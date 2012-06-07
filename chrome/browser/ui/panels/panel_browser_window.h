@@ -51,7 +51,7 @@ class PanelBrowserWindow : public BrowserWindow,
   virtual bool IsAlwaysOnTop() const OVERRIDE;
 
   // BrowserWindow overrides.
-  virtual gfx::NativeWindow GetNativeHandle() OVERRIDE;
+  virtual gfx::NativeWindow GetNativeWindow() OVERRIDE;
   virtual BrowserWindowTesting* GetBrowserWindowTesting() OVERRIDE;
   virtual StatusBubble* GetStatusBubble() OVERRIDE;
   virtual void ToolbarSizeChanged(bool is_animating) OVERRIDE;

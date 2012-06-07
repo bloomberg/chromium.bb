@@ -63,7 +63,7 @@ class TestBrowserWindowAura : public TestBrowserWindow {
   TestBrowserWindowAura(Browser* browser, aura::Window* native_window);
   virtual ~TestBrowserWindowAura();
 
-  virtual gfx::NativeWindow GetNativeHandle() OVERRIDE {
+  virtual gfx::NativeWindow GetNativeWindow() OVERRIDE {
     return native_window_;
   }
 

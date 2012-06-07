@@ -18,7 +18,7 @@ class ViewIDTest : public InProcessBrowserTest {
 
   void CheckViewID(ViewID id, bool should_have) {
     if (!root_window_)
-      root_window_ = GTK_WIDGET(browser()->window()->GetNativeHandle());
+      root_window_ = GTK_WIDGET(browser()->window()->GetNativeWindow());
 
     ASSERT_TRUE(root_window_);
     EXPECT_EQ(should_have, !!ViewIDUtil::GetWidget(root_window_, id))

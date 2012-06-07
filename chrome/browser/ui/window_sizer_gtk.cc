@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,7 @@ gfx::Point WindowSizer::GetDefaultPopupOrigin(const gfx::Size& size) {
   gfx::Point corner(monitor_bounds.x(), monitor_bounds.y());
   if (Browser* browser = BrowserList::GetLastActive()) {
     GtkWindow* window =
-        reinterpret_cast<GtkWindow*>(browser->window()->GetNativeHandle());
+        reinterpret_cast<GtkWindow*>(browser->window()->GetNativeWindow());
     int x = 0, y = 0;
     gtk_window_get_position(window, &x, &y);
     // Limit to not overflow the work area right and bottom edges.

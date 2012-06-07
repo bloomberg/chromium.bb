@@ -19,7 +19,7 @@ class AndroidNativeWindow {
   explicit AndroidNativeWindow(ANativeWindow* window);
   ~AndroidNativeWindow();
 
-  ANativeWindow* GetNativeHandle() const;
+  ANativeWindow* GetNativeWindow() const;
 
  private:
   ANativeWindow* window_;

@@ -180,7 +180,7 @@ void SettingsChangeGlobalError::OnBubbleViewDidClose(Browser* browser) {
     // TODO(ivankr): the logic for redisplaying bubble is disabled on Gtk, see
     // http://crbug.com/115719.
     if (browser->window() &&
-        !platform_util::IsWindowActive(browser->window()->GetNativeHandle())) {
+        !platform_util::IsWindowActive(browser->window()->GetNativeWindow())) {
       // Bubble closed because the entire window lost activation, display
       // again when a window gets active.
       show_on_browser_activation_ = true;

@@ -65,7 +65,7 @@ void ShowExtensionInstalledBubble(
     // The controller is deallocated when the window is closed, so no need to
     // worry about it here.
     [[ExtensionInstalledBubbleController alloc]
-        initWithParentWindow:browser->window()->GetNativeHandle()
+        initWithParentWindow:browser->window()->GetNativeWindow()
                    extension:extension
                       bundle:NULL
                      browser:browser
@@ -85,7 +85,7 @@ void extensions::BundleInstaller::ShowInstalledBubble(
   // The controller is deallocated when the window is closed, so no need to
   // worry about it here.
   [[ExtensionInstalledBubbleController alloc]
-        initWithParentWindow:browser->window()->GetNativeHandle()
+        initWithParentWindow:browser->window()->GetNativeWindow()
                    extension:NULL
                       bundle:bundle
                      browser:browser

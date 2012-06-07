@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,7 +59,7 @@ void SSLAddCertHandler::AskToAddCert() {
   Browser* browser = browser::GetLastActiveBrowser();
   // TODO(snej): Can I get the Browser that issued the request?
   if (browser) {
-    parentWindow = browser->window()->GetNativeHandle();
+    parentWindow = browser->window()->GetNativeWindow();
     if ([parentWindow attachedSheet])
       parentWindow = nil;
   }

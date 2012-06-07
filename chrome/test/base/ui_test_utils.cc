@@ -738,7 +738,7 @@ bool GetNativeWindow(const Browser* browser, gfx::NativeWindow* native_window) {
   if (!window)
     return false;
 
-  *native_window = window->GetNativeHandle();
+  *native_window = window->GetNativeWindow();
   return *native_window;
 }
 

@@ -29,7 +29,7 @@ void SetWindowBounds(gfx::NativeWindow window, const gfx::Rect& bounds) {
 }
 
 bool IsViewFocused(const Browser* browser, ViewID vid) {
-  NSWindow* window = browser->window()->GetNativeHandle();
+  NSWindow* window = browser->window()->GetNativeWindow();
   DCHECK(window);
   NSView* view = view_id_util::GetView(window, vid);
   if (!view)
@@ -51,7 +51,7 @@ bool IsViewFocused(const Browser* browser, ViewID vid) {
 }
 
 void ClickOnView(const Browser* browser, ViewID vid) {
-  NSWindow* window = browser->window()->GetNativeHandle();
+  NSWindow* window = browser->window()->GetNativeWindow();
   DCHECK(window);
   NSView* view = view_id_util::GetView(window, vid);
   DCHECK(view);

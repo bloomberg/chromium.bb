@@ -61,7 +61,7 @@ void ExtensionUninstallDialogGtk::Show() {
   // Build the dialog.
   dialog_ = gtk_dialog_new_with_buttons(
       l10n_util::GetStringUTF8(IDS_EXTENSION_UNINSTALL_PROMPT_TITLE).c_str(),
-      browser_window->GetNativeHandle(),
+      browser_window->GetNativeWindow(),
       GTK_DIALOG_MODAL,
       GTK_STOCK_CANCEL,
       GTK_RESPONSE_CLOSE,

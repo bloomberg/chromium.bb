@@ -48,7 +48,7 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
   }
 
   gfx::NativeWindow GetNativeWindow(Panel* panel) const {
-    return GetBrowserView(panel)->GetNativeHandle();
+    return GetBrowserView(panel)->GetNativeWindow();
   }
 
   PanelBoundsAnimation* GetBoundsAnimator(Panel* panel) const {

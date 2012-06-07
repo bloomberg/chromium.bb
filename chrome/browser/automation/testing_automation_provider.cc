@@ -671,7 +671,7 @@ void TestingAutomationProvider::GetActiveWindow(int* handle) {
   *handle = 0;
   Browser* browser = BrowserList::GetLastActive();
   if (browser) {
-    gfx::NativeWindow window = browser->window()->GetNativeHandle();
+    gfx::NativeWindow window = browser->window()->GetNativeWindow();
     *handle = window_tracker_->Add(window);
   }
 }
@@ -1217,7 +1217,7 @@ void TestingAutomationProvider::GetWindowForBrowser(int browser_handle,
 
   if (browser_tracker_->ContainsHandle(browser_handle)) {
     Browser* browser = browser_tracker_->GetResource(browser_handle);
-    gfx::NativeWindow win = browser->window()->GetNativeHandle();
+    gfx::NativeWindow win = browser->window()->GetNativeWindow();
     // Add() returns the existing handle for the resource if any.
     *handle = window_tracker_->Add(win);
     *success = true;
@@ -5416,7 +5416,7 @@ void TestingAutomationProvider::SendOSLevelKeyEventToTab(
         .SendError("Could not get the browser window");
     return;
   }
-  gfx::NativeWindow window = browser_window->GetNativeHandle();
+  gfx::NativeWindow window = browser_window->GetNativeWindow();
   if (!window) {
     AutomationJSONReply(this, reply_message)
         .SendError("Could not get the browser window handle");

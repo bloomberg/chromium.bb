@@ -53,7 +53,7 @@ class Bridge : public GlobalErrorBubbleViewBase {
 
 + (GlobalErrorBubbleViewBase*)showForBrowser:(Browser*)browser
     error:(const base::WeakPtr<GlobalError>&)error {
-  NSWindow* parentWindow = browser->window()->GetNativeHandle();
+  NSWindow* parentWindow = browser->window()->GetNativeWindow();
   BrowserWindowController* bwc = [BrowserWindowController
       browserWindowControllerForWindow:parentWindow];
   NSView* wrenchButton = [[bwc toolbarController] wrenchButton];

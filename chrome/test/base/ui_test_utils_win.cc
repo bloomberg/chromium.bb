@@ -54,7 +54,7 @@ FilePath GetSnapshotFileName(const FilePath& snapshot_directory) {
 bool IsViewFocused(const Browser* browser, ViewID vid) {
   BrowserWindow* browser_window = browser->window();
   DCHECK(browser_window);
-  gfx::NativeWindow window = browser_window->GetNativeHandle();
+  gfx::NativeWindow window = browser_window->GetNativeWindow();
   DCHECK(window);
   const views::Widget* widget =
       views::Widget::GetTopLevelWidgetForNativeView(window);

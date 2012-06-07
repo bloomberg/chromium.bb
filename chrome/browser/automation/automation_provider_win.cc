@@ -91,7 +91,7 @@ void AutomationProvider::WindowSimulateDrag(
     IPC::Message* reply_message) {
   if (browser_tracker_->ContainsHandle(handle) && (drag_path.size() > 1)) {
     gfx::NativeWindow window =
-        browser_tracker_->GetResource(handle)->window()->GetNativeHandle();
+        browser_tracker_->GetResource(handle)->window()->GetNativeWindow();
 
     UINT down_message = 0;
     UINT up_message = 0;
@@ -119,7 +119,7 @@ void AutomationProvider::WindowSimulateDrag(
     Browser* browser = browser_tracker_->GetResource(handle);
     DCHECK(browser);
     HWND top_level_hwnd =
-        reinterpret_cast<HWND>(browser->window()->GetNativeHandle());
+        reinterpret_cast<HWND>(browser->window()->GetNativeWindow());
     POINT temp = drag_path[0].ToPOINT();
     MapWindowPoints(top_level_hwnd, HWND_DESKTOP, &temp, 1);
     MoveMouse(temp);

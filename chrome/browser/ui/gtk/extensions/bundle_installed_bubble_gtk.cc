@@ -62,7 +62,7 @@ BundleInstalledBubbleGtk::~BundleInstalledBubbleGtk() {}
 void BundleInstalledBubbleGtk::ShowInternal(const BundleInstaller* bundle) {
   BrowserWindowGtk* browser_window =
       BrowserWindowGtk::GetBrowserWindowForNativeWindow(
-          browser_->window()->GetNativeHandle());
+          browser_->window()->GetNativeWindow());
 
   GtkThemeService* theme_provider = GtkThemeService::GetFrom(
       browser_->profile());

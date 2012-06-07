@@ -149,7 +149,7 @@ Browser* FindBrowserWithWindow(gfx::NativeWindow window) {
   for (BrowserList::const_iterator it = BrowserList::begin();
        it != BrowserList::end(); ++it) {
     Browser* browser = *it;
-    if (browser->window() && browser->window()->GetNativeHandle() == window)
+    if (browser->window() && browser->window()->GetNativeWindow() == window)
       return browser;
   }
   return NULL;

@@ -718,7 +718,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
 - (BOOL)keyWindowIsNotModal {
   Browser* browser = browser::GetLastActiveBrowser();
   return [NSApp modalWindow] == nil && (!browser ||
-         ![[browser->window()->GetNativeHandle() attachedSheet]
+         ![[browser->window()->GetNativeWindow() attachedSheet]
              isKindOfClass:[NSWindow class]]);
 }
 

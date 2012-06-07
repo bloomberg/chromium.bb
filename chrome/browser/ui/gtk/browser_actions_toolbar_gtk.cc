@@ -381,7 +381,7 @@ class BrowserActionButton : public content::NotificationObserver,
           command->accelerator().IsAltDown()));
 
       gfx::NativeWindow window =
-          toolbar_->browser()->window()->GetNativeHandle();
+          toolbar_->browser()->window()->GetNativeWindow();
       accel_group_ = gtk_accel_group_new();
       gtk_window_add_accel_group(window, accel_group_);
 
@@ -405,7 +405,7 @@ class BrowserActionButton : public content::NotificationObserver,
   void DisconnectBrowserActionPopupAccelerator() {
     if (accel_group_) {
       gfx::NativeWindow window =
-          toolbar_->browser()->window()->GetNativeHandle();
+          toolbar_->browser()->window()->GetNativeWindow();
       gtk_accel_group_disconnect_key(
           accel_group_,
           keybinding_.get()->GetGdkKeyCode(),

@@ -333,7 +333,7 @@ void ShowExtensionInstallDialogImpl(
     return;
   }
 
-  gfx::NativeWindow native_window = window->GetNativeHandle();
+  gfx::NativeWindow native_window = window->GetNativeWindow();
 
   ExtensionInstallDialogController* controller =
       [[ExtensionInstallDialogController alloc]

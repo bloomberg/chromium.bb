@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,7 +30,7 @@ namespace {
 // menu is showing.
 void SendKeyPress(Browser* browser, ui::KeyboardCode key) {
   ASSERT_TRUE(ui_controls::SendKeyPress(
-      browser->window()->GetNativeHandle(), key, false, false, false, false));
+      browser->window()->GetNativeWindow(), key, false, false, false, false));
 }
 
 // Helper class that waits until the focus has changed to a view other
@@ -116,7 +116,7 @@ class KeyboardAccessTest : public InProcessBrowserTest {
   void TestMenuKeyboardAccess(bool alternate_key_sequence, bool shift);
 
   int GetFocusedViewID() {
-    gfx::NativeWindow window = browser()->window()->GetNativeHandle();
+    gfx::NativeWindow window = browser()->window()->GetNativeWindow();
     views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
     const views::FocusManager* focus_manager = widget->GetFocusManager();
     const views::View* focused_view = focus_manager->GetFocusedView();
@@ -126,7 +126,7 @@ class KeyboardAccessTest : public InProcessBrowserTest {
   void WaitForFocusedViewIDToChange(int original_view_id) {
     if (GetFocusedViewID() != original_view_id)
       return;
-    gfx::NativeWindow window = browser()->window()->GetNativeHandle();
+    gfx::NativeWindow window = browser()->window()->GetNativeWindow();
     views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
     views::FocusManager* focus_manager = widget->GetFocusManager();
     ViewFocusChangeWaiter waiter(focus_manager, original_view_id);

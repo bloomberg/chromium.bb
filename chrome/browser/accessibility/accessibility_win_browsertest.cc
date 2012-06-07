@@ -725,7 +725,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   tree_updated_observer1.Wait();
 
   // Get the accessibility object for the browser window.
-  HWND browser_hwnd = browser()->window()->GetNativeHandle();
+  HWND browser_hwnd = browser()->window()->GetNativeWindow();
   base::win::ScopedComPtr<IAccessible> browser_accessible;
   HRESULT hr = AccessibleObjectFromWindow(
       browser_hwnd,

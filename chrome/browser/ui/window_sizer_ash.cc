@@ -25,7 +25,7 @@ bool IsValidToplevelWindow(aura::Window* window) {
        ++iter) {
     Browser* browser = *iter;
     if (browser && browser->window() &&
-        browser->window()->GetNativeHandle() == window) {
+        browser->window()->GetNativeWindow() == window) {
       return (!(browser->is_type_popup() || browser->is_type_panel()));
     }
   }

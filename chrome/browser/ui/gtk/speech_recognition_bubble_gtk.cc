@@ -190,7 +190,7 @@ void SpeechRecognitionBubbleGtk::Show() {
         browser::FindOrCreateTabbedBrowser(profile);
     BrowserWindowGtk* browser_window =
         BrowserWindowGtk::GetBrowserWindowForNativeWindow(
-            browser->window()->GetNativeHandle());
+            browser->window()->GetNativeWindow());
     reference_widget = browser_window->GetToolbar()->GetLocationBarView()
         ->location_icon_widget();
     target_rect = gtk_util::WidgetBounds(reference_widget);

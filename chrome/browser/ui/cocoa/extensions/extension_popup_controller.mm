@@ -253,7 +253,7 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
   // closed, so no need to do that here.
   gPopup = [[ExtensionPopupController alloc]
       initWithHost:host
-      parentWindow:browser->window()->GetNativeHandle()
+      parentWindow:browser->window()->GetNativeWindow()
         anchoredAt:anchoredAt
      arrowLocation:arrowLocation
            devMode:devMode];

@@ -128,7 +128,7 @@ void ExtensionInstalledBubbleGtk::Observe(
 void ExtensionInstalledBubbleGtk::ShowInternal() {
   BrowserWindowGtk* browser_window =
       BrowserWindowGtk::GetBrowserWindowForNativeWindow(
-          browser_->window()->GetNativeHandle());
+          browser_->window()->GetNativeWindow());
 
   GtkWidget* reference_widget = NULL;
 
@@ -345,7 +345,7 @@ void ExtensionInstalledBubbleGtk::BubbleClosing(BubbleGtk* bubble,
     // Turn the page action preview off.
     BrowserWindowGtk* browser_window =
           BrowserWindowGtk::GetBrowserWindowForNativeWindow(
-              browser_->window()->GetNativeHandle());
+              browser_->window()->GetNativeWindow());
     LocationBarViewGtk* location_bar_view =
         browser_window->GetToolbar()->GetLocationBarView();
     location_bar_view->SetPreviewEnabledPageAction(extension_->page_action(),

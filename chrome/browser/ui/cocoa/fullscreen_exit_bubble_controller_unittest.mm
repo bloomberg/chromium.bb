@@ -78,7 +78,7 @@ class FullscreenExitBubbleControllerTest : public CocoaProfileTest {
 
 TEST_F(FullscreenExitBubbleControllerTest, DenyExitsFullscreen) {
   CreateBrowserWindow();
-  NSWindow* window = browser()->window()->GetNativeHandle();
+  NSWindow* window = browser()->window()->GetNativeWindow();
   BrowserWindowController* bwc = [BrowserWindowController
       browserWindowControllerForWindow:window];
 

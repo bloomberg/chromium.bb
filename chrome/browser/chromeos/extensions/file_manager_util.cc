@@ -214,7 +214,7 @@ void ShowWarningMessageBox(Profile* profile, const FilePath& path) {
   // browser is leaked.
   Browser* browser = browser::FindOrCreateTabbedBrowser(profile);
   browser::ShowMessageBox(
-      browser->window()->GetNativeHandle(),
+      browser->window()->GetNativeWindow(),
       l10n_util::GetStringFUTF16(
           IDS_FILE_BROWSER_ERROR_VIEWING_FILE_TITLE,
           UTF8ToUTF16(path.BaseName().value())),

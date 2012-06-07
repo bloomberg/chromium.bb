@@ -17,7 +17,7 @@ content::WebContents* GetActiveWebContents() {
   Browser* browser = BrowserList::GetLastActive();
   if (!browser)
     return NULL;
-  if (!ash::wm::IsActiveWindow(browser->window()->GetNativeHandle()))
+  if (!ash::wm::IsActiveWindow(browser->window()->GetNativeWindow()))
     return NULL;
 
   TabContentsWrapper* wrapper = browser->GetSelectedTabContentsWrapper();

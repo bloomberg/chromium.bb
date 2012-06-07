@@ -117,7 +117,7 @@ bool PanelBrowserWindow::IsAlwaysOnTop() const {
 // native panel, delegates to Panel (WebContents handling)
 // or invoke logic that has nothing to do with panels (GetDownloadShelf).
 // -----------------------------------------------------------
-gfx::NativeWindow PanelBrowserWindow::GetNativeHandle() {
+gfx::NativeWindow PanelBrowserWindow::GetNativeWindow() {
   return native_panel_->GetNativePanelHandle();
 }
 

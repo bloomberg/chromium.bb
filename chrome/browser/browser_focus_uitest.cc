@@ -255,7 +255,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_BrowsersRememberFocus) {
   GURL url = test_server()->GetURL(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
-  gfx::NativeWindow window = browser()->window()->GetNativeHandle();
+  gfx::NativeWindow window = browser()->window()->GetNativeWindow();
 
   // The focus should be on the Tab contents.
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
@@ -281,7 +281,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, DISABLED_BrowsersRememberFocus) {
   browser2->window()->Show();
   ui_test_utils::NavigateToURL(browser2, url);
 
-  gfx::NativeWindow window2 = browser2->window()->GetNativeHandle();
+  gfx::NativeWindow window2 = browser2->window()->GetNativeWindow();
   BrowserView* browser_view2 =
       BrowserView::GetBrowserViewForBrowser(browser2);
   ASSERT_TRUE(browser_view2);

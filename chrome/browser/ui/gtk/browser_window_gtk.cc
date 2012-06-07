@@ -800,7 +800,7 @@ bool BrowserWindowGtk::IsAlwaysOnTop() const {
   return false;
 }
 
-gfx::NativeWindow BrowserWindowGtk::GetNativeHandle() {
+gfx::NativeWindow BrowserWindowGtk::GetNativeWindow() {
   return window_;
 }
 
@@ -1134,7 +1134,7 @@ void BrowserWindowGtk::ShowWebsiteSettings(
     const GURL& url,
     const content::SSLStatus& ssl,
     bool show_history) {
-    WebsiteSettingsPopupGtk::Show(GetNativeHandle(), profile,
+    WebsiteSettingsPopupGtk::Show(GetNativeWindow(), profile,
                                   tab_contents_wrapper, url, ssl);
 }
 
@@ -1304,7 +1304,7 @@ void BrowserWindowGtk::ShowPasswordGenerationBubble(
 }
 
 void BrowserWindowGtk::ConfirmBrowserCloseWithPendingDownloads() {
-  DownloadInProgressDialogGtk::Show(browser(), GetNativeHandle());
+  DownloadInProgressDialogGtk::Show(browser(), GetNativeWindow());
 }
 
 void BrowserWindowGtk::Observe(int type,

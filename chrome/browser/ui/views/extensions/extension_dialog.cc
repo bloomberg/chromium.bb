@@ -156,7 +156,7 @@ void ExtensionDialog::InitWindowFullscreen() {
 
 
 void ExtensionDialog::InitWindow(Browser* browser, int width, int height) {
-  gfx::NativeWindow parent = browser->window()->GetNativeHandle();
+  gfx::NativeWindow parent = browser->window()->GetNativeWindow();
   window_ = views::Widget::CreateWindowWithParent(this, parent);
 
   // Center the window over the browser.

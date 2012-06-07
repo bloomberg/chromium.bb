@@ -33,7 +33,7 @@ class ViewIDTest : public InProcessBrowserTest {
 
   void CheckViewID(ViewID view_id, bool should_have) {
     if (!root_window_)
-      root_window_ = browser()->window()->GetNativeHandle();
+      root_window_ = browser()->window()->GetNativeWindow();
 
     ASSERT_TRUE(root_window_);
     NSView* view = view_id_util::GetView(root_window_, view_id);

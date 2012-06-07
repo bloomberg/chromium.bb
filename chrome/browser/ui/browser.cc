@@ -538,11 +538,11 @@ void Browser::InitBrowserWindow() {
       is_app() && !is_type_panel() ?
       ShellIntegration::GetAppId(UTF8ToWide(app_name_), profile_->GetPath()) :
       ShellIntegration::GetChromiumAppId(profile_->GetPath()),
-      window()->GetNativeHandle());
+      window()->GetNativeWindow());
 
   if (is_type_panel()) {
     ui::win::SetAppIconForWindow(ShellIntegration::GetChromiumIconPath(),
-                                 window()->GetNativeHandle());
+                                 window()->GetNativeWindow());
   }
 #endif
 
@@ -1207,7 +1207,7 @@ gfx::NativeWindow Browser::BrowserShowWebDialog(
     WebDialogDelegate* delegate,
     gfx::NativeWindow parent_window) {
   if (!parent_window)
-    parent_window = window_->GetNativeHandle();
+    parent_window = window_->GetNativeWindow();
 
   return browser::ShowWebDialog(parent_window, profile_, this, delegate);
 }
@@ -1792,7 +1792,7 @@ void Browser::OpenFile() {
   const FilePath directory = profile_->last_selected_directory();
 
   // TODO(beng): figure out how to juggle this.
-  gfx::NativeWindow parent_window = window_->GetNativeHandle();
+  gfx::NativeWindow parent_window = window_->GetNativeWindow();
   select_file_dialog_->SelectFile(SelectFileDialog::SELECT_OPEN_FILE,
                                   string16(), directory,
                                   NULL, 0, FILE_PATH_LITERAL(""),
@@ -2412,7 +2412,7 @@ void Browser::UpdateUIForNavigationInTab(TabContents* contents,
 }
 
 void Browser::ShowCollectedCookiesDialog(TabContents* tab_contents) {
-  browser::ShowCollectedCookiesDialog(window()->GetNativeHandle(),
+  browser::ShowCollectedCookiesDialog(window()->GetNativeWindow(),
                                       tab_contents);
 }
 

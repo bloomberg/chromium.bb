@@ -18,7 +18,7 @@ void TestingAutomationProvider::TerminateSession(int handle, bool* success) {
 
   if (browser_tracker_->ContainsHandle(handle)) {
     Browser* browser = browser_tracker_->GetResource(handle);
-    HWND window = browser->window()->GetNativeHandle();
+    HWND window = browser->window()->GetNativeWindow();
     *success = (::PostMessageW(window, WM_ENDSESSION, 0, 0) == TRUE);
   }
 }

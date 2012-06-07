@@ -956,7 +956,7 @@ void WrenchMenu::CreateBookmarkMenu() {
 
   // TODO(oshima): Replace with views only API.
   views::Widget* parent = views::Widget::GetWidgetForNativeWindow(
-      browser_->window()->GetNativeHandle());
+      browser_->window()->GetNativeWindow());
   bookmark_menu_delegate_.reset(
       new BookmarkMenuDelegate(browser_->profile(),
                                NULL,

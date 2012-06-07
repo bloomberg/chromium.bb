@@ -114,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
   BrowserWindow* browser_window = browser()->window();
   ASSERT_TRUE(NULL != browser_window);
 
-  HWND hwnd = browser_window->GetNativeHandle();
+  HWND hwnd = browser_window->GetNativeWindow();
   ASSERT_TRUE(NULL != hwnd);
 
   // Get accessibility object.

@@ -240,7 +240,7 @@ gfx::NativeWindow SetWallpaperOptionsHandler::GetBrowserWindow() const {
       browser::FindBrowserWithProfile(Profile::FromWebUI(web_ui()));
   if (!browser)
     return NULL;
-  return browser->window()->GetNativeHandle();
+  return browser->window()->GetNativeWindow();
 }
 
 }  // namespace options2

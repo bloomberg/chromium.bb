@@ -161,7 +161,7 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
   DCHECK(browser_->command_updater()->IsCommandEnabled(IDC_SHOW_AVATAR_MENU));
 
   NSWindowController* wc =
-      [browser_->window()->GetNativeHandle() windowController];
+      [browser_->window()->GetNativeWindow() windowController];
   if ([wc isKindOfClass:[BrowserWindowController class]]) {
     [static_cast<BrowserWindowController*>(wc)
         lockBarVisibilityForOwner:self withAnimation:NO delay:NO];
@@ -203,7 +203,7 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
 
 - (void)bubbleWillClose:(NSNotification*)notif {
   NSWindowController* wc =
-      [browser_->window()->GetNativeHandle() windowController];
+      [browser_->window()->GetNativeWindow() windowController];
   if ([wc isKindOfClass:[BrowserWindowController class]]) {
     [static_cast<BrowserWindowController*>(wc)
         releaseBarVisibilityForOwner:self withAnimation:YES delay:NO];
@@ -279,7 +279,7 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
     return;
 
   NSWindowController* wc =
-      [browser_->window()->GetNativeHandle() windowController];
+      [browser_->window()->GetNativeWindow() windowController];
   if (![wc isKindOfClass:[BrowserWindowController class]])
     return;
 

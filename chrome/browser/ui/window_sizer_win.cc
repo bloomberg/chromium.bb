@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,7 @@ gfx::Point WindowSizer::GetDefaultPopupOrigin(const gfx::Size& size) {
 
   if (Browser* b = BrowserList::GetLastActive()) {
     RECT browser;
-    HWND window = reinterpret_cast<HWND>(b->window()->GetNativeHandle());
+    HWND window = reinterpret_cast<HWND>(b->window()->GetNativeWindow());
     if (GetWindowRect(window, &browser)) {
       // Limit to not overflow the work area right and bottom edges.
       gfx::Point limit(

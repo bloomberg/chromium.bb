@@ -19,7 +19,7 @@ AndroidNativeWindow::~AndroidNativeWindow() {
     ANativeWindow_release(window_);
 }
 
-ANativeWindow* AndroidNativeWindow::GetNativeHandle() const {
+ANativeWindow* AndroidNativeWindow::GetNativeWindow() const {
   return window_;
 }
 

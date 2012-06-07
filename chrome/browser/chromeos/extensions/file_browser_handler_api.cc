@@ -115,9 +115,9 @@ bool FileSelectorImpl::DoSelectFile(const FilePath& suggested_name,
       string16() /* dialog title*/, suggested_name,
       NULL /* allowed file types */, 0 /* file type index */,
       std::string() /* default file extension */, tab_contents->web_contents(),
-      browser->window()->GetNativeHandle(), NULL /* params */);
+      browser->window()->GetNativeWindow(), NULL /* params */);
 
-  return dialog_->IsRunning(browser->window()->GetNativeHandle());
+  return dialog_->IsRunning(browser->window()->GetNativeWindow());
 }
 
 void FileSelectorImpl::FileSelected(

@@ -411,7 +411,7 @@ void ExtensionInstallUI::OnInstallFailure(const string16& error) {
     return;
 
   Browser* browser = browser::FindLastActiveWithProfile(profile_);
-  browser::ShowMessageBox(browser ? browser->window()->GetNativeHandle() : NULL,
+  browser::ShowMessageBox(browser ? browser->window()->GetNativeWindow() : NULL,
       l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALL_FAILURE_TITLE), error,
       browser::MESSAGE_BOX_TYPE_WARNING);
 }

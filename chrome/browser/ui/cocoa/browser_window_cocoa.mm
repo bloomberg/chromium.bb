@@ -200,7 +200,7 @@ bool BrowserWindowCocoa::IsActive() const {
   return [window() isKeyWindow];
 }
 
-gfx::NativeWindow BrowserWindowCocoa::GetNativeHandle() {
+gfx::NativeWindow BrowserWindowCocoa::GetNativeWindow() {
   return window();
 }
 

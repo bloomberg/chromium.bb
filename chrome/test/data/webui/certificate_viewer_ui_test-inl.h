@@ -38,7 +38,7 @@ void CertificateViewerUITest::ShowCertificateViewer() {
   CertificateViewerDialog* dialog = new CertificateViewerDialog(
       google_cert);
   dialog->AddObserver(&dialog_observer);
-  dialog->Show(browser()->window()->GetNativeHandle());
+  dialog->Show(browser()->window()->GetNativeWindow());
   dialog->RemoveObserver(&dialog_observer);
   content::WebUI* webui = dialog_observer.GetWebUI();
   webui->GetWebContents()->GetRenderViewHost()->SetWebUIProperty(

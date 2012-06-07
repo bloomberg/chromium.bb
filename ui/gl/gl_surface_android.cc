@@ -127,7 +127,7 @@ bool AndroidViewSurface::Resize(const gfx::Size& size) {
   if (pbuffer_surface_.get())
     return pbuffer_surface_->Resize(size);
   else if (GetHandle()) {
-    DCHECK(window_ && window_->GetNativeHandle());
+    DCHECK(window_ && window_->GetNativeWindow());
     // Deactivate and restore any currently active context.
     EGLContext context = eglGetCurrentContext();
     if (context != EGL_NO_CONTEXT) {
@@ -144,11 +144,11 @@ bool AndroidViewSurface::Resize(const gfx::Size& size) {
 }
 
 bool AndroidViewSurface::CreateWindowSurface(AndroidNativeWindow* window) {
-  DCHECK(window->GetNativeHandle());
+  DCHECK(window->GetNativeWindow());
   window_ = window;
   EGLSurface surface = eglCreateWindowSurface(GetDisplay(),
                                               GetConfig(),
-                                              window->GetNativeHandle(),
+                                              window->GetNativeWindow(),
                                               NULL);
   if (surface == EGL_NO_SURFACE) {
     LOG(ERROR) << "eglCreateWindowSurface failed with error "
@@ -162,7 +162,7 @@ bool AndroidViewSurface::CreateWindowSurface(AndroidNativeWindow* window) {
 }
 
 void AndroidViewSurface::SetNativeWindow(AndroidNativeWindow* window) {
-  if (window->GetNativeHandle()) {
+  if (window->GetNativeWindow()) {
     DCHECK(pbuffer_surface_.get());
     pbuffer_surface_->Destroy();
     pbuffer_surface_ = NULL;

@@ -114,7 +114,7 @@ class ConfirmBubbleGtkTest : public InProcessBrowserTest {
 
     gfx::Point point(0, 0);
     bubble_ = new ConfirmBubbleGtk(
-        GTK_WIDGET(browser()->window()->GetNativeHandle()),
+        GTK_WIDGET(browser()->window()->GetNativeWindow()),
         point,
         new TestConfirmBubbleModel(&model_deleted_,
                                    &accept_clicked_,

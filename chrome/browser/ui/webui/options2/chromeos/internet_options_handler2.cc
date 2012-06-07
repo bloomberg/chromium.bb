@@ -1127,7 +1127,7 @@ gfx::NativeWindow InternetOptionsHandler::GetNativeWindow() const {
   // through some sort of delegate.
   Browser* browser =
       browser::FindBrowserWithProfile(Profile::FromWebUI(web_ui()));
-  return browser->window()->GetNativeHandle();
+  return browser->window()->GetNativeWindow();
 }
 
 Browser* InternetOptionsHandler::GetAppropriateBrowser() {

@@ -92,7 +92,7 @@ void BookmarkEditor::ShowBookmarkAllTabsDialog(Browser* browser) {
   bookmark_utils::GetURLsForOpenTabs(browser, &(details.urls));
   DCHECK(!details.urls.empty());
 
-  BookmarkEditor::Show(browser->window()->GetNativeHandle(),
+  BookmarkEditor::Show(browser->window()->GetNativeWindow(),
                        profile, details, BookmarkEditor::SHOW_TREE);
 }
 

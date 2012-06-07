@@ -63,7 +63,7 @@ class TabStripControllerTest : public CocoaProfileTest {
     ASSERT_TRUE(browser());
 
     BrowserWindow* browser_window = CreateBrowserWindow();
-    NSWindow* window = browser_window->GetNativeHandle();
+    NSWindow* window = browser_window->GetNativeWindow();
     NSView* parent = [window contentView];
     NSRect content_frame = [parent frame];
 

@@ -359,7 +359,7 @@ void ChromeLauncherController::CreateNewTab() {
   }
 
   last_browser->NewTab();
-  aura::Window* window = last_browser->window()->GetNativeHandle();
+  aura::Window* window = last_browser->window()->GetNativeWindow();
   window->Show();
   ash::wm::ActivateWindow(window);
 }

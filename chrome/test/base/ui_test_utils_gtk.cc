@@ -39,7 +39,7 @@ static bool IsWidgetInFocusChain(GtkWidget* root, GtkWidget* target) {
 bool IsViewFocused(const Browser* browser, ViewID vid) {
   BrowserWindow* browser_window = browser->window();
   DCHECK(browser_window);
-  gfx::NativeWindow window = browser_window->GetNativeHandle();
+  gfx::NativeWindow window = browser_window->GetNativeWindow();
   DCHECK(window);
   GtkWidget* widget = ViewIDUtil::GetWidget(GTK_WIDGET(window), vid);
   DCHECK(widget);
@@ -49,7 +49,7 @@ bool IsViewFocused(const Browser* browser, ViewID vid) {
 void ClickOnView(const Browser* browser, ViewID vid) {
   BrowserWindow* browser_window = browser->window();
   DCHECK(browser_window);
-  gfx::NativeWindow window = browser_window->GetNativeHandle();
+  gfx::NativeWindow window = browser_window->GetNativeWindow();
   DCHECK(window);
   GtkWidget* view = ViewIDUtil::GetWidget(GTK_WIDGET(window), vid);
   DCHECK(view);

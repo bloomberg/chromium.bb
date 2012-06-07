@@ -49,7 +49,7 @@ gfx::NativeWindow GetParent(Profile* profile) {
 
   Browser* browser = browser::FindLastActiveWithProfile(profile);
   if (browser && browser->window())
-    return browser->window()->GetNativeHandle();
+    return browser->window()->GetNativeWindow();
 
   return NULL;
 }

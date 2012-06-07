@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@ gfx::Point WindowSizer::GetDefaultPopupOrigin(const gfx::Size& size) {
   NSPoint corner = NSMakePoint(NSMinX(work_area), NSMaxY(work_area));
 
   if (Browser* b = BrowserList::GetLastActive()) {
-    NSWindow* window = b->window()->GetNativeHandle();
+    NSWindow* window = b->window()->GetNativeWindow();
     NSRect window_frame = [window frame];
 
     // Limit to not overflow the work area right and bottom edges.

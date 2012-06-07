@@ -460,7 +460,7 @@ void PanelBrowserWindowGtk::PreventActivationByOS(bool prevent_activation) {
 }
 
 gfx::NativeWindow PanelBrowserWindowGtk::GetNativePanelHandle() {
-  return GetNativeHandle();
+  return GetNativeWindow();
 }
 
 void PanelBrowserWindowGtk::UpdatePanelTitleBar() {

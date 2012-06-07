@@ -58,7 +58,7 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(test_server()->Start());
 
   GtkWidget* other_bookmarks =
-      ViewIDUtil::GetWidget(GTK_WIDGET(browser()->window()->GetNativeHandle()),
+      ViewIDUtil::GetWidget(GTK_WIDGET(browser()->window()->GetNativeWindow()),
       VIEW_ID_OTHER_BOOKMARKS);
   bool has_been_clicked = false;
   g_signal_connect(other_bookmarks, "clicked",

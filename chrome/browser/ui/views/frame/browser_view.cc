@@ -601,7 +601,7 @@ bool BrowserView::IsAlwaysOnTop() const {
   return false;
 }
 
-gfx::NativeWindow BrowserView::GetNativeHandle() {
+gfx::NativeWindow BrowserView::GetNativeWindow() {
   return GetWidget()->GetTopLevelWidget()->GetNativeWindow();
 }
 
@@ -1108,18 +1108,18 @@ DownloadShelf* BrowserView::GetDownloadShelf() {
 }
 
 void BrowserView::ConfirmBrowserCloseWithPendingDownloads() {
-  DownloadInProgressDialogView::Show(browser_.get(), GetNativeHandle());
+  DownloadInProgressDialogView::Show(browser_.get(), GetNativeWindow());
 }
 
 void BrowserView::ShowCreateWebAppShortcutsDialog(
     TabContentsWrapper* tab_contents) {
-  browser::ShowCreateWebAppShortcutsDialog(GetNativeHandle(), tab_contents);
+  browser::ShowCreateWebAppShortcutsDialog(GetNativeWindow(), tab_contents);
 }
 
 void BrowserView::ShowCreateChromeAppShortcutsDialog(
     Profile* profile,
     const extensions::Extension* app) {
-  browser::ShowCreateChromeAppShortcutsDialog(GetNativeHandle(), profile, app);
+  browser::ShowCreateChromeAppShortcutsDialog(GetNativeWindow(), profile, app);
 }
 
 void BrowserView::UserChangedTheme() {
@@ -1245,17 +1245,17 @@ void BrowserView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
 // won't do anything. We'll need something like an overall clipboard command
 // manager to do that.
 void BrowserView::Cut() {
-  ui_controls::SendKeyPress(GetNativeHandle(), ui::VKEY_X,
+  ui_controls::SendKeyPress(GetNativeWindow(), ui::VKEY_X,
                             true, false, false, false);
 }
 
 void BrowserView::Copy() {
-  ui_controls::SendKeyPress(GetNativeHandle(), ui::VKEY_C,
+  ui_controls::SendKeyPress(GetNativeWindow(), ui::VKEY_C,
                             true, false, false, false);
 }
 
 void BrowserView::Paste() {
-  ui_controls::SendKeyPress(GetNativeHandle(), ui::VKEY_V,
+  ui_controls::SendKeyPress(GetNativeWindow(), ui::VKEY_V,
                             true, false, false, false);
 }
 

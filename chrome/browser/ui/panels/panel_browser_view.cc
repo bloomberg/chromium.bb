@@ -108,7 +108,7 @@ void PanelBrowserView::Deactivate() {
   BrowserWindow* browser_window =
       panel_->manager()->GetNextBrowserWindowToActivate(GetPanelBrowser());
   if (browser_window)
-    native_window = browser_window->GetNativeHandle();
+    native_window = browser_window->GetNativeWindow();
   else
     native_window = ::GetDesktopWindow();
   if (native_window)
@@ -341,7 +341,7 @@ void PanelBrowserView::PreventActivationByOS(bool prevent_activation) {
 
 
 gfx::NativeWindow PanelBrowserView::GetNativePanelHandle() {
-  return GetNativeHandle();
+  return GetNativeWindow();
 }
 
 void PanelBrowserView::UpdatePanelTitleBar() {
@@ -445,7 +445,7 @@ void PanelBrowserView::DestroyPanelBrowser() {
 
 void PanelBrowserView::EnsurePanelFullyVisible() {
 #if defined(OS_WIN) && !defined(USE_AURA)
-  ::SetWindowPos(GetNativeHandle(), HWND_TOP, 0, 0, 0, 0,
+  ::SetWindowPos(GetNativeWindow(), HWND_TOP, 0, 0, 0, 0,
                  SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
 #else
   NOTIMPLEMENTED();
@@ -584,7 +584,7 @@ void PanelBrowserView::PanelExpansionStateChanging(
   if (is_minimized == will_be_minimized)
     return;
 
-  HWND native_window = GetNativeHandle();
+  HWND native_window = GetNativeWindow();
 
   if (!thumbnail_subclass_.get()) {
     thumbnail_subclass_.reset(new ui::HWNDSubclass(native_window));

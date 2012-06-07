@@ -45,7 +45,7 @@ void AutomationProvider::WindowSimulateDrag(
     IPC::Message* reply_message) {
   // TODO(estade): don't ignore |flags| or |escape_en_route|.
   gfx::NativeWindow window =
-      browser_tracker_->GetResource(handle)->window()->GetNativeHandle();
+      browser_tracker_->GetResource(handle)->window()->GetNativeWindow();
   if (window && (drag_path.size() > 1)) {
     int x, y;
     gdk_window_get_position(gtk_widget_get_window(GTK_WIDGET(window)), &x, &y);

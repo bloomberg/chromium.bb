@@ -64,7 +64,7 @@ const CGFloat kLabelInset = 49.0;
       NULL, parentBrowser);
 
   if ((self = [self initWithModel:model
-                     parentWindow:parentBrowser->window()->GetNativeHandle()
+                     parentWindow:parentBrowser->window()->GetNativeWindow()
                        anchoredAt:point])) {
   }
   return self;

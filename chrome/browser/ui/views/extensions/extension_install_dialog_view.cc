@@ -369,6 +369,6 @@ void ShowExtensionInstallDialogImpl(
       delegate, prompt);
 
   views::Widget* window =  views::Widget::CreateWindowWithParent(
-      dialog, browser_window->GetNativeHandle());
+      dialog, browser_window->GetNativeWindow());
   window->Show();
 }

@@ -40,7 +40,7 @@ gfx::NativeWindow GetDialogParent() {
     Browser* browser = browser::FindTabbedBrowser(
         ProfileManager::GetDefaultProfileOrOffTheRecord(), true);
     if (browser)
-      return browser->window()->GetNativeHandle();
+      return browser->window()->GetNativeWindow();
   }
   return NULL;
 }

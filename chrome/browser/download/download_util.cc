@@ -602,7 +602,7 @@ void UpdateAppIconDownloadProgress(int download_count,
     BrowserWindow* window = browser->window();
     if (!window)
       continue;
-    HWND frame = window->GetNativeHandle();
+    HWND frame = window->GetNativeWindow();
     if (download_count == 0 || progress == 1.0f)
       taskbar->SetProgressState(frame, TBPF_NOPROGRESS);
     else if (!progress_known)

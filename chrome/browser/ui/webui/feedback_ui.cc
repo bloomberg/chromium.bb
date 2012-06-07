@@ -157,7 +157,7 @@ void ShowWebFeedbackView(Browser* browser,
   native_window = ash::Shell::GetPrimaryRootWindow();
   snapshot_bounds = gfx::Rect(native_window->bounds());
 #else
-  native_window = browser->window()->GetNativeHandle();
+  native_window = browser->window()->GetNativeWindow();
   snapshot_bounds = gfx::Rect(browser->window()->GetBounds().size());
 #endif
   bool success = browser::GrabWindowSnapshot(native_window,

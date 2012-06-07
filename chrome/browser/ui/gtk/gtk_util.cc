@@ -289,7 +289,7 @@ WebContents* GetBrowserWindowSelectedWebContents(BrowserWindow* window) {
 }
 
 GtkWidget* GetBrowserWindowFocusedWidget(BrowserWindow* window) {
-  return gtk_window_get_focus(window->GetNativeHandle());
+  return gtk_window_get_focus(window->GetNativeWindow());
 }
 
 }  // namespace
@@ -457,7 +457,7 @@ void MakeAppModalWindowGroup() {
        it != BrowserList::end(); ++it) {
     // List all windows in this current group
     GtkWindowGroup* old_group =
-        gtk_window_get_group((*it)->window()->GetNativeHandle());
+        gtk_window_get_group((*it)->window()->GetNativeWindow());
 
     GList* all_windows = gtk_window_group_list_windows(old_group);
     for (GList* window = all_windows; window; window = window->next) {
@@ -474,7 +474,7 @@ void AppModalDismissedUngroupWindows() {
 
     // All windows should be part of one big modal group right now.
     GtkWindowGroup* window_group = gtk_window_get_group(
-        (*BrowserList::begin())->window()->GetNativeHandle());
+        (*BrowserList::begin())->window()->GetNativeWindow());
     GList* windows = gtk_window_group_list_windows(window_group);
 
     for (GList* item = windows; item; item = item->next) {

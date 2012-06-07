@@ -34,7 +34,7 @@ class BubbleGtkTest : public InProcessBrowserTest,
 
   GtkWidget* GetNativeBrowserWindow() {
     if (!browser_window_)
-      browser_window_ = GTK_WIDGET(browser()->window()->GetNativeHandle());
+      browser_window_ = GTK_WIDGET(browser()->window()->GetNativeWindow());
     return browser_window_;
   }
 

@@ -1699,7 +1699,7 @@ void LocationBarViewGtk::PageActionViewGtk::ConnectPageActionAccelerator() {
       GetExtensionService()->extensions();
   const Extension* extension =
       extensions->GetByID(page_action_->extension_id());
-  window_ = owner_->browser()->window()->GetNativeHandle();
+  window_ = owner_->browser()->window()->GetNativeWindow();
 
   extensions::CommandService* command_service =
       extensions::CommandServiceFactory::GetForProfile(

@@ -1880,7 +1880,7 @@ Browser* TabDragController::CreateBrowserForDrag(
       break; // Nothing to do for DETACH_ABOVE_OR_BELOW.
   }
 
-  SetTrackedByWorkspace(browser->window()->GetNativeHandle(), false);
+  SetTrackedByWorkspace(browser->window()->GetNativeWindow(), false);
   browser->window()->SetBounds(new_bounds);
   return browser;
 }

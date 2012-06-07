@@ -123,7 +123,7 @@ TEST_F(BrowserWindowControllerTest, TestNormal) {
   // popup_browser will be owned by its window.
   Browser* popup_browser(Browser::CreateWithParams(
       Browser::CreateParams(Browser::TYPE_POPUP, profile())));
-  NSWindow *cocoaWindow = popup_browser->window()->GetNativeHandle();
+  NSWindow *cocoaWindow = popup_browser->window()->GetNativeWindow();
   BrowserWindowController* controller =
       static_cast<BrowserWindowController*>([cocoaWindow windowController]);
   ASSERT_TRUE([controller isKindOfClass:[BrowserWindowController class]]);
@@ -139,7 +139,7 @@ TEST_F(BrowserWindowControllerTest, TestSetBounds) {
   Browser::CreateParams params(Browser::TYPE_TABBED, profile());
   params.initial_bounds = gfx::Rect(0, 0, 50, 50);
   Browser* browser = Browser::CreateWithParams(params);
-  NSWindow *cocoaWindow = browser->window()->GetNativeHandle();
+  NSWindow *cocoaWindow = browser->window()->GetNativeWindow();
   BrowserWindowController* controller =
     static_cast<BrowserWindowController*>([cocoaWindow windowController]);
 
@@ -164,7 +164,7 @@ TEST_F(BrowserWindowControllerTest, TestSetBoundsPopup) {
   Browser::CreateParams params(Browser::TYPE_POPUP, profile());
   params.initial_bounds = gfx::Rect(0, 0, 50, 50);
   Browser* browser = Browser::CreateWithParams(params);
-  NSWindow *cocoaWindow = browser->window()->GetNativeHandle();
+  NSWindow *cocoaWindow = browser->window()->GetNativeWindow();
   BrowserWindowController* controller =
     static_cast<BrowserWindowController*>([cocoaWindow windowController]);
 

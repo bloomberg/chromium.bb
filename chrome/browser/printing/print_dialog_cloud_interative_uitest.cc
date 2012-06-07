@@ -208,7 +208,7 @@ class PrintDialogCloudTest : public InProcessBrowserTest {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&internal_cloud_print_helpers::CreateDialogFullImpl,
-                   browser()->profile(), browser()->window()->GetNativeHandle(),
+                   browser()->profile(), browser()->window()->GetNativeWindow(),
                    path_to_pdf, string16(), string16(),
                    std::string("application/pdf"), false));
   }
@@ -258,7 +258,7 @@ IN_PROC_BROWSER_TEST_F(PrintDialogCloudTest, MAYBE_HandlersRegistered) {
   // the window. See http://crbug.com/111269
   BrowserWindow* window = browser()->window();
   ASSERT_TRUE(window);
-  gfx::NativeWindow native_window = window->GetNativeHandle();
+  gfx::NativeWindow native_window = window->GetNativeWindow();
   ASSERT_TRUE(native_window);
   bool key_sent = ui_controls::SendKeyPress(native_window, ui::VKEY_ESCAPE,
                                             false, false, false, false);

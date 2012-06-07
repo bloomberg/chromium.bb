@@ -192,7 +192,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FocusWindowDoesNotUnmaximize) {
-  gfx::NativeWindow window = browser()->window()->GetNativeHandle();
+  gfx::NativeWindow window = browser()->window()->GetNativeWindow();
   ::SendMessage(window, WM_SYSCOMMAND, SC_MAXIMIZE, 0);
   ASSERT_TRUE(RunExtensionTest("window_update/focus")) << message_;
   ASSERT_TRUE(::IsZoomed(window));

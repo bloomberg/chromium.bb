@@ -671,7 +671,7 @@ void GtkThemeService::NotifyThemeChanged() {
 
   Browser* browser = BrowserList::GetLastActive();
   if (browser && browser->window()) {
-    GtkWindow* window = browser->window()->GetNativeHandle();
+    GtkWindow* window = browser->window()->GetNativeWindow();
     gtk_util::SetDefaultWindowIcon(window);
     gtk_util::SetWindowIcon(window, browser->profile());
   }

@@ -666,7 +666,7 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(Browser* browser,
     // Setting the time of the last action on the window here allows us to steal
     // focus, which is what the user wants when opening a new tab in an existing
     // browser window.
-    gtk_util::SetWMLastUserActionTime(browser->window()->GetNativeHandle());
+    gtk_util::SetWMLastUserActionTime(browser->window()->GetNativeWindow());
 #endif
   }
 

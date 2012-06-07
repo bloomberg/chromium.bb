@@ -208,7 +208,7 @@ class SelectFileDialogExtensionBrowserTest : public ExtensionBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest, CreateAndDestroy) {
   // Browser window must be up for us to test dialog window parent.
-  gfx::NativeWindow native_window = browser()->window()->GetNativeHandle();
+  gfx::NativeWindow native_window = browser()->window()->GetNativeWindow();
   ASSERT_TRUE(native_window != NULL);
 
   // Before we call SelectFile, dialog is not running/visible.
@@ -230,7 +230,7 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
                        SelectFileAndCancel) {
   AddMountPoint(downloads_dir_);
 
-  gfx::NativeWindow owning_window = browser()->window()->GetNativeHandle();
+  gfx::NativeWindow owning_window = browser()->window()->GetNativeWindow();
 
   // FilePath() for default path.
   OpenDialog(SelectFileDialog::SELECT_OPEN_FILE, FilePath(), owning_window, "");
@@ -255,7 +255,7 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
   ASSERT_TRUE(fp != NULL);
   ASSERT_TRUE(file_util::CloseFile(fp));
 
-  gfx::NativeWindow owning_window = browser()->window()->GetNativeHandle();
+  gfx::NativeWindow owning_window = browser()->window()->GetNativeWindow();
 
   // Spawn a dialog to open a file.  Provide the path to the file so the dialog
   // will automatically select it.  Ensure that the OK button is enabled by
@@ -281,7 +281,7 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
 
   FilePath test_file = downloads_dir_.AppendASCII("file_manager_test.html");
 
-  gfx::NativeWindow owning_window = browser()->window()->GetNativeHandle();
+  gfx::NativeWindow owning_window = browser()->window()->GetNativeWindow();
 
   // Spawn a dialog to save a file, providing a suggested path.
   // Ensure "Save" button is enabled by waiting for notification from
@@ -305,7 +305,7 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
                        OpenSingletonTabAndCancel) {
   AddMountPoint(downloads_dir_);
 
-  gfx::NativeWindow owning_window = browser()->window()->GetNativeHandle();
+  gfx::NativeWindow owning_window = browser()->window()->GetNativeWindow();
 
   OpenDialog(SelectFileDialog::SELECT_OPEN_FILE, FilePath(), owning_window, "");
 
@@ -329,7 +329,7 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
                        OpenTwoDialogs) {
   AddMountPoint(downloads_dir_);
 
-  gfx::NativeWindow owning_window = browser()->window()->GetNativeHandle();
+  gfx::NativeWindow owning_window = browser()->window()->GetNativeWindow();
 
   OpenDialog(SelectFileDialog::SELECT_OPEN_FILE, FilePath(), owning_window, "");
 

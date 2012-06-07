@@ -247,7 +247,7 @@ void AppNonClientFrameViewAura::OnMouseEntered(
     control_widget_ = new views::Widget;
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
     control_widget_->AddObserver(this);
-    params.parent = browser_view()->GetNativeHandle();
+    params.parent = browser_view()->GetNativeWindow();
     params.transparent = true;
     control_widget_->Init(params);
     control_widget_->SetContentsView(control_view_);
