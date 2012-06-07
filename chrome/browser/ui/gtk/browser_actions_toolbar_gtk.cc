@@ -307,14 +307,13 @@ class BrowserActionButton : public content::NotificationObserver,
     ExtensionToolbarModel* model = action->toolbar_->model();
     const Extension* extension = action->extension_;
     Browser* browser = action->toolbar_->browser();
-    GtkWidget* chevron = action->toolbar_->chevron();
     GURL popup_url;
 
     switch (model->ExecuteBrowserAction(extension, browser, &popup_url)) {
       case ExtensionToolbarModel::ACTION_NONE:
         break;
       case ExtensionToolbarModel::ACTION_SHOW_POPUP:
-        ExtensionPopupGtk::Show(popup_url, browser, chevron);
+        ExtensionPopupGtk::Show(popup_url, browser, widget);
         break;
     }
   }
