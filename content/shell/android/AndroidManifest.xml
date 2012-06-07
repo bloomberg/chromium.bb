@@ -7,7 +7,9 @@
  -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.chromium.content_shell">
+    package="org.chromium.content_shell"
+    android:versionCode="1"
+    android:versionName="1.0">
 
     <application android:name="ContentShellApplication"
             android:label="ContentShell"
