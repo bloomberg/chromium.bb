@@ -1283,11 +1283,13 @@ shell_handle_surface_destroy(struct wl_listener *listener, void *data)
 						    struct shell_surface,
 						    surface_destroy_listener);
 
-	/* tricky way to check if resource was in fact created */
-	if (shsurf->resource.object.implementation != 0)
+	if (shsurf->resource.client) {
 		wl_resource_destroy(&shsurf->resource);
-	else
+	} else {
+		wl_signal_emit(&shsurf->resource.destroy_signal,
+			       &shsurf->resource);
 		destroy_shell_surface(shsurf);
+	}
 }
 
 static struct shell_surface *
