@@ -231,7 +231,8 @@ shell_grab_init(struct shell_grab *grab,
 static void
 shell_grab_finish(struct shell_grab *grab)
 {
-	wl_list_remove(&grab->shsurf_destroy_listener.link);
+	if (grab->shsurf)
+		wl_list_remove(&grab->shsurf_destroy_listener.link);
 }
 
 static void
