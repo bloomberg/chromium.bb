@@ -60,9 +60,9 @@ Upload() {
 
 
 UploadArmToolchain() {
-  rev=$1
-  name=$2
-  tarball=$3
+  local rev=$1
+  local name=$2
+  local tarball=$3
 
   Upload ${tarball} ${BASE_ARM_TOOLCHAIN}/${rev}/${name}
 }
@@ -85,8 +85,8 @@ ComputeSha1() {
 ######################################################################
 
 UploadArmTrustedToolchain() {
-  rev=$1
-  tarball=$2
+  local rev=$1
+  local tarball=$2
 
   UploadArmToolchain ${rev} naclsdk_linux_arm-trusted.tgz ${tarball}
 }
@@ -205,15 +205,15 @@ DownloadArchivedPexesSpec2k() {
 ######################################################################
 
 UploadArmBinariesForHWBots() {
-  name=$1
-  tarball=$2
+  local name=$1
+  local tarball=$2
   Upload ${tarball} ${BASE_BETWEEN_BOTS}/${name}/$(basename ${tarball})
 }
 
 
 DownloadArmBinariesForHWBots() {
-  name=$1
-  tarball=$2
+  local name=$1
+  local tarball=$2
   curl -L \
      ${URL_PREFIX_RAW}/${BASE_BETWEEN_BOTS}/${name}/$(basename ${tarball}) \
      -o ${tarball}
@@ -224,15 +224,15 @@ DownloadArmBinariesForHWBots() {
 ######################################################################
 
 UploadArmBinariesForHWBotsTry() {
-  name=$1
-  tarball=$2
+  local name=$1
+  local tarball=$2
   Upload ${tarball} ${BASE_BETWEEN_BOTS_TRY}/${name}/$(basename ${tarball})
 }
 
 
 DownloadArmBinariesForHWBotsTry() {
-  name=$1
-  tarball=$2
+  local name=$1
+  local tarball=$2
   curl -L \
      ${URL_PREFIX_RAW}/${BASE_BETWEEN_BOTS_TRY}/${name}/$(basename ${tarball})\
      -o ${tarball}
