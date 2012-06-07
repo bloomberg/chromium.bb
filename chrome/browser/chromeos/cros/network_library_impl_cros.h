@@ -116,7 +116,7 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
 
  private:
   // This processes all Manager update messages.
-  void NetworkManagerStatusChanged(const std::string& key, const Value* value);
+  bool NetworkManagerStatusChanged(const std::string& key, const Value* value);
   void ParseNetworkManager(const DictionaryValue& dict);
   void UpdateTechnologies(const ListValue* technologies, int* bitfieldp);
   void UpdateAvailableTechnologies(const ListValue* technologies);

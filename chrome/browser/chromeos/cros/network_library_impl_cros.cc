@@ -611,11 +611,14 @@ void NetworkLibraryImplCros::NetworkManagerStatusChangedHandler(
     const std::string& path,
     const std::string& key,
     const Value& value) {
-  NetworkManagerStatusChanged(key, &value);
+  if (!NetworkManagerStatusChanged(key, &value)) {
+    LOG(ERROR) << "Invalid key-value pair, key: " << key << " type: "
+               << value.GetType();
+  }
 }
 
 // This processes all Manager update messages.
-void NetworkLibraryImplCros::NetworkManagerStatusChanged(
+bool NetworkLibraryImplCros::NetworkManagerStatusChanged(
     const std::string& key, const Value* value) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::TimeTicks start = base::TimeTicks::Now();
@@ -626,20 +629,23 @@ void NetworkLibraryImplCros::NetworkManagerStatusChanged(
       // Currently we ignore the network manager state.
       break;
     case PROPERTY_INDEX_AVAILABLE_TECHNOLOGIES: {
-      CHECK_EQ(value->GetType(), Value::TYPE_LIST);
-      const ListValue* vlist = static_cast<const ListValue*>(value);
+      const ListValue* vlist = NULL;
+      if (!value->GetAsList(&vlist))
+        return false;
       UpdateAvailableTechnologies(vlist);
       break;
     }
     case PROPERTY_INDEX_ENABLED_TECHNOLOGIES: {
-      CHECK_EQ(value->GetType(), Value::TYPE_LIST);
-      const ListValue* vlist = static_cast<const ListValue*>(value);
+      const ListValue* vlist = NULL;
+      if (!value->GetAsList(&vlist))
+        return false;
       UpdateEnabledTechnologies(vlist);
       break;
     }
     case PROPERTY_INDEX_CONNECTED_TECHNOLOGIES: {
-      CHECK_EQ(value->GetType(), Value::TYPE_LIST);
-      const ListValue* vlist = static_cast<const ListValue*>(value);
+      const ListValue* vlist = NULL;
+      if (!value->GetAsList(&vlist))
+        return false;
       UpdateConnectedTechnologies(vlist);
       break;
     }
@@ -663,28 +669,32 @@ void NetworkLibraryImplCros::NetworkManagerStatusChanged(
       break;
     }
     case PROPERTY_INDEX_PROFILES: {
-      CHECK_EQ(value->GetType(), Value::TYPE_LIST);
-      const ListValue* vlist = static_cast<const ListValue*>(value);
+      const ListValue* vlist = NULL;
+      if (!value->GetAsList(&vlist))
+        return false;
       UpdateRememberedNetworks(vlist);
       RequestRememberedNetworksUpdate();
       break;
     }
     case PROPERTY_INDEX_SERVICES: {
-      CHECK_EQ(value->GetType(), Value::TYPE_LIST);
-      const ListValue* vlist = static_cast<const ListValue*>(value);
+      const ListValue* vlist = NULL;
+      if (!value->GetAsList(&vlist))
+        return false;
       UpdateNetworkServiceList(vlist);
       break;
     }
     case PROPERTY_INDEX_SERVICE_WATCH_LIST: {
-      CHECK_EQ(value->GetType(), Value::TYPE_LIST);
-      const ListValue* vlist = static_cast<const ListValue*>(value);
+      const ListValue* vlist = NULL;
+      if (!value->GetAsList(&vlist))
+        return false;
       UpdateWatchedNetworkServiceList(vlist);
       break;
     }
     case PROPERTY_INDEX_DEVICE:
     case PROPERTY_INDEX_DEVICES: {
-      CHECK_EQ(value->GetType(), Value::TYPE_LIST);
-      const ListValue* vlist = static_cast<const ListValue*>(value);
+      const ListValue* vlist = NULL;
+      if (!value->GetAsList(&vlist))
+        return false;
       UpdateNetworkDeviceList(vlist);
       break;
     }
@@ -705,6 +715,7 @@ void NetworkLibraryImplCros::NetworkManagerStatusChanged(
   VLOG(2) << "NetworkManagerStatusChanged: time: "
           << delta.InMilliseconds() << " ms.";
   HISTOGRAM_TIMES("CROS_NETWORK_UPDATE", delta);
+  return true;
 }
 
 void NetworkLibraryImplCros::NetworkManagerUpdate(
@@ -722,7 +733,10 @@ void NetworkLibraryImplCros::NetworkManagerUpdate(
     Value* value;
     bool res = properties->GetWithoutPathExpansion(key, &value);
     CHECK(res);
-    NetworkManagerStatusChanged(key, value);
+    if (!NetworkManagerStatusChanged(key, value)) {
+      LOG(ERROR) << "Invalid key-value pair, key: " << key << " type: "
+                 << value->GetType();
+    }
   }
   // If there is no Profiles entry, request remembered networks here.
   if (!properties->HasKey(flimflam::kProfilesProperty))
