@@ -272,19 +272,6 @@ void PrerenderLocalPredictor::OnLookupURL(history::URLID url_id,
     current_prerender_->url = url;
     RecordEvent(EVENT_GOT_PRERENDER_URL);
   }
-  RecordEvent(EVENT_PRERENDER_URL_LOOKUP_RESULT);
-  if ((url.path() == "/" || url.path() == "") && (!url.has_query()))
-    RecordEvent(EVENT_PRERENDER_URL_LOOKUP_RESULT_ROOT_PAGE);
-  if (url.SchemeIs("http"))
-    RecordEvent(EVENT_PRERENDER_URL_LOOKUP_RESULT_IS_HTTP);
-  if (url.has_query())
-    RecordEvent(EVENT_PRERENDER_URL_LOOKUP_RESULT_HAS_QUERY_STRING);
-  if (strcasestr(url.spec().c_str(), "logout") ||
-      strcasestr(url.spec().c_str(), "signout"))
-    RecordEvent(EVENT_PRERENDER_URL_LOOKUP_RESULT_CONTAINS_LOGOUT);
-  if (strcasestr(url.spec().c_str(), "login") ||
-      strcasestr(url.spec().c_str(), "signin"))
-    RecordEvent(EVENT_PRERENDER_URL_LOOKUP_RESULT_CONTAINS_LOGIN);
 }
 
 void PrerenderLocalPredictor::OnGetInitialVisitHistory(
