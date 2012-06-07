@@ -51,9 +51,7 @@ cr.define('options', function() {
       for (var i = 0; i < exceptionsButtons.length; i++) {
         exceptionsButtons[i].onclick = function(event) {
           var page = ContentSettingsExceptionsArea.getInstance();
-          page.showList(
-              event.target.getAttribute('contentType'));
-          OptionsPage.navigateToPage('contentExceptions');
+
           // Add on the proper hash for the content type, and store that in the
           // history so back/forward and tab restore works.
           var hash = event.target.getAttribute('contentType');
@@ -61,6 +59,11 @@ cr.define('options', function() {
           window.history.replaceState({pageName: page.name},
                                       page.title,
                                       '/' + url);
+
+          // Navigate after the history has been replaced in order to have the
+          // correct hash loaded.
+          OptionsPage.navigateToPage('contentExceptions');
+
           uber.invokeMethodOnParent('setPath', {path: url});
           uber.invokeMethodOnParent('setTitle',
               {title: loadTimeData.getString(hash + 'TabTitle')});
