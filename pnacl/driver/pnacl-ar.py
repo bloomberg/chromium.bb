@@ -13,29 +13,15 @@ import driver_tools
 from driver_env import env
 from driver_log import Log
 
-EXTRA_ENV = {
-  'ARGS':    '',
-  'COMMAND': ''
-}
-# just pass all args through to 'ARGS' and eventually to the underlying tool
-PATTERNS = [ ( '(.*)',  "env.append('ARGS', $0)") ]
-
 def main(argv):
-  if len(argv) ==  0:
+  if len(argv) > 0:
+    # --plugin must come after the command flags, but before the filename.
+    argv = [argv[0], '--plugin=LLVMgold'] + argv[1:]
+  else:
     print get_help(argv)
     return 1
-
-  env.update(EXTRA_ENV)
-  driver_tools.ParseArgs(argv, PATTERNS)
-
-  # Note: --plugin must come after the command flags, but before the filename.
-  #       (definitely confirmed that it cannot go before the command)
-  #       for now assume command is just the very first args
-  args = env.get('ARGS')
-  command = args.pop(0)
-  env.set('COMMAND', command)
-  env.set('ARGS', *args)
-  driver_tools.Run('"${AR}" ${COMMAND} --plugin=LLVMgold ${ARGS}')
+  env.set('ARGS', *argv)
+  driver_tools.Run('${AR} ${ARGS}')
   # only reached in case of no errors
   return 0
 

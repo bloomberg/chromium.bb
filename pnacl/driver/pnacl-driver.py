@@ -343,7 +343,8 @@ def CheckSetup():
 def main(argv):
   env.update(EXTRA_ENV)
   CheckSetup()
-  ParseArgs(argv, CustomPatterns + GCCPatterns)
+  _, real_argv = ParseArgs(argv, CustomPatterns, must_match = False)
+  ParseArgs(real_argv, GCCPatterns)
 
   # "configure", especially when run as part of a toolchain bootstrap
   # process, will invoke gcc with various diagnostic options and
@@ -413,8 +414,7 @@ def main(argv):
     # Filter out flags
     inputs = [f for f in inputs if not IsFlag(f)]
     if output != '' and len(inputs) > 1:
-      Log.Fatal('Cannot have -o with -c, -S, or -E and multiple inputs: %s',
-                repr(inputs))
+      Log.Fatal('Cannot have -o with -c, -S, or -E and multiple inputs')
 
     for f in inputs:
       if IsFlag(f):
@@ -522,9 +522,7 @@ def RunCC(infile, output, mode):
 def RunLLVMAS(infile, output):
   if IsStdinInput(infile):
     infile = '-'
-  # This is a bitcode only step - so get rid of "-arch xxx" which
-  # might be inherited from the current invocation
-  RunDriver('as', [infile, '-o', output], suppress_inherited_arch_args=True)
+  RunDriver('as', [infile, '-o', output], suppress_arch = True)
 
 def RunNativeAS(infile, output):
   if IsStdinInput(infile):

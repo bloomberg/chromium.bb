@@ -9,21 +9,15 @@
 # updates the copy in the toolchain/ tree.
 #
 
-from driver_tools import Run, ParseArgs
+from driver_tools import Run
 from driver_env import env
 from driver_log import Log
-
-EXTRA_ENV = { 'ARGS': '' }
-# just pass all args through to 'ARGS' and eventually to the underlying tool
-PATTERNS = [ ( '(.*)',  "env.append('ARGS', $0)") ]
 
 def main(argv):
   if len(argv) == 0:
     print get_help(argv)
     return 1
-
-  env.update(EXTRA_ENV)
-  ParseArgs(argv, PATTERNS)
+  env.set('ARGS', *argv)
   Run('"${RANLIB}" --plugin=LLVMgold ${ARGS}')
   # only reached in case of no errors
   return 0

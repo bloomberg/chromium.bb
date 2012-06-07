@@ -60,7 +60,7 @@ def main(argv):
         env.append('FLAGS', '-d')
       if output == '':
         # objdump to stdout
-        driver_tools.Run('"${OBJDUMP}" ${FLAGS} ${input}')
+        driver_tools.Run('${OBJDUMP} ${FLAGS} ${input}')
       else:
         # objdump always outputs to stdout, and doesn't recognize -o
         # Let's add this feature to be consistent.
