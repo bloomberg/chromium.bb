@@ -4,20 +4,28 @@
 # found in the LICENSE file.
 
 import logging
+import sys
 
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
+
+sys.path.append('/usr/local')  # To make autotest libs importable.
+from autotest.cros import cros_ui
+from autotest.cros import ownership
+
 
 class ChromeosTime(pyauto.PyUITest):
   """Tests for the ChromeOS status area clock and timezone settings."""
 
   def setUp(self):
+    cros_ui.fake_ownership()
     pyauto.PyUITest.setUp(self)
     self._initial_timezone = self.GetTimeInfo()['timezone']
 
   def tearDown(self):
     self.SetTimezone(self._initial_timezone)
     pyauto.PyUITest.tearDown(self)
+    ownership.clear_ownership()
 
   def testTimeInfo(self):
     """Print the the display time, date, and timezone."""
