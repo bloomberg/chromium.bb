@@ -155,7 +155,17 @@ std::string Message::ToStringInternal(const std::string& indent,
         std::string value;
         if (!reader->PopString(&value))
           return kBrokenMessage;
-        output += indent + "string \"" + value + "\"\n";
+        // Truncate if the string is longer than the limit.
+        const size_t kTruncateLength = 100;
+        if (value.size() < kTruncateLength) {
+          output += indent + "string \"" + value + "\"\n";
+        } else {
+          std::string truncated;
+          TruncateUTF8ToByteSize(value, kTruncateLength, &truncated);
+          base::StringAppendF(&truncated, "... (%"PRIuS" bytes in total)",
+                              value.size());
+          output += indent + "string \"" + truncated + "\"\n";
+        }
         break;
       }
       case OBJECT_PATH: {

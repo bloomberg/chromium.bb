@@ -613,3 +613,18 @@ TEST(MessageTest, SetInvalidHeaders) {
   EXPECT_EQ("", message->GetErrorName());
   EXPECT_EQ("", message->GetSender());
 }
+
+TEST(MessageTest, ToString_LongString) {
+  const std::string kLongString(1000, 'o');
+
+  scoped_ptr<dbus::Response> message(dbus::Response::CreateEmpty());
+  dbus::MessageWriter writer(message.get());
+  writer.AppendString(kLongString);
+
+  ASSERT_EQ("message_type: MESSAGE_METHOD_RETURN\n"
+            "signature: s\n\n"
+            "string \"oooooooooooooooooooooooooooooooooooooooooooooooo"
+            "oooooooooooooooooooooooooooooooooooooooooooooooooooo... "
+            "(1000 bytes in total)\"\n",
+            message->ToString());
+}

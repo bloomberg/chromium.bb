@@ -114,7 +114,8 @@ class Message {
   uint32 GetReplySerial();
 
   // Returns the string representation of this message. Useful for
-  // debugging.
+  // debugging. The output is truncated as needed (ex. strings are truncated
+  // if longer than a certain limit defined in the .cc file).
   std::string ToString();
 
  protected:
