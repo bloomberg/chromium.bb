@@ -450,7 +450,7 @@ ui::GestureStatus RootView::OnGestureEvent(const GestureEvent& event) {
     View* handler = gesture_handler_;
     GestureEvent handler_event(event, this, gesture_handler_);
     // TODO: should only do this for the last touch id that goes up.
-    if (event.type() == ui::ET_GESTURE_TAP_UP)
+    if (event.type() == ui::ET_GESTURE_END)
       gesture_handler_ = NULL;
     return handler->OnGestureEvent(handler_event);
   }

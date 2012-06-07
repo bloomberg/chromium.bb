@@ -78,7 +78,8 @@ class UI_EXPORT GestureSequence {
 
   // Tap gestures.
   void AppendTapDownGestureEvent(const GesturePoint& point, Gestures* gestures);
-  void AppendTapUpGestureEvent(const GesturePoint& point, Gestures* gestures);
+  void AppendBeginGestureEvent(const GesturePoint& point, Gestures* gestures);
+  void AppendEndGestureEvent(const GesturePoint& point, Gestures* gestures);
   void AppendClickGestureEvent(const GesturePoint& point, Gestures* gestures);
   void AppendDoubleClickGestureEvent(const GesturePoint& point,
                                      Gestures* gestures);

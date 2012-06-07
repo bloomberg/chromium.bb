@@ -248,6 +248,11 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
   const int point_id = points_[event.GetTouchId()].point_id();
   if (point_id < 0)
     return NULL;
+
+  // Send GESTURE_BEGIN for any touch pressed.
+  if (event.GetEventType() == ui::ET_TOUCH_PRESSED)
+    AppendBeginGestureEvent(point, gestures.get());
+
   switch (Signature(state_, point_id, event.GetEventType(), false)) {
     case GST_NO_GESTURE_FIRST_PRESSED:
       TouchDown(event, point, gestures.get());
@@ -351,7 +356,6 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
     case GST_PINCH_THIRD_PRESSED:
     case GST_PINCH_FOURTH_PRESSED:
     case GST_PINCH_FIFTH_PRESSED:
-      AppendTapDownGestureEvent(point, gestures.get());
       pinch_distance_current_ = BoundingBoxDiagonal(bounding_box_);
       pinch_distance_start_ = pinch_distance_current_;
       break;
@@ -359,7 +363,7 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
 
   if (event.GetEventType() == ui::ET_TOUCH_RELEASED ||
       event.GetEventType() == ui::ET_TOUCH_CANCELLED)
-    AppendTapUpGestureEvent(point, gestures.get());
+    AppendEndGestureEvent(point, gestures.get());
 
   if (state_ != last_state)
     DVLOG(4) << "Gesture Sequence"
@@ -476,13 +480,23 @@ void GestureSequence::AppendTapDownGestureEvent(const GesturePoint& point,
       point.first_touch_position(),
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
+      0, 0.f, 1 << point.touch_id()));
+}
+
+void GestureSequence::AppendBeginGestureEvent(const GesturePoint& point,
+                                              Gestures* gestures) {
+  gestures->push_back(helper_->CreateGestureEvent(
+      ui::ET_GESTURE_BEGIN,
+      point.first_touch_position(),
+      flags_,
+      base::Time::FromDoubleT(point.last_touch_time()),
       point_count_, 0.f, 1 << point.touch_id()));
 }
 
-void GestureSequence::AppendTapUpGestureEvent(const GesturePoint& point,
+void GestureSequence::AppendEndGestureEvent(const GesturePoint& point,
                                               Gestures* gestures) {
   gestures->push_back(helper_->CreateGestureEvent(
-      ui::ET_GESTURE_TAP_UP,
+      ui::ET_GESTURE_END,
       point.first_touch_position(),
       flags_,
       base::Time::FromDoubleT(point.last_touch_time()),
