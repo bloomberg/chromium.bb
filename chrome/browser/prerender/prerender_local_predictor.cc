@@ -4,6 +4,7 @@
 
 #include "chrome/browser/prerender/prerender_local_predictor.h"
 
+#include <algorithm>
 #include <map>
 #include <set>
 
@@ -116,6 +117,12 @@ bool ShouldExcludeTransitionForPrediction(PageTransition transition) {
 
 base::Time GetCurrentTime() {
   return base::Time::Now();
+}
+
+bool StrCaseStr(std::string haystack, std::string needle) {
+  std::transform(haystack.begin(), haystack.end(), haystack.begin(), ::tolower);
+  std::transform(needle.begin(), needle.end(), needle.begin(), ::tolower);
+  return (haystack.find(needle)!=std::string::npos);
 }
 
 }  // namespace
@@ -272,6 +279,19 @@ void PrerenderLocalPredictor::OnLookupURL(history::URLID url_id,
     current_prerender_->url = url;
     RecordEvent(EVENT_GOT_PRERENDER_URL);
   }
+  RecordEvent(EVENT_PRERENDER_URL_LOOKUP_RESULT);
+  if ((url.path() == "/" || url.path() == "") && (!url.has_query()))
+    RecordEvent(EVENT_PRERENDER_URL_LOOKUP_RESULT_ROOT_PAGE);
+  if (url.SchemeIs("http"))
+    RecordEvent(EVENT_PRERENDER_URL_LOOKUP_RESULT_IS_HTTP);
+  if (url.has_query())
+    RecordEvent(EVENT_PRERENDER_URL_LOOKUP_RESULT_HAS_QUERY_STRING);
+  if (StrCaseStr(url.spec().c_str(), "logout") ||
+      StrCaseStr(url.spec().c_str(), "signout"))
+    RecordEvent(EVENT_PRERENDER_URL_LOOKUP_RESULT_CONTAINS_LOGOUT);
+  if (StrCaseStr(url.spec().c_str(), "login") ||
+      StrCaseStr(url.spec().c_str(), "signin"))
+    RecordEvent(EVENT_PRERENDER_URL_LOOKUP_RESULT_CONTAINS_LOGIN);
 }
 
 void PrerenderLocalPredictor::OnGetInitialVisitHistory(
