@@ -830,14 +830,17 @@ bool PrerenderManager::AddPrerender(
 
   GURL url = url_arg;
   GURL alias_url;
-  if (IsControlGroup() && MaybeGetQueryStringBasedAliasURL(url, &alias_url))
+  uint8 experiment = GetQueryStringBasedExperiment(url_arg);
+  bool control_group_behavior =
+      IsControlGroup() || IsControlGroupExperiment(experiment);
+  if (control_group_behavior &&
+      MaybeGetQueryStringBasedAliasURL(url, &alias_url)) {
     url = alias_url;
+  }
 
   // From here on, we will record a FinalStatus so we need to register with the
   // histogram tracking.
   histograms_->RecordPrerender(origin, url_arg);
-
-  uint8 experiment = GetQueryStringBasedExperiment(url_arg);
 
   if (PrerenderContentsData* prerender_contents_data = FindEntryData(url)) {
     ++prerender_contents_data->active_count_;
@@ -888,7 +891,8 @@ bool PrerenderManager::AddPrerender(
   last_prerender_start_time_ = GetCurrentTimeTicks();
 
   data.contents_->StartPrerendering(process_id, size, session_storage_namespace,
-                                    IsControlGroup());
+                                    control_group_behavior);
+
   while (prerender_list_.size() > config_.max_elements) {
     data = prerender_list_.front();
     prerender_list_.pop_front();

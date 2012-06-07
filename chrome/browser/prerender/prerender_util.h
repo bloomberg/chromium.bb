@@ -39,6 +39,11 @@ bool IsWebURL(const GURL& url);
 // iff this is the case for the experiment_id specified.
 bool IsNoSwapInExperiment(uint8 experiment_id);
 
+// The prerender contents of some experiments should behave identical to the
+// control group, regardless of the field trial.  This function will return true
+// iff this is the case for the experiment_id specified.
+bool IsControlGroupExperiment(uint8 experiment_id);
+
 }  // namespace prerender
 
 #endif  // CHROME_BROWSER_PRERENDER_PRERENDER_UTIL_H_
