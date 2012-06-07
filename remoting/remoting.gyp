@@ -1459,6 +1459,7 @@
         'remoting_jingle_glue',
       ],
       'sources': [
+        'protocol/audio_stub.h',
         'protocol/auth_util.cc',
         'protocol/auth_util.h',
         'protocol/authentication_method.cc',
