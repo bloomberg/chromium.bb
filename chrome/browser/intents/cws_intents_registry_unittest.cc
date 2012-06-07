@@ -151,7 +151,7 @@ TEST_F(CWSIntentsRegistryTest, InvalidQuery) {
 TEST_F(CWSIntentsRegistryTest, BuildQueryURL) {
   const std::string kExpectedURL = "https://www.googleapis.com"
       "/chromewebstore/v1.1b/items/intent"
-      "?intent=action&mime_types=mime%2Ftype&start_index=0";
+      "?intent=action&mime_types=mime%2Ftype&start_index=0&num_results=15";
   GURL url = CWSIntentsRegistry::BuildQueryURL(ASCIIToUTF16("action"),
                                                ASCIIToUTF16("mime/type"));
 

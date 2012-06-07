@@ -4,12 +4,20 @@
 
 #include "chrome/browser/ui/intents/web_intent_picker_model.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model_observer.h"
 #include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
+
+namespace {
+
+const size_t kMaxSuggestionCount = 5;  // Maximum number of visible suggestions.
+
+}  // namespace
 
 WebIntentPickerModel::WebIntentPickerModel()
     : observer_(NULL) {
@@ -98,7 +106,7 @@ const WebIntentPickerModel::SuggestedExtension&
 }
 
 size_t WebIntentPickerModel::GetSuggestedExtensionCount() const {
-  return suggested_extensions_.size();
+  return std::min(suggested_extensions_.size(), kMaxSuggestionCount);
 }
 
 void WebIntentPickerModel::SetSuggestedExtensionIconWithId(

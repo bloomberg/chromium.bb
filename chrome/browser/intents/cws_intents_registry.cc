@@ -20,6 +20,20 @@
 
 namespace {
 
+// Limit for the number of suggestions we fix from CWS. Ideally, the registry
+// simply get all of them, but there is a) chunking on the CWS side, and b)
+// there is a cost with suggestions fetched. (Network overhead for favicons,
+// roundtrips to registry to check if installed).
+//
+// Since the picker limits the number of suggestions displayed to 5, 15 means
+// the suggestion list only has the potential to be shorter than that once the
+// user has at least 10 installed handlers for the particular action/type.
+//
+// TODO(groby): Adopt number of suggestions dynamically so the picker can
+// always display 5 suggestions unless there are less than 5 viable extensions
+// in the CWS.
+const char kMaxSuggestions[] = "15";
+
 // URL for CWS intents API.
 const char kCWSIntentServiceURL[] =
   "https://www.googleapis.com/chromewebstore/v1.1b/items/intent";
@@ -172,6 +186,8 @@ GURL CWSIntentsRegistry::BuildQueryURL(const string16& action,
                                                     UTF16ToUTF8(type));
   request = chrome_common_net::AppendQueryParameter(request, "start_index",
                                                     "0");
+  request = chrome_common_net::AppendQueryParameter(request, "num_results",
+                                                    kMaxSuggestions);
   if (web_intents::kApiKey[0]) {
     request = chrome_common_net::AppendQueryParameter(request, "key",
                                                        web_intents::kApiKey);
