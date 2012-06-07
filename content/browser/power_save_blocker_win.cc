@@ -165,8 +165,7 @@ class PowerSaveBlocker::Delegate
 
 void PowerSaveBlocker::Delegate::ApplyBlock() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  base::win::Version os_version = base::win::GetVersion();
-  if (os_version < base::win::VERSION_WIN7)
+  if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return ApplySimpleBlock(type_, 1);
 
   handle_.Set(CreatePowerRequest(RequestType(), reason_));
@@ -174,8 +173,7 @@ void PowerSaveBlocker::Delegate::ApplyBlock() {
 
 void PowerSaveBlocker::Delegate::RemoveBlock() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  base::win::Version os_version = base::win::GetVersion();
-  if (os_version < base::win::VERSION_WIN7)
+  if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return ApplySimpleBlock(type_, -1);
 
   DeletePowerRequest(RequestType(), handle_.Take());
@@ -184,6 +182,9 @@ void PowerSaveBlocker::Delegate::RemoveBlock() {
 POWER_REQUEST_TYPE PowerSaveBlocker::Delegate::RequestType() {
   if (type_ == kPowerSaveBlockPreventDisplaySleep)
     return PowerRequestDisplayRequired;
+
+  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+    return PowerRequestSystemRequired;
 
   return PowerRequestExecutionRequired;
 }
