@@ -244,7 +244,7 @@ void validate_gamma_table(float gamma_table[256])
 	for (i = 0; i < 256; i++) {
 		// Note: we check that the gamma is not in range
 		// instead of out of range so that we catch NaNs
-		if (!(gamma_table[i] > 0.f && gamma_table[i] < 1.f)) {
+		if (!(gamma_table[i] >= 0.f && gamma_table[i] <= 1.f)) {
 			gamma_table[i] = 0.f;
 		}
 	}

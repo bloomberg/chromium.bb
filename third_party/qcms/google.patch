@@ -1,7 +1,16 @@
-diff --git a/src/iccread.c b/src/iccread.c
-index 36b7011..2454924 100644
---- a/src/iccread.c
-+++ b/src/iccread.c
+diff --git a/third_party/qcms/src/iccread.c b/third_party/qcms/src/iccread.c
+index 36b7011..0523846 100644
+--- a/third_party/qcms/src/iccread.c
++++ b/third_party/qcms/src/iccread.c
+@@ -266,7 +266,7 @@ qcms_bool qcms_profile_is_bogus(qcms_profile *profile)
+        if (profile->color_space != RGB_SIGNATURE)
+ 	       return false;
+ 
+-       if (profile->A2B0 || profile->B2A0)
++       if (qcms_supports_iccv4 && (profile->A2B0 || profile->B2A0))
+                return false;
+ 
+        rX = s15Fixed16Number_to_float(profile->redColorant.X);
 @@ -297,6 +297,11 @@ qcms_bool qcms_profile_is_bogus(qcms_profile *profile)
         sum[1] = rY + gY + bY;
         sum[2] = rZ + gZ + bZ;
@@ -25,10 +34,10 @@ index 36b7011..2454924 100644
         // Compare with our tolerance
         for (i = 0; i < 3; ++i) {
             if (!(((sum[i] - tolerance[i]) <= target[i]) &&
-diff --git a/src/qcms.h b/src/qcms.h
+diff --git a/third_party/qcms/src/qcms.h b/third_party/qcms/src/qcms.h
 index 7d83623..1e3e125 100644
---- a/src/qcms.h
-+++ b/src/qcms.h
+--- a/third_party/qcms/src/qcms.h
++++ b/third_party/qcms/src/qcms.h
 @@ -102,6 +102,12 @@ typedef enum {
  	QCMS_DATA_GRAYA_8
  } qcms_data_type;
@@ -50,10 +59,10 @@ index 7d83623..1e3e125 100644
  
  void qcms_enable_iccv4();
  
-diff --git a/src/qcmsint.h b/src/qcmsint.h
+diff --git a/third_party/qcms/src/qcmsint.h b/third_party/qcms/src/qcmsint.h
 index 53a3420..63905de 100644
---- a/src/qcmsint.h
-+++ b/src/qcmsint.h
+--- a/third_party/qcms/src/qcmsint.h
++++ b/third_party/qcms/src/qcmsint.h
 @@ -45,6 +45,11 @@ struct precache_output
  #define ALIGN __attribute__(( aligned (16) ))
  #endif
@@ -102,10 +111,10 @@ index 53a3420..63905de 100644
 +                                          qcms_format_type output_format);
  
  extern qcms_bool qcms_supports_iccv4;
-diff --git a/src/qcmstypes.h b/src/qcmstypes.h
+diff --git a/third_party/qcms/src/qcmstypes.h b/third_party/qcms/src/qcmstypes.h
 index 56d8de3..9a9b197 100644
---- a/src/qcmstypes.h
-+++ b/src/qcmstypes.h
+--- a/third_party/qcms/src/qcmstypes.h
++++ b/third_party/qcms/src/qcmstypes.h
 @@ -87,7 +87,12 @@ typedef unsigned __int64 uint64_t;
  #ifdef _WIN64
  typedef unsigned __int64 uintptr_t;
@@ -119,10 +128,10 @@ index 56d8de3..9a9b197 100644
  #endif
  
  #elif defined (_AIX)
-diff --git a/src/transform-sse1.c b/src/transform-sse1.c
+diff --git a/third_party/qcms/src/transform-sse1.c b/third_party/qcms/src/transform-sse1.c
 index 2f34db5..aaee1bf 100644
---- a/src/transform-sse1.c
-+++ b/src/transform-sse1.c
+--- a/third_party/qcms/src/transform-sse1.c
++++ b/third_party/qcms/src/transform-sse1.c
 @@ -34,7 +34,8 @@ static const ALIGN float clampMaxValueX4[4] =
  void qcms_transform_data_rgb_out_lut_sse1(qcms_transform *transform,
                                            unsigned char *src,
@@ -213,10 +222,10 @@ index 2f34db5..aaee1bf 100644
  
      _mm_empty();
  }
-diff --git a/src/transform-sse2.c b/src/transform-sse2.c
+diff --git a/third_party/qcms/src/transform-sse2.c b/third_party/qcms/src/transform-sse2.c
 index 6a5faf9..fa7f2d1 100644
---- a/src/transform-sse2.c
-+++ b/src/transform-sse2.c
+--- a/third_party/qcms/src/transform-sse2.c
++++ b/third_party/qcms/src/transform-sse2.c
 @@ -34,7 +34,8 @@ static const ALIGN float clampMaxValueX4[4] =
  void qcms_transform_data_rgb_out_lut_sse2(qcms_transform *transform,
                                            unsigned char *src,
@@ -303,10 +312,10 @@ index 6a5faf9..fa7f2d1 100644
 +    dest[1]     = otdata_g[output[1]];
 +    dest[b_out] = otdata_b[output[2]];
  }
-diff --git a/src/transform.c b/src/transform.c
-index 9a6562b..ae3f628 100644
---- a/src/transform.c
-+++ b/src/transform.c
+diff --git a/third_party/qcms/src/transform.c b/third_party/qcms/src/transform.c
+index 9a6562b..1f4e72b 100644
+--- a/third_party/qcms/src/transform.c
++++ b/third_party/qcms/src/transform.c
 @@ -181,11 +181,20 @@ compute_chromatic_adaption(struct CIE_XYZ source_white_point,
  static struct matrix
  adaption_matrix(struct CIE_XYZ source_illumination, struct CIE_XYZ target_illumination)
@@ -668,16 +677,37 @@ index 9a6562b..ae3f628 100644
  }
  #endif
 @@ -815,7 +880,7 @@ void precache_release(struct precache_output *p)
-        }
+ 	}
  }
  
 -#ifdef HAS_POSIX_MEMALIGN
 +#ifdef HAVE_POSIX_MEMALIGN
  static qcms_transform *transform_alloc(void)
  {
-        qcms_transform *t;
-
-@@ -1262,7 +1327,17 @@ __attribute__((__force_align_arg_pointer__))
+ 	qcms_transform *t;
+@@ -994,13 +1059,15 @@ void qcms_profile_precache_output_transform(qcms_profile *profile)
+ 	if (profile->color_space != RGB_SIGNATURE)
+ 		return;
+ 
+-	/* don't precache since we will use the B2A LUT */
+-	if (profile->B2A0)
+-		return;
++	if (qcms_supports_iccv4) {
++		/* don't precache since we will use the B2A LUT */
++		if (profile->B2A0)
++			return;
+ 
+-	/* don't precache since we will use the mBA LUT */
+-	if (profile->mBA)
+-		return;
++		/* don't precache since we will use the mBA LUT */
++		if (profile->mBA)
++			return;
++	}
+ 
+ 	/* don't precache if we do not have the TRC curves */
+ 	if (!profile->redTRC || !profile->greenTRC || !profile->blueTRC)
+@@ -1262,7 +1329,17 @@ __attribute__((__force_align_arg_pointer__))
  #endif
  void qcms_transform_data(qcms_transform *transform, void *src, void *dest, size_t length)
  {
@@ -696,9 +726,11 @@ index 9a6562b..ae3f628 100644
  }
  
  qcms_bool qcms_supports_iccv4;
---- a/transform_util.c	
-+++ a/transform_util.c	
-@@ -214,6 +214,21 @@ float u8Fixed8Number_to_float(uint16_t x)
+diff --git a/third_party/qcms/src/transform_util.c b/third_party/qcms/src/transform_util.c
+index e8447e5..f68699d 100644
+--- a/third_party/qcms/src/transform_util.c
++++ b/third_party/qcms/src/transform_util.c
+@@ -235,6 +235,21 @@ float u8Fixed8Number_to_float(uint16_t x)
  	return x/256.;
  }
  
@@ -711,7 +743,7 @@ index 9a6562b..ae3f628 100644
 +	for (i = 0; i < 256; i++) {
 +		// Note: we check that the gamma is not in range
 +		// instead of out of range so that we catch NaNs
-+		if (!(gamma_table[i] > 0.f && gamma_table[i] < 1.f)) {
++		if (!(gamma_table[i] >= 0.f && gamma_table[i] <= 1.f)) {
 +			gamma_table[i] = 0.f;
 +		}
 +	}
@@ -720,7 +752,7 @@ index 9a6562b..ae3f628 100644
  float *build_input_gamma_table(struct curveType *TRC)
  {
  	float *gamma_table;
-@@ -233,7 +248,10 @@ float *build_input_gamma_table(struct curveType *TRC)
+@@ -254,7 +269,10 @@ float *build_input_gamma_table(struct curveType *TRC)
  			}
  		}
  	}

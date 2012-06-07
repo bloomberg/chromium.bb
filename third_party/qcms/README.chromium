@@ -15,11 +15,13 @@ Local Modifications:
 Some files only have license headers in the master branch.
  - Added the same license headers to the versions brought down from the 'v4'
    branch src URL qcms/tree/v4
-google.patch
- - Add bgra output support. Apply with patch -p1 < google.patch
+google.patch contains the following modifications. Apply with
+   patch -p1 < google.patch.
+ - Add bgra output support.
  - Use HAVE_POSIX_MEMALIGN instead of HAS_POSIX_MEMALIG
    (https://bugzilla.mozilla.org/show_bug.cgi?id=692922)
-Applied upstream patch:
- - https://bug752254.bugzilla.mozilla.org/attachment.cgi?id=626102
-Applied upstream security patch:
- - https://bugzilla.mozilla.org/show_bug.cgi?id=761014
+ - Applied upstream patch:
+   - https://bug752254.bugzilla.mozilla.org/attachment.cgi?id=626102
+ - Applied upstream patch for sanitizing gamma table:
+   - Expanded gamma clamp range to allow 1.0.
+ - Do not short-circuit bogus profile check for A2B0 or B2A0 unless v4 enabled.
