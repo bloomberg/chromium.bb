@@ -133,7 +133,7 @@ x11_compositor_get_keymap(struct x11_compositor *c)
 }
 
 static int
-x11_input_create(struct x11_compositor *c)
+x11_input_create(struct x11_compositor *c, int no_input)
 {
 	struct x11_input *input;
 	struct xkb_keymap *keymap;
@@ -144,14 +144,17 @@ x11_input_create(struct x11_compositor *c)
 
 	memset(input, 0, sizeof *input);
 	weston_seat_init(&input->base, &c->base);
+	c->base.seat = &input->base;
+
+	if (no_input)
+		return 0;
+
 	weston_seat_init_pointer(&input->base);
 
 	keymap = x11_compositor_get_keymap(c);
 	weston_seat_init_keyboard(&input->base, keymap);
 	if (keymap)
 		xkb_map_unref(keymap);
-
-	c->base.seat = &input->base;
 
 	return 0;
 }
@@ -401,7 +404,8 @@ x11_output_set_icon(struct x11_compositor *c,
 
 static int
 x11_compositor_create_output(struct x11_compositor *c, int x, int y,
-			     int width, int height, int fullscreen)
+			     int width, int height, int fullscreen,
+			     int no_input)
 {
 	static const char name[] = "Weston Compositor";
 	static const char class[] = "weston-1\0Weston Compositor";
@@ -410,20 +414,23 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 	struct wm_normal_hints normal_hints;
 	struct wl_event_loop *loop;
 	uint32_t mask = XCB_CW_EVENT_MASK | XCB_CW_CURSOR;
-	uint32_t values[2] = { 
-		XCB_EVENT_MASK_KEY_PRESS |
-		XCB_EVENT_MASK_KEY_RELEASE |
-		XCB_EVENT_MASK_BUTTON_PRESS |
-		XCB_EVENT_MASK_BUTTON_RELEASE |
-		XCB_EVENT_MASK_POINTER_MOTION |
+	uint32_t values[2] = {
 		XCB_EVENT_MASK_EXPOSURE |
-		XCB_EVENT_MASK_STRUCTURE_NOTIFY |
-		XCB_EVENT_MASK_ENTER_WINDOW |
-		XCB_EVENT_MASK_LEAVE_WINDOW |
-		XCB_EVENT_MASK_KEYMAP_STATE |
-		XCB_EVENT_MASK_FOCUS_CHANGE,
+		XCB_EVENT_MASK_STRUCTURE_NOTIFY,
 		0
 	};
+
+	if (!no_input)
+		values[0] |=
+			XCB_EVENT_MASK_KEY_PRESS |
+			XCB_EVENT_MASK_KEY_RELEASE |
+			XCB_EVENT_MASK_BUTTON_PRESS |
+			XCB_EVENT_MASK_BUTTON_RELEASE |
+			XCB_EVENT_MASK_POINTER_MOTION |
+			XCB_EVENT_MASK_ENTER_WINDOW |
+			XCB_EVENT_MASK_LEAVE_WINDOW |
+			XCB_EVENT_MASK_KEYMAP_STATE |
+			XCB_EVENT_MASK_FOCUS_CHANGE;
 
 	output = malloc(sizeof *output);
 	if (output == NULL)
@@ -851,6 +858,7 @@ x11_destroy(struct weston_compositor *ec)
 static struct weston_compositor *
 x11_compositor_create(struct wl_display *display,
 		      int width, int height, int count, int fullscreen,
+		      int no_input,
 		      int argc, char *argv[], const char *config_file)
 {
 	struct x11_compositor *c;
@@ -892,12 +900,12 @@ x11_compositor_create(struct wl_display *display,
 
 	for (i = 0, x = 0; i < count; i++) {
 		if (x11_compositor_create_output(c, x, 0, width, height,
-						 fullscreen) < 0)
+						 fullscreen, no_input) < 0)
 			return NULL;
 		x += width;
 	}
 
-	if (x11_input_create(c) < 0)
+	if (x11_input_create(c, no_input) < 0)
 		return NULL;
 
 	c->xcb_source =
@@ -915,17 +923,20 @@ backend_init(struct wl_display *display, int argc, char *argv[],
 	     const char *config_file)
 {
 	int width = 1024, height = 640, fullscreen = 0, count = 1;
+	int no_input = 0;
 
 	const struct weston_option x11_options[] = {
 		{ WESTON_OPTION_INTEGER, "width", 0, &width },
 		{ WESTON_OPTION_INTEGER, "height", 0, &height },
 		{ WESTON_OPTION_BOOLEAN, "fullscreen", 0, &fullscreen },
 		{ WESTON_OPTION_INTEGER, "output-count", 0, &count },
+		{ WESTON_OPTION_BOOLEAN, "no-input", 0, &no_input },
 	};
 
 	parse_options(x11_options, ARRAY_LENGTH(x11_options), argc, argv);
 
 	return x11_compositor_create(display,
 				     width, height, count, fullscreen,
+				     no_input,
 				     argc, argv, config_file);
 }
