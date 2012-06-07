@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #ifndef TESTS_PPAPI_GETURL_URL_LOAD_REQUEST_H_
@@ -15,7 +15,7 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/pp_stdint.h"
-#if __native_client__
+#if defined(__native_client__)
 // TODO(polina): add file_io_nacl include
 #else
 #include "ppapi/c/trusted/ppb_file_io_trusted.h"
