@@ -25,7 +25,9 @@ SemiMtCorrectingFilterInterpreter::SemiMtCorrectingFilterInterpreter(
       non_linear_left_(prop_reg, "SemiMT Non Linear Area Left", 1360.0),
       non_linear_right_(prop_reg, "SemiMT Non Linear Area Right", 5560.0),
       min_jump_distance_(prop_reg, "SemiMT Min Sensor Jump Distance", 150.0),
-      max_jump_distance_(prop_reg, "SemiMT Max Sensor Jump Distance", 910.0) {
+      max_jump_distance_(prop_reg, "SemiMT Max Sensor Jump Distance", 910.0),
+      move_threshold_(prop_reg, "SemiMT Finger Move Threshold", 130.0),
+      jump_threshold_(prop_reg, "SemiMT Finger Jump Distance", 260.0) {
   ClearHistory();
   next_.reset(next);
 }
@@ -42,6 +44,7 @@ Gesture* SemiMtCorrectingFilterInterpreter::SyncInterpret(
       SuppressTwoToOneFingerJump(hwstate);
       SuppressOneToTwoFingerJump(hwstate);
       CorrectFingerPosition(hwstate);
+      SuppressOneFingerJump(hwstate);
       SuppressSensorJump(hwstate);
       UpdateHistory(hwstate);
     } else {
@@ -351,6 +354,64 @@ void SemiMtCorrectingFilterInterpreter::SuppressSensorJump(
         sensor_jump_[i][j] = true;
         // Shorten the jump by half.
         current->*field -= (delta / 2);
+      }
+    }
+  }
+}
+
+// A previously stationary (or very slowly moving, i.e. motion < move_threshold)
+// single finger that suddenly appears to jump by a large distance
+// (> jump_threshold) looks suspiciously like drum roll. When we detect this,
+// report its old position, but still save the amount that it moved. If the next
+// sample shows that it has not continued to move at a reasonable speed
+// (motion < half of the jump distance), then we assume that the jump was
+// caused by drumroll, and report it as a new finger at its new position with a
+// new tracking id.
+void SemiMtCorrectingFilterInterpreter::SuppressOneFingerJump(
+    HardwareState* hwstate) {
+  if (hwstate->finger_cnt != 1)
+    return;
+  if (prev_hwstate_.finger_cnt != 1) {
+    memset(one_finger_jump_distance_, 0, sizeof(one_finger_jump_distance_));
+    return;
+  }
+
+  struct FingerState *current = &hwstate->fingers[0];
+  struct FingerState *prev =
+    prev_hwstate_.GetFingerState(current->tracking_id);
+  if (prev == NULL)
+    return;
+  float FingerState::* const fields[] = { &FingerState::position_x,
+                                          &FingerState::position_y };
+  for (size_t j = 0 ; j < arraysize(fields); j++) {
+    float FingerState::* const field = fields[j];
+    float delta = current->*field - prev->*field;
+    float abs_delta = fabsf(delta);
+    if (one_finger_jump_distance_[j] != 0) {
+      // one_finger_jump_distance is the motion that was suppressed for the
+      // previous hwstate. If it is != 0, abs_delta includes this motion plus
+      // the motion for the current hwstate. We check here that this new motion
+      // is at least half as far as the previous motion and less than one and
+      // half times of the previous motion. If so, it is a finger jump and
+      // should be assigned a new tracking id, thereby indicating that it is a
+      // new finger.
+      float abs_jump = fabsf(one_finger_jump_distance_[j]);
+      if (delta * one_finger_jump_distance_[j] >= 0 &&
+          (abs_delta >= (0.5 * abs_jump) && abs_delta <= (1.5 * abs_jump))) {
+        current->tracking_id = last_id_++;
+      }
+      one_finger_jump_distance_[j] = 0;
+    } else if (abs_delta >= jump_threshold_.val_) {
+      struct FingerState *prev2 =
+          prev2_hwstate_.GetFingerState(current->tracking_id);
+      float prev_delta = 0;
+      if (prev2 != NULL)
+        prev_delta = prev->*field - prev2->*field;
+      // Big jump following small motion, so assume drum-roll and report
+      // previous position. If we were wrong, we will fix on the next sample.
+      if (fabsf(prev_delta) < move_threshold_.val_) {
+        one_finger_jump_distance_[j] = delta;
+        current->*field = prev->*field;
       }
     }
   }

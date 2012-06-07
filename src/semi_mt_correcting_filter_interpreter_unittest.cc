@@ -763,4 +763,124 @@ TEST(SemiMtCorrectingFilterInterpreterTest, SensorJumpTest) {
       EXPECT_FALSE(interpreter.sensor_jump_[1][1]);
   }
 }
+
+TEST(SemiMtCorrectingFilterInterpreterTest, BigJumpTest) {
+  SemiMtCorrectingFilterInterpreterTestInterpreter* base_interpreter =
+      new SemiMtCorrectingFilterInterpreterTestInterpreter;
+  SemiMtCorrectingFilterInterpreter interpreter(NULL, base_interpreter);
+
+  FingerState fs[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags
+    { 0, 0, 0, 0, 76, 0, 4172, 2421, 5803, 0 },  // 0
+    { 0, 0, 0, 0, 76, 0, 2952, 2901, 5803, 0 },  // 1 (jump bottom-left)
+    { 0, 0, 0, 0, 76, 0, 2952, 2908, 5803, 0 },  // 2 (expect a new tracking id)
+    { 0, 0, 0, 0, 76, 0, 2952, 2914, 5803, 0 },  // 3
+
+    { 0, 0, 0, 0, 76, 0, 4172, 2421, 5804, 0 },  // 4
+    { 0, 0, 0, 0, 76, 0, 4152, 1901, 5804, 0 },  // 5 (jump up)
+    { 0, 0, 0, 0, 76, 0, 4152, 1908, 5804, 0 },  // 6 (expect a new tracking id)
+    { 0, 0, 0, 0, 76, 0, 4152, 1914, 5804, 0 },  // 7
+
+    { 0, 0, 0, 0, 76, 0, 4172, 1921, 5805, 0 },  // 8
+    { 0, 0, 0, 0, 76, 0, 3152, 1901, 5805, 0 },  // 9 (jump left)
+    { 0, 0, 0, 0, 76, 0, 4152, 1908, 5805, 0 },  // 10 (expect the same id)
+    { 0, 0, 0, 0, 76, 0, 4152, 1914, 5805, 0 },  // 11
+  };
+
+  HardwareState hs[] = {
+    // time, buttons, finger count, touch count, fingers
+    { 95268.194898, 0, 1, 1, &fs[0] },  // 0
+    { 95268.203728, 0, 1, 1, &fs[1] },  // 1 (jump bottom-left)
+    { 95268.216215, 0, 1, 1, &fs[2] },  // 2
+    { 95268.229053, 0, 1, 1, &fs[3] },  // 3
+    { 95268.24309, 0, 0, 0, NULL },  // 4
+
+    { 95268.194898, 0, 1, 1, &fs[4] },  // 5
+    { 95268.203728, 0, 1, 1, &fs[5] },  // 6  (jump up)
+    { 95268.216215, 0, 1, 1, &fs[6] },  // 7
+    { 95268.229053, 0, 1, 1, &fs[7] },  // 8
+    { 95268.24309, 0, 0, 0, NULL },  // 9
+
+    { 95268.194898, 0, 1, 1, &fs[8] },  // 10
+    { 95268.203728, 0, 1, 1, &fs[9] },  // 11 (jump left)
+    { 95268.216215, 0, 1, 1, &fs[10] },  // 12 jump back, so the tracking id
+    { 95268.229053, 0, 1, 1, &fs[11] },  // 13 should not be changed
+  };
+
+  HardwareProperties hwprops = {
+    1217, 1061, 5733, 4798,  // left, top, right, bottom
+    47, 65, 133, 133,  // x res, y res, x DPI, y DPI
+    2, 3,  // max_fingers, max_touch
+    false, true, true  // t5r2, semi_mt, is_button_pad
+  };
+
+  interpreter.SetHardwareProperties(hwprops);
+  interpreter.interpreter_enabled_.val_ = 1;
+  interpreter.move_threshold_.val_ = 130.0;
+  interpreter.jump_threshold_.val_ = 260.0;
+
+  for (size_t i = 0; i < arraysize(hs); i++) {
+    struct FingerState *current = &hs[i].fingers[0];
+    // prev finger with the same input tracking id
+    struct FingerState *prev = NULL;
+    if (i > 0 && hs[i].finger_cnt != 0 && hs[i - 1].finger_cnt != 0)
+      prev = &hs[i - 1].fingers[0];
+
+    interpreter.SyncInterpret(&hs[i], NULL);
+
+    // Check if we squash the jump
+    if (i == 1 || i == 11)
+      EXPECT_EQ(prev->position_x, current->position_x);
+    if (i == 1 || i == 6)
+      EXPECT_EQ(prev->position_y, current->position_y);
+
+    // Check if the tracking id is changed for a jump.
+    if (i == 2 || i == 7)
+      EXPECT_NE(prev->tracking_id, current->tracking_id);
+    else if (prev != NULL)
+      EXPECT_EQ(prev->tracking_id, current->tracking_id);
+  }
+}
+
+TEST(SemiMtCorrectingFilterInterpreterTest, FastMoveTest) {
+  SemiMtCorrectingFilterInterpreterTestInterpreter* base_interpreter =
+      new SemiMtCorrectingFilterInterpreterTestInterpreter;
+  SemiMtCorrectingFilterInterpreter interpreter(NULL, base_interpreter);
+
+  FingerState fs[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags
+    { 0, 0, 0, 0, 79, 0, 3481, 1910, 5824, 0 },  // 0
+    { 0, 0, 0, 0, 79, 0, 3497, 2079, 5824, 0 },  // 1  fast move starts here
+    { 0, 0, 0, 0, 79, 0, 3503, 2339, 5824, 0 },  // 2
+    { 0, 0, 0, 0, 55, 0, 3534, 2742, 5824, 0 },  // 3
+  };
+
+  HardwareState hs[] = {
+    // time, buttons, finger count, touch count, fingers
+    { 95268.194898, 0, 1, 1, &fs[0] },  // 0
+    { 95268.203728, 0, 1, 1, &fs[1] },  // 1
+    { 95268.216215, 0, 1, 1, &fs[2] },  // 2
+    { 95268.229053, 0, 1, 1, &fs[3] },  // 3
+  };
+
+  HardwareProperties hwprops = {
+    1217, 1061, 5733, 4798,  // left, top, right, bottom
+    47, 65, 133, 133,  // x res, y res, x DPI, y DPI
+    2, 3,  // max_fingers, max_touch
+    false, true, true  // t5r2, semi_mt, is_button_pad
+  };
+
+  interpreter.SetHardwareProperties(hwprops);
+  interpreter.interpreter_enabled_.val_ = 1;
+  interpreter.move_threshold_.val_ = 130.0;
+  interpreter.jump_threshold_.val_ = 260.0;
+
+  for (size_t i = 0; i < arraysize(hs); i++) {
+    interpreter.SyncInterpret(&hs[i], NULL);
+    struct FingerState *current = &fs[i];
+    // Make sure the tracking ids are all the same.
+    if (i > 0)
+      EXPECT_EQ(fs[i - 1].tracking_id, current->tracking_id);
+  }
+}
 }  // namespace gestures

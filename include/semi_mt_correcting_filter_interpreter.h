@@ -59,8 +59,10 @@ typedef enum {
 // include low-pressure filtering, hysteresis, finger position correction.
 
 class SemiMtCorrectingFilterInterpreter : public Interpreter {
+  FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, BigJumpTest);
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, ClipNonLinearAreaTest);
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, CorrectFingerPositionTest);
+  FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, FastMoveTest);
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, FingerCrossOverTest);
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, HistoryTest);
   FRIEND_TEST(SemiMtCorrectingFilterInterpreterTest, LowPressureTest);
@@ -150,6 +152,9 @@ class SemiMtCorrectingFilterInterpreter : public Interpreter {
   // of warping the whole displacement.
   void SuppressSensorJump(HardwareState* hwstate);
 
+  // Suppress one-finger jump caused by drumroll-like gesture.
+  void SuppressOneFingerJump(HardwareState* hwstate);
+
   // Starting finger positions of the two-finger gesture.
   FingerPosition start_pos_[kMaxSemiMtFingers];
 
@@ -180,6 +185,9 @@ class SemiMtCorrectingFilterInterpreter : public Interpreter {
   // Sensor jump flags for fingers per axis.
   bool sensor_jump_[kMaxSemiMtFingers][2];
 
+  // One-finger jump distance per axis.
+  float one_finger_jump_distance_[2];
+
   // True if the interpreter is effective in gesture pipeline.
   BoolProperty interpreter_enabled_;
 
@@ -203,6 +211,12 @@ class SemiMtCorrectingFilterInterpreter : public Interpreter {
 
   // The maximum distance of a sensor jump.
   DoubleProperty max_jump_distance_;
+
+  // The minimum distance of a finger move.
+  DoubleProperty move_threshold_;
+
+  // The threshold of a finger jump.
+  DoubleProperty jump_threshold_;
 
   scoped_ptr<Interpreter> next_;
 };
