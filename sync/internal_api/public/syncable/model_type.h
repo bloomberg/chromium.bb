@@ -6,8 +6,8 @@
 // Each sync object is expected to have an immutable object type.
 // An object's type is inferred from the type of data it holds.
 
-#ifndef SYNC_SYNCABLE_MODEL_TYPE_H_
-#define SYNC_SYNCABLE_MODEL_TYPE_H_
+#ifndef SYNC_INTERNAL_API_PUBLIC_SYNCABLE_MODEL_TYPE_H_
+#define SYNC_INTERNAL_API_PUBLIC_SYNCABLE_MODEL_TYPE_H_
 #pragma once
 
 #include <set>
@@ -15,7 +15,7 @@
 
 #include "base/logging.h"
 #include "base/time.h"
-#include "sync/util/enum_set.h"
+#include "sync/internal_api/public/util/enum_set.h"
 
 namespace base {
 class ListValue;
@@ -172,4 +172,4 @@ bool IsRealDataType(ModelType model_type);
 
 }  // namespace syncable
 
-#endif  // SYNC_SYNCABLE_MODEL_TYPE_H_
+#endif  // SYNC_INTERNAL_API_PUBLIC_SYNCABLE_MODEL_TYPE_H_

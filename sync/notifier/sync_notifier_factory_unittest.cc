@@ -14,11 +14,11 @@
 #include "jingle/notifier/base/notification_method.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "net/url_request/url_request_test_util.h"
+#include "sync/internal_api/public/syncable/model_type.h"
+#include "sync/internal_api/public/syncable/model_type_payload_map.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/mock_sync_notifier_observer.h"
 #include "sync/notifier/sync_notifier.h"
-#include "sync/syncable/model_type.h"
-#include "sync/syncable/model_type_payload_map.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

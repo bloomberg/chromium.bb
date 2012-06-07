@@ -9,8 +9,8 @@
 #pragma once
 
 #include "base/compiler_specific.h"
+#include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/protocol/nigori_specifics.pb.h"
-#include "sync/syncable/model_type.h"
 
 namespace browser_sync {
 class Cryptographer;

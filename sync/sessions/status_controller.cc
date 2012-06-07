@@ -7,8 +7,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/protocol/sync_protocol_error.h"
-#include "sync/syncable/model_type.h"
 
 namespace browser_sync {
 namespace sessions {

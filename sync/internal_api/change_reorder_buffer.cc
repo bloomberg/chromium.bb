@@ -10,8 +10,8 @@
 #include <utility>  // for pair<>
 #include <vector>
 
+#include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/internal_api/read_node.h"
-#include "sync/syncable/model_type.h"
 #include "sync/syncable/syncable.h"
 
 using std::numeric_limits;

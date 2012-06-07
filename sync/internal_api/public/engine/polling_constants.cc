@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
-#include "sync/engine/polling_constants.h"
+#include "sync/internal_api/public/engine/polling_constants.h"
 
 namespace browser_sync {
 

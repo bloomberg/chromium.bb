@@ -4,9 +4,9 @@
 
 #include "sync/engine/store_timestamps_command.h"
 
+#include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/sessions/status_controller.h"
 #include "sync/sessions/sync_session.h"
-#include "sync/syncable/model_type.h"
 #include "sync/syncable/syncable.h"
 
 namespace browser_sync {

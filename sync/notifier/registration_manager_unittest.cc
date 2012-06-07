@@ -13,8 +13,8 @@
 #include "base/basictypes.h"
 #include "base/message_loop.h"
 #include "google/cacheinvalidation/include/invalidation-client.h"
+#include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/notifier/invalidation_util.h"
-#include "sync/syncable/model_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sync_notifier {

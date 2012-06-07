@@ -4,7 +4,7 @@
 
 #include "sync/sessions/sync_session_context.h"
 
-#include "sync/syncable/model_type.h"
+#include "sync/internal_api/public/syncable/model_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser_sync {

@@ -27,10 +27,10 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "sync/internal_api/public/sessions/sync_session_snapshot.h"
+#include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/protocol/proto_enum_conversions.h"
 #include "sync/protocol/sync_protocol_error.h"
-#include "sync/sessions/sync_session_snapshot.h"
-#include "sync/syncable/model_type.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 

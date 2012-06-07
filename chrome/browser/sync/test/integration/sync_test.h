@@ -19,8 +19,8 @@
 #include "base/process_util.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/test/local_sync_test_server.h"
+#include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/protocol/sync_protocol_error.h"
-#include "sync/syncable/model_type.h"
 
 class CommandLine;
 class Profile;

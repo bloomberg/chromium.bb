@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_SESSIONS_SYNCER_STATUS_H_
-#define SYNC_SESSIONS_SYNCER_STATUS_H_
+#ifndef SYNC_INTERNAL_API_PUBLIC_SESSIONS_SYNCER_STATUS_H_
+#define SYNC_INTERNAL_API_PUBLIC_SESSIONS_SYNCER_STATUS_H_
 #pragma once
 
 #include "base/basictypes.h"
-#include "sync/syncable/model_type.h"
+#include "sync/internal_api/public/syncable/model_type.h"
 
 namespace base {
 class DictionaryValue;
@@ -47,4 +47,4 @@ struct SyncerStatus {
 }  // namespace sessions
 }  // namespace browser_sync
 
-#endif  // SYNC_SESSIONS_SYNCER_STATUS_H_
+#endif  // SYNC_INTERNAL_API_PUBLIC_SESSIONS_SYNCER_STATUS_H_

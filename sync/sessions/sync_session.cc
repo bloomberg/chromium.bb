@@ -8,7 +8,7 @@
 #include <iterator>
 
 #include "base/logging.h"
-#include "sync/syncable/model_type.h"
+#include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/syncable/syncable.h"
 
 namespace browser_sync {

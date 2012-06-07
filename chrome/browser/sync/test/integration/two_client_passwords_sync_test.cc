@@ -6,8 +6,8 @@
 #include "chrome/browser/sync/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
-#include "sync/engine/model_safe_worker.h"
-#include "sync/sessions/sync_session_snapshot.h"
+#include "sync/internal_api/public/engine/model_safe_worker.h"
+#include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 
 using passwords_helper::AddLogin;
 using passwords_helper::AllProfilesContainSamePasswordForms;

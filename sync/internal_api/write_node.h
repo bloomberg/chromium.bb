@@ -12,7 +12,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "sync/internal_api/base_node.h"
-#include "sync/syncable/model_type.h"
+#include "sync/internal_api/public/syncable/model_type.h"
 
 namespace browser_sync {
 class Cryptographer;

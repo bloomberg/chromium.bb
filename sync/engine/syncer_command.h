@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 
-#include "sync/util/syncer_error.h"
+#include "sync/internal_api/public/util/syncer_error.h"
 
 namespace browser_sync {
 

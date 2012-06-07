@@ -26,17 +26,17 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/time.h"
+#include "sync/internal_api/public/syncable/model_type.h"
+#include "sync/protocol/sync.pb.h"
 #include "sync/syncable/blob.h"
 #include "sync/syncable/dir_open_result.h"
-#include "sync/syncable/model_type.h"
 #include "sync/syncable/syncable_id.h"
 #include "sync/util/cryptographer.h"
 #include "sync/util/immutable.h"
 #include "sync/util/report_unrecoverable_error_function.h"
-#include "sync/util/unrecoverable_error_handler.h"
 #include "sync/util/time.h"
+#include "sync/util/unrecoverable_error_handler.h"
 #include "sync/util/weak_handle.h"
-#include "sync/protocol/sync.pb.h"
 
 namespace base {
 class DictionaryValue;

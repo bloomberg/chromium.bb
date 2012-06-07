@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/sync/glue/data_type_error_handler.h"
 #include "chrome/browser/sync/glue/model_associator.h"
-#include "sync/syncable/model_type.h"
+#include "sync/internal_api/public/syncable/model_type.h"
 
 class ProfileSyncService;
 

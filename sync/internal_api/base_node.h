@@ -13,8 +13,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
+#include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/protocol/sync.pb.h"
-#include "sync/syncable/model_type.h"
 
 // Forward declarations of internal class types so that sync API objects
 // may have opaque pointers to these types.

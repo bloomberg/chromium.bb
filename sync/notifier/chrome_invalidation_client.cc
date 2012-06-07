@@ -15,9 +15,9 @@
 #include "google/cacheinvalidation/include/types.h"
 #include "google/cacheinvalidation/v2/types.pb.h"
 #include "jingle/notifier/listener/push_client.h"
+#include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/notifier/invalidation_util.h"
 #include "sync/notifier/registration_manager.h"
-#include "sync/syncable/model_type.h"
 
 namespace {
 

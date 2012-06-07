@@ -7,8 +7,8 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "sync/engine/polling_constants.h"
-#include "sync/sessions/sync_session_snapshot.h"
+#include "sync/internal_api/public/engine/polling_constants.h"
+#include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 
 namespace browser_sync {
 

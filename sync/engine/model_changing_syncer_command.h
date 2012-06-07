@@ -7,8 +7,8 @@
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "sync/engine/model_safe_worker.h"
 #include "sync/engine/syncer_command.h"
+#include "sync/internal_api/public/engine/model_safe_worker.h"
 
 namespace browser_sync {
 namespace sessions {

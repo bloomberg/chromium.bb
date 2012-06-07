@@ -11,8 +11,8 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "jingle/notifier/listener/push_client.h"
+#include "sync/internal_api/public/syncable/model_type_payload_map.h"
 #include "sync/notifier/sync_notifier_observer.h"
-#include "sync/syncable/model_type_payload_map.h"
 
 namespace sync_notifier {
 

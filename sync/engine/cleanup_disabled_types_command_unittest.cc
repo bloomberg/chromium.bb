@@ -6,11 +6,11 @@
 
 #include "sync/engine/cleanup_disabled_types_command.h"
 
+#include "sync/internal_api/public/syncable/model_type_test_util.h"
 #include "sync/sessions/sync_session.h"
-#include "sync/syncable/model_type_test_util.h"
 #include "sync/test/engine/syncer_command_test.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser_sync {
 

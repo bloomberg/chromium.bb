@@ -6,9 +6,9 @@
 
 #include <algorithm>
 
+#include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/sessions/sync_session.h"
 #include "sync/sessions/sync_session_context.h"
-#include "sync/syncable/model_type.h"
 #include "sync/syncable/syncable.h"
 
 namespace browser_sync {

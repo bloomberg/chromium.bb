@@ -24,10 +24,10 @@
 #include "content/public/browser/web_contents.h"
 #include "sync/api/sync_error.h"
 #include "sync/internal_api/change_record.h"
+#include "sync/internal_api/public/syncable/model_type.h"
+#include "sync/internal_api/public/syncable/model_type_payload_map.h"
 #include "sync/internal_api/read_node.h"
 #include "sync/protocol/session_specifics.pb.h"
-#include "sync/syncable/model_type.h"
-#include "sync/syncable/model_type_payload_map.h"
 
 using content::BrowserThread;
 using content::NavigationController;

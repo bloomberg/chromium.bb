@@ -10,10 +10,10 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/time.h"
+#include "sync/internal_api/public/syncable/model_type.h"
+#include "sync/internal_api/public/util/syncer_error.h"
 #include "sync/sessions/sync_session.h"
 #include "sync/syncable/blob.h"
-#include "sync/syncable/model_type.h"
-#include "sync/util/syncer_error.h"
 
 namespace syncable {
 class Directory;

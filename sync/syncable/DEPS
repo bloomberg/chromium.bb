@@ -1,13 +1,12 @@
 include_rules = [
   "+net/base/escape.h",
   "+sql",
+  "+sync/internal_api/public/engine",
+  "+sync/internal_api/public/syncable",
   "+sync/protocol",
   "+sync/test",
   "+sync/util",
 
   # this file is weird.
   "+sync/engine/syncproto.h",
-
-  # maybe this file should live in syncable?
-  "+sync/engine/model_safe_worker.h",
 ]

@@ -13,10 +13,10 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "sync/syncable/model_type.h"
-#include "sync/util/nigori.h"
+#include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/protocol/encryption.pb.h"
 #include "sync/protocol/nigori_specifics.pb.h"
+#include "sync/util/nigori.h"
 
 namespace browser_sync {
 

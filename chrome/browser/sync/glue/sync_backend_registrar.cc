@@ -18,7 +18,7 @@
 #include "chrome/browser/sync/glue/password_model_worker.h"
 #include "chrome/browser/sync/glue/ui_model_worker.h"
 #include "content/public/browser/browser_thread.h"
-#include "sync/engine/passive_model_worker.h"
+#include "sync/internal_api/public/engine/passive_model_worker.h"
 
 using content::BrowserThread;
 

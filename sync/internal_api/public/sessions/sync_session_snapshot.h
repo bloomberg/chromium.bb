@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_SESSIONS_SYNC_SESSION_SNAPSHOT_H_
-#define SYNC_SESSIONS_SYNC_SESSION_SNAPSHOT_H_
+#ifndef SYNC_INTERNAL_API_PUBLIC_SESSIONS_SYNC_SESSION_SNAPSHOT_H_
+#define SYNC_INTERNAL_API_PUBLIC_SESSIONS_SYNC_SESSION_SNAPSHOT_H_
 #pragma once
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/time.h"
-#include "sync/sessions/error_counters.h"
-#include "sync/sessions/sync_source_info.h"
-#include "sync/sessions/syncer_status.h"
-#include "sync/syncable/model_type.h"
-#include "sync/syncable/model_type_payload_map.h"
+#include "sync/internal_api/public/sessions/error_counters.h"
+#include "sync/internal_api/public/sessions/sync_source_info.h"
+#include "sync/internal_api/public/sessions/syncer_status.h"
+#include "sync/internal_api/public/syncable/model_type.h"
+#include "sync/internal_api/public/syncable/model_type_payload_map.h"
 
 namespace base {
 class DictionaryValue;
@@ -98,4 +98,4 @@ class SyncSessionSnapshot {
 }  // namespace sessions
 }  // namespace browser_sync
 
-#endif  // SYNC_SESSIONS_SYNC_SESSION_SNAPSHOT_H_
+#endif  // SYNC_INTERNAL_API_PUBLIC_SESSIONS_SYNC_SESSION_SNAPSHOT_H_

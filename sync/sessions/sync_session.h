@@ -24,13 +24,13 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
-#include "sync/engine/model_safe_worker.h"
+#include "sync/internal_api/public/engine/model_safe_worker.h"
+#include "sync/internal_api/public/sessions/sync_session_snapshot.h"
+#include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/sessions/ordered_commit_set.h"
 #include "sync/sessions/session_state.h"
 #include "sync/sessions/status_controller.h"
 #include "sync/sessions/sync_session_context.h"
-#include "sync/sessions/sync_session_snapshot.h"
-#include "sync/syncable/model_type.h"
 #include "sync/util/extensions_activity_monitor.h"
 
 namespace syncable {

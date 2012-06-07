@@ -8,7 +8,7 @@
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
-#include "sync/sessions/sync_session_snapshot.h"
+#include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 
 using bookmarks_helper::AddFolder;
 using bookmarks_helper::AddURL;

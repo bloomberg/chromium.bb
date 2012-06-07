@@ -11,12 +11,12 @@
 #include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "sync/internal_api/change_record.h"
+#include "sync/internal_api/public/sessions/sync_session_snapshot.h"
+#include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/js/js_arg_list.h"
 #include "sync/js/js_event_details.h"
 #include "sync/js/js_event_handler.h"
 #include "sync/sessions/session_state.h"
-#include "sync/sessions/sync_session_snapshot.h"
-#include "sync/syncable/model_type.h"
 
 namespace browser_sync {
 

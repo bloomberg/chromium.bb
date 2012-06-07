@@ -8,8 +8,8 @@
 #include "chrome/browser/sync/glue/ui_model_worker.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
+#include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/internal_api/test_user_share.h"
-#include "sync/syncable/model_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

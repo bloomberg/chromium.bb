@@ -13,8 +13,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
+#include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/notifier/invalidation_state_tracker.h"
-#include "sync/syncable/model_type.h"
 
 class PrefService;
 

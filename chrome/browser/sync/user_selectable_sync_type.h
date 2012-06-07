@@ -13,7 +13,7 @@ namespace user_selectable_type {
 // via checkboxes in the "Advanced Sync Preferences" dialog. Used solely for the
 // purposes of UMA histogram logging of the datatypes explicitly selected by
 // users when sync is configured on a machine. This is a subset of the sync
-// types listed in chrome/browser/sync/syncable/model_type.h.
+// types listed in sync/internal_api/public/syncable/model_type.h.
 //
 // Note: New sync datatypes must be added to the end of this list. Adding them
 // anywhere else will result in incorrect histogram logging.

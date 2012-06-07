@@ -10,8 +10,8 @@
 #include <set>
 #include <vector>
 
-#include "sync/engine/model_safe_worker.h"
-#include "sync/syncable/model_type.h"
+#include "sync/internal_api/public/engine/model_safe_worker.h"
+#include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/syncable/syncable_id.h"
 
 namespace browser_sync {

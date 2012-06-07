@@ -14,18 +14,18 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "sync/engine/model_changing_syncer_command.h"
-#include "sync/engine/model_safe_worker.h"
 #include "sync/engine/traffic_recorder.h"
+#include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/sessions/debug_info_getter.h"
 #include "sync/sessions/sync_session.h"
 #include "sync/sessions/sync_session_context.h"
 #include "sync/syncable/syncable_mock.h"
-#include "sync/test/engine/mock_connection_manager.h"
 #include "sync/test/engine/fake_model_worker.h"
+#include "sync/test/engine/mock_connection_manager.h"
 #include "sync/test/engine/test_directory_setter_upper.h"
 #include "sync/test/fake_extensions_activity_monitor.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::NiceMock;
 

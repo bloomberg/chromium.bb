@@ -8,6 +8,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/protocol/app_notification_specifics.pb.h"
 #include "sync/protocol/app_setting_specifics.pb.h"
 #include "sync/protocol/app_specifics.pb.h"
@@ -24,7 +25,6 @@
 #include "sync/protocol/sync.pb.h"
 #include "sync/protocol/theme_specifics.pb.h"
 #include "sync/protocol/typed_url_specifics.pb.h"
-#include "sync/syncable/model_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser_sync {

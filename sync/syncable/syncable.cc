@@ -14,8 +14,8 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/debug/trace_event.h"
 #include "base/compiler_specific.h"
+#include "base/debug/trace_event.h"
 #include "base/debug/trace_event.h"
 #include "base/file_util.h"
 #include "base/hash_tables.h"
@@ -29,20 +29,20 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "net/base/escape.h"
+#include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/protocol/proto_value_conversions.h"
 #include "sync/syncable/directory_backing_store.h"
 #include "sync/syncable/directory_change_delegate.h"
 #include "sync/syncable/in_memory_directory_backing_store.h"
-#include "sync/syncable/model_type.h"
 #include "sync/syncable/on_disk_directory_backing_store.h"
 #include "sync/syncable/syncable-inl.h"
 #include "sync/syncable/syncable_changes_version.h"
 #include "sync/syncable/syncable_columns.h"
 #include "sync/syncable/syncable_enum_conversions.h"
 #include "sync/syncable/transaction_observer.h"
-#include "sync/util/logging.h"
 #include "sync/util/cryptographer.h"
-#include "net/base/escape.h"
+#include "sync/util/logging.h"
 
 namespace {
 

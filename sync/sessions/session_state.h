@@ -19,9 +19,8 @@
 #include "base/basictypes.h"
 #include "sync/engine/syncer_types.h"
 #include "sync/engine/syncproto.h"
-#include "sync/sessions/error_counters.h"
-#include "sync/sessions/syncer_status.h"
-#include "sync/syncable/model_type.h"
+#include "sync/internal_api/public/sessions/error_counters.h"
+#include "sync/internal_api/public/sessions/syncer_status.h"
 #include "sync/syncable/syncable_id.h"
 
 namespace browser_sync {

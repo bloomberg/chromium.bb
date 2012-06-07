@@ -6,7 +6,7 @@
 #define SYNC_ENGINE_COMMIT_H_
 #pragma once
 
-#include "sync/util/syncer_error.h"
+#include "sync/internal_api/public/util/syncer_error.h"
 
 namespace browser_sync {
 

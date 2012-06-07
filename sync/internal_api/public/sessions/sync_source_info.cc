@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/sessions/sync_source_info.h"
+#include "sync/internal_api/public/sessions/sync_source_info.h"
 
 #include "base/values.h"
 #include "sync/protocol/proto_enum_conversions.h"

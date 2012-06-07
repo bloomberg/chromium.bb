@@ -25,10 +25,10 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/time.h"
-#include "sync/engine/model_safe_worker.h"
-#include "sync/engine/syncer_types.h"
 #include "sync/engine/sync_engine_event.h"
+#include "sync/engine/syncer_types.h"
 #include "sync/engine/traffic_recorder.h"
+#include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/sessions/debug_info_getter.h"
 
 namespace syncable {

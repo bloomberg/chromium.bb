@@ -21,7 +21,7 @@
 #include "chrome/test/base/profile_mock.h"
 #include "content/public/test/test_browser_thread.h"
 #include "sync/api/fake_syncable_service.h"
-#include "sync/engine/model_safe_worker.h"
+#include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser_sync {

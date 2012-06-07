@@ -30,12 +30,12 @@
 #include "chrome/test/base/testing_profile.h"
 #include "sync/api/sync_data.h"
 #include "sync/internal_api/change_record.h"
+#include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/internal_api/read_node.h"
 #include "sync/internal_api/read_transaction.h"
 #include "sync/internal_api/write_node.h"
 #include "sync/internal_api/write_transaction.h"
 #include "sync/protocol/preference_specifics.pb.h"
-#include "sync/syncable/model_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

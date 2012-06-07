@@ -15,7 +15,7 @@
 #include "sync/api/sync_change_processor.h"
 #include "sync/api/sync_error.h"
 #include "sync/api/sync_error_factory.h"
-#include "sync/engine/model_safe_worker.h"
+#include "sync/internal_api/public/engine/model_safe_worker.h"
 
 class ProfileSyncComponentsFactory;
 class ProfileSyncService;

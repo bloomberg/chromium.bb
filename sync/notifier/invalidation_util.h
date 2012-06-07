@@ -11,7 +11,7 @@
 #include <string>
 
 #include "google/cacheinvalidation/deps/callback.h"
-#include "sync/syncable/model_type.h"
+#include "sync/internal_api/public/syncable/model_type.h"
 
 namespace invalidation {
 

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Constants used by SyncerThread when polling servers for updates.
+// Constants used by SyncScheduler when polling servers for updates.
 
-#ifndef SYNC_ENGINE_POLLING_CONSTANTS_H_
-#define SYNC_ENGINE_POLLING_CONSTANTS_H_
+#ifndef SYNC_INTERNAL_API_PUBLIC_ENGINE_POLLING_CONSTANTS_H_
+#define SYNC_INTERNAL_API_PUBLIC_ENGINE_POLLING_CONSTANTS_H_
 #pragma once
 
 namespace browser_sync {
@@ -17,4 +17,4 @@ extern const int kBackoffRandomizationFactor;
 
 }  // namespace browser_sync
 
-#endif  // SYNC_ENGINE_POLLING_CONSTANTS_H_
+#endif  // SYNC_INTERNAL_API_PUBLIC_ENGINE_POLLING_CONSTANTS_H_

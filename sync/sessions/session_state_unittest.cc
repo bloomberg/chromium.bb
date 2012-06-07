@@ -11,10 +11,10 @@
 #include "base/test/values_test_util.h"
 #include "base/time.h"
 #include "base/values.h"
-#include "sync/sessions/error_counters.h"
-#include "sync/sessions/sync_session_snapshot.h"
-#include "sync/sessions/sync_source_info.h"
-#include "sync/sessions/syncer_status.h"
+#include "sync/internal_api/public/sessions/error_counters.h"
+#include "sync/internal_api/public/sessions/sync_session_snapshot.h"
+#include "sync/internal_api/public/sessions/sync_source_info.h"
+#include "sync/internal_api/public/sessions/syncer_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser_sync {

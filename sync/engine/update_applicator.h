@@ -16,7 +16,7 @@
 
 #include "base/basictypes.h"
 #include "base/port.h"
-#include "sync/engine/model_safe_worker.h"
+#include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/syncable/syncable.h"
 
 namespace browser_sync {

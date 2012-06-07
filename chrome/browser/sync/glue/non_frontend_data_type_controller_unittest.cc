@@ -22,7 +22,7 @@
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/base/profile_mock.h"
 #include "content/public/test/test_browser_thread.h"
-#include "sync/engine/model_safe_worker.h"
+#include "sync/internal_api/public/engine/model_safe_worker.h"
 
 using base::WaitableEvent;
 using browser_sync::ChangeProcessorMock;

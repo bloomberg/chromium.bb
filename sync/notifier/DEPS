@@ -5,8 +5,7 @@ include_rules = [
   "+net/url_request/url_request_context.h",
   "+net/url_request/url_request_test_util.h",
 
-  "+sync/syncable/model_type.h",
-  "+sync/syncable/model_type_payload_map.h",
+  "+sync/internal_api/public/syncable",
   "+sync/protocol/service_constants.h",
   "+sync/util",
 

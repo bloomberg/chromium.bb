@@ -7,12 +7,12 @@
 #include <string>
 
 #include "base/location.h"
-#include "sync/engine/model_safe_worker.h"
 #include "sync/engine/syncer.h"
 #include "sync/engine/syncer_proto_util.h"
 #include "sync/engine/syncer_types.h"
 #include "sync/engine/syncer_util.h"
 #include "sync/engine/syncproto.h"
+#include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
 #include "sync/syncable/syncable.h"
 

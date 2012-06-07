@@ -11,10 +11,10 @@
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/test/test_http_bridge_factory.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 #include "sync/internal_api/user_share.h"
 #include "sync/js/js_reply_handler.h"
 #include "sync/protocol/encryption.pb.h"
-#include "sync/sessions/sync_session_snapshot.h"
 #include "sync/syncable/syncable.h"
 
 using browser_sync::ModelSafeRoutingInfo;

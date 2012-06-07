@@ -6,7 +6,7 @@
 #define SYNC_SYNCABLE_DIRECTORY_CHANGE_DELEGATE_H_
 #pragma once
 
-#include "sync/syncable/model_type.h"
+#include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/syncable/syncable.h"
 
 namespace syncable {

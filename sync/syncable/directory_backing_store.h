@@ -12,8 +12,8 @@
 #include "base/threading/non_thread_safe.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
+#include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/syncable/dir_open_result.h"
-#include "sync/syncable/model_type.h"
 #include "sync/syncable/syncable.h"
 
 namespace sync_pb {

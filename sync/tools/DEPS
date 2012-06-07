@@ -4,6 +4,5 @@ include_rules = [
   "+net/base/host_resolver.h",
   "+net/url_request/url_request_test_util.h",
   "+sync/notifier",
-  "+sync/syncable/model_type.h",
-  "+sync/syncable/model_type_payload_map.h",
+  "+sync/internal_api/public/syncable",
 ]

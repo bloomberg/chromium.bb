@@ -17,8 +17,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_vector.h"
 #include "sync/engine/net/server_connection_manager.h"
-#include "sync/syncable/model_type.h"
-#include "sync/syncable/model_type_payload_map.h"
+#include "sync/internal_api/public/syncable/model_type.h"
+#include "sync/internal_api/public/syncable/model_type_payload_map.h"
 #include "sync/protocol/sync.pb.h"
 
 class MockConnectionManager : public browser_sync::ServerConnectionManager {

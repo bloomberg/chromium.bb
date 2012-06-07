@@ -7,7 +7,7 @@
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "chrome/test/base/testing_pref_service.h"
-#include "sync/syncable/model_type.h"
+#include "sync/internal_api/public/syncable/model_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

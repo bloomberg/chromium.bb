@@ -17,11 +17,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "google/cacheinvalidation/include/invalidation-listener.h"
+#include "sync/internal_api/public/syncable/model_type.h"
+#include "sync/internal_api/public/syncable/model_type_payload_map.h"
 #include "sync/notifier/chrome_system_resources.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/state_writer.h"
-#include "sync/syncable/model_type.h"
-#include "sync/syncable/model_type_payload_map.h"
 #include "sync/util/weak_handle.h"
 
 namespace buzz {

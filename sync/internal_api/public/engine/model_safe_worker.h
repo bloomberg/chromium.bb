@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_ENGINE_MODEL_SAFE_WORKER_H_
-#define SYNC_ENGINE_MODEL_SAFE_WORKER_H_
+#ifndef SYNC_INTERNAL_API_PUBLIC_ENGINE_MODEL_SAFE_WORKER_H_
+#define SYNC_INTERNAL_API_PUBLIC_ENGINE_MODEL_SAFE_WORKER_H_
 #pragma once
 
 #include <map>
@@ -12,8 +12,8 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "sync/syncable/model_type.h"
-#include "sync/util/syncer_error.h"
+#include "sync/internal_api/public/syncable/model_type.h"
+#include "sync/internal_api/public/util/syncer_error.h"
 
 namespace base {
 class DictionaryValue;
@@ -84,4 +84,4 @@ ModelSafeGroup GetGroupForModelType(const syncable::ModelType type,
 
 }  // namespace browser_sync
 
-#endif  // SYNC_ENGINE_MODEL_SAFE_WORKER_H_
+#endif  // SYNC_INTERNAL_API_PUBLIC_ENGINE_MODEL_SAFE_WORKER_H_

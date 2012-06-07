@@ -14,10 +14,10 @@
 
 #include "base/compiler_specific.h"
 #include "base/synchronization/lock.h"
-#include "sync/engine/syncer_types.h"
 #include "sync/engine/sync_engine_event.h"
+#include "sync/engine/syncer_types.h"
+#include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/internal_api/sync_manager.h"
-#include "sync/syncable/model_type.h"
 
 namespace browser_sync {
 

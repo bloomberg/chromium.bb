@@ -9,9 +9,7 @@
 #include <string>
 
 #include "base/observer_list.h"
-#include "sync/sessions/session_state.h"
-#include "sync/sessions/sync_session_snapshot.h"
-#include "sync/syncable/model_type.h"
+#include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 
 namespace syncable {
 class Id;

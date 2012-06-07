@@ -17,8 +17,8 @@
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "jingle/notifier/listener/push_client_observer.h"
+#include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/notifier/sync_notifier.h"
-#include "sync/syncable/model_type.h"
 
 namespace notifier {
 class PushClient;

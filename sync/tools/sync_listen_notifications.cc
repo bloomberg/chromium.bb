@@ -20,12 +20,12 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/host_resolver.h"
 #include "net/url_request/url_request_test_util.h"
+#include "sync/internal_api/public/syncable/model_type.h"
+#include "sync/internal_api/public/syncable/model_type_payload_map.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/sync_notifier.h"
 #include "sync/notifier/sync_notifier_factory.h"
 #include "sync/notifier/sync_notifier_observer.h"
-#include "sync/syncable/model_type.h"
-#include "sync/syncable/model_type_payload_map.h"
 
 // This is a simple utility that initializes a sync notifier and
 // listens to any received notifications.

@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
-#include "sync/engine/model_safe_worker.h"
+#include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/util/unrecoverable_error_info.h"
 
 class MessageLoop;

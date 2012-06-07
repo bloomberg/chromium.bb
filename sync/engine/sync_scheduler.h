@@ -20,11 +20,11 @@
 #include "base/timer.h"
 #include "sync/engine/net/server_connection_manager.h"
 #include "sync/engine/nudge_source.h"
-#include "sync/engine/polling_constants.h"
 #include "sync/engine/syncer.h"
+#include "sync/internal_api/public/engine/polling_constants.h"
+#include "sync/internal_api/public/syncable/model_type_payload_map.h"
 #include "sync/sessions/sync_session.h"
 #include "sync/sessions/sync_session_context.h"
-#include "sync/syncable/model_type_payload_map.h"
 #include "sync/util/weak_handle.h"
 
 class MessageLoop;

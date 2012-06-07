@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_SESSIONS_ERROR_COUNTERS_H_
-#define SYNC_SESSIONS_ERROR_COUNTERS_H_
+#ifndef SYNC_INTERNAL_API_PUBLIC_SESSIONS_ERROR_COUNTERS_H_
+#define SYNC_INTERNAL_API_PUBLIC_SESSIONS_ERROR_COUNTERS_H_
 #pragma once
 
 #include "base/basictypes.h"
+#include "sync/internal_api/public/util/syncer_error.h"
 #include "sync/protocol/sync_protocol_error.h"
-#include "sync/util/syncer_error.h"
 
 namespace browser_sync {
 namespace sessions {
@@ -30,4 +30,4 @@ struct ErrorCounters {
 }  // namespace sessions
 }  // namespace browser_sync
 
-#endif  // SYNC_SESSIONS_ERROR_COUNTERS_H_
+#endif  // SYNC_INTERNAL_API_PUBLIC_SESSIONS_ERROR_COUNTERS_H_

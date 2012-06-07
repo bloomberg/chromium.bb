@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/util/enum_set.h"
+#include "sync/internal_api/public/util/enum_set.h"
 
 #include "base/basictypes.h"
 #include "testing/gtest/include/gtest/gtest.h"

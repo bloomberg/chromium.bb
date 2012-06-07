@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "sync/syncable/model_type_payload_map.h"
+#include "sync/internal_api/public/syncable/model_type_payload_map.h"
 
 namespace sync_notifier {
 

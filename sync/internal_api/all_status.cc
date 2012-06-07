@@ -9,8 +9,8 @@
 #include "base/logging.h"
 #include "base/port.h"
 #include "sync/engine/net/server_connection_manager.h"
+#include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/sessions/session_state.h"
-#include "sync/syncable/model_type.h"
 
 namespace browser_sync {
 

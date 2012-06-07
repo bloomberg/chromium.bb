@@ -4,15 +4,15 @@
 //
 // Definition of ModelTypePayloadMap and various utility functions.
 
-#ifndef SYNC_SYNCABLE_MODEL_TYPE_PAYLOAD_MAP_H_
-#define SYNC_SYNCABLE_MODEL_TYPE_PAYLOAD_MAP_H_
+#ifndef SYNC_INTERNAL_PUBLIC_API_SYNCABLE_MODEL_TYPE_PAYLOAD_MAP_H_
+#define SYNC_INTERNAL_PUBLIC_API_SYNCABLE_MODEL_TYPE_PAYLOAD_MAP_H_
 #pragma once
 
 #include <map>
 #include <string>
 
-#include "sync/engine/model_safe_worker.h"
-#include "sync/syncable/model_type.h"
+#include "sync/internal_api/public/engine/model_safe_worker.h"
+#include "sync/internal_api/public/syncable/model_type.h"
 
 namespace base {
 class DictionaryValue;
@@ -57,4 +57,4 @@ void PurgeStalePayload(ModelTypePayloadMap* original,
 
 }  // namespace syncable
 
-#endif  // SYNC_SYNCABLE_MODEL_TYPE_PAYLOAD_MAP_H_
+#endif  // SYNC_INTERNAL_PUBLIC_API_SYNCABLE_MODEL_TYPE_PAYLOAD_MAP_H_

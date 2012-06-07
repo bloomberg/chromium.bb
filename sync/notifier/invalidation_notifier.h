@@ -20,10 +20,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
+#include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/notifier/chrome_invalidation_client.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/sync_notifier.h"
-#include "sync/syncable/model_type.h"
 #include "sync/util/weak_handle.h"
 
 namespace notifier {

@@ -4,13 +4,13 @@
 
 #include "base/location.h"
 #include "sync/engine/verify_updates_command.h"
+#include "sync/protocol/bookmark_specifics.pb.h"
 #include "sync/sessions/session_state.h"
 #include "sync/sessions/sync_session.h"
 #include "sync/syncable/syncable.h"
 #include "sync/syncable/syncable_id.h"
 #include "sync/test/engine/fake_model_worker.h"
 #include "sync/test/engine/syncer_command_test.h"
-#include "sync/protocol/bookmark_specifics.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser_sync {

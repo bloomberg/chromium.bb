@@ -11,8 +11,8 @@
 #include "base/rand_util.h"
 #include "google/cacheinvalidation/include/invalidation-client.h"
 #include "google/cacheinvalidation/include/types.h"
+#include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/notifier/invalidation_util.h"
-#include "sync/syncable/model_type.h"
 
 namespace sync_notifier {
 

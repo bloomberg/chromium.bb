@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_ENGINE_PASSIVE_MODEL_WORKER_H_
-#define SYNC_ENGINE_PASSIVE_MODEL_WORKER_H_
+#ifndef SYNC_INTERNAL_API_PUBLIC_ENGINE_PASSIVE_MODEL_WORKER_H_
+#define SYNC_INTERNAL_API_PUBLIC_ENGINE_PASSIVE_MODEL_WORKER_H_
 #pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "sync/engine/model_safe_worker.h"
-#include "sync/util/syncer_error.h"
+#include "sync/internal_api/public/engine/model_safe_worker.h"
+#include "sync/internal_api/public/util/syncer_error.h"
 
 class MessageLoop;
 
@@ -37,4 +37,4 @@ class PassiveModelWorker : public ModelSafeWorker {
 
 }  // namespace browser_sync
 
-#endif  // SYNC_ENGINE_PASSIVE_MODEL_WORKER_H_
+#endif  // SYNC_INTERNAL_API_PUBLIC_ENGINE_PASSIVE_MODEL_WORKER_H_

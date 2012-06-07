@@ -11,8 +11,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/threading/non_thread_safe.h"
-#include "sync/engine/model_safe_worker.h"
-#include "sync/util/syncer_error.h"
+#include "sync/internal_api/public/engine/model_safe_worker.h"
+#include "sync/internal_api/public/util/syncer_error.h"
 
 namespace browser_sync {
 

@@ -16,7 +16,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "sync/syncable/model_type.h"
+#include "sync/internal_api/public/syncable/model_type.h"
 // For invalidation::InvalidationListener::RegistrationState.
 #include "google/cacheinvalidation/include/invalidation-listener.h"
 

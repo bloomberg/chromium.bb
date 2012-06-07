@@ -26,7 +26,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/common/chrome_switches.h"
-#include "sync/sessions/sync_session_snapshot.h"
+#include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 
 using browser_sync::sessions::SyncSessionSnapshot;
 
