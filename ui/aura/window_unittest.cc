@@ -626,7 +626,8 @@ TEST_F(WindowTest, TouchCaptureCancelsOtherTouches) {
   TouchEvent press(ui::ET_TOUCH_PRESSED,
                    gfx::Point(10, 10), 0, getTime());
   root_window()->DispatchTouchEvent(&press);
-  EXPECT_EQ(1, delegate1.gesture_event_count());
+  // We will get both GESTURE_BEGIN and GESTURE_TAP_DOWN.
+  EXPECT_EQ(2, delegate1.gesture_event_count());
   delegate1.ResetCounts();
   w2->SetCapture();
 
@@ -658,7 +659,8 @@ TEST_F(WindowTest, TouchCaptureCancelsOtherTouches) {
                     gfx::Point(10, 10), 0, getTime());
   root_window()->DispatchTouchEvent(&press2);
   EXPECT_EQ(0, delegate1.gesture_event_count());
-  EXPECT_EQ(1, delegate2.gesture_event_count());
+  // We will get both GESTURE_BEGIN and GESTURE_TAP_DOWN.
+  EXPECT_EQ(2, delegate2.gesture_event_count());
 }
 
 TEST_F(WindowTest, TouchCaptureDoesntCancelCapturedTouches) {
@@ -670,7 +672,8 @@ TEST_F(WindowTest, TouchCaptureDoesntCancelCapturedTouches) {
                    gfx::Point(10, 10), 0, getTime());
   root_window()->DispatchTouchEvent(&press);
 
-  EXPECT_EQ(1, delegate.gesture_event_count());
+  // We will get both GESTURE_BEGIN and GESTURE_TAP_DOWN.
+  EXPECT_EQ(2, delegate.gesture_event_count());
   delegate.ResetCounts();
 
   window->SetCapture();
@@ -694,7 +697,8 @@ TEST_F(WindowTest, TransferCaptureTouchEvents) {
       &d1, 0, gfx::Rect(0, 0, 20, 20), NULL));
   TouchEvent p1(ui::ET_TOUCH_PRESSED, gfx::Point(10, 10), 0, getTime());
   root_window()->DispatchTouchEvent(&p1);
-  EXPECT_EQ(1, d1.gesture_event_count());
+  // We will get both GESTURE_BEGIN and GESTURE_TAP_DOWN.
+  EXPECT_EQ(2, d1.gesture_event_count());
   d1.ResetCounts();
 
   // Touch on |w2| with a different id.
@@ -704,7 +708,8 @@ TEST_F(WindowTest, TransferCaptureTouchEvents) {
   TouchEvent p2(ui::ET_TOUCH_PRESSED, gfx::Point(41, 10), 1, getTime());
   root_window()->DispatchTouchEvent(&p2);
   EXPECT_EQ(0, d1.gesture_event_count());
-  EXPECT_EQ(1, d2.gesture_event_count());
+  // We will get both GESTURE_BEGIN and GESTURE_TAP_DOWN for new target window.
+  EXPECT_EQ(2, d2.gesture_event_count());
   d1.ResetCounts();
   d2.ResetCounts();
 

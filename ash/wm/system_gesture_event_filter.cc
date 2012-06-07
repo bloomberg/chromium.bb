@@ -260,7 +260,7 @@ class SystemPinchHandler {
       return SYSTEM_GESTURE_END;
 
     switch (event.type()) {
-      case ui::ET_GESTURE_TAP_UP: {
+      case ui::ET_GESTURE_END: {
         if (event.delta_x() > kSystemPinchPoints)
           break;
 
@@ -535,7 +535,7 @@ ui::GestureStatus SystemGestureEventFilter::PreHandleGestureEvent(
       ClearGestureHandlerForWindow(system_target);
     return ui::GESTURE_STATUS_CONSUMED;
   } else {
-    if (event->type() == ui::ET_GESTURE_TAP_DOWN &&
+    if (event->type() == ui::ET_GESTURE_BEGIN &&
         event->delta_x() >= kSystemPinchPoints) {
       pinch_handlers_[system_target] = new SystemPinchHandler(system_target);
       system_target->AddObserver(this);
