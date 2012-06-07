@@ -208,7 +208,7 @@ body.bare-minimum #dot-list {
   border: none;
   color: inherit;
   cursor: pointer;
-  font-size: 1.1em;
+  font: inherit;
   /* Leave room for the scrollbar. */
   margin-left: 13px;
   margin-right: 13px;
