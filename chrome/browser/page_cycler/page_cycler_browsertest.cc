@@ -328,7 +328,7 @@ IN_PROC_BROWSER_TEST_F(PageCyclerBrowserTest, ChromeErrorURL) {
 #else
 // Bug 131333: This test fails on a XP debug bot since Build 17609.
 #if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_PlaybackMode FAILS_PlaybackMode
+#define MAYBE_PlaybackMode DISABLED_PlaybackMode
 #else
 #define MAYBE_PlaybackMode PlaybackMode
 #endif
@@ -353,7 +353,7 @@ IN_PROC_BROWSER_TEST_F(PageCyclerCachedBrowserTest, MAYBE_PlaybackMode) {
 // cache directory while in playback mode.
 // Bug 131333: This test fails on a XP debug bot since Build 17609.
 #if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_URLNotInCache FAILS_URLNotInCache
+#define MAYBE_URLNotInCache DISABLED_URLNotInCache
 #else
 #define MAYBE_URLNotInCache URLNotInCache
 #endif
