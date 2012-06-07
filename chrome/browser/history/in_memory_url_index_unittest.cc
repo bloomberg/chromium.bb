@@ -105,6 +105,7 @@ class InMemoryURLIndexTest : public testing::Test {
   // subclasses.
   virtual FilePath::StringType TestDBName() const;
 
+#if 0
   // Convenience function to create a URLRow with basic data for |url|, |title|,
   // |visit_count|, and |typed_count|. |last_visit_ago| gives the number of
   // days from now to set the URL's last_visit.
@@ -125,6 +126,7 @@ class InMemoryURLIndexTest : public testing::Test {
   float GetTopicalityScoreOfTermAgainstURLAndTitle(const string16& term,
                                                    const string16& url,
                                                    const string16& title);
+#endif
 
   // Validates that the given |term| is contained in |cache| and that it is
   // marked as in-use.
@@ -298,6 +300,7 @@ FilePath::StringType InMemoryURLIndexTest::TestDBName() const {
     return FILE_PATH_LITERAL("url_history_provider_test.db.txt");
 }
 
+#if 0
 URLRow InMemoryURLIndexTest::MakeURLRow(const char* url,
                   const char* title,
                   int visit_count,
@@ -335,9 +338,10 @@ float InMemoryURLIndexTest::GetTopicalityScoreOfTermAgainstURLAndTitle(
   RowWordStarts word_starts;
   String16SetFromString16(url, &word_starts.url_word_starts_);
   String16SetFromString16(title, &word_starts.title_word_starts_);
-  return GetPrivateData()->GetTopicalityScore(
+  return ScoredHistoryMatch::GetTopicalityScore(
       1, url, url_matches, title_matches, word_starts);
 }
+#endif
 
 void InMemoryURLIndexTest::CheckTerm(
     const URLIndexPrivateData::SearchTermCacheMap& cache,
@@ -789,9 +793,9 @@ TEST_F(InMemoryURLIndexTest, TypedCharacterCaching) {
   CheckTerm(cache, ASCIIToUTF16("rec"));
 }
 
+#if 0
 TEST_F(InMemoryURLIndexTest, Scoring) {
   URLRow row_a(MakeURLRow("http://abcdef", "fedcba", 3, 30, 1));
-  URLIndexPrivateData& private_data(*GetPrivateData());
   // We use NowFromSystemTime() because MakeURLRow uses the same function
   // to calculate last visit time when building a row.
   base::Time now = base::Time::NowFromSystemTime();
@@ -800,43 +804,41 @@ TEST_F(InMemoryURLIndexTest, Scoring) {
   // TODO(mpearson): Test new_scoring if we're actually going to turn it
   // on by default.  This requires setting word_starts, which isn't done
   // right now.
-  ScoredHistoryMatch scored_a(private_data.ScoredMatchForURL(
-      row_a, ASCIIToUTF16("abc"), Make1Term("abc"), word_starts, now));
-  ScoredHistoryMatch scored_b(private_data.ScoredMatchForURL(
-      row_a, ASCIIToUTF16("bcd"), Make1Term("bcd"), word_starts, now));
+  ScoredHistoryMatch scored_a(row_a, ASCIIToUTF16("abc"), Make1Term("abc"),
+                              word_starts, now);
+  ScoredHistoryMatch scored_b(row_a, ASCIIToUTF16("bcd"), Make1Term("bcd"),
+                              word_starts, now);
   EXPECT_GT(scored_a.raw_score, scored_b.raw_score);
   // Test scores based on length.
-  ScoredHistoryMatch scored_c(private_data.ScoredMatchForURL(
-      row_a, ASCIIToUTF16("abcd"), Make1Term("abcd"), word_starts, now));
+  ScoredHistoryMatch scored_c(row_a, ASCIIToUTF16("abcd"), Make1Term("abcd"),
+                              word_starts, now);
   EXPECT_LT(scored_a.raw_score, scored_c.raw_score);
   // Test scores based on order.
-  ScoredHistoryMatch scored_d(private_data.ScoredMatchForURL(
-      row_a, ASCIIToUTF16("abcdef"), Make2Terms("abc", "def"), word_starts,
-      now));
-  ScoredHistoryMatch scored_e(private_data.ScoredMatchForURL(
-      row_a, ASCIIToUTF16("def abc"), Make2Terms("def", "abc"), word_starts,
-      now));
+  ScoredHistoryMatch scored_d(row_a, ASCIIToUTF16("abcdef"),
+                              Make2Terms("abc", "def"), word_starts, now);
+  ScoredHistoryMatch scored_e(row_a, ASCIIToUTF16("def abc"),
+                              Make2Terms("def", "abc"), word_starts, now);
   EXPECT_GT(scored_d.raw_score, scored_e.raw_score);
   // Test scores based on visit_count.
   URLRow row_b(MakeURLRow("http://abcdef", "fedcba", 10, 30, 1));
-  ScoredHistoryMatch scored_f(private_data.ScoredMatchForURL(
-      row_b, ASCIIToUTF16("abc"), Make1Term("abc"), word_starts, now));
+  ScoredHistoryMatch scored_f(row_b, ASCIIToUTF16("abc"), Make1Term("abc"),
+                              word_starts, now);
   EXPECT_GT(scored_f.raw_score, scored_a.raw_score);
   // Test scores based on last_visit.
   URLRow row_c(MakeURLRow("http://abcdef", "fedcba", 3, 10, 1));
-  ScoredHistoryMatch scored_g(private_data.ScoredMatchForURL(
-      row_c, ASCIIToUTF16("abc"), Make1Term("abc"), word_starts, now));
+  ScoredHistoryMatch scored_g(row_c, ASCIIToUTF16("abc"), Make1Term("abc"),
+                              word_starts, now);
   EXPECT_GT(scored_g.raw_score, scored_a.raw_score);
   // Test scores based on typed_count.
   URLRow row_d(MakeURLRow("http://abcdef", "fedcba", 3, 30, 10));
-  ScoredHistoryMatch scored_h(private_data.ScoredMatchForURL(
-      row_d, ASCIIToUTF16("abc"), Make1Term("abc"), word_starts, now));
+  ScoredHistoryMatch scored_h(row_d, ASCIIToUTF16("abc"), Make1Term("abc"),
+                              word_starts, now);
   EXPECT_GT(scored_h.raw_score, scored_a.raw_score);
   // Test scores based on a terms appearing multiple times.
   URLRow row_i(MakeURLRow("http://csi.csi.csi/csi_csi",
       "CSI Guide to CSI Las Vegas, CSI New York, CSI Provo", 3, 30, 10));
-  ScoredHistoryMatch scored_i(private_data.ScoredMatchForURL(
-      row_i, ASCIIToUTF16("csi"), Make1Term("csi"), word_starts, now));
+  ScoredHistoryMatch scored_i(row_i, ASCIIToUTF16("csi"), Make1Term("csi"),
+                              word_starts, now);
   EXPECT_LT(scored_i.raw_score, 1400);
 }
 
@@ -911,6 +913,7 @@ TEST_F(InMemoryURLIndexTest, GetTopicalityScore) {
   EXPECT_GT(title_mid_word_score, protocol_score);
   EXPECT_GT(title_mid_word_score, protocol_mid_word_score);
 }
+#endif
 
 TEST_F(InMemoryURLIndexTest, AddNewRows) {
   // Verify that the row we're going to add does not already exist.

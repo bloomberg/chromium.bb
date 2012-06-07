@@ -1136,6 +1136,8 @@
         'browser/history/page_usage_data.h',
         'browser/history/query_parser.cc',
         'browser/history/query_parser.h',
+        'browser/history/scored_history_match.cc',
+        'browser/history/scored_history_match.h',
         'browser/history/snippet.cc',
         'browser/history/snippet.h',
         'browser/history/shortcuts_backend.cc',

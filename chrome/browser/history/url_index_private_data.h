@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/history/in_memory_url_index_types.h"
 #include "chrome/browser/history/in_memory_url_index_cache.pb.h"
+#include "chrome/browser/history/scored_history_match.h"
 #include "content/public/browser/notification_details.h"
 
 class HistoryQuickProviderTest;
@@ -88,8 +89,7 @@ class URLIndexPrivateData
   typedef std::map<string16, SearchTermCacheItem> SearchTermCacheMap;
 
   // A helper class which performs the final filter on each candidate
-  // history URL match, inserting accepted matches into |scored_matches_|
-  // and trimming the maximum number of matches to 10.
+  // history URL match, inserting accepted matches into |scored_matches_|.
   class AddHistoryMatch : public std::unary_function<HistoryID, void> {
    public:
     AddHistoryMatch(const URLIndexPrivateData& private_data,
@@ -216,7 +216,7 @@ class URLIndexPrivateData
                  const std::string& languages,
                  const std::set<std::string>& scheme_whitelist);
 
-  // Deletes indexing data for the history item with the URL given in |url|.
+  // Deletes index data for the history item with the given |url|.
   // The item may not have actually been indexed, which is the case if it did
   // not previously meet minimum 'quick' criteria. Returns true if the index
   // was actually updated.
@@ -258,63 +258,6 @@ class URLIndexPrivateData
   // Helper function to HistoryIDSetFromWords which composes a set of history
   // ids for the given term given in |term|.
   HistoryIDSet HistoryIDsForTerm(const string16& term);
-
-  // Calculates a raw score for this history item by first determining
-  // if all of the terms in |terms_vector| occur in |row| and, if so,
-  // calculating a raw score based on 1) starting position of each term
-  // in the user input, 2) completeness of each term's match, 3) ordering
-  // of the occurrence of each term (i.e. they appear in order), 4) last
-  // visit time (compared to |now|), and 5) number of visits.
-  // This raw score allows the results to be ordered and can be used
-  // to influence the final score calculated by the client of this
-  // index. Returns a ScoredHistoryMatch structure with the raw score and
-  // substring matching metrics.
-  ScoredHistoryMatch ScoredMatchForURL(
-      const URLRow& row,
-      const string16& lower_string,
-      const String16Vector& terms_vector,
-      const RowWordStarts& word_starts,
-      const base::Time now) const;
-
-  // Calculates a component score based on position, ordering and total
-  // substring match size using metrics recorded in |matches|. |max_length|
-  // is the length of the string against which the terms are being searched.
-  // Only used in "old" scoring.
-  static int ScoreComponentForMatches(const TermMatches& matches,
-                                      size_t max_length);
-
-  // Start of functions used only in "new" scoring ------------------------
-
-  // Return a topicality score based on how many matches appear in the
-  // |url| and the page's title and where they are (e.g., at word
-  // boundaries).  |url_matches| and |title_matches| provide details
-  // about where the matches in the URL and title are and what terms
-  // (identified by a term number < |num_terms|) match where.
-  // |word_starts| explains where word boundaries are.
-  static float GetTopicalityScore(const int num_terms,
-                                  const string16& url,
-                                  const TermMatches& url_matches,
-                                  const TermMatches& title_matches,
-                                  const RowWordStarts& word_starts);
-
-  // Precalculates raw_term_score_to_topicality_score_, used in
-  // GetTopicalityScore().
-  static void FillInTermScoreToTopicalityScoreArray();
-
-  // Returns a recency score based on |last_visit_days_ago|, which is
-  // how many days ago the page was last visited.
-  static float GetRecencyScore(int last_visit_days_ago);
-
-  // Pre-calculates days_ago_to_recency_numerator_, used in
-  // GetRecencyScore().
-  static void FillInDaysAgoToRecencyScoreArray();
-
-  // Returns a popularity score based on |typed_count| and
-  // |visit_count|.
-  static float GetPopularityScore(int typed_count,
-                                  int visit_count);
-
-  // End of functions used only in "new" scoring --------------------------
 
   // Encode a data structure into the protobuf |cache|.
   void SavePrivateData(imui::InMemoryURLIndexCacheItem* cache) const;
@@ -393,30 +336,6 @@ class URLIndexPrivateData
   WordStartsMap word_starts_map_;
 
   // End of data members that are cached ---------------------------------------
-
-  // Pre-computed information to speed up calculating recency scores.
-  // |days_ago_to_recency_score_| is a simple array mapping how long
-  // ago a page was visited (in days) to the recency score we should
-  // assign it.  This allows easy lookups of scores without requiring
-  // math.  This is initialized upon first use of GetRecencyScore(),
-  // which calls FillInDaysAgoToRecencyScoreArray(),
-  static const int kDaysToPrecomputeRecencyScoresFor = 366;
-  static float* days_ago_to_recency_score_;
-
-  // Pre-computed information to speed up calculating topicality
-  // scores.  |raw_term_score_to_topicality_score_| is a simple array
-  // mapping how raw terms scores (a weighted sum of the number of
-  // hits for the term, weighted by how important the hit is:
-  // hostname, path, etc.) to the topicality score we should assign
-  // it.  This allows easy lookups of scores without requiring math.
-  // This is initialized upon first use of GetTopicalityScore(),
-  // which calls FillInTermScoreToTopicalityScoreArray().
-  static const int kMaxRawTermScore = 30;
-  static float* raw_term_score_to_topicality_score_;
-
-  // Whether to use new-score or old-scoring.  Set in the constructor
-  // by examining command line flags.
-  bool use_new_scoring_;
 
   // For unit testing only. Specifies the version of the cache file to be saved.
   // Used only for testing upgrading of an older version of the cache upon

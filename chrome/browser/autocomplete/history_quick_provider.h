@@ -16,6 +16,10 @@
 class Profile;
 class TermMatches;
 
+namespace history {
+struct ScoredHistoryMatch;
+}  // namespace history
+
 // This class is an autocomplete provider (a pseudo-internal component of
 // the history system) which quickly (and synchronously) provides matching
 // results from recently or frequently visited sites in the profile's

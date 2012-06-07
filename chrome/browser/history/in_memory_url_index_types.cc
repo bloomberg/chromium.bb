@@ -5,15 +5,27 @@
 #include "chrome/browser/history/in_memory_url_index_types.h"
 
 #include <algorithm>
+#include <functional>
 #include <iterator>
+#include <numeric>
 #include <set>
 
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/case_conversion.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
 
 namespace history {
+
+// The maximum score any candidate result can achieve.
+const int kMaxTotalScore = 1425;
+
+// Score ranges used to get a 'base' score for each of the scoring factors
+// (such as recency of last visit, times visited, times the URL was typed,
+// and the quality of the string match). There is a matching value range for
+// each of these scores for each factor. Note that the top score is greater
+// than |kMaxTotalScore|. The score for each candidate will be capped in the
+// final calculation.
+const int kScoreRank[] = { 1450, 1200, 900, 400 };
 
 // Matches within URL and Title Strings ----------------------------------------
 
@@ -75,25 +87,6 @@ TermMatches ReplaceOffsetsInTermMatches(const TermMatches& matches,
   return new_matches;
 }
 
-// ScoredHistoryMatch ----------------------------------------------------------
-
-ScoredHistoryMatch::ScoredHistoryMatch()
-    : raw_score(0),
-      can_inline(false) {}
-
-ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& url_info)
-    : HistoryMatch(url_info, 0, false, false),
-      raw_score(0),
-      can_inline(false) {}
-
-ScoredHistoryMatch::~ScoredHistoryMatch() {}
-
-// Comparison function for sorting ScoredMatches by their scores.
-bool ScoredHistoryMatch::MatchScoreGreater(const ScoredHistoryMatch& m1,
-                                           const ScoredHistoryMatch& m2) {
-  return m1.raw_score > m2.raw_score;
-}
-
 // Utility Functions -----------------------------------------------------------
 
 String16Set String16SetFromString16(const string16& uni_string,
@@ -152,5 +145,10 @@ Char16Set Char16SetFromString16(const string16& term) {
 
 RowWordStarts::RowWordStarts() {}
 RowWordStarts::~RowWordStarts() {}
+
+void RowWordStarts::Clear() {
+  url_word_starts_.clear();
+  title_word_starts_.clear();
+}
 
 }  // namespace history

@@ -24,6 +24,7 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/in_memory_url_index_types.h"
+#include "chrome/browser/history/scored_history_match.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "sql/connection.h"
@@ -48,24 +49,6 @@ class URLIndexPrivateData;
 struct URLVisitedDetails;
 struct URLsModifiedDetails;
 struct URLsDeletedDetails;
-
-// A RefCountedThreadSafe class that manages a bool used for passing around
-// success when saving the persistent data for the InMemoryURLIndex in a cache.
-class RefCountedBool : public base::RefCountedThreadSafe<RefCountedBool> {
- public:
-  explicit RefCountedBool(bool value) : value_(value) {}
-
-  bool value() const { return value_; }
-  void set_value(bool value) { value_ = value; }
-
- private:
-  friend class base::RefCountedThreadSafe<RefCountedBool>;
-  virtual ~RefCountedBool();
-
-  bool value_;
-
-  DISALLOW_COPY_AND_ASSIGN(RefCountedBool);
-};
 
 // The URL history source.
 // Holds portions of the URL database in memory in an indexed form.  Used to
