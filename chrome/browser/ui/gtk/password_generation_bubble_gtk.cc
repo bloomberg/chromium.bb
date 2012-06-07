@@ -66,6 +66,9 @@ PasswordGenerationBubbleGtk::PasswordGenerationBubbleGtk(
   gtk_box_pack_start(GTK_BOX(content), title_line, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(content), password_line, TRUE, TRUE, 0);
 
+  // Set initial focus to the text field containing the generated password.
+  gtk_widget_grab_focus(text_field_);
+
   bubble_ = BubbleGtk::Show(anchor_widget,
                             &anchor_rect,
                             content,
