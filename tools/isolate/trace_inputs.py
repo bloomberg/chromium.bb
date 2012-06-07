@@ -1750,22 +1750,31 @@ class LogmanTrace(ApiBase):
     u'User(ms)',    # pretty much useless.
     u'User Data',   # Extra arguments that are event-specific.
   ]
+  # Only the useful headers common to all entries are listed there. Any column
+  # at 19 or higher is dependent on the specific event.
+  EVENT_NAME = 0
+  TYPE = 1
+  PID = 9
+  TID = 10
+  PROCESSOR_ID = 11
+  TIMESTAMP = 16
+  NULL_GUID = '{00000000-0000-0000-0000-000000000000}'
+  USER_DATA = 19
+
   class Context(ApiBase.Context):
     """Processes a ETW log line and keeps the list of existent and non
     existent files accessed.
 
     Ignores directories.
     """
-    # Only the useful headers common to all entries are listed there. Any column
-    # at 19 or higher is dependent on the specific event.
+    # These indexes are for the stripped version in json.
     EVENT_NAME = 0
     TYPE = 1
-    PID = 9
-    TID = 10
-    PROCESSOR_ID = 11
-    TIMESTAMP = 16
-    NULL_GUID = '{00000000-0000-0000-0000-000000000000}'
-    USER_DATA = 19
+    PID = 2
+    TID = 3
+    PROCESSOR_ID = 4
+    TIMESTAMP = 5
+    USER_DATA = 6
 
     class Process(ApiBase.Context.Process):
       def __init__(self, *args):
@@ -1786,48 +1795,15 @@ class LogmanTrace(ApiBase):
       self._initial_pid = None
       self._line_number = 0
 
-    def on_csv_line(self, raw_line):
-      """Processes a CSV Event line."""
-      # So much white space!
-      line = [i.strip() for i in raw_line]
+    def on_line(self, line):
+      """Processes a json Event line."""
       self._line_number += 1
       try:
-        if self._line_number == 1:
-          if line != LogmanTrace.EXPECTED_HEADER:
-            raise TracingFailure(
-                'Found malformed header: %s' % ' '.join(line),
-                None, None, None)
-          return
-
-        # As you can see, the CSV is full of useful non-redundant information:
-        if (line[2] != '0' or  # Event ID
-            line[3] not in ('2', '3') or  # Version
-            line[4] != '0' or  # Channel
-            line[5] != '0' or  # Level
-            line[7] != '0' or  # Task
-            line[8] != '0x0000000000000000' or  # Keyword
-            line[12] != '' or  # Instance ID
-            line[13] != '' or  # Parent Instance ID
-            line[14] != self.NULL_GUID or  # Activity ID
-            line[15] != ''):  # Related Activity ID
-          raise TracingFailure(
-              'Found unexpected values in line: %s' % ' '.join(line),
-                None, None, None)
-        if line[0].startswith('{'):
-          # Skip GUIDs.
-          return
-
-        # Convert the PID in-place from hex.
-        line[self.PID] = int(line[self.PID], 16)
-
         # By Opcode
         handler = getattr(
             self,
             'handle_%s_%s' % (line[self.EVENT_NAME], line[self.TYPE]),
             None)
-        if not handler:
-          # Try to get an universal fallback for the event class.
-          handler = getattr(self, 'handle_%s_Any' % line[self.EVENT_NAME], None)
         if not handler:
           raise TracingFailure(
               'Unexpected event %s_%s' % (
@@ -1900,9 +1876,6 @@ class LogmanTrace(ApiBase):
               'size from %s') % (line[EVENTS_LOST], line[BUFFER_SIZE]),
             None, None, None)
 
-    def handle_EventTrace_Any(self, line):
-      pass
-
     def handle_FileIo_Cleanup(self, line):
       """General wisdom: if a file is closed, it's because it was opened.
 
@@ -1964,12 +1937,6 @@ class LogmanTrace(ApiBase):
 
     def handle_FileIo_Rename(self, line):
       # TODO(maruel): Handle?
-      pass
-
-    def handle_FileIo_Any(self, line):
-      pass
-
-    def handle_Process_Any(self, line):
       pass
 
     def handle_Process_End(self, line):
@@ -2051,32 +2018,35 @@ class LogmanTrace(ApiBase):
       Do not use self.PID here since a process' initial thread is created by
       the parent process.
       """
-      PROCESS_ID = 19
-      TTHREAD_ID = 20
-      #STACK_BASE = 21
-      #STACK_LIMIT = 22
-      #USER_STACK_BASE = 23
-      #USER_STACK_LIMIT = 24
-      #AFFINITY = 25
-      #WIN32_START_ADDR = 26
-      #TEB_BASE = 27
-      #SUB_PROCESS_TAG = 28
-      #BASE_PRIORITY = 29
-      #PAGE_PRIORITY = 30
-      #IO_PRIORITY = 31
-      #THREAD_FLAGS = 32
+      PROCESS_ID = self.USER_DATA
+      TTHREAD_ID = self.USER_DATA + 1
+      #STACK_BASE = self.USER_DATA + 2
+      #STACK_LIMIT = self.USER_DATA + 3
+      #USER_STACK_BASE = self.USER_DATA + 4
+      #USER_STACK_LIMIT = self.USER_DATA + 5
+      #AFFINITY = self.USER_DATA + 6
+      #WIN32_START_ADDR = self.USER_DATA + 7
+      #TEB_BASE = self.USER_DATA + 8
+      #SUB_PROCESS_TAG = self.USER_DATA + 9
+      #BASE_PRIORITY = self.USER_DATA + 10
+      #PAGE_PRIORITY = self.USER_DATA + 11
+      #IO_PRIORITY = self.USER_DATA + 12
+      #THREAD_FLAGS = self.USER_DATA + 13
       # Do not use self.PID here since a process' initial thread is created by
       # the parent process.
       pid = int(line[PROCESS_ID], 16)
       tid = int(line[TTHREAD_ID], 16)
       self._threads_active[tid] = pid
 
-    def handle_Thread_Any(self, line):
-      pass
-
-    def handle_SystemConfig_Any(self, line):
-      """If you have too many of these, check your hardware."""
-      pass
+    @classmethod
+    def supported_events(cls):
+      """Returns all the procesed events."""
+      out = []
+      for member in dir(cls):
+        match = re.match(r'^handle_([A-Za-z]+)_([A-Za-z]+)$', member)
+        if match:
+          out.append(match.groups())
+      return out
 
   class Tracer(ApiBase.Tracer):
     @classmethod
@@ -2119,8 +2089,9 @@ class LogmanTrace(ApiBase):
         # 3. Stop the log collection.
         cls._stop_log()
 
-      # 4. Convert the traces to text representation.
-      cls._convert_log(logname, 'csv')
+      # 4. Convert log
+      # TODO(maruel): Temporary, remove me.
+      LogmanTrace.process_log(logname)
 
       # 5. Save metadata.
       value = {
@@ -2181,52 +2152,6 @@ class LogmanTrace(ApiBase):
           stdout=subprocess.PIPE,
           stderr=subprocess.STDOUT)
 
-    @staticmethod
-    def _convert_log(logname, logformat):
-      """Converts the ETL trace to text representation.
-
-      Normally, 'csv' is sufficient. If complex scripts are used (like eastern
-      languages), use 'csv_utf16'. If localization gets in the way, use 'xml'.
-
-      Arguments:
-        - logname: Base filename to convert.
-        - logformat: Text format to be generated, csv, csv_utf16 or xml.
-
-      Use "tracerpt -?" for help.
-      """
-      LOCALE_INVARIANT = 0x7F
-      windll.kernel32.SetThreadLocale(LOCALE_INVARIANT)
-      cmd_convert = [
-        'tracerpt.exe',
-        '-l', logname + '.etl',
-        '-o', logname + '.' + logformat,
-        '-gmt',  # Use UTC
-        '-y',  # No prompt
-        # Use -of XML to get the header of each items after column 19, e.g. all
-        # the actual headers of 'User Data'.
-      ]
-
-      if logformat == 'csv':
-        # tracerpt localizes the 'Type' column, for major brainfuck
-        # entertainment. I can't imagine any sane reason to do that.
-        cmd_convert.extend(['-of', 'CSV'])
-      elif logformat == 'csv_utf16':
-        # This causes it to use UTF-16, which doubles the log size but ensures
-        # the log is readable for non-ASCII characters.
-        cmd_convert.extend(['-of', 'CSV', '-en', 'Unicode'])
-      elif logformat == 'xml':
-        cmd_convert.extend(['-of', 'XML'])
-      else:
-        raise ValueError('Unexpected log format \'%s\'' % logformat)
-      logging.debug('Running: %s' % cmd_convert)
-      # This can takes tens of minutes for large logs.
-      # Redirects all output to stderr.
-      subprocess.check_call(
-          cmd_convert,
-          stdin=subprocess.PIPE,
-          stdout=sys.stderr,
-          stderr=sys.stderr)
-
   def __init__(self):
     super(LogmanTrace, self).__init__()
     # Most ignores need to be determined at runtime.
@@ -2254,6 +2179,96 @@ class LogmanTrace(ApiBase):
     # Add these last since they have no short path name equivalent.
     self.IGNORED.add('\\SystemRoot')
     self.IGNORED = tuple(sorted(self.IGNORED))
+
+  @classmethod
+  def process_log(cls, logname):
+    """Converts the .etl file into .csv then into .json."""
+    logformat = 'csv'
+    cls._convert_log(logname, logformat)
+
+    if logformat == 'csv_utf16':
+      def load_file():
+        def utf_8_encoder(unicode_csv_data):
+          """Encodes the unicode object as utf-8 encoded str instance"""
+          for line in unicode_csv_data:
+            yield line.encode('utf-8')
+
+        def unicode_csv_reader(unicode_csv_data, **kwargs):
+          """Encodes temporarily as UTF-8 since csv module doesn't do unicode.
+          """
+          csv_reader = csv.reader(utf_8_encoder(unicode_csv_data), **kwargs)
+          for row in csv_reader:
+            # Decode str utf-8 instances back to unicode instances, cell by
+            # cell:
+            yield [cell.decode('utf-8') for cell in row]
+
+        # The CSV file is UTF-16 so use codecs.open() to load the file into the
+        # python internal unicode format (utf-8). Then explicitly re-encode as
+        # utf8 as str instances so csv can parse it fine. Then decode the utf-8
+        # str back into python unicode instances. This sounds about right.
+        for line in unicode_csv_reader(
+            codecs.open(logname + '.' + logformat, 'r', 'utf-16')):
+          # line is a list of unicode objects
+          # So much white space!
+          yield [i.strip() for i in line]
+
+    elif logformat == 'csv':
+      def load_file():
+        def ansi_csv_reader(ansi_csv_data, **kwargs):
+          """Loads an 'ANSI' code page and returns unicode() objects."""
+          assert sys.getfilesystemencoding() == 'mbcs'
+          encoding = get_current_encoding()
+          for row in csv.reader(ansi_csv_data, **kwargs):
+            # Decode str 'ansi' instances to unicode instances, cell by cell:
+            yield [cell.decode(encoding) for cell in row]
+
+        # The fastest and smallest format but only supports 'ANSI' file paths.
+        # E.g. the filenames are encoding in the 'current' encoding.
+        for line in ansi_csv_reader(open(logname + '.' + logformat)):
+          # line is a list of unicode objects.
+          yield [i.strip() for i in line]
+
+    supported_events = cls.Context.supported_events()
+
+    def trim(generator):
+      for index, line in enumerate(generator):
+        if not index:
+          if line != cls.EXPECTED_HEADER:
+            raise TracingFailure(
+                'Found malformed header: %s' % ' '.join(line),
+                None, None, None)
+          continue
+        # As you can see, the CSV is full of useful non-redundant information:
+        if (line[2] != '0' or  # Event ID
+            line[3] not in ('2', '3') or  # Version
+            line[4] != '0' or  # Channel
+            line[5] != '0' or  # Level
+            line[7] != '0' or  # Task
+            line[8] != '0x0000000000000000' or  # Keyword
+            line[12] != '' or  # Instance ID
+            line[13] != '' or  # Parent Instance ID
+            line[14] != cls.NULL_GUID or  # Activity ID
+            line[15] != ''):  # Related Activity ID
+          raise TracingFailure(
+              'Found unexpected values in line: %s' % ' '.join(line),
+                None, None, None)
+
+        if (line[cls.EVENT_NAME], line[cls.TYPE]) not in supported_events:
+          continue
+
+        # Convert the PID in-place from hex.
+        line[cls.PID] = int(line[cls.PID], 16)
+
+        yield [
+            line[cls.EVENT_NAME],
+            line[cls.TYPE],
+            line[cls.PID],
+            line[cls.TID],
+            line[cls.PROCESSOR_ID],
+            line[cls.TIMESTAMP],
+        ] + line[cls.USER_DATA:]
+
+    write_json('%s.json' % logname, list(trim(load_file())), True)
 
   @staticmethod
   def _convert_log(logname, logformat):
@@ -2303,63 +2318,23 @@ class LogmanTrace(ApiBase):
 
   @staticmethod
   def clean_trace(logname):
-    for ext in ('', '.csv', '.etl', '.xml'):
+    for ext in ('', '.csv', '.etl', '.json', '.xml'):
       if os.path.isfile(logname + ext):
         os.remove(logname + ext)
 
   @classmethod
-  def parse_log(cls, filename, blacklist):
-    logging.info('parse_log(%s, %s)' % (filename, blacklist))
+  def parse_log(cls, logname, blacklist):
+    logging.info('parse_log(%s, %s)' % (logname, blacklist))
 
     def blacklist_more(filepath):
       # All the NTFS metadata is in the form x:\$EXTEND or stuff like that.
       return blacklist(filepath) or re.match(r'[A-Z]\:\\\$EXTEND', filepath)
 
-    data = read_json(filename)
-    logformat = data['format']
-
+    data = read_json(logname)
+    lines = read_json(logname + '.json')
     context = cls.Context(blacklist_more, data['pid'])
-
-    if logformat == 'csv_utf16':
-      def utf_8_encoder(unicode_csv_data):
-        """Encodes the unicode object as utf-8 encoded str instance"""
-        for line in unicode_csv_data:
-          yield line.encode('utf-8')
-
-      def unicode_csv_reader(unicode_csv_data, **kwargs):
-        """Encodes temporarily as UTF-8 since csv module doesn't do unicode."""
-        csv_reader = csv.reader(utf_8_encoder(unicode_csv_data), **kwargs)
-        for row in csv_reader:
-          # Decode str utf-8 instances back to unicode instances, cell by cell:
-          yield [cell.decode('utf-8') for cell in row]
-
-      # The CSV file is UTF-16 so use codecs.open() to load the file into the
-      # python internal unicode format (utf-8). Then explicitly re-encode as
-      # utf8 as str instances so csv can parse it fine. Then decode the utf-8
-      # str back into python unicode instances. This sounds about right.
-      for line in unicode_csv_reader(
-          codecs.open(filename + '.' + logformat, 'r', 'utf-16')):
-        # line is a list of unicode objects
-        context.on_csv_line(line)
-
-    elif logformat == 'csv':
-      def ansi_csv_reader(ansi_csv_data, **kwargs):
-        """Loads an 'ANSI' code page and returns unicode() objects."""
-        assert sys.getfilesystemencoding() == 'mbcs'
-        encoding = get_current_encoding()
-        for row in csv.reader(ansi_csv_data, **kwargs):
-          # Decode str 'ansi' instances to unicode instances, cell by cell:
-          yield [cell.decode(encoding) for cell in row]
-
-      # The fastest and smallest format but only supports 'ANSI' file paths.
-      # E.g. the filenames are encoding in the 'current' encoding.
-      for line in ansi_csv_reader(open(filename + '.' + logformat)):
-        # line is a list of unicode objects.
-        context.on_csv_line(line)
-
-    else:
-      raise NotImplementedError('Implement %s' % logformat)
-
+    for line in lines:
+      context.on_line(line)
     return context.to_results()
 
 
