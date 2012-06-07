@@ -19,7 +19,7 @@
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/pref_names.h"
@@ -154,7 +154,7 @@ void BookmarkNodeDataToJSON(Profile* profile, const BookmarkNodeData& data,
 }  // namespace
 
 BookmarkManagerExtensionEventRouter::BookmarkManagerExtensionEventRouter(
-    Profile* profile, TabContentsWrapper* tab)
+    Profile* profile, TabContents* tab)
     : profile_(profile),
     tab_(tab) {
   tab_->bookmark_tab_helper()->SetBookmarkDragDelegate(this);

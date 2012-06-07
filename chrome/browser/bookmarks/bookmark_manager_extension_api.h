@@ -14,7 +14,6 @@
 struct BookmarkNodeData;
 class Profile;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 namespace base {
 class ListValue;
@@ -24,8 +23,7 @@ class ListValue;
 class BookmarkManagerExtensionEventRouter
     : public BookmarkTabHelper::BookmarkDrag {
  public:
-  BookmarkManagerExtensionEventRouter(Profile* profile,
-                                      TabContentsWrapper* tab);
+  BookmarkManagerExtensionEventRouter(Profile* profile, TabContents* tab);
   virtual ~BookmarkManagerExtensionEventRouter();
 
   // BookmarkTabHelper::BookmarkDrag interface
@@ -48,7 +46,7 @@ class BookmarkManagerExtensionEventRouter
   void DispatchDragEvent(const BookmarkNodeData& data, const char* event_name);
 
   Profile* profile_;
-  TabContentsWrapper* tab_;
+  TabContents* tab_;
   BookmarkNodeData bookmark_drag_data_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkManagerExtensionEventRouter);

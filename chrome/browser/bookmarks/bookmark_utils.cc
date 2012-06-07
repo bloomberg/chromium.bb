@@ -157,7 +157,7 @@ void OpenAllImpl(const BookmarkNode* node,
       // the current page, reset the navigator just to be sure.
       Browser* new_browser = browser::FindLastActiveWithProfile(profile);
       if (new_browser) {
-        WebContents* current_tab = new_browser->GetSelectedWebContents();
+        WebContents* current_tab = new_browser->GetActiveWebContents();
         if (current_tab)
           *navigator = current_tab;
       }  // else, new_browser == NULL, which happens during testing.
@@ -389,14 +389,14 @@ void OpenAll(gfx::NativeWindow parent,
   NewBrowserPageNavigator navigator_impl(profile);
   if (!navigator) {
     Browser* browser = browser::FindTabbedBrowser(profile, false);
-    if (!browser || !browser->GetSelectedWebContents()) {
+    if (!browser || !browser->GetActiveWebContents()) {
       navigator = &navigator_impl;
     } else {
       if (initial_disposition != NEW_WINDOW &&
           initial_disposition != OFF_THE_RECORD) {
         browser->window()->Activate();
       }
-      navigator = browser->GetSelectedWebContents();
+      navigator = browser->GetActiveWebContents();
     }
   }
 
@@ -667,7 +667,7 @@ void GetURLAndTitleToBookmarkFromCurrentTab(Profile* profile,
                                             GURL* url,
                                             string16* title) {
   Browser* browser = browser::FindLastActiveWithProfile(profile);
-  WebContents* web_contents = browser ? browser->GetSelectedWebContents()
+  WebContents* web_contents = browser ? browser->GetActiveWebContents()
                                         : NULL;
   if (web_contents)
     GetURLAndTitleToBookmark(web_contents, url, title);
