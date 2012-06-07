@@ -337,12 +337,23 @@ LRESULT BrowserFrameWin::OnWndProc(UINT message,
 // BrowserFrameWin, private:
 
 void BrowserFrameWin::UpdateDWMFrame() {
-  // Nothing to do yet, or we're not showing a DWM frame.
-  if (!GetWidget()->client_view() || !browser_frame_->ShouldUseNativeFrame())
+  // For "normal" windows on Aero, we always need to reset the glass area
+  // correctly, even if we're not currently showing the native frame (e.g.
+  // because a theme is showing), so we explicitly check for that case rather
+  // than checking browser_frame_->ShouldUseNativeFrame() here.  Using that here
+  // would mean we wouldn't reset the glass area to zero when moving from the
+  // native frame to an opaque frame, leading to graphical glitches behind the
+  // opaque frame.  Instead, we use that function below to tell us whether the
+  // frame is currently native or opaque.
+  if (!GetWidget()->client_view() || !browser_view_->IsBrowserTypeNormal() ||
+      !NativeWidgetWin::ShouldUseNativeFrame())
     return;
 
   MARGINS margins = { 0 };
-  if (browser_view_->IsBrowserTypeNormal()) {
+
+  // If the opaque frame is visible, we use the default (zero) margins.
+  // Otherwise, we need to figure out how to extend the glass in.
+  if (browser_frame_->ShouldUseNativeFrame()) {
     // In fullscreen mode, we don't extend glass into the client area at all,
     // because the GDI-drawn text in the web content composited over it will
     // become semi-transparent over any glass area.
@@ -359,9 +370,8 @@ void BrowserFrameWin::UpdateDWMFrame() {
           browser_frame_->GetBoundsForTabStrip(browser_view_->tabstrip()));
       margins.cyTopHeight = tabstrip_bounds.bottom() + kDWMFrameTopOffset;
     }
-  } else {
-    // For popup and app windows we want to use the default margins.
   }
+
   DwmExtendFrameIntoClientArea(GetNativeView(), &margins);
 }
 
