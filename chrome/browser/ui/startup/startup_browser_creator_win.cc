@@ -33,7 +33,7 @@ GURL GetURLToOpen(Profile* profile) {
 
   base::win::MetroLaunchType launch_type = get_launch_type(NULL);
 
-  if (launch_type == base::win::PROTOCOL) {
+  if (launch_type == base::win::PROTOCOL || launch_type == base::win::LAUNCH) {
     GetInitialUrl initial_metro_url = reinterpret_cast<GetInitialUrl>(
         ::GetProcAddress(metro, "GetInitialUrl"));
     DCHECK(initial_metro_url);

@@ -1553,6 +1553,11 @@ void Browser::BookmarkCurrentPage() {
   }
 }
 
+#if !defined(OS_WIN)
+void Browser::PinCurrentPageToStartScreen() {
+}
+#endif
+
 void Browser::SavePage() {
   content::RecordAction(UserMetricsAction("SavePage"));
   WebContents* current_tab = GetActiveWebContents();
@@ -2492,6 +2497,7 @@ void Browser::ExecuteCommandWithDisposition(
     // Page-related commands
     case IDC_SAVE_PAGE:             SavePage();                       break;
     case IDC_BOOKMARK_PAGE:         BookmarkCurrentPage();            break;
+    case IDC_PIN_TO_START_SCREEN:   PinCurrentPageToStartScreen();    break;
     case IDC_BOOKMARK_ALL_TABS:     BookmarkAllTabs();                break;
     case IDC_VIEW_SOURCE:           ViewSelectedSource();             break;
     case IDC_EMAIL_PAGE_LOCATION:   EmailPageLocation();              break;
@@ -4294,6 +4300,8 @@ void Browser::UpdateCommandsForBookmarkEditing() {
       enabled && is_type_tabbed());
   command_updater_.UpdateCommandEnabled(IDC_BOOKMARK_ALL_TABS,
       enabled && CanBookmarkAllTabs());
+  command_updater_.UpdateCommandEnabled(IDC_PIN_TO_START_SCREEN,
+      true);
 }
 
 void Browser::UpdateCommandsForBookmarkBar() {

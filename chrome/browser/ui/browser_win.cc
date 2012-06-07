@@ -4,9 +4,12 @@
 
 #include "chrome/browser/ui/browser.h"
 
+#include "base/utf_string_conversions.h"
 #include "base/win/metro.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 
 namespace {
 
@@ -48,4 +51,28 @@ void Browser::NewIncognitoWindow() {
     return;
   }
   NewEmptyWindow(profile_->GetOffTheRecordProfile());
+}
+
+void Browser::PinCurrentPageToStartScreen() {
+  HMODULE metro_module = base::win::GetMetroModule();
+  if (metro_module) {
+    GURL url;
+    string16 title;
+    TabContentsWrapper* tab = GetSelectedTabContentsWrapper();
+    bookmark_utils::GetURLAndTitleToBookmark(tab->web_contents(), &url, &title);
+
+    typedef BOOL (*MetroPinUrlToStartScreen)(string16, string16);
+    MetroPinUrlToStartScreen metro_pin_url_to_start_screen =
+        reinterpret_cast<MetroPinUrlToStartScreen>(
+            ::GetProcAddress(metro_module, "MetroPinUrlToStartScreen"));
+    if (!metro_pin_url_to_start_screen) {
+      NOTREACHED();
+      return;
+    }
+
+    VLOG(1) << __FUNCTION__ << " calling pin with title: " << title
+            << " and url " << UTF8ToUTF16(url.spec());
+    metro_pin_url_to_start_screen(title, UTF8ToUTF16(url.spec()));
+    return;
+  }
 }

@@ -546,6 +546,7 @@ class Browser : public TabStripModelDelegate,
 
   // Page-related commands
   void BookmarkCurrentPage();
+  void PinCurrentPageToStartScreen();
   void SavePage();
   void ViewSelectedSource();
   void ShowFindBar();

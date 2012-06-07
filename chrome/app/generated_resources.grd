@@ -903,6 +903,9 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         <message name="IDS_NEW_INCOGNITO_WINDOW" desc="The text label of the New incognito window menu item">
           New &amp;incognito window
         </message>
+        <message name="IDS_PIN_TO_START_SCREEN" desc="The text label of the Pin to start screen menu item">
+          Pin to Start Screen
+        </message>
         <message name="IDS_EDIT2" desc="The text label before the cut/copy/paste buttons in the merged menu">
           Edit
         </message>
@@ -985,6 +988,9 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         </message>
         <message name="IDS_NEW_INCOGNITO_WINDOW" desc="In Title Case: The text label of the New incognito window menu item">
           New &amp;Incognito Window
+        </message>
+        <message name="IDS_PIN_TO_START_SCREEN" desc="In Title Case: The text label of the Pin to start screen menu item">
+          Pin to Start Screen
         </message>
         <message name="IDS_UNDO" desc="In Title Case: The text label of the Undo menu item">
           &amp;Undo
@@ -15359,6 +15365,9 @@ Battery full
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_NEW_INCOGNITO_WINDOW" desc="The text in the keyboard overlay to explain the shortcut.">
         New Incognito window
+      </message>
+      <message name="IDS_KEYBOARD_OVERLAY_PIN_TO_START_SCREEN" desc="The text in the keyboard overlay to explain the shortcut (Pin to start screen).">
+        Pin to Start Screen
       </message>
       <message name="IDS_KEYBOARD_OVERLAY_NEW_TAB" desc="The text in the keyboard overlay to explain the shortcut.">
         New tab
