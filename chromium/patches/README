@@ -12,10 +12,6 @@ ugly/
   dalecurtis: Removes "#define UNCHECKED_BITSTREAM_READER 1" from all codecs
   defining it. In Chromium, all codecs should use the safe bitstream reader.
 
-05_remove_attribute_deprecated.patch
-  dalecurtis: Disables deprecated attribute for Chromium. Tracking bug here:
-  http://crbug.com/112673
-
 06_enable_register_protocol.patch
   dalecurtis: FFmpeg/LibAV have deprecated support for external clients which
   want to register protocols.  Chrome requires this to work.  See patch for
