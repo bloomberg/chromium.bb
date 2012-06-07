@@ -167,10 +167,7 @@ bool GLContext::SupportsDualGpus() {
         ((model == "MacBookPro") &&
          (model_major < kMacBookProFirstDualAMDIntelGPUModel)) ||
         CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisableGpuSwitching) ||
-        // http://crbug.com/127713 : disable dynamic GPU switching on
-        // 10.8 until system stability issues are resolved by Apple.
-        base::mac::IsOSMountainLion();
+            switches::kDisableGpuSwitching);
 
     if (forcibly_disable) {
       GLContextCGL::ForceUseOfDiscreteGPU();
