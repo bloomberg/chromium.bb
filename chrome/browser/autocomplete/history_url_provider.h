@@ -220,12 +220,24 @@ class HistoryURLProvider : public HistoryProvider {
   bool CanFindIntranetURL(history::URLDatabase* db,
                           const AutocompleteInput& input) const;
 
-  // Determines if |match| is suitable for inline autocomplete, and promotes it
-  // if so.
-  bool PromoteMatchForInlineAutocomplete(
-      HistoryURLProviderParams* params,
-      const history::HistoryMatch& match,
-      const history::HistoryMatches& history_matches);
+  // Determines if |match| is suitable for inline autocomplete.  If so, and if
+  // |params| is non-NULL, promotes the match.  Returns whether |match| is
+  // suitable for inline autocomplete.
+  bool PromoteMatchForInlineAutocomplete(HistoryURLProviderParams* params,
+                                         const history::HistoryMatch& match);
+
+  // Sees if a shorter version of the best match should be created, and if so
+  // places it at the front of |matches|.  This can suggest history URLs that
+  // are prefixes of the best match (if they've been visited enough, compared to
+  // the best match), or create host-only suggestions even when they haven't
+  // been visited before: if the user visited http://example.com/asdf once,
+  // we'll suggest http://example.com/ even if they've never been to it.
+  void PromoteOrCreateShorterSuggestion(
+      history::URLDatabase* db,
+      const HistoryURLProviderParams& params,
+      bool have_what_you_typed_match,
+      const AutocompleteMatch& what_you_typed_match,
+      history::HistoryMatches* matches);
 
   // Sorts the given list of matches.
   void SortMatches(history::HistoryMatches* matches) const;

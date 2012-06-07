@@ -90,80 +90,6 @@ GURL ConvertToHostOnly(const history::HistoryMatch& match,
   return host;
 }
 
-// See if a shorter version of the best match should be created, and if so place
-// it at the front of |matches|.  This can suggest history URLs that are
-// prefixes of the best match (if they've been visited enough, compared to the
-// best match), or create host-only suggestions even when they haven't been
-// visited before: if the user visited http://example.com/asdf once, we'll
-// suggest http://example.com/ even if they've never been to it.
-void PromoteOrCreateShorterSuggestion(
-    history::URLDatabase* db,
-    const HistoryURLProviderParams& params,
-    bool have_what_you_typed_match,
-    const AutocompleteMatch& what_you_typed_match,
-    history::HistoryMatches* matches) {
-  if (matches->empty())
-    return;  // No matches, nothing to do.
-
-  // Determine the base URL from which to search, and whether that URL could
-  // itself be added as a match.  We can add the base iff it's not "effectively
-  // the same" as any "what you typed" match.
-  const history::HistoryMatch& match = matches->front();
-  GURL search_base = ConvertToHostOnly(match, params.input.text());
-  bool can_add_search_base_to_matches = !have_what_you_typed_match;
-  if (search_base.is_empty()) {
-    // Search from what the user typed when we couldn't reduce the best match
-    // to a host.  Careful: use a substring of |match| here, rather than the
-    // first match in |params|, because they might have different prefixes.  If
-    // the user typed "google.com", |what_you_typed_match| will hold
-    // "http://google.com/", but |match| might begin with
-    // "http://www.google.com/".
-    // TODO: this should be cleaned up, and is probably incorrect for IDN.
-    std::string new_match = match.url_info.url().possibly_invalid_spec().
-        substr(0, match.input_location + params.input.text().length());
-    search_base = GURL(new_match);
-    // TODO(mrossetti): There is a degenerate case where the following may
-    // cause a failure: http://www/~someword/fubar.html. Diagnose.
-    // See: http://crbug.com/50101
-    if (search_base.is_empty())
-      return;  // Can't construct a valid URL from which to start a search.
-  } else if (!can_add_search_base_to_matches) {
-    can_add_search_base_to_matches =
-        (search_base != what_you_typed_match.destination_url);
-  }
-  if (search_base == match.url_info.url())
-    return;  // Couldn't shorten |match|, so no range of URLs to search over.
-
-  // Search the DB for short URLs between our base and |match|.
-  history::URLRow info(search_base);
-  bool promote = true;
-  // A short URL is only worth suggesting if it's been visited at least a third
-  // as often as the longer URL.
-  const int min_visit_count = ((match.url_info.visit_count() - 1) / 3) + 1;
-  // For stability between the in-memory and on-disk autocomplete passes, when
-  // the long URL has been typed before, only suggest shorter URLs that have
-  // also been typed.  Otherwise, the on-disk pass could suggest a shorter URL
-  // (which hasn't been typed) that the in-memory pass doesn't know about,
-  // thereby making the top match, and thus the behavior of inline
-  // autocomplete, unstable.
-  const int min_typed_count = match.url_info.typed_count() ? 1 : 0;
-  if (!db->FindShortestURLFromBase(search_base.possibly_invalid_spec(),
-          match.url_info.url().possibly_invalid_spec(), min_visit_count,
-          min_typed_count, can_add_search_base_to_matches, &info)) {
-    if (!can_add_search_base_to_matches)
-      return;  // Couldn't find anything and can't add the search base, bail.
-
-    // Try to get info on the search base itself.  Promote it to the top if the
-    // original best match isn't good enough to autocomplete.
-    db->GetRowForURL(search_base, &info);
-    promote = match.url_info.typed_count() <= 1;
-  }
-
-  // Promote or add the desired URL to the list of matches.
-  EnsureMatchPresent(info, match.input_location, match.match_in_scheme,
-                     matches, promote);
-}
-
 // Returns true if |url| is just a host (e.g. "http://www.google.com/") and not
 // some other subpage (e.g. "http://www.google.com/foo.html").
 bool IsHostOnly(const GURL& url) {
@@ -438,8 +364,7 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
     params->matches.push_back(what_you_typed_match);
   } else if (params->prevent_inline_autocomplete ||
       history_matches.empty() ||
-      !PromoteMatchForInlineAutocomplete(params, history_matches.front(),
-                                         history_matches)) {
+      !PromoteMatchForInlineAutocomplete(params, history_matches.front())) {
     // Failed to promote any URLs for inline autocompletion.  Use the What You
     // Typed match, if we have it.
     first_match = 0;
@@ -732,8 +657,7 @@ bool HistoryURLProvider::CanFindIntranetURL(
 
 bool HistoryURLProvider::PromoteMatchForInlineAutocomplete(
     HistoryURLProviderParams* params,
-    const history::HistoryMatch& match,
-    const history::HistoryMatches& matches) {
+    const history::HistoryMatch& match) {
   // Promote the first match if it's been typed at least n times, where n == 1
   // for "simple" (host-only) URLs and n == 2 for others.  We set a higher bar
   // for these long URLs because it's less likely that users will want to visit
@@ -751,10 +675,102 @@ bool HistoryURLProvider::PromoteMatchForInlineAutocomplete(
   // URL.  Since we need both passes to agree, and since during the first pass
   // there's no way to know about "foo/", make reaching this point prevent any
   // future pass from suggesting the exact input as a better match.
-  params->dont_suggest_exact_input = true;
-  params->matches.push_back(HistoryMatchToACMatch(params, match,
-      INLINE_AUTOCOMPLETE, CalculateRelevance(INLINE_AUTOCOMPLETE, 0)));
+  if (params) {
+    params->dont_suggest_exact_input = true;
+    params->matches.push_back(HistoryMatchToACMatch(params, match,
+        INLINE_AUTOCOMPLETE, CalculateRelevance(INLINE_AUTOCOMPLETE, 0)));
+  }
   return true;
+}
+
+// See if a shorter version of the best match should be created, and if so place
+// it at the front of |matches|.  This can suggest history URLs that are
+// prefixes of the best match (if they've been visited enough, compared to the
+// best match), or create host-only suggestions even when they haven't been
+// visited before: if the user visited http://example.com/asdf once, we'll
+// suggest http://example.com/ even if they've never been to it.
+void HistoryURLProvider::PromoteOrCreateShorterSuggestion(
+    history::URLDatabase* db,
+    const HistoryURLProviderParams& params,
+    bool have_what_you_typed_match,
+    const AutocompleteMatch& what_you_typed_match,
+    history::HistoryMatches* matches) {
+  if (matches->empty())
+    return;  // No matches, nothing to do.
+
+  // Determine the base URL from which to search, and whether that URL could
+  // itself be added as a match.  We can add the base iff it's not "effectively
+  // the same" as any "what you typed" match.
+  const history::HistoryMatch& match = matches->front();
+  GURL search_base = ConvertToHostOnly(match, params.input.text());
+  bool can_add_search_base_to_matches = !have_what_you_typed_match;
+  if (search_base.is_empty()) {
+    // Search from what the user typed when we couldn't reduce the best match
+    // to a host.  Careful: use a substring of |match| here, rather than the
+    // first match in |params|, because they might have different prefixes.  If
+    // the user typed "google.com", |what_you_typed_match| will hold
+    // "http://google.com/", but |match| might begin with
+    // "http://www.google.com/".
+    // TODO: this should be cleaned up, and is probably incorrect for IDN.
+    std::string new_match = match.url_info.url().possibly_invalid_spec().
+        substr(0, match.input_location + params.input.text().length());
+    search_base = GURL(new_match);
+    // TODO(mrossetti): There is a degenerate case where the following may
+    // cause a failure: http://www/~someword/fubar.html. Diagnose.
+    // See: http://crbug.com/50101
+    if (search_base.is_empty())
+      return;  // Can't construct a valid URL from which to start a search.
+  } else if (!can_add_search_base_to_matches) {
+    can_add_search_base_to_matches =
+        (search_base != what_you_typed_match.destination_url);
+  }
+  if (search_base == match.url_info.url())
+    return;  // Couldn't shorten |match|, so no range of URLs to search over.
+
+  // Search the DB for short URLs between our base and |match|.
+  history::URLRow info(search_base);
+  bool promote = true;
+  // A short URL is only worth suggesting if it's been visited at least a third
+  // as often as the longer URL.
+  const int min_visit_count = ((match.url_info.visit_count() - 1) / 3) + 1;
+  // For stability between the in-memory and on-disk autocomplete passes, when
+  // the long URL has been typed before, only suggest shorter URLs that have
+  // also been typed.  Otherwise, the on-disk pass could suggest a shorter URL
+  // (which hasn't been typed) that the in-memory pass doesn't know about,
+  // thereby making the top match, and thus the behavior of inline
+  // autocomplete, unstable.
+  const int min_typed_count = match.url_info.typed_count() ? 1 : 0;
+  if (!db->FindShortestURLFromBase(search_base.possibly_invalid_spec(),
+          match.url_info.url().possibly_invalid_spec(), min_visit_count,
+          min_typed_count, can_add_search_base_to_matches, &info)) {
+    if (!can_add_search_base_to_matches)
+      return;  // Couldn't find anything and can't add the search base, bail.
+
+    // Try to get info on the search base itself.  Promote it to the top if the
+    // original best match isn't good enough to autocomplete.
+    db->GetRowForURL(search_base, &info);
+    promote = match.url_info.typed_count() <= 1;
+  }
+
+  // Promote or add the desired URL to the list of matches.
+  bool ensure_can_inline =
+      promote && PromoteMatchForInlineAutocomplete(NULL, match);
+  EnsureMatchPresent(info, match.input_location, match.match_in_scheme,
+                     matches, promote);
+  if (ensure_can_inline) {
+    // If |match| was inline-autocompletable and we're promoting something to
+    // replace it, make sure the promoted item is also inline-autocompletable.
+    // Setting the typed_count to 2 is sufficient to guarantee this (and is safe
+    // because by this point all sorting has already happened and the only thing
+    // checking the typed_count will be PromoteMatchForInlineAutocomplete()).
+    //
+    // We have to do this here rather than changing |info| before calling
+    // EnsureMatchPresent() because if EnsureMatchPresent() merely moves an
+    // existing match to the front, it will ignore the typed_count in |info|.
+    // But we set |ensure_can_inline| above because |match| is a reference and
+    // thus checking it here would examine the wrong match.
+    matches->front().url_info.set_typed_count(2);
+  }
 }
 
 void HistoryURLProvider::SortMatches(history::HistoryMatches* matches) const {
