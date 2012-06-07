@@ -431,6 +431,9 @@ void ExtensionEventRouter::OnEventAck(
   // The event ACK is routed to the background host, so this should never be
   // NULL.
   CHECK(host);
+  if (!host->extension())
+    return;
+
   CHECK(host->extension()->has_lazy_background_page());
   pm->DecrementLazyKeepaliveCount(host->extension());
 }

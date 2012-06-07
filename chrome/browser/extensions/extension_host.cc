@@ -159,7 +159,7 @@ ExtensionHost::ExtensionHost(const extensions::Extension* extension,
 
 ExtensionHost::~ExtensionHost() {
   if (extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE &&
-      extension_->has_lazy_background_page()) {
+      extension_ && extension_->has_lazy_background_page()) {
     UMA_HISTOGRAM_LONG_TIMES("Extensions.EventPageActiveTime",
                              since_created_.Elapsed());
   }
@@ -350,7 +350,7 @@ void ExtensionHost::DidStopLoading() {
   }
   if (notify) {
     if (extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
-      if (extension_->has_lazy_background_page()) {
+      if (extension_ && extension_->has_lazy_background_page()) {
         UMA_HISTOGRAM_TIMES("Extensions.EventPageLoadTime",
                             since_created_.Elapsed());
       } else {
