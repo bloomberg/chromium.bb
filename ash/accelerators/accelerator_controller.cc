@@ -13,6 +13,7 @@
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_delegate.h"
 #include "ash/launcher/launcher_model.h"
+#include "ash/monitor/monitor_controller.h"
 #include "ash/monitor/multi_monitor_manager.h"
 #include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
@@ -351,10 +352,11 @@ bool AcceleratorController::AcceleratorPressed(
       return HandleRestoreTab();
     case TAKE_SCREENSHOT:
       if (screenshot_delegate_.get()) {
-        // TODO(oshima): Use the active window for now. Use the mouse
-        // location if there is no active window. crbug.com/130718.
-        aura::RootWindow* root_window = Shell::GetActiveRootWindow();
-        screenshot_delegate_->HandleTakeScreenshot(root_window);
+        std::vector<aura::RootWindow*> root_windows;
+        ash::Shell::GetInstance()->monitor_controller()->GetAllRootWindows(
+            &root_windows);
+        for (size_t i = 0; i < root_windows.size(); ++i)
+          screenshot_delegate_->HandleTakeScreenshot(root_windows[i]);
       }
       // Return true to prevent propagation of the key event.
       return true;

@@ -261,6 +261,9 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
   internal::FocusCycler* focus_cycler() {
     return focus_cycler_.get();
   }
+  internal::MonitorController* monitor_controller() {
+    return monitor_controller_.get();
+  }
 
   ShellDelegate* delegate() { return delegate_.get(); }
   SystemTrayDelegate* tray_delegate() { return tray_delegate_.get(); }

@@ -7,6 +7,7 @@
 #pragma once
 
 #include <map>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -27,6 +28,9 @@ class MonitorController : public aura::MonitorObserver {
  public:
   MonitorController();
   virtual ~MonitorController();
+
+  // Gets all of the root windows.
+  void GetAllRootWindows(std::vector<aura::RootWindow*>* windows);
 
   // aura::MonitorObserver overrides:
   virtual void OnMonitorBoundsChanged(

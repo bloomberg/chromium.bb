@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/ash/screenshot_taker.h"
 
+#include <climits>
 #include <string>
 
 #include "ash/shell.h"
@@ -43,7 +44,8 @@ bool ShouldUse24HourClock() {
   return base::GetHourClockType() == base::k24HourClock;
 }
 
-std::string GetScreenshotFileName(bool use_24hour_clock) {
+FilePath GetScreenshotPath(const FilePath& base_directory,
+                           bool use_24hour_clock) {
   base::Time::Exploded now;
   base::Time::Now().LocalExplode(&now);
 
@@ -56,7 +58,7 @@ std::string GetScreenshotFileName(bool use_24hour_clock) {
 
   if (use_24hour_clock) {
     file_name.append(base::StringPrintf(
-        "%02d:%02d:%02d.png", now.hour, now.minute, now.second));
+        "%02d:%02d:%02d", now.hour, now.minute, now.second));
   } else {
     int hour = now.hour;
     if (hour > 12) {
@@ -67,10 +69,20 @@ std::string GetScreenshotFileName(bool use_24hour_clock) {
     file_name.append(base::StringPrintf(
         "%d:%02d:%02d ", hour, now.minute, now.second));
     file_name.append((now.hour >= 12) ? "PM" : "AM");
-    file_name.append(".png");
   }
 
-  return file_name;
+  for (int retry = 0; retry < INT_MAX; retry++) {
+    std::string retry_suffix;
+    if (retry > 0)
+      retry_suffix = base::StringPrintf(" (%d)", retry + 1);
+
+    FilePath file_path = base_directory.AppendASCII(
+        file_name + retry_suffix + ".png");
+    if (!file_util::PathExists(file_path))
+      return file_path;
+  }
+
+  return FilePath();
 }
 
 // |is_logged_in| is used only for ChromeOS.  Otherwise it is always true.
@@ -79,29 +91,28 @@ void SaveScreenshot(bool is_logged_in,
                     scoped_refptr<base::RefCountedBytes> png_data) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
-  std::string screenshot_filename = GetScreenshotFileName(use_24hour_clock);
-  FilePath screenshot_path;
+  FilePath screenshot_directory;
   if (is_logged_in) {
-    screenshot_path = download_util::GetDefaultDownloadDirectory().AppendASCII(
-        screenshot_filename);
+    screenshot_directory = download_util::GetDefaultDownloadDirectory();
   } else {
-    file_util::CreateTemporaryFile(&screenshot_path);
+    if (!file_util::GetTempDir(&screenshot_directory)) {
+      LOG(ERROR) << "Failed to find temporary directory.";
+      return;
+    }
+  }
+
+  FilePath screenshot_path = GetScreenshotPath(
+      screenshot_directory, use_24hour_clock);
+
+  if (screenshot_path.empty()) {
+    LOG(ERROR) << "Failed to find a screenshot file name.";
+    return;
   }
 
   if (static_cast<size_t>(file_util::WriteFile(
           screenshot_path,
           reinterpret_cast<char*>(&(png_data->data()[0])),
-          png_data->size())) == png_data->size()) {
-    if (!is_logged_in) {
-      // We created a temporary file without .png suffix.  Rename it
-      // here.
-      FilePath real_path = screenshot_path.DirName().AppendASCII(
-          screenshot_filename);
-      if (!file_util::ReplaceFile(screenshot_path, real_path)) {
-        LOG(ERROR) << "Failed to rename the file to " << real_path.value();
-      }
-    }
-  } else {
+          png_data->size())) != png_data->size()) {
     LOG(ERROR) << "Failed to save to " << screenshot_path.value();
   }
 }

@@ -29,6 +29,16 @@ MonitorController::~MonitorController() {
       root_windows_.begin(), root_windows_.end());
 }
 
+void MonitorController::GetAllRootWindows(
+    std::vector<aura::RootWindow*>* windows) {
+  DCHECK(windows);
+  windows->clear();
+
+  for (std::map<int, aura::RootWindow*>::const_iterator it =
+           root_windows_.begin(); it != root_windows_.end(); ++it)
+    windows->push_back(it->second);
+}
+
 void MonitorController::OnMonitorBoundsChanged(const gfx::Monitor& monitor) {
   root_windows_[monitor.id()]->SetHostBounds(monitor.bounds_in_pixel());
 }
