@@ -94,7 +94,7 @@ Sandbox::SandboxStatus Sandbox::supportsSeccompSandbox(int proc_fd) {
     // In other words, if a single-threaded process is currently in the
     // STATUS_UNAVAILABLE state, it is safe to assume that sandboxing is
     // actually available.
-    status_ == STATUS_AVAILABLE;
+    status_ = STATUS_AVAILABLE;
     return status_;
   }
 
@@ -169,7 +169,7 @@ bool Sandbox::isSingleThreaded(int proc_fd) {
       sb.st_nlink != 3 ||
       HANDLE_EINTR(close(task))) {
     if (task >= 0) {
-      HANDLE_EINTR(close(task));
+      (void) HANDLE_EINTR(close(task));
     }
     return false;
   }
