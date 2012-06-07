@@ -173,24 +173,13 @@ void CreateSpecialContainers(aura::RootWindow* root_window) {
                   "PanelContainer",
                   non_lock_screen_containers);
 
-  // V1 Applist container is below launcher container.
-  bool use_v2_applist = internal::AppListController::UseAppListV2();
-  if (!use_v2_applist) {
-    CreateContainer(internal::kShellWindowId_AppListContainer,
-                    "AppListContainer",
-                    non_lock_screen_containers);
-  }
-
   CreateContainer(internal::kShellWindowId_LauncherContainer,
                   "LauncherContainer",
                   non_lock_screen_containers);
 
-  // V2 Applist container is above launcher container.
-  if (use_v2_applist) {
-    CreateContainer(internal::kShellWindowId_AppListContainer,
-                    "AppListContainer",
-                    non_lock_screen_containers);
-  }
+  CreateContainer(internal::kShellWindowId_AppListContainer,
+                  "AppListContainer",
+                  non_lock_screen_containers);
 
   aura::Window* modal_container = CreateContainer(
       internal::kShellWindowId_SystemModalContainer,
@@ -618,6 +607,12 @@ Shell::~Shell() {
   system_tray_.reset();
   tray_delegate_.reset();
 
+  // AppList needs to be released before shelf layout manager, which is
+  // destroyed with launcher container in the loop below. However, app list
+  // container is now on top of launcher container and released after it.
+  // TODO(xiyuan): Move it back when app list container is no longer needed.
+  app_list_controller_.reset();
+
   // Destroy secondary monitor's widgets before all the windows are destroyed.
   monitor_controller_.reset();
 
@@ -632,7 +627,6 @@ Shell::~Shell() {
   // These need a valid Shell instance to clean up properly, so explicitly
   // delete them before invalidating the instance.
   // Alphabetical.
-  app_list_controller_.reset();
   drag_drop_controller_.reset();
   event_client_.reset();
   magnification_controller_.reset();
