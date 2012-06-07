@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -19,7 +19,7 @@ static int thread_create(uintptr_t *tid,
    * We know that newlib and glibc use a small pthread_t type, so we
    * do not need to wrap pthread_t values.
    */
-  NACL_COMPILE_TIME_ASSERT(sizeof(pthread_t) == sizeof(uintptr_t));
+  NACL_ASSERT_SAME_SIZE(pthread_t, uintptr_t);
 
   return pthread_create((pthread_t *) tid, NULL,
                         (void *(*)(void *thread_argument)) func,

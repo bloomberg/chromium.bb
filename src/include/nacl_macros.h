@@ -179,17 +179,11 @@ static inline void *NaClArrayCheckHelper(void *arg) {
  *   NACL_ASSERT_SAME_SIZE(char, long);  // Unlikely to succeed
  */
 #define NACL_ASSERT_SAME_SIZE(t1, t2) \
-  do { char tested_types_are_not_the_same_size[sizeof(t1) == sizeof(t2)]; \
-       (void) tested_types_are_not_the_same_size; } while (0)
-
+  NACL_COMPILE_TIME_ASSERT(sizeof(t1) == sizeof(t2))
 
 /*
  * NACL_COMPILE_TIME_ASSERT(boolexp) verifies that the argument
- * boolexp is true.  The check occurs at compile time, assuming
- * -pedantic flag or similar is used so that the ISO C forbidden
- * zero-sized array generates an error.  This is standard with NaCl
- * code.  If the wrong compilation flags are used, then we would get a
- * run-time abort.
+ * boolexp is true.  The check occurs at compile time.
  *
  * Example:
  *
@@ -197,14 +191,28 @@ static inline void *NaClArrayCheckHelper(void *arg) {
  *
  * to explicitly state the assumption that an int32_t expression -- if
  * containing a non-negative number -- will fit in a size_t variable.
+ *
+ * We don't use an array type here because GCC supports variable-length
+ * arrays and so an expression that is not actually compile-time constant
+ * could be used and not get any compile-time error.  The size of a bitfield
+ * can never be anything but a compile-time constant, so we use that instead.
+ * MSVC doesn't support VLAs, so we use the array trick there.
  */
-#define NACL_COMPILE_TIME_ASSERT(boolexp)                          \
-  do {                                                             \
-    char compile_time_boolean_expression_is_false[0 != (boolexp)]; \
-    if (0 == sizeof compile_time_boolean_expression_is_false) {    \
-      abort();                                                     \
-    }                                                              \
+#if defined(OS_WIN)
+#define NACL_COMPILE_TIME_ASSERT(boolexp)               \
+  do {                                                  \
+    char compile_time_assert[(boolexp) ? 1 : -1];       \
+    (void) compile_time_assert;                         \
   } while (0)
+#else /* !OS_WIN */
+#define NACL_COMPILE_TIME_ASSERT(boolexp)                       \
+  do {                                                          \
+    struct {                                                    \
+      unsigned int compile_time_assert: (boolexp) ? 1 : -1;     \
+    } compile_time_assert;                                      \
+    (void) compile_time_assert;                                 \
+  } while (0)
+#endif /* OS_WIN */
 
 /*****************************************************************************
  * MAX/MIN macros for integral types                                         *
@@ -331,9 +339,8 @@ static inline void *NaClArrayCheckHelper(void *arg) {
 
 template <class Dest, class Source>
 inline Dest nacl_bit_cast(const Source& source) {
-  // Compile time assertion: sizeof(Dest) == sizeof(Source)
   // A compile error here means your Dest and Source have different sizes.
-  typedef char VerifySizesAreEqual[sizeof(Dest) == sizeof(Source) ? 1 : -1];
+  NACL_ASSERT_SAME_SIZE(Dest, Source);
 
   Dest dest;
   memcpy(&dest, &source, sizeof(dest));
