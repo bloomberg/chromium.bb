@@ -8,7 +8,6 @@ import gyp.SCons as SCons
 import os.path
 import pprint
 import re
-import string
 
 
 # TODO:  remove when we delete the last WriteList() call in this module
@@ -463,7 +462,7 @@ def GenerateSConscript(output_filename, spec, build_file, build_file_data):
 
   rules = spec.get('rules', [])
   for rule in rules:
-    name = rule['rule_name'].translate(string.maketrans(' ()-', '____'))
+    name = re.sub('[^a-zA-Z0-9_]', '_', rule['rule_name'])
     message = rule.get('message')
     if message:
         message = repr(message)

@@ -602,8 +602,7 @@ def QuoteIfNecessary(string):
 
 def StringToMakefileVariable(string):
   """Convert a string to a value that is acceptable as a make variable name."""
-  # TODO: replace other metacharacters that we encounter.
-  return re.sub('[ {}$]', '_', string)
+  return re.sub('[^a-zA-Z0-9_]', '_', string)
 
 
 srcdir_prefix = ''

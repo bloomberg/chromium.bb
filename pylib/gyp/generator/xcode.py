@@ -926,7 +926,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
       if len(concrete_outputs_all) > 0:
         # TODO(mark): There's a possibilty for collision here.  Consider
         # target "t" rule "A_r" and target "t_A" rule "r".
-        makefile_name = '%s_%s.make' % (target_name, rule['rule_name'])
+        makefile_name = '%s.make' % re.sub(
+            '[^a-zA-Z0-9_]', '_' , '%s_%s' % (target_name, rule['rule_name']))
         makefile_path = os.path.join(xcode_projects[build_file].path,
                                      makefile_name)
         # TODO(mark): try/close?  Write to a temporary file and swap it only

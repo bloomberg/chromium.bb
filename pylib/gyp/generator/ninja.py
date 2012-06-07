@@ -12,7 +12,6 @@ import gyp.xcode_emulation
 import os.path
 import re
 import subprocess
-import string
 import sys
 
 import gyp.ninja_syntax as ninja_syntax
@@ -509,7 +508,7 @@ class NinjaWriter:
     all_outputs = []
     for action in actions:
       # First write out a rule for the action.
-      name = re.sub(r'[ {}$]', '_', action['action_name'])
+      name = action['action_name']
       description = self.GenerateDescription('ACTION',
                                              action.get('message', None),
                                              name)
@@ -1098,7 +1097,7 @@ class NinjaWriter:
     if self.toolset == 'target':
       rule_name += '.' + self.toolset
     rule_name += '.' + name
-    rule_name = rule_name.translate(string.maketrans(' ()', '___'))
+    rule_name = re.sub('[^a-zA-Z0-9_]', '_', rule_name)
 
     args = args[:]
 

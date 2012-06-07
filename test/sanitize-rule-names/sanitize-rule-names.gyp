@@ -10,7 +10,7 @@
       'rules': [
         {
           # Make sure this rule name doesn't cause an invalid ninja file.
-          'rule_name': 'assembler (gnu-compatible)',
+          'rule_name': 'rule name with odd characters ()/',
           'extension': 'S',
           'outputs': ['outfile'],
           'msvs_cygwin_shell': 0,
