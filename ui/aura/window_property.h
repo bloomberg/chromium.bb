@@ -132,7 +132,7 @@ void Window::ClearProperty(const WindowProperty<T>* property) {
   namespace {                                             \
     enum { type_must_be_complete = sizeof(TYPE) };        \
     void Deallocator(intptr_t p) {                        \
-      delete WindowPropertyCaster<TYPE*>::FromIntptrT(p); \
+      delete aura::WindowPropertyCaster<TYPE*>::FromIntptrT(p); \
     }                                                     \
     const aura::WindowProperty<TYPE*> NAME ## _Value =    \
         {DEFAULT,#NAME,&Deallocator};                     \
