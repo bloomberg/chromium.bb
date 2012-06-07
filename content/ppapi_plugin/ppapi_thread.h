@@ -59,6 +59,8 @@ class PpapiThread : public ChildThread,
   virtual void Unregister(uint32 plugin_dispatcher_id) OVERRIDE;
 
   // PluginProxyDelegate.
+  // SendToBrowser() is intended to be safe to use on another thread so
+  // long as the main PpapiThread outlives it.
   virtual bool SendToBrowser(IPC::Message* msg) OVERRIDE;
   virtual void PreCacheFont(const void* logfontw) OVERRIDE;
 

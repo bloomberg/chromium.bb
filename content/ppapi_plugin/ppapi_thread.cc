@@ -20,6 +20,7 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_platform_file.h"
 #include "ipc/ipc_sync_channel.h"
+#include "ipc/ipc_sync_message_filter.h"
 #include "ppapi/c/dev/ppp_network_state_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppp.h"
@@ -154,7 +155,10 @@ std::set<PP_Instance>* PpapiThread::GetGloballySeenInstanceIDSet() {
 }
 
 bool PpapiThread::SendToBrowser(IPC::Message* msg) {
-  return Send(msg);
+  if (MessageLoop::current() == message_loop())
+    return ChildThread::Send(msg);
+
+  return sync_message_filter()->Send(msg);
 }
 
 void PpapiThread::PreCacheFont(const void* logfontw) {
