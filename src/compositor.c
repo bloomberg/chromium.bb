@@ -2734,24 +2734,24 @@ weston_text_cursor_position_notify(struct weston_surface *surface,
 
 WL_EXPORT void
 weston_output_update_zoom(struct weston_output *output,
-						wl_fixed_t fx,
-						wl_fixed_t fy,
+						wl_fixed_t x,
+						wl_fixed_t y,
 						uint32_t type)
 {
-	int32_t x, y;
+	float global_x, global_y;
 	float trans_min, trans_max;
 
 	if (output->zoom.level >= 1.0)
 		return;
 
-	x = wl_fixed_to_int(fx);
-	y = wl_fixed_to_int(fy);
+	global_x = wl_fixed_to_double(x);
+	global_y = wl_fixed_to_double(y);
 
 	output->zoom.trans_x =
-		(((float)(x - output->x) / output->current->width) *
+		(((global_x - output->x) / output->current->width) *
 		(output->zoom.level * 2)) - output->zoom.level;
 	output->zoom.trans_y =
-		(((float)(y - output->y) / output->current->height) *
+		(((global_y - output->y) / output->current->height) *
 		(output->zoom.level * 2)) - output->zoom.level;
 
 	if (type == ZOOM_TEXT_CURSOR) {
