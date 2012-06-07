@@ -9,12 +9,17 @@
 # updates the copy in the toolchain/ tree.
 #
 
-from driver_tools import Run
+from driver_tools import Run, ParseArgs
 from driver_env import env
 
+EXTRA_ENV = [ 'ARGS'          : '' ]
+# just pass all args through to 'ARGS' and eventually to the underlying tool
+PATTERNS = [ ( '(.*)',  "env.append('ARGS', $0)") ]
+
 def main(argv):
-  env.set('ARGS', *argv)
-  Run('${NM} --plugin=LLVMgold ${ARGS}')
+  env.update(EXTRA_ENV)
+  ParseArgs(argv, PATTERNS)
+  Run('"${NM}" --plugin=LLVMgold ${ARGS}')
   # only reached in case of no errors
   return 0
 

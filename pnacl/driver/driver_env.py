@@ -76,7 +76,8 @@ INITIAL_ENV = {
   'FORCE_INTERMEDIATE_S': '0',
   'USE_EMULATOR'        : '0',
   'USE_BOOTSTRAP'       : '${BUILD_OS==linux ? 1 : 0}',
-  'DRIVER_FLAGS'        : '', # Flags passed to the driver
+  # Args passed from one driver invocation to another
+  'INHERITED_DRIVER_ARGS' : '',
   'LIBMODE'             : '', # glibc or newlib (set by ReadConfig)
   'LIBMODE_GLIBC'       : '${LIBMODE==glibc ? 1 : 0}',
   'LIBMODE_NEWLIB'      : '${LIBMODE==newlib ? 1 : 0}',
