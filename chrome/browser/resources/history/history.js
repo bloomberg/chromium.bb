@@ -658,10 +658,16 @@ HistoryView.prototype.displayResults_ = function() {
     }
 
     var searchResults = createElementWithClassName('ol', 'search-results');
-    for (var i = 0, visit; visit = results[i]; i++) {
-      if (!visit.isRendered) {
-        searchResults.appendChild(visit.getResultDOM(true));
-        this.setVisitRendered_(visit);
+    if (results.length == 0) {
+      var noResults = document.createElement('div');
+      noResults.textContent = loadTimeData.getString('noresults');
+      searchResults.appendChild(noResults);
+    } else {
+      for (var i = 0, visit; visit = results[i]; i++) {
+        if (!visit.isRendered) {
+          searchResults.appendChild(visit.getResultDOM(true));
+          this.setVisitRendered_(visit);
+        }
       }
     }
     this.resultDiv_.appendChild(searchResults);
