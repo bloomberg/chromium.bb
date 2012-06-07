@@ -143,10 +143,10 @@ void PanelBrowserTitlebarGtk::BuildButtons() {
 
 CustomDrawButton* PanelBrowserTitlebarGtk::CreateButton(
     panel::TitlebarButtonType button_type) {
-  int normal_image_id;
-  int pressed_image_id;
-  int hover_image_id;
-  int tooltip_id;
+  int normal_image_id = -1;
+  int pressed_image_id = -1;
+  int hover_image_id = -1;
+  int tooltip_id = -1;
   GetButtonResources(button_type, &normal_image_id, &pressed_image_id,
                      &hover_image_id, &tooltip_id);
 
