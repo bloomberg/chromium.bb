@@ -9,6 +9,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/font.h"
 
 using content::WebContents;
 
@@ -75,6 +76,8 @@ class TestingOmniboxView : public OmniboxView {
   virtual int OnPerformDrop(const views::DropTargetEvent& event) OVERRIDE {
     return 0;
   }
+  virtual gfx::Font GetFont() { return gfx::Font(); }
+  virtual int WidthOfTextAfterCursor() { return 0; }
 #endif
 
  private:

@@ -246,6 +246,19 @@ void OmniboxViewViews::Init() {
 #endif
 }
 
+gfx::Font OmniboxViewViews::GetFont() {
+  return textfield_->font();
+}
+
+int OmniboxViewViews::WidthOfTextAfterCursor() {
+  ui::Range sel;
+  textfield_->GetSelectedRange(&sel);
+  // See comments in LocationBarView::Layout as to why this uses -1.
+  const int start = std::max(0, static_cast<int>(sel.end()) - 1);
+  // TODO: add horizontal margin.
+  return textfield_->font().GetStringWidth(GetText().substr(start));
+}
+
 bool OmniboxViewViews::HandleAfterKeyEvent(const views::KeyEvent& event,
                                            bool handled) {
   if (event.key_code() == ui::VKEY_RETURN) {

@@ -48,6 +48,7 @@ class PageActionImageView;
 class Profile;
 class SelectedKeywordView;
 class StarView;
+class SuggestedTextView;
 class TabContents;
 typedef TabContents TabContentsWrapper;
 class TemplateURLService;
@@ -56,10 +57,6 @@ namespace views {
 class BubbleDelegateView;
 class Widget;
 }
-
-#if defined(OS_WIN) || defined(USE_AURA)
-class SuggestedTextView;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -198,14 +195,12 @@ class LocationBarView : public LocationBar,
   // appears, not where the icons are shown).
   gfx::Point GetLocationEntryOrigin() const;
 
-#if defined(OS_WIN) || defined(USE_AURA)
   // Invoked from OmniboxViewWin to show the instant suggestion.
   void SetInstantSuggestion(const string16& text,
                             bool animate_to_complete);
 
   // Returns the current instant suggestion text.
   string16 GetInstantSuggestion() const;
-#endif
 
   // Sets whether the location entry can accept focus.
   void SetLocationEntryFocusable(bool focusable);
@@ -376,7 +371,6 @@ class LocationBarView : public LocationBar,
   // Sets the visibility of view to new_vis.
   void ToggleVisibility(bool new_vis, views::View* view);
 
-#if defined(OS_WIN) || defined(USE_AURA)
 #if !defined(USE_AURA)
   // Helper for the Mouse event handlers that does all the real work.
   void OnMouseEvent(const views::MouseEvent& event, UINT msg);
@@ -389,7 +383,6 @@ class LocationBarView : public LocationBar,
   // Returns |location_entry_| cast to OmniboxViewWin, or NULL if
   // |location_entry_| is of a different type.
   OmniboxViewWin* GetOmniboxViewWin();
-#endif
 #endif
 
   // Helper to show the first run info bubble.
@@ -448,11 +441,9 @@ class LocationBarView : public LocationBar,
   // Shown if the user has selected a keyword.
   SelectedKeywordView* selected_keyword_view_;
 
-#if defined(OS_WIN) || defined(USE_AURA)
   // View responsible for showing suggested text. This is NULL when there is no
   // suggested text.
   SuggestedTextView* suggested_text_view_;
-#endif
 
   // Shown if the selected url has a corresponding keyword.
   KeywordHintView* keyword_hint_view_;

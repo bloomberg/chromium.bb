@@ -39,10 +39,14 @@ class LocationBarView;
 class Profile;
 class ToolbarModel;
 
+namespace gfx {
+class Font;
+}
+
 namespace views {
 class DropTargetEvent;
 class View;
-}  // namespace views
+}
 
 #endif
 
@@ -211,6 +215,13 @@ class OmniboxView {
 
   // Performs the drop of a drag and drop operation on the view.
   virtual int OnPerformDrop(const views::DropTargetEvent& event) = 0;
+
+  // Returns the font.
+  virtual gfx::Font GetFont() = 0;
+
+  // Returns the width in pixels needed to display the text from one character
+  // before the caret to the end of the string.
+  virtual int WidthOfTextAfterCursor() = 0;
 #endif
 
   // Returns a string with any leading javascript schemas stripped from the

@@ -544,17 +544,6 @@ views::View* OmniboxViewWin::parent_view() const {
   return parent_view_;
 }
 
-int OmniboxViewWin::WidthOfTextAfterCursor() {
-  CHARRANGE selection;
-  GetSelection(selection);
-  const int start = std::max(0, static_cast<int>(selection.cpMax - 1));
-  return WidthNeededToDisplay(GetText().substr(start));
-}
-
-gfx::Font OmniboxViewWin::GetFont() {
-  return font_;
-}
-
 void OmniboxViewWin::SaveStateToTab(WebContents* tab) {
   DCHECK(tab);
 
@@ -1000,6 +989,18 @@ views::View* OmniboxViewWin::AddToView(views::View* parent) {
 
 int OmniboxViewWin::OnPerformDrop(const views::DropTargetEvent& event) {
   return OnPerformDropImpl(event, false);
+}
+
+gfx::Font OmniboxViewWin::GetFont() {
+  return font_;
+}
+
+int OmniboxViewWin::WidthOfTextAfterCursor() {
+  CHARRANGE selection;
+  GetSelection(selection);
+  // See comments in LocationBarView::Layout as to why this uses -1.
+  const int start = std::max(0, static_cast<int>(selection.cpMax - 1));
+  return WidthNeededToDisplay(GetText().substr(start));
 }
 
 int OmniboxViewWin::OnPerformDropImpl(const views::DropTargetEvent& event,

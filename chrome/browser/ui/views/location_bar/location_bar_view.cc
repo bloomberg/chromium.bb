@@ -42,6 +42,7 @@
 #include "chrome/browser/ui/views/location_bar/page_action_with_badge_view.h"
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
+#include "chrome/browser/ui/views/location_bar/suggested_text_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -70,9 +71,6 @@
 #include "chrome/browser/ui/views/first_run_bubble.h"
 #endif
 
-#if defined(OS_WIN) || defined(USE_AURA)
-#include "chrome/browser/ui/views/location_bar/suggested_text_view.h"
-#endif
 
 using content::WebContents;
 using views::View;
@@ -143,9 +141,7 @@ LocationBarView::LocationBarView(Profile* profile,
       ev_bubble_view_(NULL),
       location_entry_view_(NULL),
       selected_keyword_view_(NULL),
-#if defined(OS_WIN) || defined(USE_AURA)
       suggested_text_view_(NULL),
-#endif
       keyword_hint_view_(NULL),
       star_view_(NULL),
       action_box_button_view_(NULL),
@@ -466,7 +462,6 @@ gfx::Point LocationBarView::GetLocationEntryOrigin() const {
   return origin;
 }
 
-#if defined(OS_WIN) || defined(USE_AURA)
 void LocationBarView::SetInstantSuggestion(const string16& text,
                                            bool animate_to_complete) {
   // Don't show the suggested text if inline autocomplete is prevented.
@@ -474,11 +469,7 @@ void LocationBarView::SetInstantSuggestion(const string16& text,
     if (!suggested_text_view_) {
       suggested_text_view_ = new SuggestedTextView(location_entry_->model());
       suggested_text_view_->SetText(text);
-#if defined(USE_AURA)
-      NOTIMPLEMENTED();
-#else
-      suggested_text_view_->SetFont(GetOmniboxViewWin()->GetFont());
-#endif
+      suggested_text_view_->SetFont(location_entry_->GetFont());
       AddChildView(suggested_text_view_);
     } else if (suggested_text_view_->text() != text) {
       suggested_text_view_->SetText(text);
@@ -499,7 +490,6 @@ void LocationBarView::SetInstantSuggestion(const string16& text,
 string16 LocationBarView::GetInstantSuggestion() const {
   return HasValidSuggestText() ? suggested_text_view_->text() : string16();
 }
-#endif
 
 void LocationBarView::SetLocationEntryFocusable(bool focusable) {
 #if defined(USE_AURA)
@@ -735,7 +725,6 @@ void LocationBarView::Layout() {
     }
   }
 
-#if defined(OS_WIN)
   // Layout out the suggested text view right aligned to the location
   // entry. Only show the suggested text if we can fit the text from one
   // character before the end of the selection to the end of the text and the
@@ -747,19 +736,21 @@ void LocationBarView::Layout() {
   // keyword hints and suggested text is minimal and we're not confident this
   // is the right approach for suggested text.
   if (suggested_text_view_) {
-#if defined(USE_AURA)
-    NOTIMPLEMENTED();
-#else
     // TODO(sky): need to layout when the user changes caret position.
     int suggested_text_width =
         suggested_text_view_->GetPreferredSize().width();
-    int vis_text_width = GetOmniboxViewWin()->WidthOfTextAfterCursor();
+    int vis_text_width = location_entry_->WidthOfTextAfterCursor();
     if (vis_text_width + suggested_text_width > entry_width) {
       // Hide the suggested text if the user has scrolled or we can't fit all
       // the suggested text.
       suggested_text_view_->SetBounds(0, 0, 0, 0);
     } else {
       int location_needed_width = location_entry_->TextWidth();
+#if defined(USE_AURA)
+      // TODO(sky): fix this. The +1 comes from the width of the cursor, without
+      // the text ends up shifting to the left.
+      location_needed_width++;
+#endif
       location_bounds.set_width(std::min(location_needed_width,
                                          entry_width - suggested_text_width));
       // TODO(sky): figure out why this needs the -1.
@@ -768,9 +759,7 @@ void LocationBarView::Layout() {
                                       suggested_text_width,
                                       location_bounds.height());
     }
-#endif
   }
-#endif
 
   location_entry_view_->SetBoundsRect(location_bounds);
 }
@@ -927,12 +916,8 @@ void LocationBarView::OnChanged() {
 }
 
 void LocationBarView::OnSelectionBoundsChanged() {
-#if defined(OS_WIN)
   if (suggested_text_view_)
     suggested_text_view_->StopAnimation();
-#else
-  NOTREACHED();
-#endif
 }
 
 void LocationBarView::OnInputInProgress(bool in_progress) {
@@ -1355,7 +1340,6 @@ int LocationBarView::GetInternalHeight(bool use_preferred_size) {
   return std::max(total_height - (kVerticalEdgeThickness * 2), 0);
 }
 
-#if defined(OS_WIN) || defined(USE_AURA)
 bool LocationBarView::HasValidSuggestText() const {
   return suggested_text_view_ && !suggested_text_view_->size().IsEmpty() &&
       !suggested_text_view_->text().empty();
@@ -1365,5 +1349,4 @@ bool LocationBarView::HasValidSuggestText() const {
 OmniboxViewWin* LocationBarView::GetOmniboxViewWin() {
   return static_cast<OmniboxViewWin*>(location_entry_.get());
 }
-#endif
 #endif

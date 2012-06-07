@@ -75,14 +75,6 @@ class OmniboxViewWin
 
   views::View* parent_view() const;
 
-  // Returns the width in pixels needed to display the text from one character
-  // before the caret to the end of the string. See comments in
-  // LocationBarView::Layout as to why this uses -1.
-  int WidthOfTextAfterCursor();
-
-  // Returns the font.
-  gfx::Font GetFont();
-
   // OmniboxView:
   virtual AutocompleteEditModel* model() OVERRIDE { return model_.get(); }
   virtual const AutocompleteEditModel* model() const OVERRIDE {
@@ -135,6 +127,8 @@ class OmniboxViewWin
   virtual int GetMaxEditWidth(int entry_width) const OVERRIDE;
   virtual views::View* AddToView(views::View* parent) OVERRIDE;
   virtual int OnPerformDrop(const views::DropTargetEvent& event) OVERRIDE;
+  virtual gfx::Font GetFont() OVERRIDE;
+  virtual int WidthOfTextAfterCursor() OVERRIDE;
 
   int GetPopupMaxYCoordinate();
 

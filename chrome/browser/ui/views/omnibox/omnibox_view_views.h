@@ -144,6 +144,8 @@ class OmniboxViewViews
   virtual int GetMaxEditWidth(int entry_width) const OVERRIDE;
   virtual views::View* AddToView(views::View* parent) OVERRIDE;
   virtual int OnPerformDrop(const views::DropTargetEvent& event) OVERRIDE;
+  virtual gfx::Font GetFont() OVERRIDE;
+  virtual int WidthOfTextAfterCursor() OVERRIDE;
 
   // views::TextfieldController:
   virtual void ContentsChanged(views::Textfield* sender,
