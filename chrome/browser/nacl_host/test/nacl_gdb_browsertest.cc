@@ -17,13 +17,13 @@ static const FilePath::CharType kMockNaClGdb[] =
     FILE_PATH_LITERAL("mock_nacl_gdb");
 #endif
 
-class NaClGdbTest : public PPAPINaClTest {
+class NaClGdbTest : public PPAPINaClNewlibTest {
  public:
   NaClGdbTest() {
   }
 
   void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    PPAPINaClTest::SetUpCommandLine(command_line);
+    PPAPINaClNewlibTest::SetUpCommandLine(command_line);
 
     FilePath mock_nacl_gdb;
     EXPECT_TRUE(PathService::Get(base::DIR_EXE, &mock_nacl_gdb));

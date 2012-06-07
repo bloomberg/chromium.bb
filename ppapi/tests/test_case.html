@@ -197,9 +197,14 @@ onload = function() {
   var mode = ExtractSearchParameter("mode");
   document.title = 'Test ' + testcase;
   var obj;
-  if (mode == "nacl") {
+  if (mode == "nacl_newlib") {
     obj = document.createElement("EMBED");
-    obj.setAttribute("src", "test_case.nmf");
+    obj.setAttribute("src", "ppapi_nacl_tests_newlib.nmf");
+    obj.setAttribute("type", "application/x-nacl");
+    obj.setAttribute("mode", mode);
+  } else if (mode == "nacl_glibc") {
+    obj = document.createElement("EMBED");
+    obj.setAttribute("src", "ppapi_nacl_tests_glibc.nmf");
     obj.setAttribute("type", "application/x-nacl");
     obj.setAttribute("mode", mode);
   } else {

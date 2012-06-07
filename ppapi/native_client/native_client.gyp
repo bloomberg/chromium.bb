@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -16,6 +16,8 @@
              '../../native_client/src/untrusted/pthread/pthread.gyp:pthread_lib',
              '../../native_client/src/untrusted/irt_stub/irt_stub.gyp:ppapi_stub_lib',
           ],
+          # Here we copy linker scripts out of the Native Client repository.
+          # These are source, not build artifacts.
           'copies': [
             {
               'destination': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32',
@@ -27,6 +29,20 @@
               'destination': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64',
               'files': [
                   '<(DEPTH)/native_client/src/untrusted/irt_stub/libppapi.a',
+              ],
+            },
+            {
+              'destination': '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib32',
+              'files': [
+                  '<(DEPTH)/native_client/src/untrusted/irt_stub/libppapi.a',
+                  '<(DEPTH)/native_client/src/untrusted/irt_stub/libppapi.so',
+              ],
+            },
+            {
+              'destination': '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/lib64',
+              'files': [
+                  '<(DEPTH)/native_client/src/untrusted/irt_stub/libppapi.a',
+                  '<(DEPTH)/native_client/src/untrusted/irt_stub/libppapi.so',
               ],
             },
             {

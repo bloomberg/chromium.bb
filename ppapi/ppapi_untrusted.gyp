@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -17,7 +17,7 @@
       'type': 'none',
       'variables': {
         'nlib_target': 'libppapi_cpp.a',
-        'build_glibc': 0,
+        'build_glibc': 1,
         'build_newlib': 1,
         'sources': [
           '<@(cpp_source_files)',
@@ -39,7 +39,6 @@
        ],
       'variables': {
         'nexe_target': 'ppapi_nacl_tests',
-        'build_glibc': 0,
         'build_newlib': 1,
         'include_dirs': [
           'lib/gl/include',
@@ -54,10 +53,6 @@
         'extra_deps64': [
           '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libppapi_cpp.a',
           '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libppapi.a',
-        ],
-        'extra_deps32': [
-          '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libppapi_cpp.a',
-          '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libppapi.a',
         ],
         'extra_deps_newlib64': [
           '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libppapi_cpp.a',
@@ -84,6 +79,39 @@
           '<@(test_nacl_source_files)',
         ],
       },
+      'conditions': [
+        ['target_arch!="arm"', {
+          'variables': {
+            'build_glibc': 1,
+            # NOTE: Use /lib, not /lib64 here; it is a symbolic link which
+            # doesn't work on Windows.
+            'libdir_glibc64': '>(nacl_glibc_tc_root)/x86_64-nacl/lib',
+            'libdir_glibc32': '>(nacl_glibc_tc_root)/x86_64-nacl/lib32',
+            'nacl_objdump': '>(nacl_glibc_tc_root)/bin/x86_64-nacl-objdump',
+            'nmf_glibc%': '<(PRODUCT_DIR)/>(nexe_target)_glibc.nmf',
+          },
+          'actions': [
+          {
+            'action_name': 'Generate GLIBC NMF and copy libs',
+            'inputs': ['>(out_glibc64)', '>(out_glibc32)'],
+            # NOTE: There is no explicit dependency for the lib32
+            # and lib64 directories created in the PRODUCT_DIR.
+            # They are created as a side-effect of NMF creation.
+            'outputs': ['>(nmf_glibc)'],
+            'action': [
+              'python',
+              '<(DEPTH)/native_client_sdk/src/tools/create_nmf.py',
+              '>@(_inputs)',
+              '--objdump=>(nacl_objdump)',
+              '--library-path=>(libdir_glibc64)',
+              '--library-path=>(libdir_glibc32)',
+              '--output=>(nmf_glibc)',
+              '--stage-dependencies=<(PRODUCT_DIR)',
+            ],
+          },
+        ],
+        }],
+      ],
     },
   ],
 }

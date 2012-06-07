@@ -239,12 +239,12 @@ class NmfUtils(object):
 
   def _GenerateManifest(self, runnable=True):
     '''Create a JSON formatted dict containing the files
-    
+
     NaCl will map url requests based on architecture.  The startup NEXE
     can always be found under the top key PROGRAM.  Additional files are under
     the FILES key further mapped by file name.  In the case of 'runnable' the
     PROGRAM key is populated with urls pointing the runnable-ld.so which acts
-    as the startup nexe.  The application itself, is then placed under the 
+    as the startup nexe.  The application itself, is then placed under the
     FILES key mapped as 'main.exe' instead of it's original name so that the
     loader can find it.'''
     manifest = { FILES_KEY: {}, PROGRAM_KEY: {} }
@@ -263,6 +263,10 @@ class NmfUtils(object):
 
       # For the main nexes:
       if need.endswith('.nexe') and need in self.main_files:
+        # Ensure that the nexe name is relative, not absolute.
+        # We assume that the nexe and the corresponding nmf file are
+        # installed in the same directory.
+        urlinfo[URL_KEY] = os.path.basename(urlinfo[URL_KEY])
         # Place it under program if we aren't using the runnable-ld.so.
         if not runnable:
           manifest[PROGRAM_KEY][archinfo.arch] = urlinfo
