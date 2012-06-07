@@ -132,7 +132,7 @@ void ExternalPrefExtensionLoader::LoadOnFileThread() {
 
   ReadStandaloneExtensionPrefFiles(prefs.get());
 
-  prefs_.reset(prefs.release());
+  prefs_.swap(prefs);
   if (!prefs_.get())
     prefs_.reset(new DictionaryValue());
 
@@ -226,7 +226,7 @@ void ExternalPrefExtensionLoader::ReadStandaloneExtensionPrefFiles(
         ExtractExtensionPrefs(&serializer, extension_candidate_path));
     if (ext_prefs.get()) {
       DVLOG(1) << "Adding extension with id: " << id;
-      prefs->Set(id, ext_prefs.get());
+      prefs->Set(id, ext_prefs.release());
     }
   }
 }
