@@ -140,6 +140,12 @@ class TestView : public content::TestRenderWidgetHostView {
     return bounds_;
   }
 
+#if defined(OS_MACOSX)
+  virtual gfx::Rect GetViewCocoaBounds() const {
+    return bounds_;
+  }
+#endif
+
  protected:
   gfx::Rect bounds_;
   DISALLOW_COPY_AND_ASSIGN(TestView);

@@ -240,6 +240,8 @@ class RenderWidgetHostViewMac : public content::RenderWidgetHostViewBase {
       skia::PlatformCanvas* output,
       base::Callback<void(bool)> callback) OVERRIDE;
   virtual void OnAcceleratedCompositingStateChange() OVERRIDE;
+  // See comment in RenderWidgetHostView!
+  virtual gfx::Rect GetViewCocoaBounds() const OVERRIDE;
 
   virtual void OnAccessibilityNotifications(
       const std::vector<AccessibilityHostMsg_NotificationParams>& params

@@ -406,7 +406,15 @@ void RenderWidgetHostImpl::WasResized() {
     return;
   }
 
+#if !defined(OS_MACOSX)
   gfx::Rect view_bounds = view_->GetViewBounds();
+#else
+  // When UI scaling is enabled on OS X, allocate a smaller bitmap and
+  // pixel-scale it up.
+  // TODO(thakis): Use pixel size on mac and set UI scale in renderer.
+  // http://crbug.com/31960
+  gfx::Rect view_bounds(view_->GetViewCocoaBounds().size());
+#endif
   gfx::Size new_size(view_bounds.size());
 
   bool was_fullscreen = is_fullscreen_;

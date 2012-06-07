@@ -132,6 +132,10 @@ bool TestRenderWidgetHostView::HasAcceleratedSurface(
 void TestRenderWidgetHostView::AboutToWaitForBackingStoreMsg() {
 }
 
+gfx::Rect TestRenderWidgetHostView::GetViewCocoaBounds() const {
+  return gfx::Rect();
+}
+
 void TestRenderWidgetHostView::SetActive(bool active) {
   // <viettrungluu@gmail.com>: Do I need to do anything here?
 }
