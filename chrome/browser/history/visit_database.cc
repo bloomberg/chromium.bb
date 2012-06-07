@@ -301,8 +301,7 @@ bool VisitDatabase::GetVisitsInRangeForTransition(
 void VisitDatabase::GetVisibleVisitsInRange(base::Time begin_time,
                                             base::Time end_time,
                                             int max_count,
-                                            VisitVector* visits,
-                                            bool unique) {
+                                            VisitVector* visits) {
   visits->clear();
   // The visit_time values can be duplicated in a redirect chain, so we sort
   // by id too, to ensure a consistent ordering just in case.
@@ -330,12 +329,10 @@ void VisitDatabase::GetVisibleVisitsInRange(base::Time begin_time,
   while (statement.Step()) {
     VisitRow visit;
     FillVisitRow(statement, &visit);
-    if (unique) {
-      // Make sure the URL this visit corresponds to is unique.
-      if (found_urls.find(visit.url_id) != found_urls.end())
-        continue;
-      found_urls.insert(visit.url_id);
-    }
+    // Make sure the URL this visit corresponds to is unique.
+    if (found_urls.find(visit.url_id) != found_urls.end())
+      continue;
+    found_urls.insert(visit.url_id);
     visits->push_back(visit);
 
     if (max_count > 0 && static_cast<int>(visits->size()) >= max_count)
@@ -343,7 +340,7 @@ void VisitDatabase::GetVisibleVisitsInRange(base::Time begin_time,
   }
 }
 
-void VisitDatabase::GetVisibleVisitsDuringTimes(const VisitFilter& time_filter,
+void VisitDatabase::GetDirectVisitsDuringTimes(const VisitFilter& time_filter,
                                                 int max_results,
                                                 VisitVector* visits) {
   visits->clear();
@@ -351,18 +348,28 @@ void VisitDatabase::GetVisibleVisitsDuringTimes(const VisitFilter& time_filter,
     visits->reserve(max_results);
   for (VisitFilter::TimeVector::const_iterator it = time_filter.times().begin();
        it != time_filter.times().end(); ++it) {
-    VisitVector v;
-    GetVisibleVisitsInRange(it->first, it->second, max_results, &v, false);
-    size_t take_only = 0;
-    if (max_results &&
-        static_cast<int>(visits->size() + v.size()) > max_results) {
-      take_only = max_results - visits->size();
-    }
+    sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
+        "SELECT" HISTORY_VISIT_ROW_FIELDS "FROM visits "
+        "WHERE visit_time >= ? AND visit_time < ? "
+        "AND (transition & ?) != 0 "  // CHAIN_START
+        "AND (transition & ?) IN (?, ?) "  // TYPED or AUTO_BOOKMARK only
+        "ORDER BY visit_time DESC, id DESC"));
 
-    visits->insert(visits->end(),
-                   v.begin(), take_only ? v.begin() + take_only : v.end());
-    if (max_results && static_cast<int>(visits->size()) == max_results)
-      return;
+    statement.BindInt64(0, it->first.ToInternalValue());
+    statement.BindInt64(1, it->second.ToInternalValue());
+    statement.BindInt(2, content::PAGE_TRANSITION_CHAIN_START);
+    statement.BindInt(3, content::PAGE_TRANSITION_CORE_MASK);
+    statement.BindInt(4, content::PAGE_TRANSITION_TYPED);
+    statement.BindInt(5, content::PAGE_TRANSITION_AUTO_BOOKMARK);
+
+    while (statement.Step()) {
+      VisitRow visit;
+      FillVisitRow(statement, &visit);
+      visits->push_back(visit);
+
+      if (max_results > 0 && static_cast<int>(visits->size()) >= max_results)
+        return;
+    }
   }
 }
 

@@ -560,7 +560,7 @@ void HistoryBackend::AddPage(scoped_refptr<HistoryAddPageArgs> request) {
         UpdateVisitDuration(from_visit_id, last_recorded_time_);
       }
 
-      // Subsequent transitions in the redirect list must all be sever
+      // Subsequent transitions in the redirect list must all be server
       // redirects.
       redirect_info = content::PAGE_TRANSITION_SERVER_REDIRECT;
     }
@@ -1282,7 +1282,7 @@ void HistoryBackend::QueryHistoryBasic(URLDatabase* url_db,
   // First get all visits.
   VisitVector visits;
   visit_db->GetVisibleVisitsInRange(options.begin_time, options.end_time,
-                                    options.max_count, &visits, true);
+                                    options.max_count, &visits);
   DCHECK(options.max_count == 0 ||
          static_cast<int>(visits.size()) <= options.max_count);
 
@@ -1469,47 +1469,16 @@ void HistoryBackend::QueryFilteredURLs(
 
   if (!db_.get()) {
     // No History Database - return an empty list.
-    request->ForwardResult(request->handle(),FilteredURLList());
+    request->ForwardResult(request->handle(), FilteredURLList());
     return;
   }
 
   VisitVector visits;
-  db_->GetVisibleVisitsDuringTimes(filter, 0, &visits);
-
-  std::map<VisitID, std::pair<VisitID, URLID> > segment_ids;
-  for (size_t i = 0; i < visits.size(); ++i) {
-    segment_ids[visits[i].visit_id] =
-        std::make_pair(visits[i].referring_visit, visits[i].segment_id);
-  }
+  db_->GetDirectVisitsDuringTimes(filter, 0, &visits);
 
   std::map<URLID, double> score_map;
   for (size_t i = 0; i < visits.size(); ++i) {
-    URLID segment_id = visits[i].segment_id;
-    for (VisitID visit_id = visits[i].visit_id; !segment_id && visit_id;) {
-      std::map<VisitID, std::pair<VisitID, URLID> >::iterator vi =
-          segment_ids.find(visit_id);
-      if (vi == segment_ids.end()) {
-        VisitRow visit_row;
-        if (!db_->GetRowForVisit(visit_id, &visit_row))
-          break;
-        segment_ids[visit_id] =
-            std::make_pair(visit_row.referring_visit, visit_row.segment_id);
-        segment_id = visit_row.segment_id;
-        visit_id = visit_row.referring_visit;
-      } else {
-        visit_id = vi->second.first;
-        segment_id = vi->second.second;
-      }
-    }
-    if (!segment_id)
-      continue;
-    double score = filter.GetVisitScore(visits[i]);
-
-    std::map<URLID, double>::iterator it = score_map.find(visits[i].segment_id);
-    if (it == score_map.end())
-      score_map[visits[i].segment_id] = score;
-    else
-      it->second += score;
+    score_map[visits[i].url_id] += filter.GetVisitScore(visits[i]);
   }
 
   // TODO(georgey): experiment with visit_segment database granularity (it is
@@ -1531,11 +1500,9 @@ void HistoryBackend::QueryFilteredURLs(
     data.resize(result_count);
   }
 
-  // Get URL data.
   for (size_t i = 0; i < data.size(); ++i) {
-    URLID url_id = db_->GetSegmentRepresentationURL(data[i]->GetID());
     URLRow info;
-    if (db_->GetURLRow(url_id, &info)) {
+    if (db_->GetURLRow(data[i]->GetID(), &info)) {
       data[i]->SetURL(info.url());
       data[i]->SetTitle(info.title());
     }

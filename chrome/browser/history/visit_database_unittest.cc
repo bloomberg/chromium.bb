@@ -212,7 +212,7 @@ TEST_F(VisitDatabaseTest, GetVisibleVisitsInRange) {
   // Query the visits for all time, we should not get the first (duplicate of
   // the second) or the redirect or subframe visits.
   VisitVector results;
-  GetVisibleVisitsInRange(Time(), Time(), 0, &results, true);
+  GetVisibleVisitsInRange(Time(), Time(), 0, &results);
   ASSERT_EQ(static_cast<size_t>(2), results.size());
   EXPECT_TRUE(IsVisitInfoEqual(results[0], visit_info4) &&
               IsVisitInfoEqual(results[1], visit_info2));
@@ -220,12 +220,12 @@ TEST_F(VisitDatabaseTest, GetVisibleVisitsInRange) {
   // Query a time range and make sure beginning is inclusive and ending is
   // exclusive.
   GetVisibleVisitsInRange(visit_info2.visit_time, visit_info4.visit_time, 0,
-                          &results, true);
+                          &results);
   ASSERT_EQ(static_cast<size_t>(1), results.size());
   EXPECT_TRUE(IsVisitInfoEqual(results[0], visit_info2));
 
   // Query for a max count and make sure we get only that number.
-  GetVisibleVisitsInRange(Time(), Time(), 1, &results, true);
+  GetVisibleVisitsInRange(Time(), Time(), 1, &results);
   ASSERT_EQ(static_cast<size_t>(1), results.size());
   EXPECT_TRUE(IsVisitInfoEqual(results[0], visit_info4));
 }
