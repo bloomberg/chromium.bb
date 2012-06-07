@@ -133,7 +133,7 @@ archived-pexe-translator-test() {
   # This takes about 17min on arm with qemu
   # With an unstripped pexe arm runs out of space (also after 17min):
   # "terminate called after throwing an instance of 'std::bad_alloc'"
-  {sb_translator} ${flags} ${dir}/llc${ext} -o ${dir}/llc-${arch}.nexe
+  ${sb_translator} ${flags} ${dir}/llc${ext} -o ${dir}/llc-${arch}.nexe
 
   ls -l ${dir}
   file ${dir}/*
