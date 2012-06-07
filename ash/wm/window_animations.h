@@ -80,6 +80,11 @@ namespace internal {
 ASH_EXPORT void CrossFadeToBounds(aura::Window* window,
                                   const gfx::Rect& new_bounds);
 
+// Returns the duration of the cross-fade animation based on the |old_bounds|
+// and |new_bounds| of the window.
+ASH_EXPORT base::TimeDelta GetCrossFadeDuration(const gfx::Rect& old_bounds,
+                                                const gfx::Rect& new_bounds);
+
 // Returns false if the |window| didn't animate.
 ASH_EXPORT bool AnimateOnChildWindowVisibilityChanged(
     aura::Window* window, bool visible);
