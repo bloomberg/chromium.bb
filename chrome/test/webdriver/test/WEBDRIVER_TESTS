@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
@@ -11,7 +11,7 @@
 # Test names can be specified in any of the following ways:
 # 1. as a module, in which case all tests in that module will be run
 #      example: 'test_basic'
-# 2. or as a test case, in which case all tess in that test case will be run
+# 2. or as a test case, in which case all tests in that test case will be run
 #      example: 'test_basic.SimpleTest'
 # 3. or as an individual test
 #      example: 'test_basic.SimpleTest.testCanOpenGoogle'

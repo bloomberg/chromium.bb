@@ -539,9 +539,7 @@ class MouseEventTest(ChromeDriverTest):
   def setUp(self):
     super(MouseEventTest, self).setUp()
     self._driver = self.GetNewDriver()
-    self._driver.command_executor._commands['_keys_'] = (
-        'POST', '/session/$sessionId/keys')
-    self._driver.execute('_keys_', {'value': [Keys.CONTROL, Keys.SHIFT]})
+    ActionChains(self._driver).send_keys(Keys.CONTROL, Keys.SHIFT).perform()
     self._driver.get(self.GetTestDataUrl() + '/events.html')
     self._divs = self._driver.find_elements_by_tag_name('div')
 
@@ -982,59 +980,40 @@ class WindowTest(ChromeDriverTest):
   def testSizeAndPosition(self):
     driver = self.GetNewDriver()
 
-    # TODO(kkania): Update the python bindings and get rid of these.
-    driver.command_executor._commands.update({
-        'getSize': ('GET', '/session/$sessionId/window/$windowHandle/size'),
-        'setSize': ('POST', '/session/$sessionId/window/$windowHandle/size'),
-        'getPos': ('GET', '/session/$sessionId/window/$windowHandle/position'),
-        'setPos': ('POST', '/session/$sessionId/window/$windowHandle/position')
-    })
-    def getSize(window='current'):
-      return driver.execute('getSize', {'windowHandle': window})['value']
-    def setSize(width, height, window='current'):
-      params = { 'windowHandle': window,
-                 'width': width,
-                 'height': height
-               }
-      return driver.execute('setSize', params)
-    def getPosition(window='current'):
-      return driver.execute('getPos', {'windowHandle': window})['value']
-    def setPosition(x, y, window='current'):
-      params = { 'windowHandle': window,
-                 'x': x,
-                 'y': y
-               }
-      return driver.execute('setPos', params)
-
     # Test size.
-    size = getSize()
-    setSize(size['width'], size['height'])
-    self.assertEquals(size, getSize())
-    setSize(800, 600)
-    self.assertEquals(800, getSize()['width'])
-    self.assertEquals(600, getSize()['height'])
+    size = driver.get_window_size()
+    driver.set_window_size(size['width'], size['height'])
+    self.assertEquals(size, driver.get_window_size())
+    driver.set_window_size(800, 600)
+    self.assertEquals(800, driver.get_window_size()['width'])
+    self.assertEquals(600, driver.get_window_size()['height'])
     # Test position.
-    pos = getPosition()
-    setPosition(pos['x'], pos['y'])
-    self.assertEquals(pos, getPosition())
-    setPosition(100, 200)
-    self.assertEquals(100, getPosition()['x'])
-    self.assertEquals(200, getPosition()['y'])
+    pos = driver.get_window_position()
+    driver.set_window_position(pos['x'], pos['y'])
+    self.assertEquals(pos, driver.get_window_position())
+    driver.set_window_position(100, 200)
+    self.assertEquals(100, driver.get_window_position()['x'])
+    self.assertEquals(200, driver.get_window_position()['y'])
     # Test specifying window handle.
     driver.execute_script(
         'window.open("about:blank", "name", "height=200, width=200")')
     windows = driver.window_handles
     self.assertEquals(2, len(windows))
-    setSize(400, 300, windows[1])
-    self.assertEquals(400, getSize(windows[1])['width'])
-    self.assertEquals(300, getSize(windows[1])['height'])
-    self.assertNotEquals(getSize(windows[1]), getSize(windows[0]))
+    driver.set_window_size(400, 300, windows[1])
+    self.assertEquals(400, driver.get_window_size(windows[1])['width'])
+    self.assertEquals(300, driver.get_window_size(windows[1])['height'])
+    self.assertNotEquals(driver.get_window_size(windows[1]),
+                         driver.get_window_size(windows[0]))
     # Test specifying invalid handle.
     invalid_handle = 'f1-120'
-    self.assertRaises(WebDriverException, setSize, 400, 300, invalid_handle)
-    self.assertRaises(NoSuchWindowException, getSize, invalid_handle)
-    self.assertRaises(NoSuchWindowException, setPosition, 1, 1, invalid_handle)
-    self.assertRaises(NoSuchWindowException, getPosition, invalid_handle)
+    self.assertRaises(WebDriverException, driver.set_window_size, 400, 300,
+                      invalid_handle)
+    self.assertRaises(NoSuchWindowException, driver.get_window_size,
+                      invalid_handle)
+    self.assertRaises(NoSuchWindowException, driver.set_window_position, 1, 1,
+                      invalid_handle)
+    self.assertRaises(NoSuchWindowException, driver.get_window_position,
+                      invalid_handle)
 
 
 class GeolocationTest(ChromeDriverTest):
