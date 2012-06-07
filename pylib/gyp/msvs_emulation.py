@@ -360,6 +360,7 @@ class MsvsSettings(object):
     ld('LinkTimeCodeGeneration', map={'1': '/LTCG'})
     ld('IgnoreDefaultLibraryNames', prefix='/NODEFAULTLIB:')
     ld('ResourceOnlyDLL', map={'true': '/NOENTRY'})
+    ld('EntryPointSymbol', prefix='/ENTRY:')
     # TODO(scottmg): This should sort of be somewhere else (not really a flag).
     ld('AdditionalDependencies', prefix='')
     # TODO(scottmg): These too.
