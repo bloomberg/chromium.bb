@@ -15,7 +15,6 @@
 namespace content {
 class ShellBrowserContext;
 class ShellBrowserMainParts;
-class ShellResourceDispatcherHostDelegate;
 }
 
 namespace views {
@@ -35,9 +34,6 @@ class ExamplesContentBrowserClient : public content::ContentBrowserClient {
   content::ShellBrowserContext* browser_context();
 
  private:
-  scoped_ptr<content::ShellResourceDispatcherHostDelegate>
-      resource_dispatcher_host_delegate_;
-
   ExamplesBrowserMainParts* examples_browser_main_parts_;
 
   DISALLOW_COPY_AND_ASSIGN(ExamplesContentBrowserClient);
