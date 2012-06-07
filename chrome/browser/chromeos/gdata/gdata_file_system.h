@@ -6,32 +6,21 @@
 #define CHROME_BROWSER_CHROMEOS_GDATA_GDATA_FILE_SYSTEM_H_
 #pragma once
 
-#include <sys/stat.h>
-
 #include <map>
 #include <string>
 #include <vector>
 
-#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop.h"
 #include "base/platform_file.h"
 #include "base/timer.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/gdata/find_entry_callback.h"
 #include "chrome/browser/chromeos/gdata/gdata_cache.h"
-#include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_files.h"
 #include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
-#include "chrome/browser/chromeos/gdata/gdata_params.h"
-#include "chrome/browser/chromeos/gdata/gdata_parser.h"
-#include "chrome/browser/chromeos/gdata/gdata_uploader.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
-#include "chrome/browser/profiles/profile_keyed_service.h"
-#include "chrome/browser/profiles/profile_keyed_service_factory.h"
 #include "content/public/browser/notification_observer.h"
 
 namespace base {

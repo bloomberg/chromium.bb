@@ -11,8 +11,6 @@
 
 #include "base/memory/scoped_ptr.h"
 
-class FilePath;
-
 namespace gdata {
 
 class GDataCache {

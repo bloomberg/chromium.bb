@@ -6,8 +6,6 @@
 
 #include <vector>
 
-#include "base/file_path.h"
-#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "base/string_util.h"

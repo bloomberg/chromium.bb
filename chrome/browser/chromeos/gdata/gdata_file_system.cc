@@ -22,7 +22,6 @@
 #include "base/metrics/histogram.h"
 #include "base/platform_file.h"
 #include "base/sys_info.h"
-#include "base/threading/platform_thread.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/synchronization/waitable_event.h"
@@ -41,11 +40,9 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "net/base/mime_util.h"
-#include "net/url_request/url_request_filter.h"
 
 using content::BrowserThread;
 
