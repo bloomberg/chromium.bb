@@ -48,6 +48,7 @@
 #include <wayland-server.h>
 #include "compositor.h"
 #include "../shared/os-compatibility.h"
+#include "log.h"
 
 static struct wl_list child_process_list;
 static jmp_buf segv_jmp_buf;
@@ -3105,6 +3106,7 @@ int main(int argc, char *argv[])
 	char *backend = NULL;
 	char *shell = NULL;
 	char *module = NULL;
+	char *log = NULL;
 	int32_t idle_time = 300;
 	int32_t xserver = 0;
 	char *socket_name = NULL;
@@ -3125,6 +3127,7 @@ int main(int argc, char *argv[])
 		{ WESTON_OPTION_INTEGER, "idle-time", 'i', &idle_time },
 		{ WESTON_OPTION_BOOLEAN, "xserver", 0, &xserver },
 		{ WESTON_OPTION_STRING, "module", 0, &module },
+		{ WESTON_OPTION_STRING, "log", 0, &log },
 	};
 
 	argc = parse_options(core_options,
@@ -3134,6 +3137,8 @@ int main(int argc, char *argv[])
 		fprintf(stderr, xdg_error_message);
 		exit(EXIT_FAILURE);
 	}
+
+	weston_log_file_open(log);
 
 	display = wl_display_create();
 
@@ -3236,6 +3241,8 @@ int main(int argc, char *argv[])
 
 	ec->destroy(ec);
 	wl_display_destroy(display);
+
+	weston_log_file_close();
 
 	return ret;
 }
