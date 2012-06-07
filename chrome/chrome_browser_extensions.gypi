@@ -130,6 +130,8 @@
         'browser/extensions/api/discovery/suggested_links_registry_factory.h',
         'browser/extensions/api/dns/dns_api.cc',
         'browser/extensions/api/dns/dns_api.h',
+        'browser/extensions/api/dns/host_resolver_wrapper.cc',
+        'browser/extensions/api/dns/host_resolver_wrapper.h',
         'browser/extensions/api/extension_action/extension_actions_api.cc',
         'browser/extensions/api/extension_action/extension_actions_api.h',
         'browser/extensions/api/extension_action/extension_browser_actions_api.h',

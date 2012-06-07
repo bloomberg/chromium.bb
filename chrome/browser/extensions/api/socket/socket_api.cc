@@ -5,13 +5,19 @@
 #include "chrome/browser/extensions/api/socket/socket_api.h"
 
 #include "base/bind.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/api_resource_controller.h"
+#include "chrome/browser/extensions/api/dns/host_resolver_wrapper.h"
 #include "chrome/browser/extensions/api/socket/socket.h"
 #include "chrome/browser/extensions/api/socket/tcp_socket.h"
 #include "chrome/browser/extensions/api/socket/udp_socket.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/io_thread.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
+#include "net/base/net_errors.h"
+#include "net/base/net_log.h"
 
 namespace extensions {
 
@@ -84,28 +90,79 @@ void SocketDestroyFunction::Work() {
     error_ = kSocketNotFoundError;
 }
 
+SocketConnectFunction::SocketConnectFunction()
+    : io_thread_(g_browser_process->io_thread()),
+      request_handle_(new net::HostResolver::RequestHandle()),
+      addresses_(new net::AddressList) {
+}
+
+SocketConnectFunction::~SocketConnectFunction() {
+}
+
 bool SocketConnectFunction::Prepare() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &socket_id_));
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &address_));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &hostname_));
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(2, &port_));
   return true;
 }
 
 void SocketConnectFunction::AsyncWorkStart() {
+  StartDnsLookup();
+}
+
+void SocketConnectFunction::StartDnsLookup() {
+  net::HostResolver* host_resolver =
+      HostResolverWrapper::GetInstance()->GetHostResolver(
+          io_thread_->globals()->host_resolver.get());
+  DCHECK(host_resolver);
+
+  // Yes, we are passing zero as the port. There are some interesting but not
+  // presently relevant reasons why HostResolver asks for the port of the
+  // hostname you'd like to resolve, even though it doesn't use that value in
+  // determining its answer.
+  net::HostPortPair host_port_pair(hostname_, 0);
+
+  net::HostResolver::RequestInfo request_info(host_port_pair);
+  int resolve_result = host_resolver->Resolve(
+      request_info, addresses_.get(),
+      base::Bind(&SocketConnectFunction::OnDnsLookup, this),
+      request_handle_.get(), net::BoundNetLog());
+
+  // Balanced in OnConnect().
+  AddRef();
+
+  if (resolve_result != net::ERR_IO_PENDING)
+    OnDnsLookup(resolve_result);
+}
+
+void SocketConnectFunction::OnDnsLookup(int resolve_result) {
+  if (resolve_result == net::OK) {
+    DCHECK(!addresses_->empty());
+    resolved_address_ = addresses_->front().ToStringWithoutPort();
+    StartConnect();
+  } else {
+    OnConnect(resolve_result);
+  }
+}
+
+void SocketConnectFunction::StartConnect() {
   Socket* socket = controller()->GetSocket(socket_id_);
   if (!socket) {
     error_ = kSocketNotFoundError;
-    OnCompleted(-1);
+    OnConnect(-1);
     return;
   }
 
-  socket->Connect(address_, port_,
-      base::Bind(&SocketConnectFunction::OnCompleted, this));
+  socket->Connect(resolved_address_, port_,
+                  base::Bind(&SocketConnectFunction::OnConnect, this));
 }
 
-void SocketConnectFunction::OnCompleted(int result) {
+void SocketConnectFunction::OnConnect(int result) {
   result_.reset(Value::CreateIntegerValue(result));
   AsyncWorkCompleted();
+
+  // Added in StartDnsLookup().
+  Release();
 }
 
 bool SocketDisconnectFunction::Prepare() {
@@ -141,7 +198,7 @@ void SocketBindFunction::Work() {
 }
 
 SocketReadFunction::SocketReadFunction()
-  : params_(NULL) {
+    : params_(NULL) {
 }
 
 SocketReadFunction::~SocketReadFunction() {}
@@ -161,7 +218,7 @@ void SocketReadFunction::AsyncWorkStart() {
   }
 
   socket->Read(params_->buffer_size.get() ? *params_->buffer_size.get() : 4096,
-      base::Bind(&SocketReadFunction::OnCompleted, this));
+               base::Bind(&SocketReadFunction::OnCompleted, this));
 }
 
 void SocketReadFunction::OnCompleted(int bytes_read,
@@ -170,8 +227,8 @@ void SocketReadFunction::OnCompleted(int bytes_read,
   result->SetInteger(kResultCodeKey, bytes_read);
   if (bytes_read > 0) {
     result->Set(kDataKey,
-        base::BinaryValue::CreateWithCopiedBuffer(io_buffer->data(),
-            bytes_read));
+                base::BinaryValue::CreateWithCopiedBuffer(io_buffer->data(),
+                                                          bytes_read));
   } else {
     // BinaryValue does not support NULL buffer. Workaround it with new char[1].
     // http://crbug.com/127630
@@ -210,7 +267,7 @@ void SocketWriteFunction::AsyncWorkStart() {
   }
 
   socket->Write(io_buffer_, io_buffer_size_,
-      base::Bind(&SocketWriteFunction::OnCompleted, this));
+                base::Bind(&SocketWriteFunction::OnCompleted, this));
 }
 
 void SocketWriteFunction::OnCompleted(int bytes_written) {
@@ -222,7 +279,7 @@ void SocketWriteFunction::OnCompleted(int bytes_written) {
 }
 
 SocketRecvFromFunction::SocketRecvFromFunction()
-  : params_(NULL) {
+    : params_(NULL) {
 }
 
 SocketRecvFromFunction::~SocketRecvFromFunction() {}
@@ -242,7 +299,7 @@ void SocketRecvFromFunction::AsyncWorkStart() {
   }
 
   socket->RecvFrom(params_->buffer_size.get() ? *params_->buffer_size : 4096,
-      base::Bind(&SocketRecvFromFunction::OnCompleted, this));
+                   base::Bind(&SocketRecvFromFunction::OnCompleted, this));
 }
 
 void SocketRecvFromFunction::OnCompleted(int bytes_read,
@@ -253,8 +310,8 @@ void SocketRecvFromFunction::OnCompleted(int bytes_read,
   result->SetInteger(kResultCodeKey, bytes_read);
   if (bytes_read > 0) {
     result->Set(kDataKey,
-        base::BinaryValue::CreateWithCopiedBuffer(io_buffer->data(),
-            bytes_read));
+                base::BinaryValue::CreateWithCopiedBuffer(io_buffer->data(),
+                                                          bytes_read));
   } else {
     // BinaryValue does not support NULL buffer. Workaround it with new char[1].
     // http://crbug.com/127630
@@ -296,7 +353,7 @@ void SocketSendToFunction::AsyncWorkStart() {
   }
 
   socket->SendTo(io_buffer_, io_buffer_size_, address_, port_,
-      base::Bind(&SocketSendToFunction::OnCompleted, this));
+                 base::Bind(&SocketSendToFunction::OnCompleted, this));
 }
 
 void SocketSendToFunction::OnCompleted(int bytes_written) {
@@ -308,7 +365,7 @@ void SocketSendToFunction::OnCompleted(int bytes_written) {
 }
 
 SocketSetKeepAliveFunction::SocketSetKeepAliveFunction()
-  : params_(NULL) {
+    : params_(NULL) {
 }
 
 SocketSetKeepAliveFunction::~SocketSetKeepAliveFunction() {}
@@ -326,7 +383,7 @@ void SocketSetKeepAliveFunction::Work() {
     int delay = 0;
     if (params_->delay.get())
       delay = *params_->delay;
-      result = socket->SetKeepAlive(params_->enable, delay);
+    result = socket->SetKeepAlive(params_->enable, delay);
   } else {
     error_ = kSocketNotFoundError;
   }
@@ -334,7 +391,7 @@ void SocketSetKeepAliveFunction::Work() {
 }
 
 SocketSetNoDelayFunction::SocketSetNoDelayFunction()
-  : params_(NULL) {
+    : params_(NULL) {
 }
 
 SocketSetNoDelayFunction::~SocketSetNoDelayFunction() {}
@@ -349,9 +406,10 @@ void SocketSetNoDelayFunction::Work() {
   bool result = false;
   Socket* socket = controller()->GetSocket(params_->socket_id);
   if (socket)
-      result = socket->SetNoDelay(params_->no_delay);
+    result = socket->SetNoDelay(params_->no_delay);
   else
     error_ = kSocketNotFoundError;
   result_.reset(Value::CreateBooleanValue(result));
 }
+
 }  // namespace extensions

@@ -24,10 +24,6 @@ class DnsResolveFunction : public AsyncExtensionFunction {
 
   DnsResolveFunction();
 
-  // See below. Caller retains ownership.
-  static void set_host_resolver_for_testing(
-      net::HostResolver* host_resolver_for_testing);
-
  protected:
   virtual ~DnsResolveFunction();
 

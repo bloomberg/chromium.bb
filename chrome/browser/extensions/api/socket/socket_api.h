@@ -9,12 +9,16 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/api/api_function.h"
 #include "chrome/common/extensions/api/experimental_socket.h"
+#include "net/base/address_list.h"
+#include "net/base/host_resolver.h"
 
 #include <string>
 
 namespace net {
 class IOBuffer;
 }
+
+class IOThread;
 
 namespace extensions {
 
@@ -80,18 +84,33 @@ class SocketConnectFunction : public SocketExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.connect")
 
+  SocketConnectFunction();
+
  protected:
-  virtual ~SocketConnectFunction() {}
+  virtual ~SocketConnectFunction();
 
   // AsyncAPIFunction:
   virtual bool Prepare() OVERRIDE;
   virtual void AsyncWorkStart() OVERRIDE;
-  void OnCompleted(int result);
 
  private:
+  void StartDnsLookup();
+  void OnDnsLookup(int resolve_result);
+  void StartConnect();
+  void OnConnect(int result);
+
   int socket_id_;
-  std::string address_;
+  std::string hostname_;
+  std::string resolved_address_;
   int port_;
+
+  // This instance is widely available through BrowserProcess, but we need to
+  // acquire it on the UI thread and then use it on the IO thread, so we keep a
+  // plain pointer to it here as we move from thread to thread.
+  IOThread* io_thread_;
+
+  scoped_ptr<net::HostResolver::RequestHandle> request_handle_;
+  scoped_ptr<net::AddressList> addresses_;
 };
 
 class SocketDisconnectFunction : public SocketExtensionFunction {

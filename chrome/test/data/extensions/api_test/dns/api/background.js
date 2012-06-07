@@ -17,7 +17,7 @@ var testHostnameResolution = function() {
     chrome.test.assertEq("9.8.7.6", resolveInfo.address);
     chrome.test.succeed("hostname resolved");
   };
-  chrome.experimental.dns.resolve("www.sowbug.org", callback);
+  chrome.experimental.dns.resolve("www.sowbug.com", callback);
 };
 
 var testNonexistentHostnameResolution = function() {

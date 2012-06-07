@@ -81,32 +81,33 @@ function onWriteOrSendToComplete(writeInfo) {
   }
 }
 
+function onSetKeepAlive(result) {
+  if (protocol == "tcp")
+    chrome.test.assertTrue(result, "setKeepAlive failed for TCP.");
+  else
+    chrome.test.assertFalse(result, "setKeepAlive did not fail for UDP.");
+
+  string2ArrayBuffer(request, function(arrayBuffer) {
+      if (protocol == "tcp")
+        socket.write(socketId, arrayBuffer, onWriteOrSendToComplete);
+      else
+        socket.sendTo(socketId, arrayBuffer, address, port,
+                      onWriteOrSendToComplete);
+    });
+}
+
+function onSetNoDelay(result) {
+  if (protocol == "tcp")
+    chrome.test.assertTrue(result, "setNoDelay failed for TCP.");
+  else
+    chrome.test.assertFalse(result, "setNoDelay did not fail for UDP.");
+  socket.setKeepAlive(socketId, true, 1000, onSetKeepAlive);
+}
+
 function onConnectOrBindComplete(result) {
-  chrome.test.assertEq(0, result, "Connect or bind failed.");
+  chrome.test.assertEq(0, result,
+                       "Connect or bind failed with error " + result);
   if (result == 0) {
-    var onSetKeepAlive = function(result) {
-      if (protocol == "tcp")
-        chrome.test.assertTrue(result, "setKeepAlive failed for TCP.");
-      else
-        chrome.test.assertFalse(result, "setKeepAlive did not fail for UDP.");
-
-      string2ArrayBuffer(request, function(arrayBuffer) {
-          if (protocol == "tcp")
-            socket.write(socketId, arrayBuffer, onWriteOrSendToComplete);
-          else
-            socket.sendTo(socketId, arrayBuffer, address, port,
-                onWriteOrSendToComplete);
-        });
-    };
-
-    var onSetNoDelay = function(result) {
-      if (protocol == "tcp")
-        chrome.test.assertTrue(result, "setNoDelay failed for TCP.");
-      else
-        chrome.test.assertFalse(result, "setNoDelay did not fail for UDP.");
-      socket.setKeepAlive(socketId, true, 1000, onSetKeepAlive);
-    };
-
     socket.setNoDelay(socketId, true, onSetNoDelay);
   }
 }

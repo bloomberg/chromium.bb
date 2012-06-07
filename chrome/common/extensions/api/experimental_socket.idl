@@ -78,11 +78,11 @@
 
     // Connects the socket to the remote machine.
     // |socketId| : The socketId.
-    // |address| : The address of the remote machine.
+    // |hostname| : The hostname or IP address of the remote machine.
     // |port| : The port of the remote machine.
     // |callback| : Called when the connection attempt is complete.
     static void connect(long socketId,
-                        DOMString address,
+                        DOMString hostname,
                         long port,
                         ConnectCallback callback);
 

@@ -2,18 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/synchronization/waitable_event.h"
 #include "chrome/browser/extensions/api/dns/dns_api.h"
+#include "chrome/browser/extensions/api/dns/host_resolver_wrapper.h"
+#include "chrome/browser/extensions/api/dns/mock_host_resolver_creator.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
-#include "content/public/browser/browser_thread.h"
-#include "net/base/host_resolver.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 
-using content::BrowserThread;
 using extension_function_test_utils::CreateEmptyExtension;
 using extension_function_test_utils::RunFunctionAndReturnResult;
 
@@ -21,65 +20,19 @@ namespace {
 
 class DnsApiTest : public PlatformAppApiTest {
  public:
-  static const std::string kHostname;
-  static const std::string kAddress;
-
   DnsApiTest() : resolver_event_(true, false),
-                 mock_host_resolver_(NULL) {
+                 resolver_creator_(new extensions::MockHostResolverCreator()) {
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
-    CreateMockHostResolverOnIOThread();
-    extensions::DnsResolveFunction::set_host_resolver_for_testing(
-        get_mock_host_resolver());
+  void SetUpOnMainThread() OVERRIDE {
+    extensions::HostResolverWrapper::GetInstance()->SetHostResolverForTesting(
+        resolver_creator_->CreateMockHostResolver());
   }
 
-  virtual void CleanUpOnMainThread() OVERRIDE {
-    if (mock_host_resolver_) {
-      extensions::DnsResolveFunction::set_host_resolver_for_testing(NULL);
-      DeleteMockHostResolverOnIOThread();
-    }
-  }
-
-  void CreateMockHostResolverOnIOThread() {
-    bool result = BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&DnsApiTest::FinishMockHostResolverCreation, this));
-    DCHECK(result);
-
-    base::TimeDelta max_time = base::TimeDelta::FromSeconds(5);
-    ASSERT_TRUE(resolver_event_.TimedWait(max_time));
-
-  }
-
-  void FinishMockHostResolverCreation() {
-    mock_host_resolver_ = new net::MockHostResolver();
-    get_mock_host_resolver()->rules()->AddRule(kHostname, kAddress);
-    get_mock_host_resolver()->rules()->AddSimulatedFailure(
-        "this.hostname.is.bogus");
-    resolver_event_.Signal();
-  }
-
-  void DeleteMockHostResolverOnIOThread() {
-    if (!mock_host_resolver_)
-      return;
-    resolver_event_.Reset();
-    bool result = BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&DnsApiTest::FinishMockHostResolverDeletion, this));
-    DCHECK(result);
-
-    base::TimeDelta max_time = base::TimeDelta::FromSeconds(5);
-    ASSERT_TRUE(resolver_event_.TimedWait(max_time));
-  }
-
-  void FinishMockHostResolverDeletion() {
-    delete(mock_host_resolver_);
-    resolver_event_.Signal();
-  }
-
-  net::MockHostResolver* get_mock_host_resolver() {
-    return mock_host_resolver_;
+  void CleanUpOnMainThread() OVERRIDE {
+    extensions::HostResolverWrapper::GetInstance()->
+        SetHostResolverForTesting(NULL);
+    resolver_creator_->DeleteMockHostResolver();
   }
 
  private:
@@ -88,12 +41,8 @@ class DnsApiTest : public PlatformAppApiTest {
   // The MockHostResolver asserts that it's used on the same thread on which
   // it's created, which is actually a stronger rule than its real counterpart.
   // But that's fine; it's good practice.
-  //
-  // Plain pointer because we have to manage lifetime manually.
-  net::MockHostResolver* mock_host_resolver_;
+  scoped_refptr<extensions::MockHostResolverCreator> resolver_creator_;
 };
-const std::string DnsApiTest::kHostname = "www.sowbug.org";
-const std::string DnsApiTest::kAddress = "9.8.7.6";
 
 }  // namespace
 
@@ -128,7 +77,7 @@ IN_PROC_BROWSER_TEST_F(DnsApiTest, DnsResolveHostname) {
   resolve_function->set_has_callback(true);
 
   std::string function_arguments("[\"");
-  function_arguments += DnsApiTest::kHostname;
+  function_arguments += extensions::MockHostResolverCreator::kHostname;
   function_arguments += "\"]";
   scoped_ptr<base::Value> result(
       RunFunctionAndReturnResult(resolve_function.get(),
@@ -142,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(DnsApiTest, DnsResolveHostname) {
 
   std::string address;
   EXPECT_TRUE(value->GetString("address", &address));
-  EXPECT_EQ(DnsApiTest::kAddress, address);
+  EXPECT_EQ(extensions::MockHostResolverCreator::kAddress, address);
 }
 
 IN_PROC_BROWSER_TEST_F(DnsApiTest, DnsExtension) {

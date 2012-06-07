@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/api/dns/host_resolver_wrapper.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/common/extensions/api/experimental_dns.h"
 #include "content/public/browser/browser_thread.h"
@@ -21,26 +22,11 @@ namespace Resolve = extensions::api::experimental_dns::Resolve;
 
 namespace extensions {
 
-namespace {
-
-// If null, then we'll use io_thread_ to obtain the real HostResolver. We use
-// a plain pointer for to be consistent with the ownership model of the real
-// one.
-net::HostResolver* g_host_resolver_for_testing = NULL;
-
-}  // namespace
-
 DnsResolveFunction::DnsResolveFunction()
     : response_(false),
       io_thread_(g_browser_process->io_thread()),
       request_handle_(new net::HostResolver::RequestHandle()),
       addresses_(new net::AddressList) {
-}
-
-// static
-void DnsResolveFunction::set_host_resolver_for_testing(
-    net::HostResolver* host_resolver_for_testing_param) {
-  g_host_resolver_for_testing = host_resolver_for_testing_param;
 }
 
 DnsResolveFunction::~DnsResolveFunction() {}
@@ -61,8 +47,9 @@ bool DnsResolveFunction::RunImpl() {
 void DnsResolveFunction::WorkOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  net::HostResolver* host_resolver = g_host_resolver_for_testing ?
-      g_host_resolver_for_testing : io_thread_->globals()->host_resolver.get();
+  net::HostResolver* host_resolver =
+      HostResolverWrapper::GetInstance()->GetHostResolver(
+          io_thread_->globals()->host_resolver.get());
   DCHECK(host_resolver);
 
   // Yes, we are passing zero as the port. There are some interesting but not
