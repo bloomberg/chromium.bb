@@ -858,8 +858,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewGone, OnMsgRenderViewGone)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidStartProvisionalLoadForFrame,
                         OnMsgDidStartProvisionalLoadForFrame)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidRedirectProvisionalLoad,
-                        OnMsgDidRedirectProvisionalLoad)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidFailProvisionalLoadWithError,
                         OnMsgDidFailProvisionalLoadWithError)
     IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_FrameNavigate, OnMsgNavigate(msg))

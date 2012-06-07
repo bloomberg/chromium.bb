@@ -282,12 +282,6 @@ class CONTENT_EXPORT WebContentsImpl
       bool main_frame,
       const GURL& opener_url,
       const GURL& url) OVERRIDE;
-  virtual void DidRedirectProvisionalLoad(
-      content::RenderViewHost* render_view_host,
-      int32 page_id,
-      const GURL& opener_url,
-      const GURL& source_url,
-      const GURL& target_url) OVERRIDE;
   virtual void DidFailProvisionalLoadWithError(
       content::RenderViewHost* render_view_host,
       const ViewHostMsg_DidFailProvisionalLoadWithError_Params& params)

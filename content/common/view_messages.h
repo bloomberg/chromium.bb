@@ -1866,13 +1866,6 @@ IPC_SYNC_MESSAGE_ROUTED3_2(ViewHostMsg_RunBeforeUnloadConfirm,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_DataReceived_ACK,
                     int /* request_id */)
 
-// Sent when a provisional load on the main frame redirects.
-IPC_MESSAGE_ROUTED4(ViewHostMsg_DidRedirectProvisionalLoad,
-                    int /* page_id */,
-                    GURL /* opener url if present, else empty */,
-                    GURL /* last url */,
-                    GURL /* url redirected to */)
-
 // Sent when the renderer changes the zoom level for a particular url, so the
 // browser can update its records.  If remember is true, then url is used to
 // update the zoom level for all pages in that site.  Otherwise, the render

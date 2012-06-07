@@ -7,6 +7,8 @@
 
 #include "base/time.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "googleurl/src/gurl.h"
 
@@ -19,16 +21,13 @@ class PrerenderManager;
 
 // PrerenderTabHelper is responsible for recording perceived pageload times
 // to compare PLT's with prerendering enabled and disabled.
-class PrerenderTabHelper : public content::WebContentsObserver {
+class PrerenderTabHelper : public content::NotificationObserver,
+                           public content::WebContentsObserver {
  public:
   explicit PrerenderTabHelper(TabContentsWrapper* tab);
   virtual ~PrerenderTabHelper();
 
   // content::WebContentsObserver implementation.
-  virtual void ProvisionalChangeToMainFrameUrl(
-      const GURL& url,
-      const GURL& opener_url,
-      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidStopLoading() OVERRIDE;
   virtual void DidStartProvisionalLoadForFrame(
       int64 frame_id,
@@ -61,6 +60,14 @@ class PrerenderTabHelper : public content::WebContentsObserver {
   // Returns whether the WebContents being observed was prerendered.
   bool IsPrerendered();
 
+  void HandleResourceReceivedRedirect(const GURL& new_url);
+
+  // content::NotificationObserver
+  virtual void Observe(
+      int type,
+      const content::NotificationSource& source,
+      const content::NotificationDetails& details) OVERRIDE;
+
   // TabContentsWrapper we're created for.
   TabContentsWrapper* tab_;
 
@@ -75,6 +82,8 @@ class PrerenderTabHelper : public content::WebContentsObserver {
 
   // Current URL being loaded.
   GURL url_;
+
+  content::NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderTabHelper);
 };
