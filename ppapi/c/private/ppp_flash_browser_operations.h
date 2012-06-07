@@ -4,7 +4,7 @@
  */
 
 /* From private/ppp_flash_browser_operations.idl,
- *   modified Thu May 24 15:41:01 2012.
+ *   modified Thu Jun  7 10:43:20 2012.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPP_FLASH_BROWSER_OPERATIONS_H_
@@ -157,7 +157,7 @@ struct PPP_Flash_BrowserOperations_1_1 {
       const char* plugin_data_path,
       PP_Flash_BrowserOperations_SettingType setting_type,
       PP_Flash_BrowserOperations_Permission permission,
-      PP_Bool clear_site_speicifc);
+      PP_Bool clear_site_specific);
   /**
    * Sets site-specific permission. If a site has already got site-specific
    * permission and it is not in <code>sites</code>, it won't be affected.

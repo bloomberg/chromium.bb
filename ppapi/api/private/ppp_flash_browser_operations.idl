@@ -122,7 +122,7 @@ interface PPP_Flash_BrowserOperations {
       [in] str_t plugin_data_path,
       [in] PP_Flash_BrowserOperations_SettingType setting_type,
       [in] PP_Flash_BrowserOperations_Permission permission,
-      [in] PP_Bool clear_site_speicifc);
+      [in] PP_Bool clear_site_specific);
 
   /**
    * Sets site-specific permission. If a site has already got site-specific
