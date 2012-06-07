@@ -415,11 +415,7 @@ static void ReleaseFreeMemoryThunk() {
     RegisterInvalidParamHandler();
     _Module.Init(NULL, static_cast<HINSTANCE>(instance));
 
-    if (sandbox_info)
-      sandbox_info_ = *sandbox_info;
-    else
-      memset(&sandbox_info_, 0, sizeof(sandbox_info_));
-
+    sandbox_info_ = *sandbox_info;
 #else  // !OS_WIN
   virtual int Initialize(int argc,
                          const char** argv,
