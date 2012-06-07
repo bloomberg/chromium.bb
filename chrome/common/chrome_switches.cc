@@ -924,11 +924,11 @@ const char kNumPacThreads[]                 = "num-pac-threads";
 const char kOmniboxHistoryQuickProviderNewScoring[] =
     "omnibox-history-quick-provider-new-scoring";
 // The value the kOmniboxHistoryQuickProviderNewScoring switch may have,
-// as in "--omnibox-history-quick-provider-new-scoring=1".  1 means
-// enable new scoring.  All other values means use old scoring ( == current
-// behavior as of 6/2012).
-const char kOmniboxHistoryQuickProviderNewScoringEnabled[] =
-    "1";
+// as in "--omnibox-history-quick-provider-new-scoring=1".
+// 1 means use new scoring.
+const char kOmniboxHistoryQuickProviderNewScoringEnabled[] = "1";
+// 0 means use old scoring ( == current behavior as of 6/2012).
+const char kOmniboxHistoryQuickProviderNewScoringDisabled[] = "0";
 
 // Controls whether the omnibox's HistoryQuickProvider is allowed to
 // inline suggestions.

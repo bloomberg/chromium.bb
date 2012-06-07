@@ -72,6 +72,16 @@ const char kMediaPlayerExperimentName[] = "media-player";
 const char kAdvancedFileSystemExperimentName[] = "advanced-file-system";
 const char kVerticalTabsExperimentName[] = "vertical-tabs";
 
+const Experiment::Choice kOmniboxHistoryQuickProviderNewScoringChoices[] = {
+  { IDS_FLAGS_OMNIBOX_HISTORY_QUICK_PROVIDER_NEW_SCORING_AUTOMATIC, "", "" },
+  { IDS_FLAGS_OMNIBOX_HISTORY_QUICK_PROVIDER_NEW_SCORING_ENABLED,
+    switches::kOmniboxHistoryQuickProviderNewScoring,
+    switches::kOmniboxHistoryQuickProviderNewScoringEnabled },
+  { IDS_FLAGS_OMNIBOX_HISTORY_QUICK_PROVIDER_NEW_SCORING_DISABLED,
+    switches::kOmniboxHistoryQuickProviderNewScoring,
+    switches::kOmniboxHistoryQuickProviderNewScoringDisabled }
+};
+
 const Experiment::Choice kOmniboxInlineHistoryQuickProviderChoices[] = {
   { IDS_FLAGS_OMNIBOX_INLINE_HISTORY_QUICK_PROVIDER_AUTOMATIC, "", "" },
   { IDS_FLAGS_OMNIBOX_INLINE_HISTORY_QUICK_PROVIDER_ALLOWED,
@@ -394,6 +404,13 @@ const Experiment kExperiments[] = {
     // On by default for the Mac (different implementation in WebKit).
     kOsWin | kOsLinux | kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kEnableSmoothScrolling)
+  },
+  {
+    "omnibox-history-quick-provider-new-scoring",
+    IDS_FLAGS_OMNIBOX_HISTORY_QUICK_PROVIDER_NEW_SCORING_NAME,
+    IDS_FLAGS_OMNIBOX_HISTORY_QUICK_PROVIDER_NEW_SCORING_DESCRIPTION,
+    kOsAll,
+    MULTI_VALUE_TYPE(kOmniboxHistoryQuickProviderNewScoringChoices)
   },
   {
     "omnibox-inline-history-quick-provider",

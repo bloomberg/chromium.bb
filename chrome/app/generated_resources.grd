@@ -5446,6 +5446,21 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enable Omnibox History in the sync settings. This allows syncing your typed URL history to other clients to assist in omnibox auto-completion.
         </message>
       </if>
+      <message name="IDS_FLAGS_OMNIBOX_HISTORY_QUICK_PROVIDER_NEW_SCORING_NAME" desc="Title for the flag for omnibox to use new scoring function in HistoryQuickProvider when ranking suggestions">
+        Use new scoring in HistoryQuickProvider
+      </message>
+      <message name="IDS_FLAGS_OMNIBOX_HISTORY_QUICK_PROVIDER_NEW_SCORING_DESCRIPTION" desc="Description for the flag for omnibox to use new scoring function in HistoryQuickProvider when ranking suggestions">
+        In omnibox autocomplete, use the new scoring function for ranking matches coming from HistoryQuickProvider.
+      </message>
+      <message name="IDS_FLAGS_OMNIBOX_HISTORY_QUICK_PROVIDER_NEW_SCORING_AUTOMATIC" desc="Option name for automatic selection of whether to use new scoring function in HistoryQuickProvider">
+        Automatic
+      </message>
+      <message name="IDS_FLAGS_OMNIBOX_HISTORY_QUICK_PROVIDER_NEW_SCORING_ENABLED" desc="Option name to use new scoring function in HistoryQuickProvider">
+        New Scoring
+      </message>
+      <message name="IDS_FLAGS_OMNIBOX_HISTORY_QUICK_PROVIDER_NEW_SCORING_DISABLED" desc="Option name to use old scoring function in HistoryQuickProvider">
+        Old Scoring
+      </message>
       <message name="IDS_FLAGS_OMNIBOX_INLINE_HISTORY_QUICK_PROVIDER_NAME" desc="Title for the flag for omnibox to prohibit the HistoryQuickProvider from inlining suggestions">
         Inline HistoryQuickProvider suggestions
       </message>
