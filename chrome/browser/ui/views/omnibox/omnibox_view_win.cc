@@ -20,6 +20,8 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/iat_patch_function.h"
+#include "base/win/scoped_hdc.h"
+#include "base/win/scoped_select_object.h"
 #include "base/win/windows_version.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
@@ -482,10 +484,10 @@ OmniboxViewWin::OmniboxViewWin(AutocompleteEditController* controller,
               reinterpret_cast<LPARAM>(&WordBreakProc));
 
   // Get the metrics for the font.
-  HDC hdc = ::GetDC(NULL);
-  HGDIOBJ old_font = SelectObject(hdc, font_.GetNativeFont());
+  base::win::ScopedGetDC screen_dc(NULL);
+  base::win::ScopedSelectObject(screen_dc, font_.GetNativeFont());
   TEXTMETRIC tm = {0};
-  GetTextMetrics(hdc, &tm);
+  GetTextMetrics(screen_dc, &tm);
   int cap_height = font_.GetBaseline() - tm.tmInternalLeading;
   // The ratio of a font's x-height to its cap height.  Sadly, Windows
   // doesn't provide a true value for a font's x-height in its text
@@ -502,11 +504,8 @@ OmniboxViewWin::OmniboxViewWin(AutocompleteEditController* controller,
 
   // Get the number of twips per pixel, which we need below to offset our text
   // by the desired number of pixels.
-  const long kTwipsPerPixel = kTwipsPerInch / GetDeviceCaps(hdc, LOGPIXELSY);
-  // It's unsafe to delete a DC with a non-stock object selected, so restore the
-  // original font.
-  SelectObject(hdc, old_font);
-  ::ReleaseDC(NULL, hdc);
+  const long kTwipsPerPixel =
+      kTwipsPerInch / GetDeviceCaps(screen_dc, LOGPIXELSY);
 
   // Set the default character style -- adjust to our desired baseline.
   CHARFORMAT cf = {0};
