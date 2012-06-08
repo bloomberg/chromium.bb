@@ -1,53 +1,57 @@
 {
-    "table": "ta-ta-g1.ctb", 
-    "tests": [
+  "sections": [
+    {
+      "tests": [
         {
-            "brl": "i",
-            "txt": "இ"
+            "output": "i",
+            "input": "இ"
         }, 
         {
-            "brl": "p",
-            "txt": "ப"
+            "output": "p",
+            "input": "ப"
         }, 
         {
-            "brl": "pi",
-            "txt": "பி"
+            "output": "pi",
+            "input": "பி"
         },
         {
-            "brl": "`k",
-            "txt": "க்"
+            "output": "`k",
+            "input": "க்"
         },
         {
-            "brl": " s ",
-            "txt": " ஸ்ரீ "
+            "output": " s ",
+            "input": " ஸ்ரீ "
         },
         {
-            "brl": "p`sr9",
-            "txt": "பஸ்ரீ"
+            "output": "p`sr9",
+            "input": "பஸ்ரீ"
         },
         {
-            "brl": " q ",
-            "txt": " க்ஷ "
+            "output": " q ",
+            "input": " க்ஷ "
         },
         {
-            "brl": "`q4",
-            "txt": "க்ஷ்."
+            "output": "`q4",
+            "input": "க்ஷ்."
         },
         {
-            "brl": ",8",
-            "txt": "“"
+            "output": ",8",
+            "input": "“"
         },
         {
-            "brl": "0'",
-            "txt": "”"
+            "output": "0'",
+            "input": "”"
         },
         {
-            "brl":"8",
-            "txt": "‘"
+            "output":"8",
+            "input": "‘"
         },
         {
-            "brl": "0",
-            "txt": "’"
+            "output": "0",
+            "input": "’"
        }
-    ]
+      ]
+    }
+  ], 
+  "table": "ta-ta-g1.ctb"
 }

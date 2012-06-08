@@ -54,33 +54,32 @@ modes = {
 def showCurPos(length, pos1, marker1="^", pos2=None, marker2="*"):
     """A helper function to make a string to show the position of the given cursor."""
     display = [" "] *length
-    #print "pos1:", pos1
     display[pos1] = marker1
     if pos2:
         display[pos2] = marker2
     return "".join(display)
 
 class BrailleTest():
-    def __init__(self, harnessName, table, txt, brl, mode=0, cursorPos=None, brlCursorPos=None, comment=None, testmode=None):
+    def __init__(self, harnessName, table, input, output, mode=0, cursorPos=None, brlCursorPos=None, testmode='translate', comment=None):
         self.harnessName = harnessName
         self.table = table
-        self.txt = txt
-        self.expectedBrl = brl
+        self.input = input
+        self.expectedBrl = output
         self.mode = mode if not mode else modes[mode]
         self.cursorPos = cursorPos
         self.expectedBrlCursorPos = brlCursorPos
         self.comment = comment
-        self.testmode = 'translate' if not testmode else testmode
+        self.testmode = testmode
 
     def __str__(self):
-        return "%s: %s" % (self.harnessName, self.txt)
+        return "%s: %s" % (self.harnessName, self.input)
 
     def check_translate(self):
         if self.testmode != 'translate': return
         if self.cursorPos is not None:
-            tBrl, temp1, temp2, tBrlCurPos = translate(self.table, self.txt, mode=self.mode, cursorPos=self.cursorPos)
+            tBrl, temp1, temp2, tBrlCurPos = translate(self.table, self.input, mode=self.mode, cursorPos=self.cursorPos)
         else:
-            tBrl, temp1, temp2, tBrlCurPos = translate(self.table, self.txt, mode=self.mode)
+            tBrl, temp1, temp2, tBrlCurPos = translate(self.table, self.input, mode=self.mode)
         template = "%-25s '%s'"
         tBrlCurPosStr = showCurPos(len(tBrl), tBrlCurPos)
         report = [
@@ -93,22 +92,19 @@ class BrailleTest():
         assert tBrl == self.expectedBrl, u("\n".join(report))
 
     def check_backtranslate(self):
-        if self.testmode != 'backtranslate': return
         backtranslate_output = backTranslateString(self.table, self.expectedBrl, None, mode=self.mode)
         template = "%-25s '%s'"
         report = [
             self.__str__(),
             "--- Backtranslate failure: ---",
-            template % ("expected text:", self.txt),
+            template % ("expected text:", self.input),
             template % ("actual backtranslated text:", backtranslate_output),
             "--- end ---",
         ]
-        assert backtranslate_output == self.txt, u("\n".join(report))
+        assert backtranslate_output == self.input, u("\n".join(report))
 
     def check_cursor(self):
-        if self.testmode != 'translate': return
-        if self.cursorPos == None: return
-        tBrl, temp1, temp2, tBrlCurPos = translate(self.table, self.txt, mode=self.mode, cursorPos=self.cursorPos)
+        tBrl, temp1, temp2, tBrlCurPos = translate(self.table, self.input, mode=self.mode, cursorPos=self.cursorPos)
         template = "%-25s '%s'"
         etBrlCurPosStr = showCurPos(len(tBrl), tBrlCurPos, pos2=self.expectedBrlCursorPos)
         report = [
@@ -142,9 +138,17 @@ def test_allCases():
         f.close()
         print("Processing %s" %harness)
         tableList = [u(harnessModule['table'])]
-
-        for test in harnessModule['tests']:
-            bt = BrailleTest(harness, tableList, **test)
-            yield bt.check_translate
-            yield bt.check_cursor
-            yield bt.check_backtranslate
+        origflags = {'testmode':'translate'}
+        for section in harnessModule['sections']:
+            flags = section.get('flags', origflags)
+            for testData in section['tests']:
+                test = flags.copy()
+                test.update(testData)
+                bt = BrailleTest(harness, tableList, **test)
+                if test['testmode'] == 'translate':
+                    yield bt.check_translate
+                    if test.has_key('cursorPos'):
+                        yield bt.check_cursor
+                if test['testmode'] == 'backtranslate':
+                    continue
+                    #yield bt.check_backtranslate

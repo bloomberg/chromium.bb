@@ -1,20 +1,46 @@
 {
-    "table": "en-GB-g2.ctb", 
-    "tests": [
+  "sections": [
+{
+"tests": [
         {
-            "brl": "! cat sat on ! mat", 
-            "txt": "the cat sat on the mat"
+            "output": "! cat sat on ! mat", 
+            "input": "the cat sat on the mat"
         }, 
         {
-            "brl": "6! moon", 
-            "txt": "to the moon"
+            "output": "6! moon", 
+            "input": "to the moon"
         }, 
         {
             "brlCursorPos": 2, 
-            "brl": "y went to", 
+            "output": "y went to", 
             "cursorPos": 4, 
             "mode": "compbrlAtCursor", 
-            "txt": "you went to"
+            "input": "you went to"
         }
-    ]
+]
+},
+    {
+      "flags": {
+        "testmode": "backtranslate"
+      }, 
+      "tests": [
+        {
+          "input": "! cat sat on ! mat", 
+          "output": "the cat sat on the mat"
+        }, 
+        {
+          "input": "6! moon", 
+          "output": "to the moon"
+        }, 
+        {
+          "brlCursorPos": 2, 
+          "cursorPos": 4, 
+          "input": "y went to", 
+          "mode": "compbrlAtCursor", 
+          "output": "you went to"
+        }
+      ]
+    }
+  ], 
+  "table": "en-GB-g2.ctb"
 }

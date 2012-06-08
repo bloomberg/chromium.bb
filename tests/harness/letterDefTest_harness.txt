@@ -1,9 +1,13 @@
 {
-    "table": "letterDefTest.ctb", 
-    "tests": [
+  "sections": [
+    {
+      "tests": [
         {
-            "brl": "⠎⠍", 
-            "txt": "⠍⠎"
+            "output": "⠎⠍", 
+            "input": "⠍⠎"
         }
-    ]
+      ]
+    }
+  ], 
+  "table": "letterDefTest.ctb"
 }
