@@ -36,6 +36,7 @@ class LauncherButton : public views::CustomButton {
     //   e.g. A TYPE_APP_SHORTCUT item whose corresponding app is being
     //        installed.
     STATE_PENDING   = 1 << 4,
+    STATE_FOCUSED   = 1 << 5,
   };
 
   virtual ~LauncherButton();
@@ -91,6 +92,8 @@ class LauncherButton : public views::CustomButton {
   virtual void Layout() OVERRIDE;
   virtual bool GetTooltipText(const gfx::Point& p,
                               string16* tooltip) const OVERRIDE;
+  virtual void OnFocus() OVERRIDE;
+  virtual void OnBlur() OVERRIDE;
 
   // Sets the icon image with a shadow.
   void SetShadowedImage(const SkBitmap& bitmap);

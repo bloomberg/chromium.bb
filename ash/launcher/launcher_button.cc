@@ -42,7 +42,8 @@ const int kAttentionThrobDurationMS = 2000;
 
 bool ShouldHop(int state) {
   return state & ash::internal::LauncherButton::STATE_HOVERED ||
-      state & ash::internal::LauncherButton::STATE_ACTIVE;
+      state & ash::internal::LauncherButton::STATE_ACTIVE ||
+      state & ash::internal::LauncherButton::STATE_FOCUSED;
 }
 
 }  // namespace
@@ -397,6 +398,14 @@ bool LauncherButton::GetTooltipText(
   return true;
 }
 
+void LauncherButton::OnFocus() {
+  AddState(STATE_FOCUSED);
+}
+
+void LauncherButton::OnBlur() {
+  ClearState(STATE_FOCUSED);
+}
+
 void LauncherButton::Init() {
   icon_view_ = CreateIconView();
   // TODO: refactor the layers so each button doesn't require 2.
@@ -427,7 +436,7 @@ void LauncherButton::UpdateState() {
     if (state_ & STATE_ACTIVE || state_ & STATE_ATTENTION) {
       bar_id = IsShelfHorizontal() ? IDR_AURA_LAUNCHER_UNDERLINE_ACTIVE :
           IDR_AURA_LAUNCHER_UNDERLINE_VERTICAL_ACTIVE;
-    } else if (state_ & STATE_HOVERED) {
+    } else if (state_ & STATE_HOVERED || state_ & STATE_FOCUSED) {
       bar_id = IsShelfHorizontal() ? IDR_AURA_LAUNCHER_UNDERLINE_HOVER :
           IDR_AURA_LAUNCHER_UNDERLINE_VERTICAL_HOVER;
     } else {
