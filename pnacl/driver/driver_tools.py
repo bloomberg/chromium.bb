@@ -58,7 +58,23 @@ def SetExecutableMode(path):
     os.chmod(realpath, 0755 & ~umask)
 
 
-def RunDriver(invocation, args, suppress_arch = False):
+def FilterOutArchArgs(args):
+  while '-arch' in args:
+    i = args.index('-arch')
+    args = args[:i] + args[i+2:]
+  return args
+
+
+def RunDriver(invocation, args, suppress_inherited_arch_args=False):
+  """
+  RunDriver() is used to invoke "driver" tools, e.g.
+  those prefixed  with "pnacl-"
+
+  It automatically appends some additional flags to the invocation
+  which were inherited from the current invocation.
+  Those flags were preserved by ParseArgs
+  """
+
   if isinstance(args, str):
     args = shell.split(env.eval(args))
 
@@ -66,16 +82,13 @@ def RunDriver(invocation, args, suppress_arch = False):
   script = env.eval('${DRIVER_BIN}/%s' % module_name)
   script = shell.unescape(script)
 
-  driver_args = env.get('DRIVER_FLAGS')
-
-  # Get rid of -arch <arch> in the driver flags.
-  if suppress_arch:
-    while '-arch' in driver_args:
-      i = driver_args.index('-arch')
-      driver_args = driver_args[:i] + driver_args[i+2:]
+  inherited_driver_args = env.get('INHERITED_DRIVER_ARGS')
+  if suppress_inherited_arch_args:
+    inherited_driver_args = FilterOutArchArgs(inherited_driver_args)
 
   script = pathtools.tosys(script)
-  cmd = [script] + driver_args + args
+  cmd = [script] + args + inherited_driver_args
+  Log.Info('Driver invocation: %s', repr(cmd))
 
   module = __import__(module_name)
   # Save the environment, reset the environment, run
@@ -229,6 +242,7 @@ def ShouldExpandCommandFile(arg):
   else:
     return False
 
+
 def DoExpandCommandFile(argv, i):
   arg = argv[i]
   fd = DriverOpen(pathtools.normalize(arg[1:]), 'r')
@@ -238,7 +252,26 @@ def DoExpandCommandFile(argv, i):
   return new_argv
 
 
-def ParseArgs(argv, patternlist, must_match = True):
+def ParseArgs(argv,
+              patternlist,
+              driver_patternlist=DriverArgPatterns):
+  """Parse argv using the patterns in patternlist
+     Also apply the built-in DriverArgPatterns unless instructed otherwise.
+     This function must be called by all (real) drivers.
+  """
+  if driver_patternlist:
+    driver_args, argv = ParseArgsBase(argv, driver_patternlist)
+    assert not env.get('INHERITED_DRIVER_ARGS')
+    env.append('INHERITED_DRIVER_ARGS', *driver_args)
+
+  _, unmatched = ParseArgsBase(argv, patternlist)
+  if unmatched:
+    for u in unmatched:
+      Log.Error('Unrecognized argument: ' + u)
+    Log.Fatal('unknown arguments')
+
+
+def ParseArgsBase(argv, patternlist):
   """ Parse argv using the patterns in patternlist
       Returns: (matched, unmatched)
   """
@@ -250,10 +283,7 @@ def ParseArgs(argv, patternlist, must_match = True):
       argv = DoExpandCommandFile(argv, i)
     num_matched, action, groups = MatchOne(argv, i, patternlist)
     if num_matched == 0:
-      if must_match:
-        Log.Fatal('Unrecognized argument: ' + argv[i])
-      else:
-        unmatched.append(argv[i])
+      unmatched.append(argv[i])
       i += 1
       continue
     matched += argv[i:i+num_matched]
@@ -273,6 +303,7 @@ def ParseArgs(argv, patternlist, must_match = True):
       Log.Fatal('ParseArgs action [%s] failed with: %s', action, err)
     i += num_matched
   return (matched, unmatched)
+
 
 def MatchOne(argv, i, patternlist):
   """Find a pattern which matches argv starting at position i"""
@@ -789,6 +820,9 @@ def Run(args,
   """ Run: Run a command.
       Returns: return_code, stdout, stderr
 
+      Run() is used to invoke "other" tools, e.g.
+      those NOT prefixed with "pnacl-"
+
       stdout and stderr only contain meaningful data if
           redirect_{stdout,stderr} == subprocess.PIPE
 
@@ -931,25 +965,23 @@ def DriverMain(module, argv):
   if IsWindowsPython():
     SetupCygwinLibs()
 
-  # Parse driver arguments
-  (driver_flags, main_args) = ParseArgs(argv[1:],
-                                        DriverArgPatterns,
-                                        must_match = False)
-  env.append('DRIVER_FLAGS', *driver_flags)
+  # skip tool name
+  argv = argv[1:]
 
   # Handle help info
-  help_func = getattr(module, 'get_help', None)
-  if ('--help' in main_args or
-      '-h' in main_args or
-      '-help' in main_args or
-      '--help-full' in main_args):
+  if ('--help' in argv or
+      '-h' in argv or
+      '-help' in argv or
+      '--help-full' in argv):
+    help_func = getattr(module, 'get_help', None)
     if not help_func:
       Log.Fatal('Help text not available')
-    helpstr = help_func(main_args)
+    helpstr = help_func(argv)
     print helpstr
     return 0
 
-  return module.main(main_args)
+  return module.main(argv)
+
 
 def SetArch(arch):
   env.set('ARCH', FixArch(arch))
