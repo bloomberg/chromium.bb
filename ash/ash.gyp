@@ -191,6 +191,7 @@
         'tooltips/tooltip_controller.h',
         'touch/touch_observer_hud.cc',
         'touch/touch_observer_hud.h',
+        'ui_controls_ash.cc',
         'volume_control_delegate.h',
         'wm/app_list_controller.cc',
         'wm/app_list_controller.h',

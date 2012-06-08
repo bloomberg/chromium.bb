@@ -565,7 +565,7 @@ Shell::Shell(ShellDelegate* delegate)
       status_area_widget_(NULL),
       browser_context_(NULL) {
   gfx::Screen::SetInstance(screen_);
-  ui_controls::InstallUIControlsAura(CreateUIControlsAura(root_window_.get()));
+  ui_controls::InstallUIControlsAura(internal::CreateUIControls());
 #if defined(OS_CHROMEOS)
   // OutputConfigurator needs to get events regarding added/removed outputs.
   static_cast<aura::DispatcherLinux*>(

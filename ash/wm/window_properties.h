@@ -11,6 +11,10 @@
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 
+namespace ui_controls {
+class UIControlsAura;
+}
+
 namespace ash {
 namespace internal {
 
@@ -30,6 +34,10 @@ extern const aura::WindowProperty<ui::WindowShowState>* const
 // A property key describing the drop shadow that should be displayed under the
 // window.  If unset, no shadow is displayed.
 extern const aura::WindowProperty<ShadowType>* const kShadowTypeKey;
+
+// Used to store a ui_controls for each root window.
+extern const aura::WindowProperty<ui_controls::UIControlsAura*>* const
+    kUIControlsKey;
 
 extern const aura::WindowProperty<WindowPersistsAcrossAllWorkspacesType>* const
     kWindowPersistsAcrossAllWorkspacesKey;
