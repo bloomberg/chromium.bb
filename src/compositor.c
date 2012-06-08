@@ -44,11 +44,14 @@
 #include <dlfcn.h>
 #include <signal.h>
 #include <setjmp.h>
+#include <sys/time.h>
+#include <time.h>
 
 #include <wayland-server.h>
 #include "compositor.h"
 #include "../shared/os-compatibility.h"
 #include "log.h"
+#include "git-version.h"
 
 static struct wl_list child_process_list;
 static jmp_buf segv_jmp_buf;
@@ -3106,6 +3109,9 @@ int main(int argc, char *argv[])
 	int32_t xserver = 0;
 	char *socket_name = NULL;
 	char *config_file;
+	char buffer[64];
+	struct timeval tv;
+	struct tm *brokendown_time;
 
 	const struct config_key shell_config_keys[] = {
 		{ "type", CONFIG_KEY_STRING, &shell },
@@ -3134,6 +3140,11 @@ int main(int argc, char *argv[])
 	}
 
 	weston_log_file_open(log);
+
+	gettimeofday(&tv, NULL);
+	brokendown_time = localtime(&tv.tv_sec);
+	strftime(buffer, sizeof buffer, "%Y-%m-%d %H:%M:%S", brokendown_time);
+	weston_log("weston %s " WESTON_SHA1 "\n", buffer);
 
 	display = wl_display_create();
 
