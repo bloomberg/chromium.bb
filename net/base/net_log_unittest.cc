@@ -13,7 +13,7 @@ namespace net {
 namespace {
 
 TEST(NetLog, ScopedNetLogEventTest) {
-  CapturingNetLog log(CapturingNetLog::kUnbounded);
+  CapturingNetLog log;
   BoundNetLog net_log(BoundNetLog::Make(&log, NetLog::SOURCE_URL_REQUEST));
 
   scoped_ptr<ScopedNetLogEvent> net_log_event(
