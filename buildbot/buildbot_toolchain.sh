@@ -99,3 +99,7 @@ else
   echo "ERROR, bad platform."
   exit 1
 fi
+
+if [[ "${DONT_BUILD_COMPATIBLE_TOOLCHAINS:-no}" != "yes" ]]; then
+  native_client/tools/BACKPORTS/build_backports.sh VERSIONS ${PLATFORM}
+fi

@@ -169,3 +169,7 @@ fi
 export INSIDE_TOOLCHAIN=1
 python buildbot/buildbot_standard.py --step-suffix=' (32)' opt 32 glibc
 exec python buildbot/buildbot_standard.py --step-suffix=' (64)' opt 64 glibc
+
+if [[ "${BUILD_COMPATIBLE_TOOLCHAINS:-yes}" != "no" ]]; then
+  native_client/tools/BACKPORTS/build_backports.sh VERSIONS linux
+fi

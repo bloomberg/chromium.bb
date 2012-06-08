@@ -97,3 +97,7 @@ fi
 
 export INSIDE_TOOLCHAIN=1
 exec python buildbot/buildbot_standard.py opt 32 glibc
+
+if [[ "${BUILD_COMPATIBLE_TOOLCHAINS:-yes}" != "no" ]]; then
+  native_client/tools/BACKPORTS/build_backports.sh VERSIONS mac
+fi
