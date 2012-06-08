@@ -23,6 +23,7 @@ void av_bitstream_filter_close(AVBitStreamFilterContext *bsf);
 void av_destruct_packet(AVPacket *pkt);
 int av_lockmgr_register(AVLockMgrOperation cb);
 void avcodec_get_frame_defaults(AVFrame *pic);
+void avcodec_align_dimensions(AVCodecContext *s, int *width, int *height);
 
 # RDFT functions.
 RDFTContext *av_rdft_init(int nbits, enum RDFTransformType trans);
