@@ -305,7 +305,9 @@ function jsonParseSafe(jsonString) {
 remoting.timestamp = function() {
   /**
    * @param {number} num A number.
-   * @return {string} The number, formatted as a string of the specified length.
+   * @param {number} len The required length of the answer.
+   * @return {string} The number, formatted as a string of the specified length
+   *     by prepending zeroes as necessary.
    */
   var pad = function(num, len) {
     var result = num.toString();
