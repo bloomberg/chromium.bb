@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_flash.idl modified Thu Jun  7 12:05:41 2012. */
+/* From private/ppb_flash.idl modified Thu Jun  7 12:41:56 2012. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_FLASH_H_
 #define PPAPI_C_PRIVATE_PPB_FLASH_H_
@@ -25,7 +25,8 @@
 #define PPB_FLASH_INTERFACE_12_1 "PPB_Flash;12.1"
 #define PPB_FLASH_INTERFACE_12_2 "PPB_Flash;12.2"
 #define PPB_FLASH_INTERFACE_12_3 "PPB_Flash;12.3"
-#define PPB_FLASH_INTERFACE PPB_FLASH_INTERFACE_12_3
+#define PPB_FLASH_INTERFACE_12_4 "PPB_Flash;12.4"
+#define PPB_FLASH_INTERFACE PPB_FLASH_INTERFACE_12_4
 
 /**
  * @file
@@ -41,30 +42,30 @@ typedef enum {
   /**
    * Specifies if the system likely supports 3D hardware acceleration.
    *
-   * The result is an int where 1 corresponds to true and 0 corresponds to
-   * false, depending on the supported nature of 3D acceleration. If querying
-   * this function returns 1, the 3D system will normally use the native
-   * hardware for rendering which will be much faster.
+   * The result is a boolean PP_Var, depending on the supported nature of 3D
+   * acceleration. If querying this function returns true, the 3D system will
+   * normally use the native hardware for rendering which will be much faster.
    *
-   * Having this set to 1 only means that 3D should be used to draw 2D and
+   * Having this set to true only means that 3D should be used to draw 2D and
    * video elements. PP_FLASHSETTING_STAGE3D_ENABLED should be checked to
    * determine if it's ok to use 3D for arbitrary content.
    *
-   * In rare cases (depending on the platform) this value will be 1 but a
+   * In rare cases (depending on the platform) this value will be true but a
    * created 3D context will use emulation because context initialization
    * failed.
    */
   PP_FLASHSETTING_3DENABLED = 1,
   /**
    * Specifies if the given instance is in private/inconito/off-the-record mode
-   * (returns 1) or "regular" mode (returns 0). Returns -1 on invalid instance.
+   * (returns true) or "regular" mode (returns false). Returns an undefined
+   * PP_Var on invalid instance.
    */
   PP_FLASHSETTING_INCOGNITO = 2,
   /**
-   * Specifies if arbitrary 3d commands are supported (returns 1), or if 3d
-   * should only be used for drawing 2d and video (returns 0).
+   * Specifies if arbitrary 3d commands are supported (returns true), or if 3d
+   * should only be used for drawing 2d and video (returns false).
    *
-   * This should only be enabled if PP_FLASHSETTING_3DENABLED is 1.
+   * This should only be enabled if PP_FLASHSETTING_3DENABLED is true.
    */
   PP_FLASHSETTING_STAGE3DENABLED = 3
 } PP_FlashSetting;
@@ -81,7 +82,7 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_FlashSetting, 4);
  * The <code>PPB_Flash</code> interface contains pointers to various functions
  * that are only needed to support Pepper Flash.
  */
-struct PPB_Flash_12_3 {
+struct PPB_Flash_12_4 {
   /**
    * Sets or clears the rendering hint that the given plugin instance is always
    * on top of page content. Somewhat more optimized painting can be used in
@@ -169,13 +170,17 @@ struct PPB_Flash_12_3 {
    */
   struct PP_Var (*GetDeviceID)(PP_Instance instance);
   /**
-   * Returns the value associated with the given setting. Invalid enums will
-   * result in -1 return value.
+   * Deprecated. See GetSetting().
    */
   int32_t (*GetSettingInt)(PP_Instance instance, PP_FlashSetting setting);
+  /**
+   * Returns the value associated with the given setting. Invalid enums will
+   * result in an undefined PP_Var return value.
+   */
+  struct PP_Var (*GetSetting)(PP_Instance instance, PP_FlashSetting setting);
 };
 
-typedef struct PPB_Flash_12_3 PPB_Flash;
+typedef struct PPB_Flash_12_4 PPB_Flash;
 
 struct PPB_Flash_12_0 {
   void (*SetInstanceAlwaysOnTop)(PP_Instance instance, PP_Bool on_top);
@@ -254,6 +259,35 @@ struct PPB_Flash_12_2 {
   int32_t (*InvokePrinting)(PP_Instance instance);
   void (*UpdateActivity)(PP_Instance instance);
   struct PP_Var (*GetDeviceID)(PP_Instance instance);
+};
+
+struct PPB_Flash_12_3 {
+  void (*SetInstanceAlwaysOnTop)(PP_Instance instance, PP_Bool on_top);
+  PP_Bool (*DrawGlyphs)(PP_Instance instance,
+                        PP_Resource pp_image_data,
+                        const struct PP_FontDescription_Dev* font_desc,
+                        uint32_t color,
+                        const struct PP_Point* position,
+                        const struct PP_Rect* clip,
+                        const float transformation[3][3],
+                        PP_Bool allow_subpixel_aa,
+                        uint32_t glyph_count,
+                        const uint16_t glyph_indices[],
+                        const struct PP_Point glyph_advances[]);
+  struct PP_Var (*GetProxyForURL)(PP_Instance instance, const char* url);
+  int32_t (*Navigate)(PP_Resource request_info,
+                      const char* target,
+                      PP_Bool from_user_action);
+  void (*RunMessageLoop)(PP_Instance instance);
+  void (*QuitMessageLoop)(PP_Instance instance);
+  double (*GetLocalTimeZoneOffset)(PP_Instance instance, PP_Time t);
+  struct PP_Var (*GetCommandLineArgs)(PP_Module module);
+  void (*PreloadFontWin)(const void* logfontw);
+  PP_Bool (*IsRectTopmost)(PP_Instance instance, const struct PP_Rect* rect);
+  int32_t (*InvokePrinting)(PP_Instance instance);
+  void (*UpdateActivity)(PP_Instance instance);
+  struct PP_Var (*GetDeviceID)(PP_Instance instance);
+  int32_t (*GetSettingInt)(PP_Instance instance, PP_FlashSetting setting);
 };
 /**
  * @}

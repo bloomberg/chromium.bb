@@ -24,6 +24,10 @@ namespace pp {
 
 namespace {
 
+template <> const char* interface_name<PPB_Flash_12_4>() {
+  return PPB_FLASH_INTERFACE_12_4;
+}
+
 template <> const char* interface_name<PPB_Flash_12_3>() {
   return PPB_FLASH_INTERFACE_12_3;
 }
@@ -57,7 +61,10 @@ PPB_Flash flash_12_combined_interface;
 void InitializeCombinedInterface() {
   if (initialized_combined_interface)
     return;
-  if (has_interface<PPB_Flash_12_3>()) {
+  if (has_interface<PPB_Flash_12_4>()) {
+    memcpy(&flash_12_combined_interface, get_interface<PPB_Flash_12_4>(),
+           sizeof(PPB_Flash_12_4));
+  } else if (has_interface<PPB_Flash_12_3>()) {
     memcpy(&flash_12_combined_interface, get_interface<PPB_Flash_12_3>(),
            sizeof(PPB_Flash_12_3));
   } else if (has_interface<PPB_Flash_12_2>()) {
@@ -79,7 +86,8 @@ namespace flash {
 
 // static
 bool Flash::IsAvailable() {
-  return has_interface<PPB_Flash_12_3>() ||
+  return has_interface<PPB_Flash_12_4>() ||
+         has_interface<PPB_Flash_12_3>() ||
          has_interface<PPB_Flash_12_2>() ||
          has_interface<PPB_Flash_12_1>() ||
          has_interface<PPB_Flash_12_0>();
@@ -221,14 +229,23 @@ Var Flash::GetDeviceID(const InstanceHandle& instance) {
 }
 
 // static
-int32_t Flash::GetSettingInt(const InstanceHandle& instance,
-                             PP_FlashSetting setting) {
+Var Flash::GetSetting(const InstanceHandle& instance, PP_FlashSetting setting) {
   InitializeCombinedInterface();
-  if (flash_12_combined_interface.GetSettingInt) {
-    return flash_12_combined_interface.GetSettingInt(instance.pp_instance(),
-                                                     setting);
+  if (flash_12_combined_interface.GetSetting) {
+    return Var(PASS_REF,
+               flash_12_combined_interface.GetSetting(instance.pp_instance(),
+                                                      setting));
   }
-  return -1;
+  if (flash_12_combined_interface.GetSettingInt) {
+    // All the |PP_FlashSetting|s supported by |GetSettingInt()| return
+    // "booleans" (0 for false, 1 for true, -1 for undefined/unsupported/error).
+    int32_t result = flash_12_combined_interface.GetSettingInt(
+        instance.pp_instance(), setting);
+    if (result == 0 || result == 1)
+      return Var(!!result);
+  }
+
+  return Var();
 }
 
 // static

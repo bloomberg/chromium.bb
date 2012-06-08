@@ -248,6 +248,12 @@ int32_t PPB_Flash_Impl::GetSettingInt(PP_Instance instance,
   return -1;
 }
 
+PP_Var PPB_Flash_Impl::GetSetting(PP_Instance instance,
+                                   PP_FlashSetting setting) {
+  // No current settings are supported in-process.
+  return PP_MakeUndefined();
+}
+
 PP_Bool PPB_Flash_Impl::IsClipboardFormatAvailable(
     PP_Instance instance,
     PP_Flash_Clipboard_Type clipboard_type,

@@ -30,6 +30,8 @@ class TestFlash : public TestCase {
   std::string TestGetLocalTimeZoneOffset();
   std::string TestGetCommandLineArgs();
   std::string TestGetDeviceID();
+  std::string TestGetSettingInt();
+  std::string TestGetSetting();
 
   void QuitMessageLoopTask(int32_t);
 

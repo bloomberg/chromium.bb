@@ -55,7 +55,9 @@ class PPB_Flash_Impl : public ::ppapi::PPB_Flash_Shared {
   virtual void UpdateActivity(PP_Instance instance) OVERRIDE;
   virtual PP_Var GetDeviceID(PP_Instance instance) OVERRIDE;
   virtual int32_t GetSettingInt(PP_Instance instance,
-                                PP_FlashSetting settiny) OVERRIDE;
+                                PP_FlashSetting setting) OVERRIDE;
+  virtual PP_Var GetSetting(PP_Instance instance,
+                            PP_FlashSetting setting) OVERRIDE;
   virtual PP_Bool IsClipboardFormatAvailable(
       PP_Instance instance,
       PP_Flash_Clipboard_Type clipboard_type,

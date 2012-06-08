@@ -58,8 +58,8 @@ class Flash {
   static bool IsRectTopmost(const InstanceHandle& instance, const Rect& rect);
   static void UpdateActivity(const InstanceHandle& instance);
   static Var GetDeviceID(const InstanceHandle& instance);
-  static int32_t GetSettingInt(const InstanceHandle& instance,
-                               PP_FlashSetting setting);
+  static Var GetSetting(const InstanceHandle& instance,
+                        PP_FlashSetting setting);
 
   // PPB_Flash_Print.
   static bool InvokePrinting(const InstanceHandle& instance);

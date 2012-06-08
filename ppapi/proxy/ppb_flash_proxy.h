@@ -74,6 +74,8 @@ class PPB_Flash_Proxy : public InterfaceProxy, public PPB_Flash_Shared {
   virtual PP_Var GetDeviceID(PP_Instance instance) OVERRIDE;
   virtual int32_t GetSettingInt(PP_Instance instance,
                                 PP_FlashSetting setting) OVERRIDE;
+  virtual PP_Var GetSetting(PP_Instance instance,
+                            PP_FlashSetting setting) OVERRIDE;
   virtual PP_Bool IsClipboardFormatAvailable(
       PP_Instance instance,
       PP_Flash_Clipboard_Type clipboard_type,

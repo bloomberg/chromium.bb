@@ -33,6 +33,8 @@ void TestFlash::RunTests(const std::string& filter) {
   RUN_TEST(GetLocalTimeZoneOffset, filter);
   RUN_TEST(GetCommandLineArgs, filter);
   RUN_TEST(GetDeviceID, filter);
+  RUN_TEST(GetSettingInt, filter);
+  RUN_TEST(GetSetting, filter);
 }
 
 std::string TestFlash::TestSetInstanceAlwaysOnTop() {
@@ -108,6 +110,67 @@ std::string TestFlash::TestGetDeviceID() {
   PASS();
 }
 
+std::string TestFlash::TestGetSettingInt() {
+  // This only works out of process.
+  if (testing_interface_->IsOutOfProcess()) {
+    int32_t is_3denabled = flash_interface_->GetSettingInt(
+        instance_->pp_instance(), PP_FLASHSETTING_3DENABLED);
+    ASSERT_TRUE(is_3denabled == 0 || is_3denabled == 1);
+
+    int32_t is_incognito = flash_interface_->GetSettingInt(
+        instance_->pp_instance(), PP_FLASHSETTING_INCOGNITO);
+    ASSERT_TRUE(is_incognito == 0 || is_incognito == 1);
+
+    int32_t is_stage3denabled = flash_interface_->GetSettingInt(
+        instance_->pp_instance(), PP_FLASHSETTING_STAGE3DENABLED);
+    // This may "fail" if 3d isn't enabled.
+    ASSERT_TRUE((is_stage3denabled == 0 || is_stage3denabled == 1) ||
+                (is_stage3denabled == -1 && is_3denabled == 0));
+  }
+
+  // Invalid instance cases.
+  int32_t result = flash_interface_->GetSettingInt(
+      0, PP_FLASHSETTING_3DENABLED);
+  ASSERT_EQ(-1, result);
+  result = flash_interface_->GetSettingInt(0, PP_FLASHSETTING_INCOGNITO);
+  ASSERT_EQ(-1, result);
+  result = flash_interface_->GetSettingInt(0, PP_FLASHSETTING_STAGE3DENABLED);
+  ASSERT_EQ(-1, result);
+
+  PASS();
+}
+
+std::string TestFlash::TestGetSetting() {
+  // This only works out of process.
+  if (testing_interface_->IsOutOfProcess()) {
+    Var is_3denabled(pp::PASS_REF, flash_interface_->GetSetting(
+        instance_->pp_instance(), PP_FLASHSETTING_3DENABLED));
+    ASSERT_TRUE(is_3denabled.is_bool());
+
+    Var is_incognito(pp::PASS_REF, flash_interface_->GetSetting(
+        instance_->pp_instance(), PP_FLASHSETTING_INCOGNITO));
+    ASSERT_TRUE(is_incognito.is_bool());
+
+    Var is_stage3denabled(pp::PASS_REF, flash_interface_->GetSetting(
+        instance_->pp_instance(), PP_FLASHSETTING_STAGE3DENABLED));
+    // This may "fail" if 3d isn't enabled.
+    ASSERT_TRUE(is_stage3denabled.is_bool() ||
+                (is_stage3denabled.is_undefined() && !is_3denabled.AsBool()));
+  }
+
+  // Invalid instance cases.
+  Var result(pp::PASS_REF,
+             flash_interface_->GetSetting(0, PP_FLASHSETTING_3DENABLED));
+  ASSERT_TRUE(result.is_undefined());
+  result = Var(pp::PASS_REF,
+               flash_interface_->GetSetting(0, PP_FLASHSETTING_INCOGNITO));
+  ASSERT_TRUE(result.is_undefined());
+  result = Var(pp::PASS_REF,
+               flash_interface_->GetSetting(0, PP_FLASHSETTING_STAGE3DENABLED));
+  ASSERT_TRUE(result.is_undefined());
+
+  PASS();
+}
 
 void TestFlash::QuitMessageLoopTask(int32_t) {
   flash_interface_->QuitMessageLoop(instance_->pp_instance());

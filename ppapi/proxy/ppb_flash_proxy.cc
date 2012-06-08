@@ -582,6 +582,8 @@ PP_Var PPB_Flash_Proxy::GetDeviceID(PP_Instance instance) {
 
 int32_t PPB_Flash_Proxy::GetSettingInt(PP_Instance instance,
                                        PP_FlashSetting setting) {
+  // Note: Don't add support for any more settings here. This method is
+  // deprecated.
   switch (setting) {
     case PP_FLASHSETTING_3DENABLED:
       return static_cast<PluginDispatcher*>(dispatcher())->preferences().
@@ -594,6 +596,24 @@ int32_t PPB_Flash_Proxy::GetSettingInt(PP_Instance instance,
     default:
       return -1;
   }
+}
+
+PP_Var PPB_Flash_Proxy::GetSetting(PP_Instance instance,
+                                   PP_FlashSetting setting) {
+  ReceiveSerializedVarReturnValue result;
+  PluginDispatcher* plugin_dispatcher =
+      static_cast<PluginDispatcher*>(dispatcher());
+  switch (setting) {
+    case PP_FLASHSETTING_3DENABLED:
+      return PP_MakeBool(PP_FromBool(
+          plugin_dispatcher->preferences().is_3d_supported));
+    case PP_FLASHSETTING_INCOGNITO:
+      return PP_MakeBool(PP_FromBool(plugin_dispatcher->incognito()));
+    case PP_FLASHSETTING_STAGE3DENABLED:
+      return PP_MakeBool(PP_FromBool(
+          plugin_dispatcher->preferences().is_stage3d_supported));
+  }
+  return PP_MakeUndefined();
 }
 
 PP_Bool PPB_Flash_Proxy::IsClipboardFormatAvailable(
