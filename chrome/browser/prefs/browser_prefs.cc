@@ -53,6 +53,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/ui/alternate_error_tab_observer.h"
@@ -123,6 +124,7 @@ void RegisterLocalState(PrefService* local_state) {
   PrefProxyConfigTrackerImpl::RegisterPrefs(local_state);
   ProfileInfoCache::RegisterPrefs(local_state);
   ProfileManager::RegisterPrefs(local_state);
+  SigninManagerFactory::RegisterPrefs(local_state);
   SSLConfigServiceManager::RegisterPrefs(local_state);
   VariationsService::RegisterPrefs(local_state);
   WebCacheManager::RegisterPrefs(local_state);

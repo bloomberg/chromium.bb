@@ -193,8 +193,9 @@ class SigninManager : public GaiaAuthConsumer,
   // Registrar for notifications from the TokenService.
   content::NotificationRegistrar registrar_;
 
-  // Helper object to listen for changes to login preferences.
-  PrefChangeRegistrar pref_registrar_;
+  // Helper object to listen for changes to signin preferences stored in non-
+  // profile-specific local prefs (like kGoogleServicesUsernamePattern).
+  PrefChangeRegistrar local_state_pref_registrar_;
 
   // Actual username after successful authentication.
   std::string authenticated_username_;

@@ -59,8 +59,7 @@ void BrowserWithTestWindowTest::TearDown() {
 BrowserWithTestWindowTest::~BrowserWithTestWindowTest() {
   // A Task is leaked if we don't destroy everything, then run the message
   // loop.
-  DestroyBrowser();
-  profile_.reset(NULL);
+  DestroyBrowserAndProfile();
 
   // Schedule another task on the DB thread to notify us that it's safe to
   // carry on with the test.
@@ -142,14 +141,19 @@ void BrowserWithTestWindowTest::NavigateAndCommitActiveTab(const GURL& url) {
       web_contents()->GetController(), url);
 }
 
-void BrowserWithTestWindowTest::DestroyBrowser() {
-  if (!browser_.get())
-    return;
-  // Make sure we close all tabs, otherwise Browser isn't happy in its
-  // destructor.
-  browser()->CloseAllTabs();
-  browser_.reset(NULL);
+void BrowserWithTestWindowTest::DestroyBrowserAndProfile() {
+  if (browser_.get()) {
+    // Make sure we close all tabs, otherwise Browser isn't happy in its
+    // destructor.
+    browser()->CloseAllTabs();
+    browser_.reset(NULL);
+  }
   window_.reset(NULL);
+  // Destroy the profile here - otherwise, if the profile is freed in the
+  // destructor, and a test subclass owns a resource that the profile depends
+  // on (such as g_browser_process()->local_state()) there's no way for the
+  // subclass to free it after the profile.
+  profile_.reset(NULL);
 }
 
 TestingProfile* BrowserWithTestWindowTest::CreateProfile() {

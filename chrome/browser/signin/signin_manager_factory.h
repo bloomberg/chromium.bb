@@ -27,6 +27,10 @@ class SigninManagerFactory : public ProfileKeyedServiceFactory {
 
   // Implementation of ProfileKeyedServiceFactory (public so tests can call it).
   virtual void RegisterUserPrefs(PrefService* user_prefs) OVERRIDE;
+
+  // Registers the browser-global prefs used by SigninManager.
+  static void RegisterPrefs(PrefService* local_state);
+
  private:
   friend struct DefaultSingletonTraits<SigninManagerFactory>;
 

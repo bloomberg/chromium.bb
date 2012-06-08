@@ -60,8 +60,13 @@ void SigninManager::Initialize(Profile* profile) {
   // Should never call Initialize() twice.
   DCHECK(!IsInitialized());
   profile_ = profile;
-  pref_registrar_.Init(profile->GetPrefs());
-  pref_registrar_.Add(prefs::kGoogleServicesUsernamePattern, this);
+  PrefService* local_state = g_browser_process->local_state();
+  // local_state can be null during unit tests.
+  if (local_state) {
+    local_state_pref_registrar_.Init(local_state);
+    local_state_pref_registrar_.Add(prefs::kGoogleServicesUsernamePattern,
+                                    this);
+  }
 
   // If the user is clearing the token service from the command line, then
   // clear their login info also (not valid to be logged in without any
@@ -94,7 +99,11 @@ bool SigninManager::IsInitialized() const {
 }
 
 bool SigninManager::IsAllowedUsername(const std::string& username) const {
-  std::string pattern = profile_->GetPrefs()->GetString(
+  PrefService* local_state = g_browser_process->local_state();
+  if (!local_state)
+    return true; // In a unit test with no local state - all names are allowed.
+
+  std::string pattern = local_state->GetString(
       prefs::kGoogleServicesUsernamePattern);
   if (pattern.empty())
     return true;
@@ -501,3 +510,4 @@ void SigninManager::Observe(int type,
       NOTREACHED();
   }
 }
+

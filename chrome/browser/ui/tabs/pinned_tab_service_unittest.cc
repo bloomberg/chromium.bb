@@ -56,9 +56,10 @@ TEST_F(PinnedTabServiceTest, Popup) {
       new TestBrowserWindow(popup.get()));
   popup->SetWindowForTesting(popup_window.get());
 
-  // Close the browser. This should trigger saving the tabs.
+  // Close the browser. This should trigger saving the tabs. No need to destroy
+  // the browser (this happens automatically in the test destructor).
   browser()->OnWindowClosing();
-  DestroyBrowser();
+
   std::string result = PinnedTabTestUtils::TabsToString(
       PinnedTabCodec::ReadPinnedTabs(profile()));
   EXPECT_EQ("http://www.google.com/::pinned:", result);

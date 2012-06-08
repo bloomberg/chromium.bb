@@ -1592,9 +1592,9 @@ const char kSyncUsingSecondaryPassphrase[] = "sync.using_secondary_passphrase";
 // String that identifies the user logged into sync and other google services.
 const char kGoogleServicesUsername[] = "google.services.username";
 
-// String that contains a regex that restricts which accounts can be used to
-// log in to chrome (e.g. "*@google.com"). If missing or blank, all accounts
-// are allowed (no restrictions).
+// Local state pref containing a string regex that restricts which accounts
+// can be used to log in to chrome (e.g. "*@google.com"). If missing or blank,
+// all accounts are allowed (no restrictions).
 const char kGoogleServicesUsernamePattern[] =
     "google.services.username_pattern";
 

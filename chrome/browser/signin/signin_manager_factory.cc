@@ -32,14 +32,18 @@ SigninManagerFactory* SigninManagerFactory::GetInstance() {
 void SigninManagerFactory::RegisterUserPrefs(PrefService* user_prefs) {
   user_prefs->RegisterStringPref(prefs::kGoogleServicesUsername, "",
                                  PrefService::UNSYNCABLE_PREF);
-  user_prefs->RegisterStringPref(prefs::kGoogleServicesUsernamePattern, "",
-                                 PrefService::UNSYNCABLE_PREF);
   user_prefs->RegisterBooleanPref(prefs::kAutologinEnabled, true,
                                   PrefService::UNSYNCABLE_PREF);
   user_prefs->RegisterBooleanPref(prefs::kReverseAutologinEnabled, true,
                                   PrefService::UNSYNCABLE_PREF);
   user_prefs->RegisterBooleanPref(prefs::kIsGooglePlusUser, false,
                                  PrefService::UNSYNCABLE_PREF);
+}
+
+// static
+void SigninManagerFactory::RegisterPrefs(PrefService* local_state) {
+  local_state->RegisterStringPref(prefs::kGoogleServicesUsernamePattern, "",
+                                  PrefService::UNSYNCABLE_PREF);
 }
 
 ProfileKeyedService* SigninManagerFactory::BuildServiceInstanceFor(

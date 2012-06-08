@@ -98,11 +98,11 @@ class BrowserWithTestWindowTest : public testing::Test {
   void NavigateAndCommitActiveTab(const GURL& url);
 
  protected:
-  // Destroys the browser and window created by this class. This is invoked from
-  // the destructor.
-  void DestroyBrowser();
+  // Destroys the browser, window, and profile created by this class. This is
+  // invoked from the destructor.
+  void DestroyBrowserAndProfile();
 
-  // Creates the profile used by this test. The caller owners the return value.
+  // Creates the profile used by this test. The caller owns the return value.
   virtual TestingProfile* CreateProfile();
 
  private:

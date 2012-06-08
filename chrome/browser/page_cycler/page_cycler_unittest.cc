@@ -148,7 +148,7 @@ class PageCyclerTest : public BrowserWithTestWindowTest {
   }
 
   void CloseBrowser() {
-    DestroyBrowser();
+    DestroyBrowserAndProfile();
     PumpLoop();
   }
 
