@@ -91,6 +91,7 @@ void AppListView::InitAsBubble(
 
   set_anchor_view(anchor);
   set_margin(0);
+  set_move_with_anchor(true);
   set_parent_window(parent);
   set_close_on_deactivate(false);
   views::BubbleDelegateView::CreateBubble(this);
