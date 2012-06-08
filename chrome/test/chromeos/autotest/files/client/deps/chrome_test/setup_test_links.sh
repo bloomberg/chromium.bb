@@ -17,6 +17,12 @@ this_dir="$(readlink -f $(dirname $0))"
     "$this_dir/resources"
 ln -f -s /opt/google/chrome/*.pak "$this_dir/"
 
+# NaCl symlinks.
+ln -f -s /opt/google/chrome/nacl_helper "$this_dir/"
+ln -f -s /opt/google/chrome/nacl_helper_bootstrap "$this_dir/"
+ln -f -s /opt/google/chrome/nacl_irt_*.nexe "$this_dir/"
+ln -f -s /opt/google/chrome/libppGoogleNaClPluginChrome.so "$this_dir/"
+
 mkdir -p "$this_dir/chromeos"
 ln -f -s "/opt/google/chrome/chromeos/libcros.so" \
     "$this_dir/chromeos/libcros.so"
