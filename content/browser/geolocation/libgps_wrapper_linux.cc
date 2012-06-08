@@ -81,14 +81,14 @@ bool LibGps::Start() {
     // See gps.h NL_NOxxx for definition of gps_open() error numbers.
     DLOG(WARNING) << "gps_open() failed " << errno;
     return false;
+  } else {
+    is_open_ = true;
+    return true;
   }
 #else  // drop the support for desktop linux for now
   DLOG(WARNING) << "LibGps is only supported on ChromeOS";
   return false;
 #endif
-
-  is_open_ = true;
-  return true;
 }
 void LibGps::Stop() {
   if (is_open_)
