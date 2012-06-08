@@ -388,22 +388,11 @@
   <section>
     <h3 i18n-content="downloadLocationGroupName"></h3>
     <div>
-<if expr="pp_ifdef('chromeos')">
-      <div class="checkbox">
-        <label>
-          <input type="checkbox" 
-          pref="gdata.disabled" 
-          metric="Options_DisableGData">
-          <span i18n-content="disableGData"></span>
-        </label>
-      </div>  
-</if>    
-<if expr="not pp_ifdef('chromeos')">
       <div class="settings-row">
         <label>
           <span i18n-content="downloadLocationBrowseTitle"></span>
           <input id="downloadLocationPath" class="weakrtl" type="text"
-              pref="download.default_directory" size="36" readonly>
+            size="36" readonly>
         </label>
         <button id="downloadLocationChangeButton"
             pref="download.prompt_for_download"
@@ -417,6 +406,17 @@
           <span i18n-content="downloadLocationAskForSaveLocation"></span>
         </label>
       </div>
+<if expr="pp_ifdef('chromeos')">
+      <div class="checkbox">
+        <label>
+          <input type="checkbox" 
+          pref="gdata.disabled" 
+          metric="Options_DisableGData">
+          <span i18n-content="disableGData"></span>
+        </label>
+      </div>  
+</if>    
+<if expr="not pp_ifdef('chromeos')">
       <div id="auto-open-file-types-section" hidden>
         <div id="auto-open-file-types-container">
           <div id="auto-open-file-types-label"

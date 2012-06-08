@@ -421,10 +421,12 @@ cr.define('options', function() {
       };
 
       // Downloads section.
+      Preferences.getInstance().addEventListener('download.default_directory',
+          this.onDefaultDownloadDirectoryChanged_.bind(this));
+      $('downloadLocationChangeButton').onclick = function(event) {
+        chrome.send('selectDownloadLocation');
+      };
       if (!cr.isChromeOS) {
-        $('downloadLocationChangeButton').onclick = function(event) {
-          chrome.send('selectDownloadLocation');
-        };
         $('autoOpenFileTypesResetToDefault').onclick = function(event) {
           chrome.send('autoOpenFileTypesAction');
         };
@@ -786,6 +788,20 @@ cr.define('options', function() {
      */
     onSpellcheckConfirmDialogShownChanged_: function(event) {
       this.spellcheckConfirmDialogShown_ = event.value['value'];
+    },
+
+    /**
+     * Called when the value of the download.default_directory preference
+     * changes. We strip out /special for drive paths on ChromeOS.
+     * @param {Event} event Change event.
+     * @private
+     */
+    onDefaultDownloadDirectoryChanged_: function(event) {
+      $('downloadLocationPath').value = event.value['value'];
+      if (cr.isChromeOS) {
+          $('downloadLocationPath').value =
+              $('downloadLocationPath').value.replace(/^\/special/, '');
+      }
     },
 
     /**
