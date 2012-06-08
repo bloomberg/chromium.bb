@@ -3090,6 +3090,7 @@ static const char xdg_error_message[] =
 
 int main(int argc, char *argv[])
 {
+	int ret = EXIT_SUCCESS;
 	struct wl_display *display;
 	struct weston_compositor *ec;
 	struct wl_event_source *signals[4];
@@ -3217,6 +3218,8 @@ int main(int argc, char *argv[])
 	weston_compositor_wake(ec);
 	if (setjmp(segv_jmp_buf) == 0)
 		wl_display_run(display);
+	else
+		ret = EXIT_FAILURE;
 
 	/* prevent further rendering while shutting down */
 	ec->state = WESTON_COMPOSITOR_SLEEPING;
@@ -3234,5 +3237,5 @@ int main(int argc, char *argv[])
 	ec->destroy(ec);
 	wl_display_destroy(display);
 
-	return 0;
+	return ret;
 }
