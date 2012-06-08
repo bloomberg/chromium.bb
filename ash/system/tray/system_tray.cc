@@ -135,7 +135,6 @@ SystemTray::SystemTray()
       ime_observer_(NULL),
       locale_observer_(NULL),
       network_observer_(NULL),
-      power_status_observer_(NULL),
       update_observer_(NULL),
       user_observer_(NULL),
       should_show_launcher_(false),
@@ -181,6 +180,7 @@ void SystemTray::CreateItems() {
   internal::TrayIME* tray_ime = new internal::TrayIME;
   internal::TrayLocale* tray_locale = new internal::TrayLocale;
   internal::TrayUpdate* tray_update = new internal::TrayUpdate;
+  internal::TraySettings* tray_settings = new internal::TraySettings();
 
   accessibility_observer_ = tray_accessibility;
   audio_observer_ = tray_volume;
@@ -192,7 +192,8 @@ void SystemTray::CreateItems() {
   ime_observer_ = tray_ime;
   locale_observer_ = tray_locale;
   network_observer_ = tray_network;
-  power_status_observer_ = tray_power;
+  power_status_observers_.AddObserver(tray_power);
+  power_status_observers_.AddObserver(tray_settings);
   update_observer_ = tray_update;
   user_observer_ = tray_user;
 
@@ -209,7 +210,7 @@ void SystemTray::CreateItems() {
   AddTrayItem(tray_update);
   AddTrayItem(tray_accessibility);
   AddTrayItem(tray_caps_lock);
-  AddTrayItem(new internal::TraySettings());
+  AddTrayItem(tray_settings);
   AddTrayItem(tray_date);
   SetVisible(ash::Shell::GetInstance()->tray_delegate()->
       GetTrayVisibilityOnStartup());

@@ -6,12 +6,18 @@
 #define ASH_SYSTEM_SETTINGS_TRAY_SETTINGS_H_
 #pragma once
 
+#include "ash/system/power/power_status_observer.h"
 #include "ash/system/tray/system_tray_item.h"
 
 namespace ash {
 namespace internal {
 
-class TraySettings : public SystemTrayItem {
+namespace tray {
+class SettingsDefaultView;
+}
+
+class TraySettings : public SystemTrayItem,
+                     public PowerStatusObserver {
  public:
   TraySettings();
   virtual ~TraySettings();
@@ -25,6 +31,11 @@ class TraySettings : public SystemTrayItem {
   virtual void DestroyDefaultView() OVERRIDE;
   virtual void DestroyDetailedView() OVERRIDE;
   virtual void UpdateAfterLoginStatusChange(user::LoginStatus status) OVERRIDE;
+
+  // Overridden from PowerStatusObserver.
+  virtual void OnPowerStatusChanged(const PowerSupplyStatus& status) OVERRIDE;
+
+  tray::SettingsDefaultView* default_view_;
 
   DISALLOW_COPY_AND_ASSIGN(TraySettings);
 };

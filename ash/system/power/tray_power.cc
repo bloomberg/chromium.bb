@@ -7,6 +7,7 @@
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/system/date/date_view.h"
+#include "ash/system/power/power_status_view.h"
 #include "ash/system/power/power_supply_status.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
@@ -53,40 +54,6 @@ const int kCriticalSeconds = 5 * 60;
 const int kLowPowerSeconds = 15 * 60;
 const int kNoWarningSeconds = 30 * 60;
 
-enum IconSet {
-  ICON_LIGHT,
-  ICON_DARK
-};
-
-gfx::ImageSkia GetBatteryImage(const PowerSupplyStatus& supply_status,
-                         IconSet icon_set) {
-  gfx::ImageSkia image;
-  gfx::Image all = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-      icon_set == ICON_DARK ?
-      IDR_AURA_UBER_TRAY_POWER_SMALL_DARK : IDR_AURA_UBER_TRAY_POWER_SMALL);
-
-  int image_index = 0;
-  if (supply_status.battery_percentage >= 100) {
-    image_index = kNumPowerImages - 1;
-  } else if (!supply_status.battery_is_present) {
-    image_index = kNumPowerImages;
-  } else {
-    double percentage = supply_status.is_calculating_battery_time ? 100.0 :
-        supply_status.battery_percentage;
-    image_index = static_cast<int>(percentage / 100.0 * (kNumPowerImages - 1));
-    image_index = std::max(std::min(image_index, kNumPowerImages - 2), 0);
-  }
-
-  // TODO(mbolohan): Remove the 2px offset when the assets are centered. See
-  // crbug.com/119832.
-  SkIRect region = SkIRect::MakeXYWH(
-      (supply_status.line_power_on ? kBatteryImageWidth : 0) + 2,
-      image_index * kBatteryImageHeight,
-      kBatteryImageWidth - 2, kBatteryImageHeight);
-  all.ToImageSkia()->extractSubset(&image, region);
-  return image;
-}
-
 }  // namespace
 
 namespace tray {
@@ -113,154 +80,12 @@ class PowerTrayView : public views::ImageView {
 
  private:
   void UpdateImage() {
-    SetImage(GetBatteryImage(supply_status_, ICON_LIGHT));
+    SetImage(TrayPower::GetBatteryImage(supply_status_, ICON_LIGHT));
   }
 
   PowerSupplyStatus supply_status_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerTrayView);
-};
-
-// This view is used only for the popup.
-class PowerStatusView : public views::View {
- public:
-  enum ViewType {
-    VIEW_DEFAULT,
-    VIEW_NOTIFICATION
-  };
-
-  explicit PowerStatusView(ViewType view_type) : icon_(NULL) {
-    status_label_ = new views::Label;
-    time_label_ = new views::Label;
-
-    if (view_type == VIEW_DEFAULT)
-      LayoutDefaultView();
-    else
-      LayoutNotificationView();
-
-    Update();
-  }
-
-  virtual ~PowerStatusView() {
-  }
-
-  void UpdatePowerStatus(const PowerSupplyStatus& status) {
-    supply_status_ = status;
-    // Sanitize.
-    if (supply_status_.battery_is_full)
-      supply_status_.battery_percentage = 100.0;
-
-    Update();
-  }
-
- private:
-  void LayoutDefaultView() {
-    set_border(views::Border::CreateEmptyBorder(
-        kPaddingVertical, kTrayPopupPaddingHorizontal,
-        kPaddingVertical, kTrayPopupPaddingHorizontal));
-
-    status_label_->SetHorizontalAlignment(views::Label::ALIGN_RIGHT);
-    time_label_->SetHorizontalAlignment(views::Label::ALIGN_RIGHT);
-
-    icon_ = new views::ImageView;
-
-    views::GridLayout* layout = new views::GridLayout(this);
-    SetLayoutManager(layout);
-
-    views::ColumnSet* columns = layout->AddColumnSet(0);
-
-    columns->AddPaddingColumn(0, kTrayPopupPaddingHorizontal);
-    // Status + Time
-    columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                       0, views::GridLayout::USE_PREF, 0, kLabelMinWidth);
-
-    columns->AddPaddingColumn(0, kTrayPopupPaddingHorizontal/2);
-
-    // Icon
-    columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                       0, views::GridLayout::USE_PREF, 0, 0);
-
-    columns->AddPaddingColumn(0, kTrayPopupPaddingHorizontal);
-
-    layout->AddPaddingRow(0, kPaddingVertical);
-
-    layout->StartRow(0, 0);
-    layout->AddView(status_label_);
-    layout->AddView(icon_, 1, 3);  // 3 rows for icon
-
-    layout->AddPaddingRow(0, kPaddingVertical/3);
-    layout->StartRow(0, 0);
-    layout->AddView(time_label_);
-
-    layout->AddPaddingRow(0, kPaddingVertical);
-  }
-
-  void LayoutNotificationView() {
-    SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
-    status_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-    AddChildView(status_label_);
-
-    time_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-    AddChildView(time_label_);
-  }
-
-  void UpdateText() {
-    base::TimeDelta time = base::TimeDelta::FromSeconds(
-        supply_status_.line_power_on ?
-        supply_status_.averaged_battery_time_to_full :
-        supply_status_.averaged_battery_time_to_empty);
-    int hour = time.InHours();
-    int min = (time - base::TimeDelta::FromHours(hour)).InMinutes();
-
-    if (supply_status_.line_power_on && !hour && !min) {
-      status_label_->SetText(
-          ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-              IDS_ASH_STATUS_TRAY_BATTERY_FULL));
-    } else {
-      status_label_->SetText(
-          l10n_util::GetStringFUTF16(
-              IDS_ASH_STATUS_TRAY_BATTERY_PERCENT,
-              base::IntToString16(
-                  static_cast<int>(supply_status_.battery_percentage))));
-    }
-
-    if (supply_status_.is_calculating_battery_time) {
-      time_label_->SetText(
-          ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-              IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING));
-    } else if (hour || min) {
-      time_label_->SetText(
-          l10n_util::GetStringFUTF16(
-              supply_status_.line_power_on ?
-              IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL :
-              IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_EMPTY,
-              base::IntToString16(hour),
-              base::IntToString16(min)));
-    } else {
-      time_label_->SetText(string16());
-    }
-  }
-
-  void UpdateIcon() {
-    if (icon_) {
-      icon_->SetImage(GetBatteryImage(supply_status_, ICON_DARK));
-      icon_->SetVisible(true);
-    }
-  }
-
-  void Update() {
-    UpdateText();
-    UpdateIcon();
-  }
-
-  views::Label* status_label_;
-  views::Label* time_label_;
-  views::ImageView* icon_;
-
-  PowerSupplyStatus supply_status_;
-
-  DISALLOW_COPY_AND_ASSIGN(PowerStatusView);
 };
 
 class PowerNotificationView : public TrayNotificationView {
@@ -274,7 +99,7 @@ class PowerNotificationView : public TrayNotificationView {
   }
 
   void UpdatePowerStatus(const PowerSupplyStatus& status) {
-    SetIconImage(GetBatteryImage(status, ICON_DARK));
+    SetIconImage(TrayPower::GetBatteryImage(status, ICON_DARK));
     power_status_view_->UpdatePowerStatus(status);
   }
 
@@ -285,14 +110,13 @@ class PowerNotificationView : public TrayNotificationView {
 
  private:
   TrayPower* tray_;
-  tray::PowerStatusView* power_status_view_;
+  PowerStatusView* power_status_view_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerNotificationView);
 };
 
 }  // namespace tray
 
-using tray::PowerStatusView;
 using tray::PowerNotificationView;
 
 TrayPower::TrayPower()
@@ -302,6 +126,37 @@ TrayPower::TrayPower()
 }
 
 TrayPower::~TrayPower() {
+}
+
+// static
+gfx::ImageSkia TrayPower::GetBatteryImage(
+    const PowerSupplyStatus& supply_status,
+    IconSet icon_set) {
+  gfx::ImageSkia image;
+  gfx::Image all = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+      icon_set == ICON_DARK ?
+      IDR_AURA_UBER_TRAY_POWER_SMALL_DARK : IDR_AURA_UBER_TRAY_POWER_SMALL);
+
+  int image_index = 0;
+  if (supply_status.battery_percentage >= 100) {
+    image_index = kNumPowerImages - 1;
+  } else if (!supply_status.battery_is_present) {
+    image_index = kNumPowerImages;
+  } else {
+    double percentage = supply_status.is_calculating_battery_time ? 100.0 :
+        supply_status.battery_percentage;
+    image_index = static_cast<int>(percentage / 100.0 * (kNumPowerImages - 1));
+    image_index = std::max(std::min(image_index, kNumPowerImages - 2), 0);
+  }
+
+  // TODO(mbolohan): Remove the 2px offset when the assets are centered. See
+  // crbug.com/119832.
+  SkIRect region = SkIRect::MakeXYWH(
+      (supply_status.line_power_on ? kBatteryImageWidth : 0) + 2,
+      image_index * kBatteryImageHeight,
+      kBatteryImageWidth - 2, kBatteryImageHeight);
+  all.ToImageSkia()->extractSubset(&image, region);
+  return image;
 }
 
 views::View* TrayPower::CreateTrayView(user::LoginStatus status) {

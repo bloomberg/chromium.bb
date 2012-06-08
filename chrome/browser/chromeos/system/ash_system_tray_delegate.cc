@@ -932,9 +932,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual void PowerChanged(const PowerSupplyStatus& power_status) OVERRIDE {
     power_supply_status_ = power_status;
-    ash::PowerStatusObserver* observer = tray_->power_status_observer();
-    if (observer)
-      observer->OnPowerStatusChanged(power_status);
+    FOR_EACH_OBSERVER(ash::PowerStatusObserver, tray_->power_status_observers(),
+        OnPowerStatusChanged(power_status));
   }
 
   virtual void SystemResumed() OVERRIDE {

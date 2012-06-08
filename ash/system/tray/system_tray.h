@@ -7,6 +7,7 @@
 #pragma once
 
 #include "ash/ash_export.h"
+#include "ash/system/power/power_supply_status.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_views.h"
 #include "ash/system/user/login_status.h"
@@ -131,8 +132,8 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView {
   NetworkObserver* network_observer() const {
     return network_observer_;
   }
-  PowerStatusObserver* power_status_observer() const {
-    return power_status_observer_;
+  ObserverList<PowerStatusObserver>& power_status_observers() {
+    return power_status_observers_;
   }
   UpdateObserver* update_observer() const {
     return update_observer_;
@@ -221,7 +222,7 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView {
   IMEObserver* ime_observer_;
   LocaleObserver* locale_observer_;
   NetworkObserver* network_observer_;
-  PowerStatusObserver* power_status_observer_;
+  ObserverList<PowerStatusObserver> power_status_observers_;
   UpdateObserver* update_observer_;
   UserObserver* user_observer_;
 

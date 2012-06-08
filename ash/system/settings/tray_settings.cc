@@ -5,6 +5,7 @@
 #include "ash/system/settings/tray_settings.h"
 
 #include "ash/shell.h"
+#include "ash/system/power/power_status_view.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_views.h"
@@ -22,49 +23,96 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
 
-namespace {
+namespace ash {
+namespace internal {
 
-class SettingsView : public ash::internal::ActionableView {
+namespace tray {
+
+class SettingsDefaultView : public ash::internal::ActionableView {
  public:
-  SettingsView() {
+  explicit SettingsDefaultView(user::LoginStatus status)
+      : login_status_(status),
+        power_status_view_(NULL) {
     SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
         ash::kTrayPopupPaddingHorizontal, 0,
         ash::kTrayPopupPaddingBetweenItems));
 
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    views::ImageView* icon =
-        new ash::internal::FixedSizedImageView(0, ash::kTrayPopupItemHeight);
-    icon->SetImage(rb.GetImageNamed(IDR_AURA_UBER_TRAY_SETTINGS).ToImageSkia());
-    AddChildView(icon);
+    if (login_status_ != user::LOGGED_IN_NONE &&
+        login_status_ != user::LOGGED_IN_LOCKED) {
+      ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+      views::ImageView* icon =
+          new ash::internal::FixedSizedImageView(0, ash::kTrayPopupItemHeight);
+      icon->SetImage(
+          rb.GetImageNamed(IDR_AURA_UBER_TRAY_SETTINGS).ToImageSkia());
+      AddChildView(icon);
 
-    string16 text = rb.GetLocalizedString(
-          IDS_ASH_STATUS_TRAY_SETTINGS);
-    label_ = new views::Label(text);
-    AddChildView(label_);
+      string16 text = rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_SETTINGS);
+      label_ = new views::Label(text);
+      AddChildView(label_);
+      SetAccessibleName(text);
+    }
 
-    SetAccessibleName(text);
+    PowerSupplyStatus power_status =
+        ash::Shell::GetInstance()->tray_delegate()->GetPowerSupplyStatus();
+    if (power_status.battery_is_present) {
+      power_status_view_ = new ash::internal::PowerStatusView(
+          ash::internal::PowerStatusView::VIEW_DEFAULT);
+      AddChildView(power_status_view_);
+      UpdatePowerStatus(power_status);
+    }
   }
 
-  virtual ~SettingsView() {}
+  virtual ~SettingsDefaultView() {}
+
+  void UpdatePowerStatus(const PowerSupplyStatus& status) {
+    if (power_status_view_)
+      power_status_view_->UpdatePowerStatus(status);
+  }
 
   // Overridden from ash::internal::ActionableView.
   virtual bool PerformAction(const views::Event& event) OVERRIDE {
+    if (login_status_ == user::LOGGED_IN_NONE ||
+        login_status_ == user::LOGGED_IN_LOCKED)
+      return false;
+
     ash::Shell::GetInstance()->tray_delegate()->ShowSettings();
     return true;
   }
 
+  // Overridden from views::View.
+  virtual void Layout() OVERRIDE {
+    // Let the box-layout do the layout first. Then move power_status_view_
+    // to right align if it is created.
+    views::View::Layout();
+
+    if (power_status_view_) {
+      gfx::Size size = power_status_view_->GetPreferredSize();
+      gfx::Rect bounds(size);
+      bounds.set_x(width() - size.width() - ash::kTrayPopupPaddingBetweenItems);
+      bounds.set_y((height() - size.height()) / 2);
+      power_status_view_->SetBoundsRect(bounds);
+    }
+  }
+
+  // Overridden from views::View.
+  virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE {
+    views::View::ChildPreferredSizeChanged(child);
+    Layout();
+  }
+
  private:
+  user::LoginStatus login_status_;
   views::Label* label_;
+  ash::internal::PowerStatusView* power_status_view_;
 
-  DISALLOW_COPY_AND_ASSIGN(SettingsView);
-};
+  DISALLOW_COPY_AND_ASSIGN(SettingsDefaultView);
+ };
 
-}  // namespace
+}  // namespace tray
 
-namespace ash {
-namespace internal {
-
-TraySettings::TraySettings() {}
+TraySettings::TraySettings()
+    : default_view_(NULL) {
+}
 
 TraySettings::~TraySettings() {}
 
@@ -73,10 +121,14 @@ views::View* TraySettings::CreateTrayView(user::LoginStatus status) {
 }
 
 views::View* TraySettings::CreateDefaultView(user::LoginStatus status) {
-  if (status == user::LOGGED_IN_NONE || status == user::LOGGED_IN_LOCKED)
+  if ((status == user::LOGGED_IN_NONE || status == user::LOGGED_IN_LOCKED) &&
+      (!ash::Shell::GetInstance()->tray_delegate()->
+          GetPowerSupplyStatus().battery_is_present))
     return NULL;
 
-  return new SettingsView;
+  CHECK(default_view_ == NULL);
+  default_view_ =  new tray::SettingsDefaultView(status);
+  return default_view_;
 }
 
 views::View* TraySettings::CreateDetailedView(user::LoginStatus status) {
@@ -88,12 +140,19 @@ void TraySettings::DestroyTrayView() {
 }
 
 void TraySettings::DestroyDefaultView() {
+  default_view_ = NULL;
 }
 
 void TraySettings::DestroyDetailedView() {
 }
 
 void TraySettings::UpdateAfterLoginStatusChange(user::LoginStatus status) {
+}
+
+// Overridden from PowerStatusObserver.
+void TraySettings::OnPowerStatusChanged(const PowerSupplyStatus& status) {
+  if (default_view_)
+    default_view_->UpdatePowerStatus(status);
 }
 
 }  // namespace internal

@@ -9,6 +9,12 @@
 #include "ash/system/power/power_status_observer.h"
 #include "ash/system/tray/system_tray_item.h"
 
+class SkBitmap;
+
+namespace gfx {
+class ImageSkia;
+}
+
 namespace ash {
 namespace internal {
 
@@ -17,11 +23,19 @@ class PowerNotificationView;
 class PowerTrayView;
 }
 
+enum IconSet {
+  ICON_LIGHT,
+  ICON_DARK
+};
+
 class TrayPower : public SystemTrayItem,
                   public PowerStatusObserver {
  public:
   TrayPower();
   virtual ~TrayPower();
+
+  static gfx::ImageSkia GetBatteryImage(const PowerSupplyStatus& supply_status,
+                                        IconSet icon_set);
 
  private:
   enum NotificationState {

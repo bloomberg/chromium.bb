@@ -142,6 +142,8 @@
         'system/network/tray_sms.cc',
         'system/network/tray_sms.h',
         'system/power/power_status_observer.h',
+        'system/power/power_status_view.cc',
+        'system/power/power_status_view.h',
         'system/power/power_supply_status.cc',
         'system/power/power_supply_status.h',
         'system/power/tray_power.cc',
