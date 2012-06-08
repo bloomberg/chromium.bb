@@ -115,7 +115,7 @@ RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
   has_disable_gpu_vsync_switch_ = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableGpuVsync);
 #if defined(OS_CHROMEOS) || defined(OS_MACOSX)
-  device_scale_factor_ = screen_info.verticalDPI / kStandardDPI;
+  device_scale_factor_ = std::max(1, screen_info.verticalDPI / kStandardDPI);
 #endif
 }
 

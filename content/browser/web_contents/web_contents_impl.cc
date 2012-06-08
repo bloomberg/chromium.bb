@@ -554,15 +554,6 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
     prefs.accelerated_compositing_enabled = false;
     prefs.accelerated_2d_canvas_enabled = false;
   }
-  if (rvh->GetView()) {
-    gfx::Monitor monitor = gfx::Screen::GetMonitorNearestWindow(
-        rvh->GetView()->GetNativeView());
-    prefs.default_device_scale_factor =
-        static_cast<int>(monitor.device_scale_factor());
-  } else {
-    prefs.default_device_scale_factor =
-        gfx::Monitor::GetDefaultDeviceScaleFactor();;
-  }
 
   if (command_line.HasSwitch(switches::kDefaultTileWidth))
     prefs.default_tile_width =

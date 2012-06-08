@@ -593,6 +593,7 @@ RenderViewImpl::RenderViewImpl(
   }
 
   g_view_map.Get().insert(std::make_pair(webview(), this));
+  webview()->setDeviceScaleFactor(device_scale_factor_);
   webkit_preferences_.Apply(webview());
   webview()->initializeMainFrame(this);
   if (!frame_name.empty())
@@ -2859,8 +2860,9 @@ void RenderViewImpl::ProcessViewLayoutFlags(const CommandLine& command_line) {
   webview()->enableFixedLayoutMode(enable_fixed_layout || enable_viewport);
   webview()->settings()->setFixedElementsLayoutRelativeToFrame(true);
   if (!enable_pinch &&
+      webview()->isAcceleratedCompositingActive() &&
       webkit_preferences_.apply_default_device_scale_factor_in_compositor &&
-      webkit_preferences_.default_device_scale_factor != 1) {
+      device_scale_factor_ != 1) {
     // Page scaling is disabled by default when applying a scale factor in the
     // compositor since they are currently incompatible.
     webview()->setPageScaleFactorLimits(1, 1);
@@ -2880,8 +2882,6 @@ void RenderViewImpl::ProcessViewLayoutFlags(const CommandLine& command_line) {
         webview()->setFixedLayoutSize(WebSize(width,height));
     }
   }
-  webview()->setDeviceScaleFactor(
-      webkit_preferences_.default_device_scale_factor);
 }
 
 void RenderViewImpl::didStartProvisionalLoad(WebFrame* frame) {
@@ -4891,9 +4891,11 @@ void RenderViewImpl::OnResize(const gfx::Size& new_size,
                               bool is_fullscreen) {
   if (webview()) {
     // This setting has no effect if fixed layout is not enabled.
-    if (webkit_preferences_.default_device_scale_factor)
+    DCHECK(device_scale_factor_);
+    if (device_scale_factor_) {
       webview()->settings()->setLayoutFallbackWidth(
-          new_size.width() / webkit_preferences_.default_device_scale_factor);
+          new_size.width() / device_scale_factor_);
+    }
     webview()->hidePopups();
     if (send_preferred_size_changes_) {
       webview()->mainFrame()->setCanHaveScrollbars(
