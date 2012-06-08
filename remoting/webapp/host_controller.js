@@ -242,7 +242,8 @@ remoting.HostController.prototype.stop = function(callback) {
 
   /** @param {remoting.HostController.AsyncResult} result */
   function onStopped(result) {
-    if (that.localHost && that.localHost.hostId) {
+    if (result == remoting.HostController.AsyncResult.OK &&
+        that.localHost && that.localHost.hostId) {
       remoting.HostList.unregisterHostById(that.localHost.hostId);
     }
     callback(result);
