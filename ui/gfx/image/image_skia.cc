@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "ui/gfx/size.h"
+#include "ui/gfx/skia_util.h"
 
 namespace gfx {
 
@@ -159,11 +160,30 @@ int ImageSkia::height() const {
 bool ImageSkia::extractSubset(ImageSkia* dst, const SkIRect& subset) const {
   if (isNull())
     return false;
-  SkBitmap dst_bitmap;
-  bool return_value  = storage_->bitmaps()[0].extractSubset(&dst_bitmap,
-                                                            subset);
-  *dst = ImageSkia(dst_bitmap);
-  return return_value;
+  gfx::ImageSkia image;
+  int dip_width = width();
+  const std::vector<SkBitmap>& bitmaps = storage_->bitmaps();
+  for (std::vector<SkBitmap>::const_iterator it = bitmaps.begin();
+       it != bitmaps.end(); ++it) {
+    const SkBitmap& bitmap = *it;
+    int px_width = it->width();
+    float dip_scale = static_cast<float>(px_width) /
+        static_cast<float>(dip_width);
+    // Rounding boundary in case of a non-integer scale factor.
+    int x = static_cast<int>(subset.left() * dip_scale + 0.5);
+    int y = static_cast<int>(subset.top() * dip_scale + 0.5);
+    int w = static_cast<int>(subset.width() * dip_scale + 0.5);
+    int h = static_cast<int>(subset.height() * dip_scale + 0.5);
+    SkBitmap dst_bitmap;
+    SkIRect scaled_subset = SkIRect::MakeXYWH(x, y, w, h);
+    if (bitmap.extractSubset(&dst_bitmap, scaled_subset))
+      image.AddBitmapForScale(dst_bitmap, dip_scale);
+  }
+  if (image.empty())
+    return false;
+
+  *dst = image;
+  return true;
 }
 
 const std::vector<SkBitmap> ImageSkia::bitmaps() const {

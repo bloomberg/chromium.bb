@@ -101,9 +101,7 @@ class UI_EXPORT ImageSkia {
   int height() const;
 
   // Wrapper function for SkBitmap::extractBitmap.
-  // Operates on bitmap at index 0 if available.
-  // TODO(pkotwicz): This is temporary till conversion to gfx::ImageSkia is
-  // done.
+  // Operates on each stored bitmap.
   bool extractSubset(ImageSkia* dst, const SkIRect& subset) const;
 
   // Returns pointer to an SkBitmap contained by this object.
