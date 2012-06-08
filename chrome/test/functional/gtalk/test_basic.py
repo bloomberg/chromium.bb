@@ -232,6 +232,12 @@ class BasicTest(gtalk_base_test.GTalkBaseTest):
     self.assertTrue(self.WaitUntil(lambda: bool(self.GetMoleInfo(1))),
         msg='Timed out waiting for second mole window to open.')
 
+    # Wait for mole content to load
+    self.WaitUntilCondition(
+        lambda: self.RunInMole('window.document.body.innerHTML', 1),
+        lambda html: html and 'Ping!' in html,
+        msg='Timed out waiting for Ping! to appear in mole DOM.')
+
     # Disable the extension.
     extension = self.GetGTalkExtensionInfo()
     self.SetExtensionStateById(extension['id'], enable=False,

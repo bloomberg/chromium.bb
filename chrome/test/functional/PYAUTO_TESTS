@@ -95,8 +95,6 @@
       '-fullscreen_mouselock.FullscreenMouselockTest.testMouseLockLostOnReload',
       # crbug.com/123396
       '-fullscreen_mouselock.FullscreenMouselockTest.testPatternsForFSAndML',
-      # crbug.com/128563
-      '-gtalk.test_basic.BasicTest.testBasicFunctionality',
       # crbug.com/105560
       '-notifications',
       # crbug.com/99506
