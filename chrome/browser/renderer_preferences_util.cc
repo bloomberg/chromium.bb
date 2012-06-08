@@ -12,6 +12,9 @@
 #if defined(TOOLKIT_GTK)
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#elif defined(USE_ASH)
+#include "base/command_line.h"
+#include "ui/base/ui_base_switches.h"
 #endif
 
 namespace renderer_preferences_util {
@@ -36,6 +39,12 @@ void UpdateFromSystemSettings(
   prefs->inactive_selection_fg_color =
       theme_service->get_inactive_selection_fg_color();
 #elif defined(USE_ASH)
+  // TODO(derat): This code and GetCairoFontOptions() from ui/gfx/pango_util.cc
+  // should get their settings from the same place.
+  prefs->use_subpixel_positioning =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableTextSubpixelPositioning);
+
   // This color is 0x544d90fe modulated with 0xffffff.
   prefs->active_selection_bg_color = SkColorSetRGB(0xCB, 0xE4, 0xFA);
   prefs->active_selection_fg_color = SK_ColorBLACK;

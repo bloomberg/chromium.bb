@@ -54,6 +54,10 @@ struct CONTENT_EXPORT RendererPreferences {
   // Currently only used by Linux.
   RendererPreferencesSubpixelRenderingEnum subpixel_rendering;
 
+  // Whether subpixel positioning should be used, permitting fractional X
+  // positions for glyphs.  Currently only used by Linux.
+  bool use_subpixel_positioning;
+
   // The color of the focus ring. Currently only used on Linux.
   SkColor focus_ring_color;
 

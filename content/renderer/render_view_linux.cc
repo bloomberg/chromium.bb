@@ -1,12 +1,14 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "content/renderer/render_view_impl.h"
 
 #include "content/public/common/renderer_preferences.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebFontInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebFontRendering.h"
 
+using WebKit::WebFontInfo;
 using WebKit::WebFontRendering;
 
 static SkPaint::Hinting RendererPreferencesToSkiaHinting(
@@ -86,7 +88,7 @@ static bool RendererPreferencesToAntiAliasFlag(
   return prefs.should_antialias_text;
 }
 
-static bool RendererPreferencesToSubpixelGlyphsFlag(
+static bool RendererPreferencesToSubpixelRenderingFlag(
     const content::RendererPreferences& prefs) {
   if (prefs.subpixel_rendering !=
         content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_SYSTEM_DEFAULT &&
@@ -94,18 +96,19 @@ static bool RendererPreferencesToSubpixelGlyphsFlag(
         content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_NONE) {
     return true;
   }
-
   return false;
 }
 
 void RenderViewImpl::UpdateFontRenderingFromRendererPrefs() {
   const content::RendererPreferences& prefs = renderer_preferences_;
   WebFontRendering::setHinting(RendererPreferencesToSkiaHinting(prefs));
-  WebFontRendering::setLCDOrder(RendererPreferencesToSkiaLCDOrder(
-      prefs.subpixel_rendering));
-  WebFontRendering::setLCDOrientation(RendererPreferencesToSkiaLCDOrientation(
-      prefs.subpixel_rendering));
+  WebFontRendering::setLCDOrder(
+      RendererPreferencesToSkiaLCDOrder(prefs.subpixel_rendering));
+  WebFontRendering::setLCDOrientation(
+      RendererPreferencesToSkiaLCDOrientation(prefs.subpixel_rendering));
   WebFontRendering::setAntiAlias(RendererPreferencesToAntiAliasFlag(prefs));
-  WebFontRendering::setSubpixelGlyphs(RendererPreferencesToSubpixelGlyphsFlag(
-      prefs));
+  WebFontRendering::setSubpixelRendering(
+      RendererPreferencesToSubpixelRenderingFlag(prefs));
+  WebFontRendering::setSubpixelPositioning(prefs.use_subpixel_positioning);
+  WebFontInfo::setSubpixelPositioning(prefs.use_subpixel_positioning);
 }

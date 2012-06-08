@@ -34,6 +34,7 @@
 #include "third_party/npapi/bindings/npapi_extensions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebFontInfo.h"
+#include "ui/base/ui_base_switches.h"
 
 using WebKit::WebCString;
 using WebKit::WebFontInfo;
@@ -62,6 +63,12 @@ class SandboxIPCProcess  {
       sandbox_cmd_.push_back(sandbox_cmd);
       sandbox_cmd_.push_back(base::kFindInodeSwitch);
     }
+
+    // FontConfig doesn't provide a standard property to control subpixel
+    // positioning, so we pass a UI flag through to WebKit.
+    WebFontInfo::setSubpixelPositioning(
+        CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableTextSubpixelPositioning));
   }
 
   ~SandboxIPCProcess();
@@ -300,7 +307,8 @@ class SandboxIPCProcess  {
     reply.WriteInt(style.useHinting);
     reply.WriteInt(style.hintStyle);
     reply.WriteInt(style.useAntiAlias);
-    reply.WriteInt(style.useSubpixel);
+    reply.WriteInt(style.useSubpixelRendering);
+    reply.WriteInt(style.useSubpixelPositioning);
 
     SendRendererReply(fds, reply, -1);
   }

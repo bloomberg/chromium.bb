@@ -12,6 +12,7 @@ RendererPreferences::RendererPreferences()
       hinting(RENDERER_PREFERENCES_HINTING_SYSTEM_DEFAULT),
       subpixel_rendering(
           RENDERER_PREFERENCES_SUBPIXEL_RENDERING_SYSTEM_DEFAULT),
+      use_subpixel_positioning(false),
       focus_ring_color(0),
       thumb_active_color(0),
       thumb_inactive_color(0),
