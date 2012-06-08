@@ -399,6 +399,7 @@ class QuotaManagerTest : public testing::Test {
     return base::Time::FromDoubleT(mock_time_counter_ * 10.0);
   }
 
+  MessageLoop message_loop_;
   ScopedTempDir data_dir_;
   base::WeakPtrFactory<QuotaManagerTest> weak_factory_;
 

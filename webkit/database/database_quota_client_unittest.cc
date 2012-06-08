@@ -201,6 +201,7 @@ class DatabaseQuotaClientTest : public testing::Test {
     delete_status_ = status;
   }
 
+  MessageLoop message_loop_;
   int64 usage_;
   std::set<GURL> origins_;
   quota::StorageType type_;

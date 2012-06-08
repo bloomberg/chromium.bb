@@ -62,6 +62,7 @@ class DomStorageContextTest : public testing::Test {
   }
 
  protected:
+  MessageLoop message_loop_;
   ScopedTempDir temp_dir_;
   scoped_refptr<quota::MockSpecialStoragePolicy> storage_policy_;
   scoped_refptr<MockDomStorageTaskRunner> task_runner_;

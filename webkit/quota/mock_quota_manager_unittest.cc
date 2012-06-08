@@ -98,6 +98,7 @@ class MockQuotaManagerTest : public testing::Test {
   }
 
  private:
+  MessageLoop message_loop_;
   ScopedTempDir data_dir_;
   base::WeakPtrFactory<MockQuotaManagerTest> weak_factory_;
   scoped_refptr<MockQuotaManager> manager_;

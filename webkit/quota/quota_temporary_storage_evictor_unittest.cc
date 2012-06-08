@@ -222,6 +222,7 @@ class QuotaTemporaryStorageEvictorTest : public testing::Test {
         reset_min_available_disk_space_to_start_eviction();
   }
 
+  MessageLoop message_loop_;
   scoped_ptr<MockQuotaEvictionHandler> quota_eviction_handler_;
   scoped_ptr<QuotaTemporaryStorageEvictor> temporary_storage_evictor_;
 

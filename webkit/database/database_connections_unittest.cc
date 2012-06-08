@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -100,6 +100,7 @@ TEST(DatabaseConnectionsTest, DatabaseConnectionsWrapperTest) {
   const string16 kOriginId(ASCIIToUTF16("origin_id"));
   const string16 kName(ASCIIToUTF16("database_name"));
 
+  MessageLoop message_loop;
   scoped_refptr<DatabaseConnectionsWrapper> obj(
       new DatabaseConnectionsWrapper);
   EXPECT_FALSE(obj->HasOpenConnections());

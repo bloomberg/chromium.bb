@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,6 +71,9 @@ class MockAppCacheStorageTest : public testing::Test {
     int64 found_cache_id_;
     GURL found_manifest_url_;
   };
+
+ private:
+  MessageLoop message_loop_;
 };
 
 
@@ -619,4 +622,3 @@ TEST_F(MockAppCacheStorageTest, FindMainResponseExclusions) {
 }
 
 }  // namespace appcache
-

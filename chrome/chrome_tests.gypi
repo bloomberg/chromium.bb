@@ -1997,7 +1997,6 @@
         '../ui/views/test/test_views_delegate.h',
         '../ui/views/test/views_test_base.cc',
         '../ui/views/test/views_test_base.h',
-        '../webkit/blob/local_file_stream_reader_unittest.cc',
         '../webkit/quota/mock_storage_client.cc',
         '../webkit/quota/mock_storage_client.h',
       ],

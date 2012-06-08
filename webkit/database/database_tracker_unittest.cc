@@ -5,6 +5,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/scoped_temp_dir.h"
@@ -539,6 +540,7 @@ class DatabaseTracker_TestHelper_Test {
     const string16 kDescription = ASCIIToUTF16("database_description");
 
     // Initialize the tracker database.
+    MessageLoop message_loop;
     ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
     FilePath origin1_db_dir;
@@ -616,6 +618,7 @@ class DatabaseTracker_TestHelper_Test {
     const string16 kDescription = ASCIIToUTF16("database_description");
 
     // Initialize the tracker database.
+    MessageLoop message_loop;
     ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
     FilePath origin1_db_dir;

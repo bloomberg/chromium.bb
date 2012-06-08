@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_util.h"
+#include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "googleurl/src/gurl.h"
 #include "sql/connection.h"
@@ -480,6 +481,8 @@ class QuotaDatabaseTest : public testing::Test {
     AssignQuotaTable(db.get(), entries, entries + entries_size);
     db->CommitTransaction();
   }
+
+  MessageLoop message_loop_;
 };
 
 TEST_F(QuotaDatabaseTest, LazyOpen) {

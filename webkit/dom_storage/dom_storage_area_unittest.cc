@@ -63,6 +63,9 @@ class DomStorageAreaTest : public testing::Test {
       EXPECT_EQ(kValue, values[kKey].string());
     }
   };
+
+ private:
+  MessageLoop message_loop_;
 };
 
 TEST_F(DomStorageAreaTest, DomStorageAreaBasics) {

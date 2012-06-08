@@ -1,9 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <string>
 
+#include "base/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/appcache/appcache.h"
 #include "webkit/appcache/appcache_group.h"
@@ -95,9 +96,11 @@ class TestAppCacheHost : public AppCacheHost {
 };
 
 class AppCacheGroupTest : public testing::Test {
+ private:
+  MessageLoop message_loop_;
 };
 
-TEST(AppCacheGroupTest, AddRemoveCache) {
+TEST_F(AppCacheGroupTest, AddRemoveCache) {
   MockAppCacheService service;
   scoped_refptr<AppCacheGroup> group(
       new AppCacheGroup(&service, GURL("http://foo.com"), 111));
@@ -166,7 +169,7 @@ TEST(AppCacheGroupTest, AddRemoveCache) {
   EXPECT_FALSE(group->newest_complete_cache());  // newest removed
 }
 
-TEST(AppCacheGroupTest, CleanupUnusedGroup) {
+TEST_F(AppCacheGroupTest, CleanupUnusedGroup) {
   MockAppCacheService service;
   TestAppCacheFrontend frontend;
   AppCacheGroup* group =
@@ -207,7 +210,7 @@ TEST(AppCacheGroupTest, CleanupUnusedGroup) {
   EXPECT_EQ(frontend.last_status_, appcache::UNCACHED);
 }
 
-TEST(AppCacheGroupTest, StartUpdate) {
+TEST_F(AppCacheGroupTest, StartUpdate) {
   MockAppCacheService service;
   scoped_refptr<AppCacheGroup> group(
       new AppCacheGroup(&service, GURL("http://foo.com"), 111));
@@ -228,7 +231,7 @@ TEST(AppCacheGroupTest, StartUpdate) {
   EXPECT_EQ(AppCacheGroup::IDLE, group->update_status());
 }
 
-TEST(AppCacheGroupTest, CancelUpdate) {
+TEST_F(AppCacheGroupTest, CancelUpdate) {
   MockAppCacheService service;
   scoped_refptr<AppCacheGroup> group(
       new AppCacheGroup(&service, GURL("http://foo.com"), 111));
@@ -247,7 +250,7 @@ TEST(AppCacheGroupTest, CancelUpdate) {
   EXPECT_FALSE(observer.group_has_cache_);
 }
 
-TEST(AppCacheGroupTest, QueueUpdate) {
+TEST_F(AppCacheGroupTest, QueueUpdate) {
   MockAppCacheService service;
   scoped_refptr<AppCacheGroup> group(
       new AppCacheGroup(&service, GURL("http://foo.com"), 111));
