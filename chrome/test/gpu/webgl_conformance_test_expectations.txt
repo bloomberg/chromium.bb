@@ -47,6 +47,7 @@ UNFILED WIN LINUX : conformance_textures_texture_attachment_formats = FAIL
 125864 WIN : conformance_textures_texture_upload_cube_maps = FAIL
 
 131260 WIN DEBUG : conformance_extensions_oes_texture_float_with_video = FLAKY
+131260 WIN DEBUG : conformance_textures_tex_image_and_sub_image_2d_with_video = FLAKY
 
 125864 MAC WIN LINUX : conformance_uniforms_uniform_default_values = FAIL
 
