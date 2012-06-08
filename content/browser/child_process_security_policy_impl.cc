@@ -15,6 +15,7 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/url_constants.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/net_util.h"
 #include "net/url_request/url_request.h"
 #include "webkit/fileapi/isolated_context.h"
 
@@ -81,9 +82,16 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
                          stripped.value().size());
   }
 
+  // Grant navigation to a file but not the file:// scheme in general.
+  void GrantRequestOfSpecificFile(const FilePath &file) {
+    request_file_set_.insert(file.StripTrailingSeparators());
+  }
+
   // Revokes all permissions granted to a file.
   void RevokeAllPermissionsForFile(const FilePath& file) {
-    file_permissions_.erase(file.StripTrailingSeparators());
+    FilePath stripped = file.StripTrailingSeparators();
+    file_permissions_.erase(stripped);
+    request_file_set_.erase(stripped);
   }
 
   // Grant certain permissions to a file.
@@ -113,15 +121,22 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
     can_read_raw_cookies_ = false;
   }
 
-  // Determine whether permission has been granted to request url.
-  // Schemes that have not been granted default to being denied.
+  // Determine whether permission has been granted to request |url|.
   bool CanRequestURL(const GURL& url) {
+    // Having permission to a scheme implies permssion to all of its URLs.
     SchemeMap::const_iterator judgment(scheme_policy_.find(url.scheme()));
+    if (judgment != scheme_policy_.end())
+      return judgment->second;
 
-    if (judgment == scheme_policy_.end())
-      return false;  // Unmentioned schemes are disallowed.
+    // file:// URLs are more granular.  The child may have been given
+    // permission to a specific file but not the file:// scheme in general.
+    if (url.SchemeIs(chrome::kFileScheme)) {
+      FilePath path;
+      if (net::FileURLToFilePath(url, &path))
+        return request_file_set_.find(path) != request_file_set_.end();
+    }
 
-    return judgment->second;
+    return false;  // Unmentioned schemes are disallowed.
   }
 
   // Determine if the certain permissions have been granted to a file.
@@ -163,6 +178,7 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
   typedef int FilePermissionFlags;  // bit-set of PlatformFileFlags
   typedef std::map<FilePath, FilePermissionFlags> FileMap;
   typedef std::map<std::string, FilePermissionFlags> FileSystemMap;
+  typedef std::set<FilePath> FileSet;
 
   // Maps URL schemes to whether permission has been granted or revoked:
   //   |true| means the scheme has been granted.
@@ -173,6 +189,9 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
 
   // The set of files the child process is permited to upload to the web.
   FileMap file_permissions_;
+
+  // The set of files the child process is permitted to load.
+  FileSet request_file_set_;
 
   int enabled_bindings_;
 
@@ -315,9 +334,29 @@ void ChildProcessSecurityPolicyImpl::GrantRequestURL(
     if (state == security_state_.end())
       return;
 
-    // If the child process has been commanded to request a scheme, then we
-    // grant it the capability to request URLs of that scheme.
+    // When the child process has been commanded to request this scheme,
+    // we grant it the capability to request all URLs of that scheme.
     state->second->GrantScheme(url.scheme());
+  }
+}
+
+void ChildProcessSecurityPolicyImpl::GrantRequestSpecificFileURL(
+    int child_id,
+    const GURL& url) {
+  if (!url.SchemeIs(chrome::kFileScheme))
+    return;
+
+  {
+    base::AutoLock lock(lock_);
+    SecurityStateMap::iterator state = security_state_.find(child_id);
+    if (state == security_state_.end())
+      return;
+
+    // When the child process has been commanded to request a file:// URL,
+    // then we grant it the capability for that URL only.
+    FilePath path;
+    if (net::FileURLToFilePath(url, &path))
+        state->second->GrantRequestOfSpecificFile(path);
   }
 }
 

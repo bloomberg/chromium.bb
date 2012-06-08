@@ -271,6 +271,28 @@ TEST_F(ChildProcessSecurityPolicyTest, ViewSource) {
   p->Remove(kRendererID);
 }
 
+TEST_F(ChildProcessSecurityPolicyTest, SpecificFile) {
+  ChildProcessSecurityPolicyImpl* p =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+
+  p->Add(kRendererID);
+
+  GURL icon_url("file:///tmp/foo.png");
+  GURL sensitive_url("file:///etc/passwd");
+  EXPECT_FALSE(p->CanRequestURL(kRendererID, icon_url));
+  EXPECT_FALSE(p->CanRequestURL(kRendererID, sensitive_url));
+
+  p->GrantRequestSpecificFileURL(kRendererID, icon_url);
+  EXPECT_TRUE(p->CanRequestURL(kRendererID, icon_url));
+  EXPECT_FALSE(p->CanRequestURL(kRendererID, sensitive_url));
+
+  p->GrantRequestURL(kRendererID, icon_url);
+  EXPECT_TRUE(p->CanRequestURL(kRendererID, icon_url));
+  EXPECT_TRUE(p->CanRequestURL(kRendererID, sensitive_url));
+
+  p->Remove(kRendererID);
+}
+
 TEST_F(ChildProcessSecurityPolicyTest, CanReadFiles) {
   ChildProcessSecurityPolicyImpl* p =
       ChildProcessSecurityPolicyImpl::GetInstance();

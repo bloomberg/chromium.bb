@@ -2517,6 +2517,12 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
     }
   }
 
+  // Use the frame's original request's URL rather than the document's URL for
+  // subsequent checks.  For a popup, the document's URL may become the opener
+  // window's URL if the opener has called document.write().
+  // See http://crbug.com/93517.
+  GURL old_url(frame->dataSource()->request().url());
+
   // Detect when we're crossing a permission-based boundary (e.g. into or out of
   // an extension or app origin, leaving a WebUI page, etc). We only care about
   // top-level navigations (not iframes). But we sometimes navigate to
@@ -2539,13 +2545,26 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
     // data sources can be registered.
     // Similarly, navigations to view-source URLs or within ViewSource mode
     // must be handled by the browser process.
-    int cumulative_bindings =
-        RenderProcess::current()->GetEnabledBindings();
+    // Lastly, access to file:// URLs from non-file:// URL pages must be
+    // handled by the browser so that ordinary renderer processes don't get
+    // blessed with file permissions.
+    int cumulative_bindings = RenderProcess::current()->GetEnabledBindings();
+    bool is_initial_navigation = page_id_ == -1;
     bool should_fork =
         content::GetContentClient()->HasWebUIScheme(url) ||
         (cumulative_bindings & content::BINDINGS_POLICY_WEB_UI) ||
         url.SchemeIs(chrome::kViewSourceScheme) ||
         frame->isViewSourceModeEnabled();
+
+    if (!should_fork && url.SchemeIs(chrome::kFileScheme)) {
+      // Fork non-file to file opens.  Check the opener URL if this is the
+      // initial navigation in a newly opened window.
+      GURL source_url(old_url);
+      if (is_initial_navigation && source_url.is_empty() && frame->opener())
+        source_url = frame->opener()->top()->document().url();
+      DCHECK(!source_url.is_empty());
+      should_fork = !source_url.SchemeIs(chrome::kFileScheme);
+    }
 
     if (!should_fork) {
       // Give the embedder a chance.
@@ -2554,7 +2573,6 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
       // with hosted apps and extensions than WebUI pages.  We will remove this
       // check when cross-process POST submissions are supported.
       if (request.httpMethod() == "GET") {
-        bool is_initial_navigation = page_id_ == -1;
         should_fork = content::GetContentClient()->renderer()->ShouldFork(
             frame, url, is_initial_navigation, &send_referrer);
       }
@@ -2566,11 +2584,6 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
       return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
     }
   }
-
-  // Use the frame's original request's URL rather than the document's URL for
-  // this check.  For a popup, the document's URL may become the opener window's
-  // URL if the opener has called document.write.  See http://crbug.com/93517.
-  GURL old_url(frame->dataSource()->request().url());
 
   // Detect when a page is "forking" a new tab that can be safely rendered in
   // its own process.  This is done by sites like Gmail that try to open links

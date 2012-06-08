@@ -531,8 +531,14 @@ void RenderViewHostImpl::DragTargetDragEnter(
   for (std::vector<WebDropData::FileInfo>::const_iterator iter(
            filtered_data.filenames.begin());
        iter != filtered_data.filenames.end(); ++iter) {
+    // A dragged file may wind up as the value of an input element, or it
+    // may be used as the target of a navigation instead.  We don't know
+    // which will happen at this point, so generously grant both access
+    // and request permissions to the specific file to cover both cases.
+    // We do not give it the permission to request all file:// URLs.
     FilePath path = FilePath::FromUTF8Unsafe(UTF16ToUTF8(iter->path));
-    policy->GrantRequestURL(renderer_id, net::FilePathToFileURL(path));
+    policy->GrantRequestSpecificFileURL(renderer_id,
+                                        net::FilePathToFileURL(path));
 
     // If the renderer already has permission to read these paths, we don't need
     // to re-grant them. This prevents problems with DnD for files in the CrOS

@@ -76,8 +76,14 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
 
   // Whenever the browser processes commands the child process to request a URL,
   // it should call this method to grant the child process the capability to
-  // request the URL.
+  // request the URL, along with permission to request all URLs of the same
+  // scheme.
   void GrantRequestURL(int child_id, const GURL& url);
+
+  // Whenever the browser process drops a file icon on a tab, it should call
+  // this method to grant the child process the capability to request this one
+  // file:// URL, but not all urls of the file:// scheme.
+  void GrantRequestSpecificFileURL(int child_id, const GURL& url);
 
   // Grants the child process permission to enumerate all the files in
   // this directory and read those files.
