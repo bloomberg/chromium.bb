@@ -369,7 +369,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation {
   GLenum GetGLError();
 
   // Sets our wrapper for the GLError.
-  void SetGLError(GLenum error, const char* msg);
+  void SetGLError(GLenum error, const char* function_name, const char* msg);
 
   // Returns the last error and clears it. Useful for debugging.
   const std::string& GetLastError() {

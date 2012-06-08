@@ -2419,7 +2419,7 @@ class TodoHandler(CustomHandler):
                 func.MakeTypedOriginalArgString("")))
     file.Write("  // TODO: for now this is a no-op\n")
     file.Write(
-        "  SetGLError(GL_INVALID_OPERATION, \"gl%s not implemented\");\n" %
+        "  SetGLError(GL_INVALID_OPERATION, \"gl%s\", \"not implemented\");\n" %
         func.name)
     if func.return_type != "void":
       file.Write("  return 0;\n")
@@ -2434,7 +2434,7 @@ class TodoHandler(CustomHandler):
         "    uint32 immediate_data_size, const gles2::%s& c) {\n" % func.name)
     file.Write("  // TODO: for now this is a no-op\n")
     file.Write(
-        "  SetGLError(GL_INVALID_OPERATION, \"gl%s not implemented\");\n" %
+        "  SetGLError(GL_INVALID_OPERATION, \"gl%s\", \"not implemented\");\n" %
         func.name)
     file.Write("  return error::kNoError;\n")
     file.Write("}\n")
@@ -2745,7 +2745,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
       for arg in func.GetOriginalArgs():
         arg.WriteClientSideValidationCode(file, func)
       code = """  if (Is%(type)sReservedId(%(id)s)) {
-    SetGLError(GL_INVALID_OPERATION, "%(name)s: %(id)s reserved id");
+    SetGLError(GL_INVALID_OPERATION, "%(name)s\", \"%(id)s reserved id");
     return;
   }
   Bind%(type)sHelper(%(arg_string)s);
@@ -3393,7 +3393,7 @@ class GETnHandler(TypeHandler):
   if (error == GL_NO_ERROR) {
     result->SetNumResults(num_values);
   } else {
-    SetGLError(error, NULL);
+    SetGLError(error, "", "");
   }
   return error::kNoError;
 }
@@ -4724,7 +4724,7 @@ class SizeArgument(Argument):
   def WriteValidationCode(self, file, func):
     """overridden from Argument."""
     file.Write("  if (%s < 0) {\n" % self.name)
-    file.Write("    SetGLError(GL_INVALID_VALUE, \"gl%s: %s < 0\");\n" %
+    file.Write("    SetGLError(GL_INVALID_VALUE, \"gl%s\", \"%s < 0\");\n" %
                (func.original_name, self.name))
     file.Write("    return error::kNoError;\n")
     file.Write("  }\n")
@@ -4732,7 +4732,7 @@ class SizeArgument(Argument):
   def WriteClientSideValidationCode(self, file, func):
     """overridden from Argument."""
     file.Write("  if (%s < 0) {\n" % self.name)
-    file.Write("    SetGLError(GL_INVALID_VALUE, \"gl%s: %s < 0\");\n" %
+    file.Write("    SetGLError(GL_INVALID_VALUE, \"gl%s\", \"%s < 0\");\n" %
                (func.original_name, self.name))
     file.Write("    return;\n")
     file.Write("  }\n")
@@ -4751,11 +4751,6 @@ class SizeNotNegativeArgument(SizeArgument):
   def WriteValidationCode(self, file, func):
     """overridden from SizeArgument."""
     pass
-    #file.Write("  if (%s < 0) {\n" % self.name)
-    #file.Write("    SetGLError(GL_INVALID_VALUE, \"gl%s: %s < 0\");\n" %
-    #           (func.original_name, self.name))
-    #file.Write("    return error::kNoError;\n")
-    #file.Write("  }\n")
 
 
 class EnumBaseArgument(Argument):
@@ -4773,7 +4768,7 @@ class EnumBaseArgument(Argument):
   def WriteValidationCode(self, file, func):
     file.Write("  if (!validators_->%s.IsValid(%s)) {\n" %
         (ToUnderscore(self.type_name), self.name))
-    file.Write("    SetGLError(%s, \"gl%s: %s %s\");\n" %
+    file.Write("    SetGLError(%s, \"gl%s\", \"%s %s\");\n" %
                (self.gl_error, func.original_name, self.name, self.gl_error))
     file.Write("    return error::kNoError;\n")
     file.Write("  }\n")

@@ -735,6 +735,29 @@ void GLES2DecoderTestBase::DoTexImage2D(
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
+void GLES2DecoderTestBase::DoCompressedTexImage2D(
+    GLenum target, GLint level, GLenum format,
+    GLsizei width, GLsizei height, GLint border,
+    GLsizei size, uint32 bucket_id) {
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, CompressedTexImage2D(
+      target, level, format, width, height, border, size, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
+  CommonDecoder::Bucket* bucket = decoder_->CreateBucket(bucket_id);
+  bucket->SetSize(size);
+  CompressedTexImage2DBucket cmd;
+  cmd.Init(
+      target, level, format, width, height, border,
+      bucket_id);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
 void GLES2DecoderTestBase::DoTexImage2DSameSize(
     GLenum target, GLint level, GLenum internal_format,
     GLsizei width, GLsizei height, GLint border,

@@ -25,7 +25,7 @@ void BindBuffer(GLenum target, GLuint buffer) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << this << "] glBindBuffer(" << GLES2Util::GetStringBufferTarget(target) << ", " << buffer << ")");  // NOLINT
   if (IsBufferReservedId(buffer)) {
-    SetGLError(GL_INVALID_OPERATION, "BindBuffer: buffer reserved id");
+    SetGLError(GL_INVALID_OPERATION, "BindBuffer", "buffer reserved id");
     return;
   }
   BindBufferHelper(target, buffer);
@@ -37,7 +37,7 @@ void BindFramebuffer(GLenum target, GLuint framebuffer) {
   GPU_CLIENT_LOG("[" << this << "] glBindFramebuffer(" << GLES2Util::GetStringFrameBufferTarget(target) << ", " << framebuffer << ")");  // NOLINT
   if (IsFramebufferReservedId(framebuffer)) {
     SetGLError(
-        GL_INVALID_OPERATION, "BindFramebuffer: framebuffer reserved id");
+        GL_INVALID_OPERATION, "BindFramebuffer", "framebuffer reserved id");
     return;
   }
   BindFramebufferHelper(target, framebuffer);
@@ -49,7 +49,7 @@ void BindRenderbuffer(GLenum target, GLuint renderbuffer) {
   GPU_CLIENT_LOG("[" << this << "] glBindRenderbuffer(" << GLES2Util::GetStringRenderBufferTarget(target) << ", " << renderbuffer << ")");  // NOLINT
   if (IsRenderbufferReservedId(renderbuffer)) {
     SetGLError(
-        GL_INVALID_OPERATION, "BindRenderbuffer: renderbuffer reserved id");
+        GL_INVALID_OPERATION, "BindRenderbuffer", "renderbuffer reserved id");
     return;
   }
   BindRenderbufferHelper(target, renderbuffer);
@@ -60,7 +60,7 @@ void BindTexture(GLenum target, GLuint texture) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << this << "] glBindTexture(" << GLES2Util::GetStringTextureBindTarget(target) << ", " << texture << ")");  // NOLINT
   if (IsTextureReservedId(texture)) {
-    SetGLError(GL_INVALID_OPERATION, "BindTexture: texture reserved id");
+    SetGLError(GL_INVALID_OPERATION, "BindTexture", "texture reserved id");
     return;
   }
   BindTextureHelper(target, texture);
@@ -174,11 +174,11 @@ void CopyTexImage2D(
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << this << "] glCopyTexImage2D(" << GLES2Util::GetStringTextureTarget(target) << ", " << level << ", " << GLES2Util::GetStringTextureInternalFormat(internalformat) << ", " << x << ", " << y << ", " << width << ", " << height << ", " << border << ")");  // NOLINT
   if (width < 0) {
-    SetGLError(GL_INVALID_VALUE, "glCopyTexImage2D: width < 0");
+    SetGLError(GL_INVALID_VALUE, "glCopyTexImage2D", "width < 0");
     return;
   }
   if (height < 0) {
-    SetGLError(GL_INVALID_VALUE, "glCopyTexImage2D: height < 0");
+    SetGLError(GL_INVALID_VALUE, "glCopyTexImage2D", "height < 0");
     return;
   }
   helper_->CopyTexImage2D(
@@ -191,11 +191,11 @@ void CopyTexSubImage2D(
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << this << "] glCopyTexSubImage2D(" << GLES2Util::GetStringTextureTarget(target) << ", " << level << ", " << xoffset << ", " << yoffset << ", " << x << ", " << y << ", " << width << ", " << height << ")");  // NOLINT
   if (width < 0) {
-    SetGLError(GL_INVALID_VALUE, "glCopyTexSubImage2D: width < 0");
+    SetGLError(GL_INVALID_VALUE, "glCopyTexSubImage2D", "width < 0");
     return;
   }
   if (height < 0) {
-    SetGLError(GL_INVALID_VALUE, "glCopyTexSubImage2D: height < 0");
+    SetGLError(GL_INVALID_VALUE, "glCopyTexSubImage2D", "height < 0");
     return;
   }
   helper_->CopyTexSubImage2D(
@@ -245,7 +245,7 @@ void DeleteBuffers(GLsizei n, const GLuint* buffers) {
     }
   });
   if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "glDeleteBuffers: n < 0");
+    SetGLError(GL_INVALID_VALUE, "glDeleteBuffers", "n < 0");
     return;
   }
   DeleteBuffersHelper(n, buffers);
@@ -265,7 +265,7 @@ void DeleteFramebuffers(GLsizei n, const GLuint* framebuffers) {
     }
   });
   if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "glDeleteFramebuffers: n < 0");
+    SetGLError(GL_INVALID_VALUE, "glDeleteFramebuffers", "n < 0");
     return;
   }
   DeleteFramebuffersHelper(n, framebuffers);
@@ -292,7 +292,7 @@ void DeleteRenderbuffers(GLsizei n, const GLuint* renderbuffers) {
     }
   });
   if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "glDeleteRenderbuffers: n < 0");
+    SetGLError(GL_INVALID_VALUE, "glDeleteRenderbuffers", "n < 0");
     return;
   }
   DeleteRenderbuffersHelper(n, renderbuffers);
@@ -319,7 +319,7 @@ void DeleteTextures(GLsizei n, const GLuint* textures) {
     }
   });
   if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "glDeleteTextures: n < 0");
+    SetGLError(GL_INVALID_VALUE, "glDeleteTextures", "n < 0");
     return;
   }
   DeleteTexturesHelper(n, textures);
@@ -389,7 +389,7 @@ void FrontFace(GLenum mode) {
 void GenBuffers(GLsizei n, GLuint* buffers) {
   GPU_CLIENT_LOG("[" << this << "] glGenBuffers(" << n << ", " << static_cast<const void*>(buffers) << ")");  // NOLINT
   if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "glGenBuffers: n < 0");
+    SetGLError(GL_INVALID_VALUE, "glGenBuffers", "n < 0");
     return;
   }
   GPU_CLIENT_SINGLE_THREAD_CHECK();
@@ -412,7 +412,7 @@ void GenerateMipmap(GLenum target) {
 void GenFramebuffers(GLsizei n, GLuint* framebuffers) {
   GPU_CLIENT_LOG("[" << this << "] glGenFramebuffers(" << n << ", " << static_cast<const void*>(framebuffers) << ")");  // NOLINT
   if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "glGenFramebuffers: n < 0");
+    SetGLError(GL_INVALID_VALUE, "glGenFramebuffers", "n < 0");
     return;
   }
   GPU_CLIENT_SINGLE_THREAD_CHECK();
@@ -429,7 +429,7 @@ void GenFramebuffers(GLsizei n, GLuint* framebuffers) {
 void GenRenderbuffers(GLsizei n, GLuint* renderbuffers) {
   GPU_CLIENT_LOG("[" << this << "] glGenRenderbuffers(" << n << ", " << static_cast<const void*>(renderbuffers) << ")");  // NOLINT
   if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "glGenRenderbuffers: n < 0");
+    SetGLError(GL_INVALID_VALUE, "glGenRenderbuffers", "n < 0");
     return;
   }
   GPU_CLIENT_SINGLE_THREAD_CHECK();
@@ -446,7 +446,7 @@ void GenRenderbuffers(GLsizei n, GLuint* renderbuffers) {
 void GenTextures(GLsizei n, GLuint* textures) {
   GPU_CLIENT_LOG("[" << this << "] glGenTextures(" << n << ", " << static_cast<const void*>(textures) << ")");  // NOLINT
   if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "glGenTextures: n < 0");
+    SetGLError(GL_INVALID_VALUE, "glGenTextures", "n < 0");
     return;
   }
   GPU_CLIENT_SINGLE_THREAD_CHECK();
@@ -928,11 +928,11 @@ void RenderbufferStorage(
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << this << "] glRenderbufferStorage(" << GLES2Util::GetStringRenderBufferTarget(target) << ", " << GLES2Util::GetStringRenderBufferFormat(internalformat) << ", " << width << ", " << height << ")");  // NOLINT
   if (width < 0) {
-    SetGLError(GL_INVALID_VALUE, "glRenderbufferStorage: width < 0");
+    SetGLError(GL_INVALID_VALUE, "glRenderbufferStorage", "width < 0");
     return;
   }
   if (height < 0) {
-    SetGLError(GL_INVALID_VALUE, "glRenderbufferStorage: height < 0");
+    SetGLError(GL_INVALID_VALUE, "glRenderbufferStorage", "height < 0");
     return;
   }
   helper_->RenderbufferStorage(target, internalformat, width, height);
@@ -948,11 +948,11 @@ void Scissor(GLint x, GLint y, GLsizei width, GLsizei height) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << this << "] glScissor(" << x << ", " << y << ", " << width << ", " << height << ")");  // NOLINT
   if (width < 0) {
-    SetGLError(GL_INVALID_VALUE, "glScissor: width < 0");
+    SetGLError(GL_INVALID_VALUE, "glScissor", "width < 0");
     return;
   }
   if (height < 0) {
-    SetGLError(GL_INVALID_VALUE, "glScissor: height < 0");
+    SetGLError(GL_INVALID_VALUE, "glScissor", "height < 0");
     return;
   }
   helper_->Scissor(x, y, width, height);
@@ -1051,7 +1051,7 @@ void Uniform1fv(GLint location, GLsizei count, const GLfloat* v) {
     }
   });
   if (count < 0) {
-    SetGLError(GL_INVALID_VALUE, "glUniform1fv: count < 0");
+    SetGLError(GL_INVALID_VALUE, "glUniform1fv", "count < 0");
     return;
   }
   helper_->Uniform1fvImmediate(location, count, v);
@@ -1072,7 +1072,7 @@ void Uniform1iv(GLint location, GLsizei count, const GLint* v) {
     }
   });
   if (count < 0) {
-    SetGLError(GL_INVALID_VALUE, "glUniform1iv: count < 0");
+    SetGLError(GL_INVALID_VALUE, "glUniform1iv", "count < 0");
     return;
   }
   helper_->Uniform1ivImmediate(location, count, v);
@@ -1093,7 +1093,7 @@ void Uniform2fv(GLint location, GLsizei count, const GLfloat* v) {
     }
   });
   if (count < 0) {
-    SetGLError(GL_INVALID_VALUE, "glUniform2fv: count < 0");
+    SetGLError(GL_INVALID_VALUE, "glUniform2fv", "count < 0");
     return;
   }
   helper_->Uniform2fvImmediate(location, count, v);
@@ -1114,7 +1114,7 @@ void Uniform2iv(GLint location, GLsizei count, const GLint* v) {
     }
   });
   if (count < 0) {
-    SetGLError(GL_INVALID_VALUE, "glUniform2iv: count < 0");
+    SetGLError(GL_INVALID_VALUE, "glUniform2iv", "count < 0");
     return;
   }
   helper_->Uniform2ivImmediate(location, count, v);
@@ -1135,7 +1135,7 @@ void Uniform3fv(GLint location, GLsizei count, const GLfloat* v) {
     }
   });
   if (count < 0) {
-    SetGLError(GL_INVALID_VALUE, "glUniform3fv: count < 0");
+    SetGLError(GL_INVALID_VALUE, "glUniform3fv", "count < 0");
     return;
   }
   helper_->Uniform3fvImmediate(location, count, v);
@@ -1156,7 +1156,7 @@ void Uniform3iv(GLint location, GLsizei count, const GLint* v) {
     }
   });
   if (count < 0) {
-    SetGLError(GL_INVALID_VALUE, "glUniform3iv: count < 0");
+    SetGLError(GL_INVALID_VALUE, "glUniform3iv", "count < 0");
     return;
   }
   helper_->Uniform3ivImmediate(location, count, v);
@@ -1177,7 +1177,7 @@ void Uniform4fv(GLint location, GLsizei count, const GLfloat* v) {
     }
   });
   if (count < 0) {
-    SetGLError(GL_INVALID_VALUE, "glUniform4fv: count < 0");
+    SetGLError(GL_INVALID_VALUE, "glUniform4fv", "count < 0");
     return;
   }
   helper_->Uniform4fvImmediate(location, count, v);
@@ -1198,7 +1198,7 @@ void Uniform4iv(GLint location, GLsizei count, const GLint* v) {
     }
   });
   if (count < 0) {
-    SetGLError(GL_INVALID_VALUE, "glUniform4iv: count < 0");
+    SetGLError(GL_INVALID_VALUE, "glUniform4iv", "count < 0");
     return;
   }
   helper_->Uniform4ivImmediate(location, count, v);
@@ -1214,7 +1214,7 @@ void UniformMatrix2fv(
     }
   });
   if (count < 0) {
-    SetGLError(GL_INVALID_VALUE, "glUniformMatrix2fv: count < 0");
+    SetGLError(GL_INVALID_VALUE, "glUniformMatrix2fv", "count < 0");
     return;
   }
   helper_->UniformMatrix2fvImmediate(location, count, transpose, value);
@@ -1230,7 +1230,7 @@ void UniformMatrix3fv(
     }
   });
   if (count < 0) {
-    SetGLError(GL_INVALID_VALUE, "glUniformMatrix3fv: count < 0");
+    SetGLError(GL_INVALID_VALUE, "glUniformMatrix3fv", "count < 0");
     return;
   }
   helper_->UniformMatrix3fvImmediate(location, count, transpose, value);
@@ -1246,7 +1246,7 @@ void UniformMatrix4fv(
     }
   });
   if (count < 0) {
-    SetGLError(GL_INVALID_VALUE, "glUniformMatrix4fv: count < 0");
+    SetGLError(GL_INVALID_VALUE, "glUniformMatrix4fv", "count < 0");
     return;
   }
   helper_->UniformMatrix4fvImmediate(location, count, transpose, value);
@@ -1324,11 +1324,11 @@ void Viewport(GLint x, GLint y, GLsizei width, GLsizei height) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << this << "] glViewport(" << x << ", " << y << ", " << width << ", " << height << ")");  // NOLINT
   if (width < 0) {
-    SetGLError(GL_INVALID_VALUE, "glViewport: width < 0");
+    SetGLError(GL_INVALID_VALUE, "glViewport", "width < 0");
     return;
   }
   if (height < 0) {
-    SetGLError(GL_INVALID_VALUE, "glViewport: height < 0");
+    SetGLError(GL_INVALID_VALUE, "glViewport", "height < 0");
     return;
   }
   helper_->Viewport(x, y, width, height);
@@ -1350,17 +1350,17 @@ void RenderbufferStorageMultisampleEXT(
   GPU_CLIENT_LOG("[" << this << "] glRenderbufferStorageMultisampleEXT(" << GLES2Util::GetStringRenderBufferTarget(target) << ", " << samples << ", " << GLES2Util::GetStringRenderBufferFormat(internalformat) << ", " << width << ", " << height << ")");  // NOLINT
   if (samples < 0) {
     SetGLError(
-        GL_INVALID_VALUE, "glRenderbufferStorageMultisampleEXT: samples < 0");
+        GL_INVALID_VALUE, "glRenderbufferStorageMultisampleEXT", "samples < 0");
     return;
   }
   if (width < 0) {
     SetGLError(
-        GL_INVALID_VALUE, "glRenderbufferStorageMultisampleEXT: width < 0");
+        GL_INVALID_VALUE, "glRenderbufferStorageMultisampleEXT", "width < 0");
     return;
   }
   if (height < 0) {
     SetGLError(
-        GL_INVALID_VALUE, "glRenderbufferStorageMultisampleEXT: height < 0");
+        GL_INVALID_VALUE, "glRenderbufferStorageMultisampleEXT", "height < 0");
     return;
   }
   helper_->RenderbufferStorageMultisampleEXT(
@@ -1373,15 +1373,15 @@ void TexStorage2DEXT(
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << this << "] glTexStorage2DEXT(" << GLES2Util::GetStringTextureTarget(target) << ", " << levels << ", " << GLES2Util::GetStringTextureInternalFormatStorage(internalFormat) << ", " << width << ", " << height << ")");  // NOLINT
   if (levels < 0) {
-    SetGLError(GL_INVALID_VALUE, "glTexStorage2DEXT: levels < 0");
+    SetGLError(GL_INVALID_VALUE, "glTexStorage2DEXT", "levels < 0");
     return;
   }
   if (width < 0) {
-    SetGLError(GL_INVALID_VALUE, "glTexStorage2DEXT: width < 0");
+    SetGLError(GL_INVALID_VALUE, "glTexStorage2DEXT", "width < 0");
     return;
   }
   if (height < 0) {
-    SetGLError(GL_INVALID_VALUE, "glTexStorage2DEXT: height < 0");
+    SetGLError(GL_INVALID_VALUE, "glTexStorage2DEXT", "height < 0");
     return;
   }
   helper_->TexStorage2DEXT(target, levels, internalFormat, width, height);
@@ -1390,7 +1390,7 @@ void TexStorage2DEXT(
 void GenQueriesEXT(GLsizei n, GLuint* queries) {
   GPU_CLIENT_LOG("[" << this << "] glGenQueriesEXT(" << n << ", " << static_cast<const void*>(queries) << ")");  // NOLINT
   if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "glGenQueriesEXT: n < 0");
+    SetGLError(GL_INVALID_VALUE, "glGenQueriesEXT", "n < 0");
     return;
   }
   GPU_CLIENT_SINGLE_THREAD_CHECK();
@@ -1418,7 +1418,7 @@ void DeleteQueriesEXT(GLsizei n, const GLuint* queries) {
     }
   });
   if (n < 0) {
-    SetGLError(GL_INVALID_VALUE, "glDeleteQueriesEXT: n < 0");
+    SetGLError(GL_INVALID_VALUE, "glDeleteQueriesEXT", "n < 0");
     return;
   }
   DeleteQueriesEXTHelper(n, queries);
@@ -1513,11 +1513,12 @@ void TexImageIOSurface2DCHROMIUM(
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << this << "] glTexImageIOSurface2DCHROMIUM(" << GLES2Util::GetStringTextureBindTarget(target) << ", " << width << ", " << height << ", " << ioSurfaceId << ", " << plane << ")");  // NOLINT
   if (width < 0) {
-    SetGLError(GL_INVALID_VALUE, "glTexImageIOSurface2DCHROMIUM: width < 0");
+    SetGLError(GL_INVALID_VALUE, "glTexImageIOSurface2DCHROMIUM", "width < 0");
     return;
   }
   if (height < 0) {
-    SetGLError(GL_INVALID_VALUE, "glTexImageIOSurface2DCHROMIUM: height < 0");
+    SetGLError(
+        GL_INVALID_VALUE, "glTexImageIOSurface2DCHROMIUM", "height < 0");
     return;
   }
   helper_->TexImageIOSurface2DCHROMIUM(

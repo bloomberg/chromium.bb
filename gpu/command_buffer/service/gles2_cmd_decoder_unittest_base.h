@@ -207,6 +207,10 @@ class GLES2DecoderTestBase : public testing::Test {
   void DoDeleteShader(GLuint client_id, GLuint service_id);
   void DoDeleteTexture(GLuint client_id, GLuint service_id);
 
+  void DoCompressedTexImage2D(
+      GLenum target, GLint level, GLenum format,
+      GLsizei width, GLsizei height, GLint border,
+      GLsizei size, uint32 bucket_id);
   void DoTexImage2D(
       GLenum target, GLint level, GLenum internal_format,
       GLsizei width, GLsizei height, GLint border,

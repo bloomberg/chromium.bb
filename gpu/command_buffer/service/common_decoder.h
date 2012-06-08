@@ -102,6 +102,9 @@ class GPU_EXPORT CommonDecoder : NON_EXPORTED_BASE(public AsyncAPIInterface) {
     engine_ = engine;
   }
 
+  // Creates a bucket. If the bucket already exists returns that bucket.
+  Bucket* CreateBucket(uint32 bucket_id);
+
   // Gets a bucket. Returns NULL if the bucket does not exist.
   Bucket* GetBucket(uint32 bucket_id) const;
 
@@ -142,9 +145,6 @@ class GPU_EXPORT CommonDecoder : NON_EXPORTED_BASE(public AsyncAPIInterface) {
 
   // Gets an name for a common command.
   const char* GetCommonCommandName(cmd::CommandId command_id) const;
-
-  // Creates a bucket. If the bucket already exists returns that bucket.
-  Bucket* CreateBucket(uint32 bucket_id);
 
  private:
   // Generate a member function prototype for each command in an automated and
