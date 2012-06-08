@@ -46,6 +46,7 @@
 #include <setjmp.h>
 #include <sys/time.h>
 #include <time.h>
+#include <ctype.h>
 
 #include <wayland-server.h>
 #include "compositor.h"
@@ -2873,6 +2874,26 @@ compositor_bind(struct wl_client *client,
 			     &compositor_interface, id, compositor);
 }
 
+static void
+log_extensions(const char *name, const char *extensions)
+{
+	const char *p, *end;
+	int l;
+
+	l = weston_log("%s:", name);
+	p = extensions;
+	while (*p) {
+		end = strchrnul(p, ' ');
+		if (l + (end - p) > 78)
+			l = weston_log_continue("\n  %.*s", end - p, p);
+		else
+			l += weston_log_continue(" %.*s", end - p, p);
+		for (p = end; isspace(*p); p++)
+			;
+	}
+	weston_log_continue("\n");
+}
+
 WL_EXPORT int
 weston_compositor_init(struct weston_compositor *ec,
 		       struct wl_display *display,
@@ -2913,6 +2934,11 @@ weston_compositor_init(struct weston_compositor *ec,
 
 	wl_display_init_shm(display);
 
+	weston_log("egl vendor: %s\n",
+		   eglQueryString(ec->display, EGL_VENDOR));
+	log_extensions("egl extensions",
+		       eglQueryString(ec->display, EGL_EXTENSIONS));
+
 	ec->image_target_texture_2d =
 		(void *) eglGetProcAddress("glEGLImageTargetTexture2DOES");
 	ec->image_target_renderbuffer_storage = (void *)
@@ -2929,6 +2955,8 @@ weston_compositor_init(struct weston_compositor *ec,
 		weston_log("Retrieving GL extension string failed.\n");
 		return -1;
 	}
+
+	log_extensions("gles2 extensions", extensions);
 
 	if (!strstr(extensions, "GL_EXT_texture_format_BGRA8888")) {
 		weston_log("GL_EXT_texture_format_BGRA8888 not available\n");

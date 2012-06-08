@@ -1018,6 +1018,8 @@ init_egl(struct drm_compositor *ec, struct udev_device *device)
 		return -1;
 	}
 
+	weston_log("using %s\n", filename);
+
 	ec->drm.fd = fd;
 	ec->gbm = gbm_create_device(ec->drm.fd);
 	ec->base.display = eglGetDisplay(ec->gbm);
@@ -1349,6 +1351,12 @@ create_output_for_connector(struct drm_compositor *ec,
 	output->base.assign_planes = drm_assign_planes;
 	output->base.set_dpms = drm_set_dpms;
 	output->base.switch_mode = drm_output_switch_mode;
+
+	weston_log("kms connector %d, crtc %d at mode %dx%d@%.1f\n",
+		   output->connector_id, output->crtc_id,
+		   output->base.current->width,
+		   output->base.current->height,
+		   output->base.current->refresh / 1000.0);
 
 	return 0;
 
@@ -1747,6 +1755,8 @@ drm_compositor_create(struct wl_display *display,
 	const char *path, *device_seat;
 	struct wl_event_loop *loop;
 	uint32_t key;
+
+	weston_log("initializing drm backend\n");
 
 	ec = malloc(sizeof *ec);
 	if (ec == NULL)

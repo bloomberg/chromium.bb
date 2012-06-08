@@ -523,6 +523,9 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 
 	wl_list_insert(c->base.output_list.prev, &output->base.link);
 
+	weston_log("x11 output %dx%d, window id %d\n",
+		   width, height, output->window);
+
 	return 0;
 }
 
@@ -864,6 +867,8 @@ x11_compositor_create(struct wl_display *display,
 	struct x11_compositor *c;
 	xcb_screen_iterator_t s;
 	int i, x;
+
+	weston_log("initializing x11 backend\n");
 
 	c = malloc(sizeof *c);
 	if (c == NULL)
