@@ -318,7 +318,9 @@ clock_func(struct task *task, uint32_t events)
 {
 	struct panel_clock *clock =
 	container_of(task, struct panel_clock, clock_task);
+	uint64_t exp;
 
+	read(clock->clock_fd, &exp, sizeof exp);
 	if (panel_clock_tick(clock))
 		widget_schedule_redraw(clock->widget);
 }
