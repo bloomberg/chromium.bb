@@ -46,9 +46,9 @@ const int kSystemTrayBubbleVerticalInset = 1;
 
 const int kArrowHeight = 10;
 const int kArrowWidth = 20;
-const int kArrowPaddingFromRight = 20;
-const int kArrowPaddingFromBottom = 17;
-const int kMinArrowOffset = 12;
+
+// Inset the arrow a bit from the edge.
+const int kArrowMinOffset = kArrowWidth / 2 + 4;
 
 const int kAnimationDurationForPopupMS = 200;
 
@@ -155,7 +155,7 @@ class SystemTrayBubbleBorder : public views::BubbleBorder {
       : views::BubbleBorder(arrow_location,
                             views::BubbleBorder::NO_SHADOW),
         owner_(owner),
-        arrow_offset_(std::max(arrow_offset, kMinArrowOffset)) {
+        tray_arrow_offset_(arrow_offset) {
     set_alignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
   }
 
@@ -208,12 +208,10 @@ class SystemTrayBubbleBorder : public views::BubbleBorder {
     SkPath path;
     path.incReserve(4);
     if (arrow_location() == views::BubbleBorder::BOTTOM_RIGHT) {
-      int tip_x = base::i18n::IsRTL() ? arrow_offset_ :
-          owner_->width() - arrow_offset_;
-      if (tip_x < kArrowPaddingFromRight + kArrowWidth / 2)
-        tip_x = kArrowPaddingFromRight + kArrowWidth / 2;
-      if (tip_x > owner_->width() - kArrowPaddingFromRight - kArrowWidth / 2)
-        tip_x = owner_->width() - kArrowPaddingFromRight - kArrowWidth / 2;
+      int tip_x = base::i18n::IsRTL() ? tray_arrow_offset_ :
+          owner_->width() - tray_arrow_offset_;
+      tip_x = std::min(std::max(kArrowMinOffset, tip_x),
+                       owner_->width() - kArrowMinOffset);
       int left_base_x = tip_x - kArrowWidth / 2;
       int left_base_y = y;
       int tip_y = left_base_y + kArrowHeight;
@@ -221,21 +219,21 @@ class SystemTrayBubbleBorder : public views::BubbleBorder {
       path.lineTo(SkIntToScalar(tip_x), SkIntToScalar(tip_y));
       path.lineTo(SkIntToScalar(left_base_x + kArrowWidth),
                   SkIntToScalar(left_base_y));
-    } else if (arrow_location() == views::BubbleBorder::LEFT_BOTTOM) {
-      int tip_y = y - arrow_offset_;
+    } else {
+      int tip_y = y - tray_arrow_offset_;
+      tip_y = std::min(std::max(kArrowMinOffset, tip_y),
+                       owner_->height() - kArrowMinOffset);
       int top_base_y = tip_y - kArrowWidth / 2;
-      int top_base_x = inset.left() + kSystemTrayBubbleHorizontalInset;
-      int tip_x = top_base_x - kArrowHeight;
-      path.moveTo(SkIntToScalar(top_base_x), SkIntToScalar(top_base_y));
-      path.lineTo(SkIntToScalar(tip_x), SkIntToScalar(tip_y));
-      path.lineTo(SkIntToScalar(top_base_x),
-                  SkIntToScalar(top_base_y + kArrowWidth));
-    } else if (arrow_location() == views::BubbleBorder::RIGHT_BOTTOM){
-      int tip_y = y - arrow_offset_;
-      int top_base_y = tip_y - kArrowWidth / 2;
-      int top_base_x = inset.left() + owner_->width() -
-                       kSystemTrayBubbleHorizontalInset;
-      int tip_x = top_base_x + kArrowHeight;
+      int top_base_x, tip_x;
+      if (arrow_location() == views::BubbleBorder::LEFT_BOTTOM) {
+        top_base_x = inset.left() + kSystemTrayBubbleHorizontalInset;
+        tip_x = top_base_x - kArrowHeight;
+      } else {
+        DCHECK(arrow_location() == views::BubbleBorder::RIGHT_BOTTOM);
+        top_base_x = inset.left() + owner_->width() -
+            kSystemTrayBubbleHorizontalInset;
+        tip_x = top_base_x + kArrowHeight;
+      }
       path.moveTo(SkIntToScalar(top_base_x), SkIntToScalar(top_base_y));
       path.lineTo(SkIntToScalar(tip_x), SkIntToScalar(tip_y));
       path.lineTo(SkIntToScalar(top_base_x),
@@ -255,7 +253,7 @@ class SystemTrayBubbleBorder : public views::BubbleBorder {
   }
 
   views::View* owner_;
-  const int arrow_offset_;
+  const int tray_arrow_offset_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayBubbleBorder);
 };
@@ -290,12 +288,14 @@ namespace internal {
 SystemTrayBubbleView::SystemTrayBubbleView(
     views::View* anchor,
     views::BubbleBorder::ArrowLocation arrow_location,
-    SystemTrayBubble* host,
-    bool can_activate)
+    Host* host,
+    bool can_activate,
+    int bubble_width)
     : views::BubbleDelegateView(anchor, arrow_location),
       host_(host),
       can_activate_(can_activate),
-      max_height_(0) {
+      max_height_(0),
+      bubble_width_(bubble_width) {
   set_margin(0);
   set_parent_window(ash::Shell::GetInstance()->GetContainer(
       ash::internal::kShellWindowId_SettingBubbleContainer));
@@ -307,16 +307,27 @@ SystemTrayBubbleView::SystemTrayBubbleView(
 SystemTrayBubbleView::~SystemTrayBubbleView() {
   // Inform host items (models) that their views are being destroyed.
   if (host_)
-    host_->DestroyItemViews();
+    host_->BubbleViewDestroyed();
 }
 
-void SystemTrayBubbleView::SetBubbleBorder(views::BubbleBorder* border) {
-  GetBubbleFrameView()->SetBubbleBorder(border);
+void SystemTrayBubbleView::SetBubbleBorder(int arrow_offset) {
+  DCHECK(GetWidget());
+  SystemTrayBubbleBorder* bubble_border = new SystemTrayBubbleBorder(
+      this, arrow_location(), arrow_offset);
+  GetBubbleFrameView()->SetBubbleBorder(bubble_border);
+  // Recalculate size with new border.
+  SizeToContents();
 }
 
 void SystemTrayBubbleView::UpdateAnchor() {
   SizeToContents();
   GetWidget()->GetRootView()->SchedulePaint();
+}
+
+void SystemTrayBubbleView::SetMaxHeight(int height) {
+  max_height_ = height;
+  if (GetWidget())
+    SizeToContents();
 }
 
 void SystemTrayBubbleView::Init() {
@@ -343,6 +354,12 @@ gfx::Rect SystemTrayBubbleView::GetAnchorRect() {
   return rect;
 }
 
+gfx::Rect SystemTrayBubbleView::GetBubbleBounds() {
+  // Same as BubbleDelegateView implementation, but don't try mirroring.
+  return GetBubbleFrameView()->GetUpdatedWindowBounds(
+      GetAnchorRect(), GetPreferredSize(), false /*try_mirroring_arrow*/);
+}
+
 bool SystemTrayBubbleView::CanActivate() const {
   return can_activate_;
 }
@@ -352,17 +369,17 @@ gfx::Size SystemTrayBubbleView::GetPreferredSize() {
   int height = size.height();
   if (max_height_ != 0 && height > max_height_)
     height = max_height_;
-  return gfx::Size(kTrayPopupWidth, height);
+  return gfx::Size(bubble_width_, height);
 }
 
 void SystemTrayBubbleView::OnMouseEntered(const views::MouseEvent& event) {
   if (host_)
-    host_->StopAutoCloseTimer();
+    host_->OnMouseEnteredView();
 }
 
 void SystemTrayBubbleView::OnMouseExited(const views::MouseEvent& event) {
   if (host_)
-    host_->RestartAutoCloseTimer();
+    host_->OnMouseExitedView();
 }
 
 void SystemTrayBubbleView::GetAccessibleState(ui::AccessibleViewState* state) {
@@ -395,10 +412,7 @@ SystemTrayBubble::InitParams::InitParams(
       anchor_type(anchor_type),
       can_activate(false),
       login_status(ash::user::LOGGED_IN_NONE),
-      arrow_offset(
-          (shelf_alignment == SHELF_ALIGNMENT_BOTTOM ?
-               kArrowPaddingFromRight : kArrowPaddingFromBottom)
-          + kArrowWidth / 2),
+      arrow_offset(0),
       max_height(0) {
 }
 
@@ -494,8 +508,7 @@ void SystemTrayBubble::UpdateView(
   bubble_widget_->GetContentsView()->Layout();
   // Make sure that the bubble is large enough for the default view.
   if (bubble_type_ == BUBBLE_TYPE_DEFAULT) {
-    bubble_view_->set_max_height(0);  // Clear max height limit.
-    bubble_view_->SizeToContents();
+    bubble_view_->SetMaxHeight(0);  // Clear max height limit.
   }
 
   // When transitioning from default view to detailed view, animate the new
@@ -532,14 +545,15 @@ void SystemTrayBubble::InitView(const InitParams& init_params) {
     arrow_location = views::BubbleBorder::NONE;
   }
   bubble_view_ = new SystemTrayBubbleView(
-      init_params.anchor, arrow_location, this, init_params.can_activate);
+      init_params.anchor, arrow_location,
+      this, init_params.can_activate, kTrayPopupWidth);
   if (bubble_type_ == BUBBLE_TYPE_NOTIFICATION)
     bubble_view_->set_close_on_deactivate(false);
   int max_height = init_params.max_height;
   if (bubble_type_ == BUBBLE_TYPE_DETAILED &&
       max_height < kDetailedBubbleMaxHeight)
     max_height = kDetailedBubbleMaxHeight;
-  bubble_view_->set_max_height(max_height);
+  bubble_view_->SetMaxHeight(max_height);
 
   CreateItemViews(init_params.login_status);
 
@@ -549,11 +563,7 @@ void SystemTrayBubble::InitView(const InitParams& init_params) {
   // Must occur after call to CreateBubble()
   bubble_view_->SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
   bubble_widget_->non_client_view()->frame_view()->set_background(NULL);
-  SystemTrayBubbleBorder* bubble_border = new SystemTrayBubbleBorder(
-      bubble_view_, arrow_location, init_params.arrow_offset);
-  bubble_view_->SetBubbleBorder(bubble_border);
-  // Recalculate with new border.
-  bubble_view_->SizeToContents();
+  bubble_view_->SetBubbleBorder(init_params.arrow_offset);
 
   bubble_widget_->AddObserver(this);
 
@@ -569,6 +579,10 @@ void SystemTrayBubble::InitView(const InitParams& init_params) {
       base::TimeDelta::FromMilliseconds(kAnimationDurationForPopupMS));
 
   bubble_view_->Show();
+}
+
+void SystemTrayBubble::BubbleViewDestroyed() {
+  DestroyItemViews();
 }
 
 gfx::Rect SystemTrayBubble::GetAnchorRect() const {
@@ -603,6 +617,14 @@ gfx::Rect SystemTrayBubble::GetAnchorRect() const {
     }
   }
   return rect;
+}
+
+void SystemTrayBubble::OnMouseEnteredView() {
+  StopAutoCloseTimer();
+}
+
+void SystemTrayBubble::OnMouseExitedView() {
+  RestartAutoCloseTimer();
 }
 
 void SystemTrayBubble::DestroyItemViews() {

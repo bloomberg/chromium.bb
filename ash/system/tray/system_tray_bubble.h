@@ -31,48 +31,73 @@ class SystemTrayBubble;
 
 class SystemTrayBubbleView : public views::BubbleDelegateView {
  public:
+  class Host {
+   public:
+    Host() {}
+    virtual ~Host() {}
+
+    virtual void BubbleViewDestroyed() = 0;
+    virtual gfx::Rect GetAnchorRect() const = 0;
+    virtual void OnMouseEnteredView() = 0;
+    virtual void OnMouseExitedView() = 0;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Host);
+  };
+
   SystemTrayBubbleView(views::View* anchor,
                        views::BubbleBorder::ArrowLocation arrow_location,
-                       SystemTrayBubble* host,
-                       bool can_activate);
+                       Host* host,
+                       bool can_activate,
+                       int bubble_width);
   virtual ~SystemTrayBubbleView();
 
-  void SetBubbleBorder(views::BubbleBorder* border);
+  // Creates a bubble border with the specified arrow offset.
+  void SetBubbleBorder(int arrow_offset);
 
+  // Called whenever the bubble anchor location may have moved.
   void UpdateAnchor();
+
+  // Sets the maximum bubble height and resizes the bubble.
+  void SetMaxHeight(int height);
 
   // Called when the host is destroyed.
   void reset_host() { host_ = NULL; }
 
- private:
-  friend class SystemTrayBubble;
+  // Overridden from views::WidgetDelegate.
+  virtual bool CanActivate() const OVERRIDE;
 
   // Overridden from views::BubbleDelegateView.
-  virtual void Init() OVERRIDE;
   virtual gfx::Rect GetAnchorRect() OVERRIDE;
-  virtual bool CanActivate() const OVERRIDE;
 
   // Overridden from views::View.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+
+ protected:
+  // Overridden from views::BubbleDelegateView.
+  virtual void Init() OVERRIDE;
+  virtual gfx::Rect GetBubbleBounds() OVERRIDE;
+
+  // Overridden from views::View.
   virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
                                     views::View* child) OVERRIDE;
 
-  void set_max_height(int height) { max_height_ = height; }
-
-  SystemTrayBubble* host_;
+  Host* host_;
   bool can_activate_;
   int max_height_;
+  int bubble_width_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayBubbleView);
 };
 
 class SystemTrayBubble : public aura::EventFilter,
-                         public views::Widget::Observer {
+                         public views::Widget::Observer,
+                         public SystemTrayBubbleView::Host {
  public:
   enum BubbleType {
     BUBBLE_TYPE_DEFAULT,
@@ -109,7 +134,11 @@ class SystemTrayBubble : public aura::EventFilter,
   // Also creates |bubble_widget_| and sets up animations.
   void InitView(const InitParams& init_params);
 
-  gfx::Rect GetAnchorRect() const;
+  // Overridden from TrayBubbleView::Host.
+  virtual void BubbleViewDestroyed() OVERRIDE;
+  virtual gfx::Rect GetAnchorRect() const OVERRIDE;
+  virtual void OnMouseEnteredView() OVERRIDE;
+  virtual void OnMouseExitedView() OVERRIDE;
 
   BubbleType bubble_type() const { return bubble_type_; }
   SystemTrayBubbleView* bubble_view() const { return bubble_view_; }
