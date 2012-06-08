@@ -74,17 +74,14 @@ const char kMachineInfoSystemHwqual[] = "hardware_class";
 
 // These are the machine serial number keys that we check in order until we
 // find a non-empty serial number. The VPD spec says the serial number should be
-// in the "serial_number" key for v2+ VPDs. However, we cannot check this first,
-// since we'd get the "serial_number" value from the SMBIOS (yes, there's a name
-// clash here!), which is different from the serial number we want and not
-// actually per-device. So, we check the legacy keys first. If we find a
-// serial number for these, we use it, otherwise we must be on a newer device
-// that provides the correct data in "serial_number".
+// in the "serial_number" key for v2+ VPDs. However, legacy devices used a
+// different keys to report their serial number, which we fall back to if
+// "serial_number" is not present.
 const char* kMachineInfoSerialNumberKeys[] = {
-  "sn",            // ZGB
+  "serial_number", // VPD v2+ devices
   "Product_S/N",   // Alex
   "Product_SN",    // Mario
-  "serial_number"  // VPD v2+ devices
+  "sn",            // old ZGB devices (more recent ones use serial_number)
 };
 #endif
 
