@@ -120,13 +120,18 @@ class RemoteTryTests(mox.MoxTestBase, cros_test_lib.TempDirMixin):
     repository.IsInternalRepoCheckout(mox.IgnoreArg()).AndReturn(False)
 
     self.mox.ReplayAll()
-    job = self._CreateJob()
+    try:
+      os.environ["GIT_AUTHOR_EMAIL"] = "Elmer Fudd <efudd@google.com>"
+      os.environ["GIT_COMMITTER_EMAIL"] = "Elmer Fudd <efudd@google.com>"
+      job = self._CreateJob()
+    finally:
+      os.environ.pop("GIT_AUTHOR_EMAIL", None)
+      os.environ.pop("GIT_COMMITTER_EMAIL", None)
     created_file = self._SubmitJob(self.checkout_dir, job)
     with open(created_file, 'rb') as job_desc_file:
       values = json.load(job_desc_file)
 
-    self.assertFalse(re.search('\@google\.com', values['email'][0]) is None and
-                     re.search('\@chromium\.org', values['email'][0]) is None)
+    self.assertIn('efudd@google.com', values['email'][0])
 
     for patch in self.PATCHES:
       self.assertTrue(patch in values['extra_args'],
