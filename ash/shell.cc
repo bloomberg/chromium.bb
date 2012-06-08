@@ -553,7 +553,7 @@ internal::WorkspaceController* Shell::TestApi::workspace_controller() {
 
 Shell::Shell(ShellDelegate* delegate)
     : root_window_(aura::MonitorManager::CreateRootWindowForPrimaryMonitor()),
-      screen_(new ScreenAsh(root_window_.get())),
+      screen_(new ScreenAsh),
       env_filter_(NULL),
       delegate_(delegate),
 #if defined(OS_CHROMEOS)

@@ -12,17 +12,13 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen_impl.h"
 
-namespace aura {
-class RootWindow;
-}
-
 namespace ash {
 
 // Aura implementation of gfx::Screen. Implemented here to avoid circular
 // dependencies.
 class ASH_EXPORT ScreenAsh : public gfx::ScreenImpl {
  public:
-  explicit ScreenAsh(aura::RootWindow* root_window);
+  ScreenAsh();
   virtual ~ScreenAsh();
 
   // Returns the bounds for maximized windows. Maximized windows trigger
@@ -44,8 +40,6 @@ class ASH_EXPORT ScreenAsh : public gfx::ScreenImpl {
   virtual gfx::Monitor GetPrimaryMonitor() const OVERRIDE;
 
  private:
-  aura::RootWindow* root_window_;
-
   DISALLOW_COPY_AND_ASSIGN(ScreenAsh);
 };
 
