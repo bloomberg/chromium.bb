@@ -46,13 +46,13 @@ FcGetDefaultLangs (void)
     char *langs;
 
     langs = getenv ("FC_LANG");
-    if (!langs)
+    if (!langs || !langs[0])
 	langs = getenv ("LC_ALL");
-    if (!langs)
+    if (!langs || !langs[0])
 	langs = getenv ("LC_CTYPE");
-    if (!langs)
+    if (!langs || !langs[0])
 	langs = getenv ("LANG");
-    if (langs)
+    if (langs && langs[0])
     {
 	if (!FcStrSetAddLangs (result, langs))
 	    FcStrSetAdd (result, (const FcChar8 *) "en");
