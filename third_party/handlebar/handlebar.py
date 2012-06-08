@@ -30,6 +30,17 @@ input = {
   ]
 }
 print(template.render(input).text)
+
+Handlebar will use get() on contexts to return values, so to create custom
+getters (e.g. something that populates values lazily from keys) just add
+a get() method.
+
+class CustomContext(object):
+  def get(self, key):
+    return 10
+
+# Any time {{ }} is used, will fill it with 10.
+print(Handlebar('hello {{world}}').render(CustomContext()).text)
 """
 
 class ParseException(Exception):
@@ -82,7 +93,9 @@ class PathIdentifier(object):
   def _resolveFrom(self, context):
     result = context
     for next in self.path:
-      if not result or type(result) != dict:
+      # Only require that contexts provide a get method, meaning that callers
+      # can provide dict-like contexts (for example, to populate values lazily).
+      if not result or not getattr(result, "get", None):
         return None
       result = result.get(next)
     return result
