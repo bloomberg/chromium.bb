@@ -42,17 +42,23 @@ ChromeBrowserMainExtraPartsAsh::~ChromeBrowserMainExtraPartsAsh() {
 }
 
 void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
+  bool use_fullscreen = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAuraHostWindowUseFullscreen);
+
 #if defined(OS_CHROMEOS)
-  if (base::chromeos::IsRunningOnChromeOS() ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAuraHostWindowUseFullscreen)) {
+  if (base::chromeos::IsRunningOnChromeOS())
+    use_fullscreen = true;
+#endif
+
+  if (use_fullscreen) {
     aura::MonitorManager::set_use_fullscreen_host_window(true);
+#if defined(OS_CHROMEOS)
     aura::RootWindow::set_hide_host_cursor(true);
     // Hide the mouse cursor completely at boot.
     if (!chromeos::UserManager::Get()->IsUserLoggedIn())
       ash::Shell::set_initially_hide_cursor(true);
-  }
 #endif
+  }
 
   // Its easier to mark all windows as persisting and exclude the ones we care
   // about (browser windows), rather than explicitly excluding certain windows.
