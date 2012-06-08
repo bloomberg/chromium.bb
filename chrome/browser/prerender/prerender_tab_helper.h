@@ -13,7 +13,6 @@
 #include "googleurl/src/gurl.h"
 
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 namespace prerender {
 
@@ -24,7 +23,7 @@ class PrerenderManager;
 class PrerenderTabHelper : public content::NotificationObserver,
                            public content::WebContentsObserver {
  public:
-  explicit PrerenderTabHelper(TabContentsWrapper* tab);
+  explicit PrerenderTabHelper(TabContents* tab);
   virtual ~PrerenderTabHelper();
 
   // content::WebContentsObserver implementation.
@@ -68,8 +67,8 @@ class PrerenderTabHelper : public content::NotificationObserver,
       const content::NotificationSource& source,
       const content::NotificationDetails& details) OVERRIDE;
 
-  // TabContentsWrapper we're created for.
-  TabContentsWrapper* tab_;
+  // TabContents we're created for.
+  TabContents* tab_;
 
   // System time at which the current load was started for the purpose of
   // the perceived page load time (PPLT).

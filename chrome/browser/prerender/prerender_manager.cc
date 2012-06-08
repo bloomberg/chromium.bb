@@ -34,7 +34,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/prerender_messages.h"
@@ -124,7 +124,7 @@ class PrerenderManager::OnCloseTabContentsDeleter
           PrerenderManager::OnCloseTabContentsDeleter> {
  public:
   OnCloseTabContentsDeleter(PrerenderManager* manager,
-                            TabContentsWrapper* tab)
+                            TabContents* tab)
       : manager_(manager),
         tab_(tab) {
     tab_->web_contents()->SetDelegate(this);
@@ -158,7 +158,7 @@ class PrerenderManager::OnCloseTabContentsDeleter
   }
 
   PrerenderManager* manager_;
-  scoped_ptr<TabContentsWrapper> tab_;
+  scoped_ptr<TabContents> tab_;
 
   DISALLOW_COPY_AND_ASSIGN(OnCloseTabContentsDeleter);
 };
@@ -408,10 +408,9 @@ bool PrerenderManager::MaybeUsePrerenderedPage(WebContents* web_contents,
       new PrerenderMsg_SetIsPrerendering(new_render_view_host->GetRoutingID(),
                                          false));
 
-  TabContentsWrapper* new_tab_contents =
+  TabContents* new_tab_contents =
       prerender_contents->ReleasePrerenderContents();
-  TabContentsWrapper* old_tab_contents =
-      TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
+  TabContents* old_tab_contents = TabContents::FromWebContents(web_contents);
   DCHECK(new_tab_contents);
   DCHECK(old_tab_contents);
 
@@ -626,10 +625,9 @@ bool PrerenderManager::IsWebContentsPrerendering(
   for (PrerenderContentsDataList::const_iterator it = prerender_list_.begin();
        it != prerender_list_.end();
        ++it) {
-    TabContentsWrapper* prerender_tab_contents_wrapper =
-        it->contents_->prerender_contents();
-    if (prerender_tab_contents_wrapper &&
-        prerender_tab_contents_wrapper->web_contents() == web_contents) {
+    TabContents* prerender_tab_contents = it->contents_->prerender_contents();
+    if (prerender_tab_contents &&
+        prerender_tab_contents->web_contents() == web_contents) {
       return true;
     }
   }
@@ -639,10 +637,9 @@ bool PrerenderManager::IsWebContentsPrerendering(
            pending_delete_list_.begin();
        it != pending_delete_list_.end();
        ++it) {
-    TabContentsWrapper* prerender_tab_contents_wrapper =
-        (*it)->prerender_contents();
-    if (prerender_tab_contents_wrapper &&
-        prerender_tab_contents_wrapper->web_contents() == web_contents)
+    TabContents* prerender_tab_contents = (*it)->prerender_contents();
+    if (prerender_tab_contents &&
+        prerender_tab_contents->web_contents() == web_contents)
       return true;
   }
 
@@ -1096,7 +1093,7 @@ bool PrerenderManager::DoesRateLimitAllowPrerender() const {
 
 void PrerenderManager::DeleteOldTabContents() {
   while (!old_tab_contents_list_.empty()) {
-    TabContentsWrapper* tab_contents = old_tab_contents_list_.front();
+    TabContents* tab_contents = old_tab_contents_list_.front();
     old_tab_contents_list_.pop_front();
     // TODO(dominich): should we use Instant Unload Handler here?
     delete tab_contents;
@@ -1117,7 +1114,7 @@ void PrerenderManager::CleanUpOldNavigations() {
 }
 
 void PrerenderManager::ScheduleDeleteOldTabContents(
-    TabContentsWrapper* tab,
+    TabContents* tab,
     OnCloseTabContentsDeleter* deleter) {
   old_tab_contents_list_.push_back(tab);
   PostCleanupTask();

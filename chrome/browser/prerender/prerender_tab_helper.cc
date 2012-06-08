@@ -12,7 +12,7 @@
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
@@ -131,7 +131,7 @@ class PrerenderTabHelper::PixelStats {
   PrerenderTabHelper* tab_helper_;
 };
 
-PrerenderTabHelper::PrerenderTabHelper(TabContentsWrapper* tab)
+PrerenderTabHelper::PrerenderTabHelper(TabContents* tab)
     : content::WebContentsObserver(tab->web_contents()),
       pixel_stats_(new PixelStats(this)),
       tab_(tab) {

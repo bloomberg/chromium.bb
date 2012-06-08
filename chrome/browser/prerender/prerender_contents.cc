@@ -18,7 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/icon_messages.h"
 #include "chrome/common/prerender_messages.h"
@@ -189,8 +189,8 @@ class PrerenderContents::TabContentsDelegateImpl
     return prerender_contents_->ShouldSuppressDialogs();
   }
 
-  // Commits the History of Pages to the given TabContentsWrapper.
-  void CommitHistory(TabContentsWrapper* tab) {
+  // Commits the History of Pages to the given TabContents.
+  void CommitHistory(TabContents* tab) {
     for (size_t i = 0; i < add_page_vector_.size(); ++i)
       tab->history_tab_helper()->UpdateHistoryForNavigation(
           add_page_vector_[i].get());
@@ -320,7 +320,7 @@ void PrerenderContents::StartPrerendering(
   prerendering_has_started_ = true;
 
   WebContents* new_contents = CreateWebContents(session_storage_namespace);
-  prerender_contents_.reset(new TabContentsWrapper(new_contents));
+  prerender_contents_.reset(new TabContents(new_contents));
   content::WebContentsObserver::Observe(new_contents);
 
   tab_contents_delegate_.reset(new TabContentsDelegateImpl(this));
@@ -674,7 +674,7 @@ void PrerenderContents::DestroyWhenUsingTooManyResources() {
   }
 }
 
-TabContentsWrapper* PrerenderContents::ReleasePrerenderContents() {
+TabContents* PrerenderContents::ReleasePrerenderContents() {
   prerender_contents_->web_contents()->SetDelegate(NULL);
   render_view_host_observer_.reset();
   content::WebContentsObserver::Observe(NULL);
@@ -697,7 +697,7 @@ const RenderViewHost* PrerenderContents::GetRenderViewHost() const {
   return prerender_contents_->web_contents()->GetRenderViewHost();
 }
 
-void PrerenderContents::CommitHistory(TabContentsWrapper* tab) {
+void PrerenderContents::CommitHistory(TabContents* tab) {
   if (tab_contents_delegate_.get())
     tab_contents_delegate_->CommitHistory(tab);
 }

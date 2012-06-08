@@ -389,7 +389,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   // Arrange for the given tab contents to be deleted asap. If deleter is not
   // NULL, deletes that as well.
-  void ScheduleDeleteOldTabContents(TabContentsWrapper* tab,
+  void ScheduleDeleteOldTabContents(TabContents* tab,
                                     OnCloseTabContentsDeleter* deleter);
 
   // Adds to the history list.
@@ -475,7 +475,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Track time of last prerender to limit prerender spam.
   base::TimeTicks last_prerender_start_time_;
 
-  std::list<TabContentsWrapper*> old_tab_contents_list_;
+  std::list<TabContents*> old_tab_contents_list_;
 
   // Cancels pending tasks on deletion.
   base::WeakPtrFactory<PrerenderManager> weak_factory_;

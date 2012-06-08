@@ -23,7 +23,6 @@
 
 class Profile;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 struct FaviconURL;
 
 namespace base {
@@ -188,12 +187,12 @@ class PrerenderContents : public content::NotificationObserver,
   // Adds all alias URLs from another prerender.
   void AddAliasURLsFromOtherPrerenderContents(PrerenderContents* other_pc);
 
-  // The preview TabContentsWrapper (may be null).
-  TabContentsWrapper* prerender_contents() const {
+  // The preview TabContents (may be null).
+  TabContents* prerender_contents() const {
     return prerender_contents_.get();
   }
 
-  TabContentsWrapper* ReleasePrerenderContents();
+  TabContents* ReleasePrerenderContents();
 
   // Sets the final status, calls OnDestroy and adds |this| to the
   // PrerenderManager's pending deletes list.
@@ -201,7 +200,7 @@ class PrerenderContents : public content::NotificationObserver,
 
   // Applies all the URL history encountered during prerendering to the
   // new tab.
-  void CommitHistory(TabContentsWrapper* tab);
+  void CommitHistory(TabContents* tab);
 
   base::Value* GetAsValue() const;
 
@@ -328,8 +327,8 @@ class PrerenderContents : public content::NotificationObserver,
   // RenderViewHost for this object.
   scoped_ptr<base::ProcessMetrics> process_metrics_;
 
-  // The prerendered TabContentsWrapper; may be null.
-  scoped_ptr<TabContentsWrapper> prerender_contents_;
+  // The prerendered TabContents; may be null.
+  scoped_ptr<TabContents> prerender_contents_;
 
   scoped_ptr<PrerenderRenderViewHostObserver> render_view_host_observer_;
 

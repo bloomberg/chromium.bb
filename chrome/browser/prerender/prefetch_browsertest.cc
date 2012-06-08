@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,7 +53,7 @@ IN_PROC_BROWSER_TEST_F(PrefetchBrowserTest, PrefetchOn) {
   GURL url = test_server()->GetURL(kPrefetchPage);
 
   const string16 expected_title = ASCIIToUTF16("link onload");
-  ui_test_utils::TitleWatcher title_watcher(browser()->GetSelectedWebContents(),
+  ui_test_utils::TitleWatcher title_watcher(browser()->GetActiveWebContents(),
                                             expected_title);
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -65,7 +65,7 @@ IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestNoPrefetching, PrefetchOff) {
   GURL url = test_server()->GetURL(kPrefetchPage);
 
   const string16 expected_title = ASCIIToUTF16("link onerror");
-  ui_test_utils::TitleWatcher title_watcher(browser()->GetSelectedWebContents(),
+  ui_test_utils::TitleWatcher title_watcher(browser()->GetActiveWebContents(),
                                             expected_title);
   ui_test_utils::NavigateToURL(browser(), url);
 
