@@ -31,10 +31,10 @@ GdkCursor* GetInlineCustomCursor(CustomCursorType type) {
   if (!cursor) {
     const GdkColor fg = { 0, 0, 0, 0 };
     const GdkColor bg = { 65535, 65535, 65535, 65535 };
-    GdkPixmap* source = gdk_bitmap_create_from_data(NULL, custom.bits,
-                                                    32, 32);
-    GdkPixmap* mask = gdk_bitmap_create_from_data(NULL, custom.mask_bits,
-                                                  32, 32);
+    GdkPixmap* source = gdk_bitmap_create_from_data(
+      NULL, reinterpret_cast<const gchar*>(custom.bits), 32, 32);
+    GdkPixmap* mask = gdk_bitmap_create_from_data(
+      NULL, reinterpret_cast<const gchar*>(custom.mask_bits), 32, 32);
     cursor = gdk_cursor_new_from_pixmap(source, mask, &fg, &bg,
                                         custom.hot_x, custom.hot_y);
     g_object_unref(source);

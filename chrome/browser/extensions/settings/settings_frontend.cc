@@ -91,9 +91,9 @@ void CallbackWithUnlimitedStorage(
 
 SettingsStorageQuotaEnforcer::Limits GetLocalLimits() {
   SettingsStorageQuotaEnforcer::Limits limits = {
-    api::storage::local::QUOTA_BYTES,
-    UINT_MAX,
-    UINT_MAX
+    static_cast<size_t>(api::storage::local::QUOTA_BYTES),
+    std::numeric_limits<size_t>::max(),
+    std::numeric_limits<size_t>::max()
   };
   return limits;
 }
