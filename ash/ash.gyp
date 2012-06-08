@@ -200,6 +200,8 @@
         'wm/always_on_top_controller.h',
         'wm/base_layout_manager.cc',
         'wm/base_layout_manager.h',
+        'wm/capture_controller.cc',
+        'wm/capture_controller.h',
         'wm/custom_frame_view_ash.cc',
         'wm/custom_frame_view_ash.h',
         'wm/default_window_resizer.cc',

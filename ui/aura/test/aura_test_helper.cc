@@ -10,6 +10,7 @@
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/shared/root_window_capture_client.h"
 #include "ui/aura/single_monitor_manager.h"
 #include "ui/aura/test/test_activation_client.h"
 #include "ui/aura/test/test_screen.h"
@@ -22,7 +23,6 @@
 
 namespace aura {
 namespace test {
-
 
 AuraTestHelper::AuraTestHelper(MessageLoopForUI* message_loop)
     : setup_called_(false),
@@ -52,7 +52,9 @@ void AuraTestHelper::SetUp() {
   root_window_->set_focus_manager(focus_manager_.get());
   stacking_client_.reset(new TestStackingClient(root_window_.get()));
   test_activation_client_.reset(
-      new aura::test::TestActivationClient(root_window_.get()));
+      new test::TestActivationClient(root_window_.get()));
+  root_window_capture_client_.reset(
+      new shared::RootWindowCaptureClient(root_window_.get()));
   test_input_method_.reset(new ui::test::DummyInputMethod);
   root_window_->SetProperty(
       aura::client::kRootWindowInputMethodKey,
@@ -68,6 +70,7 @@ void AuraTestHelper::TearDown() {
   test_input_method_.reset();
   stacking_client_.reset();
   test_activation_client_.reset();
+  root_window_capture_client_.reset();
   focus_manager_.reset();
   root_window_.reset();
   aura::Env::DeleteInstance();

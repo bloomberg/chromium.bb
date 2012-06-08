@@ -20,6 +20,7 @@ class ScreenPositionClient;
 namespace shared {
 class CompoundEventFilter;
 class InputMethodEventFilter;
+class RootWindowCaptureClient;
 }
 }
 
@@ -70,6 +71,10 @@ class VIEWS_EXPORT DesktopNativeWidgetHelperAura
 
   // An event filter that pre-handles all key events to send them to an IME.
   scoped_ptr<aura::shared::InputMethodEventFilter> input_method_filter_;
+
+  // TODO(erg): This is temporary. Find out what needs to be done for desktop
+  // environment.
+  scoped_ptr<aura::shared::RootWindowCaptureClient> capture_client_;
 
   // We want some windows (omnibox, status bar) to have their own
   // NativeWidgetAura, but still act as if they're screen bounded toplevel

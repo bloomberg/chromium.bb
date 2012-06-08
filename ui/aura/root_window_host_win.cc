@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include "base/message_loop.h"
+#include "ui/aura/client/capture_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
@@ -330,7 +331,9 @@ LRESULT RootWindowHostWin::OnCaptureChanged(UINT message,
                                             LPARAM l_param) {
   if (has_capture_) {
     has_capture_ = false;
-    root_window_->SetCapture(NULL);
+    Window* capture_window = client::GetCaptureWindow(root_window_);
+    if (capture_window && capture_window->GetRootWindow() == root_window_)
+      capture_window->ReleaseCapture();
   }
   return 0;
 }

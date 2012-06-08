@@ -8,6 +8,7 @@
 #include "ui/aura/cursor_manager.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/shared/root_window_capture_client.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_activation_client.h"
 #include "ui/aura/test/test_windows.h"
@@ -27,11 +28,13 @@ TEST_F(CompoundEventFilterTest, TouchHidesCursor) {
   aura::Env::GetInstance()->SetEventFilter(new shared::CompoundEventFilter());
   aura::client::SetActivationClient(root_window(),
                                     new TestActivationClient(root_window()));
+  aura::client::SetCaptureClient(
+      root_window(), new shared::RootWindowCaptureClient(root_window()));
   TestWindowDelegate delegate;
   scoped_ptr<Window> window(CreateTestWindowWithDelegate(&delegate, 1234,
       gfx::Rect(5, 5, 100, 100), NULL));
   window->Show();
-  root_window()->SetCapture(window.get());
+  window->SetCapture();
   CursorManager* cursor_manager = aura::Env::GetInstance()->cursor_manager();
 
   MouseEvent mouse(ui::ET_MOUSE_MOVED, gfx::Point(10, 10),

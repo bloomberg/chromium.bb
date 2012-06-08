@@ -22,6 +22,9 @@ class InputMethod;
 namespace aura {
 class FocusManager;
 class RootWindow;
+namespace shared {
+class RootWindowCaptureClient;
+}
 namespace test {
 class TestActivationClient;
 class TestStackingClient;
@@ -54,6 +57,7 @@ class AuraTestHelper {
   scoped_ptr<RootWindow> root_window_;
   scoped_ptr<TestStackingClient> stacking_client_;
   scoped_ptr<TestActivationClient> test_activation_client_;
+  scoped_ptr<shared::RootWindowCaptureClient> root_window_capture_client_;
   scoped_ptr<ui::InputMethod> test_input_method_;
   scoped_ptr<FocusManager> focus_manager_;
 

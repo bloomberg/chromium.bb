@@ -13,6 +13,7 @@
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/event_client.h"
 #include "ui/aura/client/stacking_client.h"
 #include "ui/aura/client/visibility_client.h"
@@ -517,21 +518,20 @@ void Window::SetCapture() {
   RootWindow* root_window = GetRootWindow();
   if (!root_window)
     return;
-
-  root_window->SetCapture(this);
+  client::GetCaptureClient(root_window)->SetCapture(this);
 }
 
 void Window::ReleaseCapture() {
   RootWindow* root_window = GetRootWindow();
   if (!root_window)
     return;
-
-  root_window->ReleaseCapture(this);
+  client::GetCaptureClient(root_window)->ReleaseCapture(this);
 }
 
 bool Window::HasCapture() {
   RootWindow* root_window = GetRootWindow();
-  return root_window && root_window->capture_window() == this;
+  return root_window &&
+      client::GetCaptureClient(root_window)->GetCaptureWindow() == this;
 }
 
 void Window::SuppressPaint() {

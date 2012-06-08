@@ -35,6 +35,7 @@
 #include "ash/wm/activation_controller.h"
 #include "ash/wm/app_list_controller.h"
 #include "ash/wm/base_layout_manager.h"
+#include "ash/wm/capture_controller.h"
 #include "ash/wm/custom_frame_view_ash.h"
 #include "ash/wm/dialog_frame_view.h"
 #include "ash/wm/event_client_impl.h"
@@ -595,9 +596,12 @@ Shell::~Shell() {
   // widget gets deleted in the final message loop run.
   root_window_layout_->SetBackgroundWidget(NULL);
 
+  aura::RootWindow* root_window = GetPrimaryRootWindow();
+
   // TooltipController is deleted with the Shell so removing its references.
   RemoveEnvEventFilter(tooltip_controller_.get());
-  aura::client::SetTooltipClient(GetPrimaryRootWindow(), NULL);
+  aura::client::SetTooltipClient(root_window, NULL);
+  tooltip_controller_.reset();
 
   // Make sure we delete WorkspaceController before launcher is
   // deleted as it has a reference to launcher model.
@@ -618,7 +622,6 @@ Shell::~Shell() {
 
   // Delete containers now so that child windows does not access
   // observers when they are destructed.
-  aura::RootWindow* root_window = GetPrimaryRootWindow();
   while (!root_window->children().empty()) {
     aura::Window* child = root_window->children()[0];
     delete child;
@@ -637,9 +640,18 @@ Shell::~Shell() {
   shadow_controller_.reset();
   tooltip_controller_.reset();
   window_cycle_controller_.reset();
+  aura::client::SetCaptureClient(root_window, NULL);
+  capture_controller_.reset();
+  aura::client::SetDispatcherClient(root_window, NULL);
+  nested_dispatcher_controller_.reset();
+  aura::client::SetUserActionClient(root_window, NULL);
+  user_action_client_.reset();
+  aura::client::SetVisibilityClient(root_window, NULL);
+  visibility_controller_.reset();
 
   // Delete the activation controller after other controllers
   // because they might have registered ActivationChangeObserver.
+  aura::client::SetActivationClient(root_window, NULL);
   activation_controller_.reset();
 
   // Launcher widget has a InputMethodBridge that references to
@@ -763,6 +775,9 @@ void Shell::Init() {
   activation_controller_.reset(
       new internal::ActivationController(focus_manager_.get()));
   aura::client::SetActivationClient(root_window, activation_controller_.get());
+
+  capture_controller_.reset(new internal::CaptureController);
+  aura::client::SetCaptureClient(root_window, capture_controller_.get());
 
   CreateSpecialContainers(root_window);
 
@@ -1016,6 +1031,8 @@ void Shell::InitRootWindowForSecondaryMonitor(aura::RootWindow* root) {
   container->Show();
   root->layout_manager()->OnWindowResized();
   root->ShowRootWindow();
+
+  aura::client::SetCaptureClient(root, capture_controller_.get());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

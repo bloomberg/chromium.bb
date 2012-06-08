@@ -8,6 +8,7 @@
 
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/capture_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
@@ -112,9 +113,9 @@ void WindowModalityController::OnWindowVisibilityChanged(
       ui::MODAL_TYPE_WINDOW) {
     // Make sure no other window has capture, otherwise |window| won't get mouse
     // events.
-    aura::RootWindow* root = window->GetRootWindow();
-    if (root->capture_window() && root->capture_window() != window)
-      root->capture_window()->ReleaseCapture();
+    aura::Window* capture_window = aura::client::GetCaptureWindow(window);
+    if (capture_window)
+      capture_window->ReleaseCapture();
   }
 }
 

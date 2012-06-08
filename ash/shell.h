@@ -79,6 +79,7 @@ namespace internal {
 class AcceleratorFilter;
 class ActivationController;
 class AppListController;
+class CaptureController;
 class DragDropController;
 class EventClientImpl;
 class FocusCycler;
@@ -394,6 +395,7 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
   scoped_ptr<internal::ShellContextMenu> shell_context_menu_;
   scoped_ptr<internal::StackingController> stacking_controller_;
   scoped_ptr<internal::ActivationController> activation_controller_;
+  scoped_ptr<internal::CaptureController> capture_controller_;
   scoped_ptr<internal::WindowModalityController> window_modality_controller_;
   scoped_ptr<internal::DragDropController> drag_drop_controller_;
   scoped_ptr<internal::WorkspaceController> workspace_controller_;

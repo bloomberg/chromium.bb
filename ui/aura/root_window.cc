@@ -13,6 +13,7 @@
 #include "base/message_loop.h"
 #include "ui/aura/aura_switches.h"
 #include "ui/aura/client/activation_client.h"
+#include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/event_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/event.h"
@@ -114,13 +115,12 @@ bool RootWindow::hide_host_cursor_ = false;
 
 RootWindow::RootWindow(const gfx::Rect& initial_bounds)
     : Window(NULL),
-      host_(aura::RootWindowHost::Create(initial_bounds)),
+      host_(RootWindowHost::Create(initial_bounds)),
       ALLOW_THIS_IN_INITIALIZER_LIST(schedule_paint_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(event_factory_(this)),
       mouse_button_flags_(0),
       touch_ids_down_(0),
       last_cursor_(ui::kCursorNull),
-      capture_window_(NULL),
       mouse_pressed_handler_(NULL),
       mouse_moved_handler_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(
@@ -286,8 +286,8 @@ bool RootWindow::DispatchScrollEvent(ScrollEvent* event) {
   last_mouse_location_ = event->location();
   synthesize_mouse_move_ = false;
 
-  Window* target =
-      mouse_pressed_handler_ ? mouse_pressed_handler_ : capture_window_;
+  Window* target = mouse_pressed_handler_ ?
+      mouse_pressed_handler_ : client::GetCaptureWindow(this);
   if (!target)
     target = GetEventHandlerForPoint(event->location());
 
@@ -327,7 +327,7 @@ bool RootWindow::DispatchTouchEvent(TouchEvent* event) {
   event->UpdateForRootTransform(transform);
   bool handled = false;
   ui::TouchStatus status = ui::TOUCH_STATUS_UNKNOWN;
-  Window* target = capture_window_;
+  Window* target = client::GetCaptureWindow(this);
   if (!target) {
     target = ConsumerToWindow(
         gesture_recognizer_->GetTouchLockedTarget(event));
@@ -368,7 +368,7 @@ bool RootWindow::DispatchTouchEvent(TouchEvent* event) {
 bool RootWindow::DispatchGestureEvent(GestureEvent* event) {
   DispatchHeldMouseMove();
 
-  Window* target = capture_window_;
+  Window* target = client::GetCaptureWindow(this);
   if (!target) {
     target = ConsumerToWindow(
         gesture_recognizer_->GetTargetForGestureEvent(event));
@@ -462,36 +462,6 @@ void RootWindow::PostNativeEvent(const base::NativeEvent& native_event) {
 void RootWindow::ConvertPointToNativeScreen(gfx::Point* point) const {
   gfx::Point location = host_->GetLocationOnNativeScreen();
   point->Offset(location.x(), location.y());
-}
-
-void RootWindow::SetCapture(Window* window) {
-  if (capture_window_ == window)
-    return;
-
-  gesture_recognizer_->TransferEventsTo(capture_window_, window);
-
-  aura::Window* old_capture_window = capture_window_;
-  capture_window_ = window;
-
-  HandleMouseCaptureChanged(old_capture_window);
-
-  if (capture_window_) {
-    // Make all subsequent mouse events and touch go to the capture window. We
-    // shouldn't need to send an event here as OnCaptureLost should take care of
-    // that.
-    if (mouse_moved_handler_ || mouse_button_flags_ != 0)
-      mouse_moved_handler_ = capture_window_;
-  } else {
-    // Make sure mouse_moved_handler gets updated.
-    SynthesizeMouseMoveEvent();
-  }
-  mouse_pressed_handler_ = NULL;
-}
-
-void RootWindow::ReleaseCapture(Window* window) {
-  if (capture_window_ != window)
-    return;
-  SetCapture(NULL);
 }
 
 void RootWindow::AdvanceQueuedTouchEvent(Window* window, bool processed) {
@@ -628,23 +598,45 @@ FocusManager* RootWindow::GetFocusManager() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// RootWindow, private:
+// RootWindow, overridden from aura::client::CaptureDelegate:
 
-void RootWindow::HandleMouseCaptureChanged(Window* old_capture_window) {
-  if (capture_window_)
-    host_->SetCapture();
-  else
-    host_->ReleaseCapture();
+void RootWindow::UpdateCapture(Window* old_capture,
+                               Window* new_capture) {
+  DCHECK(!new_capture || new_capture->GetRootWindow() == this);
+  DCHECK(!old_capture || old_capture->GetRootWindow() == this);
 
-  if (old_capture_window && old_capture_window->delegate()) {
+  if (old_capture && old_capture->delegate()) {
     // Send a capture changed event with bogus location data.
     MouseEvent event(
         ui::ET_MOUSE_CAPTURE_CHANGED, gfx::Point(), gfx::Point(), 0);
-    ProcessMouseEvent(old_capture_window, &event);
+    ProcessMouseEvent(old_capture, &event);
 
-    old_capture_window->delegate()->OnCaptureLost();
+    old_capture->delegate()->OnCaptureLost();
   }
+
+  if (new_capture) {
+    // Make all subsequent mouse events and touch go to the capture window. We
+    // shouldn't need to send an event here as OnCaptureLost should take care of
+    // that.
+    if (mouse_moved_handler_ || mouse_button_flags_ != 0)
+      mouse_moved_handler_ = new_capture;
+  } else {
+    // Make sure mouse_moved_handler gets updated.
+    SynthesizeMouseMoveEvent();
+  }
+  mouse_pressed_handler_ = NULL;
 }
+
+void RootWindow::SetNativeCapture() {
+  host_->SetCapture();
+}
+
+void RootWindow::ReleaseNativeCapture() {
+  host_->ReleaseCapture();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// RootWindow, private:
 
 void RootWindow::HandleMouseMoved(const MouseEvent& event, Window* target) {
   if (target == mouse_moved_handler_)
@@ -833,7 +825,7 @@ bool RootWindow::ProcessGestures(ui::GestureRecognizer::Gestures* gestures) {
 }
 
 void RootWindow::OnWindowRemovedFromRootWindow(Window* detached) {
-  DCHECK(capture_window_ != this);
+  DCHECK(aura::client::GetCaptureWindow(this) != this);
 
   OnWindowHidden(detached, false);
 
@@ -868,10 +860,11 @@ void RootWindow::OnWindowHidden(Window* invisible, bool destroyed) {
     }
     GetFocusManager()->SetFocusedWindow(focus_to, NULL);
   }
+  Window* capture_window = aura::client::GetCaptureWindow(this);
   // If the ancestor of the capture window is hidden,
   // release the capture.
-  if (invisible->Contains(capture_window_) && invisible != this)
-    ReleaseCapture(capture_window_);
+  if (invisible->Contains(capture_window) && invisible != this)
+    capture_window->ReleaseCapture();
 
   // If the ancestor of any event handler windows are invisible, release the
   // pointer to those windows.
@@ -932,8 +925,8 @@ bool RootWindow::DispatchMouseEventImpl(MouseEvent* event) {
   ui::Transform transform = layer()->transform();
   transform.ConcatScale(scale, scale);
   event->UpdateForRootTransform(transform);
-  Window* target =
-      mouse_pressed_handler_ ? mouse_pressed_handler_ : capture_window_;
+  Window* target = mouse_pressed_handler_ ?
+      mouse_pressed_handler_ : client::GetCaptureWindow(this);
   if (!target)
     target = GetEventHandlerForPoint(event->location());
   return DispatchMouseEventToTarget(event, target);

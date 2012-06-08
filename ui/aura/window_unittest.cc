@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/stacking_client.h"
 #include "ui/aura/client/visibility_client.h"
 #include "ui/aura/event.h"
@@ -608,10 +609,10 @@ TEST_F(WindowTest, CaptureTests) {
   // Removing the capture window from parent should reset the capture window
   // in the root window.
   window->SetCapture();
-  EXPECT_EQ(window.get(), root_window()->capture_window());
+  EXPECT_EQ(window.get(), aura::client::GetCaptureWindow(root_window()));
   window->parent()->RemoveChild(window.get());
   EXPECT_FALSE(window->HasCapture());
-  EXPECT_EQ(NULL, root_window()->capture_window());
+  EXPECT_EQ(NULL, aura::client::GetCaptureWindow(root_window()));
 }
 
 TEST_F(WindowTest, TouchCaptureCancelsOtherTouches) {
@@ -794,7 +795,7 @@ TEST_F(WindowTest, ReleaseCaptureOnDestroy) {
 
   // Make sure the root window doesn't reference the window anymore.
   EXPECT_EQ(NULL, root_window()->mouse_pressed_handler());
-  EXPECT_EQ(NULL, root_window()->capture_window());
+  EXPECT_EQ(NULL, aura::client::GetCaptureWindow(root_window()));
 }
 
 TEST_F(WindowTest, GetBoundsInRootWindow) {

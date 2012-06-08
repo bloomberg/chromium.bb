@@ -7,6 +7,7 @@
 #include "ash/drag_drop/drag_image_view.h"
 #include "ash/shell.h"
 #include "base/message_loop.h"
+#include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/cursor_manager.h"
 #include "ui/aura/env.h"
@@ -58,9 +59,9 @@ int DragDropController::StartDragAndDrop(const ui::OSExchangeData& data,
   DCHECK(!drag_drop_in_progress_);
   // TODO(oshima): Add CaptureClient client API.
   aura::Window* capture_window =
-      Shell::GetPrimaryRootWindow()->capture_window();
+      aura::client::GetCaptureWindow(Shell::GetPrimaryRootWindow());
   if (capture_window)
-    Shell::GetPrimaryRootWindow()->ReleaseCapture(capture_window);
+    capture_window->ReleaseCapture();
   drag_drop_in_progress_ = true;
 
   drag_data_ = &data;

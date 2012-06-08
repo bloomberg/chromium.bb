@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/capture_client.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -157,9 +158,9 @@ bool SystemModalContainerLayoutManager::CanWindowReceiveEvents(
 
 void SystemModalContainerLayoutManager::AddModalWindow(aura::Window* window) {
   if (modal_windows_.empty()) {
-    aura::RootWindow* root = container_->GetRootWindow();
-    if (root->capture_window())
-      root->capture_window()->ReleaseCapture();
+    aura::Window* capture_window = aura::client::GetCaptureWindow(container_);
+    if (capture_window)
+      capture_window->ReleaseCapture();
   }
   modal_windows_.push_back(window);
   CreateModalScreen();

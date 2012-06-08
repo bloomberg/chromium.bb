@@ -13,6 +13,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/shared/compound_event_filter.h"
 #include "ui/aura/shared/input_method_event_filter.h"
+#include "ui/aura/shared/root_window_capture_client.h"
 #include "ui/views/widget/native_widget_aura.h"
 
 #if defined(OS_WIN)
@@ -125,6 +126,9 @@ void DesktopNativeWidgetHelperAura::PreInitialize(
   input_method_filter_.reset(new aura::shared::InputMethodEventFilter());
   input_method_filter_->SetInputMethodPropertyInRootWindow(root_window_.get());
   root_window_event_filter_->AddFilter(input_method_filter_.get());
+
+  capture_client_.reset(
+      new aura::shared::RootWindowCaptureClient(root_window_.get()));
 
   aura::DesktopActivationClient* activation_client =
       new aura::DesktopActivationClient(root_window_.get());

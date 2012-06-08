@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "ui/aura/aura_export.h"
+#include "ui/aura/client/capture_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/events.h"
@@ -77,7 +78,8 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
                                public ui::CompositorObserver,
                                public Window,
                                public ui::GestureEventHelper,
-                               public ui::LayerAnimationObserver {
+                               public ui::LayerAnimationObserver,
+                               public aura::client::CaptureDelegate {
  public:
   explicit RootWindow(const gfx::Rect& initial_bounds);
   virtual ~RootWindow();
@@ -93,7 +95,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   gfx::Point last_mouse_location() const { return last_mouse_location_; }
   gfx::NativeCursor last_cursor() const { return last_cursor_; }
   Window* mouse_pressed_handler() { return mouse_pressed_handler_; }
-  Window* capture_window() { return capture_window_; }
 
   void set_focus_manager(FocusManager* focus_manager) {
     focus_manager_ = focus_manager;
@@ -127,9 +128,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Moves the cursor to the specified location relative to the root window.
   void MoveCursorTo(const gfx::Point& location);
 
-  // Clips the cursor movement to |capture_window_|. Should be invoked only
-  // after SetCapture(). ReleaseCapture() implicitly removes any confines set
-  // using this function. Returns true if successful.
+  // Clips the cursor movement to the root_window.
   bool ConfineCursorToWindow();
 
   // Draws the necessary set of windows.
@@ -193,14 +192,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Converts |point| from the root window's coordinate system to native
   // screen's.
   void ConvertPointToNativeScreen(gfx::Point* point) const;
-
-  // Capture -------------------------------------------------------------------
-
-  // Sets capture to the specified window.
-  void SetCapture(Window* window);
-
-  // If |window| has capture, the current capture window is set to NULL.
-  void ReleaseCapture(Window* window);
 
   // Gesture Recognition -------------------------------------------------------
 
@@ -268,6 +259,11 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   virtual bool CanReceiveEvents() const OVERRIDE;
   virtual FocusManager* GetFocusManager() OVERRIDE;
 
+  // Overridden from aura::client::CaptureDelegate:
+  virtual void UpdateCapture(Window* old_capture, Window* new_capture) OVERRIDE;
+  virtual void SetNativeCapture() OVERRIDE;
+  virtual void ReleaseNativeCapture() OVERRIDE;
+
  private:
   friend class Window;
   friend class CompositorLock;
@@ -275,10 +271,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Called whenever the mouse moves, tracks the current |mouse_moved_handler_|,
   // sending exited and entered events as its value changes.
   void HandleMouseMoved(const MouseEvent& event, Window* target);
-
-  // Called whenever the |capture_window_| changes.
-  // Sends capture changed events to event filters for old capture window.
-  void HandleMouseCaptureChanged(Window* old_capture_window);
 
   bool ProcessMouseEvent(Window* target, MouseEvent* event);
   bool ProcessKeyEvent(Window* target, KeyEvent* event);
@@ -378,10 +370,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   bool cursor_shown_;
 
   ObserverList<RootWindowObserver> observers_;
-
-  // The capture window. When not-null, this window receives all the mouse and
-  // touch events.
-  Window* capture_window_;
 
   Window* mouse_pressed_handler_;
   Window* mouse_moved_handler_;

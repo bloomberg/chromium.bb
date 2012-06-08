@@ -18,6 +18,7 @@
 #include "base/stringprintf.h"
 #include "grit/ui_resources_standard.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/user_action_client.h"
 #include "ui/aura/dispatcher_linux.h"
 #include "ui/aura/env.h"
@@ -610,8 +611,11 @@ bool RootWindowHostLinux::Dispatch(const base::NativeEvent& event) {
       break;
     }
     case FocusOut:
-      if (xev->xfocus.mode != NotifyGrab)
-        root_window_->SetCapture(NULL);
+      if (xev->xfocus.mode != NotifyGrab) {
+        Window* capture_window = client::GetCaptureWindow(root_window_);
+        if (capture_window && capture_window->GetRootWindow() == root_window_)
+          capture_window->ReleaseCapture();
+      }
       break;
     case ConfigureNotify: {
       DCHECK_EQ(xwindow_, xev->xconfigure.window);
@@ -834,9 +838,11 @@ gfx::Point RootWindowHostLinux::GetLocationOnNativeScreen() const {
 }
 
 void RootWindowHostLinux::SetCapture() {
+  // TODO(oshima): Grab x input.
 }
 
 void RootWindowHostLinux::ReleaseCapture() {
+  // TODO(oshima): Release x input.
 }
 
 void RootWindowHostLinux::SetCursor(gfx::NativeCursor cursor) {
