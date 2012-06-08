@@ -277,7 +277,7 @@ void PrintPreviewTabController::Observe(
     case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
       NavigationController* controller =
           content::Source<NavigationController>(source).ptr();
-      TabContents* tab = TabContents::GetCurrentWrapperForContents(
+      TabContents* tab = TabContents::FromWebContents(
           controller->GetWebContents());
       content::LoadCommittedDetails* load_details =
           content::Details<content::LoadCommittedDetails>(details).ptr();

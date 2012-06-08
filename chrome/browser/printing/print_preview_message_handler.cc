@@ -84,7 +84,7 @@ TabContents* PrintPreviewMessageHandler::GetPrintPreviewTab() {
 }
 
 TabContents* PrintPreviewMessageHandler::tab_contents() {
-  return TabContents::GetCurrentWrapperForContents(web_contents());
+  return TabContents::FromWebContents(web_contents());
 }
 
 PrintPreviewUI* PrintPreviewMessageHandler::GetPrintPreviewUI() {
