@@ -414,8 +414,10 @@ int BlobURLRequestJob::ComputeBytesToRead() const {
       item_length_list_[current_item_index_] - current_item_offset_;
   int64 remaining_bytes = std::min(current_item_remaining_bytes,
                                    remaining_bytes_);
-  return std::min(read_buf_->BytesRemaining(),
-                  static_cast<int>(remaining_bytes));
+
+  return static_cast<int>(std::min(
+             static_cast<int64>(read_buf_->BytesRemaining()),
+             remaining_bytes));
 }
 
 bool BlobURLRequestJob::ReadLoop(int* bytes_read) {
