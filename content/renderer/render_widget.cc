@@ -1658,12 +1658,24 @@ COMPILE_ASSERT(int(WebKit::WebTextInputTypeTelephone) == \
                int(ui::TEXT_INPUT_TYPE_TELEPHONE), mismatching_enums);
 COMPILE_ASSERT(int(WebKit::WebTextInputTypeURL) == \
                int(ui::TEXT_INPUT_TYPE_URL), mismatching_enums);
+COMPILE_ASSERT(int(WebKit::WebTextInputTypeDate) == \
+               int(ui::TEXT_INPUT_TYPE_DATE), mismatching_enum);
+COMPILE_ASSERT(int(WebKit::WebTextInputTypeDateTime) == \
+               int(ui::TEXT_INPUT_TYPE_DATE_TIME), mismatching_enum);
+COMPILE_ASSERT(int(WebKit::WebTextInputTypeDateTimeLocal) == \
+               int(ui::TEXT_INPUT_TYPE_DATE_TIME_LOCAL), mismatching_enum);
+COMPILE_ASSERT(int(WebKit::WebTextInputTypeMonth) == \
+               int(ui::TEXT_INPUT_TYPE_MONTH), mismatching_enum);
+COMPILE_ASSERT(int(WebKit::WebTextInputTypeTime) == \
+               int(ui::TEXT_INPUT_TYPE_TIME), mismatching_enum);
+COMPILE_ASSERT(int(WebKit::WebTextInputTypeWeek) == \
+               int(ui::TEXT_INPUT_TYPE_WEEK), mismatching_enum);
 
 ui::TextInputType RenderWidget::GetTextInputType() {
   if (webwidget_) {
     int type = webwidget_->textInputType();
     // Check the type is in the range representable by ui::TextInputType.
-    DCHECK(type <= ui::TEXT_INPUT_TYPE_URL) <<
+    DCHECK_LE(type, ui::TEXT_INPUT_TYPE_WEEK) <<
       "WebKit::WebTextInputType and ui::TextInputType not synchronized";
     return static_cast<ui::TextInputType>(type);
   }
