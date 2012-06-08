@@ -17,7 +17,8 @@ namespace internal {
 gfx::ImageSkia NSImageToImageSkia(NSImage* image) {
   gfx::ImageSkia image_skia;
   for (NSImageRep* imageRep in [image representations]) {
-    NSSize imageRepSize = [imageRep size];
+    NSSize imageRepSize =
+        NSMakeSize([imageRep pixelsWide], [imageRep pixelsHigh]);
     SkBitmap bitmap(gfx::NSImageRepToSkBitmap(imageRep, imageRepSize, false));
     if (!bitmap.isNull() && !bitmap.empty()) {
       float scaleFactor = imageRepSize.width / [image size].width;
