@@ -28,21 +28,21 @@ vars = {
   "nacl_toolchain_mac_x86_newlib_hash":
       "4f072a30b55ce9088ed6c6a0033dffa3a8ae301b",
   "nacl_toolchain_pnacl_linux_x86_32_hash":
-      "36d1121c16b249fe11c24b3f149a75a9da906517",
+      "5b56a39c2bb63f35c731c76fb0a28d9039f18126",
   "nacl_toolchain_pnacl_linux_x86_64_hash":
-      "01aed2db78ee87cccf7599931c87fea244e8bd54",
+      "02fb84aaf805eb33774e85de34adc1906df3c81f",
   "nacl_toolchain_pnacl_mac_x86_32_hash":
-      "333538f719ddd7742cda120cc1b70ced4d1d72ed",
+      "28fdc9843cc2c920ba5a252c8884037903daa19c",
   "nacl_toolchain_pnacl_translator_hash":
-      "6d8c5b8c0613556f39e5132d1a7b9b65e020e01e",
+      "4be9f32463a1687a385b072071c0cd8c36a69aac",
   "nacl_toolchain_pnacl_win_x86_32_hash":
-      "32c786bb095acfa0a0c5942e355af2ef03dec9dd",
+      "9f276642818cb92a2ffb63988d346376b66d3b7b",
   "nacl_toolchain_win_x86_hash":
       "85d9b16cb503a10963654803c4a4f90ea6edfff2",
   "nacl_toolchain_win_x86_newlib_hash":
       "cd4f8209a6f87d8baf21d1610928a3def4306764",
   "nacl_toolchain_revision": "8715",
-  "pnacl_toolchain_revision": "8751",
+  "pnacl_toolchain_revision": "8847",
 
   "libjingle_revision": "152",
   "libphonenumber_revision": "456",
