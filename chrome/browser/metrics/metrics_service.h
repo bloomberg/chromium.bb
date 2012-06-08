@@ -453,7 +453,7 @@ class MetricsService
 
   // Indicates that an asynchronous reporting step is running.
   // This is used only for debugging.
-  bool waiting_for_asynchronus_reporting_step_;
+  bool waiting_for_asynchronous_reporting_step_;
 
 #if defined(OS_CHROMEOS)
   // The external metric service is used to log ChromeOS UMA events.

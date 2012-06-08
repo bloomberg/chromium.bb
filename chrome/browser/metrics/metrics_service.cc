@@ -428,7 +428,7 @@ MetricsService::MetricsService()
       next_window_id_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(self_ptr_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(state_saver_factory_(this)),
-      waiting_for_asynchronus_reporting_step_(false) {
+      waiting_for_asynchronous_reporting_step_(false) {
   DCHECK(IsSingleThreaded());
   InitializeMetricsState();
 
@@ -1051,8 +1051,8 @@ void MetricsService::StartFinalLogInfoCollection() {
   // finished, it will call OnMemoryDetailCollectionDone. That will in turn
   // call HistogramSynchronization to collect histograms from all renderers and
   // then call OnHistogramSynchronizationDone to continue processing.
-  DCHECK(!waiting_for_asynchronus_reporting_step_);
-  waiting_for_asynchronus_reporting_step_ = true;
+  DCHECK(!waiting_for_asynchronous_reporting_step_);
+  waiting_for_asynchronous_reporting_step_ = true;
 
   base::Closure callback =
       base::Bind(&MetricsService::OnMemoryDetailCollectionDone,
@@ -1073,7 +1073,7 @@ void MetricsService::OnMemoryDetailCollectionDone() {
   DCHECK(IsSingleThreaded());
   // This function should only be called as the callback from an ansynchronous
   // step.
-  DCHECK(waiting_for_asynchronus_reporting_step_);
+  DCHECK(waiting_for_asynchronous_reporting_step_);
 
   // Create a callback_task for OnHistogramSynchronizationDone.
   base::Closure callback = base::Bind(
@@ -1094,9 +1094,9 @@ void MetricsService::OnHistogramSynchronizationDone() {
   DCHECK(IsSingleThreaded());
   // This function should only be called as the callback from an ansynchronous
   // step.
-  DCHECK(waiting_for_asynchronus_reporting_step_);
+  DCHECK(waiting_for_asynchronous_reporting_step_);
 
-  waiting_for_asynchronus_reporting_step_ = false;
+  waiting_for_asynchronous_reporting_step_ = false;
   OnFinalLogInfoCollectionDone();
 }
 
@@ -1223,9 +1223,9 @@ void MetricsService::SendStagedLog() {
   // pipeline, i.e. once we switch away from the XML pipeline.
   DCHECK(current_fetch_proto_.get() || !log_manager_.has_staged_log_proto());
 
-  DCHECK(!waiting_for_asynchronus_reporting_step_);
+  DCHECK(!waiting_for_asynchronous_reporting_step_);
 
-  waiting_for_asynchronus_reporting_step_ = true;
+  waiting_for_asynchronous_reporting_step_ = true;
   current_fetch_xml_->Start();
   if (current_fetch_proto_.get())
     current_fetch_proto_->Start();
@@ -1312,7 +1312,7 @@ static const char* StatusToString(const net::URLRequestStatus& status) {
 // protobuf uploads.  Protobuf failures should be rare enough to where this
 // should be ok while we have the two pipelines running in parallel.
 void MetricsService::OnURLFetchComplete(const net::URLFetcher* source) {
-  DCHECK(waiting_for_asynchronus_reporting_step_);
+  DCHECK(waiting_for_asynchronous_reporting_step_);
 
   // We're not allowed to re-use the existing |URLFetcher|s, so free them here.
   // Note however that |source| is aliased to one of these, so we should be
@@ -1351,7 +1351,7 @@ void MetricsService::OnURLFetchComplete(const net::URLFetcher* source) {
   // the XML and the protobuf requests.  We should always have the response code
   // available.
   DCHECK_NE(response_code_, kNoResponseCode);
-  waiting_for_asynchronus_reporting_step_ = false;
+  waiting_for_asynchronous_reporting_step_ = false;
 
   // If the upload was provisionally stored, drop it now that the upload is
   // known to have gone through.
