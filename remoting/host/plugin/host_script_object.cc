@@ -456,6 +456,10 @@ bool HostNPScriptObject::Connect(const NPVariant* args,
     return false;
   }
 
+  // The UserInterface object needs to be created on the UI thread.
+  it2me_host_user_interface_.reset(
+      new It2MeHostUserInterface(host_context_.get()));
+
   ReadPolicyAndConnect(uid, auth_token, auth_service);
 
   return true;
@@ -562,8 +566,6 @@ void HostNPScriptObject::FinishConnectNetworkThread(
   base::Closure disconnect_callback = base::Bind(
       &ChromotingHost::Shutdown, base::Unretained(host_.get()),
       base::Closure());
-  it2me_host_user_interface_.reset(
-      new It2MeHostUserInterface(host_context_.get()));
   it2me_host_user_interface_->Start(host_.get(), disconnect_callback);
 
   {

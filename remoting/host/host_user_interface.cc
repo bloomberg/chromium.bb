@@ -18,6 +18,7 @@ HostUserInterface::HostUserInterface(ChromotingHostContext* context)
       is_monitoring_local_inputs_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       weak_ptr_(weak_factory_.GetWeakPtr()) {
+  DCHECK(ui_message_loop()->BelongsToCurrentThread());
 }
 
 HostUserInterface::~HostUserInterface() {
@@ -145,8 +146,7 @@ void HostUserInterface::ShowDisconnectWindow(bool show,
   if (show) {
     disconnect_window_->Show(
         host_,
-        base::Bind(&HostUserInterface::OnDisconnectCallback,
-                   weak_ptr_),
+        base::Bind(&HostUserInterface::OnDisconnectCallback, weak_ptr_),
         username);
   } else {
     disconnect_window_->Hide();
