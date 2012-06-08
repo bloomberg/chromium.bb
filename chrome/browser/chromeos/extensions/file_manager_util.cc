@@ -20,7 +20,7 @@
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/media/media_player.h"
 #include "chrome/browser/extensions/crx_installer.h"
-#include "chrome/browser/extensions/extension_install_ui.h"
+#include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -689,8 +689,8 @@ void InstallCRX(Profile* profile, const FilePath& path) {
   if (!service)
     return;
 
-  scoped_refptr<CrxInstaller> installer(CrxInstaller::Create(service,
-                                            new ExtensionInstallUI(profile)));
+  scoped_refptr<CrxInstaller> installer(
+      CrxInstaller::Create(service, new ExtensionInstallPrompt(profile)));
   installer->set_is_gallery_install(false);
   installer->set_allow_silent_install(false);
   installer->InstallCrx(path);

@@ -8,7 +8,7 @@
 #include "chrome/browser/download/download_test_observer.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/extensions/extension_install_ui.h"
+#include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -25,10 +25,10 @@ namespace {
 
 // Observer waits for exactly one download to finish.
 
-class MockInstallUI : public ExtensionInstallUI {
+class MockInstallPrompt : public ExtensionInstallPrompt {
  public:
-  explicit MockInstallUI(Profile* profile) :
-      ExtensionInstallUI(profile),
+  explicit MockInstallPrompt(Profile* profile) :
+      ExtensionInstallPrompt(profile),
       did_succeed_(false),
       confirmation_requested_(false) {}
 
@@ -68,7 +68,8 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
   bool DidWhitelistInstallPrompt(const std::string& ext_relpath,
                                  const std::string& id) {
     ExtensionService* service = browser()->profile()->GetExtensionService();
-    MockInstallUI* mock_install_ui = new MockInstallUI(browser()->profile());
+    MockInstallPrompt* mock_install_prompt =
+        new MockInstallPrompt(browser()->profile());
     FilePath ext_path = test_data_dir_.AppendASCII(ext_relpath);
 
     std::string error;
@@ -85,15 +86,15 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
 
     scoped_refptr<CrxInstaller> installer(
         CrxInstaller::Create(service,
-                             mock_install_ui, /* ownership transferred */
-                             approval.get()   /* keep ownership */));
+                             mock_install_prompt, /* ownership transferred */
+                             approval.get()       /* keep ownership */));
     installer->set_allow_silent_install(true);
     installer->set_is_gallery_install(true);
     installer->InstallCrx(PackExtension(ext_path));
     ui_test_utils::RunMessageLoop();
 
-    EXPECT_TRUE(mock_install_ui->did_succeed());
-    return mock_install_ui->confirmation_requested();
+    EXPECT_TRUE(mock_install_prompt->did_succeed());
+    return mock_install_prompt->confirmation_requested();
   }
 };
 
@@ -159,8 +160,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
   std::string crx_path_string(crx_path.value().begin(), crx_path.value().end());
   GURL url = GURL(std::string("file:///").append(crx_path_string));
 
-  MockInstallUI* mock_ui = new MockInstallUI(browser()->profile());
-  download_crx_util::SetMockInstallUIForTesting(mock_ui);
+  MockInstallPrompt* mock_prompt = new MockInstallPrompt(browser()->profile());
+  download_crx_util::SetMockInstallPromptForTesting(mock_prompt);
 
   LOG(ERROR) << "PackAndInstallExtension: Getting download manager";
   content::DownloadManager* download_manager =
@@ -177,7 +178,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
 
   EXPECT_TRUE(WaitForExtensionInstall());
   LOG(ERROR) << "PackAndInstallExtension: Extension install";
-  EXPECT_TRUE(mock_ui->confirmation_requested());
+  EXPECT_TRUE(mock_prompt->confirmation_requested());
   LOG(ERROR) << "PackAndInstallExtension: Extension install confirmed";
 }
 
@@ -192,23 +193,25 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, MAYBE_AllowOffStore) {
   const bool kTestData[] = {false, true};
 
   for (size_t i = 0; i < arraysize(kTestData); ++i) {
-    MockInstallUI* mock_ui = new MockInstallUI(browser()->profile());
+    MockInstallPrompt* mock_prompt =
+        new MockInstallPrompt(browser()->profile());
     scoped_refptr<CrxInstaller> crx_installer(
-        CrxInstaller::Create(service, mock_ui));
+        CrxInstaller::Create(service, mock_prompt));
     crx_installer->set_install_cause(
         extension_misc::INSTALL_CAUSE_USER_DOWNLOAD);
     crx_installer->set_allow_off_store_install(kTestData[i]);
 
     crx_installer->InstallCrx(test_data_dir_.AppendASCII("good.crx"));
     EXPECT_EQ(kTestData[i], WaitForExtensionInstall()) << kTestData[i];
-    EXPECT_EQ(kTestData[i], mock_ui->did_succeed());
-    EXPECT_EQ(kTestData[i], mock_ui->confirmation_requested()) << kTestData[i];
+    EXPECT_EQ(kTestData[i], mock_prompt->did_succeed());
+    EXPECT_EQ(kTestData[i], mock_prompt->confirmation_requested()) <<
+        kTestData[i];
     if (kTestData[i]) {
-      EXPECT_EQ(string16(), mock_ui->error()) << kTestData[i];
+      EXPECT_EQ(string16(), mock_prompt->error()) << kTestData[i];
     } else {
       EXPECT_EQ(l10n_util::GetStringUTF16(
           IDS_EXTENSION_INSTALL_DISALLOWED_ON_SITE),
-          mock_ui->error()) << kTestData[i];
+          mock_prompt->error()) << kTestData[i];
     }
   }
 }

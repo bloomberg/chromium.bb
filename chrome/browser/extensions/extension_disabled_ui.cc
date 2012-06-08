@@ -14,7 +14,7 @@
 #include "base/metrics/histogram.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/extensions/extension_install_ui.h"
+#include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/profiles/profile.h"
@@ -68,7 +68,7 @@ void ReleaseMenuCommandID(int id) {
 // ExtensionDisabledDialogDelegate --------------------------------------------
 
 class ExtensionDisabledDialogDelegate
-    : public ExtensionInstallUI::Delegate,
+    : public ExtensionInstallPrompt::Delegate,
       public base::RefCountedThreadSafe<ExtensionDisabledDialogDelegate> {
  public:
   ExtensionDisabledDialogDelegate(Profile* profile,
@@ -80,12 +80,12 @@ class ExtensionDisabledDialogDelegate
 
   virtual ~ExtensionDisabledDialogDelegate();
 
-  // ExtensionInstallUI::Delegate:
+  // ExtensionInstallPrompt::Delegate:
   virtual void InstallUIProceed() OVERRIDE;
   virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
 
   // The UI for showing the install dialog when enabling.
-  scoped_ptr<ExtensionInstallUI> install_ui_;
+  scoped_ptr<ExtensionInstallPrompt> install_ui_;
 
   ExtensionService* service_;
   const Extension* extension_;
@@ -98,7 +98,7 @@ ExtensionDisabledDialogDelegate::ExtensionDisabledDialogDelegate(
     : service_(service), extension_(extension) {
   AddRef();  // Balanced in Proceed or Abort.
 
-  install_ui_.reset(new ExtensionInstallUI(profile));
+  install_ui_.reset(new ExtensionInstallPrompt(profile));
   install_ui_->ConfirmReEnable(this, extension_);
 }
 

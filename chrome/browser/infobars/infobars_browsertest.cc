@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/crx_installer.h"
-#include "chrome/browser/extensions/extension_install_ui.h"
+#include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -38,7 +38,7 @@ class InfoBarsTest : public InProcessBrowserTest {
         chrome::NOTIFICATION_EXTENSION_LOADED,
         content::NotificationService::AllSources());
 
-    ExtensionInstallUI* client = new ExtensionInstallUI(profile);
+    ExtensionInstallPrompt* client = new ExtensionInstallPrompt(profile);
     scoped_refptr<CrxInstaller> installer(
         CrxInstaller::Create(service, client));
     installer->set_install_cause(extension_misc::INSTALL_CAUSE_AUTOMATION);

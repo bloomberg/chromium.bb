@@ -8,7 +8,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/crx_installer.h"
-#include "chrome/browser/extensions/extension_install_ui.h"
+#include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
@@ -83,7 +83,7 @@ void InstallExtensionHandler::HandleInstallMessage(const ListValue* args) {
   scoped_refptr<CrxInstaller> crx_installer(
       CrxInstaller::Create(
           ExtensionSystem::Get(profile)->extension_service(),
-          new ExtensionInstallUI(profile)));
+          new ExtensionInstallPrompt(profile)));
   crx_installer->set_allow_off_store_install(true);
 
   const bool kCaseSensitive = false;

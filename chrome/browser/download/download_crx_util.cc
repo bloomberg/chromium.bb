@@ -6,7 +6,7 @@
 
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
-#include "chrome/browser/extensions/extension_install_ui.h"
+#include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -22,22 +22,22 @@ namespace download_crx_util {
 
 namespace {
 
-// Hold a mock ExtensionInstallUI object that will be used when the
+// Hold a mock ExtensionInstallPrompt object that will be used when the
 // download system opens a CRX.
-ExtensionInstallUI* mock_install_ui_for_testing = NULL;
+ExtensionInstallPrompt* mock_install_prompt_for_testing = NULL;
 
 // Called to get an extension install UI object.  In tests, will return
 // a mock if the test calls download_util::SetMockInstallUIForTesting()
 // to set one.
-ExtensionInstallUI* CreateExtensionInstallUI(Profile* profile) {
+ExtensionInstallPrompt* CreateExtensionInstallPrompt(Profile* profile) {
   // Use a mock if one is present.  Otherwise, create a real extensions
   // install UI.
-  ExtensionInstallUI* result = NULL;
-  if (mock_install_ui_for_testing) {
-    result = mock_install_ui_for_testing;
-    mock_install_ui_for_testing = NULL;
+  ExtensionInstallPrompt* result = NULL;
+  if (mock_install_prompt_for_testing) {
+    result = mock_install_prompt_for_testing;
+    mock_install_prompt_for_testing = NULL;
   } else {
-    result = new ExtensionInstallUI(profile);
+    result = new ExtensionInstallPrompt(profile);
   }
 
   return result;
@@ -45,10 +45,10 @@ ExtensionInstallUI* CreateExtensionInstallUI(Profile* profile) {
 
 }  // namespace
 
-// Tests can call this method to inject a mock ExtensionInstallUI
+// Tests can call this method to inject a mock ExtensionInstallPrompt
 // to be used to confirm permissions on a downloaded CRX.
-void SetMockInstallUIForTesting(ExtensionInstallUI* mock_ui) {
-  mock_install_ui_for_testing = mock_ui;
+void SetMockInstallPromptForTesting(ExtensionInstallPrompt* mock_prompt) {
+  mock_install_prompt_for_testing = mock_prompt;
 }
 
 scoped_refptr<CrxInstaller> OpenChromeExtension(
@@ -62,7 +62,7 @@ scoped_refptr<CrxInstaller> OpenChromeExtension(
   scoped_refptr<CrxInstaller> installer(
       CrxInstaller::Create(
           service,
-          CreateExtensionInstallUI(profile),
+          CreateExtensionInstallPrompt(profile),
           WebstoreInstaller::GetAssociatedApproval(download_item)));
 
   installer->set_delete_source(true);

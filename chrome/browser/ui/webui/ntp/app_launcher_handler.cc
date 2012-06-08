@@ -913,7 +913,7 @@ void AppLauncherHandler::PromptToEnableApp(const std::string& extension_id) {
     return;  // Only one prompt at a time.
 
   extension_id_prompting_ = extension_id;
-  GetExtensionInstallUI()->ConfirmReEnable(this, extension);
+  GetExtensionInstallPrompt()->ConfirmReEnable(this, extension);
 }
 
 void AppLauncherHandler::ExtensionUninstallAccepted() {
@@ -981,10 +981,10 @@ ExtensionUninstallDialog* AppLauncherHandler::GetExtensionUninstallDialog() {
   return extension_uninstall_dialog_.get();
 }
 
-ExtensionInstallUI* AppLauncherHandler::GetExtensionInstallUI() {
+ExtensionInstallPrompt* AppLauncherHandler::GetExtensionInstallPrompt() {
   if (!extension_install_ui_.get()) {
     extension_install_ui_.reset(
-        new ExtensionInstallUI(Profile::FromWebUI(web_ui())));
+        new ExtensionInstallPrompt(Profile::FromWebUI(web_ui())));
   }
   return extension_install_ui_.get();
 }

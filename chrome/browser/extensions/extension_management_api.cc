@@ -407,8 +407,8 @@ bool SetEnabledFunction::RunImpl() {
         return false;
       }
       AddRef(); // Matched in InstallUIProceed/InstallUIAbort
-      install_ui_.reset(new ExtensionInstallUI(profile_));
-      install_ui_->ConfirmReEnable(this, extension);
+      install_prompt_.reset(new ExtensionInstallPrompt(profile_));
+      install_prompt_->ConfirmReEnable(this, extension);
       return true;
     }
     service()->EnableExtension(extension_id_);

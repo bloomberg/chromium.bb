@@ -8,7 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "chrome/browser/extensions/extension_install_ui.h"
+#include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -91,7 +91,7 @@ class LaunchAppFunction : public ExtensionManagementFunction {
 };
 
 class SetEnabledFunction : public AsyncExtensionManagementFunction,
-                           public ExtensionInstallUI::Delegate {
+                           public ExtensionInstallPrompt::Delegate {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("management.setEnabled");
 
@@ -103,7 +103,7 @@ class SetEnabledFunction : public AsyncExtensionManagementFunction,
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 
-  // ExtensionInstallUI::Delegate.
+  // ExtensionInstallPrompt::Delegate.
   virtual void InstallUIProceed() OVERRIDE;
   virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
 
@@ -111,7 +111,7 @@ class SetEnabledFunction : public AsyncExtensionManagementFunction,
   std::string extension_id_;
 
   // Used for prompting to re-enable items with permissions escalation updates.
-  scoped_ptr<ExtensionInstallUI> install_ui_;
+  scoped_ptr<ExtensionInstallPrompt> install_prompt_;
 };
 
 class UninstallFunction : public AsyncExtensionManagementFunction,

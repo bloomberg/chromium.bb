@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 
 class CrxInstaller;
-class ExtensionInstallUI;
+class ExtensionInstallPrompt;
 class Profile;
 
 namespace content {
@@ -22,12 +22,12 @@ class DownloadItem;
 
 namespace download_crx_util {
 
-// Allow tests to install a mock extension install UI object, to fake
+// Allow tests to install a mock ExtensionInstallPrompt object, to fake
 // user clicks on the permissions dialog.  Each installed mock object
 // is only used once.  If you want to return a mock for two different
 // installs, you need to call this function once before the first
 // install, and again after the first install and before the second.
-void SetMockInstallUIForTesting(ExtensionInstallUI* mock_ui);
+void SetMockInstallPromptForTesting(ExtensionInstallPrompt* mock_prompt);
 
 // Start installing a downloaded item item as a CRX (extension, theme, app,
 // ...).  The installer does work on the file thread, so the installation

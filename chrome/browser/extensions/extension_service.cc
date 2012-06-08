@@ -575,9 +575,9 @@ bool ExtensionService::UpdateExtension(
 
   // We want a silent install only for non-pending extensions and
   // pending extensions that have install_silently set.
-  ExtensionInstallUI* client =
+  ExtensionInstallPrompt* client =
       (!is_pending_extension || pending_extension_info.install_silently()) ?
-      NULL : new ExtensionInstallUI(profile_);
+      NULL : new ExtensionInstallPrompt(profile_);
 
   scoped_refptr<CrxInstaller> installer(CrxInstaller::Create(this, client));
   installer->set_expected_id(id);

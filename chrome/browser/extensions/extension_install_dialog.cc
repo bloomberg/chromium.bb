@@ -24,7 +24,7 @@ enum AutoConfirmForTest {
   ABORT
 };
 
-void AutoConfirmTask(ExtensionInstallUI::Delegate* delegate, bool proceed) {
+void AutoConfirmTask(ExtensionInstallPrompt::Delegate* delegate, bool proceed) {
   if (proceed)
     delegate->InstallUIProceed();
   else
@@ -32,7 +32,7 @@ void AutoConfirmTask(ExtensionInstallUI::Delegate* delegate, bool proceed) {
 }
 
 void DoAutoConfirm(AutoConfirmForTest setting,
-                   ExtensionInstallUI::Delegate* delegate) {
+                   ExtensionInstallPrompt::Delegate* delegate) {
   bool proceed = (setting == PROCEED);
   // We use PostTask instead of calling the delegate directly here, because in
   // the real implementations it's highly likely the message loop will be
@@ -60,8 +60,8 @@ AutoConfirmForTest CheckAutoConfirmCommandLineSwitch() {
 }  // namespace
 
 void ShowExtensionInstallDialog(Profile* profile,
-                                ExtensionInstallUI::Delegate* delegate,
-                                const ExtensionInstallUI::Prompt& prompt) {
+                                ExtensionInstallPrompt::Delegate* delegate,
+                                const ExtensionInstallPrompt::Prompt& prompt) {
   AutoConfirmForTest auto_confirm = CheckAutoConfirmCommandLineSwitch();
   if (auto_confirm != DO_NOT_SKIP) {
     DoAutoConfirm(auto_confirm, delegate);

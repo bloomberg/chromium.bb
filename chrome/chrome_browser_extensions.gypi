@@ -304,8 +304,12 @@
         'browser/extensions/extension_input_module_constants.h',
         'browser/extensions/extension_install_dialog.cc',
         'browser/extensions/extension_install_dialog.h',
+        'browser/extensions/extension_install_prompt.cc',
+        'browser/extensions/extension_install_prompt.h',
         'browser/extensions/extension_install_ui.cc',
         'browser/extensions/extension_install_ui.h',
+        'browser/extensions/extension_install_ui_default.h',
+        'browser/extensions/extension_install_ui_default.cc',
         'browser/extensions/extension_keybinding_registry.cc',
         'browser/extensions/extension_keybinding_registry.h',
         'browser/extensions/extension_management_api_constants.cc',
@@ -662,7 +666,13 @@
           ],
         }],
         ['OS=="android"', {
+          'sources': [
+            'browser/extensions/extension_install_ui_android.cc',
+            'browser/extensions/extension_install_ui_android.h',
+          ],
           'sources!': [
+            'browser/extensions/extension_install_ui_default.cc',
+            'browser/extensions/extension_install_ui_default.h',
             'browser/extensions/api/usb/usb_api.cc',
             'browser/extensions/api/usb/usb_api.h',
             'browser/extensions/api/usb/usb_device_resource.cc',

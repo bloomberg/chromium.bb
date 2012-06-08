@@ -25,6 +25,7 @@
 #include "chrome/browser/extensions/convert_web_app.h"
 #include "chrome/browser/extensions/default_apps_trial.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
+#include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/permissions_updater.h"
@@ -69,20 +70,20 @@ enum OffStoreInstallDecision {
 // static
 scoped_refptr<CrxInstaller> CrxInstaller::Create(
     ExtensionService* frontend,
-    ExtensionInstallUI* client) {
+    ExtensionInstallPrompt* client) {
   return new CrxInstaller(frontend->AsWeakPtr(), client, NULL);
 }
 
 // static
 scoped_refptr<CrxInstaller> CrxInstaller::Create(
     ExtensionService* frontend,
-    ExtensionInstallUI* client,
+    ExtensionInstallPrompt* client,
     const WebstoreInstaller::Approval* approval) {
   return new CrxInstaller(frontend->AsWeakPtr(), client, approval);
 }
 
 CrxInstaller::CrxInstaller(base::WeakPtr<ExtensionService> frontend_weak,
-                           ExtensionInstallUI* client,
+                           ExtensionInstallPrompt* client,
                            const WebstoreInstaller::Approval* approval)
     : install_directory_(frontend_weak->install_directory()),
       install_source_(Extension::INTERNAL),
@@ -102,8 +103,9 @@ CrxInstaller::CrxInstaller(base::WeakPtr<ExtensionService> frontend_weak,
     return;
 
   CHECK(profile_->IsSameProfile(approval->profile));
-  client_->set_use_app_installed_bubble(approval->use_app_installed_bubble);
-  client_->set_skip_post_install_ui(approval->skip_post_install_ui);
+  client_->install_ui()->SetUseAppInstalledBubble(
+      approval->use_app_installed_bubble);
+  client_->install_ui()->SetSkipPostInstallUI(approval->skip_post_install_ui);
 
   if (approval->skip_install_dialog) {
     // Mark the extension as approved, but save the expected manifest and ID
@@ -566,8 +568,9 @@ void CrxInstaller::ReportSuccessFromUIThread() {
     return;
 
   // If there is a client, tell the client about installation.
-  if (client_)
+  if (client_) {
     client_->OnInstallSuccess(extension_.get(), install_icon_.get());
+  }
 
   // We update the extension's granted permissions if the user already approved
   // the install (client_ is non NULL), or we are allowed to install this

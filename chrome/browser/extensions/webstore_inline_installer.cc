@@ -260,8 +260,8 @@ void WebstoreInlineInstaller::OnWebstoreResponseParseSuccess(
     return;
   }
 
-  if (average_rating_ < ExtensionInstallUI::kMinExtensionRating ||
-      average_rating_ >ExtensionInstallUI::kMaxExtensionRating) {
+  if (average_rating_ < ExtensionInstallPrompt::kMinExtensionRating ||
+      average_rating_ > ExtensionInstallPrompt::kMaxExtensionRating) {
     CompleteInstall(kInvalidWebstoreResponseError);
     return;
   }
@@ -344,12 +344,13 @@ void WebstoreInlineInstaller::OnWebstoreParseSuccess(
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
 
-  ExtensionInstallUI::Prompt prompt(ExtensionInstallUI::INLINE_INSTALL_PROMPT);
+  ExtensionInstallPrompt::Prompt prompt(
+      ExtensionInstallPrompt::INLINE_INSTALL_PROMPT);
   prompt.SetInlineInstallWebstoreData(localized_user_count_,
                                       average_rating_,
                                       rating_count_);
   std::string error;
-  dummy_extension_ = ExtensionInstallUI::GetLocalizedExtensionForDisplay(
+  dummy_extension_ = ExtensionInstallPrompt::GetLocalizedExtensionForDisplay(
       manifest, id_, localized_name_, localized_description_, &error);
   if (!dummy_extension_) {
     OnWebstoreParseFailure(id_, WebstoreInstallHelper::Delegate::MANIFEST_ERROR,
@@ -357,7 +358,7 @@ void WebstoreInlineInstaller::OnWebstoreParseSuccess(
     return;
   }
 
-  install_ui_.reset(new ExtensionInstallUI(profile));
+  install_ui_.reset(new ExtensionInstallPrompt(profile));
   install_ui_->ConfirmInlineInstall(this, dummy_extension_, &icon_, prompt);
   // Control flow finishes up in InstallUIProceed or InstallUIAbort.
 }

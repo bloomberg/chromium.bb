@@ -358,7 +358,7 @@ void BeginInstallWithManifestFunction::OnWebstoreParseSuccess(
   parsed_manifest_.reset(parsed_manifest);
 
   std::string error;
-  dummy_extension_ = ExtensionInstallUI::GetLocalizedExtensionForDisplay(
+  dummy_extension_ = ExtensionInstallPrompt::GetLocalizedExtensionForDisplay(
       parsed_manifest_.get(), id, localized_name_, "", &error);
 
   if (!dummy_extension_) {
@@ -367,8 +367,8 @@ void BeginInstallWithManifestFunction::OnWebstoreParseSuccess(
     return;
   }
 
-  install_ui_.reset(new ExtensionInstallUI(profile()));
-  install_ui_->ConfirmWebstoreInstall(this, dummy_extension_, &icon_);
+  install_prompt_.reset(new ExtensionInstallPrompt(profile()));
+  install_prompt_->ConfirmWebstoreInstall(this, dummy_extension_, &icon_);
   // Control flow finishes up in InstallUIProceed or InstallUIAbort.
 }
 

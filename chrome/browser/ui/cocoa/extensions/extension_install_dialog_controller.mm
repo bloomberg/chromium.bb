@@ -90,18 +90,18 @@ void AppendRatingStarsShim(const gfx::ImageSkia* skiaImage, void* data) {
 
 - (id)initWithParentWindow:(NSWindow*)window
                    profile:(Profile*)profile
-                  delegate:(ExtensionInstallUI::Delegate*)delegate
-                    prompt:(const ExtensionInstallUI::Prompt&)prompt {
+                  delegate:(ExtensionInstallPrompt::Delegate*)delegate
+                    prompt:(const ExtensionInstallPrompt::Prompt&)prompt {
   NSString* nibpath = nil;
 
   // We use a different XIB in the case of bundle installs, inline installs or
   // no permission warnings. These are laid out nicely for the data they
   // display.
-  if (prompt.type() == ExtensionInstallUI::BUNDLE_INSTALL_PROMPT) {
+  if (prompt.type() == ExtensionInstallPrompt::BUNDLE_INSTALL_PROMPT) {
     nibpath = [base::mac::FrameworkBundle()
                pathForResource:@"ExtensionInstallPromptBundle"
                         ofType:@"nib"];
-  } else if (prompt.type() == ExtensionInstallUI::INLINE_INSTALL_PROMPT) {
+  } else if (prompt.type() == ExtensionInstallPrompt::INLINE_INSTALL_PROMPT) {
     nibpath = [base::mac::FrameworkBundle()
                pathForResource:@"ExtensionInstallPromptInline"
                         ofType:@"nib"];
@@ -119,7 +119,7 @@ void AppendRatingStarsShim(const gfx::ImageSkia* skiaImage, void* data) {
     parentWindow_ = window;
     profile_ = profile;
     delegate_ = delegate;
-    prompt_.reset(new ExtensionInstallUI::Prompt(prompt));
+    prompt_.reset(new ExtensionInstallPrompt::Prompt(prompt));
   }
   return self;
 }
@@ -290,11 +290,11 @@ void AppendRatingStarsShim(const gfx::ImageSkia* skiaImage, void* data) {
 }
 
 - (BOOL)isBundleInstall {
-  return prompt_->type() == ExtensionInstallUI::BUNDLE_INSTALL_PROMPT;
+  return prompt_->type() == ExtensionInstallPrompt::BUNDLE_INSTALL_PROMPT;
 }
 
 - (BOOL)isInlineInstall {
-  return prompt_->type() == ExtensionInstallUI::INLINE_INSTALL_PROMPT;
+  return prompt_->type() == ExtensionInstallPrompt::INLINE_INSTALL_PROMPT;
 }
 
 - (void)appendRatingStar:(const gfx::ImageSkia*)skiaImage {
@@ -319,8 +319,8 @@ void AppendRatingStarsShim(const gfx::ImageSkia* skiaImage, void* data) {
 
 void ShowExtensionInstallDialogImpl(
     Profile* profile,
-    ExtensionInstallUI::Delegate* delegate,
-    const ExtensionInstallUI::Prompt& prompt) {
+    ExtensionInstallPrompt::Delegate* delegate,
+    const ExtensionInstallPrompt::Prompt& prompt) {
   Browser* browser = browser::FindLastActiveWithProfile(profile);
   if (!browser) {
     delegate->InstallUIAbort(false);

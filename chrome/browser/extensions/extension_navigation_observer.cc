@@ -73,8 +73,8 @@ void ExtensionNavigationObserver::PromptToEnableExtensionIfNecessary(
     in_progress_prompt_extension_id_ = extension->id();
     in_progress_prompt_navigation_controller_ = nav_controller;
 
-    extension_install_ui_.reset(new ExtensionInstallUI(profile_));
-    extension_install_ui_->ConfirmReEnable(this, extension);
+    extension_install_prompt_.reset(new ExtensionInstallPrompt(profile_));
+    extension_install_prompt_->ConfirmReEnable(this, extension);
   }
 }
 
@@ -89,7 +89,7 @@ void ExtensionNavigationObserver::InstallUIProceed() {
 
   in_progress_prompt_extension_id_ = "";
   in_progress_prompt_navigation_controller_ = NULL;
-  extension_install_ui_.reset();
+  extension_install_prompt_.reset();
 
   // Grant permissions, re-enable the extension, and then reload the tab.
   extension_service->GrantPermissionsAndEnableExtension(extension);
@@ -103,7 +103,7 @@ void ExtensionNavigationObserver::InstallUIAbort(bool user_initiated) {
 
   in_progress_prompt_extension_id_ = "";
   in_progress_prompt_navigation_controller_ = NULL;
-  extension_install_ui_.reset();
+  extension_install_prompt_.reset();
 
   std::string histogram_name = user_initiated ?
       "Extensions.Permissions_ReEnableCancel" :

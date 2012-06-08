@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_install_ui.h"
+#include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/webstore_install_helper.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -37,7 +37,7 @@ class URLFetcher;
 // request is attached to goes away.
 class WebstoreInlineInstaller
     : public base::RefCountedThreadSafe<WebstoreInlineInstaller>,
-      public ExtensionInstallUI::Delegate,
+      public ExtensionInstallPrompt::Delegate,
       public content::WebContentsObserver,
       public net::URLFetcherDelegate,
       public WebstoreInstaller::Delegate,
@@ -97,7 +97,7 @@ class WebstoreInlineInstaller
       InstallHelperResultCode result_code,
       const std::string& error_message) OVERRIDE;
 
-  // ExtensionInstallUI::Delegate interface implementation.
+  // ExtensionInstallPrompt::Delegate interface implementation.
   virtual void InstallUIProceed() OVERRIDE;
   virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
 
@@ -122,7 +122,7 @@ class WebstoreInlineInstaller
   std::string id_;
   GURL requestor_url_;
   Delegate* delegate_;
-  scoped_ptr<ExtensionInstallUI> install_ui_;
+  scoped_ptr<ExtensionInstallPrompt> install_ui_;
 
   // For fetching webstore JSON data.
   scoped_ptr<net::URLFetcher> webstore_data_url_fetcher_;

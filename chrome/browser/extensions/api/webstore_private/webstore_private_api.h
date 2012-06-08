@@ -10,7 +10,7 @@
 
 #include "chrome/browser/extensions/bundle_installer.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "chrome/browser/extensions/extension_install_ui.h"
+#include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/webstore_install_helper.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
@@ -75,7 +75,7 @@ class InstallBundleFunction : public AsyncExtensionFunction,
 
 class BeginInstallWithManifestFunction
     : public AsyncExtensionFunction,
-      public ExtensionInstallUI::Delegate,
+      public ExtensionInstallPrompt::Delegate,
       public WebstoreInstallHelper::Delegate {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.beginInstallWithManifest3");
@@ -120,7 +120,7 @@ class BeginInstallWithManifestFunction
       InstallHelperResultCode result_code,
       const std::string& error_message) OVERRIDE;
 
-  // ExtensionInstallUI::Delegate:
+  // ExtensionInstallPrompt::Delegate:
   virtual void InstallUIProceed() OVERRIDE;
   virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
 
@@ -146,11 +146,11 @@ class BeginInstallWithManifestFunction
   SkBitmap icon_;
 
   // A dummy Extension object we create for the purposes of using
-  // ExtensionInstallUI to prompt for confirmation of the install.
+  // ExtensionInstallPrompt to prompt for confirmation of the install.
   scoped_refptr<extensions::Extension> dummy_extension_;
 
   // The class that displays the install prompt.
-  scoped_ptr<ExtensionInstallUI> install_ui_;
+  scoped_ptr<ExtensionInstallPrompt> install_prompt_;
 };
 
 class CompleteInstallFunction : public SyncExtensionFunction {

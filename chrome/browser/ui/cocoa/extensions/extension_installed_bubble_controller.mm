@@ -113,7 +113,7 @@ class ExtensionLoadedNotificationObserver
                !extension->page_action()->default_icon_path().empty()) {
       type_ = extension_installed_bubble::kPageAction;
     } else {
-      NOTREACHED();  // kGeneric installs handled in the extension_install_ui.
+      NOTREACHED();  // kGeneric installs handled in extension_install_prompt.
     }
 
     if (type_ == extension_installed_bubble::kBundle) {

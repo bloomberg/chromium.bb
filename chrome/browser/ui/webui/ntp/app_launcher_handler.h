@@ -10,7 +10,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/cancelable_request.h"
-#include "chrome/browser/extensions/extension_install_ui.h"
+#include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
@@ -29,7 +29,7 @@ class Profile;
 // The handler for Javascript messages related to the "apps" view.
 class AppLauncherHandler : public content::WebUIMessageHandler,
                            public ExtensionUninstallDialog::Delegate,
-                           public ExtensionInstallUI::Delegate,
+                           public ExtensionInstallPrompt::Delegate,
                            public content::NotificationObserver {
  public:
   explicit AppLauncherHandler(ExtensionService* extension_service);
@@ -143,7 +143,7 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
   virtual void ExtensionUninstallAccepted() OVERRIDE;
   virtual void ExtensionUninstallCanceled() OVERRIDE;
 
-  // ExtensionInstallUI::Delegate:
+  // ExtensionInstallPrompt::Delegate:
   virtual void InstallUIProceed() OVERRIDE;
   virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
 
@@ -151,9 +151,9 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
   // needed.
   ExtensionUninstallDialog* GetExtensionUninstallDialog();
 
-  // Returns the ExtensionInstallUI object for this class, creating it if
+  // Returns the ExtensionInstallPrompt object for this class, creating it if
   // needed.
-  ExtensionInstallUI* GetExtensionInstallUI();
+  ExtensionInstallPrompt* GetExtensionInstallPrompt();
 
   // Helper that uninstalls all the default apps.
   void UninstallDefaultApps();
@@ -180,7 +180,7 @@ class AppLauncherHandler : public content::WebUIMessageHandler,
   scoped_ptr<ExtensionUninstallDialog> extension_uninstall_dialog_;
 
   // Used to show confirmation UI for enabling extensions in incognito mode.
-  scoped_ptr<ExtensionInstallUI> extension_install_ui_;
+  scoped_ptr<ExtensionInstallPrompt> extension_install_ui_;
 
   // The id of the extension we are prompting the user about.
   std::string extension_id_prompting_;

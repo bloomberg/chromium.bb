@@ -10,7 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "chrome/browser/extensions/extension_install_ui.h"
+#include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/common/extensions/extension_permission_set.h"
 
 class ExtensionPermissionSet;
@@ -54,7 +54,7 @@ class RemovePermissionsFunction : public SyncExtensionFunction {
 
 // chrome.permissions.request
 class RequestPermissionsFunction : public AsyncExtensionFunction,
-                                   public ExtensionInstallUI::Delegate {
+                                   public ExtensionInstallPrompt::Delegate {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("permissions.request")
 
@@ -64,7 +64,7 @@ class RequestPermissionsFunction : public AsyncExtensionFunction,
   static void SetAutoConfirmForTests(bool should_proceed);
   static void SetIgnoreUserGestureForTests(bool ignore);
 
-  // ExtensionInstallUI::Delegate:
+  // ExtensionInstallPrompt::Delegate:
   virtual void InstallUIProceed() OVERRIDE;
   virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
 
@@ -75,7 +75,7 @@ class RequestPermissionsFunction : public AsyncExtensionFunction,
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  scoped_ptr<ExtensionInstallUI> install_ui_;
+  scoped_ptr<ExtensionInstallPrompt> install_ui_;
   scoped_refptr<ExtensionPermissionSet> requested_permissions_;
 };
 

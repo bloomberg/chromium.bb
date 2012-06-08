@@ -75,8 +75,8 @@ void AddResourceIcon(const gfx::ImageSkia* skia_image, void* data) {
 class ExtensionInstallDialogView : public views::DialogDelegateView,
                                    public views::LinkListener {
  public:
-  ExtensionInstallDialogView(ExtensionInstallUI::Delegate* delegate,
-                             const ExtensionInstallUI::Prompt& prompt);
+  ExtensionInstallDialogView(ExtensionInstallPrompt::Delegate* delegate,
+                             const ExtensionInstallPrompt::Prompt& prompt);
   virtual ~ExtensionInstallDialogView();
 
  private:
@@ -95,22 +95,22 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   bool is_inline_install() {
-    return prompt_.type() == ExtensionInstallUI::INLINE_INSTALL_PROMPT;
+    return prompt_.type() == ExtensionInstallPrompt::INLINE_INSTALL_PROMPT;
   }
 
   bool is_bundle_install() {
-    return prompt_.type() == ExtensionInstallUI::BUNDLE_INSTALL_PROMPT;
+    return prompt_.type() == ExtensionInstallPrompt::BUNDLE_INSTALL_PROMPT;
   }
 
-  ExtensionInstallUI::Delegate* delegate_;
-  ExtensionInstallUI::Prompt prompt_;
+  ExtensionInstallPrompt::Delegate* delegate_;
+  ExtensionInstallPrompt::Prompt prompt_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstallDialogView);
 };
 
 ExtensionInstallDialogView::ExtensionInstallDialogView(
-    ExtensionInstallUI::Delegate* delegate,
-    const ExtensionInstallUI::Prompt& prompt)
+    ExtensionInstallPrompt::Delegate* delegate,
+    const ExtensionInstallPrompt::Prompt& prompt)
     : delegate_(delegate),
       prompt_(prompt) {
   // Possible grid layouts:
@@ -351,8 +351,8 @@ void ExtensionInstallDialogView::LinkClicked(views::Link* source,
 
 void ShowExtensionInstallDialogImpl(
     Profile* profile,
-    ExtensionInstallUI::Delegate* delegate,
-    const ExtensionInstallUI::Prompt& prompt) {
+    ExtensionInstallPrompt::Delegate* delegate,
+    const ExtensionInstallPrompt::Prompt& prompt) {
   Browser* browser = browser::FindLastActiveWithProfile(profile);
   if (!browser) {
     delegate->InstallUIAbort(false);

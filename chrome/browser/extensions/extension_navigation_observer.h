@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/extensions/extension_install_ui.h"
+#include "chrome/browser/extensions/extension_install_prompt.h"
 #include "content/public/browser/notification_registrar.h"
 
 class Profile;
@@ -23,7 +23,7 @@ class NavigationController;
 // user navigates into an extension that has been disabled due to a permission
 // increase, it prompts the user to accept the new permissions and re-enables
 // the extension.
-class ExtensionNavigationObserver : public ExtensionInstallUI::Delegate,
+class ExtensionNavigationObserver : public ExtensionInstallPrompt::Delegate,
                                     public content::NotificationObserver {
  public:
   explicit ExtensionNavigationObserver(Profile* profile);
@@ -43,7 +43,7 @@ class ExtensionNavigationObserver : public ExtensionInstallUI::Delegate,
   void PromptToEnableExtensionIfNecessary(
       content::NavigationController* nav_controller);
 
-  // ExtensionInstallUI::Delegate callbacks used for the permissions prompt.
+  // ExtensionInstallPrompt::Delegate callbacks used for the permissions prompt.
   virtual void InstallUIProceed() OVERRIDE;
   virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
 
@@ -52,7 +52,7 @@ class ExtensionNavigationObserver : public ExtensionInstallUI::Delegate,
   Profile* profile_;
 
   // The UI used to confirm enabling extensions.
-  scoped_ptr<ExtensionInstallUI> extension_install_ui_;
+  scoped_ptr<ExtensionInstallPrompt> extension_install_prompt_;
 
   // The data we keep track of when prompting to enable extensions.
   std::string in_progress_prompt_extension_id_;

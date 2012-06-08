@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/version.h"
-#include "chrome/browser/extensions/extension_install_ui.h"
+#include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/common/extensions/extension.h"
@@ -52,20 +52,20 @@ class ExtensionUpdaterTest;
 // installer->InstallCrx(...);
 class CrxInstaller
     : public SandboxedExtensionUnpackerClient,
-      public ExtensionInstallUI::Delegate {
+      public ExtensionInstallPrompt::Delegate {
  public:
   // Extensions will be installed into frontend->install_directory(),
   // then registered with |frontend|. Any install UI will be displayed
   // using |client|. Pass NULL for |client| for silent install
   static scoped_refptr<CrxInstaller> Create(
       ExtensionService* frontend,
-      ExtensionInstallUI* client);
+      ExtensionInstallPrompt* client);
 
   // Same as the previous method, except use the |approval| to bypass the
   // prompt. Note that the caller retains ownership of |approval|.
   static scoped_refptr<CrxInstaller> Create(
       ExtensionService* frontend,
-      ExtensionInstallUI* client,
+      ExtensionInstallPrompt* client,
       const WebstoreInstaller::Approval* approval);
 
   // Install the crx in |source_file|.
@@ -78,7 +78,7 @@ class CrxInstaller
   // Convert the specified web app into an extension and install it.
   void InstallWebApp(const WebApplicationInfo& web_app);
 
-  // Overridden from ExtensionInstallUI::Delegate:
+  // Overridden from ExtensionInstallPrompt::Delegate:
   virtual void InstallUIProceed() OVERRIDE;
   virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
 
@@ -159,7 +159,7 @@ class CrxInstaller
   friend class extensions::ExtensionUpdaterTest;
 
   CrxInstaller(base::WeakPtr<ExtensionService> frontend_weak,
-               ExtensionInstallUI* client,
+               ExtensionInstallPrompt* client,
                const WebstoreInstaller::Approval* approval);
   virtual ~CrxInstaller();
 
@@ -184,8 +184,8 @@ class CrxInstaller
   // whitelisted.
   bool CanSkipConfirmation();
 
-  // Runs on the UI thread. Confirms with the user (via ExtensionInstallUI) that
-  // it is OK to install this extension.
+  // Runs on the UI thread. Confirms with the user (via ExtensionInstallPrompt)
+  // that it is OK to install this extension.
   void ConfirmInstall();
 
   // Runs on File thread. Install the unpacked extension into the profile and
@@ -282,7 +282,7 @@ class CrxInstaller
   // which case the install is silent.
   // NOTE: we may be deleted on the file thread. To ensure the UI is deleted on
   // the main thread we don't use a scoped_ptr here.
-  ExtensionInstallUI* client_;
+  ExtensionInstallPrompt* client_;
 
   // The root of the unpacked extension directory. This is a subdirectory of
   // temp_dir_, so we don't have to delete it explicitly.

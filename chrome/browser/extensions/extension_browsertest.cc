@@ -18,7 +18,7 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
-#include "chrome/browser/extensions/extension_install_ui.h"
+#include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -228,9 +228,9 @@ FilePath ExtensionBrowserTest::PackExtensionWithOptions(
 }
 
 // This class is used to simulate an installation abort by the user.
-class MockAbortExtensionInstallUI : public ExtensionInstallUI {
+class MockAbortExtensionInstallPrompt : public ExtensionInstallPrompt {
  public:
-  MockAbortExtensionInstallUI() : ExtensionInstallUI(NULL) {}
+  MockAbortExtensionInstallPrompt() : ExtensionInstallPrompt(NULL) {}
 
   // Simulate a user abort on an extension installation.
   virtual void ConfirmInstall(Delegate* delegate, const Extension* extension) {
@@ -243,10 +243,10 @@ class MockAbortExtensionInstallUI : public ExtensionInstallUI {
   virtual void OnInstallFailure(const string16& error) {}
 };
 
-class MockAutoConfirmExtensionInstallUI : public ExtensionInstallUI {
+class MockAutoConfirmExtensionInstallPrompt : public ExtensionInstallPrompt {
  public:
-  explicit MockAutoConfirmExtensionInstallUI(Profile* profile) :
-      ExtensionInstallUI(profile) {}
+  explicit MockAutoConfirmExtensionInstallPrompt(Profile* profile) :
+      ExtensionInstallPrompt(profile) {}
 
   // Proceed without confirmation prompt.
   virtual void ConfirmInstall(Delegate* delegate, const Extension* extension) {
@@ -283,13 +283,13 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
   size_t num_before = service->extensions()->size();
 
   {
-    ExtensionInstallUI* install_ui = NULL;
+    ExtensionInstallPrompt* install_ui = NULL;
     if (ui_type == INSTALL_UI_TYPE_CANCEL)
-      install_ui = new MockAbortExtensionInstallUI();
+      install_ui = new MockAbortExtensionInstallPrompt();
     else if (ui_type == INSTALL_UI_TYPE_NORMAL)
-      install_ui = new ExtensionInstallUI(profile);
+      install_ui = new ExtensionInstallPrompt(profile);
     else if (ui_type == INSTALL_UI_TYPE_AUTO_CONFIRM)
-      install_ui = new MockAutoConfirmExtensionInstallUI(profile);
+      install_ui = new MockAutoConfirmExtensionInstallPrompt(profile);
 
     // TODO(tessamac): Update callers to always pass an unpacked extension
     //                 and then always pack the extension here.

@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_util.h"
-#include "chrome/browser/extensions/extension_install_ui.h"
+#include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/permissions_updater.h"
@@ -23,8 +23,8 @@ namespace {
 const char kUnpackedExtensionsBlacklistedError[] =
     "Loading of unpacked extensions is disabled by the administrator.";
 
-// Manages an ExtensionInstallUI for a particular extension.
-class SimpleExtensionLoadPrompt : public ExtensionInstallUI::Delegate {
+// Manages an ExtensionInstallPrompt for a particular extension.
+class SimpleExtensionLoadPrompt : public ExtensionInstallPrompt::Delegate {
  public:
   SimpleExtensionLoadPrompt(Profile* profile,
                             base::WeakPtr<ExtensionService> extension_service,
@@ -39,7 +39,7 @@ class SimpleExtensionLoadPrompt : public ExtensionInstallUI::Delegate {
 
  private:
   base::WeakPtr<ExtensionService> service_weak_;
-  scoped_ptr<ExtensionInstallUI> install_ui_;
+  scoped_ptr<ExtensionInstallPrompt> install_ui_;
   scoped_refptr<const Extension> extension_;
 };
 
@@ -48,7 +48,7 @@ SimpleExtensionLoadPrompt::SimpleExtensionLoadPrompt(
     base::WeakPtr<ExtensionService> extension_service,
     const Extension* extension)
     : service_weak_(extension_service),
-      install_ui_(new ExtensionInstallUI(profile)),
+      install_ui_(new ExtensionInstallPrompt(profile)),
       extension_(extension) {
 }
 
@@ -231,7 +231,7 @@ void UnpackedInstaller::OnLoaded(
         service_weak_,
         extension);
     prompt->ShowPrompt();
-    return;  // continues in SimpleExtensionLoadPrompt::InstallUI*
+    return;  // continues in SimpleExtensionLoadPrompt::InstallPrompt*
   }
 
   PermissionsUpdater perms_updater(service_weak_->profile());

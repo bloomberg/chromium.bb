@@ -53,35 +53,35 @@ void AddResourceIcon(const gfx::ImageSkia* icon, void* data) {
 namespace browser {
 
 // Displays the dialog when constructed, deletes itself when dialog is
-// dismissed. Success/failure is passed back through the ExtensionInstallUI::
-// Delegate instance.
+// dismissed. Success/failure is passed back through the
+// ExtensionInstallPrompt::Delegate instance.
 class ExtensionInstallDialog {
  public:
   ExtensionInstallDialog(GtkWindow* parent,
-                         ExtensionInstallUI::Delegate *delegate,
-                         const ExtensionInstallUI::Prompt& prompt);
+                         ExtensionInstallPrompt::Delegate *delegate,
+                         const ExtensionInstallPrompt::Prompt& prompt);
  private:
   ~ExtensionInstallDialog();
 
   CHROMEGTK_CALLBACK_1(ExtensionInstallDialog, void, OnResponse, int);
   CHROMEGTK_CALLBACK_0(ExtensionInstallDialog, void, OnStoreLinkClick);
 
-  ExtensionInstallUI::Delegate* delegate_;
+  ExtensionInstallPrompt::Delegate* delegate_;
   std::string extension_id_;  // Set for INLINE_INSTALL_PROMPT.
   GtkWidget* dialog_;
 };
 
 ExtensionInstallDialog::ExtensionInstallDialog(
     GtkWindow* parent,
-    ExtensionInstallUI::Delegate *delegate,
-    const ExtensionInstallUI::Prompt& prompt)
+    ExtensionInstallPrompt::Delegate *delegate,
+    const ExtensionInstallPrompt::Prompt& prompt)
     : delegate_(delegate),
       dialog_(NULL) {
   bool show_permissions = prompt.GetPermissionCount() > 0;
   bool is_inline_install =
-      prompt.type() == ExtensionInstallUI::INLINE_INSTALL_PROMPT;
+      prompt.type() == ExtensionInstallPrompt::INLINE_INSTALL_PROMPT;
   bool is_bundle_install =
-      prompt.type() == ExtensionInstallUI::BUNDLE_INSTALL_PROMPT;
+      prompt.type() == ExtensionInstallPrompt::BUNDLE_INSTALL_PROMPT;
 
   if (is_inline_install)
     extension_id_ = prompt.extension()->id();
@@ -268,8 +268,8 @@ void ExtensionInstallDialog::OnStoreLinkClick(GtkWidget* sender) {
 
 void ShowExtensionInstallDialogImpl(
     Profile* profile,
-    ExtensionInstallUI::Delegate* delegate,
-    const ExtensionInstallUI::Prompt& prompt) {
+    ExtensionInstallPrompt::Delegate* delegate,
+    const ExtensionInstallPrompt::Prompt& prompt) {
   Browser* browser = browser::FindLastActiveWithProfile(profile);
   if (!browser) {
     delegate->InstallUIAbort(false);
