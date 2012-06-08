@@ -112,6 +112,7 @@ class AutofillAgent : public content::RenderViewObserver,
   void OnSetAutofillActionPreview();
   void OnClearPreviewedForm();
   void OnSetNodeText(const string16& value);
+  void OnAcceptDataListSuggestion(const string16& value);
   void OnAcceptPasswordAutofillSuggestion(const string16& value);
 
   // Called in a posted task by textFieldDidChange() to work-around a WebKit bug

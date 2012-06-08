@@ -52,6 +52,10 @@ namespace {
 // (so to avoid sending long strings through IPC).
 const size_t kMaximumTextSizeForAutofill = 1000;
 
+// The maximum number of data list elements to send to the browser process
+// via IPC (to prevent long IPC messages).
+const size_t kMaximumDataListSizeForAutofill = 30;
+
 void AppendDataListSuggestions(const WebKit::WebInputElement& element,
                                std::vector<string16>* values,
                                std::vector<string16>* labels,
@@ -83,6 +87,33 @@ void AppendDataListSuggestions(const WebKit::WebInputElement& element,
       labels->push_back(string16());
     icons->push_back(string16());
     item_ids->push_back(WebAutofillClient::MenuItemIDDataListEntry);
+  }
+}
+
+// Trim the vectors before sending them to the browser process to ensure we
+// don't send too much data through the IPC.
+void TrimDataListsForIPC(std::vector<string16>* values,
+                         std::vector<string16>* labels,
+                         std::vector<string16>* icons,
+                         std::vector<int>* unique_ids) {
+  // Limit the size of the vectors.
+  if (values->size() > kMaximumDataListSizeForAutofill) {
+    values->resize(kMaximumDataListSizeForAutofill);
+    labels->resize(kMaximumDataListSizeForAutofill);
+    icons->resize(kMaximumDataListSizeForAutofill);
+    unique_ids->resize(kMaximumDataListSizeForAutofill);
+  }
+
+  // Limit the size of the strings in the vectors
+  for (size_t i = 0; i < values->size(); ++i) {
+    if ((*values)[i].length() > kMaximumTextSizeForAutofill)
+      (*values)[i].resize(kMaximumTextSizeForAutofill);
+
+    if ((*labels)[i].length() > kMaximumTextSizeForAutofill)
+      (*labels)[i].resize(kMaximumTextSizeForAutofill);
+
+    if ((*icons)[i].length() > kMaximumTextSizeForAutofill)
+      (*icons)[i].resize(kMaximumTextSizeForAutofill);
   }
 }
 
@@ -126,6 +157,8 @@ bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {
                         OnClearPreviewedForm)
     IPC_MESSAGE_HANDLER(AutofillMsg_SetNodeText,
                         OnSetNodeText)
+    IPC_MESSAGE_HANDLER(AutofillMsg_AcceptDataListSuggestion,
+                        OnAcceptDataListSuggestion)
     IPC_MESSAGE_HANDLER(AutofillMsg_AcceptPasswordAutofillSuggestion,
                         OnAcceptPasswordAutofillSuggestion)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -529,6 +562,10 @@ void AutofillAgent::OnSetNodeText(const string16& value) {
   SetNodeText(value, &element_);
 }
 
+void AutofillAgent::OnAcceptDataListSuggestion(const string16& value) {
+  AcceptDataListSuggestion(value);
+}
+
 void AutofillAgent::OnAcceptPasswordAutofillSuggestion(const string16& value) {
   // We need to make sure this is handled here because the browser process
   // skipped it handling because it believed it would be handled here. If it
@@ -599,6 +636,28 @@ void AutofillAgent::QueryAutofillSuggestions(const WebInputElement& element,
   }
 
   gfx::Rect bounding_box(element_.boundsInViewportSpace());
+
+  // Find the datalist values and send them to the browser process.
+  std::vector<string16> data_list_values;
+  std::vector<string16> data_list_labels;
+  std::vector<string16> data_list_icons;
+  std::vector<int> data_list_unique_ids;
+  AppendDataListSuggestions(element_,
+                            &data_list_values,
+                            &data_list_labels,
+                            &data_list_icons,
+                            &data_list_unique_ids);
+
+  TrimDataListsForIPC(&data_list_values,
+                      &data_list_labels,
+                      &data_list_icons,
+                      &data_list_unique_ids);
+
+  Send(new AutofillHostMsg_SetDataList(routing_id(),
+                                       data_list_values,
+                                       data_list_labels,
+                                       data_list_icons,
+                                       data_list_unique_ids));
 
   Send(new AutofillHostMsg_QueryFormFieldAutofill(routing_id(),
                                                   autofill_query_id_,

@@ -109,9 +109,13 @@ IPC_MESSAGE_ROUTED0(AutofillMsg_SetAutofillActionPreview)
 // Tells the renderer that the Autofill previewed form should be cleared.
 IPC_MESSAGE_ROUTED0(AutofillMsg_ClearPreviewedForm)
 
-// Sets the currently selected nodes value.
+// Sets the currently selected node's value.
 IPC_MESSAGE_ROUTED1(AutofillMsg_SetNodeText,
-                    string16)
+                    string16 /* new node text */)
+
+// Sets the currently selected node's value to be the given data list value.
+IPC_MESSAGE_ROUTED1(AutofillMsg_AcceptDataListSuggestion,
+                    string16 /* accepted data list value */)
 
 // Tells the renderer to populate the correct password fields with this
 // generated password.
@@ -216,3 +220,10 @@ IPC_MESSAGE_ROUTED3(AutofillHostMsg_ShowPasswordSuggestions,
                     webkit::forms::FormField /* the form field */,
                     gfx::Rect /* input field bounds, window-relative */,
                     std::vector<string16> /* suggestions */)
+
+// Inform browser of data list values for the curent field.
+IPC_MESSAGE_ROUTED4(AutofillHostMsg_SetDataList,
+                    std::vector<string16> /* values */,
+                    std::vector<string16> /* labels */,
+                    std::vector<string16> /* icons */,
+                    std::vector<int> /* unique ids */)

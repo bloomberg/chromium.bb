@@ -63,6 +63,12 @@ class AutofillExternalDelegate {
                                  const webkit::forms::FormField& field,
                                  const gfx::Rect& bounds);
 
+  // Set the data list value associated with the current field.
+  void SetCurrentDataListValues(const std::vector<string16>& autofill_values,
+                                const std::vector<string16>& autofill_labels,
+                                const std::vector<string16>& autofill_icons,
+                                const std::vector<int>& autofill_unique_ids);
+
   // Remove the given Autocomplete entry from the DB.
   virtual void RemoveAutocompleteEntry(const string16& value);
 
@@ -135,6 +141,27 @@ class AutofillExternalDelegate {
   // this data.
   void FillAutofillFormData(int unique_id, bool is_preview);
 
+  // Handle applying any Autofill warnings to the Autofill popup.
+  void ApplyAutofillWarnings(std::vector<string16>* autofill_values,
+                             std::vector<string16>* autofill_labels,
+                             std::vector<string16>* autofill_icons,
+                             std::vector<int>* autofill_unique_ids);
+
+  // Handle applying any Autofill option listings to the Autofill popup.
+  // This function should only get called when there is at least one
+  // multi-field suggestion in the list of suggestions.
+  void ApplyAutofillOptions(std::vector<string16>* autofill_values,
+                            std::vector<string16>* autofill_labels,
+                            std::vector<string16>* autofill_icons,
+                            std::vector<int>* autofill_unique_ids);
+
+  // Insert the data list values at the start of the given list, including
+  // any required separators.
+  void InsertDataListValues(std::vector<string16>* autofill_values,
+                            std::vector<string16>* autofill_labels,
+                            std::vector<string16>* autofill_icons,
+                            std::vector<int>* autofill_unique_ids);
+
   TabContents* tab_contents_;  // weak; owns me.
   AutofillManager* autofill_manager_;  // weak.
 
@@ -155,6 +182,15 @@ class AutofillExternalDelegate {
   // Have we already shown Autofill suggestions for the field the user is
   // currently editing?  Used to keep track of state for metrics logging.
   bool has_shown_autofill_popup_for_current_edit_;
+
+  // Used to indicate if a popup is currently being shown or not.
+  bool popup_visible_;
+
+  // The current data list values.
+  std::vector<string16> data_list_values_;
+  std::vector<string16> data_list_labels_;
+  std::vector<string16> data_list_icons_;
+  std::vector<int> data_list_unique_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillExternalDelegate);
 };

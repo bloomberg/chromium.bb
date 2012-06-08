@@ -219,6 +219,10 @@ class AutofillManager : public content::NotificationObserver,
   void OnShowPasswordSuggestions(const webkit::forms::FormField& field,
                                  const gfx::Rect& bounds,
                                  const std::vector<string16>& suggestions);
+  void OnSetDataList(const std::vector<string16>& values,
+                     const std::vector<string16>& labels,
+                     const std::vector<string16>& icons,
+                     const std::vector<int>& unique_ids);
 
   // Fills |host| with the RenderViewHost for this tab.
   // Returns false if Autofill is disabled or if the host is unavailable.

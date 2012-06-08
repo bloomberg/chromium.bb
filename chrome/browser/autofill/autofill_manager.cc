@@ -343,6 +343,8 @@ bool AutofillManager::OnMessageReceived(const IPC::Message& message) {
                         OnAddPasswordFormMapping)
     IPC_MESSAGE_HANDLER(AutofillHostMsg_ShowPasswordSuggestions,
                         OnShowPasswordSuggestions)
+    IPC_MESSAGE_HANDLER(AutofillHostMsg_SetDataList,
+                        OnSetDataList)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -769,6 +771,18 @@ void AutofillManager::OnShowPasswordSuggestions(
     const std::vector<string16>& suggestions) {
   if (external_delegate_)
     external_delegate_->OnShowPasswordSuggestions(suggestions, field, bounds);
+}
+
+void AutofillManager::OnSetDataList(const std::vector<string16>& values,
+                                    const std::vector<string16>& labels,
+                                    const std::vector<string16>& icons,
+                                    const std::vector<int>& unique_ids) {
+  if (external_delegate_) {
+    external_delegate_->SetCurrentDataListValues(values,
+                                                 labels,
+                                                 icons,
+                                                 unique_ids);
+  }
 }
 
 void AutofillManager::OnLoadedServerPredictions(

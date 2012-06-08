@@ -27,6 +27,12 @@ using WebKit::WebAutofillClient;
 
 namespace {
 
+// A constant value to use as the Autofill query ID.
+const int kQueryId = 5;
+
+// A constant value to use as an Autofill profile ID.
+const int kAutofillProfileId = 1;
+
 class MockAutofillExternalDelegate : public TestAutofillExternalDelegate {
  public:
   MockAutofillExternalDelegate(TabContents* tab_contents,
@@ -88,6 +94,22 @@ class AutofillExternalDelegateUnitTest : public TabContentsTestHarness {
   }
 
  protected:
+  // Set up the expectation for a platform specific OnQuery call and then
+  // execute it with the given QueryId.
+  void IssueOnQuery(int query_id) {
+    const FormData form;
+    FormField field;
+    field.is_focusable = true;
+    field.should_autocomplete = true;
+    const gfx::Rect bounds;
+
+    EXPECT_CALL(*external_delegate_,
+                OnQueryPlatformSpecific(query_id, form, field, bounds));
+
+    // This should call OnQueryPlatform specific.
+    external_delegate_->OnQuery(query_id, form, field, bounds, false);
+  }
+
   scoped_refptr<MockAutofillManager> autofill_manager_;
   scoped_ptr<MockAutofillExternalDelegate> external_delegate_;
 
@@ -99,26 +121,21 @@ class AutofillExternalDelegateUnitTest : public TabContentsTestHarness {
 
 // Test that our external delegate called the virtual methods at the right time.
 TEST_F(AutofillExternalDelegateUnitTest, TestExternalDelegateVirtualCalls) {
-  const int kQueryId = 5;
-  const FormData form;
-  FormField field;
-  field.is_focusable = true;
-  field.should_autocomplete = true;
-  const gfx::Rect bounds;
+  IssueOnQuery(kQueryId);
 
+  // The enums must be cast to ints to prevent compile errors on linux_rel.
   EXPECT_CALL(*external_delegate_,
-              OnQueryPlatformSpecific(kQueryId, form, field, bounds));
-
-  // This should call OnQueryPlatform specific.
-  external_delegate_->OnQuery(kQueryId, form, field, bounds, false);
-
-  EXPECT_CALL(*external_delegate_, ApplyAutofillSuggestions(_, _, _, _));
+              ApplyAutofillSuggestions(_, _, _, testing::ElementsAre(
+                  kAutofillProfileId,
+                  static_cast<int>(WebAutofillClient::MenuItemIDSeparator),
+                  static_cast<int>(
+                      WebAutofillClient::MenuItemIDAutofillOptions))));
 
   // This should call ApplyAutofillSuggestions.
   std::vector<string16> autofill_item;
   autofill_item.push_back(string16());
   std::vector<int> autofill_ids;
-  autofill_ids.push_back(1);
+  autofill_ids.push_back(kAutofillProfileId);
   external_delegate_->OnSuggestionsReturned(kQueryId,
                                             autofill_item,
                                             autofill_item,
@@ -137,11 +154,67 @@ TEST_F(AutofillExternalDelegateUnitTest, TestExternalDelegateVirtualCalls) {
                                                    autofill_ids[0], 0);
 }
 
+// Test that data list elements for a node will appear in the Autofill popup.
+TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateDataList) {
+  IssueOnQuery(kQueryId);
+
+  std::vector<string16> data_list_items;
+  data_list_items.push_back(string16());
+  std::vector<int> data_list_ids;
+  data_list_ids.push_back(WebAutofillClient::MenuItemIDDataListEntry);
+
+  external_delegate_->SetCurrentDataListValues(data_list_items,
+                                               data_list_items,
+                                               data_list_items,
+                                               data_list_ids);
+
+  // The enums must be cast to ints to prevent compile errors on linux_rel.
+  EXPECT_CALL(*external_delegate_,
+              ApplyAutofillSuggestions(
+                  _, _, _, testing::ElementsAre(
+                      static_cast<int>(
+                          WebAutofillClient::MenuItemIDDataListEntry),
+                      static_cast<int>(WebAutofillClient::MenuItemIDSeparator),
+                      kAutofillProfileId,
+                      static_cast<int>(WebAutofillClient::MenuItemIDSeparator),
+                      static_cast<int>(
+                          WebAutofillClient::MenuItemIDAutofillOptions))));
+
+  // This should call ApplyAutofillSuggestions.
+  std::vector<string16> autofill_item;
+  autofill_item.push_back(string16());
+  std::vector<int> autofill_ids;
+  autofill_ids.push_back(kAutofillProfileId);
+  external_delegate_->OnSuggestionsReturned(kQueryId,
+                                            autofill_item,
+                                            autofill_item,
+                                            autofill_item,
+                                            autofill_ids);
+
+  // Try calling OnSuggestionsReturned with no Autofill values and ensure
+  // the datalist items are still shown.
+  // The enum must be cast to an int to prevent compile errors on linux_rel.
+  EXPECT_CALL(*external_delegate_,
+              ApplyAutofillSuggestions(
+                  _, _, _, testing::ElementsAre(
+                      static_cast<int>(
+                          WebAutofillClient::MenuItemIDDataListEntry))));
+
+  autofill_item = std::vector<string16>();
+  autofill_ids = std::vector<int>();
+  external_delegate_->OnSuggestionsReturned(kQueryId,
+                                            autofill_item,
+                                            autofill_item,
+                                            autofill_item,
+                                            autofill_ids);
+}
+
 // Test that the Autofill delegate doesn't try and fill a form with a
 // negative unique id.
 TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateInvalidUniqueId) {
   // Ensure it doesn't try to preview the negative id.
   EXPECT_CALL(*autofill_manager_, OnFillAutofillFormData(_, _, _, _)).Times(0);
+  EXPECT_CALL(*external_delegate_, ClearPreviewedForm()).Times(1);
   external_delegate_->SelectAutofillSuggestionAtIndex(-1);
 
   // Ensure it doesn't try to fill the form in with the negative id.
