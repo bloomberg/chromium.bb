@@ -107,8 +107,10 @@ const char kNewSetupExe[] = "new-setup-exe";
 // options kInstallArchive and kUninstall are ignored.
 const char kRegisterChromeBrowser[] = "register-chrome-browser";
 
-const char kRegisterChromeBrowserSuffix[] =
-    "register-chrome-browser-suffix";
+// Used by the installer to forward the registration suffix of the
+// (un)installation in progress when launching an elevated setup.exe to finish
+// registration work.
+const char kRegisterChromeBrowserSuffix[] = "register-chrome-browser-suffix";
 
 // Switch to allow an extra URL protocol to be registered. This option is used
 // in conjunction with kRegisterChromeBrowser to specify an extra protocol
