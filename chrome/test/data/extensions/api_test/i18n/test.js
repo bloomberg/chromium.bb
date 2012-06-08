@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,11 +26,20 @@ chrome.test.getConfig(function(config) {
       chrome.test.assertEq(message, "Simple message");
 
       message = chrome.i18n.getMessage("message_with_placeholders",
-                                     ["Cira", "John"]);
+                                       ["Cira", "John"]);
       chrome.test.assertEq(message, "Cira and John work for Google");
 
       message = chrome.i18n.getMessage("message_with_one_placeholder", "19");
       chrome.test.assertEq(message, "Number of errors: 19");
+
+      message = chrome.i18n.getMessage("message_with_double_dollar_sign");
+      chrome.test.assertEq(message, "I need $500 please.");
+
+      message = chrome.i18n.getMessage(
+          "message_with_double_dollar_sign_and_placeholders",
+          ["Mitchell", "Chris"]);
+      chrome.test.assertEq(message,
+          "We should really be paying Mitchell and Chris more $$$.");
 
       chrome.test.succeed();
     },

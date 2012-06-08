@@ -26,5 +26,11 @@
         "content": "Google"
       }
     }
+  },
+  "message_with_double_dollar_sign": {
+    "message": "I need $$500 please."
+  },
+  "message_with_double_dollar_sign_and_placeholders": {
+    "message": "We should really be paying $1 and $2 more $$$$."
   }
 }

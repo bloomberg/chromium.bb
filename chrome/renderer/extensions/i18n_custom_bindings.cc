@@ -60,11 +60,7 @@ v8::Handle<v8::Value> I18NCustomBindings::GetL10nMessage(
       ExtensionMessageBundle::GetL10nMessage(message_name, *l10n_messages);
 
   std::vector<std::string> substitutions;
-  if (args[1]->IsNull() || args[1]->IsUndefined()) {
-    // chrome.i18n.getMessage("message_name");
-    // chrome.i18n.getMessage("message_name", null);
-    return v8::String::New(message.c_str());
-  } else if (args[1]->IsArray()) {
+  if (args[1]->IsArray()) {
     // chrome.i18n.getMessage("message_name", ["more", "params"]);
     v8::Local<v8::Array> placeholders = v8::Local<v8::Array>::Cast(args[1]);
     uint32_t count = placeholders->Length();
@@ -75,7 +71,7 @@ v8::Handle<v8::Value> I18NCustomBindings::GetL10nMessage(
           *v8::String::Utf8Value(
               placeholders->Get(v8::Integer::New(i))->ToString()));
     }
-  } else {
+  } else if (args[1]->IsString()) {
     // chrome.i18n.getMessage("message_name", "one param");
     substitutions.push_back(*v8::String::Utf8Value(args[1]->ToString()));
   }
