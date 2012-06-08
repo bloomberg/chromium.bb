@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -319,7 +319,7 @@ class Coverage(object):
     self.src_root = options.src_root
     self.FindPrograms()
     self.ConfirmPlatformAndPaths()
-    self.tests = []
+    self.tests = []             # This can be a list of strings, lists or both.
     self.xvfb_pid = 0
     self.test_files = []        # List of files with test specifications.
     self.test_filters = {}      # Mapping from testname->--gtest_filter arg.
@@ -489,6 +489,12 @@ class Coverage(object):
       self.tests += [os.path.join(self.directory, testname)]
       if gtest_filter:
         self.test_filters[testname] = gtest_filter
+
+    # Add 'src/test/functional/pyauto_functional.py' to self.tests.
+    # This file with '-v --suite=CONTINUOUS' arguments runs all pyauto tests.
+    self.tests += [['src/chrome/test/functional/pyauto_functional.py',
+                    '-v',
+                    '--suite=CONTINUOUS']]
 
     # Medium tests?
     # Not sure all of these work yet (e.g. page_cycler_tests)
@@ -673,28 +679,30 @@ class Coverage(object):
     """Run all unit tests and generate appropriate lcov files."""
     self.BeforeRunAllTests()
     for fulltest in self.tests:
-      if not os.path.exists(fulltest):
-        logging.info(fulltest + ' does not exist')
-        if self.options.strict:
-          sys.exit(2)
-      else:
-        logging.info('%s path exists' % fulltest)
-      cmdlist = [fulltest, '--gtest_print_time']
+      if type(fulltest) is str:
+        if not os.path.exists(fulltest):
+          logging.info(fulltest + ' does not exist')
+          if self.options.strict:
+            sys.exit(2)
+        else:
+          logging.info('%s path exists' % fulltest)
+        cmdlist = [fulltest, '--gtest_print_time']
 
-      # If asked, make this REAL fast for testing.
-      if self.options.fast_test:
-        logging.info('Running as a FAST test for testing')
-        # cmdlist.append('--gtest_filter=RenderWidgetHost*')
-        # cmdlist.append('--gtest_filter=CommandLine*')
-        cmdlist.append('--gtest_filter=C*')
+        # If asked, make this REAL fast for testing.
+        if self.options.fast_test:
+          logging.info('Running as a FAST test for testing')
+          # cmdlist.append('--gtest_filter=RenderWidgetHost*')
+          # cmdlist.append('--gtest_filter=CommandLine*')
+          cmdlist.append('--gtest_filter=C*')
 
-      # Possibly add a test-specific --gtest_filter
-      filter = self.GtestFilter(fulltest)
-      if filter:
-        cmdlist.append(filter)
+        # Possibly add a test-specific --gtest_filter
+        filter = self.GtestFilter(fulltest)
+        if filter:
+          cmdlist.append(filter)
+      elif type(fulltest) is list:
+        cmdlist = fulltest
 
       self.BeforeRunOneTest(fulltest)
-
       logging.info('Running test ' + str(cmdlist))
       try:
         retcode = self.Run(cmdlist, ignore_retcode=True)
