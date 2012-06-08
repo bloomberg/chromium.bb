@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/automation/automation_util.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
@@ -21,6 +22,10 @@ class PlatformAppContextMenu : public RenderViewContextMenu {
   PlatformAppContextMenu(WebContents* web_contents,
                          const content::ContextMenuParams& params)
       : RenderViewContextMenu(web_contents, params) {}
+
+  bool HasCommandWithId(int command_id) {
+    return menu_model_.GetIndexOfCommandId(command_id) != -1;
+  }
 
  protected:
   // These two functions implement pure virtual methods of
@@ -55,10 +60,10 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, EmptyContextMenu) {
   PlatformAppContextMenu* menu = new PlatformAppContextMenu(web_contents,
       params);
   menu->Init();
-  // TODO(benwells): Remove the constant below. Instead of checking the
-  // number of menu items check certain item's absense and presence.
-  // 3 including separator
-  ASSERT_EQ(3, menu->menu_model().GetItemCount());
+  ASSERT_TRUE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_INSPECTELEMENT));
+  ASSERT_TRUE(menu->HasCommandWithId(IDC_RELOAD));
+  ASSERT_FALSE(menu->HasCommandWithId(IDC_BACK));
+  ASSERT_FALSE(menu->HasCommandWithId(IDC_SAVE_PAGE));
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenu) {
@@ -78,9 +83,11 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenu) {
   PlatformAppContextMenu* menu = new PlatformAppContextMenu(web_contents,
       params);
   menu->Init();
-  // TODO(benwells): Remove the constant below. Instead of checking the
-  // number of menu items check certain item's absense and presence.
-  ASSERT_EQ(4, menu->menu_model().GetItemCount());
+  ASSERT_TRUE(menu->HasCommandWithId(IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST));
+  ASSERT_TRUE(menu->HasCommandWithId(IDC_CONTENT_CONTEXT_INSPECTELEMENT));
+  ASSERT_TRUE(menu->HasCommandWithId(IDC_RELOAD));
+  ASSERT_FALSE(menu->HasCommandWithId(IDC_BACK));
+  ASSERT_FALSE(menu->HasCommandWithId(IDC_SAVE_PAGE));
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DisallowNavigation) {
