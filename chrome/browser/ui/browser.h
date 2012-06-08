@@ -795,6 +795,13 @@ class Browser : public TabStripModelDelegate,
                                      int index) OVERRIDE;
   virtual void TabStripEmpty() OVERRIDE;
 
+  // Overridden from content::WebContentsDelegate:
+  virtual bool PreHandleKeyboardEvent(
+      const content::NativeWebKeyboardEvent& event,
+      bool* is_keyboard_shortcut) OVERRIDE;
+  virtual void HandleKeyboardEvent(
+      const content::NativeWebKeyboardEvent& event) OVERRIDE;
+
   // Fullscreen permission infobar callbacks.
   // TODO(koz): Remove this and have callers call FullscreenController directly.
   void OnAcceptFullscreenPermission(const GURL& url,
@@ -932,11 +939,6 @@ class Browser : public TabStripModelDelegate,
       content::WebContents* source,
       const GURL& frame_url,
       const std::string& frame_content_state) OVERRIDE;
-  virtual bool PreHandleKeyboardEvent(
-      const content::NativeWebKeyboardEvent& event,
-      bool* is_keyboard_shortcut) OVERRIDE;
-  virtual void HandleKeyboardEvent(
-      const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual void ShowRepostFormWarningDialog(
       content::WebContents* source) OVERRIDE;
   virtual bool ShouldAddNavigationToHistory(

@@ -197,7 +197,7 @@ class ExtensionHost : public content::WebContentsDelegate,
   // Platform specific implementation may override this method to handle the
   // event in platform specific way.
   virtual void UnhandledKeyboardEvent(
-      const content::NativeWebKeyboardEvent& event) {}
+      const content::NativeWebKeyboardEvent& event);
 
   // Returns true if we're hosting a background page.
   // This isn't valid until CreateRenderView is called.

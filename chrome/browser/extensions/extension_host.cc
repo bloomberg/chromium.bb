@@ -53,10 +53,6 @@
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#if defined(TOOLKIT_VIEWS)
-#include "ui/views/widget/widget.h"
-#endif
-
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
 using content::NativeWebKeyboardEvent;
@@ -462,7 +458,15 @@ bool ExtensionHost::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
       event.windowsKeyCode == ui::VKEY_ESCAPE) {
     DCHECK(is_keyboard_shortcut != NULL);
     *is_keyboard_shortcut = true;
+    return false;
   }
+
+  // Handle higher priority browser shortcuts such as Ctrl-w.
+  Browser* browser = view() ? view()->browser() : NULL;
+  if (browser)
+    return browser->PreHandleKeyboardEvent(event, is_keyboard_shortcut);
+
+  *is_keyboard_shortcut = false;
   return false;
 }
 
@@ -515,6 +519,13 @@ void ExtensionHost::OnDecrementLazyKeepaliveCount() {
     pm->DecrementLazyKeepaliveCount(extension());
 }
 
+void ExtensionHost::UnhandledKeyboardEvent(
+    const content::NativeWebKeyboardEvent& event) {
+  // Handle lower priority browser shortcuts such as Ctrl-f.
+  Browser* browser = view() ? view()->browser() : NULL;
+  if (browser)
+    return browser->HandleKeyboardEvent(event);
+}
 
 void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
   render_view_host_ = render_view_host;

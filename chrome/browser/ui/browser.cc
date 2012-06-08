@@ -3041,6 +3041,21 @@ void Browser::TabStripEmpty() {
   is_attempting_to_close_browser_ = true;
 }
 
+bool Browser::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
+                                     bool* is_keyboard_shortcut) {
+  // Escape exits tabbed fullscreen mode.
+  // TODO(koz): Write a test for this http://crbug.com/100441.
+  if (event.windowsKeyCode == 27 &&
+      fullscreen_controller_->HandleUserPressedEscape()) {
+    return true;
+  }
+  return window()->PreHandleKeyboardEvent(event, is_keyboard_shortcut);
+}
+
+void Browser::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
+  window()->HandleKeyboardEvent(event);
+}
+
 void Browser::OnAcceptFullscreenPermission(
     const GURL& url,
     FullscreenExitBubbleType bubble_type) {
@@ -3456,21 +3471,6 @@ void Browser::ViewSourceForFrame(WebContents* source,
   TabContents* tab_contents = GetTabContentsAt(
       tab_strip_model_->GetWrapperIndex(source));
   ViewSource(tab_contents, frame_url, frame_content_state);
-}
-
-bool Browser::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
-                                     bool* is_keyboard_shortcut) {
-  // Escape exits tabbed fullscreen mode.
-  // TODO(koz): Write a test for this http://crbug.com/100441.
-  if (event.windowsKeyCode == 27 &&
-      fullscreen_controller_->HandleUserPressedEscape()) {
-    return true;
-  }
-  return window()->PreHandleKeyboardEvent(event, is_keyboard_shortcut);
-}
-
-void Browser::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
-  window()->HandleKeyboardEvent(event);
 }
 
 void Browser::ShowRepostFormWarningDialog(WebContents* source) {
