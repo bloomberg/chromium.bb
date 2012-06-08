@@ -159,6 +159,7 @@ function testInvalidKeys() {
       } catch (e) {
         window.ex = e;
         shouldBe("ex.code", "IDBDatabaseException.DATA_ERR");
+        shouldBe("ex.name", "'DataError'");
       }
     });
   testKeyOrdering();

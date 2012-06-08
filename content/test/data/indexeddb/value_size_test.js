@@ -116,8 +116,9 @@ function testOverLimit()
       fail('store.add - Expected exception, but none was raised');
     } catch (e) {
       debug('Exception (expected)');
-      code = e.code;
-      shouldBe("code", "IDBDatabaseException.DATA_ERR");
+      ex = e;
+      shouldBe("ex.code", "IDBDatabaseException.DATA_ERR");
+      shouldBe("ex.name", "'DataError'");
     }
 
     try {
@@ -127,8 +128,9 @@ function testOverLimit()
       fail('store.add - Expected exception, but none was raised');
     } catch (e) {
       debug('Exception (expected)');
-      code = e.code;
-      shouldBe("code", "IDBDatabaseException.DATA_ERR");
+      ex = e;
+      shouldBe("ex.code", "IDBDatabaseException.DATA_ERR");
+      shouldBe("ex.name", "'DataError'");
     }
 
     request = store.openCursor();
@@ -142,8 +144,9 @@ function testOverLimit()
         fail('cursor.update - Expected exception, but none was raised');
       } catch (e) {
         debug('Exception (expected)');
-        code = e.code;
-        shouldBe("code", "IDBDatabaseException.DATA_ERR");
+        ex = e;
+        shouldBe("ex.code", "IDBDatabaseException.DATA_ERR");
+        shouldBe("ex.name", "'DataError'");
 
         transaction.abort();
       }
