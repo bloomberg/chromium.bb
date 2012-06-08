@@ -6143,7 +6143,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ABOUT_BOX_ERROR_DURING_UPDATE_CHECK" desc="The error label for errors that occurred while checking for updates in the About box.">
         An error occurred while checking for updates: <ph name="ERROR">$1<ex>Unable to contact Google Update</ex></ph>
       </message>
-      <message name="IDS_ABOUT_BOX_ERROR_COCREATE_FAILED" desc="The error message for the specific case when we cannot create the Google Update component">
+      <message name="IDS_ABOUT_BOX_ERROR_UPDATE_CHECK_FAILED" desc="The error message for the specific case when we cannot create the Google Update component">
         Update check failed to start (error code <ph name="ERROR">$1<ex>0x80000005</ex></ph>).
       </message>
 

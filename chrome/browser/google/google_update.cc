@@ -270,11 +270,12 @@ void GoogleUpdate::InitiateGoogleUpdateCheck(bool install_if_newer,
   if (hr != S_OK) {
     // Most of the error messages come straight from Google Update. This one is
     // deemed worthy enough to also warrant its own error.
-    string16 error_code = base::StringPrintf(L"0x%x", hr);
+    GoogleUpdateErrorCode error = GOOGLE_UPDATE_JOB_SERVER_CREATION_FAILED;
+    string16 error_code = base::StringPrintf(L"%d: 0x%x", error, hr);
     ReportFailure(
-        hr, GOOGLE_UPDATE_JOB_SERVER_CREATION_FAILED,
-        l10n_util::GetStringFUTF16(IDS_ABOUT_BOX_ERROR_COCREATE_FAILED,
-            error_code),
+        hr, error,
+        l10n_util::GetStringFUTF16(IDS_ABOUT_BOX_ERROR_UPDATE_CHECK_FAILED,
+                                   error_code),
         main_loop);
     return;
   }
@@ -307,8 +308,15 @@ void GoogleUpdate::InitiateGoogleUpdateCheck(bool install_if_newer,
   }
 
   if (hr != S_OK) {
-    ReportFailure(hr, GOOGLE_UPDATE_ONDEMAND_CLASS_NOT_FOUND,
-                  string16(), main_loop);
+    GoogleUpdateErrorCode error = GOOGLE_UPDATE_ONDEMAND_CLASS_NOT_FOUND;
+    string16 error_code = base::StringPrintf(L"%d: 0x%x", error, hr);
+    if (system_level)
+      error_code += L" -- system level";
+    ReportFailure(hr, error,
+                  l10n_util::GetStringFUTF16(
+                      IDS_ABOUT_BOX_ERROR_UPDATE_CHECK_FAILED,
+                      error_code),
+                  main_loop);
     return;
   }
 
@@ -321,8 +329,13 @@ void GoogleUpdate::InitiateGoogleUpdateCheck(bool install_if_newer,
     hr = on_demand->Update(app_guid.c_str(), job_observer);
 
   if (hr != S_OK) {
-    ReportFailure(hr, GOOGLE_UPDATE_ONDEMAND_CLASS_REPORTED_ERROR,
-                  string16(), main_loop);
+    GoogleUpdateErrorCode error = GOOGLE_UPDATE_ONDEMAND_CLASS_REPORTED_ERROR;
+    string16 error_code = base::StringPrintf(L"%d: 0x%x", error, hr);
+    ReportFailure(hr, error,
+                  l10n_util::GetStringFUTF16(
+                      IDS_ABOUT_BOX_ERROR_UPDATE_CHECK_FAILED,
+                      error_code),
+                  main_loop);
     return;
   }
 
@@ -334,9 +347,15 @@ void GoogleUpdate::InitiateGoogleUpdateCheck(bool install_if_newer,
 
   GoogleUpdateUpgradeResult results;
   hr = job_observer->GetResult(&results);
+
   if (hr != S_OK) {
-    ReportFailure(hr, GOOGLE_UPDATE_GET_RESULT_CALL_FAILED,
-                  string16(), main_loop);
+    GoogleUpdateErrorCode error = GOOGLE_UPDATE_GET_RESULT_CALL_FAILED;
+    string16 error_code = base::StringPrintf(L"%d: 0x%x", error, hr);
+    ReportFailure(hr, error,
+                  l10n_util::GetStringFUTF16(
+                      IDS_ABOUT_BOX_ERROR_UPDATE_CHECK_FAILED,
+                      error_code),
+                  main_loop);
     return;
   }
 
@@ -349,8 +368,13 @@ void GoogleUpdate::InitiateGoogleUpdateCheck(bool install_if_newer,
 
   hr = job_observer->GetVersionInfo(&version_available_);
   if (hr != S_OK) {
-    ReportFailure(hr, GOOGLE_UPDATE_GET_VERSION_INFO_FAILED,
-                  string16(), main_loop);
+    GoogleUpdateErrorCode error = GOOGLE_UPDATE_GET_VERSION_INFO_FAILED;
+    string16 error_code = base::StringPrintf(L"%d: 0x%x", error, hr);
+    ReportFailure(hr, error,
+                  l10n_util::GetStringFUTF16(
+                      IDS_ABOUT_BOX_ERROR_UPDATE_CHECK_FAILED,
+                      error_code),
+                  main_loop);
     return;
   }
 
