@@ -64,7 +64,7 @@ class BrailleTest():
         self.harnessName = harnessName
         self.table = table
         self.input = input
-        self.expectedBrl = output
+        self.expectedOutput = output
         self.mode = mode if not mode else modes[mode]
         self.cursorPos = cursorPos
         self.expectedBrlCursorPos = brlCursorPos
@@ -75,7 +75,6 @@ class BrailleTest():
         return "%s: %s" % (self.harnessName, self.input)
 
     def check_translate(self):
-        if self.testmode != 'translate': return
         if self.cursorPos is not None:
             tBrl, temp1, temp2, tBrlCurPos = translate(self.table, self.input, mode=self.mode, cursorPos=self.cursorPos)
         else:
@@ -85,23 +84,23 @@ class BrailleTest():
         report = [
             self.__str__(),
             "--- Braille Difference Failure: ---",
-            template % ("expected brl:", self.expectedBrl),
+            template % ("expected brl:", self.expectedOutput),
             template % ("actual brl:", tBrl),
             "--- end ---",
         ]
-        assert tBrl == self.expectedBrl, u("\n".join(report))
+        assert tBrl == self.expectedOutput, u("\n".join(report))
 
     def check_backtranslate(self):
-        backtranslate_output = backTranslateString(self.table, self.expectedBrl, None, mode=self.mode)
+        backtranslate_output = backTranslateString(self.table, self.input, None, mode=self.mode)
         template = "%-25s '%s'"
         report = [
             self.__str__(),
             "--- Backtranslate failure: ---",
-            template % ("expected text:", self.input),
+            template % ("expected text:", self.expectedOutput),
             template % ("actual backtranslated text:", backtranslate_output),
             "--- end ---",
         ]
-        assert backtranslate_output == self.input, u("\n".join(report))
+        assert backtranslate_output == self.expectedOutput, u("\n".join(report))
 
     def check_cursor(self):
         tBrl, temp1, temp2, tBrlCurPos = translate(self.table, self.input, mode=self.mode, cursorPos=self.cursorPos)
@@ -150,5 +149,4 @@ def test_allCases():
                     if test.has_key('cursorPos'):
                         yield bt.check_cursor
                 if test['testmode'] == 'backtranslate':
-                    continue
-                    #yield bt.check_backtranslate
+                    yield bt.check_backtranslate
