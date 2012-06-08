@@ -497,6 +497,8 @@ uint32 GLES2Util::GetGLDataTypeSizeForUniforms(int type) {
       return sizeof(GLfloat) * 4 * 4;      // NOLINT
     case GL_SAMPLER_2D:
       return sizeof(GLint);                // NOLINT
+    case GL_SAMPLER_2D_RECT_ARB:
+      return sizeof(GLint);                // NOLINT
     case GL_SAMPLER_CUBE:
       return sizeof(GLint);                // NOLINT
     case GL_SAMPLER_EXTERNAL_OES:
