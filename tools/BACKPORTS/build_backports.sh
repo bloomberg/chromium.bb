@@ -12,8 +12,8 @@ if [[ ${PWD} != */native_client ]]; then
   exit 1
 fi
 
-if [[ $# -ne 2 ]]; then
-  echo "USAGE: $0 version_file win/mac/linux"
+if [[ $# -ne 3 ]]; then
+  echo "USAGE: $0 version_file win/mac/linux glibc/newlib"
   exit 2
 fi
 
@@ -67,11 +67,24 @@ while read name id comment ; do
     ( # First step is to use glient to sync sources.
       if [[ -d "$name" ]]; then
         cd "$name"
-        gclient revert
+	if [[ "$2" == "win" ]]; then (
+	  # Use extended globbing (cygwin should always have it).
+	  shopt -s extglob
+	  # Filter out cygwin python (everything under /usr or /bin, or *cygwin*).
+	  export PATH=${PATH/#\/bin*([^:])/}
+	  export PATH=${PATH//:\/bin*([^:])/}
+	  export PATH=${PATH/#\/usr*([^:])/}
+	  export PATH=${PATH//:\/usr*([^:])/}
+	  export PATH=${PATH/#*([^:])cygwin*([^:])/}
+	  export PATH=${PATH//:*([^:])cygwin*([^:])/}
+	  gclient revert
+	) else
+	  gclient revert
+	fi
       else
-        mkdir "$name"
-        cd "$name"
-        cat >.gclient <<-END
+	mkdir "$name"
+	cd "$name"
+	cat >.gclient <<-END
 	solutions = [
 	  { "name"        : "native_client",
 	    "url"         : "http://src.chromium.org/native_client/trunk/src/native_client@$id",
@@ -83,11 +96,30 @@ while read name id comment ; do
 	  },
 	]
 	END
-	gclient sync
+	if [[ "$2" == "win" ]]; then (
+	  # Use extended globbing (cygwin should always have it).
+	  shopt -s extglob
+	  # Filter out cygwin python (everything under /usr or /bin, or *cygwin*).
+	  export PATH=${PATH/#\/bin*([^:])/}
+	  export PATH=${PATH//:\/bin*([^:])/}
+	  export PATH=${PATH/#\/usr*([^:])/}
+	  export PATH=${PATH//:\/usr*([^:])/}
+	  export PATH=${PATH/#*([^:])cygwin*([^:])/}
+	  export PATH=${PATH//:*([^:])cygwin*([^:])/}
+	  gclient sync
+	) else
+	  gclient sync
+	fi
       fi
       # Now we need to change versions to officialy mark binaries.  We don't
       # show git revision because we combine different branches here.
       patch -p0 <<-END
+	--- native_client/buildbot/buildbot_standard.py
+	+++ native_client/buildbot/buildbot_standard.py
+	@@ -148 +148,2 @@
+	-  with Step('cleanup_temp', status):
+	+  if False:
+	+   with Step('cleanup_temp', status):
 	--- native_client/tools/glibc_download.sh
 	+++ native_client/tools/glibc_download.sh
 	@@ -42 +42 @@
@@ -117,10 +149,10 @@ while read name id comment ; do
 	+++ native_client/tools/Makefile
 	@@ -847 +847 @@
 	-	+#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@ \\" \`LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1-\\2-\\3+'\` (Native Client r\`LC_ALL=C svnversion\`, Git Commit \`cd SRC/binutils ; LC_ALL=C git rev-parse HEAD\`)\\"\\n" |\\
-	+	+#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@ \\" \`LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1-\\2-\\3+'\` (Native Client r$rev)\\"\\n" |\\
+	+	+#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@ \\" \`cd ../../.. ; LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1-\\2-\\3+'\` (Native Client r$rev)\\"\\n" |\\
 	@@ -855 +855 @@
 	-	+\`cat SRC/gdb/gdb/version.in\` \`LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1-\\2-\\3+'\` (Native Client r\`LC_ALL=C svnversion\`, Git Commit \`cd SRC/gdb ; LC_ALL=C git rev-parse HEAD\`)\\n" |\\
-	+	+\`cat SRC/gdb/gdb/version.in\` \`LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1-\\2-\\3+'\` (Native Client r$rev)\\n" |\\
+	+	+\`cat SRC/gdb/gdb/version.in\` \`cd ../../.. ; LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1-\\2-\\3+'\` (Native Client r$rev)\\n" |\\
 	END
       else
 	patch -p0 <<-END
@@ -131,7 +163,7 @@ while read name id comment ; do
 	+	+#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@ \\" \`LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1\\2\\3+'\` (Native Client r$rev)\\"\\n" |\\
 	@@ -855 +855 @@
 	-	+\`cat SRC/gdb/gdb/version.in\` \`LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1\\2\\3+'\` (Native Client r\`LC_ALL=C svnversion\`, Git Commit \`cd SRC/gdb ; LC_ALL=C git rev-parse HEAD\`)\\n" |\\
-	+	+\`cat SRC/gdb/gdb/version.in\` \`LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1\\2\\3+'\` (Native Client r$rev)\\n" |\\
+	+	+\`cat SRC/gdb/gdb/version.in\` \`cd ../../.. LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1\\2\\3+'\` (Native Client r$rev)\\n" |\\
 	END
 	if [[ "$name" != ppapi15 ]]; then
 	  patch -p0 <<-END
@@ -181,11 +213,6 @@ while read name id comment ; do
 	@@ -40 +40 @@
 	-make -j8 clean buildbot-build-with-newlib
 	+make clean buildbot-build-with-newlib
-	--- native_client/buildbot/buildbot_windows-glibc-makefile.bat
-	+++ native_client/buildbot/buildbot_windows-glibc-makefile.bat
-	@@ -28 +28 @@
-	-  ..\\..\\..\\..\\scripts\\slave\\gsutil -h Cache-Control:no-cache cp -a public-read ^
-	+  ..\\..\\..\\..\\..\\..\\..\\..\\scripts\\slave\\gsutil -h Cache-Control:no-cache cp -a public-read ^
 	--- native_client/buildbot/buildbot_windows-glibc-makefile.sh
 	+++ native_client/buildbot/buildbot_windows-glibc-makefile.sh
 	@@ -40 +40 @@
@@ -200,6 +227,12 @@ while read name id comment ; do
 	-  gsutil="\${SCRIPT_DIR_ABS}/../../../../../scripts/slave/gsutil.bat"
 	+  gsutil="\${SCRIPT_DIR_ABS}/../../../../../../../../../scripts/slave/gsutil.bat"
 	END
+      mv native_client/buildbot/buildbot_windows-glibc-makefile.bat \
+	native_client/buildbot/buildbot_windows-glibc-makefile.bat.orig
+      sed -e s'/  ..\\..\\..\\..\\scripts\\slave\\gsutil/  ..\\..\\..\\..\\..\\..\\..\\..\\scripts\\slave\\gsutil/' \
+        < native_client/buildbot/buildbot_windows-glibc-makefile.bat.orig \
+        > native_client/buildbot/buildbot_windows-glibc-makefile.bat
+      rm native_client/buildbot/buildbot_windows-glibc-makefile.bat.orig
       if [[ "$name" == ppapi14 ]]; then
 	patch -p0 <<-END
 	--- native_client/buildbot/buildbot_toolchain.sh
@@ -242,7 +275,7 @@ while read name id comment ; do
       fi
       cp -vf ../../glibc-tests/xfail_list.txt native_client/tools/glibc-tests/xfail_list.txt
       # Patch sources and build the toolchains.
-      if [[ "$name" != "ppapi14" || "$BUILDBOT_BUILDERNAME" != *glibc* ]]; then
+      if [[ "$name" != "ppapi14" || "$3" != glibc ]]; then
 	make -C native_client/tools clean
 	for i in binutils gcc gdb glibc linux-headers-for-nacl newlib ; do (
 	  if [[ "$name" != "ppapi14" || "$i" != glibc ]]; then
@@ -279,23 +312,32 @@ while read name id comment ; do
 	+	echo "@set GDBVN \`sed q \$(srcdir)/../version.inT\`" > ./GDBvn.new
 	END
 	fi
-	cd native_client
-	export BUILD_COMPATIBLE_TOOLCHAINS=no
-	export BUILDBOT_GOT_REVISION="$rev"
-	if [[ "$2" == "win" ]]; then (
-	  # Use extended globbing (cygwin should always have it).
-	  shopt -s extglob
-	  # Filter out cygwin python (everything under /usr or /bin, or *cygwin*).
-	  export PATH=${PATH/#\/bin*([^:])/}
-	  export PATH=${PATH//:\/bin*([^:])/}
-	  export PATH=${PATH/#\/usr*([^:])/}
-	  export PATH=${PATH//:\/usr*([^:])/}
-	  export PATH=${PATH/#*([^:])cygwin*([^:])/}
-	  export PATH=${PATH//:*([^:])cygwin*([^:])/}
-	  python_slave buildbot/buildbot_selector.py
-	) else
-	  python buildbot/buildbot_selector.py
+	declare -r url_prefix=http://commondatastorage.googleapis.com/nativeclient-archive2
+	if [[ "$3" == "glibc" ]]; then
+	  declare -r url=$url_prefix/x86_toolchain/r"$rev"/toolchain_"$2"_x86.tar.gz
+	else
+	  declare -r url=$url_prefix/toolchain/"$rev"/naclsdk_"$2"_x86.tgz
 	fi
+	# If toolchain is already available then another try will not change anything
+	curl --fail --location --url "$url" -o /dev/null || (
+	  cd native_client
+	  export BUILD_COMPATIBLE_TOOLCHAINS=no
+	  export BUILDBOT_GOT_REVISION="$rev"
+	  if [[ "$2" == "win" ]]; then (
+	    # Use extended globbing (cygwin should always have it).
+	    shopt -s extglob
+	    # Filter out cygwin python (everything under /usr or /bin, or *cygwin*).
+	    export PATH=${PATH/#\/bin*([^:])/}
+	    export PATH=${PATH//:\/bin*([^:])/}
+	    export PATH=${PATH/#\/usr*([^:])/}
+	    export PATH=${PATH//:\/usr*([^:])/}
+	    export PATH=${PATH/#*([^:])cygwin*([^:])/}
+	    export PATH=${PATH//:*([^:])cygwin*([^:])/}
+	    python_slave buildbot/buildbot_selector.py
+	  ) else
+	    python buildbot/buildbot_selector.py
+	  fi
+	)
       fi
     ) ;;
   esac || touch $$.error &

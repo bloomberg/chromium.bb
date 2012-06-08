@@ -89,5 +89,5 @@ else
 fi
 
 if [[ "${BUILD_COMPATIBLE_TOOLCHAINS:-yes}" != "no" ]]; then
-  tools/BACKPORTS/build_backports.sh VERSIONS win
+  tools/BACKPORTS/build_backports.sh VERSIONS win glibc
 fi
