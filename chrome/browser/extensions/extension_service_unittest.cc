@@ -2497,12 +2497,12 @@ TEST_F(ExtensionServiceTest, AddPendingExtensionFromSync) {
       kFakeId, kFakeUpdateURL, &IsExtension,
       kFakeInstallSilently));
 
-  PendingExtensionInfo pending_extension_info;
-  ASSERT_TRUE(service_->pending_extension_manager()->GetById(
-      kFakeId, &pending_extension_info));
-  EXPECT_EQ(kFakeUpdateURL, pending_extension_info.update_url());
-  EXPECT_EQ(&IsExtension, pending_extension_info.should_allow_install_);
-  EXPECT_EQ(kFakeInstallSilently, pending_extension_info.install_silently());
+  const PendingExtensionInfo* pending_extension_info;
+  ASSERT_TRUE((pending_extension_info = service_->pending_extension_manager()->
+      GetById(kFakeId)));
+  EXPECT_EQ(kFakeUpdateURL, pending_extension_info->update_url());
+  EXPECT_EQ(&IsExtension, pending_extension_info->should_allow_install_);
+  EXPECT_EQ(kFakeInstallSilently, pending_extension_info->install_silently());
 }
 
 namespace {
@@ -2600,21 +2600,21 @@ TEST_F(ExtensionServiceTest, UpdatePendingExternalCrxWinsOverSync) {
       kGoodInstallSilently));
 
   // Check that there is a pending crx, with is_from_sync set to true.
-  PendingExtensionInfo pending_extension_info;
-  ASSERT_TRUE(service_->pending_extension_manager()->GetById(
-      kGoodId, &pending_extension_info));
-  EXPECT_TRUE(pending_extension_info.is_from_sync());
+  const PendingExtensionInfo* pending_extension_info;
+  ASSERT_TRUE((pending_extension_info = service_->pending_extension_manager()->
+      GetById(kGoodId)));
+  EXPECT_TRUE(pending_extension_info->is_from_sync());
 
   // Add a crx to be updated, with the same ID, from a non-sync source.
   EXPECT_TRUE(service_->pending_extension_manager()->AddFromExternalUpdateUrl(
       kGoodId, GURL(kGoodUpdateURL), Extension::EXTERNAL_PREF_DOWNLOAD));
 
   // Check that there is a pending crx, with is_from_sync set to false.
-  ASSERT_TRUE(service_->pending_extension_manager()->GetById(
-      kGoodId, &pending_extension_info));
-  EXPECT_FALSE(pending_extension_info.is_from_sync());
+  ASSERT_TRUE((pending_extension_info = service_->pending_extension_manager()->
+      GetById(kGoodId)));
+  EXPECT_FALSE(pending_extension_info->is_from_sync());
   EXPECT_EQ(Extension::EXTERNAL_PREF_DOWNLOAD,
-            pending_extension_info.install_source());
+            pending_extension_info->install_source());
 
   // Add a crx to be installed from the update mechanism.
   EXPECT_FALSE(service_->pending_extension_manager()->AddFromSync(
@@ -2622,11 +2622,11 @@ TEST_F(ExtensionServiceTest, UpdatePendingExternalCrxWinsOverSync) {
       kGoodInstallSilently));
 
   // Check that the external, non-sync update was not overridden.
-  ASSERT_TRUE(service_->pending_extension_manager()->GetById(
-      kGoodId, &pending_extension_info));
-  EXPECT_FALSE(pending_extension_info.is_from_sync());
+  ASSERT_TRUE((pending_extension_info = service_->pending_extension_manager()->
+      GetById(kGoodId)));
+  EXPECT_FALSE(pending_extension_info->is_from_sync());
   EXPECT_EQ(Extension::EXTERNAL_PREF_DOWNLOAD,
-            pending_extension_info.install_source());
+            pending_extension_info->install_source());
 }
 
 // Updating a theme should fail if the updater is explicitly told that
@@ -4710,13 +4710,13 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataNotInstalled) {
   EXPECT_FALSE(service_->IsExtensionEnabled(good_crx));
   EXPECT_TRUE(service_->IsIncognitoEnabled(good_crx));
 
-  PendingExtensionInfo info;
-  EXPECT_TRUE(
-      service_->pending_extension_manager()->GetById(good_crx, &info));
-  EXPECT_EQ(ext_specifics->update_url(), info.update_url().spec());
-  EXPECT_TRUE(info.is_from_sync());
-  EXPECT_TRUE(info.install_silently());
-  EXPECT_EQ(Extension::INTERNAL, info.install_source());
+  const PendingExtensionInfo* info;
+  EXPECT_TRUE((info = service_->pending_extension_manager()->
+      GetById(good_crx)));
+  EXPECT_EQ(ext_specifics->update_url(), info->update_url().spec());
+  EXPECT_TRUE(info->is_from_sync());
+  EXPECT_TRUE(info->install_silently());
+  EXPECT_EQ(Extension::INTERNAL, info->install_source());
   // TODO(akalin): Figure out a way to test |info.ShouldAllowInstall()|.
 }
 
@@ -4939,28 +4939,28 @@ TEST_F(ExtensionServiceTest, ConcurrentExternalLocalFile) {
       service_->OnExternalExtensionFileFound(
           kGoodId, &kVersion123, kInvalidPathToCrx,
           Extension::EXTERNAL_PREF, kCreationFlags, kDontMarkAcknowledged));
-  PendingExtensionInfo info;
-  EXPECT_TRUE(pending->GetById(kGoodId, &info));
-  EXPECT_TRUE(info.version().IsValid());
-  EXPECT_TRUE(info.version().Equals(kVersion123));
+  const PendingExtensionInfo* info;
+  EXPECT_TRUE((info = pending->GetById(kGoodId)));
+  EXPECT_TRUE(info->version().IsValid());
+  EXPECT_TRUE(info->version().Equals(kVersion123));
 
   // Adding a newer version overrides the currently pending version.
   EXPECT_TRUE(
       service_->OnExternalExtensionFileFound(
           kGoodId, &kVersion124, kInvalidPathToCrx,
           Extension::EXTERNAL_PREF, kCreationFlags, kDontMarkAcknowledged));
-  EXPECT_TRUE(pending->GetById(kGoodId, &info));
-  EXPECT_TRUE(info.version().IsValid());
-  EXPECT_TRUE(info.version().Equals(kVersion124));
+  EXPECT_TRUE((info = pending->GetById(kGoodId)));
+  EXPECT_TRUE(info->version().IsValid());
+  EXPECT_TRUE(info->version().Equals(kVersion124));
 
   // Adding an older version fails.
   EXPECT_FALSE(
       service_->OnExternalExtensionFileFound(
           kGoodId, &kVersion123, kInvalidPathToCrx,
           Extension::EXTERNAL_PREF, kCreationFlags, kDontMarkAcknowledged));
-  EXPECT_TRUE(pending->GetById(kGoodId, &info));
-  EXPECT_TRUE(info.version().IsValid());
-  EXPECT_TRUE(info.version().Equals(kVersion124));
+  EXPECT_TRUE((info = pending->GetById(kGoodId)));
+  EXPECT_TRUE(info->version().IsValid());
+  EXPECT_TRUE(info->version().Equals(kVersion124));
 
   // Adding an older version fails even when coming from a higher-priority
   // location.
@@ -4968,17 +4968,17 @@ TEST_F(ExtensionServiceTest, ConcurrentExternalLocalFile) {
       service_->OnExternalExtensionFileFound(
           kGoodId, &kVersion123, kInvalidPathToCrx,
           Extension::EXTERNAL_REGISTRY, kCreationFlags, kDontMarkAcknowledged));
-  EXPECT_TRUE(pending->GetById(kGoodId, &info));
-  EXPECT_TRUE(info.version().IsValid());
-  EXPECT_TRUE(info.version().Equals(kVersion124));
+  EXPECT_TRUE((info = pending->GetById(kGoodId)));
+  EXPECT_TRUE(info->version().IsValid());
+  EXPECT_TRUE(info->version().Equals(kVersion124));
 
   // Adding the latest version from the webstore overrides a specific version.
   GURL kUpdateUrl("http://example.com/update");
   EXPECT_TRUE(
       service_->OnExternalExtensionUpdateUrlFound(
           kGoodId, kUpdateUrl, Extension::EXTERNAL_POLICY_DOWNLOAD));
-  EXPECT_TRUE(pending->GetById(kGoodId, &info));
-  EXPECT_FALSE(info.version().IsValid());
+  EXPECT_TRUE((info = pending->GetById(kGoodId)));
+  EXPECT_FALSE(info->version().IsValid());
 }
 
 // This makes sure we can package and install CRX files that use whitelisted
@@ -5051,16 +5051,18 @@ class ExtensionSourcePriorityTest : public ExtensionServiceTest {
 
   // Get the install source of a pending extension.
   Extension::Location GetPendingLocation() {
-    PendingExtensionInfo info;
-    EXPECT_TRUE(service_->pending_extension_manager()->GetById(crx_id_, &info));
-    return info.install_source();
+    const PendingExtensionInfo* info;
+    EXPECT_TRUE((info = service_->pending_extension_manager()->
+        GetById(crx_id_)));
+    return info->install_source();
   }
 
   // Is an extension pending from a sync request?
   bool GetPendingIsFromSync() {
-    PendingExtensionInfo info;
-    EXPECT_TRUE(service_->pending_extension_manager()->GetById(crx_id_, &info));
-    return info.is_from_sync();
+    const PendingExtensionInfo* info;
+    EXPECT_TRUE((info = service_->pending_extension_manager()->
+        GetById(crx_id_)));
+    return info->is_from_sync();
   }
 
   // Is the CRX id these tests use pending?

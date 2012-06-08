@@ -69,10 +69,10 @@ AppStateMap GetAppStates(Profile* profile) {
   const PendingExtensionManager* pending_extension_manager =
       extension_service->pending_extension_manager();
 
-  std::set<std::string> pending_crx_ids;
+  std::list<std::string> pending_crx_ids;
   pending_extension_manager->GetPendingIdsForUpdateCheck(&pending_crx_ids);
 
-  for (std::set<std::string>::const_iterator id = pending_crx_ids.begin();
+  for (std::list<std::string>::const_iterator id = pending_crx_ids.begin();
        id != pending_crx_ids.end(); ++id) {
     LoadApp(extension_service, *id, &(app_state_map[*id]));
   }

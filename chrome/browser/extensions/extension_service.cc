@@ -553,13 +553,12 @@ bool ExtensionService::UpdateExtension(
     CrxInstaller** out_crx_installer) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  PendingExtensionInfo pending_extension_info;
-  bool is_pending_extension = pending_extension_manager_.GetById(
-      id, &pending_extension_info);
+  const PendingExtensionInfo* pending_extension_info =
+      pending_extension_manager()->GetById(id);
 
   const Extension* extension =
       GetExtensionByIdInternal(id, true, true, false);
-  if (!is_pending_extension && !extension) {
+  if (!pending_extension_info && !extension) {
     LOG(WARNING) << "Will not update extension " << id
                  << " because it is not installed or pending";
     // Delete extension_path since we're not creating a CrxInstaller
@@ -576,17 +575,18 @@ bool ExtensionService::UpdateExtension(
   // We want a silent install only for non-pending extensions and
   // pending extensions that have install_silently set.
   ExtensionInstallPrompt* client =
-      (!is_pending_extension || pending_extension_info.install_silently()) ?
+      (!pending_extension_info || pending_extension_info->install_silently()) ?
       NULL : new ExtensionInstallPrompt(profile_);
 
   scoped_refptr<CrxInstaller> installer(CrxInstaller::Create(this, client));
   installer->set_expected_id(id);
-  if (is_pending_extension)
-    installer->set_install_source(pending_extension_info.install_source());
-  else if (extension)
+  if (pending_extension_info) {
+    installer->set_install_source(pending_extension_info->install_source());
+    if (pending_extension_info->install_silently())
+      installer->set_allow_silent_install(true);
+  } else if (extension) {
     installer->set_install_source(extension->location());
-  if (pending_extension_info.install_silently())
-    installer->set_allow_silent_install(true);
+  }
   // If the extension was installed from or has migrated to the webstore, or
   // if the extension came from sync and its auto-update URL is from the
   // webstore, treat it as a webstore install. Note that we ignore some older
@@ -595,9 +595,9 @@ bool ExtensionService::UpdateExtension(
   int creation_flags = Extension::NO_FLAGS;
   if ((extension && extension->from_webstore()) ||
       (extension && extension->UpdatesFromGallery()) ||
-      (!extension && pending_extension_info.is_from_sync() &&
+      (!extension && pending_extension_info->is_from_sync() &&
        extension_urls::IsWebstoreUpdateUrl(
-           pending_extension_info.update_url()))) {
+           pending_extension_info->update_url()))) {
     creation_flags |= Extension::FROM_WEBSTORE;
   }
 
@@ -2098,11 +2098,11 @@ void ExtensionService::OnExtensionInstalled(
   bool initial_enable =
       !extension_prefs_->IsExtensionDisabled(id) ||
       system_->management_policy()->MustRemainEnabled(extension, NULL);
-  PendingExtensionInfo pending_extension_info;
-  if (pending_extension_manager()->GetById(id, &pending_extension_info)) {
-    pending_extension_manager()->Remove(id);
+  const PendingExtensionInfo* pending_extension_info = NULL;
+  if ((pending_extension_info = pending_extension_manager()->GetById(id))) {
+    if (!pending_extension_info->ShouldAllowInstall(*extension)) {
+      pending_extension_manager()->Remove(id);
 
-    if (!pending_extension_info.ShouldAllowInstall(*extension)) {
       LOG(WARNING)
           << "ShouldAllowInstall() returned false for "
           << id << " of type " << extension->GetType()
@@ -2123,6 +2123,8 @@ void ExtensionService::OnExtensionInstalled(
         NOTREACHED();
       return;
     }
+
+    pending_extension_manager()->Remove(id);
   } else {
     // We explicitly want to re-enable an uninstalled external
     // extension; if we're here, that means the user is manually

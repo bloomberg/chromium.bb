@@ -5,13 +5,15 @@
 #include "chrome/browser/extensions/pending_extension_info.h"
 
 PendingExtensionInfo::PendingExtensionInfo(
+    const std::string& id,
     const GURL& update_url,
     const Version& version,
     ShouldAllowInstallPredicate should_allow_install,
     bool is_from_sync,
     bool install_silently,
     extensions::Extension::Location install_source)
-    : update_url_(update_url),
+    : id_(id),
+      update_url_(update_url),
       version_(version),
       should_allow_install_(should_allow_install),
       is_from_sync_(is_from_sync),
@@ -19,8 +21,13 @@ PendingExtensionInfo::PendingExtensionInfo(
       install_source_(install_source) {}
 
 PendingExtensionInfo::PendingExtensionInfo()
-    : update_url_(),
+    : id_(""),
+      update_url_(),
       should_allow_install_(NULL),
       is_from_sync_(true),
       install_silently_(false),
       install_source_(extensions::Extension::INVALID) {}
+
+bool PendingExtensionInfo::operator==(const PendingExtensionInfo& rhs) const {
+  return id_ == rhs.id_;
+}

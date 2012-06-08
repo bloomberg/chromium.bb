@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <list>
 #include <map>
 #include <set>
 #include <vector>
@@ -238,7 +239,7 @@ void SetupPendingExtensionManagerForTest(
     int count,
     const GURL& update_url,
     PendingExtensionManager* pending_extension_manager) {
-  for (int i = 1; i <= count; i++) {
+  for (int i = 1; i <= count; ++i) {
     PendingExtensionInfo::ShouldAllowInstallPredicate should_allow_install =
         (i % 2 == 0) ? &ShouldInstallThemesOnly : &ShouldInstallExtensionsOnly;
     const bool kIsFromSync = true;
@@ -246,8 +247,8 @@ void SetupPendingExtensionManagerForTest(
     std::string id = GenerateId(base::StringPrintf("extension%i", i));
 
     pending_extension_manager->AddForTesting(
-        id,
-        PendingExtensionInfo(update_url,
+        PendingExtensionInfo(id,
+                             update_url,
                              Version(),
                              should_allow_install,
                              kIsFromSync,
@@ -701,11 +702,11 @@ class ExtensionUpdaterTest : public testing::Test {
     ManifestFetchData fetch_data(GURL("http://localhost/foo"));
     UpdateManifest::Results updates;
 
-    std::set<std::string> ids_for_update_check;
+    std::list<std::string> ids_for_update_check;
     pending_extension_manager->GetPendingIdsForUpdateCheck(
         &ids_for_update_check);
 
-    std::set<std::string>::const_iterator it;
+    std::list<std::string>::const_iterator it;
     for (it = ids_for_update_check.begin();
          it != ids_for_update_check.end(); ++it) {
       fetch_data.AddExtension(*it, "1.0.0.0",
@@ -867,8 +868,7 @@ class ExtensionUpdaterTest : public testing::Test {
       PendingExtensionManager* pending_extension_manager =
           service->pending_extension_manager();
       pending_extension_manager->AddForTesting(
-          id,
-          PendingExtensionInfo(test_url, *version,
+          PendingExtensionInfo(id, test_url, *version,
                                &ShouldAlwaysInstall, kIsFromSync,
                                kInstallSilently,
                                Extension::INTERNAL));

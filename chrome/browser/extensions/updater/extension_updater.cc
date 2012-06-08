@@ -263,10 +263,10 @@ void ExtensionUpdater::DoCheckSoon() {
 }
 
 void ExtensionUpdater::AddToDownloader(const ExtensionSet* extensions,
-    const std::set<std::string>& pending_ids) {
-  for (ExtensionSet::const_iterator iter = extensions->begin();
-       iter != extensions->end(); ++iter) {
-    const Extension& extension = **iter;
+    const std::list<std::string>& pending_ids) {
+  for (ExtensionSet::const_iterator extension_iter = extensions->begin();
+       extension_iter != extensions->end(); ++extension_iter) {
+    const Extension& extension = **extension_iter;
     if (!Extension::IsAutoUpdateableLocation(extension.location())) {
       VLOG(2) << "Extension " << extension.id() << " is not auto updateable";
       continue;
@@ -274,9 +274,11 @@ void ExtensionUpdater::AddToDownloader(const ExtensionSet* extensions,
     // An extension might be overwritten by policy, and have its update url
     // changed. Make sure existing extensions aren't fetched again, if a
     // pending fetch for an extension with the same id already exists.
-    if (!ContainsKey(pending_ids, extension.id())) {
+    std::list<std::string>::const_iterator pending_id_iter = std::find(
+        pending_ids.begin(), pending_ids.end(), extension.id());
+    if (pending_id_iter == pending_ids.end()) {
       if (downloader_->AddExtension(extension))
-        in_progress_ids_.insert(extension.id());
+        in_progress_ids_.push_back(extension.id());
     }
   }
 }
@@ -297,22 +299,19 @@ void ExtensionUpdater::CheckNow() {
   const PendingExtensionManager* pending_extension_manager =
       service_->pending_extension_manager();
 
-  std::set<std::string> pending_ids;
+  std::list<std::string> pending_ids;
   pending_extension_manager->GetPendingIdsForUpdateCheck(&pending_ids);
 
-  std::set<std::string>::const_iterator iter;
+  std::list<std::string>::const_iterator iter;
   for (iter = pending_ids.begin(); iter != pending_ids.end(); ++iter) {
-    PendingExtensionInfo info;
-    bool found_id = pending_extension_manager->GetById(*iter, &info);
-    DCHECK(found_id);
-    if (!found_id)
-      continue;
-    if (!Extension::IsAutoUpdateableLocation(info.install_source())) {
+    const PendingExtensionInfo* info = pending_extension_manager->GetById(
+        *iter);
+    if (!Extension::IsAutoUpdateableLocation(info->install_source())) {
       VLOG(2) << "Extension " << *iter << " is not auto updateable";
       continue;
     }
-    if (downloader_->AddPendingExtension(*iter, info.update_url()))
-      in_progress_ids_.insert(*iter);
+    if (downloader_->AddPendingExtension(*iter, info->update_url()))
+      in_progress_ids_.push_back(*iter);
   }
 
   AddToDownloader(service_->extensions(), pending_ids);
@@ -339,7 +338,7 @@ void ExtensionUpdater::OnExtensionDownloadFailed(const std::string& id,
                                                  const PingResult& ping) {
   DCHECK(alive_);
   UpdatePingData(id, ping);
-  in_progress_ids_.erase(id);
+  in_progress_ids_.remove(id);
   NotifyIfFinished();
 }
 
@@ -368,7 +367,7 @@ void ExtensionUpdater::OnBlacklistDownloadFinished(
     const PingResult& ping) {
   DCHECK(alive_);
   UpdatePingData(ExtensionDownloader::kBlacklistAppID, ping);
-  in_progress_ids_.erase(ExtensionDownloader::kBlacklistAppID);
+  in_progress_ids_.remove(ExtensionDownloader::kBlacklistAppID);
   NotifyIfFinished();
 
   // Verify sha256 hash value.
@@ -468,7 +467,7 @@ void ExtensionUpdater::MaybeInstallCRXFile() {
                      chrome::NOTIFICATION_CRX_INSTALLER_DONE,
                      content::Source<CrxInstaller>(installer));
     }
-    in_progress_ids_.erase(crx_file.id);
+    in_progress_ids_.remove(crx_file.id);
     fetched_crx_files_.pop();
   }
 

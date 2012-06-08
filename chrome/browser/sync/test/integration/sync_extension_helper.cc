@@ -132,11 +132,10 @@ bool SyncExtensionHelper::IsExtensionPendingInstallForSync(
     Profile* profile, const std::string& id) const {
   const PendingExtensionManager* pending_extension_manager =
       profile->GetExtensionService()->pending_extension_manager();
-  PendingExtensionInfo info;
-  if (!pending_extension_manager->GetById(id, &info)) {
+  const PendingExtensionInfo* info = pending_extension_manager->GetById(id);
+  if (!info)
     return false;
-  }
-  return info.is_from_sync();
+  return info->is_from_sync();
 }
 
 void SyncExtensionHelper::InstallExtensionsPendingForSync(
@@ -150,23 +149,23 @@ void SyncExtensionHelper::InstallExtensionsPendingForSync(
   const PendingExtensionManager* pending_extension_manager =
       profile->GetExtensionService()->pending_extension_manager();
 
-  std::set<std::string> pending_crx_ids;
+  std::list<std::string> pending_crx_ids;
   pending_extension_manager->GetPendingIdsForUpdateCheck(&pending_crx_ids);
 
-  std::set<std::string>::const_iterator id;
-  PendingExtensionInfo info;
-  for (id = pending_crx_ids.begin(); id != pending_crx_ids.end(); ++id) {
-    ASSERT_TRUE(pending_extension_manager->GetById(*id, &info));
-    if (!info.is_from_sync())
+  std::list<std::string>::const_iterator iter;
+  const PendingExtensionInfo* info = NULL;
+  for (iter = pending_crx_ids.begin(); iter != pending_crx_ids.end(); ++iter) {
+    ASSERT_TRUE((info = pending_extension_manager->GetById(*iter)));
+    if (!info->is_from_sync())
       continue;
 
-    StringMap::const_iterator it2 = id_to_name_.find(*id);
-    if (it2 == id_to_name_.end()) {
-      ADD_FAILURE() << "Could not get name for id " << *id
+    StringMap::const_iterator iter2 = id_to_name_.find(*iter);
+    if (iter2 == id_to_name_.end()) {
+      ADD_FAILURE() << "Could not get name for id " << *iter
                     << " (profile = " << profile->GetDebugName() << ")";
       continue;
     }
-    InstallExtension(profile, it2->second, type);
+    InstallExtension(profile, iter2->second, type);
   }
 }
 
@@ -199,10 +198,10 @@ SyncExtensionHelper::ExtensionStateMap
   const PendingExtensionManager* pending_extension_manager =
       extension_service->pending_extension_manager();
 
-  std::set<std::string> pending_crx_ids;
+  std::list<std::string> pending_crx_ids;
   pending_extension_manager->GetPendingIdsForUpdateCheck(&pending_crx_ids);
 
-  std::set<std::string>::const_iterator id;
+  std::list<std::string>::const_iterator id;
   for (id = pending_crx_ids.begin(); id != pending_crx_ids.end(); ++id) {
     extension_state_map[*id].enabled_state = ExtensionState::PENDING;
     extension_state_map[*id].incognito_enabled =

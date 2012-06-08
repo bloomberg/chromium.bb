@@ -21,6 +21,7 @@ class PendingExtensionInfo {
   typedef bool (*ShouldAllowInstallPredicate)(const extensions::Extension&);
 
   PendingExtensionInfo(
+      const std::string& id,
       const GURL& update_url,
       const Version& version,
       ShouldAllowInstallPredicate should_allow_install,
@@ -31,6 +32,10 @@ class PendingExtensionInfo {
   // Required for STL container membership.  Should not be used directly.
   PendingExtensionInfo();
 
+  // Consider two PendingExtensionInfos equal if their ids are equal.
+  bool operator==(const PendingExtensionInfo& rhs) const;
+
+  const std::string& id() const { return id_; }
   const GURL& update_url() const { return update_url_; }
   const Version& version() const { return version_; }
 
@@ -50,6 +55,8 @@ class PendingExtensionInfo {
   }
 
  private:
+  std::string id_;
+
   GURL update_url_;
   Version version_;
 
