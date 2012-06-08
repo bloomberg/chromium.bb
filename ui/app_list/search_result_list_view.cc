@@ -72,6 +72,24 @@ bool SearchResultListView::IsResultViewSelected(
       result_view;
 }
 
+bool SearchResultListView::OnKeyPressed(const views::KeyEvent& event) {
+  switch (event.key_code()) {
+    case ui::VKEY_UP:
+      SetSelectedIndex(std::max(selected_index_ - 1, 0));
+      return true;
+    case ui::VKEY_DOWN:
+      SetSelectedIndex(std::min(selected_index_ + 1, last_visible_index_));
+      return true;
+    case ui::VKEY_RETURN:
+      if (selected_index_ >= 0)
+        ButtonPressed(GetResultViewAt(selected_index_), event);
+      return true;
+    default:
+      break;
+  }
+  return false;
+}
+
 SearchResultView* SearchResultListView::GetResultViewAt(int index) {
   DCHECK(index >= 0 && index < child_count());
   return static_cast<SearchResultView*>(child_at(index));
@@ -106,24 +124,6 @@ void SearchResultListView::ScheduleUpdate() {
         base::Bind(&SearchResultListView::Update,
                    update_factory_.GetWeakPtr()));
   }
-}
-
-bool SearchResultListView::OnKeyPressed(const views::KeyEvent& event) {
-  switch (event.key_code()) {
-    case ui::VKEY_UP:
-      SetSelectedIndex(std::max(selected_index_ - 1, 0));
-      return true;
-    case ui::VKEY_DOWN:
-      SetSelectedIndex(std::min(selected_index_ + 1, last_visible_index_));
-      return true;
-    case ui::VKEY_RETURN:
-      if (selected_index_ >= 0)
-        ButtonPressed(GetResultViewAt(selected_index_), event);
-      return true;
-    default:
-      break;
-  }
-  return false;
 }
 
 void SearchResultListView::ButtonPressed(views::Button* sender,

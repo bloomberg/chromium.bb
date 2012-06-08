@@ -118,18 +118,14 @@ void BuildShape(const gfx::Rect& bounds,
 namespace app_list {
 
 AppListBubbleBorder::AppListBubbleBorder(views::View* app_list_view,
-                                         views::View* search_box_view,
-                                         views::View* grid_view,
-                                         views::View* results_view)
+                                         views::View* search_box_view)
     : views::BubbleBorder(views::BubbleBorder::BOTTOM_RIGHT,
                           views::BubbleBorder::NO_SHADOW),
       app_list_view_(app_list_view),
-      search_box_view_(search_box_view),
-      grid_view_(grid_view),
-      results_view_(results_view) {
+      search_box_view_(search_box_view) {
   const gfx::ShadowValue kShadows[] = {
     // Offset (0, 5), blur=8, color=0.36 black
-    gfx::ShadowValue(gfx::Point(0, 5), 8, SkColorSetARGB(0x5B, 0, 0, 0)),
+    gfx::ShadowValue(gfx::Point(0, 5), 30, SkColorSetARGB(0x72, 0, 0, 0)),
   };
   shadows_.assign(kShadows, kShadows + arraysize(kShadows));
 }
@@ -166,65 +162,32 @@ int AppListBubbleBorder::GetArrowOffset() const {
   return 0;
 }
 
-void AppListBubbleBorder::PaintSearchBoxBackground(
-    gfx::Canvas* canvas,
-    const gfx::Rect& bounds) const {
+void AppListBubbleBorder::PaintBackground(gfx::Canvas* canvas,
+                                          const gfx::Rect& bounds) const {
   const gfx::Rect search_box_view_bounds =
       app_list_view_->ConvertRectToWidget(search_box_view_->bounds());
-  gfx::Rect rect(bounds.x(),
-                 bounds.y(),
-                 bounds.width(),
-                 search_box_view_bounds.bottom() - bounds.y());
+  gfx::Rect search_box_rect(bounds.x(),
+                            bounds.y(),
+                            bounds.width(),
+                            search_box_view_bounds.bottom() - bounds.y());
 
   SkPaint paint;
   paint.setStyle(SkPaint::kFill_Style);
   paint.setColor(kSearchBoxBackground);
-  canvas->DrawRect(rect, paint);
+  canvas->DrawRect(search_box_rect, paint);
 
-  gfx::Rect seperator_rect(rect);
+  gfx::Rect seperator_rect(search_box_rect);
   seperator_rect.set_y(seperator_rect.bottom());
   seperator_rect.set_height(kTopSeparatorSize);
   canvas->FillRect(seperator_rect, kTopSeparatorColor);
-}
 
-void AppListBubbleBorder::PaintSearchResultListBackground(
-    gfx::Canvas* canvas,
-    const gfx::Rect& bounds) const {
-  if (!results_view_->visible())
-    return;
+  gfx::Rect contents_rect(bounds.x(),
+                          seperator_rect.bottom(),
+                          bounds.width(),
+                          bounds.bottom() - seperator_rect.bottom());
 
-  const gfx::Rect search_box_view_bounds =
-      app_list_view_->ConvertRectToWidget(search_box_view_->bounds());
-  int start_y = search_box_view_bounds.bottom() + kTopSeparatorSize;
-  gfx::Rect rect(bounds.x(),
-                 start_y,
-                 bounds.width(),
-                 bounds.bottom() - start_y);
-
-  SkPaint paint;
-  paint.setStyle(SkPaint::kFill_Style);
   paint.setColor(kContentsBackground);
-  canvas->DrawRect(rect, paint);
-}
-
-void AppListBubbleBorder::PaintAppsGridBackground(
-    gfx::Canvas* canvas,
-    const gfx::Rect& bounds) const {
-  if (!grid_view_->visible())
-    return;
-
-  const gfx::Rect search_box_view_bounds =
-      app_list_view_->ConvertRectToWidget(search_box_view_->bounds());
-  int start_y = search_box_view_bounds.bottom() + kTopSeparatorSize;
-  gfx::Rect rect(bounds.x(),
-                 start_y,
-                 bounds.width(),
-                 bounds.bottom() - start_y);
-
-  SkPaint paint;
-  paint.setStyle(SkPaint::kFill_Style);
-  paint.setColor(kContentsBackground);
-  canvas->DrawRect(rect, paint);
+  canvas->DrawRect(contents_rect, paint);
 }
 
 void AppListBubbleBorder::GetInsets(gfx::Insets* insets) const {
@@ -364,9 +327,7 @@ void AppListBubbleBorder::Paint(const views::View& view,
 
   // Use full bounds so that arrow is also painted.
   const gfx::Rect& bounds = view.bounds();
-  PaintSearchBoxBackground(canvas, bounds);
-  PaintAppsGridBackground(canvas, bounds);
-  PaintSearchResultListBackground(canvas, bounds);
+  PaintBackground(canvas, bounds);
 
   canvas->Restore();
 }

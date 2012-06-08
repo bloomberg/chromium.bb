@@ -33,6 +33,9 @@ class SearchResultListView : public views::View,
 
   bool IsResultViewSelected(const SearchResultView* result_view) const;
 
+  // Overridden from views::View:
+  virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
+
  private:
   // Helper function to get SearchResultView at given |index|.
   SearchResultView* GetResultViewAt(int index);
@@ -43,9 +46,6 @@ class SearchResultListView : public views::View,
   // Schedules an Update call using |update_factory_|. Do nothing if there is a
   // pending call.
   void ScheduleUpdate();
-
-  // Overridden from views::View:
-  virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,

@@ -31,8 +31,7 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate)
       model_(NULL),
       icon_view_(NULL),
       search_box_(NULL),
-      grid_view_(NULL),
-      results_view_(NULL) {
+      contents_view_(NULL) {
   icon_view_ = new views::ImageView;
   AddChildView(icon_view_);
 
@@ -124,13 +123,8 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
   }
 
   bool handled = false;
-  if (has_query) {
-    if (results_view_ && results_view_->visible())
-      handled = results_view_->OnKeyPressed(key_event);
-  } else {
-    if (grid_view_ && grid_view_->visible())
-      handled = grid_view_->OnKeyPressed(key_event);
-  }
+  if (contents_view_ && contents_view_->visible())
+    handled = contents_view_->OnKeyPressed(key_event);
 
   return handled;
 }

@@ -36,8 +36,10 @@ class SearchBoxView : public views::View,
   void SetModel(SearchBoxModel* model);
 
   views::Textfield* search_box() { return search_box_; }
-  void set_grid_view(View* grid_view) { grid_view_ = grid_view; }
-  void set_results_view(View* results_view) { results_view_ = results_view; }
+
+  void set_contents_view(View* contents_view) {
+    contents_view_ = contents_view;
+  }
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
@@ -67,8 +69,7 @@ class SearchBoxView : public views::View,
 
   views::ImageView* icon_view_;  // Owned by views hierarchy
   views::Textfield* search_box_;  // Owned by views hierarchy
-  views::View* grid_view_;  // Owned by views hierarchy
-  views::View* results_view_;  // Owned by views hierarchy
+  views::View* contents_view_;  // Owned by views hierarchy
 
   DISALLOW_COPY_AND_ASSIGN(SearchBoxView);
 };

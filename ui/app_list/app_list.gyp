@@ -37,6 +37,8 @@
         'app_list_view_delegate.h',
         'apps_grid_view.cc',
         'apps_grid_view.h',
+        'contents_view.cc',
+        'contents_view.h',
         'drop_shadow_label.cc',
         'drop_shadow_label.h',
         'icon_cache.cc',

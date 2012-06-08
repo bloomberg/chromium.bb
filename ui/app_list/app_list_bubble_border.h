@@ -16,9 +16,7 @@ namespace app_list {
 class AppListBubbleBorder : public views::BubbleBorder {
  public:
   AppListBubbleBorder(views::View* app_list_view,
-                      views::View* search_box_view,
-                      views::View* grid_view,
-                      views::View* results_view);
+                      views::View* search_box_view);
   virtual ~AppListBubbleBorder();
 
   bool ArrowAtTopOrBottom() const;
@@ -31,12 +29,8 @@ class AppListBubbleBorder : public views::BubbleBorder {
   // Gets arrow offset based on arrow location and |offset_|.
   int GetArrowOffset() const;
 
-  void PaintSearchBoxBackground(gfx::Canvas* canvas,
-                                const gfx::Rect& bounds) const;
-  void PaintSearchResultListBackground(gfx::Canvas* canvas,
-                                       const gfx::Rect& bounds) const;
-  void PaintAppsGridBackground(gfx::Canvas* canvas,
-                               const gfx::Rect& bounds) const;
+  void PaintBackground(gfx::Canvas* canvas,
+                       const gfx::Rect& bounds) const;
 
   // views::BubbleBorder overrides:
   virtual void GetInsets(gfx::Insets* insets) const OVERRIDE;
@@ -52,8 +46,6 @@ class AppListBubbleBorder : public views::BubbleBorder {
 
   // Children view of AppListView that needs to paint background.
   const views::View* search_box_view_;
-  const views::View* grid_view_;
-  const views::View* results_view_;
 
   // Offset in pixels relative the default middle position.
   gfx::Point offset_;

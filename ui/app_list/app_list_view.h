@@ -13,20 +13,14 @@
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 
-namespace views {
-class View;
-}
-
 namespace app_list {
 
 class AppListBubbleBorder;
 class AppListModel;
-class AppsGridView;
 class AppListViewDelegate;
-class PageSwitcher;
+class ContentsView;
 class PaginationModel;
 class SearchBoxView;
-class SearchResultListView;
 
 // AppListView is the top-level view and controller of app list UI. It creates
 // and hosts a AppsGridView and passes AppListModel to it for display.
@@ -59,8 +53,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual void Layout() OVERRIDE;
   virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
 
   // Overridden from views::ButtonListener:
@@ -80,15 +72,12 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   scoped_ptr<AppListModel> model_;
   scoped_ptr<AppListViewDelegate> delegate_;
 
-  // PaginationModel for model view and page switcher.
+  // PaginationModel for apps grid view and page switcher.
   scoped_ptr<PaginationModel> pagination_model_;
 
   AppListBubbleBorder* bubble_border_;  // Owned by views hierarchy.
-
-  AppsGridView* apps_grid_view_;  // Owned by views hierarchy.
-  PageSwitcher* page_switcher_view_;  // Owned by views hierarchy.
   SearchBoxView* search_box_view_;  // Owned by views hierarchy.
-  SearchResultListView* search_results_view_;  // Owned by views hierarchy.
+  ContentsView* contents_view_;  // Owned by views hierarchy.
 
   DISALLOW_COPY_AND_ASSIGN(AppListView);
 };
