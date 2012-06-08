@@ -11,6 +11,7 @@
 #include "content/browser/android/command_line.h"
 #include "content/browser/android/device_info.h"
 #include "content/browser/android/download_controller.h"
+#include "content/browser/android/jni_helper.h"
 #include "content/browser/android/trace_event_binding.h"
 
 namespace content {
@@ -22,6 +23,7 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
   { "ContentMain", content::RegisterContentMain },
   { "DeviceInfo", RegisterDeviceInfo },
   { "DownloadController", DownloadController::RegisterDownloadController },
+  { "JniHelper", RegisterJniHelper },
   { "TraceEvent", RegisterTraceEvent },
 };
 
