@@ -50,7 +50,6 @@ class SelectedKeywordView;
 class StarView;
 class SuggestedTextView;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 class TemplateURLService;
 
 namespace views {
@@ -88,7 +87,7 @@ class LocationBarView : public LocationBar,
   class Delegate {
    public:
     // Should return the current tab contents.
-    virtual TabContentsWrapper* GetTabContentsWrapper() const = 0;
+    virtual TabContents* GetTabContents() const = 0;
 
     // Returns the InstantController, or NULL if there isn't one.
     virtual InstantController* GetInstant() = 0;
@@ -258,7 +257,7 @@ class LocationBarView : public LocationBar,
   virtual SkBitmap GetFavicon() const OVERRIDE;
   virtual string16 GetTitle() const OVERRIDE;
   virtual InstantController* GetInstant() OVERRIDE;
-  virtual TabContentsWrapper* GetTabContentsWrapper() const OVERRIDE;
+  virtual TabContents* GetTabContents() const OVERRIDE;
 
   // Overridden from views::View:
   virtual std::string GetClassName() const OVERRIDE;

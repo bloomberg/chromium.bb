@@ -8,7 +8,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/content_setting_bubble_contents.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "content/public/browser/web_contents.h"
@@ -80,7 +80,7 @@ void ContentSettingImageView::UpdateFromWebContents(WebContents* web_contents) {
 
   TabSpecificContentSettings* content_settings = NULL;
   if (web_contents) {
-    content_settings = TabContentsWrapper::GetCurrentWrapperForContents(
+    content_settings = TabContents::GetOwningTabContentsForWebContents(
         web_contents)->content_settings();
   }
   if (!content_settings || content_settings->IsBlockageIndicated(
@@ -166,7 +166,7 @@ void ContentSettingImageView::OnMouseReleased(const views::MouseEvent& event) {
   if (!HitTest(event.location()))
     return;
 
-  TabContentsWrapper* tab_contents = parent_->GetTabContentsWrapper();
+  TabContents* tab_contents = parent_->GetTabContents();
   if (!tab_contents)
     return;
 

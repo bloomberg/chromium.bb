@@ -99,7 +99,7 @@ class TestingAutocompleteEditController : public AutocompleteEditController {
   virtual SkBitmap GetFavicon() const OVERRIDE { return SkBitmap(); }
   virtual string16 GetTitle() const OVERRIDE { return string16(); }
   virtual InstantController* GetInstant() OVERRIDE { return NULL; }
-  virtual TabContentsWrapper* GetTabContentsWrapper() const OVERRIDE {
+  virtual TabContents* GetTabContents() const OVERRIDE {
     return NULL;
   }
 

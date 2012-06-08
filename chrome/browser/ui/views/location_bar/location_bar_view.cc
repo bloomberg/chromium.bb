@@ -29,7 +29,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/browser/ui/views/location_bar/action_box_button_view.h"
@@ -78,8 +78,8 @@ using views::View;
 namespace {
 
 WebContents* GetWebContentsFromDelegate(LocationBarView::Delegate* delegate) {
-  const TabContentsWrapper* wrapper = delegate->GetTabContentsWrapper();
-  return wrapper ? wrapper->web_contents() : NULL;
+  const TabContents* tab_contents = delegate->GetTabContents();
+  return tab_contents ? tab_contents->web_contents() : NULL;
 }
 
 // A utility function to cast OmniboxView to OmniboxViewViews.
@@ -937,7 +937,7 @@ void LocationBarView::OnSetFocus() {
 }
 
 SkBitmap LocationBarView::GetFavicon() const {
-  return delegate_->GetTabContentsWrapper()->favicon_tab_helper()->GetFavicon();
+  return delegate_->GetTabContents()->favicon_tab_helper()->GetFavicon();
 }
 
 string16 LocationBarView::GetTitle() const {
@@ -948,8 +948,8 @@ InstantController* LocationBarView::GetInstant() {
   return delegate_->GetInstant();
 }
 
-TabContentsWrapper* LocationBarView::GetTabContentsWrapper() const {
-  return delegate_->GetTabContentsWrapper();
+TabContents* LocationBarView::GetTabContents() const {
+  return delegate_->GetTabContents();
 }
 
 int LocationBarView::AvailableWidth(int location_bar_width) {
@@ -1004,7 +1004,7 @@ void LocationBarView::RefreshPageActionViews() {
 
   std::vector<ExtensionAction*> page_actions;
 
-  TabContentsWrapper* tab_contents = GetTabContentsWrapper();
+  TabContents* tab_contents = GetTabContents();
   if (tab_contents) {
     extensions::LocationBarController* controller =
         tab_contents->extension_tab_helper()->location_bar_controller();
@@ -1038,7 +1038,7 @@ void LocationBarView::RefreshPageActionViews() {
   if (!page_action_views_.empty() && contents) {
     Browser* browser =
         browser::FindBrowserForController(&contents->GetController(), NULL);
-    GURL url = browser->GetSelectedWebContents()->GetURL();
+    GURL url = browser->GetActiveWebContents()->GetURL();
 
     for (PageActionViews::const_iterator i(page_action_views_.begin());
          i != page_action_views_.end(); ++i) {
@@ -1155,7 +1155,7 @@ void LocationBarView::WriteDragDataForView(views::View* sender,
   DCHECK_NE(GetDragOperationsForView(sender, press_pt),
             ui::DragDropTypes::DRAG_NONE);
 
-  TabContentsWrapper* tab_contents = delegate_->GetTabContentsWrapper();
+  TabContents* tab_contents = delegate_->GetTabContents();
   DCHECK(tab_contents);
   button_drag_utils::SetURLAndDragImage(
       tab_contents->web_contents()->GetURL(),
@@ -1322,9 +1322,8 @@ void LocationBarView::Observe(int type,
 
     case chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED: {
       // Only update if the updated action box was for the active tab contents.
-      TabContentsWrapper* target_tab =
-          content::Details<TabContentsWrapper>(details).ptr();
-      if (target_tab == GetTabContentsWrapper())
+      TabContents* target_tab = content::Details<TabContents>(details).ptr();
+      if (target_tab == GetTabContents())
         UpdatePageActions();
       break;
     }

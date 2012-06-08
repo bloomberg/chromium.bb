@@ -40,7 +40,7 @@
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/metrics/proto/omnibox_event.pb.h"
@@ -522,7 +522,7 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
         autocomplete_controller_->input().type(),
         popup_->selected_line(),
         -1,  // don't yet know tab ID; set later if appropriate
-        ClassifyPage(controller_->GetTabContentsWrapper()->
+        ClassifyPage(controller_->GetTabContents()->
                      web_contents()->GetURL()),
         base::TimeTicks::Now() - time_user_first_modified_omnibox_,
         0,  // inline autocomplete length; possibly set later
@@ -538,7 +538,7 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
       // If we know the destination is being opened in the current tab,
       // we can easily get the tab ID.  (If it's being opened in a new
       // tab, we don't know the tab ID yet.)
-      log.tab_id = controller_->GetTabContentsWrapper()->
+      log.tab_id = controller_->GetTabContents()->
           restore_tab_helper()->session_id().id();
     }
     autocomplete_controller_->AddProvidersInfo(&log.providers_info);
@@ -1098,7 +1098,7 @@ void AutocompleteEditModel::DoPrerender(const AutocompleteMatch& match) {
   // It's possible the tab strip does not have an active tab contents, for
   // instance if the tab has been closed or on return from a sleep state
   // (http://crbug.com/105689)
-  TabContentsWrapper* tab = controller_->GetTabContentsWrapper();
+  TabContents* tab = controller_->GetTabContents();
   if (!tab)
     return;
   prerender::PrerenderManager* prerender_manager =

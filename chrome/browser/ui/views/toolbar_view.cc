@@ -377,8 +377,8 @@ void ToolbarView::OnMenuButtonClicked(views::View* source,
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, LocationBarView::Delegate implementation:
 
-TabContentsWrapper* ToolbarView::GetTabContentsWrapper() const {
-  return browser_->GetSelectedTabContentsWrapper();
+TabContents* ToolbarView::GetTabContents() const {
+  return browser_->GetActiveTabContents();
 }
 
 InstantController* ToolbarView::GetInstant() {

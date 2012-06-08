@@ -28,7 +28,6 @@ class OmniboxView;
 class Profile;
 class SkBitmap;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 namespace gfx {
 class Rect;
@@ -81,8 +80,8 @@ class AutocompleteEditController {
   // Returns the InstantController, or NULL if instant is not enabled.
   virtual InstantController* GetInstant() = 0;
 
-  // Returns the TabContentsWrapper of the currently selected tab.
-  virtual TabContentsWrapper* GetTabContentsWrapper() const = 0;
+  // Returns the TabContents of the currently active tab.
+  virtual TabContents* GetTabContents() const = 0;
 
  protected:
   virtual ~AutocompleteEditController();

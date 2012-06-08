@@ -48,7 +48,7 @@
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
@@ -318,8 +318,8 @@ InstantController* LocationBarViewMac::GetInstant() {
   return browser_->instant();
 }
 
-TabContentsWrapper* LocationBarViewMac::GetTabContentsWrapper() const {
-  return browser_->GetSelectedTabContentsWrapper();
+TabContents* LocationBarViewMac::GetTabContents() const {
+  return browser_->GetActiveTabContents();
 }
 
 void LocationBarViewMac::Revert() {
@@ -353,7 +353,7 @@ int LocationBarViewMac::PageActionVisibleCount() {
 }
 
 WebContents* LocationBarViewMac::GetWebContents() const {
-  return browser_->GetSelectedWebContents();
+  return browser_->GetActiveWebContents();
 }
 
 PageActionDecoration* LocationBarViewMac::GetPageActionDecoration(
@@ -539,9 +539,8 @@ void LocationBarViewMac::Observe(int type,
 
     case chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED: {
       // Only update if the updated action box was for the active tab contents.
-      TabContentsWrapper* target_tab =
-          content::Details<TabContentsWrapper>(details).ptr();
-      if (target_tab == GetTabContentsWrapper())
+      TabContents* target_tab = content::Details<TabContents>(details).ptr();
+      if (target_tab == GetTabContents())
         UpdatePageActions();
       break;
     }
@@ -572,7 +571,7 @@ void LocationBarViewMac::PostNotification(NSString* notification) {
 bool LocationBarViewMac::RefreshContentSettingsDecorations() {
   const bool input_in_progress = toolbar_model_->input_in_progress();
   WebContents* web_contents =
-      input_in_progress ? NULL : browser_->GetSelectedWebContents();
+      input_in_progress ? NULL : browser_->GetActiveWebContents();
   bool icons_updated = false;
   for (size_t i = 0; i < content_setting_decorations_.size(); ++i) {
     icons_updated |=
@@ -598,7 +597,7 @@ void LocationBarViewMac::RefreshPageActionDecorations() {
 
   std::vector<ExtensionAction*> page_actions;
 
-  TabContentsWrapper* tab_contents = GetTabContentsWrapper();
+  TabContents* tab_contents = GetTabContents();
   if (!tab_contents) {
     DeletePageActionDecorations();  // Necessary?
     return;

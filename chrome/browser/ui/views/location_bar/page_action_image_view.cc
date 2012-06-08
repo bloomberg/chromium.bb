@@ -16,7 +16,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -93,7 +93,7 @@ PageActionImageView::~PageActionImageView() {
 }
 
 void PageActionImageView::ExecuteAction(int button) {
-  TabContentsWrapper* tab_contents = owner_->GetTabContentsWrapper();
+  TabContents* tab_contents = owner_->GetTabContents();
   if (!tab_contents)
     return;
 

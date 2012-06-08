@@ -56,7 +56,7 @@
 #include "chrome/browser/ui/gtk/rounded_window.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
@@ -442,7 +442,7 @@ void LocationBarViewGtk::SetSiteTypeDragSource() {
 }
 
 WebContents* LocationBarViewGtk::GetWebContents() const {
-  return browser_->GetSelectedWebContents();
+  return browser_->GetActiveWebContents();
 }
 
 void LocationBarViewGtk::SetPreviewEnabledPageAction(
@@ -617,7 +617,7 @@ void LocationBarViewGtk::OnSetFocus() {
 }
 
 SkBitmap LocationBarViewGtk::GetFavicon() const {
-  return GetTabContentsWrapper()->favicon_tab_helper()->GetFavicon();
+  return GetTabContents()->favicon_tab_helper()->GetFavicon();
 }
 
 string16 LocationBarViewGtk::GetTitle() const {
@@ -628,8 +628,8 @@ InstantController* LocationBarViewGtk::GetInstant() {
   return browser_->instant();
 }
 
-TabContentsWrapper* LocationBarViewGtk::GetTabContentsWrapper() const {
-  return browser_->GetSelectedTabContentsWrapper();
+TabContents* LocationBarViewGtk::GetTabContents() const {
+  return browser_->GetActiveTabContents();
 }
 
 void LocationBarViewGtk::ShowFirstRunBubble() {
@@ -692,7 +692,7 @@ void LocationBarViewGtk::UpdateContentSettingsIcons() {
 void LocationBarViewGtk::UpdatePageActions() {
   std::vector<ExtensionAction*> page_actions;
 
-  TabContentsWrapper* tab_contents = GetTabContentsWrapper();
+  TabContents* tab_contents = GetTabContents();
   if (tab_contents) {
     LocationBarController* controller =
         tab_contents->extension_tab_helper()->location_bar_controller();
@@ -718,7 +718,7 @@ void LocationBarViewGtk::UpdatePageActions() {
 
   WebContents* contents = GetWebContents();
   if (!page_action_views_.empty() && contents) {
-    GURL url = browser()->GetSelectedWebContents()->GetURL();
+    GURL url = browser()->GetActiveWebContents()->GetURL();
 
     for (size_t i = 0; i < page_action_views_.size(); i++) {
       page_action_views_[i]->UpdateVisibility(
@@ -816,9 +816,8 @@ void LocationBarViewGtk::Observe(int type,
 
   if (type == chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED) {
     // Only update if the updated action box was for the active tab contents.
-    TabContentsWrapper* target_tab =
-        content::Details<TabContentsWrapper>(details).ptr();
-    if (target_tab == GetTabContentsWrapper())
+    TabContents* target_tab = content::Details<TabContents>(details).ptr();
+    if (target_tab == GetTabContents())
       UpdatePageActions();
     return;
   }
@@ -1378,7 +1377,7 @@ void LocationBarViewGtk::ContentSettingImageViewGtk::UpdateFromWebContents(
 
   TabSpecificContentSettings* content_settings = NULL;
   if (web_contents) {
-    content_settings = TabContentsWrapper::GetCurrentWrapperForContents(
+    content_settings = TabContents::GetOwningTabContentsForWebContents(
         web_contents)->content_settings();
   }
   if (!content_settings || content_settings->IsBlockageIndicated(
@@ -1451,7 +1450,7 @@ void LocationBarViewGtk::ContentSettingImageViewGtk::AnimationCanceled(
 
 gboolean LocationBarViewGtk::ContentSettingImageViewGtk::OnButtonPressed(
     GtkWidget* sender, GdkEvent* event) {
-  TabContentsWrapper* tab_contents = parent_->GetTabContentsWrapper();
+  TabContents* tab_contents = parent_->GetTabContents();
   if (!tab_contents)
     return TRUE;
   Profile* profile = parent_->browser()->profile();
@@ -1750,7 +1749,7 @@ void LocationBarViewGtk::PageActionViewGtk::DisconnectPageActionAccelerator() {
 gboolean LocationBarViewGtk::PageActionViewGtk::OnButtonPressed(
     GtkWidget* sender,
     GdkEventButton* event) {
-  TabContentsWrapper* tab_contents = owner_->GetTabContentsWrapper();
+  TabContents* tab_contents = owner_->GetTabContents();
   if (!tab_contents)
     return TRUE;
 
