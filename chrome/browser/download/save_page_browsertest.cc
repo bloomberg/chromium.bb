@@ -99,7 +99,7 @@ class SavePageBrowserTest : public InProcessBrowserTest {
   }
 
   WebContents* GetCurrentTab() const {
-    WebContents* current_tab = browser()->GetSelectedWebContents();
+    WebContents* current_tab = browser()->GetActiveWebContents();
     EXPECT_TRUE(current_tab);
     return current_tab;
   }

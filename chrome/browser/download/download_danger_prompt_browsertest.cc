@@ -6,7 +6,7 @@
 #include "base/file_path.h"
 #include "chrome/browser/download/download_danger_prompt.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/mock_download_item.h"
@@ -82,7 +82,7 @@ class DownloadDangerPromptTest : public InProcessBrowserTest {
   void CreatePrompt() {
     prompt_ = DownloadDangerPrompt::Create(
         &download_,
-        browser()->GetSelectedTabContentsWrapper(),
+        browser()->GetActiveTabContents(),
         base::Bind(&DownloadDangerPromptTest::PromptCallback, this,
                    DownloadDangerPrompt::ACCEPT),
         base::Bind(&DownloadDangerPromptTest::PromptCallback, this,

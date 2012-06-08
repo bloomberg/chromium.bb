@@ -650,7 +650,7 @@ class DownloadTest : public InProcessBrowserTest {
     ASSERT_TRUE(url.is_valid()) << s.str();
 
     DownloadManager* download_manager = DownloadManagerForBrowser(browser());
-    WebContents* web_contents = browser()->GetSelectedWebContents();
+    WebContents* web_contents = browser()->GetActiveWebContents();
     ASSERT_TRUE(web_contents) << s.str();
 
     scoped_ptr<DownloadTestObserver> observer(
@@ -959,7 +959,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadResourceThrottleCancels) {
   EXPECT_TRUE(EnsureNoPendingDownloads());
 
   // Disable downloads for the tab.
-  WebContents* web_contents = browser()->GetSelectedWebContents();
+  WebContents* web_contents = browser()->GetActiveWebContents();
   DownloadRequestLimiter::TabDownloadState* tab_download_state =
       g_browser_process->download_request_limiter()->GetDownloadState(
           web_contents, web_contents, true);
@@ -976,7 +976,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadResourceThrottleCancels) {
       1);
   bool download_assempted;
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedWebContents()->GetRenderViewHost(),
+      browser()->GetActiveWebContents()->GetRenderViewHost(),
       L"",
       L"window.domAutomationController.send(startDownload());",
       &download_assempted));
@@ -1036,7 +1036,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, PerWindowShelf) {
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
 
   // Open a second tab and wait.
-  EXPECT_NE(static_cast<TabContentsWrapper*>(NULL),
+  EXPECT_NE(static_cast<TabContents*>(NULL),
             browser()->AddSelectedTabWithURL(
                 GURL(), content::PAGE_TRANSITION_TYPED));
   EXPECT_EQ(2, browser()->tab_count());
@@ -1553,7 +1553,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, ChromeURLAfterDownload) {
   ui_test_utils::NavigateToURL(browser(), flags_url);
   DownloadAndWait(browser(), download_url, EXPECT_NO_SELECT_DIALOG);
   ui_test_utils::NavigateToURL(browser(), extensions_url);
-  WebContents* contents = browser()->GetSelectedWebContents();
+  WebContents* contents = browser()->GetActiveWebContents();
   ASSERT_TRUE(contents);
   bool webui_responded = false;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
@@ -1573,7 +1573,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, BrowserCloseAfterDownload) {
   GURL download_url(URLRequestMockHTTPJob::GetMockUrl(file));
 
   ui_test_utils::NavigateToURL(browser(), downloads_url);
-  WebContents* contents = browser()->GetSelectedWebContents();
+  WebContents* contents = browser()->GetActiveWebContents();
   ASSERT_TRUE(contents);
   bool result = false;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
@@ -1938,7 +1938,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrl) {
   // DownloadUrl always prompts; return acceptance of whatever it prompts.
   NullSelectFile(browser());
 
-  WebContents* web_contents = browser()->GetSelectedWebContents();
+  WebContents* web_contents = browser()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
 
   DownloadTestObserver* observer(
@@ -1966,7 +1966,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrlToPath) {
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(file));
 
-  WebContents* web_contents = browser()->GetSelectedWebContents();
+  WebContents* web_contents = browser()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
 
   ScopedTempDir other_directory;
@@ -2036,7 +2036,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaGet) {
   context_menu_params.media_type = WebKit::WebContextMenuData::MediaTypeImage;
   context_menu_params.src_url = url;
   context_menu_params.page_url = url;
-  TestRenderViewContextMenu menu(browser()->GetSelectedWebContents(),
+  TestRenderViewContextMenu menu(browser()->GetActiveWebContents(),
                                  context_menu_params);
   menu.Init();
   menu.ExecuteCommand(IDC_CONTENT_CONTEXT_SAVEIMAGEAS);
@@ -2073,7 +2073,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaPost) {
   // which normally requires revalidation each time.
   GURL jpeg_url = test_server()->GetURL("files/post/downloads/image.jpg");
   ASSERT_TRUE(jpeg_url.is_valid());
-  WebContents* web_contents = browser()->GetSelectedWebContents();
+  WebContents* web_contents = browser()->GetActiveWebContents();
   ASSERT_TRUE(web_contents != NULL);
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
@@ -2433,7 +2433,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, LoadURLExternallyReferrerPolicy) {
 
   // Click on the link with the alt key pressed. This will download the link
   // target.
-  WebContents* tab = browser()->GetSelectedWebContents();
+  WebContents* tab = browser()->GetActiveWebContents();
   WebKit::WebMouseEvent mouse_event;
   mouse_event.type = WebKit::WebInputEvent::MouseDown;
   mouse_event.button = WebKit::WebMouseEvent::ButtonLeft;

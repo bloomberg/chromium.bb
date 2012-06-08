@@ -19,7 +19,6 @@
 
 class DownloadRequestInfoBarDelegate;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 namespace content {
 class NavigationController;

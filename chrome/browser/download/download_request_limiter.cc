@@ -11,7 +11,7 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -65,14 +65,14 @@ void DownloadRequestLimiter::TabDownloadState::DidGetUserGesture() {
     return;
   }
 
-  TabContentsWrapper* tab_wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(web_contents());
+  TabContents* tab_contents =
+      TabContents::GetOwningTabContentsForWebContents(web_contents());
   // See PromptUserForDownload(): if there's no TCW, then DOWNLOADS_NOT_ALLOWED
   // is functionally equivalent to PROMPT_BEFORE_DOWNLOAD.
-  if ((tab_wrapper &&
+  if ((tab_contents &&
        status_ != DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS &&
        status_ != DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED) ||
-      (!tab_wrapper &&
+      (!tab_contents &&
        status_ != DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS)) {
     // Revert to default status.
     host_->Remove(this);
@@ -92,10 +92,10 @@ void DownloadRequestLimiter::TabDownloadState::PromptUserForDownload(
     NotifyCallbacks(DownloadRequestLimiter::delegate_->ShouldAllowDownload());
     return;
   }
-  TabContentsWrapper* tab_wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
-  if (!tab_wrapper) {
-    // If |web_contents| doesn't have a tab_wrapper, then it isn't what a user
+  TabContents* tab_contents =
+      TabContents::GetOwningTabContentsForWebContents(web_contents);
+  if (!tab_contents) {
+    // If |web_contents| doesn't have a TabContents, then it isn't what a user
     // thinks of as a tab, it's actually a "raw" WebContents like those used
     // for extension popups/bubbles and hosted apps etc.
     // TODO(benjhayden): If this is an automatic download from an extension,
@@ -106,7 +106,7 @@ void DownloadRequestLimiter::TabDownloadState::PromptUserForDownload(
     Cancel();
     return;
   }
-  InfoBarTabHelper* infobar_helper = tab_wrapper->infobar_tab_helper();
+  InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
   infobar_ = new DownloadRequestInfoBarDelegate(infobar_helper, this);
   infobar_helper->AddInfoBar(infobar_);
 }
@@ -318,13 +318,14 @@ void DownloadRequestLimiter::CanDownloadImpl(WebContents* originating_contents,
   // If the tab requesting the download is a constrained popup that is not
   // shown, treat the request as if it came from the parent.
   WebContents* effective_contents = originating_contents;
-  TabContentsWrapper* originating_wrapper =
-     TabContentsWrapper::GetCurrentWrapperForContents(originating_contents);
-  if (originating_wrapper &&
-      originating_wrapper->blocked_content_tab_helper()->delegate()) {
-    effective_contents = originating_wrapper->blocked_content_tab_helper()->
-        delegate()->GetConstrainingContentsWrapper(originating_wrapper)->
-            web_contents();
+  TabContents* originating_tab_contents =
+     TabContents::GetOwningTabContentsForWebContents(originating_contents);
+  if (originating_tab_contents &&
+      originating_tab_contents->blocked_content_tab_helper()->delegate()) {
+    effective_contents =
+        originating_tab_contents->blocked_content_tab_helper()->delegate()->
+            GetConstrainingContentsWrapper(originating_tab_contents)->
+                web_contents();
   }
 
   TabDownloadState* state = GetDownloadState(

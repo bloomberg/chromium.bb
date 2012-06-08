@@ -4,7 +4,7 @@
 
 #include "base/bind.h"
 #include "chrome/browser/download/download_request_limiter.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/navigation_controller.h"
@@ -236,11 +236,11 @@ TEST_F(DownloadRequestLimiterTest,
        DownloadRequestLimiter_RawWebContents) {
   // By-pass TabContentsTestHarness and use
   // RenderViewHostTestHarness::CreateTestWebContents() directly so that there
-  // will be no TabContentsWrapper for web_contents.
+  // will be no TabContents for web_contents.
   scoped_ptr<WebContents> web_contents(CreateTestWebContents());
-  TabContentsWrapper* tab_wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(web_contents.get());
-  ASSERT_TRUE(tab_wrapper == NULL);
+  TabContents* tab_contents =
+      TabContents::GetOwningTabContentsForWebContents(web_contents.get());
+  ASSERT_TRUE(tab_contents == NULL);
   // DRL won't try to make an infobar if it doesn't have a TCW, and we want to
   // test that it will Cancel() instead of prompting when it doesn't have a TCW,
   // so unset the delegate.
