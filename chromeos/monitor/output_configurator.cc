@@ -158,6 +158,26 @@ static void CreateFrameBuffer(Display* display,
   int mm_height = height * kPixelsToMmScale;
   XRRSetScreenSize(display, window, width, height, mm_width, mm_height);
 }
+
+// A helper to get the current CRTC, Mode, and height for a given output.  This
+// is read from the XRandR configuration and not any of our caches.
+static void GetOutputConfiguration(Display* display,
+                                   XRRScreenResources* screen,
+                                   RROutput output,
+                                   RRCrtc* crtc,
+                                   RRMode* mode,
+                                   int* height) {
+  XRROutputInfo* output_info = XRRGetOutputInfo(display, screen, output);
+  CHECK(output_info != NULL);
+  *crtc = output_info->crtc;
+  XRRCrtcInfo* crtc_info = XRRGetCrtcInfo(display, screen, *crtc);
+  if (crtc_info != NULL) {
+    *mode = crtc_info->mode;
+    *height = crtc_info->height;
+    XRRFreeCrtcInfo(crtc_info);
+  }
+  XRRFreeOutputInfo(output_info);
+}
 }  // namespace
 
 bool OutputConfigurator::TryRecacheOutputs(Display* display,
@@ -320,8 +340,15 @@ OutputConfigurator::OutputConfigurator()
     CHECK(screen != NULL);
     bool did_detect_outputs = TryRecacheOutputs(display, screen);
     CHECK(did_detect_outputs);
-    State state = GetDefaultState();
-    UpdateCacheAndXrandrToState(display, screen, window, state);
+    State current_state = InferCurrentState(display, screen);
+    if (current_state == STATE_INVALID) {
+      // Unknown state.  Transition into the default state.
+      State state = GetDefaultState();
+      UpdateCacheAndXrandrToState(display, screen, window, state);
+    } else {
+      // This is a valid state so just save it to |output_state_|.
+      output_state_ = current_state;
+    }
     // Find xrandr_event_base_ since we need it to interpret events, later.
     int error_base_ignored = 0;
     XRRQueryExtension(display, &xrandr_event_base_, &error_base_ignored);
@@ -470,6 +497,84 @@ State OutputConfigurator::GetDefaultState() const {
     else
       state = STATE_SINGLE;
   }
+  return state;
+}
+
+State OutputConfigurator::InferCurrentState(Display* display,
+                                            XRRScreenResources* screen) const {
+  // STATE_INVALID will be our default or "unknown" state.
+  State state = STATE_INVALID;
+  // First step:  count the number of connected outputs.
+  if (secondary_output_index_ == -1) {
+    // No secondary display.
+    if (primary_output_index_ == -1) {
+      // No primary display implies HEADLESS.
+      state = STATE_HEADLESS;
+    } else {
+      // The common case of primary-only.
+      // The only sanity check we require in this case is that the current mode
+      // of the output's CRTC is the ideal mode we determined for it.
+      RRCrtc primary_crtc = None;
+      RRMode primary_mode = None;
+      int primary_height = 0;
+      GetOutputConfiguration(display,
+                            screen,
+                            output_cache_[primary_output_index_].output,
+                            &primary_crtc,
+                            &primary_mode,
+                            &primary_height);
+      if (primary_mode == output_cache_[primary_output_index_].ideal_mode)
+        state = STATE_SINGLE;
+    }
+  } else {
+    // We have two displays attached so we need to look at their configuration.
+    // Note that, for simplicity, we will only detect the states that we would
+    // have used and will assume anything unexpected is INVALID (which should
+    // not happen in any expected usage scenario).
+    RRCrtc primary_crtc = None;
+    RRMode primary_mode = None;
+    int primary_height = 0;
+    GetOutputConfiguration(display,
+                           screen,
+                           output_cache_[primary_output_index_].output,
+                           &primary_crtc,
+                           &primary_mode,
+                           &primary_height);
+    RRCrtc secondary_crtc = None;
+    RRMode secondary_mode = None;
+    int secondary_height = 0;
+    GetOutputConfiguration(display,
+                           screen,
+                           output_cache_[secondary_output_index_].output,
+                           &secondary_crtc,
+                           &secondary_mode,
+                           &secondary_height);
+    // Make sure the CRTCs are matched to the expected outputs.
+    if ((output_cache_[primary_output_index_].crtc == primary_crtc) &&
+        (output_cache_[secondary_output_index_].crtc == secondary_crtc)) {
+      // Check the mode matching:  either both mirror or both ideal.
+      if ((output_cache_[primary_output_index_].mirror_mode == primary_mode) &&
+          (output_cache_[secondary_output_index_].mirror_mode ==
+              secondary_mode)) {
+        // We are already in mirror mode.
+        state = STATE_DUAL_MIRROR;
+      } else if ((output_cache_[primary_output_index_].ideal_mode ==
+              primary_mode) &&
+          (output_cache_[secondary_output_index_].ideal_mode ==
+              secondary_mode)) {
+        // Both outputs are in their "ideal" mode so check their Y-offsets to
+        // see which "ideal" configuration this is.
+        if (primary_height == output_cache_[secondary_output_index_].y) {
+          // Secondary is tiled first.
+          state = STATE_DUAL_SECONDARY_ONLY;
+        } else if (secondary_height == output_cache_[primary_output_index_].y) {
+          // Primary is tiled first.
+          state = STATE_DUAL_PRIMARY_ONLY;
+        }
+      }
+    }
+  }
+
   return state;
 }
 

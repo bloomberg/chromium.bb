@@ -103,6 +103,13 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   // displays.
   State GetDefaultState() const;
 
+  // Called during start-up to determine what the current state of the displays
+  // appears to be, by investigating how the outputs compare to the data stored
+  // in |output_cache_|.  Returns STATE_INVALID if the current display state
+  // doesn't match any supported state.  |output_cache_| must be up-to-date with
+  // regards to the state of X or this method may return incorrect results.
+  State InferCurrentState(Display* display, XRRScreenResources* screen) const;
+
   // This is detected by the constructor to determine whether or not we should
   // be enabled.  If we aren't running on ChromeOS, we can't assume that the
   // Xrandr X11 extension is supported.
