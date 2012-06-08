@@ -635,6 +635,13 @@ class ApiBase(object):
     def close(self):
       self._initialized = False
 
+    def post_process_log(self):
+      """Post-processes the log so it becomes faster to load afterward.
+
+      Must not be used manually when using 'with' construct.
+      """
+      assert not self._initialized, 'Must stop tracing first.'
+
     def __enter__(self):
       """Enables 'with' statement."""
       return self
@@ -642,6 +649,9 @@ class ApiBase(object):
     def __exit__(self, exc_type, exc_value, traceback):
       """Enables 'with' statement."""
       self.close()
+      # If an exception was thrown, do not process logs.
+      if not exc_type:
+        self.post_process_log()
 
   def get_tracer(self, logname):
     """Returns an ApiBase.Tracer instance.
@@ -660,7 +670,7 @@ class ApiBase(object):
     raise NotImplementedError()
 
   @classmethod
-  def parse_log(cls, filename, blacklist):
+  def parse_log(cls, logname, blacklist):
     """Processes a trace log and returns the files opened and the files that do
     not exist.
 
@@ -1030,11 +1040,11 @@ class Strace(ApiBase):
         os.remove(i)
 
   @classmethod
-  def parse_log(cls, filename, blacklist):
-    logging.info('parse_log(%s, %s)' % (filename, blacklist))
-    data = read_json(filename)
+  def parse_log(cls, logname, blacklist):
+    logging.info('parse_log(%s, %s)' % (logname, blacklist))
+    data = read_json(logname)
     context = cls.Context(blacklist, data['cwd'])
-    for pidfile in glob.iglob(filename + '.*'):
+    for pidfile in glob.iglob(logname + '.*'):
       pid = pidfile.rsplit('.', 1)[1]
       if pid.isdigit():
         pid = int(pid)
@@ -1637,49 +1647,42 @@ class Dtrace(ApiBase):
         '-o', '/dev/stderr',
         '-q',
       ]
-      with open(self._logname, 'w') as logfile:
+      logname = self._logname + '.log'
+      with open(logname, 'w') as logfile:
         dtrace = subprocess.Popen(
             trace_cmd, stdout=logfile, stderr=subprocess.STDOUT)
       logging.debug('Started dtrace pid: %d' % dtrace.pid)
 
       # Part 3: Read until one line is printed, which signifies dtrace is up and
       # ready.
-      with open(self._logname, 'r') as logfile:
+      with open(logname, 'r') as logfile:
         while 'dtrace_BEGIN' not in logfile.readline():
           if dtrace.poll() is not None:
             break
 
-      try:
-        # Part 4: We can now tell our child to go.
-        # TODO(maruel): Another pipe than stdin could be used instead. This
-        # would be more consistent with the other tracing methods.
-        out = child.communicate(signal)[0]
+      # Part 4: We can now tell our child to go.
+      # TODO(maruel): Another pipe than stdin could be used instead. This
+      # would be more consistent with the other tracing methods.
+      out = child.communicate(signal)[0]
 
-        dtrace.wait()
-        if dtrace.returncode != 0:
-          print 'dtrace failure: %d' % dtrace.returncode
-          with open(self._logname) as logfile:
-            print ''.join(logfile.readlines()[-100:])
-          # Find a better way.
-          os.remove(self._logname)
-        else:
-          # Short the log right away to simplify our life. There isn't much
-          # advantage in keeping it out of order.
-          self._sort_log(self._logname)
-      except KeyboardInterrupt:
-        # Still sort when testing.
-        self._sort_log(self._logname)
-        raise
+      dtrace.wait()
+      if dtrace.returncode != 0:
+        print 'dtrace failure: %d' % dtrace.returncode
+        with open(logname) as logfile:
+          print ''.join(logfile.readlines()[-100:])
+        # Find a better way.
+        os.remove(logname)
 
       return dtrace.returncode or child.returncode, out
 
-    @staticmethod
-    def _sort_log(logname):
+    def post_process_log(self):
       """Sorts the log back in order when each call occured.
 
       dtrace doesn't save the buffer in strict order since it keeps one buffer
-        per CPU.
+      per CPU.
       """
+      super(Dtrace.Tracer, self).post_process_log()
+      logname = self._logname + '.log'
       with open(logname, 'rb') as logfile:
         lines = [l for l in logfile if l.strip()]
       errors = [l for l in lines if l.startswith('dtrace:')]
@@ -1699,14 +1702,15 @@ class Dtrace(ApiBase):
 
   @staticmethod
   def clean_trace(logname):
-    if os.path.isfile(logname):
-      os.remove(logname)
+    for ext in ('', '.log'):
+      if os.path.isfile(logname + ext):
+        os.remove(logname + ext)
 
   @classmethod
-  def parse_log(cls, filename, blacklist):
-    logging.info('parse_log(%s, %s)' % (filename, blacklist))
+  def parse_log(cls, logname, blacklist):
+    logging.info('parse_log(%s, %s)' % (logname, blacklist))
     context = cls.Context(blacklist)
-    for line in open(filename, 'rb'):
+    for line in open(logname + '.log', 'rb'):
       context.on_line(line)
     return context.to_results()
 
@@ -1722,40 +1726,6 @@ class LogmanTrace(ApiBase):
   opened relative to another file_object or as an absolute path. All the current
   working directory logic is done in user mode.
   """
-  # The basic headers.
-  EXPECTED_HEADER = [
-    u'Event Name',
-    u'Type',
-    u'Event ID',
-    u'Version',
-    u'Channel',
-    u'Level',  # 5
-    u'Opcode',
-    u'Task',
-    u'Keyword',
-    u'PID',
-    u'TID',  # 10
-    u'Processor Number',
-    u'Instance ID',
-    u'Parent Instance ID',
-    u'Activity ID',
-    u'Related Activity ID',  # 15
-    u'Clock-Time',
-    u'Kernel(ms)',  # Both have a resolution of ~15ms which makes them
-    u'User(ms)',    # pretty much useless.
-    u'User Data',   # Extra arguments that are event-specific.
-  ]
-  # Only the useful headers common to all entries are listed there. Any column
-  # at 19 or higher is dependent on the specific event.
-  EVENT_NAME = 0
-  TYPE = 1
-  PID = 9
-  TID = 10
-  PROCESSOR_ID = 11
-  TIMESTAMP = 16
-  NULL_GUID = '{00000000-0000-0000-0000-000000000000}'
-  USER_DATA = 19
-
   class Context(ApiBase.Context):
     """Processes a ETW log line and keeps the list of existent and non
     existent files accessed.
@@ -2044,6 +2014,40 @@ class LogmanTrace(ApiBase):
       return out
 
   class Tracer(ApiBase.Tracer):
+    # The basic headers.
+    EXPECTED_HEADER = [
+      u'Event Name',
+      u'Type',
+      u'Event ID',
+      u'Version',
+      u'Channel',
+      u'Level',  # 5
+      u'Opcode',
+      u'Task',
+      u'Keyword',
+      u'PID',
+      u'TID',  # 10
+      u'Processor Number',
+      u'Instance ID',
+      u'Parent Instance ID',
+      u'Activity ID',
+      u'Related Activity ID',  # 15
+      u'Clock-Time',
+      u'Kernel(ms)',  # Both have a resolution of ~15ms which makes them
+      u'User(ms)',    # pretty much useless.
+      u'User Data',   # Extra arguments that are event-specific.
+    ]
+    # Only the useful headers common to all entries are listed there. Any column
+    # at 19 or higher is dependent on the specific event.
+    EVENT_NAME = 0
+    TYPE = 1
+    PID = 9
+    TID = 10
+    PROCESSOR_ID = 11
+    TIMESTAMP = 16
+    NULL_GUID = '{00000000-0000-0000-0000-000000000000}'
+    USER_DATA = 19
+
     def trace(self, cmd, cwd, tracename, output):
       """Uses logman.exe to start and stop the NT Kernel Logger while the
       executable to be traced is run.
@@ -2082,10 +2086,6 @@ class LogmanTrace(ApiBase):
       finally:
         # 3. Stop the log collection.
         self._stop_log()
-
-      # 4. Convert log
-      # TODO(maruel): Temporary, remove me.
-      LogmanTrace.process_log(self._logname)
 
       # 5. Save metadata.
       value = {
@@ -2146,6 +2146,141 @@ class LogmanTrace(ApiBase):
           stdout=subprocess.PIPE,
           stderr=subprocess.STDOUT)
 
+    def post_process_log(self):
+      """Converts the .etl file into .csv then into .json."""
+      super(LogmanTrace.Tracer, self).post_process_log()
+      logformat = 'csv'
+      self._convert_log(logformat)
+
+      if logformat == 'csv_utf16':
+        def load_file():
+          def utf_8_encoder(unicode_csv_data):
+            """Encodes the unicode object as utf-8 encoded str instance"""
+            for line in unicode_csv_data:
+              yield line.encode('utf-8')
+
+          def unicode_csv_reader(unicode_csv_data, **kwargs):
+            """Encodes temporarily as UTF-8 since csv module doesn't do unicode.
+            """
+            csv_reader = csv.reader(utf_8_encoder(unicode_csv_data), **kwargs)
+            for row in csv_reader:
+              # Decode str utf-8 instances back to unicode instances, cell by
+              # cell:
+              yield [cell.decode('utf-8') for cell in row]
+
+          # The CSV file is UTF-16 so use codecs.open() to load the file into
+          # the python internal unicode format (utf-8). Then explicitly
+          # re-encode as utf8 as str instances so csv can parse it fine. Then
+          # decode the utf-8 str back into python unicode instances. This
+          # sounds about right.
+          for line in unicode_csv_reader(
+              codecs.open(self._logname + '.' + logformat, 'r', 'utf-16')):
+            # line is a list of unicode objects
+            # So much white space!
+            yield [i.strip() for i in line]
+
+      elif logformat == 'csv':
+        def load_file():
+          def ansi_csv_reader(ansi_csv_data, **kwargs):
+            """Loads an 'ANSI' code page and returns unicode() objects."""
+            assert sys.getfilesystemencoding() == 'mbcs'
+            encoding = get_current_encoding()
+            for row in csv.reader(ansi_csv_data, **kwargs):
+              # Decode str 'ansi' instances to unicode instances, cell by cell:
+              yield [cell.decode(encoding) for cell in row]
+
+          # The fastest and smallest format but only supports 'ANSI' file paths.
+          # E.g. the filenames are encoding in the 'current' encoding.
+          for line in ansi_csv_reader(open(self._logname + '.' + logformat)):
+            # line is a list of unicode objects.
+            yield [i.strip() for i in line]
+
+      supported_events = LogmanTrace.Context.supported_events()
+
+      def trim(generator):
+        for index, line in enumerate(generator):
+          if not index:
+            if line != self.EXPECTED_HEADER:
+              raise TracingFailure(
+                  'Found malformed header: %s' % ' '.join(line),
+                  None, None, None)
+            continue
+          # As you can see, the CSV is full of useful non-redundant information:
+          if (line[2] != '0' or  # Event ID
+              line[3] not in ('2', '3') or  # Version
+              line[4] != '0' or  # Channel
+              line[5] != '0' or  # Level
+              line[7] != '0' or  # Task
+              line[8] != '0x0000000000000000' or  # Keyword
+              line[12] != '' or  # Instance ID
+              line[13] != '' or  # Parent Instance ID
+              line[14] != self.NULL_GUID or  # Activity ID
+              line[15] != ''):  # Related Activity ID
+            raise TracingFailure(
+                'Found unexpected values in line: %s' % ' '.join(line),
+                  None, None, None)
+
+          if (line[self.EVENT_NAME], line[self.TYPE]) not in supported_events:
+            continue
+
+          # Convert the PID in-place from hex.
+          line[self.PID] = int(line[self.PID], 16)
+
+          yield [
+              line[self.EVENT_NAME],
+              line[self.TYPE],
+              line[self.PID],
+              line[self.TID],
+              line[self.PROCESSOR_ID],
+              line[self.TIMESTAMP],
+          ] + line[self.USER_DATA:]
+
+      write_json('%s.json' % self._logname, list(trim(load_file())), True)
+
+    def _convert_log(self, logformat):
+      """Converts the ETL trace to text representation.
+
+      Normally, 'csv' is sufficient. If complex scripts are used (like eastern
+      languages), use 'csv_utf16'. If localization gets in the way, use 'xml'.
+
+      Arguments:
+        - logformat: Text format to be generated, csv, csv_utf16 or xml.
+
+      Use "tracerpt -?" for help.
+      """
+      LOCALE_INVARIANT = 0x7F
+      windll.kernel32.SetThreadLocale(LOCALE_INVARIANT)
+      cmd_convert = [
+        'tracerpt.exe',
+        '-l', self._logname + '.etl',
+        '-o', self._logname + '.' + logformat,
+        '-gmt',  # Use UTC
+        '-y',  # No prompt
+        # Use -of XML to get the header of each items after column 19, e.g. all
+        # the actual headers of 'User Data'.
+      ]
+
+      if logformat == 'csv':
+        # tracerpt localizes the 'Type' column, for major brainfuck
+        # entertainment. I can't imagine any sane reason to do that.
+        cmd_convert.extend(['-of', 'CSV'])
+      elif logformat == 'csv_utf16':
+        # This causes it to use UTF-16, which doubles the log size but ensures
+        # the log is readable for non-ASCII characters.
+        cmd_convert.extend(['-of', 'CSV', '-en', 'Unicode'])
+      elif logformat == 'xml':
+        cmd_convert.extend(['-of', 'XML'])
+      else:
+        raise ValueError('Unexpected log format \'%s\'' % logformat)
+      logging.debug('Running: %s' % cmd_convert)
+      # This can takes tens of minutes for large logs.
+      # Redirects all output to stderr.
+      subprocess.check_call(
+          cmd_convert,
+          stdin=subprocess.PIPE,
+          stdout=sys.stderr,
+          stderr=sys.stderr)
+
   def __init__(self):
     super(LogmanTrace, self).__init__()
     # Most ignores need to be determined at runtime.
@@ -2173,142 +2308,6 @@ class LogmanTrace(ApiBase):
     # Add these last since they have no short path name equivalent.
     self.IGNORED.add('\\SystemRoot')
     self.IGNORED = tuple(sorted(self.IGNORED))
-
-  @classmethod
-  def process_log(cls, logname):
-    """Converts the .etl file into .csv then into .json."""
-    logformat = 'csv'
-    cls._convert_log(logname, logformat)
-
-    if logformat == 'csv_utf16':
-      def load_file():
-        def utf_8_encoder(unicode_csv_data):
-          """Encodes the unicode object as utf-8 encoded str instance"""
-          for line in unicode_csv_data:
-            yield line.encode('utf-8')
-
-        def unicode_csv_reader(unicode_csv_data, **kwargs):
-          """Encodes temporarily as UTF-8 since csv module doesn't do unicode.
-          """
-          csv_reader = csv.reader(utf_8_encoder(unicode_csv_data), **kwargs)
-          for row in csv_reader:
-            # Decode str utf-8 instances back to unicode instances, cell by
-            # cell:
-            yield [cell.decode('utf-8') for cell in row]
-
-        # The CSV file is UTF-16 so use codecs.open() to load the file into the
-        # python internal unicode format (utf-8). Then explicitly re-encode as
-        # utf8 as str instances so csv can parse it fine. Then decode the utf-8
-        # str back into python unicode instances. This sounds about right.
-        for line in unicode_csv_reader(
-            codecs.open(logname + '.' + logformat, 'r', 'utf-16')):
-          # line is a list of unicode objects
-          # So much white space!
-          yield [i.strip() for i in line]
-
-    elif logformat == 'csv':
-      def load_file():
-        def ansi_csv_reader(ansi_csv_data, **kwargs):
-          """Loads an 'ANSI' code page and returns unicode() objects."""
-          assert sys.getfilesystemencoding() == 'mbcs'
-          encoding = get_current_encoding()
-          for row in csv.reader(ansi_csv_data, **kwargs):
-            # Decode str 'ansi' instances to unicode instances, cell by cell:
-            yield [cell.decode(encoding) for cell in row]
-
-        # The fastest and smallest format but only supports 'ANSI' file paths.
-        # E.g. the filenames are encoding in the 'current' encoding.
-        for line in ansi_csv_reader(open(logname + '.' + logformat)):
-          # line is a list of unicode objects.
-          yield [i.strip() for i in line]
-
-    supported_events = cls.Context.supported_events()
-
-    def trim(generator):
-      for index, line in enumerate(generator):
-        if not index:
-          if line != cls.EXPECTED_HEADER:
-            raise TracingFailure(
-                'Found malformed header: %s' % ' '.join(line),
-                None, None, None)
-          continue
-        # As you can see, the CSV is full of useful non-redundant information:
-        if (line[2] != '0' or  # Event ID
-            line[3] not in ('2', '3') or  # Version
-            line[4] != '0' or  # Channel
-            line[5] != '0' or  # Level
-            line[7] != '0' or  # Task
-            line[8] != '0x0000000000000000' or  # Keyword
-            line[12] != '' or  # Instance ID
-            line[13] != '' or  # Parent Instance ID
-            line[14] != cls.NULL_GUID or  # Activity ID
-            line[15] != ''):  # Related Activity ID
-          raise TracingFailure(
-              'Found unexpected values in line: %s' % ' '.join(line),
-                None, None, None)
-
-        if (line[cls.EVENT_NAME], line[cls.TYPE]) not in supported_events:
-          continue
-
-        # Convert the PID in-place from hex.
-        line[cls.PID] = int(line[cls.PID], 16)
-
-        yield [
-            line[cls.EVENT_NAME],
-            line[cls.TYPE],
-            line[cls.PID],
-            line[cls.TID],
-            line[cls.PROCESSOR_ID],
-            line[cls.TIMESTAMP],
-        ] + line[cls.USER_DATA:]
-
-    write_json('%s.json' % logname, list(trim(load_file())), True)
-
-  @staticmethod
-  def _convert_log(logname, logformat):
-    """Converts the ETL trace to text representation.
-
-    Normally, 'csv' is sufficient. If complex scripts are used (like eastern
-    languages), use 'csv_utf16'. If localization gets in the way, use 'xml'.
-
-    Arguments:
-      - logname: Base filename to convert.
-      - logformat: Text format to be generated, csv, csv_utf16 or xml.
-
-    Use "tracerpt -?" for help.
-    """
-    LOCALE_INVARIANT = 0x7F
-    windll.kernel32.SetThreadLocale(LOCALE_INVARIANT)
-    cmd_convert = [
-      'tracerpt.exe',
-      '-l', logname + '.etl',
-      '-o', logname + '.' + logformat,
-      '-gmt',  # Use UTC
-      '-y',  # No prompt
-      # Use -of XML to get the header of each items after column 19, e.g. all
-      # the actual headers of 'User Data'.
-    ]
-
-    if logformat == 'csv':
-      # tracerpt localizes the 'Type' column, for major brainfuck
-      # entertainment. I can't imagine any sane reason to do that.
-      cmd_convert.extend(['-of', 'CSV'])
-    elif logformat == 'csv_utf16':
-      # This causes it to use UTF-16, which doubles the log size but ensures
-      # the log is readable for non-ASCII characters.
-      cmd_convert.extend(['-of', 'CSV', '-en', 'Unicode'])
-    elif logformat == 'xml':
-      cmd_convert.extend(['-of', 'XML'])
-    else:
-      raise ValueError('Unexpected log format \'%s\'' % logformat)
-    logging.debug('Running: %s' % cmd_convert)
-    # This can takes tens of minutes for large logs.
-    # Redirects all output to stderr.
-    subprocess.check_call(
-        cmd_convert,
-        stdin=subprocess.PIPE,
-        stdout=sys.stderr,
-        stderr=sys.stderr)
 
   @staticmethod
   def clean_trace(logname):
