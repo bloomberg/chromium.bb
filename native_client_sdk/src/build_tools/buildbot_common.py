@@ -18,22 +18,6 @@ sys.path.append(os.path.join(SDK_SRC_DIR, 'tools'))
 
 import oshelpers
 
-def IsSDKBuilder():
-  """Returns True if this script is running on an SDK builder.
-
-  False means it is either running on a trybot, or a user's machine.
-
-  Trybot names:
-    naclsdkm-((pnacl-)?linux|mac|windows(32|64))
-
-  Builder names:
-    (pnacl-)?(windows|mac|linux)-sdk-multi(rel)?
-
-    except there are currently no pnacl multirel bots, and
-    pnacl-windows-sdk-multi is actually called pnacl-win-sdk-multi."""
-  return '-sdk-multi' in os.getenv('BUILDBOT_BUILDERNAME', '')
-
-
 def ErrorExit(msg):
   """Write and error to stderr, then exit with 1 signaling failure."""
   sys.stderr.write(msg + '\n')
