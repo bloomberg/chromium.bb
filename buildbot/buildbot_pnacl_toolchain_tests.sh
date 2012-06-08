@@ -118,7 +118,6 @@ archived-pexe-translator-test() {
   # pre-built translator rev: 8759
   local ext=".strip-all"
 
-
   # Note, that the arch flag has two functions:
   # 1) it selects the target arch for the translator
   # 2) combined with --pnacl-sb it selects the host arch for the
@@ -137,8 +136,12 @@ archived-pexe-translator-test() {
 
   ls -l ${dir}
   file ${dir}/*
-  # TODO(robertm): actually run the new sandboxed translator images
-  #                on themselves
+
+  # now actually run the two new translator nexes on the ld-new pexe
+  flags="${flags} \
+         --pnacl-driver-set-LLC_SB=${dir}/llc-${arch}.nexe \
+         --pnacl-driver-set-LD_SB=${dir}/ld-new-${arch}.nexe"
+  ${sb_translator} ${flags} ${dir}/ld-new${ext} -o ${dir}/ld-new-${arch}.2.nexe
 }
 
 
