@@ -35,7 +35,7 @@
 
   <target name="compile" depends="init"
           description="compile the source " >
-    <javac srcdir="${src}" destdir="${dest.dir}">
+    <javac srcdir="${src}" destdir="${dest.dir}" debug="true">
       <classpath>
         <path location="${location.base}/android.jar"/>
         <path location="${out.dir}/chromium_base.jar"/>
