@@ -9,7 +9,7 @@ function afterCommit()
         var store = transaction.objectStore('storeName');
     } catch (e) {
         exc = e;
-        shouldBe('exc.code', 'webkitIDBDatabaseException.NOT_ALLOWED_ERR');
+        shouldBe('exc.code', 'DOMException.INVALID_STATE_ERR');
     }
     done();
 }
@@ -17,7 +17,7 @@ function afterCommit()
 function nonExistingKey()
 {
     shouldBe("event.target.result", "undefined");
-    window.setTimeout('afterCommit()', 0);
+    transaction.oncomplete = afterCommit;
 }
 
 function gotValue()
