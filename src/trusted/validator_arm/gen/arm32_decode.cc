@@ -15,7 +15,6 @@ namespace nacl_arm_dec {
 
 
 Arm32DecoderState::Arm32DecoderState() : DecoderState()
-  , Binary2RegisterImmediateOp_instance_()
   , Branch_instance_()
   , Breakpoint_instance_()
   , BxBlx_instance_()
@@ -61,7 +60,6 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , StrRegisterDouble_instance_()
   , TestIfAddressMasked_instance_()
   , Unary1RegisterBitRange_instance_()
-  , Unary1RegisterImmediateOp_instance_()
   , Undefined_instance_()
   , Unpredictable_instance_()
   , VectorLoad_instance_()
@@ -147,69 +145,29 @@ const ClassDecoder& Arm32DecoderState::decode_dp_immed(
      const Instruction insn) const
 {
   UNREFERENCED_PARAMETER(insn);
-  if ((insn.Bits() & 0x01F00000) == 0x00400000 /* op(24:20) == 00100 */ &&
-      (insn.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */)
-    return Unary1RegisterImmediateOp_instance_;
-
-  if ((insn.Bits() & 0x01F00000) == 0x00500000 /* op(24:20) == 00101 */ &&
-      (insn.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */)
-    return Binary2RegisterImmediateOp_instance_;
-
-  if ((insn.Bits() & 0x01F00000) == 0x00800000 /* op(24:20) == 01000 */ &&
-      (insn.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */)
-    return Unary1RegisterImmediateOp_instance_;
-
-  if ((insn.Bits() & 0x01F00000) == 0x00900000 /* op(24:20) == 01001 */ &&
-      (insn.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */)
-    return Binary2RegisterImmediateOp_instance_;
-
-  if ((insn.Bits() & 0x01F00000) == 0x01100000 /* op(24:20) == 10001 */ &&
-      true)
+  if ((insn.Bits() & 0x01F00000) == 0x01100000 /* op(24:20) == 10001 */)
     return TestIfAddressMasked_instance_;
 
-  if ((insn.Bits() & 0x01F00000) == 0x01500000 /* op(24:20) == 10101 */ &&
-      true)
+  if ((insn.Bits() & 0x01F00000) == 0x01500000 /* op(24:20) == 10101 */)
     return DontCareInst_instance_;
 
-  if ((insn.Bits() & 0x01B00000) == 0x01300000 /* op(24:20) == 10x11 */ &&
-      true)
+  if ((insn.Bits() & 0x01B00000) == 0x01300000 /* op(24:20) == 10x11 */)
     return DontCareInst_instance_;
 
-  if ((insn.Bits() & 0x01E00000) == 0x00400000 /* op(24:20) == 0010x */ &&
-      (insn.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16) == ~1111 */)
-    return Binary2RegisterImmediateOp_instance_;
-
-  if ((insn.Bits() & 0x01E00000) == 0x00800000 /* op(24:20) == 0100x */ &&
-      (insn.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16) == ~1111 */)
-    return Binary2RegisterImmediateOp_instance_;
-
-  if ((insn.Bits() & 0x01E00000) == 0x00A00000 /* op(24:20) == 0101x */ &&
-      true)
-    return Binary2RegisterImmediateOp_instance_;
-
-  if ((insn.Bits() & 0x01E00000) == 0x00C00000 /* op(24:20) == 0110x */ &&
-      true)
-    return Binary2RegisterImmediateOp_instance_;
-
-  if ((insn.Bits() & 0x01E00000) == 0x01800000 /* op(24:20) == 1100x */ &&
-      true)
-    return Binary2RegisterImmediateOp_instance_;
-
-  if ((insn.Bits() & 0x01E00000) == 0x01C00000 /* op(24:20) == 1110x */ &&
-      true)
+  if ((insn.Bits() & 0x01E00000) == 0x01C00000 /* op(24:20) == 1110x */)
     return MaskAddress_instance_;
 
-  if ((insn.Bits() & 0x01600000) == 0x00600000 /* op(24:20) == 0x11x */ &&
-      true)
-    return Binary2RegisterImmediateOp_instance_;
+  if ((insn.Bits() & 0x01E00000) == 0x01E00000 /* op(24:20) == 1111x */)
+    return Defs12To15_instance_;
 
-  if ((insn.Bits() & 0x01A00000) == 0x01A00000 /* op(24:20) == 11x1x */ &&
-      true)
-    return Unary1RegisterImmediateOp_instance_;
+  if ((insn.Bits() & 0x01C00000) == 0x00000000 /* op(24:20) == 000xx */)
+    return Defs12To15_instance_;
 
-  if ((insn.Bits() & 0x01C00000) == 0x00000000 /* op(24:20) == 000xx */ &&
-      true)
-    return Binary2RegisterImmediateOp_instance_;
+  if ((insn.Bits() & 0x00C00000) == 0x00800000 /* op(24:20) == x10xx */)
+    return Defs12To15_instance_;
+
+  if ((insn.Bits() & 0x01400000) == 0x00400000 /* op(24:20) == 0x1xx */)
+    return Defs12To15_instance_;
 
   // Catch any attempt to fall though ...
   fprintf(stderr, "TABLE IS INCOMPLETE: dp_immed could not parse %08X",
