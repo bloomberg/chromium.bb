@@ -539,7 +539,7 @@ class MouseEventTest(ChromeDriverTest):
   def setUp(self):
     super(MouseEventTest, self).setUp()
     self._driver = self.GetNewDriver()
-    ActionChains(self._driver).send_keys(Keys.CONTROL, Keys.SHIFT).perform()
+    ActionChains(self._driver).key_down([Keys.CONTROL, Keys.SHIFT]).perform()
     self._driver.get(self.GetTestDataUrl() + '/events.html')
     self._divs = self._driver.find_elements_by_tag_name('div')
 
