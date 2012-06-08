@@ -6,13 +6,12 @@ var errorMsg = 'Not available for platform apps.';
 var stub = function() { throw errorMsg; };
 
 // Disable document.open|close|write.
-document.open = stub;
-document.close = stub;
-document.write = stub;
+HTMLDocument.prototype.open = stub;
+HTMLDocument.prototype.close = stub;
+HTMLDocument.prototype.write = stub;
 
 // Disable history.
 window.history = {
-  open: stub,
   back: stub,
   forward: stub,
   go: stub,
@@ -23,12 +22,13 @@ window.history = {
 };
 
 // Disable find.
-window.find = stub;
+Window.prototype.find = stub;
 
-// Disable modal dialogs.
-window.alert = stub;
-window.confirm = stub;
-window.prompt = stub;
+// Disable modal dialogs. Shell windows disable these anyway, but it's nice to
+// warn.
+Window.prototype.alert = stub;
+Window.prototype.confirm = stub;
+Window.prototype.prompt = stub;
 
 // Disable window.*bar.
 var stubBar = { get visible() { throw errorMsg; } };
@@ -40,11 +40,12 @@ window.statusbar = stubBar;
 window.toolbar = stubBar;
 
 // Disable onunload, onbeforeunload.
-window.__defineSetter__('onbeforeunload', stub);
-window.__defineSetter__('onunload', stub);
-window.addEventListener = function(type) {
+Window.prototype.__defineSetter__('onbeforeunload', stub);
+Window.prototype.__defineSetter__('onunload', stub);
+var windowAddEventListener = Window.prototype.addEventListener;
+Window.prototype.addEventListener = function(type) {
   if (type === 'unload' || type === 'beforeunload')
     stub();
   else
-    return Window.prototype.addEventListener.apply(window, arguments);
+    return windowAddEventListener.apply(window, arguments);
 };

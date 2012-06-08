@@ -33,12 +33,6 @@ chrome.test.runTests([
     succeed();
   },
 
-  function testWindowHistoryOpen() {
-    assertThrowsError(window.history.open);
-    assertThrowsError(history.open);
-    succeed();
-  },
-
   function testWindowHistoryBack() {
     assertThrowsError(window.history.back);
     assertThrowsError(history.back);
@@ -80,26 +74,42 @@ chrome.test.runTests([
   },
 
   function testWindowFind() {
+    assertThrowsError(Window.prototype.find);
     assertThrowsError(window.find);
     assertThrowsError(find);
     succeed();
   },
 
   function testWindowAlert() {
+    assertThrowsError(Window.prototype.alert);
     assertThrowsError(window.alert);
     assertThrowsError(alert);
     succeed();
   },
 
   function testWindowConfirm() {
+    assertThrowsError(Window.prototype.confirm);
     assertThrowsError(window.confirm);
     assertThrowsError(confirm);
     succeed();
   },
 
   function testWindowPrompt() {
+    assertThrowsError(Window.prototype.prompt);
     assertThrowsError(window.prompt);
     assertThrowsError(prompt);
+    succeed();
+  },
+
+  function testBars() {
+    var bars = ['locationbar', 'menubar', 'personalbar',
+                'scrollbars', 'statusbar', 'toolbar'];
+    for (var x = 0; x < bars.length; x++) {
+      assertThrowsError(function() {
+        var visible = this[bars[x]].visible;
+        visible = window[bars[x]].visible;
+      });
+    }
     succeed();
   },
 
@@ -114,20 +124,12 @@ chrome.test.runTests([
       assertThrowsError(function() {
         window.addEventListener(blockedEvents[i], eventHandler);
       });
-    }
-
-    succeed();
-  },
-
-  function testBars() {
-    var bars = ['locationbar', 'menubar', 'personalbar',
-                'scrollbars', 'statusbar', 'toolbar'];
-    for (var x = 0; x < bars.length; x++) {
       assertThrowsError(function() {
-        var visible = this[bars[x]].visible;
-        visible = window[bars[x]].visible;
+        Window.prototype.addEventListener.apply(window,
+            [blockedEvents[i], eventHandler]);
       });
     }
+
     succeed();
   },
 
