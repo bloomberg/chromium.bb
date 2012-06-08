@@ -8,7 +8,7 @@
   callback GetDisplayPathCallback = void (DOMString displayPath);
 
   interface Functions {
-    static void getDisplayPath(DOMString fsname, DOMString fspath,
+    static void getDisplayPath([instanceOf=FileEntry] object fileEntry,
                                GetDisplayPathCallback onSuccess);
   };
 };

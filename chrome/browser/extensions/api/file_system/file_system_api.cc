@@ -5,14 +5,11 @@
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
 
 #include "base/file_path.h"
-#include "chrome/common/extensions/api/file_system.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/isolated_context.h"
-
-namespace GetDisplayPath = extensions::api::file_system::GetDisplayPath;
 
 namespace extensions {
 
@@ -20,18 +17,19 @@ const char kInvalidParameters[] = "Invalid parameters";
 const char kSecurityError[] = "Security error";
 
 bool FileSystemGetDisplayPathFunction::RunImpl() {
-  scoped_ptr<GetDisplayPath::Params> params(GetDisplayPath::Params::Create(
-          *args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
+  std::string filesystem_name;
+  std::string filesystem_path;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &filesystem_name));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &filesystem_path));
 
   std::string filesystem_id;
-  if (!fileapi::CrackIsolatedFileSystemName(params->fsname, &filesystem_id)) {
+  if (!fileapi::CrackIsolatedFileSystemName(filesystem_name, &filesystem_id)) {
     error_ = kInvalidParameters;
     return false;
   }
 
   fileapi::IsolatedContext* context = fileapi::IsolatedContext::GetInstance();
-  FilePath relative_path = FilePath::FromUTF8Unsafe(params->fspath);
+  FilePath relative_path = FilePath::FromUTF8Unsafe(filesystem_path);
   FilePath virtual_path = context->CreateVirtualPath(filesystem_id,
                                                      relative_path);
   FilePath file_path;

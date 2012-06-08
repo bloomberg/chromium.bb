@@ -6,7 +6,7 @@
 // FileEntry in launchData.intent.data can be read.
 function onLaunched(launchData) {
   chrome.test.runTests([
-    function testIntent() {
+    function testGetDisplayPath() {
       chrome.test.assertFalse(!launchData, "No launchData");
       chrome.test.assertFalse(!launchData.intent, "No launchData.intent");
       chrome.test.assertEq(launchData.intent.action,
@@ -16,8 +16,8 @@ function onLaunched(launchData) {
       chrome.test.assertFalse(!launchData.intent.data,
           "No launchData.intent.data");
       var entry = launchData.intent.data;
-      chrome.fileSystem.getDisplayPath(entry.filesystem.name,
-          entry.fullPath.slice(1), chrome.test.callbackPass(function(path) {
+      chrome.fileSystem.getDisplayPath(entry,
+          chrome.test.callbackPass(function(path) {
         chrome.test.assertFalse(path.indexOf('test.txt') == -1);
       }));
     }

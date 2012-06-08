@@ -570,6 +570,8 @@ void ExtensionDispatcher::PopulateSourceMap() {
                              IDR_FILE_BROWSER_HANDLER_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("fileBrowserPrivate",
                              IDR_FILE_BROWSER_PRIVATE_CUSTOM_BINDINGS_JS);
+  source_map_.RegisterSource("fileSystem",
+                             IDR_FILE_SYSTEM_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("i18n", IDR_I18N_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("experimental.input.ime",
                              IDR_INPUT_IME_CUSTOM_BINDINGS_JS);
