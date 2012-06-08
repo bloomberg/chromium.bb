@@ -1046,11 +1046,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Save filesystem as proto file.
   void SaveFileSystemAsProto();
 
-  // Saves a collected feed in GCache directory under
-  // <user_profile_dir>/GCache/v1/meta/|name| for later reloading when offline.
-  void SaveFeed(scoped_ptr<base::Value> feed_vector,
-                const FilePath& name);
-
   // Notifies events to observers on UI thread.
   void NotifyCacheInitialized();
   void NotifyFilePinned(const std::string& resource_id,

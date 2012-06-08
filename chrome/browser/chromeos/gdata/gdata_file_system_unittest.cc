@@ -3688,13 +3688,6 @@ TEST_F(GDataFileSystemTest, GetAvailableSpace) {
   message_loop_.RunAllPending();
   EXPECT_EQ(GG_LONGLONG(6789012345), callback_helper_->quota_bytes_used_);
   EXPECT_EQ(GG_LONGLONG(9876543210), callback_helper_->quota_bytes_total_);
-
-  // Verify account meta feed is saved to cache.
-  RunAllPendingForIO();
-  FilePath path = file_system_->cache_paths_[
-      GDataCache::CACHE_TYPE_META].Append(
-          FILE_PATH_LITERAL("account_metadata.json"));
-  EXPECT_TRUE(file_util::PathExists(path));
 }
 
 TEST_F(GDataFileSystemTest, MountUnmount) {

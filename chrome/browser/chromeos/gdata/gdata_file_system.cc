@@ -603,62 +603,15 @@ void LoadProtoOnBlockingPool(const FilePath& path,
   params->load_error = base::PLATFORM_FILE_OK;
 }
 
-// Loads json file content content from |file_path| on blocking pool.
-void LoadJsonFileOnBlockingPool(
-    const FilePath& file_path,
-    base::PlatformFileError* error,
-    base::Value* result) {
-  scoped_ptr<base::Value> root_value;
-  std::string contents;
-  if (!file_util::ReadFileToString(file_path, &contents)) {
-    *error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
-    return;
-  }
-
-  int unused_error_code = -1;
-  std::string unused_error_message;
-  root_value.reset(base::JSONReader::ReadAndReturnError(
-      contents, base::JSON_PARSE_RFC, &unused_error_code,
-      &unused_error_message));
-
-  bool has_root = root_value.get();
-  if (!has_root)
-    LOG(WARNING) << "Cached content read failed for file " << file_path.value();
-
-  if (!has_root) {
-    *error = base::PLATFORM_FILE_ERROR_FAILED;
-    return;
-  }
-
-  base::ListValue* result_list = NULL;
-  base::DictionaryValue* result_dict = NULL;
-  if (result->GetAsList(&result_list) &&
-      root_value->GetType() == Value::TYPE_LIST) {
-    *error = base::PLATFORM_FILE_OK;
-    result_list->Swap(reinterpret_cast<base::ListValue*>(root_value.get()));
-  } else if (result->GetAsDictionary(&result_dict) &&
-             root_value->GetType() == Value::TYPE_DICTIONARY) {
-    *error = base::PLATFORM_FILE_OK;
-    result_dict->Swap(
-        reinterpret_cast<base::DictionaryValue*>(root_value.get()));
-  } else {
-    *error = base::PLATFORM_FILE_ERROR_FAILED;
-  }
-}
-
 // Saves json file content content in |feed| to |file_pathname| on blocking
-// pool.
-void SaveFeedOnBlockingPool(
+// pool. Used for debugging.
+void SaveFeedOnBlockingPoolForDebugging(
     const FilePath& file_path,
     scoped_ptr<base::Value> feed) {
   std::string json;
-#ifndef NDEBUG
   base::JSONWriter::WriteWithOptions(feed.get(),
                                      base::JSONWriter::OPTIONS_PRETTY_PRINT,
                                      &json);
-#else
-  base::JSONWriter::Write(feed.get(), &json);
-#endif
 
   int file_size = static_cast<int>(json.length());
   if (file_util::WriteFile(file_path, json.data(), file_size) != file_size) {
@@ -1258,8 +1211,6 @@ void GDataFileSystem::OnGetAccountMetadata(
     NotifyInitialLoadFinished();
     return;
   }
-
-  SaveFeed(feed_data.Pass(), FilePath(kAccountMetadataFile));
 
   // Load changes from the server.
   LoadFeedFromServer(initial_origin,
@@ -2838,8 +2789,6 @@ void GDataFileSystem::OnGetAvailableSpace(
     return;
   }
 
-  SaveFeed(data.Pass(), FilePath(kAccountMetadataFile));
-
   callback.Run(base::PLATFORM_FILE_OK,
                feed->quota_bytes_total(),
                feed->quota_bytes_used());
@@ -3023,7 +2972,12 @@ void GDataFileSystem::OnGetDocuments(ContentOrigin initial_origin,
   std::string file_name =
       base::StringPrintf("DEBUG_feed_%d.json",
                          params->start_changestamp);
-  SaveFeed(data.Pass(), FilePath(file_name));
+  PostBlockingPoolSequencedTask(
+      FROM_HERE,
+      base::Bind(&SaveFeedOnBlockingPoolForDebugging,
+                 GetCacheDirectoryPath(
+                     GDataCache::CACHE_TYPE_META).Append(file_name),
+                 base::Passed(&data)));
 #endif
 
   // Add the current feed to the list of collected feeds for this directory.
@@ -3262,16 +3216,6 @@ void GDataFileSystem::OnRemoveEntryFromDirectoryCompleted(
 
   if (!callback.is_null())
     callback.Run(error, updated_file_path);
-}
-
-void GDataFileSystem::SaveFeed(scoped_ptr<base::Value> feed,
-                               const FilePath& name) {
-  PostBlockingPoolSequencedTask(
-      FROM_HERE,
-      base::Bind(&SaveFeedOnBlockingPool,
-                 GetCacheDirectoryPath(
-                     GDataCache::CACHE_TYPE_META).Append(name),
-                 base::Passed(&feed)));
 }
 
 void GDataFileSystem::OnRemovedDocument(
