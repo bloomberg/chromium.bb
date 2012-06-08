@@ -211,6 +211,10 @@ class CandidateWindowView : public views::View {
 
   bool is_suggestion_window_location_available_;
 
+  // True if the candidate window should be shonw on the upper side of
+  // composition text.
+  bool should_show_upper_side_;
+
   // True if the candidate window was open.  This is used to determine when to
   // send OnCandidateWindowOpened and OnCandidateWindowClosed events.
   bool was_candidate_window_open_;

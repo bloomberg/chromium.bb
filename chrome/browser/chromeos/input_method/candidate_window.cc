@@ -783,6 +783,7 @@ CandidateWindowView::CandidateWindowView(views::Widget* parent_frame)
       previous_candidate_column_size_(0, 0),
       previous_annotation_column_size_(0, 0),
       is_suggestion_window_location_available_(false),
+      should_show_upper_side_(false),
       was_candidate_window_open_(false) {
 }
 
@@ -896,6 +897,8 @@ void CandidateWindowView::UpdatePreeditText(const std::string& utf8_text) {
 }
 
 void CandidateWindowView::ShowLookupTable() {
+  if (!candidate_area_->IsShown())
+    should_show_upper_side_ = false;
   candidate_area_->Show();
   UpdateParentArea();
 }
@@ -1250,9 +1253,15 @@ void CandidateWindowView::ResizeAndMoveParentFrame() {
 
   // Handle overflow at the bottom.
   const int bottom_overflow = frame_bounds.bottom() - screen_bounds.bottom();
-  if (bottom_overflow > 0) {
+
+  // To avoid flickering window position, the candidate window should be shown
+  // on upper side of composition string if it was shown there.
+  if (should_show_upper_side_ || bottom_overflow > 0) {
     frame_bounds.set_y(frame_bounds.y() - height - frame_bounds.height());
+    should_show_upper_side_ = true;
   }
+
+  // TODO(nona): check top_overflow here.
 
   // Move the window per the cursor location.
   // SetBounds() is not cheap. Only call this when it is really changed.
