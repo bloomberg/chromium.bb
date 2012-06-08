@@ -20,8 +20,3 @@ class NTPThumbnailNotShownError(RuntimeError):
   This is due to it not being visible to a real user.
   """
   pass
-
-
-class LoginError(RuntimeError):
-  """Represent an error during Chrome OS login."""
-  pass

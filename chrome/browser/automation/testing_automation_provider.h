@@ -1383,6 +1383,15 @@ class TestingAutomationProvider : public AutomationProvider,
 
   void LoginAsGuest(base::DictionaryValue* args, IPC::Message* reply_message);
 
+  // Submits the Chrome OS login form. Watch for the login to complete using
+  // the AddLoginObserver and GetNextEvent commands.
+  // Example:
+  //   input: { "username": "user@gmail.com",
+  //            "password": "fakepassword",
+  //          }
+  void SubmitLoginForm(base::DictionaryValue* args,
+                       IPC::Message* reply_message);
+
   void AddLoginEventObserver(DictionaryValue* args,
                              IPC::Message* reply_message);
 

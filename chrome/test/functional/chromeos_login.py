@@ -56,7 +56,7 @@ class ChromeosLogin(pyauto.PyUITest):
   def testBadUsername(self):
     """Test that login fails when passed an invalid username."""
     self.assertRaises(
-        pyauto_errors.LoginError,
+        pyauto_errors.JSONInterfaceError,
         lambda: self.Login('doesnotexist@fakedomain.org', 'badpassword'))
     login_info = self.GetLoginInfo()
     self.assertFalse(login_info['is_logged_in'],
@@ -66,7 +66,7 @@ class ChromeosLogin(pyauto.PyUITest):
     """Test that login fails when passed an invalid password."""
     credentials = self._ValidCredentials()
     self.assertRaises(
-        pyauto_errors.LoginError,
+        pyauto_errors.JSONInterfaceError,
         lambda: self.Login(credentials['username'], 'badpassword'))
     login_info = self.GetLoginInfo()
     self.assertFalse(login_info['is_logged_in'],

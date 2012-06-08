@@ -85,7 +85,6 @@ import omnibox_info
 import plugins_info
 import prefs_info
 from pyauto_errors import JSONInterfaceError
-from pyauto_errors import LoginError
 from pyauto_errors import NTPThumbnailNotShownError
 import pyauto_utils
 import simplejson as json  # found in third_party
@@ -3085,23 +3084,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     except JSONInterfaceError:
       raise JSONInterfaceError(msg)
 
-  def _AddLoginEventObserver(self):
-    """Adds a LoginEventObserver associated with the AutomationEventQueue.
-
-    The LoginEventObserver will generate an event when login completes.
-
-    Returns:
-      The id of the created observer, which can be used with GetNextEvent(id)
-      and RemoveEventObserver(id).
-
-    Raises:
-      pyauto_errors.JSONInterfaceError if the automation call returns an error.
-    """
-    cmd_dict = {
-      'command': 'AddLoginEventObserver',
-    }
-    return self._GetResultFromJSONRequest(cmd_dict, windex=None)['observer_id']
-
   def GetNextEvent(self, observer_id=-1, blocking=True, timeout=-1):
     """Waits for an observed event to occur.
 
@@ -4242,22 +4224,33 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     Waits until logged in and browser is ready.
     Should be displaying the login screen to work.
 
+    Note that in case of webui auth-extension-based login, gaia auth errors
+    will not be noticed here, because the browser has no knowledge of it. In
+    this case the GetNextEvent automation command will always time out.
+
+    Returns:
+      An error string if an error occured.
+      None otherwise.
+
     Raises:
       pyauto_errors.JSONInterfaceError if the automation call returns an error.
-      pyauto_errors.LoginError if the login fails.
     """
-    observer_id = self._AddLoginEventObserver()
-    ret = self.ExecuteJavascriptInOOBEWebUI("""
-        chrome.send("completeLogin", ["%s", "%s"] );
-        window.domAutomationController.send("success");""" %
-        (username, password));
+    self._GetResultFromJSONRequest({'command': 'AddLoginEventObserver'},
+                                   windex=None)
+    cmd_dict = {
+        'command': 'SubmitLoginForm',
+        'username': username,
+        'password': password,
+    }
+    self._GetResultFromJSONRequest(cmd_dict, windex=None)
     try:
-      response = self.GetNextEvent(observer_id)
+      # TODO(craigdh): Add login failure events once PyAuto switches to mocked
+      # GAIA authentication.
+      self.GetNextEvent()
     except JSONInterfaceError as e:
-      raise JSONInterfaceError(
-          str(e) + '\n Perhaps Chrome crashed or login is broken?')
-    if 'error_string' in response:
-      raise LoginError(response['error_string'])
+      raise JSONInterfaceError('%s\nLogin failed. Perhaps Chrome crashed, '
+                               'failed to start, or the login flow is '
+                               'broken?' % str(e))
 
   def Logout(self):
     """Log out from ChromeOS and wait for session_manager to come up.

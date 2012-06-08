@@ -356,6 +356,35 @@ void TestingAutomationProvider::LoginAsGuest(DictionaryValue* args,
   controller->LoginAsGuest();
 }
 
+void TestingAutomationProvider::SubmitLoginForm(DictionaryValue* args,
+                                                IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  VLOG(2) << "TestingAutomationProvider::StartLogin";
+
+  std::string username, password;
+  if (!args->GetString("username", &username) ||
+      !args->GetString("password", &password)) {
+    reply.SendError("Invalid or missing args.");
+    return;
+  }
+
+  chromeos::ExistingUserController* controller =
+      chromeos::ExistingUserController::current_controller();
+  if (!controller) {
+    reply.SendError("Unable to access ExistingUserController");
+    return;
+  }
+
+  // WebUI login.
+  chromeos::WebUILoginDisplay* webui_login_display =
+      static_cast<chromeos::WebUILoginDisplay*>(controller->login_display());
+  VLOG(2) << "TestingAutomationProvider::StartLogin ShowSigninScreenForCreds("
+          << username << ", " << password << ")";
+
+  webui_login_display->ShowSigninScreenForCreds(username, password);
+  reply.SendSuccess(NULL);
+}
+
 void TestingAutomationProvider::AddLoginEventObserver(
     DictionaryValue* args, IPC::Message* reply_message) {
   ExistingUserController* controller =

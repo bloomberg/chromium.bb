@@ -1796,6 +1796,7 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
   handler_map["ExecuteJavascriptInOOBEWebUI"] =
       &TestingAutomationProvider::ExecuteJavascriptInOOBEWebUI;
   handler_map["LoginAsGuest"] = &TestingAutomationProvider::LoginAsGuest;
+  handler_map["SubmitLoginForm"] = &TestingAutomationProvider::SubmitLoginForm;
   handler_map["AddLoginEventObserver"] =
       &TestingAutomationProvider::AddLoginEventObserver;
   handler_map["SignOut"] = &TestingAutomationProvider::SignOut;
