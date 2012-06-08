@@ -5132,14 +5132,6 @@
    fun:_ZN3IPC12ChannelProxy7Context15OnChannelClosedEv
 }
 {
-   bug_121450
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
-   fun:_ZN4base10TaskRunner16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_
-   fun:_ZN5gdata15GDataFileSystem21LoadRootFeedFromCacheENS0_13FeedChunkTypeE*K8FilePathbRKN4base8CallbackIFvNS5_17PlatformFileErrorES4_PNS_13GDataFileBaseEEEE
-}
-{
    bug_121729
    Memcheck:Leak
    fun:malloc
