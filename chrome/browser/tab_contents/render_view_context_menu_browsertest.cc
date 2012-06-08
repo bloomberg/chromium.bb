@@ -55,7 +55,7 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
     params.media_type = WebKit::WebContextMenuData::MediaTypeNone;
     params.unfiltered_link_url = unfiltered_url;
     params.link_url = url;
-    WebContents* web_contents = browser()->GetSelectedWebContents();
+    WebContents* web_contents = browser()->GetActiveWebContents();
     params.page_url = web_contents->GetController().GetActiveEntry()->GetURL();
 #if defined(OS_MACOSX)
     params.writing_direction_default = 0;
@@ -63,7 +63,7 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
     params.writing_direction_right_to_left = 0;
 #endif  // OS_MACOSX
     TestRenderViewContextMenu* menu = new TestRenderViewContextMenu(
-        browser()->GetSelectedWebContents(), params);
+        browser()->GetActiveWebContents(), params);
     menu->Init();
     return menu;
   }
@@ -117,7 +117,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
   mouse_event.x = 15;
   mouse_event.y = 15;
   gfx::Rect offset;
-  content::WebContents* tab = browser()->GetSelectedWebContents();
+  content::WebContents* tab = browser()->GetActiveWebContents();
   tab->GetView()->GetContainerBounds(&offset);
   mouse_event.globalX = 15 + offset.x();
   mouse_event.globalY = 15 + offset.y();

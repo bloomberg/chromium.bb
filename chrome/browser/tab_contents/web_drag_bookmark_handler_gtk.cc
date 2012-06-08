@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
@@ -25,13 +25,13 @@ WebDragBookmarkHandlerGtk::~WebDragBookmarkHandlerGtk() {}
 void WebDragBookmarkHandlerGtk::DragInitialize(WebContents* contents) {
   bookmark_drag_data_.Clear();
 
-  // Ideally we would want to initialize the the TabContentsWrapper member in
+  // Ideally we would want to initialize the the TabContents member in
   // the constructor. We cannot do that as the WebDragDestGtk object is
   // created during the construction of the WebContents object.  The
-  // TabContentsWrapper is created much later.
+  // TabContents is created much later.
   DCHECK(tab_ ? (tab_->web_contents() == contents) : true);
   if (!tab_)
-    tab_ = TabContentsWrapper::GetCurrentWrapperForContents(contents);
+    tab_ = TabContents::FromWebContents(contents);
 }
 
 GdkAtom WebDragBookmarkHandlerGtk::GetBookmarkTargetAtom() const {

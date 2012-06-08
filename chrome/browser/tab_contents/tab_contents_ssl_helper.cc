@@ -21,7 +21,7 @@
 #include "chrome/browser/ssl_client_certificate_selector.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_details.h"
@@ -112,7 +112,7 @@ bool SSLCertAddedInfoBarDelegate::Accept() {
 class TabContentsSSLHelper::SSLAddCertData
     : public content::NotificationObserver {
  public:
-  explicit SSLAddCertData(TabContentsWrapper* tab_contents);
+  explicit SSLAddCertData(TabContents* tab_contents);
   virtual ~SSLAddCertData();
 
   // Displays |delegate| as an infobar in |tab_|, replacing our current one if
@@ -129,7 +129,7 @@ class TabContentsSSLHelper::SSLAddCertData
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details);
 
-  TabContentsWrapper* tab_contents_;
+  TabContents* tab_contents_;
   InfoBarDelegate* infobar_delegate_;
   content::NotificationRegistrar registrar_;
 
@@ -137,7 +137,7 @@ class TabContentsSSLHelper::SSLAddCertData
 };
 
 TabContentsSSLHelper::SSLAddCertData::SSLAddCertData(
-    TabContentsWrapper* tab_contents)
+    TabContents* tab_contents)
     : tab_contents_(tab_contents),
       infobar_delegate_(NULL) {
   content::Source<InfoBarTabHelper> source(tab_contents_->infobar_tab_helper());
@@ -182,7 +182,7 @@ void TabContentsSSLHelper::SSLAddCertData::Observe(
 
 // TabContentsSSLHelper -------------------------------------------------------
 
-TabContentsSSLHelper::TabContentsSSLHelper(TabContentsWrapper* tab_contents)
+TabContentsSSLHelper::TabContentsSSLHelper(TabContents* tab_contents)
     : tab_contents_(tab_contents) {
 }
 

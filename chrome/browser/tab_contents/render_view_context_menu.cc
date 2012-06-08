@@ -50,7 +50,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -624,10 +624,10 @@ void RenderViewContextMenu::InitMenu() {
   AppendDeveloperItems();
 
   if (!print_preview_menu_observer_.get()) {
-    TabContentsWrapper* wrapper =
-        TabContentsWrapper::GetCurrentWrapperForContents(source_web_contents_);
+    TabContents* tab_contents =
+        TabContents::FromWebContents(source_web_contents_);
     print_preview_menu_observer_.reset(
-        new PrintPreviewContextMenuObserver(wrapper));
+        new PrintPreviewContextMenuObserver(tab_contents));
   }
   observers_.AddObserver(print_preview_menu_observer_.get());
 }
@@ -1140,12 +1140,11 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return source_web_contents_->GetController().GetActiveEntry() != NULL;
 
     case IDC_CONTENT_CONTEXT_TRANSLATE: {
-      TabContentsWrapper* tab_contents_wrapper =
-          TabContentsWrapper::GetCurrentWrapperForContents(
-              source_web_contents_);
-      if (!tab_contents_wrapper)
+      TabContents* tab_contents =
+          TabContents::FromWebContents(source_web_contents_);
+      if (!tab_contents)
         return false;
-      TranslateTabHelper* helper = tab_contents_wrapper->translate_tab_helper();
+      TranslateTabHelper* helper = tab_contents->translate_tab_helper();
       std::string original_lang =
           helper->language_state().original_language();
       std::string target_lang = g_browser_process->GetApplicationLocale();
@@ -1668,16 +1667,15 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
     case IDC_PRINT:
       if (params_.media_type == WebContextMenuData::MediaTypeNone) {
-        TabContentsWrapper* tab_contents_wrapper =
-            TabContentsWrapper::GetCurrentWrapperForContents(
-                source_web_contents_);
-        if (!tab_contents_wrapper)
+        TabContents* tab_contents =
+            TabContents::FromWebContents(source_web_contents_);
+        if (!tab_contents)
           break;
         if (g_browser_process->local_state()->GetBoolean(
                 prefs::kPrintPreviewDisabled)) {
-          tab_contents_wrapper->print_view_manager()->PrintNow();
+          tab_contents->print_view_manager()->PrintNow();
         } else {
-          tab_contents_wrapper->print_view_manager()->PrintPreviewNow();
+          tab_contents->print_view_manager()->PrintPreviewNow();
         }
       } else {
         rvh->Send(new PrintMsg_PrintNodeUnderContextMenu(rvh->GetRoutingID()));
@@ -1704,12 +1702,11 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     case IDC_CONTENT_CONTEXT_TRANSLATE: {
       // A translation might have been triggered by the time the menu got
       // selected, do nothing in that case.
-      TabContentsWrapper* tab_contents_wrapper =
-          TabContentsWrapper::GetCurrentWrapperForContents(
-              source_web_contents_);
-      if (!tab_contents_wrapper)
+      TabContents* tab_contents =
+          TabContents::FromWebContents(source_web_contents_);
+      if (!tab_contents)
         return;
-      TranslateTabHelper* helper = tab_contents_wrapper->translate_tab_helper();
+      TranslateTabHelper* helper = tab_contents->translate_tab_helper();
       if (helper->language_state().IsPageTranslated() ||
           helper->language_state().translation_pending()) {
         return;
@@ -1830,12 +1827,11 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
         return;
       model->Load();
 
-      TabContentsWrapper* tab_contents_wrapper =
-          TabContentsWrapper::GetCurrentWrapperForContents(
-              source_web_contents_);
-      if (tab_contents_wrapper &&
-          tab_contents_wrapper->search_engine_tab_helper() &&
-          tab_contents_wrapper->search_engine_tab_helper()->delegate()) {
+      TabContents* tab_contents =
+          TabContents::FromWebContents(source_web_contents_);
+      if (tab_contents &&
+          tab_contents->search_engine_tab_helper() &&
+          tab_contents->search_engine_tab_helper()->delegate()) {
         string16 keyword(TemplateURLService::GenerateKeyword(params_.page_url));
         TemplateURLData data;
         data.short_name = keyword;
@@ -1844,7 +1840,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
         data.favicon_url =
             TemplateURL::GenerateFaviconURL(params_.page_url.GetOrigin());
         // Takes ownership of the TemplateURL.
-        tab_contents_wrapper->search_engine_tab_helper()->delegate()->
+        tab_contents->search_engine_tab_helper()->delegate()->
             ConfirmAddSearchProvider(new TemplateURL(profile_, data), profile_);
       }
       break;

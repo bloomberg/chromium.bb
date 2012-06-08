@@ -33,7 +33,7 @@ IN_PROC_BROWSER_TEST_F(ViewSourceTest, DoesBrowserRenderInViewSource) {
   // Check that the title didn't get set.  It should not be there (because we
   // are in view-source mode).
   EXPECT_NE(ASCIIToUTF16("foo"),
-            browser()->GetSelectedWebContents()->GetTitle());
+            browser()->GetActiveWebContents()->GetTitle());
 }
 
 // This test renders a page normally and then renders the same page in
@@ -54,7 +54,7 @@ IN_PROC_BROWSER_TEST_F(ViewSourceTest, DoesBrowserConsumeViewSourcePrefix) {
 
   // The URL should still be prefixed with "view-source:".
   EXPECT_EQ(url_viewsource.spec(),
-            browser()->GetSelectedWebContents()->GetURL().spec());
+            browser()->GetActiveWebContents()->GetURL().spec());
 }
 
 // Make sure that when looking at the actual page, we can select "View Source"

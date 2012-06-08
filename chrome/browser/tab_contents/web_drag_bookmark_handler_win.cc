@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
@@ -27,13 +27,13 @@ WebDragBookmarkHandlerWin::~WebDragBookmarkHandlerWin() {
 }
 
 void WebDragBookmarkHandlerWin::DragInitialize(WebContents* contents) {
-  // Ideally we would want to initialize the the TabContentsWrapper member in
+  // Ideally we would want to initialize the the TabContents member in
   // the constructor. We cannot do that as the WebDragTargetWin object is
   // created during the construction of the WebContents object.  The
-  // TabContentsWrapper is created much later.
+  // TabContents is created much later.
   DCHECK(tab_ ? (tab_->web_contents() == contents) : true);
   if (!tab_)
-    tab_ = TabContentsWrapper::GetCurrentWrapperForContents(contents);
+    tab_ = TabContents::FromWebContents(contents);
 }
 
 void WebDragBookmarkHandlerWin::OnDragOver(IDataObject* data_object) {

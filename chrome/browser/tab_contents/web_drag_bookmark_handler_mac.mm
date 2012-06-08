@@ -8,7 +8,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/web_contents.h"
 
 using content::WebContents;
@@ -22,7 +22,7 @@ WebDragBookmarkHandlerMac::~WebDragBookmarkHandlerMac() {}
 void WebDragBookmarkHandlerMac::DragInitialize(WebContents* contents) {
   DCHECK(tab_ ? (tab_->web_contents() == contents) : true);
   if (!tab_)
-    tab_ = TabContentsWrapper::GetCurrentWrapperForContents(contents);
+    tab_ = TabContents::FromWebContents(contents);
 
   bookmark_drag_data_.ReadFromDragClipboard();
 }

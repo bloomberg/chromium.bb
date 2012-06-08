@@ -66,7 +66,7 @@ void RenderViewContextMenuWin::ExecuteCommand(int command_id,
           NEW_FOREGROUND_TAB,
           content::PAGE_TRANSITION_LINK,
           false);
-      WebContents* source_web_contents = browser->GetSelectedWebContents();
+      WebContents* source_web_contents = browser->GetActiveWebContents();
       WebContents* new_contents = source_web_contents->OpenURL(url_params);
       DCHECK(new_contents);
       return;
