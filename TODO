@@ -64,6 +64,13 @@ to get rid of the windows #ifdefs
 ** Update gnulib
 
 ** Enhance translation table compiler to issue warnings
+   [jb]: It should be an error to define the same
+   single-cell dot pattern for two different characters. I am considering
+   issuing an error message and rejecting the table if this happens.
+
+  [mh]: It would also be very helpful if we could issue a warning when a character
+  has been defined as two or more braille representations.
+  Could we have these as warnings, not errors please.
 
 ** Optimize for use with large tables
 When used with dictionary based tables liblouis is very slow. The
