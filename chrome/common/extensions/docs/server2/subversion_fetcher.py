@@ -9,16 +9,14 @@ BRANCH_URL = SUBVERSION_URL + 'branches/'
 class SubversionFetcher(object):
   """Class to fetch resources from src.chromium.org.
   """
-  def __init__(self, base_path, urlfetch):
-    self.base_path = base_path
-    self.urlfetch = urlfetch
+  def __init__(self, branch, base_path, url_fetcher):
+    self._base_path = self._GetURLFromBranch(branch) + base_path
+    self._url_fetcher = url_fetcher
 
   def _GetURLFromBranch(self, branch):
     if branch == 'trunk':
       return TRUNK_URL + 'src/'
     return BRANCH_URL + branch + '/src/'
 
-  def FetchResource(self, branch, path):
-    url = self._GetURLFromBranch(branch) + self.base_path + path
-    result = self.urlfetch.fetch(url)
-    return result
+  def FetchResource(self, path):
+    return self._url_fetcher.fetch(self._base_path + path)

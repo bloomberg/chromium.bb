@@ -9,20 +9,21 @@ class LocalFetcher(object):
   """Class to fetch resources from local filesystem.
   """
   def __init__(self, base_path):
-    self.base_path = base_path
+    self._base_path = self._ConvertToFilepath(base_path)
+
+  def _ConvertToFilepath(self, path):
+    return path.replace('/', os.sep)
 
   class _Resource(object):
-    def __init__(self):
-      self.content = ''
+    def __init__(self, content):
+      self.content = content
       self.headers = {}
 
   def _ReadFile(self, filename):
-    with open(filename, 'r') as f:
+    path = os.path.join(self._base_path, filename)
+    logging.info('Reading: ' + path)
+    with open(path, 'r') as f:
       return f.read()
 
-  def FetchResource(self, branch, path):
-    real_path = os.path.join(*path.split('/'))
-    result = self._Resource()
-    logging.info('Reading: ' + os.path.join(self.base_path, real_path))
-    result.content = self._ReadFile(os.path.join(self.base_path, real_path))
-    return result
+  def FetchResource(self, path):
+    return self._Resource(self._ReadFile(self._ConvertToFilepath(path)))

@@ -3,36 +3,41 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import branch_utility
 import unittest
 import test_urlfetch
 
-from branch_utility import BranchUtility
-
 class BranchUtilityTest(unittest.TestCase):
   def testGetChannelNameFromPath(self):
-    b_util = BranchUtility(test_urlfetch)
-    self.assertEquals('dev', b_util.GetChannelNameFromPath(
+    self.assertEquals('dev', branch_utility.GetChannelNameFromPath(
         'dev/hello/stuff.html'))
-    self.assertEquals('beta', b_util.GetChannelNameFromPath(
+    self.assertEquals('beta', branch_utility.GetChannelNameFromPath(
         'beta/hello/stuff.html'))
-    self.assertEquals('trunk', b_util.GetChannelNameFromPath(
+    self.assertEquals('trunk', branch_utility.GetChannelNameFromPath(
         'trunk/hello/stuff.html'))
-    self.assertEquals('stable', b_util.GetChannelNameFromPath(
+    self.assertEquals('stable', branch_utility.GetChannelNameFromPath(
         'hello/stuff.html'))
-    self.assertEquals('stable', b_util.GetChannelNameFromPath(
+    self.assertEquals('stable', branch_utility.GetChannelNameFromPath(
         'hello/dev/stuff.html'))
 
   def testGetBranchNumberForChannelName(self):
-    b_util = BranchUtility(test_urlfetch)
-    b_util.SetURL('branch_utility/first.json')
+    base_path = 'branch_utility/first.json'
     self.assertEquals('1132',
-        b_util.GetBranchNumberForChannelName('dev'))
+        branch_utility.GetBranchNumberForChannelName('dev',
+                                                     test_urlfetch,
+                                                     base_path))
     self.assertEquals('1084',
-        b_util.GetBranchNumberForChannelName('beta'))
+        branch_utility.GetBranchNumberForChannelName('beta',
+                                                     test_urlfetch,
+                                                     base_path))
     self.assertEquals('1234',
-        b_util.GetBranchNumberForChannelName('stable'))
+        branch_utility.GetBranchNumberForChannelName('stable',
+                                                     test_urlfetch,
+                                                     base_path))
     self.assertEquals('trunk',
-        b_util.GetBranchNumberForChannelName('trunk'))
+        branch_utility.GetBranchNumberForChannelName('trunk',
+                                                     test_urlfetch,
+                                                     base_path))
 
 if __name__ == '__main__':
   unittest.main()

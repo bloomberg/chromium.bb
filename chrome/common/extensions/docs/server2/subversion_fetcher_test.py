@@ -18,13 +18,15 @@ class TestSubversionFetcher(SubversionFetcher):
 
 class SubversionFetcherTest(unittest.TestCase):
   def testFetchResource(self):
-    fetcher = TestSubversionFetcher('', test_urlfetch)
+    fetcher_t = TestSubversionFetcher('trunk', '', test_urlfetch)
+    fetcher_b1 = TestSubversionFetcher('branch1', '', test_urlfetch)
+    fetcher_b2 = TestSubversionFetcher('branch2', '', test_urlfetch)
     self.assertEquals('trunk test\n',
-        fetcher.FetchResource('trunk', '/test.txt').content)
+        fetcher_t.FetchResource('/test.txt').content)
     self.assertEquals('branch1 test\n',
-        fetcher.FetchResource('branch1', '/test.txt').content)
+        fetcher_b1.FetchResource('/test.txt').content)
     self.assertEquals('branch2 test\n',
-        fetcher.FetchResource('branch2', '/test.txt').content)
+        fetcher_b2.FetchResource('/test.txt').content)
 
 if __name__ == '__main__':
   unittest.main()
