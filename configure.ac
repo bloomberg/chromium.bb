@@ -55,6 +55,11 @@ AC_ARG_ENABLE([documentation],
 
 AM_CONDITIONAL(ENABLE_SCANNER, test "x$enable_scanner" = xyes)
 
+AC_ARG_WITH(icondir, [  --with-icondir=<dir>    Look for cursor icons here],
+		     [  ICONDIR=$withval],
+		     [  ICONDIR=${datadir}/icons])
+AC_SUBST([ICONDIR])
+
 EXPAT_LIB=""
 AC_ARG_WITH(expat, [  --with-expat=<dir>      Use expat from here],
 		   [ expat=$withval
