@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,7 @@ int main(int argc, char **argv) {
 extern "C" {
 
 // Provide this symbol for unittests
-void xf86MsgVerb(int unused1, int unused2, const char* fmt, ...) {
+void gestures_log(int verb, const char* fmt, ...) {
   va_list args;
   va_start(args, fmt);
   vfprintf(stdout, fmt, args);

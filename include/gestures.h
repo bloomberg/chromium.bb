@@ -18,6 +18,13 @@ extern "C" {
 
 // C API:
 
+// external logging interface
+#define GESTURES_LOG_ERROR 0
+#define GESTURES_LOG_INFO 1
+
+// this function has to be provided by the user of the library.
+void gestures_log(int verb, const char* format, ...);
+
 typedef double stime_t;  // seconds
 
 stime_t StimeFromTimeval(const struct timeval*);
