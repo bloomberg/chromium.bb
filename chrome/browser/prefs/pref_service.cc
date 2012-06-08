@@ -225,6 +225,7 @@ PrefService::~PrefService() {
   user_pref_store_ = NULL;
   default_store_ = NULL;
   pref_sync_associator_.reset();
+  pref_notifier_.reset();
 }
 
 void PrefService::InitFromStorage(bool async) {
