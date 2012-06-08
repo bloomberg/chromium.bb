@@ -186,20 +186,18 @@ void ScreenLocker::OnLoginSuccess(
   }
 
   Profile* profile = ProfileManager::GetDefaultProfile();
-  if (profile) {
-    ProfileSyncService* service(
-        ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile));
-    if (service && !service->HasSyncSetupCompleted()) {
-      SigninManager* signin = SigninManagerFactory::GetForProfile(profile);
-      DCHECK(signin);
-      GoogleServiceSigninSuccessDetails details(
-          signin->GetAuthenticatedUsername(),
-          password);
-      content::NotificationService::current()->Notify(
-          chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
-          content::Source<Profile>(profile),
-          content::Details<const GoogleServiceSigninSuccessDetails>(&details));
-    }
+  if (profile && !password.empty()) {
+    // We have a non-empty password, so notify listeners (such as the sync
+    // engine).
+    SigninManager* signin = SigninManagerFactory::GetForProfile(profile);
+    DCHECK(signin);
+    GoogleServiceSigninSuccessDetails details(
+        signin->GetAuthenticatedUsername(),
+        password);
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
+        content::Source<Profile>(profile),
+        content::Details<const GoogleServiceSigninSuccessDetails>(&details));
   }
   DBusThreadManager::Get()->GetPowerManagerClient()->
       NotifyScreenUnlockRequested();
