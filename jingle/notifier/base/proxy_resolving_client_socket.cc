@@ -305,7 +305,7 @@ bool ProxyResolvingClientSocket::IsConnectedAndIdle() const {
 }
 
 int ProxyResolvingClientSocket::GetPeerAddress(
-    net::AddressList* address) const {
+    net::IPEndPoint* address) const {
   if (transport_.get() && transport_->socket())
     return transport_->socket()->GetPeerAddress(address);
   NOTREACHED();

@@ -126,19 +126,19 @@ void PepperTCPServerSocket::OnAcceptCompleted(
   } else {
     scoped_ptr<net::StreamSocket> socket(socket_buffer_.release());
 
-    net::IPEndPoint ip_end_point;
-    net::AddressList address_list;
+    net::IPEndPoint ip_end_point_local;
+    net::IPEndPoint ip_end_point_remote;
     PP_NetAddress_Private local_addr =
         NetAddressPrivateImpl::kInvalidNetAddress;
     PP_NetAddress_Private remote_addr =
         NetAddressPrivateImpl::kInvalidNetAddress;
 
-    if (socket->GetLocalAddress(&ip_end_point) != net::OK ||
-        !NetAddressPrivateImpl::IPEndPointToNetAddress(ip_end_point,
+    if (socket->GetLocalAddress(&ip_end_point_local) != net::OK ||
+        !NetAddressPrivateImpl::IPEndPointToNetAddress(ip_end_point_local,
                                                        &local_addr) ||
-        socket->GetPeerAddress(&address_list) != net::OK ||
-        !NetAddressPrivateImpl::AddressListToNetAddress(address_list,
-                                                        &remote_addr)) {
+        socket->GetPeerAddress(&ip_end_point_remote) != net::OK ||
+        !NetAddressPrivateImpl::IPEndPointToNetAddress(ip_end_point_remote,
+                                                       &remote_addr)) {
       SendAcceptACKError();
     } else {
       uint32 accepted_socket_id =

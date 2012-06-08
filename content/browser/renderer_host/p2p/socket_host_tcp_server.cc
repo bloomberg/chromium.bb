@@ -94,13 +94,12 @@ void P2PSocketHostTcpServer::HandleAcceptResult(int result) {
     return;
   }
 
-  net::AddressList addr_list;
-  if (accept_socket_->GetPeerAddress(&addr_list) != net::OK) {
+  net::IPEndPoint address;
+  if (accept_socket_->GetPeerAddress(&address) != net::OK) {
     LOG(ERROR) << "Failed to get address of an accepted socket.";
     accept_socket_.reset();
     return;
   }
-  const net::IPEndPoint& address = addr_list.front();
   AcceptedSocketsMap::iterator it = accepted_sockets_.find(address);
   if (it != accepted_sockets_.end())
     delete it->second;

@@ -56,7 +56,7 @@ class MockClientSocket : public net::StreamSocket {
   MOCK_METHOD0(Disconnect, void());
   MOCK_CONST_METHOD0(IsConnected, bool());
   MOCK_CONST_METHOD0(IsConnectedAndIdle, bool());
-  MOCK_CONST_METHOD1(GetPeerAddress, int(net::AddressList*));
+  MOCK_CONST_METHOD1(GetPeerAddress, int(net::IPEndPoint*));
   MOCK_CONST_METHOD1(GetLocalAddress, int(net::IPEndPoint*));
   MOCK_CONST_METHOD0(NetLog, const net::BoundNetLog&());
   MOCK_METHOD0(SetSubresourceSpeculation, void());
@@ -270,12 +270,12 @@ TEST_F(FakeSSLClientSocketTest, PassThroughMethods) {
   MockClientSocket* mock_client_socket = new MockClientSocket();
   const int kReceiveBufferSize = 10;
   const int kSendBufferSize = 20;
-  net::AddressList address_list;
+  net::IPEndPoint ip_endpoint(net::IPAddressNumber(net::kIPv4AddressSize), 80);
   const int kPeerAddress = 30;
   net::BoundNetLog net_log;
   EXPECT_CALL(*mock_client_socket, SetReceiveBufferSize(kReceiveBufferSize));
   EXPECT_CALL(*mock_client_socket, SetSendBufferSize(kSendBufferSize));
-  EXPECT_CALL(*mock_client_socket, GetPeerAddress(&address_list)).
+  EXPECT_CALL(*mock_client_socket, GetPeerAddress(&ip_endpoint)).
       WillOnce(Return(kPeerAddress));
   EXPECT_CALL(*mock_client_socket, NetLog()).WillOnce(ReturnRef(net_log));
   EXPECT_CALL(*mock_client_socket, SetSubresourceSpeculation());
@@ -286,7 +286,7 @@ TEST_F(FakeSSLClientSocketTest, PassThroughMethods) {
   fake_ssl_client_socket.SetReceiveBufferSize(kReceiveBufferSize);
   fake_ssl_client_socket.SetSendBufferSize(kSendBufferSize);
   EXPECT_EQ(kPeerAddress,
-            fake_ssl_client_socket.GetPeerAddress(&address_list));
+            fake_ssl_client_socket.GetPeerAddress(&ip_endpoint));
   EXPECT_EQ(&net_log, &fake_ssl_client_socket.NetLog());
   fake_ssl_client_socket.SetSubresourceSpeculation();
   fake_ssl_client_socket.SetOmniboxSpeculation();

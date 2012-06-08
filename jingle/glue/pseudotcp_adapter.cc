@@ -521,13 +521,13 @@ bool PseudoTcpAdapter::IsConnectedAndIdle() const {
   return false;
 }
 
-int PseudoTcpAdapter::GetPeerAddress(net::AddressList* address) const {
+int PseudoTcpAdapter::GetPeerAddress(net::IPEndPoint* address) const {
   DCHECK(CalledOnValidThread());
 
   // We don't have a meaningful peer address, but we can't return an
   // error, so we return a INADDR_ANY instead.
-  net::IPAddressNumber ip_address(4);
-  *address = net::AddressList::CreateFromIPAddress(ip_address, 0);
+  net::IPAddressNumber ip_address(net::kIPv4AddressSize);
+  *address = net::IPEndPoint(ip_address, 0);
   return net::OK;
 }
 

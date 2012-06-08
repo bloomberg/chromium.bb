@@ -42,7 +42,7 @@ class PseudoTcpAdapter : public net::StreamSocket, base::NonThreadSafe {
   virtual void Disconnect() OVERRIDE;
   virtual bool IsConnected() const OVERRIDE;
   virtual bool IsConnectedAndIdle() const OVERRIDE;
-  virtual int GetPeerAddress(net::AddressList* address) const OVERRIDE;
+  virtual int GetPeerAddress(net::IPEndPoint* address) const OVERRIDE;
   virtual int GetLocalAddress(net::IPEndPoint* address) const OVERRIDE;
   virtual const net::BoundNetLog& NetLog() const OVERRIDE;
   virtual void SetSubresourceSpeculation() OVERRIDE;

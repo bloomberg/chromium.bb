@@ -113,15 +113,13 @@ bool FakeSocket::IsConnectedAndIdle() const {
   return false;
 }
 
-int FakeSocket::GetPeerAddress(net::AddressList* address) const {
-  net::IPAddressNumber ip;
-  ip.resize(net::kIPv4AddressSize);
-  *address = net::AddressList::CreateFromIPAddress(ip, 0);
+int FakeSocket::GetPeerAddress(net::IPEndPoint* address) const {
+  net::IPAddressNumber ip(net::kIPv4AddressSize);
+  *address = net::IPEndPoint(ip, 0);
   return net::OK;
 }
 
-int FakeSocket::GetLocalAddress(
-    net::IPEndPoint* address) const {
+int FakeSocket::GetLocalAddress(net::IPEndPoint* address) const {
   NOTIMPLEMENTED();
   return net::ERR_FAILED;
 }

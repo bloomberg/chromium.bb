@@ -302,7 +302,7 @@ bool FakeSSLClientSocket::IsConnectedAndIdle() const {
   return handshake_completed_ && transport_socket_->IsConnectedAndIdle();
 }
 
-int FakeSSLClientSocket::GetPeerAddress(net::AddressList* address) const {
+int FakeSSLClientSocket::GetPeerAddress(net::IPEndPoint* address) const {
   return transport_socket_->GetPeerAddress(address);
 }
 

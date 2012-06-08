@@ -41,12 +41,12 @@ bool CurveCPClientSocket::IsConnectedAndIdle() const {
   return false;
 }
 
-int CurveCPClientSocket::GetPeerAddress(AddressList* address) const {
+int CurveCPClientSocket::GetPeerAddress(IPEndPoint* address) const {
   IPEndPoint endpoint;
   int rv = packetizer_.GetPeerAddress(&endpoint);
   if (rv < 0)
     return rv;
-  *address = AddressList(endpoint);
+  *address = endpoint;
   return OK;
 }
 

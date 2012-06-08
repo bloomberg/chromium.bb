@@ -217,11 +217,9 @@ bool TransportSocket::IsConnectedAndIdle() const {
   return false;
 }
 
-int TransportSocket::GetPeerAddress(net::AddressList* address) const {
+int TransportSocket::GetPeerAddress(net::IPEndPoint* address) const {
   talk_base::SocketAddress socket_address = socket_->GetRemoteAddress();
-  net::IPEndPoint endpoint;
-  if (jingle_glue::SocketAddressToIPEndPoint(socket_address, &endpoint)) {
-    *address = net::AddressList(endpoint);
+  if (jingle_glue::SocketAddressToIPEndPoint(socket_address, address)) {
     return net::OK;
   } else {
     return net::ERR_FAILED;

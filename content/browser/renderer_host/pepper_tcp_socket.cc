@@ -317,19 +317,19 @@ void PepperTCPSocket::OnConnectCompleted(int result) {
     SendConnectACKError();
     connection_state_ = BEFORE_CONNECT;
   } else {
-    net::IPEndPoint ip_end_point;
-    net::AddressList address_list;
+    net::IPEndPoint ip_end_point_local;
+    net::IPEndPoint ip_end_point_remote;
     PP_NetAddress_Private local_addr =
         NetAddressPrivateImpl::kInvalidNetAddress;
     PP_NetAddress_Private remote_addr =
         NetAddressPrivateImpl::kInvalidNetAddress;
 
-    if (socket_->GetLocalAddress(&ip_end_point) != net::OK ||
-        !NetAddressPrivateImpl::IPEndPointToNetAddress(ip_end_point,
+    if (socket_->GetLocalAddress(&ip_end_point_local) != net::OK ||
+        !NetAddressPrivateImpl::IPEndPointToNetAddress(ip_end_point_local,
                                                        &local_addr) ||
-        socket_->GetPeerAddress(&address_list) != net::OK ||
-        !NetAddressPrivateImpl::AddressListToNetAddress(address_list,
-                                                        &remote_addr)) {
+        socket_->GetPeerAddress(&ip_end_point_remote) != net::OK ||
+        !NetAddressPrivateImpl::IPEndPointToNetAddress(ip_end_point_remote,
+                                                       &remote_addr)) {
       SendConnectACKError();
       connection_state_ = BEFORE_CONNECT;
     } else {

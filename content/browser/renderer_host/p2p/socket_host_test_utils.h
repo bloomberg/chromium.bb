@@ -66,7 +66,7 @@ class FakeSocket : public net::StreamSocket {
   virtual void Disconnect() OVERRIDE;
   virtual bool IsConnected() const OVERRIDE;
   virtual bool IsConnectedAndIdle() const OVERRIDE;
-  virtual int GetPeerAddress(net::AddressList* address) const OVERRIDE;
+  virtual int GetPeerAddress(net::IPEndPoint* address) const OVERRIDE;
   virtual int GetLocalAddress(net::IPEndPoint* address) const OVERRIDE;
   virtual const net::BoundNetLog& NetLog() const OVERRIDE;
   virtual void SetSubresourceSpeculation() OVERRIDE;
@@ -180,9 +180,8 @@ bool FakeSocket::IsConnectedAndIdle() const {
   return false;
 }
 
-int FakeSocket::GetPeerAddress(net::AddressList* address) const {
-  *address = net::AddressList::CreateFromIPAddress(peer_address_.address(),
-                                                   peer_address_.port());
+int FakeSocket::GetPeerAddress(net::IPEndPoint* address) const {
+  *address = peer_address_;
   return net::OK;
 }
 
