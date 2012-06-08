@@ -50,8 +50,10 @@ const char* PlatformString() {
 
 // Returns a string suitable for the Promo Server URL 'dist' value.
 const char* ChannelString() {
+  // GetChannel hits the registry on Windows. See http://crbug.com/70898.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
   const chrome::VersionInfo::Channel channel =
-      PromoResourceService::GetChannel();
+      chrome::VersionInfo::GetChannel();
   switch (channel) {
     case chrome::VersionInfo::CHANNEL_CANARY:
       return "canary";
