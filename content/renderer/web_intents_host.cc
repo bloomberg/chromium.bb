@@ -12,161 +12,47 @@
 #include "ipc/ipc_message.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBlob.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDeliveredIntentClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIntent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIntentRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSerializedScriptValue.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebVector.h"
 #include "v8/include/v8.h"
 #include "webkit/glue/cpp_bound_class.h"
 
 using WebKit::WebBindings;
 using WebKit::WebBlob;
 using WebKit::WebCString;
+using WebKit::WebDeliveredIntentClient;
 using WebKit::WebFrame;
+using WebKit::WebIntent;
 using WebKit::WebIntentRequest;
 using WebKit::WebString;
 using WebKit::WebSerializedScriptValue;
-using webkit_glue::CppArgumentList;
-using webkit_glue::CppBoundClass;
-using webkit_glue::CppVariant;
+using WebKit::WebVector;
 
-// This class encapsulates the API the Intent object will expose to Javascript.
-// It is made available to the Javascript runtime in the service page using
-// NPAPI methods as with plugin/Javascript interaction objects and other
-// browser-provided Javascript API objects on |window|.
-class WebIntentsHost::BoundDeliveredIntent : public CppBoundClass {
+class DeliveredIntentClientImpl : public WebDeliveredIntentClient {
  public:
-  BoundDeliveredIntent(const webkit_glue::WebIntentData& intent,
-                       WebIntentsHost* parent,
-                       WebFrame* frame) {
-    action_ = WebString(intent.action).utf8();
-    type_ = WebString(intent.type).utf8();
-    extra_data_ = intent.extra_data;
-    parent_ = parent;
+  explicit DeliveredIntentClientImpl(WebIntentsHost* host) : host_(host) {}
+  virtual ~DeliveredIntentClientImpl() {}
 
-    v8::HandleScope scope;
-    v8::Local<v8::Context> ctx = frame->mainWorldScriptContext();
-    v8::Context::Scope cscope(ctx);
-    v8::Local<v8::Value> data_obj;
-
-    if (intent.data_type == webkit_glue::WebIntentData::SERIALIZED) {
-      WebSerializedScriptValue ssv =
-          WebSerializedScriptValue::fromString(WebString(intent.data));
-      DCHECK(!ssv.isNull());
-      data_obj = v8::Local<v8::Value>::New(ssv.deserialize());
-    } else if (intent.data_type == webkit_glue::WebIntentData::UNSERIALIZED) {
-      data_obj = v8::String::New(
-          reinterpret_cast<const uint16_t*>(intent.unserialized_data.data()),
-          static_cast<int>(intent.unserialized_data.length()));
-    } else {
-      DCHECK(intent.data_type == webkit_glue::WebIntentData::BLOB);
-      web_blob_ = WebBlob::createFromFile(
-          WebString::fromUTF8(intent.blob_file.AsUTF8Unsafe()),
-          intent.blob_length);
-      data_obj = v8::Local<v8::Value>::New(web_blob_.toV8Value());
-    }
-
-    data_val_.reset(new CppVariant);
-    WebBindings::toNPVariant(data_obj, frame->windowObject(), data_val_.get());
-
-    BindGetterCallback("action", base::Bind(&BoundDeliveredIntent::GetAction,
-                                            base::Unretained(this)));
-    BindGetterCallback("type", base::Bind(&BoundDeliveredIntent::GetType,
-                                          base::Unretained(this)));
-    BindGetterCallback("data", base::Bind(&BoundDeliveredIntent::GetData,
-                                          base::Unretained(this)));
-    BindCallback("getExtra", base::Bind(&BoundDeliveredIntent::GetExtra,
-                                        base::Unretained(this)));
-    BindCallback("postResult", base::Bind(&BoundDeliveredIntent::PostResult,
-                                          base::Unretained(this)));
-    BindCallback("postFailure", base::Bind(&BoundDeliveredIntent::PostFailure,
-                                           base::Unretained(this)));
+  virtual void postResult(const WebSerializedScriptValue& data) const {
+    host_->OnResult(data.toString());
   }
 
-  virtual ~BoundDeliveredIntent() {
+  virtual void postFailure(const WebSerializedScriptValue& data) const {
+    host_->OnFailure(data.toString());
   }
 
-  WebString SerializeCppVariant(const CppVariant& val) {
-    v8::HandleScope scope;
-    v8::Handle<v8::Value> v8obj = WebBindings::toV8Value(&val);
-
-    WebSerializedScriptValue ssv =
-        WebSerializedScriptValue::serialize(v8obj);
-    if (ssv.isNull())
-      return WebKit::WebString();
-
-    return ssv.toString();
-  }
-
-  void PostResult(const CppArgumentList& args, CppVariant* retval) {
-    if (args.size() != 1) {
-      WebBindings::setException(NULL, "Must pass one argument to postResult");
-      return;
-    }
-
-    WebString str = SerializeCppVariant(args[0]);
-    parent_->OnResult(str);
-  }
-
-  void PostFailure(const CppArgumentList& args, CppVariant* retval) {
-    if (args.size() != 1) {
-      WebBindings::setException(NULL, "Must pass one argument to postFailure");
-      return;
-    }
-
-    WebString str = SerializeCppVariant(args[0]);
-    parent_->OnFailure(str);
-  }
-
-  void GetAction(CppVariant* result) {
-    std::string action;
-    action.assign(action_.data(), action_.length());
-    result->Set(action);
-  }
-
-  void GetType(CppVariant* result) {
-    std::string type;
-    type.assign(type_.data(), type_.length());
-    result->Set(type);
-  }
-
-  void GetData(CppVariant* result) {
-    result->Set(*data_val_.get());
-  }
-
-  void GetExtra(const CppArgumentList& args, CppVariant* result) {
-    if (args.size() != 1) {
-      WebBindings::setException(NULL, "Must pass one argument to getExtra");
-      return;
-    }
-
-    if (!args[0].isString()) {
-      WebBindings::setException(NULL, "Argument to getExtra must be a string");
-      return;
-    }
-
-    std::string str = args[0].ToString();
-    std::map<string16, string16>::const_iterator iter =
-        extra_data_.find(UTF8ToUTF16(str));
-    if (iter == extra_data_.end()) {
-      result->SetNull();
-      return;
-    }
-    std::string val = UTF16ToUTF8(iter->second);
-    result->Set(val);
+  virtual void destroy() OVERRIDE {
   }
 
  private:
-  // Intent data suitable for surfacing to Javascript callers.
-  WebCString action_;
-  WebCString type_;
-  std::map<string16, string16> extra_data_;
-  WebBlob web_blob_;
-  scoped_ptr<CppVariant> data_val_;
-
-  // The dispatcher object, for forwarding postResult/postFailure calls.
-  WebIntentsHost* parent_;
+  WebIntentsHost* host_;
 };
 
 WebIntentsHost::WebIntentsHost(RenderViewImpl* render_view)
@@ -230,14 +116,59 @@ void WebIntentsHost::OnFailure(const WebKit::WebString& data) {
 
 // We set the intent payload into all top-level frame window objects. This
 // should persist the data through redirects, and not deliver it to any
-// sub-frames. TODO(gbillock): This policy needs to be fine-tuned and
-// documented.
+// sub-frames.
+// TODO(gbillock): match to spec to double-check registration match before
+// delivery.
 void WebIntentsHost::DidClearWindowObject(WebFrame* frame) {
   if (intent_.get() == NULL || frame->top() != frame)
     return;
-  if (!delivered_intent_.get()) {
-    delivered_intent_.reset(
-        new BoundDeliveredIntent(*(intent_.get()), this, frame));
+
+  if (!delivered_intent_client_.get()) {
+    delivered_intent_client_.reset(new DeliveredIntentClientImpl(this));
   }
-  delivered_intent_->BindToJavascript(frame, "webkitIntent");
+
+  WebVector<WebString> extras_keys(intent_->extra_data.size());
+  WebVector<WebString> extras_values(intent_->extra_data.size());
+  std::map<string16, string16>::iterator iter;
+  int i;
+  for (i = 0, iter = intent_->extra_data.begin();
+       iter != intent_->extra_data.end();
+       ++i, ++iter) {
+    extras_keys[i] = iter->first;
+    extras_values[i] = iter->second;
+  }
+
+  v8::HandleScope scope;
+  v8::Local<v8::Context> ctx = frame->mainWorldScriptContext();
+  v8::Context::Scope cscope(ctx);
+  WebIntent web_intent;
+
+  if (intent_->data_type == webkit_glue::WebIntentData::SERIALIZED) {
+    web_intent = WebIntent::create(intent_->action, intent_->type,
+                                   intent_->data,
+                                   extras_keys, extras_values);
+  } else if (intent_->data_type == webkit_glue::WebIntentData::UNSERIALIZED) {
+    v8::Local<v8::String> dataV8 = v8::String::New(
+        reinterpret_cast<const uint16_t*>(intent_->unserialized_data.data()),
+        static_cast<int>(intent_->unserialized_data.length()));
+    WebSerializedScriptValue serialized_data =
+        WebSerializedScriptValue::serialize(dataV8);
+
+    web_intent = WebIntent::create(intent_->action, intent_->type,
+                                   serialized_data.toString(),
+                                   extras_keys, extras_values);
+  } else {
+    DCHECK(intent_->data_type == webkit_glue::WebIntentData::BLOB);
+    web_blob_ = WebBlob::createFromFile(
+        WebString::fromUTF8(intent_->blob_file.AsUTF8Unsafe()),
+        intent_->blob_length);
+    WebSerializedScriptValue serialized_data =
+        WebSerializedScriptValue::serialize(web_blob_.toV8Value());
+    web_intent = WebIntent::create(intent_->action, intent_->type,
+                                   serialized_data.toString(),
+                                   extras_keys, extras_values);
+  }
+
+  if (!web_intent.action().isEmpty())
+    frame->deliverIntent(web_intent, NULL, delivered_intent_client_.get());
 }
