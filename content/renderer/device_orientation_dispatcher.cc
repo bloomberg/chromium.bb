@@ -48,10 +48,7 @@ void DeviceOrientationDispatcher::stopUpdating() {
 
 WebKit::WebDeviceOrientation DeviceOrientationDispatcher::lastOrientation()
     const {
-  if (!last_orientation_.get())
-    return WebKit::WebDeviceOrientation::nullOrientation();
-
-  return *last_orientation_;
+   return last_orientation_;
 }
 
 namespace {
@@ -80,17 +77,17 @@ bool OrientationsEqual(const DeviceOrientationMsg_Updated_Params& a,
 
 void DeviceOrientationDispatcher::OnDeviceOrientationUpdated(
     const DeviceOrientationMsg_Updated_Params& p) {
-  if (last_orientation_.get() && OrientationsEqual(p, last_orientation_.get()))
+  if (!last_orientation_.isNull() && OrientationsEqual(p, &last_orientation_))
     return;
 
-  last_orientation_.reset(new WebKit::WebDeviceOrientation(p.can_provide_alpha,
-                                                       p.alpha,
-                                                       p.can_provide_beta,
-                                                       p.beta,
-                                                       p.can_provide_gamma,
-                                                       p.gamma,
-                                                       p.can_provide_absolute,
-                                                       p.absolute));
-
-  controller_->didChangeDeviceOrientation(*last_orientation_);
+  last_orientation_.setNull(false);
+  if (p.can_provide_alpha)
+    last_orientation_.setAlpha(p.alpha);
+  if (p.can_provide_beta)
+    last_orientation_.setBeta(p.beta);
+  if (p.can_provide_gamma)
+    last_orientation_.setGamma(p.gamma);
+  if (p.can_provide_absolute)
+    last_orientation_.setAbsolute(p.absolute);
+  controller_->didChangeDeviceOrientation(last_orientation_);
 }
