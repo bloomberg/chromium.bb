@@ -22,6 +22,9 @@ CONTENT_EXPORT extern const FilePath::CharType kAppCacheDirname[];
 // data is put.
 CONTENT_EXPORT extern const FilePath::CharType kPepperDataDirname[];
 
+// The MIME type used for the browser plugin.
+CONTENT_EXPORT extern const char kBrowserPluginMimeType[];
+
 CONTENT_EXPORT extern const size_t kMaxRendererProcessCount;
 
 // The maximum number of session history entries per tab.

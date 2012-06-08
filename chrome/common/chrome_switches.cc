@@ -125,6 +125,9 @@ const char kAutomationClientChannelID[]     = "automation-channel";
 const char kAutomationReinitializeOnChannelError[] =
     "automation-reinitialize-on-channel-error";
 
+// Enables the browser plugin only in a platform app.
+const char kBrowserPluginPlatformApps[] = "platform-apps-only";
+
 // This enables automatic captive portal checking on certain network errors.
 // If a captive portal is detected, a login tab will be opened.
 const char kCaptivePortalDetection[]        = "enable-captive-portal-detection";

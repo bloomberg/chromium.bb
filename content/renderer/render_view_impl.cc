@@ -2256,16 +2256,22 @@ void RenderViewImpl::didActivateCompositor(int input_handler_identifier) {
 
 WebPlugin* RenderViewImpl::createPlugin(WebFrame* frame,
                                         const WebPluginParams& params) {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kEnableBrowserPlugin) &&
-      UTF16ToASCII(params.mimeType) == kBrowserPluginMimeType)
-    return BrowserPlugin::Create(this, frame, params);
-
   WebPlugin* plugin = NULL;
   if (content::GetContentClient()->renderer()->OverrideCreatePlugin(
           this, frame, params, &plugin)) {
     return plugin;
   }
+
+  std::string browser_plugin_switch = CommandLine::ForCurrentProcess()->
+      GetSwitchValueASCII(switches::kBrowserPlugin);
+  // Check only that the browser plugin isn't disabled. The client layer
+  // may have provided additional selective enabling of the plugin, and
+  // so we can't assume that 'enabled' is the only state where it should
+  // be activated. If it isn't, then the client layer should have caught
+  // this in OverrideCreatePlugin already.
+  if (!browser_plugin_switch.empty() &&
+      UTF16ToASCII(params.mimeType) == content::kBrowserPluginMimeType)
+    return BrowserPlugin::Create(this, frame, params);
 
   webkit::WebPluginInfo info;
   std::string mime_type;

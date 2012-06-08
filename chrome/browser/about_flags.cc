@@ -82,6 +82,16 @@ const Experiment::Choice kOmniboxHistoryQuickProviderNewScoringChoices[] = {
     switches::kOmniboxHistoryQuickProviderNewScoringDisabled }
 };
 
+const Experiment::Choice kBrowserPluginChoices[] = {
+  { IDS_FLAGS_BROWSER_PLUGIN_DISABLED, "", "" },
+  { IDS_FLAGS_BROWSER_PLUGIN_PLATFORM_APPS,
+    switches::kBrowserPlugin,
+    switches::kBrowserPluginPlatformApps },
+  { IDS_FLAGS_BROWSER_PLUGIN_ENABLED,
+    switches::kBrowserPlugin,
+    switches::kBrowserPluginEnabled },
+};
+
 const Experiment::Choice kOmniboxInlineHistoryQuickProviderChoices[] = {
   { IDS_FLAGS_OMNIBOX_INLINE_HISTORY_QUICK_PROVIDER_AUTOMATIC, "", "" },
   { IDS_FLAGS_OMNIBOX_INLINE_HISTORY_QUICK_PROVIDER_ALLOWED,
@@ -267,7 +277,7 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_BROWSER_PLUGIN_NAME,
     IDS_FLAGS_ENABLE_BROWSER_PLUGIN_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableBrowserPlugin)
+    MULTI_VALUE_TYPE(kBrowserPluginChoices)
   },
   {
     "fixed-position-creates-stacking-context",

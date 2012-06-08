@@ -742,6 +742,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kAllowScriptingGallery,
       switches::kAppsCheckoutURL,
       switches::kAppsGalleryURL,
+      switches::kBrowserPlugin,
       switches::kCloudPrintServiceURL,
       switches::kDebugPrint,
       switches::kDisableAsynchronousSpellChecking,

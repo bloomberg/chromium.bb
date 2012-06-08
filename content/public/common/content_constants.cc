@@ -10,6 +10,8 @@ const FilePath::CharType kAppCacheDirname[] =
 const FilePath::CharType kPepperDataDirname[] =
     FILE_PATH_LITERAL("Pepper Data");
 
+const char kBrowserPluginMimeType[] = "application/browser-plugin";
+
 // This number used to be limited to 32 in the past (see b/535234).
 const size_t kMaxRendererProcessCount = 82;
 const int kMaxSessionHistoryEntries = 50;

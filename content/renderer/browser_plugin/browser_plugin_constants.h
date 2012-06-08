@@ -9,7 +9,6 @@
 #include "base/file_path.h"
 
 extern const char kBrowserPluginName[];
-extern const char kBrowserPluginMimeType[];
 extern const FilePath::CharType kBrowserPluginPath[];
 extern const char kBrowserPluginDescription[];
 

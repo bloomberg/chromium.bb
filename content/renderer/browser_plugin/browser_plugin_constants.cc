@@ -5,7 +5,6 @@
 #include "content/renderer/browser_plugin/browser_plugin_constants.h"
 
 const char kBrowserPluginName[] = "Browser Plugin";
-const char kBrowserPluginMimeType[] = "application/browser-plugin";
 const FilePath::CharType kBrowserPluginPath[] =
     FILE_PATH_LITERAL("internal/browser-plugin");
 const char kBrowserPluginDescription[] = "Out-of-Process Browser Plugin";

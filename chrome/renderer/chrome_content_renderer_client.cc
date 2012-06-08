@@ -65,6 +65,7 @@
 #include "chrome/renderer/spellchecker/spellcheck_provider.h"
 #include "chrome/renderer/translate_helper.h"
 #include "chrome/renderer/visitedlink_slave.h"
+#include "content/public/common/content_constants.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "grit/generated_resources.h"
@@ -308,9 +309,19 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
   ChromeViewHostMsg_GetPluginInfo_Status status;
   webkit::WebPluginInfo plugin_info;
   std::string actual_mime_type;
+  std::string orig_mime_type = params.mimeType.utf8();
+
+  std::string browser_plugin_switch = CommandLine::ForCurrentProcess()->
+      GetSwitchValueASCII(switches::kBrowserPlugin);
+  if (orig_mime_type == content::kBrowserPluginMimeType &&
+      (browser_plugin_switch == switches::kBrowserPluginEnabled ||
+       (browser_plugin_switch == switches::kBrowserPluginPlatformApps &&
+        ExtensionHelper::Get(render_view)->view_type() == VIEW_TYPE_APP_SHELL)))
+      return false;
+
   render_view->Send(new ChromeViewHostMsg_GetPluginInfo(
       render_view->GetRoutingID(), GURL(params.url),
-      frame->top()->document().url(), params.mimeType.utf8(),
+      frame->top()->document().url(), orig_mime_type,
       &status, &plugin_info, &actual_mime_type));
   *plugin = CreatePlugin(render_view, frame, params,
                          status, plugin_info, actual_mime_type);
@@ -355,7 +366,12 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
   GURL url(original_params.url);
   std::string orig_mime_type = original_params.mimeType.utf8();
   PluginPlaceholder* placeholder = NULL;
-  if (status_value == ChromeViewHostMsg_GetPluginInfo_Status::kNotFound) {
+
+  // If the browser plugin is to be enabled, this should be handled by the
+  // renderer, so the code won't reach here due to the early exit in
+  // OverrideCreatePlugin.
+  if (status_value == ChromeViewHostMsg_GetPluginInfo_Status::kNotFound ||
+      orig_mime_type == content::kBrowserPluginMimeType) {
 #if defined(ENABLE_MOBILE_YOUTUBE_PLUGIN)
     if (PluginPlaceholder::IsYouTubeURL(url, orig_mime_type))
       return PluginPlaceholder::CreateMobileYoutubePlugin(render_view, frame,

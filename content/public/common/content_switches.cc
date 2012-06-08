@@ -29,6 +29,15 @@ const char kBrowserAssertTest[]             = "assert-test";
 // Causes the browser process to crash on startup.
 const char kBrowserCrashTest[]              = "crash-test";
 
+// Browser plugin control name
+const char kBrowserPlugin[]                 = "browser-plugin";
+
+// Disable the plugin entirely
+const char kBrowserPluginDisabled[]         = "disabled";
+
+// Enable the plugin in all cases
+const char kBrowserPluginEnabled[]          = "enabled";
+
 // Path to the exe to run for the renderer and plugin subprocesses.
 const char kBrowserSubprocessPath[]         = "browser-subprocess-path";
 
@@ -231,9 +240,6 @@ const char kEnableAcceleratedFilters[]      = "enable-accelerated-filters";
 
 // Turns on extremely verbose logging of accessibility events.
 const char kEnableAccessibilityLogging[]    = "enable-accessibility-logging";
-
-// Turns on the browser plugin.
-const char kEnableBrowserPlugin[]           = "enable-browser-plugin";
 
 // Enables the creation of compositing layers for fixed position elements.
 const char kEnableCompositingForFixedPosition[] =
