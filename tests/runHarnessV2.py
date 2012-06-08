@@ -72,7 +72,7 @@ class BrailleTest():
         self.testmode = testmode
 
     def __str__(self):
-        return "%s: %s" % (self.harnessName, self.input)
+        return "%s" % self.harnessName
 
     def check_translate(self):
         if self.cursorPos is not None:
