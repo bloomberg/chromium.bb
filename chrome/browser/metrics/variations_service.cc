@@ -4,6 +4,8 @@
 
 #include "chrome/browser/metrics/variations_service.h"
 
+#include <set>
+
 #include "base/base64.h"
 #include "base/build_time.h"
 #include "base/memory/scoped_ptr.h"
@@ -44,6 +46,24 @@ chrome::VersionInfo::Channel ConvertStudyChannelToVersionChannel(
   // All enum values of |study_channel| were handled above.
   NOTREACHED();
   return chrome::VersionInfo::CHANNEL_UNKNOWN;
+}
+
+chrome_variations::Study_Platform GetCurrentPlatform() {
+#if defined(OS_WIN)
+  return chrome_variations::Study_Platform_PLATFORM_WINDOWS;
+#elif defined(OS_MACOSX)
+  return chrome_variations::Study_Platform_PLATFORM_MAC;
+#elif defined(OS_CHROMEOS)
+  return chrome_variations::Study_Platform_PLATFORM_CHROMEOS;
+#elif defined(OS_ANDROID)
+  return chrome_variations::Study_Platform_PLATFORM_ANDROID;
+#elif defined(OS_LINUX) || defined(OS_BSD) || defined(OS_SOLARIS)
+  // Default BSD and SOLARIS to Linux to not break those builds, although these
+  // platforms are not officially supported by Chrome.
+  return chrome_variations::Study_Platform_PLATFORM_LINUX;
+#else
+#error Unknown platform
+#endif
 }
 
 // Converts |date_time| in chrome_variations::Study date format to base::Time.
@@ -151,19 +171,27 @@ bool VariationsService::ShouldAddStudy(
     const chrome_variations::Study& study,
     const chrome::VersionInfo& version_info,
     const base::Time& reference_date) {
-  if (!CheckStudyChannel(study, chrome::VersionInfo::GetChannel())) {
-    DVLOG(1) << "Filtered out study " << study.name() << " due to version.";
-    return false;
-  }
+  if (study.has_filter()) {
+    if (!CheckStudyChannel(study.filter(), chrome::VersionInfo::GetChannel())) {
+      DVLOG(1) << "Filtered out study " << study.name() << " due to channel.";
+      return false;
+    }
 
-  if (!CheckStudyVersion(study, version_info.Version())) {
-    DVLOG(1) << "Filtered out study " << study.name() << " due to version.";
-    return false;
-  }
+    if (!CheckStudyPlatform(study.filter(), GetCurrentPlatform())) {
+      DVLOG(1) << "Filtered out study " << study.name() << " due to platform.";
+      return false;
+    }
 
-  if (!CheckStudyStartDate(study, reference_date)) {
-    DVLOG(1) << "Filtered out study " << study.name() << " due to start date.";
-    return false;
+    if (!CheckStudyVersion(study.filter(), version_info.Version())) {
+      DVLOG(1) << "Filtered out study " << study.name() << " due to version.";
+      return false;
+    }
+
+    if (!CheckStudyStartDate(study.filter(), reference_date)) {
+      DVLOG(1) << "Filtered out study " << study.name() <<
+                  " due to start date.";
+      return false;
+    }
   }
 
   DVLOG(1) << "Kept study " << study.name() << ".";
@@ -172,38 +200,54 @@ bool VariationsService::ShouldAddStudy(
 
 // static
 bool VariationsService::CheckStudyChannel(
-    const chrome_variations::Study& study,
+    const chrome_variations::Study_Filter& filter,
     chrome::VersionInfo::Channel channel) {
   // An empty channel list matches all channels.
-  if (study.channel_size() == 0)
+  if (filter.channel_size() == 0)
     return true;
 
-  for (int i = 0; i < study.channel_size(); ++i) {
-    if (ConvertStudyChannelToVersionChannel(study.channel(i)) == channel)
+  for (int i = 0; i < filter.channel_size(); ++i) {
+    if (ConvertStudyChannelToVersionChannel(filter.channel(i)) == channel)
       return true;
   }
   return false;
 }
 
 // static
-bool VariationsService::CheckStudyVersion(const chrome_variations::Study& study,
-                                          const std::string& version_string) {
+bool VariationsService::CheckStudyPlatform(
+    const chrome_variations::Study_Filter& filter,
+    chrome_variations::Study_Platform platform) {
+  // An empty platform list matches all platforms.
+  if (filter.platform_size() == 0)
+    return true;
+
+  for (int i = 0; i < filter.platform_size(); ++i) {
+    if (filter.platform(i) == platform)
+      return true;
+  }
+  return false;
+}
+
+// static
+bool VariationsService::CheckStudyVersion(
+    const chrome_variations::Study_Filter& filter,
+    const std::string& version_string) {
   const Version version(version_string);
   if (!version.IsValid()) {
     NOTREACHED();
     return false;
   }
 
-  if (study.has_min_version()) {
-    const Version min_version(study.min_version());
+  if (filter.has_min_version()) {
+    const Version min_version(filter.min_version());
     if (!min_version.IsValid())
       return false;
     if (version.CompareTo(min_version) < 0)
       return false;
   }
 
-  if (study.has_max_version()) {
-    const Version max_version(study.max_version());
+  if (filter.has_max_version()) {
+    const Version max_version(filter.max_version());
     if (!max_version.IsValid())
       return false;
     if (version.CompareTo(max_version) > 0)
@@ -215,11 +259,11 @@ bool VariationsService::CheckStudyVersion(const chrome_variations::Study& study,
 
 // static
 bool VariationsService::CheckStudyStartDate(
-    const chrome_variations::Study& study,
+    const chrome_variations::Study_Filter& filter,
     const base::Time& date_time) {
-  if (study.has_start_date()) {
+  if (filter.has_start_date()) {
     const base::Time start_date =
-        ConvertStudyDateToBaseTime(study.start_date());
+        ConvertStudyDateToBaseTime(filter.start_date());
     return date_time >= start_date;
   }
 

@@ -32,39 +32,88 @@ TEST(VariationsServiceTest, CheckStudyChannel) {
   ASSERT_EQ(arraysize(channels), arraysize(study_channels));
   bool channel_added[arraysize(channels)] = { 0 };
 
-  chrome_variations::Study study;
+  chrome_variations::Study_Filter filter;
 
   // Check in the forwarded order. The loop cond is <= arraysize(study_channels)
   // instead of < so that the result of adding the last channel gets checked.
   for (size_t i = 0; i <= arraysize(study_channels); ++i) {
     for (size_t j = 0; j < arraysize(channels); ++j) {
-      const bool expected = channel_added[j] || study.channel_size() == 0;
-      const bool result = VariationsService::CheckStudyChannel(study,
+      const bool expected = channel_added[j] || filter.channel_size() == 0;
+      const bool result = VariationsService::CheckStudyChannel(filter,
                                                                channels[j]);
       EXPECT_EQ(expected, result) << "Case " << i << "," << j << " failed!";
     }
 
     if (i < arraysize(study_channels)) {
-      study.add_channel(study_channels[i]);
+      filter.add_channel(study_channels[i]);
       channel_added[i] = true;
     }
   }
 
   // Do the same check in the reverse order.
-  study.clear_channel();
+  filter.clear_channel();
   memset(&channel_added, 0, sizeof(channel_added));
   for (size_t i = 0; i <= arraysize(study_channels); ++i) {
     for (size_t j = 0; j < arraysize(channels); ++j) {
-      const bool expected = channel_added[j] || study.channel_size() == 0;
-      const bool result = VariationsService::CheckStudyChannel(study,
+      const bool expected = channel_added[j] || filter.channel_size() == 0;
+      const bool result = VariationsService::CheckStudyChannel(filter,
                                                                channels[j]);
       EXPECT_EQ(expected, result) << "Case " << i << "," << j << " failed!";
     }
 
     if (i < arraysize(study_channels)) {
       const int index = arraysize(study_channels) - i - 1;
-      study.add_channel(study_channels[index]);
+      filter.add_channel(study_channels[index]);
       channel_added[index] = true;
+    }
+  }
+}
+
+TEST(VariationsServiceTest, CheckStudyPlatform) {
+  const chrome_variations::Study_Platform platforms[] = {
+    chrome_variations::Study_Platform_PLATFORM_WINDOWS,
+    chrome_variations::Study_Platform_PLATFORM_MAC,
+    chrome_variations::Study_Platform_PLATFORM_LINUX,
+    chrome_variations::Study_Platform_PLATFORM_CHROMEOS,
+    chrome_variations::Study_Platform_PLATFORM_ANDROID,
+  };
+  ASSERT_EQ(chrome_variations::Study_Platform_Platform_ARRAYSIZE,
+            static_cast<int>(arraysize(platforms)));
+  bool platform_added[arraysize(platforms)] = { 0 };
+
+  chrome_variations::Study_Filter filter;
+
+  // Check in the forwarded order. The loop cond is <= arraysize(platforms)
+  // instead of < so that the result of adding the last channel gets checked.
+  for (size_t i = 0; i <= arraysize(platforms); ++i) {
+    for (size_t j = 0; j < arraysize(platforms); ++j) {
+      const bool expected = platform_added[j] || filter.platform_size() == 0;
+      const bool result = VariationsService::CheckStudyPlatform(filter,
+                                                                platforms[j]);
+      EXPECT_EQ(expected, result) << "Case " << i << "," << j << " failed!";
+    }
+
+    if (i < arraysize(platforms)) {
+      filter.add_platform(platforms[i]);
+      platform_added[i] = true;
+    }
+  }
+
+  // Do the same check in the reverse order.
+  filter.clear_platform();
+  memset(&platform_added, 0, sizeof(platform_added));
+  for (size_t i = 0; i <= arraysize(platforms); ++i) {
+    for (size_t j = 0; j < arraysize(platforms); ++j) {
+      const bool expected = platform_added[j] || filter.platform_size() == 0;
+      const bool result = VariationsService::CheckStudyPlatform(filter,
+                                                                platforms[j]);
+      EXPECT_EQ(expected, result) << "Case " << i << "," << j << " failed!";
+    }
+
+    if (i < arraysize(platforms)) {
+      const int index = arraysize(platforms) - i - 1;
+      filter.add_platform(platforms[index]);
+      platform_added[index] = true;
     }
   }
 }
@@ -95,24 +144,24 @@ TEST(VariationsServiceTest, CheckStudyVersion) {
     { "2.1.1", "2.3.4", false },
   };
 
-  chrome_variations::Study study;
+  chrome_variations::Study_Filter filter;
 
   // Min/max version not set should result in true.
-  EXPECT_TRUE(VariationsService::CheckStudyVersion(study, "1.2.3"));
+  EXPECT_TRUE(VariationsService::CheckStudyVersion(filter, "1.2.3"));
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(min_test_cases); ++i) {
-    study.set_min_version(min_test_cases[i].min_version);
+    filter.set_min_version(min_test_cases[i].min_version);
     const bool result =
-        VariationsService::CheckStudyVersion(study, min_test_cases[i].version);
+        VariationsService::CheckStudyVersion(filter, min_test_cases[i].version);
     EXPECT_EQ(min_test_cases[i].expected_result, result) <<
         "Case " << i << " failed!";
   }
-  study.clear_min_version();
+  filter.clear_min_version();
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(max_test_cases); ++i) {
-    study.set_max_version(max_test_cases[i].max_version);
+    filter.set_max_version(max_test_cases[i].max_version);
     const bool result =
-        VariationsService::CheckStudyVersion(study, max_test_cases[i].version);
+        VariationsService::CheckStudyVersion(filter, max_test_cases[i].version);
     EXPECT_EQ(max_test_cases[i].expected_result, result) <<
         "Case " << i << " failed!";
   }
@@ -120,19 +169,19 @@ TEST(VariationsServiceTest, CheckStudyVersion) {
   // Check intersection semantics.
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(min_test_cases); ++i) {
     for (size_t j = 0; j < ARRAYSIZE_UNSAFE(max_test_cases); ++j) {
-      study.set_min_version(min_test_cases[i].min_version);
-      study.set_max_version(max_test_cases[j].max_version);
+      filter.set_min_version(min_test_cases[i].min_version);
+      filter.set_max_version(max_test_cases[j].max_version);
 
       if (!min_test_cases[i].expected_result) {
         const bool result =
-            VariationsService::CheckStudyVersion(study,
+            VariationsService::CheckStudyVersion(filter,
                                                  min_test_cases[i].version);
         EXPECT_FALSE(result) << "Case " << i << "," << j << " failed!";
       }
 
       if (!max_test_cases[j].expected_result) {
         const bool result =
-            VariationsService::CheckStudyVersion(study,
+            VariationsService::CheckStudyVersion(filter,
                                                  max_test_cases[j].version);
         EXPECT_FALSE(result) << "Case " << i << "," << j << " failed!";
       }
@@ -144,14 +193,14 @@ TEST(VariationsServiceTest, CheckStudyVersion) {
 // wildcards. Check that any such values received from the server result in the
 // study being disqualified.
 TEST(VariationsServiceTest, CheckStudyVersionWildcards) {
-  chrome_variations::Study study;
+  chrome_variations::Study_Filter filter;
 
-  study.set_min_version("1.0.*");
-  EXPECT_FALSE(VariationsService::CheckStudyVersion(study, "1.2.3"));
+  filter.set_min_version("1.0.*");
+  EXPECT_FALSE(VariationsService::CheckStudyVersion(filter, "1.2.3"));
 
-  study.clear_min_version();
-  study.set_max_version("2.0.*");
-  EXPECT_FALSE(VariationsService::CheckStudyVersion(study, "1.2.3"));
+  filter.clear_min_version();
+  filter.set_max_version("2.0.*");
+  EXPECT_FALSE(VariationsService::CheckStudyVersion(filter, "1.2.3"));
 }
 
 TEST(VariationsServiceTest, CheckStudyStartDate) {
@@ -166,14 +215,14 @@ TEST(VariationsServiceTest, CheckStudyStartDate) {
     { now + delta, false },
   };
 
-  chrome_variations::Study study;
+  chrome_variations::Study_Filter filter;
 
   // Start date not set should result in true.
-  EXPECT_TRUE(VariationsService::CheckStudyStartDate(study, now));
+  EXPECT_TRUE(VariationsService::CheckStudyStartDate(filter, now));
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(start_test_cases); ++i) {
-    study.set_start_date(TimeToProtoTime(start_test_cases[i].start_date));
-    const bool result = VariationsService::CheckStudyStartDate(study, now);
+    filter.set_start_date(TimeToProtoTime(start_test_cases[i].start_date));
+    const bool result = VariationsService::CheckStudyStartDate(filter, now);
     EXPECT_EQ(start_test_cases[i].expected_result, result)
         << "Case " << i << " failed!";
   }

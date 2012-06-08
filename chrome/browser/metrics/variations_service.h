@@ -48,6 +48,7 @@ class VariationsService : public net::URLFetcherDelegate {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, CheckStudyChannel);
+  FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, CheckStudyPlatform);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, CheckStudyVersion);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, CheckStudyVersionWildcards);
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, CheckStudyStartDate);
@@ -69,16 +70,20 @@ class VariationsService : public net::URLFetcherDelegate {
                              const chrome::VersionInfo& version_info,
                              const base::Time& reference_date);
 
-  // Checks whether |study| is applicable for the given |channel|.
-  static bool CheckStudyChannel(const chrome_variations::Study& study,
+  // Checks whether a study is applicable for the given |channel| per |filter|.
+  static bool CheckStudyChannel(const chrome_variations::Study_Filter& filter,
                                 chrome::VersionInfo::Channel channel);
 
-  // Checks whether |study| is applicable for the given version string.
-  static bool CheckStudyVersion(const chrome_variations::Study& study,
+  // Checks whether a study is applicable for the given |platform| per |filter|.
+  static bool CheckStudyPlatform(const chrome_variations::Study_Filter& filter,
+                                 chrome_variations::Study_Platform platform);
+
+  // Checks whether a study is applicable for the given version per |filter|.
+  static bool CheckStudyVersion(const chrome_variations::Study_Filter& filter,
                                 const std::string& version_string);
 
-  // Checks whether |study| is applicable for the given date/time.
-  static bool CheckStudyStartDate(const chrome_variations::Study& study,
+  // Checks whether a study is applicable for the given date/time per |filter|.
+  static bool CheckStudyStartDate(const chrome_variations::Study_Filter& filter,
                                   const base::Time& date_time);
 
   // Checks whether |study| is expired using the given date/time.
