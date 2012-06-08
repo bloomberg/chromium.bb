@@ -46,7 +46,8 @@ class TraceMessageFilter : public content::BrowserMessageFilter {
 
   // Awaiting ack for previously sent SendEndTracing
   bool is_awaiting_end_ack_;
-  bool is_awaiting_bpf_ack_;
+  // Awaiting ack for previously sent SendGetTraceBufferPercentFull
+  bool is_awaiting_buffer_percent_full_ack_;
 
   DISALLOW_COPY_AND_ASSIGN(TraceMessageFilter);
 };
