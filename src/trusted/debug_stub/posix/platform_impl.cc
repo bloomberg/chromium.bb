@@ -15,6 +15,7 @@
 #include <map>
 #include <vector>
 
+#include "native_client/src/include/concurrency_ops.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/gdb_rsp/abi.h"
@@ -137,6 +138,10 @@ bool IPlatform::SetMemory(uint64_t virt, uint32_t len, void *src) {
                PROT_READ | PROT_EXEC) != 0) {
     return false;
   }
+  // Flush the instruction cache in case we just modified code to add
+  // or remove a breakpoint, otherwise breakpoints will not behave
+  // reliably on ARM.
+  NaClFlushCacheForDoublyMappedCode((uint8_t *) virt, (uint8_t *) virt, len);
   return succeeded;
 }
 

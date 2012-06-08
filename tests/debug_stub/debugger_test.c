@@ -45,6 +45,26 @@ void set_registers_and_stop() {
           "mov $0xcc000000000000dd, %r13\n"
           "mov $0xdd000000000000ee, %r14\n"
           "hlt\n");
+#elif defined(__arm__)
+  /* Note that we cannot assign arbitrary test values to r9 ($tp),
+     r13 (sp), and r15 (pc) in the ARM sandbox. */
+  __asm__("movw r0, #0x0ccc\n"
+          "movt r0, #0x4bb0\n"
+          "push {r0}\n"
+          "mov r0, #0x00000001\n"
+          "mov r1, #0x10000002\n"
+          "mov r2, #0x20000003\n"
+          "mov r3, #0x30000004\n"
+          "mov r4, #0x40000005\n"
+          "mov r5, #0x50000006\n"
+          "mov r6, #0x60000007\n"
+          "mov r7, #0x70000008\n"
+          "mov r8, #0x80000009\n"
+          "mov r10, #0xa000000b\n"
+          "mov r11, #0xb000000c\n"
+          "mov r12, #0xc000000d\n"
+          "mov r14, #0xe000000f\n"
+          "bkpt 0x7777\n");
 #else
 # error Update set_registers_and_stop for other architectures
 #endif
@@ -60,6 +80,12 @@ void test_breakpoint() {
           "nop\n"
           "nop\n"
           "int3\n"
+          "nop\n"
+          "nop\n");
+#elif defined(__arm__)
+  __asm__(".p2align 4\n"
+          "nop\n"
+          "bkpt 0x7777\n"
           "nop\n"
           "nop\n");
 #else
@@ -94,6 +120,9 @@ void test_single_step() {
       ".byte 0x48, 0x83, 0xeb, 0x01\n"              /* sub  $0x1,%rbx */
       ".byte 0x66, 0x0f, 0x1f, 0x44, 0x00, 0x00\n"  /* nopw 0x0(%rax,%rax,1) */
       ".byte 0x5b\n");                              /* pop  %rbx */
+#elif defined(__arm__)
+  printf("Single-stepping is not supported on ARM\n");
+  exit(1);
 #else
 # error Update test_single_step for other architectures
 #endif

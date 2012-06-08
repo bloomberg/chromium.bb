@@ -14,9 +14,12 @@ trusted_env = env['TRUSTED_ENV']
 # The test has to be able to kill the subprocess.
 if sys.version_info < (2, 6):
   Return()
-# Our test uses inline assembly.
 if env.Bit('bitcode'):
-  Return()
+  # We use inline assembly, which does not work in pexes.
+  if env.Bit('pnacl_generate_pexe'):
+    Return()
+  env.AddBiasForPNaCl()
+  env.PNaClForceNative()
 
 debug_stub_works = (env.Bit('host_linux') or
                     (env.Bit('host_windows') and env.Bit('build_x86_64')))
@@ -24,12 +27,10 @@ debug_stub_works = (env.Bit('host_linux') or
 test_prog = env.ComponentProgram('debugger_test', 'debugger_test.c',
                                  EXTRA_LIBS=['${NONIRT_LIBS}'])
 
-sel_ldr = trusted_env.File('${STAGING_DIR}/${PROGPREFIX}sel_ldr${PROGSUFFIX}')
-env_vars = [
-    'NACL_SEL_LDR=%s' % sel_ldr,
-    'DEBUGGER_TEST_PROG=%s' % test_prog.abspath,
-    ]
-dependencies = [sel_ldr, test_prog]
+sel_ldr_command = [env.GetSelLdr(), '-f', test_prog]
+bootstrap, _ = env.GetBootstrap()
+if bootstrap is not None:
+  sel_ldr_command = [bootstrap] + sel_ldr_command
 
 # TODO(mlinck) Fix the test to correctly kill sel_ldr, and check if the
 # port is already busy.  This appears to be related to Hardy which is
@@ -38,10 +39,15 @@ dependencies = [sel_ldr, test_prog]
 # http://code.google.com/p/nativeclient/issues/detail?id=1724
 node = env.CommandTest(
     'debug_stub_test.out',
-    command=['${PYTHON}', env.File('debug_stub_test.py'),
-             env.get('TARGET_FULLARCH'), '-v'],
-    osenv=env_vars,
-    extra_deps=dependencies)
+    command=['${PYTHON}', env.File('debug_stub_test.py'), '-v',
+             '--', env.get('TARGET_FULLARCH')] + sel_ldr_command)
+# This test is in "large_tests" because it binds a fixed TCP port and
+# so will not coexist gracefully with other instances of the same test
+# or other processes that dynamically allocate TCP ports.
+# TODO(mseaborn): Eliminate the TCP port binding by using a socketpair
+# instead and move this into small_tests + pexe_tests.  Adding this to
+# nonpexe_tests (which uses -j currently) will enable this test for
+# ARM.
 env.AddNodeToTestSuite(node, ['large_tests'], 'run_debug_stub_test',
                        # TODO(mseaborn): Make this work with dynamic linking.
                        is_broken=((not env.Bit('nacl_static_link'))

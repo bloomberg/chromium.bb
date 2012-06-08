@@ -742,6 +742,10 @@ tests_to_disable_qemu = set([
     # http://code.google.com/p/nativeclient/issues/detail?id=2437
     'run_atomic_ops_test',
     'run_atomic_ops_nexe_test',
+    # The debug stub test is not set up to insert QEMU at the right
+    # point, and service_runtime's thread suspension does not work
+    # under QEMU.
+    'run_debug_stub_test',
     'run_egyptian_cotton_test',
     'run_many_threads_sequential_test',
     'run_mmap_atomicity_test',

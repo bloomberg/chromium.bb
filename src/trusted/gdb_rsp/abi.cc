@@ -18,7 +18,6 @@ using port::IPlatform;
 namespace gdb_rsp {
 
 #define MINIDEF(x, name, purpose) { #name, sizeof(x), Abi::purpose, 0, 0 }
-#define BPDEF(x, after) { sizeof(x), x, after }
 
 static Abi::RegDef RegsX86_64[] = {
   MINIDEF(uint64_t, rax, GENERAL),
@@ -85,9 +84,19 @@ static Abi::RegDef RegsArm[] = {
   MINIDEF(uint32_t, pc, INST_PTR),
 };
 
-static uint8_t BPCodeX86[] = { 0xcc };
+static uint8_t breakpoint_code_x86[] = { 0xcc };
+static Abi::BPDef breakpoint_x86 = {
+  sizeof(breakpoint_code_x86),
+  breakpoint_code_x86,
+  true
+};
 
-static Abi::BPDef BPX86 = BPDEF(BPCodeX86, true);
+static uint32_t breakpoint_code_arm[] = { 0xe1277777 /* bkpt 0x7777 */ };
+static Abi::BPDef breakpoint_arm = {
+  sizeof(breakpoint_code_arm),
+  (uint8_t *) breakpoint_code_arm,
+  false
+};
 
 static AbiMap_t *GetAbis() {
   static AbiMap_t *_abis = new AbiMap_t();
@@ -100,11 +109,11 @@ static AbiMap_t *GetAbis() {
 // dependant functions should call AbiIsAvailable to ensure
 // the module is ready.
 static bool AbiInit() {
-  Abi::Register("i386", RegsX86_32, sizeof(RegsX86_32), &BPX86);
-  Abi::Register("i386:x86-64", RegsX86_64, sizeof(RegsX86_64), &BPX86);
+  Abi::Register("i386", RegsX86_32, sizeof(RegsX86_32), &breakpoint_x86);
+  Abi::Register("i386:x86-64", RegsX86_64, sizeof(RegsX86_64), &breakpoint_x86);
 
-  // TODO(cbiffle) Figure out how to REALLY detect ARM, and define Breakpoint
-  Abi::Register("iwmmxt", RegsArm, sizeof(RegsArm), NULL);
+  // TODO(cbiffle) Figure out how to REALLY detect ARM
+  Abi::Register("iwmmxt", RegsArm, sizeof(RegsArm), &breakpoint_arm);
 
   return true;
 }

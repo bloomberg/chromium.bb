@@ -2,13 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import os
 import struct
 import subprocess
 import sys
 import unittest
 
 import gdb_rsp
+
+
+# These are set up by Main().
+ARCH = None
+SEL_LDR_COMMAND = None
 
 
 def DecodeHex(data):
@@ -69,21 +73,27 @@ X86_64_REG_DEFS = [
 ]
 
 
+ARM_REG_DEFS = [('r%d' % regno, 'I') for regno in xrange(16)]
+
+
 REG_DEFS = {
     'x86-32': X86_32_REG_DEFS,
     'x86-64': X86_64_REG_DEFS,
+    'arm': ARM_REG_DEFS,
     }
 
 
 SP_REG = {
     'x86-32': 'esp',
     'x86-64': 'rsp',
+    'arm': 'r13',
     }
 
 
 IP_REG = {
     'x86-32': 'eip',
     'x86-64': 'rip',
+    'arm': 'r15',
     }
 
 
@@ -109,12 +119,24 @@ def PopenDebugStub(test):
   gdb_rsp.EnsurePortIsAvailable()
   # Double '-c' turns off validation. This is needed because the test is using
   # instructions that do not validate, for example, 'int3'.
-  return subprocess.Popen([os.environ['NACL_SEL_LDR'], '-c', '-c', '-g',
-                           os.environ['DEBUGGER_TEST_PROG'],
-                           test])
+  return subprocess.Popen(SEL_LDR_COMMAND + ['-c', '-c', '-g', test])
 
 
 class DebugStubTest(unittest.TestCase):
+
+  def test_initial_breakpoint(self):
+    # Any arguments to the nexe would work here because we are only
+    # testing that we get a breakpoint at the _start entry point.
+    proc = PopenDebugStub('test_getting_registers')
+    try:
+      connection = gdb_rsp.GdbRspConnection()
+      reply = connection.RspRequest('?')
+      # TODO(mseaborn): Use a stricter check here when all platforms
+      # report the same signal number for the initial breakpoint.
+      self.assertTrue(reply.startswith('T'))
+    finally:
+      proc.kill()
+      proc.wait()
 
   # Test that we can fetch register values.
   # This check corresponds to the last instruction of debugger_test.c
@@ -142,6 +164,20 @@ class DebugStubTest(unittest.TestCase):
       self.assertEquals(registers['r12'], 0xbb000000000000cc)
       self.assertEquals(registers['r13'], 0xcc000000000000dd)
       self.assertEquals(registers['r14'], 0xdd000000000000ee)
+    elif ARCH == 'arm':
+      self.assertEquals(registers['r0'], 0x00000001)
+      self.assertEquals(registers['r1'], 0x10000002)
+      self.assertEquals(registers['r2'], 0x20000003)
+      self.assertEquals(registers['r3'], 0x30000004)
+      self.assertEquals(registers['r4'], 0x40000005)
+      self.assertEquals(registers['r5'], 0x50000006)
+      self.assertEquals(registers['r6'], 0x60000007)
+      self.assertEquals(registers['r7'], 0x70000008)
+      self.assertEquals(registers['r8'], 0x80000009)
+      self.assertEquals(registers['r10'], 0xa000000b)
+      self.assertEquals(registers['r11'], 0xb000000c)
+      self.assertEquals(registers['r12'], 0xc000000d)
+      self.assertEquals(registers['r14'], 0xe000000f)
     else:
       raise AssertionError('Unknown architecture')
 
@@ -151,6 +187,8 @@ class DebugStubTest(unittest.TestCase):
       reg_name = 'edx'
     elif ARCH == 'x86-64':
       reg_name = 'rdx'
+    elif ARCH == 'arm':
+      reg_name = 'r0'
     else:
       raise AssertionError('Unknown architecture')
 
@@ -226,10 +264,16 @@ class DebugStubTest(unittest.TestCase):
         # Check ip points after the int3 instruction.
         reply = connection.RspRequest('m%x,%x' % (ip - 1, 1))
         self.assertEquals(reply, 'cc')
-
         # Continue until exit.
         reply = connection.RspRequest('c')
         self.assertEquals(reply, 'W00')
+      elif ARCH == 'arm':
+        # Check pc points to the "bkpt 0x7777" instruction.  We do not
+        # skip past these instructions because the sandbox uses them
+        # as "halt" instructions, and skipping past them is unsafe.
+        breakpoint_instruction = EncodeHex(struct.pack('I', 0xe1277777))
+        reply = connection.RspRequest('m%x,%x' % (ip, 4))
+        self.assertEquals(reply, breakpoint_instruction)
       else:
         raise AssertionError('Unknown architecture')
     finally:
@@ -265,6 +309,9 @@ class DebugStubTest(unittest.TestCase):
       self.assertEqual(actual_ip, ip)
 
   def test_single_step(self):
+    if ARCH == 'arm':
+      # Skip this test because single-stepping is not supported on ARM.
+      return
     proc = PopenDebugStub('test_single_step')
     try:
       connection = gdb_rsp.GdbRspConnection()
@@ -281,6 +328,9 @@ class DebugStubTest(unittest.TestCase):
 
   def test_vCont(self):
     # Basically repeat test_single_step, but using vCont commands.
+    if ARCH == 'arm':
+      # Skip this test because single-stepping is not supported on ARM.
+      return
     proc = PopenDebugStub('test_single_step')
     try:
       connection = gdb_rsp.GdbRspConnection()
@@ -318,8 +368,20 @@ class DebugStubTest(unittest.TestCase):
       proc.wait()
 
 
-if __name__ == '__main__':
-  # TODO(mseaborn): Remove the global variable.  It is currently here
-  # because unittest does not help with making parameterised tests.
-  ARCH = sys.argv.pop(1)
+def Main():
+  # TODO(mseaborn): Clean up to remove the global variables.  They are
+  # currently here because unittest does not help with making
+  # parameterised tests.
+  index = sys.argv.index('--')
+  args = sys.argv[index + 1:]
+  # The remaining arguments go to unittest.main().
+  sys.argv = sys.argv[:index]
+  global ARCH
+  global SEL_LDR_COMMAND
+  ARCH = args.pop(0)
+  SEL_LDR_COMMAND = args
   unittest.main()
+
+
+if __name__ == '__main__':
+  Main()
