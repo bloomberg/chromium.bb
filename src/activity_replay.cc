@@ -8,12 +8,14 @@
 
 #include <base/json/json_reader.h>
 #include <base/json/json_writer.h>
+#include <gtest/gtest.h>
 
 #include "gestures/include/logging.h"
 #include "gestures/include/prop_registry.h"
 #include "gestures/include/set.h"
 #include "gestures/include/util.h"
 
+using std::endl;
 using std::set;
 using std::string;
 
@@ -475,8 +477,8 @@ bool ActivityReplay::ParsePropChange(DictionaryValue* entry) {
   return true;
 }
 
-bool ActivityReplay::Replay(Interpreter* interpreter) {
-  bool all_correct = true;
+// Replay the log and verify the output in a strict way.
+void ActivityReplay::Replay(Interpreter* interpreter) {
   bool pending_gs_flag = false;
   interpreter->SetHardwareProperties(hwprops_);
   stime_t last_timeout_req = -1.0;
@@ -492,10 +494,10 @@ bool ActivityReplay::Replay(Interpreter* interpreter) {
           Log("Input Finger ID: %d", hs.fingers[i].tracking_id);
         Gesture* next_gs = interpreter->SyncInterpret(&hs, &last_timeout_req);
         if (next_gs) {
-          if (pending_gs_flag) {
-            Err("Unexpected gesture: %s", last_gs.String().c_str());
-            all_correct = false;
-          }
+          EXPECT_FALSE(pending_gs_flag) <<
+              "Unexpected gestures:" << endl <<
+              "  Actual gesture: " << last_gs.String() << endl <<
+              "Expected gesture: NULL";
           Log("Output Gesture: %s", next_gs->String().c_str());
           last_gs = *next_gs;
           pending_gs_flag = true;
@@ -507,10 +509,10 @@ bool ActivityReplay::Replay(Interpreter* interpreter) {
         Gesture* next_gs = interpreter->HandleTimer(entry->details.timestamp,
                                                     &last_timeout_req);
         if (next_gs) {
-          if (pending_gs_flag) {
-            Err("Unexpected gesture: %s", last_gs.String().c_str());
-            all_correct = false;
-          }
+          EXPECT_FALSE(pending_gs_flag) <<
+              "Unexpected gestures:" << endl <<
+              "  Actual gesture: " << last_gs.String() << endl <<
+              "Expected gesture: NULL";
           Log("Output Gesture: %s", next_gs->String().c_str());
           last_gs = *next_gs;
           pending_gs_flag = true;
@@ -519,32 +521,36 @@ bool ActivityReplay::Replay(Interpreter* interpreter) {
       }
       case ActivityLog::kCallbackRequest:
         if (!DoubleEq(last_timeout_req, entry->details.timestamp)) {
-          Err("Expected timeout request of %f, but log has %f (entry idx %zu)",
-              last_timeout_req, entry->details.timestamp, i);
-          all_correct = false;
+          // Apply EXPECT_TRUE only when the fuzzy DoubleEq is not true.
+          EXPECT_TRUE(DoubleEq(last_timeout_req, entry->details.timestamp)) <<
+              "  Actual timeout request: " << last_timeout_req << endl <<
+              "Expected timeout request: " << entry->details.timestamp <<
+              " (entry idx " << i << ")";
         }
         break;
       case ActivityLog::kGesture: {
-        if (!pending_gs_flag || last_gs != entry->details.gesture) {
-          Err("Incorrect gesture:\n  Expected: %s.\n  Actual: %s",
-              entry->details.gesture.String().c_str(),
-              pending_gs_flag ? last_gs.String().c_str() : "(null)");
-          all_correct = false;
-        } else {
-          Log("Gesture matched:\n  Expected: %s.\n  Actual: %s",
-              entry->details.gesture.String().c_str(),
-              last_gs.String().c_str());
+        if (pending_gs_flag && last_gs == entry->details.gesture) {
+          Log("Gesture matched:\n  Actual gesture: %s.\nExpected gesture: %s",
+              last_gs.String().c_str(),
+              entry->details.gesture.String().c_str());
         }
+        EXPECT_TRUE(pending_gs_flag) <<
+            "Incorrect gesture:" << endl <<
+            "  Actual gesture: NULL" << endl <<
+            "Expected gesture: " << entry->details.gesture.String();
+        if (pending_gs_flag)
+          EXPECT_TRUE(entry->details.gesture == last_gs) <<
+              "Incorrect gesture:" << endl <<
+              "  Actual gesture: " << last_gs.String() << endl <<
+              "Expected gesture:  " << entry->details.gesture.String();
         pending_gs_flag = false;
         break;
       }
       case ActivityLog::kPropChange:
-        if (!ReplayPropChange(entry->details.prop_change))
-          all_correct = false;
+        EXPECT_TRUE(ReplayPropChange(entry->details.prop_change));
         break;
     }
   }
-  return all_correct;
 }
 
 bool ActivityReplay::ReplayPropChange(

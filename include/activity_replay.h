@@ -30,9 +30,9 @@ class ActivityReplay {
   // An empty set means honor all properties
   bool Parse(const std::string& data, const std::set<std::string>& honor_props);
 
-  // If there is any unexpected behavior, replay continues, but false is
-  // returned, otherwise true is returned.
-  bool Replay(Interpreter* interpreter);
+  // If there is any unexpected behavior, replay continues, but EXPECT_*
+  // reports failure, otherwise no failure is reported.
+  void Replay(Interpreter* interpreter);
 
  private:
   // These return true on success
