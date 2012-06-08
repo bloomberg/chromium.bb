@@ -11,7 +11,6 @@
 
 class PrintPreviewUI;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 struct PrintHostMsg_DidGetPreviewPageCount_Params;
 struct PrintHostMsg_DidPreviewDocument_Params;
 struct PrintHostMsg_DidPreviewPage_Params;
@@ -24,9 +23,9 @@ namespace printing {
 
 struct PageSizeMargins;
 
-// TabContentsWrapper offloads print preview message handling to
+// TabContents offloads print preview message handling to
 // PrintPreviewMessageHandler. This object has the same life time as the
-// TabContentsWrapper that owns it.
+// TabContents that owns it.
 class PrintPreviewMessageHandler : public content::WebContentsObserver {
  public:
   explicit PrintPreviewMessageHandler(content::WebContents* web_contents);
@@ -39,10 +38,10 @@ class PrintPreviewMessageHandler : public content::WebContentsObserver {
 
  private:
   // Gets the print preview tab associated with the WebContents being observed.
-  TabContentsWrapper* GetPrintPreviewTab();
+  TabContents* GetPrintPreviewTab();
 
-  // Helper function to return the TabContentsWrapper for web_contents().
-  TabContentsWrapper* tab_contents_wrapper();
+  // Helper function to return the TabContents for web_contents().
+  TabContents* tab_contents();
 
   // Gets the PrintPreviewUI associated with the WebContents being observed.
   PrintPreviewUI* GetPrintPreviewUI();

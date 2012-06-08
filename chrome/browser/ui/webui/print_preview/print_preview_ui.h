@@ -62,7 +62,7 @@ class PrintPreviewUI : public ui::ConstrainedWebDialogUI {
   bool source_is_modifiable() { return source_is_modifiable_; }
 
   // Set |source_is_modifiable_| for |print_preview_tab|'s PrintPreviewUI.
-  static void SetSourceIsModifiable(TabContentsWrapper* print_preview_tab,
+  static void SetSourceIsModifiable(TabContents* print_preview_tab,
                                     bool source_is_modifiable);
 
   // Determines whether to cancel a print preview request based on

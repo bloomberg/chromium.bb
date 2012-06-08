@@ -15,7 +15,7 @@
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/printing/printer_query.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/common/print_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -74,21 +74,21 @@ PrintPreviewMessageHandler::PrintPreviewMessageHandler(
 PrintPreviewMessageHandler::~PrintPreviewMessageHandler() {
 }
 
-TabContentsWrapper* PrintPreviewMessageHandler::GetPrintPreviewTab() {
+TabContents* PrintPreviewMessageHandler::GetPrintPreviewTab() {
   PrintPreviewTabController* tab_controller =
       PrintPreviewTabController::GetInstance();
   if (!tab_controller)
     return NULL;
 
-  return tab_controller->GetPrintPreviewForTab(tab_contents_wrapper());
+  return tab_controller->GetPrintPreviewForTab(tab_contents());
 }
 
-TabContentsWrapper* PrintPreviewMessageHandler::tab_contents_wrapper() {
-  return TabContentsWrapper::GetCurrentWrapperForContents(web_contents());
+TabContents* PrintPreviewMessageHandler::tab_contents() {
+  return TabContents::GetCurrentWrapperForContents(web_contents());
 }
 
 PrintPreviewUI* PrintPreviewMessageHandler::GetPrintPreviewUI() {
-  TabContentsWrapper* tab = GetPrintPreviewTab();
+  TabContents* tab = GetPrintPreviewTab();
   if (!tab || !tab->web_contents()->GetWebUI())
     return NULL;
   return static_cast<PrintPreviewUI*>(
@@ -97,7 +97,7 @@ PrintPreviewUI* PrintPreviewMessageHandler::GetPrintPreviewUI() {
 
 void PrintPreviewMessageHandler::OnRequestPrintPreview(
     bool source_is_modifiable, bool webnode_only) {
-  TabContentsWrapper* tab = tab_contents_wrapper();
+  TabContents* tab = tab_contents();
   if (webnode_only)
     tab->print_view_manager()->PrintPreviewForWebNode();
   PrintPreviewTabController::PrintPreview(tab);
@@ -251,8 +251,8 @@ bool PrintPreviewMessageHandler::OnMessageReceived(
 void PrintPreviewMessageHandler::NavigateToPendingEntry(
     const GURL& url,
     NavigationController::ReloadType reload_type) {
-  TabContentsWrapper* tab = tab_contents_wrapper();
-  TabContentsWrapper* preview_tab = GetPrintPreviewTab();
+  TabContents* tab = tab_contents();
+  TabContents* preview_tab = GetPrintPreviewTab();
   if (tab == preview_tab) {
     // Cloud print sign-in reloads the page.
     DCHECK(PrintPreviewTabController::IsPrintPreviewURL(url));

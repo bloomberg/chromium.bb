@@ -10,7 +10,7 @@
 #include "chrome/browser/printing/print_preview_unit_test_base.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_handler.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/browser/ui/webui/print_preview/sticky_settings.h"
@@ -58,8 +58,7 @@ class PrintPreviewHandlerTest : public PrintPreviewUnitTestBase {
   }
 
   void OpenPrintPreviewTab() {
-    TabContentsWrapper* initiator_tab =
-        browser()->GetSelectedTabContentsWrapper();
+    TabContents* initiator_tab = browser()->GetActiveTabContents();
     ASSERT_TRUE(initiator_tab);
 
     printing::PrintPreviewTabController* controller =
@@ -80,7 +79,7 @@ class PrintPreviewHandlerTest : public PrintPreviewUnitTestBase {
         g_browser_process->background_printing_manager();
     ASSERT_TRUE(bg_printing_manager->HasPrintPreviewTab(preview_tab_));
 
-    // Deleting TabContentsWrapper* to avoid warings from pref_notifier_impl.cc
+    // Deleting TabContents* to avoid warings from pref_notifier_impl.cc
     // after the test ends.
     delete preview_tab_;
   }
@@ -170,7 +169,7 @@ class PrintPreviewHandlerTest : public PrintPreviewUnitTestBase {
     PrintPreviewHandler::GetStickySettings()->page_size_margins_.reset();
   }
 
-  TabContentsWrapper* preview_tab_;
+  TabContents* preview_tab_;
 };
 
 // Tests that margin settings are saved correctly when printing with custom

@@ -6,7 +6,7 @@
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -56,8 +56,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
   EXPECT_EQ(1, browser()->tab_count());
 
   // Create a reference to initiator tab contents.
-  TabContentsWrapper* initiator_tab =
-      browser()->GetSelectedTabContentsWrapper();
+  TabContents* initiator_tab = browser()->GetActiveTabContents();
   ASSERT_TRUE(initiator_tab);
 
   printing::PrintPreviewTabController* tab_controller =
@@ -66,7 +65,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
 
   // Get the preview tab for initiator tab.
   initiator_tab->print_view_manager()->PrintPreviewNow();
-  TabContentsWrapper* preview_tab =
+  TabContents* preview_tab =
     tab_controller->GetOrCreatePreviewTab(initiator_tab);
 
   // New print preview tab is created.
@@ -83,7 +82,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
 
   // Get the print preview tab for initiator tab.
   initiator_tab->print_view_manager()->PrintPreviewNow();
-  TabContentsWrapper* new_preview_tab =
+  TabContents* new_preview_tab =
      tab_controller->GetOrCreatePreviewTab(initiator_tab);
 
   // New preview tab is created.
@@ -99,8 +98,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
   EXPECT_EQ(1, browser()->tab_count());
 
   // Create a reference to initiator tab contents.
-  TabContentsWrapper* initiator_tab =
-      browser()->GetSelectedTabContentsWrapper();
+  TabContents* initiator_tab = browser()->GetActiveTabContents();
   ASSERT_TRUE(initiator_tab);
 
   printing::PrintPreviewTabController* tab_controller =
@@ -109,7 +107,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
 
   // Get the preview tab for initiator tab.
   initiator_tab->print_view_manager()->PrintPreviewNow();
-  TabContentsWrapper* preview_tab =
+  TabContents* preview_tab =
     tab_controller->GetOrCreatePreviewTab(initiator_tab);
 
   // New print preview tab is created.
@@ -129,7 +127,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
 
   // Get the print preview tab for initiator tab.
   initiator_tab->print_view_manager()->PrintPreviewNow();
-  TabContentsWrapper* new_preview_tab =
+  TabContents* new_preview_tab =
      tab_controller->GetOrCreatePreviewTab(initiator_tab);
 
   EXPECT_EQ(1, browser()->tab_count());

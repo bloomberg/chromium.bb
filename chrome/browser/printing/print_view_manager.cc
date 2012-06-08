@@ -18,7 +18,7 @@
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/printing/print_view_manager_observer.h"
 #include "chrome/browser/printing/printer_query.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/print_messages.h"
@@ -51,7 +51,7 @@ static base::LazyInstance<ScriptedPrintPreviewClosureMap>
 
 namespace printing {
 
-PrintViewManager::PrintViewManager(TabContentsWrapper* tab)
+PrintViewManager::PrintViewManager(TabContents* tab)
     : content::WebContentsObserver(tab->web_contents()),
       tab_(tab),
       number_pages_(0),
@@ -65,7 +65,7 @@ PrintViewManager::PrintViewManager(TabContentsWrapper* tab)
   expecting_first_page_ = true;
 #endif
   registrar_.Add(this, chrome::NOTIFICATION_CONTENT_BLOCKED_STATE_CHANGED,
-                 content::Source<TabContentsWrapper>(tab));
+                 content::Source<TabContents>(tab));
 }
 
 PrintViewManager::~PrintViewManager() {
@@ -87,8 +87,7 @@ bool PrintViewManager::AdvancedPrintNow() {
       PrintPreviewTabController::GetInstance();
   if (!tab_controller)
     return false;
-  TabContentsWrapper* print_preview_tab =
-      tab_controller->GetPrintPreviewForTab(tab_);
+  TabContents* print_preview_tab = tab_controller->GetPrintPreviewForTab(tab_);
   if (print_preview_tab) {
     // Preview tab exist for current tab or current tab is preview tab.
     if (!print_preview_tab->web_contents()->GetWebUI())
@@ -261,7 +260,7 @@ void PrintViewManager::OnPrintingFailed(int cookie) {
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PRINT_JOB_RELEASED,
-      content::Source<TabContentsWrapper>(tab_),
+      content::Source<TabContents>(tab_),
       content::NotificationService::NoDetails());
 }
 
@@ -356,7 +355,7 @@ void PrintViewManager::OnNotifyPrintJobEvent(
 
       content::NotificationService::current()->Notify(
           chrome::NOTIFICATION_PRINT_JOB_RELEASED,
-          content::Source<TabContentsWrapper>(tab_),
+          content::Source<TabContents>(tab_),
           content::NotificationService::NoDetails());
       break;
     }
@@ -386,7 +385,7 @@ void PrintViewManager::OnNotifyPrintJobEvent(
 
       content::NotificationService::current()->Notify(
           chrome::NOTIFICATION_PRINT_JOB_RELEASED,
-          content::Source<TabContentsWrapper>(tab_),
+          content::Source<TabContents>(tab_),
           content::NotificationService::NoDetails());
       break;
     }

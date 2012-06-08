@@ -10,7 +10,7 @@
 #include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
@@ -25,7 +25,7 @@ namespace {
 const unsigned char blob1[] =
     "12346102356120394751634516591348710478123649165419234519234512349134";
 
-size_t GetConstrainedWindowCount(TabContentsWrapper* tab) {
+size_t GetConstrainedWindowCount(TabContents* tab) {
   return tab->constrained_window_tab_helper()->constrained_window_count();
 }
 
@@ -46,8 +46,7 @@ class PrintPreviewUIUnitTest : public PrintPreviewUnitTestBase {
 
 // Create/Get a preview tab for initiator tab.
 TEST_F(PrintPreviewUIUnitTest, PrintPreviewData) {
-  TabContentsWrapper* initiator_tab =
-      browser()->GetSelectedTabContentsWrapper();
+  TabContents* initiator_tab = browser()->GetActiveTabContents();
   ASSERT_TRUE(initiator_tab);
   EXPECT_EQ(0U, GetConstrainedWindowCount(initiator_tab));
 
@@ -56,8 +55,7 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewData) {
   ASSERT_TRUE(controller);
 
   initiator_tab->print_view_manager()->PrintPreviewNow();
-  TabContentsWrapper* preview_tab =
-      controller->GetOrCreatePreviewTab(initiator_tab);
+  TabContents* preview_tab = controller->GetOrCreatePreviewTab(initiator_tab);
 
   EXPECT_NE(initiator_tab, preview_tab);
   EXPECT_EQ(1, browser()->tab_count());
@@ -102,8 +100,7 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewData) {
 
 // Set and get the individual draft pages.
 TEST_F(PrintPreviewUIUnitTest, PrintPreviewDraftPages) {
-  TabContentsWrapper* initiator_tab =
-      browser()->GetSelectedTabContentsWrapper();
+  TabContents* initiator_tab = browser()->GetActiveTabContents();
   ASSERT_TRUE(initiator_tab);
 
   printing::PrintPreviewTabController* controller =
@@ -111,8 +108,7 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewDraftPages) {
   ASSERT_TRUE(controller);
 
   initiator_tab->print_view_manager()->PrintPreviewNow();
-  TabContentsWrapper* preview_tab =
-      controller->GetOrCreatePreviewTab(initiator_tab);
+  TabContents* preview_tab = controller->GetOrCreatePreviewTab(initiator_tab);
 
   EXPECT_NE(initiator_tab, preview_tab);
   EXPECT_EQ(1, browser()->tab_count());
@@ -164,8 +160,7 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewDraftPages) {
 
 // Test the browser-side print preview cancellation functionality.
 TEST_F(PrintPreviewUIUnitTest, GetCurrentPrintPreviewStatus) {
-  TabContentsWrapper* initiator_tab =
-      browser()->GetSelectedTabContentsWrapper();
+  TabContents* initiator_tab = browser()->GetActiveTabContents();
   ASSERT_TRUE(initiator_tab);
 
   printing::PrintPreviewTabController* controller =
@@ -173,8 +168,7 @@ TEST_F(PrintPreviewUIUnitTest, GetCurrentPrintPreviewStatus) {
   ASSERT_TRUE(controller);
 
   initiator_tab->print_view_manager()->PrintPreviewNow();
-  TabContentsWrapper* preview_tab =
-      controller->GetOrCreatePreviewTab(initiator_tab);
+  TabContents* preview_tab = controller->GetOrCreatePreviewTab(initiator_tab);
 
   EXPECT_NE(initiator_tab, preview_tab);
   EXPECT_EQ(1, browser()->tab_count());
@@ -228,8 +222,8 @@ TEST_F(PrintPreviewUIUnitTest, InitiatorTabGetsFocusOnPrintPreviewTabClose) {
                             NEW_FOREGROUND_TAB,
                             gfx::Rect(),
                             false);
-  TabContentsWrapper* initiator_tab =
-      TabContentsWrapper::GetCurrentWrapperForContents(initiator_contents);
+  TabContents* initiator_tab =
+      TabContents::GetCurrentWrapperForContents(initiator_contents);
   ASSERT_TRUE(initiator_tab);
   EXPECT_EQ(2, browser()->tab_count());
   EXPECT_EQ(0, initiator_tester->GetNumberOfFocusCalls());
@@ -239,8 +233,7 @@ TEST_F(PrintPreviewUIUnitTest, InitiatorTabGetsFocusOnPrintPreviewTabClose) {
   ASSERT_TRUE(controller);
 
   initiator_tab->print_view_manager()->PrintPreviewNow();
-  TabContentsWrapper* preview_tab =
-      controller->GetOrCreatePreviewTab(initiator_tab);
+  TabContents* preview_tab = controller->GetOrCreatePreviewTab(initiator_tab);
 
   EXPECT_NE(initiator_tab, preview_tab);
   EXPECT_EQ(2, browser()->tab_count());

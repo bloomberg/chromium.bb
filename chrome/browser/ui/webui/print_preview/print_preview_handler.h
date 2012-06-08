@@ -21,7 +21,6 @@
 class FilePath;
 class PrintSystemTaskProxy;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 namespace base {
 class DictionaryValue;
@@ -82,8 +81,8 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
   FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest,
                            GetLastUsedMarginSettingsDefault);
 
-  TabContentsWrapper* preview_tab_wrapper() const;
-  content::WebContents* preview_tab() const;
+  TabContents* preview_tab_contents() const;
+  content::WebContents* preview_web_contents() const;
 
   // Gets the list of printers. |args| is unused.
   void HandleGetPrinters(const base::ListValue* args);
@@ -168,7 +167,7 @@ class PrintPreviewHandler : public content::WebUIMessageHandler,
                          std::string print_ticket);
 
   // Gets the initiator tab for the print preview tab.
-  TabContentsWrapper* GetInitiatorTab() const;
+  TabContents* GetInitiatorTab() const;
 
   // Activates the initiator tab and close the preview tab.
   void ActivateInitiatorTabAndClosePreviewTab();
