@@ -950,12 +950,6 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
                                         rule_source_dirname)
                    for out in rule['outputs']]
 
-        # If an output is just the file name, turn it into a path so
-        # FixupArgPath() will know to Absolutify() it.
-        outputs = map(
-            lambda x : os.path.dirname(x) and x or os.path.join('.', x),
-            outputs)
-
         for out in outputs:
           dir = os.path.dirname(out)
           if dir:
@@ -964,7 +958,6 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
           extra_sources += outputs
         if int(rule.get('process_outputs_as_mac_bundle_resources', False)):
           extra_mac_bundle_resources += outputs
-        all_outputs += outputs
         inputs = map(Sourceify, map(self.Absolutify, [rule_source] +
                                     rule.get('inputs', [])))
         actions = ['$(call do_cmd,%s_%d)' % (name, count)]
@@ -978,6 +971,8 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
           # amount of pain.
           actions += ['@touch --no-create $@']
 
+        outputs = map(self.Absolutify, outputs)
+        all_outputs += outputs
         # Only write the 'obj' and 'builddir' rules for the "primary" output
         # (:1); it's superfluous for the "extra outputs", and this avoids
         # accidentally writing duplicate dummy rules for those outputs.
@@ -1836,12 +1831,6 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
       # important for trimming trailing slashes.
       return os.path.normpath(path)
     return os.path.normpath(os.path.join(self.path, path))
-
-
-  def FixupArgPath(self, arg):
-    if '/' in arg or '.h.' in arg:
-      return self.Absolutify(arg)
-    return arg
 
 
   def ExpandInputRoot(self, template, expansion, dirname):
