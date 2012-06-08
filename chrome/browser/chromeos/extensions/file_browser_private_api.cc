@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
+#include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system_proxy.h"
 #include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
@@ -1862,7 +1863,7 @@ ListValue* GetFileTransfersFunction::GetFileTransfersList() {
     return NULL;
 
   std::vector<gdata::GDataOperationRegistry::ProgressStatus>
-      list = system_service->file_system()->GetOperationRegistry()->
+      list = system_service->docs_service()->operation_registry()->
       GetProgressStatusList();
   return file_manager_util::ProgressStatusVectorToListValue(
       profile_, source_url_.GetOrigin(), list);
@@ -1919,7 +1920,7 @@ void CancelFileTransfersFunction::GetLocalPathsResponseOnUIThread(
   }
 
   gdata::GDataOperationRegistry* operation_registry =
-      system_service->file_system()->GetOperationRegistry();
+      system_service->docs_service()->operation_registry();
 
   scoped_ptr<ListValue> responses(new ListValue());
   for (size_t i = 0; i < files.size(); ++i) {

@@ -2794,10 +2794,6 @@ void GDataFileSystem::OnGetAvailableSpace(
                feed->quota_bytes_used());
 }
 
-GDataOperationRegistry* GDataFileSystem::GetOperationRegistry() {
-  return documents_service_->operation_registry();
-}
-
 void GDataFileSystem::OnCreateDirectoryCompleted(
     const CreateDirectoryParams& params,
     GDataErrorCode status,

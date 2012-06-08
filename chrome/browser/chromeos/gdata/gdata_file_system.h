@@ -12,6 +12,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/platform_file.h"
 #include "base/timer.h"
 #include "base/synchronization/lock.h"
@@ -19,7 +20,6 @@
 #include "chrome/browser/chromeos/gdata/find_entry_callback.h"
 #include "chrome/browser/chromeos/gdata/gdata_cache.h"
 #include "chrome/browser/chromeos/gdata/gdata_files.h"
-#include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "content/public/browser/notification_observer.h"
 
@@ -342,10 +342,6 @@ class GDataFileSystemInterface {
       const GetFileCallback& get_file_callback,
       const GetDownloadDataCallback& get_download_data_callback) = 0;
 
-  // Gets the operation registry that manages all operations performed through
-  // the GDataFileSystem object.
-  virtual GDataOperationRegistry* GetOperationRegistry() = 0;
-
   // Gets the cache state of file corresponding to |resource_id| and |md5| if it
   // exists on disk.
   // Initializes cache if it has not been initialized.
@@ -505,7 +501,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const std::string& resource_id,
       const GetFileCallback& get_file_callback,
       const GetDownloadDataCallback& get_download_data_callback) OVERRIDE;
-  virtual GDataOperationRegistry* GetOperationRegistry() OVERRIDE;
   virtual void GetCacheState(const std::string& resource_id,
                              const std::string& md5,
                              const GetCacheStateCallback& callback) OVERRIDE;

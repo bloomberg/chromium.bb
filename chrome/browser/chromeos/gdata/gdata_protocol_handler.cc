@@ -16,8 +16,10 @@
 #include "base/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_files.h"
+#include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -82,21 +84,24 @@ bool ParseDriveUrl(const std::string& path, std::string* resource_id) {
   return resource_id->size();
 }
 
-}  // namespace
+// Helper function to get GDataSystemService from Profile.
+GDataSystemService* GetSystemService() {
+  return GDataSystemServiceFactory::GetForProfile(
+      ProfileManager::GetDefaultProfile());
+}
 
 // Helper function to get GDataFileSystem from Profile on UI thread.
 void GetFileSystemOnUIThread(GDataFileSystem** file_system) {
-  GDataSystemService* system_service = GDataSystemServiceFactory::GetForProfile(
-      ProfileManager::GetDefaultProfile());
+  GDataSystemService* system_service = GetSystemService();
   *file_system = system_service ? system_service->file_system() : NULL;
 }
 
 // Helper function to cancel GData download operation on UI thread.
 void CancelGDataDownloadOnUIThread(const FilePath& gdata_file_path) {
-  GDataFileSystem* file_system = NULL;
-  GetFileSystemOnUIThread(&file_system);
-  if (file_system)
-    file_system->GetOperationRegistry()->CancelForFilePath(gdata_file_path);
+  GDataSystemService* system_service = GetSystemService();
+  if (system_service)
+    system_service->docs_service()->operation_registry()->CancelForFilePath(
+        gdata_file_path);
 }
 
 // GDataURLRequesetJob is the gateway between network-level drive://...
@@ -889,6 +894,8 @@ void GDataURLRequestJob::HeadersCompleted(int status_code,
 
   NotifyHeadersComplete();
 }
+
+}  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
 // GDataProtocolHandler class

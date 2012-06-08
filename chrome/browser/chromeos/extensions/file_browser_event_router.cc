@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/extensions/file_browser_notifications.h"
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
+#include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
@@ -116,8 +117,7 @@ void FileBrowserEventRouter::ShutdownOnUIThread() {
       GDataSystemServiceFactory::FindForProfile(profile_);
   if (system_service) {
     system_service->file_system()->RemoveObserver(this);
-    system_service->file_system()->GetOperationRegistry()->
-        RemoveObserver(this);
+    system_service->docs_service()->operation_registry()->RemoveObserver(this);
   }
 
   chromeos::NetworkLibrary* network_library =
@@ -147,7 +147,7 @@ void FileBrowserEventRouter::ObserveFileSystemEvents() {
     NOTREACHED();
     return;
   }
-  system_service->file_system()->GetOperationRegistry()->AddObserver(this);
+  system_service->docs_service()->operation_registry()->AddObserver(this);
   system_service->file_system()->AddObserver(this);
 
   chromeos::NetworkLibrary* network_library =

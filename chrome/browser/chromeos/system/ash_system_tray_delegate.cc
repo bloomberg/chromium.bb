@@ -31,6 +31,8 @@
 #include "chrome/browser/chromeos/bluetooth/bluetooth_device.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
+#include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
@@ -235,8 +237,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     if (gdata::util::IsGDataAvailable(profile)) {
       GDataSystemService* system_service =
           GDataSystemServiceFactory::FindForProfile(profile);
-      if (system_service && system_service->file_system()) {
-        system_service->file_system()->GetOperationRegistry()->
+      if (system_service) {
+        system_service->docs_service()->operation_registry()->
             RemoveObserver(this);
       }
     }
@@ -465,10 +467,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
     GDataSystemService* system_service =
           GDataSystemServiceFactory::FindForProfile(profile);
-    if (!system_service || !system_service->file_system())
+    if (!system_service)
       return;
 
-    system_service->file_system()->GetOperationRegistry()->CancelForFilePath(
+    system_service->docs_service()->operation_registry()->CancelForFilePath(
         file_path);
   }
 
@@ -480,11 +482,11 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
     GDataSystemService* system_service =
           GDataSystemServiceFactory::FindForProfile(profile);
-    if (!system_service || !system_service->file_system())
+    if (!system_service)
       return;
 
     *list = GetDriveStatusList(
-        system_service->file_system()->GetOperationRegistry()->
+        system_service->docs_service()->operation_registry()->
             GetProgressStatusList());
   }
 
@@ -781,11 +783,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     if (gdata::util::IsGDataAvailable(profile)) {
       GDataSystemService* system_service =
           GDataSystemServiceFactory::FindForProfile(profile);
-      if (!system_service || !system_service->file_system())
+      if (!system_service)
         return;
 
-      system_service->file_system()->GetOperationRegistry()->
-          AddObserver(this);
+      system_service->docs_service()->operation_registry()->AddObserver(this);
     }
   }
 
@@ -1119,10 +1120,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
     GDataSystemService* system_service =
           GDataSystemServiceFactory::FindForProfile(profile);
-    if (!system_service || !system_service->file_system())
+    if (!system_service)
       return;
 
-    OnProgressUpdate(system_service->file_system()->GetOperationRegistry()->
+    OnProgressUpdate(system_service->docs_service()->operation_registry()->
         GetProgressStatusList());
   }
 
