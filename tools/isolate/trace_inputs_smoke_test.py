@@ -12,6 +12,8 @@ import sys
 import tempfile
 import unittest
 
+import worker_pool
+
 FULLNAME = os.path.abspath(__file__)
 ROOT_DIR = os.path.dirname(FULLNAME)
 FILENAME = os.path.basename(__file__)
@@ -377,6 +379,83 @@ class TraceInputsImport(TraceInputsBase):
     simplified = self.trace_inputs.extract_directories(ROOT_DIR, results.files)
     self.assertEquals(files, [f.path for f in simplified])
 
+  def test_trace_multiple(self):
+    if sys.platform != 'linux2':
+      # TODO(maruel): Soon!
+      return
+    # Starts PARALLEL threads and trace PARALLEL child processes simultaneously.
+    # Some are started from 'data' directory, others from this script's
+    # directory. One trace fails. Verify everything still goes one.
+    PARALLEL = 8
+
+    def trace(tracer, cmd, cwd, tracename):
+      resultcode, output = tracer.trace(
+          cmd, cwd, tracename, True)
+      return (tracename, resultcode, output)
+
+    with worker_pool.ThreadPool(PARALLEL) as pool:
+      api = self.trace_inputs.get_api()
+      with api.get_tracer(self.log) as tracer:
+        pool.add_task(
+            trace, tracer, self.get_child_command(False), ROOT_DIR, 'trace1')
+        pool.add_task(
+            trace, tracer, self.get_child_command(True), self.cwd, 'trace2')
+        pool.add_task(
+            trace, tracer, self.get_child_command(False), ROOT_DIR, 'trace3')
+        pool.add_task(
+            trace, tracer, self.get_child_command(True), self.cwd, 'trace4')
+        # Have this one fail since it's started from the wrong directory.
+        pool.add_task(
+            trace, tracer, self.get_child_command(False), self.cwd, 'trace5')
+        pool.add_task(
+            trace, tracer, self.get_child_command(True), self.cwd, 'trace6')
+        pool.add_task(
+            trace, tracer, self.get_child_command(False), ROOT_DIR, 'trace7')
+        pool.add_task(
+            trace, tracer, self.get_child_command(True), self.cwd, 'trace8')
+        trace_results = pool.join()
+    actual_results = api.parse_log(
+        self.log, self.trace_inputs.get_blacklist(api))
+    self.assertEquals(8, len(trace_results))
+    self.assertEquals(8, len(actual_results))
+
+    # Convert to dict keyed on the trace name, simpler to verify.
+    trace_results = dict((i[0], i[1:]) for i in trace_results)
+    actual_results = dict((x.pop('trace'), x) for x in actual_results)
+    self.assertEquals(sorted(trace_results), sorted(actual_results))
+
+    # It'd be nice to start different kinds of processes.
+    expected_results = [
+      self._gen_dict_full(),
+      self._gen_dict_full_gyp(),
+      self._gen_dict_full(),
+      self._gen_dict_full_gyp(),
+      self._gen_dict_wrong_path(),
+      self._gen_dict_full_gyp(),
+      self._gen_dict_full(),
+      self._gen_dict_full_gyp(),
+    ]
+    self.assertEquals(len(expected_results), len(trace_results))
+
+    # See the comment above about the trace that fails because it's started from
+    # the wrong directory.
+    BUSTED = 4
+    for index, key in enumerate(sorted(actual_results)):
+      self.assertEquals('trace%d' % (index + 1), key)
+      self.assertEquals(2, len(trace_results[key]))
+      # returncode
+      self.assertEquals(0 if index != BUSTED else 2, trace_results[key][0])
+      # output
+      self.assertEquals(actual_results[key]['output'], trace_results[key][1])
+
+      self.assertEquals(['output', 'results'], sorted(actual_results[key]))
+      results = actual_results[key]['results']
+      results = results.strip_root(ROOT_DIR)
+      actual = results.flatten()
+      self.assertTrue(actual['root'].pop('pid'))
+      if index != BUSTED:
+        self.assertTrue(actual['root']['children'][0].pop('pid'))
+      self.assertEquals(expected_results[index], actual)
 
 if __name__ == '__main__':
   VERBOSE = '-v' in sys.argv

@@ -29,6 +29,7 @@ import os
 import re
 import subprocess
 import sys
+import threading
 import weakref
 
 ## OS-specific imports
@@ -616,6 +617,8 @@ class ApiBase(object):
     """During it's lifetime, the tracing subsystem is enabled."""
     def __init__(self, logname):
       self._logname = logname
+      self._lock = threading.Lock()
+      self._traces = []
       self._initialized = True
 
     def trace(self, cmd, cwd, tracename, output):
@@ -630,10 +633,25 @@ class ApiBase(object):
       Returns a tuple (resultcode, output) and updates the internal trace
       entries.
       """
+      # The implementation adds an item to self._traces.
       raise NotImplementedError(self.__class__.__name__)
 
-    def close(self):
-      self._initialized = False
+    def close(self, _timeout=None):
+      """Saves the meta-data in the logname file.
+
+      For kernel-based tracing, stops the tracing subsystem.
+
+      Must not be used manually when using 'with' construct.
+      """
+      with self._lock:
+        assert self._initialized
+        try:
+          data = {
+            'traces': self._traces,
+          }
+          write_json(self._logname, data, False)
+        finally:
+          self._initialized = False
 
     def post_process_log(self):
       """Post-processes the log so it becomes faster to load afterward.
@@ -666,12 +684,12 @@ class ApiBase(object):
 
   @staticmethod
   def clean_trace(logname):
-    """Deletes the old log."""
+    """Deletes an old log."""
     raise NotImplementedError()
 
   @classmethod
   def parse_log(cls, logname, blacklist):
-    """Processes a trace log and returns the files opened and the files that do
+    """Processes trace logs and returns the files opened and the files that do
     not exist.
 
     It does not track directories.
@@ -679,7 +697,12 @@ class ApiBase(object):
     Most of the time, files that do not exist are temporary test files that
     should be put in /tmp instead. See http://crbug.com/116251.
 
-    Returns a tuple (existing files, non existing files, nb_processes_created)
+    Returns a list of dict with keys:
+      - results: A Results instance.
+      - trace: The corresponding tracename parameter provided to
+               get_tracer().trace().
+      - output: Output gathered during execution, if get_tracer().trace(...,
+                output=False) was used.
     """
     raise NotImplementedError(cls.__class__.__name__)
 
@@ -1001,6 +1024,12 @@ class Strace(ApiBase):
     def trace(self, cmd, cwd, tracename, output):
       """Runs strace on an executable."""
       logging.info('trace(%s, %s, %s, %s)' % (cmd, cwd, tracename, output))
+      with self._lock:
+        if not self._initialized:
+          raise TracingFailure(
+              'Called Tracer.trace() on an unitialized object',
+              None, None, None, tracename)
+        assert tracename not in (i['trace'] for i in self._traces)
       stdout = stderr = None
       if output:
         stdout = subprocess.PIPE
@@ -1011,7 +1040,7 @@ class Strace(ApiBase):
         '-ff',
         '-s', '256',
         '-e', 'trace=%s' % traces,
-        '-o', self._logname,
+        '-o', self._logname + '.' + tracename,
       ]
       child = subprocess.Popen(
           trace_cmd + cmd,
@@ -1020,14 +1049,19 @@ class Strace(ApiBase):
           stdout=stdout,
           stderr=stderr)
       out = child.communicate()[0]
-      # Once it's done, write metadata into the log file to be able to follow
-      # the pid files.
-      value = {
-        'cwd': cwd,
-        # The pid of strace process, not very useful.
-        'pid': child.pid,
-      }
-      write_json(self._logname, value, False)
+      # TODO(maruel): Walk the logs and figure out the root process would
+      # simplify parsing the logs a *lot*.
+      with self._lock:
+        assert tracename not in (i['trace'] for i in self._traces)
+        self._traces.append(
+          {
+            'cmd': cmd,
+            'cwd': cwd,
+            # The pid of strace process, not very useful.
+            'pid': child.pid,
+            'trace': tracename,
+            'output': out,
+          })
       return child.returncode, out
 
   @staticmethod
@@ -1043,16 +1077,26 @@ class Strace(ApiBase):
   def parse_log(cls, logname, blacklist):
     logging.info('parse_log(%s, %s)' % (logname, blacklist))
     data = read_json(logname)
-    context = cls.Context(blacklist, data['cwd'])
-    for pidfile in glob.iglob(logname + '.*'):
-      pid = pidfile.rsplit('.', 1)[1]
-      if pid.isdigit():
-        pid = int(pid)
-        # TODO(maruel): Load as utf-8
-        for line in open(pidfile, 'rb'):
-          context.on_line(pid, line)
-
-    return context.to_results()
+    out = []
+    for item in data['traces']:
+      result = {
+        'trace': item['trace'],
+        'output': item['output'],
+      }
+      try:
+        context = cls.Context(blacklist, item['cwd'])
+        for pidfile in glob.iglob('%s.%s.*' % (logname, item['trace'])):
+          pid = pidfile.rsplit('.', 1)[1]
+          if pid.isdigit():
+            pid = int(pid)
+            # TODO(maruel): Load as utf-8
+            for line in open(pidfile, 'rb'):
+              context.on_line(pid, line)
+        result['results'] = context.to_results()
+      except TracingFailure, e:
+        result['exception'] = e
+      out.append(result)
+    return out
 
 
 class Dtrace(ApiBase):
@@ -1615,6 +1659,12 @@ class Dtrace(ApiBase):
       logging.info('Running: %s' % cmd)
       signal = 'Go!'
       logging.debug('Our pid: %d' % os.getpid())
+      with self._lock:
+        if not self._initialized:
+          raise TracingFailure(
+              'Called Tracer.trace() on an unitialized object',
+              None, None, None, tracename)
+        assert tracename not in (i['trace'] for i in self._traces)
 
       # Part 1: start the child process.
       stdout = stderr = None
@@ -1673,6 +1723,17 @@ class Dtrace(ApiBase):
         # Find a better way.
         os.remove(logname)
 
+      with self._lock:
+        assert tracename not in (i['trace'] for i in self._traces)
+        self._traces.append(
+          {
+            'cmd': cmd,
+            'cwd': cwd,
+            # The pid of strace process, not very useful.
+            'pid': child.pid,
+            'trace': tracename,
+            'output': out,
+          })
       return dtrace.returncode or child.returncode, out
 
     def post_process_log(self):
@@ -1709,10 +1770,19 @@ class Dtrace(ApiBase):
   @classmethod
   def parse_log(cls, logname, blacklist):
     logging.info('parse_log(%s, %s)' % (logname, blacklist))
-    context = cls.Context(blacklist)
-    for line in open(logname + '.log', 'rb'):
-      context.on_line(line)
-    return context.to_results()
+    data = read_json(logname)
+    out = []
+    for item in data['traces']:
+      context = cls.Context(blacklist)
+      for line in open(logname + '.log', 'rb'):
+        context.on_line(line)
+      out.append(
+          {
+            'results': context.to_results(),
+            'trace': item['trace'],
+            'output': item['output'],
+          })
+    return out
 
 
 class LogmanTrace(ApiBase):
@@ -2053,6 +2123,13 @@ class LogmanTrace(ApiBase):
       executable to be traced is run.
       """
       logging.info('trace(%s, %s, %s, %s)' % (cmd, cwd, tracename, output))
+      with self._lock:
+        if not self._initialized:
+          raise TracingFailure(
+              'Called Tracer.trace() on an unitialized object',
+              None, None, None, tracename)
+        assert tracename not in (i['trace'] for i in self._traces)
+
       # Use "logman -?" for help.
 
       stdout = stderr = None
@@ -2087,12 +2164,16 @@ class LogmanTrace(ApiBase):
         # 3. Stop the log collection.
         self._stop_log()
 
-      # 5. Save metadata.
-      value = {
-        'pid': child.pid,
-        'format': 'csv',
-      }
-      write_json(self._logname, value, False)
+      with self._lock:
+        assert tracename not in (i['trace'] for i in self._traces)
+        self._traces.append({
+          'command': cmd,
+          'cwd': cwd,
+          'pid': child.pid,
+          'trace': tracename,
+          'output': out,
+        })
+
       return child.returncode, out
 
     @classmethod
@@ -2325,10 +2406,19 @@ class LogmanTrace(ApiBase):
 
     data = read_json(logname)
     lines = read_json(logname + '.json')
-    context = cls.Context(blacklist_more, data['pid'])
-    for line in lines:
-      context.on_line(line)
-    return context.to_results()
+    out = []
+    for index, item in enumerate(data['traces']):
+      print >> sys.stderr, ('%d out of %d' % (index, len(data['traces'])))
+      context = cls.Context(blacklist_more, item['pid'])
+      for line in lines:
+        context.on_line(line)
+      out.append(
+          {
+            'results': context.to_results(),
+            'trace': item['trace'],
+            'output': item['output'],
+          })
+    return out
 
 
 def get_api():
@@ -2446,7 +2536,9 @@ def load_trace(logfile, root_dir, api):
               trace or not.
   - api: A tracing api instance.
   """
-  results = api.parse_log(logfile, get_blacklist(api))
+  data = api.parse_log(logfile, get_blacklist(api))
+  assert len(data) == 1, 'More than one trace was detected!'
+  results = data[0]['results']
   if root_dir:
     results = results.strip_root(root_dir)
   return results
