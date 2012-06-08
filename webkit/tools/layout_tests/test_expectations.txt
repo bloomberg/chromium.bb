@@ -34,4 +34,5 @@
 
 BUGCR131187 : platform/chromium/virtual/gpu/canvas/philip/tests/2d.gradient.radial.cone.cylinder.html = TEXT
 BUGCR131187 : platform/chromium/virtual/gpu/fast/canvas/canvas-currentColor.html = TEXT
-
+BUGCR131187 : canvas/philip/tests/2d.gradient.radial.cone.cylinder.html = TEXT
+BUGCR131187 : fast/canvas/canvas-currentColor.html = TEXT
