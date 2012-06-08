@@ -172,7 +172,7 @@ class TestPackage(object):
                                       p.before)]
       if found >= 3:
         # The test bailed out (i.e., didn't print OK or FAIL).
-        if found == 3:  # pexpect.TIMEOUT
+        if found == 4:  # pexpect.TIMEOUT
           logging.error('Test terminated after %d second timeout.',
                         self.timeout)
           timed_out = True
