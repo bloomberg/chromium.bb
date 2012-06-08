@@ -60,6 +60,7 @@ namespace content {
 // NOT READY YET. PowerSaveBlocker above is soon to be replaced by this class,
 // but it's not done yet so client code should use the one above for now.
 // A RAII-style class to block the system from entering low-power (sleep) mode.
+// This class is thread-safe; it may be constructed and deleted on any thread.
 class CONTENT_EXPORT PowerSaveBlocker2 {
  public:
   enum PowerSaveBlockerType {
@@ -89,9 +90,12 @@ class CONTENT_EXPORT PowerSaveBlocker2 {
   // Implementations of this class may need a second object with different
   // lifetime than the RAII container, or additional storage. This member is
   // here for that purpose. If not used, just define the class as an empty
-  // RefCounted like so to make it compile:
+  // RefCounted (or RefCountedThreadSafe) like so to make it compile:
   // class PowerSaveBlocker2::Delegate
-  //     : public RefCounted<PowerSaveBlocker2::Delegate> {
+  //     : public base::RefCounted<PowerSaveBlocker2::Delegate> {
+  //  private:
+  //   friend class base::RefCounted<Delegate>;
+  //   ~Delegate() {}
   // };
   scoped_refptr<Delegate> delegate_;
 
