@@ -397,8 +397,6 @@
         '../webkit/quota/mock_quota_manager.cc',
         '../webkit/quota/mock_quota_manager.h',
         '../webkit/quota/mock_quota_manager_unittest.cc',
-        '../webkit/quota/mock_special_storage_policy.cc',
-        '../webkit/quota/mock_special_storage_policy.h',
         '../webkit/quota/mock_storage_client.cc',
         '../webkit/quota/mock_storage_client.h',
         '../webkit/quota/quota_database_unittest.cc',
