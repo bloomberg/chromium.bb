@@ -101,5 +101,5 @@ else
 fi
 
 if [[ "${DONT_BUILD_COMPATIBLE_TOOLCHAINS:-no}" != "yes" ]]; then
-  native_client/tools/BACKPORTS/build_backports.sh VERSIONS ${PLATFORM}
+  tools/BACKPORTS/build_backports.sh VERSIONS ${PLATFORM}
 fi
