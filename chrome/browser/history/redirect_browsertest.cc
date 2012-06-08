@@ -98,14 +98,14 @@ IN_PROC_BROWSER_TEST_F(RedirectTest, Client) {
   EXPECT_EQ(final_url.spec(), redirects[0].spec());
 
   // The address bar should display the final URL.
-  EXPECT_EQ(final_url, browser()->GetSelectedWebContents()->GetURL());
+  EXPECT_EQ(final_url, browser()->GetActiveWebContents()->GetURL());
 
   // Navigate one more time.
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
       browser(), first_url, 2);
 
   // The address bar should still display the final URL.
-  EXPECT_EQ(final_url, browser()->GetSelectedWebContents()->GetURL());
+  EXPECT_EQ(final_url, browser()->GetActiveWebContents()->GetURL());
 }
 
 // http://code.google.com/p/chromium/issues/detail?id=62772
@@ -152,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(RedirectTest, ClientCancelled) {
       FilePath(), FilePath().AppendASCII("cancelled_redirect_test.html"));
   ui_test_utils::NavigateToURL(browser(), first_url);
 
-  content::WebContents* web_contents = browser()->GetSelectedWebContents();
+  content::WebContents* web_contents = browser()->GetActiveWebContents();
   content::TestNavigationObserver navigation_observer(
       content::Source<content::NavigationController>(
           &web_contents->GetController()));
@@ -207,7 +207,7 @@ IN_PROC_BROWSER_TEST_F(RedirectTest, ServerReference) {
 
   ui_test_utils::NavigateToURL(browser(), initial_url);
 
-  EXPECT_EQ(ref, browser()->GetSelectedWebContents()->GetURL().ref());
+  EXPECT_EQ(ref, browser()->GetActiveWebContents()->GetURL().ref());
 }
 
 // Test that redirect from http:// to file:// :
@@ -227,7 +227,7 @@ IN_PROC_BROWSER_TEST_F(RedirectTest, NoHttpToFile) {
   // We make sure the title doesn't match the title from the file, because the
   // nav should not have taken place.
   EXPECT_NE(ASCIIToUTF16("File!"),
-            browser()->GetSelectedWebContents()->GetTitle());
+            browser()->GetActiveWebContents()->GetTitle());
 }
 
 // Ensures that non-user initiated location changes (within page) are
@@ -265,7 +265,7 @@ IN_PROC_BROWSER_TEST_F(RedirectTest,
   GURL first_url = test_server()->GetURL(
       "client-redirect?" + slow.spec());
 
-  content::WebContents* web_contents = browser()->GetSelectedWebContents();
+  content::WebContents* web_contents = browser()->GetActiveWebContents();
   content::TestNavigationObserver observer(
       content::Source<content::NavigationController>(
           &web_contents->GetController()),
@@ -284,7 +284,7 @@ IN_PROC_BROWSER_TEST_F(RedirectTest,
   // Check to make sure the navigation did in fact take place and we are
   // at the expected page.
   EXPECT_EQ(ASCIIToUTF16("Title Of Awesomeness"),
-            browser()->GetSelectedWebContents()->GetTitle());
+            browser()->GetActiveWebContents()->GetTitle());
 
   bool final_navigation_not_redirect = true;
   std::vector<GURL> redirects = GetRedirects(first_url);

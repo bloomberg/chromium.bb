@@ -136,7 +136,7 @@ class HistoryBrowserTest : public InProcessBrowserTest {
   void LoadAndWaitForURL(const GURL& url) {
     string16 expected_title(ASCIIToUTF16("OK"));
     ui_test_utils::TitleWatcher title_watcher(
-        browser()->GetSelectedWebContents(), expected_title);
+        browser()->GetActiveWebContents(), expected_title);
     title_watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
     ui_test_utils::NavigateToURL(browser(), url);
     EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
@@ -275,7 +275,7 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest,
   // Therefore, Page 11 should be in the history in addition to Page 12.
   LoadAndWaitForFile("history_length_test_page_11.html");
 
-  ui_test_utils::SimulateMouseClick(browser()->GetSelectedWebContents());
+  ui_test_utils::SimulateMouseClick(browser()->GetActiveWebContents());
   LoadAndWaitForFile("history_length_test_page_11.html");
 }
 
@@ -300,9 +300,9 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, HistorySearchXSS) {
   // so that we're not susceptible (less susceptible?) to a race condition.
   // Should a race condition ever trigger, it won't result in flakiness.
   int num = ui_test_utils::FindInPage(
-      browser()->GetSelectedTabContentsWrapper(), ASCIIToUTF16("<img"), true,
+      browser()->GetActiveTabContents(), ASCIIToUTF16("<img"), true,
       true, NULL);
   EXPECT_GT(num, 0);
   EXPECT_EQ(ASCIIToUTF16("History"),
-            browser()->GetSelectedWebContents()->GetTitle());
+            browser()->GetActiveWebContents()->GetTitle());
 }
