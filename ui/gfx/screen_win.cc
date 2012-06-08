@@ -53,7 +53,7 @@ int Screen::GetNumMonitors() {
 }
 
 // static
-gfx::Monitor Screen::GetMonitorNearestWindow(gfx::NativeWindow window) {
+gfx::Monitor Screen::GetMonitorNearestWindow(gfx::NativeView window) {
   MONITORINFO monitor_info;
   monitor_info.cbSize = sizeof(monitor_info);
   GetMonitorInfo(MonitorFromWindow(window, MONITOR_DEFAULTTONEAREST),

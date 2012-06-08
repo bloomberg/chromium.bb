@@ -89,6 +89,15 @@ gfx::Point Screen::GetCursorScreenPoint() {
 }
 
 // static
+gfx::Monitor Screen::GetMonitorNearestWindow(gfx::NativeView view) {
+  NSWindow* window = [view window];
+  if (!window)
+    return GetPrimaryMonitor();
+  NSScreen* match_screen = [window screen];
+  return GetMonitorForScreen(match_screen, false /* may not be primary */);
+}
+
+// static
 gfx::Monitor Screen::GetPrimaryMonitor() {
   // Primary monitor is defined as the monitor with the menubar,
   // which is always at index 0.

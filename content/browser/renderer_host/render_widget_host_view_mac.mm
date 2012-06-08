@@ -95,7 +95,17 @@ typedef unsigned long long NSEventMask;
                                    handler:(NSEvent* (^)(NSEvent*))block;
 + (void)removeMonitor:(id)eventMonitor;
 @end
+
+@interface NSScreen (LionAPI)
+- (CGFloat)backingScaleFactor;
+@end
+
+@interface NSWindow (LionAPI)
+- (CGFloat)backingScaleFactor;
+@end
+
 #endif  // 10.7
+
 
 static inline int ToWebKitModifiers(NSUInteger flags) {
   int modifiers = 0;
@@ -780,8 +790,21 @@ bool RenderWidgetHostViewMac::IsPopup() const {
 
 BackingStore* RenderWidgetHostViewMac::AllocBackingStore(
     const gfx::Size& size) {
-  // TODO(thakis): Pass correct scale factor.
-  return new BackingStoreMac(render_widget_host_, size, 1.0);
+  // TODO(thakis): Register for backing scale factor change events and pass
+  // that on.
+  float scale = 1;
+  if (NSWindow* window = [cocoa_view_ window]) {
+    if ([window respondsToSelector:@selector(backingScaleFactor)])
+      scale = [window backingScaleFactor];
+    else
+      scale = [window userSpaceScaleFactor];
+  } else if (NSScreen* screen = [NSScreen mainScreen]) {
+    if ([screen respondsToSelector:@selector(backingScaleFactor)])
+      scale = [screen backingScaleFactor];
+    else
+      scale = [screen userSpaceScaleFactor];
+  }
+  return new BackingStoreMac(render_widget_host_, size, scale);
 }
 
 void RenderWidgetHostViewMac::CopyFromCompositingSurface(
@@ -1948,6 +1971,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   }
 
   if (backingStore) {
+    // Note: All coordinates are in view units, not pixels.
     gfx::Rect bitmapRect(0, 0,
                          backingStore->size().width(),
                          backingStore->size().height());

@@ -554,12 +554,6 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
     prefs.accelerated_compositing_enabled = false;
     prefs.accelerated_2d_canvas_enabled = false;
   }
-#if defined(OS_MACOSX)
-  // Mac doesn't have gfx::Screen::GetMonitorNearestWindow impl.
-  // crbug.com/125690.
-  prefs.default_device_scale_factor =
-      gfx::Monitor::GetDefaultDeviceScaleFactor();
-#else
   if (rvh->GetView()) {
     gfx::Monitor monitor = gfx::Screen::GetMonitorNearestWindow(
         rvh->GetView()->GetNativeView());
@@ -569,7 +563,6 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
     prefs.default_device_scale_factor =
         gfx::Monitor::GetDefaultDeviceScaleFactor();;
   }
-#endif
 
   if (command_line.HasSwitch(switches::kDefaultTileWidth))
     prefs.default_tile_width =
