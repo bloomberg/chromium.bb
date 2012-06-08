@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_LIBGTK2UI_LIBGTK2UI_EXPORT_H_
 #pragma once
 
-// Defines LIBGTK2UI_EXPORT so that functionality implemented by the aura module
-// can be exported to consumers.
+// Defines LIBGTK2UI_EXPORT so that functionality implemented by our limited
+// gtk2 module can be exported to consumers.
 
 #if defined(COMPONENT_BUILD)
 #if defined(WIN32)

@@ -34,7 +34,7 @@ class Gtk2UI : public ui::LinuxUI {
   Gtk2UI();
   virtual ~Gtk2UI();
 
-  // LinuxShell:
+  // ui::LinuxUI:
   virtual bool UseNativeTheme() const OVERRIDE;
   virtual gfx::Image* GetThemeImageNamed(int id) const OVERRIDE;
   virtual SkColor GetColor(int id) const OVERRIDE;

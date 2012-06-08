@@ -38,6 +38,7 @@
         'gtk2_ui.h',
         'gtk2_util.cc',
         'gtk2_util.h',
+        'libgtk2ui_export.h',
         'owned_widget_gtk2.cc',
         'owned_widget_gtk2.h',
         'skia_utils_gtk2.cc',

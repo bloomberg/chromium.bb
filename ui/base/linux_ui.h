@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_LINUX_SHELL_LINUX_SHELL_H_
-#define UI_BASE_LINUX_SHELL_LINUX_SHELL_H_
+#ifndef UI_BASE_LINUX_UI_H_
+#define UI_BASE_LINUX_UI_H_
 #pragma once
 
 #include "ui/base/ui_export.h"
@@ -22,7 +22,7 @@ namespace ui {
 // project that wants to do linux desktop native rendering.
 //
 // TODO(erg): We're hardcoding GTK2, when we'll need to have backends for (at
-// minimum) GTK2 and GTK3. LinuxShell::instance() should actually be a very
+// minimum) GTK2 and GTK3. LinuxUI::instance() should actually be a very
 // complex method that pokes around with dlopen against a libuigtk2.so, a
 // liuigtk3.so, etc.
 class UI_EXPORT LinuxUI {
@@ -32,7 +32,7 @@ class UI_EXPORT LinuxUI {
   // Sets the dynamically loaded singleton that draws the desktop native UI.
   static void SetInstance(LinuxUI* instance);
 
-  // Returns a LinuxShell instance for the toolkit used in the user's desktop
+  // Returns a LinuxUI instance for the toolkit used in the user's desktop
   // environment.
   //
   // Can return NULL, in case no toolkit has been set. (For example, if we're
@@ -47,4 +47,4 @@ class UI_EXPORT LinuxUI {
 
 }  // namespace ui
 
-#endif  // UI_BASE_LINUX_SHELL_LINUX_SHELL_H_
+#endif  // UI_BASE_LINUX_UI_H_
