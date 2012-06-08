@@ -124,6 +124,11 @@ LayoutTestControllerBindings::GetNativeFunction(v8::Handle<v8::String> name) {
     return v8::FunctionTemplate::New(SetDumpChildFramesAsText);
   if (name->Equals(v8::String::New("SetPrinting")))
     return v8::FunctionTemplate::New(SetPrinting);
+  if (name->Equals(v8::String::New(
+          "SetShouldStayOnPageAfterHandlingBeforeUnload"))) {
+    return v8::FunctionTemplate::New(
+        SetShouldStayOnPageAfterHandlingBeforeUnload);
+  }
   if (name->Equals(v8::String::New("SetWaitUntilDone")))
     return v8::FunctionTemplate::New(SetWaitUntilDone);
 

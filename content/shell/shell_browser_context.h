@@ -10,6 +10,7 @@
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/scoped_temp_dir.h"
 #include "content/public/browser/browser_context.h"
 
 namespace content {
@@ -45,6 +46,7 @@ class ShellBrowserContext : public BrowserContext {
   // allowed on the current thread.
   void InitWhileIOAllowed();
 
+  ScopedTempDir testing_path_;
   FilePath path_;
   scoped_ptr<ResourceContext> resource_context_;
   scoped_refptr<ShellDownloadManagerDelegate> download_manager_delegate_;

@@ -5,6 +5,7 @@
 #include "content/shell/shell_browser_context.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/environment.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -13,6 +14,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/shell/shell_download_manager_delegate.h"
 #include "content/shell/shell_resource_context.h"
+#include "content/shell/shell_switches.h"
 #include "content/shell/shell_url_request_context_getter.h"
 
 #if defined(OS_WIN)
@@ -48,6 +50,11 @@ ShellBrowserContext::~ShellBrowserContext() {
 }
 
 void ShellBrowserContext::InitWhileIOAllowed() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
+    CHECK(testing_path_.CreateUniqueTempDir());
+    path_ = testing_path_.path();
+    return;
+  }
 #if defined(OS_WIN)
   CHECK(PathService::Get(base::DIR_LOCAL_APP_DATA, &path_));
   path_ = path_.Append(std::wstring(L"content_shell"));
