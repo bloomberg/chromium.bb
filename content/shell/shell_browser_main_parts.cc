@@ -18,10 +18,6 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/net_module.h"
 
-#if defined(OS_ANDROID)
-#include "base/message_pump_android.h"
-#endif
-
 namespace content {
 
 static GURL GetStartupURL() {
@@ -32,12 +28,6 @@ static GURL GetStartupURL() {
 
   return GURL(args[0]);
 }
-
-#if defined(OS_ANDROID)
-static base::MessagePump* CreateMessagePumpForShell() {
-  return new base::MessagePumpForUI();
-}
-#endif
 
 ShellBrowserMainParts::ShellBrowserMainParts(
     const content::MainFunctionParams& parameters)
@@ -50,9 +40,6 @@ ShellBrowserMainParts::~ShellBrowserMainParts() {
 
 #if !defined(OS_MACOSX)
 void ShellBrowserMainParts::PreMainMessageLoopStart() {
-#if defined(OS_ANDROID)
-  MessageLoopForUI::InitMessagePumpForUIFactory(&CreateMessagePumpForShell);
-#endif
 }
 #endif
 

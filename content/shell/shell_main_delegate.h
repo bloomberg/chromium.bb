@@ -14,6 +14,10 @@
 namespace content {
 class ShellContentBrowserClient;
 class ShellContentRendererClient;
+
+#if defined(OS_ANDROID)
+class BrowserMainRunner;
+#endif
 }  // namespace content
 
 class ShellMainDelegate : public content::ContentMainDelegate {
@@ -37,6 +41,10 @@ class ShellMainDelegate : public content::ContentMainDelegate {
   scoped_ptr<content::ShellContentBrowserClient> browser_client_;
   scoped_ptr<content::ShellContentRendererClient> renderer_client_;
   content::ShellContentClient content_client_;
+
+#if defined(OS_ANDROID)
+  scoped_ptr<content::BrowserMainRunner> browser_runner_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ShellMainDelegate);
 };

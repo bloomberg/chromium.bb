@@ -59,13 +59,6 @@ int ShellBrowserMain(const content::MainFunctionParams& parameters) {
 
   int exit_code = main_runner_->Initialize(parameters);
 
-#if defined(OS_ANDROID)
-  DCHECK(exit_code < 0);
-
-  // Return 0 so that we do NOT trigger the default behavior. On Android, the
-  // UI message loop is managed by the Java application.
-  return 0;
-#else
   if (exit_code >= 0)
     return exit_code;
 
@@ -115,5 +108,4 @@ int ShellBrowserMain(const content::MainFunctionParams& parameters) {
   main_runner_->Shutdown();
 
   return exit_code;
-#endif
 }

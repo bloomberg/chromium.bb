@@ -321,8 +321,11 @@ void BrowserMainLoop::MainMessageLoopStart() {
 
   system_monitor_.reset(new base::SystemMonitor);
   hi_res_timer_manager_.reset(new HighResolutionTimerManager);
-
+#if !defined(OS_ANDROID)
+  // TODO(michaelbai): The Android content shell was stuck here, disabled it
+  // temporarily.
   network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
+#endif
   audio_manager_.reset(media::AudioManager::Create());
   online_state_observer_.reset(new BrowserOnlineStateObserver);
 

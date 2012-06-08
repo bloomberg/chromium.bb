@@ -357,6 +357,14 @@ int RunNamedProcessTypeMain(
       if (delegate) {
         int exit_code = delegate->RunProcess(process_type,
             main_function_params);
+#if defined(OS_ANDROID)
+        // In Android's browser process, the negative exit code doesn't mean the
+        // default behavior should be used as the UI message loop is managed by
+        // the Java and the browser process's default behavior is always
+        // overridden.
+        if (process_type.empty())
+          return exit_code;
+#endif
         if (exit_code >= 0)
           return exit_code;
       }

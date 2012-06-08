@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/path_service.h"
+#include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/shell/shell_browser_main.h"
@@ -46,10 +47,20 @@ void ShellMainDelegate::PreSandboxStartup() {
 int ShellMainDelegate::RunProcess(
     const std::string& process_type,
     const content::MainFunctionParams& main_function_params) {
-  if (process_type != "")
+  if (!process_type.empty())
     return -1;
 
+#if !defined(OS_ANDROID)
   return ShellBrowserMain(main_function_params);
+#else
+  // If no process type is specified, we are creating the main browser process.
+  browser_runner_.reset(content::BrowserMainRunner::Create());
+  int exit_code = browser_runner_->Initialize(main_function_params);
+  DCHECK(exit_code < 0)
+      << "BrowserRunner::Initialize failed in ShellMainDelegate";
+
+  return exit_code;
+#endif
 }
 
 void ShellMainDelegate::InitializeResourceBundle() {
