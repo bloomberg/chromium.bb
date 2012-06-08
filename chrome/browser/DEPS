@@ -50,6 +50,7 @@ include_rules = [
   "+chrome/browser/ui/views/infobars/infobar_container_view.h",
   "+chrome/browser/ui/views/location_bar/location_bar_view.h",
   "+chrome/browser/ui/views/location_bar/location_icon_view.h",
+  "+chrome/browser/ui/views/network_profile_bubble.h",
   "+chrome/browser/ui/views/notifications/balloon_view.h",
   "+chrome/browser/ui/views/notifications/balloon_view_host.h",
   "+chrome/browser/ui/views/page_info_bubble_view.h",
