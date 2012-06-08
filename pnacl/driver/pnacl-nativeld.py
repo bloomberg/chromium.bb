@@ -11,8 +11,7 @@
 # All inputs must be native objects or linker scripts.
 #
 # --pnacl-sb will cause the sandboxed LD to be used.
-# The bulk of this file is logic to invoke the sandboxed translator
-# (SRPC and non-SRPC).
+# The bulk of this file is logic to invoke the sandboxed translator.
 
 from driver_tools import *
 from driver_env import env
@@ -99,6 +98,7 @@ EXTRA_ENV = {
   'LIBS_X8632'       : '${BASE_LIB_NATIVE}x86-32',
   'LIBS_X8664'       : '${BASE_LIB_NATIVE}x86-64',
 
+  # Note: this is only used in the unsandboxed case
   'RUN_LD' : '${LD} ${LD_FLAGS} ${inputs} -o "${output}" ' +
              '${#METADATA_FILE ? --metadata ${METADATA_FILE}}',
 }
@@ -199,8 +199,8 @@ def main(argv):
   if GetArch(required=True) == 'X8664':
     env.append('LD_FLAGS', '--metadata-is64')
 
-  if env.getbool('SANDBOXED') and env.getbool('SRPC'):
-    RunLDSRPC()
+  if env.getbool('SANDBOXED'):
+    RunLDSandboxed()
   else:
     Run('${RUN_LD}')
   env.pop()
@@ -210,7 +210,7 @@ def main(argv):
 def IsFlag(arg):
   return arg.startswith('-')
 
-def RunLDSRPC():
+def RunLDSandboxed():
   CheckTranslatorPrerequisites()
   # The "main" input file is the application's combined object file.
   all_inputs = env.get('inputs')

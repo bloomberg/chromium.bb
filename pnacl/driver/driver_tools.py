@@ -220,7 +220,6 @@ DriverArgPatterns = [
   ( '--pnacl-driver-append-([^=]+)=(.*)', "env.append($0, $1)"),
   ( ('-arch', '(.+)'),                 "SetArch($0)"),
   ( '--pnacl-sb',                      "env.set('SANDBOXED', '1')"),
-  ( '--pnacl-sb-dynamic',              "env.set('SB_DYNAMIC', '1')"),
   ( '--pnacl-use-emulator',            "env.set('USE_EMULATOR', '1')"),
   ( '--dry-run',                       "env.set('DRY_RUN', '1')"),
   ( '--pnacl-arm-bias',                "env.set('BIAS', 'ARM')"),

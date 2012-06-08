@@ -84,10 +84,6 @@ EXTRA_ENV = {
   # for the final link.
   'USE_META': '0',
 
-  # Intermediate variable LLCVAR is used for delaying evaluation.
-  'LLCVAR'        : '${SANDBOXED ? LLC_SB : LLVM_LLC}',
-  'LLC'           : '${%LLCVAR%}',
-
   'TRIPLE'      : '${TRIPLE_%ARCH%}',
   'TRIPLE_ARM'  : 'armv7a-none-nacl-gnueabi',
   'TRIPLE_X8632': 'i686-none-nacl-gnu',
@@ -129,7 +125,8 @@ EXTRA_ENV = {
   'LLC_MCPU_X8632'  : 'pentium4',
   'LLC_MCPU_X8664'  : 'core2',
 
-  'RUN_LLC'       : '${LLC} ${LLC_FLAGS} ${input} -o ${output} ' +
+  # Note: this is only used in the unsandboxed case
+  'RUN_LLC'       : '${LLVM_LLC} ${LLC_FLAGS} ${input} -o ${output} ' +
                     '-metadata-text ${output}.meta',
   'STREAM_BITCODE' : '0',
 }
@@ -427,15 +424,10 @@ def RunLD(infile, outfile):
   driver_tools.RunDriver('nativeld', args)
 
 def RunLLC(infile, outfile, filetype):
-  UseSRPC = env.getbool('SANDBOXED') and env.getbool('SRPC')
-  # For now, sel_universal doesn't properly support dynamic sb translator
-  if env.getbool('SANDBOXED') and env.getbool('SB_DYNAMIC'):
-    driver_tools.CheckTranslatorPrerequisites()
-    UseSRPC = False
   env.push()
   env.setmany(input=infile, output=outfile, filetype=filetype)
-  if UseSRPC:
-    is_shared, soname, needed = RunLLCSRPC()
+  if env.getbool('SANDBOXED'):
+    is_shared, soname, needed = RunLLCSandboxed()
     env.pop()
     # soname and dt_needed libs are returned from LLC and passed to LD
     driver_tools.SetBitcodeMetadata(infile, is_shared, soname, needed)
@@ -447,14 +439,14 @@ def RunLLC(infile, outfile, filetype):
     env.pop()
   return 0
 
-def RunLLCSRPC():
+def RunLLCSandboxed():
   driver_tools.CheckTranslatorPrerequisites()
   infile = env.getone('input')
   outfile = env.getone('output')
   flags = env.get('LLC_FLAGS')
   script = MakeSelUniversalScriptForLLC(infile, outfile, flags)
   command = ('${SEL_UNIVERSAL_PREFIX} ${SEL_UNIVERSAL} ${SEL_UNIVERSAL_FLAGS} '
-    '-- ${LLC_SRPC}')
+    '-- ${LLC_SB}')
   _, stdout, _  = driver_tools.Run(command,
                                 stdin_contents=script,
                                 # stdout/stderr will be automatically dumped

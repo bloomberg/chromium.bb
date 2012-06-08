@@ -49,8 +49,6 @@ INITIAL_ENV = {
   'BASE_LLVM_BIN'   : '${BASE_LLVM}/bin',
   'TRANSLATOR_BIN'  :
     '${BASE_TOOLCHAIN}/pnacl_translator/${STANDARD_ARCH}/bin',
-  'TRANSLATOR_BIN_NONSRPC':
-    '${BASE_TOOLCHAIN}/pnacl_translator_nonsrpc/${STANDARD_ARCH}/bin',
 
   # TODO(pdox): Unify this with ARCH.
   'STANDARD_ARCH'      : '${STANDARD_ARCH_%ARCH%}',
@@ -72,7 +70,7 @@ INITIAL_ENV = {
   'RECURSE'     : '0',    # In a recursive driver call
   'SAVE_TEMPS'  : '0',    # Do not clean up temporary files
   'SANDBOXED'   : '0',    # Use sandboxed toolchain for this arch. (main switch)
-  'SRPC'        : '1',    # Use SRPC sandboxed toolchain
+
   'FORCE_INTERMEDIATE_S': '0',
   'USE_EMULATOR'        : '0',
   'USE_BOOTSTRAP'       : '${BUILD_OS==linux ? 1 : 0}',
@@ -146,21 +144,8 @@ INITIAL_ENV = {
   'SEL_LDR'       : '${SCONS_STAGING}/sel_ldr${EXEC_EXT}',
   'BOOTSTRAP_LDR' : '${SCONS_STAGING}/nacl_helper_bootstrap${EXEC_EXT}',
 
-  # Note: -a enables sel_ldr debug mode allowing us to access to local files
-  #       this is only needed if we compile/run the translators in non-srpc mode
-  'SB_PREFIX'     : '${USE_BOOTSTRAP ? ${BOOTSTRAP_LDR}} ${SEL_LDR} '
-                    '${USE_BOOTSTRAP ? --r_debug=0xXXXXXXXXXXXXXXXXX} ' +
-                    '-a -B ${IRT_BLOB} --',
-
-  'LLC_SB'        : '${SB_PREFIX} ${RUNNABLE_LD} ' +
-                    '${TRANSLATOR_BIN_NONSRPC}/llc.nexe',
-  'SB_DYNAMIC'    : '0',
-  'NNACL_LIBDIR'  : '${BASE_NACL}/toolchain/${SCONS_OS}_x86/' +
-                    'x86_64-nacl/${ARCH  == X8632 ? lib32 : lib}',
-  'RUNNABLE_LD'   : '${SB_DYNAMIC ? ${NNACL_LIBDIR}/runnable-ld.so ' +
-                    '--library-path ${NNACL_LIBDIR}}',
-
-  'LLC_SRPC'      : '${TRANSLATOR_BIN}/llc.nexe',
+  # sandboxed llvm backend
+  'LLC_SB'      : '${TRANSLATOR_BIN}/llc.nexe',
   # sandboxed linker (gold based)
   'LD_SB'       : '${TRANSLATOR_BIN}/ld.nexe',
 
