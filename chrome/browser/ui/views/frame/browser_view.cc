@@ -1178,6 +1178,9 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
   views::FocusManager* focus_manager = GetFocusManager();
   DCHECK(focus_manager);
 
+  if (focus_manager->shortcut_handling_suspended())
+    return false;
+
   ui::Accelerator accelerator(
       static_cast<ui::KeyboardCode>(event.windowsKeyCode),
       content::GetModifiersFromNativeWebKeyboardEvent(event));

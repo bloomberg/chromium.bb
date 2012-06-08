@@ -21,6 +21,8 @@
 
 namespace views {
 
+bool FocusManager::shortcut_handling_suspended_ = false;
+
 FocusManager::FocusManager(Widget* widget, FocusManagerDelegate* delegate)
     : widget_(widget),
       delegate_(delegate),
@@ -75,6 +77,9 @@ bool FocusManager::OnKeyEvent(const KeyEvent& event) {
   if (event.type() != ui::ET_KEY_PRESSED && event.type() != ui::ET_KEY_RELEASED)
     return false;
 #endif
+
+  if (shortcut_handling_suspended())
+    return true;
 
   int modifiers = ui::EF_NONE;
   if (event.IsShiftDown())

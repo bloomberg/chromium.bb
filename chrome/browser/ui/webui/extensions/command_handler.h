@@ -42,6 +42,14 @@ class CommandHandler : public content::WebUIMessageHandler {
   // Replies back through: ExtensionCommandsOverlay.returnExtensionsData.
   void HandleRequestExtensionsData(const base::ListValue* args);
 
+  // Handles requests from javascript to set a particular keyboard shortcut
+  // for a given extension command.
+  void HandleSetExtensionCommandShortcut(const base::ListValue* args);
+
+  // Handles requests from javascript to temporarily disable general Chrome
+  // shortcut handling while the web page is capturing which shortcut to use.
+  void HandleSetShortcutHandlingSuspended(const base::ListValue* args);
+
   // Fetches all known commands, active and inactive and returns them through
   // |commands|.
   void GetAllCommands(base::DictionaryValue* commands);

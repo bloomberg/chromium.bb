@@ -8,6 +8,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/commands/command_service_factory.h"
+#include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
@@ -18,7 +19,6 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace extensions {
-
 
 CommandHandler::CommandHandler() {
 }
@@ -34,12 +34,20 @@ void CommandHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
       l10n_util::GetStringUTF16(IDS_EXTENSION_COMMANDS_EMPTY));
   localized_strings->SetString("extensionCommandsInactive",
       l10n_util::GetStringUTF16(IDS_EXTENSION_COMMANDS_INACTIVE));
-  localized_strings->SetString("close", l10n_util::GetStringUTF16(IDS_CLOSE));
+  localized_strings->SetString("extensionCommandsStartTyping",
+      l10n_util::GetStringUTF16(IDS_EXTENSION_TYPE_SHORTCUT));
+  localized_strings->SetString("ok", l10n_util::GetStringUTF16(IDS_OK));
 }
 
 void CommandHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("extensionCommandsRequestExtensionsData",
       base::Bind(&CommandHandler::HandleRequestExtensionsData,
+      base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("setShortcutHandlingSuspended",
+      base::Bind(&CommandHandler::HandleSetShortcutHandlingSuspended,
+      base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("setExtensionCommandShortcut",
+      base::Bind(&CommandHandler::HandleSetExtensionCommandShortcut,
       base::Unretained(this)));
 }
 
@@ -48,6 +56,21 @@ void CommandHandler::HandleRequestExtensionsData(const ListValue* args) {
   GetAllCommands(&results);
   web_ui()->CallJavascriptFunction(
       "ExtensionCommandsOverlay.returnExtensionsData", results);
+}
+
+void CommandHandler::HandleSetExtensionCommandShortcut(
+    const base::ListValue* args) {
+  // TODO(finnur): Implement.
+}
+
+void CommandHandler::HandleSetShortcutHandlingSuspended(const ListValue* args) {
+#if !defined(OS_MACOSX)
+  bool suspended;
+  if (args->GetBoolean(0, &suspended))
+    ExtensionKeybindingRegistry::SetShortcutHandlingSuspended(suspended);
+#else
+  NOTIMPLEMENTED();
+#endif
 }
 
 void CommandHandler::GetAllCommands(base::DictionaryValue* commands) {

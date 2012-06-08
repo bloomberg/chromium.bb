@@ -7,10 +7,17 @@
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/commands/command_service_factory.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
+#include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "ui/views/focus/focus_manager.h"
+
+// static
+void extensions::ExtensionKeybindingRegistry::SetShortcutHandlingSuspended(
+    bool suspended) {
+  views::FocusManager::set_shortcut_handling_suspended(suspended);
+}
 
 ExtensionKeybindingRegistryViews::ExtensionKeybindingRegistryViews(
     Profile* profile, views::FocusManager* focus_manager)

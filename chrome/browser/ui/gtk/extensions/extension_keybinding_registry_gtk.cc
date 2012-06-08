@@ -12,6 +12,13 @@
 #include "chrome/common/extensions/extension.h"
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
 
+// static
+void extensions::ExtensionKeybindingRegistry::SetShortcutHandlingSuspended(
+    bool suspended) {
+  // TODO(finnur): Implement.
+  NOTIMPLEMENTED();
+}
+
 ExtensionKeybindingRegistryGtk::ExtensionKeybindingRegistryGtk(
     Profile* profile, gfx::NativeWindow window)
     : ExtensionKeybindingRegistry(profile),

@@ -28,6 +28,10 @@ class ExtensionKeybindingRegistry : public content::NotificationObserver {
   explicit ExtensionKeybindingRegistry(Profile* profile);
   virtual ~ExtensionKeybindingRegistry();
 
+  // Enables/Disables general shortcut handing in Chrome. Implemented in
+  // platform-specific ExtensionKeybindingsRegistry* files.
+  static void SetShortcutHandlingSuspended(bool suspended);
+
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,

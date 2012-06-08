@@ -188,6 +188,13 @@ class VIEWS_EXPORT FocusManager {
   // Returns true if in the process of changing the focused view.
   bool is_changing_focus() const { return is_changing_focus_; }
 
+  // Disable shortcut handling.
+  static void set_shortcut_handling_suspended(bool suspended) {
+    shortcut_handling_suspended_ = suspended;
+  }
+  // Returns whether shortcut handling is currently suspended.
+  bool shortcut_handling_suspended() { return shortcut_handling_suspended_; }
+
   // Register a keyboard accelerator for the specified target. If multiple
   // targets are registered for an accelerator, a target registered later has
   // higher priority.
@@ -267,6 +274,9 @@ class VIEWS_EXPORT FocusManager {
   View* FindFocusableView(FocusTraversable* focus_traversable,
                           View* starting_view,
                           bool reverse);
+
+  // Keeps track of whether shortcut handling is currently suspended.
+  static bool shortcut_handling_suspended_;
 
   // The top-level Widget this FocusManager is associated with.
   Widget* widget_;

@@ -46,7 +46,7 @@ class CommandService : public ProfileKeyedService,
   // Register prefs for keybinding.
   static void RegisterUserPrefs(PrefService* user_prefs);
 
-  // Constructs an CommandService object for the given profile.
+  // Constructs a CommandService object for the given profile.
   explicit CommandService(Profile* profile);
   virtual ~CommandService();
 

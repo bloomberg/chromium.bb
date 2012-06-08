@@ -4,6 +4,7 @@
  * in the LICENSE file.
 -->
 <div id="extensionCommandsOverlay" class="page">
+  <div class="close-button"></div>
   <h1 i18n-content="extensionCommandsOverlay"></h1>
   <div class="content-area">
     <div id="extension-command-list"
@@ -16,7 +17,7 @@
   <div class="action-area">
     <div class="action-area-right">
       <div class="button-strip">
-        <button id="extensionCommandsDismiss" i18n-content="close"></button>
+        <button id="extensionCommandsDismiss" i18n-content="ok"></button>
       </div>
     </div>
   </div>
@@ -27,7 +28,7 @@
     <div class="extension-command-list-extension-item">
       <div class="extension-command-extension-details">
         <div>
-          <span class="extension-title"></span>
+          <span class="extension-title command-title"></span>
           <div class="command-details"></div>
         </div>
       </div>
@@ -37,9 +38,11 @@
   <div class="extension-command-list-command-item-wrapper">
     <div class="extension-command-list-command-item">
       <div class="extension-command-details">
-        <div>
+        <div class="command-container">
           <span class="command-description"></span>
-          <span class="command-shortcut"></span>
+          <span class="command-shortcut-container">
+              <span class="command-shortcut clearable" tabindex="0" />
+          </span>
         </div>
       </div>
     </div>

@@ -6,10 +6,56 @@
   margin-left: 12px;
 }
 
+.command-title {
+  display: inline-block;
+  margin-top: 1em;
+}
+
+.command-container {
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
+  width: 450px;
+}
+
+.command-description {
+  -webkit-box-flex: 1;
+  display: -webkit-box;
+  margin-top: 0.5em;
+  min-height: 2em;
+}
+
+.command-shortcut-container {
+  display: -webkit-box;
+  margin-top: 0.25em;
+  min-height: 2em;
+}
+
 .command-shortcut {
-  float: right;
+  border: solid 1px #BFBFBF;
+  border-radius: 2px;
+  color: rgb(48, 57, 66);
+  display: inline-block;
+  height: 1.4em;
+  min-width: 12.5em;
+  outline: none;
+  padding: 3px 0 1px 4px;
+}
+
+.clearable {
+  background: white url('chrome://theme/IDR_EXTENSION_COMMAND_CLOSE')
+              no-repeat right;
+}
+
+.capturing {
+  background: rgb(243, 244, 255);
+  border: solid 1px rgb(140, 147, 255);
+  color: #999;
+}
+
+.contains-chars {
+  color: rgb(48, 57, 66);
 }
 
 .inactive-keybinding {
-  color: Gray;
+  color: #999;
 }

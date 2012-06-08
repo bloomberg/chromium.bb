@@ -4693,6 +4693,9 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
       <message name="IDS_EXTENSION_COMMANDS_INACTIVE" desc="The text shown instead of the shortcut text (Ctrl+F) if the shortcut is inactive.">
         Not set
       </message>
+      <message name="IDS_EXTENSION_TYPE_SHORTCUT" desc="The text shown in a text box to instruct the user to start typing (to capture which shortcut to use for the extension command).">
+        Type a shortcut
+      </message>
       <message name="IDS_EXTENSION_COMMANDS_GENERIC_ACTIVATE" desc="The generic 'activate extension' text used as description for some commands">
         Activate the extension
       </message>

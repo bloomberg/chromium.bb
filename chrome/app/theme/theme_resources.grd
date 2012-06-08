@@ -101,6 +101,7 @@
       <include name="IDR_DOWNLOAD_PROGRESS_BACKGROUND_32" file="default_100_percent/download_progress_background32.png" type="BINDATA" />
       <include name="IDR_DOWNLOAD_PROGRESS_FOREGROUND_16" file="default_100_percent/download_progress_foreground16.png" type="BINDATA" />
       <include name="IDR_DOWNLOAD_PROGRESS_FOREGROUND_32" file="default_100_percent/download_progress_foreground32.png" type="BINDATA" />
+      <include name="IDR_EXTENSION_COMMAND_CLOSE" file="default_100_percent/extension_command_close.png" type="BINDATA" />
       <include name="IDR_EXTENSION_DEFAULT_ICON" file="default_100_percent/extension_default_icon.png" type="BINDATA" />
       <include name="IDR_EXTENSIONS_FAVICON" file="default_100_percent/plugin.png" type="BINDATA" />
       <include name="IDR_EXTENSIONS_RATING_STAR_HALF_LEFT" file="default_100_percent/extensions_rating_star_half_left.png" type="BINDATA" />
