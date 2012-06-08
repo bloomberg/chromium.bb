@@ -5584,19 +5584,6 @@
    fun:_ZNK7WebCore11RenderLayer15parentClipRectsEPKS0_PNS_12RenderRegionENS_13ClipRectsTypeERNS_9ClipRectsENS_29OverlayScrollbarSizeRelevancyE
    fun:_ZNK7WebCore11RenderLayer18backgroundClipRectEPKS0_PNS_12RenderRegionENS_13ClipRectsTypeENS_29OverlayScrollbarSizeRelevancyE
 }
-{
-   bug_131351
-   Memcheck:Uninitialized
-   ...
-   fun:_ZN7WebCore15FlexBoxIterator4nextEv
-   ...
-   fun:_ZN7WebCore27RenderDeprecatedFlexibleBox19layoutHorizontalBoxEb
-   fun:_ZN7WebCore27RenderDeprecatedFlexibleBox11layoutBlockEbNS_20FractionalLayoutUnitE
-   ...
-   fun:_ZN7WebCore11RenderBlock6layoutEv
-   fun:_ZN7WebCore10RenderView6layoutEv
-   fun:_ZN7WebCore9FrameView6layoutEb
-}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
