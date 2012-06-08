@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 
+#include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace gdata {
@@ -41,6 +42,15 @@ class GDataCache {
     CACHE_STATE_DIRTY   = 0x1 << 2,
     CACHE_STATE_MOUNTED = 0x1 << 3,
   };
+
+  // Enum defining origin of a cached file.
+  enum CachedFileOrigin {
+    CACHED_FILE_FROM_SERVER = 0,
+    CACHED_FILE_LOCALLY_MODIFIED,
+    CACHED_FILE_MOUNTED,
+  };
+
+  static const char kMountedArchiveFileExtension[];
 
   // Structure to store information of an existing cache file.
   struct CacheEntry {
@@ -107,15 +117,28 @@ class GDataCache {
 
   virtual ~GDataCache();
 
+  // Returns the sub-directory under gdata cache directory for the given sub
+  // directory type. Example:  <user_profile_dir>/GCache/v1/tmp
+  FilePath GetCacheDirectoryPath(CacheSubDirectoryType sub_dir_type) const;
+
+  // Returns absolute path of the file if it were cached or to be cached.
+  FilePath GetCacheFilePath(const std::string& resource_id,
+                            const std::string& md5,
+                            CacheSubDirectoryType sub_dir_type,
+                            CachedFileOrigin file_orign) const;
+
+  // TODO(hashimoto): Remove this method when crbug.com/131756 is fixed.
+  const std::vector<FilePath>& cache_paths() const { return cache_paths_; }
+
   // Sets |cache_map_| data member to formal parameter |new_cache_map|.
   virtual void SetCacheMap(const CacheMap& new_cache_map) = 0;
 
   // Updates cache map with entry corresponding to |resource_id|.
   // Creates new entry if it doesn't exist, otherwise update the entry.
   virtual void UpdateCache(const std::string& resource_id,
-                              const std::string& md5,
-                              CacheSubDirectoryType subdir,
-                              int cache_state) = 0;
+                           const std::string& md5,
+                           CacheSubDirectoryType subdir,
+                           int cache_state) = 0;
 
   // Removes entry corresponding to |resource_id| from cache map.
   virtual void RemoveFromCache(const std::string& resource_id) = 0;
@@ -132,12 +155,17 @@ class GDataCache {
   virtual void RemoveTemporaryFiles() = 0;
 
   // Factory methods for GDataCache.
-  static scoped_ptr<GDataCache> CreateGDataCache();
+  static scoped_ptr<GDataCache> CreateGDataCache(
+      const FilePath& cache_root_path);
 
  protected:
-  GDataCache();
+  explicit GDataCache(const FilePath& cache_root_path);
 
  private:
+  // Paths for all subdirectories of GCache, one for each
+  // GDataCache::CacheSubDirectoryType enum.
+  std::vector<FilePath> cache_paths_;
+
   DISALLOW_COPY_AND_ASSIGN(GDataCache);
 };
 

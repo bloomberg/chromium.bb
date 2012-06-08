@@ -15,6 +15,8 @@
 namespace gdata {
 namespace {
 
+const char kTestCacheRootPath[] = "/";
+
 // Helper function to insert an item with key |resource_id| into |cache_map|.
 // |md5|, |sub_dir_type|, |cache_state| are used to create the value CacheEntry.
 void InsertIntoMap(GDataCache::CacheMap* cache_map,
@@ -28,7 +30,8 @@ void InsertIntoMap(GDataCache::CacheMap* cache_map,
 
 // Test all the api methods of GDataCache except for RemoveTemporaryFiles.
 TEST(GDataCacheTest, CacheTest) {
-  scoped_ptr<GDataCache> cache(GDataCache::CreateGDataCache());
+  scoped_ptr<GDataCache> cache(GDataCache::CreateGDataCache(
+      FilePath(kTestCacheRootPath)));
 
   // Save an initial entry.
   std::string test_resource_id("test_resource_id");
@@ -159,7 +162,8 @@ TEST(GDataCacheTest, RemoveTemporaryFilesTest) {
       GDataCache::CACHE_TYPE_TMP,
       GDataCache::CACHE_STATE_PRESENT);
 
-  scoped_ptr<GDataCache> cache(GDataCache::CreateGDataCache());
+  scoped_ptr<GDataCache> cache(GDataCache::CreateGDataCache(
+      FilePath(kTestCacheRootPath)));
   cache->SetCacheMap(cache_map);
   cache->RemoveTemporaryFiles();
   // resource 1 and 4 should be gone, as these are CACHE_TYPE_TMP.

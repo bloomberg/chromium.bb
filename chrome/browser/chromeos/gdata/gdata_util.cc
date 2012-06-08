@@ -252,25 +252,25 @@ void InsertGDataCachePathsPermissions(
   // operations the file access check is done for drive/ paths.
   cache_paths->push_back(std::make_pair(
       file_system->GetCacheFilePath(resource_id, file_md5,
-          GDataCache::CACHE_TYPE_PERSISTENT,
-          GDataFileSystem::CACHED_FILE_FROM_SERVER),
+                                    GDataCache::CACHE_TYPE_PERSISTENT,
+                                    GDataCache::CACHED_FILE_FROM_SERVER),
       kReadOnlyFilePermissions));
   // TODO(tbarzic): When we start supporting openFile operation, we may have to
   // change permission for localy modified files to match handler's permissions.
   cache_paths->push_back(std::make_pair(
       file_system->GetCacheFilePath(resource_id, file_md5,
-          GDataCache::CACHE_TYPE_PERSISTENT,
-          GDataFileSystem::CACHED_FILE_LOCALLY_MODIFIED),
+                                    GDataCache::CACHE_TYPE_PERSISTENT,
+                                    GDataCache::CACHED_FILE_LOCALLY_MODIFIED),
      kReadOnlyFilePermissions));
   cache_paths->push_back(std::make_pair(
       file_system->GetCacheFilePath(resource_id, file_md5,
-          GDataCache::CACHE_TYPE_PERSISTENT,
-          GDataFileSystem::CACHED_FILE_MOUNTED),
+                                    GDataCache::CACHE_TYPE_PERSISTENT,
+                                    GDataCache::CACHED_FILE_MOUNTED),
      kReadOnlyFilePermissions));
   cache_paths->push_back(std::make_pair(
       file_system->GetCacheFilePath(resource_id, file_md5,
-          GDataCache::CACHE_TYPE_TMP,
-          GDataFileSystem::CACHED_FILE_FROM_SERVER),
+                                    GDataCache::CACHE_TYPE_TMP,
+                                    GDataCache::CACHED_FILE_FROM_SERVER),
       kReadOnlyFilePermissions));
 }
 

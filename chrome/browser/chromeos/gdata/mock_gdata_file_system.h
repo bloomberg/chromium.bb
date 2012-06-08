@@ -89,7 +89,7 @@ class MockGDataFileSystem : public GDataFileSystemInterface {
       const std::string&,
       const std::string&,
       GDataCache::CacheSubDirectoryType,
-      CachedFileOrigin));
+      GDataCache::CachedFileOrigin));
   MOCK_METHOD1(GetAvailableSpace,
                void(const GetAvailableSpaceCallback& callback));
   MOCK_METHOD3(SetPinState, void(const FilePath&,

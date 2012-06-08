@@ -183,13 +183,6 @@ class GDataFileSystemInterface {
   // Checks for updates on the server.
   virtual void CheckForUpdates() = 0;
 
-  // Enum defining origin of a cached file.
-  enum CachedFileOrigin {
-    CACHED_FILE_FROM_SERVER = 0,
-    CACHED_FILE_LOCALLY_MODIFIED,
-    CACHED_FILE_MOUNTED,
-  };
-
   // Enum defining type of file operation e.g. copy or move, etc.
   // For now, it's used for StoreToCache.
   enum FileOperationType {
@@ -420,7 +413,7 @@ class GDataFileSystemInterface {
       const std::string& resource_id,
       const std::string& md5,
       GDataCache::CacheSubDirectoryType sub_dir_type,
-      CachedFileOrigin file_orign) const = 0;
+      GDataCache::CachedFileOrigin file_orign) const = 0;
 
   // Fetches the user's Account Metadata to find out current quota information
   // and returns it to the callback.
@@ -524,7 +517,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const std::string& resource_id,
       const std::string& md5,
       GDataCache::CacheSubDirectoryType sub_dir_type,
-      CachedFileOrigin file_orign) const OVERRIDE;
+      GDataCache::CachedFileOrigin file_orign) const OVERRIDE;
   virtual void GetAvailableSpace(
       const GetAvailableSpaceCallback& callback) OVERRIDE;
   // Calls private Pin or Unpin methods with |callback|.
@@ -660,10 +653,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Finds entry object by |file_path| and returns the entry object.
   // Returns NULL if it does not find the entry.
   GDataEntry* GetGDataEntryByPath(const FilePath& file_path);
-
-  // Inits cache directory paths in the provided root.
-  // Should be called before cache is initialized.
-  void SetCachePaths(const FilePath& root_path);
 
   // Converts document feed from gdata service into DirectoryInfo. On failure,
   // returns NULL and fills in |error| with an appropriate value.
@@ -1497,10 +1486,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   // Base path for GData cache, e.g. <user_profile_dir>/user/GCache/v1.
   FilePath gdata_cache_path_;
-
-  // Paths for all subdirectories of GCache, one for each
-  // GDataCache::CacheSubDirectoryType enum.
-  std::vector<FilePath> cache_paths_;
 
   // Waitable events used to block destructor until all the tasks on blocking
   // pool are run.

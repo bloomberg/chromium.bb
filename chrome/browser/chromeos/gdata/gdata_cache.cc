@@ -10,9 +10,24 @@
 #include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/chromeos/gdata/gdata_util.h"
 
 namespace gdata {
 namespace {
+
+const char kLocallyModifiedFileExtension[] = "local";
+
+const FilePath::CharType kGDataCacheMetaDir[] = FILE_PATH_LITERAL("meta");
+const FilePath::CharType kGDataCachePinnedDir[] = FILE_PATH_LITERAL("pinned");
+const FilePath::CharType kGDataCacheOutgoingDir[] =
+    FILE_PATH_LITERAL("outgoing");
+const FilePath::CharType kGDataCachePersistentDir[] =
+    FILE_PATH_LITERAL("persistent");
+const FilePath::CharType kGDataCacheTmpDir[] = FILE_PATH_LITERAL("tmp");
+const FilePath::CharType kGDataCacheTmpDownloadsDir[] =
+    FILE_PATH_LITERAL("tmp/downloads");
+const FilePath::CharType kGDataCacheTmpDocumentsDir[] =
+    FILE_PATH_LITERAL("tmp/documents");
 
 std::string CacheSubDirectoryTypeToString(
     GDataCache::CacheSubDirectoryType subdir) {
@@ -40,6 +55,8 @@ std::string CacheSubDirectoryTypeToString(
 
 }  // namespace
 
+const char GDataCache::kMountedArchiveFileExtension[] = "mounted";
+
 std::string GDataCache::CacheEntry::ToString() const {
   std::vector<std::string> cache_states;
   if (GDataCache::IsCachePresent(cache_state))
@@ -55,15 +72,58 @@ std::string GDataCache::CacheEntry::ToString() const {
                             JoinString(cache_states, ',').c_str());
 }
 
-GDataCache::GDataCache() {
+GDataCache::GDataCache(const FilePath& cache_root_path) {
+  // Insert into |cache_paths_| in order defined in enum CacheSubDirectoryType.
+  cache_paths_.push_back(cache_root_path.Append(kGDataCacheMetaDir));
+  cache_paths_.push_back(cache_root_path.Append(kGDataCachePinnedDir));
+  cache_paths_.push_back(cache_root_path.Append(kGDataCacheOutgoingDir));
+  cache_paths_.push_back(cache_root_path.Append(kGDataCachePersistentDir));
+  cache_paths_.push_back(cache_root_path.Append(kGDataCacheTmpDir));
+  cache_paths_.push_back(cache_root_path.Append(kGDataCacheTmpDownloadsDir));
+  cache_paths_.push_back(cache_root_path.Append(kGDataCacheTmpDocumentsDir));
 }
 
 GDataCache::~GDataCache() {
 }
 
+FilePath GDataCache::GetCacheDirectoryPath(
+    CacheSubDirectoryType sub_dir_type) const {
+  DCHECK_LE(0, sub_dir_type);
+  DCHECK_GT(NUM_CACHE_TYPES, sub_dir_type);
+  return cache_paths_[sub_dir_type];
+}
+
+FilePath GDataCache::GetCacheFilePath(const std::string& resource_id,
+                                      const std::string& md5,
+                                      CacheSubDirectoryType sub_dir_type,
+                                      CachedFileOrigin file_origin) const {
+  DCHECK(sub_dir_type != CACHE_TYPE_META);
+
+  // Runs on any thread.
+  // Filename is formatted as resource_id.md5, i.e. resource_id is the base
+  // name and md5 is the extension.
+  std::string base_name = util::EscapeCacheFileName(resource_id);
+  if (file_origin == CACHED_FILE_LOCALLY_MODIFIED) {
+    DCHECK(sub_dir_type == CACHE_TYPE_PERSISTENT);
+    base_name += FilePath::kExtensionSeparator;
+    base_name += kLocallyModifiedFileExtension;
+  } else if (!md5.empty()) {
+    base_name += FilePath::kExtensionSeparator;
+    base_name += util::EscapeCacheFileName(md5);
+  }
+  // For mounted archives the filename is formatted as resource_id.md5.mounted,
+  // i.e. resource_id.md5 is the base name and ".mounted" is the extension
+  if (file_origin == CACHED_FILE_MOUNTED) {
+     DCHECK(sub_dir_type == CACHE_TYPE_PERSISTENT);
+     base_name += FilePath::kExtensionSeparator;
+     base_name += kMountedArchiveFileExtension;
+  }
+  return GetCacheDirectoryPath(sub_dir_type).Append(base_name);
+}
+
 class GDataCacheMap : public GDataCache {
  public:
-  GDataCacheMap();
+  explicit GDataCacheMap(const FilePath& cache_root_path);
 
  protected:
   virtual ~GDataCacheMap();
@@ -83,7 +143,8 @@ class GDataCacheMap : public GDataCache {
   CacheMap cache_map_;
 };
 
-GDataCacheMap::GDataCacheMap() {
+GDataCacheMap::GDataCacheMap(const FilePath& cache_root_path)
+    : GDataCache(cache_root_path) {
 }
 
 GDataCacheMap::~GDataCacheMap() {
@@ -183,8 +244,9 @@ void GDataCacheMap::RemoveTemporaryFiles() {
 }
 
 // static
-scoped_ptr<GDataCache> GDataCache::CreateGDataCache() {
-  return scoped_ptr<GDataCache>(new GDataCacheMap());
+scoped_ptr<GDataCache> GDataCache::CreateGDataCache(
+    const FilePath& cache_root_path) {
+  return scoped_ptr<GDataCache>(new GDataCacheMap(cache_root_path));
 }
 
 }  // namespace gdata
