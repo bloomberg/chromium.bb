@@ -146,7 +146,8 @@
           'conditions': [
             # Only compile in the seccomp mode 1 code for the flag combination
             # where we support it.
-            [ 'OS=="linux" and target_arch!="arm" and toolkit_views==0 and selinux==0', {
+            [ 'OS=="linux" and (target_arch=="ia32" or target_arch=="x64") '
+              'and toolkit_views==0 and selinux==0', {
               'dependencies': [
                 '../seccompsandbox/seccomp.gyp:seccomp_sandbox',
               ],
