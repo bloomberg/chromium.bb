@@ -289,6 +289,8 @@ void UserManagerImpl::UserLoggedIn(const std::string& email) {
   users_.insert(users_.begin(), logged_in_user_);
 
   if (is_current_user_new_) {
+    SaveUserDisplayName(GetLoggedInUser().email(),
+        UTF8ToUTF16(GetLoggedInUser().GetAccountName(true)));
     SetInitialUserImage(email);
     SetInitialUserWallpaper(email);
   } else {
@@ -1390,11 +1392,13 @@ void UserManagerImpl::OnDownloadComplete(ProfileDownloader* downloader,
 
   ProfileDownloadResult result;
   if (!success) {
+    SaveUserDisplayName(GetLoggedInUser().email(),
+        UTF8ToUTF16(GetLoggedInUser().GetAccountName(true)));
     result = kDownloadFailure;
   } else {
     if (downloader->GetProfileFullName().empty()) {
       SaveUserDisplayName(GetLoggedInUser().email(),
-          UTF8ToUTF16(GetLoggedInUser().email()));
+          UTF8ToUTF16(GetLoggedInUser().GetAccountName(true)));
     } else {
       SaveUserDisplayName(GetLoggedInUser().email(),
           downloader->GetProfileFullName());

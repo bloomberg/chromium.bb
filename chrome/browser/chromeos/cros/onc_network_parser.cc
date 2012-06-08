@@ -684,7 +684,7 @@ std::string OncNetworkParser::GetUserExpandedValue(
   const User& logged_in_user(UserManager::Get()->GetLoggedInUser());
   ReplaceSubstringsAfterOffset(&string_value, 0,
                                onc::substitutes::kLoginIDField,
-                               logged_in_user.GetAccountName());
+                               logged_in_user.GetAccountName(false));
   ReplaceSubstringsAfterOffset(&string_value, 0,
                                onc::substitutes::kEmailField,
                                logged_in_user.email());

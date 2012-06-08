@@ -54,8 +54,9 @@ class User {
   // Returns the human name to display for this user.
   string16 GetDisplayName() const;
 
-  // Returns the account name part of the email.
-  std::string GetAccountName() const;
+  // Returns the account name part of the email. Use the display form of the
+  // email if available and use_display_name == true. Otherwise use canonical.
+  std::string GetAccountName(bool use_display_email) const;
 
   // The image for this user.
   const gfx::ImageSkia& image() const { return image_; }

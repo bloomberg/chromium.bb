@@ -66,8 +66,11 @@ void User::SetWallpaperThumbnail(const SkBitmap& wallpaper_thumbnail) {
   wallpaper_thumbnail_ = wallpaper_thumbnail;
 }
 
-std::string User::GetAccountName() const {
-  return GetUserName(email_);
+std::string User::GetAccountName(bool use_display_email) const {
+  if (use_display_email && !display_email_.empty())
+    return GetUserName(display_email_);
+  else
+    return GetUserName(email_);
 }
 
 string16 User::GetDisplayName() const {
