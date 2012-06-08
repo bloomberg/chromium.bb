@@ -35,7 +35,7 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
                   content::DownloadManager* download_manager,
                   const FilePath& gdata_tmp_download_path);
 
-  typedef base::Callback<void(const FilePath*)>
+  typedef base::Callback<void(const FilePath&)>
     SubstituteGDataDownloadPathCallback;
   static void SubstituteGDataDownloadPath(Profile* profile,
       const FilePath& gdata_path, content::DownloadItem* download,
@@ -46,6 +46,12 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
   // makes |download| a temporary.
   static void SetDownloadParams(const FilePath& gdata_path,
                                 content::DownloadItem* download);
+
+  // Gets the gdata_path from external data in |download|.
+  // GetGDataPath may return an empty path in case SetGDataPath was not
+  // previously called or there was some other internal error
+  // (there is a DCHECK for this).
+  static FilePath GetGDataPath(content::DownloadItem* download);
 
   // Checks if there is a GData upload associated with |download|
   static bool IsGDataDownload(content::DownloadItem* download);
@@ -77,12 +83,6 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
                                        FilePath* gdata_tmp_download_path);
 
  private:
-  // Gets the gdata_path from external data in |download|.
-  // GetGDataPath may return an empty path in case SetGDataPath was not
-  // previously called or there was some other internal error
-  // (there is a DCHECK for this).
-  static FilePath GetGDataPath(content::DownloadItem* download);
-
   // DownloadManager overrides.
   virtual void ManagerGoingDown(content::DownloadManager* manager) OVERRIDE;
   virtual void ModelChanged(content::DownloadManager* manager) OVERRIDE;

@@ -1239,10 +1239,11 @@ void SavePackage::GetSaveInfo() {
   // Can't use web_contents_ in the file thread, so get the data that we need
   // before calling to it.
   FilePath website_save_dir, download_save_dir;
+  bool skip_dir_check;
   DCHECK(download_manager_);
   if (download_manager_->GetDelegate()) {
     download_manager_->GetDelegate()->GetSaveDir(
-        web_contents(), &website_save_dir, &download_save_dir);
+        web_contents(), &website_save_dir, &download_save_dir, &skip_dir_check);
   }
   std::string mime_type = web_contents()->GetContentsMimeType();
   std::string accept_languages =
@@ -1252,17 +1253,20 @@ void SavePackage::GetSaveInfo() {
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&SavePackage::CreateDirectoryOnFileThread, this,
-          website_save_dir, download_save_dir, mime_type, accept_languages));
+          website_save_dir, download_save_dir, skip_dir_check,
+          mime_type, accept_languages));
 }
 
 void SavePackage::CreateDirectoryOnFileThread(
     const FilePath& website_save_dir,
     const FilePath& download_save_dir,
+    bool skip_dir_check,
     const std::string& mime_type,
     const std::string& accept_langs) {
   FilePath save_dir;
   // If the default html/websites save folder doesn't exist...
-  if (!file_util::DirectoryExists(website_save_dir)) {
+  // We skip the directory check for gdata directories on ChromeOS.
+  if (!skip_dir_check && !file_util::DirectoryExists(website_save_dir)) {
     // If the default download dir doesn't exist, create it.
     if (!file_util::DirectoryExists(download_save_dir)) {
       bool res = file_util::CreateDirectory(download_save_dir);

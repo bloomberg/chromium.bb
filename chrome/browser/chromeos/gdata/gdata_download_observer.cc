@@ -70,6 +70,12 @@ GDataExternalData* GetGDataExternalData(DownloadItem* download) {
       download->GetExternalData(&kGDataPathKey));
 }
 
+void SubstituteGDataDownloadPathHelper(
+    const GDataDownloadObserver::SubstituteGDataDownloadPathCallback& callback,
+    const FilePath* file_path) {
+  callback.Run(*file_path);
+}
+
 }  // namespace
 
 GDataDownloadObserver::GDataDownloadObserver()
@@ -105,11 +111,12 @@ void GDataDownloadObserver::Initialize(
 void GDataDownloadObserver::SubstituteGDataDownloadPath(Profile* profile,
     const FilePath& gdata_path, content::DownloadItem* download,
     const SubstituteGDataDownloadPathCallback& callback) {
-  gdata::GDataSystemService* system_service =
-      gdata::GDataSystemServiceFactory::GetForProfile(
-          profile ? profile : ProfileManager::GetDefaultProfile());
+  if (gdata::util::IsUnderGDataMountPoint(gdata_path)) {
+    gdata::GDataSystemService* system_service =
+        gdata::GDataSystemServiceFactory::GetForProfile(
+            profile ? profile : ProfileManager::GetDefaultProfile());
+    DCHECK(system_service);
 
-  if (system_service && gdata::util::IsUnderGDataMountPoint(gdata_path)) {
     // If we're trying to download a file into gdata, save path in external
     // data.
     SetDownloadParams(gdata_path, download);
@@ -125,9 +132,11 @@ void GDataDownloadObserver::SubstituteGDataDownloadPath(Profile* profile,
         base::Bind(&gdata::GDataDownloadObserver::GetGDataTempDownloadPath,
                    gdata_tmp_download_dir,
                    gdata_tmp_download_path),
-        base::Bind(callback, base::Owned(gdata_tmp_download_path)));
+        base::Bind(&SubstituteGDataDownloadPathHelper,
+                   callback,
+                   base::Owned(gdata_tmp_download_path)));
   } else {
-    callback.Run(&gdata_path);
+    callback.Run(gdata_path);
   }
 }
 
@@ -163,6 +172,7 @@ bool GDataDownloadObserver::IsGDataDownload(DownloadItem* download) {
 bool GDataDownloadObserver::IsReadyToComplete(
     DownloadItem* download,
     const base::Closure& complete_callback) {
+  DVLOG(1) << "GDataDownloadObserver::IsReadyToComplete";
   // |download| is ready for completion (as far as GData is concerned) if:
   // 1. It's not a GData download.
   //  - or -

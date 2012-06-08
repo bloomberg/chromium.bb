@@ -7,11 +7,13 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/platform_util.h"
+#include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::DownloadItem;
 using content::DownloadManager;
 using content::WebContents;
 
@@ -52,35 +54,41 @@ FilePickerResult ComparePaths(const FilePath& suggested_path,
 
 }  // namespace
 
-DownloadFilePicker::DownloadFilePicker(
-    DownloadManager* download_manager,
-    WebContents* web_contents,
-    const FilePath& suggested_path,
-    int32 download_id)
-    : download_manager_(download_manager),
-      download_id_(download_id),
-      suggested_path_(suggested_path) {
+DownloadFilePicker::DownloadFilePicker() {
+}
+
+void DownloadFilePicker::Init(DownloadManager* download_manager,
+                              DownloadItem* item) {
+  download_manager_ = download_manager;
+  download_id_ = item->GetId();
+  InitSuggestedPath(item);
+
   DCHECK(download_manager_);
   select_file_dialog_ = SelectFileDialog::Create(this);
   SelectFileDialog::FileTypeInfo file_type_info;
-  FilePath::StringType extension = suggested_path.Extension();
+  FilePath::StringType extension = suggested_path_.Extension();
   if (!extension.empty()) {
     extension.erase(extension.begin());  // drop the .
     file_type_info.extensions.resize(1);
     file_type_info.extensions[0].push_back(extension);
   }
   file_type_info.include_all_files = true;
+  WebContents* web_contents = item->GetWebContents();
   gfx::NativeWindow owning_window = web_contents ?
       platform_util::GetTopLevel(web_contents->GetNativeView()) : NULL;
 
   select_file_dialog_->SelectFile(SelectFileDialog::SELECT_SAVEAS_FILE,
                                   string16(),
-                                  suggested_path,
+                                  suggested_path_,
                                   &file_type_info, 0, FILE_PATH_LITERAL(""),
                                   web_contents, owning_window, NULL);
 }
 
 DownloadFilePicker::~DownloadFilePicker() {
+}
+
+void DownloadFilePicker::InitSuggestedPath(DownloadItem* item) {
+  set_suggested_path(item->GetTargetFilePath());
 }
 
 void DownloadFilePicker::RecordFileSelected(const FilePath& path) {

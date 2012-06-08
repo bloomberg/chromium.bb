@@ -28,8 +28,8 @@ bool g_should_prompt_for_filename = true;
 void ContinueSettingUpGDataDownload(
     const content::SavePackagePathPickedCallback& callback,
     const FilePath& gdata_path,
-    const FilePath* gdata_tmp_download_path) {
-  callback.Run(*gdata_tmp_download_path, content::SAVE_PAGE_TYPE_AS_MHTML,
+    const FilePath& gdata_tmp_download_path) {
+  callback.Run(gdata_tmp_download_path, content::SAVE_PAGE_TYPE_AS_MHTML,
                base::Bind(&gdata::GDataDownloadObserver::SetDownloadParams,
                           gdata_path));
 }

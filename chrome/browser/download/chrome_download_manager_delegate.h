@@ -57,9 +57,7 @@ class ChromeDownloadManagerDelegate
   virtual void Shutdown() OVERRIDE;
   virtual content::DownloadId GetNextId() OVERRIDE;
   virtual bool ShouldStartDownload(int32 download_id) OVERRIDE;
-  virtual void ChooseDownloadPath(content::WebContents* web_contents,
-                                  const FilePath& suggested_path,
-                                  int32 download_id) OVERRIDE;
+  virtual void ChooseDownloadPath(content::DownloadItem* item) OVERRIDE;
   virtual FilePath GetIntermediatePath(const content::DownloadItem& item,
                                        bool* ok_to_overwrite) OVERRIDE;
   virtual content::WebContents*
@@ -83,7 +81,8 @@ class ChromeDownloadManagerDelegate
       base::Time remove_end) OVERRIDE;
   virtual void GetSaveDir(content::WebContents* web_contents,
                           FilePath* website_save_dir,
-                          FilePath* download_save_dir) OVERRIDE;
+                          FilePath* download_save_dir,
+                          bool* skip_dir_check) OVERRIDE;
   virtual void ChooseSavePath(
       content::WebContents* web_contents,
       const FilePath& suggested_path,
@@ -141,6 +140,17 @@ class ChromeDownloadManagerDelegate
   void CheckVisitedReferrerBeforeDone(int32 download_id,
                                       content::DownloadDangerType danger_type,
                                       bool visited_referrer_before);
+
+#if defined (OS_CHROMEOS)
+  // GDataDownloadObserver::SubstituteGDataDownloadPath callback.
+  // Posts CheckIfSuggestedPathExists on the FILE thread.
+  void SubstituteGDataDownloadPathCallback(
+      int32 download_id,
+      bool should_prompt,
+      bool is_forced_path,
+      content::DownloadDangerType danger_type,
+      const FilePath& unverified_path);
+#endif
 
   // Called on the FILE thread to check whether the suggested file path exists.
   // We don't check if the file exists on the UI thread to avoid UI stalls from

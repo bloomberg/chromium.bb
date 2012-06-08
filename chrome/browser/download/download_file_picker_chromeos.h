@@ -10,10 +10,7 @@
 
 class DownloadFilePickerChromeOS : public DownloadFilePicker {
  public:
-  DownloadFilePickerChromeOS(content::DownloadManager* download_manager,
-                             content::WebContents* web_contents,
-                             const FilePath& suggested_path,
-                             int32 download_id);
+  DownloadFilePickerChromeOS();
   virtual ~DownloadFilePickerChromeOS();
 
  private:
@@ -21,6 +18,10 @@ class DownloadFilePickerChromeOS : public DownloadFilePicker {
   virtual void FileSelected(const FilePath& path,
                             int index,
                             void* params) OVERRIDE;
+
+  // DownloadFilePicker implementation.
+  // This looks up the gdata path instead of the temporary local path.
+  virtual void InitSuggestedPath(content::DownloadItem* item) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadFilePickerChromeOS);
 };

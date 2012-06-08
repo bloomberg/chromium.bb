@@ -52,9 +52,7 @@ class CONTENT_EXPORT DownloadManagerDelegate {
   // Asks the user for the path for a download. The delegate calls
   // DownloadManager::FileSelected or DownloadManager::FileSelectionCanceled to
   // give the answer.
-  virtual void ChooseDownloadPath(WebContents* web_contents,
-                                  const FilePath& suggested_path,
-                                  int32 download_id) {}
+  virtual void ChooseDownloadPath(DownloadItem* item) {}
 
   // Allows the embedder to set an intermediate name for the download until it's
   // complete. The return value is the intermediate path to use. If the embedder
@@ -124,7 +122,8 @@ class CONTENT_EXPORT DownloadManagerDelegate {
   // Retrieve the directories to save html pages and downloads to.
   virtual void GetSaveDir(WebContents* web_contents,
                           FilePath* website_save_dir,
-                          FilePath* download_save_dir) {}
+                          FilePath* download_save_dir,
+                          bool* skip_dir_check) {}
 
   // Asks the user for the path to save a page. The delegate calls the callback
   // to give the answer.

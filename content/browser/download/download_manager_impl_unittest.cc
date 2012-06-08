@@ -145,26 +145,24 @@ class TestDownloadManagerDelegate : public content::DownloadManagerDelegate {
     }
   }
 
-  virtual void ChooseDownloadPath(WebContents* web_contents,
-                                  const FilePath& suggested_path,
-                                  int32 download_id) OVERRIDE {
+  virtual void ChooseDownloadPath(DownloadItem* item) OVERRIDE {
     if (!expected_suggested_path_.empty()) {
       EXPECT_STREQ(expected_suggested_path_.value().c_str(),
-                   suggested_path.value().c_str());
+          item->GetTargetFilePath().value().c_str());
     }
     if (file_selection_response_.empty()) {
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
           base::Bind(&DownloadManager::FileSelectionCanceled,
                      download_manager_,
-                     download_id));
+                     item->GetId()));
     } else {
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
           base::Bind(&DownloadManager::FileSelected,
                      download_manager_,
                      file_selection_response_,
-                     download_id));
+                     item->GetId()));
     }
     expected_suggested_path_.clear();
     file_selection_response_.clear();

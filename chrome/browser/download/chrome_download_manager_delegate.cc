@@ -53,6 +53,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/gdata/gdata_download_observer.h"
+#include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/download/download_file_picker_chromeos.h"
 #include "chrome/browser/download/save_package_file_picker_chromeos.h"
 #endif
@@ -167,17 +168,15 @@ bool ChromeDownloadManagerDelegate::ShouldStartDownload(int32 download_id) {
   return false;
 }
 
-void ChromeDownloadManagerDelegate::ChooseDownloadPath(
-    WebContents* web_contents,
-    const FilePath& suggested_path,
-    int32 download_id) {
+void ChromeDownloadManagerDelegate::ChooseDownloadPath(DownloadItem* item) {
   // Deletes itself.
+  DownloadFilePicker* file_picker =
 #if defined(OS_CHROMEOS)
-  new DownloadFilePickerChromeOS
+      new DownloadFilePickerChromeOS();
 #else
-  new DownloadFilePicker
+      new DownloadFilePicker();
 #endif
-      (download_manager_, web_contents, suggested_path, download_id);
+  file_picker->Init(download_manager_, item);
 }
 
 FilePath ChromeDownloadManagerDelegate::GetIntermediatePath(
@@ -438,7 +437,8 @@ void ChromeDownloadManagerDelegate::RemoveItemsFromPersistentStoreBetween(
 
 void ChromeDownloadManagerDelegate::GetSaveDir(WebContents* web_contents,
                                                FilePath* website_save_dir,
-                                               FilePath* download_save_dir) {
+                                               FilePath* download_save_dir,
+                                               bool* skip_dir_check) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   PrefService* prefs = profile->GetPrefs();
@@ -459,6 +459,11 @@ void ChromeDownloadManagerDelegate::GetSaveDir(WebContents* web_contents,
   DCHECK(!website_save_dir->empty());
 
   *download_save_dir = prefs->GetFilePath(prefs::kDownloadDefaultDirectory);
+
+  *skip_dir_check = false;
+#if defined(OS_CHROMEOS)
+  *skip_dir_check = gdata::util::IsUnderGDataMountPoint(*website_save_dir);
+#endif
 }
 
 void ChromeDownloadManagerDelegate::ChooseSavePath(
@@ -678,6 +683,35 @@ void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
     DCHECK_EQ(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL, danger_type);
   }
 
+#if defined (OS_CHROMEOS)
+  gdata::GDataDownloadObserver::SubstituteGDataDownloadPath(
+      profile_, suggested_path, download,
+      base::Bind(
+          &ChromeDownloadManagerDelegate::SubstituteGDataDownloadPathCallback,
+          this, download->GetId(), should_prompt, is_forced_path, danger_type));
+#else
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&ChromeDownloadManagerDelegate::CheckIfSuggestedPathExists,
+                 this, download->GetId(), suggested_path, should_prompt,
+                 is_forced_path, danger_type,
+                 download_prefs_->download_path()));
+#endif
+}
+
+#if defined (OS_CHROMEOS)
+void ChromeDownloadManagerDelegate::SubstituteGDataDownloadPathCallback(
+    int32 download_id,
+    bool should_prompt,
+    bool is_forced_path,
+    content::DownloadDangerType danger_type,
+    const FilePath& suggested_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DownloadItem* download =
+      download_manager_->GetActiveDownloadItem(download_id);
+  if (!download)
+    return;
+
   // We need to move over to the FILE thread because we don't want to stat the
   // suggested path on the UI thread.  We can only access preferences on the UI
   // thread, so check the download path now and pass the value to the FILE
@@ -689,6 +723,7 @@ void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
                  is_forced_path, danger_type,
                  download_prefs_->download_path()));
 }
+#endif
 
 void ChromeDownloadManagerDelegate::CheckIfSuggestedPathExists(
     int32 download_id,

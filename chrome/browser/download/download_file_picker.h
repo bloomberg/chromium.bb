@@ -11,6 +11,7 @@
 class FilePath;
 
 namespace content {
+class DownloadItem;
 class DownloadManager;
 class WebContents;
 }
@@ -18,13 +19,19 @@ class WebContents;
 // Handles showing a dialog to the user to ask for the filename for a download.
 class DownloadFilePicker : public SelectFileDialog::Listener {
  public:
-  DownloadFilePicker(content::DownloadManager* download_manager,
-                     content::WebContents* web_contents,
-                     const FilePath& suggested_path,
-                     int32 download_id);
+  DownloadFilePicker();
   virtual ~DownloadFilePicker();
 
+  void Init(content::DownloadManager* download_manager,
+            content::DownloadItem* item);
+
  protected:
+  // On ChromeOS, DownloadItem::GetTargetPath is a temporary local filename.
+  virtual void InitSuggestedPath(content::DownloadItem* item);
+  void set_suggested_path(const FilePath& suggested_path) {
+    suggested_path_ = suggested_path;
+  }
+
   void RecordFileSelected(const FilePath& path);
 
   scoped_refptr<content::DownloadManager> download_manager_;

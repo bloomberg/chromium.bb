@@ -189,6 +189,7 @@ class CONTENT_EXPORT SavePackage
 
   void CreateDirectoryOnFileThread(const FilePath& website_save_dir,
                                    const FilePath& download_save_dir,
+                                   bool skip_dir_check,
                                    const std::string& mime_type,
                                    const std::string& accept_langs);
   void ContinueGetSaveInfo(const FilePath& suggested_path,

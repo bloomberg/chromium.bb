@@ -96,19 +96,17 @@ void ShellDownloadManagerDelegate::RestartDownload(
   download_manager_->RestartDownload(download_id);
 }
 
-void ShellDownloadManagerDelegate::ChooseDownloadPath(
-    WebContents* web_contents,
-    const FilePath& suggested_path,
-    int32 download_id) {
+void ShellDownloadManagerDelegate::ChooseDownloadPath(DownloadItem* item) {
   FilePath result;
 #if defined(OS_WIN) && !defined(USE_AURA)
+  const FilePath suggested_path(item->GetTargetFilePath());
   std::wstring file_part = FilePath(suggested_path).BaseName().value();
   wchar_t file_name[MAX_PATH];
   base::wcslcpy(file_name, file_part.c_str(), arraysize(file_name));
   OPENFILENAME save_as;
   ZeroMemory(&save_as, sizeof(save_as));
   save_as.lStructSize = sizeof(OPENFILENAME);
-  save_as.hwndOwner = web_contents->GetNativeView();
+  save_as.hwndOwner = item->GetWebContents()->GetNativeView();
   save_as.lpstrFile = file_name;
   save_as.nMaxFile = arraysize(file_name);
 
@@ -127,9 +125,9 @@ void ShellDownloadManagerDelegate::ChooseDownloadPath(
 #endif
 
   if (result.empty()) {
-    download_manager_->FileSelectionCanceled(download_id);
+    download_manager_->FileSelectionCanceled(item->GetId());
   } else {
-    download_manager_->FileSelected(result, download_id);
+    download_manager_->FileSelected(result, item->GetId());
   }
 }
 

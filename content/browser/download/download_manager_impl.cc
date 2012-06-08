@@ -398,11 +398,8 @@ void DownloadManagerImpl::RestartDownload(int32 download_id) {
   if (download->GetTargetDisposition() ==
       DownloadItem::TARGET_DISPOSITION_PROMPT) {
     // We must ask the user for the place to put the download.
-    WebContents* contents = download->GetWebContents();
-
     if (delegate_) {
-      delegate_->ChooseDownloadPath(contents, download->GetTargetFilePath(),
-                                    download_id);
+      delegate_->ChooseDownloadPath(download);
       FOR_EACH_OBSERVER(Observer, observers_,
                         SelectFileDialogDisplayed(this, download_id));
     } else {
