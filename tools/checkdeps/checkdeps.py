@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -67,8 +67,8 @@ INCLUDE_RULES_VAR_NAME = "include_rules"
 # be checked. This allows us to skip third party code, for example.
 SKIP_SUBDIRS_VAR_NAME = "skip_child_includes"
 
-# The maximum number of lines to check in each source file before giving up.
-MAX_LINES = 150
+# The maximum number of non-include lines we can see before giving up.
+MAX_UNINTERESTING_LINES = 50
 
 # The maximum line length, this is to be efficient in the case of very long
 # lines (which can't be #includes).
@@ -283,12 +283,14 @@ def ShouldCheckFile(file_name):
 
 
 def CheckLine(rules, line):
-  """Checks the given file with the given rule set. If the line is an #include
-  directive and is illegal, a string describing the error will be returned.
-  Otherwise, None will be returned."""
+  """Checks the given file with the given rule set.
+  Returns a tuple (is_include, illegal_description).
+  If the line is an #include directive the first value will be True.
+  If it is also an illegal include, the second value will be a string describing
+  the error.  Otherwise, it will be None."""
   found_item = EXTRACT_INCLUDE_PATH.match(line)
   if not found_item:
-    return None  # Not a match
+    return False, None  # Not a match
 
   include_path = found_item.group(1)
 
@@ -300,7 +302,7 @@ def CheckLine(rules, line):
     # strict about this in the future.
     if VERBOSE:
       print " WARNING: directory specified with no path: " + include_path
-    return None
+    return True, None
 
   (allowed, why_failed) = rules.DirAllowed(include_path)
   if not allowed:
@@ -308,10 +310,10 @@ def CheckLine(rules, line):
       retval = "\nFor " + rules.__str__()
     else:
       retval = ""
-    return retval + ('Illegal include: "%s"\n    Because of %s' %
+    return True, retval + ('Illegal include: "%s"\n    Because of %s' %
         (include_path, why_failed))
 
-  return None
+  return True, None
 
 
 def CheckFile(rules, file_name):
@@ -328,11 +330,18 @@ def CheckFile(rules, file_name):
     print "Checking: " + file_name
 
   ret_val = ""  # We'll collect the error messages in here
+  last_include = 0
   try:
     cur_file = open(file_name, "r")
     in_if0 = 0
-    for cur_line in range(MAX_LINES):
-      cur_line = cur_file.readline(MAX_LINE_LENGTH).strip()
+    for line_num in xrange(sys.maxint):
+      if line_num - last_include > MAX_UNINTERESTING_LINES:
+        break
+
+      cur_line = cur_file.readline(MAX_LINE_LENGTH)
+      if cur_line == "":
+        break
+      cur_line = cur_line.strip()
 
       # Check to see if we're at / inside a #if 0 block
       if cur_line == '#if 0':
@@ -345,7 +354,9 @@ def CheckFile(rules, file_name):
           in_if0 -= 1
         continue
 
-      line_status = CheckLine(rules, cur_line)
+      is_include, line_status = CheckLine(rules, cur_line)
+      if is_include:
+        last_include = line_num
       if line_status is not None:
         if len(line_status) > 0:  # Add newline to separate messages.
           line_status += "\n"
