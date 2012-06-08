@@ -24,7 +24,6 @@
 #include "ppapi/cpp/var.h"
 #include "ppapi/examples/video_decode/testdata.h"
 #include "ppapi/lib/gl/include/GLES2/gl2.h"
-#include "ppapi/lib/gl/include/GLES2/gl2ext.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
 // Use assert as a poor-man's CHECK, even in non-debug mode.
@@ -39,19 +38,6 @@
   assert(!gles2_if_->GetError(context_->pp_resource()));
 
 namespace {
-
-struct PictureBufferInfo {
-  PP_PictureBuffer_Dev buffer;
-  GLenum texture_target;
-};
-
-struct Shader {
-  Shader() : program(0),
-             texcoord_scale_location(0) {}
-
-  GLuint program;
-  GLint texcoord_scale_location;
-};
 
 class VideoDecodeDemoInstance : public pp::Instance,
                                 public pp::Graphics3DClient,
@@ -104,7 +90,7 @@ class VideoDecodeDemoInstance : public pp::Instance,
         uint32_t texture_target);
     void DismissPictureBuffer(int32_t picture_buffer_id);
 
-    const PictureBufferInfo& GetPictureBufferInfoById(int id);
+    const PP_PictureBuffer_Dev& GetPictureBufferById(int id);
     pp::VideoDecoder_Dev* decoder() { return decoder_; }
 
    private:
@@ -121,7 +107,7 @@ class VideoDecodeDemoInstance : public pp::Instance,
     size_t encoded_data_next_pos_to_decode_;
     std::set<int> bitstream_ids_at_decoder_;
     // Map of texture buffers indexed by buffer id.
-    typedef std::map<int, PictureBufferInfo> PictureBufferMap;
+    typedef std::map<int, PP_PictureBuffer_Dev> PictureBufferMap;
     PictureBufferMap picture_buffers_by_id_;
     // Map of bitstream buffers indexed by id.
     typedef std::map<int, pp::Buffer_Dev*> BitstreamBufferMap;
@@ -133,10 +119,8 @@ class VideoDecodeDemoInstance : public pp::Instance,
 
   // GL-related functions.
   void InitGL();
-  GLuint CreateTexture(int32_t width, int32_t height, GLenum texture_target);
+  GLuint CreateTexture(int32_t width, int32_t height);
   void CreateGLObjects();
-  Shader CreateProgram(const char* vertex_shader,
-                       const char* fragment_shader);
   void CreateShader(GLuint program, GLenum type, const char* source, int size);
   void DeleteTexture(GLuint id);
   void PaintFinished(int32_t result, PP_Resource decoder,
@@ -184,11 +168,6 @@ class VideoDecodeDemoInstance : public pp::Instance,
   pp::Graphics3D* context_;
   typedef std::map<int, DecoderClient*> Decoders;
   Decoders video_decoders_;
-
-  // Shader program to draw GL_TEXTURE_2D target.
-  Shader shader_2d_;
-  // Shader program to draw GL_TEXTURE_RECTANGLE_ARB target.
-  Shader shader_rectangle_arb_;
 };
 
 VideoDecodeDemoInstance::DecoderClient::DecoderClient(
@@ -210,7 +189,7 @@ VideoDecodeDemoInstance::DecoderClient::~DecoderClient() {
 
   for (PictureBufferMap::iterator it = picture_buffers_by_id_.begin();
        it != picture_buffers_by_id_.end(); ++it) {
-    gles2_->DeleteTexture(it->second.buffer.texture_id);
+    gles2_->DeleteTexture(it->second.texture_id);
   }
   picture_buffers_by_id_.clear();
 }
@@ -233,13 +212,6 @@ VideoDecodeDemoInstance::VideoDecodeDemoInstance(PP_Instance instance,
 }
 
 VideoDecodeDemoInstance::~VideoDecodeDemoInstance() {
-  if (shader_2d_.program)
-    gles2_if_->DeleteProgram(context_->pp_resource(), shader_2d_.program);
-  if (shader_rectangle_arb_.program) {
-    gles2_if_->DeleteProgram(
-        context_->pp_resource(), shader_rectangle_arb_.program);
-  }
-
   for (Decoders::iterator it = video_decoders_.begin();
        it != video_decoders_.end(); ++it) {
     delete it->second;
@@ -365,23 +337,24 @@ void VideoDecodeDemoInstance::DecoderClient::ProvidePictureBuffers(
     uint32_t req_num_of_bufs,
     PP_Size dimensions,
     uint32_t texture_target) {
+  // TODO(sail): Add support for GL_TEXTURE_RECTANGLE_ARB.
+  assert(texture_target == GL_TEXTURE_2D);
   std::vector<PP_PictureBuffer_Dev> buffers;
   for (uint32_t i = 0; i < req_num_of_bufs; ++i) {
-    PictureBufferInfo info;
-    info.buffer.size = dimensions;
-    info.texture_target = texture_target;
-    info.buffer.texture_id = gles2_->CreateTexture(
-        dimensions.width, dimensions.height, info.texture_target);
+    PP_PictureBuffer_Dev buffer;
+    buffer.size = dimensions;
+    buffer.texture_id =
+        gles2_->CreateTexture(dimensions.width, dimensions.height);
     int id = ++next_picture_buffer_id_;
-    info.buffer.id = id;
-    buffers.push_back(info.buffer);
-    assert(picture_buffers_by_id_.insert(std::make_pair(id, info)).second);
+    buffer.id = id;
+    buffers.push_back(buffer);
+    assert(picture_buffers_by_id_.insert(std::make_pair(id, buffer)).second);
   }
   decoder_->AssignPictureBuffers(buffers);
 }
 
-const PictureBufferInfo&
-VideoDecodeDemoInstance::DecoderClient::GetPictureBufferInfoById(
+const PP_PictureBuffer_Dev&
+VideoDecodeDemoInstance::DecoderClient::GetPictureBufferById(
     int id) {
   PictureBufferMap::iterator it = picture_buffers_by_id_.find(id);
   assert(it != picture_buffers_by_id_.end());
@@ -397,8 +370,7 @@ void VideoDecodeDemoInstance::DismissPictureBuffer(PP_Resource decoder,
 
 void VideoDecodeDemoInstance::DecoderClient::DismissPictureBuffer(
     int32_t picture_buffer_id) {
-  gles2_->DeleteTexture(GetPictureBufferInfoById(
-      picture_buffer_id).buffer.texture_id);
+  gles2_->DeleteTexture(GetPictureBufferById(picture_buffer_id).texture_id);
   picture_buffers_by_id_.erase(picture_buffer_id);
 }
 
@@ -412,8 +384,8 @@ void VideoDecodeDemoInstance::PictureReady(PP_Resource decoder,
   }
   DecoderClient* client = video_decoders_[decoder];
   assert(client);
-  const PictureBufferInfo& info =
-      client->GetPictureBufferInfoById(picture.picture_buffer_id);
+  const PP_PictureBuffer_Dev& buffer =
+      client->GetPictureBufferById(picture.picture_buffer_id);
   assert(!is_painting_);
   is_painting_ = true;
   int x = 0;
@@ -423,33 +395,16 @@ void VideoDecodeDemoInstance::PictureReady(PP_Resource decoder,
     y = plugin_size_.height() / kNumDecoders;
   }
 
-  if (info.texture_target == GL_TEXTURE_2D) {
-    gles2_if_->UseProgram(context_->pp_resource(), shader_2d_.program);
-    gles2_if_->Uniform2f(
-        context_->pp_resource(), shader_2d_.texcoord_scale_location, 1.0, 1.0);
-  } else {
-    assert(info.texture_target == GL_TEXTURE_RECTANGLE_ARB);
-    gles2_if_->UseProgram(
-        context_->pp_resource(), shader_rectangle_arb_.program);
-    gles2_if_->Uniform2f(context_->pp_resource(),
-                         shader_rectangle_arb_.texcoord_scale_location,
-                         info.buffer.size.width,
-                         info.buffer.size.height);
-  }
-
   gles2_if_->Viewport(context_->pp_resource(), x, y,
                       plugin_size_.width() / kNumDecoders,
                       plugin_size_.height() / kNumDecoders);
   gles2_if_->ActiveTexture(context_->pp_resource(), GL_TEXTURE0);
   gles2_if_->BindTexture(
-      context_->pp_resource(), info.texture_target, info.buffer.texture_id);
+      context_->pp_resource(), GL_TEXTURE_2D, buffer.texture_id);
   gles2_if_->DrawArrays(context_->pp_resource(), GL_TRIANGLE_STRIP, 0, 4);
-
-  gles2_if_->UseProgram(context_->pp_resource(), 0);
-
   pp::CompletionCallback cb =
       callback_factory_.NewCallback(
-          &VideoDecodeDemoInstance::PaintFinished, decoder, info.buffer.id);
+          &VideoDecodeDemoInstance::PaintFinished, decoder, buffer.id);
   last_swap_request_ticks_ = core_if_->GetTimeTicks();
   assert(context_->SwapBuffers(cb) == PP_OK_COMPLETIONPENDING);
 }
@@ -528,33 +483,29 @@ void VideoDecodeDemoInstance::PaintFinished(int32_t result, PP_Resource decoder,
   }
 }
 
-GLuint VideoDecodeDemoInstance::CreateTexture(int32_t width,
-                                              int32_t height,
-                                              GLenum texture_target) {
+GLuint VideoDecodeDemoInstance::CreateTexture(int32_t width, int32_t height) {
   GLuint texture_id;
   gles2_if_->GenTextures(context_->pp_resource(), 1, &texture_id);
   assertNoGLError();
   // Assign parameters.
   gles2_if_->ActiveTexture(context_->pp_resource(), GL_TEXTURE0);
-  gles2_if_->BindTexture(context_->pp_resource(), texture_target, texture_id);
+  gles2_if_->BindTexture(context_->pp_resource(), GL_TEXTURE_2D, texture_id);
   gles2_if_->TexParameteri(
-      context_->pp_resource(), texture_target, GL_TEXTURE_MIN_FILTER,
+      context_->pp_resource(), GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
       GL_NEAREST);
   gles2_if_->TexParameteri(
-      context_->pp_resource(), texture_target, GL_TEXTURE_MAG_FILTER,
+      context_->pp_resource(), GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
       GL_NEAREST);
   gles2_if_->TexParameterf(
-      context_->pp_resource(), texture_target, GL_TEXTURE_WRAP_S,
+      context_->pp_resource(), GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
       GL_CLAMP_TO_EDGE);
   gles2_if_->TexParameterf(
-      context_->pp_resource(), texture_target, GL_TEXTURE_WRAP_T,
+      context_->pp_resource(), GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
       GL_CLAMP_TO_EDGE);
 
-  if (texture_target == GL_TEXTURE_2D) {
-    gles2_if_->TexImage2D(
-        context_->pp_resource(), texture_target, 0, GL_RGBA, width, height, 0,
-        GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-  }
+  gles2_if_->TexImage2D(
+      context_->pp_resource(), GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
+      GL_RGBA, GL_UNSIGNED_BYTE, NULL);
   assertNoGLError();
   return texture_id;
 }
@@ -569,14 +520,13 @@ void VideoDecodeDemoInstance::CreateGLObjects() {
       "varying vec2 v_texCoord;            \n"
       "attribute vec4 a_position;          \n"
       "attribute vec2 a_texCoord;          \n"
-      "uniform vec2 v_scale;               \n"
       "void main()                         \n"
       "{                                   \n"
-      "    v_texCoord = v_scale * a_texCoord; \n"
+      "    v_texCoord = a_texCoord;        \n"
       "    gl_Position = a_position;       \n"
       "}";
 
-  static const char kFragmentShader2D[] =
+  static const char kFragmentShader[] =
       "precision mediump float;            \n"
       "varying vec2 v_texCoord;            \n"
       "uniform sampler2D s_texture;        \n"
@@ -585,63 +535,38 @@ void VideoDecodeDemoInstance::CreateGLObjects() {
       "    gl_FragColor = texture2D(s_texture, v_texCoord); \n"
       "}";
 
-  static const char kFragmentShaderRectangle[] =
-      "#extension GL_ARB_texture_rectangle : require\n"
-      "precision mediump float;            \n"
-      "varying vec2 v_texCoord;            \n"
-      "uniform sampler2DRect s_texture;    \n"
-      "void main()                         \n"
-      "{"
-      "    gl_FragColor = texture2DRect(s_texture, v_texCoord).rgba; \n"
-      "}";
+  // Create shader program.
+  GLuint program = gles2_if_->CreateProgram(context_->pp_resource());
+  CreateShader(program, GL_VERTEX_SHADER, kVertexShader, sizeof(kVertexShader));
+  CreateShader(
+      program, GL_FRAGMENT_SHADER, kFragmentShader, sizeof(kFragmentShader));
+  gles2_if_->LinkProgram(context_->pp_resource(), program);
+  gles2_if_->UseProgram(context_->pp_resource(), program);
+  gles2_if_->DeleteProgram(context_->pp_resource(), program);
+  gles2_if_->Uniform1i(
+      context_->pp_resource(),
+      gles2_if_->GetUniformLocation(
+          context_->pp_resource(), program, "s_texture"), 0);
+  assertNoGLError();
 
   // Assign vertex positions and texture coordinates to buffers for use in
   // shader program.
   static const float kVertices[] = {
     -1, 1, -1, -1, 1, 1, 1, -1,  // Position coordinates.
-    0, 1, 0, 0, 1, 1, 1, 0,      // Texture coordinates.
+    0, 1, 0, 0, 1, 1, 1, 0,  // Texture coordinates.
   };
 
   GLuint buffer;
   gles2_if_->GenBuffers(context_->pp_resource(), 1, &buffer);
   gles2_if_->BindBuffer(context_->pp_resource(), GL_ARRAY_BUFFER, buffer);
-
   gles2_if_->BufferData(context_->pp_resource(), GL_ARRAY_BUFFER,
                         sizeof(kVertices), kVertices, GL_STATIC_DRAW);
   assertNoGLError();
-
-  shader_2d_ = CreateProgram(kVertexShader, kFragmentShader2D);
-  shader_rectangle_arb_ =
-      CreateProgram(kVertexShader, kFragmentShaderRectangle);
-}
-
-Shader VideoDecodeDemoInstance::CreateProgram(const char* vertex_shader,
-                                              const char* fragment_shader) {
-  Shader shader;
-
-  // Create shader program.
-  shader.program = gles2_if_->CreateProgram(context_->pp_resource());
-  CreateShader(shader.program, GL_VERTEX_SHADER, vertex_shader,
-               strlen(vertex_shader));
-  CreateShader(shader.program, GL_FRAGMENT_SHADER, fragment_shader,
-               strlen(fragment_shader));
-  gles2_if_->LinkProgram(context_->pp_resource(), shader.program);
-  gles2_if_->UseProgram(context_->pp_resource(), shader.program);
-  gles2_if_->Uniform1i(
-      context_->pp_resource(),
-      gles2_if_->GetUniformLocation(
-          context_->pp_resource(), shader.program, "s_texture"), 0);
-  assertNoGLError();
-
-  shader.texcoord_scale_location = gles2_if_->GetUniformLocation(
-      context_->pp_resource(), shader.program, "v_scale");
-
   GLint pos_location = gles2_if_->GetAttribLocation(
-      context_->pp_resource(), shader.program, "a_position");
+      context_->pp_resource(), program, "a_position");
   GLint tc_location = gles2_if_->GetAttribLocation(
-      context_->pp_resource(), shader.program, "a_texCoord");
+      context_->pp_resource(), program, "a_texCoord");
   assertNoGLError();
-
   gles2_if_->EnableVertexAttribArray(context_->pp_resource(), pos_location);
   gles2_if_->VertexAttribPointer(context_->pp_resource(), pos_location, 2,
                                  GL_FLOAT, GL_FALSE, 0, 0);
@@ -649,10 +574,7 @@ Shader VideoDecodeDemoInstance::CreateProgram(const char* vertex_shader,
   gles2_if_->VertexAttribPointer(
       context_->pp_resource(), tc_location, 2, GL_FLOAT, GL_FALSE, 0,
       static_cast<float*>(0) + 8);  // Skip position coordinates.
-
-  gles2_if_->UseProgram(context_->pp_resource(), 0);
   assertNoGLError();
-  return shader;
 }
 
 void VideoDecodeDemoInstance::CreateShader(
