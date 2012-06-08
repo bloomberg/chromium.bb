@@ -11,11 +11,10 @@
 #include "chrome/browser/password_manager/password_manager_delegate.h"
 
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 class PasswordManagerDelegateImpl : public PasswordManagerDelegate {
  public:
-  explicit PasswordManagerDelegateImpl(TabContentsWrapper* contents)
+  explicit PasswordManagerDelegateImpl(TabContents* contents)
       : tab_contents_(contents) {}
 
   // PasswordManagerDelegate implementation.
@@ -27,7 +26,7 @@ class PasswordManagerDelegateImpl : public PasswordManagerDelegate {
   virtual bool DidLastPageLoadEncounterSSLErrors() OVERRIDE;
 
  private:
-  TabContentsWrapper* tab_contents_;
+  TabContents* tab_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerDelegateImpl);
 };
