@@ -32,7 +32,6 @@ class Browser;
 class Profile;
 class TabContentsContainer;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 class RenderViewContextMenuViews;
 struct NavigationInfo;
 
@@ -67,7 +66,7 @@ class ExternalTabContainer : public content::WebContentsDelegate,
                        AutomationResourceMessageFilter* filter);
 
   content::WebContents* web_contents() const;
-  TabContentsWrapper* tab_contents_wrapper() { return tab_contents_.get(); }
+  TabContents* tab_contents() { return tab_contents_.get(); }
 
   // Temporary hack so we can send notifications back
   void SetTabHandle(int handle);
@@ -82,7 +81,7 @@ class ExternalTabContainer : public content::WebContentsDelegate,
             DWORD style,
             bool load_requests_via_automation,
             bool handle_top_level_requests,
-            TabContentsWrapper* existing_tab_contents,
+            TabContents* existing_tab_contents,
             const GURL& initial_url,
             const GURL& referrer,
             bool infobars_enabled,
@@ -245,8 +244,8 @@ class ExternalTabContainer : public content::WebContentsDelegate,
   void RunUnloadHandlers(IPC::Message* reply_message);
 
   // Overridden from BlockedContentTabHelperDelegate:
-  virtual TabContentsWrapper* GetConstrainingContentsWrapper(
-      TabContentsWrapper* source) OVERRIDE;
+  virtual TabContents* GetConstrainingContentsWrapper(
+      TabContents* source) OVERRIDE;
 
  protected:
   ~ExternalTabContainer();
@@ -284,7 +283,7 @@ class ExternalTabContainer : public content::WebContentsDelegate,
   // Creates and initializes the view hierarchy for this ExternalTabContainer.
   void SetupExternalTabView();
 
-  scoped_ptr<TabContentsWrapper> tab_contents_;
+  scoped_ptr<TabContents> tab_contents_;
   scoped_refptr<AutomationProvider> automation_;
 
   content::NotificationRegistrar registrar_;

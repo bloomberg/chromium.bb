@@ -307,10 +307,10 @@ class TabCountChangeObserver : public TabStripModelObserver {
                          IPC::Message* reply_message,
                          int target_tab_count);
   // Implementation of TabStripModelObserver.
-  virtual void TabInsertedAt(TabContentsWrapper* contents,
+  virtual void TabInsertedAt(TabContents* contents,
                              int index,
                              bool foreground);
-  virtual void TabDetachedAt(TabContentsWrapper* contents, int index);
+  virtual void TabDetachedAt(TabContents* contents, int index);
   virtual void TabStripModelDeleted();
 
  private:
@@ -671,7 +671,7 @@ class InfoBarCountObserver : public content::NotificationObserver {
  public:
   InfoBarCountObserver(AutomationProvider* automation,
                        IPC::Message* reply_message,
-                       TabContentsWrapper* tab_contents,
+                       TabContents* tab_contents,
                        size_t target_count);
   virtual ~InfoBarCountObserver();
 
@@ -688,7 +688,7 @@ class InfoBarCountObserver : public content::NotificationObserver {
   content::NotificationRegistrar registrar_;
   base::WeakPtr<AutomationProvider> automation_;
   scoped_ptr<IPC::Message> reply_message_;
-  TabContentsWrapper* tab_contents_;
+  TabContents* tab_contents_;
 
   const size_t target_count_;
 
@@ -1318,7 +1318,7 @@ class PageSnapshotTaker : public TabEventObserver,
  public:
   PageSnapshotTaker(AutomationProvider* automation,
                     IPC::Message* reply_message,
-                    TabContentsWrapper* tab_contents,
+                    TabContents* tab_contents,
                     const FilePath& path);
   virtual ~PageSnapshotTaker();
 
@@ -1341,7 +1341,7 @@ class PageSnapshotTaker : public TabEventObserver,
 
   base::WeakPtr<AutomationProvider> automation_;
   scoped_ptr<IPC::Message> reply_message_;
-  TabContentsWrapper* tab_contents_;
+  TabContents* tab_contents_;
   FilePath image_path_;
   content::NotificationRegistrar registrar_;
 

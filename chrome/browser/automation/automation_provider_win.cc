@@ -18,7 +18,7 @@
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/navigation_controller.h"
@@ -195,7 +195,7 @@ void AutomationProvider::CreateExternalTab(
     *tab_handle = external_tab_container->tab_handle();
     *tab_container_window = external_tab_container->GetNativeView();
     *tab_window = web_contents->GetNativeView();
-    *session_id = external_tab_container->tab_contents_wrapper()->
+    *session_id = external_tab_container->tab_contents()->
         restore_tab_helper()->session_id().id();
   } else {
     external_tab_container->Uninitialize();
@@ -241,9 +241,9 @@ void AutomationProvider::PrintAsync(int tab_handle) {
   if (!web_contents)
     return;
 
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
-  wrapper->print_view_manager()->PrintNow();
+  TabContents* tab_contents =
+      TabContents::GetOwningTabContentsForWebContents(web_contents);
+  tab_contents->print_view_manager()->PrintNow();
 }
 
 ExternalTabContainer* AutomationProvider::GetExternalTabForHandle(int handle) {
@@ -335,7 +335,7 @@ void AutomationProvider::ConnectExternalTab(
     *tab_handle = external_tab_container->tab_handle();
     *tab_container_window = external_tab_container->GetNativeView();
     *tab_window = tab_contents->GetNativeView();
-    *session_id = external_tab_container->tab_contents_wrapper()->
+    *session_id = external_tab_container->tab_contents()->
         restore_tab_helper()->session_id().id();
   } else {
     external_tab_container->Uninitialize();

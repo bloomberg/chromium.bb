@@ -33,7 +33,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome/common/chrome_constants.h"
@@ -150,7 +150,7 @@ bool ExternalTabContainer::Init(Profile* profile,
                                 DWORD style,
                                 bool load_requests_via_automation,
                                 bool handle_top_level_requests,
-                                TabContentsWrapper* existing_contents,
+                                TabContents* existing_contents,
                                 const GURL& initial_url,
                                 const GURL& referrer,
                                 bool infobars_enabled,
@@ -185,7 +185,7 @@ bool ExternalTabContainer::Init(Profile* profile,
   } else {
     WebContents* new_contents = WebContents::Create(
         profile, NULL, MSG_ROUTING_NONE, NULL, NULL);
-    tab_contents_.reset(new TabContentsWrapper(new_contents));
+    tab_contents_.reset(new TabContents(new_contents));
   }
 
   if (!infobars_enabled)
@@ -450,23 +450,23 @@ void ExternalTabContainer::AddNewContents(WebContents* source,
 
   // Make sure that ExternalTabContainer instance is initialized with
   // an unwrapped Profile.
-  scoped_ptr<TabContentsWrapper> wrapper(new TabContentsWrapper(new_contents));
+  scoped_ptr<TabContents> tab_contents(new TabContents(new_contents));
   bool result = new_container->Init(
-      wrapper->profile()->GetOriginalProfile(),
+      tab_contents->profile()->GetOriginalProfile(),
       NULL,
       initial_pos,
       WS_CHILD,
       load_requests_via_automation_,
       handle_top_level_requests_,
-      wrapper.get(),
+      tab_contents.get(),
       GURL(),
       GURL(),
       true,
       route_all_top_level_navigations_);
 
   if (result) {
-    Profile* profile = wrapper->profile();
-    wrapper.release();  // Ownership has been transferred.
+    Profile* profile = tab_contents->profile();
+    tab_contents.release();  // Ownership has been transferred.
     if (route_all_top_level_navigations_) {
       return;
     }
@@ -521,8 +521,8 @@ void ExternalTabContainer::MoveContents(WebContents* source,
     automation_->Send(new AutomationMsg_MoveWindow(tab_handle_, pos));
 }
 
-TabContentsWrapper* ExternalTabContainer::GetConstrainingContentsWrapper(
-    TabContentsWrapper* source) {
+TabContents* ExternalTabContainer::GetConstrainingContentsWrapper(
+    TabContents* source) {
   return source;
 }
 
@@ -717,7 +717,7 @@ void ExternalTabContainer::ShowRepostFormWarningDialog(
     WebContents* source) {
   browser::ShowTabModalConfirmDialog(
       new RepostFormWarningController(source),
-      TabContentsWrapper::GetCurrentWrapperForContents(source));
+      TabContents::GetOwningTabContentsForWebContents(source));
 }
 
 void ExternalTabContainer::RunFileChooser(

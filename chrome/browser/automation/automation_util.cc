@@ -24,7 +24,7 @@
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/automation_id.h"
 #include "chrome/common/extensions/extension.h"
@@ -406,7 +406,7 @@ bool SendErrorIfModalDialogActive(AutomationProvider* provider,
   return active;
 }
 
-AutomationId GetIdForTab(const TabContentsWrapper* tab) {
+AutomationId GetIdForTab(const TabContents* tab) {
   return AutomationId(
       AutomationId::kTypeTab,
       base::IntToString(tab->restore_tab_helper()->session_id().id()));
@@ -452,20 +452,21 @@ bool GetTabForId(const AutomationId& id, WebContents** tab) {
   for (; iter != BrowserList::end(); ++iter) {
     Browser* browser = *iter;
     for (int tab_index = 0; tab_index < browser->tab_count(); ++tab_index) {
-      TabContentsWrapper* wrapper = browser->GetTabContentsWrapperAt(tab_index);
-      if (base::IntToString(wrapper->restore_tab_helper()->session_id().id()) ==
-              id.id()) {
-        *tab = wrapper->web_contents();
+      TabContents* tab_contents = browser->GetTabContentsAt(tab_index);
+      if (base::IntToString(
+              tab_contents->restore_tab_helper()->session_id().id()) ==
+                  id.id()) {
+        *tab = tab_contents->web_contents();
         return true;
       }
       if (preview_controller) {
-        TabContentsWrapper* preview_wrapper =
-            preview_controller->GetPrintPreviewForTab(wrapper);
-        if (preview_wrapper) {
+        TabContents* preview_tab_contents =
+            preview_controller->GetPrintPreviewForTab(tab_contents);
+        if (preview_tab_contents) {
           std::string preview_id = base::IntToString(
-              preview_wrapper->restore_tab_helper()->session_id().id());
+              preview_tab_contents->restore_tab_helper()->session_id().id());
           if (preview_id == id.id()) {
-            *tab = preview_wrapper->web_contents();
+            *tab = preview_tab_contents->web_contents();
             return true;
           }
         }

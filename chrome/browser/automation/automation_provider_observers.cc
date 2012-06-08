@@ -60,7 +60,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/login/login_prompt.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/browser/ui/webui/ntp/most_visited_handler.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
@@ -381,7 +381,7 @@ void TabStripNotificationObserver::Observe(
     const content::NotificationDetails& details) {
   if (type == notification_) {
     if (type == chrome::NOTIFICATION_TAB_PARENTED) {
-      ObserveTab(&(content::Source<TabContentsWrapper>(source).ptr()->
+      ObserveTab(&(content::Source<TabContents>(source).ptr()->
                      web_contents()->GetController()));
     } else if (type == content::NOTIFICATION_WEB_CONTENTS_DESTROYED) {
       ObserveTab(&(content::Source<content::WebContents>(source).ptr()->
@@ -471,13 +471,13 @@ TabCountChangeObserver::~TabCountChangeObserver() {
   tab_strip_model_->RemoveObserver(this);
 }
 
-void TabCountChangeObserver::TabInsertedAt(TabContentsWrapper* contents,
+void TabCountChangeObserver::TabInsertedAt(TabContents* contents,
                                            int index,
                                            bool foreground) {
   CheckTabCount();
 }
 
-void TabCountChangeObserver::TabDetachedAt(TabContentsWrapper* contents,
+void TabCountChangeObserver::TabDetachedAt(TabContents* contents,
                                            int index) {
   CheckTabCount();
 }
@@ -801,7 +801,7 @@ void BrowserOpenedNotificationObserver::Observe(
     // Only send the result if the loaded tab is in the new window.
     NavigationController* controller =
         content::Source<NavigationController>(source).ptr();
-    TabContentsWrapper* tab = TabContentsWrapper::GetCurrentWrapperForContents(
+    TabContents* tab = TabContents::GetOwningTabContentsForWebContents(
         controller->GetWebContents());
     int window_id = tab ? tab->restore_tab_helper()->window_id().id() : -1;
     if (window_id == new_window_id_) {
@@ -970,7 +970,7 @@ bool ExecuteBrowserCommandObserver::CreateAndRegisterObserver(
     case IDC_FORWARD:
     case IDC_RELOAD: {
       new NavigationNotificationObserver(
-          &browser->GetSelectedWebContents()->GetController(),
+          &browser->GetActiveWebContents()->GetController(),
           automation, reply_message, 1, false, false);
       break;
     }
@@ -1118,11 +1118,11 @@ void DomOperationObserver::Observe(
   } else if (type == chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED) {
     WebContents* web_contents = content::Source<WebContents>(source).ptr();
     if (web_contents) {
-      TabContentsWrapper* wrapper =
-          TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
-      if (wrapper &&
-          wrapper->content_settings() &&
-          wrapper->content_settings()->IsContentBlocked(
+      TabContents* tab_contents =
+          TabContents::GetOwningTabContentsForWebContents(web_contents);
+      if (tab_contents &&
+          tab_contents->content_settings() &&
+          tab_contents->content_settings()->IsContentBlocked(
               CONTENT_SETTINGS_TYPE_JAVASCRIPT)) {
         OnJavascriptBlocked();
       }
@@ -1259,7 +1259,7 @@ void TabLanguageDeterminedObserver::Observe(
     return;
   }
 
-  TranslateTabHelper* helper = TabContentsWrapper::GetCurrentWrapperForContents(
+  TranslateTabHelper* helper = TabContents::GetOwningTabContentsForWebContents(
       web_contents_)->translate_tab_helper();
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   return_value->SetBoolean("page_translated",
@@ -1303,7 +1303,7 @@ void TabLanguageDeterminedObserver::Observe(
 
 InfoBarCountObserver::InfoBarCountObserver(AutomationProvider* automation,
                                            IPC::Message* reply_message,
-                                           TabContentsWrapper* tab_contents,
+                                           TabContents* tab_contents,
                                            size_t target_count)
     : automation_(automation->AsWeakPtr()),
       reply_message_(reply_message),
@@ -1808,7 +1808,7 @@ void SavePackageNotificationObserver::Observe(
 
 PageSnapshotTaker::PageSnapshotTaker(AutomationProvider* automation,
                                      IPC::Message* reply_message,
-                                     TabContentsWrapper* tab_contents,
+                                     TabContents* tab_contents,
                                      const FilePath& path)
     : automation_(automation->AsWeakPtr()),
       reply_message_(reply_message),
@@ -2150,8 +2150,8 @@ void AppLaunchObserver::Observe(int type,
       // The app has launched only if the loaded tab is in the new window.
       NavigationController* controller =
           content::Source<NavigationController>(source).ptr();
-      TabContentsWrapper* tab =
-          TabContentsWrapper::GetCurrentWrapperForContents(
+      TabContents* tab =
+          TabContents::GetOwningTabContentsForWebContents(
               controller->GetWebContents());
       int window_id = tab ? tab->restore_tab_helper()->window_id().id() : -1;
       if (window_id == new_window_id_) {
@@ -2585,11 +2585,10 @@ AllViewsStoppedLoadingObserver::AllViewsStoppedLoadingObserver(
        ++iter) {
     Browser* browser = *iter;
     for (int i = 0; i < browser->tab_count(); ++i) {
-      TabContentsWrapper* contents_wrapper =
-          browser->GetTabContentsWrapperAt(i);
-      StartObserving(contents_wrapper->automation_tab_helper());
-      if (contents_wrapper->automation_tab_helper()->has_pending_loads())
-        pending_tabs_.insert(contents_wrapper->web_contents());
+      TabContents* tab_contents = browser->GetTabContentsAt(i);
+      StartObserving(tab_contents->automation_tab_helper());
+      if (tab_contents->automation_tab_helper()->has_pending_loads())
+        pending_tabs_.insert(tab_contents->web_contents());
     }
   }
   CheckIfNoMorePendingLoads();
@@ -2666,7 +2665,7 @@ void NewTabObserver::Observe(int type,
                              const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_TAB_PARENTED, type);
   NavigationController* controller =
-      &(content::Source<TabContentsWrapper>(source).ptr()->
+      &(content::Source<TabContents>(source).ptr()->
           web_contents()->GetController());
   if (automation_) {
     // TODO(phajdan.jr): Clean up this hack. We write the correct return type
@@ -2979,7 +2978,7 @@ void BrowserOpenedWithNewProfileNotificationObserver::Observe(
     // Only send the result if the loaded tab is in the new window.
     NavigationController* controller =
         content::Source<NavigationController>(source).ptr();
-    TabContentsWrapper* tab = TabContentsWrapper::GetCurrentWrapperForContents(
+    TabContents* tab = TabContents::GetOwningTabContentsForWebContents(
         controller->GetWebContents());
     int window_id = tab ? tab->restore_tab_helper()->window_id().id() : -1;
     if (window_id == new_window_id_) {

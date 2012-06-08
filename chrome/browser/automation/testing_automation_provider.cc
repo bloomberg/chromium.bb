@@ -113,7 +113,7 @@
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/automation_constants.h"
 #include "chrome/common/automation_events.h"
@@ -498,7 +498,7 @@ void TestingAutomationProvider::AppendTab(int handle,
     Browser* browser = browser_tracker_->GetResource(handle);
     observer = new TabAppendedNotificationObserver(browser, this,
                                                    reply_message);
-    TabContentsWrapper* contents =
+    TabContents* contents =
         browser->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_TYPED);
     if (contents) {
       append_tab_response = GetIndexForNavigationController(
@@ -2093,7 +2093,7 @@ ListValue* TestingAutomationProvider::GetInfobarsInfo(WebContents* wc) {
   // Each infobar may have different properties depending on the type.
   ListValue* infobars = new ListValue;
   InfoBarTabHelper* infobar_helper =
-      TabContentsWrapper::GetCurrentWrapperForContents(wc)->
+      TabContents::GetOwningTabContentsForWebContents(wc)->
           infobar_tab_helper();
   for (size_t i = 0; i < infobar_helper->infobar_count(); ++i) {
     DictionaryValue* infobar_item = new DictionaryValue;
@@ -2178,8 +2178,7 @@ void TestingAutomationProvider::PerformActionOnInfobar(
     return;
   }
 
-  TabContentsWrapper* tab_contents =
-      browser->GetTabContentsWrapperAt(tab_index);
+  TabContents* tab_contents = browser->GetTabContentsAt(tab_index);
   if (!tab_contents) {
     reply.SendError(StringPrintf("No such tab at index %d", tab_index));
     return;
@@ -3148,7 +3147,7 @@ void TestingAutomationProvider::OmniboxAcceptInput(
     DictionaryValue* args,
     IPC::Message* reply_message) {
   NavigationController& controller =
-      browser->GetSelectedWebContents()->GetController();
+      browser->GetActiveWebContents()->GetController();
   LocationBar* loc_bar = browser->window()->GetLocationBar();
   if (!loc_bar) {
     AutomationJSONReply(this, reply_message).SendError(
@@ -3626,18 +3625,17 @@ void TestingAutomationProvider::ClearBrowsingData(
 
 namespace {
 
-// Get the TabContentsWrapper from a dictionary of arguments.
-TabContentsWrapper* GetTabContentsWrapperFromDict(const Browser* browser,
-                                                  const DictionaryValue* args,
-                                                  std::string* error_message) {
+// Get the TabContents from a dictionary of arguments.
+TabContents* GetTabContentsFromDict(const Browser* browser,
+                                    const DictionaryValue* args,
+                                    std::string* error_message) {
   int tab_index;
   if (!args->GetInteger("tab_index", &tab_index)) {
     *error_message = "Must include tab_index.";
     return NULL;
   }
 
-  TabContentsWrapper* tab_contents =
-      browser->GetTabContentsWrapperAt(tab_index);
+  TabContents* tab_contents = browser->GetTabContentsAt(tab_index);
   if (!tab_contents) {
     *error_message = StringPrintf("No tab at index %d.", tab_index);
     return NULL;
@@ -3649,7 +3647,7 @@ TabContentsWrapper* GetTabContentsWrapperFromDict(const Browser* browser,
 TranslateInfoBarDelegate* GetTranslateInfoBarDelegate(
     WebContents* web_contents) {
   InfoBarTabHelper* infobar_helper =
-      TabContentsWrapper::GetCurrentWrapperForContents(web_contents)->
+      TabContents::GetOwningTabContentsForWebContents(web_contents)->
           infobar_tab_helper();
   for (size_t i = 0; i < infobar_helper->infobar_count(); i++) {
     InfoBarDelegate* infobar = infobar_helper->GetInfoBarDelegateAt(i);
@@ -3667,8 +3665,8 @@ void TestingAutomationProvider::FindInPage(
     DictionaryValue* args,
     IPC::Message* reply_message) {
   std::string error_message;
-  TabContentsWrapper* tab_contents =
-      GetTabContentsWrapperFromDict(browser, args, &error_message);
+  TabContents* tab_contents =
+      GetTabContentsFromDict(browser, args, &error_message);
   if (!tab_contents) {
     AutomationJSONReply(this, reply_message).SendError(error_message);
     return;
@@ -3713,14 +3711,14 @@ void TestingAutomationProvider::GetTranslateInfo(
     DictionaryValue* args,
     IPC::Message* reply_message) {
   std::string error_message;
-  TabContentsWrapper* tab_contents_wrapper =
-      GetTabContentsWrapperFromDict(browser, args, &error_message);
-  if (!tab_contents_wrapper) {
+  TabContents* tab_contents =
+      GetTabContentsFromDict(browser, args, &error_message);
+  if (!tab_contents) {
     AutomationJSONReply(this, reply_message).SendError(error_message);
     return;
   }
 
-  WebContents* web_contents = tab_contents_wrapper->web_contents();
+  WebContents* web_contents = tab_contents->web_contents();
   // Get the translate bar if there is one and pass it to the observer.
   // The observer will check for null and populate the information accordingly.
   TranslateInfoBarDelegate* translate_bar =
@@ -3730,7 +3728,7 @@ void TestingAutomationProvider::GetTranslateInfo(
       this, reply_message, web_contents, translate_bar);
   // If the language for the page hasn't been loaded yet, then just make
   // the observer, otherwise call observe directly.
-  TranslateTabHelper* helper = TabContentsWrapper::GetCurrentWrapperForContents(
+  TranslateTabHelper* helper = TabContents::GetOwningTabContentsForWebContents(
       web_contents)->translate_tab_helper();
   std::string language = helper->language_state().original_language();
   if (!language.empty()) {
@@ -3749,14 +3747,14 @@ void TestingAutomationProvider::SelectTranslateOption(
     IPC::Message* reply_message) {
   std::string option;
   std::string error_message;
-  TabContentsWrapper* tab_contents_wrapper =
-      GetTabContentsWrapperFromDict(browser, args, &error_message);
-  if (!tab_contents_wrapper) {
+  TabContents* tab_contents =
+      GetTabContentsFromDict(browser, args, &error_message);
+  if (!tab_contents) {
     AutomationJSONReply(this, reply_message).SendError(error_message);
     return;
   }
 
-  WebContents* web_contents = tab_contents_wrapper->web_contents();
+  WebContents* web_contents = tab_contents->web_contents();
   TranslateInfoBarDelegate* translate_bar =
       GetTranslateInfoBarDelegate(web_contents);
   if (!translate_bar) {
@@ -3854,7 +3852,7 @@ void TestingAutomationProvider::SelectTranslateOption(
     // This is the function called when an infobar is dismissed or when the
     // user clicks the 'Nope' translate button.
     translate_bar->TranslationDeclined();
-    tab_contents_wrapper->infobar_tab_helper()->RemoveInfoBar(translate_bar);
+    tab_contents->infobar_tab_helper()->RemoveInfoBar(translate_bar);
     reply.SendSuccess(NULL);
   } else {
     reply.SendError("Invalid string found for option.");
@@ -3870,7 +3868,7 @@ void TestingAutomationProvider::GetBlockedPopupsInfo(
     IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
   std::string error_message;
-  TabContentsWrapper* tab_contents = GetTabContentsWrapperFromDict(
+  TabContents* tab_contents = GetTabContentsFromDict(
       browser, args, &error_message);
   if (!tab_contents) {
     reply.SendError(error_message);
@@ -3880,9 +3878,9 @@ void TestingAutomationProvider::GetBlockedPopupsInfo(
   BlockedContentTabHelper* blocked_content =
       tab_contents->blocked_content_tab_helper();
   ListValue* blocked_popups_list = new ListValue;
-  std::vector<TabContentsWrapper*> blocked_contents;
+  std::vector<TabContents*> blocked_contents;
   blocked_content->GetBlockedContents(&blocked_contents);
-  for (std::vector<TabContentsWrapper*>::const_iterator it =
+  for (std::vector<TabContents*>::const_iterator it =
            blocked_contents.begin(); it != blocked_contents.end(); ++it) {
     DictionaryValue* item = new DictionaryValue;
     item->SetString("url", (*it)->web_contents()->GetURL().spec());
@@ -3900,7 +3898,7 @@ void TestingAutomationProvider::UnblockAndLaunchBlockedPopup(
     IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
   std::string error_message;
-  TabContentsWrapper* tab_contents = GetTabContentsWrapperFromDict(
+  TabContents* tab_contents = GetTabContentsFromDict(
       browser, args, &error_message);
   if (!tab_contents) {
     reply.SendError(error_message);
@@ -3918,7 +3916,7 @@ void TestingAutomationProvider::UnblockAndLaunchBlockedPopup(
     reply.SendError(StringPrintf("No popup at index %d", popup_index));
     return;
   }
-  std::vector<TabContentsWrapper*> blocked_contents;
+  std::vector<TabContents*> blocked_contents;
   blocked_content->GetBlockedContents(&blocked_contents);
   blocked_content->LaunchForContents(blocked_contents[popup_index]);
   reply.SendSuccess(NULL);
@@ -4397,8 +4395,8 @@ void TestingAutomationProvider::HeapProfilerDump(
       return;
     }
 
-    TabContentsWrapper* tab_contents =
-        TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
+    TabContents* tab_contents =
+        TabContents::GetOwningTabContentsForWebContents(web_contents);
     tab_contents->automation_tab_helper()->HeapProfilerDump(reason_string);
     reply.SendSuccess(NULL);
     return;
@@ -4475,8 +4473,8 @@ void TestingAutomationProvider::GetAutofillProfile(
     return;
   }
 
-  TabContentsWrapper* tab_contents =
-      browser->GetTabContentsWrapperAt(tab_index);
+  TabContents* tab_contents =
+      browser->GetTabContentsAt(tab_index);
   if (tab_contents) {
     PersonalDataManager* pdm = PersonalDataManagerFactory::GetForProfile(
         tab_contents->profile()->GetOriginalProfile());
@@ -4541,8 +4539,7 @@ void TestingAutomationProvider::FillAutofillProfile(
     return;
   }
 
-  TabContentsWrapper* tab_contents =
-      browser->GetTabContentsWrapperAt(tab_index);
+  TabContents* tab_contents = browser->GetTabContentsAt(tab_index);
 
   if (tab_contents) {
     PersonalDataManager* pdm =
@@ -4586,8 +4583,7 @@ void TestingAutomationProvider::SubmitAutofillForm(
         .SendError("'tab_index' missing or invalid.");
     return;
   }
-  TabContentsWrapper* tab_contents =
-      browser->GetTabContentsWrapperAt(tab_index);
+  TabContents* tab_contents = browser->GetTabContentsAt(tab_index);
   if (!tab_contents) {
     AutomationJSONReply(this, reply_message).SendError(
         StringPrintf("No such tab at index %d", tab_index));
@@ -5665,7 +5661,7 @@ void TestingAutomationProvider::LaunchApp(
       service->extension_prefs()->GetLaunchContainer(
           extension, ExtensionPrefs::LAUNCH_REGULAR);
 
-  WebContents* old_contents = browser->GetSelectedWebContents();
+  WebContents* old_contents = browser->GetActiveWebContents();
   if (!old_contents) {
     AutomationJSONReply(this, reply_message).SendError(
         "Cannot identify selected tab contents.");
@@ -5825,7 +5821,7 @@ void TestingAutomationProvider::IsMouseLocked(Browser* browser,
     base::DictionaryValue* args,
     IPC::Message* reply_message) {
   DictionaryValue dict;
-  dict.SetBoolean("result", browser->GetSelectedWebContents()->
+  dict.SetBoolean("result", browser->GetActiveWebContents()->
       GetRenderViewHost()->GetView()->IsMouseLocked());
   AutomationJSONReply(this, reply_message).SendSuccess(&dict);
 }
@@ -5882,7 +5878,7 @@ void TestingAutomationProvider::AcceptCurrentFullscreenOrMouseLockRequest(
     Browser* browser,
     base::DictionaryValue* args,
     IPC::Message* reply_message) {
-  WebContents* fullscreen_tab = browser->GetSelectedWebContents();
+  WebContents* fullscreen_tab = browser->GetActiveWebContents();
   FullscreenExitBubbleType type =
       browser->fullscreen_controller_->GetFullscreenExitBubbleType();
   browser->OnAcceptFullscreenPermission(fullscreen_tab->GetURL(), type);
@@ -6016,7 +6012,7 @@ void TestingAutomationProvider::GetIndicesFromTab(
   }
   int id = id_or_handle;
   if (has_handle) {
-    TabContentsWrapper* tab = TabContentsWrapper::GetCurrentWrapperForContents(
+    TabContents* tab = TabContents::GetOwningTabContentsForWebContents(
         tab_tracker_->GetResource(id_or_handle)->GetWebContents());
     id = tab->restore_tab_helper()->session_id().id();
   }
@@ -6025,7 +6021,7 @@ void TestingAutomationProvider::GetIndicesFromTab(
   for (; iter != BrowserList::end(); ++iter, ++browser_index) {
     Browser* browser = *iter;
     for (int tab_index = 0; tab_index < browser->tab_count(); ++tab_index) {
-      TabContentsWrapper* tab = browser->GetTabContentsWrapperAt(tab_index);
+      TabContents* tab = browser->GetTabContentsAt(tab_index);
       if (tab->restore_tab_helper()->session_id().id() == id) {
         DictionaryValue dict;
         dict.SetInteger("windex", browser_index);
@@ -6343,7 +6339,7 @@ void TestingAutomationProvider::CaptureEntirePageJSON(
     // This will delete itself when finished.
     PageSnapshotTaker* snapshot_taker = new PageSnapshotTaker(
         this, reply_message,
-        TabContentsWrapper::GetCurrentWrapperForContents(web_contents), path);
+        TabContents::GetOwningTabContentsForWebContents(web_contents), path);
     snapshot_taker->Start();
   } else {
     AutomationJSONReply(this, reply_message)
@@ -6373,7 +6369,7 @@ void TestingAutomationProvider::GetTabIds(
   for (; iter != BrowserList::end(); ++iter) {
     Browser* browser = *iter;
     for (int i = 0; i < browser->tab_count(); ++i) {
-      int id = browser->GetTabContentsWrapperAt(i)->restore_tab_helper()->
+      int id = browser->GetTabContentsAt(i)->restore_tab_helper()->
           session_id().id();
       id_list->Append(Value::CreateIntegerValue(id));
     }
@@ -6392,13 +6388,13 @@ void TestingAutomationProvider::GetViews(
   for (; browser_iter != BrowserList::end(); ++browser_iter) {
     Browser* browser = *browser_iter;
     for (int i = 0; i < browser->tab_count(); ++i) {
-      TabContentsWrapper* tab = browser->GetTabContentsWrapperAt(i);
+      TabContents* tab = browser->GetTabContentsAt(i);
       DictionaryValue* dict = new DictionaryValue();
       AutomationId id = automation_util::GetIdForTab(tab);
       dict->Set("auto_id", id.ToValue());
       view_list->Append(dict);
       if (preview_controller) {
-        TabContentsWrapper* preview_tab =
+        TabContents* preview_tab =
             preview_controller->GetPrintPreviewForTab(tab);
         if (preview_tab) {
           DictionaryValue* dict = new DictionaryValue();
@@ -6445,7 +6441,7 @@ void TestingAutomationProvider::IsTabIdValid(
   for (; iter != BrowserList::end(); ++iter) {
     Browser* browser = *iter;
     for (int i = 0; i < browser->tab_count(); ++i) {
-      TabContentsWrapper* tab = browser->GetTabContentsWrapperAt(i);
+      TabContents* tab = browser->GetTabContentsAt(i);
       if (tab->restore_tab_helper()->session_id().id() == id) {
         is_valid = true;
         break;
@@ -6652,7 +6648,7 @@ void TestingAutomationProvider::WaitForInfoBarCount(
 
   // The delegate will delete itself.
   new InfoBarCountObserver(this, reply_message,
-      TabContentsWrapper::GetCurrentWrapperForContents(
+      TabContents::GetOwningTabContentsForWebContents(
           controller->GetWebContents()), target_count);
 }
 
@@ -6672,7 +6668,7 @@ void TestingAutomationProvider::OnRemoveProvider() {
 
 void TestingAutomationProvider::EnsureTabSelected(Browser* browser,
                                                   WebContents* tab) {
-  if (browser->GetSelectedWebContents() != tab ||
+  if (browser->GetActiveWebContents() != tab ||
       browser != BrowserList::GetLastActive()) {
     browser->ActivateTabAt(browser->GetIndexOfController(&tab->GetController()),
         true /* user_gesture */);
