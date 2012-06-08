@@ -6088,8 +6088,7 @@ void TestingAutomationProvider::WaitUntilNavigationCompletes(
       new NavigationNotificationObserver(&web_contents->GetController(), this,
                                          reply_message, 1, true, true);
   if (!web_contents->IsLoading()) {
-    AutomationJSONReply(this, reply_message).SendSuccess(NULL);
-    delete observer;
+    observer->ConditionMet(AUTOMATION_MSG_NAVIGATION_SUCCESS);
     return;
   }
 }

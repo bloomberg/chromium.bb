@@ -231,9 +231,9 @@ class NavigationNotificationObserver : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details);
 
- private:
   void ConditionMet(AutomationMsg_NavigationResponseValues navigation_result);
 
+ private:
   content::NotificationRegistrar registrar_;
   base::WeakPtr<AutomationProvider> automation_;
   scoped_ptr<IPC::Message> reply_message_;
