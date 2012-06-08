@@ -51,9 +51,6 @@ void TestShellDelegate::NewTab() {
 void TestShellDelegate::NewWindow(bool incognito) {
 }
 
-void TestShellDelegate::Search() {
-}
-
 void TestShellDelegate::OpenFileManager() {
 }
 

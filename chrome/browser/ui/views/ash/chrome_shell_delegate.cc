@@ -17,7 +17,6 @@
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/ash/app_list/app_list_view_delegate.h"
 #include "chrome/browser/ui/views/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/views/ash/user_action_handler.h"
@@ -130,37 +129,6 @@ void ChromeShellDelegate::NewWindow(bool is_incognito) {
   Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
   Browser::NewEmptyWindow(
       is_incognito ? profile->GetOffTheRecordProfile() : profile);
-}
-
-void ChromeShellDelegate::Search() {
-  // Exit fullscreen to show omnibox.
-  Browser* last_active = BrowserList::GetLastActive();
-  if (last_active) {
-    if (last_active->window()->IsFullscreen()) {
-      last_active->ToggleFullscreenMode();
-      // ToggleFullscreenMode is asynchronous, so we don't have omnibox
-      // visible at this point. Wait for next event cycle which toggles
-      // the visibility of omnibox before creating new tab.
-      MessageLoop::current()->PostTask(
-          FROM_HERE, base::Bind(&ChromeShellDelegate::Search,
-                                weak_factory_.GetWeakPtr()));
-      return;
-    }
-  }
-
-  Browser* target_browser = browser::FindOrCreateTabbedBrowser(
-      last_active ? last_active->profile() :
-                    ProfileManager::GetDefaultProfileOrOffTheRecord());
-  const GURL& url = target_browser->GetSelectedWebContents() ?
-      target_browser->GetSelectedWebContents()->GetURL() : GURL();
-  if (url.SchemeIs(chrome::kChromeUIScheme) &&
-      url.host() == chrome::kChromeUINewTabHost) {
-    // If the NTP is showing, focus the omnibox.
-    target_browser->window()->SetFocusToLocationBar(true);
-  } else {
-    target_browser->NewTab();
-  }
-  target_browser->window()->Show();
 }
 
 void ChromeShellDelegate::OpenFileManager() {

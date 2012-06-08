@@ -15475,9 +15475,6 @@ Battery full
       <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_ACCESSIBILITY_FEATURES" desc="The text in the keyboard overlay to explain the shortcut (enable or disable accessibility features).">
         Toggle accessibility features
       </message>
-      <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_APP_LIST" desc="The text in the keyboard overlay to explain the shortcut (show or hide the app list).">
-        Toggle app list
-      </message>
       <message name="IDS_KEYBOARD_OVERLAY_TOGGLE_BOOKMARK_BAR" desc="The text in the keyboard overlay to explain the shortcut.">
         Toggle bookmark bar
       </message>

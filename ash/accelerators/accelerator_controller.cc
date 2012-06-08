@@ -334,9 +334,6 @@ bool AcceleratorController::PerformAction(int action,
       // Return true to prevent propagation of the key event because
       // this key combination is reserved for partial screenshot.
       return true;
-    case SEARCH_KEY:
-      ash::Shell::GetInstance()->delegate()->Search();
-      return true;
     case TOGGLE_APP_LIST:
       ash::Shell::GetInstance()->ToggleAppList();
       return true;

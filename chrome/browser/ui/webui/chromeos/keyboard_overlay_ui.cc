@@ -178,7 +178,6 @@ struct I18nContentToMessage {
   { "keyboardOverlayTaskManager", IDS_KEYBOARD_OVERLAY_TASK_MANAGER },
   { "keyboardOverlayToggleAccessibilityFeatures",
     IDS_KEYBOARD_OVERLAY_TOGGLE_ACCESSIBILITY_FEATURES },
-  { "keyboardOverlayToggleAppList", IDS_KEYBOARD_OVERLAY_TOGGLE_APP_LIST },
   { "keyboardOverlayToggleBookmarkBar",
     IDS_KEYBOARD_OVERLAY_TOGGLE_BOOKMARK_BAR },
   { "keyboardOverlayToggleCapsLock", IDS_KEYBOARD_OVERLAY_TOGGLE_CAPS_LOCK },

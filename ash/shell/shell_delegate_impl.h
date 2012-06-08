@@ -30,7 +30,6 @@ class ShellDelegateImpl : public ash::ShellDelegate {
   virtual void Exit() OVERRIDE;
   virtual void NewTab() OVERRIDE;
   virtual void NewWindow(bool incognito) OVERRIDE;
-  virtual void Search() OVERRIDE;
   virtual void OpenFileManager() OVERRIDE;
   virtual void OpenCrosh() OVERRIDE;
   virtual void OpenMobileSetup(const std::string& service_path) OVERRIDE;

@@ -68,9 +68,6 @@ class ASH_EXPORT ShellDelegate {
   // Invoked when the user uses Ctrl-N or Ctrl-Shift-N to open a new window.
   virtual void NewWindow(bool incognito) = 0;
 
-  // Invoked when the user presses the Search key.
-  virtual void Search() = 0;
-
   // Invoked when the user uses Ctrl-M to open file manager.
   virtual void OpenFileManager() = 0;
 

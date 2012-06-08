@@ -66,9 +66,6 @@ void ShellDelegateImpl::NewWindow(bool incognito) {
   ash::shell::ToplevelWindow::CreateToplevelWindow(create_params);
 }
 
-void ShellDelegateImpl::Search() {
-}
-
 void ShellDelegateImpl::OpenFileManager() {
 }
 
