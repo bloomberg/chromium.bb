@@ -32,6 +32,8 @@
 #include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_notifications.h"
@@ -261,6 +263,23 @@ history::URLDatabase* HistoryService::InMemoryDatabase() {
   if (in_memory_backend_.get())
     return in_memory_backend_->db();
   return NULL;
+}
+
+void HistoryService::ShutdownOnUIThread() {
+  // It's possible that bookmarks haven't loaded and history is waiting for
+  // bookmarks to complete loading. In such a situation history can't shutdown
+  // (meaning if we invoked history_service_->Cleanup now, we would
+  // deadlock). To break the deadlock we tell BookmarkModel it's about to be
+  // deleted so that it can release the signal history is waiting on, allowing
+  // history to shutdown (history_service_->Cleanup to complete). In such a
+  // scenario history sees an incorrect view of bookmarks, but it's better
+  // than a deadlock.
+  BookmarkModel* bookmark_model = static_cast<BookmarkModel*>(
+      BookmarkModelFactory::GetForProfileIfExists(profile_));
+  if (bookmark_model)
+    bookmark_model->Shutdown();
+
+  Cleanup();
 }
 
 void HistoryService::SetSegmentPresentationIndex(int64 segment_id, int index) {

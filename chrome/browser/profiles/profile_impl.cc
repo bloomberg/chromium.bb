@@ -20,7 +20,7 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/background/background_mode_manager.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_plugin_service_filter.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
@@ -40,6 +40,7 @@
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/shortcuts_backend.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/instant/instant_controller.h"
@@ -232,7 +233,6 @@ ProfileImpl::ProfileImpl(const FilePath& path,
           new VisitedLinkEventListener(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(io_data_(this)),
       host_content_settings_map_(NULL),
-      history_service_created_(false),
       favicon_service_created_(false),
       start_time_(Time::Now()),
       delegate_(delegate),
@@ -515,29 +515,6 @@ ProfileImpl::~ProfileImpl() {
   if (top_sites_.get())
     top_sites_->Shutdown();
 
-  if (bookmark_bar_model_.get()) {
-    // It's possible that bookmarks haven't loaded and history is waiting for
-    // bookmarks to complete loading. In such a situation history can't shutdown
-    // (meaning if we invoked history_service_->Cleanup now, we would
-    // deadlock). To break the deadlock we tell BookmarkModel it's about to be
-    // deleted so that it can release the signal history is waiting on, allowing
-    // history to shutdown (history_service_->Cleanup to complete). In such a
-    // scenario history sees an incorrect view of bookmarks, but it's better
-    // than a deadlock.
-    bookmark_bar_model_->Cleanup();
-  }
-
-  if (history_service_.get())
-    history_service_->Cleanup();
-
-  // HistoryService may call into the BookmarkModel, as such we need to
-  // delete HistoryService before the BookmarkModel. The destructor for
-  // HistoryService will join with HistoryService's backend thread so that
-  // by the time the destructor has finished we're sure it will no longer call
-  // into the BookmarkModel.
-  history_service_ = NULL;
-  bookmark_bar_model_.reset();
-
   // FaviconService depends on HistoryServce so make sure we delete
   // HistoryService first.
   favicon_service_.reset();
@@ -791,23 +768,11 @@ GAIAInfoUpdateService* ProfileImpl::GetGAIAInfoUpdateService() {
 }
 
 HistoryService* ProfileImpl::GetHistoryService(ServiceAccessType sat) {
-  // If saving history is disabled, only allow explicit access.
-  if (GetPrefs()->GetBoolean(prefs::kSavingBrowserHistoryDisabled) &&
-      sat != EXPLICIT_ACCESS)
-    return NULL;
-
-  if (!history_service_created_) {
-    history_service_created_ = true;
-    scoped_refptr<HistoryService> history(new HistoryService(this));
-    if (!history->Init(GetPath(), GetBookmarkModel()))
-      return NULL;
-    history_service_.swap(history);
-  }
-  return history_service_.get();
+  return HistoryServiceFactory::GetForProfile(this, sat).get();
 }
 
 HistoryService* ProfileImpl::GetHistoryServiceWithoutCreating() {
-  return history_service_.get();
+  return HistoryServiceFactory::GetForProfileIfExists(this).get();
 }
 
 AutocompleteClassifier* ProfileImpl::GetAutocompleteClassifier() {
@@ -843,11 +808,7 @@ quota::SpecialStoragePolicy* ProfileImpl::GetSpecialStoragePolicy() {
 }
 
 BookmarkModel* ProfileImpl::GetBookmarkModel() {
-  if (!bookmark_bar_model_.get()) {
-    bookmark_bar_model_.reset(new BookmarkModel(this));
-    bookmark_bar_model_->Load();
-  }
-  return bookmark_bar_model_.get();
+  return BookmarkModelFactory::GetForProfile(this);
 }
 
 ProtocolHandlerRegistry* ProfileImpl::GetProtocolHandlerRegistry() {

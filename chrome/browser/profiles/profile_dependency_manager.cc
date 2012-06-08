@@ -10,6 +10,7 @@
 
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/captive_portal/captive_portal_service_factory.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/download/download_service_factory.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/extensions/api/discovery/suggested_links_registry_factory.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -181,6 +183,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
 #if defined(ENABLE_BACKGROUND)
   BackgroundContentsServiceFactory::GetInstance();
 #endif
+  BookmarkModelFactory::GetInstance();
 #if !defined(OS_ANDROID)
   captive_portal::CaptivePortalServiceFactory::GetInstance();
 #endif
@@ -202,6 +205,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
 #endif
   GlobalErrorServiceFactory::GetInstance();
   GoogleURLTrackerFactory::GetInstance();
+  HistoryServiceFactory::GetInstance();
   NTPResourceCacheFactory::GetInstance();
   PasswordStoreFactory::GetInstance();
   PersonalDataManagerFactory::GetInstance();

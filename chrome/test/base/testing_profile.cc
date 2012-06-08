@@ -14,6 +14,7 @@
 #include "base/string_number_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_backend.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
@@ -245,8 +247,6 @@ TestingProfile::~TestingProfile() {
     host_content_settings_map_->ShutdownOnUIThread();
 
   DestroyTopSites();
-  DestroyHistoryService();
-  // FaviconService depends on HistoryServce so destroying it later.
   DestroyFaviconService();
 
   if (pref_proxy_config_tracker_.get())
@@ -257,6 +257,11 @@ void TestingProfile::CreateFaviconService() {
   favicon_service_.reset(new FaviconService(this));
 }
 
+static scoped_refptr<RefcountedProfileKeyedService> BuildHistoryService(
+    Profile* profile) {
+  return new HistoryService(profile);
+}
+
 void TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
   DestroyHistoryService();
   if (delete_file) {
@@ -264,18 +269,28 @@ void TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
     path = path.Append(chrome::kHistoryFilename);
     file_util::Delete(path, false);
   }
-  history_service_ = new HistoryService(this);
-  history_service_->Init(GetPath(), bookmark_bar_model_.get(), no_db);
+  // This will create and init the history service.
+  HistoryService* history_service = static_cast<HistoryService*>(
+      HistoryServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+          this, BuildHistoryService).get());
+  if (!history_service->Init(this->GetPath(),
+                             reinterpret_cast<BookmarkService*>(
+                                 BookmarkModelFactory::GetForProfile(this)),
+                             no_db)) {
+    HistoryServiceFactory::GetInstance()->SetTestingFactoryAndUse(this, NULL);
+  }
 }
 
 void TestingProfile::DestroyHistoryService() {
-  if (!history_service_.get())
+  scoped_refptr<HistoryService> history_service =
+      HistoryServiceFactory::GetForProfileIfExists(this);
+  if (!history_service.get())
     return;
 
-  history_service_->NotifyRenderProcessHostDestruction(0);
-  history_service_->SetOnBackendDestroyTask(MessageLoop::QuitClosure());
-  history_service_->Cleanup();
-  history_service_ = NULL;
+  history_service->NotifyRenderProcessHostDestruction(0);
+  history_service->SetOnBackendDestroyTask(MessageLoop::QuitClosure());
+  history_service->Cleanup();
+  HistoryServiceFactory::ShutdownForProfile(this);
 
   // Wait for the backend class to terminate before deleting the files and
   // moving to the next test. Note: if this never terminates, somebody is
@@ -312,23 +327,34 @@ void TestingProfile::DestroyFaviconService() {
   favicon_service_.reset();
 }
 
+static ProfileKeyedService* BuildBookmarkModel(Profile* profile) {
+  BookmarkModel* bookmark_model = new BookmarkModel(profile);
+  bookmark_model->Load();
+  return bookmark_model;
+}
+
+
 void TestingProfile::CreateBookmarkModel(bool delete_file) {
-  // Nuke the model first, that way we're sure it's done writing to disk.
-  bookmark_bar_model_.reset(NULL);
 
   if (delete_file) {
     FilePath path = GetPath();
     path = path.Append(chrome::kBookmarksFileName);
     file_util::Delete(path, false);
   }
-  bookmark_bar_model_.reset(new BookmarkModel(this));
-  if (history_service_.get()) {
-    history_service_->history_backend_->bookmark_service_ =
-        bookmark_bar_model_.get();
-    history_service_->history_backend_->expirer_.bookmark_service_ =
-        bookmark_bar_model_.get();
+  // This will create a bookmark model.
+  BookmarkModel* bookmark_service =
+      static_cast<BookmarkModel*>(
+          BookmarkModelFactory::GetInstance()->SetTestingFactoryAndUse(
+              this, BuildBookmarkModel));
+
+  HistoryService* history_service =
+      HistoryServiceFactory::GetForProfileIfExists(this).get();
+  if (history_service) {
+    history_service->history_backend_->bookmark_service_ =
+        bookmark_service;
+    history_service->history_backend_->expirer_.bookmark_service_ =
+        bookmark_service;
   }
-  bookmark_bar_model_->Load();
 }
 
 void TestingProfile::CreateAutocompleteClassifier() {
@@ -354,14 +380,14 @@ void TestingProfile::CreateWebDataService() {
 }
 
 void TestingProfile::BlockUntilBookmarkModelLoaded() {
-  DCHECK(bookmark_bar_model_.get());
-  if (bookmark_bar_model_->IsLoaded())
+  DCHECK(GetBookmarkModel());
+  if (GetBookmarkModel()->IsLoaded())
     return;
   BookmarkLoadObserver observer;
-  bookmark_bar_model_->AddObserver(&observer);
+  GetBookmarkModel()->AddObserver(&observer);
   MessageLoop::current()->Run();
-  bookmark_bar_model_->RemoveObserver(&observer);
-  DCHECK(bookmark_bar_model_->IsLoaded());
+  GetBookmarkModel()->RemoveObserver(&observer);
+  DCHECK(GetBookmarkModel()->IsLoaded());
 }
 
 // TODO(phajdan.jr): Doesn't this hang if Top Sites are already loaded?
@@ -476,11 +502,11 @@ FaviconService* TestingProfile::GetFaviconService(ServiceAccessType access) {
 }
 
 HistoryService* TestingProfile::GetHistoryService(ServiceAccessType access) {
-  return history_service_.get();
+  return HistoryServiceFactory::GetForProfileIfExists(this);
 }
 
 HistoryService* TestingProfile::GetHistoryServiceWithoutCreating() {
-  return history_service_.get();
+  return HistoryServiceFactory::GetForProfileIfExists(this);
 }
 
 net::CookieMonster* TestingProfile::GetCookieMonster() {
@@ -652,7 +678,7 @@ bool TestingProfile::DidLastSessionExitCleanly() {
 }
 
 BookmarkModel* TestingProfile::GetBookmarkModel() {
-  return bookmark_bar_model_.get();
+  return BookmarkModelFactory::GetForProfileIfExists(this);
 }
 
 bool TestingProfile::IsSameProfile(Profile *p) {
@@ -684,11 +710,13 @@ PrefProxyConfigTracker* TestingProfile::GetProxyConfigTracker() {
 }
 
 void TestingProfile::BlockUntilHistoryProcessesPendingRequests() {
-  DCHECK(history_service_.get());
+  scoped_refptr<HistoryService> history_service =
+      HistoryServiceFactory::GetForProfileIfExists(this);
+  DCHECK(history_service.get());
   DCHECK(MessageLoop::current());
 
   CancelableRequestConsumer consumer;
-  history_service_->ScheduleDBTask(new QuittingHistoryDBTask(), &consumer);
+  history_service->ScheduleDBTask(new QuittingHistoryDBTask(), &consumer);
   MessageLoop::current()->Run();
 }
 

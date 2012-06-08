@@ -134,7 +134,12 @@ void InMemoryURLIndex::ShutDown() {
   registrar_.RemoveAll();
   cache_reader_consumer_.CancelAllRequests();
   shutdown_ = true;
-  PostSaveToCacheFileTask();
+  FilePath path;
+  if (!GetCacheFilePath(&path))
+    return;
+  scoped_refptr<RefCountedBool> succeeded(new RefCountedBool(false));
+  URLIndexPrivateData::WritePrivateDataToCacheFileTask(
+      private_data_, path, succeeded);
   needs_to_be_cached_ = false;
 }
 
