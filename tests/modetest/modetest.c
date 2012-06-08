@@ -264,8 +264,10 @@ static void dump_blob(struct device *dev, uint32_t blob_id)
 	drmModePropertyBlobPtr blob;
 
 	blob = drmModeGetPropertyBlob(dev->fd, blob_id);
-	if (!blob)
+	if (!blob) {
+		printf("\n");
 		return;
+	}
 
 	blob_data = blob->data;
 
