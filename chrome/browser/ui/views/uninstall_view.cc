@@ -69,10 +69,15 @@ void UninstallView::SetupControls() {
       l10n_util::GetStringUTF16(IDS_UNINSTALL_DELETE_PROFILE));
   layout->AddView(delete_profile_);
 
-  // Set default browser combo box
+  // Set default browser combo box. If the default should not or cannot be
+  // changed, widgets are not shown. We assume here that if Chrome cannot
+  // be set programatically as default, neither can any other browser (for
+  // instance because the OS doesn't permit that).
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   if (dist->CanSetAsDefault() &&
-      ShellIntegration::IsDefaultBrowser()) {
+      ShellIntegration::IsDefaultBrowser() &&
+      (ShellIntegration::CanSetAsDefaultBrowser() !=
+          ShellIntegration::SET_DEFAULT_INTERACTIVE)) {
     browsers_.reset(new BrowsersMap());
     ShellUtil::GetRegisteredBrowsers(dist, browsers_.get());
     if (!browsers_->empty()) {
