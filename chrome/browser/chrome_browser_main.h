@@ -129,9 +129,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // computer startup has on retention and usage of Chrome.
   void AutoLaunchChromeFieldTrial();
 
-  // Field trial for testing domain bound certs.
-  void DomainBoundCertsFieldTrial();
-
   // A collection of field trials intended to test the uniformity and
   // correctness of the field trial control, bucketing and reporting systems.
   void SetupUniformityFieldTrials();

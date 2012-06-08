@@ -111,7 +111,6 @@
 #include "grit/platform_locale_settings.h"
 #include "net/base/net_module.h"
 #include "net/base/sdch_manager.h"
-#include "net/base/ssl_config_service.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/http/http_basic_stream.h"
 #include "net/http/http_network_layer.h"
@@ -1013,25 +1012,6 @@ void ChromeBrowserMainParts::AutoLaunchChromeFieldTrial() {
   }
 }
 
-void ChromeBrowserMainParts::DomainBoundCertsFieldTrial() {
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel == chrome::VersionInfo::CHANNEL_CANARY) {
-    net::SSLConfigService::EnableDomainBoundCertsTrial();
-  } else if (channel == chrome::VersionInfo::CHANNEL_DEV &&
-             base::FieldTrialList::IsOneTimeRandomizationEnabled()) {
-    const base::FieldTrial::Probability kDivisor = 100;
-    // 10% probability of being in the enabled group.
-    const base::FieldTrial::Probability kEnableProbability = 10;
-    scoped_refptr<base::FieldTrial> trial =
-        base::FieldTrialList::FactoryGetFieldTrial(
-            "DomainBoundCerts", kDivisor, "disable", 2012, 5, 31, NULL);
-    trial->UseOneTimeRandomization();
-    int enable_group = trial->AppendGroup("enable", kEnableProbability);
-    if (trial->group() == enable_group)
-      net::SSLConfigService::EnableDomainBoundCertsTrial();
-  }
-}
-
 void ChromeBrowserMainParts::SetupUniformityFieldTrials() {
   // One field trial will be created for each entry in this array. The i'th
   // field trial will have |trial_sizes[i]| groups in it, including the default
@@ -1103,7 +1083,6 @@ void ChromeBrowserMainParts::SetupFieldTrials(bool metrics_recording_enabled,
   PredictorFieldTrial();
   DefaultAppsFieldTrial();
   AutoLaunchChromeFieldTrial();
-  DomainBoundCertsFieldTrial();
   gpu_util::InitializeForceCompositingModeFieldTrial();
   SetupUniformityFieldTrials();
   AutocompleteFieldTrial::Activate();
