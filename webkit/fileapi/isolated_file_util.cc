@@ -319,7 +319,9 @@ bool IsolatedFileUtil::IsDirectoryEmpty(
     const FileSystemPath& path) {
   std::string filesystem_id;
   FilePath platform_path;
-  if (!GetPlatformPath(path, &platform_path))
+  if (!IsolatedContext::GetInstance()->CrackIsolatedPath(
+          path.internal_path(), &filesystem_id,
+          NULL, &platform_path))
     return false;
   if (platform_path.empty()) {
     // The root directory case.
