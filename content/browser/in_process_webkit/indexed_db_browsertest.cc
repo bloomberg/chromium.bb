@@ -86,7 +86,8 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, KeyPathTest) {
   SimpleTest(GetTestURL(FilePath(FILE_PATH_LITERAL("key_path_test.html"))));
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, TransactionGetTest) {
+// Temporarily disabling until webkit r119751 rolls  (alecflett@chromium.org)
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_TransactionGetTest) {
   SimpleTest(GetTestURL(FilePath(
       FILE_PATH_LITERAL("transaction_get_test.html"))));
 }
