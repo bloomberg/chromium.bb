@@ -24,6 +24,8 @@ namespace omaha {
 #include "google_update/google_update_idl.h"
 }  // namespace omaha
 
+#include "remoting/host/constants.h"
+
 using base::win::ScopedBstr;
 using base::win::ScopedComPtr;
 
@@ -43,10 +45,6 @@ const char16 kOmahaPathValueName[] = TO_L_STRING("path");
 const char16 kGoogleUpdateCommandLineFormat[] =
     TO_L_STRING("\"%ls\" /install \"bundlename=Chromoting%%20Host&appguid=%ls&")
     TO_L_STRING("appname=Chromoting%%20Host&needsadmin=True&lang=%ls\"");
-
-// The Omaha Appid of the host.
-const char16 kOmahaAppid[] =
-    TO_L_STRING("{b210701e-ffc4-49e3-932b-370728c72662}");
 
 // TODO(alexeypa): Get the desired laungage from the web app.
 const char16 kOmahaLanguage[] = TO_L_STRING("en");
@@ -143,7 +141,7 @@ void DaemonComInstallerWin::Install() {
   }
 
   // Add Chromoting Host to the bundle.
-  ScopedBstr appid(kOmahaAppid);
+  ScopedBstr appid(kHostOmahaAppid);
   ScopedBstr empty(kOmahaEmpty);
   ScopedBstr language(kOmahaLanguage);
   hr = bundle_->createApp(appid, empty, language, empty);
@@ -292,7 +290,7 @@ void DaemonCommandLineInstallerWin::Install() {
   string16 command_line =
       StringPrintf(kGoogleUpdateCommandLineFormat,
                    google_update.c_str(),
-                   kOmahaAppid,
+                   kHostOmahaAppid,
                    kOmahaLanguage);
 
   base::LaunchOptions options;

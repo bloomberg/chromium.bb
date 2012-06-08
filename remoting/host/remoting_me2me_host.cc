@@ -21,8 +21,10 @@
 #include "build/build_config.h"
 #include "crypto/nss_util.h"
 #include "net/base/network_change_notifier.h"
+#include "remoting/base/breakpad.h"
 #include "remoting/base/constants.h"
 #include "remoting/host/branding.h"
+#include "remoting/host/breakpad.h"
 #include "remoting/host/constants.h"
 #include "remoting/host/capturer.h"
 #include "remoting/host/chromoting_host.h"
@@ -557,6 +559,11 @@ int CALLBACK WinMain(HINSTANCE instance,
                      HINSTANCE previous_instance,
                      LPSTR command_line,
                      int show_command) {
+  // Initializes the crash dump reports.
+  if (remoting::IsCrashReportingEnabled()) {
+    remoting::InitializeCrashReporting();
+  }
+
   g_hModule = instance;
 
   // Register and initialize common controls.

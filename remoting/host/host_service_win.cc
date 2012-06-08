@@ -23,9 +23,10 @@
 #include "base/stringprintf.h"
 #include "base/threading/thread.h"
 #include "base/win/wrapped_window_proc.h"
-
+#include "remoting/base/breakpad.h"
 #include "remoting/base/scoped_sc_handle_win.h"
 #include "remoting/host/branding.h"
+#include "remoting/host/breakpad.h"
 #include "remoting/host/host_service_resource.h"
 #include "remoting/host/wts_console_observer_win.h"
 #include "remoting/host/wts_session_process_launcher_win.h"
@@ -410,6 +411,11 @@ LRESULT CALLBACK HostService::SessionChangeNotificationProc(HWND hwnd,
 } // namespace remoting
 
 int main(int argc, char** argv) {
+  // Initializes the crash dump reports.
+  if (remoting::IsCrashReportingEnabled()) {
+    remoting::InitializeCrashReporting();
+  }
+
   CommandLine::Init(argc, argv);
 
   // This object instance is required by Chrome code (for example,

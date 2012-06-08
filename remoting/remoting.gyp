@@ -501,6 +501,7 @@
           ],
           'dependencies': [
             '../base/base.gyp:base',
+            'remoting_breakpad',
             'remoting_elevated_controller',
             'remoting_protocol',
             'remoting_version_resources',
@@ -508,6 +509,8 @@
           'sources': [
             'host/branding.cc',
             'host/branding.h',
+            'host/breakpad.h',
+            'host/breakpad_win.cc',
             'host/elevated_controller.rc',
             'host/elevated_controller_module_win.cc',
             'host/elevated_controller_win.cc',
@@ -546,15 +549,19 @@
             '../base/base.gyp:base_static',
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
             '../ipc/ipc.gyp:ipc',
+            'remoting_breakpad',
             'remoting_version_resources',
           ],
           'sources': [
             'base/scoped_sc_handle_win.h',
             'host/branding.cc',
             'host/branding.h',
+            'host/breakpad.h',
+            'host/breakpad_win.cc',
             'host/chromoting_messages.cc',
             'host/chromoting_messages.h',
             'host/constants.h',
+            'host/constants_win.cc',
             'host/host_service.rc',
             'host/host_service_resource.h',
             'host/host_service_win.cc',
@@ -768,6 +775,30 @@
   ],  # end of 'conditions'
 
   'targets': [
+    {
+      'target_name': 'remoting_breakpad',
+      'type': 'static_library',
+      'variables': { 'enable_wexit_time_destructors': 1, },
+      'dependencies': [
+        '../base/base.gyp:base',
+      ],
+      'sources': [
+        'base/breakpad.h',
+        'base/breakpad_linux.cc',
+        'base/breakpad_mac.mm',
+        'base/breakpad_win.cc',
+        'host/constants.h',
+        'host/constants_win.cc',
+      ],
+      'conditions': [
+        ['OS=="win"', {
+          'dependencies': [
+            '../breakpad/breakpad.gyp:breakpad_handler',
+          ],
+        }],
+      ],
+    },  # end of target 'remoting_breakpad'
+
     {
       'target_name': 'remoting_client_plugin',
       'type': 'static_library',
@@ -1078,6 +1109,7 @@
         'host/clipboard_mac.mm',
         'host/clipboard_win.cc',
         'host/constants.h',
+        'host/constants_win.cc',
         'host/continue_window.h',
         'host/continue_window_gtk.cc',
         'host/continue_window_mac.mm',
@@ -1289,6 +1321,7 @@
       'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
         'remoting_base',
+        'remoting_breakpad',
         'remoting_host',
         'remoting_jingle_glue',
         '../base/base.gyp:base',
@@ -1298,6 +1331,8 @@
       'sources': [
         'host/branding.cc',
         'host/branding.h',
+        'host/breakpad.h',
+        'host/breakpad_win.cc',
         'host/host_event_logger.h',
         'host/sighup_listener_mac.cc',
         'host/sighup_listener_mac.h',
@@ -1590,6 +1625,7 @@
       'type': 'executable',
       'dependencies': [
         'remoting_base',
+        'remoting_breakpad',
         'remoting_client',
         'remoting_client_plugin',
         'remoting_host',
@@ -1610,6 +1646,9 @@
       ],
       'sources': [
         'base/auth_token_util_unittest.cc',
+        'base/base_mock_objects.cc',
+        'base/base_mock_objects.h',
+        'base/breakpad_win_unittest.cc',
         'base/codec_test.cc',
         'base/codec_test.h',
         'base/compound_buffer_unittest.cc',
@@ -1619,8 +1658,6 @@
         'base/encode_decode_unittest.cc',
         'base/encoder_vp8_unittest.cc',
         'base/encoder_row_based_unittest.cc',
-        'base/base_mock_objects.cc',
-        'base/base_mock_objects.h',
         'base/util_unittest.cc',
         'client/key_event_mapper_unittest.cc',
         'client/plugin/mac_key_event_processor_unittest.cc',
@@ -1679,9 +1716,17 @@
       ],
       'conditions': [
         [ 'OS=="win"', {
+          'include_dirs': [
+            '../breakpad/src',
+          ],
           'dependencies': [
             '../ipc/ipc.gyp:ipc'
           ],
+          'link_settings': {
+            'libraries': [
+              '-lrpcrt4.lib',
+            ],
+          },
         }],
         ['chromeos != 0', {
           'dependencies!': [
