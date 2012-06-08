@@ -31,11 +31,26 @@ using content::BrowserThread;
 
 namespace {
 
+// Calls the appropriate function for setting Chrome as the default browser.
+// This requires IO access (registry) and may result in interaction with a
+// modal system UI.
+void SetChromeAsDefaultBrowser(bool interactive_flow) {
+  if (interactive_flow) {
+    UMA_HISTOGRAM_COUNTS("DefaultBrowserWarning.SetAsDefaultUI", 1);
+    if (!ShellIntegration::SetAsDefaultBrowserInteractive())
+      UMA_HISTOGRAM_COUNTS("DefaultBrowserWarning.SetAsDefaultUIFailed", 1);
+  } else {
+    UMA_HISTOGRAM_COUNTS("DefaultBrowserWarning.SetAsDefault", 1);
+    ShellIntegration::SetAsDefaultBrowser();
+  }
+}
+
 // The delegate for the infobar shown when Chrome is not the default browser.
 class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  explicit DefaultBrowserInfoBarDelegate(InfoBarTabHelper* infobar_helper,
-                                         PrefService* prefs);
+  DefaultBrowserInfoBarDelegate(InfoBarTabHelper* infobar_helper,
+                                PrefService* prefs,
+                                bool interactive_flow_required);
 
  private:
   virtual ~DefaultBrowserInfoBarDelegate();
@@ -61,6 +76,10 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
   // Whether the info-bar should be dismissed on the next navigation.
   bool should_expire_;
 
+  // Whether changing the default application will require entering the
+  // modal-UI flow.
+  const bool interactive_flow_required_;
+
   // Used to delay the expiration of the info-bar.
   base::WeakPtrFactory<DefaultBrowserInfoBarDelegate> weak_factory_;
 
@@ -69,11 +88,13 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
 
 DefaultBrowserInfoBarDelegate::DefaultBrowserInfoBarDelegate(
     InfoBarTabHelper* infobar_helper,
-    PrefService* prefs)
+    PrefService* prefs,
+    bool interactive_flow_required)
     : ConfirmInfoBarDelegate(infobar_helper),
       prefs_(prefs),
       action_taken_(false),
       should_expire_(false),
+      interactive_flow_required_(interactive_flow_required),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   // We want the info-bar to stick-around for few seconds and then be hidden
   // on the next navigation after that.
@@ -115,11 +136,11 @@ bool DefaultBrowserInfoBarDelegate::NeedElevation(InfoBarButton button) const {
 
 bool DefaultBrowserInfoBarDelegate::Accept() {
   action_taken_ = true;
-  UMA_HISTOGRAM_COUNTS("DefaultBrowserWarning.SetAsDefault", 1);
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,
-      base::Bind(base::IgnoreResult(&ShellIntegration::SetAsDefaultBrowser)));
+      base::Bind(&SetChromeAsDefaultBrowser, interactive_flow_required_));
+
   return true;
 }
 
@@ -132,14 +153,15 @@ bool DefaultBrowserInfoBarDelegate::Cancel() {
 }
 
 void CheckDefaultBrowserCallback() {
-  if (ShellIntegration::IsDefaultBrowser() ||
-      !ShellIntegration::CanSetAsDefaultBrowser()) {
-    return;
+  if (!ShellIntegration::IsDefaultBrowser()) {
+    ShellIntegration::DefaultWebClientSetPermission default_change_mode =
+        ShellIntegration::CanSetAsDefaultBrowser();
+
+    if (default_change_mode != ShellIntegration::SET_DEFAULT_NOT_ALLOWED) {
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+          base::Bind(&browser::internal::NotifyNotDefaultBrowserCallback));
+    }
   }
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&browser::internal::NotifyNotDefaultBrowserCallback));
 }
 
 }  // namespace
@@ -192,9 +214,12 @@ void NotifyNotDefaultBrowserCallback() {
   if (infobar_helper->infobar_count() > 0)
     return;
 
+  bool interactive_flow = ShellIntegration::CanSetAsDefaultBrowser() ==
+      ShellIntegration::SET_DEFAULT_INTERACTIVE;
   infobar_helper->AddInfoBar(
       new DefaultBrowserInfoBarDelegate(infobar_helper,
-                                        tab->profile()->GetPrefs()));
+                                        tab->profile()->GetPrefs(),
+                                        interactive_flow));
 }
 
 }  // namespace internal

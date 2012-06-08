@@ -58,6 +58,7 @@ class BrowserOptionsHandler
   // ShellIntegration::DefaultWebClientObserver implementation.
   virtual void SetDefaultWebClientUIState(
       ShellIntegration::DefaultWebClientUIState state) OVERRIDE;
+  virtual bool IsInteractiveSetDefaultPermitted() OVERRIDE;
 
   // TemplateURLServiceObserver implementation.
   virtual void OnTemplateURLServiceChanged() OVERRIDE;

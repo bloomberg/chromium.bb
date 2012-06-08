@@ -237,6 +237,15 @@ class ShellUtil {
                                 const string16& chrome_exe,
                                 bool elevate_if_not_admin);
 
+  // Shows to the user a system dialog where Chrome can be set as the
+  // default browser. This is intended for Windows 8 and above only.
+  // This is a blocking call.
+  //
+  // |dist| gives the type of browser distribution currently in use.
+  // |chrome_exe| The chrome.exe path to register as default browser.
+  static bool ShowMakeChromeDefaultSystemUI(BrowserDistribution* dist,
+                                            const string16& chrome_exe);
+
   // Make Chrome the default application for a protocol.
   // chrome_exe: The chrome.exe path to register as default browser.
   // protocol: The protocol to register as the default handler for.

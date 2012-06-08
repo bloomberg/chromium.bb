@@ -18,7 +18,8 @@
 
 using content::BrowserThread;
 
-bool ShellIntegration::CanSetAsDefaultProtocolClient() {
+ShellIntegration::DefaultWebClientSetPermission
+    ShellIntegration::CanSetAsDefaultProtocolClient() {
   // Allowed as long as the browser can become the operating system default
   // browser.
   return CanSetAsDefaultBrowser();
@@ -92,6 +93,13 @@ CommandLine ShellIntegration::CommandLineArgsForLauncher(
   return new_cmd_line;
 }
 
+#if !defined(OS_WIN)
+// static
+bool ShellIntegration::SetAsDefaultBrowserInteractive() {
+  return false;
+}
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 // ShellIntegration::DefaultWebClientWorker
 //
@@ -154,7 +162,7 @@ void ShellIntegration::DefaultWebClientWorker::CompleteCheckIsDefault(
 
 void ShellIntegration::DefaultWebClientWorker::ExecuteSetAsDefault() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  SetAsDefault();
+  SetAsDefault(observer_ && observer_->IsInteractiveSetDefaultPermitted());
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(
@@ -203,8 +211,19 @@ ShellIntegration::DefaultBrowserWorker::CheckIsDefault() {
   return ShellIntegration::IsDefaultBrowser();
 }
 
-void ShellIntegration::DefaultBrowserWorker::SetAsDefault() {
-  ShellIntegration::SetAsDefaultBrowser();
+void ShellIntegration::DefaultBrowserWorker::SetAsDefault(
+    bool interactive_permitted) {
+  switch (ShellIntegration::CanSetAsDefaultBrowser()) {
+    case ShellIntegration::SET_DEFAULT_UNATTENDED:
+      ShellIntegration::SetAsDefaultBrowser();
+      break;
+    case ShellIntegration::SET_DEFAULT_INTERACTIVE:
+      if (interactive_permitted)
+        ShellIntegration::SetAsDefaultBrowserInteractive();
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -225,6 +244,7 @@ ShellIntegration::DefaultProtocolClientWorker::CheckIsDefault() {
   return ShellIntegration::IsDefaultProtocolClient(protocol_);
 }
 
-void ShellIntegration::DefaultProtocolClientWorker::SetAsDefault() {
+void ShellIntegration::DefaultProtocolClientWorker::SetAsDefault(
+    bool interactive_permitted) {
   ShellIntegration::SetAsDefaultProtocolClient(protocol_);
 }

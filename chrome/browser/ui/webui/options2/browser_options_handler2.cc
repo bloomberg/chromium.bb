@@ -675,7 +675,8 @@ void BrowserOptionsHandler::CheckAutoLaunchCallback(
 
 void BrowserOptionsHandler::UpdateDefaultBrowserState() {
   // Check for side-by-side first.
-  if (!ShellIntegration::CanSetAsDefaultBrowser()) {
+  if (ShellIntegration::CanSetAsDefaultBrowser() ==
+          ShellIntegration::SET_DEFAULT_NOT_ALLOWED) {
     SetDefaultBrowserUIString(IDS_OPTIONS_DEFAULTBROWSER_SXS);
     return;
   }
@@ -740,6 +741,10 @@ void BrowserOptionsHandler::SetDefaultWebClientUIState(
     return;  // Still processing.
 
   SetDefaultBrowserUIString(status_string_id);
+}
+
+bool BrowserOptionsHandler::IsInteractiveSetDefaultPermitted() {
+  return true;  // This is UI so we can allow it.
 }
 
 void BrowserOptionsHandler::SetDefaultBrowserUIString(int status_string_id) {

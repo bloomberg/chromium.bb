@@ -7,9 +7,10 @@
 
 // TODO: crbug/115375 to track implementation for following methods.
 // static
-bool ShellIntegration::CanSetAsDefaultBrowser() {
+ShellIntegration::DefaultWebClientSetPermission
+    ShellIntegration::CanSetAsDefaultBrowser() {
   NOTIMPLEMENTED();
-  return false;
+  return SET_DEFAULT_NOT_ALLOWED;
 }
 
 // static

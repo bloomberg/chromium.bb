@@ -39,7 +39,8 @@ bool ShouldRemoveHandlersNotInOS() {
   // difference (http://crbug.com/88255).
   return false;
 #else
-  return ShellIntegration::CanSetAsDefaultProtocolClient();
+  return ShellIntegration::CanSetAsDefaultProtocolClient() !=
+      ShellIntegration::SET_DEFAULT_NOT_ALLOWED;
 #endif
 }
 

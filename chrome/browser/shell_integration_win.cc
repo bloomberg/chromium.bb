@@ -425,8 +425,15 @@ bool ActivateApplication(const string16& app_id) {
 
 }  // namespace
 
-bool ShellIntegration::CanSetAsDefaultBrowser() {
-  return BrowserDistribution::GetDistribution()->CanSetAsDefault();
+ShellIntegration::DefaultWebClientSetPermission
+    ShellIntegration::CanSetAsDefaultBrowser() {
+  if (!BrowserDistribution::GetDistribution()->CanSetAsDefault())
+    return SET_DEFAULT_NOT_ALLOWED;
+
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return SET_DEFAULT_INTERACTIVE;
+  else
+    return SET_DEFAULT_UNATTENDED;
 }
 
 bool ShellIntegration::SetAsDefaultBrowser() {
@@ -468,6 +475,23 @@ bool ShellIntegration::SetAsDefaultProtocolClient(const std::string& protocol) {
   }
 
   VLOG(1) << "Chrome registered as default handler for " << protocol << ".";
+  return true;
+}
+
+bool ShellIntegration::SetAsDefaultBrowserInteractive() {
+  FilePath chrome_exe;
+  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
+    NOTREACHED() << "Error getting app exe path";
+    return false;
+  }
+
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  if (!ShellUtil::ShowMakeChromeDefaultSystemUI(dist, chrome_exe.value())) {
+    LOG(ERROR) << "Failed to launch the set-default-browser Windows UI.";
+    return false;
+  }
+
+  VLOG(1) << "Set-as-default Windows UI triggered.";
   return true;
 }
 

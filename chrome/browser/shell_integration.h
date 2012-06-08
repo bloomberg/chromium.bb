@@ -23,16 +23,32 @@ class ShellIntegration {
   // false if this operation fails.
   static bool SetAsDefaultBrowser();
 
+  // Initiates an OS shell flow which (if followed by the user) should set
+  // Chrome as the default browser. Returns false if the flow cannot be
+  // initialized, if it is not supported (introduced for Windows 8) or if the
+  // user cancels the operation. This is a blocking call and requires a FILE
+  // thread.
+  static bool SetAsDefaultBrowserInteractive();
+
   // Sets Chrome as the default client application for the given protocol
   // (only for the current user). Returns false if this operation fails.
   static bool SetAsDefaultProtocolClient(const std::string& protocol);
 
-  // Returns true if the running browser can be set as the default browser.
-  static bool CanSetAsDefaultBrowser();
+  // In Windows 8 a browser can be made default-in-metro only in an interactive
+  // flow. We will distinguish between two types of permissions here to avoid
+  // forcing the user into UI interaction when this should not be done.
+  enum DefaultWebClientSetPermission {
+    SET_DEFAULT_NOT_ALLOWED = 0,
+    SET_DEFAULT_UNATTENDED,
+    SET_DEFAULT_INTERACTIVE,
+  };
 
-  // Returns true if the running browser can be set as the default client
-  // application for specific protocols.
-  static bool CanSetAsDefaultProtocolClient();
+  // Returns requirements for making the running browser the user's default.
+  static DefaultWebClientSetPermission CanSetAsDefaultBrowser();
+
+  // Returns requirements for making the running browser the user's default
+  // client application for specific protocols.
+  static DefaultWebClientSetPermission CanSetAsDefaultProtocolClient();
 
   // On Linux, it may not be possible to determine or set the default browser
   // on some desktop environments or configurations. So, we use this enum and
@@ -150,6 +166,9 @@ class ShellIntegration {
     // Observer classes that return true to OwnedByWorker are automatically
     // freed by the worker when they are no longer needed.
     virtual bool IsOwnedByWorker() { return false; }
+    // An observer can permit or decline set-as-default operation if it
+    // requires triggering user interaction.
+    virtual bool IsInteractiveSetDefaultPermitted() { return false; }
   };
 
   //  Helper objects that handle checking if Chrome is the default browser
@@ -185,7 +204,7 @@ class ShellIntegration {
     virtual DefaultWebClientState CheckIsDefault() = 0;
 
     // Function that sets Chrome as the default web client.
-    virtual void SetAsDefault() = 0;
+    virtual void SetAsDefault(bool interactive_permitted) = 0;
 
     // Function that handles performing the check on the file thread. This
     // function is posted as a task onto the file thread, where it performs
@@ -234,7 +253,7 @@ class ShellIntegration {
     virtual DefaultWebClientState CheckIsDefault() OVERRIDE;
 
     // Set Chrome as the default browser.
-    virtual void SetAsDefault() OVERRIDE;
+    virtual void SetAsDefault(bool interactive_permitted) OVERRIDE;
 
     DISALLOW_COPY_AND_ASSIGN(DefaultBrowserWorker);
   };
@@ -258,7 +277,7 @@ class ShellIntegration {
     virtual DefaultWebClientState CheckIsDefault() OVERRIDE;
 
     // Set Chrome as the default handler for this protocol.
-    virtual void SetAsDefault() OVERRIDE;
+    virtual void SetAsDefault(bool interactive_permitted) OVERRIDE;
 
     std::string protocol_;
 

@@ -10,16 +10,21 @@
 #include "chrome/common/chrome_version_info.h"
 #import "third_party/mozilla/NSWorkspace+Utils.h"
 
-bool ShellIntegration::CanSetAsDefaultBrowser() {
-  return chrome::VersionInfo::GetChannel() !=
-      chrome::VersionInfo::CHANNEL_CANARY;
+ShellIntegration::DefaultWebClientSetPermission
+    ShellIntegration::CanSetAsDefaultBrowser() {
+  if (chrome::VersionInfo::GetChannel() !=
+          chrome::VersionInfo::CHANNEL_CANARY) {
+    return SET_DEFAULT_UNATTENDED;
+  }
+
+  return SET_DEFAULT_NOT_ALLOWED;
 }
 
 // Sets Chromium as default browser to be used by the operating system. This
 // applies only for the current user. Returns false if this cannot be done, or
 // if the operation fails.
 bool ShellIntegration::SetAsDefaultBrowser() {
-  if (!CanSetAsDefaultBrowser())
+  if (CanSetAsDefaultBrowser() != SET_DEFAULT_UNATTENDED)
     return false;
 
   // We really do want the outer bundle here, not the main bundle since setting
@@ -39,7 +44,7 @@ bool ShellIntegration::SetAsDefaultProtocolClient(const std::string& protocol) {
   if (protocol.empty())
     return false;
 
-  if (!CanSetAsDefaultProtocolClient())
+  if (CanSetAsDefaultProtocolClient() != SET_DEFAULT_UNATTENDED)
     return false;
 
   // We really do want the main bundle here since it makes sense to set an

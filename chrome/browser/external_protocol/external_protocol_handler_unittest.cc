@@ -27,7 +27,7 @@ class FakeExternalProtocolHandlerWorker
     return os_state_;
   }
 
-  virtual void SetAsDefault() {}
+  virtual void SetAsDefault(bool interactive_permitted) {}
 
   ShellIntegration::DefaultWebClientState os_state_;
 };

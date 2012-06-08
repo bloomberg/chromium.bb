@@ -611,6 +611,23 @@ bool AnotherUserHasDefaultBrowser(BrowserDistribution* dist,
   return true;
 }
 
+// Launches the Windows 7 and Windows 8 dialog for picking the application to
+// handle the given protocol. Most importantly, this is used to set the default
+// handler for http (and, implicitly with it, https). In that case it is also
+// known as the 'how do you want to open webpages' dialog.
+// It is required that Chrome be already *registered* for the given protocol.
+bool LaunchSelectDefaultProtocolHandlerDialog(const wchar_t* protocol) {
+  DCHECK(protocol);
+  OPENASINFO open_as_info = {};
+  open_as_info.pcszFile = protocol;
+  open_as_info.oaifInFlags =
+      OAIF_URL_PROTOCOL | OAIF_FORCE_REGISTRATION | OAIF_REGISTER_EXT;
+  HRESULT hr = SHOpenWithDialog(NULL, &open_as_info);
+  DLOG_IF(WARNING, FAILED(hr)) << "Failed to set as default " << protocol
+      << " handler; hr=0x" << std::hex << hr;
+  return SUCCEEDED(hr);
+}
+
 // Launches the Windows 7 and Windows 8 application association dialog, which
 // is the only documented way to make a browser the default browser on
 // Windows 8.
@@ -945,6 +962,14 @@ bool ShellUtil::MakeChromeDefault(BrowserDistribution* dist,
   if (!dist->CanSetAsDefault())
     return false;
 
+  // Windows 8 does not permit making a browser default just like that.
+  // This process needs to be routed through the system's UI. Use
+  // ShowMakeChromeDefaultSystemUI instead (below).
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    NOTREACHED();
+    return false;
+  }
+
   ShellUtil::RegisterChromeBrowser(dist, chrome_exe, L"", elevate_if_not_admin);
 
   bool ret = true;
@@ -955,17 +980,7 @@ bool ShellUtil::MakeChromeDefault(BrowserDistribution* dist,
   if (ShellUtil::GetUserSpecificDefaultBrowserSuffix(dist, &app_suffix))
     app_name += app_suffix;
 
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
-    // On Windows 8, you can't set yourself as the default handler
-    // programatically. In other words IApplicationAssociationRegistration
-    // has been rendered useless. What you can do is to launch
-    // "Set Program Associations" section of the "Default Programs"
-    // control panel. This action does not require elevation and we
-    // don't get to control window activation. More info at:
-    // http://msdn.microsoft.com/en-us/library/cc144154(VS.85).aspx
-    return LaunchApplicationAssociationDialog(app_name.c_str());
-
-  } else if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
     // On Windows Vista and Win7 we still can set ourselves via the
     // the IApplicationAssociationRegistration interface.
     VLOG(1) << "Registering Chrome as default browser on Vista.";
@@ -1025,6 +1040,24 @@ bool ShellUtil::MakeChromeDefault(BrowserDistribution* dist,
   // file associations.
   SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, NULL, NULL);
   return ret;
+}
+
+bool ShellUtil::ShowMakeChromeDefaultSystemUI(BrowserDistribution* dist,
+                                              const string16& chrome_exe) {
+  DCHECK_GE(base::win::GetVersion(), base::win::VERSION_WIN8);
+  if (!dist->CanSetAsDefault())
+    return false;
+
+  if (!RegisterChromeBrowser(dist, chrome_exe, string16(), true))
+      return false;
+
+  // On Windows 8, you can't set yourself as the default handler
+  // programatically. In other words IApplicationAssociationRegistration
+  // has been rendered useless. What you can do is to launch
+  // "Set Program Associations" section of the "Default Programs"
+  // control panel, which is a mess, or pop the concise "How you want to open
+  // webpages?" dialog.  We choose the latter.
+  return LaunchSelectDefaultProtocolHandlerDialog(L"http");
 }
 
 bool ShellUtil::MakeChromeDefaultProtocolClient(BrowserDistribution* dist,

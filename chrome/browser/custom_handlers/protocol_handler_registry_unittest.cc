@@ -126,7 +126,7 @@ class FakeProtocolClientWorker
     }
   }
 
-  virtual void SetAsDefault() {}
+  virtual void SetAsDefault(bool interactive_permitted) {}
 
  private:
   bool force_failure_;

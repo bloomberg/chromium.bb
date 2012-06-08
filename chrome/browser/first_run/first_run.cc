@@ -375,8 +375,11 @@ void AutoImportPlatformCommon(
     ShowFirstRunDialog(profile);
   }
 
-  if (make_chrome_default)
+  if (make_chrome_default &&
+      ShellIntegration::CanSetAsDefaultBrowser() ==
+          ShellIntegration::SET_DEFAULT_UNATTENDED) {
     ShellIntegration::SetAsDefaultBrowser();
+  }
 
   // Display the first run bubble if there is a default search provider.
   TemplateURLService* template_url =
