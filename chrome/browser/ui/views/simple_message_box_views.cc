@@ -34,7 +34,6 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
 
   MessageBoxResult result() const { return result_; }
 
- private:
   virtual ~SimpleMessageBoxViews();
 
   // Overridden from views::DialogDelegate:
@@ -54,6 +53,7 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
   // Overridden from MessageLoop::Dispatcher:
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 
+ private:
   const string16 window_title_;
   const MessageBoxType type_;
   MessageBoxResult result_;
@@ -160,15 +160,19 @@ MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
   views::Widget::CreateWindowWithParent(dialog, parent)->Show();
 
 #if defined(USE_AURA)
-  aura::client::GetDispatcherClient(parent->GetRootWindow())->RunWithDispatcher(
-      dialog, parent, true);
+  // Use the widget's window itself so that the message loop
+  // exists when the dialog is closed by some other means than
+  // |Cancel| or |Accept|.
+  aura::Window* anchor = parent ?
+      parent : dialog->GetWidget()->GetNativeWindow();
+  aura::client::GetDispatcherClient(anchor->GetRootWindow())->
+      RunWithDispatcher(dialog, anchor, true);
 #else
   {
     MessageLoop::ScopedNestableTaskAllower allow(MessageLoopForUI::current());
     MessageLoopForUI::current()->RunWithDispatcher(dialog);
   }
 #endif
-
   return dialog->result();
 }
 
