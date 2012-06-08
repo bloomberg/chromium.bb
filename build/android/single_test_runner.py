@@ -197,6 +197,10 @@ class SingleTestRunner(BaseTestRunner):
           # GetWebKitRootDirFilePath() we're in a chrome working dir.
           'chrome/VERSION',
           ]
+    elif self.test_package.test_suite_basename == 'content_unittests':
+      return [
+          'webkit/data/dom_storage/webcore_test_database.localstorage',
+          ]
     return []
 
   def LaunchHelperToolsForTestSuite(self):
