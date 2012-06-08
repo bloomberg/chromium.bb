@@ -11,6 +11,7 @@ weston_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
 weston_LDADD = $(COMPOSITOR_LIBS) $(DLOPEN_LIBS) -lm ../shared/libshared.la
 
 weston_SOURCES =				\
+	git-version.h				\
 	log.c					\
 	log.h					\
 	compositor.c				\
@@ -29,6 +30,13 @@ weston_SOURCES =				\
 	matrix.h				\
 	weston-launch.h				\
 	weston-egl-ext.h
+
+git-version.h : .FORCE
+	echo "#define WESTON_SHA1 \"$(shell git --git-dir=$(top_srcdir)/.git show-ref --head --hash=20 HEAD)\"" > $@-new
+	cmp -s $@ $@-new || cp $@-new $@
+	rm $@-new
+
+.FORCE :
 
 if ENABLE_XWAYLAND
 SUBDIRS = xwayland
@@ -171,7 +179,8 @@ BUILT_SOURCES =					\
 	tablet-shell-protocol.c			\
 	tablet-shell-server-protocol.h		\
 	desktop-shell-protocol.c		\
-	desktop-shell-server-protocol.h
+	desktop-shell-server-protocol.h		\
+	git-version.h
 
 CLEANFILES = $(BUILT_SOURCES)
 
