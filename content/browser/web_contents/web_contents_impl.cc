@@ -429,8 +429,12 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       !command_line.HasSwitch(switches::kDisable3DAPIs) &&
       !command_line.HasSwitch(switches::kDisableExperimentalWebGL);
 
-  prefs.flash_3d_enabled = prefs.flash_stage3d_enabled =
-      GpuProcessHost::gpu_enabled();
+  prefs.flash_3d_enabled =
+      GpuProcessHost::gpu_enabled() &&
+      !command_line.HasSwitch(switches::kDisableFlash3d);
+  prefs.flash_stage3d_enabled =
+      GpuProcessHost::gpu_enabled() &&
+      !command_line.HasSwitch(switches::kDisableFlashStage3d);
 
   prefs.gl_multisampling_enabled =
       !command_line.HasSwitch(switches::kDisableGLMultisampling);
