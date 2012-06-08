@@ -2,6 +2,7 @@
   "name": "allow silent update",
   "version": "1.0",
   "manifest_version": 2,
-  "platform_app": true,
-  "background": {"scripts": ["background.js"]}
+  "app": {
+    "background": {"scripts": ["background.js"]}
+  }
 }

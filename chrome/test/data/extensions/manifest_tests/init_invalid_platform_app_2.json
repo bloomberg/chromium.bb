@@ -1,9 +1,10 @@
 {
   "name": "Platform Test",
-  "platform_app": true,
   "version": "1",
   "manifest_version": 2,
-  "background": {
-    // Platform apps must have a background page or scripts
+  "app": {
+    "background": {
+      // Platform apps must have a background page or scripts
+    }
   }
 }

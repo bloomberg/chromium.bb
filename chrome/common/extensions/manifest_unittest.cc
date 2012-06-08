@@ -134,23 +134,17 @@ TEST_F(ManifestTest, ExtensionTypes) {
   MutateManifest(
       &manifest, keys::kTheme, NULL);
 
-  // Platform app.
-  MutateManifest(
-      &manifest, keys::kPlatformApp, new DictionaryValue());
-  AssertType(manifest.get(), Extension::TYPE_EXTENSION);  // must be boolean
-  MutateManifest(
-      &manifest, keys::kPlatformApp, Value::CreateBooleanValue(false));
-  AssertType(manifest.get(), Extension::TYPE_EXTENSION);  // must be true
-  MutateManifest(
-      &manifest, keys::kPlatformApp, Value::CreateBooleanValue(true));
-  AssertType(manifest.get(), Extension::TYPE_PLATFORM_APP);
-  MutateManifest(
-      &manifest, keys::kPlatformApp, NULL);
-
   // Packaged app.
   MutateManifest(
       &manifest, keys::kApp, new DictionaryValue());
   AssertType(manifest.get(), Extension::TYPE_PACKAGED_APP);
+
+  // Platform app.
+  MutateManifest(
+      &manifest, keys::kPlatformAppBackground, new DictionaryValue());
+  AssertType(manifest.get(), Extension::TYPE_PLATFORM_APP);
+  MutateManifest(
+      &manifest, keys::kPlatformAppBackground, NULL);
 
   // Hosted app.
   MutateManifest(
@@ -188,12 +182,12 @@ TEST_F(ManifestTest, RestrictedKeys) {
   EXPECT_TRUE(manifest->Get(keys::kPageAction, &output));
 
   MutateManifest(
-      &manifest, keys::kPlatformApp, Value::CreateBooleanValue(true));
+      &manifest, keys::kPlatformAppBackground, new DictionaryValue());
   AssertType(manifest.get(), Extension::TYPE_PLATFORM_APP);
   EXPECT_FALSE(manifest->HasKey(keys::kPageAction));
   EXPECT_FALSE(manifest->Get(keys::kPageAction, &output));
   MutateManifest(
-      &manifest, keys::kPlatformApp, NULL);
+      &manifest, keys::kPlatformAppBackground, NULL);
 
   // "commands" is restricted to manifest_version >= 2.
   MutateManifest(

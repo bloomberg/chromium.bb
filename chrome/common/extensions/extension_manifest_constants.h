@@ -93,7 +93,9 @@ namespace extension_manifest_keys {
   extern const char kPageActionPopupPath[];
   extern const char kPageActions[];
   extern const char kPermissions[];
-  extern const char kPlatformApp[];
+  extern const char kPlatformAppBackground[];
+  extern const char kPlatformAppBackgroundPage[];
+  extern const char kPlatformAppBackgroundScripts[];
   extern const char kPlugins[];
   extern const char kPluginsPath[];
   extern const char kPluginsPublic[];

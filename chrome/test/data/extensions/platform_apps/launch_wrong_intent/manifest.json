@@ -1,6 +1,5 @@
 {
   "name": "Platform App Launch Test",
-  "platform_app": true,
   "version": "1",
   "manifest_version": 2,
   "intents": {
@@ -12,7 +11,9 @@
     }
   },
   "permissions": ["experimental"],
-  "background": {
-    "scripts": ["test.js"]
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
   }
 }

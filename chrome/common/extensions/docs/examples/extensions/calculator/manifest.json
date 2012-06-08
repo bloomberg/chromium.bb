@@ -3,16 +3,17 @@
   "description": "Add numbers. Now includes subtraction!",
   "manifest_version": 2,
   "version": "1.0.1",
-  "background": {
-    "scripts": ["main.js"]
+  "app": {
+    "background": {
+      "scripts": ["main.js"]
+    }
   },
-  "platform_app": true,
   "icons": {
     "16": "icon_16.png",
     "128": "icon_128.png"
   },
   "permissions": [
     "experimental",
-    "windows"
+    "appWindow"
   ]
 }

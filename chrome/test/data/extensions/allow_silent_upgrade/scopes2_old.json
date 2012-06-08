@@ -6,6 +6,7 @@
     "client_id": "my-client-id",
     "scopes": ["scope1", "scope2"]
   },
-  "platform_app": true,
-  "background": {"scripts": ["background.js"]}
+  "app": {
+    "background": {"scripts": ["background.js"]}
+  }
 }

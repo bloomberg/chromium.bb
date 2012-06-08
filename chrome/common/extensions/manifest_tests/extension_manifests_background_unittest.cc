@@ -68,11 +68,9 @@ TEST_F(ExtensionManifestTest, BackgroundPage) {
   manifest->SetInteger(keys::kManifestVersion, 2);
   Feature* feature = SimpleFeatureProvider::GetManifestFeatures()->
       GetFeature("background_page");
-  extension = LoadAndExpectSuccess(Manifest(manifest.get(), ""));
-  ASSERT_TRUE(extension);
-  ASSERT_EQ(1u, extension->install_warnings().size());
-  EXPECT_EQ(feature->GetErrorMessage(Feature::INVALID_MAX_MANIFEST_VERSION),
-            extension->install_warnings()[0]);
+  LoadAndExpectWarning(
+      Manifest(manifest.get(), ""),
+      feature->GetErrorMessage(Feature::INVALID_MAX_MANIFEST_VERSION));
 }
 
 TEST_F(ExtensionManifestTest, BackgroundAllowNoJsAccess) {

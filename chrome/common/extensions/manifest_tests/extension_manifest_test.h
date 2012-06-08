@@ -73,6 +73,20 @@ class ExtensionManifestTest : public testing::Test {
           extensions::Extension::INTERNAL,
       int flags = extensions::Extension::NO_FLAGS);
 
+  scoped_refptr<extensions::Extension> LoadAndExpectWarning(
+      const Manifest& manifest,
+      const std::string& expected_error,
+      extensions::Extension::Location location =
+          extensions::Extension::INTERNAL,
+      int flags = extensions::Extension::NO_FLAGS);
+
+  scoped_refptr<extensions::Extension> LoadAndExpectWarning(
+      char const* manifest_name,
+      const std::string& expected_error,
+      extensions::Extension::Location location =
+          extensions::Extension::INTERNAL,
+      int flags = extensions::Extension::NO_FLAGS);
+
   void VerifyExpectedError(extensions::Extension* extension,
                            const std::string& name,
                            const std::string& error,
@@ -92,9 +106,13 @@ class ExtensionManifestTest : public testing::Test {
 
   void AddPattern(URLPatternSet* extent, const std::string& pattern);
 
-  // used to differentiate between calls to LoadAndExpectError and
-  // LoadAndExpectSuccess via function RunTestcases
-  enum EXPECT_TYPE { EXPECT_TYPE_ERROR, EXPECT_TYPE_SUCCESS };
+  // used to differentiate between calls to LoadAndExpectError,
+  // LoadAndExpectWarning and LoadAndExpectSuccess via function RunTestcases.
+  enum EXPECT_TYPE {
+    EXPECT_TYPE_ERROR,
+    EXPECT_TYPE_WARNING,
+    EXPECT_TYPE_SUCCESS
+  };
 
   struct Testcase {
     std::string manifest_filename_;

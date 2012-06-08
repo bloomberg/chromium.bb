@@ -675,14 +675,13 @@
     },
     {
       "api_calls": [
-        "chrome.windows.create"
+        "chrome.appWindow.create"
       ],
       "crx_path": null,
       "description": "Add numbers. Now includes subtraction!",
       "features": [
-        "background_page",
-        "experimental",
-        "windows"
+        "appWindow",
+        "experimental"
       ],
       "icon": "icon_128.png",
       "id": "3fb3045783163c0eaaf0d0ce139f254502192a92",
@@ -690,7 +689,7 @@
       "packaged_app": false,
       "path": "examples/extensions/calculator/",
       "protocols": [],
-      "search_string": "CALCULATOR (PLATFORM APP) ADD NUMBERS. NOW INCLUDES SUBTRACTION! BACKGROUND_PAGE EXPERIMENTAL WINDOWS CHROME.WINDOWS.CREATE",
+      "search_string": "CALCULATOR (PLATFORM APP) ADD NUMBERS. NOW INCLUDES SUBTRACTION! APPWINDOW EXPERIMENTAL CHROME.APPWINDOW.CREATE",
       "source_files": [
         "calculator.html",
         "controller.js",
@@ -701,7 +700,7 @@
         "style.css",
         "view.js"
       ],
-      "source_hash": "e7718b346a126dd6511553b51056b53732f664cf",
+      "source_hash": "9ffcc4ae67840e1ac102c0dd1922dac92e6bf3f8",
       "zip_path": "examples/extensions/calculator.zip"
     },
     {

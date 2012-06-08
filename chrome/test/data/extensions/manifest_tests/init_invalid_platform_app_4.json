@@ -6,5 +6,9 @@
     "background": {
       "scripts": ["background.js"]
     }
+  },
+  // "background.scripts" outside of "app"
+  "background": {
+    "scripts": ["background.js"]
   }
 }

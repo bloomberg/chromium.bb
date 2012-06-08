@@ -7,6 +7,11 @@
     "channel": "stable",
     "extension_types": ["packaged_app", "hosted_app", "platform_app"]
   },
+  "app.background": {
+    "channel": "stable",
+    "extension_types": ["platform_app"],
+    "min_manifest_version": 2
+  },
   "app.launch": {
     "channel": "stable",
     "extension_types": ["packaged_app", "hosted_app"]
@@ -20,7 +25,8 @@
   "background": {
     "channel": "stable",
     "extension_types": [
-      "extension", "packaged_app", "hosted_app", "platform_app"
+      // Platform apps specify their background page via app.background.
+      "extension", "packaged_app", "hosted_app"
     ]
   },
   "background.persistent": {
@@ -33,7 +39,7 @@
   "background_page": {
     "channel": "stable",
     "extension_types": [
-      "extension", "packaged_app", "hosted_app", "platform_app"
+      "extension", "packaged_app", "hosted_app"
     ],
     "max_manifest_version": 1
   },
@@ -175,11 +181,6 @@
     "extension_types": [
       "extension", "packaged_app", "hosted_app", "platform_app"
     ]
-  },
-  "platform_app": {
-    "channel": "stable",
-    "extension_types": ["platform_app"],
-    "min_manifest_version": 2
   },
   "plugins": {
     "channel": "stable",

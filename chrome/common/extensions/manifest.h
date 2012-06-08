@@ -52,6 +52,7 @@ class Manifest {
   // These access the wrapped manifest value, returning false when the property
   // does not exist or if the manifest type can't access it.
   bool HasKey(const std::string& key) const;
+  bool HasPath(const std::string& path) const;
   bool Get(const std::string& path, base::Value** out_value) const;
   bool GetBoolean(const std::string& path, bool* out_value) const;
   bool GetInteger(const std::string& path, int* out_value) const;

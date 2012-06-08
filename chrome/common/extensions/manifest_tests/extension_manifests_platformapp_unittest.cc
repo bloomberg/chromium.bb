@@ -24,20 +24,35 @@ TEST_F(ExtensionManifestTest, PlatformApps) {
       LoadAndExpectSuccess("init_valid_platform_app.json");
   EXPECT_TRUE(extension->is_storage_isolated());
 
-  extension = LoadAndExpectSuccess("init_invalid_platform_app_1.json");
-  ASSERT_TRUE(extension);
-  ASSERT_EQ(1u, extension->install_warnings().size());
-  EXPECT_EQ("'app.launch' is not allowed for specified package type "
-                "(theme, app, etc.).",
-            extension->install_warnings()[0]);
+  LoadAndExpectWarning(
+      "init_invalid_platform_app_1.json",
+      "'app.launch' is not allowed for specified package type "
+          "(theme, app, etc.).");
 
-  LoadAndExpectError(
-      "init_invalid_platform_app_2.json",
-      extension_manifest_errors::kBackgroundRequiredForPlatformApps);
+  Testcase error_testcases[] = {
+    Testcase("init_invalid_platform_app_2.json",
+        errors::kBackgroundRequiredForPlatformApps),
+    Testcase("init_invalid_platform_app_3.json",
+        errors::kPlatformAppNeedsManifestVersion2),
+  };
+  RunTestcases(error_testcases, arraysize(error_testcases), EXPECT_TYPE_ERROR);
 
-  LoadAndExpectError(
-      "init_invalid_platform_app_3.json",
-      extension_manifest_errors::kPlatformAppNeedsManifestVersion2);
+  Testcase warning_testcases[] = {
+    Testcase(
+        "init_invalid_platform_app_1.json",
+        "'app.launch' is not allowed for specified package type "
+            "(theme, app, etc.)."),
+    Testcase(
+        "init_invalid_platform_app_4.json",
+        "'background' is not allowed for specified package type "
+            "(theme, app, etc.)."),
+    Testcase(
+        "init_invalid_platform_app_5.json",
+        "'background' is not allowed for specified package type "
+            "(theme, app, etc.).")
+  };
+  RunTestcases(
+      warning_testcases, arraysize(warning_testcases), EXPECT_TYPE_WARNING);
 }
 
 TEST_F(ExtensionManifestTest, CertainApisRequirePlatformApps) {

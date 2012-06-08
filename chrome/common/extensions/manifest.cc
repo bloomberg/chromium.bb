@@ -26,21 +26,17 @@ Manifest::Manifest(Extension::Location location,
       type_(Extension::TYPE_UNKNOWN) {
   if (value_->HasKey(keys::kTheme)) {
     type_ = Extension::TYPE_THEME;
-  } else {
-    bool is_platform_app = false;
-    if (value_->GetBoolean(keys::kPlatformApp, &is_platform_app) &&
-        is_platform_app) {
+  } else if (value_->HasKey(keys::kApp)) {
+    if (value_->Get(keys::kWebURLs, NULL) ||
+        value_->Get(keys::kLaunchWebURL, NULL)) {
+      type_ = Extension::TYPE_HOSTED_APP;
+    } else if (value_->Get(keys::kPlatformAppBackground, NULL)) {
       type_ = Extension::TYPE_PLATFORM_APP;
-    } else if (value_->HasKey(keys::kApp)) {
-      if (value_->Get(keys::kWebURLs, NULL) ||
-          value_->Get(keys::kLaunchWebURL, NULL)) {
-        type_ = Extension::TYPE_HOSTED_APP;
-      } else {
-        type_ = Extension::TYPE_PACKAGED_APP;
-      }
     } else {
-      type_ = Extension::TYPE_EXTENSION;
+      type_ = Extension::TYPE_PACKAGED_APP;
     }
+  } else {
+    type_ = Extension::TYPE_EXTENSION;
   }
   CHECK_NE(type_, Extension::TYPE_UNKNOWN);
 }
@@ -91,6 +87,11 @@ void Manifest::ValidateManifest(std::string* error,
 
 bool Manifest::HasKey(const std::string& key) const {
   return CanAccessKey(key) && value_->HasKey(key);
+}
+
+bool Manifest::HasPath(const std::string& path) const {
+  Value* ignored = NULL;
+  return CanAccessPath(path) && value_->Get(path, &ignored);
 }
 
 bool Manifest::Get(

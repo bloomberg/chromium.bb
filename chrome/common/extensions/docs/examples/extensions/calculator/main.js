@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 
 chrome.experimental.app.onLaunched.addListener(function() {
-  chrome.windows.create({
-      url: 'calculator.html',
-      type: 'shell',
+  chrome.appWindow.create('calculator.html', {
       width: 217,
       height: 223
   });

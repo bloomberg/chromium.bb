@@ -753,7 +753,11 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadOfflineEnabled(string16* error);
   bool LoadOptionsPage(string16* error);
   bool LoadBackgroundScripts(string16* error);
+  bool LoadBackgroundScripts(const std::string& key, string16* error);
   bool LoadBackgroundPage(const ExtensionAPIPermissionSet& api_permissions,
+                          string16* error);
+  bool LoadBackgroundPage(const std::string& key,
+                          const ExtensionAPIPermissionSet& api_permissions,
                           string16* error);
   bool LoadBackgroundPersistent(
       const ExtensionAPIPermissionSet& api_permissions,

@@ -116,6 +116,30 @@ scoped_refptr<Extension> ExtensionManifestTest::LoadAndExpectSuccess(
   return LoadAndExpectSuccess(Manifest(manifest_name), location, flags);
 }
 
+scoped_refptr<Extension> ExtensionManifestTest::LoadAndExpectWarning(
+    const Manifest& manifest,
+    const std::string& expected_warning,
+    Extension::Location location,
+    int flags) {
+  std::string error;
+  scoped_refptr<Extension> extension =
+      LoadExtension(manifest, &error, location, flags);
+  EXPECT_TRUE(extension) << manifest.name();
+  EXPECT_EQ("", error) << manifest.name();
+  EXPECT_EQ(1u, extension->install_warnings().size());
+  EXPECT_EQ(expected_warning, extension->install_warnings()[0]);
+  return extension;
+}
+
+scoped_refptr<Extension> ExtensionManifestTest::LoadAndExpectWarning(
+    char const* manifest_name,
+    const std::string& expected_warning,
+    Extension::Location location,
+    int flags) {
+  return LoadAndExpectWarning(
+      Manifest(manifest_name), expected_warning, location, flags);
+}
+
 void ExtensionManifestTest::VerifyExpectedError(
     Extension* extension,
     const std::string& name,
@@ -148,7 +172,6 @@ void ExtensionManifestTest::LoadAndExpectError(
   return LoadAndExpectError(
       Manifest(manifest_name), expected_error, location, flags);
 }
-
 
 void ExtensionManifestTest::AddPattern(URLPatternSet* extent,
                                        const std::string& pattern) {
@@ -199,6 +222,14 @@ void ExtensionManifestTest::RunTestcases(const Testcase* testcases,
                            testcases[i].expected_error_,
                            testcases[i].location_,
                            testcases[i].flags_);
+      }
+      break;
+    case EXPECT_TYPE_WARNING:
+      for (size_t i = 0; i < num_testcases; ++i) {
+        LoadAndExpectWarning(testcases[i].manifest_filename_.c_str(),
+                             testcases[i].expected_error_,
+                             testcases[i].location_,
+                             testcases[i].flags_);
       }
       break;
     case EXPECT_TYPE_SUCCESS:

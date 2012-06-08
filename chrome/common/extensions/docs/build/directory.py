@@ -749,10 +749,12 @@ class Sample(dict):
     return has_b_popup or has_p_popup
 
   def is_hosted_app(self):
-    """ Returns true if the manifest has an app but not a local_path."""
+    """ Returns true if the manifest has an app but not a local_path (that's a
+    packaged app) nor a background (that's a platform app)."""
     return (self._manifest.has_key('app') and
             (not self._manifest['app'].has_key('launch') or
-             not self._manifest['app']['launch'].has_key('local_path')))
+             not self._manifest['app']['launch'].has_key('local_path')) and
+            not self._manifest['app'].has_key('background'))
 
   def is_packaged_app(self):
     """ Returns true if the manifest has an app/launch/local_path section."""

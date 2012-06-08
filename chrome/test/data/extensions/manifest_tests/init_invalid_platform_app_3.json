@@ -1,9 +1,10 @@
 {
   "name": "Platform Test",
-  "platform_app": true,
   "version": "1",
-  "background": {
-    "scripts": ["background.js"]
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
   }
   // "manifest_version": 2 is required
 }

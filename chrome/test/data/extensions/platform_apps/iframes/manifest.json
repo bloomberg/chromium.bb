@@ -1,14 +1,15 @@
 {
   "name": "Platform App Test: local iframes are allowed",
-  "platform_app": true,
   "version": "1",
   "manifest_version": 2,
   "permissions": [
     "experimental",
     "appWindow"
   ],
-  "background": {
-    "scripts": ["test.js"]
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
   },
   // Attempt to specify a Content Security Policy that is more relaxed than the
   // default (would allow remote iframes). It should be ignored.

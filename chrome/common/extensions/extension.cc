@@ -1593,9 +1593,7 @@ bool Extension::LoadWebAccessibleResources(string16* error) {
 }
 
 bool Extension::LoadSandboxedPages(string16* error) {
-  // Can't use HasKey, since it doesn't do path expansion.
-  Value* ignored = NULL;
-  if (!manifest_->Get(keys::kSandboxedPages, &ignored))
+  if (!manifest_->HasPath(keys::kSandboxedPages))
     return true;
 
   ListValue* list_value = NULL;
@@ -1615,7 +1613,7 @@ bool Extension::LoadSandboxedPages(string16* error) {
     sandboxed_pages_.insert(relative_path);
   }
 
-  if (manifest_->Get(keys::kSandboxedPagesCSP, &ignored)) {
+  if (manifest_->HasPath(keys::kSandboxedPagesCSP)) {
     if (!manifest_->GetString(
         keys::kSandboxedPagesCSP, &sandboxed_pages_content_security_policy_)) {
       *error = ASCIIToUTF16(errors::kInvalidSandboxedPagesCSP);
@@ -1719,8 +1717,16 @@ bool Extension::LoadOptionsPage(string16* error) {
 }
 
 bool Extension::LoadBackgroundScripts(string16* error) {
+  if (is_platform_app()) {
+    return LoadBackgroundScripts(keys::kPlatformAppBackgroundScripts, error);
+  }
+
+  return LoadBackgroundScripts(keys::kBackgroundScripts, error);
+}
+
+bool Extension::LoadBackgroundScripts(const std::string& key, string16* error) {
   Value* background_scripts_value = NULL;
-  if (!manifest_->Get(keys::kBackgroundScripts, &background_scripts_value))
+  if (!manifest_->Get(key, &background_scripts_value))
     return true;
 
   CHECK(background_scripts_value);
@@ -1747,12 +1753,32 @@ bool Extension::LoadBackgroundScripts(string16* error) {
 bool Extension::LoadBackgroundPage(
     const ExtensionAPIPermissionSet& api_permissions,
     string16* error) {
-  base::Value* background_page_value = NULL;
-  if (!manifest_->Get(keys::kBackgroundPage, &background_page_value))
-    manifest_->Get(keys::kBackgroundPageLegacy, &background_page_value);
+  if (is_platform_app()) {
+    return LoadBackgroundPage(
+        keys::kPlatformAppBackgroundPage, api_permissions, error);
+  }
 
-  if (!background_page_value)
+  if (!LoadBackgroundPage(keys::kBackgroundPage, api_permissions, error))
+    return false;
+  if (background_url_.is_empty())
+    return LoadBackgroundPage(
+        keys::kBackgroundPageLegacy, api_permissions, error);
+  return true;
+}
+
+bool Extension::LoadBackgroundPage(
+    const std::string& key,
+    const ExtensionAPIPermissionSet& api_permissions,
+    string16* error) {
+  base::Value* background_page_value = NULL;
+  if (!manifest_->Get(key, &background_page_value))
     return true;
+
+  if (!background_scripts_.empty()) {
+    *error = ASCIIToUTF16(errors::kInvalidBackgroundCombination);
+    return false;
+  }
+
 
   std::string background_str;
   if (!background_page_value->GetAsString(&background_str)) {
@@ -1760,32 +1786,27 @@ bool Extension::LoadBackgroundPage(
     return false;
   }
 
-  if (!background_scripts_.empty()) {
-    *error = ASCIIToUTF16(errors::kInvalidBackgroundCombination);
-    return false;
-  }
-
   if (is_hosted_app()) {
+    background_url_ = GURL(background_str);
+
     // Make sure "background" permission is set.
     if (!api_permissions.count(ExtensionAPIPermission::kBackground)) {
       *error = ASCIIToUTF16(errors::kBackgroundPermissionNeeded);
       return false;
     }
     // Hosted apps require an absolute URL.
-    GURL bg_page(background_str);
-    if (!bg_page.is_valid()) {
+    if (!background_url_.is_valid()) {
       *error = ASCIIToUTF16(errors::kInvalidBackgroundInHostedApp);
       return false;
     }
 
-    if (!(bg_page.SchemeIs("https") ||
+    if (!(background_url_.SchemeIs("https") ||
           (CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kAllowHTTPBackgroundPage) &&
-           bg_page.SchemeIs("http")))) {
+           background_url_.SchemeIs("http")))) {
       *error = ASCIIToUTF16(errors::kInvalidBackgroundInHostedApp);
       return false;
     }
-    background_url_ = bg_page;
   } else {
     background_url_ = GetResourceURL(background_str);
   }
