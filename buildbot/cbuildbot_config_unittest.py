@@ -268,6 +268,18 @@ class CBuildBotTest(mox.MoxTestBase):
             'As this is the %s branch, all release configs that are being used '
             'must end in %s.' % (branch, tracking_branch, branch))
 
+  def testBuildTests(self):
+    """Verify that we don't try to use tests without building them."""
+
+    for build_name, config in cbuildbot_config.config.iteritems():
+      if not config['build_tests']:
+        self.assertFalse('factory_test' in config['images'],
+            'Config %s builds factory_test without build_tests.' % build_name)
+        self.assertFalse('test' in config['images'],
+            'Config %s builds test image without build_tests.' % build_name)
+        for flag in ('vm_tests', 'hw_tests', 'upload_hw_test_artifacts'):
+          self.assertFalse(config[flag],
+              'Config %s set %s without build_tests.' % (build_name, flag))
 
 if __name__ == '__main__':
   unittest.main()

@@ -968,29 +968,44 @@ _arm_release.add_config('arm-ironhide-release',
 # end in -factory or -firmware suffixes.
 
 _factory_release = _release.derive(
-  vm_tests=None,
+  prebuilts=False,
+  push_image=False,
+  upload_hw_test_artifacts=False,
 )
 
 _firmware_release = _release.derive(
+  images=['base'],
   push_image=False,
-  uprev=True,
-  overlays=constants.BOTH_OVERLAYS,
   build_tests=False,
   unittests=False,
   vm_tests=None,
   prebuilts=False,
+  upload_hw_test_artifacts=False,
 )
 
-# Examples:
-#_firmware_release.add_config('x86-mario-firmware',
-#  boards=['x86-mario'],
-#)
+# This is an example firmware branch configuration for x86.
+# Modify it to match your firmware branch.
+_firmware_release.add_config('x86-mario-firmware',
+  boards=['x86-mario'],
+)
 
-#_factory_release.add_config('x86-mario-factory',
-#  boards=['x86-mario'],
-#)
+# This is an example firmware branch configuration for arm.
+# Modify it to match your firmware branch.
+_firmware_release.add_config('daisy-firmware',
+  arm,
+  boards=['daisy'],
+)
 
+# This is an example factory branch configuration for x86.
+# Modify it to match your factory branch.
+_factory_release.add_config('x86-mario-factory',
+  boards=['x86-mario'],
+)
+
+# This is an example factory branch configuration for arm.
+# Modify it to match your factory branch.
 _factory_release.add_config('daisy-factory',
+  arm,
   boards=['daisy'],
 )
 
