@@ -1,4 +1,16 @@
 {
+  "google-talk": {
+    "mime_types": [
+    ],
+    "versions": [
+      {
+        "version": "0",
+        "status": "up_to_date",
+        "comment": "'Google Talk Plugin' and 'Google Talk Plugin Video Accelerator' use two completely different versioning schemes, so we can't define a minimum version."
+      }
+    ],
+    "name": "Google Talk"
+  },
   "java-runtime-environment": {
     "mime_types": [
       "application/x-java-applet",

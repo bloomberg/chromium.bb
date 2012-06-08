@@ -81,7 +81,6 @@ PluginInstaller* PluginFinder::FindPlugin(const std::string& mime_type,
     }
     std::string language_str;
     bool success = plugin->GetString("lang", &language_str);
-    DCHECK(success);
     if (language_str != language)
       continue;
     ListValue* mime_types = NULL;
@@ -123,7 +122,6 @@ PluginInstaller* PluginFinder::CreateInstaller(
   DCHECK(!installers_[identifier]);
   std::string url;
   bool success = plugin_dict->GetString("url", &url);
-  DCHECK(success);
   std::string help_url;
   plugin_dict->GetString("help_url", &help_url);
   string16 name;

@@ -22,8 +22,10 @@ TEST(PluginFinderTest, JsonSyntax) {
     ASSERT_TRUE(plugin_it.value().GetAsDictionary(&plugin));
     std::string dummy_str;
     bool dummy_bool;
-    EXPECT_TRUE(plugin->GetString("lang", &dummy_str));
-    EXPECT_TRUE(plugin->GetString("url", &dummy_str));
+    if (plugin->HasKey("lang"))
+      EXPECT_TRUE(plugin->GetString("lang", &dummy_str));
+    if (plugin->HasKey("url"))
+      EXPECT_TRUE(plugin->GetString("url", &dummy_str));
     EXPECT_TRUE(plugin->GetString("name", &dummy_str));
     if (plugin->HasKey("help_url"))
       EXPECT_TRUE(plugin->GetString("help_url", &dummy_str));

@@ -510,6 +510,7 @@ class PrerenderBrowserTest : public InProcessBrowserTest {
         switches::kExtraPluginDir,
         app_dir.Append(FILE_PATH_LITERAL("plugins")));
 #endif
+    command_line->AppendSwitch(switches::kAlwaysAuthorizePlugins);
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {

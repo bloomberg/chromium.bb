@@ -122,6 +122,12 @@ class PluginServiceTest : public InProcessBrowserTest {
     command_line->AppendSwitchPath(switches::kExtraPluginDir,
                                    browser_directory.AppendASCII("plugins"));
 #endif
+    // TODO(jam): since these plugin tests are running under Chrome, we need to
+    // tell it to disable its security features for old plugins. Once this is
+    // running under content_browsertests, these flags won't be needed.
+    // http://crbug.com/90448
+    // switches::kAlwaysAuthorizePlugins
+    command_line->AppendSwitch("always-authorize-plugins");
   }
 };
 
@@ -177,10 +183,7 @@ void QuitUIMessageLoopFromIOThread() {
 }
 
 void OpenChannelAndThenCancel(PluginProcessHost::Client* client) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  // Start opening the channel
-  PluginServiceImpl::GetInstance()->OpenChannelToNpapiPlugin(
-      0, 0, GURL(), GURL(), kNPAPITestPluginMimeType, client);
+  OpenChannel(client);
   // Immediately cancel it. This is guaranteed to work since PluginService needs
   // to consult its filter on the FILE thread.
   PluginServiceImpl::GetInstance()->CancelOpenChannelToNpapiPlugin(client);

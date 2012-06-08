@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,6 +33,12 @@ class PluginDataRemoverTest : public InProcessBrowserTest,
     command_line->AppendSwitchPath(switches::kExtraPluginDir,
                                    browser_directory.AppendASCII("plugins"));
 #endif
+    // TODO(jam): since these plugin tests are running under Chrome, we need to
+    // tell it to disable its security features for old plugins. Once this is
+    // running under content_browsertests, these flags won't be needed.
+    // http://crbug.com/90448
+    // switches::kAlwaysAuthorizePlugins
+    command_line->AppendSwitch("always-authorize-plugins");
   }
 };
 
