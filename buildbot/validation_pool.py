@@ -277,7 +277,6 @@ class PatchSeries(object):
             changes_that_failed_to_apply_to_tot.add(
                 MarkChangeFailedToT(change))
 
-          break
         except cros_patch.PatchException, e:
           changes_that_failed_to_apply_to_tot.add(MarkChangeFailedToT(change))
         else:
@@ -285,6 +284,8 @@ class PatchSeries(object):
           changes_applied.add(change)
           changes_list.append(change)
           cros_build_lib.PrintBuildbotLink(str(change), change.url)
+          continue
+        break
 
     logging.debug('Done investigating changes.  Applied %s',
                   ' '.join([c.id for c in changes_list]))
