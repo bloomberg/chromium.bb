@@ -33,8 +33,8 @@ namespace {
 const SkColor kInvalidColorIdColor = SkColorSetRGB(255, 0, 128);
 // Dialogs:
 const SkColor kDialogBackgroundColor = SkColorSetRGB(200, 200, 200);
-// FocusableBorder (should be unused on Win):
-const SkColor kFocusedBorderColor= SkColorSetRGB(0x4D, 0x90, 0xFE);
+// FocusableBorder:
+const SkColor kFocusedBorderColor = SkColorSetRGB(0x4D, 0x90, 0xFE);
 const SkColor kUnfocusedBorderColor = SkColorSetRGB(0xD9, 0xD9, 0xD9);
 // TextButton:
 const SkColor kTextButtonBackgroundColor = SkColorSetRGB(0xde, 0xde, 0xde);
@@ -384,6 +384,12 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
       // TODO(benrg): Should this use the new Windows theme functions? The old
       // code in DialogClientView::OnPaint used GetSysColor(COLOR_3DFACE).
       return WinColorToSkColor(GetSysColor(COLOR_3DFACE));
+
+    // FocusableBorder
+    case kColorId_FocusedBorderColor:
+      return kFocusedBorderColor;
+    case kColorId_UnfocusedBorderColor:
+      return kUnfocusedBorderColor;
 
     // TextButton
     case kColorId_TextButtonBackgroundColor:

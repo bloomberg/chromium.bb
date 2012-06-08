@@ -51,6 +51,11 @@
 #include "ui/views/widget/widget_hwnd_utils.h"
 #include "ui/views/window/native_frame_view.h"
 
+#if !defined(USE_AURA)
+#include "base/command_line.h"
+#include "ui/base/ui_base_switches.h"
+#endif
+
 #pragma comment(lib, "dwmapi.lib")
 
 // From msdn:
@@ -668,13 +673,14 @@ bool NativeWidgetWin::HasCapture() const {
 }
 
 InputMethod* NativeWidgetWin::CreateInputMethod() {
-#if defined(USE_AURA)
+#if !defined(USE_AURA)
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(switches::kEnableViewsTextfield))
+    return NULL;
+#endif
   InputMethod* input_method = new InputMethodWin(this);
   input_method->Init(GetWidget());
   return input_method;
-#else
-  return NULL;
-#endif
 }
 
 void NativeWidgetWin::CenterWindow(const gfx::Size& size) {

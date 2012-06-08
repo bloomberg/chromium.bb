@@ -17,6 +17,7 @@ UI_EXPORT extern const char kDefaultDeviceScaleFactor[];
 UI_EXPORT extern const char kEnableTextSubpixelPositioning[];
 UI_EXPORT extern const char kEnableTouchCalibration[];
 UI_EXPORT extern const char kEnableTouchEvents[];
+UI_EXPORT extern const char kEnableViewsTextfield[];
 UI_EXPORT extern const char kHighlightMissing2xResources[];
 UI_EXPORT extern const char kLang[];
 UI_EXPORT extern const char kLoad2xResources[];

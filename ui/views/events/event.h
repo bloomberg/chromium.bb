@@ -290,9 +290,7 @@ class VIEWS_EXPORT KeyEvent : public Event {
   // event from the host environment). This is typically only used in testing as
   // some metadata obtainable from the underlying native event is not present.
   // It's also used by input methods to fabricate keyboard events.
-  KeyEvent(ui::EventType type,
-           ui::KeyboardCode key_code,
-           int event_flags);
+  KeyEvent(ui::EventType type, ui::KeyboardCode key_code, int event_flags);
 
   ui::KeyboardCode key_code() const { return key_code_; }
 

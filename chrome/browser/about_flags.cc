@@ -773,6 +773,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableNewOobe),
   },
 #endif
+  {
+    "enable-views-textfield",
+    IDS_FLAGS_ENABLE_VIEWS_TEXTFIELD_NAME,
+    IDS_FLAGS_ENABLE_VIEWS_TEXTFIELD_DESCRIPTION,
+    kOsWin,
+    SINGLE_VALUE_TYPE(switches::kEnableViewsTextfield),
+  },
 };
 
 const Experiment* experiments = kExperiments;

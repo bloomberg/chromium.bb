@@ -5757,6 +5757,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_PINCH_SCALE_DESCRIPTION" desc="Description of the flag to turn on experiental pinch to scale.">
         Enables experimental support for scale using pinch.
       </message>
+      <message name="IDS_FLAGS_ENABLE_VIEWS_TEXTFIELD_NAME" desc="Name of the flag to use NativeTextfieldViews instead of NativeTextfieldWin.">
+        Enable Views Textfield.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_VIEWS_TEXTFIELD_DESCRIPTION" desc="Description of the flag to use NativeTextfieldViews instead of NativeTextfieldWin.">
+        Enables an experimental textfield for application UI; does not effect web content.
+      </message>
 
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_FLAGS_ALLOW_TOUCHPAD_THREE_FINGER_CLICK_NAME" desc="Name for the flag to enable touchpad three finger click as middle button.">

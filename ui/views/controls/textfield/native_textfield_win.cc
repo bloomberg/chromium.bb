@@ -17,7 +17,6 @@
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
-#include "ui/base/keycodes/keyboard_code_conversion_win.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_win.h"
@@ -29,7 +28,6 @@
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/native/native_view_host.h"
-#include "ui/views/controls/textfield/native_textfield_views.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/focus/focus_manager.h"
@@ -1204,19 +1202,6 @@ void NativeTextfieldWin::BuildContextMenu() {
   context_menu_contents_->AddSeparator();
   context_menu_contents_->AddItemWithStringId(IDS_APP_SELECT_ALL,
                                               IDS_APP_SELECT_ALL);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// NativeTextfieldWrapper, public:
-
-// static
-NativeTextfieldWrapper* NativeTextfieldWrapper::CreateWrapper(
-    Textfield* field) {
-#if defined(USE_AURA)
-  return new NativeTextfieldViews(field);
-#else
-  return new NativeTextfieldWin(field);
-#endif
 }
 
 }  // namespace views

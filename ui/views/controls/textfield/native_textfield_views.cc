@@ -8,7 +8,6 @@
 #include <set>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
@@ -1179,13 +1178,5 @@ bool NativeTextfieldViews::ShouldInsertChar(char16 ch, int flags) {
   return ((ch >= 0x20 && ch < 0x7F) || ch > 0x9F) &&
       (flags & ~(ui::EF_SHIFT_DOWN | ui::EF_CAPS_LOCK_DOWN)) != ui::EF_ALT_DOWN;
 }
-
-#if defined(USE_AURA)
-// static
-NativeTextfieldWrapper* NativeTextfieldWrapper::CreateWrapper(
-    Textfield* field) {
-  return new NativeTextfieldViews(field);
-}
-#endif
 
 }  // namespace views

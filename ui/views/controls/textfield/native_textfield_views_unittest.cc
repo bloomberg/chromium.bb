@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/pickle.h"
 #include "base/string16.h"
@@ -22,6 +23,7 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/render_text.h"
 #include "ui/views/controls/textfield/native_textfield_views.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -42,11 +44,6 @@ namespace {
 // OnKeyReleased() methods.
 class TestTextfield : public views::Textfield {
  public:
-  TestTextfield()
-      : key_handled_(false),
-        key_received_(false) {
-  }
-
   explicit TestTextfield(StyleFlags style)
       : Textfield(style),
         key_handled_(false),
@@ -68,9 +65,7 @@ class TestTextfield : public views::Textfield {
   bool key_handled() const { return key_handled_; }
   bool key_received() const { return key_received_; }
 
-  void clear() {
-    key_received_ = key_handled_ = false;
-  }
+  void clear() { key_received_ = key_handled_ = false; }
 
  private:
   bool key_handled_;
@@ -82,8 +77,7 @@ class TestTextfield : public views::Textfield {
 // A helper class for use with ui::TextInputClient::GetTextFromRange().
 class GetTextHelper {
  public:
-  GetTextHelper() {
-  }
+  GetTextHelper() {}
 
   void set_text(const string16& text) { text_ = text; }
   const string16& text() const { return text_; }
@@ -141,9 +135,7 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
     last_contents_ = new_contents;
   }
 
-  virtual bool HandleKeyEvent(Textfield* sender,
-                              const KeyEvent& key_event) {
-
+  virtual bool HandleKeyEvent(Textfield* sender, const KeyEvent& key_event) {
     // TODO(oshima): figure out how to test the keystroke.
     return false;
   }
@@ -161,6 +153,10 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
   }
 
   void InitTextfields(Textfield::StyleFlags style, int count) {
+    // Append kEnableViewsTextfield to use NativeTextfieldViews on Windows.
+    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    command_line->AppendSwitch(switches::kEnableViewsTextfield);
+
     ASSERT_FALSE(textfield_);
     textfield_ = new TestTextfield(style);
     textfield_->SetController(this);
@@ -193,6 +189,8 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
     // Assumes the Widget is always focused.
     input_method_->OnFocus();
 
+    // TODO(msw): Determine why this requires two calls to work on Windows.
+    textfield_->RequestFocus();
     textfield_->RequestFocus();
   }
 

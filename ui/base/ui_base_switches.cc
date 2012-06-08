@@ -20,6 +20,9 @@ const char kEnableTouchCalibration[] = "enable-touch-calibration";
 // Enable support for touch events.
 const char kEnableTouchEvents[] = "enable-touch-events";
 
+// Enables the Views textfield on Windows.
+const char kEnableViewsTextfield[] = "enable-views-textfield";
+
 // Generates a 2x version of resources for which no 2x version is available or
 // the 2x version is of an incorrect size and applies a red mask to the
 // resource. Resources for which hidpi is not supported because of software
