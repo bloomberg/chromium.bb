@@ -9,7 +9,7 @@
 #include <jni.h>
 
 #include "base/basictypes.h"
-#include "base/message_loop_proxy.h"
+#include "base/message_loop.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayer.h"
@@ -38,6 +38,7 @@ class WebMediaPlayerProxyAndroid;
 // media player, and reports player state changes to the webkit.
 class WebMediaPlayerAndroid :
     public WebKit::WebMediaPlayer,
+    public MessageLoop::DestructionObserver,
     public base::SupportsWeakPtr<WebMediaPlayerAndroid> {
  public:
   WebMediaPlayerAndroid(WebKit::WebFrame* frame,
@@ -134,6 +135,12 @@ class WebMediaPlayerAndroid :
   // However, the actual GlTexture is not released to keep the video screenshot.
   void ReleaseMediaResources();
 
+  // Whether |media_player_| has been initialized.
+  bool IsInitialized() const;
+
+  // Method inherited from DestructionObserver.
+  virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
+
  private:
   // Create a media player to load the |url_| and prepare for playback.
   // Because of limited decoding resources on mobile devices, idle media players
@@ -175,6 +182,9 @@ class WebMediaPlayerAndroid :
 
   // The video frame object used for renderering by WebKit.
   scoped_ptr<WebKit::WebVideoFrame> video_frame_;
+
+  // Message loops for main renderer thread.
+  MessageLoop* main_loop_;
 
   // Proxy object that delegates method calls on Render Thread.
   // This object is created on the Render Thread and is only called in the

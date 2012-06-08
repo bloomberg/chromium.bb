@@ -26,6 +26,13 @@ class WebMediaPlayerManagerAndroid {
   int RegisterMediaPlayer(WebMediaPlayerAndroid* player);
   void UnregisterMediaPlayer(int player_id);
 
+  // Called when a mediaplayer starts to decode media. If the number
+  // of active decoders hits the limit, release some resources.
+  // TODO(qinmin): we need to classify between video and audio decoders.
+  // Audio decoders are inexpensive. And css animations often come with
+  // lots of small audio files.
+  void RequestMediaResources(int player_id);
+
   // Release all the media resources on the renderer process.
   void ReleaseMediaResources();
 
@@ -33,15 +40,12 @@ class WebMediaPlayerManagerAndroid {
   WebMediaPlayerAndroid* GetMediaPlayer(int player_id);
 
  private:
-  // Information needed to manage WebMediaPlayerAndroid.
-  // TODO(qinmin): more informations will be added here for resource management.
-  struct MediaPlayerInfo {
-    webkit_media::WebMediaPlayerAndroid* player;
-  };
+  // Get the number of active players.
+  int32 GetActivePlayerCount();
 
   // Info for all available WebMediaPlayerAndroid on a page; kept so that
   // we can enumerate them to send updates about tab focus and visibily.
-  std::map<int32, MediaPlayerInfo> media_players_;
+  std::map<int32, WebMediaPlayerAndroid*> media_players_;
 
   int32 next_media_player_id_;
 

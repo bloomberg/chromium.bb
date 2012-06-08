@@ -63,7 +63,8 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       client_(client),
       buffered_(1u),
       video_frame_(new WebVideoFrameImpl(VideoFrame::CreateEmptyFrame())),
-      proxy_(new WebMediaPlayerProxyAndroid(base::MessageLoopProxy::current(),
+      main_loop_(MessageLoop::current()),
+      proxy_(new WebMediaPlayerProxyAndroid(main_loop_->message_loop_proxy(),
                                             AsWeakPtr())),
       prepared_(false),
       duration_(0),
@@ -81,17 +82,19 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       stream_id_(0),
       needs_establish_peer_(true),
       stream_texture_factory_(factory) {
-  player_id_ = manager_->RegisterMediaPlayer(this);
+  main_loop_->AddDestructionObserver(this);
+  if (manager_)
+    player_id_ = manager_->RegisterMediaPlayer(this);
   if (stream_texture_factory_.get())
     stream_texture_proxy_.reset(stream_texture_factory_->CreateProxy());
 }
 
 WebMediaPlayerAndroid::~WebMediaPlayerAndroid() {
-  if (media_player_.get()) {
-    media_player_->Stop();
-  }
+  if (manager_)
+    manager_->UnregisterMediaPlayer(player_id_);
 
-  manager_->UnregisterMediaPlayer(player_id_);
+  if (main_loop_)
+    main_loop_->RemoveDestructionObserver(this);
 }
 
 void WebMediaPlayerAndroid::InitIncognito(bool incognito_mode) {
@@ -484,6 +487,10 @@ void WebMediaPlayerAndroid::ReleaseMediaResources() {
   prepared_ = false;
 }
 
+bool WebMediaPlayerAndroid::IsInitialized() const {
+  return (media_player_ != NULL);
+}
+
 void WebMediaPlayerAndroid::InitializeMediaPlayer() {
   CHECK(!media_player_.get());
   prepared_ = false;
@@ -496,6 +503,9 @@ void WebMediaPlayerAndroid::InitializeMediaPlayer() {
     cookies = UTF16ToUTF8(cookie_jar_->cookies(url_, first_party_url));
   }
   media_player_->SetDataSource(url_.spec(), cookies, incognito_mode_);
+
+  if (manager_)
+    manager_->RequestMediaResources(player_id_);
 
   media_player_->Prepare(
       base::Bind(&WebMediaPlayerProxyAndroid::MediaInfoCallback, proxy_),
@@ -557,6 +567,11 @@ void WebMediaPlayerAndroid::DestroyStreamTexture() {
   stream_texture_factory_->DestroyStreamTexture(texture_id_);
   texture_id_ = 0;
   stream_id_ = 0;
+}
+
+void WebMediaPlayerAndroid::WillDestroyCurrentMessageLoop() {
+  manager_ = NULL;
+  main_loop_ = NULL;
 }
 
 WebVideoFrame* WebMediaPlayerAndroid::getCurrentFrame() {
