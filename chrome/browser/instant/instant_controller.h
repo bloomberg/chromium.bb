@@ -30,7 +30,6 @@ class InstantTest;
 class PrefService;
 class Profile;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 class TemplateURL;
 
 // InstantController maintains a WebContents that is intended to give a preview
@@ -124,7 +123,7 @@ class InstantController : public InstantLoaderDelegate {
   // Invoked when the user does some gesture that should trigger making the
   // current previewed page the permanent page.  Returns the TCW that contains
   // the committed preview.
-  TabContentsWrapper* CommitCurrentPreview(InstantCommitType type);
+  TabContents* CommitCurrentPreview(InstantCommitType type);
 
   // Accepts the currently showing instant preview, if any, and returns true.
   // Returns false if there is no instant preview showing.
@@ -155,17 +154,17 @@ class InstantController : public InstantLoaderDelegate {
   // irrelevant, for example when |type| is INSTANT_COMMIT_DESTROY.
   // WARNING: be sure and invoke CompleteRelease after adding the returned
   // WebContents to a tabstrip.
-  TabContentsWrapper* ReleasePreviewContents(InstantCommitType type,
-                                             TabContentsWrapper* tab_contents);
+  TabContents* ReleasePreviewContents(InstantCommitType type,
+                                      TabContents* tab_contents);
 
   // Does cleanup after the preview contents has been added to the tabstrip.
   // Invoke this if you explicitly invoke ReleasePreviewContents.
-  void CompleteRelease(TabContentsWrapper* tab);
+  void CompleteRelease(TabContents* tab);
 
-  // The preview TabContentsWrapper; may be null.
-  TabContentsWrapper* GetPreviewContents() const;
+  // The preview TabContents; may be null.
+  TabContents* GetPreviewContents() const;
 
-  // Returns true if the preview TabContentsWrapper is ready to be displayed. In
+  // Returns true if the preview TabContents is ready to be displayed. In
   // some situations this may return false yet GetPreviewContents() returns
   // non-NULL.
   bool is_displayable() const { return is_displayable_; }
@@ -200,7 +199,7 @@ class InstantController : public InstantLoaderDelegate {
 
   // Updates InstantLoaderManager and its current InstantLoader. This is invoked
   // internally from Update.
-  void UpdateLoader(TabContentsWrapper* tab_contents,
+  void UpdateLoader(TabContents* tab_contents,
                     const TemplateURL* template_url,
                     const GURL& url,
                     content::PageTransition transition_type,

@@ -6,7 +6,7 @@
 
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -15,13 +15,13 @@
 
 using content::WebContents;
 
-// TabContentsDelegate implementation. This owns the TabContentsWrapper supplied
+// TabContentsDelegate implementation. This owns the TabContents supplied
 // to the constructor.
 class InstantUnloadHandler::TabContentsDelegateImpl
     : public content::WebContentsDelegate {
  public:
   TabContentsDelegateImpl(InstantUnloadHandler* handler,
-                          TabContentsWrapper* tab_contents,
+                          TabContents* tab_contents,
                           int index)
       : handler_(handler),
         tab_contents_(tab_contents),
@@ -32,9 +32,9 @@ class InstantUnloadHandler::TabContentsDelegateImpl
   ~TabContentsDelegateImpl() {
   }
 
-  // Releases ownership of the TabContentsWrapper to the caller.
-  TabContentsWrapper* ReleaseTab() {
-    TabContentsWrapper* tab = tab_contents_.release();
+  // Releases ownership of the TabContents to the caller.
+  TabContents* ReleaseTab() {
+    TabContents* tab = tab_contents_.release();
     tab->web_contents()->SetDelegate(NULL);
     return tab;
   }
@@ -57,7 +57,7 @@ class InstantUnloadHandler::TabContentsDelegateImpl
 
  private:
   InstantUnloadHandler* handler_;
-  scoped_ptr<TabContentsWrapper> tab_contents_;
+  scoped_ptr<TabContents> tab_contents_;
 
   // The index |tab_contents_| was originally at. If we add the tab back we add
   // it at this index.
@@ -73,7 +73,7 @@ InstantUnloadHandler::InstantUnloadHandler(Browser* browser)
 InstantUnloadHandler::~InstantUnloadHandler() {
 }
 
-void InstantUnloadHandler::RunUnloadListenersOrDestroy(TabContentsWrapper* tab,
+void InstantUnloadHandler::RunUnloadListenersOrDestroy(TabContents* tab,
                                                        int index) {
   if (!tab->web_contents()->NeedToFireBeforeUnload()) {
     // Tab doesn't have any before unload listeners and can be safely deleted.
@@ -93,8 +93,8 @@ void InstantUnloadHandler::RunUnloadListenersOrDestroy(TabContentsWrapper* tab,
 }
 
 void InstantUnloadHandler::Activate(TabContentsDelegateImpl* delegate) {
-  // Take ownership of the TabContentsWrapper from the delegate.
-  TabContentsWrapper* tab = delegate->ReleaseTab();
+  // Take ownership of the TabContents from the delegate.
+  TabContents* tab = delegate->ReleaseTab();
   browser::NavigateParams params(browser_, tab);
   params.disposition = NEW_FOREGROUND_TAB;
   params.tabstrip_index = delegate->index();

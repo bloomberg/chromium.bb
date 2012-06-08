@@ -25,7 +25,6 @@
 class InstantLoaderDelegate;
 class InstantLoaderManagerTest;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 class TemplateURL;
 
 namespace content {
@@ -55,10 +54,10 @@ class InstantLoader : public content::NotificationObserver {
                 const std::string& group);
   virtual ~InstantLoader();
 
-  // Invoked to load a URL. |tab_contents| is the TabContentsWrapper the preview
+  // Invoked to load a URL. |tab_contents| is the TabContents the preview
   // is going to be shown on top of and potentially replace. Returns true if the
   // arguments differ from the last call to |Update|.
-  bool Update(TabContentsWrapper* tab_contents,
+  bool Update(TabContents* tab_contents,
               const TemplateURL* template_url,
               const GURL& url,
               content::PageTransition transition_type,
@@ -75,14 +74,14 @@ class InstantLoader : public content::NotificationObserver {
   // content.
   bool IsMouseDownFromActivate();
 
-  // Releases the preview TabContentsWrapper passing ownership to the caller.
-  // This is intended to be called when the preview TabContentsWrapper is
+  // Releases the preview TabContents passing ownership to the caller.
+  // This is intended to be called when the preview TabContents is
   // committed. This does not notify the delegate. |tab_contents| is the
   // underlying tab onto which the preview will be committed. It can be NULL
   // when the underlying tab is irrelevant, for example when |type| is
   // INSTANT_COMMIT_DESTROY.
-  TabContentsWrapper* ReleasePreviewContents(InstantCommitType type,
-                                             TabContentsWrapper* tab_contents);
+  TabContents* ReleasePreviewContents(InstantCommitType type,
+                                      TabContents* tab_contents);
 
   // Calls through to method of same name on delegate.
   bool ShouldCommitInstantOnMouseUp();
@@ -90,7 +89,7 @@ class InstantLoader : public content::NotificationObserver {
 
   // Preload |template_url|'s instant URL, if the loader doesn't already have
   // a |preview_contents()| for it.
-  void MaybeLoadInstantURL(TabContentsWrapper* tab_contents,
+  void MaybeLoadInstantURL(TabContents* tab_contents,
                            const TemplateURL* template_url);
 
   // Returns true if the preview NavigationController's WebContents has a
@@ -102,12 +101,12 @@ class InstantLoader : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // The preview TabContentsWrapper; may be null.
-  TabContentsWrapper* preview_contents() const {
+  // The preview TabContents; may be null.
+  TabContents* preview_contents() const {
     return preview_contents_.get();
   }
 
-  // Returns true if the preview TabContentsWrapper is ready to be shown. A
+  // Returns true if the preview TabContents is ready to be shown. A
   // non-instant loader is ready once the renderer paints, otherwise it isn't
   // ready until we get a response back from the page.
   bool ready() const { return ready_; }
@@ -181,17 +180,17 @@ class InstantLoader : public content::NotificationObserver {
   // waiting on the load and |force_if_loading| is false this does nothing.
   void SendBoundsToPage(bool force_if_loading);
 
-  // Called when the TabContentsDelegate wants to swap a new TabContentsWrapper
+  // Called when the TabContentsDelegate wants to swap a new TabContents
   // into our |preview_contents_|.
-  void ReplacePreviewContents(TabContentsWrapper* old_tc,
-                              TabContentsWrapper* new_tc);
+  void ReplacePreviewContents(TabContents* old_tc,
+                              TabContents* new_tc);
 
   // Called to set up the |preview_contents_| based on |tab_contents| when it is
   // created or replaced.
-  void SetupPreviewContents(TabContentsWrapper* tab_contents);
+  void SetupPreviewContents(TabContents* tab_contents);
 
-  // Creates and sets the preview TabContentsWrapper.
-  void CreatePreviewContents(TabContentsWrapper* tab_contents);
+  // Creates and sets the preview TabContents.
+  void CreatePreviewContents(TabContents* tab_contents);
 
   // Creates and loads the |template_url|'s instant URL.
   void LoadInstantURL(const TemplateURL* template_url,
@@ -212,8 +211,8 @@ class InstantLoader : public content::NotificationObserver {
   // gesture on the WebContents and the preview needs to be activated.
   scoped_ptr<TabContentsDelegateImpl> preview_tab_contents_delegate_;
 
-  // The preview TabContentsWrapper; may be null.
-  scoped_ptr<TabContentsWrapper> preview_contents_;
+  // The preview TabContents; may be null.
+  scoped_ptr<TabContents> preview_contents_;
 
   // Is the preview_contents ready to be shown?
   bool ready_;

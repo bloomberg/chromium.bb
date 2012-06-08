@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,11 +10,10 @@
 
 class Browser;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 // InstantUnloadHandler makes sure the before unload and unload handler is run
 // when using instant. When the user commits the instant preview the existing
-// TabContentsWrapper is passed to |RunUnloadListenersOrDestroy|. If the tab has
+// TabContents is passed to |RunUnloadListenersOrDestroy|. If the tab has
 // no before unload or unload listener the tab is deleted, otherwise the before
 // unload and unload listener is executed. If the before unload listener shows a
 // dialog the tab is added back to the tabstrip at its original location next to
@@ -25,7 +24,7 @@ class InstantUnloadHandler {
   ~InstantUnloadHandler();
 
   // See class description for details on what this does.
-  void RunUnloadListenersOrDestroy(TabContentsWrapper* tab_contents, int index);
+  void RunUnloadListenersOrDestroy(TabContents* tab_contents, int index);
 
  private:
   class TabContentsDelegateImpl;

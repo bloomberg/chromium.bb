@@ -28,7 +28,7 @@
 #include "chrome/browser/ui/constrained_window_tab_helper_delegate.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
@@ -92,7 +92,7 @@ void AddPreviewUsageForHistogram(TemplateURLID template_url_id,
   }
 }
 
-SessionStorageNamespace* GetSessionStorageNamespace(TabContentsWrapper* tab) {
+SessionStorageNamespace* GetSessionStorageNamespace(TabContents* tab) {
   return tab->web_contents()->GetController().GetSessionStorageNamespace();
 }
 
@@ -247,11 +247,11 @@ class InstantLoader::TabContentsDelegateImpl
       content::NavigationType navigation_type) OVERRIDE;
 
   // CoreTabHelperDelegate:
-  virtual void SwapTabContents(TabContentsWrapper* old_tc,
-                               TabContentsWrapper* new_tc) OVERRIDE;
+  virtual void SwapTabContents(TabContents* old_tc,
+                               TabContents* new_tc) OVERRIDE;
 
   // ConstrainedWindowTabHelperDelegate:
-  virtual void WillShowConstrainedWindow(TabContentsWrapper* source) OVERRIDE;
+  virtual void WillShowConstrainedWindow(TabContents* source) OVERRIDE;
   virtual bool ShouldFocusConstrainedWindow() OVERRIDE;
 
   // content::WebContentsObserver:
@@ -348,7 +348,7 @@ void InstantLoader::TabContentsDelegateImpl::SetLastHistoryURLAndPrune(
 
 void InstantLoader::TabContentsDelegateImpl::CommitHistory(
     bool supports_instant) {
-  TabContentsWrapper* tab = loader_->preview_contents();
+  TabContents* tab = loader_->preview_contents();
   if (tab->profile()->IsOffTheRecord())
     return;
 
@@ -533,8 +533,8 @@ bool InstantLoader::TabContentsDelegateImpl::ShouldAddNavigationToHistory(
 // If this is being called, something is swapping in to our preview_contents_
 // before we've added it to the tab strip.
 void InstantLoader::TabContentsDelegateImpl::SwapTabContents(
-    TabContentsWrapper* old_tc,
-    TabContentsWrapper* new_tc) {
+    TabContents* old_tc,
+    TabContents* new_tc) {
   loader_->ReplacePreviewContents(old_tc, new_tc);
 }
 
@@ -546,7 +546,7 @@ bool InstantLoader::TabContentsDelegateImpl::ShouldFocusConstrainedWindow() {
 }
 
 void InstantLoader::TabContentsDelegateImpl::WillShowConstrainedWindow(
-    TabContentsWrapper* source) {
+    TabContents* source) {
   if (!loader_->ready()) {
     // A constrained window shown for an auth may not paint. Show the preview
     // contents.
@@ -586,7 +586,7 @@ void InstantLoader::TabContentsDelegateImpl::OnSetSuggestions(
     int32 page_id,
     const std::vector<std::string>& suggestions,
     InstantCompleteBehavior behavior) {
-  TabContentsWrapper* source = loader_->preview_contents();
+  TabContents* source = loader_->preview_contents();
   NavigationEntry* entry =
       source->web_contents()->GetController().GetActiveEntry();
   if (!entry || page_id != entry->GetPageID())
@@ -644,14 +644,14 @@ InstantLoader::InstantLoader(InstantLoaderDelegate* delegate,
 InstantLoader::~InstantLoader() {
   registrar_.RemoveAll();
 
-  // Delete the TabContentsWrapper before the delegate as the TabContentsWrapper
+  // Delete the TabContents before the delegate as the TabContents
   // holds a reference to the delegate.
   if (preview_contents())
     AddPreviewUsageForHistogram(template_url_id_, PREVIEW_DELETED, group_);
   preview_contents_.reset();
 }
 
-bool InstantLoader::Update(TabContentsWrapper* tab_contents,
+bool InstantLoader::Update(TabContents* tab_contents,
                            const TemplateURL* template_url,
                            const GURL& url,
                            content::PageTransition transition_type,
@@ -772,9 +772,9 @@ bool InstantLoader::IsMouseDownFromActivate() {
       preview_tab_contents_delegate_->is_mouse_down_from_activate();
 }
 
-TabContentsWrapper* InstantLoader::ReleasePreviewContents(
+TabContents* InstantLoader::ReleasePreviewContents(
     InstantCommitType type,
-    TabContentsWrapper* tab_contents) {
+    TabContents* tab_contents) {
   if (!preview_contents_.get())
     return NULL;
 
@@ -850,7 +850,7 @@ void InstantLoader::CommitInstantLoader() {
   delegate_->CommitInstantLoader(this);
 }
 
-void InstantLoader::MaybeLoadInstantURL(TabContentsWrapper* tab_contents,
+void InstantLoader::MaybeLoadInstantURL(TabContents* tab_contents,
                                         const TemplateURL* template_url) {
   DCHECK(template_url_id_ == template_url->id());
 
@@ -1032,11 +1032,11 @@ void InstantLoader::SendBoundsToPage(bool force_if_waiting) {
   }
 }
 
-void InstantLoader::ReplacePreviewContents(TabContentsWrapper* old_tc,
-                                           TabContentsWrapper* new_tc) {
+void InstantLoader::ReplacePreviewContents(TabContents* old_tc,
+                                           TabContents* new_tc) {
   DCHECK(old_tc == preview_contents_);
   // We release here without deleting so that the caller still has reponsibility
-  // for deleting the TabContentsWrapper.
+  // for deleting the TabContents.
   ignore_result(preview_contents_.release());
   preview_contents_.reset(new_tc);
   session_storage_namespace_ = GetSessionStorageNamespace(new_tc);
@@ -1070,7 +1070,7 @@ void InstantLoader::ReplacePreviewContents(TabContentsWrapper* old_tc,
     ShowPreview();
 }
 
-void InstantLoader::SetupPreviewContents(TabContentsWrapper* tab_contents) {
+void InstantLoader::SetupPreviewContents(TabContents* tab_contents) {
   preview_contents_->web_contents()->SetDelegate(
       preview_tab_contents_delegate_.get());
   preview_contents_->blocked_content_tab_helper()->SetAllContentsBlocked(true);
@@ -1109,10 +1109,10 @@ void InstantLoader::SetupPreviewContents(TabContentsWrapper* tab_contents) {
   preview_contents_->web_contents()->GetView()->SizeContents(tab_bounds.size());
 }
 
-void InstantLoader::CreatePreviewContents(TabContentsWrapper* tab_contents) {
+void InstantLoader::CreatePreviewContents(TabContents* tab_contents) {
   WebContents* new_contents = WebContents::Create(
       tab_contents->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
-  preview_contents_.reset(new TabContentsWrapper(new_contents));
+  preview_contents_.reset(new TabContents(new_contents));
   AddPreviewUsageForHistogram(template_url_id_, PREVIEW_CREATED, group_);
   session_storage_namespace_ = GetSessionStorageNamespace(tab_contents);
   preview_tab_contents_delegate_.reset(new TabContentsDelegateImpl(this));

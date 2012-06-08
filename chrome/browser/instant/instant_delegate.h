@@ -10,7 +10,6 @@
 #include "chrome/common/instant_types.h"
 
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 namespace gfx {
 class Rect;
@@ -20,16 +19,16 @@ class Rect;
 // InstantController for details.
 class InstantDelegate {
  public:
-  // Invoked when the instant TabContentsWrapper should be shown.
-  virtual void ShowInstant(TabContentsWrapper* preview_contents) = 0;
+  // Invoked when the instant TabContents should be shown.
+  virtual void ShowInstant(TabContents* preview_contents) = 0;
 
-  // Invoked when the instant TabContentsWrapper should be hidden.
+  // Invoked when the instant TabContents should be hidden.
   virtual void HideInstant() = 0;
 
   // Invoked when the user does something that should result in the preview
-  // TabContentsWrapper becoming the active TabContentsWrapper. The delegate
-  // takes ownership of the supplied TabContentsWrapper.
-  virtual void CommitInstant(TabContentsWrapper* preview_contents) = 0;
+  // TabContents becoming the active TabContents. The delegate
+  // takes ownership of the supplied TabContents.
+  virtual void CommitInstant(TabContents* preview_contents) = 0;
 
   // Invoked when the suggested text is to change to |text|.
   virtual void SetSuggestedText(const string16& text,
@@ -42,7 +41,7 @@ class InstantDelegate {
   virtual void InstantPreviewFocused() = 0;
 
   // Returns the tab contents over which the instant preview is overlaid.
-  virtual TabContentsWrapper* GetInstantHostTabContents() const = 0;
+  virtual TabContents* GetInstantHostTabContents() const = 0;
 
  protected:
   virtual ~InstantDelegate() {}

@@ -19,7 +19,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -103,7 +103,7 @@ bool InstantController::Update(const AutocompleteMatch& match,
   last_url_ = match.destination_url;
   last_user_text_ = user_text;
 
-  TabContentsWrapper* tab_contents = delegate_->GetInstantHostTabContents();
+  TabContents* tab_contents = delegate_->GetInstantHostTabContents();
   if (!tab_contents) {
     Hide();
     return false;
@@ -188,7 +188,7 @@ bool InstantController::PrepareForCommit() {
   if (mode_ == INSTANT)
     return IsCurrent();
 
-  TabContentsWrapper* tab_contents = delegate_->GetInstantHostTabContents();
+  TabContents* tab_contents = delegate_->GetInstantHostTabContents();
   if (!tab_contents)
     return false;
 
@@ -216,12 +216,11 @@ bool InstantController::PrepareForCommit() {
   return true;
 }
 
-TabContentsWrapper* InstantController::CommitCurrentPreview(
-    InstantCommitType type) {
+TabContents* InstantController::CommitCurrentPreview(InstantCommitType type) {
   DCHECK(loader_.get());
-  TabContentsWrapper* tab_contents = delegate_->GetInstantHostTabContents();
+  TabContents* tab_contents = delegate_->GetInstantHostTabContents();
   DCHECK(tab_contents);
-  TabContentsWrapper* preview = ReleasePreviewContents(type, tab_contents);
+  TabContents* preview = ReleasePreviewContents(type, tab_contents);
   preview->web_contents()->GetController().CopyStateFromAndPrune(
       &tab_contents->web_contents()->GetController());
   delegate_->CommitInstant(preview);
@@ -329,7 +328,7 @@ void InstantController::OnAutocompleteLostFocus(
 #endif
 
 void InstantController::OnAutocompleteGotFocus() {
-  TabContentsWrapper* tab_contents = delegate_->GetInstantHostTabContents();
+  TabContents* tab_contents = delegate_->GetInstantHostTabContents();
   if (!tab_contents)
     return;
 
@@ -344,13 +343,13 @@ void InstantController::OnAutocompleteGotFocus() {
   loader_->MaybeLoadInstantURL(tab_contents, template_url);
 }
 
-TabContentsWrapper* InstantController::ReleasePreviewContents(
+TabContents* InstantController::ReleasePreviewContents(
     InstantCommitType type,
-    TabContentsWrapper* current_tab) {
+    TabContents* current_tab) {
   if (!loader_.get())
     return NULL;
 
-  TabContentsWrapper* tab = loader_->ReleasePreviewContents(type, current_tab);
+  TabContents* tab = loader_->ReleasePreviewContents(type, current_tab);
   ClearBlacklist();
   is_out_of_date_ = true;
   is_displayable_ = false;
@@ -360,11 +359,11 @@ TabContentsWrapper* InstantController::ReleasePreviewContents(
   return tab;
 }
 
-void InstantController::CompleteRelease(TabContentsWrapper* tab) {
+void InstantController::CompleteRelease(TabContents* tab) {
   tab->blocked_content_tab_helper()->SetAllContentsBlocked(false);
 }
 
-TabContentsWrapper* InstantController::GetPreviewContents() const {
+TabContents* InstantController::GetPreviewContents() const {
   return loader_.get() ? loader_->preview_contents() : NULL;
 }
 
@@ -448,7 +447,7 @@ void InstantController::UpdateIsDisplayable() {
   }
 }
 
-void InstantController::UpdateLoader(TabContentsWrapper* tab_contents,
+void InstantController::UpdateLoader(TabContents* tab_contents,
                                      const TemplateURL* template_url,
                                      const GURL& url,
                                      content::PageTransition transition_type,

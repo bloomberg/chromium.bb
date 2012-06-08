@@ -21,7 +21,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -120,7 +120,7 @@ class InstantTest : public InProcessBrowserTest {
     return browser()->window()->GetLocationBar()->GetLocationEntry();
   }
 
-  TabContentsWrapper* preview() const {
+  TabContents* preview() const {
     return instant()->GetPreviewContents();
   }
 
@@ -320,7 +320,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(OnSubmitEvent)) {
   EXPECT_FALSE(preview());
   EXPECT_FALSE(instant()->is_displayable());
   EXPECT_FALSE(instant()->IsCurrent());
-  EXPECT_EQ(preview_tab, browser()->GetSelectedWebContents());
+  EXPECT_EQ(preview_tab, browser()->GetActiveWebContents());
 
   // We should have two entries. One corresponding to the page the user was
   // first on, and one for the search page.
@@ -358,7 +358,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, DISABLED_OnCancelEvent) {
   EXPECT_FALSE(preview());
   EXPECT_FALSE(instant()->is_displayable());
   EXPECT_FALSE(instant()->IsCurrent());
-  EXPECT_EQ(preview_tab, browser()->GetSelectedWebContents());
+  EXPECT_EQ(preview_tab, browser()->GetActiveWebContents());
 
   // Check that the value is reflected and oncancel is called.
   EXPECT_EQ("true 0 1 1 true d false def false 3 3",
@@ -721,7 +721,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(DontPersistSearchbox)) {
   EXPECT_FALSE(preview());
 
   // The searchBox actually gets cleared on commit.
-  ASSERT_TRUE(GetStringFromJavascript(browser()->GetSelectedWebContents(),
+  ASSERT_TRUE(GetStringFromJavascript(browser()->GetActiveWebContents(),
       "window.chrome.searchBox.value", &value));
   EXPECT_EQ("", value);
 
@@ -729,7 +729,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(DontPersistSearchbox)) {
   ui_test_utils::NavigateToURL(
       browser(), test_server()->GetURL("files/empty.html"));
 
-  ASSERT_TRUE(GetStringFromJavascript(browser()->GetSelectedWebContents(),
+  ASSERT_TRUE(GetStringFromJavascript(browser()->GetActiveWebContents(),
       "window.chrome.searchBox.value", &value));
   EXPECT_EQ("", value);
 }
@@ -769,8 +769,8 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(PreloadsInstant)) {
   EXPECT_FALSE(instant()->IsCurrent());
   ASSERT_TRUE(CheckVisibilityIs(preview()->web_contents(), false));
 
-  // Adding a new tab shouldn't delete (or recreate) the TabContentsWrapper.
-  TabContentsWrapper* preview_tab = preview();
+  // Adding a new tab shouldn't delete (or recreate) the TabContents.
+  TabContents* preview_tab = preview();
   AddBlankTabAndShow(browser());
   EXPECT_EQ(preview_tab, preview());
 
@@ -792,7 +792,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(PageVisibilityTest)) {
 
   // Initially navigate to the empty page which should be visible.
   ui_test_utils::NavigateToURL(browser(), test_server()->GetURL(""));
-  WebContents* initial_contents = browser()->GetSelectedWebContents();
+  WebContents* initial_contents = browser()->GetActiveWebContents();
 
   ASSERT_TRUE(CheckVisibilityIs(initial_contents, true));
 
@@ -817,7 +817,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE(PageVisibilityTest)) {
 
   // Commit the preview.
   ASSERT_TRUE(PressEnter());
-  EXPECT_EQ(preview_contents, browser()->GetSelectedWebContents());
+  EXPECT_EQ(preview_contents, browser()->GetActiveWebContents());
   ASSERT_TRUE(CheckVisibilityIs(preview_contents, true));
 }
 
