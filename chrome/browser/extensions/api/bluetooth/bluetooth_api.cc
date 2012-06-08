@@ -43,6 +43,8 @@ chromeos::BluetoothAdapter* GetMutableAdapter(Profile* profile) {
 
 namespace {
 
+const char kFailedToConnect[] = "Connection failed";
+const char kInvalidDevice[] = "Invalid device";
 const char kSocketNotFoundError[] = "Socket not found: invalid socket id";
 
 }  // namespace
@@ -165,6 +167,7 @@ void BluetoothConnectFunction::ConnectToServiceCallback(
     result_.reset(result_socket.ToValue().release());
     SendResponse(true);
   } else {
+    SetError(kFailedToConnect);
     SendResponse(false);
   }
 
@@ -179,6 +182,7 @@ bool BluetoothConnectFunction::RunImpl() {
       GetMutableAdapter(profile())->GetDevice(params->device.address);
   if (!device) {
     SendResponse(false);
+    SetError(kInvalidDevice);
     return false;
   }
 
