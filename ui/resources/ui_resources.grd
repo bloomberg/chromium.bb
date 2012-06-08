@@ -137,60 +137,60 @@
       <!-- Images only used by Aura. -->
       <if expr="pp_ifdef('use_aura')">
         <include name="IDR_AURA_LAUNCHER_BROWSER_SHORTCUT" file="default_100_percent/aura/chromium-32.png" type="BINDATA" />
-        <include name="IDR_AURA_LAUNCHER_BROWSER" file="default_100_percent/aura/launcher_browser.png" type="BINDATA" />
-        <include name="IDR_AURA_LAUNCHER_BROWSER_PANEL" file="default_100_percent/aura/launcher_browser_panel.png" type="BINDATA" />
-        <include name="IDR_AURA_LAUNCHER_ICON_APPLIST" file="default_100_percent/aura/launcher_applist.png" type="BINDATA" />
-        <include name="IDR_AURA_LAUNCHER_ICON_APPLIST_HOT" file="default_100_percent/aura/launcher_applist_hover.png" type="BINDATA" />
-        <include name="IDR_AURA_LAUNCHER_ICON_APPLIST_PUSHED" file="default_100_percent/aura/launcher_applist_pressed.png" type="BINDATA" />
-        <include name="IDR_AURA_LAUNCHER_INCOGNITO_BROWSER" file="default_100_percent/aura/launcher_incognito_browser.png" type="BINDATA" />
-        <include name="IDR_AURA_LAUNCHER_INCOGNITO_BROWSER_PANEL" file="default_100_percent/aura/launcher_incognito_browser_panel.png" type="BINDATA" />
-        <include name="IDR_AURA_LAUNCHER_NEW_BROWSER" file="default_100_percent/aura/new_browser.png" type="BINDATA" />
-        <include name="IDR_AURA_LAUNCHER_NEW_BROWSER_HOT" file="default_100_percent/aura/new_browser_hover.png" type="BINDATA" />
-        <include name="IDR_AURA_LAUNCHER_NEW_BROWSER_PUSHED" file="default_100_percent/aura/new_browser_pressed.png" type="BINDATA" />
-        <include name="IDR_AURA_LAUNCHER_OVERFLOW" file="default_100_percent/aura/launcher_overflow.png" type="BINDATA" />
-        <include name="IDR_AURA_LAUNCHER_OVERFLOW_HOT" file="default_100_percent/aura/launcher_overflow_hover.png" type="BINDATA" />
-        <include name="IDR_AURA_LAUNCHER_OVERFLOW_PUSHED" file="default_100_percent/aura/launcher_overflow_pressed.png" type="BINDATA" />
-        <include name="IDR_AURA_LAUNCHER_UNDERLINE_ACTIVE" file="default_100_percent/aura/launcher_underline_active.png" type="BINDATA" />
-        <include name="IDR_AURA_LAUNCHER_UNDERLINE_HOVER" file="default_100_percent/aura/launcher_underline_hover.png" type="BINDATA" />
-        <include name="IDR_AURA_LAUNCHER_UNDERLINE_RUNNING" file="default_100_percent/aura/launcher_underline_running.png" type="BINDATA" />
-        <include name="IDR_AURA_LAUNCHER_UNDERLINE_VERTICAL_ACTIVE" file="default_100_percent/aura/launcher_underline_active.png" type="BINDATA" />
-        <include name="IDR_AURA_LAUNCHER_UNDERLINE_VERTICAL_HOVER" file="default_100_percent/aura/launcher_underline_hover.png" type="BINDATA" />
-        <include name="IDR_AURA_LAUNCHER_UNDERLINE_VERTICAL_RUNNING" file="default_100_percent/aura/launcher_underline_running.png" type="BINDATA" />
-        <include name="IDR_AURA_MULTI_WINDOW_RESIZE_H" file="default_100_percent/aura/multi_window_resize_hover.png" type="BINDATA" />
-        <include name="IDR_AURA_MULTI_WINDOW_RESIZE_V" file="default_100_percent/aura/multi_window_resize_v.png" type="BINDATA" />
-        <include name="IDR_AURA_RESIZE_SHADOW_TOP_LEFT" file="default_100_percent/aura/resize_shadow_top_left.png" type="BINDATA" />
-        <include name="IDR_AURA_RESIZE_SHADOW_TOP" file="default_100_percent/aura/resize_shadow_top.png" type="BINDATA" />
-        <include name="IDR_AURA_RESIZE_SHADOW_TOP_RIGHT" file="default_100_percent/aura/resize_shadow_top_right.png" type="BINDATA" />
-        <include name="IDR_AURA_RESIZE_SHADOW_LEFT" file="default_100_percent/aura/resize_shadow_left.png" type="BINDATA" />
-        <include name="IDR_AURA_RESIZE_SHADOW_RIGHT" file="default_100_percent/aura/resize_shadow_right.png" type="BINDATA" />
-        <include name="IDR_AURA_RESIZE_SHADOW_BOTTOM_LEFT" file="default_100_percent/aura/resize_shadow_bottom_left.png" type="BINDATA" />
-        <include name="IDR_AURA_RESIZE_SHADOW_BOTTOM" file="default_100_percent/aura/resize_shadow_bottom.png" type="BINDATA" />
-        <include name="IDR_AURA_RESIZE_SHADOW_BOTTOM_RIGHT" file="default_100_percent/aura/resize_shadow_bottom_right.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_ACTIVE_TOP_LEFT" file="default_100_percent/aura/window_shadow_active_top_left.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_ACTIVE_TOP" file="default_100_percent/aura/window_shadow_active_top.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_ACTIVE_TOP_RIGHT" file="default_100_percent/aura/window_shadow_active_top_right.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_ACTIVE_LEFT" file="default_100_percent/aura/window_shadow_active_left.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_ACTIVE_RIGHT" file="default_100_percent/aura/window_shadow_active_right.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_ACTIVE_BOTTOM_LEFT" file="default_100_percent/aura/window_shadow_active_bottom_left.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_ACTIVE_BOTTOM" file="default_100_percent/aura/window_shadow_active_bottom.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_ACTIVE_BOTTOM_RIGHT" file="default_100_percent/aura/window_shadow_active_bottom_right.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_INACTIVE_TOP_LEFT" file="default_100_percent/aura/window_shadow_inactive_top_left.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_INACTIVE_TOP" file="default_100_percent/aura/window_shadow_inactive_top.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_INACTIVE_TOP_RIGHT" file="default_100_percent/aura/window_shadow_inactive_top_right.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_INACTIVE_LEFT" file="default_100_percent/aura/window_shadow_inactive_left.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_INACTIVE_RIGHT" file="default_100_percent/aura/window_shadow_inactive_right.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_INACTIVE_BOTTOM_LEFT" file="default_100_percent/aura/window_shadow_inactive_bottom_left.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_INACTIVE_BOTTOM" file="default_100_percent/aura/window_shadow_inactive_bottom.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_INACTIVE_BOTTOM_RIGHT" file="default_100_percent/aura/window_shadow_inactive_bottom_right.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_SMALL_TOP_LEFT" file="default_100_percent/aura/small_shadow_top_left.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_SMALL_TOP" file="default_100_percent/aura/small_shadow_top.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_SMALL_TOP_RIGHT" file="default_100_percent/aura/small_shadow_top_right.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_SMALL_LEFT" file="default_100_percent/aura/small_shadow_left.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_SMALL_RIGHT" file="default_100_percent/aura/small_shadow_right.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_SMALL_BOTTOM_LEFT" file="default_100_percent/aura/small_shadow_bottom_left.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_SMALL_BOTTOM" file="default_100_percent/aura/small_shadow_bottom.png" type="BINDATA" />
-        <include name="IDR_AURA_SHADOW_SMALL_BOTTOM_RIGHT" file="default_100_percent/aura/small_shadow_bottom_right.png" type="BINDATA" />
-        <include name="IDR_AURA_STATUS_MOCK" file="default_100_percent/aura/statusbar.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_BROWSER" file="default_100_percent/ash/launcher_browser.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_BROWSER_PANEL" file="default_100_percent/ash/launcher_browser_panel.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_ICON_APPLIST" file="default_100_percent/ash/launcher_applist.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_ICON_APPLIST_HOT" file="default_100_percent/ash/launcher_applist_hover.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_ICON_APPLIST_PUSHED" file="default_100_percent/ash/launcher_applist_pressed.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_INCOGNITO_BROWSER" file="default_100_percent/ash/launcher_incognito_browser.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_INCOGNITO_BROWSER_PANEL" file="default_100_percent/ash/launcher_incognito_browser_panel.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_NEW_BROWSER" file="default_100_percent/ash/new_browser.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_NEW_BROWSER_HOT" file="default_100_percent/ash/new_browser_hover.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_NEW_BROWSER_PUSHED" file="default_100_percent/ash/new_browser_pressed.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_OVERFLOW" file="default_100_percent/ash/launcher_overflow.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_OVERFLOW_HOT" file="default_100_percent/ash/launcher_overflow_hover.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_OVERFLOW_PUSHED" file="default_100_percent/ash/launcher_overflow_pressed.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_UNDERLINE_ACTIVE" file="default_100_percent/ash/launcher_underline_active.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_UNDERLINE_HOVER" file="default_100_percent/ash/launcher_underline_hover.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_UNDERLINE_RUNNING" file="default_100_percent/ash/launcher_underline_running.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_UNDERLINE_VERTICAL_ACTIVE" file="default_100_percent/ash/launcher_underline_active.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_UNDERLINE_VERTICAL_HOVER" file="default_100_percent/ash/launcher_underline_hover.png" type="BINDATA" />
+        <include name="IDR_AURA_LAUNCHER_UNDERLINE_VERTICAL_RUNNING" file="default_100_percent/ash/launcher_underline_running.png" type="BINDATA" />
+        <include name="IDR_AURA_MULTI_WINDOW_RESIZE_H" file="default_100_percent/ash/multi_window_resize_hover.png" type="BINDATA" />
+        <include name="IDR_AURA_MULTI_WINDOW_RESIZE_V" file="default_100_percent/ash/multi_window_resize_v.png" type="BINDATA" />
+        <include name="IDR_AURA_RESIZE_SHADOW_TOP_LEFT" file="default_100_percent/ash/resize_shadow_top_left.png" type="BINDATA" />
+        <include name="IDR_AURA_RESIZE_SHADOW_TOP" file="default_100_percent/ash/resize_shadow_top.png" type="BINDATA" />
+        <include name="IDR_AURA_RESIZE_SHADOW_TOP_RIGHT" file="default_100_percent/ash/resize_shadow_top_right.png" type="BINDATA" />
+        <include name="IDR_AURA_RESIZE_SHADOW_LEFT" file="default_100_percent/ash/resize_shadow_left.png" type="BINDATA" />
+        <include name="IDR_AURA_RESIZE_SHADOW_RIGHT" file="default_100_percent/ash/resize_shadow_right.png" type="BINDATA" />
+        <include name="IDR_AURA_RESIZE_SHADOW_BOTTOM_LEFT" file="default_100_percent/ash/resize_shadow_bottom_left.png" type="BINDATA" />
+        <include name="IDR_AURA_RESIZE_SHADOW_BOTTOM" file="default_100_percent/ash/resize_shadow_bottom.png" type="BINDATA" />
+        <include name="IDR_AURA_RESIZE_SHADOW_BOTTOM_RIGHT" file="default_100_percent/ash/resize_shadow_bottom_right.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_ACTIVE_TOP_LEFT" file="default_100_percent/ash/window_shadow_active_top_left.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_ACTIVE_TOP" file="default_100_percent/ash/window_shadow_active_top.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_ACTIVE_TOP_RIGHT" file="default_100_percent/ash/window_shadow_active_top_right.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_ACTIVE_LEFT" file="default_100_percent/ash/window_shadow_active_left.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_ACTIVE_RIGHT" file="default_100_percent/ash/window_shadow_active_right.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_ACTIVE_BOTTOM_LEFT" file="default_100_percent/ash/window_shadow_active_bottom_left.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_ACTIVE_BOTTOM" file="default_100_percent/ash/window_shadow_active_bottom.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_ACTIVE_BOTTOM_RIGHT" file="default_100_percent/ash/window_shadow_active_bottom_right.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_INACTIVE_TOP_LEFT" file="default_100_percent/ash/window_shadow_inactive_top_left.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_INACTIVE_TOP" file="default_100_percent/ash/window_shadow_inactive_top.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_INACTIVE_TOP_RIGHT" file="default_100_percent/ash/window_shadow_inactive_top_right.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_INACTIVE_LEFT" file="default_100_percent/ash/window_shadow_inactive_left.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_INACTIVE_RIGHT" file="default_100_percent/ash/window_shadow_inactive_right.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_INACTIVE_BOTTOM_LEFT" file="default_100_percent/ash/window_shadow_inactive_bottom_left.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_INACTIVE_BOTTOM" file="default_100_percent/ash/window_shadow_inactive_bottom.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_INACTIVE_BOTTOM_RIGHT" file="default_100_percent/ash/window_shadow_inactive_bottom_right.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_SMALL_TOP_LEFT" file="default_100_percent/ash/small_shadow_top_left.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_SMALL_TOP" file="default_100_percent/ash/small_shadow_top.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_SMALL_TOP_RIGHT" file="default_100_percent/ash/small_shadow_top_right.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_SMALL_LEFT" file="default_100_percent/ash/small_shadow_left.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_SMALL_RIGHT" file="default_100_percent/ash/small_shadow_right.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_SMALL_BOTTOM_LEFT" file="default_100_percent/ash/small_shadow_bottom_left.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_SMALL_BOTTOM" file="default_100_percent/ash/small_shadow_bottom.png" type="BINDATA" />
+        <include name="IDR_AURA_SHADOW_SMALL_BOTTOM_RIGHT" file="default_100_percent/ash/small_shadow_bottom_right.png" type="BINDATA" />
+        <include name="IDR_AURA_STATUS_MOCK" file="default_100_percent/ash/statusbar.png" type="BINDATA" />
       </if>
 
       <!-- Wallpapers used by Ash when building ChromiumOS. -->
@@ -283,7 +283,7 @@
         <include name="IDR_AURA_WINDOW_HEADER_SHADE_TOP_RIGHT" file="default_100_percent/aura/window_header_shade_top_right.png" type="BINDATA" />
         <include name="IDR_AURA_WINDOW_ZOOM_ICON" file="default_100_percent/aura/slab_zoom.png" type="BINDATA" />
 
-        <include name="IDR_AURA_SWITCH_MONITOR" file="default_100_percent/aura/switch_monitor.png" type="BINDATA" />
+        <include name="IDR_AURA_SWITCH_MONITOR" file="default_100_percent/ash/switch_monitor.png" type="BINDATA" />
         <include name="IDR_OAK" file="oak.png" type="BINDATA"/>
       </if>
     </includes>
