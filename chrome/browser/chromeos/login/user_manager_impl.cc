@@ -984,19 +984,31 @@ void UserManagerImpl::MigrateWallpaperData() {
     const DictionaryValue* user_wallpapers =
           local_state->GetDictionary(kUserWallpapers);
     int index;
-    if (user_wallpapers) {
-      const UserList& users = GetUsers();
-      for (UserList::const_iterator it = users.begin();
-           it != users.end();
-           ++it) {
-        std::string username = (*it)->email();
-        if (user_wallpapers->GetIntegerWithoutPathExpansion((username),
-            &index)) {
-          DictionaryPrefUpdate prefs_wallpapers_update(local_state,
-                                                       kUserWallpapers);
-          prefs_wallpapers_update->RemoveWithoutPathExpansion(username, NULL);
-          SaveUserWallpaperProperties(username, User::DEFAULT, index);
-        }
+    const UserList& users = GetUsers();
+    for (UserList::const_iterator it = users.begin();
+         it != users.end();
+         ++it) {
+      std::string username = (*it)->email();
+      if (user_wallpapers->GetIntegerWithoutPathExpansion((username),
+          &index)) {
+        DictionaryPrefUpdate prefs_wallpapers_update(local_state,
+                                                     kUserWallpapers);
+        prefs_wallpapers_update->RemoveWithoutPathExpansion(username, NULL);
+        SaveUserWallpaperProperties(username, User::DEFAULT, index);
+      } else {
+        // Before M20, wallpaper index is not saved into LocalState unless user
+        // specifically sets a wallpaper. After M20, the default wallpaper index
+        // is saved to LocalState as soon as a new user login. When migrating
+        // wallpaper index from M20 to M21, we only migrate data that is in
+        // LocalState. This cause a problem when users login on a M20 device and
+        // then update the device to M21. The default wallpaper index failed to
+        // migrate because it was not saved into LocalState. Then we assume that
+        // all users have index saved in LocalState in M21. This is not true and
+        // it results an empty wallpaper for those users as described in
+        // cr/130685. So here we use default wallpaper for users that exist in
+        // user list but does not have an index saved in LocalState.
+        SaveUserWallpaperProperties(username, User::DEFAULT,
+                                    ash::GetDefaultWallpaperIndex());
       }
     }
   }
@@ -1065,17 +1077,15 @@ void UserManagerImpl::GetUserWallpaperProperties(const std::string& username,
   if (!username.empty()) {
     const DictionaryValue* user_wallpapers = g_browser_process->local_state()->
         GetDictionary(UserManager::kUserWallpapersProperties);
-    if (user_wallpapers) {
-      base::DictionaryValue* wallpaper_properties;
-      if (user_wallpapers->GetDictionaryWithoutPathExpansion(
-          username,
-          &wallpaper_properties)) {
-        *type = User::UNKNOWN;
-        *index = ash::GetDefaultWallpaperIndex();
-        wallpaper_properties->GetInteger(kWallpaperTypeNodeName,
-                                         reinterpret_cast<int*>(type));
-        wallpaper_properties->GetInteger(kWallpaperIndexNodeName, index);
-      }
+    base::DictionaryValue* wallpaper_properties;
+    if (user_wallpapers->GetDictionaryWithoutPathExpansion(
+        username,
+        &wallpaper_properties)) {
+      *type = User::UNKNOWN;
+      *index = ash::GetDefaultWallpaperIndex();
+      wallpaper_properties->GetInteger(kWallpaperTypeNodeName,
+                                       reinterpret_cast<int*>(type));
+      wallpaper_properties->GetInteger(kWallpaperIndexNodeName, index);
     }
   }
 }
