@@ -150,14 +150,16 @@ void PromoResourceService::ScheduleNotification(double promo_start,
     int64 ms_until_end =
         static_cast<int64>((base::Time::FromDoubleT(
             promo_end) - base::Time::Now()).InMilliseconds());
-    if (ms_until_start > 0)
+    if (ms_until_start > 0) {
+      // Schedule the next notification to happen at the start of promotion.
       PostNotification(ms_until_start);
-    if (ms_until_end > 0) {
-      PostNotification(ms_until_end);
+    } else if (ms_until_end > 0) {
       if (ms_until_start <= 0) {
         // Notify immediately if time is between start and end.
         PostNotification(0);
       }
+      // Schedule the next notification to happen at the end of promotion.
+      PostNotification(ms_until_end);
     }
   }
 }
