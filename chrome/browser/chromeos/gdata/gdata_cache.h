@@ -11,6 +11,7 @@
 
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/sequenced_worker_pool.h"
 
 namespace gdata {
 
@@ -155,16 +156,32 @@ class GDataCache {
   virtual void RemoveTemporaryFiles() = 0;
 
   // Factory methods for GDataCache.
+  // |pool| and |sequence_token| are used to assert that the functions are
+  // called on the right sequenced worker pool with the right sequence token.
+  //
+  // For testing, the thread assertion can be disabled by passing NULL and
+  // the default value of SequenceToken.
   static scoped_ptr<GDataCache> CreateGDataCache(
-      const FilePath& cache_root_path);
+      const FilePath& cache_root_path,
+      base::SequencedWorkerPool* pool,
+      const base::SequencedWorkerPool::SequenceToken& sequence_token);
 
  protected:
-  explicit GDataCache(const FilePath& cache_root_path);
+  GDataCache(
+      const FilePath& cache_root_path,
+      base::SequencedWorkerPool* pool_,
+      const base::SequencedWorkerPool::SequenceToken& sequence_token);
+
+  // Checks whether the current thread is on the right sequenced worker pool
+  // with the right sequence ID. If not, DCHECK will fail.
+  void AssertOnSequencedWorkerPool();
 
  private:
   // Paths for all subdirectories of GCache, one for each
   // GDataCache::CacheSubDirectoryType enum.
   std::vector<FilePath> cache_paths_;
+  base::SequencedWorkerPool* pool_;
+  const base::SequencedWorkerPool::SequenceToken sequence_token_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataCache);
 };

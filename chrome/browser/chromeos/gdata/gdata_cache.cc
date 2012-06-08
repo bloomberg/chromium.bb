@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "base/string_util.h"
-#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 
 namespace gdata {
@@ -72,7 +71,12 @@ std::string GDataCache::CacheEntry::ToString() const {
                             JoinString(cache_states, ',').c_str());
 }
 
-GDataCache::GDataCache(const FilePath& cache_root_path) {
+GDataCache::GDataCache(
+    const FilePath& cache_root_path,
+    base::SequencedWorkerPool* pool,
+    const base::SequencedWorkerPool::SequenceToken& sequence_token)
+    : pool_(pool),
+      sequence_token_(sequence_token) {
   // Insert into |cache_paths_| in order defined in enum CacheSubDirectoryType.
   cache_paths_.push_back(cache_root_path.Append(kGDataCacheMetaDir));
   cache_paths_.push_back(cache_root_path.Append(kGDataCachePinnedDir));
@@ -121,9 +125,16 @@ FilePath GDataCache::GetCacheFilePath(const std::string& resource_id,
   return GetCacheDirectoryPath(sub_dir_type).Append(base_name);
 }
 
+void GDataCache::AssertOnSequencedWorkerPool() {
+  DCHECK(!pool_ || pool_->IsRunningSequenceOnCurrentThread(sequence_token_));
+}
+
 class GDataCacheMap : public GDataCache {
  public:
-  explicit GDataCacheMap(const FilePath& cache_root_path);
+  GDataCacheMap(
+      const FilePath& cache_root_path,
+      base::SequencedWorkerPool* pool,
+      const base::SequencedWorkerPool::SequenceToken& sequence_token);
 
  protected:
   virtual ~GDataCacheMap();
@@ -143,17 +154,21 @@ class GDataCacheMap : public GDataCache {
   CacheMap cache_map_;
 };
 
-GDataCacheMap::GDataCacheMap(const FilePath& cache_root_path)
-    : GDataCache(cache_root_path) {
+GDataCacheMap::GDataCacheMap(
+    const FilePath& cache_root_path,
+    base::SequencedWorkerPool* pool,
+    const base::SequencedWorkerPool::SequenceToken& sequence_token)
+    : GDataCache(cache_root_path, pool, sequence_token) {
 }
 
 GDataCacheMap::~GDataCacheMap() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  // TODO(satorux): Enable this once all callers are fixed: crbug.com/131826.
+  // AssertOnSequencedWorkerPool();
   cache_map_.clear();
 }
 
 void GDataCacheMap::SetCacheMap(const CacheMap& new_cache_map)  {
-  base::ThreadRestrictions::AssertIOAllowed();
+  AssertOnSequencedWorkerPool();
   cache_map_ = new_cache_map;
 }
 
@@ -161,7 +176,7 @@ void GDataCacheMap::UpdateCache(const std::string& resource_id,
                                 const std::string& md5,
                                 CacheSubDirectoryType subdir,
                                 int cache_state) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  AssertOnSequencedWorkerPool();
 
   CacheMap::iterator iter = cache_map_.find(resource_id);
   if (iter == cache_map_.end()) {  // New resource, create new entry.
@@ -190,7 +205,7 @@ void GDataCacheMap::UpdateCache(const std::string& resource_id,
 }
 
 void GDataCacheMap::RemoveFromCache(const std::string& resource_id) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  AssertOnSequencedWorkerPool();
 
   CacheMap::iterator iter = cache_map_.find(resource_id);
   if (iter != cache_map_.end()) {
@@ -202,7 +217,8 @@ void GDataCacheMap::RemoveFromCache(const std::string& resource_id) {
 scoped_ptr<GDataCache::CacheEntry> GDataCacheMap::GetCacheEntry(
     const std::string& resource_id,
     const std::string& md5) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  // TODO(satorux): Enable this once all callers are fixed: crbug.com/131826.
+  // AssertOnSequencedWorkerPool();
 
   CacheMap::iterator iter = cache_map_.find(resource_id);
   if (iter == cache_map_.end()) {
@@ -230,7 +246,7 @@ scoped_ptr<GDataCache::CacheEntry> GDataCacheMap::GetCacheEntry(
 }
 
 void GDataCacheMap::RemoveTemporaryFiles() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  AssertOnSequencedWorkerPool();
 
   CacheMap::iterator iter = cache_map_.begin();
   while (iter != cache_map_.end()) {
@@ -245,8 +261,11 @@ void GDataCacheMap::RemoveTemporaryFiles() {
 
 // static
 scoped_ptr<GDataCache> GDataCache::CreateGDataCache(
-    const FilePath& cache_root_path) {
-  return scoped_ptr<GDataCache>(new GDataCacheMap(cache_root_path));
+    const FilePath& cache_root_path,
+    base::SequencedWorkerPool* pool,
+    const base::SequencedWorkerPool::SequenceToken& sequence_token) {
+  return scoped_ptr<GDataCache>(new GDataCacheMap(
+      cache_root_path, pool, sequence_token));
 }
 
 }  // namespace gdata

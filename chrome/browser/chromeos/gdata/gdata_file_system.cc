@@ -935,7 +935,9 @@ void GDataFileSystem::Initialize() {
   documents_service_->Initialize(profile_);
 
   root_.reset(new GDataRootDirectory);
-  cache_ = GDataCache::CreateGDataCache(gdata_cache_path_).Pass();
+  cache_ = GDataCache::CreateGDataCache(gdata_cache_path_,
+                                        BrowserThread::GetBlockingPool(),
+                                        sequence_token_).Pass();
 
   PrefService* pref_service = profile_->GetPrefs();
   hide_hosted_docs_ = pref_service->GetBoolean(prefs::kDisableGDataHostedFiles);
@@ -1005,6 +1007,7 @@ GDataFileSystem::~GDataFileSystem() {
   // Lock to let root destroy cache map and resource map.
   base::AutoLock lock(lock_);
   root_.reset();
+  // TODO(satorux): Should not delete this on UI thread. crbug.com/131826.
   cache_.reset();
 
   // Let's make sure that num_pending_tasks_lock_ has been released on all
@@ -3221,6 +3224,7 @@ void GDataFileSystem::OnFileDownloaded(
       // To access root_. Limit the scope as SetPinStateOnUIThread() will
       // acquire the lock.
       base::AutoLock lock(lock_);
+      // TODO(satorux): Should not call this on UI thread. crbug.com/131826.
       scoped_ptr<GDataCache::CacheEntry> cache_entry = cache_->GetCacheEntry(
           params.resource_id,
           params.md5);
