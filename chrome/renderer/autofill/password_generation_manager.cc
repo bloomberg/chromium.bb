@@ -20,6 +20,54 @@
 
 namespace autofill {
 
+namespace {
+
+// Returns true if we think that this form is for account creation. |passwords|
+// is filled with the password field(s) in the form.
+bool GetAccountCreationPasswordFields(
+    const WebKit::WebFormElement& form,
+    std::vector<WebKit::WebInputElement>* passwords) {
+  // Ignore forms with autocomplete turned off for now. We may remove this in
+  // the future, as we only want to avoid creating passwords if the signin
+  // form has autocomplete turned off.
+  if (form.isNull() || !form.autoComplete())
+    return false;
+
+  // If we can't get a valid PasswordForm, we skip this form because the
+  // the password won't get saved even if we generate it.
+  webkit::forms::PasswordForm* password_form(
+      webkit::forms::PasswordFormDomManager::CreatePasswordForm(form));
+  if (!password_form) {
+    DVLOG(2) << "Invalid action on form";
+    return false;
+  }
+
+  // Grab all of the passwords for the form.
+  WebKit::WebVector<WebKit::WebFormControlElement> control_elements;
+  form.getFormControlElements(control_elements);
+
+  for (size_t i = 0; i < control_elements.size(); i++) {
+    WebKit::WebInputElement* input_element =
+        toWebInputElement(&control_elements[i]);
+    // Only pay attention to visible password fields.
+    if (input_element &&
+        input_element->isPasswordField() &&
+        input_element->hasNonEmptyBoundingBox()) {
+      passwords->push_back(*input_element);
+    }
+  }
+
+  // For now, just assume that if there are two password fields in the
+  // form that this is meant for account creation.
+  // TODO(gcasto): Determine better heauristics for this.
+  if (passwords->size() == 2)
+    return true;
+
+  return false;
+}
+
+} // namespace
+
 PasswordGenerationManager::PasswordGenerationManager(
     content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
@@ -28,7 +76,10 @@ PasswordGenerationManager::PasswordGenerationManager(
 }
 PasswordGenerationManager::~PasswordGenerationManager() {}
 
-void PasswordGenerationManager::DidFinishDocumentLoad(WebKit::WebFrame* frame) {
+void PasswordGenerationManager::DidFinishLoad(WebKit::WebFrame* frame) {
+  // Clear previous state.
+  passwords_.clear();
+
   // We don't want to generate passwords if the browser won't store or sync
   // them.
   if (!enabled_)
@@ -40,31 +91,14 @@ void PasswordGenerationManager::DidFinishDocumentLoad(WebKit::WebFrame* frame) {
   WebKit::WebVector<WebKit::WebFormElement> forms;
   frame->document().forms(forms);
   for (size_t i = 0; i < forms.size(); ++i) {
-    const WebKit::WebFormElement& web_form = forms[i];
-    if (web_form.isNull() || !web_form.autoComplete())
-      continue;
-
-    // Grab all of the passwords for each form.
-    WebKit::WebVector<WebKit::WebFormControlElement> control_elements;
-    web_form.getFormControlElements(control_elements);
-
     std::vector<WebKit::WebInputElement> passwords;
-    for (size_t i = 0; i < control_elements.size(); i++) {
-      WebKit::WebInputElement* input_element =
-          toWebInputElement(&control_elements[i]);
-      if (input_element && input_element->isPasswordField())
-        passwords.push_back(*input_element);
-    }
-
-    // For now, just assume that if there are two password fields in the
-    // form that this is meant for account creation. Also, we assume that there
-    // is only one account creation field per URL.
-    // TODO(gcasto): Determine better heauristics for this.
-    if (passwords.size() == 2) {
+    if (GetAccountCreationPasswordFields(forms[i], &passwords)) {
+      DVLOG(2) << "Account creation form detected";
       passwords_ = passwords;
       // Make the decoration visible for this element.
       passwords[0].decorationElementFor(this).setAttribute("style",
                                                            "display:block");
+      // We assume that there is only one account creation field per URL.
       return;
     }
   }

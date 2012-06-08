@@ -40,7 +40,7 @@ class PasswordGenerationManager : public content::RenderViewObserver,
 
  private:
   // RenderViewObserver:
-  virtual void DidFinishDocumentLoad(WebKit::WebFrame* frame) OVERRIDE;
+  virtual void DidFinishLoad(WebKit::WebFrame* frame) OVERRIDE;
 
   // WebTextFieldDecoratorClient:
   virtual bool shouldAddDecorationTo(
@@ -50,7 +50,10 @@ class PasswordGenerationManager : public content::RenderViewObserver,
   virtual WebKit::WebCString imageNameForDisabledState() OVERRIDE;
   virtual WebKit::WebCString imageNameForReadOnlyState() OVERRIDE;
   virtual void handleClick(WebKit::WebInputElement& element) OVERRIDE;
-  virtual void willDetach(const WebKit::WebInputElement&) OVERRIDE;
+  virtual void willDetach(const WebKit::WebInputElement& element) OVERRIDE;
+
+  bool IsAccountCreationForm(const WebKit::WebFormElement& form,
+                             std::vector<WebKit::WebInputElement>* passwords);
 
   // Message handlers.
   void OnPasswordAccepted(const string16& password);

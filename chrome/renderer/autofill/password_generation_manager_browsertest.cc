@@ -94,6 +94,22 @@ const char kSigninFormHTML[] =
 const char kAccountCreationFormHTML[] =
     "<FORM name = 'blah' action = 'http://www.random.com/'> "
     "  <INPUT type = 'text' id = 'username'/> "
+    "  <INPUT type = 'password' id = 'first_password' size=5/> "
+    "  <INPUT type = 'password' id = 'second_password' size=5/> "
+    "  <INPUT type = 'submit' value = 'LOGIN' />"
+    "</FORM>";
+
+const char kHiddenPasswordAccountCreationFormHTML[] =
+    "<FORM name = 'blah' action = 'http://www.random.com/'> "
+    "  <INPUT type = 'text' id = 'username'/> "
+    "  <INPUT type = 'password' id = 'first_password'/> "
+    "  <INPUT type = 'password' id = 'second_password' style='display:none'/> "
+    "  <INPUT type = 'submit' value = 'LOGIN' />"
+    "</FORM>";
+
+const char kInvalidActionAccountCreationFormHTML[] =
+    "<FORM name = 'blah' action = 'invalid'> "
+    "  <INPUT type = 'text' id = 'username'/> "
     "  <INPUT type = 'password' id = 'first_password'/> "
     "  <INPUT type = 'password' id = 'second_password'/> "
     "  <INPUT type = 'submit' value = 'LOGIN' />"
@@ -116,9 +132,6 @@ TEST_F(PasswordGenerationManagerTest, DetectionTest) {
   element = document.getElementById(WebString::fromUTF8("first_password"));
   ASSERT_FALSE(element.isNull());
   WebInputElement first_password_element = element.to<WebInputElement>();
-  element = document.getElementById(WebString::fromUTF8("second_password"));
-  ASSERT_FALSE(element.isNull());
-  WebInputElement second_password_element = element.to<WebInputElement>();
   EXPECT_FALSE(DecorationIsVisible(&first_password_element));
 
   // Pretend like password generation was enabled.
@@ -132,14 +145,27 @@ TEST_F(PasswordGenerationManagerTest, DetectionTest) {
   element = document.getElementById(WebString::fromUTF8("first_password"));
   ASSERT_FALSE(element.isNull());
   first_password_element = element.to<WebInputElement>();
-  element = document.getElementById(WebString::fromUTF8("second_password"));
-  ASSERT_FALSE(element.isNull());
-  second_password_element = element.to<WebInputElement>();
   EXPECT_TRUE(DecorationIsVisible(&first_password_element));
   SimulateClickOnDecoration(&first_password_element);
   EXPECT_EQ(1u, generation_manager_->messages().size());
   EXPECT_EQ(AutofillHostMsg_ShowPasswordGenerationPopup::ID,
             generation_manager_->messages()[0]->type());
+
+  // This doesn't trigger because hidden password fields are ignored.
+  LoadHTML(kHiddenPasswordAccountCreationFormHTML);
+  document = GetMainFrame()->document();
+  element = document.getElementById(WebString::fromUTF8("first_password"));
+  ASSERT_FALSE(element.isNull());
+  first_password_element = element.to<WebInputElement>();
+  EXPECT_FALSE(DecorationIsVisible(&first_password_element));
+
+  // This doesn't trigger because the form action is invalid.
+  LoadHTML(kInvalidActionAccountCreationFormHTML);
+  document = GetMainFrame()->document();
+  element = document.getElementById(WebString::fromUTF8("first_password"));
+  ASSERT_FALSE(element.isNull());
+  first_password_element = element.to<WebInputElement>();
+  EXPECT_FALSE(DecorationIsVisible(&first_password_element));
 }
 
 TEST_F(PasswordGenerationManagerTest, FillTest) {
