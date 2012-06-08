@@ -24,6 +24,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
 #include <time.h>
 
 #include <wayland-server.h>
@@ -33,36 +34,19 @@
 
 static FILE *weston_logfile = NULL;
 
-static char cached_timestamp[21];
-static int cached_tv_sec = 0;
-
 static int weston_log_timestamp(void)
 {
-	struct timespec tp;
-	unsigned int time;
+	struct timeval tv;
+	struct tm *brokendown_time;
+	char string[128];
 
-	clock_gettime(CLOCK_REALTIME, &tp);
-	time = (tp.tv_sec * 1000000L) + (tp.tv_nsec / 1000);
+	gettimeofday(&tv, NULL);
 
-	if (cached_tv_sec != tp.tv_sec) {
-		char string[26];
-		struct tm *lt = localtime(&tp.tv_sec);
+	brokendown_time = localtime(&tv.tv_sec);
 
-		cached_tv_sec = tp.tv_sec;
+	strftime(string, sizeof string, "%Y-%m-%d %H:%M:%S", brokendown_time);
 
-		strftime (string,24,"%Y-%m-%d %H:%M:%S", lt);
-		strncpy (cached_timestamp, string, 20);
-	}
-
-	return fprintf(weston_logfile, "[%s.%03u] ", cached_timestamp, tp.tv_nsec/1000000);
-}
-
-static int weston_log_print(const char *fmt, va_list arg)
-{
-	int l;
-	l = vfprintf(weston_logfile, fmt, arg);
-	fflush(weston_logfile);
-	return l;
+	return fprintf(weston_logfile, "[%s.%03li] ", string, tv.tv_usec/1000);
 }
 
 static void
@@ -70,7 +54,7 @@ custom_handler(const char *fmt, va_list arg)
 {
 	weston_log_timestamp();
 	fprintf(weston_logfile, "libwayland: ");
-	weston_log_print(fmt, arg);
+	vfprintf(weston_logfile, fmt, arg);
 }
 
 void
@@ -78,15 +62,19 @@ weston_log_file_open(const char *filename)
 {
 	wl_log_set_handler_server(custom_handler);
 
-	weston_logfile = fopen(filename, "a");
+	if (filename != NULL)
+		weston_logfile = fopen(filename, "a");
+
 	if (weston_logfile == NULL)
 		weston_logfile = stderr;
+	else
+		setvbuf(weston_logfile, NULL, _IOLBF, 256);
 }
 
 void
 weston_log_file_close()
 {
-	if (weston_logfile != stderr)
+	if ((weston_logfile != stderr) && (weston_logfile != NULL))
 		fclose(weston_logfile);
 	weston_logfile = stderr;
 }
@@ -98,7 +86,7 @@ weston_log(const char *fmt, ...)
 	va_list argp;
 	va_start(argp, fmt);
 	l = weston_log_timestamp();
-	l += weston_log_print(fmt, argp);
+	l += vfprintf(weston_logfile, fmt, argp);
 	va_end(argp);
 	return l;
 }
@@ -109,7 +97,7 @@ weston_log_continue(const char *fmt, ...)
 	int l;
 	va_list argp;
 	va_start(argp, fmt);
-	l = weston_log_print(fmt, argp);
+	l = vfprintf(weston_logfile, fmt, argp);
 	va_end(argp);
 	return l;
 }

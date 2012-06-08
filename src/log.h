@@ -20,8 +20,8 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef _WAYLAND_SYSTEM_LOG_H_
-#define _WAYLAND_SYSTEM_LOG_H_
+#ifndef _WESTON_LOG_H_
+#define _WESTON_LOG_H_
 
 void weston_log_file_open(const char *filename);
 void weston_log_file_close(void);
