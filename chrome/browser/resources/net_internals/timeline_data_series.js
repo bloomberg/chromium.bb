@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -168,11 +168,11 @@ var SourceCountDataSeries = (function() {
         return;
       }
 
-      if (entry.phase == LogEventPhase.PHASE_BEGIN) {
+      if (entry.phase == EventPhase.PHASE_BEGIN) {
         this.onBeginEvent(entry.source.id, entry.time);
         return;
       }
-      if (entry.phase == LogEventPhase.PHASE_END)
+      if (entry.phase == EventPhase.PHASE_END)
         this.onEndEvent(entry.source.id, entry.time);
     },
 
@@ -219,7 +219,7 @@ var SocketsInUseDataSeries = (function() {
    * @constructor
    */
   function SocketsInUseDataSeries() {
-    superClass.call(this, LogSourceType.SOCKET, LogEventType.SOCKET_IN_USE);
+    superClass.call(this, EventSourceType.SOCKET, EventType.SOCKET_IN_USE);
   }
 
   SocketsInUseDataSeries.prototype = {
@@ -229,8 +229,8 @@ var SocketsInUseDataSeries = (function() {
     onReceivedLogEntry: function(entry) {
       // SSL sockets have two nested SOCKET_IN_USE events.  This is needed to
       // mark SSL sockets as unused after SSL negotiation.
-      if (entry.type == LogEventType.SSL_CONNECT &&
-          entry.phase == LogEventPhase.PHASE_END) {
+      if (entry.type == EventType.SSL_CONNECT &&
+          entry.phase == EventPhase.PHASE_END) {
         this.onEndEvent(entry.source.id, entry.time);
         return;
       }
@@ -352,9 +352,9 @@ var DiskCacheTransferRateDataSeries = (function() {
     __proto__: superClass.prototype,
 
     onReceivedLogEntry: function(entry) {
-      if (entry.source.type != LogSourceType.DISK_CACHE_ENTRY ||
+      if (entry.source.type != EventSourceType.DISK_CACHE_ENTRY ||
           entry.type != this.eventType_ ||
-          entry.phase != LogEventPhase.PHASE_END) {
+          entry.phase != EventPhase.PHASE_END) {
         return;
       }
       // The disk cache has a lot of 0-length writes, when truncating entries.

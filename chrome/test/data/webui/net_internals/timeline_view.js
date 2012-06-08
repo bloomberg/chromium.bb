@@ -66,9 +66,9 @@ LoadLogWithNewEventsTask.prototype = {
     logDump.constants.timeTickOffset = '0';
     logDump.events = [];
 
-    var source = new NetInternalsTest.Source(1, LogSourceType.SOCKET);
+    var source = new NetInternalsTest.Source(1, EventSourceType.SOCKET);
     logDump.events.push(
-        NetInternalsTest.createBeginEvent(source, LogEventType.SOCKET_ALIVE,
+        NetInternalsTest.createBeginEvent(source, EventType.SOCKET_ALIVE,
                                           this.startTime_, null));
     logDump.events.push(
         NetInternalsTest.createMatchingEndEvent(logDump.events[0],

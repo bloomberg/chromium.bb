@@ -23,11 +23,11 @@ var LogGroupEntry = (function() {
 
   LogGroupEntry.prototype = {
     isBegin: function() {
-      return this.orig.phase == LogEventPhase.PHASE_BEGIN;
+      return this.orig.phase == EventPhase.PHASE_BEGIN;
     },
 
     isEnd: function() {
-      return this.orig.phase == LogEventPhase.PHASE_END;
+      return this.orig.phase == EventPhase.PHASE_END;
     },
 
     getDepth: function() {

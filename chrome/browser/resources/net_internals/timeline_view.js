@@ -190,39 +190,39 @@ var TimelineView = (function() {
       this.dataSeries_ = [];
 
       this.addDataSeries_(new SourceCountDataSeries(
-                              LogSourceType.SOCKET,
-                              LogEventType.SOCKET_ALIVE),
+                              EventSourceType.SOCKET,
+                              EventType.SOCKET_ALIVE),
                           TimelineView.OPEN_SOCKETS_ID);
 
       this.addDataSeries_(new SocketsInUseDataSeries(),
                           TimelineView.IN_USE_SOCKETS_ID);
 
       this.addDataSeries_(new SourceCountDataSeries(
-                              LogSourceType.URL_REQUEST,
-                              LogEventType.REQUEST_ALIVE),
+                              EventSourceType.URL_REQUEST,
+                              EventType.REQUEST_ALIVE),
                           TimelineView.URL_REQUESTS_ID);
 
       this.addDataSeries_(new SourceCountDataSeries(
-                              LogSourceType.HOST_RESOLVER_IMPL_REQUEST,
-                              LogEventType.HOST_RESOLVER_IMPL_REQUEST),
+                              EventSourceType.HOST_RESOLVER_IMPL_REQUEST,
+                              EventType.HOST_RESOLVER_IMPL_REQUEST),
                           TimelineView.DNS_REQUESTS_ID);
 
       this.addDataSeries_(new NetworkTransferRateDataSeries(
-                              LogEventType.SOCKET_BYTES_RECEIVED,
-                              LogEventType.UDP_BYTES_RECEIVED),
+                              EventType.SOCKET_BYTES_RECEIVED,
+                              EventType.UDP_BYTES_RECEIVED),
                           TimelineView.BYTES_RECEIVED_ID);
 
       this.addDataSeries_(new NetworkTransferRateDataSeries(
-                              LogEventType.SOCKET_BYTES_SENT,
-                              LogEventType.UDP_BYTES_SENT),
+                              EventType.SOCKET_BYTES_SENT,
+                              EventType.UDP_BYTES_SENT),
                           TimelineView.BYTES_SENT_ID);
 
       this.addDataSeries_(new DiskCacheTransferRateDataSeries(
-                              LogEventType.ENTRY_READ_DATA),
+                              EventType.ENTRY_READ_DATA),
                           TimelineView.DISK_CACHE_BYTES_READ_ID);
 
       this.addDataSeries_(new DiskCacheTransferRateDataSeries(
-                              LogEventType.ENTRY_WRITE_DATA),
+                              EventType.ENTRY_WRITE_DATA),
                           TimelineView.DISK_CACHE_BYTES_WRITTEN_ID);
 
       this.graphView_.setDataSeries(this.dataSeries_);

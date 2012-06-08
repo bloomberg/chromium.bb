@@ -242,18 +242,18 @@ function writeParameters(entry, enableSecurityStripping, out) {
  */
 function getParamaterWriterForEventType(eventType) {
   switch (eventType) {
-    case LogEventType.HTTP_TRANSACTION_SEND_REQUEST_HEADERS:
-    case LogEventType.HTTP_TRANSACTION_SEND_TUNNEL_HEADERS:
+    case EventType.HTTP_TRANSACTION_SEND_REQUEST_HEADERS:
+    case EventType.HTTP_TRANSACTION_SEND_TUNNEL_HEADERS:
       return writeParamsForRequestHeaders;
 
-    case LogEventType.PROXY_CONFIG_CHANGED:
+    case EventType.PROXY_CONFIG_CHANGED:
       return writeParamsForProxyConfigChanged;
 
-    case LogEventType.CERT_VERIFIER_JOB:
-    case LogEventType.SSL_CERTIFICATES_RECEIVED:
+    case EventType.CERT_VERIFIER_JOB:
+    case EventType.SSL_CERTIFICATES_RECEIVED:
       return writeParamsForCertificates;
 
-    case LogEventType.SSL_VERSION_FALLBACK:
+    case EventType.SSL_VERSION_FALLBACK:
       return writeParamsForSSLVersionFallback;
   }
   return null;
@@ -280,7 +280,7 @@ function defaultWriteParameter(key, value, out) {
   // string.
   if (key == 'source_dependency' && typeof value == 'object') {
     var link = '#events&s=' + value.id;
-    var valueStr = value.id + ' (' + LogSourceTypeNames[value.type] + ')';
+    var valueStr = value.id + ' (' + EventSourceTypeNames[value.type] + ')';
     out.writeArrowKeyValue(key, valueStr, link);
     return;
   }
@@ -537,7 +537,7 @@ function getTextForEvent(entry) {
     text = ' ';
   }
 
-  text += LogEventTypeNames[entry.orig.type];
+  text += EventTypeNames[entry.orig.type];
   return text;
 }
 

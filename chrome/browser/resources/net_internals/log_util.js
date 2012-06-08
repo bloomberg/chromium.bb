@@ -179,9 +179,9 @@ log_util = (function() {
       if (typeof event == 'object' &&
           typeof event.source == 'object' &&
           typeof event.time == 'string' &&
-          typeof LogEventTypeNames[event.type] == 'string' &&
-          typeof LogSourceTypeNames[event.source.type] == 'string' &&
-          getKeyWithValue(LogEventPhase, event.phase) != '?') {
+          typeof EventTypeNames[event.type] == 'string' &&
+          typeof EventSourceTypeNames[event.source.type] == 'string' &&
+          getKeyWithValue(EventPhase, event.phase) != '?') {
         if (event.wasPassivelyCaptured) {
           // NOTE: Up until Chrome 18, log dumps included "passively captured"
           // events. These are no longer supported, so skip past them

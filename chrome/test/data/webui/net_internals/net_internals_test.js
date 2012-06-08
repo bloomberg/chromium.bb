@@ -597,7 +597,7 @@ var NetInternalsTest = (function() {
    * @constructor
    */
   NetInternalsTest.Source = function(type, id) {
-    assertNotEquals(getKeyWithValue(LogSourceType, type), '?');
+    assertNotEquals(getKeyWithValue(EventSourceType, type), '?');
     assertGE(id, 0);
     this.type = type;
     this.id = id;
@@ -613,8 +613,8 @@ var NetInternalsTest = (function() {
    * @constructor
    */
   NetInternalsTest.Event = function(source, type, time, phase, params) {
-    assertNotEquals(getKeyWithValue(LogEventType, type), '?');
-    assertNotEquals(getKeyWithValue(LogEventPhase, phase), '?');
+    assertNotEquals(getKeyWithValue(EventType, type), '?');
+    assertNotEquals(getKeyWithValue(EventPhase, phase), '?');
 
     this.source = source;
     this.phase = phase;
@@ -632,7 +632,7 @@ var NetInternalsTest = (function() {
    */
   NetInternalsTest.createBeginEvent = function(source, type, time, params) {
     return new NetInternalsTest.Event(source, type, time,
-                                      LogEventPhase.PHASE_BEGIN, params);
+                                      EventPhase.PHASE_BEGIN, params);
   };
 
   /**
@@ -642,7 +642,7 @@ var NetInternalsTest = (function() {
    */
   NetInternalsTest.createEndEvent = function(source, type, time, params) {
     return new NetInternalsTest.Event(source, type, time,
-                                      LogEventPhase.PHASE_END, params);
+                                      EventPhase.PHASE_END, params);
   };
 
   /**

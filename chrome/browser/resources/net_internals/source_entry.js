@@ -22,7 +22,7 @@ var SourceEntry = (function() {
     // Set to true when an END_PHASE matching the first entry is encountered.
     this.isInactive_ = true;
 
-    if (logEntry.phase == LogEventPhase.PHASE_BEGIN)
+    if (logEntry.phase == EventPhase.PHASE_BEGIN)
       this.isInactive_ = false;
 
     this.update(logEntry);
@@ -32,7 +32,7 @@ var SourceEntry = (function() {
     update: function(logEntry) {
       // Only the last event should have the same type first event,
       if (!this.isInactive_ &&
-          logEntry.phase == LogEventPhase.PHASE_END &&
+          logEntry.phase == EventPhase.PHASE_END &&
           logEntry.type == this.entries_[0].type) {
         this.isInactive_ = true;
       }
@@ -44,7 +44,7 @@ var SourceEntry = (function() {
         // is 0, indicating no actual error occurred.
         if (netErrorCode) {
           // Ignore error code caused by not finding an entry in the cache.
-          if (logEntry.type != LogEventType.HTTP_CACHE_OPEN_ENTRY ||
+          if (logEntry.type != EventType.HTTP_CACHE_OPEN_ENTRY ||
               netErrorCode != NetError.FAILED) {
             this.isError_ = true;
           }
@@ -66,10 +66,10 @@ var SourceEntry = (function() {
       if (!e)
         return;
 
-      if (e.source.type == LogSourceType.NONE) {
+      if (e.source.type == EventSourceType.NONE) {
         // NONE is what we use for global events that aren't actually grouped
         // by a "source ID", so we will just stringize the event's type.
-        this.description_ = LogEventTypeNames[e.type];
+        this.description_ = EventTypeNames[e.type];
         return;
       }
 
@@ -78,32 +78,32 @@ var SourceEntry = (function() {
       }
 
       switch (e.source.type) {
-        case LogSourceType.URL_REQUEST:
-        case LogSourceType.SOCKET_STREAM:
-        case LogSourceType.HTTP_STREAM_JOB:
+        case EventSourceType.URL_REQUEST:
+        case EventSourceType.SOCKET_STREAM:
+        case EventSourceType.HTTP_STREAM_JOB:
           this.description_ = e.params.url;
           break;
-        case LogSourceType.CONNECT_JOB:
+        case EventSourceType.CONNECT_JOB:
           this.description_ = e.params.group_name;
           break;
-        case LogSourceType.HOST_RESOLVER_IMPL_REQUEST:
-        case LogSourceType.HOST_RESOLVER_IMPL_JOB:
-        case LogSourceType.HOST_RESOLVER_IMPL_PROC_TASK:
+        case EventSourceType.HOST_RESOLVER_IMPL_REQUEST:
+        case EventSourceType.HOST_RESOLVER_IMPL_JOB:
+        case EventSourceType.HOST_RESOLVER_IMPL_PROC_TASK:
           this.description_ = e.params.host;
           break;
-        case LogSourceType.DISK_CACHE_ENTRY:
-        case LogSourceType.MEMORY_CACHE_ENTRY:
+        case EventSourceType.DISK_CACHE_ENTRY:
+        case EventSourceType.MEMORY_CACHE_ENTRY:
           this.description_ = e.params.key;
           break;
-        case LogSourceType.SPDY_SESSION:
+        case EventSourceType.SPDY_SESSION:
           if (e.params.host)
             this.description_ = e.params.host + ' (' + e.params.proxy + ')';
           break;
-        case LogSourceType.HTTP_PIPELINED_CONNECTION:
+        case EventSourceType.HTTP_PIPELINED_CONNECTION:
           if (e.params.host_and_port)
             this.description_ = e.params.host_and_port;
           break;
-        case LogSourceType.SOCKET:
+        case EventSourceType.SOCKET:
           // Use description of parent source, if any.
           if (e.params.source_dependency != undefined) {
             var parentId = e.params.source_dependency.id;
@@ -111,42 +111,42 @@ var SourceEntry = (function() {
                 SourceTracker.getInstance().getDescription(parentId);
           }
           break;
-        case LogSourceType.UDP_SOCKET:
+        case EventSourceType.UDP_SOCKET:
           if (e.params.address != undefined) {
             this.description_ = e.params.address;
             // If the parent of |this| is a HOST_RESOLVER_IMPL_JOB, use
             // '<DNS Server IP> [<host we're resolving>]'.
-            if (this.entries_[0].type == LogEventType.SOCKET_ALIVE &&
+            if (this.entries_[0].type == EventType.SOCKET_ALIVE &&
                 this.entries_[0].params.source_dependency != undefined) {
               var parentId = this.entries_[0].params.source_dependency.id;
               var parent = SourceTracker.getInstance().getSourceEntry(parentId);
               if (parent &&
                   parent.getSourceType() ==
-                      LogSourceType.HOST_RESOLVER_IMPL_JOB &&
+                      EventSourceType.HOST_RESOLVER_IMPL_JOB &&
                   parent.getDescription().length > 0) {
                 this.description_ += ' [' + parent.getDescription() + ']';
               }
             }
           }
           break;
-        case LogSourceType.ASYNC_HOST_RESOLVER_REQUEST:
-        case LogSourceType.DNS_TRANSACTION:
+        case EventSourceType.ASYNC_HOST_RESOLVER_REQUEST:
+        case EventSourceType.DNS_TRANSACTION:
           this.description_ = e.params.hostname;
           break;
-        case LogSourceType.DOWNLOAD:
+        case EventSourceType.DOWNLOAD:
           switch (e.type) {
-            case LogEventType.DOWNLOAD_FILE_RENAMED:
+            case EventType.DOWNLOAD_FILE_RENAMED:
               this.description_ = e.params.new_filename;
               break;
-            case LogEventType.DOWNLOAD_FILE_OPENED:
+            case EventType.DOWNLOAD_FILE_OPENED:
               this.description_ = e.params.file_name;
               break;
-            case LogEventType.DOWNLOAD_ITEM_ACTIVE:
+            case EventType.DOWNLOAD_ITEM_ACTIVE:
               this.description_ = e.params.file_name;
               break;
           }
           break;
-        case LogSourceType.FILESTREAM:
+        case EventSourceType.FILESTREAM:
           this.description_ = e.params.file_name;
           break;
       }
@@ -173,37 +173,37 @@ var SourceEntry = (function() {
     getStartEntry_: function() {
       if (this.entries_.length < 1)
         return undefined;
-      if (this.entries_[0].source.type == LogSourceType.FILESTREAM) {
-        var e = this.findLogEntryByType_(LogEventType.FILE_STREAM_OPEN);
+      if (this.entries_[0].source.type == EventSourceType.FILESTREAM) {
+        var e = this.findLogEntryByType_(EventType.FILE_STREAM_OPEN);
         if (e != undefined)
           return e;
       }
-      if (this.entries_[0].source.type == LogSourceType.DOWNLOAD) {
+      if (this.entries_[0].source.type == EventSourceType.DOWNLOAD) {
         // If any rename occurred, use the last name
         e = this.findLastLogEntryStartByType_(
-            LogEventType.DOWNLOAD_FILE_RENAMED);
+            EventType.DOWNLOAD_FILE_RENAMED);
         if (e != undefined)
           return e;
         // Otherwise, if the file was opened, use that name
-        e = this.findLogEntryByType_(LogEventType.DOWNLOAD_FILE_OPENED);
+        e = this.findLogEntryByType_(EventType.DOWNLOAD_FILE_OPENED);
         if (e != undefined)
           return e;
         // History items are never opened, so use the activation info
-        e = this.findLogEntryByType_(LogEventType.DOWNLOAD_ITEM_ACTIVE);
+        e = this.findLogEntryByType_(EventType.DOWNLOAD_ITEM_ACTIVE);
         if (e != undefined)
           return e;
       }
       if (this.entries_.length >= 2) {
-        if (this.entries_[0].type == LogEventType.SOCKET_POOL_CONNECT_JOB ||
-            this.entries_[1].type == LogEventType.UDP_CONNECT) {
+        if (this.entries_[0].type == EventType.SOCKET_POOL_CONNECT_JOB ||
+            this.entries_[1].type == EventType.UDP_CONNECT) {
           return this.entries_[1];
         }
-        if (this.entries_[0].type == LogEventType.REQUEST_ALIVE) {
+        if (this.entries_[0].type == EventType.REQUEST_ALIVE) {
           var start_index = 1;
           // Skip over URL_REQUEST_BLOCKED_ON_DELEGATE events for URL_REQUESTs.
           while (start_index + 1 < this.entries_.length &&
                  this.entries_[start_index].type ==
-                     LogEventType.URL_REQUEST_BLOCKED_ON_DELEGATE) {
+                     EventType.URL_REQUEST_BLOCKED_ON_DELEGATE) {
             ++start_index;
           }
           return this.entries_[start_index];
@@ -232,7 +232,7 @@ var SourceEntry = (function() {
     findLastLogEntryStartByType_: function(type) {
       for (var i = this.entries_.length - 1; i >= 0; --i) {
         if (this.entries_[i].type == type) {
-          if (this.entries_[i].phase != LogEventPhase.PHASE_END)
+          if (this.entries_[i].phase != EventPhase.PHASE_END)
             return this.entries_[i];
         }
       }
@@ -244,7 +244,7 @@ var SourceEntry = (function() {
     },
 
     getSourceTypeString: function() {
-      return LogSourceTypeNames[this.entries_[0].source.type];
+      return EventSourceTypeNames[this.entries_[0].source.type];
     },
 
     getSourceType: function() {

@@ -7,11 +7,11 @@
  * updated on load log).  The *Types dictionaries map strings to numeric IDs,
  * while the *TypeNames are the other way around.
  */
-var LogEventType = null;
-var LogEventTypeNames = null;
-var LogEventPhase = null;
-var LogSourceType = null;
-var LogSourceTypeNames = null;
+var EventType = null;
+var EventTypeNames = null;
+var EventPhase = null;
+var EventSourceType = null;
+var EventSourceTypeNames = null;
 var LogLevelType = null;
 var ClientInfo = null;
 var NetError = null;
@@ -244,11 +244,11 @@ ConstantsObserver.prototype.onReceivedConstants = function(receivedConstants) {
 
   Constants = receivedConstants;
 
-  LogEventType = Constants.logEventTypes;
-  LogEventTypeNames = makeInverseMap(LogEventType);
-  LogEventPhase = Constants.logEventPhase;
-  LogSourceType = Constants.logSourceType;
-  LogSourceTypeNames = makeInverseMap(LogSourceType);
+  EventType = Constants.logEventTypes;
+  EventTypeNames = makeInverseMap(EventType);
+  EventPhase = Constants.logEventPhase;
+  EventSourceType = Constants.logSourceType;
+  EventSourceTypeNames = makeInverseMap(EventSourceType);
   LogLevelType = Constants.logLevelType;
   ClientInfo = Constants.clientInfo;
   LoadFlag = Constants.loadFlag;

@@ -138,13 +138,13 @@ function painterTestURLRequest() {
 
   testCase.logEntries = [
     {
-      'phase': LogEventPhase.PHASE_BEGIN,
+      'phase': EventPhase.PHASE_BEGIN,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953534778',
-      'type': LogEventType.REQUEST_ALIVE
+      'type': EventType.REQUEST_ALIVE
     },
     {
       'params': {
@@ -153,22 +153,22 @@ function painterTestURLRequest() {
         'priority': 4,
         'url': 'http://www.google.com/'
       },
-      'phase': LogEventPhase.PHASE_BEGIN,
+      'phase': EventPhase.PHASE_BEGIN,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953534792',
-      'type': LogEventType.URL_REQUEST_START_JOB
+      'type': EventType.URL_REQUEST_START_JOB
     },
     {
-      'phase': LogEventPhase.PHASE_END,
+      'phase': EventPhase.PHASE_END,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953534800',
-      'type': LogEventType.URL_REQUEST_START_JOB
+      'type': EventType.URL_REQUEST_START_JOB
     },
     {
       'params': {
@@ -177,94 +177,94 @@ function painterTestURLRequest() {
         'priority': 4,
         'url': 'http://www.google.com/'
       },
-      'phase': LogEventPhase.PHASE_BEGIN,
+      'phase': EventPhase.PHASE_BEGIN,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953534802',
-      'type': LogEventType.URL_REQUEST_START_JOB
+      'type': EventType.URL_REQUEST_START_JOB
     },
     {
-      'phase': LogEventPhase.PHASE_BEGIN,
+      'phase': EventPhase.PHASE_BEGIN,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953534809',
-      'type': LogEventType.HTTP_CACHE_GET_BACKEND
+      'type': EventType.HTTP_CACHE_GET_BACKEND
     },
     {
-      'phase': LogEventPhase.PHASE_END,
+      'phase': EventPhase.PHASE_END,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953534810',
-      'type': LogEventType.HTTP_CACHE_GET_BACKEND
+      'type': EventType.HTTP_CACHE_GET_BACKEND
     },
     {
-      'phase': LogEventPhase.PHASE_BEGIN,
+      'phase': EventPhase.PHASE_BEGIN,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953534811',
-      'type': LogEventType.HTTP_CACHE_OPEN_ENTRY
+      'type': EventType.HTTP_CACHE_OPEN_ENTRY
     },
     {
-      'phase': LogEventPhase.PHASE_END,
+      'phase': EventPhase.PHASE_END,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953534816',
-      'type': LogEventType.HTTP_CACHE_OPEN_ENTRY
+      'type': EventType.HTTP_CACHE_OPEN_ENTRY
     },
     {
-      'phase': LogEventPhase.PHASE_BEGIN,
+      'phase': EventPhase.PHASE_BEGIN,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953534817',
-      'type': LogEventType.HTTP_CACHE_ADD_TO_ENTRY
+      'type': EventType.HTTP_CACHE_ADD_TO_ENTRY
     },
     {
-      'phase': LogEventPhase.PHASE_END,
+      'phase': EventPhase.PHASE_END,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953534818',
-      'type': LogEventType.HTTP_CACHE_ADD_TO_ENTRY
+      'type': EventType.HTTP_CACHE_ADD_TO_ENTRY
     },
     {
-      'phase': LogEventPhase.PHASE_BEGIN,
+      'phase': EventPhase.PHASE_BEGIN,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953534823',
-      'type': LogEventType.HTTP_CACHE_READ_INFO
+      'type': EventType.HTTP_CACHE_READ_INFO
     },
     {
-      'phase': LogEventPhase.PHASE_END,
+      'phase': EventPhase.PHASE_END,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953534827',
-      'type': LogEventType.HTTP_CACHE_READ_INFO
+      'type': EventType.HTTP_CACHE_READ_INFO
     },
     {
-      'phase': LogEventPhase.PHASE_BEGIN,
+      'phase': EventPhase.PHASE_BEGIN,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953534830',
-      'type': LogEventType.HTTP_STREAM_REQUEST
+      'type': EventType.HTTP_STREAM_REQUEST
     },
     {
       'params': {
@@ -273,31 +273,31 @@ function painterTestURLRequest() {
           'type': 11
         }
       },
-      'phase': LogEventPhase.PHASE_NONE,
+      'phase': EventPhase.PHASE_NONE,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953534898',
-      'type': LogEventType.HTTP_STREAM_REQUEST_BOUND_TO_JOB
+      'type': EventType.HTTP_STREAM_REQUEST_BOUND_TO_JOB
     },
     {
-      'phase': LogEventPhase.PHASE_END,
+      'phase': EventPhase.PHASE_END,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953534902',
-      'type': LogEventType.HTTP_STREAM_REQUEST
+      'type': EventType.HTTP_STREAM_REQUEST
     },
     {
-      'phase': LogEventPhase.PHASE_BEGIN,
+      'phase': EventPhase.PHASE_BEGIN,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953534906',
-      'type': LogEventType.HTTP_TRANSACTION_SEND_REQUEST
+      'type': EventType.HTTP_TRANSACTION_SEND_REQUEST
     },
     {
       'params': {
@@ -312,49 +312,49 @@ function painterTestURLRequest() {
         ],
         'line': 'GET / HTTP/1.1\r\n'
       },
-      'phase': LogEventPhase.PHASE_NONE,
+      'phase': EventPhase.PHASE_NONE,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953534910',
-      'type': LogEventType.HTTP_TRANSACTION_SEND_REQUEST_HEADERS
+      'type': EventType.HTTP_TRANSACTION_SEND_REQUEST_HEADERS
     },
     {
-      'phase': LogEventPhase.PHASE_END,
+      'phase': EventPhase.PHASE_END,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953534915',
-      'type': LogEventType.HTTP_TRANSACTION_SEND_REQUEST
+      'type': EventType.HTTP_TRANSACTION_SEND_REQUEST
     },
     {
-      'phase': LogEventPhase.PHASE_BEGIN,
+      'phase': EventPhase.PHASE_BEGIN,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953534916',
-      'type': LogEventType.HTTP_TRANSACTION_READ_HEADERS
+      'type': EventType.HTTP_TRANSACTION_READ_HEADERS
     },
     {
-      'phase': LogEventPhase.PHASE_BEGIN,
+      'phase': EventPhase.PHASE_BEGIN,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953534917',
-      'type': LogEventType.HTTP_STREAM_PARSER_READ_HEADERS
+      'type': EventType.HTTP_STREAM_PARSER_READ_HEADERS
     },
     {
-      'phase': LogEventPhase.PHASE_END,
+      'phase': EventPhase.PHASE_END,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953534987',
-      'type': LogEventType.HTTP_STREAM_PARSER_READ_HEADERS
+      'type': EventType.HTTP_STREAM_PARSER_READ_HEADERS
     },
     {
       'params': {
@@ -369,310 +369,310 @@ function painterTestURLRequest() {
           'Content-Length: 23798',
         ]
       },
-      'phase': LogEventPhase.PHASE_NONE,
+      'phase': EventPhase.PHASE_NONE,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953534989',
-      'type': LogEventType.HTTP_TRANSACTION_READ_RESPONSE_HEADERS
+      'type': EventType.HTTP_TRANSACTION_READ_RESPONSE_HEADERS
     },
     {
-      'phase': LogEventPhase.PHASE_END,
+      'phase': EventPhase.PHASE_END,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953534992',
-      'type': LogEventType.HTTP_TRANSACTION_READ_HEADERS
+      'type': EventType.HTTP_TRANSACTION_READ_HEADERS
     },
     {
-      'phase': LogEventPhase.PHASE_BEGIN,
+      'phase': EventPhase.PHASE_BEGIN,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953534993',
-      'type': LogEventType.HTTP_CACHE_WRITE_INFO
+      'type': EventType.HTTP_CACHE_WRITE_INFO
     },
     {
-      'phase': LogEventPhase.PHASE_END,
+      'phase': EventPhase.PHASE_END,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953535023',
-      'type': LogEventType.HTTP_CACHE_WRITE_INFO
+      'type': EventType.HTTP_CACHE_WRITE_INFO
     },
     {
-      'phase': LogEventPhase.PHASE_BEGIN,
+      'phase': EventPhase.PHASE_BEGIN,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953535024',
-      'type': LogEventType.HTTP_CACHE_WRITE_DATA
+      'type': EventType.HTTP_CACHE_WRITE_DATA
     },
     {
-      'phase': LogEventPhase.PHASE_END,
+      'phase': EventPhase.PHASE_END,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953535062',
-      'type': LogEventType.HTTP_CACHE_WRITE_DATA
+      'type': EventType.HTTP_CACHE_WRITE_DATA
     },
     {
-      'phase': LogEventPhase.PHASE_BEGIN,
+      'phase': EventPhase.PHASE_BEGIN,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953535062',
-      'type': LogEventType.HTTP_CACHE_WRITE_INFO
+      'type': EventType.HTTP_CACHE_WRITE_INFO
     },
     {
-      'phase': LogEventPhase.PHASE_END,
+      'phase': EventPhase.PHASE_END,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953535075',
-      'type': LogEventType.HTTP_CACHE_WRITE_INFO
+      'type': EventType.HTTP_CACHE_WRITE_INFO
     },
     {
-      'phase': LogEventPhase.PHASE_END,
+      'phase': EventPhase.PHASE_END,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953535081',
-      'type': LogEventType.URL_REQUEST_START_JOB
+      'type': EventType.URL_REQUEST_START_JOB
     },
     {
-      'phase': LogEventPhase.PHASE_BEGIN,
+      'phase': EventPhase.PHASE_BEGIN,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953535537',
-      'type': LogEventType.HTTP_TRANSACTION_READ_BODY
+      'type': EventType.HTTP_TRANSACTION_READ_BODY
     },
     {
-      'phase': LogEventPhase.PHASE_END,
+      'phase': EventPhase.PHASE_END,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953535538',
-      'type': LogEventType.HTTP_TRANSACTION_READ_BODY
+      'type': EventType.HTTP_TRANSACTION_READ_BODY
     },
     {
-      'phase': LogEventPhase.PHASE_BEGIN,
+      'phase': EventPhase.PHASE_BEGIN,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953535538',
-      'type': LogEventType.HTTP_CACHE_WRITE_DATA
+      'type': EventType.HTTP_CACHE_WRITE_DATA
     },
     {
-      'phase': LogEventPhase.PHASE_END,
+      'phase': EventPhase.PHASE_END,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953535541',
-      'type': LogEventType.HTTP_CACHE_WRITE_DATA
+      'type': EventType.HTTP_CACHE_WRITE_DATA
     },
     {
-      'phase': LogEventPhase.PHASE_BEGIN,
+      'phase': EventPhase.PHASE_BEGIN,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953535542',
-      'type': LogEventType.HTTP_TRANSACTION_READ_BODY
+      'type': EventType.HTTP_TRANSACTION_READ_BODY
     },
     {
-      'phase': LogEventPhase.PHASE_END,
+      'phase': EventPhase.PHASE_END,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953535545',
-      'type': LogEventType.HTTP_TRANSACTION_READ_BODY
+      'type': EventType.HTTP_TRANSACTION_READ_BODY
     },
     {
-      'phase': LogEventPhase.PHASE_BEGIN,
+      'phase': EventPhase.PHASE_BEGIN,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953535546',
-      'type': LogEventType.HTTP_CACHE_WRITE_DATA
+      'type': EventType.HTTP_CACHE_WRITE_DATA
     },
     {
-      'phase': LogEventPhase.PHASE_END,
+      'phase': EventPhase.PHASE_END,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953535548',
-      'type': LogEventType.HTTP_CACHE_WRITE_DATA
+      'type': EventType.HTTP_CACHE_WRITE_DATA
     },
     {
-      'phase': LogEventPhase.PHASE_BEGIN,
+      'phase': EventPhase.PHASE_BEGIN,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953535548',
-      'type': LogEventType.HTTP_TRANSACTION_READ_BODY
+      'type': EventType.HTTP_TRANSACTION_READ_BODY
     },
     {
-      'phase': LogEventPhase.PHASE_END,
+      'phase': EventPhase.PHASE_END,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953535548',
-      'type': LogEventType.HTTP_TRANSACTION_READ_BODY
+      'type': EventType.HTTP_TRANSACTION_READ_BODY
     },
     {
-      'phase': LogEventPhase.PHASE_BEGIN,
+      'phase': EventPhase.PHASE_BEGIN,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953535549',
-      'type': LogEventType.HTTP_CACHE_WRITE_DATA
+      'type': EventType.HTTP_CACHE_WRITE_DATA
     },
     {
-      'phase': LogEventPhase.PHASE_END,
+      'phase': EventPhase.PHASE_END,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953535549',
-      'type': LogEventType.HTTP_CACHE_WRITE_DATA
+      'type': EventType.HTTP_CACHE_WRITE_DATA
     },
     {
-      'phase': LogEventPhase.PHASE_BEGIN,
+      'phase': EventPhase.PHASE_BEGIN,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953535550',
-      'type': LogEventType.HTTP_TRANSACTION_READ_BODY
+      'type': EventType.HTTP_TRANSACTION_READ_BODY
     },
     {
-      'phase': LogEventPhase.PHASE_END,
+      'phase': EventPhase.PHASE_END,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953535550',
-      'type': LogEventType.HTTP_TRANSACTION_READ_BODY
+      'type': EventType.HTTP_TRANSACTION_READ_BODY
     },
     {
-      'phase': LogEventPhase.PHASE_BEGIN,
+      'phase': EventPhase.PHASE_BEGIN,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953535550',
-      'type': LogEventType.HTTP_CACHE_WRITE_DATA
+      'type': EventType.HTTP_CACHE_WRITE_DATA
     },
     {
-      'phase': LogEventPhase.PHASE_END,
+      'phase': EventPhase.PHASE_END,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953535551',
-      'type': LogEventType.HTTP_CACHE_WRITE_DATA
+      'type': EventType.HTTP_CACHE_WRITE_DATA
     },
     {
-      'phase': LogEventPhase.PHASE_BEGIN,
+      'phase': EventPhase.PHASE_BEGIN,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953535552',
-      'type': LogEventType.HTTP_TRANSACTION_READ_BODY
+      'type': EventType.HTTP_TRANSACTION_READ_BODY
     },
     {
-      'phase': LogEventPhase.PHASE_END,
+      'phase': EventPhase.PHASE_END,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953535553',
-      'type': LogEventType.HTTP_TRANSACTION_READ_BODY
+      'type': EventType.HTTP_TRANSACTION_READ_BODY
     },
     {
-      'phase': LogEventPhase.PHASE_BEGIN,
+      'phase': EventPhase.PHASE_BEGIN,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953535553',
-      'type': LogEventType.HTTP_CACHE_WRITE_DATA
+      'type': EventType.HTTP_CACHE_WRITE_DATA
     },
     {
-      'phase': LogEventPhase.PHASE_END,
+      'phase': EventPhase.PHASE_END,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953535556',
-      'type': LogEventType.HTTP_CACHE_WRITE_DATA
+      'type': EventType.HTTP_CACHE_WRITE_DATA
     },
     {
-      'phase': LogEventPhase.PHASE_BEGIN,
+      'phase': EventPhase.PHASE_BEGIN,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953535556',
-      'type': LogEventType.HTTP_TRANSACTION_READ_BODY
+      'type': EventType.HTTP_TRANSACTION_READ_BODY
     },
     {
-      'phase': LogEventPhase.PHASE_END,
+      'phase': EventPhase.PHASE_END,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953535559',
-      'type': LogEventType.HTTP_TRANSACTION_READ_BODY
+      'type': EventType.HTTP_TRANSACTION_READ_BODY
     },
     {
-      'phase': LogEventPhase.PHASE_BEGIN,
+      'phase': EventPhase.PHASE_BEGIN,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953535559',
-      'type': LogEventType.HTTP_CACHE_WRITE_DATA
+      'type': EventType.HTTP_CACHE_WRITE_DATA
     },
     {
-      'phase': LogEventPhase.PHASE_END,
+      'phase': EventPhase.PHASE_END,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953535559',
-      'type': LogEventType.HTTP_CACHE_WRITE_DATA
+      'type': EventType.HTTP_CACHE_WRITE_DATA
     },
     {
-      'phase': LogEventPhase.PHASE_END,
+      'phase': EventPhase.PHASE_END,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953535567',
-      'type': LogEventType.REQUEST_ALIVE
+      'type': EventType.REQUEST_ALIVE
     }
   ];
 
@@ -755,13 +755,13 @@ function painterTestNetError() {
 
   testCase.logEntries = [
      {
-       'phase': LogEventPhase.PHASE_BEGIN,
+       'phase': EventPhase.PHASE_BEGIN,
        'source': {
          'id': 318,
-         'type': LogSourceType.URL_REQUEST
+         'type': EventSourceType.URL_REQUEST
        },
        'time': '953675448',
-       'type': LogEventType.REQUEST_ALIVE
+       'type': EventType.REQUEST_ALIVE
      },
      {
        'params': {
@@ -770,22 +770,22 @@ function painterTestNetError() {
          'priority': 4,
          'url': 'http://www.doesnotexistdomain.com/'
        },
-       'phase': LogEventPhase.PHASE_BEGIN,
+       'phase': EventPhase.PHASE_BEGIN,
        'source': {
          'id': 318,
-         'type': LogSourceType.URL_REQUEST
+         'type': EventSourceType.URL_REQUEST
        },
        'time': '953675455',
-       'type': LogEventType.URL_REQUEST_START_JOB
+       'type': EventType.URL_REQUEST_START_JOB
      },
      {
-       'phase': LogEventPhase.PHASE_END,
+       'phase': EventPhase.PHASE_END,
        'source': {
          'id': 318,
-         'type': LogSourceType.URL_REQUEST
+         'type': EventSourceType.URL_REQUEST
        },
        'time': '953675460',
-       'type': LogEventType.URL_REQUEST_START_JOB
+       'type': EventType.URL_REQUEST_START_JOB
      },
      {
        'params': {
@@ -794,130 +794,130 @@ function painterTestNetError() {
          'priority': 4,
          'url': 'http://www.doesnotexistdomain.com/'
        },
-       'phase': LogEventPhase.PHASE_BEGIN,
+       'phase': EventPhase.PHASE_BEGIN,
        'source': {
          'id': 318,
-         'type': LogSourceType.URL_REQUEST
+         'type': EventSourceType.URL_REQUEST
        },
        'time': '953675460',
-       'type': LogEventType.URL_REQUEST_START_JOB
+       'type': EventType.URL_REQUEST_START_JOB
      },
      {
-       'phase': LogEventPhase.PHASE_BEGIN,
+       'phase': EventPhase.PHASE_BEGIN,
        'source': {
          'id': 318,
-         'type': LogSourceType.URL_REQUEST
+         'type': EventSourceType.URL_REQUEST
        },
        'time': '953675469',
-       'type': LogEventType.HTTP_CACHE_GET_BACKEND
+       'type': EventType.HTTP_CACHE_GET_BACKEND
      },
      {
-       'phase': LogEventPhase.PHASE_END,
+       'phase': EventPhase.PHASE_END,
        'source': {
          'id': 318,
-         'type': LogSourceType.URL_REQUEST
+         'type': EventSourceType.URL_REQUEST
        },
        'time': '953675469',
-       'type': LogEventType.HTTP_CACHE_GET_BACKEND
+       'type': EventType.HTTP_CACHE_GET_BACKEND
      },
      {
-       'phase': LogEventPhase.PHASE_BEGIN,
+       'phase': EventPhase.PHASE_BEGIN,
        'source': {
          'id': 318,
-         'type': LogSourceType.URL_REQUEST
+         'type': EventSourceType.URL_REQUEST
        },
        'time': '953675469',
-       'type': LogEventType.HTTP_CACHE_OPEN_ENTRY
+       'type': EventType.HTTP_CACHE_OPEN_ENTRY
      },
      {
        'params': {
          'net_error': -2
        },
-       'phase': LogEventPhase.PHASE_END,
+       'phase': EventPhase.PHASE_END,
        'source': {
          'id': 318,
-         'type': LogSourceType.URL_REQUEST
+         'type': EventSourceType.URL_REQUEST
        },
        'time': '953675470',
-       'type': LogEventType.HTTP_CACHE_OPEN_ENTRY
+       'type': EventType.HTTP_CACHE_OPEN_ENTRY
      },
      {
-       'phase': LogEventPhase.PHASE_BEGIN,
+       'phase': EventPhase.PHASE_BEGIN,
        'source': {
          'id': 318,
-         'type': LogSourceType.URL_REQUEST
+         'type': EventSourceType.URL_REQUEST
        },
        'time': '953675471',
-       'type': LogEventType.HTTP_CACHE_CREATE_ENTRY
+       'type': EventType.HTTP_CACHE_CREATE_ENTRY
      },
      {
-       'phase': LogEventPhase.PHASE_END,
+       'phase': EventPhase.PHASE_END,
        'source': {
          'id': 318,
-         'type': LogSourceType.URL_REQUEST
+         'type': EventSourceType.URL_REQUEST
        },
        'time': '953675473',
-       'type': LogEventType.HTTP_CACHE_CREATE_ENTRY
+       'type': EventType.HTTP_CACHE_CREATE_ENTRY
      },
      {
-       'phase': LogEventPhase.PHASE_BEGIN,
+       'phase': EventPhase.PHASE_BEGIN,
        'source': {
          'id': 318,
-         'type': LogSourceType.URL_REQUEST
+         'type': EventSourceType.URL_REQUEST
        },
        'time': '953675473',
-       'type': LogEventType.HTTP_CACHE_ADD_TO_ENTRY
+       'type': EventType.HTTP_CACHE_ADD_TO_ENTRY
      },
      {
-       'phase': LogEventPhase.PHASE_END,
+       'phase': EventPhase.PHASE_END,
        'source': {
          'id': 318,
-         'type': LogSourceType.URL_REQUEST
+         'type': EventSourceType.URL_REQUEST
        },
        'time': '953675474',
-       'type': LogEventType.HTTP_CACHE_ADD_TO_ENTRY
+       'type': EventType.HTTP_CACHE_ADD_TO_ENTRY
      },
      {
-       'phase': LogEventPhase.PHASE_BEGIN,
+       'phase': EventPhase.PHASE_BEGIN,
        'source': {
          'id': 318,
-         'type': LogSourceType.URL_REQUEST
+         'type': EventSourceType.URL_REQUEST
        },
        'time': '953675474',
-       'type': LogEventType.HTTP_STREAM_REQUEST
+       'type': EventType.HTTP_STREAM_REQUEST
      },
      {
-       'phase': LogEventPhase.PHASE_END,
+       'phase': EventPhase.PHASE_END,
        'source': {
          'id': 318,
-         'type': LogSourceType.URL_REQUEST
+         'type': EventSourceType.URL_REQUEST
        },
        'time': '953675699',
-       'type': LogEventType.HTTP_STREAM_REQUEST
+       'type': EventType.HTTP_STREAM_REQUEST
      },
      {
        'params': {
          'net_error': -105
        },
-       'phase': LogEventPhase.PHASE_END,
+       'phase': EventPhase.PHASE_END,
        'source': {
          'id': 318,
-         'type': LogSourceType.URL_REQUEST
+         'type': EventSourceType.URL_REQUEST
        },
        'time': '953675705',
-       'type': LogEventType.URL_REQUEST_START_JOB
+       'type': EventType.URL_REQUEST_START_JOB
      },
      {
        'params': {
          'net_error': -105
        },
-       'phase': LogEventPhase.PHASE_END,
+       'phase': EventPhase.PHASE_END,
        'source': {
          'id': 318,
-         'type': LogSourceType.URL_REQUEST
+         'type': EventSourceType.URL_REQUEST
        },
        'time': '953675923',
-       'type': LogEventType.REQUEST_ALIVE
+       'type': EventType.REQUEST_ALIVE
      }
   ];
 
@@ -966,13 +966,13 @@ function painterTestHexEncodedBytes() {
            'type': 4
          }
        },
-       'phase': LogEventPhase.PHASE_BEGIN,
+       'phase': EventPhase.PHASE_BEGIN,
        'source': {
          'id': 637,
-         'type': LogSourceType.SOCKET
+         'type': EventSourceType.SOCKET
        },
        'time': '953918459',
-       'type': LogEventType.SOCKET_ALIVE
+       'type': EventType.SOCKET_ALIVE
      },
      {
        'params': {
@@ -980,46 +980,46 @@ function painterTestHexEncodedBytes() {
            '184.30.253.15:80'
          ]
        },
-       'phase': LogEventPhase.PHASE_BEGIN,
+       'phase': EventPhase.PHASE_BEGIN,
        'source': {
          'id': 637,
-         'type': LogSourceType.SOCKET
+         'type': EventSourceType.SOCKET
        },
        'time': '953918460',
-       'type': LogEventType.TCP_CONNECT
+       'type': EventType.TCP_CONNECT
      },
      {
        'params': {
          'address': '184.30.253.15:80'
        },
-       'phase': LogEventPhase.PHASE_BEGIN,
+       'phase': EventPhase.PHASE_BEGIN,
        'source': {
          'id': 637,
-         'type': LogSourceType.SOCKET
+         'type': EventSourceType.SOCKET
        },
        'time': '953918461',
-       'type': LogEventType.TCP_CONNECT_ATTEMPT
+       'type': EventType.TCP_CONNECT_ATTEMPT
      },
      {
-       'phase': LogEventPhase.PHASE_END,
+       'phase': EventPhase.PHASE_END,
        'source': {
          'id': 637,
-         'type': LogSourceType.SOCKET
+         'type': EventSourceType.SOCKET
        },
        'time': '953918464',
-       'type': LogEventType.TCP_CONNECT_ATTEMPT
+       'type': EventType.TCP_CONNECT_ATTEMPT
      },
      {
        'params': {
          'source_address': '127.0.0.1:54041'
        },
-       'phase': LogEventPhase.PHASE_END,
+       'phase': EventPhase.PHASE_END,
        'source': {
          'id': 637,
-         'type': LogSourceType.SOCKET
+         'type': EventSourceType.SOCKET
        },
        'time': '953918465',
-       'type': LogEventType.TCP_CONNECT
+       'type': EventType.TCP_CONNECT
      },
      {
        'params': {
@@ -1028,13 +1028,13 @@ function painterTestHexEncodedBytes() {
            'type': 11
          }
        },
-       'phase': LogEventPhase.PHASE_BEGIN,
+       'phase': EventPhase.PHASE_BEGIN,
        'source': {
          'id': 637,
-         'type': LogSourceType.SOCKET
+         'type': EventSourceType.SOCKET
        },
        'time': '953918472',
-       'type': LogEventType.SOCKET_IN_USE
+       'type': EventType.SOCKET_IN_USE
      },
      {
        'params': {
@@ -1043,13 +1043,13 @@ function painterTestHexEncodedBytes() {
                               'F312E310D0A486F73743A207777772E6170706C652E' +
                               '636F6D0D0A436F6E6E656374696F6E3A20'
        },
-       'phase': LogEventPhase.PHASE_NONE,
+       'phase': EventPhase.PHASE_NONE,
        'source': {
          'id': 637,
-         'type': LogSourceType.SOCKET
+         'type': EventSourceType.SOCKET
        },
        'time': '953918484',
-       'type': LogEventType.SOCKET_BYTES_SENT
+       'type': EventType.SOCKET_BYTES_SENT
      },
      {
        'params': {
@@ -1058,13 +1058,13 @@ function painterTestHexEncodedBytes() {
                               'D4D6F6469666965643A204D6F6E2C20313920446563' +
                               '20323031312032323A34363A353920474D'
        },
-       'phase': LogEventPhase.PHASE_NONE,
+       'phase': EventPhase.PHASE_NONE,
        'source': {
          'id': 637,
-         'type': LogSourceType.SOCKET
+         'type': EventSourceType.SOCKET
        },
        'time': '953918596',
-       'type': LogEventType.SOCKET_BYTES_RECEIVED
+       'type': EventType.SOCKET_BYTES_RECEIVED
      }
   ];
 
@@ -1116,22 +1116,22 @@ function painterTestCertVerifierJob() {
            '-----BEGIN CERTIFICATE-----\n2\n-----END CERTIFICATE-----\n',
          ]
        },
-       'phase': LogEventPhase.PHASE_BEGIN,
+       'phase': EventPhase.PHASE_BEGIN,
        'source': {
          'id': 752,
-         'type': LogSourceType.CERT_VERIFIER_JOB
+         'type': EventSourceType.CERT_VERIFIER_JOB
        },
        'time': '954124663',
-       'type': LogEventType.CERT_VERIFIER_JOB
+       'type': EventType.CERT_VERIFIER_JOB
      },
      {
-       'phase': LogEventPhase.PHASE_END,
+       'phase': EventPhase.PHASE_END,
        'source': {
          'id': 752,
-         'type': LogSourceType.CERT_VERIFIER_JOB
+         'type': EventSourceType.CERT_VERIFIER_JOB
        },
        'time': '954124697',
-       'type': LogEventType.CERT_VERIFIER_JOB
+       'type': EventType.CERT_VERIFIER_JOB
      }
   ];
 
@@ -1173,13 +1173,13 @@ function painterTestProxyConfig() {
            'auto_detect': true
          }
        },
-       'phase': LogEventPhase.PHASE_NONE,
+       'phase': EventPhase.PHASE_NONE,
        'source': {
          'id': 814,
-         'type': LogSourceType.NONE
+         'type': EventSourceType.NONE
        },
        'time': '954443578',
-       'type': LogEventType.PROXY_CONFIG_CHANGED
+       'type': EventType.PROXY_CONFIG_CHANGED
      }
   ];
 
@@ -1225,13 +1225,13 @@ function painterTestDontStripCookiesURLRequest() {
            'Connection: close'
          ]
        },
-       'phase': LogEventPhase.PHASE_NONE,
+       'phase': EventPhase.PHASE_NONE,
        'source': {
          'id': 829,
-         'type': LogSourceType.URL_REQUEST
+         'type': EventSourceType.URL_REQUEST
        },
        'time': '1019307339',
-       'type': LogEventType.HTTP_TRANSACTION_READ_RESPONSE_HEADERS
+       'type': EventType.HTTP_TRANSACTION_READ_RESPONSE_HEADERS
      },
      {
        'params': {
@@ -1247,13 +1247,13 @@ function painterTestDontStripCookiesURLRequest() {
          ],
          'line': 'GET / HTTP/1.1\r\n'
        },
-       'phase': LogEventPhase.PHASE_NONE,
+       'phase': EventPhase.PHASE_NONE,
        'source': {
          'id': 829,
-         'type': LogSourceType.URL_REQUEST
+         'type': EventSourceType.URL_REQUEST
        },
        'time': '1019307458',
-       'type': LogEventType.HTTP_TRANSACTION_SEND_REQUEST_HEADERS
+       'type': EventType.HTTP_TRANSACTION_SEND_REQUEST_HEADERS
      }
   ];
 
@@ -1324,13 +1324,13 @@ function painterTestDontStripCookiesSPDYSession() {
         ],
         'stream_id': 1
       },
-      'phase': LogEventPhase.PHASE_NONE,
+      'phase': EventPhase.PHASE_NONE,
       'source': {
         'id': 153,
-        'type': LogSourceType.SPDY_SESSION
+        'type': EventSourceType.SPDY_SESSION
       },
       'time': '1012984638',
-      'type': LogEventType.SPDY_SESSION_SYN_STREAM
+      'type': EventType.SPDY_SESSION_SYN_STREAM
     },
     {
       'params': {
@@ -1345,13 +1345,13 @@ function painterTestDontStripCookiesSPDYSession() {
         ],
         'stream_id': 5
       },
-      'phase': LogEventPhase.PHASE_NONE,
+      'phase': EventPhase.PHASE_NONE,
       'source': {
         'id': 153,
-        'type': LogSourceType.SPDY_SESSION
+        'type': EventSourceType.SPDY_SESSION
       },
       'time': '1012992266',
-      'type': LogEventType.SPDY_SESSION_SYN_REPLY
+      'type': EventType.SPDY_SESSION_SYN_REPLY
     }
   ];
 
@@ -1413,13 +1413,13 @@ function painterTestExtraCustomParameter() {
         // This is unexpected!
         'hello': 'yo dawg, i heard you like strings'
       },
-      'phase': LogEventPhase.PHASE_NONE,
+      'phase': EventPhase.PHASE_NONE,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953534910',
-      'type': LogEventType.HTTP_TRANSACTION_SEND_REQUEST_HEADERS
+      'type': EventType.HTTP_TRANSACTION_SEND_REQUEST_HEADERS
     },
   ];
 
@@ -1451,13 +1451,13 @@ function painterTestMissingCustomParameter() {
         ],
         'line': 'GET / HTTP/1.1\r\n'
       },
-      'phase': LogEventPhase.PHASE_NONE,
+      'phase': EventPhase.PHASE_NONE,
       'source': {
         'id': 146,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '953534910',
-      'type': LogEventType.HTTP_TRANSACTION_SEND_REQUEST_HEADERS
+      'type': EventType.HTTP_TRANSACTION_SEND_REQUEST_HEADERS
     },
   ];
 
@@ -1485,13 +1485,13 @@ function painterTestSSLVersionFallback() {
         'version_after': 0x301,
         'version_before': 0x302
       },
-        'phase': LogEventPhase.PHASE_NONE,
+        'phase': EventPhase.PHASE_NONE,
         'source': {
           'id': 124,
-          'type': LogSourceType.URL_REQUEST
+          'type': EventSourceType.URL_REQUEST
         },
         'time': '1119062679',
-        'type': LogEventType.SSL_VERSION_FALLBACK
+        'type': EventType.SSL_VERSION_FALLBACK
     },
     {
       'params': {
@@ -1500,26 +1500,26 @@ function painterTestSSLVersionFallback() {
         'version_after': 0x300,
         'version_before': 0x301
       },
-      'phase': LogEventPhase.PHASE_NONE,
+      'phase': EventPhase.PHASE_NONE,
       'source': {
         'id': 124,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '1119062850',
-      'type': LogEventType.SSL_VERSION_FALLBACK
+      'type': EventType.SSL_VERSION_FALLBACK
     },
     {
       'params': {
         'version_after': 0x123456,
         'version_before': 0x300
       },
-      'phase': LogEventPhase.PHASE_NONE,
+      'phase': EventPhase.PHASE_NONE,
       'source': {
         'id': 124,
-        'type': LogSourceType.URL_REQUEST
+        'type': EventSourceType.URL_REQUEST
       },
       'time': '1119062850',
-      'type': LogEventType.SSL_VERSION_FALLBACK
+      'type': EventType.SSL_VERSION_FALLBACK
     },
   ];
 
