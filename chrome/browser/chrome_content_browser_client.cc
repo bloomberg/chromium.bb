@@ -37,6 +37,7 @@
 #include "chrome/browser/extensions/extension_webkit_preferences.h"
 #include "chrome/browser/geolocation/chrome_access_token_store.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/gpu_util.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/media/media_internals.h"
 #include "chrome/browser/net/chrome_net_log.h"
@@ -1432,6 +1433,9 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
     extension_webkit_preferences::SetPreferences(
         extension, view_type, web_prefs);
   }
+
+  if (gpu_util::InForceCompositingModeTrial())
+    web_prefs->force_compositing_mode = true;
 
   if (view_type == chrome::VIEW_TYPE_NOTIFICATION) {
     web_prefs->allow_scripts_to_close_windows = true;

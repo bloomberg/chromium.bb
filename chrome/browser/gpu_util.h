@@ -69,6 +69,13 @@ base::DictionaryValue* GpuInfoAsDictionaryValue();
 // Send UMA histograms about the enabled features.
 void UpdateStats();
 
+// Returs whether this client has been selected for the force-compositing-mode
+// trial.
+bool InForceCompositingModeTrial();
+
+// Sets up the force-compositing-mode field trial.
+void InitializeForceCompositingModeFieldTrial();
+
 }  // namespace gpu_util
 
 #endif  // CHROME_BROWSER_GPU_UTIL_H_

@@ -1104,6 +1104,7 @@ void ChromeBrowserMainParts::SetupFieldTrials(bool metrics_recording_enabled,
   DefaultAppsFieldTrial();
   AutoLaunchChromeFieldTrial();
   DomainBoundCertsFieldTrial();
+  gpu_util::InitializeForceCompositingModeFieldTrial();
   SetupUniformityFieldTrials();
   AutocompleteFieldTrial::Activate();
 }

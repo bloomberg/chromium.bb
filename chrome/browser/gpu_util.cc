@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -15,9 +16,16 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/gpu_blacklist.h"
+#include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/gpu_info.h"
+
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#elif defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
 
 using content::GpuDataManager;
 using content::GpuFeatureType;
@@ -161,6 +169,53 @@ int GetGpuBlacklistHistogramValueWin(GpuFeatureStatus status) {
 }  // namespace
 
 namespace gpu_util {
+
+const char kForceCompositingModeFieldTrialName[] = "ForceCompositingMode";
+const char kFieldTrialEnabledName[] = "enabled";
+
+void InitializeForceCompositingModeFieldTrial() {
+// Enable the field trial only on desktop OS's.
+#if !(defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX))
+  return;
+#endif
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  // Only run the trial on the Canary channel.
+  if (channel != chrome::VersionInfo::CHANNEL_CANARY)
+    return;
+#if defined(OS_WIN)
+  // Don't run the trial on Windows XP.
+  if (base::win::GetVersion() < base::win::VERSION_VISTA)
+    return;
+#elif defined(OS_MACOSX)
+  // Accelerated compositing is only implemented on Mac OSX 10.6 or later.
+  if (base::mac::IsOSLeopardOrEarlier())
+    return;
+#endif
+
+  const base::FieldTrial::Probability kDivisor = 100;
+  scoped_refptr<base::FieldTrial> trial(
+    base::FieldTrialList::FactoryGetFieldTrial(
+        kForceCompositingModeFieldTrialName, kDivisor,
+        "disable", 2012, 12, 31, NULL));
+
+  // Produce the same result on every run of this client.
+  trial->UseOneTimeRandomization();
+  // 50% probability of being in the enabled group.
+  const base::FieldTrial::Probability kEnableProbability = 50;
+  int enable_group = trial->AppendGroup(
+      kFieldTrialEnabledName, kEnableProbability);
+
+  bool enabled = (trial->group() == enable_group);
+  UMA_HISTOGRAM_BOOLEAN("GPU.InForceCompositingModeFieldTrial", enabled);
+}
+
+bool InForceCompositingModeTrial() {
+  base::FieldTrial* trial =
+      base::FieldTrialList::Find(kForceCompositingModeFieldTrialName);
+  if (!trial)
+    return false;
+  return trial->group_name() == kFieldTrialEnabledName;
+}
 
 GpuFeatureType StringToGpuFeatureType(const std::string& feature_string) {
   if (feature_string == kGpuFeatureNameAccelerated2dCanvas)
@@ -309,17 +364,18 @@ Value* GetFeatureStatus() {
             (command_line.HasSwitch(switches::kDisableAcceleratedCompositing) ||
              (flags & content::GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING)))
           status += "_readback";
-        bool has_thread = CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableThreadedCompositing) &&
-            (!CommandLine::ForCurrentProcess()->HasSwitch(
-                switches::kDisableThreadedCompositing));
-        if (kGpuFeatureInfo[i].name == "compositing" &&
-            CommandLine::ForCurrentProcess()->HasSwitch(
-                switches::kForceCompositingMode))
-          status += "_force";
-        if (kGpuFeatureInfo[i].name == "compositing" &&
-            has_thread)
-          status += "_threaded";
+        bool has_thread =
+            command_line.HasSwitch(switches::kEnableThreadedCompositing) &&
+            !command_line.HasSwitch(switches::kDisableThreadedCompositing);
+        if (kGpuFeatureInfo[i].name == "compositing") {
+          bool force_compositing =
+              command_line.HasSwitch(switches::kForceCompositingMode) ||
+              InForceCompositingModeTrial();
+          if (force_compositing)
+            status += "_force";
+          if (has_thread)
+            status += "_threaded";
+        }
         if (kGpuFeatureInfo[i].name == "css_animation") {
           if (has_thread)
             status = "accelerated_threaded";
