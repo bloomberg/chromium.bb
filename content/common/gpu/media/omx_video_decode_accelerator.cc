@@ -748,7 +748,8 @@ void OmxVideoDecodeAccelerator::OnOutputPortDisabled() {
   if (client_) {
     client_->ProvidePictureBuffers(
         kNumPictureBuffers,
-        gfx::Size(vformat.nFrameWidth, vformat.nFrameHeight));
+        gfx::Size(vformat.nFrameWidth, vformat.nFrameHeight),
+        GL_TEXTURE_2D);
   }
 }
 

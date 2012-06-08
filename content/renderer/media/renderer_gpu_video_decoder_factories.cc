@@ -75,7 +75,7 @@ void RendererGpuVideoDecoderFactories::AsyncCreateVideoDecodeAccelerator(
 bool RendererGpuVideoDecoderFactories::CreateTextures(
     int32 count, const gfx::Size& size,
     std::vector<uint32>* texture_ids,
-    uint32* texture_target) {
+    uint32 texture_target) {
   DCHECK_NE(MessageLoop::current(), message_loop_);
   bool success = false;
   base::WaitableEvent waiter(false, false);
@@ -88,8 +88,9 @@ bool RendererGpuVideoDecoderFactories::CreateTextures(
 
 void RendererGpuVideoDecoderFactories::AsyncCreateTextures(
     int32 count, const gfx::Size& size, std::vector<uint32>* texture_ids,
-    uint32* texture_target, bool* success, base::WaitableEvent* waiter) {
+    uint32 texture_target, bool* success, base::WaitableEvent* waiter) {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK(texture_target);
   if (!context_) {
     *success = false;
     waiter->Signal();
@@ -98,16 +99,15 @@ void RendererGpuVideoDecoderFactories::AsyncCreateTextures(
   gpu::gles2::GLES2Implementation* gles2 = context_->GetImplementation();
   texture_ids->resize(count);
   gles2->GenTextures(count, &texture_ids->at(0));
-  *texture_target = GL_TEXTURE_2D;
   for (int i = 0; i < count; ++i) {
     gles2->ActiveTexture(GL_TEXTURE0);
     uint32 texture_id = texture_ids->at(i);
-    gles2->BindTexture(*texture_target, texture_id);
-    gles2->TexParameteri(*texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    gles2->TexParameteri(*texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    gles2->TexParameterf(*texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    gles2->TexParameterf(*texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    gles2->TexImage2D(*texture_target, 0, GL_RGBA, size.width(), size.height(),
+    gles2->BindTexture(texture_target, texture_id);
+    gles2->TexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    gles2->TexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    gles2->TexParameterf(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    gles2->TexParameterf(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    gles2->TexImage2D(texture_target, 0, GL_RGBA, size.width(), size.height(),
                       0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
   }
   // We need a glFlush here to guarantee the decoder (in the GPU process) can

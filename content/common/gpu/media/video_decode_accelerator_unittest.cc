@@ -204,9 +204,9 @@ class EglRenderingVDAClient : public VideoDecodeAccelerator::Client {
 
   // VideoDecodeAccelerator::Client implementation.
   // The heart of the Client.
-  virtual void ProvidePictureBuffers(
-      uint32 requested_num_of_buffers,
-      const gfx::Size& dimensions);
+  virtual void ProvidePictureBuffers(uint32 requested_num_of_buffers,
+                                     const gfx::Size& dimensions,
+                                     uint32 texture_target);
   virtual void DismissPictureBuffer(int32 picture_buffer_id);
   virtual void PictureReady(const media::Picture& picture);
   // Simple state changes.
@@ -333,7 +333,8 @@ void EglRenderingVDAClient::CreateDecoder() {
 
 void EglRenderingVDAClient::ProvidePictureBuffers(
     uint32 requested_num_of_buffers,
-    const gfx::Size& dimensions) {
+    const gfx::Size& dimensions,
+    uint32 texture_target) {
   if (decoder_deleted())
     return;
   std::vector<media::PictureBuffer> buffers;
@@ -342,7 +343,8 @@ void EglRenderingVDAClient::ProvidePictureBuffers(
     uint32 id = picture_buffers_by_id_.size();
     uint32 texture_id;
     base::WaitableEvent done(false, false);
-    rendering_helper_->CreateTexture(rendering_window_id_, &texture_id, &done);
+    rendering_helper_->CreateTexture(
+        rendering_window_id_, texture_target, &texture_id, &done);
     done.Wait();
     CHECK(outstanding_texture_ids_.insert(texture_id).second);
     media::PictureBuffer* buffer =

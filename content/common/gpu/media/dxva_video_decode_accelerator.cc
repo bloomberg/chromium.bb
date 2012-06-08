@@ -1014,8 +1014,10 @@ void DXVAVideoDecodeAccelerator::RequestPictureBuffers(int width, int height) {
   // TODO(ananta)
   // We need to support mid stream resize.
   if (state_ != kUninitialized && client_) {
-    client_->ProvidePictureBuffers(kNumPictureBuffers,
-                                   gfx::Size(width, height));
+    client_->ProvidePictureBuffers(
+        kNumPictureBuffers,
+        gfx::Size(width, height),
+        GL_TEXTURE_2D);
   }
 }
 

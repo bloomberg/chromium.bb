@@ -517,9 +517,11 @@ IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderHostMsg_BitstreamBufferProcessed,
                     int32) /* Processed buffer ID */
 
 // Allocate video frames for output of the hardware video decoder.
-IPC_MESSAGE_ROUTED2(AcceleratedVideoDecoderHostMsg_ProvidePictureBuffers,
-                    int32, /* Number of video frames to generate */
-                    gfx::Size) /* Requested size of buffer */
+IPC_MESSAGE_ROUTED3(
+    AcceleratedVideoDecoderHostMsg_ProvidePictureBuffers,
+    int32, /* Number of video frames to generate */
+    gfx::Size, /* Requested size of buffer */
+    uint32 ) /* Texture target */
 
 // Decoder reports that a picture is ready and buffer does not need to be passed
 // back to the decoder.

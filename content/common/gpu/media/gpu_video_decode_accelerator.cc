@@ -69,9 +69,12 @@ bool GpuVideoDecodeAccelerator::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void GpuVideoDecodeAccelerator::ProvidePictureBuffers(
-    uint32 requested_num_of_buffers, const gfx::Size& dimensions) {
+    uint32 requested_num_of_buffers,
+    const gfx::Size& dimensions,
+    uint32 texture_target) {
   if (!Send(new AcceleratedVideoDecoderHostMsg_ProvidePictureBuffers(
-          host_route_id_, requested_num_of_buffers, dimensions))) {
+          host_route_id_, requested_num_of_buffers, dimensions,
+          texture_target))) {
     DLOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_ProvidePictureBuffers) "
                 << "failed";
   }

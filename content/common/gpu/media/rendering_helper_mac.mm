@@ -90,6 +90,7 @@ class RenderingHelperMac : public RenderingHelper {
                           base::WaitableEvent* done) OVERRIDE;
   virtual void UnInitialize(base::WaitableEvent* done) OVERRIDE;
   virtual void CreateTexture(int window_id,
+                             uint32 texture_target,
                              GLuint* texture_id,
                              base::WaitableEvent* done) OVERRIDE;
   virtual void RenderTexture(GLuint texture_id) OVERRIDE;
@@ -185,9 +186,11 @@ void RenderingHelperMac::UnInitialize(base::WaitableEvent* done) {
 }
 
 void RenderingHelperMac::CreateTexture(int window_id,
+                                       uint32 texture_target,
                                        GLuint* texture_id,
                                        base::WaitableEvent* done) {
   CHECK_EQ(MessageLoop::current(), message_loop_);
+  CHECK_EQ(static_cast<uint32>(GL_TEXTURE_RECTANGLE_ARB), texture_target);
   CGLContextObj cgl_ctx = GetCGLContext(gl_view_);
   glGenTextures(1, texture_id);
   CHECK_EQ(GL_NO_ERROR, static_cast<int>(glGetError()));

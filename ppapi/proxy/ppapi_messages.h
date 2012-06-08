@@ -626,10 +626,11 @@ IPC_MESSAGE_ROUTED2(PpapiMsg_PPBVideoDecoder_ResetACK,
                     int32_t /* PP_CompletionCallback result */)
 
 // PPP_VideoDecoder_Dev.
-IPC_MESSAGE_ROUTED3(PpapiMsg_PPPVideoDecoder_ProvidePictureBuffers,
+IPC_MESSAGE_ROUTED4(PpapiMsg_PPPVideoDecoder_ProvidePictureBuffers,
                     ppapi::HostResource /* video_decoder */,
                     uint32_t /* requested number of buffers */,
-                    PP_Size /* dimensions of buffers */)
+                    PP_Size /* dimensions of buffers */,
+                    uint32_t /* texture_target */)
 IPC_MESSAGE_ROUTED2(PpapiMsg_PPPVideoDecoder_DismissPictureBuffer,
                     ppapi::HostResource /* video_decoder */,
                     int32_t /* picture buffer id */)

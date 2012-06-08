@@ -328,7 +328,8 @@ void MacVideoDecodeAccelerator::RequestPictures() {
     client_->ProvidePictureBuffers(
         kNumPictureBuffers,
         gfx::Size(config_record_builder_.coded_width(),
-                  config_record_builder_.coded_height()));
+                  config_record_builder_.coded_height()),
+        GL_TEXTURE_RECTANGLE_ARB);
   }
 }
 

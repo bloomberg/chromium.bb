@@ -30,7 +30,8 @@ class PPP_VideoDecoder_Proxy : public InterfaceProxy {
   // Message handlers.
   void OnMsgProvidePictureBuffers(const ppapi::HostResource& decoder,
                                   uint32_t req_num_of_buffers,
-                                  const PP_Size& dimensions);
+                                  const PP_Size& dimensions,
+                                  uint32_t texture_target);
   void OnMsgDismissPictureBuffer(const ppapi::HostResource& decoder,
                                  int32_t picture_id);
   void OnMsgPictureReady(const ppapi::HostResource& decoder,

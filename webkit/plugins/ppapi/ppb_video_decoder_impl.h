@@ -49,8 +49,9 @@ class PPB_VideoDecoder_Impl : public ::ppapi::PPB_VideoDecoder_Shared,
   virtual void Destroy() OVERRIDE;
 
   // media::VideoDecodeAccelerator::Client implementation.
-  virtual void ProvidePictureBuffers(
-      uint32 requested_num_of_buffers, const gfx::Size& dimensions) OVERRIDE;
+  virtual void ProvidePictureBuffers(uint32 requested_num_of_buffers,
+                                     const gfx::Size& dimensions,
+                                     uint32 texture_target) OVERRIDE;
   virtual void DismissPictureBuffer(int32 picture_buffer_id) OVERRIDE;
   virtual void PictureReady(const media::Picture& picture) OVERRIDE;
   virtual void NotifyInitializeDone() OVERRIDE;

@@ -298,16 +298,19 @@ void GpuVideoDecoder::NotifyInitializeDone() {
 }
 
 void GpuVideoDecoder::ProvidePictureBuffers(uint32 count,
-                                            const gfx::Size& size) {
+                                            const gfx::Size& size,
+                                            uint32 texture_target) {
   if (!gvd_loop_proxy_->BelongsToCurrentThread()) {
     gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-        &GpuVideoDecoder::ProvidePictureBuffers, this, count, size));
+        &GpuVideoDecoder::ProvidePictureBuffers, this, count, size,
+        texture_target));
     return;
   }
 
   std::vector<uint32> texture_ids;
+  decoder_texture_target_ = texture_target;
   if (!factories_->CreateTextures(
-      count, size, &texture_ids, &decoder_texture_target_)) {
+      count, size, &texture_ids, decoder_texture_target_)) {
     NotifyError(VideoDecodeAccelerator::PLATFORM_FAILURE);
     return;
   }

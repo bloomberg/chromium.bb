@@ -220,13 +220,15 @@ void PPB_VideoDecoder_Impl::Destroy() {
 }
 
 void PPB_VideoDecoder_Impl::ProvidePictureBuffers(
-    uint32 requested_num_of_buffers, const gfx::Size& dimensions) {
+    uint32 requested_num_of_buffers,
+    const gfx::Size& dimensions,
+    uint32 texture_target) {
   if (!ppp_videodecoder_)
     return;
 
   PP_Size out_dim = PP_MakeSize(dimensions.width(), dimensions.height());
   ppp_videodecoder_->ProvidePictureBuffers(pp_instance(), pp_resource(),
-                                           requested_num_of_buffers, &out_dim);
+      requested_num_of_buffers, &out_dim, texture_target);
 }
 
 void PPB_VideoDecoder_Impl::PictureReady(const media::Picture& picture) {

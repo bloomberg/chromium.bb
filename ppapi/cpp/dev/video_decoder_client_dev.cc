@@ -21,13 +21,14 @@ const char kPPPVideoDecoderInterface[] = PPP_VIDEODECODER_DEV_INTERFACE;
 void ProvidePictureBuffers(PP_Instance instance,
                            PP_Resource decoder,
                            uint32_t req_num_of_bufs,
-                           const PP_Size* dimensions) {
+                           const PP_Size* dimensions,
+                           uint32_t texture_target) {
   void* object = Instance::GetPerInstanceObject(instance,
                                                 kPPPVideoDecoderInterface);
   if (!object)
     return;
   static_cast<VideoDecoderClient_Dev*>(object)->ProvidePictureBuffers(
-      decoder, req_num_of_bufs, *dimensions);
+      decoder, req_num_of_bufs, *dimensions, texture_target);
 }
 
 void DismissPictureBuffer(PP_Instance instance,

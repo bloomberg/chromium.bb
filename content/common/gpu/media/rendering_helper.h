@@ -40,6 +40,7 @@ class RenderingHelper {
   // Return a newly-created GLES2 texture id rendering to a specific window, and
   // signal |*done|.
   virtual void CreateTexture(int window_id,
+                             uint32 texture_target,
                              uint32* texture_id,
                              base::WaitableEvent* done) = 0;
 

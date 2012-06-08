@@ -90,9 +90,11 @@ void PlatformVideoDecoderImpl::NotifyError(
 
 void PlatformVideoDecoderImpl::ProvidePictureBuffers(
     uint32 requested_num_of_buffers,
-    const gfx::Size& dimensions) {
+    const gfx::Size& dimensions,
+    uint32 texture_target) {
   DCHECK(RenderThreadImpl::current());
-  client_->ProvidePictureBuffers(requested_num_of_buffers, dimensions);
+  client_->ProvidePictureBuffers(requested_num_of_buffers, dimensions,
+                                 texture_target);
 }
 
 void PlatformVideoDecoderImpl::DismissPictureBuffer(int32 picture_buffer_id) {

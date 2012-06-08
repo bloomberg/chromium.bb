@@ -60,9 +60,11 @@ class VideoDecodeDemoInstance : public pp::Instance,
   }
 
   // pp::VideoDecoderClient_Dev implementation.
-  virtual void ProvidePictureBuffers(PP_Resource decoder,
-                                     uint32_t req_num_of_bufs,
-                                     const PP_Size& dimensions);
+  virtual void ProvidePictureBuffers(
+      PP_Resource decoder,
+      uint32_t req_num_of_bufs,
+      const PP_Size& dimensions,
+      uint32_t texture_target);
   virtual void DismissPictureBuffer(PP_Resource decoder,
                                     int32_t picture_buffer_id);
   virtual void PictureReady(PP_Resource decoder, const PP_Picture_Dev& picture);
@@ -82,8 +84,10 @@ class VideoDecodeDemoInstance : public pp::Instance,
     void DecodeNextNALUs();
 
     // Per-decoder implementation of part of pp::VideoDecoderClient_Dev.
-    void ProvidePictureBuffers(uint32_t req_num_of_bufs,
-                               PP_Size dimensions);
+    void ProvidePictureBuffers(
+        uint32_t req_num_of_bufs,
+        PP_Size dimensions,
+        uint32_t texture_target);
     void DismissPictureBuffer(int32_t picture_buffer_id);
 
     const PP_PictureBuffer_Dev& GetPictureBufferById(int id);
@@ -320,15 +324,21 @@ void VideoDecodeDemoInstance::DecoderClient::DecodeNextNALU() {
   decoder_->Decode(bitstream_buffer, cb);
 }
 
-void VideoDecodeDemoInstance::ProvidePictureBuffers(
-    PP_Resource decoder, uint32_t req_num_of_bufs, const PP_Size& dimensions) {
+void VideoDecodeDemoInstance::ProvidePictureBuffers(PP_Resource decoder,
+                                                    uint32_t req_num_of_bufs,
+                                                    const PP_Size& dimensions,
+                                                    uint32_t texture_target) {
   DecoderClient* client = video_decoders_[decoder];
   assert(client);
-  client->ProvidePictureBuffers(req_num_of_bufs, dimensions);
+  client->ProvidePictureBuffers(req_num_of_bufs, dimensions, texture_target);
 }
 
 void VideoDecodeDemoInstance::DecoderClient::ProvidePictureBuffers(
-    uint32_t req_num_of_bufs, PP_Size dimensions) {
+    uint32_t req_num_of_bufs,
+    PP_Size dimensions,
+    uint32_t texture_target) {
+  // TODO(sail): Add support for GL_TEXTURE_RECTANGLE_ARB.
+  assert(texture_target == GL_TEXTURE_2D);
   std::vector<PP_PictureBuffer_Dev> buffers;
   for (uint32_t i = 0; i < req_num_of_bufs; ++i) {
     PP_PictureBuffer_Dev buffer;

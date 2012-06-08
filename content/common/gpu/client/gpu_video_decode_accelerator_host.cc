@@ -145,10 +145,13 @@ void GpuVideoDecodeAcceleratorHost::OnBitstreamBufferProcessed(
 
 void GpuVideoDecodeAcceleratorHost::OnProvidePictureBuffer(
     uint32 num_requested_buffers,
-    const gfx::Size& buffer_size) {
+    const gfx::Size& buffer_size,
+    uint32 texture_target) {
   DCHECK(CalledOnValidThread());
-  if (client_)
-    client_->ProvidePictureBuffers(num_requested_buffers, buffer_size);
+  if (client_) {
+    client_->ProvidePictureBuffers(
+        num_requested_buffers, buffer_size, texture_target);
+  }
 }
 
 void GpuVideoDecodeAcceleratorHost::OnDismissPictureBuffer(

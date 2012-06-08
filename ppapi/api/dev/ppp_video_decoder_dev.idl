@@ -8,7 +8,8 @@
  */
 label Chrome {
   M14 = 0.9,
-  M18 = 0.10
+  M18 = 0.10,
+  M21 = 0.11
 };
 
 /**
@@ -33,11 +34,35 @@ interface PPP_VideoDecoder_Dev {
    *  |req_num_of_bufs| tells how many buffers are needed by the decoder.
    *  |dimensions| tells the dimensions of the buffer to allocate.
    */
+  [deprecate=0.11]
   void ProvidePictureBuffers(
       [in] PP_Instance instance,
       [in] PP_Resource decoder,
       [in] uint32_t req_num_of_bufs,
       [in] PP_Size dimensions);
+
+  /**
+   * Callback function to provide buffers for the decoded output pictures. If
+   * succeeds plugin must provide buffers through AssignPictureBuffers function
+   * to the API. If |req_num_of_bufs| matching exactly the specification
+   * given in the parameters cannot be allocated decoder should be destroyed.
+   *
+   * Decoding will not proceed until buffers have been provided.
+   *
+   * Parameters:
+   *  |instance| the plugin instance to which the callback is responding.
+   *  |decoder| the PPB_VideoDecoder_Dev resource.
+   *  |req_num_of_bufs| tells how many buffers are needed by the decoder.
+   *  |dimensions| tells the dimensions of the buffer to allocate.
+   *  |texture_target| the type of texture used.
+   */
+  [version=0.11]
+  void ProvidePictureBuffers(
+      [in] PP_Instance instance,
+      [in] PP_Resource decoder,
+      [in] uint32_t req_num_of_bufs,
+      [in] PP_Size dimensions,
+      [in] uint32_t texture_target);
 
   /**
    * Callback function for decoder to deliver unneeded picture buffers back to

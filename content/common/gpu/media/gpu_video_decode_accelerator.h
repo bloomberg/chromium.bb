@@ -30,8 +30,9 @@ class GpuVideoDecodeAccelerator
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // media::VideoDecodeAccelerator::Client implementation.
-  virtual void ProvidePictureBuffers(
-      uint32 requested_num_of_buffers, const gfx::Size& dimensions) OVERRIDE;
+  virtual void ProvidePictureBuffers(uint32 requested_num_of_buffers,
+                                     const gfx::Size& dimensions,
+                                     uint32 texture_target) OVERRIDE;
   virtual void DismissPictureBuffer(int32 picture_buffer_id) OVERRIDE;
   virtual void PictureReady(const media::Picture& picture) OVERRIDE;
   virtual void NotifyInitializeDone() OVERRIDE;
