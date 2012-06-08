@@ -512,12 +512,6 @@ void BluetoothDevice::ConnectToMatchingService(
 
 void BluetoothDevice::ConnectToService(const std::string& service_uuid,
                                        SocketCallback callback) {
-  // quick sanity check
-  if (!ProvidesServiceWithUUID(service_uuid)) {
-    callback.Run(NULL);
-    return;
-  }
-
   DBusThreadManager::Get()->GetBluetoothDeviceClient()->
       DiscoverServices(
           object_path_,
