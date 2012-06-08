@@ -26,6 +26,7 @@
 #include "net/base/file_stream.h"
 #include "net/base/net_util.h"
 #include "ui/base/clipboard/custom_data_helper.h"
+#include "ui/base/dragdrop/cocoa_dnd_util.h"
 #include "ui/gfx/mac/nsimage_cache.h"
 #include "webkit/glue/webdropdata.h"
 
@@ -369,7 +370,9 @@ void PromiseWriterHelper(const WebDropData& drop_data,
 - (void)fillPasteboard {
   DCHECK(pasteboard_.get());
 
-  [pasteboard_ declareTypes:[NSArray array] owner:contentsView_];
+  [pasteboard_
+      declareTypes:[NSArray arrayWithObject:ui::kChromeDragDummyPboardType]
+             owner:contentsView_];
 
   // HTML.
   if (!dropData_->text_html.empty())

@@ -222,7 +222,8 @@ int GetModifierFlags() {
 }
 
 // Given |data|, which should not be nil, fill it in using the contents of the
-// given pasteboard.
+// given pasteboard. The types handled by this method should be kept in sync
+// with [WebContentsViewCocoa registerDragTypes].
 - (void)populateWebDropData:(WebDropData*)data
              fromPasteboard:(NSPasteboard*)pboard {
   DCHECK(data);

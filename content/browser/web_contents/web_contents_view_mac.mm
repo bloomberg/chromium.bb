@@ -23,6 +23,8 @@
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #import "ui/base/cocoa/focus_tracker.h"
+#include "ui/base/clipboard/custom_data_helper.h"
+#include "ui/base/dragdrop/cocoa_dnd_util.h"
 
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
@@ -365,8 +367,16 @@ void WebContentsViewMac::CloseTab() {
 
 // Registers for the view for the appropriate drag types.
 - (void)registerDragTypes {
-  NSArray* types = [NSArray arrayWithObjects:NSStringPboardType,
-      NSHTMLPboardType, NSURLPboardType, nil];
+  NSArray* types = [NSArray arrayWithObjects:
+      ui::kChromeDragDummyPboardType,
+      kWebURLsWithTitlesPboardType,
+      NSURLPboardType,
+      NSStringPboardType,
+      NSHTMLPboardType,
+      NSRTFPboardType,
+      NSFilenamesPboardType,
+      ui::kWebCustomDataPboardType,
+      nil];
   [self registerForDraggedTypes:types];
 }
 
