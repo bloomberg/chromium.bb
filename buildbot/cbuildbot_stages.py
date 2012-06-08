@@ -241,6 +241,7 @@ class SyncStage(bs.BuilderStage):
   """Stage that performs syncing for the builder."""
 
   option_name = 'sync'
+  output_manifest_sha1 = True
 
   def __init__(self, options, build_config):
     super(SyncStage, self).__init__(options, build_config)
@@ -278,8 +279,10 @@ class SyncStage(bs.BuilderStage):
     print 'TRACKING BRANCH: %s' % self.repo.branch
     print 'NEXT MANIFEST: %s' % next_manifest
 
-    if not self.skip_sync: self.repo.Sync(next_manifest)
-    self.repo.ExportManifest('/dev/stderr')
+    if not self.skip_sync:
+      self.repo.Sync(next_manifest)
+    print >> sys.stderr, self.repo.ExportManifest(
+        mark_revision=self.output_manifest_sha1)
 
   def _PerformStage(self):
     self.Initialize()
@@ -294,6 +297,8 @@ class SyncStage(bs.BuilderStage):
 
 class LKGMSyncStage(SyncStage):
   """Stage that syncs to the last known good manifest blessed by builders."""
+
+  output_manifest_sha1 = False
 
   def GetNextManifest(self):
     """Override: Gets the LKGM."""
@@ -313,6 +318,7 @@ class ManifestVersionedSyncStage(SyncStage):
   """Stage that generates a unique manifest file, and sync's to it."""
 
   manifest_manager = None
+  output_manifest_sha1 = False
 
   def __init__(self, options, build_config):
     # Perform the sync at the end of the stage to the given manifest.

@@ -447,7 +447,8 @@ class BuildSpecsManager(object):
     """Returns the path to a new manifest based on the current source checkout.
     """
     new_manifest = tempfile.mkstemp('manifest_versions.manifest')[1]
-    self.cros_source.ExportManifest(new_manifest)
+    osutils.WriteFile(new_manifest,
+                      self.cros_source.ExportManifest(mark_revision=True))
     return new_manifest
 
   def GetNextVersion(self, version_info):

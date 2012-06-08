@@ -119,11 +119,6 @@ def ClearBuildRoot(buildroot, preserve_paths=()):
     CreateTrybotMarker(buildroot)
 
 
-def DisableInteractiveRepoManifestCommand():
-  """Set the PAGER repo manifest uses to be non-interactive."""
-  os.environ['PAGER'] = 'cat'
-
-
 class RepoRepository(object):
   """ A Class that encapsulates a repo repository.
   Args:
@@ -291,15 +286,34 @@ class RepoRepository(object):
     """Returns full path including source directory of path in repo."""
     return os.path.join(self.directory, path)
 
-  def ExportManifest(self, output_file):
-    """Export current manifest to a file.
+  def ExportManifest(self, mark_revision=False, revisions=True):
+    """Export the revision locked manifest
 
     Args:
-      output_file: Self explanatory.
+      mark_revision: If True, then the sha1 of manifest.git is recorded
+        into the resultant manifest tag as a version attribute.
+        Specifically, if manifests.git is at 1234, <manifest> becomes
+        <manifest revision="1234">.
+      revisions: If True, then rewrite all branches/tags into a specific
+        sha1 revision.  If False, don't.
+    Returns:
+      The manifest as a string.
     """
-    DisableInteractiveRepoManifestCommand()
-    cros_build_lib.RunCommand(['repo', 'manifest', '-r', '-o', output_file],
-                              cwd=self.directory, print_cmd=True)
+    cmd = ['repo', 'manifest', '-o', '-']
+    if revisions:
+      cmd += ['-r']
+    output = cros_build_lib.RunCommandCaptureOutput(
+        cmd, cwd=self.directory, print_cmd=False,
+        extra_env={'PAGER':'cat'}).output
+
+    if not mark_revision:
+        return output
+    modified = cros_build_lib.RunGitCommand(
+        os.path.join(self.directory, '.repo/manifests'),
+        ['rev-list', '-n1', 'HEAD'])
+    assert modified.output
+    return output.replace("<manifest>", '<manifest revision="%s">' %
+                          modified.output.strip())
 
   def IsManifestDifferent(self, other_manifest):
     """Checks whether this manifest is different than another.
@@ -315,19 +329,14 @@ class RepoRepository(object):
     black_list = ['="chromium/']
     logging.debug('Calling DiffManifests against %s', other_manifest)
 
-    temp_manifest_file = tempfile.mktemp()
-    try:
-      self.ExportManifest(temp_manifest_file)
-      blacklist_pattern = re.compile(r'|'.join(black_list))
-      with open(temp_manifest_file, 'r') as manifest1_fh:
-        with open(other_manifest, 'r') as manifest2_fh:
-          for (line1, line2) in zip(manifest1_fh, manifest2_fh):
-            if blacklist_pattern.search(line1):
-              logging.debug('%s ignored %s', line1, line2)
-              continue
+    current = self.ExportManifest()
+    blacklist_pattern = re.compile(r'|'.join(black_list))
+    with open(other_manifest, 'r') as manifest2_fh:
+      for (line1, line2) in zip(current.splitlines(), manifest2_fh):
+        if blacklist_pattern.search(line1):
+          logging.debug('%s ignored %s', line1, line2)
+          continue
 
-            if line1 != line2:
-              return True
-          return False
-    finally:
-      os.remove(temp_manifest_file)
+        if line1 != line2:
+          return True
+      return False
