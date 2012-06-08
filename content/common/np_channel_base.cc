@@ -253,6 +253,20 @@ bool NPChannelBase::OnControlMessageReceived(const IPC::Message& msg) {
 
 void NPChannelBase::OnChannelError() {
   channel_valid_ = false;
+
+  // TODO(shess): http://crbug.com/97285
+  // Once an error is seen on a channel, remap the channel to prevent
+  // it from being vended again.  Keep the channel in the map so
+  // RemoveRoute() can clean things up correctly.
+  for (ChannelMap::iterator iter = g_channels.Get().begin();
+       iter != g_channels.Get().end(); ++iter) {
+    if (iter->second == this) {
+      // Insert new element before invalidating |iter|.
+      g_channels.Get()[iter->first + "-error"] = iter->second;
+      g_channels.Get().erase(iter);
+      break;
+    }
+  }
 }
 
 NPObject* NPChannelBase::GetExistingNPObjectProxy(int route_id) {
