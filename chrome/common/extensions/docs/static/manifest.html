@@ -56,7 +56,7 @@ are <b>name</b> and <b>version</b>.
   "<a href="#requirements">requirements</a>": {...},
   "<a href="autoupdate.html">update_url</a>": "http://<em>path/to/updateInfo</em>.xml",
   "<a href="#web_accessible_resources">web_accessible_resources</a>": [...],
-  "<a href="#sandboxed_pages">sandboxed_pages</a>": [...]
+  "<a href="#sandbox">sandbox</a>": [...]
 }
 </pre>
 
@@ -819,10 +819,10 @@ a complete list of all whitelisted resources. Resources not listed will be
 blocked.
 </p>
 
-<h3 id="sandboxed_pages">sandboxed_pages</h3>
+<h3 id="sandbox">sandbox</h3>
 
 <p>
-A list of paths (relative to the package root) to pages that are to be served
+Defines an collection of app or extension pages that are to be served
 in a sandboxed unique origin, and optionally a Content Security Policy to use
 with them. Being in a sandbox has two implications:
 </p>
@@ -842,7 +842,7 @@ in a sandbox with a custom CSP:</p>
 
 <pre>{
   ...
-  "sandboxed_pages": {
+  "sandbox": {
     "pages": [
       "page1.html",
       "directory/page2.html"

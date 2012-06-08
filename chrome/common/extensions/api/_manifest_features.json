@@ -191,7 +191,7 @@
       "extension", "packaged_app", "hosted_app", "platform_app"
     ]
   },
-  "sandboxed_pages": {
+  "sandbox": {
     "channel": "stable",
     "extension_types": [
       "extension", "platform_app"

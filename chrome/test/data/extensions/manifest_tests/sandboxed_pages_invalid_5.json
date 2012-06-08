@@ -6,7 +6,7 @@
   "background": {
     "scripts": ["background.js"]
   },
-  "sandboxed_pages": {
+  "sandbox": {
     "pages": ["test"],
     // Sandbox directive that allows top-level navigation in a platform app.
     "content_security_policy": "sandbox allow-top-navigation"
