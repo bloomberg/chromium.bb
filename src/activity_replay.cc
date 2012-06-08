@@ -477,9 +477,11 @@ bool ActivityReplay::ParsePropChange(DictionaryValue* entry) {
 
 bool ActivityReplay::Replay(Interpreter* interpreter) {
   bool all_correct = true;
+  bool pending_gs_flag = false;
   interpreter->SetHardwareProperties(hwprops_);
   stime_t last_timeout_req = -1.0;
-  Gesture* last_gs = NULL;
+  // Use last_gs to save a copy of last gesture.
+  Gesture last_gs;
   for (size_t i = 0; i < log_.size(); ++i) {
     ActivityLog::Entry* entry = log_.GetEntry(i);
     switch (entry->type) {
@@ -488,18 +490,33 @@ bool ActivityReplay::Replay(Interpreter* interpreter) {
         HardwareState hs = entry->details.hwstate;
         for (size_t i = 0; i < hs.finger_cnt; i++)
           Log("Input Finger ID: %d", hs.fingers[i].tracking_id);
-        last_gs = interpreter->SyncInterpret(&hs, &last_timeout_req);
-        if (last_gs)
-          Log("Output Gesture: %s", last_gs->String().c_str());
+        Gesture* next_gs = interpreter->SyncInterpret(&hs, &last_timeout_req);
+        if (next_gs) {
+          if (pending_gs_flag) {
+            Err("Unexpected gesture: %s", last_gs.String().c_str());
+            all_correct = false;
+          }
+          Log("Output Gesture: %s", next_gs->String().c_str());
+          last_gs = *next_gs;
+          pending_gs_flag = true;
+        }
         break;
       }
-      case ActivityLog::kTimerCallback:
+      case ActivityLog::kTimerCallback: {
         last_timeout_req = -1.0;
-        last_gs = interpreter->HandleTimer(entry->details.timestamp,
-                                           &last_timeout_req);
-        if (last_gs)
-          Log("Output Gesture: %s", last_gs->String().c_str());
+        Gesture* next_gs = interpreter->HandleTimer(entry->details.timestamp,
+                                                    &last_timeout_req);
+        if (next_gs) {
+          if (pending_gs_flag) {
+            Err("Unexpected gesture: %s", last_gs.String().c_str());
+            all_correct = false;
+          }
+          Log("Output Gesture: %s", next_gs->String().c_str());
+          last_gs = *next_gs;
+          pending_gs_flag = true;
+        }
         break;
+      }
       case ActivityLog::kCallbackRequest:
         if (!DoubleEq(last_timeout_req, entry->details.timestamp)) {
           Err("Expected timeout request of %f, but log has %f (entry idx %zu)",
@@ -507,14 +524,20 @@ bool ActivityReplay::Replay(Interpreter* interpreter) {
           all_correct = false;
         }
         break;
-      case ActivityLog::kGesture:
-        if (!last_gs || *last_gs != entry->details.gesture) {
-          Err("Incorrect gesture. Expected %s, but log has %s",
-              last_gs ? last_gs->String().c_str() : "(null)",
-              entry->details.gesture.String().c_str());
+      case ActivityLog::kGesture: {
+        if (!pending_gs_flag || last_gs != entry->details.gesture) {
+          Err("Incorrect gesture:\n  Expected: %s.\n  Actual: %s",
+              entry->details.gesture.String().c_str(),
+              pending_gs_flag ? last_gs.String().c_str() : "(null)");
           all_correct = false;
+        } else {
+          Log("Gesture matched:\n  Expected: %s.\n  Actual: %s",
+              entry->details.gesture.String().c_str(),
+              last_gs.String().c_str());
         }
+        pending_gs_flag = false;
         break;
+      }
       case ActivityLog::kPropChange:
         if (!ReplayPropChange(entry->details.prop_change))
           all_correct = false;
