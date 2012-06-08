@@ -25,7 +25,6 @@ void CopyNaClCommandLineArguments(CommandLine* cmd_line) {
     switches::kEnableDCHECK,
     switches::kSilentDumpOnDCHECK,
     switches::kMemoryProfiling,
-    switches::kEnableNaClDebug,
     switches::kNoErrorDialogs,
     switches::kEnableNaClIPCProxy,
   };

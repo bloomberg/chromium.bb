@@ -54,6 +54,7 @@ struct NaClStartParams {
   std::string version;
 
   bool enable_exception_handling;
+  bool enable_debug_stub;
 };
 
 }  // namespace nacl

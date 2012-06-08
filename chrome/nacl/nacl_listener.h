@@ -27,7 +27,6 @@ class NaClListener : public IPC::Channel::Listener {
   virtual ~NaClListener();
   // Listen for a request to launch a NaCl module.
   void Listen();
-  void set_debug_enabled(bool value) {debug_enabled_ = value;}
 
   bool Send(IPC::Message* msg);
 
@@ -46,8 +45,6 @@ class NaClListener : public IPC::Channel::Listener {
 
   // Used to identify what thread we're on.
   MessageLoop* main_loop_;
-
-  bool debug_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClListener);
 };

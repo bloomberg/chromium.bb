@@ -616,6 +616,8 @@ bool NaClProcessHost::StartNaClExecution() {
   params.validation_cache_key = nacl_browser->GetValidationCacheKey();
   params.version = chrome::VersionInfo().CreateVersionString();
   params.enable_exception_handling = enable_exception_handling_;
+  params.enable_debug_stub =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableNaClDebug);
 
   base::PlatformFile irt_file = nacl_browser->IrtFile();
   CHECK_NE(irt_file, base::kInvalidPlatformFileValue);
