@@ -207,6 +207,7 @@ class NativeInputTest(ChromeDriverTest):
     q.send_keys('tokyo')
     self.assertEqual(q.text, 'tokyo')
 
+
   # Needs to run on a machine with an IME installed.
   def DISABLED_testSendKeysNativeProcessedByIME(self):
     driver = self.GetNewDriver(NativeInputTest._CAPABILITIES)
@@ -801,7 +802,8 @@ class FileUploadControlTest(ChromeDriverTest):
     super(FileUploadControlTest, self).setUp()
     self._driver = self.GetNewDriver()
 
-  def testSetFilePathToFileUploadControl(self):
+  # Fails on win - crbug.com/131782
+  def DISABLED_testSetFilePathToFileUploadControl(self):
     """Verify a file path is set to the file upload control."""
     self._driver.get(self.GetTestDataUrl() + '/upload.html')
 

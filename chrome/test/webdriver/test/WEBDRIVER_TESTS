@@ -64,7 +64,6 @@
   ],
 
   'win': [
-    '-chromedriver_tests.FileUploadControlTest.testSetFilePathToFileUploadControl',
 
   ],
 
