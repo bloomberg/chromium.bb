@@ -15,6 +15,7 @@ import urllib2
 
 from chromite.lib import cros_build_lib
 
+GSUTIL_BIN = '/b/build/third_party/gsutil/gsutil'
 TWO_WEEKS = 60 * 60 * 24 * 7 * 2
 
 class PackageIndex(object):
@@ -296,7 +297,7 @@ def GrabRemotePackageIndex(binhost_url):
         return None
       raise
   elif binhost_url.startswith('gs://'):
-    cmd = ['gsutil', 'cat', url]
+    cmd = [GSUTIL_BIN, 'cat', url]
     try:
       output = cros_build_lib.RunCommand(cmd, redirect_stdout=True,
                                          print_cmd=False).output

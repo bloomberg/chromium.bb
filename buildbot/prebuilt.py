@@ -39,10 +39,9 @@ if __name__ == '__main__':
 
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
-from chromite.lib.binpkg import (GrabLocalPackageIndex, GrabRemotePackageIndex)
+from chromite.lib import binpkg
 
 _RETRIES = 3
-_GSUTIL_BIN = '/b/build/third_party/gsutil/gsutil'
 _HOST_PACKAGES_PATH = 'chroot/var/lib/portage/pkgs'
 _CATEGORIES_PATH = 'chroot/etc/portage/categories'
 _PYM_PATH = 'chroot/usr/lib/portage/pym'
@@ -187,11 +186,11 @@ def _GsUpload(args):
                  'public-read-write']
   acl_cmd = None
   if acl in CANNED_ACLS:
-    cmd = [_GSUTIL_BIN, 'cp', '-a', acl, local_file, remote_file]
+    cmd = [binpkg.GSUTIL_BIN, 'cp', '-a', acl, local_file, remote_file]
   else:
     # For private uploads we assume that the overlay board is set up properly
     # and a googlestore_acl.xml is present, if not this script errors
-    cmd = [_GSUTIL_BIN, 'cp', '-a', 'private', local_file, remote_file]
+    cmd = [binpkg.GSUTIL_BIN, 'cp', '-a', 'private', local_file, remote_file]
     if not os.path.exists(acl):
       print >> sys.stderr, ('You are specifying either a file that does not '
                             'exist or an unknown canned acl: %s. Aborting '
@@ -199,7 +198,7 @@ def _GsUpload(args):
       # emulate the failing of an upload since we are not uploading the file
       return (local_file, remote_file)
 
-    acl_cmd = [_GSUTIL_BIN, 'setacl', acl, remote_file]
+    acl_cmd = [binpkg.GSUTIL_BIN, 'setacl', acl, remote_file]
 
   if not cros_build_lib.RunCommandWithRetries(
       _RETRIES, cmd, print_cmd=False, error_code_ok=True).returncode == 0:
@@ -337,7 +336,7 @@ def _GrabAllRemotePackageIndexes(binhost_urls):
   """
   pkg_indexes = []
   for url in binhost_urls:
-    pkg_index = GrabRemotePackageIndex(url)
+    pkg_index = binpkg.GrabRemotePackageIndex(url)
     if pkg_index:
       pkg_indexes.append(pkg_index)
   return pkg_indexes
@@ -403,7 +402,7 @@ class PrebuiltUploader(object):
     """
 
     # Process Packages file, removing duplicates and filtered packages.
-    pkg_index = GrabLocalPackageIndex(package_path)
+    pkg_index = binpkg.GrabLocalPackageIndex(package_path)
     pkg_index.SetUploadLocation(self._binhost_base_url, url_suffix)
     pkg_index.RemoveFilteredPackages(self._ShouldFilterPackage)
     uploads = pkg_index.ResolveDuplicateUploads(self._pkg_indexes)
