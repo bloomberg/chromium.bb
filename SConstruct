@@ -257,6 +257,9 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'built_elsewhere', default=False,
     desc='The programs have already been built by another system')
 
+  BitFromArgument(env, 'skip_trusted_tests', default=False,
+    desc='Only run untrusted tests - useful for translator testing')
+
   BitFromArgument(env, 'nacl_pic', default=False,
     desc='generate position indepent code for (P)NaCl modules')
 
@@ -757,7 +760,19 @@ tests_to_disable = set()
 if ARGUMENTS.get('disable_tests', '') != '':
   tests_to_disable.update(ARGUMENTS['disable_tests'].split(','))
 
+
 def ShouldSkipTest(env, node_name):
+  if env.Bit('skip_trusted_tests') and env['NACL_BUILD_FAMILY'] == 'TRUSTED':
+    return True
+
+  if env.Bit('do_not_run_tests'):
+    # This hack is used for pnacl testing where we might build tests
+    # without running them on one bot and then transfer and run them on another.
+    # The skip logic only takes the first bot into account e.g. qemu
+    # restrictions, while it really should be skipping based on the second
+    # bot. By simply disabling the skipping completely we work around this.
+    return False
+
   # There are no known-to-fail tests any more, but this code is left
   # in so that if/when we port to a new architecture or add a test
   # that is known to fail on some platform(s), we can continue to have
@@ -804,7 +819,7 @@ def AddNodeToTestSuite(env, node, suite_name, node_name=None, is_broken=False,
       print '*** BROKEN ', display_name
     BROKEN_TEST_COUNT += 1
     env.Alias('broken_tests', node)
-  elif ShouldSkipTest(env, node_name) and not env.Bit('do_not_run_tests'):
+  elif ShouldSkipTest(env, node_name):
     print '*** SKIPPING ', GetPlatformString(env), ':', display_name
     env.Alias('broken_tests', node)
   else:
