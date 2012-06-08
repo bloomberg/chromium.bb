@@ -169,21 +169,8 @@ void StatusController::set_last_download_updates_result(
   shared_.error.mutate()->last_download_updates_result = result;
 }
 
-void StatusController::set_last_post_commit_result(const SyncerError result) {
-  shared_.error.mutate()->last_post_commit_result = result;
-}
-
-SyncerError StatusController::last_post_commit_result() const {
-  return shared_.error.value().last_post_commit_result;
-}
-
-void StatusController::set_last_process_commit_response_result(
-    const SyncerError result) {
-  shared_.error.mutate()->last_process_commit_response_result = result;
-}
-
-SyncerError StatusController::last_process_commit_response_result() const {
-  return shared_.error.value().last_process_commit_response_result;
+void StatusController::set_commit_result(const SyncerError result) {
+  shared_.error.mutate()->commit_result = result;
 }
 
 void StatusController::update_conflicts_resolved(bool resolved) {

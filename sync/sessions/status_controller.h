@@ -157,9 +157,6 @@ class StatusController {
     return ActiveGroupRestrictionIncludesModel(syncable::BOOKMARKS);
   }
 
-  SyncerError last_post_commit_result() const;
-  SyncerError last_process_commit_response_result() const;
-
   // A toolbelt full of methods for updating counters and flags.
   void set_num_server_changes_remaining(int64 changes_remaining);
   void set_invalid_store(bool invalid_store);
@@ -174,8 +171,7 @@ class StatusController {
   void increment_num_server_overwrites();
   void set_sync_protocol_error(const SyncProtocolError& error);
   void set_last_download_updates_result(const SyncerError result);
-  void set_last_post_commit_result(const SyncerError result);
-  void set_last_process_commit_response_result(const SyncerError result);
+  void set_commit_result(const SyncerError result);
 
   void update_conflicts_resolved(bool resolved);
   void reset_conflicts_resolved();

@@ -19,6 +19,35 @@ namespace browser_sync {
 using sessions::SyncSession;
 using sessions::StatusController;
 
+namespace {
+
+// Sets the SYNCING bits of all items in the commit set to value_to_set.
+void SetAllSyncingBitsToValue(WriteTransaction* trans,
+                              const sessions::OrderedCommitSet& commit_set,
+                              bool value_to_set) {
+  const std::vector<syncable::Id>& commit_ids = commit_set.GetAllCommitIds();
+  for (std::vector<syncable::Id>::const_iterator it = commit_ids.begin();
+       it != commit_ids.end(); ++it) {
+    syncable::MutableEntry entry(trans, syncable::GET_BY_ID, *it);
+    if (entry.good()) {
+      entry.Put(syncable::SYNCING, value_to_set);
+    }
+  }
+}
+
+// Sets the SYNCING bits for all items in the OrderedCommitSet.
+void SetSyncingBits(WriteTransaction* trans,
+                    const sessions::OrderedCommitSet& commit_set) {
+  SetAllSyncingBitsToValue(trans, commit_set, true);
+}
+
+// Clears the SYNCING bits for all items in the OrderedCommitSet.
+void ClearSyncingBits(syncable::Directory* dir,
+                      const sessions::OrderedCommitSet& commit_set) {
+  WriteTransaction trans(FROM_HERE, SYNCER, dir);
+  SetAllSyncingBitsToValue(&trans, commit_set, false);
+}
+
 // Helper function that finds sync items that are ready to be committed to the
 // server and serializes them into a commit message protobuf.  It will return
 // false iff there are no entries ready to be committed at this time.
@@ -48,53 +77,77 @@ bool PrepareCommitMessage(sessions::SyncSession* session,
   get_commit_ids_command.Execute(session);
 
   DVLOG(1) << "Commit message will contain " << commit_set->Size() << " items.";
-  if (commit_set->Empty())
+  if (commit_set->Empty()) {
     return false;
+  }
 
   // Serialize the message.
   BuildCommitCommand build_commit_command(*commit_set, commit_message);
   build_commit_command.Execute(session);
 
+  SetSyncingBits(session->write_transaction(), *commit_set);
   return true;
 }
 
-SyncerError BuildAndPostCommits(Syncer* syncer,
-                                sessions::SyncSession* session) {
-  StatusController* status_controller = session->mutable_status_controller();
-
-  sessions::OrderedCommitSet commit_set(session->routing_info());
+SyncerError BuildAndPostCommitsImpl(Syncer* syncer,
+                                    sessions::SyncSession* session,
+                                    sessions::OrderedCommitSet* commit_set) {
   ClientToServerMessage commit_message;
-  while (PrepareCommitMessage(session, &commit_set, &commit_message)
-         && !syncer->ExitRequested()) {
+  while (!syncer->ExitRequested() &&
+         PrepareCommitMessage(session, commit_set, &commit_message)) {
     ClientToServerResponse commit_response;
 
     DVLOG(1) << "Sending commit message.";
     TRACE_EVENT_BEGIN0("sync", "PostCommit");
-    status_controller->set_last_post_commit_result(
-        SyncerProtoUtil::PostClientToServerMessage(commit_message,
-                                                   &commit_response,
-                                                   session));
+    const SyncerError post_result = SyncerProtoUtil::PostClientToServerMessage(
+        commit_message, &commit_response, session);
     TRACE_EVENT_END0("sync", "PostCommit");
 
-    // ProcessCommitResponse includes some code that cleans up after a failure
-    // to post a commit message, so we must run it regardless of whether or not
-    // the commit succeeds.
+    if (post_result != SYNCER_OK) {
+      LOG(WARNING) << "Post commit failed";
+      return post_result;
+    }
+
+    if (!commit_response.has_commit()) {
+      LOG(WARNING) << "Commit response has no commit body!";
+      return SERVER_RESPONSE_VALIDATION_FAILED;
+    }
+
+    const size_t num_responses = commit_response.commit().entryresponse_size();
+    if (num_responses != commit_set->Size()) {
+      LOG(ERROR)
+         << "Commit response has wrong number of entries! "
+         << "Expected: " << commit_set->Size() << ", "
+         << "Got: " << num_responses;
+      return SERVER_RESPONSE_VALIDATION_FAILED;
+    }
 
     TRACE_EVENT_BEGIN0("sync", "ProcessCommitResponse");
     ProcessCommitResponseCommand process_response_command(
-        commit_set, commit_message, commit_response);
-    status_controller->set_last_process_commit_response_result(
-            process_response_command.Execute(session));
+        *commit_set, commit_message, commit_response);
+    const SyncerError processing_result =
+        process_response_command.Execute(session);
     TRACE_EVENT_END0("sync", "ProcessCommitResponse");
 
-    // Exit early if either the commit or the response processing failed.
-    if (status_controller->last_post_commit_result() != SYNCER_OK)
-      return status_controller->last_post_commit_result();
-    if (status_controller->last_process_commit_response_result() != SYNCER_OK)
-      return status_controller->last_process_commit_response_result();
+    if (processing_result != SYNCER_OK) {
+      return processing_result;
+    }
   }
 
   return SYNCER_OK;
+}
+
+}  // namespace
+
+
+SyncerError BuildAndPostCommits(Syncer* syncer,
+                                sessions::SyncSession* session) {
+  sessions::OrderedCommitSet commit_set(session->routing_info());
+  SyncerError result = BuildAndPostCommitsImpl(syncer, session, &commit_set);
+  if (result != SYNCER_OK) {
+    ClearSyncingBits(session->context()->directory(), commit_set);
+  }
+  return result;
 }
 
 }  // namespace browser_sync

@@ -9,8 +9,7 @@ namespace sessions {
 
 ErrorCounters::ErrorCounters()
     : last_download_updates_result(UNSET),
-      last_post_commit_result(UNSET),
-      last_process_commit_response_result(UNSET) {
+      commit_result(UNSET) {
 }
 
 }  // namespace sessions

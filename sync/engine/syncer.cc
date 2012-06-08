@@ -182,7 +182,8 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         break;
       }
       case COMMIT: {
-        BuildAndPostCommits(this, session);
+        session->mutable_status_controller()->set_commit_result(
+            BuildAndPostCommits(this, session));
         next_step = RESOLVE_CONFLICTS;
         break;
       }

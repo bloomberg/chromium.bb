@@ -615,15 +615,11 @@ void ConstructAboutInformation(ProfileSyncService* service,
         browser_sync::GetUpdatesSourceString(
         snapshot.source().updates_source));
     sync_ui_util::AddStringSyncDetails(
-        cycles, "Download Updates",
+        cycles, "Download Step Result",
         GetSyncerErrorString(snapshot.errors().last_download_updates_result));
     sync_ui_util::AddStringSyncDetails(
-        cycles, "Post Commit",
-        GetSyncerErrorString(snapshot.errors().last_post_commit_result));
-    sync_ui_util::AddStringSyncDetails(
-        cycles, "Process Commit Response",
-        GetSyncerErrorString(
-            snapshot.errors().last_process_commit_response_result));
+        cycles, "Commit Step Result",
+        GetSyncerErrorString(snapshot.errors().commit_result));
 
     // Strictly increasing counters.
     ListValue* counters = AddSyncDetailsSection(details, "Running Totals");

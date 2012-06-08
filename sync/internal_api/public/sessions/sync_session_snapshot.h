@@ -68,7 +68,6 @@ class SyncSessionSnapshot {
   int num_hierarchy_conflicts() const;
   int num_simple_conflicts() const;
   int num_server_conflicts() const;
-  bool did_commit_items() const;
   SyncSourceInfo source() const;
   bool notifications_enabled() const;
   size_t num_entries() const;

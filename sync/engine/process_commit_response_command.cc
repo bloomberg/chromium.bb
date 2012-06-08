@@ -74,33 +74,6 @@ std::set<ModelSafeGroup> ProcessCommitResponseCommand::GetGroupsToChange(
   return groups_with_commits;
 }
 
-SyncerError ProcessCommitResponseCommand::ModelNeutralExecuteImpl(
-    SyncSession* session) {
-  syncable::Directory* dir = session->context()->directory();
-  const vector<syncable::Id>& commit_ids = commit_set_.GetAllCommitIds();
-
-  if (!commit_response_.has_commit()) {
-    LOG(WARNING) << "Commit response has no commit body!";
-    ClearSyncingBits(dir, commit_ids);
-    return SERVER_RESPONSE_VALIDATION_FAILED;
-  }
-
-  const CommitResponse& cr = commit_response_.commit();
-  int commit_count = commit_set_.Size();
-  if (cr.entryresponse_size() != commit_count) {
-    LOG(ERROR) << "Commit response has wrong number of entries! Expected:" <<
-               commit_count << " Got:" << cr.entryresponse_size();
-    for (int i = 0 ; i < cr.entryresponse_size() ; i++) {
-      LOG(ERROR) << "Response #" << i << " Value: " <<
-                 cr.entryresponse(i).response_type();
-      if (cr.entryresponse(i).has_error_message())
-        LOG(ERROR) << "  " << cr.entryresponse(i).error_message();
-    }
-    ClearSyncingBits(dir, commit_ids);
-    return SERVER_RESPONSE_VALIDATION_FAILED;
-  }
-  return SYNCER_OK;
-}
 
 SyncerError ProcessCommitResponseCommand::ModelChangingExecuteImpl(
     SyncSession* session) {
@@ -497,24 +470,6 @@ void ProcessCommitResponseCommand::ProcessSuccessfulCommitResponse(
   // deleted during the commit of the rename.  Unit test & fix.
   if (local_entry->Get(IS_DIR) && local_entry->Get(IS_DEL)) {
     deleted_folders->insert(local_entry->Get(ID));
-  }
-}
-
-void ProcessCommitResponseCommand::ClearSyncingBits(
-    syncable::Directory *dir,
-    const vector<syncable::Id>& commit_ids) {
-  // This is part of the cleanup in the case of a failed commit.  Normally we
-  // would unset the SYNCING bit when processing the commit response.  In the
-  // failure case we don't process the response, so we need to clear those bits
-  // here.
-  syncable::WriteTransaction trans(FROM_HERE, syncable::SYNCER, dir);
-  for (size_t i = 0; i < commit_ids.size(); i++) {
-    syncable::MutableEntry entry(&trans, syncable::GET_BY_ID, commit_ids[i]);
-    if (entry.good()) {
-      entry.Put(syncable::SYNCING, false);
-    } else {
-      LOG(WARNING) << "Id: " << commit_ids[i] << " disappeared";
-    }
   }
 }
 

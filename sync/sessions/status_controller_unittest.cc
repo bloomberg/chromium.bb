@@ -66,12 +66,8 @@ TEST_F(StatusControllerTest, ReadYourWrites) {
   status.set_last_download_updates_result(SYNCER_OK);
   EXPECT_EQ(SYNCER_OK, status.error().last_download_updates_result);
 
-  status.set_last_post_commit_result(SYNC_AUTH_ERROR);
-  EXPECT_EQ(SYNC_AUTH_ERROR, status.error().last_post_commit_result);
-
-  status.set_last_process_commit_response_result(SYNC_SERVER_ERROR);
-  EXPECT_EQ(SYNC_SERVER_ERROR,
-            status.error().last_process_commit_response_result);
+  status.set_commit_result(SYNC_AUTH_ERROR);
+  EXPECT_EQ(SYNC_AUTH_ERROR, status.error().commit_result);
 
   for (int i = 0; i < 14; i++)
     status.increment_num_successful_commits();

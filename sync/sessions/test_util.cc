@@ -22,7 +22,7 @@ void SimulateDownloadUpdatesFailed(sessions::SyncSession* session,
 
 void SimulateCommitFailed(sessions::SyncSession* session,
                           SyncerStep begin, SyncerStep end) {
-  session->mutable_status_controller()->set_last_post_commit_result(
+  session->mutable_status_controller()->set_commit_result(
       SERVER_RETURN_TRANSIENT_ERROR);
 }
 
@@ -42,10 +42,7 @@ void SimulateSuccess(sessions::SyncSession* session,
   if (end == SYNCER_END) {
     session->mutable_status_controller()->set_last_download_updates_result(
         SYNCER_OK);
-    session->mutable_status_controller()->set_last_post_commit_result(
-        SYNCER_OK);
-    session->mutable_status_controller()->
-        set_last_process_commit_response_result(SYNCER_OK);
+    session->mutable_status_controller()->set_commit_result(SYNCER_OK);
   }
 }
 

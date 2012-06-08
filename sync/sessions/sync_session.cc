@@ -235,12 +235,8 @@ bool IsError(SyncerError error) {
 bool HadErrors(const ErrorCounters& error) {
   const bool download_updates_error =
       IsError(error.last_download_updates_result);
-  const bool post_commit_error = IsError(error.last_post_commit_result);
-  const bool process_commit_response_error =
-      IsError(error.last_process_commit_response_result);
-  return download_updates_error ||
-         post_commit_error ||
-         process_commit_response_error;
+  const bool commit_error = IsError(error.commit_result);
+  return download_updates_error || commit_error;
 }
 }  // namespace
 
@@ -251,9 +247,7 @@ bool SyncSession::Succeeded() const {
 
 bool SyncSession::SuccessfullyReachedServer() const {
   const ErrorCounters& error = status_controller_->error();
-  bool reached_server = error.last_download_updates_result == SYNCER_OK ||
-                        error.last_post_commit_result == SYNCER_OK ||
-                        error.last_process_commit_response_result == SYNCER_OK;
+  bool reached_server = error.last_download_updates_result == SYNCER_OK;
   // It's possible that we reached the server on one attempt, then had an error
   // on the next (or didn't perform some of the server-communicating commands).
   // We want to verify that, for all commands attempted, we successfully spoke

@@ -124,11 +124,8 @@ SyncerError BuildCommitCommand::ExecuteImpl(SyncSession* session) {
         static_cast<SyncEntity*>(commit_message->add_entries());
     sync_entry->set_id(id);
     MutableEntry meta_entry(session->write_transaction(),
-                            syncable::GET_BY_ID,
-                            id);
+                            syncable::GET_BY_ID, id);
     CHECK(meta_entry.good());
-    // This is the only change we make to the entry in this function.
-    meta_entry.Put(syncable::SYNCING, true);
 
     DCHECK(0 != session->routing_info().count(meta_entry.GetModelType()))
         << "Committing change to datatype that's not actively enabled.";

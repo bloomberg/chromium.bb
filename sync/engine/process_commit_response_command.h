@@ -61,8 +61,6 @@ class ProcessCommitResponseCommand : public ModelChangingSyncerCommand {
   // ModelChangingSyncerCommand implementation.
   virtual std::set<ModelSafeGroup> GetGroupsToChange(
       const sessions::SyncSession& session) const OVERRIDE;
-  virtual SyncerError ModelNeutralExecuteImpl(
-      sessions::SyncSession* session) OVERRIDE;
   virtual SyncerError ModelChangingExecuteImpl(
       sessions::SyncSession* session) OVERRIDE;
 

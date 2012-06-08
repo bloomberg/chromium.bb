@@ -795,7 +795,8 @@ bool ProfileSyncServiceHarness::IsFullySynced() {
   // If we didn't try to commit anything in the previous cycle, there's a
   // good chance that we're now fully up to date.
   bool is_fully_synced =
-      (snap.errors().last_post_commit_result == browser_sync::UNSET)
+      snap.syncer_status().num_successful_commits == 0
+      && snap.errors().commit_result == browser_sync::SYNCER_OK
       && IsDataSyncedImpl(snap);
 
   DVLOG(1) << GetClientInfoString(
@@ -999,6 +1000,9 @@ std::string ProfileSyncServiceHarness::GetClientInfoString(
        << snap.has_more_to_sync()
        << ", has_unsynced_items: "
        << (service()->sync_initialized() ? service()->HasUnsyncedItems() : 0)
+       << ", did_commit: "
+       << (snap.syncer_status().num_successful_commits == 0
+           && snap.errors().commit_result == browser_sync::SYNCER_OK)
        << ", encryption conflicts: "
        << snap.num_encryption_conflicts()
        << ", hierarchy conflicts: "

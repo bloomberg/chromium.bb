@@ -23,8 +23,7 @@ struct ErrorCounters {
 
   // Records the most recent results of PostCommit and GetUpdates commands.
   SyncerError last_download_updates_result;
-  SyncerError last_post_commit_result;
-  SyncerError last_process_commit_response_result;
+  SyncerError commit_result;
 };
 
 }  // namespace sessions
