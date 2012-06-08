@@ -4,11 +4,12 @@
 
 // Constants used for the Tabs API and the Windows API.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_TABS_MODULE_CONSTANTS_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_TABS_MODULE_CONSTANTS_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_TABS_TABS_CONSTANTS_H_
+#define CHROME_BROWSER_EXTENSIONS_API_TABS_TABS_CONSTANTS_H_
 #pragma once
 
-namespace extension_tabs_module_constants {
+namespace extensions {
+namespace tabs_constants {
 
 // Keys used in serializing tab data & events.
 extern const char kActiveKey[];
@@ -98,6 +99,7 @@ extern const char kMoreThanOneValuesError[];
 extern const char kLoadFileError[];
 extern const char kCannotDetermineLanguageOfUnloadedTab[];
 
-};  // namespace extension_tabs_module_constants
+};  // namespace tabs_constants
+};  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_TABS_MODULE_CONSTANTS_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_TABS_TABS_CONSTANTS_H_

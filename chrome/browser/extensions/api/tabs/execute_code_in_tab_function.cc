@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/execute_code_in_tab_function.h"
+#include "chrome/browser/extensions/api/tabs/execute_code_in_tab_function.h"
 
 #include "base/bind.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/api/tabs/tabs.h"
+#include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
-#include "chrome/browser/extensions/extension_tabs_module.h"
-#include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/extensions/file_reader.h"
 #include "chrome/browser/extensions/script_executor.h"
 #include "chrome/browser/profiles/profile.h"
@@ -31,7 +31,7 @@
 using content::BrowserThread;
 using extensions::ScriptExecutor;
 
-namespace keys = extension_tabs_module_constants;
+namespace keys = extensions::tabs_constants;
 
 ExecuteCodeInTabFunction::ExecuteCodeInTabFunction()
     : execute_tab_id_(-1),

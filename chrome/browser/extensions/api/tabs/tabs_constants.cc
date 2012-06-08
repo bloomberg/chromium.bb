@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_tabs_module_constants.h"
+#include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 
-namespace extension_tabs_module_constants {
+namespace extensions {
+namespace tabs_constants {
 
 const char kActiveKey[] = "active";
 const char kAllFramesKey[] = "allFrames";
@@ -103,4 +104,5 @@ const char kLoadFileError[] = "Failed to load file: \"*\". ";
 const char kCannotDetermineLanguageOfUnloadedTab[] =
     "Cannot determine language: tab not loaded";
 
-}  // namespace extension_tabs_module_constants
+}  // namespace tabs_constants
+}  // namespace extensions

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_tabs_module.h"
+#include "chrome/browser/extensions/api/tabs/tabs.h"
 
 #include <algorithm>
 #include <limits>
@@ -19,13 +19,13 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_function_util.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/extensions/extension_window_controller.h"
 #include "chrome/browser/extensions/extension_window_list.h"
 #include "chrome/browser/extensions/script_executor.h"
@@ -86,7 +86,7 @@ namespace GetAll = extensions::api::windows::GetAll;
 namespace GetCurrent = extensions::api::windows::GetCurrent;
 namespace GetLastFocused = extensions::api::windows::GetLastFocused;
 namespace errors = extension_manifest_errors;
-namespace keys = extension_tabs_module_constants;
+namespace keys = extensions::tabs_constants;
 
 using content::NavigationController;
 using content::NavigationEntry;

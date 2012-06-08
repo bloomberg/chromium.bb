@@ -6,11 +6,11 @@
 
 #include "ash/wm/panel_frame_view.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/extensions/extension_window_controller.h"
 #include "chrome/browser/extensions/extension_window_list.h"
 #include "chrome/browser/profiles/profile.h"
@@ -37,7 +37,7 @@ const int kDefaultWidth = 200;
 const int kDefaultHeight = 300;
 }
 
-namespace keys = extension_tabs_module_constants;
+namespace keys = extensions::tabs_constants;
 
 namespace internal {
 

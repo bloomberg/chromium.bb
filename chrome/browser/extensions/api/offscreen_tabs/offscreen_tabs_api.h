@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/values.h"
+#include "chrome/browser/extensions/api/tabs/tabs.h"
 #include "chrome/browser/extensions/extension_function.h"
-#include "chrome/browser/extensions/extension_tabs_module.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_TABS_MODULE_H__
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_TABS_MODULE_H__
+#ifndef CHROME_BROWSER_EXTENSIONS_API_TABS_TABS_H__
+#define CHROME_BROWSER_EXTENSIONS_API_TABS_TABS_H__
 #pragma once
 
 #include <string>
@@ -198,4 +198,4 @@ class CaptureVisibleTabFunction : public AsyncExtensionFunction,
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.captureVisibleTab")
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_TABS_MODULE_H__
+#endif  // CHROME_BROWSER_EXTENSIONS_API_TABS_TABS_H__

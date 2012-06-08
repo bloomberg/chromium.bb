@@ -16,13 +16,13 @@
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/offscreen_tabs/offscreen_tabs_constants.h"
+#include "chrome/browser/extensions/api/tabs/tabs.h"
+#include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_event_names.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/extensions/extension_tabs_module.h"
-#include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -49,7 +49,7 @@ using content::WebContents;
 using WebKit::WebInputEvent;
 
 namespace keys = extensions::offscreen_tabs_constants;
-namespace tabs_keys = extension_tabs_module_constants;
+namespace tabs_keys = extensions::tabs_constants;
 namespace events = extension_event_names;
 
 namespace {

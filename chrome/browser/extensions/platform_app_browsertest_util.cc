@@ -3,10 +3,11 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
+
 #include "base/command_line.h"
 #include "base/stringprintf.h"
+#include "chrome/browser/extensions/api/tabs/tabs.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
-#include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/application_launch.h"

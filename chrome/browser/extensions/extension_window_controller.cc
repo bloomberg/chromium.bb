@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/extension_window_controller.h"
 
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_tabs_module_constants.h"
+#include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_window_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/base_window.h"
@@ -29,7 +29,7 @@ Browser* ExtensionWindowController::GetBrowser() const {
   return NULL;
 }
 
-namespace keys = extension_tabs_module_constants;
+namespace keys = extensions::tabs_constants;
 
 base::DictionaryValue* ExtensionWindowController::CreateWindowValue() const {
   DictionaryValue* result = new DictionaryValue();

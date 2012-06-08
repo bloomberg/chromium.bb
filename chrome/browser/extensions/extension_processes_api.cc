@@ -12,12 +12,12 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 
+#include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_function_util.h"
 #include "chrome/browser/extensions/extension_processes_api_constants.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -567,7 +567,7 @@ void GetProcessIdForTabFunction::GetProcessIdForTab() {
   if (!ExtensionTabUtil::GetTabById(tab_id_, profile(), include_incognito(),
                                     NULL, NULL, &contents, &tab_index)) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
-        extension_tabs_module_constants::kTabNotFoundError,
+        extensions::tabs_constants::kTabNotFoundError,
         base::IntToString(tab_id_));
     result_.reset(Value::CreateIntegerValue(-1));
     SendResponse(false);

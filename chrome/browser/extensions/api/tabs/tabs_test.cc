@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_tabs_module.h"
+#include "chrome/browser/extensions/api/tabs/tabs.h"
 
 #include <string>
 
@@ -11,8 +11,8 @@
 #include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
-#include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -22,7 +22,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "ui/gfx/rect.h"
 
-namespace keys = extension_tabs_module_constants;
+namespace keys = extensions::tabs_constants;
 namespace utils = extension_function_test_utils;
 
 namespace {

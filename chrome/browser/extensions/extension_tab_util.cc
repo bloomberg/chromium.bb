@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/extension_tab_util.h"
 
-#include "chrome/browser/extensions/extension_tabs_module_constants.h"
+#include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
@@ -21,7 +21,7 @@
 #include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 
-namespace keys = extension_tabs_module_constants;
+namespace keys = extensions::tabs_constants;
 namespace errors = extension_manifest_errors;
 
 using content::NavigationEntry;

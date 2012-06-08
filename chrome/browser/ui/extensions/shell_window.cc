@@ -6,7 +6,6 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
-#include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/intents/web_intents_util.h"
