@@ -109,8 +109,11 @@ class TabContents : public content::WebContentsObserver {
   static const TabContents* GetCurrentWrapperForContents(
       const content::WebContents* contents);  // DEPRECATED
   static TabContents* GetOwningTabContentsForWebContents(
-      content::WebContents* contents);
+      content::WebContents* contents);  // DEPRECATED
   static const TabContents* GetOwningTabContentsForWebContents(
+      const content::WebContents* contents);  // DEPRECATED
+  static TabContents* FromWebContents(content::WebContents* contents);
+  static const TabContents* FromWebContents(
       const content::WebContents* contents);
 
   // Returns the WebContents that this owns.

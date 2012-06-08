@@ -208,18 +208,29 @@ TabContents* TabContents::Clone() {
 // static deprecated
 TabContents* TabContents::GetCurrentWrapperForContents(
     WebContents* contents) {
-  return GetOwningTabContentsForWebContents(contents);
+  return FromWebContents(contents);
 }
 
 // static deprecated
 const TabContents* TabContents::GetCurrentWrapperForContents(
     const WebContents* contents) {
-  return GetOwningTabContentsForWebContents(contents);
+  return FromWebContents(contents);
+}
+
+// static deprecated
+TabContents* TabContents::GetOwningTabContentsForWebContents(
+    WebContents* contents) {
+  return FromWebContents(contents);
+}
+
+// static deprecated
+const TabContents* TabContents::GetOwningTabContentsForWebContents(
+    const WebContents* contents) {
+  return FromWebContents(contents);
 }
 
 // static
-TabContents* TabContents::GetOwningTabContentsForWebContents(
-    WebContents* contents) {
+TabContents* TabContents::FromWebContents(WebContents* contents) {
   TabContents** tab_contents =
       property_accessor()->GetProperty(contents->GetPropertyBag());
 
@@ -227,8 +238,7 @@ TabContents* TabContents::GetOwningTabContentsForWebContents(
 }
 
 // static
-const TabContents* TabContents::GetOwningTabContentsForWebContents(
-    const WebContents* contents) {
+const TabContents* TabContents::FromWebContents(const WebContents* contents) {
   TabContents* const* tab_contents =
       property_accessor()->GetProperty(contents->GetPropertyBag());
 
