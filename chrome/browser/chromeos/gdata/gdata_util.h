@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/memory/scoped_ptr.h"
 #include "googleurl/src/gurl.h"
 
 class FilePath;
@@ -77,12 +79,14 @@ bool ParseSearchFileName(const std::string& search_file_name,
 // Examples: ExtractGDatPath("/special/drive/foo.txt") => "drive/foo.txt"
 FilePath ExtractGDataPath(const FilePath& path);
 
-// Returns vector of all possible cache paths for a given path on gdata mount
-// point.
+// Inserts all possible cache paths for a given vector of paths on gdata mount
+// point into the output vector |cache_paths|, and then invokes callback.
+// Caller must ensure that |cache_paths| lives until the callback is invoked.
 void InsertGDataCachePathsPermissions(
     Profile* profile_,
-    const FilePath& gdata_path,
-    std::vector<std::pair<FilePath, int> >* cache_paths);
+    scoped_ptr<std::vector<FilePath> > gdata_paths,
+    std::vector<std::pair<FilePath, int> >* cache_paths,
+    const base::Closure& callback);
 
 // Returns true if gdata is currently active with the specified profile.
 bool IsGDataAvailable(Profile* profile);

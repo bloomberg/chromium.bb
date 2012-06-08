@@ -547,6 +547,14 @@ void FileTaskExecutor::ExecuteFailedOnUIThread() {
   Done(false);
 }
 
+const Extension* FileTaskExecutor::GetExtension() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  ExtensionService* service = profile_->GetExtensionService();
+  return service ? service->GetExtensionById(extension_id_, false) :
+                   NULL;
+}
+
 void FileTaskExecutor::ExecuteFileActionsOnUIThread(
     const std::string& file_system_name,
     const GURL& file_system_root,
@@ -554,19 +562,36 @@ void FileTaskExecutor::ExecuteFileActionsOnUIThread(
     int handler_pid) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  ExtensionService* service = profile_->GetExtensionService();
-  if (!service) {
-    Done(false);
-    return;
-  }
-
-  const Extension* extension = service->GetExtensionById(extension_id_, false);
+  const Extension* extension = GetExtension();
   if (!extension) {
     Done(false);
     return;
   }
 
-  InitHandlerHostFileAccessPermissions(file_list, extension, action_id_);
+  InitHandlerHostFileAccessPermissions(
+      file_list,
+      extension,
+      action_id_,
+      base::Bind(&FileTaskExecutor::OnInitAccessForExecuteFileActionsOnUIThread,
+                 this,
+                 file_system_name,
+                 file_system_root,
+                 file_list,
+                 handler_pid));
+}
+
+void FileTaskExecutor::OnInitAccessForExecuteFileActionsOnUIThread(
+    const std::string& file_system_name,
+    const GURL& file_system_root,
+    const FileDefinitionList& file_list,
+    int handler_pid) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  const Extension* extension = GetExtension();
+  if (!extension) {
+    Done(false);
+    return;
+  }
 
   if (handler_pid > 0) {
     SetupPermissionsAndDispatchEvent(file_system_name, file_system_root,
@@ -649,9 +674,11 @@ void FileTaskExecutor::SetupPermissionsAndDispatchEvent(
 void FileTaskExecutor::InitHandlerHostFileAccessPermissions(
     const FileDefinitionList& file_list,
     const Extension* handler_extension,
-    const std::string& action_id) {
+    const std::string& action_id,
+    const base::Closure& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  scoped_ptr<std::vector<FilePath> > gdata_paths(new std::vector<FilePath>);
   for (FileDefinitionList::const_iterator iter = file_list.begin();
        iter != file_list.end();
        ++iter) {
@@ -660,15 +687,22 @@ void FileTaskExecutor::InitHandlerHostFileAccessPermissions(
         iter->absolute_path,
         GetAccessPermissionsForHandler(handler_extension, action_id)));
 
-    if (!gdata::util::IsUnderGDataMountPoint(iter->absolute_path))
-      continue;
-
-    // If the file is on gdata mount point, we'll have to give handler host
-    // permissions for file's gdata cache paths.
-    // This has to be called on UI thread.
-    gdata::util::InsertGDataCachePathsPermissions(profile_, iter->virtual_path,
-        &handler_host_permissions_);
+    if (gdata::util::IsUnderGDataMountPoint(iter->absolute_path))
+      gdata_paths->push_back(iter->virtual_path);
   }
+
+  if (gdata_paths->empty()) {
+    // Invoke callback if none of the files are on gdata mount point.
+    callback.Run();
+    return;
+  }
+
+  // For files on gdata mount point, we'll have to give handler host permissions
+  // for their cache paths. This has to be called on UI thread.
+  gdata::util::InsertGDataCachePathsPermissions(profile_,
+                                                gdata_paths.Pass(),
+                                                &handler_host_permissions_,
+                                                callback);
 }
 
 void FileTaskExecutor::SetupHandlerHostFileAccessPermissions(int handler_pid) {

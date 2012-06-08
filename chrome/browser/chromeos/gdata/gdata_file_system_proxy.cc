@@ -215,10 +215,7 @@ void GDataFileSystemProxy::CreateSnapshotFile(
     const GURL& file_url,
     const FileSystemOperationInterface::SnapshotFileCallback& callback) {
   FilePath file_path;
-  base::PlatformFileInfo file_info;
-  GDataFileProperties file_properties;
-  if (!ValidateUrl(file_url, &file_path) ||
-      !file_system_->GetFileInfoByPath(file_path, &file_properties)) {
+  if (!ValidateUrl(file_url, &file_path)) {
     MessageLoopProxy::current()->PostTask(FROM_HERE,
          base::Bind(callback,
                     base::PLATFORM_FILE_ERROR_NOT_FOUND,
@@ -228,10 +225,36 @@ void GDataFileSystemProxy::CreateSnapshotFile(
     return;
   }
 
-  file_system_->GetFileByPath(file_path,
+  file_system_->GetEntryInfoByPathAsync(
+      file_path,
+      base::Bind(&GDataFileSystemProxy::OnGetEntryInfoByPathAsync,
+                 this, callback));
+}
+
+void GDataFileSystemProxy::OnGetEntryInfoByPathAsync(
+    const FileSystemOperationInterface::SnapshotFileCallback& callback,
+    base::PlatformFileError error,
+    const FilePath& entry_path,
+    scoped_ptr<GDataEntryProto> entry_proto) {
+  if (error != base::PLATFORM_FILE_OK || !entry_proto.get()) {
+    MessageLoopProxy::current()->PostTask(FROM_HERE,
+         base::Bind(callback,
+                    base::PLATFORM_FILE_ERROR_NOT_FOUND,
+                    base::PlatformFileInfo(),
+                    FilePath(),
+                    scoped_refptr<ShareableFileReference>(NULL)));
+    return;
+  }
+
+  base::PlatformFileInfo file_info;
+  GDataEntry::ConvertProtoToPlatformFileInfo(
+      entry_proto->file_info(),
+      &file_info);
+
+  file_system_->GetFileByPath(entry_path,
                               base::Bind(&CallSnapshotFileCallback,
                                          callback,
-                                         file_properties.file_info),
+                                         file_info),
                               GetDownloadDataCallback());
 }
 

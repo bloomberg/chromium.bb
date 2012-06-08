@@ -109,7 +109,7 @@ class FileTaskExecutor : public base::RefCountedThreadSafe<FileTaskExecutor> {
   void ExecuteFileActionsOnUIThread(const std::string& file_system_name,
                                     const GURL& file_system_root,
                                     const FileDefinitionList& file_list,
-                                    int handler_id);
+                                    int handler_pid);
   void SetupPermissionsAndDispatchEvent(const std::string& file_system_name,
                                         const GURL& file_system_root,
                                         const FileDefinitionList& file_list,
@@ -121,10 +121,23 @@ class FileTaskExecutor : public base::RefCountedThreadSafe<FileTaskExecutor> {
   void InitHandlerHostFileAccessPermissions(
       const FileDefinitionList& file_list,
       const extensions::Extension* handler_extension,
-      const std::string& action_id);
+      const std::string& action_id,
+      const base::Closure& callback);
+
+  // Invoked upon completion of InitHandlerHostFileAccessPermissions initiated
+  // by ExecuteFileActionsOnUIThread.
+  void OnInitAccessForExecuteFileActionsOnUIThread(
+      const std::string& file_system_name,
+      const GURL& file_system_root,
+      const FileDefinitionList& file_list,
+      int handler_pid);
+
   // Registers file permissions from |handler_host_permissions_| with
   // ChildProcessSecurityPolicy for process with id |handler_pid|.
   void SetupHandlerHostFileAccessPermissions(int handler_pid);
+
+  // Helper function to get the extension pointer.
+  const extensions::Extension* GetExtension();
 
   Profile* profile_;
   const GURL source_url_;

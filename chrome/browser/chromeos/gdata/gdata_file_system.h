@@ -114,21 +114,6 @@ typedef base::Callback<void(const std::string& resource_id)>
 typedef base::Callback<void(base::PlatformFileError error,
                             int cache_state)> GetCacheStateCallback;
 
-// Helper structure used for extracting key properties from GDataFile object.
-// TODO(satorux): Remove this as part of crosbug.com/30066
-struct GDataFileProperties {
-  GDataFileProperties();
-  ~GDataFileProperties();
-
-  base::PlatformFileInfo file_info;
-  std::string resource_id;
-  std::string file_md5;
-  std::string mime_type;
-  GURL content_url;
-  GURL alternate_url;
-  bool is_hosted_document;
-};
-
 // GData file system abstraction layer.
 // The interface is defined to make GDataFileSystem mockable.
 class GDataFileSystemInterface {
@@ -392,13 +377,6 @@ class GDataFileSystemInterface {
   virtual void SearchAsync(const std::string& search_query,
                            const ReadDirectoryCallback& callback) = 0;
 
-
-  // Finds a file (not a directory) by |file_path| and returns its key
-  // |properties|.  Returns true if file was found.
-  // TODO(satorux): Remove this: crosbug.com/30066.
-  virtual bool GetFileInfoByPath(const FilePath& file_path,
-                                 GDataFileProperties* properties) = 0;
-
   // Returns true if the given path is under gdata cache directory, i.e.
   // <user_profile_dir>/GCache/v1
   virtual bool IsUnderGDataCacheDirectory(const FilePath& path) const = 0;
@@ -508,8 +486,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const ReadDirectoryCallback& callback) OVERRIDE;
   virtual void RequestDirectoryRefresh(
       const FilePath& file_path) OVERRIDE;
-  virtual bool GetFileInfoByPath(const FilePath& file_path,
-                                 GDataFileProperties* properties) OVERRIDE;
   virtual bool IsUnderGDataCacheDirectory(const FilePath& path) const OVERRIDE;
   virtual FilePath GetCacheDirectoryPath(
       GDataCache::CacheSubDirectoryType sub_dir_type) const OVERRIDE;
@@ -692,16 +668,24 @@ class GDataFileSystem : public GDataFileSystemInterface,
                            const FilePath& remote_dest_file_path,
                            const FileOperationCallback& callback);
 
+  // Invoked upon completion of GetFileInfoByPathAsync initiated by
+  // GetFileByPath. It then continues to invoke GetResolvedFileByPath.
+  void OnGetFileInfoCompleteForGetFileByPath(
+      const FilePath& file_path,
+      const GetFileCallback& get_file_callback,
+      const GetDownloadDataCallback& get_download_data_callback,
+      base::PlatformFileError error,
+      scoped_ptr<GDataFileProto> file_info);
   // Invoked upon completion of GetFileInfoByPathAsync initiated by OpenFile.
-  // It then continues to invoke GetFileByPath and processed to
+  // It then continues to invoke GetResolvedFileByPath and proceeds to
   // OnGetFileCompleteForOpenFile.
   void OnGetFileInfoCompleteForOpenFile(const FilePath& file_path,
                                         const OpenFileCallback& callback,
                                         base::PlatformFileError error,
                                         scoped_ptr<GDataFileProto> file_info);
   // Invoked upon completion of GetFileInfoByPathAsync initiated by CloseFile.
-  // It then continues to invoke GetFileByPath and processed to
-  // OnGetFileCompleteForCloseFile.
+  // It then continues to invoke CommitDirtyInCache and proceeds to
+  // OnCommitDirtyInCacheCompleteForCloseFile.
   void OnGetFileInfoCompleteForCloseFile(const FilePath& file_path,
                                          const CloseFileCallback& callback,
                                          base::PlatformFileError error,
@@ -1418,6 +1402,16 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // retrieve and refresh file system content from server and disk cache.
   void FindEntryByPathAsyncOnUIThread(const FilePath& search_file_path,
                                       const FindEntryCallback& callback);
+
+  // Gets |file_path| from the file system after the file info is already
+  // resolved with GetFileInfoByPathAsync(). This function is called by
+  // OnGetFileInfoCompleteForGetFileByPath and OnGetFileInfoCompleteForOpenFile.
+  void GetResolvedFileByPath(
+      const FilePath& file_path,
+      const GetFileCallback& get_file_callback,
+      const GetDownloadDataCallback& get_download_data_callback,
+      base::PlatformFileError error,
+      const GDataFileProto* file_proto);
 
   // The following functions are used to forward calls to asynchronous public
   // member functions to UI thread.

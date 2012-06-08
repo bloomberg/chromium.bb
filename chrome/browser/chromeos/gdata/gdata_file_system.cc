@@ -837,14 +837,6 @@ CallbackType CreateRelayCallback(const CallbackType& callback) {
 
 }  // namespace
 
-// GDataFileProperties struct implementation.
-
-GDataFileProperties::GDataFileProperties() : is_hosted_document(false) {
-}
-
-GDataFileProperties::~GDataFileProperties() {
-}
-
 // GDataFileSystem::GetDocumentsParams struct implementation.
 
 GDataFileSystem::GetDocumentsParams::GetDocumentsParams(
@@ -1976,8 +1968,40 @@ void GDataFileSystem::GetFileByPathOnUIThread(
     const GetDownloadDataCallback& get_download_data_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  GDataFileProperties file_properties;
-  if (!GetFileInfoByPath(file_path, &file_properties)) {
+  GetFileInfoByPathAsync(
+      file_path,
+      base::Bind(&GDataFileSystem::OnGetFileInfoCompleteForGetFileByPath,
+                 ui_weak_ptr_,
+                 file_path,
+                 CreateRelayCallback(get_file_callback),
+                 CreateRelayCallback(get_download_data_callback)));
+}
+
+void GDataFileSystem::OnGetFileInfoCompleteForGetFileByPath(
+    const FilePath& file_path,
+    const GetFileCallback& get_file_callback,
+    const GetDownloadDataCallback& get_download_data_callback,
+    base::PlatformFileError error,
+    scoped_ptr<GDataFileProto> file_info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  DCHECK(!file_info->gdata_entry().resource_id().empty());
+  GetResolvedFileByPath(file_path,
+                        get_file_callback,
+                        get_download_data_callback,
+                        error,
+                        file_info.get());
+}
+
+void GDataFileSystem::GetResolvedFileByPath(
+    const FilePath& file_path,
+    const GetFileCallback& get_file_callback,
+    const GetDownloadDataCallback& get_download_data_callback,
+    base::PlatformFileError error,
+    const GDataFileProto* file_proto) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (error != base::PLATFORM_FILE_OK || !file_proto) {
     if (!get_file_callback.is_null()) {
       MessageLoop::current()->PostTask(
           FROM_HERE,
@@ -1994,7 +2018,7 @@ void GDataFileSystem::GetFileByPathOnUIThread(
   // document instead of fetching the document content in one of the exported
   // formats. The JSON file contains the edit URL and resource ID of the
   // document.
-  if (file_properties.is_hosted_document) {
+  if (file_proto->is_hosted_document()) {
     base::PlatformFileError* error =
         new base::PlatformFileError(base::PLATFORM_FILE_OK);
     FilePath* temp_file_path = new FilePath;
@@ -2005,8 +2029,8 @@ void GDataFileSystem::GetFileByPathOnUIThread(
         base::Bind(&CreateDocumentJsonFileOnBlockingPool,
                    GetCacheDirectoryPath(
                        GDataCache::CACHE_TYPE_TMP_DOCUMENTS),
-                   file_properties.alternate_url,
-                   file_properties.resource_id,
+                   GURL(file_proto->alternate_url()),
+                   file_proto->gdata_entry().resource_id(),
                    error,
                    temp_file_path,
                    mime_type,
@@ -2022,22 +2046,22 @@ void GDataFileSystem::GetFileByPathOnUIThread(
 
   // Returns absolute path of the file if it were cached or to be cached.
   FilePath local_tmp_path = cache_->GetCacheFilePath(
-      file_properties.resource_id,
-      file_properties.file_md5,
+      file_proto->gdata_entry().resource_id(),
+      file_proto->file_md5(),
       GDataCache::CACHE_TYPE_TMP,
       GDataCache::CACHED_FILE_FROM_SERVER);
   GetFileFromCacheByResourceIdAndMd5(
-      file_properties.resource_id,
-      file_properties.file_md5,
+      file_proto->gdata_entry().resource_id(),
+      file_proto->file_md5(),
       base::Bind(
           &GDataFileSystem::OnGetFileFromCache,
           ui_weak_ptr_,
           GetFileFromCacheParams(file_path,
                                  local_tmp_path,
-                                 file_properties.content_url,
-                                 file_properties.resource_id,
-                                 file_properties.file_md5,
-                                 file_properties.mime_type,
+                                 GURL(file_proto->gdata_entry().content_url()),
+                                 file_proto->gdata_entry().resource_id(),
+                                 file_proto->file_md5(),
+                                 file_proto->content_mime_type(),
                                  get_file_callback,
                                  get_download_data_callback)));
 }
@@ -2481,28 +2505,6 @@ void GDataFileSystem::OnRequestDirectoryRefresh(
   // notify that the directory is changed.
   NotifyDirectoryChanged(directory_path);
   DVLOG(1) << "Directory refreshed: " << directory_path.value();
-}
-
-bool GDataFileSystem::GetFileInfoByPath(
-    const FilePath& file_path, GDataFileProperties* properties) {
-  DCHECK(properties);
-  base::AutoLock lock(lock_);
-  GDataEntry* entry = GetGDataEntryByPath(file_path);
-  if (!entry)
-    return false;
-
-  properties->file_info = entry->file_info();
-  properties->resource_id = entry->resource_id();
-
-  GDataFile* regular_file = entry->AsGDataFile();
-  if (regular_file) {
-    properties->file_md5 = regular_file->file_md5();
-    properties->mime_type = regular_file->content_mime_type();
-    properties->content_url = regular_file->content_url();
-    properties->alternate_url = regular_file->alternate_url();
-    properties->is_hosted_document = regular_file->is_hosted_document();
-  }
-  return true;
 }
 
 GDataEntry* GDataFileSystem::GetGDataEntryByPath(
@@ -5078,21 +5080,15 @@ void GDataFileSystem::OnGetFileInfoCompleteForOpenFile(
   }
 
   DCHECK(!file_info->gdata_entry().resource_id().empty());
-
-  // TODO(kinaba): once it is cleaned up (crbug/127048), remove the indirection.
-  // Do not call GetFileByPathOnUIThread() directly for avoiding deadlock.
-  // The current method is called as a callback from GetFileInfoByPathAsync(),
-  // which is under the lock taken.
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&GDataFileSystem::GetFileByPathOnUIThread,
+  GetResolvedFileByPath(
+      file_path,
+      base::Bind(&GDataFileSystem::OnGetFileCompleteForOpenFile,
                  ui_weak_ptr_,
-                 file_path,
-                 base::Bind(&GDataFileSystem::OnGetFileCompleteForOpenFile,
-                            ui_weak_ptr_,
-                            callback,
-                            base::Passed(&file_info)),
-                 GetDownloadDataCallback()));
+                 callback,
+                 base::Passed(&file_info)),
+      GetDownloadDataCallback(),
+      error,
+      file_info.get());
 }
 
 void GDataFileSystem::OnGetFileCompleteForOpenFile(
@@ -5181,21 +5177,13 @@ void GDataFileSystem::OnGetFileInfoCompleteForCloseFile(
   // if the file has not been modified. Come up with a way to detect the
   // intactness effectively, or provide a method for user to declare it when
   // calling CloseFile().
-
-  // TODO(kinaba): once it is cleaned up (crbug/127048), remove the indirection.
-  // Do not call CommitDirtyInCache() directly for avoiding deadlock.
-  // The current method is called as a callback from GetFileInfoByPathAsync(),
-  // which is under the lock taken.
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
+  CommitDirtyInCache(
+      file_info->gdata_entry().resource_id(),
+      file_info->file_md5(),
       base::Bind(
-          &GDataFileSystem::CommitDirtyInCache,
+          &GDataFileSystem::OnCommitDirtyInCacheCompleteForCloseFile,
           ui_weak_ptr_,
-          file_info->gdata_entry().resource_id(),
-          file_info->file_md5(),
-          base::Bind(&GDataFileSystem::OnCommitDirtyInCacheCompleteForCloseFile,
-                     ui_weak_ptr_,
-                     callback)));
+          callback));
 }
 
 void GDataFileSystem::OnCommitDirtyInCacheCompleteForCloseFile(
