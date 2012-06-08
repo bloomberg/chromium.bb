@@ -126,10 +126,6 @@ FcDefaultSubstitute (FcPattern *pattern)
 	FcPatternObjectAddDouble (pattern, FC_PIXEL_SIZE_OBJECT, size);
     }
 
-    if (FcPatternObjectGet (pattern, FC_LANG_OBJECT, 0, &v) == FcResultNoMatch)
-    {
- 	FcPatternObjectAddString (pattern, FC_LANG_OBJECT, FcGetDefaultLang ());
-    }
     if (FcPatternObjectGet (pattern, FC_FONTVERSION_OBJECT, 0, &v) == FcResultNoMatch)
     {
 	FcPatternObjectAddInteger (pattern, FC_FONTVERSION_OBJECT, 0x7fffffff);
