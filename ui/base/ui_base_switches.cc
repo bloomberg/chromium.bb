@@ -20,6 +20,13 @@ const char kEnableTouchCalibration[] = "enable-touch-calibration";
 // Enable support for touch events.
 const char kEnableTouchEvents[] = "enable-touch-events";
 
+// Generates a 2x version of resources for which no 2x version is available or
+// the 2x version is of an incorrect size and applies a red mask to the
+// resource. Resources for which hidpi is not supported because of software
+// reasons will show up pixelated.
+const char kHighlightMissing2xResources[] =
+    "highlight-missing-2x-resources";
+
 // The language file that we want to try to open. Of the form
 // language[-country] where language is the 2 letter code from ISO-639.
 const char kLang[] = "lang";

@@ -17,6 +17,7 @@
 #include "base/synchronization/lock.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
@@ -27,6 +28,7 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/skbitmap_operations.h"
 
 namespace ui {
 
@@ -42,6 +44,40 @@ const int kSmallFontSizeDelta = -2;
 const int kMediumFontSizeDelta = 3;
 const int kLargeFontSizeDelta = 8;
 #endif
+
+// If 2x resource is missing from |image| or is the incorrect size,
+// logs the resource id and creates a 2x version of the resource.
+// Blends the created resource with red to make it distinguishable from
+// bitmaps in the resource pak.
+void Create2xResourceIfMissing(gfx::ImageSkia image, int idr) {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(
+          switches::kHighlightMissing2xResources) &&
+      command_line->HasSwitch(switches::kLoad2xResources) &&
+      !image.HasBitmapForScale(2.0f)) {
+    float bitmap_scale;
+    SkBitmap bitmap = image.GetBitmapForScale(2.0f, &bitmap_scale);
+
+    if (bitmap_scale == 1.0f)
+      LOG(INFO) << "Missing 2x resource with id " << idr;
+    else
+      LOG(INFO) << "Incorrectly sized 2x resource with id " << idr;
+
+    SkBitmap bitmap2x = skia::ImageOperations::Resize(bitmap,
+        skia::ImageOperations::RESIZE_LANCZOS3,
+        image.width() * 2, image.height() * 2);
+
+    SkBitmap mask;
+    mask.setConfig(SkBitmap::kARGB_8888_Config,
+                   bitmap2x.width(),
+                   bitmap2x.height());
+    mask.allocPixels();
+    mask.eraseColor(SK_ColorRED);
+    SkBitmap result = SkBitmapOperations::CreateBlendedBitmap(bitmap2x, mask,
+                                                              0.2);
+    image.AddBitmapForScale(result, 2.0f);
+  }
+}
 
 }  // namespace
 
@@ -258,6 +294,8 @@ gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
       // The load failed to retrieve the image; show a debugging red square.
       return GetEmptyImage();
     }
+
+    Create2xResourceIfMissing(image_skia, resource_id);
 
     image = gfx::Image(image_skia);
   }
