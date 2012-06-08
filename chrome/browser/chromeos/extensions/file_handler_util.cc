@@ -465,8 +465,7 @@ class FileTaskExecutor::ExecuteTasksFileSystemCallbackDispatcher {
     GURL base_url = fileapi::GetFileSystemRootURI(target_origin_url,
         fileapi::kFileSystemTypeExternal);
     file->target_file_url = GURL(base_url.spec() + virtual_path.value());
-    FilePath root(FILE_PATH_LITERAL("/"));
-    file->virtual_path = root.Append(virtual_path);
+    file->virtual_path = virtual_path;
     file->is_directory = file_info.is_directory;
     file->absolute_path = final_file_path;
     return true;
@@ -624,7 +623,9 @@ void FileTaskExecutor::SetupPermissionsAndDispatchEvent(
     files_urls->Append(file_def);
     file_def->SetString("fileSystemName", file_system_name);
     file_def->SetString("fileSystemRoot", file_system_root.spec());
-    file_def->SetString("fileFullPath", iter->virtual_path.value());
+    FilePath root(FILE_PATH_LITERAL("/"));
+    FilePath full_path = root.Append(iter->virtual_path);
+    file_def->SetString("fileFullPath", full_path.value());
     file_def->SetBoolean("fileIsDirectory", iter->is_directory);
   }
   // Get tab id.
@@ -665,7 +666,7 @@ void FileTaskExecutor::InitHandlerHostFileAccessPermissions(
     // If the file is on gdata mount point, we'll have to give handler host
     // permissions for file's gdata cache paths.
     // This has to be called on UI thread.
-    gdata::util::InsertGDataCachePathsPermissions(profile_, iter->absolute_path,
+    gdata::util::InsertGDataCachePathsPermissions(profile_, iter->virtual_path,
         &handler_host_permissions_);
   }
 }
