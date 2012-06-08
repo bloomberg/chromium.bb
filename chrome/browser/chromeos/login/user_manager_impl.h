@@ -254,7 +254,7 @@ class UserManagerImpl : public UserManager,
   bool SaveBitmapToFile(const SkBitmap& image,
                         const FilePath& image_path);
 
-  // Initializes |downloaded_profile_picture_| with the picture of the logged-in
+  // Initializes |downloaded_profile_image_| with the picture of the logged-in
   // user.
   void InitDownloadedProfileImage();
 

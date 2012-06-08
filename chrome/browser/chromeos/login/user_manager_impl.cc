@@ -1425,10 +1425,13 @@ void UserManagerImpl::OnDownloadComplete(ProfileDownloader* downloader,
   }
 
   if (result == kDownloadSuccess) {
+    // TODO(ivankr): temporary measure until UserManager is fully migrated
+    // to use ImageSkia instead of SkBitmap.
+    gfx::ImageSkia profile_image(downloaded_profile_image_);
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED,
         content::Source<UserManagerImpl>(this),
-        content::Details<const SkBitmap>(&downloaded_profile_image_));
+        content::Details<const gfx::ImageSkia>(&profile_image));
   } else {
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_PROFILE_IMAGE_UPDATE_FAILED,

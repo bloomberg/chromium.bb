@@ -168,9 +168,8 @@ void UserImageScreen::Observe(int type,
     case chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED: {
       // We've got a new profile image.
       if (actor_) {
-        gfx::ImageSkia profile_image(
-            *content::Details<const SkBitmap>(details).ptr());
-        actor_->AddProfileImage(profile_image);
+        actor_->AddProfileImage(
+            *content::Details<const gfx::ImageSkia>(details).ptr());
       }
       break;
     }
