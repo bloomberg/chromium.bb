@@ -39,7 +39,7 @@ Library
 #include "louis.h"
 #include "config.h"
 
-#define QUOTESUB 28 /*Stand-in for double quotes in strings*/
+#define QUOTESUB 28		/*Stand-in for double quotes in strings */
 
 
 /* Contributed by Michel Such <michel.such@free.fr */
@@ -2068,12 +2068,12 @@ passGetString ()
 	  return 0;
 	}
       if (passLine.chars[passLinepos] == 34)
-      break;
+	break;
       if (passLine.chars[passLinepos] == QUOTESUB)
-      passHoldString.chars[passHoldString.length++] = 34;
+	passHoldString.chars[passHoldString.length++] = 34;
       else
-      passHoldString.chars[passHoldString.length++] = 
-      passLine.chars[passLinepos];
+	passHoldString.chars[passHoldString.length++] =
+	  passLine.chars[passLinepos];
       passLinepos++;
     }
   passHoldString.chars[passHoldString.length] = 0;
