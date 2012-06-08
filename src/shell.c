@@ -176,8 +176,8 @@ struct rotate_grab {
 	struct shell_grab base;
 	struct weston_matrix rotation;
 	struct {
-		int32_t x;
-		int32_t y;
+		GLfloat x;
+		GLfloat y;
 	} center;
 };
 
@@ -1896,10 +1896,10 @@ rotate_binding(struct wl_seat *seat, uint32_t time, uint32_t button,
 
 	shell_grab_init(&rotate->base, &rotate_grab_interface, surface);
 
-	weston_surface_to_global(surface->surface,
-				 surface->surface->geometry.width / 2,
-				 surface->surface->geometry.height / 2,
-				 &rotate->center.x, &rotate->center.y);
+	weston_surface_to_global_float(surface->surface,
+				       surface->surface->geometry.width / 2,
+				       surface->surface->geometry.height / 2,
+				       &rotate->center.x, &rotate->center.y);
 
 	wl_pointer_start_grab(seat->pointer, &rotate->base.grab);
 

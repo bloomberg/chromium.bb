@@ -460,17 +460,6 @@ weston_surface_to_global_fixed(struct weston_surface *surface,
 	*y = wl_fixed_from_double(yf);
 }
 
-WL_EXPORT void
-weston_surface_to_global(struct weston_surface *surface,
-			 int32_t sx, int32_t sy, int32_t *x, int32_t *y)
-{
-	GLfloat xf, yf;
-
-	weston_surface_to_global_float(surface, sx, sy, &xf, &yf);
-	*x = floorf(xf);
-	*y = floorf(yf);
-}
-
 static void
 surface_from_global_float(struct weston_surface *surface,
 			  GLfloat x, GLfloat y, GLfloat *sx, GLfloat *sy)
