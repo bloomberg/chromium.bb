@@ -1,0 +1,18 @@
+{
+  "name": "Platform App fileSystem.getDisplayPath test",
+  "platform_app": true,
+  "version": "1",
+  "manifest_version": 2,
+  "intents": {
+    "http://webintents.org/view": {
+      "type": [
+        "text/*"
+      ],
+      "title": "Test editor"
+    }
+  },
+  "permissions": ["experimental", "fileSystem"],
+  "background": {
+    "scripts": ["test.js"]
+  }
+}

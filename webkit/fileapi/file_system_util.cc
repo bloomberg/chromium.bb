@@ -276,4 +276,34 @@ WebKit::WebFileError PlatformFileErrorToWebFileError(
   }
 }
 
+std::string GetIsolatedFileSystemName(const GURL& origin_url,
+                                      const std::string& filesystem_id) {
+  std::string name(fileapi::GetFileSystemName(origin_url,
+      fileapi::kFileSystemTypeIsolated));
+  name.append("_");
+  name.append(filesystem_id);
+  return name;
+}
+
+bool CrackIsolatedFileSystemName(const std::string& filesystem_name,
+                                 std::string* filesystem_id) {
+  DCHECK(filesystem_id);
+
+  // |filesystem_name| is of the form {origin}:isolated_{filesystem_id}.
+  std::string start_token(":");
+  start_token = start_token.append(kIsolatedName).append("_");
+  size_t pos = filesystem_name.find(start_token);
+  if (pos == std::string::npos)
+    return false;
+  if (pos == 0)
+    return false;
+
+  *filesystem_id = filesystem_name.substr(pos + start_token.length(),
+                                          std::string::npos);
+  if (filesystem_id->empty())
+    return false;
+
+  return true;
+}
+
 }  // namespace fileapi

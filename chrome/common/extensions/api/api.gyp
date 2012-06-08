@@ -37,6 +37,7 @@
           'experimental_serial.idl',
           'experimental_socket.idl',
           'experimental_usb.idl',
+          'file_system.idl',
         ],
         'cc_dir': 'chrome/common/extensions/api',
         'root_namespace': 'extensions::api',

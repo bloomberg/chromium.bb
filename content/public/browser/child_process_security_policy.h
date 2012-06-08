@@ -96,6 +96,11 @@ class ChildProcessSecurityPolicy {
   // Grants the child process the capability to access URLs of the provided
   // scheme.
   virtual void GrantScheme(int child_id, const std::string& scheme) = 0;
+
+  // Returns true iff read access has been granted to the file system with
+  // |filesystem_id|.
+  virtual bool CanReadFileSystem(int child_id,
+                                 const std::string& filesystem_id) = 0;
 };
 
 };  // namespace content

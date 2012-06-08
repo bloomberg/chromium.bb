@@ -124,6 +124,20 @@ FILEAPI_EXPORT FilePath StringToFilePath(const std::string& file_path_string);
 FILEAPI_EXPORT WebKit::WebFileError PlatformFileErrorToWebFileError(
     base::PlatformFileError error_code);
 
+// Generate a file system name for the given arguments. Should only be used by
+// platform apps.
+FILEAPI_EXPORT std::string GetIsolatedFileSystemName(
+    const GURL& origin_url,
+    const std::string& filesystem_id);
+
+// Find the file system id from |filesystem_name|. Should only be used by
+// platform apps. This function will return false if the file system name is
+// not of the form {origin}:Isolated_{id}, and will also check that there is an
+// origin and id present. It will not check that the origin or id are valid.
+FILEAPI_EXPORT bool CrackIsolatedFileSystemName(
+    const std::string& filesystem_name,
+    std::string* filesystem_id);
+
 }  // namespace fileapi
 
 #endif  // WEBKIT_FILEAPI_FILE_SYSTEM_UTIL_H_

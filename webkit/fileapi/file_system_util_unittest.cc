@@ -157,5 +157,34 @@ TEST_F(FileSystemUtilTest, VirtualPathGetComponents) {
   }
 }
 
+TEST_F(FileSystemUtilTest, GetIsolatedFileSystemName) {
+  GURL origin_url("http://foo");
+  std::string fsname1 = GetIsolatedFileSystemName(origin_url, "bar");
+  EXPECT_EQ("http_foo_0:Isolated_bar", fsname1);
+}
+
+TEST_F(FileSystemUtilTest, CrackIsolatedFileSystemName) {
+  std::string fsid;
+  EXPECT_TRUE(CrackIsolatedFileSystemName("foo:Isolated_bar", &fsid));
+  EXPECT_EQ("bar", fsid);
+  EXPECT_TRUE(CrackIsolatedFileSystemName("foo:Isolated__bar", &fsid));
+  EXPECT_EQ("_bar", fsid);
+  EXPECT_TRUE(CrackIsolatedFileSystemName("foo::Isolated_bar", &fsid));
+  EXPECT_EQ("bar", fsid);
+}
+
+TEST_F(FileSystemUtilTest, RejectBadIsolatedFileSystemName) {
+  std::string fsid;
+  EXPECT_FALSE(CrackIsolatedFileSystemName("foobar", &fsid));
+  EXPECT_FALSE(CrackIsolatedFileSystemName("foo:_bar", &fsid));
+  EXPECT_FALSE(CrackIsolatedFileSystemName("foo:Isolatedbar", &fsid));
+  EXPECT_FALSE(CrackIsolatedFileSystemName("fooIsolatedbar", &fsid));
+  EXPECT_FALSE(CrackIsolatedFileSystemName("foo:Persistent", &fsid));
+  EXPECT_FALSE(CrackIsolatedFileSystemName("foo:Temporary", &fsid));
+  EXPECT_FALSE(CrackIsolatedFileSystemName("foo:External", &fsid));
+  EXPECT_FALSE(CrackIsolatedFileSystemName(":Isolated_bar", &fsid));
+  EXPECT_FALSE(CrackIsolatedFileSystemName("foo:Isolated_", &fsid));
+}
+
 }  // namespace (anonymous)
 }  // namespace fileapi

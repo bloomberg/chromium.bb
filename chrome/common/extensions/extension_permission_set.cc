@@ -241,6 +241,9 @@ void ExtensionAPIPermission::RegisterAllPermissions(
       kFileBrowserHandler, "fileBrowserHandler", 0,
       ExtensionPermissionMessage::kNone, kFlagCannotBeOptional);
   info->RegisterPermission(
+      kFileSystem, "fileSystem", 0,
+      ExtensionPermissionMessage::kNone, kFlagNone);
+  info->RegisterPermission(
       kHistory, "history", IDS_EXTENSION_PROMPT_WARNING_BROWSING_HISTORY,
       ExtensionPermissionMessage::kBrowsingHistory,
       kFlagNone);

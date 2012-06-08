@@ -57,10 +57,7 @@ v8::Handle<v8::Value> MediaGalleryCustomBindings::GetMediaFileSystemObject(
   const GURL origin = GURL(webframe->document().securityOrigin().toString());
   const GURL root_url =
       fileapi::GetFileSystemRootURI(origin, fileapi::kFileSystemTypeIsolated);
-  const std::string fsname_prefix =
-      fileapi::GetFileSystemName(origin, fileapi::kFileSystemTypeIsolated);
-  const std::string fsname =
-      base::StringPrintf("%s_%s", fsname_prefix.c_str(), fsid.c_str());
+  const std::string fsname = fileapi::GetIsolatedFileSystemName(origin, fsid);
   const std::string url = base::StringPrintf("%s%s/%s/",
                                              root_url.spec().c_str(),
                                              fsid.c_str(),

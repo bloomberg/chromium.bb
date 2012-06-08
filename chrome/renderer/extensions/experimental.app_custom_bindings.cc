@@ -30,9 +30,8 @@ static v8::Handle<v8::Value> GetIsolatedFileSystem(
   GURL context_url = UserScriptSlave::GetDataSourceURLForFrame(webframe);
   CHECK(context_url.SchemeIs(chrome::kExtensionScheme));
 
-  std::string name(fileapi::GetFileSystemName(context_url.GetOrigin(),
-      fileapi::kFileSystemTypeIsolated));
-  name.append(file_system_id);
+  std::string name(fileapi::GetIsolatedFileSystemName(context_url.GetOrigin(),
+                                                      file_system_id));
 
   std::string root(fileapi::GetFileSystemRootURI(context_url.GetOrigin(),
       fileapi::kFileSystemTypeIsolated).spec());

@@ -465,7 +465,7 @@ bool ChildProcessSecurityPolicyImpl::CanRequestURL(
 }
 
 bool ChildProcessSecurityPolicyImpl::CanReadFile(int child_id,
-                                             const FilePath& file) {
+                                                 const FilePath& file) {
   return HasPermissionsForFile(child_id, file, kReadFilePermissions);
 }
 
@@ -474,6 +474,13 @@ bool ChildProcessSecurityPolicyImpl::CanReadDirectory(
   return HasPermissionsForFile(child_id,
                                directory,
                                kEnumerateDirectoryPermissions);
+}
+
+bool ChildProcessSecurityPolicyImpl::CanReadFileSystem(
+    int child_id, const std::string& filesystem_id) {
+  return HasPermissionsForFileSystem(child_id,
+                                     filesystem_id,
+                                     kReadFilePermissions);
 }
 
 bool ChildProcessSecurityPolicyImpl::HasPermissionsForFile(

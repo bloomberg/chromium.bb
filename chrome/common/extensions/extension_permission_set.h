@@ -119,6 +119,7 @@ class ExtensionAPIPermission {
     kExperimental,
     kFileBrowserHandler,
     kFileBrowserPrivate,
+    kFileSystem,
     kGeolocation,
     kHistory,
     kIdle,
