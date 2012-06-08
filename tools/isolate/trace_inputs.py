@@ -643,7 +643,7 @@ class ApiBase(object):
       """Enables 'with' statement."""
       self.close()
 
-  def get_tracer(self, logname=None):
+  def get_tracer(self, logname):
     """Returns an ApiBase.Tracer instance.
 
     Initializes the tracing subsystem, which is a requirement for kernel-based
@@ -988,13 +988,9 @@ class Strace(ApiBase):
       return [i[len(prefix):] for i in dir(cls.Process) if i.startswith(prefix)]
 
   class Tracer(ApiBase.Tracer):
-    @classmethod
-    def trace(cls, cmd, cwd, logname, output):
-      """Runs strace on an executable.
-
-      Since the logs are per pid, we need to log the list of the initial pid.
-      """
-      logging.info('trace(%s, %s, %s, %s)' % (cmd, cwd, logname, output))
+    def trace(self, cmd, cwd, tracename, output):
+      """Runs strace on an executable."""
+      logging.info('trace(%s, %s, %s, %s)' % (cmd, cwd, tracename, output))
       stdout = stderr = None
       if output:
         stdout = subprocess.PIPE
@@ -1005,7 +1001,7 @@ class Strace(ApiBase):
         '-ff',
         '-s', '256',
         '-e', 'trace=%s' % traces,
-        '-o', logname,
+        '-o', self._logname,
       ]
       child = subprocess.Popen(
           trace_cmd + cmd,
@@ -1021,7 +1017,7 @@ class Strace(ApiBase):
         # The pid of strace process, not very useful.
         'pid': child.pid,
       }
-      write_json(logname, value, False)
+      write_json(self._logname, value, False)
       return child.returncode, out
 
   @staticmethod
@@ -1597,8 +1593,7 @@ class Dtrace(ApiBase):
           '%s\n'
           '%s') % (pid, cwd, cls.D_CODE, cls.D_CODE_EXECVE)
 
-    @classmethod
-    def trace(cls, cmd, cwd, logname, output):
+    def trace(self, cmd, cwd, tracename, output):
       """Runs dtrace on an executable.
 
       This dtruss is broken when it starts the process itself or when tracing
@@ -1606,7 +1601,7 @@ class Dtrace(ApiBase):
       trace_child_process.py, which waits for dtrace to start, then
       trace_child_process.py starts the executable to trace.
       """
-      logging.info('trace(%s, %s, %s, %s)' % (cmd, cwd, logname, output))
+      logging.info('trace(%s, %s, %s, %s)' % (cmd, cwd, tracename, output))
       logging.info('Running: %s' % cmd)
       signal = 'Go!'
       logging.debug('Our pid: %d' % os.getpid())
@@ -1638,18 +1633,18 @@ class Dtrace(ApiBase):
         'dtrace',
         '-x', 'dynvarsize=4m',
         '-x', 'evaltime=exec',
-        '-n', cls.code(child.pid, cwd),
+        '-n', self.code(child.pid, cwd),
         '-o', '/dev/stderr',
         '-q',
       ]
-      with open(logname, 'w') as logfile:
+      with open(self._logname, 'w') as logfile:
         dtrace = subprocess.Popen(
             trace_cmd, stdout=logfile, stderr=subprocess.STDOUT)
       logging.debug('Started dtrace pid: %d' % dtrace.pid)
 
       # Part 3: Read until one line is printed, which signifies dtrace is up and
       # ready.
-      with open(logname, 'r') as logfile:
+      with open(self._logname, 'r') as logfile:
         while 'dtrace_BEGIN' not in logfile.readline():
           if dtrace.poll() is not None:
             break
@@ -1663,17 +1658,17 @@ class Dtrace(ApiBase):
         dtrace.wait()
         if dtrace.returncode != 0:
           print 'dtrace failure: %d' % dtrace.returncode
-          with open(logname) as logfile:
+          with open(self._logname) as logfile:
             print ''.join(logfile.readlines()[-100:])
           # Find a better way.
-          os.remove(logname)
+          os.remove(self._logname)
         else:
           # Short the log right away to simplify our life. There isn't much
           # advantage in keeping it out of order.
-          cls._sort_log(logname)
+          self._sort_log(self._logname)
       except KeyboardInterrupt:
         # Still sort when testing.
-        cls._sort_log(logname)
+        self._sort_log(self._logname)
         raise
 
       return dtrace.returncode or child.returncode, out
@@ -2049,12 +2044,11 @@ class LogmanTrace(ApiBase):
       return out
 
   class Tracer(ApiBase.Tracer):
-    @classmethod
-    def trace(cls, cmd, cwd, logname, output):
+    def trace(self, cmd, cwd, tracename, output):
       """Uses logman.exe to start and stop the NT Kernel Logger while the
       executable to be traced is run.
       """
-      logging.info('trace(%s, %s, %s, %s)' % (cmd, cwd, logname, output))
+      logging.info('trace(%s, %s, %s, %s)' % (cmd, cwd, tracename, output))
       # Use "logman -?" for help.
 
       stdout = stderr = None
@@ -2063,7 +2057,7 @@ class LogmanTrace(ApiBase):
         stderr = subprocess.STDOUT
 
       # 1. Start the log collection.
-      cls._start_log(logname + '.etl')
+      self._start_log(self._logname + '.etl')
 
       # 2. Run the child process.
       logging.debug('Running: %s' % cmd)
@@ -2087,18 +2081,18 @@ class LogmanTrace(ApiBase):
         out = child.communicate()[0]
       finally:
         # 3. Stop the log collection.
-        cls._stop_log()
+        self._stop_log()
 
       # 4. Convert log
       # TODO(maruel): Temporary, remove me.
-      LogmanTrace.process_log(logname)
+      LogmanTrace.process_log(self._logname)
 
       # 5. Save metadata.
       value = {
         'pid': child.pid,
         'format': 'csv',
       }
-      write_json(logname, value, False)
+      write_json(self._logname, value, False)
       return child.returncode, out
 
     @classmethod
@@ -2440,7 +2434,8 @@ def trace(logfile, cmd, cwd, api, output):
   cmd = fix_python_path(cmd)
   assert os.path.isabs(cmd[0]), cmd[0]
   api.clean_trace(logfile)
-  return api.get_tracer().trace(cmd, cwd, logfile, output)
+  with api.get_tracer(logfile) as tracer:
+    return tracer.trace(cmd, cwd, 'default', output)
 
 
 def load_trace(logfile, root_dir, api):
