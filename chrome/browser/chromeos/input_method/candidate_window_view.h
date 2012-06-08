@@ -11,6 +11,10 @@
 #include "chrome/browser/chromeos/input_method/ibus_ui_controller.h"
 #include "ui/views/view.h"
 
+namespace gfx {
+class Font;
+}
+
 namespace chromeos {
 namespace input_method {
 
@@ -230,8 +234,9 @@ class InfolistWindowView : public views::View {
   void Hide();
   void DelayHide(unsigned int milliseconds);
   void UpdateCandidates(const InputMethodLookupTable& lookup_table);
-
   void ResizeAndMoveParentFrame();
+  gfx::Font GetTitleFont() const;
+  gfx::Font GetDescriptionFont() const;
 
  protected:
   // Override View::VisibilityChanged()
@@ -268,6 +273,11 @@ class InfolistWindowView : public views::View {
   static bool ShouldUpdateView(
     const mozc::commands::InformationList* old_usages,
     const mozc::commands::InformationList* new_usages);
+
+  // Information title font
+  scoped_ptr<gfx::Font> title_font_;
+  // Information description font
+  scoped_ptr<gfx::Font> description_font_;
 
   DISALLOW_COPY_AND_ASSIGN(InfolistWindowView);
 };

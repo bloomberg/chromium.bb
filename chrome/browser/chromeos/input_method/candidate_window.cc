@@ -66,6 +66,13 @@ const int kFontSizeDelta = 1;
 const int kFontSizeDelta = 2;
 #endif
 
+// Currently the infolist window only supports Japanese font.
+#if defined(GOOGLE_CHROME_BUILD)
+const char kJapaneseFontName[] = "MotoyaG04Gothic";
+#else
+const char kJapaneseFontName[] = "IPAPGothic";
+#endif
+
 // The minimum width of candidate labels in the vertical candidate
 // window. We use this value to prevent the candidate window from being
 // too narrow when all candidates are short.
@@ -1290,16 +1297,14 @@ InfolistView::InfolistView(
 void InfolistView::Init() {
   title_label_ = new views::Label;
   title_label_->SetPosition(gfx::Point(0, 0));
-  title_label_->SetFont(
-      title_label_->font().DeriveFont(kFontSizeDelta + 2));
+  title_label_->SetFont(parent_infolist_window_->GetTitleFont());
   title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   title_label_->set_border(
       views::Border::CreateEmptyBorder(4, 7, 2, 4));
 
   description_label_ = new views::Label;
   description_label_->SetPosition(gfx::Point(0, 0));
-  description_label_->SetFont(
-      description_label_->font().DeriveFont(kFontSizeDelta - 2));
+  description_label_->SetFont(parent_infolist_window_->GetDescriptionFont());
   description_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   description_label_->SetMultiLine(true);
   description_label_->set_border(
@@ -1367,7 +1372,9 @@ InfolistWindowView::InfolistWindowView(views::Widget* parent_frame,
       parent_frame_(parent_frame),
       candidate_window_frame_(candidate_window_frame),
       infolist_area_(NULL),
-      visible_(false) {
+      visible_(false),
+      title_font_(new gfx::Font(kJapaneseFontName, kFontSizeDelta + 15)),
+      description_font_(new gfx::Font(kJapaneseFontName, kFontSizeDelta + 11)) {
 }
 
 InfolistWindowView::~InfolistWindowView() {
@@ -1557,11 +1564,19 @@ void InfolistWindowView::VisibilityChanged(View* starting_from,
     ResizeAndMoveParentFrame();
   }
 }
+
 void InfolistWindowView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   View::OnBoundsChanged(previous_bounds);
   ResizeAndMoveParentFrame();
 }
 
+gfx::Font InfolistWindowView::GetTitleFont() const {
+  return *title_font_.get();
+}
+
+gfx::Font InfolistWindowView::GetDescriptionFont() const {
+  return *description_font_.get();
+}
 
 bool CandidateWindowControllerImpl::Init() {
   // Create the candidate window view.
