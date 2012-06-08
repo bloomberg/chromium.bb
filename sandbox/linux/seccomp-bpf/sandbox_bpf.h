@@ -72,7 +72,7 @@
 
 #if defined(__i386__)
 #define MIN_SYSCALL  0
-#define MAX_SYSCALL  512
+#define MAX_SYSCALL  1024
 #define SECCOMP_ARCH AUDIT_ARCH_I386
 #define REG_RESULT   REG_EAX
 #define REG_SYSCALL  REG_EAX
@@ -84,7 +84,7 @@
 #define REG_PARM6    REG_EBP
 #elif defined(__x86_64__)
 #define MIN_SYSCALL  0
-#define MAX_SYSCALL  512
+#define MAX_SYSCALL  1024
 #define SECCOMP_ARCH AUDIT_ARCH_X86_64
 #define REG_RESULT   REG_RAX
 #define REG_SYSCALL  REG_RAX

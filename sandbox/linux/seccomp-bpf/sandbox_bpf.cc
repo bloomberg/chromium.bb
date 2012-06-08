@@ -215,16 +215,36 @@ void Sandbox::installFilter() {
   // system call.
   std::vector<struct sock_filter> program;
   program.push_back((struct sock_filter)
-                    BPF_STMT(BPF_LD+BPF_W+BPF_ABS,
-                             offsetof(struct arch_seccomp_data, arch)));
+    BPF_STMT(BPF_LD+BPF_W+BPF_ABS, offsetof(struct arch_seccomp_data, arch)));
   program.push_back((struct sock_filter)
     BPF_JUMP(BPF_JMP+BPF_JEQ+BPF_K, SECCOMP_ARCH, 1, 0));
+
+  // TODO: Instead of killing outright, we should raise a SIGSYS and
+  //       report a useful error message. SIGKILL cannot be trapped by the
+  //       debugger and essentially makes the program fail in a way that is
+  //       almost impossible to debug.
   program.push_back((struct sock_filter)
-    BPF_STMT(BPF_RET+BPF_K, SECCOMP_RET_ERRNO + SECCOMP_DENY_ERRNO));
+    BPF_STMT(BPF_RET+BPF_K, SECCOMP_RET_KILL));
 
   // Grab the system call number, so that we can implement jump tables.
   program.push_back((struct sock_filter)
     BPF_STMT(BPF_LD+BPF_W+BPF_ABS, offsetof(struct arch_seccomp_data, nr)));
+
+  // On Intel architectures, verify that system call numbers are in the
+  // expected number range. The older i386 and x86-64 APIs clear bit 30
+  // on all system calls. The newer x86-32 API always sets bit 30.
+#if defined(__i386__) || defined(__x86_64__)
+#if defined(__x86_64__) && defined(__ILP32__)
+  program.push_back((struct sock_filter)
+    BPF_JUMP(BPF_JMP+BPF_JSET+BPF_K, 0x40000000, 1, 0));
+#else
+  program.push_back((struct sock_filter)
+    BPF_JUMP(BPF_JMP+BPF_JSET+BPF_K, 0x40000000, 0, 1));
+#endif
+  // TODO: raise a suitable SIGSYS signal
+  program.push_back((struct sock_filter)
+    BPF_STMT(BPF_RET+BPF_K, SECCOMP_RET_KILL));
+#endif
 
   // Evaluate all possible system calls and depending on their
   // exit codes generate a BPF filter.
@@ -266,8 +286,9 @@ void Sandbox::installFilter() {
 
   // Everything that isn't allowed is forbidden. Eventually, we would
   // like to have a way to log forbidden calls, when in debug mode.
+  // TODO: raise a suitable SIGSYS signal
   program.push_back((struct sock_filter)
-    BPF_STMT(BPF_RET+BPF_K, SECCOMP_RET_ERRNO + SECCOMP_DENY_ERRNO));
+    BPF_STMT(BPF_RET+BPF_K, SECCOMP_RET_KILL));
 
   // Install BPF filter program
   const struct sock_fprog prog = { program.size(), &program[0] };
