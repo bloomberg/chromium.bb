@@ -135,11 +135,7 @@ void AppEventRouter::DispatchOnLaunchedEventWithFileEntry(
   intent->SetString("type", "chrome-extension://fileentry");
   args.Append(launch_data);
   args.Append(Value::CreateStringValue(file_system_id));
-#if defined(OS_WIN)
-  args.Append(Value::CreateStringValue(UTF16ToUTF8(base_name.value())));
-#else
-  args.Append(Value::CreateStringValue(base_name.value()));
-#endif
+  args.Append(Value::CreateStringValue(base_name.AsUTF8Unsafe()));
   std::string json_args;
   base::JSONWriter::Write(&args, &json_args);
   profile->GetExtensionEventRouter()->DispatchEventToExtension(
