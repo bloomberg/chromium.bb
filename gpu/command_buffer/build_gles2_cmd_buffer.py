@@ -629,6 +629,19 @@ _ENUM_LISTS = {
       'GL_INT',
     ],
   },
+  'ReadPixelType': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_UNSIGNED_BYTE',
+      'GL_UNSIGNED_SHORT_5_6_5',
+      'GL_UNSIGNED_SHORT_4_4_4_4',
+      'GL_UNSIGNED_SHORT_5_5_5_1',
+    ],
+    'invalid': [
+      'GL_SHORT',
+      'GL_INT',
+    ],
+  },
   'RenderBufferFormat': {
     'type': 'GLenum',
     'valid': [
@@ -1335,7 +1348,7 @@ _FUNCTION_INFO = {
     'client_test': False,
     'cmd_args':
         'GLint x, GLint y, GLsizei width, GLsizei height, '
-        'GLenumReadPixelFormat format, GLenumPixelType type, '
+        'GLenumReadPixelFormat format, GLenumReadPixelType type, '
         'uint32 pixels_shm_id, uint32 pixels_shm_offset, '
         'uint32 result_shm_id, uint32 result_shm_offset',
     'result': ['uint32'],

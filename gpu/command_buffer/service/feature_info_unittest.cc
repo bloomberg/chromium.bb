@@ -59,6 +59,16 @@ class FeatureInfoTest : public testing::Test {
   FeatureInfo::Ref info_;
 };
 
+namespace {
+
+struct FormatInfo {
+   GLenum format;
+   const GLenum* types;
+   size_t count;
+};
+
+}  // anonymous namespace.
+
 TEST_F(FeatureInfoTest, Basic) {
   // Test it starts off uninitialized.
   EXPECT_FALSE(info_->feature_flags().chromium_framebuffer_multisample);
@@ -81,6 +91,97 @@ TEST_F(FeatureInfoTest, Basic) {
   EXPECT_FALSE(info_->feature_flags().is_intel);
   EXPECT_FALSE(info_->feature_flags().is_nvidia);
   EXPECT_FALSE(info_->feature_flags().is_amd);
+
+  // Test good types.
+  {
+    static const GLenum kAlphaTypes[] = {
+        GL_UNSIGNED_BYTE,
+    };
+    static const GLenum kRGBTypes[] = {
+        GL_UNSIGNED_BYTE,
+        GL_UNSIGNED_SHORT_5_6_5,
+    };
+    static const GLenum kRGBATypes[] = {
+        GL_UNSIGNED_BYTE,
+        GL_UNSIGNED_SHORT_4_4_4_4,
+        GL_UNSIGNED_SHORT_5_5_5_1,
+    };
+    static const GLenum kLuminanceTypes[] = {
+        GL_UNSIGNED_BYTE,
+    };
+    static const GLenum kLuminanceAlphaTypes[] = {
+        GL_UNSIGNED_BYTE,
+    };
+    static const FormatInfo kFormatTypes[] = {
+      { GL_ALPHA, kAlphaTypes, arraysize(kAlphaTypes), },
+      { GL_RGB, kRGBTypes, arraysize(kRGBTypes), },
+      { GL_RGBA, kRGBATypes, arraysize(kRGBATypes), },
+      { GL_LUMINANCE, kLuminanceTypes, arraysize(kLuminanceTypes), },
+      { GL_LUMINANCE_ALPHA, kLuminanceAlphaTypes,
+        arraysize(kLuminanceAlphaTypes), } ,
+    };
+    for (size_t ii = 0; ii < arraysize(kFormatTypes); ++ii) {
+      const FormatInfo& info = kFormatTypes[ii];
+      const ValueValidator<GLenum>& validator =
+          info_->GetTextureFormatValidator(info.format);
+      for (size_t jj = 0; jj < info.count; ++jj) {
+        EXPECT_TRUE(validator.IsValid(info.types[jj]));
+      }
+    }
+  }
+
+  // Test some bad types
+  {
+    static const GLenum kAlphaTypes[] = {
+        GL_UNSIGNED_SHORT_5_5_5_1,
+        GL_FLOAT,
+    };
+    static const GLenum kRGBTypes[] = {
+        GL_UNSIGNED_SHORT_4_4_4_4,
+        GL_FLOAT,
+    };
+    static const GLenum kRGBATypes[] = {
+        GL_UNSIGNED_SHORT_5_6_5,
+        GL_FLOAT,
+    };
+    static const GLenum kLuminanceTypes[] = {
+        GL_UNSIGNED_SHORT_4_4_4_4,
+        GL_FLOAT,
+    };
+    static const GLenum kLuminanceAlphaTypes[] = {
+        GL_UNSIGNED_SHORT_5_5_5_1,
+        GL_FLOAT,
+    };
+    static const GLenum kBGRATypes[] = {
+        GL_UNSIGNED_BYTE,
+        GL_UNSIGNED_SHORT_5_6_5,
+        GL_FLOAT,
+    };
+    static const GLenum kDepthTypes[] = {
+        GL_UNSIGNED_BYTE,
+        GL_UNSIGNED_SHORT,
+        GL_UNSIGNED_INT,
+        GL_FLOAT,
+    };
+    static const FormatInfo kFormatTypes[] = {
+      { GL_ALPHA, kAlphaTypes, arraysize(kAlphaTypes), },
+      { GL_RGB, kRGBTypes, arraysize(kRGBTypes), },
+      { GL_RGBA, kRGBATypes, arraysize(kRGBATypes), },
+      { GL_LUMINANCE, kLuminanceTypes, arraysize(kLuminanceTypes), },
+      { GL_LUMINANCE_ALPHA, kLuminanceAlphaTypes,
+        arraysize(kLuminanceAlphaTypes), } ,
+      { GL_BGRA_EXT, kBGRATypes, arraysize(kBGRATypes), },
+      { GL_DEPTH_COMPONENT, kDepthTypes, arraysize(kDepthTypes), },
+    };
+    for (size_t ii = 0; ii < arraysize(kFormatTypes); ++ii) {
+      const FormatInfo& info = kFormatTypes[ii];
+      const ValueValidator<GLenum>& validator =
+          info_->GetTextureFormatValidator(info.format);
+      for (size_t jj = 0; jj < info.count; ++jj) {
+        EXPECT_FALSE(validator.IsValid(info.types[jj]));
+      }
+    }
+  }
 }
 
 TEST_F(FeatureInfoTest, InitializeNoExtensions) {
@@ -146,6 +247,12 @@ TEST_F(FeatureInfoTest, InitializeNoExtensions) {
       GL_DEPTH_COMPONENT24));
   EXPECT_FALSE(info_->validators()->texture_parameter.IsValid(
       GL_TEXTURE_USAGE_ANGLE));
+  EXPECT_FALSE(info_->validators()->texture_internal_format_storage.IsValid(
+      GL_DEPTH_COMPONENT16));
+  EXPECT_FALSE(info_->validators()->texture_internal_format_storage.IsValid(
+      GL_DEPTH_COMPONENT32_OES));
+  EXPECT_FALSE(info_->validators()->texture_internal_format_storage.IsValid(
+      GL_DEPTH24_STENCIL8_OES));
 }
 
 TEST_F(FeatureInfoTest, InitializeNPOTExtensionGLES) {
@@ -205,6 +312,8 @@ TEST_F(FeatureInfoTest, InitializeEXT_texture_format_BGRA8888GLES2) {
       GL_BGRA_EXT));
   EXPECT_TRUE(info_->validators()->texture_internal_format.IsValid(
       GL_BGRA_EXT));
+  EXPECT_TRUE(info_->GetTextureFormatValidator(GL_BGRA_EXT).IsValid(
+      GL_UNSIGNED_BYTE));
 }
 
 TEST_F(FeatureInfoTest, InitializeEXT_texture_format_BGRA8888GL) {
@@ -220,6 +329,8 @@ TEST_F(FeatureInfoTest, InitializeEXT_texture_format_BGRA8888GL) {
       GL_BGRA_EXT));
   EXPECT_TRUE(info_->validators()->read_pixel_format.IsValid(
       GL_BGRA_EXT));
+  EXPECT_TRUE(info_->GetTextureFormatValidator(GL_BGRA_EXT).IsValid(
+      GL_UNSIGNED_BYTE));
 }
 
 TEST_F(FeatureInfoTest, InitializeEXT_texture_format_BGRA8888Apple) {
@@ -231,6 +342,8 @@ TEST_F(FeatureInfoTest, InitializeEXT_texture_format_BGRA8888Apple) {
       GL_BGRA_EXT));
   EXPECT_TRUE(info_->validators()->texture_internal_format.IsValid(
       GL_BGRA_EXT));
+  EXPECT_TRUE(info_->GetTextureFormatValidator(GL_BGRA_EXT).IsValid(
+      GL_UNSIGNED_BYTE));
 }
 
 TEST_F(FeatureInfoTest, InitializeEXT_read_format_bgra) {
@@ -259,6 +372,26 @@ TEST_F(FeatureInfoTest, InitializeOES_texture_floatGLES2) {
               Not(HasSubstr("GL_OES_texture_half_float_linear")));
   EXPECT_TRUE(info_->validators()->pixel_type.IsValid(GL_FLOAT));
   EXPECT_FALSE(info_->validators()->pixel_type.IsValid(GL_HALF_FLOAT_OES));
+  EXPECT_TRUE(info_->GetTextureFormatValidator(GL_ALPHA).IsValid(
+      GL_FLOAT));
+  EXPECT_TRUE(info_->GetTextureFormatValidator(GL_RGB).IsValid(
+      GL_FLOAT));
+  EXPECT_TRUE(info_->GetTextureFormatValidator(GL_RGBA).IsValid(
+      GL_FLOAT));
+  EXPECT_TRUE(info_->GetTextureFormatValidator(GL_LUMINANCE).IsValid(
+      GL_FLOAT));
+  EXPECT_TRUE(info_->GetTextureFormatValidator(GL_LUMINANCE_ALPHA).IsValid(
+      GL_FLOAT));
+  EXPECT_FALSE(info_->GetTextureFormatValidator(GL_ALPHA).IsValid(
+      GL_HALF_FLOAT_OES));
+  EXPECT_FALSE(info_->GetTextureFormatValidator(GL_RGB).IsValid(
+      GL_HALF_FLOAT_OES));
+  EXPECT_FALSE(info_->GetTextureFormatValidator(GL_RGBA).IsValid(
+      GL_HALF_FLOAT_OES));
+  EXPECT_FALSE(info_->GetTextureFormatValidator(GL_LUMINANCE).IsValid(
+      GL_HALF_FLOAT_OES));
+  EXPECT_FALSE(info_->GetTextureFormatValidator(GL_LUMINANCE_ALPHA).IsValid(
+      GL_HALF_FLOAT_OES));
 }
 
 TEST_F(FeatureInfoTest, InitializeOES_texture_float_linearGLES2) {
@@ -273,6 +406,26 @@ TEST_F(FeatureInfoTest, InitializeOES_texture_float_linearGLES2) {
               Not(HasSubstr("GL_OES_texture_half_float_linear")));
   EXPECT_TRUE(info_->validators()->pixel_type.IsValid(GL_FLOAT));
   EXPECT_FALSE(info_->validators()->pixel_type.IsValid(GL_HALF_FLOAT_OES));
+  EXPECT_TRUE(info_->GetTextureFormatValidator(GL_ALPHA).IsValid(
+      GL_FLOAT));
+  EXPECT_TRUE(info_->GetTextureFormatValidator(GL_RGB).IsValid(
+      GL_FLOAT));
+  EXPECT_TRUE(info_->GetTextureFormatValidator(GL_RGBA).IsValid(
+      GL_FLOAT));
+  EXPECT_TRUE(info_->GetTextureFormatValidator(GL_LUMINANCE).IsValid(
+      GL_FLOAT));
+  EXPECT_TRUE(info_->GetTextureFormatValidator(GL_LUMINANCE_ALPHA).IsValid(
+      GL_FLOAT));
+  EXPECT_FALSE(info_->GetTextureFormatValidator(GL_ALPHA).IsValid(
+      GL_HALF_FLOAT_OES));
+  EXPECT_FALSE(info_->GetTextureFormatValidator(GL_RGB).IsValid(
+      GL_HALF_FLOAT_OES));
+  EXPECT_FALSE(info_->GetTextureFormatValidator(GL_RGBA).IsValid(
+      GL_HALF_FLOAT_OES));
+  EXPECT_FALSE(info_->GetTextureFormatValidator(GL_LUMINANCE).IsValid(
+      GL_HALF_FLOAT_OES));
+  EXPECT_FALSE(info_->GetTextureFormatValidator(GL_LUMINANCE_ALPHA).IsValid(
+      GL_HALF_FLOAT_OES));
 }
 
 TEST_F(FeatureInfoTest, InitializeOES_texture_half_floatGLES2) {
@@ -288,6 +441,26 @@ TEST_F(FeatureInfoTest, InitializeOES_texture_half_floatGLES2) {
               Not(HasSubstr("GL_OES_texture_half_float_linear")));
   EXPECT_FALSE(info_->validators()->pixel_type.IsValid(GL_FLOAT));
   EXPECT_TRUE(info_->validators()->pixel_type.IsValid(GL_HALF_FLOAT_OES));
+  EXPECT_FALSE(info_->GetTextureFormatValidator(GL_ALPHA).IsValid(
+      GL_FLOAT));
+  EXPECT_FALSE(info_->GetTextureFormatValidator(GL_RGB).IsValid(
+      GL_FLOAT));
+  EXPECT_FALSE(info_->GetTextureFormatValidator(GL_RGBA).IsValid(
+      GL_FLOAT));
+  EXPECT_FALSE(info_->GetTextureFormatValidator(GL_LUMINANCE).IsValid(
+      GL_FLOAT));
+  EXPECT_FALSE(info_->GetTextureFormatValidator(GL_LUMINANCE_ALPHA).IsValid(
+      GL_FLOAT));
+  EXPECT_TRUE(info_->GetTextureFormatValidator(GL_ALPHA).IsValid(
+      GL_HALF_FLOAT_OES));
+  EXPECT_TRUE(info_->GetTextureFormatValidator(GL_RGB).IsValid(
+      GL_HALF_FLOAT_OES));
+  EXPECT_TRUE(info_->GetTextureFormatValidator(GL_RGBA).IsValid(
+      GL_HALF_FLOAT_OES));
+  EXPECT_TRUE(info_->GetTextureFormatValidator(GL_LUMINANCE).IsValid(
+      GL_HALF_FLOAT_OES));
+  EXPECT_TRUE(info_->GetTextureFormatValidator(GL_LUMINANCE_ALPHA).IsValid(
+      GL_HALF_FLOAT_OES));
 }
 
 TEST_F(FeatureInfoTest, InitializeOES_texture_half_float_linearGLES2) {
@@ -304,6 +477,26 @@ TEST_F(FeatureInfoTest, InitializeOES_texture_half_float_linearGLES2) {
               HasSubstr("GL_OES_texture_half_float_linear"));
   EXPECT_FALSE(info_->validators()->pixel_type.IsValid(GL_FLOAT));
   EXPECT_TRUE(info_->validators()->pixel_type.IsValid(GL_HALF_FLOAT_OES));
+  EXPECT_FALSE(info_->GetTextureFormatValidator(GL_ALPHA).IsValid(
+      GL_FLOAT));
+  EXPECT_FALSE(info_->GetTextureFormatValidator(GL_RGB).IsValid(
+      GL_FLOAT));
+  EXPECT_FALSE(info_->GetTextureFormatValidator(GL_RGBA).IsValid(
+      GL_FLOAT));
+  EXPECT_FALSE(info_->GetTextureFormatValidator(GL_LUMINANCE).IsValid(
+      GL_FLOAT));
+  EXPECT_FALSE(info_->GetTextureFormatValidator(GL_LUMINANCE_ALPHA).IsValid(
+      GL_FLOAT));
+  EXPECT_TRUE(info_->GetTextureFormatValidator(GL_ALPHA).IsValid(
+      GL_HALF_FLOAT_OES));
+  EXPECT_TRUE(info_->GetTextureFormatValidator(GL_RGB).IsValid(
+      GL_HALF_FLOAT_OES));
+  EXPECT_TRUE(info_->GetTextureFormatValidator(GL_RGBA).IsValid(
+      GL_HALF_FLOAT_OES));
+  EXPECT_TRUE(info_->GetTextureFormatValidator(GL_LUMINANCE).IsValid(
+      GL_HALF_FLOAT_OES));
+  EXPECT_TRUE(info_->GetTextureFormatValidator(GL_LUMINANCE_ALPHA).IsValid(
+      GL_HALF_FLOAT_OES));
 }
 
 TEST_F(FeatureInfoTest, InitializeEXT_framebuffer_multisample) {
@@ -340,11 +533,20 @@ TEST_F(FeatureInfoTest, InitializeEXT_ARB_depth_texture) {
   info_->Initialize(NULL);
   EXPECT_THAT(info_->extensions(),
               HasSubstr("GL_GOOGLE_depth_texture"));
+  EXPECT_THAT(info_->extensions(),
+              HasSubstr("GL_CHROMIUM_depth_texture"));
   EXPECT_TRUE(info_->validators()->texture_internal_format.IsValid(
       GL_DEPTH_COMPONENT));
   EXPECT_TRUE(info_->validators()->texture_format.IsValid(GL_DEPTH_COMPONENT));
+  EXPECT_FALSE(info_->validators()->texture_format.IsValid(GL_DEPTH_STENCIL));
   EXPECT_TRUE(info_->validators()->pixel_type.IsValid(GL_UNSIGNED_SHORT));
   EXPECT_TRUE(info_->validators()->pixel_type.IsValid(GL_UNSIGNED_INT));
+  EXPECT_TRUE(info_->GetTextureFormatValidator(GL_DEPTH_COMPONENT).IsValid(
+      GL_UNSIGNED_SHORT));
+  EXPECT_TRUE(info_->GetTextureFormatValidator(GL_DEPTH_COMPONENT).IsValid(
+      GL_UNSIGNED_INT));
+  EXPECT_FALSE(info_->GetTextureFormatValidator(GL_DEPTH_STENCIL).IsValid(
+      GL_UNSIGNED_INT_24_8));
 }
 
 TEST_F(FeatureInfoTest, InitializeOES_ARB_depth_texture) {
@@ -352,11 +554,49 @@ TEST_F(FeatureInfoTest, InitializeOES_ARB_depth_texture) {
   info_->Initialize(NULL);
   EXPECT_THAT(info_->extensions(),
               HasSubstr("GL_GOOGLE_depth_texture"));
+  EXPECT_THAT(info_->extensions(),
+              HasSubstr("GL_CHROMIUM_depth_texture"));
   EXPECT_TRUE(info_->validators()->texture_internal_format.IsValid(
       GL_DEPTH_COMPONENT));
   EXPECT_TRUE(info_->validators()->texture_format.IsValid(GL_DEPTH_COMPONENT));
+  EXPECT_FALSE(info_->validators()->texture_format.IsValid(GL_DEPTH_STENCIL));
   EXPECT_TRUE(info_->validators()->pixel_type.IsValid(GL_UNSIGNED_SHORT));
   EXPECT_TRUE(info_->validators()->pixel_type.IsValid(GL_UNSIGNED_INT));
+  EXPECT_TRUE(info_->GetTextureFormatValidator(GL_DEPTH_COMPONENT).IsValid(
+      GL_UNSIGNED_SHORT));
+  EXPECT_TRUE(info_->GetTextureFormatValidator(GL_DEPTH_COMPONENT).IsValid(
+      GL_UNSIGNED_INT));
+  EXPECT_FALSE(info_->GetTextureFormatValidator(GL_DEPTH_STENCIL).IsValid(
+      GL_UNSIGNED_INT_24_8));
+}
+
+TEST_F(FeatureInfoTest, InitializeANGLE_depth_texture) {
+  SetupInitExpectations("GL_ANGLE_depth_texture");
+  info_->Initialize(NULL);
+  EXPECT_THAT(info_->extensions(),
+              HasSubstr("GL_GOOGLE_depth_texture"));
+  EXPECT_THAT(info_->extensions(),
+              HasSubstr("GL_CHROMIUM_depth_texture"));
+  EXPECT_THAT(info_->extensions(),
+              Not(HasSubstr("GL_ANGLE_depth_texture")));
+  EXPECT_TRUE(info_->validators()->texture_internal_format.IsValid(
+      GL_DEPTH_COMPONENT));
+  EXPECT_TRUE(info_->validators()->texture_format.IsValid(GL_DEPTH_COMPONENT));
+  EXPECT_FALSE(info_->validators()->texture_format.IsValid(GL_DEPTH_STENCIL));
+  EXPECT_TRUE(info_->validators()->pixel_type.IsValid(GL_UNSIGNED_SHORT));
+  EXPECT_TRUE(info_->validators()->pixel_type.IsValid(GL_UNSIGNED_INT));
+  EXPECT_FALSE(info_->validators()->texture_internal_format_storage.IsValid(
+      GL_DEPTH_COMPONENT16));
+  EXPECT_FALSE(info_->validators()->texture_internal_format_storage.IsValid(
+      GL_DEPTH_COMPONENT32_OES));
+  EXPECT_FALSE(info_->validators()->texture_internal_format_storage.IsValid(
+      GL_DEPTH24_STENCIL8_OES));
+  EXPECT_TRUE(info_->GetTextureFormatValidator(GL_DEPTH_COMPONENT).IsValid(
+      GL_UNSIGNED_SHORT));
+  EXPECT_TRUE(info_->GetTextureFormatValidator(GL_DEPTH_COMPONENT).IsValid(
+      GL_UNSIGNED_INT));
+  EXPECT_FALSE(info_->GetTextureFormatValidator(GL_DEPTH_STENCIL).IsValid(
+      GL_UNSIGNED_INT_24_8));
 }
 
 TEST_F(FeatureInfoTest, InitializeEXT_packed_depth_stencil) {
@@ -400,6 +640,12 @@ TEST_F(FeatureInfoTest,
   EXPECT_TRUE(info_->validators()->texture_format.IsValid(
       GL_DEPTH_STENCIL));
   EXPECT_TRUE(info_->validators()->pixel_type.IsValid(
+      GL_UNSIGNED_INT_24_8));
+  EXPECT_TRUE(info_->GetTextureFormatValidator(GL_DEPTH_COMPONENT).IsValid(
+      GL_UNSIGNED_SHORT));
+  EXPECT_TRUE(info_->GetTextureFormatValidator(GL_DEPTH_COMPONENT).IsValid(
+      GL_UNSIGNED_INT));
+  EXPECT_TRUE(info_->GetTextureFormatValidator(GL_DEPTH_STENCIL).IsValid(
       GL_UNSIGNED_INT_24_8));
 }
 

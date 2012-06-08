@@ -36,7 +36,7 @@ class GLTestHelper {
   // Checks an area of pixels for a color.
   static bool CheckPixels(
       GLint x, GLint y, GLsizei width, GLsizei height, GLint tolerance,
-      uint8* color);
+      const uint8* color);
 
   // Uses ReadPixels to save an area of the current FBO/Backbuffer.
   static bool SaveBackbufferAsBMP(const char* filename, int width, int height);

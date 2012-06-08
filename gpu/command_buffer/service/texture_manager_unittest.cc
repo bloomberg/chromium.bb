@@ -767,6 +767,24 @@ TEST_F(TextureInfoTest, EGLImageExternal) {
   manager.Destroy(false);
 }
 
+TEST_F(TextureInfoTest, DepthTexture) {
+  TestHelper::SetupFeatureInfoInitExpectations(
+      gl_.get(), "GL_ANGLE_depth_texture");
+  FeatureInfo::Ref feature_info(new FeatureInfo());
+  feature_info->Initialize(NULL);
+  TextureManager manager(
+      feature_info.get(), kMaxTextureSize, kMaxCubeMapTextureSize);
+  manager.CreateTextureInfo(kClient1Id, kService1Id);
+  TextureManager::TextureInfo* info = manager.GetTextureInfo(kClient1Id);
+  ASSERT_TRUE(info != NULL);
+  manager.SetInfoTarget(info, GL_TEXTURE_2D);
+  manager.SetLevelInfo(
+      info, GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 4, 4, 1, 0,
+      GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, false);
+  EXPECT_FALSE(manager.CanGenerateMipmaps(info));
+  manager.Destroy(false);
+}
+
 TEST_F(TextureInfoTest, SafeUnsafe) {
   static const GLuint kClient2Id = 2;
   static const GLuint kService2Id = 12;

@@ -388,6 +388,31 @@ void GLES2DecoderTestBase::SetupExpectationsForFramebufferClearing(
       restore_scissor_test);
 }
 
+void GLES2DecoderTestBase::SetupExpectationsForRestoreClearState(
+    GLclampf restore_red,
+    GLclampf restore_green,
+    GLclampf restore_blue,
+    GLclampf restore_alpha,
+    GLuint restore_stencil,
+    GLclampf restore_depth,
+    bool restore_scissor_test) {
+  EXPECT_CALL(*gl_, ClearColor(
+      restore_red, restore_green, restore_blue, restore_alpha))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ClearStencil(restore_stencil))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ClearDepth(restore_depth))
+      .Times(1)
+      .RetiresOnSaturation();
+  if (restore_scissor_test) {
+    EXPECT_CALL(*gl_, Enable(GL_SCISSOR_TEST))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
+}
+
 void GLES2DecoderTestBase::SetupExpectationsForFramebufferClearingMulti(
     GLuint read_framebuffer_service_id,
     GLuint draw_framebuffer_service_id,
@@ -444,21 +469,9 @@ void GLES2DecoderTestBase::SetupExpectationsForFramebufferClearingMulti(
   EXPECT_CALL(*gl_, Clear(clear_bits))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, ClearColor(
-      restore_red, restore_green, restore_blue, restore_alpha))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, ClearStencil(restore_stencil))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, ClearDepth(restore_depth))
-      .Times(1)
-      .RetiresOnSaturation();
-  if (restore_scissor_test) {
-    EXPECT_CALL(*gl_, Enable(GL_SCISSOR_TEST))
-        .Times(1)
-        .RetiresOnSaturation();
-  }
+  SetupExpectationsForRestoreClearState(
+      restore_red, restore_green, restore_blue, restore_alpha,
+      restore_stencil, restore_depth, restore_scissor_test);
   if (target == GL_READ_FRAMEBUFFER_EXT) {
     EXPECT_CALL(*gl_, BindFramebufferEXT(
         GL_READ_FRAMEBUFFER_EXT, read_framebuffer_service_id))

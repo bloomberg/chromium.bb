@@ -123,6 +123,13 @@ class GLES2DecoderManualInitTest : public GLES2DecoderWithShaderTest {
   }
 };
 
+class GLES2DecoderANGLEManualInitTest : public GLES2DecoderANGLETest {
+ public:
+  // Override default setup so nothing gets setup.
+  virtual void SetUp() {
+  }
+};
+
 TEST_F(GLES2DecoderWithShaderTest, DrawArraysNoAttributesSucceeds) {
   SetupTexture();
   AddExpectationsForSimulatedAttrib0(kNumVertices, 0);
@@ -7048,6 +7055,155 @@ TEST_F(GLES2DecoderTest, IsEnabledReturnsCachedValue) {
     EXPECT_EQ(error::kNoError, ExecuteCmd(is_enabled_cmd));
     EXPECT_EQ(0u, *result);
   }
+}
+
+TEST_F(GLES2DecoderManualInitTest, DepthTextureBadArgs) {
+  InitDecoder(
+      "GL_ANGLE_depth_texture",      // extensions
+      false,   // has alpha
+      true,    // has depth
+      true,    // has stencil
+      false,   // request alpha
+      true,    // request depth
+      true,    // request stencil
+      true);   // bind generates resource
+
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+  // Check trying to upload data fails.
+  TexImage2D tex_cmd;
+  tex_cmd.Init(
+      GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
+      1, 1, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT,
+      kSharedMemoryId, kSharedMemoryOffset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(tex_cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+  // Try level > 0.
+  tex_cmd.Init(
+      GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT,
+      1, 1, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, 0, 0);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(tex_cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+  // Make a 1 pixel depth texture.
+  DoTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
+               1, 1, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, 0, 0);
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  // Check that trying to update it fails.
+  TexSubImage2D tex_sub_cmd;
+  tex_sub_cmd.Init(
+      GL_TEXTURE_2D, 0, 0, 0, 1, 1, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT,
+      kSharedMemoryId, kSharedMemoryOffset, GL_FALSE);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(tex_sub_cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  // Check that trying to CopyTexImage2D fails
+  CopyTexImage2D copy_tex_cmd;
+  copy_tex_cmd.Init(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 0, 0, 1, 1, 0);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(copy_tex_cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+
+  // Check that trying to CopyTexSubImage2D fails
+  CopyTexSubImage2D copy_sub_cmd;
+  copy_sub_cmd.Init(GL_TEXTURE_2D, 0, 0, 0, 0, 0, 1, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(copy_sub_cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+}
+
+TEST_F(GLES2DecoderManualInitTest, GenerateMipmapDepthTexture) {
+  InitDecoder(
+      "GL_ANGLE_depth_texture",      // extensions
+      false,   // has alpha
+      true,    // has depth
+      true,    // has stencil
+      false,   // request alpha
+      true,    // request depth
+      true,    // request stencil
+      true);   // bind generates resource
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+  DoTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
+               2, 2, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT,
+               0, 0);
+  GenerateMipmap cmd;
+  cmd.Init(GL_TEXTURE_2D);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+}
+
+TEST_F(GLES2DecoderANGLEManualInitTest, DrawClearsDepthTexture) {
+  InitDecoder(
+      "GL_ANGLE_depth_texture",      // extensions
+      true,    // has alpha
+      true,    // has depth
+      false,   // has stencil
+      true,    // request alpha
+      true,    // request depth
+      false,   // request stencil
+      true);   // bind generates resource
+
+  SetupDefaultProgram();
+  SetupAllNeededVertexBuffers();
+  const GLenum attachment = GL_DEPTH_ATTACHMENT;
+  const GLenum target = GL_TEXTURE_2D;
+  const GLint level = 0;
+  DoBindTexture(target, client_texture_id_, kServiceTextureId);
+
+  // Create a depth texture.
+  DoTexImage2D(target, level, GL_DEPTH_COMPONENT, 1, 1, 0,
+               GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, 0, 0);
+
+  EXPECT_CALL(*gl_, GenFramebuffersEXT(1, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, BindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, _))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  EXPECT_CALL(*gl_, FramebufferTexture2DEXT(
+      GL_DRAW_FRAMEBUFFER_EXT, attachment, target, kServiceTextureId, level))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_DRAW_FRAMEBUFFER_EXT))
+      .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
+      .RetiresOnSaturation();
+
+  EXPECT_CALL(*gl_, ClearStencil(0))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, StencilMask(-1))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ClearDepth(1.0f))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, DepthMask(true))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, Disable(GL_SCISSOR_TEST))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  EXPECT_CALL(*gl_, Clear(GL_DEPTH_BUFFER_BIT))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  SetupExpectationsForRestoreClearState(
+      0.0f, 0.0f, 0.0f, 0.0f, 0, 1.0f, false);
+
+  EXPECT_CALL(*gl_, DeleteFramebuffersEXT(1, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, BindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, 0))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  SetupExpectationsForApplyingDefaultDirtyState();
+  EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
+      .Times(1)
+      .RetiresOnSaturation();
+  DrawArrays cmd;
+  cmd.Init(GL_TRIANGLES, 0, kNumVertices);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
 // TODO(gman): Complete this test.

@@ -39,6 +39,7 @@ ValueValidator<GLenum> query_object_parameter;
 ValueValidator<GLenum> query_parameter;
 ValueValidator<GLenum> query_target;
 ValueValidator<GLenum> read_pixel_format;
+ValueValidator<GLenum> read_pixel_type;
 ValueValidator<GLenum> render_buffer_format;
 ValueValidator<GLenum> render_buffer_parameter;
 ValueValidator<GLenum> render_buffer_target;

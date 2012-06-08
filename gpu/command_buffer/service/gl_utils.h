@@ -86,7 +86,16 @@
 #define GL_COMMANDS_ISSUED_CHROMIUM            0x84F2
 
 // GL_OES_texure_3D
-#define GL_SAMPLER_3D_OES                                       0x8B5F
+#define GL_SAMPLER_3D_OES                      0x8B5F
+
+// GL_OES_depth24
+#define GL_DEPTH_COMPONENT24_OES               0x81A6
+
+// GL_OES_depth32
+#define GL_DEPTH_COMPONENT32_OES               0x81A7
+
+// GL_OES_packed_depth_stencil
+#define GL_DEPTH24_STENCIL8_OES                0x88F0
 
 #define GL_GLEXT_PROTOTYPES 1
 

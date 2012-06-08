@@ -105,7 +105,7 @@ GLuint GLTestHelper::SetupUnitQuad(GLint position_location) {
 
 bool GLTestHelper::CheckPixels(
     GLint x, GLint y, GLsizei width, GLsizei height, GLint tolerance,
-    uint8* color) {
+    const uint8* color) {
   GLsizei size = width * height * 4;
   scoped_array<uint8> pixels(new uint8[size]);
   memset(pixels.get(), 123, size);

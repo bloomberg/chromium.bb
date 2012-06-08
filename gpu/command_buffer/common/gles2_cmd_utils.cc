@@ -346,6 +346,10 @@ int ElementsPerGroup(int format, int type) {
     case GL_ALPHA:
     case GL_LUMINANCE:
     case GL_DEPTH_COMPONENT:
+    case GL_DEPTH_COMPONENT24_OES:
+    case GL_DEPTH_COMPONENT32_OES:
+    case GL_DEPTH_COMPONENT16:
+    case GL_DEPTH24_STENCIL8_OES:
     case GL_DEPTH_STENCIL_OES:
        return 1;
     default:
@@ -598,6 +602,8 @@ uint32 GLES2Util::GetChannelsForFormat(int format) {
     case GL_RGBA4:
     case GL_RGB5_A1:
       return kRGBA;
+    case GL_DEPTH_COMPONENT32_OES:
+    case GL_DEPTH_COMPONENT24_OES:
     case GL_DEPTH_COMPONENT16:
     case GL_DEPTH_COMPONENT:
       return kDepth;

@@ -210,7 +210,13 @@ bool TextureManager::TextureInfo::CanGenerateMipmaps(
     return false;
   }
 
+  // Can't generate mips for depth or stencil textures.
   const TextureInfo::LevelInfo& first = level_infos_[0][0];
+  uint32 channels = GLES2Util::GetChannelsForFormat(first.format);
+  if (channels & (GLES2Util::kDepth | GLES2Util::kStencil)) {
+    return false;
+  }
+
   // TODO(gman): Check internal_format, format and type.
   for (size_t ii = 0; ii < level_infos_.size(); ++ii) {
     const LevelInfo& info = level_infos_[ii][0];

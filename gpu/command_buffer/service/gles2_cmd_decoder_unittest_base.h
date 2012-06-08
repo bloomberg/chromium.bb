@@ -262,6 +262,15 @@ class GLES2DecoderTestBase : public testing::Test {
       GLsizei width,
       GLsizei height);
 
+  void SetupExpectationsForRestoreClearState(
+      GLclampf restore_red,
+      GLclampf restore_green,
+      GLclampf restore_blue,
+      GLclampf restore_alpha,
+      GLuint restore_stencil,
+      GLclampf restore_depth,
+      bool restore_scissor_test);
+
   void SetupExpectationsForFramebufferClearing(
       GLenum target,
       GLuint clear_bits,

@@ -37,6 +37,7 @@ static std::string GetStringQueryObjectParameter(uint32 value);
 static std::string GetStringQueryParameter(uint32 value);
 static std::string GetStringQueryTarget(uint32 value);
 static std::string GetStringReadPixelFormat(uint32 value);
+static std::string GetStringReadPixelType(uint32 value);
 static std::string GetStringRenderBufferFormat(uint32 value);
 static std::string GetStringRenderBufferParameter(uint32 value);
 static std::string GetStringRenderBufferTarget(uint32 value);

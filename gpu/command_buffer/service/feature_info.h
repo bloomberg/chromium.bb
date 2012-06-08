@@ -6,6 +6,7 @@
 #define GPU_COMMAND_BUFFER_SERVICE_FEATURE_INFO_H_
 
 #include <string>
+#include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
@@ -77,6 +78,10 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     return &validators_;
   }
 
+  const ValueValidator<GLenum>& GetTextureFormatValidator(GLenum format) {
+    return texture_format_validators_[format];
+  }
+
   const std::string& extensions() const {
     return extensions_;
   }
@@ -87,6 +92,10 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
 
  private:
   friend class base::RefCounted<FeatureInfo>;
+
+  typedef base::hash_map<GLenum, ValueValidator<GLenum> > ValidatorMap;
+  ValidatorMap texture_format_validators_;
+
   ~FeatureInfo();
 
   void AddExtensionString(const std::string& str);

@@ -18,7 +18,50 @@
 namespace gpu {
 namespace gles2 {
 
+namespace {
+
+struct FormatInfo {
+   GLenum format;
+   const GLenum* types;
+   size_t count;
+};
+
+}  // anonymous namespace.
+
 FeatureInfo::FeatureInfo() {
+  static const GLenum kAlphaTypes[] = {
+      GL_UNSIGNED_BYTE,
+  };
+  static const GLenum kRGBTypes[] = {
+      GL_UNSIGNED_BYTE,
+      GL_UNSIGNED_SHORT_5_6_5,
+  };
+  static const GLenum kRGBATypes[] = {
+      GL_UNSIGNED_BYTE,
+      GL_UNSIGNED_SHORT_4_4_4_4,
+      GL_UNSIGNED_SHORT_5_5_5_1,
+  };
+  static const GLenum kLuminanceTypes[] = {
+      GL_UNSIGNED_BYTE,
+  };
+  static const GLenum kLuminanceAlphaTypes[] = {
+      GL_UNSIGNED_BYTE,
+  };
+  static const FormatInfo kFormatTypes[] = {
+    { GL_ALPHA, kAlphaTypes, arraysize(kAlphaTypes), },
+    { GL_RGB, kRGBTypes, arraysize(kRGBTypes), },
+    { GL_RGBA, kRGBATypes, arraysize(kRGBATypes), },
+    { GL_LUMINANCE, kLuminanceTypes, arraysize(kLuminanceTypes), },
+    { GL_LUMINANCE_ALPHA, kLuminanceAlphaTypes,
+      arraysize(kLuminanceAlphaTypes), } ,
+  };
+  for (size_t ii = 0; ii < arraysize(kFormatTypes); ++ii) {
+    const FormatInfo& info = kFormatTypes[ii];
+    ValueValidator<GLenum>& validator = texture_format_validators_[info.format];
+    for (size_t jj = 0; jj < info.count; ++jj) {
+      validator.AddValue(info.types[jj]);
+    }
+  }
 }
 
 // Helps query for extensions.
@@ -212,29 +255,44 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
   }
 
   // Check if we should support GL_OES_packed_depth_stencil and/or
-  // GL_GOOGLE_depth_texture.
-  // NOTE: GL_OES_depth_texture requires support for depth
-  // cubemaps. GL_ARB_depth_texture requires other features that
-  // GL_OES_packed_depth_stencil does not provide. Therefore we made up
-  // GL_GOOGLE_depth_texture.
+  // GL_GOOGLE_depth_texture / GL_CHROMIUM_depth_texture.
+  //
+  // NOTE: GL_OES_depth_texture requires support for depth cubemaps.
+  // GL_ARB_depth_texture requires other features that
+  // GL_OES_packed_depth_stencil does not provide.
+  //
+  // Therefore we made up GL_GOOGLE_depth_texture / GL_CHROMIUM_depth_texture.
+  //
+  // GL_GOOGLE_depth_texture is legacy. As we exposed it into NaCl we can't
+  // get rid of it.
+  //
   bool enable_depth_texture = false;
-  if (ext.Desire("GL_GOOGLE_depth_texture") &&
+  if ((ext.Desire("GL_GOOGLE_depth_texture") ||
+       ext.Desire("GL_CHROMIUM_depth_texture")) &&
       (ext.Have("GL_ARB_depth_texture") ||
-       ext.Have("GL_OES_depth_texture"))) {
+       ext.Have("GL_OES_depth_texture") ||
+       ext.Have("GL_ANGLE_depth_texture"))) {
     enable_depth_texture = true;
+  }
+
+  if (enable_depth_texture) {
+    AddExtensionString("GL_CHROMIUM_depth_texture");
     AddExtensionString("GL_GOOGLE_depth_texture");
+    texture_format_validators_[GL_DEPTH_COMPONENT].AddValue(GL_UNSIGNED_SHORT);
+    texture_format_validators_[GL_DEPTH_COMPONENT].AddValue(GL_UNSIGNED_INT);
     validators_.texture_internal_format.AddValue(GL_DEPTH_COMPONENT);
     validators_.texture_format.AddValue(GL_DEPTH_COMPONENT);
     validators_.pixel_type.AddValue(GL_UNSIGNED_SHORT);
     validators_.pixel_type.AddValue(GL_UNSIGNED_INT);
   }
-  // TODO(gman): Add depth types fo ElementsPerGroup and BytesPerElement
 
   if (ext.Desire("GL_OES_packed_depth_stencil") &&
       (ext.Have("GL_EXT_packed_depth_stencil") ||
        ext.Have("GL_OES_packed_depth_stencil"))) {
     AddExtensionString("GL_OES_packed_depth_stencil");
     if (enable_depth_texture) {
+      texture_format_validators_[GL_DEPTH_STENCIL].AddValue(
+          GL_UNSIGNED_INT_24_8);
       validators_.texture_internal_format.AddValue(GL_DEPTH_STENCIL);
       validators_.texture_format.AddValue(GL_DEPTH_STENCIL);
       validators_.pixel_type.AddValue(GL_UNSIGNED_INT_24_8);
@@ -265,6 +323,7 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
 
   if (enable_texture_format_bgra8888) {
     AddExtensionString("GL_EXT_texture_format_BGRA8888");
+    texture_format_validators_[GL_BGRA_EXT].AddValue(GL_UNSIGNED_BYTE);
     validators_.texture_internal_format.AddValue(GL_BGRA_EXT);
     validators_.texture_format.AddValue(GL_BGRA_EXT);
   }
@@ -328,7 +387,13 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
   }
 
   if (enable_texture_float) {
+    texture_format_validators_[GL_ALPHA].AddValue(GL_FLOAT);
+    texture_format_validators_[GL_RGB].AddValue(GL_FLOAT);
+    texture_format_validators_[GL_RGBA].AddValue(GL_FLOAT);
+    texture_format_validators_[GL_LUMINANCE].AddValue(GL_FLOAT);
+    texture_format_validators_[GL_LUMINANCE_ALPHA].AddValue(GL_FLOAT);
     validators_.pixel_type.AddValue(GL_FLOAT);
+    validators_.read_pixel_type.AddValue(GL_FLOAT);
     AddExtensionString("GL_OES_texture_float");
     if (enable_texture_float_linear) {
       AddExtensionString("GL_OES_texture_float_linear");
@@ -336,7 +401,13 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
   }
 
   if (enable_texture_half_float) {
+    texture_format_validators_[GL_ALPHA].AddValue(GL_HALF_FLOAT_OES);
+    texture_format_validators_[GL_RGB].AddValue(GL_HALF_FLOAT_OES);
+    texture_format_validators_[GL_RGBA].AddValue(GL_HALF_FLOAT_OES);
+    texture_format_validators_[GL_LUMINANCE].AddValue(GL_HALF_FLOAT_OES);
+    texture_format_validators_[GL_LUMINANCE_ALPHA].AddValue(GL_HALF_FLOAT_OES);
     validators_.pixel_type.AddValue(GL_HALF_FLOAT_OES);
+    validators_.read_pixel_type.AddValue(GL_HALF_FLOAT_OES);
     AddExtensionString("GL_OES_texture_half_float");
     if (enable_texture_half_float_linear) {
       AddExtensionString("GL_OES_texture_half_float_linear");

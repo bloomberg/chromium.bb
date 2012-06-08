@@ -1324,6 +1324,13 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   void ReleaseIOSurfaceForTexture(GLuint texture_id);
 #endif
 
+  // Validates the combination of texture parameters. For example validates that
+  // for a given format the specific type, level and targets are valid.
+  // Synthesizes the correct GL error if invalid. Returns true if valid.
+  bool ValidateTextureParameters(
+      const char* function_name,
+      GLenum target, GLenum format, GLenum type, GLint level);
+
   void LogMessage(const std::string& msg);
   void RenderWarning(const std::string& msg);
   void PerformanceWarning(const std::string& msg);
@@ -6667,6 +6674,43 @@ bool GLES2DecoderImpl::ClearLevel(
     int width,
     int height,
     bool is_texture_immutable) {
+  uint32 channels = GLES2Util::GetChannelsForFormat(format);
+  if (IsAngle() && (channels & GLES2Util::kDepth) != 0) {
+    // It's a depth format and ANGLE doesn't allow texImage2D or texSubImage2D
+    // on depth formats.
+    GLuint fb = 0;
+    glGenFramebuffersEXT(1, &fb);
+    glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, fb);
+
+    bool have_stencil = (channels & GLES2Util::kStencil) != 0;
+    GLenum attachment = have_stencil ? GL_DEPTH_STENCIL_ATTACHMENT :
+                                       GL_DEPTH_ATTACHMENT;
+
+    glFramebufferTexture2DEXT(
+        GL_DRAW_FRAMEBUFFER_EXT, attachment, target, service_id, level);
+    // ANGLE promises a depth only attachment ok.
+    if (glCheckFramebufferStatusEXT(GL_DRAW_FRAMEBUFFER_EXT) !=
+        GL_FRAMEBUFFER_COMPLETE) {
+      return false;
+    }
+    glClearStencil(0);
+    glStencilMask(-1);
+    glClearDepth(1.0f);
+    glDepthMask(true);
+    glDisable(GL_SCISSOR_TEST);
+    glClear(GL_DEPTH_BUFFER_BIT | (have_stencil ? GL_STENCIL_BUFFER_BIT : 0));
+
+    RestoreClearState();
+
+    glDeleteFramebuffersEXT(1, &fb);
+    FramebufferManager::FramebufferInfo* framebuffer =
+        GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER_EXT);
+    GLuint fb_service_id =
+        framebuffer ? framebuffer->service_id() : GetBackbufferServiceId();
+    glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, fb_service_id);
+    return true;
+  }
+
   static const uint32 kMaxZeroSize = 1024 * 1024 * 4;
 
   uint32 size;
@@ -6894,6 +6938,28 @@ error::Error GLES2DecoderImpl::HandleCompressedTexSubImage2DBucket(
   return error::kNoError;
 }
 
+bool GLES2DecoderImpl::ValidateTextureParameters(
+    const char* function_name,
+    GLenum target, GLenum format, GLenum type, GLint level) {
+  if (!feature_info_->GetTextureFormatValidator(format).IsValid(type)) {
+      SetGLError(GL_INVALID_OPERATION,
+                 (std::string(function_name) + ": invalid type " +
+                  GLES2Util::GetStringEnum(type) + " for format " +
+                  GLES2Util::GetStringEnum(format)).c_str());
+      return false;
+  }
+
+  uint32 channels = GLES2Util::GetChannelsForFormat(format);
+  if ((channels & (GLES2Util::kDepth | GLES2Util::kStencil)) != 0 && level) {
+    SetGLError(GL_INVALID_OPERATION,
+               (std::string(function_name) + ": invalid type " +
+                GLES2Util::GetStringEnum(type) + " for format " +
+                GLES2Util::GetStringEnum(format)).c_str());
+    return false;
+  }
+  return true;
+}
+
 error::Error GLES2DecoderImpl::DoTexImage2D(
   GLenum target,
   GLint level,
@@ -6926,9 +6992,19 @@ error::Error GLES2DecoderImpl::DoTexImage2D(
     SetGLError(GL_INVALID_OPERATION, "glTexImage2D: format != internalFormat");
     return error::kNoError;
   }
+  if (!ValidateTextureParameters("glTexImage2D", target, format, type, level)) {
+    return error::kNoError;
+  }
   if (!texture_manager()->ValidForTarget(target, level, width, height, 1) ||
       border != 0) {
     SetGLError(GL_INVALID_VALUE, "glTexImage2D: dimensions out of range");
+    return error::kNoError;
+  }
+  if ((GLES2Util::GetChannelsForFormat(format) &
+       (GLES2Util::kDepth | GLES2Util::kStencil)) != 0 && pixels) {
+    SetGLError(
+        GL_INVALID_OPERATION,
+        "glTexImage2D: can not supply data for depth or stencil textures");
     return error::kNoError;
   }
   TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
@@ -7137,6 +7213,10 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
     SetGLError(GL_INVALID_VALUE, "glCopyTexImage2D: dimensions out of range");
     return;
   }
+  if (!ValidateTextureParameters(
+      "glCopyTexImage2D", target, internal_format, GL_UNSIGNED_BYTE, level)) {
+    return;
+  }
 
   // Check we have compatible formats.
   GLenum read_format = GetBoundReadFrameBufferInternalFormat();
@@ -7145,6 +7225,13 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
 
   if ((channels_needed & channels_exist) != channels_needed) {
     SetGLError(GL_INVALID_OPERATION, "glCopyTexImage2D: incompatible format");
+    return;
+  }
+
+  if ((channels_needed & (GLES2Util::kDepth | GLES2Util::kStencil)) != 0) {
+    SetGLError(
+        GL_INVALID_OPERATION,
+        "glCopyImage2D: can not be used with depth or stencil textures");
     return;
   }
 
@@ -7240,6 +7327,13 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
     return;
   }
 
+  if ((channels_needed & (GLES2Util::kDepth | GLES2Util::kStencil)) != 0) {
+    SetGLError(
+        GL_INVALID_OPERATION,
+        "glCopySubImage2D: can not be used with depth or stencil textures");
+    return;
+  }
+
   if (!CheckBoundFramebuffersValid("glCopyTexSubImage2D")) {
     return;
   }
@@ -7327,6 +7421,14 @@ void GLES2DecoderImpl::DoTexSubImage2D(
           target, level, xoffset, yoffset, width, height, format, type)) {
     SetGLError(GL_INVALID_VALUE,
                "glTexSubImage2D: bad dimensions.");
+    return;
+  }
+
+  if ((GLES2Util::GetChannelsForFormat(format) &
+       (GLES2Util::kDepth | GLES2Util::kStencil)) != 0) {
+    SetGLError(
+        GL_INVALID_OPERATION,
+        "glTexSubImage2D: can not supply data for depth or stencil textures");
     return;
   }
 

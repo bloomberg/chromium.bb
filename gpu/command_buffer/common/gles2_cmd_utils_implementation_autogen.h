@@ -963,6 +963,17 @@ std::string GLES2Util::GetStringReadPixelFormat(uint32 value) {
       string_table, arraysize(string_table), value);
 }
 
+std::string GLES2Util::GetStringReadPixelType(uint32 value) {
+  static EnumToString string_table[] = {
+    { GL_UNSIGNED_BYTE, "GL_UNSIGNED_BYTE" },
+    { GL_UNSIGNED_SHORT_5_6_5, "GL_UNSIGNED_SHORT_5_6_5" },
+    { GL_UNSIGNED_SHORT_4_4_4_4, "GL_UNSIGNED_SHORT_4_4_4_4" },
+    { GL_UNSIGNED_SHORT_5_5_5_1, "GL_UNSIGNED_SHORT_5_5_5_1" },
+  };
+  return GLES2Util::GetQualifiedEnumString(
+      string_table, arraysize(string_table), value);
+}
+
 std::string GLES2Util::GetStringRenderBufferFormat(uint32 value) {
   static EnumToString string_table[] = {
     { GL_RGBA4, "GL_RGBA4" },
