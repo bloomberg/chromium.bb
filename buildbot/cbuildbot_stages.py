@@ -690,6 +690,11 @@ class BuildBoardStage(bs.BuilderStage):
       if self._options.clobber:
         env['IGNORE_PREFLIGHT_BINHOST'] = '1'
 
+      latest_toolchain = self._build_config['latest_toolchain']
+      if latest_toolchain and self._build_config['gcc_githash']:
+        env['USE'] = 'git_gcc'
+        env['GCC_GITHASH'] = self._build_config['gcc_githash']
+
       commands.MakeChroot(
           buildroot=self._build_root,
           replace=self._build_config['chroot_replace'],
@@ -712,11 +717,7 @@ class BuildBoardStage(bs.BuilderStage):
       if self._options.clobber:
         env['IGNORE_PREFLIGHT_BINHOST'] = '1'
 
-      latest_toolchain = self._build_config['latest_toolchain']
 
-      if latest_toolchain and self._build_config['gcc_githash']:
-        env['USE'] = 'git_gcc'
-        env['GCC_GITHASH'] = self._build_config['gcc_githash']
 
       commands.SetupBoard(self._build_root,
                           board=board_to_build,
