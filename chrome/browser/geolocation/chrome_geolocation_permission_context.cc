@@ -20,7 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
@@ -528,15 +528,14 @@ void GeolocationInfoBarQueueController::ClearPendingInfoBarRequestsForTab(
 InfoBarTabHelper* GeolocationInfoBarQueueController::GetInfoBarHelper(
     int render_process_id,
     int render_view_id) {
-  WebContents* tab_contents =
+  WebContents* web_contents =
       tab_util::GetWebContentsByID(render_process_id, render_view_id);
+  if (!web_contents)
+    return NULL;
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
   if (!tab_contents)
     return NULL;
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents);
-  if (!wrapper)
-    return NULL;
-  return wrapper->infobar_tab_helper();
+  return tab_contents->infobar_tab_helper();
 }
 
 bool GeolocationInfoBarQueueController::AlreadyShowingInfoBar(

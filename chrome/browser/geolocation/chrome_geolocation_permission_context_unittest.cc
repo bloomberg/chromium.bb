@@ -16,7 +16,7 @@
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/testing_profile.h"
@@ -133,7 +133,7 @@ class GeolocationPermissionContextTests : public TabContentsTestHarness {
   scoped_refptr<ChromeGeolocationPermissionContext>
       geolocation_permission_context_;
   ClosedDelegateTracker closed_delegate_tracker_;
-  ScopedVector<TabContentsWrapper> extra_tabs_;
+  ScopedVector<TabContents> extra_tabs_;
 
  private:
   // TabContentsTestHarness:
@@ -211,7 +211,7 @@ void GeolocationPermissionContextTests::AddNewTab(const GURL& url) {
       url, content::Referrer(), content::PAGE_TRANSITION_TYPED, std::string());
   RenderViewHostTester::For(new_tab->GetRenderViewHost())->
       SendNavigate(extra_tabs_.size() + 1, url);
-  extra_tabs_.push_back(new TabContentsWrapper(new_tab));
+  extra_tabs_.push_back(new TabContents(new_tab));
 }
 
 void GeolocationPermissionContextTests::CheckTabContentsState(
