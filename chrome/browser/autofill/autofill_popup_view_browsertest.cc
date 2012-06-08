@@ -61,7 +61,7 @@ class AutofillPopupViewBrowserTest : public InProcessBrowserTest {
   virtual ~AutofillPopupViewBrowserTest() {}
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    web_contents_ = browser()->GetSelectedWebContents();
+    web_contents_ = browser()->GetActiveWebContents();
     ASSERT_TRUE(web_contents_ != NULL);
 
     autofill_popup_view_.reset(new TestAutofillPopupView(

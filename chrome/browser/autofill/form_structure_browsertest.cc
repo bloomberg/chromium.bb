@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@
 #include "chrome/browser/autofill/data_driven_test.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "googleurl/src/gurl.h"
@@ -59,7 +59,7 @@ void FormStructureBrowserTest::GenerateResults(const std::string& input,
                                                        HTMLToDataURI(input)));
 
   AutofillManager* autofill_manager =
-      browser()->GetSelectedTabContentsWrapper()->autofill_manager();
+      browser()->GetActiveTabContents()->autofill_manager();
   ASSERT_NE(static_cast<AutofillManager*>(NULL), autofill_manager);
   std::vector<FormStructure*> forms = autofill_manager->form_structures_.get();
   *output = FormStructureBrowserTest::FormStructuresToString(forms);

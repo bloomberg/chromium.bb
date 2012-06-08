@@ -43,7 +43,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -177,9 +177,9 @@ void DeterminePossibleFieldTypesForUpload(
 
 }  // namespace
 
-AutofillManager::AutofillManager(TabContentsWrapper* tab_contents)
+AutofillManager::AutofillManager(TabContents* tab_contents)
     : content::WebContentsObserver(tab_contents->web_contents()),
-      tab_contents_wrapper_(tab_contents),
+      tab_contents_(tab_contents),
       personal_data_(NULL),
       download_manager_(tab_contents->profile(), this),
       disable_download_manager_requests_(false),
@@ -232,8 +232,7 @@ void AutofillManager::RegisterUserPrefs(PrefService* prefs) {
 
 void AutofillManager::RegisterWithSyncService() {
   ProfileSyncService* temp_sync_service =
-      ProfileSyncServiceFactory::GetForProfile(
-          tab_contents_wrapper_->profile());
+      ProfileSyncServiceFactory::GetForProfile(tab_contents_->profile());
   if (temp_sync_service) {
     sync_service_ = temp_sync_service->AsWeakPtr();
     sync_service_->AddObserver(this);
@@ -262,7 +261,7 @@ void AutofillManager::UpdatePasswordGenerationState(
       sync_set.Has(syncable::PASSWORDS);
 
   bool password_manager_enabled =
-      tab_contents_wrapper_->password_manager()->IsSavingEnabled();
+      tab_contents_->password_manager()->IsSavingEnabled();
 
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());
@@ -353,7 +352,7 @@ bool AutofillManager::OnMessageReceived(const IPC::Message& message) {
 bool AutofillManager::OnFormSubmitted(const FormData& form,
                                       const TimeTicks& timestamp) {
   // Let AutoComplete know as well.
-  tab_contents_wrapper_->autocomplete_history_manager()->OnFormSubmitted(form);
+  tab_contents_->autocomplete_history_manager()->OnFormSubmitted(form);
 
   if (!IsAutofillEnabled())
     return false;
@@ -555,7 +554,7 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
   // Add the results from AutoComplete.  They come back asynchronously, so we
   // hand off what we generated and they will send the results back to the
   // renderer.
-  tab_contents_wrapper_->autocomplete_history_manager()->
+  tab_contents_->autocomplete_history_manager()->
       OnGetAutocompleteSuggestions(
           query_id, field.name, field.value, values, labels, icons, unique_ids);
 }
@@ -820,8 +819,7 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
   // it.
   scoped_ptr<const CreditCard> scoped_credit_card(imported_credit_card);
   if (imported_credit_card && web_contents()) {
-    InfoBarTabHelper* infobar_helper =
-        tab_contents_wrapper_->infobar_tab_helper();
+    InfoBarTabHelper* infobar_helper = tab_contents_->infobar_tab_helper();
     infobar_helper->AddInfoBar(
         new AutofillCCInfoBarDelegate(infobar_helper,
                                       scoped_credit_card.release(),
@@ -885,10 +883,10 @@ void AutofillManager::Reset() {
     external_delegate_->Reset();
 }
 
-AutofillManager::AutofillManager(TabContentsWrapper* tab_contents,
+AutofillManager::AutofillManager(TabContents* tab_contents,
                                  PersonalDataManager* personal_data)
     : content::WebContentsObserver(tab_contents->web_contents()),
-      tab_contents_wrapper_(tab_contents),
+      tab_contents_(tab_contents),
       personal_data_(personal_data),
       download_manager_(tab_contents->profile(), this),
       disable_download_manager_requests_(true),

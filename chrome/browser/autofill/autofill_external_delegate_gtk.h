@@ -21,7 +21,7 @@ class WebContents;
 
 class AutofillExternalDelegateGtk : public AutofillExternalDelegate {
  public:
-  AutofillExternalDelegateGtk(TabContentsWrapper* tab_contents_wrapper,
+  AutofillExternalDelegateGtk(TabContents* tab_contents,
                               AutofillManager* autofill_manager);
 
   virtual ~AutofillExternalDelegateGtk();

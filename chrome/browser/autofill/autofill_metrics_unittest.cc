@@ -14,7 +14,7 @@
 #include "chrome/browser/autofill/autofill_metrics.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/test/base/testing_profile.h"
@@ -171,7 +171,7 @@ class TestFormStructure : public FormStructure {
 
 class TestAutofillManager : public AutofillManager {
  public:
-  TestAutofillManager(TabContentsWrapper* tab_contents,
+  TestAutofillManager(TabContents* tab_contents,
                       TestPersonalDataManager* personal_manager)
       : AutofillManager(tab_contents, personal_manager),
         autofill_enabled_(true),

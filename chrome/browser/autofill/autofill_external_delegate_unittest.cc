@@ -29,9 +29,9 @@ namespace {
 
 class MockAutofillExternalDelegate : public TestAutofillExternalDelegate {
  public:
-  MockAutofillExternalDelegate(TabContentsWrapper* wrapper,
+  MockAutofillExternalDelegate(TabContents* tab_contents,
                                AutofillManager* autofill_manger)
-      : TestAutofillExternalDelegate(wrapper, autofill_manger) {}
+      : TestAutofillExternalDelegate(tab_contents, autofill_manger) {}
   ~MockAutofillExternalDelegate() {}
 
   MOCK_METHOD4(ApplyAutofillSuggestions, void(
@@ -56,7 +56,7 @@ class MockAutofillExternalDelegate : public TestAutofillExternalDelegate {
 
 class MockAutofillManager : public AutofillManager {
  public:
-  explicit MockAutofillManager(TabContentsWrapper* tab_contents)
+  explicit MockAutofillManager(TabContents* tab_contents)
       // Force to use the constructor designated for unit test, but we don't
       // really need personal_data in this test so we pass a NULL pointer.
       : AutofillManager(tab_contents, NULL) {}

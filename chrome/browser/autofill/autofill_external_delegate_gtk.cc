@@ -6,22 +6,22 @@
 
 #include "chrome/browser/ui/gtk/autofill/autofill_popup_view_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 
 AutofillExternalDelegate* AutofillExternalDelegate::Create(
-    TabContentsWrapper* tab_contents_wrapper,
+    TabContents* tab_contents,
     AutofillManager* autofill_manager) {
-  return new AutofillExternalDelegateGtk(tab_contents_wrapper,
+  return new AutofillExternalDelegateGtk(tab_contents,
                                          autofill_manager);
 }
 
 AutofillExternalDelegateGtk::AutofillExternalDelegateGtk(
-    TabContentsWrapper* tab_contents_wrapper,
+    TabContents* tab_contents,
     AutofillManager* autofill_manager)
-    : AutofillExternalDelegate(tab_contents_wrapper, autofill_manager),
-      web_contents_(tab_contents_wrapper->web_contents()),
+    : AutofillExternalDelegate(tab_contents, autofill_manager),
+      web_contents_(tab_contents->web_contents()),
       event_handler_id_(0) {
   tab_native_view_ = web_contents_->GetView()->GetNativeView();
 }

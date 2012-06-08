@@ -20,7 +20,7 @@
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -132,14 +132,14 @@ class AutofillTest : public InProcessBrowserTest {
                         const std::string& expected_value) {
     std::string value;
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-        browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
+        browser()->GetActiveWebContents()->GetRenderViewHost(), L"",
         L"window.domAutomationController.send("
         L"document.getElementById('" + field_name + L"').value);", &value));
     EXPECT_EQ(expected_value, value);
   }
 
   RenderViewHost* render_view_host() {
-    return browser()->GetSelectedWebContents()->GetRenderViewHost();
+    return browser()->GetActiveWebContents()->GetRenderViewHost();
   }
 
   void SimulateURLFetch(bool success) {
@@ -184,7 +184,7 @@ class AutofillTest : public InProcessBrowserTest {
 
   void FocusFirstNameField() {
     LOG(WARNING) << "Clicking on the tab.";
-    ui_test_utils::SimulateMouseClick(browser()->GetSelectedWebContents());
+    ui_test_utils::SimulateMouseClick(browser()->GetActiveWebContents());
 
     LOG(WARNING) << "Focusing the first name field.";
     bool result = false;
@@ -214,7 +214,7 @@ class AutofillTest : public InProcessBrowserTest {
     ui_test_utils::WindowedNotificationObserver observer(
         notification_type, content::Source<RenderViewHost>(render_view_host()));
     ui_test_utils::SimulateKeyPress(
-        browser()->GetSelectedWebContents(), key, false, false, false, false);
+        browser()->GetActiveWebContents(), key, false, false, false, false);
     observer.Wait();
   }
 
@@ -622,8 +622,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_AutofillAfterReload) {
 
   // Reload the page.
   LOG(WARNING) << "Reloading the page.";
-  WebContents* tab =
-      browser()->GetSelectedTabContentsWrapper()->web_contents();
+  WebContents* tab = browser()->GetActiveWebContents();
   tab->GetController().Reload(false);
   ui_test_utils::WaitForLoadStop(tab);
 
@@ -680,7 +679,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AutofillAfterTranslate) {
       render_view_host(),
       ChromeViewHostMsg_TranslateLanguageDetermined(0, "ja", true));
   TranslateInfoBarDelegate* infobar =
-      browser()->GetSelectedTabContentsWrapper()->infobar_tab_helper()->
+      browser()->GetActiveTabContents()->infobar_tab_helper()->
           GetInfoBarDelegateAt(0)->AsTranslateInfoBarDelegate();
 
   ASSERT_TRUE(infobar != NULL);

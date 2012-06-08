@@ -26,7 +26,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/chrome_switches.h"
@@ -439,7 +439,7 @@ void ExpectFilledCreditCardYearMonthWithYearMonth(int page_id,
 
 class TestAutofillManager : public AutofillManager {
  public:
-  TestAutofillManager(TabContentsWrapper* tab_contents,
+  TestAutofillManager(TabContents* tab_contents,
                       TestPersonalDataManager* personal_data)
       : AutofillManager(tab_contents, personal_data),
         personal_data_(personal_data),
@@ -3073,9 +3073,9 @@ namespace {
 
 class MockAutofillExternalDelegate : public TestAutofillExternalDelegate {
  public:
-  explicit MockAutofillExternalDelegate(TabContentsWrapper* wrapper,
+  explicit MockAutofillExternalDelegate(TabContents* tab_contents,
                                         AutofillManager* autofill_manager)
-      : TestAutofillExternalDelegate(wrapper, autofill_manager) {}
+      : TestAutofillExternalDelegate(tab_contents, autofill_manager) {}
   virtual ~MockAutofillExternalDelegate() {}
 
   MOCK_METHOD5(OnQuery, void(int query_id,
@@ -3123,7 +3123,7 @@ TEST_F(AutofillManagerTest, TestTabContentsWithExternalDelegate) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kExternalAutofillPopup);
 
-  // Setting the contents creates a new TabContentsWrapper.
+  // Setting the contents creates a new TabContents.
   WebContents* contents = CreateTestWebContents();
   SetContents(contents);
 

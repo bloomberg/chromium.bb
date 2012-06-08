@@ -5,10 +5,10 @@
 #include "chrome/browser/autofill/autofill_external_delegate.h"
 
 #include "chrome/browser/autofill/autofill_manager.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 
 AutofillExternalDelegate* AutofillExternalDelegate::Create(
-    TabContentsWrapper* tab_contents,
+    TabContents* tab_contents,
     AutofillManager* manager) {
   NOTIMPLEMENTED() << "TODO(jrg): Upstream AutofillExternalDelegateAndroid";
   return NULL;

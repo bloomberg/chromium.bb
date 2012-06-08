@@ -37,7 +37,6 @@ class PersonalDataManager;
 class PrefService;
 class ProfileSyncService;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 struct ViewHostMsg_FrameNavigate_Params;
 
@@ -74,7 +73,7 @@ class AutofillManager : public content::NotificationObserver,
                         public ProfileSyncServiceObserver,
                         public base::RefCounted<AutofillManager> {
  public:
-  explicit AutofillManager(TabContentsWrapper* tab_contents);
+  explicit AutofillManager(TabContents* tab_contents);
 
   // Registers our Enable/Disable Autofill pref.
   static void RegisterUserPrefs(PrefService* prefs);
@@ -118,7 +117,7 @@ class AutofillManager : public content::NotificationObserver,
   typedef std::pair<std::string, size_t> GUIDPair;
 
   // Test code should prefer to use this constructor.
-  AutofillManager(TabContentsWrapper* tab_contents,
+  AutofillManager(TabContents* tab_contents,
                   PersonalDataManager* personal_data);
 
   // Returns the value of the AutofillEnabled pref.
@@ -318,8 +317,8 @@ class AutofillManager : public content::NotificationObserver,
   void SendAutofillTypePredictions(
       const std::vector<FormStructure*>& forms) const;
 
-  // The owning TabContentsWrapper.
-  TabContentsWrapper* tab_contents_wrapper_;
+  // The owning TabContents.
+  TabContents* tab_contents_;
 
   // The personal data manager, used to save and load personal data to/from the
   // web database.  This is overridden by the AutofillManagerTest.

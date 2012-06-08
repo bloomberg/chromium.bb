@@ -22,12 +22,12 @@ AutofillExternalDelegate::~AutofillExternalDelegate() {
 }
 
 AutofillExternalDelegate::AutofillExternalDelegate(
-    TabContentsWrapper* tab_contents_wrapper,
+    TabContents* tab_contents,
     AutofillManager* autofill_manager)
-    : tab_contents_wrapper_(tab_contents_wrapper),
+    : tab_contents_(tab_contents),
       autofill_manager_(autofill_manager),
       password_autofill_manager_(
-          tab_contents_wrapper ? tab_contents_wrapper->web_contents() : NULL),
+          tab_contents ? tab_contents->web_contents() : NULL),
       autofill_query_id_(0),
       display_warning_if_disabled_(false),
       has_shown_autofill_popup_for_current_edit_(false) {
@@ -146,7 +146,7 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   if (!v.empty() && autofill_query_field_.is_focusable)
     ApplyAutofillSuggestions(v, l, i, ids);
 
-  tab_contents_wrapper_->autofill_manager()->OnDidShowAutofillSuggestions(
+  tab_contents_->autofill_manager()->OnDidShowAutofillSuggestions(
       has_autofill_item && !has_shown_autofill_popup_for_current_edit_);
   has_shown_autofill_popup_for_current_edit_ |= has_autofill_item;
 }
@@ -171,8 +171,8 @@ void AutofillExternalDelegate::OnShowPasswordSuggestions(
 }
 
 void AutofillExternalDelegate::RemoveAutocompleteEntry(const string16& value) {
-  if (tab_contents_wrapper_) {
-    tab_contents_wrapper_->autocomplete_history_manager()->
+  if (tab_contents_) {
+    tab_contents_->autocomplete_history_manager()->
         OnRemoveAutocompleteEntry(autofill_query_field_.name, value);
   }
 }
@@ -202,8 +202,7 @@ bool AutofillExternalDelegate::DidAcceptAutofillSuggestions(
     autofill_manager_->OnShowAutofillDialog();
   } else if (unique_id == WebAutofillClient::MenuItemIDClearForm) {
     // User selected 'Clear form'.
-    RenderViewHost* host =
-        tab_contents_wrapper_->web_contents()->GetRenderViewHost();
+    RenderViewHost* host = tab_contents_->web_contents()->GetRenderViewHost();
     host->Send(new AutofillMsg_ClearForm(host->GetRoutingID()));
   } else if (unique_id == WebAutofillClient::MenuItemIDPasswordEntry &&
              password_autofill_manager_.DidAcceptAutofillSuggestion(
@@ -212,8 +211,7 @@ bool AutofillExternalDelegate::DidAcceptAutofillSuggestions(
     // the page as required.
   } else if (unique_id == WebAutofillClient::MenuItemIDAutocompleteEntry) {
     // User selected an Autocomplete, so we fill directly.
-    RenderViewHost* host =
-        tab_contents_wrapper_->web_contents()->GetRenderViewHost();
+    RenderViewHost* host = tab_contents_->web_contents()->GetRenderViewHost();
     host->Send(new AutofillMsg_SetNodeText(
         host->GetRoutingID(),
         value));
@@ -227,8 +225,7 @@ bool AutofillExternalDelegate::DidAcceptAutofillSuggestions(
 }
 
 void AutofillExternalDelegate::ClearPreviewedForm() {
-  RenderViewHost* host =
-      tab_contents_wrapper_->web_contents()->GetRenderViewHost();
+  RenderViewHost* host = tab_contents_->web_contents()->GetRenderViewHost();
   host->Send(new AutofillMsg_ClearPreviewedForm(host->GetRoutingID()));
 }
 
@@ -250,8 +247,7 @@ void AutofillExternalDelegate::AddPasswordFormMapping(
 
 void AutofillExternalDelegate::FillAutofillFormData(int unique_id,
                                                     bool is_preview) {
-  RenderViewHost* host =
-      tab_contents_wrapper_->web_contents()->GetRenderViewHost();
+  RenderViewHost* host = tab_contents_->web_contents()->GetRenderViewHost();
 
   if (is_preview) {
     host->Send(new AutofillMsg_SetAutofillActionPreview(
@@ -275,7 +271,7 @@ void AutofillExternalDelegate::FillAutofillFormData(int unique_id,
 #if !defined(OS_ANDROID) && !defined(TOOLKIT_GTK)
 
 AutofillExternalDelegate* AutofillExternalDelegate::Create(
-    TabContentsWrapper*, AutofillManager*) {
+    TabContents*, AutofillManager*) {
   return NULL;
 }
 

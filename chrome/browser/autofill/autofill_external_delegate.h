@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "chrome/browser/autofill/password_autofill_manager.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "webkit/forms/form_data.h"
 #include "webkit/forms/form_field.h"
 #include "webkit/forms/password_form_dom_manager.h"
@@ -98,10 +98,10 @@ class AutofillExternalDelegate {
   // MUST implement this.  The 1st arg is the tab contents that owns
   // this delegate; the second is the Autofill manager owned by the
   // tab contents.
-  static AutofillExternalDelegate* Create(TabContentsWrapper*,
+  static AutofillExternalDelegate* Create(TabContents*,
                                           AutofillManager*);
  protected:
-  explicit AutofillExternalDelegate(TabContentsWrapper* tab_contents_wrapper,
+  explicit AutofillExternalDelegate(TabContents* tab_contents,
                                     AutofillManager* autofill_manager);
 
   // Displays the the Autofill results to the user with an external
@@ -126,7 +126,7 @@ class AutofillExternalDelegate {
   virtual void SetBounds(const gfx::Rect& bounds) = 0;
 
   // Return the profile that this autofill delegate is currently working with.
-  Profile* profile() { return tab_contents_wrapper_->profile(); }
+  Profile* profile() { return tab_contents_->profile(); }
 
  private:
   // Fills the form with the Autofill data corresponding to |unique_id|.
@@ -135,7 +135,7 @@ class AutofillExternalDelegate {
   // this data.
   void FillAutofillFormData(int unique_id, bool is_preview);
 
-  TabContentsWrapper* tab_contents_wrapper_;  // weak; owns me.
+  TabContents* tab_contents_;  // weak; owns me.
   AutofillManager* autofill_manager_;  // weak.
 
   // Password Autofill manager, handles all password-related Autofilling.
