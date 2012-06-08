@@ -10,7 +10,6 @@
 #include "content/public/common/page_transition_types.h"
 
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 ///////////////////////////////////////////////////////////////////////////////
 // TabStripModelOrderController
@@ -33,7 +32,7 @@ class TabStripModelOrderController : public TabStripModelObserver {
 
   // Determine where to place a newly opened tab by using the supplied
   // transition and foreground flag to figure out how it was opened.
-  int DetermineInsertionIndex(TabContentsWrapper* new_contents,
+  int DetermineInsertionIndex(TabContents* new_contents,
                               content::PageTransition transition,
                               bool foreground);
 
@@ -44,8 +43,8 @@ class TabStripModelOrderController : public TabStripModelObserver {
   int DetermineNewSelectedIndex(int removed_index) const;
 
   // Overridden from TabStripModelObserver:
-  virtual void ActiveTabChanged(TabContentsWrapper* old_contents,
-                                TabContentsWrapper* new_contents,
+  virtual void ActiveTabChanged(TabContents* old_contents,
+                                TabContents* new_contents,
                                 int index,
                                 bool user_gesture) OVERRIDE;
 

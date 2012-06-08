@@ -12,7 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/navigation_details.h"
@@ -89,7 +89,7 @@ WebContents* TabFinder::FindTab(Browser* browser,
 
   // If the current tab matches the url, ignore it and let the user reload the
   // existing tab.
-  WebContents* selected_tab = browser->GetSelectedWebContents();
+  WebContents* selected_tab = browser->GetActiveWebContents();
   if (TabMatchesURL(selected_tab, url))
     return NULL;
 
@@ -122,7 +122,7 @@ void TabFinder::Observe(int type,
   DCHECK_EQ(type, chrome::NOTIFICATION_TAB_PARENTED);
 
   // The tab was added to a browser. Query for its state now.
-  TabContentsWrapper* tab = content::Source<TabContentsWrapper>(source).ptr();
+  TabContents* tab = content::Source<TabContents>(source).ptr();
   TrackTab(tab->web_contents());
 }
 

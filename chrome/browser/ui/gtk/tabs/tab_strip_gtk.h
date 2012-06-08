@@ -28,6 +28,8 @@ class BrowserWindowGtk;
 class CustomDrawButton;
 class DraggedTabControllerGtk;
 class GtkThemeService;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 
 namespace gfx {
 class Image;

@@ -3130,7 +3130,7 @@ WebContents* Browser::OpenURLFromTab(WebContents* source,
                                      const OpenURLParams& params) {
   browser::NavigateParams nav_params(this, params.url, params.transition);
   nav_params.source_contents = GetTabContentsAt(
-      tab_strip_model_->GetWrapperIndex(source));
+      tab_strip_model_->GetIndexOfWebContents(source));
   nav_params.referrer = params.referrer;
   nav_params.disposition = params.disposition;
   nav_params.tabstrip_add_types = TabStripModel::ADD_NONE;
@@ -3211,7 +3211,7 @@ void Browser::AddNewContents(WebContents* source,
 
   browser::NavigateParams params(this, new_tab_contents);
   params.source_contents = source ?
-      GetTabContentsAt(tab_strip_model_->GetWrapperIndex(source)): NULL;
+      GetTabContentsAt(tab_strip_model_->GetIndexOfWebContents(source)): NULL;
   params.disposition = disposition;
   params.window_bounds = initial_pos;
   params.window_action = browser::NavigateParams::SHOW_WINDOW;
@@ -3220,7 +3220,7 @@ void Browser::AddNewContents(WebContents* source,
 }
 
 void Browser::ActivateContents(WebContents* contents) {
-  ActivateTabAt(tab_strip_model_->GetWrapperIndex(contents), false);
+  ActivateTabAt(tab_strip_model_->GetIndexOfWebContents(contents), false);
   window_->Activate();
 }
 
@@ -3267,7 +3267,7 @@ void Browser::CloseContents(WebContents* source) {
     return;
   }
 
-  int index = tab_strip_model_->GetWrapperIndex(source);
+  int index = tab_strip_model_->GetIndexOfWebContents(source);
   if (index == TabStripModel::kNoTab) {
     NOTREACHED() << "CloseContents called for tab not in our strip";
     return;
@@ -3285,7 +3285,7 @@ void Browser::MoveContents(WebContents* source, const gfx::Rect& pos) {
 }
 
 void Browser::DetachContents(WebContents* source) {
-  int index = tab_strip_model_->GetWrapperIndex(source);
+  int index = tab_strip_model_->GetIndexOfWebContents(source);
   if (index >= 0)
     tab_strip_model_->DetachTabContentsAt(index);
 }
@@ -3459,7 +3459,7 @@ void Browser::OnStartDownload(WebContents* source,
 void Browser::ViewSourceForTab(WebContents* source, const GURL& page_url) {
   DCHECK(source);
   TabContents* tab_contents = GetTabContentsAt(
-      tab_strip_model_->GetWrapperIndex(source));
+      tab_strip_model_->GetIndexOfWebContents(source));
   ViewSource(tab_contents);
 }
 
@@ -3468,7 +3468,7 @@ void Browser::ViewSourceForFrame(WebContents* source,
                                  const std::string& frame_content_state) {
   DCHECK(source);
   TabContents* tab_contents = GetTabContentsAt(
-      tab_strip_model_->GetWrapperIndex(source));
+      tab_strip_model_->GetIndexOfWebContents(source));
   ViewSource(tab_contents, frame_url, frame_content_state);
 }
 
@@ -4548,7 +4548,7 @@ void Browser::ProcessPendingUIUpdates() {
     if (flags &
         (content::INVALIDATE_TYPE_TAB | content::INVALIDATE_TYPE_TITLE)) {
       tab_strip_model_->UpdateTabContentsStateAt(
-          tab_strip_model_->GetWrapperIndex(contents),
+          tab_strip_model_->GetIndexOfWebContents(contents),
           TabStripModelObserver::ALL);
     }
 

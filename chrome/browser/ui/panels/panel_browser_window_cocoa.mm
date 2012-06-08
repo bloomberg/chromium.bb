@@ -15,7 +15,7 @@
 #import "chrome/browser/ui/panels/panel_titlebar_view_cocoa.h"
 #import "chrome/browser/ui/panels/panel_utils_cocoa.h"
 #import "chrome/browser/ui/panels/panel_window_controller_cocoa.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -324,13 +324,13 @@ int PanelBrowserWindowCocoa::TitleOnlyHeight() const {
   return [controller_ titlebarHeightInScreenCoordinates];
 }
 
-void PanelBrowserWindowCocoa::TabInsertedAt(TabContentsWrapper* contents,
+void PanelBrowserWindowCocoa::TabInsertedAt(TabContents* contents,
                                             int index,
                                             bool foreground) {
   [controller_ tabInserted:contents->web_contents()];
 }
 
-void PanelBrowserWindowCocoa::TabDetachedAt(TabContentsWrapper* contents,
+void PanelBrowserWindowCocoa::TabDetachedAt(TabContents* contents,
                                             int index) {
   [controller_ tabDetached:contents->web_contents()];
 }

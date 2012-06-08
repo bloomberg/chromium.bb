@@ -17,15 +17,15 @@ class TestTabStripModelDelegate : public TabStripModelDelegate {
   virtual ~TestTabStripModelDelegate();
 
   // Overridden from TabStripModelDelegate:
-  virtual TabContentsWrapper* AddBlankTab(bool foreground) OVERRIDE;
-  virtual TabContentsWrapper* AddBlankTabAt(int index,
-                                            bool foreground) OVERRIDE;
-  virtual Browser* CreateNewStripWithContents(TabContentsWrapper* contents,
+  virtual TabContents* AddBlankTab(bool foreground) OVERRIDE;
+  virtual TabContents* AddBlankTabAt(int index,
+                                     bool foreground) OVERRIDE;
+  virtual Browser* CreateNewStripWithContents(TabContents* contents,
                                               const gfx::Rect& window_bounds,
                                               const DockInfo& dock_info,
                                               bool maximize) OVERRIDE;
   virtual int GetDragActions() const OVERRIDE;
-  virtual TabContentsWrapper* CreateTabContentsForURL(
+  virtual TabContents* CreateTabContentsForURL(
       const GURL& url,
       const content::Referrer& referrer,
       Profile* profile,
@@ -35,9 +35,8 @@ class TestTabStripModelDelegate : public TabStripModelDelegate {
   virtual bool CanDuplicateContentsAt(int index) OVERRIDE;
   virtual void DuplicateContentsAt(int index) OVERRIDE;
   virtual void CloseFrameAfterDragSession() OVERRIDE;
-  virtual void CreateHistoricalTab(TabContentsWrapper* contents) OVERRIDE;
-  virtual bool RunUnloadListenerBeforeClosing(
-      TabContentsWrapper* contents) OVERRIDE;
+  virtual void CreateHistoricalTab(TabContents* contents) OVERRIDE;
+  virtual bool RunUnloadListenerBeforeClosing(TabContents* contents) OVERRIDE;
   virtual bool CanRestoreTab() OVERRIDE;
   virtual void RestoreTab() OVERRIDE;
   virtual bool CanCloseContents(std::vector<int>* indices) OVERRIDE;

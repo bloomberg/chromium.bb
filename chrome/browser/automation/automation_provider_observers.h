@@ -65,6 +65,8 @@ class InfoBarTabHelper;
 class Notification;
 class Profile;
 class SavePackage;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 class TranslateInfoBarDelegate;
 
 namespace automation {

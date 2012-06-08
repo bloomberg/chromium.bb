@@ -4,25 +4,25 @@
 
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 
-void TabStripModelObserver::TabInsertedAt(TabContentsWrapper* contents,
+void TabStripModelObserver::TabInsertedAt(TabContents* contents,
                                           int index,
                                           bool foreground) {
 }
 
 void TabStripModelObserver::TabClosingAt(TabStripModel* tab_strip_model,
-                                         TabContentsWrapper* contents,
+                                         TabContents* contents,
                                          int index) {
 }
 
-void TabStripModelObserver::TabDetachedAt(TabContentsWrapper* contents,
+void TabStripModelObserver::TabDetachedAt(TabContents* contents,
                                           int index) {
 }
 
-void TabStripModelObserver::TabDeactivated(TabContentsWrapper* contents) {
+void TabStripModelObserver::TabDeactivated(TabContents* contents) {
 }
 
-void TabStripModelObserver::ActiveTabChanged(TabContentsWrapper* old_contents,
-                                             TabContentsWrapper* new_contents,
+void TabStripModelObserver::ActiveTabChanged(TabContents* old_contents,
+                                             TabContents* new_contents,
                                              int index,
                                              bool user_gesture) {
 }
@@ -32,31 +32,31 @@ void TabStripModelObserver::TabSelectionChanged(
     const TabStripSelectionModel& model) {
 }
 
-void TabStripModelObserver::TabMoved(TabContentsWrapper* contents,
+void TabStripModelObserver::TabMoved(TabContents* contents,
                                      int from_index,
                                      int to_index) {
 }
 
-void TabStripModelObserver::TabChangedAt(TabContentsWrapper* contents,
+void TabStripModelObserver::TabChangedAt(TabContents* contents,
                                          int index,
                                          TabChangeType change_type) {
 }
 
 void TabStripModelObserver::TabReplacedAt(TabStripModel* tab_strip_model,
-                                          TabContentsWrapper* old_contents,
-                                          TabContentsWrapper* new_contents,
+                                          TabContents* old_contents,
+                                          TabContents* new_contents,
                                           int index) {
 }
 
-void TabStripModelObserver::TabPinnedStateChanged(TabContentsWrapper* contents,
+void TabStripModelObserver::TabPinnedStateChanged(TabContents* contents,
                                                   int index) {
 }
 
-void TabStripModelObserver::TabMiniStateChanged(TabContentsWrapper* contents,
+void TabStripModelObserver::TabMiniStateChanged(TabContents* contents,
                                                 int index) {
 }
 
-void TabStripModelObserver::TabBlockedStateChanged(TabContentsWrapper* contents,
+void TabStripModelObserver::TabBlockedStateChanged(TabContents* contents,
                                                    int index) {
 }
 

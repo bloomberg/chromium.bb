@@ -21,7 +21,7 @@
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_order_controller.h"
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
@@ -50,30 +50,29 @@ using extensions::Extension;
 
 namespace {
 
-// Class used to delete a TabContentsWrapper when another TabContentsWrapper is
-// destroyed.
+// Class used to delete a TabContents when another TabContents is destroyed.
 class DeleteTabContentsOnDestroyedObserver
     : public content::NotificationObserver {
  public:
-  DeleteTabContentsOnDestroyedObserver(TabContentsWrapper* source,
-                                       TabContentsWrapper* tab_to_delete)
+  DeleteTabContentsOnDestroyedObserver(TabContents* source,
+                                       TabContents* tab_to_delete)
       : source_(source),
         tab_to_delete_(tab_to_delete) {
     registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                   content::Source<TabContentsWrapper>(source));
+                   content::Source<TabContents>(source));
   }
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) {
-    TabContentsWrapper* tab_to_delete = tab_to_delete_;
+    TabContents* tab_to_delete = tab_to_delete_;
     tab_to_delete_ = NULL;
     delete tab_to_delete;
   }
 
  private:
-  TabContentsWrapper* source_;
-  TabContentsWrapper* tab_to_delete_;
+  TabContents* source_;
+  TabContents* tab_to_delete_;
   content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(DeleteTabContentsOnDestroyedObserver);
@@ -83,7 +82,7 @@ class DeleteTabContentsOnDestroyedObserver
 
 class TabStripDummyDelegate : public TestTabStripModelDelegate {
  public:
-  explicit TabStripDummyDelegate(TabContentsWrapper* dummy)
+  explicit TabStripDummyDelegate(TabContents* dummy)
       : dummy_contents_(dummy),
         can_close_(true),
         run_unload_(false) {}
@@ -93,7 +92,7 @@ class TabStripDummyDelegate : public TestTabStripModelDelegate {
   void set_run_unload_listener(bool value) { run_unload_ = value; }
 
   // Overridden from TabStripModelDelegate:
-  virtual TabContentsWrapper* CreateTabContentsForURL(
+  virtual TabContents* CreateTabContentsForURL(
       const GURL& url,
       const content::Referrer& referrer,
       Profile* profile,
@@ -104,8 +103,7 @@ class TabStripDummyDelegate : public TestTabStripModelDelegate {
       return dummy_contents_;
     return NULL;
   }
-  virtual bool RunUnloadListenerBeforeClosing(
-      TabContentsWrapper* contents) OVERRIDE {
+  virtual bool RunUnloadListenerBeforeClosing(TabContents* contents) OVERRIDE {
     return run_unload_;
   }
   virtual bool CanCloseContents(std::vector<int>* indices) OVERRIDE {
@@ -115,9 +113,9 @@ class TabStripDummyDelegate : public TestTabStripModelDelegate {
   }
 
  private:
-  // A dummy TabContentsWrapper we give to callers that expect us to actually
+  // A dummy TabContents we give to callers that expect us to actually
   // build a Destinations tab for them.
-  TabContentsWrapper* dummy_contents_;
+  TabContents* dummy_contents_;
 
   // Whether tabs can be closed.
   bool can_close_;
@@ -133,14 +131,14 @@ class TabStripModelTest : public ChromeRenderViewHostTestHarness {
   TabStripModelTest() : browser_thread_(BrowserThread::UI, &message_loop_) {
   }
 
-  TabContentsWrapper* CreateTabContents() {
+  TabContents* CreateTabContents() {
     return Browser::TabContentsFactory(
         profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
   }
 
-  TabContentsWrapper* CreateTabContentsWithSharedRPH(
+  TabContents* CreateTabContentsWithSharedRPH(
       WebContents* web_contents) {
-    TabContentsWrapper* retval = Browser::TabContentsFactory(profile(),
+    TabContents* retval = Browser::TabContentsFactory(profile(),
         web_contents->GetRenderViewHost()->GetSiteInstance(), MSG_ROUTING_NONE,
         NULL, NULL);
     EXPECT_EQ(retval->web_contents()->GetRenderProcessHost(),
@@ -148,7 +146,7 @@ class TabStripModelTest : public ChromeRenderViewHostTestHarness {
     return retval;
   }
 
-  // Forwards a URL "load" request through to our dummy TabContentsWrapper
+  // Forwards a URL "load" request through to our dummy TabContents
   // implementation.
   void LoadURL(WebContents* con, const std::wstring& url) {
     controller().LoadURL(GURL(WideToUTF16(url)), content::Referrer(),
@@ -218,7 +216,7 @@ class TabStripModelTest : public ChromeRenderViewHostTestHarness {
                                        int pinned_count,
                                        const std::string& selected_tabs) {
     for (int i = 0; i < tab_count; ++i) {
-      TabContentsWrapper* contents = CreateTabContents();
+      TabContents* contents = CreateTabContents();
       SetID(contents->web_contents(), i);
       model->AppendTabContents(contents, true);
     }
@@ -275,7 +273,7 @@ class MockTabStripModelObserver : public TabStripModelObserver {
   };
 
   struct State {
-    State(TabContentsWrapper* a_dst_contents,
+    State(TabContents* a_dst_contents,
           int a_dst_index,
           TabStripModelObserverAction a_action)
         : src_contents(NULL),
@@ -287,8 +285,8 @@ class MockTabStripModelObserver : public TabStripModelObserver {
           action(a_action) {
     }
 
-    TabContentsWrapper* src_contents;
-    TabContentsWrapper* dst_contents;
+    TabContents* src_contents;
+    TabContents* dst_contents;
     int src_index;
     int dst_index;
     bool user_gesture;
@@ -324,7 +322,7 @@ class MockTabStripModelObserver : public TabStripModelObserver {
   }
 
   // TabStripModelObserver implementation:
-  virtual void TabInsertedAt(TabContentsWrapper* contents,
+  virtual void TabInsertedAt(TabContents* contents,
                              int index,
                              bool foreground) {
     empty_ = false;
@@ -332,8 +330,8 @@ class MockTabStripModelObserver : public TabStripModelObserver {
     s->foreground = foreground;
     states_.push_back(s);
   }
-  virtual void ActiveTabChanged(TabContentsWrapper* old_contents,
-                                TabContentsWrapper* new_contents,
+  virtual void ActiveTabChanged(TabContents* old_contents,
+                                TabContents* new_contents,
                                 int index,
                                 bool user_gesture) {
     State* s = new State(new_contents, index, ACTIVATE);
@@ -350,37 +348,36 @@ class MockTabStripModelObserver : public TabStripModelObserver {
     s->src_index = old_model.active();
     states_.push_back(s);
   }
-  virtual void TabMoved(
-      TabContentsWrapper* contents, int from_index, int to_index) {
+  virtual void TabMoved(TabContents* contents, int from_index, int to_index) {
     State* s = new State(contents, to_index, MOVE);
     s->src_index = from_index;
     states_.push_back(s);
   }
 
   virtual void TabClosingAt(TabStripModel* tab_strip_model,
-                            TabContentsWrapper* contents,
+                            TabContents* contents,
                             int index) {
     states_.push_back(new State(contents, index, CLOSE));
   }
-  virtual void TabDetachedAt(TabContentsWrapper* contents, int index) {
+  virtual void TabDetachedAt(TabContents* contents, int index) {
     states_.push_back(new State(contents, index, DETACH));
   }
-  virtual void TabDeactivated(TabContentsWrapper* contents) {
+  virtual void TabDeactivated(TabContents* contents) {
     states_.push_back(new State(contents, model()->active_index(), DEACTIVATE));
   }
-  virtual void TabChangedAt(TabContentsWrapper* contents, int index,
+  virtual void TabChangedAt(TabContents* contents, int index,
                             TabChangeType change_type) {
     states_.push_back(new State(contents, index, CHANGE));
   }
   virtual void TabReplacedAt(TabStripModel* tab_strip_model,
-                             TabContentsWrapper* old_contents,
-                             TabContentsWrapper* new_contents,
+                             TabContents* old_contents,
+                             TabContents* new_contents,
                              int index) {
     State* s = new State(new_contents, index, REPLACED);
     s ->src_contents = old_contents;
     states_.push_back(s);
   }
-  virtual void TabPinnedStateChanged(TabContentsWrapper* contents, int index) {
+  virtual void TabPinnedStateChanged(TabContents* contents, int index) {
     states_.push_back(new State(contents, index, PINNED));
   }
   virtual void TabStripEmpty() {
@@ -414,7 +411,7 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
 
   typedef MockTabStripModelObserver::State State;
 
-  TabContentsWrapper* contents1 = CreateTabContents();
+  TabContents* contents1 = CreateTabContents();
 
   // Note! The ordering of these tests is important, each subsequent test
   // builds on the state established in the previous. This is important if you
@@ -440,7 +437,7 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
   }
 
   // Test InsertTabContentsAt, foreground tab.
-  TabContentsWrapper* contents2 = CreateTabContents();
+  TabContents* contents2 = CreateTabContents();
   {
     tabstrip.InsertTabContentsAt(1, contents2, TabStripModel::ADD_ACTIVE);
 
@@ -462,7 +459,7 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
   }
 
   // Test InsertTabContentsAt, background tab.
-  TabContentsWrapper* contents3 = CreateTabContents();
+  TabContents* contents3 = CreateTabContents();
   {
     tabstrip.InsertTabContentsAt(2, contents3, TabStripModel::ADD_NONE);
 
@@ -494,7 +491,7 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
   // Test DetachTabContentsAt
   {
     // Detach
-    TabContentsWrapper* detached = tabstrip.DetachTabContentsAt(2);
+    TabContents* detached = tabstrip.DetachTabContentsAt(2);
     // ... and append again because we want this for later.
     tabstrip.AppendTabContents(detached, true);
     EXPECT_EQ(8, observer.GetStateCount());
@@ -646,15 +643,15 @@ TEST_F(TabStripModelTest, TestBasicOpenerAPI) {
   // as the first tab in the strip and then we create 5 other tabs in the
   // background with opener_contents set as their opener.
 
-  TabContentsWrapper* opener_contents = CreateTabContents();
+  TabContents* opener_contents = CreateTabContents();
   NavigationController* opener =
       &opener_contents->web_contents()->GetController();
   tabstrip.AppendTabContents(opener_contents, true);
-  TabContentsWrapper* contents1 = CreateTabContents();
-  TabContentsWrapper* contents2 = CreateTabContents();
-  TabContentsWrapper* contents3 = CreateTabContents();
-  TabContentsWrapper* contents4 = CreateTabContents();
-  TabContentsWrapper* contents5 = CreateTabContents();
+  TabContents* contents1 = CreateTabContents();
+  TabContents* contents2 = CreateTabContents();
+  TabContents* contents3 = CreateTabContents();
+  TabContents* contents4 = CreateTabContents();
+  TabContents* contents5 = CreateTabContents();
 
   // We use |InsertTabContentsAt| here instead of AppendTabContents so that
   // openership relationships are preserved.
@@ -716,15 +713,15 @@ TEST_F(TabStripModelTest, TestBasicOpenerAPI) {
 }
 
 static int GetInsertionIndex(TabStripModel* tabstrip,
-                             TabContentsWrapper* contents) {
+                             TabContents* contents) {
   return tabstrip->order_controller()->DetermineInsertionIndex(
       contents, content::PAGE_TRANSITION_LINK, false);
 }
 
 static void InsertTabContentses(TabStripModel* tabstrip,
-                                TabContentsWrapper* contents1,
-                                TabContentsWrapper* contents2,
-                                TabContentsWrapper* contents3) {
+                                TabContents* contents1,
+                                TabContents* contents2,
+                                TabContents* contents3) {
   tabstrip->InsertTabContentsAt(GetInsertionIndex(tabstrip, contents1),
                                 contents1, TabStripModel::ADD_INHERIT_GROUP);
   tabstrip->InsertTabContentsAt(GetInsertionIndex(tabstrip, contents2),
@@ -739,12 +736,12 @@ TEST_F(TabStripModelTest, TestLTRInsertionOptions) {
   TabStripModel tabstrip(&delegate, profile());
   EXPECT_TRUE(tabstrip.empty());
 
-  TabContentsWrapper* opener_contents = CreateTabContents();
+  TabContents* opener_contents = CreateTabContents();
   tabstrip.AppendTabContents(opener_contents, true);
 
-  TabContentsWrapper* contents1 = CreateTabContents();
-  TabContentsWrapper* contents2 = CreateTabContents();
-  TabContentsWrapper* contents3 = CreateTabContents();
+  TabContents* contents1 = CreateTabContents();
+  TabContents* contents2 = CreateTabContents();
+  TabContents* contents3 = CreateTabContents();
 
   // Test LTR
   InsertTabContentses(&tabstrip, contents1, contents2, contents3);
@@ -763,9 +760,9 @@ TEST_F(TabStripModelTest, InsertBefore) {
   tabstrip.SetInsertionPolicy(TabStripModel::INSERT_BEFORE);
   EXPECT_TRUE(tabstrip.empty());
 
-  TabContentsWrapper* contents1 = CreateTabContents();
-  TabContentsWrapper* contents2 = CreateTabContents();
-  TabContentsWrapper* contents3 = CreateTabContents();
+  TabContents* contents1 = CreateTabContents();
+  TabContents* contents2 = CreateTabContents();
+  TabContents* contents3 = CreateTabContents();
 
   InsertTabContentses(&tabstrip, contents1, contents2, contents3);
 
@@ -784,12 +781,12 @@ TEST_F(TabStripModelTest, InsertBeforeOpeners) {
   TabStripModel tabstrip(&delegate, profile());
   tabstrip.SetInsertionPolicy(TabStripModel::INSERT_BEFORE);
   EXPECT_TRUE(tabstrip.empty());
-  TabContentsWrapper* opener_contents = CreateTabContents();
+  TabContents* opener_contents = CreateTabContents();
   tabstrip.AppendTabContents(opener_contents, true);
 
-  TabContentsWrapper* contents1 = CreateTabContents();
-  TabContentsWrapper* contents2 = CreateTabContents();
-  TabContentsWrapper* contents3 = CreateTabContents();
+  TabContents* contents1 = CreateTabContents();
+  TabContents* contents2 = CreateTabContents();
+  TabContents* contents3 = CreateTabContents();
 
   InsertTabContentses(&tabstrip, contents1, contents2, contents3);
 
@@ -813,19 +810,19 @@ TEST_F(TabStripModelTest, TestInsertionIndexDetermination) {
   TabStripModel tabstrip(&delegate, profile());
   EXPECT_TRUE(tabstrip.empty());
 
-  TabContentsWrapper* opener_contents = CreateTabContents();
+  TabContents* opener_contents = CreateTabContents();
   NavigationController* opener =
       &opener_contents->web_contents()->GetController();
   tabstrip.AppendTabContents(opener_contents, true);
 
   // Open some other random unrelated tab in the background to monkey with our
   // insertion index.
-  TabContentsWrapper* other_contents = CreateTabContents();
+  TabContents* other_contents = CreateTabContents();
   tabstrip.AppendTabContents(other_contents, false);
 
-  TabContentsWrapper* contents1 = CreateTabContents();
-  TabContentsWrapper* contents2 = CreateTabContents();
-  TabContentsWrapper* contents3 = CreateTabContents();
+  TabContents* contents1 = CreateTabContents();
+  TabContents* contents2 = CreateTabContents();
+  TabContents* contents3 = CreateTabContents();
 
   // Start by testing LTR
   InsertTabContentses(&tabstrip, contents1, contents2, contents3);
@@ -842,7 +839,7 @@ TEST_F(TabStripModelTest, TestInsertionIndexDetermination) {
 
   // Now open a foreground tab from a link. It should be opened adjacent to the
   // opener tab.
-  TabContentsWrapper* fg_link_contents = CreateTabContents();
+  TabContents* fg_link_contents = CreateTabContents();
   int insert_index = tabstrip.order_controller()->DetermineInsertionIndex(
       fg_link_contents, content::PAGE_TRANSITION_LINK, true);
   EXPECT_EQ(1, insert_index);
@@ -857,7 +854,7 @@ TEST_F(TabStripModelTest, TestInsertionIndexDetermination) {
   EXPECT_EQ(0, tabstrip.active_index());
 
   // Now open a new empty tab. It should open at the end of the strip.
-  TabContentsWrapper* fg_nonlink_contents = CreateTabContents();
+  TabContents* fg_nonlink_contents = CreateTabContents();
   insert_index = tabstrip.order_controller()->DetermineInsertionIndex(
       fg_nonlink_contents, content::PAGE_TRANSITION_AUTO_BOOKMARK, true);
   EXPECT_EQ(tabstrip.count(), insert_index);
@@ -896,12 +893,12 @@ TEST_F(TabStripModelTest, TestSelectOnClose) {
   TabStripModel tabstrip(&delegate, profile());
   EXPECT_TRUE(tabstrip.empty());
 
-  TabContentsWrapper* opener_contents = CreateTabContents();
+  TabContents* opener_contents = CreateTabContents();
   tabstrip.AppendTabContents(opener_contents, true);
 
-  TabContentsWrapper* contents1 = CreateTabContents();
-  TabContentsWrapper* contents2 = CreateTabContents();
-  TabContentsWrapper* contents3 = CreateTabContents();
+  TabContents* contents1 = CreateTabContents();
+  TabContents* contents2 = CreateTabContents();
+  TabContents* contents3 = CreateTabContents();
 
   // Note that we use Detach instead of Close throughout this test to avoid
   // having to keep reconstructing these TabContentses.
@@ -949,10 +946,10 @@ TEST_F(TabStripModelTest, TestSelectOnClose) {
   EXPECT_EQ(0, tabstrip.active_index());
   // Finally test that when a tab has no "siblings" that the opener is
   // selected.
-  TabContentsWrapper* other_contents = CreateTabContents();
+  TabContents* other_contents = CreateTabContents();
   tabstrip.InsertTabContentsAt(1, other_contents, TabStripModel::ADD_NONE);
   EXPECT_EQ(2, tabstrip.count());
-  TabContentsWrapper* opened_contents = CreateTabContents();
+  TabContents* opened_contents = CreateTabContents();
   tabstrip.InsertTabContentsAt(2, opened_contents,
                                TabStripModel::ADD_ACTIVE |
                                TabStripModel::ADD_INHERIT_GROUP);
@@ -1144,12 +1141,12 @@ TEST_F(TabStripModelTest, TestContextMenuCloseCommands) {
   TabStripModel tabstrip(&delegate, profile());
   EXPECT_TRUE(tabstrip.empty());
 
-  TabContentsWrapper* opener_contents = CreateTabContents();
+  TabContents* opener_contents = CreateTabContents();
   tabstrip.AppendTabContents(opener_contents, true);
 
-  TabContentsWrapper* contents1 = CreateTabContents();
-  TabContentsWrapper* contents2 = CreateTabContents();
-  TabContentsWrapper* contents3 = CreateTabContents();
+  TabContents* contents1 = CreateTabContents();
+  TabContents* contents2 = CreateTabContents();
+  TabContents* contents3 = CreateTabContents();
 
   InsertTabContentses(&tabstrip, contents1, contents2, contents3);
   EXPECT_EQ(0, tabstrip.active_index());
@@ -1161,7 +1158,7 @@ TEST_F(TabStripModelTest, TestContextMenuCloseCommands) {
   EXPECT_EQ(1, tabstrip.count());
   EXPECT_EQ(opener_contents, tabstrip.GetActiveTabContents());
 
-  TabContentsWrapper* dummy_contents = CreateTabContents();
+  TabContents* dummy_contents = CreateTabContents();
   tabstrip.AppendTabContents(dummy_contents, false);
 
   contents1 = CreateTabContents();
@@ -1189,11 +1186,11 @@ TEST_F(TabStripModelTest, GetIndicesClosedByCommand) {
   TabStripModel tabstrip(&delegate, profile());
   EXPECT_TRUE(tabstrip.empty());
 
-  TabContentsWrapper* contents1 = CreateTabContents();
-  TabContentsWrapper* contents2 = CreateTabContents();
-  TabContentsWrapper* contents3 = CreateTabContents();
-  TabContentsWrapper* contents4 = CreateTabContents();
-  TabContentsWrapper* contents5 = CreateTabContents();
+  TabContents* contents1 = CreateTabContents();
+  TabContents* contents2 = CreateTabContents();
+  TabContents* contents3 = CreateTabContents();
+  TabContents* contents4 = CreateTabContents();
+  TabContents* contents5 = CreateTabContents();
 
   tabstrip.AppendTabContents(contents1, true);
   tabstrip.AppendTabContents(contents2, true);
@@ -1239,13 +1236,13 @@ TEST_F(TabStripModelTest, AddTabContents_MiddleClickLinksAndClose) {
   EXPECT_TRUE(tabstrip.empty());
 
   // Open the Home Page
-  TabContentsWrapper* homepage_contents = CreateTabContents();
+  TabContents* homepage_contents = CreateTabContents();
   tabstrip.AddTabContents(
       homepage_contents, -1, content::PAGE_TRANSITION_AUTO_BOOKMARK,
       TabStripModel::ADD_ACTIVE);
 
   // Open some other tab, by user typing.
-  TabContentsWrapper* typed_page_contents = CreateTabContents();
+  TabContents* typed_page_contents = CreateTabContents();
   tabstrip.AddTabContents(
       typed_page_contents, -1, content::PAGE_TRANSITION_TYPED,
       TabStripModel::ADD_ACTIVE);
@@ -1257,15 +1254,15 @@ TEST_F(TabStripModelTest, AddTabContents_MiddleClickLinksAndClose) {
 
   // Open a bunch of tabs by simulating middle clicking on links on the home
   // page.
-  TabContentsWrapper* middle_click_contents1 = CreateTabContents();
+  TabContents* middle_click_contents1 = CreateTabContents();
   tabstrip.AddTabContents(
       middle_click_contents1, -1, content::PAGE_TRANSITION_LINK,
       TabStripModel::ADD_NONE);
-  TabContentsWrapper* middle_click_contents2 = CreateTabContents();
+  TabContents* middle_click_contents2 = CreateTabContents();
   tabstrip.AddTabContents(
       middle_click_contents2, -1, content::PAGE_TRANSITION_LINK,
       TabStripModel::ADD_NONE);
-  TabContentsWrapper* middle_click_contents3 = CreateTabContents();
+  TabContents* middle_click_contents3 = CreateTabContents();
   tabstrip.AddTabContents(
       middle_click_contents3, -1, content::PAGE_TRANSITION_LINK,
       TabStripModel::ADD_NONE);
@@ -1279,11 +1276,11 @@ TEST_F(TabStripModelTest, AddTabContents_MiddleClickLinksAndClose) {
   EXPECT_EQ(typed_page_contents, tabstrip.GetTabContentsAt(4));
 
   // Now simulate seleting a tab in the middle of the group of tabs opened from
-  // the home page and start closing them. Each TabContentsWrapper in the group
+  // the home page and start closing them. Each TabContents in the group
   // should be closed, right to left. This test is constructed to start at the
-  // middle TabContentsWrapper in the group to make sure the cursor wraps around
-  // to the first TabContentsWrapper in the group before closing the opener or
-  // any other TabContentsWrapper.
+  // middle TabContents in the group to make sure the cursor wraps around
+  // to the first TabContents in the group before closing the opener or
+  // any other TabContents.
   tabstrip.ActivateTabAt(2, true);
   tabstrip.CloseSelectedTabs();
   EXPECT_EQ(middle_click_contents3, tabstrip.GetActiveTabContents());
@@ -1300,7 +1297,7 @@ TEST_F(TabStripModelTest, AddTabContents_MiddleClickLinksAndClose) {
   EXPECT_TRUE(tabstrip.empty());
 }
 
-// Tests whether or not a TabContentsWrapper created by a left click on a link
+// Tests whether or not a TabContents created by a left click on a link
 // that opens a new tab is inserted correctly adjacent to the tab that spawned
 // it.
 TEST_F(TabStripModelTest, AddTabContents_LeftClickPopup) {
@@ -1309,13 +1306,13 @@ TEST_F(TabStripModelTest, AddTabContents_LeftClickPopup) {
   EXPECT_TRUE(tabstrip.empty());
 
   // Open the Home Page
-  TabContentsWrapper* homepage_contents = CreateTabContents();
+  TabContents* homepage_contents = CreateTabContents();
   tabstrip.AddTabContents(
       homepage_contents, -1, content::PAGE_TRANSITION_AUTO_BOOKMARK,
       TabStripModel::ADD_ACTIVE);
 
   // Open some other tab, by user typing.
-  TabContentsWrapper* typed_page_contents = CreateTabContents();
+  TabContents* typed_page_contents = CreateTabContents();
   tabstrip.AddTabContents(
       typed_page_contents, -1, content::PAGE_TRANSITION_TYPED,
       TabStripModel::ADD_ACTIVE);
@@ -1326,7 +1323,7 @@ TEST_F(TabStripModelTest, AddTabContents_LeftClickPopup) {
   tabstrip.ActivateTabAt(0, true);
 
   // Open a tab by simulating a left click on a link that opens in a new tab.
-  TabContentsWrapper* left_click_contents = CreateTabContents();
+  TabContents* left_click_contents = CreateTabContents();
   tabstrip.AddTabContents(left_click_contents, -1,
                           content::PAGE_TRANSITION_LINK,
                           TabStripModel::ADD_ACTIVE);
@@ -1360,13 +1357,13 @@ TEST_F(TabStripModelTest, AddTabContents_CreateNewBlankTab) {
   EXPECT_TRUE(tabstrip.empty());
 
   // Open the Home Page
-  TabContentsWrapper* homepage_contents = CreateTabContents();
+  TabContents* homepage_contents = CreateTabContents();
   tabstrip.AddTabContents(
       homepage_contents, -1, content::PAGE_TRANSITION_AUTO_BOOKMARK,
       TabStripModel::ADD_ACTIVE);
 
   // Open some other tab, by user typing.
-  TabContentsWrapper* typed_page_contents = CreateTabContents();
+  TabContents* typed_page_contents = CreateTabContents();
   tabstrip.AddTabContents(
       typed_page_contents, -1, content::PAGE_TRANSITION_TYPED,
       TabStripModel::ADD_ACTIVE);
@@ -1377,7 +1374,7 @@ TEST_F(TabStripModelTest, AddTabContents_CreateNewBlankTab) {
   tabstrip.ActivateTabAt(0, true);
 
   // Open a new blank tab in the foreground.
-  TabContentsWrapper* new_blank_contents = CreateTabContents();
+  TabContents* new_blank_contents = CreateTabContents();
   tabstrip.AddTabContents(new_blank_contents, -1,
                           content::PAGE_TRANSITION_TYPED,
                           TabStripModel::ADD_ACTIVE);
@@ -1389,11 +1386,11 @@ TEST_F(TabStripModelTest, AddTabContents_CreateNewBlankTab) {
   EXPECT_EQ(new_blank_contents, tabstrip.GetTabContentsAt(2));
 
   // Now open a couple more blank tabs in the background.
-  TabContentsWrapper* background_blank_contents1 = CreateTabContents();
+  TabContents* background_blank_contents1 = CreateTabContents();
   tabstrip.AddTabContents(
       background_blank_contents1, -1, content::PAGE_TRANSITION_TYPED,
       TabStripModel::ADD_NONE);
-  TabContentsWrapper* background_blank_contents2 = CreateTabContents();
+  TabContents* background_blank_contents2 = CreateTabContents();
   tabstrip.AddTabContents(
       background_blank_contents2, -1, content::PAGE_TRANSITION_GENERATED,
       TabStripModel::ADD_NONE);
@@ -1416,13 +1413,13 @@ TEST_F(TabStripModelTest, AddTabContents_ForgetOpeners) {
   EXPECT_TRUE(tabstrip.empty());
 
   // Open the Home Page
-  TabContentsWrapper* homepage_contents = CreateTabContents();
+  TabContents* homepage_contents = CreateTabContents();
   tabstrip.AddTabContents(
       homepage_contents, -1, content::PAGE_TRANSITION_AUTO_BOOKMARK,
       TabStripModel::ADD_ACTIVE);
 
   // Open some other tab, by user typing.
-  TabContentsWrapper* typed_page_contents = CreateTabContents();
+  TabContents* typed_page_contents = CreateTabContents();
   tabstrip.AddTabContents(
       typed_page_contents, -1, content::PAGE_TRANSITION_TYPED,
       TabStripModel::ADD_ACTIVE);
@@ -1434,15 +1431,15 @@ TEST_F(TabStripModelTest, AddTabContents_ForgetOpeners) {
 
   // Open a bunch of tabs by simulating middle clicking on links on the home
   // page.
-  TabContentsWrapper* middle_click_contents1 = CreateTabContents();
+  TabContents* middle_click_contents1 = CreateTabContents();
   tabstrip.AddTabContents(
       middle_click_contents1, -1, content::PAGE_TRANSITION_LINK,
       TabStripModel::ADD_NONE);
-  TabContentsWrapper* middle_click_contents2 = CreateTabContents();
+  TabContents* middle_click_contents2 = CreateTabContents();
   tabstrip.AddTabContents(
       middle_click_contents2, -1, content::PAGE_TRANSITION_LINK,
       TabStripModel::ADD_NONE);
-  TabContentsWrapper* middle_click_contents3 = CreateTabContents();
+  TabContents* middle_click_contents3 = CreateTabContents();
   tabstrip.AddTabContents(
       middle_click_contents3, -1, content::PAGE_TRANSITION_LINK,
       TabStripModel::ADD_NONE);
@@ -1478,19 +1475,19 @@ TEST_F(TabStripModelTest, AddTabContents_ForgetOpeners) {
 TEST_F(TabStripModelTest, AppendContentsReselectionTest) {
   WebContents* fake_destinations_tab =
       WebContents::Create(profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
-  TabContentsWrapper wrapper(fake_destinations_tab);
-  TabStripDummyDelegate delegate(&wrapper);
+  TabContents tab_contents(fake_destinations_tab);
+  TabStripDummyDelegate delegate(&tab_contents);
   TabStripModel tabstrip(&delegate, profile());
   EXPECT_TRUE(tabstrip.empty());
 
   // Open the Home Page
-  TabContentsWrapper* homepage_contents = CreateTabContents();
+  TabContents* homepage_contents = CreateTabContents();
   tabstrip.AddTabContents(
       homepage_contents, -1, content::PAGE_TRANSITION_AUTO_BOOKMARK,
       TabStripModel::ADD_ACTIVE);
 
   // Open some other tab, by user typing.
-  TabContentsWrapper* typed_page_contents = CreateTabContents();
+  TabContents* typed_page_contents = CreateTabContents();
   tabstrip.AddTabContents(
       typed_page_contents, -1, content::PAGE_TRANSITION_TYPED,
       TabStripModel::ADD_NONE);
@@ -1500,7 +1497,7 @@ TEST_F(TabStripModelTest, AppendContentsReselectionTest) {
 
   // Now simulate a link click that opens a new tab (by virtue of target=_blank)
   // and make sure the right tab gets selected when the new tab is closed.
-  TabContentsWrapper* target_blank_contents = CreateTabContents();
+  TabContents* target_blank_contents = CreateTabContents();
   tabstrip.AppendTabContents(target_blank_contents, true);
   EXPECT_EQ(2, tabstrip.active_index());
   tabstrip.CloseTabContentsAt(2, TabStripModel::CLOSE_NONE);
@@ -1516,16 +1513,16 @@ TEST_F(TabStripModelTest, ReselectionConsidersChildrenTest) {
   TabStripModel strip(&delegate, profile());
 
   // Open page A
-  TabContentsWrapper* page_a_contents = CreateTabContents();
+  TabContents* page_a_contents = CreateTabContents();
   strip.AddTabContents(
       page_a_contents, -1, content::PAGE_TRANSITION_AUTO_BOOKMARK,
       TabStripModel::ADD_ACTIVE);
 
   // Simulate middle click to open page A.A and A.B
-  TabContentsWrapper* page_a_a_contents = CreateTabContents();
+  TabContents* page_a_a_contents = CreateTabContents();
   strip.AddTabContents(page_a_a_contents, -1, content::PAGE_TRANSITION_LINK,
                        TabStripModel::ADD_NONE);
-  TabContentsWrapper* page_a_b_contents = CreateTabContents();
+  TabContents* page_a_b_contents = CreateTabContents();
   strip.AddTabContents(page_a_b_contents, -1, content::PAGE_TRANSITION_LINK,
                        TabStripModel::ADD_NONE);
 
@@ -1534,7 +1531,7 @@ TEST_F(TabStripModelTest, ReselectionConsidersChildrenTest) {
   EXPECT_EQ(page_a_a_contents, strip.GetActiveTabContents());
 
   // Simulate a middle click to open page A.A.A
-  TabContentsWrapper* page_a_a_a_contents = CreateTabContents();
+  TabContents* page_a_a_a_contents = CreateTabContents();
   strip.AddTabContents(page_a_a_a_contents, -1, content::PAGE_TRANSITION_LINK,
                        TabStripModel::ADD_NONE);
 
@@ -1567,14 +1564,14 @@ TEST_F(TabStripModelTest, AddTabContents_NewTabAtEndOfStripInheritsGroup) {
   TabStripModel strip(&delegate, profile());
 
   // Open page A
-  TabContentsWrapper* page_a_contents = CreateTabContents();
+  TabContents* page_a_contents = CreateTabContents();
   strip.AddTabContents(page_a_contents, -1, content::PAGE_TRANSITION_START_PAGE,
                        TabStripModel::ADD_ACTIVE);
 
   // Open pages B, C and D in the background from links on page A...
-  TabContentsWrapper* page_b_contents = CreateTabContents();
-  TabContentsWrapper* page_c_contents = CreateTabContents();
-  TabContentsWrapper* page_d_contents = CreateTabContents();
+  TabContents* page_b_contents = CreateTabContents();
+  TabContents* page_c_contents = CreateTabContents();
+  TabContents* page_d_contents = CreateTabContents();
   strip.AddTabContents(page_b_contents, -1, content::PAGE_TRANSITION_LINK,
                        TabStripModel::ADD_NONE);
   strip.AddTabContents(page_c_contents, -1, content::PAGE_TRANSITION_LINK,
@@ -1586,7 +1583,7 @@ TEST_F(TabStripModelTest, AddTabContents_NewTabAtEndOfStripInheritsGroup) {
   strip.ActivateTabAt(1, true);
 
   // Open a New Tab at the end of the strip (simulate Ctrl+T)
-  TabContentsWrapper* new_tab_contents = CreateTabContents();
+  TabContents* new_tab_contents = CreateTabContents();
   strip.AddTabContents(new_tab_contents, -1, content::PAGE_TRANSITION_TYPED,
                        TabStripModel::ADD_ACTIVE);
 
@@ -1602,7 +1599,7 @@ TEST_F(TabStripModelTest, AddTabContents_NewTabAtEndOfStripInheritsGroup) {
   // Open a non-New Tab tab at the end of the strip, with a TYPED transition.
   // This is like typing a URL in the address bar and pressing Alt+Enter. The
   // behavior should be the same as above.
-  TabContentsWrapper* page_e_contents = CreateTabContents();
+  TabContents* page_e_contents = CreateTabContents();
   strip.AddTabContents(page_e_contents, -1, content::PAGE_TRANSITION_TYPED,
                        TabStripModel::ADD_ACTIVE);
 
@@ -1618,7 +1615,7 @@ TEST_F(TabStripModelTest, AddTabContents_NewTabAtEndOfStripInheritsGroup) {
   // transition. This is like right clicking on a bookmark and choosing "Open
   // in New Tab". No opener relationship should be preserved between this Tab
   // and the one that was active when the gesture was performed.
-  TabContentsWrapper* page_f_contents = CreateTabContents();
+  TabContents* page_f_contents = CreateTabContents();
   strip.AddTabContents(page_f_contents, -1,
                        content::PAGE_TRANSITION_AUTO_BOOKMARK,
                        TabStripModel::ADD_ACTIVE);
@@ -1644,14 +1641,14 @@ TEST_F(TabStripModelTest, NavigationForgetsOpeners) {
   TabStripModel strip(&delegate, profile());
 
   // Open page A
-  TabContentsWrapper* page_a_contents = CreateTabContents();
+  TabContents* page_a_contents = CreateTabContents();
   strip.AddTabContents(page_a_contents, -1, content::PAGE_TRANSITION_START_PAGE,
                        TabStripModel::ADD_ACTIVE);
 
   // Open pages B, C and D in the background from links on page A...
-  TabContentsWrapper* page_b_contents = CreateTabContents();
-  TabContentsWrapper* page_c_contents = CreateTabContents();
-  TabContentsWrapper* page_d_contents = CreateTabContents();
+  TabContents* page_b_contents = CreateTabContents();
+  TabContents* page_c_contents = CreateTabContents();
+  TabContents* page_d_contents = CreateTabContents();
   strip.AddTabContents(page_b_contents, -1, content::PAGE_TRANSITION_LINK,
                        TabStripModel::ADD_NONE);
   strip.AddTabContents(page_c_contents, -1, content::PAGE_TRANSITION_LINK,
@@ -1660,7 +1657,7 @@ TEST_F(TabStripModelTest, NavigationForgetsOpeners) {
                        TabStripModel::ADD_NONE);
 
   // Open page E in a different opener group from page A.
-  TabContentsWrapper* page_e_contents = CreateTabContents();
+  TabContents* page_e_contents = CreateTabContents();
   strip.AddTabContents(page_e_contents, -1, content::PAGE_TRANSITION_START_PAGE,
                        TabStripModel::ADD_NONE);
 
@@ -1693,13 +1690,13 @@ TEST_F(TabStripModelTest, NavigationForgettingDoesntAffectNewTab) {
 
   // Open a tab and several tabs from it, then select one of the tabs that was
   // opened.
-  TabContentsWrapper* page_a_contents = CreateTabContents();
+  TabContents* page_a_contents = CreateTabContents();
   strip.AddTabContents(page_a_contents, -1, content::PAGE_TRANSITION_START_PAGE,
                        TabStripModel::ADD_ACTIVE);
 
-  TabContentsWrapper* page_b_contents = CreateTabContents();
-  TabContentsWrapper* page_c_contents = CreateTabContents();
-  TabContentsWrapper* page_d_contents = CreateTabContents();
+  TabContents* page_b_contents = CreateTabContents();
+  TabContents* page_c_contents = CreateTabContents();
+  TabContents* page_d_contents = CreateTabContents();
   strip.AddTabContents(page_b_contents, -1, content::PAGE_TRANSITION_LINK,
                        TabStripModel::ADD_NONE);
   strip.AddTabContents(page_c_contents, -1, content::PAGE_TRANSITION_LINK,
@@ -1714,7 +1711,7 @@ TEST_F(TabStripModelTest, NavigationForgettingDoesntAffectNewTab) {
   // last on.
 
   // Now simulate opening a new tab at the end of the TabStrip.
-  TabContentsWrapper* new_tab_contents1 = CreateTabContents();
+  TabContents* new_tab_contents1 = CreateTabContents();
   strip.AddTabContents(new_tab_contents1, -1, content::PAGE_TRANSITION_TYPED,
                        TabStripModel::ADD_ACTIVE);
 
@@ -1728,7 +1725,7 @@ TEST_F(TabStripModelTest, NavigationForgettingDoesntAffectNewTab) {
   // tab's opener relationship to be forgotten.
 
   // Open a new tab again.
-  TabContentsWrapper* new_tab_contents2 = CreateTabContents();
+  TabContents* new_tab_contents2 = CreateTabContents();
   strip.AddTabContents(new_tab_contents2, -1, content::PAGE_TRANSITION_TYPED,
                        TabStripModel::ADD_ACTIVE);
 
@@ -1757,8 +1754,8 @@ TEST_F(TabStripModelTest, FastShutdown) {
   // Make sure fast shutdown is attempted when tabs that share a RPH are shut
   // down.
   {
-    TabContentsWrapper* contents1 = CreateTabContents();
-    TabContentsWrapper* contents2 =
+    TabContents* contents1 = CreateTabContents();
+    TabContents* contents2 =
         CreateTabContentsWithSharedRPH(contents1->web_contents());
 
     SetID(contents1->web_contents(), 1);
@@ -1786,8 +1783,8 @@ TEST_F(TabStripModelTest, FastShutdown) {
   // Make sure fast shutdown is not attempted when only some tabs that share a
   // RPH are shut down.
   {
-    TabContentsWrapper* contents1 = CreateTabContents();
-    TabContentsWrapper* contents2 =
+    TabContents* contents1 = CreateTabContents();
+    TabContents* contents2 =
         CreateTabContentsWithSharedRPH(contents1->web_contents());
 
     SetID(contents1->web_contents(), 1);
@@ -1831,11 +1828,11 @@ TEST_F(TabStripModelTest, Apps) {
       Extension::Create(path, Extension::INVALID, manifest, Extension::NO_FLAGS,
                         &error));
   extension_app->launch_web_url_ = "http://www.google.com";
-  TabContentsWrapper* contents1 = CreateTabContents();
+  TabContents* contents1 = CreateTabContents();
   contents1->extension_tab_helper()->SetExtensionApp(extension_app);
-  TabContentsWrapper* contents2 = CreateTabContents();
+  TabContents* contents2 = CreateTabContents();
   contents2->extension_tab_helper()->SetExtensionApp(extension_app);
-  TabContentsWrapper* contents3 = CreateTabContents();
+  TabContents* contents3 = CreateTabContents();
 
   SetID(contents1->web_contents(), 1);
   SetID(contents2->web_contents(), 2);
@@ -1949,9 +1946,9 @@ TEST_F(TabStripModelTest, Pinning) {
 
   typedef MockTabStripModelObserver::State State;
 
-  TabContentsWrapper* contents1 = CreateTabContents();
-  TabContentsWrapper* contents2 = CreateTabContents();
-  TabContentsWrapper* contents3 = CreateTabContents();
+  TabContents* contents1 = CreateTabContents();
+  TabContents* contents2 = CreateTabContents();
+  TabContents* contents3 = CreateTabContents();
 
   SetID(contents1->web_contents(), 1);
   SetID(contents2->web_contents(), 2);
@@ -2084,7 +2081,7 @@ TEST_F(TabStripModelTest, Pinning) {
     observer.ClearStates();
   }
 
-  TabContentsWrapper* contents4 = CreateTabContents();
+  TabContents* contents4 = CreateTabContents();
   SetID(contents4->web_contents(), 4);
 
   // Insert "4" between "1" and "3". As "1" and "4" are pinned, "4" should end
@@ -2110,14 +2107,14 @@ TEST_F(TabStripModelTest, ReplaceSendsSelected) {
   TabStripDummyDelegate delegate(NULL);
   TabStripModel strip(&delegate, profile());
 
-  TabContentsWrapper* first_contents = CreateTabContents();
+  TabContents* first_contents = CreateTabContents();
   strip.AddTabContents(first_contents, -1, content::PAGE_TRANSITION_TYPED,
                        TabStripModel::ADD_ACTIVE);
 
   MockTabStripModelObserver tabstrip_observer(&strip);
   strip.AddObserver(&tabstrip_observer);
 
-  TabContentsWrapper* new_contents = CreateTabContents();
+  TabContents* new_contents = CreateTabContents();
   delete strip.ReplaceTabContentsAt(0, new_contents);
 
   ASSERT_EQ(2, tabstrip_observer.GetStateCount());
@@ -2134,7 +2131,7 @@ TEST_F(TabStripModelTest, ReplaceSendsSelected) {
 
   // Now add another tab and replace it, making sure we don't get a selected
   // event this time.
-  TabContentsWrapper* third_contents = CreateTabContents();
+  TabContents* third_contents = CreateTabContents();
   strip.AddTabContents(third_contents, 1, content::PAGE_TRANSITION_TYPED,
                        TabStripModel::ADD_NONE);
 
@@ -2161,9 +2158,9 @@ TEST_F(TabStripModelTest, DiscardTabContentsAt) {
   TabStripModel tabstrip(&delegate, profile());
 
   // Fill it with some tabs.
-  TabContentsWrapper* contents1 = CreateTabContents();
+  TabContents* contents1 = CreateTabContents();
   tabstrip.AppendTabContents(contents1, true);
-  TabContentsWrapper* contents2 = CreateTabContents();
+  TabContents* contents2 = CreateTabContents();
   tabstrip.AppendTabContents(contents2, true);
 
   // Start watching for events after the appends to avoid observing state
@@ -2172,7 +2169,7 @@ TEST_F(TabStripModelTest, DiscardTabContentsAt) {
   tabstrip.AddObserver(&tabstrip_observer);
 
   // Discard one of the tabs.
-  TabContentsWrapper* null_contents1 = tabstrip.DiscardTabContentsAt(0);
+  TabContents* null_contents1 = tabstrip.DiscardTabContentsAt(0);
   ASSERT_EQ(2, tabstrip.count());
   EXPECT_TRUE(tabstrip.IsTabDiscarded(0));
   EXPECT_FALSE(tabstrip.IsTabDiscarded(1));
@@ -2185,7 +2182,7 @@ TEST_F(TabStripModelTest, DiscardTabContentsAt) {
   tabstrip_observer.ClearStates();
 
   // Discard the same tab again.
-  TabContentsWrapper* null_contents2 = tabstrip.DiscardTabContentsAt(0);
+  TabContents* null_contents2 = tabstrip.DiscardTabContentsAt(0);
   ASSERT_EQ(2, tabstrip.count());
   EXPECT_TRUE(tabstrip.IsTabDiscarded(0));
   EXPECT_FALSE(tabstrip.IsTabDiscarded(1));
@@ -2204,7 +2201,7 @@ TEST_F(TabStripModelTest, DiscardTabContentsAt) {
   EXPECT_FALSE(tabstrip.IsTabDiscarded(1));
 
   // Discarding the active tab should not crash.
-  TabContentsWrapper* null_contents3 = tabstrip.DiscardTabContentsAt(0);
+  TabContents* null_contents3 = tabstrip.DiscardTabContentsAt(0);
   ASSERT_EQ(2, tabstrip.count());
   EXPECT_TRUE(tabstrip.IsTabDiscarded(0));
   EXPECT_FALSE(tabstrip.IsTabDiscarded(1));
@@ -2218,8 +2215,8 @@ TEST_F(TabStripModelTest, DiscardTabContentsAt) {
 TEST_F(TabStripModelTest, DeleteFromDestroy) {
   TabStripDummyDelegate delegate(NULL);
   TabStripModel strip(&delegate, profile());
-  TabContentsWrapper* contents1 = CreateTabContents();
-  TabContentsWrapper* contents2 = CreateTabContents();
+  TabContents* contents1 = CreateTabContents();
+  TabContents* contents2 = CreateTabContents();
   strip.AppendTabContents(contents1, true);
   strip.AppendTabContents(contents2, true);
   // DeleteTabContentsOnDestroyedObserver deletes contents1 when contents2 sends
@@ -2294,9 +2291,9 @@ TEST_F(TabStripModelTest, MoveSelectedTabsTo) {
 TEST_F(TabStripModelTest, CloseSelectedTabs) {
   TabStripDummyDelegate delegate(NULL);
   TabStripModel strip(&delegate, profile());
-  TabContentsWrapper* contents1 = CreateTabContents();
-  TabContentsWrapper* contents2 = CreateTabContents();
-  TabContentsWrapper* contents3 = CreateTabContents();
+  TabContents* contents1 = CreateTabContents();
+  TabContents* contents2 = CreateTabContents();
+  TabContents* contents3 = CreateTabContents();
   strip.AppendTabContents(contents1, true);
   strip.AppendTabContents(contents2, true);
   strip.AppendTabContents(contents3, true);
@@ -2311,10 +2308,10 @@ TEST_F(TabStripModelTest, MultipleSelection) {
   TabStripDummyDelegate delegate(NULL);
   TabStripModel strip(&delegate, profile());
   MockTabStripModelObserver observer(&strip);
-  TabContentsWrapper* contents0 = CreateTabContents();
-  TabContentsWrapper* contents1 = CreateTabContents();
-  TabContentsWrapper* contents2 = CreateTabContents();
-  TabContentsWrapper* contents3 = CreateTabContents();
+  TabContents* contents0 = CreateTabContents();
+  TabContents* contents1 = CreateTabContents();
+  TabContents* contents2 = CreateTabContents();
+  TabContents* contents3 = CreateTabContents();
   strip.AppendTabContents(contents0, false);
   strip.AppendTabContents(contents1, false);
   strip.AppendTabContents(contents2, false);
@@ -2424,8 +2421,8 @@ TEST_F(TabStripModelTest, MultipleSelection) {
 TEST_F(TabStripModelTest, MultipleToSingle) {
   TabStripDummyDelegate delegate(NULL);
   TabStripModel strip(&delegate, profile());
-  TabContentsWrapper* contents1 = CreateTabContents();
-  TabContentsWrapper* contents2 = CreateTabContents();
+  TabContents* contents1 = CreateTabContents();
+  TabContents* contents2 = CreateTabContents();
   strip.AppendTabContents(contents1, false);
   strip.AppendTabContents(contents2, false);
   strip.ToggleSelectionAt(0);

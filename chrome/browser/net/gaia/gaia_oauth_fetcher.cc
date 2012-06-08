@@ -292,7 +292,7 @@ void OpenGetOAuthTokenURL(Browser* browser,
       url,
       content::PAGE_TRANSITION_AUTO_BOOKMARK);
   params.source_contents = browser->tab_strip_model()->GetTabContentsAt(
-      browser->tab_strip_model()->GetWrapperIndex(NULL));
+      browser->tab_strip_model()->GetIndexOfWebContents(NULL));
   params.referrer = referrer;
   params.disposition = disposition;
   params.tabstrip_add_types = TabStripModel::ADD_NONE;

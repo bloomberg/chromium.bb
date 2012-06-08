@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
@@ -27,7 +27,7 @@ TestTabStripModelObserver::~TestTabStripModelObserver() {
 }
 
 void TestTabStripModelObserver::TabBlockedStateChanged(
-    TabContentsWrapper* contents, int index) {
+    TabContents* contents, int index) {
   // Need to do this later - the print preview tab has not been created yet.
   MessageLoop::current()->PostTask(
       FROM_HERE,
@@ -37,11 +37,11 @@ void TestTabStripModelObserver::TabBlockedStateChanged(
 }
 
 void TestTabStripModelObserver::ObservePrintPreviewTabContents(
-    TabContentsWrapper* contents) {
+    TabContents* contents) {
   printing::PrintPreviewTabController* tab_controller =
       printing::PrintPreviewTabController::GetInstance();
   if (tab_controller) {
-    TabContentsWrapper* preview_tab =
+    TabContents* preview_tab =
         tab_controller->GetPrintPreviewForTab(contents);
     if (preview_tab) {
       RegisterAsObserver(content::Source<NavigationController>(

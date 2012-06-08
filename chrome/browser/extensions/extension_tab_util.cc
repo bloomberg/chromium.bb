@@ -142,7 +142,7 @@ bool ExtensionTabUtil::GetTabStripModel(const WebContents* web_contents,
   for (BrowserList::const_iterator it = BrowserList::begin();
       it != BrowserList::end(); ++it) {
     TabStripModel* tab_strip = (*it)->tab_strip_model();
-    int index = tab_strip->GetWrapperIndex(web_contents);
+    int index = tab_strip->GetIndexOfWebContents(web_contents);
     if (index != -1) {
       *tab_strip_model = tab_strip;
       *tab_index = index;

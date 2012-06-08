@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
 
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/dock_info.h"
 #include "ui/gfx/rect.h"
 
@@ -17,17 +17,17 @@ TestTabStripModelDelegate::TestTabStripModelDelegate() {
 TestTabStripModelDelegate::~TestTabStripModelDelegate() {
 }
 
-TabContentsWrapper* TestTabStripModelDelegate::AddBlankTab(bool foreground) {
+TabContents* TestTabStripModelDelegate::AddBlankTab(bool foreground) {
   return NULL;
 }
 
-TabContentsWrapper* TestTabStripModelDelegate::AddBlankTabAt(int index,
-                                                             bool foreground) {
+TabContents* TestTabStripModelDelegate::AddBlankTabAt(int index,
+                                                      bool foreground) {
   return NULL;
 }
 
 Browser* TestTabStripModelDelegate::CreateNewStripWithContents(
-    TabContentsWrapper* contents,
+    TabContents* contents,
     const gfx::Rect& window_bounds,
     const DockInfo& dock_info,
     bool maximize) {
@@ -38,7 +38,7 @@ int TestTabStripModelDelegate::GetDragActions() const {
   return 0;
 }
 
-TabContentsWrapper* TestTabStripModelDelegate::CreateTabContentsForURL(
+TabContents* TestTabStripModelDelegate::CreateTabContentsForURL(
       const GURL& url,
       const content::Referrer& referrer,
       Profile* profile,
@@ -58,12 +58,11 @@ void TestTabStripModelDelegate::DuplicateContentsAt(int index) {
 void TestTabStripModelDelegate::CloseFrameAfterDragSession() {
 }
 
-void TestTabStripModelDelegate::CreateHistoricalTab(
-    TabContentsWrapper* contents) {
+void TestTabStripModelDelegate::CreateHistoricalTab(TabContents* contents) {
 }
 
 bool TestTabStripModelDelegate::RunUnloadListenerBeforeClosing(
-    TabContentsWrapper* contents) {
+    TabContents* contents) {
   return true;
 }
 

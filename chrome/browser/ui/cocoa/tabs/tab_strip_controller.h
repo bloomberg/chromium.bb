@@ -24,6 +24,8 @@
 
 class Browser;
 class ConstrainedWindowMac;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 class TabStripModelObserverBridge;
 class TabStripModel;
 

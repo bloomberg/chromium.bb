@@ -292,7 +292,7 @@ WebContents* OpenApplicationTab(Profile* profile,
   if (disposition == CURRENT_TAB) {
     WebContents* existing_tab = browser->GetSelectedWebContents();
     TabStripModel* model = browser->tab_strip_model();
-    int tab_index = model->GetWrapperIndex(existing_tab);
+    int tab_index = model->GetIndexOfWebContents(existing_tab);
 
     existing_tab->OpenURL(content::OpenURLParams(
           extension_url,
@@ -304,7 +304,7 @@ WebContents* OpenApplicationTab(Profile* profile,
     if (params.tabstrip_add_types & TabStripModel::ADD_PINNED) {
       model->SetTabPinned(tab_index, true);
       // Pinning may have moved the tab.
-      tab_index = model->GetWrapperIndex(existing_tab);
+      tab_index = model->GetIndexOfWebContents(existing_tab);
     }
     if (params.tabstrip_add_types & TabStripModel::ADD_ACTIVE)
       model->ActivateTabAt(tab_index, true);

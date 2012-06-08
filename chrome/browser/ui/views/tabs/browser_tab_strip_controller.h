@@ -17,6 +17,8 @@
 
 class BaseTab;
 class Browser;
+class TabContents;
+typedef TabContents TabContentsWrapper;
 class TabStrip;
 class TabStripSelectionModel;
 struct TabRendererData;

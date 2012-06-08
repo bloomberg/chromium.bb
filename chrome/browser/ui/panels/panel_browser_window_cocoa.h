@@ -77,10 +77,10 @@ class PanelBrowserWindowCocoa : public NativePanelCocoa,
   virtual int TitleOnlyHeight() const OVERRIDE;
 
   // Overridden from TabStripModelObserver.
-  virtual void TabInsertedAt(TabContentsWrapper* contents,
+  virtual void TabInsertedAt(TabContents* contents,
                              int index,
                              bool foreground) OVERRIDE;
-  virtual void TabDetachedAt(TabContentsWrapper* contents, int index) OVERRIDE;
+  virtual void TabDetachedAt(TabContents* contents, int index) OVERRIDE;
 
   // Overridden from NotificationObserver.
   virtual void Observe(int type,

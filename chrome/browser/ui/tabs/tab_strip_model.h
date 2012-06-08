@@ -17,7 +17,6 @@
 
 class Profile;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 class TabStripModelDelegate;
 class TabStripModelOrderController;
 
@@ -31,7 +30,7 @@ class WebContents;
 // TabStripModel
 //
 //  A model & low level controller of a Browser Window tabstrip. Holds a vector
-//  of TabContentsWrappers, and provides an API for adding, removing and
+//  of TabContentses, and provides an API for adding, removing and
 //  shuffling them, as well as a higher level API for doing specific Browser-
 //  related tasks like adding new Tabs from just a URL, etc.
 //
@@ -45,7 +44,7 @@ class WebContents;
 //   You'll notice there is no explicit api for making a tab a mini-tab, rather
 //   there are two tab types that are implicitly mini-tabs:
 //   . App. Corresponds to an extension that wants an app tab. App tabs are
-//     identified by TabContentsWrapper::extension_tab_helper()::is_app().
+//     identified by TabContents::extension_tab_helper()::is_app().
 //     App tabs are always pinned (you can't unpin them).
 //   . Pinned. Any tab can be pinned. Non-app tabs whose pinned state is changed
 //     are moved to be with other mini-tabs or non-mini tabs.
@@ -98,7 +97,7 @@ class TabStripModel : public content::NotificationObserver {
     // The tab should be pinned.
     ADD_PINNED        = 1 << 1,
 
-    // If not set the insertion index of the TabContentsWrapper is left up to
+    // If not set the insertion index of the TabContents is left up to
     // the Order Controller associated, so the final insertion index may differ
     // from the specified index. Otherwise the index supplied is used.
     ADD_FORCE_INDEX   = 1 << 2,
@@ -135,7 +134,7 @@ class TabStripModel : public content::NotificationObserver {
   // Retrieve the Profile associated with this TabStripModel.
   Profile* profile() const { return profile_; }
 
-  // Retrieve the index of the currently active TabContentsWrapper.
+  // Retrieve the index of the currently active TabContents.
   int active_index() const { return selection_model_.active(); }
 
   // Returns true if the tabstrip is currently closing all open tabs (via a
@@ -162,11 +161,11 @@ class TabStripModel : public content::NotificationObserver {
   // Determines if the specified index is contained within the TabStripModel.
   bool ContainsIndex(int index) const;
 
-  // Adds the specified TabContentsWrapper in the default location. Tabs opened
+  // Adds the specified TabContents in the default location. Tabs opened
   // in the foreground inherit the group of the previously active tab.
-  void AppendTabContents(TabContentsWrapper* contents, bool foreground);
+  void AppendTabContents(TabContents* contents, bool foreground);
 
-  // Adds the specified TabContentsWrapper at the specified location.
+  // Adds the specified TabContents at the specified location.
   // |add_types| is a bitmask of AddTypes; see it for details.
   //
   // All append/insert methods end up in this method.
@@ -177,13 +176,13 @@ class TabStripModel : public content::NotificationObserver {
   // constraint that all mini-tabs occur before non-mini-tabs.
   // See also AddTabContents.
   void InsertTabContentsAt(int index,
-                           TabContentsWrapper* contents,
+                           TabContents* contents,
                            int add_types);
 
-  // Closes the TabContentsWrapper at the specified index. This causes the
-  // TabContentsWrapper to be destroyed, but it may not happen immediately.
+  // Closes the TabContents at the specified index. This causes the
+  // TabContents to be destroyed, but it may not happen immediately.
   // |close_types| is a bitmask of CloseTypes. Returns true if the
-  // TabContentsWrapper was closed immediately, false if it was not closed (we
+  // TabContents was closed immediately, false if it was not closed (we
   // may be waiting for a response from an onunload handler, or waiting for the
   // user to confirm closure).
   bool CloseTabContentsAt(int index, uint32 close_types);
@@ -197,25 +196,25 @@ class TabStripModel : public content::NotificationObserver {
   // ownership of the passed in controller.
   // XXXPINK This API is weird and wrong. Remove it or change it or rename it?
   void ReplaceNavigationControllerAt(int index,
-                                     TabContentsWrapper* contents);
+                                     TabContents* contents);
 
   // Replaces the tab contents at |index| with |new_contents|. The
-  // TabContentsWrapper that was at |index| is returned and ownership returns
+  // TabContents that was at |index| is returned and ownership returns
   // to the caller.
-  TabContentsWrapper* ReplaceTabContentsAt(int index,
-                                           TabContentsWrapper* new_contents);
+  TabContents* ReplaceTabContentsAt(int index,
+                                    TabContents* new_contents);
 
-  // Destroys the TabContentsWrapper at the specified index, but keeps the tab
+  // Destroys the TabContents at the specified index, but keeps the tab
   // visible in the tab strip. Used to free memory in low-memory conditions,
   // especially on Chrome OS. The tab reloads if the user clicks on it.
-  // Returns an empty TabContentsWrapper, used only for testing.
-  TabContentsWrapper* DiscardTabContentsAt(int index);
+  // Returns an empty TabContents, used only for testing.
+  TabContents* DiscardTabContentsAt(int index);
 
-  // Detaches the TabContentsWrapper at the specified index from this strip. The
-  // TabContentsWrapper is not destroyed, just removed from display. The caller
+  // Detaches the TabContents at the specified index from this strip. The
+  // TabContents is not destroyed, just removed from display. The caller
   // is responsible for doing something with it (e.g. stuffing it into another
   // strip).
-  TabContentsWrapper* DetachTabContentsAt(int index);
+  TabContents* DetachTabContentsAt(int index);
 
   // Makes the tab at the specified index the active tab. |user_gesture| is true
   // if the user actually clicked on the tab or navigated to it using a keyboard
@@ -227,9 +226,9 @@ class TabStripModel : public content::NotificationObserver {
   // active tab index.
   void AddTabAtToSelection(int index);
 
-  // Move the TabContentsWrapper at the specified index to another index. This
+  // Move the TabContents at the specified index to another index. This
   // method does NOT send Detached/Attached notifications, rather it moves the
-  // TabContentsWrapper inline and sends a Moved notification instead.
+  // TabContents inline and sends a Moved notification instead.
   // If |select_after_move| is false, whatever tab was selected before the move
   // will still be selected, but it's index may have incremented or decremented
   // one slot.
@@ -255,32 +254,33 @@ class TabStripModel : public content::NotificationObserver {
   // 1)
   void MoveSelectedTabsTo(int index);
 
-  // Returns the currently active TabContentsWrapper, or NULL if there is none.
-  TabContentsWrapper* GetActiveTabContents() const;
+  // Returns the currently active TabContents, or NULL if there is none.
+  TabContents* GetActiveTabContents() const;
 
-  // Returns the TabContentsWrapper at the specified index, or NULL if there is
+  // Returns the TabContents at the specified index, or NULL if there is
   // none.
-  TabContentsWrapper* GetTabContentsAt(int index) const;
+  TabContents* GetTabContentsAt(int index) const;
 
-  // Returns the index of the specified TabContentsWrapper, or
-  // TabStripModel::kNoTab if the TabContentsWrapper is not in this
+  // Returns the index of the specified TabContents, or
+  // TabStripModel::kNoTab if the TabContents is not in this
   // TabStripModel.
-  int GetIndexOfTabContents(const TabContentsWrapper* contents) const;
+  int GetIndexOfTabContents(const TabContents* contents) const;
 
-  // Returns the index of the specified TabContentsWrapper given its raw
+  // Returns the index of the specified TabContents given its raw
   // WebContents, or TabStripModel::kNoTab if the WebContents is not in this
-  // TabStripModel.  Note: This is only needed in rare cases where the wrapper
-  // is not already present (such as implementing WebContentsDelegate methods,
-  // which don't know about the wrapper.  Returns NULL if |contents| is not
-  // associated with any TabContentsWrapper in the model.
-  int GetWrapperIndex(const content::WebContents* contents) const;
+  // TabStripModel.  Note: This is only needed in rare cases where the
+  // TabContents is not already present (such as implementing
+  // WebContentsDelegate methods, which don't know about TabContents).  Returns
+  // NULL if |contents| is not associated with any TabContents in the
+  // model.
+  int GetIndexOfWebContents(const content::WebContents* contents) const;
 
   // Returns the index of the specified NavigationController, or kNoTab if it is
   // not in this TabStripModel.
   int GetIndexOfController(
       const content::NavigationController* controller) const;
 
-  // Notify any observers that the TabContentsWrapper at the specified index has
+  // Notify any observers that the TabContents at the specified index has
   // changed in some way. See TabChangeType for details of |change_type|.
   void UpdateTabContentsStateAt(
       int index,
@@ -296,22 +296,21 @@ class TabStripModel : public content::NotificationObserver {
   // notifications this method causes.
   void CloseAllTabs();
 
-  // Returns true if there are any TabContentsWrappers that are currently
-  // loading.
+  // Returns true if there are any TabContentses that are currently loading.
   bool TabsAreLoading() const;
 
-  // Returns the controller controller that opened the TabContentsWrapper at
+  // Returns the controller controller that opened the TabContents at
   // |index|.
   content::NavigationController* GetOpenerOfTabContentsAt(int index);
 
-  // Changes the |opener| of the TabContentsWrapper at |index|.
+  // Changes the |opener| of the TabContents at |index|.
   // Note: |opener| must be in this tab strip.
   void SetOpenerOfTabContentsAt(
       int index,
       content::NavigationController* opener);
 
-  // Returns the index of the next TabContentsWrapper in the sequence of
-  // TabContentsWrappers spawned by the specified NavigationController after
+  // Returns the index of the next TabContents in the sequence of
+  // TabContentses spawned by the specified NavigationController after
   // |start_index|. If |use_group| is true, the group property of the tab is
   // used instead of the opener to find the next tab. Under some circumstances
   // the group relationship may exist but the opener may not.
@@ -320,23 +319,23 @@ class TabStripModel : public content::NotificationObserver {
       int start_index,
       bool use_group) const;
 
-  // Returns the index of the first TabContentsWrapper in the model opened by
+  // Returns the index of the first TabContents in the model opened by
   // the specified opener.
   int GetIndexOfFirstTabContentsOpenedBy(
       const content::NavigationController* opener,
       int start_index) const;
 
-  // Returns the index of the last TabContentsWrapper in the model opened by the
+  // Returns the index of the last TabContents in the model opened by the
   // specified opener, starting at |start_index|.
   int GetIndexOfLastTabContentsOpenedBy(
       const content::NavigationController* opener,
       int start_index) const;
 
   // Called by the Browser when a navigation is about to occur in the specified
-  // TabContentsWrapper. Depending on the tab, and the transition type of the
+  // TabContents. Depending on the tab, and the transition type of the
   // navigation, the TabStripModel may adjust its selection and grouping
   // behavior.
-  void TabNavigating(TabContentsWrapper* contents,
+  void TabNavigating(TabContents* contents,
                      content::PageTransition transition);
 
   // Forget all Opener relationships that are stored (but _not_ group
@@ -346,16 +345,16 @@ class TabStripModel : public content::NotificationObserver {
   // TabStripModelOrderController.
   void ForgetAllOpeners();
 
-  // Forgets the group affiliation of the specified TabContentsWrapper. This
-  // should be called when a TabContentsWrapper that is part of a logical group
+  // Forgets the group affiliation of the specified TabContents. This
+  // should be called when a TabContents that is part of a logical group
   // of tabs is moved to a new logical context by the user (e.g. by typing a new
   // URL or selecting a bookmark). This also forgets the opener, which is
   // considered a weaker relationship than group.
-  void ForgetGroup(TabContentsWrapper* contents);
+  void ForgetGroup(TabContents* contents);
 
   // Returns true if the group/opener relationships present for |contents|
   // should be reset when _any_ selection change occurs in the model.
-  bool ShouldResetGroupOnSelect(TabContentsWrapper* contents) const;
+  bool ShouldResetGroupOnSelect(TabContents* contents) const;
 
   // Changes the blocked state of the tab at |index|.
   void SetTabBlocked(int index, bool blocked);
@@ -379,7 +378,7 @@ class TabStripModel : public content::NotificationObserver {
   // Returns true if the tab at |index| is blocked by a tab modal dialog.
   bool IsTabBlocked(int index) const;
 
-  // Returns true if the TabContentsWrapper at |index| has been discarded to
+  // Returns true if the TabContents at |index| has been discarded to
   // save memory.  See DiscardTabContentsAt() for details.
   bool IsTabDiscarded(int index) const;
 
@@ -418,11 +417,11 @@ class TabStripModel : public content::NotificationObserver {
 
   // Command level API /////////////////////////////////////////////////////////
 
-  // Adds a TabContentsWrapper at the best position in the TabStripModel given
+  // Adds a TabContents at the best position in the TabStripModel given
   // the specified insertion index, transition, etc. |add_types| is a bitmask of
   // AddTypes; see it for details. This method ends up calling into
   // InsertTabContentsAt to do the actual insertion.
-  void AddTabContents(TabContentsWrapper* contents,
+  void AddTabContents(TabContents* contents,
                       int index,
                       content::PageTransition transition,
                       int add_types);
@@ -516,20 +515,20 @@ class TabStripModel : public content::NotificationObserver {
   // determine which indices the command applies to.
   std::vector<int> GetIndicesForCommand(int index) const;
 
-  // Returns true if the specified TabContentsWrapper is a New Tab at the end of
+  // Returns true if the specified TabContents is a New Tab at the end of
   // the TabStrip. We check for this because opener relationships are _not_
   // forgotten for the New Tab page opened as a result of a New Tab gesture
   // (e.g. Ctrl+T, etc) since the user may open a tab transiently to look up
   // something related to their current activity.
-  bool IsNewTabAtEndOfTabStrip(TabContentsWrapper* contents) const;
+  bool IsNewTabAtEndOfTabStrip(TabContents* contents) const;
 
-  // Closes the TabContentsWrappers at the specified indices. This causes the
-  // TabContentsWrappers to be destroyed, but it may not happen immediately. If
+  // Closes the TabContentses at the specified indices. This causes the
+  // TabContentses to be destroyed, but it may not happen immediately. If
   // the page in question has an unload event the WebContents will not be
   // destroyed until after the event has completed, which will then call back
   // into this method.
   //
-  // Returns true if the TabContentsWrapper were closed immediately, false if we
+  // Returns true if the TabContentses were closed immediately, false if we
   // are waiting for the result of an onunload handler.
   bool InternalCloseTabs(const std::vector<int>& in_indices,
                          uint32 close_types);
@@ -542,17 +541,17 @@ class TabStripModel : public content::NotificationObserver {
   // The boolean parameter create_historical_tab controls whether to
   // record these tabs and their history for reopening recently closed
   // tabs.
-  void InternalCloseTab(TabContentsWrapper* contents,
+  void InternalCloseTab(TabContents* contents,
                         int index,
                         bool create_historical_tabs);
 
-  TabContentsWrapper* GetContentsAt(int index) const;
+  TabContents* GetContentsAt(int index) const;
 
   // Notifies the observers if the active tab is being deactivated.
-  void NotifyIfTabDeactivated(TabContentsWrapper* contents);
+  void NotifyIfTabDeactivated(TabContents* contents);
 
   // Notifies the observers if the active tab has changed.
-  void NotifyIfActiveTabChanged(TabContentsWrapper* old_contents,
+  void NotifyIfActiveTabChanged(TabContents* old_contents,
                                 NotifyTypes notify_types);
 
   // Notifies the observers if the active tab or the tab selection has changed.
@@ -560,7 +559,7 @@ class TabStripModel : public content::NotificationObserver {
   // Note: This function might end up sending 0 to 2 notifications in the
   // following order: ActiveTabChanged, TabSelectionChanged.
   void NotifyIfActiveOrSelectionChanged(
-      TabContentsWrapper* old_contents,
+      TabContents* old_contents,
       NotifyTypes notify_types,
       const TabStripSelectionModel& old_model);
 
@@ -602,12 +601,12 @@ class TabStripModel : public content::NotificationObserver {
   // Our delegate.
   TabStripModelDelegate* delegate_;
 
-  // A hunk of data representing a TabContentsWrapper and (optionally) the
+  // A hunk of data representing a TabContents and (optionally) the
   // NavigationController that spawned it. This memory only sticks around while
-  // the TabContentsWrapper is in the current TabStripModel, unless otherwise
+  // the TabContents is in the current TabStripModel, unless otherwise
   // specified in code.
   struct TabContentsData {
-    explicit TabContentsData(TabContentsWrapper* a_contents)
+    explicit TabContentsData(TabContents* a_contents)
         : contents(a_contents),
           reset_group_on_select(false),
           pinned(false),
@@ -616,23 +615,23 @@ class TabStripModel : public content::NotificationObserver {
       SetGroup(NULL);
     }
 
-    // Create a relationship between this TabContentsWrapper and other
-    // TabContentsWrappers. Used to identify which TabContentsWrapper to select
+    // Create a relationship between this TabContents and other
+    // TabContentses. Used to identify which TabContents to select
     // next after one is closed.
     void SetGroup(content::NavigationController* a_group) {
       group = a_group;
       opener = a_group;
     }
 
-    // Forget the opener relationship so that when this TabContentsWrapper is
+    // Forget the opener relationship so that when this TabContents is
     // closed unpredictable re-selection does not occur.
     void ForgetOpener() {
       opener = NULL;
     }
 
-    TabContentsWrapper* contents;
+    TabContents* contents;
     // We use NavigationControllers here since they more closely model the
-    // "identity" of a Tab, TabContentsWrappers can change depending on the URL
+    // "identity" of a Tab, TabContentses can change depending on the URL
     // loaded in the Tab.
     // The group is used to model a set of tabs spawned from a single parent
     // tab. This value is preserved for a given tab as long as the tab remains
@@ -665,7 +664,7 @@ class TabStripModel : public content::NotificationObserver {
     bool discarded;
   };
 
-  // The TabContentsWrapper data currently hosted within this TabStripModel.
+  // The TabContents data currently hosted within this TabStripModel.
   typedef std::vector<TabContentsData*> TabContentsDataVector;
   TabContentsDataVector contents_data_;
 
