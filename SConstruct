@@ -3401,7 +3401,6 @@ irt_variant_tests = [
     'tests/nacl_log/nacl.scons',
     'tests/nameservice/nacl.scons',
     'tests/nanosleep/nacl.scons',
-    'tests/native_worker/nacl.scons',
     'tests/noop/nacl.scons',
     'tests/nrd_xfer/nacl.scons',
     'tests/nthread_nice/nacl.scons',
