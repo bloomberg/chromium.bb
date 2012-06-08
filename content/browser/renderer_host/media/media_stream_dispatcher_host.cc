@@ -177,7 +177,7 @@ void MediaStreamDispatcherHost::OnChannelClosing() {
   DVLOG(1) << "MediaStreamDispatcherHost::OnChannelClosing";
 
   // Since the IPC channel is gone, cancel pending requests and close all
-  // requested VideCaptureDevices.
+  // requested VideoCaptureDevices.
   manager()->CancelRequests(this);
   for (StreamMap::iterator it = streams_.begin();
        it != streams_.end();
