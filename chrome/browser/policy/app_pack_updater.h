@@ -20,6 +20,7 @@
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "net/base/network_change_notifier.h"
 
 class CrxInstaller;
 class ExternalExtensionLoader;
@@ -48,6 +49,7 @@ class BrowserPolicyConnector;
 // at login time.
 class AppPackUpdater : public CloudPolicySubsystem::Observer,
                        public content::NotificationObserver,
+                       public net::NetworkChangeNotifier::IPAddressObserver,
                        public extensions::ExtensionDownloaderDelegate {
  public:
   // Callback to listen for updates to the screensaver extension's path.
@@ -74,13 +76,18 @@ class AppPackUpdater : public CloudPolicySubsystem::Observer,
   void SetScreenSaverUpdateCallback(const ScreenSaverUpdateCallback& callback);
 
  private:
+  struct AppPackEntry {
+    std::string update_url;
+    bool update_checked;
+  };
+
   struct CacheEntry {
     std::string path;
     std::string cached_version;
   };
 
-  // Maps an extension ID to its update URL.
-  typedef std::map<std::string, std::string> PolicyEntryMap;
+  // Maps an extension ID to its update URL and update information.
+  typedef std::map<std::string, AppPackEntry> PolicyEntryMap;
 
   // Maps an extension ID to a CacheEntry.
   typedef std::map<std::string, CacheEntry> CacheEntryMap;
@@ -96,6 +103,9 @@ class AppPackUpdater : public CloudPolicySubsystem::Observer,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // net::NetworkChangeNotifier::IPAddressObserver:
+  virtual void OnIPAddressChanged() OVERRIDE;
 
   // Loads the current policy and schedules a cache update.
   void LoadPolicy();
@@ -176,6 +186,10 @@ class AppPackUpdater : public CloudPolicySubsystem::Observer,
   // Sets |screen_saver_path_| and invokes |screen_saver_update_callback_| if
   // appropriate.
   void SetScreenSaverPath(const FilePath& path);
+
+  // Marks extension |id| in |app_pack_extensions_| as having already been
+  // checked for updates, if it exists.
+  void SetUpdateChecked(const std::string& id);
 
   base::WeakPtrFactory<AppPackUpdater> weak_ptr_factory_;
 
