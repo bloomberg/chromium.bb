@@ -34,7 +34,7 @@ using content::BrowserThread;
 static const int kSbTimerStartIntervalSec = 5 * 60;
 
 // The maximum time, in seconds, to wait for a response to an update request.
-static const int kSbMaxUpdateWaitSec = 10;
+static const int kSbMaxUpdateWaitSec = 30;
 
 // Maximum back off multiplier.
 static const int kSbMaxBackOff = 8;
@@ -557,7 +557,7 @@ void SafeBrowsingProtocolManager::UpdateResponseTimeout() {
   DCHECK_EQ(request_type_, UPDATE_REQUEST);
   request_.reset();
   UpdateFinished(false);
-  ScheduleNextUpdate(false);
+  ScheduleNextUpdate(true);
 }
 
 void SafeBrowsingProtocolManager::OnChunkInserted() {
