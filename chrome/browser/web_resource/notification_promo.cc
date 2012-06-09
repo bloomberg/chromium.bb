@@ -50,8 +50,11 @@ const char* PlatformString() {
 
 // Returns a string suitable for the Promo Server URL 'dist' value.
 const char* ChannelString() {
+#if defined (OS_WIN)
   // GetChannel hits the registry on Windows. See http://crbug.com/70898.
+  // TODO(achuith): Move NotificationPromo::PromoServerURL to the blocking pool.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
+#endif
   const chrome::VersionInfo::Channel channel =
       chrome::VersionInfo::GetChannel();
   switch (channel) {

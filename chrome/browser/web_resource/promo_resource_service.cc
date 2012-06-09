@@ -61,7 +61,7 @@ void PromoResourceService::RegisterUserPrefs(PrefService* prefs) {
                             PrefService::UNSYNCABLE_PREF);
   NotificationPromo::RegisterUserPrefs(prefs);
 
-  // TODO(achuith): Delete this in M21
+  // TODO(achuith): Delete this in M22.
   prefs->RegisterDoublePref(prefs::kNtpCustomLogoStart,
                             0,
                             PrefService::UNSYNCABLE_PREF);
