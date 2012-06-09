@@ -299,7 +299,7 @@ def _SetEnvForPnacl(env, root):
     pnacl_translate_flags += ' -fPIC'
 
   if env.Bit('use_sandboxed_translator'):
-    sb_flags = ' --pnacl-sb --pnacl-default-command-line'
+    sb_flags = ' --pnacl-sb'
     if env.Bit('sandboxed_translator_is_dynamic'):
       sb_flags += ' --pnacl-sb-dynamic'
     pnacl_ld_flags += sb_flags
