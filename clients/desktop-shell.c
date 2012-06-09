@@ -485,6 +485,8 @@ panel_create(struct display *display)
 	widget_set_redraw_handler(panel->widget, panel_redraw_handler);
 	widget_set_resize_handler(panel->widget, panel_resize_handler);
 	widget_set_button_handler(panel->widget, panel_button_handler);
+	
+	panel_add_clock(panel);
 
 	return panel;
 }
@@ -895,7 +897,6 @@ launcher_section_done(void *data)
 	wl_list_for_each(output, &desktop->outputs, link) {
 		panel_add_launcher(output->panel,
 				   key_launcher_icon, key_launcher_path);
-		panel_add_clock(output->panel);
 	}
 
 	free(key_launcher_icon);
