@@ -107,6 +107,7 @@
               '--library-path=>(libdir_glibc32)',
               '--output=>(nmf_glibc)',
               '--stage-dependencies=<(PRODUCT_DIR)',
+              '--toolchain=glibc',
             ],
           },
         ],

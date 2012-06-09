@@ -3,16 +3,24 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import buildbot_common
+import optparse
 import os
 import sys
 
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+SDK_SRC_DIR = os.path.dirname(SCRIPT_DIR)
+SDK_EXAMPLE_DIR = os.path.join(SDK_SRC_DIR, 'examples')
+SDK_DIR = os.path.dirname(SDK_SRC_DIR)
+SRC_DIR = os.path.dirname(SDK_DIR)
+OUT_DIR = os.path.join(SRC_DIR, 'out')
+PPAPI_DIR = os.path.join(SRC_DIR, 'ppapi')
+
 ARCHITECTURES = ['32', '64']
 
 
 def WriteMakefile(srcpath, dstpath, replacements):
-  print 'opening: %s\n' % srcpath
   text = open(srcpath, 'rb').read()
   for key in replacements:
     text = text.replace(key, replacements[key])
@@ -51,18 +59,33 @@ def SetVar(varname, values):
   return out
 
 
+def GenerateCopyList(desc):
+  sources = []
+
+  # Add sources for each target
+  for target in desc['TARGETS']:
+    sources.extend(target['SOURCES'])
+
+  # And HTML and data files
+  sources.append(desc['NAME'] + '.html')
+  sources.extend(desc.get('DATA', []))
+  return sources
+
+
 def GenerateReplacements(desc):
   # Generate target settings
   tools = desc['TOOLS']
 
+  prelaunch = ''
+  prerun = ''
+
   settings = SetVar('VALID_TOOLCHAINS', tools)
   settings+= 'TOOLCHAIN?=%s\n\n' % tools[0]
 
-  targets = []
   rules = ''
-
-  for name in desc['TARGETS']:
-    target = desc['TARGETS'][name]
+  targets = []
+  for target in desc['TARGETS']:
+    name = target['NAME']
     macro = name.upper()
     ext = GetExtType(target)
 
@@ -71,16 +94,16 @@ def GenerateReplacements(desc):
     cxx_sources = [fname for fname in sources if fname.endswith('.cc')]
 
     if cc_sources:
-      flags = target.get('CCFLAGS', '')
+      flags = target.get('CCFLAGS', ['$(NACL_CCFLAGS)'])
       settings += SetVar(macro + '_CC', cc_sources)
       settings += SetVar(macro + '_CCFLAGS', flags)
 
     if cxx_sources:
-      flags = target.get('CXXFLAGS', '')
+      flags = target.get('CXXFLAGS', ['$(NACL_CXXFLAGS)'])
       settings += SetVar(macro + '_CXX', cxx_sources)
-      settings += SetVar(macro + '_CCFLAGS', flags)
+      settings += SetVar(macro + '_CXXFLAGS', flags)
 
-    flags = target.get('LDFLAGS')
+    flags = target.get('LDFLAGS', ['$(NACL_LDFLAGS)'])
     settings += SetVar(macro + '_LDFLAGS', flags)
 
     for arch in ARCHITECTURES:
@@ -103,17 +126,25 @@ def GenerateReplacements(desc):
       rules += '%s : %s\n' % (target_name, ' '.join(object_sets))
       rules += '\t$(NACL_LINK) -o $@ $^ -m%s $(%s_LDFLAGS)\n\n' % (arch, macro)
 
-  targets = 'all : '+ ' '.join(targets) 
+  nmf = desc['NAME'] + '.nmf'
+  nmfs = '%s : %s\n' % (nmf, ' '.join(targets))
+  nmfs +='\t$(NMF) $(NMF_ARGS) -o $@ $(NMF_PATHS) $^\n'
+
+  targets = 'all : '+ ' '.join(targets + [nmf]) 
   return {
       '__PROJECT_SETTINGS__' : settings,
       '__PROJECT_TARGETS__' : targets,
-      '__PROJECT_RULES__' : rules
+      '__PROJECT_RULES__' : rules,
+      '__PROJECT_NMFS__' : nmfs,
+      '__PROJECT_PRELAUNCH__' : prelaunch,
+      '__PROJECT_PRERUN__' : prerun
+
   }
 
 
 # 'KEY' : ( <TYPE>, [Accepted Values], <Required?>)
 DSC_FORMAT = {
-    'TOOLS' : (list, ['host', 'newlib', 'glibc', 'pnacl'], True),
+    'TOOLS' : (list, ['newlib', 'glibc', 'pnacl'], True),
     'TARGETS' : (list, {
         'NAME': (str, '', True),
         'TYPE': (str, ['main', 'nexe', 'so'], True),
@@ -122,8 +153,10 @@ DSC_FORMAT = {
         'CXXFLAGS': (list, '', False),
         'LDFLAGS': (list, '', False)
     }, True),
-    'PAGE': (str, '', False),
+    'DEST': (str, ['examples', 'src'], True),
     'NAME': (str, '', False),
+    'DATA': (list, '', False),
+    'TITLE': (str, '', False),
     'DESC': (str, '', False),
     'INFO': (str, '', False)
 }
@@ -204,34 +237,48 @@ def ValidateFormat(src, format, ErrorMsg=ErrorMsgFunc):
 
   return not failed
 
-# TODO(noelallen) : Remove before turning on
-testdesc = {
-    'TOOLS': ['newlib', 'glibc'],
-    'TARGETS': {
-        'hello_world' : {
-            'TYPE' : 'main',
-            'SOURCES' : ['hello_world.c'],
-            'CCFLAGS' : '',
-            'CXXFLAGS' : '',
-            'LDFLAGS' : '',
-        },
-    },
-    'PAGE': 'hello_world.html',
-    'NAME': 'Hello World',
-    'DESC': """
-The Hello World In C example demonstrates the basic structure of all
-Native Client applications. This example loads a Native Client module.  The
-page tracks the status of the module as it load.  On a successful load, the
-module will post a message containing the string "Hello World" back to
-JavaScript which will display it as an alert.""",
-    'INFO': 'Basic HTML, JavaScript, and module architecture.'
-}
+
+def ProcessProject(options, filename):
+  print 'Processing %s...' % filename
+  # Default src directory is the directory the description was found in 
+  src_dir = os.path.dirname(os.path.abspath(filename))
+  desc = open(filename, 'rb').read()
+  desc = eval(desc, {}, {})
+  if not ValidateFormat(desc, DSC_FORMAT):
+    return False
+
+  name = desc['NAME']
+  out_dir = os.path.join(options.dstroot, desc['DEST'], name)
+  buildbot_common.MakeDir(out_dir)
+
+  # Copy sources to example directory
+  sources = GenerateCopyList(desc)
+  for src_name in sources:
+    src_file = os.path.join(src_dir, src_name)
+    dst_file = os.path.join(out_dir, src_name)
+    buildbot_common.CopyFile(src_file, dst_file)
+
+  # Add Makefile
+  repdict = GenerateReplacements(desc)
+  make_path = os.path.join(out_dir, 'Makefile')
+  WriteMakefile(options.template, make_path, repdict)
+  return True
 
 
 def main(argv):
-  srcpath = os.path.join(SCRIPT_DIR, 'template.mk')
-  repdict = GenerateReplacements(testdesc)
-  WriteMakefile(srcpath, 'out.make', repdict)
+  parser = optparse.OptionParser()
+  parser.add_option('--dstroot', help='Set root for destination.',
+      dest='dstroot', default=OUT_DIR)
+  parser.add_option('--template', help='Set the makefile template.',
+      dest='template', default=os.path.join(SCRIPT_DIR, 'template.mk'))
+
+  options, args = parser.parse_args(argv)
+  for filename in args:
+    if not ProcessProject(options, filename):
+      print '\n*** Failed to process project: %s ***' % filename
+      return 1
+
+  return 0
 
 
 if __name__ == '__main__':

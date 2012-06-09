@@ -26,6 +26,7 @@ BASIC_DESC = {
       'SOURCES' : ['hello_world.c'],
     },
   ],
+  'DEST' : 'examples'
 }
 
 class TestFunctions(unittest.TestCase):

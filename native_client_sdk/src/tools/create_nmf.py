@@ -93,7 +93,8 @@ class NmfUtils(object):
   '''
 
   def __init__(self, main_files=None, objdump='x86_64-nacl-objdump',
-               lib_path=None, extra_files=None, lib_prefix=None):
+               lib_path=None, extra_files=None, lib_prefix=None,
+               toolchain=None):
     ''' Constructor
 
     Args:
@@ -104,7 +105,9 @@ class NmfUtils(object):
       extra_files: List of extra files to include in the nmf
       lib_prefix: A list of path components to prepend to the library paths,
           both for staging the libraries and for inclusion into the nmf file.
-          Examples:  ['..'], ['lib_dir'] '''
+          Examples:  ['..'], ['lib_dir']
+      toolchain: Specify which toolchain newlib|glibc|pnacl which can require
+          different forms of the NMF.'''
     self.objdump = objdump
     self.main_files = main_files or []
     self.extra_files = extra_files or []
@@ -112,6 +115,7 @@ class NmfUtils(object):
     self.manifest = None
     self.needed = None
     self.lib_prefix = lib_prefix or []
+    self.toolchain = toolchain
 
 
   def GleanFromObjdump(self, files):
@@ -237,7 +241,7 @@ class NmfUtils(object):
           os.path.normcase(os.path.abspath(destination))):
         shutil.copy2(source, destination)
 
-  def _GenerateManifest(self, runnable=True):
+  def _GenerateManifest(self):
     '''Create a JSON formatted dict containing the files
 
     NaCl will map url requests based on architecture.  The startup NEXE
@@ -250,6 +254,7 @@ class NmfUtils(object):
     manifest = { FILES_KEY: {}, PROGRAM_KEY: {} }
     needed = self.GetNeeded()
 
+    runnable = self.toolchain != 'newlib' 
     for need in needed:
       archinfo = needed[need]
       urlinfo = { URL_KEY: archinfo.url }
@@ -277,7 +282,6 @@ class NmfUtils(object):
       fileinfo = manifest[FILES_KEY].get(name, {})
       fileinfo[archinfo.arch] = urlinfo
       manifest[FILES_KEY][name] = fileinfo
-
     self.manifest = manifest
 
   def GetManifest(self):
@@ -294,6 +298,24 @@ class NmfUtils(object):
     # a newline at the end.  This code fixes these problems.
     pretty_lines = pretty_string.split('\n')
     return '\n'.join([line.rstrip() for line in pretty_lines]) + '\n'
+
+
+def ErrorOut(text):
+  sys.stderr.write(text + '\n')
+  sys.exit(1)
+
+
+def DetermineToolchain(objdump):
+  objdump = objdump.replace('\\', '/')
+  paths = objdump.split('/')
+  count = len(paths)
+  for index in range(count - 2, 0, -1):
+    if paths[index] == 'toolchain':
+      if paths[index + 1].endswith('newlib'):
+        return 'newlib'
+      if paths[index + 1].endswith('glibc'):
+        return 'glibc'
+  ErrorOut('Could not deternime which toolchain to use.')
 
 
 def Main(argv):
@@ -315,7 +337,16 @@ def Main(argv):
   parser.add_option('-r', '--remove', dest='remove',
                     help='Remove the prefix from the files.',
                     metavar='PATH')
+  parser.add_option('-t', '--toolchain', dest='toolchain',
+                    help='Add DIRECTORY to library search path',
+                    default=None, metavar='TOOLCHAIN')
   (options, args) = parser.parse_args(argv)
+  
+  if not options.toolchain:
+    options.toolchain = DetermineToolchain(os.path.abspath(options.objdump))
+
+  if options.toolchain not in ['newlib', 'glibc']:
+    ErrorOut('Unknown toolchain: ' + str(options.toolchain))
 
   if len(args) < 1:
     parser.print_usage()
@@ -323,10 +354,10 @@ def Main(argv):
 
   nmf = NmfUtils(objdump=options.objdump,
                  main_files=args,
-                 lib_path=options.lib_path)
+                 lib_path=options.lib_path,
+                 toolchain=options.toolchain)
 
   manifest = nmf.GetManifest()
-
   if options.output is None:
     sys.stdout.write(nmf.GetJson())
   else:

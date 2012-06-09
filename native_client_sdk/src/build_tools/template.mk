@@ -7,12 +7,19 @@
 #   http://www.gnu.org/software/make/manual/make.html
 #
 
+#
+# Defaults
+#
+NACL_WARNINGS:=-Wno-long-long -Wall -Wswitch-enum -Werror -pedantic
+NACL_CCFLAGS:=-O0 -g -pthread $(NACL_WARNINGS)
+NACL_CXXFLAGS:= -O0 -g -pthread -std=gnu++98 $(NACL_WARNINGS)
+NACL_LDFLAGS:=-Wl,-as-needed -g -pthread -lppapi_cpp -lppapi 
+
 
 #
 # Project Settings
 #
 __PROJECT_SETTINGS__
-
 
 #
 # Project Targets
@@ -91,15 +98,6 @@ NACL_LINK?=$(TC_PATH)/bin/i686-nacl-g++
 
 
 #
-# NaCl Flags
-#
-WARNINGS:=-Wno-long-long -Wall -Wswitch-enum -Werror -pedantic 
-NACL_CCFLAGS:= -O0 -g -pthread $(WARNINGS)
-NACL_CXXFLAGS:= -O0 -g -pthread -std=gnu++98 $(WARNINGS)
-NACL_LDFLAGS:=-g -pthread -lppapi
-
-
-#
 # Verify we can find the Chrome executable if we need to launch it.
 #
 .PHONY: CHECK_FOR_CHROME
@@ -113,12 +111,27 @@ endif
 
 
 __PROJECT_RULES__
+#
+# NMF Manifiest generation
+#
+# Use the python script create_nmf to scan the binaries for dependencies using
+# objdump.  Pass in the (-L) paths to the default library toolchains so that we
+# can find those libraries and have it automatically copy the files (-s) to
+# the target directory for us.
+NMF:=python $(NACL_SDK_ROOT)/tools/create_nmf.py
+NMF_ARGS:=-D $(TC_PATH)/x86_64-nacl/bin/objdump -s .
+NMF_PATHS:=-L $(TC_PATH)/x86_64-nacl/lib32 -L $(TC_PATH)/x86_64-nacl/lib
 
+__PROJECT_NMFS__
+
+__PROJECT_PRERUN__
 
 RUN: all
 	python ../httpd.py
 
+__PROJECT_PRELAUNCH__
 
 LAUNCH_NEXE: CHECK_FOR_CHROME all
 	$(CHROME_PATH) $(NEXE_ARGS) "localhost:5103/$(PROJECT).html"
+
 
