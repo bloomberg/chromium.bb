@@ -372,6 +372,7 @@ const PPB_PDF* PPB_PDF_Impl::GetInterface() {
 
 // static
 void PPB_PDF_Impl::InvokePrintingForInstance(PP_Instance instance_id) {
+#if defined(ENABLE_PRINTING)
   PluginInstance* instance = HostGlobals::Get()->GetInstance(instance_id);
   if (!instance)
     return;
@@ -383,4 +384,5 @@ void PPB_PDF_Impl::InvokePrintingForInstance(PP_Instance instance_id) {
   PrintWebViewHelper* print_view_helper = PrintWebViewHelper::Get(render_view);
   if (print_view_helper)
     print_view_helper->PrintNode(element);
+#endif
 }

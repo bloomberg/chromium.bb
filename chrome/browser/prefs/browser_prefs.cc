@@ -151,9 +151,12 @@ void RegisterLocalState(PrefService* local_state) {
   FlagsUI::RegisterPrefs(local_state);
   ManagedMode::RegisterPrefs(local_state);
   NewTabPageHandler::RegisterPrefs(local_state);
-  printing::PrintJobManager::RegisterPrefs(local_state);
   PromoResourceService::RegisterPrefs(local_state);
   UpgradeDetector::RegisterPrefs(local_state);
+#endif
+
+#if defined(ENABLE_PRINTING)
+  printing::PrintJobManager::RegisterPrefs(local_state);
 #endif
 
 #if defined(OS_CHROMEOS)

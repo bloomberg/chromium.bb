@@ -1169,6 +1169,7 @@ int PluginInstance::PrintBegin(const WebPrintParams& print_params) {
 }
 
 bool PluginInstance::PrintPage(int page_number, WebKit::WebCanvas* canvas) {
+#if defined(ENABLE_PRINTING)
   DCHECK(plugin_print_interface_);
   PP_PrintPageNumberRange_Dev page_range;
   page_range.first_page_number = page_range.last_page_number = page_number;
@@ -1188,6 +1189,9 @@ bool PluginInstance::PrintPage(int page_number, WebKit::WebCanvas* canvas) {
   {
     return PrintPageHelper(&page_range, 1, canvas);
   }
+#else  // defined(ENABLED_PRINTING)
+  return false;
+#endif
 }
 
 bool PluginInstance::PrintPageHelper(PP_PrintPageNumberRange_Dev* page_ranges,
@@ -1415,6 +1419,7 @@ PluginDelegate::PlatformContext3D* PluginInstance::CreateContext3D() {
 
 bool PluginInstance::PrintPDFOutput(PP_Resource print_output,
                                     WebKit::WebCanvas* canvas) {
+#if defined(ENABLE_PRINTING)
   ::ppapi::thunk::EnterResourceNoLock<PPB_Buffer_API> enter(print_output, true);
   if (enter.failed())
     return false;
@@ -1518,6 +1523,9 @@ bool PluginInstance::PrintPDFOutput(PP_Resource print_output,
 #endif  // defined(OS_WIN)
 
   return ret;
+#else  // defined(ENABLE_PRINTING)
+  return false;
+#endif
 }
 
 PPB_Graphics2D_Impl* PluginInstance::GetBoundGraphics2D() const {

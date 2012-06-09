@@ -371,6 +371,7 @@ void ChromeContentUtilityClient::OnParseJSON(const std::string& json) {
 
 void ChromeContentUtilityClient::OnGetPrinterCapsAndDefaults(
     const std::string& printer_name) {
+#if defined(ENABLE_PRINTING)
   scoped_refptr<printing::PrintBackend> print_backend =
       printing::PrintBackend::CreateInstance(NULL);
   printing::PrinterCapsAndDefaults printer_info;
@@ -381,7 +382,9 @@ void ChromeContentUtilityClient::OnGetPrinterCapsAndDefaults(
   if (print_backend->GetPrinterCapsAndDefaults(printer_name, &printer_info)) {
     Send(new ChromeUtilityHostMsg_GetPrinterCapsAndDefaults_Succeeded(
         printer_name, printer_info));
-  } else {
+  } else
+#endif
+  {
     Send(new ChromeUtilityHostMsg_GetPrinterCapsAndDefaults_Failed(
         printer_name));
   }

@@ -235,15 +235,16 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   // extensions, etc) aren't supported.
   if (url.host() == chrome::kChromeUIInspectHost)
     return &NewWebUI<InspectUI>;
-  // Android doesn't support print/print-preview.
+  // Android does not support plugins for now.
+  if (url.host() == chrome::kChromeUIPluginsHost)
+    return &NewWebUI<PluginsUI>;
+#endif
+#if defined(ENABLE_PRINTING)
   if (url.host() == chrome::kChromeUIPrintHost &&
       !g_browser_process->local_state()->GetBoolean(
           prefs::kPrintPreviewDisabled)) {
     return &NewWebUI<PrintPreviewUI>;
   }
-  // Android does not support plugins for now.
-  if (url.host() == chrome::kChromeUIPluginsHost)
-    return &NewWebUI<PluginsUI>;
 #endif
 #if defined(OS_WIN)
   if (url.host() == chrome::kChromeUIConflictsHost)

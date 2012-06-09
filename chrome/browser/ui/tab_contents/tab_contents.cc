@@ -121,7 +121,6 @@ TabContents::TabContents(WebContents* contents)
   zoom_controller_.reset(new ZoomController(this));
 
 #if !defined(OS_ANDROID)
-  print_view_manager_.reset(new printing::PrintViewManager(this));
   sad_tab_helper_.reset(new SadTabHelper(contents));
 #endif
 
@@ -147,6 +146,10 @@ TabContents::TabContents(WebContents* contents)
 #if !defined(OS_ANDROID)
   if (OmniboxSearchHint::IsEnabled(profile()))
     omnibox_search_hint_.reset(new OmniboxSearchHint(this));
+#endif
+
+#if defined(ENABLE_PRINTING)
+  print_view_manager_.reset(new printing::PrintViewManager(this));
   print_preview_.reset(new printing::PrintPreviewMessageHandler(contents));
 #endif
 

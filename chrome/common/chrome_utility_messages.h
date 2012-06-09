@@ -161,11 +161,13 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_ParseJSON_Succeeded,
 IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_ParseJSON_Failed,
                      std::string /* error message, if any*/)
 
+#if defined(ENABLE_PRINTING)
 // Reply when the utility process has succeeded in obtaining the printer
 // capabilities and defaults.
 IPC_MESSAGE_CONTROL2(ChromeUtilityHostMsg_GetPrinterCapsAndDefaults_Succeeded,
                      std::string /* printer name */,
                      printing::PrinterCapsAndDefaults)
+#endif
 
 // Reply when the utility process has failed to obtain the printer
 // capabilities and defaults.

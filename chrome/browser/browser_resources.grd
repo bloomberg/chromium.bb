@@ -35,10 +35,12 @@
         <include name="IDR_CERTIFICATE_VIEWER_JS" file="resources\certificate_viewer.js" type="BINDATA" />
         <include name="IDR_CERTIFICATE_VIEWER_CSS" file="resources\certificate_viewer.css" type="BINDATA" />
       </if>
-      <include name="IDR_CLOUDPRINT_MANIFEST" file="resources\cloud_print_app\manifest.json" type="BINDATA" />
-      <include name="IDR_CLOUD_PRINT_SETUP_DONE_HTML" file="resources\cloud_print\cloud_print_setup_done.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_CLOUD_PRINT_SETUP_FLOW_HTML" file="resources\cloud_print\cloud_print_setup_flow.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_CLOUD_PRINT_SETUP_LOGIN_HTML" file="resources\cloud_print\cloud_print_setup_login.html" flattenhtml="true" type="BINDATA" />
+      <if expr="pp_ifdef('enable_printing')">
+        <include name="IDR_CLOUDPRINT_MANIFEST" file="resources\cloud_print_app\manifest.json" type="BINDATA" />
+        <include name="IDR_CLOUD_PRINT_SETUP_DONE_HTML" file="resources\cloud_print\cloud_print_setup_done.html" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_CLOUD_PRINT_SETUP_FLOW_HTML" file="resources\cloud_print\cloud_print_setup_flow.html" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_CLOUD_PRINT_SETUP_LOGIN_HTML" file="resources\cloud_print\cloud_print_setup_login.html" flattenhtml="true" type="BINDATA" />
+      </if>
       <include name="IDR_CRASHES_HTML" file="resources\crashes.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_CRASHES_JS" file="resources\crashes.js" type="BINDATA" />
       <include name="IDR_CREDITS_HTML" file="resources\about_credits.html" flattenhtml="true" type="BINDATA" />
@@ -101,20 +103,22 @@
       <include name="IDR_POLICY_CSS" file="resources\policy.css" type="BINDATA"/>
       <include name="IDR_POLICY_HTML" file="resources\policy.html" flattenhtml="true" allowexternalscript="true" type="BINDATA"/>
       <include name="IDR_POLICY_JS" file="resources\policy.js" type="BINDATA"/>
-      <include name="IDR_PRINT_PREVIEW_HTML" file="resources\print_preview\print_preview.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-      <include name="IDR_PRINT_PREVIEW_JS" file="resources\print_preview\print_preview.js" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_PRINT_PREVIEW_IMAGES_CLASSIC_PRINTER_32"
-               file="resources\print_preview\images\classic_printer_32.png" type="BINDATA" />
-      <include name="IDR_PRINT_PREVIEW_IMAGES_CLOUD_PRINTER_32"
-               file="resources\print_preview\images\cloud_printer_32.png" type="BINDATA" />
-      <include name="IDR_PRINT_PREVIEW_IMAGES_CLOUD_PRINTER_SHARED_32"
-               file="resources\print_preview\images\cloud_printer_shared_32.png" type="BINDATA" />
-      <include name="IDR_PRINT_PREVIEW_IMAGES_GOOGLE_PROMOTED_PRINTER_32"
-               file="resources\print_preview\images\google_promoted_printer_32.png" type="BINDATA" />
-      <include name="IDR_PRINT_PREVIEW_IMAGES_MOBILE_32"
-               file="resources\print_preview\images\mobile_32.png" type="BINDATA" />
-      <include name="IDR_PRINT_PREVIEW_IMAGES_MOBILE_SHARED_32"
-               file="resources\print_preview\images\mobile_shared_32.png" type="BINDATA" />
+      <if expr="pp_ifdef('enable_printing')">
+        <include name="IDR_PRINT_PREVIEW_HTML" file="resources\print_preview\print_preview.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_PRINT_PREVIEW_JS" file="resources\print_preview\print_preview.js" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_PRINT_PREVIEW_IMAGES_CLASSIC_PRINTER_32"
+                 file="resources\print_preview\images\classic_printer_32.png" type="BINDATA" />
+        <include name="IDR_PRINT_PREVIEW_IMAGES_CLOUD_PRINTER_32"
+                 file="resources\print_preview\images\cloud_printer_32.png" type="BINDATA" />
+        <include name="IDR_PRINT_PREVIEW_IMAGES_CLOUD_PRINTER_SHARED_32"
+                 file="resources\print_preview\images\cloud_printer_shared_32.png" type="BINDATA" />
+        <include name="IDR_PRINT_PREVIEW_IMAGES_GOOGLE_PROMOTED_PRINTER_32"
+                 file="resources\print_preview\images\google_promoted_printer_32.png" type="BINDATA" />
+        <include name="IDR_PRINT_PREVIEW_IMAGES_MOBILE_32"
+                 file="resources\print_preview\images\mobile_32.png" type="BINDATA" />
+        <include name="IDR_PRINT_PREVIEW_IMAGES_MOBILE_SHARED_32"
+                 file="resources\print_preview\images\mobile_shared_32.png" type="BINDATA" />
+      </if>
       <include name="IDR_PROFILER_HTML" file="resources\profiler\profiler.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_PROFILER_JS" file="resources\profiler\profiler.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_READER_OUT_OF_DATE_HTML" file="resources\reader_out_of_date.html" flattenhtml="true" type="BINDATA" />

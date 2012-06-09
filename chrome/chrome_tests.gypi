@@ -2106,6 +2106,12 @@
             ['exclude', '^browser/automation/'],
           ],
         }],
+        ['enable_printing!=1', {
+          'sources/': [
+            ['exclude', '^browser/printing/'],
+            ['exclude', '^browser/ui/webui/print_preview/'],
+          ],
+        }],
         ['enable_session_service!=1', {
           'sources!': [
             'browser/sessions/session_service_unittest.cc',
@@ -2366,14 +2372,12 @@
           'sources/': [
             ['exclude', '^browser/captive_portal/'],
             ['exclude', '^browser/chrome_to_mobile'],
-            ['exclude', '^browser/printing/'],
             ['exclude', '^browser/themes/'],
             ['exclude', '^browser/ui/panels'],
             ['exclude', '^browser/ui/tabs/'],
             ['exclude', '^browser/ui/toolbar/'],
             ['exclude', '^browser/ui/webui/options/'],
             ['exclude', '^browser/ui/webui/options2/'],
-            ['exclude', '^browser/ui/webui/print_preview/'],
             # No service process on Android.
             ['exclude', '^common/service_'],
             ['exclude', '^service/'],

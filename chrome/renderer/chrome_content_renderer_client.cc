@@ -254,7 +254,9 @@ void ChromeContentRendererClient::RenderViewCreated(
   }
   new ExtensionHelper(render_view, extension_dispatcher_.get());
   new PageLoadHistograms(render_view, histogram_snapshots_.get());
+#if defined(ENABLE_PRINTING)
   new PrintWebViewHelper(render_view);
+#endif
   new SearchBox(render_view);
   new SpellCheckProvider(render_view, this);
   new prerender::PrerendererClient(render_view);

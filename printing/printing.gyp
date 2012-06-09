@@ -87,6 +87,11 @@
         ],
       },
       'conditions': [
+        ['enable_printing!=1', {
+          'sources/': [
+            ['exclude', '.'],
+          ],
+        }],
         ['toolkit_uses_gtk == 0',{
             'sources/': [['exclude', '_cairo\\.cc$']]
         }],
@@ -209,6 +214,12 @@
         'units_unittest.cc',
       ],
       'conditions': [
+        ['enable_printing!=1', {
+          'sources/': [
+            ['exclude', '.'],
+            ['include', 'run_all_unittests.cc'],
+          ],
+        }],
         ['toolkit_uses_gtk == 0', {'sources/': [['exclude', '_gtk_unittest\\.cc$']]}],
         ['OS!="mac"', {'sources/': [['exclude', '_mac_unittest\\.(cc|mm?)$']]}],
         ['OS!="win"', {'sources/': [['exclude', '_win_unittest\\.cc$']]}],

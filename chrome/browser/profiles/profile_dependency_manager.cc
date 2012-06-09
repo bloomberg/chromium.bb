@@ -188,7 +188,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   captive_portal::CaptivePortalServiceFactory::GetInstance();
 #endif
   ChromeURLDataManagerFactory::GetInstance();
-#if !defined(OS_ANDROID)
+#if defined(ENABLE_PRINTING)
   CloudPrintProxyServiceFactory::GetInstance();
 #endif
   CookieSettings::Factory::GetInstance();

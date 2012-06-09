@@ -46,7 +46,6 @@ const char* const kChromePaths[] = {
   chrome::kChromeUIPluginsHost,
   chrome::kChromeUIPolicyHost,
   chrome::kChromeUIPredictorsHost,
-  chrome::kChromeUIPrintHost,
   chrome::kChromeUIProfilerHost,
   chrome::kChromeUIQuotaInternalsHost,
   chrome::kChromeUISessionsHost,
@@ -77,6 +76,9 @@ const char* const kChromePaths[] = {
   chrome::kChromeUIProxySettingsHost,
   chrome::kChromeUISystemInfoHost,
   chrome::kChromeUIWallpaperHost,
+#endif
+#if defined(ENABLE_PRINTING)
+  chrome::kChromeUIPrintHost,
 #endif
 };
 
