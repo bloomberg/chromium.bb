@@ -271,6 +271,7 @@ while read name id comment ; do
       # Patch sources and build the toolchains.
       if [[ "$name" != "ppapi14" || "$3" != glibc ]]; then
 	make -C native_client/tools clean
+	rm -f native_client/tools/SRC/*
 	for i in binutils gcc gdb glibc linux-headers-for-nacl newlib ; do (
 	  if [[ "$name" != "ppapi14" || "$i" != glibc ]]; then
 	    rm -rf native_client/tools/SRC/"$i"
