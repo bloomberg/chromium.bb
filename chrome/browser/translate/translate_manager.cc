@@ -27,7 +27,7 @@
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -317,13 +317,12 @@ void TranslateManager::Observe(int type,
         return;
       }
 
-      TabContentsWrapper* wrapper =
-          TabContentsWrapper::GetCurrentWrapperForContents(
-              controller->GetWebContents());
-      if (!wrapper || !wrapper->translate_tab_helper())
+      TabContents* tab_contents =
+          TabContents::FromWebContents(controller->GetWebContents());
+      if (!tab_contents || !tab_contents->translate_tab_helper())
         return;
 
-      TranslateTabHelper* helper = wrapper->translate_tab_helper();
+      TranslateTabHelper* helper = tab_contents->translate_tab_helper();
       if (!load_details->is_main_frame &&
           helper->language_state().translation_declined()) {
         // Some sites (such as Google map) may trigger sub-frame navigations
@@ -355,13 +354,12 @@ void TranslateManager::Observe(int type,
       WebContents* tab = content::Source<WebContents>(source).ptr();
       // We may get this notifications multiple times.  Make sure to translate
       // only once.
-      TabContentsWrapper* wrapper =
-          TabContentsWrapper::GetCurrentWrapperForContents(tab);
-      if (!wrapper || !wrapper->translate_tab_helper())
+      TabContents* tab_contents = TabContents::FromWebContents(tab);
+      if (!tab_contents || !tab_contents->translate_tab_helper())
         return;
 
       LanguageState& language_state =
-          wrapper->translate_tab_helper()->language_state();
+          tab_contents->translate_tab_helper()->language_state();
       if (language_state.page_translatable() &&
           !language_state.translation_pending() &&
           !language_state.translation_declined() &&
@@ -447,32 +445,33 @@ void TranslateManager::OnURLFetchComplete(const net::URLFetcher* source) {
     for (iter = pending_requests_.begin(); iter != pending_requests_.end();
          ++iter) {
       const PendingRequest& request = *iter;
-      WebContents* tab = tab_util::GetWebContentsByID(request.render_process_id,
-                                                      request.render_view_id);
-      if (!tab) {
+      WebContents* web_contents =
+          tab_util::GetWebContentsByID(request.render_process_id,
+                                       request.render_view_id);
+      if (!web_contents) {
         // The tab went away while we were retrieving the script.
         continue;
       }
-      NavigationEntry* entry = tab->GetController().GetActiveEntry();
+      NavigationEntry* entry = web_contents->GetController().GetActiveEntry();
       if (!entry || entry->GetPageID() != request.page_id) {
         // We navigated away from the page the translation was triggered on.
         continue;
       }
 
       if (error) {
-        TabContentsWrapper* wrapper =
-            TabContentsWrapper::GetCurrentWrapperForContents(tab);
-        InfoBarTabHelper* infobar_helper = wrapper->infobar_tab_helper();
+        TabContents* tab_contents = TabContents::FromWebContents(web_contents);
+        InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
         ShowInfoBar(
-            tab, TranslateInfoBarDelegate::CreateErrorDelegate(
+            web_contents,
+            TranslateInfoBarDelegate::CreateErrorDelegate(
                 TranslateErrors::NETWORK,
                 infobar_helper,
-                wrapper->profile()->GetPrefs(),
+                tab_contents->profile()->GetPrefs(),
                 request.source_lang,
                 request.target_lang));
       } else {
         // Translate the page.
-        DoTranslatePage(tab, translate_script_,
+        DoTranslatePage(web_contents, translate_script_,
                         request.source_lang, request.target_lang);
       }
     }
@@ -491,8 +490,8 @@ void TranslateManager::OnURLFetchComplete(const net::URLFetcher* source) {
 }
 
 // static
-bool TranslateManager::IsShowingTranslateInfobar(WebContents* tab) {
-  return GetTranslateInfoBarDelegate(tab) != NULL;
+bool TranslateManager::IsShowingTranslateInfobar(WebContents* web_contents) {
+  return GetTranslateInfoBarDelegate(web_contents) != NULL;
 }
 
 TranslateManager::TranslateManager()
@@ -508,16 +507,17 @@ TranslateManager::TranslateManager()
                               content::NotificationService::AllSources());
 }
 
-void TranslateManager::InitiateTranslation(WebContents* tab,
+void TranslateManager::InitiateTranslation(WebContents* web_contents,
                                            const std::string& page_lang) {
 #ifdef FILE_MANAGER_EXTENSION
-  const GURL& page_url = tab->GetURL();
+  const GURL& page_url = web_contents->GetURL();
   if (page_url.SchemeIs("chrome-extension") &&
       page_url.DomainIs(kFileBrowserDomain))
     return;
 #endif
 
-  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   PrefService* prefs = profile->GetOriginalProfile()->GetPrefs();
   if (!prefs->GetBoolean(prefs::kEnableTranslate))
     return;
@@ -527,14 +527,14 @@ void TranslateManager::InitiateTranslation(WebContents* tab,
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableTranslate))
     return;
 
-  NavigationEntry* entry = tab->GetController().GetActiveEntry();
+  NavigationEntry* entry = web_contents->GetController().GetActiveEntry();
   if (!entry) {
     // This can happen for popups created with window.open("").
     return;
   }
 
   // If there is already a translate infobar showing, don't show another one.
-  if (GetTranslateInfoBarDelegate(tab))
+  if (GetTranslateInfoBarDelegate(web_contents))
     return;
 
   std::string target_lang = GetTargetLanguage(prefs);
@@ -552,7 +552,7 @@ void TranslateManager::InitiateTranslation(WebContents* tab,
   // - any language the user configured as accepted languages.
   if (!IsTranslatableURL(entry->GetURL()) || language_code == target_lang ||
       !TranslatePrefs::CanTranslate(prefs, language_code, entry->GetURL()) ||
-      IsAcceptLanguage(tab, language_code)) {
+      IsAcceptLanguage(web_contents, language_code)) {
     return;
   }
 
@@ -561,52 +561,52 @@ void TranslateManager::InitiateTranslation(WebContents* tab,
   // feature; the user will get an infobar, so they can control whether the
   // page's text is sent to the translate server.
   std::string auto_target_lang;
-  if (!tab->GetBrowserContext()->IsOffTheRecord() &&
+  if (!web_contents->GetBrowserContext()->IsOffTheRecord() &&
       TranslatePrefs::ShouldAutoTranslate(prefs, language_code,
           &auto_target_lang)) {
     // We need to confirm that the saved target language is still supported.
     // Also, GetLanguageCode will take care of removing country code if any.
     auto_target_lang = GetLanguageCode(auto_target_lang);
     if (IsSupportedLanguage(auto_target_lang)) {
-      TranslatePage(tab, language_code, auto_target_lang);
+      TranslatePage(web_contents, language_code, auto_target_lang);
       return;
     }
   }
 
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab);
-  if (!wrapper || !wrapper->translate_tab_helper())
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
+  if (!tab_contents || !tab_contents->translate_tab_helper())
     return;
 
-  TranslateTabHelper* helper = wrapper->translate_tab_helper();
+  TranslateTabHelper* helper = tab_contents->translate_tab_helper();
   std::string auto_translate_to = helper->language_state().AutoTranslateTo();
   if (!auto_translate_to.empty()) {
     // This page was navigated through a click from a translated page.
-    TranslatePage(tab, language_code, auto_translate_to);
+    TranslatePage(web_contents, language_code, auto_translate_to);
     return;
   }
 
-  InfoBarTabHelper* infobar_helper = wrapper->infobar_tab_helper();
+  InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
   // Prompts the user if he/she wants the page translated.
   infobar_helper->AddInfoBar(
       TranslateInfoBarDelegate::CreateDelegate(
           TranslateInfoBarDelegate::BEFORE_TRANSLATE, infobar_helper,
-          wrapper->profile()->GetPrefs(), language_code, target_lang));
+          tab_contents->profile()->GetPrefs(), language_code, target_lang));
 }
 
 void TranslateManager::InitiateTranslationPosted(
     int process_id, int render_id, const std::string& page_lang) {
   // The tab might have been closed.
-  WebContents* tab = tab_util::GetWebContentsByID(process_id, render_id);
-  if (!tab)
+  WebContents* web_contents =
+      tab_util::GetWebContentsByID(process_id, render_id);
+  if (!web_contents)
     return;
 
-  TranslateTabHelper* helper = TabContentsWrapper::GetCurrentWrapperForContents(
-      tab)->translate_tab_helper();
+  TranslateTabHelper* helper =
+      TabContents::FromWebContents(web_contents)->translate_tab_helper();
   if (helper->language_state().translation_pending())
     return;
 
-  InitiateTranslation(tab, GetLanguageCode(page_lang));
+  InitiateTranslation(web_contents, GetLanguageCode(page_lang));
 }
 
 void TranslateManager::TranslatePage(WebContents* web_contents,
@@ -618,12 +618,11 @@ void TranslateManager::TranslatePage(WebContents* web_contents,
     return;
   }
 
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
-  InfoBarTabHelper* infobar_helper = wrapper->infobar_tab_helper();
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
+  InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
   ShowInfoBar(web_contents, TranslateInfoBarDelegate::CreateDelegate(
       TranslateInfoBarDelegate::TRANSLATING, infobar_helper,
-      wrapper->profile()->GetPrefs(), source_lang, target_lang));
+      tab_contents->profile()->GetPrefs(), source_lang, target_lang));
 
   if (!translate_script_.empty()) {
     DoTranslatePage(web_contents, translate_script_, source_lang, target_lang);
@@ -652,8 +651,8 @@ void TranslateManager::RevertTranslation(WebContents* web_contents) {
   web_contents->GetRenderViewHost()->Send(new ChromeViewMsg_RevertTranslation(
       web_contents->GetRenderViewHost()->GetRoutingID(), entry->GetPageID()));
 
-  TranslateTabHelper* helper = TabContentsWrapper::GetCurrentWrapperForContents(
-      web_contents)->translate_tab_helper();
+  TranslateTabHelper* helper =
+      TabContents::FromWebContents(web_contents)->translate_tab_helper();
   helper->language_state().set_current_language(
       helper->language_state().original_language());
 }
@@ -668,8 +667,8 @@ void TranslateManager::ReportLanguageDetectionError(WebContents* web_contents) {
   report_error_url += net::EscapeUrlEncodedData(page_url.spec(), true);
   report_error_url += "&sl=";
 
-  TranslateTabHelper* helper = TabContentsWrapper::GetCurrentWrapperForContents(
-      web_contents)->translate_tab_helper();
+  TranslateTabHelper* helper =
+      TabContents::FromWebContents(web_contents)->translate_tab_helper();
   report_error_url += helper->language_state().original_language();
   report_error_url += "&hl=";
   report_error_url +=
@@ -686,34 +685,32 @@ void TranslateManager::ReportLanguageDetectionError(WebContents* web_contents) {
                                  content::PAGE_TRANSITION_AUTO_BOOKMARK);
 }
 
-void TranslateManager::DoTranslatePage(WebContents* tab,
+void TranslateManager::DoTranslatePage(WebContents* web_contents,
                                        const std::string& translate_script,
                                        const std::string& source_lang,
                                        const std::string& target_lang) {
-  NavigationEntry* entry = tab->GetController().GetActiveEntry();
+  NavigationEntry* entry = web_contents->GetController().GetActiveEntry();
   if (!entry) {
     NOTREACHED();
     return;
   }
 
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab);
-  if (!wrapper || !wrapper->translate_tab_helper())
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
+  if (!tab_contents || !tab_contents->translate_tab_helper())
     return;
 
-  wrapper->translate_tab_helper()->language_state().set_translation_pending(
-      true);
-  tab->GetRenderViewHost()->Send(new ChromeViewMsg_TranslatePage(
-      tab->GetRenderViewHost()->GetRoutingID(), entry->GetPageID(),
+  tab_contents->translate_tab_helper()->
+      language_state().set_translation_pending(true);
+  web_contents->GetRenderViewHost()->Send(new ChromeViewMsg_TranslatePage(
+      web_contents->GetRenderViewHost()->GetRoutingID(), entry->GetPageID(),
       translate_script, source_lang, target_lang));
 }
 
-void TranslateManager::PageTranslated(WebContents* tab,
+void TranslateManager::PageTranslated(WebContents* web_contents,
                                       PageTranslatedDetails* details) {
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab);
-  InfoBarTabHelper* infobar_helper = wrapper->infobar_tab_helper();
-  PrefService* prefs = wrapper->profile()->GetPrefs();
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
+  InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
+  PrefService* prefs = tab_contents->profile()->GetPrefs();
 
   // Create the new infobar to display.
   TranslateInfoBarDelegate* infobar;
@@ -737,12 +734,13 @@ void TranslateManager::PageTranslated(WebContents* tab,
         TranslateInfoBarDelegate::AFTER_TRANSLATE, infobar_helper,
         prefs, details->source_language, details->target_language);
   }
-  ShowInfoBar(tab, infobar);
+  ShowInfoBar(web_contents, infobar);
 }
 
-bool TranslateManager::IsAcceptLanguage(WebContents* tab,
+bool TranslateManager::IsAcceptLanguage(WebContents* web_contents,
                                         const std::string& language) {
-  Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   profile = profile->GetOriginalProfile();
   PrefService* pref_service = profile->GetPrefs();
   PrefServiceLanguagesMap::const_iterator iter =
@@ -847,16 +845,16 @@ void TranslateManager::RequestTranslateScript() {
   translate_script_request_pending_->Start();
 }
 
-void TranslateManager::ShowInfoBar(content::WebContents* tab,
+void TranslateManager::ShowInfoBar(content::WebContents* web_contents,
                                    TranslateInfoBarDelegate* infobar) {
   DCHECK(infobar != NULL);
-  TranslateInfoBarDelegate* old_infobar = GetTranslateInfoBarDelegate(tab);
+  TranslateInfoBarDelegate* old_infobar =
+      GetTranslateInfoBarDelegate(web_contents);
   infobar->UpdateBackgroundAnimation(old_infobar);
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab);
-  if (!wrapper)
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
+  if (!tab_contents)
     return;
-  InfoBarTabHelper* infobar_helper = wrapper->infobar_tab_helper();
+  InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
   if (old_infobar) {
     // There already is a translate infobar, simply replace it.
     infobar_helper->ReplaceInfoBar(old_infobar, infobar);
@@ -892,12 +890,11 @@ std::string TranslateManager::GetTargetLanguage(PrefService* prefs) {
 
 // static
 TranslateInfoBarDelegate* TranslateManager::GetTranslateInfoBarDelegate(
-    WebContents* tab) {
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab);
-  if (!wrapper)
+    WebContents* web_contents) {
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
+  if (!tab_contents)
     return NULL;
-  InfoBarTabHelper* infobar_helper = wrapper->infobar_tab_helper();
+  InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
 
   for (size_t i = 0; i < infobar_helper->infobar_count(); ++i) {
     TranslateInfoBarDelegate* delegate =

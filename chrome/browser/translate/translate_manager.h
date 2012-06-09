@@ -94,7 +94,7 @@ class TranslateManager : public content::NotificationObserver,
   }
 
   // Convenience method to know if a tab is showing a translate infobar.
-  static bool IsShowingTranslateInfobar(content::WebContents* tab);
+  static bool IsShowingTranslateInfobar(content::WebContents* web_contents);
 
   // Returns true if the URL can be translated.
   static bool IsTranslatableURL(const GURL& url);
@@ -142,7 +142,7 @@ class TranslateManager : public content::NotificationObserver,
 
   // Starts the translation process on |tab| containing the page in the
   // |page_lang| language.
-  void InitiateTranslation(content::WebContents* tab,
+  void InitiateTranslation(content::WebContents* web_contents,
                            const std::string& page_lang);
 
   // If the tab identified by |process_id| and |render_id| has been closed, this
@@ -158,12 +158,13 @@ class TranslateManager : public content::NotificationObserver,
                        const std::string& target_lang);
 
   // Shows the after translate or error infobar depending on the details.
-  void PageTranslated(content::WebContents* tab,
+  void PageTranslated(content::WebContents* web_contents,
                       PageTranslatedDetails* details);
 
   // Returns true if the passed language has been configured by the user as an
   // accept language.
-  bool IsAcceptLanguage(content::WebContents* tab, const std::string& language);
+  bool IsAcceptLanguage(content::WebContents* web_contents,
+                        const std::string& language);
 
   // Initializes the |accept_languages_| language table based on the associated
   // preference in |prefs|.
@@ -175,7 +176,7 @@ class TranslateManager : public content::NotificationObserver,
 
   // Shows the specified translate |infobar| in the given |tab|.  If a current
   // translate infobar is showing, it just replaces it with the new one.
-  void ShowInfoBar(content::WebContents* tab,
+  void ShowInfoBar(content::WebContents* web_contents,
                    TranslateInfoBarDelegate* infobar);
 
   // Returns the language to translate to. The language returned is the
@@ -188,7 +189,7 @@ class TranslateManager : public content::NotificationObserver,
 
   // Returns the translate info bar showing in |tab| or NULL if none is showing.
   static TranslateInfoBarDelegate* GetTranslateInfoBarDelegate(
-      content::WebContents* tab);
+      content::WebContents* web_contents);
 
   content::NotificationRegistrar notification_registrar_;
 
