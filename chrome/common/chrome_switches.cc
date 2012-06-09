@@ -899,11 +899,6 @@ const char kNoPings[]                       = "no-pings";
 // other proxy server flags that are passed.
 const char kNoProxyServer[]                 = "no-proxy-server";
 
-// Stronger version of insecure content blocking, for the case where the
-// blocking would only be applied to a whitelist of domains. Switch is expected
-// to become obsolete once the whitelist goes away.
-const char kNoRunningInsecureContent[]      = "no-running-insecure-content";
-
 // Disables the service process from adding itself as an autorun process. This
 // does not delete existing autorun registrations, it just prevents the service
 // from registering a new one.

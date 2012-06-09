@@ -242,7 +242,6 @@ extern const char kNoManaged[];
 extern const char kNoNetworkProfileWarning[];
 extern const char kNoProxyServer[];
 extern const char kNoPings[];
-extern const char kNoRunningInsecureContent[];
 extern const char kNoServiceAutorun[];
 extern const char kNoStartupWindow[];
 extern const char kNotifyCloudPrintTokenExpired[];

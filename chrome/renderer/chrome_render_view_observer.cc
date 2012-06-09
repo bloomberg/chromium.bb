@@ -154,8 +154,6 @@ enum {
 
 // Constants for mixed-content blocking.
 static const char kGoogleDotCom[] = "google.com";
-static const char kFacebookDotCom[] = "facebook.com";
-static const char kTwitterDotCom[] = "twitter.com";
 
 static bool PaintViewIntoCanvas(WebView* view,
                                 skia::PlatformCanvas& canvas) {
@@ -549,10 +547,6 @@ bool ChromeRenderViewObserver::allowRunningInsecureContent(
     bool allowed_per_settings,
     const WebKit::WebSecurityOrigin& origin,
     const WebKit::WebURL& resource_url) {
-  // Single value to control permissive mixed content behaviour.  We flip
-  // this at the present between beta / stable releases.
-  const bool block_insecure_content_on_all_domains = true;
-
   std::string origin_host(origin.host().utf8());
   GURL frame_gurl(frame->document().url());
   DCHECK_EQ(frame_gurl.host(), origin_host);
@@ -606,15 +600,7 @@ bool ChromeRenderViewObserver::allowRunningInsecureContent(
   else if (EndsWith(resource_gurl.path(), kDotSWF, false))
     SendInsecureContentSignal(INSECURE_CONTENT_RUN_SWF);
 
-  if (!allow_running_insecure_content_ &&
-      !allowed_per_settings &&
-      (block_insecure_content_on_all_domains ||
-       CommandLine::ForCurrentProcess()->HasSwitch(
-           switches::kNoRunningInsecureContent) ||
-       is_google ||
-       isHostInDomain(origin_host, kFacebookDotCom) ||
-       isHostInDomain(origin_host, kTwitterDotCom) ||
-       IsStrictSecurityHost(origin_host))) {
+  if (!allow_running_insecure_content_ && !allowed_per_settings) {
     if (!warned_about_insecure_content_) {
       warned_about_insecure_content_ = true;
       Send(new ChromeViewHostMsg_DidBlockRunningInsecureContent(routing_id()));
