@@ -244,6 +244,12 @@ class UITestBase {
   // browser when launched.
   void AppendBrowserLaunchSwitch(const char* name, const char* value);
 
+  // Pass-through to AutomationProxy::BeginTracing.
+  bool BeginTracing(const std::string& categories);
+
+  // Pass-through to AutomationProxy::EndTracing.
+  std::string EndTracing();
+
  protected:
   // String to display when a test fails because the crash service isn't
   // running.

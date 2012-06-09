@@ -516,6 +516,17 @@ void UITestBase::AppendBrowserLaunchSwitch(const char* name,
   launch_arguments_.AppendSwitchASCII(name, value);
 }
 
+bool UITestBase::BeginTracing(const std::string& categories) {
+  return automation()->BeginTracing(categories);
+}
+
+std::string UITestBase::EndTracing() {
+  std::string json_trace_output;
+  if (!automation()->EndTracing(&json_trace_output))
+    return "";
+  return json_trace_output;
+}
+
 // UITest methods
 
 void UITest::SetUp() {
