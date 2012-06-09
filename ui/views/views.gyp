@@ -560,6 +560,11 @@
             '../third_party/wtl/include',
           ],
         }],
+        ['OS=="win" and win_use_allocator_shim==1', {
+          'dependencies': [
+            '../../base/allocator/allocator.gyp:allocator',
+          ],
+        }],
         ['use_aura==0 and OS=="win"', {
           'sources/': [
             ['exclude', 'controls/combobox/native_combobox_views_unittest.cc'],
