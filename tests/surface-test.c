@@ -30,19 +30,19 @@
 TEST(surface_transform)
 {
 	struct weston_surface *surface;
-	int32_t x, y;
+	GLfloat x, y;
 
 	surface = weston_surface_create(compositor);
 	weston_surface_configure(surface, 100, 100, 200, 200);
 	weston_surface_update_transform(surface);
-	weston_surface_to_global(surface, 20, 20, &x, &y);
+	weston_surface_to_global_float(surface, 20, 20, &x, &y);
 
-	fprintf(stderr, "20,20 maps to %d, %d\n", x, y);
+	fprintf(stderr, "20,20 maps to %f, %f\n", x, y);
 	assert(x == 120 && y == 120);
 
 	weston_surface_set_position(surface, 150, 300);
 	weston_surface_update_transform(surface);
-	weston_surface_to_global(surface, 50, 40, &x, &y);
+	weston_surface_to_global_float(surface, 50, 40, &x, &y);
 	assert(x == 200 && y == 340);
 
 	wl_display_terminate(compositor->wl_display);
