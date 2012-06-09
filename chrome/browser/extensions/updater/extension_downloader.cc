@@ -542,6 +542,12 @@ void ExtensionDownloader::FetchUpdatedExtension(const std::string& id,
                                                 const GURL& url,
                                                 const std::string& hash,
                                                 const std::string& version) {
+  if (!url.is_valid()) {
+    // TODO(asargent): This can sometimes be invalid. See crbug.com/130881.
+    LOG(ERROR) << "Invalid URL: " << url.spec();
+    return;
+  }
+
   for (std::deque<ExtensionFetch>::const_iterator iter =
            extensions_pending_.begin();
        iter != extensions_pending_.end(); ++iter) {
