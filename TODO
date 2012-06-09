@@ -7,6 +7,8 @@ file, with a bit of extra info.
 ** Document the changes to LOUIS_TABLEPATH
 
 ** remove runHarness.py, put inplace nosetests (p2/3) and runharnessV2
+   [mh] most of the work done, configure.ac needs to do a pymod check for nose, make check needs to test for both python2/3 and nose. for given version.
+
 
 ** [mh] Document the test harness with its use of json
 

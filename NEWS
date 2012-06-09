@@ -13,9 +13,10 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
     run if there is a Python interpreter on the system
 *** Add a test harness
     This test infrastructure allows the user to do table tests in a
-    simple and concise syntax. These test are also based on Python and
-    are only run if Python is installed on the system. See the
+    simple and concise syntax. These tests are based on the Python nose testing framework and
+    are only run if either Python 2.x or 3.x with the related nose python module is installed on the system. See the
     documentation for more information.
+    Thanks to Mesar Hameed.
 *** Support for Python 3 in the Python bindings
     The Python bindings now work for both Python 2 and Python 3.
     Thanks to Michael Whapples.
