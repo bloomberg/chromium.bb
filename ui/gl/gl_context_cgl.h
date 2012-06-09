@@ -6,6 +6,8 @@
 #define UI_GL_GL_CONTEXT_CGL_H_
 #pragma once
 
+#include <OpenGL/CGLTypes.h>
+
 #include "ui/gl/gl_context.h"
 
 namespace gfx {
@@ -42,6 +44,8 @@ class GLContextCGL : public GLContext {
 
   void* context_;
   GpuPreference gpu_preference_;
+
+  CGLPixelFormatObj discrete_pixelformat_;
 
   DISALLOW_COPY_AND_ASSIGN(GLContextCGL);
 };

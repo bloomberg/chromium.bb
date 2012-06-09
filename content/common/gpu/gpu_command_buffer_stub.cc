@@ -295,14 +295,10 @@ void GpuCommandBufferStub::OnInitialize(
     return;
   }
 
-  gfx::GpuPreference gpu_preference =
-      channel_->ShouldPreferDiscreteGpu() ?
-          gfx::PreferDiscreteGpu : gpu_preference_;
-
   context_ = gfx::GLContext::CreateGLContext(
       channel_->share_group(),
       surface_.get(),
-      gpu_preference);
+      gpu_preference_);
   if (!context_.get()) {
     // Ensure the decoder is not destroyed if it is not initialized.
     decoder_.reset();

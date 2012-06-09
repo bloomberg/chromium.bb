@@ -169,7 +169,6 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
       software_(software),
       handle_messages_scheduled_(false),
       processed_get_state_fast_(false),
-      num_contexts_preferring_discrete_gpu_(0),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(gpu_channel_manager);
   DCHECK(client_id);
@@ -326,7 +325,6 @@ void GpuChannel::CreateViewCommandBuffer(
   content::GetContentClient()->SetActiveURL(init_params.active_url);
 
 #if defined(ENABLE_GPU)
-  WillCreateCommandBuffer(init_params.gpu_preference);
 
   GpuCommandBufferStub* share_group = stubs_.Lookup(init_params.share_group_id);
 
@@ -378,10 +376,6 @@ void GpuChannel::RemoveRoute(int32 route_id) {
   router_.RemoveRoute(route_id);
 }
 
-bool GpuChannel::ShouldPreferDiscreteGpu() const {
-  return num_contexts_preferring_discrete_gpu_ > 0;
-}
-
 void GpuChannel::SetPreemptByCounter(
     scoped_refptr<gpu::RefCountedCounter> preempt_by_counter) {
   preempt_by_counter_ = preempt_by_counter;
@@ -410,9 +404,6 @@ bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
                                     OnCreateOffscreenCommandBuffer)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuChannelMsg_DestroyCommandBuffer,
                                     OnDestroyCommandBuffer)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuChannelMsg_WillGpuSwitchOccur,
-                                    OnWillGpuSwitchOccur)
-    IPC_MESSAGE_HANDLER(GpuChannelMsg_CloseChannel, OnCloseChannel)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled) << msg.type();
@@ -503,8 +494,6 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(
 
   content::GetContentClient()->SetActiveURL(init_params.active_url);
 #if defined(ENABLE_GPU)
-  WillCreateCommandBuffer(init_params.gpu_preference);
-
   GpuCommandBufferStub* share_group = stubs_.Lookup(init_params.share_group_id);
 
   route_id = GenerateRouteID();
@@ -544,56 +533,15 @@ void GpuChannel::OnDestroyCommandBuffer(int32 route_id,
   if (router_.ResolveRoute(route_id)) {
     GpuCommandBufferStub* stub = stubs_.Lookup(route_id);
     bool need_reschedule = (stub && !stub->IsScheduled());
-    gfx::GpuPreference gpu_preference =
-        stub ? stub->gpu_preference() : gfx::PreferIntegratedGpu;
     router_.RemoveRoute(route_id);
     stubs_.Remove(route_id);
     // In case the renderer is currently blocked waiting for a sync reply from
     // the stub, we need to make sure to reschedule the GpuChannel here.
     if (need_reschedule)
       OnScheduled();
-    DidDestroyCommandBuffer(gpu_preference);
   }
 
   if (reply_message)
     Send(reply_message);
 }
 
-
-void GpuChannel::OnWillGpuSwitchOccur(bool is_creating_context,
-                                      gfx::GpuPreference gpu_preference,
-                                      IPC::Message* reply_message) {
-  TRACE_EVENT0("gpu", "GpuChannel::OnWillGpuSwitchOccur");
-
-  bool will_switch_occur = false;
-
-  if (gpu_preference == gfx::PreferDiscreteGpu &&
-      gfx::GLContext::SupportsDualGpus()) {
-    if (is_creating_context) {
-      will_switch_occur = !num_contexts_preferring_discrete_gpu_;
-    } else {
-      will_switch_occur = (num_contexts_preferring_discrete_gpu_ == 1);
-    }
-  }
-
-  GpuChannelMsg_WillGpuSwitchOccur::WriteReplyParams(
-      reply_message,
-      will_switch_occur);
-  Send(reply_message);
-}
-
-void GpuChannel::OnCloseChannel() {
-  gpu_channel_manager_->RemoveChannel(client_id_);
-  // At this point "this" is deleted!
-}
-
-void GpuChannel::WillCreateCommandBuffer(gfx::GpuPreference gpu_preference) {
-  if (gpu_preference == gfx::PreferDiscreteGpu)
-    ++num_contexts_preferring_discrete_gpu_;
-}
-
-void GpuChannel::DidDestroyCommandBuffer(gfx::GpuPreference gpu_preference) {
-  if (gpu_preference == gfx::PreferDiscreteGpu)
-    --num_contexts_preferring_discrete_gpu_;
-  DCHECK_GE(num_contexts_preferring_discrete_gpu_, 0);
-}

@@ -43,9 +43,6 @@ PlatformContext3DImpl::~PlatformContext3DImpl() {
     DCHECK(channel_.get());
     channel_->DestroyCommandBuffer(command_buffer_);
     command_buffer_ = NULL;
-    if (channel_->WillGpuSwitchOccur(false, gfx::PreferDiscreteGpu)) {
-      channel_->ForciblyCloseChannel();
-    }
   }
 
   channel_ = NULL;
@@ -64,28 +61,13 @@ bool PlatformContext3DImpl::Init(const int32* attrib_list,
   if (!render_thread)
     return false;
 
-  bool retry = false;
   gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
 
-  // Note similar code in PP_GRAPHICS3DATTRIB_initialize.
-  do {
-    channel_ = render_thread->EstablishGpuChannelSync(
-        CAUSE_FOR_GPU_LAUNCH_PEPPERPLATFORMCONTEXT3DIMPL_INITIALIZE);
-    if (!channel_.get())
-      return false;
-    DCHECK(channel_->state() == GpuChannelHost::kConnected);
-    if (!retry) {
-      // If the creation of this context requires all contexts for this
-      // renderer to be destroyed on the GPU process side, then drop the
-      // channel and recreate it.
-      if (channel_->WillGpuSwitchOccur(true, gpu_preference)) {
-        channel_->ForciblyCloseChannel();
-        retry = true;
-      }
-    } else {
-      retry = false;
-    }
-  } while (retry);
+  channel_ = render_thread->EstablishGpuChannelSync(
+      CAUSE_FOR_GPU_LAUNCH_PEPPERPLATFORMCONTEXT3DIMPL_INITIALIZE);
+  if (!channel_.get())
+    return false;
+  DCHECK(channel_->state() == GpuChannelHost::kConnected);
 
   gfx::Size surface_size;
   std::vector<int32> attribs;

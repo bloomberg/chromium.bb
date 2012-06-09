@@ -312,20 +312,6 @@ IPC_SYNC_MESSAGE_CONTROL2_1(GpuChannelMsg_CreateOffscreenCommandBuffer,
 IPC_SYNC_MESSAGE_CONTROL1_0(GpuChannelMsg_DestroyCommandBuffer,
                             int32 /* instance_id */)
 
-// Asks the GPU process whether the creation or destruction of a
-// command buffer on the given GPU (integrated or discrete) will cause
-// the system to switch which GPU it is using. All contexts that share
-// resources need to be created on the same GPU.
-IPC_SYNC_MESSAGE_CONTROL2_1(GpuChannelMsg_WillGpuSwitchOccur,
-                            bool /* is_creating_context */,
-                            gfx::GpuPreference /* preference */,
-                            bool /* will_cause_switch */)
-
-// Forcibly closes the channel on the GPU process side, in order to
-// have the side effect that all contexts associated with this
-// renderer go into the lost state.
-IPC_MESSAGE_CONTROL0(GpuChannelMsg_CloseChannel)
-
 //------------------------------------------------------------------------------
 // GPU Command Buffer Messages
 // These are messages between a renderer process to the GPU process relating to

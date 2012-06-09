@@ -157,16 +157,6 @@ WebGraphicsContext3DCommandBufferImpl::
     gl_->SetErrorMessageCallback(NULL);
   }
 
-  if (host_) {
-    if (host_->WillGpuSwitchOccur(false, gpu_preference_)) {
-      host_->ForciblyCloseChannel();
-      TRACE_EVENT0(
-          "gpu",
-          "WebGfxCtx3DCmdBfrImpl::~WebGfxCtx3DCmdBfrImpl closed channel");
-      ClearSharedContexts();
-    }
-  }
-
   {
     base::AutoLock lock(g_all_shared_contexts_lock.Get());
     g_all_shared_contexts.Pointer()->erase(this);
@@ -200,31 +190,10 @@ bool WebGraphicsContext3DCommandBufferImpl::Initialize(
   if (attributes.preferDiscreteGPU)
     gpu_preference_ = gfx::PreferDiscreteGpu;
 
-  bool retry = false;
-
-  // Note similar code in Pepper PlatformContext3DImpl::Init.
-  do {
-    host_ = factory_->EstablishGpuChannelSync(cause);
-    if (!host_)
-      return false;
-    DCHECK(host_->state() == GpuChannelHost::kConnected);
-
-    if (!retry) {
-      // If the creation of this context requires all contexts for this
-      // client to be destroyed on the GPU process side, then drop the
-      // channel and recreate it.
-      if (host_->WillGpuSwitchOccur(true, gpu_preference_)) {
-        host_->ForciblyCloseChannel();
-        TRACE_EVENT0(
-            "gpu",
-            "WebGfxCtx3DCmdBfrImpl::Initialize closed channel");
-        ClearSharedContexts();
-        retry = true;
-      }
-    } else {
-      retry = false;
-    }
-  } while (retry);
+  host_ = factory_->EstablishGpuChannelSync(cause);
+  if (!host_)
+    return false;
+  DCHECK(host_->state() == GpuChannelHost::kConnected);
 
   return true;
 }

@@ -18,7 +18,8 @@ namespace gfx {
 GLContextCGL::GLContextCGL(GLShareGroup* share_group)
   : GLContext(share_group),
     context_(NULL),
-    gpu_preference_(PreferIntegratedGpu) {
+    gpu_preference_(PreferIntegratedGpu),
+    discrete_pixelformat_(NULL) {
 }
 
 bool GLContextCGL::Initialize(GLSurface* compatible_surface,
@@ -27,19 +28,11 @@ bool GLContextCGL::Initialize(GLSurface* compatible_surface,
 
   GLContextCGL* share_context = share_group() ?
       static_cast<GLContextCGL*>(share_group()->GetContext()) : NULL;
-  if (SupportsDualGpus()) {
-    // Ensure the GPU preference is compatible with contexts already in the
-    // share group.
-    if (share_context && gpu_preference != share_context->GetGpuPreference())
-      return false;
-  }
 
   std::vector<CGLPixelFormatAttribute> attribs;
-  bool using_offline_renderer =
-      SupportsDualGpus() && gpu_preference == PreferIntegratedGpu;
-  if (using_offline_renderer) {
-    attribs.push_back(kCGLPFAAllowOfflineRenderers);
-  }
+  // Allow offline renderers for every context, so that they can all be in the
+  // same share group.
+  attribs.push_back(kCGLPFAAllowOfflineRenderers);
   if (GetGLImplementation() == kGLImplementationAppleGL) {
     attribs.push_back(kCGLPFARendererID);
     attribs.push_back((CGLPixelFormatAttribute) kCGLRendererGenericFloatID);
@@ -60,6 +53,21 @@ bool GLContextCGL::Initialize(GLSurface* compatible_surface,
   }
   DCHECK_NE(num_pixel_formats, 0);
 
+  // If using the discrete gpu, create a pixel format requiring it before we
+  // create the context.
+  if (!SupportsDualGpus() || gpu_preference == PreferDiscreteGpu) {
+    std::vector<CGLPixelFormatAttribute> discrete_attribs;
+    discrete_attribs.push_back((CGLPixelFormatAttribute) 0);
+    GLint num_pixel_formats;
+    if (CGLChoosePixelFormat(&discrete_attribs.front(),
+                             &discrete_pixelformat_,
+                             &num_pixel_formats) != kCGLNoError) {
+      LOG(ERROR) << "Error choosing pixel format.";
+      return false;
+    }
+  }
+
+
   CGLError res = CGLCreateContext(
       format,
       share_context ?
@@ -77,6 +85,10 @@ bool GLContextCGL::Initialize(GLSurface* compatible_surface,
 }
 
 void GLContextCGL::Destroy() {
+  if (discrete_pixelformat_) {
+    CGLReleasePixelFormat(discrete_pixelformat_);
+    discrete_pixelformat_ = NULL;
+  }
   if (context_) {
     CGLDestroyContext(static_cast<CGLContextObj>(context_));
     context_ = NULL;

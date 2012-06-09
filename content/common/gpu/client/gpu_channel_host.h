@@ -136,20 +136,6 @@ class GpuChannelHost : public IPC::Message::Sender,
   void AddRoute(int route_id, base::WeakPtr<IPC::Channel::Listener> listener);
   void RemoveRoute(int route_id);
 
-  // Asks the GPU process whether the creation or destruction of the
-  // given command buffer on the given GPU will provoke a switch of
-  // the GPU from integrated to discrete or vice versa. This requires
-  // all of the GL contexts in the same share group in the GPU process
-  // to be dropped.
-  bool WillGpuSwitchOccur(bool is_creating_context,
-                          gfx::GpuPreference gpu_preference);
-
-  // Forcibly close the channel on the GPU process side. This will
-  // cause all command buffers on this side to soon afterward start
-  // registering lost contexts. It also has the side effect of setting
-  // the state on this side to lost.
-  void ForciblyCloseChannel();
-
   GpuChannelHostFactory* factory() const { return factory_; }
   int gpu_host_id() const { return gpu_host_id_; }
   base::ProcessId gpu_pid() const { return channel_->peer_pid(); }
