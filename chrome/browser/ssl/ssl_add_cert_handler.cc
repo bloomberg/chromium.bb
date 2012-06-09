@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "chrome/browser/tab_contents/tab_contents_ssl_helper.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
@@ -94,9 +94,8 @@ void SSLAddCertHandler::CallVerifyClientCertificateError(int cert_error) {
   if (!tab)
     return;
 
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab);
-  wrapper->ssl_helper()->OnVerifyClientCertificateError(this, cert_error);
+  TabContents* tab_contents = TabContents::FromWebContents(tab);
+  tab_contents->ssl_helper()->OnVerifyClientCertificateError(this, cert_error);
 }
 
 void SSLAddCertHandler::CallAddClientCertificate(bool add_cert,
@@ -106,14 +105,13 @@ void SSLAddCertHandler::CallAddClientCertificate(bool add_cert,
   if (!tab)
     return;
 
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab);
+  TabContents* tab_contents = TabContents::FromWebContents(tab);
   if (add_cert) {
     if (cert_error == net::OK) {
-      wrapper->ssl_helper()->OnAddClientCertificateSuccess(this);
+      tab_contents->ssl_helper()->OnAddClientCertificateSuccess(this);
     } else {
-      wrapper->ssl_helper()->OnAddClientCertificateError(this, cert_error);
+      tab_contents->ssl_helper()->OnAddClientCertificateError(this, cert_error);
     }
   }
-  wrapper->ssl_helper()->OnAddClientCertificateFinished(this);
+  tab_contents->ssl_helper()->OnAddClientCertificateFinished(this);
 }
