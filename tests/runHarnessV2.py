@@ -29,9 +29,55 @@ Please see the liblouis documentation for information of how to add a new harnes
 import json
 import os
 import sys
+import traceback
+from glob import iglob
+from nose.plugins import Plugin
+from nose import run
 from louis import translate, backTranslateString
 from louis import noContractions, compbrlAtCursor, dotsIO, comp8Dots, pass1Only, compbrlLeftCursor, otherTrans, ucBrl
-from glob import iglob
+
+
+### Nosetest plugin for controlling the output format. ###
+
+class Reporter(Plugin):
+    name = 'reporter'
+    def __init__(self):
+        super(Reporter, self).__init__()
+        self.res = []
+        self.stream = None
+
+    def setOutputStream(self, stream):
+        # grab for own use
+        self.stream = stream
+        # return dummy stream
+        class dummy:
+            def write(self, *arg):
+                pass
+            def writeln(self, *arg):
+                pass
+            def flush(self):
+                pass
+        d = dummy()
+        return d
+
+    def addError(self, test, err):
+        exctype, value, tb = err
+        errMsg = ''.join(traceback.format_exception(exctype, value, tb))
+        self.res.append("--- Error: ---\n%s\n--- end ---\n" % errMsg)
+
+    def addFailure(self, test, err):
+        exctype, value, tb = err
+        #errMsg = ''.join(traceback.format_exception(exctype, value, None))
+        self.res.append("%s\n" % value)
+
+    def finalize(self, result):
+        total = "%d test%s" % (result.testsRun, result.testsRun != 1 and "s" or "")
+        failures = "%d failure%s" % (len(result.failures), len(result.failures) != 1 and "s" or "")
+        errors = "%d error%s" %(len(result.errors), len(result.errors) != 1 and "s" or "")
+        self.res.append("Ran %s, with %s and %s.\n" % (total,  failures, errors))
+        self.stream.write("\n".join(self.res))
+
+### End of nosetest plugin for controlling the output format. ###
 
 PY2 = sys.version_info[0] == 2
 
@@ -82,8 +128,8 @@ class BrailleTest():
         template = "%-25s '%s'"
         tBrlCurPosStr = showCurPos(len(tBrl), tBrlCurPos)
         report = [
-            self.__str__(),
-            "--- Braille Difference Failure: ---",
+            "--- Braille Difference Failure: %s ---" % self.__str__(),
+            template % ("input:", self.input),
             template % ("expected brl:", self.expectedOutput),
             template % ("actual brl:", tBrl),
             "--- end ---",
@@ -94,8 +140,8 @@ class BrailleTest():
         backtranslate_output = backTranslateString(self.table, self.input, None, mode=self.mode)
         template = "%-25s '%s'"
         report = [
-            self.__str__(),
-            "--- Backtranslate failure: ---",
+            "--- Backtranslate failure: %s ---" % self.__str__(),
+            template % ("input:", self.input),
             template % ("expected text:", self.expectedOutput),
             template % ("actual backtranslated text:", backtranslate_output),
             "--- end ---",
@@ -107,8 +153,8 @@ class BrailleTest():
         template = "%-25s '%s'"
         etBrlCurPosStr = showCurPos(len(tBrl), tBrlCurPos, pos2=self.expectedBrlCursorPos)
         report = [
-            self.__str__(),
-            "--- Braille Cursor Difference Failure: ---",
+            "--- Braille Cursor Difference Failure: %s ---" %self.__str__(),
+            template % ("input:", self.input),
             template % ("received brl:", tBrl),
             template % ("BRLCursorAt %d expected %d:" %(tBrlCurPos, self.expectedBrlCursorPos), 
                         etBrlCurPosStr),
@@ -135,7 +181,6 @@ def test_allCases():
         f = open(harness, 'r')
         harnessModule = json.load(f, encoding="UTF-8")
         f.close()
-        print("Processing %s" %harness)
         tableList = [u(harnessModule['table'])]
         origflags = {'testmode':'translate'}
         for section in harnessModule['sections']:
@@ -146,7 +191,11 @@ def test_allCases():
                 bt = BrailleTest(harness, tableList, **test)
                 if test['testmode'] == 'translate':
                     yield bt.check_translate
-                    if test.has_key('cursorPos'):
+                    if 'cursorPos' in test:
                         yield bt.check_cursor
                 if test['testmode'] == 'backtranslate':
                     yield bt.check_backtranslate
+
+if __name__ == '__main__':
+    run(addplugins=[Reporter()], argv=['-v', '--with-reporter', sys.argv[0]], defaultTest=__name__)
+
