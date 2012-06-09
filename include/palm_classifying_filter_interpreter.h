@@ -89,6 +89,8 @@ class PalmClassifyingFilterInterpreter : public Interpreter {
 
   // Maximum pressure above which a finger is considered a palm
   DoubleProperty palm_pressure_;
+  // Maximum width_major above which a finger is considered a palm
+  DoubleProperty palm_width_;
   // The smaller of two widths around the edge for palm detection. Any contact
   // in this edge zone may be a palm, regardless of pressure
   DoubleProperty palm_edge_min_width_;

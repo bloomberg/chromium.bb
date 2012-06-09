@@ -16,6 +16,7 @@ PalmClassifyingFilterInterpreter::PalmClassifyingFilterInterpreter(
     PropRegistry* prop_reg, Interpreter* next, FingerMetrics* finger_metrics)
     : finger_metrics_(finger_metrics),
       palm_pressure_(prop_reg, "Palm Pressure", 200.0),
+      palm_width_(prop_reg, "Palm Width", 21.2),
       palm_edge_min_width_(prop_reg, "Tap Exclusion Border Width", 8.0),
       palm_edge_width_(prop_reg, "Palm Edge Zone Width", 14.0),
       palm_edge_point_speed_(prop_reg, "Palm Edge Zone Min Point Speed", 100.0),
@@ -102,7 +103,8 @@ void PalmClassifyingFilterInterpreter::UpdatePalmState(
   for (short i = 0; i < hwstate.finger_cnt; i++) {
     const FingerState& fs = hwstate.fingers[i];
     // Mark anything over the palm thresh as a palm
-    if (fs.pressure >= palm_pressure_.val_) {
+    if (fs.pressure >= palm_pressure_.val_ ||
+        fs.touch_major >= palm_width_.val_) {
       palm_.insert(fs.tracking_id);
       pointing_.erase(fs.tracking_id);
 
@@ -168,7 +170,7 @@ void PalmClassifyingFilterInterpreter::UpdatePalmFlags(HardwareState* hwstate) {
     FingerState* fs = &hwstate->fingers[i];
     if (SetContainsValue(palm_, fs->tracking_id) ||
         (!SetContainsValue(pointing_, fs->tracking_id) &&
-                           FingerInPalmEnvelope(*fs))) {
+         FingerInPalmEnvelope(*fs))) {
       // Finger is believed to be a palm, or it's ambiguous and not likely
       // co-pointing
       fs->flags |= GESTURES_FINGER_PALM;
