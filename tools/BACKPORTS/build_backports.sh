@@ -66,19 +66,10 @@ while read name id comment ; do
     *)
     ( # First step is to use glient to sync sources.
       if [[ -d "$name" ]]; then
-        cd "$name"
-	if [[ "$2" == "win" ]]; then (
-	  # Use extended globbing (cygwin should always have it).
-	  shopt -s extglob
-	  # Filter out cygwin python (everything under /usr or /bin, or *cygwin*).
-	  export PATH=${PATH/#\/bin*([^:])/}
-	  export PATH=${PATH//:\/bin*([^:])/}
-	  export PATH=${PATH/#\/usr*([^:])/}
-	  export PATH=${PATH//:\/usr*([^:])/}
-	  export PATH=${PATH/#*([^:])cygwin*([^:])/}
-	  export PATH=${PATH//:*([^:])cygwin*([^:])/}
-	  gclient revert
-	) else
+	cd "$name"
+	if [[ "$2" == "win" ]]; then
+	  gclient.bat revert
+	else
 	  gclient revert
 	fi
       else
@@ -96,18 +87,9 @@ while read name id comment ; do
 	  },
 	]
 	END
-	if [[ "$2" == "win" ]]; then (
-	  # Use extended globbing (cygwin should always have it).
-	  shopt -s extglob
-	  # Filter out cygwin python (everything under /usr or /bin, or *cygwin*).
-	  export PATH=${PATH/#\/bin*([^:])/}
-	  export PATH=${PATH//:\/bin*([^:])/}
-	  export PATH=${PATH/#\/usr*([^:])/}
-	  export PATH=${PATH//:\/usr*([^:])/}
-	  export PATH=${PATH/#*([^:])cygwin*([^:])/}
-	  export PATH=${PATH//:*([^:])cygwin*([^:])/}
-	  gclient sync
-	) else
+	if [[ "$2" == "win" ]]; then
+	  gclient.bat sync
+	else
 	  gclient sync
 	fi
       fi
@@ -230,8 +212,8 @@ while read name id comment ; do
       mv native_client/buildbot/buildbot_windows-glibc-makefile.bat \
 	native_client/buildbot/buildbot_windows-glibc-makefile.bat.orig
       sed -e s'/  ..\\..\\..\\..\\scripts\\slave\\gsutil/  ..\\..\\..\\..\\..\\..\\..\\..\\scripts\\slave\\gsutil/' \
-        < native_client/buildbot/buildbot_windows-glibc-makefile.bat.orig \
-        > native_client/buildbot/buildbot_windows-glibc-makefile.bat
+	< native_client/buildbot/buildbot_windows-glibc-makefile.bat.orig \
+	> native_client/buildbot/buildbot_windows-glibc-makefile.bat
       rm native_client/buildbot/buildbot_windows-glibc-makefile.bat.orig
       if [[ "$name" == ppapi14 ]]; then
 	patch -p0 <<-END
@@ -292,13 +274,13 @@ while read name id comment ; do
 	    fi
 	    cd ../../../../..
 	    ( while read n id comment && [[ "$n" != "$name" ]]; do
-	        : # Nothing
+		: # Nothing
 	      done
 	      cd "$name/native_client/tools/SRC/$i"
 	      while read name id comment ; do
-	        if [[ "$i" == "$name" ]]; then
-	          git diff "$id"{^..,} | patch -p1 || touch "$$.error"
-	        fi
+		if [[ "$i" == "$name" ]]; then
+		  git diff "$id"{^..,} | patch -p1 || touch "$$.error"
+		fi
 	      done
 	    ) < "$1"
 	  fi
