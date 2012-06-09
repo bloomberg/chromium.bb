@@ -73,10 +73,11 @@ class BackgroundSteps(multiprocessing.Process):
         buf = output.read(_BUFSIZE)
         while len(buf) > 0:
           sys.stdout.write(buf)
-          pos = output.tell()
+          pos += len(buf)
           if len(buf) < _BUFSIZE:
             break
           buf = output.read(_BUFSIZE)
+        sys.stdout.flush()
 
     # Propagate any results.
     for result in results:
