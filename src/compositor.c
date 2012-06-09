@@ -1060,7 +1060,7 @@ weston_output_repaint(struct weston_output *output, int msecs)
 		wl_resource_destroy(&cb->resource);
 	}
 
-	wl_list_for_each_safe(animation, next, &ec->animation_list, link)
+	wl_list_for_each_safe(animation, next, &output->animation_list, link)
 		animation->frame(animation, output, msecs);
 }
 
@@ -1142,8 +1142,12 @@ weston_compositor_schedule_repaint(struct weston_compositor *compositor)
 WL_EXPORT void
 weston_compositor_fade(struct weston_compositor *compositor, float tint)
 {
+	struct weston_output *output;
 	struct weston_surface *surface;
 	int done;
+
+	output = container_of(compositor->output_list.next,
+                             struct weston_output, link);
 
 	done = weston_spring_done(&compositor->fade.spring);
 	compositor->fade.spring.target = tint;
@@ -1167,7 +1171,7 @@ weston_compositor_fade(struct weston_compositor *compositor, float tint)
 
 	weston_surface_damage(compositor->fade.surface);
 	if (wl_list_empty(&compositor->fade.animation.link))
-		wl_list_insert(compositor->animation_list.prev,
+		wl_list_insert(output->animation_list.prev,
 			       &compositor->fade.animation.link);
 }
 
@@ -2840,6 +2844,7 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 
 	wl_signal_init(&output->frame_signal);
 	wl_list_init(&output->frame_callback_list);
+	wl_list_init(&output->animation_list);
 	wl_list_init(&output->resource_list);
 
 	output->id = ffs(~output->compositor->output_id_pool) - 1;
@@ -2990,7 +2995,6 @@ weston_compositor_init(struct weston_compositor *ec,
 	wl_list_init(&ec->key_binding_list);
 	wl_list_init(&ec->button_binding_list);
 	wl_list_init(&ec->axis_binding_list);
-	wl_list_init(&ec->animation_list);
 	weston_spring_init(&ec->fade.spring, 30.0, 1.0, 1.0);
 	ec->fade.animation.frame = fade_frame;
 	wl_list_init(&ec->fade.animation.link);

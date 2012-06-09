@@ -188,7 +188,7 @@ weston_zoom_run(struct weston_surface *surface, GLfloat start, GLfloat stop,
 	wl_signal_add(&surface->surface.resource.destroy_signal,
 		      &zoom->listener);
 
-	wl_list_insert(&surface->compositor->animation_list,
+	wl_list_insert(&surface->output->animation_list,
 		       &zoom->animation.link);
 
 	return zoom;
@@ -510,7 +510,7 @@ weston_fade_run(struct weston_surface *surface,
 	wl_signal_add(&surface->surface.resource.destroy_signal,
 		      &fade->listener);
 
-	wl_list_insert(&surface->compositor->animation_list,
+	wl_list_insert(&surface->output->animation_list,
 		       &fade->animation.link);
 
 	return fade;

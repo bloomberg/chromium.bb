@@ -131,6 +131,7 @@ struct weston_output {
 	struct weston_compositor *compositor;
 	struct weston_matrix matrix;
 	struct wl_list frame_callback_list;
+	struct wl_list animation_list;
 	int32_t x, y, mm_width, mm_height;
 	struct weston_border border;
 	pixman_region32_t region;
@@ -287,7 +288,6 @@ struct weston_compositor {
 	struct wl_list key_binding_list;
 	struct wl_list button_binding_list;
 	struct wl_list axis_binding_list;
-	struct wl_list animation_list;
 	struct {
 		struct weston_spring spring;
 		struct weston_animation animation;
