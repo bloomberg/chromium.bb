@@ -336,6 +336,8 @@ pushbuf_submit(struct nouveau_pushbuf *push, struct nouveau_object *chan)
 		req.push = (uint64_t)(unsigned long)krec->push;
 		req.suffix0 = nvpb->suffix0;
 		req.suffix1 = nvpb->suffix1;
+		req.vram_available = 0; /* for valgrind */
+		req.gart_available = 0;
 
 		if (dbg_on(0))
 			pushbuf_dump(krec, krec_id++, fifo->channel);
@@ -534,7 +536,7 @@ nouveau_pushbuf_new(struct nouveau_client *client, struct nouveau_object *chan,
 	struct nouveau_fifo *fifo = chan->data;
 	struct nouveau_pushbuf_priv *nvpb;
 	struct nouveau_pushbuf *push;
-	struct drm_nouveau_gem_pushbuf req;
+	struct drm_nouveau_gem_pushbuf req = {};
 	int ret;
 
 	if (chan->oclass != NOUVEAU_FIFO_CHANNEL_CLASS)

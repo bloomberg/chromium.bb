@@ -31,12 +31,9 @@ int
 abi16_chan_nv04(struct nouveau_object *obj)
 {
 	struct nouveau_device *dev = (struct nouveau_device *)obj->parent;
-	struct drm_nouveau_channel_alloc req;
 	struct nv04_fifo *nv04 = obj->data;
+	struct drm_nouveau_channel_alloc req = {nv04->vram, nv04->gart};
 	int ret;
-
-	req.fb_ctxdma_handle = nv04->vram;
-	req.tt_ctxdma_handle = nv04->gart;
 
 	ret = drmCommandWriteRead(dev->fd, DRM_NOUVEAU_CHANNEL_ALLOC,
 				  &req, sizeof(req));
