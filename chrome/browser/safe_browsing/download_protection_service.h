@@ -133,7 +133,7 @@ class DownloadProtectionService {
     REASON_DOWNLOAD_DANGEROUS,
     REASON_DOWNLOAD_SAFE,
     REASON_EMPTY_URL_CHAIN,
-    REASON_HTTPS_URL,
+    DEPRECATED_REASON_HTTPS_URL,
     REASON_PING_DISABLED,
     REASON_TRUSTED_EXECUTABLE,
     REASON_OS_NOT_SUPPORTED,
@@ -151,6 +151,8 @@ class DownloadProtectionService {
                            CheckClientDownloadValidateRequest);
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
                            CheckClientDownloadSuccess);
+  FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
+                           CheckClientDownloadHTTPS);
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
                            CheckClientDownloadZip);
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,

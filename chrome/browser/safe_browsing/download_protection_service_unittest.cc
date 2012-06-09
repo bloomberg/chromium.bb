@@ -279,17 +279,8 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadInvalidUrl) {
   msg_loop_.Run();
   ExpectResult(DownloadProtectionService::SAFE);
 
-  // Only https is not supported for now for privacy reasons.
   info.local_file = FilePath(FILE_PATH_LITERAL("a.tmp"));
   info.target_file = FilePath(FILE_PATH_LITERAL("a.exe"));
-  info.download_url_chain.push_back(GURL("https://www.google.com/"));
-  download_service_->CheckClientDownload(
-      info,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  msg_loop_.Run();
-  ExpectResult(DownloadProtectionService::SAFE);
-
   info.download_url_chain.push_back(GURL("file://www.google.com/"));
   download_service_->CheckClientDownload(
       info,
@@ -429,6 +420,37 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   msg_loop_.Run();
 #if defined(OS_WIN)
   ExpectResult(DownloadProtectionService::UNCOMMON);
+#else
+  ExpectResult(DownloadProtectionService::SAFE);
+#endif
+}
+
+TEST_F(DownloadProtectionServiceTest, CheckClientDownloadHTTPS) {
+  ClientDownloadResponse response;
+  response.set_verdict(ClientDownloadResponse::DANGEROUS);
+  FakeURLFetcherFactory factory;
+  factory.SetFakeResponse(
+      DownloadProtectionService::kDownloadRequestUrl,
+      response.SerializeAsString(),
+      true);
+
+  DownloadProtectionService::DownloadInfo info;
+  info.local_file = FilePath(FILE_PATH_LITERAL("a.tmp"));
+  info.target_file = FilePath(FILE_PATH_LITERAL("a.exe"));
+  info.download_url_chain.push_back(GURL("https://www.evil.com/a.exe"));
+  info.referrer_url = GURL("http://www.google.com/");
+
+  EXPECT_CALL(*sb_service_, MatchDownloadWhitelistUrl(_))
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*signature_util_, CheckSignature(info.local_file, _)).Times(1);
+
+  download_service_->CheckClientDownload(
+      info,
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this)));
+  msg_loop_.Run();
+#if defined(OS_WIN)
+  ExpectResult(DownloadProtectionService::DANGEROUS);
 #else
   ExpectResult(DownloadProtectionService::SAFE);
 #endif

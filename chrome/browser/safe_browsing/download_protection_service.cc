@@ -368,7 +368,6 @@ class DownloadProtectionService::CheckClientDownloadRequest
           return;
 
         case REASON_NOT_BINARY_FILE:
-        case REASON_HTTPS_URL:
           RecordFileExtensionType(info_.target_file);
           RecordImprovedProtectionStats(reason);
           PostFinishTask(SAFE);
@@ -494,10 +493,6 @@ class DownloadProtectionService::CheckClientDownloadRequest
       return false;
     }
     *type = GetDownloadType(info.target_file);
-    if (final_url.SchemeIs("https")) {
-      *reason = REASON_HTTPS_URL;
-      return false;
-    }
     return true;
   }
 
