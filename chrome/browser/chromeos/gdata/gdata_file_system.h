@@ -1478,9 +1478,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // The document service for the GDataFileSystem.
   DocumentsServiceInterface* documents_service_;
 
-  // Base path for GData cache, e.g. <user_profile_dir>/user/GCache/v1.
-  FilePath gdata_cache_path_;
-
   // Waitable events used to block destructor until all the tasks on blocking
   // pool are run.
   scoped_ptr<base::WaitableEvent> on_io_completed_;

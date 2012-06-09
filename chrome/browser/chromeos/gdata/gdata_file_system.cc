@@ -36,9 +36,7 @@
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
@@ -54,7 +52,6 @@ const char kMimeTypeOctetStream[] = "application/octet-stream";
 
 const char kWildCard[] = "*";
 
-const FilePath::CharType kGDataCacheVersionDir[] = FILE_PATH_LITERAL("v1");
 const FilePath::CharType kAccountMetadataFile[] =
     FILE_PATH_LITERAL("account_metadata.json");
 const FilePath::CharType kFilesystemProtoFile[] =
@@ -927,15 +924,11 @@ GDataFileSystem::GDataFileSystem(Profile* profile,
 void GDataFileSystem::Initialize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  FilePath cache_base_path;
-  chrome::GetUserCacheDirectory(profile_->GetPath(), &cache_base_path);
-  gdata_cache_path_ = cache_base_path.Append(chrome::kGDataCacheDirname);
-  gdata_cache_path_ = gdata_cache_path_.Append(kGDataCacheVersionDir);
-
   documents_service_->Initialize(profile_);
 
   root_.reset(new GDataRootDirectory);
-  cache_ = GDataCache::CreateGDataCache(gdata_cache_path_,
+  const FilePath cache_root_path = GDataCache::GetCacheRootPath(profile_);
+  cache_ = GDataCache::CreateGDataCache(cache_root_path,
                                         BrowserThread::GetBlockingPool(),
                                         sequence_token_).Pass();
 
@@ -3950,7 +3943,7 @@ void GDataFileSystem::SetHideHostedDocuments(bool hide) {
 //===================== GDataFileSystem: Cache entry points ====================
 
 bool GDataFileSystem::IsUnderGDataCacheDirectory(const FilePath& path) const {
-  return gdata_cache_path_ == path || gdata_cache_path_.IsParent(path);
+  return cache_->IsUnderGDataCacheDirectory(path);
 }
 
 FilePath GDataFileSystem::GetCacheDirectoryPath(

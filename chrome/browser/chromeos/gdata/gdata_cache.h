@@ -13,6 +13,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/sequenced_worker_pool.h"
 
+class Profile;
+
 namespace gdata {
 
 class GDataCache {
@@ -128,6 +130,10 @@ class GDataCache {
                             CacheSubDirectoryType sub_dir_type,
                             CachedFileOrigin file_orign) const;
 
+  // Returns true if the given path is under gdata cache directory, i.e.
+  // <user_profile_dir>/GCache/v1
+  bool IsUnderGDataCacheDirectory(const FilePath& path) const;
+
   // TODO(hashimoto): Remove this method when crbug.com/131756 is fixed.
   const std::vector<FilePath>& cache_paths() const { return cache_paths_; }
 
@@ -166,6 +172,11 @@ class GDataCache {
       base::SequencedWorkerPool* pool,
       const base::SequencedWorkerPool::SequenceToken& sequence_token);
 
+  // Gets the cache root path (i.e. <user_profile_dir>/GCache/v1) from the
+  // profile.
+  // TODO(satorux): Write a unit test for this.
+  static FilePath GetCacheRootPath(Profile* profile);
+
  protected:
   GDataCache(
       const FilePath& cache_root_path,
@@ -177,6 +188,8 @@ class GDataCache {
   void AssertOnSequencedWorkerPool();
 
  private:
+  // The root directory of the cache (i.e. <user_profile_dir>/GCache/v1).
+  const FilePath cache_root_path_;
   // Paths for all subdirectories of GCache, one for each
   // GDataCache::CacheSubDirectoryType enum.
   std::vector<FilePath> cache_paths_;

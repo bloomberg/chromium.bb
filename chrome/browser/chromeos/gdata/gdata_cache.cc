@@ -10,12 +10,16 @@
 #include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_paths_internal.h"
 
 namespace gdata {
 namespace {
 
 const char kLocallyModifiedFileExtension[] = "local";
 
+const FilePath::CharType kGDataCacheVersionDir[] = FILE_PATH_LITERAL("v1");
 const FilePath::CharType kGDataCacheMetaDir[] = FILE_PATH_LITERAL("meta");
 const FilePath::CharType kGDataCachePinnedDir[] = FILE_PATH_LITERAL("pinned");
 const FilePath::CharType kGDataCacheOutgoingDir[] =
@@ -75,16 +79,17 @@ GDataCache::GDataCache(
     const FilePath& cache_root_path,
     base::SequencedWorkerPool* pool,
     const base::SequencedWorkerPool::SequenceToken& sequence_token)
-    : pool_(pool),
+    : cache_root_path_(cache_root_path),
+      pool_(pool),
       sequence_token_(sequence_token) {
   // Insert into |cache_paths_| in order defined in enum CacheSubDirectoryType.
-  cache_paths_.push_back(cache_root_path.Append(kGDataCacheMetaDir));
-  cache_paths_.push_back(cache_root_path.Append(kGDataCachePinnedDir));
-  cache_paths_.push_back(cache_root_path.Append(kGDataCacheOutgoingDir));
-  cache_paths_.push_back(cache_root_path.Append(kGDataCachePersistentDir));
-  cache_paths_.push_back(cache_root_path.Append(kGDataCacheTmpDir));
-  cache_paths_.push_back(cache_root_path.Append(kGDataCacheTmpDownloadsDir));
-  cache_paths_.push_back(cache_root_path.Append(kGDataCacheTmpDocumentsDir));
+  cache_paths_.push_back(cache_root_path_.Append(kGDataCacheMetaDir));
+  cache_paths_.push_back(cache_root_path_.Append(kGDataCachePinnedDir));
+  cache_paths_.push_back(cache_root_path_.Append(kGDataCacheOutgoingDir));
+  cache_paths_.push_back(cache_root_path_.Append(kGDataCachePersistentDir));
+  cache_paths_.push_back(cache_root_path_.Append(kGDataCacheTmpDir));
+  cache_paths_.push_back(cache_root_path_.Append(kGDataCacheTmpDownloadsDir));
+  cache_paths_.push_back(cache_root_path_.Append(kGDataCacheTmpDocumentsDir));
 }
 
 GDataCache::~GDataCache() {
@@ -127,6 +132,10 @@ FilePath GDataCache::GetCacheFilePath(const std::string& resource_id,
 
 void GDataCache::AssertOnSequencedWorkerPool() {
   DCHECK(!pool_ || pool_->IsRunningSequenceOnCurrentThread(sequence_token_));
+}
+
+bool GDataCache::IsUnderGDataCacheDirectory(const FilePath& path) const {
+  return cache_root_path_ == path || cache_root_path_.IsParent(path);
 }
 
 class GDataCacheMap : public GDataCache {
@@ -266,6 +275,15 @@ scoped_ptr<GDataCache> GDataCache::CreateGDataCache(
     const base::SequencedWorkerPool::SequenceToken& sequence_token) {
   return scoped_ptr<GDataCache>(new GDataCacheMap(
       cache_root_path, pool, sequence_token));
+}
+
+// static
+FilePath GDataCache::GetCacheRootPath(Profile* profile) {
+  FilePath cache_base_path;
+  chrome::GetUserCacheDirectory(profile->GetPath(), &cache_base_path);
+  FilePath cache_root_path =
+      cache_base_path.Append(chrome::kGDataCacheDirname);
+  return cache_root_path.Append(kGDataCacheVersionDir);
 }
 
 }  // namespace gdata
