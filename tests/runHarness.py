@@ -24,15 +24,68 @@ Please see the liblouis documentation for information of how to add a new harnes
 
 @author: Mesar Hameed <mhameed@src.gnome.org>
 @author: Michael Whapples <mwhapples@aim.com>
+@author: Hammer Attila <hammera@pickup.hu>
 """
 
-import sys
-import os
 import json
-
-from louis import translate
-from louis import noContractions, compbrlAtCursor, dotsIO, comp8Dots, pass1Only, compbrlLeftCursor, otherTrans, ucBrl
+import os
+import sys
+import traceback
 from glob import iglob
+from nose.plugins import Plugin
+from nose import run
+from louis import translate, backTranslateString
+from louis import noContractions, compbrlAtCursor, dotsIO, comp8Dots, pass1Only, compbrlLeftCursor, otherTrans, ucBrl
+
+
+### Nosetest plugin for controlling the output format. ###
+
+class Reporter(Plugin):
+    name = 'reporter'
+    def __init__(self):
+        super(Reporter, self).__init__()
+        self.res = []
+        self.stream = None
+
+    def setOutputStream(self, stream):
+        # grab for own use
+        self.stream = stream
+        # return dummy stream
+        class dummy:
+            def write(self, *arg):
+                pass
+            def writeln(self, *arg):
+                pass
+            def flush(self):
+                pass
+        d = dummy()
+        return d
+
+    def addError(self, test, err):
+        exctype, value, tb = err
+        errMsg = ''.join(traceback.format_exception(exctype, value, tb))
+        self.res.append("--- Error: ---\n%s\n--- end ---\n" % errMsg)
+
+    def addFailure(self, test, err):
+        exctype, value, tb = err
+        #errMsg = ''.join(traceback.format_exception(exctype, value, None))
+        self.res.append("%s\n" % value)
+
+    def finalize(self, result):
+        total = "%d test%s" % (result.testsRun, result.testsRun != 1 and "s" or "")
+        failures = "%d failure%s" % (len(result.failures), len(result.failures) != 1 and "s" or "")
+        errors = "%d error%s" %(len(result.errors), len(result.errors) != 1 and "s" or "")
+        self.res.append("Ran %s, with %s and %s.\n" % (total,  failures, errors))
+        self.stream.write("\n".join(self.res))
+
+### End of nosetest plugin for controlling the output format. ###
+
+PY2 = sys.version_info[0] == 2
+
+def u(a):
+    if PY2:
+        return a.encode("utf-8")
+    return a
 
 modes = {
     'noContractions': noContractions,
@@ -49,90 +102,101 @@ def showCurPos(length, pos1, marker1="^", pos2=None, marker2="*"):
     """A helper function to make a string to show the position of the given cursor."""
     display = [" "] *length
     display[pos1] = marker1
-    if pos2: display[pos2] = marker2
+    if pos2:
+        display[pos2] = marker2
     return "".join(display)
 
-def reportFailure(text, actualBRL, expectedBRL, cursorPos, actualBRLCursorPos, expectedBRLCursorPos):
-    """Function to layout and print a failure report.
+class BrailleTest():
+    def __init__(self, harnessName, table, input, output, mode=0, cursorPos=None, brlCursorPos=None, testmode='translate', comment=None):
+        self.harnessName = harnessName
+        self.table = table
+        self.input = input
+        self.expectedOutput = output
+        self.mode = mode if not mode else modes[mode]
+        self.cursorPos = cursorPos
+        self.expectedBrlCursorPos = brlCursorPos
+        self.comment = comment
+        self.testmode = testmode
 
-    Works out where the missmatch is occuring and presents the necessary information, with markers.
-    """
+    def __str__(self):
+        return "%s" % self.harnessName
 
-    template = "%-25s '%s'"
+    def check_translate(self):
+        if self.cursorPos is not None:
+            tBrl, temp1, temp2, tBrlCurPos = translate(self.table, self.input, mode=self.mode, cursorPos=self.cursorPos)
+        else:
+            tBrl, temp1, temp2, tBrlCurPos = translate(self.table, self.input, mode=self.mode)
+        template = "%-25s '%s'"
+        tBrlCurPosStr = showCurPos(len(tBrl), tBrlCurPos)
+        report = [
+            "--- Braille Difference Failure: %s ---" % self.__str__(),
+            template % ("input:", self.input),
+            template % ("expected brl:", self.expectedOutput),
+            template % ("actual brl:", tBrl),
+            "--- end ---",
+        ]
+        assert tBrl == self.expectedOutput, u("\n".join(report))
 
-    report = [template % ("text:", text),
-              template %("CursorAt: %d" %cursorPos, showCurPos(len(text), cursorPos) )]
-    if actualBRL != expectedBRL and actualBRLCursorPos != expectedBRLCursorPos:
-        report.insert(0,"--- Braille and cursor Difference Failure: ---")
-        report.extend([
-            template % ("expected brl:", expectedBRL),
-            template %("expectedCursorAt: %d" %expectedBRLCursorPos, showCurPos(len(expectedBRL), expectedBRLCursorPos) ),
+    def check_backtranslate(self):
+        backtranslate_output = backTranslateString(self.table, self.input, None, mode=self.mode)
+        template = "%-25s '%s'"
+        report = [
+            "--- Backtranslate failure: %s ---" % self.__str__(),
+            template % ("input:", self.input),
+            template % ("expected text:", self.expectedOutput),
+            template % ("actual backtranslated text:", backtranslate_output),
+            "--- end ---",
+        ]
+        assert backtranslate_output == self.expectedOutput, u("\n".join(report))
 
-            template % ("actual brl:", actualBRL),
-            template %("actualCursorAt: %d" %actualBRLCursorPos, showCurPos(len(actualBRL), actualBRLCursorPos) ),
-        ])
-    elif actualBRL != expectedBRL:
-        report.insert(0,"--- Braille Difference Failure: ---")
-        report.extend([
-            template % ("expected brl:", expectedBRL),
-            template % ("actual brl:", actualBRL),
-            template %("brlCursorAt: %d" %actualBRLCursorPos, showCurPos(len(actualBRL), actualBRLCursorPos) ),
-        ])
-    else: 
-        report.insert(0, "--- Braille Cursor Difference Failure: ---")
-        report.extend([
-            template % ("received brl:", actualBRL),
-            template % ("BRLCursorAt %d expected %d:" % (actualBRLCursorPos, expectedBRLCursorPos),
-                        showCurPos(len(actualBRL), actualBRLCursorPos, pos2=expectedBRLCursorPos))
-        ])
-    report.append("--- end ---")
-    print("\n".join(report).encode("utf-8"))
+    def check_cursor(self):
+        tBrl, temp1, temp2, tBrlCurPos = translate(self.table, self.input, mode=self.mode, cursorPos=self.cursorPos)
+        template = "%-25s '%s'"
+        etBrlCurPosStr = showCurPos(len(tBrl), tBrlCurPos, pos2=self.expectedBrlCursorPos)
+        report = [
+            "--- Braille Cursor Difference Failure: %s ---" %self.__str__(),
+            template % ("input:", self.input),
+            template % ("received brl:", tBrl),
+            template % ("BRLCursorAt %d expected %d:" %(tBrlCurPos, self.expectedBrlCursorPos), 
+                        etBrlCurPosStr),
+            "--- end ---"
+        ]
+        assert tBrlCurPos == self.expectedBrlCursorPos, u("\n".join(report))
 
-total_failed = 0
-harness_dir = "harness"
-if 'HARNESS_DIR' in os.environ:
-    # we assume that if HARNESS_DIR is set that we are invoked from
-    # the Makefile, i.e. all the paths to the Python test files and
-    # the test tables are set correctly.
-    harness_dir = os.environ['HARNESS_DIR']
-else:
-    # we are not invoked via the Makefile, i.e. we have to set up the
-    # paths (LOUIS_TABLEPATH) manually.
+def test_allCases():
     harness_dir = "harness"
-    # make sure local test braille tables are found
-    os.environ['LOUIS_TABLEPATH'] = 'tables'
+    if 'HARNESS_DIR' in os.environ:
+        # we assume that if HARNESS_DIR is set that we are invoked from
+        # the Makefile, i.e. all the paths to the Python test files and
+        # the test tables are set correctly.
+        harness_dir = os.environ['HARNESS_DIR']
+    else:
+        # we are not invoked via the Makefile, i.e. we have to set up the
+        # paths (LOUIS_TABLEPATH) manually.
+        harness_dir = "harness"
+        # make sure local test braille tables are found
+        os.environ['LOUIS_TABLEPATH'] = 'tables'
 
-# Process all *_harness.txt files in the harness directory.
-
-for harness in iglob(os.path.join(harness_dir, '*_harness.txt')):
-    try:
+    # Process all *_harness.txt files in the harness directory.
+    for harness in iglob(os.path.join(harness_dir, '*_harness.txt')):
         f = open(harness, 'r')
         harnessModule = json.load(f, encoding="UTF-8")
-    except Exception as e:
-        # Doesn't look like the harness is a valid python file.
-        print("Warning: could not load %s" % harness)
-        print(e)
-        total_failed += 1
-        continue
-    finally:
         f.close()
-    print("Processing %s" %harness)
-    failed = 0
-    tableList = [harnessModule['table'].encode('UTF-8')]
-    for test in harnessModule['tests']:
-        if 'mode' in test:
-            test['mode'] = modes[test['mode']]
-        text = test['txt']
-        mode = test.get('mode', 0)
-        cursorPos = test.get('cursorPos', 0)
-        expectedBRLCursorPos = test.get('brlCursorPos', 0)
-        expectedBRL = test['brl']
+        tableList = [u(harnessModule['table'])]
+        origflags = {'testmode':'translate'}
+        for section in harnessModule['sections']:
+            flags = section.get('flags', origflags)
+            for testData in section['tests']:
+                test = flags.copy()
+                test.update(testData)
+                bt = BrailleTest(harness, tableList, **test)
+                if test['testmode'] == 'translate':
+                    yield bt.check_translate
+                    if 'cursorPos' in test:
+                        yield bt.check_cursor
+                if test['testmode'] == 'backtranslate':
+                    yield bt.check_backtranslate
 
-        actualBRL, BRL2rawPos, raw2BRLPos, actualBRLCursorPos = translate(tableList, text, mode=mode, cursorPos=cursorPos, typeform=None)
-        if actualBRL != expectedBRL or actualBRLCursorPos != expectedBRLCursorPos:
-            failed += 1 
-            reportFailure(text, actualBRL, expectedBRL, cursorPos, actualBRLCursorPos, expectedBRLCursorPos)
-    total_failed += failed
-    print("%d of %d tests failed." %(failed, len(harnessModule['tests'])))
+if __name__ == '__main__':
+    run(addplugins=[Reporter()], argv=['-v', '--with-reporter', sys.argv[0]], defaultTest=__name__)
 
-sys.exit(0 if total_failed == 0 else 1)
