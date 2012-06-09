@@ -83,6 +83,7 @@ cr.define('ntp', function() {
         a.href = '';
         a.classList.add('recent-window');
         a.textContent = formatTabsText(data.tabs.length);
+        a.title = data.tabs.map(function(tab) { return tab.title; }).join('\n');
       } else {
         a.href = data.url;
         a.style.backgroundImage = 'url(chrome://favicon/' + data.url + ')';
