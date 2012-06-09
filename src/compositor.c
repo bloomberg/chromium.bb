@@ -3170,12 +3170,12 @@ int main(int argc, char *argv[])
 	argc = parse_options(core_options,
 			     ARRAY_LENGTH(core_options), argc, argv);
 
+	weston_log_file_open(log);
+	
 	if (!getenv("XDG_RUNTIME_DIR")) {
 		weston_log(xdg_error_message);
 		exit(EXIT_FAILURE);
 	}
-
-	weston_log_file_open(log);
 
 	gettimeofday(&tv, NULL);
 	brokendown_time = localtime(&tv.tv_sec);
