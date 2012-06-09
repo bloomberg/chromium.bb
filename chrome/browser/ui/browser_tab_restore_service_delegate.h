@@ -28,7 +28,7 @@ class BrowserTabRestoreServiceDelegate : public TabRestoreServiceDelegate {
   virtual int GetSelectedIndex() const OVERRIDE;
   virtual std::string GetAppName() const OVERRIDE;
   virtual content::WebContents* GetWebContentsAt(int index) const OVERRIDE;
-  virtual content::WebContents* GetSelectedWebContents() const OVERRIDE;
+  virtual content::WebContents* GetActiveWebContents() const OVERRIDE;
   virtual bool IsTabPinned(int index) const OVERRIDE;
   virtual content::WebContents* AddRestoredTab(
       const std::vector<TabNavigation>& navigations,

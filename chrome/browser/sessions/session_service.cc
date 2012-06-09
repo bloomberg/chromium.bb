@@ -29,7 +29,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
@@ -443,7 +443,7 @@ void SessionService::UpdateTabNavigation(
                                                    tab_id.id(), index, entry));
 }
 
-void SessionService::TabRestored(TabContentsWrapper* tab, bool pinned) {
+void SessionService::TabRestored(TabContents* tab, bool pinned) {
   if (!ShouldTrackChangesToWindow(tab->restore_tab_helper()->window_id()))
     return;
 
@@ -588,8 +588,7 @@ void SessionService::Observe(int type,
     }
 
     case chrome::NOTIFICATION_TAB_PARENTED: {
-      TabContentsWrapper* tab =
-          content::Source<TabContentsWrapper>(source).ptr();
+      TabContents* tab = content::Source<TabContents>(source).ptr();
       if (tab->profile() != profile())
         return;
       SetTabWindow(tab->restore_tab_helper()->window_id(),
@@ -604,8 +603,7 @@ void SessionService::Observe(int type,
     }
 
     case chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED: {
-      TabContentsWrapper* tab =
-          content::Source<TabContentsWrapper>(source).ptr();
+      TabContents* tab = content::Source<TabContents>(source).ptr();
       if (!tab || tab->profile() != profile())
         return;
       TabClosed(tab->restore_tab_helper()->window_id(),
@@ -616,10 +614,9 @@ void SessionService::Observe(int type,
     }
 
     case content::NOTIFICATION_NAV_LIST_PRUNED: {
-      TabContentsWrapper* tab =
-          TabContentsWrapper::GetCurrentWrapperForContents(
-              content::Source<content::NavigationController>(
-                  source).ptr()->GetWebContents());
+      TabContents* tab = TabContents::FromWebContents(
+          content::Source<content::NavigationController>(source).ptr()->
+              GetWebContents());
       if (!tab || tab->profile() != profile())
         return;
       content::Details<content::PrunedDetails> pruned_details(details);
@@ -640,10 +637,9 @@ void SessionService::Observe(int type,
     }
 
     case content::NOTIFICATION_NAV_ENTRY_CHANGED: {
-      TabContentsWrapper* tab =
-          TabContentsWrapper::GetCurrentWrapperForContents(
-              content::Source<content::NavigationController>(
-                  source).ptr()->GetWebContents());
+      TabContents* tab = TabContents::FromWebContents(
+          content::Source<content::NavigationController>(source).ptr()->
+              GetWebContents());
       if (!tab || tab->profile() != profile())
         return;
       content::Details<content::EntryChangedDetails> changed(details);
@@ -655,10 +651,9 @@ void SessionService::Observe(int type,
     }
 
     case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
-      TabContentsWrapper* tab =
-          TabContentsWrapper::GetCurrentWrapperForContents(
-              content::Source<content::NavigationController>(
-                  source).ptr()->GetWebContents());
+      TabContents* tab = TabContents::FromWebContents(
+          content::Source<content::NavigationController>(source).ptr()->
+              GetWebContents());
       if (!tab || tab->profile() != profile())
         return;
       int current_entry_index =
@@ -1249,7 +1244,7 @@ bool SessionService::CreateTabsAndWindows(
 
 void SessionService::BuildCommandsForTab(
     const SessionID& window_id,
-    TabContentsWrapper* tab,
+    TabContents* tab,
     int index_in_window,
     bool is_pinned,
     std::vector<SessionCommand*>* commands,
@@ -1276,13 +1271,11 @@ void SessionService::BuildCommandsForTab(
     commands->push_back(CreatePinnedStateCommand(session_id, true));
   }
 
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab->web_contents());
-  if (wrapper->extension_tab_helper()->extension_app()) {
+  if (tab->extension_tab_helper()->extension_app()) {
     commands->push_back(
         CreateSetTabExtensionAppIDCommand(
             kCommandSetExtensionAppID, session_id.id(),
-            wrapper->extension_tab_helper()->extension_app()->id()));
+            tab->extension_tab_helper()->extension_app()->id()));
   }
 
   const std::string& ua_override = tab->web_contents()->GetUserAgentOverride();
@@ -1343,7 +1336,7 @@ void SessionService::BuildCommandsForBrowser(
 
   bool added_to_windows_to_track = false;
   for (int i = 0; i < browser->tab_count(); ++i) {
-    TabContentsWrapper* tab = browser->GetTabContentsWrapperAt(i);
+    TabContents* tab = browser->GetTabContentsAt(i);
     DCHECK(tab);
     if (tab->profile() == profile() || profile() == NULL) {
       BuildCommandsForTab(browser->session_id(), tab, i,

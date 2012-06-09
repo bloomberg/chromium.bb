@@ -38,8 +38,8 @@ WebContents* BrowserTabRestoreServiceDelegate::GetWebContentsAt(
   return browser_->GetWebContentsAt(index);
 }
 
-WebContents* BrowserTabRestoreServiceDelegate::GetSelectedWebContents() const {
-  return browser_->GetSelectedWebContents();
+WebContents* BrowserTabRestoreServiceDelegate::GetActiveWebContents() const {
+  return browser_->GetActiveWebContents();
 }
 
 bool BrowserTabRestoreServiceDelegate::IsTabPinned(int index) const {

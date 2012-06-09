@@ -41,7 +41,7 @@ class TabRestoreServiceDelegate {
 
   // see Browser methods with the same names
   virtual content::WebContents* GetWebContentsAt(int index) const = 0;
-  virtual content::WebContents* GetSelectedWebContents() const = 0;
+  virtual content::WebContents* GetActiveWebContents() const = 0;
   virtual bool IsTabPinned(int index) const = 0;
   virtual content::WebContents* AddRestoredTab(
       const std::vector<TabNavigation>& navigations,

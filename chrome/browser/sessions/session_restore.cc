@@ -549,7 +549,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
           RestoreTabsToBrowser(*(*i), browser, selected_tab_index);
       ShowBrowser(browser, selected_tab_index);
       tab_loader_->TabIsLoading(
-          &browser->GetSelectedWebContents()->GetController());
+          &browser->GetActiveWebContents()->GetController());
       NotifySessionServiceOfRestoredTabs(browser, initial_tab_count);
     }
 
@@ -787,7 +787,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
       }
       if ((*i)->type == Browser::TYPE_TABBED)
         last_browser = browser;
-      WebContents* active_tab = browser->GetSelectedWebContents();
+      WebContents* active_tab = browser->GetActiveWebContents();
       int initial_tab_count = browser->tab_count();
       int selected_tab_index = std::max(
           0,
@@ -803,7 +803,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
         active_tab = NULL;
       }
       tab_loader_->TabIsLoading(
-          &browser->GetSelectedWebContents()->GetController());
+          &browser->GetActiveWebContents()->GetController());
       NotifySessionServiceOfRestoredTabs(browser, initial_tab_count);
     }
 
@@ -935,7 +935,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
 
     // TODO(jcampan): http://crbug.com/8123 we should not need to set the
     //                initial focus explicitly.
-    browser->GetSelectedWebContents()->GetView()->SetInitialFocus();
+    browser->GetActiveWebContents()->GetView()->SetInitialFocus();
 
     if (!browser_shown_) {
       browser_shown_ = true;
@@ -975,7 +975,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
     if (!session_service)
       return;
     for (int i = initial_count; i < browser->tab_count(); ++i)
-      session_service->TabRestored(browser->GetTabContentsWrapperAt(i),
+      session_service->TabRestored(browser->GetTabContentsAt(i),
                                    browser->IsTabPinned(i));
   }
 

@@ -475,9 +475,9 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, Basic) {
 
   Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
   ASSERT_EQ(1u, BrowserList::size());
-  ASSERT_EQ(url2_, new_browser->GetSelectedWebContents()->GetURL());
+  ASSERT_EQ(url2_, new_browser->GetActiveWebContents()->GetURL());
   GoBack(new_browser);
-  ASSERT_EQ(url1_, new_browser->GetSelectedWebContents()->GetURL());
+  ASSERT_EQ(url1_, new_browser->GetActiveWebContents()->GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoresForwardAndBackwardNavs) {
@@ -488,16 +488,16 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoresForwardAndBackwardNavs) {
   GoBack(browser());
   Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
   ASSERT_EQ(1u, BrowserList::size());
-  ASSERT_EQ(url2_, new_browser->GetSelectedWebContents()->GetURL());
+  ASSERT_EQ(url2_, new_browser->GetActiveWebContents()->GetURL());
   GoForward(new_browser);
-  ASSERT_EQ(url3_, new_browser->GetSelectedWebContents()->GetURL());
+  ASSERT_EQ(url3_, new_browser->GetActiveWebContents()->GetURL());
   GoBack(new_browser);
-  ASSERT_EQ(url2_, new_browser->GetSelectedWebContents()->GetURL());
+  ASSERT_EQ(url2_, new_browser->GetActiveWebContents()->GetURL());
 
   // Test renderer-initiated back/forward as well.
   GURL go_back_url("javascript:history.back();");
   ui_test_utils::NavigateToURL(new_browser, go_back_url);
-  ASSERT_EQ(url1_, new_browser->GetSelectedWebContents()->GetURL());
+  ASSERT_EQ(url1_, new_browser->GetActiveWebContents()->GetURL());
 }
 
 // Tests that the SiteInstances used for entries in a restored tab's history
@@ -520,18 +520,18 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
   ASSERT_EQ(1, new_browser->tab_count());
 
   // Check that back and forward work as expected.
-  ASSERT_EQ(cross_site_url, new_browser->GetSelectedWebContents()->GetURL());
+  ASSERT_EQ(cross_site_url, new_browser->GetActiveWebContents()->GetURL());
 
   GoBack(new_browser);
-  ASSERT_EQ(url1_, new_browser->GetSelectedWebContents()->GetURL());
+  ASSERT_EQ(url1_, new_browser->GetActiveWebContents()->GetURL());
 
   GoForward(new_browser);
-  ASSERT_EQ(cross_site_url, new_browser->GetSelectedWebContents()->GetURL());
+  ASSERT_EQ(cross_site_url, new_browser->GetActiveWebContents()->GetURL());
 
   // Test renderer-initiated back/forward as well.
   GURL go_forward_url("javascript:history.forward();");
   ui_test_utils::NavigateToURL(new_browser, go_forward_url);
-  ASSERT_EQ(url2_, new_browser->GetSelectedWebContents()->GetURL());
+  ASSERT_EQ(url2_, new_browser->GetActiveWebContents()->GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, TwoTabsSecondSelected) {
@@ -546,7 +546,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, TwoTabsSecondSelected) {
   ASSERT_EQ(1u, BrowserList::size());
   ASSERT_EQ(2, new_browser->tab_count());
   ASSERT_EQ(1, new_browser->active_index());
-  ASSERT_EQ(url2_, new_browser->GetSelectedWebContents()->GetURL());
+  ASSERT_EQ(url2_, new_browser->GetActiveWebContents()->GetURL());
 
   ASSERT_EQ(url1_, new_browser->GetWebContentsAt(0)->GetURL());
 }
@@ -563,7 +563,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, ClosedTabStaysClosed) {
   Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
 
   AssertOneWindowWithOneTab(new_browser);
-  ASSERT_EQ(url1_, new_browser->GetSelectedWebContents()->GetURL());
+  ASSERT_EQ(url1_, new_browser->GetActiveWebContents()->GetURL());
 }
 
 // Test to verify that the print preview tab is not restored.
@@ -580,7 +580,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, DontRestorePrintPreviewTabTest) {
   Browser* new_browser = QuitBrowserAndRestore(browser(), 1);
 
   AssertOneWindowWithOneTab(new_browser);
-  ASSERT_EQ(url1_, new_browser->GetSelectedWebContents()->GetURL());
+  ASSERT_EQ(url1_, new_browser->GetActiveWebContents()->GetURL());
 }
 
 // Creates a tabbed browser and popup and makes sure we restore both.
@@ -658,7 +658,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
 
   AssertOneWindowWithOneTab(new_browser);
 
-  ASSERT_EQ(url1_, new_browser->GetSelectedWebContents()->GetURL());
+  ASSERT_EQ(url1_, new_browser->GetActiveWebContents()->GetURL());
 }
 
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
@@ -684,7 +684,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, TwoWindowsCloseOneRestoreOnlyOne) {
 
   AssertOneWindowWithOneTab(new_browser);
 
-  ASSERT_EQ(url1_, new_browser->GetSelectedWebContents()->GetURL());
+  ASSERT_EQ(url1_, new_browser->GetActiveWebContents()->GetURL());
 }
 
 // Make sure after a restore the number of processes matches that of the number
@@ -758,6 +758,6 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestorePinnedSelectedTab) {
   // The pinned tab is the selected tab.
   ASSERT_EQ(2, new_browser->tab_count());
   EXPECT_EQ(0, new_browser->active_index());
-  EXPECT_EQ(url1_, new_browser->GetSelectedWebContents()->GetURL());
+  EXPECT_EQ(url1_, new_browser->GetActiveWebContents()->GetURL());
   EXPECT_EQ(url2_, new_browser->GetWebContentsAt(1)->GetURL());
 }

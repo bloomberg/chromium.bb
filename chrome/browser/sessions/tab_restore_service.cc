@@ -23,7 +23,7 @@
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sessions/tab_restore_service_delegate.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -422,7 +422,7 @@ void TabRestoreService::RestoreEntryById(TabRestoreServiceDelegate* delegate,
     delegate->ShowBrowserWindow();
 
     if (disposition == CURRENT_TAB && current_delegate &&
-        current_delegate->GetSelectedWebContents()) {
+        current_delegate->GetActiveWebContents()) {
       current_delegate->CloseTab();
     }
   } else {
@@ -536,13 +536,12 @@ void TabRestoreService::PopulateTab(Tab* tab,
     tab->current_navigation_index = 0;
   tab->tabstrip_index = index;
 
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(
-          controller->GetWebContents());
-  // wrapper is NULL in some browser tests.
-  if (wrapper) {
+  TabContents* tab_contents =
+      TabContents::FromWebContents(controller->GetWebContents());
+  // tab_contents is NULL in some browser tests.
+  if (tab_contents) {
     const extensions::Extension* extension =
-        wrapper->extension_tab_helper()->extension_app();
+        tab_contents->extension_tab_helper()->extension_app();
     if (extension)
       tab->extension_app_id = extension->id();
   }

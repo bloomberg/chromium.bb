@@ -24,7 +24,6 @@
 class Profile;
 class SessionCommand;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 struct SessionTab;
 struct SessionWindow;
 
@@ -157,7 +156,7 @@ class SessionService : public BaseSessionService,
 
   // Notification that a tab has restored its entries or a closed tab is being
   // reused.
-  void TabRestored(TabContentsWrapper* tab, bool pinned);
+  void TabRestored(TabContents* tab, bool pinned);
 
   // Sets the index of the selected entry in the navigation controller for the
   // specified tab.
@@ -327,7 +326,7 @@ class SessionService : public BaseSessionService,
   // indices that were written.
   void BuildCommandsForTab(
       const SessionID& window_id,
-      TabContentsWrapper* tab,
+      TabContents* tab,
       int index_in_window,
       bool is_pinned,
       std::vector<SessionCommand*>* commands,

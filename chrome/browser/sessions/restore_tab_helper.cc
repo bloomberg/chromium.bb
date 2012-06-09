@@ -4,7 +4,7 @@
 
 #include "chrome/browser/sessions/restore_tab_helper.h"
 
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/notification_service.h"
@@ -24,12 +24,11 @@ void RestoreTabHelper::SetWindowID(const SessionID& id) {
   window_id_ = id;
 
   // TODO(mpcomplete): Maybe this notification should send out a WebContents.
-  TabContentsWrapper* tab =
-      TabContentsWrapper::GetCurrentWrapperForContents(web_contents());
+  TabContents* tab = TabContents::FromWebContents(web_contents());
   if (tab) {
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_TAB_PARENTED,
-        content::Source<TabContentsWrapper>(tab),
+        content::Source<TabContents>(tab),
         content::NotificationService::NoDetails());
   }
 
