@@ -180,6 +180,7 @@ weston_zoom_run(struct weston_surface *surface, GLfloat start, GLfloat stop,
 		       &zoom->transform.link);
 	weston_spring_init(&zoom->spring, 200.0, 0.0, 1.0);
 	zoom->spring.friction = 700;
+	zoom->animation.frame_counter = 0;
 	zoom->spring.timestamp = weston_compositor_get_time();
 	zoom->animation.frame = weston_zoom_frame;
 	weston_zoom_frame(&zoom->animation, NULL, zoom->spring.timestamp);
@@ -502,6 +503,7 @@ weston_fade_run(struct weston_surface *surface,
 	fade->data = data;
 	weston_spring_init(&fade->spring, 200.0, 0, 1.0);
 	fade->spring.friction = 700;
+	fade->animation.frame_counter = 0;
 	fade->spring.timestamp = weston_compositor_get_time();
 	fade->animation.frame = weston_fade_frame;
 	weston_fade_frame(&fade->animation, NULL, fade->spring.timestamp);

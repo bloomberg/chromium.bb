@@ -1060,8 +1060,10 @@ weston_output_repaint(struct weston_output *output, int msecs)
 		wl_resource_destroy(&cb->resource);
 	}
 
-	wl_list_for_each_safe(animation, next, &output->animation_list, link)
+	wl_list_for_each_safe(animation, next, &output->animation_list, link) {
 		animation->frame(animation, output, msecs);
+		animation->frame_counter++;
+	}
 }
 
 static int
@@ -1170,9 +1172,11 @@ weston_compositor_fade(struct weston_compositor *compositor, float tint)
 	}
 
 	weston_surface_damage(compositor->fade.surface);
-	if (wl_list_empty(&compositor->fade.animation.link))
+	if (wl_list_empty(&compositor->fade.animation.link)) {
+		compositor->fade.animation.frame_counter = 0;
 		wl_list_insert(output->animation_list.prev,
 			       &compositor->fade.animation.link);
+	}
 }
 
 static void

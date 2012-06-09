@@ -231,6 +231,7 @@ struct weston_shader {
 struct weston_animation {
 	void (*frame)(struct weston_animation *animation,
 		      struct weston_output *output, uint32_t msecs);
+	int frame_counter;
 	struct wl_list link;
 };
 
