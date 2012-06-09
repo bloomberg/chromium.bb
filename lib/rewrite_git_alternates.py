@@ -216,21 +216,25 @@ def RebuildRepoCheckout(repo_root, initial_reference,
 
   reference_roots = list(WalkReferences(initial_reference,
                                         suppress=[repo_root]))
+
+  # Always rebuild the external alternates for any operation; 1) we don't want
+  # external out of sync from chroot, 2) if this is the first conversion, if
+  # we only update chroot it'll break external access to the repo.
+  reference_map = dict((x, x) for x in reference_roots)
+  rebuilds = [('alternates', reference_map)]
   if chroot_reference_root:
     alternates_dir = 'chroot/alternates'
     base = os.path.join(chroot_reference_root, '.repo', 'chroot', 'external')
     reference_map = dict((x, '%s%i' % (base, idx + 1))
                          for idx, x in enumerate(reference_roots))
-  else:
-    alternates_dir = 'alternates'
-    reference_map = dict((x, x) for x in reference_roots)
+    rebuilds += [('chroot/alternates', reference_map)]
 
-  alternates_dir = os.path.join(repo_root, '.repo', alternates_dir)
-
-  _RebuildRepoCheckout(repo_root,
-                       reference_map,
-                       alternates_dir)
-  return reference_map
+  for alternates_dir, reference_map in rebuilds:
+    alternates_dir = os.path.join(repo_root, '.repo', alternates_dir)
+    _RebuildRepoCheckout(repo_root,
+                         reference_map,
+                         alternates_dir)
+  return reference_roots
 
 
 if __name__ == '__main__':
@@ -244,4 +248,4 @@ if __name__ == '__main__':
     chroot_reference_root = sys.argv[3]
   ret = RebuildRepoCheckout(sys.argv[1], sys.argv[2],
                             chroot_reference_root=chroot_reference_root)
-  print '\n'.join(ret.iterkeys())
+  print '\n'.join(ret)
