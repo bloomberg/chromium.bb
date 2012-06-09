@@ -17,9 +17,15 @@ if [[ $# -ne 3 ]]; then
   exit 2
 fi
 
+if [[ "${0:0:1}" == "/" ]]; then
+  declare -r scriptname="$0"
+else
+  declare -r scriptname="$PWD/$0"
+fi
+
 cd tools/BACKPORTS
 
-if [[ "$(../glibc_revision.sh)" == "$(cat "$1.lastver")" ]]; then
+if [[ "$((sha1sum "$scriptname" "$1" || shasum "$scriptname" "$1") 2>/dev/null)" == "$(cat "$1.lastver")" ]]; then
   # Everything is already done
   exit 0
 fi
@@ -132,6 +138,9 @@ while read name id comment ; do
 	@@ -847 +847 @@
 	-	+#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@ \\" \`LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1-\\2-\\3+'\` (Native Client r\`LC_ALL=C svnversion\`, Git Commit \`cd SRC/binutils ; LC_ALL=C git rev-parse HEAD\`)\\"\\n" |\\
 	+	+#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@ \\" \`cd ../../.. ; LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1-\\2-\\3+'\` (Native Client r$rev)\\"\\n" |\\
+	@@ -849 +849 @@
+	-	LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1-\\2-\\3+' > SRC/gcc/gcc/DATESTAMP
+	+	( cd ../../.. ; LC_ALL=C svn info ) | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1-\\2-\\3+' > SRC/gcc/gcc/DATESTAMP
 	@@ -855 +855 @@
 	-	+\`cat SRC/gdb/gdb/version.in\` \`LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1-\\2-\\3+'\` (Native Client r\`LC_ALL=C svnversion\`, Git Commit \`cd SRC/gdb ; LC_ALL=C git rev-parse HEAD\`)\\n" |\\
 	+	+\`cat SRC/gdb/gdb/version.in\` \`cd ../../.. ; LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1-\\2-\\3+'\` (Native Client r$rev)\\n" |\\
@@ -142,7 +151,10 @@ while read name id comment ; do
 	+++ native_client/tools/Makefile
 	@@ -847 +847 @@
 	-	+#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@ \\" \`LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1\\2\\3+'\` (Native Client r\`LC_ALL=C svnversion\`, Git Commit \`cd SRC/binutils ; LC_ALL=C git rev-parse HEAD\`)\\"\\n" |\\
-	+	+#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@ \\" \`LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1\\2\\3+'\` (Native Client r$rev)\\"\\n" |\\
+	+	+#define BFD_VERSION_STRING  @bfd_version_package@ @bfd_version_string@ \\" \`cd ../../.. ; LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1\\2\\3+'\` (Native Client r$rev)\\"\\n" |\\
+	@@ -849 +849 @@
+	-	LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1\\2\\3+' > SRC/gcc/gcc/DATESTAMP
+	+	( cd ../../.. ; LC_ALL=C svn info ) | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1\\2\\3+' > SRC/gcc/gcc/DATESTAMP
 	@@ -855 +855 @@
 	-	+\`cat SRC/gdb/gdb/version.in\` \`LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1\\2\\3+'\` (Native Client r\`LC_ALL=C svnversion\`, Git Commit \`cd SRC/gdb ; LC_ALL=C git rev-parse HEAD\`)\\n" |\\
 	+	+\`cat SRC/gdb/gdb/version.in\` \`cd ../../.. LC_ALL=C svn info | grep 'Last Changed Date' | sed -e s'+Last Changed Date: \\(....\\)-\\(..\\)-\\(..\\).*+\\1\\2\\3+'\` (Native Client r$rev)\\n" |\\
@@ -334,4 +346,4 @@ if [[ -e "$$.error" ]]; then
   exit 2
 fi
 
-../glibc_revision.sh > "$1.lastver"
+(sha1sum "$scriptname" "$1" || shasum "$scriptname" "$1") > "$1.lastver" 2>/dev/null

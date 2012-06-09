@@ -101,5 +101,6 @@ else
 fi
 
 if [[ "${DONT_BUILD_COMPATIBLE_TOOLCHAINS:-no}" != "yes" ]]; then
+  echo @@@BUILD_STEP sync backports@@@
   tools/BACKPORTS/build_backports.sh VERSIONS ${PLATFORM} newlib
 fi

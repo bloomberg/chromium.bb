@@ -89,5 +89,6 @@ else
 fi
 
 if [[ "${BUILD_COMPATIBLE_TOOLCHAINS:-yes}" != "no" ]]; then
+  echo @@@BUILD_STEP sync backports@@@
   tools/BACKPORTS/build_backports.sh VERSIONS win glibc
 fi

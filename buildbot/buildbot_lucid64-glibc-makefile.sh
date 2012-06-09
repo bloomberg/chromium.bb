@@ -171,5 +171,6 @@ python buildbot/buildbot_standard.py --step-suffix=' (32)' opt 32 glibc
 python buildbot/buildbot_standard.py --step-suffix=' (64)' opt 64 glibc
 
 if [[ "${BUILD_COMPATIBLE_TOOLCHAINS:-yes}" != "no" ]]; then
+  echo @@@BUILD_STEP sync backports@@@
   tools/BACKPORTS/build_backports.sh VERSIONS linux glibc
 fi
