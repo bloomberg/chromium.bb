@@ -199,7 +199,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, MAYBE_AllowOffStore) {
         CrxInstaller::Create(service, mock_prompt));
     crx_installer->set_install_cause(
         extension_misc::INSTALL_CAUSE_USER_DOWNLOAD);
-    crx_installer->set_allow_off_store_install(kTestData[i]);
+
+    if (kTestData[i]) {
+      crx_installer->set_off_store_install_allow_reason(
+          CrxInstaller::OffStoreInstallAllowedInTest);
+    }
 
     crx_installer->InstallCrx(test_data_dir_.AppendASCII("good.crx"));
     EXPECT_EQ(kTestData[i], WaitForExtensionInstall()) << kTestData[i];

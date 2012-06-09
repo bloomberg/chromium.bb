@@ -84,7 +84,8 @@ void InstallExtensionHandler::HandleInstallMessage(const ListValue* args) {
       CrxInstaller::Create(
           ExtensionSystem::Get(profile)->extension_service(),
           new ExtensionInstallPrompt(profile)));
-  crx_installer->set_allow_off_store_install(true);
+  crx_installer->set_off_store_install_allow_reason(
+      CrxInstaller::OffStoreInstallAllowedFromSettingsPage);
 
   const bool kCaseSensitive = false;
 

@@ -303,8 +303,11 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
     scoped_refptr<CrxInstaller> installer(
         CrxInstaller::Create(service, install_ui));
     installer->set_expected_id(id);
-    installer->set_allow_off_store_install(true);
     installer->set_is_gallery_install(from_webstore);
+    if (!from_webstore) {
+      installer->set_off_store_install_allow_reason(
+          CrxInstaller::OffStoreInstallAllowedInTest);
+    }
 
     content::NotificationRegistrar registrar;
     registrar.Add(this, chrome::NOTIFICATION_CRX_INSTALLER_DONE,

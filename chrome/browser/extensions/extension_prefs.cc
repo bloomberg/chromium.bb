@@ -1904,6 +1904,27 @@ void ExtensionPrefs::ClearIncognitoSessionOnlyContentSettings() {
   }
 }
 
+URLPatternSet ExtensionPrefs::GetAllowedInstallSites() {
+  URLPatternSet result;
+  const ListValue* list = prefs_->GetList(prefs::kExtensionAllowedInstallSites);
+  CHECK(list);
+
+  for (size_t i = 0; i < list->GetSize(); ++i) {
+    std::string entry_string;
+    URLPattern entry(URLPattern::SCHEME_ALL);
+    if (!list->GetString(i, &entry_string) ||
+        entry.Parse(entry_string) != URLPattern::PARSE_SUCCESS) {
+      LOG(ERROR) << "Invalid value for preference: "
+                 << prefs::kExtensionAllowedInstallSites
+                 << "." << i;
+      continue;
+    }
+    result.AddPattern(entry);
+  }
+
+  return result;
+}
+
 // static
 void ExtensionPrefs::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(kExtensionsPref, PrefService::UNSYNCABLE_PREF);
@@ -1931,4 +1952,6 @@ void ExtensionPrefs::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterInt64Pref(prefs::kNextExtensionsUpdateCheck,
                            0,  // default value
                            PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterListPref(prefs::kExtensionAllowedInstallSites,
+                          PrefService::UNSYNCABLE_PREF);
 }

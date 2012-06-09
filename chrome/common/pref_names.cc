@@ -1356,13 +1356,18 @@ const char kDisablePluginFinder[] = "plugins.disable_plugin_finder";
 const char kBrowserActionContainerWidth[] =
     "extensions.browseractions.container.width";
 
+// The sites that are allowed to install extensions. These sites should be
+// allowed to install extensions without the scary dangerous downloads bar.
+// Also, when off-store-extension installs are disabled, these sites are exempt.
+const char kExtensionAllowedInstallSites[] = "extensions.allowed_install_sites";
+
 // A whitelist of extension ids the user can install: exceptions from the
-// following blacklist. This is controlled by the administrator.
+// following blacklist.
 const char kExtensionInstallAllowList[] = "extensions.install.allowlist";
+
 // A blacklist, containing extensions the user cannot install. This list can
-// conatin "*" meaning all extensions. This is controlled by the administrator.
-// This list should not be confused with the extension blacklist, which is
-// Google controlled.
+// contain "*" meaning all extensions. This list should not be confused with the
+// extension blacklist, which is Google controlled.
 const char kExtensionInstallDenyList[] = "extensions.install.denylist";
 
 // Whether we have run the extension-alert system (see ExtensionGlobalError)

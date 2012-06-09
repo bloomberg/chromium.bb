@@ -128,6 +128,26 @@ class ExtensionListPolicyHandler : public TypeCheckingPolicyHandler {
   DISALLOW_COPY_AND_ASSIGN(ExtensionListPolicyHandler);
 };
 
+// Implements additional checks for policies that are lists of extension
+// URLPatterns.
+class ExtensionURLPatternListPolicyHandler : public TypeCheckingPolicyHandler {
+ public:
+  ExtensionURLPatternListPolicyHandler(const char* policy_name,
+                                       const char* pref_path);
+  virtual ~ExtensionURLPatternListPolicyHandler();
+
+  // ConfigurationPolicyHandler methods:
+  virtual bool CheckPolicySettings(const PolicyMap& policies,
+                                   PolicyErrorMap* errors) OVERRIDE;
+  virtual void ApplyPolicySettings(const PolicyMap& policies,
+                                   PrefValueMap* prefs) OVERRIDE;
+
+ private:
+  const char* pref_path_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionURLPatternListPolicyHandler);
+};
+
 // ConfigurationPolicyHandler for the SyncDisabled policy.
 class SyncPolicyHandler : public TypeCheckingPolicyHandler {
  public:

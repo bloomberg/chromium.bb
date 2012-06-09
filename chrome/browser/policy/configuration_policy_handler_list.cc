@@ -336,6 +336,10 @@ ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList() {
       new ExtensionListPolicyHandler(key::kExtensionInstallBlacklist,
                                      prefs::kExtensionInstallDenyList,
                                      true));
+  handlers_.push_back(
+      new ExtensionURLPatternListPolicyHandler(
+          key::kExtensionInstallSources,
+          prefs::kExtensionAllowedInstallSites));
 
 #if !defined(OS_CHROMEOS)
   handlers_.push_back(new DownloadDirPolicyHandler());

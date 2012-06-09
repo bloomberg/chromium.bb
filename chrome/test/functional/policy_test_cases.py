@@ -137,6 +137,9 @@ class PolicyPrefsTestCases(object):
     'ExtensionInstallForcelist':
       ('kExtensionInstallForceList', ['lcncmkcnkcdbbanbjakcencbaoegdjlp;' +
        'https://clients2.google.com/service/update2/crx'], [], OS_ALL),
+    'ExtensionInstallSources':
+        ('kExtensionInstallSources', ['https://www.corp.monkey.net/*'],
+         [], OS_ALL),
     'ShowHomeButton': ('kShowHomeButton', True, [BROWSER], OS_ALL),
     'DeveloperToolsDisabled': ('kDevToolsDisabled', True, [], OS_ALL),
     'RestoreOnStartup': (None, 5, [BROWSER], OS_ALL),

@@ -62,4 +62,63 @@ TEST(ExtensionListPolicyHandlerTest, ApplyPolicySettings) {
   EXPECT_TRUE(base::Value::Equals(&list, value));
 }
 
+TEST(ExtensionURLPatternListPolicyHandlerTest, CheckPolicySettings) {
+  base::ListValue list;
+  PolicyMap policy_map;
+  PolicyErrorMap errors;
+  ExtensionURLPatternListPolicyHandler handler(
+      key::kExtensionInstallSources,
+      prefs::kExtensionAllowedInstallSites);
+
+  policy_map.Set(key::kExtensionInstallSources, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, list.DeepCopy());
+  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_TRUE(errors.empty());
+
+  list.Append(Value::CreateStringValue("http://*.google.com/*"));
+  policy_map.Set(key::kExtensionInstallSources, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, list.DeepCopy());
+  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_TRUE(errors.empty());
+
+  list.Append(Value::CreateStringValue("<all_urls>"));
+  policy_map.Set(key::kExtensionInstallSources, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, list.DeepCopy());
+  EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_TRUE(errors.empty());
+
+  list.Append(Value::CreateStringValue("invalid"));
+  policy_map.Set(key::kExtensionInstallSources, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, list.DeepCopy());
+  EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_FALSE(errors.empty());
+  EXPECT_FALSE(errors.GetErrors(key::kExtensionInstallSources).empty());
+
+  // URLPattern syntax has a different way to express 'all urls'. Though '*'
+  // would be compatible today, it would be brittle, so we disallow.
+  list.Append(Value::CreateStringValue("*"));
+  policy_map.Set(key::kExtensionInstallSources, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, list.DeepCopy());
+  EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
+  EXPECT_FALSE(errors.empty());
+  EXPECT_FALSE(errors.GetErrors(key::kExtensionInstallSources).empty());
+}
+
+TEST(ExtensionURLPatternListPolicyHandlerTest, ApplyPolicySettings) {
+  base::ListValue list;
+  PolicyMap policy_map;
+  PrefValueMap prefs;
+  base::Value* value = NULL;
+  ExtensionURLPatternListPolicyHandler handler(
+      key::kExtensionInstallSources,
+      prefs::kExtensionAllowedInstallSites);
+
+  list.Append(Value::CreateStringValue("https://corp.monkey.net/*"));
+  policy_map.Set(key::kExtensionInstallSources, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, list.DeepCopy());
+  handler.ApplyPolicySettings(policy_map, &prefs);
+  EXPECT_TRUE(prefs.GetValue(prefs::kExtensionAllowedInstallSites, &value));
+  EXPECT_TRUE(base::Value::Equals(&list, value));
+}
+
 }  // namespace policy

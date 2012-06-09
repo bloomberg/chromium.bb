@@ -280,6 +280,64 @@ bool ExtensionListPolicyHandler::CheckAndGetList(
   return true;
 }
 
+// ExtensionURLPatternListPolicyHandler implementation -------------------------
+
+ExtensionURLPatternListPolicyHandler::ExtensionURLPatternListPolicyHandler(
+    const char* policy_name,
+    const char* pref_path)
+    : TypeCheckingPolicyHandler(policy_name, base::Value::TYPE_LIST),
+      pref_path_(pref_path) {}
+
+ExtensionURLPatternListPolicyHandler::~ExtensionURLPatternListPolicyHandler() {}
+
+bool ExtensionURLPatternListPolicyHandler::CheckPolicySettings(
+    const PolicyMap& policies,
+    PolicyErrorMap* errors) {
+  const base::Value* value = NULL;
+  if (!CheckAndGetValue(policies, errors, &value))
+    return false;
+
+  if (!value)
+    return true;
+
+  const base::ListValue* list_value = NULL;
+  if (!value->GetAsList(&list_value)) {
+    NOTREACHED();
+    return false;
+  }
+
+  // Check that the list contains valid URLPattern strings only.
+  for (base::ListValue::const_iterator entry(list_value->begin());
+       entry != list_value->end(); ++entry) {
+    std::string url_pattern_string;
+    if (!(*entry)->GetAsString(&url_pattern_string)) {
+      errors->AddError(policy_name(),
+                       entry - list_value->begin(),
+                       IDS_POLICY_TYPE_ERROR,
+                       ValueTypeToString(base::Value::TYPE_STRING));
+      return false;
+    }
+
+    URLPattern pattern(URLPattern::SCHEME_ALL);
+    if (pattern.Parse(url_pattern_string) != URLPattern::PARSE_SUCCESS) {
+      errors->AddError(policy_name(),
+                       entry - list_value->begin(),
+                       IDS_POLICY_VALUE_FORMAT_ERROR);
+      return false;
+    }
+  }
+
+  return true;
+}
+
+void ExtensionURLPatternListPolicyHandler::ApplyPolicySettings(
+    const PolicyMap& policies,
+    PrefValueMap* prefs) {
+  const Value* value = policies.GetValue(policy_name());
+  if (value)
+    prefs->SetValue(pref_path_, value->DeepCopy());
+}
+
 // SimplePolicyHandler implementation ------------------------------------------
 
 SimplePolicyHandler::SimplePolicyHandler(

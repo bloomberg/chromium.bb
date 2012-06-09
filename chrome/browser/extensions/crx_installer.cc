@@ -98,7 +98,7 @@ CrxInstaller::CrxInstaller(base::WeakPtr<ExtensionService> frontend_weak,
       allow_silent_install_(false),
       install_cause_(extension_misc::INSTALL_CAUSE_UNSET),
       creation_flags_(Extension::NO_FLAGS),
-      allow_off_store_install_(false) {
+      off_store_install_allow_reason_(OffStoreInstallDisallowed) {
   if (!approval)
     return;
 
@@ -260,9 +260,12 @@ bool CrxInstaller::AllowInstall(const Extension* extension,
       if (is_gallery_install()) {
         UMA_HISTOGRAM_ENUMERATION(kHistogramName, OnStoreInstall,
                                   NumOffStoreInstallDecision);
-      } else if (allow_off_store_install_) {
+      } else if (off_store_install_allow_reason_ != OffStoreInstallDisallowed) {
         UMA_HISTOGRAM_ENUMERATION(kHistogramName, OffStoreInstallAllowed,
                                   NumOffStoreInstallDecision);
+        UMA_HISTOGRAM_ENUMERATION("Extensions.OffStoreInstallAllowReason",
+                                  off_store_install_allow_reason_,
+                                  NumOffStoreInstallAllowReasons);
       } else {
         UMA_HISTOGRAM_ENUMERATION(kHistogramName, OffStoreInstallDisallowed,
                                   NumOffStoreInstallDecision);

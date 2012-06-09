@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/extension_scoped_prefs.h"
 #include "chrome/browser/extensions/management_policy.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/url_pattern_set.h"
 #include "chrome/common/string_ordinal.h"
 
 class ExtensionPrefValueMap;
@@ -431,6 +432,10 @@ class ExtensionPrefs : public extensions::ContentSettingsStore::Observer,
   ExtensionSorting* extension_sorting() const {
     return extension_sorting_.get();
   }
+
+  // Describes the URLs that are able to install extensions. See
+  // prefs::kExtensionAllowedInstallSites for more information.
+  URLPatternSet GetAllowedInstallSites();
 
  protected:
   // For unit testing. Enables injecting an artificial clock that is used

@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -43,6 +44,20 @@ ExtensionInstallPrompt* CreateExtensionInstallPrompt(Profile* profile) {
   return result;
 }
 
+bool OffStoreInstallAllowedByPrefs(Profile* profile, const DownloadItem& item) {
+  ExtensionPrefs* prefs =
+      ExtensionSystem::Get(profile)->extension_service()->extension_prefs();
+  CHECK(prefs);
+
+  URLPatternSet url_patterns = prefs->GetAllowedInstallSites();
+
+  // TODO(aa): RefererURL is cleared in some cases, for example when going
+  // between secure and non-secure URLs. It would be better if DownloadItem
+  // tracked the initiating page explicitly.
+  return url_patterns.MatchesURL(item.GetURL()) &&
+      url_patterns.MatchesURL(item.GetReferrerUrl());
+}
+
 }  // namespace
 
 // Tests can call this method to inject a mock ExtensionInstallPrompt
@@ -67,6 +82,11 @@ scoped_refptr<CrxInstaller> OpenChromeExtension(
 
   installer->set_delete_source(true);
   installer->set_install_cause(extension_misc::INSTALL_CAUSE_USER_DOWNLOAD);
+
+  if (OffStoreInstallAllowedByPrefs(profile, download_item)) {
+    installer->set_off_store_install_allow_reason(
+        CrxInstaller::OffStoreInstallAllowedBecausePref);
+  }
 
   if (UserScript::IsURLUserScript(download_item.GetURL(),
                                   download_item.GetMimeType())) {

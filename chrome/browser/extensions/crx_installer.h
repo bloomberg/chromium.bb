@@ -54,6 +54,15 @@ class CrxInstaller
     : public SandboxedExtensionUnpackerClient,
       public ExtensionInstallPrompt::Delegate {
  public:
+  // Used in histograms; do not change order.
+  enum OffStoreInstallAllowReason {
+    OffStoreInstallDisallowed,
+    OffStoreInstallAllowedFromSettingsPage,
+    OffStoreInstallAllowedBecausePref,
+    OffStoreInstallAllowedInTest,
+    NumOffStoreInstallAllowReasons
+  };
+
   // Extensions will be installed into frontend->install_directory(),
   // then registered with |frontend|. Any install UI will be displayed
   // using |client|. Pass NULL for |client| for silent install
@@ -146,8 +155,12 @@ class CrxInstaller
     install_cause_ = install_cause;
   }
 
-  bool allow_off_store_install() const { return allow_off_store_install_; }
-  void set_allow_off_store_install(bool val) { allow_off_store_install_ = val; }
+  OffStoreInstallAllowReason off_store_install_allow_reason() const {
+    return off_store_install_allow_reason_;
+  }
+  void set_off_store_install_allow_reason(OffStoreInstallAllowReason reason) {
+    off_store_install_allow_reason_ = reason;
+  }
 
   void set_page_ordinal(const StringOrdinal& page_ordinal) {
     page_ordinal_ = page_ordinal;
@@ -312,7 +325,7 @@ class CrxInstaller
   int creation_flags_;
 
   // Whether to allow off store installation.
-  bool allow_off_store_install_;
+  OffStoreInstallAllowReason off_store_install_allow_reason_;
 
   DISALLOW_COPY_AND_ASSIGN(CrxInstaller);
 };
