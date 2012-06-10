@@ -160,11 +160,6 @@ class WebMediaPlayerImpl
   virtual WebKit::WebMediaPlayer::NetworkState networkState() const;
   virtual WebKit::WebMediaPlayer::ReadyState readyState() const;
 
-  // TODO(fischman): this method now lies in preparation for removal once
-  // WebKit::WebMediaPlayer is fixed to not call it.  http://webk.it/86113
-  // When removing this method also delete fake_bytes_loaded_.
-  virtual unsigned long long bytesLoaded() const;
-
   virtual bool didLoadingProgress() const;
   virtual unsigned long long totalBytes() const;
 
@@ -327,9 +322,6 @@ class WebMediaPlayerImpl
   WebKit::WebAudioSourceProvider* audio_source_provider_;
 
   bool is_local_source_;
-
-  // TODO(fischman): see TODO on bytesLoaded() above.
-  mutable uint64 fake_bytes_loaded_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };

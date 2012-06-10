@@ -120,8 +120,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       accelerated_compositing_reported_(false),
       incremented_externally_allocated_memory_(false),
       audio_source_provider_(audio_source_provider),
-      is_local_source_(false),
-      fake_bytes_loaded_(0) {
+      is_local_source_(false) {
   media_log_->AddEvent(
       media_log_->CreateEvent(media::MediaLogEvent::WEBMEDIAPLAYER_CREATED));
 
@@ -486,13 +485,6 @@ float WebMediaPlayerImpl::maxTimeSeekable() const {
   if (proxy_ && proxy_->data_source() && proxy_->data_source()->IsStreaming())
     return 0.0f;
   return static_cast<float>(pipeline_->GetMediaDuration().InSecondsF());
-}
-
-unsigned long long WebMediaPlayerImpl::bytesLoaded() const {
-  DCHECK_EQ(main_loop_, MessageLoop::current());
-  if (didLoadingProgress())
-    ++fake_bytes_loaded_;
-  return fake_bytes_loaded_;
 }
 
 bool WebMediaPlayerImpl::didLoadingProgress() const {

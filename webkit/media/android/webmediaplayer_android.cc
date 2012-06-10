@@ -71,7 +71,6 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       pending_seek_(0),
       seeking_(false),
       playback_completed_(false),
-      buffered_bytes_(0),
       did_loading_progress_(false),
       cookie_jar_(cookie_jar),
       manager_(manager),
@@ -297,10 +296,6 @@ bool WebMediaPlayerAndroid::didLoadingProgress() const {
   return ret;
 }
 
-unsigned long long WebMediaPlayerAndroid::bytesLoaded() const {
-  return buffered_bytes_;
-}
-
 unsigned long long WebMediaPlayerAndroid::totalBytes() const {
   // Deprecated.
   // TODO(qinmin): Remove this from WebKit::WebMediaPlayer as it is never used.
@@ -409,11 +404,6 @@ void WebMediaPlayerAndroid::OnPlaybackComplete() {
 void WebMediaPlayerAndroid::OnBufferingUpdate(int percentage) {
   buffered_[0].end = duration() * percentage / 100;
   did_loading_progress_ = true;
-  // Implement a trick here to fake progress event, as WebKit checks
-  // consecutive bytesLoaded() to see if any progress made.
-  // See HTMLMediaElement::progressEventTimerFired.
-  // TODO(qinmin): need a method to calculate the buffered bytes.
-  buffered_bytes_++;
 }
 
 void WebMediaPlayerAndroid::OnSeekComplete() {

@@ -91,7 +91,6 @@ class WebMediaPlayerAndroid :
   // Get rate of loading the resource.
   virtual int32 dataRate() const;
 
-  virtual unsigned long long bytesLoaded() const;
   virtual bool didLoadingProgress() const;
   virtual unsigned long long totalBytes() const;
 
@@ -207,9 +206,6 @@ class WebMediaPlayerAndroid :
 
   // Whether playback has completed.
   float playback_completed_;
-
-  // Fake it by self increasing on every OnBufferingUpdate event.
-  int64 buffered_bytes_;
 
   // Whether loading has progressed since the last call to didLoadingProgress.
   mutable bool did_loading_progress_;
