@@ -110,9 +110,6 @@ class WebMediaPlayerImpl
                      media::MediaLog* media_log);
   virtual ~WebMediaPlayerImpl();
 
-  // TODO(fischman): remove the single-param version once WebKit stops calling
-  // it.
-  virtual void load(const WebKit::WebURL& url);
   virtual void load(const WebKit::WebURL& url, CORSMode cors_mode);
   virtual void cancelLoad();
 

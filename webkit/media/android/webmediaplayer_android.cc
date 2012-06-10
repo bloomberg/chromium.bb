@@ -101,10 +101,6 @@ void WebMediaPlayerAndroid::InitIncognito(bool incognito_mode) {
   incognito_mode_ = incognito_mode;
 }
 
-void WebMediaPlayerAndroid::load(const WebURL& url) {
-  load(url, CORSModeUnspecified);
-}
-
 void WebMediaPlayerAndroid::load(const WebURL& url, CORSMode cors_mode) {
   if (cors_mode != CORSModeUnspecified)
     NOTIMPLEMENTED() << "No CORS support";

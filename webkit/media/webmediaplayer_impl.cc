@@ -209,10 +209,6 @@ URLSchemeForHistogram URLScheme(const GURL& url) {
 
 }  // anonymous namespace
 
-void WebMediaPlayerImpl::load(const WebKit::WebURL& url) {
-  load(url, CORSModeUnspecified);
-}
-
 void WebMediaPlayerImpl::load(const WebKit::WebURL& url, CORSMode cors_mode) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
 
