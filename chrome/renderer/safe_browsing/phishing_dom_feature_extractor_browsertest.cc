@@ -92,7 +92,8 @@ class PhishingDOMFeatureExtractorTest
   base::WeakPtrFactory<PhishingDOMFeatureExtractorTest> weak_factory_;
 };
 
-TEST_F(PhishingDOMFeatureExtractorTest, FormFeatures) {
+// This test is disabled. See bug 131999
+TEST_F(PhishingDOMFeatureExtractorTest, DISABLED_FormFeatures) {
   // This test doesn't exercise the extraction timing.
   EXPECT_CALL(clock_, Now()).WillRepeatedly(Return(base::TimeTicks::Now()));
   responses_["http://host.com/"] =
@@ -192,7 +193,8 @@ TEST_F(PhishingDOMFeatureExtractorTest, LinkFeatures) {
   EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
 }
 
-TEST_F(PhishingDOMFeatureExtractorTest, ScriptAndImageFeatures) {
+// This test is disabled. See bug 131999
+TEST_F(PhishingDOMFeatureExtractorTest, DISABLED_ScriptAndImageFeatures) {
   // This test doesn't exercise the extraction timing.
   EXPECT_CALL(clock_, Now()).WillRepeatedly(Return(base::TimeTicks::Now()));
   responses_["http://host.com/"] =
@@ -223,7 +225,8 @@ TEST_F(PhishingDOMFeatureExtractorTest, ScriptAndImageFeatures) {
   EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
 }
 
-TEST_F(PhishingDOMFeatureExtractorTest, SubFrames) {
+// This test is disabled. See bug 131999
+TEST_F(PhishingDOMFeatureExtractorTest, DISABLED_SubFrames) {
   // This test doesn't exercise the extraction timing.
   EXPECT_CALL(clock_, Now()).WillRepeatedly(Return(base::TimeTicks::Now()));
 
