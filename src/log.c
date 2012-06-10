@@ -34,6 +34,8 @@
 
 static FILE *weston_logfile = NULL;
 
+static int cached_tm_mday = -1;
+
 static int weston_log_timestamp(void)
 {
 	struct timeval tv;
@@ -44,7 +46,16 @@ static int weston_log_timestamp(void)
 
 	brokendown_time = localtime(&tv.tv_sec);
 
-	strftime(string, sizeof string, "%Y-%m-%d %H:%M:%S", brokendown_time);
+	strftime(string, sizeof string, "%H:%M:%S", brokendown_time);
+
+	if (brokendown_time->tm_mday != cached_tm_mday) {
+		char date_string[128];
+
+		strftime(date_string, sizeof string, "%Y-%m-%d %Z", brokendown_time);
+		fprintf(weston_logfile, "Date: %s\n", date_string);
+
+		cached_tm_mday = brokendown_time->tm_mday;
+	}
 
 	return fprintf(weston_logfile, "[%s.%03li] ", string, tv.tv_usec/1000);
 }
