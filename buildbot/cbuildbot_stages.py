@@ -696,11 +696,16 @@ class BuildBoardStage(bs.BuilderStage):
 
   def _PerformStage(self):
     chroot_upgrade = True
+    latest_toolchain = self._build_config['latest_toolchain']
     chroot_path = os.path.join(self._build_root, 'chroot')
     if not os.path.isdir(chroot_path) or self._build_config['chroot_replace']:
       env = {}
       if self._options.clobber:
         env['IGNORE_PREFLIGHT_BINHOST'] = '1'
+
+      if latest_toolchain and self._build_config['gcc_githash']:
+        env['USE'] = 'git_gcc'
+        env['GCC_GITHASH'] = self._build_config['gcc_githash']
 
       commands.MakeChroot(
           buildroot=self._build_root,
@@ -724,11 +729,7 @@ class BuildBoardStage(bs.BuilderStage):
       if self._options.clobber:
         env['IGNORE_PREFLIGHT_BINHOST'] = '1'
 
-      latest_toolchain = self._build_config['latest_toolchain']
 
-      if latest_toolchain and self._build_config['gcc_githash']:
-        env['USE'] = 'git_gcc'
-        env['GCC_GITHASH'] = self._build_config['gcc_githash']
 
       commands.SetupBoard(self._build_root,
                           board=board_to_build,
