@@ -22,11 +22,7 @@ class CountingObserver : public net::NetLog::ThreadSafeObserver {
       net_log()->RemoveThreadSafeObserver(this);
   }
 
-  virtual void OnAddEntry(net::NetLog::EventType type,
-                          const base::TimeTicks& time,
-                          const net::NetLog::Source& source,
-                          net::NetLog::EventPhase phase,
-                          net::NetLog::EventParameters* params) OVERRIDE {
+  virtual void OnAddEntry(const net::NetLog::Entry& entry) OVERRIDE {
     ++count_;
   }
 
@@ -37,7 +33,7 @@ class CountingObserver : public net::NetLog::ThreadSafeObserver {
 };
 
 void AddEvent(ChromeNetLog* net_log) {
-  net_log->AddGlobalEntry(net::NetLog::TYPE_CANCELLED, NULL);
+  net_log->AddGlobalEntry(net::NetLog::TYPE_CANCELLED);
 }
 
 // A thread that waits until an event has been signalled before calling

@@ -19,15 +19,9 @@ VlogNetLog::VlogNetLog() : id_(0) {
 VlogNetLog::~VlogNetLog() {
 }
 
-void VlogNetLog::AddEntry(
-    EventType type,
-    const Source& source,
-    EventPhase phase,
-    const scoped_refptr<EventParameters>& params) {
+void VlogNetLog::OnAddEntry(const NetLog::Entry& entry) {
   if (VLOG_IS_ON(4)) {
-    scoped_ptr<Value> value(
-        net::NetLog::EntryToDictionaryValue(
-            type, base::TimeTicks::Now(), source, phase, params, false));
+    scoped_ptr<Value> value(entry.ToValue());
     std::string json;
     base::JSONWriter::Write(value.get(), &json);
     VLOG(4) << json;
@@ -35,6 +29,7 @@ void VlogNetLog::AddEntry(
 }
 
 uint32 VlogNetLog::NextID() {
+  // TODO(mmenke):  Make this threadsafe and start with 1 instead of 0.
   return id_++;
 }
 

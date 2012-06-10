@@ -20,11 +20,7 @@ class VlogNetLog : public net::NetLog {
   virtual ~VlogNetLog();
 
   // NetLog overrides:
-  virtual void AddEntry(
-      EventType type,
-      const Source& source,
-      EventPhase phase,
-      const scoped_refptr<NetLog::EventParameters>& params) OVERRIDE;
+  virtual void OnAddEntry(const NetLog::Entry& entry) OVERRIDE;
   virtual uint32 NextID() OVERRIDE;
   virtual LogLevel GetLogLevel() const OVERRIDE;
   virtual void AddThreadSafeObserver(ThreadSafeObserver* observer,

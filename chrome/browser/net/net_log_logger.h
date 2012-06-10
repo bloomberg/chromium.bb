@@ -34,11 +34,7 @@ class NetLogLogger : public net::NetLog::ThreadSafeObserver {
   void StartObserving(net::NetLog* net_log);
 
   // net::NetLog::ThreadSafeObserver implementation:
-  virtual void OnAddEntry(net::NetLog::EventType type,
-                          const base::TimeTicks& time,
-                          const net::NetLog::Source& source,
-                          net::NetLog::EventPhase phase,
-                          net::NetLog::EventParameters* params) OVERRIDE;
+  virtual void OnAddEntry(const net::NetLog::Entry& entry) OVERRIDE;
 
  private:
   ScopedStdioHandle file_;

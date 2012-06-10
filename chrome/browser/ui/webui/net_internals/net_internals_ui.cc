@@ -479,20 +479,16 @@ class NetInternalsMessageHandler::IOThreadImpl
   void OnSetLogLevel(const ListValue* list);
 
   // ChromeNetLog::ThreadSafeObserver implementation:
-  virtual void OnAddEntry(net::NetLog::EventType type,
-                          const base::TimeTicks& time,
-                          const net::NetLog::Source& source,
-                          net::NetLog::EventPhase phase,
-                          net::NetLog::EventParameters* params);
+  virtual void OnAddEntry(const net::NetLog::Entry& entry) OVERRIDE;
 
   // ConnectionTester::Delegate implementation:
-  virtual void OnStartConnectionTestSuite();
+  virtual void OnStartConnectionTestSuite() OVERRIDE;
   virtual void OnStartConnectionTestExperiment(
-      const ConnectionTester::Experiment& experiment);
+      const ConnectionTester::Experiment& experiment) OVERRIDE;
   virtual void OnCompletedConnectionTestExperiment(
       const ConnectionTester::Experiment& experiment,
-      int result);
-  virtual void OnCompletedConnectionTestSuite();
+      int result) OVERRIDE;
+  virtual void OnCompletedConnectionTestSuite() OVERRIDE;
 
   // Helper that calls g_browser.receive in the renderer, passing in |command|
   // and |arg|.  Takes ownership of |arg|.  If the renderer is displaying a log
@@ -1503,16 +1499,10 @@ void NetInternalsMessageHandler::IOThreadImpl::OnSetLogLevel(
 // Note that unlike other methods of IOThreadImpl, this function
 // can be called from ANY THREAD.
 void NetInternalsMessageHandler::IOThreadImpl::OnAddEntry(
-    net::NetLog::EventType type,
-    const base::TimeTicks& time,
-    const net::NetLog::Source& source,
-    net::NetLog::EventPhase phase,
-    net::NetLog::EventParameters* params) {
+    const net::NetLog::Entry& entry) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&IOThreadImpl::AddEntryToQueue, this,
-          net::NetLog::EntryToDictionaryValue(type, time, source, phase,
-                                              params, false)));
+      base::Bind(&IOThreadImpl::AddEntryToQueue, this, entry.ToValue()));
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::AddEntryToQueue(Value* entry) {

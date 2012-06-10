@@ -70,11 +70,7 @@ class LoadTimingObserver : public net::NetLog::ThreadSafeObserver {
   URLRequestRecord* GetURLRequestRecord(uint32 source_id);
 
   // net::NetLog::ThreadSafeObserver implementation:
-  virtual void OnAddEntry(net::NetLog::EventType type,
-                          const base::TimeTicks& time,
-                          const net::NetLog::Source& source,
-                          net::NetLog::EventPhase phase,
-                          net::NetLog::EventParameters* params) OVERRIDE;
+  virtual void OnAddEntry(const net::NetLog::Entry& entry) OVERRIDE;
 
   static void PopulateTimingInfo(net::URLRequest* request,
                                  content::ResourceResponse* response);
@@ -87,32 +83,16 @@ class LoadTimingObserver : public net::NetLog::ThreadSafeObserver {
   FRIEND_TEST_ALL_PREFIXES(LoadTimingObserverTest,
                            SocketRecord);
 
-  void OnAddURLRequestEntry(net::NetLog::EventType type,
-                            const base::TimeTicks& time,
-                            const net::NetLog::Source& source,
-                            net::NetLog::EventPhase phase,
-                            net::NetLog::EventParameters* params);
-
-  void OnAddHTTPStreamJobEntry(net::NetLog::EventType type,
-                               const base::TimeTicks& time,
-                               const net::NetLog::Source& source,
-                               net::NetLog::EventPhase phase,
-                               net::NetLog::EventParameters* params);
-
-  void OnAddConnectJobEntry(net::NetLog::EventType type,
-                            const base::TimeTicks& time,
-                            const net::NetLog::Source& source,
-                            net::NetLog::EventPhase phase,
-                            net::NetLog::EventParameters* params);
-
-  void OnAddSocketEntry(net::NetLog::EventType type,
-                        const base::TimeTicks& time,
-                        const net::NetLog::Source& source,
-                        net::NetLog::EventPhase phase,
-                        net::NetLog::EventParameters* params);
+  void OnAddURLRequestEntry(const net::NetLog::Entry& entry);
+  void OnAddHTTPStreamJobEntry(const net::NetLog::Entry& entry);
+  void OnAddConnectJobEntry(const net::NetLog::Entry& entry);
+  void OnAddSocketEntry(const net::NetLog::Entry& entry);
 
   URLRequestRecord* CreateURLRequestRecord(uint32 source_id);
   void DeleteURLRequestRecord(uint32 source_id);
+
+  // Returns current time.  Virtual for unit tests.
+  virtual base::TimeTicks GetCurrentTime() const;
 
   typedef base::hash_map<uint32, URLRequestRecord> URLRequestToRecordMap;
   typedef base::hash_map<uint32, HTTPStreamJobRecord> HTTPStreamJobToRecordMap;

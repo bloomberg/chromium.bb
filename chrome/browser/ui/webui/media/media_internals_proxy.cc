@@ -80,14 +80,10 @@ void MediaInternalsProxy::OnUpdate(const string16& update) {
       base::Bind(&MediaInternalsProxy::UpdateUIOnUIThread, this, update));
 }
 
-void MediaInternalsProxy::OnAddEntry(net::NetLog::EventType type,
-                                     const base::TimeTicks& time,
-                                     const net::NetLog::Source& source,
-                                     net::NetLog::EventPhase phase,
-                                     net::NetLog::EventParameters* params) {
+void MediaInternalsProxy::OnAddEntry(const net::NetLog::Entry& entry) {
   bool is_event_interesting = false;
   for (size_t i = 0; i < arraysize(kNetEventTypeFilter); i++) {
-    if (type == kNetEventTypeFilter[i]) {
+    if (entry.type() == kNetEventTypeFilter[i]) {
       is_event_interesting = true;
       break;
     }
@@ -99,8 +95,7 @@ void MediaInternalsProxy::OnAddEntry(net::NetLog::EventType type,
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&MediaInternalsProxy::AddNetEventOnUIThread, this,
-          net::NetLog::EntryToDictionaryValue(type, time, source, phase,
-                                              params, false)));
+                 entry.ToValue()));
 }
 
 MediaInternalsProxy::~MediaInternalsProxy() {}

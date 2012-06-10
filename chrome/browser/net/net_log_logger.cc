@@ -37,14 +37,8 @@ void NetLogLogger::StartObserving(net::NetLog* net_log) {
   net_log->AddThreadSafeObserver(this, net::NetLog::LOG_ALL_BUT_BYTES);
 }
 
-void NetLogLogger::OnAddEntry(net::NetLog::EventType type,
-                              const base::TimeTicks& time,
-                              const net::NetLog::Source& source,
-                              net::NetLog::EventPhase phase,
-                              net::NetLog::EventParameters* params) {
-  scoped_ptr<Value> value(
-      net::NetLog::EntryToDictionaryValue(
-          type, time, source, phase, params, false));
+void NetLogLogger::OnAddEntry(const net::NetLog::Entry& entry) {
+  scoped_ptr<Value> value(entry.ToValue());
   // Don't pretty print, so each JSON value occupies a single line, with no
   // breaks (Line breaks in any text field will be escaped).  Using strings
   // instead of integer identifiers allows logs from older versions to be

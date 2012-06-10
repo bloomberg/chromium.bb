@@ -55,11 +55,7 @@ class MediaInternalsProxy
   virtual void OnUpdate(const string16& update) OVERRIDE;
 
   // net::NetLog::ThreadSafeObserver implementation. Callable from any thread:
-  virtual void OnAddEntry(net::NetLog::EventType type,
-                          const base::TimeTicks& time,
-                          const net::NetLog::Source& source,
-                          net::NetLog::EventPhase phase,
-                          net::NetLog::EventParameters* params) OVERRIDE;
+  virtual void OnAddEntry(const net::NetLog::Entry& entry) OVERRIDE;
 
  private:
   friend struct content::BrowserThread::DeleteOnThread<
