@@ -74,9 +74,16 @@ while read name id comment ; do
       if [[ -d "$name" ]]; then
 	cd "$name"
 	if [[ "$2" == "win" ]]; then
-	  gclient.bat revert
+	  # "gclient.bat revert" automatically calls "runhooks"… ⇒ it fails…
+	  # "gclient runhooks" downloads toolchain then calls gyp… ⇒ it fails…
+	  # "glient.bat runhooks" sees toolchain and simply calls gyp ⇒ success!
+	  # Additional fun: error codes are lost somewhere in gclient.bat…
+	  ( gclient.bat revert || true
+	    gclient runhooks --force || true
+	    gclient.bat runhooks --force || true
+	  ) < /dev/null
 	else
-	  gclient revert
+	  gclient revert < /dev/null
 	fi
       else
 	mkdir "$name"
@@ -94,9 +101,16 @@ while read name id comment ; do
 	]
 	END
 	if [[ "$2" == "win" ]]; then
-	  gclient.bat sync
+	  # "gclient.bat revert" automatically calls "runhooks"… ⇒ it fails…
+	  # "gclient runhooks" downloads toolchain then calls gyp… ⇒ it fails…
+	  # "glient.bat runhooks" sees toolchain and simply calls gyp ⇒ success!
+	  # Additional fun: error codes are lost somewhere in gclient.bat…
+	  ( gclient.bat sync || true
+	    gclient runhooks --force || true
+	    gclient.bat runhooks --force || true
+	  ) < /dev/null
 	else
-	  gclient sync
+	  gclient sync < /dev/null
 	fi
       fi
       # Now we need to change versions to officialy mark binaries.  We don't
