@@ -132,4 +132,3 @@ SpeechRecognitionBubble* SpeechRecognitionBubble::CreateNativeBubble(
     const gfx::Rect& element_rect) {
   return new SpeechRecognitionBubbleImpl(web_contents, delegate, element_rect);
 }
-

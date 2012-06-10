@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/login/login_prompt.h"
-#import "chrome/browser/ui/login/login_prompt_mac.h"
+#import "chrome/browser/ui/cocoa/login_prompt_cocoa.h"
 
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
@@ -15,6 +14,7 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/cocoa/constrained_window_mac.h"
 #include "chrome/browser/ui/login/login_model.h"
+#include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
