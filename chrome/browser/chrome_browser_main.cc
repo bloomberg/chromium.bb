@@ -1044,6 +1044,7 @@ void ChromeBrowserMainParts::SetupUniformityFieldTrials() {
     scoped_refptr<base::FieldTrial> trial(
         base::FieldTrialList::FactoryGetFieldTrial(
             trial_name, divisor, "default", 2015, 1, 1, NULL));
+    trial->UseOneTimeRandomization();
     experiments_helper::AssociateGoogleVariationID(trial_name, "default",
         trial_base_ids[i]);
     // Loop starts with group 1 because the field trial automatically creates a
