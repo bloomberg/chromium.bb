@@ -38,6 +38,7 @@
 #include <sys/mman.h>
 #include <sys/wait.h>
 #include <sys/socket.h>
+#include <sys/utsname.h>
 #include <unistd.h>
 #include <math.h>
 #include <linux/input.h>
@@ -2884,6 +2885,17 @@ compositor_bind(struct wl_client *client,
 }
 
 static void
+log_uname(void)
+{
+	struct utsname usys;
+
+	uname(&usys);
+
+	weston_log("OS: %s, %s, %s, %s\n", usys.sysname, usys.release,
+						usys.version, usys.machine);
+}
+
+static void
 log_extensions(const char *name, const char *extensions)
 {
 	const char *p, *end;
@@ -2942,6 +2954,8 @@ weston_compositor_init(struct weston_compositor *ec,
 		return -1;
 
 	wl_display_init_shm(display);
+
+	log_uname();
 
 	weston_log("egl vendor: %s\n",
 		   eglQueryString(ec->display, EGL_VENDOR));
