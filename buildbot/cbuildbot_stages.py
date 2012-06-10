@@ -120,13 +120,14 @@ class CleanUpStage(bs.BuilderStage):
         # way, clean it up.
         pass
 
-    if self._options.clobber or manifest is None:
+    if manifest is None:
       self._DeleteChroot()
       repository.ClearBuildRoot(self._build_root, self._options.preserve_paths)
     else:
       # Clean mount points first to be safe about deleting.
       commands.CleanUpMountPoints(self._build_root)
 
+      commands.BuildRootGitCleanup(self._build_root, self._options.debug)
       tasks = [functools.partial(commands.BuildRootGitCleanup,
                                  self._build_root, self._options.debug),
                functools.partial(commands.WipeOldOutput, self._build_root),

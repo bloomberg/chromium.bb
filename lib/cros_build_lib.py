@@ -871,7 +871,7 @@ class ManifestCheckout(Manifest):
     if root is None:
       raise OSError(errno.ENOENT, "Couldn't find repo root: %s" % (path,))
     root = os.path.normpath(os.path.realpath(root))
-    if search is not None:
+    if not search:
       if os.path.normpath(os.path.realpath(path)) != root:
         raise OSError(errno.ENOENT, "Path %s is not a repo root, and search "
                       "is disabled." % path)
