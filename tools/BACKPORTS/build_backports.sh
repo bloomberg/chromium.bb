@@ -292,7 +292,8 @@ while read name id comment ; do
 	      cd "$name/native_client/tools/SRC/$i"
 	      while read name id comment ; do
 		if [[ "$i" == "$name" ]]; then
-		  git diff "$id"{^..,} | patch -p1 || touch "$$.error"
+		  git diff "$id"{^..,} | patch -p1 ||
+		    touch "../../../../$$.error" "../../../../$$.error.$name"
 		fi
 	      done
 	    ) < "$1"
@@ -335,7 +336,7 @@ while read name id comment ; do
 	)
       fi
     ) ;;
-  esac || touch $$.error &
+  esac || touch "$$.error" "$$.error.$name" &
 done < "$1"
 
 wait
@@ -343,7 +344,15 @@ wait
 # If we were unable to checkout some sources then it's time to stop.
 if [[ -e "$$.error" ]]; then
   rm -f "$$.error"
-  # Errors are reported by git above already
+  set +x
+  echo '@@@BUILD_STEP report_backport_build_errors@@@'
+  while read name id comment; do
+    if [[ -e "$$.error.$name" ]]; then
+      echo "Error found while building toolchain for $name" 1>&2
+      rm -f "$$.error.$name"
+    fi
+  done < "$1"
+  echo '@@@STEP_FAILURE@@@'
   exit 2
 fi
 
