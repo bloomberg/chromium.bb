@@ -339,8 +339,8 @@ class TestUploadPrebuilt(unittest.TestCase):
         self.name = name
     self.mox = mox.Mox()
     self.pkgindex = SimplePackageIndex()
-    self.mox.StubOutWithMock(prebuilt, 'GrabLocalPackageIndex')
-    prebuilt.GrabLocalPackageIndex('/packages').AndReturn(self.pkgindex)
+    self.mox.StubOutWithMock(binpkg, 'GrabLocalPackageIndex')
+    binpkg.GrabLocalPackageIndex('/packages').AndReturn(self.pkgindex)
     self.mox.StubOutWithMock(prebuilt, 'RemoteUpload')
     self.mox.StubOutWithMock(self.pkgindex, 'ResolveDuplicateUploads')
     self.pkgindex.ResolveDuplicateUploads([]).AndReturn(PRIVATE_PACKAGES)
@@ -509,8 +509,8 @@ class TestMain(unittest.TestCase):
     options.slave_targets = [prebuilt.BuildTarget('x86-bar', 'aura')]
     self.mox.StubOutWithMock(prebuilt, 'ParseOptions')
     prebuilt.ParseOptions().AndReturn(tuple([options, target]))
-    self.mox.StubOutWithMock(prebuilt, 'GrabRemotePackageIndex')
-    prebuilt.GrabRemotePackageIndex(old_binhost).AndReturn(True)
+    self.mox.StubOutWithMock(binpkg, 'GrabRemotePackageIndex')
+    binpkg.GrabRemotePackageIndex(old_binhost).AndReturn(True)
     self.mox.StubOutWithMock(prebuilt.PrebuiltUploader, '__init__')
     self.mox.StubOutWithMock(prebuilt, 'GetBoardPathFromCrosOverlayList')
     fake_overlay_path = '/fake_path'
