@@ -845,26 +845,36 @@ class ManifestCheckout(Manifest):
   _instance_cache = {}
 
   # pylint: disable=W0221
-  def __init__(self, path, manifest_path=None):
+  def __init__(self, path, manifest_path=None, search=True):
     """Initialize this instance.
 
     Args:
       path: Path into a manifest checkout (doesn't have to be the root).
       manifest_path: If supplied, the manifest to use.  Else the manifest
         in the root of the checkout is used.  May be a seekable file handle.
+      search: If True, the path can point into the repo, and the root will
+        be found automatically.  If False, the path *must* be the root, else
+        an OSError ENOENT will be thrown.
+    Raises:
+      OSError: if a failure occurs.
     """
-    self.root, manifest_path = self._NormalizeArgs(path, manifest_path)
+    self.root, manifest_path = self._NormalizeArgs(path, manifest_path,
+                                                   search=search)
     self.manifest_branch = self._GetManifestsBranch(self.root)
     self.default_branch = 'refs/remotes/m/%s' % self.manifest_branch
     self._content_merging = {}
     Manifest.__init__(self, manifest_path)
 
   @staticmethod
-  def _NormalizeArgs(path, manifest_path=None):
+  def _NormalizeArgs(path, manifest_path=None, search=True):
     root = FindRepoCheckoutRoot(path)
     if root is None:
       raise OSError(errno.ENOENT, "Couldn't find repo root: %s" % (path,))
     root = os.path.normpath(os.path.realpath(root))
+    if search is not None:
+      if os.path.normpath(os.path.realpath(path)) != root:
+        raise OSError(errno.ENOENT, "Path %s is not a repo root, and search "
+                      "is disabled." % path)
     if manifest_path is None:
       manifest_path = os.path.join(root, '.repo', 'manifest.xml')
     return root, manifest_path
@@ -933,7 +943,9 @@ class ManifestCheckout(Manifest):
         os.path.join(root, '.repo', 'manifests'), 'default',
         allow_broken_merge_settings=True, for_checkout=False)
     if result is None:
-      raise Exception("Manifest in root %s isn't on a branch" % root)
+      raise OSError(errno.ENOENT,
+                    "Manifest repository at %s isn't on a branch, thus"
+                    " unusable" % root)
     return StripLeadingRefsHeads(result[1], False)
 
   def GetProjectPath(self, project, absolute=False):
@@ -953,21 +965,28 @@ class ManifestCheckout(Manifest):
 
   # pylint: disable=W0221
   @classmethod
-  def Cached(cls, path, manifest_path=None):
+  def Cached(cls, path, manifest_path=None, search=True):
     """Return an instance, reusing an existing one if possible.
 
     Args:
       path: The pathway into a checkout; the root will be found automatically.
       manifest_path: if given, the manifest.xml to use instead of the
         checkouts internal manifest.  Use with care.
+      search: If True, the path can point into the repo, and the root will
+        be found automatically.  If False, the path *must* be the root, else
+        an OSError ENOENT will be thrown.
     """
-    root, manifest_path = cls._NormalizeArgs(path, manifest_path)
+    root, manifest_path = cls._NormalizeArgs(path, manifest_path,
+                                             search=search)
 
     md5 = cls._GetManifestHash(manifest_path)
 
     obj = cls._instance_cache.get((root, md5))
     if obj is None:
-      obj = cls._instance_cache[(root, md5)] = cls(root, manifest_path)
+      # Pass search=False since via the steps above, we *must* be pointing
+      # at the repo root.
+      obj = cls._instance_cache[(root, md5)] = cls(root, manifest_path,
+                                                   search=False)
     return obj
 
 def _GitRepoIsContentMerging(git_repo, remote):

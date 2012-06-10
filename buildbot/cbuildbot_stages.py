@@ -108,8 +108,19 @@ class CleanUpStage(bs.BuilderStage):
       if not commands.ValidateClobber(self._build_root):
         sys.exit(0)
 
-    if self._options.clobber or not os.path.exists(
-        os.path.join(self._build_root, '.repo')):
+    # If we can't get a manifest out of it, then it's not usable and must be
+    # clobbered.
+    manifest = None
+    if not self._options.clobber:
+      try:
+        manifest = cros_build_lib.ManifestCheckout.Cached(self._build_root,
+                                                          search=False)
+      except EnvironmentError:
+        # Either there is no repo there, or the manifest isn't usable; either
+        # way, clean it up.
+        pass
+
+    if self._options.clobber or manifest is None:
       self._DeleteChroot()
       repository.ClearBuildRoot(self._build_root, self._options.preserve_paths)
     else:
