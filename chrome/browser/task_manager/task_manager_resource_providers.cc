@@ -37,8 +37,8 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -227,7 +227,7 @@ bool TaskManagerRendererResource::SupportNetworkUsage() const {
 gfx::ImageSkia* TaskManagerTabContentsResource::prerender_icon_ = NULL;
 
 TaskManagerTabContentsResource::TaskManagerTabContentsResource(
-    TabContentsWrapper* tab_contents)
+    TabContents* tab_contents)
     : TaskManagerRendererResource(
           tab_contents->web_contents()->GetRenderProcessHost()->GetHandle(),
           tab_contents->web_contents()->GetRenderViewHost()),
@@ -330,7 +330,7 @@ gfx::ImageSkia TaskManagerTabContentsResource::GetIcon() const {
   return tab_contents_->favicon_tab_helper()->GetFavicon();
 }
 
-TabContentsWrapper* TaskManagerTabContentsResource::GetTabContents() const {
+TabContents* TaskManagerTabContentsResource::GetTabContents() const {
   return tab_contents_;
 }
 
@@ -373,10 +373,9 @@ TaskManager::Resource* TaskManagerTabContentsResourceProvider::GetResource(
   if (origin_pid)
     return NULL;
 
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
-  std::map<TabContentsWrapper*, TaskManagerTabContentsResource*>::iterator
-      res_iter = resources_.find(wrapper);
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
+  std::map<TabContents*, TaskManagerTabContentsResource*>::iterator
+      res_iter = resources_.find(tab_contents);
   if (res_iter == resources_.end()) {
     // Can happen if the tab was closed while a network request was being
     // performed.
@@ -389,7 +388,7 @@ void TaskManagerTabContentsResourceProvider::StartUpdating() {
   DCHECK(!updating_);
   updating_ = true;
 
-  // Add all the existing TabContentsWrappers.
+  // Add all the existing TabContentses.
   for (TabContentsIterator iterator; !iterator.done(); ++iterator)
     Add(*iterator);
 
@@ -429,15 +428,14 @@ void TaskManagerTabContentsResourceProvider::StopUpdating() {
 }
 
 void TaskManagerTabContentsResourceProvider::AddToTaskManager(
-    TabContentsWrapper* tab_contents) {
+    TabContents* tab_contents) {
   TaskManagerTabContentsResource* resource =
       new TaskManagerTabContentsResource(tab_contents);
   resources_[tab_contents] = resource;
   task_manager_->AddResource(resource);
 }
 
-void TaskManagerTabContentsResourceProvider::Add(
-    TabContentsWrapper* tab_contents) {
+void TaskManagerTabContentsResourceProvider::Add(TabContents* tab_contents) {
   if (!updating_)
     return;
 
@@ -447,7 +445,7 @@ void TaskManagerTabContentsResourceProvider::Add(
     return;
   }
 
-  std::map<TabContentsWrapper*, TaskManagerTabContentsResource*>::const_iterator
+  std::map<TabContents*, TaskManagerTabContentsResource*>::const_iterator
       iter = resources_.find(tab_contents);
   if (iter != resources_.end()) {
     // The case may happen that we have added a WebContents as part of the
@@ -459,11 +457,10 @@ void TaskManagerTabContentsResourceProvider::Add(
   AddToTaskManager(tab_contents);
 }
 
-void TaskManagerTabContentsResourceProvider::Remove(
-    TabContentsWrapper* tab_contents) {
+void TaskManagerTabContentsResourceProvider::Remove(TabContents* tab_contents) {
   if (!updating_)
     return;
-  std::map<TabContentsWrapper*, TaskManagerTabContentsResource*>::iterator
+  std::map<TabContents*, TaskManagerTabContentsResource*>::iterator
       iter = resources_.find(tab_contents);
   if (iter == resources_.end()) {
     // Since WebContents are destroyed asynchronously (see TabContentsCollector
@@ -482,11 +479,10 @@ void TaskManagerTabContentsResourceProvider::Remove(
   delete resource;
 }
 
-void TaskManagerTabContentsResourceProvider::Update(
-    TabContentsWrapper* tab_contents) {
+void TaskManagerTabContentsResourceProvider::Update(TabContents* tab_contents) {
   if (!updating_)
     return;
-  std::map<TabContentsWrapper*, TaskManagerTabContentsResource*>::iterator
+  std::map<TabContents*, TaskManagerTabContentsResource*>::iterator
       iter = resources_.find(tab_contents);
   DCHECK(iter != resources_.end());
   if (iter != resources_.end())
@@ -496,14 +492,14 @@ void TaskManagerTabContentsResourceProvider::Update(
 void TaskManagerTabContentsResourceProvider::Observe(int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  TabContentsWrapper* tab_contents;
+  TabContents* tab_contents;
   if (type == chrome::NOTIFICATION_INSTANT_COMMITTED) {
-    tab_contents = content::Source<TabContentsWrapper>(source).ptr();
+    tab_contents = content::Source<TabContents>(source).ptr();
   } else {
-    tab_contents = TabContentsWrapper::GetCurrentWrapperForContents(
+    tab_contents = TabContents::FromWebContents(
         content::Source<WebContents>(source).ptr());
   }
-  // A background page does not have a TabContentsWrapper.
+  // A background page does not have a TabContents.
   if (!tab_contents)
     return;
   switch (type) {

@@ -25,7 +25,7 @@
 #include "chrome/browser/task_manager/task_manager_worker_resource_provider.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/view_type.h"
@@ -481,7 +481,7 @@ TaskManager::Resource::Type TaskManagerModel::GetResourceType(int index) const {
   return resources_[index]->GetType();
 }
 
-TabContentsWrapper* TaskManagerModel::GetResourceTabContents(int index) const {
+TabContents* TaskManagerModel::GetResourceTabContents(int index) const {
   CHECK_LT(index, ResourceCount());
   return resources_[index]->GetTabContents();
 }
@@ -1098,8 +1098,7 @@ void TaskManager::ActivateProcess(int index) {
   // GetResourceTabContents returns a pointer to the relevant tab contents for
   // the resource.  If the index doesn't correspond to a Tab (i.e. refers to
   // the Browser process or a plugin), GetTabContents will return NULL.
-  TabContentsWrapper* chosen_tab_contents =
-      model_->GetResourceTabContents(index);
+  TabContents* chosen_tab_contents = model_->GetResourceTabContents(index);
   if (chosen_tab_contents) {
     WebContents* web_contents = chosen_tab_contents->web_contents();
     web_contents->GetDelegate()->ActivateContents(web_contents);

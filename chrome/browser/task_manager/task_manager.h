@@ -22,7 +22,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 
 class TabContents;
-typedef TabContents TabContentsWrapper;
 class TaskManagerModel;
 
 namespace base {
@@ -107,7 +106,7 @@ class TaskManager {
 
     // A helper function for ActivateFocusedTab.  Returns NULL by default
     // because not all resources have an associated tab.
-    virtual TabContentsWrapper* GetTabContents() const { return NULL; }
+    virtual TabContents* GetTabContents() const { return NULL; }
 
     // Whether this resource does report the network usage accurately.
     // This controls whether 0 or N/A is displayed when no bytes have been
@@ -403,8 +402,8 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   // Returns the type of the given resource.
   TaskManager::Resource::Type GetResourceType(int index) const;
 
-  // Returns TabContentsWrapper of given resource or NULL if not applicable.
-  TabContentsWrapper* GetResourceTabContents(int index) const;
+  // Returns TabContents of given resource or NULL if not applicable.
+  TabContents* GetResourceTabContents(int index) const;
 
   // Returns Extension of given resource or NULL if not applicable.
   const extensions::Extension* GetResourceExtension(int index) const;

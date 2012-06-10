@@ -22,7 +22,6 @@
 class BackgroundContents;
 class BalloonHost;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 namespace content {
 class RenderViewHost;
@@ -103,7 +102,7 @@ class TaskManagerRendererResource : public TaskManager::Resource {
 
 class TaskManagerTabContentsResource : public TaskManagerRendererResource {
  public:
-  explicit TaskManagerTabContentsResource(TabContentsWrapper* tab_contents);
+  explicit TaskManagerTabContentsResource(TabContents* tab_contents);
   virtual ~TaskManagerTabContentsResource();
 
   // Called when the underlying tab_contents has been committed, and is thus no
@@ -115,7 +114,7 @@ class TaskManagerTabContentsResource : public TaskManagerRendererResource {
   virtual string16 GetTitle() const OVERRIDE;
   virtual string16 GetProfileName() const OVERRIDE;
   virtual gfx::ImageSkia GetIcon() const OVERRIDE;
-  virtual TabContentsWrapper* GetTabContents() const OVERRIDE;
+  virtual TabContents* GetTabContents() const OVERRIDE;
   virtual const extensions::Extension* GetExtension() const OVERRIDE;
 
  private:
@@ -125,7 +124,7 @@ class TaskManagerTabContentsResource : public TaskManagerRendererResource {
   bool HostsExtension() const;
 
   static gfx::ImageSkia* prerender_icon_;
-  TabContentsWrapper* tab_contents_;
+  TabContents* tab_contents_;
   bool is_instant_preview_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskManagerTabContentsResource);
@@ -151,11 +150,11 @@ class TaskManagerTabContentsResourceProvider
  private:
   virtual ~TaskManagerTabContentsResourceProvider();
 
-  void Add(TabContentsWrapper* tab_contents);
-  void Remove(TabContentsWrapper* tab_contents);
-  void Update(TabContentsWrapper* tab_contents);
+  void Add(TabContents* tab_contents);
+  void Remove(TabContents* tab_contents);
+  void Update(TabContents* tab_contents);
 
-  void AddToTaskManager(TabContentsWrapper* tab_contents);
+  void AddToTaskManager(TabContents* tab_contents);
 
   // Whether we are currently reporting to the task manager. Used to ignore
   // notifications sent after StopUpdating().
@@ -163,9 +162,9 @@ class TaskManagerTabContentsResourceProvider
 
   TaskManager* task_manager_;
 
-  // Maps the actual resources (the TabContentsWrappers) to the Task Manager
+  // Maps the actual resources (the TabContentses) to the Task Manager
   // resources.
-  std::map<TabContentsWrapper*, TaskManagerTabContentsResource*> resources_;
+  std::map<TabContents*, TaskManagerTabContentsResource*> resources_;
 
   // A scoped container for notification registries.
   content::NotificationRegistrar registrar_;
