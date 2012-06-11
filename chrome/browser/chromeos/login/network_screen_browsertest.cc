@@ -106,6 +106,18 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
     EXPECT_CALL(*mock_network_library_, cellular_connecting())
         .Times(AnyNumber())
         .WillRepeatedly((Return(false)));
+    EXPECT_CALL(*mock_network_library_, wimax_available())
+        .Times(AnyNumber())
+        .WillRepeatedly((Return(true)));
+    EXPECT_CALL(*mock_network_library_, wimax_enabled())
+        .Times(AnyNumber())
+        .WillRepeatedly((Return(true)));
+    EXPECT_CALL(*mock_network_library_, wimax_connected())
+        .Times(AnyNumber())
+        .WillRepeatedly((Return(false)));
+    EXPECT_CALL(*mock_network_library_, wimax_connecting())
+        .Times(AnyNumber())
+        .WillRepeatedly((Return(false)));
 
     EXPECT_CALL(*mock_network_library_, FindCellularDevice())
         .Times(AnyNumber())
