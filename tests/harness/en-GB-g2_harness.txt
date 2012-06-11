@@ -1,24 +1,24 @@
 {
   "sections": [
-{
-"tests": [
+    {
+      "tests": [
         {
-            "output": "! cat sat on ! mat", 
-            "input": "the cat sat on the mat"
+          "input": "the cat sat on the mat", 
+          "output": "! cat sat on ! mat"
         }, 
         {
-            "output": "6! moon", 
-            "input": "to the moon"
+          "input": "to the moon", 
+          "output": "6! moon"
         }, 
         {
-            "brlCursorPos": 2, 
-            "output": "y went to", 
-            "cursorPos": 4, 
-            "mode": "compbrlAtCursor", 
-            "input": "you went to"
+          "brlCursorPos": 2, 
+          "cursorPos": 4, 
+          "input": "you went to", 
+          "mode": "compbrlAtCursor", 
+          "output": "y went to"
         }
-]
-},
+      ]
+    }, 
     {
       "flags": {
         "testmode": "backtranslate"
