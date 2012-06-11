@@ -104,6 +104,10 @@ typedef unsigned long long NSEventMask;
 - (CGFloat)backingScaleFactor;
 @end
 
+@interface NSView (NSOpenGLSurfaceResolutionLionAPI)
+- (void)setWantsBestResolutionOpenGLSurface:(BOOL)flag;
+@end
+
 #endif  // 10.7
 
 
@@ -114,6 +118,20 @@ static inline int ToWebKitModifiers(NSUInteger flags) {
   if (flags & NSAlternateKeyMask) modifiers |= WebInputEvent::AltKey;
   if (flags & NSCommandKeyMask) modifiers |= WebInputEvent::MetaKey;
   return modifiers;
+}
+
+float ScaleFactor(NSView* view) {
+  if (NSWindow* window = [view window]) {
+    if ([window respondsToSelector:@selector(backingScaleFactor)])
+      return [window backingScaleFactor];
+    return [window userSpaceScaleFactor];
+  }
+  if (NSScreen* screen = [NSScreen mainScreen]) {
+    if ([screen respondsToSelector:@selector(backingScaleFactor)])
+      return [screen backingScaleFactor];
+    return [screen userSpaceScaleFactor];
+  }
+  return 1;
 }
 
 // Private methods:
@@ -792,18 +810,7 @@ BackingStore* RenderWidgetHostViewMac::AllocBackingStore(
     const gfx::Size& size) {
   // TODO(thakis): Register for backing scale factor change events and pass
   // that on.
-  float scale = 1;
-  if (NSWindow* window = [cocoa_view_ window]) {
-    if ([window respondsToSelector:@selector(backingScaleFactor)])
-      scale = [window backingScaleFactor];
-    else
-      scale = [window userSpaceScaleFactor];
-  } else if (NSScreen* screen = [NSScreen mainScreen]) {
-    if ([screen respondsToSelector:@selector(backingScaleFactor)])
-      scale = [screen backingScaleFactor];
-    else
-      scale = [screen userSpaceScaleFactor];
-  }
+  float scale = ScaleFactor(cocoa_view_);
   return new BackingStoreMac(render_widget_host_, size, scale);
 }
 
@@ -1081,11 +1088,13 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceSuspend() {
 
 bool RenderWidgetHostViewMac::HasAcceleratedSurface(
       const gfx::Size& desired_size) {
+  // TODO: What coordinates is desired_size in? Should it be
+  // compared to the pixel or logical size of compositing_iosurface_?
   return last_frame_was_accelerated_ &&
          compositing_iosurface_.get() &&
          compositing_iosurface_->HasIOSurface() &&
          (desired_size.IsEmpty() ||
-          compositing_iosurface_->io_surface_size() == desired_size);
+          compositing_iosurface_->pixel_io_surface_size() == desired_size);
 }
 
 void RenderWidgetHostViewMac::AboutToWaitForBackingStoreMsg() {
@@ -1298,6 +1307,10 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     focusedPluginIdentifier_ = -1;
 
     // OpenGL support:
+    if ([self respondsToSelector:
+        @selector(setWantsBestResolutionOpenGLSurface:)]) {
+      [self setWantsBestResolutionOpenGLSurface:YES];
+    }
     handlingGlobalFrameDidChange_ = NO;
     [[NSNotificationCenter defaultCenter]
          addObserver:self
@@ -1965,7 +1978,10 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
       NSRectFill(dirtyRect);
     }
 
-    renderWidgetHostView_->compositing_iosurface_->DrawIOSurface(self);
+    // TODO(thakis): Register for backing scale factor change events and pass
+    // that on.
+    renderWidgetHostView_->compositing_iosurface_->DrawIOSurface(
+        self, ScaleFactor(self));
     renderWidgetHostView_->AckPendingSwapBuffers();
     return;
   }

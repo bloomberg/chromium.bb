@@ -76,7 +76,7 @@ namespace gfx {
 
 // static
 bool Screen::IsDIPEnabled() {
-  return false;
+  return true;
 }
 
 // static

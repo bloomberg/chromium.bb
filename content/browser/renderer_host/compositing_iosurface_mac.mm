@@ -205,7 +205,7 @@ void CompositingIOSurfaceMac::SetIOSurface(uint64 io_surface_handle) {
   CGLSetCurrentContext(0);
 }
 
-void CompositingIOSurfaceMac::DrawIOSurface(NSView* view) {
+void CompositingIOSurfaceMac::DrawIOSurface(NSView* view, float scale_factor) {
   CGLSetCurrentContext(cglContext_);
 
   bool has_io_surface = MapIOSurfaceToTexture(io_surface_handle_);
@@ -214,11 +214,22 @@ void CompositingIOSurfaceMac::DrawIOSurface(NSView* view) {
                "has_io_surface", has_io_surface);
 
   [glContext_ setView:view];
-  gfx::Size window_size([view frame].size.width, [view frame].size.height);
-  glViewport(0, 0, window_size.width(), window_size.height());
+  gfx::Size window_size(NSSizeToCGSize([view frame].size));
+  gfx::Size pixel_window_size = window_size.Scale(scale_factor);
+  glViewport(0, 0, pixel_window_size.width(), pixel_window_size.height());
+
+  // TODO: After a resolution change, the DPI-ness of the view and the
+  // IOSurface might not be in sync.
+  gfx::Size io_surface_size = pixel_io_surface_size_;
+  io_surface_size = pixel_io_surface_size_.Scale(1.0 / scale_factor);
+  quad_.set_size(io_surface_size, pixel_io_surface_size_);
 
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
+
+  // Note that the projection keeps things in view units, so the use of
+  // window_size / io_surface_size (as opposed to the pixel_ variants) below is
+  // correct.
   glOrtho(0, window_size.width(), window_size.height(), 0, -1, 1);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
@@ -239,20 +250,20 @@ void CompositingIOSurfaceMac::DrawIOSurface(NSView* view) {
     glBindTexture(GL_TEXTURE_RECTANGLE_ARB, 0); CHECK_GL_ERROR();
 
     // Fill the resize gutters with white.
-    if (window_size.width() > io_surface_size_.width() ||
-        window_size.height() > io_surface_size_.height()) {
+    if (window_size.width() > io_surface_size.width() ||
+        window_size.height() > io_surface_size.height()) {
       glUseProgram(shader_program_white_);
       SurfaceQuad filler_quad;
-      if (window_size.width() > io_surface_size_.width()) {
+      if (window_size.width() > io_surface_size.width()) {
         // Draw right-side gutter down to the bottom of the window.
-        filler_quad.set_rect(io_surface_size_.width(), 0.0f,
+        filler_quad.set_rect(io_surface_size.width(), 0.0f,
                              window_size.width(), window_size.height());
         DrawQuad(filler_quad);
       }
-      if (window_size.height() > io_surface_size_.height()) {
+      if (window_size.height() > io_surface_size.height()) {
         // Draw bottom gutter to the width of the IOSurface.
-        filler_quad.set_rect(0.0f, io_surface_size_.height(),
-                             io_surface_size_.width(), window_size.height());
+        filler_quad.set_rect(0.0f, io_surface_size.height(),
+                             io_surface_size.width(), window_size.height());
         DrawQuad(filler_quad);
       }
     }
@@ -342,7 +353,7 @@ bool CompositingIOSurfaceMac::CopyTo(const gfx::Size& dst_size, void* out) {
   glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texture_);
 
   SurfaceQuad quad;
-  quad.set_size(dst_size, io_surface_size_);
+  quad.set_size(dst_size, pixel_io_surface_size_);
   DrawQuad(quad);
 
   glBindTexture(GL_TEXTURE_RECTANGLE_ARB, 0); CHECK_GL_ERROR();
@@ -380,11 +391,11 @@ bool CompositingIOSurfaceMac::MapIOSurfaceToTexture(
   }
 
   io_surface_handle_ = io_surface_handle;
-  io_surface_size_.SetSize(
+  pixel_io_surface_size_.SetSize(
       io_surface_support_->IOSurfaceGetWidth(io_surface_),
       io_surface_support_->IOSurfaceGetHeight(io_surface_));
 
-  quad_.set_size(io_surface_size_, io_surface_size_);
+  quad_.set_size(pixel_io_surface_size_, pixel_io_surface_size_);
 
   GLenum target = GL_TEXTURE_RECTANGLE_ARB;
   glGenTextures(1, &texture_);
@@ -392,17 +403,17 @@ bool CompositingIOSurfaceMac::MapIOSurfaceToTexture(
   glTexParameterf(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameterf(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST); CHECK_GL_ERROR();
   GLuint plane = 0;
-  CGLError cglerror =
-      io_surface_support_->CGLTexImageIOSurface2D(cglContext_,
-                                                  target,
-                                                  GL_RGBA,
-                                                  io_surface_size_.width(),
-                                                  io_surface_size_.height(),
-                                                  GL_BGRA,
-                                                  GL_UNSIGNED_INT_8_8_8_8_REV,
-                                                  io_surface_.get(),
-                                                  plane);
-   CHECK_GL_ERROR();
+  CGLError cglerror = io_surface_support_->CGLTexImageIOSurface2D(
+      cglContext_,
+      target,
+      GL_RGBA,
+      pixel_io_surface_size_.width(),
+      pixel_io_surface_size_.height(),
+      GL_BGRA,
+      GL_UNSIGNED_INT_8_8_8_8_REV,
+      io_surface_.get(),
+      plane);
+  CHECK_GL_ERROR();
   if (cglerror != kCGLNoError) {
     LOG(ERROR) << "CGLTexImageIOSurface2D: " << cglerror;
     return false;

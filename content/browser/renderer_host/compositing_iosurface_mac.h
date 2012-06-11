@@ -28,9 +28,9 @@ class CompositingIOSurfaceMac {
   void SetIOSurface(uint64 io_surface_handle);
 
   // Blit the IOSurface at the upper-left corner of the |view|. If |view| window
-  // size is larger than the IOSurface, the remaining left and bottom edges will
-  // be white.
-  void DrawIOSurface(NSView* view);
+  // size is larger than the IOSurface, the remaining right and bottom edges
+  // will be white. |scaleFactor| is 1 in normal views, 2 in HiDPI views.
+  void DrawIOSurface(NSView* view, float scale_factor);
 
   // Copy the data of the "live" OpenGL texture referring to this IOSurfaceRef
   // into |out|. The image data is transformed so that it fits in |dst_size|.
@@ -51,7 +51,9 @@ class CompositingIOSurfaceMac {
 
   bool HasIOSurface() { return !!io_surface_.get(); }
 
-  const gfx::Size& io_surface_size() const { return io_surface_size_; }
+  const gfx::Size& pixel_io_surface_size() const {
+    return pixel_io_surface_size_;
+  }
 
   bool is_vsync_disabled() const { return is_vsync_disabled_; }
 
@@ -126,7 +128,7 @@ class CompositingIOSurfaceMac {
   base::mac::ScopedCFTypeRef<CFTypeRef> io_surface_;
 
   // The width and height of the io surface.
-  gfx::Size io_surface_size_;
+  gfx::Size pixel_io_surface_size_;
 
   // The "live" OpenGL texture referring to this IOSurfaceRef. Note
   // that per the CGLTexImageIOSurface2D API we do not need to
