@@ -2906,13 +2906,47 @@ log_extensions(const char *name, const char *extensions)
 	while (*p) {
 		end = strchrnul(p, ' ');
 		if (l + (end - p) > 78)
-			l = weston_log_continue("\n  %.*s", end - p, p);
+			l = weston_log_continue("\n" STAMP_SPACE "%.*s",
+						end - p, p);
 		else
 			l += weston_log_continue(" %.*s", end - p, p);
 		for (p = end; isspace(*p); p++)
 			;
 	}
 	weston_log_continue("\n");
+}
+
+static void
+log_egl_gl_info(EGLDisplay egldpy)
+{
+	const char *str;
+
+	str = eglQueryString(egldpy, EGL_VERSION);
+	weston_log("EGL version: %s\n", str ? str : "(null)");
+
+	str = eglQueryString(egldpy, EGL_VENDOR);
+	weston_log("EGL vendor: %s\n", str ? str : "(null)");
+
+	str = eglQueryString(egldpy, EGL_CLIENT_APIS);
+	weston_log("EGL client APIs: %s\n", str ? str : "(null)");
+
+	str = eglQueryString(egldpy, EGL_EXTENSIONS);
+	log_extensions("EGL extensions", str ? str : "(null)");
+
+	str = (char *)glGetString(GL_VERSION);
+	weston_log("GL version: %s\n", str ? str : "(null)");
+
+	str = (char *)glGetString(GL_SHADING_LANGUAGE_VERSION);
+	weston_log("GLSL version: %s\n", str ? str : "(null)");
+
+	str = (char *)glGetString(GL_VENDOR);
+	weston_log("GL vendor: %s\n", str ? str : "(null)");
+
+	str = (char *)glGetString(GL_RENDERER);
+	weston_log("GL renderer: %s\n", str ? str : "(null)");
+
+	str = (char *)glGetString(GL_EXTENSIONS);
+	log_extensions("GL extensions", str ? str : "(null)");
 }
 
 WL_EXPORT int
@@ -2955,10 +2989,7 @@ weston_compositor_init(struct weston_compositor *ec,
 
 	wl_display_init_shm(display);
 
-	weston_log("egl vendor: %s\n",
-		   eglQueryString(ec->display, EGL_VENDOR));
-	log_extensions("egl extensions",
-		       eglQueryString(ec->display, EGL_EXTENSIONS));
+	log_egl_gl_info(ec->display);
 
 	ec->image_target_texture_2d =
 		(void *) eglGetProcAddress("glEGLImageTargetTexture2DOES");
@@ -2976,8 +3007,6 @@ weston_compositor_init(struct weston_compositor *ec,
 		weston_log("Retrieving GL extension string failed.\n");
 		return -1;
 	}
-
-	log_extensions("gles2 extensions", extensions);
 
 	if (!strstr(extensions, "GL_EXT_texture_format_BGRA8888")) {
 		weston_log("GL_EXT_texture_format_BGRA8888 not available\n");
