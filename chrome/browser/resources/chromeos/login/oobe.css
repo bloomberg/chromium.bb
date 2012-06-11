@@ -49,6 +49,8 @@ button {
 button.custom-appearance {
   -webkit-transition: border-color 200ms;
   border: 1px solid transparent;
+  /* Don't grey out disabled buttons. */
+  color: buttontext !important;
 }
 
 button.custom-appearance:focus {
