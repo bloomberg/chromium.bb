@@ -311,6 +311,10 @@ float ScoredHistoryMatch::GetTopicalityScore(
   // This isn't worth worrying about.
   const size_t end_of_hostname_pos = (colon_pos != std::string::npos) ?
       url.find('/', colon_pos + 3) : url.find('/');
+  size_t last_part_of_hostname_pos =
+      (end_of_hostname_pos != std::string::npos) ?
+      url.rfind('.', end_of_hostname_pos) :
+      url.rfind('.');
   // Loop through all URL matches and score them appropriately.
   for (TermMatches::const_iterator iter = url_matches.begin();
        iter != url_matches.end(); ++iter) {
@@ -333,7 +337,14 @@ float ScoredHistoryMatch::GetTopicalityScore(
     } else if ((colon_pos == std::string::npos) ||
          (iter->offset > colon_pos)) {
       // match in hostname
-      term_scores[iter->term_num] += at_word_boundary ? 10 : 2;
+      if ((last_part_of_hostname_pos == std::string::npos) ||
+          (iter->offset < last_part_of_hostname_pos)) {
+        // Either there are no dots in the hostname or this match isn't
+        // the last dotted component.
+        term_scores[iter->term_num] += at_word_boundary ? 10 : 2;
+      } // else: match in the last part of a dotted hostname (usually
+        // this is the top-level domain .com, .net, etc.).  Do not
+        // count this match for scoring.
     } // else: match in protocol.  Do not count this match for scoring.
   }
   // Now do the analogous loop over all matches in the title.

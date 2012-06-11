@@ -148,6 +148,18 @@ TEST_F(ScoredHistoryMatchTest, GetTopicalityScore) {
   const float hostname_mid_word_score =
       GetTopicalityScoreOfTermAgainstURLAndTitle(
           ASCIIToUTF16("bc"), url, title);
+  const float domain_name_score =
+      GetTopicalityScoreOfTermAgainstURLAndTitle(
+          ASCIIToUTF16("def"), url, title);
+  const float domain_name_mid_word_score =
+      GetTopicalityScoreOfTermAgainstURLAndTitle(
+          ASCIIToUTF16("ef"), url, title);
+  const float tld_score =
+      GetTopicalityScoreOfTermAgainstURLAndTitle(
+          ASCIIToUTF16("com"), url, title);
+  const float tld_mid_word_score =
+      GetTopicalityScoreOfTermAgainstURLAndTitle(
+          ASCIIToUTF16("om"), url, title);
   const float path_score =
       GetTopicalityScoreOfTermAgainstURLAndTitle(
           ASCIIToUTF16("path1"), url, title);
@@ -172,28 +184,36 @@ TEST_F(ScoredHistoryMatchTest, GetTopicalityScore) {
   const float title_mid_word_score =
       GetTopicalityScoreOfTermAgainstURLAndTitle(
           ASCIIToUTF16("er"), url, title);
-  // Verify hostname > path > arg, and the same for the matches at
-  // non-word-boundaries.
+  // Verify hostname and domain name > path > arg, and the same for the
+  // matches at non-word-boundaries.
   EXPECT_GT(hostname_score, path_score);
+  EXPECT_GT(domain_name_score, path_score);
   EXPECT_GT(path_score, arg_score);
   EXPECT_GT(hostname_mid_word_score, path_mid_word_score);
+  EXPECT_GT(domain_name_mid_word_score, path_mid_word_score);
   EXPECT_GT(path_mid_word_score, arg_mid_word_score);
   // Also verify that the matches at non-word-boundaries all score
-  // worse than the matches at word boundaries.  These two sets suffice.
+  // worse than the matches at word boundaries.  These three sets suffice.
   EXPECT_GT(arg_score, hostname_mid_word_score);
+  EXPECT_GT(arg_score, domain_name_mid_word_score);
   EXPECT_GT(title_score, title_mid_word_score);
   // Check that title matches fit somewhere reasonable compared to the
   // various types of URL matches.
   EXPECT_GT(title_score, arg_score);
-  EXPECT_GT(arg_score, hostname_mid_word_score);
+  EXPECT_GT(arg_score, title_mid_word_score);
   EXPECT_GT(title_mid_word_score, arg_mid_word_score);
-  // Finally, verify that protocol matches score worse than everything
-  // (except possibly mid-word matches in the ?arg section of the URL--I
-  // can imagine scoring those pretty harshly as well).
+  // Finally, verify that protocol matches and top level domain name
+  // matches (.com, .net, etc.) score worse than everything (except
+  // possibly mid-word matches in the ?arg section of the URL--I can
+  // imagine scoring those pretty harshly as well).
   EXPECT_GT(path_mid_word_score, protocol_score);
   EXPECT_GT(path_mid_word_score, protocol_mid_word_score);
   EXPECT_GT(title_mid_word_score, protocol_score);
   EXPECT_GT(title_mid_word_score, protocol_mid_word_score);
+  EXPECT_GT(path_mid_word_score, tld_score);
+  EXPECT_GT(path_mid_word_score, tld_mid_word_score);
+  EXPECT_GT(title_mid_word_score, tld_score);
+  EXPECT_GT(title_mid_word_score, tld_mid_word_score);
 }
 
 }  // namespace history
