@@ -201,6 +201,7 @@ static const char* GetInstMnemonic(const NaClEnumerator* enumerator) {
 
   /* Force simplifications if needed. Use mnemonic if defined. */
   disassembly = SimplifiedDisassembly(enumerator);
+  (void) disassembly;  /* TODO(bradchen): use or remove this variable */
   if (nacl_decoder._mnemonic[0] != 0) return nacl_decoder._mnemonic;
 
   /* If reached, we haven't cached it, so find the name from the
