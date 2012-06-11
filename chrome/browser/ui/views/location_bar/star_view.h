@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,8 @@ class StarView : public views::ImageView {
                               string16* tooltip) const OVERRIDE;
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
+  virtual ui::GestureStatus OnGestureEvent(
+      const views::GestureEvent& event) OVERRIDE;
   virtual bool OnKeyPressed(const views::KeyEvent& event) OVERRIDE;
 
   // The CommandUpdater for the Browser object that owns the location bar.
