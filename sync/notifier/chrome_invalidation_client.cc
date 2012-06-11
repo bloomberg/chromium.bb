@@ -35,11 +35,11 @@ ChromeInvalidationClient::ChromeInvalidationClient(
                                ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       listener_(NULL),
       ticl_ready_(false) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
 }
 
 ChromeInvalidationClient::~ChromeInvalidationClient() {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   Stop();
   DCHECK(!listener_);
 }
@@ -51,7 +51,7 @@ void ChromeInvalidationClient::Start(
     const browser_sync::WeakHandle<InvalidationStateTracker>&
         invalidation_state_tracker,
     Listener* listener) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   Stop();
 
   chrome_system_resources_.set_platform(client_info);
@@ -94,12 +94,12 @@ void ChromeInvalidationClient::Start(
 
 void ChromeInvalidationClient::UpdateCredentials(
     const std::string& email, const std::string& token) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   chrome_system_resources_.network()->UpdateCredentials(email, token);
 }
 
 void ChromeInvalidationClient::Stop() {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   if (!invalidation_client_.get()) {
     return;
   }
@@ -116,7 +116,7 @@ void ChromeInvalidationClient::Stop() {
 }
 
 void ChromeInvalidationClient::RegisterTypes(syncable::ModelTypeSet types) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   registered_types_ = types;
   if (ticl_ready_ && registration_manager_.get()) {
     registration_manager_->SetRegisteredTypes(registered_types_);
@@ -135,7 +135,7 @@ void ChromeInvalidationClient::Invalidate(
     invalidation::InvalidationClient* client,
     const invalidation::Invalidation& invalidation,
     const invalidation::AckHandle& ack_handle) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   DVLOG(1) << "Invalidate: " << InvalidationToString(invalidation);
   syncable::ModelType model_type;
   if (!ObjectIdToRealModelType(invalidation.object_id(), &model_type)) {
@@ -185,7 +185,7 @@ void ChromeInvalidationClient::InvalidateUnknownVersion(
     invalidation::InvalidationClient* client,
     const invalidation::ObjectId& object_id,
     const invalidation::AckHandle& ack_handle) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   DVLOG(1) << "InvalidateUnknownVersion";
 
   syncable::ModelType model_type;
@@ -208,7 +208,7 @@ void ChromeInvalidationClient::InvalidateUnknownVersion(
 void ChromeInvalidationClient::InvalidateAll(
     invalidation::InvalidationClient* client,
     const invalidation::AckHandle& ack_handle) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   DVLOG(1) << "InvalidateAll";
   EmitInvalidation(registered_types_, std::string());
   // TODO(akalin): We should really acknowledge only after we get the
@@ -218,7 +218,7 @@ void ChromeInvalidationClient::InvalidateAll(
 
 void ChromeInvalidationClient::EmitInvalidation(
     syncable::ModelTypeSet types, const std::string& payload) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   syncable::ModelTypePayloadMap type_payloads =
       syncable::ModelTypePayloadMapFromEnumSet(types, payload);
   listener_->OnInvalidate(type_payloads);
@@ -228,7 +228,7 @@ void ChromeInvalidationClient::InformRegistrationStatus(
       invalidation::InvalidationClient* client,
       const invalidation::ObjectId& object_id,
       InvalidationListener::RegistrationState new_state) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   DVLOG(1) << "InformRegistrationStatus: "
            << ObjectIdToString(object_id) << " " << new_state;
 
@@ -249,7 +249,7 @@ void ChromeInvalidationClient::InformRegistrationFailure(
     const invalidation::ObjectId& object_id,
     bool is_transient,
     const std::string& error_message) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   DVLOG(1) << "InformRegistrationFailure: "
            << ObjectIdToString(object_id)
            << "is_transient=" << is_transient
@@ -278,7 +278,7 @@ void ChromeInvalidationClient::ReissueRegistrations(
     invalidation::InvalidationClient* client,
     const std::string& prefix,
     int prefix_length) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   DVLOG(1) << "AllRegistrationsLost";
   registration_manager_->MarkAllRegistrationsLost();
 }
@@ -292,7 +292,7 @@ void ChromeInvalidationClient::InformError(
 }
 
 void ChromeInvalidationClient::WriteState(const std::string& state) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   DVLOG(1) << "WriteState";
   invalidation_state_tracker_.Call(
       FROM_HERE, &InvalidationStateTracker::SetInvalidationState, state);

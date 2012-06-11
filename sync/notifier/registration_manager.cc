@@ -67,12 +67,12 @@ RegistrationManager::RegistrationManager(
 }
 
 RegistrationManager::~RegistrationManager() {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
 }
 
 void RegistrationManager::SetRegisteredTypes(
     syncable::ModelTypeSet types) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
 
   for (int i = syncable::FIRST_REAL_MODEL_TYPE;
        i < syncable::MODEL_TYPE_COUNT; ++i) {
@@ -91,7 +91,7 @@ void RegistrationManager::SetRegisteredTypes(
 
 void RegistrationManager::MarkRegistrationLost(
     syncable::ModelType model_type) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   RegistrationStatus* status = &registration_statuses_[model_type];
   if (!status->enabled) {
     return;
@@ -102,7 +102,7 @@ void RegistrationManager::MarkRegistrationLost(
 }
 
 void RegistrationManager::MarkAllRegistrationsLost() {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   for (int i = syncable::FIRST_REAL_MODEL_TYPE;
        i < syncable::MODEL_TYPE_COUNT; ++i) {
     syncable::ModelType model_type = syncable::ModelTypeFromInt(i);
@@ -113,14 +113,14 @@ void RegistrationManager::MarkAllRegistrationsLost() {
 }
 
 void RegistrationManager::DisableType(syncable::ModelType model_type) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   RegistrationStatus* status = &registration_statuses_[model_type];
   LOG(INFO) << "Disabling " << syncable::ModelTypeToString(model_type);
   status->Disable();
 }
 
 syncable::ModelTypeSet RegistrationManager::GetRegisteredTypes() const {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   syncable::ModelTypeSet registered_types;
   for (int i = syncable::FIRST_REAL_MODEL_TYPE;
        i < syncable::MODEL_TYPE_COUNT; ++i) {
@@ -134,7 +134,7 @@ syncable::ModelTypeSet RegistrationManager::GetRegisteredTypes() const {
 
 RegistrationManager::PendingRegistrationMap
     RegistrationManager::GetPendingRegistrations() const {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   PendingRegistrationMap pending_registrations;
   for (int i = syncable::FIRST_REAL_MODEL_TYPE;
        i < syncable::MODEL_TYPE_COUNT; ++i) {
@@ -154,7 +154,7 @@ RegistrationManager::PendingRegistrationMap
 }
 
 void RegistrationManager::FirePendingRegistrationsForTest() {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   for (int i = syncable::FIRST_REAL_MODEL_TYPE;
        i < syncable::MODEL_TYPE_COUNT; ++i) {
     syncable::ModelType model_type = syncable::ModelTypeFromInt(i);
@@ -194,7 +194,7 @@ double RegistrationManager::GetJitter() {
 
 void RegistrationManager::TryRegisterType(syncable::ModelType model_type,
                                           bool is_retry) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   RegistrationStatus* status = &registration_statuses_[model_type];
   if (!status->enabled) {
     // Disabled, so do nothing.
@@ -241,7 +241,7 @@ void RegistrationManager::TryRegisterType(syncable::ModelType model_type,
 }
 
 void RegistrationManager::DoRegisterType(syncable::ModelType model_type) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   invalidation::ObjectId object_id;
   if (!RealModelTypeToObjectId(model_type, &object_id)) {
     LOG(DFATAL) << "Invalid model type: " << model_type;
@@ -254,7 +254,7 @@ void RegistrationManager::DoRegisterType(syncable::ModelType model_type) {
 }
 
 void RegistrationManager::UnregisterType(syncable::ModelType model_type) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   invalidation::ObjectId object_id;
   if (!RealModelTypeToObjectId(model_type, &object_id)) {
     LOG(DFATAL) << "Invalid model type: " << model_type;
@@ -267,7 +267,7 @@ void RegistrationManager::UnregisterType(syncable::ModelType model_type) {
 
 bool RegistrationManager::IsTypeRegistered(
     syncable::ModelType model_type) const {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   return registration_statuses_[model_type].state ==
       invalidation::InvalidationListener::REGISTERED;
 }

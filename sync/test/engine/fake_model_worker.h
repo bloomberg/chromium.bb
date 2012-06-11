@@ -18,7 +18,7 @@ namespace browser_sync {
 
 // Fake implementation of ModelSafeWorker that does work on the
 // current thread regardless of the group.
-class FakeModelWorker : public ModelSafeWorker {
+class FakeModelWorker : public ModelSafeWorker, public base::NonThreadSafe {
  public:
   explicit FakeModelWorker(ModelSafeGroup group);
 
@@ -29,8 +29,6 @@ class FakeModelWorker : public ModelSafeWorker {
 
  private:
   virtual ~FakeModelWorker();
-
-  base::NonThreadSafe non_thread_safe_;
 
   const ModelSafeGroup group_;
 

@@ -77,7 +77,7 @@ XmppConnection::XmppConnection(
 }
 
 XmppConnection::~XmppConnection() {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   ClearClient();
   task_pump_->Stop();
   MessageLoop* current_message_loop = MessageLoop::current();
@@ -90,7 +90,7 @@ XmppConnection::~XmppConnection() {
 }
 
 void XmppConnection::OnStateChange(buzz::XmppEngine::State state) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   VLOG(1) << "XmppClient state changed to " << state;
   if (!weak_xmpp_client_.get()) {
     LOG(DFATAL) << "weak_xmpp_client_ unexpectedly NULL";
@@ -128,12 +128,12 @@ void XmppConnection::OnStateChange(buzz::XmppEngine::State state) {
 }
 
 void XmppConnection::OnInputLog(const char* data, int len) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   VLOG(2) << "XMPP Input: " << base::StringPiece(data, len);
 }
 
 void XmppConnection::OnOutputLog(const char* data, int len) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   VLOG(2) << "XMPP Output: " << base::StringPiece(data, len);
 }
 

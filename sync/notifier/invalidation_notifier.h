@@ -35,7 +35,8 @@ namespace sync_notifier {
 // This class must live on the IO thread.
 class InvalidationNotifier
     : public SyncNotifier,
-      public ChromeInvalidationClient::Listener {
+      public ChromeInvalidationClient::Listener,
+      public base::NonThreadSafe {
  public:
   // |invalidation_state_tracker| must be initialized.
   InvalidationNotifier(
@@ -66,8 +67,6 @@ class InvalidationNotifier
   virtual void OnSessionStatusChanged(bool has_session) OVERRIDE;
 
  private:
-  base::NonThreadSafe non_thread_safe_;
-
   // We start off in the STOPPED state.  When we get our initial
   // credentials, we connect and move to the CONNECTING state.  When
   // we're connected we start the invalidation client and move to the

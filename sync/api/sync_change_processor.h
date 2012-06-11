@@ -34,7 +34,6 @@ class SyncChangeProcessor {
   virtual SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const SyncChangeList& change_list) = 0;
- protected:
 };
 
 #endif  // SYNC_API_SYNC_CHANGE_PROCESSOR_H_

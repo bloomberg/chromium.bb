@@ -21,13 +21,13 @@ enum IncomingNotificationSource {
 
 class SyncNotifierObserver {
  public:
-  SyncNotifierObserver() {}
-  virtual ~SyncNotifierObserver() {}
-
   virtual void OnIncomingNotification(
       const syncable::ModelTypePayloadMap& type_payloads,
       IncomingNotificationSource source) = 0;
   virtual void OnNotificationStateChange(bool notifications_enabled) = 0;
+
+ protected:
+  virtual ~SyncNotifierObserver() {}
 };
 
 }  // namespace sync_notifier

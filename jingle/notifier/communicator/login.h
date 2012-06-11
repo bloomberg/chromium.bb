@@ -45,11 +45,12 @@ class Login : public net::NetworkChangeNotifier::IPAddressObserver,
  public:
   class Delegate {
    public:
-    virtual ~Delegate() {}
-
     virtual void OnConnect(
         base::WeakPtr<buzz::XmppTaskParentInterface> base_task) = 0;
     virtual void OnDisconnect() = 0;
+
+   protected:
+    virtual ~Delegate() {}
   };
 
   // Does not take ownership of |delegate|, which must not be NULL.

@@ -30,7 +30,9 @@ namespace notifier {
 class TaskPump;
 class WeakXmppClient;
 
-class XmppConnection : public sigslot::has_slots<> {
+class XmppConnection
+    : public sigslot::has_slots<>,
+      public base::NonThreadSafe {
  public:
   class Delegate {
    public:
@@ -82,7 +84,6 @@ class XmppConnection : public sigslot::has_slots<> {
 
   void ClearClient();
 
-  base::NonThreadSafe non_thread_safe_;
   scoped_ptr<TaskPump> task_pump_;
   base::WeakPtr<WeakXmppClient> weak_xmpp_client_;
   bool on_connect_called_;

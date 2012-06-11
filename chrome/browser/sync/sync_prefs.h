@@ -44,7 +44,8 @@ class SyncPrefObserver {
 //   sync_setup_wizard.cc
 //   sync_setup_wizard_unittest.cc
 //   two_client_preferences_sync_test.cc
-class SyncPrefs : public base::SupportsWeakPtr<SyncPrefs>,
+class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
+                  public base::SupportsWeakPtr<SyncPrefs>,
                   public content::NotificationObserver {
  public:
   // |pref_service| may be NULL (for unit tests), but in that case no
@@ -132,8 +133,6 @@ class SyncPrefs : public base::SupportsWeakPtr<SyncPrefs>,
   syncable::ModelTypeSet ResolvePrefGroups(
       syncable::ModelTypeSet registered_types,
       syncable::ModelTypeSet types) const;
-
-  base::NonThreadSafe non_thread_safe_;
 
   // May be NULL.
   PrefService* const pref_service_;

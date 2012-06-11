@@ -29,7 +29,8 @@ class JsEventHandler;
 // summarized version to a JsEventHandler.
 class JsMutationEventObserver
     : public sync_api::SyncManager::ChangeObserver,
-      public syncable::TransactionObserver {
+      public syncable::TransactionObserver,
+      public base::NonThreadSafe {
  public:
   JsMutationEventObserver();
 
@@ -54,7 +55,6 @@ class JsMutationEventObserver
       syncable::ModelTypeSet models_with_changes) OVERRIDE;
 
  private:
-  base::NonThreadSafe non_thread_safe_;
   base::WeakPtrFactory<JsMutationEventObserver> weak_ptr_factory_;
   WeakHandle<JsEventHandler> event_handler_;
 

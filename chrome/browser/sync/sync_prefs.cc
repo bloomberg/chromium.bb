@@ -33,21 +33,21 @@ SyncPrefs::SyncPrefs(PrefService* pref_service)
 }
 
 SyncPrefs::~SyncPrefs() {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
 }
 
 void SyncPrefs::AddSyncPrefObserver(SyncPrefObserver* sync_pref_observer) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   sync_pref_observers_.AddObserver(sync_pref_observer);
 }
 
 void SyncPrefs::RemoveSyncPrefObserver(SyncPrefObserver* sync_pref_observer) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   sync_pref_observers_.RemoveObserver(sync_pref_observer);
 }
 
 void SyncPrefs::ClearPreferences() {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   CHECK(pref_service_);
   pref_service_->ClearPref(prefs::kSyncLastSyncedTime);
   pref_service_->ClearPref(prefs::kSyncHasSetupCompleted);
@@ -58,41 +58,41 @@ void SyncPrefs::ClearPreferences() {
 }
 
 bool SyncPrefs::HasSyncSetupCompleted() const {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   return
       pref_service_ &&
       pref_service_->GetBoolean(prefs::kSyncHasSetupCompleted);
 }
 
 void SyncPrefs::SetSyncSetupCompleted() {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   CHECK(pref_service_);
   pref_service_->SetBoolean(prefs::kSyncHasSetupCompleted, true);
   SetStartSuppressed(false);
 }
 
 bool SyncPrefs::IsStartSuppressed() const {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   return
       pref_service_ &&
       pref_service_->GetBoolean(prefs::kSyncSuppressStart);
 }
 
 void SyncPrefs::SetStartSuppressed(bool is_suppressed) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   CHECK(pref_service_);
   pref_service_->SetBoolean(prefs::kSyncSuppressStart, is_suppressed);
 }
 
 std::string SyncPrefs::GetGoogleServicesUsername() const {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   return
       pref_service_ ?
       pref_service_->GetString(prefs::kGoogleServicesUsername) : "";
 }
 
 base::Time SyncPrefs::GetLastSyncedTime() const {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   return
       base::Time::FromInternalValue(
           pref_service_ ?
@@ -100,20 +100,20 @@ base::Time SyncPrefs::GetLastSyncedTime() const {
 }
 
 void SyncPrefs::SetLastSyncedTime(base::Time time) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   CHECK(pref_service_);
   pref_service_->SetInt64(prefs::kSyncLastSyncedTime, time.ToInternalValue());
 }
 
 bool SyncPrefs::HasKeepEverythingSynced() const {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   return
       pref_service_ &&
       pref_service_->GetBoolean(prefs::kSyncKeepEverythingSynced);
 }
 
 void SyncPrefs::SetKeepEverythingSynced(bool keep_everything_synced) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   CHECK(pref_service_);
   pref_service_->SetBoolean(prefs::kSyncKeepEverythingSynced,
                             keep_everything_synced);
@@ -121,7 +121,7 @@ void SyncPrefs::SetKeepEverythingSynced(bool keep_everything_synced) {
 
 syncable::ModelTypeSet SyncPrefs::GetPreferredDataTypes(
     syncable::ModelTypeSet registered_types) const {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   if (!pref_service_) {
     return syncable::ModelTypeSet();
   }
@@ -150,7 +150,7 @@ syncable::ModelTypeSet SyncPrefs::GetPreferredDataTypes(
 void SyncPrefs::SetPreferredDataTypes(
     syncable::ModelTypeSet registered_types,
     syncable::ModelTypeSet preferred_types) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   CHECK(pref_service_);
   DCHECK(registered_types.HasAll(preferred_types));
   preferred_types = ResolvePrefGroups(registered_types, preferred_types);
@@ -161,39 +161,38 @@ void SyncPrefs::SetPreferredDataTypes(
 }
 
 bool SyncPrefs::IsManaged() const {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   return pref_service_ && pref_service_->GetBoolean(prefs::kSyncManaged);
 }
 
 std::string SyncPrefs::GetEncryptionBootstrapToken() const {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   return
       pref_service_ ?
       pref_service_->GetString(prefs::kSyncEncryptionBootstrapToken) : "";
 }
 
 void SyncPrefs::SetEncryptionBootstrapToken(const std::string& token) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   pref_service_->SetString(prefs::kSyncEncryptionBootstrapToken, token);
 }
 
 #if defined(OS_CHROMEOS)
 std::string SyncPrefs::GetSpareBootstrapToken() const {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   return pref_service_ ?
       pref_service_->GetString(prefs::kSyncSpareBootstrapToken) : "";
 }
 
 void SyncPrefs::SetSpareBootstrapToken(const std::string& token) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   pref_service_->SetString(prefs::kSyncSpareBootstrapToken, token);
 }
 #endif
 
-
 void SyncPrefs::AcknowledgeSyncedTypes(
     syncable::ModelTypeSet types) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   CHECK(pref_service_);
   // Add the types to the current set of acknowledged
   // types, and then store the resulting set in prefs.
@@ -210,7 +209,7 @@ void SyncPrefs::AcknowledgeSyncedTypes(
 void SyncPrefs::Observe(int type,
                         const content::NotificationSource& source,
                         const content::NotificationDetails& details) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   DCHECK(content::Source<PrefService>(pref_service_) == source);
   switch (type) {
     case chrome::NOTIFICATION_PREF_CHANGED: {
@@ -229,13 +228,13 @@ void SyncPrefs::Observe(int type,
 }
 
 void SyncPrefs::SetManagedForTest(bool is_managed) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   CHECK(pref_service_);
   pref_service_->SetBoolean(prefs::kSyncManaged, is_managed);
 }
 
 syncable::ModelTypeSet SyncPrefs::GetAcknowledgeSyncedTypesForTest() const {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   if (!pref_service_) {
     return syncable::ModelTypeSet();
   }
@@ -296,7 +295,7 @@ void SyncPrefs::RegisterPrefGroups() {
 }
 
 void SyncPrefs::RegisterPreferences() {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   CHECK(pref_service_);
   if (pref_service_->FindPreference(prefs::kSyncLastSyncedTime)) {
     return;
@@ -373,7 +372,7 @@ void SyncPrefs::RegisterPreferences() {
 
 void SyncPrefs::RegisterDataTypePreferredPref(syncable::ModelType type,
                                               bool is_preferred) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   CHECK(pref_service_);
   const char* pref_name = GetPrefNameForDataType(type);
   if (!pref_name) {
@@ -385,7 +384,7 @@ void SyncPrefs::RegisterDataTypePreferredPref(syncable::ModelType type,
 }
 
 bool SyncPrefs::GetDataTypePreferred(syncable::ModelType type) const {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   if (!pref_service_) {
     return false;
   }
@@ -400,7 +399,7 @@ bool SyncPrefs::GetDataTypePreferred(syncable::ModelType type) const {
 
 void SyncPrefs::SetDataTypePreferred(
     syncable::ModelType type, bool is_preferred) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   CHECK(pref_service_);
   const char* pref_name = GetPrefNameForDataType(type);
   if (!pref_name) {

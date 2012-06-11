@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,11 +14,11 @@ TaskPump::TaskPump()
       stopped_(false) {}
 
 TaskPump::~TaskPump() {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
 }
 
 void TaskPump::WakeTasks() {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   if (!stopped_ && !posted_wake_) {
     MessageLoop* current_message_loop = MessageLoop::current();
     CHECK(current_message_loop);
@@ -31,7 +31,7 @@ void TaskPump::WakeTasks() {
 }
 
 int64 TaskPump::CurrentTime() {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   // Only timeout tasks rely on this function.  Since we're not using
   // libjingle tasks for timeout, it's safe to return 0 here.
   return 0;
@@ -42,7 +42,7 @@ void TaskPump::Stop() {
 }
 
 void TaskPump::CheckAndRunTasks() {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   if (stopped_) {
     return;
   }

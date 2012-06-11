@@ -16,8 +16,6 @@ namespace sync_api {
 // want to make a subsequent POST.
 class HttpPostProviderInterface {
  public:
-  virtual ~HttpPostProviderInterface() {}
-
   // Use specified user agent string when POSTing. If not called a default UA
   // may be used.
   virtual void SetUserAgent(const char* user_agent) = 0;
@@ -59,6 +57,9 @@ class HttpPostProviderInterface {
   // Abandon any pending POST and unblock caller in MakeSynchronousPost.
   // This must be safe to call from any thread.
   virtual void Abort() = 0;
+
+ protected:
+  virtual ~HttpPostProviderInterface() {}
 };
 
 }  // namespace sync_api

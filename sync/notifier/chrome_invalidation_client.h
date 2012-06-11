@@ -42,7 +42,8 @@ class RegistrationManager;
 // thread.
 class ChromeInvalidationClient
     : public InvalidationListener,
-      public StateWriter {
+      public StateWriter,
+      public base::NonThreadSafe {
  public:
   class Listener {
    public:
@@ -117,7 +118,6 @@ class ChromeInvalidationClient
   void EmitInvalidation(
       syncable::ModelTypeSet types, const std::string& payload);
 
-  base::NonThreadSafe non_thread_safe_;
   ChromeSystemResources chrome_system_resources_;
   InvalidationVersionMap max_invalidation_versions_;
   browser_sync::WeakHandle<InvalidationStateTracker>

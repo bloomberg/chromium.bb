@@ -19,7 +19,7 @@ JsMutationEventObserver::JsMutationEventObserver()
     : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
 
 JsMutationEventObserver::~JsMutationEventObserver() {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
 }
 
 base::WeakPtr<JsMutationEventObserver> JsMutationEventObserver::AsWeakPtr() {
@@ -86,7 +86,7 @@ void JsMutationEventObserver::OnChangesComplete(
 void JsMutationEventObserver::OnTransactionWrite(
     const syncable::ImmutableWriteTransactionInfo& write_transaction_info,
     syncable::ModelTypeSet models_with_changes) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   if (!event_handler_.IsInitialized()) {
     return;
   }

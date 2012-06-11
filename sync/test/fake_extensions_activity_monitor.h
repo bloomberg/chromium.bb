@@ -14,7 +14,9 @@ namespace browser_sync {
 
 // Fake non-thread-safe implementation of ExtensionsActivityMonitor
 // suitable to be used in single-threaded sync tests.
-class FakeExtensionsActivityMonitor : public ExtensionsActivityMonitor {
+class FakeExtensionsActivityMonitor
+    : public ExtensionsActivityMonitor,
+      public base::NonThreadSafe {
  public:
   FakeExtensionsActivityMonitor();
   virtual ~FakeExtensionsActivityMonitor();
@@ -25,7 +27,6 @@ class FakeExtensionsActivityMonitor : public ExtensionsActivityMonitor {
 
  private:
   Records records_;
-  base::NonThreadSafe non_thread_safe_;
 };
 
 }  // namespace browser_sync

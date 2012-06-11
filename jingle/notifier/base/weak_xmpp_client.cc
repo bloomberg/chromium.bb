@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,12 +13,12 @@ WeakXmppClient::WeakXmppClient(talk_base::TaskParent* parent)
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
 
 WeakXmppClient::~WeakXmppClient() {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   Invalidate();
 }
 
 void WeakXmppClient::Invalidate() {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   // We don't want XmppClient raising any signals once its invalidated.
   SignalStateChange.disconnect_all();
   SignalLogInput.disconnect_all();
@@ -27,12 +27,12 @@ void WeakXmppClient::Invalidate() {
 }
 
 base::WeakPtr<WeakXmppClient> WeakXmppClient::AsWeakPtr() {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   return weak_ptr_factory_.GetWeakPtr();
 }
 
 void WeakXmppClient::Stop() {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   // We don't want XmppClient used after it has been stopped.
   Invalidate();
   buzz::XmppClient::Stop();

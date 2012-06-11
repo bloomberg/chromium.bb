@@ -32,28 +32,28 @@ InvalidationNotifier::InvalidationNotifier(
 }
 
 InvalidationNotifier::~InvalidationNotifier() {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
 }
 
 void InvalidationNotifier::AddObserver(SyncNotifierObserver* observer) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   observers_.AddObserver(observer);
 }
 
 void InvalidationNotifier::RemoveObserver(SyncNotifierObserver* observer) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   observers_.RemoveObserver(observer);
 }
 
 void InvalidationNotifier::SetUniqueId(const std::string& unique_id) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   invalidation_client_id_ = unique_id;
   DVLOG(1) << "Setting unique ID to " << unique_id;
   CHECK(!invalidation_client_id_.empty());
 }
 
 void InvalidationNotifier::SetStateDeprecated(const std::string& state) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   DCHECK_LT(state_, STARTED);
   if (invalidation_state_.empty()) {
     // Migrate state from sync to invalidation state tracker (bug
@@ -88,20 +88,20 @@ void InvalidationNotifier::UpdateCredentials(
 
 void InvalidationNotifier::UpdateEnabledTypes(
     syncable::ModelTypeSet enabled_types) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   CHECK(!invalidation_client_id_.empty());
   invalidation_client_.RegisterTypes(enabled_types);
 }
 
 void InvalidationNotifier::SendNotification(
     syncable::ModelTypeSet changed_types) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   // Do nothing.
 }
 
 void InvalidationNotifier::OnInvalidate(
     const syncable::ModelTypePayloadMap& type_payloads) {
-  DCHECK(non_thread_safe_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   FOR_EACH_OBSERVER(SyncNotifierObserver, observers_,
                     OnIncomingNotification(type_payloads,
                                            sync_notifier::REMOTE_NOTIFICATION));

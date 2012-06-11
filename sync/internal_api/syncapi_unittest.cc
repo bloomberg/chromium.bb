@@ -680,7 +680,7 @@ class TestHttpPostProviderFactory : public HttpPostProviderFactory {
     return new TestHttpPostProviderInterface();
   }
   virtual void Destroy(HttpPostProviderInterface* http) OVERRIDE {
-    delete http;
+    delete static_cast<TestHttpPostProviderInterface*>(http);
   }
 };
 
