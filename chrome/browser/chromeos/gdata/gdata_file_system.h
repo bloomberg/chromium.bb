@@ -613,6 +613,16 @@ class GDataFileSystem : public GDataFileSystemInterface,
     FindEntryCallback callback;
   };
 
+  // Defines set of parameters passed to an intermediate callback
+  // OnGetFileCompleteForOpen, during execution of OpenFile() method.
+  struct GetFileCompleteForOpenParams {
+    GetFileCompleteForOpenParams(const std::string& resource_id,
+                                 const std::string& md5);
+    ~GetFileCompleteForOpenParams();
+    std::string resource_id;
+    std::string md5;
+  };
+
   typedef std::map<std::string /* resource_id */, GDataEntry*>
       FileResourceIdMap;
 
@@ -718,16 +728,17 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   // Invoked upon completion of GetFileByPath initiated by OpenFile. If
   // GetFileByPath is successful, calls MarkDirtyInCache to mark the cache
-  // file as dirty for the file identified by |file_info->resource_id| and
-  // |file_info->file_md5|.
+  // file as dirty for the file identified by |file_info.resource_id| and
+  // |file_info.md5|.
   //
   // Can be called from UI/IO thread. |callback| is run on the calling thread.
-  void OnGetFileCompleteForOpenFile(const OpenFileCallback& callback,
-                                    scoped_ptr<GDataFileProto> file_info,
-                                    base::PlatformFileError error,
-                                    const FilePath& file_path,
-                                    const std::string& mime_type,
-                                    GDataFileType file_type);
+  void OnGetFileCompleteForOpenFile(
+      const OpenFileCallback& callback,
+      const GetFileCompleteForOpenParams& file_info,
+      base::PlatformFileError error,
+      const FilePath& file_path,
+      const std::string& mime_type,
+      GDataFileType file_type);
 
   // Copies a document with |resource_id| to the directory at |dir_path|
   // and names the copied document as |new_name|.

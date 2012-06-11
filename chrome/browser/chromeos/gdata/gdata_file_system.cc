@@ -878,6 +878,19 @@ GDataFileSystem::CreateDirectoryParams::CreateDirectoryParams(
 GDataFileSystem::CreateDirectoryParams::~CreateDirectoryParams() {
 }
 
+// GDataFileSystem::GetFileCompleteForOpenParams struct implementation.
+
+GDataFileSystem::GetFileCompleteForOpenParams::GetFileCompleteForOpenParams(
+    const std::string& resource_id,
+    const std::string& md5)
+    : resource_id(resource_id),
+      md5(md5) {
+}
+
+GDataFileSystem::GetFileCompleteForOpenParams::~GetFileCompleteForOpenParams() {
+}
+
+
 //=================== GetFileFromCacheParams implementation ===================
 
 GDataFileSystem::GetFileFromCacheParams::GetFileFromCacheParams(
@@ -5082,7 +5095,9 @@ void GDataFileSystem::OnGetFileInfoCompleteForOpenFile(
       base::Bind(&GDataFileSystem::OnGetFileCompleteForOpenFile,
                  ui_weak_ptr_,
                  callback,
-                 base::Passed(&file_info)),
+                 GetFileCompleteForOpenParams(
+                     file_info->gdata_entry().resource_id(),
+                     file_info->file_md5())),
       GetDownloadDataCallback(),
       error,
       file_info.get());
@@ -5090,7 +5105,7 @@ void GDataFileSystem::OnGetFileInfoCompleteForOpenFile(
 
 void GDataFileSystem::OnGetFileCompleteForOpenFile(
     const OpenFileCallback& callback,
-    scoped_ptr<GDataFileProto> file_info,
+    const GetFileCompleteForOpenParams& file_info,
     base::PlatformFileError error,
     const FilePath& file_path,
     const std::string& mime_type,
@@ -5107,8 +5122,8 @@ void GDataFileSystem::OnGetFileCompleteForOpenFile(
   DCHECK_EQ(REGULAR_FILE, file_type);
 
   MarkDirtyInCache(
-      file_info->gdata_entry().resource_id(),
-      file_info->file_md5(),
+      file_info.resource_id,
+      file_info.md5,
       base::Bind(&GDataFileSystem::OnMarkDirtyInCacheCompleteForOpenFile,
                  ui_weak_ptr_,
                  callback));
