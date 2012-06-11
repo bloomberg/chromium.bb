@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <limits>
-
 #include "chrome/browser/jankometer.h"
+
+#include <limits>
 
 #include "base/basictypes.h"
 #include "base/bind.h"
@@ -21,10 +21,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
-
-#if defined(TOOLKIT_GTK)
-#include "chrome/browser/ui/gtk/gtk_util.h"
-#endif
 
 using base::TimeDelta;
 using base::TimeTicks;
