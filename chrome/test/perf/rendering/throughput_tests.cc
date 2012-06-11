@@ -466,7 +466,13 @@ IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, DISABLED_TestURL) {
   RunTestWithURL(kAllowExternalDNS);
 }
 
-IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, Particles) {
+// crbug.com/124049
+#if defined(OS_MACOSX)
+#define MAYBE_Particels DISABLED_Particles
+#else
+#define MAYBE_Particles Particles
+#endif
+IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, MAYBE_Particles) {
   RunTest("particles", kInternal);
 }
 
@@ -510,7 +516,13 @@ IN_PROC_BROWSER_TEST_F(ThroughputTestSW, CanvasTextSW) {
   RunTest("canvas2d_balls_text", kNone);
 }
 
-IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, CanvasTextGPU) {
+// crbug.com/124049
+#if defined(OS_MACOSX)
+#define MAYBE_CanvasTextGPU DISABLED_CanvasTextGPU
+#else
+#define MAYBE_CanvasTextGPU CanvasTextGPU
+#endif
+IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, MAYBE_CanvasTextGPU) {
   RunTest("canvas2d_balls_text", kNone | kIsGpuCanvasTest);
 }
 
