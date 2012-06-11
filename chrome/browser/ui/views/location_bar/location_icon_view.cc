@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 LocationIconView::LocationIconView(LocationBarView* location_bar)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(click_handler_(this, location_bar)) {
+    : ALLOW_THIS_IN_INITIALIZER_LIST(page_info_helper_(this, location_bar)) {
   SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_LOCATION_ICON));
 }
 
@@ -23,7 +23,16 @@ bool LocationIconView::OnMousePressed(const views::MouseEvent& event) {
 }
 
 void LocationIconView::OnMouseReleased(const views::MouseEvent& event) {
-  click_handler_.OnMouseReleased(event);
+  page_info_helper_.ProcessEvent(event);
+}
+
+ui::GestureStatus LocationIconView::OnGestureEvent(
+    const views::GestureEvent& event) {
+  if (event.type() == ui::ET_GESTURE_TAP) {
+    page_info_helper_.ProcessEvent(event);
+    return ui::GESTURE_STATUS_CONSUMED;
+  }
+  return ui::GESTURE_STATUS_UNKNOWN;
 }
 
 void LocationIconView::ShowTooltip(bool show) {

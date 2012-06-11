@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_LOCATION_ICON_VIEW_H_
 #pragma once
 
-#include "chrome/browser/ui/views/location_bar/click_handler.h"
+#include "chrome/browser/ui/views/location_bar/page_info_helper.h"
 #include "ui/views/controls/image_view.h"
 
 class LocationBarView;
@@ -25,12 +25,14 @@ class LocationIconView : public views::ImageView {
   // Overridden from views::ImageView:
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
+  virtual ui::GestureStatus OnGestureEvent(
+      const views::GestureEvent& event) OVERRIDE;
 
   // Whether we should show the tooltip for this icon or not.
   void ShowTooltip(bool show);
 
  private:
-  ClickHandler click_handler_;
+  PageInfoHelper page_info_helper_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(LocationIconView);
 };

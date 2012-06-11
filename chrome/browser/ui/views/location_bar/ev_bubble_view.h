@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_EV_BUBBLE_VIEW_H_
 #pragma once
 
-#include "chrome/browser/ui/views/location_bar/click_handler.h"
 #include "chrome/browser/ui/views/location_bar/icon_label_bubble_view.h"
+#include "chrome/browser/ui/views/location_bar/page_info_helper.h"
 
 class LocationBarView;
 
@@ -27,9 +27,11 @@ class EVBubbleView : public IconLabelBubbleView {
   // Overridden from view.
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
+  virtual ui::GestureStatus OnGestureEvent(
+      const views::GestureEvent& event) OVERRIDE;
 
  private:
-  ClickHandler click_handler_;
+  PageInfoHelper page_info_helper_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(EVBubbleView);
 };
