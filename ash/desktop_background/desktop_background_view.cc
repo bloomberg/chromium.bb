@@ -139,6 +139,8 @@ void CreateDesktopBackground(const gfx::ImageSkia& wallpaper,
   DesktopBackgroundView* view = new DesktopBackgroundView(wallpaper,
                                                           wallpaper_layout);
   params.delegate = view;
+  if (wallpaper.empty())
+    params.transparent = true;
   params.parent = root_window->GetChildById(
       ash::internal::kShellWindowId_DesktopBackgroundContainer);
   desktop_widget->Init(params);
