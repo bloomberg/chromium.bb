@@ -87,8 +87,11 @@ static const int32 kPorts[] = {53, 80, 587, 6121, 8080, 999999};
 static uint32 g_packet_number_ = 0;
 
 // Maximum number of packets that can be sent to the server for packet loss
-// testing.
-static const uint32 kMaximumPackets = 6;
+// correlation test.
+static const uint32 kMaximumCorrelationPackets = 6;
+
+// Maximum number of packets that can be sent to the server.
+static const uint32 kMaximumPackets = 21;
 
 // NetworkStats methods and members.
 NetworkStats::NetworkStats()
@@ -567,6 +570,43 @@ void NetworkStats::GetHistogramNames(const ProtocolValue& protocol,
 void NetworkStats::RecordHistograms(const ProtocolValue& protocol,
                                     const Status& status,
                                     int result) {
+  if (packets_to_send_ == kMaximumPackets) {
+    bool received_atleast_one_packet = packets_received_mask_ > 0;
+    std::string block_histogram_name = base::StringPrintf(
+        "NetConnectivity.BlockUnblock");
+    base::Histogram* block_histogram = base::BooleanHistogram::FactoryGet(
+        block_histogram_name, base::Histogram::kUmaTargetedHistogramFlag);
+    block_histogram->AddBoolean(received_atleast_one_packet);
+
+    if (!received_atleast_one_packet)
+      return;
+
+    std::string probability_histogram_name = base::StringPrintf(
+        "NetConnectivity.ProbabilityOfPacketLoss.%d", kMaximumPackets);
+    base::Histogram* probability_histogram = base::Histogram::FactoryGet(
+        probability_histogram_name, 1, kMaximumPackets, kMaximumPackets + 1,
+        base::Histogram::kUmaTargetedHistogramFlag);
+
+    int count = 0;
+    for (size_t j = 0; j < packets_to_send_; j++) {
+      int packet_number = j + 1;
+      if (packets_received_mask_ & (1 << j)) {
+        probability_histogram->Add(packet_number);
+        count++;
+      }
+      if (packet_number < 2)
+        continue;
+      std::string unblock_histogram_name = base::StringPrintf(
+          "NetConnectivity.UnblockRcvFrom.%d.%d",
+          kMaximumPackets, packet_number);
+      base::Histogram* unblock_histogram = base::Histogram::FactoryGet(
+          unblock_histogram_name, 1, packet_number, packet_number + 1,
+          base::Histogram::kUmaTargetedHistogramFlag);
+      unblock_histogram->Add(count);
+    }
+    return;
+  }
+
   base::TimeDelta duration = base::TimeTicks::Now() - start_time();
 
   std::string rtt_histogram_name;
@@ -589,8 +629,8 @@ void NetworkStats::RecordHistograms(const ProtocolValue& protocol,
       base::Histogram* histogram = base::LinearHistogram::FactoryGet(
           packet_loss_histogram_name,
           1,
-          2 << kMaximumPackets,
-          (2 << kMaximumPackets) + 1,
+          2 << kMaximumCorrelationPackets,
+          (2 << kMaximumCorrelationPackets) + 1,
           base::Histogram::kUmaTargetedHistogramFlag);
       histogram->Add(packets_received_mask_);
       packet_loss_histogram_name.append(".NoProxy");
@@ -808,7 +848,8 @@ void CollectNetworkStats(const std::string& network_stats_server,
 
   CR_DEFINE_STATIC_LOCAL(scoped_refptr<base::FieldTrial>, trial, ());
   static bool collect_stats = false;
-  static NetworkStats::HistogramPortSelector histogram_port;
+  static NetworkStats::HistogramPortSelector histogram_port =
+      NetworkStats::PORT_6121;
 
   if (!trial.get()) {
     // Set up a field trial to collect network stats for UDP and TCP.
@@ -838,15 +879,6 @@ void CollectNetworkStats(const std::string& network_stats_server,
                                                  probability_per_group);
     if (trial->group() == collect_stats_group)
       collect_stats = true;
-
-    if (collect_stats) {
-      // Pick a port randomly from the set of TCP/UDP echo server ports
-      // specified in |kPorts|.
-      histogram_port = static_cast<NetworkStats::HistogramPortSelector>(
-          base::RandInt(NetworkStats::PORT_53, NetworkStats::PORT_8080));
-      DCHECK_GE(histogram_port, NetworkStats::PORT_53);
-      DCHECK_LE(histogram_port, NetworkStats::PORT_8080);
-    }
   }
 
   if (!collect_stats)
@@ -884,7 +916,7 @@ void StartNetworkStatsTest(net::HostResolver* host_resolver,
                            const net::HostPortPair& server_address,
                            NetworkStats::HistogramPortSelector histogram_port,
                            bool has_proxy_server) {
-  int experiment_to_run = base::RandInt(1, 6);
+  int experiment_to_run = base::RandInt(6, 7);
   switch (experiment_to_run) {
     case 1:
       {
@@ -927,10 +959,20 @@ void StartNetworkStatsTest(net::HostResolver* host_resolver,
         UDPStatsClient* packet_loss_udp_stats = new UDPStatsClient();
         packet_loss_udp_stats->Start(
             host_resolver, server_address, histogram_port, has_proxy_server,
-            kLargeTestBytesToSend, kMaximumPackets, net::CompletionCallback());
+            kLargeTestBytesToSend, kMaximumCorrelationPackets,
+            net::CompletionCallback());
       }
       break;
     case 6:
+      {
+        UDPStatsClient* packet_loss_udp_stats = new UDPStatsClient();
+        packet_loss_udp_stats->Start(
+            host_resolver, server_address, histogram_port, has_proxy_server,
+            kSmallTestBytesToSend, kMaximumCorrelationPackets,
+            net::CompletionCallback());
+      }
+      break;
+    case 7:
       {
         UDPStatsClient* packet_loss_udp_stats = new UDPStatsClient();
         packet_loss_udp_stats->Start(
