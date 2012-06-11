@@ -383,6 +383,8 @@ void ChromeDownloadManagerDelegate::OpenWithWebIntent(
   // the url, but with web intents we don't need to pass it.
   intent_data.extra_data.insert(make_pair(
       ASCIIToUTF16("url"), ASCIIToUTF16(item->GetURL().spec())));
+  intent_data.extra_data.insert(make_pair(
+      ASCIIToUTF16("filename"), UTF8ToUTF16(item->GetSuggestedFilename())));
 
   content::WebIntentsDispatcher* dispatcher =
       content::WebIntentsDispatcher::Create(intent_data);
