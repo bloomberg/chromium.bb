@@ -100,6 +100,10 @@ extensions::AlarmManager* TestExtensionSystem::alarm_manager() {
   return alarm_manager_.get();
 }
 
+extensions::StateStore* TestExtensionSystem::state_store() {
+  return NULL;
+}
+
 ExtensionInfoMap* TestExtensionSystem::info_map() {
   return NULL;
 }

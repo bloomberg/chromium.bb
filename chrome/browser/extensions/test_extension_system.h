@@ -45,6 +45,7 @@ class TestExtensionSystem : public ExtensionSystem {
   virtual ExtensionDevToolsManager* devtools_manager() OVERRIDE;
   virtual ExtensionProcessManager* process_manager() OVERRIDE;
   virtual extensions::AlarmManager* alarm_manager() OVERRIDE;
+  virtual extensions::StateStore* state_store() OVERRIDE;
   virtual ExtensionInfoMap* info_map() OVERRIDE;
   virtual extensions::LazyBackgroundTaskQueue*
       lazy_background_task_queue() OVERRIDE;
