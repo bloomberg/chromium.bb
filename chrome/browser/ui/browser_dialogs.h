@@ -13,7 +13,6 @@ class Browser;
 class Profile;
 class SkBitmap;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 class TabModalConfirmDialogDelegate;
 class TemplateURL;
 
@@ -55,7 +54,7 @@ gfx::NativeWindow ShowWebDialog(gfx::NativeWindow parent,
 
 // Shows the collected cookies dialog box.
 void ShowCollectedCookiesDialog(gfx::NativeWindow parent_window,
-                                TabContentsWrapper* tab_contents);
+                                TabContents* tab_contents);
 
 // Creates the ExtensionInstalledBubble and schedules it to be shown once
 // the extension has loaded. |extension| is the installed extension. |browser|
@@ -74,7 +73,7 @@ void HideHungRendererDialog(content::WebContents* contents);
 
 // Shows a tab-modal dialog box.
 void ShowTabModalConfirmDialog(TabModalConfirmDialogDelegate* delegate,
-                               TabContentsWrapper* wrapper);
+                               TabContents* tab_contents);
 
 }  // namespace browser
 

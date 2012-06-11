@@ -103,7 +103,7 @@ bool FullscreenControllerTest::IsFullscreenBubbleDisplayingButtons() {
 }
 
 void FullscreenControllerTest::AcceptCurrentFullscreenOrMouseLockRequest() {
-  WebContents* fullscreen_tab = browser()->GetSelectedWebContents();
+  WebContents* fullscreen_tab = browser()->GetActiveWebContents();
   FullscreenExitBubbleType type =
       browser()->fullscreen_controller_->GetFullscreenExitBubbleType();
   browser()->OnAcceptFullscreenPermission(fullscreen_tab->GetURL(), type);

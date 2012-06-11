@@ -1,10 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/constrained_window.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,8 +24,8 @@ class ConstrainedWindowTabHelperUnit : public TabContentsTestHarness {
 
 class ConstrainedWindowCloseTest : public ConstrainedWindow {
  public:
-  explicit ConstrainedWindowCloseTest(TabContentsWrapper* wrapper)
-      : wrapper_(wrapper) {
+  explicit ConstrainedWindowCloseTest(TabContents* tab_contents)
+      : tab_contents_(tab_contents) {
   }
 
   virtual void ShowConstrainedWindow() {}
@@ -33,12 +33,12 @@ class ConstrainedWindowCloseTest : public ConstrainedWindow {
   virtual ~ConstrainedWindowCloseTest() {}
 
   virtual void CloseConstrainedWindow() {
-    wrapper_->constrained_window_tab_helper()->WillClose(this);
+    tab_contents_->constrained_window_tab_helper()->WillClose(this);
     close_count++;
   }
 
   int close_count;
-  TabContentsWrapper* wrapper_;
+  TabContents* tab_contents_;
 };
 
 TEST_F(ConstrainedWindowTabHelperUnit, ConstrainedWindows) {

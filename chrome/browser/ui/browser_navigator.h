@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,6 @@
 class Browser;
 class Profile;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 namespace browser {
 
@@ -36,7 +35,7 @@ namespace browser {
 // params.disposition = NEW_BACKGROUND_TAB;
 // browser::Navigate(&params);
 //
-// Opens a popup TabContentsWrapper:
+// Opens a popup TabContents:
 // browser::NavigateParams params(browser, popup_contents);
 // params.source_contents = source_contents;
 // browser::Navigate(&params);
@@ -47,35 +46,35 @@ struct NavigateParams {
   NavigateParams(Browser* browser,
                  const GURL& a_url,
                  content::PageTransition a_transition);
-  NavigateParams(Browser* browser, TabContentsWrapper* a_target_contents);
+  NavigateParams(Browser* browser, TabContents* a_target_contents);
   ~NavigateParams();
 
   // The URL/referrer to be loaded. Ignored if |target_contents| is non-NULL.
   GURL url;
   content::Referrer referrer;
 
-  // [in]  A TabContentsWrapper to be navigated or inserted into the target
+  // [in]  A TabContents to be navigated or inserted into the target
   //       Browser's tabstrip. If NULL, |url| or the homepage will be used
   //       instead. When non-NULL, Navigate() assumes it has already been
   //       navigated to its intended destination and will not load any URL in it
   //       (i.e. |url| is ignored).
   //       Default is NULL.
-  // [out] The TabContentsWrapper in which the navigation occurred or that was
+  // [out] The TabContents in which the navigation occurred or that was
   //       inserted. Guaranteed non-NULL except for note below:
   // Note: If this field is set to NULL by the caller and Navigate() creates
-  //       a new TabContentsWrapper, this field will remain NULL and the
-  //       TabContentsWrapper deleted if the TabContentsWrapper it created is
+  //       a new TabContents, this field will remain NULL and the
+  //       TabContents deleted if the TabContents it created is
   //       not added to a TabStripModel before Navigate() returns.
-  TabContentsWrapper* target_contents;
+  TabContents* target_contents;
 
-  // [in]  The TabContentsWrapper that initiated the Navigate() request if such
+  // [in]  The TabContents that initiated the Navigate() request if such
   //       context is necessary. Default is NULL, i.e. no context.
-  // [out] If NULL, this value will be set to the selected TabContentsWrapper in
+  // [out] If NULL, this value will be set to the selected TabContents in
   //       the originating browser prior to the operation performed by
   //       Navigate(). However, if the originating page is from a different
   //       profile (e.g. an OFF_THE_RECORD page originating from a non-OTR
   //       window), then |source_contents| is reset to NULL.
-  TabContentsWrapper* source_contents;
+  TabContents* source_contents;
 
   // The disposition requested by the navigation source. Default is
   // CURRENT_TAB. What follows is a set of coercions that happen to this value

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,7 +54,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGuestSessionNavigatorTest,
   EXPECT_EQ(incognito_browser, p.browser);
   EXPECT_EQ(2, incognito_browser->tab_count());
   EXPECT_EQ(GURL("chrome://chrome/settings"),
-            incognito_browser->GetSelectedWebContents()->GetURL());
+            incognito_browser->GetActiveWebContents()->GetURL());
 }
 
 }  // namespace

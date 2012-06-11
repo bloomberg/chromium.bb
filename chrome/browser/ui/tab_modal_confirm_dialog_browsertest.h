@@ -22,7 +22,6 @@ typedef TabModalConfirmDialogViews TabModalConfirmDialog;
 
 class MockTabModalConfirmDialogDelegate;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 class TabModalConfirmDialogDelegate;
 
 class TabModalConfirmDialogTest : public InProcessBrowserTest {
@@ -40,7 +39,7 @@ class TabModalConfirmDialogTest : public InProcessBrowserTest {
 
  private:
   TabModalConfirmDialog* CreateTestDialog(
-      TabModalConfirmDialogDelegate* delegate, TabContentsWrapper* wrapper);
+      TabModalConfirmDialogDelegate* delegate, TabContents* tab_contents);
 
   // Deletes itself.
   TabModalConfirmDialog* dialog_;

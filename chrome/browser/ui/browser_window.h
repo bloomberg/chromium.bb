@@ -26,7 +26,6 @@ class LocationBar;
 class Profile;
 class StatusBubble;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 class TemplateURL;
 #if !defined(OS_MACOSX)
 class ToolbarView;
@@ -163,7 +162,7 @@ class BrowserWindow : public BaseWindow {
   virtual void UpdateReloadStopState(bool is_loading, bool force) = 0;
 
   // Updates the toolbar with the state for the specified |contents|.
-  virtual void UpdateToolbar(TabContentsWrapper* contents,
+  virtual void UpdateToolbar(TabContents* contents,
                              bool should_restore_state) = 0;
 
   // Focuses the toolbar (for accessibility).
@@ -288,7 +287,7 @@ class BrowserWindow : public BaseWindow {
   // that page/frame.  If |show_history| is true, a section showing how many
   // times that URL has been visited is added to the page info.
   virtual void ShowWebsiteSettings(Profile* profile,
-                                   TabContentsWrapper* tab_contents_wrapper,
+                                   TabContents* tab_contents,
                                    const GURL& url,
                                    const content::SSLStatus& ssl,
                                    bool show_history) = 0;
@@ -311,8 +310,7 @@ class BrowserWindow : public BaseWindow {
       const content::NativeWebKeyboardEvent& event) = 0;
 
   // Shows the create web app shortcut dialog box.
-  virtual void ShowCreateWebAppShortcutsDialog(
-      TabContentsWrapper* tab_contents) = 0;
+  virtual void ShowCreateWebAppShortcutsDialog(TabContents* tab_contents) = 0;
 
   // Shows the create chrome app shortcut dialog box.
   virtual void ShowCreateChromeAppShortcutsDialog(Profile* profile,
@@ -338,7 +336,7 @@ class BrowserWindow : public BaseWindow {
 #endif
 
   // Invoked when instant's tab contents should be shown.
-  virtual void ShowInstant(TabContentsWrapper* preview) = 0;
+  virtual void ShowInstant(TabContents* preview) = 0;
 
   // Invoked when the instant's tab contents should be hidden.
   virtual void HideInstant() = 0;

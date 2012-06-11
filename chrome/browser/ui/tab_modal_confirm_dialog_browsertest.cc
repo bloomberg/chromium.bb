@@ -39,9 +39,9 @@ TabModalConfirmDialogTest::TabModalConfirmDialogTest()
 
 void TabModalConfirmDialogTest::SetUpOnMainThread() {
   delegate_ = new MockTabModalConfirmDialogDelegate(
-      browser()->GetSelectedWebContents());
+      browser()->GetActiveWebContents());
   dialog_ = CreateTestDialog(delegate_,
-                             browser()->GetSelectedTabContentsWrapper());
+                             browser()->GetActiveTabContents());
   ui_test_utils::RunAllPendingInMessageLoop();
 }
 
@@ -54,8 +54,8 @@ void TabModalConfirmDialogTest::CleanUpOnMainThread() {
 // a separate file.
 #if !defined(OS_MACOSX)
 TabModalConfirmDialog* TabModalConfirmDialogTest::CreateTestDialog(
-    TabModalConfirmDialogDelegate* delegate, TabContentsWrapper* wrapper) {
-  return new TabModalConfirmDialog(delegate, wrapper);
+    TabModalConfirmDialogDelegate* delegate, TabContents* tab_contents) {
+  return new TabModalConfirmDialog(delegate, tab_contents);
 }
 
 void TabModalConfirmDialogTest::CloseDialog(bool accept) {

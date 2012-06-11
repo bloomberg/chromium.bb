@@ -173,7 +173,7 @@ class BrowserCloseTest : public InProcessBrowserTest {
     new_browser->AddSelectedTabWithURL(GURL(chrome::kAboutBlankURL),
                                        content::PAGE_TRANSITION_START_PAGE);
     ui_test_utils::WaitForLoadStop(
-        new_browser->GetSelectedWebContents());
+        new_browser->GetActiveWebContents());
     new_browser->window()->Show();
     return new_browser;
   }

@@ -7,8 +7,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/navigation_controller.h"
 

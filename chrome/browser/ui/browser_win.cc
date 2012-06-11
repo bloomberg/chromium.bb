@@ -9,7 +9,7 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 
 namespace {
 
@@ -58,7 +58,7 @@ void Browser::PinCurrentPageToStartScreen() {
   if (metro_module) {
     GURL url;
     string16 title;
-    TabContentsWrapper* tab = GetSelectedTabContentsWrapper();
+    TabContents* tab = GetActiveTabContents();
     bookmark_utils::GetURLAndTitleToBookmark(tab->web_contents(), &url, &title);
 
     typedef BOOL (*MetroPinUrlToStartScreen)(string16, string16);

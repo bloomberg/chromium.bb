@@ -10,7 +10,7 @@
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
@@ -283,9 +283,8 @@ void HungPluginTabHelper::CloseBar(PluginState* state) {
 }
 
 InfoBarTabHelper* HungPluginTabHelper::GetInfoBarHelper() {
-  TabContentsWrapper* tcw =
-      TabContentsWrapper::GetCurrentWrapperForContents(web_contents());
-  if (!tcw)
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
+  if (!tab_contents)
     return NULL;
-  return tcw->infobar_tab_helper();
+  return tab_contents->infobar_tab_helper();
 }

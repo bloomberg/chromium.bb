@@ -6,7 +6,7 @@
 
 #include "chrome/browser/ui/constrained_window.h"
 #include "chrome/browser/ui/constrained_window_tab_helper_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -18,9 +18,9 @@
 using content::WebContents;
 
 ConstrainedWindowTabHelper::ConstrainedWindowTabHelper(
-    TabContentsWrapper* wrapper)
-    : content::WebContentsObserver(wrapper->web_contents()),
-      wrapper_(wrapper),
+    TabContents* tab_contents)
+    : content::WebContentsObserver(tab_contents->web_contents()),
+      tab_contents_(tab_contents),
       delegate_(NULL) {
 }
 
@@ -85,7 +85,7 @@ void ConstrainedWindowTabHelper::BlockTabContent(bool blocked) {
         host->GetRoutingID(), blocked));
   }
   if (delegate_)
-    delegate_->SetTabContentBlocked(wrapper_, blocked);
+    delegate_->SetTabContentBlocked(tab_contents_, blocked);
 }
 
 void ConstrainedWindowTabHelper::DidNavigateMainFrame(

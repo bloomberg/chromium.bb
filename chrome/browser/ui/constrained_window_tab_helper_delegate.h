@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,21 +7,20 @@
 #pragma once
 
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 class ConstrainedWindowTabHelperDelegate {
  public:
-  // Invoked prior to the TabContentsWrapper showing a constrained window.
-  virtual void WillShowConstrainedWindow(TabContentsWrapper* source);
+  // Invoked prior to the TabContents showing a constrained window.
+  virtual void WillShowConstrainedWindow(TabContents* source);
 
   // Returns true if constrained windows should be focused. Default is true.
   virtual bool ShouldFocusConstrainedWindow();
 
-  // Changes the blocked state of |wrapper|. TabContentsWrapper are considered
+  // Changes the blocked state of |tab_contents|. TabContentses are considered
   // blocked while displaying a tab modal dialog. During that time renderer host
-  // will ignore any UI interaction within TabContentsWrapper outside of the
+  // will ignore any UI interaction within TabContents outside of the
   // currently displaying dialog.
-  virtual void SetTabContentBlocked(TabContentsWrapper* wrapper, bool blocked);
+  virtual void SetTabContentBlocked(TabContents* tab_contents, bool blocked);
 
  protected:
   virtual ~ConstrainedWindowTabHelperDelegate();

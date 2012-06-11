@@ -22,7 +22,7 @@ class FullscreenControllerInteractiveTest
     // Verify that IsMouseLocked is consistent between the
     // Fullscreen Controller and the Render View Host View.
     EXPECT_TRUE(browser()->IsMouseLocked() ==
-                browser()->GetSelectedWebContents()->
+                browser()->GetActiveWebContents()->
                     GetRenderViewHost()->GetView()->IsMouseLocked());
     return browser()->IsMouseLocked();
   }
@@ -144,7 +144,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   ui_test_utils::NavigateToURL(browser(),
                                test_server()->GetURL(kFullscreenMouseLockHTML));
 
-  WebContents* tab = browser()->GetSelectedWebContents();
+  WebContents* tab = browser()->GetActiveWebContents();
 
   ASSERT_FALSE(IsFullscreenBubbleDisplayed());
 

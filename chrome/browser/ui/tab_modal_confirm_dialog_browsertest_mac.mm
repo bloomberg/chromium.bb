@@ -8,8 +8,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 TabModalConfirmDialog* TabModalConfirmDialogTest::CreateTestDialog(
-    TabModalConfirmDialogDelegate* delegate, TabContentsWrapper* wrapper) {
-  return new TabModalConfirmDialogMac(delegate, wrapper);
+    TabModalConfirmDialogDelegate* delegate, TabContents* tab_contents) {
+  return new TabModalConfirmDialogMac(delegate, tab_contents);
 }
 
 void TabModalConfirmDialogTest::CloseDialog(bool accept) {

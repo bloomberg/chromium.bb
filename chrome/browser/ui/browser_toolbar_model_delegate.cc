@@ -15,5 +15,5 @@ BrowserToolbarModelDelegate::~BrowserToolbarModelDelegate() {
 
 content::WebContents*
 BrowserToolbarModelDelegate::GetActiveWebContents() const {
-  return browser_->GetSelectedWebContents();
+  return browser_->GetActiveWebContents();
 }

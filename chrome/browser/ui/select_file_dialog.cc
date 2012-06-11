@@ -11,7 +11,7 @@
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/common/selected_file_info.h"
 #include "grit/generated_resources.h"
@@ -74,9 +74,8 @@ void SelectFileDialog::SelectFile(Type type,
   if (!CanOpenSelectFileDialog()) {
     // Show the InfoBar saying that file-selection dialogs are disabled.
     if (source_contents) {
-      TabContentsWrapper* wrapper =
-          TabContentsWrapper::GetCurrentWrapperForContents(source_contents);
-      InfoBarTabHelper* infobar_helper = wrapper->infobar_tab_helper();
+      TabContents* tab_contents = TabContents::FromWebContents(source_contents);
+      InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
       infobar_helper->AddInfoBar(new SimpleAlertInfoBarDelegate(
           infobar_helper,
           NULL,

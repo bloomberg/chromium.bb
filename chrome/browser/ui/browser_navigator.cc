@@ -26,7 +26,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/status_bubble.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -111,13 +111,13 @@ bool AdjustNavigateParamsForURL(browser::NavigateParams* params) {
 // |params|. This might just return the same Browser specified in |params|, or
 // some other if that Browser is deemed incompatible.
 Browser* GetBrowserForDisposition(browser::NavigateParams* params) {
-  // If no source TabContentsWrapper was specified, we use the selected one from
+  // If no source TabContents was specified, we use the selected one from
   // the target browser. This must happen first, before
   // GetBrowserForDisposition() has a chance to replace |params->browser| with
   // another one.
   if (!params->source_contents && params->browser)
     params->source_contents =
-        params->browser->GetSelectedTabContentsWrapper();
+        params->browser->GetActiveTabContents();
 
   Profile* profile =
       params->browser ? params->browser->profile() : params->profile;
@@ -297,12 +297,12 @@ class ScopedBrowserDisplayer {
   DISALLOW_COPY_AND_ASSIGN(ScopedBrowserDisplayer);
 };
 
-// This class manages the lifetime of a TabContentsWrapper created by the
-// Navigate() function. When Navigate() creates a TabContentsWrapper for a URL,
+// This class manages the lifetime of a TabContents created by the
+// Navigate() function. When Navigate() creates a TabContents for a URL,
 // an instance of this class takes ownership of it via TakeOwnership() until the
-// TabContentsWrapper is added to a tab strip at which time ownership is
+// TabContents is added to a tab strip at which time ownership is
 // relinquished via ReleaseOwnership(). If this object goes out of scope without
-// being added to a tab strip, the created TabContentsWrapper is deleted to
+// being added to a tab strip, the created TabContents is deleted to
 // avoid a leak and the params->target_contents field is set to NULL.
 class ScopedTargetContentsOwner {
  public:
@@ -321,13 +321,13 @@ class ScopedTargetContentsOwner {
   }
 
   // Relinquishes ownership of |params_|' target_contents.
-  TabContentsWrapper* ReleaseOwnership() {
+  TabContents* ReleaseOwnership() {
     return target_contents_owner_.release();
   }
 
  private:
   browser::NavigateParams* params_;
-  scoped_ptr<TabContentsWrapper> target_contents_owner_;
+  scoped_ptr<TabContents> target_contents_owner_;
   DISALLOW_COPY_AND_ASSIGN(ScopedTargetContentsOwner);
 };
 
@@ -365,7 +365,7 @@ void InitializeExtraHeaders(browser::NavigateParams* params,
 
 // If a prerendered page exists for |url|, replace the page at |target_contents|
 // with it.
-bool SwapInPrerender(TabContentsWrapper* target_contents, const GURL& url) {
+bool SwapInPrerender(TabContents* target_contents, const GURL& url) {
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForProfile(
           target_contents->profile());
@@ -399,7 +399,7 @@ NavigateParams::NavigateParams(
 }
 
 NavigateParams::NavigateParams(Browser* a_browser,
-                               TabContentsWrapper* a_target_contents)
+                               TabContents* a_target_contents)
     : target_contents(a_target_contents),
       source_contents(NULL),
       disposition(CURRENT_TAB),
@@ -458,7 +458,7 @@ void Navigate(NavigateParams* params) {
   // Make sure the Browser is shown if params call for it.
   ScopedBrowserDisplayer displayer(params);
 
-  // Makes sure any TabContentsWrapper created by this function is destroyed if
+  // Makes sure any TabContents created by this function is destroyed if
   // not properly added to a tab strip.
   ScopedTargetContentsOwner target_contents_owner(params);
 
@@ -480,7 +480,7 @@ void Navigate(NavigateParams* params) {
   }
 
   // Determine if the navigation was user initiated. If it was, we need to
-  // inform the target TabContentsWrapper, and we may need to update the UI.
+  // inform the target TabContents, and we may need to update the UI.
   content::PageTransition base_transition =
       content::PageTransitionStripQualifier(params->transition);
   bool user_initiated =
@@ -497,7 +497,7 @@ void Navigate(NavigateParams* params) {
   // Check if this is a singleton tab that already exists
   int singleton_index = GetIndexOfSingletonTab(params);
 
-  // If no target TabContentsWrapper was specified, we need to construct one if
+  // If no target TabContents was specified, we need to construct one if
   // we are supposed to target a new tab; unless it's a singleton that already
   // exists.
   if (!params->target_contents && singleton_index < 0) {
@@ -642,8 +642,7 @@ int GetIndexOfSingletonTab(browser::NavigateParams* params) {
   int tab_count = params->browser->tab_count();
   for (int i = 0; i < tab_count; ++i) {
     int tab_index = (start_index + i) % tab_count;
-    TabContentsWrapper* tab =
-        params->browser->GetTabContentsWrapperAt(tab_index);
+    TabContents* tab = params->browser->GetTabContentsAt(tab_index);
 
     url_canon::Replacements<char> replacements;
     if (params->ref_behavior == browser::NavigateParams::IGNORE_REF)

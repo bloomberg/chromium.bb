@@ -16,7 +16,6 @@ class BrowserWindow;
 class GURL;
 class Profile;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 namespace content {
 class WebContents;
@@ -49,16 +48,17 @@ class FullscreenController : public base::RefCounted<FullscreenController> {
   // The window may still be transitioning, and window_->IsFullscreen()
   // may still return false.
   bool IsFullscreenForTabOrPending() const;
-  bool IsFullscreenForTabOrPending(const content::WebContents* tab) const;
+  bool IsFullscreenForTabOrPending(
+      const content::WebContents* web_contents) const;
 
   bool IsMouseLockRequested() const;
   bool IsMouseLocked() const;
 
   // Requests.
-  void RequestToLockMouse(content::WebContents* tab,
+  void RequestToLockMouse(content::WebContents* web_contents,
                           bool user_gesture,
                           bool last_unlocked_by_target);
-  void ToggleFullscreenModeForTab(content::WebContents* tab,
+  void ToggleFullscreenModeForTab(content::WebContents* web_contents,
                                   bool enter_fullscreen);
 #if defined(OS_MACOSX)
   void TogglePresentationMode();
@@ -72,7 +72,7 @@ class FullscreenController : public base::RefCounted<FullscreenController> {
   // Notifications.
   void LostMouseLock();
   void OnTabClosing(content::WebContents* web_contents);
-  void OnTabDeactivated(TabContentsWrapper* contents);
+  void OnTabDeactivated(TabContents* contents);
   void OnAcceptFullscreenPermission(const GURL& url,
                                     FullscreenExitBubbleType bubble_type);
   void OnDenyFullscreenPermission(FullscreenExitBubbleType bubble_type);
@@ -120,8 +120,8 @@ class FullscreenController : public base::RefCounted<FullscreenController> {
   Browser* browser_;
 
   // If there is currently a tab in fullscreen mode (entered via
-  // webkitRequestFullScreen), this is its wrapper.
-  TabContentsWrapper* fullscreened_tab_;
+  // webkitRequestFullScreen), this is its TabContents.
+  TabContents* fullscreened_tab_;
 
   // The URL of the extension which trigerred "browser fullscreen" mode.
   GURL extension_caused_fullscreen_;
@@ -135,8 +135,8 @@ class FullscreenController : public base::RefCounted<FullscreenController> {
   // True if this controller has toggled into tab OR browser fullscreen.
   bool toggled_into_fullscreen_;
 
-  // Wrapper for current tab requesting or currently in mouse lock.
-  TabContentsWrapper* mouse_lock_tab_;
+  // TabContents for current tab requesting or currently in mouse lock.
+  TabContents* mouse_lock_tab_;
 
   MouseLockState mouse_lock_state_;
 
