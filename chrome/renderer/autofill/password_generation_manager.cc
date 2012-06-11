@@ -33,11 +33,11 @@ bool GetAccountCreationPasswordFields(
   if (form.isNull() || !form.autoComplete())
     return false;
 
-  // If we can't get a valid PasswordForm, we skip this form because the
-  // the password won't get saved even if we generate it.
-  webkit::forms::PasswordForm* password_form(
+  // Bail out if |form| is not a valid PasswordForm. In this case the password
+  // wouldn't get saved even if generated.
+  scoped_ptr<webkit::forms::PasswordForm> password_form(
       webkit::forms::PasswordFormDomManager::CreatePasswordForm(form));
-  if (!password_form) {
+  if (!password_form.get()) {
     DVLOG(2) << "Invalid action on form";
     return false;
   }
