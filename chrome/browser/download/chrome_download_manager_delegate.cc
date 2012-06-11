@@ -111,13 +111,7 @@ ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)
 ChromeDownloadManagerDelegate::~ChromeDownloadManagerDelegate() {
 }
 
-void ChromeDownloadManagerDelegate::ProfileShutdown() {
-  download_history_.reset();
-  download_prefs_.reset();
-}
-
 void ChromeDownloadManagerDelegate::SetDownloadManager(DownloadManager* dm) {
-  AddRef();  // Will be balanced in Shutdown().
   download_manager_ = dm;
   download_history_.reset(new DownloadHistory(profile_));
   download_history_->Load(
@@ -126,7 +120,8 @@ void ChromeDownloadManagerDelegate::SetDownloadManager(DownloadManager* dm) {
 }
 
 void ChromeDownloadManagerDelegate::Shutdown() {
-  Release();  // Balance the AddRef in SetDownloadManager.
+  download_history_.reset();
+  download_prefs_.reset();
 }
 
 DownloadId ChromeDownloadManagerDelegate::GetNextId() {

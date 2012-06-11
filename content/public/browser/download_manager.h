@@ -69,7 +69,10 @@ class CONTENT_EXPORT DownloadManager
   virtual void SetDelegate(DownloadManagerDelegate* delegate) = 0;
   virtual DownloadManagerDelegate* GetDelegate() const = 0;
 
-  // Shutdown the download manager. Called by content before destruction.
+  // Shutdown the download manager. Content calls this when BrowserContext is
+  // being destructed. If the embedder needs this to be called earlier, it can
+  // call it. In that case, the delegate's Shutdown() method will only be called
+  // once.
   virtual void Shutdown() = 0;
 
   // Interface to implement for observers that wish to be informed of changes

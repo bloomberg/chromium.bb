@@ -99,8 +99,13 @@ void DownloadService::SetDownloadManagerDelegateForTesting(
 }
 
 void DownloadService::Shutdown() {
-  if (manager_delegate_.get()) {
-    manager_delegate_->ProfileShutdown();
-    manager_delegate_.release();
+  if (download_manager_created_) {
+    // Normally the DownloadManager would be shutdown later, after the Profile
+    // goes away and BrowserContext's destructor runs. But that would be too
+    // late for us since we need to use the profile (indirectly through history
+    // code) when the DownloadManager is shutting down. So we shut it down
+    // manually earlier. See http://crbug.com/131692
+    BrowserContext::GetDownloadManager(profile_)->Shutdown();
   }
+  manager_delegate_.release();
 }
