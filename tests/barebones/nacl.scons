@@ -44,13 +44,11 @@ barebones_tests = ['addr_modes',
 for basename in barebones_tests:
   # TODO(kcc): the barebones tests confuse the current nacl-ified valgrind.
   if env.IsRunningUnderValgrind(): continue
-  # NOTE: the expected alignments are described via NACL_STACK_ALIGN_MASK in
-  # src/trusted/service_runtime/nacl_config.h
-  # For x86-32 and x86-64 we currently rely on startup code (crt1_*)
-  # to fix the stack alignment which does not help for barebones tests, c.f.
-  # http://code.google.com/p/nativeclient/issues/detail?id=651
+  # For x86-32 and x86-64 stack alignment is 0mod16.
   if basename == 'stack_alignment16' and not env.Bit('build_x86'):
     continue
+  # ARM should also be 0mod16, but is 0mod8.
+  # http://code.google.com/p/nativeclient/issues/detail?id=2665
   if basename == 'stack_alignment8' and not env.Bit('build_arm'):
     continue
   is_broken = is_glibc
@@ -58,10 +56,6 @@ for basename in barebones_tests:
   # which cannot be handled by the TLS rewrite in binutils.
   if basename == 'reloc' and is_glibc and env.Bit('build_x86_64'):
     continue
-
-  # TODO(robertm): enable this when ready (see above)
-  if basename == 'stack_alignment16' and env.Bit('build_x86'):
-    is_broken = True
 
   src = 'barebones_' + basename + '.c'
   nexe_name = 'barebones_' + basename
