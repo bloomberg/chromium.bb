@@ -177,10 +177,10 @@ bool Channel::ChannelImpl::Send(Message* message) {
   scoped_ptr<Message> message_ptr(message);
 
 #ifdef IPC_MESSAGE_LOG_ENABLED
-  Logging::GetInstance()->OnSendMessage(message, "");
+  Logging::GetInstance()->OnSendMessage(message_ptr.get(), "");
 #endif  // IPC_MESSAGE_LOG_ENABLED
 
-  output_queue_.push_back(linked_ptr<Message>(message));
+  output_queue_.push_back(linked_ptr<Message>(message_ptr.release()));
   if (!waiting_connect_)
     return ProcessOutgoingMessages();
 
