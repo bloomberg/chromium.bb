@@ -432,6 +432,13 @@ class AutocompleteProvider
   // information it wants to |provider_info|.
   virtual void AddProviderInfo(ProvidersInfo* provider_info) const;
 
+  // A convenience function to call net::FormatUrl() with the current set of
+  // "Accept Languages" when check_accept_lang is true.  Otherwise, it's called
+  // with an empty list.
+  string16 StringForURLDisplay(const GURL& url,
+                               bool check_accept_lang,
+                               bool trim_http) const;
+
 #ifdef UNIT_TEST
   void set_listener(ACProviderListener* listener) { listener_ = listener; }
 #endif
@@ -452,13 +459,6 @@ class AutocompleteProvider
   // Updates the starred state of each of the matches in matches_ from the
   // profile's bookmark bar model.
   void UpdateStarredStateOfMatches();
-
-  // A convenience function to call net::FormatUrl() with the current set of
-  // "Accept Languages" when check_accept_lang is true.  Otherwise, it's called
-  // with an empty list.
-  string16 StringForURLDisplay(const GURL& url,
-                               bool check_accept_lang,
-                               bool trim_http) const;
 
   // The profile associated with the AutocompleteProvider.  Reference is not
   // owned by us.

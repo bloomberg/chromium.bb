@@ -149,6 +149,14 @@ class HistoryURLProvider : public HistoryProvider {
       languages_(languages) {}
 #endif
 
+  // Returns a match corresponding to exactly what the user has typed.
+  // NOTE: This does not set the relevance of the returned match, as different
+  //       callers want different behavior. Callers must set this manually.
+  // This function is static so SearchProvider may construct similar matches.
+  static AutocompleteMatch SuggestExactInput(AutocompleteProvider* provider,
+                                             const AutocompleteInput& input,
+                                             bool trim_http);
+
   // AutocompleteProvider
   virtual void Start(const AutocompleteInput& input,
                      bool minimal_changes) OVERRIDE;
@@ -191,16 +199,11 @@ class HistoryURLProvider : public HistoryProvider {
   // is ignored.  Only called some of the time; for some matches,
   // relevancy scores are assigned consecutively decreasing (1416,
   // 1415, 1414, ...).
-  int CalculateRelevance(MatchType match_type,
-                         size_t match_number) const;
+  int CalculateRelevance(MatchType match_type, size_t match_number) const;
 
   // Helper function that actually launches the two autocomplete passes.
   void RunAutocompletePasses(const AutocompleteInput& input,
                              bool fixup_input_and_run_pass_1);
-
-  // Returns a match corresponding to exactly what the user has typed.
-  AutocompleteMatch SuggestExactInput(const AutocompleteInput& input,
-                                      bool trim_http);
 
   // Given a |match| containing the "what you typed" suggestion created by
   // SuggestExactInput(), looks up its info in the DB.  If found, fills in the

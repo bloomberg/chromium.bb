@@ -20,6 +20,7 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_field_trial.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/autocomplete/url_prefix.h"
 #include "chrome/browser/history/history.h"
@@ -736,6 +737,24 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
   std::partial_sort(matches_.begin(),
       matches_.begin() + std::min(max_total_matches, matches_.size()),
       matches_.end(), &AutocompleteMatch::MoreRelevant);
+
+  // If the top match is effectively 'verbatim' but exceeds the calculated
+  // verbatim relevance, and REQUESTED_URL |input_| has a |desired_tld|
+  // (for example ".com" when the CTRL key is pressed for REQUESTED_URL input),
+  // promote a URL_WHAT_YOU_TYPED match to the top. Otherwise, these matches can
+  // stomp the HistoryURLProvider's similar transient URL_WHAT_YOU_TYPED match,
+  // and CTRL+ENTER will invoke the search instead of the expected navigation.
+  if ((has_suggested_relevance_ || verbatim_relevance_ >= 0) &&
+      input_.type() == AutocompleteInput::REQUESTED_URL &&
+      !input_.desired_tld().empty() && !matches_.empty() &&
+      matches_.front().relevance > CalculateRelevanceForVerbatim() &&
+      matches_.front().fill_into_edit == input_.text()) {
+    AutocompleteMatch match = HistoryURLProvider::SuggestExactInput(
+        this, input_, !HasHTTPScheme(input_.text()));
+    match.relevance = matches_.front().relevance + 1;
+    matches_.insert(matches_.begin(), match);
+  }
+
   if (matches_.size() > max_total_matches)
     matches_.erase(matches_.begin() + max_total_matches, matches_.end());
 

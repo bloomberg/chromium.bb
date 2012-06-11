@@ -575,6 +575,18 @@ void AutocompleteProvider::AddProviderInfo(
     ProvidersInfo* provider_info) const {
 }
 
+string16 AutocompleteProvider::StringForURLDisplay(const GURL& url,
+                                                   bool check_accept_lang,
+                                                   bool trim_http) const {
+  std::string languages = (check_accept_lang && profile_) ?
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages) : std::string();
+  return net::FormatUrl(
+      url,
+      languages,
+      net::kFormatUrlOmitAll & ~(trim_http ? 0 : net::kFormatUrlOmitHTTP),
+      net::UnescapeRule::SPACES, NULL, NULL, NULL);
+}
+
 AutocompleteProvider::~AutocompleteProvider() {
   Stop();
 }
@@ -601,18 +613,6 @@ void AutocompleteProvider::UpdateStarredStateOfMatches() {
 
   for (ACMatches::iterator i = matches_.begin(); i != matches_.end(); ++i)
     i->starred = bookmark_model->IsBookmarked(GURL(i->destination_url));
-}
-
-string16 AutocompleteProvider::StringForURLDisplay(const GURL& url,
-                                                   bool check_accept_lang,
-                                                   bool trim_http) const {
-  std::string languages = (check_accept_lang && profile_) ?
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages) : std::string();
-  return net::FormatUrl(
-      url,
-      languages,
-      net::kFormatUrlOmitAll & ~(trim_http ? 0 : net::kFormatUrlOmitHTTP),
-      net::UnescapeRule::SPACES, NULL, NULL, NULL);
 }
 
 // AutocompleteResult ---------------------------------------------------------
