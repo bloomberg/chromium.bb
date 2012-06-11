@@ -26,7 +26,7 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/tabs/dragged_tab_controller_gtk.h"
 #include "chrome/browser/ui/gtk/tabs/tab_strip_menu_controller.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
@@ -852,7 +852,7 @@ void TabStripGtk::UpdateLoadingAnimations() {
       --index;
     } else {
       TabRendererGtk::AnimationState state;
-      TabContentsWrapper* contents = model_->GetTabContentsAt(index);
+      TabContents* contents = model_->GetTabContentsAt(index);
       if (!contents || !contents->web_contents()->IsLoading()) {
         state = TabGtk::ANIMATION_NONE;
       } else if (contents->web_contents()->IsWaitingForResponse()) {
@@ -968,7 +968,7 @@ GtkWidget* TabStripGtk::GetWidgetForViewID(ViewID view_id) {
 ////////////////////////////////////////////////////////////////////////////////
 // TabStripGtk, TabStripModelObserver implementation:
 
-void TabStripGtk::TabInsertedAt(TabContentsWrapper* contents,
+void TabStripGtk::TabInsertedAt(TabContents* contents,
                                 int index,
                                 bool foreground) {
   TRACE_EVENT0("ui::gtk", "TabStripGtk::TabInsertedAt");
@@ -1033,7 +1033,7 @@ void TabStripGtk::TabInsertedAt(TabContentsWrapper* contents,
   ReStack();
 }
 
-void TabStripGtk::TabDetachedAt(TabContentsWrapper* contents, int index) {
+void TabStripGtk::TabDetachedAt(TabContents* contents, int index) {
   GenerateIdealBounds();
   StartRemoveTabAnimation(index, contents->web_contents());
   // Have to do this _after_ calling StartRemoveTabAnimation, so that any
@@ -1042,8 +1042,8 @@ void TabStripGtk::TabDetachedAt(TabContentsWrapper* contents, int index) {
   GetTabAt(index)->set_closing(true);
 }
 
-void TabStripGtk::ActiveTabChanged(TabContentsWrapper* old_contents,
-                                   TabContentsWrapper* new_contents,
+void TabStripGtk::ActiveTabChanged(TabContents* old_contents,
+                                   TabContents* new_contents,
                                    int index,
                                    bool user_gesture) {
   TRACE_EVENT0("ui::gtk", "TabStripGtk::ActiveTabChanged");
@@ -1097,7 +1097,7 @@ void TabStripGtk::TabSelectionChanged(TabStripModel* tab_strip_model,
   }
 }
 
-void TabStripGtk::TabMoved(TabContentsWrapper* contents,
+void TabStripGtk::TabMoved(TabContents* contents,
                            int from_index,
                            int to_index) {
   gfx::Rect start_bounds = GetIdealBounds(from_index);
@@ -1112,7 +1112,7 @@ void TabStripGtk::TabMoved(TabContentsWrapper* contents,
   ReStack();
 }
 
-void TabStripGtk::TabChangedAt(TabContentsWrapper* contents, int index,
+void TabStripGtk::TabChangedAt(TabContents* contents, int index,
                                TabChangeType change_type) {
   // Index is in terms of the model. Need to make sure we adjust that index in
   // case we have an animation going.
@@ -1130,13 +1130,13 @@ void TabStripGtk::TabChangedAt(TabContentsWrapper* contents, int index,
 }
 
 void TabStripGtk::TabReplacedAt(TabStripModel* tab_strip_model,
-                                TabContentsWrapper* old_contents,
-                                TabContentsWrapper* new_contents,
+                                TabContents* old_contents,
+                                TabContents* new_contents,
                                 int index) {
   TabChangedAt(new_contents, index, ALL);
 }
 
-void TabStripGtk::TabMiniStateChanged(TabContentsWrapper* contents, int index) {
+void TabStripGtk::TabMiniStateChanged(TabContents* contents, int index) {
   // Don't do anything if we've already picked up the change from TabMoved.
   if (GetTabAt(index)->mini() == model_->IsMiniTab(index))
     return;
@@ -1152,7 +1152,7 @@ void TabStripGtk::TabMiniStateChanged(TabContentsWrapper* contents, int index) {
   }
 }
 
-void TabStripGtk::TabBlockedStateChanged(TabContentsWrapper* contents,
+void TabStripGtk::TabBlockedStateChanged(TabContents* contents,
                                          int index) {
   GetTabAt(index)->SetBlocked(model_->IsTabBlocked(index));
 }
@@ -2072,7 +2072,7 @@ gboolean TabStripGtk::OnExpose(GtkWidget* widget, GdkEventExpose* event) {
     TabGtk* tab = GetTabAt(i);
     // We must ask the _Tab's_ model, not ourselves, because in some situations
     // the model will be different to this object, e.g. when a Tab is being
-    // removed after its TabContentsWrapper has been destroyed.
+    // removed after its TabContents has been destroyed.
     if (!tab->IsActive()) {
       gtk_container_propagate_expose(GTK_CONTAINER(tabstrip_.get()),
                                      tab->widget(), event);

@@ -31,7 +31,7 @@
 #include "chrome/browser/ui/gtk/tab_contents_container_gtk.h"
 #include "chrome/browser/ui/gtk/tabs/tab_strip_gtk.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_source.h"
@@ -588,7 +588,7 @@ int FindBarGtk::GetWidth() {
 }
 
 void FindBarGtk::FindEntryTextInContents(bool forward_search) {
-  TabContentsWrapper* tab_contents = find_bar_controller_->tab_contents();
+  TabContents* tab_contents = find_bar_controller_->tab_contents();
   if (!tab_contents)
     return;
   FindTabHelper* find_tab_helper = tab_contents->find_tab_helper();
@@ -673,7 +673,7 @@ bool FindBarGtk::MaybeForwardKeyEventToRenderer(GdkEventKey* event) {
       return false;
   }
 
-  TabContentsWrapper* contents = find_bar_controller_->tab_contents();
+  TabContents* contents = find_bar_controller_->tab_contents();
   if (!contents)
     return false;
 

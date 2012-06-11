@@ -74,7 +74,7 @@
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/page_info_bubble.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -833,7 +833,7 @@ void BrowserWindowGtk::BookmarkBarStateChanged(
 
 void BrowserWindowGtk::UpdateDevTools() {
   UpdateDevToolsForContents(
-      browser_->GetSelectedWebContents());
+      browser_->GetActiveWebContents());
 }
 
 void BrowserWindowGtk::SetDevToolsDockSide(DevToolsDockSide side) {
@@ -876,7 +876,7 @@ void BrowserWindowGtk::LoadingAnimationCallback() {
     tabstrip_->UpdateLoadingAnimations();
   } else if (ShouldShowWindowIcon()) {
     // ... or in the window icon area for popups and app windows.
-    WebContents* web_contents = browser_->GetSelectedWebContents();
+    WebContents* web_contents = browser_->GetActiveWebContents();
     // GetSelectedTabContents can return NULL for example under Purify when
     // the animations are running slowly and this function is called on
     // a timer through LoadingAnimationCallback.
@@ -998,7 +998,7 @@ void BrowserWindowGtk::UpdateReloadStopState(bool is_loading, bool force) {
       force);
 }
 
-void BrowserWindowGtk::UpdateToolbar(TabContentsWrapper* contents,
+void BrowserWindowGtk::UpdateToolbar(TabContents* contents,
                                      bool should_restore_state) {
   TRACE_EVENT0("ui::gtk", "BrowserWindowGtk::UpdateToolbar");
   toolbar_->UpdateWebContents(contents->web_contents(), should_restore_state);
@@ -1130,12 +1130,12 @@ void BrowserWindowGtk::ShowPageInfo(Profile* profile,
 
 void BrowserWindowGtk::ShowWebsiteSettings(
     Profile* profile,
-    TabContentsWrapper* tab_contents_wrapper,
+    TabContents* tab_contents,
     const GURL& url,
     const content::SSLStatus& ssl,
     bool show_history) {
     WebsiteSettingsPopupGtk::Show(GetNativeWindow(), profile,
-                                  tab_contents_wrapper, url, ssl);
+                                  tab_contents, url, ssl);
 }
 
 void BrowserWindowGtk::ShowAppMenu() {
@@ -1224,7 +1224,7 @@ void BrowserWindowGtk::HandleKeyboardEvent(
 }
 
 void BrowserWindowGtk::ShowCreateWebAppShortcutsDialog(
-    TabContentsWrapper* tab_contents) {
+    TabContents* tab_contents) {
   CreateWebApplicationShortcutsDialogGtk::Show(window_, tab_contents);
 }
 
@@ -1245,7 +1245,7 @@ void BrowserWindowGtk::Paste() {
   gtk_util::DoPaste(this);
 }
 
-void BrowserWindowGtk::ShowInstant(TabContentsWrapper* preview) {
+void BrowserWindowGtk::ShowInstant(TabContents* preview) {
   contents_container_->SetPreview(preview);
   MaybeShowBookmarkBar(false);
 }
@@ -1284,13 +1284,12 @@ void BrowserWindowGtk::ShowPasswordGenerationBubble(
     const gfx::Rect& rect,
     autofill::PasswordGenerator* password_generator,
     const webkit::forms::PasswordForm& form) {
-  WebContents* web_contents = browser_->GetSelectedWebContents();
+  WebContents* web_contents = browser_->GetActiveWebContents();
   if (!web_contents || !web_contents->GetContentNativeView()) {
     return;
   }
 
-  TabContentsWrapper* tab_contents =
-      TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
   if (!tab_contents)
     return;
 
@@ -1329,10 +1328,10 @@ void BrowserWindowGtk::Observe(int type,
   }
 }
 
-void BrowserWindowGtk::TabDetachedAt(TabContentsWrapper* contents, int index) {
+void BrowserWindowGtk::TabDetachedAt(TabContents* contents, int index) {
   // We use index here rather than comparing |contents| because by this time
   // the model has already removed |contents| from its list, so
-  // browser_->GetSelectedWebContents() will return NULL or something else.
+  // browser_->GetActiveWebContents() will return NULL or something else.
   if (index == browser_->active_index()) {
     infobar_container_->ChangeTabContents(NULL);
     UpdateDevToolsForContents(NULL);
@@ -1340,8 +1339,8 @@ void BrowserWindowGtk::TabDetachedAt(TabContentsWrapper* contents, int index) {
   contents_container_->DetachTab(contents);
 }
 
-void BrowserWindowGtk::ActiveTabChanged(TabContentsWrapper* old_contents,
-                                        TabContentsWrapper* new_contents,
+void BrowserWindowGtk::ActiveTabChanged(TabContents* old_contents,
+                                        TabContents* new_contents,
                                         int index,
                                         bool user_gesture) {
   TRACE_EVENT0("ui::gtk", "BrowserWindowGtk::ActiveTabChanged");
@@ -1420,7 +1419,7 @@ void BrowserWindowGtk::MaybeShowBookmarkBar(bool animate) {
   if (!IsBookmarkBarSupported())
     return;
 
-  TabContentsWrapper* tab = GetDisplayedTab();
+  TabContents* tab = GetDisplayedTab();
 
   if (tab)
     bookmark_bar_->SetPageNavigator(browser_.get());
@@ -1439,8 +1438,8 @@ void BrowserWindowGtk::MaybeShowBookmarkBar(bool animate) {
 
 void BrowserWindowGtk::UpdateDevToolsForContents(WebContents* contents) {
   TRACE_EVENT0("ui::gtk", "BrowserWindowGtk::UpdateDevToolsForContents");
-  TabContentsWrapper* old_devtools = devtools_container_->tab();
-  TabContentsWrapper* devtools_contents = contents ?
+  TabContents* old_devtools = devtools_container_->tab();
+  TabContents* devtools_contents = contents ?
       DevToolsWindow::GetDevToolsContents(contents) : NULL;
   if (old_devtools == devtools_contents)
     return;
@@ -1540,7 +1539,7 @@ gboolean BrowserWindowGtk::OnConfigure(GtkWidget* widget,
 
   GetLocationBar()->GetLocationEntry()->ClosePopup();
 
-  TabContentsWrapper* tab = GetDisplayedTab();
+  TabContents* tab = GetDisplayedTab();
   if (tab) {
     tab->web_contents()->GetRenderViewHost()->NotifyMoveOrResizeStarted();
   }
@@ -1749,7 +1748,7 @@ void BrowserWindowGtk::RegisterUserPrefs(PrefService* prefs) {
                              PrefService::SYNCABLE_PREF);
 }
 
-TabContentsWrapper* BrowserWindowGtk::GetDisplayedTab() {
+TabContents* BrowserWindowGtk::GetDisplayedTab() {
   return contents_container_->GetVisibleTab();
 }
 
@@ -2220,7 +2219,7 @@ gboolean BrowserWindowGtk::OnKeyPress(GtkWidget* widget, GdkEventKey* event) {
   // If a widget besides the native view is focused, we have to try to handle
   // the custom accelerators before letting it handle them.
   WebContents* current_web_contents =
-      browser()->GetSelectedWebContents();
+      browser()->GetActiveWebContents();
   // The current tab might not have a render view if it crashed.
   if (!current_web_contents || !current_web_contents->GetContentNativeView() ||
       !gtk_widget_is_focus(current_web_contents->GetContentNativeView())) {

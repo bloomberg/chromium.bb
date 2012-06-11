@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/login/login_model.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -113,9 +113,9 @@ class LoginHandlerGtk : public LoginHandler,
     WebContents* requesting_contents = GetWebContentsForLogin();
     DCHECK(requesting_contents);
 
-    TabContentsWrapper* wrapper =
-        TabContentsWrapper::GetCurrentWrapperForContents(requesting_contents);
-    SetDialog(new ConstrainedWindowGtk(wrapper, this));
+    TabContents* tab_contents =
+        TabContents::FromWebContents(requesting_contents);
+    SetDialog(new ConstrainedWindowGtk(tab_contents, this));
     NotifyAuthNeeded();
   }
 

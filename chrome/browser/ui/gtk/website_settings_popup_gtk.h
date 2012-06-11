@@ -19,7 +19,6 @@ class GtkThemeService;
 class GURL;
 class Profile;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 class WebsiteSettings;
 
 namespace content {
@@ -35,17 +34,17 @@ class WebsiteSettingsPopupGtk : public WebsiteSettingsUI,
   // the currently active window, |profile| contains the currently active
   // profile and |ssl| contains the |SSLStatus| of the connection to the
   // website in the currently active tab that is wrapped by the
-  // |tab_contents_wrapper|.
+  // |tab_contents|.
   static void Show(gfx::NativeWindow parent,
                    Profile* profile,
-                   TabContentsWrapper* tab_contents_wrapper,
+                   TabContents* tab_contents,
                    const GURL& url,
                    const content::SSLStatus& ssl);
 
  private:
   WebsiteSettingsPopupGtk(gfx::NativeWindow parent,
                           Profile* profile,
-                          TabContentsWrapper* wrapper,
+                          TabContents* tab_contents,
                           const GURL& url,
                           const content::SSLStatus& ssl);
 
@@ -102,7 +101,7 @@ class WebsiteSettingsPopupGtk : public WebsiteSettingsUI,
 
   Profile* profile_;
 
-  TabContentsWrapper* tab_contents_wrapper_;
+  TabContents* tab_contents_;
 
   // The browser object of the current window. This is needed to open the
   // settings page in a new tab.

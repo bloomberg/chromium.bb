@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_types.h"
@@ -20,15 +20,15 @@ namespace browser {
 
 // Declared in browser_dialogs.h so others don't have to depend on our header.
 void ShowTabModalConfirmDialog(TabModalConfirmDialogDelegate* delegate,
-                               TabContentsWrapper* wrapper) {
-  new TabModalConfirmDialogGtk(delegate, wrapper);
+                               TabContents* tab_contents) {
+  new TabModalConfirmDialogGtk(delegate, tab_contents);
 }
 
 }
 
 TabModalConfirmDialogGtk::TabModalConfirmDialogGtk(
     TabModalConfirmDialogDelegate* delegate,
-    TabContentsWrapper* wrapper)
+    TabContents* tab_contents)
     : delegate_(delegate) {
   dialog_ = gtk_vbox_new(FALSE, ui::kContentAreaBorder);
   gtk_box_set_spacing(GTK_BOX(dialog_), ui::kContentAreaSpacing);
@@ -76,7 +76,7 @@ TabModalConfirmDialogGtk::TabModalConfirmDialogGtk(
   g_signal_connect(ok_, "clicked", G_CALLBACK(OnAcceptThunk), this);
   gtk_box_pack_end(GTK_BOX(buttonBox), ok_, FALSE, TRUE, 0);
 
-  delegate->set_window(new ConstrainedWindowGtk(wrapper, this));
+  delegate->set_window(new ConstrainedWindowGtk(tab_contents, this));
 }
 
 GtkWidget* TabModalConfirmDialogGtk::GetWidgetRoot() {

@@ -24,7 +24,6 @@ typedef struct _GtkWindow GtkWindow;
 
 class Profile;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 namespace extensions{
 class Extension;
@@ -85,10 +84,10 @@ class CreateWebApplicationShortcutsDialogGtk
     : public CreateApplicationShortcutsDialogGtk {
  public:
   // Displays the dialog box to create application shortcuts for |tab_contents|.
-  static void Show(GtkWindow* parent, TabContentsWrapper* tab_contents);
+  static void Show(GtkWindow* parent, TabContents* tab_contents);
 
   CreateWebApplicationShortcutsDialogGtk(GtkWindow* parent,
-                                         TabContentsWrapper* tab_contents);
+                                         TabContents* tab_contents);
 
   virtual void OnCreatedShortcut(void) OVERRIDE;
 
@@ -96,8 +95,8 @@ class CreateWebApplicationShortcutsDialogGtk
   virtual ~CreateWebApplicationShortcutsDialogGtk() {}
 
  private:
-  // TabContentsWrapper for which the shortcut will be created.
-  TabContentsWrapper* tab_contents_;
+  // TabContents for which the shortcut will be created.
+  TabContents* tab_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(CreateWebApplicationShortcutsDialogGtk);
 };

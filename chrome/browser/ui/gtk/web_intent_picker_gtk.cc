@@ -24,7 +24,7 @@
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -68,8 +68,8 @@ enum {
   kInstallButtonIndex,
 };
 
-GtkThemeService *GetThemeService(TabContentsWrapper* wrapper) {
-  return GtkThemeService::GetFrom(wrapper->profile());
+GtkThemeService *GetThemeService(TabContents* tab_contents) {
+  return GtkThemeService::GetFrom(tab_contents->profile());
 }
 
 // Set the image of |button| to |pixbuf|.
@@ -137,16 +137,16 @@ GtkWidget* CreateStarsWidget(double rating) {
 } // namespace
 
 // static
-WebIntentPicker* WebIntentPicker::Create(TabContentsWrapper* wrapper,
+WebIntentPicker* WebIntentPicker::Create(TabContents* tab_contents,
                                          WebIntentPickerDelegate* delegate,
                                          WebIntentPickerModel* model) {
-  return new WebIntentPickerGtk(wrapper, delegate, model);
+  return new WebIntentPickerGtk(tab_contents, delegate, model);
 }
 
-WebIntentPickerGtk::WebIntentPickerGtk(TabContentsWrapper* wrapper,
+WebIntentPickerGtk::WebIntentPickerGtk(TabContents* tab_contents,
                                        WebIntentPickerDelegate* delegate,
                                        WebIntentPickerModel* model)
-    : wrapper_(wrapper),
+    : tab_contents_(tab_contents),
       delegate_(delegate),
       model_(model),
       contents_(NULL),
@@ -163,12 +163,12 @@ WebIntentPickerGtk::WebIntentPickerGtk(TabContentsWrapper* wrapper,
   UpdateCWSLabel();
   UpdateSuggestedExtensions();
 
-  GtkThemeService* theme_service = GetThemeService(wrapper);
+  GtkThemeService* theme_service = GetThemeService(tab_contents);
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                        content::Source<ThemeService>(theme_service));
   theme_service->InitThemesFor(this);
 
-  window_ = new ConstrainedWindowGtk(wrapper, this);
+  window_ = new ConstrainedWindowGtk(tab_contents, this);
 }
 
 WebIntentPickerGtk::~WebIntentPickerGtk() {
@@ -222,13 +222,13 @@ void WebIntentPickerGtk::OnExtensionIconChanged(WebIntentPickerModel* model,
 void WebIntentPickerGtk::OnInlineDisposition(WebIntentPickerModel* model,
                                              const GURL& url) {
   content::WebContents* web_contents = content::WebContents::Create(
-      wrapper_->profile(),
-      tab_util::GetSiteInstanceForNewTab(wrapper_->profile(), url),
+      tab_contents_->profile(),
+      tab_util::GetSiteInstanceForNewTab(tab_contents_->profile(), url),
       MSG_ROUTING_NONE, NULL, NULL);
-  inline_disposition_tab_contents_.reset(new TabContentsWrapper(web_contents));
+  inline_disposition_tab_contents_.reset(new TabContents(web_contents));
   inline_disposition_delegate_.reset(
       new WebIntentInlineDispositionDelegate(this, web_contents,
-                                             wrapper_->profile()));
+                                             tab_contents_->profile()));
 
   // Must call this immediately after WebContents creation to avoid race
   // with load.
@@ -304,7 +304,7 @@ void WebIntentPickerGtk::OnPendingAsyncCompleted() {
   // Add the message text.
   GtkWidget* hbox = gtk_hbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(sub_contents), hbox, TRUE, TRUE, 0);
-  GtkThemeService* theme_service = GetThemeService(wrapper_);
+  GtkThemeService* theme_service = GetThemeService(tab_contents_);
   GtkWidget* no_service_label = theme_service->BuildLabel(
       l10n_util::GetStringUTF8(IDS_INTENT_PICKER_NO_SERVICES).c_str(),
       ui::kGdkBlack);
@@ -341,7 +341,7 @@ void WebIntentPickerGtk::Observe(int type,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
   DCHECK_EQ(type, chrome::NOTIFICATION_BROWSER_THEME_CHANGED);
-  GtkThemeService* theme_service = GetThemeService(wrapper_);
+  GtkThemeService* theme_service = GetThemeService(tab_contents_);
   if (theme_service->UsingNativeTheme())
     gtk_util::UndoForceFontSize(header_label_);
   else
@@ -420,7 +420,7 @@ void WebIntentPickerGtk::OnServiceButtonClick(GtkWidget* button) {
 }
 
 void WebIntentPickerGtk::InitContents() {
-  GtkThemeService* theme_service = GetThemeService(wrapper_);
+  GtkThemeService* theme_service = GetThemeService(tab_contents_);
 
   // Main contents vbox.
   contents_ = gtk_vbox_new(FALSE, 0);
@@ -505,7 +505,7 @@ void WebIntentPickerGtk::AddCloseButton(GtkWidget* containingBox) {
   gtk_box_pack_start(GTK_BOX(containingBox), close_hbox, TRUE, TRUE, 0);
 
   close_button_.reset(
-      CustomDrawButton::CloseButton(GetThemeService(wrapper_)));
+      CustomDrawButton::CloseButton(GetThemeService(tab_contents_)));
   g_signal_connect(close_button_->widget(), "clicked",
                    G_CALLBACK(OnCloseButtonClickThunk), this);
   gtk_widget_set_can_focus(close_button_->widget(), FALSE);
@@ -519,7 +519,7 @@ void WebIntentPickerGtk::AddTitle(GtkWidget* containingBox) {
   gtk_box_pack_start(GTK_BOX(containingBox), header_hbox, TRUE, TRUE, 0);
 
   // Label text will be set in the call to SetActionString().
-  header_label_ = GetThemeService(wrapper_)->BuildLabel(
+  header_label_ = GetThemeService(tab_contents_)->BuildLabel(
       std::string(), ui::kGdkBlack);
   gtk_util::ForceFontSizePixels(header_label_, kHeaderLabelPixelSize);
   gtk_box_pack_start(GTK_BOX(header_hbox), header_label_, TRUE, TRUE, 0);
@@ -577,7 +577,7 @@ void WebIntentPickerGtk::UpdateCWSLabel() {
 }
 
 void WebIntentPickerGtk::UpdateSuggestedExtensions() {
-  GtkThemeService* theme_service = GetThemeService(wrapper_);
+  GtkThemeService* theme_service = GetThemeService(tab_contents_);
 
   gtk_util::RemoveAllChildren(extensions_vbox_);
 

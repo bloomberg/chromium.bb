@@ -18,7 +18,7 @@
 #include "chrome/browser/ui/crypto_module_password_dialog.h"
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
@@ -46,7 +46,7 @@ class SSLClientCertificateSelector : public SSLClientAuthObserver,
                                      public ConstrainedWindowGtkDelegate {
  public:
   explicit SSLClientCertificateSelector(
-      TabContentsWrapper* parent,
+      TabContents* parent,
       const net::HttpNetworkSession* network_session,
       net::SSLCertRequestInfo* cert_request_info,
       const base::Callback<void(net::X509Certificate*)>& callback);
@@ -92,19 +92,19 @@ class SSLClientCertificateSelector : public SSLClientAuthObserver,
   // Hold on to the select button to focus it.
   GtkWidget* select_button_;
 
-  TabContentsWrapper* wrapper_;
+  TabContents* tab_contents_;
   ConstrainedWindow* window_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLClientCertificateSelector);
 };
 
 SSLClientCertificateSelector::SSLClientCertificateSelector(
-    TabContentsWrapper* wrapper,
+    TabContents* tab_contents,
     const net::HttpNetworkSession* network_session,
     net::SSLCertRequestInfo* cert_request_info,
     const base::Callback<void(net::X509Certificate*)>& callback)
     : SSLClientAuthObserver(network_session, cert_request_info, callback),
-      wrapper_(wrapper),
+      tab_contents_(tab_contents),
       window_(NULL) {
   root_widget_.Own(gtk_vbox_new(FALSE, ui::kControlSpacing));
 
@@ -197,7 +197,7 @@ SSLClientCertificateSelector::~SSLClientCertificateSelector() {
 
 void SSLClientCertificateSelector::Show() {
   DCHECK(!window_);
-  window_ = new ConstrainedWindowGtk(wrapper_, this);
+  window_ = new ConstrainedWindowGtk(tab_contents_, this);
 }
 
 void SSLClientCertificateSelector::OnCertSelectedByNotification() {
@@ -388,13 +388,13 @@ void SSLClientCertificateSelector::OnPromptShown(GtkWidget* widget,
 namespace browser {
 
 void ShowSSLClientCertificateSelector(
-    TabContentsWrapper* wrapper,
+    TabContents* tab_contents,
     const net::HttpNetworkSession* network_session,
     net::SSLCertRequestInfo* cert_request_info,
     const base::Callback<void(net::X509Certificate*)>& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   (new SSLClientCertificateSelector(
-      wrapper, network_session, cert_request_info, callback))->Show();
+      tab_contents, network_session, cert_request_info, callback))->Show();
 }
 
 }  // namespace browser

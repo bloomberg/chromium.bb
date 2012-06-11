@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,7 +27,6 @@ class TabGtk;
 class TabStripGtk;
 class TabStripModel;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 class DraggedTabControllerGtk : public content::NotificationObserver,
                                 public content::WebContentsDelegate {
@@ -65,7 +64,7 @@ class DraggedTabControllerGtk : public content::NotificationObserver,
   bool IsDraggingTab(const TabGtk* tab);
 
   // Returns true if |tab_contents| matches any tab contents being dragged.
-  bool IsDraggingTabContents(const TabContentsWrapper* tab_contents);
+  bool IsDraggingTabContents(const TabContents* tab_contents);
 
   // Returns true if the specified tab is detached.
   bool IsTabDetached(const TabGtk* tab);
@@ -155,12 +154,12 @@ class DraggedTabControllerGtk : public content::NotificationObserver,
   gfx::Point GetDraggedViewPoint(const gfx::Point& screen_point);
 
   // Finds the Tab within the specified TabStrip that corresponds to the
-  // dragged TabContentsWrapper.
+  // dragged TabContents.
   TabGtk* GetTabMatchingDraggedContents(TabStripGtk* tabstrip,
-                                        TabContentsWrapper* contents);
+                                        TabContents* contents);
 
   // Finds all the tabs within the specified TabStrip that correspond to the
-  // dragged TabContentsWrapper.
+  // dragged TabContents.
   std::vector<TabGtk*> GetTabsMatchingDraggedContents(TabStripGtk* tabstrip);
 
   // Sets the visible and draggging property of all dragged tabs. If |repaint|
@@ -178,7 +177,7 @@ class DraggedTabControllerGtk : public content::NotificationObserver,
   // be destroyed immediately, false otherwise.
   bool CompleteDrag();
 
-  // Resets the delegates of the TabContentsWrapper.
+  // Resets the delegates of the TabContents.
   void ResetDelegates();
 
   // Create the DraggedViewGtk if it does not yet exist.

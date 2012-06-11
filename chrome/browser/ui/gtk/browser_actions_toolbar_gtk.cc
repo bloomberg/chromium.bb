@@ -31,7 +31,7 @@
 #include "chrome/browser/ui/gtk/hover_controller_gtk.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
@@ -564,11 +564,11 @@ BrowserActionsToolbarGtk::~BrowserActionsToolbarGtk() {
 }
 
 int BrowserActionsToolbarGtk::GetCurrentTabId() {
-  TabContentsWrapper* selected_tab = browser_->GetSelectedTabContentsWrapper();
-  if (!selected_tab)
+  TabContents* active_tab = browser_->GetActiveTabContents();
+  if (!active_tab)
     return -1;
 
-  return selected_tab->restore_tab_helper()->session_id().id();
+  return active_tab->restore_tab_helper()->session_id().id();
 }
 
 void BrowserActionsToolbarGtk::Update() {

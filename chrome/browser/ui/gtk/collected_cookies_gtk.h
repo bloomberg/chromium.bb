@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,18 +21,17 @@
 
 class CookiesTreeModel;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 // CollectedCookiesGtk is a dialog that displays the allowed and blocked
 // cookies of the current tab contents.  To display the dialog, invoke
-// ShowCollectedCookiesDialog() on the delegate of the tab contents wrapper's
+// ShowCollectedCookiesDialog() on the delegate of the tab contents's
 // content settings tab helper.
 
 class CollectedCookiesGtk : public ConstrainedWindowGtkDelegate,
                             public gtk_tree::TreeAdapter::Delegate,
                             public content::NotificationObserver {
  public:
-  CollectedCookiesGtk(GtkWindow* parent, TabContentsWrapper* wrapper);
+  CollectedCookiesGtk(GtkWindow* parent, TabContents* tab_contents);
 
   // ConstrainedWindowGtkDelegate methods.
   virtual GtkWidget* GetWidgetRoot() OVERRIDE;
@@ -115,8 +114,8 @@ class CollectedCookiesGtk : public ConstrainedWindowGtkDelegate,
   // Displays information about selected cookie.
   GtkWidget* cookie_info_view_;
 
-  // The tab contents wrapper.
-  TabContentsWrapper* wrapper_;
+  // The tab contents.
+  TabContents* tab_contents_;
 
   bool status_changed_;
 

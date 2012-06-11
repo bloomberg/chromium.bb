@@ -172,7 +172,7 @@ class DraggedViewGtk : public ui::AnimationDelegate {
   // tabstrip.
   gfx::Size attached_tab_size_;
 
-  // The dimensions of the TabContentsWrapper being dragged.
+  // The dimensions of the TabContents being dragged.
   gfx::Size contents_size_;
 
   // The animation used to slide the attached tab to its final location.

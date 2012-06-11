@@ -38,7 +38,7 @@ ChromeWebContentsViewDelegateGtk::ChromeWebContentsViewDelegateGtk(
       web_contents_(web_contents),
       expanded_container_(NULL),
       focus_store_(NULL) {
-  gtk_widget_set_name(floating_.get(), "chrome-tab-contents-wrapper-view");
+  gtk_widget_set_name(floating_.get(), "chrome-tab-contents-view");
   g_signal_connect(floating_.get(), "set-floating-position",
                    G_CALLBACK(OnSetFloatingPositionThunk), this);
   DCHECK_EQ(g_instances.Get().count(web_contents), 0u);

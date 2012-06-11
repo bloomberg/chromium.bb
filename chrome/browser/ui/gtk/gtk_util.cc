@@ -285,7 +285,7 @@ gboolean PaintNoBackground(GtkWidget* widget,
 WebContents* GetBrowserWindowSelectedWebContents(BrowserWindow* window) {
   BrowserWindowGtk* browser_window = static_cast<BrowserWindowGtk*>(
       window);
-  return browser_window->browser()->GetSelectedWebContents();
+  return browser_window->browser()->GetActiveWebContents();
 }
 
 GtkWidget* GetBrowserWindowFocusedWidget(BrowserWindow* window) {

@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/constrained_window_tab_helper_delegate.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/tab_contents/chrome_web_contents_view_delegate_gtk.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/gtk/focus_store_gtk.h"
@@ -34,13 +34,13 @@ bool ConstrainedWindowGtkDelegate::ShouldHaveBorderPadding() const {
 }
 
 ConstrainedWindowGtk::ConstrainedWindowGtk(
-    TabContentsWrapper* wrapper,
+    TabContents* tab_contents,
     ConstrainedWindowGtkDelegate* delegate)
-    : wrapper_(wrapper),
+    : tab_contents_(tab_contents),
       delegate_(delegate),
       visible_(false),
       weak_factory_(this) {
-  DCHECK(wrapper);
+  DCHECK(tab_contents);
   DCHECK(delegate);
   GtkWidget* dialog = delegate->GetWidgetRoot();
 
@@ -79,7 +79,7 @@ ConstrainedWindowGtk::ConstrainedWindowGtk(
   g_signal_connect(widget(), "hierarchy-changed",
                    G_CALLBACK(OnHierarchyChangedThunk), this);
 
-  wrapper_->constrained_window_tab_helper()->AddConstrainedDialog(this);
+  tab_contents_->constrained_window_tab_helper()->AddConstrainedDialog(this);
 }
 
 ConstrainedWindowGtk::~ConstrainedWindowGtk() {
@@ -100,7 +100,7 @@ void ConstrainedWindowGtk::CloseConstrainedWindow() {
   if (visible_)
     ContainingView()->RemoveConstrainedWindow(this);
   delegate_->DeleteDelegate();
-  wrapper_->constrained_window_tab_helper()->WillClose(this);
+  tab_contents_->constrained_window_tab_helper()->WillClose(this);
 
   delete this;
 }
@@ -113,7 +113,7 @@ void ConstrainedWindowGtk::FocusConstrainedWindow() {
   // The user may have focused another tab. In this case do not grab focus
   // until this tab is refocused.
   ConstrainedWindowTabHelper* helper =
-      wrapper_->constrained_window_tab_helper();
+      tab_contents_->constrained_window_tab_helper();
   if ((!helper->delegate() ||
        helper->delegate()->ShouldFocusConstrainedWindow()) &&
       gtk_util::IsWidgetAncestryVisible(focus_widget)) {
@@ -125,7 +125,8 @@ void ConstrainedWindowGtk::FocusConstrainedWindow() {
 
 ConstrainedWindowGtk::TabContentsViewType*
     ConstrainedWindowGtk::ContainingView() {
-  return ChromeWebContentsViewDelegateGtk::GetFor(wrapper_->web_contents());
+  return
+      ChromeWebContentsViewDelegateGtk::GetFor(tab_contents_->web_contents());
 }
 
 gboolean ConstrainedWindowGtk::OnKeyPress(GtkWidget* sender,

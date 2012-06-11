@@ -6,7 +6,7 @@
 
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
 #include "chrome/browser/ui/gtk/tab_contents_container_gtk.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -51,7 +51,7 @@ class ConstrainedWebDialogDelegateGtk : public ConstrainedWindowGtkDelegate,
   virtual ConstrainedWindow* window() OVERRIDE {
     return impl_->window();
   }
-  virtual TabContentsWrapper* tab() OVERRIDE {
+  virtual TabContents* tab() OVERRIDE {
     return impl_->tab();
   }
 
@@ -101,7 +101,7 @@ ConstrainedWebDialogDelegate* ui::CreateConstrainedWebDialog(
       Profile* profile,
       WebDialogDelegate* delegate,
       WebDialogWebContentsDelegate* tab_delegate,
-      TabContentsWrapper* overshadowed) {
+      TabContents* overshadowed) {
   ConstrainedWebDialogDelegateGtk* constrained_delegate =
       new ConstrainedWebDialogDelegateGtk(profile, delegate, tab_delegate);
   ConstrainedWindow* constrained_window =

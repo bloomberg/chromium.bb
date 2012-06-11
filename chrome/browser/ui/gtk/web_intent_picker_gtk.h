@@ -26,7 +26,6 @@ class CustomDrawButton;
 class GURL;
 class TabContentsContainerGtk;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 class ThrobberGtk;
 class WebIntentPickerDelegate;
 
@@ -36,7 +35,7 @@ class WebIntentPickerGtk : public WebIntentPicker,
                            public ConstrainedWindowGtkDelegate,
                            public content::NotificationObserver {
  public:
-  WebIntentPickerGtk(TabContentsWrapper* tab_contents,
+  WebIntentPickerGtk(TabContents* tab_contents,
                      WebIntentPickerDelegate* delegate,
                      WebIntentPickerModel* model);
   virtual ~WebIntentPickerGtk();
@@ -117,7 +116,7 @@ class WebIntentPickerGtk : public WebIntentPicker,
   void RemoveThrobber();
 
   // A weak pointer to the tab contents on which to display the picker UI.
-  TabContentsWrapper* wrapper_;
+  TabContents* tab_contents_;
 
   // A weak pointer to the WebIntentPickerDelegate to notify when the user
   // chooses a service or cancels.
@@ -153,7 +152,7 @@ class WebIntentPickerGtk : public WebIntentPicker,
   ConstrainedWindowGtk* window_;
 
   // Container for the HTML in the inline disposition case.
-  scoped_ptr<TabContentsWrapper> inline_disposition_tab_contents_;
+  scoped_ptr<TabContents> inline_disposition_tab_contents_;
 
   // Widget for displaying the HTML in the inline disposition case.
   scoped_ptr<TabContentsContainerGtk> tab_contents_container_;

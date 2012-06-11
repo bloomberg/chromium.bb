@@ -14,7 +14,6 @@
 #include "ui/base/gtk/gtk_signal.h"
 
 class TabContents;
-typedef TabContents TabContentsWrapper;
 class TabModalConfirmDialogDelegate;
 
 // Displays a tab-modal dialog, i.e. a dialog that will block the current page
@@ -25,7 +24,7 @@ class TabModalConfirmDialogDelegate;
 class TabModalConfirmDialogGtk : public ConstrainedWindowGtkDelegate {
  public:
   TabModalConfirmDialogGtk(TabModalConfirmDialogDelegate* delegate,
-                           TabContentsWrapper* wrapper);
+                           TabContents* tab_contents);
 
   // ConstrainedWindowGtkDelegate methods
   virtual GtkWidget* GetWidgetRoot() OVERRIDE;

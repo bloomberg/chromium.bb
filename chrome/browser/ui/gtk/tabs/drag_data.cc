@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/gtk/tabs/drag_data.h"
 
 #include "chrome/browser/ui/gtk/tabs/tab_gtk.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -22,7 +22,7 @@ DraggedTabData::DraggedTabData()
 }
 
 DraggedTabData::DraggedTabData(TabGtk* tab,
-                               TabContentsWrapper* contents,
+                               TabContents* contents,
                                content::WebContentsDelegate* original_delegate,
                                int source_model_index,
                                bool pinned,
@@ -95,12 +95,12 @@ int DragData::GetAddTypesForDraggedTabAt(size_t index) {
   return add_types;
 }
 
-TabContentsWrapper* DragData::GetSourceTabContentsWrapper() {
+TabContents* DragData::GetSourceTabContents() {
   return GetSourceTabData()->contents_;
 }
 
 WebContents* DragData::GetSourceWebContents() {
-  TabContentsWrapper* contents = GetSourceTabData()->contents_;
+  TabContents* contents = GetSourceTabData()->contents_;
   return contents ? contents->web_contents(): NULL;
 }
 

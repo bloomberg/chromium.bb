@@ -19,7 +19,7 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/tabs/drag_data.h"
 #include "chrome/browser/ui/gtk/tabs/tab_renderer_gtk.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -71,12 +71,11 @@ DraggedViewGtk::DraggedViewGtk(DragData* drag_data,
   }
 
   for (size_t i = 0; i < drag_data_->size(); i++) {
-    TabContentsWrapper* wrapper =
-        TabContentsWrapper::GetCurrentWrapperForContents(
-            drag_data_->get(i)->contents_->web_contents());
+    TabContents* tab_contents = TabContents::FromWebContents(
+        drag_data_->get(i)->contents_->web_contents());
     renderers_[i]->UpdateData(
         drag_data_->get(i)->contents_->web_contents(),
-        wrapper->extension_tab_helper()->is_app(),
+        tab_contents->extension_tab_helper()->is_app(),
         false); // loading_only
     renderers_[i]->set_is_active(
         static_cast<int>(i) == drag_data_->source_tab_index());

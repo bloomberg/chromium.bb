@@ -23,7 +23,6 @@ class Browser;
 class Profile;
 class TabContentsContainerGtk;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 class WebDialogController;
 
 class WebDialogGtk : public WebDialogWebContentsDelegate,
@@ -80,7 +79,7 @@ class WebDialogGtk : public WebDialogWebContentsDelegate,
   GtkWidget* dialog_;
 
   scoped_ptr<WebDialogController> dialog_controller_;
-  scoped_ptr<TabContentsWrapper> tab_;
+  scoped_ptr<TabContents> tab_;
   scoped_ptr<TabContentsContainerGtk> tab_contents_container_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDialogGtk);
