@@ -6,6 +6,8 @@
 #define DBUS_SERVICE_CONSTANTS_H_
 
 namespace dbus {
+const char kDBusServiceName[] = "org.freedesktop.DBus";
+const char kDBusServicePath[] = "/org/freedesktop/DBus";
 const char kDBusPropertiesInterface[] = "org.freedesktop.DBus.Properties";
 // Methods
 const char kDBusPropertiesGetAll[] = "GetAll";
