@@ -29,10 +29,6 @@ ProtectorServiceFactory::ProtectorServiceFactory()
   // Dependencies for the correct service shutdown order.
   DependsOn(GlobalErrorServiceFactory::GetInstance());
   DependsOn(TemplateURLServiceFactory::GetInstance());
-  // BUG(ivankr): to be bullet-proof, ProtectorService must outlive the
-  // ExtensionService as well and be the second to last thing destroyed in
-  // ProfileImpl (the last being the PrefService itself). This cannot be
-  // accomplished with ProfileKeyedService implementation.
 }
 
 ProtectorServiceFactory::~ProtectorServiceFactory() {

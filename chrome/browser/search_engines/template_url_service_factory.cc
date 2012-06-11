@@ -26,8 +26,7 @@ TemplateURLServiceFactory::TemplateURLServiceFactory()
   DependsOn(GoogleURLTrackerFactory::GetInstance());
   DependsOn(WebDataServiceFactory::GetInstance());
   // TODO(erg): For Shutdown() order, we need to:
-  //     DependsOn(HistoryService::GetInstance());
-  //     DependsOn(ExtensionService::GetInstance());
+  //     DependsOn(HistoryServiceFactory::GetInstance());
 }
 
 TemplateURLServiceFactory::~TemplateURLServiceFactory() {}
