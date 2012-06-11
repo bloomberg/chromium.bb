@@ -3159,9 +3159,6 @@ int main(int argc, char *argv[])
 	int32_t xserver = 0;
 	char *socket_name = NULL;
 	char *config_file;
-	char buffer[64];
-	struct timeval tv;
-	struct tm *brokendown_time;
 
 	const struct config_key shell_config_keys[] = {
 		{ "type", CONFIG_KEY_STRING, &shell },
@@ -3191,10 +3188,12 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	gettimeofday(&tv, NULL);
-	brokendown_time = localtime(&tv.tv_sec);
-	strftime(buffer, sizeof buffer, "%Y-%m-%d %H:%M:%S", brokendown_time);
-	weston_log("weston %s " WESTON_SHA1 "\n", buffer);
+	weston_log("%s\n"
+		   STAMP_SPACE "%s\n"
+		   STAMP_SPACE "Bug reports to: %s\n"
+		   STAMP_SPACE "Build: %s\n",
+		   PACKAGE_STRING, PACKAGE_URL, PACKAGE_BUGREPORT,
+		   WESTON_SHA1);
 
 	display = wl_display_create();
 

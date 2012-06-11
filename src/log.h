@@ -23,6 +23,9 @@
 #ifndef _WESTON_LOG_H_
 #define _WESTON_LOG_H_
 
+/* String literal of spaces, the same width as the timestamp. */
+#define STAMP_SPACE "               "
+
 void weston_log_file_open(const char *filename);
 void weston_log_file_close(void);
 
