@@ -218,6 +218,38 @@ fail:
 	return NULL;
 }
 
+/* import a buffer from dmabuf fd, does not take ownership of the
+ * fd so caller should close() the fd when it is otherwise done
+ * with it (even if it is still using the 'struct omap_bo *')
+ */
+struct omap_bo * omap_bo_from_dmabuf(struct omap_device *dev, int fd)
+{
+	struct omap_bo *bo;
+	struct drm_prime_handle req = {
+			.fd = fd,
+	};
+	int ret;
+
+	bo = calloc(sizeof(*bo), 1);
+	if (!bo) {
+		goto fail;
+	}
+
+	ret = drmIoctl(dev->fd, DRM_IOCTL_PRIME_FD_TO_HANDLE, &req);
+	if (ret) {
+		goto fail;
+	}
+
+	bo->dev = dev;
+	bo->handle = req.handle;
+
+	return bo;
+
+fail:
+	free(bo);
+	return NULL;
+}
+
 /* destroy a buffer object */
 void omap_bo_del(struct omap_bo *bo)
 {

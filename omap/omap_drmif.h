@@ -50,6 +50,7 @@ struct omap_bo * omap_bo_new(struct omap_device *dev,
 struct omap_bo * omap_bo_new_tiled(struct omap_device *dev,
 		uint32_t width, uint32_t height, uint32_t flags);
 struct omap_bo * omap_bo_from_name(struct omap_device *dev, uint32_t name);
+struct omap_bo * omap_bo_from_dmabuf(struct omap_device *dev, int fd);
 void omap_bo_del(struct omap_bo *bo);
 int omap_bo_get_name(struct omap_bo *bo, uint32_t *name);
 uint32_t omap_bo_handle(struct omap_bo *bo);
