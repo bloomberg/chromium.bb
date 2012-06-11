@@ -3904,7 +3904,8 @@ void Browser::Observe(int type,
       if (pref_name == prefs::kPrintingEnabled) {
         UpdatePrintingState(GetContentRestrictionsForSelectedTab());
       } else if (pref_name == prefs::kInstantEnabled) {
-        if (!InstantController::IsEnabled(profile())) {
+        if (browser_shutdown::ShuttingDownWithoutClosingBrowsers() ||
+            !InstantController::IsEnabled(profile())) {
           if (instant()) {
             instant()->DestroyPreviewContents();
             instant_.reset();
