@@ -565,8 +565,6 @@ static int eg_surface_init_1d(struct radeon_surface_manager *surf_man,
     tilew = 8;
     xalign = surf_man->hw_info.group_bytes / (tilew * surf->bpe * surf->nsamples);
     if (surf->flags & RADEON_SURF_SBUFFER) {
-        surf->stencil_offset = 0;
-        surf->stencil_tile_split = 0;
         xalign = surf_man->hw_info.group_bytes / (tilew * surf->nsamples);
     }
     xalign = MAX2(tilew, xalign);
@@ -607,7 +605,6 @@ static int eg_surface_init_2d(struct radeon_surface_manager *surf_man,
     unsigned slice_pt;
     unsigned i;
 
-    surf->stencil_offset = 0;
     /* compute tile values */
     tilew = 8;
     tileh = 8;
@@ -748,6 +745,9 @@ static int eg_surface_init(struct radeon_surface_manager *surf_man,
     if (r) {
         return r;
     }
+
+    surf->stencil_offset = 0;
+    surf->stencil_tile_split = 0;
 
     /* check tiling mode */
     switch (mode) {
