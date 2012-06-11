@@ -2955,8 +2955,6 @@ weston_compositor_init(struct weston_compositor *ec,
 
 	wl_display_init_shm(display);
 
-	log_uname();
-
 	weston_log("egl vendor: %s\n",
 		   eglQueryString(ec->display, EGL_VENDOR));
 	log_extensions("egl extensions",
@@ -3194,6 +3192,7 @@ int main(int argc, char *argv[])
 		   STAMP_SPACE "Build: %s\n",
 		   PACKAGE_STRING, PACKAGE_URL, PACKAGE_BUGREPORT,
 		   WESTON_SHA1);
+	log_uname();
 
 	display = wl_display_create();
 
