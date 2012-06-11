@@ -446,7 +446,7 @@ static int eg_init_hw_info(struct radeon_surface_manager *surf_man)
 
     surf_man->hw_info.allow_2d = 0;
     version = drmGetVersion(surf_man->fd);
-    if (version && version->version_minor >= 14) {
+    if (version && version->version_minor >= 16) {
         surf_man->hw_info.allow_2d = 1;
     }
 
