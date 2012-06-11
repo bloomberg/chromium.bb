@@ -37,6 +37,7 @@ class PageSwitcher : public views::View,
   // Overridden from PaginationModelObserver:
   virtual void TotalPagesChanged() OVERRIDE;
   virtual void SelectedPageChanged(int old_selected, int new_selected) OVERRIDE;
+  virtual void TransitionChanged() OVERRIDE;
 
   PaginationModel* model_;  // Owned by parent AppListView.
   views::View* buttons_;  // Owned by views hierarchy.

@@ -31,15 +31,15 @@ class PageSwitcherButton : public views::CustomButton {
  public:
   explicit PageSwitcherButton(views::ButtonListener* listener)
       : views::CustomButton(listener),
-        selected_(false) {
+        selected_range_(0) {
   }
   virtual ~PageSwitcherButton() {}
 
-  void SetSelected(bool selected) {
-    if (selected == selected_)
+  void SetSelectedRange(double selected_range) {
+    if (selected_range_ == selected_range)
       return;
 
-    selected_ = selected;
+    selected_range_ = selected_range;
     SchedulePaint();
   }
 
@@ -49,9 +49,7 @@ class PageSwitcherButton : public views::CustomButton {
   }
 
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    if (selected_ || state() == BS_PUSHED) {
-      PaintButton(canvas, kSelectedColor);
-    } else if (state() == BS_HOT) {
+    if (state() == BS_HOT) {
       PaintButton(canvas, kHoverColor);
     } else {
       PaintButton(canvas, kNormalColor);
@@ -60,7 +58,7 @@ class PageSwitcherButton : public views::CustomButton {
 
  private:
   // Paints a button that has two rounded corner at bottom.
-  void PaintButton(gfx::Canvas* canvas, SkColor color) {
+  void PaintButton(gfx::Canvas* canvas, SkColor base_color) {
     gfx::Rect rect(GetContentsBounds().Center(
             gfx::Size(kButtonWidth, kButtonHeight)));
 
@@ -72,11 +70,36 @@ class PageSwitcherButton : public views::CustomButton {
     SkPaint paint;
     paint.setAntiAlias(true);
     paint.setStyle(SkPaint::kFill_Style);
-    paint.setColor(color);
+    paint.setColor(base_color);
     canvas->DrawPath(path, paint);
+
+    int selected_start_x = 0;
+    int selected_width = 0;
+    if (selected_range_ > 0) {
+      selected_width = selected_range_ * rect.width();
+    } else if (selected_range_ < 0) {
+      selected_width =  -selected_range_ * rect.width();
+      selected_start_x = rect.right() - selected_width;
+    }
+
+    if (selected_width) {
+      gfx::Rect selected_rect(rect);
+      selected_rect.set_x(selected_start_x);
+      selected_rect.set_width(selected_width);
+
+      SkPath selected_path;
+      selected_path.addRoundRect(gfx::RectToSkRect(selected_rect),
+                                 SkIntToScalar(kButtonCornerRadius),
+                                 SkIntToScalar(kButtonCornerRadius));
+      paint.setColor(kSelectedColor);
+      canvas->DrawPath(selected_path, paint);
+    }
   }
 
-  bool selected_;
+  // [-1, 1] range that represents the portion of the button that should be
+  // painted with kSelectedColor. Positive range starts from left side and
+  // negative range starts from the right side.
+  double selected_range_;
 
   DISALLOW_COPY_AND_ASSIGN(PageSwitcherButton);
 };
@@ -129,7 +152,7 @@ void PageSwitcher::ButtonPressed(views::Button* sender,
                                  const views::Event& event) {
   for (int i = 0; i < buttons_->child_count(); ++i) {
     if (sender == static_cast<views::Button*>(buttons_->child_at(i))) {
-      model_->SelectPage(i);
+      model_->SelectPage(i, true /* animate */);
       break;
     }
   }
@@ -139,7 +162,7 @@ void PageSwitcher::TotalPagesChanged() {
   buttons_->RemoveAllChildViews(true);
   for (int i = 0; i < model_->total_pages(); ++i) {
     PageSwitcherButton* button = new PageSwitcherButton(this);
-    button->SetSelected(i == model_->selected_page());
+    button->SetSelectedRange(i == model_->selected_page() ? 1 : 0);
     buttons_->AddChildView(button);
   }
   buttons_->SetVisible(model_->total_pages() > 1);
@@ -148,9 +171,25 @@ void PageSwitcher::TotalPagesChanged() {
 
 void PageSwitcher::SelectedPageChanged(int old_selected, int new_selected) {
   if (old_selected >= 0 && old_selected < buttons_->child_count())
-    GetButtonByIndex(buttons_, old_selected)->SetSelected(false);
+    GetButtonByIndex(buttons_, old_selected)->SetSelectedRange(0);
   if (new_selected >= 0 && new_selected < buttons_->child_count())
-    GetButtonByIndex(buttons_, new_selected)->SetSelected(true);
+    GetButtonByIndex(buttons_, new_selected)->SetSelectedRange(1);
+}
+
+void PageSwitcher::TransitionChanged() {
+  const int current_page = model_->selected_page();
+  const int target_page = model_->transition().target_page;
+
+  double progress = model_->transition().progress;
+  double remaining = progress - 1;
+
+  if (current_page > target_page) {
+    remaining = -remaining;
+    progress = -progress;
+  }
+
+  GetButtonByIndex(buttons_, current_page)->SetSelectedRange(remaining);
+  GetButtonByIndex(buttons_, target_page)->SetSelectedRange(progress);
 }
 
 }  // namespace app_list

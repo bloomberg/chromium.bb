@@ -6,6 +6,8 @@
 #define UI_APP_LIST_APPS_GRID_VIEW_H_
 #pragma once
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/pagination_model_observer.h"
@@ -56,6 +58,11 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Updates from model.
   void Update();
 
+  // Updates total pages and auto select first page is no page is selected.
+  void UpdatePaginationModel();
+
+  AppListItemView* CreateViewForItemAtIndex(size_t index);
+
   AppListItemView* GetItemViewAtIndex(int index);
   void SetSelectedItemByIndex(int index);
 
@@ -67,6 +74,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Overridden from PaginationModelObserver:
   virtual void TotalPagesChanged() OVERRIDE;
   virtual void SelectedPageChanged(int old_selected, int new_selected) OVERRIDE;
+  virtual void TransitionChanged() OVERRIDE;
 
   AppListModel::Apps* model_;  // Owned by AppListModel.
   views::ButtonListener* listener_;

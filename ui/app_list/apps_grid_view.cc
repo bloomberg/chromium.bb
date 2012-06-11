@@ -16,6 +16,9 @@ namespace {
 const int kLeftRightPadding = 20;
 const int kTopPadding = 1;
 
+// Padding space in pixels between pages.
+const int kPagePadding = 40;
+
 // Preferred tile size when showing in fixed layout.
 const int kPreferredTileWidth = 88;
 const int kPreferredTileHeight = 98;
@@ -32,7 +35,6 @@ AppsGridView::AppsGridView(views::ButtonListener* listener,
       cols_(0),
       rows_per_page_(0),
       selected_item_index_(-1) {
-  set_focusable(true);
   pagination_model_->AddObserver(this);
 }
 
@@ -82,8 +84,10 @@ bool AppsGridView::IsSelectedItem(const AppListItemView* item) const {
 
 void AppsGridView::EnsureItemVisible(const AppListItemView* item) {
   int index = GetIndexOf(item);
-  if (index >= 0 && tiles_per_page())
-    pagination_model_->SelectPage(index / tiles_per_page());
+  if (index >= 0 && tiles_per_page()) {
+    pagination_model_->SelectPage(index / tiles_per_page(),
+                                  false /* animate */);
+  }
 }
 
 gfx::Size AppsGridView::GetPreferredSize() {
@@ -100,37 +104,54 @@ void AppsGridView::Layout() {
 
   gfx::Size tile_size(kPreferredTileWidth, kPreferredTileHeight);
 
-
-  pagination_model_->SetTotalPages((child_count() - 1) / tiles_per_page() + 1);
-  if (pagination_model_->selected_page() < 0)
-    pagination_model_->SelectPage(0);
-
   gfx::Rect grid_rect = rect.Center(
       gfx::Size(tile_size.width() * cols_,
                 tile_size.height() * rows_per_page_));
   grid_rect = grid_rect.Intersect(rect);
 
-  // Layouts items.
-  const int page = pagination_model_->selected_page();
-  const int first_visible_index = page * tiles_per_page();
-  const int last_visible_index = (page + 1) * tiles_per_page() - 1;
-  gfx::Rect current_tile(grid_rect.origin(), tile_size);
+  // Page width including padding pixels. A tile.x + page_width means the same
+  // tile slot in the next page.
+  const int page_width = grid_rect.width() + kPagePadding;
+
+  // If there is a transition, calculates offset for current and target page.
+  const int current_page = pagination_model_->selected_page();
+  const PaginationModel::Transition& transition =
+      pagination_model_->transition();
+  int transition_offset = 0;
+  if (transition.target_page >= 0) {
+    transition_offset = transition.progress * page_width;
+    // Transition to right means negative offset.
+    if (transition.target_page > current_page)
+      transition_offset = -transition_offset;
+  }
+
+  const int first_visible_index = current_page * tiles_per_page();
+  const int last_visible_index = (current_page + 1) * tiles_per_page() - 1;
+  gfx::Rect tile_slot(grid_rect.origin(), tile_size);
   for (int i = 0; i < child_count(); ++i) {
     views::View* view = child_at(i);
-    static_cast<AppListItemView*>(view)->SetIconSize(icon_size_);
 
-    if (i < first_visible_index || i > last_visible_index) {
-      view->SetVisible(false);
-      continue;
-    }
+    // Decides an x_offset for current item.
+    int x_offset = 0;
+    if (i < first_visible_index)
+      x_offset = -page_width;
+    else if (i > last_visible_index)
+      x_offset = page_width;
 
-    view->SetBoundsRect(current_tile);
-    view->SetVisible(rect.Contains(current_tile));
+    int page = i / tiles_per_page();
+    if (page == current_page || page == transition.target_page)
+      x_offset += transition_offset;
 
-    current_tile.Offset(tile_size.width(), 0);
-    if ((i + 1) % cols_ == 0) {
-      current_tile.set_x(grid_rect.x());
-      current_tile.set_y(current_tile.y() + tile_size.height());
+    gfx::Rect adjusted_slot(tile_slot);
+    adjusted_slot.Offset(x_offset, 0);
+    view->SetBoundsRect(adjusted_slot);
+
+    tile_slot.Offset(tile_size.width(), 0);
+    if ((i + 1) % tiles_per_page() == 0) {
+      tile_slot.set_origin(grid_rect.origin());
+    } else if ((i + 1) % cols_ == 0) {
+      tile_slot.set_x(grid_rect.x());
+      tile_slot.set_y(tile_slot.y() + tile_size.height());
     }
   }
 }
@@ -203,10 +224,28 @@ void AppsGridView::Update() {
     return;
 
   for (size_t i = 0; i < model_->item_count(); ++i)
-    AddChildView(new AppListItemView(this, model_->GetItemAt(i), listener_));
+    AddChildView(CreateViewForItemAtIndex(i));
+
+  UpdatePaginationModel();
 
   Layout();
   SchedulePaint();
+}
+
+void AppsGridView::UpdatePaginationModel() {
+  pagination_model_->SetTotalPages(
+      (child_count() - 1) / tiles_per_page() + 1);
+  if (pagination_model_->selected_page() < 0)
+    pagination_model_->SelectPage(0, false /* animate */);
+}
+
+AppListItemView* AppsGridView::CreateViewForItemAtIndex(size_t index) {
+  DCHECK_LT(index, model_->item_count());
+  AppListItemView* item = new AppListItemView(this,
+                                              model_->GetItemAt(index),
+                                              listener_);
+  item->SetIconSize(icon_size_);
+  return item;
 }
 
 AppListItemView* AppsGridView::GetItemViewAtIndex(int index) {
@@ -226,16 +265,19 @@ void AppsGridView::SetSelectedItemByIndex(int index) {
     selected_item_index_ = index;
     GetItemViewAtIndex(selected_item_index_)->SchedulePaint();
 
-    if (tiles_per_page())
-      pagination_model_->SelectPage(selected_item_index_ / tiles_per_page());
+    if (tiles_per_page()) {
+      pagination_model_->SelectPage(selected_item_index_ / tiles_per_page(),
+                                    true /* animate */);
+    }
   }
 }
 
 void AppsGridView::ListItemsAdded(size_t start, size_t count) {
-  for (size_t i = start; i < start + count; ++i) {
-    AddChildViewAt(new AppListItemView(this, model_->GetItemAt(i), listener_),
-                   i);
-  }
+  for (size_t i = start; i < start + count; ++i)
+    AddChildViewAt(CreateViewForItemAtIndex(i), i);
+
+  UpdatePaginationModel();
+
   Layout();
   SchedulePaint();
 }
@@ -243,6 +285,8 @@ void AppsGridView::ListItemsAdded(size_t start, size_t count) {
 void AppsGridView::ListItemsRemoved(size_t start, size_t count) {
   for (size_t i = 0; i < count; ++i)
     delete child_at(start);
+
+  UpdatePaginationModel();
 
   Layout();
   SchedulePaint();
@@ -256,6 +300,10 @@ void AppsGridView::TotalPagesChanged() {
 }
 
 void AppsGridView::SelectedPageChanged(int old_selected, int new_selected) {
+  Layout();
+}
+
+void AppsGridView::TransitionChanged() {
   Layout();
 }
 
