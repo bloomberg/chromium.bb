@@ -107,7 +107,7 @@ void EncodingMenuModel::Build() {
 }
 
 bool EncodingMenuModel::IsCommandIdChecked(int command_id) const {
-  WebContents* current_tab = browser_->GetSelectedWebContents();
+  WebContents* current_tab = browser_->GetActiveWebContents();
   if (!current_tab)
     return false;
   EncodingMenuController controller;
@@ -606,8 +606,8 @@ void WrenchMenuModel::UpdateZoomControls() {
   bool enable_increment = false;
   bool enable_decrement = false;
   int zoom_percent = 100;
-  if (browser_->GetSelectedWebContents()) {
-    zoom_percent = browser_->GetSelectedWebContents()->GetZoomPercent(
+  if (browser_->GetActiveWebContents()) {
+    zoom_percent = browser_->GetActiveWebContents()->GetZoomPercent(
         &enable_increment, &enable_decrement);
   }
   zoom_label_ = l10n_util::GetStringFUTF16(
