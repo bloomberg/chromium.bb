@@ -1,11 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/blocked_content/blocked_content_container.h"
 
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/rect.h"
 
@@ -16,7 +16,7 @@ using content::WebContents;
 const size_t BlockedContentContainer::kImpossibleNumberOfPopups = 30;
 
 struct BlockedContentContainer::BlockedContent {
-  BlockedContent(TabContentsWrapper* tab_contents,
+  BlockedContent(TabContents* tab_contents,
                  WindowOpenDisposition disposition,
                  const gfx::Rect& bounds,
                  bool user_gesture)
@@ -26,13 +26,13 @@ struct BlockedContentContainer::BlockedContent {
         user_gesture(user_gesture) {
   }
 
-  TabContentsWrapper* tab_contents;
+  TabContents* tab_contents;
   WindowOpenDisposition disposition;
   gfx::Rect bounds;
   bool user_gesture;
 };
 
-BlockedContentContainer::BlockedContentContainer(TabContentsWrapper* owner)
+BlockedContentContainer::BlockedContentContainer(TabContents* owner)
     : owner_(owner) {
 }
 
@@ -40,7 +40,7 @@ BlockedContentContainer::~BlockedContentContainer() {
   Clear();
 }
 
-void BlockedContentContainer::AddTabContents(TabContentsWrapper* tab_contents,
+void BlockedContentContainer::AddTabContents(TabContents* tab_contents,
                                              WindowOpenDisposition disposition,
                                              const gfx::Rect& bounds,
                                              bool user_gesture) {
@@ -60,8 +60,7 @@ void BlockedContentContainer::AddTabContents(TabContentsWrapper* tab_contents,
   tab_contents->web_contents()->WasHidden();
 }
 
-void BlockedContentContainer::LaunchForContents(
-    TabContentsWrapper* tab_contents) {
+void BlockedContentContainer::LaunchForContents(TabContents* tab_contents) {
   // Open the popup.
   for (BlockedContents::iterator i(blocked_contents_.begin());
        i != blocked_contents_.end(); ++i) {
@@ -90,7 +89,7 @@ size_t BlockedContentContainer::GetBlockedContentsCount() const {
 }
 
 void BlockedContentContainer::GetBlockedContents(
-    std::vector<TabContentsWrapper*>* blocked_contents) const {
+    std::vector<TabContents*>* blocked_contents) const {
   DCHECK(blocked_contents);
   for (BlockedContents::const_iterator i(blocked_contents_.begin());
        i != blocked_contents_.end(); ++i)
@@ -100,7 +99,7 @@ void BlockedContentContainer::GetBlockedContents(
 void BlockedContentContainer::Clear() {
   for (BlockedContents::iterator i(blocked_contents_.begin());
        i != blocked_contents_.end(); ++i) {
-    TabContentsWrapper* tab_contents = i->tab_contents;
+    TabContents* tab_contents = i->tab_contents;
     tab_contents->web_contents()->SetDelegate(NULL);
     tab_contents->blocked_content_tab_helper()->set_delegate(NULL);
     delete tab_contents;
@@ -128,7 +127,7 @@ void BlockedContentContainer::AddNewContents(WebContents* source,
 void BlockedContentContainer::CloseContents(WebContents* source) {
   for (BlockedContents::iterator i(blocked_contents_.begin());
        i != blocked_contents_.end(); ++i) {
-    TabContentsWrapper* tab_contents = i->tab_contents;
+    TabContents* tab_contents = i->tab_contents;
     if (tab_contents->web_contents() == source) {
       tab_contents->web_contents()->SetDelegate(NULL);
       tab_contents->blocked_content_tab_helper()->set_delegate(NULL);
@@ -163,7 +162,7 @@ bool BlockedContentContainer::ShouldSuppressDialogs() {
   return true;
 }
 
-TabContentsWrapper* BlockedContentContainer::GetConstrainingContentsWrapper(
-    TabContentsWrapper* source) {
+TabContents* BlockedContentContainer::GetConstrainingTabContents(
+    TabContents* source) {
   return owner_;
 }

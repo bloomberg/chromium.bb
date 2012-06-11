@@ -1021,8 +1021,7 @@ class Browser : public TabStripModelDelegate,
                                     bool blocked) OVERRIDE;
 
   // Overridden from BlockedContentTabHelperDelegate:
-  virtual TabContents* GetConstrainingContentsWrapper(
-      TabContents* source) OVERRIDE;
+  virtual TabContents* GetConstrainingTabContents(TabContents* source) OVERRIDE;
 
   // Overridden from BookmarkTabHelperDelegate:
   virtual void URLStarredChanged(TabContents* source,

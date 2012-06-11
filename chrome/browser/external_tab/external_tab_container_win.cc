@@ -521,7 +521,7 @@ void ExternalTabContainer::MoveContents(WebContents* source,
     automation_->Send(new AutomationMsg_MoveWindow(tab_handle_, pos));
 }
 
-TabContents* ExternalTabContainer::GetConstrainingContentsWrapper(
+TabContents* ExternalTabContainer::GetConstrainingTabContents(
     TabContents* source) {
   return source;
 }

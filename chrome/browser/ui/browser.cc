@@ -3200,7 +3200,7 @@ void Browser::AddNewContents(WebContents* source,
             switches::kDisablePopupBlocking)) {
       // Unrequested popups from normal pages are constrained unless they're in
       // the whitelist.  The popup owner will handle checking this.
-      GetConstrainingContentsWrapper(source_tab_contents)->
+      GetConstrainingTabContents(source_tab_contents)->
           blocked_content_tab_helper()->
               AddPopup(new_tab_contents, initial_pos, user_gesture);
       return;
@@ -3420,7 +3420,7 @@ void Browser::OnStartDownload(WebContents* source,
                               content::DownloadItem* download) {
   TabContents* tab_contents =
       TabContents::GetOwningTabContentsForWebContents(source);
-  TabContents* constrained = GetConstrainingContentsWrapper(tab_contents);
+  TabContents* constrained = GetConstrainingTabContents(tab_contents);
   if (constrained != tab_contents) {
     // Download in a constrained popup is shown in the tab that opened it.
     WebContents* constrained_tab = constrained->web_contents();
@@ -3721,7 +3721,7 @@ void Browser::SetTabContentBlocked(TabContents* tab_contents, bool blocked) {
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, BlockedContentTabHelperDelegate implementation:
 
-TabContents* Browser::GetConstrainingContentsWrapper(TabContents* source) {
+TabContents* Browser::GetConstrainingTabContents(TabContents* source) {
   return source;
 }
 

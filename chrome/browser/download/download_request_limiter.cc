@@ -324,7 +324,7 @@ void DownloadRequestLimiter::CanDownloadImpl(WebContents* originating_contents,
       originating_tab_contents->blocked_content_tab_helper()->delegate()) {
     effective_contents =
         originating_tab_contents->blocked_content_tab_helper()->delegate()->
-            GetConstrainingContentsWrapper(originating_tab_contents)->
+            GetConstrainingTabContents(originating_tab_contents)->
                 web_contents();
   }
 

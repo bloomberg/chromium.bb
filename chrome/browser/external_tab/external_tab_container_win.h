@@ -244,8 +244,7 @@ class ExternalTabContainer : public content::WebContentsDelegate,
   void RunUnloadHandlers(IPC::Message* reply_message);
 
   // Overridden from BlockedContentTabHelperDelegate:
-  virtual TabContents* GetConstrainingContentsWrapper(
-      TabContents* source) OVERRIDE;
+  virtual TabContents* GetConstrainingTabContents(TabContents* source) OVERRIDE;
 
  protected:
   ~ExternalTabContainer();
