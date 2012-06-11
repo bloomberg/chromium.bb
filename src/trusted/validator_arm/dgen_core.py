@@ -24,7 +24,7 @@ class BitPattern(object):
     """A pattern for matching strings of bits.  See parse() for syntax."""
 
     @staticmethod
-    def parse(pattern, hi_bit, lo_bit):
+    def parse(pattern, column):
         """ Parses a string pattern describing some bits.  The string can
         consist of '1' and '0' to match bits explicitly, 'x' or 'X' to ignore
         bits, '_' as an ignored separator, and an optional leading '~' to
@@ -38,18 +38,19 @@ class BitPattern(object):
 
         Args:
             pattern: a string in the format described above.
-            hi_bit: the top of the range matched by this pattern, inclusive.
-            lo_bit: the bottom of the range matched by this pattern, inclusive.
+            column: The tuple (name, hi, lo) defining a column.
         Returns:
             A BitPattern instance that describes the match, and is capable of
             transforming itself to a C expression.
         Raises:
             Exception: the input didn't meet the rules described above.
         """
+        hi_bit = column[1]
+        lo_bit = column[2]
         num_bits = hi_bit - lo_bit + 1
         # Convert - into a full-width don't-care pattern.
         if pattern == '-':
-            return BitPattern.parse('x' * num_bits, hi_bit, lo_bit)
+            return BitPattern.parse('x' * num_bits, column)
 
         # Derive the operation type from the presence of a leading tilde.
         if pattern.startswith('~'):
@@ -82,15 +83,15 @@ class BitPattern(object):
 
         mask = mask << lo_bit
         value = value << lo_bit
-        return BitPattern(mask, value, op)
+        return BitPattern(mask, value, op, column)
 
     @staticmethod
-    def parse_catch(pattern, hi_bit, lo_bit):
+    def parse_catch(pattern, column):
         """"Calls parse with given arguments, and catches exceptions
             raised. Prints raised exceptions and returns None.
         """
         try:
-            return BitPattern.parse(pattern, hi_bit, lo_bit);
+            return BitPattern.parse(pattern, column);
         except Exception as ex:
             print "Error: %s" % ex
             return None
@@ -128,6 +129,10 @@ class BitPattern(object):
             and self.mask == other.mask
             and self.value == other.value)
 
+    def strictly_overlaps(self, other):
+      """Checks if patterns overlap, and aren't equal."""
+      return ((self.mask & other.mask) != 0) and (self != other)
+
     def is_strictly_compatible(self, other):
         """Checks if two patterns are safe to merge using +, but are not ==."""
         if self.is_complement(other):
@@ -146,7 +151,7 @@ class BitPattern(object):
         if self.op == other.op:
             c = self.conflicts(other)
             return BitPattern((self.mask | other.mask) ^ c,
-                (self.value | other.value) ^ c, self.op)
+                (self.value | other.value) ^ c, self.op, self.column)
         else:
             return BitPattern(0, 0, '==')  # matches anything
 
@@ -190,7 +195,8 @@ class BitPattern(object):
         return (cmp(other.significant_bits, self.significant_bits)
             or cmp(self.mask, other.mask)
             or cmp(self.value, other.value)
-            or cmp(self.op, other.op))
+            or cmp(self.op, other.op)
+            or cmp(self.column, other.column))
 
 
     def first_bit(self):
@@ -255,7 +261,7 @@ class Table(object):
       return self._columns[:]
 
     def add_column(self, name, hi_bit, lo_bit):
-        """Adds a column to the table.
+        """Adds a column to the table. Returns true if successful.
 
         Because we don't use the column information for very much, we don't give
         it a type -- we store it as a list of tuples.
@@ -265,7 +271,12 @@ class Table(object):
             hi_bit: the leftmost bit included.
             lo_bit: the rightmost bit included.
         """
+        column = (name, hi_bit, lo_bit)
+        for col in self._columns:
+          if col == column:
+            return False
         self._columns.append( (name, hi_bit, lo_bit) )
+        return True
 
     def rows(self, default_also = True):
         """Returns all rows in table (including the default row
@@ -301,8 +312,7 @@ class Table(object):
            internal form. Returns None if pattern is bad.
         """
         if column >= len(self._columns): return None
-        col = self._columns[column]
-        return BitPattern.parse_catch(pattern, col[1], col[2])
+        return BitPattern.parse_catch(pattern, self._columns[column])
 
     def action_filter(self, names):
         """Returns a table with DecoderActions reduced to the given field names.
@@ -455,6 +465,13 @@ class Row(object):
         for p in patterns:
             self.significant_bits += p.significant_bits
 
+    def strictly_overlaps_bits(self, bitpat):
+      """Checks if bitpat strictly overlaps a bit pattern in the row."""
+      for p in self.patterns:
+        if bitpat.strictly_overlaps(p):
+          return True
+      return False
+
     def can_merge(self, other):
         """Determines if we can merge two Rows."""
         if self.action != other.action or self.arch != other.arch:
@@ -465,7 +482,10 @@ class Row(object):
         for (a, b) in zip(self.patterns, other.patterns):
             if a == b:
                 equal_columns += 1
-            if a.is_strictly_compatible(b):
+            # Be sure the column doesn't overlap with other columns in pattern.
+            if (not self.strictly_overlaps_bits(a) and
+                not other.strictly_overlaps_bits(b) and
+                a.is_strictly_compatible(b)):
                 compat_columns += 1
 
         cols = len(self.patterns)

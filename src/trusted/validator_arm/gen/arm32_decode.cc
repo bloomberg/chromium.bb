@@ -75,8 +75,7 @@ const ClassDecoder& Arm32DecoderState::decode_ARMv7(
 {
 
   if ((insn.Bits() & 0xF0000000) != 0xF0000000 /* cond(31:28) == ~1111 */ &&
-      (insn.Bits() & 0x0E000000) == 0x04000000 /* op1(27:25) == 010 */ &&
-      true)
+      (insn.Bits() & 0x0E000000) == 0x04000000 /* op1(27:25) == 010 */)
     return decode_load_store_word_byte(insn);
 
   if ((insn.Bits() & 0xF0000000) != 0xF0000000 /* cond(31:28) == ~1111 */ &&
@@ -90,23 +89,18 @@ const ClassDecoder& Arm32DecoderState::decode_ARMv7(
     return decode_media(insn);
 
   if ((insn.Bits() & 0xF0000000) != 0xF0000000 /* cond(31:28) == ~1111 */ &&
-      (insn.Bits() & 0x0C000000) == 0x00000000 /* op1(27:25) == 00x */ &&
-      true)
+      (insn.Bits() & 0x0C000000) == 0x00000000 /* op1(27:25) == 00x */)
     return decode_dp_misc(insn);
 
   if ((insn.Bits() & 0xF0000000) != 0xF0000000 /* cond(31:28) == ~1111 */ &&
-      (insn.Bits() & 0x0C000000) == 0x08000000 /* op1(27:25) == 10x */ &&
-      true)
+      (insn.Bits() & 0x0C000000) == 0x08000000 /* op1(27:25) == 10x */)
     return decode_branch_block_xfer(insn);
 
   if ((insn.Bits() & 0xF0000000) != 0xF0000000 /* cond(31:28) == ~1111 */ &&
-      (insn.Bits() & 0x0C000000) == 0x0C000000 /* op1(27:25) == 11x */ &&
-      true)
+      (insn.Bits() & 0x0C000000) == 0x0C000000 /* op1(27:25) == 11x */)
     return decode_super_cop(insn);
 
-  if ((insn.Bits() & 0xF0000000) == 0xF0000000 /* cond(31:28) == 1111 */ &&
-      true &&
-      true)
+  if ((insn.Bits() & 0xF0000000) == 0xF0000000 /* cond(31:28) == 1111 */)
     return decode_unconditional(insn);
 
   // Catch any attempt to fall though ...
@@ -154,19 +148,31 @@ const ClassDecoder& Arm32DecoderState::decode_dp_immed(
   if ((insn.Bits() & 0x01B00000) == 0x01300000 /* op(24:20) == 10x11 */)
     return DontCareInst_instance_;
 
+  if ((insn.Bits() & 0x01E00000) == 0x00400000 /* op(24:20) == 0010x */)
+    return Defs12To15_instance_;
+
+  if ((insn.Bits() & 0x01E00000) == 0x00800000 /* op(24:20) == 0100x */)
+    return Defs12To15_instance_;
+
+  if ((insn.Bits() & 0x01E00000) == 0x00C00000 /* op(24:20) == 0110x */)
+    return Defs12To15_instance_;
+
+  if ((insn.Bits() & 0x01E00000) == 0x01800000 /* op(24:20) == 1100x */)
+    return Defs12To15_instance_;
+
   if ((insn.Bits() & 0x01E00000) == 0x01C00000 /* op(24:20) == 1110x */)
     return MaskAddress_instance_;
 
   if ((insn.Bits() & 0x01E00000) == 0x01E00000 /* op(24:20) == 1111x */)
     return Defs12To15_instance_;
 
+  if ((insn.Bits() & 0x00E00000) == 0x00A00000 /* op(24:20) == x101x */)
+    return Defs12To15_instance_;
+
+  if ((insn.Bits() & 0x01600000) == 0x00600000 /* op(24:20) == 0x11x */)
+    return Defs12To15_instance_;
+
   if ((insn.Bits() & 0x01C00000) == 0x00000000 /* op(24:20) == 000xx */)
-    return Defs12To15_instance_;
-
-  if ((insn.Bits() & 0x00C00000) == 0x00800000 /* op(24:20) == x10xx */)
-    return Defs12To15_instance_;
-
-  if ((insn.Bits() & 0x01400000) == 0x00400000 /* op(24:20) == 0x1xx */)
     return Defs12To15_instance_;
 
   // Catch any attempt to fall though ...
@@ -232,23 +238,19 @@ const ClassDecoder& Arm32DecoderState::decode_dp_misc(
     return decode_sync(insn);
 
   if ((insn.Bits() & 0x02000000) == 0x02000000 /* op(25:25) == 1 */ &&
-      (insn.Bits() & 0x01F00000) == 0x01000000 /* op1(24:20) == 10000 */ &&
-      true)
+      (insn.Bits() & 0x01F00000) == 0x01000000 /* op1(24:20) == 10000 */)
     return Defs12To15_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x02000000 /* op(25:25) == 1 */ &&
-      (insn.Bits() & 0x01F00000) == 0x01400000 /* op1(24:20) == 10100 */ &&
-      true)
+      (insn.Bits() & 0x01F00000) == 0x01400000 /* op1(24:20) == 10100 */)
     return DataProc_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x02000000 /* op(25:25) == 1 */ &&
-      (insn.Bits() & 0x01B00000) == 0x01200000 /* op1(24:20) == 10x10 */ &&
-      true)
+      (insn.Bits() & 0x01B00000) == 0x01200000 /* op1(24:20) == 10x10 */)
     return decode_msr_and_hints(insn);
 
   if ((insn.Bits() & 0x02000000) == 0x02000000 /* op(25:25) == 1 */ &&
-      (insn.Bits() & 0x01900000) != 0x01000000 /* op1(24:20) == ~10xx0 */ &&
-      true)
+      (insn.Bits() & 0x01900000) != 0x01000000 /* op1(24:20) == ~10xx0 */)
     return decode_dp_immed(insn);
 
   // Catch any attempt to fall though ...
@@ -266,6 +268,25 @@ const ClassDecoder& Arm32DecoderState::decode_dp_reg(
   if ((insn.Bits() & 0x01E00000) == 0x00200000 /* op1(24:20) == 0001x */)
     return Defs12To15CondsDontCare_instance_;
 
+  if ((insn.Bits() & 0x01E00000) == 0x01800000 /* op1(24:20) == 1100x */)
+    return Defs12To15_instance_;
+
+  if ((insn.Bits() & 0x01E00000) == 0x01A00000 /* op1(24:20) == 1101x */ &&
+      (insn.Bits() & 0x00000060) == 0x00000000 /* op3(6:5) == 00 */)
+    return Defs12To15_instance_;
+
+  if ((insn.Bits() & 0x01E00000) == 0x01A00000 /* op1(24:20) == 1101x */ &&
+      (insn.Bits() & 0x00000060) == 0x00000020 /* op3(6:5) == 01 */)
+    return Defs12To15_instance_;
+
+  if ((insn.Bits() & 0x01E00000) == 0x01A00000 /* op1(24:20) == 1101x */ &&
+      (insn.Bits() & 0x00000060) == 0x00000040 /* op3(6:5) == 10 */)
+    return Defs12To15_instance_;
+
+  if ((insn.Bits() & 0x01E00000) == 0x01A00000 /* op1(24:20) == 1101x */ &&
+      (insn.Bits() & 0x00000060) == 0x00000060 /* op3(6:5) == 11 */)
+    return Defs12To15_instance_;
+
   if ((insn.Bits() & 0x01E00000) == 0x01E00000 /* op1(24:20) == 1111x */)
     return Defs12To15_instance_;
 
@@ -281,7 +302,7 @@ const ClassDecoder& Arm32DecoderState::decode_dp_reg(
   if ((insn.Bits() & 0x01A00000) == 0x00000000 /* op1(24:20) == 00x0x */)
     return Defs12To15_instance_;
 
-  if ((insn.Bits() & 0x00C00000) == 0x00800000 /* op1(24:20) == x10xx */)
+  if ((insn.Bits() & 0x01C00000) == 0x00800000 /* op1(24:20) == 010xx */)
     return Defs12To15_instance_;
 
   // Catch any attempt to fall though ...
@@ -384,8 +405,7 @@ const ClassDecoder& Arm32DecoderState::decode_half_mult(
      const Instruction insn) const
 {
   UNREFERENCED_PARAMETER(insn);
-  if ((insn.Bits() & 0x00600000) == 0x00000000 /* op1(22:21) == 00 */ &&
-      true)
+  if ((insn.Bits() & 0x00600000) == 0x00000000 /* op1(22:21) == 00 */)
     return Defs16To19CondsDontCareRdRaRmRnNotPc_instance_;
 
   if ((insn.Bits() & 0x00600000) == 0x00200000 /* op1(22:21) == 01 */ &&
@@ -396,12 +416,10 @@ const ClassDecoder& Arm32DecoderState::decode_half_mult(
       (insn.Bits() & 0x00000020) == 0x00000020 /* op(5:5) == 1 */)
     return Defs16To19CondsDontCareRdRmRnNotPc_instance_;
 
-  if ((insn.Bits() & 0x00600000) == 0x00400000 /* op1(22:21) == 10 */ &&
-      true)
+  if ((insn.Bits() & 0x00600000) == 0x00400000 /* op1(22:21) == 10 */)
     return Defs12To19CondsDontCareRdRmRnNotPc_instance_;
 
-  if ((insn.Bits() & 0x00600000) == 0x00600000 /* op1(22:21) == 11 */ &&
-      true)
+  if ((insn.Bits() & 0x00600000) == 0x00600000 /* op1(22:21) == 11 */)
     return Defs16To19CondsDontCareRdRmRnNotPc_instance_;
 
   // Catch any attempt to fall though ...
@@ -417,28 +435,23 @@ const ClassDecoder& Arm32DecoderState::decode_load_store_word_byte(
 {
   UNREFERENCED_PARAMETER(insn);
   if ((insn.Bits() & 0x02000000) == 0x00000000 /* A(25:25) == 0 */ &&
-      (insn.Bits() & 0x01300000) == 0x00000000 /* op1(24:20) == 0xx00 */ &&
-      true)
+      (insn.Bits() & 0x01300000) == 0x00000000 /* op1(24:20) == 0xx00 */)
     return StrImmediate_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x00000000 /* A(25:25) == 0 */ &&
-      (insn.Bits() & 0x01300000) == 0x00100000 /* op1(24:20) == 0xx01 */ &&
-      true)
+      (insn.Bits() & 0x01300000) == 0x00100000 /* op1(24:20) == 0xx01 */)
     return LdrImmediate_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x00000000 /* A(25:25) == 0 */ &&
-      (insn.Bits() & 0x01100000) == 0x01000000 /* op1(24:20) == 1xxx0 */ &&
-      true)
+      (insn.Bits() & 0x01100000) == 0x01000000 /* op1(24:20) == 1xxx0 */)
     return StrImmediate_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x00000000 /* A(25:25) == 0 */ &&
-      (insn.Bits() & 0x01100000) == 0x01100000 /* op1(24:20) == 1xxx1 */ &&
-      true)
+      (insn.Bits() & 0x01100000) == 0x01100000 /* op1(24:20) == 1xxx1 */)
     return LdrImmediate_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x00000000 /* A(25:25) == 0 */ &&
-      (insn.Bits() & 0x01200000) == 0x00200000 /* op1(24:20) == 0xx1x */ &&
-      true)
+      (insn.Bits() & 0x01200000) == 0x00200000 /* op1(24:20) == 0xx1x */)
     return Forbidden_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x02000000 /* A(25:25) == 1 */ &&
@@ -484,13 +497,11 @@ const ClassDecoder& Arm32DecoderState::decode_media(
 {
 
   if ((insn.Bits() & 0x01F00000) == 0x01800000 /* op1(24:20) == 11000 */ &&
-      (insn.Bits() & 0x000000E0) == 0x00000000 /* op2(7:5) == 000 */ &&
-      true)
+      (insn.Bits() & 0x000000E0) == 0x00000000 /* op2(7:5) == 000 */)
     return Multiply_instance_;
 
   if ((insn.Bits() & 0x01F00000) == 0x01F00000 /* op1(24:20) == 11111 */ &&
-      (insn.Bits() & 0x000000E0) == 0x000000E0 /* op2(7:5) == 111 */ &&
-      true)
+      (insn.Bits() & 0x000000E0) == 0x000000E0 /* op2(7:5) == 111 */)
     return Roadblock_instance_;
 
   if ((insn.Bits() & 0x01E00000) == 0x01C00000 /* op1(24:20) == 1110x */ &&
@@ -504,28 +515,19 @@ const ClassDecoder& Arm32DecoderState::decode_media(
     return Unary1RegisterBitRange_instance_;
 
   if ((insn.Bits() & 0x01A00000) == 0x01A00000 /* op1(24:20) == 11x1x */ &&
-      (insn.Bits() & 0x00000060) == 0x00000040 /* op2(7:5) == x10 */ &&
-      true)
+      (insn.Bits() & 0x00000060) == 0x00000040 /* op2(7:5) == x10 */)
     return DataProc_instance_;
 
-  if ((insn.Bits() & 0x01C00000) == 0x00000000 /* op1(24:20) == 000xx */ &&
-      true &&
-      true)
+  if ((insn.Bits() & 0x01C00000) == 0x00000000 /* op1(24:20) == 000xx */)
     return decode_parallel_add_sub_signed(insn);
 
-  if ((insn.Bits() & 0x01C00000) == 0x00400000 /* op1(24:20) == 001xx */ &&
-      true &&
-      true)
+  if ((insn.Bits() & 0x01C00000) == 0x00400000 /* op1(24:20) == 001xx */)
     return decode_parallel_add_sub_unsigned(insn);
 
-  if ((insn.Bits() & 0x01800000) == 0x00800000 /* op1(24:20) == 01xxx */ &&
-      true &&
-      true)
+  if ((insn.Bits() & 0x01800000) == 0x00800000 /* op1(24:20) == 01xxx */)
     return decode_pack_sat_rev(insn);
 
-  if ((insn.Bits() & 0x01800000) == 0x01000000 /* op1(24:20) == 10xxx */ &&
-      true &&
-      true)
+  if ((insn.Bits() & 0x01800000) == 0x01000000 /* op1(24:20) == 10xxx */)
     return decode_signed_mult(insn);
 
   if (true)
@@ -559,48 +561,38 @@ const ClassDecoder& Arm32DecoderState::decode_misc(
     return Forbidden_instance_;
 
   if ((insn.Bits() & 0x00000070) == 0x00000000 /* op2(6:4) == 000 */ &&
-      (insn.Bits() & 0x00600000) == 0x00600000 /* op(22:21) == 11 */ &&
-      true)
+      (insn.Bits() & 0x00600000) == 0x00600000 /* op(22:21) == 11 */)
     return Forbidden_instance_;
 
   if ((insn.Bits() & 0x00000070) == 0x00000000 /* op2(6:4) == 000 */ &&
-      (insn.Bits() & 0x00200000) == 0x00000000 /* op(22:21) == x0 */ &&
-      true)
+      (insn.Bits() & 0x00200000) == 0x00000000 /* op(22:21) == x0 */)
     return DataProc_instance_;
 
   if ((insn.Bits() & 0x00000070) == 0x00000010 /* op2(6:4) == 001 */ &&
-      (insn.Bits() & 0x00600000) == 0x00200000 /* op(22:21) == 01 */ &&
-      true)
+      (insn.Bits() & 0x00600000) == 0x00200000 /* op(22:21) == 01 */)
     return BxBlx_instance_;
 
   if ((insn.Bits() & 0x00000070) == 0x00000010 /* op2(6:4) == 001 */ &&
-      (insn.Bits() & 0x00600000) == 0x00600000 /* op(22:21) == 11 */ &&
-      true)
+      (insn.Bits() & 0x00600000) == 0x00600000 /* op(22:21) == 11 */)
     return DataProc_instance_;
 
   if ((insn.Bits() & 0x00000070) == 0x00000020 /* op2(6:4) == 010 */ &&
-      (insn.Bits() & 0x00600000) == 0x00200000 /* op(22:21) == 01 */ &&
-      true)
+      (insn.Bits() & 0x00600000) == 0x00200000 /* op(22:21) == 01 */)
     return Forbidden_instance_;
 
   if ((insn.Bits() & 0x00000070) == 0x00000030 /* op2(6:4) == 011 */ &&
-      (insn.Bits() & 0x00600000) == 0x00200000 /* op(22:21) == 01 */ &&
-      true)
+      (insn.Bits() & 0x00600000) == 0x00200000 /* op(22:21) == 01 */)
     return BxBlx_instance_;
 
-  if ((insn.Bits() & 0x00000070) == 0x00000050 /* op2(6:4) == 101 */ &&
-      true &&
-      true)
+  if ((insn.Bits() & 0x00000070) == 0x00000050 /* op2(6:4) == 101 */)
     return decode_sat_add_sub(insn);
 
   if ((insn.Bits() & 0x00000070) == 0x00000070 /* op2(6:4) == 111 */ &&
-      (insn.Bits() & 0x00600000) == 0x00200000 /* op(22:21) == 01 */ &&
-      true)
+      (insn.Bits() & 0x00600000) == 0x00200000 /* op(22:21) == 01 */)
     return Breakpoint_instance_;
 
   if ((insn.Bits() & 0x00000070) == 0x00000070 /* op2(6:4) == 111 */ &&
-      (insn.Bits() & 0x00600000) == 0x00600000 /* op(22:21) == 11 */ &&
-      true)
+      (insn.Bits() & 0x00600000) == 0x00600000 /* op(22:21) == 11 */)
     return Forbidden_instance_;
 
   if (true)
@@ -629,78 +621,57 @@ const ClassDecoder& Arm32DecoderState::decode_misc_hints_simd(
     return Forbidden_instance_;
 
   if ((insn.Bits() & 0x07F00000) == 0x05700000 /* op1(26:20) == 1010111 */ &&
-      (insn.Bits() & 0x000000F0) == 0x00000010 /* op2(7:4) == 0001 */ &&
-      true)
+      (insn.Bits() & 0x000000F0) == 0x00000010 /* op2(7:4) == 0001 */)
     return EffectiveNoOp_instance_;
 
   if ((insn.Bits() & 0x07F00000) == 0x05700000 /* op1(26:20) == 1010111 */ &&
-      (insn.Bits() & 0x000000F0) == 0x00000050 /* op2(7:4) == 0101 */ &&
-      true)
+      (insn.Bits() & 0x000000F0) == 0x00000050 /* op2(7:4) == 0101 */)
     return EffectiveNoOp_instance_;
 
   if ((insn.Bits() & 0x07F00000) == 0x05700000 /* op1(26:20) == 1010111 */ &&
-      (insn.Bits() & 0x000000D0) == 0x00000040 /* op2(7:4) == 01x0 */ &&
-      true)
+      (insn.Bits() & 0x000000D0) == 0x00000040 /* op2(7:4) == 01x0 */)
     return EffectiveNoOp_instance_;
 
-  if ((insn.Bits() & 0x07700000) == 0x04100000 /* op1(26:20) == 100x001 */ &&
-      true &&
-      true)
+  if ((insn.Bits() & 0x07700000) == 0x04100000 /* op1(26:20) == 100x001 */)
     return EffectiveNoOp_instance_;
 
-  if ((insn.Bits() & 0x07700000) == 0x04500000 /* op1(26:20) == 100x101 */ &&
-      true &&
-      true)
+  if ((insn.Bits() & 0x07700000) == 0x04500000 /* op1(26:20) == 100x101 */)
     return EffectiveNoOp_instance_;
 
   if ((insn.Bits() & 0x07700000) == 0x05100000 /* op1(26:20) == 101x001 */ &&
-      true &&
       (insn.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16) == ~1111 */)
     return EffectiveNoOp_instance_;
 
   if ((insn.Bits() & 0x07700000) == 0x05100000 /* op1(26:20) == 101x001 */ &&
-      true &&
       (insn.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */)
     return Unpredictable_instance_;
 
-  if ((insn.Bits() & 0x07700000) == 0x05500000 /* op1(26:20) == 101x101 */ &&
-      true &&
-      true)
+  if ((insn.Bits() & 0x07700000) == 0x05500000 /* op1(26:20) == 101x101 */)
     return EffectiveNoOp_instance_;
 
   if ((insn.Bits() & 0x07700000) == 0x06500000 /* op1(26:20) == 110x101 */ &&
-      (insn.Bits() & 0x00000010) == 0x00000000 /* op2(7:4) == xxx0 */ &&
-      true)
+      (insn.Bits() & 0x00000010) == 0x00000000 /* op2(7:4) == xxx0 */)
     return EffectiveNoOp_instance_;
 
   if ((insn.Bits() & 0x07700000) == 0x07500000 /* op1(26:20) == 111x101 */ &&
-      (insn.Bits() & 0x00000010) == 0x00000000 /* op2(7:4) == xxx0 */ &&
-      true)
+      (insn.Bits() & 0x00000010) == 0x00000000 /* op2(7:4) == xxx0 */)
     return EffectiveNoOp_instance_;
 
   if ((insn.Bits() & 0x06700000) == 0x06100000 /* op1(26:20) == 11xx001 */ &&
-      (insn.Bits() & 0x00000010) == 0x00000000 /* op2(7:4) == xxx0 */ &&
-      true)
+      (insn.Bits() & 0x00000010) == 0x00000000 /* op2(7:4) == xxx0 */)
     return EffectiveNoOp_instance_;
 
-  if ((insn.Bits() & 0x06300000) == 0x04300000 /* op1(26:20) == 10xxx11 */ &&
-      true &&
-      true)
+  if ((insn.Bits() & 0x06300000) == 0x04300000 /* op1(26:20) == 10xxx11 */)
     return Unpredictable_instance_;
 
   if ((insn.Bits() & 0x06300000) == 0x06300000 /* op1(26:20) == 11xxx11 */ &&
-      (insn.Bits() & 0x00000010) == 0x00000000 /* op2(7:4) == xxx0 */ &&
-      true)
+      (insn.Bits() & 0x00000010) == 0x00000000 /* op2(7:4) == xxx0 */)
     return Unpredictable_instance_;
 
-  if ((insn.Bits() & 0x07100000) == 0x04000000 /* op1(26:20) == 100xxx0 */ &&
-      true &&
-      true)
+  if ((insn.Bits() & 0x07100000) == 0x04000000 /* op1(26:20) == 100xxx0 */)
     return decode_simd_load_store(insn);
 
-  if ((insn.Bits() & 0x06000000) == 0x02000000 /* op1(26:20) == 01xxxxx */ &&
-      true &&
-      true)
+  if ((insn.Bits() & 0x06000000) == 0x02000000 /* op1(26:20) == 01xxxxx */)
     return decode_simd_dp(insn);
 
   if (true)
@@ -744,28 +715,22 @@ const ClassDecoder& Arm32DecoderState::decode_msr_and_hints(
     return EffectiveNoOp_instance_;
 
   if ((insn.Bits() & 0x00400000) == 0x00000000 /* op(22:22) == 0 */ &&
-      (insn.Bits() & 0x000F0000) == 0x00040000 /* op1(19:16) == 0100 */ &&
-      true)
+      (insn.Bits() & 0x000F0000) == 0x00040000 /* op1(19:16) == 0100 */)
     return MoveToStatusRegister_instance_;
 
   if ((insn.Bits() & 0x00400000) == 0x00000000 /* op(22:22) == 0 */ &&
-      (insn.Bits() & 0x000B0000) == 0x00080000 /* op1(19:16) == 1x00 */ &&
-      true)
+      (insn.Bits() & 0x000B0000) == 0x00080000 /* op1(19:16) == 1x00 */)
     return MoveToStatusRegister_instance_;
 
   if ((insn.Bits() & 0x00400000) == 0x00000000 /* op(22:22) == 0 */ &&
-      (insn.Bits() & 0x00030000) == 0x00010000 /* op1(19:16) == xx01 */ &&
-      true)
+      (insn.Bits() & 0x00030000) == 0x00010000 /* op1(19:16) == xx01 */)
     return Forbidden_instance_;
 
   if ((insn.Bits() & 0x00400000) == 0x00000000 /* op(22:22) == 0 */ &&
-      (insn.Bits() & 0x00020000) == 0x00020000 /* op1(19:16) == xx1x */ &&
-      true)
+      (insn.Bits() & 0x00020000) == 0x00020000 /* op1(19:16) == xx1x */)
     return Forbidden_instance_;
 
-  if ((insn.Bits() & 0x00400000) == 0x00400000 /* op(22:22) == 1 */ &&
-      true &&
-      true)
+  if ((insn.Bits() & 0x00400000) == 0x00400000 /* op(22:22) == 1 */)
     return Forbidden_instance_;
 
   if (true)
@@ -821,12 +786,8 @@ const ClassDecoder& Arm32DecoderState::decode_pack_sat_rev(
       (insn.Bits() & 0x00000020) == 0x00000000 /* op2(7:5) == xx0 */)
     return PackSatRev_instance_;
 
-  if ((insn.Bits() & 0x00700000) == 0x00400000 /* op1(22:20) == 100 */ &&
-      (insn.Bits() & 0x000000E0) == 0x00000060 /* op2(7:5) == 011 */)
-    return PackSatRev_instance_;
-
   if ((insn.Bits() & 0x00700000) == 0x00600000 /* op1(22:20) == 110 */ &&
-      (insn.Bits() & 0x000000A0) == 0x00000020 /* op2(7:5) == 0x1 */)
+      (insn.Bits() & 0x000000E0) == 0x00000020 /* op2(7:5) == 001 */)
     return PackSatRev_instance_;
 
   if ((insn.Bits() & 0x00700000) == 0x00700000 /* op1(22:20) == 111 */ &&
@@ -841,12 +802,12 @@ const ClassDecoder& Arm32DecoderState::decode_pack_sat_rev(
       (insn.Bits() & 0x000000E0) == 0x000000A0 /* op2(7:5) == 101 */)
     return PackSatRev_instance_;
 
-  if ((insn.Bits() & 0x00500000) == 0x00000000 /* op1(22:20) == 0x0 */ &&
-      (insn.Bits() & 0x000000E0) == 0x00000060 /* op2(7:5) == 011 */)
-    return PackSatRev_instance_;
-
   if ((insn.Bits() & 0x00600000) == 0x00200000 /* op1(22:20) == 01x */ &&
       (insn.Bits() & 0x000000E0) == 0x00000020 /* op2(7:5) == 001 */)
+    return PackSatRev_instance_;
+
+  if ((insn.Bits() & 0x00100000) == 0x00000000 /* op1(22:20) == xx0 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000060 /* op2(7:5) == 011 */)
     return PackSatRev_instance_;
 
   if ((insn.Bits() & 0x00200000) == 0x00200000 /* op1(22:20) == x1x */ &&
@@ -962,28 +923,28 @@ const ClassDecoder& Arm32DecoderState::decode_signed_mult(
 {
   UNREFERENCED_PARAMETER(insn);
   if ((insn.Bits() & 0x00700000) == 0x00000000 /* op1(22:20) == 000 */ &&
+      (insn.Bits() & 0x000000C0) == 0x00000000 /* op2(7:5) == 00x */)
+    return Multiply_instance_;
+
+  if ((insn.Bits() & 0x00700000) == 0x00000000 /* op1(22:20) == 000 */ &&
+      (insn.Bits() & 0x000000C0) == 0x00000040 /* op2(7:5) == 01x */)
+    return Multiply_instance_;
+
+  if ((insn.Bits() & 0x00700000) == 0x00000000 /* op1(22:20) == 000 */ &&
       (insn.Bits() & 0x000000C0) == 0x00000040 /* op2(7:5) == 01x */ &&
       (insn.Bits() & 0x0000F000) != 0x0000F000 /* A(15:12) == ~1111 */)
     return Multiply_instance_;
 
-  if ((insn.Bits() & 0x00700000) == 0x00000000 /* op1(22:20) == 000 */ &&
-      (insn.Bits() & 0x00000080) == 0x00000000 /* op2(7:5) == 0xx */ &&
-      true)
-    return Multiply_instance_;
-
   if ((insn.Bits() & 0x00700000) == 0x00400000 /* op1(22:20) == 100 */ &&
-      (insn.Bits() & 0x00000080) == 0x00000000 /* op2(7:5) == 0xx */ &&
-      true)
+      (insn.Bits() & 0x00000080) == 0x00000000 /* op2(7:5) == 0xx */)
     return LongMultiply_instance_;
 
   if ((insn.Bits() & 0x00700000) == 0x00500000 /* op1(22:20) == 101 */ &&
-      (insn.Bits() & 0x000000C0) == 0x00000000 /* op2(7:5) == 00x */ &&
-      true)
+      (insn.Bits() & 0x000000C0) == 0x00000000 /* op2(7:5) == 00x */)
     return Multiply_instance_;
 
   if ((insn.Bits() & 0x00700000) == 0x00500000 /* op1(22:20) == 101 */ &&
-      (insn.Bits() & 0x000000C0) == 0x000000C0 /* op2(7:5) == 11x */ &&
-      true)
+      (insn.Bits() & 0x000000C0) == 0x000000C0 /* op2(7:5) == 11x */)
     return Multiply_instance_;
 
   if (true)
@@ -1001,9 +962,47 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp(
      const Instruction insn) const
 {
 
+  if ((insn.Bits() & 0x00B80000) == 0x00800000 /* A(23:19) == 1x000 */ &&
+      (insn.Bits() & 0x00000090) == 0x00000010 /* C(7:4) == 0xx1 */)
+    return decode_simd_dp_1imm(insn);
+
+  if ((insn.Bits() & 0x00B80000) == 0x00880000 /* A(23:19) == 1x001 */ &&
+      (insn.Bits() & 0x00000090) == 0x00000010 /* C(7:4) == 0xx1 */)
+    return decode_simd_dp_2shift(insn);
+
+  if ((insn.Bits() & 0x00B00000) == 0x00900000 /* A(23:19) == 1x01x */ &&
+      (insn.Bits() & 0x00000090) == 0x00000010 /* C(7:4) == 0xx1 */)
+    return decode_simd_dp_2shift(insn);
+
+  if ((insn.Bits() & 0x00B00000) == 0x00A00000 /* A(23:19) == 1x10x */ &&
+      (insn.Bits() & 0x00000050) == 0x00000000 /* C(7:4) == x0x0 */)
+    return decode_simd_dp_3diff(insn);
+
+  if ((insn.Bits() & 0x00B00000) == 0x00A00000 /* A(23:19) == 1x10x */ &&
+      (insn.Bits() & 0x00000050) == 0x00000040 /* C(7:4) == x1x0 */)
+    return decode_simd_dp_2scalar(insn);
+
+  if ((insn.Bits() & 0x00A00000) == 0x00800000 /* A(23:19) == 1x0xx */ &&
+      (insn.Bits() & 0x00000050) == 0x00000000 /* C(7:4) == x0x0 */)
+    return decode_simd_dp_3diff(insn);
+
+  if ((insn.Bits() & 0x00A00000) == 0x00800000 /* A(23:19) == 1x0xx */ &&
+      (insn.Bits() & 0x00000050) == 0x00000040 /* C(7:4) == x1x0 */)
+    return decode_simd_dp_2scalar(insn);
+
+  if ((insn.Bits() & 0x00A00000) == 0x00A00000 /* A(23:19) == 1x1xx */ &&
+      (insn.Bits() & 0x00000090) == 0x00000010 /* C(7:4) == 0xx1 */)
+    return decode_simd_dp_2shift(insn);
+
+  if ((insn.Bits() & 0x00800000) == 0x00000000 /* A(23:19) == 0xxxx */)
+    return decode_simd_dp_3same(insn);
+
+  if ((insn.Bits() & 0x00800000) == 0x00800000 /* A(23:19) == 1xxxx */ &&
+      (insn.Bits() & 0x00000090) == 0x00000090 /* C(7:4) == 1xx1 */)
+    return decode_simd_dp_2shift(insn);
+
   if ((insn.Bits() & 0x01000000) == 0x00000000 /* U(24:24) == 0 */ &&
       (insn.Bits() & 0x00B00000) == 0x00B00000 /* A(23:19) == 1x11x */ &&
-      true &&
       (insn.Bits() & 0x00000010) == 0x00000000 /* C(7:4) == xxx0 */)
     return EffectiveNoOp_instance_;
 
@@ -1025,66 +1024,6 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp(
       (insn.Bits() & 0x00000010) == 0x00000000 /* C(7:4) == xxx0 */)
     return decode_simd_dp_2misc(insn);
 
-  if (true &&
-      (insn.Bits() & 0x00B80000) == 0x00800000 /* A(23:19) == 1x000 */ &&
-      true &&
-      (insn.Bits() & 0x00000090) == 0x00000010 /* C(7:4) == 0xx1 */)
-    return decode_simd_dp_1imm(insn);
-
-  if (true &&
-      (insn.Bits() & 0x00B80000) == 0x00880000 /* A(23:19) == 1x001 */ &&
-      true &&
-      (insn.Bits() & 0x00000090) == 0x00000010 /* C(7:4) == 0xx1 */)
-    return decode_simd_dp_2shift(insn);
-
-  if (true &&
-      (insn.Bits() & 0x00B00000) == 0x00900000 /* A(23:19) == 1x01x */ &&
-      true &&
-      (insn.Bits() & 0x00000090) == 0x00000010 /* C(7:4) == 0xx1 */)
-    return decode_simd_dp_2shift(insn);
-
-  if (true &&
-      (insn.Bits() & 0x00B00000) == 0x00A00000 /* A(23:19) == 1x10x */ &&
-      true &&
-      (insn.Bits() & 0x00000050) == 0x00000000 /* C(7:4) == x0x0 */)
-    return decode_simd_dp_3diff(insn);
-
-  if (true &&
-      (insn.Bits() & 0x00B00000) == 0x00A00000 /* A(23:19) == 1x10x */ &&
-      true &&
-      (insn.Bits() & 0x00000050) == 0x00000040 /* C(7:4) == x1x0 */)
-    return decode_simd_dp_2scalar(insn);
-
-  if (true &&
-      (insn.Bits() & 0x00A00000) == 0x00800000 /* A(23:19) == 1x0xx */ &&
-      true &&
-      (insn.Bits() & 0x00000050) == 0x00000000 /* C(7:4) == x0x0 */)
-    return decode_simd_dp_3diff(insn);
-
-  if (true &&
-      (insn.Bits() & 0x00A00000) == 0x00800000 /* A(23:19) == 1x0xx */ &&
-      true &&
-      (insn.Bits() & 0x00000050) == 0x00000040 /* C(7:4) == x1x0 */)
-    return decode_simd_dp_2scalar(insn);
-
-  if (true &&
-      (insn.Bits() & 0x00A00000) == 0x00A00000 /* A(23:19) == 1x1xx */ &&
-      true &&
-      (insn.Bits() & 0x00000090) == 0x00000010 /* C(7:4) == 0xx1 */)
-    return decode_simd_dp_2shift(insn);
-
-  if (true &&
-      (insn.Bits() & 0x00800000) == 0x00000000 /* A(23:19) == 0xxxx */ &&
-      true &&
-      true)
-    return decode_simd_dp_3same(insn);
-
-  if (true &&
-      (insn.Bits() & 0x00800000) == 0x00800000 /* A(23:19) == 1xxxx */ &&
-      true &&
-      (insn.Bits() & 0x00000090) == 0x00000090 /* C(7:4) == 1xx1 */)
-    return decode_simd_dp_2shift(insn);
-
   if (true)
     return Undefined_instance_;
 
@@ -1100,8 +1039,7 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_1imm(
      const Instruction insn) const
 {
   UNREFERENCED_PARAMETER(insn);
-  if ((insn.Bits() & 0x00000020) == 0x00000000 /* op(5:5) == 0 */ &&
-      true)
+  if ((insn.Bits() & 0x00000020) == 0x00000000 /* op(5:5) == 0 */)
     return EffectiveNoOp_instance_;
 
   if ((insn.Bits() & 0x00000020) == 0x00000020 /* op(5:5) == 1 */ &&
@@ -1199,24 +1137,21 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_2scalar(
      const Instruction insn) const
 {
   UNREFERENCED_PARAMETER(insn);
-  if ((insn.Bits() & 0x00000F00) == 0x00000A00 /* A(11:8) == 1010 */ &&
-      true)
+  if ((insn.Bits() & 0x00000F00) == 0x00000A00 /* A(11:8) == 1010 */)
     return EffectiveNoOp_instance_;
 
   if ((insn.Bits() & 0x00000F00) == 0x00000B00 /* A(11:8) == 1011 */ &&
       (insn.Bits() & 0x01000000) == 0x00000000 /* U(24:24) == 0 */)
     return EffectiveNoOp_instance_;
 
-  if ((insn.Bits() & 0x00000B00) == 0x00000200 /* A(11:8) == 0x10 */ &&
-      true)
+  if ((insn.Bits() & 0x00000B00) == 0x00000200 /* A(11:8) == 0x10 */)
     return EffectiveNoOp_instance_;
 
   if ((insn.Bits() & 0x00000B00) == 0x00000300 /* A(11:8) == 0x11 */ &&
       (insn.Bits() & 0x01000000) == 0x00000000 /* U(24:24) == 0 */)
     return EffectiveNoOp_instance_;
 
-  if ((insn.Bits() & 0x00000200) == 0x00000000 /* A(11:8) == xx0x */ &&
-      true)
+  if ((insn.Bits() & 0x00000200) == 0x00000000 /* A(11:8) == xx0x */)
     return EffectiveNoOp_instance_;
 
   if (true)
@@ -1235,9 +1170,11 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_2shift(
 {
   UNREFERENCED_PARAMETER(insn);
   if ((insn.Bits() & 0x00000F00) == 0x00000500 /* A(11:8) == 0101 */ &&
-      (insn.Bits() & 0x01000000) == 0x00000000 /* U(24:24) == 0 */ &&
-      true &&
-      true)
+      (insn.Bits() & 0x01000000) == 0x00000000 /* U(24:24) == 0 */)
+    return EffectiveNoOp_instance_;
+
+  if ((insn.Bits() & 0x00000F00) == 0x00000800 /* A(11:8) == 1000 */ &&
+      (insn.Bits() & 0x00000040) == 0x00000040 /* B(6:6) == 1 */)
     return EffectiveNoOp_instance_;
 
   if ((insn.Bits() & 0x00000F00) == 0x00000800 /* A(11:8) == 1000 */ &&
@@ -1248,44 +1185,24 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_2shift(
 
   if ((insn.Bits() & 0x00000F00) == 0x00000800 /* A(11:8) == 1000 */ &&
       (insn.Bits() & 0x01000000) == 0x01000000 /* U(24:24) == 1 */ &&
-      (insn.Bits() & 0x00000040) == 0x00000000 /* B(6:6) == 0 */ &&
-      true)
+      (insn.Bits() & 0x00000040) == 0x00000000 /* B(6:6) == 0 */)
     return EffectiveNoOp_instance_;
 
-  if ((insn.Bits() & 0x00000F00) == 0x00000800 /* A(11:8) == 1000 */ &&
-      true &&
-      (insn.Bits() & 0x00000040) == 0x00000040 /* B(6:6) == 1 */ &&
-      true)
-    return EffectiveNoOp_instance_;
-
-  if ((insn.Bits() & 0x00000F00) == 0x00000900 /* A(11:8) == 1001 */ &&
-      true &&
-      true &&
-      true)
+  if ((insn.Bits() & 0x00000F00) == 0x00000900 /* A(11:8) == 1001 */)
     return EffectiveNoOp_instance_;
 
   if ((insn.Bits() & 0x00000F00) == 0x00000A00 /* A(11:8) == 1010 */ &&
-      true &&
-      (insn.Bits() & 0x00000040) == 0x00000000 /* B(6:6) == 0 */ &&
-      true)
+      (insn.Bits() & 0x00000040) == 0x00000000 /* B(6:6) == 0 */)
     return EffectiveNoOp_instance_;
 
   if ((insn.Bits() & 0x00000E00) == 0x00000400 /* A(11:8) == 010x */ &&
-      (insn.Bits() & 0x01000000) == 0x01000000 /* U(24:24) == 1 */ &&
-      true &&
-      true)
+      (insn.Bits() & 0x01000000) == 0x01000000 /* U(24:24) == 1 */)
     return EffectiveNoOp_instance_;
 
-  if ((insn.Bits() & 0x00000600) == 0x00000600 /* A(11:8) == x11x */ &&
-      true &&
-      true &&
-      true)
+  if ((insn.Bits() & 0x00000600) == 0x00000600 /* A(11:8) == x11x */)
     return EffectiveNoOp_instance_;
 
-  if ((insn.Bits() & 0x00000C00) == 0x00000000 /* A(11:8) == 00xx */ &&
-      true &&
-      true &&
-      true)
+  if ((insn.Bits() & 0x00000C00) == 0x00000000 /* A(11:8) == 00xx */)
     return EffectiveNoOp_instance_;
 
   if (true)
@@ -1311,12 +1228,10 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_3diff(
       (insn.Bits() & 0x01000000) == 0x00000000 /* U(24:24) == 0 */)
     return EffectiveNoOp_instance_;
 
-  if ((insn.Bits() & 0x00000900) == 0x00000800 /* A(11:8) == 1xx0 */ &&
-      true)
+  if ((insn.Bits() & 0x00000900) == 0x00000800 /* A(11:8) == 1xx0 */)
     return EffectiveNoOp_instance_;
 
-  if ((insn.Bits() & 0x00000800) == 0x00000000 /* A(11:8) == 0xxx */ &&
-      true)
+  if ((insn.Bits() & 0x00000800) == 0x00000000 /* A(11:8) == 0xxx */)
     return EffectiveNoOp_instance_;
 
   if (true)
@@ -1335,33 +1250,22 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_3same(
 {
   UNREFERENCED_PARAMETER(insn);
   if ((insn.Bits() & 0x00000F00) == 0x00000100 /* A(11:8) == 0001 */ &&
-      (insn.Bits() & 0x00000010) == 0x00000010 /* B(4:4) == 1 */ &&
-      true &&
-      true)
+      (insn.Bits() & 0x00000010) == 0x00000010 /* B(4:4) == 1 */)
     return EffectiveNoOp_instance_;
 
-  if ((insn.Bits() & 0x00000F00) == 0x00000500 /* A(11:8) == 0101 */ &&
-      true &&
-      true &&
-      true)
+  if ((insn.Bits() & 0x00000F00) == 0x00000500 /* A(11:8) == 0101 */)
     return EffectiveNoOp_instance_;
 
-  if ((insn.Bits() & 0x00000F00) == 0x00000900 /* A(11:8) == 1001 */ &&
-      true &&
-      true &&
-      true)
+  if ((insn.Bits() & 0x00000F00) == 0x00000900 /* A(11:8) == 1001 */)
     return EffectiveNoOp_instance_;
 
   if ((insn.Bits() & 0x00000F00) == 0x00000B00 /* A(11:8) == 1011 */ &&
-      (insn.Bits() & 0x00000010) == 0x00000000 /* B(4:4) == 0 */ &&
-      true &&
-      true)
+      (insn.Bits() & 0x00000010) == 0x00000000 /* B(4:4) == 0 */)
     return EffectiveNoOp_instance_;
 
   if ((insn.Bits() & 0x00000F00) == 0x00000D00 /* A(11:8) == 1101 */ &&
       (insn.Bits() & 0x00000010) == 0x00000000 /* B(4:4) == 0 */ &&
-      (insn.Bits() & 0x01000000) == 0x01000000 /* U(24:24) == 1 */ &&
-      true)
+      (insn.Bits() & 0x01000000) == 0x01000000 /* U(24:24) == 1 */)
     return EffectiveNoOp_instance_;
 
   if ((insn.Bits() & 0x00000F00) == 0x00000D00 /* A(11:8) == 1101 */ &&
@@ -1371,9 +1275,12 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_3same(
     return EffectiveNoOp_instance_;
 
   if ((insn.Bits() & 0x00000F00) == 0x00000D00 /* A(11:8) == 1101 */ &&
-      true &&
-      (insn.Bits() & 0x01000000) == 0x00000000 /* U(24:24) == 0 */ &&
-      true)
+      (insn.Bits() & 0x01000000) == 0x00000000 /* U(24:24) == 0 */)
+    return EffectiveNoOp_instance_;
+
+  if ((insn.Bits() & 0x00000F00) == 0x00000E00 /* A(11:8) == 1110 */ &&
+      (insn.Bits() & 0x00000010) == 0x00000000 /* B(4:4) == 0 */ &&
+      (insn.Bits() & 0x00200000) == 0x00000000 /* C(21:20) == 0x */)
     return EffectiveNoOp_instance_;
 
   if ((insn.Bits() & 0x00000F00) == 0x00000E00 /* A(11:8) == 1110 */ &&
@@ -1383,51 +1290,31 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_3same(
     return EffectiveNoOp_instance_;
 
   if ((insn.Bits() & 0x00000F00) == 0x00000E00 /* A(11:8) == 1110 */ &&
-      (insn.Bits() & 0x00000010) == 0x00000000 /* B(4:4) == 0 */ &&
-      true &&
-      (insn.Bits() & 0x00200000) == 0x00000000 /* C(21:20) == 0x */)
-    return EffectiveNoOp_instance_;
-
-  if ((insn.Bits() & 0x00000F00) == 0x00000E00 /* A(11:8) == 1110 */ &&
       (insn.Bits() & 0x00000010) == 0x00000010 /* B(4:4) == 1 */ &&
-      (insn.Bits() & 0x01000000) == 0x01000000 /* U(24:24) == 1 */ &&
-      true)
+      (insn.Bits() & 0x01000000) == 0x01000000 /* U(24:24) == 1 */)
     return EffectiveNoOp_instance_;
 
   if ((insn.Bits() & 0x00000700) == 0x00000700 /* A(11:8) == x111 */ &&
-      (insn.Bits() & 0x00000010) == 0x00000000 /* B(4:4) == 0 */ &&
-      true &&
-      true)
+      (insn.Bits() & 0x00000010) == 0x00000000 /* B(4:4) == 0 */)
     return EffectiveNoOp_instance_;
 
   if ((insn.Bits() & 0x00000B00) == 0x00000300 /* A(11:8) == 0x11 */ &&
-      (insn.Bits() & 0x00000010) == 0x00000010 /* B(4:4) == 1 */ &&
-      true &&
-      true)
+      (insn.Bits() & 0x00000010) == 0x00000010 /* B(4:4) == 1 */)
     return EffectiveNoOp_instance_;
 
   if ((insn.Bits() & 0x00000B00) == 0x00000B00 /* A(11:8) == 1x11 */ &&
       (insn.Bits() & 0x00000010) == 0x00000010 /* B(4:4) == 1 */ &&
-      (insn.Bits() & 0x01000000) == 0x00000000 /* U(24:24) == 0 */ &&
-      true)
+      (insn.Bits() & 0x01000000) == 0x00000000 /* U(24:24) == 0 */)
     return EffectiveNoOp_instance_;
 
   if ((insn.Bits() & 0x00000D00) == 0x00000100 /* A(11:8) == 00x1 */ &&
-      (insn.Bits() & 0x00000010) == 0x00000000 /* B(4:4) == 0 */ &&
-      true &&
-      true)
+      (insn.Bits() & 0x00000010) == 0x00000000 /* B(4:4) == 0 */)
     return EffectiveNoOp_instance_;
 
-  if ((insn.Bits() & 0x00000D00) == 0x00000800 /* A(11:8) == 10x0 */ &&
-      true &&
-      true &&
-      true)
+  if ((insn.Bits() & 0x00000D00) == 0x00000800 /* A(11:8) == 10x0 */)
     return EffectiveNoOp_instance_;
 
-  if ((insn.Bits() & 0x00000900) == 0x00000000 /* A(11:8) == 0xx0 */ &&
-      true &&
-      true &&
-      true)
+  if ((insn.Bits() & 0x00000900) == 0x00000000 /* A(11:8) == 0xx0 */)
     return EffectiveNoOp_instance_;
 
   if (true)
@@ -1518,8 +1405,7 @@ const ClassDecoder& Arm32DecoderState::decode_simd_load_store_l1(
       (insn.Bits() & 0x00000C00) == 0x00000400 /* B(11:8) == 01xx */)
     return VectorLoad_instance_;
 
-  if ((insn.Bits() & 0x00800000) == 0x00800000 /* A(23:23) == 1 */ &&
-      true)
+  if ((insn.Bits() & 0x00800000) == 0x00800000 /* A(23:23) == 1 */)
     return VectorLoad_instance_;
 
   if (true)
@@ -1537,16 +1423,13 @@ const ClassDecoder& Arm32DecoderState::decode_super_cop(
      const Instruction insn) const
 {
   UNREFERENCED_PARAMETER(insn);
-  if ((insn.Bits() & 0x03F00000) == 0x00400000 /* op1(25:20) == 000100 */ &&
-      true)
+  if ((insn.Bits() & 0x03F00000) == 0x00400000 /* op1(25:20) == 000100 */)
     return CoprocessorOp_instance_;
 
-  if ((insn.Bits() & 0x03F00000) == 0x00500000 /* op1(25:20) == 000101 */ &&
-      true)
+  if ((insn.Bits() & 0x03F00000) == 0x00500000 /* op1(25:20) == 000101 */)
     return MoveDoubleFromCoprocessor_instance_;
 
-  if ((insn.Bits() & 0x03E00000) == 0x00000000 /* op1(25:20) == 00000x */ &&
-      true)
+  if ((insn.Bits() & 0x03E00000) == 0x00000000 /* op1(25:20) == 00000x */)
     return Undefined_instance_;
 
   if ((insn.Bits() & 0x03100000) == 0x02000000 /* op1(25:20) == 10xxx0 */ &&
@@ -1557,20 +1440,17 @@ const ClassDecoder& Arm32DecoderState::decode_super_cop(
       (insn.Bits() & 0x00000010) == 0x00000010 /* op(4:4) == 1 */)
     return MoveFromCoprocessor_instance_;
 
-  if ((insn.Bits() & 0x02100000) == 0x00000000 /* op1(25:20) == 0xxxx0 */ &&
-      true)
+  if ((insn.Bits() & 0x02100000) == 0x00000000 /* op1(25:20) == 0xxxx0 */)
     return StoreCoprocessor_instance_;
 
-  if ((insn.Bits() & 0x02100000) == 0x00100000 /* op1(25:20) == 0xxxx1 */ &&
-      true)
+  if ((insn.Bits() & 0x02100000) == 0x00100000 /* op1(25:20) == 0xxxx1 */)
     return LoadCoprocessor_instance_;
 
   if ((insn.Bits() & 0x03000000) == 0x02000000 /* op1(25:20) == 10xxxx */ &&
       (insn.Bits() & 0x00000010) == 0x00000000 /* op(4:4) == 0 */)
     return CoprocessorOp_instance_;
 
-  if ((insn.Bits() & 0x03000000) == 0x03000000 /* op1(25:20) == 11xxxx */ &&
-      true)
+  if ((insn.Bits() & 0x03000000) == 0x03000000 /* op1(25:20) == 11xxxx */)
     return Forbidden_instance_;
 
   // Catch any attempt to fall though ...
@@ -1621,79 +1501,55 @@ const ClassDecoder& Arm32DecoderState::decode_unconditional(
      const Instruction insn) const
 {
 
-  if ((insn.Bits() & 0x0FF00000) == 0x0C400000 /* op1(27:20) == 11000100 */ &&
-      true &&
-      true)
+  if ((insn.Bits() & 0x0FF00000) == 0x0C400000 /* op1(27:20) == 11000100 */)
     return CoprocessorOp_instance_;
 
-  if ((insn.Bits() & 0x0FF00000) == 0x0C500000 /* op1(27:20) == 11000101 */ &&
-      true &&
-      true)
+  if ((insn.Bits() & 0x0FF00000) == 0x0C500000 /* op1(27:20) == 11000101 */)
     return MoveDoubleFromCoprocessor_instance_;
 
-  if ((insn.Bits() & 0x0FB00000) == 0x0C200000 /* op1(27:20) == 11000x10 */ &&
-      true &&
-      true)
+  if ((insn.Bits() & 0x0FB00000) == 0x0C200000 /* op1(27:20) == 11000x10 */)
     return StoreCoprocessor_instance_;
 
   if ((insn.Bits() & 0x0FB00000) == 0x0C300000 /* op1(27:20) == 11000x11 */ &&
-      true &&
       (insn.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16) == ~1111 */)
     return LoadCoprocessor_instance_;
 
-  if ((insn.Bits() & 0x0F900000) == 0x0C800000 /* op1(27:20) == 11001xx0 */ &&
-      true &&
-      true)
+  if ((insn.Bits() & 0x0F900000) == 0x0C800000 /* op1(27:20) == 11001xx0 */)
     return StoreCoprocessor_instance_;
 
   if ((insn.Bits() & 0x0F900000) == 0x0C900000 /* op1(27:20) == 11001xx1 */ &&
-      true &&
       (insn.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */)
     return LoadCoprocessor_instance_;
 
-  if ((insn.Bits() & 0x0E500000) == 0x08100000 /* op1(27:20) == 100xx0x1 */ &&
-      true &&
-      true)
+  if ((insn.Bits() & 0x0E500000) == 0x08100000 /* op1(27:20) == 100xx0x1 */)
     return Forbidden_instance_;
 
-  if ((insn.Bits() & 0x0E500000) == 0x08400000 /* op1(27:20) == 100xx1x0 */ &&
-      true &&
-      true)
+  if ((insn.Bits() & 0x0E500000) == 0x08400000 /* op1(27:20) == 100xx1x0 */)
     return Forbidden_instance_;
 
-  if ((insn.Bits() & 0x0F100000) == 0x0D000000 /* op1(27:20) == 1101xxx0 */ &&
-      true &&
-      true)
+  if ((insn.Bits() & 0x0F100000) == 0x0D000000 /* op1(27:20) == 1101xxx0 */)
     return StoreCoprocessor_instance_;
 
   if ((insn.Bits() & 0x0F100000) == 0x0D100000 /* op1(27:20) == 1101xxx1 */ &&
-      true &&
       (insn.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */)
     return LoadCoprocessor_instance_;
 
   if ((insn.Bits() & 0x0F100000) == 0x0E000000 /* op1(27:20) == 1110xxx0 */ &&
-      (insn.Bits() & 0x00000010) == 0x00000010 /* op(4:4) == 1 */ &&
-      true)
+      (insn.Bits() & 0x00000010) == 0x00000010 /* op(4:4) == 1 */)
     return CoprocessorOp_instance_;
 
   if ((insn.Bits() & 0x0F100000) == 0x0E100000 /* op1(27:20) == 1110xxx1 */ &&
-      (insn.Bits() & 0x00000010) == 0x00000010 /* op(4:4) == 1 */ &&
-      true)
+      (insn.Bits() & 0x00000010) == 0x00000010 /* op(4:4) == 1 */)
     return MoveFromCoprocessor_instance_;
 
   if ((insn.Bits() & 0x0F000000) == 0x0E000000 /* op1(27:20) == 1110xxxx */ &&
-      (insn.Bits() & 0x00000010) == 0x00000000 /* op(4:4) == 0 */ &&
-      true)
+      (insn.Bits() & 0x00000010) == 0x00000000 /* op(4:4) == 0 */)
     return CoprocessorOp_instance_;
 
-  if ((insn.Bits() & 0x0E000000) == 0x0A000000 /* op1(27:20) == 101xxxxx */ &&
-      true &&
-      true)
+  if ((insn.Bits() & 0x0E000000) == 0x0A000000 /* op1(27:20) == 101xxxxx */)
     return Forbidden_instance_;
 
-  if ((insn.Bits() & 0x08000000) == 0x00000000 /* op1(27:20) == 0xxxxxxx */ &&
-      true &&
-      true)
+  if ((insn.Bits() & 0x08000000) == 0x00000000 /* op1(27:20) == 0xxxxxxx */)
     return decode_misc_hints_simd(insn);
 
   if (true)

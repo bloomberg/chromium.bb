@@ -1,14 +1,15 @@
 #!/usr/bin/python
 #
-# Copyright 2009 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
-# Copyright 2009, Google Inc.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 #
 
 """
 Table minimization algorithm.
 """
+
+import dgen_core
 
 def optimize_rows(rows):
     """Breaks rows up into batches, and attempts to minimize each batch,
@@ -51,23 +52,18 @@ def _optimize_rows_for_single_action(rows):
     return rows
 
 def _remove_unused_columns(rows):
-    num_cols = len(rows[0].patterns)
-    used = [False] * num_cols
-
     for r in rows:
-        for i in range(0, num_cols):
-            if r.patterns[i].mask != 0:
-                used[i] = True
-
-    if not True in used:
-        # Always preserve at least one column
-        used[0] = True
-
-    for col in range(num_cols - 1, 0 - 1, -1):
-        for r in rows:
-            if not used[col]:
-                del r.patterns[col]
-
+      # Remove true entries form row.
+      if not r.patterns:
+        continue
+      simp_patterns = []
+      for p in r.patterns:
+        if p.mask != 0:  # i.e. test if not true.
+          simp_patterns.append(p)
+      if not simp_patterns:
+        # Stick in true, so row is always non-empty
+        simp_patterns.append(dgen_core.BitPattern(0, 0, '=='))
+      r.patterns = simp_patterns
 
 def each_index_pair(sequence):
     """Utility function: Generates each unique index pair in sequence."""
