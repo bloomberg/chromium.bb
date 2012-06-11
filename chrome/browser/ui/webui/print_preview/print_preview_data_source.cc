@@ -152,6 +152,10 @@ void PrintPreviewDataSource::Init() {
                      IDS_PRINT_PREVIEW_SETUP_CLOUD_PRINTERS);
   AddLocalizedString("changeDestination",
                      IDS_PRINT_PREVIEW_CHANGE_DESTINATION);
+  AddLocalizedString("offlineForYear", IDS_PRINT_PREVIEW_OFFLINE_FOR_YEAR);
+  AddLocalizedString("offlineForMonth", IDS_PRINT_PREVIEW_OFFLINE_FOR_MONTH);
+  AddLocalizedString("offlineForWeek", IDS_PRINT_PREVIEW_OFFLINE_FOR_WEEK);
+  AddLocalizedString("offline", IDS_PRINT_PREVIEW_OFFLINE);
 
   set_json_path("strings.js");
   add_resource_path("print_preview.js", IDR_PRINT_PREVIEW_JS);

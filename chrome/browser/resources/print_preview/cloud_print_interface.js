@@ -78,6 +78,7 @@ cr.define('cloudprint', function() {
       if (isRecent) {
         params['q'] = '^recent';
       }
+      params['connection_status'] = 'ALL';
       this.sendRequest_('GET', 'search', params, null, this.onSearchDone_);
     },
 

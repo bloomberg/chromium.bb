@@ -129,7 +129,8 @@ cr.define('print_preview', function() {
         print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
         print_preview.Destination.Type.LOCAL,
         localStrings.getString('printToPDF'),
-        false /*isRecent*/);
+        false /*isRecent*/,
+        print_preview.Destination.ConnectionStatus.ONLINE);
     dest.capabilities = new print_preview.ChromiumCapabilities(
         false /*hasCopiesCapability*/,
         '1' /*defaultCopiesStr*/,
@@ -326,9 +327,16 @@ cr.define('print_preview', function() {
      * @private
      */
     insertDestination_: function(destination) {
-      if (this.destinationMap_[destination.id] == null) {
+      var existingDestination = this.destinationMap_[destination.id];
+      if (existingDestination == null) {
         this.destinations_.push(destination);
         this.destinationMap_[destination.id] = destination;
+        return true;
+      } else if (existingDestination.connectionStatus ==
+                     print_preview.Destination.ConnectionStatus.UNKNOWN &&
+                 destination.connectionStatus !=
+                     print_preview.Destination.ConnectionStatus.UNKNOWN) {
+        existingDestination.connectionStatus = destination.connectionStatus;
         return true;
       } else {
         return false;

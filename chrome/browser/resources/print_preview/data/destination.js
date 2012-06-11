@@ -12,12 +12,17 @@ cr.define('print_preview', function() {
    * @param {!print_preview.Destination.Type} type Type of the destination.
    * @param {string} displayName Display name of the destination.
    * @param {boolean} isRecent Whether the destination has been used recently.
+   * @param {!print_preview.Destination.ConnectionStatus} connectionStatus
+   *     Connection status of the print destination.
    * @param {Array.<string>=} opt_tags Tags associated with the destination.
    * @param {boolean=} opt_isOwned Whether the destination is owned by the user.
    *     Only applies to cloud-based destinations.
+   * @param {number=} opt_lastAccessTime Number of milliseconds since the epoch
+   *     when the printer was last accessed.
    * @constructor
    */
-  function Destination(id, type, displayName, isRecent, opt_tags, opt_isOwned) {
+  function Destination(id, type, displayName, isRecent, connectionStatus,
+                       opt_tags, opt_isOwned, opt_lastAccessTime) {
     /**
      * ID of the destination.
      * @type {string}
@@ -73,6 +78,21 @@ cr.define('print_preview', function() {
      * @private
      */
     this.location_ = null;
+
+    /**
+     * Connection status of the destination.
+     * @type {!print_preview.Destination.ConnectionStatus}
+     * @private
+     */
+    this.connectionStatus_ = connectionStatus;
+
+    /**
+     * Number of milliseconds since the epoch when the printer was last
+     * accessed.
+     * @type {number}
+     * @private
+     */
+    this.lastAccessTime_ = opt_lastAccessTime || Date.now();
   };
 
   /**
@@ -100,6 +120,17 @@ cr.define('print_preview', function() {
     GOOGLE: 'google',
     LOCAL: 'local',
     MOBILE: 'mobile'
+  };
+
+  /**
+   * Enumerations of the connection statuses of printer destinations.
+   * @enum {string}
+   */
+  Destination.ConnectionStatus = {
+    DORMANT: 'DORMANT',
+    OFFLINE: 'OFFLINE',
+    ONLINE: 'ONLINE',
+    UNKNOWN: 'UNKNOWN'
   };
 
   Destination.prototype = {
@@ -189,6 +220,30 @@ cr.define('print_preview', function() {
      */
     set capabilities(capabilities) {
       this.capabilities_ = capabilities;
+    },
+
+    /**
+     * @return {!print_preview.Destination.ConnectionStatus} Connection status
+     *     of the print destination.
+     */
+    get connectionStatus() {
+      return this.connectionStatus_;
+    },
+
+    /**
+     * @param {!print_preview.Destination.ConnectionStatus} status Connection
+     *     status of the print destination.
+     */
+    set connectionStatus(status) {
+      this.connectionStatus_ = status;
+    },
+
+    /**
+     * @return {number} Number of milliseconds since the epoch when the printer
+     *     was last accessed.
+     */
+    get lastAccessTime() {
+      return this.lastAccessTime_;
     },
 
     /**

@@ -52,7 +52,7 @@
 }
 
 .destination-settings-location {
-  color: gray;
+  opacity: 0.4;
   overflow: hidden;
   position: absolute;
   text-overflow: ellipsis;

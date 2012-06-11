@@ -15,6 +15,10 @@
   background-color: rgb(228, 236, 247);
 }
 
+.destination-list-item.stale {
+  opacity: 0.4;
+}
+
 .destination-list-item-icon {
   -webkit-margin-end: 8px;
   -webkit-transition: opacity 150ms;
@@ -31,4 +35,10 @@
 
 .destination-list-item-name {
   vertical-align: middle;
+}
+
+.destination-list-item .offline-status {
+  -webkit-margin-start: 1em;
+  font-size: 75%;
+  opacity: 0.6;
 }

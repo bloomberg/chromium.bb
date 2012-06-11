@@ -7308,6 +7308,18 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_PRINT_PREVIEW_CHANGE_DESTINATION" desc="Label on button to change print destination.">
         Change...
       </message>
+      <message name="IDS_PRINT_PREVIEW_OFFLINE_FOR_YEAR" desc="Shown when printer has been offline for more than a year.">
+        Offline for more than a year
+      </message>
+      <message name="IDS_PRINT_PREVIEW_OFFLINE_FOR_MONTH" desc="Shown when printer has been offline for more than a month.">
+        Offline for more than a month
+      </message>
+      <message name="IDS_PRINT_PREVIEW_OFFLINE_FOR_WEEK" desc="Shown when printer has been offline for more than a week.">
+        Offline for more than a week
+      </message>
+      <message name="IDS_PRINT_PREVIEW_OFFLINE" desc="Shown when printer is currently offline.">
+        Currently offline
+      </message>
 
       <!-- Load State -->
       <message name="IDS_LOAD_STATE_WAITING_FOR_DELEGATE">

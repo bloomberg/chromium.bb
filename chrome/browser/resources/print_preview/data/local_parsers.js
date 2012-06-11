@@ -19,7 +19,8 @@ cr.define('print_preview', function() {
         destinationInfo.deviceName,
         print_preview.Destination.Type.LOCAL,
         destinationInfo.printerName,
-        false /*isRecent*/);
+        false /*isRecent*/,
+        print_preview.Destination.ConnectionStatus.ONLINE);
   };
 
   /** Namespace that contains a method to parse local print capabilities. */

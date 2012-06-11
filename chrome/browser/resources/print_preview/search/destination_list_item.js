@@ -48,7 +48,8 @@ cr.define('print_preview', function() {
    */
   DestinationListItem.Classes_ = {
     ICON: 'destination-list-item-icon',
-    NAME: 'destination-list-item-name'
+    NAME: 'destination-list-item-name',
+    STALE: 'stale'
   };
 
   /**
@@ -63,7 +64,7 @@ cr.define('print_preview', function() {
     MOBILE: 'images/mobile_32.png',
     MOBILE_SHARED: 'images/mobile_shared_32.png',
     GOOGLE_PROMOTED: 'images/google_promoted_printer_32.png'
-  },
+  };
 
   DestinationListItem.prototype = {
     __proto__: print_preview.Component.prototype,
@@ -73,36 +74,75 @@ cr.define('print_preview', function() {
       this.setElementInternal(this.cloneTemplateInternal(
           'destination-list-item-template'));
 
-      var iconUrl;
-      if (this.destination_.isGooglePromoted) {
-        iconUrl = DestinationListItem.Icons_.GOOGLE_PROMOTED;
-      } else if (this.destination_.isLocal) {
-        iconUrl = DestinationListItem.Icons_.LOCAL;
-      } else if (this.destination_.type ==
-          print_preview.Destination.Type.MOBILE && this.destination_.isOwned) {
-        iconUrl = DestinationListItem.Icons_.MOBILE;
-      } else if (this.destination_.type ==
-          print_preview.Destination.Type.MOBILE && !this.destination_.isOwned) {
-        iconUrl = DestinationListItem.Icons_.MOBILE_SHARED;
-      } else if (this.destination_.type ==
-          print_preview.Destination.Type.GOOGLE && this.destination_.isOwned) {
-        iconUrl = DestinationListItem.Icons_.CLOUD;
-      } else {
-        iconUrl = DestinationListItem.Icons_.CLOUD_SHARED;
-      }
-
       var iconImg = this.getElement().getElementsByClassName(
           print_preview.DestinationListItem.Classes_.ICON)[0];
-      iconImg.src = iconUrl;
+      iconImg.src = this.getIconUrl_();
+
       var nameEl = this.getElement().getElementsByClassName(
           DestinationListItem.Classes_.NAME)[0];
       nameEl.textContent = this.destination_.displayName;
+
+      this.initializeOfflineStatusElement_();
     },
 
     /** @override */
     enterDocument: function() {
       print_preview.Component.prototype.enterDocument.call(this);
       this.tracker.add(this.getElement(), 'click', this.onActivate_.bind(this));
+    },
+
+    /**
+     * Initializes the element which renders the print destination's
+     * offline status.
+     * @private
+     */
+    initializeOfflineStatusElement_: function() {
+      if (arrayContains([print_preview.Destination.ConnectionStatus.OFFLINE,
+                         print_preview.Destination.ConnectionStatus.DORMANT],
+                        this.destination_.connectionStatus)) {
+        this.getElement().classList.add(DestinationListItem.Classes_.STALE);
+        var offlineDurationMs = Date.now() - this.destination_.lastAccessTime;
+        var offlineMessageId;
+        if (offlineDurationMs > 31622400000.0) { // One year.
+          offlineMessageId = 'offlineForYear';
+        } else if (offlineDurationMs > 2678400000.0) { // One month.
+          offlineMessageId = 'offlineForMonth';
+        } else if (offlineDurationMs > 604800000.0) { // One week.
+          offlineMessageId = 'offlineForWeek';
+        } else {
+          offlineMessageId = 'offline';
+        }
+        var offlineStatusEl = this.getElement().querySelector(
+            '.offline-status');
+        offlineStatusEl.textContent = localStrings.getString(offlineMessageId);
+        setIsVisible(offlineStatusEl, true);
+      }
+    },
+
+    /**
+     * @param {!print_preview.Destination} dest Destination to get the icon URL
+     *     for.
+     * @return {string} URL of the icon for the given print destination.
+     * @private
+     */
+    getIconUrl_: function() {
+      var dest = this.destination_;
+      if (dest.isGooglePromoted) {
+          return DestinationListItem.Icons_.GOOGLE_PROMOTED;
+      } else if (dest.isLocal) {
+        return DestinationListItem.Icons_.LOCAL;
+      } else if (dest.type == print_preview.Destination.Type.MOBILE &&
+                 dest.isOwned) {
+        return DestinationListItem.Icons_.MOBILE;
+      } else if (dest.type == print_preview.Destination.Type.MOBILE &&
+                 !dest.isOwned) {
+        return DestinationListItem.Icons_.MOBILE_SHARED;
+      } else if (dest.type == print_preview.Destination.Type.GOOGLE &&
+                 dest.isOwned) {
+        return DestinationListItem.Icons_.CLOUD;
+      } else {
+        return DestinationListItem.Icons_.CLOUD_SHARED;
+      }
     },
 
     /**

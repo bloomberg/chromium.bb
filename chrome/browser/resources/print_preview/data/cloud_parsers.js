@@ -14,7 +14,9 @@ cr.define('cloudprint', function() {
    * @private
    */
   CloudDestinationParser.Field_ = {
+    LAST_ACCESS: 'accessTime',
     CAPABILITIES: 'capabilities',
+    CONNECTION_STATUS: 'connectionStatus',
     DISPLAY_NAME: 'displayName',
     FORMAT: 'capsFormat',
     ID: 'id',
@@ -65,14 +67,21 @@ cr.define('cloudprint', function() {
     var tags = json[CloudDestinationParser.Field_.TAGS] || [];
     var isRecent = arrayContains(tags, CloudDestinationParser.RECENT_TAG_);
     var isOwned = arrayContains(tags, CloudDestinationParser.OWNED_TAG_);
+    var connectionStatus =
+        json[CloudDestinationParser.Field_.CONNECTION_STATUS] ||
+        print_preview.Destination.ConnectionStatus.UNKNOWN;
+    var lastAccess = parseInt(
+        json[CloudDestinationParser.Field_.LAST_ACCESS], 10) || Date.now();
     var cloudDest = new print_preview.Destination(
         json[CloudDestinationParser.Field_.ID],
         CloudDestinationParser.parseType_(
             json[CloudDestinationParser.Field_.TYPE]),
         json[CloudDestinationParser.Field_.DISPLAY_NAME],
         isRecent,
+        connectionStatus,
         tags,
-        isOwned);
+        isOwned,
+        lastAccess);
     if (json.hasOwnProperty(CloudDestinationParser.Field_.CAPABILITIES) &&
         json.hasOwnProperty(CloudDestinationParser.Field_.FORMAT)) {
       cloudDest.capabilities = CloudCapabilitiesParser.parse(
