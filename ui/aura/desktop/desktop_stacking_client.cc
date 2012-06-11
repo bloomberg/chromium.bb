@@ -6,6 +6,7 @@
 
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/shared/root_window_capture_client.h"
 #include "ui/aura/window.h"
 
 namespace aura {
@@ -23,6 +24,9 @@ Window* DesktopStackingClient::GetDefaultParent(Window* window) {
     null_parent_.reset(new aura::RootWindow(gfx::Rect(100, 100)));
     null_parent_->Init();
     null_parent_->set_focus_manager(new FocusManager);
+
+    capture_client_.reset(
+        new aura::shared::RootWindowCaptureClient(null_parent_.get()));
   }
   return null_parent_.get();
 }
