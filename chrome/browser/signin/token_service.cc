@@ -270,7 +270,7 @@ void TokenService::OnIssueAuthTokenSuccess(const std::string& service,
   // login scoped token pair.
   if (service == GaiaConstants::kLSOService) {
     int index = GetServiceIndex(service);
-    DCHECK_NE(-1, index);
+    CHECK_GE(index, 0);
     fetchers_[index]->StartLsoForOAuthLoginTokenExchange(auth_token);
   }
 }
