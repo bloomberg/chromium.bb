@@ -36,7 +36,7 @@
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/feature.h"
+#include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 

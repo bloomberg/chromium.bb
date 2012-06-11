@@ -4,7 +4,7 @@
 
 #include "base/message_loop.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/feature.h"
+#include "chrome/common/extensions/features/feature.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/chrome_v8_context_set.h"
 #include "testing/gtest/include/gtest/gtest.h"

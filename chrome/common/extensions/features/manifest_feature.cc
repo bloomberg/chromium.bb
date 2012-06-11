@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/permission_feature.h"
+#include "chrome/common/extensions/features/manifest_feature.h"
 
-#include "chrome/common/extensions/extension_permission_set.h"
+#include "chrome/common/extensions/manifest.h"
 
 namespace extensions {
 
-PermissionFeature::PermissionFeature() {
+ManifestFeature::ManifestFeature() {
 }
 
-PermissionFeature::~PermissionFeature() {
+ManifestFeature::~ManifestFeature() {
 }
 
-Feature::Availability PermissionFeature::IsAvailableToContext(
+Feature::Availability ManifestFeature::IsAvailableToContext(
     const Extension* extension,
     Feature::Context context,
     Feature::Platform platform) const {
@@ -24,7 +24,9 @@ Feature::Availability PermissionFeature::IsAvailableToContext(
   if (availability != IS_AVAILABLE)
     return availability;
 
-  if (!extension->HasAPIPermission(name()))
+  // We know we can skip manifest()->GetKey() here because we just did the same
+  // validation it would do above.
+  if (!extension->manifest()->value()->HasKey(name()))
     return NOT_PRESENT;
 
   return IS_AVAILABLE;

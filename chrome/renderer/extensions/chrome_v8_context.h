@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/common/extensions/feature.h"
+#include "chrome/common/extensions/features/feature.h"
 #include "chrome/renderer/module_system.h"
 #include "v8/include/v8.h"
 

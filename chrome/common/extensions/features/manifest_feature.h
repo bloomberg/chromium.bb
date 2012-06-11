@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_PERMISSION_FEATURE_H_
-#define CHROME_COMMON_EXTENSIONS_PERMISSION_FEATURE_H_
+#ifndef CHROME_COMMON_EXTENSIONS_FEATURES_MANIFEST_FEATURE_H_
+#define CHROME_COMMON_EXTENSIONS_FEATURES_MANIFEST_FEATURE_H_
 #pragma once
 
-#include "chrome/common/extensions/feature.h"
+#include "chrome/common/extensions/features/feature.h"
 
 namespace extensions {
 
-class PermissionFeature : public Feature {
+class ManifestFeature : public Feature {
  public:
-  PermissionFeature();
-  virtual ~PermissionFeature();
+  ManifestFeature();
+  virtual ~ManifestFeature();
 
   virtual Feature::Availability IsAvailableToContext(
       const Extension* extension,
@@ -23,4 +23,4 @@ class PermissionFeature : public Feature {
 
 }  // extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_PERMISSION_FEATURE_H_
+#endif  // CHROME_COMMON_EXTENSIONS_FEATURES_MANIFEST_FEATURE_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_SIMPLE_FEATURE_PROVIDER_H_
-#define CHROME_COMMON_EXTENSIONS_SIMPLE_FEATURE_PROVIDER_H_
+#ifndef CHROME_COMMON_EXTENSIONS_FEATURES_SIMPLE_FEATURE_PROVIDER_H_
+#define CHROME_COMMON_EXTENSIONS_FEATURES_SIMPLE_FEATURE_PROVIDER_H_
 #pragma once
 
 #include <set>
@@ -11,8 +11,8 @@
 
 #include "base/memory/linked_ptr.h"
 #include "base/values.h"
-#include "chrome/common/extensions/feature.h"
-#include "chrome/common/extensions/feature_provider.h"
+#include "chrome/common/extensions/features/feature.h"
+#include "chrome/common/extensions/features/feature_provider.h"
 
 namespace extensions {
 
@@ -49,4 +49,4 @@ class SimpleFeatureProvider : public FeatureProvider {
 
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_SIMPLE_FEATURE_PROVIDER_H_
+#endif  // CHROME_COMMON_EXTENSIONS_FEATURES_SIMPLE_FEATURE_PROVIDER_H_

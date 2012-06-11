@@ -16,8 +16,8 @@
 #include "base/memory/singleton.h"
 #include "base/string_piece.h"
 #include "base/values.h"
-#include "chrome/common/extensions/feature.h"
-#include "chrome/common/extensions/feature_provider.h"
+#include "chrome/common/extensions/features/feature.h"
+#include "chrome/common/extensions/features/feature_provider.h"
 #include "chrome/common/extensions/url_pattern_set.h"
 
 namespace base {

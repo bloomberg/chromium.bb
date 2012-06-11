@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_FEATURE_PROVIDER_H_
-#define CHROME_COMMON_EXTENSIONS_FEATURE_PROVIDER_H_
+#ifndef CHROME_COMMON_EXTENSIONS_FEATURES_FEATURE_PROVIDER_H_
+#define CHROME_COMMON_EXTENSIONS_FEATURES_FEATURE_PROVIDER_H_
 #pragma once
 
 #include <string>
@@ -24,4 +24,4 @@ class FeatureProvider {
 
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_FEATURE_PROVIDER_H_
+#endif  // CHROME_COMMON_EXTENSIONS_FEATURES_FEATURE_PROVIDER_H_

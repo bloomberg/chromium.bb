@@ -12,7 +12,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
-#include "chrome/common/extensions/simple_feature_provider.h"
+#include "chrome/common/extensions/features/simple_feature_provider.h"
 
 namespace errors = extension_manifest_errors;
 namespace keys = extension_manifest_keys;

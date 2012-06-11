@@ -19,7 +19,7 @@
 #include "chrome/common/extensions/api/generated_schemas.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_permission_set.h"
-#include "chrome/common/extensions/simple_feature_provider.h"
+#include "chrome/common/extensions/features/simple_feature_provider.h"
 #include "googleurl/src/gurl.h"
 #include "grit/common_resources.h"
 #include "grit/extensions_api_resources.h"

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/simple_feature_provider.h"
+#include "chrome/common/extensions/features/simple_feature_provider.h"
 
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
-#include "chrome/common/extensions/manifest_feature.h"
-#include "chrome/common/extensions/permission_feature.h"
+#include "chrome/common/extensions/features/manifest_feature.h"
+#include "chrome/common/extensions/features/permission_feature.h"
 #include "grit/common_resources.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
