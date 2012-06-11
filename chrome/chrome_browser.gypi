@@ -1457,6 +1457,7 @@
         'browser/notifications/desktop_notification_service.h',
         'browser/notifications/desktop_notification_service_factory.cc',
         'browser/notifications/desktop_notification_service_factory.h',
+        'browser/notifications/desktop_notification_service_win.cc',
         'browser/notifications/notification.cc',
         'browser/notifications/notification.h',
         'browser/notifications/notification_delegate.h',

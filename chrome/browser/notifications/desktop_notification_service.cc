@@ -368,6 +368,7 @@ void DesktopNotificationService::RequestPermission(
   }
 }
 
+#if !defined(OS_WIN)
 void DesktopNotificationService::ShowNotification(
     const Notification& notification) {
   GetUIManager()->Add(notification, profile_);
@@ -380,6 +381,7 @@ bool DesktopNotificationService::CancelDesktopNotification(
                                   false));
   return GetUIManager()->CancelById(proxy->id());
 }
+#endif  // OS_WIN
 
 bool DesktopNotificationService::ShowDesktopNotification(
     const content::ShowDesktopNotificationHostMsgParams& params,
