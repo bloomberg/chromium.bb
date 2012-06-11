@@ -119,7 +119,7 @@ int newtab_button_v_offset() {
         value = 7;
         break;
       case ui::LAYOUT_TOUCH:
-        value = 11;
+        value = 8;
         break;
       default:
         NOTREACHED();
