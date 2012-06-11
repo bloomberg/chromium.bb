@@ -53,6 +53,15 @@ class Arm32DecoderState : DecoderState {
   inline const ClassDecoder& decode_dp_reg_shifted(
       const Instruction insn) const;
 
+  inline const ClassDecoder& decode_ext_reg_load_store(
+      const Instruction insn) const;
+
+  inline const ClassDecoder& decode_ext_reg_move(
+      const Instruction insn) const;
+
+  inline const ClassDecoder& decode_ext_reg_transfers(
+      const Instruction insn) const;
+
   inline const ClassDecoder& decode_extra_load_store(
       const Instruction insn) const;
 
@@ -75,6 +84,9 @@ class Arm32DecoderState : DecoderState {
       const Instruction insn) const;
 
   inline const ClassDecoder& decode_mult(
+      const Instruction insn) const;
+
+  inline const ClassDecoder& decode_other_vfp_data_proc(
       const Instruction insn) const;
 
   inline const ClassDecoder& decode_pack_sat_rev(
@@ -129,6 +141,9 @@ class Arm32DecoderState : DecoderState {
       const Instruction insn) const;
 
   inline const ClassDecoder& decode_unconditional(
+      const Instruction insn) const;
+
+  inline const ClassDecoder& decode_vfp_data_proc(
       const Instruction insn) const;
 
   // The following fields define the set of class decoders

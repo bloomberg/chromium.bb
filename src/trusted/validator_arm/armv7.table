@@ -943,22 +943,164 @@ class Store3RegisterOp : LoadStore3RegisterOp
 +--
 
 +-- super_cop (See Section A5.6)
-# N.B. The ISA spec models the "Advanced SIMD" operations separately from other
-# coprocessor operations.  We don't, so the coproc column is omitted.
-| op1(25:20) op(4) Rn(19:16)
-| 0xxxx0     -     -         =StoreCoprocessor  # STC
-| 0xxxx1     -     ~1111     =LoadCoprocessor   # LDC(immediate), LDC2(immediate)
-| "          "     1111      =LoadCoprocessor   # LDC(literal), LDC2(literal)
-| 00000x     -     -         =Undefined
-| 000100     -     -         =CoprocessorOp(v5TE)  # MCRR, MCRR2
-| 000101     -     -         =MoveDoubleFromCoprocessor(v5TE)  # MRRC, MRRC2
-| 10xxxx     0     -         =CoprocessorOp     # CDP, CDP2
-| 10xxx0     1     -         =CoprocessorOp     # MCR, MCR2
-| 10xxx1     1     -         =MoveFromCoprocessor  # MRC, MRC2
-| 11xxxx     -     -         =Forbidden         # SVC (nee SWI)
+# Note: We currently only allow floating point (and advanced SIMD) 
+# coprocessor operations (coproc=101x).
+| op1(25:20) op(4) coproc(11:8) Rn(19:16)
+# TODO(karl): The following row should not accept if op1=~000x0x
+| 0xxxxx     -     101x         -
+                   -> ext_reg_load_store
+# TODO(karl): The following row should not accept if op1=~000x0x
+| 0xxxx0     -     ~101x           -
+                   # TODO(karl): will never be safe since coproc~=101x?
+                   = StoreCoprocessor # STC A8-372
+# TODO(karl): The following row should not accept if op1=~000x0x
+| 0xxxx1     -     ~101x        ~1111
+                   # TODO(karl): will never be safe since coproc~=101x?
+                   = LoadCoprocessor  # LDC(immediate), LDC2(immediate) A8-106
+| "          "     "            1111
+                   = LoadCoprocessor  # LDC(literal), LDC2(literal) # A8-108
+| 00000x     -     -            -
+                   = Undefined # see table, section A5.6
+| 00010x     -     101x         -
+                   -> ext_reg_transfers
+| 000100     -     ~101x        -
+                   # TODO(karl): will never be safe since coproc~=101x?
+                   = CoprocessorOp (v5TE) # MCRR, MCRR2 A8-188
+| 000101     -     ~101x        -
+                   # TODO(karl): will never be safe since coproc~=101x?
+                   = MoveDoubleFromCoprocessor (v5TE) # MRRC, MRRC2 A8-204
+| 10xxxx     0     101x         -
+                   -> vfp_data_proc
+| "          "     ~101x        -
+                   # TODO(karl): will never be safe since coproc~=101x?
+                   = CoprocessorOp    # CDP, CDP2 A8-68
+| "          1     101x         -
+                   -> ext_reg_move
+| "          "     ~101x        -
+                   # TODO(karl): will never be safe since coproc~=101x?
+                   = CoprocessorOp    # MCR, MCR2 A8-186
+| 10xxx1     1     ~101x        -
+                   # TODO(karl): will never be safe since coproc~=101x?
+                   = MoveFromCoprocessor  # MRC, MRC2
+| 11xxxx     -     -            -
+                   = Forbidden        # SVC (nee SWI) A8-430
++--
+
++-- vfp_data_proc (A7.5 Table A7-16, page A7-24)
+# Three register VPD data-processing, CDP instructions for
+# coprocessors 10/11.
+#
+# Note: Currently, all instructions use class CoprocessorOp
+# to follow what the previous version of the ARM validator did.
+#
+# TODO(karl): Fix the class decoders to do the right thing.
+| opc1(23:20) opc3(7:6)
+| 0x00        -         = CoprocessorOp  # VMLA, MVLS A8-636
+| 0x01        -         = CoprocessorOp  # VNMLA, VNMLS, VNMUL A8-674
+| 0x10        x1        "
+| "           x0        = CoprocessorOp  # VMUL A8-664
+| 0x11        x0        = CoprocessorOp  # VADD A8-536
+| "           x1        = CoprocessorOp  # VSUB A8-788
+| 1x00        x0        = CoprocessorOp  # VDIV A8-590
+| 1x11        -         -> other_vfp_data_proc
++--
+
++-- other_vfp_data_proc (A7.5 Table A7-17, page 17-25)
+# Other VPD data-processing, CDP instructions for coprocessors 10/11. 
+#
+# Note: Currently, all instructions use class CoprocessorOp
+# to follow what the previous version of the ARM validator did.
+#
+# TODO(karl): Fix the class decoders to do the right thing.
+| opc2(19:16) opc3(7:6)
+| -           x0        = CoprocessorOp  # VMOV (immediate) A8-640
+| 0000        01        = CoprocessorOp  # VMOV A8-642
+| "           11        = CoprocessorOp  # VABS A8-352
+| 0001        01        = CoprocessorOp  # VNEG A8-672
+| "           11        = CoprocessorOp  # VSQRT A8-762
+| 001x        x1        = CoprocessorOp  # VCVTB, VCVTT A8-588
+| 010x        x1        = CoprocessorOp  # VCMP, VCMPE A8-572
+| 0111        11        = CoprocessorOp  # VCVT A8-584
+| 1000        x1        = CoprocessorOp  # VCVT, VCVR A8-578
+| 101x        x1        = CoprocessorOp  # VCVT A8-582
+| 110x        x1        = CoprocessorOp  # VCVT, VCVTR A8-578
+| 111x        x1        = CoprocessorOp  # vfp modified immediate constants,
+                                         # Table A7-18
++--
+
++-- ext_reg_load_store (A7.6)
+# LDC and STC instructions for coprocessors 10/11.
+#
+# Note: Currently, all instructions use use StoreCoprocessor or LoadCoprocessor.
+# This is to try and follow what the previous version of the ARM validator
+# did (except that the previous only used StoreCoprocessor).
+#
+# TODO(karl): Fix the class decoders to do the right thing.
+| opcode(24:20) Rn(19:16)
+| 0010x         -         -> ext_reg_transfers
+| 01x00         -         = StoreCoprocessor
+                            # VTSM A8-784 (increment after, no writeback).
+| 01x10         -         = StoreCoprocessor
+                            # VTSM A8-784 (increment after, writeback).
+| 1xx00         -         = StoreCoprocessor # VSTR A8-786
+| 10x10         ~1101     = StoreCoprocessor
+                            # VSTM A8-784 (decrement before, writeback).
+| "             1101      = StoreCoprocessor # VPUSH A8-696
+| 01x01         -         = LoadCoprocessor
+                            # VLDM A8-626 (increment after, no writeback).
+| 01x11         ~1101     = LoadCoprocessor
+                            # VLDM A8-626 (increment after, writeback)
+| "             1101      = LoadCoprocessor # VPOP A8-694
+| 1xx01         -         = LoadCoprocessor # VLDR A8-628
+| 10x11         -         = LoadCoprocessor
+                            # VLDM A8-626 (decrement before, writeback).
++--
+
++-- ext_reg_move (A7.8 page A7-31)
+# MRC and MCR instructions for coprocessors 10/11.
+| L(20) C(8) A(23:21) B(6:5)
+| 0     0    000      -      # TODO(karl): Fix this to do the right thing.
+                             # VMOV A8-648 (arm core and single precision)
+                             = CoprocessorOp
+| "     "    111      -      # TODO(karl): Fix this to do the right thing.
+                             # VMSR A8-660
+                             = CoprocessorOp
+| 0     1    0xx      -      # TODO(karl): Fix this to do the right thing.
+                             # VMRS A8-644 (arm core to scalar)
+                             = CoprocessorOp
+| "     "    1xx      0x     # TODO(karl): Fix this to do the right thing.
+                             # VDUP A8-594 (arm core reg)
+                             = CoprocessorOp
+| 1     0    000      -      # TODO(karl): Fix this to do the right thing.
+                             # VMOV A8-648 (arm core and single precision)
+                             = CoprocessorOp
+| "     "    111      -      # TODO(karl): Fix this to do the right thing.
+                             # VMRS A8-658
+                             = CoprocessorOp
+| "     1    xxx      -      # TODO(karl): Fix this to do the right thing.
+                             # VMOV A8-648 (scalar to arm core)
+                             = CoprocessorOp
+| else:                      = Undefined  # Note on page A7-31
++--
+
++-- ext_reg_transfers (A7.8 page A7-32)
+# These are 64-bit MRRC and MCRR instructions for coprocessors 10/11.
+| C(8) op(7:4)
+| 0    00x1    # TODO(karl): Fix this to do the right thing.
+               # VMOV A8-650
+               = MoveDoubleFromCoprocessor
+| 1    00x1    # TODO(karl): Fix this to do the right thing.
+               # VMOV A8-652
+               = MoveDoubleFromCoprocessor
 +--
 
 +-- unconditional (See Section A5.7)
+# Note: We currently only allow floating point (and advanced SIMD) 
+# coprocessor operations (coproc=101x).
+#
+# TODO(karl): Should we be allowing any of these coprocessor instructions?
+#             It appears that many of these may not be coprocessor
+#             10/11 specific.
 | op1(27:20) op(4) Rn(19:16)
 | 0xxx_xxxx  -     -         ->misc_hints_simd
 | 100x_x1x0  -     -         =Forbidden         # SRS

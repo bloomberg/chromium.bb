@@ -416,6 +416,101 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_dp_reg_shifted(
 
 
 /*
+ * Implementation of table ext_reg_load_store.
+ * Specified by: ('A7.6',)
+ */
+const NamedClassDecoder& NamedArm32DecoderState::decode_ext_reg_load_store(
+     const nacl_arm_dec::Instruction insn) const {
+
+  if ((insn.Bits() & 0x01B00000) == 0x00900000 /* opcode(24:20) == 01x01 */)
+    return LoadCoprocessor_None_instance_;
+
+  if ((insn.Bits() & 0x01B00000) == 0x00B00000 /* opcode(24:20) == 01x11 */)
+    return LoadCoprocessor_None_instance_;
+
+  if ((insn.Bits() & 0x01B00000) == 0x01200000 /* opcode(24:20) == 10x10 */)
+    return StoreCoprocessor_None_instance_;
+
+  if ((insn.Bits() & 0x01B00000) == 0x01300000 /* opcode(24:20) == 10x11 */)
+    return LoadCoprocessor_None_instance_;
+
+  if ((insn.Bits() & 0x01E00000) == 0x00400000 /* opcode(24:20) == 0010x */)
+    return decode_ext_reg_transfers(insn);
+
+  if ((insn.Bits() & 0x01300000) == 0x01000000 /* opcode(24:20) == 1xx00 */)
+    return StoreCoprocessor_None_instance_;
+
+  if ((insn.Bits() & 0x01300000) == 0x01100000 /* opcode(24:20) == 1xx01 */)
+    return LoadCoprocessor_None_instance_;
+
+  if ((insn.Bits() & 0x01900000) == 0x00800000 /* opcode(24:20) == 01xx0 */)
+    return StoreCoprocessor_None_instance_;
+
+  // Catch any attempt to fall through...
+  fprintf(stderr, "TABLE IS INCOMPLETE: ext_reg_load_store could not parse %08X",
+          insn.Bits());
+  return Forbidden_None_instance_;
+}
+
+
+/*
+ * Implementation of table ext_reg_move.
+ * Specified by: ('A7.8 page A7 - 31',)
+ */
+const NamedClassDecoder& NamedArm32DecoderState::decode_ext_reg_move(
+     const nacl_arm_dec::Instruction insn) const {
+  UNREFERENCED_PARAMETER(insn);
+  if ((insn.Bits() & 0x00000100) == 0x00000000 /* C(8:8) == 0 */ &&
+      (insn.Bits() & 0x00E00000) == 0x00000000 /* A(23:21) == 000 */)
+    return CoprocessorOp_None_instance_;
+
+  if ((insn.Bits() & 0x00000100) == 0x00000000 /* C(8:8) == 0 */ &&
+      (insn.Bits() & 0x00E00000) == 0x00E00000 /* A(23:21) == 111 */)
+    return CoprocessorOp_None_instance_;
+
+  if ((insn.Bits() & 0x00100000) == 0x00000000 /* L(20:20) == 0 */ &&
+      (insn.Bits() & 0x00000100) == 0x00000100 /* C(8:8) == 1 */ &&
+      (insn.Bits() & 0x00800000) == 0x00000000 /* A(23:21) == 0xx */)
+    return CoprocessorOp_None_instance_;
+
+  if ((insn.Bits() & 0x00100000) == 0x00000000 /* L(20:20) == 0 */ &&
+      (insn.Bits() & 0x00000100) == 0x00000100 /* C(8:8) == 1 */ &&
+      (insn.Bits() & 0x00800000) == 0x00800000 /* A(23:21) == 1xx */ &&
+      (insn.Bits() & 0x00000040) == 0x00000000 /* B(6:5) == 0x */)
+    return CoprocessorOp_None_instance_;
+
+  if ((insn.Bits() & 0x00100000) == 0x00100000 /* L(20:20) == 1 */ &&
+      (insn.Bits() & 0x00000100) == 0x00000100 /* C(8:8) == 1 */)
+    return CoprocessorOp_None_instance_;
+
+  if (true)
+    return Undefined_None_instance_;
+
+  // Catch any attempt to fall through...
+  fprintf(stderr, "TABLE IS INCOMPLETE: ext_reg_move could not parse %08X",
+          insn.Bits());
+  return Forbidden_None_instance_;
+}
+
+
+/*
+ * Implementation of table ext_reg_transfers.
+ * Specified by: ('A7.8 page A7 - 32',)
+ */
+const NamedClassDecoder& NamedArm32DecoderState::decode_ext_reg_transfers(
+     const nacl_arm_dec::Instruction insn) const {
+  UNREFERENCED_PARAMETER(insn);
+  if ((insn.Bits() & 0x000000D0) == 0x00000010 /* op(7:4) == 00x1 */)
+    return MoveDoubleFromCoprocessor_None_instance_;
+
+  // Catch any attempt to fall through...
+  fprintf(stderr, "TABLE IS INCOMPLETE: ext_reg_transfers could not parse %08X",
+          insn.Bits());
+  return Forbidden_None_instance_;
+}
+
+
+/*
  * Implementation of table extra_load_store.
  * Specified by: ('See Section A5.2.8',)
  */
@@ -952,6 +1047,47 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_mult(
 
   // Catch any attempt to fall through...
   fprintf(stderr, "TABLE IS INCOMPLETE: mult could not parse %08X",
+          insn.Bits());
+  return Forbidden_None_instance_;
+}
+
+
+/*
+ * Implementation of table other_vfp_data_proc.
+ * Specified by: ('A7.5 Table A7 - 17, page 17 - 25',)
+ */
+const NamedClassDecoder& NamedArm32DecoderState::decode_other_vfp_data_proc(
+     const nacl_arm_dec::Instruction insn) const {
+  UNREFERENCED_PARAMETER(insn);
+  if ((insn.Bits() & 0x000F0000) == 0x00010000 /* opc2(19:16) == 0001 */ &&
+      (insn.Bits() & 0x00000040) == 0x00000040 /* opc3(7:6) == x1 */)
+    return CoprocessorOp_None_instance_;
+
+  if ((insn.Bits() & 0x000F0000) == 0x00070000 /* opc2(19:16) == 0111 */ &&
+      (insn.Bits() & 0x000000C0) == 0x000000C0 /* opc3(7:6) == 11 */)
+    return CoprocessorOp_None_instance_;
+
+  if ((insn.Bits() & 0x00070000) == 0x00000000 /* opc2(19:16) == x000 */ &&
+      (insn.Bits() & 0x00000040) == 0x00000040 /* opc3(7:6) == x1 */)
+    return CoprocessorOp_None_instance_;
+
+  if ((insn.Bits() & 0x000E0000) == 0x000E0000 /* opc2(19:16) == 111x */ &&
+      (insn.Bits() & 0x00000040) == 0x00000040 /* opc3(7:6) == x1 */)
+    return CoprocessorOp_None_instance_;
+
+  if ((insn.Bits() & 0x00060000) == 0x00020000 /* opc2(19:16) == x01x */ &&
+      (insn.Bits() & 0x00000040) == 0x00000040 /* opc3(7:6) == x1 */)
+    return CoprocessorOp_None_instance_;
+
+  if ((insn.Bits() & 0x00060000) == 0x00040000 /* opc2(19:16) == x10x */ &&
+      (insn.Bits() & 0x00000040) == 0x00000040 /* opc3(7:6) == x1 */)
+    return CoprocessorOp_None_instance_;
+
+  if ((insn.Bits() & 0x00000040) == 0x00000000 /* opc3(7:6) == x0 */)
+    return CoprocessorOp_None_instance_;
+
+  // Catch any attempt to fall through...
+  fprintf(stderr, "TABLE IS INCOMPLETE: other_vfp_data_proc could not parse %08X",
           insn.Bits());
   return Forbidden_None_instance_;
 }
@@ -1686,36 +1822,55 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_load_store_l1(
  */
 const NamedClassDecoder& NamedArm32DecoderState::decode_super_cop(
      const nacl_arm_dec::Instruction insn) const {
-  UNREFERENCED_PARAMETER(insn);
-  if ((insn.Bits() & 0x03F00000) == 0x00400000 /* op1(25:20) == 000100 */)
+
+  if ((insn.Bits() & 0x03F00000) == 0x00400000 /* op1(25:20) == 000100 */ &&
+      (insn.Bits() & 0x00000E00) != 0x00000A00 /* coproc(11:8) == ~101x */)
     return CoprocessorOp_None_instance_;
 
-  if ((insn.Bits() & 0x03F00000) == 0x00500000 /* op1(25:20) == 000101 */)
+  if ((insn.Bits() & 0x03F00000) == 0x00500000 /* op1(25:20) == 000101 */ &&
+      (insn.Bits() & 0x00000E00) != 0x00000A00 /* coproc(11:8) == ~101x */)
     return MoveDoubleFromCoprocessor_None_instance_;
 
   if ((insn.Bits() & 0x03E00000) == 0x00000000 /* op1(25:20) == 00000x */)
     return Undefined_None_instance_;
 
-  if ((insn.Bits() & 0x03100000) == 0x02000000 /* op1(25:20) == 10xxx0 */ &&
-      (insn.Bits() & 0x00000010) == 0x00000010 /* op(4:4) == 1 */)
-    return CoprocessorOp_None_instance_;
+  if ((insn.Bits() & 0x03E00000) == 0x00400000 /* op1(25:20) == 00010x */ &&
+      (insn.Bits() & 0x00000E00) == 0x00000A00 /* coproc(11:8) == 101x */)
+    return decode_ext_reg_transfers(insn);
 
   if ((insn.Bits() & 0x03100000) == 0x02100000 /* op1(25:20) == 10xxx1 */ &&
-      (insn.Bits() & 0x00000010) == 0x00000010 /* op(4:4) == 1 */)
+      (insn.Bits() & 0x00000010) == 0x00000010 /* op(4:4) == 1 */ &&
+      (insn.Bits() & 0x00000E00) != 0x00000A00 /* coproc(11:8) == ~101x */)
     return MoveFromCoprocessor_None_instance_;
 
-  if ((insn.Bits() & 0x02100000) == 0x00000000 /* op1(25:20) == 0xxxx0 */)
+  if ((insn.Bits() & 0x02100000) == 0x00000000 /* op1(25:20) == 0xxxx0 */ &&
+      (insn.Bits() & 0x00000E00) != 0x00000A00 /* coproc(11:8) == ~101x */)
     return StoreCoprocessor_None_instance_;
 
-  if ((insn.Bits() & 0x02100000) == 0x00100000 /* op1(25:20) == 0xxxx1 */)
+  if ((insn.Bits() & 0x02100000) == 0x00100000 /* op1(25:20) == 0xxxx1 */ &&
+      (insn.Bits() & 0x00000E00) != 0x00000A00 /* coproc(11:8) == ~101x */)
     return LoadCoprocessor_None_instance_;
 
   if ((insn.Bits() & 0x03000000) == 0x02000000 /* op1(25:20) == 10xxxx */ &&
-      (insn.Bits() & 0x00000010) == 0x00000000 /* op(4:4) == 0 */)
+      (insn.Bits() & 0x00000E00) != 0x00000A00 /* coproc(11:8) == ~101x */)
     return CoprocessorOp_None_instance_;
+
+  if ((insn.Bits() & 0x03000000) == 0x02000000 /* op1(25:20) == 10xxxx */ &&
+      (insn.Bits() & 0x00000010) == 0x00000000 /* op(4:4) == 0 */ &&
+      (insn.Bits() & 0x00000E00) == 0x00000A00 /* coproc(11:8) == 101x */)
+    return decode_vfp_data_proc(insn);
+
+  if ((insn.Bits() & 0x03000000) == 0x02000000 /* op1(25:20) == 10xxxx */ &&
+      (insn.Bits() & 0x00000010) == 0x00000010 /* op(4:4) == 1 */ &&
+      (insn.Bits() & 0x00000E00) == 0x00000A00 /* coproc(11:8) == 101x */)
+    return decode_ext_reg_move(insn);
 
   if ((insn.Bits() & 0x03000000) == 0x03000000 /* op1(25:20) == 11xxxx */)
     return Forbidden_None_instance_;
+
+  if ((insn.Bits() & 0x02000000) == 0x00000000 /* op1(25:20) == 0xxxxx */ &&
+      (insn.Bits() & 0x00000E00) == 0x00000A00 /* coproc(11:8) == 101x */)
+    return decode_ext_reg_load_store(insn);
 
   // Catch any attempt to fall through...
   fprintf(stderr, "TABLE IS INCOMPLETE: super_cop could not parse %08X",
@@ -1825,6 +1980,30 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_unconditional(
 
   // Catch any attempt to fall through...
   fprintf(stderr, "TABLE IS INCOMPLETE: unconditional could not parse %08X",
+          insn.Bits());
+  return Forbidden_None_instance_;
+}
+
+
+/*
+ * Implementation of table vfp_data_proc.
+ * Specified by: ('A7.5 Table A7 - 16, page A7 - 24',)
+ */
+const NamedClassDecoder& NamedArm32DecoderState::decode_vfp_data_proc(
+     const nacl_arm_dec::Instruction insn) const {
+
+  if ((insn.Bits() & 0x00B00000) == 0x00800000 /* opc1(23:20) == 1x00 */ &&
+      (insn.Bits() & 0x00000040) == 0x00000000 /* opc3(7:6) == x0 */)
+    return CoprocessorOp_None_instance_;
+
+  if ((insn.Bits() & 0x00B00000) == 0x00B00000 /* opc1(23:20) == 1x11 */)
+    return decode_other_vfp_data_proc(insn);
+
+  if ((insn.Bits() & 0x00800000) == 0x00000000 /* opc1(23:20) == 0xxx */)
+    return CoprocessorOp_None_instance_;
+
+  // Catch any attempt to fall through...
+  fprintf(stderr, "TABLE IS INCOMPLETE: vfp_data_proc could not parse %08X",
           insn.Bits());
   return Forbidden_None_instance_;
 }

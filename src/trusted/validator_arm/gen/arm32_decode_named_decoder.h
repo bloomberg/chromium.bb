@@ -337,6 +337,12 @@ class NamedArm32DecoderState : nacl_arm_dec::DecoderState {
       const nacl_arm_dec::Instruction insn) const;
   inline const NamedClassDecoder& decode_dp_reg_shifted(
       const nacl_arm_dec::Instruction insn) const;
+  inline const NamedClassDecoder& decode_ext_reg_load_store(
+      const nacl_arm_dec::Instruction insn) const;
+  inline const NamedClassDecoder& decode_ext_reg_move(
+      const nacl_arm_dec::Instruction insn) const;
+  inline const NamedClassDecoder& decode_ext_reg_transfers(
+      const nacl_arm_dec::Instruction insn) const;
   inline const NamedClassDecoder& decode_extra_load_store(
       const nacl_arm_dec::Instruction insn) const;
   inline const NamedClassDecoder& decode_half_mult(
@@ -352,6 +358,8 @@ class NamedArm32DecoderState : nacl_arm_dec::DecoderState {
   inline const NamedClassDecoder& decode_msr_and_hints(
       const nacl_arm_dec::Instruction insn) const;
   inline const NamedClassDecoder& decode_mult(
+      const nacl_arm_dec::Instruction insn) const;
+  inline const NamedClassDecoder& decode_other_vfp_data_proc(
       const nacl_arm_dec::Instruction insn) const;
   inline const NamedClassDecoder& decode_pack_sat_rev(
       const nacl_arm_dec::Instruction insn) const;
@@ -388,6 +396,8 @@ class NamedArm32DecoderState : nacl_arm_dec::DecoderState {
   inline const NamedClassDecoder& decode_sync(
       const nacl_arm_dec::Instruction insn) const;
   inline const NamedClassDecoder& decode_unconditional(
+      const nacl_arm_dec::Instruction insn) const;
+  inline const NamedClassDecoder& decode_vfp_data_proc(
       const nacl_arm_dec::Instruction insn) const;
 };
 
