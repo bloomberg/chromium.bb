@@ -1,4 +1,4 @@
-/* Copyright (c) 2008-2009, Google Inc.
+/* Copyright (c) 2012, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,9 +22,6 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * ---
- * Author: Kostya Serebryany
  */
 
 #ifdef _MSC_VER
@@ -40,93 +37,174 @@
 
 #include "dynamic_annotations.h"
 
-#ifdef __GNUC__
-/* valgrind.h uses gcc extensions so it won't build with other compilers */
-/* # include "third_party/valgrind/valgrind.h" */
-#endif
-
 /* Each function is empty and called (via a macro) only in debug mode.
    The arguments are captured by dynamic tools at runtime. */
 
 #if DYNAMIC_ANNOTATIONS_ENABLED == 1
 
+/* WARNING: because NaCl defines the bodies of all Valgrind interceptors to be
+   empty, compilers that perform Identical Code Folding (ICF) can place them at
+   the exact same memory address, which will cause Valgrind to fail. */
+
+// Dynamic annotation functions are stubs in NaCl.
+#define DYNAMIC_ANNOTATIONS_IMPL 
+
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateRWLockCreate)(
-    const char *file, int line, const volatile void *lock){}
+    const char *file, int line, const volatile void *lock)
+{DYNAMIC_ANNOTATIONS_IMPL}
+
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateRWLockDestroy)(
-    const char *file, int line, const volatile void *lock){}
+    const char *file, int line, const volatile void *lock)
+{DYNAMIC_ANNOTATIONS_IMPL}
+
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateRWLockAcquired)(
-    const char *file, int line, const volatile void *lock, long is_w){}
+    const char *file, int line, const volatile void *lock, long is_w)
+{DYNAMIC_ANNOTATIONS_IMPL}
+
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateRWLockReleased)(
-    const char *file, int line, const volatile void *lock, long is_w){}
+    const char *file, int line, const volatile void *lock, long is_w)
+{DYNAMIC_ANNOTATIONS_IMPL}
+
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateBarrierInit)(
     const char *file, int line, const volatile void *barrier, long count,
-    long reinitialization_allowed) {}
+    long reinitialization_allowed)
+{DYNAMIC_ANNOTATIONS_IMPL}
+
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateBarrierWaitBefore)(
-    const char *file, int line, const volatile void *barrier) {}
+    const char *file, int line, const volatile void *barrier)
+{DYNAMIC_ANNOTATIONS_IMPL}
+
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateBarrierWaitAfter)(
-    const char *file, int line, const volatile void *barrier) {}
+    const char *file, int line, const volatile void *barrier)
+{DYNAMIC_ANNOTATIONS_IMPL}
+
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateBarrierDestroy)(
-    const char *file, int line, const volatile void *barrier) {}
+    const char *file, int line, const volatile void *barrier)
+{DYNAMIC_ANNOTATIONS_IMPL}
 
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateCondVarWait)(
     const char *file, int line, const volatile void *cv,
-    const volatile void *lock){}
+    const volatile void *lock)
+{DYNAMIC_ANNOTATIONS_IMPL}
+
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateCondVarSignal)(
-    const char *file, int line, const volatile void *cv){}
+    const char *file, int line, const volatile void *cv)
+{DYNAMIC_ANNOTATIONS_IMPL}
+
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateCondVarSignalAll)(
-    const char *file, int line, const volatile void *cv){}
+    const char *file, int line, const volatile void *cv)
+{DYNAMIC_ANNOTATIONS_IMPL}
+
+void DYNAMIC_ANNOTATIONS_NAME(AnnotateHappensBefore)(
+    const char *file, int line, const volatile void *obj)
+{DYNAMIC_ANNOTATIONS_IMPL}
+
+void DYNAMIC_ANNOTATIONS_NAME(AnnotateHappensAfter)(
+    const char *file, int line, const volatile void *obj)
+{DYNAMIC_ANNOTATIONS_IMPL}
+
 void DYNAMIC_ANNOTATIONS_NAME(AnnotatePublishMemoryRange)(
-    const char *file, int line, const volatile void *address, long size){}
+    const char *file, int line, const volatile void *address, long size)
+{DYNAMIC_ANNOTATIONS_IMPL}
+
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateUnpublishMemoryRange)(
-    const char *file, int line, const volatile void *address, long size){}
+    const char *file, int line, const volatile void *address, long size)
+{DYNAMIC_ANNOTATIONS_IMPL}
+
 void DYNAMIC_ANNOTATIONS_NAME(AnnotatePCQCreate)(
-    const char *file, int line, const volatile void *pcq){}
+    const char *file, int line, const volatile void *pcq)
+{DYNAMIC_ANNOTATIONS_IMPL}
+
 void DYNAMIC_ANNOTATIONS_NAME(AnnotatePCQDestroy)(
-    const char *file, int line, const volatile void *pcq){}
+    const char *file, int line, const volatile void *pcq)
+{DYNAMIC_ANNOTATIONS_IMPL}
+
 void DYNAMIC_ANNOTATIONS_NAME(AnnotatePCQPut)(
-    const char *file, int line, const volatile void *pcq){}
+    const char *file, int line, const volatile void *pcq)
+{DYNAMIC_ANNOTATIONS_IMPL}
+
 void DYNAMIC_ANNOTATIONS_NAME(AnnotatePCQGet)(
-    const char *file, int line, const volatile void *pcq){}
+    const char *file, int line, const volatile void *pcq)
+{DYNAMIC_ANNOTATIONS_IMPL}
+
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateNewMemory)(
-    const char *file, int line, const volatile void *mem, long size){}
+    const char *file, int line, const volatile void *mem, long size)
+{DYNAMIC_ANNOTATIONS_IMPL}
+
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateExpectRace)(
     const char *file, int line, const volatile void *mem,
-    const char *description){}
+    const char *description)
+{DYNAMIC_ANNOTATIONS_IMPL}
+
+void DYNAMIC_ANNOTATIONS_NAME(AnnotateFlushExpectedRaces)(
+    const char *file, int line)
+{DYNAMIC_ANNOTATIONS_IMPL}
+
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateBenignRace)(
     const char *file, int line, const volatile void *mem,
-    const char *description){}
+    const char *description)
+{DYNAMIC_ANNOTATIONS_IMPL}
+
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateBenignRaceSized)(
     const char *file, int line, const volatile void *mem, long size,
-    const char *description){}
+    const char *description)
+{DYNAMIC_ANNOTATIONS_IMPL}
+
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateMutexIsUsedAsCondVar)(
-    const char *file, int line, const volatile void *mu){}
+    const char *file, int line, const volatile void *mu)
+{DYNAMIC_ANNOTATIONS_IMPL}
+
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateMutexIsNotPHB)(
-    const char *file, int line, const volatile void *mu){}
+    const char *file, int line, const volatile void *mu)
+{DYNAMIC_ANNOTATIONS_IMPL}
+
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateTraceMemory)(
-    const char *file, int line, const volatile void *arg){}
+    const char *file, int line, const volatile void *arg)
+{DYNAMIC_ANNOTATIONS_IMPL}
+
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateThreadName)(
-    const char *file, int line, const char *name){}
+    const char *file, int line, const char *name)
+{DYNAMIC_ANNOTATIONS_IMPL}
+
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateIgnoreReadsBegin)(
-    const char *file, int line){}
+    const char *file, int line)
+{DYNAMIC_ANNOTATIONS_IMPL}
+
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateIgnoreReadsEnd)(
-    const char *file, int line){}
+    const char *file, int line)
+{DYNAMIC_ANNOTATIONS_IMPL}
+
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateIgnoreWritesBegin)(
-    const char *file, int line){}
+    const char *file, int line)
+{DYNAMIC_ANNOTATIONS_IMPL}
+
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateIgnoreWritesEnd)(
-    const char *file, int line){}
+    const char *file, int line)
+{DYNAMIC_ANNOTATIONS_IMPL}
+
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateIgnoreSyncBegin)(
-    const char *file, int line){}
+    const char *file, int line)
+{DYNAMIC_ANNOTATIONS_IMPL}
+
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateIgnoreSyncEnd)(
-    const char *file, int line){}
+    const char *file, int line)
+{DYNAMIC_ANNOTATIONS_IMPL}
+
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateEnableRaceDetection)(
-    const char *file, int line, int enable){}
+    const char *file, int line, int enable)
+{DYNAMIC_ANNOTATIONS_IMPL}
+
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateNoOp)(
-    const char *file, int line, const volatile void *arg){}
+    const char *file, int line, const volatile void *arg)
+{DYNAMIC_ANNOTATIONS_IMPL}
+
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateFlushState)(
-    const char *file, int line){}
+    const char *file, int line)
+{DYNAMIC_ANNOTATIONS_IMPL}
 
 #endif  /* DYNAMIC_ANNOTATIONS_ENABLED == 1 */
 
+#if DYNAMIC_ANNOTATIONS_PROVIDE_RUNNING_ON_VALGRIND == 1
 static int GetRunningOnValgrind(void) {
 #ifdef RUNNING_ON_VALGRIND
   if (RUNNING_ON_VALGRIND) return 1;
@@ -147,7 +225,7 @@ static int GetRunningOnValgrind(void) {
   /* value will remain "1" if res == 0 or res >= sizeof(value). The latter
    * can happen only if the given value is long, in this case it can't be "0".
    */
-  if (res > 0 && !strcmp(value, "0"))
+  if (res > 0 && strcmp(value, "0") != 0)
     return 1;
 #endif
   return 0;
@@ -163,3 +241,5 @@ int RunningOnValgrind(void) {
     running_on_valgrind = local_running_on_valgrind = GetRunningOnValgrind();
   return local_running_on_valgrind;
 }
+
+#endif /* DYNAMIC_ANNOTATIONS_PROVIDE_RUNNING_ON_VALGRIND == 1 */

@@ -1,4 +1,4 @@
-/* Copyright (c) 2008-2009, Google Inc.
+/* Copyright (c) 2012, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,9 +22,6 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * ---
- * Author: Kostya Serebryany
  */
 
 /* This file defines dynamic annotations for use with dynamic analysis
@@ -55,15 +52,30 @@
 
 #ifndef DYNAMIC_ANNOTATIONS_PREFIX
 # define DYNAMIC_ANNOTATIONS_PREFIX
-# define DYNAMIC_ANNOTATIONS_NAME(name) name
+#endif
+
+#ifndef DYNAMIC_ANNOTATIONS_PROVIDE_RUNNING_ON_VALGRIND
+# define DYNAMIC_ANNOTATIONS_PROVIDE_RUNNING_ON_VALGRIND 1
+#endif
+
+#ifdef DYNAMIC_ANNOTATIONS_WANT_ATTRIBUTE_WEAK
+# ifdef __GNUC__
+#  define DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK __attribute__((weak))
+# else
+/* TODO(glider): for Windows support we may want to change this macro in order
+   to prepend __declspec(selectany) to the annotations' declarations. */
+#  error weak annotations are not supported for your compiler
+# endif
 #else
+# define DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK
+#endif
+
 /* The following preprocessor magic prepends the value of
    DYNAMIC_ANNOTATIONS_PREFIX to annotation function names. */
-# define DYNAMIC_ANNOTATIONS_GLUE0(A, B) A##B
-# define DYNAMIC_ANNOTATIONS_GLUE(A, B) DYNAMIC_ANNOTATIONS_GLUE0(A, B)
-# define DYNAMIC_ANNOTATIONS_NAME(name) \
+#define DYNAMIC_ANNOTATIONS_GLUE0(A, B) A##B
+#define DYNAMIC_ANNOTATIONS_GLUE(A, B) DYNAMIC_ANNOTATIONS_GLUE0(A, B)
+#define DYNAMIC_ANNOTATIONS_NAME(name) \
   DYNAMIC_ANNOTATIONS_GLUE(DYNAMIC_ANNOTATIONS_PREFIX, name)
-#endif
 
 #ifndef DYNAMIC_ANNOTATIONS_ENABLED
 # define DYNAMIC_ANNOTATIONS_ENABLED 0
@@ -130,16 +142,12 @@
     DYNAMIC_ANNOTATIONS_NAME(AnnotateCondVarSignalAll)(__FILE__, __LINE__, cv)
 
   /* Annotations for user-defined synchronization mechanisms. */
-  #define ANNOTATE_HAPPENS_BEFORE(obj) ANNOTATE_CONDVAR_SIGNAL(obj)
-  #define ANNOTATE_HAPPENS_AFTER(obj)  ANNOTATE_CONDVAR_WAIT(obj)
+  #define ANNOTATE_HAPPENS_BEFORE(obj) \
+    DYNAMIC_ANNOTATIONS_NAME(AnnotateHappensBefore)(__FILE__, __LINE__, obj)
+  #define ANNOTATE_HAPPENS_AFTER(obj) \
+    DYNAMIC_ANNOTATIONS_NAME(AnnotateHappensAfter)(__FILE__, __LINE__, obj)
 
-  /* Report that the bytes in the range [pointer, pointer+size) are about
-     to be published safely. The race checker will create a happens-before
-     arc from the call ANNOTATE_PUBLISH_MEMORY_RANGE(pointer, size) to
-     subsequent accesses to this memory.
-     Note: this annotation may not work properly if the race detector uses
-     sampling, i.e. does not observe all memory accesses.
-     */
+  /* DEPRECATED. Don't use it. */
   #define ANNOTATE_PUBLISH_MEMORY_RANGE(pointer, size) \
     DYNAMIC_ANNOTATIONS_NAME(AnnotatePublishMemoryRange)(__FILE__, __LINE__, \
         pointer, size)
@@ -356,6 +364,9 @@
     DYNAMIC_ANNOTATIONS_NAME(AnnotateExpectRace)(__FILE__, __LINE__, address, \
         description)
 
+  #define ANNOTATE_FLUSH_EXPECTED_RACES() \
+    DYNAMIC_ANNOTATIONS_NAME(AnnotateFlushExpectedRaces)(__FILE__, __LINE__)
+
   /* A no-op. Insert where you like to test the interceptors. */
   #define ANNOTATE_NO_OP(arg) \
     DYNAMIC_ANNOTATIONS_NAME(AnnotateNoOp)(__FILE__, __LINE__, arg)
@@ -391,6 +402,7 @@
   #define ANNOTATE_PCQ_GET(pcq) /* empty */
   #define ANNOTATE_NEW_MEMORY(address, size) /* empty */
   #define ANNOTATE_EXPECT_RACE(address, description) /* empty */
+  #define ANNOTATE_FLUSH_EXPECTED_RACES(address, description) /* empty */
   #define ANNOTATE_BENIGN_RACE(address, description) /* empty */
   #define ANNOTATE_BENIGN_RACE_SIZED(address, size, description) /* empty */
   #define ANNOTATE_PURE_HAPPENS_BEFORE_MUTEX(mu) /* empty */
@@ -416,81 +428,111 @@
 extern "C" {
 #endif
 
+
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateRWLockCreate)(
-    const char *file, int line, const volatile void *lock);
+    const char *file, int line,
+    const volatile void *lock) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateRWLockDestroy)(
-    const char *file, int line, const volatile void *lock);
+    const char *file, int line,
+    const volatile void *lock) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateRWLockAcquired)(
-    const char *file, int line, const volatile void *lock, long is_w);
+    const char *file, int line,
+    const volatile void *lock, long is_w) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateRWLockReleased)(
-    const char *file, int line, const volatile void *lock, long is_w);
+    const char *file, int line,
+    const volatile void *lock, long is_w) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateBarrierInit)(
     const char *file, int line, const volatile void *barrier, long count,
-    long reinitialization_allowed);
+    long reinitialization_allowed) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateBarrierWaitBefore)(
-    const char *file, int line, const volatile void *barrier);
+    const char *file, int line,
+    const volatile void *barrier) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateBarrierWaitAfter)(
-    const char *file, int line, const volatile void *barrier);
+    const char *file, int line,
+    const volatile void *barrier) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateBarrierDestroy)(
-    const char *file, int line, const volatile void *barrier);
+    const char *file, int line,
+    const volatile void *barrier) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateCondVarWait)(
     const char *file, int line, const volatile void *cv,
-    const volatile void *lock);
+    const volatile void *lock) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateCondVarSignal)(
-    const char *file, int line, const volatile void *cv);
+    const char *file, int line,
+    const volatile void *cv) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateCondVarSignalAll)(
-    const char *file, int line, const volatile void *cv);
+    const char *file, int line,
+    const volatile void *cv) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
+void DYNAMIC_ANNOTATIONS_NAME(AnnotateHappensBefore)(
+    const char *file, int line,
+    const volatile void *obj) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
+void DYNAMIC_ANNOTATIONS_NAME(AnnotateHappensAfter)(
+    const char *file, int line,
+    const volatile void *obj) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
 void DYNAMIC_ANNOTATIONS_NAME(AnnotatePublishMemoryRange)(
-    const char *file, int line, const volatile void *address, long size);
+    const char *file, int line,
+    const volatile void *address, long size) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateUnpublishMemoryRange)(
-    const char *file, int line, const volatile void *address, long size);
+    const char *file, int line,
+    const volatile void *address, long size) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
 void DYNAMIC_ANNOTATIONS_NAME(AnnotatePCQCreate)(
-    const char *file, int line, const volatile void *pcq);
+    const char *file, int line,
+    const volatile void *pcq) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
 void DYNAMIC_ANNOTATIONS_NAME(AnnotatePCQDestroy)(
-    const char *file, int line, const volatile void *pcq);
+    const char *file, int line,
+    const volatile void *pcq) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
 void DYNAMIC_ANNOTATIONS_NAME(AnnotatePCQPut)(
-    const char *file, int line, const volatile void *pcq);
+    const char *file, int line,
+    const volatile void *pcq) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
 void DYNAMIC_ANNOTATIONS_NAME(AnnotatePCQGet)(
-    const char *file, int line, const volatile void *pcq);
+    const char *file, int line,
+    const volatile void *pcq) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateNewMemory)(
-    const char *file, int line, const volatile void *mem, long size);
+    const char *file, int line,
+    const volatile void *mem, long size) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateExpectRace)(
     const char *file, int line, const volatile void *mem,
-    const char *description);
+    const char *description) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
+void DYNAMIC_ANNOTATIONS_NAME(AnnotateFlushExpectedRaces)(
+    const char *file, int line) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateBenignRace)(
     const char *file, int line, const volatile void *mem,
-    const char *description);
+    const char *description) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateBenignRaceSized)(
     const char *file, int line, const volatile void *mem, long size,
-    const char *description);
+    const char *description) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateMutexIsUsedAsCondVar)(
-    const char *file, int line, const volatile void *mu);
+    const char *file, int line,
+    const volatile void *mu) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateMutexIsNotPHB)(
-    const char *file, int line, const volatile void *mu);
+    const char *file, int line,
+    const volatile void *mu) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateTraceMemory)(
-    const char *file, int line, const volatile void *arg);
+    const char *file, int line,
+    const volatile void *arg) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateThreadName)(
-    const char *file, int line, const char *name);
+    const char *file, int line,
+    const char *name) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateIgnoreReadsBegin)(
-    const char *file, int line);
+    const char *file, int line) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateIgnoreReadsEnd)(
-    const char *file, int line);
+    const char *file, int line) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateIgnoreWritesBegin)(
-    const char *file, int line);
+    const char *file, int line) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateIgnoreWritesEnd)(
-    const char *file, int line);
+    const char *file, int line) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateIgnoreSyncBegin)(
-    const char *file, int line);
+    const char *file, int line) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateIgnoreSyncEnd)(
-    const char *file, int line);
+    const char *file, int line) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateEnableRaceDetection)(
-    const char *file, int line, int enable);
+    const char *file, int line, int enable) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateNoOp)(
-    const char *file, int line, const volatile void *arg);
+    const char *file, int line,
+    const volatile void *arg) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
 void DYNAMIC_ANNOTATIONS_NAME(AnnotateFlushState)(
-    const char *file, int line);
+    const char *file, int line) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
 
-
+#if DYNAMIC_ANNOTATIONS_PROVIDE_RUNNING_ON_VALGRIND == 1
 /* Return non-zero value if running under valgrind.
 
   If "valgrind.h" is included into dynamic_annotations.c,
@@ -506,7 +548,8 @@ void DYNAMIC_ANNOTATIONS_NAME(AnnotateFlushState)(
     - Make your tool intercept the function RunningOnValgrind() and
       change its return value.
  */
-int RunningOnValgrind(void);
+int RunningOnValgrind(void) DYNAMIC_ANNOTATIONS_ATTRIBUTE_WEAK;
+#endif /* DYNAMIC_ANNOTATIONS_PROVIDE_RUNNING_ON_VALGRIND == 1 */
 
 #ifdef __cplusplus
 }
@@ -523,7 +566,7 @@ int RunningOnValgrind(void);
      one can use
         ... = ANNOTATE_UNPROTECTED_READ(x); */
   template <class T>
-  inline T ANNOTATE_UNPROTECTED_READ(const volatile T const &x) {
+  inline T ANNOTATE_UNPROTECTED_READ(const volatile T &x) {
     ANNOTATE_IGNORE_READS_BEGIN();
     T res = x;
     ANNOTATE_IGNORE_READS_END();
