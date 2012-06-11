@@ -8,7 +8,7 @@
 #ifndef _LIBEVDEV_MT_H_
 #define _LIBEVDEV_MT_H_
 
-#include "libevdev_log.h"
+#include <libevdev/libevdev_log.h>
 
 /*
  * From include/linux/input.h

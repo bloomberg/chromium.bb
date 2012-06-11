@@ -4,12 +4,12 @@
  * found in the LICENSE file.
  */
 
-#include "libevdev_mt.h"
+#include <libevdev/libevdev_mt.h>
 
 #include <errno.h>
 #include <linux/input.h>
 
-#include "libevdev.h"
+#include <libevdev/libevdev.h>
 
 const char *mt_axis_names[] = {
     "Touch Major",

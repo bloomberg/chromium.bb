@@ -3,7 +3,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#include "libevdev.h"
+#include <libevdev/libevdev.h>
 
 #include <errno.h>
 #include <fcntl.h>
@@ -12,9 +12,9 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "libevdev_event.h"
-#include "libevdev_log.h"
-#include "libevdev_util.h"
+#include <libevdev/libevdev_event.h>
+#include <libevdev/libevdev_log.h>
+#include <libevdev/libevdev_util.h>
 
 /* Number of events to attempt to read from kernel on each SIGIO */
 #define NUM_EVENTS          16

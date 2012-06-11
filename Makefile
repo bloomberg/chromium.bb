@@ -53,14 +53,14 @@ install: $(SONAME)
 	ln -s $(SONAME:$(OBJDIR)/%=%) \
 		$(DESTDIR)$(LIBDIR)/$(SONAME:$(OBJDIR)/%.0=%)
 
-	install -D -m 0644 include/libevdev.h \
-		$(DESTDIR)usr/include/libevdev/libevdev.h
-	install -D -m 0664 include/libevdev_event.h \
-		$(DESTDIR)usr/include/libevdev/libevdev_event.h
-	install -D -m 0664 include/libevdev_mt.h \
-		$(DESTDIR)usr/include/libevdev/libevdev_mt.h
-	install -D -m 0664 include/libevdev_log.h \
-		$(DESTDIR)usr/include/libevdev/libevdev_log.h
+	install -D -m 0644 include/libevdev/libevdev.h \
+		 $(DESTDIR)usr/include/libevdev/libevdev.h
+	install -D -m 0664 include/libevdev/libevdev_event.h \
+		 $(DESTDIR)usr/include/libevdev/libevdev_event.h
+	install -D -m 0664 include/libevdev/libevdev_mt.h \
+		 $(DESTDIR)usr/include/libevdev/libevdev_mt.h
+	install -D -m 0664 include/libevdev/libevdev_log.h \
+		 $(DESTDIR)usr/include/libevdev/libevdev_log.h
 
 clean:
 	rm -rf $(OBJDIR) $(DEPDIR) html app.info app.info.orig

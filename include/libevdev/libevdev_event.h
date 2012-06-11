@@ -8,8 +8,8 @@
 #ifndef _LIBEVDEV_EVENT_H_
 #define _LIBEVDEV_EVENT_H_
 
-#include "libevdev_log.h"
-#include "libevdev_mt.h"
+#include <libevdev/libevdev_log.h>
+#include <libevdev/libevdev_mt.h>
 
 
 /* 1 MiB debug buffer of struct input_event objects */
