@@ -189,12 +189,12 @@ class Target:
 #   into the equivalent ninja path.
 #
 # - GypPathToUniqueOutput translates a gyp path into a ninja path to write
-#   an output file; the result can be namespaced such that is unique
+#   an output file; the result can be namespaced such that it is unique
 #   to the input file name as well as the output target name.
 
 class NinjaWriter:
-  def __init__(self, target_outputs, base_dir, build_dir, output_file, flavor,
-               abs_build_dir=None):
+  def __init__(self, qualified_target, target_outputs, base_dir, build_dir,
+               output_file, flavor, abs_build_dir=None):
     """
     base_dir: path from source root to directory containing this gyp file,
               by gyp semantics, all input paths are relative to this
@@ -202,6 +202,7 @@ class NinjaWriter:
     abs_build_dir: absolute path to the build directory
     """
 
+    self.qualified_target = qualified_target
     self.target_outputs = target_outputs
     self.base_dir = base_dir
     self.build_dir = build_dir
@@ -413,12 +414,6 @@ class NinjaWriter:
     if not output:
       return None
 
-    if self.name != output and self.toolset == 'target':
-      # Write a short name to build this target.  This benefits both the
-      # "build chrome" case as well as the gyp tests, which expect to be
-      # able to run actions and build libraries by their short name.
-      self.ninja.build(self.name, 'phony', output)
-
     assert self.target.FinalOutput(), output
     return self.target
 
@@ -508,7 +503,7 @@ class NinjaWriter:
     all_outputs = []
     for action in actions:
       # First write out a rule for the action.
-      name = action['action_name']
+      name = '%s_%s' % (self.qualified_target, action['action_name'])
       description = self.GenerateDescription('ACTION',
                                              action.get('message', None),
                                              name)
@@ -541,7 +536,7 @@ class NinjaWriter:
     all_outputs = []
     for rule in rules:
       # First write out a rule for the rule action.
-      name = rule['rule_name']
+      name = '%s_%s' % (self.qualified_target, rule['rule_name'])
       # Skip a rule with no action and no inputs.
       if 'action' not in rule and not rule.get('rule_sources', []):
         continue
@@ -1487,6 +1482,9 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
 
   # target_outputs is a map from qualified target name to a Target object.
   target_outputs = {}
+  # target_short_names is a map from target short name to a list of Target
+  # objects.
+  target_short_names = {}
   for qualified_target in target_list:
     # qualified_target is like: third_party/icu/icu.gyp:icui18n#target
     build_file, name, toolset = \
@@ -1509,16 +1507,28 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     output_file = os.path.join(obj, base_path, name + '.ninja')
 
     abs_build_dir = os.path.abspath(toplevel_build)
-    writer = NinjaWriter(target_outputs, base_path, build_dir,
+    writer = NinjaWriter(qualified_target, target_outputs, base_path, build_dir,
                          OpenOutput(os.path.join(toplevel_build, output_file)),
                          flavor, abs_build_dir=abs_build_dir)
     master_ninja.subninja(output_file)
 
     target = writer.WriteSpec(spec, config_name, generator_flags)
     if target:
+      if name != target.FinalOutput() and spec['toolset'] == 'target':
+        target_short_names.setdefault(name, []).append(target)
       target_outputs[qualified_target] = target
       if qualified_target in all_targets:
         all_outputs.add(target.FinalOutput())
+
+  if target_short_names:
+    # Write a short name to build this target.  This benefits both the
+    # "build chrome" case as well as the gyp tests, which expect to be
+    # able to run actions and build libraries by their short name.
+    master_ninja.newline()
+    master_ninja.comment('Short names for targets.')
+    for short_name in target_short_names:
+      master_ninja.build(short_name, 'phony', [x.FinalOutput() for x in
+                                               target_short_names[short_name]])
 
   if all_outputs:
     master_ninja.newline()

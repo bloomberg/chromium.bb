@@ -16,7 +16,7 @@ import TestCommon
 class TestPrefixesAndSuffixes(unittest.TestCase):
   if sys.platform in ('win32', 'cygwin'):
     def test_BinaryNamesWindows(self):
-      writer = ninja.NinjaWriter('wee', '.', '.', 'ninja.build', 'win')
+      writer = ninja.NinjaWriter('foo', 'wee', '.', '.', 'ninja.build', 'win')
       spec = { 'target_name': 'wee' }
       self.assertTrue(writer.ComputeOutputFileName(spec, 'executable').
           endswith('.exe'))
@@ -27,7 +27,7 @@ class TestPrefixesAndSuffixes(unittest.TestCase):
 
   if sys.platform == 'linux2':
     def test_BinaryNamesLinux(self):
-      writer = ninja.NinjaWriter('wee', '.', '.', 'ninja.build', 'linux')
+      writer = ninja.NinjaWriter('foo', 'wee', '.', '.', 'ninja.build', 'linux')
       spec = { 'target_name': 'wee' }
       self.assertTrue('.' not in writer.ComputeOutputFileName(spec,
                                                               'executable'))

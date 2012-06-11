@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (c) 2011 Google Inc. All rights reserved.
+# Copyright (c) 2012 Google Inc. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -29,7 +29,7 @@ test.run_gyp('test2.gyp', chdir='src')
 test.sleep()
 test.touch('src/shared_infile.txt')
 test.build('test2.gyp', 'target2', chdir='src')
-# Check INTERMEDIATE_DIR file didn't get overwritten but SHARED_INTERMEDIAT_DIR
+# Check INTERMEDIATE_DIR file didn't get overwritten but SHARED_INTERMEDIATE_DIR
 # file did.
 intermediate_file2 = test.read('src/outfile.txt')
 test.must_contain(intermediate_file1, 'target1')

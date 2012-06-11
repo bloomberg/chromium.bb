@@ -694,6 +694,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
 
     self.fp.write(header)
 
+    self.qualified_target = qualified_target
     self.path = base_path
     self.target = spec['target_name']
     self.type = spec['type']
@@ -840,7 +841,8 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     part_of_all: flag indicating this target is part of 'all'
     """
     for action in actions:
-      name = self.target + '_' + StringToMakefileVariable(action['action_name'])
+      name = StringToMakefileVariable('%s_%s' % (self.qualified_target,
+                                                 action['action_name']))
       self.WriteLn('### Rules for action "%s":' % action['action_name'])
       inputs = action['inputs']
       outputs = action['outputs']
@@ -934,7 +936,8 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     part_of_all: flag indicating this target is part of 'all'
     """
     for rule in rules:
-      name = self.target + '_' + StringToMakefileVariable(rule['rule_name'])
+      name = StringToMakefileVariable('%s_%s' % (self.qualified_target,
+                                                 rule['rule_name']))
       count = 0
       self.WriteLn('### Generated for rule %s:' % name)
 
@@ -1044,7 +1047,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     """
     self.WriteLn('### Generated for copy rule.')
 
-    variable = self.target + '_copies'
+    variable = StringToMakefileVariable(self.qualified_target + '_copies')
     outputs = []
     for copy in copies:
       for path in copy['files']:
