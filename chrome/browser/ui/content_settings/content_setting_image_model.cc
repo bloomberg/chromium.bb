@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -112,12 +112,12 @@ void ContentSettingBlockedImageModel::UpdateFromWebContents(
   const int* explanatory_string_ids = kBlockedExplanatoryTextIDs;
   // If a content type is blocked by default and was accessed, display the
   // accessed icon.
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
-  TabSpecificContentSettings* content_settings = wrapper->content_settings();
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
+  TabSpecificContentSettings* content_settings =
+      tab_contents->content_settings();
   if (!content_settings->IsContentBlocked(get_content_settings_type())) {
     if (!content_settings->IsContentAccessed(get_content_settings_type()) ||
-        (wrapper->profile()->GetHostContentSettingsMap()->
+        (tab_contents->profile()->GetHostContentSettingsMap()->
             GetDefaultContentSetting(get_content_settings_type(), NULL) !=
                 CONTENT_SETTING_BLOCK))
       return;
@@ -143,8 +143,7 @@ void ContentSettingGeolocationImageModel::UpdateFromWebContents(
   if (!web_contents)
     return;
   TabSpecificContentSettings* content_settings =
-      TabContentsWrapper::GetCurrentWrapperForContents(web_contents)->
-          content_settings();
+      TabContents::FromWebContents(web_contents)->content_settings();
   const GeolocationSettingsState& settings_state = content_settings->
       geolocation_settings_state();
   if (settings_state.state_map().empty())

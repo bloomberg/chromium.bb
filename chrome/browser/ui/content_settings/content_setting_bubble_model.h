@@ -20,7 +20,6 @@
 class ContentSettingBubbleModelDelegate;
 class Profile;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 // This model provides data for ContentSettingBubble, and also controls
 // the action triggered when the allow / block radio buttons are triggered.
@@ -32,7 +31,7 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
 
   static ContentSettingBubbleModel* CreateContentSettingBubbleModel(
       Delegate* delegate,
-      TabContentsWrapper* tab_contents,
+      TabContents* tab_contents,
       Profile* profile,
       ContentSettingsType content_type);
 
@@ -41,7 +40,7 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   struct PopupItem {
     SkBitmap bitmap;
     std::string title;
-    TabContentsWrapper* tab_contents;
+    TabContents* tab_contents;
   };
   typedef std::vector<PopupItem> PopupItems;
 
@@ -95,10 +94,10 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   virtual void OnManageLinkClicked() {}
 
  protected:
-  ContentSettingBubbleModel(TabContentsWrapper* tab_contents, Profile* profile,
+  ContentSettingBubbleModel(TabContents* tab_contents, Profile* profile,
       ContentSettingsType content_type);
 
-  TabContentsWrapper* tab_contents() const { return tab_contents_; }
+  TabContents* tab_contents() const { return tab_contents_; }
   Profile* profile() const { return profile_; }
 
   void set_title(const std::string& title) { bubble_content_.title = title; }
@@ -126,7 +125,7 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   void AddBlockedResource(const std::string& resource_identifier);
 
  private:
-  TabContentsWrapper* tab_contents_;
+  TabContents* tab_contents_;
   Profile* profile_;
   ContentSettingsType content_type_;
   BubbleContent bubble_content_;
