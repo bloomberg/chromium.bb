@@ -34,6 +34,7 @@ EXTRA_ENV = {
   'SHARED'         : '0',
   'STDLIB'         : '1',
   'USE_DEFAULTLIBS': '1',
+  'FAST_TRANSLATION': '0',
 
   'INPUTS'        : '',
   'OUTPUT'        : '',
@@ -89,8 +90,7 @@ EXTRA_ENV = {
   'TRIPLE_X8632': 'i686-none-nacl-gnu',
   'TRIPLE_X8664': 'x86_64-none-nacl-gnu',
 
-  'LLC_FLAGS_COMMON': '-tail-merge-threshold=50 ' +
-                      '${PIC ? -relocation-model=pic} ' +
+  'LLC_FLAGS_COMMON': '${PIC ? -relocation-model=pic} ' +
                       #  -force-tls-non-pic makes the code generator (llc)
                       # do the work that would otherwise be done by
                       # linker rewrites which are quite messy in the nacl
@@ -108,12 +108,51 @@ EXTRA_ENV = {
   # LLC flags which set the target and output type.
   # These are handled separately by libLTO.
   'LLC_FLAGS_TARGET' : '-mcpu=${LLC_MCPU_%ARCH%} ' +
-                       '-mtriple=${TRIPLE} -filetype=${filetype}',
+                       '-mtriple=${TRIPLE} ' +
+                       '-filetype=${filetype}',
   # Additional non-default flags go here.
   'LLC_FLAGS_EXTRA' : '',
-  'LLC_FLAGS_BASE': '${LLC_FLAGS_COMMON} ${LLC_FLAGS_%ARCH%} '
-                    '${LLC_FLAGS_EXTRA}',
-  'LLC_FLAGS'     : '${LLC_FLAGS_TARGET} ${LLC_FLAGS_BASE}',
+
+  # slower translation == faster code
+  'LLC_FLAGS_SLOW':
+  # TODO(robertm): consider activating '-O3'
+  # Due to a quadratic algorithm used for tail merging
+  # capping it at 50 helps speed up translation
+                     '-tail-merge-threshold=50',
+
+  # faster translation == slower code
+  # TODO(robertm): these need to be evaluated for how effective they
+  #                are and how much they hurt performance
+  'LLC_FLAGS_FAST' : '${LLC_FLAGS_FAST_%ARCH%}',
+
+  'LLC_FLAGS_FAST_X8632':
+  # -O0 causes us to run out of space when translating llc.pexe
+  # -O1 reduces translation time by approx 10% but breaks the nexe
+  # -O2 is the default
+  #                        '-O1 ' +
+                          '-fast-isel ' +
+  # This does not result in working nexes,
+  #                   '-pre-RA-sched=fast
+  # This does not result in working nexes,',
+  #                   '-regalloc=fast ' +
+  # This, surprisingly, makes a measurable difference
+                          '-tail-merge-threshold=20',
+  'LLC_FLAGS_FAST_X8664':
+                           '-O1 ' +
+  # broken
+  #                        '-fast-isel ' +
+                          '-tail-merge-threshold=20',
+  'LLC_FLAGS_FAST_ARM':
+  # due to slow turn around times ARM settings have not been explored in depth
+  #                       '-O2 ' +
+                          '-fast-isel ' +
+                          '-tail-merge-threshold=20',
+
+  'LLC_FLAGS': '${LLC_FLAGS_TARGET} ' +
+               '${LLC_FLAGS_COMMON} ' +
+               '${LLC_FLAGS_%ARCH%} ' +
+               '${LLC_FLAGS_EXTRA} ' +
+               '${FAST_TRANSLATION ? ${LLC_FLAGS_FAST} : ${LLC_FLAGS_SLOW}}',
 
   'LLC_MARCH'       : '${LLC_MARCH_%ARCH%}',
   'LLC_MARCH_ARM'   : 'arm',
@@ -141,7 +180,7 @@ TranslatorPatterns = [
   # Expose a very limited set of llc flags.
   ( '(-sfi-.+)',        "env.append('LLC_FLAGS_EXTRA', $0)"),
   ( '(-mtls-use-call)', "env.append('LLC_FLAGS_EXTRA', $0)"),
-  ( '-translate-fast',  "env.append('LLC_FLAGS_EXTRA', '-O0')"),
+  ( '-translate-fast',  "env.set('FAST_TRANSLATION', '1')"),
 
   # If translating a .pexe which was linked statically against
   # glibc, then you must do pnacl-translate -static. This will
@@ -390,13 +429,18 @@ def ToggleDefaultCommandlineLD(inputs, infile):
       Log.Info(reason + ' -- not using default SRPC commandline for LD!')
       inputs.append('--pnacl-driver-set-USE_DEFAULT_CMD_LINE=0')
 
+
 def RequiresNonStandardLLCCommandline():
+  if env.getbool('FAST_TRANSLATION'):
+    return ('FAST_TRANSLATION', True)
+
   extra_flags = env.get('LLC_FLAGS_EXTRA')
   if extra_flags != []:
     reason = 'Has additional llc flags: %s' % extra_flags
     return (reason, True)
-  else:
-    return (None, False)
+
+  return (None, False)
+
 
 def UseDefaultCommandlineLLC():
   if not env.getbool('USE_DEFAULT_CMD_LINE'):
