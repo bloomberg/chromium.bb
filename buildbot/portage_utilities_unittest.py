@@ -336,13 +336,13 @@ class FindOverlaysTest(mox.MoxTestBase):
     output_obj = cros_build_lib.CommandResult()
     output_obj.output = public_output
     cros_build_lib.RunCommand(
-        [stub_list_cmd, '--all_boards', '--noprivate'],
+        [stub_list_cmd, '--noprivate', '--all_boards'],
         print_cmd=False, redirect_stdout=True).AndReturn(output_obj)
 
     output_obj = cros_build_lib.CommandResult()
     output_obj.output = private_output
     cros_build_lib.RunCommand(
-        [stub_list_cmd, '--all_boards', '--nopublic'],
+        [stub_list_cmd, '--nopublic', '--all_boards'],
         print_cmd=False, redirect_stdout=True).AndReturn(output_obj)
 
     output_obj = cros_build_lib.CommandResult()

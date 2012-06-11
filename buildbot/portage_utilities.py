@@ -52,7 +52,8 @@ def FindOverlays(srcroot, overlay_type, board=None):
     return []
 
   if board:
-    cmd_argv.extend(['--board', board])
+    board_no_variant, _, variant = board.partition('_')
+    cmd_argv.extend(['--board', board_no_variant, '--variant', variant])
   else:
     cmd_argv.append('--all_boards')
 
