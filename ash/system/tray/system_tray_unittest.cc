@@ -164,8 +164,7 @@ TEST_F(SystemTrayTest, TrayWidgetAutoResizes) {
             tray->GetWidget()->GetWindowScreenBounds().size().ToString());
 }
 
-// Disabled due to a use-after-free, see http://crbug.com/127539.
-TEST_F(SystemTrayTest, DISABLED_SystemTrayNotifications) {
+TEST_F(SystemTrayTest, SystemTrayNotifications) {
   scoped_ptr<SystemTray> tray(CreateSystemTray());
   ASSERT_TRUE(tray->GetWidget());
 
