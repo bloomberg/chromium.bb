@@ -468,7 +468,7 @@ IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, DISABLED_TestURL) {
 
 // crbug.com/124049
 #if defined(OS_MACOSX)
-#define MAYBE_Particels DISABLED_Particles
+#define MAYBE_Particles DISABLED_Particles
 #else
 #define MAYBE_Particles Particles
 #endif
