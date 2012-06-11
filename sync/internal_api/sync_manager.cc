@@ -847,14 +847,14 @@ void SyncManager::RequestCleanupDisabledTypes(
   DCHECK(thread_checker_.CalledOnValidThread());
   if (data_->scheduler()) {
     data_->session_context()->set_routing_info(routing_info);
-    data_->scheduler()->ScheduleCleanupDisabledTypes();
+    data_->scheduler()->CleanupDisabledTypes();
   }
 }
 
 void SyncManager::RequestClearServerData() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (data_->scheduler())
-    data_->scheduler()->ScheduleClearUserData();
+    data_->scheduler()->ClearUserData();
 }
 
 void SyncManager::RequestConfig(
@@ -869,7 +869,7 @@ void SyncManager::RequestConfig(
   }
   StartConfigurationMode(base::Closure());
   data_->session_context()->set_routing_info(routing_info);
-  data_->scheduler()->ScheduleConfig(types, GetSourceFromReason(reason));
+  data_->scheduler()->ScheduleConfiguration(types, GetSourceFromReason(reason));
 }
 
 void SyncManager::StartConfigurationMode(const base::Closure& callback) {
@@ -1966,7 +1966,7 @@ SyncManager::Status SyncManager::SyncInternal::GetStatus() {
 void SyncManager::SyncInternal::RequestNudge(
     const tracked_objects::Location& location) {
   if (scheduler()) {
-     scheduler()->ScheduleNudge(
+     scheduler()->ScheduleNudgeAsync(
         TimeDelta::FromMilliseconds(0), browser_sync::NUDGE_SOURCE_LOCAL,
         ModelTypeSet(), location);
   }
@@ -1991,10 +1991,10 @@ void SyncManager::SyncInternal::RequestNudgeForDataTypes(
   base::TimeDelta nudge_delay = NudgeStrategy::GetNudgeDelayTimeDelta(
       types.First().Get(),
       this);
-  scheduler()->ScheduleNudge(nudge_delay,
-                             browser_sync::NUDGE_SOURCE_LOCAL,
-                             types,
-                             nudge_location);
+  scheduler()->ScheduleNudgeAsync(nudge_delay,
+                                  browser_sync::NUDGE_SOURCE_LOCAL,
+                                  types,
+                                  nudge_location);
 }
 
 void SyncManager::SyncInternal::OnSyncEngineEvent(
@@ -2329,14 +2329,14 @@ void SyncManager::SyncInternal::OnIncomingNotification(
   DCHECK(thread_checker_.CalledOnValidThread());
   if (source == sync_notifier::LOCAL_NOTIFICATION) {
     if (scheduler()) {
-      scheduler()->ScheduleNudgeWithPayloads(
+      scheduler()->ScheduleNudgeWithPayloadsAsync(
           TimeDelta::FromMilliseconds(kSyncRefreshDelayMsec),
           browser_sync::NUDGE_SOURCE_LOCAL_REFRESH,
           type_payloads, FROM_HERE);
     }
   } else if (!type_payloads.empty()) {
     if (scheduler()) {
-      scheduler()->ScheduleNudgeWithPayloads(
+      scheduler()->ScheduleNudgeWithPayloadsAsync(
           TimeDelta::FromMilliseconds(kSyncSchedulerDelayMsec),
           browser_sync::NUDGE_SOURCE_NOTIFICATION,
           type_payloads, FROM_HERE);

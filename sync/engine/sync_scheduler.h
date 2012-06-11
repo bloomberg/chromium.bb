@@ -76,27 +76,28 @@ class SyncScheduler : public sessions::SyncSession::Delegate {
   // are cancelled.
   void RequestStop(const base::Closure& callback);
 
-  // The meat and potatoes.
-  void ScheduleNudge(const base::TimeDelta& delay, NudgeSource source,
+  // The meat and potatoes. Both of these methods will post a delayed task
+  // to attempt the actual nudge (see ScheduleNudgeImpl).
+  void ScheduleNudgeAsync(const base::TimeDelta& delay, NudgeSource source,
                      syncable::ModelTypeSet types,
                      const tracked_objects::Location& nudge_location);
-  void ScheduleNudgeWithPayloads(
+  void ScheduleNudgeWithPayloadsAsync(
       const base::TimeDelta& delay, NudgeSource source,
       const syncable::ModelTypePayloadMap& types_with_payloads,
       const tracked_objects::Location& nudge_location);
 
+  // Schedule a configuration cycle. May execute immediately or at a later time
+  // (depending on backoff/throttle state).
   // Note: The source argument of this function must come from the subset of
   // GetUpdatesCallerInfo values related to configurations.
-  void ScheduleConfig(
+  void ScheduleConfiguration(
       syncable::ModelTypeSet types,
       sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source);
 
-  void ScheduleClearUserData();
-  // If this is called before Start(), the cleanup is guaranteed to
-  // happen before the Start finishes.
-  //
-  // TODO(akalin): Figure out how to test this.
-  void ScheduleCleanupDisabledTypes();
+  // TODO(tim): remove this. crbug.com/131336
+  void ClearUserData();
+
+  void CleanupDisabledTypes();
 
   // Change status of notifications in the SyncSessionContext.
   void set_notifications_enabled(bool notifications_enabled);
@@ -310,17 +311,12 @@ class SyncScheduler : public sessions::SyncSession::Delegate {
 
   // 'Impl' here refers to real implementation of public functions, running on
   // |thread_|.
-  void StartImpl(Mode mode, const base::Closure& callback);
   void StopImpl(const base::Closure& callback);
   void ScheduleNudgeImpl(
       const base::TimeDelta& delay,
       sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source,
       const syncable::ModelTypePayloadMap& types_with_payloads,
       bool is_canary_job, const tracked_objects::Location& nudge_location);
-  void ScheduleConfigImpl(const ModelSafeRoutingInfo& routing_info,
-      const std::vector<ModelSafeWorker*>& workers,
-      const sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source);
-  void ScheduleClearUserDataImpl();
 
   // Returns true if the client is currently in exponential backoff.
   bool IsBackingOff() const;

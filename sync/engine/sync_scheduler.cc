@@ -255,30 +255,9 @@ void SyncScheduler::Start(Mode mode, const base::Closure& callback) {
             << thread_name << " with mode " << GetModeString(mode);
   if (!started_) {
     started_ = true;
-    PostTask(FROM_HERE, "SendInitialSnapshot",
-             base::Bind(&SyncScheduler::SendInitialSnapshot,
-                        weak_ptr_factory_.GetWeakPtr()));
+    SendInitialSnapshot();
   }
-  PostTask(FROM_HERE, "StartImpl",
-           base::Bind(&SyncScheduler::StartImpl,
-                      weak_ptr_factory_.GetWeakPtr(), mode, callback));
-}
 
-void SyncScheduler::SendInitialSnapshot() {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  scoped_ptr<SyncSession> dummy(new SyncSession(session_context_, this,
-      SyncSourceInfo(), ModelSafeRoutingInfo(),
-      std::vector<ModelSafeWorker*>()));
-  SyncEngineEvent event(SyncEngineEvent::STATUS_CHANGED);
-  event.snapshot = dummy->TakeSnapshot();
-  session_context_->NotifyListeners(event);
-}
-
-void SyncScheduler::StartImpl(Mode mode, const base::Closure& callback) {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  SDVLOG(2) << "In StartImpl with mode " << GetModeString(mode);
-
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
   DCHECK(!session_context_->account_name().empty());
   DCHECK(syncer_.get());
   Mode old_mode = mode_;
@@ -292,6 +271,16 @@ void SyncScheduler::StartImpl(Mode mode, const base::Closure& callback) {
     // execute in the new mode.
     DoPendingJobIfPossible(false);
   }
+}
+
+void SyncScheduler::SendInitialSnapshot() {
+  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  scoped_ptr<SyncSession> dummy(new SyncSession(session_context_, this,
+      SyncSourceInfo(), ModelSafeRoutingInfo(),
+      std::vector<ModelSafeWorker*>()));
+  SyncEngineEvent event(SyncEngineEvent::STATUS_CHANGED);
+  event.snapshot = dummy->TakeSnapshot();
+  session_context_->NotifyListeners(event);
 }
 
 SyncScheduler::JobProcessDecision SyncScheduler::DecideWhileInWaitInterval(
@@ -459,25 +448,26 @@ struct ModelSafeWorkerGroupIs {
   ModelSafeGroup group;
 };
 
-void SyncScheduler::ScheduleClearUserData() {
+void SyncScheduler::ClearUserData() {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  PostTask(FROM_HERE, "ScheduleClearUserDataImpl",
-           base::Bind(&SyncScheduler::ScheduleClearUserDataImpl,
-                      weak_ptr_factory_.GetWeakPtr()));
+  SyncSessionJob job(SyncSessionJob::CLEAR_USER_DATA, TimeTicks::Now(),
+                     make_linked_ptr(CreateSyncSession(SyncSourceInfo())),
+                     false,
+                     FROM_HERE);
+
+  DoSyncSessionJob(job);
 }
 
-// TODO(sync): Remove the *Impl methods for the other Schedule*
-// functions, too.
-void SyncScheduler::ScheduleCleanupDisabledTypes() {
+void SyncScheduler::CleanupDisabledTypes() {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   SyncSessionJob job(SyncSessionJob::CLEANUP_DISABLED_TYPES, TimeTicks::Now(),
                      make_linked_ptr(CreateSyncSession(SyncSourceInfo())),
                      false,
                      FROM_HERE);
-  ScheduleSyncSessionJob(job);
+  DoSyncSessionJob(job);
 }
 
-void SyncScheduler::ScheduleNudge(
+void SyncScheduler::ScheduleNudgeAsync(
     const TimeDelta& delay,
     NudgeSource source, ModelTypeSet types,
     const tracked_objects::Location& nudge_location) {
@@ -489,17 +479,14 @@ void SyncScheduler::ScheduleNudge(
 
   ModelTypePayloadMap types_with_payloads =
       syncable::ModelTypePayloadMapFromEnumSet(types, std::string());
-  PostTask(nudge_location, "ScheduleNudgeImpl",
-           base::Bind(&SyncScheduler::ScheduleNudgeImpl,
-                      weak_ptr_factory_.GetWeakPtr(),
-                      delay,
-                      GetUpdatesFromNudgeSource(source),
-                      types_with_payloads,
-                      false,
-                      nudge_location));
+  SyncScheduler::ScheduleNudgeImpl(delay,
+                                   GetUpdatesFromNudgeSource(source),
+                                   types_with_payloads,
+                                   false,
+                                   nudge_location);
 }
 
-void SyncScheduler::ScheduleNudgeWithPayloads(
+void SyncScheduler::ScheduleNudgeWithPayloadsAsync(
     const TimeDelta& delay,
     NudgeSource source, const ModelTypePayloadMap& types_with_payloads,
     const tracked_objects::Location& nudge_location) {
@@ -510,24 +497,11 @@ void SyncScheduler::ScheduleNudgeWithPayloads(
       << "payloads "
       << syncable::ModelTypePayloadMapToString(types_with_payloads);
 
-  PostTask(nudge_location, "ScheduleNudgeImpl",
-           base::Bind(&SyncScheduler::ScheduleNudgeImpl,
-                      weak_ptr_factory_.GetWeakPtr(),
-                      delay,
-                      GetUpdatesFromNudgeSource(source),
-                      types_with_payloads,
-                      false,
-                      nudge_location));
-}
-
-void SyncScheduler::ScheduleClearUserDataImpl() {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  SyncSessionJob job(SyncSessionJob::CLEAR_USER_DATA, TimeTicks::Now(),
-                     make_linked_ptr(CreateSyncSession(SyncSourceInfo())),
-                     false,
-                     FROM_HERE);
-
-  ScheduleSyncSessionJob(job);
+  SyncScheduler::ScheduleNudgeImpl(delay,
+                                   GetUpdatesFromNudgeSource(source),
+                                   types_with_payloads,
+                                   false,
+                                   nudge_location);
 }
 
 void SyncScheduler::ScheduleNudgeImpl(
@@ -626,7 +600,7 @@ void GetModelSafeParamsForTypes(ModelTypeSet types,
   }
 }
 
-void SyncScheduler::ScheduleConfig(
+void SyncScheduler::ScheduleConfiguration(
     ModelTypeSet types,
     GetUpdatesCallerInfo::GetUpdatesSource source) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
@@ -640,32 +614,16 @@ void SyncScheduler::ScheduleConfig(
                              session_context_->workers(),
                              &routes, &workers);
 
-  PostTask(FROM_HERE, "ScheduleConfigImpl",
-           base::Bind(&SyncScheduler::ScheduleConfigImpl,
-                      weak_ptr_factory_.GetWeakPtr(),
-                      routes,
-                      workers,
-                      source));
-}
-
-void SyncScheduler::ScheduleConfigImpl(
-    const ModelSafeRoutingInfo& routing_info,
-    const std::vector<ModelSafeWorker*>& workers,
-    const sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source) {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
-
-  SDVLOG(2) << "In ScheduleConfigImpl";
-  // TODO(tim): config-specific GetUpdatesCallerInfo value?
   SyncSession* session = new SyncSession(session_context_, this,
       SyncSourceInfo(source,
-          syncable::ModelTypePayloadMapFromRoutingInfo(
-              routing_info, std::string())),
-      routing_info, workers);
+                     syncable::ModelTypePayloadMapFromRoutingInfo(
+                         routes, std::string())),
+      routes, workers);
   SyncSessionJob job(SyncSessionJob::CONFIGURATION, TimeTicks::Now(),
                      make_linked_ptr(session),
                      false,
                      FROM_HERE);
-  ScheduleSyncSessionJob(job);
+  DoSyncSessionJob(job);
 }
 
 const char* SyncScheduler::GetModeString(SyncScheduler::Mode mode) {
@@ -752,6 +710,8 @@ void SyncScheduler::ScheduleSyncSessionJob(const SyncSessionJob& job) {
       << SyncSessionJob::GetPurposeString(job.purpose)
       << " job and " << delay.InMilliseconds() << " ms delay";
 
+  DCHECK(job.purpose == SyncSessionJob::NUDGE ||
+         job.purpose == SyncSessionJob::POLL);
   if (job.purpose == SyncSessionJob::NUDGE) {
     SDVLOG_LOC(job.from_here, 2) << "Resetting pending_nudge";
     DCHECK(!pending_nudge_.get() || pending_nudge_->session.get() ==
