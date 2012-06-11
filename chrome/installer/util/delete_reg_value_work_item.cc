@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,9 +87,11 @@ void DeleteRegValueWorkItem::Rollback() {
                          KEY_READ | KEY_WRITE);
   if (result == ERROR_SUCCESS) {
     // try to restore the previous value
-    result = key.WriteValue(value_name_.c_str(), &previous_value_[0],
-                            static_cast<DWORD>(previous_value_.size()),
-                            previous_type_);
+    DWORD previous_size = static_cast<DWORD>(previous_value_.size());
+    const char* previous_value =
+        previous_size ? &previous_value_[0] : NULL;
+    result = key.WriteValue(value_name_.c_str(), previous_value,
+                            previous_size, previous_type_);
     VLOG_IF(1, result != ERROR_SUCCESS) << "rollback: restoring "
                                         << value_name_ << " error: " << result;
   } else {
