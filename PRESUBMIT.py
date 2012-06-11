@@ -61,12 +61,14 @@ def _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api):
   # We only scan .cc files and the like, as the declaration of
   # for-testing functions in header files are hard to distinguish from
   # calls to such functions without a proper C++ parser.
+  platform_specifiers = r'(_(android|chromeos|gtk|mac|posix|win))?'
   source_extensions = r'\.(cc|cpp|cxx|mm)$'
   file_inclusion_pattern = r'.+%s' % source_extensions
   file_exclusion_patterns = (
       r'.*[/\\](test_|mock_).+%s' % source_extensions,
       r'.+_test_(base|support|util)%s' % source_extensions,
-      r'.+_(api|browser|perf|unit|ui)?test%s' % source_extensions,
+      r'.+_(api|browser|perf|unit|ui)?test%s%s' % (platform_specifiers,
+                                                   source_extensions),
       r'.+profile_sync_service_harness%s' % source_extensions,
       )
   path_exclusion_patterns = (
