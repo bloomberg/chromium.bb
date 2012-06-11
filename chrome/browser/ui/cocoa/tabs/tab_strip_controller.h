@@ -25,7 +25,6 @@
 class Browser;
 class ConstrainedWindowMac;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 class TabStripModelObserverBridge;
 class TabStripModel;
 
@@ -176,7 +175,7 @@ class TabStripModel;
 // current placeholder.
 - (void)moveTabFromIndex:(NSInteger)from;
 
-// Drop a given TabContentsWrapper at the location of the current placeholder.
+// Drop a given TabContents at the location of the current placeholder.
 // If there is no placeholder, it will go at the end. Used when dragging from
 // another window when we don't have access to the WebContents as part of our
 // strip. |frame| is in the coordinate system of the tab strip view and
@@ -185,7 +184,7 @@ class TabStripModel;
 // its previous window, setting |pinned| to YES will propagate that state to the
 // new window. Mini-tabs are either app or pinned tabs; the app state is stored
 // by the |contents|, but the |pinned| state is the caller's responsibility.
-- (void)dropTabContents:(TabContentsWrapper*)contents
+- (void)dropTabContents:(TabContents*)contents
               withFrame:(NSRect)frame
             asPinnedTab:(BOOL)pinned;
 

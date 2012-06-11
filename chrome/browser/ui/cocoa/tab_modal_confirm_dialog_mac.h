@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/cocoa/constrained_window_mac.h"
 
 class TabContents;
-typedef TabContents TabContentsWrapper;
 class TabModalConfirmDialogDelegate;
 
 // Displays a tab-modal dialog, i.e. a dialog that will block the current page
@@ -24,7 +23,7 @@ class TabModalConfirmDialogMac
     : public ConstrainedWindowMacDelegateSystemSheet {
  public:
   TabModalConfirmDialogMac(TabModalConfirmDialogDelegate* delegate,
-                           TabContentsWrapper* wrapper);
+                           TabContents* tab_contents);
 
   // ConstrainedWindowDelegateMacSystemSheet methods:
   virtual void DeleteDelegate() OVERRIDE;

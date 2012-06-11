@@ -16,7 +16,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ssl/ssl_client_auth_observer.h"
 #import "chrome/browser/ui/cocoa/constrained_window_mac.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "net/base/ssl_cert_request_info.h"
@@ -28,7 +28,7 @@ using content::BrowserThread;
 
 @interface SFChooseIdentityPanel (SystemPrivate)
 // A system-private interface that dismisses a panel whose sheet was started by
-// beginSheetForWindow:modalDelegate:didEndSelector:contextInfo:identities:message:
+// -beginSheetForWindow:modalDelegate:didEndSelector:contextInfo:identities:message:
 // as though the user clicked the button identified by returnCode. Verified
 // present in 10.5, 10.6, and 10.7.
 - (void)_dismissWithCode:(NSInteger)code;
@@ -54,7 +54,7 @@ class NotificationProxy;
        certRequestInfo:(net::SSLCertRequestInfo*)certRequestInfo
          callback:(const base::Callback<void(net::X509Certificate*)>&)callback;
 - (void)onNotification;
-- (void)displayDialog:(TabContentsWrapper*)wrapper;
+- (void)displayDialog:(TabContents*)tabContents;
 @end
 
 namespace {
@@ -134,7 +134,7 @@ class NotificationProxy : public SSLClientAuthObserver {
 namespace browser {
 
 void ShowSSLClientCertificateSelector(
-    TabContentsWrapper* wrapper,
+    TabContents* tabContents,
     const net::HttpNetworkSession* network_session,
     net::SSLCertRequestInfo* cert_request_info,
     const base::Callback<void(net::X509Certificate*)>& callback) {
@@ -144,7 +144,7 @@ void ShowSSLClientCertificateSelector(
           initWithObserver:network_session
            certRequestInfo:cert_request_info
                   callback:callback] autorelease];
-  [selector displayDialog:wrapper];
+  [selector displayDialog:tabContents];
 }
 
 }  // namespace browser
@@ -191,7 +191,7 @@ void ShowSSLClientCertificateSelector(
   window_->CloseConstrainedWindow();
 }
 
-- (void)displayDialog:(TabContentsWrapper*)wrapper {
+- (void)displayDialog:(TabContents*)tabContents {
   DCHECK(!window_);
   // Create an array of CFIdentityRefs for the certificates:
   size_t numCerts = observer_->cert_request_info()->client_certs.size();
@@ -225,7 +225,7 @@ void ShowSSLClientCertificateSelector(
   }
 
   window_ = new ConstrainedWindowMac(
-      wrapper,
+      tabContents,
       new ConstrainedSFChooseIdentityPanel(
           panel, self,
           @selector(sheetDidEnd:returnCode:context:),

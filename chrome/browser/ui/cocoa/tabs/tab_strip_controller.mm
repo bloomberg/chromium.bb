@@ -45,7 +45,7 @@
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_selection_model.h"
@@ -144,7 +144,7 @@ private:
 - (void)addSubviewToPermanentList:(NSView*)aView;
 - (void)regenerateSubviewList;
 - (NSInteger)indexForContentsView:(NSView*)view;
-- (void)updateFaviconForContents:(TabContentsWrapper*)contents
+- (void)updateFaviconForContents:(TabContents*)contents
                          atIndex:(NSInteger)modelIndex;
 - (void)layoutTabsWithAnimation:(BOOL)animate
              regenerateSubviews:(BOOL)doUpdate;
@@ -302,7 +302,7 @@ private:
 #pragma mark -
 
 // In general, there is a one-to-one correspondence between TabControllers,
-// TabViews, TabContentsControllers, and the TabContentsWrapper in the
+// TabViews, TabContentsControllers, and the TabContents in the
 // TabStripModel. In the steady-state, the indices line up so an index coming
 // from the model is directly mapped to the same index in the parallel arrays
 // holding our views and controllers. This is also true when new tabs are
@@ -453,10 +453,9 @@ private:
     // means the tab model is already fully formed with tabs. Need to walk the
     // list and create the UI for each.
     const int existingTabCount = tabStripModel_->count();
-    const TabContentsWrapper* selection =
-        tabStripModel_->GetActiveTabContents();
+    const TabContents* selection = tabStripModel_->GetActiveTabContents();
     for (int i = 0; i < existingTabCount; ++i) {
-      TabContentsWrapper* currentContents = tabStripModel_->GetTabContentsAt(i);
+      TabContents* currentContents = tabStripModel_->GetTabContentsAt(i);
       [self insertTabWithContents:currentContents
                           atIndex:i
                      inForeground:NO];
@@ -556,7 +555,7 @@ private:
 
   // Make sure the new tabs's sheets are visible (necessary when a background
   // tab opened a sheet while it was in the background and now becomes active).
-  TabContentsWrapper* newTab = tabStripModel_->GetTabContentsAt(modelIndex);
+  TabContents* newTab = tabStripModel_->GetTabContentsAt(modelIndex);
   DCHECK(newTab);
   if (newTab) {
     ConstrainedWindowTabHelper::ConstrainedWindowList::iterator it, end;
@@ -1144,7 +1143,7 @@ private:
 
 // Called when a notification is received from the model to insert a new tab
 // at |modelIndex|.
-- (void)insertTabWithContents:(TabContentsWrapper*)contents
+- (void)insertTabWithContents:(TabContents*)contents
                       atIndex:(NSInteger)modelIndex
                  inForeground:(bool)inForeground {
   DCHECK(contents);
@@ -1202,8 +1201,8 @@ private:
 
 // Called when a notification is received from the model to select a particular
 // tab. Swaps in the toolbar and content area associated with |newContents|.
-- (void)activateTabWithContents:(TabContentsWrapper*)newContents
-               previousContents:(TabContentsWrapper*)oldContents
+- (void)activateTabWithContents:(TabContents*)newContents
+               previousContents:(TabContents*)oldContents
                         atIndex:(NSInteger)modelIndex
                     userGesture:(bool)wasUserGesture {
   // Take closing tabs into account.
@@ -1261,8 +1260,8 @@ private:
   }
 }
 
-- (void)tabReplacedWithContents:(TabContentsWrapper*)newContents
-               previousContents:(TabContentsWrapper*)oldContents
+- (void)tabReplacedWithContents:(TabContents*)newContents
+               previousContents:(TabContents*)oldContents
                         atIndex:(NSInteger)modelIndex {
   NSInteger index = [self indexFromModelIndex:modelIndex];
   TabContentsController* oldController =
@@ -1376,7 +1375,7 @@ private:
 // Called when a notification is received from the model that the given tab
 // has gone away. Start an animation then force a layout to put everything
 // in motion.
-- (void)tabDetachedWithContents:(TabContentsWrapper*)contents
+- (void)tabDetachedWithContents:(TabContents*)contents
                         atIndex:(NSInteger)modelIndex {
   // Take closing tabs into account.
   NSInteger index = [self indexFromModelIndex:modelIndex];
@@ -1397,7 +1396,7 @@ private:
 
 // A helper routine for creating an NSImageView to hold the favicon or app icon
 // for |contents|.
-- (NSImageView*)iconImageViewForContents:(TabContentsWrapper*)contents {
+- (NSImageView*)iconImageViewForContents:(TabContents*)contents {
   BOOL isApp = contents->extension_tab_helper()->is_app();
   NSImage* image = nil;
   // Favicons come from the renderer, and the renderer draws everything in the
@@ -1423,7 +1422,7 @@ private:
 
 // Updates the current loading state, replacing the icon view with a favicon,
 // a throbber, the default icon, or nothing at all.
-- (void)updateFaviconForContents:(TabContentsWrapper*)contents
+- (void)updateFaviconForContents:(TabContents*)contents
                          atIndex:(NSInteger)modelIndex {
   if (!contents)
     return;
@@ -1495,7 +1494,7 @@ private:
 // Called when a notification is received from the model that the given tab
 // has been updated. |loading| will be YES when we only want to update the
 // throbber state, not anything else about the (partially) loading tab.
-- (void)tabChangedWithContents:(TabContentsWrapper*)contents
+- (void)tabChangedWithContents:(TabContents*)contents
                        atIndex:(NSInteger)modelIndex
                     changeType:(TabStripModelObserver::TabChangeType)change {
   // Take closing tabs into account.
@@ -1525,7 +1524,7 @@ private:
 // Called when a tab is moved (usually by drag&drop). Keep our parallel arrays
 // in sync with the tab strip model. It can also be pinned/unpinned
 // simultaneously, so we need to take care of that.
-- (void)tabMovedWithContents:(TabContentsWrapper*)contents
+- (void)tabMovedWithContents:(TabContents*)contents
                    fromIndex:(NSInteger)modelFrom
                      toIndex:(NSInteger)modelTo {
   // Take closing tabs into account.
@@ -1554,7 +1553,7 @@ private:
 }
 
 // Called when a tab is pinned or unpinned without moving.
-- (void)tabMiniStateChangedWithContents:(TabContentsWrapper*)contents
+- (void)tabMiniStateChangedWithContents:(TabContents*)contents
                                 atIndex:(NSInteger)modelIndex {
   // Take closing tabs into account.
   NSInteger index = [self indexFromModelIndex:modelIndex];
@@ -1641,7 +1640,7 @@ private:
   tabStripModel_->MoveTabContentsAt(from, toIndex, true);
 }
 
-// Drop a given TabContentsWrapper at the location of the current placeholder.
+// Drop a given TabContents at the location of the current placeholder.
 // If there is no placeholder, it will go at the end. Used when dragging from
 // another window when we don't have access to the WebContents as part of our
 // strip. |frame| is in the coordinate system of the tab strip view and
@@ -1650,7 +1649,7 @@ private:
 // its previous window, setting |pinned| to YES will propagate that state to the
 // new window. Mini-tabs are either app or pinned tabs; the app state is stored
 // by the |contents|, but the |pinned| state is the caller's responsibility.
-- (void)dropTabContents:(TabContentsWrapper*)contents
+- (void)dropTabContents:(TabContents*)contents
               withFrame:(NSRect)frame
             asPinnedTab:(BOOL)pinned {
   int modelIndex = [self indexOfPlaceholder];

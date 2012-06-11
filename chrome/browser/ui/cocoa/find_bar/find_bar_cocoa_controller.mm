@@ -16,7 +16,7 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -74,7 +74,7 @@ const float kRightEdgeOffset = 25;
 }
 
 - (void)dealloc {
-  // All animations should be explicitly stopped by the TabContentsWrapper
+  // All animations should be explicitly stopped by the TabContents
   // before a tab is closed.
   DCHECK(!showHideAnimation_.get());
   DCHECK(!moveAnimation_.get());
@@ -168,7 +168,7 @@ const float kRightEdgeOffset = 25;
   if (!findBarBridge_)
     return;
 
-  TabContentsWrapper* tab_contents =
+  TabContents* tab_contents =
       findBarBridge_->GetFindBarController()->tab_contents();
   if (!tab_contents)
     return;
@@ -222,7 +222,7 @@ const float kRightEdgeOffset = 25;
              command == @selector(scrollToEndOfDocument:) ||
              command == @selector(moveUp:) ||
              command == @selector(moveDown:)) {
-    TabContentsWrapper* contents =
+    TabContents* contents =
         findBarBridge_->GetFindBarController()->tab_contents();
     if (!contents)
       return NO;
@@ -466,7 +466,7 @@ const float kRightEdgeOffset = 25;
 
   if (!findBarBridge_ || !findBarBridge_->GetFindBarController())
     return frame.origin.x;
-  TabContentsWrapper* contents =
+  TabContents* contents =
       findBarBridge_->GetFindBarController()->tab_contents();
   if (!contents)
     return frame.origin.x;
@@ -528,7 +528,7 @@ const float kRightEdgeOffset = 25;
   // End the find session, hide the "x of y" text and disable the
   // buttons, but do not close the find bar or raise the window here.
   if (stopSearch && findBarBridge_) {
-    TabContentsWrapper* contents =
+    TabContents* contents =
         findBarBridge_->GetFindBarController()->tab_contents();
     if (contents) {
       FindTabHelper* find_tab_helper = contents->find_tab_helper();

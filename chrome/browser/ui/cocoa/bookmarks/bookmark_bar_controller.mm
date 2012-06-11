@@ -2288,7 +2288,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 #pragma mark BookmarkBarToolbarViewController Protocol
 
 - (int)currentTabContentsHeight {
-  WebContents* wc = browser_->GetSelectedWebContents();
+  WebContents* wc = browser_->GetActiveWebContents();
   return wc ? wc->GetView()->GetContainerSize().height() : 0;
 }
 

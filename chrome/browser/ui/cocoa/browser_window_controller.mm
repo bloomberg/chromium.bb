@@ -57,7 +57,7 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/dock_info.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
@@ -593,7 +593,7 @@ enum {
 - (void)windowDidBecomeKey:(NSNotification*)notification {
   // We need to activate the controls (in the "WebView"). To do this, get the
   // selected WebContents's RenderWidgetHostView and tell it to activate.
-  if (WebContents* contents = browser_->GetSelectedWebContents()) {
+  if (WebContents* contents = browser_->GetActiveWebContents()) {
     if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->SetActive(true);
   }
@@ -610,7 +610,7 @@ enum {
 
   // We need to deactivate the controls (in the "WebView"). To do this, get the
   // selected WebContents's RenderWidgetHostView and tell it to deactivate.
-  if (WebContents* contents = browser_->GetSelectedWebContents()) {
+  if (WebContents* contents = browser_->GetActiveWebContents()) {
     if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->SetActive(false);
   }
@@ -621,7 +621,7 @@ enum {
   [self saveWindowPositionIfNeeded];
 
   // Let the selected RenderWidgetHostView know, so that it can tell plugins.
-  if (WebContents* contents = browser_->GetSelectedWebContents()) {
+  if (WebContents* contents = browser_->GetActiveWebContents()) {
     if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->SetWindowVisibility(false);
   }
@@ -630,7 +630,7 @@ enum {
 // Called when we have been unminimized.
 - (void)windowDidDeminiaturize:(NSNotification *)notification {
   // Let the selected RenderWidgetHostView know, so that it can tell plugins.
-  if (WebContents* contents = browser_->GetSelectedWebContents()) {
+  if (WebContents* contents = browser_->GetActiveWebContents()) {
     if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->SetWindowVisibility(true);
   }
@@ -641,7 +641,7 @@ enum {
   // Let the selected RenderWidgetHostView know, so that it can tell plugins
   // (unless we are minimized, in which case nothing has really changed).
   if (![[self window] isMiniaturized]) {
-    if (WebContents* contents = browser_->GetSelectedWebContents()) {
+    if (WebContents* contents = browser_->GetActiveWebContents()) {
       if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
         rwhv->SetWindowVisibility(false);
     }
@@ -653,7 +653,7 @@ enum {
   // Let the selected RenderWidgetHostView know, so that it can tell plugins
   // (unless we are minimized, in which case nothing has really changed).
   if (![[self window] isMiniaturized]) {
-    if (WebContents* contents = browser_->GetSelectedWebContents()) {
+    if (WebContents* contents = browser_->GetActiveWebContents()) {
       if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
         rwhv->SetWindowVisibility(true);
     }
@@ -698,7 +698,7 @@ enum {
       std::max(kProportion * NSWidth(frame),
                std::min(kProportion * NSHeight(frame), NSWidth(frame)));
 
-  WebContents* contents = browser_->GetSelectedWebContents();
+  WebContents* contents = browser_->GetActiveWebContents();
   if (contents) {
     // If the intrinsic width is bigger, then make it the zoomed width.
     const int kScrollbarWidth = 16;  // TODO(viettrungluu): ugh.
@@ -935,7 +935,7 @@ enum {
 
   if (resizeRectDirty) {
     // Send new resize rect to foreground tab.
-    if (content::WebContents* contents = browser_->GetSelectedWebContents()) {
+    if (content::WebContents* contents = browser_->GetActiveWebContents()) {
       if (content::RenderViewHost* rvh = contents->GetRenderViewHost()) {
         rvh->ResizeRectChanged(windowShim_->GetRootWindowResizerRect());
       }
@@ -975,7 +975,7 @@ enum {
     DCHECK(browser_.get());
     Profile* profile = browser_->profile();
     DCHECK(profile);
-    WebContents* current_tab = browser_->GetSelectedWebContents();
+    WebContents* current_tab = browser_->GetActiveWebContents();
     if (!current_tab) {
       return;
     }
@@ -1228,8 +1228,7 @@ enum {
     if (!isBrowser) return;
     BrowserWindowController* dragBWC = (BrowserWindowController*)dragController;
     int index = [dragBWC->tabStripController_ modelIndexForTabView:view];
-    TabContentsWrapper* contents =
-        dragBWC->browser_->GetTabContentsWrapperAt(index);
+    TabContents* contents = dragBWC->browser_->GetTabContentsAt(index);
     // The tab contents may have gone away if given a window.close() while it
     // is being dragged. If so, bail, we've got nothing to drop.
     if (!contents)
@@ -1307,7 +1306,7 @@ enum {
 
   // Fetch the tab contents for the tab being dragged.
   int index = [tabStripController_ modelIndexForTabView:tabView];
-  TabContentsWrapper* contents = browser_->GetTabContentsWrapperAt(index);
+  TabContents* contents = browser_->GetTabContentsAt(index);
 
   // Set the window size. Need to do this before we detach the tab so it's
   // still in the window. We have to flip the coordinates as that's what
@@ -1490,7 +1489,7 @@ enum {
 }
 
 - (NSString*)activeTabTitle {
-  WebContents* contents = browser_->GetSelectedWebContents();
+  WebContents* contents = browser_->GetActiveWebContents();
   return base::SysUTF16ToNSString(contents->GetTitle());
 }
 
@@ -1522,10 +1521,9 @@ enum {
   // applicable)?
   [self updateBookmarkBarVisibilityWithAnimation:NO];
 
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(contents);
+  TabContents* tabContents = TabContents::FromWebContents(contents);
   // Without the .get(), xcode fails.
-  [infoBarContainerController_.get() changeTabContents:wrapper];
+  [infoBarContainerController_.get() changeTabContents:tabContents];
 }
 
 - (void)onReplaceTabWithContents:(WebContents*)contents {
@@ -1552,9 +1550,8 @@ enum {
 }
 
 - (void)onTabDetachedWithContents:(WebContents*)contents {
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(contents);
-  [infoBarContainerController_ tabDetachedWithContents:wrapper];
+  TabContents* tabContents = TabContents::FromWebContents(contents);
+  [infoBarContainerController_ tabDetachedWithContents:tabContents];
 }
 
 - (void)userChangedTheme {
@@ -1760,7 +1757,7 @@ enum {
   }
 
   // Let the selected RenderWidgetHostView know, so that it can tell plugins.
-  if (WebContents* contents = browser_->GetSelectedWebContents()) {
+  if (WebContents* contents = browser_->GetActiveWebContents()) {
     if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->WindowFrameChanged();
   }
@@ -1814,7 +1811,7 @@ enum {
     [self resetWindowGrowthState];
 
   // Let the selected RenderWidgetHostView know, so that it can tell plugins.
-  if (WebContents* contents = browser_->GetSelectedWebContents()) {
+  if (WebContents* contents = browser_->GetActiveWebContents()) {
     if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->WindowFrameChanged();
   }

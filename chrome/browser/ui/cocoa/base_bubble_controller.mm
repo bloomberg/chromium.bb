@@ -18,8 +18,8 @@
 
 @interface BaseBubbleController (Private)
 - (void)updateOriginFromAnchor;
-- (void)activateTabWithContents:(TabContentsWrapper*)newContents
-               previousContents:(TabContentsWrapper*)oldContents
+- (void)activateTabWithContents:(TabContents*)newContents
+               previousContents:(TabContents*)oldContents
                         atIndex:(NSInteger)index
                     userGesture:(bool)wasUserGesture;
 @end
@@ -291,8 +291,8 @@ typedef unsigned long long NSEventMask;
   [window setFrameOrigin:origin];
 }
 
-- (void)activateTabWithContents:(TabContentsWrapper*)newContents
-               previousContents:(TabContentsWrapper*)oldContents
+- (void)activateTabWithContents:(TabContents*)newContents
+               previousContents:(TabContents*)oldContents
                         atIndex:(NSInteger)index
                     userGesture:(bool)wasUserGesture {
   // The user switched tabs; close.

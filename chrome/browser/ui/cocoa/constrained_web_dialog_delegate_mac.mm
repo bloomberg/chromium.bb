@@ -8,7 +8,7 @@
 
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/ui/cocoa/constrained_window_mac.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/web_dialog_web_contents_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/size.h"
@@ -51,7 +51,7 @@ class ConstrainedWebDialogDelegateMac :
   virtual ConstrainedWindow* window() OVERRIDE {
     return impl_->window();
   }
-  virtual TabContentsWrapper* tab() OVERRIDE {
+  virtual TabContents* tab() OVERRIDE {
     return impl_->tab();
   }
 
@@ -120,14 +120,14 @@ ConstrainedWebDialogDelegate* ui::CreateConstrainedWebDialog(
         Profile* profile,
         WebDialogDelegate* delegate,
         WebDialogWebContentsDelegate* tab_delegate,
-        TabContentsWrapper* wrapper) {
+        TabContents* tab_contents) {
   // Deleted when ConstrainedWebDialogDelegateMac::DeleteDelegate() runs.
   ConstrainedWebDialogDelegateMac* constrained_delegate =
       new ConstrainedWebDialogDelegateMac(profile, delegate, tab_delegate);
   // Deleted when ConstrainedWebDialogDelegateMac::OnDialogCloseFromWebUI()
   // runs.
   ConstrainedWindow* constrained_window =
-      new ConstrainedWindowMac(wrapper, constrained_delegate);
+      new ConstrainedWindowMac(tab_contents, constrained_delegate);
   constrained_delegate->set_window(constrained_window);
   return constrained_delegate;
 }

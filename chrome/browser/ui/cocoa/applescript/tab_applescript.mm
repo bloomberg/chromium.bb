@@ -16,7 +16,7 @@
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/cocoa/applescript/error_applescript.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -154,7 +154,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
   [super dealloc];
 }
 
-- (id)initWithTabContent:(TabContentsWrapper*)aTabContent {
+- (id)initWithTabContent:(TabContents*)aTabContent {
   if (!aTabContent) {
     [self release];
     return nil;
@@ -173,7 +173,7 @@ static NSAppleEventDescriptor* valueToDescriptor(Value* value) {
   return self;
 }
 
-- (void)setTabContent:(TabContentsWrapper*)aTabContent {
+- (void)setTabContent:(TabContents*)aTabContent {
   DCHECK(aTabContent);
   // It is safe to be weak, if a tab goes away (eg user closing a tab)
   // the applescript runtime calls tabs in AppleScriptWindow and this

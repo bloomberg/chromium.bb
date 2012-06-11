@@ -19,7 +19,7 @@
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/browser/ui/fullscreen_exit_bubble_type.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_strings.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"

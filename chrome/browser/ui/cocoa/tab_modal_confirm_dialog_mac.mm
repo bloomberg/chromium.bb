@@ -7,7 +7,7 @@
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/gfx/image/image.h"
 
@@ -45,16 +45,16 @@ namespace browser {
 
 // Declared in browser_dialogs.h so others don't have to depend on our header.
 void ShowTabModalConfirmDialog(TabModalConfirmDialogDelegate* delegate,
-                               TabContentsWrapper* wrapper) {
+                               TabContents* tab_contents) {
   // Deletes itself when closed.
-  new TabModalConfirmDialogMac(delegate, wrapper);
+  new TabModalConfirmDialogMac(delegate, tab_contents);
 }
 
 }
 
 TabModalConfirmDialogMac::TabModalConfirmDialogMac(
     TabModalConfirmDialogDelegate* delegate,
-    TabContentsWrapper* wrapper)
+    TabContents* tab_contents)
     : ConstrainedWindowMacDelegateSystemSheet(
         [[[TabModalConfirmDialogMacBridge alloc] initWithDelegate:delegate]
             autorelease],
@@ -75,7 +75,7 @@ TabModalConfirmDialogMac::TabModalConfirmDialogMac(
 
   set_sheet(alert);
 
-  delegate->set_window(new ConstrainedWindowMac(wrapper, this));
+  delegate->set_window(new ConstrainedWindowMac(tab_contents, this));
 }
 
 TabModalConfirmDialogMac::~TabModalConfirmDialogMac() {

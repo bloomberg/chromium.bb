@@ -29,7 +29,7 @@ class CollectedCookiesWindowControllerTest
 TEST_F(CollectedCookiesWindowControllerTest, Construction) {
   CollectedCookiesWindowController* controller =
       [[CollectedCookiesWindowController alloc]
-          initWithTabContentsWrapper:tab_contents()];
+          initWithTabContents:tab_contents()];
 
   [controller release];
 }

@@ -21,7 +21,7 @@
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/pref_names.h"
@@ -841,7 +841,7 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
 }
 
 - (int)currentTabId {
-  TabContentsWrapper* selected_tab = browser_->GetSelectedTabContentsWrapper();
+  TabContents* selected_tab = browser_->GetActiveTabContents();
   if (!selected_tab)
     return -1;
 

@@ -23,7 +23,7 @@ namespace {
 
 class DummyContentSettingBubbleModel : public ContentSettingBubbleModel {
  public:
-  DummyContentSettingBubbleModel(TabContentsWrapper* tab_contents,
+  DummyContentSettingBubbleModel(TabContents* tab_contents,
                                  Profile* profile,
                                  ContentSettingsType content_type)
       : ContentSettingBubbleModel(tab_contents, profile, content_type) {

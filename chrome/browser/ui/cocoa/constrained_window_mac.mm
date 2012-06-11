@@ -6,7 +6,7 @@
 
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #import "third_party/GTM/AppKit/GTMWindowSheetController.h"
@@ -86,16 +86,16 @@ void ConstrainedWindowMacDelegateCustomSheet::RunSheet(
 }
 
 ConstrainedWindowMac::ConstrainedWindowMac(
-    TabContentsWrapper* wrapper, ConstrainedWindowMacDelegate* delegate)
-    : wrapper_(wrapper),
+    TabContents* tab_contents, ConstrainedWindowMacDelegate* delegate)
+    : tab_contents_(tab_contents),
       delegate_(delegate),
       controller_(nil),
       should_be_visible_(false),
       closing_(false) {
-  DCHECK(wrapper);
+  DCHECK(tab_contents);
   DCHECK(delegate);
 
-  wrapper->constrained_window_tab_helper()->AddConstrainedDialog(this);
+  tab_contents->constrained_window_tab_helper()->AddConstrainedDialog(this);
 }
 
 ConstrainedWindowMac::~ConstrainedWindowMac() {}
@@ -106,7 +106,7 @@ void ConstrainedWindowMac::ShowConstrainedWindow() {
   // this case, open the sheet now. Else, Realize() will be called later, when
   // our tab becomes visible.
   NSWindow* browserWindow =
-      wrapper_->web_contents()->GetView()->GetTopLevelNativeWindow();
+      tab_contents_->web_contents()->GetView()->GetTopLevelNativeWindow();
   BrowserWindowController* browser_controller =
       [BrowserWindowController browserWindowControllerForWindow:browserWindow];
   if ([browser_controller canAttachConstrainedWindow])
@@ -126,7 +126,7 @@ void ConstrainedWindowMac::CloseConstrainedWindow() {
   // ok.
   [controller_ removeConstrainedWindow:this];
   delegate_->DeleteDelegate();
-  wrapper_->constrained_window_tab_helper()->WillClose(this);
+  tab_contents_->constrained_window_tab_helper()->WillClose(this);
 
   delete this;
 }

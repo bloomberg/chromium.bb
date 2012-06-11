@@ -13,7 +13,7 @@
 #import "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/browser_command_executor.h"
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/web_dialog_controller.h"
 #include "chrome/browser/ui/webui/web_dialog_web_contents_delegate.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -351,18 +351,18 @@ void WebDialogWindowDelegateBridge::HandleKeyboardEvent(
 }
 
 - (void)loadDialogContents {
-  contentsWrapper_.reset(new TabContentsWrapper(WebContents::Create(
+  tabContents_.reset(new TabContents(WebContents::Create(
       delegate_->profile(), NULL, MSG_ROUTING_NONE, NULL, NULL)));
   [[self window]
-      setContentView:contentsWrapper_->web_contents()->GetNativeView()];
-  contentsWrapper_->web_contents()->SetDelegate(delegate_.get());
+      setContentView:tabContents_->web_contents()->GetNativeView()];
+  tabContents_->web_contents()->SetDelegate(delegate_.get());
 
   // This must be done before loading the page; see the comments in
   // WebDialogUI.
   WebDialogUI::GetPropertyAccessor().SetProperty(
-      contentsWrapper_->web_contents()->GetPropertyBag(), delegate_.get());
+      tabContents_->web_contents()->GetPropertyBag(), delegate_.get());
 
-  contentsWrapper_->web_contents()->GetController().LoadURL(
+  tabContents_->web_contents()->GetController().LoadURL(
       delegate_->GetDialogContentURL(),
       content::Referrer(),
       content::PAGE_TRANSITION_START_PAGE,

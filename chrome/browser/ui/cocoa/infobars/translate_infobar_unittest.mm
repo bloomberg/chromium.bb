@@ -13,7 +13,7 @@
 #import "chrome/browser/ui/cocoa/infobars/before_translate_infobar_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar.h"
 #import "chrome/browser/ui/cocoa/infobars/translate_infobar_base.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #import "content/public/browser/web_contents.h"
 #import "testing/gmock/include/gmock/gmock.h"
 #import "testing/gtest/include/gtest/gtest.h"
@@ -74,7 +74,7 @@ class TranslationInfoBarTest : public CocoaProfileTest {
   // the test.
   virtual void SetUp() {
     CocoaProfileTest::SetUp();
-    tab_contents_.reset(new TabContentsWrapper(WebContents::Create(
+    tab_contents_.reset(new TabContents(WebContents::Create(
        profile(), NULL, MSG_ROUTING_NONE, NULL, NULL)));
     CreateInfoBar();
   }
@@ -106,7 +106,7 @@ class TranslationInfoBarTest : public CocoaProfileTest {
     [[test_window() contentView] addSubview:[infobar_controller_ view]];
   }
 
-  scoped_ptr<TabContentsWrapper> tab_contents_;
+  scoped_ptr<TabContents> tab_contents_;
   scoped_ptr<MockTranslateInfoBarDelegate> infobar_delegate_;
   scoped_nsobject<TranslateInfoBarControllerBase> infobar_controller_;
 };

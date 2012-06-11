@@ -12,7 +12,7 @@
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/web_contents.h"
@@ -82,7 +82,7 @@ const int kMinContentsSize = 50;
 - (void)updateDevToolsForWebContents:(WebContents*)contents
                          withProfile:(Profile*)profile {
   // Get current devtools content.
-  TabContentsWrapper* devToolsTab = contents ?
+  TabContents* devToolsTab = contents ?
       DevToolsWindow::GetDevToolsContents(contents) : NULL;
   WebContents* devToolsContents = devToolsTab ?
       devToolsTab->web_contents() : NULL;

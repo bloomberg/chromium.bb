@@ -19,7 +19,7 @@
 #include "chrome/browser/ui/intents/web_intent_inline_disposition_delegate.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/web_contents.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/gfx/image/image.h"
@@ -66,32 +66,32 @@ void ConstrainedPickerSheetDelegate::DeleteDelegate() {
 }  // namespace
 
 // static
-WebIntentPicker* WebIntentPicker::Create(TabContentsWrapper* wrapper,
+WebIntentPicker* WebIntentPicker::Create(TabContents* tab_contents,
                                          WebIntentPickerDelegate* delegate,
                                          WebIntentPickerModel* model) {
-  return new WebIntentPickerCocoa(wrapper, delegate, model);
+  return new WebIntentPickerCocoa(tab_contents, delegate, model);
 }
 
 WebIntentPickerCocoa::WebIntentPickerCocoa()
     : delegate_(NULL),
       model_(NULL),
-      wrapper_(NULL),
+      tab_contents_(NULL),
       sheet_controller_(nil),
       service_invoked(false) {
 }
 
-WebIntentPickerCocoa::WebIntentPickerCocoa(TabContentsWrapper* wrapper,
+WebIntentPickerCocoa::WebIntentPickerCocoa(TabContents* tab_contents,
                                            WebIntentPickerDelegate* delegate,
                                            WebIntentPickerModel* model)
     : delegate_(delegate),
       model_(model),
-      wrapper_(wrapper),
+      tab_contents_(tab_contents),
       sheet_controller_(nil),
       service_invoked(false) {
   model_->set_observer(this);
 
   DCHECK(delegate);
-  DCHECK(wrapper);
+  DCHECK(tab_contents);
 
   sheet_controller_ = [
       [WebIntentPickerSheetController alloc] initWithPicker:this];
@@ -100,7 +100,7 @@ WebIntentPickerCocoa::WebIntentPickerCocoa(TabContentsWrapper* wrapper,
   ConstrainedPickerSheetDelegate* constrained_delegate =
       new ConstrainedPickerSheetDelegate(this, sheet_controller_);
 
-  window_ = new ConstrainedWindowMac(wrapper, constrained_delegate);
+  window_ = new ConstrainedWindowMac(tab_contents, constrained_delegate);
 }
 
 WebIntentPickerCocoa::~WebIntentPickerCocoa() {
@@ -157,13 +157,13 @@ void WebIntentPickerCocoa::OnExtensionIconChanged(
 void WebIntentPickerCocoa::OnInlineDisposition(WebIntentPickerModel* model,
                                                const GURL& url) {
   content::WebContents* web_contents = content::WebContents::Create(
-      wrapper_->profile(),
-      tab_util::GetSiteInstanceForNewTab(wrapper_->profile(), url),
+      tab_contents_->profile(),
+      tab_util::GetSiteInstanceForNewTab(tab_contents_->profile(), url),
       MSG_ROUTING_NONE, NULL, NULL);
-  inline_disposition_tab_contents_.reset(new TabContentsWrapper(web_contents));
+  inline_disposition_tab_contents_.reset(new TabContents(web_contents));
   inline_disposition_delegate_.reset(
       new WebIntentInlineDispositionDelegate(this, web_contents,
-                                             wrapper_->profile()));
+                                             tab_contents_->profile()));
 
   // Must call this immediately after WebContents creation to avoid race
   // with load.

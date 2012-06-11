@@ -27,7 +27,7 @@
 #import "chrome/browser/ui/cocoa/tab_contents/favicon_util.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_model_observer_bridge.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -104,12 +104,12 @@ namespace tabpose {
 class ThumbnailLoader;
 }
 
-// A CALayer that draws a thumbnail for a TabContentsWrapper object. The layer
+// A CALayer that draws a thumbnail for a TabContents object. The layer
 // tries to draw the WebContents's backing store directly if possible, and
 // requests a thumbnail bitmap from the WebContents's renderer process if not.
 @interface ThumbnailLayer : CALayer {
-  // The TabContentsWrapper the thumbnail is for.
-  TabContentsWrapper* contents_;  // weak
+  // The TabContents the thumbnail is for.
+  TabContents* contents_;  // weak
 
   // The size the thumbnail is drawn at when zoomed in.
   NSSize fullSize_;
@@ -124,7 +124,7 @@ class ThumbnailLoader;
   // True if the layer already sent a thumbnail request to a renderer.
   BOOL didSendLoad_;
 }
-- (id)initWithTabContents:(TabContentsWrapper*)contents
+- (id)initWithTabContents:(TabContents*)contents
                  fullSize:(NSSize)fullSize;
 - (void)drawInContext:(CGContextRef)context;
 - (void)setThumbnail:(const SkBitmap&)bitmap;
@@ -196,7 +196,7 @@ void ThumbnailLoader::LoadThumbnail() {
 
 @implementation ThumbnailLayer
 
-- (id)initWithTabContents:(TabContentsWrapper*)contents
+- (id)initWithTabContents:(TabContents*)contents
                  fullSize:(NSSize)fullSize {
   CHECK(contents);
   if ((self = [super init])) {
@@ -206,7 +206,7 @@ void ThumbnailLoader::LoadThumbnail() {
   return self;
 }
 
-- (void)setTabContents:(TabContentsWrapper*)contents {
+- (void)setTabContents:(TabContents*)contents {
   contents_ = contents;
 }
 
@@ -250,7 +250,7 @@ void ThumbnailLoader::LoadThumbnail() {
 
 - (int)bottomOffset {
   int bottomOffset = 0;
-  TabContentsWrapper* devToolsContents =
+  TabContents* devToolsContents =
       DevToolsWindow::GetDevToolsContents(contents_->web_contents());
   if (devToolsContents && devToolsContents->web_contents() &&
       devToolsContents->web_contents()->GetRenderViewHost() &&
@@ -416,8 +416,8 @@ class Tile {
     return contents_->web_contents()->GetTitle();
   }
 
-  TabContentsWrapper* tab_contents() const { return contents_; }
-  void set_tab_contents(TabContentsWrapper* new_contents) {
+  TabContents* tab_contents() const { return contents_; }
+  void set_tab_contents(TabContents* new_contents) {
     contents_ = new_contents;
   }
 
@@ -434,7 +434,7 @@ class Tile {
   CGFloat title_font_size_;
   NSRect title_rect_;
 
-  TabContentsWrapper* contents_;  // weak
+  TabContents* contents_;  // weak
 
   DISALLOW_COPY_AND_ASSIGN(Tile);
 };
@@ -527,7 +527,7 @@ class TileSet {
 
   // Inserts a new Tile object containing |contents| at |index|. Does no
   // relayout.
-  void InsertTileAt(int index, TabContentsWrapper* contents);
+  void InsertTileAt(int index, TabContents* contents);
 
   // Removes the Tile object at |index|. Does no relayout.
   void RemoveTileAt(int index);
@@ -793,7 +793,7 @@ int TileSet::previous_index() const {
   return new_index;
 }
 
-void TileSet::InsertTileAt(int index, TabContentsWrapper* contents) {
+void TileSet::InsertTileAt(int index, TabContents* contents) {
   tiles_.insert(tiles_.begin() + index, new Tile);
   tiles_[index]->contents_ = contents;
 }
@@ -1522,7 +1522,7 @@ void AnimateCALayerOpacityFromTo(
       nil);
 }
 
-- (void)insertTabWithContents:(TabContentsWrapper*)contents
+- (void)insertTabWithContents:(TabContents*)contents
                       atIndex:(NSInteger)index
                  inForeground:(bool)inForeground {
   // This happens if you cmd-click a link and then immediately open tabpose
@@ -1559,13 +1559,13 @@ void AnimateCALayerOpacityFromTo(
   }
 }
 
-- (void)tabClosingWithContents:(TabContentsWrapper*)contents
+- (void)tabClosingWithContents:(TabContents*)contents
                        atIndex:(NSInteger)index {
   // We will also get a -tabDetachedWithContents:atIndex: notification for
   // closing tabs, so do nothing here.
 }
 
-- (void)tabDetachedWithContents:(TabContentsWrapper*)contents
+- (void)tabDetachedWithContents:(TabContents*)contents
                         atIndex:(NSInteger)index {
   ScopedCAActionSetDuration durationSetter(kObserverChangeAnimationDuration);
 
@@ -1606,7 +1606,7 @@ void AnimateCALayerOpacityFromTo(
     [self refreshLayerFramesAtIndex:i];
 }
 
-- (void)tabMovedWithContents:(TabContentsWrapper*)contents
+- (void)tabMovedWithContents:(TabContents*)contents
                     fromIndex:(NSInteger)from
                       toIndex:(NSInteger)to {
   ScopedCAActionSetDuration durationSetter(kObserverChangeAnimationDuration);
@@ -1643,7 +1643,7 @@ void AnimateCALayerOpacityFromTo(
     [self refreshLayerFramesAtIndex:i];
 }
 
-- (void)tabChangedWithContents:(TabContentsWrapper*)contents
+- (void)tabChangedWithContents:(TabContents*)contents
                        atIndex:(NSInteger)index
                     changeType:(TabStripModelObserver::TabChangeType)change {
   // Tell the window to update text, title, and thumb layers at |index| to get

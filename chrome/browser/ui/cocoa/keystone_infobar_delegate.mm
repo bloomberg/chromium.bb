@@ -20,7 +20,7 @@
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/navigation_details.h"
@@ -191,17 +191,17 @@ bool KeystonePromotionInfoBarDelegate::Cancel() {
       [[KeystoneGlue defaultKeystoneGlue] needsPromotion]) {
     Browser* browser = browser::GetLastActiveBrowser();
     if (browser) {
-      TabContentsWrapper* wrapper = browser->GetSelectedTabContentsWrapper();
+      TabContents* tabContents = browser->GetActiveTabContents();
 
       // Only show if no other info bars are showing, because that's how the
       // default browser info bar works.
-      if (wrapper) {
-        InfoBarTabHelper* infobar_helper = wrapper->infobar_tab_helper();
+      if (tabContents) {
+        InfoBarTabHelper* infobar_helper = tabContents->infobar_tab_helper();
         if (infobar_helper->infobar_count() == 0) {
           infobar_helper->AddInfoBar(
               new KeystonePromotionInfoBarDelegate(
                   infobar_helper,
-                  wrapper->profile()->GetPrefs()));
+                  tabContents->profile()->GetPrefs()));
         }
       }
     }

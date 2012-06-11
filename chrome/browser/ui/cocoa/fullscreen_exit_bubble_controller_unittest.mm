@@ -65,7 +65,7 @@ class FullscreenExitBubbleControllerTest : public CocoaProfileTest {
   }
 
   void AppendTabToStrip() {
-    TabContentsWrapper* tab_contents = Browser::TabContentsFactory(
+    TabContents* tab_contents = Browser::TabContentsFactory(
         profile(), site_instance_, MSG_ROUTING_NONE,
         NULL, NULL);
     browser()->tab_strip_model()->AppendTabContents(
@@ -85,7 +85,7 @@ TEST_F(FullscreenExitBubbleControllerTest, DenyExitsFullscreen) {
   [bwc showWindow:nil];
 
   AppendTabToStrip();
-  WebContents* fullscreen_tab = browser()->GetSelectedWebContents();
+  WebContents* fullscreen_tab = browser()->GetActiveWebContents();
   {
     base::mac::ScopedNSAutoreleasePool pool;
     ui_test_utils::WindowedNotificationObserver fullscreen_observer(

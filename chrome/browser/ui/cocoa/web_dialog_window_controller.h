@@ -17,16 +17,15 @@ class Browser;
 class WebDialogWindowDelegateBridge;
 class Profile;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 // This controller manages a dialog box with properties and HTML content taken
 // from a WebDialogDelegate object.
 @interface WebDialogWindowController : NSWindowController<NSWindowDelegate> {
  @private
-  // Order here is important, as tab_contents_ may send messages to
+  // Order here is important, as tabContents_ may send messages to
   // delegate_ when it gets destroyed.
   scoped_ptr<WebDialogWindowDelegateBridge> delegate_;
-  scoped_ptr<TabContentsWrapper> contentsWrapper_;
+  scoped_ptr<TabContents> tabContents_;
 }
 
 // Creates and shows an WebDialogWindowController with the given

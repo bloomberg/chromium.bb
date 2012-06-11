@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/cocoa/web_intent_picker_cocoa.h"
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
@@ -502,8 +502,8 @@ NSButton* CreateHyperlinkButton(NSString* title, const NSRect& frame) {
     picker_->OnSheetDidEnd(sheet);
 }
 
-- (void)setInlineDispositionTabContents:(TabContentsWrapper*)wrapper {
-  contents_ = wrapper;
+- (void)setInlineDispositionTabContents:(TabContents*)tabContents {
+  contents_ = tabContents;
 }
 
 - (void)setInlineDispositionFrameSize:(NSSize)inlineContentSize {

@@ -97,7 +97,7 @@ int CurrentTabId() {
   Browser* browser = browser::GetLastActiveBrowser();
   if(!browser)
     return -1;
-  WebContents* contents = browser->GetSelectedWebContents();
+  WebContents* contents = browser->GetActiveWebContents();
   if (!contents)
     return -1;
   return ExtensionTabUtil::GetTabId(contents);

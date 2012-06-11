@@ -34,7 +34,7 @@
 #include "chrome/browser/ui/cocoa/task_manager_mac.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/page_info_bubble.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_source.h"
@@ -237,7 +237,7 @@ void BrowserWindowCocoa::BookmarkBarStateChanged(
 
 void BrowserWindowCocoa::UpdateDevTools() {
   [controller_ updateDevToolsForContents:
-      browser_->GetSelectedWebContents()];
+      browser_->GetActiveWebContents()];
 }
 
 void BrowserWindowCocoa::SetDevToolsDockSide(DevToolsDockSide side) {
@@ -353,7 +353,7 @@ void BrowserWindowCocoa::UpdateReloadStopState(bool is_loading, bool force) {
   [controller_ setIsLoading:is_loading force:force];
 }
 
-void BrowserWindowCocoa::UpdateToolbar(TabContentsWrapper* contents,
+void BrowserWindowCocoa::UpdateToolbar(TabContents* contents,
                                        bool should_restore_state) {
   [controller_ updateToolbarWithContents:contents->web_contents()
                       shouldRestoreState:should_restore_state ? YES : NO];
@@ -497,7 +497,7 @@ void BrowserWindowCocoa::ShowPageInfo(Profile* profile,
 
 void BrowserWindowCocoa::ShowWebsiteSettings(
     Profile* profile,
-    TabContentsWrapper* tab_contents_wrapper,
+    TabContents* tab_contents,
     const GURL& url,
     const content::SSLStatus& ssl,
     bool show_history) {
@@ -533,7 +533,7 @@ void BrowserWindowCocoa::HandleKeyboardEvent(
 }
 
 void BrowserWindowCocoa::ShowCreateWebAppShortcutsDialog(
-    TabContentsWrapper* tab_contents) {
+    TabContents* tab_contents) {
   NOTIMPLEMENTED();
 }
 
@@ -573,7 +573,7 @@ bool BrowserWindowCocoa::InPresentationMode() {
   return [controller_ inPresentationMode];
 }
 
-void BrowserWindowCocoa::ShowInstant(TabContentsWrapper* preview) {
+void BrowserWindowCocoa::ShowInstant(TabContents* preview) {
   [controller_ showInstant:preview->web_contents()];
 }
 

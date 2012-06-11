@@ -18,7 +18,7 @@
 #include "chrome/browser/ui/cocoa/applescript/constants_applescript.h"
 #include "chrome/browser/ui/cocoa/applescript/error_applescript.h"
 #import "chrome/browser/ui/cocoa/applescript/tab_applescript.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
@@ -138,7 +138,7 @@
 - (TabAppleScript*)activeTab {
   TabAppleScript* currentTab =
       [[[TabAppleScript alloc]
-          initWithTabContent:browser_->GetSelectedTabContentsWrapper()]
+          initWithTabContent:browser_->GetActiveTabContents()]
               autorelease];
   [currentTab setContainer:self
                   property:AppleScript::kTabsProperty];
@@ -151,7 +151,7 @@
 
   for (int i = 0; i < browser_->tab_count(); ++i) {
     // Check to see if tab is closing.
-    TabContentsWrapper* tab_contents = browser_->GetTabContentsWrapperAt(i);
+    TabContents* tab_contents = browser_->GetTabContentsAt(i);
     if (tab_contents->in_destructor()) {
       continue;
     }
@@ -173,7 +173,7 @@
 
   // Set how long it takes a tab to be created.
   base::TimeTicks newTabStartTime = base::TimeTicks::Now();
-  TabContentsWrapper* contents =
+  TabContents* contents =
       browser_->AddSelectedTabWithURL(GURL(chrome::kChromeUINewTabURL),
                                       content::PAGE_TRANSITION_TYPED);
   contents->web_contents()->SetNewTabStartTime(newTabStartTime);
