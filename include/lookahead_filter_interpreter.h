@@ -27,6 +27,7 @@ class LookaheadFilterInterpreter : public Interpreter {
   FRIEND_TEST(LookaheadFilterInterpreterTest, InterpolationOverdueTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, NoTapSetTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, QuickMoveTest);
+  FRIEND_TEST(LookaheadFilterInterpreterTest, SemiMtNoTrackingIdAssignmentTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, SimpleTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, SpuriousCallbackTest);
   FRIEND_TEST(LookaheadFilterInterpreterTest, VariableDelayTest);
@@ -110,6 +111,8 @@ class LookaheadFilterInterpreter : public Interpreter {
   // We want to present time to next_ in a monotonically increasing manner,
   // so this keeps track of the most recent timestamp we've given next_.
   stime_t last_interpreted_time_;
+
+  HardwareProperties hwprops_;
 
   Gesture result_;
 

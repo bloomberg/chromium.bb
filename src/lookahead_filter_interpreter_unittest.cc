@@ -1047,4 +1047,64 @@ TEST(LookaheadFilterInterpreterTest, CyapaQuickTwoFingerMoveTest) {
   }
 }
 
+TEST(LookaheadFilterInterpreterTest, SemiMtNoTrackingIdAssignmentTest) {
+  LookaheadFilterInterpreterTestInterpreter* base_interpreter = NULL;
+  scoped_ptr<LookaheadFilterInterpreter> interpreter;
+
+  HardwareProperties hwprops = {
+    0, 0, 100, 100,  // left, top, right, bottom
+    1,  // x res (pixels/mm)
+    1,  // y res (pixels/mm)
+    25, 25, 2, 5,  // scrn DPI X, Y, max fingers, max_touch,
+    1, 1, 0  // t5r2, semi, button pad
+  };
+
+  FingerState fs[] = {
+    // TM, Tm, WM, Wm, pr, orient, x, y, id
+    { 0, 0, 0, 0, 5, 0, 76, 45, 20, 0},  // 0
+
+    { 0, 0, 0, 0, 62, 0, 56, 43, 20, 0},  // 1
+    { 0, 0, 0, 0, 62, 0, 76, 41, 21, 0},
+
+    { 0, 0, 0, 0, 76, 0, 56, 38, 20, 0},  // 3
+    { 0, 0, 0, 0, 76, 0, 75, 35, 21, 0},
+
+    { 0, 0, 0, 0, 78, 0, 56, 31, 20, 0},  // 5
+    { 0, 0, 0, 0, 78, 0, 75, 27, 21, 0},
+
+    { 0, 0, 0, 0, 78, 0, 56, 22, 20, 0},  // 7
+    { 0, 0, 0, 0, 78, 0, 75, 18, 21, 0},
+
+    // It will trigger the tracking id assignment for a quick move on a
+    // non-semi-mt device.
+    { 0, 0, 0, 0, 78, 0, 56, 13, 20, 0},  // 9
+    { 0, 0, 0, 0, 78, 0, 75, 8, 21, 0}
+  };
+
+  HardwareState hs[] = {
+    { 328.989039, 0, 1, 1, &fs[0] },
+    { 329.013853, 0, 2, 2, &fs[1] },
+    { 329.036266, 0, 2, 2, &fs[3] },
+    { 329.061772, 0, 2, 2, &fs[5] },
+    { 329.086734, 0, 2, 2, &fs[7] },
+    { 329.110350, 0, 2, 2, &fs[9] },
+  };
+
+  base_interpreter = new LookaheadFilterInterpreterTestInterpreter;
+  interpreter.reset(new LookaheadFilterInterpreter(NULL, base_interpreter));
+  interpreter->SetHardwareProperties(hwprops);
+
+  stime_t timeout = -1.0;
+  List<LookaheadFilterInterpreter::QState>* queue = &interpreter->queue_;
+
+  interpreter->SyncInterpret(&hs[0], &timeout);
+  EXPECT_EQ(queue->Tail()->fs_[0].tracking_id, 20);
+
+  // Test if the fingers in queue have the same tracking ids from input.
+  for (size_t i = 1; i < arraysize(hs); i++) {
+    interpreter->SyncInterpret(&hs[i], &timeout);
+    EXPECT_EQ(queue->Tail()->fs_[0].tracking_id, 20);  // the same input id
+    EXPECT_EQ(queue->Tail()->fs_[1].tracking_id, 21);
+  }
+}
 }  // namespace gestures
