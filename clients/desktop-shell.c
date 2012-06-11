@@ -294,22 +294,22 @@ panel_launcher_button_handler(struct widget *widget,
 		panel_launcher_activate(launcher);
 }
 
-
 static int
 panel_clock_tick(struct panel_clock *clock)
 {
 	time_t rawtime;
-	struct tm * timeinfo;
+	struct tm *timeinfo;
 	char string[128];
 
-	time ( &rawtime );
-	timeinfo = localtime ( &rawtime );
-	strftime (string,124,"%a %b %d, %I:%M:%S %p",timeinfo);
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+	strftime(string, 124, "%a %b %d, %I:%M:%S %p", timeinfo);
 
-	if (0 == strcmp(string, clock->string))
+	if (strcmp(string, clock->string) == 0)
 		return 0;
 
-	strncpy (clock->string, string, 126 );
+	strncpy(clock->string, string, 126);
+
 	return 1;
 }
 
@@ -317,7 +317,7 @@ static void
 clock_func(struct task *task, uint32_t events)
 {
 	struct panel_clock *clock =
-	container_of(task, struct panel_clock, clock_task);
+		container_of(task, struct panel_clock, clock_task);
 	uint64_t exp;
 
 	read(clock->clock_fd, &exp, sizeof exp);
@@ -334,17 +334,17 @@ panel_clock_redraw_handler(struct widget *widget, void *data)
 	struct rectangle allocation;
 	cairo_text_extents_t extents;
 	cairo_font_extents_t font_extents;
-
 	time_t rawtime;
 	struct tm * timeinfo;
 
-	time ( &rawtime );
-	timeinfo = localtime ( &rawtime );
-	strftime (clock->string,126,"%a %b %d, %I:%M:%S %p",timeinfo);
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+	strftime(clock->string,126,"%a %b %d, %I:%M:%S %p",timeinfo);
 
 	widget_get_allocation(widget, &allocation);
 
-	if (allocation.width == 0) return;
+	if (allocation.width == 0)
+		return;
 
 	surface = window_get_surface(clock->panel->window);
 	cr = cairo_create(surface);
@@ -352,7 +352,7 @@ panel_clock_redraw_handler(struct widget *widget, void *data)
 			allocation.width, allocation.height);
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.1);
-	cairo_rectangle (cr, allocation.x, allocation.y, 3, 3);
+	cairo_rectangle(cr, allocation.x, allocation.y, 3, 3);
 	cairo_fill(cr);
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
@@ -362,12 +362,14 @@ panel_clock_redraw_handler(struct widget *widget, void *data)
 	cairo_set_font_size(cr, 14);
 	cairo_text_extents(cr, clock->string, &extents);
 	cairo_font_extents (cr, &font_extents);
-		cairo_move_to(cr, allocation.x + 5, allocation.y + 3*(allocation.height>>2) + 1);
-		cairo_set_source_rgb(cr, 0, 0, 0);
-		cairo_show_text(cr, clock->string);
-		cairo_move_to(cr, allocation.x + 4, allocation.y + 3*(allocation.height>>2));
-		cairo_set_source_rgb(cr, 1, 1, 1);
-		cairo_show_text(cr, clock->string);
+	cairo_move_to(cr, allocation.x + 5,
+		      allocation.y + 3 * (allocation.height >> 2) + 1);
+	cairo_set_source_rgb(cr, 0, 0, 0);
+	cairo_show_text(cr, clock->string);
+	cairo_move_to(cr, allocation.x + 4,
+		      allocation.y + 3 * (allocation.height >> 2));
+	cairo_set_source_rgb(cr, 1, 1, 1);
+	cairo_show_text(cr, clock->string);
 	cairo_destroy(cr);
 }
 
@@ -375,9 +377,9 @@ static int
 clock_timer_reset(struct panel_clock *clock)
 {
 	struct itimerspec its;
+
 	its.it_interval.tv_sec = 1;
 	its.it_interval.tv_nsec = 0;
-
 	its.it_value.tv_sec = 1;
 	its.it_value.tv_nsec = 0;
 	if (timerfd_settime(clock->clock_fd, 0, &its, NULL) < 0) {
@@ -407,16 +409,12 @@ panel_add_clock(struct panel *panel)
 	clock->clock_fd = timerfd;
 
 	clock->clock_task.run = clock_func;
-	display_watch_fd(
-		window_get_display(panel->window), 
-		clock->clock_fd,
-		EPOLLIN, 
-		&clock->clock_task);
+	display_watch_fd(window_get_display(panel->window), clock->clock_fd,
+			 EPOLLIN, &clock->clock_task);
 	clock_timer_reset(clock);
 
 	clock->widget = widget_add_widget(panel->widget, clock);
-	widget_set_redraw_handler(clock->widget,
-				  panel_clock_redraw_handler);
+	widget_set_redraw_handler(clock->widget, panel_clock_redraw_handler);
 }
 
 static void
