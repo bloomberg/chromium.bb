@@ -182,6 +182,9 @@ void ShortcutsProviderTest::SetUp() {
 }
 
 void ShortcutsProviderTest::TearDown() {
+  // Run all pending tasks or else some threads hold on to the message loop
+  // and prevent it from being deleted.
+  message_loop_.RunAllPending();
   provider_ = NULL;
 }
 

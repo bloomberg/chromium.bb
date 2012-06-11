@@ -1465,12 +1465,3 @@
    fun:TestingProfile::TestingProfile
    fun:ShortcutsProviderTest::SetUp
 }
-{
-   bug_131668_c
-   Heapcheck:Leak
-   fun:MessageLoop::MessageLoop
-   fun:MessageLoopForUI::MessageLoopForUI
-   fun:ShortcutsProviderTest::ShortcutsProviderTest
-   ...
-   fun:testing::internal::TestFactoryImpl::CreateTest
-}
