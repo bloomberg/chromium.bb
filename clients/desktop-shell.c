@@ -319,7 +319,7 @@ panel_clock_redraw_handler(struct widget *widget, void *data)
 
 	time(&rawtime);
 	timeinfo = localtime(&rawtime);
-	strftime(string, sizeof string, "%a %b %d, %I:%M:%S %p", timeinfo);
+	strftime(string, sizeof string, "%a %b %d, %I:%M %p", timeinfo);
 
 	widget_get_allocation(widget, &allocation);
 	if (allocation.width == 0)
@@ -349,9 +349,9 @@ clock_timer_reset(struct panel_clock *clock)
 {
 	struct itimerspec its;
 
-	its.it_interval.tv_sec = 1;
+	its.it_interval.tv_sec = 60;
 	its.it_interval.tv_nsec = 0;
-	its.it_value.tv_sec = 1;
+	its.it_value.tv_sec = 60;
 	its.it_value.tv_nsec = 0;
 	if (timerfd_settime(clock->clock_fd, 0, &its, NULL) < 0) {
 		fprintf(stderr, "could not set timerfd\n: %m");
