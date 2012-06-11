@@ -55,35 +55,46 @@ WebIntentsTable::~WebIntentsTable() {
 bool WebIntentsTable::Init() {
   if (!db_->DoesTableExist("web_intents")) {
     if (!db_->Execute("CREATE TABLE web_intents ("
-                      "service_url LONGVARCHAR,"
-                      "action VARCHAR,"
-                      "type VARCHAR,"
-                      "title LONGVARCHAR,"
-                      "disposition VARCHAR,"
-                      "UNIQUE (service_url, action, type))")) {
+                      " service_url LONGVARCHAR,"
+                      " action VARCHAR,"
+                      " type VARCHAR,"
+                      " title LONGVARCHAR,"
+                      " disposition VARCHAR,"
+                      " scheme VARCHAR,"
+                      " UNIQUE (service_url, action, scheme, type))")) {
       return false;
     }
   }
 
   if (!db_->DoesTableExist("web_intents_defaults")) {
     if (!db_->Execute("CREATE TABLE web_intents_defaults ("
-                      "action VARCHAR,"
-                      "type VARCHAR,"
-                      "url_pattern LONGVARCHAR,"
-                      "user_date INTEGER,"
-                      "suppression INTEGER,"
-                      "service_url LONGVARCHAR,"
-                      "UNIQUE (action, type, url_pattern))")) {
+                      " action VARCHAR,"
+                      " type VARCHAR,"
+                      " url_pattern LONGVARCHAR,"
+                      " user_date INTEGER,"
+                      " suppression INTEGER,"
+                      " service_url LONGVARCHAR,"
+                      " scheme VARCHAR,"
+                      " UNIQUE (action, scheme, type, url_pattern))")) {
       return false;
     }
   }
 
-  if (!db_->Execute("CREATE INDEX IF NOT EXISTS web_intents_index "
-                    "ON web_intents (action)"))
+  if (!db_->Execute("CREATE INDEX IF NOT EXISTS web_intents_index"
+                    " ON web_intents (action)"))
     return false;
 
-  if (!db_->Execute("CREATE INDEX IF NOT EXISTS web_intents_default_index "
-                    "ON web_intents_defaults (action)")) {
+  if (!db_->Execute("CREATE INDEX IF NOT EXISTS web_intents_default_index"
+                    " ON web_intents_defaults (action)")) {
+    return false;
+  }
+
+  if (!db_->Execute("CREATE INDEX IF NOT EXISTS web_intents_index"
+                    " ON web_intents (scheme)"))
+    return false;
+
+  if (!db_->Execute("CREATE INDEX IF NOT EXISTS web_intents_default_index"
+                    " ON web_intents_defaults (scheme)")) {
     return false;
   }
 
@@ -93,6 +104,63 @@ bool WebIntentsTable::Init() {
 // TODO(jhawkins): Figure out Sync story.
 bool WebIntentsTable::IsSyncable() {
   return false;
+}
+
+// Updates the table by way of renaming the old tables, rerunning
+// the Init method, then selecting old values into the new tables.
+bool WebIntentsTable::MigrateToVersion46AddSchemeColumn() {
+  if (!db_->Execute("ALTER TABLE web_intents RENAME TO old_web_intents")) {
+    DLOG(WARNING) << "Could not backup web_intents table.";
+    return false;
+  }
+
+  if (!db_->Execute("ALTER TABLE web_intents_defaults"
+                    " RENAME TO old_web_intents_defaults")) {
+    DLOG(WARNING) << "Could not backup web_intents_defaults table.";
+    return false;
+  }
+
+  if (!Init()) return false;
+
+  // The database is known to be in an invalid state in the wild
+  // with a missing "title" column. Guard against this.
+  if (db_->DoesColumnExist("old_web_intents", "title")) {
+    if (!db_->Execute(
+        "INSERT INTO web_intents"
+        " (service_url, action, type, title, disposition)"
+        " SELECT "
+        " service_url, action, type, title, disposition"
+        " FROM old_web_intents")) {
+
+      DLOG(WARNING) << "Could not copy old intent data to updated table.";
+    }
+  } else {
+    DLOG(WARNING) << "'title' column missing from old_web_intents table."
+        " Skipping copy.";
+  }
+
+  if (!db_->Execute(
+      "INSERT INTO web_intents_defaults"
+      " (service_url, action, type, url_pattern, user_date, suppression)"
+      " SELECT "
+      " service_url, action, type, url_pattern, user_date, suppression"
+      " FROM old_web_intents_defaults")) {
+
+    DLOG(WARNING) << "Could not copy old intent defaults data to"
+        " updated table.";
+  }
+
+  if (!db_->Execute("DROP table old_web_intents")) {
+    LOG(WARNING) << "Could not drop backup web_intents table.";
+    return false;
+  }
+
+  if (!db_->Execute("DROP table old_web_intents_defaults")) {
+    DLOG(WARNING) << "Could not drop backup web_intents_defaults table.";
+    return false;
+  }
+
+  return true;
 }
 
 bool WebIntentsTable::GetWebIntentServices(

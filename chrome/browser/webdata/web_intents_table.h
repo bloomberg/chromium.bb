@@ -56,6 +56,9 @@ class WebIntentsTable : public WebDatabaseTable {
   virtual bool Init() OVERRIDE;
   virtual bool IsSyncable() OVERRIDE;
 
+  // Adds "scheme" column to the web_intents and web_intents_defaults tables.
+  bool MigrateToVersion46AddSchemeColumn();
+
   // Adds a web intent service to the WebIntents table.
   // If |service| already exists, replaces it.
   bool SetWebIntentService(const webkit_glue::WebIntentServiceData& service);
