@@ -31,11 +31,11 @@ using content::BrowserThreadImpl;
 
 enum { kDeviceId = 1 };
 
-ACTION_P5(StopCapture, controller, controller_id, controller_handler, flag,
+ACTION_P4(StopCapture, controller, controller_id, controller_handler,
           message_loop) {
   message_loop->PostTask(FROM_HERE,
       base::Bind(&VideoCaptureController::StopCapture,
-                 controller, controller_id, controller_handler, flag));
+                 controller, controller_id, controller_handler));
   message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
 }
 
@@ -90,7 +90,6 @@ class MockVideoCaptureControllerEventHandler
     EXPECT_EQ(id, controller_id_);
     DoPaused(id);
   }
-  virtual void OnReadyToDelete(const VideoCaptureControllerID& id) OVERRIDE {}
 
   scoped_refptr<VideoCaptureController> controller_;
   MessageLoop* message_loop_;
@@ -206,7 +205,7 @@ TEST_F(VideoCaptureControllerTest, StartAndStop) {
       .Times(AtLeast(1))
       .WillOnce(StopCapture(controller_.get(),
                             controller_handler_->controller_id_,
-                            controller_handler_.get(), true,
+                            controller_handler_.get(),
                             message_loop_.get()));
   EXPECT_CALL(*vcm_,
               StopCapture(vcm_->video_session_id_))
@@ -268,5 +267,5 @@ TEST_F(VideoCaptureControllerTest, StopSession) {
               StopCapture(vcm_->video_session_id_))
       .Times(1);
   controller_->StopCapture(controller_handler_->controller_id_,
-                           controller_handler_.get(), true);
+                           controller_handler_.get());
 }

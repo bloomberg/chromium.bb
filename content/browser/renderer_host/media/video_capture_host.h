@@ -79,7 +79,6 @@ class CONTENT_EXPORT VideoCaptureHost
                            int height,
                            int frame_per_second) OVERRIDE;
   virtual void OnPaused(const VideoCaptureControllerID& id) OVERRIDE;
-  virtual void OnReadyToDelete(const VideoCaptureControllerID& id) OVERRIDE;
 
  private:
   friend class content::BrowserThread;
@@ -112,34 +111,34 @@ class CONTENT_EXPORT VideoCaptureHost
   // referenced by |device_id|.
   void OnReceiveEmptyBuffer(int device_id, int buffer_id);
 
-
-  // Called on the IO thread when VideoCaptureController have
-  // reported that all DIBs have been returned.
-  void DoDeleteVideoCaptureControllerOnIOThread(
-      const VideoCaptureControllerID& id);
-
   // Send a newly created buffer to the VideoCaptureMessageFilter.
-  void DoSendNewBufferOnIOThread(int device_id,
-                                 base::SharedMemoryHandle handle,
-                                 int length,
-                                 int buffer_id);
+  void DoSendNewBufferOnIOThread(
+      const VideoCaptureControllerID& controller_id,
+      base::SharedMemoryHandle handle,
+      int length,
+      int buffer_id);
 
   // Send a filled buffer to the VideoCaptureMessageFilter.
-  void DoSendFilledBufferOnIOThread(int device_id,
-                                    int buffer_id,
-                                    base::Time timestamp);
+  void DoSendFilledBufferOnIOThread(
+      const VideoCaptureControllerID& controller_id,
+      int buffer_id,
+      base::Time timestamp);
 
-  // Send a information about frame resolution and frame rate
+  // Send information about frame resolution and frame rate
   // to the VideoCaptureMessageFilter.
-  void DoSendFrameInfoOnIOThread(int device_id,
-                                 int width,
-                                 int height,
-                                 int frame_per_second);
+  void DoSendFrameInfoOnIOThread(
+      const VideoCaptureControllerID& controller_id,
+      int width,
+      int height,
+      int frame_per_second);
 
   // Handle error coming from VideoCaptureDevice.
-  void DoHandleErrorOnIOThread(int device_id);
+  void DoHandleErrorOnIOThread(const VideoCaptureControllerID& controller_id);
 
-  void DoPausedOnIOThread(int device_id);
+  void DoPausedOnIOThread(const VideoCaptureControllerID& controller_id);
+
+  void DeleteVideoCaptureControllerOnIOThread(
+      const VideoCaptureControllerID& controller_id);
 
   // Helpers.
   media_stream::VideoCaptureManager* GetVideoCaptureManager();

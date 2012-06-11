@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/media/video_capture_controller.h"
 
+#include <set>
+
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
@@ -27,8 +29,7 @@ struct VideoCaptureController::ControllerClient {
         event_handler(handler),
         render_process_handle(render_process),
         parameters(params),
-        session_closed(false),
-        report_ready_to_delete(false) {
+        session_closed(false) {
   }
 
   ~ControllerClient() {}
@@ -42,14 +43,10 @@ struct VideoCaptureController::ControllerClient {
   media::VideoCaptureParams parameters;
 
   // Buffers used by this client.
-  std::list<int> buffers;
+  std::set<int> buffers;
 
   // State of capture session, controlled by VideoCaptureManager directly.
   bool session_closed;
-
-  // Record client's status when it has called StopCapture, but haven't
-  // returned all buffers.
-  bool report_ready_to_delete;
 };
 
 struct VideoCaptureController::SharedDIB {
@@ -145,60 +142,44 @@ void VideoCaptureController::StartCapture(
 
 void VideoCaptureController::StopCapture(
     const VideoCaptureControllerID& id,
-    VideoCaptureControllerEventHandler* event_handler,
-    bool force_buffer_return) {
+    VideoCaptureControllerEventHandler* event_handler) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DVLOG(1) << "VideoCaptureController::StopCapture, id " << id.device_id;
 
   ControllerClient* client = FindClient(id, event_handler, pending_clients_);
   // If the client is still in pending queue, just remove it.
   if (client) {
-    client->event_handler->OnReadyToDelete(client->controller_id);
     pending_clients_.remove(client);
     return;
   }
 
   client = FindClient(id, event_handler, controller_clients_);
-  DCHECK(client) << "Client should have called StartCapture()";
+  if (!client)
+    return;
 
-  if (force_buffer_return) {
-    // The client requests to return buffers which means it can't return
-    // buffers normally. After buffers are returned, client is free to
-    // delete itself. No need to call OnReadyToDelete.
+  // Take back all buffers held by the |client|.
+  for (std::set<int>::iterator buffer_it = client->buffers.begin();
+       buffer_it != client->buffers.end(); ++buffer_it) {
+    int buffer_id = *buffer_it;
+    DIBMap::iterator dib_it = owned_dibs_.find(buffer_id);
+    if (dib_it == owned_dibs_.end())
+      continue;
 
-    // Return all buffers held by the clients.
-    for (std::list<int>::iterator buffer_it = client->buffers.begin();
-         buffer_it != client->buffers.end(); ++buffer_it) {
-      int buffer_id = *buffer_it;
-      DIBMap::iterator dib_it = owned_dibs_.find(buffer_id);
-      if (dib_it == owned_dibs_.end())
-        continue;
-
-      {
-        base::AutoLock lock(lock_);
-        DCHECK_GT(dib_it->second->references, 0)
-            << "The buffer is not used by renderer.";
-        dib_it->second->references -= 1;
-      }
+    {
+      base::AutoLock lock(lock_);
+      DCHECK_GT(dib_it->second->references, 0)
+          << "The buffer is not used by renderer.";
+      dib_it->second->references -= 1;
     }
-    client->buffers.clear();
-  } else {
-    // Normal way to stop capture.
-    if (!client->buffers.empty()) {
-      // There are still some buffers held by the client.
-      client->report_ready_to_delete = true;
-      return;
-    }
-    // No buffer is held by the client. Ready to delete.
-    client->event_handler->OnReadyToDelete(client->controller_id);
   }
+  client->buffers.clear();
 
   int session_id = client->parameters.session_id;
   delete client;
   controller_clients_.remove(client);
 
   // No more clients. Stop device.
-  if (controller_clients_.empty()) {
+  if (controller_clients_.empty() && state_ == video_capture::kStarted) {
     video_capture_manager_->Stop(session_id,
         base::Bind(&VideoCaptureController::OnDeviceStopped, this));
     frame_info_available_ = false;
@@ -232,25 +213,12 @@ void VideoCaptureController::ReturnBuffer(
   DIBMap::iterator dib_it = owned_dibs_.find(buffer_id);
   // If this buffer is not held by this client, or this client doesn't exist
   // in controller, do nothing.
-  if (!client || dib_it == owned_dibs_.end())
+  if (!client ||
+      client->buffers.find(buffer_id) == client->buffers.end() ||
+      dib_it == owned_dibs_.end())
     return;
 
-  client->buffers.remove(buffer_id);
-  // If this client has called StopCapture and doesn't hold any buffer after
-  // after this return, ready to delete this client.
-  if (client->report_ready_to_delete && client->buffers.empty()) {
-    client->event_handler->OnReadyToDelete(client->controller_id);
-    delete client;
-    controller_clients_.remove(client);
-
-    if (controller_clients_.empty()) {
-       // No more clients. Stop device.
-       video_capture_manager_->Stop(current_params_.session_id,
-          base::Bind(&VideoCaptureController::OnDeviceStopped, this));
-      frame_info_available_ = false;
-      state_ = video_capture::kStopping;
-    }
-  }
+  client->buffers.erase(buffer_id);
   {
     base::AutoLock lock(lock_);
     DCHECK_GT(dib_it->second->references, 0)
@@ -262,7 +230,7 @@ void VideoCaptureController::ReturnBuffer(
 
   // When all buffers have been returned by clients and device has been
   // called to stop, check if restart is needed. This could happen when
-  // some clients call StopCapture before returning all buffers.
+  // capture needs to be restarted due to resolution change.
   if (!ClientHasDIB() && state_ == video_capture::kStopping) {
     PostStopping();
   }
@@ -404,13 +372,12 @@ void VideoCaptureController::DoIncomingCapturedFrameOnIOThread(
   if (state_ == video_capture::kStarted) {
     for (ControllerClients::iterator client_it = controller_clients_.begin();
          client_it != controller_clients_.end(); client_it++) {
-      if ((*client_it)->report_ready_to_delete ||
-          (*client_it)->session_closed)
+      if ((*client_it)->session_closed)
         continue;
 
       (*client_it)->event_handler->OnBufferReady((*client_it)->controller_id,
                                                  buffer_id, timestamp);
-      (*client_it)->buffers.push_back(buffer_id);
+      (*client_it)->buffers.insert(buffer_id);
       count++;
     }
   }

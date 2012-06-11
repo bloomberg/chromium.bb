@@ -51,13 +51,10 @@ class CONTENT_EXPORT VideoCaptureController
                     const media::VideoCaptureParams& params);
 
   // Stop video capture.
-  // When the capture is stopped and all DIBs have been returned,
-  // VideoCaptureControllerEventHandler::OnReadyToDelete will be called.
-  // |force_buffer_return| allows controller to take back all buffers used
-  // by |event_handler|.
+  // This will take back all buffers held by by |event_handler|, and
+  // |event_handler| shouldn't use those buffers any more.
   void StopCapture(const VideoCaptureControllerID& id,
-                   VideoCaptureControllerEventHandler* event_handler,
-                   bool force_buffer_return);
+                   VideoCaptureControllerEventHandler* event_handler);
 
   // API called directly by VideoCaptureManager in case the device is
   // prematurely closed.

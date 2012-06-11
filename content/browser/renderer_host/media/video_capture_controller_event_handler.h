@@ -46,9 +46,6 @@ class CONTENT_EXPORT VideoCaptureControllerEventHandler {
   // The capture session has been paused. No more frame will be sent.
   virtual void OnPaused(const VideoCaptureControllerID& id) = 0;
 
-  // Report that this object can be deleted.
-  virtual void OnReadyToDelete(const VideoCaptureControllerID& id) = 0;
-
  protected:
   virtual ~VideoCaptureControllerEventHandler() {}
 };
