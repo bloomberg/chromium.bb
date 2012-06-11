@@ -66,12 +66,12 @@
         <include name="IDR_CONTENT_TOP_CENTER" file="default_100_percent/ash/content_top_center.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('use_ash')">
-        <include name="IDR_CONTENT_TOP_CENTER" file="default_200_percent/content_top_center.png" type="BINDATA" />
+        <include name="IDR_CONTENT_TOP_CENTER" file="default_100_percent/content_top_center.png" type="BINDATA" />
       </if>
-      <include name="IDR_CONTENT_TOP_LEFT_CORNER" file="default_200_percent/content_top_left_corner.png" type="BINDATA" />
-      <include name="IDR_CONTENT_TOP_LEFT_CORNER_MASK" file="default_200_percent/content_top_left_corner_mask.png" type="BINDATA" />
-      <include name="IDR_CONTENT_TOP_RIGHT_CORNER" file="default_200_percent/content_top_right_corner.png" type="BINDATA" />
-      <include name="IDR_CONTENT_TOP_RIGHT_CORNER_MASK" file="default_200_percent/content_top_right_corner_mask.png" type="BINDATA" />
+      <include name="IDR_CONTENT_TOP_LEFT_CORNER" file="default_100_percent/content_top_left_corner.png" type="BINDATA" />
+      <include name="IDR_CONTENT_TOP_LEFT_CORNER_MASK" file="default_100_percent/content_top_left_corner_mask.png" type="BINDATA" />
+      <include name="IDR_CONTENT_TOP_RIGHT_CORNER" file="default_100_percent/content_top_right_corner.png" type="BINDATA" />
+      <include name="IDR_CONTENT_TOP_RIGHT_CORNER_MASK" file="default_100_percent/content_top_right_corner_mask.png" type="BINDATA" />
       <include name="IDR_DOWNLOADS_FAVICON" file="default_200_percent/downloads_favicon.png" type="BINDATA" />
       <include name="IDR_FEEDBACK" file="default_200_percent/feedback.png" type="BINDATA" />
       <include name="IDR_FEEDBACK_H" file="default_200_percent/feedback_hover.png" type="BINDATA" />
@@ -177,7 +177,7 @@
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
         <include name="IDR_STOP" file="default_200_percent/stop.png" type="BINDATA" />
-        <include name="IDR_STOP_D" file="default_200_percent/stop_disabled.png" type="BINDATA" />
+        <include name="IDR_STOP_D" file="default_100_percent/stop_disabled.png" type="BINDATA" />
         <include name="IDR_STOP_H" file="default_200_percent/stop_hover.png" type="BINDATA" />
         <include name="IDR_STOP_P" file="default_200_percent/stop_pressed.png" type="BINDATA" />
       </if>
@@ -189,11 +189,11 @@
         <include name="IDR_TAB_ALPHA_RIGHT" file="default_100_percent/ash/tab_alpha_right.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
-        <include name="IDR_TAB_ACTIVE_CENTER" file="default_200_percent/tab_active_center.png" type="BINDATA" />
-        <include name="IDR_TAB_ACTIVE_LEFT" file="default_200_percent/tab_active_left.png" type="BINDATA" />
-        <include name="IDR_TAB_ACTIVE_RIGHT" file="default_200_percent/tab_active_right.png" type="BINDATA" />
-        <include name="IDR_TAB_ALPHA_LEFT" file="default_200_percent/tab_alpha_left.png" type="BINDATA" />
-        <include name="IDR_TAB_ALPHA_RIGHT" file="default_200_percent/tab_alpha_right.png" type="BINDATA" />
+        <include name="IDR_TAB_ACTIVE_CENTER" file="default_100_percent/tab_active_center.png" type="BINDATA" />
+        <include name="IDR_TAB_ACTIVE_LEFT" file="default_100_percent/tab_active_left.png" type="BINDATA" />
+        <include name="IDR_TAB_ACTIVE_RIGHT" file="default_100_percent/tab_active_right.png" type="BINDATA" />
+        <include name="IDR_TAB_ALPHA_LEFT" file="default_100_percent/tab_alpha_left.png" type="BINDATA" />
+        <include name="IDR_TAB_ALPHA_RIGHT" file="default_100_percent/tab_alpha_right.png" type="BINDATA" />
       </if>
       <!-- Note: Tab close buttons are not traditional buttons.  Tab close buttons
            fill a background with a color from the theme, tile IDR_TAB_CLOSE over it,
@@ -205,10 +205,10 @@
         <include name="IDR_TAB_CLOSE_P" file="default_100_percent/ash/tab_close_pressed.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
-        <include name="IDR_TAB_CLOSE" file="default_200_percent/tab_close.png" type="BINDATA" />
-        <include name="IDR_TAB_CLOSE_H" file="default_200_percent/tab_close_hover.png" type="BINDATA" />
-        <include name="IDR_TAB_CLOSE_MASK" file="default_200_percent/tab_close_mask.png" type="BINDATA" />
-        <include name="IDR_TAB_CLOSE_P" file="default_200_percent/tab_close_pressed.png" type="BINDATA" />
+        <include name="IDR_TAB_CLOSE" file="default_100_percent/tab_close.png" type="BINDATA" />
+        <include name="IDR_TAB_CLOSE_H" file="default_100_percent/tab_close_hover.png" type="BINDATA" />
+        <include name="IDR_TAB_CLOSE_MASK" file="default_100_percent/tab_close_mask.png" type="BINDATA" />
+        <include name="IDR_TAB_CLOSE_P" file="default_100_percent/tab_close_pressed.png" type="BINDATA" />
       </if>
       <include name="IDR_TAB_DROP_DOWN" file="default_200_percent/tab_drop_down.png" type="BINDATA" />
       <include name="IDR_TAB_DROP_UP" file="default_200_percent/tab_drop_up.png" type="BINDATA" />
@@ -218,9 +218,9 @@
         <include name="IDR_TAB_INACTIVE_RIGHT" file="default_100_percent/ash/tab_inactive_right.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
-        <include name="IDR_TAB_INACTIVE_CENTER" file="default_200_percent/tab_inactive_center.png" type="BINDATA" />
-        <include name="IDR_TAB_INACTIVE_LEFT" file="default_200_percent/tab_inactive_left.png" type="BINDATA" />
-        <include name="IDR_TAB_INACTIVE_RIGHT" file="default_200_percent/tab_inactive_right.png" type="BINDATA" />
+        <include name="IDR_TAB_INACTIVE_CENTER" file="default_100_percent/tab_inactive_center.png" type="BINDATA" />
+        <include name="IDR_TAB_INACTIVE_LEFT" file="default_100_percent/tab_inactive_left.png" type="BINDATA" />
+        <include name="IDR_TAB_INACTIVE_RIGHT" file="default_100_percent/tab_inactive_right.png" type="BINDATA" />
       </if>
       <!-- Ash has a gray frame, Windows uses blue. -->
       <if expr="pp_ifdef('use_ash')">

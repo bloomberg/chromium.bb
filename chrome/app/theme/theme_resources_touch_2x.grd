@@ -138,10 +138,10 @@
       <include name="IDR_MOBILE" file="touch_100_percent/mobile.png" type="BINDATA" />
       <include name="IDR_MOBILE_LIT" file="touch_100_percent/mobile_lit.png" type="BINDATA" />
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_NEWTAB_BUTTON" file="touch_200_percent/newtab_normal.png" type="BINDATA" />
-        <include name="IDR_NEWTAB_BUTTON_H" file="touch_200_percent/newtab_hover.png" type="BINDATA" />
-        <include name="IDR_NEWTAB_BUTTON_P" file="touch_200_percent/newtab_pressed.png" type="BINDATA" />
-        <include name="IDR_NEWTAB_BUTTON_MASK" file="touch_200_percent/newtab_button_mask.png" type="BINDATA" />
+        <include name="IDR_NEWTAB_BUTTON" file="touch_100_percent/newtab_normal.png" type="BINDATA" />
+        <include name="IDR_NEWTAB_BUTTON_H" file="touch_100_percent/newtab_hover.png" type="BINDATA" />
+        <include name="IDR_NEWTAB_BUTTON_P" file="touch_100_percent/newtab_pressed.png" type="BINDATA" />
+        <include name="IDR_NEWTAB_BUTTON_MASK" file="touch_100_percent/newtab_button_mask.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
         <include name="IDR_NEWTAB_BUTTON" file="default_200_percent/newtab.png" type="BINDATA" />
@@ -153,7 +153,7 @@
       <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_C" file="touch_100_percent/ev_bubble_c.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_L" file="touch_100_percent/ev_bubble_l.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_R" file="touch_100_percent/ev_bubble_r.png" type="BINDATA" />
-      <include name="IDR_OTR_ICON" file="touch_200_percent/otr_icon.png" type="BINDATA" />
+      <include name="IDR_OTR_ICON" file="touch_100_percent/otr_icon.png" type="BINDATA" />
       <include name="IDR_PLUGIN" file="touch_100_percent/plugin.png" type="BINDATA" />
       <if expr="pp_ifdef('toolkit_views')">
         <include name="IDR_RELOAD" file="touch_200_percent/browser_reload_normal.png" type="BINDATA" />
@@ -177,23 +177,23 @@
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
         <include name="IDR_STOP" file="default_200_percent/stop.png" type="BINDATA" />
-        <include name="IDR_STOP_D" file="default_200_percent/stop_disabled.png" type="BINDATA" />
+        <include name="IDR_STOP_D" file="default_100_percent/stop_disabled.png" type="BINDATA" />
         <include name="IDR_STOP_H" file="default_200_percent/stop_hover.png" type="BINDATA" />
         <include name="IDR_STOP_P" file="default_200_percent/stop_pressed.png" type="BINDATA" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_TAB_ACTIVE_CENTER" file="touch_200_percent/tab_active_center.png" type="BINDATA" />
-        <include name="IDR_TAB_ACTIVE_LEFT" file="touch_200_percent/tab_active_left.png" type="BINDATA" />
-        <include name="IDR_TAB_ACTIVE_RIGHT" file="touch_200_percent/tab_active_right.png" type="BINDATA" />
-        <include name="IDR_TAB_ALPHA_LEFT" file="touch_200_percent/tab_alpha_left.png" type="BINDATA" />
-        <include name="IDR_TAB_ALPHA_RIGHT" file="touch_200_percent/tab_alpha_right.png" type="BINDATA" />
+        <include name="IDR_TAB_ACTIVE_CENTER" file="touch_100_percent/tab_active_center.png" type="BINDATA" />
+        <include name="IDR_TAB_ACTIVE_LEFT" file="touch_100_percent/tab_active_left.png" type="BINDATA" />
+        <include name="IDR_TAB_ACTIVE_RIGHT" file="touch_100_percent/tab_active_right.png" type="BINDATA" />
+        <include name="IDR_TAB_ALPHA_LEFT" file="touch_100_percent/tab_alpha_left.png" type="BINDATA" />
+        <include name="IDR_TAB_ALPHA_RIGHT" file="touch_100_percent/tab_alpha_right.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
-        <include name="IDR_TAB_ACTIVE_CENTER" file="default_200_percent/tab_active_center.png" type="BINDATA" />
-        <include name="IDR_TAB_ACTIVE_LEFT" file="default_200_percent/tab_active_left.png" type="BINDATA" />
-        <include name="IDR_TAB_ACTIVE_RIGHT" file="default_200_percent/tab_active_right.png" type="BINDATA" />
-        <include name="IDR_TAB_ALPHA_LEFT" file="default_200_percent/tab_alpha_left.png" type="BINDATA" />
-        <include name="IDR_TAB_ALPHA_RIGHT" file="default_200_percent/tab_alpha_right.png" type="BINDATA" />
+        <include name="IDR_TAB_ACTIVE_CENTER" file="default_100_percent/tab_active_center.png" type="BINDATA" />
+        <include name="IDR_TAB_ACTIVE_LEFT" file="default_100_percent/tab_active_left.png" type="BINDATA" />
+        <include name="IDR_TAB_ACTIVE_RIGHT" file="default_100_percent/tab_active_right.png" type="BINDATA" />
+        <include name="IDR_TAB_ALPHA_LEFT" file="default_100_percent/tab_alpha_left.png" type="BINDATA" />
+        <include name="IDR_TAB_ALPHA_RIGHT" file="default_100_percent/tab_alpha_right.png" type="BINDATA" />
       </if>
       <!-- Note: Tab close buttons are not traditional buttons.  Tab close buttons
            fill a background with a color from the theme, tile IDR_TAB_CLOSE over it,
@@ -205,22 +205,22 @@
         <include name="IDR_TAB_CLOSE_P" file="touch_200_percent/tab_close_pressed.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
-        <include name="IDR_TAB_CLOSE" file="default_200_percent/tab_close.png" type="BINDATA" />
-        <include name="IDR_TAB_CLOSE_H" file="default_200_percent/tab_close_hover.png" type="BINDATA" />
-        <include name="IDR_TAB_CLOSE_MASK" file="default_200_percent/tab_close_mask.png" type="BINDATA" />
-        <include name="IDR_TAB_CLOSE_P" file="default_200_percent/tab_close_pressed.png" type="BINDATA" />
+        <include name="IDR_TAB_CLOSE" file="default_100_percent/tab_close.png" type="BINDATA" />
+        <include name="IDR_TAB_CLOSE_H" file="default_100_percent/tab_close_hover.png" type="BINDATA" />
+        <include name="IDR_TAB_CLOSE_MASK" file="default_100_percent/tab_close_mask.png" type="BINDATA" />
+        <include name="IDR_TAB_CLOSE_P" file="default_100_percent/tab_close_pressed.png" type="BINDATA" />
       </if>
       <include name="IDR_TAB_DROP_DOWN" file="touch_100_percent/tab_drop_down.png" type="BINDATA" />
       <include name="IDR_TAB_DROP_UP" file="touch_100_percent/tab_drop_up.png" type="BINDATA" />
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_TAB_INACTIVE_CENTER" file="touch_200_percent/tab_inactive_center.png" type="BINDATA" />
-        <include name="IDR_TAB_INACTIVE_LEFT" file="touch_200_percent/tab_inactive_left.png" type="BINDATA" />
-        <include name="IDR_TAB_INACTIVE_RIGHT" file="touch_200_percent/tab_inactive_right.png" type="BINDATA" />
+        <include name="IDR_TAB_INACTIVE_CENTER" file="touch_100_percent/tab_inactive_center.png" type="BINDATA" />
+        <include name="IDR_TAB_INACTIVE_LEFT" file="touch_100_percent/tab_inactive_left.png" type="BINDATA" />
+        <include name="IDR_TAB_INACTIVE_RIGHT" file="touch_100_percent/tab_inactive_right.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
-        <include name="IDR_TAB_INACTIVE_CENTER" file="default_200_percent/tab_inactive_center.png" type="BINDATA" />
-        <include name="IDR_TAB_INACTIVE_LEFT" file="default_200_percent/tab_inactive_left.png" type="BINDATA" />
-        <include name="IDR_TAB_INACTIVE_RIGHT" file="default_200_percent/tab_inactive_right.png" type="BINDATA" />
+        <include name="IDR_TAB_INACTIVE_CENTER" file="default_100_percent/tab_inactive_center.png" type="BINDATA" />
+        <include name="IDR_TAB_INACTIVE_LEFT" file="default_100_percent/tab_inactive_left.png" type="BINDATA" />
+        <include name="IDR_TAB_INACTIVE_RIGHT" file="default_100_percent/tab_inactive_right.png" type="BINDATA" />
       </if>
       <!-- Ash has a gray frame, Windows uses blue. -->
       <if expr="pp_ifdef('use_ash')">
