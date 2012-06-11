@@ -304,6 +304,10 @@ bool Panel::IsAlwaysOnTop() const {
   return always_on_top_;
 }
 
+gfx::NativeWindow Panel::GetNativeWindow() {
+  return native_panel_->GetNativePanelHandle();
+}
+
 gfx::Rect Panel::GetRestoredBounds() const {
   gfx::Rect bounds = native_panel_->GetPanelBounds();
   bounds.set_y(bounds.bottom() - full_size_.height());

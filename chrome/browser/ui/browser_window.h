@@ -94,10 +94,6 @@ class BrowserWindow : public BaseWindow {
   //////////////////////////////////////////////////////////////////////////////
   // Browser specific methods:
 
-  // Return a platform dependent identifier for this frame. On Windows, this
-  // returns an HWND.
-  virtual gfx::NativeWindow GetNativeWindow() = 0;
-
   // Returns a pointer to the testing interface to the Browser window, or NULL
   // if there is none.
   virtual BrowserWindowTesting* GetBrowserWindowTesting() = 0;

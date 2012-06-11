@@ -649,17 +649,17 @@ Shell::~Shell() {
   aura::client::SetVisibilityClient(root_window, NULL);
   visibility_controller_.reset();
 
-  // Delete the activation controller after other controllers
-  // because they might have registered ActivationChangeObserver.
-  aura::client::SetActivationClient(root_window, NULL);
-  activation_controller_.reset();
-
   // Launcher widget has a InputMethodBridge that references to
   // input_method_filter_'s input_method_. So explicitly release launcher_
   // before input_method_filter_. And this needs to be after we delete all
   // containers in case there are still live browser windows which access
   // LauncherModel during close.
   launcher_.reset();
+
+  // Delete the activation controller after other controllers and launcher
+  // because they might have registered ActivationChangeObserver.
+  aura::client::SetActivationClient(root_window, NULL);
+  activation_controller_.reset();
 
   DCHECK(instance_ == this);
   instance_ = NULL;

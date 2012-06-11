@@ -21,9 +21,20 @@
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ui/aura/client/activation_change_observer.h"
+#include "ui/aura/window_observer.h"
 
 namespace ash {
 class LauncherModel;
+}
+
+namespace aura {
+class Window;
+
+namespace client {
+class ActivationClient;
+}
+
 }
 
 class BrowserLauncherItemController;
@@ -38,7 +49,9 @@ typedef TabContents TabContentsWrapper;
 class ChromeLauncherController : public ash::LauncherDelegate,
                                  public ash::LauncherModelObserver,
                                  public content::NotificationObserver,
-                                 public ShellWindowRegistry::Observer {
+                                 public ShellWindowRegistry::Observer,
+                                 public aura::client::ActivationChangeObserver,
+                                 public aura::WindowObserver {
  public:
   // Indicates if a launcher item is incognito or not.
   enum IncognitoState {
@@ -186,6 +199,14 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   virtual void OnShellWindowAdded(ShellWindow* shell_window) OVERRIDE;
   virtual void OnShellWindowRemoved(ShellWindow* shell_window) OVERRIDE;
 
+  // Overriden from client::ActivationChangeObserver:
+  virtual void OnWindowActivated(
+      aura::Window* active,
+      aura::Window* old_active) OVERRIDE;
+
+  // Overriden from aura::WindowObserver:
+  virtual void OnWindowRemovingFromRootWindow(aura::Window* window) OVERRIDE;
+
  private:
   friend class BrowserLauncherItemControllerTest;
   friend class ChromeLauncherControllerTest;
@@ -214,6 +235,7 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   };
 
   typedef std::map<ash::LauncherID, Item> IDToItemMap;
+  typedef std::map<aura::Window*, ash::LauncherID> WindowToIDMap;
 
   // Updates the pinned pref state. The pinned state consists of a list pref.
   // Each item of the list is a dictionary. The key |kAppIDPath| gives the
@@ -260,12 +282,17 @@ class ChromeLauncherController : public ash::LauncherDelegate,
 
   IDToItemMap id_to_item_map_;
 
+  // Allows us to get from an aura::Window to the id of a launcher item.
+  // Currently only used for platform app windows.
+  WindowToIDMap window_to_id_map_;
+
   // Used to load the image for an app tab.
   scoped_ptr<AppIconLoader> app_icon_loader_;
 
   content::NotificationRegistrar notification_registrar_;
 
   PrefChangeRegistrar pref_change_registrar_;
+  aura::client::ActivationClient* activation_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherController);
 };

@@ -387,6 +387,10 @@ bool PanelViewAura::IsFullscreen() const {
   return GetWidget()->IsFullscreen();
 }
 
+gfx::NativeWindow PanelViewAura::GetNativeWindow() {
+  return GetWidget()->GetNativeWindow();
+}
+
 gfx::Rect PanelViewAura::GetRestoredBounds() const {
   return GetWidget()->GetRestoredBounds();
 }

@@ -49,7 +49,10 @@ ShellWindow* ShellWindow::Create(Profile* profile,
                                  const GURL& url,
                                  const ShellWindow::CreateParams params) {
   // This object will delete itself when the window is closed.
-  return ShellWindow::CreateImpl(profile, extension, url, params);
+  ShellWindow* window =
+      ShellWindow::CreateImpl(profile, extension, url, params);
+  ShellWindowRegistry::Get(profile)->AddShellWindow(window);
+  return window;
 }
 
 ShellWindow::ShellWindow(Profile* profile,
@@ -88,16 +91,12 @@ ShellWindow::ShellWindow(Profile* profile,
 
   // Prevent the browser process from shutting down while this window is open.
   browser::StartKeepAlive();
-
-  ShellWindowRegistry::Get(profile_)->AddShellWindow(this);
 }
 
 ShellWindow::~ShellWindow() {
   // Unregister now to prevent getting NOTIFICATION_APP_TERMINATING if we're the
   // last window open.
   registrar_.RemoveAll();
-
-  ShellWindowRegistry::Get(profile_)->RemoveShellWindow(this);
 
   // Remove shutdown prevention.
   browser::EndKeepAlive();
@@ -107,11 +106,17 @@ bool ShellWindow::IsFullscreenOrPending() const {
   return false;
 }
 
+void ShellWindow::OnNativeClose() {
+  ShellWindowRegistry::Get(profile_)->RemoveShellWindow(this);
+  delete this;
+}
+
 string16 ShellWindow::GetTitle() const {
   // WebContents::GetTitle() will return the page's URL if there's no <title>
   // specified. However, we'd prefer to show the name of the extension in that
   // case, so we directly inspect the NavigationEntry's title.
-  if (web_contents()->GetController().GetActiveEntry()->GetTitle().empty())
+  if (!web_contents()->GetController().GetActiveEntry() ||
+      web_contents()->GetController().GetActiveEntry()->GetTitle().empty())
     return UTF8ToUTF16(extension()->name());
   return web_contents()->GetTitle();
 }

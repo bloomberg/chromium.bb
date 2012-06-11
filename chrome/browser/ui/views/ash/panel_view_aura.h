@@ -78,6 +78,7 @@ class PanelViewAura : public views::NativeViewHost,
   virtual bool IsMaximized() const OVERRIDE;
   virtual bool IsMinimized() const OVERRIDE;
   virtual bool IsFullscreen() const OVERRIDE;
+  virtual gfx::NativeWindow GetNativeWindow() OVERRIDE;
   virtual gfx::Rect GetRestoredBounds() const OVERRIDE;
   virtual gfx::Rect GetBounds() const OVERRIDE;
   virtual void Show() OVERRIDE;

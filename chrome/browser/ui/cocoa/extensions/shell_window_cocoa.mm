@@ -68,6 +68,10 @@ bool ShellWindowCocoa::IsFullscreen() const {
   return false;
 }
 
+gfx::NativeWindow ShellWindowCocoa::GetNativeWindow() {
+  return window();
+}
+
 gfx::Rect ShellWindowCocoa::GetRestoredBounds() const {
   // Flip coordinates based on the primary screen.
   NSScreen* screen = [[NSScreen screens] objectAtIndex:0];

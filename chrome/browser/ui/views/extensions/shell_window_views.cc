@@ -252,6 +252,10 @@ bool ShellWindowViews::IsFullscreen() const {
   return window_->IsFullscreen();
 }
 
+gfx::NativeWindow ShellWindowViews::GetNativeWindow() {
+  return window_->GetNativeWindow();
+}
+
 gfx::Rect ShellWindowViews::GetRestoredBounds() const {
   return window_->GetRestoredBounds();
 }
@@ -317,7 +321,7 @@ bool ShellWindowViews::IsAlwaysOnTop() const {
 }
 
 void ShellWindowViews::DeleteDelegate() {
-  delete this;
+  OnNativeClose();
 }
 
 void ShellWindowViews::ButtonPressed(

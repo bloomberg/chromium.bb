@@ -77,6 +77,10 @@ class ShellWindow : public content::NotificationObserver,
   virtual void SetFullscreen(bool fullscreen) {}
   virtual bool IsFullscreenOrPending() const;
 
+  // Call to notify ShellRegistry and delete the window.
+  void OnNativeClose();
+
+
  private:
   // PlatformAppBrowserTest needs access to web_contents()
   friend class PlatformAppBrowserTest;

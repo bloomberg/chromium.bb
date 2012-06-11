@@ -61,6 +61,10 @@ bool ShellWindowGtk::IsFullscreen() const {
   return false;
 }
 
+gfx::NativeWindow ShellWindowGtk::GetNativeWindow() {
+  return window_;
+}
+
 gfx::Rect ShellWindowGtk::GetRestoredBounds() const {
   return restored_bounds_;
 }

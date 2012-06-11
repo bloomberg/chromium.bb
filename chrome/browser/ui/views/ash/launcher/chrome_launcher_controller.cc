@@ -64,7 +64,8 @@ ChromeLauncherController* ChromeLauncherController::instance_ = NULL;
 ChromeLauncherController::ChromeLauncherController(Profile* profile,
                                                    ash::LauncherModel* model)
     : model_(model),
-      profile_(profile) {
+      profile_(profile),
+      activation_client_(NULL) {
   if (!profile_) {
     // Use the original profile as on chromeos we may get a temporary off the
     // record profile.
@@ -94,6 +95,13 @@ ChromeLauncherController::~ChromeLauncherController() {
   }
   if (instance_ == this)
     instance_ = NULL;
+  if (activation_client_)
+    activation_client_->RemoveObserver(this);
+
+  for (WindowToIDMap::iterator i = window_to_id_map_.begin();
+       i != window_to_id_map_.end(); ++i) {
+    i->first->RemoveObserver(this);
+  }
 }
 
 void ChromeLauncherController::Init() {
@@ -133,6 +141,10 @@ void ChromeLauncherController::Init() {
     else if (behavior_value == ash::kShelfAutoHideBehaviorAlways)
       behavior = ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
     ash::Shell::GetInstance()->SetShelfAutoHideBehavior(behavior);
+    activation_client_ =
+        aura::client::GetActivationClient(
+            ash::Shell::GetInstance()->GetPrimaryRootWindow());
+    activation_client_->AddObserver(this);
   }
 }
 
@@ -498,36 +510,69 @@ void ChromeLauncherController::Observe(
 }
 
 void ChromeLauncherController::OnShellWindowAdded(ShellWindow* shell_window) {
+  aura::Window* window = shell_window->GetNativeWindow();
+  ash::LauncherItemStatus status =
+      ash::wm::IsActiveWindow(window) ?
+          ash::STATUS_ACTIVE : ash::STATUS_RUNNING;
+  window->AddObserver(this);
   const std::string app_id = shell_window->extension()->id();
   for (IDToItemMap::const_iterator i = id_to_item_map_.begin();
        i != id_to_item_map_.end(); ++i) {
     if (i->second.app_id == app_id) {
-      SetItemStatus(i->first, ash::STATUS_RUNNING);
+      window_to_id_map_[window] = i->first;
+      SetItemStatus(i->first, status);
       return;
     }
   }
-  CreateAppLauncherItem(NULL, app_id, ash::STATUS_RUNNING);
+  ash::LauncherID id = CreateAppLauncherItem(NULL, app_id, status);
+  window_to_id_map_[window] = id;
 }
 
 void ChromeLauncherController::OnShellWindowRemoved(ShellWindow* shell_window) {
-  const std::string app_id = shell_window->extension()->id();
-  ShellWindowRegistry* registry = ShellWindowRegistry::Get(profile_);
-  if (registry->GetShellWindowsForApp(app_id).size() > 0)
-    return;
+  // Window removal is handled in OnWindowRemovingFromRootWindow() below.
+}
 
-  for (IDToItemMap::const_iterator i = id_to_item_map_.begin();
-       i != id_to_item_map_.end(); ++i) {
-    if (i->second.app_id == app_id) {
-      int index = model_->ItemIndexByID(i->first);
-      DCHECK_GE(index, 0);
-      ash::LauncherItem item = model_->items()[index];
-      if (item.type == ash::TYPE_APP_SHORTCUT)
-        SetItemStatus(i->first, ash::STATUS_CLOSED);
-      else
-        LauncherItemClosed(i->first);
+void ChromeLauncherController::OnWindowActivated(aura::Window* active,
+                                                 aura::Window* old_active) {
+  if (window_to_id_map_.find(old_active) != window_to_id_map_.end()) {
+    if (window_to_id_map_.find(active) != window_to_id_map_.end() &&
+        window_to_id_map_[old_active] == window_to_id_map_[active]) {
+      // Old and new windows are for the same item. Don't change the status.
       return;
     }
+    SetItemStatus(window_to_id_map_[old_active], ash::STATUS_RUNNING);
   }
+  if (window_to_id_map_.find(active) != window_to_id_map_.end())
+    SetItemStatus(window_to_id_map_[active], ash::STATUS_ACTIVE);
+}
+
+void ChromeLauncherController::OnWindowRemovingFromRootWindow(
+    aura::Window* window) {
+  window->RemoveObserver(this);
+  DCHECK(window_to_id_map_.find(window) != window_to_id_map_.end());
+  ash::LauncherID id = window_to_id_map_[window];
+  window_to_id_map_.erase(window);
+
+  DCHECK(id_to_item_map_.find(id) != id_to_item_map_.end());
+  ShellWindowRegistry::ShellWindowSet remaining_windows =
+      ShellWindowRegistry::Get(profile_)->GetShellWindowsForApp(
+      id_to_item_map_[id].app_id);
+
+  // We can't count on getting called before or after the ShellWindowRegistry.
+  if (remaining_windows.size() > 1 ||
+      (remaining_windows.size() == 1 &&
+          (*remaining_windows.begin())->GetNativeWindow() != window)) {
+    return;
+  }
+
+  // Close or remove item.
+  int index = model_->ItemIndexByID(id);
+  DCHECK_GE(index, 0);
+  ash::LauncherItem item = model_->items()[index];
+  if (item.type == ash::TYPE_APP_SHORTCUT)
+    SetItemStatus(id, ash::STATUS_CLOSED);
+  else
+    LauncherItemClosed(id);
 }
 
 void ChromeLauncherController::PersistPinnedState() {
