@@ -5,3 +5,6 @@ dmaclach@chromium.org
 jam@chromium.org
 jeremy@chromium.org
 tsepez@chromium.org
+
+# For NaCl-related code (ipc_channel_nacl.*)
+dmichael@chromium.org
