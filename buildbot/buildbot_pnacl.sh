@@ -524,7 +524,7 @@ tc-tests-large() {
   # glibc
   scons-stage "x86-32" "${scons_flags} --nacl_glibc pnacl_generate_pexe=0" \
               "${SCONS_TC_TESTS}"
-  scons-stage "x86-64" "${scons-stage} --nacl_glibc pnacl_generate_pexe=0" \
+  scons-stage "x86-64" "${scons_flags} --nacl_glibc pnacl_generate_pexe=0" \
               "${SCONS_TC_TESTS}"
 
   if ! ${is_try} ; then
