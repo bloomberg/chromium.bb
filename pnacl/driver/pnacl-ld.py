@@ -44,7 +44,8 @@ EXTRA_ENV = {
   'TRANSLATE_FLAGS_USER': '',
 
   'OPT_FLAGS': '-O${OPT_LEVEL} ${OPT_STRIP_%STRIP_MODE%} ' +
-               '-inline-threshold=${OPT_INLINE_THRESHOLD}',
+               '-inline-threshold=${OPT_INLINE_THRESHOLD} ' +
+               '--do-not-wrap',
   'OPT_INLINE_THRESHOLD': '100',
   'OPT_LEVEL': '0',
   'OPT_STRIP_none': '',
