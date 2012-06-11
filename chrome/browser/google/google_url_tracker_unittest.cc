@@ -21,7 +21,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 // TestNotificationObserver ---------------------------------------------------
 
@@ -244,8 +243,7 @@ void GoogleURLTrackerTest::SetSearchPending(const GURL& search_url,
     google_url_tracker_->OnNavigationPending(
         content::Source<content::NavigationController>(
             reinterpret_cast<content::NavigationController*>(unique_id)),
-        content::Source<TabContentsWrapper>(
-            reinterpret_cast<TabContentsWrapper*>(unique_id)),
+        content::Source<TabContents>(reinterpret_cast<TabContents*>(unique_id)),
         reinterpret_cast<InfoBarTabHelper*>(unique_id), search_url);
   }
 }
@@ -256,16 +254,15 @@ void GoogleURLTrackerTest::CommitSearch(int unique_id) {
   if (google_url_tracker_->registrar_.IsRegistered(google_url_tracker_.get(),
       content::NOTIFICATION_NAV_ENTRY_COMMITTED, source)) {
     google_url_tracker_->OnNavigationCommittedOrTabClosed(source,
-        content::Source<TabContentsWrapper>(
-            reinterpret_cast<TabContentsWrapper*>(unique_id)),
+        content::Source<TabContents>(reinterpret_cast<TabContents*>(unique_id)),
         reinterpret_cast<InfoBarTabHelper*>(unique_id), true);
   }
 }
 
 void GoogleURLTrackerTest::CloseTab(int unique_id) {
   unique_ids_seen_.erase(unique_id);
-  content::Source<TabContentsWrapper> source(
-      reinterpret_cast<TabContentsWrapper*>(unique_id));
+  content::Source<TabContents> source(
+      reinterpret_cast<TabContents*>(unique_id));
   InfoBarTabHelper* infobar_helper =
       reinterpret_cast<InfoBarTabHelper*>(unique_id);
   if (google_url_tracker_->registrar_.IsRegistered(google_url_tracker_.get(),

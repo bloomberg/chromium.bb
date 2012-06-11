@@ -18,7 +18,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -385,30 +385,27 @@ void GoogleURLTracker::Observe(int type,
     case content::NOTIFICATION_NAV_ENTRY_PENDING: {
       content::NavigationController* controller =
           content::Source<content::NavigationController>(source).ptr();
-      TabContentsWrapper* tab_contents =
-          TabContentsWrapper::GetCurrentWrapperForContents(
-              controller->GetWebContents());
+      TabContents* tab_contents =
+          TabContents::FromWebContents(controller->GetWebContents());
       OnNavigationPending(source,
-                          content::Source<TabContentsWrapper>(tab_contents),
+                          content::Source<TabContents>(tab_contents),
                           tab_contents->infobar_tab_helper(),
                           controller->GetPendingEntry()->GetURL());
       break;
     }
 
     case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
-      TabContentsWrapper* tab_contents =
-          TabContentsWrapper::GetCurrentWrapperForContents(
-              content::Source<content::NavigationController>(source)->
-                  GetWebContents());
+      TabContents* tab_contents = TabContents::FromWebContents(
+          content::Source<content::NavigationController>(source)->
+              GetWebContents());
       OnNavigationCommittedOrTabClosed(source,
-          content::Source<TabContentsWrapper>(tab_contents),
+          content::Source<TabContents>(tab_contents),
           tab_contents->infobar_tab_helper(), true);
       break;
     }
 
     case chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED: {
-      TabContentsWrapper* tab_contents =
-          content::Source<TabContentsWrapper>(source).ptr();
+      TabContents* tab_contents = content::Source<TabContents>(source).ptr();
       OnNavigationCommittedOrTabClosed(
           content::Source<content::NavigationController>(
               &tab_contents->web_contents()->GetController()), source,
@@ -417,12 +414,11 @@ void GoogleURLTracker::Observe(int type,
     }
 
     case chrome::NOTIFICATION_INSTANT_COMMITTED: {
-      TabContentsWrapper* tab_contents =
-          content::Source<TabContentsWrapper>(source).ptr();
+      TabContents* tab_contents = content::Source<TabContents>(source).ptr();
       content::WebContents* web_contents = tab_contents->web_contents();
       content::Source<content::NavigationController> source(
           &web_contents->GetController());
-      content::Source<TabContentsWrapper> tab_contents_source(tab_contents);
+      content::Source<TabContents> tab_contents_source(tab_contents);
       InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
       OnNavigationPending(source, tab_contents_source, infobar_helper,
                           web_contents->GetURL());

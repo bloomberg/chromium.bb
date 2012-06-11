@@ -144,7 +144,7 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   // listeners, to indicate that we've received the "load now pending"
   // notification.  |navigation_controller_source| and |tab_contents_source| are
   // NotificationSources pointing to the associated NavigationController and
-  // TabContentsWrapper, respectively, for this load; |infobar_helper| is the
+  // TabContents, respectively, for this load; |infobar_helper| is the
   // InfoBarTabHelper of the associated tab; and |search_url| is the actual
   // search performed by the user, which if necessary we'll re-do on a new
   // domain later.  This function creates a (still-invisible) InfoBarDelegate
