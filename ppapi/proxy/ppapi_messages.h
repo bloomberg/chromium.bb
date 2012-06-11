@@ -437,6 +437,13 @@ IPC_MESSAGE_ROUTED2(PpapiMsg_PPPClass_Deallocate,
                     int64 /* ppp_class */,
                     int64 /* object */)
 
+// PPB_Flash_DeviceID.
+IPC_MESSAGE_ROUTED4(PpapiMsg_PPBFlashDeviceID_GetReply,
+                    int32 /* routing_id */,
+                    PP_Resource /* resource */,
+                    int32 /* result */,
+                    std::string /* value */)
+
 // PPP_Graphics3D_Dev.
 IPC_MESSAGE_ROUTED1(PpapiMsg_PPPGraphics3D_ContextLost,
                     PP_Instance /* instance */)
@@ -1258,6 +1265,11 @@ IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBFlash_QueryFileRef,
                            int32_t /* result */)
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBFlash_InvokePrinting,
                     PP_Instance /* instance */)
+
+// PPB_Flash_DeviceID.
+IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBFlashDeviceID_Get,
+                    int32 /* routing_id */,
+                    PP_Resource /* resource */)
 
 // PPB_Flash_Menu
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFlashMenu_Create,

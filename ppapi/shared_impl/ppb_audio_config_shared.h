@@ -38,8 +38,7 @@ class PPAPI_SHARED_EXPORT PPB_AudioConfig_Shared
 
  private:
   // You must call Init before using this object.
-  explicit PPB_AudioConfig_Shared(ResourceObjectType type,
-                                  PP_Instance instance);
+  PPB_AudioConfig_Shared(ResourceObjectType type, PP_Instance instance);
 
   // Returns false if the arguments are invalid, the object should not be
   // used in this case.

@@ -175,6 +175,7 @@ struct PPB_Flash_12_4 {
   void (*UpdateActivity)(PP_Instance instance);
   /**
    * Returns the device ID as a string. Returns a PP_VARTYPE_UNDEFINED on error.
+   * Deprecated, use GetDeviceIDAsync.
    */
   struct PP_Var (*GetDeviceID)(PP_Instance instance);
   /**

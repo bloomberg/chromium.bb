@@ -252,6 +252,8 @@
       'cpp/private/flash.h',
       'cpp/private/flash_clipboard.cc',
       'cpp/private/flash_clipboard.h',
+      'cpp/private/flash_device_id.cc',
+      'cpp/private/flash_device_id.h',
       'cpp/private/flash_fullscreen.cc',
       'cpp/private/flash_fullscreen.h',
       'cpp/private/flash_menu.cc',

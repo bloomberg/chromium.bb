@@ -214,6 +214,7 @@ class PepperMessageFilter
                                  ppapi::PPB_X509Certificate_Fields* result);
   void OnUpdateActivity();
   void OnGetDeviceID(std::string* id);
+  void OnGetDeviceIDAsync(int32_t routing_id, PP_Resource resource);
 
   // Callback when the font list has been retrieved on a background thread.
   void GetFontFamiliesComplete(IPC::Message* reply_msg,

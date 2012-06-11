@@ -40,6 +40,11 @@ PROXIED_IFACE(PPB_Flash,
               PPB_FLASH_FILE_FILEREF_INTERFACE,
               PPB_Flash_File_FileRef)
 
+PROXIED_API(PPB_Flash_DeviceID)
+PROXIED_IFACE(PPB_Flash_DeviceID,
+              PPB_FLASH_DEVICEID_INTERFACE_1_0,
+              PPB_Flash_DeviceID_1_0)
+
 PROXIED_API(PPB_Flash_Menu)
 PROXIED_IFACE(PPB_Flash_Menu,
               PPB_FLASH_MENU_INTERFACE_0_2,

@@ -138,6 +138,10 @@ PP_Resource ResourceCreationImpl::CreateFileSystem(
   return PPB_FileSystem_Impl::Create(instance, type);
 }
 
+PP_Resource ResourceCreationImpl::CreateFlashDeviceID(PP_Instance instance) {
+  return 0;  // Not supported in-process.
+}
+
 PP_Resource ResourceCreationImpl::CreateFlashMenu(
     PP_Instance instance,
     const PP_Flash_Menu* menu_data) {

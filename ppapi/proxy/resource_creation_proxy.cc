@@ -18,6 +18,7 @@
 #include "ppapi/proxy/ppb_file_io_proxy.h"
 #include "ppapi/proxy/ppb_file_ref_proxy.h"
 #include "ppapi/proxy/ppb_file_system_proxy.h"
+#include "ppapi/proxy/ppb_flash_device_id_proxy.h"
 #include "ppapi/proxy/ppb_flash_menu_proxy.h"
 #include "ppapi/proxy/ppb_flash_message_loop_proxy.h"
 #include "ppapi/proxy/ppb_graphics_2d_proxy.h"
@@ -226,6 +227,10 @@ PP_Resource ResourceCreationProxy::CreateFileChooser(
     const char* accept_types) {
   return PPB_FileChooser_Proxy::CreateProxyResource(instance, mode,
                                                     accept_types);
+}
+
+PP_Resource ResourceCreationProxy::CreateFlashDeviceID(PP_Instance instance) {
+  return PPB_Flash_DeviceID_Proxy::CreateProxyResource(instance);
 }
 
 PP_Resource ResourceCreationProxy::CreateFlashMenu(

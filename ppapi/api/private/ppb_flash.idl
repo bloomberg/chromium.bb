@@ -179,6 +179,7 @@ interface PPB_Flash {
 
   /**
    * Returns the device ID as a string. Returns a PP_VARTYPE_UNDEFINED on error.
+   * Deprecated, use GetDeviceIDAsync.
    */
   [version=12.2]
   PP_Var GetDeviceID([in] PP_Instance instance);
@@ -187,7 +188,8 @@ interface PPB_Flash {
    * Deprecated. See GetSetting().
    */
   [version=12.3]
-  int32_t GetSettingInt(PP_Instance instance, PP_FlashSetting setting);
+  int32_t GetSettingInt([in] PP_Instance instance,
+                        [in] PP_FlashSetting setting);
 
   /**
    * Returns the value associated with the given setting. Invalid enums will
