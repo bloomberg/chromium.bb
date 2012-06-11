@@ -32,7 +32,7 @@ weston_SOURCES =				\
 	weston-egl-ext.h
 
 git-version.h : .FORCE
-	echo "#define WESTON_SHA1 \"$(shell git --git-dir=$(top_srcdir)/.git show-ref --head --hash=20 HEAD)\"" > $@-new
+	echo "#define BUILD_ID \"$(shell git --work-tree=$(top_srcdir) describe --always --dirty) $(shell git --work-tree=$(top_srcdir) log -1 --format='%s (%ci)')\"" > $@-new
 	cmp -s $@ $@-new || cp $@-new $@
 	rm $@-new
 

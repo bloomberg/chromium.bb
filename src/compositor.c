@@ -3220,7 +3220,7 @@ int main(int argc, char *argv[])
 		   STAMP_SPACE "Bug reports to: %s\n"
 		   STAMP_SPACE "Build: %s\n",
 		   PACKAGE_STRING, PACKAGE_URL, PACKAGE_BUGREPORT,
-		   WESTON_SHA1);
+		   BUILD_ID);
 	log_uname();
 
 	display = wl_display_create();
