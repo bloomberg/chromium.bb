@@ -155,9 +155,7 @@ void MetricsLogSerializer::WriteLogsToPrefList(
     size_t bytes_used = 0;
     for (std::vector<MetricsLogManager::SerializedLog>::const_reverse_iterator
          it = local_list.rbegin(); it != local_list.rend(); ++it) {
-      // TODO(isherman): Always uses XML length so both formats of a given log
-      // will be saved; switch to proto once that's the primary format.
-      size_t log_size = it->xml.length();
+      size_t log_size = it->length();
       if (bytes_used >= byte_limit &&
           (local_list.size() - start) >= list_length_limit)
         break;

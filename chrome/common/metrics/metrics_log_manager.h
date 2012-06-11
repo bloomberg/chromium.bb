@@ -28,6 +28,7 @@ class MetricsLogManager {
     // Exposed to reduce code churn as we transition from the XML pipeline to
     // the protocol buffer pipeline.
     bool empty() const;
+    size_t length() const;
     void swap(SerializedLog& log);
 
     std::string xml;

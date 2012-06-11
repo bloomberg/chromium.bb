@@ -10,6 +10,8 @@
 #include "third_party/bzip2/bzlib.h"
 #endif
 
+#include <algorithm>
+
 #include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "chrome/common/metrics/metrics_log_base.h"
@@ -35,6 +37,10 @@ MetricsLogManager::~MetricsLogManager() {}
 bool MetricsLogManager::SerializedLog::empty() const {
   DCHECK_EQ(xml.empty(), proto.empty());
   return xml.empty();
+}
+
+size_t MetricsLogManager::SerializedLog::length() const {
+  return std::max(xml.length(), proto.length());
 }
 
 void MetricsLogManager::SerializedLog::swap(SerializedLog& log) {
