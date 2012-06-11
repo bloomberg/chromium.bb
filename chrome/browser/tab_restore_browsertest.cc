@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
@@ -160,7 +160,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, Basic) {
   // And make sure everything looks right.
   EXPECT_EQ(starting_tab_count + 1, browser()->tab_count());
   EXPECT_EQ(closed_tab_index, browser()->active_index());
-  EXPECT_EQ(url1_, browser()->GetSelectedWebContents()->GetURL());
+  EXPECT_EQ(url1_, browser()->GetActiveWebContents()->GetURL());
 }
 
 // Close a tab not at the end of the current window, then restore it. The tab
@@ -179,7 +179,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, MiddleTab) {
   // And make sure everything looks right.
   EXPECT_EQ(starting_tab_count + 3, browser()->tab_count());
   EXPECT_EQ(closed_tab_index, browser()->active_index());
-  EXPECT_EQ(url1_, browser()->GetSelectedWebContents()->GetURL());
+  EXPECT_EQ(url1_, browser()->GetActiveWebContents()->GetURL());
 }
 
 // Close a tab, switch windows, then restore the tab. The tab should be in its
@@ -205,7 +205,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreToDifferentWindow) {
   // And make sure everything looks right.
   EXPECT_EQ(starting_tab_count + 3, browser()->tab_count());
   EXPECT_EQ(closed_tab_index, browser()->active_index());
-  EXPECT_EQ(url1_, browser()->GetSelectedWebContents()->GetURL());
+  EXPECT_EQ(url1_, browser()->GetActiveWebContents()->GetURL());
 }
 
 // Close a tab, open a new window, close the first window, then restore the
@@ -233,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, FLAKY_BasicRestoreFromClosedWindow) {
 
   // Tab should be in a new window.
   Browser* browser = GetBrowser(1);
-  content::WebContents* web_contents = browser->GetSelectedWebContents();
+  content::WebContents* web_contents = browser->GetActiveWebContents();
   // And make sure the URLs matches.
   EXPECT_EQ(url2_, web_contents->GetURL());
   GoBack(browser);
@@ -293,7 +293,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindowAndTab) {
   // Restore the closed tab.
   ASSERT_NO_FATAL_FAILURE(RestoreTab(1, closed_tab_index));
   EXPECT_EQ(starting_tab_count + 3, browser->tab_count());
-  EXPECT_EQ(url1_, browser->GetSelectedWebContents()->GetURL());
+  EXPECT_EQ(url1_, browser->GetActiveWebContents()->GetURL());
 }
 
 // Open a window with two tabs, close both (closing the window), then restore
@@ -329,12 +329,12 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreIntoSameWindow) {
   ASSERT_NO_FATAL_FAILURE(RestoreTab(1, 0));
   Browser* browser = GetBrowser(1);
   EXPECT_EQ(1, browser->tab_count());
-  EXPECT_EQ(url2_, browser->GetSelectedWebContents()->GetURL());
+  EXPECT_EQ(url2_, browser->GetActiveWebContents()->GetURL());
 
   // Restore the next-to-last-closed tab into the same window.
   ASSERT_NO_FATAL_FAILURE(RestoreTab(1, 0));
   EXPECT_EQ(2, browser->tab_count());
-  EXPECT_EQ(url1_, browser->GetSelectedWebContents()->GetURL());
+  EXPECT_EQ(url1_, browser->GetActiveWebContents()->GetURL());
 }
 
 // Tests that a duplicate history entry is not created when we restore a page
@@ -377,9 +377,9 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWithExistingSiteInstance) {
   ASSERT_NO_FATAL_FAILURE(RestoreTab(0, tab_count - 1));
 
   // And make sure the URLs match.
-  EXPECT_EQ(http_url2, browser()->GetSelectedWebContents()->GetURL());
+  EXPECT_EQ(http_url2, browser()->GetActiveWebContents()->GetURL());
   GoBack(browser());
-  EXPECT_EQ(http_url1, browser()->GetSelectedWebContents()->GetURL());
+  EXPECT_EQ(http_url1, browser()->GetActiveWebContents()->GetURL());
 }
 
 // Tests that the SiteInstances used for entries in a restored tab's history
@@ -425,9 +425,9 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest,
   ASSERT_NO_FATAL_FAILURE(RestoreTab(0, tab_count - 1));
 
   // And make sure the URLs match.
-  EXPECT_EQ(url1_, browser()->GetSelectedWebContents()->GetURL());
+  EXPECT_EQ(url1_, browser()->GetActiveWebContents()->GetURL());
   GoBack(browser());
-  EXPECT_EQ(http_url1, browser()->GetSelectedWebContents()->GetURL());
+  EXPECT_EQ(http_url1, browser()->GetActiveWebContents()->GetURL());
 
   // Navigating to a new URL should clear the forward list, because the max
   // page ID of the renderer should have been updated when we restored the tab.
@@ -435,7 +435,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest,
       browser(), http_url2, CURRENT_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   EXPECT_FALSE(browser()->CanGoForward());
-  EXPECT_EQ(http_url2, browser()->GetSelectedWebContents()->GetURL());
+  EXPECT_EQ(http_url2, browser()->GetActiveWebContents()->GetURL());
 }
 
 IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindow) {
@@ -501,7 +501,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreTabWithSpecialURL) {
 
   // Restore the closed tab.
   ASSERT_NO_FATAL_FAILURE(RestoreTab(0, 1));
-  TabContentsWrapper* tab = browser()->GetTabContentsWrapperAt(1);
+  TabContents* tab = browser()->GetTabContentsAt(1);
   EnsureTabFinishedRestoring(tab->web_contents());
 
   // See if content is as expected.
@@ -530,7 +530,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreTabWithSpecialURLOnBack) {
 
   // Restore the closed tab.
   ASSERT_NO_FATAL_FAILURE(RestoreTab(0, 1));
-  TabContentsWrapper* tab = browser()->GetTabContentsWrapperAt(1);
+  TabContents* tab = browser()->GetTabContentsAt(1);
   EnsureTabFinishedRestoring(tab->web_contents());
   ASSERT_EQ(http_url, tab->web_contents()->GetURL());
 

@@ -19,7 +19,7 @@ class LoadtimesExtensionBindingsTest : public InProcessBrowserTest {
     // before we read them. We ought to test that too. Until the race is fixed,
     // zero it out so the test is stable.
     content::RenderViewHost* rvh =
-        browser()->GetSelectedWebContents()->GetRenderViewHost();
+        browser()->GetActiveWebContents()->GetRenderViewHost();
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
         rvh, L"",
         L"window.before.firstPaintAfterLoadTime = 0;"
@@ -45,7 +45,7 @@ IN_PROC_BROWSER_TEST_F(LoadtimesExtensionBindingsTest,
   GURL plain_url = test_server()->GetURL("blank");
   ui_test_utils::NavigateToURL(browser(), plain_url);
   content::RenderViewHost* rvh =
-      browser()->GetSelectedWebContents()->GetRenderViewHost();
+      browser()->GetActiveWebContents()->GetRenderViewHost();
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
       rvh, L"", L"window.before = window.chrome.loadTimes()"));
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
@@ -62,7 +62,7 @@ IN_PROC_BROWSER_TEST_F(LoadtimesExtensionBindingsTest,
   GURL hash_url(plain_url.spec() + "#");
   ui_test_utils::NavigateToURL(browser(), plain_url);
   content::RenderViewHost* rvh =
-      browser()->GetSelectedWebContents()->GetRenderViewHost();
+      browser()->GetActiveWebContents()->GetRenderViewHost();
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
       rvh, L"", L"window.before = window.chrome.loadTimes()"));
   ui_test_utils::NavigateToURL(browser(), hash_url);

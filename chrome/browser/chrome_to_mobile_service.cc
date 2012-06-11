@@ -245,7 +245,7 @@ void ChromeToMobileService::SendToMobile(const string16& mobile_id,
   RequestData data;
   data.mobile_id = mobile_id;
   content::WebContents* web_contents =
-      browser::FindLastActiveWithProfile(profile_)->GetSelectedWebContents();
+      browser::FindLastActiveWithProfile(profile_)->GetActiveWebContents();
   data.url = web_contents->GetURL();
   data.title = web_contents->GetTitle();
   data.snapshot_path = snapshot;
@@ -332,9 +332,9 @@ void ChromeToMobileService::SnapshotFileCreated(
   snapshots_.insert(path);
 
   Browser* browser = browser::FindLastActiveWithProfile(profile_);
-  if (success && browser && browser->GetSelectedWebContents()) {
+  if (success && browser && browser->GetActiveWebContents()) {
     // Generate the snapshot and have the observer be called back on completion.
-    browser->GetSelectedWebContents()->GenerateMHTML(path,
+    browser->GetActiveWebContents()->GenerateMHTML(path,
         base::Bind(&Observer::SnapshotGenerated, observer));
   } else if (observer.get()) {
     // Signal snapshot generation failure.

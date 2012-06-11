@@ -166,13 +166,13 @@ TEST_F(BrowserCommandsTest, BackForwardInNewTab) {
   CommitPendingLoad(&second->GetController());
   browser()->GoBack(NEW_FOREGROUND_TAB);
   ASSERT_EQ(3, browser()->active_index());
-  ASSERT_EQ(url1, browser()->GetSelectedWebContents()->GetURL());
+  ASSERT_EQ(url1, browser()->GetActiveWebContents()->GetURL());
 
   // Same thing again for forward.
   // TODO(brettw) bug 11055: see the comment above about why we need this.
-  CommitPendingLoad(&browser()->GetSelectedWebContents()->GetController());
+  CommitPendingLoad(&browser()->GetActiveWebContents()->GetController());
   browser()->GoForward(NEW_FOREGROUND_TAB);
   ASSERT_EQ(4, browser()->active_index());
-  ASSERT_EQ(url2, browser()->GetSelectedWebContents()->GetURL());
+  ASSERT_EQ(url2, browser()->GetActiveWebContents()->GetURL());
 }
 

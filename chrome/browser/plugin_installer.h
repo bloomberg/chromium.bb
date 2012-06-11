@@ -17,7 +17,6 @@
 class FilePath;
 class PluginInstallerObserver;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 class WeakPluginInstallerObserver;
 
 namespace content {
@@ -91,7 +90,7 @@ class PluginInstaller : public content::DownloadItem::Observer {
   // Starts downloading the download URL and opens the downloaded file
   // when finished. This method should only be called if |url_for_display|
   // returns false.
-  void StartInstalling(TabContentsWrapper* wrapper);
+  void StartInstalling(TabContents* tab_contents);
 
   // If |status_str| describes a valid security status, writes it to |status|
   // and returns true, else returns false and leaves |status| unchanged.

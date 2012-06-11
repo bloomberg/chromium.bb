@@ -9,7 +9,7 @@
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/link_infobar_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
@@ -141,7 +141,7 @@ void AlternateNavURLFetcher::Observe(
     case chrome::NOTIFICATION_INSTANT_COMMITTED: {
       // See above.
       NavigationController* controller =
-          &content::Source<TabContentsWrapper>(source)->
+          &content::Source<TabContents>(source)->
               web_contents()->GetController();
       if (controller_ == controller) {
         delete this;
@@ -228,8 +228,8 @@ void AlternateNavURLFetcher::ShowInfobarIfPossible() {
   }
 
   InfoBarTabHelper* infobar_helper =
-      TabContentsWrapper::GetCurrentWrapperForContents(
-          controller_->GetWebContents())->infobar_tab_helper();
+      TabContents::FromWebContents(controller_->GetWebContents())->
+          infobar_tab_helper();
   infobar_helper->AddInfoBar(
       new AlternateNavInfoBarDelegate(infobar_helper, alternate_nav_url_));
   delete this;

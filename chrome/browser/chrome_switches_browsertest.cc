@@ -40,7 +40,7 @@ IN_PROC_BROWSER_TEST_F(HostRulesTest, TestMap) {
 
   std::string html;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-      browser()->GetSelectedWebContents()->GetRenderViewHost(),
+      browser()->GetActiveWebContents()->GetRenderViewHost(),
       L"",
       L"window.domAutomationController.send(document.body.outerHTML);",
       &html));

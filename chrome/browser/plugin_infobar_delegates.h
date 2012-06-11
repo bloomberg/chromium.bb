@@ -107,7 +107,7 @@ class OutdatedPluginInfoBarDelegate : public PluginInfoBarDelegate,
   // not have any buttons (and not call the callback).
   void ReplaceWithInfoBar(const string16& message);
 
-  // Has the same lifetime as TabContentsWrapper, which owns us
+  // Has the same lifetime as TabContents, which owns us
   // (transitively via InfoBarTabHelper).
   PluginObserver* observer_;
 

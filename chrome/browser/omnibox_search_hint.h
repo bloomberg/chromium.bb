@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,6 @@
 
 class Profile;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 // This class is responsible for showing an info-bar that tells the user she
 // can type her search query directly in the omnibox.
@@ -24,7 +23,7 @@ typedef TabContents TabContentsWrapper;
 // info-bar.
 class OmniboxSearchHint : public content::NotificationObserver {
  public:
-  explicit OmniboxSearchHint(TabContentsWrapper* tab);
+  explicit OmniboxSearchHint(TabContents* tab);
   virtual ~OmniboxSearchHint();
 
   // content::NotificationObserver method:
@@ -36,7 +35,7 @@ class OmniboxSearchHint : public content::NotificationObserver {
   // queries can be typed directly in there.
   void ShowEnteringQuery();
 
-  TabContentsWrapper* tab() { return tab_; }
+  TabContents* tab() { return tab_; }
 
   // Disables the hint infobar permanently, so that it does not show ever again.
   void DisableHint();
@@ -51,7 +50,7 @@ class OmniboxSearchHint : public content::NotificationObserver {
   content::NotificationRegistrar notification_registrar_;
 
   // The tab we are associated with.
-  TabContentsWrapper* tab_;
+  TabContents* tab_;
 
   // A map containing the URLs of the search engine for which we want to
   // trigger the hint.

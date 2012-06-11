@@ -68,7 +68,7 @@
 #include "chrome/browser/toolkit_extra_parts.h"
 #include "chrome/browser/ui/media_stream_infobar_delegate.h"
 #include "chrome/browser/ui/tab_contents/chrome_web_contents_view_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/browser/user_style_sheet_watcher.h"
 #include "chrome/browser/user_style_sheet_watcher_factory.h"
@@ -1078,16 +1078,15 @@ void ChromeContentBrowserClient::SelectClientCertificate(
     }
   }
 
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab);
-  if (!wrapper) {
-    // If there is no TabContentsWrapper for the given WebContents then we can't
+  TabContents* tab_contents = TabContents::FromWebContents(tab);
+  if (!tab_contents) {
+    // If there is no TabContents for the given WebContents then we can't
     // show the user a dialog to select a client certificate. So we simply
     // proceed with no client certificate.
     callback.Run(NULL);
     return;
   }
-  wrapper->ssl_helper()->ShowClientCertificateRequestDialog(
+  tab_contents->ssl_helper()->ShowClientCertificateRequestDialog(
       network_session, cert_request_info, callback);
 }
 
@@ -1114,8 +1113,7 @@ void ChromeContentBrowserClient::RequestMediaAccessPermission(
     return;
   }
 
-  TabContentsWrapper* tab =
-      TabContentsWrapper::GetCurrentWrapperForContents(contents);
+  TabContents* tab = TabContents::FromWebContents(contents);
   DCHECK(tab);
 
   InfoBarTabHelper* infobar_helper = tab->infobar_tab_helper();

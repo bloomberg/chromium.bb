@@ -17,7 +17,7 @@
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/plugin_service.h"
@@ -51,7 +51,7 @@ namespace {
 class ConfirmInstallDialogDelegate : public TabModalConfirmDialogDelegate,
                                      public WeakPluginInstallerObserver {
  public:
-  ConfirmInstallDialogDelegate(TabContentsWrapper* wrapper,
+  ConfirmInstallDialogDelegate(TabContents* tab_contents,
                                PluginInstaller* installer);
 
   // TabModalConfirmDialogDelegate methods:
@@ -66,15 +66,15 @@ class ConfirmInstallDialogDelegate : public TabModalConfirmDialogDelegate,
   virtual void OnlyWeakObserversLeft() OVERRIDE;
 
  private:
-  TabContentsWrapper* wrapper_;
+  TabContents* tab_contents_;
 };
 
 ConfirmInstallDialogDelegate::ConfirmInstallDialogDelegate(
-    TabContentsWrapper* wrapper,
+    TabContents* tab_contents,
     PluginInstaller* installer)
-    : TabModalConfirmDialogDelegate(wrapper->web_contents()),
+    : TabModalConfirmDialogDelegate(tab_contents->web_contents()),
       WeakPluginInstallerObserver(installer),
-      wrapper_(wrapper) {
+      tab_contents_(tab_contents) {
 }
 
 string16 ConfirmInstallDialogDelegate::GetTitle() {
@@ -93,7 +93,7 @@ string16 ConfirmInstallDialogDelegate::GetAcceptButtonTitle() {
 }
 
 void ConfirmInstallDialogDelegate::OnAccepted() {
-  installer()->StartInstalling(wrapper_);
+  installer()->StartInstalling(tab_contents_);
 }
 
 void ConfirmInstallDialogDelegate::OnCanceled() {
@@ -160,7 +160,7 @@ class PluginObserver::PluginPlaceholderHost : public PluginInstallerObserver {
 };
 #endif  // defined(ENABLE_PLUGIN_INSTALLATION)
 
-PluginObserver::PluginObserver(TabContentsWrapper* tab_contents)
+PluginObserver::PluginObserver(TabContents* tab_contents)
     : content::WebContentsObserver(tab_contents->web_contents()),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       tab_contents_(tab_contents) {

@@ -14,7 +14,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugin_installer_observer.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_id.h"
 #include "content/public/browser/download_item.h"
@@ -188,21 +188,21 @@ void PluginInstaller::RemoveWeakObserver(
   weak_observers_.RemoveObserver(observer);
 }
 
-void PluginInstaller::StartInstalling(TabContentsWrapper* wrapper) {
+void PluginInstaller::StartInstalling(TabContents* tab_contents) {
   DCHECK_EQ(INSTALLER_STATE_IDLE, state_);
   DCHECK(!url_for_display_);
   state_ = INSTALLER_STATE_DOWNLOADING;
   FOR_EACH_OBSERVER(PluginInstallerObserver, observers_, DownloadStarted());
-  content::WebContents* web_contents = wrapper->web_contents();
+  content::WebContents* web_contents = tab_contents->web_contents();
   DownloadManager* download_manager =
-      BrowserContext::GetDownloadManager(wrapper->profile());
+      BrowserContext::GetDownloadManager(tab_contents->profile());
   download_util::RecordDownloadSource(
       download_util::INITIATED_BY_PLUGIN_INSTALLER);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&BeginDownload,
                  plugin_url_,
-                 wrapper->profile()->GetResourceContext(),
+                 tab_contents->profile()->GetResourceContext(),
                  web_contents->GetRenderProcessHost()->GetID(),
                  web_contents->GetRenderViewHost()->GetRoutingID(),
                  base::Bind(&PluginInstaller::DownloadStarted,

@@ -8,7 +8,7 @@
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -35,7 +35,7 @@ IN_PROC_BROWSER_TEST_F(CollectedCookiesTest, DoubleDisplay) {
       browser(), test_server()->GetURL("files/cookie1.html"));
 
   // Click on the info link twice.
-  TabContentsWrapper* tab_contents = browser()->GetSelectedTabContentsWrapper();
+  TabContents* tab_contents = browser()->GetActiveTabContents();
   browser()->ShowCollectedCookiesDialog(tab_contents);
   browser()->ShowCollectedCookiesDialog(tab_contents);
 }
@@ -52,7 +52,7 @@ IN_PROC_BROWSER_TEST_F(CollectedCookiesTest, NavigateAway) {
       browser(), test_server()->GetURL("files/cookie1.html"));
 
   // Click on the info link.
-  TabContentsWrapper* tab_contents = browser()->GetSelectedTabContentsWrapper();
+  TabContents* tab_contents = browser()->GetActiveTabContents();
   browser()->ShowCollectedCookiesDialog(tab_contents);
 
   // Navigate to another page.

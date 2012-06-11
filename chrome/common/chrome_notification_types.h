@@ -146,7 +146,7 @@ enum NotificationType {
   NOTIFICATION_TAB_ADDED,
 
   // This notification is sent after a tab has been appended to the tab_strip.
-  // The source is a Source<TabContentsWrapper> of the tab being added. There
+  // The source is a Source<TabContents> of the tab being added. There
   // are no details.
   NOTIFICATION_TAB_PARENTED,
 
@@ -155,15 +155,15 @@ enum NotificationType {
   // closed tab.  No details are expected.
   //
   // See also NOTIFICATION_TAB_CONTENTS_DESTROYED, which is sent when the
-  // TabContentsWrapper is destroyed, and
+  // TabContents is destroyed, and
   // content::NOTIFICATION_WEB_CONTENTS_DESTROYED, which is sent when the
   // WebContents containing the NavigationController is destroyed.
   NOTIFICATION_TAB_CLOSING,
 
-  // Sent when a TabContentsWrapper is being destroyed.  At this point it's safe
-  // to call TabContentsWrapper member functions, which is not true of the
+  // Sent when a TabContents is being destroyed.  At this point it's safe
+  // to call TabContents member functions, which is not true of the
   // similar content::NOTIFICATION_WEB_CONTENTS_DESTROYED that fires later
-  // during teardown.  The source is a Source<TabContentsWrapper>.  There are no
+  // during teardown.  The source is a Source<TabContents>.  There are no
   // details.
   NOTIFICATION_TAB_CONTENTS_DESTROYED,
 
@@ -409,7 +409,7 @@ enum NotificationType {
   NOTIFICATION_PRINT_JOB_EVENT,
 
   // Sent when a PrintJob has been released.
-  // Source is the TabContentsWrapper that holds the print job.
+  // Source is the TabContents that holds the print job.
   NOTIFICATION_PRINT_JOB_RELEASED,
 
   // Shutdown ----------------------------------------------------------------
@@ -442,7 +442,7 @@ enum NotificationType {
   NOTIFICATION_EXTENSIONS_READY,
 
   // Sent when an extension icon being displayed in the location bar is updated.
-  // The source is the Profile and the details are the TabContentsWrapper for
+  // The source is the Profile and the details are the TabContents for
   // the tab.
   NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
 
@@ -1028,7 +1028,7 @@ enum NotificationType {
   NOTIFICATION_INSTANT_CONTROLLER_SHOWN,
 
   // Sent when an Instant preview is committed.  The Source is the
-  // TabContentsWrapper containing the committed preview.  There are no details.
+  // TabContents containing the committed preview.  There are no details.
   NOTIFICATION_INSTANT_COMMITTED,
 
   // Sent when the instant loader determines whether the page supports the
@@ -1152,7 +1152,7 @@ enum NotificationType {
   // Blocked content.
   // Sent when content changes to or from the blocked state in
   // BlockedContentTabHelper.
-  // The source is the TabContentsWrapper of the blocked content and details
+  // The source is the TabContents of the blocked content and details
   // is a boolean: true if the content is entering the blocked state, false
   // if it is leaving.
   NOTIFICATION_CONTENT_BLOCKED_STATE_CHANGED,

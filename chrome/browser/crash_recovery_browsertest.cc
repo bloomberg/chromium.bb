@@ -1,10 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/file_path.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -52,8 +52,7 @@ IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, Reload) {
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
-          &browser()->GetSelectedTabContentsWrapper()->web_contents()->
-              GetController()));
+          &browser()->GetActiveWebContents()->GetController()));
   browser()->Reload(CURRENT_TAB);
   observer.Wait();
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(),
@@ -82,8 +81,7 @@ IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, LoadInNewTab) {
   ui_test_utils::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(
-          &browser()->GetSelectedTabContentsWrapper()->web_contents()->
-              GetController()));
+          &browser()->GetActiveWebContents()->GetController()));
   browser()->Reload(CURRENT_TAB);
   observer.Wait();
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(),

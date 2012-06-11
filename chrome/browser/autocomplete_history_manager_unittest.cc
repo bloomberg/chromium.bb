@@ -9,7 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/test_autofill_external_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -145,8 +145,8 @@ namespace {
 
 class MockAutofillExternalDelegate : public TestAutofillExternalDelegate {
  public:
-  explicit MockAutofillExternalDelegate(TabContentsWrapper* wrapper)
-      : TestAutofillExternalDelegate(wrapper, NULL) {}
+  explicit MockAutofillExternalDelegate(TabContents* tab_contents)
+      : TestAutofillExternalDelegate(tab_contents, NULL) {}
   virtual ~MockAutofillExternalDelegate() {}
 
   virtual void ApplyAutofillSuggestions(
@@ -187,7 +187,7 @@ TEST_F(AutocompleteHistoryManagerTest, ExternalDelegate) {
       &profile_, web_data_service_);
 
   MockAutofillExternalDelegate external_delegate(
-      TabContentsWrapper::GetCurrentWrapperForContents(contents()));
+      TabContents::FromWebContents(contents()));
   EXPECT_CALL(external_delegate, OnSuggestionsReturned(_, _,  _,  _,  _));
   autocomplete_history_manager.SetExternalDelegate(&external_delegate);
 

@@ -9,7 +9,7 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/plugin_observer.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/render_view_host.h"
@@ -168,7 +168,7 @@ OutdatedPluginInfoBarDelegate::OutdatedPluginInfoBarDelegate(
     PluginInstaller* installer,
     const string16& message)
     : PluginInfoBarDelegate(
-        observer->tab_contents_wrapper()->infobar_tab_helper(),
+        observer->tab_contents()->infobar_tab_helper(),
         installer->name(),
         installer->identifier()),
       WeakPluginInstallerObserver(installer),
@@ -225,7 +225,7 @@ bool OutdatedPluginInfoBarDelegate::Accept() {
   if (installer()->url_for_display()) {
     installer()->OpenDownloadURL(web_contents);
   } else {
-    installer()->StartInstalling(observer_->tab_contents_wrapper());
+    installer()->StartInstalling(observer_->tab_contents());
   }
   return false;
 }

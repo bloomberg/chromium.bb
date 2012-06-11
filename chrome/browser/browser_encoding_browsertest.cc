@@ -42,7 +42,7 @@ class BrowserEncodingTest : public InProcessBrowserTest {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
         content::NotificationService::AllSources());
-    browser()->GetSelectedWebContents()->SavePage(
+    browser()->GetActiveWebContents()->SavePage(
         full_file_name, temp_sub_resource_dir_,
         content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML);
     observer.Wait();
@@ -138,7 +138,7 @@ IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, MAYBE_TestEncodingAliasMapping) {
         ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
     EXPECT_EQ(kEncodingTestDatas[i].encoding_name,
-              browser()->GetSelectedWebContents()->GetEncoding());
+              browser()->GetActiveWebContents()->GetEncoding());
     browser()->CloseTab();
   }
 }
@@ -154,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, TestOverrideEncoding) {
   test_dir_path = test_dir_path.AppendASCII(kTestFileName);
   GURL url = URLRequestMockHTTPJob::GetMockUrl(test_dir_path);
   ui_test_utils::NavigateToURL(browser(), url);
-  content::WebContents* web_contents = browser()->GetSelectedWebContents();
+  content::WebContents* web_contents = browser()->GetActiveWebContents();
   EXPECT_EQ("ISO-8859-1", web_contents->GetEncoding());
 
   // Override the encoding to "gb18030".
@@ -258,7 +258,7 @@ IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, MAYBE_TestEncodingAutoDetect) {
   browser()->profile()->GetPrefs()->SetString(prefs::kDefaultCharset,
                                               "ISO-8859-4");
 
-  content::WebContents* web_contents = browser()->GetSelectedWebContents();
+  content::WebContents* web_contents = browser()->GetActiveWebContents();
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestDatas); ++i) {
     // Disable auto detect if it is on.
     browser()->profile()->GetPrefs()->SetBoolean(

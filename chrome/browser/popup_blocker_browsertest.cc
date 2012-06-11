@@ -36,7 +36,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, PopupBlockedPostBlank) {
   // to the original URL.
   EXPECT_EQ(1u, browser::GetBrowserCount(browser()->profile()));
   EXPECT_EQ(1, browser()->tab_count());
-  WebContents* cur_tab = browser()->GetSelectedWebContents();
+  WebContents* cur_tab = browser()->GetActiveWebContents();
   ASSERT_TRUE(cur_tab);
   EXPECT_EQ(url, cur_tab->GetURL());
 }

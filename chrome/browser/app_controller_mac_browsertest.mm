@@ -68,7 +68,7 @@ IN_PROC_BROWSER_TEST_F(AppControllerWebAppBrowserTest,
   EXPECT_EQ(2u, BrowserList::size());
 
   Browser* browser = *(BrowserList::begin());
-  GURL current_url = browser->GetSelectedWebContents()->GetURL();
+  GURL current_url = browser->GetActiveWebContents()->GetURL();
   EXPECT_EQ(GetAppURL(), current_url.spec());
 }
 

@@ -55,7 +55,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMainTest, ReuseBrowserInstanceWhenOpeningFile) {
   observer.Wait();
 
   GURL url = net::FilePathToFileURL(test_file_path);
-  content::WebContents* tab = browser()->GetSelectedWebContents();
+  content::WebContents* tab = browser()->GetActiveWebContents();
   ASSERT_EQ(url, tab->GetController().GetActiveEntry()->GetVirtualURL());
 }
 
