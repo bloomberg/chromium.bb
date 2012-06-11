@@ -112,8 +112,7 @@ def CheckChangeOnCommit(input_api, output_api):
   return report
 
 
-def GetPreferredTrySlaves(project, change):
-  print project
+def GetPreferredTrySlaves(_, change):
 
   # This is a heuristic to (conservatively) detect if the change only
   # affects the pnacl toolchain and not the main builders, and run the
@@ -122,7 +121,7 @@ def GetPreferredTrySlaves(project, change):
   for f in change.AffectedFiles(include_dirs=True):
     if not f.LocalPath().startswith('pnacl'):
       is_pnacl_toolchain_only = False
-  if is_pnacl_only:
+  if is_pnacl_toolchain_only:
     return [
         'nacl-toolchain-linux-pnacl-x86_64',
         'nacl-toolchain-linux-pnacl-x86_32',
