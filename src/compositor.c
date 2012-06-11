@@ -1839,9 +1839,11 @@ notify_key(struct wl_seat *seat, uint32_t time, uint32_t key,
 		*k = key;
 	}
 
-	if (grab == &seat->keyboard->default_grab)
+	if (grab == &seat->keyboard->default_grab) {
 		weston_compositor_run_key_binding(compositor, ws, time, key,
 						  state);
+		grab = seat->keyboard->grab;
+	}
 
 	grab->interface->key(grab, time, key, state);
 	if (mods)
