@@ -1051,7 +1051,9 @@ const char kGetRoutes[] = "GetRoutes";
 const char kSetDebugMode[] = "SetDebugMode";
 const char kSystraceStart[] = "SystraceStart";
 const char kSystraceStop[] = "SystraceStop";
-const char kSytraceStatus[] = "SystraceStatus";
+const char kSystraceStatus[] = "SystraceStatus";
+const char kGetLog[] = "GetLog";
+const char kGetAllLogs[] = "GetAllLogs";
 }  // namespace debugd
 
 #endif  // DBUS_SERVICE_CONSTANTS_H_
