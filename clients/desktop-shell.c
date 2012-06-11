@@ -327,14 +327,6 @@ panel_clock_redraw_handler(struct widget *widget, void *data)
 
 	surface = window_get_surface(clock->panel->window);
 	cr = cairo_create(surface);
-	cairo_rectangle(cr, allocation.x, allocation.y,
-			allocation.width, allocation.height);
-	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
-	cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.1);
-	cairo_rectangle(cr, allocation.x, allocation.y, 3, 3);
-	cairo_fill(cr);
-
-	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 	cairo_select_font_face(cr, "sans",
 			       CAIRO_FONT_SLANT_NORMAL,
 			       CAIRO_FONT_WEIGHT_NORMAL);
