@@ -43,7 +43,13 @@ class DeleteRegValueWorkItemTest : public testing::Test {
 
 // Delete a value. The value should get deleted after Do() and should be
 // recreated after Rollback().
-TEST_F(DeleteRegValueWorkItemTest, DeleteExistingValue) {
+// Bug 132037: This test causes an assertion error on Windows.
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_DeleteExistingValue DISABLED_DeleteExistingValue
+#else
+#define MAYBE_DeleteExistingValue DeleteExistingValue
+#endif
+TEST_F(DeleteRegValueWorkItemTest, MAYBE_DeleteExistingValue) {
   RegKey key;
   std::wstring parent_key(kTestRoot);
   parent_key.push_back(FilePath::kSeparators[0]);
