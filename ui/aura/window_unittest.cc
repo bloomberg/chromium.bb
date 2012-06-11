@@ -418,6 +418,40 @@ TEST_F(WindowTest, GetToplevelWindow) {
   EXPECT_EQ(w11.get(), w1111->GetToplevelWindow());
 }
 
+class AddedToRootWindowObserver : public WindowObserver {
+ public:
+  AddedToRootWindowObserver() : called_(false) {}
+
+  virtual void OnWindowAddedToRootWindow(Window* window) OVERRIDE {
+    called_ = true;
+  }
+
+  bool called() const { return called_; }
+
+ private:
+  bool called_;
+
+  DISALLOW_COPY_AND_ASSIGN(AddedToRootWindowObserver);
+};
+
+TEST_F(WindowTest, WindowAddedToRootWindowShouldNotifyChildAndNotParent) {
+  AddedToRootWindowObserver parent_observer;
+  AddedToRootWindowObserver child_observer;
+  scoped_ptr<Window> parent_window(CreateTestWindowWithId(1, NULL));
+  scoped_ptr<Window> child_window(CreateTestWindowWithId(1, NULL));
+
+  parent_window->AddObserver(&parent_observer);
+  child_window->AddObserver(&child_observer);
+
+  parent_window->AddChild(child_window.get());
+
+  EXPECT_FALSE(parent_observer.called());
+  EXPECT_TRUE(child_observer.called());
+
+  parent_window->RemoveObserver(&parent_observer);
+  child_window->RemoveObserver(&child_observer);
+}
+
 // Various destruction assertions.
 TEST_F(WindowTest, DestroyTest) {
   DestroyTrackingDelegateImpl parent_delegate;
