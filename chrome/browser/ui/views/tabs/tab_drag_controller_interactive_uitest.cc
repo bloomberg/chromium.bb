@@ -11,7 +11,7 @@
 #include "base/string_number_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
@@ -334,7 +334,7 @@ IN_PROC_BROWSER_TEST_F(DetachToBrowserTabDragControllerTest,
 
 namespace {
 
-void DeleteWhileDetachedStep2(TabContentsWrapper* tab) {
+void DeleteWhileDetachedStep2(TabContents* tab) {
   delete tab;
 }
 
@@ -350,7 +350,7 @@ IN_PROC_BROWSER_TEST_F(DetachToBrowserTabDragControllerTest,
 
   // Move to the first tab and drag it enough so that it detaches.
   gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
-  TabContentsWrapper* to_delete =
+  TabContents* to_delete =
       browser()->tab_strip_model()->GetTabContentsAt(0);
   ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(tab_0_center));
   ASSERT_TRUE(ui_test_utils::SendMouseEventsSync(
@@ -372,7 +372,7 @@ IN_PROC_BROWSER_TEST_F(DetachToBrowserTabDragControllerTest,
 
 namespace {
 
-void DeleteSourceDetachedStep2(TabContentsWrapper* tab) {
+void DeleteSourceDetachedStep2(TabContents* tab) {
   // This ends up closing the source window.
   delete tab;
   // Cancel the drag.
@@ -391,8 +391,7 @@ IN_PROC_BROWSER_TEST_F(DetachToBrowserTabDragControllerTest,
 
   // Move to the first tab and drag it enough so that it detaches.
   gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
-  TabContentsWrapper* to_delete =
-      browser()->tab_strip_model()->GetTabContentsAt(1);
+  TabContents* to_delete = browser()->tab_strip_model()->GetTabContentsAt(1);
   ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(tab_0_center));
   ASSERT_TRUE(ui_test_utils::SendMouseEventsSync(
                   ui_controls::LEFT, ui_controls::DOWN));

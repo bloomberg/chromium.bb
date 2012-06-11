@@ -42,7 +42,6 @@ class BrowserLauncherItemControllerTest;
 class PrefService;
 class Profile;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 // ChromeLauncherController manages the launcher items needed for tabbed
 // browsers (BrowserLauncherItemController) and browser shortcuts.
@@ -67,7 +66,7 @@ class ChromeLauncherController : public ash::LauncherDelegate,
 
     // Returns the app id of the specified tab, or an empty string if there is
     // no app.
-    virtual std::string GetAppID(TabContentsWrapper* tab) = 0;
+    virtual std::string GetAppID(TabContents* tab) = 0;
 
     // Returns true if |id| is valid. Used during restore to ignore no longer
     // valid extensions.
@@ -132,7 +131,7 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   ExtensionPrefs::LaunchType GetLaunchType(ash::LauncherID id);
 
   // Returns the id of the app for the specified tab.
-  std::string GetAppID(TabContentsWrapper* tab);
+  std::string GetAppID(TabContents* tab);
 
   // Sets the image for an app tab. This is intended to be invoked from the
   // AppIconLoader.

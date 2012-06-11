@@ -23,7 +23,6 @@
 
 class SSLClientAuthHandler;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 namespace net {
 class HttpNetworkSession;

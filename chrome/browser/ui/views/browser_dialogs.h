@@ -23,7 +23,6 @@ class FindBar;
 class GURL;
 class Profile;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 class TemplateURL;
 
 namespace content {
@@ -92,7 +91,7 @@ void EditSearchEngine(gfx::NativeWindow parent,
 
 // Shows the create web app shortcut dialog box.
 void ShowCreateWebAppShortcutsDialog(gfx::NativeWindow parent_window,
-                                     TabContentsWrapper* tab_contents);
+                                     TabContents* tab_contents);
 
 // Shows the create chrome app shortcut dialog box.
 void ShowCreateChromeAppShortcutsDialog(gfx::NativeWindow parent_window,

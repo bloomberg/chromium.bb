@@ -175,14 +175,14 @@ class BrowserView : public BrowserWindow,
   // activated, false if none was shown.
   bool ActivateAppModalDialog() const;
 
-  // Returns the selected WebContents/TabContentsWrapper. Used by our
+  // Returns the selected WebContents/TabContents. Used by our
   // NonClientView's TabIconView::TabContentsProvider implementations.
   // TODO(beng): exposing this here is a bit bogus, since it's only used to
   // determine loading state. It'd be nicer if we could change this to be
   // bool IsSelectedTabLoading() const; or something like that. We could even
   // move it to a WindowDelegate subclass.
-  content::WebContents* GetSelectedWebContents() const;
-  TabContentsWrapper* GetSelectedTabContentsWrapper() const;
+  content::WebContents* GetActiveWebContents() const;
+  TabContents* GetActiveTabContents() const;
 
   // Retrieves the icon to use in the frame to indicate an OTR window.
   gfx::ImageSkia GetOTRAvatarIcon() const;
@@ -257,7 +257,7 @@ class BrowserView : public BrowserWindow,
   virtual LocationBar* GetLocationBar() const OVERRIDE;
   virtual void SetFocusToLocationBar(bool select_all) OVERRIDE;
   virtual void UpdateReloadStopState(bool is_loading, bool force) OVERRIDE;
-  virtual void UpdateToolbar(TabContentsWrapper* contents,
+  virtual void UpdateToolbar(TabContents* contents,
                              bool should_restore_state) OVERRIDE;
   virtual void FocusToolbar() OVERRIDE;
   virtual void FocusAppMenu() OVERRIDE;
@@ -298,7 +298,7 @@ class BrowserView : public BrowserWindow,
                             const content::SSLStatus& ssl,
                             bool show_history) OVERRIDE;
   virtual void ShowWebsiteSettings(Profile* profile,
-                                   TabContentsWrapper* tab_contents_wrapper,
+                                   TabContents* tab_contents,
                                    const GURL& url,
                                    const content::SSLStatus& ssl,
                                    bool show_history) OVERRIDE;
@@ -309,13 +309,13 @@ class BrowserView : public BrowserWindow,
   virtual void HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual void ShowCreateWebAppShortcutsDialog(
-      TabContentsWrapper* tab_contents) OVERRIDE;
+      TabContents* tab_contents) OVERRIDE;
   virtual void ShowCreateChromeAppShortcutsDialog(
       Profile*, const extensions::Extension* app) OVERRIDE;
   virtual void Cut() OVERRIDE;
   virtual void Copy() OVERRIDE;
   virtual void Paste() OVERRIDE;
-  virtual void ShowInstant(TabContentsWrapper* preview) OVERRIDE;
+  virtual void ShowInstant(TabContents* preview) OVERRIDE;
   virtual void HideInstant() OVERRIDE;
   virtual gfx::Rect GetInstantBounds() OVERRIDE;
   virtual WindowOpenDisposition GetDispositionForPopupBounds(
@@ -336,15 +336,15 @@ class BrowserView : public BrowserWindow,
   virtual ToolbarView* GetToolbarView() const OVERRIDE;
 
   // Overridden from TabStripModelObserver:
-  virtual void TabDetachedAt(TabContentsWrapper* contents, int index) OVERRIDE;
-  virtual void TabDeactivated(TabContentsWrapper* contents) OVERRIDE;
-  virtual void ActiveTabChanged(TabContentsWrapper* old_contents,
-                                TabContentsWrapper* new_contents,
+  virtual void TabDetachedAt(TabContents* contents, int index) OVERRIDE;
+  virtual void TabDeactivated(TabContents* contents) OVERRIDE;
+  virtual void ActiveTabChanged(TabContents* old_contents,
+                                TabContents* new_contents,
                                 int index,
                                 bool user_gesture) OVERRIDE;
   virtual void TabReplacedAt(TabStripModel* tab_strip_model,
-                             TabContentsWrapper* old_contents,
-                             TabContentsWrapper* new_contents,
+                             TabContents* old_contents,
+                             TabContents* new_contents,
                              int index) OVERRIDE;
   virtual void TabStripEmpty() OVERRIDE;
 
@@ -458,17 +458,17 @@ class BrowserView : public BrowserWindow,
   // Layout the Status Bubble.
   void LayoutStatusBubble();
 
-  // Prepare to show the Bookmark Bar for the specified TabContentsWrapper.
+  // Prepare to show the Bookmark Bar for the specified TabContents.
   // Returns true if the Bookmark Bar can be shown (i.e. it's supported for this
   // Browser type) and there should be a subsequent re-layout to show it.
   // |contents| can be NULL.
-  bool MaybeShowBookmarkBar(TabContentsWrapper* contents);
+  bool MaybeShowBookmarkBar(TabContents* contents);
 
-  // Prepare to show an Info Bar for the specified TabContentsWrapper. Returns
+  // Prepare to show an Info Bar for the specified TabContents. Returns
   // true if there is an Info Bar to show and one is supported for this Browser
   // type, and there should be a subsequent re-layout to show it.
   // |contents| can be NULL.
-  bool MaybeShowInfoBar(TabContentsWrapper* contents);
+  bool MaybeShowInfoBar(TabContents* contents);
 
   // Shows docked devtools.
   void ShowDevToolsContainer();
@@ -477,13 +477,13 @@ class BrowserView : public BrowserWindow,
   void HideDevToolsContainer();
 
   // Updated devtools window for given contents.
-  void UpdateDevToolsForContents(TabContentsWrapper* tab_contents);
+  void UpdateDevToolsForContents(TabContents* tab_contents);
 
   // Updates various optional child Views, e.g. Bookmarks Bar, Info Bar or the
   // Download Shelf in response to a change notification from the specified
   // |contents|. |contents| can be NULL. In this case, all optional UI will be
   // removed.
-  void UpdateUIForContents(TabContentsWrapper* contents);
+  void UpdateUIForContents(TabContents* contents);
 
   // Updates an optional child View, e.g. Bookmarks Bar, Info Bar, Download
   // Shelf. If |*old_view| differs from new_view, the old_view is removed and
@@ -523,7 +523,7 @@ class BrowserView : public BrowserWindow,
 
   // Invoked from ActiveTabChanged or when instant is made active.
   // |new_contents| must not be NULL.
-  void ProcessTabSelected(TabContentsWrapper* new_contents);
+  void ProcessTabSelected(TabContents* new_contents);
 
   // Exposes resize corner size to BrowserViewLayout.
   gfx::Size GetResizeCornerSize() const;

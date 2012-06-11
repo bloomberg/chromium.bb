@@ -112,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, MAYBE_SizeWindow) {
 
   TestWebDialogView* view =
       new TestWebDialogView(browser()->profile(), browser(), delegate);
-  WebContents* web_contents = browser()->GetSelectedWebContents();
+  WebContents* web_contents = browser()->GetActiveWebContents();
   ASSERT_TRUE(web_contents != NULL);
   views::Widget::CreateWindowWithParent(
       view, web_contents->GetView()->GetTopLevelNativeWindow());
@@ -192,7 +192,7 @@ IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, DISABLED_WebContentRendered) {
 
   TestWebDialogView* view =
       new TestWebDialogView(browser()->profile(), browser(), delegate);
-  WebContents* web_contents = browser()->GetSelectedWebContents();
+  WebContents* web_contents = browser()->GetActiveWebContents();
   ASSERT_TRUE(web_contents != NULL);
   views::Widget::CreateWindowWithParent(
       view, web_contents->GetView()->GetTopLevelNativeWindow());

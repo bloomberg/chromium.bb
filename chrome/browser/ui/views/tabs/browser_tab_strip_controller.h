@@ -18,7 +18,6 @@
 class BaseTab;
 class Browser;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 class TabStrip;
 class TabStripSelectionModel;
 struct TabRendererData;
@@ -28,7 +27,7 @@ class WebContents;
 }
 
 // An implementation of TabStripController that sources data from the
-// TabContentsWrappers in a TabStripModel.
+// TabContentses in a TabStripModel.
 class BrowserTabStripController : public TabStripController,
                                   public TabStripModelObserver,
                                   public content::NotificationObserver {
@@ -76,29 +75,29 @@ class BrowserTabStripController : public TabStripController,
   virtual void LayoutTypeMaybeChanged() OVERRIDE;
 
   // TabStripModelObserver implementation:
-  virtual void TabInsertedAt(TabContentsWrapper* contents,
+  virtual void TabInsertedAt(TabContents* contents,
                              int model_index,
                              bool is_active) OVERRIDE;
-  virtual void TabDetachedAt(TabContentsWrapper* contents,
+  virtual void TabDetachedAt(TabContents* contents,
                              int model_index) OVERRIDE;
   virtual void TabSelectionChanged(
       TabStripModel* tab_strip_model,
       const TabStripSelectionModel& old_model) OVERRIDE;
-  virtual void TabMoved(TabContentsWrapper* contents,
+  virtual void TabMoved(TabContents* contents,
                         int from_model_index,
                         int to_model_index) OVERRIDE;
-  virtual void TabChangedAt(TabContentsWrapper* contents,
+  virtual void TabChangedAt(TabContents* contents,
                             int model_index,
                             TabChangeType change_type) OVERRIDE;
   virtual void TabReplacedAt(TabStripModel* tab_strip_model,
-                             TabContentsWrapper* old_contents,
-                             TabContentsWrapper* new_contents,
+                             TabContents* old_contents,
+                             TabContents* new_contents,
                              int model_index) OVERRIDE;
-  virtual void TabPinnedStateChanged(TabContentsWrapper* contents,
+  virtual void TabPinnedStateChanged(TabContents* contents,
                                      int model_index) OVERRIDE;
-  virtual void TabMiniStateChanged(TabContentsWrapper* contents,
+  virtual void TabMiniStateChanged(TabContents* contents,
                                    int model_index) OVERRIDE;
-  virtual void TabBlockedStateChanged(TabContentsWrapper* contents,
+  virtual void TabBlockedStateChanged(TabContents* contents,
                                       int model_index) OVERRIDE;
 
   // content::NotificationObserver implementation:
@@ -129,7 +128,7 @@ class BrowserTabStripController : public TabStripController,
   class TabContextMenuContents;
 
   // Invokes tabstrip_->SetTabData.
-  void SetTabDataAt(TabContentsWrapper* contents, int model_index);
+  void SetTabDataAt(TabContents* contents, int model_index);
 
   void StartHighlightTabsForCommand(
       TabStripModel::ContextMenuCommand command_id,
@@ -139,7 +138,7 @@ class BrowserTabStripController : public TabStripController,
       BaseTab* tab);
 
   // Adds a tab.
-  void AddTab(TabContentsWrapper* contents, int index, bool is_active);
+  void AddTab(TabContents* contents, int index, bool is_active);
 
   // Resets the tabstrips layout type from prefs.
   void UpdateLayoutType();

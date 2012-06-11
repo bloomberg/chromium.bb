@@ -466,7 +466,7 @@ void TabDragController::InitTabDragData(BaseTab* tab,
       drag_data->source_model_index);
   drag_data->pinned = source_tabstrip_->IsTabPinned(tab);
   registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
-                 content::Source<TabContentsWrapper>(drag_data->contents));
+                 content::Source<TabContents>(drag_data->contents));
 
   if (!detach_into_browser_) {
     drag_data->original_delegate =
@@ -555,8 +555,8 @@ void TabDragController::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED, type);
-  TabContentsWrapper* destroyed_tab_contents =
-      content::Source<TabContentsWrapper>(source).ptr();
+  TabContents* destroyed_tab_contents =
+      content::Source<TabContents>(source).ptr();
   WebContents* destroyed_web_contents = destroyed_tab_contents->web_contents();
   for (size_t i = 0; i < drag_data_.size(); ++i) {
     if (drag_data_[i].contents == destroyed_tab_contents) {
@@ -871,8 +871,7 @@ void TabDragController::MoveAttached(const gfx::Point& screen_point) {
     TabStripModel* attached_model = GetModel(attached_tabstrip_);
     gfx::Rect bounds = GetDraggedViewTabStripBounds(dragged_view_point);
     int to_index = GetInsertionIndexForDraggedBounds(bounds);
-    TabContentsWrapper* last_contents =
-        drag_data_[drag_data_.size() - 1].contents;
+    TabContents* last_contents = drag_data_[drag_data_.size() - 1].contents;
     int index_of_last_item =
           attached_model->GetIndexOfTabContents(last_contents);
     if (initial_move_) {

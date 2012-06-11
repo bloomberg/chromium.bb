@@ -8,7 +8,7 @@
 
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/find_bar_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -67,7 +67,7 @@ bool FindBarHost::MaybeForwardKeyEventToWebpage(
       return false;
   }
 
-  TabContentsWrapper* contents = find_bar_controller_->tab_contents();
+  TabContents* contents = find_bar_controller_->tab_contents();
   if (!contents)
     return false;
 

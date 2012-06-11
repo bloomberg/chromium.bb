@@ -574,7 +574,7 @@ bool PanelBrowserFrameView::ShouldTabIconViewAnimate() const {
   // This function is queried during the creation of the window as the
   // TabIconView we host is initialized, so we need to NULL check the selected
   // WebContents because in this condition there is not yet a selected tab.
-  WebContents* current_tab = browser_view()->GetSelectedWebContents();
+  WebContents* current_tab = browser_view()->GetActiveWebContents();
   return current_tab ? current_tab->IsLoading() : false;
 }
 

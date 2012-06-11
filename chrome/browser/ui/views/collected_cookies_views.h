@@ -19,7 +19,6 @@ class CookieInfoView;
 class CookiesTreeModel;
 class InfobarView;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 namespace views {
 class Label;
@@ -31,7 +30,7 @@ class TreeView;
 //
 // CollectedCookiesViews is a dialog that displays the allowed and blocked
 // cookies of the current tab contents. To display the dialog, invoke
-// ShowCollectedCookiesDialog() on the delegate of the tab contents wrapper's
+// ShowCollectedCookiesDialog() on the delegate of the TabContents's
 // content settings tab helper.
 class CollectedCookiesViews : public views::DialogDelegateView,
                               public content::NotificationObserver,
@@ -40,7 +39,7 @@ class CollectedCookiesViews : public views::DialogDelegateView,
                               public views::TreeViewController {
  public:
   // Use BrowserWindow::ShowCollectedCookiesDialog to show.
-  explicit CollectedCookiesViews(TabContentsWrapper* wrapper);
+  explicit CollectedCookiesViews(TabContents* tab_contents);
 
   // views::DialogDelegate:
   virtual string16 GetWindowTitle() const OVERRIDE;
@@ -90,7 +89,7 @@ class CollectedCookiesViews : public views::DialogDelegateView,
   ConstrainedWindow* window_;
 
   // The tab contents.
-  TabContentsWrapper* wrapper_;
+  TabContents* tab_contents_;
 
   // Assorted views.
   views::Label* allowed_label_;

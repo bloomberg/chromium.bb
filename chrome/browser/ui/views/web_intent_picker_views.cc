@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model_observer.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
@@ -661,7 +661,7 @@ class WebIntentPickerViews : public views::ButtonListener,
                              public ServiceButtonsView::Delegate,
                              public SuggestedExtensionsRowView::Delegate {
  public:
-  WebIntentPickerViews(TabContentsWrapper* tab_contents,
+  WebIntentPickerViews(TabContents* tab_contents,
                        WebIntentPickerDelegate* delegate,
                        WebIntentPickerModel* model);
   virtual ~WebIntentPickerViews();
@@ -749,8 +749,8 @@ class WebIntentPickerViews : public views::ButtonListener,
   // Delegate for inline disposition tab contents.
   scoped_ptr<WebIntentInlineDispositionDelegate> inline_disposition_delegate_;
 
-  // A weak pointer to the wrapper of the WebContents this picker is in.
-  TabContentsWrapper* wrapper_;
+  // A weak pointer to the TabContents this picker is in.
+  TabContents* tab_contents_;
 
   // A weak pointer to the WebView that hosts the WebContents being displayed.
   // Created locally, owned by Views.
@@ -786,13 +786,13 @@ class WebIntentPickerViews : public views::ButtonListener,
 };
 
 // static
-WebIntentPicker* WebIntentPicker::Create(TabContentsWrapper* wrapper,
+WebIntentPicker* WebIntentPicker::Create(TabContents* tab_contents,
                                          WebIntentPickerDelegate* delegate,
                                          WebIntentPickerModel* model) {
-  return new WebIntentPickerViews(wrapper, delegate, model);
+  return new WebIntentPickerViews(tab_contents, delegate, model);
 }
 
-WebIntentPickerViews::WebIntentPickerViews(TabContentsWrapper* wrapper,
+WebIntentPickerViews::WebIntentPickerViews(TabContents* tab_contents,
                                            WebIntentPickerDelegate* delegate,
                                            WebIntentPickerModel* model)
     : delegate_(delegate),
@@ -801,8 +801,8 @@ WebIntentPickerViews::WebIntentPickerViews(TabContentsWrapper* wrapper,
       action_label_(NULL),
       suggestions_label_(NULL),
       extensions_(NULL),
-      wrapper_(wrapper),
-      webview_(new views::WebView(wrapper->profile())),
+      tab_contents_(tab_contents),
+      webview_(new views::WebView(tab_contents->profile())),
       contents_(NULL),
       window_(NULL),
       more_suggestions_link_(NULL),
@@ -812,7 +812,7 @@ WebIntentPickerViews::WebIntentPickerViews(TabContentsWrapper* wrapper,
   InitContents();
 
   // Show the dialog.
-  window_ = new ConstrainedWindowViews(wrapper, this);
+  window_ = new ConstrainedWindowViews(tab_contents, this);
 }
 
 WebIntentPickerViews::~WebIntentPickerViews() {
@@ -988,18 +988,18 @@ void WebIntentPickerViews::OnExtensionIconChanged(
 void WebIntentPickerViews::OnInlineDisposition(
     WebIntentPickerModel* model, const GURL& url) {
   if (!webview_)
-    webview_ = new views::WebView(wrapper_->profile());
+    webview_ = new views::WebView(tab_contents_->profile());
 
   inline_web_contents_.reset(WebContents::Create(
-      wrapper_->profile(),
-      tab_util::GetSiteInstanceForNewTab(wrapper_->profile(), url),
+      tab_contents_->profile(),
+      tab_util::GetSiteInstanceForNewTab(tab_contents_->profile(), url),
       MSG_ROUTING_NONE, NULL, NULL));
   // Does not take ownership, so we keep a scoped_ptr
   // for the WebContents locally.
   webview_->SetWebContents(inline_web_contents_.get());
   inline_disposition_delegate_.reset(
       new WebIntentInlineDispositionDelegate(this, inline_web_contents_.get(),
-                                             wrapper_->profile()));
+                                             tab_contents_->profile()));
   content::WebContents* web_contents = webview_->GetWebContents();
 
   const WebIntentPickerModel::InstalledService* service =

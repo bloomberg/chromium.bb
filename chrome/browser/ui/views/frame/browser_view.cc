@@ -37,7 +37,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -205,7 +205,7 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
   if (host_view_->IsDetached()) {
     // Draw the background to match the new tab page.
     int height = 0;
-    WebContents* contents = browser_->GetSelectedWebContents();
+    WebContents* contents = browser_->GetActiveWebContents();
     if (contents && contents->GetView())
       height = contents->GetView()->GetContainerSize().height();
     NtpBackgroundUtil::PaintBackgroundDetachedMode(
@@ -508,12 +508,12 @@ bool BrowserView::ActivateAppModalDialog() const {
   return false;
 }
 
-WebContents* BrowserView::GetSelectedWebContents() const {
-  return browser_->GetSelectedWebContents();
+WebContents* BrowserView::GetActiveWebContents() const {
+  return browser_->GetActiveWebContents();
 }
 
-TabContentsWrapper* BrowserView::GetSelectedTabContentsWrapper() const {
-  return browser_->GetSelectedTabContentsWrapper();
+TabContents* BrowserView::GetActiveTabContents() const {
+  return browser_->GetActiveTabContents();
 }
 
 gfx::ImageSkia BrowserView::GetOTRAvatarIcon() const {
@@ -633,7 +633,7 @@ void BrowserView::ToolbarSizeChanged(bool is_animating) {
       is_animating || (call_state == REENTRANT_FORCE_FAST_RESIZE);
   if (use_fast_resize)
     contents_container_->SetFastResize(true);
-  UpdateUIForContents(browser_->GetSelectedTabContentsWrapper());
+  UpdateUIForContents(browser_->GetActiveTabContents());
   if (use_fast_resize)
     contents_container_->SetFastResize(false);
 
@@ -679,12 +679,12 @@ void BrowserView::BookmarkBarStateChanged(
     bookmark_bar_view_->SetBookmarkBarState(
         browser_->bookmark_bar_state(), change_type);
   }
-  if (MaybeShowBookmarkBar(browser_->GetSelectedTabContentsWrapper()))
+  if (MaybeShowBookmarkBar(browser_->GetActiveTabContents()))
     Layout();
 }
 
 void BrowserView::UpdateDevTools() {
-  UpdateDevToolsForContents(GetSelectedTabContentsWrapper());
+  UpdateDevToolsForContents(GetActiveTabContents());
   Layout();
 }
 
@@ -817,7 +817,7 @@ void BrowserView::FullScreenStateChanged() {
 }
 
 void BrowserView::RestoreFocus() {
-  WebContents* selected_web_contents = GetSelectedWebContents();
+  WebContents* selected_web_contents = GetActiveWebContents();
   if (selected_web_contents)
     selected_web_contents->GetView()->RestoreFocus();
 }
@@ -860,7 +860,7 @@ void BrowserView::UpdateReloadStopState(bool is_loading, bool force) {
       is_loading ? ReloadButton::MODE_STOP : ReloadButton::MODE_RELOAD, force);
 }
 
-void BrowserView::UpdateToolbar(TabContentsWrapper* contents,
+void BrowserView::UpdateToolbar(TabContents* contents,
                                 bool should_restore_state) {
   toolbar_->Update(contents->web_contents(), should_restore_state);
 }
@@ -1113,7 +1113,7 @@ void BrowserView::ConfirmBrowserCloseWithPendingDownloads() {
 }
 
 void BrowserView::ShowCreateWebAppShortcutsDialog(
-    TabContentsWrapper* tab_contents) {
+    TabContents* tab_contents) {
   browser::ShowCreateWebAppShortcutsDialog(GetNativeWindow(), tab_contents);
 }
 
@@ -1145,13 +1145,13 @@ void BrowserView::ShowPageInfo(Profile* profile,
 }
 
 void BrowserView::ShowWebsiteSettings(Profile* profile,
-                                      TabContentsWrapper* tab_contents_wrapper,
+                                      TabContents* tab_contents,
                                       const GURL& url,
                                       const content::SSLStatus& ssl,
                                       bool show_history) {
   WebsiteSettingsPopupView::ShowPopup(
       GetLocationBarView()->location_icon_view(), profile,
-      tab_contents_wrapper, url, ssl);
+      tab_contents, url, ssl);
 }
 
 void BrowserView::ShowAppMenu() {
@@ -1266,7 +1266,7 @@ void BrowserView::Paste() {
                             true, false, false, false);
 }
 
-void BrowserView::ShowInstant(TabContentsWrapper* preview) {
+void BrowserView::ShowInstant(TabContents* preview) {
   if (!preview_container_) {
     preview_container_ = new views::WebView(browser_->profile());
     preview_container_->set_id(VIEW_ID_TAB_CONTAINER);
@@ -1330,10 +1330,10 @@ ToolbarView* BrowserView::GetToolbarView() const {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, TabStripModelObserver implementation:
 
-void BrowserView::TabDetachedAt(TabContentsWrapper* contents, int index) {
+void BrowserView::TabDetachedAt(TabContents* contents, int index) {
   // We use index here rather than comparing |contents| because by this time
   // the model has already removed |contents| from its list, so
-  // browser_->GetSelectedWebContents() will return NULL or something else.
+  // browser_->GetActiveWebContents() will return NULL or something else.
   if (index == browser_->active_index()) {
     // We need to reset the current tab contents to NULL before it gets
     // freed. This is because the focus manager performs some operations
@@ -1344,7 +1344,7 @@ void BrowserView::TabDetachedAt(TabContentsWrapper* contents, int index) {
   }
 }
 
-void BrowserView::TabDeactivated(TabContentsWrapper* contents) {
+void BrowserView::TabDeactivated(TabContents* contents) {
   // We do not store the focus when closing the tab to work-around bug 4633.
   // Some reports seem to show that the focus manager and/or focused view can
   // be garbage at that point, it is not clear why.
@@ -1352,16 +1352,16 @@ void BrowserView::TabDeactivated(TabContentsWrapper* contents) {
     contents->web_contents()->GetView()->StoreFocus();
 }
 
-void BrowserView::ActiveTabChanged(TabContentsWrapper* old_contents,
-                                   TabContentsWrapper* new_contents,
+void BrowserView::ActiveTabChanged(TabContents* old_contents,
+                                   TabContents* new_contents,
                                    int index,
                                    bool user_gesture) {
   ProcessTabSelected(new_contents);
 }
 
 void BrowserView::TabReplacedAt(TabStripModel* tab_strip_model,
-                                TabContentsWrapper* old_contents,
-                                TabContentsWrapper* new_contents,
+                                TabContents* old_contents,
+                                TabContents* new_contents,
                                 int index) {
   if (index != browser_->tab_strip_model()->active_index())
     return;
@@ -1442,7 +1442,7 @@ bool BrowserView::ShouldShowWindowTitle() const {
 
 gfx::ImageSkia BrowserView::GetWindowAppIcon() {
   if (browser_->is_app()) {
-    TabContentsWrapper* contents = browser_->GetSelectedTabContentsWrapper();
+    TabContents* contents = browser_->GetActiveTabContents();
     if (contents && contents->extension_tab_helper()->GetExtensionAppIcon())
       return *contents->extension_tab_helper()->GetExtensionAppIcon();
   }
@@ -1587,7 +1587,7 @@ void BrowserView::OnWidgetActivationChanged(views::Widget* widget,
 }
 
 void BrowserView::OnWindowBeginUserBoundsChange() {
-  WebContents* web_contents = GetSelectedWebContents();
+  WebContents* web_contents = GetActiveWebContents();
   if (!web_contents)
     return;
   web_contents->GetRenderViewHost()->NotifyMoveOrResizeStarted();
@@ -1884,8 +1884,8 @@ void BrowserView::LoadingAnimationCallback() {
     tabstrip_->UpdateLoadingAnimations();
   } else if (ShouldShowWindowIcon()) {
     // ... or in the window icon area for popups and app windows.
-    WebContents* web_contents = browser_->GetSelectedWebContents();
-    // GetSelectedWebContents can return NULL for example under Purify when
+    WebContents* web_contents = browser_->GetActiveWebContents();
+    // GetActiveWebContents can return NULL for example under Purify when
     // the animations are running slowly and this function is called on a timer
     // through LoadingAnimationCallback.
     frame_->UpdateThrobber(web_contents && web_contents->IsLoading());
@@ -1914,7 +1914,7 @@ void BrowserView::LayoutStatusBubble() {
   status_bubble_->SetBounds(origin.x(), origin.y(), width() / 3, height);
 }
 
-bool BrowserView::MaybeShowBookmarkBar(TabContentsWrapper* contents) {
+bool BrowserView::MaybeShowBookmarkBar(TabContents* contents) {
   views::View* new_bookmark_bar_view = NULL;
   if (browser_->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR) &&
       contents) {
@@ -1934,20 +1934,20 @@ bool BrowserView::MaybeShowBookmarkBar(TabContentsWrapper* contents) {
   return UpdateChildViewAndLayout(new_bookmark_bar_view, &active_bookmark_bar_);
 }
 
-bool BrowserView::MaybeShowInfoBar(TabContentsWrapper* contents) {
+bool BrowserView::MaybeShowInfoBar(TabContents* contents) {
   // TODO(beng): Remove this function once the interface between
   //             InfoBarContainer, DownloadShelfView and WebContents and this
   //             view is sorted out.
   return true;
 }
 
-void BrowserView::UpdateDevToolsForContents(TabContentsWrapper* wrapper) {
+void BrowserView::UpdateDevToolsForContents(TabContents* tab_contents) {
   WebContents* devtools_contents = NULL;
-  if (wrapper) {
-    TabContentsWrapper* devtools_contents_wrapper =
-        DevToolsWindow::GetDevToolsContents(wrapper->web_contents());
-    if (devtools_contents_wrapper)
-      devtools_contents = devtools_contents_wrapper->web_contents();
+  if (tab_contents) {
+    TabContentsWrapper* devtools_tab_contents =
+        DevToolsWindow::GetDevToolsContents(tab_contents->web_contents());
+    if (devtools_tab_contents)
+      devtools_contents = devtools_tab_contents->web_contents();
   }
 
   bool should_show = devtools_contents && !devtools_container_->visible();
@@ -2018,7 +2018,7 @@ void BrowserView::HideDevToolsContainer() {
   Layout();
 }
 
-void BrowserView::UpdateUIForContents(TabContentsWrapper* contents) {
+void BrowserView::UpdateUIForContents(TabContents* contents) {
   bool needs_layout = MaybeShowBookmarkBar(contents);
   needs_layout |= MaybeShowInfoBar(contents);
   if (needs_layout)
@@ -2311,7 +2311,7 @@ void BrowserView::UpdateAcceleratorMetrics(
 #endif
 }
 
-void BrowserView::ProcessTabSelected(TabContentsWrapper* new_contents) {
+void BrowserView::ProcessTabSelected(TabContents* new_contents) {
   // If |contents_container_| already has the correct WebContents, we can save
   // some work.  This also prevents extra events from being reported by the
   // Visibility API under Windows, as ChangeWebContents will briefly hide
@@ -2422,19 +2422,19 @@ void BrowserView::ShowPasswordGenerationBubble(
   gfx::Rect bounds(origin, rect.size());
 
   // Create the bubble.
-  WebContents* web_contents = GetSelectedWebContents();
-  TabContentsWrapper* wrapper = GetSelectedTabContentsWrapper();
-  if (!web_contents || !wrapper)
+  TabContents* tab_contents = GetActiveTabContents();
+  if (!tab_contents)
     return;
 
   PasswordGenerationBubbleView* bubble =
-      new PasswordGenerationBubbleView(bounds,
-                                       form,
-                                       this,
-                                       web_contents->GetRenderViewHost(),
-                                       password_generator,
-                                       browser_.get(),
-                                       wrapper->password_manager());
+      new PasswordGenerationBubbleView(
+          bounds,
+          form,
+          this,
+          tab_contents->web_contents()->GetRenderViewHost(),
+          password_generator,
+          browser_.get(),
+          tab_contents->password_manager());
 
   views::BubbleDelegateView::CreateBubble(bubble);
   bubble->SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);

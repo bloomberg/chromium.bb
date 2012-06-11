@@ -21,7 +21,6 @@ class Browser;
 class ChromeLauncherController;
 class LauncherFaviconLoader;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 namespace ash {
 class LauncherModel;
@@ -87,12 +86,12 @@ class BrowserLauncherItemController : public TabStripModelObserver,
   void BrowserActivationStateChanged();
 
   // TabStripModel overrides:
-  virtual void ActiveTabChanged(TabContentsWrapper* old_contents,
-                                TabContentsWrapper* new_contents,
+  virtual void ActiveTabChanged(TabContents* old_contents,
+                                TabContents* new_contents,
                                 int index,
                                 bool user_gesture) OVERRIDE;
   virtual void TabChangedAt(
-      TabContentsWrapper* tab,
+      TabContents* tab,
       int index,
       TabStripModelObserver::TabChangeType change_type) OVERRIDE;
 
@@ -119,7 +118,7 @@ class BrowserLauncherItemController : public TabStripModelObserver,
   void UpdateItemStatus();
 
   // Updates the launcher from |tab|.
-  void UpdateLauncher(TabContentsWrapper* tab);
+  void UpdateLauncher(TabContents* tab);
 
   ash::LauncherModel* launcher_model();
 

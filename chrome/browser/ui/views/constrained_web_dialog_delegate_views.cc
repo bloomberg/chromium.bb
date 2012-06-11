@@ -6,7 +6,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/size.h"
@@ -85,7 +85,7 @@ class ConstrainedWebDialogDelegateViewViews
   virtual ConstrainedWindow* window() OVERRIDE {
     return impl_->window();
   }
-  virtual TabContentsWrapper* tab() OVERRIDE {
+  virtual TabContents* tab() OVERRIDE {
     return impl_->tab();
   }
 
@@ -144,7 +144,7 @@ ConstrainedWebDialogDelegate* ui::CreateConstrainedWebDialog(
     Profile* profile,
     WebDialogDelegate* delegate,
     WebDialogWebContentsDelegate* tab_delegate,
-    TabContentsWrapper* container) {
+    TabContents* container) {
   ConstrainedWebDialogDelegateViewViews* constrained_delegate =
       new ConstrainedWebDialogDelegateViewViews(profile, delegate, tab_delegate);
   ConstrainedWindow* constrained_window =

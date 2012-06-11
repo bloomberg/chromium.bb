@@ -5,7 +5,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -104,7 +104,7 @@ class ConstrainedWindowViewTest : public InProcessBrowserTest {
 // *) Constrained windows that are queued don't register themselves as
 //    accelerator targets until they are displayed.
 IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
-  TabContentsWrapper* tab_contents = browser()->GetSelectedTabContentsWrapper();
+  TabContents* tab_contents = browser()->GetActiveTabContents();
   ASSERT_TRUE(tab_contents != NULL);
   ConstrainedWindowTabHelper* constrained_window_helper =
       tab_contents->constrained_window_tab_helper();

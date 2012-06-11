@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,9 +60,9 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
 
     io_loop_finished_event_.Wait();
 
-    ui_test_utils::WaitForLoadStop(browser()->GetSelectedWebContents());
+    ui_test_utils::WaitForLoadStop(browser()->GetActiveWebContents());
     selector_ = new SSLClientCertificateSelector(
-        browser()->GetSelectedTabContentsWrapper(),
+        browser()->GetActiveTabContents(),
         auth_requestor_->http_network_session_,
         auth_requestor_->cert_request_info_,
         base::Bind(&SSLClientAuthRequestorMock::CertificateSelected,
@@ -152,14 +152,14 @@ class SSLClientCertificateSelectorMultiTabTest
     ui_test_utils::WaitForLoadStop(browser()->GetWebContentsAt(2));
 
     selector_1_ = new SSLClientCertificateSelector(
-        browser()->GetTabContentsWrapperAt(1),
+        browser()->GetTabContentsAt(1),
         auth_requestor_1_->http_network_session_,
         auth_requestor_1_->cert_request_info_,
         base::Bind(&SSLClientAuthRequestorMock::CertificateSelected,
                    auth_requestor_1_));
     selector_1_->Init();
     selector_2_ = new SSLClientCertificateSelector(
-        browser()->GetTabContentsWrapperAt(2),
+        browser()->GetTabContentsAt(2),
         auth_requestor_2_->http_network_session_,
         auth_requestor_2_->cert_request_info_,
         base::Bind(&SSLClientAuthRequestorMock::CertificateSelected,
@@ -228,7 +228,7 @@ class SSLClientCertificateSelectorMultiProfileTest
     SSLClientCertificateSelectorTest::SetUpOnMainThread();
 
     selector_1_ = new SSLClientCertificateSelector(
-        browser_1_->GetSelectedTabContentsWrapper(),
+        browser_1_->GetActiveTabContents(),
         auth_requestor_1_->http_network_session_,
         auth_requestor_1_->cert_request_info_,
         base::Bind(&SSLClientAuthRequestorMock::CertificateSelected,

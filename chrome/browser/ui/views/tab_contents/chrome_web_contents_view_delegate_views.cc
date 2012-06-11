@@ -8,7 +8,7 @@
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/sad_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/chrome_web_contents_view_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/views/tab_contents/render_view_context_menu_views.h"
 #include "content/public/browser/render_process_host.h"
@@ -59,10 +59,9 @@ content::WebDragDestDelegate*
 }
 
 bool ChromeWebContentsViewDelegateViews::Focus() {
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(web_contents_);
-  if (wrapper) {
-      views::Widget* sad_tab = wrapper->sad_tab_helper()->sad_tab();
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents_);
+  if (tab_contents) {
+      views::Widget* sad_tab = tab_contents->sad_tab_helper()->sad_tab();
     if (sad_tab) {
       sad_tab->GetContentsView()->RequestFocus();
       return true;
@@ -72,7 +71,7 @@ bool ChromeWebContentsViewDelegateViews::Focus() {
     // this is here. Eventually this should be ported to a containing view
     // specializing in constrained window management.
     ConstrainedWindowTabHelper* helper =
-        wrapper->constrained_window_tab_helper();
+        tab_contents->constrained_window_tab_helper();
     if (helper->constrained_window_count() > 0) {
       ConstrainedWindow* window = *helper->constrained_window_begin();
       DCHECK(window);
@@ -164,11 +163,10 @@ void ChromeWebContentsViewDelegateViews::ShowContextMenu(
 }
 
 void ChromeWebContentsViewDelegateViews::SizeChanged(const gfx::Size& size) {
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(web_contents_);
-  if (!wrapper)
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents_);
+  if (!tab_contents)
     return;
-  views::Widget* sad_tab = wrapper->sad_tab_helper()->sad_tab();
+  views::Widget* sad_tab = tab_contents->sad_tab_helper()->sad_tab();
   if (sad_tab)
     sad_tab->SetBounds(gfx::Rect(size));
 }

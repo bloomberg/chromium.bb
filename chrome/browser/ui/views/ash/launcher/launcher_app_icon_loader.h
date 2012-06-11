@@ -29,7 +29,7 @@ class LauncherAppIconLoader : public ChromeLauncherController::AppIconLoader,
   virtual ~LauncherAppIconLoader();
 
   // AppIconLoader:
-  virtual std::string GetAppID(TabContentsWrapper* tab) OVERRIDE;
+  virtual std::string GetAppID(TabContents* tab) OVERRIDE;
   virtual bool IsValidID(const std::string& id) OVERRIDE;
   virtual void FetchImage(const std::string& id) OVERRIDE;
 
@@ -42,7 +42,7 @@ class LauncherAppIconLoader : public ChromeLauncherController::AppIconLoader,
   typedef std::map<int, std::string> ImageLoaderIDToExtensionIDMap;
 
   // Returns the extension for the specified tab.
-  const extensions::Extension* GetExtensionForTab(TabContentsWrapper* tab);
+  const extensions::Extension* GetExtensionForTab(TabContents* tab);
 
   // Returns the extension by ID.
   const extensions::Extension* GetExtensionByID(const std::string& id);

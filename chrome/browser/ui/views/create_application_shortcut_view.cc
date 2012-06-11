@@ -14,7 +14,7 @@
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/chrome_constants.h"
@@ -200,7 +200,7 @@ void AppInfoView::OnPaint(gfx::Canvas* canvas) {
 namespace browser {
 
 void ShowCreateWebAppShortcutsDialog(gfx::NativeWindow parent_window,
-                                     TabContentsWrapper* tab_contents) {
+                                     TabContents* tab_contents) {
   views::Widget::CreateWindowWithParent(
       new CreateUrlApplicationShortcutView(tab_contents),
       parent_window)->Show();
@@ -412,7 +412,7 @@ void CreateApplicationShortcutView::ButtonPressed(views::Button* sender,
 }
 
 CreateUrlApplicationShortcutView::CreateUrlApplicationShortcutView(
-    TabContentsWrapper* tab_contents)
+    TabContents* tab_contents)
     : CreateApplicationShortcutView(tab_contents->profile()),
       tab_contents_(tab_contents),
       pending_download_(NULL)  {

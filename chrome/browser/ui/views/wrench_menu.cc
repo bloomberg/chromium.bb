@@ -549,7 +549,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
   void UpdateZoomControls() {
     bool enable_increment = false;
     bool enable_decrement = false;
-    WebContents* selected_tab = menu_->browser_->GetSelectedWebContents();
+    WebContents* selected_tab = menu_->browser_->GetActiveWebContents();
     int zoom = 100;
     if (selected_tab)
       zoom = selected_tab->GetZoomPercent(&enable_increment, &enable_decrement);
@@ -570,7 +570,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView,
 
     int max_w = 0;
 
-    WebContents* selected_tab = menu_->browser_->GetSelectedWebContents();
+    WebContents* selected_tab = menu_->browser_->GetActiveWebContents();
     if (selected_tab) {
       int min_percent = selected_tab->GetMinimumZoomPercent();
       int max_percent = selected_tab->GetMaximumZoomPercent();

@@ -12,7 +12,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_selection_model.h"
@@ -299,7 +299,7 @@ void BrowserTabStripController::UpdateLoadingAnimations() {
   for (int i = 0, tab_count = tabstrip_->tab_count(); i < tab_count; ++i) {
     BaseTab* tab = tabstrip_->tab_at(i);
     if (model_->ContainsIndex(i)) {
-      TabContentsWrapper* contents = model_->GetTabContentsAt(i);
+      TabContents* contents = model_->GetTabContentsAt(i);
       tab->UpdateLoadingAnimation(
           TabContentsNetworkState(contents->web_contents()));
     }
@@ -375,7 +375,7 @@ void BrowserTabStripController::LayoutTypeMaybeChanged() {
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserTabStripController, TabStripModelObserver implementation:
 
-void BrowserTabStripController::TabInsertedAt(TabContentsWrapper* contents,
+void BrowserTabStripController::TabInsertedAt(TabContents* contents,
                                               int model_index,
                                               bool is_active) {
   DCHECK(contents);
@@ -383,7 +383,7 @@ void BrowserTabStripController::TabInsertedAt(TabContentsWrapper* contents,
   AddTab(contents, model_index, is_active);
 }
 
-void BrowserTabStripController::TabDetachedAt(TabContentsWrapper* contents,
+void BrowserTabStripController::TabDetachedAt(TabContents* contents,
                                               int model_index) {
   // Cancel any pending tab transition.
   hover_tab_selector_.CancelTabTransition();
@@ -397,7 +397,7 @@ void BrowserTabStripController::TabSelectionChanged(
   tabstrip_->SetSelection(old_model, model_->selection_model());
 }
 
-void BrowserTabStripController::TabMoved(TabContentsWrapper* contents,
+void BrowserTabStripController::TabMoved(TabContents* contents,
                                          int from_model_index,
                                          int to_model_index) {
   // Cancel any pending tab transition.
@@ -410,7 +410,7 @@ void BrowserTabStripController::TabMoved(TabContentsWrapper* contents,
   tabstrip_->MoveTab(from_model_index, to_model_index, data);
 }
 
-void BrowserTabStripController::TabChangedAt(TabContentsWrapper* contents,
+void BrowserTabStripController::TabChangedAt(TabContents* contents,
                                              int model_index,
                                              TabChangeType change_type) {
   if (change_type == TITLE_NOT_LOADING) {
@@ -423,26 +423,26 @@ void BrowserTabStripController::TabChangedAt(TabContentsWrapper* contents,
 }
 
 void BrowserTabStripController::TabReplacedAt(TabStripModel* tab_strip_model,
-                                              TabContentsWrapper* old_contents,
-                                              TabContentsWrapper* new_contents,
+                                              TabContents* old_contents,
+                                              TabContents* new_contents,
                                               int model_index) {
   SetTabDataAt(new_contents, model_index);
 }
 
 void BrowserTabStripController::TabPinnedStateChanged(
-    TabContentsWrapper* contents,
+    TabContents* contents,
     int model_index) {
   // Currently none of the renderers render pinned state differently.
 }
 
 void BrowserTabStripController::TabMiniStateChanged(
-    TabContentsWrapper* contents,
+    TabContents* contents,
     int model_index) {
   SetTabDataAt(contents, model_index);
 }
 
 void BrowserTabStripController::TabBlockedStateChanged(
-    TabContentsWrapper* contents,
+    TabContents* contents,
     int model_index) {
   SetTabDataAt(contents, model_index);
 }
@@ -483,32 +483,31 @@ void BrowserTabStripController::SetTabRendererDataFromModel(
     TabRendererData* data,
     TabStatus tab_status) {
   SkBitmap* app_icon = NULL;
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(contents);
+  TabContents* tab_contents = TabContents::FromWebContents(contents);
 
   // Extension App icons are slightly larger than favicons, so only allow
   // them if permitted by the model.
   if (model_->delegate()->LargeIconsPermitted())
-    app_icon = wrapper->extension_tab_helper()->GetExtensionAppIcon();
+    app_icon = tab_contents->extension_tab_helper()->GetExtensionAppIcon();
 
   if (app_icon)
     data->favicon = *app_icon;
   else
-    data->favicon = wrapper->favicon_tab_helper()->GetFavicon();
+    data->favicon = tab_contents->favicon_tab_helper()->GetFavicon();
   data->network_state = TabContentsNetworkState(contents);
   data->title = contents->GetTitle();
   data->url = contents->GetURL();
   data->loading = contents->IsLoading();
   data->crashed_status = contents->GetCrashedStatus();
   data->incognito = contents->GetBrowserContext()->IsOffTheRecord();
-  data->show_icon = wrapper->favicon_tab_helper()->ShouldDisplayFavicon();
+  data->show_icon = tab_contents->favicon_tab_helper()->ShouldDisplayFavicon();
   data->mini = model_->IsMiniTab(model_index);
   data->blocked = model_->IsTabBlocked(model_index);
-  data->app = wrapper->extension_tab_helper()->is_app();
+  data->app = tab_contents->extension_tab_helper()->is_app();
 }
 
 void BrowserTabStripController::SetTabDataAt(
-    TabContentsWrapper* contents,
+    TabContents* contents,
     int model_index) {
   TabRendererData data;
   SetTabRendererDataFromModel(contents->web_contents(), model_index, &data,
@@ -543,7 +542,7 @@ void BrowserTabStripController::StopHighlightTabsForCommand(
   }
 }
 
-void BrowserTabStripController::AddTab(TabContentsWrapper* contents,
+void BrowserTabStripController::AddTab(TabContents* contents,
                                        int index,
                                        bool is_active) {
   // Cancel any pending tab transition.

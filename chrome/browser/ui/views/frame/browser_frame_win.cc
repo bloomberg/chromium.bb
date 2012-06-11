@@ -498,7 +498,7 @@ void BrowserFrameWin::GetMetroCurrentTabInfo(WPARAM w_param) {
   current_tab_info->title = base::win::LocalAllocAndCopyString(
       browser->GetWindowTitleForCurrentTab());
 
-  WebContents* current_tab = browser->GetSelectedWebContents();
+  WebContents* current_tab = browser->GetActiveWebContents();
   DCHECK(current_tab);
 
   current_tab_info->url = base::win::LocalAllocAndCopyString(

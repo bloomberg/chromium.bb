@@ -8,7 +8,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/web_contents.h"
 
 // Returns the currently-active WebContents belonging to the active browser, or
@@ -20,10 +20,7 @@ content::WebContents* GetActiveWebContents() {
   if (!ash::wm::IsActiveWindow(browser->window()->GetNativeWindow()))
     return NULL;
 
-  TabContentsWrapper* wrapper = browser->GetSelectedTabContentsWrapper();
-  if (!wrapper)
-    return NULL;
-  return wrapper->web_contents();
+  return browser->GetActiveWebContents();
 }
 
 UserActionHandler::UserActionHandler() {}

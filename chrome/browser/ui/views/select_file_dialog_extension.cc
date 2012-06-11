@@ -19,7 +19,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/selected_file_info.h"
@@ -255,7 +255,7 @@ void SelectFileDialogExtension::SelectFileImpl(
     return;
   }
 
-  TabContentsWrapper* tab = owner_browser_->GetSelectedTabContentsWrapper();
+  TabContents* tab = owner_browser_->GetActiveTabContents();
 
   // Check if we have another dialog opened in the tab. It's unlikely, but
   // possible.

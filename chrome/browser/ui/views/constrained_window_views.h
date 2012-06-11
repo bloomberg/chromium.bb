@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,6 @@
 #include "ui/views/widget/widget.h"
 
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 namespace views {
 namespace internal {
@@ -59,12 +58,12 @@ class ConstrainedWindowViews : public views::Widget,
                                public ConstrainedWindow,
                                public NativeConstrainedWindowDelegate {
  public:
-  ConstrainedWindowViews(TabContentsWrapper* wrapper,
+  ConstrainedWindowViews(TabContents* tab_contents,
                          views::WidgetDelegate* widget_delegate);
   virtual ~ConstrainedWindowViews();
 
-  // Returns the TabContentsWrapper that constrains this Constrained Window.
-  TabContentsWrapper* owner() const { return wrapper_; }
+  // Returns the TabContents that constrains this Constrained Window.
+  TabContents* owner() const { return tab_contents_; }
 
   // Overridden from ConstrainedWindow:
   virtual void ShowConstrainedWindow() OVERRIDE;
@@ -82,7 +81,7 @@ class ConstrainedWindowViews : public views::Widget,
   virtual views::internal::NativeWidgetDelegate*
       AsNativeWidgetDelegate() OVERRIDE;
 
-  TabContentsWrapper* wrapper_;
+  TabContents* tab_contents_;
 
   NativeConstrainedWindow* native_constrained_window_;
 

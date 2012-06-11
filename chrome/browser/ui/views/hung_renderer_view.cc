@@ -15,8 +15,8 @@
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/logging_chrome.h"
 #include "content/public/browser/render_process_host.h"
@@ -98,7 +98,7 @@ class HungPagesTableModel : public views::GroupTableModel {
   class WebContentsObserverImpl : public content::WebContentsObserver {
    public:
     WebContentsObserverImpl(HungPagesTableModel* model,
-                            TabContentsWrapper* tab);
+                            TabContents* tab);
 
     WebContents* web_contents() const {
       return content::WebContentsObserver::web_contents();
@@ -114,7 +114,7 @@ class HungPagesTableModel : public views::GroupTableModel {
 
    private:
     HungPagesTableModel* model_;
-    TabContentsWrapper* tab_;
+    TabContents* tab_;
 
     DISALLOW_COPY_AND_ASSIGN(WebContentsObserverImpl);
   };
@@ -157,12 +157,14 @@ void HungPagesTableModel::InitForWebContents(WebContents* hung_contents) {
   tab_observers_.reset();
   if (hung_contents) {
     // Force hung_contents to be first.
-    TabContentsWrapper* hung_wrapper =
-        TabContentsWrapper::GetCurrentWrapperForContents(hung_contents);
-    if (hung_wrapper)
-      tab_observers_.push_back(new WebContentsObserverImpl(this, hung_wrapper));
+    TabContents* hung_tab_contents =
+        TabContents::FromWebContents(hung_contents);
+    if (hung_tab_contents) {
+      tab_observers_.push_back(new WebContentsObserverImpl(this,
+                                                           hung_tab_contents));
+    }
     for (TabContentsIterator it; !it.done(); ++it) {
-      if (*it != hung_wrapper &&
+      if (*it != hung_tab_contents &&
           it->web_contents()->GetRenderProcessHost() ==
           hung_contents->GetRenderProcessHost())
         tab_observers_.push_back(new WebContentsObserverImpl(this, *it));
@@ -225,7 +227,7 @@ void HungPagesTableModel::TabDestroyed(WebContentsObserverImpl* tab) {
 
 HungPagesTableModel::WebContentsObserverImpl::WebContentsObserverImpl(
     HungPagesTableModel* model,
-    TabContentsWrapper* tab)
+    TabContents* tab)
     : content::WebContentsObserver(tab->web_contents()),
       model_(model),
       tab_(tab) {

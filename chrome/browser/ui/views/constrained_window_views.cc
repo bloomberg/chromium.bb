@@ -11,7 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/chrome_constants.h"
@@ -571,16 +571,16 @@ class ConstrainedWindowFrameViewAsh : public ash::CustomFrameViewAsh {
 // ConstrainedWindowViews, public:
 
 ConstrainedWindowViews::ConstrainedWindowViews(
-    TabContentsWrapper* wrapper,
+    TabContents* tab_contents,
     views::WidgetDelegate* widget_delegate)
-    : wrapper_(wrapper),
+    : tab_contents_(tab_contents),
       ALLOW_THIS_IN_INITIALIZER_LIST(native_constrained_window_(
           NativeConstrainedWindow::CreateNativeConstrainedWindow(this))) {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.delegate = widget_delegate;
   params.native_widget = native_constrained_window_->AsNativeWidget();
   params.child = true;
-  params.parent = wrapper->web_contents()->GetNativeView();
+  params.parent = tab_contents->web_contents()->GetNativeView();
 #if defined(USE_ASH)
   // Ash window headers can be transparent.
   params.transparent = true;
@@ -588,7 +588,7 @@ ConstrainedWindowViews::ConstrainedWindowViews(
 #endif
   Init(params);
 
-  wrapper_->constrained_window_tab_helper()->AddConstrainedDialog(this);
+  tab_contents_->constrained_window_tab_helper()->AddConstrainedDialog(this);
 }
 
 ConstrainedWindowViews::~ConstrainedWindowViews() {
@@ -599,21 +599,21 @@ ConstrainedWindowViews::~ConstrainedWindowViews() {
 
 void ConstrainedWindowViews::ShowConstrainedWindow() {
   ConstrainedWindowTabHelper* helper =
-      wrapper_->constrained_window_tab_helper();
+      tab_contents_->constrained_window_tab_helper();
   if (helper && helper->delegate())
-    helper->delegate()->WillShowConstrainedWindow(wrapper_);
+    helper->delegate()->WillShowConstrainedWindow(tab_contents_);
   Show();
   FocusConstrainedWindow();
 }
 
 void ConstrainedWindowViews::CloseConstrainedWindow() {
-  wrapper_->constrained_window_tab_helper()->WillClose(this);
+  tab_contents_->constrained_window_tab_helper()->WillClose(this);
   Close();
 }
 
 void ConstrainedWindowViews::FocusConstrainedWindow() {
   ConstrainedWindowTabHelper* helper =
-      wrapper_->constrained_window_tab_helper();
+      tab_contents_->constrained_window_tab_helper();
   if ((!helper->delegate() ||
        helper->delegate()->ShouldFocusConstrainedWindow()) &&
       widget_delegate() &&
@@ -648,7 +648,7 @@ views::NonClientFrameView* ConstrainedWindowViews::CreateNonClientFrameView() {
 // ConstrainedWindowViews, NativeConstrainedWindowDelegate implementation:
 
 void ConstrainedWindowViews::OnNativeConstrainedWindowDestroyed() {
-  wrapper_->constrained_window_tab_helper()->WillClose(this);
+  tab_contents_->constrained_window_tab_helper()->WillClose(this);
 }
 
 void ConstrainedWindowViews::OnNativeConstrainedWindowMouseActivate() {

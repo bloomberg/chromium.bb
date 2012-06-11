@@ -10,7 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/browser_action_view.h"
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
@@ -128,7 +128,7 @@ void BrowserActionsContainer::Init() {
 }
 
 int BrowserActionsContainer::GetCurrentTabId() const {
-  TabContentsWrapper* tab = browser_->GetSelectedTabContentsWrapper();
+  TabContents* tab = browser_->GetActiveTabContents();
   return tab ? tab->restore_tab_helper()->session_id().id() : -1;
 }
 

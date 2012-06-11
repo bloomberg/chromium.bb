@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/certificate_viewer.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -88,13 +88,13 @@ void CertificateSelectorTableModel::SetObserver(
 // SSLClientCertificateSelector:
 
 SSLClientCertificateSelector::SSLClientCertificateSelector(
-    TabContentsWrapper* wrapper,
+    TabContents* tab_contents,
     const net::HttpNetworkSession* network_session,
     net::SSLCertRequestInfo* cert_request_info,
     const base::Callback<void(net::X509Certificate*)>& callback)
     : SSLClientAuthObserver(network_session, cert_request_info, callback),
       model_(new CertificateSelectorTableModel(cert_request_info)),
-      wrapper_(wrapper),
+      tab_contents_(tab_contents),
       window_(NULL),
       table_(NULL),
       view_cert_button_(NULL),
@@ -140,7 +140,7 @@ void SSLClientCertificateSelector::Init() {
 
   StartObserving();
 
-  window_ = new ConstrainedWindowViews(wrapper_, this);
+  window_ = new ConstrainedWindowViews(tab_contents_, this);
 
   // Select the first row automatically.  This must be done after the dialog has
   // been created.
@@ -229,7 +229,7 @@ void SSLClientCertificateSelector::ButtonPressed(
     net::X509Certificate* cert = GetSelectedCert();
     if (cert)
       ShowCertificateViewer(
-          wrapper_->web_contents()->GetView()->GetTopLevelNativeWindow(),
+          tab_contents_->web_contents()->GetView()->GetTopLevelNativeWindow(),
           cert);
   }
 }
@@ -284,14 +284,14 @@ void SSLClientCertificateSelector::CreateViewCertButton() {
 namespace browser {
 
 void ShowSSLClientCertificateSelector(
-    TabContentsWrapper* wrapper,
+    TabContents* tab_contents,
     const net::HttpNetworkSession* network_session,
     net::SSLCertRequestInfo* cert_request_info,
     const base::Callback<void(net::X509Certificate*)>& callback) {
-  DVLOG(1) << __FUNCTION__ << " " << wrapper;
+  DVLOG(1) << __FUNCTION__ << " " << tab_contents;
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   (new SSLClientCertificateSelector(
-       wrapper, network_session, cert_request_info, callback))->Init();
+       tab_contents, network_session, cert_request_info, callback))->Init();
 }
 
 }  // namespace browser

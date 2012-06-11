@@ -6,7 +6,7 @@
 
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/extension_set.h"
@@ -22,7 +22,7 @@ LauncherAppIconLoader::LauncherAppIconLoader(
 LauncherAppIconLoader::~LauncherAppIconLoader() {
 }
 
-std::string LauncherAppIconLoader::GetAppID(TabContentsWrapper* tab) {
+std::string LauncherAppIconLoader::GetAppID(TabContents* tab) {
   const extensions::Extension* extension = GetExtensionForTab(tab);
   return extension ? extension->id() : std::string();
 }
@@ -69,7 +69,7 @@ void LauncherAppIconLoader::OnImageLoaded(const gfx::Image& image,
 }
 
 const extensions::Extension* LauncherAppIconLoader::GetExtensionForTab(
-    TabContentsWrapper* tab) {
+    TabContents* tab) {
   ExtensionService* extension_service = profile_->GetExtensionService();
   if (!extension_service)
     return NULL;

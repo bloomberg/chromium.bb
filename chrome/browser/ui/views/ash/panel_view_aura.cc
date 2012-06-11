@@ -228,7 +228,7 @@ PanelExtensionWindowController::CreateWindowValueWithTabs() const {
 
   // TODO(stevenjb): Implement tab interface for Aura panels.
   // Currently there is no mechanism to get a tab id without an associated
-  // TabContentsWrapper. We will need to either add a TabContentsWrapper for
+  // TabContents. We will need to either add a TabContents for
   // panels, or add another mechanism for tracking tabs. crbug.com/115532.
 
   return result;

@@ -14,7 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -102,8 +102,8 @@ void BrowserLauncherItemController::BrowserActivationStateChanged() {
 }
 
 void BrowserLauncherItemController::ActiveTabChanged(
-    TabContentsWrapper* old_contents,
-    TabContentsWrapper* new_contents,
+    TabContents* old_contents,
+    TabContents* new_contents,
     int index,
     bool user_gesture) {
   // Update immediately on a tab change.
@@ -111,7 +111,7 @@ void BrowserLauncherItemController::ActiveTabChanged(
 }
 
 void BrowserLauncherItemController::TabChangedAt(
-    TabContentsWrapper* tab,
+    TabContents* tab,
     int index,
     TabStripModelObserver::TabChangeType change_type) {
   if (index != tab_model_->active_index() ||
@@ -161,7 +161,7 @@ void BrowserLauncherItemController::UpdateItemStatus() {
   launcher_controller_->SetItemStatus(item_id_, status);
 }
 
-void BrowserLauncherItemController::UpdateLauncher(TabContentsWrapper* tab) {
+void BrowserLauncherItemController::UpdateLauncher(TabContents* tab) {
   if (type_ == TYPE_APP_PANEL)
     return;  // Maintained entirely by ChromeLauncherController.
 

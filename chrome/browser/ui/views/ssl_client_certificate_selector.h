@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,6 @@ class TextButton;
 class CertificateSelectorTableModel;
 class ConstrainedWindow;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 class SSLClientCertificateSelector : public SSLClientAuthObserver,
                                      public views::DialogDelegateView,
@@ -43,7 +42,7 @@ class SSLClientCertificateSelector : public SSLClientAuthObserver,
                                      public views::TableViewObserver {
  public:
   SSLClientCertificateSelector(
-      TabContentsWrapper* wrapper,
+      TabContents* tab_contents,
       const net::HttpNetworkSession* network_session,
       net::SSLCertRequestInfo* cert_request_info,
       const base::Callback<void(net::X509Certificate*)>& callback);
@@ -81,7 +80,7 @@ class SSLClientCertificateSelector : public SSLClientAuthObserver,
 
   scoped_ptr<CertificateSelectorTableModel> model_;
 
-  TabContentsWrapper* wrapper_;
+  TabContents* tab_contents_;
 
   ConstrainedWindow* window_;
   views::TableView* table_;

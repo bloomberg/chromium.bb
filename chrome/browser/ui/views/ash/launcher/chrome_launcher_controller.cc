@@ -26,7 +26,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/ash/extension_utils.h"
 #include "chrome/browser/ui/views/ash/launcher/browser_launcher_item_controller.h"
@@ -265,7 +265,7 @@ ExtensionPrefs::LaunchType ChromeLauncherController::GetLaunchType(
       id_to_item_map_[id].app_id, ExtensionPrefs::LAUNCH_DEFAULT);
 }
 
-std::string ChromeLauncherController::GetAppID(TabContentsWrapper* tab) {
+std::string ChromeLauncherController::GetAppID(TabContents* tab) {
   return app_icon_loader_->GetAppID(tab);
 }
 
