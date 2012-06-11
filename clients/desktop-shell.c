@@ -95,7 +95,6 @@ struct panel_launcher {
 struct panel_clock {
 	struct widget *widget;
 	struct panel *panel;
-	char string[128];
 	struct task clock_task;
 	int clock_fd;
 };
@@ -294,25 +293,6 @@ panel_launcher_button_handler(struct widget *widget,
 		panel_launcher_activate(launcher);
 }
 
-static int
-panel_clock_tick(struct panel_clock *clock)
-{
-	time_t rawtime;
-	struct tm *timeinfo;
-	char string[128];
-
-	time(&rawtime);
-	timeinfo = localtime(&rawtime);
-	strftime(string, 124, "%a %b %d, %I:%M:%S %p", timeinfo);
-
-	if (strcmp(string, clock->string) == 0)
-		return 0;
-
-	strncpy(clock->string, string, 126);
-
-	return 1;
-}
-
 static void
 clock_func(struct task *task, uint32_t events)
 {
@@ -321,8 +301,7 @@ clock_func(struct task *task, uint32_t events)
 	uint64_t exp;
 
 	read(clock->clock_fd, &exp, sizeof exp);
-	if (panel_clock_tick(clock))
-		widget_schedule_redraw(clock->widget);
+	widget_schedule_redraw(clock->widget);
 }
 
 static void
@@ -336,13 +315,13 @@ panel_clock_redraw_handler(struct widget *widget, void *data)
 	cairo_font_extents_t font_extents;
 	time_t rawtime;
 	struct tm * timeinfo;
+	char string[128];
 
 	time(&rawtime);
 	timeinfo = localtime(&rawtime);
-	strftime(clock->string,126,"%a %b %d, %I:%M:%S %p",timeinfo);
+	strftime(string, sizeof string, "%a %b %d, %I:%M:%S %p", timeinfo);
 
 	widget_get_allocation(widget, &allocation);
-
 	if (allocation.width == 0)
 		return;
 
@@ -360,16 +339,16 @@ panel_clock_redraw_handler(struct widget *widget, void *data)
 			       CAIRO_FONT_SLANT_NORMAL,
 			       CAIRO_FONT_WEIGHT_NORMAL);
 	cairo_set_font_size(cr, 14);
-	cairo_text_extents(cr, clock->string, &extents);
+	cairo_text_extents(cr, string, &extents);
 	cairo_font_extents (cr, &font_extents);
 	cairo_move_to(cr, allocation.x + 5,
 		      allocation.y + 3 * (allocation.height >> 2) + 1);
 	cairo_set_source_rgb(cr, 0, 0, 0);
-	cairo_show_text(cr, clock->string);
+	cairo_show_text(cr, string);
 	cairo_move_to(cr, allocation.x + 4,
 		      allocation.y + 3 * (allocation.height >> 2));
 	cairo_set_source_rgb(cr, 1, 1, 1);
-	cairo_show_text(cr, clock->string);
+	cairo_show_text(cr, string);
 	cairo_destroy(cr);
 }
 
