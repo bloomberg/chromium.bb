@@ -25,7 +25,7 @@ class MockBrowsingDataLocalStorageHelper
   virtual void StartFetching(
       const base::Callback<void(const std::list<LocalStorageInfo>&)>& callback)
           OVERRIDE;
-  virtual void DeleteLocalStorageFile(const FilePath& file_path) OVERRIDE;
+  virtual void DeleteOrigin(const GURL& origin) OVERRIDE;
 
   // Adds some LocalStorageInfo samples.
   void AddLocalStorageSamples();
@@ -40,7 +40,7 @@ class MockBrowsingDataLocalStorageHelper
   // invocation.
   bool AllDeleted();
 
-  FilePath last_deleted_file_;
+  GURL last_deleted_origin_;
 
  private:
   virtual ~MockBrowsingDataLocalStorageHelper();
@@ -49,7 +49,7 @@ class MockBrowsingDataLocalStorageHelper
 
   base::Callback<void(const std::list<LocalStorageInfo>&)> callback_;
 
-  std::map<const FilePath::StringType, bool> files_;
+  std::map<const GURL, bool> origins_;
 
   std::list<LocalStorageInfo> response_;
 };

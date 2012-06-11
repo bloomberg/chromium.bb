@@ -171,7 +171,8 @@
   if ((self = [super init])) {
     type_ = kCocoaCookieDetailsTypeTreeLocalStorage;
     canEditExpiration_ = NO;
-    domain_.reset([base::SysUTF8ToNSString(storageInfo->origin) retain]);
+    domain_.reset(
+        [base::SysUTF8ToNSString(storageInfo->origin_url.spec()) retain]);
     fileSize_.reset(
         [base::SysUTF16ToNSString(ui::FormatBytes(storageInfo->size)) retain]);
     lastModified_.reset([base::SysUTF16ToNSString(

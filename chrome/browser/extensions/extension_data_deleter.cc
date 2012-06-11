@@ -48,8 +48,7 @@ void ExtensionDataDeleter::StartDeleting(
       base::Bind(
           &ExtensionDataDeleter::DeleteCookiesOnIOThread, deleter));
 
-  BrowserContext::GetDOMStorageContext(profile)->DeleteForOrigin(
-      deleter->origin_id_);
+  BrowserContext::GetDOMStorageContext(profile)->DeleteOrigin(storage_origin);
 
   BrowserThread::PostTask(
       BrowserThread::WEBKIT_DEPRECATED, FROM_HERE,

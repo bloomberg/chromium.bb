@@ -8,7 +8,7 @@
 
 #include <list>
 #include <set>
-#include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -16,42 +16,26 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/time.h"
+#include "content/public/browser/dom_storage_context.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 
 class Profile;
 
-namespace content {
-class DOMStorageContext;
-}
-
-// This class fetches local storage information in the WebKit thread, and
-// notifies the UI thread upon completion.
-// A client of this class need to call StartFetching from the UI thread to
-// initiate the flow, and it'll be notified by the callback in its UI
-// thread at some later point.
+// This class fetches local storage information and provides a
+// means to delete the data associated with an origin.
 class BrowsingDataLocalStorageHelper
-    : public base::RefCountedThreadSafe<BrowsingDataLocalStorageHelper> {
+    : public base::RefCounted<BrowsingDataLocalStorageHelper> {
  public:
   // Contains detailed information about local storage.
   struct LocalStorageInfo {
     LocalStorageInfo(
-        const std::string& protocol,
-        const std::string& host,
-        unsigned short port,
-        const std::string& database_identifier,
-        const std::string& origin,
-        const FilePath& file_path,
+        const GURL& origin_url,
         int64 size,
         base::Time last_modified);
     ~LocalStorageInfo();
 
-    std::string protocol;
-    std::string host;
-    unsigned short port;
-    std::string database_identifier;
-    std::string origin;
-    FilePath file_path;
+    GURL origin_url;
     int64 size;
     base::Time last_modified;
   };
@@ -59,43 +43,27 @@ class BrowsingDataLocalStorageHelper
   explicit BrowsingDataLocalStorageHelper(Profile* profile);
 
   // Starts the fetching process, which will notify its completion via
-  // callback.
-  // This must be called only in the UI thread.
+  // callback. This must be called only in the UI thread.
   virtual void StartFetching(
       const base::Callback<void(const std::list<LocalStorageInfo>&)>& callback);
-  // Requests a single local storage file to be deleted in the WEBKIT thread.
-  virtual void DeleteLocalStorageFile(const FilePath& file_path);
+
+  // Deletes the local storage for the |origin|.
+  virtual void DeleteOrigin(const GURL& origin);
 
  protected:
-  friend class base::RefCountedThreadSafe<BrowsingDataLocalStorageHelper>;
+  friend class base::RefCounted<BrowsingDataLocalStorageHelper>;
   virtual ~BrowsingDataLocalStorageHelper();
 
-  // Notifies the completion callback in the UI thread.
-  void NotifyInUIThread();
+  void CallCompletionCallback();
 
-  // Owned by the profile
-  content::DOMStorageContext* dom_storage_context_;
-
-  // This only mutates on the UI thread.
+  content::DOMStorageContext* dom_storage_context_;  // Owned by the profile
   base::Callback<void(const std::list<LocalStorageInfo>&)> completion_callback_;
-
-  // Indicates whether or not we're currently fetching information:
-  // it's true when StartFetching() is called in the UI thread, and it's reset
-  // after we notified the callback in the UI thread.
-  // This only mutates on the UI thread.
   bool is_fetching_;
-
-  // Access to |local_storage_info_| is triggered indirectly via the UI thread
-  // and guarded by |is_fetching_|. This means |local_storage_info_| is only
-  // accessed while |is_fetching_| is true. The flag |is_fetching_| is only
-  // accessed on the UI thread.
   std::list<LocalStorageInfo> local_storage_info_;
 
  private:
-  // Called back with all the local storage files.
-  void GetAllStorageFilesCallback(const std::vector<FilePath>& files);
-  // Get the file info on the file thread.
-  void FetchLocalStorageInfo(const std::vector<FilePath>& files);
+  void GetUsageInfoCallback(
+      const std::vector<dom_storage::DomStorageContext::UsageInfo>& infos);
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataLocalStorageHelper);
 };

@@ -170,9 +170,11 @@ class CookiesTreeModelTest : public testing::Test {
       if (node->GetDetailedInfo().node_type == node_type) {
         switch (node_type) {
           case CookieTreeNode::DetailedInfo::TYPE_SESSION_STORAGE:
-            return node->GetDetailedInfo().session_storage_info->origin + ",";
+            return node->GetDetailedInfo().
+                session_storage_info->origin_url.spec() + ",";
           case CookieTreeNode::DetailedInfo::TYPE_LOCAL_STORAGE:
-            return node->GetDetailedInfo().local_storage_info->origin + ",";
+            return node->GetDetailedInfo().
+                local_storage_info->origin_url.spec() + ",";
           case CookieTreeNode::DetailedInfo::TYPE_DATABASE:
             return node->GetDetailedInfo().database_info->database_name + ",";
           case CookieTreeNode::DetailedInfo::TYPE_COOKIE:

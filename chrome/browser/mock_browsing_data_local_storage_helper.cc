@@ -21,24 +21,24 @@ void MockBrowsingDataLocalStorageHelper::StartFetching(
   callback_ = callback;
 }
 
-void MockBrowsingDataLocalStorageHelper::DeleteLocalStorageFile(
-    const FilePath& file_path) {
-  CHECK(files_.find(file_path.value()) != files_.end());
-  last_deleted_file_ = file_path;
-  files_[file_path.value()] = false;
+void MockBrowsingDataLocalStorageHelper::DeleteOrigin(
+    const GURL& origin) {
+  CHECK(origins_.find(origin) != origins_.end());
+  last_deleted_origin_ = origin;
+  origins_[origin] = false;
 }
 
 void MockBrowsingDataLocalStorageHelper::AddLocalStorageSamples() {
+  const GURL kOrigin1("http://host1:1/");
+  const GURL kOrigin2("http://host2:2/");
   response_.push_back(
       BrowsingDataLocalStorageHelper::LocalStorageInfo(
-          "http", "host1", 1, "db1", "http://host1:1/",
-          FilePath(FILE_PATH_LITERAL("file1")), 1, base::Time()));
-  files_[FILE_PATH_LITERAL("file1")] = true;
+          kOrigin1, 1, base::Time()));
+  origins_[kOrigin1] = true;
   response_.push_back(
       BrowsingDataLocalStorageHelper::LocalStorageInfo(
-          "http", "host2", 2, "db2", "http://host2:2/",
-          FilePath(FILE_PATH_LITERAL("file2")), 2, base::Time()));
-  files_[FILE_PATH_LITERAL("file2")] = true;
+          kOrigin2, 2, base::Time()));
+  origins_[kOrigin2] = true;
 }
 
 void MockBrowsingDataLocalStorageHelper::Notify() {
@@ -47,14 +47,14 @@ void MockBrowsingDataLocalStorageHelper::Notify() {
 }
 
 void MockBrowsingDataLocalStorageHelper::Reset() {
-  for (std::map<const FilePath::StringType, bool>::iterator i = files_.begin();
-       i != files_.end(); ++i)
+  for (std::map<const GURL, bool>::iterator i = origins_.begin();
+       i != origins_.end(); ++i)
     i->second = true;
 }
 
 bool MockBrowsingDataLocalStorageHelper::AllDeleted() {
-  for (std::map<const FilePath::StringType, bool>::const_iterator i =
-       files_.begin(); i != files_.end(); ++i)
+  for (std::map<const GURL, bool>::const_iterator i =
+       origins_.begin(); i != origins_.end(); ++i)
     if (i->second)
       return false;
   return true;

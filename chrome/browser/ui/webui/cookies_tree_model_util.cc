@@ -151,7 +151,7 @@ bool GetCookieTreeNodeDictionary(const CookieTreeNode& node,
       const BrowsingDataLocalStorageHelper::LocalStorageInfo&
          local_storage_info = *node.GetDetailedInfo().local_storage_info;
 
-      dict->SetString(kKeyOrigin, local_storage_info.origin);
+      dict->SetString(kKeyOrigin, local_storage_info.origin_url.spec());
       dict->SetString(kKeySize, ui::FormatBytes(local_storage_info.size));
       dict->SetString(kKeyModified, UTF16ToUTF8(
           base::TimeFormatFriendlyDateAndTime(

@@ -6,16 +6,10 @@
 #define CONTENT_BROWSER_DOM_STORAGE_DOM_STORAGE_CONTEXT_IMPL_H_
 #pragma once
 
-#include "base/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/string16.h"
-#include "base/time.h"
 #include "content/public/browser/dom_storage_context.h"
-#include "webkit/dom_storage/dom_storage_types.h"
 
-namespace dom_storage {
-class DomStorageContext;
-}
+class FilePath;
 
 namespace quota {
 class SpecialStoragePolicy;
@@ -34,13 +28,6 @@ class CONTENT_EXPORT DOMStorageContextImpl :
   // DOMStorageContext implementation.
   virtual void GetUsageInfo(const GetUsageInfoCallback& callback) OVERRIDE;
   virtual void DeleteOrigin(const GURL& origin) OVERRIDE;
-
-  // DEPRECATED DOMStorageContext implementation.
-  virtual void GetAllStorageFiles(
-      const GetAllStorageFilesCallback& callback) OVERRIDE;
-  virtual FilePath GetFilePath(const string16& origin_id) const OVERRIDE;
-  virtual void DeleteForOrigin(const string16& origin_id) OVERRIDE;
-  virtual void DeleteLocalStorageFile(const FilePath& file_path) OVERRIDE;
 
   // Called to free up memory that's not strictly needed.
   void PurgeMemory();

@@ -312,29 +312,26 @@ class RemoveHistoryTester : public BrowsingDataRemoverTester {
 class RemoveLocalStorageTester : public BrowsingDataRemoverTester {
  public:
   explicit RemoveLocalStorageTester(TestingProfile* profile)
-      : dom_storage_context_(NULL) {
+      : profile_(profile), dom_storage_context_(NULL) {
     dom_storage_context_ =
         content::BrowserContext::GetDOMStorageContext(profile);
   }
 
-  // Returns true, if the given URL exists.
-  bool DOMStorageExistsForOrigin(const GURL& url) {
-    GetLocalStorageFiles();
+  // Returns true, if the given origin URL exists.
+  bool DOMStorageExistsForOrigin(const GURL& origin) {
+    GetUsageInfo();
     BlockUntilNotified();
-    for (size_t i = 0; i < files_->size(); ++i) {
-      FilePath file_path = (*files_)[i];
-      GURL origin(WebKit::WebSecurityOrigin::createFromDatabaseIdentifier(
-          webkit_glue::FilePathToWebString(file_path.BaseName())).toString());
-      if (origin == url)
+    for (size_t i = 0; i < infos_.size(); ++i) {
+      if (origin == infos_[i].origin)
         return true;
     }
     return false;
   }
 
   void AddDOMStorageTestData() {
-    FilePath storage_path =
-        dom_storage_context_->GetFilePath(
-            ASCIIToUTF16("http_host1_1")).DirName();
+    // Note: This test depends on details of how the dom_storage library
+    // stores data in the host file system.
+    FilePath storage_path = profile_->GetPath().AppendASCII("Local Storage");
     file_util::CreateDirectory(storage_path);
 
     // Write some files.
@@ -355,20 +352,22 @@ class RemoveLocalStorageTester : public BrowsingDataRemoverTester {
   }
 
  private:
-  void GetLocalStorageFiles() {
-    dom_storage_context_->GetAllStorageFiles(
-        base::Bind(&RemoveLocalStorageTester::OnGotLocalStorageFiles,
+  void GetUsageInfo() {
+    dom_storage_context_->GetUsageInfo(
+        base::Bind(&RemoveLocalStorageTester::OnGotUsageInfo,
                    base::Unretained(this)));
   }
-  void OnGotLocalStorageFiles(const std::vector<FilePath>& files) {
-    files_.reset(new std::vector<FilePath>(files));
+  void OnGotUsageInfo(
+      const std::vector<dom_storage::DomStorageContext::UsageInfo>& infos) {
+    infos_ = infos;
     Notify();
   }
 
-  // TestingProfile owns the context; we shouldn't delete it.
+  // We don't own these pointers.
+  TestingProfile* profile_;
   content::DOMStorageContext* dom_storage_context_;
 
-  scoped_ptr<std::vector<FilePath> > files_;
+  std::vector<dom_storage::DomStorageContext::UsageInfo> infos_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoveLocalStorageTester);
 };

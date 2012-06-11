@@ -3323,14 +3323,15 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   EXPECT_EQ(1U, origins.size());
   EXPECT_EQ(origin_id, origins[0].GetOrigin());
 
-  // Create local storage. We only simulate this by creating the backing file
-  // since webkit is not initialized.
-  DOMStorageContext* context = BrowserContext::GetDOMStorageContext(
-      profile_.get());
-  FilePath lso_path = context->GetFilePath(origin_id);
-  EXPECT_TRUE(file_util::CreateDirectory(lso_path.DirName()));
-  EXPECT_EQ(0, file_util::WriteFile(lso_path, NULL, 0));
-  EXPECT_TRUE(file_util::PathExists(lso_path));
+  // Create local storage. We only simulate this by creating the backing files.
+  // Note: This test depends on details of how the dom_storage library
+  // stores data in the host file system.
+  FilePath lso_dir_path = profile_->GetPath().AppendASCII("Local Storage");
+  FilePath lso_file_path = lso_dir_path.AppendASCII(
+      UTF16ToUTF8(origin_id) + ".localstorage");
+  EXPECT_TRUE(file_util::CreateDirectory(lso_dir_path));
+  EXPECT_EQ(0, file_util::WriteFile(lso_file_path, NULL, 0));
+  EXPECT_TRUE(file_util::PathExists(lso_file_path));
 
   // Create indexed db. Similarly, it is enough to only simulate this by
   // creating the directory on the disk.
@@ -3358,7 +3359,7 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   EXPECT_EQ(0U, origins.size());
 
   // Check that the LSO file has been removed.
-  EXPECT_FALSE(file_util::PathExists(lso_path));
+  EXPECT_FALSE(file_util::PathExists(lso_file_path));
 
   // Check if the indexed db has disappeared too.
   EXPECT_FALSE(file_util::DirectoryExists(idb_path));
@@ -3433,14 +3434,15 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   EXPECT_EQ(1U, origins.size());
   EXPECT_EQ(origin_id, origins[0].GetOrigin());
 
-  // Create local storage. We only simulate this by creating the backing file
-  // since webkit is not initialized.
-  DOMStorageContext* context = BrowserContext::GetDOMStorageContext(
-      profile_.get());
-  FilePath lso_path = context->GetFilePath(origin_id);
-  EXPECT_TRUE(file_util::CreateDirectory(lso_path.DirName()));
-  EXPECT_EQ(0, file_util::WriteFile(lso_path, NULL, 0));
-  EXPECT_TRUE(file_util::PathExists(lso_path));
+  // Create local storage. We only simulate this by creating the backing files.
+  // Note: This test depends on details of how the dom_storage library
+  // stores data in the host file system.
+  FilePath lso_dir_path = profile_->GetPath().AppendASCII("Local Storage");
+  FilePath lso_file_path = lso_dir_path.AppendASCII(
+      UTF16ToUTF8(origin_id) + ".localstorage");
+  EXPECT_TRUE(file_util::CreateDirectory(lso_dir_path));
+  EXPECT_EQ(0, file_util::WriteFile(lso_file_path, NULL, 0));
+  EXPECT_TRUE(file_util::PathExists(lso_file_path));
 
   // Create indexed db. Similarly, it is enough to only simulate this by
   // creating the directory on the disk.
@@ -3485,7 +3487,7 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   EXPECT_EQ(0U, origins.size());
 
   // Check that the LSO file has been removed.
-  EXPECT_FALSE(file_util::PathExists(lso_path));
+  EXPECT_FALSE(file_util::PathExists(lso_file_path));
 
   // Check if the indexed db has disappeared too.
   EXPECT_FALSE(file_util::DirectoryExists(idb_path));

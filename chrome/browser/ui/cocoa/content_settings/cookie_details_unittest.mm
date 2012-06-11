@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,20 +81,15 @@ TEST_F(CookiesDetailsTest, CreateForTreeDatabase) {
 
 TEST_F(CookiesDetailsTest, CreateForTreeLocalStorage) {
   scoped_nsobject<CocoaCookieDetails> details;
-  std::string protocol("http");
-  std::string host("chromium.org");
-  unsigned short port = 80;
-  std::string database_identifier("id");
-  std::string origin("chromium.org");
-  FilePath file_path(FILE_PATH_LITERAL("/"));
+  const GURL kOrigin("http://chromium.org/");
   int64 size = 1234;
   base::Time last_modified = base::Time::Now();
-  BrowsingDataLocalStorageHelper::LocalStorageInfo info(protocol, host, port,
-      database_identifier, origin, file_path, size, last_modified);
+  BrowsingDataLocalStorageHelper::LocalStorageInfo info(
+      kOrigin, size, last_modified);
   details.reset([[CocoaCookieDetails alloc] initWithLocalStorage:&info]);
 
   EXPECT_EQ([details.get() type], kCocoaCookieDetailsTypeTreeLocalStorage);
-  EXPECT_NSEQ(@"chromium.org", [details.get() domain]);
+  EXPECT_NSEQ(@"http://chromium.org/", [details.get() domain]);
   EXPECT_NSEQ(@"1,234 B", [details.get() fileSize]);
   EXPECT_NSNE(@"", [details.get() lastModified]);
 

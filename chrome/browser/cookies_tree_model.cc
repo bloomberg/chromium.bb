@@ -180,18 +180,15 @@ CookieTreeNode::DetailedInfo CookieTreeDatabaseNode::GetDetailedInfo() const {
 CookieTreeLocalStorageNode::CookieTreeLocalStorageNode(
     std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo>::iterator
         local_storage_info)
-    : CookieTreeNode(UTF8ToUTF16(
-          local_storage_info->origin.empty() ?
-              local_storage_info->database_identifier :
-              local_storage_info->origin)),
+    : CookieTreeNode(UTF8ToUTF16(local_storage_info->origin_url.spec())),
       local_storage_info_(local_storage_info) {
 }
 
 CookieTreeLocalStorageNode::~CookieTreeLocalStorageNode() {}
 
 void CookieTreeLocalStorageNode::DeleteStoredObjects() {
-  GetModel()->local_storage_helper_->DeleteLocalStorageFile(
-      local_storage_info_->file_path);
+  GetModel()->local_storage_helper_->DeleteOrigin(
+      local_storage_info_->origin_url);
   GetModel()->local_storage_info_list_.erase(local_storage_info_);
 }
 
@@ -207,10 +204,7 @@ CookieTreeLocalStorageNode::GetDetailedInfo() const {
 CookieTreeSessionStorageNode::CookieTreeSessionStorageNode(
     std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo>::iterator
         session_storage_info)
-    : CookieTreeNode(UTF8ToUTF16(
-          session_storage_info->origin.empty() ?
-              session_storage_info->database_identifier :
-              session_storage_info->origin)),
+    : CookieTreeNode(UTF8ToUTF16(session_storage_info->origin_url.spec())),
       session_storage_info_(session_storage_info) {
 }
 
@@ -946,7 +940,7 @@ void CookiesTreeModel::PopulateLocalStorageInfoWithFilter(
        local_storage_info_list_.begin();
        local_storage_info != local_storage_info_list_.end();
        ++local_storage_info) {
-    GURL origin(local_storage_info->origin);
+    const GURL& origin(local_storage_info->origin_url);
 
     if (!filter.size() ||
         (CookieTreeOriginNode::TitleForUrl(origin).find(filter) !=
@@ -979,8 +973,7 @@ void CookiesTreeModel::PopulateSessionStorageInfoWithFilter(
        session_storage_info_list_.begin();
        session_storage_info != session_storage_info_list_.end();
        ++session_storage_info) {
-    GURL origin(session_storage_info->origin);
-
+    const GURL& origin = session_storage_info->origin_url;
     if (!filter.size() ||
         (CookieTreeOriginNode::TitleForUrl(origin).find(filter) !=
          std::wstring::npos)) {

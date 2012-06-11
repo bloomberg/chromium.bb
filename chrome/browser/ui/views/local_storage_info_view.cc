@@ -35,7 +35,8 @@ LocalStorageInfoView::~LocalStorageInfoView() {
 void LocalStorageInfoView::SetLocalStorageInfo(
     const BrowsingDataLocalStorageHelper::LocalStorageInfo&
     local_storage_info) {
-  origin_value_field_->SetText(UTF8ToUTF16(local_storage_info.origin));
+  origin_value_field_->SetText(
+      UTF8ToUTF16(local_storage_info.origin_url.spec()));
   size_value_field_->SetText(ui::FormatBytes(local_storage_info.size));
   last_modified_value_field_->SetText(
       base::TimeFormatFriendlyDateAndTime(local_storage_info.last_modified));

@@ -9,11 +9,10 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/string16.h"
 #include "content/common/content_export.h"
 #include "webkit/dom_storage/dom_storage_context.h"
 
-class FilePath;
+class GURL;
 
 namespace content {
 
@@ -31,15 +30,6 @@ class DOMStorageContext {
 
   // Deletes the local storage data for the given origin.
   virtual void DeleteOrigin(const GURL& origin) = 0;
-
-  // The stuff below is DEPRECATED.
-  typedef base::Callback<void(const std::vector<FilePath>&)>
-      GetAllStorageFilesCallback;
-  virtual void GetAllStorageFiles(
-      const GetAllStorageFilesCallback& callback) = 0;
-  virtual FilePath GetFilePath(const string16& origin_id) const = 0;
-  virtual void DeleteForOrigin(const string16& origin_id) = 0;
-  virtual void DeleteLocalStorageFile(const FilePath& file_path) = 0;
 
  protected:
   virtual ~DOMStorageContext() {}

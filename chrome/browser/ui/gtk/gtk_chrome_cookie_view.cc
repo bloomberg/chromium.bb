@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -556,7 +556,7 @@ void gtk_chrome_cookie_view_display_local_storage(
   UpdateVisibleDetailedInfo(self, self->local_storage_details_table_);
 
   gtk_entry_set_text(GTK_ENTRY(self->local_storage_origin_entry_),
-                     local_storage_info.origin.c_str());
+                     local_storage_info.origin_url.spec().c_str());
   gtk_entry_set_text(GTK_ENTRY(self->local_storage_size_entry_),
                      UTF16ToUTF8(ui::FormatBytes(
                          local_storage_info.size)).c_str());
