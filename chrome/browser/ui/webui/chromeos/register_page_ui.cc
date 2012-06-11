@@ -58,6 +58,7 @@ const char kMachineInfoSerialNumber[] = "serial_number";
 // Types of network connection.
 const char kConnectionEthernet[] = "ethernet";
 const char kConnectionWifi[] = "wifi";
+const char kConnectionWimax[] = "wimax";
 const char kConnection3g[] = "3g";
 const char kUndefinedValue[] = "undefined";
 
@@ -77,6 +78,8 @@ static std::string GetConnectionType() {
     return kConnectionWifi;
   else if (network_lib->cellular_connected())
     return kConnection3g;
+  else if (network_lib->wimax_connected())
+    return kConnectionWimax;
   // Connection might have been lost and is in reconnecting state at this point.
   else if (network_lib->ethernet_connecting())
     return kConnectionEthernet;
@@ -84,6 +87,8 @@ static std::string GetConnectionType() {
     return kConnectionWifi;
   else if (network_lib->cellular_connecting())
     return kConnection3g;
+  else if (network_lib->wimax_connecting())
+    return kConnectionWimax;
   else
     return kUndefinedValue;
 }

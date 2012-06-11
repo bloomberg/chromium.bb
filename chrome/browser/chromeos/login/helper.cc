@@ -87,12 +87,16 @@ string16 GetCurrentNetworkName(NetworkLibrary* network_library) {
     return UTF8ToUTF16(network_library->wifi_network()->name());
   } else if (network_library->cellular_connected()) {
     return UTF8ToUTF16(network_library->cellular_network()->name());
+  } else if (network_library->wimax_connected()) {
+    return UTF8ToUTF16(network_library->wimax_network()->name());
   } else if (network_library->ethernet_connecting()) {
     return l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
   } else if (network_library->wifi_connecting()) {
     return UTF8ToUTF16(network_library->wifi_network()->name());
   } else if (network_library->cellular_connecting()) {
     return UTF8ToUTF16(network_library->cellular_network()->name());
+  } else if (network_library->wimax_connecting()) {
+    return UTF8ToUTF16(network_library->wimax_network()->name());
   } else {
     return string16();
   }

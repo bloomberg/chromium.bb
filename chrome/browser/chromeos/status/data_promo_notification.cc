@@ -142,7 +142,7 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification(
       !UserManager::Get()->IsLoggedInAsGuest() &&
       check_for_promo_ &&
       cros->cellular_connected() && !cros->ethernet_connected() &&
-      !cros->wifi_connected()) {
+      !cros->wifi_connected() && !cros->wimax_connected()) {
     std::string deal_text;
     int carrier_deal_promo_pref = kNotificationCountPrefDefault;
     const MobileConfig::CarrierDeal* deal = NULL;

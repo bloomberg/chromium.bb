@@ -292,10 +292,12 @@ bool NetworkLibraryImplBase::virtual_network_connected() const {
   return active_virtual_ ? active_virtual_->connected() : false;
 }
 bool NetworkLibraryImplBase::Connected() const {
-  return ethernet_connected() || wifi_connected() || cellular_connected();
+  return ethernet_connected() || wifi_connected() ||
+      cellular_connected() || wimax_connected();
 }
 bool NetworkLibraryImplBase::Connecting() const {
-  return ethernet_connecting() || wifi_connecting() || cellular_connecting();
+  return ethernet_connecting() || wifi_connecting() ||
+      cellular_connecting() || wimax_connecting();
 }
 const WifiNetworkVector& NetworkLibraryImplBase::wifi_networks() const {
   return wifi_networks_;
