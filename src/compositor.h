@@ -94,16 +94,37 @@ struct weston_border {
 	int32_t left, right, top, bottom;
 };
 
+struct weston_animation {
+	void (*frame)(struct weston_animation *animation,
+		      struct weston_output *output, uint32_t msecs);
+	int frame_counter;
+	struct wl_list link;
+};
+
+struct weston_spring {
+	double k;
+	double friction;
+	double current;
+	double target;
+	double previous;
+	uint32_t timestamp;
+};
+
 enum {
-	ZOOM_POINTER,
-	ZOOM_TEXT_CURSOR
+	ZOOM_FOCUS_POINTER,
+	ZOOM_FOCUS_TEXT
 };
 
 struct weston_output_zoom {
 	int active;
+	uint32_t type;
 	float increment;
 	float level;
+	float max_level;
+	wl_fixed_t fx, fy;
 	float trans_x, trans_y;
+	struct weston_animation animation_z;
+	struct weston_spring spring_z;
 };
 
 /* bit compatible with drm definitions. */
@@ -226,22 +247,6 @@ struct weston_shader {
 	GLint color_uniform;
 	GLint texwidth_uniform;
 	GLint opaque_uniform;
-};
-
-struct weston_animation {
-	void (*frame)(struct weston_animation *animation,
-		      struct weston_output *output, uint32_t msecs);
-	int frame_counter;
-	struct wl_list link;
-};
-
-struct weston_spring {
-	double k;
-	double friction;
-	double current;
-	double target;
-	double previous;
-	uint32_t timestamp;
 };
 
 enum {

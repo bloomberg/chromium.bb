@@ -1640,7 +1640,7 @@ notify_motion(struct wl_seat *seat, uint32_t time, wl_fixed_t x, wl_fixed_t y)
 		if (output->zoom.active &&
 		    pixman_region32_contains_point(&output->region,
 						   ix, iy, NULL))
-			weston_output_update_zoom(output, x, y, ZOOM_POINTER);
+			weston_output_update_zoom(output, x, y, ZOOM_FOCUS_POINTER);
 
 	weston_device_repick(seat);
 	interface = seat->pointer->grab->interface;
@@ -2734,7 +2734,49 @@ weston_text_cursor_position_notify(struct weston_surface *surface,
 						wl_fixed_to_int(global_y),
 						NULL))
 			weston_output_update_zoom(output, global_x, global_y,
-							  ZOOM_TEXT_CURSOR);
+							  ZOOM_FOCUS_TEXT);
+}
+
+static void
+weston_zoom_frame_z(struct weston_animation *animation,
+		struct weston_output *output, uint32_t msecs)
+{
+	if (animation->frame_counter == 0)
+		output->zoom.spring_z.timestamp = msecs;
+
+	weston_spring_update(&output->zoom.spring_z, msecs);
+
+	if (output->zoom.spring_z.current > output->zoom.max_level)
+		output->zoom.spring_z.current = output->zoom.max_level;
+	else if (output->zoom.spring_z.current < 0.0)
+		output->zoom.spring_z.current = 0.0;
+
+	if (weston_spring_done(&output->zoom.spring_z)) {
+		if (output->zoom.level <= 0.0)
+			output->zoom.active = 0;
+		output->zoom.spring_z.current = output->zoom.level;
+		wl_list_remove(&animation->link);
+		wl_list_init(&animation->link);
+	}
+
+	output->dirty = 1;
+	weston_output_damage(output);
+}
+
+static void
+weston_zoom_transition(struct weston_output *output)
+{
+	if (output->zoom.level != output->zoom.spring_z.current) {
+		output->zoom.spring_z.target = output->zoom.level;
+		if (wl_list_empty(&output->zoom.animation_z.link)) {
+			output->zoom.animation_z.frame_counter = 0;
+			wl_list_insert(output->animation_list.prev,
+				&output->zoom.animation_z.link);
+		}
+	}
+
+	output->dirty = 1;
+	weston_output_damage(output);
 }
 
 WL_EXPORT void
@@ -2745,25 +2787,35 @@ weston_output_update_zoom(struct weston_output *output,
 {
 	float global_x, global_y;
 	float trans_min, trans_max;
+	float ratio, level;
 
-	if (output->zoom.level >= 1.0)
+	level = output->zoom.spring_z.current;
+
+	if (!output->zoom.active || level > output->zoom.max_level)
 		return;
+
+	output->zoom.type = type;
+
+	output->zoom.fx = x;
+	output->zoom.fy = y;
 
 	global_x = wl_fixed_to_double(x);
 	global_y = wl_fixed_to_double(y);
 
 	output->zoom.trans_x =
 		(((global_x - output->x) / output->current->width) *
-		(output->zoom.level * 2)) - output->zoom.level;
+		(level * 2)) - level;
 	output->zoom.trans_y =
 		(((global_y - output->y) / output->current->height) *
-		(output->zoom.level * 2)) - output->zoom.level;
+		(level * 2)) - level;
 
-	if (type == ZOOM_TEXT_CURSOR) {
-		output->zoom.trans_x *= 1 / output->zoom.level;
-		output->zoom.trans_y *= 1 / output->zoom.level;
+	if (type == ZOOM_FOCUS_TEXT) {
+		ratio = 1 / level;
 
-		trans_max = output->zoom.level * 2 - output->zoom.level;
+		output->zoom.trans_x *= ratio;
+		output->zoom.trans_y *= ratio;
+
+		trans_max = level * 2 - level;
 		trans_min = -trans_max;
 
 		if (output->zoom.trans_x > trans_max)
@@ -2776,8 +2828,7 @@ weston_output_update_zoom(struct weston_output *output,
 			output->zoom.trans_y = trans_min;
 	}
 
-	output->dirty = 1;
-	weston_output_damage(output);
+	weston_zoom_transition(output);
 }
 
 WL_EXPORT void
@@ -2799,10 +2850,14 @@ weston_output_update_matrix(struct weston_output *output)
 			    flip * 2.0 / (output->current->height + output->border.top + output->border.bottom), 1);
 
 	if (output->zoom.active) {
-		magnification = 1 / (1 - output->zoom.level);
+		magnification = 1 / (1 - output->zoom.spring_z.current);
 		weston_matrix_init(&camera);
 		weston_matrix_init(&modelview);
-		weston_matrix_translate(&camera, output->zoom.trans_x, flip * output->zoom.trans_y, 0);
+		weston_output_update_zoom(output, output->zoom.fx,
+						  output->zoom.fy,
+						  output->zoom.type);
+		weston_matrix_translate(&camera, output->zoom.trans_x,
+					  flip * output->zoom.trans_y, 0);
 		weston_matrix_invert(&modelview, &camera);
 		weston_matrix_scale(&modelview, magnification, magnification, 1.0);
 		weston_matrix_multiply(&output->matrix, &modelview);
@@ -2840,10 +2895,15 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 	wl_list_init(&output->read_pixels_list);
 
 	output->zoom.active = 0;
-	output->zoom.increment = 0.05;
+	output->zoom.increment = 0.07;
+	output->zoom.max_level = 0.95;
 	output->zoom.level = 0.0;
 	output->zoom.trans_x = 0.0;
 	output->zoom.trans_y = 0.0;
+	weston_spring_init(&output->zoom.spring_z, 250.0, 0.0, 0.0);
+	output->zoom.spring_z.friction = 1000;
+	output->zoom.animation_z.frame = weston_zoom_frame_z;
+	wl_list_init(&output->zoom.animation_z.link);
 
 	output->flags = flags;
 	weston_output_move(output, x, y);

@@ -1706,7 +1706,7 @@ do_zoom(struct wl_seat *seat, uint32_t time, uint32_t key, uint32_t axis,
 	struct weston_seat *ws = (struct weston_seat *) seat;
 	struct weston_compositor *compositor = ws->compositor;
 	struct weston_output *output;
-	float maximum_level, increment;
+	float increment;
 
 	wl_list_for_each(output, &compositor->output_list, link) {
 		if (pixman_region32_contains_point(&output->region,
@@ -1723,23 +1723,21 @@ do_zoom(struct wl_seat *seat, uint32_t time, uint32_t key, uint32_t axis,
 			else
 				increment = 0;
 
-			output->zoom.active = 1;
 			output->zoom.level += increment;
 
-			if (output->zoom.level <= 0.0) {
-				output->zoom.active = 0;
+			if (output->zoom.level < 0.0)
 				output->zoom.level = 0.0;
-			}
+			else if (output->zoom.level > output->zoom.max_level)
+				output->zoom.level = output->zoom.max_level;
+			else
+				output->zoom.active = 1;
 
-			maximum_level = 1 - output->zoom.increment;
-
-			if (output->zoom.level > maximum_level)
-				output->zoom.level = maximum_level;
+			output->zoom.spring_z.target = output->zoom.level;
 
 			weston_output_update_zoom(output,
 			                          seat->pointer->x,
 						  seat->pointer->y,
-						  ZOOM_POINTER);
+						  ZOOM_FOCUS_POINTER);
 		}
 	}
 }
