@@ -983,30 +983,18 @@ TEST_PPAPI_IN_PROCESS(WebSocket_UtilityGetURL)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_UtilityValidConnect)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_UtilityInvalidClose)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_UtilityValidClose)
-
-// PPAPITest.WebSocket_UtilityGetProtocol times out frequently on all platforms.
-// http://crbug.com/130400
-TEST_PPAPI_IN_PROCESS_WITH_WS(DISABLED_WebSocket_UtilityGetProtocol)
-
+TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_UtilityGetProtocol)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_UtilityTextSendReceive)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_UtilityBinarySendReceive)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_UtilityBufferedAmount)
 TEST_PPAPI_NACL_VIA_HTTP(WebSocket_IsWebSocket)
-
-// PPAPINaClTest.WebSocket_UninitializedPropertiesAccess times out frequently on
-// all platforms. http://crbug.com/130414
-TEST_PPAPI_NACL_VIA_HTTP(DISABLED_WebSocket_UninitializedPropertiesAccess)
-
+TEST_PPAPI_NACL_VIA_HTTP(WebSocket_UninitializedPropertiesAccess)
 TEST_PPAPI_NACL_VIA_HTTP(WebSocket_InvalidConnect)
 TEST_PPAPI_NACL_VIA_HTTP(WebSocket_Protocols)
 TEST_PPAPI_NACL_VIA_HTTP(WebSocket_GetURL)
 TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_ValidConnect)
 TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_InvalidClose)
-
-// PPAPINaClTest.WebSocket_ValidClose times out frequently on all platforms.
-// http://crbug.com/130418
-TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(DISABLED_WebSocket_ValidClose)
-
+TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_ValidClose)
 TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_GetProtocol)
 TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_TextSendReceive)
 TEST_PPAPI_NACL_VIA_HTTP_WITH_WS(WebSocket_BinarySendReceive)
