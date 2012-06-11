@@ -3113,16 +3113,16 @@ load_module(const char *name, const char *entrypoint, void **handle)
 	else
 		snprintf(path, sizeof path, "%s", name);
 
+	weston_log("Loading module '%s'\n", path);
 	module = dlopen(path, RTLD_LAZY);
 	if (!module) {
-		weston_log("failed to load module '%s': %s\n", path, dlerror());
+		weston_log("Failed to load module: %s\n", dlerror());
 		return NULL;
 	}
 
 	init = dlsym(module, entrypoint);
 	if (!init) {
-		weston_log("failed to lookup init function in '%s': %s\n",
-			path, dlerror());
+		weston_log("Failed to lookup init function: %s\n", dlerror());
 		return NULL;
 	}
 
