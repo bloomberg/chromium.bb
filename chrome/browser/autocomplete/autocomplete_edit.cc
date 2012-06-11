@@ -1087,7 +1087,12 @@ bool AutocompleteEditModel::DoInstant(const AutocompleteMatch& match,
                            suggested_text);
   }
 
-  instant->Hide();
+  // It's possible DoInstant() was called due to an OnChanged() event from the
+  // omnibox view if the user clicked the renderer while IME composition was
+  // active. In that case we still want to commit on mouse up, so don't call
+  // Hide().
+  if (!instant->commit_on_mouse_up())
+    instant->Hide();
   return false;
 }
 
