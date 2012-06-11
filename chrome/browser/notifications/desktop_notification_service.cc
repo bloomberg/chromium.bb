@@ -23,7 +23,7 @@
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_pattern.h"
@@ -336,7 +336,7 @@ void DesktopNotificationService::RequestPermission(
   if (!tab) {
     Browser* browser = browser::FindLastActiveWithProfile(profile_);
     if (browser)
-      tab = browser->GetSelectedWebContents();
+      tab = browser->GetActiveWebContents();
   }
 
   if (!tab)
@@ -349,12 +349,12 @@ void DesktopNotificationService::RequestPermission(
   ContentSetting setting = GetContentSetting(origin);
   if (setting == CONTENT_SETTING_ASK) {
     // Show an info bar requesting permission.
-    TabContentsWrapper* wrapper =
-        TabContentsWrapper::GetCurrentWrapperForContents(tab);
-    InfoBarTabHelper* infobar_helper = wrapper->infobar_tab_helper();
+    TabContents* tab_contents = TabContents::FromWebContents(tab);
+    InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
     infobar_helper->AddInfoBar(new NotificationPermissionInfoBarDelegate(
         infobar_helper,
-        DesktopNotificationServiceFactory::GetForProfile(wrapper->profile()),
+        DesktopNotificationServiceFactory::GetForProfile(
+            tab_contents->profile()),
         origin,
         DisplayNameForOrigin(origin),
         process_id,
