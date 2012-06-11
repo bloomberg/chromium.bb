@@ -5,7 +5,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/speech/speech_recognition_bubble.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect.h"
@@ -24,14 +24,14 @@ class SpeechRecognitionBubbleTest : public SpeechRecognitionBubbleDelegate,
 IN_PROC_BROWSER_TEST_F(SpeechRecognitionBubbleTest, CreateAndDestroy) {
   gfx::Rect element_rect(100, 100, 100, 100);
   scoped_ptr<SpeechRecognitionBubble> bubble(SpeechRecognitionBubble::Create(
-      browser()->GetSelectedWebContents(), this, element_rect));
+      browser()->GetActiveWebContents(), this, element_rect));
   EXPECT_TRUE(bubble.get());
 }
 
 IN_PROC_BROWSER_TEST_F(SpeechRecognitionBubbleTest, ShowAndDestroy) {
   gfx::Rect element_rect(100, 100, 100, 100);
   scoped_ptr<SpeechRecognitionBubble> bubble(SpeechRecognitionBubble::Create(
-      browser()->GetSelectedWebContents(), this, element_rect));
+      browser()->GetActiveWebContents(), this, element_rect));
   EXPECT_TRUE(bubble.get());
   bubble->Show();
 }
@@ -39,7 +39,7 @@ IN_PROC_BROWSER_TEST_F(SpeechRecognitionBubbleTest, ShowAndDestroy) {
 IN_PROC_BROWSER_TEST_F(SpeechRecognitionBubbleTest, ShowAndHide) {
   gfx::Rect element_rect(100, 100, 100, 100);
   scoped_ptr<SpeechRecognitionBubble> bubble(SpeechRecognitionBubble::Create(
-      browser()->GetSelectedWebContents(), this, element_rect));
+      browser()->GetActiveWebContents(), this, element_rect));
   EXPECT_TRUE(bubble.get());
   bubble->Show();
   bubble->Hide();
@@ -48,7 +48,7 @@ IN_PROC_BROWSER_TEST_F(SpeechRecognitionBubbleTest, ShowAndHide) {
 IN_PROC_BROWSER_TEST_F(SpeechRecognitionBubbleTest, ShowAndHideTwice) {
   gfx::Rect element_rect(100, 100, 100, 100);
   scoped_ptr<SpeechRecognitionBubble> bubble(SpeechRecognitionBubble::Create(
-      browser()->GetSelectedWebContents(), this, element_rect));
+      browser()->GetActiveWebContents(), this, element_rect));
   EXPECT_TRUE(bubble.get());
   bubble->Show();
   bubble->Hide();

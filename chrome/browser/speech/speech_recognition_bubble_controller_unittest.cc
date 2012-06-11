@@ -6,7 +6,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/speech/speech_recognition_bubble_controller.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
@@ -152,10 +152,10 @@ class SpeechRecognitionBubbleControllerTest
     // real WebContents pointer from the test fixture and pass that, because
     // the bubble controller registers for tab close notifications which need
     // a valid WebContents.
-    TabContentsWrapper* wrapper =
-        test_fixture_->browser()->GetSelectedTabContentsWrapper();
-    if (wrapper)
-      web_contents = wrapper->web_contents();
+    TabContents* tab_contents =
+        test_fixture_->browser()->GetActiveTabContents();
+    if (tab_contents)
+      web_contents = tab_contents->web_contents();
     return new MockSpeechRecognitionBubble(web_contents, delegate,
                                            element_rect);
   }
