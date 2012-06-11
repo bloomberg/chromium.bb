@@ -4,6 +4,7 @@
 
 #include "ui/base/ime/character_composer.h"
 
+#include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/gtk+/gdk/gdkkeysyms.h"
 #include "ui/base/events.h"
@@ -187,6 +188,17 @@ TEST(CharacterComposerTest, CompositionStateIsClearedAfterReset) {
   EXPECT_TRUE(character_composer.composed_character().empty());
 }
 
+TEST(CharacterComposerTest, KeySequenceCompositionPreedit) {
+  CharacterComposer character_composer;
+  // LATIN SMALL LETTER A WITH ACUTE
+  // preedit_string() is always empty in key sequence composition mode.
+  ExpectKeyFiltered(&character_composer, GDK_KEY_dead_acute, 0);
+  EXPECT_TRUE(character_composer.preedit_string().empty());
+  EXPECT_TRUE(character_composer.FilterKeyPress(GDK_KEY_a, 0));
+  EXPECT_EQ(string16(1, 0x00E1), character_composer.composed_character());
+  EXPECT_TRUE(character_composer.preedit_string().empty());
+}
+
 // ComposeCheckerWithCompactTable in character_composer.cc is depending on the
 // assumption that the data in gtkimcontextsimpleseqs.h is correctly ordered.
 TEST(CharacterComposerTest, MainTableIsCorrectlyOrdered) {
@@ -249,6 +261,44 @@ TEST(CharacterComposerTest, HexadecimalComposition) {
                           string16(kMusicalKeyboard,
                                    kMusicalKeyboard +
                                    arraysize(kMusicalKeyboard)));
+}
+
+TEST(CharacterComposerTest, HexadecimalCompositionPreedit) {
+  CharacterComposer character_composer;
+  // HIRAGANA LETTER A (U+3042)
+  ExpectKeyFiltered(&character_composer, GDK_KEY_U,
+                    EF_SHIFT_DOWN | EF_CONTROL_DOWN);
+  EXPECT_EQ(ASCIIToUTF16("u"), character_composer.preedit_string());
+  ExpectKeyFiltered(&character_composer, GDK_KEY_3, 0);
+  EXPECT_EQ(ASCIIToUTF16("u3"), character_composer.preedit_string());
+  ExpectKeyFiltered(&character_composer, GDK_KEY_0, 0);
+  EXPECT_EQ(ASCIIToUTF16("u30"), character_composer.preedit_string());
+  ExpectKeyFiltered(&character_composer, GDK_KEY_4, 0);
+  EXPECT_EQ(ASCIIToUTF16("u304"), character_composer.preedit_string());
+  ExpectKeyFiltered(&character_composer, GDK_KEY_a, 0);
+  EXPECT_EQ(ASCIIToUTF16("u304a"), character_composer.preedit_string());
+  ExpectKeyFiltered(&character_composer, GDK_KEY_BackSpace, 0);
+  EXPECT_EQ(ASCIIToUTF16("u304"), character_composer.preedit_string());
+  ExpectCharacterComposed(&character_composer, GDK_KEY_2, GDK_KEY_Return, 0,
+                          string16(1, 0x3042));
+  EXPECT_EQ(ASCIIToUTF16(""), character_composer.preedit_string());
+
+  // Sequence with an ignored character ('x') and Escape.
+  ExpectKeyFiltered(&character_composer, GDK_KEY_U,
+                    EF_SHIFT_DOWN | EF_CONTROL_DOWN);
+  EXPECT_EQ(ASCIIToUTF16("u"), character_composer.preedit_string());
+  ExpectKeyFiltered(&character_composer, GDK_KEY_3, 0);
+  EXPECT_EQ(ASCIIToUTF16("u3"), character_composer.preedit_string());
+  ExpectKeyFiltered(&character_composer, GDK_KEY_0, 0);
+  EXPECT_EQ(ASCIIToUTF16("u30"), character_composer.preedit_string());
+  ExpectKeyFiltered(&character_composer, GDK_KEY_x, 0);
+  EXPECT_EQ(ASCIIToUTF16("u30"), character_composer.preedit_string());
+  ExpectKeyFiltered(&character_composer, GDK_KEY_4, 0);
+  EXPECT_EQ(ASCIIToUTF16("u304"), character_composer.preedit_string());
+  ExpectKeyFiltered(&character_composer, GDK_KEY_2, 0);
+  EXPECT_EQ(ASCIIToUTF16("u3042"), character_composer.preedit_string());
+  ExpectKeyFiltered(&character_composer, GDK_KEY_Escape, 0);
+  EXPECT_EQ(ASCIIToUTF16(""), character_composer.preedit_string());
 }
 
 TEST(CharacterComposerTest, HexadecimalCompositionWithNonHexKey) {

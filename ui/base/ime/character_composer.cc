@@ -8,6 +8,7 @@
 #include <iterator>
 
 #include "base/third_party/icu/icu_utf.h"
+#include "base/utf_string_conversions.h"
 // Note for Gtk removal: gdkkeysyms.h only contains a set of
 // '#define GDK_KeyName 0xNNNN' macros and does not #include any Gtk headers.
 #include "third_party/gtk+/gdk/gdkkeysyms.h"
@@ -374,12 +375,14 @@ CharacterComposer::~CharacterComposer() {}
 void CharacterComposer::Reset() {
   compose_buffer_.clear();
   composed_character_.clear();
+  preedit_string_.clear();
   composition_mode_ = KEY_SEQUENCE_MODE;
 }
 
 bool CharacterComposer::FilterKeyPress(unsigned int keyval,
                                        unsigned int flags) {
   composed_character_.clear();
+  preedit_string_.clear();
 
   // We don't care about modifier key presses.
   if(KeypressShouldBeIgnored(keyval))
@@ -393,38 +396,25 @@ bool CharacterComposer::FilterKeyPress(unsigned int keyval,
     if (composition_mode_ == KEY_SEQUENCE_MODE && compose_buffer_.empty()) {
       // There is no ongoing composition.  Let's switch to HEX_MODE.
       composition_mode_ = HEX_MODE;
+      UpdatePreeditStringHexMode();
       return true;
     }
   }
 
-  if (composition_mode_ == HEX_MODE) {
-    const size_t kMaxHexSequenceLength = 8;
-    const int hex_digit = KeyvalToHexDigit(keyval);
-
-    if (keyval == GDK_KEY_Escape) {
-      // Cancel composition when ESC is pressed.
-      Reset();
-    } else if (keyval == GDK_KEY_Return || keyval == GDK_KEY_KP_Enter ||
-               keyval == GDK_KEY_ISO_Enter ||
-               keyval == GDK_KEY_space || keyval == GDK_KEY_KP_Space) {
-      // Commit the composed character when Enter or space is pressed.
-      CommitHex();
-    } else if (keyval == GDK_KEY_BackSpace) {
-      // Pop back the buffer when Backspace is pressed.
-      if (!compose_buffer_.empty()) {
-        compose_buffer_.pop_back();
-      } else {
-        // If there is no character in |compose_buffer_|, cancel composition.
-        Reset();
-      }
-    } else if (hex_digit >= 0 &&
-               compose_buffer_.size() < kMaxHexSequenceLength) {
-      // Add the key to the buffer if it is a hex digit.
-      compose_buffer_.push_back(hex_digit);
-    }
-    return true;
+  // Filter key press in an appropriate manner.
+  switch (composition_mode_) {
+    case KEY_SEQUENCE_MODE:
+      return FilterKeyPressSequenceMode(keyval, flags);
+    case HEX_MODE:
+      return FilterKeyPressHexMode(keyval, flags);
+    default:
+      NOTREACHED();
+      return false;
   }
+}
 
+bool CharacterComposer::FilterKeyPressSequenceMode(unsigned int keyval,
+                                                   unsigned int flags) {
   DCHECK(composition_mode_ == KEY_SEQUENCE_MODE);
   compose_buffer_.push_back(keyval);
 
@@ -448,6 +438,39 @@ bool CharacterComposer::FilterKeyPress(unsigned int keyval,
   return false;
 }
 
+bool CharacterComposer::FilterKeyPressHexMode(unsigned int keyval,
+                                              unsigned int flags) {
+  DCHECK(composition_mode_ == HEX_MODE);
+  const size_t kMaxHexSequenceLength = 8;
+  const int hex_digit = KeyvalToHexDigit(keyval);
+
+  if (keyval == GDK_KEY_Escape) {
+    // Cancel composition when ESC is pressed.
+    Reset();
+  } else if (keyval == GDK_KEY_Return || keyval == GDK_KEY_KP_Enter ||
+             keyval == GDK_KEY_ISO_Enter ||
+             keyval == GDK_KEY_space || keyval == GDK_KEY_KP_Space) {
+    // Commit the composed character when Enter or space is pressed.
+    CommitHex();
+  } else if (keyval == GDK_KEY_BackSpace) {
+    // Pop back the buffer when Backspace is pressed.
+    if (!compose_buffer_.empty()) {
+      compose_buffer_.pop_back();
+    } else {
+      // If there is no character in |compose_buffer_|, cancel composition.
+      Reset();
+    }
+  } else if (hex_digit >= 0 &&
+             compose_buffer_.size() < kMaxHexSequenceLength) {
+    // Add the key to the buffer if it is a hex digit.
+    compose_buffer_.push_back(hex_digit);
+  }
+
+  UpdatePreeditStringHexMode();
+
+  return true;
+}
+
 void CharacterComposer::CommitHex() {
   DCHECK(composition_mode_ == HEX_MODE);
   uint32 composed_character_utf32 = 0;
@@ -457,9 +480,22 @@ void CharacterComposer::CommitHex() {
     composed_character_utf32 <<= 4;
     composed_character_utf32 |= digit;
   }
+  Reset();
   UTF32CharacterToUTF16(composed_character_utf32, &composed_character_);
-  compose_buffer_.clear();
-  composition_mode_ = KEY_SEQUENCE_MODE;
+}
+
+void CharacterComposer::UpdatePreeditStringHexMode() {
+  if (composition_mode_ != HEX_MODE) {
+    preedit_string_.clear();
+    return;
+  }
+  std::string preedit_string_ascii("u");
+  for (size_t i = 0; i != compose_buffer_.size(); ++i) {
+    const int digit = compose_buffer_[i];
+    DCHECK(0 <= digit && digit < 16);
+    preedit_string_ascii += digit <= 9 ? ('0' + digit) : ('a' + (digit - 10));
+  }
+  preedit_string_ = ASCIIToUTF16(preedit_string_ascii);
 }
 
 }  // namespace ui
