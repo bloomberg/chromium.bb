@@ -38,33 +38,13 @@ namespace {
 const GdkColor kBackgroundColor = GDK_COLOR_RGB(0xff, 0xff, 0xff);
 
 std::string PermissionTypeToString(ContentSettingsType type) {
-  switch (type) {
-    case CONTENT_SETTINGS_TYPE_POPUPS:
-      return l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_TYPE_POPUPS);
-    case CONTENT_SETTINGS_TYPE_PLUGINS:
-      return l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_TYPE_PLUGINS);
-    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
-      return l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_TYPE_LOCATION);
-    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-      return l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_TYPE_NOTIFICATIONS);
-    default:
-      NOTREACHED();
-      return "";
-  }
+  return l10n_util::GetStringUTF8(
+      WebsiteSettingsUI::PermissionTypeToUIStringID(type));
 }
 
 std::string PermissionValueToString(ContentSetting value) {
-  switch (value) {
-    case CONTENT_SETTING_ALLOW:
-      return l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_PERMISSION_ALLOW);
-    case CONTENT_SETTING_BLOCK:
-      return l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_PERMISSION_BLOCK);
-    case CONTENT_SETTING_ASK:
-      return l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_PERMISSION_ASK);
-    default:
-      NOTREACHED();
-      return "";
-  }
+  return l10n_util::GetStringUTF8(
+      WebsiteSettingsUI::PermissionValueToUIStringID(value));
 }
 
 }  // namespace

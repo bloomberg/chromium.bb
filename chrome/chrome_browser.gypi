@@ -3689,6 +3689,8 @@
         'browser/ui/views/web_dialog_view.cc',
         'browser/ui/views/web_dialog_view.h',
         'browser/ui/views/web_intent_picker_views.cc',
+        'browser/ui/views/website_settings_popup_view.cc',
+        'browser/ui/views/website_settings_popup_view.h',
         'browser/ui/views/wrench_menu.cc',
         'browser/ui/views/wrench_menu.h',
         'browser/ui/web_applications/web_app_ui.cc',

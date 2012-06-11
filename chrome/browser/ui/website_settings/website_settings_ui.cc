@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 
+#include "grit/generated_resources.h"
+
 WebsiteSettingsUI::CookieInfo::CookieInfo()
     : allowed(-1), blocked(-1) {
 }
@@ -21,4 +23,36 @@ WebsiteSettingsUI::IdentityInfo::IdentityInfo()
 }
 
 WebsiteSettingsUI::~WebsiteSettingsUI() {
+}
+
+// static
+int WebsiteSettingsUI::PermissionTypeToUIStringID(ContentSettingsType type) {
+  switch (type) {
+    case CONTENT_SETTINGS_TYPE_POPUPS:
+      return IDS_WEBSITE_SETTINGS_TYPE_POPUPS;
+    case CONTENT_SETTINGS_TYPE_PLUGINS:
+      return IDS_WEBSITE_SETTINGS_TYPE_PLUGINS;
+    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+      return IDS_WEBSITE_SETTINGS_TYPE_LOCATION;
+    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+      return IDS_WEBSITE_SETTINGS_TYPE_NOTIFICATIONS;
+    default:
+      NOTREACHED();
+      return -1;
+  }
+}
+
+// static
+int WebsiteSettingsUI::PermissionValueToUIStringID(ContentSetting value) {
+  switch (value) {
+    case CONTENT_SETTING_ALLOW:
+      return IDS_WEBSITE_SETTINGS_PERMISSION_ALLOW;
+    case CONTENT_SETTING_BLOCK:
+      return IDS_WEBSITE_SETTINGS_PERMISSION_BLOCK;
+    case CONTENT_SETTING_ASK:
+      return IDS_WEBSITE_SETTINGS_PERMISSION_ASK;
+    default:
+      NOTREACHED();
+      return -1;
+  }
 }

@@ -59,6 +59,7 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/browser/ui/views/update_recommended_message_box.h"
+#include "chrome/browser/ui/views/website_settings_popup_view.h"
 #include "chrome/browser/ui/webui/feedback_ui.h"
 #include "chrome/browser/ui/window_sizer.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -1148,6 +1149,9 @@ void BrowserView::ShowWebsiteSettings(Profile* profile,
                                       const GURL& url,
                                       const content::SSLStatus& ssl,
                                       bool show_history) {
+  WebsiteSettingsPopupView::ShowPopup(
+      GetLocationBarView()->location_icon_view(), profile,
+      tab_contents_wrapper, url, ssl);
 }
 
 void BrowserView::ShowAppMenu() {

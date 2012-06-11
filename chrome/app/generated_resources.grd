@@ -260,6 +260,15 @@ are declared in build/common.gypi.
       <message name="IDS_WEBSITE_SETTINGS_THIRD_PARTY_SITE_DATA" desc="The label of the counts for allowed and blocked third party cookies and site data.">
         Others
       </message>
+      <message name="IDS_WEBSITE_SETTINGS_SITE_DATA_STATS_LINE" desc="The label text with the number of allowed and blocked cookies and site data objects.">
+        <ph name="DATA_SOURCE">$1<ex>foo.bar.org</ex></ph> (<ph name="ALLOWED_COUNT">$2<ex>6</ex></ph> Allowed / <ph name="BLOCKED_COUNT">$3<ex>0</ex></ph> Blocked)
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_DEFAULT_PERMISSION_LABEL" desc="The label for the global default setting that is used in a permissions dropdown.">
+        Use global default (<ph name="PERMISSION_VALUE">$1<ex>ALLOW</ex></ph>)
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_PERMISSION_LABEL" desc="The label for a permission value that is used in the permisisons dropdown.">
+        Always <ph name="PERMISSION_VALUE">$1<ex>ALLOW</ex></ph>
+      </message>
 
       <message name="IDS_SHOWFULLHISTORY_LINK" desc="The label of the Show Full History link at the bottom of the back/forward menu.">
         Show Full History

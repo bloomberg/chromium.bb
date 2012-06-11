@@ -20,7 +20,6 @@ class GURL;
 class PermissionInfoList;
 class Profile;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 class WebsiteSettings;
 
 namespace content {
@@ -83,6 +82,12 @@ class WebsiteSettingsUI {
   };
 
   virtual ~WebsiteSettingsUI();
+
+  // Returns the resource ID of the UI string for the given permission |type|.
+  static int PermissionTypeToUIStringID(ContentSettingsType type);
+
+  // Returns the resource ID of the UI string for the given permission |value|.
+  static int PermissionValueToUIStringID(ContentSetting value);
 
   // Sets cookie information.
   virtual void SetCookieInfo(const CookieInfoList& cookie_info_list) = 0;
