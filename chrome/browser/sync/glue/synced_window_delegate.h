@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,7 +57,7 @@ class SyncedWindowDelegate {
   // Returns true iff the provided tab is currently "pinned" in the tab strip.
   virtual bool IsTabPinned(const SyncedTabDelegate* tab) const = 0;
 
-  // see Browser::GetTabContentsWrapperAt
+  // see Browser::GetTabContentsAt
   virtual SyncedTabDelegate* GetTabAt(int index) const = 0;
 
   // Return the tab id for the tab at |index|.

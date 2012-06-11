@@ -24,7 +24,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/sync/one_click_signin_histogram.h"
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -185,8 +185,8 @@ InfoBarDelegate::InfoBarAutomationType
 
 void OneClickLoginInfoBarDelegate::DisableOneClickSignIn() {
   PrefService* pref_service =
-      TabContentsWrapper::GetCurrentWrapperForContents(
-          owner()->web_contents())->profile()->GetPrefs();
+      TabContents::FromWebContents(owner()->web_contents())->
+          profile()->GetPrefs();
   pref_service->SetBoolean(prefs::kReverseAutologinEnabled, false);
 }
 
@@ -308,15 +308,14 @@ void OneClickSigninHelper::ShowInfoBarUIThread(
   if (!signin->IsAllowedUsername(email))
     return;
 
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
-  if (!wrapper)
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
+  if (!tab_contents)
     return;
 
   // Save the email in the one-click signin manager.  The manager may
   // not exist if the contents is incognito or if the profile is already
   // connected to a Google account.
-  OneClickSigninHelper* helper = wrapper->one_click_signin_helper();
+  OneClickSigninHelper* helper = tab_contents->one_click_signin_helper();
   if (helper)
     helper->SaveSessionIndexAndEmail(session_index, email);
 }
@@ -332,11 +331,10 @@ void OneClickSigninHelper::DidStopLoading() {
   if (email_.empty() || password_.empty())
     return;
 
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(web_contents());
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
 
-  wrapper->infobar_tab_helper()->AddInfoBar(
-      new OneClickLoginInfoBarDelegate(wrapper->infobar_tab_helper(),
+  tab_contents->infobar_tab_helper()->AddInfoBar(
+      new OneClickLoginInfoBarDelegate(tab_contents->infobar_tab_helper(),
                                        session_index_, email_, password_));
 
   email_.clear();

@@ -13,8 +13,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/ui/sync/tab_contents_wrapper_synced_tab_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -45,7 +45,7 @@ static const char kNTPOpenTabSyncURL[] = "chrome://newtab/#opentabs";
 // from a NavigationController, if it exists. Returns |NULL| otherwise.
 SyncedTabDelegate* ExtractSyncedTabDelegate(
     const content::NotificationSource& source) {
-  TabContentsWrapper* tab = TabContentsWrapper::GetCurrentWrapperForContents(
+  TabContents* tab = TabContents::FromWebContents(
       content::Source<NavigationController>(source).ptr()->GetWebContents());
   if (!tab)
     return NULL;
@@ -113,8 +113,7 @@ void SessionChangeProcessor::Observe(
 
     case chrome::NOTIFICATION_TAB_PARENTED: {
       SyncedTabDelegate* tab =
-          content::Source<TabContentsWrapper>(source).ptr()->
-              synced_tab_delegate();
+          content::Source<TabContents>(source).ptr()->synced_tab_delegate();
       if (!tab || tab->profile() != profile_) {
         return;
       }
@@ -124,13 +123,12 @@ void SessionChangeProcessor::Observe(
     }
 
     case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME: {
-      TabContentsWrapper* tab_contents_wrapper =
-          TabContentsWrapper::GetCurrentWrapperForContents(
-              content::Source<WebContents>(source).ptr());
-      if (!tab_contents_wrapper) {
+      TabContents* tab_contents = TabContents::FromWebContents(
+          content::Source<WebContents>(source).ptr());
+      if (!tab_contents) {
         return;
       }
-      SyncedTabDelegate* tab = tab_contents_wrapper->synced_tab_delegate();
+      SyncedTabDelegate* tab = tab_contents->synced_tab_delegate();
       if (!tab || tab->profile() != profile_) {
         return;
       }
@@ -140,9 +138,8 @@ void SessionChangeProcessor::Observe(
     }
 
     case chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED: {
-      TabContentsWrapper* tab_contents_wrapper =
-          content::Source<TabContentsWrapper>(source).ptr();
-      SyncedTabDelegate* tab = tab_contents_wrapper->synced_tab_delegate();
+      TabContents* tab_contents = content::Source<TabContents>(source).ptr();
+      SyncedTabDelegate* tab = tab_contents->synced_tab_delegate();
       if (!tab || tab->profile() != profile_) {
         return;
       }

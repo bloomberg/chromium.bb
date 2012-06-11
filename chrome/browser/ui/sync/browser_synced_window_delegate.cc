@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/sync/tab_contents_wrapper_synced_tab_delegate.h"
+#include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 
@@ -47,7 +47,7 @@ bool BrowserSyncedWindowDelegate::IsTabPinned(
     const browser_sync::SyncedTabDelegate* tab) const {
   for (int i = 0; i < browser_->tab_count(); i++) {
     browser_sync::SyncedTabDelegate* current =
-        browser_->GetTabContentsWrapperAt(i)->synced_tab_delegate();
+        browser_->GetTabContentsAt(i)->synced_tab_delegate();
     if (tab == current)
       return browser_->IsTabPinned(i);
   }
@@ -57,7 +57,7 @@ bool BrowserSyncedWindowDelegate::IsTabPinned(
 
 browser_sync::SyncedTabDelegate* BrowserSyncedWindowDelegate::GetTabAt(
     int index) const {
-  return browser_->GetTabContentsWrapperAt(index)->synced_tab_delegate();
+  return browser_->GetTabContentsAt(index)->synced_tab_delegate();
 }
 
 SessionID::id_type BrowserSyncedWindowDelegate::GetTabIdAt(int index) const {
