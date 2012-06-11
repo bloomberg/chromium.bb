@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/browser/ui/find_bar/find_bar_state_factory.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -73,7 +73,7 @@ void FindBarController::EndFindSession(SelectionAction selection_action,
   }
 }
 
-void FindBarController::ChangeTabContents(TabContentsWrapper* contents) {
+void FindBarController::ChangeTabContents(TabContents* contents) {
   if (tab_contents_) {
     registrar_.RemoveAll();
     find_bar_->StopAnimation();
