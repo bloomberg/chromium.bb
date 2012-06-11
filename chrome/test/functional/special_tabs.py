@@ -90,25 +90,21 @@ class SpecialTabsTest(pyauto.PyUITest):
   }
 
   chromeos_special_url_tabs = {
-    'chrome://active-downloads': { 'title': 'Downloads', 'CSP': False },
-    'chrome://choose-mobile-network': { 'title': 'undefined', 'CSP': False },
-    'chrome://imageburner': { 'title':'Create a Recovery Media', 'CSP': False },
-    'chrome://keyboardoverlay': { 'title': 'Keyboard Overlay', 'CSP': False },
-    'chrome://login': { 'CSP': False },
+    'chrome://choose-mobile-network': { 'title': 'undefined', 'CSP': True },
+    'chrome://flags': { 'CSP': True },
+    'chrome://imageburner': { 'title':'Create a Recovery Media', 'CSP': True },
+    'chrome://keyboardoverlay': { 'title': 'Keyboard Overlay', 'CSP': True },
     'chrome://network': { 'title': 'About Network' },
-    'chrome://oobe': { 'title': 'undefined', 'CSP': False },
     'chrome://os-credits': { 'title': 'Credits', 'CSP': False },
     'chrome://proxy-settings': { 'CSP': False },
     'chrome://register': { 'CSP': False },
-    'chrome://sim-unlock': { 'title': 'Enter SIM Card PIN', 'CSP': False },
+    'chrome://settings/languages':
+      { 'title': 'Settings - Languages and input' },
+    'chrome://sim-unlock': { 'title': 'Enter SIM card PIN', 'CSP': False },
     'chrome://system': { 'title': 'About System', 'CSP': False },
-
-    # OVERRIDE - usually a warning page without CSP (so far).
-    'chrome://flags': { 'CSP': False },
 
     # OVERRIDE - title and page different on CrOS
     'chrome://settings/accounts': { 'title': 'Settings - Users' },
-    'chrome://settings/proxy': { 'title': 'Proxy' },
   }
   broken_chromeos_special_url_tabs = {
     # returns "not available" page on chromeos=1 linux but has an URL constant.
@@ -125,6 +121,7 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://slideshow': { 'CSP': False },
     'chrome://syncresources': { 'CSP': False },
     'chrome://theme': { 'CSP': False },
+    'chrome://view-http-cache': { 'CSP': False },
 
     # crashes on chromeos=1 on linux, possibly missing real CrOS features.
     'chrome://cryptohome': { 'CSP': False},
@@ -303,7 +300,7 @@ class SpecialTabsTest(pyauto.PyUITest):
                          msg='Got %s for %s' % (result, url))
 
       # Restart browser so that every URL gets a fresh instance.
-      self.RestartBrowser(clear_profile=False)
+      self.RestartBrowser(clear_profile=True)
 
   def testAboutAppCacheTab(self):
     """Test App Cache tab to confirm about page populates caches."""
