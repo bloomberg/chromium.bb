@@ -175,6 +175,7 @@ const char kStateOverrideRequest[] = "StateOverrideRequest";
 const char kGetPowerAccumulationMethod[] = "GetPowerAccumulation";
 const char kHandleUserActivityMethod[] = "HandleUserActivity";
 const char kHandleVideoActivityMethod[] = "HandleVideoActivity";
+const char kSetIsProjectingMethod[] = "SetIsProjecting";
 // DEPRECATED
 const char kPowerManagerDecreaseScreenBrightness[] =
     "DecreaseScreenBrightness";
