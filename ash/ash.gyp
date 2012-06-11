@@ -164,6 +164,8 @@
         'system/tray/system_tray_item.h',
         'system/tray/tray_background_view.cc',
         'system/tray/tray_background_view.h',
+        'system/tray/tray_bubble_view.cc',
+        'system/tray/tray_bubble_view.h',
         'system/tray/tray_constants.cc',
         'system/tray/tray_constants.h',
         'system/tray/tray_details_view.cc',
