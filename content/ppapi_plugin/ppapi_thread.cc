@@ -28,6 +28,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/interface_list.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
+#include "ui/base/ui_base_switches.h"
 #include "webkit/plugins/plugin_switches.h"
 
 #if defined(OS_WIN)
@@ -159,6 +160,11 @@ bool PpapiThread::SendToBrowser(IPC::Message* msg) {
     return ChildThread::Send(msg);
 
   return sync_message_filter()->Send(msg);
+}
+
+std::string PpapiThread::GetUILanguage() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  return command_line->GetSwitchValueASCII(switches::kLang);
 }
 
 void PpapiThread::PreCacheFont(const void* logfontw) {

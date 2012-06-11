@@ -126,6 +126,7 @@ class PluginProxyTestHarness : public ProxyTestHarnessBase {
 
     // PluginPepperDelegate implementation.
     virtual bool SendToBrowser(IPC::Message* msg) OVERRIDE;
+    virtual std::string GetUILanguage() OVERRIDE;
     virtual void PreCacheFont(const void* logfontw) OVERRIDE;
 
    private:

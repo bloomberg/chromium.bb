@@ -16,12 +16,14 @@
 #include "content/browser/renderer_host/render_message_filter.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/child_process_messages.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/pepper_plugin_info.h"
 #include "content/public/common/process_type.h"
 #include "ipc/ipc_switches.h"
 #include "net/base/network_change_notifier.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ui/base/ui_base_switches.h"
 #include "webkit/plugins/plugin_switches.h"
 
 using content::ChildProcessHost;
@@ -187,6 +189,13 @@ bool PpapiPluginProcessHost::Init(const content::PepperPluginInfo& info) {
     };
     cmd_line->CopySwitchesFrom(browser_command_line, kPluginForwardSwitches,
                                arraysize(kPluginForwardSwitches));
+  }
+
+  std::string locale =
+      content::GetContentClient()->browser()->GetApplicationLocale();
+  if (!locale.empty()) {
+    // Pass on the locale so the plugin will know what language we're using.
+    cmd_line->AppendSwitchASCII(switches::kLang, locale);
   }
 
   if (!plugin_launcher.empty())

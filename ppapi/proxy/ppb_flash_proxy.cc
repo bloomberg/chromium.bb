@@ -287,7 +287,6 @@ int32_t PPB_Flash_Proxy::GetSettingInt(PP_Instance instance,
 
 PP_Var PPB_Flash_Proxy::GetSetting(PP_Instance instance,
                                    PP_FlashSetting setting) {
-  ReceiveSerializedVarReturnValue result;
   PluginDispatcher* plugin_dispatcher =
       static_cast<PluginDispatcher*>(dispatcher());
   switch (setting) {
@@ -299,6 +298,9 @@ PP_Var PPB_Flash_Proxy::GetSetting(PP_Instance instance,
     case PP_FLASHSETTING_STAGE3DENABLED:
       return PP_MakeBool(PP_FromBool(
           plugin_dispatcher->preferences().is_stage3d_supported));
+    case PP_FLASHSETTING_LANGUAGE:
+      return StringVar::StringToPPVar(
+          PluginGlobals::Get()->plugin_proxy_delegate()->GetUILanguage());
   }
   return PP_MakeUndefined();
 }

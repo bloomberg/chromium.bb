@@ -6,6 +6,7 @@
   'dependencies': [
     '../base/base.gyp:base',
     '../ppapi/ppapi_internal.gyp:ppapi_proxy',
+    '../ui/ui.gyp:ui',
   ],
   'sources': [
     'ppapi_plugin/broker_process_dispatcher.cc',

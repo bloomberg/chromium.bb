@@ -229,6 +229,10 @@ bool PluginProxyTestHarness::PluginDelegateMock::SendToBrowser(
   return false;
 }
 
+std::string PluginProxyTestHarness::PluginDelegateMock::GetUILanguage() {
+  return std::string("en-US");
+}
+
 void PluginProxyTestHarness::PluginDelegateMock::PreCacheFont(
     const void* logfontw) {
 }

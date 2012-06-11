@@ -47,7 +47,16 @@ enum PP_FlashSetting {
    *
    * This should only be enabled if PP_FLASHSETTING_3DENABLED is true.
    */
-  PP_FLASHSETTING_STAGE3DENABLED = 3
+  PP_FLASHSETTING_STAGE3DENABLED = 3,
+
+  /**
+   * Specifies the string for the language code of the UI of the browser.
+   *
+   * For example: "en-US" or "de".
+   *
+   * Returns an undefined PP_Var on invalid instance.
+   */
+  PP_FLASHSETTING_LANGUAGE = 4
 };
 
 /**
