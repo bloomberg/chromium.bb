@@ -78,6 +78,7 @@ binarydata/${LOG_FILE}?id=${LOG_IDNUM}&logIndex=0"
       TYPE="$(file "$LOG_FILE")"
       if [[ "$TYPE" = *bzip2* ]]; then
         # download success
+        infile="$LOG_FILE"
         break
       fi
       rm -f "$LOG_FILE"
