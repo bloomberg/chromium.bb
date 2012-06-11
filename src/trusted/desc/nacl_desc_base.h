@@ -190,7 +190,6 @@ struct NaClDescVtbl {
    * the memory, prior to putting new memory in place.
    */
   int (*UnmapUnsafe)(struct NaClDesc          *vself,
-                     struct NaClDescEffector  *effp,
                      void                     *start_addr,
                      size_t                   len) NACL_WUR;
 #endif
@@ -397,10 +396,9 @@ uintptr_t NaClDescMapNotImplemented(struct NaClDesc         *vself,
                                     nacl_off64_t            offset);
 
 #if NACL_WINDOWS
-int NaClDescUnmapUnsafeNotImplemented(struct NaClDesc         *vself,
-                                      struct NaClDescEffector *effp,
-                                      void                    *start_addr,
-                                      size_t                  len);
+int NaClDescUnmapUnsafeNotImplemented(struct NaClDesc  *vself,
+                                      void             *start_addr,
+                                      size_t           len);
 /* This is an initializer for use when defining NaClDescVtbl structs. */
 # define NACL_DESC_UNMAP_NOT_IMPLEMENTED \
     NaClDescUnmapUnsafeNotImplemented,

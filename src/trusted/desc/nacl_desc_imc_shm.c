@@ -204,10 +204,9 @@ static uintptr_t NaClDescImcShmMap(struct NaClDesc         *vself,
 }
 
 #if NACL_WINDOWS
-static int NaClDescImcShmUnmapUnsafe(struct NaClDesc         *vself,
-                                     struct NaClDescEffector *effp,
-                                     void                    *start_addr,
-                                     size_t                  len) {
+static int NaClDescImcShmUnmapUnsafe(struct NaClDesc  *vself,
+                                     void             *start_addr,
+                                     size_t           len) {
   int       retval;
   uintptr_t addr;
   uintptr_t end_addr;

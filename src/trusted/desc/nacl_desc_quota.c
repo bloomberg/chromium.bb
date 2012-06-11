@@ -73,14 +73,13 @@ uintptr_t NaClDescQuotaMap(struct NaClDesc          *vself,
 }
 
 #if NACL_WINDOWS
-int NaClDescQuotaUnmapUnsafe(struct NaClDesc          *vself,
-                             struct NaClDescEffector  *effp,
-                             void                     *start_addr,
-                             size_t                   len) {
+int NaClDescQuotaUnmapUnsafe(struct NaClDesc  *vself,
+                             void             *start_addr,
+                             size_t           len) {
   struct NaClDescQuota *self = (struct NaClDescQuota *) vself;
 
   return (*NACL_VTBL(NaClDesc, self->desc)->
-          UnmapUnsafe)(self->desc, effp, start_addr, len);
+          UnmapUnsafe)(self->desc, start_addr, len);
 }
 #endif
 

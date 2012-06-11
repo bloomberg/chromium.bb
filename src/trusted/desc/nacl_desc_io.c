@@ -166,12 +166,10 @@ uintptr_t NaClDescIoDescMapAnon(struct NaClDescEffector *effp,
 }
 
 #if NACL_WINDOWS
-static int NaClDescIoDescUnmapUnsafe(struct NaClDesc         *vself,
-                                     struct NaClDescEffector *effp,
-                                     void                    *start_addr,
-                                     size_t                  len) {
+static int NaClDescIoDescUnmapUnsafe(struct NaClDesc  *vself,
+                                     void             *start_addr,
+                                     size_t           len) {
   UNREFERENCED_PARAMETER(vself);
-  UNREFERENCED_PARAMETER(effp);
   return NaClHostDescUnmapUnsafe(start_addr, len);
 }
 #endif

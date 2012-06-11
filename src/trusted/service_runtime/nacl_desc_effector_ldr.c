@@ -67,24 +67,8 @@ static void NaClDescEffLdrUnmapMemory(struct NaClDescEffector  *vself,
                 GetLastError());
       }
     } else {
-      struct NaClDesc *backing_ndp;
-      int             retval;
-
-      backing_ndp = map_region->nmop->ndp;
-
-      retval = (*((struct NaClDescVtbl const *) backing_ndp->base.vtbl)->
-                UnmapUnsafe)(backing_ndp,
-                             vself,
-                             (void *) addr,
-                             NACL_MAP_PAGESIZE);
-      if (0 != retval) {
-        NaClLog(LOG_FATAL,
-                ("NaClMMap: UnmapUnsafe failed at user addr 0x%08"NACL_PRIxPTR
-                 " (sys 0x%08"NACL_PRIxPTR") failed: syscall return %d\n"),
-                addr,
-                NaClUserToSys(self->nap, addr),
-                retval);
-      }
+      NaClDescUnmapUnsafe(map_region->nmop->ndp,
+                          (void *) addr, NACL_MAP_PAGESIZE);
     }
   }
 }

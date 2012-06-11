@@ -1569,7 +1569,6 @@ cleanup:
 #if NACL_WINDOWS
 static int32_t MunmapInternal(struct NaClApp *nap,
                               uintptr_t sysaddr, size_t length) {
-  int32_t retval;
   uintptr_t addr;
   uintptr_t endaddr = sysaddr + length;
   for (addr = sysaddr; addr < endaddr; addr += NACL_MAP_PAGESIZE) {
@@ -1595,17 +1594,11 @@ static int32_t MunmapInternal(struct NaClApp *nap,
                 addr, error, error);
       }
     } else {
-      struct NaClDesc *desc = entry->nmop->ndp;
-      retval = (*NACL_VTBL(NaClDesc, desc)->UnmapUnsafe)(desc, nap->effp,
-                                                         (void*) addr,
-                                                         NACL_MAP_PAGESIZE);
-      if (0 != retval) {
-        NaClLog(LOG_FATAL,
-                ("NaClSysMunmap: Could not unmap via ndp->Unmap 0x%08x"
-                 " and cannot handle address space move\n"),
-                addr);
-      }
-      /* Fill the address space hole that we opened with UnmapUnsafe(). */
+      NaClDescUnmapUnsafe(entry->nmop->ndp, (void *) addr, NACL_MAP_PAGESIZE);
+      /*
+       * Fill the address space hole that we opened with
+       * NaClDescUnmapUnsafe().
+       */
       if (!VirtualAlloc((void *) addr, NACL_MAP_PAGESIZE, MEM_RESERVE,
                         PAGE_READWRITE)) {
         NaClLog(LOG_FATAL, "MunmapInternal: "

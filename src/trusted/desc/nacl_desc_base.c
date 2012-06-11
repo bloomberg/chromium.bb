@@ -194,10 +194,8 @@ uintptr_t NaClDescMapNotImplemented(struct NaClDesc         *vself,
 
 #if NACL_WINDOWS
 int NaClDescUnmapUnsafeNotImplemented(struct NaClDesc         *vself,
-                                      struct NaClDescEffector *effp,
                                       void                    *start_addr,
                                       size_t                  len) {
-  UNREFERENCED_PARAMETER(effp);
   UNREFERENCED_PARAMETER(start_addr);
   UNREFERENCED_PARAMETER(len);
 
