@@ -195,9 +195,9 @@ UserManagerImpl::UserManagerImpl()
       is_current_user_owner_(false),
       is_current_user_new_(false),
       is_current_user_ephemeral_(false),
-      current_user_wallpaper_type_(User::DEFAULT),
+      current_user_wallpaper_type_(User::UNKNOWN),
       ALLOW_THIS_IN_INITIALIZER_LIST(current_user_wallpaper_index_(
-          ash::GetDefaultWallpaperIndex())),
+          ash::GetInvalidWallpaperIndex())),
       ephemeral_users_enabled_(false),
       observed_sync_service_(NULL),
       last_image_set_async_(false),
@@ -1087,7 +1087,7 @@ void UserManagerImpl::GetUserWallpaperProperties(const std::string& username,
         username,
         &wallpaper_properties)) {
       *type = User::UNKNOWN;
-      *index = ash::GetDefaultWallpaperIndex();
+      *index = ash::GetInvalidWallpaperIndex();
       wallpaper_properties->GetInteger(kWallpaperTypeNodeName,
                                        reinterpret_cast<int*>(type));
       wallpaper_properties->GetInteger(kWallpaperIndexNodeName, index);
