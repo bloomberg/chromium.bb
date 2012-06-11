@@ -253,27 +253,30 @@ class ShellUtil {
                                               const string16& chrome_exe,
                                               const string16& protocol);
 
-  // This method adds Chrome to the list that shows up in Add/Remove Programs->
-  // Set Program Access and Defaults and also creates Chrome ProgIds under
-  // Software\Classes. This method requires write access to HKLM so is just
-  // best effort deal. If write to HKLM fails and elevate_if_not_admin is true,
-  // this method will:
-  // - add the ProgId entries to HKCU on XP. HKCU entries will not make
-  //   Chrome show in Set Program Access and Defaults but they are still useful
-  //   because we can make Chrome run when user clicks on http link or html
-  //   file.
-  // - will try to launch setup.exe with admin priviledges on Vista to do
-  //   these tasks. Users will see standard Vista elevation prompt and if they
-  //   enter the right credentials, the write operation will work.
-  // Currently elevate_if_not_admin is true only when user tries to make Chrome
-  // default browser (through the UI or through installer options) and Chrome
-  // is not registered on the machine.
+  // Registers Chrome as a potential default browser and handler for filetypes
+  // and protocols.
+  // If Chrome is already registered, this method is a no-op.
+  // This method requires write access to HKLM so is just a best effort deal.
+  // If write to HKLM fails and:
+  // - |elevate_if_not_admin| is true (and OS is Vista or above):
+  //   tries to launch setup.exe with admin priviledges (by prompting the user
+  //   with a UAC) to do these tasks.
+  // - |elevate_if_not_admin| is false (or OS is XP):
+  //   adds the ProgId entries to HKCU. These entries will not make Chrome show
+  //   in Default Programs but they are still useful because Chrome can be
+  //   registered to run when the user clicks on an http link or an html file.
   //
   // |chrome_exe| full path to chrome.exe.
   // |unique_suffix| Optional input. If given, this function appends the value
   // to default browser entries names that it creates in the registry.
+  // Currently, this is only used to continue an install with the same suffix
+  // when elevating and calling setup.exe with admin privileges as described
+  // above.
   // |elevate_if_not_admin| if true will make this method try alternate methods
-  // as described above.
+  // as described above. This should only be true when following a user action
+  // (e.g. "Make Chrome Default") as it allows this method to UAC.
+  //
+  // Returns true if Chrome is successfully registered (or already registered).
   static bool RegisterChromeBrowser(BrowserDistribution* dist,
                                     const string16& chrome_exe,
                                     const string16& unique_suffix,

@@ -1194,12 +1194,9 @@ bool ShellUtil::RegisterChromeForProtocol(BrowserDistribution* dist,
 
   if (IsUserAnAdmin()) {
     // We can do this operation directly.
-    // If we're not registered at all, try to register. If that fails
-    // we should give up.
-    if (!IsChromeRegistered(dist, chrome_exe, suffix) &&
-        !RegisterChromeBrowser(dist, chrome_exe, suffix, false)) {
+    // First, make sure Chrome is fully registered on this machine.
+    if (!RegisterChromeBrowser(dist, chrome_exe, suffix, false))
       return false;
-    }
 
     // Write in the capabillity for the protocol.
     std::list<RegistryEntry*> entries;
