@@ -112,6 +112,7 @@
         'shared_impl/ppb_video_capture_shared.h',
         'shared_impl/ppb_view_shared.cc',
         'shared_impl/ppb_view_shared.h',
+        'shared_impl/ppp_flash_browser_operations_shared.h',
         'shared_impl/ppp_instance_combined.cc',
         'shared_impl/ppp_instance_combined.h',
         'shared_impl/proxy_lock.cc',

@@ -6,7 +6,11 @@
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS2_CONTENT_SETTINGS_HANDLER2_H_
 #pragma once
 
-#include "chrome/browser/plugin_data_remover_helper.h"
+#include <map>
+#include <string>
+
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/pepper_flash_settings_manager.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/ui/webui/options2/options_ui2.h"
 #include "chrome/common/content_settings_types.h"
@@ -19,7 +23,8 @@ class ProtocolHandlerRegistry;
 
 namespace options2 {
 
-class ContentSettingsHandler : public OptionsPageUIHandler {
+class ContentSettingsHandler : public OptionsPageUIHandler,
+                               public PepperFlashSettingsManager::Client {
  public:
   ContentSettingsHandler();
   virtual ~ContentSettingsHandler();
@@ -35,20 +40,46 @@ class ContentSettingsHandler : public OptionsPageUIHandler {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // PepperFlashSettingsManager::Client implementation.
+  virtual void OnGetPermissionSettingsCompleted(
+      uint32 request_id,
+      bool success,
+      PP_Flash_BrowserOperations_Permission default_permission,
+      const ppapi::FlashSiteSettings& sites) OVERRIDE;
+
   // Gets a string identifier for the group name, for use in HTML.
   static std::string ContentSettingsTypeToGroupName(ContentSettingsType type);
 
  private:
+  // Extends ContentSettingsType with some other types that will be also
+  // displayed in the content settings UI.
+  class ExContentSettingsType;
+  struct ExContentSettingsTypeNameEntry;
+
+  struct CachedPepperFlashSettings {
+    CachedPepperFlashSettings();
+    ~CachedPepperFlashSettings();
+
+    PP_Flash_BrowserOperations_Permission default_permission;
+
+    typedef std::map<std::string, PP_Flash_BrowserOperations_Permission>
+        SiteMap;
+    SiteMap sites;
+
+    bool initialized;
+  };
+
   // Functions that call into the page -----------------------------------------
 
   // Updates the page with the default settings (allow, ask, block, etc.)
-  void UpdateSettingDefaultFromModel(ContentSettingsType type);
+  void UpdateSettingDefaultFromModel(const ExContentSettingsType& type);
 
   // Clobbers and rebuilds the specific content setting type exceptions table.
-  void UpdateExceptionsViewFromModel(ContentSettingsType type);
+  void UpdateExceptionsViewFromModel(const ExContentSettingsType& type);
   // Clobbers and rebuilds the specific content setting type exceptions
   // OTR table.
-  void UpdateOTRExceptionsViewFromModel(ContentSettingsType type);
+  void UpdateOTRExceptionsViewFromModel(
+      const ExContentSettingsType& type);
   // Clobbers and rebuilds all the exceptions tables in the page (both normal
   // and OTR tables).
   void UpdateAllExceptionsViewsFromModel();
@@ -58,6 +89,9 @@ class ContentSettingsHandler : public OptionsPageUIHandler {
   void UpdateGeolocationExceptionsView();
   // Clobbers and rebuilds just the desktop notification exception table.
   void UpdateNotificationExceptionsView();
+  // Clobbers and rebuilds just the Pepper Flash camera and microphone exception
+  // table.
+  void UpdateFlashCameraMicExceptionsView();
   // Clobbers and rebuilds an exception table that's managed by the host content
   // settings map.
   void UpdateExceptionsViewFromHostContentSettingsMap(ContentSettingsType type);
@@ -102,16 +136,26 @@ class ContentSettingsHandler : public OptionsPageUIHandler {
 
   // Gets the default setting in string form. If |provider_id| is not NULL, the
   // id of the provider which provided the default setting is assigned to it.
-  std::string GetSettingDefaultFromModel(ContentSettingsType type,
+  std::string GetSettingDefaultFromModel(const ExContentSettingsType& type,
                                          std::string* provider_id);
 
   // Gets the ProtocolHandlerRegistry for the normal profile.
   ProtocolHandlerRegistry* GetProtocolHandlerRegistry();
 
+  static ExContentSettingsType ExContentSettingsTypeFromGroupName(
+      const std::string& name);
+  static std::string ExContentSettingsTypeToGroupName(
+      const ExContentSettingsType& type);
+
   // Member variables ---------------------------------------------------------
 
   content::NotificationRegistrar notification_registrar_;
   PrefChangeRegistrar pref_change_registrar_;
+  scoped_ptr<PepperFlashSettingsManager> flash_settings_manager_;
+  CachedPepperFlashSettings flash_cameramic_settings_;
+
+  static const ExContentSettingsTypeNameEntry
+      kExContentSettingsTypeGroupNames[];
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingsHandler);
 };

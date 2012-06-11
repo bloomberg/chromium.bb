@@ -86,8 +86,6 @@ cr.define('options', function() {
         OptionsPage.navigateToPage('cookies');
       };
 
-      // Remove from DOM instead of hiding so :last-of-type applies the style
-      // correctly.
       var intentsSection = $('intents-section');
       if (!loadTimeData.getBoolean('enable_web_intents') && intentsSection)
         intentsSection.parentNode.removeChild(intentsSection);
@@ -99,6 +97,9 @@ cr.define('options', function() {
 
       $('content-settings-overlay-confirm').onclick =
           OptionsPage.closeOverlay.bind(OptionsPage);
+
+      $('pepper-flash-cameramic-section').style.display = 'none';
+      $('pepper-flash-cameramic-exceptions-div').style.display = 'none';
     },
 
     /**
@@ -226,6 +227,16 @@ cr.define('options', function() {
                                'list[mode=' + mode + ']');
     exceptionsList.patternValidityCheckComplete(pattern, valid);
   };
+
+  /**
+   * Enables the Pepper Flash camera and microphone settings.
+   * Please note that whether the settings are actually showed or not is also
+   * affected by the style class pepper-flash-settings.
+   */
+  ContentSettings.enablePepperFlashCameraMicSettings = function() {
+    $('pepper-flash-cameramic-section').style.display = '';
+    $('pepper-flash-cameramic-exceptions-div').style.display = '';
+  }
 
   // Export
   return {

@@ -45,6 +45,7 @@
 #include "ppapi/shared_impl/ppb_network_list_private_shared.h"
 #include "ppapi/shared_impl/ppb_url_request_info_shared.h"
 #include "ppapi/shared_impl/ppb_view_shared.h"
+#include "ppapi/shared_impl/ppp_flash_browser_operations_shared.h"
 #include "ppapi/shared_impl/private/ppb_host_resolver_shared.h"
 #include "ppapi/shared_impl/private/ppb_x509_certificate_private_shared.h"
 
@@ -116,6 +117,11 @@ IPC_STRUCT_TRAITS_BEGIN(ppapi::DeviceRefData)
   IPC_STRUCT_TRAITS_MEMBER(type)
   IPC_STRUCT_TRAITS_MEMBER(name)
   IPC_STRUCT_TRAITS_MEMBER(id)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(ppapi::FlashSiteSetting)
+  IPC_STRUCT_TRAITS_MEMBER(site)
+  IPC_STRUCT_TRAITS_MEMBER(permission)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(ppapi::ViewData)
@@ -267,6 +273,36 @@ IPC_MESSAGE_CONTROL2(PpapiMsg_DeauthorizeContentLicenses,
                      uint32 /* request_id */,
                      FilePath /* plugin_data_path */)
 IPC_MESSAGE_CONTROL2(PpapiHostMsg_DeauthorizeContentLicensesResult,
+                     uint32 /* request_id */,
+                     bool /* success */)
+
+IPC_MESSAGE_CONTROL3(PpapiMsg_GetPermissionSettings,
+                     uint32 /* request_id */,
+                     FilePath /* plugin_data_path */,
+                     PP_Flash_BrowserOperations_SettingType /* setting_type */)
+IPC_MESSAGE_CONTROL4(
+    PpapiHostMsg_GetPermissionSettingsResult,
+    uint32 /* request_id */,
+    bool /* success */,
+    PP_Flash_BrowserOperations_Permission /* default_permission */,
+    ppapi::FlashSiteSettings /* sites */)
+
+IPC_MESSAGE_CONTROL5(PpapiMsg_SetDefaultPermission,
+                     uint32 /* request_id */,
+                     FilePath /* plugin_data_path */,
+                     PP_Flash_BrowserOperations_SettingType /* setting_type */,
+                     PP_Flash_BrowserOperations_Permission /* permission */,
+                     bool /* clear_site_specific */)
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_SetDefaultPermissionResult,
+                     uint32 /* request_id */,
+                     bool /* success */)
+
+IPC_MESSAGE_CONTROL4(PpapiMsg_SetSitePermission,
+                     uint32 /* request_id */,
+                     FilePath /* plugin_data_path */,
+                     PP_Flash_BrowserOperations_SettingType /* setting_type */,
+                     ppapi::FlashSiteSettings /* sites */)
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_SetSitePermissionResult,
                      uint32 /* request_id */,
                      bool /* success */)
 

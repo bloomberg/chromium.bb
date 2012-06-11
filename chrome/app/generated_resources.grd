@@ -6960,6 +6960,18 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_MOUSE_LOCK_BLOCK_RADIO" desc="A radio button in the Content Settings dialog for blocking all sites ability to disable the mouse cursor.">
         Do not allow any site to disable the mouse cursor
       </message>
+      <message name="IDS_PEPPER_FLASH_CAMERAMIC_TAB_LABEL" desc="Label for Pepper Flash camera and microphone tab on Content Settings dialog">
+        Flash camera and microphone
+      </message>
+      <message name="IDS_PEPPER_FLASH_CAMERAMIC_HEADER" desc="Label for Pepper Flash camera and microphone exception management page on Content Settings dialog">
+        Flash camera and microphone exceptions
+      </message>
+      <message name="IDS_PEPPER_FLASH_CAMERAMIC_ASK_RADIO" desc="A radio button in the Content Settings dialog for asking before allowing sites to use the camera or microphone.">
+        Ask me when a site wants to use the camera or microphone (recommended)
+      </message>
+      <message name="IDS_PEPPER_FLASH_CAMERAMIC_BLOCK_RADIO" desc="A radio button in the Content Settings dialog for blocking all sites from using the camera and microphone.">
+        Block all sites from using the camera and microphone
+      </message>
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_PROTECTED_CONTENT_TAB_LABEL" desc="Label for the Protected Content tab on the Content Settings dialog.">
           Protected Content
