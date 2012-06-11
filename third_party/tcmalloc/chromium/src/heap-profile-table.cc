@@ -290,6 +290,16 @@ void HeapProfileTable::MarkAsIgnored(const void* ptr) {
   }
 }
 
+void HeapProfileTable::MarkCurrentAllocations(AllocationMark mark) {
+  const MarkArgs args(mark, true);
+  alloc_address_map_->Iterate<const MarkArgs&>(MarkIterator, args);
+}
+
+void HeapProfileTable::MarkUnmarkedAllocations(AllocationMark mark) {
+  const MarkArgs args(mark, true);
+  alloc_address_map_->Iterate<const MarkArgs&>(MarkIterator, args);
+}
+
 // We'd be happier using snprintfer, but we don't to reduce dependencies.
 int HeapProfileTable::UnparseBucket(const Bucket& b,
                                     char* buf, int buflen, int bufsize,
@@ -396,6 +406,18 @@ void HeapProfileTable::ClearMMapData() {
   mmap_address_map_ = NULL;
 }
 
+void HeapProfileTable::DumpMarkedObjects(AllocationMark mark,
+                                         const char* file_name) {
+  RawFD fd = RawOpenForWriting(file_name);
+  if (fd == kIllegalRawFD) {
+    RAW_LOG(ERROR, "Failed dumping live objects to %s", file_name);
+    return;
+  }
+  const DumpMarkedArgs args(fd, mark);
+  alloc_address_map_->Iterate<const DumpMarkedArgs&>(DumpMarkedIterator, args);
+  RawClose(fd);
+}
+
 void HeapProfileTable::IterateOrderedAllocContexts(
     AllocContextIterator callback) const {
   Bucket** list = MakeSortedBucketList();
@@ -472,6 +494,32 @@ void HeapProfileTable::DumpNonLiveIterator(const void* ptr, AllocValue* v,
   char buf[1024];
   int len = UnparseBucket(b, buf, 0, sizeof(buf), "", args.profile_stats);
   RawWrite(args.fd, buf, len);
+}
+
+inline
+void HeapProfileTable::DumpMarkedIterator(const void* ptr, AllocValue* v,
+                                          const DumpMarkedArgs& args) {
+  if (v->mark() != args.mark)
+    return;
+  Bucket b;
+  memset(&b, 0, sizeof(b));
+  b.allocs = 1;
+  b.alloc_size = v->bytes;
+  b.depth = v->bucket()->depth;
+  b.stack = v->bucket()->stack;
+  char addr[16];
+  snprintf(addr, 16, "0x%08" PRIxPTR, ptr);
+  char buf[1024];
+  int len = UnparseBucket(b, buf, 0, sizeof(buf), addr, NULL);
+  RawWrite(args.fd, buf, len);
+}
+
+inline
+void HeapProfileTable::MarkIterator(const void* ptr, AllocValue* v,
+                                    const MarkArgs& args) {
+  if (!args.mark_all && v->mark() != UNMARKED)
+    return;
+  v->set_mark(args.mark);
 }
 
 inline void HeapProfileTable::ZeroBucketCountsIterator(

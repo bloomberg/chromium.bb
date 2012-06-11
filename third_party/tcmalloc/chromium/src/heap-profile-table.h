@@ -71,6 +71,15 @@ class HeapProfileTable {
     }
   };
 
+  // Possible marks for MarkCurrentAllocations and MarkUnmarkedAllocations. New
+  // allocations are marked with UNMARKED by default.
+  enum AllocationMark {
+    UNMARKED = 0,
+    MARK_ONE,
+    MARK_TWO,
+    MARK_THREE
+  };
+
   // Info we can return about an allocation.
   struct AllocInfo {
     size_t object_size;  // size of the allocation
@@ -138,6 +147,13 @@ class HeapProfileTable {
   // are skipped in heap checking reports.
   void MarkAsIgnored(const void* ptr);
 
+  // Mark all currently known allocations with the given AllocationMark.
+  void MarkCurrentAllocations(AllocationMark mark);
+
+  // Mark all unmarked (i.e. marked with AllocationMark::UNMARKED) with the
+  // given mark.
+  void MarkUnmarkedAllocations(AllocationMark mark);
+
   // Return current total (de)allocation statistics.  It doesn't contain
   // mmap'ed regions.
   const Stats& total() const { return total_; }
@@ -203,6 +219,25 @@ class HeapProfileTable {
   // calling ClearMMapData.
   void ClearMMapData();
 
+  // Dump a list of allocations marked as "live" along with their creation
+  // stack traces and sizes to a file named |file_name|. Together with
+  // MarkCurrentAllocatiosn and MarkUnmarkedAllocations this can be used
+  // to find objects that are created in a certain time span:
+  //   1. Invoke MarkCurrentAllocations(MARK_ONE) to mark the start of the
+  //      timespan.
+  //   2. Perform whatever action you suspect allocates memory that is not
+  //      correctly freed.
+  //   3. Invoke MarkUnmarkedAllocations(MARK_TWO).
+  //   4. Perform whatever action is supposed to free the memory again. New
+  //      allocations are not marked. So all allocations that are marked as
+  //      "live" where created during step 2.
+  //   5. Invoke DumpMarkedObjects(MARK_TWO) to get the list of allocations that
+  //      were created during step 2, but survived step 4.
+  //
+  // Note that this functionality cannot be used if the HeapProfileTable is
+  // used for leak checking (using HeapLeakChecker).
+  void DumpMarkedObjects(AllocationMark mark, const char* file_name);
+
  private:
   friend class DeepHeapProfile;
 
@@ -238,6 +273,12 @@ class HeapProfileTable {
     void set_ignore(bool r) {
       bucket_rep = (bucket_rep & ~uintptr_t(kIgnore)) | (r ? kIgnore : 0);
     }
+    AllocationMark mark() const {
+      return static_cast<AllocationMark>(bucket_rep & uintptr_t(kMask));
+    }
+    void set_mark(AllocationMark mark) {
+      bucket_rep = (bucket_rep & ~uintptr_t(kMask)) | uintptr_t(mark);
+    }
 
    private:
     // We store a few bits in the bottom bits of bucket_rep.
@@ -261,6 +302,23 @@ class HeapProfileTable {
 
     DumpArgs(RawFD a, Stats* d)
       : fd(a), profile_stats(d) { }
+  };
+
+  // Arguments that need to be passed DumpMarkedIterator callback below.
+  struct DumpMarkedArgs {
+    RawFD fd;  // file to write to.
+    AllocationMark mark;  // The mark of the allocations to process.
+
+    DumpMarkedArgs(RawFD a, AllocationMark m) : fd(a), mark(m) { }
+  };
+
+  // Arguments that need to be passed MarkIterator callback below.
+  struct MarkArgs {
+    AllocationMark mark;  // The mark to put on allocations.
+    bool mark_all;  // True if all allocations should be marked. Otherwise just
+                    // mark unmarked allocations.
+
+    MarkArgs(AllocationMark m, bool a) : mark(m), mark_all(a) { }
   };
 
   // helpers ----------------------------
@@ -307,10 +365,19 @@ class HeapProfileTable {
     callback(ptr, info);
   }
 
+  // Helper for MarkCurrentAllocations and MarkUnmarkedAllocations.
+  inline static void MarkIterator(const void* ptr, AllocValue* v,
+                                  const MarkArgs& args);
+
   // Helper for DumpNonLiveProfile to do object-granularity
   // heap profile dumping. It gets passed to AllocationMap::Iterate.
   inline static void DumpNonLiveIterator(const void* ptr, AllocValue* v,
                                          const DumpArgs& args);
+
+  // Helper for DumpMarkedObjects to dump all allocations with a given mark. It
+  // gets passed to AllocationMap::Iterate.
+  inline static void DumpMarkedIterator(const void* ptr, AllocValue* v,
+                                        const DumpMarkedArgs& args);
 
   // Helper for filling size variables in buckets by zero.
   inline static void ZeroBucketCountsIterator(

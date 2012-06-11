@@ -601,6 +601,30 @@ extern "C" void HeapProfilerDump(const char* reason) {
   }
 }
 
+extern "C" void HeapProfilerMarkBaseline() {
+  SpinLockHolder l(&heap_lock);
+
+  if (!is_on) return;
+
+  heap_profile->MarkCurrentAllocations(HeapProfileTable::MARK_ONE);
+}
+
+extern "C" void HeapProfilerMarkInteresting() {
+  SpinLockHolder l(&heap_lock);
+
+  if (!is_on) return;
+
+  heap_profile->MarkUnmarkedAllocations(HeapProfileTable::MARK_TWO);
+}
+
+extern "C" void HeapProfilerDumpAliveObjects(const char* filename) {
+  SpinLockHolder l(&heap_lock);
+
+  if (!is_on) return;
+
+  heap_profile->DumpMarkedObjects(HeapProfileTable::MARK_TWO, filename);
+}
+
 //----------------------------------------------------------------------
 // Initialization/finalization code
 //----------------------------------------------------------------------
