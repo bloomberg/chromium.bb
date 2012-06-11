@@ -33,7 +33,7 @@ DownloadFileImpl::DownloadFileImpl(
     DownloadRequestHandleInterface* request_handle,
     DownloadManager* download_manager,
     bool calculate_hash,
-    scoped_ptr<PowerSaveBlocker> power_save_blocker,
+    scoped_ptr<content::PowerSaveBlocker> power_save_blocker,
     const net::BoundNetLog& bound_net_log)
         : file_(info->save_info.file_path,
                 info->url(),

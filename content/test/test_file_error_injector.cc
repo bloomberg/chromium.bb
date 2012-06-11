@@ -91,7 +91,7 @@ DownloadFileWithErrors::DownloadFileWithErrors(
                            request_handle,
                            download_manager,
                            calculate_hash,
-                           scoped_ptr<PowerSaveBlocker>(NULL).Pass(),
+                           scoped_ptr<content::PowerSaveBlocker>(NULL).Pass(),
                            bound_net_log),
           source_url_(info->url()),
           error_info_(error_info),

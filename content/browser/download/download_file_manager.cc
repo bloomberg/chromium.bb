@@ -57,9 +57,10 @@ DownloadFile* DownloadFileFactoryImpl::CreateFile(
   return new DownloadFileImpl(
       info, stream.Pass(), new DownloadRequestHandle(request_handle),
       download_manager, calculate_hash,
-      scoped_ptr<PowerSaveBlocker>(
-          new PowerSaveBlocker(
-              PowerSaveBlocker::kPowerSaveBlockPreventSystemSleep)).Pass(),
+      scoped_ptr<content::PowerSaveBlocker>(
+          new content::PowerSaveBlocker(
+              content::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
+              "Download in progress")).Pass(),
       bound_net_log);
 }
 

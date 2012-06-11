@@ -12,70 +12,6 @@
 #include "base/threading/thread.h"
 #include "content/public/browser/browser_thread.h"
 
-using content::BrowserThread;
-
-namespace {
-
-// Power management cannot be done on the UI thread. IOPMAssertionCreate does a
-// synchronous MIG call to configd, so if it is called on the main thread the UI
-// is at the mercy of another process. See http://crbug.com/79559 and
-// http://www.opensource.apple.com/source/IOKitUser/IOKitUser-514.16.31/pwr_mgt.subproj/IOPMLibPrivate.c .
-base::Thread* g_power_thread;
-IOPMAssertionID g_power_assertion;
-
-void CreateSleepAssertion(PowerSaveBlocker::PowerSaveBlockerType type) {
-  DCHECK_EQ(base::PlatformThread::CurrentId(), g_power_thread->thread_id());
-  IOReturn result;
-
-  if (g_power_assertion != kIOPMNullAssertionID) {
-    result = IOPMAssertionRelease(g_power_assertion);
-    g_power_assertion = kIOPMNullAssertionID;
-    LOG_IF(ERROR, result != kIOReturnSuccess)
-        << "IOPMAssertionRelease: " << result;
-  }
-
-  CFStringRef level = NULL;
-  // See QA1340 <http://developer.apple.com/library/mac/#qa/qa1340/> for more
-  // details.
-  switch (type) {
-    case PowerSaveBlocker::kPowerSaveBlockPreventSystemSleep:
-      level = kIOPMAssertionTypeNoIdleSleep;
-      break;
-    case PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep:
-      level = kIOPMAssertionTypeNoDisplaySleep;
-      break;
-    default:
-      break;
-  }
-  if (level) {
-    result = IOPMAssertionCreate(level,
-                                 kIOPMAssertionLevelOn,
-                                 &g_power_assertion);
-    LOG_IF(ERROR, result != kIOReturnSuccess)
-        << "IOPMAssertionCreate: " << result;
-  }
-}
-
-}  // namespace
-
-// Called only from UI thread.
-// static
-void PowerSaveBlocker::ApplyBlock(PowerSaveBlockerType type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!g_power_thread) {
-    g_power_assertion = kIOPMNullAssertionID;
-    g_power_thread = new base::Thread("PowerSaveBlocker");
-    g_power_thread->Start();
-  }
-
-  g_power_thread->message_loop()->
-      PostTask(FROM_HERE, base::Bind(CreateSleepAssertion, type));
-}
-
-// TODO(avi): Remove ^^^ this code in favor of vvv this code.
-// http://crbug.com/126591
-
 namespace {
 
 // Power management cannot be done on the UI thread. IOPMAssertionCreate does a
@@ -94,14 +30,14 @@ struct PowerSaveBlockerLazyInstanceTraits {
   static void Delete(base::Thread* instance) { }
 };
 base::LazyInstance<base::Thread, PowerSaveBlockerLazyInstanceTraits>
-    g_power_thread2 = LAZY_INSTANCE_INITIALIZER;
+    g_power_thread = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
 namespace content {
 
-class PowerSaveBlocker2::Delegate
-    : public base::RefCountedThreadSafe<PowerSaveBlocker2::Delegate> {
+class PowerSaveBlocker::Delegate
+    : public base::RefCountedThreadSafe<PowerSaveBlocker::Delegate> {
  public:
   Delegate(PowerSaveBlockerType type, const std::string& reason)
       : type_(type), reason_(reason), assertion_(kIOPMNullAssertionID) {}
@@ -111,25 +47,25 @@ class PowerSaveBlocker2::Delegate
   void RemoveBlock();
 
  private:
-  friend class base::RefCountedThreadSafe<PowerSaveBlocker2::Delegate>;
+  friend class base::RefCountedThreadSafe<Delegate>;
   ~Delegate() {}
   PowerSaveBlockerType type_;
   std::string reason_;
   IOPMAssertionID assertion_;
 };
 
-void PowerSaveBlocker2::Delegate::ApplyBlock() {
+void PowerSaveBlocker::Delegate::ApplyBlock() {
   DCHECK_EQ(base::PlatformThread::CurrentId(),
-            g_power_thread2.Pointer()->thread_id());
+            g_power_thread.Pointer()->thread_id());
 
   CFStringRef level = NULL;
   // See QA1340 <http://developer.apple.com/library/mac/#qa/qa1340/> for more
   // details.
   switch (type_) {
-    case PowerSaveBlocker2::kPowerSaveBlockPreventAppSuspension:
+    case PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension:
       level = kIOPMAssertionTypeNoIdleSleep;
       break;
-    case PowerSaveBlocker2::kPowerSaveBlockPreventDisplaySleep:
+    case PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep:
       level = kIOPMAssertionTypeNoDisplaySleep;
       break;
     default:
@@ -147,9 +83,9 @@ void PowerSaveBlocker2::Delegate::ApplyBlock() {
   }
 }
 
-void PowerSaveBlocker2::Delegate::RemoveBlock() {
+void PowerSaveBlocker::Delegate::RemoveBlock() {
   DCHECK_EQ(base::PlatformThread::CurrentId(),
-            g_power_thread2.Pointer()->thread_id());
+            g_power_thread.Pointer()->thread_id());
 
   if (assertion_ != kIOPMNullAssertionID) {
     IOReturn result = IOPMAssertionRelease(assertion_);
@@ -158,18 +94,18 @@ void PowerSaveBlocker2::Delegate::RemoveBlock() {
   }
 }
 
-PowerSaveBlocker2::PowerSaveBlocker2(PowerSaveBlockerType type,
-                                     const std::string& reason)
-    : delegate_(new PowerSaveBlocker2::Delegate(type, reason)) {
-  g_power_thread2.Pointer()->message_loop()->PostTask(
+PowerSaveBlocker::PowerSaveBlocker(PowerSaveBlockerType type,
+                                   const std::string& reason)
+    : delegate_(new Delegate(type, reason)) {
+  g_power_thread.Pointer()->message_loop()->PostTask(
       FROM_HERE,
-      base::Bind(&PowerSaveBlocker2::Delegate::ApplyBlock, delegate_));
+      base::Bind(&Delegate::ApplyBlock, delegate_));
 }
 
-PowerSaveBlocker2::~PowerSaveBlocker2() {
-  g_power_thread2.Pointer()->message_loop()->PostTask(
+PowerSaveBlocker::~PowerSaveBlocker() {
+  g_power_thread.Pointer()->message_loop()->PostTask(
       FROM_HERE,
-      base::Bind(&PowerSaveBlocker2::Delegate::RemoveBlock, delegate_));
+      base::Bind(&Delegate::RemoveBlock, delegate_));
 }
 
 }  // namespace content

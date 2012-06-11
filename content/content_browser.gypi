@@ -443,7 +443,6 @@
     'browser/plugin_service_impl.h',
     'browser/power_save_blocker.h',
     'browser/power_save_blocker_android.cc',
-    'browser/power_save_blocker_common.cc',
     'browser/power_save_blocker_linux.cc',
     'browser/power_save_blocker_mac.cc',
     'browser/power_save_blocker_win.cc',

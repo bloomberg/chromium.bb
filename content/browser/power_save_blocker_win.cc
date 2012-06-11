@@ -12,32 +12,6 @@
 #include "base/win/windows_version.h"
 #include "content/public/browser/browser_thread.h"
 
-using content::BrowserThread;
-
-// Called only from UI thread.
-// static
-void PowerSaveBlocker::ApplyBlock(PowerSaveBlockerType type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  DWORD flags = ES_CONTINUOUS;
-
-  switch (type) {
-    case kPowerSaveBlockPreventSystemSleep:
-      flags |= ES_SYSTEM_REQUIRED;
-      break;
-    case kPowerSaveBlockPreventDisplaySleep:
-      flags |= ES_DISPLAY_REQUIRED;
-      break;
-    default:
-      break;
-  }
-
-  SetThreadExecutionState(flags);
-}
-
-// TODO(rvargas): Remove after the old interface goes away.
-#define PowerSaveBlocker PowerSaveBlocker2
-
 namespace {
 
 int g_blocker_count[2];
@@ -153,7 +127,7 @@ class PowerSaveBlocker::Delegate
   POWER_REQUEST_TYPE RequestType();
 
  private:
-  friend class base::RefCountedThreadSafe<PowerSaveBlocker::Delegate>;
+  friend class base::RefCountedThreadSafe<Delegate>;
   ~Delegate() {}
 
   PowerSaveBlockerType type_;

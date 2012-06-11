@@ -1768,13 +1768,15 @@ void RenderViewHostImpl::OnMediaNotification(int64 player_cookie,
                                              bool has_audio,
                                              bool is_playing) {
   if (is_playing) {
-    PowerSaveBlocker* blocker = NULL;
+    content::PowerSaveBlocker* blocker = NULL;
     if (has_video) {
-      blocker = new PowerSaveBlocker(
-          PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep);
+      blocker = new content::PowerSaveBlocker(
+          content::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
+          "Playing video");
     } else if (has_audio) {
-      blocker = new PowerSaveBlocker(
-          PowerSaveBlocker::kPowerSaveBlockPreventSystemSleep);
+      blocker = new content::PowerSaveBlocker(
+          content::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
+          "Playing audio");
     }
 
     if (blocker)

@@ -126,7 +126,7 @@ class DownloadFileTest : public testing::Test {
             scoped_ptr<content::ByteStreamReader>(input_stream_).Pass(),
             new DownloadRequestHandle(),
             download_manager_, calculate_hash,
-            scoped_ptr<PowerSaveBlocker>(NULL).Pass(),
+            scoped_ptr<content::PowerSaveBlocker>(NULL).Pass(),
             net::BoundNetLog()));
 
     EXPECT_CALL(*input_stream_, Read(_, _))

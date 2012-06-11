@@ -18,13 +18,12 @@
 #include "content/browser/download/download_request_handle.h"
 #include "net/base/net_log.h"
 
-class PowerSaveBlocker;
-
 struct DownloadCreateInfo;
 
 namespace content {
 class ByteStreamReader;
 class DownloadManager;
+class PowerSaveBlocker;
 }
 
 class CONTENT_EXPORT DownloadFileImpl : virtual public content::DownloadFile {
@@ -36,7 +35,7 @@ class CONTENT_EXPORT DownloadFileImpl : virtual public content::DownloadFile {
                    DownloadRequestHandleInterface* request_handle,
                    content::DownloadManager* download_manager,
                    bool calculate_hash,
-                   scoped_ptr<PowerSaveBlocker> power_save_blocker,
+                   scoped_ptr<content::PowerSaveBlocker> power_save_blocker,
                    const net::BoundNetLog& bound_net_log);
   virtual ~DownloadFileImpl();
 
@@ -104,7 +103,7 @@ class CONTENT_EXPORT DownloadFileImpl : virtual public content::DownloadFile {
   base::WeakPtrFactory<DownloadFileImpl> weak_factory_;
 
   // RAII handle to keep the system from sleeping while we're downloading.
-  scoped_ptr<PowerSaveBlocker> power_save_blocker_;
+  scoped_ptr<content::PowerSaveBlocker> power_save_blocker_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadFileImpl);
 };

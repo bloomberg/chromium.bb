@@ -6,9 +6,23 @@
 
 #include "base/logging.h"
 
-// Called only from UI thread.
-// static
-void PowerSaveBlocker::ApplyBlock(PowerSaveBlockerType type) {
+namespace content {
+
+class PowerSaveBlocker::Delegate
+    : public base::RefCounted<PowerSaveBlocker::Delegate> {
+ private:
+  friend class base::RefCounted<Delegate>;
+  ~Delegate() {}
+};
+
+PowerSaveBlocker::PowerSaveBlocker(PowerSaveBlockerType type,
+                                   const std::string& reason) {
   // TODO(wangxianzhu): Implement it.
+  // This may be called on any thread.
   NOTIMPLEMENTED();
 }
+
+PowerSaveBlocker::~PowerSaveBlocker() {
+}
+
+}  // namespace content

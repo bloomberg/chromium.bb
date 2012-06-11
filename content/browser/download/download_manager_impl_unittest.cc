@@ -392,7 +392,7 @@ DownloadFileWithErrors::DownloadFileWithErrors(
                        new DownloadRequestHandle(),
                        manager,
                        calculate_hash,
-                       scoped_ptr<PowerSaveBlocker>(NULL).Pass(),
+                       scoped_ptr<content::PowerSaveBlocker>(NULL).Pass(),
                        net::BoundNetLog()),
       forced_error_(net::OK) {
 }
@@ -563,7 +563,7 @@ TEST_F(DownloadManagerTest, MAYBE_StartDownload) {
                              stream_reader.Pass(),
                              new DownloadRequestHandle(),
                              download_manager_, false,
-                             scoped_ptr<PowerSaveBlocker>(NULL).Pass(),
+                             scoped_ptr<content::PowerSaveBlocker>(NULL).Pass(),
                              net::BoundNetLog()));
     AddDownloadToFileManager(info->download_id, download_file);
     download_file->Initialize();
@@ -1129,7 +1129,7 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadOverwriteTest) {
       new DownloadFileImpl(info.get(), stream_output.Pass(),
                            new DownloadRequestHandle(),
                            download_manager_, false,
-                           scoped_ptr<PowerSaveBlocker>(NULL).Pass(),
+                           scoped_ptr<content::PowerSaveBlocker>(NULL).Pass(),
                            net::BoundNetLog()));
   download_file->Rename(cr_path);
   // This creates the .temp version of the file.
@@ -1208,7 +1208,7 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadRemoveTest) {
       new DownloadFileImpl(info.get(), stream_output.Pass(),
                            new DownloadRequestHandle(),
                            download_manager_, false,
-                           scoped_ptr<PowerSaveBlocker>(NULL).Pass(),
+                           scoped_ptr<content::PowerSaveBlocker>(NULL).Pass(),
                            net::BoundNetLog()));
   download_file->Rename(cr_path);
   // This creates the .temp version of the file.

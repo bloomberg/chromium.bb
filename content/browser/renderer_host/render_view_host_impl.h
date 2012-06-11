@@ -28,7 +28,6 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class ChildProcessSecurityPolicyImpl;
-class PowerSaveBlocker;
 class SessionStorageNamespaceImpl;
 class SkBitmap;
 class ViewMsg_Navigate;
@@ -47,6 +46,7 @@ class ListValue;
 
 namespace content {
 class TestRenderViewHost;
+class PowerSaveBlocker;
 }
 
 namespace ui {
@@ -649,7 +649,7 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   // Holds PowerSaveBlockers for the media players in use. Key is the
   // player_cookie passed to OnMediaNotification, value is the PowerSaveBlocker.
-  typedef std::map<int64, PowerSaveBlocker*> PowerSaveBlockerMap;
+  typedef std::map<int64, content::PowerSaveBlocker*> PowerSaveBlockerMap;
   PowerSaveBlockerMap power_save_blockers_;
 
   // A list of observers that filter messages.  Weak references.
