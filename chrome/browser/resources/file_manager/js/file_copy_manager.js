@@ -91,10 +91,24 @@ FileCopyManager.Task.prototype.markEntryComplete = function(entry, size) {
   } else if (this.pendingFiles && this.pendingFiles[0].inProgress) {
     this.completedFiles.push(entry);
     this.completedBytes += size;
+    this.pendingBytes -= size;
     this.pendingFiles.shift();
   } else {
     throw new Error('Try to remove a source entry which is not correspond to' +
                     ' the finished target entry');
+  }
+};
+
+/**
+ * Updates copy progress status for the entry.
+ *
+ * @param {Entry} entry Entry which is being coppied.
+ * @param {number} size Number of bytes that has been copied since last update.
+ */
+FileCopyManager.Task.prototype.updateFileCopyProgress = function(entry, size) {
+  if (entry.isFile && this.pendingFiles && this.pendingFiles[0].inProgress) {
+    this.completedBytes += size;
+    this.pendingBytes -= size;
   }
 };
 
@@ -144,7 +158,11 @@ FileCopyManager.prototype.getStatus = function() {
     completedItems: 0,  // Files + Directories
     completedFiles: 0,
     completedDirectories: 0,
-    completedBytes: 0
+    completedBytes: 0,
+
+    // If source or target are on gdata we can't use completed bytes to track
+    // progress.
+    useBytesForPercentage: true
   };
 
   for (var i = 0; i < this.copyTasks_.length; i++) {
@@ -156,6 +174,8 @@ FileCopyManager.prototype.getStatus = function() {
     rv.completedFiles += task.completedFiles.length;
     rv.completedDirectories += task.completedDirectories.length;
     rv.completedBytes += task.completedBytes;
+    if (task.sourceOnGData || task.targetOnGData)
+      rv.useBytesForPercentage = false;
   }
   rv.pendingItems = rv.pendingFiles + rv.pendingDirectories;
   rv.completedItems = rv.completedFiles + rv.completedDirectories;
@@ -176,17 +196,22 @@ FileCopyManager.prototype.getStatus = function() {
  */
 FileCopyManager.prototype.getProgress = function() {
   var status = this.getStatus();
+
+  // TODO(tbarzic): We can't use completedBytes and totalBytes to estimate
+  // progress if the file is transferred from/to drive for two reasons:
+  // 1' completedBytes don't get updated for drive files.
+  // 2' There is no way to get completed bytes in real time. If completed bytes
+  //    are updated when each item finished and if there is a large item to be
+  //    copied, the progress bar would stop moving until the item is finished
+  //    and then jump a large portion of the bar.
+  //
+  // Obviously 2' > 1'.
+  var percentage = status.useBytesForPercentage ?
+      (status.completedBytes / status.totalBytes) :
+      ((status.completedItems + 0.5) / status.totalItems);
+
   return {
-    // TODO(bshe): Need to figure out a way to get completed bytes in real
-    // time. We currently use completedItems and totalItems to estimate the
-    // progress. There are completeBytes and totalBytes ready to use.
-    // However, the completedBytes is not in real time. It only updates
-    // itself after each item finished. So if there is a large item to
-    // copy, the progress bar will stop moving until it finishes and jump
-    // a large portion of the bar.
-    // There is case that when user copy a large file, we want to show an
-    // 100% animated progress bar. So we use completedItems + 1 here.
-    percentage: (status.completedItems + 1) / status.totalItems,
+    percentage: percentage,
     pendingItems: status.pendingItems
   };
 };
@@ -550,6 +575,11 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
     onCopyCompleteBase(entry, size);
   }
 
+  function onCopyProgress(entry, size) {
+    task.updateFileCopyProgress(entry, size);
+    self.sendProgressEvent_('PROGRESS');
+  }
+
   function onError(reason, data) {
     console.log('serviceNextTaskEntry error: ' + reason + ':', data);
     errorCallback(new FileCopyManager.Error(reason, data));
@@ -710,7 +740,7 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
           {create: true, exclusive: true},
           function(targetEntry) {
             self.copyEntry_(sourceEntry, targetEntry,
-                           onCopyComplete, onError);
+                            onCopyProgress, onCopyComplete, onError);
           },
           util.flog('Error getting file: ' + targetRelativePath,
                     onFilesystemError));
@@ -735,20 +765,53 @@ FileCopyManager.prototype.serviceNextTaskEntry_ = function(
 
 /**
  * Copy the contents of sourceEntry into targetEntry.
+ *
+ * @private
+ * @param {Entry} sourceEntry entry that will be copied.
+ * @param {Entry} targetEntry entry to which sourceEntry will be copied.
+ * @param {function(Entry, number)} progressCallback function that will be
+ *     called when a part of the source entry is copied. It takes |targetEntry|
+ *     and size of the last copied chunk as parameters.
+ * @param {function(Entry, number)} successCallback function that will be called
+ *     the copy operation finishes. It takes |targetEntry| and size of the last
+ *     (not previously reported) copied chunk as parameters.
+ * @param {function{string, object}} errorCallback function that will be called
+ *     if an error is encountered. Takes error type and additional error data
+ *     as parameters.
  */
-FileCopyManager.prototype.copyEntry_ = function(
-    sourceEntry, targetEntry, successCallback, errorCallback) {
+FileCopyManager.prototype.copyEntry_ = function(sourceEntry,
+                                                targetEntry,
+                                                progressCallback,
+                                                successCallback,
+                                                errorCallback) {
   if (this.maybeCancel_())
     return;
 
+  self = this;
   function onSourceFileFound(file) {
     function onWriterCreated(writer) {
-      writer.onerror = function(err) {
-        errorCallback('FILESYSTEM_ERROR', err);
+      var reportedProgress = 0;
+      writer.onerror = function(progress) {
+        errorCallback('FILESYSTEM_ERROR', writer.error);
       };
+
+      writer.onprogress = function(progress) {
+        if (self.maybeCancel_()) {
+          // If the copy was canelled, we should abort the operation.
+          writer.abort();
+          return;
+        }
+        // |progress.loaded| will contain total amount of data copied by now.
+        // |progressCallback| expects data amount delta from the last progress
+        // update.
+        progressCallback(targetEntry, progress.loaded - reportedProgress);
+        reportedProgress = progress.loaded;
+      };
+
       writer.onwriteend = function() {
-        successCallback(targetEntry, file.size);
+        successCallback(targetEntry, file.size - reportedProgress);
       };
+
       writer.write(file);
     }
 
