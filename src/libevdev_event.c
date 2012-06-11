@@ -383,26 +383,26 @@ Event_Print(EvdevPtr device, struct input_event* ev)
     case EV_SYN:
         switch (ev->code) {
         case SYN_REPORT:
-            LOG_ERROR(device, "@ %ld.%06ld  ---------- SYN_REPORT -------\n",
+            LOG_DEBUG(device, "@ %ld.%06ld  ---------- SYN_REPORT -------\n",
                 ev->time.tv_sec, ev->time.tv_usec);
             return;
         case SYN_MT_REPORT:
-            LOG_ERROR(device, "@ %ld.%06ld  ........ SYN_MT_REPORT ......\n",
+            LOG_DEBUG(device, "@ %ld.%06ld  ........ SYN_MT_REPORT ......\n",
                 ev->time.tv_sec, ev->time.tv_usec);
             return;
         case SYN_DROPPED:
-            LOG_ERROR(device, "@ %ld.%06ld  ++++++++ SYN_DROPPED ++++++++\n",
+            LOG_DEBUG(device, "@ %ld.%06ld  ++++++++ SYN_DROPPED ++++++++\n",
                 ev->time.tv_sec, ev->time.tv_usec);
             return;
         default:
-            LOG_ERROR(device, "@ %ld.%06ld  ?????? SYN_UNKNOWN (%d) ?????\n",
+            LOG_DEBUG(device, "@ %ld.%06ld  ?????? SYN_UNKNOWN (%d) ?????\n",
                 ev->time.tv_sec, ev->time.tv_usec, ev->code);
             return;
         }
         break;
     case EV_ABS:
         if (ev->code == ABS_MT_SLOT) {
-            LOG_ERROR(device, "@ %ld.%06ld  .......... MT SLOT %d ........\n",
+            LOG_DEBUG(device, "@ %ld.%06ld  .......... MT SLOT %d ........\n",
                 ev->time.tv_sec, ev->time.tv_usec, ev->value);
             return;
         }
@@ -411,7 +411,7 @@ Event_Print(EvdevPtr device, struct input_event* ev)
         break;
     }
 
-    LOG_ERROR(device, "@ %ld.%06ld %s[%d] (%s) = %d\n",
+    LOG_DEBUG(device, "@ %ld.%06ld %s[%d] (%s) = %d\n",
         ev->time.tv_sec, ev->time.tv_usec, Event_Type_To_String(ev->type),
         ev->code, Event_To_String(ev->type, ev->code), ev->value);
 }
