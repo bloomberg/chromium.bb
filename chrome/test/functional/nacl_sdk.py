@@ -24,6 +24,7 @@ import zipfile
 import pyauto_functional  # Must be imported before pyauto.
 import pyauto
 import pyauto_utils
+import test_utils
 
 
 class NaClSDKTest(pyauto.PyUITest):
@@ -167,6 +168,7 @@ class NaClSDKTest(pyauto.PyUITest):
 
         examples = {
             'dynamic_library_open': 'http://localhost:5103/dlopen/dlopen.html',
+            'file_io': 'http://localhost:5103/file_io/file_io.html',
             'geturl': 'http://localhost:5103/geturl/geturl.html',
             'input_events': 'http://localhost:5103/input_events'
                 '/input_events.html',
@@ -256,6 +258,7 @@ class NaClSDKTest(pyauto.PyUITest):
     """
     available_example_tests = {
         'dynamic_library_open': self._VerifyDynamicLibraryOpen,
+        'file_io': self._VerifyFileIoExample,
         'geturl': self._VerifyGetURLExample,
         'input_events': self._VerifyInputEventsExample,
         'load_progress': self._VerifyLoadProgressExample,
@@ -392,6 +395,74 @@ class NaClSDKTest(pyauto.PyUITest):
 
     success = self.WaitUntil(_CheckMouseClickEventStatus, expect_retval=-1)
     self.assertTrue(success, msg='Example %s failed. URL: %s' % (name, url))
+
+  def _VerifyFileIoExample(self, tab_index, name, url):
+    """Verify File IO Example.
+
+    Args:
+      tab_index: Tab index integer that the example is on.
+      name: A string name of the example.
+      url: A string url of the example.
+    """
+    def _CheckStatus(substring_expected, fail_msg):
+      self.assertTrue(
+          self.WaitUntil(
+            lambda: self.GetDOMValue(
+              'document.getElementById("status_field").innerHTML', tab_index)\
+                  .find(substring_expected) != -1, expect_retval=True),
+          msg='Example %s failed. URL: %s. Reason: %s' % (name, url, fail_msg))
+
+    # Give permission to use file system by clicking infobar OK
+    infobar_index = test_utils.WaitForInfobarTypeAndGetIndex(self,
+        'confirm_infobar', 0, tab_index)
+    self.PerformActionOnInfobar('accept', infobar_index, 0, tab_index)
+    _CheckStatus('Ready!', 'NaCl module load')
+
+    # Check that deleting non-existing files gives file not found
+    js_code = """
+      document.getElementById('file_name').value = '/abc';
+      document.getElementById('file_editor').value = 'test';
+      document.getElementById('delete_but').click();
+      window.domAutomationController.send('done');
+    """
+    self.ExecuteJavascript(js_code, tab_index)
+    _CheckStatus('File not found', 'Delete non-existing')
+
+    # Check that saving works
+    js_code = """
+      document.getElementById('save_but').click();
+      window.domAutomationController.send('done');
+    """
+    self.ExecuteJavascript(js_code, tab_index)
+    _CheckStatus('Save successful', 'Save test')
+
+    # Check that we load what we saved
+    js_code = """
+      document.getElementById('file_editor').value = 'different';
+      document.getElementById('load_but').click();
+      window.domAutomationController.send('done');
+    """
+    self.ExecuteJavascript(js_code, tab_index)
+    _CheckStatus('Load complete', 'Load test')
+    self.assertTrue(
+        self.GetDOMValue('document.getElementById("file_editor").value',
+          tab_index).find('test') != -1, msg='Loaded wrong text or failed')
+
+    # Check that we delete files successfully
+    js_code = """
+      document.getElementById('delete_but').click();
+      window.domAutomationController.send('done');
+    """
+    self.ExecuteJavascript(js_code, tab_index)
+    _CheckStatus('File deleted', 'Delete test')
+
+    # Check that file is deleted and load produces not found
+    js_code = """
+      document.getElementById('load_but').click();
+      window.domAutomationController.send('done');
+    """
+    self.ExecuteJavascript(js_code, tab_index)
+    _CheckStatus('File not found', 'Load deleted test')
 
   def _VerifyWebSocketExample(self, tab_index, name, url):
     """Verify Web Socket Open Example.

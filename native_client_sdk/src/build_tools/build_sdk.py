@@ -352,6 +352,7 @@ EXAMPLE_MAP = {
   'newlib': [
     'debugging',
     'file_histogram',
+    'file_io',
     'fullscreen_tumbler',
     'gamepad',
     'geturl',
