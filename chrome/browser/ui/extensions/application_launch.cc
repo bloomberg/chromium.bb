@@ -13,7 +13,7 @@
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/extensions/platform_app_launcher.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -198,15 +198,17 @@ WebContents* OpenApplicationWindow(
   if (app_browser)
     *app_browser = browser;
 
-  TabContentsWrapper* wrapper =
+  TabContents* tab_contents =
       browser->AddSelectedTabWithURL(url, content::PAGE_TRANSITION_START_PAGE);
-  WebContents* contents = wrapper->web_contents();
+  WebContents* contents = tab_contents->web_contents();
   contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
   contents->GetRenderViewHost()->SyncRendererPrefs();
   // TODO(stevenjb): Find the right centralized place to do this. Currently it
   // is only done for app tabs in normal browsers through SetExtensionAppById.
-  if (extension && type == Browser::TYPE_PANEL)
-    wrapper->extension_tab_helper()->SetExtensionAppIconById(extension->id());
+  if (extension && type == Browser::TYPE_PANEL) {
+    tab_contents->extension_tab_helper()->
+        SetExtensionAppIconById(extension->id());
+  }
 
   browser->window()->Show();
 
@@ -290,7 +292,7 @@ WebContents* OpenApplicationTab(Profile* profile,
   params.disposition = disposition;
 
   if (disposition == CURRENT_TAB) {
-    WebContents* existing_tab = browser->GetSelectedWebContents();
+    WebContents* existing_tab = browser->GetActiveWebContents();
     TabStripModel* model = browser->tab_strip_model();
     int tab_index = model->GetIndexOfWebContents(existing_tab);
 
@@ -300,7 +302,7 @@ WebContents* OpenApplicationTab(Profile* profile,
                             WebKit::WebReferrerPolicyDefault),
           disposition, content::PAGE_TRANSITION_LINK, false));
     // Reset existing_tab as OpenURL() may have clobbered it.
-    existing_tab = browser->GetSelectedWebContents();
+    existing_tab = browser->GetActiveWebContents();
     if (params.tabstrip_add_types & TabStripModel::ADD_PINNED) {
       model->SetTabPinned(tab_index, true);
       // Pinning may have moved the tab.

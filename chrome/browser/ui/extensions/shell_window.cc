@@ -14,7 +14,7 @@
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
@@ -70,7 +70,7 @@ ShellWindow::ShellWindow(Profile* profile,
   web_contents_ = WebContents::Create(
       profile, SiteInstance::CreateForURL(profile, url), MSG_ROUTING_NONE, NULL,
       NULL);
-  contents_wrapper_.reset(new TabContentsWrapper(web_contents_));
+  contents_.reset(new TabContents(web_contents_));
   content::WebContentsObserver::Observe(web_contents_);
   web_contents_->SetDelegate(this);
   chrome::SetViewType(web_contents_, chrome::VIEW_TYPE_APP_SHELL);
@@ -144,9 +144,9 @@ void ShellWindow::WebIntentDispatch(
   if (!web_intents::IsWebIntentsEnabledForProfile(profile_))
     return;
 
-  contents_wrapper_->web_intent_picker_controller()->SetIntentsDispatcher(
+  contents_->web_intent_picker_controller()->SetIntentsDispatcher(
       intents_dispatcher);
-  contents_wrapper_->web_intent_picker_controller()->ShowDialog(
+  contents_->web_intent_picker_controller()->ShowDialog(
       intents_dispatcher->GetIntent().action,
       intents_dispatcher->GetIntent().type);
 }

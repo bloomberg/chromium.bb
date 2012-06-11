@@ -20,7 +20,6 @@ class ExtensionWindowController;
 class GURL;
 class Profile;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 namespace content {
 class WebContents;
@@ -132,8 +131,8 @@ class ShellWindow : public content::NotificationObserver,
   const extensions::Extension* extension_;
 
   const SessionID session_id_;
-  scoped_ptr<TabContentsWrapper> contents_wrapper_;
-  // web_contents_ is owned by contents_wrapper_.
+  scoped_ptr<TabContents> contents_;
+  // web_contents_ is owned by contents_.
   content::WebContents* web_contents_;
   content::NotificationRegistrar registrar_;
   ExtensionFunctionDispatcher extension_function_dispatcher_;
