@@ -17,6 +17,12 @@ export PNACL_VERBOSE=true
 FAIL_FAST=${FAIL_FAST:-true}
 # This remembers when any build steps failed, but we ended up continuing.
 RETCODE=0
+# for scons builds an empty target indicates all targets should be build
+# this does not run any tests, though
+readonly SCONS_EVERYTHING=""
+readonly SCONS_S_M_L="small_tests medium_tests large_tests"
+# subset of tests used on toolchain builders
+readonly SCONS_TC_TESTS="small_tests medium_tests large_tests"
 
 readonly SCONS_COMMON="./scons --verbose bitcode=1"
 readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
@@ -336,39 +342,48 @@ browser-tests() {
 
 # This function is shared between x86-32 and x86-64. All building and testing
 # is done on the same bot. Try runs are identical to buildbot runs
+#
+# Note: unlike its arm counterparts we do not run trusted tests on these bots.
+# Trusted tests get plenty of coverage by other bots, e.g. nacl-gcc bots.
+# We make the assumption here that there are no "exotic tests" which
+# are trusted in nature but are somehow depedent on the untrusted TC.
 mode-buildbot-x86() {
-  local bits=$1
+  local arch="x86-$1"
   FAIL_FAST=false
   clobber
 
+  local flags_build="--mode=opt-host,nacl skip_trusted_tests=1 -k \
+                     -j8 do_not_run_tests=1"
+  local flags_run="--mode=opt-host,nacl skip_trusted_tests=1 -k -j4"
   # Normal pexe tests. Build all targets, then run (-j4 is a compromise to try
   # to reduce cycle times without making output too difficult to follow)
-  scons-stage "x86-${bits}" "--mode=opt-host,nacl -j8 -k" ""
-  scons-stage "x86-${bits}" "--mode=opt-host,nacl -j4 -k" \
-    "small_tests medium_tests large_tests"
+  # We also intentionally build more than we run for "coverage".
+  # specifying "" as the target which means "build everything"
+
+  scons-stage "${arch}" "${flags_build}" "${SCONS_EVERYTHING}"
+  scons-stage "${arch}" "${flags_run}"   "${SCONS_S_M_L}"
 
   # non-pexe tests (Do the build-everything step just to make sure it all still
   # builds as non-pexe)
-  scons-stage "x86-${bits}" "--mode=opt-host,nacl -j8 -k pnacl_generate_pexe=0"\
-    ""
-  scons-stage "x86-${bits}" "--mode=opt-host,nacl -j4 -k pnacl_generate_pexe=0"\
-    "nonpexe_tests"
+  scons-stage "${arch}" "${flags_build} pnacl_generate_pexe=0" \
+      "${SCONS_EVERYTHING}"
+  scons-stage "${arch}" "${flags_run} pnacl_generate_pexe=0" \
+      "nonpexe_tests"
 
   # PIC
-  scons-stage "x86-${bits}" \
-    "--mode=opt-host,nacl -j8 -k nacl_pic=1 pnacl_generate_pexe=0" ""
-  scons-stage "x86-${bits}" \
-    "--mode=opt-host,nacl -j4 -k nacl_pic=1 pnacl_generate_pexe=0" \
-    "small_tests medium_tests large_tests"
+  scons-stage "${arch}" "${flags_build} nacl_pic=1 pnacl_generate_pexe=0" \
+      "${SCONS_EVERYTHING}"
+  scons-stage "${arch}" "${flags_run} nacl_pic=1 pnacl_generate_pexe=0" \
+      "${SCONS_S_M_L}"
 
   # sandboxed translation
-  build-sbtc-prerequisites x86-${bits}
-  scons-stage "x86-${bits}" "--mode=opt-host,nacl -j8 -k \
-    use_sandboxed_translator=1" ""
-  scons-stage "x86-${bits}" "--mode=opt-host,nacl -j4 -k \
-    use_sandboxed_translator=1" "small_tests medium_tests large_tests"
+  build-sbtc-prerequisites ${arch}
+  scons-stage "${arch}" "${flags_build} use_sandboxed_translator=1" \
+      "${SCONS_EVERYTHING}"
+  scons-stage "${arch}" "${flags_run} use_sandboxed_translator=1" \
+      "${SCONS_S_M_L}"
 
-  browser-tests "x86-${bits}" "--mode=opt-host,nacl,nacl_irt_test -j8 -k"
+  browser-tests "${arch}" "--mode=opt-host,nacl,nacl_irt_test -j8 -k"
 }
 
 # QEMU upload bot runs this function, and the hardware download bot runs
@@ -390,16 +405,16 @@ mode-buildbot-arm() {
   # QEMU is too flaky for the main waterfall
 
   # Normal pexe mode tests
-  scons-stage "arm" "${qemuflags}" ""
+  scons-stage "arm" "${qemuflags}" "${SCONS_EVERYTHING}"
   # This extra step is required to translate the pexes (because translation
   # happens as part of CommandSelLdrTestNacl and not part of the
   # build-everything step)
-  scons-stage "arm" "${qemuflags}" "small_tests medium_tests large_tests"
+  scons-stage "arm" "${qemuflags}" "${SCONS_S_M_L}"
 
   # PIC
   # Don't bother to build everything here, just the tests we want to run
   scons-stage "arm" "${qemuflags} nacl_pic=1 pnacl_generate_pexe=0" \
-    "small_tests medium_tests large_tests"
+    "${SCONS_S_M_L}"
 
   # non-pexe-mode tests
   scons-stage "arm" "${qemuflags} pnacl_generate_pexe=0" "nonpexe_tests"
@@ -418,9 +433,9 @@ mode-buildbot-arm-hw() {
   local mode=$1
   local hwflags="-j2 -k naclsdk_validate=0 built_elsewhere=1"
 
-  scons-stage "arm" "${mode} ${hwflags}" "small_tests medium_tests large_tests"
+  scons-stage "arm" "${mode} ${hwflags}" "${SCONS_S_M_L}"
   scons-stage "arm" "${mode} ${hwflags} nacl_pic=1 pnacl_generate_pexe=0" \
-    "small_tests medium_tests large_tests"
+    "${SCONS_S_M_L}"
   scons-stage "arm" "${mode} ${hwflags} pnacl_generate_pexe=0" "nonpexe_tests"
   scons-stage "arm" \
     "${mode} ${hwflags} use_sandboxed_translator=1 translate_in_build_step=0" \
@@ -437,12 +452,13 @@ mode-trybot-qemu() {
   clobber
   gyp-arm-build Release
 
-  scons-stage "arm" "${qemuflags}" ""
-  scons-stage "arm" "${qemuflags} -j1" "small_tests medium_tests large_tests"
+  scons-stage "arm" "${qemuflags}" "${SCONS_EVERYTHING}"
+  scons-stage "arm" "${qemuflags} -j1" "${SCONS_S_M_L}"
 
-  scons-stage "arm" "${qemuflags} nacl_pic=1 pnacl_generate_pexe=0" ""
+  scons-stage "arm" "${qemuflags} nacl_pic=1 pnacl_generate_pexe=0" \
+      "${SCONS_EVERYTHING}"
   scons-stage "arm" "${qemuflags} -j1 nacl_pic=1 pnacl_generate_pexe=0" \
-    "small_tests medium_tests large_tests"
+      "${SCONS_S_M_L}"
 
   # non-pexe tests
   scons-stage "arm" "${qemuflags} pnacl_generate_pexe=0" "nonpexe_tests"
@@ -480,8 +496,6 @@ mode-buildbot-arm-hw-try() {
   mode-buildbot-arm-hw "--mode=opt-host,nacl"
 }
 
-readonly TC_TESTS="smoke_tests"
-
 # hackish step to generate pexe for bitcode stability archiving
 tc-generate-and-archive-pexes() {
   local build_dir="scons-out/nacl-x86-32-pnacl-pexe-clang"
@@ -500,21 +514,21 @@ tc-generate-and-archive-pexes() {
 # These are also suitable for local TC sanity testing
 tc-tests-large() {
   local is_try=$1
+  local scons_flags="--mode=opt-host,nacl -k skip_trusted_tests=1 -j8"
+
   # newlib
-  scons-stage "x86-32" "--mode=opt-host,nacl -j8 -k" "${TC_TESTS}"
-  scons-stage "x86-64" "--mode=opt-host,nacl -j8 -k" "${TC_TESTS}"
-  scons-stage "arm"    "--mode=opt-host,nacl -j8 -k" "${TC_TESTS}"
+  scons-stage "x86-32" "${scons_flags}" "${SCONS_TC_TESTS}"
+  scons-stage "x86-64" "${scons_flags}" "${SCONS_TC_TESTS}"
+  scons-stage "arm"    "${scons_flags}" "${SCONS_TC_TESTS}"
 
   # glibc
-  scons-stage "x86-32" \
-              "--mode=opt-host,nacl -j8 -k --nacl_glibc pnacl_generate_pexe=0" \
-              "${TC_TESTS}"
-  scons-stage "x86-64" \
-              "--mode=opt-host,nacl -j8 -k --nacl_glibc pnacl_generate_pexe=0" \
-              "${TC_TESTS}"
+  scons-stage "x86-32" "${scons_flags} --nacl_glibc pnacl_generate_pexe=0" \
+              "${SCONS_TC_TESTS}"
+  scons-stage "x86-64" "${scons-stage} --nacl_glibc pnacl_generate_pexe=0" \
+              "${SCONS_TC_TESTS}"
 
   if ! ${is_try} ; then
-      tc-generate-and-archive-pexes
+    tc-generate-and-archive-pexes
   fi
 
   # we run the browser tests last since they tend to be flaky
@@ -533,7 +547,7 @@ tc-tests-large() {
 }
 
 tc-tests-small() {
-  scons-stage "$1" "--mode=opt-host,nacl -j8 -k" "${TC_TESTS}"
+  scons-stage "$1" "--mode=opt-host,nacl -j8 -k" "${SCONS_TC_TESTS}"
   browser-tests "$1" "--mode=opt-host,nacl,nacl_irt_test -j8 -k"
 }
 
@@ -601,14 +615,15 @@ test-all-newlib() {
 
   # First build everything.
   echo "@@@BUILD_STEP scons build @@@"
-  scons-stage "arm" "--mode=opt-host,nacl -j${concur}" ""
-  scons-stage "x86-32" "--mode=opt-host,nacl -j${concur}" ""
-  scons-stage "x86-64" "--mode=opt-host,nacl -j${concur}" ""
-  # Then test everything.
+  local scons_flags="--mode=opt-host,nacl skip_trusted_tests=1 -j${concur}"
+  scons-stage "arm"    "${scons_flags}" "${EVERYTHING}"
+  scons-stage "x86-32" "${scons_flags}" "${EVERYTHING}"
+  scons-stage "x86-64" "${scons_flags}" "${EVERYTHING}"
+  # Then run at least the smoke_tests
   echo "@@@BUILD_STEP scons smoke_tests @@@"
-  scons-stage "arm" "--mode=opt-host,nacl -j${concur}" "smoke_tests"
-  scons-stage "x86-32" "--mode=opt-host,nacl -j${concur}" "smoke_tests"
-  scons-stage "x86-64" "--mode=opt-host,nacl -j${concur}" "smoke_tests"
+  scons-stage "arm"    "${scons_flags}" "smoke_tests"
+  scons-stage "x86-32" "${scons_flags}" "smoke_tests"
+  scons-stage "x86-64" "${scons_flags}" "smoke_tests"
   # browser tests.
   browser-tests "arm" "--verbose --mode=opt-host,nacl,nacl_irt_test -j${concur}"
   browser-tests "x86-32" \
