@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,20 +11,19 @@
 #include "chrome/browser/shell_integration.h"
 
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 namespace web_app {
 
-// Extracts shortcut info of given TabContentsWrapper.
-void GetShortcutInfoForTab(TabContentsWrapper* tab_contents,
+// Extracts shortcut info of given TabContents.
+void GetShortcutInfoForTab(TabContents* tab_contents,
                            ShellIntegration::ShortcutInfo* info);
 
-// Updates web app shortcut of the TabContentsWrapper. This function checks and
+// Updates web app shortcut of the TabContents. This function checks and
 // updates web app icon and shortcuts if needed. For icon, the check is based
 // on MD5 hash of icon image. For shortcuts, it checks the desktop, start menu
 // and quick launch (as well as pinned shortcut) for shortcut and only
 // updates (recreates) them if they exits.
-void UpdateShortcutForTabContents(TabContentsWrapper* tab_contents);
+void UpdateShortcutForTabContents(TabContents* tab_contents);
 
 }  // namespace web_app
 
