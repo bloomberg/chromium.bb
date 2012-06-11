@@ -13,7 +13,7 @@
 namespace browser {
 
 void ShowSSLClientCertificateSelector(
-    TabContentsWrapper* wrapper,
+    TabContents* tab_contents,
     const net::HttpNetworkSession* network_session,
     net::SSLCertRequestInfo* cert_request_info,
     const base::Callback<void(net::X509Certificate*)>& callback) {
