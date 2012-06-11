@@ -41,6 +41,10 @@ BackingStoreMac::BackingStoreMac(content::RenderWidgetHost* widget,
 BackingStoreMac::~BackingStoreMac() {
 }
 
+size_t BackingStoreMac::MemorySize() {
+  return size().Scale(device_scale_factor_).GetArea() * 4;
+}
+
 void BackingStoreMac::PaintToBackingStore(
     content::RenderProcessHost* process,
     TransportDIB::Id bitmap,
