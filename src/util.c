@@ -135,6 +135,9 @@ weston_zoom_frame(struct weston_animation *animation,
 	struct weston_surface *es = zoom->surface;
 	GLfloat scale;
 
+	if (animation->frame_counter == 0)
+		zoom->spring.timestamp = msecs;
+
 	weston_spring_update(&zoom->spring, msecs);
 
 	if (weston_spring_done(&zoom->spring)) {
@@ -181,9 +184,8 @@ weston_zoom_run(struct weston_surface *surface, GLfloat start, GLfloat stop,
 	weston_spring_init(&zoom->spring, 200.0, 0.0, 1.0);
 	zoom->spring.friction = 700;
 	zoom->animation.frame_counter = 0;
-	zoom->spring.timestamp = weston_compositor_get_time();
 	zoom->animation.frame = weston_zoom_frame;
-	weston_zoom_frame(&zoom->animation, NULL, zoom->spring.timestamp);
+	weston_zoom_frame(&zoom->animation, NULL, 0);
 
 	zoom->listener.notify = handle_zoom_surface_destroy;
 	wl_signal_add(&surface->surface.resource.destroy_signal,
@@ -470,6 +472,9 @@ weston_fade_frame(struct weston_animation *animation,
 	struct weston_surface *es = fade->surface;
 	float fade_factor;
 
+	if (animation->frame_counter == 0)
+		fade->spring.timestamp = msecs;
+
 	weston_spring_update(&fade->spring, msecs);
 
 	if (weston_spring_done(&fade->spring)) {
@@ -504,9 +509,8 @@ weston_fade_run(struct weston_surface *surface,
 	weston_spring_init(&fade->spring, 200.0, 0, 1.0);
 	fade->spring.friction = 700;
 	fade->animation.frame_counter = 0;
-	fade->spring.timestamp = weston_compositor_get_time();
 	fade->animation.frame = weston_fade_frame;
-	weston_fade_frame(&fade->animation, NULL, fade->spring.timestamp);
+	weston_fade_frame(&fade->animation, NULL, 0);
 
 	fade->listener.notify = handle_fade_surface_destroy;
 	wl_signal_add(&surface->surface.resource.destroy_signal,

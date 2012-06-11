@@ -956,6 +956,9 @@ fade_frame(struct weston_animation *animation,
 			     struct weston_compositor, fade.animation);
 	struct weston_surface *surface;
 
+	if (animation->frame_counter == 0)
+		compositor->fade.spring.timestamp = msecs;
+
 	surface = compositor->fade.surface;
 	weston_spring_update(&compositor->fade.spring, msecs);
 	weston_surface_set_color(surface, 0.0, 0.0, 0.0,
@@ -1147,19 +1150,13 @@ weston_compositor_fade(struct weston_compositor *compositor, float tint)
 {
 	struct weston_output *output;
 	struct weston_surface *surface;
-	int done;
 
 	output = container_of(compositor->output_list.next,
                              struct weston_output, link);
 
-	done = weston_spring_done(&compositor->fade.spring);
 	compositor->fade.spring.target = tint;
 	if (weston_spring_done(&compositor->fade.spring))
 		return;
-
-	if (done)
-		compositor->fade.spring.timestamp =
-			weston_compositor_get_time();
 
 	if (compositor->fade.surface == NULL) {
 		surface = weston_surface_create(compositor);
