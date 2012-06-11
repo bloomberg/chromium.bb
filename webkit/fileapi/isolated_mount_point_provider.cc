@@ -26,29 +26,6 @@
 
 namespace fileapi {
 
-namespace {
-
-IsolatedContext* isolated_context() {
-  return IsolatedContext::GetInstance();
-}
-
-FilePath GetPathFromURL(const GURL& url, bool for_writing) {
-  GURL origin_url;
-  FileSystemType file_system_type = kFileSystemTypeUnknown;
-  FilePath virtual_path;
-  if (!CrackFileSystemURL(url, &origin_url, &file_system_type, &virtual_path))
-    return FilePath();
-  std::string fsid;
-  FilePath path;
-  if (!isolated_context()->CrackIsolatedPath(virtual_path, &fsid, NULL, &path))
-    return FilePath();
-  if (for_writing && !isolated_context()->IsWritable(fsid))
-    return FilePath();
-  return path;
-}
-
-}  // namespace
-
 IsolatedMountPointProvider::IsolatedMountPointProvider()
     : isolated_file_util_(new IsolatedFileUtil()) {
 }
@@ -130,7 +107,7 @@ IsolatedMountPointProvider::CreateFileStreamReader(
     const GURL& url,
     int64 offset,
     FileSystemContext* context) const {
-  FilePath path = GetPathFromURL(url, false);
+  FilePath path = GetPathFromURL(url);
   return path.empty() ? NULL : new webkit_blob::LocalFileStreamReader(
       context->file_task_runner(), path, offset, base::Time());
 }
@@ -139,13 +116,30 @@ FileStreamWriter* IsolatedMountPointProvider::CreateFileStreamWriter(
     const GURL& url,
     int64 offset,
     FileSystemContext* context) const {
-  FilePath path = GetPathFromURL(url, true);
+  FilePath path = GetPathFromURL(url);
   return path.empty() ? NULL : new LocalFileStreamWriter(path, offset);
 }
 
 FileSystemQuotaUtil* IsolatedMountPointProvider::GetQuotaUtil() {
   // No quota support.
   return NULL;
+}
+
+IsolatedContext* IsolatedMountPointProvider::isolated_context() const {
+  return IsolatedContext::GetInstance();
+}
+
+FilePath IsolatedMountPointProvider::GetPathFromURL(const GURL& url) const {
+  GURL origin_url;
+  FileSystemType file_system_type = kFileSystemTypeUnknown;
+  FilePath virtual_path;
+  if (!CrackFileSystemURL(url, &origin_url, &file_system_type, &virtual_path))
+    return FilePath();
+  std::string fsid;
+  FilePath path;
+  if (!isolated_context()->CrackIsolatedPath(virtual_path, &fsid, NULL, &path))
+    return FilePath();
+  return path;
 }
 
 }  // namespace fileapi

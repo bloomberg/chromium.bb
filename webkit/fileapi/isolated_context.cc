@@ -51,7 +51,6 @@ void IsolatedContext::RevokeIsolatedFileSystem(
     const std::string& filesystem_id) {
   base::AutoLock locker(lock_);
   toplevel_map_.erase(filesystem_id);
-  writable_ids_.erase(filesystem_id);
 }
 
 bool IsolatedContext::CrackIsolatedPath(const FilePath& virtual_path,
@@ -98,7 +97,7 @@ bool IsolatedContext::CrackIsolatedPath(const FilePath& virtual_path,
   return true;
 }
 
-bool IsolatedContext::GetTopLevelPaths(const std::string& filesystem_id,
+bool IsolatedContext::GetTopLevelPaths(std::string filesystem_id,
                                        std::vector<FilePath>* paths) const {
   DCHECK(paths);
   base::AutoLock locker(lock_);
@@ -113,23 +112,6 @@ bool IsolatedContext::GetTopLevelPaths(const std::string& filesystem_id,
     paths->push_back(iter->second);
   }
   return true;
-}
-
-bool IsolatedContext::SetWritable(const std::string& filesystem_id,
-                                  bool writable) {
-  base::AutoLock locker(lock_);
-  if (toplevel_map_.find(filesystem_id) == toplevel_map_.end())
-    return false;
-  if (writable)
-    writable_ids_.insert(filesystem_id);
-  else
-    writable_ids_.erase(filesystem_id);
-  return true;
-}
-
-bool IsolatedContext::IsWritable(const std::string& filesystem_id) const {
-  base::AutoLock locker(lock_);
-  return (writable_ids_.find(filesystem_id) != writable_ids_.end());
 }
 
 FilePath IsolatedContext::CreateVirtualPath(
