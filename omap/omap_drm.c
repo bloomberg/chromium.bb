@@ -35,6 +35,7 @@
 #include <errno.h>
 #include <sys/mman.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 #include <xf86drm.h>
 
@@ -228,6 +229,10 @@ void omap_bo_del(struct omap_bo *bo)
 		munmap(bo->map, bo->size);
 	}
 
+	if (bo->fd) {
+		close(bo->fd);
+	}
+
 	if (bo->handle) {
 		struct drm_gem_close req = {
 				.handle = bo->handle,
@@ -266,6 +271,9 @@ uint32_t omap_bo_handle(struct omap_bo *bo)
 	return bo->handle;
 }
 
+/* caller owns the dmabuf fd that is returned and is responsible
+ * to close() it when done
+ */
 int omap_bo_dmabuf(struct omap_bo *bo)
 {
 	if (!bo->fd) {
@@ -282,7 +290,7 @@ int omap_bo_dmabuf(struct omap_bo *bo)
 
 		bo->fd = req.fd;
 	}
-	return bo->fd;
+	return dup(bo->fd);
 }
 
 uint32_t omap_bo_size(struct omap_bo *bo)
