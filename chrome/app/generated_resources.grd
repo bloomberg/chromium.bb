@@ -862,10 +862,10 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       </if>
       <if expr="not is_macosx">
         <message name="IDS_CONTENT_CONTEXT_SPELLCHECK_MENU" desc="In Title Case: The name of the Spellcheck Options submenu in the spelling context menu">
-          &amp;Spell-checker Options
+          &amp;Spell-checker options
         </message>
-        <message name="IDS_CONTENT_CONTEXT_CHECK_SPELLING_OF_THIS_FIELD" desc="The name of the Check the spelling of this field command in the spelling context menu">
-          &amp;Check the spelling of this field
+        <message name="IDS_CONTENT_CONTEXT_CHECK_SPELLING_WHILE_TYPING" desc="The name of the Check Spelling while Typing field command in the spelling context menu">
+          Check the spelling of text fields
         </message>
         <message name="IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS" desc="The name of the Language Settings command in the content area context menu">
           &amp;Language settings...

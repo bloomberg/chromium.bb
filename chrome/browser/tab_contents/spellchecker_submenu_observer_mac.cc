@@ -51,7 +51,7 @@ void SpellCheckerSubMenuObserver::InitMenu(
 
   // Add a 'Check Spelling While Typing' item in the sub menu.
   submenu_model_.AddCheckItem(
-      IDC_CHECK_SPELLING_OF_THIS_FIELD,
+      IDC_CHECK_SPELLING_WHILE_TYPING,
       l10n_util::GetStringUTF16(
           IDS_CONTENT_CONTEXT_CHECK_SPELLING_WHILE_TYPING));
 
@@ -68,7 +68,7 @@ bool SpellCheckerSubMenuObserver::IsCommandIdSupported(int command_id) {
       // is hard for this class to handle it.
       return false;
 
-    case IDC_CHECK_SPELLING_OF_THIS_FIELD:
+    case IDC_CHECK_SPELLING_WHILE_TYPING:
     case IDC_SPELLPANEL_TOGGLE:
     case IDC_SPELLCHECK_MENU:
     case IDC_CONTENT_CONTEXT_SPELLING_TOGGLE:
@@ -81,8 +81,8 @@ bool SpellCheckerSubMenuObserver::IsCommandIdSupported(int command_id) {
 bool SpellCheckerSubMenuObserver::IsCommandIdChecked(int command_id) {
   DCHECK(IsCommandIdSupported(command_id));
 
-  // Check box for 'Check the Spelling of this field'.
-  if (command_id == IDC_CHECK_SPELLING_OF_THIS_FIELD) {
+  // Check box for 'Check Spelling while typing'.
+  if (command_id == IDC_CHECK_SPELLING_WHILE_TYPING) {
     Profile* profile = proxy_->GetProfile();
     if (!profile || !profile->GetPrefs()->GetBoolean(prefs::kEnableSpellCheck))
       return false;
@@ -102,7 +102,7 @@ bool SpellCheckerSubMenuObserver::IsCommandIdEnabled(int command_id) {
   const PrefService* pref = profile->GetPrefs();
 
   switch (command_id) {
-    case IDC_CHECK_SPELLING_OF_THIS_FIELD:
+    case IDC_CHECK_SPELLING_WHILE_TYPING:
       return pref->GetBoolean(prefs::kEnableSpellCheck);
 
     case IDC_SPELLPANEL_TOGGLE:
@@ -119,7 +119,7 @@ void SpellCheckerSubMenuObserver::ExecuteCommand(int command_id) {
 
   content::RenderViewHost* rvh = proxy_->GetRenderViewHost();
   switch (command_id) {
-    case IDC_CHECK_SPELLING_OF_THIS_FIELD:
+    case IDC_CHECK_SPELLING_WHILE_TYPING:
       rvh->Send(new SpellCheckMsg_ToggleSpellCheck(rvh->GetRoutingID()));
       break;
 

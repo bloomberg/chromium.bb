@@ -1320,7 +1320,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_CONTENT_CONTEXT_VIEWFRAMEINFO:
       return true;
 
-    case IDC_CHECK_SPELLING_OF_THIS_FIELD:
+    case IDC_CHECK_SPELLING_WHILE_TYPING:
       return profile_->GetPrefs()->GetBoolean(prefs::kEnableSpellCheck);
 
 #if defined(OS_MACOSX)

@@ -64,11 +64,11 @@ void SpellCheckerSubMenuObserver::InitMenu(
       IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS,
       IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS);
 
-  // Add a 'Check the spelling of this field' item in the sub menu.
+  // Add a 'Check spelling while typing' item in the sub menu.
   submenu_model_.AddCheckItem(
-      IDC_CHECK_SPELLING_OF_THIS_FIELD,
+      IDC_CHECK_SPELLING_WHILE_TYPING,
       l10n_util::GetStringUTF16(
-          IDS_CONTENT_CONTEXT_CHECK_SPELLING_OF_THIS_FIELD));
+          IDS_CONTENT_CONTEXT_CHECK_SPELLING_WHILE_TYPING));
 
   // Add a check item "Ask Google for spelling suggestions" item. (This class
   // does not handle this item because the SpellingMenuObserver class handles it
@@ -95,7 +95,7 @@ bool SpellCheckerSubMenuObserver::IsCommandIdSupported(int command_id) {
       // is hard for this class to handle it.
       return false;
 
-    case IDC_CHECK_SPELLING_OF_THIS_FIELD:
+    case IDC_CHECK_SPELLING_WHILE_TYPING:
     case IDC_SPELLPANEL_TOGGLE:
     case IDC_SPELLCHECK_MENU:
       return true;
@@ -112,8 +112,8 @@ bool SpellCheckerSubMenuObserver::IsCommandIdChecked(int command_id) {
     return language_selected_ == command_id - IDC_SPELLCHECK_LANGUAGES_FIRST;
   }
 
-  // Check box for 'Check the Spelling of this field'.
-  if (command_id == IDC_CHECK_SPELLING_OF_THIS_FIELD) {
+  // Check box for 'Check Spelling while typing'.
+  if (command_id == IDC_CHECK_SPELLING_WHILE_TYPING) {
     Profile* profile = proxy_->GetProfile();
     if (!profile || !profile->GetPrefs()->GetBoolean(prefs::kEnableSpellCheck))
       return false;
@@ -137,7 +137,7 @@ bool SpellCheckerSubMenuObserver::IsCommandIdEnabled(int command_id) {
   }
 
   switch (command_id) {
-    case IDC_CHECK_SPELLING_OF_THIS_FIELD:
+    case IDC_CHECK_SPELLING_WHILE_TYPING:
       return pref->GetBoolean(prefs::kEnableSpellCheck);
 
     case IDC_SPELLPANEL_TOGGLE:
@@ -168,7 +168,7 @@ void SpellCheckerSubMenuObserver::ExecuteCommand(int command_id) {
 
   content::RenderViewHost* rvh = proxy_->GetRenderViewHost();
   switch (command_id) {
-    case IDC_CHECK_SPELLING_OF_THIS_FIELD:
+    case IDC_CHECK_SPELLING_WHILE_TYPING:
       rvh->Send(new SpellCheckMsg_ToggleSpellCheck(rvh->GetRoutingID()));
       break;
   }
