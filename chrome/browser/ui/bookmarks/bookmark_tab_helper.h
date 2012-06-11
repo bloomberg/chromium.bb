@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,6 @@
 
 class BookmarkTabHelperDelegate;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 struct BookmarkNodeData;
 
 // Per-tab class to manage bookmarks.
@@ -32,7 +31,7 @@ class BookmarkTabHelper : public content::NotificationObserver,
     virtual ~BookmarkDrag() {}
   };
 
-  explicit BookmarkTabHelper(TabContentsWrapper* tab_contents);
+  explicit BookmarkTabHelper(TabContents* tab_contents);
   virtual ~BookmarkTabHelper();
 
   bool is_starred() const { return is_starred_; }
@@ -73,8 +72,8 @@ class BookmarkTabHelper : public content::NotificationObserver,
   // Registers and unregisters us for notifications.
   content::NotificationRegistrar registrar_;
 
-  // Owning TabContentsWrapper.
-  TabContentsWrapper* tab_contents_wrapper_;
+  // Owning TabContents.
+  TabContents* tab_contents_;
 
   // Delegate for notifying our owner (usually Browser) about stuff. Not owned
   // by us.

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,14 +9,13 @@
 #include "base/basictypes.h"
 
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 // Objects implement this interface to get notified about changes in the
 // BookmarkTabHelper and to provide necessary functionality.
 class BookmarkTabHelperDelegate {
  public:
   // Notification that the starredness of the current URL changed.
-  virtual void URLStarredChanged(TabContentsWrapper* source, bool starred) = 0;
+  virtual void URLStarredChanged(TabContents* source, bool starred) = 0;
 
  protected:
   virtual ~BookmarkTabHelperDelegate();
