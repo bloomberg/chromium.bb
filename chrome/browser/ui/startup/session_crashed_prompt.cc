@@ -8,7 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/url_constants.h"
@@ -101,7 +101,7 @@ void ShowSessionCrashedPrompt(Browser* browser) {
 
   // In ChromeBot tests, there might be a race. This line appears to get
   // called during shutdown and |tab| can be NULL.
-  TabContentsWrapper* tab = browser->GetSelectedTabContentsWrapper();
+  TabContents* tab = browser->GetActiveTabContents();
   if (!tab)
     return;
 

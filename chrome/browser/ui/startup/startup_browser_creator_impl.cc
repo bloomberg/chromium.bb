@@ -52,7 +52,7 @@
 #include "chrome/browser/ui/startup/obsolete_os_prompt.h"
 #include "chrome/browser/ui/startup/session_crashed_prompt.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
@@ -315,7 +315,7 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
     OpenApplicationTab(profile);
 
     if (browser_to_focus)
-      browser_to_focus->GetSelectedWebContents()->GetView()->SetInitialFocus();
+      browser_to_focus->GetActiveWebContents()->GetView()->SetInitialFocus();
 
     if (process_startup) {
       if (browser_defaults::kOSSupportsOtherBrowsers &&
@@ -706,7 +706,7 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(Browser* browser,
 
     first_tab = false;
   }
-  if (!browser->GetSelectedWebContents()) {
+  if (!browser->GetActiveWebContents()) {
     // TODO: this is a work around for 110909. Figure out why it's needed.
     if (!browser->tab_count())
       browser->AddBlankTab(true);
@@ -717,7 +717,7 @@ Browser* StartupBrowserCreatorImpl::OpenTabsInBrowser(Browser* browser,
   browser->window()->Show();
   // TODO(jcampan): http://crbug.com/8123 we should not need to set the initial
   //                focus explicitly.
-  browser->GetSelectedWebContents()->GetView()->SetInitialFocus();
+  browser->GetActiveWebContents()->GetView()->SetInitialFocus();
 
   return browser;
 }

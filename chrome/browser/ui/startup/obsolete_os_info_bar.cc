@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/startup/obsolete_os_info_bar.h"
 
 #include "chrome/browser/infobars/infobar_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"

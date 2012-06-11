@@ -22,7 +22,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -667,7 +667,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   ASSERT_EQ(1, new_browser->tab_count());
   EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
             new_browser->GetWebContentsAt(0)->GetURL());
-  EXPECT_EQ(1U, new_browser->GetTabContentsWrapperAt(0)->infobar_tab_helper()->
+  EXPECT_EQ(1U, new_browser->GetTabContentsAt(0)->infobar_tab_helper()->
             infobar_count());
 
   // The profile which normally opens last open pages displays the new tab page.
@@ -677,7 +677,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   ASSERT_EQ(1, new_browser->tab_count());
   EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
             new_browser->GetWebContentsAt(0)->GetURL());
-  EXPECT_EQ(1U, new_browser->GetTabContentsWrapperAt(0)->infobar_tab_helper()->
+  EXPECT_EQ(1U, new_browser->GetTabContentsAt(0)->infobar_tab_helper()->
             infobar_count());
 
   // The profile which normally opens URLs displays the new tab page.
@@ -687,7 +687,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   ASSERT_EQ(1, new_browser->tab_count());
   EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
             new_browser->GetWebContentsAt(0)->GetURL());
-  EXPECT_EQ(1U, new_browser->GetTabContentsWrapperAt(0)->infobar_tab_helper()->
+  EXPECT_EQ(1U, new_browser->GetTabContentsAt(0)->infobar_tab_helper()->
             infobar_count());
 }
 #endif  // !OS_CHROMEOS

@@ -10,7 +10,7 @@
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/tab_contents/simple_alert_infobar_delegate.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -36,7 +36,7 @@ void ShowBadFlagsPrompt(Browser* browser) {
   }
 
   if (bad_flag) {
-    TabContentsWrapper* tab = browser->GetSelectedTabContentsWrapper();
+    TabContents* tab = browser->GetActiveTabContents();
     if (!tab)
       return;
     tab->infobar_tab_helper()->AddInfoBar(
