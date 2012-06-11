@@ -55,6 +55,31 @@ FingerViewController.prototype = {
         return i;
     return -1;
   },
+  getHardwareStateLETimestamp: function(timestamp) {
+    for (var i = this.entries.length - 1; i >= 0; i--) {
+      if (this.entries[i].type == 'hardwareState' &&
+          this.entries[i].timestamp <= timestamp) {
+        return i;
+      }
+    }
+    return -1;
+  },
+  getHardwareStateGETimestamp: function(timestamp) {
+    for (var i = 0; i < this.entries.length; i++) {
+      if (this.entries[i].type == 'hardwareState' &&
+          this.entries[i].timestamp >= timestamp) {
+        return i;
+      }
+    }
+    return -1;
+  },
+  getTimestamp: function(index) {
+    if (this.entries[index].type == 'hardwareState' &&
+        index >= 0 && index < this.entries.length) {
+      return this.entries[index].timestamp;
+    }
+    return -1;
+  },
   setRange: function(begin, end) {
     this.begin = begin;
     this.end = end;

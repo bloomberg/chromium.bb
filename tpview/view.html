@@ -21,8 +21,12 @@ function update_range(event, ui) {
   finger_view_controller.setRange(ui.values[0], ui.values[1]);
   var begin_event = finger_view_controller.getEvent(ui.values[0]);
   $("#begin_event").text(begin_event);
+  if ((beginTimestamp = finger_view_controller.getTimestamp(ui.values[0])) > 0)
+    $('#input_begin_time').val(beginTimestamp);
   var end_event = finger_view_controller.getEvent(ui.values[1]);
   $("#end_event").text(end_event);
+  if ((endTimestamp = finger_view_controller.getTimestamp(ui.values[1])) > 0)
+    $('#input_end_time').val(endTimestamp);
 }
 
 function loadLogObj(obj) {
@@ -109,6 +113,7 @@ function begin_stepBack() {
       return;
     values[0] = newValue;
     $("#slider").slider("option", "values", values);
+    $('#input_begin_time').val(finger_view_controller.getTimestamp(newValue));
   }
 }
 
@@ -120,6 +125,7 @@ function begin_stepForward() {
       return;
     values[0] = newValue;
     $("#slider").slider("option", "values", values);
+    $('#input_begin_time').val(finger_view_controller.getTimestamp(newValue));
   }
 }
 
@@ -131,6 +137,7 @@ function end_stepBack() {
       return;
     values[1] = newValue;
     $("#slider").slider("option", "values", values);
+    $('#input_end_time').val(finger_view_controller.getTimestamp(newValue));
   }
 }
 
@@ -143,6 +150,31 @@ function end_stepForward() {
       return;
     values[1] = newValue;
     $("#slider").slider("option", "values", values);
+    $('#input_end_time').val(finger_view_controller.getTimestamp(newValue));
+  }
+}
+
+function setBeginTimestamp() {
+  timestamp = $('#input_begin_time').val();
+  var values = $('#slider').slider('option', 'values');
+  var minValue = $('#slider').slider('option', 'min');
+  var maxValue = $('#slider').slider('option', 'max');
+  var newValue = finger_view_controller.getHardwareStateLETimestamp(timestamp);
+  if (newValue >= minValue && newValue <= maxValue) {
+    values[0] = (newValue >= values[1] ? values[1] : newValue);
+    $('#slider').slider('option', 'values', values);
+  }
+}
+
+function setEndTimestamp() {
+  timestamp = $('#input_end_time').val();
+  var values = $('#slider').slider('option', 'values');
+  var minValue = $('#slider').slider('option', 'min');
+  var maxValue = $('#slider').slider('option', 'max');
+  var newValue = finger_view_controller.getHardwareStateGETimestamp(timestamp);
+  if (newValue >= minValue && newValue <= maxValue) {
+    values[1] = (newValue <= values[0] ? values[0] : newValue);
+    $('#slider').slider('option', 'values', values);
   }
 }
 
@@ -223,6 +255,7 @@ $(document).ready(function() {
       primary: "ui-icon-triangle-1-e"
     }
   }).click(end_stepForward);
+
   $("#shrink").button({
     text: true,
   }).click(shrink);
@@ -271,9 +304,13 @@ $(document).ready(function() {
 <div id="sliderdiv"><div id="slider"></div></div>
 <button id="begin_stepback">Begin Step Back</button>
 <button id="begin_stepforward">Begin Step Forward</button>
+Set begin time: <input type='text' id='input_begin_time'
+                  onkeyup="setBeginTimestamp()" />
 <div id="begin_event"></div><br/>
 <button id="end_stepback">End Step Back</button>
 <button id="end_stepforward">End Step Forward</button>
+Set end time: <input type='text' id='input_end_time'
+                  onkeyup="setEndTimestamp()" />
 <div id="end_event"></div><br/>
 <button id="shrink">Shrink Range</button>
 </div>
