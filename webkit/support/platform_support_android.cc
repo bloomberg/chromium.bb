@@ -33,7 +33,7 @@ const char kDumpRenderTreeDir[] = "/data/drt";
 namespace webkit_support {
 
 void BeforeInitialize(bool unit_test_mode) {
-  InitAndroidTestPaths();
+  base::InitAndroidTestPaths();
 
   // Set XML_CATALOG_FILES environment variable to blank to prevent libxml from
   // loading and complaining the non-exsistent /etc/xml/catalog file.

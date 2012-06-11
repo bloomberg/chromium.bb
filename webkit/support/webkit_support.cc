@@ -110,7 +110,7 @@ void InitLogging() {
 
 #if defined(OS_ANDROID)
   // On Android we expect the log to appear in logcat.
-  InitAndroidTestLogging();
+  base::InitAndroidTestLogging();
 #else
   FilePath log_filename;
   PathService::Get(base::DIR_EXE, &log_filename);
