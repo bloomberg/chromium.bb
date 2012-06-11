@@ -42,7 +42,7 @@ class WebIntentPickerModel;
 - (id)initWithPicker:(WebIntentPickerCocoa*)picker;
 
 // Set the contents for inline disposition intents.
-- (void)setInlineDispositionTabContents:(TabContents*)tab_contents;
+- (void)setInlineDispositionTabContents:(TabContents*)tabContents;
 
 // Set the size of the inline disposition view.
 - (void)setInlineDispositionFrameSize:(NSSize)size;

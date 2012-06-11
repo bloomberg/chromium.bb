@@ -27,7 +27,6 @@ class Browser;
 struct DefaultWebIntentService;
 class GURL;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 class WebIntentPicker;
 class WebIntentPickerModel;
 
@@ -46,7 +45,7 @@ class WebIntentPickerController : public content::NotificationObserver,
                                   public WebIntentPickerDelegate,
                                   public WebstoreInstaller::Delegate {
  public:
-  explicit WebIntentPickerController(TabContentsWrapper* wrapper);
+  explicit WebIntentPickerController(TabContents* tab_contents);
   virtual ~WebIntentPickerController();
 
   // Sets the intent data and return pathway handler object for which
@@ -166,7 +165,7 @@ class WebIntentPickerController : public content::NotificationObserver,
   void ClosePicker();
 
   // A weak pointer to the tab contents that the picker is displayed on.
-  TabContentsWrapper* wrapper_;
+  TabContents* tab_contents_;
 
   // A notification registrar, listening for notifications when the tab closes
   // to close the picker ui.

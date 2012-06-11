@@ -19,7 +19,7 @@
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model.h"
 #include "chrome/browser/ui/intents/web_intent_picker_model_observer.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_switches.h"
@@ -236,7 +236,7 @@ class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
     favicon_service_ =
         GetBrowser()->profile()->GetFaviconService(Profile::EXPLICIT_ACCESS);
     controller_ = GetBrowser()->
-        GetSelectedTabContentsWrapper()->web_intent_picker_controller();
+        GetActiveTabContents()->web_intent_picker_controller();
 
     SetupMockPicker();
     controller_->set_model_observer(&picker_);
@@ -351,7 +351,7 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest, ChooseService) {
   OnServiceChosen(kServiceURL2, WebIntentPickerModel::DISPOSITION_WINDOW);
   ASSERT_EQ(2, browser()->tab_count());
   EXPECT_EQ(GURL(kServiceURL2),
-            browser()->GetSelectedWebContents()->GetURL());
+            browser()->GetActiveWebContents()->GetURL());
 
   EXPECT_TRUE(dispatcher.dispatched_);
 
@@ -390,14 +390,14 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   AddWebIntentService(kAction1, kServiceURL1);
   AddCWSExtensionServiceEmpty(kAction1);
 
-  GURL original = browser()->GetSelectedWebContents()->GetURL();
+  GURL original = browser()->GetActiveWebContents()->GetURL();
 
   // Open a new page, but keep focus on original.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(chrome::kChromeUINewTabURL), NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   ASSERT_EQ(2, browser()->tab_count());
-  EXPECT_EQ(original, browser()->GetSelectedWebContents()->GetURL());
+  EXPECT_EQ(original, browser()->GetActiveWebContents()->GetURL());
 
   controller_->ShowDialog(kAction1, kType1);
   picker_.Wait();
@@ -412,13 +412,13 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   OnServiceChosen(kServiceURL1, WebIntentPickerModel::DISPOSITION_WINDOW);
   ASSERT_EQ(3, browser()->tab_count());
   EXPECT_EQ(GURL(kServiceURL1),
-            browser()->GetSelectedWebContents()->GetURL());
+            browser()->GetActiveWebContents()->GetURL());
 
   EXPECT_TRUE(dispatcher.dispatched_);
 
   OnSendReturnMessage(webkit_glue::WEB_INTENT_REPLY_SUCCESS);
   ASSERT_EQ(2, browser()->tab_count());
-  EXPECT_EQ(original, browser()->GetSelectedWebContents()->GetURL());
+  EXPECT_EQ(original, browser()->GetActiveWebContents()->GetURL());
 }
 
 class WebIntentPickerControllerIncognitoBrowserTest :
@@ -596,7 +596,7 @@ IN_PROC_BROWSER_TEST_F(WebIntentPickerControllerBrowserTest,
   // The tab is shown immediately without needing to call OnServiceChosen.
   ASSERT_EQ(2, browser()->tab_count());
   EXPECT_EQ(GURL(kServiceURL1),
-            browser()->GetSelectedWebContents()->GetURL());
+            browser()->GetActiveWebContents()->GetURL());
 
   EXPECT_TRUE(dispatcher.dispatched_);
 }
