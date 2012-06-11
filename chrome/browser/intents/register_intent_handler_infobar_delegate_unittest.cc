@@ -7,7 +7,7 @@
 #include "chrome/browser/intents/register_intent_handler_infobar_delegate.h"
 #include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_contents/test_tab_contents.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"

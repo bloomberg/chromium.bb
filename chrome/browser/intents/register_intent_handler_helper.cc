@@ -10,7 +10,7 @@
 #include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "content/public/browser/web_contents.h"
 #include "webkit/glue/web_intent_service_data.h"
 
@@ -21,20 +21,19 @@ void Browser::RegisterIntentHandlerHelper(
     WebContents* tab,
     const webkit_glue::WebIntentServiceData& data,
     bool user_gesture) {
-  TabContentsWrapper* tcw =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab);
-  if (!tcw || tcw->profile()->IsOffTheRecord())
+  TabContents* tab_contents = TabContents::FromWebContents(tab);
+  if (!tab_contents || tab_contents->profile()->IsOffTheRecord())
     return;
 
-  if (!web_intents::IsWebIntentsEnabledForProfile(tcw->profile()))
+  if (!web_intents::IsWebIntentsEnabledForProfile(tab_contents->profile()))
     return;
 
   FaviconService* favicon_service =
-      tcw->profile()->GetFaviconService(Profile::EXPLICIT_ACCESS);
+      tab_contents->profile()->GetFaviconService(Profile::EXPLICIT_ACCESS);
 
   RegisterIntentHandlerInfoBarDelegate::MaybeShowIntentInfoBar(
-      tcw->infobar_tab_helper(),
-      WebIntentsRegistryFactory::GetForProfile(tcw->profile()),
+      tab_contents->infobar_tab_helper(),
+      WebIntentsRegistryFactory::GetForProfile(tab_contents->profile()),
       data,
       favicon_service,
       tab->GetURL());
