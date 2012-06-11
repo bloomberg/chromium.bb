@@ -266,8 +266,11 @@ INSTANTIATE_TEST_CASE_P(, FrameRateCompositingTest, ::testing::Values(
                         kUseReferenceBuild,
                         kUseReferenceBuild | kUseGpu | kForceGpuComposited));
 
+// crbug.com/132133
+#if !defined(OS_WIN)
 FRAME_RATE_TEST_WITH_AND_WITHOUT_ACCELERATED_COMPOSITING(blank);
 FRAME_RATE_TEST_WITH_AND_WITHOUT_ACCELERATED_COMPOSITING(googleblog);
+#endif
 
 typedef FrameRateTest FrameRateNoVsyncCanvasInternalTest;
 
@@ -286,7 +289,10 @@ INSTANTIATE_TEST_CASE_P(, FrameRateNoVsyncCanvasInternalTest, ::testing::Values(
     kIsGpuCanvasTest | kUseReferenceBuild | kInternal | kHasRedirect | kUseGpu |
         kDisableVsync));
 
+// crbug.com/132133
+#if !defined(OS_WIN)
 INTERNAL_FRAME_RATE_TEST_CANVAS_WITH_AND_WITHOUT_NOVSYNC(fishbowl)
+#endif
 
 typedef FrameRateTest FrameRateGpuCanvasInternalTest;
 
@@ -305,8 +311,11 @@ INSTANTIATE_TEST_CASE_P(, FrameRateGpuCanvasInternalTest, ::testing::Values(
     kIsGpuCanvasTest | kUseReferenceBuild | kInternal | kHasRedirect | kUseGpu |
         kDisableVsync));
 
+// crbug.com/132133
+#if !defined(OS_WIN)
 INTERNAL_FRAME_RATE_TEST_CANVAS_GPU(fireflies)
 INTERNAL_FRAME_RATE_TEST_CANVAS_GPU(FishIE)
 INTERNAL_FRAME_RATE_TEST_CANVAS_GPU(speedreading)
+#endif
 
 }  // namespace
