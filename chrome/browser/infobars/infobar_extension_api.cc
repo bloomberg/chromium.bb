@@ -15,7 +15,7 @@
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/url_constants.h"
@@ -53,7 +53,7 @@ bool ShowInfoBarFunction::RunImpl() {
   GURL url = extension->GetResourceURL(extension->url(), html_path);
 
   Browser* browser = NULL;
-  TabContentsWrapper* tab_contents = NULL;
+  TabContents* tab_contents = NULL;
   if (!ExtensionTabUtil::GetTabById(
       tab_id,
       profile(),

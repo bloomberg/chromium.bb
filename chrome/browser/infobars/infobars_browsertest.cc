@@ -9,7 +9,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/browser/profiles/profile.h"
@@ -73,7 +73,7 @@ IN_PROC_BROWSER_TEST_F(InfoBarsTest, TestInfoBarsCloseOnNewTheme) {
   infobar_added_2.Wait();
   infobar_removed_1.Wait();
   EXPECT_EQ(0u,
-            browser()->GetTabContentsWrapperAt(0)->infobar_tab_helper()->
+            browser()->GetTabContentsAt(0)->infobar_tab_helper()->
                 infobar_count());
 
   ui_test_utils::WindowedNotificationObserver infobar_removed_2(
@@ -82,6 +82,6 @@ IN_PROC_BROWSER_TEST_F(InfoBarsTest, TestInfoBarsCloseOnNewTheme) {
   ThemeServiceFactory::GetForProfile(browser()->profile())->UseDefaultTheme();
   infobar_removed_2.Wait();
   EXPECT_EQ(0u,
-            browser()->GetSelectedTabContentsWrapper()->infobar_tab_helper()->
+            browser()->GetActiveTabContents()->infobar_tab_helper()->
                 infobar_count());
 }
