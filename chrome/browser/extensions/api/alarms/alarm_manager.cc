@@ -8,12 +8,11 @@
 #include "base/json/json_writer.h"
 #include "base/message_loop.h"
 #include "base/time.h"
-#include "base/value_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/state_store.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
@@ -23,10 +22,6 @@ namespace extensions {
 namespace {
 
 const char kOnAlarmEvent[] = "alarms.onAlarm";
-
-// A list of alarms that this extension has set.
-const char kRegisteredAlarms[] = "alarms";
-const char kAlarmScheduledRunTime[] = "scheduled_run_time";
 
 // The minimum period between polling for alarms to run.
 const base::TimeDelta kDefaultMinPollPeriod = base::TimeDelta::FromMinutes(5);
@@ -50,51 +45,11 @@ class DefaultAlarmDelegate : public AlarmManager::Delegate {
   Profile* profile_;
 };
 
-// Contains the state we persist for each alarm.
-struct AlarmState {
-  linked_ptr<AlarmManager::Alarm> alarm;
-  base::Time scheduled_run_time;
-
-  AlarmState() {}
-  ~AlarmState() {}
-};
-
 // Creates a TimeDelta from a delay as specified in the API.
 base::TimeDelta TimeDeltaFromDelay(double delay_in_minutes) {
   return base::TimeDelta::FromMicroseconds(
       delay_in_minutes * base::Time::kMicrosecondsPerMinute);
 }
-
-std::vector<AlarmState> AlarmsFromValue(const base::ListValue* list) {
-  typedef AlarmManager::Alarm Alarm;
-  std::vector<AlarmState> alarms;
-  for (size_t i = 0; i < list->GetSize(); ++i) {
-    base::DictionaryValue* alarm_dict = NULL;
-    AlarmState alarm;
-    alarm.alarm.reset(new Alarm());
-    if (list->GetDictionary(i, &alarm_dict) &&
-        Alarm::Populate(*alarm_dict, alarm.alarm.get())) {
-      base::Value* time_value = NULL;
-      if (alarm_dict->Get(kAlarmScheduledRunTime, &time_value))
-        base::GetValueAsTime(*time_value, &alarm.scheduled_run_time);
-      alarms.push_back(alarm);
-    }
-  }
-  return alarms;
-}
-
-scoped_ptr<base::ListValue> AlarmsToValue(
-    const std::vector<AlarmState>& alarms) {
-  scoped_ptr<base::ListValue> list(new ListValue());
-  for (size_t i = 0; i < alarms.size(); ++i) {
-    scoped_ptr<base::DictionaryValue> alarm = alarms[i].alarm->ToValue().Pass();
-    alarm->Set(kAlarmScheduledRunTime,
-               base::CreateTimeValue(alarms[i].scheduled_run_time));
-    list->Append(alarm.release());
-  }
-  return list.Pass();
-}
-
 
 }  // namespace
 
@@ -106,10 +61,6 @@ AlarmManager::AlarmManager(Profile* profile)
       last_poll_time_(base::Time()) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile_));
-
-  StateStore* storage = ExtensionSystem::Get(profile_)->state_store();
-  if (storage)
-    storage->RegisterKey(kRegisteredAlarms);
 }
 
 AlarmManager::~AlarmManager() {
@@ -119,7 +70,7 @@ void AlarmManager::AddAlarm(const std::string& extension_id,
                             const linked_ptr<Alarm>& alarm) {
   base::TimeDelta alarm_time = TimeDeltaFromDelay(alarm->delay_in_minutes);
   AddAlarmImpl(extension_id, alarm, alarm_time);
-  WriteToStorage(extension_id);
+  WriteToPrefs(extension_id);
 }
 
 const AlarmManager::Alarm* AlarmManager::GetAlarm(
@@ -160,7 +111,7 @@ bool AlarmManager::RemoveAlarm(const std::string& extension_id,
     return false;
 
   RemoveAlarmIterator(it);
-  WriteToStorage(extension_id);
+  WriteToPrefs(extension_id);
   return true;
 }
 
@@ -175,7 +126,7 @@ void AlarmManager::RemoveAllAlarms(const std::string& extension_id) {
     RemoveAlarmIterator(AlarmIterator(list, list->second.begin()));
 
   CHECK(alarms_.find(extension_id) == alarms_.end());
-  WriteToStorage(extension_id);
+  WriteToPrefs(extension_id);
 }
 
 void AlarmManager::RemoveAlarmIterator(const AlarmIterator& iter) {
@@ -208,7 +159,7 @@ void AlarmManager::OnAlarm(const std::string& extension_id,
     scheduled_times_[alarm].time =
         last_poll_time_ + TimeDeltaFromDelay(alarm->delay_in_minutes);
   }
-  WriteToStorage(extension_id_copy);
+  WriteToPrefs(extension_id_copy);
 }
 
 void AlarmManager::AddAlarmImpl(const std::string& extension_id,
@@ -229,41 +180,43 @@ void AlarmManager::AddAlarmImpl(const std::string& extension_id,
   ScheduleNextPoll(base::TimeDelta::FromMinutes(0));
 }
 
-void AlarmManager::WriteToStorage(const std::string& extension_id) {
-  StateStore* storage = ExtensionSystem::Get(profile_)->state_store();
-  if (!storage)
+void AlarmManager::WriteToPrefs(const std::string& extension_id) {
+  ExtensionService* service =
+      ExtensionSystem::Get(profile_)->extension_service();
+  if (!service || !service->extension_prefs())
     return;
 
-  std::vector<AlarmState> alarm_states;
+  std::vector<AlarmPref> alarm_prefs;
+
   AlarmMap::iterator list = alarms_.find(extension_id);
   if (list != alarms_.end()) {
     for (AlarmList::iterator it = list->second.begin();
          it != list->second.end(); ++it) {
-      AlarmState pref;
+      AlarmPref pref;
       pref.alarm = *it;
       pref.scheduled_run_time = scheduled_times_[it->get()].time;
-      alarm_states.push_back(pref);
+      alarm_prefs.push_back(pref);
     }
   }
 
-  scoped_ptr<Value> alarms(AlarmsToValue(alarm_states).release());
-  storage->SetExtensionValue(extension_id, kRegisteredAlarms, alarms.Pass());
+  service->extension_prefs()->SetRegisteredAlarms(extension_id, alarm_prefs);
 }
 
-void AlarmManager::ReadFromStorage(const std::string& extension_id,
-                                   scoped_ptr<base::Value> value) {
-  base::ListValue* list = NULL;
-  if (!value.get() || !value->GetAsList(&list))
+void AlarmManager::ReadFromPrefs(const std::string& extension_id) {
+  ExtensionService* service =
+      ExtensionSystem::Get(profile_)->extension_service();
+  if (!service || !service->extension_prefs())
     return;
 
-  std::vector<AlarmState> alarm_states = AlarmsFromValue(list);
-  for (size_t i = 0; i < alarm_states.size(); ++i) {
+  std::vector<AlarmPref> alarm_prefs =
+      service->extension_prefs()->GetRegisteredAlarms(extension_id);
+  for (size_t i = 0; i < alarm_prefs.size(); ++i) {
     base::TimeDelta delay =
-        alarm_states[i].scheduled_run_time - base::Time::Now();
+        alarm_prefs[i].scheduled_run_time - base::Time::Now();
     if (delay < base::TimeDelta::FromSeconds(0))
       delay = base::TimeDelta::FromSeconds(0);
 
-    AddAlarmImpl(extension_id, alarm_states[i].alarm, delay);
+    AddAlarmImpl(extension_id, alarm_prefs[i].alarm, delay);
   }
 }
 
@@ -338,18 +291,19 @@ void AlarmManager::Observe(
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
-      StateStore* storage = ExtensionSystem::Get(profile_)->state_store();
-      if (storage) {
-        storage->GetExtensionValue(extension->id(), kRegisteredAlarms,
-            base::Bind(&AlarmManager::ReadFromStorage,
-                       AsWeakPtr(), extension->id()));
-      }
+      ReadFromPrefs(extension->id());
       break;
     }
     default:
       NOTREACHED();
       break;
   }
+}
+
+AlarmPref::AlarmPref() {
+}
+
+AlarmPref::~AlarmPref() {
 }
 
 }  // namespace extensions

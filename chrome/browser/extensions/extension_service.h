@@ -171,10 +171,6 @@ class ExtensionService
   // settings are stored.
   static const char* kSyncExtensionSettingsDirectoryName;
 
-  // The name of the database inside the profile where chrome-internal
-  // extension state resides.
-  static const char* kStateStoreName;
-
   // Returns the Extension of hosted or packaged apps, NULL otherwise.
   const extensions::Extension* GetInstalledApp(const GURL& url);
 

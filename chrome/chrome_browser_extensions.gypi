@@ -459,8 +459,6 @@
         'browser/extensions/settings/weak_unlimited_settings_storage.h',
         'browser/extensions/shell_window_registry.cc',
         'browser/extensions/shell_window_registry.h',
-        'browser/extensions/state_store.cc',
-        'browser/extensions/state_store.h',
         'browser/extensions/theme_installed_infobar_delegate.cc',
         'browser/extensions/theme_installed_infobar_delegate.h',
         'browser/extensions/unpacked_installer.cc',

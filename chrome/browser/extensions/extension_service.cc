@@ -189,7 +189,6 @@ const char* ExtensionService::kSyncAppSettingsDirectoryName =
     "Sync App Settings";
 const char* ExtensionService::kSyncExtensionSettingsDirectoryName =
     "Sync Extension Settings";
-const char* ExtensionService::kStateStoreName = "Extension State";
 
 void ExtensionService::CheckExternalUninstall(const std::string& id) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

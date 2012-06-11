@@ -28,6 +28,7 @@ class PrefService;
 class URLPatternSet;
 
 namespace extensions {
+struct AlarmPref;
 struct ExtensionOmniboxSuggestion;
 }
 
@@ -274,6 +275,13 @@ class ExtensionPrefs : public extensions::ContentSettingsStore::Observer,
   std::set<std::string> GetRegisteredEvents(const std::string& extension_id);
   void SetRegisteredEvents(const std::string& extension_id,
                            const std::set<std::string>& events);
+
+  // Controls a list of alarms for this extension, including the next time they
+  // should run.
+  std::vector<extensions::AlarmPref> GetRegisteredAlarms(
+      const std::string& extension_id);
+  void SetRegisteredAlarms(const std::string& extension_id,
+                           const std::vector<extensions::AlarmPref>& alarms);
 
   // Controls the omnibox default suggestion as set by the extension.
   extensions::ExtensionOmniboxSuggestion GetOmniboxDefaultSuggestion(
