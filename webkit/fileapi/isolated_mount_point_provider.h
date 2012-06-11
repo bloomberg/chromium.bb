@@ -58,9 +58,6 @@ class IsolatedMountPointProvider : public FileSystemMountPointProvider {
   virtual FileSystemQuotaUtil* GetQuotaUtil() OVERRIDE;
 
  private:
-  IsolatedContext* isolated_context() const;
-  FilePath GetPathFromURL(const GURL& url) const;
-
   scoped_ptr<IsolatedFileUtil> isolated_file_util_;
 };
 

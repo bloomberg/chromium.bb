@@ -24,6 +24,7 @@
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/native_file_util.h"
 #include "webkit/fileapi/obfuscated_file_util.h"
+#include "webkit/fileapi/sandbox_file_stream_writer.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/quota/quota_manager.h"
 
@@ -461,9 +462,7 @@ fileapi::FileStreamWriter* SandboxMountPointProvider::CreateFileStreamWriter(
     const GURL& url,
     int64 offset,
     FileSystemContext* context) const {
-  // TODO(kinaba,kinuko): return SandboxFileWriter when it is implemented.
-  NOTIMPLEMENTED();
-  return NULL;
+  return new SandboxFileStreamWriter(context, url, offset);
 }
 
 FileSystemQuotaUtil* SandboxMountPointProvider::GetQuotaUtil() {

@@ -16,6 +16,7 @@
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/local_file_util.h"
 #include "webkit/fileapi/native_file_util.h"
+#include "webkit/fileapi/sandbox_file_stream_writer.h"
 #include "webkit/quota/quota_manager.h"
 
 namespace fileapi {
@@ -156,9 +157,7 @@ fileapi::FileStreamWriter* TestMountPointProvider::CreateFileStreamWriter(
     const GURL& url,
     int64 offset,
     FileSystemContext* context) const {
-  // TODO(kinaba,kinuko): return SandboxFileWriter when it is implemented.
-  NOTIMPLEMENTED();
-  return NULL;
+  return new SandboxFileStreamWriter(context, url, offset);
 }
 
 FileSystemQuotaUtil* TestMountPointProvider::GetQuotaUtil() {
