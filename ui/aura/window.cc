@@ -325,7 +325,7 @@ void Window::AddChild(Window* child) {
   RootWindow* root_window = child->GetRootWindow();
   if (root_window) {
     root_window->OnWindowAddedToRootWindow(child);
-    NotifyAddedToRootWindow();
+    child->NotifyAddedToRootWindow();
   }
 }
 
