@@ -25,14 +25,19 @@
 
 <p id="nbspandspaces">This line has a &nbsp; non-breaking space and spaces</p>
 
+<p id="multilinenbsp">These lines &nbsp<br />&nbsp have leading and trailing NBSPs&nbsp;&nbsp;</p>
+
 <p id="inline">This <span id="inlinespan">    line has <em>text</em>	</span> within elements that are meant to be displayed
     <!-- not as a block but --> inline</p>
 
-<p id="preformatted">This section has a <pre>preformatted
-    text block
-  within in
-        </pre>
-</p>
+<div id="div-with-pre">
+<p>before pre</p>
+<pre id="preformatted">   This section has a preformatted
+    text block    
+  split in four lines
+         </pre>
+<p>after pre</p>
+</div>
 
 <div id="twoblocks"><p>Some text</p><p>Some more text</p></div>
 
@@ -59,7 +64,12 @@ document.write(" and with document.write again");
 <a href="" id="linkWithTrailingSpace">link with trailing space   		
 </a>
 <a href=""><b>link with formatting tags</b></a>
+<a href="" id="quote">link with " (double quote)</a>
+<a href="" id="squote">link with ' (single quote)</a>
+<a href="" id="backslash">link with \ (backslash)</a>
 </div>
+
+<div style="text-indent:80%"><a href="resultPage.html" id="multilinelink">this link should break<br />on multiple lines</a></div>
 
 <div name="someDiv">Top level</div>
 <div id="containsSomeDiv">
@@ -74,6 +84,9 @@ document.write(" and with document.write again");
 
 <!-- Here comes an invalid <img> tag which has no src attribute ... -->
 <img id="invalidImgTag" />
+
+<img id="validImgTag" src="icon.gif" />
+<a id="validAnchorTag" href="icon.gif">a link to an icon</a>
 
 <span id="simpleJsonText">{a="b", c=1, d=true}</span>
 <span id="complexJsonText">{a="\\b\\\"'\'"}</span>

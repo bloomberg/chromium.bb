@@ -30,16 +30,6 @@
             blackBox.style.display = show ? '' : 'none';
           }, delay);
         }
-
-        function displayEvent(event) {
-          var keys = ['x', 'y', 'clientX', 'clientY', 'pageX', 'pageY', 'screenX', 'screenY'];
-          var message = "<ul>";
-          for (var i = 0; i < keys.length; i++) {
-            message += "<li>" + keys[i] + ": <span id='" + keys[i] + "'>" + event[keys[i]] + "</span></li>";
-          }
-          message += "</ul>";
-          document.getElementById('result').innerHTML = message;
-        }
     </script>
     <script type="text/javascript">
         var startList = function() {
@@ -89,8 +79,11 @@
     </ul>
 </div>
 
-<div id="result">
-	&nbsp;
+<div id="resultContainer" height="30">&nbsp;
+  <div id="result" style="width:300;height:60">
+    <p>&nbsp;</p>
+  </div>
+
 </div>
                                                                                          
 <div id="formageddon">
@@ -108,7 +101,7 @@
         </select>
         <input type="checkbox" id="checkbox" value="checkbox thing" onchange="javascript:updateContent(this)"/>
         <input id="clickField" type="text" onclick="document.getElementById('clickField').value='Clicked';" value="Hello"/>
-        <input id="doubleClickField" type="text" ondblclick="document.getElementById('doubleClickField').value='DoubleClicked';" oncontextmenu="document.getElementById('doubleClickField').value='ContextClicked';" value="DoubleHello"/>
+        <input id="doubleClickField" type="text" onclick="document.getElementById('doubleClickField').value='Clicked';" ondblclick="document.getElementById('doubleClickField').value='DoubleClicked';" oncontextmenu="document.getElementById('doubleClickField').value='ContextClicked'; return false;" value="DoubleHello"/>
         <input id="clearMe" value="Something" onchange="displayMessage('Cleared')"/>
     </form>
 </div>
@@ -172,7 +165,8 @@
     <button type="button" id="jsSubmitButton" onclick="javascript:document.getElementById('on-form').submit();">Submitomatic</button>
 
     <button type="button" id="switchFocus" onclick="document.getElementById('theworks').focus();">Switch focus</button>
-    <button type="button" onclick="var element = document.getElementById('switchFocus'); var clickEvent = document.createEvent('MouseEvents'); clickEvent.initMouseEvent('click', true, true, null, 0, 0, 0, 0, 0,false, false, false, false, 0, element);element.dispatchEvent(clickEvent);">Do magic</button>
+    <button type="button" onclick="var element = document.getElementById('switchFocus'); var clickEvent = document.createEvent('MouseEvents'); clickEvent.initMouseEvent('click', true, true, null, 0, 0, 0, 0, 0,false, false, false, false, 0, element);element.dispatchEvent(clickEvent);">Do magic</button><br/>
+    <label id="labelForCheckbox" for="labeledCheckbox" onclick="appendMessage('labelclick')">Toggle checkbox</label><input type="checkbox" id="labeledCheckbox" onclick="appendMessage('chboxclick')"/>
   </form>
   
   <form action="javascriptPage.html" id="submitListeningForm" onsubmit="appendMessage('form-onsubmit '); return false;">
@@ -229,10 +223,6 @@
     </ul>
 </div>
 
-<p id="zeroheight" style="height:0px;">This is a foo</p>
-
-<p id="zerowidth" style="width:0;">This is a bar</p>
-
 <a href="#" id="close" onclick="window.close();">Close window</a>
 
 <div id="delete" onclick="var d = document.getElementById('deleted'); this.removeChild(d);">
@@ -258,11 +248,21 @@
   <div style="clear: both"></div>
 </div>
 
-<div id="eventish" onclick="displayEvent(event);">
-  Click me to view my coordinates
+<a id="new_window" onmouseup="window.open('closeable_window.html', 'close_me')" href="#">Click me to open a new window</a>
+
+<a id="throwing-mouseover" onmouseover="throw new Error()" href="#throwing-mouseover">Mouse over me will throw a JS error</a>
+
+<div id="parent">
+    <span id="movable" onmouseover="var p = document.getElementById('movable'); displayMessage('parent matches? ' + (p != event.relatedTarget));">
+        Click on me to show the related target
+    </span>
 </div>
 
-<a id="new_window" onmouseup="window.open('closeable_window.html', 'close_me')" href="#">Click me to open a new window</a>
+<div id="zero" style="width:0;height:0">
+  <div>
+    <img src="map.png">
+  </div>
+</div>
 
 </body>
 </html>

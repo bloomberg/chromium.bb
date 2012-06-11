@@ -1,9 +1,6 @@
 <?xml version="1.0"?>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-    <link rel="stylesheet" href="stylesheets/generic.css" type="text/css"/>
-    <script type="text/javascript" src="javascripts/prototype.js"></script>
-    <script type="text/javascript" src="javascripts/effects.js"></script>
     <title>XHTML Test Page</title>
 </head>
 <body>
@@ -60,7 +57,6 @@
 <p id="spaces">     </p>
 <p id="empty"></p>
 <a href="foo" id="linkWithEqualsSign">Link=equalssign</a>
-<p id="self-closed" />Here is some content that should not be in the previous p tag
 
 <p class=" spaceAround ">Spaced out</p>
 
@@ -70,5 +66,11 @@
   <span>first_span</span>
   <span>second_span</span>
 </span>
+
+<div id="parent">I'm a parent
+  <div id="child">I'm a child</div>
+</div>
+
+<div id="only-exists-on-xhtmltest">Woo woo</div>
 </body>
 </html>
