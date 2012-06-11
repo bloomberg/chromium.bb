@@ -48,7 +48,8 @@ void PepperGtalkMessageFilter::OnTalkGetPermission(uint32 plugin_dispatcher_id,
   const string16 message = l10n_util::GetStringUTF16(
       IDS_GTALK_SCREEN_SHARE_DIALOG_MESSAGE);
 
-  aura::Window* parent = ash::Shell::GetInstance()->GetContainer(
+  aura::Window* parent = ash::Shell::GetContainer(
+      ash::Shell::GetActiveRootWindow(),
       ash::internal::kShellWindowId_SystemModalContainer);
   user_response = browser::ShowMessageBox(parent, title, message,
       browser::MESSAGE_BOX_TYPE_QUESTION) == browser::MESSAGE_BOX_RESULT_YES;

@@ -106,7 +106,8 @@ typedef AshTestBase NestedDispatcherTest;
 // Aura window below lock screen in z order.
 TEST_F(NestedDispatcherTest, AssociatedWindowBelowLockScreen) {
   MockDispatcher inner_dispatcher;
-  aura::Window* default_container = Shell::GetInstance()->GetContainer(
+  aura::Window* default_container = Shell::GetContainer(
+      Shell::GetPrimaryRootWindow(),
       internal::kShellWindowId_DefaultContainer);
   scoped_ptr<aura::Window> associated_window(aura::test::CreateTestWindowWithId(
       0, default_container));
@@ -126,7 +127,8 @@ TEST_F(NestedDispatcherTest, AssociatedWindowBelowLockScreen) {
 TEST_F(NestedDispatcherTest, AssociatedWindowAboveLockScreen) {
   MockDispatcher inner_dispatcher;
 
-  aura::Window* default_container = Shell::GetInstance()->GetContainer(
+  aura::Window* default_container = Shell::GetContainer(
+      Shell::GetPrimaryRootWindow(),
       internal::kShellWindowId_DefaultContainer);
   scoped_ptr<aura::Window>mock_lock_container(
       aura::test::CreateTestWindowWithId(0, default_container));

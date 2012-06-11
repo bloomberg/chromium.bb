@@ -85,7 +85,9 @@ void AppListController::SetVisible(bool visible) {
     app_list::AppListView* view = new app_list::AppListView(
         Shell::GetInstance()->delegate()->CreateAppListViewDelegate());
     view->InitAsBubble(
-        Shell::GetInstance()->GetContainer(kShellWindowId_AppListContainer),
+        Shell::GetContainer(
+            Shell::GetPrimaryRootWindow(),
+            kShellWindowId_AppListContainer),
         Shell::GetInstance()->launcher()->GetAppListButtonView(),
         GetBubbleArrowLocation());
     SetView(view);
@@ -199,9 +201,11 @@ ui::GestureStatus AppListController::PreHandleGestureEvent(
 // AppListController,  aura::FocusObserver implementation:
 void AppListController::OnWindowFocused(aura::Window* window) {
   if (view_ && is_visible_) {
-    aura::Window* applist_container = Shell::GetInstance()->GetContainer(
+    aura::Window* applist_container = Shell::GetContainer(
+        Shell::GetPrimaryRootWindow(),
         kShellWindowId_AppListContainer);
-    aura::Window* bubble_container = Shell::GetInstance()->GetContainer(
+    aura::Window* bubble_container = Shell::GetContainer(
+        Shell::GetPrimaryRootWindow(),
         kShellWindowId_SettingBubbleContainer);
     if (window->parent() != applist_container &&
         window->parent() != bubble_container) {

@@ -153,7 +153,8 @@ void WebUILoginDisplayHost::LoadURL(const GURL& url) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableNewOobe))
       params.transparent = true;
     params.parent =
-        ash::Shell::GetInstance()->GetContainer(
+        ash::Shell::GetContainer(
+            ash::Shell::GetPrimaryRootWindow(),
             ash::internal::kShellWindowId_LockScreenContainer);
 
     login_window_ = new views::Widget;

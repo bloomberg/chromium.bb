@@ -296,7 +296,8 @@ void SimpleWebViewDialog::ShowPageInfo(content::WebContents* web_contents,
           true,
           this);
   page_info_bubble->set_parent_window(
-      ash::Shell::GetInstance()->GetContainer(
+      ash::Shell::GetContainer(
+          ash::Shell::GetPrimaryRootWindow(),
           ash::internal::kShellWindowId_LockSystemModalContainer));
   CreateViewsBubble(page_info_bubble);
   page_info_bubble->Show();

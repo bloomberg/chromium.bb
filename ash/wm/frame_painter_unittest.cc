@@ -20,7 +20,8 @@ using views::ImageButton;
 namespace {
 
 aura::Window* GetDefaultContainer() {
-  return ash::Shell::GetInstance()->GetContainer(
+  return ash::Shell::GetContainer(
+      ash::Shell::GetPrimaryRootWindow(),
       ash::internal::kShellWindowId_DefaultContainer);
 }
 

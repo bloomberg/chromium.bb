@@ -33,44 +33,46 @@ views::Widget* CreateTestWindow(const views::Widget::InitParams& params) {
 }
 
 aura::Window* GetDefaultContainer() {
-  return Shell::GetInstance()->GetContainer(
-        ash::internal::kShellWindowId_DefaultContainer);
+  return Shell::GetContainer(
+      Shell::GetPrimaryRootWindow(),
+      internal::kShellWindowId_DefaultContainer);
 }
 
 aura::Window* GetAlwaysOnTopContainer() {
-  return Shell::GetInstance()->GetContainer(
-        ash::internal::kShellWindowId_AlwaysOnTopContainer);
+  return Shell::GetContainer(
+      Shell::GetPrimaryRootWindow(),
+      internal::kShellWindowId_AlwaysOnTopContainer);
 }
 
 // Expect ALL the containers!
 void ExpectAllContainers() {
-  Shell* shell = Shell::GetInstance();
-  EXPECT_TRUE(
-      shell->GetContainer(internal::kShellWindowId_DesktopBackgroundContainer));
-  EXPECT_TRUE(
-      shell->GetContainer(internal::kShellWindowId_DefaultContainer));
-  EXPECT_TRUE(
-      shell->GetContainer(internal::kShellWindowId_AlwaysOnTopContainer));
-  EXPECT_TRUE(
-      shell->GetContainer(internal::kShellWindowId_PanelContainer));
-  EXPECT_TRUE(
-      shell->GetContainer(internal::kShellWindowId_LauncherContainer));
-  EXPECT_TRUE(
-      shell->GetContainer(internal::kShellWindowId_SystemModalContainer));
-  EXPECT_TRUE(
-      shell->GetContainer(internal::kShellWindowId_LockScreenContainer));
-  EXPECT_TRUE(
-      shell->GetContainer(internal::kShellWindowId_LockSystemModalContainer));
-  EXPECT_TRUE(
-      shell->GetContainer(internal::kShellWindowId_StatusContainer));
-  EXPECT_TRUE(
-      shell->GetContainer(internal::kShellWindowId_MenuContainer));
-  EXPECT_TRUE(shell->GetContainer(
-      internal::kShellWindowId_DragImageAndTooltipContainer));
-  EXPECT_TRUE(
-      shell->GetContainer(internal::kShellWindowId_SettingBubbleContainer));
-  EXPECT_TRUE(
-      shell->GetContainer(internal::kShellWindowId_OverlayContainer));
+  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
+  EXPECT_TRUE(Shell::GetContainer(
+      root_window, internal::kShellWindowId_DesktopBackgroundContainer));
+  EXPECT_TRUE(Shell::GetContainer(
+      root_window, internal::kShellWindowId_DefaultContainer));
+  EXPECT_TRUE(Shell::GetContainer(
+      root_window, internal::kShellWindowId_AlwaysOnTopContainer));
+  EXPECT_TRUE(Shell::GetContainer(
+      root_window, internal::kShellWindowId_PanelContainer));
+  EXPECT_TRUE(Shell::GetContainer(
+      root_window, internal::kShellWindowId_LauncherContainer));
+  EXPECT_TRUE(Shell::GetContainer(
+      root_window, internal::kShellWindowId_SystemModalContainer));
+  EXPECT_TRUE(Shell::GetContainer(
+      root_window, internal::kShellWindowId_LockScreenContainer));
+  EXPECT_TRUE(Shell::GetContainer(
+      root_window, internal::kShellWindowId_LockSystemModalContainer));
+  EXPECT_TRUE(Shell::GetContainer(
+      root_window, internal::kShellWindowId_StatusContainer));
+  EXPECT_TRUE(Shell::GetContainer(
+      root_window, internal::kShellWindowId_MenuContainer));
+  EXPECT_TRUE(Shell::GetContainer(
+      root_window, internal::kShellWindowId_DragImageAndTooltipContainer));
+  EXPECT_TRUE(Shell::GetContainer(
+      root_window, internal::kShellWindowId_SettingBubbleContainer));
+  EXPECT_TRUE(Shell::GetContainer(
+      root_window, internal::kShellWindowId_OverlayContainer));
 }
 
 void TestCreateWindow(views::Widget::InitParams::Type type,
@@ -186,8 +188,9 @@ TEST_F(ShellTest, CreateModalWindow) {
   modal_widget->Show();
 
   // It should be in modal container.
-  aura::Window* modal_container = Shell::GetInstance()->GetContainer(
-      ash::internal::kShellWindowId_SystemModalContainer);
+  aura::Window* modal_container = Shell::GetContainer(
+      Shell::GetPrimaryRootWindow(),
+      internal::kShellWindowId_SystemModalContainer);
   EXPECT_EQ(modal_container, modal_widget->GetNativeWindow()->parent());
 
   modal_widget->Close();
@@ -207,13 +210,15 @@ TEST_F(ShellTest, CreateLockScreenModalWindow) {
 
   // Create a LockScreen window.
   views::Widget* lock_widget = CreateTestWindow(widget_params);
-  ash::Shell::GetInstance()->GetContainer(
+  ash::Shell::GetContainer(
+      Shell::GetPrimaryRootWindow(),
       ash::internal::kShellWindowId_LockScreenContainer)->
       AddChild(lock_widget->GetNativeView());
   lock_widget->Show();
 
   // It should be in LockScreen container.
-  aura::Window* lock_screen = Shell::GetInstance()->GetContainer(
+  aura::Window* lock_screen = Shell::GetContainer(
+      Shell::GetPrimaryRootWindow(),
       ash::internal::kShellWindowId_LockScreenContainer);
   EXPECT_EQ(lock_screen, lock_widget->GetNativeWindow()->parent());
 
@@ -223,7 +228,8 @@ TEST_F(ShellTest, CreateLockScreenModalWindow) {
   lock_modal_widget->Show();
 
   // It should be in LockScreen modal container.
-  aura::Window* lock_modal_container = Shell::GetInstance()->GetContainer(
+  aura::Window* lock_modal_container = Shell::GetContainer(
+      Shell::GetPrimaryRootWindow(),
       ash::internal::kShellWindowId_LockSystemModalContainer);
   EXPECT_EQ(lock_modal_container,
             lock_modal_widget->GetNativeWindow()->parent());
@@ -234,7 +240,8 @@ TEST_F(ShellTest, CreateLockScreenModalWindow) {
   modal_widget->Show();
 
   // It should be in non-LockScreen modal container.
-  aura::Window* modal_container = Shell::GetInstance()->GetContainer(
+  aura::Window* modal_container = Shell::GetContainer(
+      Shell::GetPrimaryRootWindow(),
       ash::internal::kShellWindowId_SystemModalContainer);
   EXPECT_EQ(modal_container, modal_widget->GetNativeWindow()->parent());
 

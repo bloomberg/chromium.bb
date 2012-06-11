@@ -209,7 +209,8 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification(
         links);
     mobile_data_bubble_->set_link_listener(listener);
     mobile_data_bubble_->set_parent_window(
-        ash::Shell::GetInstance()->GetContainer(
+        ash::Shell::GetContainer(
+            ash::Shell::GetPrimaryRootWindow(),
             ash::internal::kShellWindowId_SettingBubbleContainer));
     views::BubbleDelegateView::CreateBubble(mobile_data_bubble_);
     mobile_data_bubble_->Show();

@@ -24,12 +24,12 @@ EventClientImpl::~EventClientImpl() {
 bool EventClientImpl::CanProcessEventsWithinSubtree(
     const aura::Window* window) const {
   if (Shell::GetInstance()->IsScreenLocked()) {
-    aura::Window* lock_screen_containers =
-        Shell::GetInstance()->GetContainer(
-            kShellWindowId_LockScreenContainersContainer);
-    aura::Window* lock_screen_related_containers =
-        Shell::GetInstance()->GetContainer(
-            kShellWindowId_LockScreenRelatedContainersContainer);
+    aura::Window* lock_screen_containers = Shell::GetContainer(
+        root_window_,
+        kShellWindowId_LockScreenContainersContainer);
+    aura::Window* lock_screen_related_containers = Shell::GetContainer(
+        root_window_,
+        kShellWindowId_LockScreenRelatedContainersContainer);
     return lock_screen_containers->Contains(window) ||
         lock_screen_related_containers->Contains(window);
   }

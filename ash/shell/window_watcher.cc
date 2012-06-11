@@ -15,8 +15,9 @@ namespace shell {
 
 WindowWatcher::WindowWatcher()
     : window_(ash::Shell::GetInstance()->launcher()->window_container()),
-      panel_container_(ash::Shell::GetInstance()->GetContainer(
-          ash::internal::kShellWindowId_PanelContainer)) {
+      panel_container_(ash::Shell::GetContainer(
+          Shell::GetPrimaryRootWindow(),
+          internal::kShellWindowId_PanelContainer)) {
   window_->AddObserver(this);
   panel_container_->AddObserver(this);
 }

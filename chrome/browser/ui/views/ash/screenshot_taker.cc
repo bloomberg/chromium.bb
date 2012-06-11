@@ -169,7 +169,8 @@ void ScreenshotTaker::DisplayVisualFeedback(const gfx::Rect& rect) {
   visual_feedback_layer_->SetOpacity(kVisualFeedbackLayerOpacity);
   visual_feedback_layer_->SetBounds(rect);
 
-  ui::Layer* parent = ash::Shell::GetInstance()->GetContainer(
+  ui::Layer* parent = ash::Shell::GetContainer(
+      ash::Shell::GetActiveRootWindow(),
       ash::internal::kShellWindowId_OverlayContainer)->layer();
   parent->Add(visual_feedback_layer_.get());
   visual_feedback_layer_->SetVisible(true);

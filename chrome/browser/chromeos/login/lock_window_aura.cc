@@ -42,10 +42,10 @@ void LockWindowAura::Init() {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.show_state = ui::SHOW_STATE_FULLSCREEN;
-  // TODO(flackr): Use a property to specify this container rather than
-  // depending on shell implementation.
+  // TODO(oshima): move the lock screen harness to ash.
   params.parent =
-      ash::Shell::GetInstance()->GetContainer(
+      ash::Shell::GetContainer(
+          ash::Shell::GetPrimaryRootWindow(),
           ash::internal::kShellWindowId_LockScreenContainer);
   views::Widget::Init(params);
   ash::SetWindowVisibilityAnimationTransition(GetNativeView(),

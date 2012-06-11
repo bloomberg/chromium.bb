@@ -18,7 +18,8 @@ StatusAreaWidget::StatusAreaWidget() {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.delegate = widget_delegate_;
-  params.parent = Shell::GetInstance()->GetContainer(
+  params.parent = Shell::GetContainer(
+      Shell::GetPrimaryRootWindow(),
       ash::internal::kShellWindowId_StatusContainer);
   params.transparent = true;
   Init(params);

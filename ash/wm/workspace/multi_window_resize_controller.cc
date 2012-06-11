@@ -356,8 +356,9 @@ void MultiWindowResizeController::ShowNow() {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.transparent = true;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.parent = Shell::GetInstance()->GetContainer(
-      ash::internal::kShellWindowId_AlwaysOnTopContainer);
+  params.parent = Shell::GetContainer(
+      Shell::GetActiveRootWindow(),
+      internal::kShellWindowId_AlwaysOnTopContainer);
   params.can_activate = false;
   ResizeView* view = new ResizeView(this, windows_.direction);
   params.delegate = new views::WidgetDelegateView;

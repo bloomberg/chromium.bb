@@ -51,7 +51,9 @@ class WorkspaceManagerTest : public test::AshTestBase {
   }
 
   aura::Window* GetViewport() {
-    return Shell::GetInstance()->GetContainer(kShellWindowId_DefaultContainer);
+    return Shell::GetContainer(
+        Shell::GetPrimaryRootWindow(),
+        kShellWindowId_DefaultContainer);
   }
 
   const std::vector<Workspace*>& workspaces() const {

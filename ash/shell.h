@@ -160,6 +160,13 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
   // point.
   static aura::RootWindow* GetRootWindowAt(const gfx::Point& point);
 
+  static aura::Window* GetContainer(aura::RootWindow* root_window,
+                                    int container_id);
+
+  // Returns the list of containers that match |container_id| in
+  // all root windows.
+  static std::vector<aura::Window*> GetAllContainers(int container_id);
+
   void set_active_root_window(aura::RootWindow* active_root_window) {
     active_root_window_ = active_root_window;
   }
@@ -167,9 +174,6 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
   internal::RootWindowLayoutManager* root_window_layout() const {
     return root_window_layout_;
   }
-
-  aura::Window* GetContainer(int container_id);
-  const aura::Window* GetContainer(int container_id) const;
 
   // Adds or removes |filter| from the aura::Env's CompoundEventFilter.
   void AddEnvEventFilter(aura::EventFilter* filter);

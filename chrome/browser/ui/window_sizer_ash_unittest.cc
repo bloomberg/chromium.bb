@@ -604,7 +604,8 @@ TEST_F(WindowSizerTest,
 TEST_F(WindowSizerTestWithBrowser, PlaceNewWindowOverOldWindow) {
   // Create a dummy window.
   aura::Window* default_container =
-      ash::Shell::GetInstance()->GetContainer(
+      ash::Shell::GetContainer(
+          ash::Shell::GetPrimaryRootWindow(),
           ash::internal::kShellWindowId_DefaultContainer);
   scoped_ptr<aura::Window> window(
       aura::test::CreateTestWindowWithId(0, default_container));

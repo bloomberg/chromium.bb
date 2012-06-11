@@ -4,19 +4,23 @@
 
 #include "ash/wm/window_properties.h"
 
+#include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/shadow_types.h"
 #include "ui/aura/window_property.h"
 #include "ui/ui_controls/ui_controls_aura.h"
 
 // Property type for bool and ui::WindowShowState are
 // defined in aura.
+DECLARE_WINDOW_PROPERTY_TYPE(ash::internal::AlwaysOnTopController*);
 DECLARE_WINDOW_PROPERTY_TYPE(ash::internal::ShadowType);
 DECLARE_WINDOW_PROPERTY_TYPE(ash::WindowPersistsAcrossAllWorkspacesType)
 DECLARE_WINDOW_PROPERTY_TYPE(ui_controls::UIControlsAura*)
 
 namespace ash {
 namespace internal {
-
+DEFINE_OWNED_WINDOW_PROPERTY_KEY(ash::internal::AlwaysOnTopController,
+                                 kAlwaysOnTopControllerKey,
+                                 NULL);
 DEFINE_WINDOW_PROPERTY_KEY(
     bool, kChildWindowVisibilityChangesAnimatedKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(

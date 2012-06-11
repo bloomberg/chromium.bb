@@ -49,9 +49,9 @@ TEST_F(FocusCyclerTest, CycleFocusBrowserOnly) {
   scoped_ptr<FocusCycler> focus_cycler(new FocusCycler());
 
   // Create a single test window.
-  Window* default_container =
-      ash::Shell::GetInstance()->GetContainer(
-          internal::kShellWindowId_DefaultContainer);
+  Window* default_container = Shell::GetContainer(
+      Shell::GetPrimaryRootWindow(),
+      internal::kShellWindowId_DefaultContainer);
   scoped_ptr<Window> window0(CreateTestWindowWithId(0, default_container));
   wm::ActivateWindow(window0.get());
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
@@ -79,9 +79,9 @@ TEST_F(FocusCyclerTest, CycleFocusForward) {
   launcher->SetFocusCycler(focus_cycler.get());
 
   // Create a single test window.
-  Window* default_container =
-      ash::Shell::GetInstance()->GetContainer(
-          internal::kShellWindowId_DefaultContainer);
+  Window* default_container = Shell::GetContainer(
+      Shell::GetPrimaryRootWindow(),
+      internal::kShellWindowId_DefaultContainer);
   scoped_ptr<Window> window0(CreateTestWindowWithId(0, default_container));
   wm::ActivateWindow(window0.get());
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
@@ -117,9 +117,9 @@ TEST_F(FocusCyclerTest, CycleFocusBackward) {
   launcher->SetFocusCycler(focus_cycler.get());
 
   // Create a single test window.
-  Window* default_container =
-      ash::Shell::GetInstance()->GetContainer(
-          internal::kShellWindowId_DefaultContainer);
+  Window* default_container = Shell::GetContainer(
+      Shell::GetPrimaryRootWindow(),
+      internal::kShellWindowId_DefaultContainer);
   scoped_ptr<Window> window0(CreateTestWindowWithId(0, default_container));
   wm::ActivateWindow(window0.get());
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
@@ -186,9 +186,9 @@ TEST_F(FocusCyclerLauncherTest, CycleFocusForwardInvisible) {
   launcher->SetFocusCycler(focus_cycler.get());
 
   // Create a single test window.
-  Window* default_container =
-      ash::Shell::GetInstance()->GetContainer(
-          internal::kShellWindowId_DefaultContainer);
+  Window* default_container = Shell::GetContainer(
+      Shell::GetPrimaryRootWindow(),
+      internal::kShellWindowId_DefaultContainer);
   scoped_ptr<Window> window0(CreateTestWindowWithId(0, default_container));
   wm::ActivateWindow(window0.get());
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
@@ -220,9 +220,9 @@ TEST_F(FocusCyclerLauncherTest, CycleFocusBackwardInvisible) {
   launcher->SetFocusCycler(focus_cycler.get());
 
   // Create a single test window.
-  Window* default_container =
-      ash::Shell::GetInstance()->GetContainer(
-          internal::kShellWindowId_DefaultContainer);
+  Window* default_container = Shell::GetInstance()->GetContainer(
+      Shell::GetPrimaryRootWindow(),
+      internal::kShellWindowId_DefaultContainer);
   scoped_ptr<Window> window0(CreateTestWindowWithId(0, default_container));
   wm::ActivateWindow(window0.get());
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));

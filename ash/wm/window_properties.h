@@ -17,10 +17,16 @@ class UIControlsAura;
 
 namespace ash {
 namespace internal {
+class AlwaysOnTopController;
 
 // Shell-specific window property keys.
 
 // Alphabetical sort.
+
+// A Key to store AlwaysOnTopController per RootWindow. The value is
+// owned by the RootWindow.
+extern const aura::WindowProperty<internal::AlwaysOnTopController*>* const
+    kAlwaysOnTopControllerKey;
 
 // Property set on all windows whose child windows' visibility changes are
 // animated.

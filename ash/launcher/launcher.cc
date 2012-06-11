@@ -116,7 +116,8 @@ Launcher::Launcher(aura::Window* window_container)
   params.layer_type = ui::LAYER_SOLID_COLOR;
   params.transparent = true;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.parent = Shell::GetInstance()->GetContainer(
+  params.parent = Shell::GetContainer(
+      window_container_->GetRootWindow(),
       ash::internal::kShellWindowId_LauncherContainer);
   launcher_view_ = new internal::LauncherView(model_.get(), delegate_.get());
   launcher_view_->Init();

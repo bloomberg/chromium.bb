@@ -43,10 +43,6 @@ const int kWindowContainerIds[] = {
     kShellWindowId_StatusContainer,
 };
 
-aura::Window* GetContainer(int id) {
-  return Shell::GetInstance()->GetContainer(id);
-}
-
 // Returns true if children of |window| can be activated.
 // These are the only containers in which windows can receive focus.
 bool SupportsChildActivation(aura::Window* window) {
@@ -310,8 +306,11 @@ aura::Window* ActivationController::GetTopmostWindowToActivate(
   size_t current_container_index = 0;
   // If the container of the window losing focus is in the list, start from that
   // container.
+  aura::RootWindow* root = ignore->GetRootWindow();
+  if (!root)
+    root = Shell::GetActiveRootWindow();
   for (size_t i = 0; ignore && i < arraysize(kWindowContainerIds); i++) {
-    aura::Window* container = GetContainer(kWindowContainerIds[i]);
+    aura::Window* container = Shell::GetContainer(root, kWindowContainerIds[i]);
     if (container && container->Contains(ignore)) {
       current_container_index = i;
       break;
@@ -322,10 +321,14 @@ aura::Window* ActivationController::GetTopmostWindowToActivate(
   aura::Window* window = NULL;
   for (; !window && current_container_index < arraysize(kWindowContainerIds);
        current_container_index++) {
-    aura::Window* container =
-        GetContainer(kWindowContainerIds[current_container_index]);
-    if (container)
-      window = GetTopmostWindowToActivateInContainer(container, ignore);
+
+    aura::Window::Windows containers =
+        Shell::GetAllContainers(kWindowContainerIds[current_container_index]);
+    for (aura::Window::Windows::const_iterator iter = containers.begin();
+         iter != containers.end();
+         ++iter) {
+      window = GetTopmostWindowToActivateInContainer((*iter), ignore);
+    }
   }
   return window;
 }

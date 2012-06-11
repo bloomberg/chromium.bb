@@ -127,8 +127,11 @@ void WindowCycleController::AltKeyReleased() {
 
 // static
 std::vector<aura::Window*> WindowCycleController::BuildWindowList() {
-  aura::Window* default_container = ash::Shell::GetInstance()->GetContainer(
-    ash::internal::kShellWindowId_DefaultContainer);
+  // TODO(oshima): Figure out how this should work with multiple root
+  // windows. Just use active root window for now.
+  aura::Window* default_container = Shell::GetContainer(
+      Shell::GetActiveRootWindow(),
+      internal::kShellWindowId_DefaultContainer);
   WindowCycleList::WindowList windows = default_container->children();
   // Removes unfocusable windows.
   WindowCycleList::WindowList::iterator last =

@@ -967,7 +967,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE {
-    return ash::Shell::GetInstance()->GetContainer(
+    return ash::Shell::GetContainer(
+        ash::Shell::GetPrimaryRootWindow(),
         GetUserLoginStatus() == ash::user::LOGGED_IN_NONE ?
             ash::internal::kShellWindowId_LockSystemModalContainer :
             ash::internal::kShellWindowId_SystemModalContainer);

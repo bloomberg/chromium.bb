@@ -704,13 +704,31 @@ aura::RootWindow* Shell::GetPrimaryRootWindow() {
   return GetInstance()->root_window_.get();
 }
 
+// static
 aura::RootWindow* Shell::GetActiveRootWindow() {
   return GetInstance()->active_root_window_;
 }
 
+// static
 aura::RootWindow* Shell::GetRootWindowAt(const gfx::Point& point) {
   // TODO(oshima): Support multiple root windows.
   return GetPrimaryRootWindow();
+}
+
+// static
+aura::Window* Shell::GetContainer(aura::RootWindow* root_window,
+                                  int container_id) {
+  return root_window->GetChildById(container_id);
+}
+
+// static
+std::vector<aura::Window*> Shell::GetAllContainers(int container_id) {
+  // TODO(oshima): Support multiple root windows.
+  std::vector<aura::Window*> containers;
+  aura::Window* container = GetPrimaryRootWindow()->GetChildById(container_id);
+  if (container)
+    containers.push_back(container);
+  return containers;
 }
 
 void Shell::Init() {
@@ -870,15 +888,6 @@ void Shell::Init() {
   screen_dimmer_.reset(new internal::ScreenDimmer(root_window));
 }
 
-aura::Window* Shell::GetContainer(int container_id) {
-  return const_cast<aura::Window*>(
-      const_cast<const Shell*>(this)->GetContainer(container_id));
-}
-
-const aura::Window* Shell::GetContainer(int container_id) const {
-  return GetPrimaryRootWindow()->GetChildById(container_id);
-}
-
 void Shell::AddEnvEventFilter(aura::EventFilter* filter) {
   env_filter_->AddFilter(filter);
 }
@@ -917,7 +926,9 @@ bool Shell::IsScreenLocked() const {
 }
 
 bool Shell::IsModalWindowOpen() const {
+  // TODO(oshima): Walk though all root windows.
   const aura::Window* modal_container = GetContainer(
+      GetPrimaryRootWindow(),
       internal::kShellWindowId_SystemModalContainer);
   return !modal_container->children().empty();
 }
@@ -967,8 +978,9 @@ void Shell::CreateLauncher() {
   if (launcher_.get())
     return;
 
-  aura::Window* default_container =
-      GetContainer(internal::kShellWindowId_DefaultContainer);
+  aura::Window* default_container = GetContainer(
+      GetPrimaryRootWindow(),
+      internal::kShellWindowId_DefaultContainer);
   launcher_.reset(new Launcher(default_container));
 
   launcher_->SetFocusCycler(focus_cycler_.get());
@@ -1044,17 +1056,20 @@ void Shell::InitLayoutManagers() {
 
   internal::ShelfLayoutManager* shelf_layout_manager =
       new internal::ShelfLayoutManager(status_area_widget_);
-  GetContainer(internal::kShellWindowId_LauncherContainer)->
+  GetContainer(
+      GetPrimaryRootWindow(),
+      internal::kShellWindowId_LauncherContainer)->
       SetLayoutManager(shelf_layout_manager);
   shelf_ = shelf_layout_manager;
 
   internal::StatusAreaLayoutManager* status_area_layout_manager =
       new internal::StatusAreaLayoutManager(shelf_layout_manager);
-  GetContainer(internal::kShellWindowId_StatusContainer)->
+  GetContainer(GetPrimaryRootWindow(),
+               internal::kShellWindowId_StatusContainer)->
       SetLayoutManager(status_area_layout_manager);
 
-  aura::Window* default_container =
-      GetContainer(internal::kShellWindowId_DefaultContainer);
+  aura::Window* default_container = GetContainer(
+      GetPrimaryRootWindow(), internal::kShellWindowId_DefaultContainer);
   // Workspace manager has its own layout managers.
   workspace_controller_.reset(
       new internal::WorkspaceController(default_container));
@@ -1062,8 +1077,8 @@ void Shell::InitLayoutManagers() {
   shelf_layout_manager->set_workspace_manager(
       workspace_controller_->workspace_manager());
 
-  aura::Window* always_on_top_container =
-      GetContainer(internal::kShellWindowId_AlwaysOnTopContainer);
+  aura::Window* always_on_top_container = GetContainer(
+      GetPrimaryRootWindow(), internal::kShellWindowId_AlwaysOnTopContainer);
   always_on_top_container->SetLayoutManager(
       new internal::BaseLayoutManager(
           always_on_top_container->GetRootWindow()));
@@ -1072,6 +1087,7 @@ void Shell::InitLayoutManagers() {
   if (CommandLine::ForCurrentProcess()->
       HasSwitch(switches::kAuraPanelManager)) {
     aura::Window* panel_container = GetContainer(
+        GetPrimaryRootWindow(),
         internal::kShellWindowId_PanelContainer);
     panel_layout_manager_ =
         new internal::PanelLayoutManager(panel_container);

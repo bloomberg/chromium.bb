@@ -53,7 +53,8 @@ class PanelLayoutManagerTest : public ash::test::AshTestBase {
   }
 
   aura::Window* GetPanelContainer() {
-    return Shell::GetInstance()->GetContainer(
+    return Shell::GetContainer(
+        Shell::GetPrimaryRootWindow(),
         ash::internal::kShellWindowId_PanelContainer);
   }
 

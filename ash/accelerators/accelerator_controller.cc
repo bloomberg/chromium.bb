@@ -42,44 +42,45 @@
 #include "chromeos/monitor/output_configurator.h"
 #endif  // defined(OS_CHROMEOS)
 
+namespace ash {
 namespace {
 
-bool HandleCycleWindowMRU(ash::WindowCycleController::Direction direction,
+bool HandleCycleWindowMRU(WindowCycleController::Direction direction,
                           bool is_alt_down) {
-  ash::Shell::GetInstance()->
+  Shell::GetInstance()->
       window_cycle_controller()->HandleCycleWindow(direction, is_alt_down);
   // Always report we handled the key, even if the window didn't change.
   return true;
 }
 
-void HandleCycleWindowLinear(ash::CycleDirection direction) {
-  ash::Shell::GetInstance()->launcher()->CycleWindowLinear(direction);
+void HandleCycleWindowLinear(CycleDirection direction) {
+  Shell::GetInstance()->launcher()->CycleWindowLinear(direction);
 }
 
 #if defined(OS_CHROMEOS)
 bool HandleLock() {
-  ash::Shell::GetInstance()->delegate()->LockScreen();
+  Shell::GetInstance()->delegate()->LockScreen();
   return true;
 }
 
 bool HandleFileManager() {
-  ash::Shell::GetInstance()->delegate()->OpenFileManager();
+  Shell::GetInstance()->delegate()->OpenFileManager();
   return true;
 }
 
 bool HandleCrosh() {
-  ash::Shell::GetInstance()->delegate()->OpenCrosh();
+  Shell::GetInstance()->delegate()->OpenCrosh();
   return true;
 }
 
 bool HandleToggleSpokenFeedback() {
-  ash::Shell::GetInstance()->delegate()->ToggleSpokenFeedback();
+  Shell::GetInstance()->delegate()->ToggleSpokenFeedback();
   return true;
 }
 #endif
 
 bool HandleExit() {
-  ash::ShellDelegate* delegate = ash::Shell::GetInstance()->delegate();
+  ShellDelegate* delegate = Shell::GetInstance()->delegate();
   if (!delegate)
     return false;
   delegate->Exit();
@@ -87,12 +88,12 @@ bool HandleExit() {
 }
 
 bool HandleNewTab() {
-  ash::Shell::GetInstance()->delegate()->NewTab();
+  Shell::GetInstance()->delegate()->NewTab();
   return true;
 }
 
 bool HandleNewWindow(bool is_incognito) {
-  ash::ShellDelegate* delegate = ash::Shell::GetInstance()->delegate();
+  ShellDelegate* delegate = Shell::GetInstance()->delegate();
   if (!delegate)
     return false;
   delegate->NewWindow(is_incognito);
@@ -100,19 +101,20 @@ bool HandleNewWindow(bool is_incognito) {
 }
 
 bool HandleRestoreTab() {
-  ash::Shell::GetInstance()->delegate()->RestoreTab();
+  Shell::GetInstance()->delegate()->RestoreTab();
   return true;
 }
 
 bool HandleShowTaskManager() {
-  ash::Shell::GetInstance()->delegate()->ShowTaskManager();
+  Shell::GetInstance()->delegate()->ShowTaskManager();
   return true;
 }
 
 // Rotates the default window container.
 bool HandleRotateWindows() {
-  aura::Window* target = ash::Shell::GetInstance()->GetContainer(
-        ash::internal::kShellWindowId_DefaultContainer);
+  aura::Window* target = Shell::GetContainer(
+      Shell::GetPrimaryRootWindow(),
+      internal::kShellWindowId_DefaultContainer);
   scoped_ptr<ui::LayerAnimationSequence> screen_rotation(
       new ui::LayerAnimationSequence(new ui::ScreenRotation(360)));
   target->layer()->GetAnimator()->StartAnimation(
@@ -142,36 +144,36 @@ bool HandleRotateScreen() {
     case 13: delta = 180; break;
   }
   i = (i + 1) % 14;
-  ash::Shell::GetPrimaryRootWindow()->layer()->GetAnimator()->
+  Shell::GetPrimaryRootWindow()->layer()->GetAnimator()->
       set_preemption_strategy(ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
   scoped_ptr<ui::LayerAnimationSequence> screen_rotation(
       new ui::LayerAnimationSequence(new ui::ScreenRotation(delta)));
-  screen_rotation->AddObserver(ash::Shell::GetPrimaryRootWindow());
-  ash::Shell::GetPrimaryRootWindow()->layer()->GetAnimator()->StartAnimation(
+  screen_rotation->AddObserver(Shell::GetPrimaryRootWindow());
+  Shell::GetPrimaryRootWindow()->layer()->GetAnimator()->StartAnimation(
       screen_rotation.release());
   return true;
 }
 
 bool HandleToggleDesktopBackgroundMode() {
-  ash::DesktopBackgroundController* desktop_background_controller =
-      ash::Shell::GetInstance()->desktop_background_controller();
+  DesktopBackgroundController* desktop_background_controller =
+      Shell::GetInstance()->desktop_background_controller();
   if (desktop_background_controller->desktop_background_mode() ==
-      ash::DesktopBackgroundController::BACKGROUND_IMAGE) {
+      DesktopBackgroundController::BACKGROUND_IMAGE) {
     desktop_background_controller->SetDesktopBackgroundSolidColorMode();
   } else {
-    ash::Shell::GetInstance()->user_wallpaper_delegate()->
+    Shell::GetInstance()->user_wallpaper_delegate()->
         SetLoggedInUserWallpaper();
   }
   return true;
 }
 
 bool HandleToggleRootWindowFullScreen() {
-  ash::Shell::GetPrimaryRootWindow()->ToggleFullScreen();
+  Shell::GetPrimaryRootWindow()->ToggleFullScreen();
   return true;
 }
 
 bool HandlePrintLayerHierarchy() {
-  aura::RootWindow* root_window = ash::Shell::GetPrimaryRootWindow();
+  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
   ui::PrintLayerHierarchy(root_window->layer(),
                           root_window->last_mouse_location());
   return true;
@@ -180,15 +182,16 @@ bool HandlePrintLayerHierarchy() {
 void PrintWindowHierarchy(aura::Window* window, int indent) {
   std::string indent_str(indent, ' ');
   DLOG(INFO) << indent_str << window->name() << " type " << window->type()
-      << (ash::wm::IsActiveWindow(window) ? "active" : "");
+      << (wm::IsActiveWindow(window) ? "active" : "");
   for (size_t i = 0; i < window->children().size(); ++i)
     PrintWindowHierarchy(window->children()[i], indent + 3);
 }
 
 bool HandlePrintWindowHierarchy() {
   DLOG(INFO) << "Window hierarchy:";
-  aura::Window* container = ash::Shell::GetInstance()->GetContainer(
-      ash::internal::kShellWindowId_DefaultContainer);
+  aura::Window* container =
+      Shell::GetContainer(Shell::GetPrimaryRootWindow(),
+                          internal::kShellWindowId_DefaultContainer);
   PrintWindowHierarchy(container, 0);
   return true;
 }
@@ -196,8 +199,6 @@ bool HandlePrintWindowHierarchy() {
 #endif  // !defined(NDEBUG)
 
 }  // namespace
-
-namespace ash {
 
 ////////////////////////////////////////////////////////////////////////////////
 // AcceleratorController, public:

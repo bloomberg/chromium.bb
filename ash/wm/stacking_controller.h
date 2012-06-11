@@ -32,7 +32,8 @@ class StackingController : public aura::client::StackingClient {
   // placed in the screen lock modal container.
   aura::Window* GetSystemModalContainer(aura::Window* window) const;
 
-  scoped_ptr<internal::AlwaysOnTopController> always_on_top_controller_;
+  // Returns the AlwaysOnTopController for the current active root window.
+  internal::AlwaysOnTopController* GetAlwaysOnTopController();
 
   DISALLOW_COPY_AND_ASSIGN(StackingController);
 };

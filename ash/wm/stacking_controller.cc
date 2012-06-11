@@ -7,7 +7,9 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/always_on_top_controller.h"
+#include "ash/wm/window_properties.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 
@@ -16,7 +18,7 @@ namespace internal {
 namespace {
 
 aura::Window* GetContainerById(int id) {
-  return Shell::GetInstance()->GetContainer(id);
+  return Shell::GetContainer(Shell::GetActiveRootWindow(), id);
 }
 
 aura::Window* GetContainerForWindow(aura::Window* window) {
@@ -42,10 +44,6 @@ bool IsWindowModal(aura::Window* window) {
 
 StackingController::StackingController() {
   aura::client::SetStackingClient(this);
-  always_on_top_controller_.reset(new internal::AlwaysOnTopController);
-  always_on_top_controller_->SetContainers(
-      GetContainerById(internal::kShellWindowId_DefaultContainer),
-      GetContainerById(internal::kShellWindowId_AlwaysOnTopContainer));
 }
 
 StackingController::~StackingController() {
@@ -62,7 +60,7 @@ aura::Window* StackingController::GetDefaultParent(aura::Window* window) {
         return GetSystemModalContainer(window);
       else if (IsWindowModal(window))
         return GetContainerForWindow(window->transient_parent());
-      return always_on_top_controller_->GetContainer(window);
+      return GetAlwaysOnTopController()->GetContainer(window);
     case aura::client::WINDOW_TYPE_PANEL:
       return GetContainerById(internal::kShellWindowId_PanelContainer);
     case aura::client::WINDOW_TYPE_MENU:
@@ -111,6 +109,23 @@ aura::Window* StackingController::GetSystemModalContainer(
   }
 
   return container;
+}
+
+internal::AlwaysOnTopController*
+StackingController::GetAlwaysOnTopController() {
+  aura::RootWindow* root_window = Shell::GetActiveRootWindow();
+  internal::AlwaysOnTopController* controller =
+      root_window->GetProperty(internal::kAlwaysOnTopControllerKey);
+  if (!controller) {
+    controller = new internal::AlwaysOnTopController;
+    controller->SetContainers(
+        root_window->GetChildById(internal::kShellWindowId_DefaultContainer),
+        root_window->GetChildById(
+            internal::kShellWindowId_AlwaysOnTopContainer));
+    // RootWindow owns the AlwaysOnTopController object.
+    root_window->SetProperty(kAlwaysOnTopControllerKey, controller);
+  }
+  return controller;
 }
 
 }  // namespace internal

@@ -88,7 +88,7 @@ class GetTopmostWindowToActivateTest : public ActivationControllerTest {
         &delegate_,
         id,
         gfx::Rect(),
-        Shell::GetInstance()->GetContainer(container_id));
+        Shell::GetContainer(Shell::GetPrimaryRootWindow(), container_id));
     delegate->SetWindow(window);
     return window;
   }

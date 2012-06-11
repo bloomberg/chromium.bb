@@ -137,7 +137,8 @@ TouchObserverHUD::TouchObserverHUD() {
   params.can_activate = false;
   params.accept_events = false;
   params.bounds = gfx::Rect(content->GetPreferredSize());
-  params.parent = Shell::GetInstance()->GetContainer(
+  params.parent = Shell::GetContainer(
+      Shell::GetPrimaryRootWindow(),
       internal::kShellWindowId_OverlayContainer);
   widget_->Init(params);
   widget_->SetContentsView(content);

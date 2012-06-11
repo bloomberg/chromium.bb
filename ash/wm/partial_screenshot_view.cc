@@ -41,19 +41,20 @@ void PartialScreenshotView::StartPartialScreenshot(
   views::Widget* widget = new views::Widget;
   PartialScreenshotView* view = new PartialScreenshotView(
       screenshot_delegate);
-
+  aura::RootWindow* root_window = Shell::GetActiveRootWindow();
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.transparent = true;
   params.delegate = view;
   // The partial screenshot rectangle has to be at the real top of
   // the screen.
-  params.parent = Shell::GetInstance()->GetContainer(
+  params.parent = Shell::GetContainer(
+      root_window,
       internal::kShellWindowId_OverlayContainer);
 
   widget->Init(params);
   widget->SetContentsView(view);
-  widget->SetBounds(Shell::GetPrimaryRootWindow()->bounds());
+  widget->SetBounds(root_window->bounds());
   widget->GetNativeView()->SetName("PartialScreenshotView");
   widget->StackAtTop();
   widget->Show();

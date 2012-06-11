@@ -23,7 +23,8 @@ typedef ash::test::AshTestBase WindowAnimationsTest;
 
 TEST_F(WindowAnimationsTest, HideShow) {
   aura::Window* default_container =
-      ash::Shell::GetInstance()->GetContainer(
+      ash::Shell::GetContainer(
+          Shell::GetPrimaryRootWindow(),
           internal::kShellWindowId_DefaultContainer);
   scoped_ptr<aura::Window> window(
       aura::test::CreateTestWindowWithId(0, default_container));
@@ -60,7 +61,8 @@ TEST_F(WindowAnimationsTest, HideShow) {
 
 TEST_F(WindowAnimationsTest, ShowHide) {
   aura::Window* default_container =
-      ash::Shell::GetInstance()->GetContainer(
+      ash::Shell::GetContainer(
+          Shell::GetPrimaryRootWindow(),
           internal::kShellWindowId_DefaultContainer);
   scoped_ptr<aura::Window> window(
       aura::test::CreateTestWindowWithId(0, default_container));
@@ -97,7 +99,8 @@ TEST_F(WindowAnimationsTest, ShowHide) {
 
 TEST_F(WindowAnimationsTest, LayerTargetVisibility) {
   aura::Window* default_container =
-      ash::Shell::GetInstance()->GetContainer(
+      ash::Shell::GetContainer(
+          Shell::GetPrimaryRootWindow(),
           internal::kShellWindowId_DefaultContainer);
   scoped_ptr<aura::Window> window(
       aura::test::CreateTestWindowWithId(0, default_container));
@@ -113,7 +116,8 @@ TEST_F(WindowAnimationsTest, LayerTargetVisibility) {
 
 TEST_F(WindowAnimationsTest, CrossFadeToBounds) {
   Window* default_container =
-      ash::Shell::GetInstance()->GetContainer(
+      ash::Shell::GetContainer(
+          Shell::GetPrimaryRootWindow(),
           internal::kShellWindowId_DefaultContainer);
   scoped_ptr<Window> window(
       aura::test::CreateTestWindowWithId(0, default_container));

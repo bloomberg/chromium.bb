@@ -121,9 +121,9 @@ WindowPositionerTest::~WindowPositionerTest() {
 void WindowPositionerTest::SetUp() {
   AshTestBase::SetUp();
   // Create some default dummy windows.
-  aura::Window* default_container =
-      ash::Shell::GetInstance()->GetContainer(
-          ash::internal::kShellWindowId_DefaultContainer);
+  aura::Window* default_container = ash::Shell::GetContainer(
+      ash::Shell::GetPrimaryRootWindow(),
+      ash::internal::kShellWindowId_DefaultContainer);
   window_.reset(aura::test::CreateTestWindowWithId(0, default_container));
   window_->SetBounds(gfx::Rect(16, 32, 640, 320));
   popup_.reset(aura::test::CreateTestWindowWithId(1, default_container));

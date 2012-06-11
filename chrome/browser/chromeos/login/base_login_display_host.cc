@@ -292,7 +292,8 @@ void BaseLoginDisplayHost::ShutdownDisplayHost(bool post_quit_task) {
 }
 
 void BaseLoginDisplayHost::StartAnimation() {
-  if (ash::Shell::GetInstance()->GetContainer(
+  if (ash::Shell::GetContainer(
+          ash::Shell::GetPrimaryRootWindow(),
           ash::internal::kShellWindowId_DesktopBackgroundContainer)->
           children().empty()) {
     // If there is no background window, don't perform any animation on the
@@ -319,7 +320,8 @@ void BaseLoginDisplayHost::StartAnimation() {
   // Background animation.
   if (do_background_animation) {
     ui::Layer* background_layer =
-        ash::Shell::GetInstance()->GetContainer(
+        ash::Shell::GetContainer(
+            ash::Shell::GetPrimaryRootWindow(),
             ash::internal::kShellWindowId_DesktopBackgroundContainer)->
                 layer();
 
@@ -350,8 +352,9 @@ void BaseLoginDisplayHost::StartAnimation() {
   // Browser windows layer opacity and transform animation.
   if (do_browser_transform_animation || do_browser_opacity_animation) {
     ui::Layer* default_container_layer =
-        ash::Shell::GetInstance()->GetContainer(
-              ash::internal::kShellWindowId_DefaultContainer)->layer();
+        ash::Shell::GetContainer(
+            ash::Shell::GetPrimaryRootWindow(),
+            ash::internal::kShellWindowId_DefaultContainer)->layer();
 
     ui::LayerAnimationElement::AnimatableProperties browser_pause_properties;
 

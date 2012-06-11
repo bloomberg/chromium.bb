@@ -33,7 +33,8 @@ class BaseLayoutManagerTest : public test::AshTestBase {
         Shell::GetPrimaryRootWindow(),
         gfx::Insets(1, 2, 3, 4));
     Shell::GetPrimaryRootWindow()->SetHostSize(gfx::Size(800, 600));
-    aura::Window* default_container = Shell::GetInstance()->GetContainer(
+    aura::Window* default_container = Shell::GetContainer(
+        Shell::GetPrimaryRootWindow(),
         internal::kShellWindowId_DefaultContainer);
     default_container->SetLayoutManager(new internal::BaseLayoutManager(
         Shell::GetPrimaryRootWindow()));

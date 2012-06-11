@@ -25,12 +25,14 @@ namespace test {
 namespace {
 
 aura::Window* GetModalContainer() {
-  return Shell::GetInstance()->GetContainer(
+  return Shell::GetContainer(
+      Shell::GetPrimaryRootWindow(),
       ash::internal::kShellWindowId_SystemModalContainer);
 }
 
 aura::Window* GetDefaultContainer() {
-  return Shell::GetInstance()->GetContainer(
+  return Shell::GetContainer(
+      Shell::GetPrimaryRootWindow(),
       ash::internal::kShellWindowId_DefaultContainer);
 }
 
@@ -271,7 +273,8 @@ TEST_F(SystemModalContainerLayoutManagerTest, EventFocusContainers) {
   Shell::GetInstance()->delegate()->LockScreen();
   EventTestWindow* lock_delegate = new EventTestWindow(false);
   scoped_ptr<aura::Window> lock(lock_delegate->OpenTestWindow(
-      Shell::GetInstance()->GetContainer(
+      Shell::GetContainer(
+          Shell::GetPrimaryRootWindow(),
           ash::internal::kShellWindowId_LockScreenContainer)));
   EXPECT_TRUE(wm::IsActiveWindow(lock.get()));
   e1.ClickLeftButton();
@@ -297,7 +300,8 @@ TEST_F(SystemModalContainerLayoutManagerTest, EventFocusContainers) {
 // is hidden.
 TEST_F(SystemModalContainerLayoutManagerTest, ShowModalWhileHidden) {
   // Hide the lock screen.
-  Shell::GetInstance()->GetContainer(
+  Shell::GetContainer(
+      Shell::GetPrimaryRootWindow(),
       internal::kShellWindowId_SystemModalContainer)->layer()->SetOpacity(0);
 
   // Create a modal window.

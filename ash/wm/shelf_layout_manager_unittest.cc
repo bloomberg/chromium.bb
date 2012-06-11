@@ -38,8 +38,9 @@ void StepWidgetLayerAnimatorToEnd(views::Widget* widget) {
 }
 
 ShelfLayoutManager* GetShelfLayoutManager() {
-  aura::Window* window = ash::Shell::GetInstance()->GetContainer(
-      ash::internal::kShellWindowId_LauncherContainer);
+  aura::Window* window = Shell::GetContainer(
+      Shell::GetPrimaryRootWindow(),
+      internal::kShellWindowId_LauncherContainer);
   return static_cast<ShelfLayoutManager*>(window->layout_manager());
 }
 
@@ -63,7 +64,8 @@ class ShelfLayoutManagerTest : public ash::test::AshTestBase {
     window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
     window->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window->Init(ui::LAYER_TEXTURED);
-    aura::Window* parent = Shell::GetInstance()->GetContainer(
+    aura::Window* parent = Shell::GetContainer(
+        Shell::GetPrimaryRootWindow(),
         internal::kShellWindowId_DefaultContainer);
     window->SetParent(parent);
     return window;
@@ -283,7 +285,8 @@ TEST_F(ShelfLayoutManagerTest, VisibleWhenLockScreenShowing) {
   EXPECT_EQ(root->bounds().bottom() - ShelfLayoutManager::kAutoHideSize,
             shelf->launcher_widget()->GetWindowScreenBounds().y());
 
-  aura::Window* lock_container = Shell::GetInstance()->GetContainer(
+  aura::Window* lock_container = Shell::GetContainer(
+      Shell::GetPrimaryRootWindow(),
       internal::kShellWindowId_LockScreenContainer);
 
   views::Widget* lock_widget = new views::Widget;

@@ -297,8 +297,9 @@ SystemTrayBubbleView::SystemTrayBubbleView(
       max_height_(0),
       bubble_width_(bubble_width) {
   set_margin(0);
-  set_parent_window(ash::Shell::GetInstance()->GetContainer(
-      ash::internal::kShellWindowId_SettingBubbleContainer));
+  set_parent_window(Shell::GetContainer(
+      anchor->GetWidget()->GetNativeWindow()->GetRootWindow(),
+      internal::kShellWindowId_SettingBubbleContainer));
   set_notify_enter_exit_on_child(true);
   SetPaintToLayer(true);
   SetFillsBoundsOpaquely(true);

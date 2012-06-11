@@ -36,7 +36,8 @@ TEST_F(WindowCycleControllerTest, HandleCycleWindowBaseCases) {
 
   // Create a single test window.
   Window* default_container =
-      ash::Shell::GetInstance()->GetContainer(
+      ash::Shell::GetContainer(
+          Shell::GetPrimaryRootWindow(),
           internal::kShellWindowId_DefaultContainer);
   scoped_ptr<Window> window0(CreateTestWindowWithId(0, default_container));
   wm::ActivateWindow(window0.get());
@@ -55,7 +56,8 @@ TEST_F(WindowCycleControllerTest, SingleWindowNotActive) {
 
   // Create a single test window.
   Window* default_container =
-      ash::Shell::GetInstance()->GetContainer(
+      ash::Shell::GetContainer(
+          Shell::GetPrimaryRootWindow(),
           internal::kShellWindowId_DefaultContainer);
   scoped_ptr<Window> window0(CreateTestWindowWithId(0, default_container));
   wm::ActivateWindow(window0.get());
@@ -78,7 +80,8 @@ TEST_F(WindowCycleControllerTest, HandleCycleWindow) {
   // Set up several windows to use to test cycling.  Create them in reverse
   // order so they are stacked 0 over 1 over 2.
   Window* default_container =
-      Shell::GetInstance()->GetContainer(
+      Shell::GetContainer(
+          Shell::GetPrimaryRootWindow(),
           internal::kShellWindowId_DefaultContainer);
   scoped_ptr<Window> window2(CreateTestWindowWithId(2, default_container));
   scoped_ptr<Window> window1(CreateTestWindowWithId(1, default_container));
@@ -164,7 +167,8 @@ TEST_F(WindowCycleControllerTest, HandleCycleWindow) {
 
   // When a modal window is active, cycling window does not take effect.
   aura::Window* modal_container =
-      ash::Shell::GetInstance()->GetContainer(
+      ash::Shell::GetContainer(
+          Shell::GetPrimaryRootWindow(),
           internal::kShellWindowId_SystemModalContainer);
   scoped_ptr<Window> modal_window(
       CreateTestWindowWithId(-2, modal_container));
@@ -186,7 +190,8 @@ TEST_F(WindowCycleControllerTest, HandleCycleWindow) {
 TEST_F(WindowCycleControllerTest, MaximizedWindow) {
   // Create a couple of test windows.
   Window* default_container =
-      ash::Shell::GetInstance()->GetContainer(
+      ash::Shell::GetContainer(
+          Shell::GetPrimaryRootWindow(),
           internal::kShellWindowId_DefaultContainer);
   scoped_ptr<Window> window0(CreateTestWindowWithId(0, default_container));
   scoped_ptr<Window> window1(CreateTestWindowWithId(1, default_container));
@@ -210,7 +215,8 @@ TEST_F(WindowCycleControllerTest, MaximizedWindow) {
 TEST_F(WindowCycleControllerTest, Minimized) {
   // Create a couple of test windows.
   Window* default_container =
-      ash::Shell::GetInstance()->GetContainer(
+      Shell::GetContainer(
+          Shell::GetPrimaryRootWindow(),
           internal::kShellWindowId_DefaultContainer);
   scoped_ptr<Window> window0(CreateTestWindowWithId(0, default_container));
   scoped_ptr<Window> window1(CreateTestWindowWithId(1, default_container));

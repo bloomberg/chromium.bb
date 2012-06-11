@@ -161,15 +161,17 @@ void RestoreWindow(aura::Window* window) {
 // Fills |containers| with the containers described by |group|.
 void GetContainers(PowerButtonController::ContainerGroup group,
                    aura::Window::Windows* containers) {
-  aura::Window* non_lock_screen_containers =
-      Shell::GetInstance()->GetContainer(
-          internal::kShellWindowId_NonLockScreenContainersContainer);
-  aura::Window* lock_screen_containers =
-      Shell::GetInstance()->GetContainer(
-          internal::kShellWindowId_LockScreenContainersContainer);
-  aura::Window* lock_screen_related_containers =
-      Shell::GetInstance()->GetContainer(
-          internal::kShellWindowId_LockScreenRelatedContainersContainer);
+  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
+
+  aura::Window* non_lock_screen_containers = Shell::GetContainer(
+      root_window,
+      internal::kShellWindowId_NonLockScreenContainersContainer);
+  aura::Window* lock_screen_containers = Shell::GetContainer(
+      root_window,
+      internal::kShellWindowId_LockScreenContainersContainer);
+  aura::Window* lock_screen_related_containers = Shell::GetContainer(
+      root_window,
+      internal::kShellWindowId_LockScreenRelatedContainersContainer);
 
   containers->clear();
   switch (group) {
