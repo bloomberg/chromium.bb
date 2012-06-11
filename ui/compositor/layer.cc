@@ -428,6 +428,7 @@ void Layer::paintContents(WebKit::WebCanvas* web_canvas,
   gfx::Canvas canvas(web_canvas);
   bool scale_content = scale_content_;
   if (scale_content) {
+    canvas.Save();
     canvas.sk_canvas()->scale(SkFloatToScalar(device_scale_factor_),
                               SkFloatToScalar(device_scale_factor_));
   }
