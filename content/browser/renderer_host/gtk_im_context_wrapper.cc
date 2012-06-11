@@ -228,7 +228,7 @@ void GtkIMContextWrapper::UpdateInputMethodState(
 
   // The renderer has updated its IME status.
   // Control the GtkIMContext object according to this status.
-  if (!context_ || !is_focused_)
+  if (!context_)
     return;
 
   DCHECK(!is_in_key_event_handler_);
@@ -237,7 +237,7 @@ void GtkIMContextWrapper::UpdateInputMethodState(
       type != ui::TEXT_INPUT_TYPE_PASSWORD);
   if (is_enabled_ != is_enabled) {
     is_enabled_ = is_enabled;
-    if (is_enabled)
+    if (is_enabled && is_focused_)
       gtk_im_context_focus_in(context_);
     else
       gtk_im_context_focus_out(context_);
