@@ -103,7 +103,7 @@ void Logging::OnSendLogs() {
   sender_->Send(msg);
 }
 
-void Logging::SetIPCSender(IPC::Message::Sender* sender) {
+void Logging::SetIPCSender(IPC::Sender* sender) {
   sender_ = sender;
 }
 

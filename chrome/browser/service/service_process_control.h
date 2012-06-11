@@ -19,6 +19,8 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ipc/ipc_channel_proxy.h"
+#include "ipc/ipc_listener.h"
+#include "ipc/ipc_sender.h"
 
 class CommandLine;
 
@@ -36,8 +38,8 @@ struct CloudPrintProxyInfo;
 //
 // This class is accessed on the UI thread through some UI actions. It then
 // talks to the IPC channel on the IO thread.
-class ServiceProcessControl : public IPC::Channel::Sender,
-                              public IPC::Channel::Listener,
+class ServiceProcessControl : public IPC::Sender,
+                              public IPC::Listener,
                               public content::NotificationObserver {
  public:
   typedef IDMap<ServiceProcessControl>::iterator iterator;
@@ -70,12 +72,12 @@ class ServiceProcessControl : public IPC::Channel::Sender,
   // Virtual for testing.
   virtual void Disconnect();
 
-  // IPC::Channel::Listener implementation.
+  // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
 
-  // IPC::Channel::Sender implementation
+  // IPC::Sender implementation
   virtual bool Send(IPC::Message* message) OVERRIDE;
 
   // content::NotificationObserver implementation.

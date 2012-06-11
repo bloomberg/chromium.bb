@@ -72,10 +72,10 @@ class MockRenderProcessHost : public RenderProcessHost {
   virtual base::TimeDelta GetChildProcessIdleTime() const OVERRIDE;
   virtual void SurfaceUpdated(int32 surface_id) OVERRIDE;
 
-  // IPC::Channel::Sender via RenderProcessHost.
+  // IPC::Sender via RenderProcessHost.
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
-  // IPC::Channel::Listener via RenderProcessHost.
+  // IPC::Listener via RenderProcessHost.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
 

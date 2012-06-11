@@ -20,13 +20,14 @@
 #include "base/path_service.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
+#include "ipc/ipc_listener.h"
 #include "testing/multiprocess_func_list.h"
 
 namespace {
 
 static const uint32 kQuitMessage = 47;
 
-class IPCChannelPosixTestListener : public IPC::Channel::Listener {
+class IPCChannelPosixTestListener : public IPC::Listener {
  public:
   enum STATUS {
     DISCONNECTED,

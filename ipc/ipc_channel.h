@@ -16,8 +16,14 @@
 #include "base/process.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message.h"
+#include "ipc/ipc_sender.h"
+
+// TODO(brettw) remove this when the "typedef Sender" is removed below.
+#include "ipc/ipc_listener.h"
 
 namespace IPC {
+
+class Listener;
 
 //------------------------------------------------------------------------------
 // See
@@ -36,38 +42,16 @@ namespace IPC {
 // the channel with the mode set to one of the NAMED modes. NAMED modes are
 // currently used by automation and service processes.
 
-class IPC_EXPORT Channel : public Message::Sender {
+class IPC_EXPORT Channel : public Sender {
   // Security tests need access to the pipe handle.
   friend class ChannelTest;
 
  public:
-  // Implemented by consumers of a Channel to receive messages.
-  class IPC_EXPORT Listener {
-   public:
-    virtual ~Listener() {}
-
-    // Called when a message is received.  Returns true iff the message was
-    // handled.
-    virtual bool OnMessageReceived(const Message& message) = 0;
-
-    // Called when the channel is connected and we have received the internal
-    // Hello message from the peer.
-    virtual void OnChannelConnected(int32 peer_pid) {}
-
-    // Called when an error is detected that causes the channel to close.
-    // This method is not called when a channel is closed normally.
-    virtual void OnChannelError() {}
-
-#if defined(OS_POSIX)
-    // Called on the server side when a channel that listens for connections
-    // denies an attempt to connect.
-    virtual void OnChannelDenied() {}
-
-    // Called on the server side when a channel that listens for connections
-    // has an error that causes the listening channel to close.
-    virtual void OnChannelListenError() {}
-#endif  // OS_POSIX
-  };
+  // IPC::Listener used to be IPC::Channel::Listener which prevented forward
+  // declarations. To keep existing code compiling, we provide this
+  // backwards-compatible definition. New code should use IPC::Listener.
+  // TODO(brettw) converto users of this and delete.
+  typedef IPC::Listener Listener;
 
   // Flags to test modes
   enum ModeFlags {

@@ -27,11 +27,11 @@ namespace IPC {
 // receiving messages while waiting for a response.  Note that this object can
 // be used to send simultaneous synchronous messages from different threads.
 class IPC_EXPORT SyncMessageFilter : public ChannelProxy::MessageFilter,
-                                     public Message::Sender {
+                                     public Sender {
  public:
   explicit SyncMessageFilter(base::WaitableEvent* shutdown_event);
 
-  // Message::Sender implementation.
+  // MessageSender implementation.
   virtual bool Send(Message* message) OVERRIDE;
 
   // ChannelProxy::MessageFilter implementation.

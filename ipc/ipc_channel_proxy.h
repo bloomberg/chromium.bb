@@ -14,6 +14,8 @@
 #include "base/synchronization/lock.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_handle.h"
+#include "ipc/ipc_listener.h"
+#include "ipc/ipc_sender.h"
 
 namespace IPC {
 
@@ -47,9 +49,8 @@ class SendCallbackHelper;
 // The consumer of IPC::ChannelProxy is responsible for allocating the Thread
 // instance where the IPC::Channel will be created and operated.
 //
-class IPC_EXPORT ChannelProxy : public Message::Sender {
+class IPC_EXPORT ChannelProxy : public Sender {
  public:
-
   struct MessageFilterTraits;
 
   // A class that receives messages on the thread where the IPC channel is
@@ -124,13 +125,13 @@ class IPC_EXPORT ChannelProxy : public Message::Sender {
   // IPC::Channel should be created.
   ChannelProxy(const IPC::ChannelHandle& channel_handle,
                Channel::Mode mode,
-               Channel::Listener* listener,
+               Listener* listener,
                base::MessageLoopProxy* ipc_thread_loop);
 
   // Creates an uninitialized channel proxy. Init must be called to receive
   // or send any messages. This two-step setup allows message filters to be
   // added before any messages are sent or received.
-  ChannelProxy(Channel::Listener* listener,
+  ChannelProxy(Listener* listener,
                base::MessageLoopProxy* ipc_thread_loop);
 
   virtual ~ChannelProxy();
@@ -194,9 +195,9 @@ class IPC_EXPORT ChannelProxy : public Message::Sender {
 
   // Used internally to hold state that is referenced on the IPC thread.
   class Context : public base::RefCountedThreadSafe<Context>,
-                  public Channel::Listener {
+                  public Listener {
    public:
-    Context(Channel::Listener* listener, base::MessageLoopProxy* ipc_thread);
+    Context(Listener* listener, base::MessageLoopProxy* ipc_thread);
     void ClearIPCMessageLoop() { ipc_message_loop_ = NULL; }
     base::MessageLoopProxy* ipc_message_loop() const {
       return ipc_message_loop_.get();
@@ -210,7 +211,7 @@ class IPC_EXPORT ChannelProxy : public Message::Sender {
     friend class base::RefCountedThreadSafe<Context>;
     virtual ~Context();
 
-    // IPC::Channel::Listener methods:
+    // IPC::Listener methods:
     virtual bool OnMessageReceived(const Message& message) OVERRIDE;
     virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
     virtual void OnChannelError() OVERRIDE;
@@ -250,7 +251,7 @@ class IPC_EXPORT ChannelProxy : public Message::Sender {
     void OnDispatchError();
 
     scoped_refptr<base::MessageLoopProxy> listener_message_loop_;
-    Channel::Listener* listener_;
+    Listener* listener_;
 
     // List of filters.  This is only accessed on the IPC thread.
     std::vector<scoped_refptr<MessageFilter> > filters_;

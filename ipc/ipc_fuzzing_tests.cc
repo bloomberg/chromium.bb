@@ -115,15 +115,15 @@ TEST(IPCMessageIntegrity, ReadVectorTooLarge2) {
   EXPECT_FALSE(ReadParam(&m, &iter, &vec));
 }
 
-class SimpleListener : public IPC::Channel::Listener {
+class SimpleListener : public IPC::Listener {
  public:
   SimpleListener() : other_(NULL) {
   }
-  void Init(IPC::Message::Sender* s) {
+  void Init(IPC::Sender* s) {
     other_ = s;
   }
  protected:
-  IPC::Message::Sender* other_;
+  IPC::Sender* other_;
 };
 
 enum {

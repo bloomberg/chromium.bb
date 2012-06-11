@@ -11,6 +11,7 @@
 #include "content/public/browser/keyboard_listener.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "ipc/ipc_channel.h"
+#include "ipc/ipc_sender.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
 #include "ui/gfx/size.h"
@@ -102,7 +103,7 @@ class RenderWidgetHostView;
 // messages for select popups. This placement is more out of convenience than
 // anything else. When the view is live, these messages are forwarded to it by
 // the RenderWidgetHost's IPC message map.
-class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Sender {
+class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
  public:
   // Free all backing stores used for rendering to drop memory usage.
   static void RemoveAllBackingStores();

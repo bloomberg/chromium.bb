@@ -21,7 +21,9 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "base/synchronization/waitable_event.h"
+#include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
+#include "ipc/ipc_sender.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "ipc/ipc_sync_message_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,7 +35,7 @@ namespace IPC {
 namespace {
 
 // Base class for a "process" with listener and IPC threads.
-class Worker : public Channel::Listener, public Message::Sender {
+class Worker : public Listener, public Sender {
  public:
   // Will create a channel without a name.
   Worker(Channel::Mode mode, const std::string& thread_name)

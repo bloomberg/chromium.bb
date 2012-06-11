@@ -28,6 +28,7 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message_utils.h"
+#include "ipc/ipc_sender.h"
 #include "ipc/ipc_switches.h"
 #include "testing/multiprocess_func_list.h"
 
@@ -161,7 +162,7 @@ TEST_F(IPCChannelTest, BasicMessageTest) {
   EXPECT_FALSE(m.ReadWString(&iter, &vw));
 }
 
-static void Send(IPC::Message::Sender* sender, const char* text) {
+static void Send(IPC::Sender* sender, const char* text) {
   static int message_index = 0;
 
   IPC::Message* message = new IPC::Message(0,
@@ -205,13 +206,13 @@ class MyChannelListener : public IPC::Channel::Listener {
     MessageLoop::current()->Quit();
   }
 
-  void Init(IPC::Message::Sender* s) {
+  void Init(IPC::Sender* s) {
     sender_ = s;
     messages_left_ = 50;
   }
 
  private:
-  IPC::Message::Sender* sender_;
+  IPC::Sender* sender_;
   int messages_left_;
 };
 
@@ -350,7 +351,7 @@ class ChannelListenerWithOnConnectedSend : public IPC::Channel::Listener {
     MessageLoop::current()->Quit();
   }
 
-  void Init(IPC::Message::Sender* s) {
+  void Init(IPC::Sender* s) {
     sender_ = s;
     messages_left_ = 50;
   }
@@ -364,7 +365,7 @@ class ChannelListenerWithOnConnectedSend : public IPC::Channel::Listener {
     }
   }
 
-  IPC::Message::Sender* sender_;
+  IPC::Sender* sender_;
   int messages_left_;
 };
 

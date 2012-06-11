@@ -12,6 +12,9 @@
 #include "base/pickle.h"
 #include "ipc/ipc_export.h"
 
+// TODO(brettw) remove this when the "typedef Sender" is removed below.
+#include "ipc/ipc_sender.h"
+
 // Ipc logging adds a dependency from the 'chrome' target on all ipc message
 // classes. In a component build, this would require exporting all message
 // classes, so don't support ipc logging in the components build.
@@ -39,17 +42,11 @@ struct LogData;
 
 class IPC_EXPORT Message : public Pickle {
  public:
-  // Implemented by objects that can send IPC messages across a channel.
-  class IPC_EXPORT Sender {
-   public:
-    virtual ~Sender() {}
-
-    // Sends the given IPC message.  The implementor takes ownership of the
-    // given Message regardless of whether or not this method succeeds.  This
-    // is done to make this method easier to use.  Returns true on success and
-    // false otherwise.
-    virtual bool Send(Message* msg) = 0;
-  };
+  // IPC::Sender used to be IPC::Message::Sender which prevented forward
+  // declarations. To keep existing code compiling, we provide this backwards-
+  // compatible definition. New code should use IPC::Sender.
+  // TODO(brettw) convert users of this and delete.
+  typedef IPC::Sender Sender;
 
   enum PriorityValue {
     PRIORITY_LOW = 1,

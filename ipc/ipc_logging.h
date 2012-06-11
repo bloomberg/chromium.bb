@@ -59,7 +59,7 @@ class IPC_EXPORT Logging {
 
   // Called by child processes to give the logger object the channel to send
   // logging data to the browser process.
-  void SetIPCSender(Message::Sender* sender);
+  void SetIPCSender(Sender* sender);
 
   // Called in the browser process when logging data from a child process is
   // received.
@@ -112,7 +112,7 @@ class IPC_EXPORT Logging {
   std::vector<LogData> queued_logs_;
   bool queue_invoke_later_pending_;
 
-  Message::Sender* sender_;
+  Sender* sender_;
   MessageLoop* main_thread_;
 
   Consumer* consumer_;

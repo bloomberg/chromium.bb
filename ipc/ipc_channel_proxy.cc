@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "ipc/ipc_channel_proxy.h"
+#include "ipc/ipc_listener.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
@@ -41,7 +42,7 @@ ChannelProxy::MessageFilter::~MessageFilter() {}
 
 //------------------------------------------------------------------------------
 
-ChannelProxy::Context::Context(Channel::Listener* listener,
+ChannelProxy::Context::Context(Listener* listener,
                                base::MessageLoopProxy* ipc_message_loop)
     : listener_message_loop_(base::MessageLoopProxy::current()),
       listener_(listener),
@@ -274,7 +275,7 @@ void ChannelProxy::Context::OnDispatchError() {
 
 ChannelProxy::ChannelProxy(const IPC::ChannelHandle& channel_handle,
                            Channel::Mode mode,
-                           Channel::Listener* listener,
+                           Listener* listener,
                            base::MessageLoopProxy* ipc_thread)
     : context_(new Context(listener, ipc_thread)),
       outgoing_message_filter_(NULL),

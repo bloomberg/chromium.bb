@@ -7,8 +7,7 @@
 namespace IPC {
 namespace internal {
 
-ChannelReader::ChannelReader(Channel::Listener* listener)
-    : listener_(listener) {
+ChannelReader::ChannelReader(Listener* listener) : listener_(listener) {
   memset(input_buf_, 0, sizeof(input_buf_));
 }
 

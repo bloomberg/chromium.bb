@@ -32,6 +32,8 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/trace_subscriber.h"
 #include "ipc/ipc_channel.h"
+#include "ipc/ipc_listener.h"
+#include "ipc/ipc_sender.h"
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 #include "ui/gfx/native_widget_types.h"
@@ -79,8 +81,8 @@ class Point;
 }
 
 class AutomationProvider
-    : public IPC::Channel::Listener,
-      public IPC::Message::Sender,
+    : public IPC::Listener,
+      public IPC::Sender,
       public base::SupportsWeakPtr<AutomationProvider>,
       public base::RefCountedThreadSafe<
           AutomationProvider, content::BrowserThread::DeleteOnUIThread>,
@@ -133,10 +135,10 @@ class AutomationProvider
       const content::NavigationController* controller,
       const Browser* parent) const;
 
-  // IPC::Channel::Sender implementation.
+  // IPC::Sender implementation.
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
-  // IPC::Channel::Listener implementation.
+  // IPC::Listener implementation.
   virtual void OnChannelConnected(int pid) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;

@@ -25,10 +25,10 @@ namespace internal {
 // here (and rename appropriately) rather than writing a different class.
 class ChannelReader {
  public:
-  explicit ChannelReader(Channel::Listener* listener);
+  explicit ChannelReader(Listener* listener);
   virtual ~ChannelReader();
 
-  void set_listener(Channel::Listener* listener) { listener_ = listener; }
+  void set_listener(Listener* listener) { listener_ = listener; }
 
   // Call to process messages received from the IPC connection and dispatch
   // them. Returns false on channel error. True indicates that everything
@@ -49,7 +49,7 @@ class ChannelReader {
  protected:
   enum ReadState { READ_SUCCEEDED, READ_FAILED, READ_PENDING };
 
-  Channel::Listener* listener() const { return listener_; }
+  Listener* listener() const { return listener_; }
 
   // Populates the given buffer with data from the pipe.
   //
@@ -86,7 +86,7 @@ class ChannelReader {
   // Returns true on success. False means channel error.
   bool DispatchInputData(const char* input_data, int input_data_len);
 
-  Channel::Listener* listener_;
+  Listener* listener_;
 
   // We read from the pipe into this buffer. Managed by DispatchInputData, do
   // not access directly outside that function.
