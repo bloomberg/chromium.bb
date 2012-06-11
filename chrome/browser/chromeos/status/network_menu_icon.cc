@@ -46,8 +46,8 @@ gfx::ImageSkia* kArcsImagesAnimatingLight[kNumArcsImages - 1];
 const int kBadgeLeftX = 0;
 const int kBadgeTopY = 0;
 
-// ID for VPN badge. TODO(stevenjb): replace with correct icon when available.
-const int kVpnBadgeId = IDR_STATUSBAR_NETWORK_SECURE;
+// ID for VPN badge.
+const int kVpnBadgeId = IDR_STATUSBAR_VPN_BADGE;
 
 int StrengthIndex(int strength, int count) {
   if (strength == 0) {
@@ -380,8 +380,16 @@ class NetworkIcon {
         break;
     }
     // Display warning badge if cros is not loaded.
-    if (is_status_bar_&& !CrosLibrary::Get()->load_error_string().empty())
+    if (is_status_bar_ && !CrosLibrary::Get()->load_error_string().empty())
       top_right_badge_ = rb.GetImageSkiaNamed(IDR_STATUSBAR_NETWORK_WARNING);
+
+    // Display the VPN badge too.
+    if (resource_color_theme_ == NetworkMenuIcon::COLOR_DARK &&
+        cros->virtual_network() &&
+        (cros->virtual_network()->connected() ||
+         cros->virtual_network()->connecting())) {
+      bottom_left_badge_ = rb.GetImageSkiaNamed(kVpnBadgeId);
+    }
   }
 
   // Clears any previous state then sets the base icon and badges.

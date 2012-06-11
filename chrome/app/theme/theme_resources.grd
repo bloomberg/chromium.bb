@@ -535,6 +535,7 @@
         <include name="IDR_STATUSBAR_VOLUME_SLIDER_FULL" file="default_100_percent/statusbar_volume_slider_full.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_VOLUME_SLIDER_THUMB" file="default_100_percent/statusbar_volume_slider_thumb.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_VPN" file="default_100_percent/statusbar_vpn_dark.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_VPN_BADGE" file="default_100_percent/statusbar_network_secure.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_WINDOW_MAXIMIZE" file="default_100_percent/statusbar_window_maximize.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_WINDOW_RESTORE" file="default_100_percent/statusbar_window_restore.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_WIRED" file="default_100_percent/statusbar_wired.png" type="BINDATA" />
