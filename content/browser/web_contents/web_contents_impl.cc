@@ -66,6 +66,7 @@
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_switches.h"
@@ -464,8 +465,6 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       !command_line.HasSwitch(switches::kDisableAccelerated2dCanvas);
   prefs.deferred_2d_canvas_enabled =
       !command_line.HasSwitch(switches::kDisableDeferred2dCanvas);
-  prefs.threaded_animation_enabled =
-      !command_line.HasSwitch(switches::kDisableThreadedAnimation);
   prefs.accelerated_painting_enabled =
       GpuProcessHost::gpu_enabled() &&
       command_line.HasSwitch(switches::kEnableAcceleratedPainting);
@@ -479,8 +478,6 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       !command_line.HasSwitch(switches::kDisableAcceleratedPlugins);
   prefs.accelerated_video_enabled =
       !command_line.HasSwitch(switches::kDisableAcceleratedVideo);
-  prefs.partial_swap_enabled =
-      command_line.HasSwitch(switches::kEnablePartialSwap);
   prefs.interactive_form_validation_enabled =
       !command_line.HasSwitch(switches::kDisableInteractiveFormValidation);
   prefs.fullscreen_enabled =
@@ -506,8 +503,6 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
 
   prefs.visual_word_movement_enabled =
       command_line.HasSwitch(switches::kEnableVisualWordMovement);
-  prefs.per_tile_painting_enabled =
-      command_line.HasSwitch(switches::kEnablePerTilePainting);
 
   {  // Certain GPU features might have been blacklisted.
     GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();
@@ -554,6 +549,15 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
     prefs.accelerated_compositing_enabled = false;
     prefs.accelerated_2d_canvas_enabled = false;
   }
+
+#if !defined(WEBCOMPOSITOR_OWNS_SETTINGS)
+  prefs.threaded_animation_enabled =
+      !command_line.HasSwitch(switches::kDisableThreadedAnimation);
+  prefs.per_tile_painting_enabled =
+      command_line.HasSwitch(switches::kEnablePerTilePainting);
+  prefs.partial_swap_enabled =
+      command_line.HasSwitch(switches::kEnablePartialSwap);
+#endif
 
   if (command_line.HasSwitch(switches::kDefaultTileWidth))
     prefs.default_tile_width =

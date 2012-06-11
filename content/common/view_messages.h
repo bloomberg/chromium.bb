@@ -31,6 +31,7 @@
 #include "media/base/media_log_event.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFindOptions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerAction.h"
@@ -190,14 +191,12 @@ IPC_STRUCT_TRAITS_BEGIN(webkit_glue::WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(fixed_position_compositing_enabled)
   IPC_STRUCT_TRAITS_MEMBER(accelerated_2d_canvas_enabled)
   IPC_STRUCT_TRAITS_MEMBER(deferred_2d_canvas_enabled)
-  IPC_STRUCT_TRAITS_MEMBER(threaded_animation_enabled)
   IPC_STRUCT_TRAITS_MEMBER(accelerated_painting_enabled)
   IPC_STRUCT_TRAITS_MEMBER(accelerated_filters_enabled)
   IPC_STRUCT_TRAITS_MEMBER(accelerated_plugins_enabled)
   IPC_STRUCT_TRAITS_MEMBER(accelerated_layers_enabled)
   IPC_STRUCT_TRAITS_MEMBER(accelerated_animation_enabled)
   IPC_STRUCT_TRAITS_MEMBER(accelerated_video_enabled)
-  IPC_STRUCT_TRAITS_MEMBER(partial_swap_enabled)
   IPC_STRUCT_TRAITS_MEMBER(memory_info_enabled)
   IPC_STRUCT_TRAITS_MEMBER(interactive_form_validation_enabled)
   IPC_STRUCT_TRAITS_MEMBER(fullscreen_enabled)
@@ -205,11 +204,15 @@ IPC_STRUCT_TRAITS_BEGIN(webkit_glue::WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(allow_running_insecure_content)
   IPC_STRUCT_TRAITS_MEMBER(enable_scroll_animator)
   IPC_STRUCT_TRAITS_MEMBER(visual_word_movement_enabled)
-  IPC_STRUCT_TRAITS_MEMBER(per_tile_painting_enabled)
   IPC_STRUCT_TRAITS_MEMBER(password_echo_enabled)
   IPC_STRUCT_TRAITS_MEMBER(css_regions_enabled)
   IPC_STRUCT_TRAITS_MEMBER(css_shaders_enabled)
   IPC_STRUCT_TRAITS_MEMBER(device_supports_touch)
+#if !defined(WEBCOMPOSITOR_OWNS_SETTINGS)
+  IPC_STRUCT_TRAITS_MEMBER(threaded_animation_enabled)
+  IPC_STRUCT_TRAITS_MEMBER(partial_swap_enabled)
+  IPC_STRUCT_TRAITS_MEMBER(per_tile_painting_enabled)
+#endif
   IPC_STRUCT_TRAITS_MEMBER(default_tile_width)
   IPC_STRUCT_TRAITS_MEMBER(default_tile_height)
   IPC_STRUCT_TRAITS_MEMBER(max_untiled_layer_width)

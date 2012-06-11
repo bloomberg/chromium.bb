@@ -141,12 +141,15 @@ Compositor::Compositor(CompositorDelegate* delegate,
       command_line->HasSwitch(switches::kUIShowFPSCounter);
   settings.showPlatformLayerTree =
       command_line->HasSwitch(switches::kUIShowLayerTree);
-  settings.refreshRate = test_compositor_enabled ?
-      kTestRefreshRate : kDefaultRefreshRate;
+  settings.refreshRate =
+      test_compositor_enabled ? kTestRefreshRate : kDefaultRefreshRate;
+
+#if !defined(WEBCOMPOSITOR_OWNS_SETTINGS)
   settings.partialSwapEnabled =
       command_line->HasSwitch(switches::kUIEnablePartialSwap);
   settings.perTilePainting =
-    command_line->HasSwitch(switches::kUIEnablePerTilePainting);
+      command_line->HasSwitch(switches::kUIEnablePerTilePainting);
+#endif
 
   host_.initialize(this, root_web_layer_, settings);
   root_web_layer_.setAnchorPoint(WebKit::WebFloatPoint(0.f, 0.f));
@@ -166,6 +169,14 @@ Compositor::~Compositor() {
 }
 
 void Compositor::Initialize(bool use_thread) {
+#if defined(WEBCOMPOSITOR_OWNS_SETTINGS)
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  // These settings must be applied before we initialize the compositor.
+  WebKit::WebCompositor::setPartialSwapEnabled(
+      command_line->HasSwitch(switches::kUIEnablePartialSwap));
+  WebKit::WebCompositor::setPerTilePaintingEnabled(
+      command_line->HasSwitch(switches::kUIEnablePerTilePainting));
+#endif
   if (use_thread)
     g_compositor_thread = new webkit_glue::WebThreadImpl("Browser Compositor");
   WebKit::WebCompositor::initialize(g_compositor_thread);

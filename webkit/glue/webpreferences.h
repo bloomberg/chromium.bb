@@ -18,6 +18,7 @@
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/webkit_glue_export.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositor.h"
 
 namespace WebKit {
 class WebView;
@@ -98,7 +99,6 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool show_paint_rects;
   bool asynchronous_spell_checking_enabled;
   bool unified_textchecker_enabled;
-  bool threaded_animation_enabled;
   bool accelerated_compositing_enabled;
   bool force_compositing_mode;
   bool fixed_position_compositing_enabled;
@@ -110,7 +110,6 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool accelerated_painting_enabled;
   bool accelerated_filters_enabled;
   bool accelerated_plugins_enabled;
-  bool partial_swap_enabled;
   bool memory_info_enabled;
   bool interactive_form_validation_enabled;
   bool fullscreen_enabled;
@@ -121,10 +120,14 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool enable_scroll_animator;
   bool hixie76_websocket_protocol_enabled;
   bool visual_word_movement_enabled;
-  bool per_tile_painting_enabled;
   bool css_regions_enabled;
   bool css_shaders_enabled;
   bool device_supports_touch;
+#if !defined(WEBCOMPOSITOR_OWNS_SETTINGS)
+  bool threaded_animation_enabled;
+  bool per_tile_painting_enabled;
+  bool partial_swap_enabled;
+#endif
   int default_tile_width;
   int default_tile_height;
   int max_untiled_layer_width;

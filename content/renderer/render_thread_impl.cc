@@ -241,6 +241,16 @@ void RenderThreadImpl::Init() {
 
   content::GetContentClient()->renderer()->RenderThreadStarted();
 
+#if defined(WEBCOMPOSITOR_OWNS_SETTINGS)
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  WebKit::WebCompositor::setAcceleratedAnimationEnabled(
+      !command_line.HasSwitch(switches::kDisableThreadedAnimation));
+  WebKit::WebCompositor::setPerTilePaintingEnabled(
+      command_line.HasSwitch(switches::kEnablePerTilePainting));
+  WebKit::WebCompositor::setPartialSwapEnabled(
+      command_line.HasSwitch(switches::kEnablePartialSwap));
+#endif
+
   // Note that under Linux, the media library will normally already have
   // been initialized by the Zygote before this instance became a Renderer.
   FilePath media_path;

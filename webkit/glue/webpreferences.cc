@@ -6,7 +6,6 @@
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNetworkStateNotifier.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
@@ -82,7 +81,6 @@ WebPreferences::WebPreferences()
       show_paint_rects(false),
       asynchronous_spell_checking_enabled(true),
       unified_textchecker_enabled(false),
-      threaded_animation_enabled(false),
       accelerated_compositing_enabled(false),
       force_compositing_mode(false),
       fixed_position_compositing_enabled(false),
@@ -94,7 +92,6 @@ WebPreferences::WebPreferences()
       accelerated_painting_enabled(false),
       accelerated_filters_enabled(false),
       accelerated_plugins_enabled(false),
-      partial_swap_enabled(false),
       memory_info_enabled(false),
       interactive_form_validation_enabled(true),
       fullscreen_enabled(false),
@@ -105,10 +102,14 @@ WebPreferences::WebPreferences()
       enable_scroll_animator(false),
       hixie76_websocket_protocol_enabled(false),
       visual_word_movement_enabled(false),
-      per_tile_painting_enabled(false),
       css_regions_enabled(false),
       css_shaders_enabled(false),
       device_supports_touch(false),
+#if !defined(WEBCOMPOSITOR_OWNS_SETTINGS)
+      threaded_animation_enabled(false),
+      per_tile_painting_enabled(false),
+      partial_swap_enabled(false),
+#endif
       default_tile_width(256),
       default_tile_height(256),
       max_untiled_layer_width(512),
@@ -292,8 +293,6 @@ void WebPreferences::Apply(WebView* web_view) const {
   // overlay of rects, if requested on the command line.
   settings->setShowPaintRects(show_paint_rects);
 
-  settings->setThreadedAnimationEnabled(threaded_animation_enabled);
-
   // Enable gpu-accelerated compositing if requested on the command line.
   settings->setAcceleratedCompositingEnabled(accelerated_compositing_enabled);
 
@@ -334,9 +333,6 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setAcceleratedCompositingForCanvasEnabled(
       experimental_webgl_enabled || accelerated_2d_canvas_enabled);
 
-  // Enable partial swaps if specified form the command line.
-  settings->setPartialSwapEnabled(partial_swap_enabled);
-
   // Enable memory info reporting to page if requested on the command line.
   settings->setMemoryInfoEnabled(memory_info_enabled);
 
@@ -366,13 +362,20 @@ void WebPreferences::Apply(WebView* web_view) const {
       hixie76_websocket_protocol_enabled);
   settings->setVisualWordMovementEnabled(visual_word_movement_enabled);
 
-  // Enable per-tile painting if requested on the command line.
-  settings->setPerTilePaintingEnabled(per_tile_painting_enabled);
-
   settings->setExperimentalCSSRegionsEnabled(css_regions_enabled);
   settings->setExperimentalCSSCustomFilterEnabled(css_shaders_enabled);
 
   settings->setDeviceSupportsTouch(device_supports_touch);
+
+#if !defined(WEBCOMPOSITOR_OWNS_SETTINGS)
+  settings->setThreadedAnimationEnabled(threaded_animation_enabled);
+
+  // Enable per-tile painting if requested on the command line.
+  settings->setPerTilePaintingEnabled(per_tile_painting_enabled);
+
+  // Enable partial swaps if specified form the command line.
+  settings->setPartialSwapEnabled(partial_swap_enabled);
+#endif
 
   settings->setDefaultTileSize(
       WebSize(default_tile_width, default_tile_height));
