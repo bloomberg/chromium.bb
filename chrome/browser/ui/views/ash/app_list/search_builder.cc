@@ -6,13 +6,13 @@
 
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/event_disposition.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/ash/extension_utils.h"
-#include "chrome/browser/ui/views/event_utils.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/app_list/search_box_model.h"
@@ -175,8 +175,7 @@ void SearchBuilder::OpenResult(const app_list::SearchResult& result,
     browser->OpenURL(
         content::OpenURLParams(match.destination_url,
                                content::Referrer(),
-                               event_utils::DispositionFromEventFlags(
-                                   event_flags),
+                               browser::DispositionFromEventFlags(event_flags),
                                match.transition,
                                false));
   }

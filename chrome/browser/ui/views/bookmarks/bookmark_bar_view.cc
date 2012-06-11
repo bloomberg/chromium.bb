@@ -18,6 +18,7 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/event_disposition.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -217,9 +218,7 @@ class BookmarkFolderButton : public views::MenuButton {
         e.flags() == ui::EF_RIGHT_MOUSE_BUTTON)
       return false;
 
-    WindowOpenDisposition disposition(
-        event_utils::DispositionFromEventFlags(e.flags()));
-    return disposition != CURRENT_TAB;
+    return browser::DispositionFromEventFlags(e.flags()) != CURRENT_TAB;
   }
 
   virtual void OnPaint(gfx::Canvas* canvas) {
@@ -1030,7 +1029,7 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
   DCHECK(page_navigator_);
 
   WindowOpenDisposition disposition_from_event_flags =
-      event_utils::DispositionFromEventFlags(sender->mouse_event_flags());
+      browser::DispositionFromEventFlags(sender->mouse_event_flags());
 
   Profile* profile = browser_->profile();
   if (node->is_url()) {

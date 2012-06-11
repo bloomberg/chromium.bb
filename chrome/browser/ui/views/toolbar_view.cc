@@ -7,6 +7,7 @@
 #include "base/i18n/number_formatting.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/event_disposition.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -17,7 +18,6 @@
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/browser_actions_container.h"
-#include "chrome/browser/ui/views/event_utils.h"
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
 #include "chrome/browser/ui/views/wrench_menu.h"
 #include "chrome/browser/upgrade_detector.h"
@@ -442,7 +442,7 @@ void ToolbarView::ButtonPressed(views::Button* sender,
                                 const views::Event& event) {
   int command = sender->tag();
   WindowOpenDisposition disposition =
-      event_utils::DispositionFromEventFlags(sender->mouse_event_flags());
+      browser::DispositionFromEventFlags(sender->mouse_event_flags());
   if ((disposition == CURRENT_TAB) &&
       ((command == IDC_BACK) || (command == IDC_FORWARD))) {
     // Forcibly reset the location bar, since otherwise it won't discard any

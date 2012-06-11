@@ -7,7 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/command_updater.h"
-#include "chrome/browser/ui/views/event_utils.h"
+#include "chrome/browser/event_disposition.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -92,7 +92,7 @@ void ReloadButton::ButtonPressed(views::Button* /* button */,
     }
 
     WindowOpenDisposition disposition =
-        event_utils::DispositionFromEventFlags(flags);
+        browser::DispositionFromEventFlags(flags);
     if ((disposition == CURRENT_TAB) && location_bar_) {
       // Forcibly reset the location bar, since otherwise it won't discard any
       // ongoing user edits, since it doesn't realize this is a user-initiated

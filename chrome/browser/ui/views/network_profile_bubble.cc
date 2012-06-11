@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/network_profile_bubble_prefs.h"
-#include "chrome/browser/ui/views/event_utils.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/common/chrome_switches.h"
@@ -275,7 +274,7 @@ gfx::Rect NetworkProfileBubble::GetAnchorRect() {
 void NetworkProfileBubble::LinkClicked(views::Link* source, int event_flags) {
   RecordUmaEvent(METRIC_LEARN_MORE_CLICKED);
   WindowOpenDisposition disposition =
-      event_utils::DispositionFromEventFlags(event_flags);
+      browser::DispositionFromEventFlags(event_flags);
   content::OpenURLParams params(
       GURL("https://sites.google.com/a/chromium.org/dev/administrators/"
             "common-problems-and-solutions#network_profile"),
