@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,6 @@ void BaseScreenHandler::ShowScreen(const char* screen_name,
     screen_params.SetWithoutPathExpansion("data", data->DeepCopy());
   web_ui()->CallJavascriptFunction("cr.ui.Oobe.showScreen", screen_params);
 }
-
 
 gfx::NativeWindow BaseScreenHandler::GetNativeWindow() {
   return BaseLoginDisplayHost::default_host()->GetNativeWindow();

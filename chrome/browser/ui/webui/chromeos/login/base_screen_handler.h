@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,7 +41,7 @@ class BaseScreenHandler : public content::WebUIMessageHandler {
   bool page_is_ready() const { return page_is_ready_; }
 
   // Returns the window which shows us.
-  gfx::NativeWindow GetNativeWindow();
+  virtual gfx::NativeWindow GetNativeWindow();
 
  private:
   // Keeps whether page is ready.

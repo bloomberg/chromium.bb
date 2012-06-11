@@ -150,6 +150,10 @@ void WebUILoginDisplay::ShowGaiaPasswordChanged(const std::string& username) {
 }
 
 // WebUILoginDisplay, SigninScreenHandlerDelegate implementation: --------------
+gfx::NativeWindow WebUILoginDisplay::GetNativeWindow() const {
+  return parent_window();
+}
+
 void WebUILoginDisplay::CompleteLogin(const std::string& username,
                                       const std::string& password) {
   DCHECK(delegate_);

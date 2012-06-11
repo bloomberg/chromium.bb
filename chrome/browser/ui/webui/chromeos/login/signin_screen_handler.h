@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/web_ui.h"
+#include "ui/gfx/native_widget_types.h"
 
 class BrowsingDataRemover;
 
@@ -55,6 +56,9 @@ class LoginDisplayWebUIHandler {
 // An interface for SigninScreenHandler to call WebUILoginDisplay.
 class SigninScreenHandlerDelegate {
  public:
+  // Returns corresponding native window.
+  virtual gfx::NativeWindow GetNativeWindow() const = 0;
+
   // Confirms sign up by provided |username| and |password| specified.
   // Used for new user login via GAIA extension.
   virtual void CompleteLogin(const std::string& username,
@@ -139,6 +143,7 @@ class SigninScreenHandler : public BaseScreenHandler,
   virtual void GetLocalizedStrings(
       base::DictionaryValue* localized_strings) OVERRIDE;
   virtual void Initialize() OVERRIDE;
+  virtual gfx::NativeWindow GetNativeWindow() OVERRIDE;
 
   // WebUIMessageHandler implementation:
   virtual void RegisterMessages() OVERRIDE;

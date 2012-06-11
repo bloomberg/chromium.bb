@@ -42,6 +42,7 @@ class WebUILoginDisplay : public LoginDisplay,
   virtual void ShowGaiaPasswordChanged(const std::string& username) OVERRIDE;
 
   // SigninScreenHandlerDelegate implementation:
+  virtual gfx::NativeWindow GetNativeWindow() const OVERRIDE;
   virtual void CompleteLogin(const std::string& username,
                              const std::string& password) OVERRIDE;
   virtual void Login(const std::string& username,
