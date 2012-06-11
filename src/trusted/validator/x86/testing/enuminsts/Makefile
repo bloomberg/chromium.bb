@@ -20,6 +20,8 @@ BITS=64
 
 # NACLV - If defined, the nacl revision number the executable was built using.
 
+# RAGEL - test the ragel decoder
+
 # Defines the pin version to use. Can be overridden on the command line,
 # so that other versions can be used.
 PINV=2.10-45467
@@ -45,6 +47,10 @@ endif
 NACLLIBS=\
 	$(NACLSCONS)/lib/libncdis_util_x86_$(BITS).a \
 	$(NACLSCONS)/lib/libncvalidate_x86_$(BITS).a \
+	$(NACLSCONS)/lib/libdfa_decode_x86_32.a \
+	$(NACLSCONS)/lib/libdfa_decode_x86_64.a \
+	$(NACLSCONS)/lib/libdfa_validate_x86_32.a \
+	$(NACLSCONS)/lib/libdfa_validate_x86_64.a \
 	$(LIB32INSERT) \
 	$(NACLSCONS)/lib/libncval_reg_sfi_x86_$(BITS).a \
 	$(NACLSCONS)/lib/libnc_decoder_x86_$(BITS).a \
@@ -94,16 +100,26 @@ NACLVDEFS=
 NACLVSUFFIX=
 endif
 
+ifdef RAGEL
+RAGELDECODER=ragel_tester$(SUFFIX).o
+RAGELDEFS=-DNACL_RAGEL_DECODER
+else
+RAGELDECODER=
+RAGELDEFS=
+endif
+
 SUFFIX=-$(BITS)$(XEDSUFFIX)$(NACLVSUFFIX)
 OPTDBG=-g -O1
 CC=gcc -m$(BITS)
 CXX=g++ -m$(BITS)
-CCARGS = -c $(NACLDEFS) $(NACLVDEFS) $(XEDDEFS) $(XEDINCLUDE) $(NACLINCLUDE)
+CCARGS = -c $(NACLDEFS) $(NACLVDEFS) $(XEDDEFS) $(XEDINCLUDE) $(NACLINCLUDE) $(RAGELDEFS)
 
 enuminsts$(SUFFIX):$(XEDLIB) enuminsts$(SUFFIX).o str_utils$(SUFFIX).o \
+		$(RAGELDECODER) \
 		$(XEDDECODER) nacl_tester$(SUFFIX).o input_tester$(SUFFIX).o \
 		text2hex$(SUFFIX).o
 	$(CXX) $(OPTDBG) -o $@ enuminsts$(SUFFIX).o str_utils$(SUFFIX).o \
+		$(RAGELDECODER) \
 		$(XEDDECODER) nacl_tester$(SUFFIX).o input_tester$(SUFFIX).o \
 		text2hex$(SUFFIX).o $(XEDLIB) $(NACLLIBS)
 
@@ -118,6 +134,9 @@ nacl_tester$(SUFFIX).o: nacl_tester.c
 
 xed_tester$(SUFFIX).o: xed_tester.c
 	$(CC) $(OPTDBG) -o xed_tester$(SUFFIX).o $(CCARGS) xed_tester.c
+
+ragel_tester$(SUFFIX).o: ragel_tester.c
+	$(CC) $(OPTDBG) -o ragel_tester$(SUFFIX).o $(CCARGS) ragel_tester.c
 
 str_utils$(SUFFIX).o: str_utils.h str_utils.c
 	$(CC) $(OPTDBG) -o str_utils$(SUFFIX).o $(CCARGS) str_utils.c

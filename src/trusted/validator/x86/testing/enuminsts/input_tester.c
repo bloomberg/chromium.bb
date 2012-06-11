@@ -8,6 +8,9 @@
  * input_tester.c
  * Implements a decoder that matches the input enumeration fed into stdin.
  */
+#ifndef NACL_TRUSTED_BUT_NOT_TCB
+#error("This file is not meant for use in the TCB.")
+#endif
 
 #include "native_client/src/trusted/validator/x86/testing/enuminsts/input_tester.h"
 
@@ -56,6 +59,7 @@ static struct {
  */
 static void ParseInst(const NaClEnumerator* enumerator,
                       const int pc_address) {
+  UNREFERENCED_PARAMETER(enumerator);
   input_decoder.pc_address_ = pc_address;
   input_decoder.mnemonic_ = NULL;
   input_decoder.operands_ = NULL;
@@ -67,6 +71,8 @@ static void ParseInst(const NaClEnumerator* enumerator,
 static void AssembleDesc(const NaClEnumerator* enumerator) {
   char* desc;
   char* end;
+  UNREFERENCED_PARAMETER(enumerator);
+
   /* Start by looking for description. */
   desc = (char*) strip(strskip(input_decoder.line_, "#"));
   if (desc == NULL) {
@@ -112,9 +118,8 @@ static const char* GetInstOperandsText(const NaClEnumerator* enumerator) {
 
 /* Prints out the disassembled instruction. */
 static void PrintInst(const NaClEnumerator* enumerator) {
-  size_t i;
-  const char* desc;
-  size_t num_bytes;
+  int i;
+
   printf("   IN: %"NACL_PRIxNaClPcAddressAll": ", input_decoder.pc_address_);
   for (i = 0; i < input_decoder.num_bytes_; ++i) {
     printf("%02x ", enumerator->_itext[i]);
@@ -134,16 +139,21 @@ static void PrintInst(const NaClEnumerator* enumerator) {
 
 /* Returns true if the instruction parsed a legal instruction. */
 static Bool IsInstLegal(const NaClEnumerator* enumerator) {
+  UNREFERENCED_PARAMETER(enumerator);
   return TRUE;
 }
 
 static size_t InstLength(const NaClEnumerator* enumerator) {
+  UNREFERENCED_PARAMETER(enumerator);
   return (size_t) input_decoder.num_bytes_;
 }
 
 static void InstallFlag(const NaClEnumerator* enumerator,
                         const char* flag_name,
                         const void* flag_address) {
+  UNREFERENCED_PARAMETER(enumerator);
+  UNREFERENCED_PARAMETER(flag_name);
+  UNREFERENCED_PARAMETER(flag_address);
 }
 
 

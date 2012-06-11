@@ -1,0 +1,47 @@
+# -*- python -*-
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import os
+import sys
+Import('env')
+
+# ------------------------------------------------------
+# General adjustments to the environment for builds.
+
+# Make a copy of debug CRT for now.
+# TODO(bradnelson): Find a better way to generalize this requirement.
+# NOTE: debug builds on windows break without this
+crt = []
+if env.AllBits('windows', 'debug'):
+  for i in ['.', '$STAGING_DIR']:
+    crt += env.Replicate(i, '$VC80_DIR/vc/redist/Debug_NonRedist/'
+                         'x86/Microsoft.VC80.DebugCRT')
+    crt += env.Replicate(i, '$VC80_DIR/vc/redist/x86/Microsoft.VC80.CRT')
+
+# Create environment for command-line tools and testing, rather than
+# part of the TCB. Then define compile-time flag that communicates
+# that we are compiling in the test environment (rather than for the TCB).
+test_env = env.Clone()
+test_env.Append(CCFLAGS=['-DNACL_TRUSTED_BUT_NOT_TCB', '-DNACL_RAGEL_DECODER'])
+
+if test_env.Bit('target_x86_64'):
+  enuminst = test_env.ComponentProgram(
+    'enuminst',
+    ['enuminsts.c', 'input_tester.c', 'nacl_tester.c',
+     'ragel_tester.c', 'str_utils.c', 'text2hex.c'],
+    EXTRA_LIBS=[test_env.NaClTargetArchSuffix('ncdis_util'),
+                test_env.NaClTargetArchSuffix('ncvalidate'),
+                test_env.NaClTargetArchSuffix('dfa_decode'),
+                test_env.NaClTargetArchSuffix('dfa_validate'),
+                test_env.NaClTargetArchSuffix('ncval_reg_sfi'),
+                test_env.NaClTargetArchSuffix('nc_decoder'),
+                test_env.NaClTargetArchSuffix('nc_opcode_modeling_verbose'),
+                test_env.NaClTargetArchSuffix('nc_opcode_modeling'),
+                test_env.NaClTargetArchSuffix('ncdis_decode_tables'),
+                test_env.NaClTargetArchSuffix('ncval_base_verbose'),
+                test_env.NaClTargetArchSuffix('ncval_base'),
+                'platform', 'gio', 'utils',
+               ])
+  env.Requires(enuminst, crt)

@@ -8,9 +8,13 @@
  * nacl_tester.c
  * Uses the NaCl x86 validator/decoder to implement a NaClEnumeratorDecoder.
  */
+#ifndef NACL_TRUSTED_BUT_NOT_TCB
+#error("This file is not meant for use in the TCB.")
+#endif
 
 #include "native_client/src/trusted/validator/x86/testing/enuminsts/enuminsts.h"
 
+#include <ctype.h>
 #include <string.h>
 #include "native_client/src/trusted/validator_x86/ncenuminsts.h"
 #include "native_client/src/trusted/validator/x86/testing/enuminsts/str_utils.h"
@@ -50,6 +54,7 @@ struct {
 } nacl_decoder;
 
 static Bool IsInstLegal(const NaClEnumerator *enumerator) {
+  UNREFERENCED_PARAMETER(enumerator);
   return !nacl_decoder._ignore_instruction &&
       NaClInstDecodesCorrectly(nacl_decoder._inst);
 }
@@ -63,7 +68,8 @@ static Bool NaClIsntXedImplemented(const NaClEnumerator *enumerator) {
     "Pf2id"
   };
   const char* name = NaClOpcodeName(nacl_decoder._inst);
-  int i;
+  size_t i;
+  UNREFERENCED_PARAMETER(enumerator);
   for (i = 0; i < NACL_ARRAY_SIZE(nacl_but_not_xed); ++i) {
     if (0 == strcmp(name, nacl_but_not_xed[i])) {
       return TRUE;
@@ -84,7 +90,7 @@ static void ParseInst(const NaClEnumerator* enumerator,
   nacl_decoder._mnemonic_lower[0] = 0;
   nacl_decoder._operands[0] = 0;
   nacl_decoder._inst =
-      NaClParseInst((char*) enumerator->_itext,
+      NaClParseInst((uint8_t *)enumerator->_itext,
                     enumerator->_num_bytes, pc_address);
   if (nacl_decoder._ignore_instructions_not_xed_implemented &&
       IsInstLegal(enumerator)) {
@@ -97,6 +103,7 @@ static void ParseInst(const NaClEnumerator* enumerator,
 static const char* Disassemble(const NaClEnumerator* enumerator) {
   char* stmp;
 
+  UNREFERENCED_PARAMETER(enumerator);
   /* First see if we have cached it. If so, return it. */
   if (nacl_decoder._disassembly[0] != 0) return nacl_decoder._disassembly;
 
@@ -111,7 +118,9 @@ static const char* GetInstMnemonicLower(const NaClEnumerator* enumerator) {
   char mnemonic[kBufferSize];
   size_t i;
 
-  if (nacl_decoder._mnemonic_lower[0] != 0) return nacl_decoder._mnemonic_lower;
+  UNREFERENCED_PARAMETER(enumerator);
+  if (nacl_decoder._mnemonic_lower[0] != 0)
+    return nacl_decoder._mnemonic_lower;
 
   cstrncpy(mnemonic, NaClOpcodeName(nacl_decoder._inst), kBufferSize);
   for (i = 0; i < kBufferSize; ++i) {
@@ -150,7 +159,7 @@ static const char* SimplifiedDisassembly(const NaClEnumerator *enumerator) {
   if (NULL == start) {
     /* Don't know how to simplify, give up and just use disassembly. */
     cstrncpy(nacl_decoder._simplified_disassembly, disassembly, kBufferSize);
-    return;
+    return nacl_decoder._simplified_disassembly;
   }
   cstrncpy(nacl_decoder._simplified_disassembly, start, kBufferSize);
   rstrip(nacl_decoder._simplified_disassembly);
@@ -164,7 +173,7 @@ static const char* SimplifiedDisassembly(const NaClEnumerator *enumerator) {
       { "xchg %rax, %rax" , "nop" },
       { "xchg %ax, %ax" , "nop" },
     };
-    int i;
+    size_t i;
     char buf[kBufferSize];
     const char* desc = strfind(nacl_decoder._simplified_disassembly, mnemonic);
     if (NULL == desc) return nacl_decoder._simplified_disassembly;
@@ -176,10 +185,10 @@ static const char* SimplifiedDisassembly(const NaClEnumerator *enumerator) {
         cstrncpy(nacl_decoder._simplified_disassembly,
                  pairs[i].xed_name, kBufferSize);
         cstrncpy(nacl_decoder._mnemonic, pairs[i].xed_name, kBufferSize);
-        return;
       }
     }
   }
+  return nacl_decoder._simplified_disassembly;
 }
 
 /* Returns the mnemonic name for the disassembled instruction. */
@@ -205,7 +214,7 @@ static const char* GetInstMnemonic(const NaClEnumerator* enumerator) {
       { "pfrsqrt", "pfsqrt" },
       { "pfrcpit1", "pfcpit1" }
     };
-    int i;
+    size_t i;
     for (i = 0; i < NACL_ARRAY_SIZE(pairs); ++i) {
       if (0 == strcmp(mnemonic, pairs[i].nacl_name)) {
         const char* start =
@@ -227,7 +236,6 @@ static const char* GetInstMnemonic(const NaClEnumerator* enumerator) {
  * to compare accross decoders.
  */
 static const char* GetInstOperandsText(const NaClEnumerator* enumerator) {
-  char sbuf[kBufferSize];
   char operands[kBufferSize];
   const char* disassembly;
   const char* after_mnemonic;
@@ -252,6 +260,7 @@ static void PrintInst(const NaClEnumerator* enumerator) {
 
 /* Returns the number of bytes in the disassembled instruction. */
 static size_t InstLength(const NaClEnumerator* enumerator) {
+  UNREFERENCED_PARAMETER(enumerator);
   return (size_t) NaClInstLength(nacl_decoder._inst);
 }
 
@@ -259,7 +268,7 @@ static size_t InstLength(const NaClEnumerator* enumerator) {
  * validator tests pass.
  */
 static Bool MaybeInstValidates(const NaClEnumerator *enumerator) {
-  return NaClInstValidates((char*) enumerator->_itext,
+  return NaClInstValidates((uint8_t*) enumerator->_itext,
                            NaClInstLength(nacl_decoder._inst),
                            nacl_decoder._pc_address,
                            nacl_decoder._inst);
@@ -270,6 +279,7 @@ static Bool SegmentValidates(const NaClEnumerator *enumerator,
                              const uint8_t* segment,
                              const size_t size,
                              const int pc_address) {
+  UNREFERENCED_PARAMETER(enumerator);
   return NaClSegmentValidates((uint8_t*) segment, size, pc_address);
 }
 
@@ -277,6 +287,7 @@ static Bool SegmentValidates(const NaClEnumerator *enumerator,
 static void InstallFlag(const NaClEnumerator* enumerator,
                         const char* flag_name,
                         const void* flag_address) {
+  UNREFERENCED_PARAMETER(enumerator);
   if (0 == strcmp(flag_name, "--nops")) {
     nacl_decoder._translate_to_xed_nops = *((Bool*) flag_address);
   } else if (0 == strcmp(flag_name, "--xedimplemented")) {

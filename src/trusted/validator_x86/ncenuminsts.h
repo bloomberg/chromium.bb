@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -88,7 +88,7 @@ Bool NaClInstValidates(uint8_t* mbase,
  *    vbase - The virtual address associated with the instruction.
  */
 Bool NaClSegmentValidates(uint8_t* mbase,
-                          uint8_t size,
+                          size_t size,
                           NaClPcAddress vbase);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCEMNUMINSTS_H_ */

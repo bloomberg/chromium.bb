@@ -12,6 +12,9 @@
  * as the x86-32 validator, and document how to properly test the
  * x86-32 decoder.
  */
+#ifndef NACL_TRUSTED_BUT_NOT_TCB
+#error("This file is not meant for use in the TCB.")
+#endif
 
 #include "native_client/src/trusted/validator/x86/testing/enuminsts/enuminsts.h"
 
@@ -21,9 +24,12 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
+#include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/utils/flags.h"
 #include "native_client/src/trusted/validator/x86/testing/enuminsts/input_tester.h"
 #include "native_client/src/trusted/validator/x86/testing/enuminsts/str_utils.h"
+#include "native_client/src/trusted/validator/x86/testing/enuminsts/text2hex.h"
 
 /* When non-zero, prints out additional debugging messages. */
 #define kDebug 0
@@ -140,7 +146,7 @@ static ComparedInstruction gCinst;
 /* The name of the executable (i.e. argv[0] from the command line). */
 static char *gArgv0 = "argv0";
 
-static inline const char* BoolName(Bool b) {
+static INLINE const char* BoolName(Bool b) {
   return b ? "true" : "false";
 }
 
@@ -277,7 +283,7 @@ void InternalError(const char *why) {
 /* Records that a fatal (i.e. non-recoverable) error occurred. */
 void ReportFatalError(const char* why) {
   char buffer[kBufferSize];
-  snprintf(buffer, kBufferSize, "%s - quitting!", why);
+  SNPRINTF(buffer, kBufferSize, "%s - quitting!", why);
   InternalError(buffer);
   exit(1);
 }
@@ -332,14 +338,6 @@ static void PrintDisassembledInstructionVariants(ComparedInstruction* cinst) {
   }
 }
 
-/* Print error message "why", and show instructions that failed for
- * that reason.
- */
-static void CinstInternalError(ComparedInstruction* cinst, const char* why) {
-  PrintDisassembledInstructionVariants(cinst);
-  InternalError(why);
-}
-
 /* Prints out progress messages. */
 static void PrintVProgress(const char* format, va_list ap) {
   if (gSilent) {
@@ -391,6 +389,7 @@ static void ResetSkipCounts(const char* last_opcode) {
  */
 static void ReportOnSkippedErrors(ComparedInstruction* cinst,
                                   const char* mnemonic) {
+  UNREFERENCED_PARAMETER(cinst);
   if (nSkipped > 0 && gSilent) {
     printf("...skipped %d errors for %s\n", nSkipped, last_bad_mnemonic);
   }
@@ -420,8 +419,9 @@ static void DecoderError(const char *why,
     /* Look for first possible name for instruction. */
     for (i = 0; i < cinst->_enumerator._num_decoders; ++i) {
       NaClEnumeratorDecoder *decoder = cinst->_enumerator._decoder[i];
+      const char* mnemonic;
       if (NULL == decoder->_get_inst_mnemonic_fn) continue;
-      const char* mnemonic = cinst->_enumerator._decoder[0]->
+      mnemonic = cinst->_enumerator._decoder[0]->
           _get_inst_mnemonic_fn(&cinst->_enumerator);
       if (strcmp(mnemonic, last_bad_mnemonic) == 0) {
         nSkipped += 1;
@@ -506,7 +506,7 @@ static Bool BadRegWrite(ComparedInstruction *cinst) {
            */
           if (!IsSpecialSafeRegWrite(cinst)) continue;
           gSawLethalError = 1;
-          snprintf(sbuf, kBufferSize, "(%s) xed operand %d\n",
+          SNPRINTF(sbuf, kBufferSize, "(%s) xed operand %d\n",
                    other_decoder->_id_name, (int) j);
           DecoderError("ILLEGAL REGISTER WRITE", cinst, sbuf);
           return TRUE;
@@ -560,7 +560,7 @@ static Bool AreInstOperandsEqual(ComparedInstruction *cinst) {
   for (i = 1; i < num_decoders; ++i) {
     if (0 != strncmp(operands[i-1], operands[i], kBufferSize)) {
       char sbuf[kBufferSize];
-      snprintf(sbuf, kBufferSize, "(%s) '%s' != (%s)'%s'",
+      SNPRINTF(sbuf, kBufferSize, "(%s) '%s' != (%s)'%s'",
                operands_decoder[i-1]->_id_name, operands[i-1],
                operands_decoder[i]->_id_name, operands[i]);
       DecoderError("OPERAND MISMATCH", cinst, sbuf);
@@ -613,7 +613,7 @@ static Bool AreInstMnemonicsEqual(ComparedInstruction *cinst) {
   for (i = 1; i < num_decoders; ++i) {
     if (strncmp(name[i-1], name[i], kBufferSize) != 0) {
       char sbuf[kBufferSize];
-      snprintf(sbuf, kBufferSize, "(%s) %s != (%s) %s",
+      SNPRINTF(sbuf, kBufferSize, "(%s) %s != (%s) %s",
                name_decoder[i-1]->_id_name, name[i-1],
                name_decoder[i]->_id_name, name[i]);
       DecoderError("MNEMONIC MISMATCH", cinst, sbuf);
@@ -681,7 +681,7 @@ static Bool AreInstructionLengthsEqual(ComparedInstruction *cinst) {
   for (i = 1; i < num_decoders; ++i) {
     if (length[i-1] != length[i]) {
       char sbuf[kBufferSize];
-      snprintf(sbuf, kBufferSize, "(%s) %"NACL_PRIuS" != (%s) %"NACL_PRIuS,
+      SNPRINTF(sbuf, kBufferSize, "(%s) %"NACL_PRIuS" != (%s) %"NACL_PRIuS,
                length_decoder[i-1]->_id_name, length[i-1],
                length_decoder[i]->_id_name, length[i]);
       DecoderError("LENGTH MISMATCH", cinst, sbuf);
@@ -783,7 +783,7 @@ static void TryOneInstruction(ComparedInstruction *cinst,
 /* Returns true if for all decoders recognize legal instructions, they use
  * less than len bytes.
  */
-static int IsLegalInstShorterThan(ComparedInstruction *cinst, int len) {
+static int IsLegalInstShorterThan(ComparedInstruction *cinst, size_t len) {
   size_t i;
   Bool found_legal = FALSE;
   for (i = 0; i < cinst->_enumerator._num_decoders; ++i) {
@@ -801,7 +801,7 @@ static int IsLegalInstShorterThan(ComparedInstruction *cinst, int len) {
  * particular prefix.
  */
 static void TestAllWithPrefix(ComparedInstruction *cinst,
-                              int prefix, int prefix_length) {
+                              int prefix, size_t prefix_length) {
   const int kFillerByteCount = NACL_ENUM_MAX_INSTRUCTION_BYTES;
   const int kInstByteCount = NACL_ENUM_MAX_INSTRUCTION_BYTES;
   const int kIterByteCount = 3;
@@ -1112,7 +1112,7 @@ static void ReadInstList(InstList** list, const char* filename) {
   FILE* file = fopen(filename, "r");
   if (NULL == file) {
     char buffer[kBufferSize];
-    snprintf(buffer, kBufferSize, "%s: unable to open", filename);
+    SNPRINTF(buffer, kBufferSize, "%s: unable to open", filename);
     ReportFatalError(buffer);
   }
   GetInstList(list, file, filename);
@@ -1219,6 +1219,7 @@ static int ParseArgs(ComparedInstruction* cinst, int argc, char *argv[]) {
 /* Define set of available enumerator decoders. */
 static void NaClPreregisterEnumeratorDecoder(ComparedInstruction* cinst,
                                              NaClEnumeratorDecoder* decoder) {
+  UNREFERENCED_PARAMETER(cinst);
   if (kNumAvailableDecoders >= NACL_MAX_AVAILABLE_DECODERS) {
     fprintf(stderr, "Too many preregistered enumerator decoders\n");
     exit(1);
@@ -1240,6 +1241,9 @@ static void NaClInitializeAvailableDecoders() {
   kNumAvailableDecoders = 0;
 #ifdef NACL_XED_DECODER
   NaClPreregisterEnumeratorDecoder(&gCinst, RegisterXedDecoder());
+#endif
+#ifdef NACL_RAGEL_DECODER
+  NaClPreregisterEnumeratorDecoder(&gCinst, RegisterRagelDecoder());
 #endif
   NaClPreregisterEnumeratorDecoder(&gCinst, RegisterNaClDecoder());
   NaClPreregisterEnumeratorDecoder(&gCinst, RegisterInputDecoder());

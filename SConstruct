@@ -2628,6 +2628,7 @@ def MakeBaseTrustedEnv():
       'src/trusted/validator/x86/ncval_reg_sfi/build.scons',
       'src/trusted/validator/x86/ncval_seg_sfi/build.scons',
       'src/trusted/validator/x86/ncval_seg_sfi/generator/build.scons',
+      'src/trusted/validator/x86/testing/enuminsts/build.scons',
       'src/trusted/validator/x86/32/build.scons',
       'src/trusted/validator/x86/64/build.scons',
       'src/trusted/validator_x86/build.scons',

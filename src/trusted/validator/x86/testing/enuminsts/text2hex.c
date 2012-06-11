@@ -7,10 +7,15 @@
 /*
  * Hexidecimal text to bytes conversion tools.
  */
+#ifndef NACL_TRUSTED_BUT_NOT_TCB
+#error("This file is not meant for use in the TCB.")
+#endif
 
 #include "native_client/src/trusted/validator/x86/testing/enuminsts/text2hex.h"
 
 #include <stdio.h>
+
+#include "native_client/src/include/portability_io.h"
 
 #define kBufferSize 1024
 
@@ -68,7 +73,7 @@ static const char* TextContext(const char* context,
     return context;
   } else {
     static char buffer[kBufferSize];
-    snprintf(buffer, kBufferSize, "%s line %d", context, line);
+    SNPRINTF(buffer, kBufferSize, "%s line %d", context, line);
     return buffer;
   }
 }
@@ -91,7 +96,7 @@ static int InstallTextByte(InstByteArray ibytes,
                            const int line) {
   if (num_bytes == NACL_ENUM_MAX_INSTRUCTION_BYTES) {
     char buffer[kBufferSize];
-    snprintf(buffer, kBufferSize,
+    SNPRINTF(buffer, kBufferSize,
              "%s: opcode sequence too long in '%s'",
              TextContext(context, line), itext);
     ReportFatalError(buffer);
@@ -180,7 +185,7 @@ int Text2Bytes(InstByteArray ibytes,
         break;
       default: {
         char buffer[kBufferSize];
-        snprintf(buffer, kBufferSize,
+        SNPRINTF(buffer, kBufferSize,
                  "%s: contains bad text:\n   '%s'\n",
                  TextContext(context, line), itext);
         ReportFatalError(buffer);
@@ -192,7 +197,7 @@ int Text2Bytes(InstByteArray ibytes,
   /* If only a single byte was used to define hex value, convert it. */
   if (mini_buf_index > 0) {
     char buffer[kBufferSize];
-    snprintf(buffer, kBufferSize,
+    SNPRINTF(buffer, kBufferSize,
              "%s: Opcode sequence must be an even number of chars '%s'",
              TextContext(context, line), itext);
     ReportFatalError(buffer);

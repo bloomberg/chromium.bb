@@ -9,16 +9,22 @@
  *
  * Defines support string routines for the instruction enumerator.
  */
+#ifndef NACL_TRUSTED_BUT_NOT_TCB
+#error("This file is not meant for use in the TCB.")
+#endif
 
 #include "native_client/src/trusted/validator/x86/testing/enuminsts/str_utils.h"
 
+#include <ctype.h>
 #include <string.h>
+
+#include "native_client/src/trusted/validator/x86/testing/enuminsts/enuminsts.h"
 
 /* If string s begins with string prefix, return a pointer to the
  * first byte after the prefix. Else return s.
  */
 char *SkipPrefix(char *s, const char *prefix) {
-  int plen = strlen(prefix);
+  size_t plen = strlen(prefix);
   if (strncmp(s, prefix, plen) == 0) {
     return &s[plen + 1];
   }
@@ -34,7 +40,7 @@ const char *strip(const char *s) {
 
 /* Updates the string by removing trailing spaces/newlines. */
 void rstrip(char *s) {
-  int slen = strlen(s);
+  size_t slen = strlen(s);
   while (slen > 0) {
     --slen;
     if (!isspace(s[slen])) return;
@@ -46,9 +52,9 @@ void rstrip(char *s) {
  * on success, NULL on failure.
  */
 const char *strfind(const char *s, const char *ss) {
-  int i;
-  int slen = strlen(s);
-  int sslen = strlen(ss);
+  size_t i;
+  size_t slen = strlen(s);
+  size_t sslen = strlen(ss);
 
   for (i = 0; i < slen; i++) {
     if (s[i] == ss[0]) {
@@ -64,7 +70,6 @@ const char *strfind(const char *s, const char *ss) {
  * after ss. Otherwise return NULL.
  */
 const char *strskip(const char *s, const char *ss) {
-  int sslen = strlen(ss);
   const char *tmp = strfind(s, ss);
   if (tmp != NULL) {
     return &tmp[strlen(ss)];
@@ -74,15 +79,14 @@ const char *strskip(const char *s, const char *ss) {
 
 /* Remove all instances of character c in string s. */
 void strnzapchar(char *s, const char c) {
-  int i, nskip;
-  char *t = s;
-  const int slen = strlen(s);
+  size_t i, nskip;
+  const size_t slen = strlen(s);
 
   if (0 == c) return;
   nskip = 0;
   for (i = 0; i + nskip <= slen; i++) {
     while (s[i + nskip] == c) nskip += 1;
-    s[i] = s[i+nskip];
+    s[i] = s[i + nskip];
   }
 }
 
@@ -113,7 +117,7 @@ void cstrncpy(char *dest, const char *src, size_t n) {
 /* Copy src to dest, stoping at character c.
  */
 void strncpyto(char *dest, const char *src, size_t n, char c) {
-  int i;
+  size_t i;
 
   i = 0;
   while (1) {

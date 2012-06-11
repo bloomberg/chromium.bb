@@ -96,7 +96,7 @@ Bool NaClInstValidates(uint8_t* mbase,
 }
 
 Bool NaClSegmentValidates(uint8_t* mbase,
-                          uint8_t size,
+                          size_t size,
                           NaClPcAddress vbase) {
   NaClCPUFeaturesX86 cpu_features;
   NaClValidationStatus  status;

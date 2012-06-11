@@ -8,6 +8,9 @@
  * ragel_tester.c
  * Implements a ragel decoder that can be used as a NaClEnumeratorDecoder.
  */
+#ifndef NACL_TRUSTED_BUT_NOT_TCB
+#error("This file is not meant for use in the TCB.")
+#endif
 
 #include "native_client/src/trusted/validator/x86/testing/enuminsts/enuminsts.h"
 
@@ -50,12 +53,16 @@ void RagelPrintInstBytes() {
 }
 
 void RagelDecodeError (const uint8_t *ptr, void *userdata) {
+  UNREFERENCED_PARAMETER(ptr);
+  UNREFERENCED_PARAMETER(userdata);
   return;
   printf("DFA error in decoder: ");
   RagelPrintInstBytes();
 }
 
 void RagelValidateError (const uint8_t *ptr, void *userdata) {
+  UNREFERENCED_PARAMETER(ptr);
+  UNREFERENCED_PARAMETER(userdata);
   return;
   printf("DFA error in validator\n");
   RagelPrintInstBytes();
@@ -63,12 +70,19 @@ void RagelValidateError (const uint8_t *ptr, void *userdata) {
 
 void RagelInstruction(const uint8_t *begin, const uint8_t *end,
                       struct instruction *instruction, void *userdata) {
-  RState.inst_num_bytes = end - begin;
+  UNREFERENCED_PARAMETER(instruction);
+  UNREFERENCED_PARAMETER(userdata);
+  if (end > begin) {
+    RState.inst_num_bytes = (uint8_t)(end - begin);
+  } else {
+    RState.inst_num_bytes = 0;
+  }
 }
 
 /* Defines the function to parse the first instruction. */
 static void RParseInst(const NaClEnumerator* enumerator, const int pc_address) {
   int res;
+  UNREFERENCED_PARAMETER(pc_address);
   RState.inst_offset = enumerator->_itext;
   RState.ia32_mode = 0;
   RState.inst_num_bytes = 0;
@@ -87,22 +101,28 @@ static void RParseInst(const NaClEnumerator* enumerator, const int pc_address) {
 
 /* Returns true if the instruction parsed a legal instruction. */
 static Bool RIsInstLegal(const NaClEnumerator* enumerator) {
+  UNREFERENCED_PARAMETER(enumerator);
   return RState.inst_is_legal;
 }
 
 /* Prints out the disassembled instruction. */
 static void RPrintInst(const NaClEnumerator* enumerator) {
+  UNREFERENCED_PARAMETER(enumerator);
   printf("Ragel: ");
   RagelPrintInstBytes();
 }
 
 static size_t RInstLength(const NaClEnumerator* enumerator) {
+  UNREFERENCED_PARAMETER(enumerator);
   return (size_t)RState.inst_num_bytes;
 }
 
 static void InstallFlag(const NaClEnumerator* enumerator,
                         const char* flag_name,
                         const void* flag_address) {
+  UNREFERENCED_PARAMETER(enumerator);
+  UNREFERENCED_PARAMETER(flag_name);
+  UNREFERENCED_PARAMETER(flag_address);
 }
 
 /* Defines the registry function that creates a ragel decoder, and returns
