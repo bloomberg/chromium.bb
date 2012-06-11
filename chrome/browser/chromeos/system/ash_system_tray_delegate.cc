@@ -20,6 +20,7 @@
 #include "ash/system/tray_caps_lock.h"
 #include "ash/system/user/update_observer.h"
 #include "ash/system/user/user_observer.h"
+#include "base/callback.h"
 #include "base/chromeos/chromeos_version.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
@@ -679,6 +680,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual void ToggleBluetooth() OVERRIDE {
     bluetooth_adapter_->SetPowered(!bluetooth_adapter_->IsPowered(),
+                                   base::Closure(),
                                    base::Bind(&BluetoothPowerFailure));
   }
 

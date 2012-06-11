@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/options2/chromeos/bluetooth_options_handler2.h"
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -185,6 +186,7 @@ void BluetoothOptionsHandler::EnableChangeCallback(
   args->GetBoolean(0, &bluetooth_enabled);
 
   adapter_->SetPowered(bluetooth_enabled,
+                       base::Closure(),
                        base::Bind(&BluetoothOptionsHandler::EnableChangeError,
                                   weak_ptr_factory_.GetWeakPtr()));
 }
@@ -198,6 +200,7 @@ void BluetoothOptionsHandler::FindDevicesCallback(
     const ListValue* args) {
   adapter_->SetDiscovering(
       true,
+      base::Closure(),
       base::Bind(&BluetoothOptionsHandler::FindDevicesError,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -304,6 +307,7 @@ void BluetoothOptionsHandler::StopDiscoveryCallback(
     const ListValue* args) {
   adapter_->SetDiscovering(
       false,
+      base::Closure(),
       base::Bind(&BluetoothOptionsHandler::StopDiscoveryError,
                  weak_ptr_factory_.GetWeakPtr()));
 }

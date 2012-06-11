@@ -102,10 +102,12 @@ class BluetoothAdapter : private BluetoothManagerClient::Observer,
   // Indicates whether the adapter radio is powered.
   virtual bool IsPowered() const;
 
-  // Requests a change to the adapter radio power, setting |powered| to
-  // true will turn on the radio and false will turn it off. |callback|
-  // will only be called if the request fails.
-  void SetPowered(bool powered, ErrorCallback callback);
+  // Requests a change to the adapter radio power, setting |powered| to true
+  // will turn on the radio and false will turn it off.  On success, callback
+  // will be called.  On failure, |error_callback| will be called.
+  void SetPowered(bool powered,
+                  const base::Closure& callback,
+                  const ErrorCallback& error_callback);
 
   // Indicates whether the adapter is currently discovering new devices,
   // note that a typical discovery process has phases of this being true
@@ -114,9 +116,11 @@ class BluetoothAdapter : private BluetoothManagerClient::Observer,
   bool IsDiscovering() const;
 
   // Requests that the adapter either begin discovering new devices when
-  // |discovering| is true, or cease any discovery when false. |callback|
-  // will only be called if the request fails.
-  void SetDiscovering(bool discovering, ErrorCallback callback);
+  // |discovering| is true, or cease any discovery when false.  On success,
+  // callback will be called.  On failure, |error_callback| will be called.
+  void SetDiscovering(bool discovering,
+                      const base::Closure& callback,
+                      const ErrorCallback& error_callback);
 
   // Requests the list of devices from the adapter, all are returned
   // including those currently connected and those paired. Use the
@@ -183,7 +187,10 @@ class BluetoothAdapter : private BluetoothManagerClient::Observer,
   void RemoveAdapter();
 
   // Called by dbus:: in response to the method call send by SetPowered().
-  void OnSetPowered(ErrorCallback callback, bool success);
+  // |callback| and |error_callback| are the callbacks passed to SetPowered().
+  void OnSetPowered(const base::Closure& callback,
+                    const ErrorCallback& error_callback,
+                    bool success);
 
   // Updates the tracked state of the adapter's radio power to |powered|
   // and notifies observers. Called on receipt of a property changed signal,
@@ -191,10 +198,16 @@ class BluetoothAdapter : private BluetoothManagerClient::Observer,
   void PoweredChanged(bool powered);
 
   // Called by dbus:: in response to the method calls send by SetDiscovering().
-  void OnStartDiscovery(ErrorCallback callback,
-                        const dbus::ObjectPath& adapter_path, bool success);
-  void OnStopDiscovery(ErrorCallback callback,
-                       const dbus::ObjectPath& adapter_path, bool success);
+  // |callback| and |error_callback| are the callbacks passed to
+  // SetDiscovering().
+  void OnStartDiscovery(const base::Closure& callback,
+                        const ErrorCallback& error_callback,
+                        const dbus::ObjectPath& adapter_path,
+                        bool success);
+  void OnStopDiscovery(const base::Closure& callback,
+                       const ErrorCallback& error_callback,
+                       const dbus::ObjectPath& adapter_path,
+                       bool success);
 
   // Updates the tracked state of the adapter's discovering state to
   // |discovering| and notifies observers. Called on receipt of a property
