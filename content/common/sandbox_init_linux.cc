@@ -232,6 +232,7 @@ static void EmitAllowSignalSelf(std::vector<struct sock_filter>* program) {
 static void EmitAllowGettime(std::vector<struct sock_filter>* program) {
   EmitAllowSyscall(__NR_clock_gettime, program);
   EmitAllowSyscall(__NR_gettimeofday, program);
+  EmitAllowSyscall(__NR_time, program);
 }
 
 static void EmitSetupEmptyFileSystem(std::vector<struct sock_filter>* program) {
