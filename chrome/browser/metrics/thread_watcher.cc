@@ -374,8 +374,11 @@ void ThreadWatcher::GotNoResponse() {
   unresponsive_count_histogram_->Add(unresponding_thread_count);
 
   // Crash the browser if the watched thread is to be crashed on hang and if the
-  // number of other threads responding is equal to live_threads_threshold_.
-  if (crash_on_hang_ && responding_thread_count <= live_threads_threshold_) {
+  // number of other threads responding is less than or equal to
+  // live_threads_threshold_ and at least one other thread is responding.
+  if (crash_on_hang_ &&
+      responding_thread_count > 0 &&
+      responding_thread_count <= live_threads_threshold_) {
     static bool crashed_once = false;
     if (!crashed_once) {
       crashed_once = true;
