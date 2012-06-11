@@ -16,7 +16,7 @@
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/pref_names.h"
@@ -150,7 +150,7 @@ void OpenReaderUpdateURL(WebContents* tab) {
 }
 
 // Opens the PDF using Adobe Reader.
-void OpenUsingReader(TabContentsWrapper* tab,
+void OpenUsingReader(TabContents* tab,
                      const WebPluginInfo& reader_plugin,
                      InfoBarDelegate* old_delegate,
                      InfoBarDelegate* new_delegate) {
@@ -176,7 +176,7 @@ class PDFUnsupportedFeatureInterstitial
     : public content::InterstitialPageDelegate {
  public:
   PDFUnsupportedFeatureInterstitial(
-      TabContentsWrapper* tab,
+      TabContents* tab,
       const WebPluginInfo& reader_webplugininfo)
       : tab_contents_(tab),
         reader_webplugininfo_(reader_webplugininfo) {
@@ -246,7 +246,7 @@ class PDFUnsupportedFeatureInterstitial
   }
 
  private:
-  TabContentsWrapper* tab_contents_;
+  TabContents* tab_contents_;
   WebPluginInfo reader_webplugininfo_;
   InterstitialPage* interstitial_page_;  // Owns us.
 
@@ -259,7 +259,7 @@ class PDFUnsupportedFeatureInterstitial
 class PDFUnsupportedFeatureInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   // |reader| is NULL if Adobe Reader isn't installed.
-  PDFUnsupportedFeatureInfoBarDelegate(TabContentsWrapper* tab_contents,
+  PDFUnsupportedFeatureInfoBarDelegate(TabContents* tab_contents,
                                        const webkit::WebPluginInfo* reader,
                                        PluginFinder* plugin_finder);
   virtual ~PDFUnsupportedFeatureInfoBarDelegate();
@@ -277,7 +277,7 @@ class PDFUnsupportedFeatureInfoBarDelegate : public ConfirmInfoBarDelegate {
   bool OnYes();
   void OnNo();
 
-  TabContentsWrapper* tab_contents_;
+  TabContents* tab_contents_;
   bool reader_installed_;
   bool reader_vulnerable_;
   WebPluginInfo reader_webplugininfo_;
@@ -286,7 +286,7 @@ class PDFUnsupportedFeatureInfoBarDelegate : public ConfirmInfoBarDelegate {
 };
 
 PDFUnsupportedFeatureInfoBarDelegate::PDFUnsupportedFeatureInfoBarDelegate(
-    TabContentsWrapper* tab_contents,
+    TabContents* tab_contents,
     const webkit::WebPluginInfo* reader,
     PluginFinder* plugin_finder)
     : ConfirmInfoBarDelegate(tab_contents->infobar_tab_helper()),
@@ -394,8 +394,7 @@ void GotPluginGroupsCallback(int process_id,
   if (!web_contents)
     return;
 
-  TabContentsWrapper* tab =
-      TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
+  TabContents* tab = TabContents::FromWebContents(web_contents);
   if (!tab)
     return;
 
@@ -432,7 +431,7 @@ void GotPluginFinderCallback(int process_id,
 
 }  // namespace
 
-void PDFHasUnsupportedFeature(TabContentsWrapper* tab) {
+void PDFHasUnsupportedFeature(TabContents* tab) {
 #if defined(OS_WIN) && defined(ENABLE_PLUGIN_INSTALLATION)
   // Only works for Windows for now.  For Mac, we'll have to launch the file
   // externally since Adobe Reader doesn't work inside Chrome.

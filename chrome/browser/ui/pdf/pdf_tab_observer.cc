@@ -1,16 +1,16 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/pdf/pdf_tab_observer.h"
 
 #include "chrome/browser/ui/pdf/pdf_unsupported_feature.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/render_messages.h"
 
-PDFTabObserver::PDFTabObserver(TabContentsWrapper* wrapper)
-    : content::WebContentsObserver(wrapper->web_contents()),
-      wrapper_(wrapper) {
+PDFTabObserver::PDFTabObserver(TabContents* tab_contents)
+    : content::WebContentsObserver(tab_contents->web_contents()),
+      tab_contents_(tab_contents) {
 }
 
 PDFTabObserver::~PDFTabObserver() {
@@ -33,5 +33,5 @@ bool PDFTabObserver::OnMessageReceived(const IPC::Message& message) {
 // Internal helpers
 
 void PDFTabObserver::OnPDFHasUnsupportedFeature() {
-  PDFHasUnsupportedFeature(wrapper_);
+  PDFHasUnsupportedFeature(tab_contents_);
 }
