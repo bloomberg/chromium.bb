@@ -287,10 +287,14 @@ RenderWidgetHost* RenderWidgetHostViewAura::GetRenderWidgetHost() const {
 
 void RenderWidgetHostViewAura::DidBecomeSelected() {
   host_->WasRestored();
+  if (!current_surface_ && host_->is_accelerated_compositing_active() &&
+      !released_front_lock_.get())
+    released_front_lock_ = window_->GetRootWindow()->GetCompositorLock();
 }
 
 void RenderWidgetHostViewAura::WasHidden() {
   host_->WasHidden();
+  released_front_lock_ = NULL;
 }
 
 void RenderWidgetHostViewAura::SetSize(const gfx::Size& size) {
@@ -505,6 +509,8 @@ void RenderWidgetHostViewAura::UpdateExternalTexture() {
     if (container)
       container->Update();
     window_->SetExternalTexture(container);
+
+    released_front_lock_ = NULL;
 
     if (!container) {
       resize_locks_.clear();

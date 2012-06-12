@@ -22,6 +22,10 @@
 #include "ui/gfx/rect.h"
 #include "webkit/glue/webcursor.h"
 
+namespace aura {
+class CompositorLock;
+}
+
 namespace content {
 class RenderWidgetHostImpl;
 class RenderWidgetHostView;
@@ -307,6 +311,9 @@ class RenderWidgetHostViewAura
   std::vector<linked_ptr<ResizeLock> > resize_locks_;
   // These locks are the ones waiting for a frame to be drawn.
   std::vector<linked_ptr<ResizeLock> > locks_pending_draw_;
+
+  // This lock is for waiting for a front surface to become available to draw.
+  scoped_refptr<aura::CompositorLock> released_front_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAura);
 };
