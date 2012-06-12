@@ -5,6 +5,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 
 #include "chrome/browser/google/google_url_tracker_factory.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -32,9 +33,8 @@ TemplateURLServiceFactory::TemplateURLServiceFactory()
     : ProfileKeyedServiceFactory("TemplateURLServiceFactory",
                                  ProfileDependencyManager::GetInstance()) {
   DependsOn(GoogleURLTrackerFactory::GetInstance());
+  DependsOn(HistoryServiceFactory::GetInstance());
   DependsOn(WebDataServiceFactory::GetInstance());
-  // TODO(erg): For Shutdown() order, we need to:
-  //     DependsOn(HistoryServiceFactory::GetInstance());
 }
 
 TemplateURLServiceFactory::~TemplateURLServiceFactory() {}

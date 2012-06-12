@@ -27,7 +27,7 @@ BookmarkModelFactory* BookmarkModelFactory::GetInstance() {
 }
 
 BookmarkModelFactory::BookmarkModelFactory()
-    : ProfileKeyedServiceFactory("BookmarkModelFactory",
+    : ProfileKeyedServiceFactory("BookmarkModel",
                                  ProfileDependencyManager::GetInstance()) {
 }
 

@@ -5,6 +5,7 @@
 #include "chrome/browser/download/download_service_factory.h"
 
 #include "chrome/browser/download/download_service.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 
 // static
@@ -22,8 +23,7 @@ DownloadServiceFactory* DownloadServiceFactory::GetInstance() {
 DownloadServiceFactory::DownloadServiceFactory()
     : ProfileKeyedServiceFactory("DownloadService",
                                  ProfileDependencyManager::GetInstance()) {
-  // TODO(rdsmith): For Shutdown() order we need to:
-  //    DependsOn(HistoryServiceDataFactory::GetInstance());
+  DependsOn(HistoryServiceFactory::GetInstance());
 }
 
 DownloadServiceFactory::~DownloadServiceFactory() {
