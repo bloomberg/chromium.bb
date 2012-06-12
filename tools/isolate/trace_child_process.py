@@ -17,17 +17,12 @@ import sys
 
 
 def main():
-  cmd = sys.argv[1:]
-  if sys.argv[1] == '--wait':
-    cmd = cmd[1:]
-    signal = 'Go!'
-    value = sys.stdin.read(len(signal))
-    assert value == signal
-    sys.stdin.close()
+  cmd = sys.argv[2:]
 
   # The reason os.execve() is not used is that we don't want the modules
   # imported here to influence the executable being traced, so we need a fresh
   # pid and need to fork.
+  # TODO(maruel): Use CreateProcess() on Windows and fork manually on OSX.
   return subprocess.call(cmd)
 
 

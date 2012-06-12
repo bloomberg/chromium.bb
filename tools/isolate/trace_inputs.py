@@ -29,7 +29,9 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
 import threading
+import time
 import weakref
 
 ## OS-specific imports
@@ -1145,13 +1147,15 @@ class Dtrace(ApiBase):
     class Process(ApiBase.Context.Process):
       pass
 
-    def __init__(self, blacklist):
+    def __init__(self, blacklist, tracer_pid, initial_cwd):
+      logging.info(
+          '%s(%d, %s)' % (self.__class__.__name__, tracer_pid, initial_cwd))
       super(Dtrace.Context, self).__init__(blacklist)
       # Process ID of the trace_child_process.py wrapper script instance.
-      self._tracer_pid = None
+      self._tracer_pid = tracer_pid
+      self._initial_cwd = initial_cwd
       # First process to be started by self._tracer_pid.
       self._initial_pid = None
-      self._initial_cwd = None
       self._line_number = 0
 
     def on_line(self, line):
@@ -1202,13 +1206,11 @@ class Dtrace(ApiBase):
             sorted(p.pid for p in process.all))
       return Results(process)
 
-    def handle_dtrace_BEGIN(self, pid, args):
-      if self._tracer_pid or self._initial_pid:
+    def handle_dtrace_BEGIN(self, _pid, args):
+      if not self.RE_DTRACE_BEGIN.match(args):
         raise TracingFailure(
             'Found internal inconsitency in dtrace_BEGIN log line',
             None, None, None)
-      self._tracer_pid = pid
-      self._initial_cwd = self.RE_DTRACE_BEGIN.match(args).group(1)
 
     def handle_proc_start(self, pid, args):
       """Transfers cwd.
@@ -1228,26 +1230,24 @@ class Dtrace(ApiBase):
             'Failed to parse arguments: %s' % args,
             None, None, None)
       ppid = int(match.group(1))
-      if (ppid == self._tracer_pid) == bool(self._initial_pid):
-        raise TracingFailure(
-            ( 'Parent process is _tracer_pid(%d) but _initial_pid(%d) is '
-              'already set') % (self._tracer_pid, self._initial_pid),
-            None, None, None)
-      if not self._initial_pid:
+      if ppid == self._tracer_pid and not self._initial_pid:
         self._initial_pid = pid
         ppid = None
         cwd = self._initial_cwd
-      else:
+      elif ppid in self.processes:
         parent = self.processes[ppid]
         cwd = parent.cwd
+      else:
+        # Another process tree, ignore.
+        return
       proc = self.processes[pid] = self.Process(self, pid, cwd, ppid)
       proc.cwd = cwd
-      logging.debug('New child: %s -> %d' % (ppid, pid))
+      logging.debug('New child: %s -> %d  cwd:%s' % (ppid, pid, unicode(cwd)))
 
     def handle_proc_exit(self, pid, _args):
       """Removes cwd."""
-      if pid != self._tracer_pid:
-        # self._tracer_pid is not traced itself.
+      if pid in self.processes:
+        # self._tracer_pid is not traced itself and other traces run neither.
         self.processes[pid].cwd = None
 
     def handle_execve(self, pid, args):
@@ -1260,6 +1260,9 @@ class Dtrace(ApiBase):
       Will have to put the answer at http://stackoverflow.com/questions/7556249.
       :)
       """
+      if not pid in self.processes:
+        # Another process tree, ignore.
+        return
       match = self.RE_EXECVE.match(args)
       if not match:
         raise TracingFailure(
@@ -1275,10 +1278,9 @@ class Dtrace(ApiBase):
 
     def handle_chdir(self, pid, args):
       """Updates cwd."""
-      if not self._tracer_pid or pid not in self.processes:
-        raise TracingFailure(
-            'Found inconsistency in the log, is it an old log?',
-            None, None, None)
+      if pid not in self.processes:
+        # Another process tree, ignore.
+        return
       cwd = self.RE_CHDIR.match(args).group(1)
       if not cwd.startswith('/'):
         cwd2 = os.path.join(self.processes[pid].cwd, cwd)
@@ -1293,6 +1295,9 @@ class Dtrace(ApiBase):
       return self.handle_open(pid, args)
 
     def handle_open(self, pid, args):
+      if pid not in self.processes:
+        # Another process tree, ignore.
+        return
       match = self.RE_OPEN.match(args)
       if not match:
         raise TracingFailure(
@@ -1305,6 +1310,9 @@ class Dtrace(ApiBase):
       self._handle_file(pid, match.group(1))
 
     def handle_rename(self, pid, args):
+      if pid not in self.processes:
+        # Another process tree, ignore.
+        return
       match = self.RE_RENAME.match(args)
       if not match:
         raise TracingFailure(
@@ -1323,6 +1331,10 @@ class Dtrace(ApiBase):
       if os.path.isdir(filepath):
         return
       self.processes[pid].add_file(filepath)
+
+    def handle_ftruncate(self, pid, args):
+      """Just used as a signal to kill dtrace, ignoring."""
+      pass
 
     @staticmethod
     def _handle_ignored(pid, args):
@@ -1372,15 +1384,17 @@ class Dtrace(ApiBase):
     # 1 is for tracked processes.
     # 2 is for trace_child_process.py only. It is not tracked itself but
     #   all its decendants are.
+    #
+    # The script will kill itself only once waiting_to_die == 1 and
+    # current_processes == 0, so that both getlogin() was called and that
+    # all traced processes exited.
     D_CODE = """
       dtrace:::BEGIN {
-        /* Since the child process is already started, initialize
-           current_processes to 1. */
-        current_processes = 1;
+        waiting_to_die = 0;
+        current_processes = 0;
         logindex = 0;
-        trackedpid[TRACER_PID] = 2;
         printf("%d %d %s_%s(\\"%s\\")\\n",
-               logindex, TRACER_PID, probeprov, probename, CWD);
+               logindex, PID, probeprov, probename, SCRIPT);
         logindex++;
       }
 
@@ -1394,8 +1408,21 @@ class Dtrace(ApiBase):
                current_processes);
         logindex++;
       }
-      proc:::exit /trackedpid[pid] && current_processes == 1/ {
-        /* Last process is exiting. */
+      /* Should use SCRIPT but there is no access to this variable at that
+       * point. */
+      proc:::start /ppid == PID && execname == "Python"/ {
+        trackedpid[pid] = 2;
+        current_processes += 1;
+        printf("%d %d %s_%s(%d, \\"%s\\", %d)\\n",
+               logindex, pid, probeprov, probename,
+               ppid,
+               execname,
+               current_processes);
+        logindex++;
+      }
+      proc:::exit /trackedpid[pid] &&
+                  current_processes == 1 &&
+                  waiting_to_die == 1/ {
         trackedpid[pid] = 0;
         current_processes -= 1;
         printf("%d %d %s_%s(%d)\\n",
@@ -1411,6 +1438,17 @@ class Dtrace(ApiBase):
                logindex, pid, probeprov, probename,
                current_processes);
         logindex++;
+      }
+
+      /* Use an arcane function to detect when we need to die */
+      syscall::ftruncate:entry /pid == PID && arg0 == FILE_ID/ {
+        waiting_to_die = 1;
+        printf("%d %d %s()\\n", logindex, pid, probefunc);
+        logindex++;
+      }
+      syscall::ftruncate:entry /
+          pid == PID && arg0 == FILE_ID && current_processes == 0/ {
+        exit(0);
       }
 
       syscall::open*:entry /trackedpid[pid] == 1/ {
@@ -1629,23 +1667,65 @@ class Dtrace(ApiBase):
       */
       """
 
-    @classmethod
-    def code(cls, pid, cwd):
+    def __init__(self, logname):
+      """Starts the log collection with dtrace.
+
+      Requires root access or chmod 4555 on dtrace. dtrace is asynchronous so
+      this needs to wait for dtrace to be "warmed up".
+      """
+      super(Dtrace.Tracer, self).__init__(logname)
+      self._script = os.path.join(BASE_DIR, 'trace_child_process.py')
+      # This unique dummy temp file is used to signal the dtrace script that it
+      # should stop as soon as all the child processes are done. A bit hackish
+      # but works fine enough.
+      self._dummy_file_id, self._dummy_file_name = tempfile.mkstemp(
+          prefix='trace_signal_file')
+
+      # Note: do not use the -p flag. It's useless if the initial process quits
+      # too fast, resulting in missing traces from the grand-children. The D
+      # code manages the dtrace lifetime itself.
+      trace_cmd = [
+        'sudo',
+        'dtrace',
+        '-x', 'dynvarsize=4m',
+        '-x', 'evaltime=exec',
+        '-o', '/dev/stderr',
+        '-q',
+        '-n', self._get_dtrace_code(),
+      ]
+      with open(self._logname + '.log', 'wb') as logfile:
+        self._dtrace = subprocess.Popen(
+            trace_cmd, stdout=logfile, stderr=subprocess.STDOUT)
+      logging.debug('Started dtrace pid: %d' % self._dtrace.pid)
+
+      # Reads until one line is printed, which signifies dtrace is up and ready.
+      with open(self._logname + '.log', 'rb') as logfile:
+        while 'dtrace_BEGIN' not in logfile.readline():
+          if self._dtrace.poll() is not None:
+            # Do a busy wait. :/
+            break
+      logging.debug('dtrace started')
+
+    def _get_dtrace_code(self):
       """Setups the D code to implement child process tracking.
 
-      Injects the pid and the initial cwd into the trace header for context.
-      The reason is that the child process trace_child_process.py is already
-      running at that point so:
-      - no proc_start() is logged for it.
-      - there is no way to figure out the absolute path of cwd in kernel on OSX
+      Injects the cookie in the script so it knows when to stop.
+
+      The script will detect any trace_child_process.py instance and will start
+      tracing it.
       """
-      cwd = os.path.realpath(cwd).replace('\\', '\\\\').replace('%', '%%')
       return (
-          'inline int TRACER_PID = %d;\n'
-          'inline string CWD = "%s";\n'
+          'inline int PID = %d;\n'
+          'inline string SCRIPT = "%s";\n'
+          'inline int FILE_ID = %d;\n'
           '\n'
           '%s\n'
-          '%s') % (pid, cwd, cls.D_CODE, cls.D_CODE_EXECVE)
+          '%s') % (
+              os.getpid(),
+              self._script,
+              self._dummy_file_id,
+              self.D_CODE,
+              self.D_CODE_EXECVE)
 
     def trace(self, cmd, cwd, tracename, output):
       """Runs dtrace on an executable.
@@ -1657,7 +1737,6 @@ class Dtrace(ApiBase):
       """
       logging.info('trace(%s, %s, %s, %s)' % (cmd, cwd, tracename, output))
       logging.info('Running: %s' % cmd)
-      signal = 'Go!'
       logging.debug('Our pid: %d' % os.getpid())
       with self._lock:
         if not self._initialized:
@@ -1666,16 +1745,20 @@ class Dtrace(ApiBase):
               None, None, None, tracename)
         assert tracename not in (i['trace'] for i in self._traces)
 
-      # Part 1: start the child process.
+      # Starts the script wrapper to start the child process. This signals the
+      # dtrace script that this process is to be traced.
       stdout = stderr = None
       if output:
         stdout = subprocess.PIPE
         stderr = subprocess.STDOUT
       child_cmd = [
         sys.executable,
-        os.path.join(BASE_DIR, 'trace_child_process.py'),
-        '--wait',
+        self._script,
+        tracename,
       ]
+      # Call a dummy function so that dtrace knows I'm about to launch a process
+      # that needs to be traced.
+      # Yummy.
       child = subprocess.Popen(
           child_cmd + cmd,
           stdin=subprocess.PIPE,
@@ -1684,44 +1767,9 @@ class Dtrace(ApiBase):
           cwd=cwd)
       logging.debug('Started child pid: %d' % child.pid)
 
-      # Part 2: start dtrace process.
-      # Note: do not use the -p flag. It's useless if the initial process quits
-      # too fast, resulting in missing traces from the grand-children. The D
-      # code manages the dtrace lifetime itself.
-      trace_cmd = [
-        'sudo',
-        'dtrace',
-        '-x', 'dynvarsize=4m',
-        '-x', 'evaltime=exec',
-        '-n', self.code(child.pid, cwd),
-        '-o', '/dev/stderr',
-        '-q',
-      ]
-      logname = self._logname + '.log'
-      with open(logname, 'w') as logfile:
-        dtrace = subprocess.Popen(
-            trace_cmd, stdout=logfile, stderr=subprocess.STDOUT)
-      logging.debug('Started dtrace pid: %d' % dtrace.pid)
-
-      # Part 3: Read until one line is printed, which signifies dtrace is up and
-      # ready.
-      with open(logname, 'r') as logfile:
-        while 'dtrace_BEGIN' not in logfile.readline():
-          if dtrace.poll() is not None:
-            break
-
-      # Part 4: We can now tell our child to go.
-      # TODO(maruel): Another pipe than stdin could be used instead. This
-      # would be more consistent with the other tracing methods.
-      out = child.communicate(signal)[0]
-
-      dtrace.wait()
-      if dtrace.returncode != 0:
-        print 'dtrace failure: %d' % dtrace.returncode
-        with open(logname) as logfile:
-          print ''.join(logfile.readlines()[-100:])
-        # Find a better way.
-        os.remove(logname)
+      out = child.communicate()[0]
+      # This doesn't mean tracing is done, one of the grand-child process may
+      # still be alive. It will be tracked with the dtrace script.
 
       with self._lock:
         assert tracename not in (i['trace'] for i in self._traces)
@@ -1734,7 +1782,39 @@ class Dtrace(ApiBase):
             'trace': tracename,
             'output': out,
           })
-      return dtrace.returncode or child.returncode, out
+      return child.returncode, out
+
+    def close(self, timeout=None):
+      """Terminates dtrace."""
+      logging.debug('close(%s)' % timeout)
+      try:
+        try:
+          super(Dtrace.Tracer, self).close(timeout)
+          # Signal dtrace that it should stop now.
+          os.ftruncate(self._dummy_file_id, 0)
+          if timeout:
+            start = time.time()
+            # Use polling. :/
+            while (self._dtrace.poll() is None and
+                   (time.time() - start) < timeout):
+              time.sleep(0.1)
+            self._dtrace.kill()
+          self._dtrace.wait()
+        finally:
+          # Make sure to kill it in any case.
+          if self._dtrace.poll() is None:
+            try:
+              self._dtrace.kill()
+              self._dtrace.wait()
+            except OSError:
+              pass
+
+        if self._dtrace.returncode != 0:
+          # Warn about any dtrace failure but basically ignore it.
+          print 'dtrace failure: %s' % self._dtrace.returncode
+      finally:
+        os.close(self._dummy_file_id)
+        os.remove(self._dummy_file_name)
 
     def post_process_log(self):
       """Sorts the log back in order when each call occured.
@@ -1773,7 +1853,7 @@ class Dtrace(ApiBase):
     data = read_json(logname)
     out = []
     for item in data['traces']:
-      context = cls.Context(blacklist)
+      context = cls.Context(blacklist, item['pid'], item['cwd'])
       for line in open(logname + '.log', 'rb'):
         context.on_line(line)
       out.append(

@@ -380,7 +380,7 @@ class TraceInputsImport(TraceInputsBase):
     self.assertEquals(files, [f.path for f in simplified])
 
   def test_trace_multiple(self):
-    if sys.platform != 'linux2':
+    if sys.platform not in ('darwin', 'linux2'):
       # TODO(maruel): Soon!
       return
     # Starts PARALLEL threads and trace PARALLEL child processes simultaneously.
