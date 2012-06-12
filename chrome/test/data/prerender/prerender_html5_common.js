@@ -77,6 +77,17 @@ if (testNetworkEvents) {
   mediaEl.addEventListener('loadstart', mediaEventHandler, false);
 }
 
+// TODO(shishir): Remove this once http://crbug.com/130788 is fixed.
+function printDebugInfo() {
+  console.log("\ncanPlaySeen: " + canPlaySeen);
+  console.log("playingSeen: " + playingSeen);
+  console.log("canPlayThroughSeen: " + canPlayThroughSeen);
+  console.log("loadStartSeen: " + loadStartSeen);
+  console.log("stalledSeen: " + stalledSeen);
+  console.log("hasError: " + hasError + "\n");
+}
+setInterval(printDebugInfo, 5000);
+
 function DidPrerenderPass() {
   // The media should not have started at this point.
   return !canPlaySeen && !playingSeen && !hasError &&
