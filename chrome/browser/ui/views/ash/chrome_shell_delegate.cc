@@ -48,6 +48,19 @@
 #include "chromeos/dbus/power_manager_client.h"
 #endif
 
+namespace {
+
+// Returns the browser that should handle accelerators.
+Browser* GetTargetBrowser() {
+  Browser* browser = browser::FindBrowserWithWindow(ash::wm::GetActiveWindow());
+  if (browser)
+    return browser;
+  return browser::FindOrCreateTabbedBrowser(
+      ProfileManager::GetDefaultProfileOrOffTheRecord());
+}
+
+}  // namespace
+
 // static
 ChromeShellDelegate* ChromeShellDelegate::instance_ = NULL;
 
@@ -119,8 +132,7 @@ void ChromeShellDelegate::Exit() {
 }
 
 void ChromeShellDelegate::NewTab() {
-  Browser* browser = browser::FindOrCreateTabbedBrowser(
-      ProfileManager::GetDefaultProfileOrOffTheRecord());
+  Browser* browser = GetTargetBrowser();
   browser->NewTab();
   browser->window()->Show();
 }
@@ -139,8 +151,7 @@ void ChromeShellDelegate::OpenFileManager() {
 
 void ChromeShellDelegate::OpenCrosh() {
 #if defined(OS_CHROMEOS)
-  Browser* browser = browser::FindOrCreateTabbedBrowser(
-      ProfileManager::GetDefaultProfileOrOffTheRecord());
+  Browser* browser = GetTargetBrowser();
   GURL crosh_url = TerminalExtensionHelper::GetCroshExtensionURL(
       browser->profile());
   if (!crosh_url.is_valid())
@@ -156,8 +167,7 @@ void ChromeShellDelegate::OpenCrosh() {
 
 void ChromeShellDelegate::OpenMobileSetup(const std::string& service_path) {
 #if defined(OS_CHROMEOS)
-  Browser* browser = browser::FindOrCreateTabbedBrowser(
-      ProfileManager::GetDefaultProfileOrOffTheRecord());
+  Browser* browser = GetTargetBrowser();
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableMobileSetupDialog)) {
     MobileSetupDialog::Show(service_path);
@@ -176,13 +186,15 @@ void ChromeShellDelegate::OpenMobileSetup(const std::string& service_path) {
 }
 
 void ChromeShellDelegate::RestoreTab() {
-  Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
+  Browser* browser = GetTargetBrowser();
+  // Do not restore tabs while in the incognito mode.
+  if (browser->profile()->IsOffTheRecord())
+    return;
   TabRestoreService* service =
-      TabRestoreServiceFactory::GetForProfile(profile);
+      TabRestoreServiceFactory::GetForProfile(browser->profile());
   if (!service)
     return;
   if (service->IsLoaded()) {
-    Browser* browser = browser::FindOrCreateTabbedBrowser(profile);
     browser->RestoreTab();
   } else {
     service->LoadTabsFromLastSession();
