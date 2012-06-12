@@ -15,6 +15,10 @@
 #include "ui/views/widget/widget.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/input_method/input_method_manager.h"
+#endif
+
 using ui::WebDialogDelegate;
 
 namespace {
@@ -36,6 +40,12 @@ void KeyboardOverlayDialogView::ShowDialog() {
   if (g_instance)
     return;
 
+#if defined(OS_CHROMEOS)
+  // Temporarily disable all accelerators for IME switching including Shift+Alt
+  // since the user might press Shift+Alt to remember an accelerator that starts
+  // with Shift+Alt (e.g. Shift+Alt+Tab for moving focus backwards).
+  chromeos::input_method::InputMethodManager::GetInstance()->DisableHotkeys();
+#endif
   KeyboardOverlayDelegate* delegate = new KeyboardOverlayDelegate(
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_TITLE));
   KeyboardOverlayDialogView* view = new KeyboardOverlayDialogView(
@@ -64,5 +74,9 @@ void KeyboardOverlayDialogView::ShowDialog() {
 }
 
 void KeyboardOverlayDialogView::WindowClosing() {
+#if defined(OS_CHROMEOS)
+  // Re-enable the IME accelerators. See the comment in ShowDialog() above.
+  chromeos::input_method::InputMethodManager::GetInstance()->EnableHotkeys();
+#endif
   g_instance = NULL;
 }
