@@ -607,11 +607,6 @@
     'all': [
       'perf',
 
-      # ==================================================
-      # Disabled tests that need to be investigated/fixed.
-      # ==================================================
-      '-perf.PageCyclerNetSimTest',  # Disable new test until vetted.
-
       # ===========================
       # Permanently-disabled tests.
       # ===========================
@@ -661,8 +656,16 @@
       '-perf.NetflixPerfTest',  # Designed only for ChromeOS.
     ],
     'chromeos': [
-      '-perf.GPUPerfTest',  # Designed only for Chrome desktop.
+      # ==================================================
+      # Disabled tests that need to be investigated/fixed.
+      # ==================================================
       '-perf.NetflixPerfTest',  # crosbug.com/p/8499.
+      '-perf.PageCyclerNetSimTest',  # Investigate Web Page Replay on ChromeOS.
+
+      # ===========================
+      # Permanently-disabled tests.
+      # ===========================
+      '-perf.GPUPerfTest',  # Designed only for Chrome desktop.
     ],
   },
 
