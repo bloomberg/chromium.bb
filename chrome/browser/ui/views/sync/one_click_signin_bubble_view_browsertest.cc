@@ -49,7 +49,8 @@ class OneClickSigninBubbleViewBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(OneClickSigninBubbleViewBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, Show) {
+// Disabled. See http://crbug.com/132348
+IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, DISABLED_Show) {
   ShowOneClickSigninBubble();
   ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_TRUE(OneClickSigninBubbleView::IsShowing());
@@ -61,7 +62,8 @@ IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, Show) {
   EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());
 }
 
-IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, OkButton) {
+// Disabled. See http://crbug.com/132348
+IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, DISABLED_OkButton) {
   OneClickSigninBubbleView* view = ShowOneClickSigninBubble();
 
   // Simulate pressing the OK button.  Set the message loop in the bubble
@@ -78,7 +80,9 @@ IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, OkButton) {
   EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());
 }
 
-IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, UndoButton) {
+// Disabled. See http://crbug.com/132348
+IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest,
+                       DISABLED_UndoButton) {
   OneClickSigninBubbleView* view = ShowOneClickSigninBubble();
 
   // Simulate pressing the undo button.  Set the message loop in the bubble
@@ -94,7 +98,9 @@ IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, UndoButton) {
   EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());
 }
 
-IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, AdvancedLink) {
+// Disabled. See http://crbug.com/132348
+IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest,
+                       DISABLED_AdvancedLink) {
   OneClickSigninBubbleView* view = ShowOneClickSigninBubble();
 
   // Simulate pressing a link in the bubble.  This should open a new tab.
@@ -108,7 +114,9 @@ IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, AdvancedLink) {
   EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());
 }
 
-IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, PressEnterKey) {
+// Disabled. See http://crbug.com/132348
+IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest,
+                       DISABLED_PressEnterKey) {
   OneClickSigninBubbleView* one_click_view = ShowOneClickSigninBubble();
 
   // Simulate pressing the Enter key.
@@ -124,7 +132,9 @@ IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, PressEnterKey) {
   EXPECT_FALSE(OneClickSigninBubbleView::IsShowing());
 }
 
-IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest, PressEscapeKey) {
+// Disabled. See http://crbug.com/132348
+IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleViewBrowserTest,
+                       DISABLED_PressEscapeKey) {
   OneClickSigninBubbleView* one_click_view = ShowOneClickSigninBubble();
 
   // Simulate pressing the Escape key.
