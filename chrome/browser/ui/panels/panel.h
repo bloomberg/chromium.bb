@@ -283,6 +283,7 @@ class Panel : public BaseWindow,
  private:
   friend class PanelManager;
   friend class PanelBrowserTest;
+  friend class OldPanelBrowserTest;
 
   enum MaxSizePolicy {
     // Default maximum size is proportional to the work area.

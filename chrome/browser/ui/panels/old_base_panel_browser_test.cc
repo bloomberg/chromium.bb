@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/panels/base_panel_browser_test.h"
+#include "chrome/browser/ui/panels/old_base_panel_browser_test.h"
 
 #include "chrome/browser/ui/browser_list.h"
 
@@ -55,7 +55,7 @@ struct MockDesktopBar {
 };
 
 class MockDisplaySettingsProviderImpl :
-    public BasePanelBrowserTest::MockDisplaySettingsProvider {
+    public OldBasePanelBrowserTest::MockDisplaySettingsProvider {
  public:
   explicit MockDisplaySettingsProviderImpl(PanelManager* panel_manager);
   virtual ~MockDisplaySettingsProviderImpl() { }
@@ -187,10 +187,10 @@ bool ExistsPanel(Panel* panel) {
 
 }  // namespace
 
-const FilePath::CharType* BasePanelBrowserTest::kTestDir =
+const FilePath::CharType* OldBasePanelBrowserTest::kTestDir =
     FILE_PATH_LITERAL("panels");
 
-BasePanelBrowserTest::BasePanelBrowserTest()
+OldBasePanelBrowserTest::OldBasePanelBrowserTest()
     : InProcessBrowserTest(),
       mock_display_settings_enabled_(true) {
 #if defined(OS_MACOSX)
@@ -198,10 +198,10 @@ BasePanelBrowserTest::BasePanelBrowserTest()
 #endif
 }
 
-BasePanelBrowserTest::~BasePanelBrowserTest() {
+OldBasePanelBrowserTest::~OldBasePanelBrowserTest() {
 }
 
-bool BasePanelBrowserTest::SkipTestIfIceWM() {
+bool OldBasePanelBrowserTest::SkipTestIfIceWM() {
 #if defined(OS_LINUX)
   return ui::GuessWindowManager() == ui::WM_ICE_WM;
 #else
@@ -209,7 +209,7 @@ bool BasePanelBrowserTest::SkipTestIfIceWM() {
 #endif
 }
 
-bool BasePanelBrowserTest::SkipTestIfCompizWM() {
+bool OldBasePanelBrowserTest::SkipTestIfCompizWM() {
 #if defined(OS_LINUX)
   return ui::GuessWindowManager() == ui::WM_COMPIZ;
 #else
@@ -217,12 +217,12 @@ bool BasePanelBrowserTest::SkipTestIfCompizWM() {
 #endif
 }
 
-void BasePanelBrowserTest::SetUpCommandLine(CommandLine* command_line) {
+void OldBasePanelBrowserTest::SetUpCommandLine(CommandLine* command_line) {
   EnableDOMAutomation();
   command_line->AppendSwitch(switches::kEnablePanels);
 }
 
-void BasePanelBrowserTest::SetUpOnMainThread() {
+void OldBasePanelBrowserTest::SetUpOnMainThread() {
   InProcessBrowserTest::SetUpOnMainThread();
 
   // Setup the work area and desktop bar so that we have consistent testing
@@ -243,7 +243,7 @@ void BasePanelBrowserTest::SetUpOnMainThread() {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 }
 
-void BasePanelBrowserTest::WaitForPanelActiveState(
+void OldBasePanelBrowserTest::WaitForPanelActiveState(
     Panel* panel, ActiveState expected_state) {
   DCHECK(expected_state == SHOW_AS_ACTIVE ||
          expected_state == SHOW_AS_INACTIVE);
@@ -257,7 +257,7 @@ void BasePanelBrowserTest::WaitForPanelActiveState(
   EXPECT_TRUE(panel->IsActive() == (expected_state == SHOW_AS_ACTIVE));
 }
 
-void BasePanelBrowserTest::WaitForWindowSizeAvailable(Panel* panel) {
+void OldBasePanelBrowserTest::WaitForWindowSizeAvailable(Panel* panel) {
   scoped_ptr<NativePanelTesting> panel_testing(
       NativePanelTesting::Create(panel->native_panel()));
   ui_test_utils::WindowedNotificationObserver signal(
@@ -269,7 +269,7 @@ void BasePanelBrowserTest::WaitForWindowSizeAvailable(Panel* panel) {
   EXPECT_TRUE(panel_testing->IsWindowSizeKnown());
 }
 
-void BasePanelBrowserTest::WaitForBoundsAnimationFinished(Panel* panel) {
+void OldBasePanelBrowserTest::WaitForBoundsAnimationFinished(Panel* panel) {
   scoped_ptr<NativePanelTesting> panel_testing(
       NativePanelTesting::Create(panel->native_panel()));
   ui_test_utils::WindowedNotificationObserver signal(
@@ -281,7 +281,7 @@ void BasePanelBrowserTest::WaitForBoundsAnimationFinished(Panel* panel) {
   EXPECT_TRUE(!panel_testing->IsAnimatingBounds());
 }
 
-void BasePanelBrowserTest::WaitForExpansionStateChanged(
+void OldBasePanelBrowserTest::WaitForExpansionStateChanged(
     Panel* panel, Panel::ExpansionState expansion_state) {
   ui_test_utils::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_PANEL_CHANGED_EXPANSION_STATE,
@@ -292,7 +292,7 @@ void BasePanelBrowserTest::WaitForExpansionStateChanged(
   EXPECT_EQ(expansion_state, panel->expansion_state());
 }
 
-Panel* BasePanelBrowserTest::CreatePanelWithParams(
+Panel* OldBasePanelBrowserTest::CreatePanelWithParams(
     const CreatePanelParams& params) {
 #if defined(OS_MACOSX)
   // Opening panels on a Mac causes NSWindowController of the Panel window
@@ -330,20 +330,6 @@ Panel* BasePanelBrowserTest::CreatePanelWithParams(
     EXPECT_TRUE(panel->auto_resizable());
   }
 
-#if defined(OS_LINUX)
-  // On bots, we might have a simple window manager which always activates new
-  // windows, and can't always deactivate them. Keep track of the previously
-  // active window so we can activate that window back to ensure the new window
-  // is inactive.
-  Browser* last_active_browser_to_restore = NULL;
-  if (params.expected_active_state == SHOW_AS_INACTIVE &&
-      ui::GuessWindowManager() == ui::WM_ICE_WM) {
-    last_active_browser_to_restore = BrowserList::GetLastActive();
-    EXPECT_TRUE(last_active_browser_to_restore);
-    EXPECT_NE(last_active_browser_to_restore, panel_browser);
-  }
-#endif
-
   if (params.show_flag == SHOW_AS_ACTIVE) {
     panel->Show();
   } else {
@@ -354,9 +340,13 @@ Panel* BasePanelBrowserTest::CreatePanelWithParams(
     MessageLoopForUI::current()->RunAllPending();
 
 #if defined(OS_LINUX)
-    // Restore focus where it was. It will deactivate the new panel.
-    if (last_active_browser_to_restore)
-      last_active_browser_to_restore->window()->Activate();
+    // On bots, we might have a simple window manager which always activates new
+    // windows, and can't always deactivate them. Re-activate the main tabbed
+    // browser to "deactivate" the newly created panel.
+    if (params.expected_active_state == SHOW_AS_INACTIVE &&
+        ui::GuessWindowManager() == ui::WM_ICE_WM) {
+      browser()->window()->Activate();
+    }
 #endif
     // More waiting, because gaining or losing focus may require inter-process
     // asynchronous communication, and it is not enough to just run the local
@@ -374,25 +364,25 @@ Panel* BasePanelBrowserTest::CreatePanelWithParams(
   return panel;
 }
 
-Panel* BasePanelBrowserTest::CreatePanelWithBounds(
+Panel* OldBasePanelBrowserTest::CreatePanelWithBounds(
     const std::string& panel_name, const gfx::Rect& bounds) {
   CreatePanelParams params(panel_name, bounds, SHOW_AS_ACTIVE);
   return CreatePanelWithParams(params);
 }
 
-Panel* BasePanelBrowserTest::CreatePanel(const std::string& panel_name) {
+Panel* OldBasePanelBrowserTest::CreatePanel(const std::string& panel_name) {
   CreatePanelParams params(panel_name, gfx::Rect(), SHOW_AS_ACTIVE);
   return CreatePanelWithParams(params);
 }
 
-Panel* BasePanelBrowserTest::CreateDockedPanel(const std::string& name,
+Panel* OldBasePanelBrowserTest::CreateDockedPanel(const std::string& name,
                                                const gfx::Rect& bounds) {
   Panel* panel = CreatePanelWithBounds(name, bounds);
   EXPECT_EQ(PanelStrip::DOCKED, panel->panel_strip()->type());
   return panel;
 }
 
-Panel* BasePanelBrowserTest::CreateDetachedPanel(const std::string& name,
+Panel* OldBasePanelBrowserTest::CreateDetachedPanel(const std::string& name,
                                                  const gfx::Rect& bounds) {
   Panel* panel = CreatePanelWithBounds(name, bounds);
   panel->manager()->MovePanelToStrip(panel,
@@ -407,14 +397,14 @@ Panel* BasePanelBrowserTest::CreateDetachedPanel(const std::string& name,
   return panel;
 }
 
-void BasePanelBrowserTest::CreateTestTabContents(Browser* browser) {
+void OldBasePanelBrowserTest::CreateTestTabContents(Browser* browser) {
   TabContentsWrapper* tab_contents =
       new TabContentsWrapper(
           WebContentsTester::CreateTestWebContents(browser->profile(), NULL));
   browser->AddTab(tab_contents, content::PAGE_TRANSITION_LINK);
 }
 
-scoped_refptr<Extension> BasePanelBrowserTest::CreateExtension(
+scoped_refptr<Extension> OldBasePanelBrowserTest::CreateExtension(
     const FilePath::StringType& path,
     Extension::Location location,
     const DictionaryValue& extra_value) {
@@ -439,15 +429,16 @@ scoped_refptr<Extension> BasePanelBrowserTest::CreateExtension(
   return extension;
 }
 
-void BasePanelBrowserTest::SetTestingAreas(const gfx::Rect& primary_screen_area,
-                                           const gfx::Rect& work_area) {
+void OldBasePanelBrowserTest::SetTestingAreas(
+    const gfx::Rect& primary_screen_area,
+    const gfx::Rect& work_area) {
   DCHECK(primary_screen_area.Contains(work_area));
   mock_display_settings_provider_->SetPrimaryScreenArea(primary_screen_area);
   mock_display_settings_provider_->SetWorkArea(
       work_area.IsEmpty() ? primary_screen_area : work_area);
 }
 
-void BasePanelBrowserTest::CloseWindowAndWait(Panel* panel) {
+void OldBasePanelBrowserTest::CloseWindowAndWait(Panel* panel) {
   // Closing a panel may involve several async tasks. Need to use
   // message pump and wait for the notification.
   PanelManager* manager = PanelManager::GetInstance();
@@ -472,7 +463,7 @@ void BasePanelBrowserTest::CloseWindowAndWait(Panel* panel) {
 #endif  // OS_MACOSX
 }
 
-void BasePanelBrowserTest::MoveMouseAndWaitForExpansionStateChange(
+void OldBasePanelBrowserTest::MoveMouseAndWaitForExpansionStateChange(
     Panel* panel,
     const gfx::Point& position) {
   ui_test_utils::WindowedNotificationObserver signal(
@@ -482,11 +473,11 @@ void BasePanelBrowserTest::MoveMouseAndWaitForExpansionStateChange(
   signal.Wait();
 }
 
-void BasePanelBrowserTest::MoveMouse(const gfx::Point& position) {
+void OldBasePanelBrowserTest::MoveMouse(const gfx::Point& position) {
   PanelManager::GetInstance()->mouse_watcher()->NotifyMouseMovement(position);
 }
 
-std::string BasePanelBrowserTest::MakePanelName(int index) {
+std::string OldBasePanelBrowserTest::MakePanelName(int index) {
   std::string panel_name("Panel");
   return panel_name + base::IntToString(index);
 }

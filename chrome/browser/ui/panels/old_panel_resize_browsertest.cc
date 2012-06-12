@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/panels/base_panel_browser_test.h"
+#include "chrome/browser/ui/panels/old_base_panel_browser_test.h"
 #include "chrome/browser/ui/panels/detached_panel_strip.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_resize_controller.h"
 
-class PanelResizeBrowserTest : public BasePanelBrowserTest {
+class OldPanelResizeBrowserTest : public OldBasePanelBrowserTest {
  public:
-  PanelResizeBrowserTest() : BasePanelBrowserTest() {
+  OldPanelResizeBrowserTest() : OldBasePanelBrowserTest() {
   }
 
-  virtual ~PanelResizeBrowserTest() {
+  virtual ~OldPanelResizeBrowserTest() {
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    BasePanelBrowserTest::SetUpOnMainThread();
+    OldBasePanelBrowserTest::SetUpOnMainThread();
 
     // All the tests here assume using mocked 800x600 screen area for the
     // primary monitor. Do the check now.
@@ -28,7 +28,7 @@ class PanelResizeBrowserTest : public BasePanelBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, DockedPanelResizability) {
+IN_PROC_BROWSER_TEST_F(OldPanelResizeBrowserTest, DockedPanelResizability) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   Panel* panel = CreatePanel("Panel");
 
@@ -147,7 +147,7 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, DockedPanelResizability) {
   panel->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, ResizeDetachedPanel) {
+IN_PROC_BROWSER_TEST_F(OldPanelResizeBrowserTest, ResizeDetachedPanel) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   Panel* panel = CreateDetachedPanel("Panel", gfx::Rect(300, 200, 150, 100));
 
@@ -214,7 +214,8 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, ResizeDetachedPanel) {
   PanelManager::GetInstance()->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, ResizeDetachedPanelToClampSize) {
+IN_PROC_BROWSER_TEST_F(OldPanelResizeBrowserTest,
+                       ResizeDetachedPanelToClampSize) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   Panel* panel = CreateDetachedPanel("Panel", gfx::Rect(300, 200, 150, 100));
 
@@ -259,7 +260,8 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, ResizeDetachedPanelToClampSize) {
   PanelManager::GetInstance()->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, CloseDetachedPanelOnResize) {
+IN_PROC_BROWSER_TEST_F(OldPanelResizeBrowserTest,
+                       CloseDetachedPanelOnResize) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   PanelResizeController* resize_controller = panel_manager->resize_controller();
   DetachedPanelStrip* detached_strip = panel_manager->detached_strip();
@@ -321,7 +323,7 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, CloseDetachedPanelOnResize) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, ResizeAndCancel) {
+IN_PROC_BROWSER_TEST_F(OldPanelResizeBrowserTest, ResizeAndCancel) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   Panel* panel = CreateDetachedPanel("Panel", gfx::Rect(300, 200, 150, 100));
   PanelResizeController* resize_controller = panel_manager->resize_controller();
@@ -367,7 +369,7 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, ResizeAndCancel) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, ResizeDetachedPanelToTop) {
+IN_PROC_BROWSER_TEST_F(OldPanelResizeBrowserTest, ResizeDetachedPanelToTop) {
   // Setup the test areas to have top-aligned bar excluded from work area.
   const gfx::Rect primary_scren_area(0, 0, 800, 600);
   const gfx::Rect work_area(0, 10, 800, 590);
