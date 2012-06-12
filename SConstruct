@@ -733,15 +733,16 @@ tests_to_disable_qemu = set([
     # TODO(dschuff) some of these tests appear to work with the new QMEU.
     # find out which
     # http://code.google.com/p/nativeclient/issues/detail?id=2437
-    'run_atomic_ops_test',
+    # Note, for now these tests disable both the irt and non-irt variants
+    'run_atomic_ops_test',    # still broken with qemu 2012/06/12
     'run_atomic_ops_nexe_test',
     # The debug stub test is not set up to insert QEMU at the right
     # point, and service_runtime's thread suspension does not work
     # under QEMU.
     'run_debug_stub_test',
-    'run_egyptian_cotton_test',
+    'run_egyptian_cotton_test',  # still broken with qemu 2012/06/12
     'run_many_threads_sequential_test',
-    'run_mmap_atomicity_test',
+    'run_mmap_atomicity_test',   # still broken with qemu 2012/06/12
     # http://code.google.com/p/nativeclient/issues/detail?id=2142
     'run_nacl_semaphore_test',
     'run_nacl_tls_unittest',
@@ -759,6 +760,9 @@ if ARGUMENTS.get('disable_tests', '') != '':
 
 
 def ShouldSkipTest(env, node_name):
+  if node_name is None:
+    return True
+
   if env.Bit('skip_trusted_tests') and env['NACL_BUILD_FAMILY'] == 'TRUSTED':
     return True
 
@@ -779,8 +783,12 @@ def ShouldSkipTest(env, node_name):
   if node_name in tests_to_disable:
     return True
 
-  if env.UsingEmulator() and node_name in tests_to_disable_qemu:
-    return True
+  if env.UsingEmulator():
+    if node_name in tests_to_disable_qemu:
+      return True
+    # For now also disable the irt variant
+    if node_name.endswith('_irt') and node_name[:-4] in tests_to_disable_qemu:
+      return True
 
   # Retrieve list of tests to skip on this platform
   skiplist = bad_build_lists.get(GetPlatformString(env), [])
@@ -3350,6 +3358,7 @@ irt_only_tests = [
     #### ALPHABETICALLY SORTED ####
     'tests/irt/nacl.scons',
     'tests/random/nacl.scons',
+    'tests/translator_size_limits/nacl.scons',
     ]
 
 # These are tests that are worthwhile to run in both IRT and non-IRT variants.
@@ -3462,7 +3471,6 @@ nonvariant_tests = ExtendFileList([
     'tests/pyauto_nacl/nacl.scons',
     'tests/signal_handler_single_step/nacl.scons',
     'tests/thread_suspension/nacl.scons',
-    'tests/translator_size_limits/nacl.scons',
     'tests/trusted_crash/crash_in_syscall/nacl.scons',
     'tests/trusted_crash/osx_crash_filter/nacl.scons',
     'tests/trusted_crash/osx_crash_forwarding/nacl.scons',
@@ -3555,8 +3563,10 @@ nacl_irt_env.ClearBits('pnacl_shared_newlib')
 if nacl_irt_env.Bit('target_x86_64') or nacl_irt_env.Bit('target_x86_32'):
   nacl_irt_env.ClearBits('bitcode')
   nacl_irt_env.SetBits('native_code')
-# The irt is not subject to the pexe contraint!
-nacl_irt_env.ClearBits('pnacl_generate_pexe')
+# The irt is not subject to the pexe constraint!
+if nacl_irt_env.Bit('pnacl_generate_pexe'):
+  # do not build the irt using the the pexe step
+  nacl_irt_env.ClearBits('pnacl_generate_pexe')
 # do not build the irt using the sandboxed translator
 nacl_irt_env.ClearBits('use_sandboxed_translator')
 nacl_irt_env.Tool('naclsdk')
@@ -3661,7 +3671,13 @@ def AddImplicitLibs(env):
   # Require the pnacl_irt_shim for pnacl x86-64.
   # Use -B to have the compiler look for the fresh libpnacl_irt_shim.a.
   if env.Bit('bitcode') and env.Bit('target_x86_64'):
-    implicit_libs += ['libpnacl_irt_shim.a']
+    # Note: without this hack ibpnacl_irt_shim.a will be deleted
+    #       when "built_elsewhere=1"
+    #       Since we force the build in a previous step the dependency
+    #       is not really needed.
+    #       Note: the "precious" mechanism did not work in this case
+    if not env.Bit('built_elsewhere'):
+      implicit_libs += ['libpnacl_irt_shim.a']
 
   if not env.Bit('nacl_glibc'):
     # These are automatically linked in by the compiler, either directly

@@ -127,6 +127,10 @@ sloppy_env.AddNodeToTestSuite(node,
 # NOTE: we assume that the incoming env contains '-O2', '-fomit-frame-pointer'
 def MakeEnv(use_opts, use_frames):
   new_env = env.Clone()
+  # NOTE: this effectively introduces a light-weight version of AddBiasForPNaCl.
+  #       To be systematic we should not do this but it is only used
+  #       for stack_frame.cc and eh_return.c and other solutions
+  #       aren't pretty either.
   new_env.Append(CPPDEFINES=['TARGET_FULLARCH=${TARGET_FULLARCH}'])
   new_env.FilterOut(CFLAGS=['-pedantic'])
   new_env.FilterOut(CCFLAGS=['-pedantic'])
@@ -161,16 +165,23 @@ for tag, e in ENVIRONMENTS_TO_TRY:
               'eh_catch_many.cc',
               'eh_loop_break.cc',
               ]:
-    is_broken = False
-    if not env.Bit('bitcode') and src in ['stack_frame.cc']:
-      # This tests makes pnacl specific assumptions which
-      # may not hold for the nacl-gcc TC
-      is_broken = True
 
     if not env.Bit('bitcode') and src in ['eh_return.c']:
       # for some reason gcc does not allow us to use
       #  __builtin_eh_return
       continue
+
+    is_broken = False
+    if (env.Bit('bitcode') and
+        env.Bit('pnacl_generate_pexe') and
+        src in ['stack_frame.cc', 'eh_return.c']):
+      # stack_frame.cc and eh_return.c have bias see above
+      is_broken = True
+
+    if not env.Bit('bitcode') and src in ['stack_frame.cc']:
+      # This test makes pnacl specific assumptions which
+      # may not hold for the nacl-gcc TC
+      is_broken = True
 
     # BUG=http://code.google.com/p/nativeclient/issues/detail?id=2665
     # CFA is not always 0 mod 8 for x86-32 with glibc (could be 4):
