@@ -951,10 +951,16 @@ env.AddNodeToTestSuite(node, ['small_tests'],
 exe = env.ComponentProgram('nacl_error_log_test',
                             ['nacl_error_log_test.c'],
                             EXTRA_LIBS=sel_ldr_libs)
+
+if env.Bit('coverage_enabled'):
+  expected_exit = 'naclabort_coverage'
+else:
+  expected_exit = 'sigabrt'
+
 node = env.CommandTest(
   'nacl_error_log_test.out',
   command=[exe],
-  exit_status='sigabrt',
+  exit_status=expected_exit,
   filter_regex='"(NaClCrashLogWriter.*)|(This is a test of the emergency.*)"',
   filter_group_only='true',
   stdout_golden=env.File('nacl_error_log_test.stdout'))
