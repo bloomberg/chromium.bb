@@ -486,8 +486,7 @@ TEST_F(AcceleratorControllerTest, ProcessOnce) {
 }
 #endif
 
-// Disabled due to a real bug, see http://crbug.com/127538.
-TEST_F(AcceleratorControllerTest, DISABLED_GlobalAccelerators) {
+TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   // CycleBackward
   EXPECT_TRUE(GetController()->Process(
       ui::Accelerator(ui::VKEY_F5, ui::EF_CONTROL_DOWN)));
@@ -529,10 +528,10 @@ TEST_F(AcceleratorControllerTest, DISABLED_GlobalAccelerators) {
   {
     EXPECT_FALSE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
     EXPECT_TRUE(GetController()->Process(
-        ui::Accelerator(ui::VKEY_LWIN, ui::EF_CONTROL_DOWN)));
+        ui::Accelerator(ui::VKEY_LWIN, ui::EF_NONE)));
     EXPECT_TRUE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
     EXPECT_TRUE(GetController()->Process(
-        ui::Accelerator(ui::VKEY_LWIN, ui::EF_CONTROL_DOWN)));
+        ui::Accelerator(ui::VKEY_LWIN, ui::EF_NONE)));
     EXPECT_FALSE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
   }
   // ToggleCapsLock
@@ -722,7 +721,7 @@ TEST_F(AcceleratorControllerTest, DISABLED_GlobalAccelerators) {
 
   // New tab
   EXPECT_TRUE(GetController()->Process(
-      ui::Accelerator(ui::VKEY_T, ui::EF_SHIFT_DOWN)));
+      ui::Accelerator(ui::VKEY_T, ui::EF_CONTROL_DOWN)));
 
   // New incognito window
   EXPECT_TRUE(GetController()->Process(
@@ -732,11 +731,6 @@ TEST_F(AcceleratorControllerTest, DISABLED_GlobalAccelerators) {
   EXPECT_TRUE(GetController()->Process(
       ui::Accelerator(ui::VKEY_N, ui::EF_CONTROL_DOWN)));
 
-#if defined(OS_CHROMEOS)
-  EXPECT_TRUE(GetController()->Process(
-      ui::Accelerator(ui::VKEY_L, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)));
-#endif
-
   // Restore tab
   EXPECT_TRUE(GetController()->Process(
       ui::Accelerator(ui::VKEY_T, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)));
@@ -744,6 +738,15 @@ TEST_F(AcceleratorControllerTest, DISABLED_GlobalAccelerators) {
   // Show task manager
   EXPECT_TRUE(GetController()->Process(
       ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN)));
+
+#if defined(OS_CHROMEOS)
+  // Lock screen
+  // NOTE: Accelerators that do not work on the lock screen need to be
+  // tested before the sequence below is invoked because it causes a side
+  // effect of locking the screen.
+  EXPECT_TRUE(GetController()->Process(
+      ui::Accelerator(ui::VKEY_L, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)));
+#endif
 }
 
 TEST_F(AcceleratorControllerTest, ImeGlobalAccelerators) {
