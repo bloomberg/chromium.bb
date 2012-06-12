@@ -7,6 +7,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"
+#include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -71,6 +72,8 @@ bool SpellingServiceClient::RequestTextCheck(
     uloc_getLanguage(id, language, arraysize(language), &error);
     country = uloc_getISO3Country(id);
   }
+  if (type == SPELLCHECK && base::strcasecmp(language, ULOC_ENGLISH))
+    return false;
 
   // Format the JSON request to be sent to the Spelling service.
   std::string encoded_text;

@@ -58,6 +58,7 @@ class TestingSpellCheckProvider : public SpellCheckProvider {
     text_check_completions_.Remove(identifier);
     completion->didFinishCheckingText(
         std::vector<WebKit::WebTextCheckingResult>());
+    last_request_ = text;
   }
 
   void ResetResult() {
@@ -151,13 +152,13 @@ TEST_F(SpellCheckProviderTest, MultiLineText) {
   EXPECT_EQ(0, provider_.offset_);
   EXPECT_EQ(ASCIIToUTF16("First Second\n"), provider_.text_);
 
-  // Verify that the SpellCheckProvider class spellcheck the second line when we
+  // Verify that the SpellCheckProvider class spellcheck the lines when we
   // finish typing a word "Third" to the second line.
   provider_.ResetResult();
   provider_.RequestTextChecking(WebKit::WebString("First Second\nThird "), 0,
                                 &completion);
-  EXPECT_EQ(13, provider_.offset_);
-  EXPECT_EQ(ASCIIToUTF16("Third "), provider_.text_);
+  EXPECT_EQ(0, provider_.offset_);
+  EXPECT_EQ(ASCIIToUTF16("First Second\nThird "), provider_.text_);
 
   // Verify that the SpellCheckProvider class does not send a spellcheck request
   // when a user inserts whitespace characters.
@@ -167,13 +168,13 @@ TEST_F(SpellCheckProviderTest, MultiLineText) {
   EXPECT_EQ(-1, provider_.offset_);
   EXPECT_TRUE(provider_.text_.empty());
 
-  // Verify that the SpellCheckProvider class spellcheck the second line when we
-  // type a period.
+  // Verify that the SpellCheckProvider class spellcheck the lines when we type
+  // a period.
   provider_.ResetResult();
   provider_.RequestTextChecking(
       WebKit::WebString("First Second\nThird   Fourth."), 0, &completion);
-  EXPECT_EQ(13, provider_.offset_);
-  EXPECT_EQ(ASCIIToUTF16("Third   Fourth."), provider_.text_);
+  EXPECT_EQ(0, provider_.offset_);
+  EXPECT_EQ(ASCIIToUTF16("First Second\nThird   Fourth."), provider_.text_);
 }
 
 // Tests that the SpellCheckProvider class cancels incoming spellcheck requests

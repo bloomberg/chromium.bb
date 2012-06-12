@@ -85,14 +85,9 @@ class SpellCheckProvider : public content::RenderViewObserver,
       const string16& text,
       const std::vector<SpellCheckResult>& results);
 
-  // Returns whether |text| has word characters after |index|, i.e. whether a
-  // spellchecker needs to check this text.
-  bool HasWordCharacters(const string16& text, int index) const;
-
-  // Returns a line that should be sent to a browser to spellcheck it.
-  bool GetRequestLine(const string16& text,
-                      string16* request,
-                      int* offset) const;
+  // Returns whether |text| has word characters, i.e. whether a spellchecker
+  // needs to check this text.
+  bool HasWordCharacters(const WebKit::WebString& text, int index) const;
 #endif
 #if defined(OS_MACOSX)
   void OnAdvanceToNextMisspelling();
@@ -111,8 +106,10 @@ class SpellCheckProvider : public content::RenderViewObserver,
   WebTextCheckCompletions text_check_completions_;
 
 #if !defined(OS_MACOSX)
-  // The last line sent to the browser process to spellcheck it.
-  string16 last_line_;
+  // The last text sent to the browser process to spellcheck it and its
+  // spellchecking results.
+  string16 last_request_;
+  WebKit::WebVector<WebKit::WebTextCheckingResult> last_results_;
 #endif
 
 #if defined(OS_MACOSX)

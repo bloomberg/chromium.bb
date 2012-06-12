@@ -103,22 +103,63 @@ void SpellCheckProvider::RequestTextChecking(
       document_tag,
       text));
 #else
-  // Send this text to a browser. A browser checks the user profile and send
-  // this text to the Spelling service only if a user enables this feature.
-  // TODO(hbono) Implement a cache to avoid sending IPC messages.
-  string16 line;
-  int offset = -1;
-  if (!GetRequestLine(text, &line, &offset)) {
+  if (text.isEmpty() || !HasWordCharacters(text, 0)) {
     completion->didCancelCheckingText();
     return;
   }
-
-  last_line_ = line;
+  // Cancel this spellcheck request if the cached text is a substring of the
+  // given text and the given text is the middle of a possible word.
+  // TODO(hbono): Move this cache code to a new function and add its unit test.
+  string16 request(text);
+  size_t text_length = request.length();
+  size_t last_length = last_request_.length();
+  if (text_length >= last_length &&
+      !request.compare(0, last_length, last_request_)) {
+    if (text_length == last_length || !HasWordCharacters(text, last_length)) {
+      completion->didCancelCheckingText();
+      return;
+    }
+    int code = 0;
+    int length = static_cast<int>(text_length);
+    U16_PREV(text.data(), 0, length, code);
+    UErrorCode error = U_ZERO_ERROR;
+    if (uscript_getScript(code, &error) != USCRIPT_COMMON) {
+      completion->didCancelCheckingText();
+      return;
+    }
+  }
+  // Create a subset of the cached results and return it if the given text is a
+  // substring of the cached text.
+  if (text_length < last_length &&
+      !last_request_.compare(0, text_length, request)) {
+    size_t result_size = 0;
+    for (size_t i = 0; i < last_results_.size(); ++i) {
+      size_t start = last_results_[i].location;
+      size_t end = start + last_results_[i].length;
+      if (start <= text_length && end <= text_length)
+        ++result_size;
+    }
+    if (result_size > 0) {
+      WebKit::WebVector<WebKit::WebTextCheckingResult> results(result_size);
+      for (size_t i = 0; i < result_size; ++i) {
+        results[i].type = last_results_[i].type;
+        results[i].location = last_results_[i].location;
+        results[i].length = last_results_[i].length;
+        results[i].replacement = last_results_[i].replacement;
+      }
+      completion->didFinishCheckingText(results);
+      return;
+    }
+  }
+  // Send this text to a browser. A browser checks the user profile and send
+  // this text to the Spelling service only if a user enables this feature.
+  last_request_.clear();
+  last_results_.assign(WebKit::WebVector<WebKit::WebTextCheckingResult>());
   Send(new SpellCheckHostMsg_CallSpellingService(
       routing_id(),
       text_check_completions_.Add(completion),
-      offset,
-      line));
+      0,
+      request));
 #endif  // !OS_MACOSX
 }
 
@@ -278,58 +319,25 @@ void SpellCheckProvider::OnRespondSpellingService(
     CreateTextCheckingResults(offset, results, &textcheck_results);
   }
   completion->didFinishCheckingText(textcheck_results);
+
+  // Cache the request and the converted results.
+  last_request_ = line;
+  last_results_.swap(textcheck_results);
 }
 
-bool SpellCheckProvider::HasWordCharacters(const string16& text,
-                                           int index) const {
-  const char16* data = text.c_str();
+bool SpellCheckProvider::HasWordCharacters(
+    const WebKit::WebString& text,
+    int index) const {
+  const char16* data = text.data();
   int length = text.length();
   while (index < length) {
     uint32 code = 0;
     U16_NEXT(data, index, length, code);
-    UErrorCode err = U_ZERO_ERROR;
-    if (uscript_getScript(code, &err) == USCRIPT_LATIN)
+    UErrorCode error = U_ZERO_ERROR;
+    if (uscript_getScript(code, &error) == USCRIPT_LATIN)
       return true;
   }
   return false;
-}
-
-bool SpellCheckProvider::GetRequestLine(const string16& text,
-                                        string16* line,
-                                        int* offset) const {
-  // WebKit sends the line being edited by a user to this class. (It also sends
-  // the previous line when the user is typing its first word.) We send the line
-  // being edited by a user when the input text satisfies all conditions listed
-  // below.
-  // * There is a non-word character at the end of of the input line so this
-  //   class can send a request only when a user finishes typing a word.
-  // * There are word characters in the input line.
-  // * There are word characters in the difference between the input line and
-  //   the previously-spellchecked line.
-  if (text.empty())
-    return false;
-  UErrorCode err = U_ZERO_ERROR;
-  if (uscript_getScript(*(text.rbegin()), &err) != USCRIPT_COMMON)
-    return false;
-  size_t input_offset = text.find('\n');
-  string16 input_line;
-  if (input_offset != string16::npos && HasWordCharacters(text, input_offset)) {
-    ++input_offset;
-    *offset = static_cast<int>(input_offset);
-    input_line = text.substr(input_offset);
-  } else {
-    if (!HasWordCharacters(text, 0))
-      return false;
-    *offset = 0;
-    input_line = text;
-  }
-  size_t length = last_line_.length();
-  if (length > 0 && !input_line.compare(0, length, last_line_)) {
-    if (!HasWordCharacters(input_line, static_cast<int>(length)))
-      return false;
-  }
-  line->assign(input_line);
-  return true;
 }
 #endif
 
