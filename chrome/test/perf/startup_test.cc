@@ -376,13 +376,14 @@ TEST_F(StartupTest, PerfRestoreFewTabsReference) {
 #elif defined(OS_WIN)
 // http://crbug.com/46609
 #if !defined(NDEBUG)
+// This test is disabled on Windows Debug. See bug http://crbug.com/132279
+#define MAYBE_PerfRestoreSeveralTabs DISABLED_PerfRestoreSeveralTabs
+#else
+#define MAYBE_PerfRestoreSeveralTabs PerfRestoreSeveralTabs
+#endif  // !defined(NDEBUG)
 // http://crbug.com/102584
 #define MAYBE_PerfSeveralTabs DISABLED_PerfSeveralTabs
-#else
-#define MAYBE_PerfSeveralTabs DISABLED_PerfSeveralTabs
-#endif
 #define MAYBE_PerfSeveralTabsReference PerfSeveralTabsReference
-#define MAYBE_PerfRestoreSeveralTabs PerfRestoreSeveralTabs
 #define MAYBE_PerfExtensionContentScript50 PerfExtensionContentScript50
 #else
 #define MAYBE_PerfSeveralTabsReference PerfSeveralTabsReference
