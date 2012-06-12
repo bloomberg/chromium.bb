@@ -52,7 +52,8 @@ class SMSClientImpl : public SMSClient {
   void OnGetAll(const GetAllCallback& callback, dbus::Response* response) {
     if (!response) {
       // Must invoke the callback, even if there is no message.
-      callback.Run(base::DictionaryValue());
+      base::DictionaryValue empty_dictionary;
+      callback.Run(empty_dictionary);
       return;
     }
     dbus::MessageReader reader(response);
@@ -60,7 +61,8 @@ class SMSClientImpl : public SMSClient {
     base::DictionaryValue* dictionary_value = NULL;
     if (!value.get() || !value->GetAsDictionary(&dictionary_value)) {
       LOG(WARNING) << "Invalid response: " << response->ToString();
-      callback.Run(base::DictionaryValue());
+      base::DictionaryValue empty_dictionary;
+      callback.Run(empty_dictionary);
       return;
     }
     callback.Run(*dictionary_value);
