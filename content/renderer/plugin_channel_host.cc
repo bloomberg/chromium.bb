@@ -36,6 +36,9 @@ namespace {
 // Breakpad key for the RemoveRoute() backtrace.
 const char* kRemoveRouteTraceKey = "remove_route_bt";
 
+// Breakpad key for the OnChannelError() backtrace.
+const char* kChannelErrorTraceKey = "channel_error_bt";
+
 // GetRemoveTrackingFlag() exposes this so that
 // WebPluginDelegateProxy::Initialize() can do scoped set/reset.  When
 // true, RemoveRoute() knows WBDP::Initialize() is on the stack, and
@@ -202,6 +205,16 @@ bool PluginChannelHost::Send(IPC::Message* msg) {
 }
 
 void PluginChannelHost::OnChannelError() {
+#if defined(OS_MACOSX)
+  if (remove_tracking) {
+    base::debug::StackTrace trace;
+    size_t count = 0;
+    const void* const* addresses = trace.Addresses(&count);
+    base::mac::SetCrashKeyFromAddresses(
+        base::SysUTF8ToNSString(kChannelErrorTraceKey), addresses, count);
+  }
+#endif
+
   NPChannelBase::OnChannelError();
 
   for (ProxyMap::iterator iter = proxies_.begin();
