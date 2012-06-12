@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,7 +44,7 @@ class VIEWS_EXPORT MenuModelAdapter : public MenuDelegate {
   virtual void ExecuteCommand(int id) OVERRIDE;
   virtual void ExecuteCommand(int id, int mouse_event_flags) OVERRIDE;
   virtual bool IsTriggerableEvent(MenuItemView* source,
-                                  const MouseEvent& e) OVERRIDE;
+                                  const Event& e) OVERRIDE;
   virtual bool GetAccelerator(int id,
                               ui::Accelerator* accelerator) OVERRIDE;
   virtual string16 GetLabel(int id) const OVERRIDE;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -93,7 +93,7 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
   // MenuDelegate like methods (see class description for details).
   string16 GetTooltipText(int id, const gfx::Point& p) const;
   bool IsTriggerableEvent(views::MenuItemView* menu,
-                          const views::MouseEvent& e);
+                          const views::Event& e);
   void ExecuteCommand(int id, int mouse_event_flags);
   bool GetDropFormats(
       views::MenuItemView* menu,

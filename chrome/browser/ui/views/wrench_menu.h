@@ -42,7 +42,7 @@ class WrenchMenu : public views::MenuDelegate,
   // MenuDelegate overrides:
   virtual string16 GetTooltipText(int id, const gfx::Point& p) const OVERRIDE;
   virtual bool IsTriggerableEvent(views::MenuItemView* menu,
-                                  const views::MouseEvent& e) OVERRIDE;
+                                  const views::Event& e) OVERRIDE;
   virtual bool GetDropFormats(
       views::MenuItemView* menu,
       int* formats,

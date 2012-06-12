@@ -7,14 +7,14 @@
 #pragma once
 
 namespace views {
-class MouseEvent;
+class Event;
 }
 
 namespace event_utils {
 
-// Returns true if the specified mouse event may have a
+// Returns true if the specified event may have a
 // WindowOptionDisposition.
-bool IsPossibleDispositionEvent(const views::MouseEvent& event);
+bool IsPossibleDispositionEvent(const views::Event& event);
 
 }  // namespace event_utils
 

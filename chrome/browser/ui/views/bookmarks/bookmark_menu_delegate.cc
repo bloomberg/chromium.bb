@@ -112,7 +112,7 @@ string16 BookmarkMenuDelegate::GetTooltipText(
 }
 
 bool BookmarkMenuDelegate::IsTriggerableEvent(views::MenuItemView* menu,
-                                              const views::MouseEvent& e) {
+                                              const views::Event& e) {
   return event_utils::IsPossibleDispositionEvent(e);
 }
 

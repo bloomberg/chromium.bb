@@ -197,7 +197,7 @@ ui::GestureStatus CustomButton::OnGestureEvent(const GestureEvent& event) {
   if (state_ == BS_DISABLED)
     return ui::GESTURE_STATUS_UNKNOWN;
 
-  if (event.type() == ui::ET_GESTURE_TAP) {
+  if (event.type() == ui::ET_GESTURE_TAP && IsTriggerableEvent(event)) {
     // Set the button state to hot and start the animation fully faded in. The
     // TAP_UP event issued immediately after will set the state to BS_NORMAL
     // beginning the fade out animation. See http://crbug.com/131184.
@@ -205,7 +205,8 @@ ui::GestureStatus CustomButton::OnGestureEvent(const GestureEvent& event) {
     hover_animation_->Reset(1.0);
     NotifyClick(event);
     return ui::GESTURE_STATUS_CONSUMED;
-  } else if (event.type() == ui::ET_GESTURE_TAP_DOWN) {
+  } else if (event.type() == ui::ET_GESTURE_TAP_DOWN &&
+             ShouldEnterPushedState(event)) {
     SetState(BS_PUSHED);
     if (request_focus_on_press_)
       RequestFocus();
@@ -282,11 +283,14 @@ CustomButton::CustomButton(ButtonListener* listener)
 void CustomButton::StateChanged() {
 }
 
-bool CustomButton::IsTriggerableEvent(const MouseEvent& event) {
-  return (triggerable_event_flags_ & event.flags()) != 0;
+bool CustomButton::IsTriggerableEvent(const Event& event) {
+  return event.type() == ui::ET_GESTURE_TAP_DOWN ||
+         event.type() == ui::ET_GESTURE_TAP ||
+         (event.IsMouseEvent() &&
+             (triggerable_event_flags_ & event.flags()) != 0);
 }
 
-bool CustomButton::ShouldEnterPushedState(const MouseEvent& event) {
+bool CustomButton::ShouldEnterPushedState(const Event& event) {
   return IsTriggerableEvent(event);
 }
 

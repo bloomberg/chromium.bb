@@ -669,7 +669,7 @@ string16 WrenchMenu::GetTooltipText(int id,
 }
 
 bool WrenchMenu::IsTriggerableEvent(views::MenuItemView* menu,
-                                    const views::MouseEvent& e) {
+                                    const views::Event& e) {
   return is_bookmark_command(menu->GetCommand()) ?
       bookmark_menu_delegate_->IsTriggerableEvent(menu, e) :
       MenuDelegate::IsTriggerableEvent(menu, e);

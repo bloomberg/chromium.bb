@@ -8,8 +8,9 @@
 
 namespace event_utils {
 
-bool IsPossibleDispositionEvent(const views::MouseEvent& event) {
-  return event.IsLeftMouseButton() || event.IsMiddleMouseButton();
+bool IsPossibleDispositionEvent(const views::Event& event) {
+  return event.IsMouseEvent() && (event.flags() &
+             (ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON));
 }
 
 }  // namespace event_utils

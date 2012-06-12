@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,8 +58,11 @@ void MenuDelegate::ExecuteCommand(int id, int mouse_event_flags) {
 }
 
 bool MenuDelegate::IsTriggerableEvent(MenuItemView* source,
-                                      const MouseEvent& e) {
-  return e.IsLeftMouseButton() || e.IsRightMouseButton();
+                                      const Event& e) {
+  return e.type() == ui::ET_GESTURE_TAP ||
+         e.type() == ui::ET_GESTURE_TAP_DOWN ||
+         (e.IsMouseEvent() && (e.flags() &
+              (ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON)));
 }
 
 bool MenuDelegate::CanDrop(MenuItemView* menu, const OSExchangeData& data) {

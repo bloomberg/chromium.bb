@@ -163,8 +163,10 @@ class BookmarkButton : public views::TextButton {
     return !tooltip->empty();
   }
 
-  virtual bool IsTriggerableEvent(const views::MouseEvent& e) OVERRIDE {
-    return event_utils::IsPossibleDispositionEvent(e);
+  virtual bool IsTriggerableEvent(const views::Event& e) OVERRIDE {
+    return e.type() == ui::ET_GESTURE_TAP ||
+           e.type() == ui::ET_GESTURE_TAP_DOWN ||
+           event_utils::IsPossibleDispositionEvent(e);
   }
 
   virtual std::string GetClassName() const OVERRIDE {
@@ -211,14 +213,18 @@ class BookmarkFolderButton : public views::MenuButton {
     return !tooltip->empty();
   }
 
-  virtual bool IsTriggerableEvent(const views::MouseEvent& e) OVERRIDE {
-    // Left clicks should show the menu contents and right clicks should show
-    // the context menu. They should not trigger the opening of underlying urls.
-    if (e.flags() == ui::EF_LEFT_MOUSE_BUTTON ||
-        e.flags() == ui::EF_RIGHT_MOUSE_BUTTON)
+  virtual bool IsTriggerableEvent(const views::Event& e) OVERRIDE {
+    // Left clicks and taps should show the menu contents and right clicks
+    // should show the context menu. They should not trigger the opening of
+    // underlying urls.
+    if (e.type() == ui::ET_GESTURE_TAP ||
+        (e.IsMouseEvent() && (e.flags() &
+             (ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON))))
       return false;
 
-    return browser::DispositionFromEventFlags(e.flags()) != CURRENT_TAB;
+    if (e.IsMouseEvent())
+      return browser::DispositionFromEventFlags(e.flags()) != CURRENT_TAB;
+    return false;
   }
 
   virtual void OnPaint(gfx::Canvas* canvas) {
