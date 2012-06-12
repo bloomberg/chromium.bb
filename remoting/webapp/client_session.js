@@ -639,7 +639,10 @@ remoting.ClientSession.prototype.toggleFullScreen_ = function() {
     this.enableBumpScroll_(false);
   } else {
     document.body.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
-    this.enableBumpScroll_(true);
+    // Don't enable bump scrolling immediately because it can result in
+    // onMouseMove firing before the webkitIsFullScreen property can be
+    // read safely (crbug.com/132180).
+    window.setTimeout(this.enableBumpScroll_.bind(this, true), 0);
   }
 };
 
