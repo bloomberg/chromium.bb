@@ -185,11 +185,11 @@ class DownloadItemTest : public testing::Test {
     info_->url_chain.push_back(GURL());
     info_->state = state;
 
-    MockRequestHandle* request_handle =
-        new testing::NiceMock<MockRequestHandle>;
+    scoped_ptr<DownloadRequestHandleInterface> request_handle(
+        new testing::NiceMock<MockRequestHandle>);
     DownloadItem* download =
         new DownloadItemImpl(&delegate_, *(info_.get()),
-                             request_handle, false, net::BoundNetLog());
+                             request_handle.Pass(), false, net::BoundNetLog());
     allocated_downloads_.insert(download);
     return download;
   }

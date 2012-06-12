@@ -93,11 +93,10 @@ class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
                    const net::BoundNetLog& bound_net_log);
 
   // Constructing for a regular download.
-  // Takes ownership of the object pointed to by |request_handle|.
   // |bound_net_log| is constructed externally for our use.
   DownloadItemImpl(Delegate* delegate,
                    const DownloadCreateInfo& info,
-                   DownloadRequestHandleInterface* request_handle,
+                   scoped_ptr<DownloadRequestHandleInterface> request_handle,
                    bool is_otr,
                    const net::BoundNetLog& bound_net_log);
 

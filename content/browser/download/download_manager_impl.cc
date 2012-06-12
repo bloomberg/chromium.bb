@@ -152,11 +152,11 @@ class DownloadItemFactoryImpl : public content::DownloadItemFactory {
     virtual content::DownloadItem* CreateActiveItem(
         DownloadItemImpl::Delegate* delegate,
         const DownloadCreateInfo& info,
-        DownloadRequestHandleInterface* request_handle,
+        scoped_ptr<DownloadRequestHandleInterface> request_handle,
         bool is_otr,
         const net::BoundNetLog& bound_net_log) OVERRIDE {
-      return new DownloadItemImpl(delegate, info, request_handle, is_otr,
-                                  bound_net_log);
+      return new DownloadItemImpl(delegate, info, request_handle.Pass(),
+                                  is_otr, bound_net_log);
     }
 
     virtual content::DownloadItem* CreateSavePageItem(
@@ -460,7 +460,8 @@ net::BoundNetLog DownloadManagerImpl::CreateDownloadItem(
   if (!info->download_id.IsValid())
     info->download_id = GetNextId();
   DownloadItem* download = factory_->CreateActiveItem(
-      this, *info, new DownloadRequestHandle(request_handle),
+      this, *info, scoped_ptr<DownloadRequestHandleInterface>(
+          new DownloadRequestHandle(request_handle)).Pass(),
       browser_context_->IsOffTheRecord(), bound_net_log);
   int32 download_id = info->download_id.local();
 

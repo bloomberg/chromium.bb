@@ -209,10 +209,10 @@ DownloadItemImpl::DownloadItemImpl(Delegate* delegate,
 DownloadItemImpl::DownloadItemImpl(
     Delegate* delegate,
     const DownloadCreateInfo& info,
-    DownloadRequestHandleInterface* request_handle,
+    scoped_ptr<DownloadRequestHandleInterface> request_handle,
     bool is_otr,
     const net::BoundNetLog& bound_net_log)
-    : request_handle_(request_handle),
+    : request_handle_(request_handle.Pass()),
       download_id_(info.download_id),
       target_disposition_(
           (info.prompt_user_for_save_location) ?

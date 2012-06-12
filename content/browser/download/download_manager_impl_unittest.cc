@@ -156,7 +156,7 @@ class MockDownloadItemFactory
   virtual content::DownloadItem* CreateActiveItem(
       DownloadItemImpl::Delegate* delegate,
       const DownloadCreateInfo& info,
-      DownloadRequestHandleInterface* request_handle,
+      scoped_ptr<DownloadRequestHandleInterface> request_handle,
       bool is_otr,
       const net::BoundNetLog& bound_net_log) OVERRIDE;
   virtual content::DownloadItem* CreateSavePageItem(
@@ -220,7 +220,7 @@ content::DownloadItem* MockDownloadItemFactory::CreatePersistedItem(
 content::DownloadItem* MockDownloadItemFactory::CreateActiveItem(
     DownloadItemImpl::Delegate* delegate,
     const DownloadCreateInfo& info,
-    DownloadRequestHandleInterface* request_handle,
+    scoped_ptr<DownloadRequestHandleInterface> request_handle,
     bool is_otr,
     const net::BoundNetLog& bound_net_log) {
   int local_id = info.download_id.local();

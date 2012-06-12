@@ -10,9 +10,10 @@
 #define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_ITEM_FACTORY_H_
 #pragma once
 
-#include "content/browser/download/download_item_impl.h"
-
 #include <string>
+
+#include "base/memory/scoped_ptr.h"
+#include "content/browser/download/download_item_impl.h"
 
 struct DownloadCreateInfo;
 class DownloadRequestHandleInterface;
@@ -44,7 +45,7 @@ public:
   virtual content::DownloadItem* CreateActiveItem(
       DownloadItemImpl::Delegate* delegate,
       const DownloadCreateInfo& info,
-      DownloadRequestHandleInterface* request_handle,
+      scoped_ptr<DownloadRequestHandleInterface> request_handle,
       bool is_otr,
       const net::BoundNetLog& bound_net_log) = 0;
 
