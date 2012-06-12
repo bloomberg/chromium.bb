@@ -224,7 +224,7 @@ _settings = dict(
   build_type=constants.PFQ_TYPE,
 
 # arm -- Whether the board we are building is arm-based.
-  arm = False,
+  arm=False,
 
   archive_build_debug=False,
 
@@ -396,7 +396,7 @@ generic_boards = set([
 # Arch-specific mixins.
 
 arm = _config(
-  arm = True,
+  arm=True,
   # VM/tests are broken on arm.
   unittests=False,
   vm_tests=None,
