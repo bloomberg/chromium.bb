@@ -356,7 +356,6 @@
         '../third_party/skia/src/gpu/GrAAConvexPathRenderer.h',
         '../third_party/skia/src/gpu/GrAAHairLinePathRenderer.cpp',
         '../third_party/skia/src/gpu/GrAAHairLinePathRenderer.h',
-        '../third_party/skia/src/gpu/GrAARectRenderer.cpp',
         '../third_party/skia/src/gpu/GrAddPathRenderers_default.cpp',
         '../third_party/skia/src/gpu/GrAllocPool.cpp',
         '../third_party/skia/src/gpu/GrAllocPool.h',
@@ -673,7 +672,6 @@
         '../third_party/skia/include/effects/SkPorterDuff.h',
         '../third_party/skia/include/effects/SkTransparentShader.h',
 
-        '../third_party/skia/include/gpu/GrAARectRenderer.h',
         '../third_party/skia/include/gpu/GrClip.h',
         '../third_party/skia/include/gpu/GrClipIterator.h',
         '../third_party/skia/include/gpu/GrColor.h',
