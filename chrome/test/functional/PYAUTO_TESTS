@@ -326,6 +326,8 @@
       # crosbug.com/19556
       '-autofill.AutofillTest.testDisplayLineItemForEntriesWithNoCCNum',
       '-autofill.AutofillTest.testPostalCodeAndStateLabelsBasedOnCountry',
+      # crbug.com/132337
+      '-autofill.AutofillTest.testTabOrderForEditAddress',
       # crosbug.com/27405
       '-browser.BrowserTest.testKillAndReloadSharedProcess',
       # crbug.com/129489
@@ -344,6 +346,8 @@
       '-extensions.ExtensionsTest.testDisableEnableExtension',
       # Need internal data dirs in autotest package. crosbug.com/6855
       '-find_in_page.FindMatchTests.testSearchInPDF',
+      # crbug.com/132340
+      '-gtalk.test_basic.BasicTest.testBasicFunctionality',
       # crbug.com/129498
       '-https.SSLTest.testSSLCertAuthorityOK',
       '-https.SSLTest.testSSLCertOK',
