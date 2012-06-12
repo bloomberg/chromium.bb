@@ -6,10 +6,12 @@
 
 #include <set>
 
+#include "base/debug/alias.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/stl_util.h"
+#include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_api_constants.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_helpers.h"
@@ -219,8 +221,15 @@ void ContentSettingsStore::ClearContentSettingsForExtension(
   {
     base::AutoLock lock(lock_);
     OriginIdentifierValueMap* map = GetValueMap(ext_id, scope);
-    if (!map)
-      return;
+    // TODO(bauerb): This is for debugging http://crbug.com/128652.
+    // Remove once the bug is fixed.
+    if (!map) {
+      char ext_id_buffer[33];
+      base::strlcpy(ext_id_buffer, ext_id.c_str(), sizeof(ext_id_buffer));
+      base::debug::Alias(ext_id_buffer);
+      // Do a clean crash.
+      CHECK(false);
+    }
     notify = !map->empty();
     map->clear();
   }
