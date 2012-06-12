@@ -70,6 +70,21 @@ bool IsSubpixelRenderingEnabledInFontConfig() {
   return subpixel_enabled;
 }
 
+// Sets underline metrics on |renderer| according to Pango font |desc|.
+void SetPangoUnderlineMetrics(PangoFontDescription *desc,
+                              internal::SkiaTextRenderer* renderer) {
+  PangoFontMetrics* metrics = GetPangoFontMetrics(desc);
+  int thickness = pango_font_metrics_get_underline_thickness(metrics);
+  // Pango returns the position "above the baseline". Change its sign to convert
+  // it to a vertical offset from the baseline.
+  int position = -pango_font_metrics_get_underline_position(metrics);
+  pango_quantize_line_geometry(&thickness, &position);
+  // Note: pango_quantize_line_geometry() guarantees pixel boundaries, so
+  //       PANGO_PIXELS() is safe to use.
+  renderer->SetUnderlineMetrics(PANGO_PIXELS(thickness),
+                                PANGO_PIXELS(position));
+}
+
 }  // namespace
 
 // TODO(xji): index saved in upper layer is utf16 index. Pango uses utf8 index.
@@ -445,6 +460,8 @@ void RenderTextLinux::DrawVisualText(Canvas* canvas) {
         renderer.SetForegroundColor(styles[style].foreground);
         renderer.SetFontFamilyWithStyle(family_name, styles[style].font_style);
         renderer.DrawPosText(&pos[start], &glyphs[start], i - start);
+        if (styles[style].underline)
+          SetPangoUnderlineMetrics(desc.get(), &renderer);
         renderer.DrawDecorations(start_x, y, glyph_x - start_x, styles[style]);
 
         start = i;
@@ -461,6 +478,8 @@ void RenderTextLinux::DrawVisualText(Canvas* canvas) {
     renderer.SetForegroundColor(styles[style].foreground);
     renderer.SetFontFamilyWithStyle(family_name, styles[style].font_style);
     renderer.DrawPosText(&pos[start], &glyphs[start], glyph_count - start);
+    if (styles[style].underline)
+      SetPangoUnderlineMetrics(desc.get(), &renderer);
     renderer.DrawDecorations(start_x, y, glyph_x - start_x, styles[style]);
     x = glyph_x;
   }

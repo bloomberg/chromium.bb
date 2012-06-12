@@ -179,9 +179,15 @@ namespace gfx {
 
 namespace internal {
 
+// Value of |underline_thickness_| that indicates that underline metrics have
+// not been set explicitly.
+const SkScalar kUnderlineMetricsNotSet = -1.0f;
+
 SkiaTextRenderer::SkiaTextRenderer(Canvas* canvas)
     : canvas_skia_(canvas->sk_canvas()),
-      started_drawing_(false) {
+      started_drawing_(false),
+      underline_thickness_(kUnderlineMetricsNotSet),
+      underline_position_(0.0f) {
   DCHECK(canvas_skia_);
   paint_.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
   paint_.setStyle(SkPaint::kFill_Style);
@@ -221,7 +227,7 @@ void SkiaTextRenderer::SetTypeface(SkTypeface* typeface) {
   paint_.setTypeface(typeface);
 }
 
-void SkiaTextRenderer::SetTextSize(int size) {
+void SkiaTextRenderer::SetTextSize(SkScalar size) {
   paint_.setTextSize(size);
 }
 
@@ -250,6 +256,12 @@ void SkiaTextRenderer::SetForegroundColor(SkColor foreground) {
 void SkiaTextRenderer::SetShader(SkShader* shader, const Rect& bounds) {
   bounds_ = RectToSkRect(bounds);
   paint_.setShader(shader);
+}
+
+void SkiaTextRenderer::SetUnderlineMetrics(SkScalar thickness,
+                                           SkScalar position) {
+  underline_thickness_ = thickness;
+  underline_position_ = position;
 }
 
 void SkiaTextRenderer::DrawPosText(const SkPoint* pos,
@@ -304,9 +316,13 @@ void SkiaTextRenderer::DrawDecorations(int x, int y, int width,
   r.fRight = x + width;
 
   if (style.underline) {
-    SkScalar offset = SkScalarMulAdd(text_size, kUnderlineOffset, y);
-    r.fTop = offset;
-    r.fBottom = offset + height;
+    if (underline_thickness_ == kUnderlineMetricsNotSet) {
+      r.fTop = SkScalarMulAdd(text_size, kUnderlineOffset, y);
+      r.fBottom = r.fTop + height;
+    } else {
+      r.fTop = y + underline_position_;
+      r.fBottom = r.fTop + underline_thickness_;
+    }
     canvas_skia_->drawRect(r, paint_);
   }
   if (style.strike) {
