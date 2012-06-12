@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_NETWORK_NETWORK_SMS_HANDLER_H_
 #define CHROMEOS_NETWORK_NETWORK_SMS_HANDLER_H_
 
+#include <string>
+
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -46,6 +48,8 @@ class CHROMEOS_EXPORT NetworkSmsHandler {
 
  private:
   class NetworkSmsDeviceHandler;
+  class ModemManagerNetworkSmsDeviceHandler;
+  class ModemManager1NetworkSmsDeviceHandler;
 
   // Called from NetworkSmsDeviceHandler when a message is received.
   void NotifyMessageReceived(const base::DictionaryValue& message);

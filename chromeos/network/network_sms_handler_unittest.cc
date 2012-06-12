@@ -4,6 +4,9 @@
 
 #include "chromeos/network/network_sms_handler.h"
 
+#include <set>
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -15,17 +18,28 @@ namespace {
 
 class TestObserver : public NetworkSmsHandler::Observer {
  public:
-  TestObserver() : message_count_(0) {}
+  TestObserver() {}
   virtual ~TestObserver() {}
 
   virtual void MessageReceived(const base::DictionaryValue& message) OVERRIDE {
-    ++message_count_;
+    std::string text;
+    if (message.GetStringWithoutPathExpansion(
+            NetworkSmsHandler::kTextKey, &text)) {
+      messages_.insert(text);
+    }
   }
 
-  int message_count() { return message_count_; }
+  void ClearMessages() {
+    messages_.clear();
+  }
+
+  int message_count() { return messages_.size(); }
+  const std::set<std::string>& messages() const {
+    return messages_;
+  }
 
  private:
-  int message_count_;
+  std::set<std::string> messages_;
 };
 
 }  // namespace
@@ -50,17 +64,29 @@ class NetworkSmsHandlerTest : public testing::Test {
 
 TEST_F(NetworkSmsHandlerTest, SmsHandlerDbusStub) {
   // This relies on the stub dbus implementations for FlimflamManagerClient,
-  // FlimflamDeviceClient, and GsmSMSClient.
-  // Initialize a sms handler. The stub dbus clients will send the first test
-  // message when Gsm.SMS.List is called in NetworkSmsHandler::Init.
+  // FlimflamDeviceClient, GsmSMSClient, ModemMessagingClient and SMSClient.
+  // Initialize a sms handler. The stub dbus clients will not send the
+  // first test message until RequestUpdate has been called.
   scoped_ptr<NetworkSmsHandler> sms_handler(new NetworkSmsHandler());
   scoped_ptr<TestObserver> test_observer(new TestObserver());
   sms_handler->AddObserver(test_observer.get());
   sms_handler->Init();
   message_loop_.RunAllPending();
+  EXPECT_EQ(test_observer->message_count(), 0);
+
+  // Test that no messages have been received yet
+  const std::set<std::string>& messages(test_observer->messages());
+  // Note: The following string corresponds to values in
+  // ModemMessagingClientStubImpl and SmsClientStubImpl.
+  const char kMessage1[] = "SMSClientStubImpl: Test Message: /SMS/0";
+  EXPECT_EQ(messages.find(kMessage1), messages.end());
+
+  // Test for messages delivered by signals.
+  test_observer->ClearMessages();
   sms_handler->RequestUpdate();
   message_loop_.RunAllPending();
   EXPECT_GE(test_observer->message_count(), 1);
+  EXPECT_NE(messages.find(kMessage1), messages.end());
 }
 
 }  // namespace chromeos
