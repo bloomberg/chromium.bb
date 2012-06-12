@@ -1,11 +1,11 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "remoting/host/differ_block.h"
 
+#include "base/cpu.h"
 #include "build/build_config.h"
-#include "media/base/cpu_features.h"
 #include "remoting/host/differ_block_internal.h"
 
 namespace remoting {
@@ -31,10 +31,11 @@ int BlockDifference(const uint8* image1, const uint8* image2, int stride) {
     // TODO(hclam): Implement a NEON version.
     diff_proc = &BlockDifference_C;
 #else
+    base::CPU cpu;
     // For x86 processors, check if SSE2 is supported.
-    if (media::hasSSE2() && kBlockSize == 32)
+    if (cpu.has_sse2() && kBlockSize == 32)
       diff_proc = &BlockDifference_SSE2_W32;
-    else if (media::hasSSE2() && kBlockSize == 16)
+    else if (cpu.has_sse2() && kBlockSize == 16)
       diff_proc = &BlockDifference_SSE2_W16;
     else
       diff_proc = &BlockDifference_C;

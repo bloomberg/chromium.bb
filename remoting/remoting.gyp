@@ -400,7 +400,7 @@
           ],
           'sources': [
             # The jsoncpp target is not yet built for Mac OS X 64-bit, so
-            # include the files directly, instead of depending on the target. 
+            # include the files directly, instead of depending on the target.
             '../third_party/jsoncpp/source/src/lib_json/json_reader.cpp',
             '../third_party/jsoncpp/source/src/lib_json/json_writer.cpp',
             '../third_party/modp_b64/modp_b64.cc',
@@ -461,7 +461,7 @@
         },  # end of target 'remoting_host_prefpane'
       ],  # end of 'targets'
     }],  # 'OS=="mac"'
-    
+
     ['OS=="win"', {
       'targets': [
         {
@@ -1588,9 +1588,6 @@
       'target_name': 'differ_block',
       'type': 'static_library',
       'variables': { 'enable_wexit_time_destructors': 1, },
-      'dependencies': [
-        '../media/media.gyp:cpu_features',
-      ],
       'conditions': [
         [ 'target_arch == "ia32" or target_arch == "x64"', {
           'dependencies': [
