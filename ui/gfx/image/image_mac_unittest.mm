@@ -16,9 +16,9 @@ namespace {
 
 class ImageMacTest : public testing::Test {
  public:
-  void CreateBitmapImageRep(int width, int height,
-                            NSBitmapImageRep** image_rep) {
-    *image_rep = [[NSBitmapImageRep alloc]
+  void BitmapImageRep(int width, int height,
+                      NSBitmapImageRep** image_rep) {
+    *image_rep = [[[NSBitmapImageRep alloc]
         initWithBitmapDataPlanes:NULL
                       pixelsWide:width
                       pixelsHigh:height
@@ -29,7 +29,8 @@ class ImageMacTest : public testing::Test {
                   colorSpaceName:NSDeviceRGBColorSpace
                     bitmapFormat:0
                      bytesPerRow:0
-                    bitsPerPixel:0];
+                    bitsPerPixel:0]
+                 autorelease];
   }
 };
 
@@ -42,7 +43,7 @@ TEST_F(ImageMacTest, NSImageWithResizedNSImageRepToImageSkia) {
   const int kHeight2x = 24;
 
   NSBitmapImageRep* image_rep;
-  CreateBitmapImageRep(kWidth2x, kHeight2x, &image_rep);
+  BitmapImageRep(kWidth2x, kHeight2x, &image_rep);
 
   scoped_nsobject<NSImage> ns_image(
       [[NSImage alloc] initWithSize:NSMakeSize(kWidth1x, kHeight1x)]);
@@ -68,9 +69,9 @@ TEST_F(ImageMacTest, MultiResolutionNSImageToImageSkia) {
   const int kHeight2x = 24;
 
   NSBitmapImageRep* image_rep_1;
-  CreateBitmapImageRep(kWidth1x, kHeight1x, &image_rep_1);
+  BitmapImageRep(kWidth1x, kHeight1x, &image_rep_1);
   NSBitmapImageRep* image_rep_2;
-  CreateBitmapImageRep(kWidth2x, kHeight2x, &image_rep_2);
+  BitmapImageRep(kWidth2x, kHeight2x, &image_rep_2);
   scoped_nsobject<NSImage> ns_image(
       [[NSImage alloc] initWithSize:NSMakeSize(kWidth1x, kHeight1x)]);
   [ns_image addRepresentation:image_rep_1];
