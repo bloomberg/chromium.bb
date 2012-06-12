@@ -65,10 +65,16 @@ class JsonHostConfig {
   // True if launchd has been instructed to stop the service and we are waiting
   // for the operation to complete.
   BOOL awaiting_service_stop_;
+
+  // True if a version-mismatch has been detected.  If true, this causes all
+  // controls to be greyed out, and also prevents any config file from being
+  // deleted, pending a restart of the preference pane.
+  BOOL restart_pending_or_canceled_;
 }
 
 - (void)mainViewDidLoad;
 - (void)willSelect;
+- (void)didSelect;
 - (void)willUnselect;
 - (void)onDisable:(id)sender;
 - (void)applyConfiguration:(id)sender
@@ -90,6 +96,9 @@ class JsonHostConfig {
 // leaving a stale file around in case of a crash), but this method can safely
 // be called multiple times without forgetting the loaded config.  To explicitly
 // forget the current config, set |have_new_config_| to NO.
+//
+// This method should not be called if |restart_pending_or_canceled_| is YES,
+// since this would delete any config file.
 - (void)readNewConfig;
 
 // Update all UI controls according to any stored flags and loaded config.
@@ -112,8 +121,26 @@ class JsonHostConfig {
 - (BOOL)sendJobControlMessage:(const char*)launch_key;
 
 // Compare the version of the running pref-pane against the installed version.
-// If the versions are mismatched, return YES and restart the System
-// Preferences application, so the correct version of this pref-pane is loaded.
-- (BOOL)restartPanelIfDifferentVersionInstalled;
+// If the versions are mismatched and the pref-pane is visible, disable the
+// pane to prevent interaction, and prompt the user to restart System
+// Preferences.
+//
+// This should be called on notification of a new config, and also in
+// |didSelect| when the pane becomes visible.  The pane needs to be visible so
+// that the alert appears as a sheet over the pane (instead of a detached
+// window), which gives the user an appropriate context for the alert.
+//
+// In the case of a version-mismatch, the new config file should be kept until
+// System Preferences is restarted, or thrown away when the user cancels the
+// alert.  This method sets the |restart_pending_or_canceled_| flag on
+// detecting version-mismatch.
+- (void)checkInstalledVersion;
+
+- (void)mismatchAlertDidEnd:(NSAlert*)alert
+                 returnCode:(NSInteger)returnCode
+                contextInfo:(void*)contextInfo;
+
+// Called when the user chooses OK when prompted to restart System Preferences.
+- (void)restartSystemPreferences;
 
 @end

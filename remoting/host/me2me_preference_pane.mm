@@ -179,8 +179,16 @@ std::string JsonHostConfig::GetSerializedData() const {
                                        repeats:YES] retain];
   [self updateServiceStatus];
   [self updateAuthorizationStatus];
-  [self readNewConfig];
+
+  [self checkInstalledVersion];
+  if (!restart_pending_or_canceled_)
+    [self readNewConfig];
+
   [self updateUI];
+}
+
+- (void)didSelect {
+  [self checkInstalledVersion];
 }
 
 - (void)willUnselect {
@@ -191,9 +199,8 @@ std::string JsonHostConfig::GetSerializedData() const {
   [service_status_timer_ invalidate];
   [service_status_timer_ release];
   service_status_timer_ = nil;
-  if (have_new_config_) {
+  if (have_new_config_)
     [self notifyPlugin:kUpdateFailedNotificationName];
-  }
 }
 
 - (void)applyConfiguration:(id)sender
@@ -245,7 +252,10 @@ std::string JsonHostConfig::GetSerializedData() const {
 }
 
 - (void)onNewConfigFile:(NSNotification*)notification {
-  [self readNewConfig];
+  [self checkInstalledVersion];
+  if (!restart_pending_or_canceled_)
+    [self readNewConfig];
+
   [self updateUI];
 }
 
@@ -281,12 +291,6 @@ std::string JsonHostConfig::GetSerializedData() const {
 }
 
 - (void)readNewConfig {
-  if ([self restartPanelIfDifferentVersionInstalled]) {
-    // Don't read any new config if the version is mismatched.  Return control
-    // to the main run-loop instead, so the application can be terminated.
-    return;
-  }
-
   std::string file;
   if (!GetTemporaryConfigFilePath(&file)) {
     LOG(ERROR) << "Failed to get path of configuration data.";
@@ -351,11 +355,16 @@ std::string JsonHostConfig::GetSerializedData() const {
     DCHECK(result);
   }
 
-  [disable_view_ setEnabled:(is_pane_unlocked_ && is_service_running_)];
-  [confirm_pin_view_ setEnabled:is_pane_unlocked_];
+  [disable_view_ setEnabled:(is_pane_unlocked_ && is_service_running_ &&
+                             !restart_pending_or_canceled_)];
+  [confirm_pin_view_ setEnabled:(is_pane_unlocked_ &&
+                                 !restart_pending_or_canceled_)];
   [confirm_pin_view_ setEmail:base::SysUTF8ToNSString(email)];
   NSString* applyButtonText = is_service_running_ ? @"Confirm" : @"Enable";
   [confirm_pin_view_ setButtonText:applyButtonText];
+
+  if (restart_pending_or_canceled_)
+    [authorization_view_ setEnabled:NO];
 }
 
 - (void)showError {
@@ -529,41 +538,104 @@ std::string JsonHostConfig::GetSerializedData() const {
                       userInfo:nil];
 }
 
-- (BOOL)restartPanelIfDifferentVersionInstalled {
-  NSBundle* this_bundle = [NSBundle bundleForClass:[self class]];
-  NSDictionary* this_plist = [this_bundle infoDictionary];
-  NSString* this_version = [this_plist objectForKey:@"CFBundleVersion"];
+- (void)checkInstalledVersion {
+  // There's no point repeating the check if the pane has already been disabled
+  // from a previous call to this method.  The pane only gets disabled when a
+  // version-mismatch has been detected here, so skip the check, but continue to
+  // handle the version-mismatch case.
+  if (!restart_pending_or_canceled_) {
+    NSBundle* this_bundle = [NSBundle bundleForClass:[self class]];
+    NSDictionary* this_plist = [this_bundle infoDictionary];
+    NSString* this_version = [this_plist objectForKey:@"CFBundleVersion"];
 
-  NSString* bundle_path = [this_bundle bundlePath];
-  NSString* plist_path =
-      [bundle_path stringByAppendingString:@"/Contents/Info.plist"];
-  NSDictionary* disk_plist =
-      [NSDictionary dictionaryWithContentsOfFile:plist_path];
-  NSString* disk_version = [disk_plist objectForKey:@"CFBundleVersion"];
+    NSString* bundle_path = [this_bundle bundlePath];
+    NSString* plist_path =
+        [bundle_path stringByAppendingString:@"/Contents/Info.plist"];
+    NSDictionary* disk_plist =
+        [NSDictionary dictionaryWithContentsOfFile:plist_path];
+    NSString* disk_version = [disk_plist objectForKey:@"CFBundleVersion"];
 
-  if (disk_version == nil) {
-    LOG(ERROR) << "Failed to get installed version information";
-    [self showError];
-    return NO;
+    if (disk_version == nil) {
+      LOG(ERROR) << "Failed to get installed version information";
+      [self showError];
+      return;
+    }
+
+    if ([this_version isEqualToString:disk_version])
+      return;
+
+    restart_pending_or_canceled_ = YES;
+    [self updateUI];
   }
 
-  if ([this_version isEqualToString:disk_version]) {
-    return NO;
+  NSWindow* window = [[self mainView] window];
+  if (window == nil) {
+    // Defer the alert until |didSelect| is called, which happens just after
+    // the window is created.
+    return;
+  }
+
+  // This alert appears as a sheet over the top of the Chromoting pref-pane,
+  // underneath the title, so it's OK to refer to "this preference pane" rather
+  // than repeat the title "Chromoting" here.
+  NSAlert* alert = [[NSAlert alloc] init];
+  [alert setMessageText:@"System update detected"];
+  [alert setInformativeText:@"To use this preference pane, System Preferences "
+      "needs to be restarted"];
+  [alert addButtonWithTitle:@"OK"];
+  NSButton* cancel_button = [alert addButtonWithTitle:@"Cancel"];
+  [cancel_button setKeyEquivalent:@"\e"];
+  [alert setAlertStyle:NSWarningAlertStyle];
+  [alert beginSheetModalForWindow:window
+                    modalDelegate:self
+                   didEndSelector:@selector(
+                       mismatchAlertDidEnd:returnCode:contextInfo:)
+                      contextInfo:nil];
+  [alert release];
+}
+
+- (void)mismatchAlertDidEnd:(NSAlert*)alert
+                 returnCode:(NSInteger)returnCode
+                contextInfo:(void*)contextInfo {
+  if (returnCode == NSAlertFirstButtonReturn) {
+    // OK was pressed.
+
+    // Dismiss the alert window here, so that the application will respond to
+    // the NSApp terminate: message.
+    [[alert window] orderOut:nil];
+    [self restartSystemPreferences];
   } else {
-    // Terminate and relaunch System Preferences.
+    // Cancel was pressed.
 
-    // TODO(lambroslambrou): Improve this when System Preferences supports
-    // dynamic reloading of pref-panes.
-    NSTask* task = [[NSTask alloc] init];
-    NSArray* arguments = [NSArray arrayWithObjects:@"--relaunch-prefpane", nil];
-    [task setLaunchPath:[NSString stringWithUTF8String:kHelperTool]];
-    [task setArguments:arguments];
-    [task setStandardInput:[NSPipe pipe]];
-    [task launch];
-    [task release];
-    [NSApp terminate:nil];
-    return YES;
+    // If there is a new config file, delete it and notify the web-app of
+    // failure to apply the config.  Otherwise, the web-app will remain in a
+    // spinning state until System Preferences eventually gets restarted and
+    // the user visits this pane again.
+    std::string file;
+    if (!GetTemporaryConfigFilePath(&file)) {
+      // There's no point in alerting the user here.  The same error would
+      // happen when the pane is eventually restarted, so the user would be
+      // alerted at that time.
+      LOG(ERROR) << "Failed to get path of configuration data.";
+      return;
+    }
+    if (access(file.c_str(), F_OK) != 0)
+      return;
+
+    remove(file.c_str());
+    [self notifyPlugin:kUpdateFailedNotificationName];
   }
+}
+
+- (void)restartSystemPreferences {
+  NSTask* task = [[NSTask alloc] init];
+  NSArray* arguments = [NSArray arrayWithObjects:@"--relaunch-prefpane", nil];
+  [task setLaunchPath:[NSString stringWithUTF8String:kHelperTool]];
+  [task setArguments:arguments];
+  [task setStandardInput:[NSPipe pipe]];
+  [task launch];
+  [task release];
+  [NSApp terminate:nil];
 }
 
 @end
