@@ -52,7 +52,7 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
     NOTREACHED();
 #endif
   } else if (browser_view_->IsOffTheRecord()) {
-    avatar = rb.GetImageNamed(IDR_OTR_ICON);
+    avatar = rb.GetImageNamed(browser_view_->GetOTRIconResourceID());
   } else if (ManagedMode::IsInManagedMode()) {
     avatar = rb.GetImageNamed(IDR_MANAGED_MODE_AVATAR);
   } else if (AvatarMenuModel::ShouldShowAvatarMenu()) {
