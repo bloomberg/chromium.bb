@@ -1227,8 +1227,8 @@ void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
     return;
 
   gfx::NativeCursor cursor = current_cursor_.GetNativeCursor();
-  if (is_loading_ && cursor == ui::kCursorPointer)
-    cursor = ui::kCursorProgress;
+  if (is_loading_)
+    cursor = ui::kCursorPointer;
 
   root_window->SetCursor(cursor);
 }
