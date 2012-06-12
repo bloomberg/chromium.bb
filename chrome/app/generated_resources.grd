@@ -6665,6 +6665,9 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_DEL_FORM_DATA_CHKBOX" desc="Checkbox for deleting form data saved for Autofill">
         Clear saved Autofill form data
       </message>
+      <message name="IDS_DEL_HOSTED_APPS_DATA_CHKBOX" desc="Checkbox for deleting data of hosted apps">
+        Clear data from hosted apps
+      </message>
       <message name="IDS_DEAUTHORIZE_CONTENT_LICENSES_CHKBOX" desc="Checkbox for deauthorizing content licenses (DRM videos, etc.)">
         Deauthorize content licenses
       </message>

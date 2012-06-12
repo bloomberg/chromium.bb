@@ -322,6 +322,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, ClearData) {
   ASSERT_TRUE(BooleanPrefMatches(prefs::kDeleteCookies));
   ASSERT_TRUE(BooleanPrefMatches(prefs::kDeletePasswords));
   ASSERT_TRUE(BooleanPrefMatches(prefs::kDeleteFormData));
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kDeleteHostedAppsData));
 
   ChangeBooleanPref(0, prefs::kDeleteBrowsingHistory);
   ChangeBooleanPref(0, prefs::kDeleteDownloadHistory);
@@ -329,6 +330,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, ClearData) {
   ChangeBooleanPref(0, prefs::kDeleteCookies);
   ChangeBooleanPref(0, prefs::kDeletePasswords);
   ChangeBooleanPref(0, prefs::kDeleteFormData);
+  ChangeBooleanPref(0, prefs::kDeleteHostedAppsData);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(BooleanPrefMatches(
       prefs::kDeleteBrowsingHistory));
@@ -338,6 +340,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, ClearData) {
   ASSERT_TRUE(BooleanPrefMatches(prefs::kDeleteCookies));
   ASSERT_TRUE(BooleanPrefMatches(prefs::kDeletePasswords));
   ASSERT_TRUE(BooleanPrefMatches(prefs::kDeleteFormData));
+  ASSERT_TRUE(BooleanPrefMatches(prefs::kDeleteHostedAppsData));
 }
 
 // TCM ID - 3686300.

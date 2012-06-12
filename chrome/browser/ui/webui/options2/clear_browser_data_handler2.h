@@ -30,8 +30,16 @@ class ClearBrowserDataHandler : public OptionsPageUIHandler,
   // Javascript callback to start clearing data.
   void HandleClearBrowserData(const ListValue* value);
 
-  // Callback from BrowsingDataRemover. Closes the dialog.
+  // Callback from BrowsingDataRemover. Calls OnAllDataRemoved once both
+  // protected and unprotected data are removed.
   virtual void OnBrowsingDataRemoverDone() OVERRIDE;
+
+  // Closes the dialog once all requested data has been removed.
+  void OnAllDataRemoved();
+
+  // Clears the data of hosted apps, which is otherwise protected from deletion
+  // when the user clears regular browsing data.
+  void ClearHostedAppData();
 
   // If non-null it means removal is in progress. BrowsingDataRemover takes care
   // of deleting itself when done.
@@ -39,6 +47,10 @@ class ClearBrowserDataHandler : public OptionsPageUIHandler,
 
   // Keeps track of whether clearing LSO data is supported.
   BooleanPrefMember clear_plugin_lso_data_enabled_;
+
+  // Indicates that we also need to delete hosted app data after finishing the
+  // first removal operation.
+  bool remove_hosted_app_data_pending_;
 
   DISALLOW_COPY_AND_ASSIGN(ClearBrowserDataHandler);
 };

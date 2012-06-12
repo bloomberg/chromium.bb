@@ -2133,6 +2133,9 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kDeleteFormData,
                              false,
                              PrefService::SYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kDeleteHostedAppsData,
+                             false,
+                             PrefService::SYNCABLE_PREF);
   prefs->RegisterIntegerPref(prefs::kDeleteTimePeriod,
                              0,
                              PrefService::SYNCABLE_PREF);

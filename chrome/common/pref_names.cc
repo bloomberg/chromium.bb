@@ -721,6 +721,7 @@ const char kDeleteCache[] = "browser.clear_data.cache";
 const char kDeleteCookies[] = "browser.clear_data.cookies";
 const char kDeletePasswords[] = "browser.clear_data.passwords";
 const char kDeleteFormData[] = "browser.clear_data.form_data";
+const char kDeleteHostedAppsData[] = "browser.clear_data.hosted_apps_data";
 const char kDeauthorizeContentLicenses[] =
     "browser.clear_data.content_licenses";
 const char kDeleteTimePeriod[] = "browser.clear_data.time_period";
