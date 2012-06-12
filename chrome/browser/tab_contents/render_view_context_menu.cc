@@ -917,8 +917,9 @@ void RenderViewContextMenu::AppendSearchProvider() {
     printable_selection_text.insert(i, 1, '&');
 
   if (match.transition == content::PAGE_TRANSITION_TYPED) {
-    if (ChildProcessSecurityPolicy::GetInstance()->IsWebSafeScheme(
-        selection_navigation_url_.scheme())) {
+    if ((selection_navigation_url_ != params_.link_url) &&
+        ChildProcessSecurityPolicy::GetInstance()->IsWebSafeScheme(
+            selection_navigation_url_.scheme())) {
       menu_model_.AddItem(
           IDC_CONTENT_CONTEXT_GOTOURL,
           l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_GOTOURL,
