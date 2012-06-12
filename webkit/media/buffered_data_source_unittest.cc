@@ -37,7 +37,10 @@ namespace webkit_media {
 class MockBufferedDataSource : public BufferedDataSource {
  public:
   MockBufferedDataSource(MessageLoop* message_loop, WebFrame* frame)
-      : BufferedDataSource(message_loop, frame, new media::MediaLog()),
+      : BufferedDataSource(message_loop, frame, new media::MediaLog(),
+                           base::Bind(&MockBufferedDataSource::set_downloading,
+                                      base::Unretained(this))),
+        downloading_(false),
         loading_(false) {
   }
 
@@ -64,9 +67,14 @@ class MockBufferedDataSource : public BufferedDataSource {
 
   bool loading() { return loading_; }
   void set_loading(bool loading) { loading_ = loading; }
+  bool downloading() { return downloading_; }
+  void set_downloading(bool downloading) { downloading_ = downloading; }
 
  private:
   virtual ~MockBufferedDataSource() {}
+
+  // Whether the resource is downloading or deferred.
+  bool downloading_;
 
   // Whether the resource load has starting loading but yet to been cancelled.
   bool loading_;
@@ -172,7 +180,6 @@ class BufferedDataSourceTest : public testing::Test {
   int data_source_playback_rate() { return data_source_->playback_rate_; }
   int loader_bitrate() { return loader()->bitrate_; }
   int loader_playback_rate() { return loader()->playback_rate_; }
-
 
   scoped_refptr<MockBufferedDataSource> data_source_;
 
@@ -432,16 +439,16 @@ TEST_F(BufferedDataSourceTest, Read) {
 
   // When the read completes we'll update our network status.
   EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize - 1));
-  EXPECT_CALL(host_, SetNetworkActivity(true));
   EXPECT_CALL(*this, ReadCallback(kDataSize));
   FinishRead();
+  EXPECT_TRUE(data_source_->downloading());
 
   // During teardown we'll also report our final network status.
-  EXPECT_CALL(host_, SetNetworkActivity(false));
   EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize - 1));
 
-  EXPECT_TRUE(data_source_->loading());
+  EXPECT_TRUE(data_source_->downloading());
   Stop();
+  EXPECT_FALSE(data_source_->downloading());
 }
 
 }  // namespace webkit_media

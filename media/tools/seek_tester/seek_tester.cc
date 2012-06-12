@@ -27,7 +27,6 @@ class DemuxerHostImpl : public media::DemuxerHost {
   // DataSourceHost implementation.
   virtual void SetTotalBytes(int64 total_bytes) OVERRIDE {}
   virtual void AddBufferedByteRange(int64 start, int64 end) OVERRIDE {}
-  virtual void SetNetworkActivity(bool is_downloading_data) OVERRIDE {}
 
   // DemuxerHost implementation.
   virtual void SetDuration(base::TimeDelta duration) OVERRIDE {}

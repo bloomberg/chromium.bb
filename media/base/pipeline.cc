@@ -95,7 +95,6 @@ Pipeline::~Pipeline() {
 void Pipeline::Start(scoped_ptr<FilterCollection> collection,
                      const PipelineStatusCB& ended_cb,
                      const PipelineStatusCB& error_cb,
-                     const NetworkEventCB& network_cb,
                      const PipelineStatusCB& start_cb) {
   base::AutoLock auto_lock(lock_);
   CHECK(!running_) << "Media pipeline is already running";
@@ -103,7 +102,7 @@ void Pipeline::Start(scoped_ptr<FilterCollection> collection,
   running_ = true;
   message_loop_->PostTask(FROM_HERE, base::Bind(
       &Pipeline::StartTask, this, base::Passed(&collection),
-      ended_cb, error_cb, network_cb, start_cb));
+      ended_cb, error_cb, start_cb));
 }
 
 void Pipeline::Stop(const base::Closure& stop_cb) {
@@ -474,21 +473,6 @@ void Pipeline::NotifyEnded() {
   media_log_->AddEvent(media_log_->CreateEvent(MediaLogEvent::ENDED));
 }
 
-void Pipeline::SetNetworkActivity(bool is_downloading_data) {
-  DCHECK(IsRunning());
-
-  NetworkEvent type = DOWNLOAD_PAUSED;
-  if (is_downloading_data)
-    type = DOWNLOAD_CONTINUED;
-
-  message_loop_->PostTask(FROM_HERE, base::Bind(
-      &Pipeline::NotifyNetworkEventTask, this, type));
-  media_log_->AddEvent(
-      media_log_->CreateBooleanEvent(
-          MediaLogEvent::NETWORK_ACTIVITY_SET,
-          "is_downloading_data", is_downloading_data));
-}
-
 void Pipeline::DisableAudioRenderer() {
   DCHECK(IsRunning());
 
@@ -542,14 +526,12 @@ void Pipeline::OnUpdateStatistics(const PipelineStatistics& stats) {
 void Pipeline::StartTask(scoped_ptr<FilterCollection> filter_collection,
                          const PipelineStatusCB& ended_cb,
                          const PipelineStatusCB& error_cb,
-                         const NetworkEventCB& network_cb,
                          const PipelineStatusCB& start_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK_EQ(kCreated, state_);
   filter_collection_ = filter_collection.Pass();
   ended_cb_ = ended_cb;
   error_cb_ = error_cb;
-  network_cb_ = network_cb;
   seek_cb_ = start_cb;
 
   // Kick off initialization.
@@ -846,12 +828,6 @@ void Pipeline::NotifyEndedTask() {
   }
 
   ReportStatus(ended_cb_, status_);
-}
-
-void Pipeline::NotifyNetworkEventTask(NetworkEvent type) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
-  if (!network_cb_.is_null())
-    network_cb_.Run(type);
 }
 
 void Pipeline::DisableAudioRendererTask() {

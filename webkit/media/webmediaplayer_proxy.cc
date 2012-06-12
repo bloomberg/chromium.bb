@@ -12,7 +12,6 @@
 #include "media/filters/video_renderer_base.h"
 #include "webkit/media/webmediaplayer_impl.h"
 
-using media::NetworkEvent;
 using media::PipelineStatus;
 
 namespace webkit_media {
@@ -113,11 +112,6 @@ void WebMediaPlayerProxy::PipelineErrorCallback(PipelineStatus error) {
       &WebMediaPlayerProxy::PipelineErrorTask, this, error));
 }
 
-void WebMediaPlayerProxy::NetworkEventCallback(NetworkEvent type) {
-  render_loop_->PostTask(FROM_HERE, base::Bind(
-      &WebMediaPlayerProxy::NetworkEventTask, this, type));
-}
-
 void WebMediaPlayerProxy::RepaintTask() {
   DCHECK(render_loop_->BelongsToCurrentThread());
   {
@@ -152,12 +146,6 @@ void WebMediaPlayerProxy::PipelineErrorTask(PipelineStatus error) {
   DCHECK(render_loop_->BelongsToCurrentThread());
   if (webmediaplayer_)
     webmediaplayer_->OnPipelineError(error);
-}
-
-void WebMediaPlayerProxy::NetworkEventTask(NetworkEvent type) {
-  DCHECK(render_loop_->BelongsToCurrentThread());
-  if (webmediaplayer_)
-    webmediaplayer_->OnNetworkEvent(type);
 }
 
 void WebMediaPlayerProxy::SetOpaqueTask(bool opaque) {

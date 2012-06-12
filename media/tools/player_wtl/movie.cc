@@ -93,7 +93,6 @@ bool Movie::Open(const wchar_t* url, VideoRendererBase* video_renderer) {
       collection.Pass(),
       media::PipelineStatusCB(),
       media::PipelineStatusCB(),
-      media::NetworkEventCB(),
       note.Callback());
 
   // Wait until the pipeline is fully initialized.

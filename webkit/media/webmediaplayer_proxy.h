@@ -85,7 +85,6 @@ class WebMediaPlayerProxy
   void PipelineSeekCallback(media::PipelineStatus status);
   void PipelineEndedCallback(media::PipelineStatus status);
   void PipelineErrorCallback(media::PipelineStatus error);
-  void NetworkEventCallback(media::NetworkEvent type);
 
   // ChunkDemuxerClient implementation.
   virtual void DemuxerOpened(media::ChunkDemuxer* demuxer) OVERRIDE;
@@ -129,9 +128,6 @@ class WebMediaPlayerProxy
   // Notify |webmediaplayer_| that a pipeline error has occurred during
   // playback.
   void PipelineErrorTask(media::PipelineStatus error);
-
-  // Notify |webmediaplayer_| that there's a network event.
-  void NetworkEventTask(media::NetworkEvent type);
 
   // Inform |webmediaplayer_| whether the video content is opaque.
   void SetOpaqueTask(bool opaque);

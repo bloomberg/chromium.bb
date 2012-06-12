@@ -192,7 +192,6 @@ class PipelineTest : public ::testing::Test {
         mocks_->Create().Pass(),
         base::Bind(&CallbackHelper::OnEnded, base::Unretained(&callbacks_)),
         base::Bind(&CallbackHelper::OnError, base::Unretained(&callbacks_)),
-        NetworkEventCB(),
         base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)));
     message_loop_.RunAllPending();
   }
@@ -305,7 +304,6 @@ TEST_F(PipelineTest, NeverInitializes) {
         mocks_->Create().Pass(),
         base::Bind(&CallbackHelper::OnEnded, base::Unretained(&callbacks_)),
         base::Bind(&CallbackHelper::OnError, base::Unretained(&callbacks_)),
-        NetworkEventCB(),
         base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)));
   message_loop_.RunAllPending();
 
@@ -328,7 +326,6 @@ TEST_F(PipelineTest, RequiredFilterMissing) {
       collection.Pass(),
       base::Bind(&CallbackHelper::OnEnded, base::Unretained(&callbacks_)),
       base::Bind(&CallbackHelper::OnError, base::Unretained(&callbacks_)),
-      NetworkEventCB(),
       base::Bind(&CallbackHelper::OnStart, base::Unretained(&callbacks_)));
   message_loop_.RunAllPending();
   EXPECT_FALSE(pipeline_->IsInitialized());

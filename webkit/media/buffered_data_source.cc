@@ -25,13 +25,13 @@ static const int kNumCacheMissRetries = 3;
 BufferedDataSource::BufferedDataSource(
     MessageLoop* render_loop,
     WebFrame* frame,
-    media::MediaLog* media_log)
+    media::MediaLog* media_log,
+    const DownloadingCB& downloading_cb)
     : total_bytes_(kPositionNotSpecified),
       buffered_bytes_(0),
       streaming_(false),
       frame_(frame),
       loader_(NULL),
-      is_downloading_data_(false),
       read_size_(0),
       read_buffer_(NULL),
       last_read_start_(0),
@@ -45,7 +45,9 @@ BufferedDataSource::BufferedDataSource(
       cache_miss_retries_left_(kNumCacheMissRetries),
       bitrate_(0),
       playback_rate_(0.0),
-      media_log_(media_log) {
+      media_log_(media_log),
+      downloading_cb_(downloading_cb) {
+  DCHECK(!downloading_cb_.is_null());
 }
 
 BufferedDataSource::~BufferedDataSource() {}
@@ -549,7 +551,8 @@ void BufferedDataSource::NetworkEventCallback() {
   if (!url_.SchemeIs(kHttpScheme) && !url_.SchemeIs(kHttpsScheme))
     return;
 
-  bool is_downloading_data = loader_->is_downloading_data();
+  downloading_cb_.Run(loader_->is_downloading_data());
+
   int64 current_buffered_position = loader_->GetBufferedPosition();
 
   // If we get an unspecified value, return immediately.
@@ -567,12 +570,6 @@ void BufferedDataSource::NetworkEventCallback() {
   base::AutoLock auto_lock(lock_);
   if (stop_signal_received_)
     return;
-
-  if (is_downloading_data != is_downloading_data_) {
-    is_downloading_data_ = is_downloading_data;
-    if (host())
-      host()->SetNetworkActivity(is_downloading_data);
-  }
 
   int64 start = loader_->first_byte_position();
   if (host() && current_buffered_position > start)

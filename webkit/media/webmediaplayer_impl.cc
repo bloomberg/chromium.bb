@@ -44,7 +44,6 @@ using WebKit::WebMediaPlayer;
 using WebKit::WebRect;
 using WebKit::WebSize;
 using WebKit::WebString;
-using media::NetworkEvent;
 using media::PipelineStatus;
 
 namespace {
@@ -244,7 +243,9 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url, CORSMode cors_mode) {
 
   // Otherwise it's a regular request which requires resolving the URL first.
   proxy_->set_data_source(
-      new BufferedDataSource(main_loop_, frame_, media_log_));
+      new BufferedDataSource(main_loop_, frame_, media_log_,
+                             base::Bind(&WebMediaPlayerImpl::NotifyDownloading,
+                                        base::Unretained(this))));
   proxy_->data_source()->Initialize(
       url, static_cast<BufferedResourceLoader::CORSMode>(cors_mode),
       base::Bind(
@@ -458,10 +459,12 @@ int WebMediaPlayerImpl::dataRate() const {
 }
 
 WebMediaPlayer::NetworkState WebMediaPlayerImpl::networkState() const {
+  DCHECK_EQ(main_loop_, MessageLoop::current());
   return network_state_;
 }
 
 WebMediaPlayer::ReadyState WebMediaPlayerImpl::readyState() const {
+  DCHECK_EQ(main_loop_, MessageLoop::current());
   return ready_state_;
 }
 
@@ -917,26 +920,6 @@ void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
   Repaint();
 }
 
-void WebMediaPlayerImpl::OnNetworkEvent(NetworkEvent type) {
-  DCHECK_EQ(main_loop_, MessageLoop::current());
-  switch(type) {
-    case media::DOWNLOAD_CONTINUED:
-      SetNetworkState(WebMediaPlayer::NetworkStateLoading);
-      break;
-    case media::DOWNLOAD_PAUSED:
-      SetNetworkState(WebMediaPlayer::NetworkStateIdle);
-      break;
-    case media::CAN_PLAY_THROUGH:
-      // Temporarily disable delayed firing of CAN_PLAY_THROUGH due to
-      // crbug.com/106480.
-      // TODO(vrk): uncomment code below when bug above is fixed.
-      // SetReadyState(WebMediaPlayer::NetworkStateHaveEnoughData);
-      break;
-    default:
-      NOTREACHED();
-  }
-}
-
 void WebMediaPlayerImpl::OnDemuxerOpened() {
   DCHECK_EQ(main_loop_, MessageLoop::current());
 
@@ -971,13 +954,23 @@ void WebMediaPlayerImpl::DataSourceInitialized(
   StartPipeline();
 }
 
+void WebMediaPlayerImpl::NotifyDownloading(bool is_downloading) {
+  if (!is_downloading && network_state_ == WebMediaPlayer::NetworkStateLoading)
+    SetNetworkState(WebMediaPlayer::NetworkStateIdle);
+  else if (is_downloading && network_state_ == WebMediaPlayer::NetworkStateIdle)
+    SetNetworkState(WebMediaPlayer::NetworkStateLoading);
+  media_log_->AddEvent(
+      media_log_->CreateBooleanEvent(
+          media::MediaLogEvent::NETWORK_ACTIVITY_SET,
+          "is_downloading_data", is_downloading));
+}
+
 void WebMediaPlayerImpl::StartPipeline() {
   started_ = true;
   pipeline_->Start(
       filter_collection_.Pass(),
       base::Bind(&WebMediaPlayerProxy::PipelineEndedCallback, proxy_.get()),
       base::Bind(&WebMediaPlayerProxy::PipelineErrorCallback, proxy_.get()),
-      base::Bind(&WebMediaPlayerProxy::NetworkEventCallback, proxy_.get()),
       base::Bind(&WebMediaPlayerProxy::PipelineInitializationCallback,
                  proxy_.get()));
 }

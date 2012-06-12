@@ -226,7 +226,6 @@ class WebMediaPlayerImpl
   void OnPipelineSeek(media::PipelineStatus status);
   void OnPipelineEnded(media::PipelineStatus status);
   void OnPipelineError(media::PipelineStatus error);
-  void OnNetworkEvent(media::NetworkEvent type);
   void OnDemuxerOpened();
   void OnKeyNeeded(scoped_array<uint8> init_data, int init_data_size);
   void SetOpaque(bool);
@@ -234,6 +233,9 @@ class WebMediaPlayerImpl
  private:
   // Called after asynchronous initialization of a data source completed.
   void DataSourceInitialized(const GURL& gurl, media::PipelineStatus status);
+
+  // Called when the data source is downloading or paused.
+  void NotifyDownloading(bool is_downloading);
 
   // Finishes starting the pipeline due to a call to load().
   void StartPipeline();
