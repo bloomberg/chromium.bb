@@ -519,7 +519,7 @@ TabContents* BrowserView::GetActiveTabContents() const {
 gfx::ImageSkia BrowserView::GetOTRAvatarIcon() const {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   const gfx::ImageSkia* otr_avatar =
-      rb.GetNativeImageNamed(IDR_OTR_ICON).ToImageSkia();
+      rb.GetNativeImageNamed(GetOTRIconResourceID()).ToImageSkia();
   return *otr_avatar;
 }
 
@@ -1781,6 +1781,20 @@ bool BrowserView::SplitHandleMoved(views::SingleSplitView* sender) {
 
 void BrowserView::OnSysColorChange() {
   browser::MaybeShowInvertBubbleView(browser_->profile(), contents_);
+}
+
+int BrowserView::GetOTRIconResourceID() const {
+  int otr_resource_id = IDR_OTR_ICON;
+  if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) {
+    if (IsFullscreen())
+      otr_resource_id = IDR_OTR_ICON_FULLSCREEN;
+#if defined(OS_WIN)
+    if (base::win::GetMetroModule() != NULL)
+      otr_resource_id = IDR_OTR_ICON_FULLSCREEN;
+#endif
+  }
+
+  return otr_resource_id;
 }
 
 views::LayoutManager* BrowserView::CreateLayoutManager() const {
