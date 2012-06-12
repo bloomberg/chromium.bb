@@ -39,6 +39,7 @@
 #include "log.h"
 
 #define DEFAULT_NUM_WORKSPACES 1
+#define DEFAULT_WORKSPACE_CHANGE_ANIMATION_LENGTH 200
 
 enum animation_type {
 	ANIMATION_NONE,
@@ -88,6 +89,13 @@ struct desktop_shell {
 		struct wl_array array;
 		unsigned int current;
 		unsigned int num;
+
+		struct weston_animation animation;
+		int anim_dir;
+		uint32_t anim_timestamp;
+		double anim_current;
+		struct workspace *anim_from;
+		struct workspace *anim_to;
 	} workspaces;
 
 	struct {
@@ -165,6 +173,8 @@ struct shell_surface {
 	} fullscreen;
 
 	struct ping_timer *ping_timer;
+
+	struct weston_transform workspace_transform;
 
 	struct weston_output *fullscreen_output;
 	struct weston_output *output;
@@ -337,6 +347,12 @@ workspace_create(void)
 	return ws;
 }
 
+static int
+workspace_is_empty(struct workspace *ws)
+{
+	return wl_list_empty(&ws->layer.surface_list);
+}
+
 static struct workspace *
 get_workspace(struct desktop_shell *shell, unsigned int index)
 {
@@ -362,6 +378,209 @@ activate_workspace(struct desktop_shell *shell, unsigned int index)
 	shell->workspaces.current = index;
 }
 
+static unsigned int
+get_output_height(struct weston_output *output)
+{
+	return abs(output->region.extents.y1 - output->region.extents.y2);
+}
+
+static void
+surface_translate(struct weston_surface *surface, double d)
+{
+	struct shell_surface *shsurf = get_shell_surface(surface);
+	struct weston_transform *transform;
+
+	transform = &shsurf->workspace_transform;
+	if (wl_list_empty(&transform->link))
+		wl_list_insert(surface->geometry.transformation_list.prev,
+			       &shsurf->workspace_transform.link);
+
+	weston_matrix_init(&shsurf->workspace_transform.matrix);
+	weston_matrix_translate(&shsurf->workspace_transform.matrix,
+				0.0, d, 0.0);
+	surface->geometry.dirty = 1;
+}
+
+static void
+workspace_translate_out(struct workspace *ws, double fraction)
+{
+	struct weston_surface *surface;
+	unsigned int height;
+	double d;
+
+	wl_list_for_each(surface, &ws->layer.surface_list, layer_link) {
+		height = get_output_height(surface->output);
+		d = height * fraction;
+
+		surface_translate(surface, d);
+	}
+}
+
+static void
+workspace_translate_in(struct workspace *ws, double fraction)
+{
+	struct weston_surface *surface;
+	unsigned int height;
+	double d;
+
+	wl_list_for_each(surface, &ws->layer.surface_list, layer_link) {
+		height = get_output_height(surface->output);
+
+		if (fraction > 0)
+			d = -(height - height * fraction);
+		else
+			d = height + height * fraction;
+
+		surface_translate(surface, d);
+	}
+}
+
+static void
+workspace_damage_all_surfaces(struct workspace *ws)
+{
+	struct weston_surface *surface;
+
+	wl_list_for_each(surface, &ws->layer.surface_list, layer_link)
+		weston_surface_damage(surface);
+}
+
+static void
+reverse_workspace_change_animation(struct desktop_shell *shell,
+				   unsigned int index,
+				   struct workspace *from,
+				   struct workspace *to)
+{
+	shell->workspaces.current = index;
+
+	shell->workspaces.anim_to = to;
+	shell->workspaces.anim_from = from;
+	shell->workspaces.anim_dir = -1 * shell->workspaces.anim_dir;
+	shell->workspaces.anim_timestamp = 0;
+
+	workspace_damage_all_surfaces(from);
+	workspace_damage_all_surfaces(to);
+}
+
+static void
+workspace_deactivate_transforms(struct workspace *ws)
+{
+	struct weston_surface *surface;
+	struct shell_surface *shsurf;
+
+	wl_list_for_each(surface, &ws->layer.surface_list, layer_link) {
+		shsurf = get_shell_surface(surface);
+		wl_list_remove(&shsurf->workspace_transform.link);
+		wl_list_init(&shsurf->workspace_transform.link);
+		shsurf->surface->geometry.dirty = 1;
+	}
+}
+
+static void
+finish_workspace_change_animation(struct desktop_shell *shell,
+				  struct workspace *from,
+				  struct workspace *to)
+{
+	workspace_damage_all_surfaces(from);
+	workspace_damage_all_surfaces(to);
+
+	wl_list_remove(&shell->workspaces.animation.link);
+	workspace_deactivate_transforms(from);
+	workspace_deactivate_transforms(to);
+	shell->workspaces.anim_to = NULL;
+
+	wl_list_remove(&shell->workspaces.anim_from->layer.link);
+}
+
+static void
+animate_workspace_change_frame(struct weston_animation *animation,
+			       struct weston_output *output, uint32_t msecs)
+{
+	struct desktop_shell *shell =
+		container_of(animation, struct desktop_shell,
+			     workspaces.animation);
+	struct workspace *from = shell->workspaces.anim_from;
+	struct workspace *to = shell->workspaces.anim_to;
+	uint32_t t;
+	double x, y;
+
+	if (workspace_is_empty(from) && workspace_is_empty(to)) {
+		finish_workspace_change_animation(shell, from, to);
+		return;
+	}
+
+	if (shell->workspaces.anim_timestamp == 0) {
+		if (shell->workspaces.anim_current == 0.0)
+			shell->workspaces.anim_timestamp = msecs;
+		else
+			shell->workspaces.anim_timestamp =
+				msecs -
+				/* Invers of movement function 'y' below. */
+				(asin(1.0 - shell->workspaces.anim_current) *
+				 DEFAULT_WORKSPACE_CHANGE_ANIMATION_LENGTH *
+				 M_2_PI);
+	}
+
+	t = msecs - shell->workspaces.anim_timestamp;
+
+	/*
+	 * x = [0, π/2]
+	 * y(x) = sin(x)
+	 */
+	x = t * (1.0/DEFAULT_WORKSPACE_CHANGE_ANIMATION_LENGTH) * M_PI_2;
+	y = sin(x);
+
+	if (t < DEFAULT_WORKSPACE_CHANGE_ANIMATION_LENGTH) {
+		workspace_damage_all_surfaces(from);
+		workspace_damage_all_surfaces(to);
+
+		workspace_translate_out(from, shell->workspaces.anim_dir * y);
+		workspace_translate_in(to, shell->workspaces.anim_dir * y);
+		shell->workspaces.anim_current = y;
+
+		workspace_damage_all_surfaces(from);
+		workspace_damage_all_surfaces(to);
+	}
+	else {
+		finish_workspace_change_animation(shell, from, to);
+	}
+}
+
+static void
+animate_workspace_change(struct desktop_shell *shell,
+			 unsigned int index,
+			 struct workspace *from,
+			 struct workspace *to)
+{
+	struct weston_output *output;
+
+	int dir;
+
+	if (index > shell->workspaces.current)
+		dir = -1;
+	else
+		dir = 1;
+
+	shell->workspaces.current = index;
+
+	shell->workspaces.anim_dir = dir;
+	shell->workspaces.anim_from = from;
+	shell->workspaces.anim_to = to;
+	shell->workspaces.anim_current = 0.0;
+	shell->workspaces.anim_timestamp = 0;
+
+	output = container_of(shell->compositor->output_list.next,
+			      struct weston_output, link);
+	wl_list_insert(&output->animation_list,
+		       &shell->workspaces.animation.link);
+
+	wl_list_insert(&from->layer.link, &to->layer.link);
+
+	workspace_translate_in(to, 0);
+
+	workspace_damage_all_surfaces(from);
+	workspace_damage_all_surfaces(to);
+}
+
 static void
 change_workspace(struct desktop_shell *shell, unsigned int index)
 {
@@ -384,11 +603,24 @@ change_workspace(struct desktop_shell *shell, unsigned int index)
 	from = get_current_workspace(shell);
 	to = get_workspace(shell, index);
 
-	shell->workspaces.current = index;
-	wl_list_insert(&from->layer.link, &to->layer.link);
-	wl_list_remove(&from->layer.link);
+	if (shell->workspaces.anim_from == to &&
+	    shell->workspaces.anim_to == from) {
+		reverse_workspace_change_animation(shell, index, from, to);
+		return;
+	}
 
-	weston_compositor_damage_all(shell->compositor);
+	if (shell->workspaces.anim_to != NULL)
+		finish_workspace_change_animation(shell,
+						  shell->workspaces.anim_from,
+						  shell->workspaces.anim_to);
+
+	if (workspace_is_empty(to) && workspace_is_empty(from)) {
+		shell->workspaces.current = index;
+		wl_list_insert(&from->layer.link, &to->layer.link);
+		wl_list_remove(&from->layer.link);
+	}
+	else
+		animate_workspace_change(shell, index, from, to);
 }
 
 static void
@@ -1439,6 +1671,8 @@ create_shell_surface(void *shell, struct weston_surface *surface,
 	/* empty when not in use */
 	wl_list_init(&shsurf->rotation.transform.link);
 	weston_matrix_init(&shsurf->rotation.rotation);
+
+	wl_list_init(&shsurf->workspace_transform.link);
 
 	shsurf->type = SHELL_SURFACE_NONE;
 	shsurf->next_type = SHELL_SURFACE_NONE;
@@ -2926,6 +3160,9 @@ shell_init(struct weston_compositor *ec)
 			return -1;
 	}
 	activate_workspace(shell, 0);
+
+	wl_list_init(&shell->workspaces.animation.link);
+	shell->workspaces.animation.frame = animate_workspace_change_frame;
 
 	if (wl_display_add_global(ec->wl_display, &wl_shell_interface,
 				  shell, bind_shell) == NULL)
