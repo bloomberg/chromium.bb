@@ -19,7 +19,6 @@ class CookieInfoList;
 class GURL;
 class PermissionInfoList;
 class Profile;
-class TabContents;
 class WebsiteSettings;
 
 namespace content {

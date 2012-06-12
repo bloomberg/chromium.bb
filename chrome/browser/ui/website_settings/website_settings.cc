@@ -24,7 +24,6 @@
 #include "chrome/browser/content_settings/local_shared_objects_container.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 #include "chrome/common/content_settings_pattern.h"
 #include "content/public/browser/browser_thread.h"
