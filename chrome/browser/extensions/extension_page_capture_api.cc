@@ -8,7 +8,7 @@
 #include "base/file_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/notification_details.h"
@@ -186,11 +186,11 @@ void PageCaptureSaveAsMHTMLFunction::ReturnSuccess(int64 file_size) {
 
 WebContents* PageCaptureSaveAsMHTMLFunction::GetWebContents() {
   Browser* browser = NULL;
-  TabContentsWrapper* tab_contents_wrapper = NULL;
+  TabContents* tab_contents = NULL;
 
   if (!ExtensionTabUtil::GetTabById(tab_id_, profile(), include_incognito(),
-      &browser, NULL, &tab_contents_wrapper, NULL)) {
+      &browser, NULL, &tab_contents, NULL)) {
     return NULL;
   }
-  return tab_contents_wrapper->web_contents();
+  return tab_contents->web_contents();
 }

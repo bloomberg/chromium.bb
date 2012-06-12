@@ -15,7 +15,7 @@
 #include "chrome/browser/extensions/extension_window_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
@@ -97,8 +97,7 @@ void ExtensionBrowserEventRouter::Init() {
     Browser* browser = *iter;
     if (browser->tab_strip_model()) {
       for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
-        WebContents* contents =
-            browser->GetTabContentsWrapperAt(i)->web_contents();
+        WebContents* contents = browser->GetTabContentsAt(i)->web_contents();
         int tab_id = ExtensionTabUtil::GetTabId(contents);
         tab_entries_[tab_id] = TabEntry();
       }
@@ -144,7 +143,7 @@ void ExtensionBrowserEventRouter::RegisterForBrowserNotifications(
 
   for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
     RegisterForTabNotifications(
-        browser->GetTabContentsWrapperAt(i)->web_contents());
+        browser->GetTabContentsAt(i)->web_contents());
   }
 }
 
@@ -266,7 +265,7 @@ void ExtensionBrowserEventRouter::TabCreatedAt(WebContents* contents,
   RegisterForTabNotifications(contents);
 }
 
-void ExtensionBrowserEventRouter::TabInsertedAt(TabContentsWrapper* contents,
+void ExtensionBrowserEventRouter::TabInsertedAt(TabContents* contents,
                                                 int index,
                                                 bool active) {
   // If tab is new, send created event.
@@ -294,7 +293,7 @@ void ExtensionBrowserEventRouter::TabInsertedAt(TabContentsWrapper* contents,
   DispatchEvent(contents->profile(), events::kOnTabAttached, json_args);
 }
 
-void ExtensionBrowserEventRouter::TabDetachedAt(TabContentsWrapper* contents,
+void ExtensionBrowserEventRouter::TabDetachedAt(TabContents* contents,
                                                 int index) {
   if (!GetTabEntry(contents->web_contents())) {
     // The tab was removed. Don't send detach event.
@@ -319,7 +318,7 @@ void ExtensionBrowserEventRouter::TabDetachedAt(TabContentsWrapper* contents,
 }
 
 void ExtensionBrowserEventRouter::TabClosingAt(TabStripModel* tab_strip_model,
-                                               TabContentsWrapper* contents,
+                                               TabContents* contents,
                                                int index) {
   int tab_id = ExtensionTabUtil::GetTabId(contents->web_contents());
 
@@ -343,8 +342,8 @@ void ExtensionBrowserEventRouter::TabClosingAt(TabStripModel* tab_strip_model,
 }
 
 void ExtensionBrowserEventRouter::ActiveTabChanged(
-    TabContentsWrapper* old_contents,
-    TabContentsWrapper* new_contents,
+    TabContents* old_contents,
+    TabContents* new_contents,
     int index,
     bool user_gesture) {
   ListValue args;
@@ -382,7 +381,7 @@ void ExtensionBrowserEventRouter::TabSelectionChanged(
 
   for (size_t i = 0; i < new_selection.size(); ++i) {
     int index = new_selection[i];
-    TabContentsWrapper* contents = tab_strip_model->GetTabContentsAt(index);
+    TabContents* contents = tab_strip_model->GetTabContentsAt(index);
     if (!contents)
       break;
     int tab_id = ExtensionTabUtil::GetTabId(contents->web_contents());
@@ -407,7 +406,7 @@ void ExtensionBrowserEventRouter::TabSelectionChanged(
   DispatchEvent(profile, events::kOnTabHighlighted, json_args);
 }
 
-void ExtensionBrowserEventRouter::TabMoved(TabContentsWrapper* contents,
+void ExtensionBrowserEventRouter::TabMoved(TabContents* contents,
                                            int from_index,
                                            int to_index) {
   ListValue args;
@@ -575,7 +574,7 @@ void ExtensionBrowserEventRouter::Observe(
   }
 }
 
-void ExtensionBrowserEventRouter::TabChangedAt(TabContentsWrapper* contents,
+void ExtensionBrowserEventRouter::TabChangedAt(TabContents* contents,
                                                int index,
                                                TabChangeType change_type) {
   TabUpdated(contents->web_contents(), false);
@@ -583,15 +582,15 @@ void ExtensionBrowserEventRouter::TabChangedAt(TabContentsWrapper* contents,
 
 void ExtensionBrowserEventRouter::TabReplacedAt(
     TabStripModel* tab_strip_model,
-    TabContentsWrapper* old_contents,
-    TabContentsWrapper* new_contents,
+    TabContents* old_contents,
+    TabContents* new_contents,
     int index) {
   TabClosingAt(tab_strip_model, old_contents, index);
   TabInsertedAt(new_contents, index, tab_strip_model->active_index() == index);
 }
 
 void ExtensionBrowserEventRouter::TabPinnedStateChanged(
-    TabContentsWrapper* contents,
+    TabContents* contents,
     int index) {
   TabStripModel* tab_strip = NULL;
   int tab_index;
@@ -632,7 +631,7 @@ void ExtensionBrowserEventRouter::DispatchOldPageActionEvent(
 void ExtensionBrowserEventRouter::BrowserActionExecuted(
     const std::string& extension_id, Browser* browser) {
   Profile* profile = browser->profile();
-  TabContentsWrapper* tab_contents = NULL;
+  TabContents* tab_contents = NULL;
   int tab_id = 0;
   if (!ExtensionTabUtil::GetDefaultTab(browser, &tab_contents, &tab_id))
     return;
@@ -648,7 +647,7 @@ void ExtensionBrowserEventRouter::PageActionExecuted(
     int button) {
   DispatchOldPageActionEvent(profile, extension_id, page_action_id, tab_id, url,
                              button);
-  TabContentsWrapper* tab_contents = NULL;
+  TabContents* tab_contents = NULL;
   if (!ExtensionTabUtil::GetTabById(tab_id, profile, profile->IsOffTheRecord(),
                                     NULL, NULL, &tab_contents, NULL)) {
     return;
@@ -674,7 +673,7 @@ void ExtensionBrowserEventRouter::CommandExecuted(
 void ExtensionBrowserEventRouter::ExtensionActionExecuted(
     Profile* profile,
     const std::string& extension_id,
-    TabContentsWrapper* tab_contents) {
+    TabContents* tab_contents) {
   const extensions::Extension* extension =
       profile->GetExtensionService()->GetExtensionById(extension_id, false);
   if (!extension)

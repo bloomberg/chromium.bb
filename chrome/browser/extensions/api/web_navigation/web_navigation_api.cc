@@ -16,7 +16,7 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/retargeting_details.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
@@ -458,11 +458,10 @@ void WebNavigationEventRouter::Retargeting(const RetargetingDetails* details) {
     return;
 
   // If the WebContents was created as a response to an IPC from a renderer
-  // (and therefore doesn't yet have a wrapper), or if it isn't yet inserted
+  // (and therefore doesn't yet have a TabContents), or if it isn't yet inserted
   // into a tab strip, we need to delay the extension event until the
   // WebContents is fully initialized.
-  if ((TabContentsWrapper::GetCurrentWrapperForContents(
-       details->target_web_contents) == NULL) ||
+  if (TabContents::FromWebContents(details->target_web_contents) == NULL ||
       details->not_yet_in_tabstrip) {
     pending_web_contents_[details->target_web_contents] =
         PendingWebContents(
@@ -731,14 +730,18 @@ bool GetFrameFunction::RunImpl() {
 
   result_.reset(Value::CreateNullValue());
 
-  TabContentsWrapper* wrapper;
-  if (!ExtensionTabUtil::GetTabById(
-        tab_id, profile(), include_incognito(), NULL, NULL, &wrapper, NULL) ||
-      !wrapper) {
+  TabContents* tab_contents;
+  if (!ExtensionTabUtil::GetTabById(tab_id,
+                                    profile(),
+                                    include_incognito(),
+                                    NULL, NULL,
+                                    &tab_contents,
+                                    NULL) ||
+      !tab_contents) {
     return true;
   }
 
-  WebContents* web_contents = wrapper->web_contents();
+  WebContents* web_contents = tab_contents->web_contents();
   WebNavigationTabObserver* observer =
       WebNavigationTabObserver::Get(web_contents);
   DCHECK(observer);
@@ -774,14 +777,18 @@ bool GetAllFramesFunction::RunImpl() {
 
   result_.reset(Value::CreateNullValue());
 
-  TabContentsWrapper* wrapper;
-  if (!ExtensionTabUtil::GetTabById(
-        tab_id, profile(), include_incognito(), NULL, NULL, &wrapper, NULL) ||
-      !wrapper) {
+  TabContents* tab_contents;
+  if (!ExtensionTabUtil::GetTabById(tab_id,
+                                    profile(),
+                                    include_incognito(),
+                                    NULL, NULL,
+                                    &tab_contents,
+                                    NULL) ||
+      !tab_contents) {
     return true;
   }
 
-  WebContents* web_contents = wrapper->web_contents();
+  WebContents* web_contents = tab_contents->web_contents();
   WebNavigationTabObserver* observer =
       WebNavigationTabObserver::Get(web_contents);
   DCHECK(observer);

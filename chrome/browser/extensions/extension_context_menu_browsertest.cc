@@ -143,7 +143,7 @@ class ExtensionContextMenuBrowserTest : public ExtensionBrowserTest {
                                         const GURL& page_url,
                                         const GURL& link_url,
                                         const GURL& frame_url) {
-    WebContents* web_contents = browser->GetSelectedWebContents();
+    WebContents* web_contents = browser->GetActiveWebContents();
     WebContextMenuData data;
     content::ContextMenuParams params(data);
     params.page_url = page_url;

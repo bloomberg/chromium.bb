@@ -41,7 +41,7 @@
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/snapshot_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/window_sizer.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -181,7 +181,7 @@ bool GetTabById(int tab_id,
                 bool include_incognito,
                 Browser** browser,
                 TabStripModel** tab_strip,
-                TabContentsWrapper** contents,
+                TabContents** contents,
                 int* tab_index,
                 std::string* error_message) {
   if (ExtensionTabUtil::GetTabById(tab_id, profile, include_incognito,
@@ -391,7 +391,7 @@ bool CreateWindowFunction::ShouldOpenIncognitoWindow(
 bool CreateWindowFunction::RunImpl() {
   DictionaryValue* args = NULL;
   std::vector<GURL> urls;
-  TabContentsWrapper* contents = NULL;
+  TabContents* contents = NULL;
 
   if (HasOptionalArgument(0))
     EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
@@ -605,7 +605,7 @@ bool CreateWindowFunction::RunImpl() {
                                             extension_id);
 
   for (std::vector<GURL>::iterator i = urls.begin(); i != urls.end(); ++i) {
-    TabContentsWrapper* tab = new_window->AddSelectedTabWithURL(
+    TabContents* tab = new_window->AddSelectedTabWithURL(
         *i, content::PAGE_TRANSITION_LINK);
     if (window_type == Browser::TYPE_PANEL)
       tab->extension_tab_helper()->SetExtensionAppIconById(extension_id);
@@ -807,7 +807,7 @@ bool GetSelectedTabFunction::RunImpl() {
     return false;
 
   TabStripModel* tab_strip = browser->tab_strip_model();
-  TabContentsWrapper* contents = tab_strip->GetActiveTabContents();
+  TabContents* contents = tab_strip->GetActiveTabContents();
   if (!contents) {
     error_ = keys::kNoSelectedTabError;
     return false;
@@ -977,7 +977,7 @@ bool CreateTabFunction::RunImpl() {
     EXTENSION_FUNCTION_VALIDATE(args->GetInteger(
         keys::kOpenerTabIdKey, &opener_id));
 
-    TabContentsWrapper* opener_contents = NULL;
+    TabContents* opener_contents = NULL;
     if (!ExtensionTabUtil::GetTabById(
             opener_id, profile(), include_incognito(),
             NULL, NULL, &opener_contents, NULL))
@@ -1088,7 +1088,7 @@ bool GetTabFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &tab_id));
 
   TabStripModel* tab_strip = NULL;
-  TabContentsWrapper* contents = NULL;
+  TabContents* contents = NULL;
   int tab_index = -1;
   if (!GetTabById(tab_id, profile(), include_incognito(),
                   NULL, &tab_strip, &contents, &tab_index, &error_))
@@ -1179,7 +1179,7 @@ bool UpdateTabFunction::RunImpl() {
   }
 
   int tab_id = -1;
-  TabContentsWrapper* contents = NULL;
+  TabContents* contents = NULL;
   if (tab_value == NULL || tab_value->IsType(Value::TYPE_NULL)) {
     Browser* browser = GetCurrentBrowser();
     if (!browser) {
@@ -1257,7 +1257,7 @@ bool UpdateTabFunction::RunImpl() {
     EXTENSION_FUNCTION_VALIDATE(update_props->GetInteger(
         keys::kOpenerTabIdKey, &opener_id));
 
-    TabContentsWrapper* opener_contents = NULL;
+    TabContents* opener_contents = NULL;
     if (!ExtensionTabUtil::GetTabById(
             opener_id, profile(), include_incognito(),
             NULL, NULL, &opener_contents, NULL))
@@ -1372,7 +1372,7 @@ bool MoveTabsFunction::RunImpl() {
   for (size_t i = 0; i < tab_ids.size(); ++i) {
     Browser* source_browser = NULL;
     TabStripModel* source_tab_strip = NULL;
-    TabContentsWrapper* contents = NULL;
+    TabContents* contents = NULL;
     int tab_index = -1;
     if (!GetTabById(tab_ids[i], profile(), include_incognito(),
                     &source_browser, &source_tab_strip, &contents,
@@ -1482,7 +1482,7 @@ bool ReloadTabFunction::RunImpl() {
       }
   }
 
-  TabContentsWrapper* contents = NULL;
+  TabContents* contents = NULL;
 
   // If |tab_id| is specified, look for it. Otherwise default to selected tab
   // in the current window.
@@ -1535,7 +1535,7 @@ bool RemoveTabsFunction::RunImpl() {
 
   for (size_t i = 0; i < tab_ids.size(); ++i) {
     Browser* browser = NULL;
-    TabContentsWrapper* contents = NULL;
+    TabContents* contents = NULL;
     if (!GetTabById(tab_ids[i], profile(), include_incognito(),
                     &browser, NULL, &contents, NULL, &error_))
       return false;
@@ -1555,7 +1555,7 @@ bool RemoveTabsFunction::RunImpl() {
 }
 
 bool CaptureVisibleTabFunction::GetTabToCapture(
-    WebContents** web_contents, TabContentsWrapper** wrapper) {
+    WebContents** web_contents, TabContents** tab_contents) {
   Browser* browser = NULL;
   // windowId defaults to "current" window.
   int window_id = extension_misc::kCurrentWindowId;
@@ -1566,21 +1566,21 @@ bool CaptureVisibleTabFunction::GetTabToCapture(
   if (!GetBrowserFromWindowID(this, window_id, &browser))
     return false;
 
-  *web_contents = browser->GetSelectedWebContents();
+  *web_contents = browser->GetActiveWebContents();
   if (*web_contents == NULL) {
     error_ = keys::kInternalVisibleTabCaptureError;
     return false;
   }
 
-  *wrapper = browser->GetSelectedTabContentsWrapper();
+  *tab_contents = browser->GetActiveTabContents();
 
   return true;
 };
 
 bool CaptureVisibleTabFunction::RunImpl() {
   WebContents* web_contents = NULL;
-  TabContentsWrapper* wrapper = NULL;
-  if (!GetTabToCapture(&web_contents, &wrapper))
+  TabContents* tab_contents = NULL;
+  if (!GetTabToCapture(&web_contents, &tab_contents))
     return false;
 
   image_format_ = FORMAT_JPEG;  // Default format is JPEG.
@@ -1644,8 +1644,8 @@ void CaptureVisibleTabFunction::CopyFromBackingStoreComplete(
   }
 
   WebContents* web_contents = NULL;
-  TabContentsWrapper* wrapper = NULL;
-  if (!GetTabToCapture(&web_contents, &wrapper)) {
+  TabContents* tab_contents = NULL;
+  if (!GetTabToCapture(&web_contents, &tab_contents)) {
     error_ = keys::kInternalVisibleTabCaptureError;
     SendResponse(false);
     return;
@@ -1656,7 +1656,7 @@ void CaptureVisibleTabFunction::CopyFromBackingStoreComplete(
                  chrome::NOTIFICATION_TAB_SNAPSHOT_TAKEN,
                  content::Source<WebContents>(web_contents));
   AddRef();  // Balanced in CaptureVisibleTabFunction::Observe().
-  wrapper->snapshot_tab_helper()->CaptureSnapshot();
+  tab_contents->snapshot_tab_helper()->CaptureSnapshot();
 }
 
 // If a backing store was not available in CaptureVisibleTabFunction::RunImpl,
@@ -1734,7 +1734,7 @@ void CaptureVisibleTabFunction::SendResultFromBitmap(
 bool DetectTabLanguageFunction::RunImpl() {
   int tab_id = 0;
   Browser* browser = NULL;
-  TabContentsWrapper* contents = NULL;
+  TabContents* contents = NULL;
 
   // If |tab_id| is specified, look for it. Otherwise default to selected tab
   // in the current window.

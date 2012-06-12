@@ -183,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationUserAction) {
   ASSERT_TRUE(
       RunExtensionSubtest("webnavigation", "test_userAction.html")) << message_;
 
-  WebContents* tab = browser()->GetSelectedWebContents();
+  WebContents* tab = browser()->GetActiveWebContents();
   ui_test_utils::WaitForLoadStop(tab);
 
   ResultCatcher catcher;
@@ -221,7 +221,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationRequestOpenTab) {
   ASSERT_TRUE(RunExtensionSubtest("webnavigation", "test_requestOpenTab.html"))
       << message_;
 
-  WebContents* tab = browser()->GetSelectedWebContents();
+  WebContents* tab = browser()->GetActiveWebContents();
   ui_test_utils::WaitForLoadStop(tab);
 
   ResultCatcher catcher;
@@ -258,7 +258,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationTargetBlank) {
   ASSERT_TRUE(RunExtensionSubtest("webnavigation", "test_targetBlank.html"))
       << message_;
 
-  WebContents* tab = browser()->GetSelectedWebContents();
+  WebContents* tab = browser()->GetActiveWebContents();
   ui_test_utils::WaitForLoadStop(tab);
 
   ResultCatcher catcher;
@@ -304,7 +304,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebNavigationTargetBlankIncognito) {
   ui_test_utils::OpenURLOffTheRecord(browser()->profile(), url);
   WebContents* tab = browser::FindTabbedBrowser(
       browser()->profile()->GetOffTheRecordProfile(), false)->
-          GetSelectedWebContents();
+          GetActiveWebContents();
 
   // There's a link with target=_blank on a.html. Click on it to open it in a
   // new tab.

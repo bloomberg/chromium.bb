@@ -10,7 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -24,7 +24,7 @@ class ExtensionInstallUIBrowserTest : public ExtensionBrowserTest {
   // Checks that a theme info bar is currently visible and issues an undo to
   // revert to the previous theme.
   void VerifyThemeInfoBarAndUndoInstall() {
-    TabContentsWrapper* tab = browser()->GetSelectedTabContentsWrapper();
+    TabContents* tab = browser()->GetActiveTabContents();
     ASSERT_TRUE(tab);
     InfoBarTabHelper* infobar_helper = tab->infobar_tab_helper();
     ASSERT_EQ(1U, infobar_helper->infobar_count());
@@ -111,7 +111,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
 
   if (NewTabUI::ShouldShowApps()) {
     EXPECT_EQ(num_tabs + 1, browser()->tab_count());
-    WebContents* web_contents = browser()->GetSelectedWebContents();
+    WebContents* web_contents = browser()->GetActiveWebContents();
     ASSERT_TRUE(web_contents);
     EXPECT_TRUE(StartsWithASCII(web_contents->GetURL().spec(),
                                 "chrome://newtab/", false));
@@ -136,7 +136,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
   EXPECT_EQ(num_incognito_tabs, incognito_browser->tab_count());
   if (NewTabUI::ShouldShowApps()) {
     EXPECT_EQ(num_normal_tabs + 1, browser()->tab_count());
-    WebContents* web_contents = browser()->GetSelectedWebContents();
+    WebContents* web_contents = browser()->GetActiveWebContents();
     ASSERT_TRUE(web_contents);
     EXPECT_TRUE(StartsWithASCII(web_contents->GetURL().spec(),
                                 "chrome://newtab/", false));

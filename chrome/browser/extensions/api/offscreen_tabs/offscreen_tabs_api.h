@@ -29,7 +29,6 @@
 class BackingStore;
 class SkBitmap;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 namespace content {
 class WebContents;
 }  // namespace content
@@ -154,7 +153,7 @@ class ToDataUrlOffscreenTabFunction : public CaptureVisibleTabFunction {
 
   // CaptureVisibleTabFunction:
   virtual bool GetTabToCapture(content::WebContents** web_contents,
-                               TabContentsWrapper** wrapper) OVERRIDE;
+                               TabContents** tab_contents) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ToDataUrlOffscreenTabFunction);

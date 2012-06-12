@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/simple_message_box.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -130,7 +130,7 @@ void ExtensionInstallUIDefault::ShowThemeInfoBar(
   if (!browser)
     return;
 
-  TabContentsWrapper* tab_contents = browser->GetSelectedTabContentsWrapper();
+  TabContents* tab_contents = browser->GetActiveTabContents();
   if (!tab_contents)
     return;
   InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
@@ -163,7 +163,7 @@ void ExtensionInstallUIDefault::ShowThemeInfoBar(
 }
 
 InfoBarDelegate* ExtensionInstallUIDefault::GetNewThemeInstalledInfoBarDelegate(
-    TabContentsWrapper* tab_contents,
+    TabContents* tab_contents,
     const Extension* new_theme,
     const std::string& previous_theme_id,
     bool previous_using_native_theme) {

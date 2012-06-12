@@ -13,7 +13,6 @@ namespace base {
 class DictionaryValue;
 }
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 // Implementation of both the browserAction and pageAction APIs.
 //
@@ -45,7 +44,7 @@ class ExtensionActionFunction : public SyncExtensionFunction {
   int tab_id_;
 
   // Tab content for |tab_id_| if one exists.
-  TabContentsWrapper* contents_;
+  TabContents* contents_;
 
   // The extension action for the current extension.
   ExtensionAction* extension_action_;

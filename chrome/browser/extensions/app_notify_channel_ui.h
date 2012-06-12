@@ -13,7 +13,6 @@
 
 class Profile;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 // An interface for prompting a user to sign in to sync so that we can create
 // an app notification channel for one of their apps.
@@ -47,7 +46,7 @@ class AppNotifyChannelUIImpl : public AppNotifyChannelUI,
                                public ProfileSyncServiceObserver {
  public:
   AppNotifyChannelUIImpl(Profile* profile,
-                         TabContentsWrapper* wrapper,
+                         TabContents* tab_contents,
                          const std::string& app_name,
                          AppNotifyChannelUI::UIType ui_type);
   virtual ~AppNotifyChannelUIImpl();
@@ -57,7 +56,7 @@ class AppNotifyChannelUIImpl : public AppNotifyChannelUI,
 
  protected:
   // A private class we use to put up an infobar - its lifetime is managed by
-  // |wrapper_|, so we don't have one as an instance variable.
+  // |tab_contents_|, so we don't have one as an instance variable.
   class InfoBar;
   friend class AppNotifyChannelUIImpl::InfoBar;
 
@@ -72,7 +71,7 @@ class AppNotifyChannelUIImpl : public AppNotifyChannelUI,
   void StopObservingSync();
 
   Profile* profile_;
-  TabContentsWrapper* wrapper_;
+  TabContents* tab_contents_;
   std::string app_name_;
   AppNotifyChannelUI::UIType ui_type_;
   AppNotifyChannelUI::Delegate* delegate_;

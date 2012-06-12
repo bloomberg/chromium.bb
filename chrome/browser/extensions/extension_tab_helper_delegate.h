@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,6 @@
 #include "base/basictypes.h"
 
 class TabContents;
-typedef TabContents TabContentsWrapper;
 struct WebApplicationInfo;
 
 // Objects implement this interface to get notified about changes in the
@@ -17,11 +16,11 @@ struct WebApplicationInfo;
 class ExtensionTabHelperDelegate {
  public:
   // Notification that a user's request to install an application has completed.
-  virtual void OnDidGetApplicationInfo(TabContentsWrapper* source,
+  virtual void OnDidGetApplicationInfo(TabContents* source,
                                        int32 page_id);
 
   // Notification when an application programmatically requests installation.
-  virtual void OnInstallApplication(TabContentsWrapper* source,
+  virtual void OnInstallApplication(TabContents* source,
                                     const WebApplicationInfo& app_info);
  protected:
   virtual ~ExtensionTabHelperDelegate();

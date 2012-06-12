@@ -4,11 +4,11 @@
 
 #include "chrome/browser/extensions/page_action_controller.h"
 
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
@@ -16,7 +16,7 @@
 
 namespace extensions {
 
-PageActionController::PageActionController(TabContentsWrapper* tab_contents)
+PageActionController::PageActionController(TabContents* tab_contents)
     : tab_contents_(tab_contents) {}
 
 PageActionController::~PageActionController() {}

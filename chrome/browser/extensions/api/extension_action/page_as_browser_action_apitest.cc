@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
@@ -72,7 +72,7 @@ IN_PROC_BROWSER_TEST_F(PageAsBrowserActionApiTest, Basic) {
   }
 
   // Test that we received the changes.
-  int tab_id = ExtensionTabUtil::GetTabId(browser()->GetSelectedWebContents());
+  int tab_id = ExtensionTabUtil::GetTabId(browser()->GetActiveWebContents());
   ExtensionAction* action = extension->browser_action();
   ASSERT_TRUE(action);
   EXPECT_EQ("Modified", action->GetTitle(tab_id));
@@ -104,7 +104,7 @@ IN_PROC_BROWSER_TEST_F(PageAsBrowserActionApiTest, AddPopup) {
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
 
-  int tab_id = ExtensionTabUtil::GetTabId(browser()->GetSelectedWebContents());
+  int tab_id = ExtensionTabUtil::GetTabId(browser()->GetActiveWebContents());
 
   ExtensionAction* page_action = extension->browser_action();
   ASSERT_TRUE(page_action)
@@ -149,7 +149,7 @@ IN_PROC_BROWSER_TEST_F(PageAsBrowserActionApiTest, RemovePopup) {
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
 
-  int tab_id = ExtensionTabUtil::GetTabId(browser()->GetSelectedWebContents());
+  int tab_id = ExtensionTabUtil::GetTabId(browser()->GetActiveWebContents());
 
   ExtensionAction* page_action = extension->browser_action();
   ASSERT_TRUE(page_action)

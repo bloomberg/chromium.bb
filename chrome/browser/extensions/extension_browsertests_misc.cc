@@ -17,7 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -98,7 +98,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WebContents) {
 
   bool result = false;
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
+      browser()->GetActiveWebContents()->GetRenderViewHost(), L"",
       L"testTabsAPI()", &result));
   EXPECT_TRUE(result);
 
@@ -110,7 +110,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WebContents) {
       GURL("chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/page.html"));
   result = false;
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
+      browser()->GetActiveWebContents()->GetRenderViewHost(), L"",
       L"testTabsAPI()", &result));
   EXPECT_TRUE(result);
 }
@@ -304,7 +304,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationBrowserAction) {
                extension->description().c_str());
   EXPECT_STREQ(WideToUTF8(L"Hreggvi\u00F0ur is my name").c_str(),
                extension->name().c_str());
-  int tab_id = ExtensionTabUtil::GetTabId(browser()->GetSelectedWebContents());
+  int tab_id = ExtensionTabUtil::GetTabId(browser()->GetActiveWebContents());
   EXPECT_STREQ(WideToUTF8(L"Hreggvi\u00F0ur").c_str(),
                extension->browser_action()->GetTitle(tab_id).c_str());
 }
@@ -333,7 +333,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationPageAction) {
                extension->description().c_str());
   EXPECT_STREQ(WideToUTF8(L"Hreggvi\u00F0ur is my name").c_str(),
                extension->name().c_str());
-  int tab_id = ExtensionTabUtil::GetTabId(browser()->GetSelectedWebContents());
+  int tab_id = ExtensionTabUtil::GetTabId(browser()->GetActiveWebContents());
   EXPECT_STREQ(WideToUTF8(L"Hreggvi\u00F0ur").c_str(),
                extension->page_action()->GetTitle(tab_id).c_str());
 }
@@ -418,7 +418,7 @@ void NavigateToFeedAndValidate(net::TestServer* server,
   ui_test_utils::NavigateToURL(browser,
                                GetFeedUrl(server, url, true, extension_id));
 
-  WebContents* tab = browser->GetSelectedWebContents();
+  WebContents* tab = browser->GetActiveWebContents();
   ASSERT_TRUE(ValidatePageElement(tab,
                                   L"",
                                   jscript_feed_title,
@@ -661,7 +661,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenExtension) {
       last_loaded_extension_id_ + "/test.html");
   ui_test_utils::NavigateToURL(browser(), start_url);
   WebContents* newtab;
-  ASSERT_NO_FATAL_FAILURE(OpenWindow(browser()->GetSelectedWebContents(),
+  ASSERT_NO_FATAL_FAILURE(OpenWindow(browser()->GetActiveWebContents(),
                           start_url.Resolve("newtab.html"), true, &newtab));
 
   bool result = false;
@@ -679,7 +679,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenInvalidExtension) {
   GURL start_url(std::string("chrome-extension://") +
       last_loaded_extension_id_ + "/test.html");
   ui_test_utils::NavigateToURL(browser(), start_url);
-  ASSERT_NO_FATAL_FAILURE(OpenWindow(browser()->GetSelectedWebContents(),
+  ASSERT_NO_FATAL_FAILURE(OpenWindow(browser()->GetActiveWebContents(),
       GURL("chrome-extension://thisissurelynotavalidextensionid/newtab.html"),
       false, NULL));
 
@@ -696,7 +696,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenNoPrivileges) {
 
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
   WebContents* newtab;
-  ASSERT_NO_FATAL_FAILURE(OpenWindow(browser()->GetSelectedWebContents(),
+  ASSERT_NO_FATAL_FAILURE(OpenWindow(browser()->GetActiveWebContents(),
       GURL(std::string("chrome-extension://") + last_loaded_extension_id_ +
           "/newtab.html"), false, &newtab));
 
@@ -731,7 +731,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
 
   ui_test_utils::NavigateToURL(browser(),
       net::FilePathToFileURL(extension_dir.AppendASCII("test.html")));
-  WebContents* tab = browser()->GetSelectedWebContents();
+  WebContents* tab = browser()->GetActiveWebContents();
 
   // With no extensions, the plugin should not be loaded.
   bool result = false;
@@ -768,8 +768,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(
-            &browser()->GetSelectedTabContentsWrapper()->web_contents()->
-                GetController()));
+            &browser()->GetActiveWebContents()->GetController()));
     browser()->Reload(CURRENT_TAB);
     observer.Wait();
   }
@@ -800,7 +799,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginPrivate) {
   // Load the test page through the extension URL, and the plugin should work.
   ui_test_utils::NavigateToURL(browser(),
       extension->GetResourceURL("test.html"));
-  WebContents* tab = browser()->GetSelectedWebContents();
+  WebContents* tab = browser()->GetActiveWebContents();
   bool result = false;
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       tab->GetRenderViewHost(), L"", L"testPluginWorks()", &result));
@@ -844,7 +843,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_OptionsPage) {
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIExtensionsURL));
   TabStripModel* tab_strip = browser()->tab_strip_model();
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
-      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
+      browser()->GetActiveWebContents()->GetRenderViewHost(), L"",
       jscript_click_option_button));
 
   // If the options page hasn't already come up, wait for it.

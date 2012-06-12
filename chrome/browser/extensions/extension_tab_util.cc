@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -41,10 +41,9 @@ int ExtensionTabUtil::GetWindowIdOfTabStripModel(
   return -1;
 }
 
-// TODO(sky): this function should really take a TabContentsWrapper.
+// TODO(sky): this function should really take a TabContents.
 int ExtensionTabUtil::GetTabId(const WebContents* web_contents) {
-  const TabContentsWrapper* tab =
-      TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
+  const TabContents* tab = TabContents::FromWebContents(web_contents);
   return tab ? tab->restore_tab_helper()->session_id().id() : -1;
 }
 
@@ -52,10 +51,9 @@ std::string ExtensionTabUtil::GetTabStatusText(bool is_loading) {
   return is_loading ? keys::kStatusValueLoading : keys::kStatusValueComplete;
 }
 
-// TODO(sky): this function should really take a TabContentsWrapper.
+// TODO(sky): this function should really take a TabContents.
 int ExtensionTabUtil::GetWindowIdOfTab(const WebContents* web_contents) {
-  const TabContentsWrapper* tab =
-      TabContentsWrapper::GetCurrentWrapperForContents(web_contents);
+  const TabContents* tab = TabContents::FromWebContents(web_contents);
   return tab ? tab->restore_tab_helper()->window_id().id() : -1;
 }
 
@@ -154,12 +152,12 @@ bool ExtensionTabUtil::GetTabStripModel(const WebContents* web_contents,
 }
 
 bool ExtensionTabUtil::GetDefaultTab(Browser* browser,
-                                     TabContentsWrapper** contents,
+                                     TabContents** contents,
                                      int* tab_id) {
   DCHECK(browser);
   DCHECK(contents);
 
-  *contents = browser->GetSelectedTabContentsWrapper();
+  *contents = browser->GetActiveTabContents();
   if (*contents) {
     if (tab_id)
       *tab_id = ExtensionTabUtil::GetTabId((*contents)->web_contents());
@@ -174,7 +172,7 @@ bool ExtensionTabUtil::GetTabById(int tab_id,
                                   bool include_incognito,
                                   Browser** browser,
                                   TabStripModel** tab_strip,
-                                  TabContentsWrapper** contents,
+                                  TabContents** contents,
                                   int* tab_index) {
   Profile* incognito_profile =
       include_incognito && profile->HasOffTheRecordProfile() ?
@@ -186,8 +184,7 @@ bool ExtensionTabUtil::GetTabById(int tab_id,
         target_browser->profile() == incognito_profile) {
       TabStripModel* target_tab_strip = target_browser->tab_strip_model();
       for (int i = 0; i < target_tab_strip->count(); ++i) {
-        TabContentsWrapper* target_contents =
-            target_tab_strip->GetTabContentsAt(i);
+        TabContents* target_contents = target_tab_strip->GetTabContentsAt(i);
         if (target_contents->restore_tab_helper()->session_id().id() ==
             tab_id) {
           if (browser)

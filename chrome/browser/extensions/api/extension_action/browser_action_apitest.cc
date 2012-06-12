@@ -80,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Basic) {
   service->toolbar_model()->ExecuteBrowserAction(extension, browser(), NULL);
 
   // Verify the command worked.
-  WebContents* tab = browser()->GetSelectedWebContents();
+  WebContents* tab = browser()->GetActiveWebContents();
   bool result = false;
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       tab->GetRenderViewHost(), L"",
@@ -196,7 +196,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionAddPopup) {
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
 
-  int tab_id = ExtensionTabUtil::GetTabId(browser()->GetSelectedWebContents());
+  int tab_id = ExtensionTabUtil::GetTabId(browser()->GetActiveWebContents());
 
   ExtensionAction* browser_action = extension->browser_action();
   ASSERT_TRUE(browser_action)
@@ -251,7 +251,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionRemovePopup) {
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
 
-  int tab_id = ExtensionTabUtil::GetTabId(browser()->GetSelectedWebContents());
+  int tab_id = ExtensionTabUtil::GetTabId(browser()->GetActiveWebContents());
 
   ExtensionAction* browser_action = extension->browser_action();
   ASSERT_TRUE(browser_action)

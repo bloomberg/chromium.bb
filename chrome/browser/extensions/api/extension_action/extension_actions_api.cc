@@ -13,7 +13,7 @@
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
@@ -84,7 +84,7 @@ bool ExtensionActionFunction::RunImpl() {
     }
   }
 
-  // Find the TabContentsWrapper that contains this tab id if one is required.
+  // Find the TabContents that contains this tab id if one is required.
   if (tab_id_ == ExtensionAction::kDefaultTabId) {
     EXTENSION_FUNCTION_VALIDATE(GetExtension()->browser_action());
   } else {

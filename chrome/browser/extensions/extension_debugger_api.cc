@@ -22,7 +22,7 @@
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
@@ -181,8 +181,7 @@ ExtensionDevToolsClientHost::ExtensionDevToolsClientHost(
   DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(agent, this);
 
   InfoBarTabHelper* infobar_helper =
-      TabContentsWrapper::GetCurrentWrapperForContents(web_contents_)->
-          infobar_tab_helper();
+      TabContents::FromWebContents(web_contents_)->infobar_tab_helper();
   infobar_delegate_ =
       new ExtensionDevToolsInfoBarDelegate(infobar_helper, extension_name);
   if (infobar_helper->AddInfoBar(infobar_delegate_)) {
@@ -199,9 +198,8 @@ ExtensionDevToolsClientHost::~ExtensionDevToolsClientHost() {
   registrar_.RemoveAll();
 
   if (infobar_delegate_) {
-    TabContentsWrapper* wrapper =
-        TabContentsWrapper::GetCurrentWrapperForContents(web_contents_);
-    InfoBarTabHelper* helper = wrapper->infobar_tab_helper();
+    TabContents* tab_contents = TabContents::FromWebContents(web_contents_);
+    InfoBarTabHelper* helper = tab_contents->infobar_tab_helper();
     if (helper)
       helper->RemoveInfoBar(infobar_delegate_);
   }
@@ -363,18 +361,18 @@ bool DebuggerFunction::InitTabContents() {
   DictionaryValue* dict = static_cast<DictionaryValue*>(debuggee);
   EXTENSION_FUNCTION_VALIDATE(dict->GetInteger(keys::kTabIdKey, &tab_id_));
 
-  // Find the TabContentsWrapper that contains this tab id.
+  // Find the TabContents that contains this tab id.
   contents_ = NULL;
-  TabContentsWrapper* wrapper = NULL;
+  TabContents* tab_contents = NULL;
   bool result = ExtensionTabUtil::GetTabById(
-      tab_id_, profile(), include_incognito(), NULL, NULL, &wrapper, NULL);
-  if (!result || !wrapper) {
+      tab_id_, profile(), include_incognito(), NULL, NULL, &tab_contents, NULL);
+  if (!result || !tab_contents) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
         keys::kNoTabError,
         base::IntToString(tab_id_));
     return false;
   }
-  contents_ = wrapper->web_contents();
+  contents_ = tab_contents->web_contents();
 
   if (content::GetContentClient()->HasWebUIScheme(
           contents_->GetURL())) {

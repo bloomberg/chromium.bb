@@ -19,7 +19,6 @@ class BackingStore;
 class GURL;
 class SkBitmap;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 namespace base {
 class DictionaryValue;
@@ -125,7 +124,7 @@ class UpdateTabFunction : public AsyncExtensionFunction {
                                   bool* is_async);
   virtual void PopulateResult();
 
-  TabContentsWrapper* tab_contents_;
+  TabContents* tab_contents_;
 
  private:
   virtual bool RunImpl() OVERRIDE;
@@ -177,7 +176,7 @@ class CaptureVisibleTabFunction : public AsyncExtensionFunction,
   virtual ~CaptureVisibleTabFunction() {}
   virtual bool RunImpl() OVERRIDE;
   virtual bool GetTabToCapture(content::WebContents** web_contents,
-                               TabContentsWrapper** wrapper);
+                               TabContents** tab_contents);
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;

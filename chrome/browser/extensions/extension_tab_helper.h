@@ -19,7 +19,6 @@
 
 class ExtensionTabHelperDelegate;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 struct WebApplicationInfo;
 
 namespace content {
@@ -42,7 +41,7 @@ class ExtensionTabHelper
       public AppNotifyChannelSetup::Delegate,
       public base::SupportsWeakPtr<ExtensionTabHelper> {
  public:
-  explicit ExtensionTabHelper(TabContentsWrapper* wrapper);
+  explicit ExtensionTabHelper(TabContents* tab_contents);
   virtual ~ExtensionTabHelper();
 
   // Copies the internal state from another ExtensionTabHelper.
@@ -91,8 +90,8 @@ class ExtensionTabHelper
   // Extension::EXTENSION_ICON_SMALLISH).
   SkBitmap* GetExtensionAppIcon();
 
-  TabContentsWrapper* tab_contents_wrapper() {
-    return wrapper_;
+  TabContents* tab_contents() {
+    return tab_contents_;
   }
 
   content::WebContents* web_contents() const {
@@ -188,7 +187,7 @@ class ExtensionTabHelper
   // Cached web app info data.
   WebApplicationInfo web_app_info_;
 
-  TabContentsWrapper* wrapper_;
+  TabContents* tab_contents_;
 
   // Either script_executor/location_bar_controller will have values, or
   // script_badge_controller will have a value, depending on whether the action

@@ -4,9 +4,9 @@
 
 #include "chrome/browser/extensions/script_badge_controller.h"
 
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -21,7 +21,7 @@
 
 namespace extensions {
 
-ScriptBadgeController::ScriptBadgeController(TabContentsWrapper* tab_contents)
+ScriptBadgeController::ScriptBadgeController(TabContents* tab_contents)
     : content::WebContentsObserver(tab_contents->web_contents()),
       script_executor_(tab_contents->web_contents()),
       tab_contents_(tab_contents) {}
@@ -119,7 +119,7 @@ void ScriptBadgeController::Notify() {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
       content::Source<Profile>(tab_contents_->profile()),
-      content::Details<TabContentsWrapper>(tab_contents_));
+      content::Details<TabContents>(tab_contents_));
 }
 
 void ScriptBadgeController::DidNavigateMainFrame(

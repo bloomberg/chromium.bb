@@ -21,7 +21,6 @@
 class ExtensionAction;
 class ExtensionService;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 namespace IPC {
 class Message;
@@ -51,7 +50,7 @@ class ScriptBadgeController
       public ScriptExecutor,
       public content::WebContentsObserver {
  public:
-  explicit ScriptBadgeController(TabContentsWrapper* tab_contents);
+  explicit ScriptBadgeController(TabContents* tab_contents);
 
   // LocationBarController implementation.
   virtual scoped_ptr<std::vector<ExtensionAction*> > GetCurrentActions()
@@ -102,8 +101,8 @@ class ScriptBadgeController
   // Delegate ScriptExecutorImpl for running ExecuteScript.
   ScriptExecutorImpl script_executor_;
 
-  // Our parent TabContentsWrapper.
-  TabContentsWrapper* tab_contents_;
+  // Our parent TabContents.
+  TabContents* tab_contents_;
 
   // The extensions that have called ExecuteScript on the current frame.
   std::set<std::string> extensions_executing_scripts_;

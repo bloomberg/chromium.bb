@@ -294,7 +294,7 @@ void ExtensionProcessManager::OpenOptionsPage(const Extension* extension,
                        content::PAGE_TRANSITION_LINK, false);
   browser->OpenURL(params);
   browser->window()->Show();
-  WebContents* web_contents = browser->GetSelectedWebContents();
+  WebContents* web_contents = browser->GetActiveWebContents();
   web_contents->GetDelegate()->ActivateContents(web_contents);
 }
 

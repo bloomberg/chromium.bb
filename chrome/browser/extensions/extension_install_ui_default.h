@@ -10,7 +10,6 @@
 
 class InfoBarDelegate;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 class ExtensionInstallUIDefault : public ExtensionInstallUI {
  public:
@@ -35,7 +34,7 @@ class ExtensionInstallUIDefault : public ExtensionInstallUI {
   // Returns the delegate to control the browser's info bar. This is
   // within its own function due to its platform-specific nature.
   static InfoBarDelegate* GetNewThemeInstalledInfoBarDelegate(
-      TabContentsWrapper* tab_contents,
+      TabContents* tab_contents,
       const extensions::Extension* new_theme,
       const std::string& previous_theme_id,
       bool previous_using_native_theme);

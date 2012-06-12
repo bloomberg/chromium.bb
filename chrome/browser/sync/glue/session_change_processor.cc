@@ -188,7 +188,7 @@ void SessionChangeProcessor::Observe(
         return;
       }
       if (extension_tab_helper->extension_app()) {
-        modified_tabs.push_back(extension_tab_helper->tab_contents_wrapper()->
+        modified_tabs.push_back(extension_tab_helper->tab_contents()->
             synced_tab_delegate());
       }
       DVLOG(1) << "Received TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED "

@@ -33,7 +33,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoNoScript) {
 
   Browser* otr_browser = browser::FindTabbedBrowser(
       browser()->profile()->GetOffTheRecordProfile(), false);
-  WebContents* tab = otr_browser->GetSelectedWebContents();
+  WebContents* tab = otr_browser->GetActiveWebContents();
 
   // Verify the script didn't run.
   bool result = false;
@@ -70,7 +70,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoYesScript) {
 
   Browser* otr_browser = browser::FindTabbedBrowser(
       browser()->profile()->GetOffTheRecordProfile(), false);
-  WebContents* tab = otr_browser->GetSelectedWebContents();
+  WebContents* tab = otr_browser->GetActiveWebContents();
 
   // Verify the script ran.
   bool result = false;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -99,7 +99,7 @@ class NaClExtensionTest : public ExtensionBrowserTest {
 
     bool embedded_plugin_created = false;
     bool content_handler_plugin_created = false;
-    WebContents* web_contents = browser()->GetSelectedWebContents();
+    WebContents* web_contents = browser()->GetActiveWebContents();
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
         web_contents->GetRenderViewHost(), L"",
         L"window.domAutomationController.send(EmbeddedPluginCreated());",

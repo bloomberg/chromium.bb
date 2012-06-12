@@ -14,7 +14,6 @@
 
 class ExtensionService;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 
 namespace extensions {
 
@@ -22,7 +21,7 @@ namespace extensions {
 // on the page_action extension API.
 class PageActionController : public LocationBarController {
  public:
-  explicit PageActionController(TabContentsWrapper* tab_contents);
+  explicit PageActionController(TabContents* tab_contents);
   virtual ~PageActionController();
 
   // LocationBarController implementation.
@@ -35,7 +34,7 @@ class PageActionController : public LocationBarController {
   // Gets the ExtensionService for |tab_contents_|.
   ExtensionService* GetExtensionService();
 
-  TabContentsWrapper* tab_contents_;
+  TabContents* tab_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(PageActionController);
 };

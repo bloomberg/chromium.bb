@@ -16,7 +16,7 @@
 #include "chrome/browser/extensions/script_executor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
@@ -62,7 +62,7 @@ bool ExecuteCodeInTabFunction::RunImpl() {
 
   execute_tab_id_ = -1;
   Browser* browser = NULL;
-  TabContentsWrapper* contents = NULL;
+  TabContents* contents = NULL;
 
   // If |tab_id| is specified, look for it. Otherwise default to selected tab
   // in the current window.
@@ -220,7 +220,7 @@ void ExecuteCodeInTabFunction::DidLoadAndLocalizeFile(bool success,
 }
 
 bool ExecuteCodeInTabFunction::Execute(const std::string& code_string) {
-  TabContentsWrapper* contents = NULL;
+  TabContents* contents = NULL;
   Browser* browser = NULL;
 
   bool success = ExtensionTabUtil::GetTabById(

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,7 +66,7 @@ bool ClipboardApiTest::ExecutePasteInSelectedTab(bool* result) {
 bool ClipboardApiTest::ExecuteScriptInSelectedTab(const std::wstring& script,
                                                   bool* result) {
   if (!ui_test_utils::ExecuteJavaScriptAndExtractBool(
-          browser()->GetSelectedWebContents()->GetRenderViewHost(),
+          browser()->GetActiveWebContents()->GetRenderViewHost(),
           L"",
           script,
           result)) {

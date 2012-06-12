@@ -117,7 +117,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
 
     bool result = false;
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
+        browser()->GetActiveWebContents()->GetRenderViewHost(), L"",
         L"window.domAutomationController.send("
         L"document.defaultView.getComputedStyle(document.body, null)."
         L"getPropertyValue('background-color') == 'rgb(245, 245, 220)')",
@@ -126,7 +126,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
 
     result = false;
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
+        browser()->GetActiveWebContents()->GetRenderViewHost(), L"",
         L"window.domAutomationController.send(document.title == 'Modified')",
         &result));
     EXPECT_EQ(expect_script, result);

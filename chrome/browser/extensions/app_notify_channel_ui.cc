@@ -14,7 +14,7 @@
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/common/url_constants.h"
@@ -91,11 +91,11 @@ void AppNotifyChannelUIImpl::InfoBar::InfoBarDismissed() {
 
 AppNotifyChannelUIImpl::AppNotifyChannelUIImpl(
     Profile* profile,
-    TabContentsWrapper* wrapper,
+    TabContents* tab_contents,
     const std::string& app_name,
     AppNotifyChannelUI::UIType ui_type)
     : profile_(profile->GetOriginalProfile()),
-      wrapper_(wrapper),
+      tab_contents_(tab_contents),
       app_name_(app_name),
       ui_type_(ui_type),
       delegate_(NULL),
@@ -125,7 +125,7 @@ void AppNotifyChannelUIImpl::PromptSyncSetup(
     return;
   }
 
-  InfoBarTabHelper* helper = wrapper_->infobar_tab_helper();
+  InfoBarTabHelper* helper = tab_contents_->infobar_tab_helper();
   helper->AddInfoBar(new AppNotifyChannelUIImpl::InfoBar(
       this, helper, app_name_));
 }

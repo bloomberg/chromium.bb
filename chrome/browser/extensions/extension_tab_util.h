@@ -12,7 +12,6 @@ class Browser;
 class GURL;
 class Profile;
 class TabContents;
-typedef TabContents TabContentsWrapper;
 class TabStripModel;
 
 namespace base {
@@ -56,14 +55,14 @@ class ExtensionTabUtil {
                                TabStripModel** tab_strip_model,
                                int* tab_index);
   static bool GetDefaultTab(Browser* browser,
-                            TabContentsWrapper** contents,
+                            TabContents** contents,
                             int* tab_id);
   // Any out parameter (|browser|, |tab_strip|, |contents|, & |tab_index|) may
   // be NULL and will not be set within the function.
   static bool GetTabById(int tab_id, Profile* profile, bool incognito_enabled,
                          Browser** browser,
                          TabStripModel** tab_strip,
-                         TabContentsWrapper** contents,
+                         TabContents** contents,
                          int* tab_index);
 
   // Takes |url_string| and returns a GURL which is either valid and absolute

@@ -13,7 +13,7 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_error_utils.h"
@@ -75,8 +75,8 @@ bool PageActionsFunction::SetPageActionEnabled(bool enable) {
     return false;
   }
 
-  // Find the TabContentsWrapper that contains this tab id.
-  TabContentsWrapper* contents = NULL;
+  // Find the TabContents that contains this tab id.
+  TabContents* contents = NULL;
   bool result = ExtensionTabUtil::GetTabById(
       tab_id, profile(), include_incognito(), NULL, NULL, &contents, NULL);
   if (!result || !contents) {

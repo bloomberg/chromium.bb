@@ -28,7 +28,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -592,8 +592,8 @@ void ExtensionHost::AddNewContents(WebContents* source,
       Profile::FromBrowserContext(new_contents->GetBrowserContext());
   Browser* browser = browser::FindTabbedBrowser(
       profile, false);  // Match incognito exactly.
-  TabContentsWrapper* wrapper = new TabContentsWrapper(new_contents);
-  browser::NavigateParams params(browser, wrapper);
+  TabContents* tab_contents = new TabContents(new_contents);
+  browser::NavigateParams params(browser, tab_contents);
 
   // The extension_app_id parameter ends up as app_name in the Browser
   // which causes the Browser to return true for is_app().  This affects

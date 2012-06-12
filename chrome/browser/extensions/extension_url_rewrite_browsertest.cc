@@ -33,7 +33,7 @@ class ExtensionURLRewriteBrowserTest : public ExtensionBrowserTest {
   }
 
   content::NavigationController* GetNavigationController() const {
-    return &browser()->GetSelectedWebContents()->GetController();
+    return &browser()->GetActiveWebContents()->GetController();
   }
 
   NavigationEntry* GetNavigationEntry() const {

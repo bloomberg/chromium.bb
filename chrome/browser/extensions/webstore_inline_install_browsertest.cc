@@ -77,7 +77,7 @@ class WebstoreInlineInstallTest : public InProcessBrowserTest {
     std::string script = StringPrintf("%s('%s')", test_function_name.c_str(),
         test_gallery_url_.c_str());
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-        browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
+        browser()->GetActiveWebContents()->GetRenderViewHost(), L"",
         UTF8ToWide(script), &result));
     EXPECT_TRUE(result);
   }
@@ -142,7 +142,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, InstallNotSupported) {
   if (browser()->tab_strip_model()->count() == 1) {
     ui_test_utils::WaitForNewTab(browser());
   }
-  WebContents* web_contents = browser()->GetSelectedWebContents();
+  WebContents* web_contents = browser()->GetActiveWebContents();
   EXPECT_EQ(GURL("http://cws.com/show-me-the-money"), web_contents->GetURL());
 }
 

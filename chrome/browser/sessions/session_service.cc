@@ -680,11 +680,11 @@ void SessionService::Observe(int type,
     case chrome::NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED: {
       ExtensionTabHelper* extension_tab_helper =
           content::Source<ExtensionTabHelper>(source).ptr();
-      if (extension_tab_helper->tab_contents_wrapper()->profile() != profile())
+      if (extension_tab_helper->tab_contents()->profile() != profile())
         return;
       if (extension_tab_helper->extension_app()) {
         RestoreTabHelper* helper =
-            extension_tab_helper->tab_contents_wrapper()->restore_tab_helper();
+            extension_tab_helper->tab_contents()->restore_tab_helper();
         SetTabExtensionAppID(helper->window_id(),
                              helper->session_id(),
                              extension_tab_helper->extension_app()->id());
