@@ -168,6 +168,15 @@
       <include name="IDR_SAD_FAVICON" file="touch_100_percent/sadfavicon.png" type="BINDATA" />
       <include name="IDR_STAR" file="touch_100_percent/star.png" type="BINDATA" />
       <include name="IDR_STAR_LIT" file="touch_100_percent/star_lit.png" type="BINDATA" />
+      <if expr="pp_ifdef('chromeos')">
+        <include name="IDR_STATUSBAR_NETWORK_ARCS_DARK" file="default_200_percent/statusbar_network_arcs_dark.png" type="BINDATA" /> 
+        <include name="IDR_STATUSBAR_NETWORK_ARCS_LIGHT" file="default_200_percent/statusbar_network_arcs_light.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_NETWORK_BARS_DARK" file="default_200_percent/statusbar_network_bars_dark.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_NETWORK_BARS_LIGHT" file="default_200_percent/statusbar_network_bars_light.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_NETWORK_SECURE" file="default_200_percent/statusbar_network_secure.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_VPN" file="default_200_percent/statusbar_vpn_dark.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_WIRED" file="default_200_percent/statusbar_wired.png" type="BINDATA" />
+      </if>
       <include name="IDR_ACTION_BOX_BUTTON" file="default_100_percent/action_box_button.png" type="BINDATA" />
       <if expr="pp_ifdef('toolkit_views')">
         <include name="IDR_STOP" file="touch_200_percent/browser_stop_normal.png" type="BINDATA" />

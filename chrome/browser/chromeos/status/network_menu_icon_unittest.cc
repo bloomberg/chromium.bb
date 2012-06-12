@@ -7,6 +7,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "grit/theme_resources.h"
+#include "grit/theme_resources_standard.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 

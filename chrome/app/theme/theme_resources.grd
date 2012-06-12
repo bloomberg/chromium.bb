@@ -507,12 +507,8 @@
         <include name="IDR_STATUSBAR_NETWORK_1X_ERROR" file="default_100_percent/statusbar_network_1x_error.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_1X_UNKNOWN" file="default_100_percent/statusbar_network_1x_unknown.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_ARCS" file="default_100_percent/statusbar_network_arcs.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_ARCS_LIGHT" file="default_100_percent/statusbar_network_arcs_light.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_ARCS_DARK" file="default_100_percent/statusbar_network_arcs_dark.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_ARCS_LARGE" file="default_100_percent/statusbar_network_arcs_large.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_BARS" file="default_100_percent/statusbar_network_bars.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_BARS_LIGHT" file="default_100_percent/statusbar_network_bars_light.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_BARS_DARK" file="default_100_percent/statusbar_network_bars_dark.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_BARS_LARGE" file="default_100_percent/statusbar_network_bars_large.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_DISCONNECTED" file="default_100_percent/statusbar_network_disconnected.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_EDGE" file="default_100_percent/statusbar_network_edge.png" type="BINDATA" />
@@ -522,7 +518,6 @@
         <include name="IDR_STATUSBAR_NETWORK_LTE" file="default_100_percent/statusbar_network_lte.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_LTE_ADVANCED" file="default_100_percent/statusbar_network_lte_advanced.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_ROAMING" file="default_100_percent/statusbar_network_roaming.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_SECURE" file="default_100_percent/statusbar_network_secure.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_WARNING" file="default_100_percent/statusbar_network_warning.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_VOLUME_ICON1" file="default_100_percent/statusbar_volume_icon1.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_VOLUME_ICON2" file="default_100_percent/statusbar_volume_icon2.png" type="BINDATA" />
@@ -531,11 +526,9 @@
         <include name="IDR_STATUSBAR_VOLUME_SLIDER_EMPTY" file="default_100_percent/statusbar_volume_slider_empty.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_VOLUME_SLIDER_FULL" file="default_100_percent/statusbar_volume_slider_full.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_VOLUME_SLIDER_THUMB" file="default_100_percent/statusbar_volume_slider_thumb.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_VPN" file="default_100_percent/statusbar_vpn_dark.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_VPN_BADGE" file="default_100_percent/statusbar_network_secure.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_WINDOW_MAXIMIZE" file="default_100_percent/statusbar_window_maximize.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_WINDOW_RESTORE" file="default_100_percent/statusbar_window_restore.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_WIRED" file="default_100_percent/statusbar_wired.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_WIRED_LARGE" file="default_100_percent/statusbar_wired_large.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_WIRED_BLACK" file="default_100_percent/statusbar_wiredb.png" type="BINDATA" />
         <include name="IDR_USER_IMAGE_NO_VIDEO" file="default_100_percent/no_video.png" type="BINDATA" />
