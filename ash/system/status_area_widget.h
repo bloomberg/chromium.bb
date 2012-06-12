@@ -11,6 +11,11 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
+
+class ShellDelegate;
+class SystemTray;
+class SystemTrayDelegate;
+
 namespace internal {
 
 class StatusAreaWidgetDelegate;
@@ -20,11 +25,27 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   StatusAreaWidget();
   virtual ~StatusAreaWidget();
 
-  void AddTray(views::View* tray);
+  // Creates the SystemTray.
+  void CreateTrayViews(ShellDelegate* shell_delegate);
+
+  // Destroys the system tray. Called before tearing down the windows to avoid
+  // shutdown ordering issues.
+  void Shutdown();
+
   void SetShelfAlignment(ShelfAlignment alignment);
 
+  SystemTray* system_tray() { return system_tray_; }
+  SystemTrayDelegate* system_tray_delegate() {
+    return system_tray_delegate_.get();
+  }
+
  private:
+  void AddSystemTray(SystemTray* system_tray, ShellDelegate* shell_delegate);
+
+  scoped_ptr<SystemTrayDelegate> system_tray_delegate_;
+  // Weak pointers to View classes that are parented to StatusAreaWidget:
   internal::StatusAreaWidgetDelegate* widget_delegate_;
+  SystemTray* system_tray_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusAreaWidget);
 };

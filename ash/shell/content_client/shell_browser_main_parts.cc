@@ -32,6 +32,10 @@
 #include "ui/base/touch/touch_factory.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/dbus/dbus_thread_manager.h"
+#endif
+
 namespace ash {
 namespace shell {
 void InitWindowTypeLauncher();
@@ -73,6 +77,12 @@ void ShellBrowserMainParts::PreMainMessageLoopStart() {
 #endif
 }
 #endif
+
+void ShellBrowserMainParts::PostMainMessageLoopStart() {
+#if defined(OS_CHROMEOS)
+  chromeos::DBusThreadManager::Initialize();
+#endif
+}
 
 void ShellBrowserMainParts::PreMainMessageLoopRun() {
   browser_context_.reset(new content::ShellBrowserContext);

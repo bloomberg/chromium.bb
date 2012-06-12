@@ -25,11 +25,8 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_factory.h"
 #include "ash/shell_window_ids.h"
-#include "ash/system/bluetooth/bluetooth_observer.h"
-#include "ash/system/network/network_observer.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_delegate.h"
 #include "ash/tooltips/tooltip_controller.h"
 #include "ash/touch/touch_observer_hud.h"
 #include "ash/wm/activation_controller.h"
@@ -67,7 +64,6 @@
 #include "ash/wm/workspace_controller.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/utf_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/user_action_client.h"
@@ -216,6 +212,12 @@ void CreateSpecialContainers(aura::RootWindow* root_window) {
                   "StatusContainer",
                   lock_screen_related_containers);
 
+  aura::Window* settings_bubble_container = CreateContainer(
+      internal::kShellWindowId_SettingBubbleContainer,
+      "SettingBubbleContainer",
+      lock_screen_related_containers);
+  SetChildWindowVisibilityChangesAnimated(settings_bubble_container);
+
   aura::Window* menu_container = CreateContainer(
       internal::kShellWindowId_MenuContainer,
       "MenuContainer",
@@ -227,12 +229,6 @@ void CreateSpecialContainers(aura::RootWindow* root_window) {
       "DragImageAndTooltipContainer",
       lock_screen_related_containers);
   SetChildWindowVisibilityChangesAnimated(drag_drop_container);
-
-  aura::Window* settings_bubble_container = CreateContainer(
-      internal::kShellWindowId_SettingBubbleContainer,
-      "SettingBubbleContainer",
-      lock_screen_related_containers);
-  SetChildWindowVisibilityChangesAnimated(settings_bubble_container);
 
   CreateContainer(internal::kShellWindowId_OverlayContainer,
                   "OverlayContainer",
@@ -261,261 +257,6 @@ class DummyUserWallpaperDelegate : public UserWallpaperDelegate {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DummyUserWallpaperDelegate);
-};
-
-class DummySystemTrayDelegate : public SystemTrayDelegate {
- public:
-  DummySystemTrayDelegate()
-      : muted_(false),
-        wifi_enabled_(true),
-        cellular_enabled_(true),
-        bluetooth_enabled_(true),
-        volume_(0.5),
-        caps_lock_enabled_(false) {
-  }
-
-  virtual ~DummySystemTrayDelegate() {}
-
- private:
-  virtual bool GetTrayVisibilityOnStartup() OVERRIDE { return true; }
-
-  // Overridden from SystemTrayDelegate:
-  virtual const string16 GetUserDisplayName() const OVERRIDE {
-    return UTF8ToUTF16("Über tray Über tray Über tray Über tray");
-  }
-
-  virtual const std::string GetUserEmail() const OVERRIDE {
-    return "über@tray";
-  }
-
-  virtual const gfx::ImageSkia& GetUserImage() const OVERRIDE {
-    return null_image_;
-  }
-
-  virtual user::LoginStatus GetUserLoginStatus() const OVERRIDE {
-    return user::LOGGED_IN_USER;
-  }
-
-  virtual bool SystemShouldUpgrade() const OVERRIDE {
-    return true;
-  }
-
-  virtual base::HourClockType GetHourClockType() const OVERRIDE {
-    return base::k24HourClock;
-  }
-
-  virtual PowerSupplyStatus GetPowerSupplyStatus() const OVERRIDE {
-    return PowerSupplyStatus();
-  }
-
-  virtual void RequestStatusUpdate() const OVERRIDE {
-  }
-
-  virtual void ShowSettings() OVERRIDE {
-  }
-
-  virtual void ShowDateSettings() OVERRIDE {
-  }
-
-  virtual void ShowNetworkSettings() OVERRIDE {
-  }
-
-  virtual void ShowBluetoothSettings() OVERRIDE {
-  }
-
-  virtual void ShowDriveSettings() OVERRIDE {
-  }
-
-  virtual void ShowIMESettings() OVERRIDE {
-  }
-
-  virtual void ShowHelp() OVERRIDE {
-  }
-
-  virtual bool IsAudioMuted() const OVERRIDE {
-    return muted_;
-  }
-
-  virtual void SetAudioMuted(bool muted) OVERRIDE {
-    muted_ = muted;
-  }
-
-  virtual float GetVolumeLevel() const OVERRIDE {
-    return volume_;
-  }
-
-  virtual void SetVolumeLevel(float volume) OVERRIDE {
-    volume_ = volume;
-  }
-
-  virtual bool IsCapsLockOn() const OVERRIDE {
-    return caps_lock_enabled_;
-  }
-
-  virtual void SetCapsLockEnabled(bool enabled) OVERRIDE {
-    caps_lock_enabled_ = enabled;
-  }
-
-  virtual bool IsInAccessibilityMode() const OVERRIDE {
-    return false;
-  }
-
-  virtual void SetEnableSpokenFeedback(bool enable) OVERRIDE {}
-
-  virtual void ShutDown() OVERRIDE {}
-
-  virtual void SignOut() OVERRIDE {
-    MessageLoop::current()->Quit();
-  }
-
-  virtual void RequestLockScreen() OVERRIDE {}
-
-  virtual void RequestRestart() OVERRIDE {}
-
-  virtual void GetAvailableBluetoothDevices(
-      BluetoothDeviceList* list) OVERRIDE {
-  }
-
-  virtual void ToggleBluetoothConnection(const std::string& address) OVERRIDE {
-  }
-
-  virtual void GetCurrentIME(IMEInfo* info) OVERRIDE {
-  }
-
-  virtual void GetAvailableIMEList(IMEInfoList* list) OVERRIDE {
-  }
-
-  virtual void GetCurrentIMEProperties(IMEPropertyInfoList* list) OVERRIDE {
-  }
-
-  virtual void SwitchIME(const std::string& ime_id) OVERRIDE {
-  }
-
-  virtual void ActivateIMEProperty(const std::string& key) OVERRIDE {
-  }
-
-  virtual void CancelDriveOperation(const FilePath&) OVERRIDE {
-  }
-
-  virtual void GetDriveOperationStatusList(
-      ash::DriveOperationStatusList*) OVERRIDE {
-  }
-
-  virtual void GetMostRelevantNetworkIcon(NetworkIconInfo* info,
-                                          bool large) OVERRIDE {
-  }
-
-  virtual void GetAvailableNetworks(
-      std::vector<NetworkIconInfo>* list) OVERRIDE {
-  }
-
-  virtual void ConnectToNetwork(const std::string& network_id) OVERRIDE {
-  }
-
-  virtual void GetNetworkAddresses(std::string* ip_address,
-                                   std::string* ethernet_mac_address,
-                                   std::string* wifi_mac_address) OVERRIDE {
-    *ip_address = "127.0.0.1";
-    *ethernet_mac_address = "00:11:22:33:44:55";
-    *wifi_mac_address = "66:77:88:99:00:11";
-  }
-
-  virtual void RequestNetworkScan() OVERRIDE {
-  }
-
-  virtual void AddBluetoothDevice() OVERRIDE {
-  }
-
-  virtual void ToggleAirplaneMode() OVERRIDE {
-  }
-
-  virtual void ToggleWifi() OVERRIDE {
-    wifi_enabled_ = !wifi_enabled_;
-    ash::NetworkObserver* observer =
-        ash::Shell::GetInstance()->system_tray()->network_observer();
-    if (observer) {
-      ash::NetworkIconInfo info;
-      observer->OnNetworkRefresh(info);
-    }
-  }
-
-  virtual void ToggleMobile() OVERRIDE {
-    cellular_enabled_ = !cellular_enabled_;
-    ash::NetworkObserver* observer =
-        ash::Shell::GetInstance()->system_tray()->network_observer();
-    if (observer) {
-      ash::NetworkIconInfo info;
-      observer->OnNetworkRefresh(info);
-    }
-  }
-
-  virtual void ToggleBluetooth() OVERRIDE {
-    bluetooth_enabled_ = !bluetooth_enabled_;
-    ash::BluetoothObserver* observer =
-        ash::Shell::GetInstance()->system_tray()->bluetooth_observer();
-    if (observer)
-      observer->OnBluetoothRefresh();
-  }
-
-  virtual void ShowOtherWifi() OVERRIDE {
-  }
-
-  virtual void ShowOtherCellular() OVERRIDE {
-  }
-
-  virtual bool IsNetworkConnected() OVERRIDE {
-    return true;
-  }
-
-  virtual bool GetWifiAvailable() OVERRIDE {
-    return true;
-  }
-
-  virtual bool GetMobileAvailable() OVERRIDE {
-    return true;
-  }
-
-  virtual bool GetBluetoothAvailable() OVERRIDE {
-    return true;
-  }
-
-  virtual bool GetWifiEnabled() OVERRIDE {
-    return wifi_enabled_;
-  }
-
-  virtual bool GetMobileEnabled() OVERRIDE {
-    return cellular_enabled_;
-  }
-
-  virtual bool GetBluetoothEnabled() OVERRIDE {
-    return bluetooth_enabled_;
-  }
-
-  virtual bool GetMobileScanSupported() OVERRIDE {
-    return true;
-  }
-
-  virtual bool GetCellularCarrierInfo(std::string* carrier_id,
-                                      std::string* topup_url,
-                                      std::string* setup_url) OVERRIDE {
-    return false;
-  }
-
-  virtual void ShowCellularURL(const std::string& url) OVERRIDE {
-  }
-
-  virtual void ChangeProxySettings() OVERRIDE {
-  }
-
-  bool muted_;
-  bool wifi_enabled_;
-  bool cellular_enabled_;
-  bool bluetooth_enabled_;
-  float volume_;
-  bool caps_lock_enabled_;
-  gfx::ImageSkia null_image_;
-
-  DISALLOW_COPY_AND_ASSIGN(DummySystemTrayDelegate);
 };
 
 }  // namespace
@@ -607,9 +348,8 @@ Shell::~Shell() {
   // deleted as it has a reference to launcher model.
   workspace_controller_.reset();
 
-  // The system tray needs to be reset before all the windows are destroyed.
-  system_tray_.reset();
-  tray_delegate_.reset();
+  // The status area needs to be shut down before the windows are destroyed.
+  status_area_widget_->Shutdown();
 
   // AppList needs to be released before shelf layout manager, which is
   // destroyed with launcher container in the loop below. However, app list
@@ -813,21 +553,8 @@ void Shell::Init() {
 
   event_client_.reset(new internal::EventClientImpl(root_window));
 
-  status_area_widget_ = new internal::StatusAreaWidget;
-
-  system_tray_.reset(new SystemTray());
-  status_area_widget_->AddTray(system_tray_.get());
-  system_tray_->Initialize();
-
-  if (delegate_.get()) {
-    tray_delegate_.reset(delegate_->CreateSystemTrayDelegate(
-        system_tray_.get()));
-  }
-  if (!tray_delegate_.get())
-    tray_delegate_.reset(new DummySystemTrayDelegate());
-
-  system_tray_->CreateItems();  // Called after delegate is created.
-
+  status_area_widget_ = new internal::StatusAreaWidget();
+  status_area_widget_->CreateTrayViews(delegate_.get());
   status_area_widget_->Show();
 
   // This controller needs to be set before SetupManagedWindowMode.
@@ -1020,6 +747,14 @@ void Shell::SetShelfAlignment(ShelfAlignment alignment) {
 
 ShelfAlignment Shell::GetShelfAlignment() {
   return shelf_->alignment();
+}
+
+SystemTrayDelegate* Shell::tray_delegate() {
+  return status_area_widget_->system_tray_delegate();
+}
+
+SystemTray* Shell::system_tray() {
+  return status_area_widget_->system_tray();
 }
 
 int Shell::GetGridSize() const {

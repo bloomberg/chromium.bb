@@ -7,9 +7,9 @@
 #pragma once
 
 #include "ash/ash_export.h"
+#include "ash/wm/shelf_auto_hide_behavior.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/accessible_pane_view.h"
-#include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget_delegate.h"
 
 namespace ash {
@@ -17,14 +17,22 @@ namespace internal {
 
 class FocusCycler;
 
-class ASH_EXPORT StatusAreaWidgetDelegate : public views::WidgetDelegate,
-                                            public views::AccessiblePaneView {
+class ASH_EXPORT StatusAreaWidgetDelegate : public views::AccessiblePaneView,
+                                            public views::WidgetDelegate {
  public:
   StatusAreaWidgetDelegate();
   virtual ~StatusAreaWidgetDelegate();
 
+  // Add a tray view to the widget (e.g. system tray, web notifications).
+  void AddTray(views::View* tray);
+
+  // Called whenever layout might change (e.g. alignment changed).
+  void UpdateLayout();
+
   // Sets the focus cycler.
   void SetFocusCyclerForTesting(const FocusCycler* focus_cycler);
+
+  void set_alignment(ShelfAlignment alignment) { alignment_ = alignment; }
 
   // Overridden from views::AccessiblePaneView.
   virtual View* GetDefaultFocusableChild() OVERRIDE;
@@ -38,10 +46,13 @@ class ASH_EXPORT StatusAreaWidgetDelegate : public views::WidgetDelegate,
   virtual bool CanActivate() const OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
 
-  void SetLayout(views::BoxLayout::Orientation orientation);
+ protected:
+  // Overridden from views::View:
+  virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
 
  private:
   const FocusCycler* focus_cycler_for_testing_;
+  ShelfAlignment alignment_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusAreaWidgetDelegate);
 };

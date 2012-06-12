@@ -270,7 +270,7 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
   }
 
   ShellDelegate* delegate() { return delegate_.get(); }
-  SystemTrayDelegate* tray_delegate() { return tray_delegate_.get(); }
+
   UserWallpaperDelegate* user_wallpaper_delegate() {
     return user_wallpaper_delegate_.get();
   }
@@ -308,7 +308,9 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
     return status_area_widget_;
   }
 
-  SystemTray* system_tray() const { return system_tray_.get(); }
+  // Convenience accessor for members of StatusAreaWidget.
+  SystemTrayDelegate* tray_delegate();
+  SystemTray* system_tray();
 
   // Returns the size of the grid.
   int GetGridSize() const;
@@ -388,7 +390,6 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
 #endif  // !defined(OS_MACOSX)
 
   scoped_ptr<ShellDelegate> delegate_;
-  scoped_ptr<SystemTrayDelegate> tray_delegate_;
   scoped_ptr<UserWallpaperDelegate> user_wallpaper_delegate_;
 
   scoped_ptr<Launcher> launcher_;
@@ -466,9 +467,6 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
 
   // Widget containing system tray.
   internal::StatusAreaWidget* status_area_widget_;
-
-  // System tray with clock, Wi-Fi signal, etc.
-  scoped_ptr<SystemTray> system_tray_;
 
   // Used by ash/shell.
   content::BrowserContext* browser_context_;

@@ -11,7 +11,6 @@
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_views.h"
 #include "ash/system/user/login_status.h"
-#include "ash/wm/shelf_auto_hide_behavior.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -147,8 +146,8 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView {
   // Returns true if the bubble exists.
   bool CloseBubbleForTest() const;
 
-  void SetShelfAlignment(ShelfAlignment alignment);
-  ShelfAlignment shelf_alignment() const { return shelf_alignment_; }
+  // Overridden from TrayBackgroundView.
+  virtual void SetShelfAlignment(ShelfAlignment alignment) OVERRIDE;
 
  private:
   friend class internal::SystemTrayLayerAnimationObserver;
@@ -234,9 +233,6 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView {
 
   // See description agove getter.
   bool should_show_launcher_;
-
-  // Shelf alignment.
-  ShelfAlignment shelf_alignment_;
 
   scoped_ptr<internal::SystemTrayLayerAnimationObserver>
       layer_animation_observer_;

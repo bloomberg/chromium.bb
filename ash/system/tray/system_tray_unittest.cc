@@ -21,12 +21,10 @@ namespace test {
 namespace {
 
 SystemTray* CreateSystemTray() {
-  SystemTray* tray = new SystemTray;
   internal::StatusAreaWidget* widget = new internal::StatusAreaWidget;
-  widget->AddTray(tray);
-  tray->CreateItems();
+  widget->CreateTrayViews(NULL);
   widget->Show();
-  return tray;
+  return widget->system_tray();
 }
 
 // Trivial item implementation that tracks its views for testing.

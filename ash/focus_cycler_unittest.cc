@@ -34,11 +34,10 @@ internal::StatusAreaWidgetDelegate* GetStatusAreaWidgetDelegate(
 }
 
 SystemTray* CreateSystemTray() {
-  SystemTray* tray = new SystemTray;
   internal::StatusAreaWidget* widget = new internal::StatusAreaWidget;
-  widget->AddTray(tray);
+  widget->CreateTrayViews(NULL);
   widget->Show();
-  return tray;
+  return widget->system_tray();
 }
 
 }  // namespace

@@ -15,6 +15,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/accessible_pane_view.h"
+#include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -27,8 +28,8 @@ namespace ash {
 namespace internal {
 
 StatusAreaWidgetDelegate::StatusAreaWidgetDelegate()
-    : focus_cycler_for_testing_(NULL) {
-  SetLayout(views::BoxLayout::kHorizontal);
+    : focus_cycler_for_testing_(NULL),
+      alignment_(SHELF_ALIGNMENT_BOTTOM) {
 }
 
 StatusAreaWidgetDelegate::~StatusAreaWidgetDelegate() {
@@ -72,10 +73,48 @@ bool StatusAreaWidgetDelegate::CanActivate() const {
 void StatusAreaWidgetDelegate::DeleteDelegate() {
 }
 
-void StatusAreaWidgetDelegate::SetLayout(
-    views::BoxLayout::Orientation orientation) {
-  SetLayoutManager(new views::BoxLayout(orientation, 0, 0, kTraySpacing));
+void StatusAreaWidgetDelegate::AddTray(views::View* tray) {
+  SetLayoutManager(NULL);  // Reset layout manager before adding a child.
+  AddChildView(tray);
+  // Set the layout manager with the new list of children.
+  UpdateLayout();
+}
+
+void StatusAreaWidgetDelegate::UpdateLayout() {
+  // Use a grid layout so that the trays can be centered in each cell, and
+  // so that the widget gets laid out correctly when tray sizes change.
+  views::GridLayout* layout = new views::GridLayout(this);
+  SetLayoutManager(layout);
+
+  views::ColumnSet* columns = layout->AddColumnSet(0);
+  if (alignment_ == SHELF_ALIGNMENT_BOTTOM) {
+    for (int c = 0; c < child_count(); ++c) {
+      if (c != 0)
+        columns->AddPaddingColumn(0, kTraySpacing);
+      columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
+                         0, /* resize percent */
+                         views::GridLayout::USE_PREF, 0, 0);
+    }
+    layout->StartRow(0, 0);
+    for (int c = 0; c < child_count(); ++c)
+      layout->AddView(child_at(c));
+  } else {
+    columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
+                       0, /* resize percent */
+                       views::GridLayout::USE_PREF, 0, 0);
+    for (int c = 0; c < child_count(); ++c) {
+      if (c != 0)
+        layout->AddPaddingRow(0, kTraySpacing);
+      layout->StartRow(0, 0);
+      layout->AddView(child_at(c));
+    }
+  }
   Layout();
+}
+
+void StatusAreaWidgetDelegate::ChildPreferredSizeChanged(View* child) {
+  // Need to re-layout the parent window when trays or items are added/removed.
+  parent()->GetWidget()->GetRootView()->Layout();
 }
 
 }  // namespace internal

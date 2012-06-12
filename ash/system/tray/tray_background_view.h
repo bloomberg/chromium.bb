@@ -9,6 +9,7 @@
 #include "ash/ash_export.h"
 #include "ash/launcher/background_animator.h"
 #include "ash/system/tray/tray_views.h"
+#include "ash/wm/shelf_auto_hide_behavior.h"
 
 namespace ash {
 namespace internal {
@@ -36,6 +37,9 @@ class ASH_EXPORT TrayBackgroundView : public internal::ActionableView,
   // Overridden from internal::BackgroundAnimatorDelegate.
   virtual void UpdateBackground(int alpha) OVERRIDE;
 
+  // Called whenever the shelf alignment changes.
+  virtual void SetShelfAlignment(ShelfAlignment alignment);
+
   // Sets |contents| as a child and sets its background to |background_|.
   void SetContents(views::View* contents);
 
@@ -45,7 +49,12 @@ class ASH_EXPORT TrayBackgroundView : public internal::ActionableView,
       bool value,
       internal::BackgroundAnimator::ChangeType change_type);
 
+  ShelfAlignment shelf_alignment() const { return shelf_alignment_; }
+
  private:
+  // Shelf alignment.
+  ShelfAlignment shelf_alignment_;
+
   // Owned by the view passed to SetContents().
   internal::TrayBackground* background_;
 

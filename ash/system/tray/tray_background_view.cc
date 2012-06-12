@@ -54,11 +54,12 @@ class TrayBackground : public views::Background {
 // TrayBackgroundView
 
 TrayBackgroundView::TrayBackgroundView()
-    : background_(NULL),
-    ALLOW_THIS_IN_INITIALIZER_LIST(hide_background_animator_(
-        this, 0, kTrayBackgroundAlpha)),
-    ALLOW_THIS_IN_INITIALIZER_LIST(hover_background_animator_(
-        this, 0, kTrayBackgroundHoverAlpha - kTrayBackgroundAlpha)) {
+    : shelf_alignment_(SHELF_ALIGNMENT_BOTTOM),
+      background_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(hide_background_animator_(
+          this, 0, kTrayBackgroundAlpha)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(hover_background_animator_(
+          this, 0, kTrayBackgroundHoverAlpha - kTrayBackgroundAlpha)) {
   set_border(views::Border::CreateEmptyBorder(0, 0,
         kPaddingFromBottomOfScreenBottomAlignment,
         kPaddingFromRightEdgeOfScreenBottomAlignment));
@@ -107,6 +108,10 @@ void TrayBackgroundView::SetPaintsBackground(
       bool value,
       internal::BackgroundAnimator::ChangeType change_type) {
   hide_background_animator_.SetPaintsBackground(value, change_type);
+}
+
+void TrayBackgroundView::SetShelfAlignment(ShelfAlignment alignment) {
+  shelf_alignment_ = alignment;
 }
 
 }  // namespace internal

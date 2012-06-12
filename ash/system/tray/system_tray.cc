@@ -138,7 +138,6 @@ SystemTray::SystemTray()
       update_observer_(NULL),
       user_observer_(NULL),
       should_show_launcher_(false),
-      shelf_alignment_(SHELF_ALIGNMENT_BOTTOM),
       default_bubble_height_(0) {
   tray_container_ = new internal::SystemTrayContainer;
   tray_container_->SetLayoutManager(new views::BoxLayout(
@@ -475,11 +474,11 @@ void SystemTray::UpdateNotificationAnchor() {
 
 void SystemTray::SetBorder() {
   // Change the border padding for different shelf alignment.
-  if (shelf_alignment_ == SHELF_ALIGNMENT_BOTTOM) {
+  if (shelf_alignment() == SHELF_ALIGNMENT_BOTTOM) {
     set_border(views::Border::CreateEmptyBorder(0, 0,
         kPaddingFromBottomOfScreenBottomAlignment,
         kPaddingFromRightEdgeOfScreenBottomAlignment));
-  } else if (shelf_alignment_ == SHELF_ALIGNMENT_LEFT) {
+  } else if (shelf_alignment() == SHELF_ALIGNMENT_LEFT) {
     set_border(views::Border::CreateEmptyBorder(0,
         kPaddingFromEdgeOfScreenVerticalAlignment,
         kPaddingFromBottomOfScreenVerticalAlignment,
@@ -493,9 +492,9 @@ void SystemTray::SetBorder() {
 }
 
 void SystemTray::SetShelfAlignment(ShelfAlignment alignment) {
-  if (alignment == shelf_alignment_)
+  if (alignment == shelf_alignment())
     return;
-  shelf_alignment_ = alignment;
+  internal::TrayBackgroundView::SetShelfAlignment(alignment);
   UpdateAfterShelfAlignmentChange(alignment);
   SetBorder();
   tray_container_->SetLayoutManager(new views::BoxLayout(
