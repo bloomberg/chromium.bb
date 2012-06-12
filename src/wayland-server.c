@@ -622,6 +622,8 @@ wl_seat_init(struct wl_seat *seat)
 {
 	memset(seat, 0, sizeof *seat);
 
+	wl_signal_init(&seat->destroy_signal);
+
 	seat->selection_data_source = NULL;
 	wl_list_init(&seat->base_resource_list);
 	wl_signal_init(&seat->selection_signal);
@@ -632,6 +634,8 @@ wl_seat_init(struct wl_seat *seat)
 WL_EXPORT void
 wl_seat_release(struct wl_seat *seat)
 {
+	wl_signal_emit(&seat->destroy_signal, seat);
+
 	if (seat->pointer)
 		wl_pointer_release(seat->pointer);
 	if (seat->keyboard)

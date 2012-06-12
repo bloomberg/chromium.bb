@@ -294,6 +294,7 @@ struct wl_touch {
 
 struct wl_seat {
 	struct wl_list base_resource_list;
+	struct wl_signal destroy_signal;
 
 	struct wl_pointer *pointer;
 	struct wl_keyboard *keyboard;
