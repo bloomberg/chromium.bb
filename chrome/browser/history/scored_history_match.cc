@@ -403,8 +403,7 @@ void ScoredHistoryMatch::FillInTermScoreToTopicalityScoreArray() {
       // function so a score of 10 points gets a 1.0 (to meet up exactly
       // with the linear component) and increases logarithmically until
       // maxing out at 30 points, with computes to a score around 2.1.
-      topicality_score = (1.0 + 2.25 * log10(0.1 *
-          ((term_score <= 30) ? term_score : 30)));
+      topicality_score = (1.0 + 2.25 * log10(0.1 * term_score));
     }
     raw_term_score_to_topicality_score[term_score] = topicality_score;
   }
