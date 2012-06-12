@@ -112,7 +112,6 @@ void RegisterLocalState(PrefService* local_state) {
   // Prefs in Local State
   local_state->RegisterIntegerPref(prefs::kMultipleProfilePrefMigration, 0);
 
-  AppsPromo::RegisterPrefs(local_state);
   browser_shutdown::RegisterPrefs(local_state);
   ExternalProtocolHandler::RegisterPrefs(local_state);
   geolocation::RegisterPrefs(local_state);
@@ -146,6 +145,7 @@ void RegisterLocalState(PrefService* local_state) {
 #endif
 
 #if !defined(OS_ANDROID)
+  AppsPromo::RegisterPrefs(local_state);
   BackgroundModeManager::RegisterPrefs(local_state);
   Browser::RegisterPrefs(local_state);
   FlagsUI::RegisterPrefs(local_state);
@@ -180,18 +180,13 @@ void RegisterLocalState(PrefService* local_state) {
 void RegisterUserPrefs(PrefService* user_prefs) {
   // User prefs
   AlternateErrorPageTabObserver::RegisterUserPrefs(user_prefs);
-  AppsPromo::RegisterUserPrefs(user_prefs);
   AutofillManager::RegisterUserPrefs(user_prefs);
   bookmark_utils::RegisterUserPrefs(user_prefs);
   ChromeVersionService::RegisterUserPrefs(user_prefs);
   chrome_browser_net::HttpServerPropertiesManager::RegisterPrefs(user_prefs);
   chrome_browser_net::Predictor::RegisterUserPrefs(user_prefs);
   DownloadPrefs::RegisterUserPrefs(user_prefs);
-  extensions::CommandService::RegisterUserPrefs(user_prefs);
-  extensions::ComponentLoader::RegisterUserPrefs(user_prefs);
-  ExtensionPrefs::RegisterUserPrefs(user_prefs);
   ExtensionSettingsHandler::RegisterUserPrefs(user_prefs);
-  ExtensionWebUI::RegisterUserPrefs(user_prefs);
   GAIAInfoUpdateService::RegisterUserPrefs(user_prefs);
   HostContentSettingsMap::RegisterUserPrefs(user_prefs);
   IncognitoModePrefs::RegisterUserPrefs(user_prefs);
@@ -223,6 +218,11 @@ void RegisterUserPrefs(PrefService* user_prefs) {
 #endif
 
 #if !defined(OS_ANDROID)
+  AppsPromo::RegisterUserPrefs(user_prefs);
+  extensions::CommandService::RegisterUserPrefs(user_prefs);
+  extensions::ComponentLoader::RegisterUserPrefs(user_prefs);
+  ExtensionPrefs::RegisterUserPrefs(user_prefs);
+  ExtensionWebUI::RegisterUserPrefs(user_prefs);
   Browser::RegisterUserPrefs(user_prefs);
   browser::RegisterAutolaunchPrefs(user_prefs);
   DevToolsWindow::RegisterUserPrefs(user_prefs);
