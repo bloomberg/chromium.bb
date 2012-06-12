@@ -130,6 +130,7 @@ RootWindow::RootWindow(const gfx::Rect& initial_bounds)
       draw_on_compositing_end_(false),
       defer_draw_scheduling_(false),
       mouse_move_hold_count_(0),
+      ALLOW_THIS_IN_INITIALIZER_LIST(held_mouse_event_factory_(this)),
       compositor_lock_(NULL),
       draw_on_compositor_unlock_(false) {
   SetName("RootWindow");
@@ -250,15 +251,20 @@ void RootWindow::ScheduleFullDraw() {
 }
 
 bool RootWindow::DispatchMouseEvent(MouseEvent* event) {
-  if (mouse_move_hold_count_) {
-    if (event->type() == ui::ET_MOUSE_DRAGGED ||
-        (event->flags() & ui::EF_IS_SYNTHESIZED)) {
+  if (event->type() == ui::ET_MOUSE_DRAGGED ||
+      (event->flags() & ui::EF_IS_SYNTHESIZED)) {
+    if (mouse_move_hold_count_) {
       held_mouse_move_.reset(new MouseEvent(*event, NULL, NULL));
       return true;
     } else {
-      DispatchHeldMouseMove();
+      // We may have a held event for a period between the time
+      // mouse_move_hold_count_ fell to 0 and the DispatchHeldMouseMove
+      // executes. Since we're going to dispatch the new event directly below,
+      // we can reset the old one.
+      held_mouse_move_.reset();
     }
   }
+  DispatchHeldMouseMove();
   return DispatchMouseEventImpl(event);
 }
 
@@ -485,14 +491,25 @@ void RootWindow::ToggleFullScreen() {
 #endif
 
 void RootWindow::HoldMouseMoves() {
+  if (!mouse_move_hold_count_)
+    held_mouse_event_factory_.InvalidateWeakPtrs();
   ++mouse_move_hold_count_;
 }
 
 void RootWindow::ReleaseMouseMoves() {
   --mouse_move_hold_count_;
   DCHECK_GE(mouse_move_hold_count_, 0);
-  if (!mouse_move_hold_count_)
-    DispatchHeldMouseMove();
+  if (!mouse_move_hold_count_ && held_mouse_move_.get()) {
+    // We don't want to call DispatchHeldMouseMove directly, because this might
+    // be called from a deep stack while another event, in which case
+    // dispatching another one may not be safe/expected.
+    // Instead we post a task, that we may cancel if HoldMouseMoves is called
+    // again before it executes.
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&RootWindow::DispatchHeldMouseMove,
+                   held_mouse_event_factory_.GetWeakPtr()));
+  }
 }
 
 scoped_refptr<CompositorLock> RootWindow::GetCompositorLock() {

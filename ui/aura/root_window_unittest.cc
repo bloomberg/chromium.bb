@@ -567,4 +567,80 @@ TEST_F(RootWindowTest, MouseMoveThenTouch) {
   }
 }
 
+TEST_F(RootWindowTest, HoldMouseMove) {
+  EventFilterRecorder* filter = new EventFilterRecorder;
+  root_window()->SetEventFilter(filter);  // passes ownership
+
+  test::TestWindowDelegate delegate;
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      &delegate, 1, gfx::Rect(0, 0, 100, 100), NULL));
+
+  MouseEvent mouse_move_event(ui::ET_MOUSE_MOVED, gfx::Point(0, 0),
+                              gfx::Point(0, 0), 0);
+  root_window()->DispatchMouseEvent(&mouse_move_event);
+  // Discard MOUSE_ENTER.
+  filter->events().clear();
+
+  root_window()->HoldMouseMoves();
+
+  // Check that we don't immediately dispatch the MOUSE_DRAGGED event.
+  MouseEvent mouse_dragged_event(ui::ET_MOUSE_DRAGGED, gfx::Point(0, 0),
+                              gfx::Point(0, 0), 0);
+  root_window()->DispatchMouseEvent(&mouse_dragged_event);
+  EXPECT_TRUE(filter->events().empty());
+
+  // Check that we do dispatch the held MOUSE_DRAGGED event before another type
+  // of event.
+  MouseEvent mouse_pressed_event(ui::ET_MOUSE_PRESSED, gfx::Point(0, 0),
+                                 gfx::Point(0, 0), 0);
+  root_window()->DispatchMouseEvent(&mouse_pressed_event);
+  EXPECT_EQ("MOUSE_DRAGGED MOUSE_PRESSED",
+            EventTypesToString(filter->events()));
+  filter->events().clear();
+
+  // Check that we coalesce held MOUSE_DRAGGED events.
+  MouseEvent mouse_dragged_event2(ui::ET_MOUSE_DRAGGED, gfx::Point(1, 1),
+                                  gfx::Point(1, 1), 0);
+  root_window()->DispatchMouseEvent(&mouse_dragged_event);
+  root_window()->DispatchMouseEvent(&mouse_dragged_event2);
+  EXPECT_TRUE(filter->events().empty());
+  root_window()->DispatchMouseEvent(&mouse_pressed_event);
+  EXPECT_EQ("MOUSE_DRAGGED MOUSE_PRESSED",
+            EventTypesToString(filter->events()));
+  filter->events().clear();
+
+  // Check that on ReleaseMouseMoves, held events are not dispatched
+  // immediately, but posted instead.
+  root_window()->DispatchMouseEvent(&mouse_dragged_event);
+  root_window()->ReleaseMouseMoves();
+  EXPECT_TRUE(filter->events().empty());
+  RunAllPendingInMessageLoop();
+  EXPECT_EQ("MOUSE_DRAGGED", EventTypesToString(filter->events()));
+  filter->events().clear();
+
+  // However if another message comes in before the dispatch,
+  // the Check that on ReleaseMouseMoves, held events are not dispatched
+  // immediately, but posted instead.
+  root_window()->HoldMouseMoves();
+  root_window()->DispatchMouseEvent(&mouse_dragged_event);
+  root_window()->ReleaseMouseMoves();
+  root_window()->DispatchMouseEvent(&mouse_pressed_event);
+  EXPECT_EQ("MOUSE_DRAGGED MOUSE_PRESSED",
+            EventTypesToString(filter->events()));
+  filter->events().clear();
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(filter->events().empty());
+
+  // Check that if the other message is another MOUSE_DRAGGED, we still coalesce
+  // them.
+  root_window()->HoldMouseMoves();
+  root_window()->DispatchMouseEvent(&mouse_dragged_event);
+  root_window()->ReleaseMouseMoves();
+  root_window()->DispatchMouseEvent(&mouse_dragged_event2);
+  EXPECT_EQ("MOUSE_DRAGGED", EventTypesToString(filter->events()));
+  filter->events().clear();
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(filter->events().empty());
+}
+
 }  // namespace aura

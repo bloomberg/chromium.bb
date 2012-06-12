@@ -388,6 +388,9 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // while the count is > 0.
   int mouse_move_hold_count_;
   scoped_ptr<MouseEvent> held_mouse_move_;
+  // Used to schedule DispatchHeldMouseMove() when |mouse_move_hold_count_| goes
+  // to 0.
+  base::WeakPtrFactory<RootWindow> held_mouse_event_factory_;
 
   CompositorLock* compositor_lock_;
   bool draw_on_compositor_unlock_;
