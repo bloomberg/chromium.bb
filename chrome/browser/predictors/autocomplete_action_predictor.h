@@ -124,18 +124,19 @@ class AutocompleteActionPredictor
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Removes all rows from the database and caches.
+  void DeleteAllRows();
+
+  // Removes rows from the database and caches that contain a URL in |rows|.
+  void DeleteRowsWithURLs(const history::URLRows& rows);
+
   // Called when NOTIFICATION_OMNIBOX_OPENED_URL is observed.
   void OnOmniboxOpenedUrl(const AutocompleteLog& log);
 
-  // Deletes any old or invalid entries from the local caches. |url_db| and
-  // |id_list| must not be NULL. Every row id deleted will be added to id_list.
-  void DeleteOldIdsFromCaches(
-      history::URLDatabase* url_db,
-      std::vector<AutocompleteActionPredictorTable::Row::Id>* id_list);
-
-  // Called to delete any old or invalid entries from the database. Called after
-  // the local caches are created once the history service is available.
-  void DeleteOldEntries(history::URLDatabase* url_db);
+  // Adds and updates rows in the database and caches.
+  void AddAndUpdateRows(
+    const AutocompleteActionPredictorTable::Rows& rows_to_add,
+    const AutocompleteActionPredictorTable::Rows& rows_to_update);
 
   // Called to populate the local caches. This also calls DeleteOldEntries
   // if the history service is available, or registers for the notification of
@@ -146,6 +147,16 @@ class AutocompleteActionPredictor
   // Attempts to call DeleteOldEntries if the in-memory database has been loaded
   // by |service|. Returns success as a boolean.
   bool TryDeleteOldEntries(HistoryService* service);
+
+  // Called to delete any old or invalid entries from the database. Called after
+  // the local caches are created once the history service is available.
+  void DeleteOldEntries(history::URLDatabase* url_db);
+
+  // Deletes any old or invalid entries from the local caches. |url_db| and
+  // |id_list| must not be NULL. Every row id deleted will be added to id_list.
+  void DeleteOldIdsFromCaches(
+      history::URLDatabase* url_db,
+      std::vector<AutocompleteActionPredictorTable::Row::Id>* id_list);
 
   // Uses local caches to calculate an exact percentage prediction that the user
   // will take a particular match given what they have typed. |is_in_db| is set
@@ -158,17 +169,6 @@ class AutocompleteActionPredictor
   // Calculates the confidence for an entry in the DBCacheMap.
   double CalculateConfidenceForDbEntry(DBCacheMap::const_iterator iter) const;
 
-  // Adds and updates rows in the database and caches.
-  void AddAndUpdateRows(
-    const AutocompleteActionPredictorTable::Rows& rows_to_add,
-    const AutocompleteActionPredictorTable::Rows& rows_to_update);
-
-  // Removes all rows from the database and caches.
-  void DeleteAllRows();
-
-  // Removes rows from the database and caches that contain a URL in |rows|.
-  void DeleteRowsWithURLs(const history::URLRows& rows);
-
   Profile* profile_;
   scoped_refptr<AutocompleteActionPredictorTable> table_;
   content::NotificationRegistrar notification_registrar_;
@@ -177,7 +177,7 @@ class AutocompleteActionPredictor
   std::vector<TransitionalMatch> transitional_matches_;
 
   // This allows us to predict the effect of confidence threshold changes on
-  // accuracy.
+  // accuracy.  This is cleared after every omnibox navigation.
   mutable std::vector<std::pair<GURL, double> > tracked_urls_;
 
   DBCacheMap db_cache_;
