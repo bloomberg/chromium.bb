@@ -489,6 +489,8 @@
       # The source is behind.  Waiting for dev to automate the update.
       # crbug.com/109160
       '-execute_javascript.ExecuteJavascriptTest.testExecuteJavascriptInExtension',
+      # crbug.com/132272
+      '-shortcuts.ShortcutsTest.testHelpShortcut',
       # crbug.com/129802
       '-translate.TranslateTest.testAlwaysTranslateLanguageButton',
       '-translate.TranslateTest.testChangeTargetLanguageAlwaysTranslate',
