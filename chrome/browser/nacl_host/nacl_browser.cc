@@ -9,6 +9,7 @@
 #include "base/path_service.h"
 #include "base/pickle.h"
 #include "base/win/windows_version.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "content/public/browser/browser_thread.h"
@@ -21,7 +22,7 @@ const char kValidationCacheSequenceName[] = "NaClValidationCache";
 const FilePath::CharType kValidationCacheFileName[] =
     FILE_PATH_LITERAL("nacl_validation_cache.bin");
 
-#if defined(CHROMEOS)
+#if defined(OS_CHROMEOS)
 // TODO(ncbray) enable on ChromeOS.
 // http://code.google.com/p/chromium/issues/detail?id=131218
 const bool kValidationCacheEnabledByDefault = false;
