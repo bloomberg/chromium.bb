@@ -95,6 +95,7 @@ CONTENT_EXPORT extern const char kEnableFixedLayout[];
 CONTENT_EXPORT extern const char kDisableFullScreen[];
 extern const char kEnablePointerLock[];
 extern const char kEnableGamepad[];
+extern const char kEnableGpuBenchmarking[];
 CONTENT_EXPORT extern const char kEnableLogging[];
 extern const char kEnableMediaSource[];
 extern const char kEnablePeerConnection[];

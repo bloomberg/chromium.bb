@@ -278,6 +278,9 @@ const char kEnablePointerLock[]             = "enable-pointer-lock";
 // Enable the Gamepad API
 const char kEnableGamepad[]                 = "enable-gamepad";
 
+// Enables the GPU benchmarking extension
+const char kEnableGpuBenchmarking[]         = "enable-gpu-benchmarking";
+
 // Force logging to be enabled.  Logging is disabled by default in release
 // builds.
 const char kEnableLogging[]                 = "enable-logging";

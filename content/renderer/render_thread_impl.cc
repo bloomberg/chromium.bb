@@ -53,6 +53,7 @@
 #include "content/renderer/dom_storage/webstoragearea_impl.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/gpu/compositor_thread.h"
+#include "content/renderer/gpu/gpu_benchmarking_extension.h"
 #include "content/renderer/media/audio_input_message_filter.h"
 #include "content/renderer/media/audio_message_filter.h"
 #include "content/renderer/media/media_stream_center.h"
@@ -241,8 +242,11 @@ void RenderThreadImpl::Init() {
 
   content::GetContentClient()->renderer()->RenderThreadStarted();
 
-#if defined(WEBCOMPOSITOR_OWNS_SETTINGS)
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kEnableGpuBenchmarking))
+      RegisterExtension(content::GpuBenchmarkingExtension::Get());
+
+#if defined(WEBCOMPOSITOR_OWNS_SETTINGS)
   WebKit::WebCompositor::setAcceleratedAnimationEnabled(
       !command_line.HasSwitch(switches::kDisableThreadedAnimation));
   WebKit::WebCompositor::setPerTilePaintingEnabled(

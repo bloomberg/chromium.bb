@@ -77,6 +77,8 @@
     'renderer/gpu/compositor_thread.h',
     'renderer/gpu/input_event_filter.cc',
     'renderer/gpu/input_event_filter.h',
+    'renderer/gpu/gpu_benchmarking_extension.cc',
+    'renderer/gpu/gpu_benchmarking_extension.h',
     'renderer/idle_user_detector.cc',
     'renderer/idle_user_detector.h',
     'renderer/input_tag_speech_dispatcher.cc',
