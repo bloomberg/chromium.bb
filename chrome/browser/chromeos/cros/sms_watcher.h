@@ -16,7 +16,6 @@
 namespace base {
 
 class DictionaryValue;
-class ListValue;
 
 }  // namespace base
 
@@ -34,6 +33,18 @@ class SMSWatcher : public CrosNetworkWatcher {
   static const char kClassKey[];
   static const char kIndexKey[];
 
+  static const char kModemManager1NumberKey[];
+  static const char kModemManager1TextKey[];
+  static const char kModemManager1TimestampKey[];
+  static const char kModemManager1SmscKey[];
+  static const char kModemManager1ValidityKey[];
+  static const char kModemManager1ClassKey[];
+  static const char kModemManager1IndexKey[];
+
+  // Base class of watcher implementation classes.  Public to allow
+  // derived classes in the anonymous namespace to inherit from it.
+  class WatcherBase;
+
   SMSWatcher(const std::string& modem_device_path,
              MonitorSMSCallback callback,
              void* object);
@@ -44,29 +55,13 @@ class SMSWatcher : public CrosNetworkWatcher {
   void DevicePropertiesCallback(DBusMethodCallStatus call_status,
                                 const base::DictionaryValue& properties);
 
-  // Callback for SmsReceived signal.
-  void OnSmsReceived(uint32 index, bool complete);
-
-  // Runs |callback_| with a SMS.
-  void RunCallbackWithSMS(const base::DictionaryValue& sms_dictionary);
-
-  // Callback for Get() method.
-  void GetSMSCallback(uint32 index,
-                      const base::DictionaryValue& sms_dictionary);
-
-  // Callback for List() method.
-  void ListSMSCallback(const base::ListValue& result);
-
-  // Deletes SMSs in the queue.
-  void DeleteSMSInChain();
-
   base::WeakPtrFactory<SMSWatcher> weak_ptr_factory_;
   std::string device_path_;
   MonitorSMSCallback callback_;
   void* object_;
-  std::string dbus_connection_;
-  dbus::ObjectPath object_path_;
-  std::vector<uint32> delete_queue_;
+  scoped_ptr<WatcherBase> watcher_;
+
+  DISALLOW_COPY_AND_ASSIGN(SMSWatcher);
 };
 
 }  // namespace
