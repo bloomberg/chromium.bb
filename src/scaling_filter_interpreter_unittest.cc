@@ -38,6 +38,14 @@ class ScalingFilterInterpreterTestInterpreter : public Interpreter {
       }
       expected_coordinates_.pop_front();
     }
+    if (!expected_touch_major_.empty()) {
+      const vector<float>& expected = expected_touch_major_.front();
+      EXPECT_EQ(expected.size(), hwstate->finger_cnt);
+      for (size_t i = 0; i < hwstate->finger_cnt; i++)
+        EXPECT_FLOAT_EQ(expected[i], hwstate->fingers[i].touch_major)
+            << "i=" << i;
+      expected_touch_major_.pop_front();
+    }
     if (!expected_pressures_.empty() && hwstate->finger_cnt > 0) {
       EXPECT_FLOAT_EQ(expected_pressures_.front(),
                       hwstate->fingers[0].pressure);
@@ -83,6 +91,7 @@ class ScalingFilterInterpreterTestInterpreter : public Interpreter {
   Gesture return_value_;
   deque<Gesture> return_values_;
   deque<vector<pair<float, float> > > expected_coordinates_;
+  deque<vector<float> > expected_touch_major_;
   deque<float> expected_pressures_;
   deque<int> expected_finger_cnt_;
   deque<int> expected_touch_cnt_;
@@ -116,9 +125,13 @@ TEST(ScalingFilterInterpreterTest, SimpleTest) {
   const float kPressureThreshold = 10.0;
   interpreter.pressure_scale_.val_ = kPressureScale;
   interpreter.pressure_translate_.val_ = kPressureTranslate;
+  const float kTouchMajorScale = 1.5;
+  const float kTouchMajorTranslate = 4.2;
+  interpreter.touch_major_scale_.val_ = kTouchMajorScale;
+  interpreter.touch_major_translate_.val_ = kTouchMajorTranslate;
 
   FingerState fs[] = {
-    { 0, 0, 0, 0, 1, 0, 150, 4000, 1, 0 },
+    { 1, 0, 0, 0, 1, 0, 150, 4000, 1, 0 },
     { 0, 0, 0, 0, 2, 0, 550, 2000, 1, 0 },
     { 0, 0, 0, 0, 3, 0, 250, 3000, 1, 0 },
     { 0, 0, 0, 0, 3, 0, 250, 3000, 1, 0 }
@@ -157,6 +170,8 @@ TEST(ScalingFilterInterpreterTest, SimpleTest) {
   base_interpreter->expected_pressures_.push_back(
       fs[3].pressure * kPressureScale + kPressureTranslate);
 
+  base_interpreter->expected_touch_major_.push_back(
+      vector<float>(1, kTouchMajorScale + kTouchMajorTranslate));
 
   // Set up gestures to return
   base_interpreter->return_values_.push_back(Gesture());  // Null type

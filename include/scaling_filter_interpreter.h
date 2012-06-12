@@ -70,6 +70,11 @@ class ScalingFilterInterpreter : public Interpreter {
   DoubleProperty pressure_scale_;
   DoubleProperty pressure_translate_;
   DoubleProperty pressure_threshold_;
+
+  // Output touch width (mm) = input * scale + translate.
+  // If input is 0, we skip this all together.
+  DoubleProperty touch_major_scale_;
+  DoubleProperty touch_major_translate_;
 };
 
 }  // namespace gestures

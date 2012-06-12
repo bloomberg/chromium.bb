@@ -23,7 +23,9 @@ ScalingFilterInterpreter::ScalingFilterInterpreter(PropRegistry* prop_reg,
       screen_y_scale_(1.0),
       pressure_scale_(prop_reg, "Pressure Calibration Slope", 1.0),
       pressure_translate_(prop_reg, "Pressure Calibration Offset", 0.0),
-      pressure_threshold_(prop_reg, "Pressure Minimum Threshold", 0.0) {
+      pressure_threshold_(prop_reg, "Pressure Minimum Threshold", 0.0),
+      touch_major_scale_(prop_reg, "Touch Major Calibration Slope", 1.0),
+      touch_major_translate_(prop_reg, "Touch Major Calibration Offset", 0.0) {
   next_.reset(next);
 }
 
@@ -77,6 +79,10 @@ void ScalingFilterInterpreter::ScaleHardwareState(HardwareState* hwstate) {
     hwstate->fingers[i].position_y += tp_y_translate_;
     hwstate->fingers[i].pressure *= pressure_scale_.val_;
     hwstate->fingers[i].pressure += pressure_translate_.val_;
+    if (hwstate->fingers[i].touch_major) {
+      hwstate->fingers[i].touch_major *= touch_major_scale_.val_;
+      hwstate->fingers[i].touch_major += touch_major_translate_.val_;
+    }
     // TODO(adlr): scale other fields
   }
 }
