@@ -14,7 +14,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/base/ime/text_input_test_support.h"
 #include "ui/compositor/layer_animator.h"
-#include "ui/gfx/monitor.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 
 namespace ash {
@@ -57,12 +57,12 @@ void AshTestBase::TearDown() {
 
 void AshTestBase::ChangeMonitorConfig(float scale,
                                       const gfx::Rect& bounds_in_pixel) {
-  gfx::Monitor monitor = gfx::Monitor(gfx::Screen::GetPrimaryMonitor().id());
-  monitor.SetScaleAndBounds(scale, bounds_in_pixel);
-  std::vector<gfx::Monitor> monitors;
-  monitors.push_back(monitor);
+  gfx::Display display = gfx::Display(gfx::Screen::GetPrimaryMonitor().id());
+  display.SetScaleAndBounds(scale, bounds_in_pixel);
+  std::vector<gfx::Display> displays;
+  displays.push_back(display);
   aura::Env::GetInstance()->monitor_manager()->OnNativeMonitorsChanged(
-      monitors);
+      displays);
 }
 
 void AshTestBase::RunAllPendingInMessageLoop() {

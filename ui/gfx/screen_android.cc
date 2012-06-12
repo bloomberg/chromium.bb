@@ -5,7 +5,7 @@
 #include "ui/gfx/screen.h"
 
 #include "base/logging.h"
-#include "ui/gfx/monitor.h"
+#include "ui/gfx/display.h"
 
 namespace gfx {
 
@@ -15,13 +15,13 @@ bool Screen::IsDIPEnabled() {
 }
 
 // static
-gfx::Monitor Screen::GetPrimaryMonitor() {
+gfx::Display Screen::GetPrimaryMonitor() {
   NOTIMPLEMENTED() << "crbug.com/117839 tracks implementation";
-  return gfx::Monitor(0, gfx::Rect(0, 0, 1, 1));
+  return gfx::Display(0, gfx::Rect(0, 0, 1, 1));
 }
 
 // static
-gfx::Monitor Screen::GetMonitorNearestWindow(gfx::NativeView view) {
+gfx::Display Screen::GetMonitorNearestWindow(gfx::NativeView view) {
   return GetPrimaryMonitor();
 }
 

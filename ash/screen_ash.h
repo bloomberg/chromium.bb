@@ -6,8 +6,8 @@
 #define ASH_SCREEN_ASH_H_
 #pragma once
 
-#include "base/compiler_specific.h"
 #include "ash/ash_export.h"
+#include "base/compiler_specific.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen_impl.h"
@@ -33,11 +33,11 @@ class ASH_EXPORT ScreenAsh : public gfx::ScreenImpl {
   virtual gfx::NativeWindow GetWindowAtCursorScreenPoint() OVERRIDE;
 
   virtual int GetNumMonitors() OVERRIDE;
-  virtual gfx::Monitor GetMonitorNearestWindow(
+  virtual gfx::Display GetMonitorNearestWindow(
       gfx::NativeView view) const OVERRIDE;
-  virtual gfx::Monitor GetMonitorNearestPoint(
+  virtual gfx::Display GetMonitorNearestPoint(
       const gfx::Point& point) const OVERRIDE;
-  virtual gfx::Monitor GetPrimaryMonitor() const OVERRIDE;
+  virtual gfx::Display GetPrimaryMonitor() const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScreenAsh);

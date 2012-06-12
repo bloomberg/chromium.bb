@@ -11,11 +11,11 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "ui/aura/display_observer.h"
 #include "ui/aura/monitor_manager.h"
-#include "ui/aura/monitor_observer.h"
 
 namespace aura {
-class Monitor;
+class Display;
 class RootWindow;
 }
 
@@ -24,7 +24,7 @@ namespace internal {
 
 // MonitorController creates and maintains RootWindows for each
 // attached monitor, keeping them in sync with monitor configuration changes.
-class MonitorController : public aura::MonitorObserver {
+class MonitorController : public aura::DisplayObserver {
  public:
   MonitorController();
   virtual ~MonitorController();
@@ -32,11 +32,11 @@ class MonitorController : public aura::MonitorObserver {
   // Gets all of the root windows.
   void GetAllRootWindows(std::vector<aura::RootWindow*>* windows);
 
-  // aura::MonitorObserver overrides:
-  virtual void OnMonitorBoundsChanged(
-      const gfx::Monitor& monitor) OVERRIDE;
-  virtual void OnMonitorAdded(const gfx::Monitor& monitor) OVERRIDE;
-  virtual void OnMonitorRemoved(const gfx::Monitor& monitor) OVERRIDE;
+  // aura::DisplayObserver overrides:
+  virtual void OnDisplayBoundsChanged(
+      const gfx::Display& display) OVERRIDE;
+  virtual void OnDisplayAdded(const gfx::Display& display) OVERRIDE;
+  virtual void OnDisplayRemoved(const gfx::Display& display) OVERRIDE;
 
  private:
   void Init();

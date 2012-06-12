@@ -41,7 +41,7 @@
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/monitor.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
 
@@ -113,16 +113,16 @@ bool CanRendererHandleEvent(const aura::MouseEvent* event) {
 
 void GetScreenInfoForWindow(WebKit::WebScreenInfo* results,
                             aura::Window* window) {
-  const gfx::Monitor monitor = window ?
+  const gfx::Display display = window ?
       gfx::Screen::GetMonitorNearestWindow(window) :
       gfx::Screen::GetPrimaryMonitor();
-  const gfx::Size size = monitor.size();
+  const gfx::Size size = display.size();
   results->rect = WebKit::WebRect(0, 0, size.width(), size.height());
   results->availableRect = results->rect;
-  // TODO(derat|oshima): Don't hardcode this. Get this from monitor object.
+  // TODO(derat|oshima): Don't hardcode this. Get this from display object.
   results->depth = 24;
   results->depthPerComponent = 8;
-  int default_dpi = monitor.device_scale_factor() * 160;
+  int default_dpi = display.device_scale_factor() * 160;
   results->verticalDPI = default_dpi;
   results->horizontalDPI = default_dpi;
 }

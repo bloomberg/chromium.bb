@@ -61,7 +61,7 @@ void Env::SetMonitorManager(MonitorManager* monitor_manager) {
   monitor_manager_.reset(monitor_manager);
 #if defined(USE_X11)
   // Update the monitor manager with latest info.
-  monitor_change_observer_->NotifyMonitorChange();
+  monitor_change_observer_->NotifyDisplayChange();
 #endif
 }
 

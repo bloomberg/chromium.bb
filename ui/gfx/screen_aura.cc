@@ -5,7 +5,7 @@
 #include "ui/gfx/screen.h"
 
 #include "base/logging.h"
-#include "ui/gfx/monitor.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/screen_impl.h"
 
@@ -47,22 +47,22 @@ int Screen::GetNumMonitors() {
 }
 
 // static
-Monitor Screen::GetMonitorNearestWindow(NativeView window) {
+Display Screen::GetMonitorNearestWindow(NativeView window) {
   return g_instance_->GetMonitorNearestWindow(window);
 }
 
 // static
-Monitor Screen::GetMonitorNearestPoint(const Point& point) {
+Display Screen::GetMonitorNearestPoint(const Point& point) {
   return g_instance_->GetMonitorNearestPoint(point);
 }
 
 // static
-Monitor Screen::GetPrimaryMonitor() {
+Display Screen::GetPrimaryMonitor() {
   return g_instance_->GetPrimaryMonitor();
 }
 
 // static
-Monitor Screen::GetMonitorMatching(const gfx::Rect& match_rect) {
+Display Screen::GetMonitorMatching(const gfx::Rect& match_rect) {
   return g_instance_->GetMonitorNearestPoint(match_rect.CenterPoint());
 }
 

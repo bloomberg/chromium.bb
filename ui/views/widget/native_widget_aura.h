@@ -16,7 +16,6 @@
 #include "ui/views/widget/native_widget_private.h"
 
 namespace aura {
-class Monitor;
 class Window;
 }
 namespace gfx {

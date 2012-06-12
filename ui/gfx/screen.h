@@ -7,8 +7,8 @@
 #pragma once
 
 #include "ui/base/ui_export.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/monitor.h"
 #include "ui/gfx/point.h"
 
 namespace gfx {
@@ -42,17 +42,17 @@ class UI_EXPORT Screen {
   // number of distinct, usable displays.
   static int GetNumMonitors();
 
-  // Returns the monitor nearest the specified window.
-  static gfx::Monitor GetMonitorNearestWindow(gfx::NativeView view);
+  // Returns the display nearest the specified window.
+  static gfx::Display GetMonitorNearestWindow(gfx::NativeView view);
 
-  // Returns the the monitor nearest the specified point.
-  static gfx::Monitor GetMonitorNearestPoint(const gfx::Point& point);
+  // Returns the the display nearest the specified point.
+  static gfx::Display GetMonitorNearestPoint(const gfx::Point& point);
 
   // Returns the bounds of the work area of the primary monitor.
-  static gfx::Monitor GetPrimaryMonitor();
+  static gfx::Display GetPrimaryMonitor();
 
-  // Returns the monitor that most closely intersects the provided bounds.
-  static gfx::Monitor GetMonitorMatching(const gfx::Rect& match_rect);
+  // Returns the display that most closely intersects the provided bounds.
+  static gfx::Display GetMonitorMatching(const gfx::Rect& match_rect);
 };
 
 }  // namespace gfx

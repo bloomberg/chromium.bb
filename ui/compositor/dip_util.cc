@@ -9,10 +9,10 @@
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/layer.h"
-#include "ui/gfx/monitor.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/point.h"
-#include "ui/gfx/size.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/size.h"
 
 namespace ui {
 

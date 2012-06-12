@@ -12,7 +12,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/gfx/monitor.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 
 namespace ash {
@@ -94,8 +94,8 @@ void RestoreWindow(aura::Window* window) {
 }
 
 void CenterWindow(aura::Window* window) {
-  const gfx::Monitor monitor = gfx::Screen::GetMonitorNearestWindow(window);
-  gfx::Rect center = monitor.work_area().Center(window->bounds().size());
+  const gfx::Display display = gfx::Screen::GetMonitorNearestWindow(window);
+  gfx::Rect center = display.work_area().Center(window->bounds().size());
   window->SetBounds(center);
 }
 

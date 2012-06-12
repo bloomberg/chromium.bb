@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/aura/monitor_observer.h"
+#include "ui/aura/display_observer.h"
 
 namespace aura {
 
-MonitorObserver::~MonitorObserver() {
+DisplayObserver::~DisplayObserver() {
 }
 
 }  // namespace aura

@@ -14,18 +14,18 @@
 #include "ui/aura/aura_export.h"
 
 namespace gfx {
-class Monitor;
+class Display;
 class Point;
 class Size;
 }
 
 namespace aura {
-class MonitorObserver;
+class DisplayObserver;
 class RootWindow;
 class Window;
 
 // MonitorManager creates, deletes and updates Monitor objects when
-// monitor configuration changes, and notifies MonitorObservers about
+// monitor configuration changes, and notifies DisplayObservers about
 // the change. This is owned by Env and its lifetime is longer than
 // any windows.
 class AURA_EXPORT MonitorManager {
@@ -43,8 +43,8 @@ class AURA_EXPORT MonitorManager {
   // monitor at the origin of the screen. An empty string creates
   // the monitor with default size.
   //  The device scale factor can be specified by "*", like "1280x780*2",
-  // or |gfx::Monitor::GetDefaultDeviceScaleFactor()| will be used if omitted.
-  static gfx::Monitor CreateMonitorFromSpec(const std::string& spec);
+  // or |gfx::Display::GetDefaultDeviceScaleFactor()| will be used if omitted.
+  static gfx::Display CreateMonitorFromSpec(const std::string& spec);
 
   // A utility function to create a root window for primary monitor.
   static RootWindow* CreateRootWindowForPrimaryMonitor();
@@ -52,39 +52,38 @@ class AURA_EXPORT MonitorManager {
   MonitorManager();
   virtual ~MonitorManager();
 
-  // Adds/removes MonitorObservers.
-  void AddObserver(MonitorObserver* observer);
-  void RemoveObserver(MonitorObserver* observer);
+  // Adds/removes DisplayObservers.
+  void AddObserver(DisplayObserver* observer);
+  void RemoveObserver(DisplayObserver* observer);
 
   // Called when monitor configuration has changed. The new monitor
   // configurations is passed as a vector of Monitor object, which
   // contains each monitor's new infomration.
   virtual void OnNativeMonitorsChanged(
-      const std::vector<gfx::Monitor>& monitors) = 0;
+      const std::vector<gfx::Display>& display) = 0;
 
   // Create a root window for given |monitor|.
   virtual RootWindow* CreateRootWindowForMonitor(
-      const gfx::Monitor& monitor) = 0;
+      const gfx::Display& display) = 0;
 
-  // Returns the monitor at |index|. The monitor at 0 is considered
-  // "primary".
-  virtual const gfx::Monitor& GetMonitorAt(size_t index) = 0;
+  // Returns the display at |index|. The display at 0 is considered "primary".
+  virtual const gfx::Display& GetMonitorAt(size_t index) = 0;
 
   virtual size_t GetNumMonitors() const = 0;
 
-  // Returns the monitor object nearest given |window|.
-  virtual const gfx::Monitor& GetMonitorNearestWindow(
+  // Returns the display object nearest given |window|.
+  virtual const gfx::Display& GetMonitorNearestWindow(
       const Window* window) const = 0;
 
   // Returns the monitor object nearest given |pint|.
-  virtual const gfx::Monitor& GetMonitorNearestPoint(
+  virtual const gfx::Display& GetMonitorNearestPoint(
       const gfx::Point& point) const = 0;
 
  protected:
-  // Calls observers' OnMonitorBoundsChanged methods.
-  void NotifyBoundsChanged(const gfx::Monitor& monitor);
-  void NotifyMonitorAdded(const gfx::Monitor& monitor);
-  void NotifyMonitorRemoved(const gfx::Monitor& monitor);
+  // Calls observers' OnDisplayBoundsChanged methods.
+  void NotifyBoundsChanged(const gfx::Display& display);
+  void NotifyDisplayAdded(const gfx::Display& display);
+  void NotifyDisplayRemoved(const gfx::Display& display);
 
  private:
   // If set before the RootWindow is created, the host window will cover the
@@ -92,7 +91,7 @@ class AURA_EXPORT MonitorManager {
   // switches::kAuraHostWindowSize flag.
   static bool use_fullscreen_host_window_;
 
-  ObserverList<MonitorObserver> observers_;
+  ObserverList<DisplayObserver> observers_;
   DISALLOW_COPY_AND_ASSIGN(MonitorManager);
 };
 

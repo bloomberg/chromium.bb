@@ -10,7 +10,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/root_window.h"
-#include "ui/gfx/monitor.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 
 namespace ash {
@@ -58,15 +58,15 @@ int ScreenAsh::GetNumMonitors() {
   return GetMonitorManager()->GetNumMonitors();
 }
 
-gfx::Monitor ScreenAsh::GetMonitorNearestWindow(gfx::NativeView window) const {
+gfx::Display ScreenAsh::GetMonitorNearestWindow(gfx::NativeView window) const {
   return GetMonitorManager()->GetMonitorNearestWindow(window);
 }
 
-gfx::Monitor ScreenAsh::GetMonitorNearestPoint(const gfx::Point& point) const {
+gfx::Display ScreenAsh::GetMonitorNearestPoint(const gfx::Point& point) const {
   return GetMonitorManager()->GetMonitorNearestPoint(point);
 }
 
-gfx::Monitor ScreenAsh::GetPrimaryMonitor() const {
+gfx::Display ScreenAsh::GetPrimaryMonitor() const {
   return GetMonitorManager()->GetMonitorAt(0);
 }
 

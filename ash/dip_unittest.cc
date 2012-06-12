@@ -18,8 +18,8 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/insets.h"
-#include "ui/gfx/monitor.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
 
@@ -39,31 +39,31 @@ TEST_F(DIPTest, MAYBE_WorkArea) {
   ChangeMonitorConfig(1.0f, gfx::Rect(0, 0, 1000, 900));
 
   aura::RootWindow* root = Shell::GetPrimaryRootWindow();
-  const gfx::Monitor monitor = gfx::Screen::GetMonitorNearestWindow(root);
+  const gfx::Display display = gfx::Screen::GetMonitorNearestWindow(root);
 
-  EXPECT_EQ("0,0 1000x900", monitor.bounds().ToString());
-  gfx::Rect work_area = monitor.work_area();
+  EXPECT_EQ("0,0 1000x900", display.bounds().ToString());
+  gfx::Rect work_area = display.work_area();
   EXPECT_EQ("0,0 1000x852", work_area.ToString());
-  EXPECT_EQ("0,0,48,0", monitor.bounds().InsetsFrom(work_area).ToString());
+  EXPECT_EQ("0,0,48,0", display.bounds().InsetsFrom(work_area).ToString());
 
   ChangeMonitorConfig(2.0f, gfx::Rect(0, 0, 2000, 1800));
 
-  const gfx::Monitor monitor_2x = gfx::Screen::GetMonitorNearestWindow(root);
+  const gfx::Display display_2x = gfx::Screen::GetMonitorNearestWindow(root);
 
   // The |bounds_in_pixel()| should report bounds in pixel coordinate.
-  EXPECT_EQ("0,0 2000x1800", monitor_2x.bounds_in_pixel().ToString());
+  EXPECT_EQ("0,0 2000x1800", display_2x.bounds_in_pixel().ToString());
 
   // Aura and views coordinates are in DIP, so they their bounds do not change.
-  EXPECT_EQ("0,0 1000x900", monitor_2x.bounds().ToString());
-  work_area = monitor_2x.work_area();
+  EXPECT_EQ("0,0 1000x900", display_2x.bounds().ToString());
+  work_area = display_2x.work_area();
   EXPECT_EQ("0,0 1000x852", work_area.ToString());
-  EXPECT_EQ("0,0,48,0", monitor_2x.bounds().InsetsFrom(work_area).ToString());
+  EXPECT_EQ("0,0,48,0", display_2x.bounds().InsetsFrom(work_area).ToString());
 
   // Sanity check if the workarea's inset hight is same as
   // the launcher's height.
   Launcher* launcher = Shell::GetInstance()->launcher();
   EXPECT_EQ(
-      monitor_2x.bounds().InsetsFrom(work_area).height(),
+      display_2x.bounds().InsetsFrom(work_area).height(),
       launcher->widget()->GetNativeView()->layer()->bounds().height());
 }
 

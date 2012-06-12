@@ -10,7 +10,7 @@
 #include "ui/aura/aura_export.h"
 #include "ui/aura/monitor_manager.h"
 #include "ui/aura/window_observer.h"
-#include "ui/gfx/monitor.h"
+#include "ui/gfx/display.h"
 
 namespace gfx {
 class Rect;
@@ -27,16 +27,16 @@ class AURA_EXPORT SingleMonitorManager : public MonitorManager,
 
   // MonitorManager overrides:
   virtual void OnNativeMonitorsChanged(
-      const std::vector<gfx::Monitor>& monitors) OVERRIDE;
+      const std::vector<gfx::Display>& display) OVERRIDE;
   virtual RootWindow* CreateRootWindowForMonitor(
-      const gfx::Monitor& monitor) OVERRIDE;
-  virtual const gfx::Monitor& GetMonitorAt(size_t index) OVERRIDE;
+      const gfx::Display& display) OVERRIDE;
+  virtual const gfx::Display& GetMonitorAt(size_t index) OVERRIDE;
 
   virtual size_t GetNumMonitors() const OVERRIDE;
 
-  virtual const gfx::Monitor& GetMonitorNearestWindow(
+  virtual const gfx::Display& GetMonitorNearestWindow(
       const Window* window) const OVERRIDE;
-  virtual const gfx::Monitor& GetMonitorNearestPoint(
+  virtual const gfx::Display& GetMonitorNearestPoint(
       const gfx::Point& point) const OVERRIDE;
 
   // WindowObserver overrides:
@@ -50,7 +50,7 @@ class AURA_EXPORT SingleMonitorManager : public MonitorManager,
   void Update(const gfx::Size size);
 
   RootWindow* root_window_;
-  gfx::Monitor monitor_;
+  gfx::Display display_;
 
   DISALLOW_COPY_AND_ASSIGN(SingleMonitorManager);
 };

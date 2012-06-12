@@ -8,7 +8,7 @@
 #include "ui/aura/desktop/desktop_screen.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/root_window_host.h"
-#include "ui/gfx/monitor.h"
+#include "ui/gfx/display.h"
 
 namespace {
 
@@ -19,11 +19,11 @@ MONITORINFO GetMonitorInfoForMonitor(HMONITOR monitor) {
   return monitor_info;
 }
 
-gfx::Monitor GetMonitor(MONITORINFO& monitor_info) {
+gfx::Display GetDisplay(MONITORINFO& monitor_info) {
   // TODO(oshima): Implement ID and Observer.
-  gfx::Monitor monitor(0, gfx::Rect(monitor_info.rcMonitor));
-  monitor.set_work_area(gfx::Rect(monitor_info.rcWork));
-  return monitor;
+  gfx::Display display(0, gfx::Rect(monitor_info.rcMonitor));
+  display.set_work_area(gfx::Rect(monitor_info.rcWork));
+  return display;
 }
 
 }  // namespace
@@ -62,7 +62,7 @@ int DesktopScreenWin::GetNumMonitors() {
   return GetSystemMetrics(SM_CMONITORS);
 }
 
-gfx::Monitor DesktopScreenWin::GetMonitorNearestWindow(
+gfx::Display DesktopScreenWin::GetMonitorNearestWindow(
     gfx::NativeView window) const {
   gfx::AcceleratedWidget accelerated_window =
       window->GetRootWindow()->GetAcceleratedWidget();
@@ -71,27 +71,27 @@ gfx::Monitor DesktopScreenWin::GetMonitorNearestWindow(
   GetMonitorInfo(MonitorFromWindow(accelerated_window,
                                    MONITOR_DEFAULTTONEAREST),
                  &monitor_info);
-  return GetMonitor(monitor_info);
+  return GetDisplay(monitor_info);
 }
 
-gfx::Monitor DesktopScreenWin::GetMonitorNearestPoint(
+gfx::Display DesktopScreenWin::GetMonitorNearestPoint(
     const gfx::Point& point) const {
   POINT initial_loc = { point.x(), point.y() };
   HMONITOR monitor = MonitorFromPoint(initial_loc, MONITOR_DEFAULTTONEAREST);
   MONITORINFO mi = {0};
   mi.cbSize = sizeof(mi);
   if (monitor && GetMonitorInfo(monitor, &mi))
-    return GetMonitor(mi);
-  return gfx::Monitor();
+    return GetDisplay(mi);
+  return gfx::Display();
 }
 
-gfx::Monitor DesktopScreenWin::GetPrimaryMonitor() const {
+gfx::Display DesktopScreenWin::GetPrimaryMonitor() const {
   MONITORINFO mi = GetMonitorInfoForMonitor(
       MonitorFromWindow(NULL, MONITOR_DEFAULTTOPRIMARY));
-  gfx::Monitor monitor = GetMonitor(mi);
-  DCHECK_EQ(GetSystemMetrics(SM_CXSCREEN), monitor.size().width());
-  DCHECK_EQ(GetSystemMetrics(SM_CYSCREEN), monitor.size().height());
-  return monitor;
+  gfx::Display display = GetDisplay(mi);
+  DCHECK_EQ(GetSystemMetrics(SM_CXSCREEN), display.size().width());
+  DCHECK_EQ(GetSystemMetrics(SM_CYSCREEN), display.size().height());
+  return display;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

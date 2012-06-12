@@ -11,7 +11,7 @@
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/aura/event.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/monitor.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
@@ -42,8 +42,8 @@ class TouchHudCanvas : public views::View {
       : owner_(owner),
         path_index_(0),
         color_index_(0) {
-    gfx::Monitor monitor = gfx::Screen::GetPrimaryMonitor();
-    gfx::Rect bounds = monitor.bounds();
+    gfx::Display display = gfx::Screen::GetPrimaryMonitor();
+    gfx::Rect bounds = display.bounds();
     size_.set_width(bounds.width() / kScale);
     size_.set_height(bounds.height() / kScale);
   }

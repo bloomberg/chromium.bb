@@ -54,8 +54,8 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/monitor.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
 
@@ -1137,8 +1137,8 @@ Browser* InternetOptionsHandler::GetAppropriateBrowser() {
 
 float InternetOptionsHandler::GetIconScaleFactor() {
   gfx::NativeWindow window = GetNativeWindow();
-  gfx::Monitor monitor = gfx::Screen::GetMonitorNearestWindow(window);
-  return monitor.device_scale_factor();
+  gfx::Display display = gfx::Screen::GetMonitorNearestWindow(window);
+  return display.device_scale_factor();
 }
 
 void InternetOptionsHandler::NetworkCommandCallback(const ListValue* args) {

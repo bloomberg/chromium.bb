@@ -13,7 +13,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/root_window_host.h"
 #include "ui/base/x/x11_util.h"
-#include "ui/gfx/monitor.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/screen_impl.h"
 
@@ -39,11 +39,11 @@ class DesktopScreenX11 : public gfx::ScreenImpl {
   virtual gfx::Point GetCursorScreenPoint() OVERRIDE;
   virtual gfx::NativeWindow GetWindowAtCursorScreenPoint() OVERRIDE;
   virtual int GetNumMonitors() OVERRIDE;
-  virtual gfx::Monitor GetMonitorNearestWindow(
+  virtual gfx::Display GetMonitorNearestWindow(
       gfx::NativeView window) const OVERRIDE;
-  virtual gfx::Monitor GetMonitorNearestPoint(
+  virtual gfx::Display GetMonitorNearestPoint(
       const gfx::Point& point) const OVERRIDE;
-  virtual gfx::Monitor GetPrimaryMonitor() const OVERRIDE;
+  virtual gfx::Display GetPrimaryMonitor() const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DesktopScreenX11);
@@ -92,21 +92,21 @@ int DesktopScreenX11::GetNumMonitors() {
   return 1;
 }
 
-gfx::Monitor DesktopScreenX11::GetMonitorNearestWindow(
+gfx::Display DesktopScreenX11::GetMonitorNearestWindow(
     gfx::NativeView window) const {
   // TODO(erg): Do the right thing once we know what that is.
-  return gfx::Monitor(0, gfx::Rect(GetPrimaryMonitorSize()));
+  return gfx::Display(0, gfx::Rect(GetPrimaryMonitorSize()));
 }
 
-gfx::Monitor DesktopScreenX11::GetMonitorNearestPoint(
+gfx::Display DesktopScreenX11::GetMonitorNearestPoint(
     const gfx::Point& point) const {
   // TODO(erg): Do the right thing once we know what that is.
-  return gfx::Monitor(0, gfx::Rect(GetPrimaryMonitorSize()));
+  return gfx::Display(0, gfx::Rect(GetPrimaryMonitorSize()));
 }
 
-gfx::Monitor DesktopScreenX11::GetPrimaryMonitor() const {
+gfx::Display DesktopScreenX11::GetPrimaryMonitor() const {
   // TODO(erg): Do the right thing once we know what that is.
-  return gfx::Monitor(0, gfx::Rect(GetPrimaryMonitorSize()));
+  return gfx::Display(0, gfx::Rect(GetPrimaryMonitorSize()));
 }
 
 }  // namespace

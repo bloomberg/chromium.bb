@@ -78,15 +78,15 @@ gfx::Rect DisplaySettingsProvider::GetWorkArea() const {
   // screen (and overlap Dock). And we also want to exclude the system menu
   // area. Note that the rect returned from gfx::Screen util functions is in
   // platform-independent screen coordinates with (0, 0) as the top-left corner.
-  gfx::Monitor monitor = gfx::Screen::GetPrimaryMonitor();
-  gfx::Rect monitor_area = monitor.bounds();
-  gfx::Rect work_area = monitor.work_area();
-  int system_menu_height = work_area.y() - monitor_area.y();
+  gfx::Display display = gfx::Screen::GetPrimaryMonitor();
+  gfx::Rect display_area = display.bounds();
+  gfx::Rect work_area = display.work_area();
+  int system_menu_height = work_area.y() - display_area.y();
   if (system_menu_height > 0) {
-    monitor_area.set_y(monitor_area.y() + system_menu_height);
-    monitor_area.set_height(monitor_area.height() - system_menu_height);
+    display_area.set_y(display_area.y() + system_menu_height);
+    display_area.set_height(display_area.height() - system_menu_height);
   }
-  return monitor_area;
+  return display_area;
 #else
   gfx::Rect work_area = gfx::Screen::GetPrimaryMonitor().work_area();
 #endif

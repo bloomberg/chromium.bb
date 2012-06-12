@@ -4,21 +4,21 @@
 
 #include "ui/base/events.h"
 
-#include <X11/Xlib.h>
+#include <string.h>
 #include <X11/extensions/XInput.h>
 #include <X11/extensions/XInput2.h>
-#include <string.h>
+#include <X11/Xlib.h>
 
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_pump_aurax11.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
-#include "ui/base/ui_base_switches.h"
 #include "ui/base/touch/touch_factory.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/base/x/valuators.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/point.h"
-#include "ui/gfx/monitor.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
 

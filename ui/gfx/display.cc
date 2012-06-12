@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/monitor.h"
+#include "ui/gfx/display.h"
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -29,23 +29,23 @@ float GetDefaultDeviceScaleFactorImpl() {
 } // namespace
 
 // static
-float Monitor::GetDefaultDeviceScaleFactor() {
+float Display::GetDefaultDeviceScaleFactor() {
   static const float kDefaultDeviceScaleFactor =
       GetDefaultDeviceScaleFactorImpl();
   return kDefaultDeviceScaleFactor;
 }
 
-Monitor::Monitor()
+Display::Display()
     : id_(-1),
       device_scale_factor_(GetDefaultDeviceScaleFactor()) {
 }
 
-Monitor::Monitor(int id)
+Display::Display(int id)
     : id_(id),
       device_scale_factor_(GetDefaultDeviceScaleFactor()) {
 }
 
-Monitor::Monitor(int id, const gfx::Rect& bounds)
+Display::Display(int id, const gfx::Rect& bounds)
     : id_(id),
       bounds_(bounds),
       work_area_(bounds),
@@ -55,17 +55,17 @@ Monitor::Monitor(int id, const gfx::Rect& bounds)
 #endif
 }
 
-Monitor::~Monitor() {
+Display::~Display() {
 }
 
-Insets Monitor::GetWorkAreaInsets() const {
+Insets Display::GetWorkAreaInsets() const {
   return gfx::Insets(work_area_.y() - bounds_.y(),
                      work_area_.x() - bounds_.x(),
                      bounds_.bottom() - work_area_.bottom(),
                      bounds_.right() - work_area_.right());
 }
 
-void Monitor::SetScaleAndBounds(
+void Display::SetScaleAndBounds(
     float device_scale_factor,
     const gfx::Rect& bounds_in_pixel) {
   Insets insets = bounds_.InsetsFrom(work_area_);
@@ -73,15 +73,15 @@ void Monitor::SetScaleAndBounds(
 #if defined(USE_AURA)
   bounds_in_pixel_ = bounds_in_pixel;
 #endif
-  // TODO(oshima): For m19, work area/monitor bounds that chrome/webapps sees
+  // TODO(oshima): For m19, work area/display bounds that chrome/webapps sees
   // has (0, 0) origin because it's simpler and enough. Fix this when
-  // real multi monitor support is implemented.
+  // real multi display support is implemented.
   bounds_ = gfx::Rect(
       bounds_in_pixel.size().Scale(1.0f / device_scale_factor_));
   UpdateWorkAreaFromInsets(insets);
 }
 
-void Monitor::SetSize(const gfx::Size& size_in_pixel) {
+void Display::SetSize(const gfx::Size& size_in_pixel) {
   SetScaleAndBounds(
       device_scale_factor_,
 #if defined(USE_AURA)
@@ -91,17 +91,17 @@ void Monitor::SetSize(const gfx::Size& size_in_pixel) {
 #endif
 }
 
-void Monitor::UpdateWorkAreaFromInsets(const gfx::Insets& insets) {
+void Display::UpdateWorkAreaFromInsets(const gfx::Insets& insets) {
   work_area_ = bounds_;
   work_area_.Inset(insets);
 }
 
-gfx::Size Monitor::GetSizeInPixel() const {
+gfx::Size Display::GetSizeInPixel() const {
   return size().Scale(device_scale_factor_);
 }
 
-std::string Monitor::ToString() const {
-  return base::StringPrintf("Monitor[%d] bounds=%s, workarea=%s, scale=%f",
+std::string Display::ToString() const {
+  return base::StringPrintf("Display[%d] bounds=%s, workarea=%s, scale=%f",
                             id_,
                             bounds_.ToString().c_str(),
                             work_area_.ToString().c_str(),

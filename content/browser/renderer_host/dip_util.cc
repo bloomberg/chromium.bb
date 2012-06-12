@@ -5,7 +5,7 @@
 #include "content/browser/renderer_host/dip_util.h"
 
 #include "content/public/browser/render_widget_host_view.h"
-#include "ui/gfx/monitor.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
@@ -19,9 +19,9 @@ float GetDIPScaleFactor(const RenderWidgetHostView* view) {
 // TODO(pkotwicz): Fix this. (crbug.com/129409).
 #if !defined(OS_MACOSX)
   if (gfx::Screen::IsDIPEnabled()) {
-    gfx::Monitor monitor = gfx::Screen::GetMonitorNearestWindow(
+    gfx::Display display = gfx::Screen::GetMonitorNearestWindow(
         view ? view->GetNativeView() : NULL);
-    return monitor.device_scale_factor();
+    return display.device_scale_factor();
   }
 #endif
   return 1.0f;

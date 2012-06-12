@@ -23,14 +23,14 @@ class TestScreen : public gfx::ScreenImpl {
   virtual gfx::Point GetCursorScreenPoint() OVERRIDE;
   virtual gfx::NativeWindow GetWindowAtCursorScreenPoint() OVERRIDE;
   virtual int GetNumMonitors() OVERRIDE;
-  virtual gfx::Monitor GetMonitorNearestWindow(
+  virtual gfx::Display GetMonitorNearestWindow(
       gfx::NativeView view) const OVERRIDE;
-  virtual gfx::Monitor GetMonitorNearestPoint(
+  virtual gfx::Display GetMonitorNearestPoint(
       const gfx::Point& point) const OVERRIDE;
-  virtual gfx::Monitor GetPrimaryMonitor() const OVERRIDE;
+  virtual gfx::Display GetPrimaryMonitor() const OVERRIDE;
 
  private:
-  gfx::Monitor GetMonitor() const;
+  gfx::Display GetMonitor() const;
 
   aura::RootWindow* root_window_;
 

@@ -26,7 +26,6 @@ class CommandLine;
 namespace aura {
 class EventFilter;
 class FocusManager;
-class Monitor;
 class RootWindow;
 class Window;
 namespace client {

@@ -16,7 +16,7 @@
 
 namespace gfx {
 class Insets;
-class Monitor;
+class Display;
 }
 
 namespace ash {
@@ -45,15 +45,15 @@ class ASH_EXPORT MultiMonitorManager : public aura::MonitorManager,
 
   // MonitorManager overrides:
   virtual void OnNativeMonitorsChanged(
-      const std::vector<gfx::Monitor>& monitors) OVERRIDE;
+      const std::vector<gfx::Display>& displays) OVERRIDE;
   virtual aura::RootWindow* CreateRootWindowForMonitor(
-      const gfx::Monitor& monitor) OVERRIDE;
-  virtual const gfx::Monitor& GetMonitorAt(size_t index) OVERRIDE;
+      const gfx::Display& display) OVERRIDE;
+  virtual const gfx::Display& GetMonitorAt(size_t index) OVERRIDE;
 
   virtual size_t GetNumMonitors() const OVERRIDE;
-  virtual const gfx::Monitor& GetMonitorNearestPoint(
+  virtual const gfx::Display& GetMonitorNearestPoint(
       const gfx::Point& point) const OVERRIDE;
-  virtual const gfx::Monitor& GetMonitorNearestWindow(
+  virtual const gfx::Display& GetMonitorNearestWindow(
       const aura::Window* window) const OVERRIDE;
 
   // RootWindowObserver overrides:
@@ -61,15 +61,15 @@ class ASH_EXPORT MultiMonitorManager : public aura::MonitorManager,
                                    const gfx::Size& new_size) OVERRIDE;
 
  private:
-  typedef std::vector<gfx::Monitor> Monitors;
+  typedef std::vector<gfx::Display> Displays;
 
   void Init();
   void AddRemoveMonitorImpl();
   void CycleMonitorImpl();
   void ScaleMonitorImpl();
-  gfx::Monitor& FindMonitorById(int id);
+  gfx::Display& FindDisplayById(int id);
 
-  Monitors monitors_;
+  Displays displays_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiMonitorManager);
 };

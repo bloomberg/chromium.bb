@@ -9,25 +9,25 @@
 #include "ui/aura/aura_export.h"
 
 namespace gfx {
-class Monitor;
+class Display;
 }
 
 namespace aura {
 
-// Observers for monitor configuration changes.
-class AURA_EXPORT MonitorObserver {
+// Observers for display configuration changes.
+class AURA_EXPORT DisplayObserver {
  public:
-  // Called when the |monitor|'s bound has changed.
-  virtual void OnMonitorBoundsChanged(const gfx::Monitor& monitor) = 0;
+  // Called when the |display|'s bound has changed.
+  virtual void OnDisplayBoundsChanged(const gfx::Display& display) = 0;
 
   // Called when |new_monitor| has been added.
-  virtual void OnMonitorAdded(const gfx::Monitor& new_monitor) = 0;
+  virtual void OnDisplayAdded(const gfx::Display& new_display) = 0;
 
-  // Called when |old_monitor| has been removed.
-  virtual void OnMonitorRemoved(const gfx::Monitor& old_monitor) = 0;
+  // Called when |old_display| has been removed.
+  virtual void OnDisplayRemoved(const gfx::Display& old_display) = 0;
 
  protected:
-  virtual ~MonitorObserver();
+  virtual ~DisplayObserver();
 };
 
 }  // namespace aura

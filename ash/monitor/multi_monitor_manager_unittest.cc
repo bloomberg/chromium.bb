@@ -9,37 +9,36 @@
 #include "base/format_macros.h"
 #include "base/string_split.h"
 #include "base/stringprintf.h"
+#include "ui/aura/display_observer.h"
 #include "ui/aura/env.h"
-#include "ui/aura/monitor_observer.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_observer.h"
-#include "ui/gfx/monitor.h"
+#include "ui/gfx/display.h"
 
 namespace ash {
 namespace test {
 
 using std::vector;
 using std::string;
-using gfx::Monitor;
 
 namespace {
 
-vector<Monitor> CreateMonitorsFromString(
+vector<gfx::Display> CreateDisplaysFromString(
     const std::string specs) {
-  vector<Monitor> monitors;
+  vector<gfx::Display> displays;
   vector<string> parts;
   base::SplitString(specs, ',', &parts);
   for (vector<string>::const_iterator iter = parts.begin();
        iter != parts.end(); ++iter) {
-    monitors.push_back(aura::MonitorManager::CreateMonitorFromSpec(*iter));
+    displays.push_back(aura::MonitorManager::CreateMonitorFromSpec(*iter));
   }
-  return monitors;
+  return displays;
 }
 
 }  // namespace
 
 class MultiMonitorManagerTest : public test::AshTestBase,
-                                public aura::MonitorObserver,
+                                public aura::DisplayObserver,
                                 public aura::WindowObserver {
  public:
   MultiMonitorManagerTest()
@@ -62,8 +61,8 @@ class MultiMonitorManagerTest : public test::AshTestBase,
   aura::MonitorManager* monitor_manager() {
     return aura::Env::GetInstance()->monitor_manager();
   }
-  const vector<Monitor>& changed() const { return changed_; }
-  const vector<Monitor>& added() const { return added_; }
+  const vector<gfx::Display>& changed() const { return changed_; }
+  const vector<gfx::Display>& added() const { return added_; }
 
   string GetCountSummary() const {
     return StringPrintf("%"PRIuS" %"PRIuS" %"PRIuS,
@@ -81,14 +80,14 @@ class MultiMonitorManagerTest : public test::AshTestBase,
     return root_window_destroyed_;
   }
 
-  // aura::MonitorObserver overrides:
-  virtual void OnMonitorBoundsChanged(const Monitor& monitor) OVERRIDE {
-    changed_.push_back(monitor);
+  // aura::DisplayObserver overrides:
+  virtual void OnDisplayBoundsChanged(const gfx::Display& display) OVERRIDE {
+    changed_.push_back(display);
   }
-  virtual void OnMonitorAdded(const Monitor& new_monitor) OVERRIDE {
-    added_.push_back(new_monitor);
+  virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE {
+    added_.push_back(new_display);
   }
-  virtual void OnMonitorRemoved(const Monitor& old_monitor) OVERRIDE {
+  virtual void OnDisplayRemoved(const gfx::Display& old_display) OVERRIDE {
     ++removed_count_;
   }
 
@@ -99,13 +98,13 @@ class MultiMonitorManagerTest : public test::AshTestBase,
   }
 
   void UpdateMonitor(const std::string str) {
-    vector<Monitor> monitors = CreateMonitorsFromString(str);
-    monitor_manager()->OnNativeMonitorsChanged(monitors);
+    vector<gfx::Display> displays = CreateDisplaysFromString(str);
+    monitor_manager()->OnNativeMonitorsChanged(displays);
   }
 
  private:
-  vector<Monitor> changed_;
-  vector<Monitor> added_;
+  vector<gfx::Display> changed_;
+  vector<gfx::Display> added_;
   size_t removed_count_;
   bool root_window_destroyed_;
 
@@ -157,8 +156,8 @@ TEST_F(MultiMonitorManagerTest, NativeMonitorTest) {
   EXPECT_EQ("0,0 800x300", changed()[0].bounds().ToString());
   reset();
 
-  // # of monitor can go to zero when screen is off.
-  const vector<Monitor> empty;
+  // # of display can go to zero when screen is off.
+  const vector<gfx::Display> empty;
   monitor_manager()->OnNativeMonitorsChanged(empty);
   EXPECT_EQ(1U, monitor_manager()->GetNumMonitors());
   EXPECT_EQ("0 0 0", GetCountSummary());
