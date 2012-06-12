@@ -25,7 +25,7 @@ class ExtensionSettingsQuotaTest : public testing::Test {
       : byte_value_1_(Value::CreateIntegerValue(1)),
         byte_value_16_(Value::CreateStringValue("sixteen bytes.")),
         byte_value_256_(new ListValue()),
-        delegate_(new TestingSettingsStorage()) {
+        delegate_(new TestingValueStore()) {
     for (int i = 1; i < 89; ++i) {
       byte_value_256_->Append(Value::CreateIntegerValue(i));
     }
@@ -72,7 +72,7 @@ class ExtensionSettingsQuotaTest : public testing::Test {
   scoped_ptr<SettingsStorageQuotaEnforcer> storage_;
 
   // In-memory storage area being delegated to.  Always owned by |storage_|.
-  TestingSettingsStorage* delegate_;
+  TestingValueStore* delegate_;
 };
 
 TEST_F(ExtensionSettingsQuotaTest, ZeroQuotaBytes) {

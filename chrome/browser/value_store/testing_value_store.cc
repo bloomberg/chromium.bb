@@ -8,7 +8,7 @@
 
 namespace {
 
-const char* kGenericErrorMessage = "TestingSettingsStorage configured to error";
+const char* kGenericErrorMessage = "TestingValueStore configured to error";
 
 ValueStore::ReadResult ReadResultError() {
   return ValueStore::MakeReadResult(kGenericErrorMessage);
@@ -26,40 +26,40 @@ std::vector<std::string> CreateVector(const std::string& string) {
 
 }  // namespace
 
-TestingSettingsStorage::TestingSettingsStorage()
+TestingValueStore::TestingValueStore()
     : fail_all_requests_(false) {}
 
-TestingSettingsStorage::~TestingSettingsStorage() {}
+TestingValueStore::~TestingValueStore() {}
 
-void TestingSettingsStorage::SetFailAllRequests(bool fail_all_requests) {
+void TestingValueStore::SetFailAllRequests(bool fail_all_requests) {
   fail_all_requests_ = fail_all_requests;
 }
 
-size_t TestingSettingsStorage::GetBytesInUse(const std::string& key) {
+size_t TestingValueStore::GetBytesInUse(const std::string& key) {
   // Let SettingsStorageQuotaEnforcer implement this.
   NOTREACHED() << "Not implemented";
   return 0;
 }
 
-size_t TestingSettingsStorage::GetBytesInUse(
+size_t TestingValueStore::GetBytesInUse(
     const std::vector<std::string>& keys) {
   // Let SettingsStorageQuotaEnforcer implement this.
   NOTREACHED() << "Not implemented";
   return 0;
 }
 
-size_t TestingSettingsStorage::GetBytesInUse() {
+size_t TestingValueStore::GetBytesInUse() {
   // Let SettingsStorageQuotaEnforcer implement this.
   NOTREACHED() << "Not implemented";
   return 0;
 }
 
-ValueStore::ReadResult TestingSettingsStorage::Get(
+ValueStore::ReadResult TestingValueStore::Get(
     const std::string& key) {
   return Get(CreateVector(key));
 }
 
-ValueStore::ReadResult TestingSettingsStorage::Get(
+ValueStore::ReadResult TestingValueStore::Get(
     const std::vector<std::string>& keys) {
   if (fail_all_requests_) {
     return ReadResultError();
@@ -76,21 +76,21 @@ ValueStore::ReadResult TestingSettingsStorage::Get(
   return MakeReadResult(settings);
 }
 
-ValueStore::ReadResult TestingSettingsStorage::Get() {
+ValueStore::ReadResult TestingValueStore::Get() {
   if (fail_all_requests_) {
     return ReadResultError();
   }
   return MakeReadResult(storage_.DeepCopy());
 }
 
-ValueStore::WriteResult TestingSettingsStorage::Set(
+ValueStore::WriteResult TestingValueStore::Set(
     WriteOptions options, const std::string& key, const Value& value) {
   DictionaryValue settings;
   settings.SetWithoutPathExpansion(key, value.DeepCopy());
   return Set(options, settings);
 }
 
-ValueStore::WriteResult TestingSettingsStorage::Set(
+ValueStore::WriteResult TestingValueStore::Set(
     WriteOptions options, const DictionaryValue& settings) {
   if (fail_all_requests_) {
     return WriteResultError();
@@ -112,12 +112,12 @@ ValueStore::WriteResult TestingSettingsStorage::Set(
   return MakeWriteResult(changes.release());
 }
 
-ValueStore::WriteResult TestingSettingsStorage::Remove(
+ValueStore::WriteResult TestingValueStore::Remove(
     const std::string& key) {
   return Remove(CreateVector(key));
 }
 
-ValueStore::WriteResult TestingSettingsStorage::Remove(
+ValueStore::WriteResult TestingValueStore::Remove(
     const std::vector<std::string>& keys) {
   if (fail_all_requests_) {
     return WriteResultError();
@@ -135,7 +135,7 @@ ValueStore::WriteResult TestingSettingsStorage::Remove(
   return MakeWriteResult(changes.release());
 }
 
-ValueStore::WriteResult TestingSettingsStorage::Clear() {
+ValueStore::WriteResult TestingValueStore::Clear() {
   if (fail_all_requests_) {
     return WriteResultError();
   }

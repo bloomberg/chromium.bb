@@ -63,7 +63,7 @@ SyncableSettingsStorage* SettingsBackend::GetOrCreateStorageWithSyncData(
     // sync will only go ahead if each underlying storage operation succeeds.
     storage = new SettingsStorageQuotaEnforcer(quota_, storage);
   } else {
-    storage = new FailingSettingsStorage();
+    storage = new FailingValueStore();
   }
 
   linked_ptr<SyncableSettingsStorage> syncable_storage(

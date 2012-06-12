@@ -11,10 +11,10 @@
 
 // ValueStore for testing, with an in-memory storage but the ability to
 // optionally fail all operations.
-class TestingSettingsStorage : public ValueStore {
+class TestingValueStore : public ValueStore {
  public:
-  TestingSettingsStorage();
-  virtual ~TestingSettingsStorage();
+  TestingValueStore();
+  virtual ~TestingValueStore();
 
   // Sets whether to fail all requests (default is false).
   void SetFailAllRequests(bool fail_all_requests);
@@ -41,7 +41,7 @@ class TestingSettingsStorage : public ValueStore {
 
   bool fail_all_requests_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestingSettingsStorage);
+  DISALLOW_COPY_AND_ASSIGN(TestingValueStore);
 };
 
 #endif  // CHROME_BROWSER_VALUE_STORE_TESTING_VALUE_STORE_H_

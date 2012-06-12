@@ -10,9 +10,9 @@
 #include "chrome/browser/value_store/value_store.h"
 
 // Settings storage area which fails every request.
-class FailingSettingsStorage : public ValueStore {
+class FailingValueStore : public ValueStore {
  public:
-  FailingSettingsStorage() {}
+  FailingValueStore() {}
 
   // ValueStore implementation.
   virtual size_t GetBytesInUse(const std::string& key) OVERRIDE;
@@ -32,7 +32,7 @@ class FailingSettingsStorage : public ValueStore {
   virtual WriteResult Clear() OVERRIDE;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(FailingSettingsStorage);
+  DISALLOW_COPY_AND_ASSIGN(FailingValueStore);
 };
 
 #endif  // CHROME_BROWSER_VALUE_STORE_FAILING_VALUE_STORE_H_

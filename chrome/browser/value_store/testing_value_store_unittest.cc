@@ -11,13 +11,13 @@ namespace extensions {
 namespace {
 
 ValueStore* Param(const FilePath& file_path) {
-  return new TestingSettingsStorage();
+  return new TestingValueStore();
 }
 
 }  // namespace
 
 INSTANTIATE_TEST_CASE_P(
-    TestingSettingsStorage,
+    TestingValueStore,
     ValueStoreTest,
     testing::Values(&Param));
 

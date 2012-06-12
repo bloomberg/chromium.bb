@@ -20,59 +20,59 @@ ValueStore::WriteResult WriteResultError() {
 
 }  // namespace
 
-size_t FailingSettingsStorage::GetBytesInUse(const std::string& key) {
+size_t FailingValueStore::GetBytesInUse(const std::string& key) {
   // Let SettingsStorageQuotaEnforcer implement this.
   NOTREACHED() << "Not implemented";
   return 0;
 }
 
-size_t FailingSettingsStorage::GetBytesInUse(
+size_t FailingValueStore::GetBytesInUse(
     const std::vector<std::string>& keys) {
   // Let SettingsStorageQuotaEnforcer implement this.
   NOTREACHED() << "Not implemented";
   return 0;
 }
 
-size_t FailingSettingsStorage::GetBytesInUse() {
+size_t FailingValueStore::GetBytesInUse() {
   // Let SettingsStorageQuotaEnforcer implement this.
   NOTREACHED() << "Not implemented";
   return 0;
 }
 
-ValueStore::ReadResult FailingSettingsStorage::Get(
+ValueStore::ReadResult FailingValueStore::Get(
     const std::string& key) {
   return ReadResultError();
 }
 
-ValueStore::ReadResult FailingSettingsStorage::Get(
+ValueStore::ReadResult FailingValueStore::Get(
     const std::vector<std::string>& keys) {
   return ReadResultError();
 }
 
-ValueStore::ReadResult FailingSettingsStorage::Get() {
+ValueStore::ReadResult FailingValueStore::Get() {
   return ReadResultError();
 }
 
-ValueStore::WriteResult FailingSettingsStorage::Set(
+ValueStore::WriteResult FailingValueStore::Set(
     WriteOptions options, const std::string& key, const Value& value) {
   return WriteResultError();
 }
 
-ValueStore::WriteResult FailingSettingsStorage::Set(
+ValueStore::WriteResult FailingValueStore::Set(
     WriteOptions options, const DictionaryValue& settings) {
   return WriteResultError();
 }
 
-ValueStore::WriteResult FailingSettingsStorage::Remove(
+ValueStore::WriteResult FailingValueStore::Remove(
     const std::string& key) {
   return WriteResultError();
 }
 
-ValueStore::WriteResult FailingSettingsStorage::Remove(
+ValueStore::WriteResult FailingValueStore::Remove(
     const std::vector<std::string>& keys) {
   return WriteResultError();
 }
 
-ValueStore::WriteResult FailingSettingsStorage::Clear() {
+ValueStore::WriteResult FailingValueStore::Clear() {
   return WriteResultError();
 }

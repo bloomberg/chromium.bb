@@ -7,7 +7,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
-#include "chrome/browser/value_store/caching_value_store.h"
+#include "chrome/browser/value_store/value_store_frontend.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,11 +16,9 @@ using content::BrowserThread;
 
 // Test suite for CachingValueStore, using a test database with a few simple
 // entries.
-class CachingValueStoreTest
-    : public testing::Test,
-      public CachingValueStore::Observer {
+class ValueStoreFrontendTest : public testing::Test {
  public:
-  CachingValueStoreTest()
+  ValueStoreFrontendTest()
       : ui_thread_(BrowserThread::UI, MessageLoop::current()),
         file_thread_(BrowserThread::FILE, MessageLoop::current()) {
   }
@@ -39,26 +37,29 @@ class CachingValueStoreTest
 
   virtual void TearDown() {
     MessageLoop::current()->RunAllPending();  // wait for storage to delete
-    storage_->RemoveObserver(this);
     storage_.reset();
-  }
-
-  // CachingValueStore::Observer
-  virtual void OnInitializationComplete() {
-    MessageLoop::current()->Quit();
   }
 
   // Reset the value store, reloading the DB from disk.
   void ResetStorage() {
-    if (storage_.get())
-      storage_->RemoveObserver(this);
-    storage_.reset(new CachingValueStore(db_path_));
-    storage_->AddObserver(this);
-    MessageLoop::current()->Run();  // wait for OnInitializationComplete
+    storage_.reset(new ValueStoreFrontend(db_path_));
+  }
+
+  bool Get(const std::string& key, scoped_ptr<base::Value>* output) {
+    storage_->Get(key, base::Bind(&ValueStoreFrontendTest::GetAndWait,
+                                  base::Unretained(this), output));
+    MessageLoop::current()->Run();  // wait for GetAndWait
+    return !!output->get();
   }
 
  protected:
-  scoped_ptr<CachingValueStore> storage_;
+  void GetAndWait(scoped_ptr<base::Value>* output,
+                  scoped_ptr<base::Value> result) {
+    *output = result.Pass();
+    MessageLoop::current()->Quit();
+  }
+
+  scoped_ptr<ValueStoreFrontend> storage_;
   ScopedTempDir temp_dir_;
   FilePath db_path_;
   MessageLoop message_loop_;
@@ -66,48 +67,50 @@ class CachingValueStoreTest
   content::TestBrowserThread file_thread_;
 };
 
-TEST_F(CachingValueStoreTest, GetExistingData) {
-  const base::Value* value = NULL;
-  ASSERT_FALSE(storage_->Get("key0", &value));
+TEST_F(ValueStoreFrontendTest, GetExistingData) {
+  scoped_ptr<base::Value> value(NULL);
+  ASSERT_FALSE(Get("key0", &value));
 
   // Test existing keys in the DB.
   {
-    ASSERT_TRUE(storage_->Get("key1", &value));
+    ASSERT_TRUE(Get("key1", &value));
     std::string result;
     ASSERT_TRUE(value->GetAsString(&result));
     EXPECT_EQ("value1", result);
   }
 
   {
-    ASSERT_TRUE(storage_->Get("key2", &value));
+    ASSERT_TRUE(Get("key2", &value));
     int result;
     ASSERT_TRUE(value->GetAsInteger(&result));
     EXPECT_EQ(2, result);
   }
 }
 
-TEST_F(CachingValueStoreTest, ChangesPersistAfterReload) {
-  storage_->Set("key0", base::Value::CreateIntegerValue(0));
-  storage_->Set("key1", base::Value::CreateStringValue("new1"));
+TEST_F(ValueStoreFrontendTest, ChangesPersistAfterReload) {
+  storage_->Set("key0",
+      scoped_ptr<base::Value>(base::Value::CreateIntegerValue(0)));
+  storage_->Set("key1",
+      scoped_ptr<base::Value>(base::Value::CreateStringValue("new1")));
   storage_->Remove("key2");
 
   // Reload the DB and test our changes.
   ResetStorage();
 
-  const base::Value* value = NULL;
+  scoped_ptr<base::Value> value(NULL);
   {
-    ASSERT_TRUE(storage_->Get("key0", &value));
+    ASSERT_TRUE(Get("key0", &value));
     int result;
     ASSERT_TRUE(value->GetAsInteger(&result));
     EXPECT_EQ(0, result);
   }
 
   {
-    ASSERT_TRUE(storage_->Get("key1", &value));
+    ASSERT_TRUE(Get("key1", &value));
     std::string result;
     ASSERT_TRUE(value->GetAsString(&result));
     EXPECT_EQ("new1", result);
   }
 
-  ASSERT_FALSE(storage_->Get("key2", &value));
+  ASSERT_FALSE(Get("key2", &value));
 }

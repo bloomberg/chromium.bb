@@ -167,11 +167,11 @@ class SyncChangeProcessorDelegate : public SyncChangeProcessor {
   DISALLOW_COPY_AND_ASSIGN(SyncChangeProcessorDelegate);
 };
 
-// SettingsStorageFactory which always returns TestingSettingsStorage objects,
+// SettingsStorageFactory which always returns TestingValueStore objects,
 // and allows individually created objects to be returned.
-class TestingSettingsStorageFactory : public SettingsStorageFactory {
+class TestingValueStoreFactory : public SettingsStorageFactory {
  public:
-  TestingSettingsStorage* GetExisting(const std::string& extension_id) {
+  TestingValueStore* GetExisting(const std::string& extension_id) {
     DCHECK(created_.count(extension_id));
     return created_[extension_id];
   }
@@ -179,7 +179,7 @@ class TestingSettingsStorageFactory : public SettingsStorageFactory {
   // SettingsStorageFactory implementation.
   virtual ValueStore* Create(
       const FilePath& base_path, const std::string& extension_id) OVERRIDE {
-    TestingSettingsStorage* new_storage = new TestingSettingsStorage();
+    TestingValueStore* new_storage = new TestingValueStore();
     DCHECK(!created_.count(extension_id));
     created_[extension_id] = new_storage;
     return new_storage;
@@ -187,11 +187,11 @@ class TestingSettingsStorageFactory : public SettingsStorageFactory {
 
  private:
   // SettingsStorageFactory is refcounted.
-  virtual ~TestingSettingsStorageFactory() {}
+  virtual ~TestingValueStoreFactory() {}
 
   // None of these storage areas are owned by this factory, so care must be
   // taken when calling GetExisting.
-  std::map<std::string, TestingSettingsStorage*> created_;
+  std::map<std::string, TestingValueStore*> created_;
 };
 
 void AssignSettingsService(SyncableService** dst,
@@ -697,10 +697,9 @@ TEST_F(ExtensionSettingsSyncTest, FailingStartSyncingDisablesSync) {
   StringValue barValue("barValue");
 
   // There is a bit of a convoluted method to get storage areas that can fail;
-  // hand out TestingSettingsStorage object then toggle them failing/succeeding
+  // hand out TestingValueStore object then toggle them failing/succeeding
   // as necessary.
-  TestingSettingsStorageFactory* testing_factory =
-      new TestingSettingsStorageFactory();
+  TestingValueStoreFactory* testing_factory = new TestingValueStoreFactory();
   storage_factory_->Reset(testing_factory);
 
   ValueStore* good = AddExtensionAndGetStorage("good", type);
@@ -896,8 +895,7 @@ TEST_F(ExtensionSettingsSyncTest, FailingProcessChangesDisablesSync) {
   StringValue fooValue("fooValue");
   StringValue barValue("barValue");
 
-  TestingSettingsStorageFactory* testing_factory =
-      new TestingSettingsStorageFactory();
+  TestingValueStoreFactory* testing_factory = new TestingValueStoreFactory();
   storage_factory_->Reset(testing_factory);
 
   ValueStore* good = AddExtensionAndGetStorage("good", type);
@@ -994,8 +992,7 @@ TEST_F(ExtensionSettingsSyncTest, FailingGetAllSyncDataDoesntStopSync) {
   StringValue fooValue("fooValue");
   StringValue barValue("barValue");
 
-  TestingSettingsStorageFactory* testing_factory =
-      new TestingSettingsStorageFactory();
+  TestingValueStoreFactory* testing_factory = new TestingValueStoreFactory();
   storage_factory_->Reset(testing_factory);
 
   ValueStore* good = AddExtensionAndGetStorage("good", type);
@@ -1050,8 +1047,7 @@ TEST_F(ExtensionSettingsSyncTest, FailureToReadChangesToPushDisablesSync) {
   StringValue fooValue("fooValue");
   StringValue barValue("barValue");
 
-  TestingSettingsStorageFactory* testing_factory =
-      new TestingSettingsStorageFactory();
+  TestingValueStoreFactory* testing_factory = new TestingValueStoreFactory();
   storage_factory_->Reset(testing_factory);
 
   ValueStore* good = AddExtensionAndGetStorage("good", type);
@@ -1155,8 +1151,7 @@ TEST_F(ExtensionSettingsSyncTest, FailureToPushLocalStateDisablesSync) {
   StringValue fooValue("fooValue");
   StringValue barValue("barValue");
 
-  TestingSettingsStorageFactory* testing_factory =
-      new TestingSettingsStorageFactory();
+  TestingValueStoreFactory* testing_factory = new TestingValueStoreFactory();
   storage_factory_->Reset(testing_factory);
 
   ValueStore* good = AddExtensionAndGetStorage("good", type);
@@ -1247,8 +1242,7 @@ TEST_F(ExtensionSettingsSyncTest, FailureToPushLocalChangeDisablesSync) {
   StringValue fooValue("fooValue");
   StringValue barValue("barValue");
 
-  TestingSettingsStorageFactory* testing_factory =
-      new TestingSettingsStorageFactory();
+  TestingValueStoreFactory* testing_factory = new TestingValueStoreFactory();
   storage_factory_->Reset(testing_factory);
 
   ValueStore* good = AddExtensionAndGetStorage("good", type);
