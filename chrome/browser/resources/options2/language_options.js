@@ -40,9 +40,15 @@ cr.define('options', function() {
   LanguageOptions.prototype = {
     __proto__: OptionsPage.prototype,
 
+    /* For recording the prospective language (the next locale after relaunch).
+     * @type {?string}
+     * @private
+     */
+    prospectiveUiLanguageCode_: null,
+
     /**
      * Initializes LanguageOptions page.
-     * Calls base class implementation to starts preference initialization.
+     * Calls base class implementation to start preference initialization.
      */
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
@@ -55,6 +61,8 @@ cr.define('options', function() {
       languageOptionsList.addEventListener('save',
           this.handleLanguageOptionsListSave_.bind(this));
 
+      this.prospectiveUiLanguageCode_ =
+          loadTimeData.getString('prospectiveUiLanguageCode');
       this.addEventListener('visibleChange',
                             this.handleVisibleChange_.bind(this));
 
@@ -112,8 +120,9 @@ cr.define('options', function() {
       }
 
       if (cr.isChromeOS) {
-        $('language-options-ui-restart-button').onclick =
-            chrome.send.bind(chrome, 'uiLanguageRestart');
+        $('language-options-ui-restart-button').onclick = function() {
+          chrome.send('uiLanguageRestart');
+        };
       }
 
       $('language-confirm').onclick =
@@ -370,7 +379,7 @@ cr.define('options', function() {
       // hidden by a language change.
       uiLanguageButton.hidden = false;
 
-      if (languageCode == loadTimeData.getString('prospectiveUiLanguageCode')) {
+      if (languageCode == this.prospectiveUiLanguageCode_) {
         uiLanguageMessage.textContent =
             loadTimeData.getString('is_displayed_in_this_language');
         showMutuallyExclusiveNodes(
@@ -580,7 +589,7 @@ cr.define('options', function() {
      */
     languageIsDeletable: function(languageCode) {
       // Don't allow removing the language if it's a UI language.
-      if (languageCode == loadTimeData.getString('prospectiveUiLanguageCode'))
+      if (languageCode == this.prospectiveUiLanguageCode_)
         return false;
       return (!cr.isChromeOS ||
               this.canDeleteLanguage_(languageCode));
@@ -824,7 +833,7 @@ cr.define('options', function() {
    * @param {string} languageCode The newly selected language to use.
    */
   LanguageOptions.uiLanguageSaved = function(languageCode) {
-    loadTimeData.getString('prospectiveUiLanguageCode') = languageCode;
+    this.prospectiveUiLanguageCode_ = languageCode;
 
     // If the user is no longer on the same language code, ignore.
     if ($('language-options-list').getSelectedLanguageCode() != languageCode)
