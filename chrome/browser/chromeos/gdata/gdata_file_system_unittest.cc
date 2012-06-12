@@ -3758,8 +3758,8 @@ TEST_F(GDataFileSystemTest, OpenAndCloseFile) {
       base::Bind(&CallbackHelper::CloseFileCallback,
                  callback_helper_.get());
 
-  FilePath file_in_root(FILE_PATH_LITERAL("gdata/File 1.txt"));
-  GDataEntry* entry = FindEntry(file_in_root);
+  const FilePath kFileInRoot(FILE_PATH_LITERAL("drive/File 1.txt"));
+  GDataEntry* entry = FindEntry(kFileInRoot);
   GDataFile* file = entry->AsGDataFile();
   FilePath downloaded_file = GetCachePathForFile(file);
   const int64 file_size = entry->file_info().size;
@@ -3780,14 +3780,14 @@ TEST_F(GDataFileSystemTest, OpenAndCloseFile) {
 
   // The file is obtained with the mock DocumentsService.
   EXPECT_CALL(*mock_doc_service_,
-              DownloadFile(file_in_root,
+              DownloadFile(kFileInRoot,
                            downloaded_file,
                            GURL("https://file_content_url_changed/"),
                            _, _))
       .Times(1);
 
-  // Open file_in_root ("gdata/File 1.txt").
-  file_system_->OpenFile(file_in_root, callback);
+  // Open kFileInRoot ("drive/File 1.txt").
+  file_system_->OpenFile(kFileInRoot, callback);
   RunAllPendingForIO();  // Try to get from the cache.
   RunAllPendingForIO();  // Check if we have space before downloading.
   RunAllPendingForIO();  // Check if we have space after downloading.
@@ -3808,8 +3808,8 @@ TEST_F(GDataFileSystemTest, OpenAndCloseFile) {
                                 file_md5,
                                 callback_helper_->opened_file_path_);
 
-  // Close file_in_root ("gdata/File 1.txt").
-  file_system_->CloseFile(file_in_root, close_file_callback);
+  // Close kFileInRoot ("drive/File 1.txt").
+  file_system_->CloseFile(kFileInRoot, close_file_callback);
   RunAllPendingForIO();  // Commit dirty in cache.
 
   // Verify that the file was properly closed.
