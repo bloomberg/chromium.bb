@@ -194,6 +194,8 @@
     'browser/android/download_controller.h',
     'browser/android/jni_helper.cc',
     'browser/android/jni_helper.h',
+    'browser/android/sandboxed_process_launcher.cc',
+    'browser/android/sandboxed_process_launcher.h',
     'browser/android/trace_event_binding.cc',
     'browser/android/trace_event_binding.h',
     'browser/appcache/appcache_dispatcher_host.cc',

@@ -13,6 +13,7 @@
 #include "content/browser/android/device_info.h"
 #include "content/browser/android/download_controller.h"
 #include "content/browser/android/jni_helper.h"
+#include "content/browser/android/sandboxed_process_launcher.h"
 #include "content/browser/android/trace_event_binding.h"
 #include "content/common/android/surface_callback.h"
 
@@ -26,6 +27,7 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
   { "DeviceInfo", RegisterDeviceInfo },
   { "DownloadController", DownloadController::RegisterDownloadController },
   { "JniHelper", RegisterJniHelper },
+  { "SandboxedProcessLauncher", content::RegisterSandboxedProcessLauncher },
   { "SandboxedProcessService", content::RegisterSandboxedProcessService },
   { "SurfaceCallback", content::RegisterSurfaceCallback },
   { "TraceEvent", RegisterTraceEvent },

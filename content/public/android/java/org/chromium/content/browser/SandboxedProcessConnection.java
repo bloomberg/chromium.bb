@@ -63,8 +63,6 @@ public class SandboxedProcessConnection {
         final String[] mCommandLine;
         final int mIpcFd;
         final int mCrashFd;
-        final int mChromePakFd;
-        final int mLocalePakFd;
         final ISandboxedProcessCallback mCallback;
         final Runnable mOnConnectionCallback;
 
@@ -72,15 +70,11 @@ public class SandboxedProcessConnection {
                 String[] commandLine,
                 int ipcFd,
                 int crashFd,
-                int chromePakFd,
-                int localePakFd,
                 ISandboxedProcessCallback callback,
                 Runnable onConnectionCallback) {
             mCommandLine = commandLine;
             mIpcFd = ipcFd;
             mCrashFd = crashFd;
-            mChromePakFd = chromePakFd;
-            mLocalePakFd = localePakFd;
             mCallback = callback;
             mOnConnectionCallback = onConnectionCallback;
         }
@@ -238,14 +232,12 @@ public class SandboxedProcessConnection {
             String[] commandLine,
             int ipcFd,
             int crashFd,
-            int chromePakFd,
-            int localePakFd,
             ISandboxedProcessCallback callback,
             Runnable onConnectionCallback) {
         TraceEvent.begin();
         assert mConnectionParams == null;
-        mConnectionParams = new ConnectionParams(commandLine, ipcFd, crashFd, chromePakFd,
-                localePakFd, callback, onConnectionCallback);
+        mConnectionParams = new ConnectionParams(commandLine, ipcFd, crashFd, callback,
+                                                 onConnectionCallback);
         if (mServiceConnectComplete) {
             doConnectionSetup();
         }
@@ -311,14 +303,6 @@ public class SandboxedProcessConnection {
                 Bundle bundle = new Bundle();
                 bundle.putStringArray(EXTRA_COMMAND_LINE, mConnectionParams.mCommandLine);
                 bundle.putParcelable(EXTRA_IPC_FD, ipcFdParcel);
-
-                ParcelFileDescriptor chromePakFdParcel =
-                        ParcelFileDescriptor.fromFd(mConnectionParams.mChromePakFd);
-                bundle.putParcelable(EXTRA_CHROME_PAK_FD, chromePakFdParcel);
-
-                ParcelFileDescriptor localePakFdParcel =
-                        ParcelFileDescriptor.fromFd(mConnectionParams.mLocalePakFd);
-                bundle.putParcelable(EXTRA_LOCALE_PAK_FD, localePakFdParcel);
 
                 try {
                     ParcelFileDescriptor crashFdParcel =
