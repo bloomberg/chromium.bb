@@ -100,6 +100,8 @@ void AutocompleteActionPredictorTable::GetAllRows(Rows* row_buffer) {
   sql::Statement statement(DB()->GetCachedStatement(SQL_FROM_HERE,
       base::StringPrintf(
           "SELECT * FROM %s", kAutocompletePredictorTableName).c_str()));
+  if (!statement.is_valid())
+    return;
 
   Row row;
   while (StepAndInitializeRow(&statement, &row))
@@ -140,6 +142,11 @@ void AutocompleteActionPredictorTable::AddAndUpdateRows(
             "INSERT INTO %s "
             "(id, user_text, url, number_of_hits, number_of_misses) "
             "VALUES (?,?,?,?,?)", kAutocompletePredictorTableName).c_str()));
+    if (!statement.is_valid()) {
+      DB()->RollbackTransaction();
+      return;
+    }
+
     BindRowToStatement(*it, &statement);
     if (!statement.Run()) {
       DB()->RollbackTransaction();
@@ -153,6 +160,11 @@ void AutocompleteActionPredictorTable::AddAndUpdateRows(
             "UPDATE %s "
             "SET id=?, user_text=?, url=?, number_of_hits=?, number_of_misses=?"
             " WHERE id=?1", kAutocompletePredictorTableName).c_str()));
+    if (!statement.is_valid()) {
+      DB()->RollbackTransaction();
+      return;
+    }
+
     BindRowToStatement(*it, &statement);
     if (!statement.Run()) {
       DB()->RollbackTransaction();
@@ -169,20 +181,24 @@ void AutocompleteActionPredictorTable::DeleteRows(
   if (CantAccessDatabase())
     return;
 
-  sql::Statement statement(DB()->GetUniqueStatement(base::StringPrintf(
-      "DELETE FROM %s WHERE id=?",
-      kAutocompletePredictorTableName).c_str()));
-
   if (!DB()->BeginTransaction())
     return;
   for (std::vector<Row::Id>::const_iterator it = id_list.begin();
        it != id_list.end(); ++it) {
+    sql::Statement statement(DB()->GetCachedStatement(SQL_FROM_HERE,
+        base::StringPrintf(
+            "DELETE FROM %s WHERE id=?",
+            kAutocompletePredictorTableName).c_str()));
+    if (!statement.is_valid()) {
+      DB()->RollbackTransaction();
+      return;
+    }
+
     statement.BindString(0, *it);
     if (!statement.Run()) {
       DB()->RollbackTransaction();
       return;
     }
-    statement.Reset(true);
   }
   DB()->CommitTransaction();
 }
@@ -195,6 +211,8 @@ void AutocompleteActionPredictorTable::DeleteAllRows() {
   sql::Statement statement(DB()->GetCachedStatement(SQL_FROM_HERE,
       base::StringPrintf("DELETE FROM %s",
                          kAutocompletePredictorTableName).c_str()));
+  if (!statement.is_valid())
+    return;
 
   statement.Run();
 }
@@ -233,7 +251,7 @@ void AutocompleteActionPredictorTable::LogDatabaseStats()  {
   sql::Statement count_statement(DB()->GetUniqueStatement(
       base::StringPrintf("SELECT count(id) FROM %s",
                          kAutocompletePredictorTableName).c_str()));
-  if (!count_statement.Step())
+  if (!count_statement.is_valid() || !count_statement.Step())
     return;
   UMA_HISTOGRAM_COUNTS("AutocompleteActionPredictor.DatabaseRowCount",
                        count_statement.ColumnInt(0));
