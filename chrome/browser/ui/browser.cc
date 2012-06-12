@@ -1579,8 +1579,7 @@ void Browser::ShowPageInfo(content::WebContents* web_contents,
                            bool show_history) {
   Profile* profile = Profile::FromBrowserContext(
       web_contents->GetBrowserContext());
-  TabContents* tab_contents =
-      TabContents::GetOwningTabContentsForWebContents(web_contents);
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableWebsiteSettings)) {
@@ -2236,9 +2235,8 @@ bool Browser::RunUnloadEventsHelper(WebContents* contents) {
 }
 
 // static
-void Browser::JSOutOfMemoryHelper(WebContents* tab) {
-  TabContents* tab_contents = TabContents::GetOwningTabContentsForWebContents(
-      tab);
+void Browser::JSOutOfMemoryHelper(WebContents* web_contents) {
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
   if (!tab_contents)
     return;
 
@@ -2251,13 +2249,12 @@ void Browser::JSOutOfMemoryHelper(WebContents* tab) {
 }
 
 // static
-void Browser::RegisterProtocolHandlerHelper(WebContents* tab,
+void Browser::RegisterProtocolHandlerHelper(WebContents* web_contents,
                                             const std::string& protocol,
                                             const GURL& url,
                                             const string16& title,
                                             bool user_gesture) {
-  TabContents* tab_contents = TabContents::GetOwningTabContentsForWebContents(
-      tab);
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
   if (!tab_contents || tab_contents->profile()->IsOffTheRecord())
     return;
 
@@ -2294,14 +2291,13 @@ void Browser::RegisterProtocolHandlerHelper(WebContents* tab,
 }
 
 // static
-void Browser::FindReplyHelper(WebContents* tab,
+void Browser::FindReplyHelper(WebContents* web_contents,
                               int request_id,
                               int number_of_matches,
                               const gfx::Rect& selection_rect,
                               int active_match_ordinal,
                               bool final_update) {
-  TabContents* tab_contents = TabContents::GetOwningTabContentsForWebContents(
-      tab);
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
   if (!tab_contents || !tab_contents->find_tab_helper())
     return;
 
@@ -3173,14 +3169,12 @@ void Browser::AddNewContents(WebContents* source,
 
   TabContents* source_tab_contents = NULL;
   BlockedContentTabHelper* source_blocked_content = NULL;
-  TabContents* new_tab_contents =
-      TabContents::GetOwningTabContentsForWebContents(new_contents);
+  TabContents* new_tab_contents = TabContents::FromWebContents(new_contents);
   if (!new_tab_contents) {
     new_tab_contents = new TabContents(new_contents);
   }
   if (source) {
-    source_tab_contents =
-        TabContents::GetOwningTabContentsForWebContents(source);
+    source_tab_contents = TabContents::FromWebContents(source);
     source_blocked_content = source_tab_contents->blocked_content_tab_helper();
   }
 
@@ -3248,7 +3242,7 @@ void Browser::LoadingStateChanged(WebContents* source) {
       // malware site etc). When this happens, we abort the shortcut update.
       NavigationEntry* entry = source->GetController().GetLastCommittedEntry();
       if (entry) {
-        TabContents::GetOwningTabContentsForWebContents(source)->
+        TabContents::FromWebContents(source)->
             extension_tab_helper()->GetApplicationInfo(entry->GetPageID());
       } else {
         pending_web_app_action_ = NONE;
@@ -3350,8 +3344,7 @@ void Browser::ConvertContentsToApplication(WebContents* contents) {
   Browser* app_browser = Browser::CreateWithParams(
       Browser::CreateParams::CreateForApp(
           TYPE_POPUP, app_name, gfx::Rect(), profile_));
-  TabContents* tab_contents =
-      TabContents::GetOwningTabContentsForWebContents(contents);
+  TabContents* tab_contents = TabContents::FromWebContents(contents);
   if (!tab_contents)
     tab_contents = new TabContents(contents);
   app_browser->tab_strip_model()->AppendTabContents(tab_contents, true);
@@ -3365,27 +3358,27 @@ gfx::Rect Browser::GetRootWindowResizerRect() const {
   return window_->GetRootWindowResizerRect();
 }
 
-void Browser::BeforeUnloadFired(WebContents* tab,
+void Browser::BeforeUnloadFired(WebContents* web_contents,
                                 bool proceed,
                                 bool* proceed_to_fire_unload) {
   if (!is_attempting_to_close_browser_) {
     *proceed_to_fire_unload = proceed;
     if (!proceed)
-      tab->SetClosedByUserGesture(false);
+      web_contents->SetClosedByUserGesture(false);
     return;
   }
 
   if (!proceed) {
     CancelWindowClose();
     *proceed_to_fire_unload = false;
-    tab->SetClosedByUserGesture(false);
+    web_contents->SetClosedByUserGesture(false);
     return;
   }
 
-  if (RemoveFromSet(&tabs_needing_before_unload_fired_, tab)) {
+  if (RemoveFromSet(&tabs_needing_before_unload_fired_, web_contents)) {
     // Now that beforeunload has fired, put the tab on the queue to fire
     // unload.
-    tabs_needing_unload_fired_.insert(tab);
+    tabs_needing_unload_fired_.insert(web_contents);
     ProcessPendingTabs();
     // We want to handle firing the unload event ourselves since we want to
     // fire all the beforeunload events before attempting to fire the unload
@@ -3418,8 +3411,7 @@ int Browser::GetExtraRenderViewHeight() const {
 
 void Browser::OnStartDownload(WebContents* source,
                               content::DownloadItem* download) {
-  TabContents* tab_contents =
-      TabContents::GetOwningTabContentsForWebContents(source);
+  TabContents* tab_contents = TabContents::FromWebContents(source);
   TabContents* constrained = GetConstrainingTabContents(tab_contents);
   if (constrained != tab_contents) {
     // Download in a constrained popup is shown in the tab that opened it.
@@ -3475,7 +3467,7 @@ void Browser::ViewSourceForFrame(WebContents* source,
 void Browser::ShowRepostFormWarningDialog(WebContents* source) {
   browser::ShowTabModalConfirmDialog(
       new RepostFormWarningController(source),
-      TabContents::GetOwningTabContentsForWebContents(source));
+      TabContents::FromWebContents(source));
 }
 
 bool Browser::ShouldAddNavigationToHistory(
@@ -3530,8 +3522,7 @@ void Browser::ContentRestrictionsChanged(WebContents* source) {
 
 void Browser::RendererUnresponsive(WebContents* source) {
   // Ignore hangs if print preview is open.
-  TabContents* tab_contents =
-      TabContents::GetOwningTabContentsForWebContents(source);
+  TabContents* tab_contents = TabContents::FromWebContents(source);
   if (tab_contents) {
     printing::PrintPreviewTabController* controller =
         printing::PrintPreviewTabController::GetInstance();
@@ -3552,8 +3543,7 @@ void Browser::RendererResponsive(WebContents* source) {
 }
 
 void Browser::WorkerCrashed(WebContents* source) {
-  TabContents* tab_contents =
-      TabContents::GetOwningTabContentsForWebContents(source);
+  TabContents* tab_contents = TabContents::FromWebContents(source);
   InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
   infobar_helper->AddInfoBar(new SimpleAlertInfoBarDelegate(
       infobar_helper,
@@ -3562,13 +3552,13 @@ void Browser::WorkerCrashed(WebContents* source) {
       true));
 }
 
-void Browser::DidNavigateMainFramePostCommit(WebContents* tab) {
-  if (tab == GetActiveWebContents())
+void Browser::DidNavigateMainFramePostCommit(WebContents* web_contents) {
+  if (web_contents == GetActiveWebContents())
     UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
 }
 
-void Browser::DidNavigateToPendingEntry(WebContents* tab) {
-  if (tab == GetActiveWebContents())
+void Browser::DidNavigateToPendingEntry(WebContents* web_contents) {
+  if (web_contents == GetActiveWebContents())
     UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TAB_STATE);
 }
 
@@ -3576,19 +3566,21 @@ content::JavaScriptDialogCreator* Browser::GetJavaScriptDialogCreator() {
   return GetJavaScriptDialogCreatorInstance();
 }
 
-content::ColorChooser* Browser::OpenColorChooser(WebContents* tab,
+content::ColorChooser* Browser::OpenColorChooser(WebContents* web_contents,
                                                  int color_chooser_id,
                                                  SkColor color) {
 #if defined(OS_WIN)
   // On Windows, only create a color chooser if one doesn't exist, because we
   // can't close the old color chooser dialog.
   if (!color_chooser_.get())
-    color_chooser_.reset(content::ColorChooser::Create(color_chooser_id, tab,
+    color_chooser_.reset(content::ColorChooser::Create(color_chooser_id,
+                                                       web_contents,
                                                        color));
 #else
   if (color_chooser_.get())
     color_chooser_->End();
-  color_chooser_.reset(content::ColorChooser::Create(color_chooser_id, tab,
+  color_chooser_.reset(content::ColorChooser::Create(color_chooser_id,
+                                                     web_contents,
                                                      color));
 #endif
   return color_chooser_.get();
@@ -3598,54 +3590,57 @@ void Browser::DidEndColorChooser() {
   color_chooser_.reset();
 }
 
-void Browser::RunFileChooser(WebContents* tab,
+void Browser::RunFileChooser(WebContents* web_contents,
                              const content::FileChooserParams& params) {
-  FileSelectHelper::RunFileChooser(tab, params);
+  FileSelectHelper::RunFileChooser(web_contents, params);
 }
 
-void Browser::EnumerateDirectory(WebContents* tab,
+void Browser::EnumerateDirectory(WebContents* web_contents,
                                  int request_id,
                                  const FilePath& path) {
-  FileSelectHelper::EnumerateDirectory(tab, request_id, path);
+  FileSelectHelper::EnumerateDirectory(web_contents, request_id, path);
 }
 
-void Browser::ToggleFullscreenModeForTab(WebContents* tab,
+void Browser::ToggleFullscreenModeForTab(WebContents* web_contents,
                                          bool enter_fullscreen) {
-  fullscreen_controller_->ToggleFullscreenModeForTab(tab, enter_fullscreen);
+  fullscreen_controller_->ToggleFullscreenModeForTab(web_contents,
+                                                     enter_fullscreen);
 }
 
-bool Browser::IsFullscreenForTabOrPending(const WebContents* tab) const {
-  return fullscreen_controller_->IsFullscreenForTabOrPending(tab);
+bool Browser::IsFullscreenForTabOrPending(
+    const WebContents* web_contents) const {
+  return fullscreen_controller_->IsFullscreenForTabOrPending(web_contents);
 }
 
-void Browser::JSOutOfMemory(WebContents* tab) {
-  JSOutOfMemoryHelper(tab);
+void Browser::JSOutOfMemory(WebContents* web_contents) {
+  JSOutOfMemoryHelper(web_contents);
 }
 
-void Browser::RegisterProtocolHandler(WebContents* tab,
+void Browser::RegisterProtocolHandler(WebContents* web_contents,
                                       const std::string& protocol,
                                       const GURL& url,
                                       const string16& title,
                                       bool user_gesture) {
-  RegisterProtocolHandlerHelper(tab, protocol, url, title, user_gesture);
+  RegisterProtocolHandlerHelper(
+      web_contents, protocol, url, title, user_gesture);
 }
 
 void Browser::RegisterIntentHandler(
-    WebContents* tab,
+    WebContents* web_contents,
     const webkit_glue::WebIntentServiceData& data,
     bool user_gesture) {
-  RegisterIntentHandlerHelper(tab, data, user_gesture);
+  RegisterIntentHandlerHelper(web_contents, data, user_gesture);
 }
 
 void Browser::WebIntentDispatch(
-    WebContents* tab, content::WebIntentsDispatcher* intents_dispatcher) {
+    WebContents* web_contents,
+    content::WebIntentsDispatcher* intents_dispatcher) {
   if (!web_intents::IsWebIntentsEnabledForProfile(profile_))
     return;
 
   UMA_HISTOGRAM_COUNTS("WebIntents.Dispatch", 1);
 
-  TabContents* tab_contents =
-      TabContents::GetOwningTabContentsForWebContents(tab);
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
   tab_contents->web_intent_picker_controller()->SetIntentsDispatcher(
       intents_dispatcher);
   tab_contents->web_intent_picker_controller()->ShowDialog(
@@ -3663,20 +3658,20 @@ void Browser::ResizeDueToAutoResize(WebContents* source,
   window_->ResizeDueToAutoResize(source, new_size);
 }
 
-void Browser::FindReply(WebContents* tab,
+void Browser::FindReply(WebContents* web_contents,
                         int request_id,
                         int number_of_matches,
                         const gfx::Rect& selection_rect,
                         int active_match_ordinal,
                         bool final_update) {
-  FindReplyHelper(tab, request_id, number_of_matches, selection_rect,
+  FindReplyHelper(web_contents, request_id, number_of_matches, selection_rect,
                   active_match_ordinal, final_update);
 }
 
-void Browser::RequestToLockMouse(WebContents* tab,
+void Browser::RequestToLockMouse(WebContents* web_contents,
                                  bool user_gesture,
                                  bool last_unlocked_by_target) {
-  fullscreen_controller_->RequestToLockMouse(tab,
+  fullscreen_controller_->RequestToLockMouse(web_contents,
                                              user_gesture,
                                              last_unlocked_by_target);
 }
@@ -4623,13 +4618,13 @@ void Browser::ProcessPendingTabs() {
   // Process beforeunload tabs first. When that queue is empty, process
   // unload tabs.
   if (!tabs_needing_before_unload_fired_.empty()) {
-    WebContents* tab = *(tabs_needing_before_unload_fired_.begin());
+    WebContents* web_contents = *(tabs_needing_before_unload_fired_.begin());
     // Null check render_view_host here as this gets called on a PostTask and
     // the tab's render_view_host may have been nulled out.
-    if (tab->GetRenderViewHost()) {
-      tab->GetRenderViewHost()->FirePageBeforeUnload(false);
+    if (web_contents->GetRenderViewHost()) {
+      web_contents->GetRenderViewHost()->FirePageBeforeUnload(false);
     } else {
-      ClearUnloadState(tab, true);
+      ClearUnloadState(web_contents, true);
     }
   } else if (!tabs_needing_unload_fired_.empty()) {
     // We've finished firing all beforeunload events and can proceed with unload
@@ -4640,13 +4635,13 @@ void Browser::ProcessPendingTabs() {
     // TODO(ojan): We can probably fire all the unload events in parallel and
     // get a perf benefit from that in the cases where the tab hangs in it's
     // unload handler or takes a long time to page in.
-    WebContents* tab = *(tabs_needing_unload_fired_.begin());
+    WebContents* web_contents = *(tabs_needing_unload_fired_.begin());
     // Null check render_view_host here as this gets called on a PostTask and
     // the tab's render_view_host may have been nulled out.
-    if (tab->GetRenderViewHost()) {
-      tab->GetRenderViewHost()->ClosePage();
+    if (web_contents->GetRenderViewHost()) {
+      web_contents->GetRenderViewHost()->ClosePage();
     } else {
-      ClearUnloadState(tab, true);
+      ClearUnloadState(web_contents, true);
     }
   } else {
     NOTREACHED();
@@ -4680,10 +4675,11 @@ void Browser::CancelWindowClose() {
     watcher->OnWindowCloseCanceled(this);
 }
 
-bool Browser::RemoveFromSet(UnloadListenerSet* set, WebContents* tab) {
+bool Browser::RemoveFromSet(UnloadListenerSet* set, WebContents* web_contents) {
   DCHECK(is_attempting_to_close_browser_);
 
-  UnloadListenerSet::iterator iter = std::find(set->begin(), set->end(), tab);
+  UnloadListenerSet::iterator iter =
+      std::find(set->begin(), set->end(), web_contents);
   if (iter != set->end()) {
     set->erase(iter);
     return true;
@@ -4691,13 +4687,13 @@ bool Browser::RemoveFromSet(UnloadListenerSet* set, WebContents* tab) {
   return false;
 }
 
-void Browser::ClearUnloadState(WebContents* tab, bool process_now) {
+void Browser::ClearUnloadState(WebContents* web_contents, bool process_now) {
   // Closing of browser could be canceled (via IsClosingPermitted) between the
   // time when request was initiated and when this method is called, so check
   // for is_attempting_to_close_browser_ flag before proceeding.
   if (is_attempting_to_close_browser_) {
-    RemoveFromSet(&tabs_needing_before_unload_fired_, tab);
-    RemoveFromSet(&tabs_needing_unload_fired_, tab);
+    RemoveFromSet(&tabs_needing_before_unload_fired_, web_contents);
+    RemoveFromSet(&tabs_needing_unload_fired_, web_contents);
     if (process_now) {
       ProcessPendingTabs();
     } else {
@@ -4838,14 +4834,14 @@ void Browser::ReloadInternal(WindowOpenDisposition disposition,
   //
   // Also notify RenderViewHostDelegate of the user gesture; this is
   // normally done in Browser::Navigate, but a reload bypasses Navigate.
-  WebContents* tab = GetOrCloneTabForDisposition(disposition);
-  tab->UserGestureDone();
-  if (!tab->FocusLocationBarByDefault())
-    tab->Focus();
+  WebContents* web_contents = GetOrCloneTabForDisposition(disposition);
+  web_contents->UserGestureDone();
+  if (!web_contents->FocusLocationBarByDefault())
+    web_contents->Focus();
   if (ignore_cache)
-    tab->GetController().ReloadIgnoringCache(true);
+    web_contents->GetController().ReloadIgnoringCache(true);
   else
-    tab->GetController().Reload(true);
+    web_contents->GetController().Reload(true);
 }
 
 WebContents* Browser::GetOrCloneTabForDisposition(

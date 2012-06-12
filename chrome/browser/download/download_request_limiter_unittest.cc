@@ -238,8 +238,7 @@ TEST_F(DownloadRequestLimiterTest,
   // RenderViewHostTestHarness::CreateTestWebContents() directly so that there
   // will be no TabContents for web_contents.
   scoped_ptr<WebContents> web_contents(CreateTestWebContents());
-  TabContents* tab_contents =
-      TabContents::GetOwningTabContentsForWebContents(web_contents.get());
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents.get());
   ASSERT_TRUE(tab_contents == NULL);
   // DRL won't try to make an infobar if it doesn't have a TCW, and we want to
   // test that it will Cancel() instead of prompting when it doesn't have a TCW,

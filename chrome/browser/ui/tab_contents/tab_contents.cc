@@ -73,7 +73,7 @@ TabContents::TabContents(WebContents* contents)
       in_destructor_(false),
       web_contents_(contents) {
   DCHECK(contents);
-  DCHECK(!GetOwningTabContentsForWebContents(contents));
+  DCHECK(!FromWebContents(contents));
 
   chrome::SetViewType(contents, chrome::VIEW_TYPE_TAB_CONTENTS);
 
@@ -216,18 +216,6 @@ TabContents* TabContents::GetCurrentWrapperForContents(
 
 // static deprecated
 const TabContents* TabContents::GetCurrentWrapperForContents(
-    const WebContents* contents) {
-  return FromWebContents(contents);
-}
-
-// static deprecated
-TabContents* TabContents::GetOwningTabContentsForWebContents(
-    WebContents* contents) {
-  return FromWebContents(contents);
-}
-
-// static deprecated
-const TabContents* TabContents::GetOwningTabContentsForWebContents(
     const WebContents* contents) {
   return FromWebContents(contents);
 }

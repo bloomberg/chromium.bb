@@ -653,10 +653,10 @@ class Browser : public TabStripModelDelegate,
   static bool RunUnloadEventsHelper(content::WebContents* contents);
 
   // Helper function to handle JS out of memory notifications
-  static void JSOutOfMemoryHelper(content::WebContents* tab);
+  static void JSOutOfMemoryHelper(content::WebContents* web_contents);
 
   // Helper function to register a protocol handler.
-  static void RegisterProtocolHandlerHelper(content::WebContents* tab,
+  static void RegisterProtocolHandlerHelper(content::WebContents* web_contents,
                                             const std::string& protocol,
                                             const GURL& url,
                                             const string16& title,
@@ -666,12 +666,12 @@ class Browser : public TabStripModelDelegate,
   // |data| is the registered handler data. |user_gesture| is true if the call
   // was made in the context of a user gesture.
   static void RegisterIntentHandlerHelper(
-      content::WebContents* tab,
+      content::WebContents* web_contents,
       const webkit_glue::WebIntentServiceData& data,
       bool user_gesture);
 
   // Helper function to handle find results.
-  static void FindReplyHelper(content::WebContents* tab,
+  static void FindReplyHelper(content::WebContents* web_contents,
                               int request_id,
                               int number_of_matches,
                               const gfx::Rect& selection_rect,
@@ -960,49 +960,52 @@ class Browser : public TabStripModelDelegate,
   virtual void RendererResponsive(content::WebContents* source) OVERRIDE;
   virtual void WorkerCrashed(content::WebContents* source) OVERRIDE;
   virtual void DidNavigateMainFramePostCommit(
-      content::WebContents* tab) OVERRIDE;
-  virtual void DidNavigateToPendingEntry(content::WebContents* tab) OVERRIDE;
+      content::WebContents* web_contents) OVERRIDE;
+  virtual void DidNavigateToPendingEntry(
+      content::WebContents* web_contents) OVERRIDE;
   virtual content::JavaScriptDialogCreator*
       GetJavaScriptDialogCreator() OVERRIDE;
-  virtual content::ColorChooser* OpenColorChooser(content::WebContents* tab,
-                                                  int color_chooser_id,
-                                                  SkColor color) OVERRIDE;
+  virtual content::ColorChooser* OpenColorChooser(
+      content::WebContents* web_contents,
+      int color_chooser_id,
+      SkColor color) OVERRIDE;
   virtual void DidEndColorChooser() OVERRIDE;
   virtual void RunFileChooser(
-      content::WebContents* tab,
+      content::WebContents* web_contents,
       const content::FileChooserParams& params) OVERRIDE;
-  virtual void EnumerateDirectory(content::WebContents* tab, int request_id,
+  virtual void EnumerateDirectory(content::WebContents* web_contents,
+                                  int request_id,
                                   const FilePath& path) OVERRIDE;
-  virtual void ToggleFullscreenModeForTab(content::WebContents* tab,
+  virtual void ToggleFullscreenModeForTab(content::WebContents* web_contents,
       bool enter_fullscreen) OVERRIDE;
   virtual bool IsFullscreenForTabOrPending(
-      const content::WebContents* tab) const OVERRIDE;
-  virtual void JSOutOfMemory(content::WebContents* tab) OVERRIDE;
-  virtual void RegisterProtocolHandler(content::WebContents* tab,
+      const content::WebContents* web_contents) const OVERRIDE;
+  virtual void JSOutOfMemory(content::WebContents* web_contents) OVERRIDE;
+  virtual void RegisterProtocolHandler(content::WebContents* web_contents,
                                        const std::string& protocol,
                                        const GURL& url,
                                        const string16& title,
                                        bool user_gesture) OVERRIDE;
   virtual void RegisterIntentHandler(
-      content::WebContents* tab,
+      content::WebContents* web_contents,
       const webkit_glue::WebIntentServiceData& data,
       bool user_gesture) OVERRIDE;
   virtual void WebIntentDispatch(
-      content::WebContents* tab,
+      content::WebContents* web_contents,
       content::WebIntentsDispatcher* intents_dispatcher) OVERRIDE;
   virtual void UpdatePreferredSize(content::WebContents* source,
                                    const gfx::Size& pref_size) OVERRIDE;
   virtual void ResizeDueToAutoResize(content::WebContents* source,
                                      const gfx::Size& new_size) OVERRIDE;
 
-  virtual void FindReply(content::WebContents* tab,
+  virtual void FindReply(content::WebContents* web_contents,
                          int request_id,
                          int number_of_matches,
                          const gfx::Rect& selection_rect,
                          int active_match_ordinal,
                          bool final_update) OVERRIDE;
 
-  virtual void RequestToLockMouse(content::WebContents* tab,
+  virtual void RequestToLockMouse(content::WebContents* web_contents,
                                   bool user_gesture,
                                   bool last_unlocked_by_target) OVERRIDE;
   virtual void LostMouseLock() OVERRIDE;
@@ -1176,10 +1179,11 @@ class Browser : public TabStripModelDelegate,
   // events since the user cancelled closing the window.
   void CancelWindowClose();
 
-  // Removes |tab| from the passed |set|.
+  // Removes |web_contents| from the passed |set|.
   // Returns whether the tab was in the set in the first place.
   // TODO(beng): this method needs a better name!
-  bool RemoveFromSet(UnloadListenerSet* set, content::WebContents* tab);
+  bool RemoveFromSet(UnloadListenerSet* set,
+                     content::WebContents* web_contents);
 
   // Cleans up state appropriately when we are trying to close the browser and
   // the tab has finished firing its unload handler. We also use this in the
@@ -1190,7 +1194,7 @@ class Browser : public TabStripModelDelegate,
   // Typically you'll want to pass in true for |process_now|. Passing in true
   // may result in deleting |tab|. If you know that shouldn't happen (because of
   // the state of the stack), pass in false.
-  void ClearUnloadState(content::WebContents* tab, bool process_now);
+  void ClearUnloadState(content::WebContents* web_contents, bool process_now);
 
   // In-progress download termination handling /////////////////////////////////
 

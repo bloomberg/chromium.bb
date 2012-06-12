@@ -2094,8 +2094,7 @@ ListValue* TestingAutomationProvider::GetInfobarsInfo(WebContents* wc) {
   // Each infobar may have different properties depending on the type.
   ListValue* infobars = new ListValue;
   InfoBarTabHelper* infobar_helper =
-      TabContents::GetOwningTabContentsForWebContents(wc)->
-          infobar_tab_helper();
+      TabContents::FromWebContents(wc)->infobar_tab_helper();
   for (size_t i = 0; i < infobar_helper->infobar_count(); ++i) {
     DictionaryValue* infobar_item = new DictionaryValue;
     InfoBarDelegate* infobar = infobar_helper->GetInfoBarDelegateAt(i);
@@ -3648,8 +3647,7 @@ TabContents* GetTabContentsFromDict(const Browser* browser,
 TranslateInfoBarDelegate* GetTranslateInfoBarDelegate(
     WebContents* web_contents) {
   InfoBarTabHelper* infobar_helper =
-      TabContents::GetOwningTabContentsForWebContents(web_contents)->
-          infobar_tab_helper();
+      TabContents::FromWebContents(web_contents)->infobar_tab_helper();
   for (size_t i = 0; i < infobar_helper->infobar_count(); i++) {
     InfoBarDelegate* infobar = infobar_helper->GetInfoBarDelegateAt(i);
     if (infobar->AsTranslateInfoBarDelegate())
@@ -3729,8 +3727,8 @@ void TestingAutomationProvider::GetTranslateInfo(
       this, reply_message, web_contents, translate_bar);
   // If the language for the page hasn't been loaded yet, then just make
   // the observer, otherwise call observe directly.
-  TranslateTabHelper* helper = TabContents::GetOwningTabContentsForWebContents(
-      web_contents)->translate_tab_helper();
+  TranslateTabHelper* helper =
+      TabContents::FromWebContents(web_contents)->translate_tab_helper();
   std::string language = helper->language_state().original_language();
   if (!language.empty()) {
     observer->Observe(chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
@@ -4396,8 +4394,7 @@ void TestingAutomationProvider::HeapProfilerDump(
       return;
     }
 
-    TabContents* tab_contents =
-        TabContents::GetOwningTabContentsForWebContents(web_contents);
+    TabContents* tab_contents = TabContents::FromWebContents(web_contents);
     tab_contents->automation_tab_helper()->HeapProfilerDump(reason_string);
     reply.SendSuccess(NULL);
     return;
@@ -6013,7 +6010,7 @@ void TestingAutomationProvider::GetIndicesFromTab(
   }
   int id = id_or_handle;
   if (has_handle) {
-    TabContents* tab = TabContents::GetOwningTabContentsForWebContents(
+    TabContents* tab = TabContents::FromWebContents(
         tab_tracker_->GetResource(id_or_handle)->GetWebContents());
     id = tab->restore_tab_helper()->session_id().id();
   }
@@ -6338,8 +6335,7 @@ void TestingAutomationProvider::CaptureEntirePageJSON(
     FilePath path(path_str);
     // This will delete itself when finished.
     PageSnapshotTaker* snapshot_taker = new PageSnapshotTaker(
-        this, reply_message,
-        TabContents::GetOwningTabContentsForWebContents(web_contents), path);
+        this, reply_message, TabContents::FromWebContents(web_contents), path);
     snapshot_taker->Start();
   } else {
     AutomationJSONReply(this, reply_message)
@@ -6648,8 +6644,7 @@ void TestingAutomationProvider::WaitForInfoBarCount(
 
   // The delegate will delete itself.
   new InfoBarCountObserver(this, reply_message,
-      TabContents::GetOwningTabContentsForWebContents(
-          controller->GetWebContents()), target_count);
+      TabContents::FromWebContents(controller->GetWebContents()), target_count);
 }
 
 void TestingAutomationProvider::ResetToDefaultTheme() {

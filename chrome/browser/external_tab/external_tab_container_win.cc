@@ -717,7 +717,7 @@ void ExternalTabContainer::ShowRepostFormWarningDialog(
     WebContents* source) {
   browser::ShowTabModalConfirmDialog(
       new RepostFormWarningController(source),
-      TabContents::GetOwningTabContentsForWebContents(source));
+      TabContents::FromWebContents(source));
 }
 
 void ExternalTabContainer::RunFileChooser(

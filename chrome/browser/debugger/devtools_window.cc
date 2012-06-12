@@ -227,7 +227,7 @@ DevToolsWindow::DevToolsWindow(TabContents* tab_contents,
   if (inspected_rvh) {
     WebContents* tab = WebContents::FromRenderViewHost(inspected_rvh);
     if (tab)
-      inspected_tab_ = TabContents::GetOwningTabContentsForWebContents(tab);
+      inspected_tab_ = TabContents::FromWebContents(tab);
   }
 }
 
@@ -262,8 +262,7 @@ void DevToolsWindow::InspectedContentsClosing() {
 }
 
 void DevToolsWindow::ContentsReplaced(WebContents* new_contents) {
-  TabContents* new_tab_contents =
-      TabContents::GetOwningTabContentsForWebContents(new_contents);
+  TabContents* new_tab_contents = TabContents::FromWebContents(new_contents);
   DCHECK(new_tab_contents);
   if (!new_tab_contents)
       return;

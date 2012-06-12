@@ -519,8 +519,7 @@ void AutomationProvider::SendFindRequest(
   if (!with_json) {
     find_in_page_observer_.reset(observer);
   }
-  TabContents* tab_contents =
-      TabContents::GetOwningTabContentsForWebContents(web_contents);
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
   if (tab_contents)
     tab_contents->find_tab_helper()->set_current_find_request_id(request_id);
 

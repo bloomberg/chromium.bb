@@ -65,10 +65,9 @@ void DownloadRequestLimiter::TabDownloadState::DidGetUserGesture() {
     return;
   }
 
-  TabContents* tab_contents =
-      TabContents::GetOwningTabContentsForWebContents(web_contents());
-  // See PromptUserForDownload(): if there's no TCW, then DOWNLOADS_NOT_ALLOWED
-  // is functionally equivalent to PROMPT_BEFORE_DOWNLOAD.
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents());
+  // See PromptUserForDownload(): if there's no TabContents, then
+  // DOWNLOADS_NOT_ALLOWED is functionally equivalent to PROMPT_BEFORE_DOWNLOAD.
   if ((tab_contents &&
        status_ != DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS &&
        status_ != DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED) ||
@@ -92,8 +91,7 @@ void DownloadRequestLimiter::TabDownloadState::PromptUserForDownload(
     NotifyCallbacks(DownloadRequestLimiter::delegate_->ShouldAllowDownload());
     return;
   }
-  TabContents* tab_contents =
-      TabContents::GetOwningTabContentsForWebContents(web_contents);
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
   if (!tab_contents) {
     // If |web_contents| doesn't have a TabContents, then it isn't what a user
     // thinks of as a tab, it's actually a "raw" WebContents like those used
@@ -319,7 +317,7 @@ void DownloadRequestLimiter::CanDownloadImpl(WebContents* originating_contents,
   // shown, treat the request as if it came from the parent.
   WebContents* effective_contents = originating_contents;
   TabContents* originating_tab_contents =
-     TabContents::GetOwningTabContentsForWebContents(originating_contents);
+     TabContents::FromWebContents(originating_contents);
   if (originating_tab_contents &&
       originating_tab_contents->blocked_content_tab_helper()->delegate()) {
     effective_contents =

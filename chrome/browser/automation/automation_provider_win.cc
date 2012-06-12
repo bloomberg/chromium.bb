@@ -241,8 +241,7 @@ void AutomationProvider::PrintAsync(int tab_handle) {
   if (!web_contents)
     return;
 
-  TabContents* tab_contents =
-      TabContents::GetOwningTabContentsForWebContents(web_contents);
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents);
   tab_contents->print_view_manager()->PrintNow();
 }
 

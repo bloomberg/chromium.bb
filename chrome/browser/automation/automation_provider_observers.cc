@@ -801,8 +801,8 @@ void BrowserOpenedNotificationObserver::Observe(
     // Only send the result if the loaded tab is in the new window.
     NavigationController* controller =
         content::Source<NavigationController>(source).ptr();
-    TabContents* tab = TabContents::GetOwningTabContentsForWebContents(
-        controller->GetWebContents());
+    TabContents* tab =
+        TabContents::FromWebContents(controller->GetWebContents());
     int window_id = tab ? tab->restore_tab_helper()->window_id().id() : -1;
     if (window_id == new_window_id_) {
       if (for_browser_command_) {
@@ -1118,8 +1118,7 @@ void DomOperationObserver::Observe(
   } else if (type == chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED) {
     WebContents* web_contents = content::Source<WebContents>(source).ptr();
     if (web_contents) {
-      TabContents* tab_contents =
-          TabContents::GetOwningTabContentsForWebContents(web_contents);
+      TabContents* tab_contents = TabContents::FromWebContents(web_contents);
       if (tab_contents &&
           tab_contents->content_settings() &&
           tab_contents->content_settings()->IsContentBlocked(
@@ -1259,8 +1258,8 @@ void TabLanguageDeterminedObserver::Observe(
     return;
   }
 
-  TranslateTabHelper* helper = TabContents::GetOwningTabContentsForWebContents(
-      web_contents_)->translate_tab_helper();
+  TranslateTabHelper* helper =
+      TabContents::FromWebContents(web_contents_)->translate_tab_helper();
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   return_value->SetBoolean("page_translated",
                            helper->language_state().IsPageTranslated());
@@ -2151,8 +2150,7 @@ void AppLaunchObserver::Observe(int type,
       NavigationController* controller =
           content::Source<NavigationController>(source).ptr();
       TabContents* tab =
-          TabContents::GetOwningTabContentsForWebContents(
-              controller->GetWebContents());
+          TabContents::FromWebContents(controller->GetWebContents());
       int window_id = tab ? tab->restore_tab_helper()->window_id().id() : -1;
       if (window_id == new_window_id_) {
         if (automation_) {
@@ -2978,8 +2976,8 @@ void BrowserOpenedWithNewProfileNotificationObserver::Observe(
     // Only send the result if the loaded tab is in the new window.
     NavigationController* controller =
         content::Source<NavigationController>(source).ptr();
-    TabContents* tab = TabContents::GetOwningTabContentsForWebContents(
-        controller->GetWebContents());
+    TabContents* tab =
+        TabContents::FromWebContents(controller->GetWebContents());
     int window_id = tab ? tab->restore_tab_helper()->window_id().id() : -1;
     if (window_id == new_window_id_) {
       if (automation_) {

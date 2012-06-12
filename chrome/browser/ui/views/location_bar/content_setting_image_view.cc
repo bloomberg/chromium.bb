@@ -80,8 +80,8 @@ void ContentSettingImageView::UpdateFromWebContents(WebContents* web_contents) {
 
   TabSpecificContentSettings* content_settings = NULL;
   if (web_contents) {
-    content_settings = TabContents::GetOwningTabContentsForWebContents(
-        web_contents)->content_settings();
+    content_settings =
+        TabContents::FromWebContents(web_contents)->content_settings();
   }
   if (!content_settings || content_settings->IsBlockageIndicated(
       content_setting_image_model_->get_content_settings_type()))
