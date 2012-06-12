@@ -276,6 +276,7 @@
     'browser/download/download_file_impl.h',
     'browser/download/download_file_manager.cc',
     'browser/download/download_file_manager.h',
+    'browser/download/download_item_factory.h',
     'browser/download/download_item_impl.cc',
     'browser/download/download_item_impl.h',
     'browser/download/download_manager_impl.cc',

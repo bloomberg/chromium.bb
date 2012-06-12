@@ -1,7 +1,6 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
 
 #ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_MANAGER_IMPL_H_
 #define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_MANAGER_IMPL_H_
@@ -17,15 +16,25 @@
 #include "base/message_loop_helpers.h"
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
+#include "content/browser/download/download_item_factory.h"
 #include "content/browser/download/download_item_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_manager.h"
+
+class DownloadFileManager;
 
 class CONTENT_EXPORT DownloadManagerImpl
     : public content::DownloadManager,
       public DownloadItemImpl::Delegate {
  public:
-  explicit DownloadManagerImpl(net::NetLog* net_log);
+  // Caller guarantees that |file_manager| and |net_log| will remain valid
+  // for the lifetime of DownloadManagerImpl (until Shutdown() is called).
+  // |factory| may be a default constructed (null) scoped_ptr; if so,
+  // the DownloadManagerImpl creates and takes ownership of the
+  // default DownloadItemFactory.
+  DownloadManagerImpl(DownloadFileManager* file_manager,
+                      scoped_ptr<content::DownloadItemFactory> factory,
+                      net::NetLog* net_log);
 
   // content::DownloadManager functions.
   virtual void SetDelegate(content::DownloadManagerDelegate* delegate) OVERRIDE;
@@ -109,9 +118,6 @@ class CONTENT_EXPORT DownloadManagerImpl
   virtual void AssertStateConsistent(
       content::DownloadItem* download) const OVERRIDE;
 
-  // For unit tests only.
-  void SetFileManagerForTesting(DownloadFileManager* file_manager);
-
  private:
   typedef std::set<content::DownloadItem*> DownloadSet;
   typedef base::hash_map<int64, content::DownloadItem*> DownloadMap;
@@ -178,6 +184,9 @@ class CONTENT_EXPORT DownloadManagerImpl
 
   // Called when Save Page As entry is committed to the persistent store.
   void OnSavePageItemAddedToPersistentStore(int32 download_id, int64 db_handle);
+
+  // Factory for creation of downloads items.
+  scoped_ptr<content::DownloadItemFactory> factory_;
 
   // |downloads_| is the owning set for all downloads known to the
   // DownloadManager.  This includes downloads started by the user in

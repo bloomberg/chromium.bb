@@ -551,6 +551,47 @@ TEST_F(DownloadItemTest, CallbackAfterRenameToIntermediateName) {
   ::testing::Mock::VerifyAndClearExpectations(mock_delegate());
 }
 
+TEST_F(DownloadItemTest, Interrupted) {
+  DownloadItem* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
+
+  int64 size = 1022;
+  const std::string hash_state("Live beef");
+  const content::DownloadInterruptReason reason(
+      content::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED);
+
+  // Confirm interrupt sets state properly.
+  item->Interrupted(size, hash_state, reason);
+  EXPECT_EQ(size, item->GetReceivedBytes());
+  EXPECT_EQ(DownloadItem::INTERRUPTED, item->GetState());
+  EXPECT_EQ(hash_state, item->GetHashState());
+  EXPECT_EQ(reason, item->GetLastReason());
+
+  // Cancel should result in no change.
+  item->Cancel(true);
+  EXPECT_EQ(size, item->GetReceivedBytes());
+  EXPECT_EQ(DownloadItem::INTERRUPTED, item->GetState());
+  EXPECT_EQ(hash_state, item->GetHashState());
+  EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED,
+            item->GetLastReason());
+}
+
+TEST_F(DownloadItemTest, Canceled) {
+  DownloadItem* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
+
+  // Confirm cancel sets state properly.
+  EXPECT_CALL(*mock_delegate(), DownloadCancelled(item));
+  item->Cancel(true);
+  EXPECT_EQ(DownloadItem::CANCELLED, item->GetState());
+}
+
+TEST_F(DownloadItemTest, FileRemoved) {
+  DownloadItem* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
+
+  EXPECT_EQ(false, item->GetFileExternallyRemoved());
+  item->OnDownloadedFileRemoved();
+  EXPECT_EQ(true, item->GetFileExternallyRemoved());
+}
+
 TEST(MockDownloadItem, Compiles) {
   MockDownloadItem mock_item;
 }

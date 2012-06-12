@@ -6,9 +6,11 @@
 
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
+#include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/browser/in_process_webkit/indexed_db_context_impl.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -75,7 +77,7 @@ void CreateQuotaManagerAndClients(BrowserContext* context) {
       context->GetPath(), context->IsOffTheRecord(),
       context->GetSpecialStoragePolicy(), quota_manager->proxy(),
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
-  context->SetUserData(kDatabaseTrackerKeyName, 
+  context->SetUserData(kDatabaseTrackerKeyName,
                        new UserDataAdapter<DatabaseTracker>(db_tracker));
 
   FilePath path = context->IsOffTheRecord() ? FilePath() : context->GetPath();
@@ -142,8 +144,16 @@ DOMStorageContextImpl* GetDOMStorageContextImpl(BrowserContext* context) {
 DownloadManager* BrowserContext::GetDownloadManager(
     BrowserContext* context) {
   if (!context->GetUserData(kDownloadManagerKeyName)) {
-    scoped_refptr<DownloadManager> download_manager = new DownloadManagerImpl(
-        GetContentClient()->browser()->GetNetLog());
+    ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
+    DCHECK(rdh);
+    DownloadFileManager* file_manager = rdh->download_file_manager();
+    DCHECK(file_manager);
+    scoped_refptr<DownloadManager> download_manager =
+        new DownloadManagerImpl(
+            file_manager,
+            scoped_ptr<DownloadItemFactory>(),
+            GetContentClient()->browser()->GetNetLog());
+
     context->SetUserData(
         kDownloadManagerKeyName,
         new UserDataAdapter<DownloadManager>(download_manager));

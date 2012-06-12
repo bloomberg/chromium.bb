@@ -136,6 +136,42 @@ void EnsureNoPendingDownloadJobsOnIO(bool* result) {
                  download_file_manager, result));
 }
 
+class DownloadItemFactoryImpl : public content::DownloadItemFactory {
+ public:
+    DownloadItemFactoryImpl() {}
+    virtual ~DownloadItemFactoryImpl() {}
+
+    virtual content::DownloadItem* CreatePersistedItem(
+        DownloadItemImpl::Delegate* delegate,
+        content::DownloadId download_id,
+        const content::DownloadPersistentStoreInfo& info,
+        const net::BoundNetLog& bound_net_log) OVERRIDE {
+      return new DownloadItemImpl(delegate, download_id, info, bound_net_log);
+    }
+
+    virtual content::DownloadItem* CreateActiveItem(
+        DownloadItemImpl::Delegate* delegate,
+        const DownloadCreateInfo& info,
+        DownloadRequestHandleInterface* request_handle,
+        bool is_otr,
+        const net::BoundNetLog& bound_net_log) OVERRIDE {
+      return new DownloadItemImpl(delegate, info, request_handle, is_otr,
+                                  bound_net_log);
+    }
+
+    virtual content::DownloadItem* CreateSavePageItem(
+        DownloadItemImpl::Delegate* delegate,
+        const FilePath& path,
+        const GURL& url,
+        bool is_otr,
+        content::DownloadId download_id,
+        const std::string& mime_type,
+        const net::BoundNetLog& bound_net_log) OVERRIDE {
+      return new DownloadItemImpl(delegate, path, url, is_otr, download_id,
+                                  mime_type, bound_net_log);
+    }
+};
+
 }  // namespace
 
 namespace content {
@@ -152,12 +188,18 @@ bool DownloadManager::EnsureNoPendingDownloadsForTesting() {
 
 }  // namespace content
 
-DownloadManagerImpl::DownloadManagerImpl(net::NetLog* net_log)
-    : shutdown_needed_(false),
+DownloadManagerImpl::DownloadManagerImpl(
+    DownloadFileManager* file_manager,
+    scoped_ptr<content::DownloadItemFactory> factory,
+    net::NetLog* net_log)
+    : factory_(factory.Pass()),
+      shutdown_needed_(false),
       browser_context_(NULL),
-      file_manager_(NULL),
-      delegate_(NULL),
+      file_manager_(file_manager),
       net_log_(net_log) {
+  DCHECK(file_manager);
+  if (!factory_.get())
+    factory_.reset(new DownloadItemFactoryImpl());
 }
 
 DownloadManagerImpl::~DownloadManagerImpl() {
@@ -209,11 +251,11 @@ void DownloadManagerImpl::Shutdown() {
   FOR_EACH_OBSERVER(Observer, observers_, ManagerGoingDown(this));
   // TODO(benjhayden): Consider clearing observers_.
 
-  if (file_manager_) {
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-        base::Bind(&DownloadFileManager::OnDownloadManagerShutdown,
-                   file_manager_, make_scoped_refptr(this)));
-  }
+  DCHECK(file_manager_);
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&DownloadFileManager::OnDownloadManagerShutdown,
+                 file_manager_, make_scoped_refptr(this)));
 
   AssertContainersConsistent();
 
@@ -316,22 +358,12 @@ void DownloadManagerImpl::SearchDownloads(const string16& query,
   }
 }
 
-// Query the history service for information about all persisted downloads.
 bool DownloadManagerImpl::Init(content::BrowserContext* browser_context) {
   DCHECK(browser_context);
   DCHECK(!shutdown_needed_)  << "DownloadManager already initialized.";
   shutdown_needed_ = true;
 
   browser_context_ = browser_context;
-
-  // In test mode, there may be no ResourceDispatcherHostImpl.  In this case
-  // it's safe to avoid setting |file_manager_| because we only call a small
-  // set of functions, none of which need it.
-  ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
-  if (rdh) {
-    file_manager_ = rdh->download_file_manager();
-    DCHECK(file_manager_);
-  }
 
   return true;
 }
@@ -425,8 +457,9 @@ net::BoundNetLog DownloadManagerImpl::CreateDownloadItem(
 
   net::BoundNetLog bound_net_log =
       net::BoundNetLog::Make(net_log_, net::NetLog::SOURCE_DOWNLOAD);
-  info->download_id = GetNextId();
-  DownloadItem* download = new DownloadItemImpl(
+  if (!info->download_id.IsValid())
+    info->download_id = GetNextId();
+  DownloadItem* download = factory_->CreateActiveItem(
       this, *info, new DownloadRequestHandle(request_handle),
       browser_context_->IsOffTheRecord(), bound_net_log);
   int32 download_id = info->download_id.local();
@@ -446,7 +479,7 @@ DownloadItem* DownloadManagerImpl::CreateSavePackageDownloadItem(
     DownloadItem::Observer* observer) {
   net::BoundNetLog bound_net_log =
       net::BoundNetLog::Make(net_log_, net::NetLog::SOURCE_DOWNLOAD);
-  DownloadItem* download = new DownloadItemImpl(
+  DownloadItem* download = factory_->CreateSavePageItem(
       this,
       main_file_path,
       page_url,
@@ -680,8 +713,8 @@ void DownloadManagerImpl::DownloadCancelled(DownloadItem* download) {
   // should already have been updated.
   AssertStateConsistent(download);
 
-  if (file_manager_)
-    download->OffThreadCancel(file_manager_);
+  DCHECK(file_manager_);
+  download->OffThreadCancel(file_manager_);
 }
 
 void DownloadManagerImpl::OnDownloadInterrupted(
@@ -880,7 +913,7 @@ void DownloadManagerImpl::OnPersistentStoreQueryComplete(
 
     net::BoundNetLog bound_net_log =
         net::BoundNetLog::Make(net_log_, net::NetLog::SOURCE_DOWNLOAD);
-    DownloadItem* download = new DownloadItemImpl(
+    DownloadItem* download = factory_->CreatePersistedItem(
         this, GetNextId(), entries->at(i), bound_net_log);
     downloads_.insert(download);
     history_downloads_[download->GetDbHandle()] = download;
@@ -1149,9 +1182,4 @@ void DownloadManagerImpl::DownloadRenamedToFinalName(
     delegate_->UpdatePathForItemInPersistentStore(
         download, download->GetFullPath());
   }
-}
-
-void DownloadManagerImpl::SetFileManagerForTesting(
-      DownloadFileManager* file_manager) {
-  file_manager_ = file_manager;
 }
