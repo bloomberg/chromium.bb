@@ -375,7 +375,8 @@ cr.define('options.contentSettings', function() {
       var exceptionList = this;
 
       // Whether the exceptions in this list allow an 'Ask every time' option.
-      this.enableAskOption = this.contentType == 'plugins';
+      this.enableAskOption = this.contentType == 'plugins' ||
+                             this.contentType == 'pepper-flash-cameramic';
 
       this.autoExpands = true;
       this.reset();

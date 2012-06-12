@@ -16,6 +16,8 @@ include_rules = [
   "+ppapi/c",  # For various types.
   "+ppapi/proxy",
   "+ppapi/shared_impl/api_id.h",
+  # Defines some types that are marshalled over IPC.
+  "+ppapi/shared_impl/ppp_flash_browser_operations_shared.h",
   "+rlz",
   "+sandbox/linux",
   "+sandbox/src",  # The path doesn't say it, but this is the Windows sandbox.

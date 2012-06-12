@@ -40,6 +40,17 @@ class PepperFlashSettingsManager::Core
   void Detach();
 
   void DeauthorizeContentLicenses(uint32 request_id);
+  void GetPermissionSettings(
+      uint32 request_id,
+      PP_Flash_BrowserOperations_SettingType setting_type);
+  void SetDefaultPermission(
+      uint32 request_id,
+      PP_Flash_BrowserOperations_SettingType setting_type,
+      PP_Flash_BrowserOperations_Permission permission,
+      bool clear_site_specific);
+  void SetSitePermission(uint32 request_id,
+                         PP_Flash_BrowserOperations_SettingType setting_type,
+                         const ppapi::FlashSiteSettings& sites);
 
   // IPC::Channel::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -51,14 +62,34 @@ class PepperFlashSettingsManager::Core
 
   enum RequestType {
     INVALID_REQUEST_TYPE = 0,
-    DEAUTHORIZE_CONTENT_LICENSES
+    DEAUTHORIZE_CONTENT_LICENSES,
+    GET_PERMISSION_SETTINGS,
+    SET_DEFAULT_PERMISSION,
+    SET_SITE_PERMISSION
   };
 
   struct PendingRequest {
-    PendingRequest() : id(0), type(INVALID_REQUEST_TYPE) {}
+    PendingRequest()
+        : id(0),
+          type(INVALID_REQUEST_TYPE),
+          setting_type(PP_FLASH_BROWSEROPERATIONS_SETTINGTYPE_CAMERAMIC),
+          permission(PP_FLASH_BROWSEROPERATIONS_PERMISSION_DEFAULT),
+          clear_site_specific(false) {
+    }
 
     uint32 id;
     RequestType type;
+
+    // Used by GET_PERMISSION_SETTINGS, SET_DEFAULT_PERMISSION and
+    // SET_SITE_PERMISSION.
+    PP_Flash_BrowserOperations_SettingType setting_type;
+
+    // Used by SET_DEFAULT_PERMISSION.
+    PP_Flash_BrowserOperations_Permission permission;
+    bool clear_site_specific;
+
+    // Used by SET_SITE_PERMISSION.
+    ppapi::FlashSiteSettings sites;
   };
 
   virtual ~Core();
@@ -67,15 +98,43 @@ class PepperFlashSettingsManager::Core
   void ConnectToChannel(bool success, const IPC::ChannelHandle& handle);
 
   void DeauthorizeContentLicensesOnIOThread(uint32 request_id);
+  void GetPermissionSettingsOnIOThread(
+      uint32 request_id,
+      PP_Flash_BrowserOperations_SettingType setting_type);
+  void SetDefaultPermissionOnIOThread(
+      uint32 request_id,
+      PP_Flash_BrowserOperations_SettingType setting_type,
+      PP_Flash_BrowserOperations_Permission permission,
+      bool clear_site_specific);
+  void SetSitePermissionOnIOThread(
+      uint32 request_id,
+      PP_Flash_BrowserOperations_SettingType setting_type,
+      const ppapi::FlashSiteSettings& sites);
+
   void NotifyErrorFromIOThread();
 
   void NotifyDeauthorizeContentLicensesCompleted(uint32 request_id,
                                                  bool success);
+  void NotifyGetPermissionSettingsCompleted(
+      uint32 request_id,
+      bool success,
+      PP_Flash_BrowserOperations_Permission default_permission,
+      const ppapi::FlashSiteSettings& sites);
+  void NotifySetDefaultPermissionCompleted(uint32 request_id, bool success);
+  void NotifySetSitePermissionCompleted(uint32 request_id, bool success);
+
   void NotifyError(
       const std::vector<std::pair<uint32, RequestType> >& notifications);
 
   // Message handlers.
   void OnDeauthorizeContentLicensesResult(uint32 request_id, bool success);
+  void OnGetPermissionSettingsResult(
+      uint32 request_id,
+      bool success,
+      PP_Flash_BrowserOperations_Permission default_permission,
+      const ppapi::FlashSiteSettings& sites);
+  void OnSetDefaultPermissionResult(uint32 request_id, bool success);
+  void OnSetSitePermissionResult(uint32 request_id, bool success);
 
   // Used only on the UI thread.
   PepperFlashSettingsManager* manager_;
@@ -140,11 +199,53 @@ void PepperFlashSettingsManager::Core::DeauthorizeContentLicenses(
                  request_id));
 }
 
+void PepperFlashSettingsManager::Core::GetPermissionSettings(
+    uint32 request_id,
+    PP_Flash_BrowserOperations_SettingType setting_type) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&Core::GetPermissionSettingsOnIOThread, this, request_id,
+                 setting_type));
+}
+
+void PepperFlashSettingsManager::Core::SetDefaultPermission(
+    uint32 request_id,
+    PP_Flash_BrowserOperations_SettingType setting_type,
+    PP_Flash_BrowserOperations_Permission permission,
+    bool clear_site_specific) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&Core::SetDefaultPermissionOnIOThread, this, request_id,
+                 setting_type, permission, clear_site_specific));
+}
+
+void PepperFlashSettingsManager::Core::SetSitePermission(
+  uint32 request_id,
+  PP_Flash_BrowserOperations_SettingType setting_type,
+  const ppapi::FlashSiteSettings& sites) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&Core::SetSitePermissionOnIOThread, this, request_id,
+                 setting_type, sites));
+}
+
 bool PepperFlashSettingsManager::Core::OnMessageReceived(
     const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(Core, message)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_DeauthorizeContentLicensesResult,
                         OnDeauthorizeContentLicensesResult)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_GetPermissionSettingsResult,
+                        OnGetPermissionSettingsResult)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_SetDefaultPermissionResult,
+                        OnSetDefaultPermissionResult)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_SetSitePermissionResult,
+                        OnSetSitePermissionResult)
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
 
@@ -190,14 +291,14 @@ void PepperFlashSettingsManager::Core::ConnectToChannel(
   DCHECK(!channel_.get());
 
   if (!success) {
-    LOG(ERROR) << "Couldn't open plugin channel";
+    DLOG(ERROR) << "Couldn't open plugin channel";
     NotifyErrorFromIOThread();
     return;
   }
 
   channel_.reset(new IPC::Channel(handle, IPC::Channel::MODE_CLIENT, this));
   if (!channel_->Connect()) {
-    LOG(ERROR) << "Couldn't connect to plugin";
+    DLOG(ERROR) << "Couldn't connect to plugin";
     NotifyErrorFromIOThread();
     return;
   }
@@ -212,6 +313,17 @@ void PepperFlashSettingsManager::Core::ConnectToChannel(
     switch (iter->type) {
       case DEAUTHORIZE_CONTENT_LICENSES:
         DeauthorizeContentLicensesOnIOThread(iter->id);
+        break;
+      case GET_PERMISSION_SETTINGS:
+        GetPermissionSettingsOnIOThread(iter->id, iter->setting_type);
+        break;
+      case SET_DEFAULT_PERMISSION:
+        SetDefaultPermissionOnIOThread(
+            iter->id, iter->setting_type, iter->permission,
+            iter->clear_site_specific);
+        break;
+      case SET_SITE_PERMISSION:
+        SetSitePermissionOnIOThread(iter->id, iter->setting_type, iter->sites);
         break;
       default:
         NOTREACHED();
@@ -237,7 +349,90 @@ void PepperFlashSettingsManager::Core::DeauthorizeContentLicensesOnIOThread(
   IPC::Message* msg =
       new PpapiMsg_DeauthorizeContentLicenses(request_id, plugin_data_path_);
   if (!channel_->Send(msg)) {
-    LOG(ERROR) << "Couldn't send DeauthorizeContentLicenses message";
+    DLOG(ERROR) << "Couldn't send DeauthorizeContentLicenses message";
+    // A failure notification for the current request will be sent since
+    // |pending_responses_| has been updated.
+    NotifyErrorFromIOThread();
+  }
+}
+
+void PepperFlashSettingsManager::Core::GetPermissionSettingsOnIOThread(
+    uint32 request_id,
+    PP_Flash_BrowserOperations_SettingType setting_type) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  if (!initialized_) {
+    PendingRequest request;
+    request.id = request_id;
+    request.type = GET_PERMISSION_SETTINGS;
+    request.setting_type = setting_type;
+    pending_requests_.push_back(request);
+    return;
+  }
+
+  pending_responses_.insert(
+      std::make_pair(request_id, GET_PERMISSION_SETTINGS));
+  IPC::Message* msg = new PpapiMsg_GetPermissionSettings(
+      request_id, plugin_data_path_, setting_type);
+  if (!channel_->Send(msg)) {
+    DLOG(ERROR) << "Couldn't send GetPermissionSettings message";
+    // A failure notification for the current request will be sent since
+    // |pending_responses_| has been updated.
+    NotifyErrorFromIOThread();
+  }
+}
+
+void PepperFlashSettingsManager::Core::SetDefaultPermissionOnIOThread(
+    uint32 request_id,
+    PP_Flash_BrowserOperations_SettingType setting_type,
+    PP_Flash_BrowserOperations_Permission permission,
+    bool clear_site_specific) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  if (!initialized_) {
+    PendingRequest request;
+    request.id = request_id;
+    request.type = SET_DEFAULT_PERMISSION;
+    request.setting_type = setting_type;
+    request.permission = permission;
+    request.clear_site_specific = clear_site_specific;
+    pending_requests_.push_back(request);
+    return;
+  }
+
+  pending_responses_.insert(std::make_pair(request_id, SET_DEFAULT_PERMISSION));
+  IPC::Message* msg = new PpapiMsg_SetDefaultPermission(
+      request_id, plugin_data_path_, setting_type, permission,
+      clear_site_specific);
+  if (!channel_->Send(msg)) {
+    DLOG(ERROR) << "Couldn't send SetDefaultPermission message";
+    // A failure notification for the current request will be sent since
+    // |pending_responses_| has been updated.
+    NotifyErrorFromIOThread();
+  }
+}
+
+void PepperFlashSettingsManager::Core::SetSitePermissionOnIOThread(
+    uint32 request_id,
+    PP_Flash_BrowserOperations_SettingType setting_type,
+    const ppapi::FlashSiteSettings& sites) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  if (!initialized_) {
+    pending_requests_.push_back(PendingRequest());
+    PendingRequest& request = pending_requests_.back();
+    request.id = request_id;
+    request.type = SET_SITE_PERMISSION;
+    request.setting_type = setting_type;
+    request.sites = sites;
+    return;
+  }
+
+  pending_responses_.insert(std::make_pair(request_id, SET_SITE_PERMISSION));
+  IPC::Message* msg = new PpapiMsg_SetSitePermission(
+      request_id, plugin_data_path_, setting_type, sites);
+  if (!channel_->Send(msg)) {
+    DLOG(ERROR) << "Couldn't send SetSitePermission message";
     // A failure notification for the current request will be sent since
     // |pending_responses_| has been updated.
     NotifyErrorFromIOThread();
@@ -274,6 +469,41 @@ PepperFlashSettingsManager::Core::NotifyDeauthorizeContentLicensesCompleted(
   }
 }
 
+void PepperFlashSettingsManager::Core::NotifyGetPermissionSettingsCompleted(
+    uint32 request_id,
+    bool success,
+    PP_Flash_BrowserOperations_Permission default_permission,
+    const ppapi::FlashSiteSettings& sites) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (manager_) {
+    manager_->client_->OnGetPermissionSettingsCompleted(
+        request_id, success, default_permission, sites);
+  }
+}
+
+void PepperFlashSettingsManager::Core::NotifySetDefaultPermissionCompleted(
+    uint32 request_id,
+    bool success) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (manager_) {
+    manager_->client_->OnSetDefaultPermissionCompleted(
+        request_id, success);
+  }
+}
+
+void PepperFlashSettingsManager::Core::NotifySetSitePermissionCompleted(
+    uint32 request_id,
+    bool success) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (manager_) {
+    manager_->client_->OnSetSitePermissionCompleted(
+        request_id, success);
+  }
+}
+
 void PepperFlashSettingsManager::Core::NotifyError(
     const std::vector<std::pair<uint32, RequestType> >& notifications) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -286,8 +516,20 @@ void PepperFlashSettingsManager::Core::NotifyError(
     if (manager_) {
       switch (iter->second) {
         case DEAUTHORIZE_CONTENT_LICENSES:
-          manager_->client_->OnDeauthorizeContentLicensesCompleted(iter->first,
-                                                                   false);
+          manager_->client_->OnDeauthorizeContentLicensesCompleted(
+              iter->first, false);
+          break;
+        case GET_PERMISSION_SETTINGS:
+          manager_->client_->OnGetPermissionSettingsCompleted(
+              iter->first, false, PP_FLASH_BROWSEROPERATIONS_PERMISSION_DEFAULT,
+              ppapi::FlashSiteSettings());
+          break;
+        case SET_DEFAULT_PERMISSION:
+          manager_->client_->OnSetDefaultPermissionCompleted(
+              iter->first, false);
+          break;
+        case SET_SITE_PERMISSION:
+          manager_->client_->OnSetSitePermissionCompleted(iter->first, false);
           break;
         default:
           NOTREACHED();
@@ -304,7 +546,7 @@ void PepperFlashSettingsManager::Core::OnDeauthorizeContentLicensesResult(
     uint32 request_id,
     bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  LOG_IF(ERROR, !success) << "DeauthorizeContentLicenses returned error";
+  DLOG_IF(ERROR, !success) << "DeauthorizeContentLicenses returned error";
 
   std::map<uint32, RequestType>::iterator iter =
       pending_responses_.find(request_id);
@@ -316,6 +558,65 @@ void PepperFlashSettingsManager::Core::OnDeauthorizeContentLicensesResult(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&Core::NotifyDeauthorizeContentLicensesCompleted, this,
                    request_id, success));
+  }
+}
+
+void PepperFlashSettingsManager::Core::OnGetPermissionSettingsResult(
+    uint32 request_id,
+    bool success,
+    PP_Flash_BrowserOperations_Permission default_permission,
+    const ppapi::FlashSiteSettings& sites) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DLOG_IF(ERROR, !success) << "GetPermissionSettings returned error";
+
+  std::map<uint32, RequestType>::iterator iter =
+      pending_responses_.find(request_id);
+  if (iter != pending_responses_.end()) {
+    DCHECK_EQ(iter->second, GET_PERMISSION_SETTINGS);
+
+    pending_responses_.erase(iter);
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&Core::NotifyGetPermissionSettingsCompleted, this,
+                   request_id, success, default_permission, sites));
+  }
+}
+
+void PepperFlashSettingsManager::Core::OnSetDefaultPermissionResult(
+    uint32 request_id,
+    bool success) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DLOG_IF(ERROR, !success) << "SetDefaultPermission returned error";
+
+  std::map<uint32, RequestType>::iterator iter =
+      pending_responses_.find(request_id);
+  if (iter != pending_responses_.end()) {
+    DCHECK_EQ(iter->second, SET_DEFAULT_PERMISSION);
+
+    pending_responses_.erase(iter);
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&Core::NotifySetDefaultPermissionCompleted, this,
+                   request_id, success));
+  }
+}
+
+void PepperFlashSettingsManager::Core::OnSetSitePermissionResult(
+    uint32 request_id,
+    bool success) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DLOG_IF(ERROR, !success) << "SetSitePermission returned error";
+
+  std::map<uint32, RequestType>::iterator iter =
+      pending_responses_.find(request_id);
+  if (iter != pending_responses_.end()) {
+    DCHECK_EQ(iter->second, SET_SITE_PERMISSION);
+
+    pending_responses_.erase(iter);
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&Core::NotifySetSitePermissionCompleted, this, request_id,
+        success));
   }
 }
 
@@ -377,6 +678,40 @@ uint32 PepperFlashSettingsManager::DeauthorizeContentLicenses() {
   EnsureCoreExists();
   uint32 id = GetNextRequestId();
   core_->DeauthorizeContentLicenses(id);
+  return id;
+}
+
+uint32 PepperFlashSettingsManager::GetPermissionSettings(
+    PP_Flash_BrowserOperations_SettingType setting_type) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  EnsureCoreExists();
+  uint32 id = GetNextRequestId();
+  core_->GetPermissionSettings(id, setting_type);
+  return id;
+}
+
+uint32 PepperFlashSettingsManager::SetDefaultPermission(
+    PP_Flash_BrowserOperations_SettingType setting_type,
+    PP_Flash_BrowserOperations_Permission permission,
+    bool clear_site_specific) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  EnsureCoreExists();
+  uint32 id = GetNextRequestId();
+  core_->SetDefaultPermission(id, setting_type, permission,
+                              clear_site_specific);
+  return id;
+}
+
+uint32 PepperFlashSettingsManager::SetSitePermission(
+    PP_Flash_BrowserOperations_SettingType setting_type,
+    const ppapi::FlashSiteSettings& sites) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  EnsureCoreExists();
+  uint32 id = GetNextRequestId();
+  core_->SetSitePermission(id, setting_type, sites);
   return id;
 }
 

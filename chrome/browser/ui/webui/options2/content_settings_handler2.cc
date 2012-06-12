@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/webui/options2/content_settings_handler2.h"
 
-#include <map>
-#include <string>
 #include <vector>
 
 #include "base/bind.h"
@@ -41,6 +39,7 @@
 #include "content/public/common/content_switches.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
@@ -51,9 +50,10 @@ using content::UserMetricsAction;
 
 namespace {
 
-struct ContentSettingsTypeNameEntry {
-  ContentSettingsType type;
-  const char* name;
+enum ExContentSettingsTypeEnum {
+  EX_CONTENT_SETTINGS_TYPE_PEPPER_FLASH_CAMERAMIC =
+      CONTENT_SETTINGS_NUM_TYPES,
+  EX_CONTENT_SETTINGS_NUM_TYPES
 };
 
 typedef std::map<ContentSettingsPattern, ContentSetting> OnePatternSettings;
@@ -67,33 +67,8 @@ const char* kSource = "source";
 const char* kAppName = "appName";
 const char* kAppId = "appId";
 const char* kEmbeddingOrigin = "embeddingOrigin";
-
-const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
-  {CONTENT_SETTINGS_TYPE_COOKIES, "cookies"},
-  {CONTENT_SETTINGS_TYPE_IMAGES, "images"},
-  {CONTENT_SETTINGS_TYPE_JAVASCRIPT, "javascript"},
-  {CONTENT_SETTINGS_TYPE_PLUGINS, "plugins"},
-  {CONTENT_SETTINGS_TYPE_POPUPS, "popups"},
-  {CONTENT_SETTINGS_TYPE_GEOLOCATION, "location"},
-  {CONTENT_SETTINGS_TYPE_NOTIFICATIONS, "notifications"},
-  {CONTENT_SETTINGS_TYPE_INTENTS, "intents"},
-  {CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE, "auto-select-certificate"},
-  {CONTENT_SETTINGS_TYPE_FULLSCREEN, "fullscreen"},
-  {CONTENT_SETTINGS_TYPE_MOUSELOCK, "mouselock"},
-};
-COMPILE_ASSERT(arraysize(kContentSettingsTypeGroupNames) ==
-                   CONTENT_SETTINGS_NUM_TYPES,
-               MISSING_CONTENT_SETTINGS_TYPE);
-
-ContentSettingsType ContentSettingsTypeFromGroupName(const std::string& name) {
-  for (size_t i = 0; i < arraysize(kContentSettingsTypeGroupNames); ++i) {
-    if (name == kContentSettingsTypeGroupNames[i].name)
-      return kContentSettingsTypeGroupNames[i].type;
-  }
-
-  NOTREACHED() << name << " is not a recognized content settings type.";
-  return CONTENT_SETTINGS_TYPE_DEFAULT;
-}
+const char* kDefaultProviderID = "default";
+const char* kPreferencesSource = "preferences";
 
 std::string ContentSettingToString(ContentSetting setting) {
   switch (setting) {
@@ -244,9 +219,106 @@ void AddExceptionsGrantedByHostedApps(
   }
 }
 
+ContentSetting FlashPermissionToContentSetting(
+    PP_Flash_BrowserOperations_Permission permission) {
+  switch (permission) {
+    case PP_FLASH_BROWSEROPERATIONS_PERMISSION_DEFAULT:
+      return CONTENT_SETTING_DEFAULT;
+    case PP_FLASH_BROWSEROPERATIONS_PERMISSION_ALLOW:
+      return CONTENT_SETTING_ALLOW;
+    case PP_FLASH_BROWSEROPERATIONS_PERMISSION_BLOCK:
+      return CONTENT_SETTING_BLOCK;
+    case PP_FLASH_BROWSEROPERATIONS_PERMISSION_ASK:
+      return CONTENT_SETTING_ASK;
+    default:
+      NOTREACHED();
+      return CONTENT_SETTING_DEFAULT;
+  }
+}
+
+PP_Flash_BrowserOperations_Permission FlashPermissionFromContentSetting(
+    ContentSetting setting) {
+  switch (setting) {
+    case CONTENT_SETTING_DEFAULT:
+      return PP_FLASH_BROWSEROPERATIONS_PERMISSION_DEFAULT;
+    case CONTENT_SETTING_ALLOW:
+      return PP_FLASH_BROWSEROPERATIONS_PERMISSION_ALLOW;
+    case CONTENT_SETTING_BLOCK:
+      return PP_FLASH_BROWSEROPERATIONS_PERMISSION_BLOCK;
+    case CONTENT_SETTING_ASK:
+      return PP_FLASH_BROWSEROPERATIONS_PERMISSION_ASK;
+    default:
+      NOTREACHED();
+      return PP_FLASH_BROWSEROPERATIONS_PERMISSION_DEFAULT;
+  }
+}
+
+std::string CanonicalizeHost(const std::string& host) {
+  url_canon::CanonHostInfo info;
+  return net::CanonicalizeHost(host, &info);
+}
+
+bool IsValidHost(const std::string& host) {
+  std::string canonicalized_host = CanonicalizeHost(host);
+  return !canonicalized_host.empty();
+}
+
 }  // namespace
 
 namespace options2 {
+
+class ContentSettingsHandler::ExContentSettingsType {
+ public:
+  explicit ExContentSettingsType(int value) : value_(value) {
+    DCHECK(value_ < EX_CONTENT_SETTINGS_NUM_TYPES);
+  }
+  explicit ExContentSettingsType(ContentSettingsType type) : value_(type) {}
+  explicit ExContentSettingsType(ExContentSettingsTypeEnum type)
+      : value_(type) {}
+
+  bool IsExtraContentSettingsType() const {
+    return value_ >= CONTENT_SETTINGS_NUM_TYPES;
+  }
+
+  operator int() const { return value_; }
+
+  ContentSettingsType ToContentSettingsType() const {
+    DCHECK(value_ < CONTENT_SETTINGS_NUM_TYPES);
+    return static_cast<ContentSettingsType>(value_);
+  }
+
+ private:
+  int value_;
+};
+
+ContentSettingsHandler::CachedPepperFlashSettings::CachedPepperFlashSettings()
+    : default_permission(PP_FLASH_BROWSEROPERATIONS_PERMISSION_BLOCK),
+      initialized(false) {
+}
+
+ContentSettingsHandler::CachedPepperFlashSettings::~CachedPepperFlashSettings() {
+}
+
+struct ContentSettingsHandler::ExContentSettingsTypeNameEntry {
+  int type;
+  const char* name;
+};
+
+const ContentSettingsHandler::ExContentSettingsTypeNameEntry
+    ContentSettingsHandler::kExContentSettingsTypeGroupNames[] = {
+  {CONTENT_SETTINGS_TYPE_COOKIES, "cookies"},
+  {CONTENT_SETTINGS_TYPE_IMAGES, "images"},
+  {CONTENT_SETTINGS_TYPE_JAVASCRIPT, "javascript"},
+  {CONTENT_SETTINGS_TYPE_PLUGINS, "plugins"},
+  {CONTENT_SETTINGS_TYPE_POPUPS, "popups"},
+  {CONTENT_SETTINGS_TYPE_GEOLOCATION, "location"},
+  {CONTENT_SETTINGS_TYPE_NOTIFICATIONS, "notifications"},
+  {CONTENT_SETTINGS_TYPE_INTENTS, "intents"},
+  {CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE, "auto-select-certificate"},
+  {CONTENT_SETTINGS_TYPE_FULLSCREEN, "fullscreen"},
+  {CONTENT_SETTINGS_TYPE_MOUSELOCK, "mouselock"},
+  {EX_CONTENT_SETTINGS_TYPE_PEPPER_FLASH_CAMERAMIC, "pepper-flash-cameramic"},
+};
 
 ContentSettingsHandler::ContentSettingsHandler() {
 }
@@ -328,6 +400,12 @@ void ContentSettingsHandler::GetLocalizedValues(
     { "mouselock_allow", IDS_MOUSE_LOCK_ALLOW_RADIO },
     { "mouselock_ask", IDS_MOUSE_LOCK_ASK_RADIO },
     { "mouselock_block", IDS_MOUSE_LOCK_BLOCK_RADIO },
+    // Pepper Flash camera and microphone filter.
+    { "pepperFlashCameramicTabLabel", IDS_PEPPER_FLASH_CAMERAMIC_TAB_LABEL },
+    // The header has to be named as <content_type_name>_header.
+    { "pepper-flash-cameramic_header", IDS_PEPPER_FLASH_CAMERAMIC_HEADER },
+    { "pepperFlashCameramicAsk", IDS_PEPPER_FLASH_CAMERAMIC_ASK_RADIO },
+    { "pepperFlashCameramicBlock", IDS_PEPPER_FLASH_CAMERAMIC_BLOCK_RADIO },
 #if defined(OS_CHROMEOS)
     // Protected Content filter
     { "protectedContentTabLabel", IDS_PROTECTED_CONTENT_TAB_LABEL },
@@ -360,6 +438,8 @@ void ContentSettingsHandler::GetLocalizedValues(
                 IDS_FULLSCREEN_TAB_LABEL);
   RegisterTitle(localized_strings, "mouselock",
                 IDS_MOUSE_LOCK_TAB_LABEL);
+  RegisterTitle(localized_strings, "pepper-flash-cameramic",
+                IDS_PEPPER_FLASH_CAMERAMIC_TAB_LABEL);
 
   Profile* profile = Profile::FromWebUI(web_ui());
   localized_strings->SetBoolean(
@@ -393,11 +473,18 @@ void ContentSettingsHandler::InitializeHandler() {
   PrefService* prefs = profile->GetPrefs();
   pref_change_registrar_.Init(prefs);
   pref_change_registrar_.Add(prefs::kGeolocationContentSettings, this);
+  pref_change_registrar_.Add(prefs::kPepperFlashSettingsEnabled, this);
+
+  flash_settings_manager_.reset(new PepperFlashSettingsManager(this, profile));
 }
 
 void ContentSettingsHandler::InitializePage() {
   UpdateHandlersEnabledRadios();
   UpdateAllExceptionsViewsFromModel();
+
+  flash_cameramic_settings_ = CachedPepperFlashSettings();
+  flash_settings_manager_->GetPermissionSettings(
+      PP_FLASH_BROWSEROPERATIONS_SETTINGTYPE_CAMERAMIC);
 }
 
 void ContentSettingsHandler::Observe(
@@ -431,18 +518,27 @@ void ContentSettingsHandler::Observe(
           content::Details<const ContentSettingsDetails>(details).ptr();
 
       // TODO(estade): we pretend update_all() is always true.
-      if (settings_details->update_all_types())
+      if (settings_details->update_all_types()) {
         UpdateAllExceptionsViewsFromModel();
-      else
-        UpdateExceptionsViewFromModel(settings_details->type());
+      } else {
+        UpdateExceptionsViewFromModel(
+            ExContentSettingsType(settings_details->type()));
+      }
       break;
     }
 
     case chrome::NOTIFICATION_PREF_CHANGED: {
       const std::string& pref_name =
           *content::Details<std::string>(details).ptr();
-      if (pref_name == prefs::kGeolocationContentSettings)
+      if (pref_name == prefs::kGeolocationContentSettings) {
         UpdateGeolocationExceptionsView();
+      } else if (pref_name == prefs::kPepperFlashSettingsEnabled) {
+        if (!flash_cameramic_settings_.initialized) {
+          flash_settings_manager_->GetPermissionSettings(
+              PP_FLASH_BROWSEROPERATIONS_SETTINGTYPE_CAMERAMIC);
+        }
+      }
+
       break;
     }
 
@@ -461,15 +557,36 @@ void ContentSettingsHandler::Observe(
   }
 }
 
+void ContentSettingsHandler::OnGetPermissionSettingsCompleted(
+    uint32 /* request_id */,
+    bool success,
+    PP_Flash_BrowserOperations_Permission default_permission,
+    const ppapi::FlashSiteSettings& sites) {
+  if (success && !flash_cameramic_settings_.initialized) {
+    flash_cameramic_settings_.initialized = true;
+    flash_cameramic_settings_.default_permission = default_permission;
+    for (ppapi::FlashSiteSettings::const_iterator iter = sites.begin();
+         iter != sites.end(); ++iter) {
+      if (IsValidHost(iter->site))
+        flash_cameramic_settings_.sites[iter->site] = iter->permission;
+    }
+    UpdateExceptionsViewFromModel(
+        ExContentSettingsType(EX_CONTENT_SETTINGS_TYPE_PEPPER_FLASH_CAMERAMIC));
+
+    web_ui()->CallJavascriptFunction(
+        "ContentSettings.enablePepperFlashCameraMicSettings");
+  }
+}
+
 void ContentSettingsHandler::UpdateSettingDefaultFromModel(
-    ContentSettingsType type) {
+    const ExContentSettingsType& type) {
   DictionaryValue filter_settings;
   std::string provider_id;
-  filter_settings.SetString(ContentSettingsTypeToGroupName(type) + ".value",
-                            GetSettingDefaultFromModel(type, &provider_id));
   filter_settings.SetString(
-      ContentSettingsTypeToGroupName(type) + ".managedBy",
-      provider_id);
+      ExContentSettingsTypeToGroupName(type) + ".value",
+      GetSettingDefaultFromModel(type, &provider_id));
+  filter_settings.SetString(
+      ExContentSettingsTypeToGroupName(type) + ".managedBy", provider_id);
 
   web_ui()->CallJavascriptFunction(
       "ContentSettings.setContentFilterSettingsValue", filter_settings);
@@ -478,17 +595,21 @@ void ContentSettingsHandler::UpdateSettingDefaultFromModel(
 }
 
 std::string ContentSettingsHandler::GetSettingDefaultFromModel(
-    ContentSettingsType type, std::string* provider_id) {
+    const ExContentSettingsType& type, std::string* provider_id) {
   Profile* profile = Profile::FromWebUI(web_ui());
   ContentSetting default_setting;
   if (type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
     default_setting =
         DesktopNotificationServiceFactory::GetForProfile(profile)->
             GetDefaultContentSetting(provider_id);
+  } else if (type == EX_CONTENT_SETTINGS_TYPE_PEPPER_FLASH_CAMERAMIC) {
+    default_setting = FlashPermissionToContentSetting(
+        flash_cameramic_settings_.default_permission);
+    *provider_id = kDefaultProviderID;
   } else {
     default_setting =
         profile->GetHostContentSettingsMap()->
-            GetDefaultContentSetting(type, provider_id);
+            GetDefaultContentSetting(type.ToContentSettingsType(), provider_id);
   }
 
   return ContentSettingToString(default_setting);
@@ -505,25 +626,25 @@ void ContentSettingsHandler::UpdateHandlersEnabledRadios() {
 
 void ContentSettingsHandler::UpdateAllExceptionsViewsFromModel() {
   for (int type = CONTENT_SETTINGS_TYPE_DEFAULT + 1;
-       type < CONTENT_SETTINGS_NUM_TYPES; ++type) {
+       type < EX_CONTENT_SETTINGS_NUM_TYPES; ++type) {
     // The content settings type CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE
     // is supposed to be set by policy only. Hence there is no user facing UI
     // for this content type and we skip it here.
     if (type == CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE)
       continue;
-    UpdateExceptionsViewFromModel(static_cast<ContentSettingsType>(type));
+    UpdateExceptionsViewFromModel(ExContentSettingsType(type));
   }
 }
 
 void ContentSettingsHandler::UpdateAllOTRExceptionsViewsFromModel() {
   for (int type = CONTENT_SETTINGS_TYPE_DEFAULT + 1;
-       type < CONTENT_SETTINGS_NUM_TYPES; ++type) {
-    UpdateOTRExceptionsViewFromModel(static_cast<ContentSettingsType>(type));
+       type < EX_CONTENT_SETTINGS_NUM_TYPES; ++type) {
+    UpdateOTRExceptionsViewFromModel(ExContentSettingsType(type));
   }
 }
 
 void ContentSettingsHandler::UpdateExceptionsViewFromModel(
-    ContentSettingsType type) {
+    const ExContentSettingsType& type) {
   // Don't update intents settings at this point.
   // Turn on when enable_web_intents_tag is enabled.
   if (type == CONTENT_SETTINGS_TYPE_INTENTS)
@@ -536,22 +657,28 @@ void ContentSettingsHandler::UpdateExceptionsViewFromModel(
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
       UpdateNotificationExceptionsView();
       break;
+    case EX_CONTENT_SETTINGS_TYPE_PEPPER_FLASH_CAMERAMIC:
+      UpdateFlashCameraMicExceptionsView();
+      break;
     default:
-      UpdateExceptionsViewFromHostContentSettingsMap(type);
+      UpdateExceptionsViewFromHostContentSettingsMap(
+          type.ToContentSettingsType());
       break;
   }
 }
 
 void ContentSettingsHandler::UpdateOTRExceptionsViewFromModel(
-    ContentSettingsType type) {
+    const ExContentSettingsType& type) {
   switch (type) {
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
     case CONTENT_SETTINGS_TYPE_INTENTS:
     case CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE:
+    case EX_CONTENT_SETTINGS_TYPE_PEPPER_FLASH_CAMERAMIC:
       break;
     default:
-      UpdateExceptionsViewFromOTRHostContentSettingsMap(type);
+      UpdateExceptionsViewFromOTRHostContentSettingsMap(
+          type.ToContentSettingsType());
       break;
   }
 }
@@ -575,7 +702,7 @@ void ContentSettingsHandler::UpdateGeolocationExceptionsView() {
     // Don't add default settings.
     if (i->primary_pattern == ContentSettingsPattern::Wildcard() &&
         i->secondary_pattern == ContentSettingsPattern::Wildcard() &&
-        i->source != "preferences") {
+        i->source != kPreferencesSource) {
       continue;
     }
     all_patterns_settings[i->primary_pattern][i->secondary_pattern] =
@@ -622,7 +749,8 @@ void ContentSettingsHandler::UpdateGeolocationExceptionsView() {
 
   // This is mainly here to keep this function ideologically parallel to
   // UpdateExceptionsViewFromHostContentSettingsMap().
-  UpdateSettingDefaultFromModel(CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  UpdateSettingDefaultFromModel(
+      ExContentSettingsType(CONTENT_SETTINGS_TYPE_GEOLOCATION));
 }
 
 void ContentSettingsHandler::UpdateNotificationExceptionsView() {
@@ -644,7 +772,7 @@ void ContentSettingsHandler::UpdateNotificationExceptionsView() {
     // Don't add default settings.
     if (i->primary_pattern == ContentSettingsPattern::Wildcard() &&
         i->secondary_pattern == ContentSettingsPattern::Wildcard() &&
-        i->source != "preferences") {
+        i->source != kPreferencesSource) {
       continue;
     }
 
@@ -660,7 +788,31 @@ void ContentSettingsHandler::UpdateNotificationExceptionsView() {
 
   // This is mainly here to keep this function ideologically parallel to
   // UpdateExceptionsViewFromHostContentSettingsMap().
-  UpdateSettingDefaultFromModel(CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+  UpdateSettingDefaultFromModel(
+      ExContentSettingsType(CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
+}
+
+void ContentSettingsHandler::UpdateFlashCameraMicExceptionsView() {
+  ListValue exceptions;
+  for (CachedPepperFlashSettings::SiteMap::iterator iter =
+           flash_cameramic_settings_.sites.begin();
+       iter != flash_cameramic_settings_.sites.end(); ++iter) {
+    DictionaryValue* exception = new DictionaryValue();
+    exception->SetString(kDisplayPattern, iter->first);
+    exception->SetString(
+        kSetting,
+        ContentSettingToString(FlashPermissionToContentSetting(iter->second)));
+    exception->SetString(kSource, kPreferencesSource);
+    exceptions.Append(exception);
+  }
+
+  StringValue type_string(ExContentSettingsTypeToGroupName(
+      ExContentSettingsType(EX_CONTENT_SETTINGS_TYPE_PEPPER_FLASH_CAMERAMIC)));
+  web_ui()->CallJavascriptFunction("ContentSettings.setExceptions",
+                                   type_string, exceptions);
+
+  UpdateSettingDefaultFromModel(
+      ExContentSettingsType(EX_CONTENT_SETTINGS_TYPE_PEPPER_FLASH_CAMERAMIC));
 }
 
 void ContentSettingsHandler::UpdateExceptionsViewFromHostContentSettingsMap(
@@ -706,7 +858,7 @@ void ContentSettingsHandler::UpdateExceptionsViewFromHostContentSettingsMap(
 
   // The default may also have changed (we won't get a separate notification).
   // If it hasn't changed, this call will be harmless.
-  UpdateSettingDefaultFromModel(type);
+  UpdateSettingDefaultFromModel(ExContentSettingsType(type));
 }
 
 void ContentSettingsHandler::UpdateExceptionsViewFromOTRHostContentSettingsMap(
@@ -802,7 +954,8 @@ void ContentSettingsHandler::SetContentFilter(const ListValue* args) {
   }
 
   ContentSetting default_setting = ContentSettingFromString(setting);
-  ContentSettingsType content_type = ContentSettingsTypeFromGroupName(group);
+  ExContentSettingsType content_type =
+      ExContentSettingsTypeFromGroupName(group);
   Profile* profile = Profile::FromWebUI(web_ui());
 
 #if defined(OS_CHROMEOS)
@@ -815,10 +968,17 @@ void ContentSettingsHandler::SetContentFilter(const ListValue* args) {
   if (content_type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
     DesktopNotificationServiceFactory::GetForProfile(profile)->
         SetDefaultContentSetting(default_setting);
+  } else if (content_type == EX_CONTENT_SETTINGS_TYPE_PEPPER_FLASH_CAMERAMIC) {
+    flash_cameramic_settings_.default_permission =
+        FlashPermissionFromContentSetting(default_setting);
+    flash_settings_manager_->SetDefaultPermission(
+        PP_FLASH_BROWSEROPERATIONS_SETTINGTYPE_CAMERAMIC,
+        flash_cameramic_settings_.default_permission, false);
   } else {
     HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
-    ApplyWhitelist(content_type, default_setting);
-    map->SetDefaultContentSetting(content_type, default_setting);
+    ContentSettingsType converted_type = content_type.ToContentSettingsType();
+    ApplyWhitelist(converted_type, default_setting);
+    map->SetDefaultContentSetting(converted_type, default_setting);
   }
   switch (content_type) {
     case CONTENT_SETTINGS_TYPE_COOKIES:
@@ -857,6 +1017,10 @@ void ContentSettingsHandler::SetContentFilter(const ListValue* args) {
       content::RecordAction(
           UserMetricsAction("Options_DefaultMouseLockSettingChanged"));
       break;
+    case EX_CONTENT_SETTINGS_TYPE_PEPPER_FLASH_CAMERAMIC:
+      content::RecordAction(
+          UserMetricsAction("Options_DefaultFlashCameraMicSettingChanged"));
+      break;
     default:
       break;
   }
@@ -868,7 +1032,8 @@ void ContentSettingsHandler::RemoveException(const ListValue* args) {
   CHECK(args->GetString(arg_i++, &type_string));
 
   Profile* profile = Profile::FromWebUI(web_ui());
-  ContentSettingsType type = ContentSettingsTypeFromGroupName(type_string);
+  ExContentSettingsType type = ExContentSettingsTypeFromGroupName(
+      type_string);
   if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
     std::string origin;
     std::string embedding_origin;
@@ -905,18 +1070,37 @@ void ContentSettingsHandler::RemoveException(const ListValue* args) {
     rv = args->GetString(arg_i++, &pattern);
     DCHECK(rv);
 
-    HostContentSettingsMap* settings_map =
-        mode == "normal" ? GetContentSettingsMap() :
-                           GetOTRContentSettingsMap();
-    // The settings map could be null if the mode was OTR but the OTR profile
-    // got destroyed before we received this message.
-    if (settings_map) {
-      settings_map->SetContentSetting(
-          ContentSettingsPattern::FromString(pattern),
-          ContentSettingsPattern::Wildcard(),
-          ContentSettingsTypeFromGroupName(type_string),
-          "",
-          CONTENT_SETTING_DEFAULT);
+    if (type == EX_CONTENT_SETTINGS_TYPE_PEPPER_FLASH_CAMERAMIC) {
+      DCHECK_EQ(mode, "normal");
+
+      CachedPepperFlashSettings::SiteMap::iterator iter =
+          flash_cameramic_settings_.sites.find(pattern);
+      if (iter != flash_cameramic_settings_.sites.end()) {
+        flash_cameramic_settings_.sites.erase(iter);
+        ppapi::FlashSiteSettings site_settings(1,
+            ppapi::FlashSiteSetting(
+                pattern, PP_FLASH_BROWSEROPERATIONS_PERMISSION_DEFAULT));
+        flash_settings_manager_->SetSitePermission(
+            PP_FLASH_BROWSEROPERATIONS_SETTINGTYPE_CAMERAMIC,
+            site_settings);
+      } else {
+        NOTREACHED();
+      }
+      UpdateFlashCameraMicExceptionsView();
+    } else {
+      HostContentSettingsMap* settings_map =
+          mode == "normal" ? GetContentSettingsMap() :
+                             GetOTRContentSettingsMap();
+      // The settings map could be null if the mode was OTR but the OTR profile
+      // got destroyed before we received this message.
+      if (settings_map) {
+        settings_map->SetContentSetting(
+            ContentSettingsPattern::FromString(pattern),
+            ContentSettingsPattern::Wildcard(),
+            type.ToContentSettingsType(),
+            "",
+            CONTENT_SETTING_DEFAULT);
+      }
     }
   }
 }
@@ -932,48 +1116,71 @@ void ContentSettingsHandler::SetException(const ListValue* args) {
   std::string setting;
   CHECK(args->GetString(arg_i++, &setting));
 
-  ContentSettingsType type = ContentSettingsTypeFromGroupName(type_string);
+  ExContentSettingsType type = ExContentSettingsTypeFromGroupName(type_string);
   if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION ||
       type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
     NOTREACHED();
-    return;
+  } else if (type == EX_CONTENT_SETTINGS_TYPE_PEPPER_FLASH_CAMERAMIC) {
+    DCHECK(IsValidHost(pattern));
+
+    if (flash_cameramic_settings_.sites.find(pattern) ==
+        flash_cameramic_settings_.sites.end()) {
+      pattern = CanonicalizeHost(pattern);
+    }
+    PP_Flash_BrowserOperations_Permission permission =
+        FlashPermissionFromContentSetting(ContentSettingFromString(setting));
+    flash_cameramic_settings_.sites[pattern] = permission;
+    ppapi::FlashSiteSettings
+        site_settings(1, ppapi::FlashSiteSetting(pattern, permission));
+    flash_settings_manager_->SetSitePermission(
+        PP_FLASH_BROWSEROPERATIONS_SETTINGTYPE_CAMERAMIC,
+        site_settings);
+    UpdateFlashCameraMicExceptionsView();
+  } else {
+    HostContentSettingsMap* settings_map =
+        mode == "normal" ? GetContentSettingsMap() :
+                           GetOTRContentSettingsMap();
+
+    // The settings map could be null if the mode was OTR but the OTR profile
+    // got destroyed before we received this message.
+    if (!settings_map)
+      return;
+    settings_map->SetContentSetting(ContentSettingsPattern::FromString(pattern),
+                                    ContentSettingsPattern::Wildcard(),
+                                    type.ToContentSettingsType(),
+                                    "",
+                                    ContentSettingFromString(setting));
   }
-
-  HostContentSettingsMap* settings_map =
-      mode == "normal" ? GetContentSettingsMap() :
-                         GetOTRContentSettingsMap();
-
-  // The settings map could be null if the mode was OTR but the OTR profile
-  // got destroyed before we received this message.
-  if (!settings_map)
-    return;
-  settings_map->SetContentSetting(ContentSettingsPattern::FromString(pattern),
-                                  ContentSettingsPattern::Wildcard(),
-                                  type,
-                                  "",
-                                  ContentSettingFromString(setting));
 }
 
 void ContentSettingsHandler::CheckExceptionPatternValidity(
     const ListValue* args) {
   size_t arg_i = 0;
-  Value* type;
-  CHECK(args->Get(arg_i++, &type));
+  std::string type_string;
+  CHECK(args->GetString(arg_i++, &type_string));
   std::string mode_string;
   CHECK(args->GetString(arg_i++, &mode_string));
   std::string pattern_string;
   CHECK(args->GetString(arg_i++, &pattern_string));
 
-  ContentSettingsPattern pattern =
-      ContentSettingsPattern::FromString(pattern_string);
+  ExContentSettingsType type = ExContentSettingsTypeFromGroupName(type_string);
+  bool is_valid = false;
+  if (type == EX_CONTENT_SETTINGS_TYPE_PEPPER_FLASH_CAMERAMIC) {
+    is_valid = IsValidHost(pattern_string);
+  } else {
+    ContentSettingsPattern pattern =
+        ContentSettingsPattern::FromString(pattern_string);
+    is_valid = pattern.IsValid();
+  }
 
+  scoped_ptr<Value> type_value(Value::CreateStringValue(type_string));
   scoped_ptr<Value> mode_value(Value::CreateStringValue(mode_string));
   scoped_ptr<Value> pattern_value(Value::CreateStringValue(pattern_string));
-  scoped_ptr<Value> valid_value(Value::CreateBooleanValue(pattern.IsValid()));
+  scoped_ptr<Value> valid_value(Value::CreateBooleanValue(is_valid));
 
   web_ui()->CallJavascriptFunction(
       "ContentSettings.patternValidityCheckComplete",
-      *type,
+      *type_value.get(),
       *mode_value.get(),
       *pattern_value.get(),
       *valid_value.get());
@@ -982,13 +1189,7 @@ void ContentSettingsHandler::CheckExceptionPatternValidity(
 // static
 std::string ContentSettingsHandler::ContentSettingsTypeToGroupName(
     ContentSettingsType type) {
-  for (size_t i = 0; i < arraysize(kContentSettingsTypeGroupNames); ++i) {
-    if (type == kContentSettingsTypeGroupNames[i].type)
-      return kContentSettingsTypeGroupNames[i].name;
-  }
-
-  NOTREACHED();
-  return std::string();
+  return ExContentSettingsTypeToGroupName(ExContentSettingsType(type));
 }
 
 HostContentSettingsMap* ContentSettingsHandler::GetContentSettingsMap() {
@@ -1005,6 +1206,35 @@ HostContentSettingsMap*
   if (profile->HasOffTheRecordProfile())
     return profile->GetOffTheRecordProfile()->GetHostContentSettingsMap();
   return NULL;
+}
+
+// static
+ContentSettingsHandler::ExContentSettingsType
+    ContentSettingsHandler::ExContentSettingsTypeFromGroupName(
+        const std::string& name) {
+  COMPILE_ASSERT(arraysize(kExContentSettingsTypeGroupNames) ==
+                     EX_CONTENT_SETTINGS_NUM_TYPES,
+                 MISSING_CONTENT_SETTINGS_TYPE);
+
+  for (size_t i = 0; i < arraysize(kExContentSettingsTypeGroupNames); ++i) {
+    if (name == kExContentSettingsTypeGroupNames[i].name)
+      return ExContentSettingsType(kExContentSettingsTypeGroupNames[i].type);
+  }
+
+  NOTREACHED() << name << " is not a recognized content settings type.";
+  return ExContentSettingsType(CONTENT_SETTINGS_TYPE_DEFAULT);
+}
+
+// static
+std::string ContentSettingsHandler::ExContentSettingsTypeToGroupName(
+    const ExContentSettingsType& type) {
+  for (size_t i = 0; i < arraysize(kExContentSettingsTypeGroupNames); ++i) {
+    if (type == kExContentSettingsTypeGroupNames[i].type)
+      return kExContentSettingsTypeGroupNames[i].name;
+  }
+
+  NOTREACHED();
+  return std::string();
 }
 
 }  // namespace options2
