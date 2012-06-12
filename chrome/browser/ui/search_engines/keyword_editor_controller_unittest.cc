@@ -108,7 +108,8 @@ void KeywordEditorControllerTest::Init(bool simulate_load_failure) {
   // the profile is.
   controller_.reset();
   profile_.reset(new TestingProfile());
-  profile_->CreateTemplateURLService();
+  TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+      profile_.get(), &TemplateURLServiceFactory::BuildInstanceFor);
 
   model_ = TemplateURLServiceFactory::GetForProfile(profile_.get());
   if (simulate_load_failure)

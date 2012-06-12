@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
+#include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -118,7 +119,8 @@ void SearchProviderTest::SetUp() {
 
   // We need both the history service and template url model loaded.
   profile_.CreateHistoryService(true, false);
-  profile_.CreateTemplateURLService();
+  TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+      &profile_, &TemplateURLServiceFactory::BuildInstanceFor);
 
   TemplateURLService* turl_model =
       TemplateURLServiceFactory::GetForProfile(&profile_);
@@ -488,7 +490,8 @@ TEST_F(SearchProviderTest, DifferingText) {
 }
 
 TEST_F(SearchProviderTest, DontAutocompleteURLLikeTerms) {
-  profile_.CreateAutocompleteClassifier();
+  AutocompleteClassifierFactory::GetInstance()->SetTestingFactoryAndUse(
+      &profile_, &AutocompleteClassifierFactory::BuildInstanceFor);
   GURL url = AddSearchToHistory(default_t_url_,
                                 ASCIIToUTF16("docs.google.com"), 1);
 

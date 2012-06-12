@@ -775,12 +775,6 @@ HistoryService* ProfileImpl::GetHistoryServiceWithoutCreating() {
   return HistoryServiceFactory::GetForProfileIfExists(this).get();
 }
 
-AutocompleteClassifier* ProfileImpl::GetAutocompleteClassifier() {
-  if (!autocomplete_classifier_.get())
-    autocomplete_classifier_.reset(new AutocompleteClassifier(this));
-  return autocomplete_classifier_.get();
-}
-
 history::ShortcutsBackend* ProfileImpl::GetShortcutsBackend() {
   // This is called on one thread only - UI, so no magic is needed to protect
   // against the multiple concurrent calls.

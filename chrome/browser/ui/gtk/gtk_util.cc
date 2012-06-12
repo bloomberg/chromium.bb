@@ -18,6 +18,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
+#include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/event_disposition.h"
@@ -1003,8 +1004,8 @@ bool URLFromPrimarySelection(Profile* profile, GURL* url) {
   // Use autocomplete to clean up the text, going so far as to turn it into
   // a search query if necessary.
   AutocompleteMatch match;
-  profile->GetAutocompleteClassifier()->Classify(UTF8ToUTF16(selection_text),
-      string16(), false, false, &match, NULL);
+  AutocompleteClassifierFactory::GetForProfile(profile)->Classify(
+      UTF8ToUTF16(selection_text), string16(), false, false, &match, NULL);
   g_free(selection_text);
   if (!match.destination_url.is_valid())
     return false;

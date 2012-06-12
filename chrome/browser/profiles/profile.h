@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager_factory.h"
 #include "content/public/browser/browser_context.h"
 
-class AutocompleteClassifier;
 class BookmarkModel;
 class ChromeAppCacheService;
 class ChromeURLDataManager;
@@ -254,11 +253,6 @@ class Profile : public content::BrowserContext {
   // Similar to GetHistoryService(), but won't create the history service if it
   // doesn't already exist.
   virtual HistoryService* GetHistoryServiceWithoutCreating() = 0;
-
-  // Retrieves a pointer to the AutocompleteClassifier associated with this
-  // profile. The AutocompleteClassifier is lazily created the first time that
-  // this method is called.
-  virtual AutocompleteClassifier* GetAutocompleteClassifier() = 0;
 
   // Returns the ShortcutsBackend for this profile. This is owned by
   // the Profile and created on the first call. Callers that outlive the life of

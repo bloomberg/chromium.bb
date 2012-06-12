@@ -56,17 +56,6 @@ class OmniboxApiTest : public ExtensionApiTest {
         autocomplete_controller();
   }
 
-  void WaitForTemplateURLServiceToLoad() {
-    ui_test_utils::WindowedNotificationObserver loaded_observer(
-        chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
-        content::NotificationService::AllSources());
-    TemplateURLService* model =
-        TemplateURLServiceFactory::GetForProfile(browser()->profile());
-    model->Load();
-    if (!model->loaded())
-      loaded_observer.Wait();
-  }
-
   // TODO(phajdan.jr): Get rid of this wait-in-a-loop pattern.
   void WaitForAutocompleteDone(AutocompleteController* controller) {
     while (!controller->done()) {
@@ -83,7 +72,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, DISABLED_Basic) {
 
   // The results depend on the TemplateURLService being loaded. Make sure it is
   // loaded so that the autocomplete results are consistent.
-  WaitForTemplateURLServiceToLoad();
+  ui_test_utils::WaitForTemplateURLServiceToLoad(
+      TemplateURLServiceFactory::GetForProfile(browser()->profile()));
 
   LocationBar* location_bar = GetLocationBar(browser());
   AutocompleteController* autocomplete_controller =
@@ -197,7 +187,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, DISABLED_PopupStaysClosed) {
 
   // The results depend on the TemplateURLService being loaded. Make sure it is
   // loaded so that the autocomplete results are consistent.
-  WaitForTemplateURLServiceToLoad();
+  ui_test_utils::WaitForTemplateURLServiceToLoad(
+      TemplateURLServiceFactory::GetForProfile(browser()->profile()));
 
   LocationBar* location_bar = GetLocationBar(browser());
   OmniboxView* omnibox_view = location_bar->GetLocationEntry();
@@ -251,7 +242,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, DISABLED_IncognitoSplitMode) {
 
   // The results depend on the TemplateURLService being loaded. Make sure it is
   // loaded so that the autocomplete results are consistent.
-  WaitForTemplateURLServiceToLoad();
+  ui_test_utils::WaitForTemplateURLServiceToLoad(
+      TemplateURLServiceFactory::GetForProfile(browser()->profile()));
 
   LocationBar* location_bar = GetLocationBar(incognito_browser);
   AutocompleteController* autocomplete_controller =

@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
+#include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_view.h"
@@ -379,8 +380,8 @@ void AutocompleteEditModel::AdjustTextForCopy(int sel_min,
   // the user is probably holding down control to cause the copy, which will
   // screw up our calculation of the desired_tld.
   AutocompleteMatch match;
-  profile_->GetAutocompleteClassifier()->Classify(*text, string16(),
-        KeywordIsSelected(), true, &match, NULL);
+  AutocompleteClassifierFactory::GetForProfile(profile_)->Classify(*text,
+        string16(), KeywordIsSelected(), true, &match, NULL);
   if (match.transition != content::PAGE_TRANSITION_TYPED)
     return;
   *url = match.destination_url;
@@ -459,8 +460,9 @@ bool AutocompleteEditModel::CanPasteAndGo(const string16& text) const {
   if (!view_->GetCommandUpdater()->IsCommandEnabled(IDC_OPEN_CURRENT_URL))
     return false;
 
-  profile_->GetAutocompleteClassifier()->Classify(text, string16(),
-      false, false, &paste_and_go_match_, &paste_and_go_alternate_nav_url_);
+  AutocompleteClassifierFactory::GetForProfile(profile_)->Classify(text,
+      string16(), false, false, &paste_and_go_match_,
+      &paste_and_go_alternate_nav_url_);
   return paste_and_go_match_.destination_url.is_valid();
 }
 
@@ -1013,7 +1015,7 @@ void AutocompleteEditModel::GetInfoForCurrentText(
   if (popup_->IsOpen() || query_in_progress()) {
     InfoForCurrentSelection(match, alternate_nav_url);
   } else {
-    profile_->GetAutocompleteClassifier()->Classify(
+    AutocompleteClassifierFactory::GetForProfile(profile_)->Classify(
         UserTextFromDisplayText(view_->GetText()), GetDesiredTLD(),
         KeywordIsSelected(), true, match, alternate_nav_url);
   }

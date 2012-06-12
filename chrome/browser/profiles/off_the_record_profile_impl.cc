@@ -238,10 +238,6 @@ FaviconService* OffTheRecordProfileImpl::GetFaviconService(
   return NULL;
 }
 
-AutocompleteClassifier* OffTheRecordProfileImpl::GetAutocompleteClassifier() {
-  return profile_->GetAutocompleteClassifier();
-}
-
 history::ShortcutsBackend* OffTheRecordProfileImpl::GetShortcutsBackend() {
   return NULL;
 }

@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -162,8 +164,10 @@ TEST_F(AutocompleteEditTest, AdjustTextForCopy) {
   // NOTE: The TemplateURLService must be created before the
   // AutocompleteClassifier so that the SearchProvider gets a non-NULL
   // TemplateURLService at construction time.
-  profile.CreateTemplateURLService();
-  profile.CreateAutocompleteClassifier();
+  TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+      &profile, &TemplateURLServiceFactory::BuildInstanceFor);
+  AutocompleteClassifierFactory::GetInstance()->SetTestingFactoryAndUse(
+      &profile, &AutocompleteClassifierFactory::BuildInstanceFor);
   AutocompleteEditModel model(&view, &controller, &profile);
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input); ++i) {

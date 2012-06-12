@@ -179,7 +179,8 @@ void AutocompleteProviderTest::ResetControllerWithTestProviders(
 
 void AutocompleteProviderTest::
     ResetControllerWithTestProvidersWithKeywordAndSearchProviders() {
-  profile_.CreateTemplateURLService();
+  TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+      &profile_, &TemplateURLServiceFactory::BuildInstanceFor);
 
   // Reset the default TemplateURL.
   TemplateURLData data;
@@ -218,7 +219,8 @@ void AutocompleteProviderTest::
 
 void AutocompleteProviderTest::
     ResetControllerWithKeywordProvider() {
-  profile_.CreateTemplateURLService();
+  TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+      &profile_, &TemplateURLServiceFactory::BuildInstanceFor);
 
   TemplateURLService* turl_model =
       TemplateURLServiceFactory::GetForProfile(&profile_);

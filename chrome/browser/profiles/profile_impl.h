@@ -88,7 +88,6 @@ class ProfileImpl : public Profile,
   virtual GAIAInfoUpdateService* GetGAIAInfoUpdateService() OVERRIDE;
   virtual HistoryService* GetHistoryService(ServiceAccessType sat) OVERRIDE;
   virtual HistoryService* GetHistoryServiceWithoutCreating() OVERRIDE;
-  virtual AutocompleteClassifier* GetAutocompleteClassifier() OVERRIDE;
   virtual history::ShortcutsBackend* GetShortcutsBackend() OVERRIDE;
   virtual policy::PolicyService* GetPolicyService() OVERRIDE;
   virtual PrefService* GetPrefs() OVERRIDE;
@@ -223,7 +222,6 @@ class ProfileImpl : public Profile,
       geolocation_permission_context_;
   scoped_ptr<GAIAInfoUpdateService> gaia_info_update_service_;
   scoped_ptr<FaviconService> favicon_service_;
-  scoped_ptr<AutocompleteClassifier> autocomplete_classifier_;
   scoped_refptr<history::ShortcutsBackend> shortcuts_backend_;
   bool favicon_service_created_;
 

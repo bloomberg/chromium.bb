@@ -38,9 +38,8 @@
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/protector/protector_service_factory.h"
 #include "chrome/browser/search_engines/template_url_fetcher_factory.h"
-#include "chrome/browser/search_engines/template_url_service.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/speech/chrome_speech_recognition_preferences.h"
+#include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -357,10 +356,6 @@ void TestingProfile::CreateBookmarkModel(bool delete_file) {
   }
 }
 
-void TestingProfile::CreateAutocompleteClassifier() {
-  autocomplete_classifier_.reset(new AutocompleteClassifier(this));
-}
-
 void TestingProfile::CreateProtocolHandlerRegistry() {
   protocol_handler_registry_ = new ProtocolHandlerRegistry(this,
       new ProtocolHandlerRegistry::Delegate());
@@ -398,28 +393,6 @@ void TestingProfile::BlockUntilTopSitesLoaded() {
   if (!GetHistoryService(Profile::EXPLICIT_ACCESS))
     GetTopSites()->HistoryLoaded();
   top_sites_loaded_observer.Wait();
-}
-
-static ProfileKeyedService* BuildTemplateURLService(Profile* profile) {
-  return new TemplateURLService(profile);
-}
-
-void TestingProfile::CreateTemplateURLService() {
-  TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-      this, BuildTemplateURLService);
-}
-
-void TestingProfile::BlockUntilTemplateURLServiceLoaded() {
-  TemplateURLService* turl_model =
-      TemplateURLServiceFactory::GetForProfile(this);
-  if (turl_model->loaded())
-    return;
-
-  ui_test_utils::WindowedNotificationObserver turl_service_load_observer(
-      chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
-      content::NotificationService::AllSources());
-  turl_model->Load();
-  turl_service_load_observer.Wait();
 }
 
 FilePath TestingProfile::GetPath() {
@@ -514,10 +487,6 @@ net::CookieMonster* TestingProfile::GetCookieMonster() {
     return NULL;
   return GetRequestContext()->GetURLRequestContext()->cookie_store()->
       GetCookieMonster();
-}
-
-AutocompleteClassifier* TestingProfile::GetAutocompleteClassifier() {
-  return autocomplete_classifier_.get();
 }
 
 policy::PolicyService* TestingProfile::GetPolicyService() {

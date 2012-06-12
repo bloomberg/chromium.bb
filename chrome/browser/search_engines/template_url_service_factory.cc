@@ -11,13 +11,21 @@
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/pref_names.h"
 
+// static
 TemplateURLService* TemplateURLServiceFactory::GetForProfile(Profile* profile) {
   return static_cast<TemplateURLService*>(
       GetInstance()->GetServiceForProfile(profile, true));
 }
 
+// static
 TemplateURLServiceFactory* TemplateURLServiceFactory::GetInstance() {
   return Singleton<TemplateURLServiceFactory>::get();
+}
+
+// static
+ProfileKeyedService* TemplateURLServiceFactory::BuildInstanceFor(
+    Profile* profile) {
+  return new TemplateURLService(profile);
 }
 
 TemplateURLServiceFactory::TemplateURLServiceFactory()
@@ -33,7 +41,7 @@ TemplateURLServiceFactory::~TemplateURLServiceFactory() {}
 
 ProfileKeyedService* TemplateURLServiceFactory::BuildServiceInstanceFor(
     Profile* profile) const {
-  return new TemplateURLService(profile);
+  return BuildInstanceFor(profile);
 }
 
 void TemplateURLServiceFactory::RegisterUserPrefs(PrefService* prefs) {

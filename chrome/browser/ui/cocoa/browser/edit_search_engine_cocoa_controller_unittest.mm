@@ -7,6 +7,7 @@
 #include "base/memory/scoped_nsobject.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "grit/generated_resources.h"
@@ -53,16 +54,17 @@ namespace {
 
 class EditSearchEngineControllerTest : public CocoaProfileTest {
  public:
-   virtual void SetUp() {
-     CocoaProfileTest::SetUp();
-     ASSERT_TRUE(profile());
+  virtual void SetUp() {
+    CocoaProfileTest::SetUp();
+    ASSERT_TRUE(profile());
 
-     profile()->CreateTemplateURLService();
-     controller_ =
-        [[FakeEditSearchEngineController alloc] initWithProfile:profile()
-                                                       delegate:nil
-                                                    templateURL:nil];
-   }
+    TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+        profile(), &TemplateURLServiceFactory::BuildInstanceFor);
+    controller_ =
+       [[FakeEditSearchEngineController alloc] initWithProfile:profile()
+                                                      delegate:nil
+                                                   templateURL:nil];
+  }
 
   virtual void TearDown() {
     // Force the window to load so we hit |-awakeFromNib| to register as the

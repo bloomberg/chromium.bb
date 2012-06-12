@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,13 +11,14 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
+#include "chrome/browser/profiles/profile_keyed_service.h"
 
 class AutocompleteController;
 struct AutocompleteMatch;
 class GURL;
 class Profile;
 
-class AutocompleteClassifier {
+class AutocompleteClassifier : public ProfileKeyedService {
  public:
   explicit AutocompleteClassifier(Profile* profile);
   virtual ~AutocompleteClassifier();
@@ -44,6 +45,9 @@ class AutocompleteClassifier {
                 GURL* alternate_nav_url);
 
  private:
+  // ProfileKeyedService:
+  virtual void Shutdown() OVERRIDE;
+
   scoped_ptr<AutocompleteController> controller_;
 
   // Are we currently in Classify? Used to verify Classify isn't invoked

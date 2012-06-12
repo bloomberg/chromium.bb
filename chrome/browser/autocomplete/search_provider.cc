@@ -18,6 +18,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
+#include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/autocomplete_field_trial.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
@@ -846,7 +847,8 @@ SearchProvider::SuggestResults SearchProvider::ScoreHistoryResults(
     bool input_multiple_words,
     const string16& input_text,
     bool is_keyword) {
-  AutocompleteClassifier* classifier = profile_->GetAutocompleteClassifier();
+  AutocompleteClassifier* classifier =
+      AutocompleteClassifierFactory::GetForProfile(profile_);
   SuggestResults scored_results;
   for (HistoryResults::const_iterator i(results.begin()); i != results.end();
        ++i) {

@@ -15,6 +15,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
+#include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -777,7 +778,7 @@ class NotificationBridge : public content::NotificationObserver {
 
   // If the input is plain text, classify the input and make the URL.
   AutocompleteMatch match;
-  browser_->profile()->GetAutocompleteClassifier()->Classify(
+  AutocompleteClassifierFactory::GetForProfile(browser_->profile())->Classify(
       base::SysNSStringToUTF16(text), string16(), false, false, &match, NULL);
   GURL url(match.destination_url);
 

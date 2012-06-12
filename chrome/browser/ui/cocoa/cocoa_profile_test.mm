@@ -1,10 +1,12 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 
+#include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "content/public/test/test_browser_thread.h"
 
@@ -62,8 +64,10 @@ void CocoaProfileTest::SetUp() {
   // platforms use a stub |BrowserWindow| and thus don't need to do
   // this.
   // http://crbug.com/39725
-  profile_->CreateAutocompleteClassifier();
-  profile_->CreateTemplateURLService();
+  TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+      profile_, &TemplateURLServiceFactory::BuildInstanceFor);
+  AutocompleteClassifierFactory::GetInstance()->SetTestingFactoryAndUse(
+      profile_, &AutocompleteClassifierFactory::BuildInstanceFor);
 
   browser_.reset(new Browser(Browser::TYPE_TABBED, profile_));
   ASSERT_TRUE(browser_.get());

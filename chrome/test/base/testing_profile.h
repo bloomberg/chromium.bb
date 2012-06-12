@@ -31,7 +31,6 @@ namespace quota {
 class SpecialStoragePolicy;
 }
 
-class AutocompleteClassifier;
 class CommandLine;
 class ExtensionPrefs;
 class ExtensionSpecialStoragePolicy;
@@ -95,10 +94,6 @@ class TestingProfile : public Profile {
   // BlockUntilBookmarkModelLoaded.
   void CreateBookmarkModel(bool delete_file);
 
-  // Creates an AutocompleteClassifier. If not invoked the
-  // AutocompleteClassifier is NULL.
-  void CreateAutocompleteClassifier();
-
   // Creates a ProtocolHandlerRegistry. If not invoked the protocol handler
   // registry is NULL.
   void CreateProtocolHandlerRegistry();
@@ -112,13 +107,6 @@ class TestingProfile : public Profile {
 
   // Blocks until TopSites finishes loading.
   void BlockUntilTopSitesLoaded();
-
-  // Creates a TemplateURLService. If not invoked, the TemplateURLService is
-  // NULL.
-  void CreateTemplateURLService();
-
-  // Blocks until TempalteURLService finishes loading.
-  void BlockUntilTemplateURLServiceLoaded();
 
   TestingPrefService* GetTestingPrefService();
 
@@ -172,7 +160,6 @@ class TestingProfile : public Profile {
   // this by calling CreateRequestContext(). See the note at GetRequestContext
   // for more information.
   net::CookieMonster* GetCookieMonster();
-  virtual AutocompleteClassifier* GetAutocompleteClassifier() OVERRIDE;
   virtual history::ShortcutsBackend* GetShortcutsBackend() OVERRIDE;
   virtual policy::PolicyService* GetPolicyService() OVERRIDE;
   // Sets the profile's PrefService. If a pref service hasn't been explicitly
@@ -271,10 +258,6 @@ class TestingProfile : public Profile {
   // The ProtocolHandlerRegistry. Only created if CreateProtocolHandlerRegistry
   // is invoked.
   scoped_refptr<ProtocolHandlerRegistry> protocol_handler_registry_;
-
-  // The AutocompleteClassifier.  Only created if CreateAutocompleteClassifier
-  // is invoked.
-  scoped_ptr<AutocompleteClassifier> autocomplete_classifier_;
 
   // The policy service. Lazily created as a stub.
   scoped_ptr<policy::PolicyService> policy_service_;

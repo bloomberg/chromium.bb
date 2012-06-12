@@ -110,6 +110,8 @@
         'browser/autocomplete/autocomplete.h',
         'browser/autocomplete/autocomplete_classifier.cc',
         'browser/autocomplete/autocomplete_classifier.h',
+        'browser/autocomplete/autocomplete_classifier_factory.cc',
+        'browser/autocomplete/autocomplete_classifier_factory.h',
         'browser/autocomplete/autocomplete_controller_delegate.h',
         'browser/autocomplete/autocomplete_edit.cc',
         'browser/autocomplete/autocomplete_edit.h',

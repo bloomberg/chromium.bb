@@ -15,6 +15,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
+#include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -1770,7 +1771,7 @@ bool TabStripGtk::CompleteDrop(const guchar* data, bool is_plain_text) {
   GURL url;
   if (is_plain_text) {
     AutocompleteMatch match;
-    model_->profile()->GetAutocompleteClassifier()->Classify(
+    AutocompleteClassifierFactory::GetForProfile(model_->profile())->Classify(
         UTF8ToUTF16(reinterpret_cast<const char*>(data)), string16(),
         false, false, &match, NULL);
     url = match.destination_url;
