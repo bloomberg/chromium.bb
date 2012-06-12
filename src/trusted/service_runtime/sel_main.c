@@ -39,6 +39,7 @@
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
+#include "native_client/src/trusted/service_runtime/nacl_error_log_hook.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
@@ -104,7 +105,6 @@ int ImportModeMap(char opt) {
   /* NOTREACHED */
 }
 
-
 static void PrintUsage() {
   /* NOTE: this is broken up into multiple statements to work around
            the constant string size limit */
@@ -112,7 +112,8 @@ static void PrintUsage() {
           "Usage: sel_ldr [-h d:D] [-r d:D] [-w d:D] [-i d:D]\n"
           "               [-f nacl_file]\n"
           "               [-l log_file]\n"
-          "               [-X d] [-acFgImMRsQv] -- [nacl_file] [args]\n"
+          "               [-X d] [-acFglQRsSQv]\n"
+          "               -- [nacl_file] [args]\n"
           "\n");
   fprintf(stderr,
           " -h\n"
@@ -138,11 +139,11 @@ static void PrintUsage() {
           " -c ignore validator! dangerous! Repeating this option twice skips\n"
           "    validation completely.\n"
           " -F fuzz testing; quit after loading NaCl app\n"
-          " -S enable signal handling.  Not supported on Windows.\n"
           " -g enable gdb debug stub.  Not secure on x86-64 Windows.\n"
           " -l <file>  write log output to the given file\n"
-          " -s safely stub out non-validating instructions\n"
           " -Q disable platform qualification (dangerous!)\n"
+          " -s safely stub out non-validating instructions\n"
+          " -S enable signal handling.  Not supported on Windows.\n"
           " -E <name=value>|<name> set an environment variable\n"
           " -Z use fixed feature x86 CPU mode\n"
           );  /* easier to add new flags/lines */
@@ -199,9 +200,7 @@ int main(int  argc,
   struct NaClPerfCounter        time_all_main;
   const char                    **envp;
   struct NaClEnvCleanser        env_cleanser;
-
-
-  const char* sandbox_fd_string;
+  const char *sandbox_fd_string;
 
 #if NACL_OSX
   /* Mac dynamic libraries cannot access the environ variable directly. */
@@ -255,28 +254,46 @@ int main(int  argc,
 #if NACL_LINUX
                        "+D:"
 #endif
-                       "aB:ceE:f:Fgh:i:Il:Qr:RsSvw:X:Z")) != -1) {
+                       "aB:ceE:f:Fgh:i:l:Qr:RsSvw:X:Z")) != -1) {
     switch (opt) {
-      case 'e':
-        enable_exception_handling = 1;
+      case 'a':
+        fprintf(stderr, "DEBUG MODE ENABLED (bypass acl)\n");
+        debug_mode_bypass_acl_checks = 1;
+        break;
+      case 'B':
+        blob_library_file = optarg;
+        break;
+      case 'c':
+        ++debug_mode_ignore_validator;
         break;
 #if NACL_LINUX
       case 'D':
         handle_r_debug(optarg, argv[0]);
         break;
 #endif
-      case 'c':
-        ++debug_mode_ignore_validator;
+      case 'e':
+        enable_exception_handling = 1;
         break;
-      case 'a':
-        fprintf(stderr, "DEBUG MODE ENABLED (bypass acl)\n");
-        debug_mode_bypass_acl_checks = 1;
+      case 'E':
+        /*
+         * For simplicity, we treat the environment variables as a
+         * list of strings rather than a key/value mapping.  We do not
+         * try to prevent duplicate keys or require the strings to be
+         * of the form "KEY=VALUE".  This is in line with how execve()
+         * works in Unix.
+         *
+         * We expect that most callers passing "-E" will either pass
+         * in a fixed list or will construct the list using a
+         * high-level language, in which case de-duplicating keys
+         * outside of sel_ldr is easier.  However, we could do
+         * de-duplication here if it proves to be worthwhile.
+         */
+        if (!DynArraySet(&env_vars, env_vars.num_entries, optarg)) {
+          NaClLog(LOG_FATAL, "Adding item to env_vars failed\n");
+        }
         break;
       case 'f':
         nacl_file = optarg;
-        break;
-      case 'B':
-        blob_library_file = optarg;
         break;
       case 'F':
         fuzzing_quit_after_load = 1;
@@ -285,10 +302,6 @@ int main(int  argc,
       case 'g':
         handle_signals = 1;
         enable_debug_stub = 1;
-        break;
-
-      case 'S':
-        handle_signals = 1;
         break;
 
       case 'h':
@@ -325,10 +338,21 @@ int main(int  argc,
       case 'l':
         log_file = optarg;
         break;
+      case 'Q':
+        fprintf(stderr, "PLATFORM QUALIFICATION DISABLED BY -Q - "
+                "Native Client's sandbox will be unreliable!\n");
+        skip_qualification = 1;
+        break;
       case 'R':
         rpc_supplies_nexe = 1;
         break;
       /* case 'r':  with 'h' and 'w' above */
+      case 's':
+        stub_out_mode = 1;
+        break;
+      case 'S':
+        handle_signals = 1;
+        break;
       case 'v':
         ++verbosity;
         NaClLogIncrVerbosity();
@@ -336,32 +360,6 @@ int main(int  argc,
       /* case 'w':  with 'h' and 'r' above */
       case 'X':
         export_addr_to = strtol(optarg, (char **) 0, 0);
-        break;
-      case 'Q':
-        fprintf(stderr, "PLATFORM QUALIFICATION DISABLED BY -Q - "
-                "Native Client's sandbox will be unreliable!\n");
-        skip_qualification = 1;
-        break;
-      case 's':
-        stub_out_mode = 1;
-        break;
-      case 'E':
-        /*
-         * For simplicity, we treat the environment variables as a
-         * list of strings rather than a key/value mapping.  We do not
-         * try to prevent duplicate keys or require the strings to be
-         * of the form "KEY=VALUE".  This is in line with how execve()
-         * works in Unix.
-         *
-         * We expect that most callers passing "-E" will either pass
-         * in a fixed list or will construct the list using a
-         * high-level language, in which case de-duplicating keys
-         * outside of sel_ldr is easier.  However, we could do
-         * de-duplication here if it proves to be worthwhile.
-         */
-        if (!DynArraySet(&env_vars, env_vars.num_entries, optarg)) {
-          NaClLog(LOG_FATAL, "Adding item to env_vars failed\n");
-        }
         break;
       case 'Z':
         fixed_feature_cpu_mode = 1;

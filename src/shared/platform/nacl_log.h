@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -401,6 +401,16 @@ void NaClLog_mu(int         detail_level,
 
 void NaClLogTagNext_mu(void);
 
+/*
+ * The function at |fn| is invoked when NaClLog's family of logging
+ * functions are invoked with LOG_FATAL.  This defaults to NaClAbort
+ * (see nacl_exit.h), but may be overridden to do other things prior
+ * to aborting.  NB: it is not a good idea to depend on too much
+ * within |fn|, since the application state is likely
+ * inconsistent/unstable.  It is probably a good idea to only use
+ * low-level routines or system calls directly.
+ */
+void NaClLogSetAbortBehavior(void (*fn)(void));
 
 EXTERN_C_END
 

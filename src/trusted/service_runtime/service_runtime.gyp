@@ -42,6 +42,7 @@
           'nacl_desc_effector_ldr.c',
           'nacl_desc_postmessage.c',
           'nacl_error_gio.c',
+          'nacl_error_log_hook.c',
           'nacl_globals.c',
           'nacl_kern_services.c',
           'nacl_memory_object.c',

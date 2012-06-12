@@ -667,3 +667,9 @@ void NaClLog2_Function(char const *module_name,
   NaClLogDoLogAndUnsetModuleV(detail_level, fmt, ap);
   va_end(ap);
 }
+
+void NaClLogSetAbortBehavior(void (*fn)(void)) {
+  NaClXMutexLock(&log_mu);
+  gNaClLogAbortBehavior = fn;
+  NaClXMutexUnlock(&log_mu);
+}
