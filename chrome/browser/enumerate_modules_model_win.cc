@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -143,7 +143,10 @@ const ModuleEnumerator::BlacklistEntry ModuleEnumerator::kModuleBlacklist[] = {
   // cwalsp.dll, "%systemroot%\\system32\\".
   { "e579a039", "23d01d5b", "", "", "", kUninstallLink },
 
-  // datamngr.dll, "%programfiles%\\windows searchqu toolbar\\".
+  // datamngr.dll (1), "%programfiles%\\searchqu toolbar\\datamngr\\".
+  { "7add320b", "470a3da3", "", "", "", kUninstallLink },
+
+  // datamngr.dll (2), "%programfiles%\\windows searchqu toolbar\\".
   { "7add320b", "7a3c8be3", "", "", "", kUninstallLink },
 
   // dsoqq0.dll, "%temp%\\".
