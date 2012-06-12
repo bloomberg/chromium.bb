@@ -11,7 +11,7 @@
 #include "remoting/jingle_glue/xmpp_proxy.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace remoting {
@@ -20,10 +20,15 @@ class PepperXmppProxy : public XmppProxy {
  public:
   typedef base::Callback<void(const std::string&)> SendIqCallback;
 
+  // |plugin_task_runner| is the thread on which |send_iq_callback| is
+  // called. Normally the callback will call JavaScript, so this has
+  // to be the task runner that corresponds to the plugin
+  // thread. |callback_task_runner| is used to call the callback
+  // registered with AttachCallback().
   PepperXmppProxy(
       const SendIqCallback& send_iq_callback,
-      base::MessageLoopProxy* plugin_message_loop,
-      base::MessageLoopProxy* callback_message_loop);
+      base::SingleThreadTaskRunner* plugin_task_runner,
+      base::SingleThreadTaskRunner* callback_task_runner);
 
   // Registered the callback class with this object.
   //
@@ -46,8 +51,8 @@ class PepperXmppProxy : public XmppProxy {
 
   SendIqCallback send_iq_callback_;
 
-  scoped_refptr<base::MessageLoopProxy> plugin_message_loop_;
-  scoped_refptr<base::MessageLoopProxy> callback_message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> plugin_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> callback_task_runner_;
 
   // Must only be access on callback_message_loop_.
   base::WeakPtr<ResponseCallback> callback_;

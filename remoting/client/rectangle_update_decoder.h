@@ -15,7 +15,7 @@
 #include "remoting/client/frame_producer.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace pp {
@@ -33,14 +33,15 @@ class SessionConfig;
 // TODO(ajwong): Re-examine this API, especially with regards to how error
 // conditions on each step are reported.  Should they be CHECKs? Logs? Other?
 // TODO(sergeyu): Rename this class.
-class RectangleUpdateDecoder :
-    public base::RefCountedThreadSafe<RectangleUpdateDecoder>,
-    public FrameProducer {
+class RectangleUpdateDecoder
+    : public base::RefCountedThreadSafe<RectangleUpdateDecoder>,
+      public FrameProducer {
  public:
-  // Creates an update decoder on |message_loop_|, outputting to |consumer|.
+  // Creates an update decoder on |task_runner_|, outputting to |consumer|.
   // TODO(wez): Replace the ref-counted proxy with an owned FrameConsumer.
-  RectangleUpdateDecoder(scoped_refptr<base::MessageLoopProxy> message_loop,
-                         scoped_refptr<FrameConsumerProxy> consumer);
+  RectangleUpdateDecoder(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      scoped_refptr<FrameConsumerProxy> consumer);
 
   // Initializes decoder with the information from the protocol config.
   void Initialize(const protocol::SessionConfig& config);
@@ -67,7 +68,7 @@ class RectangleUpdateDecoder :
   void SchedulePaint();
   void DoPaint();
 
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<FrameConsumerProxy> consumer_;
   scoped_ptr<Decoder> decoder_;
 

@@ -22,7 +22,9 @@
 #include "remoting/protocol/video_stub.h"
 #include "remoting/jingle_glue/xmpp_proxy.h"
 
-class MessageLoop;
+namespace base {
+class SingleThreadTaskRunner;
+}  // namespace base
 
 namespace remoting {
 
@@ -30,7 +32,6 @@ namespace protocol {
 class TransportFactory;
 }  // namespace protocol
 
-class ClientContext;
 class RectangleUpdateDecoder;
 
 // TODO(sergeyu): Move VideoStub implementation to RectangleUpdateDecoder.
@@ -40,17 +41,16 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
  public:
   // Objects passed in are not owned by this class.
   ChromotingClient(const ClientConfig& config,
-                   ClientContext* context,
+                   scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                    protocol::ConnectionToHost* connection,
                    ChromotingView* view,
-                   RectangleUpdateDecoder* rectangle_decoder,
-                   const base::Closure& client_done);
+                   RectangleUpdateDecoder* rectangle_decoder);
   virtual ~ChromotingClient();
 
+  // Start/stop the client. Must be called on the main thread.
   void Start(scoped_refptr<XmppProxy> xmpp_proxy,
              scoped_ptr<protocol::TransportFactory> transport_factory);
   void Stop(const base::Closure& shutdown_task);
-  void ClientDone();
 
   // Return the stats recorded by this client.
   ChromotingStats* GetStats();
@@ -82,8 +82,6 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
     base::Closure done;
   };
 
-  base::MessageLoopProxy* message_loop();
-
   // Initializes connection.
   void Initialize();
 
@@ -100,7 +98,7 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
 
   // The following are not owned by this class.
   ClientConfig config_;
-  ClientContext* context_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   protocol::ConnectionToHost* connection_;
   ChromotingView* view_;
   RectangleUpdateDecoder* rectangle_decoder_;

@@ -25,9 +25,9 @@ using remoting::protocol::SessionConfig;
 namespace remoting {
 
 RectangleUpdateDecoder::RectangleUpdateDecoder(
-    scoped_refptr<base::MessageLoopProxy> message_loop,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     scoped_refptr<FrameConsumerProxy> consumer)
-    : message_loop_(message_loop),
+    : task_runner_(task_runner),
       consumer_(consumer),
       source_size_(SkISize::Make(0, 0)),
       view_size_(SkISize::Make(0, 0)),
@@ -54,8 +54,8 @@ void RectangleUpdateDecoder::Initialize(const SessionConfig& config) {
 
 void RectangleUpdateDecoder::DecodePacket(scoped_ptr<VideoPacket> packet,
                                           const base::Closure& done) {
-  if (!message_loop_->BelongsToCurrentThread()) {
-    message_loop_->PostTask(
+  if (!task_runner_->BelongsToCurrentThread()) {
+    task_runner_->PostTask(
         FROM_HERE, base::Bind(&RectangleUpdateDecoder::DecodePacket,
                               this, base::Passed(&packet), done));
     return;
@@ -99,7 +99,7 @@ void RectangleUpdateDecoder::SchedulePaint() {
   if (paint_scheduled_)
     return;
   paint_scheduled_ = true;
-  message_loop_->PostTask(
+  task_runner_->PostTask(
       FROM_HERE, base::Bind(&RectangleUpdateDecoder::DoPaint, this));
 }
 
@@ -131,8 +131,8 @@ void RectangleUpdateDecoder::DoPaint() {
 }
 
 void RectangleUpdateDecoder::RequestReturnBuffers(const base::Closure& done) {
-  if (!message_loop_->BelongsToCurrentThread()) {
-    message_loop_->PostTask(
+  if (!task_runner_->BelongsToCurrentThread()) {
+    task_runner_->PostTask(
         FROM_HERE, base::Bind(&RectangleUpdateDecoder::RequestReturnBuffers,
         this, done));
     return;
@@ -148,8 +148,8 @@ void RectangleUpdateDecoder::RequestReturnBuffers(const base::Closure& done) {
 }
 
 void RectangleUpdateDecoder::DrawBuffer(pp::ImageData* buffer) {
-  if (!message_loop_->BelongsToCurrentThread()) {
-    message_loop_->PostTask(
+  if (!task_runner_->BelongsToCurrentThread()) {
+    task_runner_->PostTask(
         FROM_HERE, base::Bind(&RectangleUpdateDecoder::DrawBuffer,
                               this, buffer));
     return;
@@ -163,8 +163,8 @@ void RectangleUpdateDecoder::DrawBuffer(pp::ImageData* buffer) {
 }
 
 void RectangleUpdateDecoder::InvalidateRegion(const SkRegion& region) {
-  if (!message_loop_->BelongsToCurrentThread()) {
-    message_loop_->PostTask(
+  if (!task_runner_->BelongsToCurrentThread()) {
+    task_runner_->PostTask(
         FROM_HERE, base::Bind(&RectangleUpdateDecoder::InvalidateRegion,
                               this, region));
     return;
@@ -178,8 +178,8 @@ void RectangleUpdateDecoder::InvalidateRegion(const SkRegion& region) {
 
 void RectangleUpdateDecoder::SetOutputSizeAndClip(const SkISize& view_size,
                                                   const SkIRect& clip_area) {
-  if (!message_loop_->BelongsToCurrentThread()) {
-    message_loop_->PostTask(
+  if (!task_runner_->BelongsToCurrentThread()) {
+    task_runner_->PostTask(
         FROM_HERE, base::Bind(&RectangleUpdateDecoder::SetOutputSizeAndClip,
                               this, view_size, clip_area));
     return;

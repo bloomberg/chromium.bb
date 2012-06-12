@@ -196,7 +196,7 @@ bool ChromotingInstance::Init(uint32_t argc,
   scoped_refptr<FrameConsumerProxy> consumer_proxy =
       new FrameConsumerProxy(plugin_message_loop_);
   rectangle_decoder_ = new RectangleUpdateDecoder(
-      context_.decode_message_loop(), consumer_proxy);
+      context_.decode_task_runner(), consumer_proxy);
   view_.reset(new PepperView(this, &context_, rectangle_decoder_.get()));
   consumer_proxy->Attach(view_->AsWeakPtr());
 
@@ -369,9 +369,9 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
   jingle_glue::JingleThreadWrapper::EnsureForCurrentThread();
 
   host_connection_.reset(new protocol::ConnectionToHost(true));
-  client_.reset(new ChromotingClient(config, &context_, host_connection_.get(),
-                                     view_.get(), rectangle_decoder_.get(),
-                                     base::Closure()));
+  client_.reset(new ChromotingClient(config, context_.main_task_runner(),
+                                     host_connection_.get(), view_.get(),
+                                     rectangle_decoder_.get()));
 
   // Construct the input pipeline
   mouse_input_filter_.reset(
@@ -398,8 +398,7 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
   // Setup the XMPP Proxy.
   xmpp_proxy_ = new PepperXmppProxy(
       base::Bind(&ChromotingInstance::SendOutgoingIq, AsWeakPtr()),
-      plugin_message_loop_,
-      context_.network_message_loop());
+      plugin_message_loop_, context_.main_task_runner());
 
   scoped_ptr<cricket::HttpPortAllocatorBase> port_allocator(
       PepperPortAllocator::Create(this));

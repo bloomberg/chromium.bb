@@ -15,7 +15,7 @@
 #include "remoting/client/frame_consumer.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace remoting {
@@ -26,8 +26,7 @@ class FrameConsumerProxy
  public:
   // Constructs a proxy for |frame_consumer| which will trampoline invocations
   // to |frame_consumer_message_loop|.
-  FrameConsumerProxy(
-      scoped_refptr<base::MessageLoopProxy> frame_consumer_message_loop);
+  FrameConsumerProxy(scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // FrameConsumer implementation.
   virtual void ApplyBuffer(const SkISize& view_size,
@@ -46,7 +45,7 @@ class FrameConsumerProxy
   virtual ~FrameConsumerProxy();
 
   base::WeakPtr<FrameConsumer> frame_consumer_;
-  scoped_refptr<base::MessageLoopProxy> frame_consumer_message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameConsumerProxy);
 };

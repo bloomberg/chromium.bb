@@ -5,7 +5,9 @@
 #include "remoting/client/plugin/pepper_network_manager.h"
 
 #include "base/bind.h"
-#include "base/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/private/network_list_private.h"
 #include "ppapi/cpp/private/net_address_private.h"
@@ -27,7 +29,7 @@ PepperNetworkManager::~PepperNetworkManager() {
 void PepperNetworkManager::StartUpdating() {
   if (network_list_received_) {
     // Post a task to avoid reentrancy.
-    MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&PepperNetworkManager::SendNetworksChangedSignal,
                               weak_factory_.GetWeakPtr()));
   }

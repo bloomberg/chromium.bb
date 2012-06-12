@@ -6,8 +6,8 @@
 
 namespace remoting {
 
-ClientContext::ClientContext(base::MessageLoopProxy* main_message_loop_proxy)
-    : main_message_loop_proxy_(main_message_loop_proxy),
+ClientContext::ClientContext(base::SingleThreadTaskRunner* main_task_runner)
+    : main_task_runner_(main_task_runner),
       decode_thread_("ChromotingClientDecodeThread") {
 }
 
@@ -24,16 +24,12 @@ void ClientContext::Stop() {
   decode_thread_.Stop();
 }
 
-base::MessageLoopProxy* ClientContext::main_message_loop() {
-  return main_message_loop_proxy_;
+base::SingleThreadTaskRunner* ClientContext::main_task_runner() {
+  return main_task_runner_;
 }
 
-base::MessageLoopProxy* ClientContext::decode_message_loop() {
+base::SingleThreadTaskRunner* ClientContext::decode_task_runner() {
   return decode_thread_.message_loop_proxy();
-}
-
-base::MessageLoopProxy* ClientContext::network_message_loop() {
-  return main_message_loop_proxy_;
 }
 
 }  // namespace remoting

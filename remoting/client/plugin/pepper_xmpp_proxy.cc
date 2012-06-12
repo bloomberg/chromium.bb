@@ -12,29 +12,31 @@ namespace remoting {
 
 PepperXmppProxy::PepperXmppProxy(
     const SendIqCallback& send_iq_callback,
-    base::MessageLoopProxy* plugin_message_loop,
-    base::MessageLoopProxy* callback_message_loop)
+    base::SingleThreadTaskRunner* plugin_task_runner,
+    base::SingleThreadTaskRunner* callback_task_runner)
     : send_iq_callback_(send_iq_callback),
-      plugin_message_loop_(plugin_message_loop),
-      callback_message_loop_(callback_message_loop) {
-  DCHECK(plugin_message_loop_->BelongsToCurrentThread());
+      plugin_task_runner_(plugin_task_runner),
+      callback_task_runner_(callback_task_runner) {
+  DCHECK(plugin_task_runner_->BelongsToCurrentThread());
 }
 
 PepperXmppProxy::~PepperXmppProxy() {
 }
 
-void PepperXmppProxy::AttachCallback(base::WeakPtr<ResponseCallback> callback) {
-  DCHECK(callback_message_loop_->BelongsToCurrentThread());
+void PepperXmppProxy::AttachCallback(
+    base::WeakPtr<ResponseCallback> callback) {
+  DCHECK(callback_task_runner_->BelongsToCurrentThread());
   callback_ = callback;
 }
 
 void PepperXmppProxy::DetachCallback() {
+  DCHECK(callback_task_runner_->BelongsToCurrentThread());
   callback_.reset();
 }
 
 void PepperXmppProxy::SendIq(const std::string& request_xml) {
-  if (!plugin_message_loop_->BelongsToCurrentThread()) {
-    plugin_message_loop_->PostTask(FROM_HERE, base::Bind(
+  if (!plugin_task_runner_->BelongsToCurrentThread()) {
+    plugin_task_runner_->PostTask(FROM_HERE, base::Bind(
         &PepperXmppProxy::SendIq, this, request_xml));
     return;
   }
@@ -43,8 +45,8 @@ void PepperXmppProxy::SendIq(const std::string& request_xml) {
 }
 
 void PepperXmppProxy::OnIq(const std::string& response_xml) {
-  if (!callback_message_loop_->BelongsToCurrentThread()) {
-    callback_message_loop_->PostTask(
+  if (!callback_task_runner_->BelongsToCurrentThread()) {
+    callback_task_runner_->PostTask(
         FROM_HERE, base::Bind(&PepperXmppProxy::OnIq, this, response_xml));
     return;
   }

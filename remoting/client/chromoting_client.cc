@@ -26,18 +26,17 @@ ChromotingClient::QueuedVideoPacket::QueuedVideoPacket(
 ChromotingClient::QueuedVideoPacket::~QueuedVideoPacket() {
 }
 
-ChromotingClient::ChromotingClient(const ClientConfig& config,
-                                   ClientContext* context,
-                                   protocol::ConnectionToHost* connection,
-                                   ChromotingView* view,
-                                   RectangleUpdateDecoder* rectangle_decoder,
-                                   const base::Closure& client_done)
+ChromotingClient::ChromotingClient(
+    const ClientConfig& config,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    protocol::ConnectionToHost* connection,
+    ChromotingView* view,
+    RectangleUpdateDecoder* rectangle_decoder)
     : config_(config),
-      context_(context),
+      task_runner_(task_runner),
       connection_(connection),
       view_(view),
       rectangle_decoder_(rectangle_decoder),
-      client_done_(client_done),
       packet_being_processed_(false),
       last_sequence_number_(0),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
@@ -49,7 +48,7 @@ ChromotingClient::~ChromotingClient() {
 void ChromotingClient::Start(
     scoped_refptr<XmppProxy> xmpp_proxy,
     scoped_ptr<protocol::TransportFactory> transport_factory) {
-  DCHECK(message_loop()->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   scoped_ptr<protocol::Authenticator> authenticator(
       protocol::NegotiatingAuthenticator::CreateForClient(
@@ -63,18 +62,11 @@ void ChromotingClient::Start(
                        config_.host_public_key, transport_factory.Pass(),
                        authenticator.Pass(), this, this, this, this);
 
-  if (!view_->Initialize()) {
-    ClientDone();
-  }
+  view_->Initialize();
 }
 
 void ChromotingClient::Stop(const base::Closure& shutdown_task) {
-  if (!message_loop()->BelongsToCurrentThread()) {
-    message_loop()->PostTask(
-        FROM_HERE, base::Bind(&ChromotingClient::Stop,
-                              weak_ptr_, shutdown_task));
-    return;
-  }
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   // Drop all pending packets.
   while(!received_packets_.empty()) {
@@ -93,19 +85,14 @@ void ChromotingClient::OnDisconnected(const base::Closure& shutdown_task) {
   shutdown_task.Run();
 }
 
-void ChromotingClient::ClientDone() {
-  if (!client_done_.is_null()) {
-    message_loop()->PostTask(FROM_HERE, client_done_);
-    client_done_.Reset();
-  }
-}
-
 ChromotingStats* ChromotingClient::GetStats() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
   return &stats_;
 }
 
 void ChromotingClient::InjectClipboardEvent(
     const protocol::ClipboardEvent& event) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
   view_->GetClipboardStub()->InjectClipboardEvent(event);
 }
 
@@ -116,7 +103,7 @@ void ChromotingClient::SetCursorShape(
 
 void ChromotingClient::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
                                           const base::Closure& done) {
-  DCHECK(message_loop()->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   // If the video packet is empty then drop it. Empty packets are used to
   // maintain activity on the network.
@@ -149,11 +136,12 @@ void ChromotingClient::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
 }
 
 int ChromotingClient::GetPendingPackets() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
   return received_packets_.size();
 }
 
 void ChromotingClient::DispatchPacket() {
-  DCHECK(message_loop()->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   CHECK(!packet_being_processed_);
 
   if (received_packets_.empty()) {
@@ -180,21 +168,17 @@ void ChromotingClient::DispatchPacket() {
 void ChromotingClient::OnConnectionState(
     protocol::ConnectionToHost::State state,
     protocol::ErrorCode error) {
-  DCHECK(message_loop()->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   VLOG(1) << "ChromotingClient::OnConnectionState(" << state << ")";
   if (state == protocol::ConnectionToHost::CONNECTED)
     Initialize();
   view_->SetConnectionState(state, error);
 }
 
-base::MessageLoopProxy* ChromotingClient::message_loop() {
-  return context_->network_message_loop();
-}
-
 void ChromotingClient::OnPacketDone(bool last_packet,
                                     base::Time decode_start) {
-  if (!message_loop()->BelongsToCurrentThread()) {
-    message_loop()->PostTask(FROM_HERE, base::Bind(
+  if (!task_runner_->BelongsToCurrentThread()) {
+    task_runner_->PostTask(FROM_HERE, base::Bind(
         &ChromotingClient::OnPacketDone, base::Unretained(this),
         last_packet, decode_start));
     return;
@@ -217,11 +201,7 @@ void ChromotingClient::OnPacketDone(bool last_packet,
 }
 
 void ChromotingClient::Initialize() {
-  if (!message_loop()->BelongsToCurrentThread()) {
-    message_loop()->PostTask(FROM_HERE, base::Bind(
-        &ChromotingClient::Initialize, weak_ptr_));
-    return;
-  }
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   // Initialize the decoder.
   rectangle_decoder_->Initialize(connection_->config());
