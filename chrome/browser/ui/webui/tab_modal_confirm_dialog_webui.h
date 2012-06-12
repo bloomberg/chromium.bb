@@ -15,7 +15,6 @@
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
 class TabContents;
-typedef TabContents TabContentsWrapper;
 class TabModalConfirmDialogDelegate;
 
 namespace ui {
@@ -31,7 +30,7 @@ class TabModalConfirmDialogWebUI : public ui::WebDialogDelegate {
  public:
   TabModalConfirmDialogWebUI(
       TabModalConfirmDialogDelegate* dialog_delegate,
-      TabContentsWrapper* wrapper);
+      TabContents* tab_contents);
 
   // ui::WebDialogDelegate implementation.
   virtual ui::ModalType GetDialogModalType() const OVERRIDE;

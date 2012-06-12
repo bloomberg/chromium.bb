@@ -23,7 +23,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/browser/ui/webui/screenshot_source.h"
@@ -109,7 +109,7 @@ std::string GetUserEmail() {
 int GetIndexOfFeedbackTab(Browser* browser) {
   GURL feedback_url(chrome::kChromeUIFeedbackURL);
   for (int i = 0; i < browser->tab_count(); ++i) {
-    WebContents* tab = browser->GetTabContentsWrapperAt(i)->web_contents();
+    WebContents* tab = browser->GetWebContentsAt(i);
     if (tab && tab->GetURL().GetWithEmptyPath() == feedback_url)
       return i;
   }
@@ -367,8 +367,7 @@ bool FeedbackHandler::Init() {
     return false;
   }
 
-  WebContents* target_tab =
-      browser->GetTabContentsWrapperAt(index)->web_contents();
+  WebContents* target_tab = browser->GetWebContentsAt(index);
   if (target_tab) {
     target_tab_url_ = target_tab->GetURL().spec();
   }

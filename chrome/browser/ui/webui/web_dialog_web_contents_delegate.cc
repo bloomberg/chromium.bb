@@ -7,7 +7,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/web_contents.h"
 
@@ -91,10 +91,10 @@ Browser* WebDialogWebContentsDelegate::StaticAddNewContents(
   // to find a browser matching params.profile or create a new one.
   Browser* browser = NULL;
 
-  TabContentsWrapper* wrapper = new TabContentsWrapper(new_contents);
-  browser::NavigateParams params(browser, wrapper);
+  TabContents* tab_contents = new TabContents(new_contents);
+  browser::NavigateParams params(browser, tab_contents);
   params.profile = profile;
-  // TODO(pinkerton): no way to get a wrapper for this.
+  // TODO(pinkerton): no way to get a TabContents for this.
   // params.source_contents = source;
   params.disposition = disposition;
   params.window_bounds = initial_pos;

@@ -9,7 +9,7 @@
 #include "base/property_bag.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/constrained_window.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/web_dialog_web_contents_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
@@ -32,7 +32,7 @@ ConstrainedWebDialogDelegateBase::ConstrainedWebDialogDelegateBase(
   CHECK(delegate);
   WebContents* web_contents =
       WebContents::Create(profile, NULL, MSG_ROUTING_NONE, NULL, NULL);
-  tab_.reset(new TabContentsWrapper(web_contents));
+  tab_.reset(new TabContents(web_contents));
   if (tab_delegate) {
     override_tab_delegate_.reset(tab_delegate);
     web_contents->SetDelegate(tab_delegate);
@@ -90,7 +90,7 @@ ConstrainedWindow* ConstrainedWebDialogDelegateBase::window() {
   return window_;
 }
 
-TabContentsWrapper* ConstrainedWebDialogDelegateBase::tab() {
+TabContents* ConstrainedWebDialogDelegateBase::tab() {
   return tab_.get();
 }
 

@@ -569,7 +569,7 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
     Browser* browser = browser::FindLastActiveWithProfile(profile);
     WebContents* old_contents = NULL;
     if (browser)
-      old_contents = browser->GetSelectedWebContents();
+      old_contents = browser->GetActiveWebContents();
 
     WebContents* new_contents = application_launch::OpenApplication(
         profile, extension, launch_container, GURL(url),

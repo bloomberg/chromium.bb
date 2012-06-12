@@ -41,7 +41,7 @@ IN_PROC_BROWSER_TEST_F(InspectUITest, DISABLED_SharedWorkersList) {
       NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
-  WebContents* web_contents = browser()->GetSelectedWebContents();
+  WebContents* web_contents = browser()->GetActiveWebContents();
   ASSERT_TRUE(web_contents != NULL);
 
   std::string result;

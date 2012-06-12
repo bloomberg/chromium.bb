@@ -282,7 +282,7 @@ void PrintPreviewHandler::RegisterMessages() {
 }
 
 TabContents* PrintPreviewHandler::preview_tab_contents() const {
-  return TabContents::GetCurrentWrapperForContents(preview_web_contents());
+  return TabContents::FromWebContents(preview_web_contents());
 }
 
 WebContents* PrintPreviewHandler::preview_web_contents() const {

@@ -14,7 +14,7 @@
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/web_ui_browsertest.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -324,7 +324,7 @@ void NetInternalsTest::SetUpCommandLine(CommandLine* command_line) {
 void NetInternalsTest::SetUpOnMainThread() {
   // Increase the memory allowed in a prerendered page above normal settings,
   // as debug builds use more memory and often go over the usual limit.
-  Profile* profile = browser()->GetSelectedTabContentsWrapper()->profile();
+  Profile* profile = browser()->GetActiveTabContents()->profile();
   prerender::PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForProfile(profile);
   prerender_manager->mutable_config().max_bytes = 1000 * 1024 * 1024;

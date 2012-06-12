@@ -14,7 +14,7 @@
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/about_ui.h"
 #include "chrome/browser/ui/webui/bookmarks_ui.h"
 #include "chrome/browser/ui/webui/crashes_ui.h"
@@ -116,7 +116,7 @@ WebUIController* NewWebUI<AboutUI>(WebUI* web_ui, const GURL& url) {
 }
 
 // Only create ExtensionWebUI for URLs that are allowed extension bindings,
-// hosted by actual tabs. If tab_contents has no wrapper, it likely refers
+// hosted by actual tabs. If there is no TabContents, it likely refers
 // to another container type, like an extension background page. If there is
 // no WebUI (it's not accessible when calling GetWebUIType and related
 // functions) then we conservatively assume that we need a WebUI.
@@ -125,9 +125,7 @@ bool NeedsExtensionWebUI(WebUI* web_ui,
                          const GURL& url) {
   ExtensionService* service = profile ? profile->GetExtensionService() : NULL;
   return service && service->ExtensionBindingsAllowed(url) &&
-      (!web_ui ||
-        TabContentsWrapper::GetCurrentWrapperForContents(
-            web_ui->GetWebContents()));
+      (!web_ui || TabContents::FromWebContents(web_ui->GetWebContents()));
 }
 
 // Returns a function that can be used to create the right type of WebUI for a

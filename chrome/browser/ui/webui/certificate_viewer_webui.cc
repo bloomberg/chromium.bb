@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/certificate_dialogs.h"
 #include "chrome/browser/ui/constrained_window.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
@@ -72,15 +72,14 @@ void CertificateViewerDialog::Show(gfx::NativeWindow parent) {
   // TODO(oshima): Should get browser from parent.
   Browser* browser = BrowserList::GetLastActive();
   DCHECK(browser);
-  TabContentsWrapper* current_wrapper =
-      browser->GetSelectedTabContentsWrapper();
+  TabContents* current_tab_contents = browser->GetActiveTabContents();
   // TODO(bshe): UI tweaks needed for AURA html Dialog, such as add padding on
   // title for AURA ConstrainedWebDialogUI.
   window_ = ui::CreateConstrainedWebDialog(
-      current_wrapper->profile(),
+      current_tab_contents->profile(),
       this,
       NULL,
-      current_wrapper)->window()->GetNativeWindow();
+      current_tab_contents)->window()->GetNativeWindow();
 }
 
 ui::ModalType CertificateViewerDialog::GetDialogModalType() const {

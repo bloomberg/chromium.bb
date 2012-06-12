@@ -16,7 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/constrained_window.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
@@ -36,8 +36,8 @@ namespace browser {
 
 // Declared in browser_dialogs.h so others don't have to depend on our header.
 void ShowTabModalConfirmDialog(TabModalConfirmDialogDelegate* delegate,
-                               TabContentsWrapper* wrapper) {
-  new TabModalConfirmDialogWebUI(delegate, wrapper);
+                               TabContents* tab_contents) {
+  new TabModalConfirmDialogWebUI(delegate, tab_contents);
 }
 
 }  // namespace browser
@@ -47,9 +47,9 @@ const int kDialogHeight = 120;
 
 TabModalConfirmDialogWebUI::TabModalConfirmDialogWebUI(
     TabModalConfirmDialogDelegate* delegate,
-    TabContentsWrapper* wrapper)
+    TabContents* tab_contents)
     : delegate_(delegate) {
-  Profile* profile = wrapper->profile();
+  Profile* profile = tab_contents->profile();
   ChromeWebUIDataSource* data_source =
       new ChromeWebUIDataSource(chrome::kChromeUITabModalConfirmDialogHost);
   data_source->set_default_resource(IDR_TAB_MODAL_CONFIRM_DIALOG_HTML);
@@ -59,7 +59,7 @@ TabModalConfirmDialogWebUI::TabModalConfirmDialogWebUI(
       ui::CreateConstrainedWebDialog(profile,
                                      this,
                                      NULL,
-                                     wrapper);
+                                     tab_contents);
   delegate_->set_window(constrained_web_dialog_delegate_->window());
 }
 

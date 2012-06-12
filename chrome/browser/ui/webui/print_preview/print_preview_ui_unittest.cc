@@ -222,8 +222,7 @@ TEST_F(PrintPreviewUIUnitTest, InitiatorTabGetsFocusOnPrintPreviewTabClose) {
                             NEW_FOREGROUND_TAB,
                             gfx::Rect(),
                             false);
-  TabContents* initiator_tab =
-      TabContents::GetCurrentWrapperForContents(initiator_contents);
+  TabContents* initiator_tab = TabContents::FromWebContents(initiator_contents);
   ASSERT_TRUE(initiator_tab);
   EXPECT_EQ(2, browser()->tab_count());
   EXPECT_EQ(0, initiator_tester->GetNumberOfFocusCalls());

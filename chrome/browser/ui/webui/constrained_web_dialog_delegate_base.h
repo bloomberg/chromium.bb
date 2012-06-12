@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/web_dialog_web_contents_delegate.h"
 #include "ui/web_dialogs/constrained_web_dialog_ui.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
@@ -37,7 +37,7 @@ class ConstrainedWebDialogDelegateBase
   virtual void OnDialogCloseFromWebUI() OVERRIDE;
   virtual void ReleaseTabContentsOnDialogClose() OVERRIDE;
   virtual ConstrainedWindow* window() OVERRIDE;
-  virtual TabContentsWrapper* tab() OVERRIDE;
+  virtual TabContents* tab() OVERRIDE;
 
   // WebDialogWebContentsDelegate interface.
   virtual void HandleKeyboardEvent(
@@ -54,7 +54,7 @@ class ConstrainedWebDialogDelegateBase
   ConstrainedWindow* window_;
 
   // Holds the HTML to display in the constrained dialog.
-  scoped_ptr<TabContentsWrapper> tab_;
+  scoped_ptr<TabContents> tab_;
 
   // Was the dialog closed from WebUI (in which case |web_dialog_delegate_|'s
   // OnDialogClosed() method has already been called)?
