@@ -172,6 +172,8 @@ WebstoreInstaller::WebstoreInstaller(Profile* profile,
       download_item_(NULL),
       flags_(flags),
       approval_(approval.release()) {
+  // TODO(benjhayden): Change this CHECK to DCHECK after http://crbug.com/126013
+  CHECK(controller_);
   download_url_ = GetWebstoreInstallURL(id, flags & FLAG_INLINE_INSTALL ?
       kInlineInstallSource : kDefaultInstallSource);
 
@@ -197,9 +199,7 @@ void WebstoreInstaller::Start() {
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&GetDownloadFilePath, download_path, id_,
-                 base::Bind(&WebstoreInstaller::StartDownload,
-                            base::Unretained(this))));
-
+                 base::Bind(&WebstoreInstaller::StartDownload, this)));
 }
 
 void WebstoreInstaller::Observe(int type,
@@ -306,7 +306,7 @@ void WebstoreInstaller::OnDownloadOpened(DownloadItem* download) {
 void WebstoreInstaller::StartDownload(const FilePath& file) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (file.empty()) {
+  if (file.empty() || !controller_->GetWebContents()) {
     ReportFailure(kDownloadDirectoryError);
     return;
   }
@@ -322,9 +322,10 @@ void WebstoreInstaller::StartDownload(const FilePath& file) {
   scoped_ptr<DownloadUrlParameters> params(
       DownloadUrlParameters::FromWebContents(
           controller_->GetWebContents(), download_url_, save_info));
-  params->set_referrer(
-      content::Referrer(controller_->GetActiveEntry()->GetURL(),
-                        WebKit::WebReferrerPolicyDefault));
+  if (controller_->GetActiveEntry())
+    params->set_referrer(
+        content::Referrer(controller_->GetActiveEntry()->GetURL(),
+                          WebKit::WebReferrerPolicyDefault));
   params->set_callback(base::Bind(&WebstoreInstaller::OnDownloadStarted, this));
   BrowserContext::GetDownloadManager(profile_)->DownloadUrl(params.Pass());
 }
