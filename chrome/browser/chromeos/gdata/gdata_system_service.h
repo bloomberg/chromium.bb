@@ -31,6 +31,9 @@ class GDataSystemService : public ProfileKeyedService  {
   // Returns the documents service instance.
   DocumentsServiceInterface* docs_service() { return documents_service_.get(); }
 
+  // Returns the cache instance.
+  GDataCache* cache() { return cache_.get(); }
+
   // Returns the file system instance.
   GDataFileSystem* file_system() { return file_system_.get(); }
 
@@ -54,6 +57,8 @@ class GDataSystemService : public ProfileKeyedService  {
   friend class GDataSystemServiceFactory;
 
   Profile* profile_;
+  const base::SequencedWorkerPool::SequenceToken sequence_token_;
+  scoped_ptr<GDataCache> cache_;
   scoped_ptr<DocumentsServiceInterface> documents_service_;
   scoped_ptr<GDataFileSystem> file_system_;
   scoped_ptr<GDataUploader> uploader_;

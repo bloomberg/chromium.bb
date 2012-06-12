@@ -28,17 +28,30 @@ namespace gdata {
 //===================== GDataSystemService ====================================
 GDataSystemService::GDataSystemService(Profile* profile)
     : profile_(profile),
+      sequence_token_(BrowserThread::GetBlockingPool()->GetSequenceToken()),
+      // TODO(hashimoto): Create cache_ on the blocking pool. crbug.com/131756
+      cache_(
+          GDataCache::CreateGDataCache(GDataCache::GetCacheRootPath(profile_),
+                                       BrowserThread::GetBlockingPool(),
+                                       sequence_token_)),
       documents_service_(new DocumentsService),
-      file_system_(new GDataFileSystem(profile, docs_service())),
+      file_system_(new GDataFileSystem(profile,
+                                       cache(),
+                                       docs_service(),
+                                       sequence_token_)),
       uploader_(new GDataUploader(file_system(), docs_service())),
       download_observer_(new GDataDownloadObserver),
-      sync_client_(new GDataSyncClient(profile, file_system())),
+      sync_client_(new GDataSyncClient(profile, file_system(), cache())),
       webapps_registry_(new DriveWebAppsRegistry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 GDataSystemService::~GDataSystemService() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(sequence_token_)
+      ->PostTask(
+          FROM_HERE,
+          base::Bind(&base::DeletePointer<GDataCache>, cache_.release()));
 }
 
 void GDataSystemService::Initialize() {
@@ -55,7 +68,7 @@ void GDataSystemService::Initialize() {
   download_observer_->Initialize(
       uploader_.get(),
       download_manager,
-      file_system_->GetCacheDirectoryPath(
+      cache_->GetCacheDirectoryPath(
           GDataCache::CACHE_TYPE_TMP_DOWNLOADS));
 }
 

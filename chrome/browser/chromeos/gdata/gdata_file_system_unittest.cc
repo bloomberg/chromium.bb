@@ -166,6 +166,8 @@ class GDataFileSystemTest : public testing::Test {
   GDataFileSystemTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         io_thread_(content::BrowserThread::IO),
+        sequence_token_(
+            content::BrowserThread::GetBlockingPool()->GetSequenceToken()),
         file_system_(NULL),
         mock_doc_service_(NULL),
         num_callback_invocations_(0),
@@ -194,9 +196,16 @@ class GDataFileSystemTest : public testing::Test {
     mock_free_disk_space_checker_ = new MockFreeDiskSpaceGetter;
     SetFreeDiskSpaceGetterForTesting(mock_free_disk_space_checker_);
 
+    cache_.reset(GDataCache::CreateGDataCache(
+        GDataCache::GetCacheRootPath(profile_.get()),
+        content::BrowserThread::GetBlockingPool(),
+        sequence_token_).release());
+
     ASSERT_FALSE(file_system_);
     file_system_ = new GDataFileSystem(profile_.get(),
-                                       mock_doc_service_);
+                                       cache_.get(),
+                                       mock_doc_service_,
+                                       sequence_token_);
 
     mock_sync_client_.reset(new StrictMock<MockGDataSyncClient>);
     file_system_->AddObserver(mock_sync_client_.get());
@@ -220,6 +229,10 @@ class GDataFileSystemTest : public testing::Test {
     delete mock_doc_service_;
     mock_doc_service_ = NULL;
     SetFreeDiskSpaceGetterForTesting(NULL);
+    content::BrowserThread::GetBlockingPool()
+        ->GetSequencedTaskRunner(sequence_token_)->PostTask(
+            FROM_HERE,
+            base::Bind(&base::DeletePointer<GDataCache>, cache_.release()));
 
     // Run the remaining tasks on both the main thread and the IO thread, so
     // that all PostTaskAndReply round trip finish (that is, both the 1st and
@@ -307,11 +320,10 @@ class GDataFileSystemTest : public testing::Test {
   }
 
   FilePath GetCachePathForFile(GDataFile* file) {
-    return file_system_->GetCacheFilePath(
-        file->resource_id(),
-        file->file_md5(),
-        GDataCache::CACHE_TYPE_TMP,
-        GDataCache::CACHED_FILE_FROM_SERVER);
+    return cache_->GetCacheFilePath(file->resource_id(),
+                                    file->file_md5(),
+                                    GDataCache::CACHE_TYPE_TMP,
+                                    GDataCache::CACHED_FILE_FROM_SERVER);
   }
 
   GDataEntry* FindEntry(const FilePath& file_path) {
@@ -410,13 +422,12 @@ class GDataFileSystemTest : public testing::Test {
             directory_proto->gdata_entry().resource_id());
   }
 
-  FilePath GetCacheFilePath(
-      const std::string& resource_id,
-      const std::string& md5,
-      GDataCache::CacheSubDirectoryType sub_dir_type,
-      GDataCache::CachedFileOrigin file_origin) {
-    return file_system_->GetCacheFilePath(resource_id, md5, sub_dir_type,
-                                          file_origin);
+  FilePath GetCacheFilePath(const std::string& resource_id,
+                            const std::string& md5,
+                            GDataCache::CacheSubDirectoryType sub_dir_type,
+                            GDataCache::CachedFileOrigin file_origin) {
+    return cache_->GetCacheFilePath(resource_id, md5, sub_dir_type,
+                                    file_origin);
   }
 
   // Returns true if the cache entry exists for the given resource ID and MD5.
@@ -428,7 +439,7 @@ class GDataFileSystemTest : public testing::Test {
   // Returns true if the cache file exists for the given resource ID and MD5.
   bool CacheFileExists(const std::string& resource_id,
                        const std::string& md5) {
-    const FilePath file_path = file_system_->GetCacheFilePath(
+    const FilePath file_path = cache_->GetCacheFilePath(
         resource_id,
         md5,
         GDataCache::CACHE_TYPE_TMP,
@@ -439,7 +450,7 @@ class GDataFileSystemTest : public testing::Test {
   void TestGetCacheFilePath(const std::string& resource_id,
                             const std::string& md5,
                             const std::string& expected_filename) {
-    FilePath actual_path = file_system_->GetCacheFilePath(
+    FilePath actual_path = cache_->GetCacheFilePath(
         resource_id,
         md5,
         GDataCache::CACHE_TYPE_TMP,
@@ -545,19 +556,19 @@ class GDataFileSystemTest : public testing::Test {
     // - no "<resource_id>" symlink exists in pinned and outgoing dirs.
     std::vector<PathToVerify> paths_to_verify;
     paths_to_verify.push_back(  // Index 0: CACHE_TYPE_TMP.
-        PathToVerify(file_system_->GetCacheFilePath(resource_id, "*",
+        PathToVerify(cache_->GetCacheFilePath(resource_id, "*",
                      GDataCache::CACHE_TYPE_TMP,
                      GDataCache::CACHED_FILE_FROM_SERVER), FilePath()));
     paths_to_verify.push_back(  // Index 1: CACHE_TYPE_PERSISTENT.
-        PathToVerify(file_system_->GetCacheFilePath(resource_id, "*",
+        PathToVerify(cache_->GetCacheFilePath(resource_id, "*",
                      GDataCache::CACHE_TYPE_PERSISTENT,
                      GDataCache::CACHED_FILE_FROM_SERVER), FilePath()));
     paths_to_verify.push_back(  // Index 2: CACHE_TYPE_PINNED.
-        PathToVerify(file_system_->GetCacheFilePath(resource_id, "",
+        PathToVerify(cache_->GetCacheFilePath(resource_id, "",
                      GDataCache::CACHE_TYPE_PINNED,
                      GDataCache::CACHED_FILE_FROM_SERVER), FilePath()));
     paths_to_verify.push_back(  // Index 3: CACHE_TYPE_OUTGOING.
-        PathToVerify(file_system_->GetCacheFilePath(resource_id, "",
+        PathToVerify(cache_->GetCacheFilePath(resource_id, "",
                      GDataCache::CACHE_TYPE_OUTGOING,
                      GDataCache::CACHED_FILE_FROM_SERVER), FilePath()));
     if (!cache_entry.get()) {
@@ -787,7 +798,7 @@ class GDataFileSystemTest : public testing::Test {
                              const FilePath& file_path) {
     ++num_callback_invocations_;
     EXPECT_TRUE(file_util::PathExists(file_path));
-    EXPECT_TRUE(file_path == file_system_->GetCacheFilePath(
+    EXPECT_TRUE(file_path == cache_->GetCacheFilePath(
         resource_id,
         md5,
         expected_sub_dir_type_,
@@ -839,7 +850,7 @@ class GDataFileSystemTest : public testing::Test {
     for (size_t i = 0; i < ARRAYSIZE_UNSAFE(initial_cache_resources); ++i) {
       const struct InitialCacheResource& resource = initial_cache_resources[i];
       // Determine gdata cache file absolute path according to cache state.
-      FilePath dest_path = file_system_->GetCacheFilePath(
+      FilePath dest_path = cache_->GetCacheFilePath(
           resource.resource_id,
           resource.md5,
           GDataCache::IsCachePinned(resource.cache_state) ||
@@ -862,7 +873,7 @@ class GDataFileSystemTest : public testing::Test {
       // Create symbolic link in pinned dir, naming it per cache files
       // convention.
       if (GDataCache::IsCachePinned(resource.cache_state)) {
-        FilePath link_path = file_system_->GetCacheFilePath(
+        FilePath link_path = cache_->GetCacheFilePath(
             resource.resource_id,
             "",
             GDataCache::CACHE_TYPE_PINNED,
@@ -873,7 +884,7 @@ class GDataFileSystemTest : public testing::Test {
       // Create symbolic link in outgoing dir, naming it per cache files
       // convention.
       if (GDataCache::IsCacheDirty(resource.cache_state)) {
-        FilePath link_path = file_system_->GetCacheFilePath(
+        FilePath link_path = cache_->GetCacheFilePath(
             resource.resource_id,
             "",
             GDataCache::CACHE_TYPE_OUTGOING,
@@ -937,7 +948,7 @@ class GDataFileSystemTest : public testing::Test {
     }
 
     // Verify actual cache file.
-    FilePath dest_path = file_system_->GetCacheFilePath(
+    FilePath dest_path = cache_->GetCacheFilePath(
         resource_id,
         md5,
         GDataCache::IsCachePinned(expected_cache_state_) ||
@@ -954,7 +965,7 @@ class GDataFileSystemTest : public testing::Test {
       EXPECT_FALSE(exists);
 
     // Verify symlink in pinned dir.
-    FilePath symlink_path = file_system_->GetCacheFilePath(
+    FilePath symlink_path = cache_->GetCacheFilePath(
         resource_id,
         std::string(),
         GDataCache::CACHE_TYPE_PINNED,
@@ -974,7 +985,7 @@ class GDataFileSystemTest : public testing::Test {
     }
 
     // Verify symlink in outgoing dir.
-    symlink_path = file_system_->GetCacheFilePath(
+    symlink_path = cache_->GetCacheFilePath(
         resource_id,
         std::string(),
         GDataCache::CACHE_TYPE_OUTGOING,
@@ -1226,8 +1237,10 @@ class GDataFileSystemTest : public testing::Test {
   // See also content/browser/browser_thread_imple.cc.
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
+  const base::SequencedWorkerPool::SequenceToken sequence_token_;
   scoped_ptr<TestingProfile> profile_;
   scoped_refptr<CallbackHelper> callback_helper_;
+  scoped_ptr<GDataCache> cache_;
   GDataFileSystem* file_system_;
   MockDocumentsService* mock_doc_service_;
   MockFreeDiskSpaceGetter* mock_free_disk_space_checker_;
@@ -3703,10 +3716,9 @@ TEST_F(GDataFileSystemTest, MountUnmount) {
 
   // Mark the file mounted.
   num_callback_invocations_ = 0;
-  file_path = file_system_->GetCacheFilePath(
-      resource_id, md5,
-      GDataCache::CACHE_TYPE_TMP,
-      GDataCache::CACHED_FILE_FROM_SERVER);
+  file_path = cache_->GetCacheFilePath(resource_id, md5,
+                                       GDataCache::CACHE_TYPE_TMP,
+                                       GDataCache::CACHED_FILE_FROM_SERVER);
   TestSetMountedState(resource_id, md5, file_path, true,
                       base::PLATFORM_FILE_OK,
                       GDataCache::CACHE_STATE_PRESENT |
@@ -3717,11 +3729,10 @@ TEST_F(GDataFileSystemTest, MountUnmount) {
 
   // Clear mounted state of the file.
   num_callback_invocations_ = 0;
-  file_path = file_system_->GetCacheFilePath(
-      resource_id,
-      md5,
-      GDataCache::CACHE_TYPE_PERSISTENT,
-      GDataCache::CACHED_FILE_MOUNTED);
+  file_path = cache_->GetCacheFilePath(resource_id,
+                                       md5,
+                                       GDataCache::CACHE_TYPE_PERSISTENT,
+                                       GDataCache::CACHED_FILE_MOUNTED);
   TestSetMountedState(resource_id, md5, file_path, false,
                       base::PLATFORM_FILE_OK,
                       GDataCache::CACHE_STATE_PRESENT,

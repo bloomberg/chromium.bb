@@ -917,9 +917,13 @@ GDataFileSystem::GetFileFromCacheParams::~GetFileFromCacheParams() {
 
 // GDataFileSystem class implementation.
 
-GDataFileSystem::GDataFileSystem(Profile* profile,
-                                 DocumentsServiceInterface* documents_service)
+GDataFileSystem::GDataFileSystem(
+    Profile* profile,
+    GDataCache* cache,
+    DocumentsServiceInterface* documents_service,
+    const base::SequencedWorkerPool::SequenceToken& sequence_token)
     : profile_(profile),
+      cache_(cache),
       documents_service_(documents_service),
       on_io_completed_(new base::WaitableEvent(
           true /* manual reset */, true /* initially signaled */)),
@@ -929,7 +933,7 @@ GDataFileSystem::GDataFileSystem(Profile* profile,
       ui_weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(
           new base::WeakPtrFactory<GDataFileSystem>(this))),
       ui_weak_ptr_(ui_weak_ptr_factory_->GetWeakPtr()),
-      sequence_token_(BrowserThread::GetBlockingPool()->GetSequenceToken()) {
+      sequence_token_(sequence_token) {
   // Should be created from the file browser extension API on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -940,10 +944,6 @@ void GDataFileSystem::Initialize() {
   documents_service_->Initialize(profile_);
 
   root_.reset(new GDataRootDirectory);
-  const FilePath cache_root_path = GDataCache::GetCacheRootPath(profile_);
-  cache_ = GDataCache::CreateGDataCache(cache_root_path,
-                                        BrowserThread::GetBlockingPool(),
-                                        sequence_token_).Pass();
 
   PrefService* pref_service = profile_->GetPrefs();
   hide_hosted_docs_ = pref_service->GetBoolean(prefs::kDisableGDataHostedFiles);
@@ -1013,8 +1013,6 @@ GDataFileSystem::~GDataFileSystem() {
   // Lock to let root destroy cache map and resource map.
   base::AutoLock lock(lock_);
   root_.reset();
-  // TODO(satorux): Should not delete this on UI thread. crbug.com/131826.
-  cache_.reset();
 
   // Let's make sure that num_pending_tasks_lock_ has been released on all
   // other threads.
@@ -2036,7 +2034,7 @@ void GDataFileSystem::GetResolvedFileByPath(
     PostBlockingPoolSequencedTaskAndReply(
         FROM_HERE,
         base::Bind(&CreateDocumentJsonFileOnBlockingPool,
-                   GetCacheDirectoryPath(
+                   cache_->GetCacheDirectoryPath(
                        GDataCache::CACHE_TYPE_TMP_DOCUMENTS),
                    GURL(file_proto->alternate_url()),
                    file_proto->gdata_entry().resource_id(),
@@ -2236,7 +2234,7 @@ void GDataFileSystem::FreeDiskSpaceIfNeededFor(int64 num_bytes,
   // First remove temporary files from the cache map.
   cache_->RemoveTemporaryFiles();
   // Then remove all files under "tmp" directory.
-  RemoveAllFiles(GetCacheDirectoryPath(GDataCache::CACHE_TYPE_TMP));
+  RemoveAllFiles(cache_->GetCacheDirectoryPath(GDataCache::CACHE_TYPE_TMP));
 
   // Check the disk space again.
   *has_enough_space = HasEnoughSpaceFor(num_bytes);
@@ -2957,7 +2955,7 @@ void GDataFileSystem::OnGetDocuments(ContentOrigin initial_origin,
   PostBlockingPoolSequencedTask(
       FROM_HERE,
       base::Bind(&SaveFeedOnBlockingPoolForDebugging,
-                 GetCacheDirectoryPath(
+                 cache_->GetCacheDirectoryPath(
                      GDataCache::CACHE_TYPE_META).Append(file_name),
                  base::Passed(&data)));
 #endif
@@ -3008,7 +3006,7 @@ void GDataFileSystem::LoadRootFeedFromCache(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   const FilePath path =
-      GetCacheDirectoryPath(GDataCache::CACHE_TYPE_META).Append(
+      cache_->GetCacheDirectoryPath(GDataCache::CACHE_TYPE_META).Append(
           kFilesystemProtoFile);
   LoadRootFeedParams* params = new LoadRootFeedParams(search_file_path,
                                                       should_load_from_server,
@@ -3094,7 +3092,7 @@ void GDataFileSystem::SaveFileSystemAsProto() {
   }
 
   const FilePath path =
-      GetCacheDirectoryPath(GDataCache::CACHE_TYPE_META).Append(
+      cache_->GetCacheDirectoryPath(GDataCache::CACHE_TYPE_META).Append(
           kFilesystemProtoFile);
   scoped_ptr<std::string> serialized_proto(new std::string());
   root_->SerializeToString(serialized_proto.get());
@@ -3955,23 +3953,6 @@ void GDataFileSystem::SetHideHostedDocuments(bool hide) {
 
 //===================== GDataFileSystem: Cache entry points ====================
 
-bool GDataFileSystem::IsUnderGDataCacheDirectory(const FilePath& path) const {
-  return cache_->IsUnderGDataCacheDirectory(path);
-}
-
-FilePath GDataFileSystem::GetCacheDirectoryPath(
-    GDataCache::CacheSubDirectoryType sub_dir_type) const {
-  return cache_->GetCacheDirectoryPath(sub_dir_type);
-}
-
-FilePath GDataFileSystem::GetCacheFilePath(
-    const std::string& resource_id,
-    const std::string& md5,
-    GDataCache::CacheSubDirectoryType sub_dir_type,
-    GDataCache::CachedFileOrigin file_origin) const {
-  return cache_->GetCacheFilePath(resource_id, md5, sub_dir_type, file_origin);
-}
-
 void GDataFileSystem::StoreToCache(const std::string& resource_id,
                                    const std::string& md5,
                                    const FilePath& source_path,
@@ -4152,7 +4133,7 @@ void GDataFileSystem::InitializeCacheOnBlockingPool() {
   // Change permissions of cache persistent directory to u+rwx,og+x in order to
   // allow archive files in that directory to be mounted by cros-disks.
   error = ChangeFilePermissions(
-      GetCacheDirectoryPath(GDataCache::CACHE_TYPE_PERSISTENT),
+      cache_->GetCacheDirectoryPath(GDataCache::CACHE_TYPE_PERSISTENT),
       S_IRWXU | S_IXGRP | S_IXOTH);
   if (error != base::PLATFORM_FILE_OK)
     return;
@@ -4896,7 +4877,7 @@ void GDataFileSystem::ScanCacheDirectory(
     GDataCache::CacheSubDirectoryType sub_dir_type,
     GDataCache::CacheMap* cache_map) {
   file_util::FileEnumerator enumerator(
-      GetCacheDirectoryPath(sub_dir_type),
+      cache_->GetCacheDirectoryPath(sub_dir_type),
       false,  // not recursive
       static_cast<file_util::FileEnumerator::FileType>(
           file_util::FileEnumerator::FILES |

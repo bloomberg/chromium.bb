@@ -80,14 +80,6 @@ class MockGDataFileSystem : public GDataFileSystemInterface {
                     const ReadDirectoryCallback& callback));
   MOCK_METHOD1(RequestDirectoryRefresh,
                void(const FilePath& file_path));
-  MOCK_CONST_METHOD1(IsUnderGDataCacheDirectory, bool(const FilePath& path));
-  MOCK_CONST_METHOD1(GetCacheDirectoryPath, FilePath(
-      GDataCache::CacheSubDirectoryType));
-  MOCK_CONST_METHOD4(GetCacheFilePath, FilePath(
-      const std::string&,
-      const std::string&,
-      GDataCache::CacheSubDirectoryType,
-      GDataCache::CachedFileOrigin));
   MOCK_METHOD1(GetAvailableSpace,
                void(const GetAvailableSpaceCallback& callback));
   MOCK_METHOD3(SetPinState, void(const FilePath&,

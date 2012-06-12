@@ -122,7 +122,7 @@ void GDataDownloadObserver::SubstituteGDataDownloadPath(Profile* profile,
     SetDownloadParams(gdata_path, download);
 
     const FilePath gdata_tmp_download_dir =
-        system_service->file_system()->GetCacheDirectoryPath(
+        system_service->cache()->GetCacheDirectoryPath(
             gdata::GDataCache::CACHE_TYPE_TMP_DOWNLOADS);
 
     // Swap the gdata path with a local path. Local path must be created

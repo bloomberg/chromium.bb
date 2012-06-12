@@ -73,9 +73,11 @@ void ScanPinnedDirectory(const FilePath& directory,
 }  // namespace
 
 GDataSyncClient::GDataSyncClient(Profile* profile,
-                                 GDataFileSystemInterface* file_system)
+                                 GDataFileSystemInterface* file_system,
+                                 GDataCache* cache)
     : profile_(profile),
       file_system_(file_system),
+      cache_(cache),
       registrar_(new PrefChangeRegistrar),
       fetch_loop_is_running_(false),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
@@ -120,7 +122,7 @@ void GDataSyncClient::StartInitialScan(const base::Closure& closure) {
       BrowserThread::GetBlockingPool()->PostTaskAndReply(
           FROM_HERE,
           base::Bind(&ScanPinnedDirectory,
-                     file_system_->GetCacheDirectoryPath(
+                     cache_->GetCacheDirectoryPath(
                          GDataCache::CACHE_TYPE_PINNED),
                      resource_ids),
           base::Bind(&GDataSyncClient::OnInitialScanComplete,

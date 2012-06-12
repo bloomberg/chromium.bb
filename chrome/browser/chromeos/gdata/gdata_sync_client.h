@@ -62,7 +62,8 @@ class GDataSyncClient
   // |file_system| is used access the
   // cache (ex. store a file to the cache when the file is downloaded).
   GDataSyncClient(Profile* profile,
-                  GDataFileSystemInterface* file_system);
+                  GDataFileSystemInterface* file_system,
+                  GDataCache* cache);
   virtual ~GDataSyncClient();
 
   // GDataSyncClientInterface overrides.
@@ -127,7 +128,8 @@ class GDataSyncClient
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
   Profile* profile_;
-  GDataFileSystemInterface* file_system_;
+  GDataFileSystemInterface* file_system_;  // Owned by GDataSystemService.
+  GDataCache* cache_;  // Owned by GDataSystemService.
   scoped_ptr<PrefChangeRegistrar> registrar_;
 
   // The queue of resource IDs used to fetch pinned-but-not-fetched files in

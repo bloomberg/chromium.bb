@@ -377,22 +377,6 @@ class GDataFileSystemInterface {
   virtual void SearchAsync(const std::string& search_query,
                            const ReadDirectoryCallback& callback) = 0;
 
-  // Returns true if the given path is under gdata cache directory, i.e.
-  // <user_profile_dir>/GCache/v1
-  virtual bool IsUnderGDataCacheDirectory(const FilePath& path) const = 0;
-
-  // Returns the sub-directory under gdata cache directory for the given sub
-  // directory type. Example:  <user_profile_dir>/GCache/v1/tmp
-  virtual FilePath GetCacheDirectoryPath(
-      GDataCache::CacheSubDirectoryType sub_dir_type) const = 0;
-
-  // Returns absolute path of the file if it were cached or to be cached.
-  virtual FilePath GetCacheFilePath(
-      const std::string& resource_id,
-      const std::string& md5,
-      GDataCache::CacheSubDirectoryType sub_dir_type,
-      GDataCache::CachedFileOrigin file_orign) const = 0;
-
   // Fetches the user's Account Metadata to find out current quota information
   // and returns it to the callback.
   virtual void GetAvailableSpace(const GetAvailableSpaceCallback& callback) = 0;
@@ -422,8 +406,11 @@ class GDataFileSystemInterface {
 class GDataFileSystem : public GDataFileSystemInterface,
                         public content::NotificationObserver {
  public:
-  GDataFileSystem(Profile* profile,
-                  DocumentsServiceInterface* documents_service);
+  GDataFileSystem(
+      Profile* profile,
+      GDataCache* cache,
+      DocumentsServiceInterface* documents_service,
+      const base::SequencedWorkerPool::SequenceToken& sequence_token);
   virtual ~GDataFileSystem();
 
   // GDataFileSystem overrides.
@@ -486,14 +473,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const ReadDirectoryCallback& callback) OVERRIDE;
   virtual void RequestDirectoryRefresh(
       const FilePath& file_path) OVERRIDE;
-  virtual bool IsUnderGDataCacheDirectory(const FilePath& path) const OVERRIDE;
-  virtual FilePath GetCacheDirectoryPath(
-      GDataCache::CacheSubDirectoryType sub_dir_type) const OVERRIDE;
-  virtual FilePath GetCacheFilePath(
-      const std::string& resource_id,
-      const std::string& md5,
-      GDataCache::CacheSubDirectoryType sub_dir_type,
-      GDataCache::CachedFileOrigin file_orign) const OVERRIDE;
   virtual void GetAvailableSpace(
       const GetAvailableSpaceCallback& callback) OVERRIDE;
   // Calls private Pin or Unpin methods with |callback|.
@@ -1472,7 +1451,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const SetMountedStateCallback& callback);
 
   scoped_ptr<GDataRootDirectory> root_;
-  scoped_ptr<GDataCache> cache_;
 
   // This guards regular states.
   base::Lock lock_;
@@ -1480,7 +1458,10 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // The profile hosts the GDataFileSystem via GDataSystemService.
   Profile* profile_;
 
-  // The document service for the GDataFileSystem.
+  // The cache owned by GDataSystemService.
+  GDataCache* cache_;
+
+  // The document service owned by GDataSystemService.
   DocumentsServiceInterface* documents_service_;
 
   // Waitable events used to block destructor until all the tasks on blocking

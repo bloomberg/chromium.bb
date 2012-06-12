@@ -37,10 +37,11 @@ class GDataSyncClientTest : public testing::Test {
  public:
   GDataSyncClientTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
+        io_thread_(content::BrowserThread::IO),
+        sequence_token_(
+            content::BrowserThread::GetBlockingPool()->GetSequenceToken()),
         profile_(new TestingProfile),
         mock_file_system_(new MockGDataFileSystem),
-        sync_client_(new GDataSyncClient(profile_.get(),
-                                         mock_file_system_.get())),
         mock_network_library_(NULL) {
   }
 
@@ -51,14 +52,23 @@ class GDataSyncClientTest : public testing::Test {
     mock_network_library_ = new chromeos::MockNetworkLibrary;
     chromeos::CrosLibrary::Get()->GetTestApi()->SetNetworkLibrary(
         mock_network_library_, true);
-    EXPECT_CALL(*mock_network_library_, AddNetworkManagerObserver(
-        sync_client_.get())).Times(1);
-    EXPECT_CALL(*mock_network_library_, RemoveNetworkManagerObserver(
-        sync_client_.get())).Times(1);
 
     // Create a temporary directory.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
+    // Initialize the sync client.
+    cache_.reset(GDataCache::CreateGDataCache(
+        temp_dir_.path(),
+        content::BrowserThread::GetBlockingPool(),
+        sequence_token_).release());
+    sync_client_.reset(new GDataSyncClient(profile_.get(),
+                                           mock_file_system_.get(),
+                                           cache_.get()));
+
+    EXPECT_CALL(*mock_network_library_, AddNetworkManagerObserver(
+        sync_client_.get())).Times(1);
+    EXPECT_CALL(*mock_network_library_, RemoveNetworkManagerObserver(
+        sync_client_.get())).Times(1);
     EXPECT_CALL(*mock_file_system_, AddObserver(sync_client_.get()))
         .Times(1);
     EXPECT_CALL(*mock_file_system_, RemoveObserver(sync_client_.get()))
@@ -72,6 +82,23 @@ class GDataSyncClientTest : public testing::Test {
     // client registers itself as observer of NetworkLibrary.
     sync_client_.reset();
     chromeos::CrosLibrary::Shutdown();
+    content::BrowserThread::GetBlockingPool()
+        ->GetSequencedTaskRunner(sequence_token_)->PostTask(
+            FROM_HERE,
+            base::Bind(&base::DeletePointer<GDataCache>, cache_.release()));
+    RunAllPendingForIO();
+  }
+
+  // Used to wait for the result from an operation that involves file IO,
+  // that runs on the blocking pool thread.
+  void RunAllPendingForIO() {
+    // We should first flush tasks on UI thread, as it can require some
+    // tasks to be run before IO tasks start.
+    message_loop_.RunAllPending();
+    content::BrowserThread::GetBlockingPool()->FlushForTesting();
+    // Once IO tasks are done, flush UI thread again so the results from IO
+    // tasks are processed.
+    message_loop_.RunAllPending();
   }
 
   // Sets up MockNetworkLibrary as if it's connected to wifi network.
@@ -124,21 +151,26 @@ class GDataSyncClientTest : public testing::Test {
 
   // Sets up test files in the temporary directory.
   void SetUpTestFiles() {
+    // Create a directory in the temporary directory for pinned files.
+    const FilePath pinned_dir =
+        cache_->GetCacheDirectoryPath(GDataCache::CACHE_TYPE_PINNED);
+    ASSERT_TRUE(file_util::CreateDirectory(pinned_dir));
+
     // Create a symlink in the temporary directory to /dev/null.
     // We'll collect this resource ID as a file to be fetched.
     ASSERT_TRUE(
         file_util::CreateSymbolicLink(
             FilePath::FromUTF8Unsafe("/dev/null"),
-            temp_dir_.path().Append("resource_id_not_fetched_foo")));
+            pinned_dir.Append("resource_id_not_fetched_foo")));
     // Create some more.
     ASSERT_TRUE(
         file_util::CreateSymbolicLink(
             FilePath::FromUTF8Unsafe("/dev/null"),
-            temp_dir_.path().Append("resource_id_not_fetched_bar")));
+            pinned_dir.Append("resource_id_not_fetched_bar")));
     ASSERT_TRUE(
         file_util::CreateSymbolicLink(
             FilePath::FromUTF8Unsafe("/dev/null"),
-            temp_dir_.path().Append("resource_id_not_fetched_baz")));
+            pinned_dir.Append("resource_id_not_fetched_baz")));
 
     // Create a symlink in the temporary directory to a test file
     // We won't collect this resource ID, as it already exists.
@@ -149,7 +181,7 @@ class GDataSyncClientTest : public testing::Test {
     ASSERT_TRUE(
         file_util::CreateSymbolicLink(
             test_file_path,
-            temp_dir_.path().Append("resource_id_fetched")));
+            pinned_dir.Append("resource_id_fetched")));
   }
 
   // Called when StartInitialScan() is complete.
@@ -172,9 +204,12 @@ class GDataSyncClientTest : public testing::Test {
  protected:
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
+  content::TestBrowserThread io_thread_;
+  const base::SequencedWorkerPool::SequenceToken sequence_token_;
   ScopedTempDir temp_dir_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<MockGDataFileSystem> mock_file_system_;
+  scoped_ptr<GDataCache> cache_;
   scoped_ptr<GDataSyncClient> sync_client_;
   chromeos::MockNetworkLibrary* mock_network_library_;
   scoped_ptr<chromeos::Network> active_network_;
@@ -182,10 +217,6 @@ class GDataSyncClientTest : public testing::Test {
 
 TEST_F(GDataSyncClientTest, StartInitialScan) {
   SetUpTestFiles();
-
-  EXPECT_CALL(*mock_file_system_, GetCacheDirectoryPath(
-      GDataCache::CACHE_TYPE_PINNED))
-      .WillOnce(Return(temp_dir_.path()));
 
   sync_client_->StartInitialScan(
       base::Bind(&GDataSyncClientTest::OnInitialScanComplete,

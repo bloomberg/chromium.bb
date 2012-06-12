@@ -198,22 +198,23 @@ void AddGDataMountPoint(
   // |system_service| is NULL if incognito window / guest login.
   if (!system_service || !system_service->file_system())
     return;
-  gdata::GDataFileSystem* gdata_file_system = system_service->file_system();
+  gdata::GDataCache* cache = system_service->cache();
 
   // We check permissions for raw cache file paths only for read-only
   // operations (when fileEntry.file() is called), so read only permissions
   // should be sufficient for all cache paths. For the rest of supported
   // operations the file access check is done for drive/ paths.
   GrantFilePermissionsToHost(render_view_host,
-                             gdata_file_system->GetCacheDirectoryPath(
+                             cache->GetCacheDirectoryPath(
                                  gdata::GDataCache::CACHE_TYPE_TMP),
                              file_handler_util::GetReadOnlyPermissions());
   GrantFilePermissionsToHost(
       render_view_host,
-      gdata_file_system->GetCacheDirectoryPath(
+      cache->GetCacheDirectoryPath(
           gdata::GDataCache::CACHE_TYPE_PERSISTENT),
       file_handler_util::GetReadOnlyPermissions());
 
+  gdata::GDataFileSystem* gdata_file_system = system_service->file_system();
   provider->AddRemoteMountPoint(
       mount_point,
       new gdata::GDataFileSystemProxy(gdata_file_system));
@@ -1003,7 +1004,9 @@ void AddMountFunction::GetLocalPathsResponseOnUIThread(
       gdata::GDataSystemServiceFactory::GetForProfile(profile_);
   gdata::GDataFileSystem* file_system =
       system_service ? system_service->file_system() : NULL;
-  if (file_system && file_system->IsUnderGDataCacheDirectory(source_path)) {
+  gdata::GDataCache* cache =
+      system_service ? system_service->cache() : NULL;
+  if (file_system && cache && cache->IsUnderGDataCacheDirectory(source_path)) {
     file_system->SetMountedState(
         source_path,
         true,

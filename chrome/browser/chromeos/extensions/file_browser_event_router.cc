@@ -318,9 +318,13 @@ void FileBrowserEventRouter::MountCompleted(
         (error_code == chromeos::MOUNT_ERROR_NONE)) {
       FilePath source_path(mount_info.source_path);
       gdata::GDataFileSystem* file_system = GetRemoteFileSystem();
-      if (file_system && file_system->IsUnderGDataCacheDirectory(source_path))
+      gdata::GDataSystemService* system_service =
+          gdata::GDataSystemServiceFactory::GetForProfile(profile_);
+      if (file_system && system_service &&
+          system_service->cache()->IsUnderGDataCacheDirectory(source_path)) {
         file_system->SetMountedState(source_path, false,
                                      gdata::SetMountedStateCallback());
+      }
     }
   }
 }
