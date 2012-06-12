@@ -28,6 +28,7 @@ declare -a g_cleanup_dirs
 # Binaries to sign.
 ME2ME_HOST='PrivilegedHelperTools/org.chromium.chromoting.me2me_host.app'
 UNINSTALLER='Applications/@@HOST_UNINSTALLER_NAME@@.app'
+PREFPANE='PreferencePanes/org.chromium.chromoting.prefPane'
 
 # The Chromoting Host installer is a meta-package that consists of 3
 # components:
@@ -38,14 +39,17 @@ if $USE_ICEBERG ; then
   PKGPROJ_HOST='ChromotingHost.packproj'
   PKGPROJ_HOST_SERVICE='ChromotingHostService.packproj'
   PKGPROJ_HOST_UNINSTALLER='ChromotingHostUninstaller.packproj'
+
+  # Final (user-visible) mpkg name.
+  PKG_FINAL='@@HOST_PKG@@.mpkg'
 else
   PKGPROJ_HOST='ChromotingHost.pkgproj'
   PKGPROJ_HOST_SERVICE='ChromotingHostService.pkgproj'
   PKGPROJ_HOST_UNINSTALLER='ChromotingHostUninstaller.pkgproj'
-fi
 
-# Final (user-visible) mpkg name.
-PKG_FINAL='@@HOST_PKG@@.mpkg'
+  # Final (user-visible) pkg name.
+  PKG_FINAL='@@HOST_PKG@@.pkg'
+fi
 
 DMG_VOLUME_NAME='@@DMG_VOLUME_NAME@@'
 DMG_FILE_NAME='@@DMG_FILE_NAME@@.dmg'
@@ -115,6 +119,15 @@ sign_binaries() {
 
   sign "${input_dir}/${ME2ME_HOST}" "${keychain}" "${id}"
   sign "${input_dir}/${UNINSTALLER}" "${keychain}" "${id}"
+  sign "${input_dir}/${PREFPANE}" "${keychain}" "${id}"
+}
+
+sign_installer() {
+  local input_dir="${1}"
+  local keychain="${2}"
+  local id="${3}"
+
+  sign "${input_dir}/${PKG_DIR}/${PKG_FINAL}" "${keychain}" "${id}"
 }
 
 build_package() {
@@ -174,8 +187,7 @@ main() {
 
   sign_binaries "${input_dir}" "${codesign_keychain}" "${codesign_id}"
   build_packages "${input_dir}"
-  # TODO(garykac): Sign final .mpkg once we've switched to Packages.
-  # (crbug.com/127267)
+  sign_installer "${input_dir}" "${codesign_keychain}" "${codesign_id}"
   build_dmg "${input_dir}" "${output_dir}"
 
   cleanup

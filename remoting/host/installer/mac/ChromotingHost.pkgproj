@@ -697,7 +697,7 @@
 				</array>
 			</dict>
 			<key>BUILD_FORMAT</key>
-			<integer>1</integer>
+			<integer>0</integer>
 			<key>BUILD_PATH</key>
 			<dict>
 				<key>PATH</key>
