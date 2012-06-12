@@ -18,6 +18,11 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/net_module.h"
 
+#if defined(OS_ANDROID)
+#include "net/base/network_change_notifier.h"
+#include "net/android/network_change_notifier_factory.h"
+#endif
+
 namespace content {
 
 static GURL GetStartupURL() {
@@ -51,7 +56,8 @@ void ShellBrowserMainParts::PostMainMessageLoopStart() {
 
 void ShellBrowserMainParts::PreEarlyInitialization() {
 #if defined(OS_ANDROID)
-  // TODO(tedchoc): Setup the NetworkChangeNotifier here.
+  net::NetworkChangeNotifier::SetFactory(
+      new net::android::NetworkChangeNotifierFactory());
 #endif
 }
 
