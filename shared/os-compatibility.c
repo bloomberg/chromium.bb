@@ -168,3 +168,13 @@ os_create_anonymous_file(off_t size)
 
 	return fd;
 }
+
+#ifndef HAVE_STRCHRNUL
+char *
+strchrnul(const char *s, int c)
+{
+	while (*s && *s != c)
+		s++;
+	return (char *)s;
+}
+#endif

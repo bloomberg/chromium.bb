@@ -27,7 +27,7 @@ AC_SUBST(DLOPEN_LIBS)
 
 AC_CHECK_HEADERS([execinfo.h])
 
-AC_CHECK_FUNCS([mkostemp])
+AC_CHECK_FUNCS([mkostemp strchrnul])
 
 PKG_CHECK_MODULES(COMPOSITOR,
 		  [wayland-server egl >= 7.10 glesv2 xkbcommon pixman-1])

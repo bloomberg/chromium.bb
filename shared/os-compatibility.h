@@ -46,4 +46,9 @@ os_epoll_create_cloexec(void);
 int
 os_create_anonymous_file(off_t size);
 
+#ifndef HAVE_STRCHRNUL
+char *
+strchrnul(const char *s, int c);
+#endif
+
 #endif /* OS_COMPATIBILITY_H */
