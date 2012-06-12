@@ -12,7 +12,7 @@
 from driver_tools import Run, ParseArgs
 from driver_env import env
 
-EXTRA_ENV = [ 'ARGS'          : '' ]
+EXTRA_ENV = { 'ARGS'          : '' }
 # just pass all args through to 'ARGS' and eventually to the underlying tool
 PATTERNS = [ ( '(.*)',  "env.append('ARGS', $0)") ]
 
