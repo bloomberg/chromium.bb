@@ -364,6 +364,17 @@ class FullscreenMouselockTest(pyauto.PyUITest):
     self.assertTrue(self.WaitUntil(lambda: not self.IsMouseLocked()),
                     msg='Mouse lock did not break when page is reloaded.')
 
+  def testNoMLBubbleWhenTabLoseFocus(self):
+    """Verify mouse lock bubble goes away when tab loses focus."""
+    self.NavigateToURL(self.GetHttpURLForDataPath(
+        'fullscreen_mouselock', 'fullscreen_mouselock.html'))
+    self._driver.find_element_by_id('lockMouse1').click()
+    self.assertTrue(self.WaitUntil(self.IsMouseLockPermissionRequested))
+    self.AppendTab(pyauto.GURL('chrome://newtab'))
+    self.assertTrue(self.WaitUntil(
+        lambda: not self.IsFullscreenBubbleDisplayingButtons()),
+                    msg='Mouse lock bubble did not clear when tab lost focus.')
+
   def ExitTabFSToBrowserFS(self):
     """Verify exiting tab fullscreen leaves browser in browser fullscreen.
 
