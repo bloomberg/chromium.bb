@@ -393,6 +393,7 @@
         '../third_party/skia/src/gpu/GrPathRendererChain.h',
         '../third_party/skia/src/gpu/GrSoftwarePathRenderer.cpp',
         '../third_party/skia/src/gpu/GrSoftwarePathRenderer.h',
+        '../third_party/skia/src/gpu/GrPath.h',
         '../third_party/skia/src/gpu/GrPathUtils.cpp',
         '../third_party/skia/src/gpu/GrPlotMgr.h',
         '../third_party/skia/src/gpu/GrRandom.h',
@@ -439,6 +440,8 @@
         '../third_party/skia/src/gpu/gl/GrGLIndexBuffer.cpp',
         '../third_party/skia/src/gpu/gl/GrGLIndexBuffer.h',
         '../third_party/skia/src/gpu/gl/GrGLInterface.cpp',
+        '../third_party/skia/src/gpu/gl/GrGLPath.cpp',
+        '../third_party/skia/src/gpu/gl/GrGLPath.h',
         '../third_party/skia/src/gpu/gl/GrGLProgram.cpp',
         '../third_party/skia/src/gpu/gl/GrGLProgram.h',
         '../third_party/skia/src/gpu/gl/GrGLProgramStage.cpp',
@@ -556,6 +559,7 @@
         '../third_party/skia/src/utils/SkBitSet.h',
         '../third_party/skia/src/utils/SkDeferredCanvas.cpp',
         '../third_party/skia/src/utils/SkMatrix44.cpp',
+        '../third_party/skia/src/utils/SkNullCanvas.cpp',
         '../third_party/skia/include/utils/SkNWayCanvas.h',
         '../third_party/skia/src/utils/SkNWayCanvas.cpp',
 
@@ -714,6 +718,8 @@
         '../third_party/skia/include/images/SkImageRef_GlobalPool.h',
         '../third_party/skia/include/images/SkMovie.h',
         '../third_party/skia/include/images/SkPageFlipper.h',
+
+        '../third_party/skia/include/utils/SkNullCanvas.h',
 
         'ext/bitmap_platform_device.h',
         'ext/bitmap_platform_device_android.cc',
