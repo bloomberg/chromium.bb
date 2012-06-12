@@ -48,10 +48,8 @@ int RecordAndMapError(int error,
 
   bound_net_log.AddEvent(
       net::NetLog::TYPE_FILE_STREAM_ERROR,
-      make_scoped_refptr(
-          new FileStreamErrorParameters(GetFileErrorSourceName(source),
-                                        error,
-                                        net_error)));
+      base::Bind(&NetLogFileStreamErrorCallback,
+                 source, error, net_error));
 
   RecordFileError(error, source, record_uma);
 
@@ -66,11 +64,10 @@ void OpenFile(const FilePath& path,
               base::PlatformFile* file,
               int* result,
               const net::BoundNetLog& bound_net_log) {
+  std::string file_name = path.AsUTF8Unsafe();
   bound_net_log.BeginEvent(
       net::NetLog::TYPE_FILE_STREAM_OPEN,
-      make_scoped_refptr(
-          new net::NetLogStringParameter("file_name",
-                                         path.AsUTF8Unsafe())));
+      NetLog::StringCallback("file_name", &file_name));
 
   *file = base::CreatePlatformFile(path, open_flags, NULL, NULL);
   if (*file == base::kInvalidPlatformFileValue) {
@@ -656,15 +653,11 @@ void FileStreamWin::SetBoundNetLogSource(
 
   bound_net_log_.AddEvent(
       net::NetLog::TYPE_FILE_STREAM_BOUND_TO_OWNER,
-      make_scoped_refptr(
-          new net::NetLogSourceParameter("source_dependency",
-                                         owner_bound_net_log.source())));
+      owner_bound_net_log.source().ToEventParametersCallback());
 
   owner_bound_net_log.AddEvent(
       net::NetLog::TYPE_FILE_STREAM_SOURCE,
-      make_scoped_refptr(
-          new net::NetLogSourceParameter("source_dependency",
-                                         bound_net_log_.source())));
+      bound_net_log_.source().ToEventParametersCallback());
 }
 
 base::PlatformFile FileStreamWin::GetPlatformFileForTesting() {
