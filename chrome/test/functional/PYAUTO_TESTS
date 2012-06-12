@@ -493,6 +493,8 @@
       '-execute_javascript.ExecuteJavascriptTest.testExecuteJavascriptInExtension',
       # crbug.com/132272
       '-shortcuts.ShortcutsTest.testHelpShortcut',
+      # crbug.com/132285
+      '-special_tabs.SpecialTabsTest.testSpecialURLTabs',
       # crbug.com/129802
       '-translate.TranslateTest.testAlwaysTranslateLanguageButton',
       '-translate.TranslateTest.testChangeTargetLanguageAlwaysTranslate',
