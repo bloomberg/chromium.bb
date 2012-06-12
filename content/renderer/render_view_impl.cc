@@ -3737,10 +3737,6 @@ gfx::Size RenderViewImpl::GetSize() const {
   return size();
 }
 
-gfx::NativeViewId RenderViewImpl::GetHostWindow() const {
-  return host_window();
-}
-
 WebPreferences& RenderViewImpl::GetWebkitPreferences() {
   return webkit_preferences_;
 }

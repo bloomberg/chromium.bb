@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,9 @@
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/common/print_messages.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 
 #if defined(OS_CHROMEOS)
 #include <fcntl.h>
@@ -22,9 +25,6 @@
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
 #include "chrome/browser/printing/print_dialog_cloud.h"
-#include "content/public/browser/render_view_host.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
 #endif
 
 using content::BrowserThread;
@@ -169,43 +169,86 @@ void PrintingMessageFilter::OnTempFileForPrintingWritten(int render_view_id,
                     "renderer: " << sequence_number;
     return;
   }
-
-  content::RenderViewHost* view = content::RenderViewHost::FromID(
-      render_process_id_, render_view_id);
-  content::WebContents* wc = content::WebContents::FromRenderViewHost(view);
-  print_dialog_cloud::CreatePrintDialogForFile(
-      wc->GetBrowserContext(),
-      wc->GetView()->GetTopLevelNativeWindow(),
-      it->second,
-      string16(),
-      string16(),
-      std::string("application/pdf"),
-      false);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&PrintingMessageFilter::CreatePrintDialogForFile,
+                 this, render_view_id, it->second));
 
   // Erase the entry in the map.
   map->erase(it);
 }
+
+void PrintingMessageFilter::CreatePrintDialogForFile(int render_view_id,
+                                                     const FilePath& path) {
+  content::WebContents* wc = GetWebContentsForRenderView(render_view_id);
+  print_dialog_cloud::CreatePrintDialogForFile(
+      wc->GetBrowserContext(),
+      wc->GetView()->GetTopLevelNativeWindow(),
+      path,
+      string16(),
+      string16(),
+      std::string("application/pdf"),
+      false);
+}
 #endif  // defined(OS_CHROMEOS)
 
+content::WebContents* PrintingMessageFilter::GetWebContentsForRenderView(
+    int render_view_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  content::RenderViewHost* view = content::RenderViewHost::FromID(
+      render_process_id_, render_view_id);
+  return content::WebContents::FromRenderViewHost(view);
+}
+
+struct PrintingMessageFilter::GetPrintSettingsForRenderViewParams {
+  printing::PrinterQuery::GetSettingsAskParam ask_user_for_settings;
+  int expected_page_count;
+  bool has_selection;
+  printing::MarginType margin_type;
+};
+
+void PrintingMessageFilter::GetPrintSettingsForRenderView(
+    int render_view_id,
+    GetPrintSettingsForRenderViewParams params,
+    const base::Closure& callback,
+    scoped_refptr<printing::PrinterQuery> printer_query) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  content::WebContents* wc = GetWebContentsForRenderView(render_view_id);
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&printing::PrinterQuery::GetSettings, printer_query,
+                 params.ask_user_for_settings, wc->GetView()->GetNativeView(),
+                 params.expected_page_count, params.has_selection,
+                 params.margin_type, callback));
+}
+
 void PrintingMessageFilter::OnGetDefaultPrintSettings(IPC::Message* reply_msg) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   scoped_refptr<printing::PrinterQuery> printer_query;
   if (!print_job_manager_->printing_enabled()) {
     // Reply with NULL query.
     OnGetDefaultPrintSettingsReply(printer_query, reply_msg);
     return;
   }
-
   print_job_manager_->PopPrinterQuery(0, &printer_query);
   if (!printer_query.get())
     printer_query = new printing::PrinterQuery;
 
   // Loads default settings. This is asynchronous, only the IPC message sender
   // will hang until the settings are retrieved.
-  printer_query->GetSettings(
-      printing::PrinterQuery::DEFAULTS, NULL, 0, false,
-      printing::DEFAULT_MARGINS,
-      base::Bind(&PrintingMessageFilter::OnGetDefaultPrintSettingsReply, this,
-                 printer_query, reply_msg));
+  GetPrintSettingsForRenderViewParams params;
+  params.ask_user_for_settings = printing::PrinterQuery::DEFAULTS;
+  params.expected_page_count = 0;
+  params.has_selection = false;
+  params.margin_type = printing::DEFAULT_MARGINS;
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&PrintingMessageFilter::GetPrintSettingsForRenderView, this,
+          reply_msg->routing_id(), params,
+          base::Bind(&PrintingMessageFilter::OnGetDefaultPrintSettingsReply,
+              this, printer_query, reply_msg),
+          printer_query));
 }
 
 void PrintingMessageFilter::OnGetDefaultPrintSettingsReply(
@@ -235,20 +278,24 @@ void PrintingMessageFilter::OnGetDefaultPrintSettingsReply(
 void PrintingMessageFilter::OnScriptedPrint(
     const PrintHostMsg_ScriptedPrint_Params& params,
     IPC::Message* reply_msg) {
-  gfx::NativeView host_view =
-      gfx::NativeViewFromIdInBrowser(params.host_window_id);
-
   scoped_refptr<printing::PrinterQuery> printer_query;
   print_job_manager_->PopPrinterQuery(params.cookie, &printer_query);
   if (!printer_query.get()) {
     printer_query = new printing::PrinterQuery;
   }
+  GetPrintSettingsForRenderViewParams settings_params;
+  settings_params.ask_user_for_settings = printing::PrinterQuery::ASK_USER;
+  settings_params.expected_page_count = params.expected_pages_count;
+  settings_params.has_selection = params.has_selection;
+  settings_params.margin_type = params.margin_type;
 
-  printer_query->GetSettings(
-      printing::PrinterQuery::ASK_USER, host_view, params.expected_pages_count,
-      params.has_selection, params.margin_type,
-      base::Bind(&PrintingMessageFilter::OnScriptedPrintReply, this,
-                 printer_query, reply_msg));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&PrintingMessageFilter::GetPrintSettingsForRenderView, this,
+                 reply_msg->routing_id(), settings_params,
+                 base::Bind(&PrintingMessageFilter::OnScriptedPrintReply, this,
+                            printer_query, reply_msg),
+                 printer_query));
 }
 
 void PrintingMessageFilter::OnScriptedPrintReply(

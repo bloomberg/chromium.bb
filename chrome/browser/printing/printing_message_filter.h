@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,10 +15,15 @@
 #include "base/shared_memory.h"
 #endif
 
+class FilePath;
 struct PrintHostMsg_ScriptedPrint_Params;
 
 namespace base {
 class DictionaryValue;
+}
+
+namespace content {
+class WebContents;
 }
 
 namespace printing {
@@ -54,10 +59,28 @@ class PrintingMessageFilter : public content::BrowserMessageFilter {
   void OnAllocateTempFileForPrinting(base::FileDescriptor* temp_file_fd,
                                      int* sequence_number);
   void OnTempFileForPrintingWritten(int render_view_id, int sequence_number);
+  void CreatePrintDialogForFile(int render_view_id, const FilePath& path);
 #endif
 
-  // Get the default print setting. The task is handled by the print
-  // worker thread and the UI thread. The reply occurs on the IO thread.
+  // Given a render_view_id get the corresponding WebContents.
+  // Must be called on the UI thread.
+  content::WebContents* GetWebContentsForRenderView(int render_view_id);
+
+  // GetPrintSettingsForRenderView must be called via PostTask and
+  // base::Bind.  Collapse the settings-specific params into a
+  // struct to avoid running into issues with too many params
+  // to base::Bind.
+  struct GetPrintSettingsForRenderViewParams;
+
+  // Retrieve print settings.  Uses |render_view_id| to get a parent
+  // for any UI created if needed.
+  void GetPrintSettingsForRenderView(
+      int render_view_id,
+      GetPrintSettingsForRenderViewParams params,
+      const base::Closure& callback,
+      scoped_refptr<printing::PrinterQuery> printer_query);
+
+  // Get the default print setting.
   void OnGetDefaultPrintSettings(IPC::Message* reply_msg);
   void OnGetDefaultPrintSettingsReply(
       scoped_refptr<printing::PrinterQuery> printer_query,

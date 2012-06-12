@@ -251,7 +251,6 @@ IPC_STRUCT_END()
 
 // Parameters for the IPC message ViewHostMsg_ScriptedPrint
 IPC_STRUCT_BEGIN(PrintHostMsg_ScriptedPrint_Params)
-  IPC_STRUCT_MEMBER(gfx::NativeViewId, host_window_id)
   IPC_STRUCT_MEMBER(int, cookie)
   IPC_STRUCT_MEMBER(int, expected_pages_count)
   IPC_STRUCT_MEMBER(bool, has_selection)

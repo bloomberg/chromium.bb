@@ -64,9 +64,6 @@ class CONTENT_EXPORT RenderView : public IPC::Message::Sender {
   // Returns the size of the view.
   virtual gfx::Size GetSize() const = 0;
 
-  // Returns the window we are embedded within.
-  virtual gfx::NativeViewId GetHostWindow() const = 0;
-
   // Gets WebKit related preferences associated with this view.
   virtual webkit_glue::WebPreferences& GetWebkitPreferences() = 0;
 

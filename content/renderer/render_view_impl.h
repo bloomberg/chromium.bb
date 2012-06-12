@@ -660,7 +660,6 @@ class RenderViewImpl : public RenderWidget,
   virtual int GetRoutingID() const OVERRIDE;
   virtual int GetPageId() const OVERRIDE;
   virtual gfx::Size GetSize() const OVERRIDE;
-  virtual gfx::NativeViewId GetHostWindow() const OVERRIDE;
   virtual webkit_glue::WebPreferences& GetWebkitPreferences() OVERRIDE;
   virtual WebKit::WebView* GetWebView() OVERRIDE;
   virtual WebKit::WebNode GetFocusedNode() const OVERRIDE;

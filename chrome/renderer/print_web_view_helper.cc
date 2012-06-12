@@ -1539,10 +1539,6 @@ bool PrintWebViewHelper::GetPrintSettingsFromUser(WebKit::WebFrame* frame,
   PrintHostMsg_ScriptedPrint_Params params;
   PrintMsg_PrintPages_Params print_settings;
 
-  // host_window_ may be NULL at this point if the current window is a
-  // popup and the print() command has been issued from the parent. The
-  // receiver of this message has to deal with this.
-  params.host_window_id = render_view()->GetHostWindow();
   params.cookie = print_pages_params_->params.document_cookie;
   params.has_selection = frame->hasSelection();
   params.expected_pages_count = expected_pages_count;
