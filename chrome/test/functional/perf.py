@@ -376,14 +376,15 @@ class BasePerfTest(pyauto.PyUITest):
           are iteration numbers.  If this argument is specified, then the
           |value| argument must be a list of (x, y) tuples.
     """
-    if isinstance(value, list) and value[0] and isinstance(value[0], tuple):
+    if (isinstance(value, list) and value[0] is not None and
+        isinstance(value[0], tuple)):
       assert units_x
     if units_x:
       assert isinstance(value, list)
 
     if self.IsChromeOS():
       # ChromeOS results don't support lists.
-      if (isinstance(value, list) and value[0] and
+      if (isinstance(value, list) and value[0] is not None and
           not isinstance(value[0], tuple)):
         value = Mean(value)
 
