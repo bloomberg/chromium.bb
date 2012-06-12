@@ -137,7 +137,7 @@ GlobalMenuBarCommand tools_menu[] = {
 
 GlobalMenuBarCommand help_menu[] = {
   { IDS_FEEDBACK, IDC_FEEDBACK },
-  { IDS_HELP_PAGE , IDC_HELP_PAGE },
+  { IDS_HELP_PAGE , IDC_HELP_PAGE_VIA_MENU },
   { MENU_END, MENU_END }
 };
 

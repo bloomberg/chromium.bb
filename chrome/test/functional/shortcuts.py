@@ -155,7 +155,7 @@ class ShortcutsTest(pyauto.PyUITest):
 
   def testHelpShortcut(self):
     """Verify help shortcut opens help page."""
-    self.ApplyAccelerator(pyauto.IDC_HELP_PAGE)
+    self.ApplyAccelerator(pyauto.IDC_HELP_PAGE_VIA_KEYBOARD)
     help_page_title = 'Google Chrome Help'
     if self.IsChromeOS():
       help_page_title = 'Chrome OS Help'

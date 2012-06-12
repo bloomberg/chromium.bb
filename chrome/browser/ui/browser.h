@@ -158,6 +158,18 @@ class Browser : public TabStripModelDelegate,
     DOWNLOAD_CLOSE_LAST_WINDOW_IN_INCOGNITO_PROFILE,
   };
 
+  // Sources of requests to show the help tab.
+  enum HelpSource {
+    // Keyboard accelerators.
+    HELP_SOURCE_KEYBOARD,
+
+    // Menus (e.g. wrench menu or Chrome OS system menu).
+    HELP_SOURCE_MENU,
+
+    // WebUI (the "About" page).
+    HELP_SOURCE_WEBUI,
+  };
+
   // Different types of action when web app info is available.
   // OnDidGetApplicationInfo uses this to dispatch calls.
   enum WebAppAction {
@@ -314,7 +326,7 @@ class Browser : public TabStripModelDelegate,
   static void OpenAboutWindow(Profile* profile);
   static void OpenHistoryWindow(Profile* profile);
   static void OpenDownloadsWindow(Profile* profile);
-  static void OpenHelpWindow(Profile* profile);
+  static void OpenHelpWindow(Profile* profile, HelpSource source);
   static void OpenOptionsWindow(Profile* profile);
   static void OpenSyncSetupWindow(Profile* profile,
                                   SyncPromoUI::Source source);
@@ -627,7 +639,7 @@ class Browser : public TabStripModelDelegate,
   void OpenInstantConfirmDialog();
   void OpenAboutChromeDialog();
   void OpenUpdateChromeDialog();
-  void ShowHelpTab();
+  void ShowHelpTab(HelpSource source);
   void OpenPrivacyDashboardTabAndActivate();
   void OpenSearchEngineOptionsDialog();
   void OpenPluginsTabAndActivate();

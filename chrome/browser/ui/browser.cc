@@ -690,9 +690,9 @@ void Browser::OpenDownloadsWindow(Profile* profile) {
 }
 
 // static
-void Browser::OpenHelpWindow(Profile* profile) {
+void Browser::OpenHelpWindow(Profile* profile, HelpSource source) {
   Browser* browser = Browser::Create(profile);
-  browser->ShowHelpTab();
+  browser->ShowHelpTab(source);
   browser->window()->Show();
 }
 
@@ -1987,9 +1987,23 @@ void Browser::OpenUpdateChromeDialog() {
   window_->ShowUpdateChromeDialog();
 }
 
-void Browser::ShowHelpTab() {
+void Browser::ShowHelpTab(HelpSource source) {
   content::RecordAction(UserMetricsAction("ShowHelpTab"));
-  ShowSingletonTab(GURL(chrome::kChromeHelpURL));
+  GURL url;
+  switch (source) {
+    case HELP_SOURCE_KEYBOARD:
+      url = GURL(chrome::kChromeHelpViaKeyboardURL);
+      break;
+    case HELP_SOURCE_MENU:
+      url = GURL(chrome::kChromeHelpViaMenuURL);
+      break;
+    case HELP_SOURCE_WEBUI:
+      url = GURL(chrome::kChromeHelpViaWebUIURL);
+      break;
+    default:
+      NOTREACHED() << "Unhandled help source " << source;
+  }
+  ShowSingletonTab(url);
 }
 
 void Browser::OpenPrivacyDashboardTabAndActivate() {
@@ -2483,9 +2497,9 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_RESTORE_TAB:           RestoreTab();                     break;
     case IDC_COPY_URL:              WriteCurrentURLToClipboard();     break;
     case IDC_SHOW_AS_TAB:           ConvertPopupToTabbedBrowser();    break;
-    case IDC_FULLSCREEN:            ToggleFullscreenMode();      break;
+    case IDC_FULLSCREEN:            ToggleFullscreenMode();           break;
 #if defined(OS_MACOSX)
-    case IDC_PRESENTATION_MODE:     TogglePresentationMode();    break;
+    case IDC_PRESENTATION_MODE:     TogglePresentationMode();         break;
 #endif
     case IDC_EXIT:                  Exit();                           break;
 
@@ -2576,7 +2590,7 @@ void Browser::ExecuteCommandWithDisposition(
                                     break;
     case IDC_TASK_MANAGER:          OpenTaskManager(false);           break;
     case IDC_VIEW_BACKGROUND_PAGES: OpenTaskManager(true);            break;
-    case IDC_FEEDBACK:              OpenFeedbackDialog();            break;
+    case IDC_FEEDBACK:              OpenFeedbackDialog();             break;
 
     case IDC_SHOW_BOOKMARK_BAR:     ToggleBookmarkBar();              break;
     case IDC_PROFILING_ENABLED:     Profiling::Toggle();              break;
@@ -2595,7 +2609,8 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_ABOUT:                 OpenAboutChromeDialog();          break;
     case IDC_UPGRADE_DIALOG:        OpenUpdateChromeDialog();         break;
     case IDC_VIEW_INCOMPATIBILITIES: ShowAboutConflictsTab();         break;
-    case IDC_HELP_PAGE:             ShowHelpTab();                    break;
+    case IDC_HELP_PAGE_VIA_KEYBOARD: ShowHelpTab(HELP_SOURCE_KEYBOARD); break;
+    case IDC_HELP_PAGE_VIA_MENU:    ShowHelpTab(HELP_SOURCE_MENU);    break;
     case IDC_SHOW_SYNC_SETUP:       ShowSyncSetup(SyncPromoUI::SOURCE_MENU);
                                     break;
     case IDC_TOGGLE_SPEECH_INPUT:   ToggleSpeechInput();              break;
@@ -4110,7 +4125,8 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_TASK_MANAGER, true);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_HISTORY, true);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_DOWNLOADS, true);
-  command_updater_.UpdateCommandEnabled(IDC_HELP_PAGE, true);
+  command_updater_.UpdateCommandEnabled(IDC_HELP_PAGE_VIA_KEYBOARD, true);
+  command_updater_.UpdateCommandEnabled(IDC_HELP_PAGE_VIA_MENU, true);
   command_updater_.UpdateCommandEnabled(IDC_BOOKMARKS_MENU, true);
 
   command_updater_.UpdateCommandEnabled(

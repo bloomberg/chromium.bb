@@ -60,7 +60,7 @@ BEGIN
     VK_RIGHT,       IDC_FORWARD,                VIRTKEY, ALT
     VK_BACK,        IDC_FORWARD,                VIRTKEY, SHIFT
     VK_F11,         IDC_FULLSCREEN,             VIRTKEY
-    VK_F1,          IDC_HELP_PAGE,              VIRTKEY
+    VK_F1,          IDC_HELP_PAGE_VIA_KEYBOARD, VIRTKEY
     "I",            IDC_DEV_TOOLS,              VIRTKEY, CONTROL, SHIFT
     "J",            IDC_DEV_TOOLS_CONSOLE,      VIRTKEY, CONTROL, SHIFT
     "C",            IDC_DEV_TOOLS_INSPECT,      VIRTKEY, CONTROL, SHIFT

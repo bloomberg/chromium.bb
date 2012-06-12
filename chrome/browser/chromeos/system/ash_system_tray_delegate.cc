@@ -331,7 +331,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void ShowHelp() OVERRIDE {
-    GetAppropriateBrowser()->ShowHelpTab();
+    GetAppropriateBrowser()->ShowHelpTab(Browser::HELP_SOURCE_MENU);
   }
 
   virtual bool IsAudioMuted() const OVERRIDE {

@@ -234,7 +234,7 @@ GtkWidget* MenuGtk::Delegate::GetDefaultImageForCommandId(int command_id) {
       stock = GTK_STOCK_QUIT;
       break;
 
-    case IDC_HELP_PAGE:
+    case IDC_HELP_PAGE_VIA_MENU:
       stock = GTK_STOCK_HELP;
       break;
 

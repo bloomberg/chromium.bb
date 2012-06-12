@@ -891,11 +891,11 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
       else
         Browser::OpenExtensionsWindow(lastProfile);
       break;
-    case IDC_HELP_PAGE:
+    case IDC_HELP_PAGE_VIA_MENU:
       if (Browser* browser = ActivateBrowser(lastProfile))
-        browser->ShowHelpTab();
+        browser->ShowHelpTab(Browser::HELP_SOURCE_MENU);
       else
-        Browser::OpenHelpWindow(lastProfile);
+        Browser::OpenHelpWindow(lastProfile, Browser::HELP_SOURCE_MENU);
       break;
     case IDC_SHOW_SYNC_SETUP:
       if (Browser* browser = ActivateBrowser(lastProfile))
@@ -1024,7 +1024,7 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
   menuState_->UpdateCommandEnabled(IDC_SHOW_HISTORY, true);
   menuState_->UpdateCommandEnabled(IDC_SHOW_DOWNLOADS, true);
   menuState_->UpdateCommandEnabled(IDC_MANAGE_EXTENSIONS, true);
-  menuState_->UpdateCommandEnabled(IDC_HELP_PAGE, true);
+  menuState_->UpdateCommandEnabled(IDC_HELP_PAGE_VIA_MENU, true);
   menuState_->UpdateCommandEnabled(IDC_IMPORT_SETTINGS, true);
   menuState_->UpdateCommandEnabled(IDC_FEEDBACK, true);
   menuState_->UpdateCommandEnabled(IDC_SHOW_SYNC_SETUP, true);

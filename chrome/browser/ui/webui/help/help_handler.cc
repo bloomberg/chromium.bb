@@ -304,7 +304,7 @@ void HelpHandler::OpenHelpPage(const base::ListValue* args) {
   DCHECK(args->empty());
   Browser* browser = browser::FindBrowserWithWebContents(
       web_ui()->GetWebContents());
-  browser->ShowHelpTab();
+  browser->ShowHelpTab(Browser::HELP_SOURCE_WEBUI);
 }
 
 #if defined(OS_CHROMEOS)

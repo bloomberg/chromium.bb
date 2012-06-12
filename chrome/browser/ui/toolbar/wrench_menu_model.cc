@@ -333,7 +333,7 @@ void WrenchMenuModel::ExecuteCommand(int command_id) {
     }
   }
 
-  if (command_id == IDC_HELP_PAGE)
+  if (command_id == IDC_HELP_PAGE_VIA_MENU)
     content::RecordAction(UserMetricsAction("ShowHelpTabViaWrenchMenu"));
 
   browser_->ExecuteCommand(command_id);
@@ -504,11 +504,11 @@ void WrenchMenuModel::Build() {
 #endif
 
   if (!is_touch_menu) {
-    AddItemWithStringId(IDC_HELP_PAGE, IDS_HELP_PAGE);
+    AddItemWithStringId(IDC_HELP_PAGE_VIA_MENU, IDS_HELP_PAGE);
 
     if (browser_defaults::kShowHelpMenuItemIcon) {
       ui::ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-      SetIcon(GetIndexOfCommandId(IDC_HELP_PAGE),
+      SetIcon(GetIndexOfCommandId(IDC_HELP_PAGE_VIA_MENU),
               *rb.GetImageSkiaNamed(IDR_HELP_MENU));
     }
   }

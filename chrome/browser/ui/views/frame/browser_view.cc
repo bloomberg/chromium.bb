@@ -2200,7 +2200,7 @@ int BrowserView::GetCommandIDForAppCommandID(int app_command_id) const {
     case APPCOMMAND_BROWSER_HOME:     return IDC_HOME;
     case APPCOMMAND_BROWSER_STOP:     return IDC_STOP;
     case APPCOMMAND_BROWSER_SEARCH:   return IDC_FOCUS_SEARCH;
-    case APPCOMMAND_HELP:             return IDC_HELP_PAGE;
+    case APPCOMMAND_HELP:             return IDC_HELP_PAGE_VIA_KEYBOARD;
     case APPCOMMAND_NEW:              return IDC_NEW_TAB;
     case APPCOMMAND_OPEN:             return IDC_OPEN_FILE;
     case APPCOMMAND_CLOSE:            return IDC_CLOSE_TAB;
@@ -2250,7 +2250,7 @@ void BrowserView::InitHangMonitor() {
 void BrowserView::UpdateAcceleratorMetrics(
     const ui::Accelerator& accelerator, int command_id) {
   const ui::KeyboardCode key_code = accelerator.key_code();
-  if (command_id == IDC_HELP_PAGE && key_code == ui::VKEY_F1)
+  if (command_id == IDC_HELP_PAGE_VIA_KEYBOARD && key_code == ui::VKEY_F1)
     content::RecordAction(UserMetricsAction("ShowHelpTabViaF1"));
 
 #if defined(OS_CHROMEOS)

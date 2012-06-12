@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -165,7 +165,7 @@ const struct AcceleratorMapping {
     GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
   { GDK_h, IDC_SHOW_HISTORY, GDK_CONTROL_MASK },
   { GDK_j, IDC_SHOW_DOWNLOADS, GDK_CONTROL_MASK },
-  { GDK_F1, IDC_HELP_PAGE, GdkModifierType(0) },
+  { GDK_F1, IDC_HELP_PAGE_VIA_KEYBOARD, GdkModifierType(0) },
   { XF86XK_AddFavorite, IDC_BOOKMARK_PAGE, GdkModifierType(0) },
   { XF86XK_Favorites, IDC_SHOW_BOOKMARK_BAR, GdkModifierType(0) },
   { XF86XK_History, IDC_SHOW_HISTORY, GdkModifierType(0) },
