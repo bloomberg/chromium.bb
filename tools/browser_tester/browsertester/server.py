@@ -15,19 +15,6 @@ import time
 import urllib
 import urlparse
 
-def GetFileSize(f):
-  return os.fstat(f.fileno()).st_size
-
-def GetNetworkDelay(mbps, f):
-  # TODO(jvoung): account for latency too?
-  if mbps > 0.0:
-    filesize = GetFileSize(f)
-    return (filesize * 8) / (mbps * 1024.0 * 1024.0)
-  else:
-    # A mbps (megabits / second) value <= 0.0 is used to turn off
-    # bandwidth simulation.
-    return 0
-
 class RequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
   def NormalizePath(self, path):
@@ -166,19 +153,35 @@ class RequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
       # A normal GET request for transferring files, etc.
       f = self.send_head()
       if f:
-        # Assume all other responses are short / files are the big things.
-        delay = GetNetworkDelay(self.server.bandwidth, f)
-        if (delay > 0.0):
-          # TODO(ncbray): we may want to be more realistic and spread out
-          # the sleeps while copying the file (in the future we may be able
-          # to stream validation, nexe startup, etc.).
-          self.server.listener.Log('Simulate BW with delay %f(s)' % delay)
-          time.sleep(delay)
         self.copyfile(f, self.wfile)
         f.close()
 
     self.server.ResetTimeout()
 
+  def copyfile(self, source, outputfile):
+    # Bandwidth values <= 0.0 are considered infinite
+    if self.server.bandwidth <= 0.0:
+      return SimpleHTTPServer.SimpleHTTPRequestHandler.copyfile(
+          self, source, outputfile)
+
+    self.server.listener.Log('Simulating %f mbps server BW' %
+                             self.server.bandwidth)
+    chunk_size = 1500 # What size to use?
+    bits_per_sec = self.server.bandwidth * 1000000
+    start_time = time.time()
+    data_sent = 0
+    while True:
+      chunk = source.read(chunk_size)
+      if len(chunk) == 0:
+        break
+      cur_elapsed = time.time() - start_time
+      target_elapsed = (data_sent + len(chunk)) * 8 / bits_per_sec
+      if (cur_elapsed < target_elapsed):
+        time.sleep(target_elapsed - cur_elapsed)
+      outputfile.write(chunk)
+      data_sent += len(chunk)
+    self.server.listener.Log('Streamed %d bytes in %f s' %
+                             (data_sent, time.time() - start_time))
 
   # Disable the built-in logging
   def log_message(self, format, *args):

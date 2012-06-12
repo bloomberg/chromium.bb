@@ -132,6 +132,8 @@ ACCEPTABLE_ARGUMENTS = set([
     'DOXYGEN',
     'MODE',
     'SILENT',
+    # Limit bandwidth of browser tester
+    'browser_tester_bw',
     # set build platform
     'buildplatform',
     # Location to download Chromium binaries to and/or read them from.
@@ -1692,6 +1694,8 @@ def PPAPIBrowserTester(env,
     command.extend(['--mime_type', file_ext, mime_type])
   command.extend(['--serving_dir', '${NACL_SDK_LIB}'])
   command.extend(['--serving_dir', '${LIB_DIR}'])
+  if 'browser_tester_bw' in ARGUMENTS:
+    command.extend(['-b', ARGUMENTS['browser_tester_bw']])
   if not nmfs is None:
     for nmf_file in nmfs:
       generated_manifest = GeneratedManifestNode(env, nmf_file)
