@@ -1506,10 +1506,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         <ph name="ENGINE_NAME">$1<ex>Google</ex></ph> (Default)
       </message>
 
-      <message name="IDS_UNKNOWN_SEARCH_ENGINE_NAME" desc="The name given to a search engine for which we can't deduce any information (even a hostname)">
-        Unknown engine
-      </message>
-
       <message name="IDS_TIME_SECS_DEFAULT"
                desc="This is necessary for every language. This is the default for all the numbers NOT covered by special cases (singular, dual/two, few, many) some languages need. For CJK, Vietnamese, Turkish and Kannada, this is the only string necessary. For languages with singular-plural distinction, this is the generic plural. For Lithuanian, NUMBER_DEFAULT is 11 .. 19.">
         <ph name="NUMBER_DEFAULT"><ex>37</ex>#</ph> secs

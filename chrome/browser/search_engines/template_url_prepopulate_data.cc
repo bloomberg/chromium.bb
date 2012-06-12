@@ -24,6 +24,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -1088,9 +1089,9 @@ const PrepopulatedEngine google = {
   L"Google",
   L"google.com",  // This will be dynamically updated by the TemplateURL system.
   "http://www.google.com/favicon.ico",
-  "{google:baseURL}search?{google:RLZ}{google:acceptedSuggestion}"
-      "{google:originalQueryForSuggestion}{google:searchFieldtrialParameter}"
-      "sourceid=chrome&ie={inputEncoding}&q={searchTerms}",
+  "{google:baseURL}search?q={searchTerms}&{google:RLZ}"
+      "{google:acceptedSuggestion}{google:originalQueryForSuggestion}"
+      "{google:searchFieldtrialParameter}sourceid=chrome&ie={inputEncoding}",
   "UTF-8",
   "{google:baseSuggestURL}search?{google:searchFieldtrialParameter}"
       "client=chrome&hl={language}&q={searchTerms}",
@@ -3400,53 +3401,44 @@ TemplateURL* GetPrepopulatedDefaultSearch(Profile* profile) {
   return default_search_provider;
 }
 
-// Finds a prepopulated engine whose origin is the same as |url|'s origin.
-static const PrepopulatedEngine* GetEngineForURL(const std::string& url) {
-  // We may get a valid URL, or we may get the Google prepopulate URL which
-  // can't be converted to a GURL.  Instead of forcing callers to substitute to
-  // ensure the provided URL is valid, just detect the second case directly
-  // here.
-  GURL as_gurl(url);
-  if (!as_gurl.is_valid()) {
-    // We only need to check Google, the other engines should all be valid URLs
-    // and thus won't ever string-compare successfully against |url|.
-    return (url == google.search_url) ? &google : NULL;
-  }
+SearchEngineType GetEngineType(const std::string& url) {
+  // Restricted to UI thread because ReplaceSearchTerms() is so restricted.
+  using content::BrowserThread;
+  DCHECK(!BrowserThread::IsWellKnownThread(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // For all other cases, check using origins, in order to more aggressively
-  // match search engine types for data imported from other browsers.
+  // We may get a valid URL, or we may get the Google prepopulate URL which
+  // can't be converted directly to a GURL.  To handle the latter, we first
+  // construct a TemplateURL from the provided |url|, then call
+  // ReplaceSearchTerms().  This should return a valid URL even when the input
+  // has Google base URLs.
+  TemplateURLData data;
+  data.SetURL(url);
+  TemplateURL turl(NULL, data);
+  GURL as_gurl(turl.url_ref().ReplaceSearchTerms(ASCIIToUTF16("x"),
+      TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16()));
+  if (!as_gurl.is_valid())
+    return SEARCH_ENGINE_OTHER;
+
+  // Check using origins, in order to more aggressively match search engine
+  // types for data imported from other browsers.
   //
   // First special-case Google, because the prepopulate URL for it will not
   // convert to a GURL and thus won't have an origin.  Instead see if the
   // incoming URL's host is "[*.]google.<TLD>".
   if (google_util::IsGoogleHostname(as_gurl.host(),
                                     google_util::DISALLOW_SUBDOMAIN))
-    return &google;
+    return google.type;
 
   // Now check the rest of the prepopulate data.
   GURL origin(as_gurl.GetOrigin());
   for (size_t i = 0; i < arraysize(kAllEngines); ++i) {
     GURL engine_url(kAllEngines[i]->search_url);
     if (engine_url.is_valid() && (origin == engine_url.GetOrigin()))
-      return kAllEngines[i];
+      return kAllEngines[i]->type;
   }
 
-  return NULL;
-}
-
-string16 GetEngineName(const std::string& url) {
-  const PrepopulatedEngine* engine = GetEngineForURL(url);
-  if (engine)
-    return WideToUTF16(engine->name);
-  GURL as_gurl(url);
-  return (as_gurl.is_valid() && !as_gurl.host().empty()) ?
-      UTF8ToUTF16(as_gurl.host()) :
-      l10n_util::GetStringUTF16(IDS_UNKNOWN_SEARCH_ENGINE_NAME);
-}
-
-SearchEngineType GetEngineType(const std::string& url) {
-  const PrepopulatedEngine* engine = GetEngineForURL(url);
-  return engine ? engine->type : SEARCH_ENGINE_OTHER;
+  return SEARCH_ENGINE_OTHER;
 }
 
 }  // namespace TemplateURLPrepopulateData

@@ -43,17 +43,11 @@ void GetPrepopulatedEngines(Profile* profile,
 // not used.
 TemplateURL* GetPrepopulatedDefaultSearch(Profile* profile);
 
-// Both the next two functions use same-origin checks unless the |url| is a
-// Google seach URL, in which case we'll identify any valid Google hostname, or
-// the unsubstituted Google prepopulate URL, as "Google".
-
-// Returns the short name for the matching engine, or url.host() if no engines
-// match.  If no engines match and the |url| can't be converted to a valid GURL,
-// returns the string in IDS_UNKNOWN_SEARCH_ENGINE_NAME.
-string16 GetEngineName(const std::string& url);
-
 // Returns the type of the matching engine, or SEARCH_ENGINE_OTHER if no engines
-// match.
+// match.  This uses same-origin checks unless the |url| is a Google seach URL,
+// in which case we'll identify any valid Google hostname as "Google".
+//
+// NOTE: Must be called on the UI thread.
 SearchEngineType GetEngineType(const std::string& url);
 
 }  // namespace TemplateURLPrepopulateData
