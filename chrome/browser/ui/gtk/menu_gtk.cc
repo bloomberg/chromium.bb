@@ -759,6 +759,9 @@ void MenuGtk::OnSubMenuShow(GtkWidget* submenu) {
   // Notify the submenu model that the menu will be shown.
   ui::MenuModel* submenu_model = static_cast<ui::MenuModel*>(
       g_object_get_data(G_OBJECT(menu_item), "submenu-model"));
+  // TODO(mdm): Figure out why this can sometimes be NULL. See bug 131974.
+  if (!submenu_model)
+    return;
   submenu_model->MenuWillShow();
 
   // Actually build the submenu and attach it to the parent menu item.
