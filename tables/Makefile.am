@@ -111,7 +111,7 @@ table_files = \
 	hu-chardefs.cti \
 	hu-exceptionwords.cti \
 	hu-hu-g1.ctb \
-	hu.ctb \
+	hu-hu-comp8.ctb \
 	hy.ctb \
 	hyph_cs_CZ.dic \
 	hyph_de_DE.dic \
