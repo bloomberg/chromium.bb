@@ -69,6 +69,9 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
         'DEEP_MEMORY_PROFILE_INTERVAL', int, self._DEEP_MEMORY_PROFILE_INTERVAL)
 
     if self._deep_memory_profile:
+      if not self.IsLinux():
+        raise NotSupportedEnvironmentError(
+            'Deep Memory Profiler is not supported in this environment (OS).')
       dir_prefix = 'endure.%s.' % datetime.today().strftime('%Y%m%d.%H%M%S')
       self._deep_tempdir = tempfile.mkdtemp(prefix=dir_prefix)
       os.environ['HEAPPROFILE'] = os.path.join(self._deep_tempdir, 'endure')
@@ -145,13 +148,7 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
 
     Returns:
       A value converted from the environment variable with 'converter'.
-
-    Raises:
-      NotSupportedEnvironmentError if the environment (OS) is not supported.
     """
-    if not self.IsLinux():
-      raise NotSupportedEnvironmentError(
-          'Deep Memory Profiler is not supported in this environment (OS).')
     return converter(os.environ.get(env_name, default))
 
   def _WaitForDeepMemoryProfiler(self):
