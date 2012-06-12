@@ -419,7 +419,10 @@ panel_resize_handler(struct widget *widget,
 	}
 	h=20;
 	w=170;
-	widget_set_allocation(panel->clock->widget,  width - w - 8, y - h / 2, w + 1, h + 1);
+
+	if (panel->clock)
+		widget_set_allocation(panel->clock->widget,
+				      width - w - 8, y - h / 2, w + 1, h + 1);
 }
 
 static void
