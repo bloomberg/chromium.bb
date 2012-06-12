@@ -94,7 +94,7 @@ class NmfUtils(object):
 
   def __init__(self, main_files=None, objdump='x86_64-nacl-objdump',
                lib_path=None, extra_files=None, lib_prefix=None,
-               toolchain=None):
+               toolchain=None, remap={}):
     ''' Constructor
 
     Args:
@@ -107,7 +107,9 @@ class NmfUtils(object):
           both for staging the libraries and for inclusion into the nmf file.
           Examples:  ['..'], ['lib_dir']
       toolchain: Specify which toolchain newlib|glibc|pnacl which can require
-          different forms of the NMF.'''
+          different forms of the NMF.
+      remap: Remaps the library name in the manifest.
+      '''
     self.objdump = objdump
     self.main_files = main_files or []
     self.extra_files = extra_files or []
@@ -116,6 +118,7 @@ class NmfUtils(object):
     self.needed = None
     self.lib_prefix = lib_prefix or []
     self.toolchain = toolchain
+    self.remap = remap
 
 
   def GleanFromObjdump(self, files):
@@ -279,6 +282,7 @@ class NmfUtils(object):
         # Otherwise, treat it like another another file named main.nexe.
         name = MAIN_NEXE
 
+      name = self.remap.get(name, name)
       fileinfo = manifest[FILES_KEY].get(name, {})
       fileinfo[archinfo.arch] = urlinfo
       manifest[FILES_KEY][name] = fileinfo
@@ -340,6 +344,9 @@ def Main(argv):
   parser.add_option('-t', '--toolchain', dest='toolchain',
                     help='Add DIRECTORY to library search path',
                     default=None, metavar='TOOLCHAIN')
+  parser.add_option('-n', '--name', dest='name',
+                    help='Rename FOO as BAR',
+                    action='append', default=[], metavar='FOO,BAR')
   (options, args) = parser.parse_args(argv)
   
   if not options.toolchain:
@@ -352,10 +359,18 @@ def Main(argv):
     parser.print_usage()
     sys.exit(1)
 
+  remap = {}
+  for ren in options.name:
+    parts = ren.split(',')
+    if len(parts) != 2:
+      ErrorOut('Expecting --name=<orig_arch.so>,<new_name.so>')
+    remap[parts[0]] = parts[1]
+
   nmf = NmfUtils(objdump=options.objdump,
                  main_files=args,
                  lib_path=options.lib_path,
-                 toolchain=options.toolchain)
+                 toolchain=options.toolchain,
+                 remap=remap)
 
   manifest = nmf.GetManifest()
   if options.output is None:

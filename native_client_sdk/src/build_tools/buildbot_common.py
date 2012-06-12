@@ -52,11 +52,15 @@ def CopyDir(src, dst, excludes=['.svn', '*/.svn']):
   for exc in excludes:
     args.append('--exclude=' + exc)
   print 'cp -r %s %s' % (src, dst)
+  if os.path.abspath(src) == os.path.abspath(dst):
+    ErrorExit('ERROR: Copying directory onto itself: ' + src)
   oshelpers.Copy(args)
 
 
 def CopyFile(src, dst):
   print 'cp -r %s %s' % (src, dst)
+  if os.path.abspath(src) == os.path.abspath(dst):
+    ErrorExit('ERROR: Copying file onto itself: ' + src)
   args = [src, dst]
   oshelpers.Copy(args)
 

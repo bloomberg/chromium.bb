@@ -46,11 +46,9 @@ def SetVar(varname, values):
   line = varname + ':='
   out = ''
   for value in values:
-    if not line:
-      line = varname + '+='
     if len(line) + len(value) > 78:
       out += line[:-1] + '\n'
-      line = ''
+      line = '%s+=%s ' % (varname, value)
     else:
       line += value + ' '
 
@@ -76,14 +74,16 @@ def GenerateReplacements(desc):
   # Generate target settings
   tools = desc['TOOLS']
 
-  prelaunch = ''
-  prerun = ''
+  prerun = desc.get('PRE', '')
+  postlaunch = desc.get('POST', '')
+  prelaunch = desc.get('LAUNCH', '')
 
   settings = SetVar('VALID_TOOLCHAINS', tools)
   settings+= 'TOOLCHAIN?=%s\n\n' % tools[0]
 
   rules = ''
   targets = []
+  remaps = ''
   for target in desc['TARGETS']:
     name = target['NAME']
     macro = name.upper()
@@ -125,10 +125,12 @@ def GenerateReplacements(desc):
       targets.append(target_name)
       rules += '%s : %s\n' % (target_name, ' '.join(object_sets))
       rules += '\t$(NACL_LINK) -o $@ $^ -m%s $(%s_LDFLAGS)\n\n' % (arch, macro)
+      if target['TYPE'] == 'so':
+        remaps += ' -n %s,%s.so' % (target_name, name)
 
   nmf = desc['NAME'] + '.nmf'
   nmfs = '%s : %s\n' % (nmf, ' '.join(targets))
-  nmfs +='\t$(NMF) $(NMF_ARGS) -o $@ $(NMF_PATHS) $^\n'
+  nmfs +='\t$(NMF) $(NMF_ARGS) -o $@ $(NMF_PATHS) $^%s\n' % remaps
 
   targets = 'all : '+ ' '.join(targets + [nmf]) 
   return {
@@ -137,8 +139,8 @@ def GenerateReplacements(desc):
       '__PROJECT_RULES__' : rules,
       '__PROJECT_NMFS__' : nmfs,
       '__PROJECT_PRELAUNCH__' : prelaunch,
-      '__PROJECT_PRERUN__' : prerun
-
+      '__PROJECT_PRERUN__' : prerun,
+      '__PROJECT_POSTLAUNCH__' : postlaunch
   }
 
 
@@ -153,6 +155,8 @@ DSC_FORMAT = {
         'CXXFLAGS': (list, '', False),
         'LDFLAGS': (list, '', False)
     }, True),
+    'POST': (str, '', False),
+    'PRE': (str, '', False),
     'DEST': (str, ['examples', 'src'], True),
     'NAME': (str, '', False),
     'DATA': (list, '', False),
@@ -238,17 +242,40 @@ def ValidateFormat(src, format, ErrorMsg=ErrorMsgFunc):
   return not failed
 
 
-def ProcessProject(options, filename):
-  print 'Processing %s...' % filename
+def AddMakeBat(pepperdir, makepath):
+  """Create a simple batch file to execute Make.
+
+  Creates a simple batch file named make.bat for the Windows platform at the
+  given path, pointing to the Make executable in the SDK."""
+
+  makepath = os.path.abspath(makepath)
+  if not makepath.startswith(pepperdir):
+    buildbot_common.ErrorExit('Make.bat not relative to Pepper directory: ' +
+                              makepath)
+
+  makeexe = os.path.abspath(os.path.join(pepperdir, 'tools'))
+  relpath = os.path.relpath(makeexe, makepath)
+
+  fp = open(os.path.join(makepath, 'make.bat'), 'wb')
+  outpath = os.path.join(relpath, 'make.exe')
+
+  # Since make.bat is only used by Windows, for Windows path style
+  outpath = outpath.replace(os.path.sep, '\\')
+  fp.write('@%s %%*\n' % outpath)
+  fp.close()
+
+
+def ProcessProject(dstroot, template, filename):
+  print '\n\nProcessing %s...' % filename
   # Default src directory is the directory the description was found in 
   src_dir = os.path.dirname(os.path.abspath(filename))
   desc = open(filename, 'rb').read()
   desc = eval(desc, {}, {})
   if not ValidateFormat(desc, DSC_FORMAT):
-    return False
+    return (None, None)
 
   name = desc['NAME']
-  out_dir = os.path.join(options.dstroot, desc['DEST'], name)
+  out_dir = os.path.join(dstroot, desc['DEST'], name)
   buildbot_common.MakeDir(out_dir)
 
   # Copy sources to example directory
@@ -261,8 +288,40 @@ def ProcessProject(options, filename):
   # Add Makefile
   repdict = GenerateReplacements(desc)
   make_path = os.path.join(out_dir, 'Makefile')
-  WriteMakefile(options.template, make_path, repdict)
-  return True
+  WriteMakefile(template, make_path, repdict)
+
+  outdir = os.path.dirname(os.path.abspath(make_path))
+  pepperdir = os.path.dirname(os.path.dirname(outdir))
+  AddMakeBat(pepperdir, outdir)
+  return (name, desc['DEST'])
+
+
+def GenerateExamplesMakefile(in_path, out_path, examples):
+  """Generate a Makefile that includes only the examples supported by this
+  SDK."""
+  # Line wrap the PROJECTS variable
+  wrap_width = 80
+  projects_text = SetVar('PROJECTS', examples)
+
+  out_makefile_text = ''
+  wrote_projects_text = False
+  snipping = False
+  for line in open(in_path, 'r'):
+    if line.startswith('# =SNIP='):
+      snipping = not snipping
+      continue
+
+    if snipping:
+      if not wrote_projects_text:
+        out_makefile_text += projects_text
+      wrote_projects_text = True
+    else:
+      out_makefile_text += line
+  open(out_path, 'w').write(out_makefile_text)
+  
+  outdir = os.path.dirname(os.path.abspath(out_path))
+  pepperdir = os.path.dirname(outdir)
+  AddMakeBat(pepperdir, outdir)
 
 
 def main(argv):
@@ -271,12 +330,24 @@ def main(argv):
       dest='dstroot', default=OUT_DIR)
   parser.add_option('--template', help='Set the makefile template.',
       dest='template', default=os.path.join(SCRIPT_DIR, 'template.mk'))
+  parser.add_option('--master', help='Create master Makefile.',
+      action='store_true', dest='master', default=False)
 
+  examples = []
   options, args = parser.parse_args(argv)
   for filename in args:
-    if not ProcessProject(options, filename):
+    name, dest = ProcessProject(options.dstroot, options.template, filename)
+    if not name:
       print '\n*** Failed to process project: %s ***' % filename
       return 1
+
+    if dest == 'examples':
+      examples.append(name)
+
+  if options.master:
+    master_in = os.path.join(SDK_EXAMPLE_DIR, 'Makefile')
+    master_out = os.path.join(options.dstroot, 'examples', 'Makefile')
+    GenerateExamplesMakefile(master_in, master_out, examples)
 
   return 0
 

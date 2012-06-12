@@ -17,6 +17,7 @@ and whether it should upload an SDK to file storage (GSTORE)
 
 
 # std python includes
+import generate_make
 import optparse
 import os
 import platform
@@ -53,29 +54,6 @@ import oshelpers
 GSTORE = 'http://commondatastorage.googleapis.com/nativeclient-mirror/nacl/'
 MAKE = 'nacl_sdk/make_3_81/make.exe'
 CYGTAR = os.path.join(NACL_DIR, 'build', 'cygtar.py')
-
-
-def AddMakeBat(pepperdir, makepath):
-  """Create a simple batch file to execute Make.
-
-  Creates a simple batch file named make.bat for the Windows platform at the
-  given path, pointing to the Make executable in the SDK."""
-
-  makepath = os.path.abspath(makepath)
-  if not makepath.startswith(pepperdir):
-    buildbot_common.ErrorExit('Make.bat not relative to Pepper directory: ' +
-                              makepath)
-
-  makeexe = os.path.abspath(os.path.join(pepperdir, 'tools'))
-  relpath = os.path.relpath(makeexe, makepath)
-
-  fp = open(os.path.join(makepath, 'make.bat'), 'wb')
-  outpath = os.path.join(relpath, 'make.exe')
-
-  # Since make.bat is only used by Windows, for Windows path style
-  outpath = outpath.replace(os.path.sep, '\\')
-  fp.write('@%s %%*\n' % outpath)
-  fp.close()
 
 
 def BuildOutputDir(*paths):
@@ -370,45 +348,11 @@ EXAMPLE_MAP = {
   ],
   'glibc': [
     'dlopen',
-    'hello_world_glibc',
   ],
   'pnacl': [
     'hello_world_pnacl',
   ],
 }
-
-def GenerateExamplesMakefile(in_path, out_path, examples):
-  """Generate a Makefile that includes only the examples supported by this
-  SDK."""
-  # Line wrap the PROJECTS variable
-  wrap_width = 80
-  projects_text = ''
-  projects_line = 'PROJECTS:='
-  for example in examples:
-    if len(projects_line + example + ' ') > wrap_width:
-      projects_text += projects_line + '\n'
-      projects_line = 'PROJECTS+='
-    projects_line += example + ' '
-
-  # Add the last unwrapped line
-  projects_text += projects_line + '\n'
-
-  out_makefile_text = ''
-  wrote_projects_text = False
-  snipping = False
-  for line in open(in_path, 'r'):
-    if line.startswith('# =SNIP='):
-      snipping = not snipping
-      continue
-
-    if snipping:
-      if not wrote_projects_text:
-        out_makefile_text += projects_text
-      wrote_projects_text = True
-    else:
-      out_makefile_text += line
-
-  open(out_path, 'w').write(out_makefile_text)
 
 
 def CopyExamples(pepperdir, toolchains):
@@ -422,7 +366,6 @@ def CopyExamples(pepperdir, toolchains):
   exampledir = os.path.join(pepperdir, 'examples')
   buildbot_common.RemoveDir(exampledir)
   buildbot_common.MakeDir(exampledir)
-  AddMakeBat(pepperdir, exampledir)
 
   # Copy individual files
   files = ['favicon.ico', 'httpd.cmd', 'httpd.py', 'index.html']
@@ -433,15 +376,15 @@ def CopyExamples(pepperdir, toolchains):
   examples = []
   for tc in toolchains:
     examples.extend(EXAMPLE_MAP[tc])
-  for example in examples:
-    buildbot_common.CopyDir(os.path.join(SDK_EXAMPLE_DIR, example), exampledir)
-    AddMakeBat(pepperdir, os.path.join(exampledir, example))
 
-  # Generate a root Makefile that only includes supported examples
-  out_makefile = os.path.join(exampledir, 'Makefile')
-  print 'Generating %s' % (out_makefile,)
-  GenerateExamplesMakefile(os.path.join(SDK_EXAMPLE_DIR, 'Makefile'),
-      out_makefile, examples)
+  print 'Process: ' + ' '.join(examples)
+  args = ['--dstroot=%s' % pepperdir, '--master']
+  for example in examples:
+    dsc = os.path.join(SDK_EXAMPLE_DIR, example, 'example.dsc')
+    args.append(dsc)
+  if generate_make.main(args):
+    buildbot_common.ErrorExit('Failed to build examples.')
+
 
 def main(args):
   parser = optparse.OptionParser()
