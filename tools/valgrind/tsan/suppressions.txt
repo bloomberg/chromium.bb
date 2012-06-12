@@ -975,3 +975,17 @@
    fun:net::SSLClientSocketNSS::Core::Connect
    fun:base::internal::RunnableAdapter::Run
 }
+{
+   bug_132230a
+   ThreadSanitizer:Race
+   ...
+   fun:ProtocolHandlerRegistry::DefaultClientObserver::~DefaultClientObserver
+   fun:::FakeClientObserver::~FakeClientObserver
+   fun:ProtocolHandlerRegistry::Finalize
+}
+{
+   bug_132230b
+   ThreadSanitizer:Race
+   fun:ShellIntegration::DefaultWebClientWorker::ExecuteSetAsDefault
+   fun:base::internal::RunnableAdapter::Run
+}
