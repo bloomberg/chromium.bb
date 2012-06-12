@@ -53,8 +53,10 @@ readonly BASE_BETWEEN_BOTS=nativeclient-archive2/between_builders
 # UTIL
 ######################################################################
 Upload() {
-  echo  "uploading: $2"
-  echo  @@@STEP_LINK@download@${URL_PREFIX_UI}/$2@@@
+  local size_kb="$(stat -c '%s' $1)"
+  size_kb=$((${size_kb} / 1024))
+  echo  "uploading: $2 (${size_kb}kB)"
+  echo  "@@@STEP_LINK@download (${size_kb}kB)@${URL_PREFIX_UI}/$2@@@"
   ${GS_UTIL} cp -a public-read $1 gs://$2
 }
 
