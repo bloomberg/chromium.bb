@@ -183,17 +183,6 @@ void PanelBrowserWindow::ExitFullscreen() {
   NOTIMPLEMENTED();
 }
 
-#if defined(OS_WIN)
-void PanelBrowserWindow::SetMetroSnapMode(bool enable) {
-  NOTIMPLEMENTED();
-}
-
-bool PanelBrowserWindow::IsInMetroSnapMode() const {
-  NOTIMPLEMENTED();
-  return false;
-}
-#endif
-
 void PanelBrowserWindow::UpdateFullscreenExitBubbleContent(
       const GURL& url,
       FullscreenExitBubbleType bubble_type) {

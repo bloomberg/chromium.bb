@@ -68,10 +68,6 @@ class PanelBrowserWindow : public BrowserWindow,
   virtual void EnterFullscreen(
       const GURL& url, FullscreenExitBubbleType type) OVERRIDE;
   virtual void ExitFullscreen() OVERRIDE;
-#if defined(OS_WIN)
-  virtual void SetMetroSnapMode(bool enable) OVERRIDE;
-  virtual bool IsInMetroSnapMode() const OVERRIDE;
-#endif
   virtual void UpdateFullscreenExitBubbleContent(
       const GURL& url,
       FullscreenExitBubbleType bubble_type) OVERRIDE;

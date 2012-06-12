@@ -9,8 +9,7 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/fullscreen_controller.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 
 namespace {
 
@@ -52,10 +51,6 @@ void Browser::NewIncognitoWindow() {
     return;
   }
   NewEmptyWindow(profile_->GetOffTheRecordProfile());
-}
-
-void Browser::SetMetroSnapMode(bool enable) {
-  fullscreen_controller_->SetMetroSnapMode(enable);
 }
 
 void Browser::PinCurrentPageToStartScreen() {

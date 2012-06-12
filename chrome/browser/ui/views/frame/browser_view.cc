@@ -770,14 +770,14 @@ void BrowserView::EnterFullscreen(
   if (IsFullscreen())
     return;  // Nothing to do.
 
-  ProcessFullscreen(true, FOR_DESKTOP, url, bubble_type);
+  ProcessFullscreen(true, url, bubble_type);
 }
 
 void BrowserView::ExitFullscreen() {
   if (!IsFullscreen())
     return;  // Nothing to do.
 
-  ProcessFullscreen(false, FOR_DESKTOP, GURL(), FEB_TYPE_NONE);
+  ProcessFullscreen(false, GURL(), FEB_TYPE_NONE);
 }
 
 void BrowserView::UpdateFullscreenExitBubbleContent(
@@ -805,28 +805,16 @@ void BrowserView::FullScreenStateChanged() {
   if (IsFullscreen()) {
     if (fullscreen_request_.pending) {
       fullscreen_request_.pending = false;
-      ProcessFullscreen(true, FOR_DESKTOP,
-                        fullscreen_request_.url,
+      ProcessFullscreen(true, fullscreen_request_.url,
                         fullscreen_request_.bubble_type);
     } else {
-      ProcessFullscreen(true, FOR_DESKTOP, GURL(),
+      ProcessFullscreen(true, GURL(),
                         FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION);
     }
   } else {
-    ProcessFullscreen(false, FOR_DESKTOP, GURL(), FEB_TYPE_NONE);
+    ProcessFullscreen(false, GURL(), FEB_TYPE_NONE);
   }
 }
-
-#if defined(OS_WIN)
-void BrowserView::SetMetroSnapMode(bool enable) {
-  ProcessFullscreen(enable, FOR_METRO, GURL(), FEB_TYPE_NONE);
-}
-
-bool BrowserView::IsInMetroSnapMode() const {
-  return static_cast<views::NativeWidgetWin*>(
-      frame_->native_widget())->IsInMetroSnapMode();
-}
-#endif  // defined(OS_WIN)
 
 void BrowserView::RestoreFocus() {
   WebContents* selected_web_contents = GetActiveWebContents();
@@ -2098,7 +2086,6 @@ bool BrowserView::UpdateChildViewAndLayout(views::View* new_view,
 }
 
 void BrowserView::ProcessFullscreen(bool fullscreen,
-                                    FullscreenType type,
                                     const GURL& url,
                                     FullscreenExitBubbleType bubble_type) {
   // Reduce jankiness during the following position changes by:
@@ -2111,8 +2098,7 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   OmniboxViewWin* omnibox_view =
       static_cast<OmniboxViewWin*>(location_bar->GetLocationEntry());
 #endif
-
-  if (!fullscreen && type != FOR_METRO) {
+  if (!fullscreen) {
     // Hide the fullscreen bubble as soon as possible, since the mode toggle can
     // take enough time for the user to notice.
     fullscreen_bubble_.reset();
@@ -2139,23 +2125,15 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
       PushForceHidden();
 #endif
 
-  if (type == FOR_METRO) {
-#if defined(OS_WIN)
-    // Enter metro snap mode.
-    static_cast<views::NativeWidgetWin*>(
-        frame_->native_widget())->SetMetroSnapFullscreen(fullscreen);
-#endif
-  } else {
-    // Toggle fullscreen mode.
-    frame_->SetFullscreen(fullscreen);
-  }
+  // Toggle fullscreen mode.
+  frame_->SetFullscreen(fullscreen);
 
   browser_->WindowFullscreenStateChanged();
 
   if (fullscreen) {
     bool is_kiosk =
         CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode);
-    if (!is_kiosk && type != FOR_METRO) {
+    if (!is_kiosk) {
       fullscreen_bubble_.reset(new FullscreenExitBubbleViews(
           GetWidget(), browser_.get(), url, bubble_type));
     }

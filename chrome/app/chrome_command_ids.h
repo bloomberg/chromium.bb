@@ -59,8 +59,6 @@
 #define IDC_TABPOSE                     34036
 #define IDC_DEBUG_FRAME_TOGGLE          34038
 #define IDC_PRESENTATION_MODE           34039
-#define IDC_METRO_SNAP_ENABLE           34040
-#define IDC_METRO_SNAP_DISABLE          34041
 
 // Page-related commands
 #define IDC_BOOKMARK_PAGE               35000
