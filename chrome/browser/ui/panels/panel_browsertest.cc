@@ -1407,12 +1407,11 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_CreateWithExistingContents) {
   EXPECT_EQ(2U, BrowserList::size());
 
   // Swap tab contents over to the panel from the tabbed browser.
-  TabContentsWrapper* contents =
-      browser()->tab_strip_model()->DetachTabContentsAt(0);
+  TabContents* contents = browser()->tab_strip_model()->DetachTabContentsAt(0);
   panel_browser->tab_strip_model()->InsertTabContentsAt(
       0, contents, TabStripModel::ADD_NONE);
   panel_browser->SelectNumberedTab(0);
-  EXPECT_EQ(contents, panel_browser->GetSelectedTabContentsWrapper());
+  EXPECT_EQ(contents, panel_browser->GetActiveTabContents());
   EXPECT_EQ(1, PanelManager::GetInstance()->num_panels());
 
   // Ensure that the tab contents were noticed by the panel by
@@ -1423,7 +1422,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_CreateWithExistingContents) {
       chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
       content::Source<Panel>(panel));
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScript(
-      panel_browser->GetSelectedWebContents()->GetRenderViewHost(),
+      panel_browser->GetActiveWebContents()->GetRenderViewHost(),
       std::wstring(),
       L"changeSize(50);"));
   enlarge.Wait();
@@ -1438,7 +1437,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_CreateWithExistingContents) {
   EXPECT_EQ(0, PanelManager::GetInstance()->num_panels());
 
   Browser* tabbed_browser = browser::FindTabbedBrowser(profile, false);
-  EXPECT_EQ(contents, tabbed_browser->GetSelectedTabContentsWrapper());
+  EXPECT_EQ(contents, tabbed_browser->GetActiveTabContents());
   tabbed_browser->window()->Close();
 }
 

@@ -39,7 +39,7 @@ void OldPanel::Initialize(const gfx::Rect& bounds, Browser* browser) {
 }
 
 content::WebContents* OldPanel::WebContents() const {
-  return browser_->GetSelectedWebContents();
+  return browser_->GetActiveWebContents();
 }
 
 bool OldPanel::ShouldCloseWindow() {

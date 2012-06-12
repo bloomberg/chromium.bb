@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/native_panel.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/window_sizer.h"
 #include "content/public/browser/web_contents.h"
@@ -219,7 +219,7 @@ void PanelBrowserWindow::UpdateReloadStopState(bool is_loading, bool force) {
   // Panels don't have stop/reload indicator.
 }
 
-void PanelBrowserWindow::UpdateToolbar(TabContentsWrapper* contents,
+void PanelBrowserWindow::UpdateToolbar(TabContents* contents,
                                        bool should_restore_state) {
   // Panels do not have a toolbar.
 }
@@ -364,7 +364,7 @@ void PanelBrowserWindow::ShowPageInfo(Profile* profile,
 }
 void PanelBrowserWindow::ShowWebsiteSettings(
     Profile* profile,
-    TabContentsWrapper* tab_contents_wrapper,
+    TabContents* tab_contents,
     const GURL& url,
     const content::SSLStatus& ssl,
     bool show_history) {
@@ -388,7 +388,7 @@ void PanelBrowserWindow::HandleKeyboardEvent(
 }
 
 void PanelBrowserWindow::ShowCreateWebAppShortcutsDialog(
-    TabContentsWrapper* tab_contents) {
+    TabContents* tab_contents) {
   NOTIMPLEMENTED();
 }
 
@@ -431,7 +431,7 @@ bool PanelBrowserWindow::InPresentationMode() {
 }
 #endif
 
-void PanelBrowserWindow::ShowInstant(TabContentsWrapper* preview) {
+void PanelBrowserWindow::ShowInstant(TabContents* preview) {
   NOTIMPLEMENTED();
 }
 
@@ -481,7 +481,7 @@ void PanelBrowserWindow::DestroyBrowser() {
   native_panel_->DestroyPanelBrowser();
 }
 
-void PanelBrowserWindow::TabInsertedAt(TabContentsWrapper* contents,
+void PanelBrowserWindow::TabInsertedAt(TabContents* contents,
                                        int index,
                                        bool foreground) {
   if (panel_->auto_resizable()) {
