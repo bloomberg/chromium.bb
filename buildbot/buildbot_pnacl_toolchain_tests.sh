@@ -127,21 +127,41 @@ archived-pexe-translator-test() {
       # We need to enable qemu magic for arm
       flags="${flags} --pnacl-use-emulator"
   fi
+  local fast_trans_flags="${flags} -translate-fast"
 
-  ${sb_translator} ${flags} ${dir}/ld-new${ext} -o ${dir}/ld-new-${arch}.nexe
+  ${sb_translator} ${flags} ${dir}/ld-new${ext} \
+      -o ${dir}/ld-new-${arch}.nexe
+  ${sb_translator} ${fast_trans_flags} ${dir}/ld-new${ext} \
+      -o ${dir}/ld-new-${arch}.fast_trans.nexe
   # This takes about 17min on arm with qemu
   # With an unstripped pexe arm runs out of space (also after 17min):
   # "terminate called after throwing an instance of 'std::bad_alloc'"
-  ${sb_translator} ${flags} ${dir}/llc${ext} -o ${dir}/llc-${arch}.nexe
+  ${sb_translator} ${flags} ${dir}/llc${ext} \
+      -o ${dir}/llc-${arch}.nexe
+  # Drop this for arm if bots are becoming too slow
+  ${sb_translator} ${fast_trans_flags} ${dir}/llc${ext} \
+      -o ${dir}/llc-${arch}.fast_trans.nexe
 
   ls -l ${dir}
   file ${dir}/*
 
   # now actually run the two new translator nexes on the ld-new pexe
-  flags="${flags} \
-         --pnacl-driver-set-LLC_SB=${dir}/llc-${arch}.nexe \
-         --pnacl-driver-set-LD_SB=${dir}/ld-new-${arch}.nexe"
-  ${sb_translator} ${flags} ${dir}/ld-new${ext} -o ${dir}/ld-new-${arch}.2.nexe
+  driver_flags="--pnacl-driver-set-LLC_SB=${dir}/llc-${arch}.nexe \
+                --pnacl-driver-set-LD_SB=${dir}/ld-new-${arch}.nexe"
+  ${sb_translator} ${flags} ${driver_flags} ${dir}/ld-new${ext} \
+      -o ${dir}/ld-new-${arch}.2.nexe
+
+  # Drop this for arm if bots are becoming too slow
+  driver_flags="--pnacl-driver-set-LLC_SB=${dir}/llc-${arch}.fast_trans.nexe \
+                --pnacl-driver-set-LD_SB=${dir}/ld-new-${arch}.fast_trans.nexe"
+  ${sb_translator} ${flags} ${driver_flags} ${dir}/ld-new${ext} \
+      -o ${dir}/ld-new-${arch}.3.nexe
+
+  # TODO(robertm): Ideally we would compare the result of translation like so
+  # ${dir}/ld-new-${arch}.2.nexe == ${dir}/ld-new-${arch}.3.nexe
+  # but this requires the translator to be deterministic which is not
+  # quite true at the moment - probably due to due hashing inside of
+  # llc based on pointer values.
 }
 
 
