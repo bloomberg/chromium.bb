@@ -62,7 +62,6 @@ class Link {
     EMBED,
     PRODUCT,
     ICON,
-    OPEN_WITH,
   };
   Link();
 
@@ -82,30 +81,19 @@ class Link {
   // Title of the link.
   const string16& title() const { return title_; }
 
-  // For OPEN_WITH links, this contains the application ID. For all other link
-  // types, it is the empty string.
-  const std::string& app_id() const { return app_id_; }
-
   // Link MIME type.
   const std::string& mime_type() const { return mime_type_; }
 
  private:
   friend class DocumentEntry;
-  // Converts value of link.rel into LinkType. Outputs to |type| and returns
-  // true when |rel| has a valid value. Otherwise does nothing and returns
-  // false.
-  static bool GetLinkType(const base::StringPiece& rel, LinkType* type);
-
-  // Converts value of link.rel to application ID, if there is one embedded in
-  // the link.rel field. Outputs to |app_id| and returns true when |rel| has a
-  // valid value. Otherwise does nothing and returns false.
-  static bool GetAppID(const base::StringPiece& rel, std::string* app_id);
-
+  // Converts value of link.rel into LinkType. Outputs to |result| and
+  // returns true when |rel| has a valid value. Otherwise does nothing
+  // and returns false.
+  static bool GetLinkType(const base::StringPiece& rel, LinkType* result);
 
   LinkType type_;
   GURL href_;
   string16 title_;
-  std::string app_id_;
   std::string mime_type_;
 
   DISALLOW_COPY_AND_ASSIGN(Link);
