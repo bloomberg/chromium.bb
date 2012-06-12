@@ -23,6 +23,8 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/locale_settings.h"
 #include "grit/platform_locale_settings.h"
+#include "unicode/uchar.h"
+#include "unicode/uscript.h"
 #include "webkit/glue/webpreferences.h"
 
 using content::WebContents;
@@ -134,111 +136,127 @@ void RegisterFontFamilyMapObserver(PrefChangeRegistrar* registrar,
 struct FontDefault {
   const char* pref_name;
   int resource_id;
-
-  // The locale that matches the script this default pref is for.  May be a
-  // comma-separated list.  For example, for a Cyrillic font pref,
-  // |native_locale| is something like "sr,ru" (Serbian and Russian).  When the
-  // locale of the browser process is in |native_locale|, the default is not
-  // registered to avoid overriding the user's font pref (see comments in
-  // PrefTabsHelper::RegisterUserPrefs).  When |native_locale| is the empty
-  // string, the default is registered regardless of locale.
-  const char* native_locale;
 };
-
-// Locales that match Cyrllic script, according to ICU data. Only define
-// |kCyrllicLocales| on platforms it's used on to avoid compiler error.
-#if defined(OS_WIN)
-const char* kCyrllicLocales = "be,bg,kk,mk,ru,sr,uk,uz";
-#endif
 
 // Font pref defaults.  The prefs that have defaults vary by platform, since not
 // all platforms have fonts for all scripts for all generic families.
 // TODO(falken): add proper defaults when possible for all
 // platforms/scripts/generic families.
 const FontDefault kFontDefaults[] = {
-  { prefs::kWebKitStandardFontFamily, IDS_STANDARD_FONT_FAMILY, "" },
-  { prefs::kWebKitFixedFontFamily, IDS_FIXED_FONT_FAMILY, "" },
-  { prefs::kWebKitSerifFontFamily, IDS_SERIF_FONT_FAMILY, "" },
-  { prefs::kWebKitSansSerifFontFamily, IDS_SANS_SERIF_FONT_FAMILY, "" },
-  { prefs::kWebKitCursiveFontFamily, IDS_CURSIVE_FONT_FAMILY, "" },
-  { prefs::kWebKitFantasyFontFamily, IDS_FANTASY_FONT_FAMILY, "" },
+  { prefs::kWebKitStandardFontFamily, IDS_STANDARD_FONT_FAMILY },
+  { prefs::kWebKitFixedFontFamily, IDS_FIXED_FONT_FAMILY },
+  { prefs::kWebKitSerifFontFamily, IDS_SERIF_FONT_FAMILY },
+  { prefs::kWebKitSansSerifFontFamily, IDS_SANS_SERIF_FONT_FAMILY },
+  { prefs::kWebKitCursiveFontFamily, IDS_CURSIVE_FONT_FAMILY },
+  { prefs::kWebKitFantasyFontFamily, IDS_FANTASY_FONT_FAMILY },
 #if defined(OS_CHROMEOS) || defined(OS_MACOSX) || defined(OS_WIN)
   { prefs::kWebKitStandardFontFamilyJapanese,
-    IDS_STANDARD_FONT_FAMILY_JAPANESE, "ja" },
-  { prefs::kWebKitFixedFontFamilyJapanese, IDS_FIXED_FONT_FAMILY_JAPANESE,
-    "ja" },
-  { prefs::kWebKitSerifFontFamilyJapanese, IDS_SERIF_FONT_FAMILY_JAPANESE,
-    "ja" },
+    IDS_STANDARD_FONT_FAMILY_JAPANESE },
+  { prefs::kWebKitFixedFontFamilyJapanese, IDS_FIXED_FONT_FAMILY_JAPANESE },
+  { prefs::kWebKitSerifFontFamilyJapanese, IDS_SERIF_FONT_FAMILY_JAPANESE },
   { prefs::kWebKitSansSerifFontFamilyJapanese,
-    IDS_SANS_SERIF_FONT_FAMILY_JAPANESE, "ja" },
-  { prefs::kWebKitStandardFontFamilyKorean, IDS_STANDARD_FONT_FAMILY_KOREAN,
-    "ko" },
-  { prefs::kWebKitSerifFontFamilyKorean, IDS_SERIF_FONT_FAMILY_KOREAN, "ko" },
+    IDS_SANS_SERIF_FONT_FAMILY_JAPANESE },
+  { prefs::kWebKitStandardFontFamilyKorean, IDS_STANDARD_FONT_FAMILY_KOREAN },
+  { prefs::kWebKitSerifFontFamilyKorean, IDS_SERIF_FONT_FAMILY_KOREAN },
   { prefs::kWebKitSansSerifFontFamilyKorean,
-    IDS_SANS_SERIF_FONT_FAMILY_KOREAN, "ko" },
+    IDS_SANS_SERIF_FONT_FAMILY_KOREAN },
   { prefs::kWebKitStandardFontFamilySimplifiedHan,
-    IDS_STANDARD_FONT_FAMILY_SIMPLIFIED_HAN, "zh-CN" },
+    IDS_STANDARD_FONT_FAMILY_SIMPLIFIED_HAN },
   { prefs::kWebKitSerifFontFamilySimplifiedHan,
-    IDS_SERIF_FONT_FAMILY_SIMPLIFIED_HAN, "zh-CN" },
+    IDS_SERIF_FONT_FAMILY_SIMPLIFIED_HAN },
   { prefs::kWebKitSansSerifFontFamilySimplifiedHan,
-    IDS_SANS_SERIF_FONT_FAMILY_SIMPLIFIED_HAN, "zh-CN" },
+    IDS_SANS_SERIF_FONT_FAMILY_SIMPLIFIED_HAN },
   { prefs::kWebKitStandardFontFamilyTraditionalHan,
-    IDS_STANDARD_FONT_FAMILY_TRADITIONAL_HAN, "zh-TW" },
+    IDS_STANDARD_FONT_FAMILY_TRADITIONAL_HAN },
   { prefs::kWebKitSerifFontFamilyTraditionalHan,
-    IDS_SERIF_FONT_FAMILY_TRADITIONAL_HAN, "zh-TW" },
+    IDS_SERIF_FONT_FAMILY_TRADITIONAL_HAN },
   { prefs::kWebKitSansSerifFontFamilyTraditionalHan,
-    IDS_SANS_SERIF_FONT_FAMILY_TRADITIONAL_HAN, "zh-TW" },
+    IDS_SANS_SERIF_FONT_FAMILY_TRADITIONAL_HAN },
 #endif
 #if defined(OS_CHROMEOS)
-  { prefs::kWebKitStandardFontFamilyArabic, IDS_STANDARD_FONT_FAMILY_ARABIC,
-    "ar" },
-  { prefs::kWebKitSerifFontFamilyArabic, IDS_SERIF_FONT_FAMILY_ARABIC, "ar" },
+  { prefs::kWebKitStandardFontFamilyArabic, IDS_STANDARD_FONT_FAMILY_ARABIC },
+  { prefs::kWebKitSerifFontFamilyArabic, IDS_SERIF_FONT_FAMILY_ARABIC },
   { prefs::kWebKitSansSerifFontFamilyArabic,
-    IDS_SANS_SERIF_FONT_FAMILY_ARABIC, "ar" },
-  { prefs::kWebKitFixedFontFamilyKorean, IDS_FIXED_FONT_FAMILY_KOREAN, "ko" },
+    IDS_SANS_SERIF_FONT_FAMILY_ARABIC },
+  { prefs::kWebKitFixedFontFamilyKorean, IDS_FIXED_FONT_FAMILY_KOREAN },
   { prefs::kWebKitFixedFontFamilySimplifiedHan,
-    IDS_FIXED_FONT_FAMILY_SIMPLIFIED_HAN, "zh-CN" },
+    IDS_FIXED_FONT_FAMILY_SIMPLIFIED_HAN },
   { prefs::kWebKitFixedFontFamilyTraditionalHan,
-    IDS_FIXED_FONT_FAMILY_TRADITIONAL_HAN, "zh-TW" },
+    IDS_FIXED_FONT_FAMILY_TRADITIONAL_HAN },
 #elif defined(OS_WIN)
   { prefs::kWebKitStandardFontFamilyCyrillic,
-    IDS_STANDARD_FONT_FAMILY_CYRILLIC, kCyrllicLocales },
-  { prefs::kWebKitFixedFontFamilyCyrillic,
-    IDS_FIXED_FONT_FAMILY_CYRILLIC, kCyrllicLocales },
-  { prefs::kWebKitSerifFontFamilyCyrillic,
-    IDS_SERIF_FONT_FAMILY_CYRILLIC, kCyrllicLocales },
+    IDS_STANDARD_FONT_FAMILY_CYRILLIC },
+  { prefs::kWebKitFixedFontFamilyCyrillic, IDS_FIXED_FONT_FAMILY_CYRILLIC },
+  { prefs::kWebKitSerifFontFamilyCyrillic, IDS_SERIF_FONT_FAMILY_CYRILLIC },
   { prefs::kWebKitSansSerifFontFamilyCyrillic,
-    IDS_SANS_SERIF_FONT_FAMILY_CYRILLIC, kCyrllicLocales },
-  { prefs::kWebKitStandardFontFamilyGreek,
-    IDS_STANDARD_FONT_FAMILY_GREEK, "el" },
-  { prefs::kWebKitFixedFontFamilyGreek, IDS_FIXED_FONT_FAMILY_GREEK, "el" },
-  { prefs::kWebKitSerifFontFamilyGreek, IDS_SERIF_FONT_FAMILY_GREEK, "el" },
-  { prefs::kWebKitSansSerifFontFamilyGreek,
-    IDS_SANS_SERIF_FONT_FAMILY_GREEK, "el" },
-  { prefs::kWebKitFixedFontFamilyKorean, IDS_FIXED_FONT_FAMILY_KOREAN, "ko" },
-  { prefs::kWebKitCursiveFontFamilyKorean, IDS_CURSIVE_FONT_FAMILY_KOREAN,
-    "ko" },
+    IDS_SANS_SERIF_FONT_FAMILY_CYRILLIC },
+  { prefs::kWebKitStandardFontFamilyGreek, IDS_STANDARD_FONT_FAMILY_GREEK },
+  { prefs::kWebKitFixedFontFamilyGreek, IDS_FIXED_FONT_FAMILY_GREEK },
+  { prefs::kWebKitSerifFontFamilyGreek, IDS_SERIF_FONT_FAMILY_GREEK },
+  { prefs::kWebKitSansSerifFontFamilyGreek, IDS_SANS_SERIF_FONT_FAMILY_GREEK },
+  { prefs::kWebKitFixedFontFamilyKorean, IDS_FIXED_FONT_FAMILY_KOREAN },
+  { prefs::kWebKitCursiveFontFamilyKorean, IDS_CURSIVE_FONT_FAMILY_KOREAN },
   { prefs::kWebKitFixedFontFamilySimplifiedHan,
-    IDS_FIXED_FONT_FAMILY_SIMPLIFIED_HAN, "zh-CN" },
+    IDS_FIXED_FONT_FAMILY_SIMPLIFIED_HAN },
   { prefs::kWebKitFixedFontFamilyTraditionalHan,
-    IDS_FIXED_FONT_FAMILY_TRADITIONAL_HAN, "zh-TW" },
+    IDS_FIXED_FONT_FAMILY_TRADITIONAL_HAN },
 #endif
 };
 
 const size_t kFontDefaultsLength = arraysize(kFontDefaults);
 
-// Returns true if |locale| matches a string in comma-separated list
-// |locale_list|.
-static bool MatchesLocale(const std::string& locale,
-                          const std::string& locale_list) {
-  std::vector<std::string> list;
-  base::SplitString(locale_list, ',', &list);
-  for (std::vector<std::string>::const_iterator iter = list.begin();
-       iter != list.end(); ++iter) {
-    if (StartsWithASCII(locale, *iter, false))
-      return true;
+// Returns the script of the font pref |pref_name|.  For example, suppose
+// |pref_name| is "webkit.webprefs.fonts.serif.Hant".  Since the script code for
+// the script name "Hant" is USCRIPT_TRADITIONAL_HAN, the function returns
+// USCRIPT_TRADITIONAL_HAN.  |pref_name| must be a valid font pref name.
+UScriptCode GetScriptOfFontPref(const char* pref_name) {
+  // ICU script names are four letters.
+  static const size_t kScriptNameLength = 4;
+
+  size_t len = strlen(pref_name);
+  DCHECK_GT(len, kScriptNameLength);
+  const char* scriptName = &pref_name[len - kScriptNameLength];
+  int32 code = u_getPropertyValueEnum(UCHAR_SCRIPT, scriptName);
+  DCHECK(code >= 0 && code < USCRIPT_CODE_LIMIT);
+  return static_cast<UScriptCode>(code);
+}
+
+// If |scriptCode| is a member of a family of "similar" script codes, returns
+// the script code in that family that is used in font pref names.  For example,
+// USCRIPT_HANGUL and USCRIPT_KOREAN are considered equivalent for the purposes
+// of font selection.  Chrome uses the script code USCRIPT_HANGUL (script name
+// "Hang") in Korean font pref names (for example,
+// "webkit.webprefs.fonts.serif.Hang").  So, if |scriptCode| is USCRIPT_KOREAN,
+// the function returns USCRIPT_HANGUL.  If |scriptCode| is not a member of such
+// a family, returns |scriptCode|.
+UScriptCode GetScriptForFontPrefMatching(UScriptCode scriptCode) {
+  switch (scriptCode) {
+  case USCRIPT_HIRAGANA:
+  case USCRIPT_KATAKANA:
+  case USCRIPT_JAPANESE:
+    return USCRIPT_KATAKANA_OR_HIRAGANA;
+  case USCRIPT_KOREAN:
+    return USCRIPT_HANGUL;
+  default:
+    return scriptCode;
   }
-  return false;
+}
+
+// Returns the primary script used by the browser's UI locale.  For example, if
+// the locale is "ru", the function returns USCRIPT_CYRILLIC, and if the locale
+// is "en", the function returns USCRIPT_LATIN.
+UScriptCode GetScriptOfBrowserLocale() {
+  std::string locale = g_browser_process->GetApplicationLocale();
+
+  UScriptCode code = USCRIPT_INVALID_CODE;
+  UErrorCode err = U_ZERO_ERROR;
+  uscript_getCode(locale.c_str(), &code, 1, &err);
+
+  // Ignore the error that multiple scripts could be returned, since we only
+  // want one script.
+  if (U_FAILURE(err) && err != U_BUFFER_OVERFLOW_ERROR)
+    code = USCRIPT_INVALID_CODE;
+  return GetScriptForFontPrefMatching(code);
 }
 
 const struct {
@@ -415,17 +433,24 @@ void PrefsTabHelper::RegisterUserPrefs(PrefService* prefs) {
                                      PrefService::SYNCABLE_PREF);
 
   // Register font prefs that have defaults.
-  std::string locale = g_browser_process->GetApplicationLocale();
+  UScriptCode browser_script = GetScriptOfBrowserLocale();
   for (size_t i = 0; i < kFontDefaultsLength; ++i) {
     const FontDefault& pref = kFontDefaults[i];
-    // Suppress default per-script font when the script matches the browser's
-    // locale.  Otherwise, the default would override the user's preferences
-    // when viewing pages in their native language.  This would be bad
-    // particularly because there is not yet a way for users to customize
-    // their per-script font prefs.  This code can possibly be removed later if
-    // users can easily access per-script font prefs (e.g., via the extensions
-    // workflow), or the problem turns out to not be really critical after all.
-    if (!MatchesLocale(locale, pref.native_locale)) {
+    UScriptCode pref_script = GetScriptOfFontPref(pref.pref_name);
+
+    // Suppress this default font pref value if it is for the primary script of
+    // the browser's UI locale.  For example, if the pref is for the sans-serif
+    // font for the Cyrillic script, and the browser locale is "ru" (Russian),
+    // the default is suppressed.  Otherwise, the default would override the
+    // user's font preferences when viewing pages in their native language.
+    // This is because users have no way yet of customizing their per-script
+    // font preferences.  The font prefs accessible in the options UI are for
+    // the default, unknown script; these prefs have less priority than the
+    // per-script font prefs when the script of the content is known.  This code
+    // can possibly be removed later if users can easily access per-script font
+    // prefs (e.g., via the extensions workflow), or the problem turns out to
+    // not be really critical after all.
+    if (browser_script != pref_script) {
       prefs->RegisterLocalizedStringPref(pref.pref_name,
                                          pref.resource_id,
                                          PrefService::UNSYNCABLE_PREF);
