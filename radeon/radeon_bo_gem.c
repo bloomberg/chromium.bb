@@ -45,7 +45,7 @@
 #include "radeon_bo.h"
 #include "radeon_bo_int.h"
 #include "radeon_bo_gem.h"
-
+#include <fcntl.h>
 struct radeon_bo_gem {
     struct radeon_bo_int base;
     uint32_t            name;
@@ -348,4 +348,50 @@ int radeon_gem_set_domain(struct radeon_bo *bo, uint32_t read_domains, uint32_t 
                             &args,
                             sizeof(args));
     return r;
+}
+
+int radeon_gem_prime_share_bo(struct radeon_bo *bo, int *handle)
+{
+    struct radeon_bo_gem *bo_gem = (struct radeon_bo_gem*)bo;
+    int ret;
+
+    ret = drmPrimeHandleToFD(bo_gem->base.bom->fd, bo->handle, DRM_CLOEXEC, handle);
+    return ret;
+}
+
+struct radeon_bo *radeon_gem_bo_open_prime(struct radeon_bo_manager *bom,
+					   int fd_handle,
+					   uint32_t size)
+{
+    struct radeon_bo_gem *bo;
+    int r;
+    uint32_t handle;
+
+    bo = (struct radeon_bo_gem*)calloc(1, sizeof(struct radeon_bo_gem));
+    if (bo == NULL) {
+        return NULL;
+    }
+
+    bo->base.bom = bom;
+    bo->base.handle = 0;
+    bo->base.size = size;
+    bo->base.alignment = 0;
+    bo->base.domains = RADEON_GEM_DOMAIN_GTT;
+    bo->base.flags = 0;
+    bo->base.ptr = NULL;
+    atomic_set(&bo->reloc_in_cs, 0);
+    bo->map_count = 0;
+
+    r = drmPrimeFDToHandle(bom->fd, fd_handle, &handle);
+    if (r != 0) {
+	free(bo);
+	return NULL;
+    }
+
+    bo->base.handle = handle;
+    bo->name = handle;
+
+    radeon_bo_ref((struct radeon_bo *)bo);
+    return (struct radeon_bo *)bo;
+
 }

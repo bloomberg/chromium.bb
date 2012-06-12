@@ -41,4 +41,8 @@ uint32_t radeon_gem_name_bo(struct radeon_bo *bo);
 void *radeon_gem_get_reloc_in_cs(struct radeon_bo *bo);
 int radeon_gem_set_domain(struct radeon_bo *bo, uint32_t read_domains, uint32_t write_domain);
 int radeon_gem_get_kernel_name(struct radeon_bo *bo, uint32_t *name);
+int radeon_gem_prime_share_bo(struct radeon_bo *bo, int *handle);
+struct radeon_bo *radeon_gem_bo_open_prime(struct radeon_bo_manager *bom,
+					   int fd_handle,
+					   uint32_t size);
 #endif
