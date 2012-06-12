@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
-#include "chrome/browser/ui/panels/base_panel_browser_test.h"
+#include "chrome/browser/ui/panels/old_base_panel_browser_test.h"
 #include "chrome/browser/ui/panels/docked_panel_strip.h"
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/panels/panel.h"
@@ -46,9 +46,9 @@ using content::DownloadManager;
 using content::WebContents;
 using extensions::Extension;
 
-class PanelBrowserTest : public BasePanelBrowserTest {
+class OldPanelBrowserTest : public OldBasePanelBrowserTest {
  public:
-  PanelBrowserTest() : BasePanelBrowserTest() {
+  OldPanelBrowserTest() : OldBasePanelBrowserTest() {
   }
 
  protected:
@@ -255,7 +255,7 @@ class PanelBrowserTest : public BasePanelBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CheckDockedPanelProperties) {
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, CheckDockedPanelProperties) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelStrip* docked_strip = panel_manager->docked_strip();
 
@@ -316,7 +316,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CheckDockedPanelProperties) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreatePanel) {
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, CreatePanel) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   EXPECT_EQ(0, panel_manager->num_panels()); // No panels initially.
 
@@ -337,7 +337,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreatePanel) {
   EXPECT_EQ(0, panel_manager->num_panels());
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreateBigPanel) {
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, CreateBigPanel) {
   gfx::Rect work_area = PanelManager::GetInstance()->
       display_settings_provider()->GetDisplayArea();
   Panel* panel = CreatePanelWithBounds("BigPanel", work_area);
@@ -350,7 +350,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreateBigPanel) {
 }
 
 // Flaky: http://crbug.com/105445
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_AutoResize) {
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, DISABLED_AutoResize) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   panel_manager->enable_auto_sizing(true);
   // Bigger space is needed by this test.
@@ -417,7 +417,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_AutoResize) {
   panel->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, ResizePanel) {
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, ResizePanel) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   panel_manager->enable_auto_sizing(true);
 
@@ -450,7 +450,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, ResizePanel) {
   panel->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, AnimateBounds) {
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, AnimateBounds) {
   Panel* panel = CreatePanelWithBounds("PanelTest", gfx::Rect(0, 0, 100, 100));
   scoped_ptr<NativePanelTesting> panel_testing(
       NativePanelTesting::Create(panel->native_panel()));
@@ -472,7 +472,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, AnimateBounds) {
   panel->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, RestoredBounds) {
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, RestoredBounds) {
   // Disable mouse watcher. We don't care about mouse movements in this test.
   PanelManager* panel_manager = PanelManager::GetInstance();
   PanelMouseWatcher* mouse_watcher = new TestPanelMouseWatcher();
@@ -533,7 +533,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, RestoredBounds) {
   panel->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MinimizeRestore) {
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, MinimizeRestore) {
   // We'll simulate mouse movements for test.
   PanelMouseWatcher* mouse_watcher = new TestPanelMouseWatcher();
   PanelManager::GetInstance()->SetMouseWatcherForTesting(mouse_watcher);
@@ -545,7 +545,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MinimizeRestore) {
   PanelManager::GetInstance()->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MinimizeRestoreTwoPanels) {
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, MinimizeRestoreTwoPanels) {
   // We'll simulate mouse movements for test.
   PanelMouseWatcher* mouse_watcher = new TestPanelMouseWatcher();
   PanelManager::GetInstance()->SetMouseWatcherForTesting(mouse_watcher);
@@ -558,7 +558,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MinimizeRestoreTwoPanels) {
   PanelManager::GetInstance()->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MinimizeRestoreThreePanels) {
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, MinimizeRestoreThreePanels) {
   // We'll simulate mouse movements for test.
   PanelMouseWatcher* mouse_watcher = new TestPanelMouseWatcher();
   PanelManager::GetInstance()->SetMouseWatcherForTesting(mouse_watcher);
@@ -572,7 +572,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MinimizeRestoreThreePanels) {
   PanelManager::GetInstance()->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MinimizeRestoreButtonClick) {
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, MinimizeRestoreButtonClick) {
   // Test with three panels.
   Panel* panel1 = CreatePanel("PanelTest1");
   Panel* panel2 = CreatePanel("PanelTest2");
@@ -619,7 +619,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MinimizeRestoreButtonClick) {
   EXPECT_FALSE(panel3->IsMinimized());
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, RestoreAllWithTitlebarClick) {
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, RestoreAllWithTitlebarClick) {
   // We'll simulate mouse movements for test.
   PanelMouseWatcher* mouse_watcher = new TestPanelMouseWatcher();
   PanelManager::GetInstance()->SetMouseWatcherForTesting(mouse_watcher);
@@ -792,7 +792,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, RestoreAllWithTitlebarClick) {
 #else
 #define MAYBE_ActivatePanelOrTabbedWindow ActivatePanelOrTabbedWindow
 #endif
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivatePanelOrTabbedWindow) {
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, MAYBE_ActivatePanelOrTabbedWindow) {
   CreatePanelParams params1("Panel1", gfx::Rect(), SHOW_AS_ACTIVE);
   Panel* panel1 = CreatePanelWithParams(params1);
   CreatePanelParams params2("Panel2", gfx::Rect(), SHOW_AS_ACTIVE);
@@ -840,7 +840,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivatePanelOrTabbedWindow) {
 #else
 #define MAYBE_ActivateDeactivateBasic DISABLED_ActivateDeactivateBasic
 #endif
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivateDeactivateBasic) {
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, MAYBE_ActivateDeactivateBasic) {
   // Create an active panel.
   Panel* panel = CreatePanel("PanelTest");
   scoped_ptr<NativePanelTesting> native_panel_testing(
@@ -867,7 +867,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivateDeactivateBasic) {
 #define MAYBE_ActivateDeactivateMultiple DISABLED_ActivateDeactivateMultiple
 #endif
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivateDeactivateMultiple) {
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, MAYBE_ActivateDeactivateMultiple) {
   BrowserWindow* tabbed_window = browser()->window();
 
   // Create 4 panels in the following screen layout:
@@ -922,7 +922,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivateDeactivateMultiple) {
   EXPECT_TRUE(tabbed_window->IsActive());
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionBasic) {
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, DrawAttentionBasic) {
   CreatePanelParams params("Initially Inactive", gfx::Rect(), SHOW_AS_INACTIVE);
   Panel* panel = CreatePanelWithParams(params);
   scoped_ptr<NativePanelTesting> native_panel_testing(
@@ -959,7 +959,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionBasic) {
   panel->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionWhileMinimized) {
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, DrawAttentionWhileMinimized) {
   // We'll simulate mouse movements for test.
   PanelMouseWatcher* mouse_watcher = new TestPanelMouseWatcher();
   PanelManager::GetInstance()->SetMouseWatcherForTesting(mouse_watcher);
@@ -1011,7 +1011,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionWhileMinimized) {
 
 // Verify that minimized state of a panel is correct after draw attention
 // is stopped when there are other minimized panels.
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, StopDrawingAttentionWhileMinimized) {
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest,
+                       StopDrawingAttentionWhileMinimized) {
   // We'll simulate mouse movements for test.
   PanelMouseWatcher* mouse_watcher = new TestPanelMouseWatcher();
   PanelManager::GetInstance()->SetMouseWatcherForTesting(mouse_watcher);
@@ -1078,7 +1079,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, StopDrawingAttentionWhileMinimized) {
   panel2->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionWhenActive) {
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, DrawAttentionWhenActive) {
   CreatePanelParams params("Initially Active", gfx::Rect(), SHOW_AS_ACTIVE);
   Panel* panel = CreatePanelWithParams(params);
   scoped_ptr<NativePanelTesting> native_panel_testing(
@@ -1097,7 +1098,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionWhenActive) {
   panel->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionResetOnActivate) {
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, DrawAttentionResetOnActivate) {
   // Create 2 panels so we end up with an inactive panel that can
   // be made to draw attention.
   Panel* panel = CreatePanel("test panel1");
@@ -1122,7 +1123,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionResetOnActivate) {
   panel2->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest,
                        DrawAttentionMinimizedNotResetOnActivate) {
   // Create 2 panels so we end up with an inactive panel that can
   // be made to draw attention.
@@ -1152,7 +1153,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   panel2->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionResetOnClick) {
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, DrawAttentionResetOnClick) {
   CreatePanelParams params("Initially Inactive", gfx::Rect(), SHOW_AS_INACTIVE);
   Panel* panel = CreatePanelWithParams(params);
   scoped_ptr<NativePanelTesting> native_panel_testing(
@@ -1176,7 +1177,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionResetOnClick) {
   panel->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest,
                        MinimizeImmediatelyAfterRestore) {
   CreatePanelParams params("Panel Test", gfx::Rect(), SHOW_AS_ACTIVE);
   Panel* panel = CreatePanelWithParams(params);
@@ -1200,7 +1201,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   panel->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, FocusLostOnMinimize) {
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, FocusLostOnMinimize) {
   CreatePanelParams params("Initially Active", gfx::Rect(), SHOW_AS_ACTIVE);
   Panel* panel = CreatePanelWithParams(params);
   EXPECT_EQ(Panel::EXPANDED, panel->expansion_state());
@@ -1211,7 +1212,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, FocusLostOnMinimize) {
   panel->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreateInactiveSwitchToActive) {
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, CreateInactiveSwitchToActive) {
   // Compiz will not activate initially inactive window.
   if (SkipTestIfCompizWM())
     return;
@@ -1237,7 +1238,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreateInactiveSwitchToActive) {
 
 // When there are 2 panels and no chrome window, minimizing one panel does
 // not expand/focuses another.
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest,
                        MAYBE_MinimizeTwoPanelsWithoutTabbedWindow) {
   CreatePanelParams params("Initially Inactive", gfx::Rect(), SHOW_AS_INACTIVE);
   Panel* panel1 = CreatePanelWithParams(params);
@@ -1277,7 +1278,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   panel2->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest,
                        NonExtensionDomainPanelsCloseOnUninstall) {
   // Create a test extension.
   DictionaryValue empty_value;
@@ -1338,7 +1339,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   panel_other->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, OnBeforeUnloadOnClose) {
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, OnBeforeUnloadOnClose) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   EXPECT_EQ(0, panel_manager->num_panels()); // No panels initially.
 
@@ -1390,7 +1391,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, OnBeforeUnloadOnClose) {
 // http://crbug.com/126381 - should find a better notification to wait
 // for resize completion. Bounds animation could happen for all sorts of
 // reasons.
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_CreateWithExistingContents) {
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest,
+                       DISABLED_CreateWithExistingContents) {
   PanelManager::GetInstance()->enable_auto_sizing(true);
 
   // Load contents into regular tabbed browser.
@@ -1442,7 +1444,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_CreateWithExistingContents) {
   tabbed_browser->window()->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, SizeClamping) {
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, SizeClamping) {
   // Using '0' sizes is equivalent of not providing sizes in API and causes
   // minimum sizes to be applied to facilitate auto-sizing.
   CreatePanelParams params("Panel", gfx::Rect(), SHOW_AS_ACTIVE);
@@ -1474,7 +1476,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, SizeClamping) {
   panel->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, TightAutosizeAroundSingleLine) {
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, TightAutosizeAroundSingleLine) {
   PanelManager::GetInstance()->enable_auto_sizing(true);
   // Using 0 sizes triggers auto-sizing.
   CreatePanelParams params("Panel", gfx::Rect(), SHOW_AS_ACTIVE);
@@ -1504,7 +1506,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, TightAutosizeAroundSingleLine) {
   panel->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest,
                        DefaultMaxSizeOnDisplaySettingsChange) {
   Panel* panel = CreatePanelWithBounds("1", gfx::Rect(0, 0, 240, 220));
 
@@ -1527,7 +1529,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   panel->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest,
                        CustomMaxSizeOnDisplaySettingsChange) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   Panel* panel = CreatePanelWithBounds("1", gfx::Rect(0, 0, 240, 220));
@@ -1565,9 +1567,9 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   panel->Close();
 }
 
-class PanelDownloadTest : public PanelBrowserTest {
+class OldPanelDownloadTest : public OldPanelBrowserTest {
  public:
-  PanelDownloadTest() : PanelBrowserTest() { }
+  OldPanelDownloadTest() : OldPanelBrowserTest() { }
 
   // Creates a temporary directory for downloads that is auto-deleted
   // on destruction.
@@ -1583,7 +1585,7 @@ class PanelDownloadTest : public PanelBrowserTest {
 
  protected:
   void SetUpOnMainThread() OVERRIDE {
-    PanelBrowserTest::SetUpOnMainThread();
+    OldPanelBrowserTest::SetUpOnMainThread();
 
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
@@ -1643,7 +1645,7 @@ class DownloadObserver : public content::DownloadManager::Observer {
 
 // Verify that the download shelf is opened in the existing tabbed browser
 // when a download is started in a Panel.
-IN_PROC_BROWSER_TEST_F(PanelDownloadTest, Download) {
+IN_PROC_BROWSER_TEST_F(OldPanelDownloadTest, Download) {
   Profile* profile = browser()->profile();
   ASSERT_TRUE(CreateDownloadDirectory(profile));
   Browser* panel_browser = Browser::CreateWithParams(
@@ -1696,7 +1698,7 @@ IN_PROC_BROWSER_TEST_F(PanelDownloadTest, Download) {
 // Verify that a new tabbed browser is created to display a download
 // shelf when a download is started in a Panel and there is no existing
 // tabbed browser.
-IN_PROC_BROWSER_TEST_F(PanelDownloadTest, MAYBE_DownloadNoTabbedBrowser) {
+IN_PROC_BROWSER_TEST_F(OldPanelDownloadTest, MAYBE_DownloadNoTabbedBrowser) {
   Profile* profile = browser()->profile();
   ASSERT_TRUE(CreateDownloadDirectory(profile));
   Browser* panel_browser = Browser::CreateWithParams(

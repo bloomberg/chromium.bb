@@ -3,16 +3,16 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
-#include "chrome/browser/ui/panels/base_panel_browser_test.h"
+#include "chrome/browser/ui/panels/old_base_panel_browser_test.h"
 #include "chrome/browser/ui/panels/docked_panel_strip.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/test_panel_mouse_watcher.h"
 
-class DockedPanelBrowserTest : public BasePanelBrowserTest {
+class OldDockedPanelBrowserTest : public OldBasePanelBrowserTest {
  public:
   virtual void SetUpOnMainThread() OVERRIDE {
-    BasePanelBrowserTest::SetUpOnMainThread();
+    OldBasePanelBrowserTest::SetUpOnMainThread();
 
     // All the tests here assume using mocked 800x600 screen area for the
     // primary monitor. Do the check now.
@@ -23,7 +23,7 @@ class DockedPanelBrowserTest : public BasePanelBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, SqueezePanelsInDock) {
+IN_PROC_BROWSER_TEST_F(OldDockedPanelBrowserTest, SqueezePanelsInDock) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelStrip* docked_strip = panel_manager->docked_strip();
 
@@ -85,7 +85,7 @@ IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, SqueezePanelsInDock) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, SqueezeAndThenSomeMore) {
+IN_PROC_BROWSER_TEST_F(OldDockedPanelBrowserTest, SqueezeAndThenSomeMore) {
   PanelManager* panel_manager = PanelManager::GetInstance();
 
   // Create enough docked panels to get into squeezing.
@@ -137,7 +137,7 @@ IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, SqueezeAndThenSomeMore) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, MinimizeSqueezedActive) {
+IN_PROC_BROWSER_TEST_F(OldDockedPanelBrowserTest, MinimizeSqueezedActive) {
   PanelManager* panel_manager = PanelManager::GetInstance();
 
   // Create enough docked panels to get into squeezing.
@@ -191,7 +191,7 @@ IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, MinimizeSqueezedActive) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, CloseSqueezedPanels) {
+IN_PROC_BROWSER_TEST_F(OldDockedPanelBrowserTest, CloseSqueezedPanels) {
   PanelManager* panel_manager = PanelManager::GetInstance();
 
   // Create enough docked panels to get into squeezing.

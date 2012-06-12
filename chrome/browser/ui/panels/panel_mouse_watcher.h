@@ -46,7 +46,7 @@ class PanelMouseWatcher {
   friend class PanelMouseWatcherTest;
   FRIEND_TEST_ALL_PREFIXES(PanelMouseWatcherTest, StartStopWatching);
   friend class BasePanelBrowserTest;
-  FRIEND_TEST_ALL_PREFIXES(PanelOverflowBrowserTest, FullScreenMode);
+  friend class OldBasePanelBrowserTest;
 
   // Start/stop tracking mouse movements.
   virtual void Start() = 0;

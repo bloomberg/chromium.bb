@@ -160,6 +160,7 @@ class PanelBrowserWindow : public BrowserWindow,
 
  private:
   friend class BasePanelBrowserTest;
+  friend class OldBasePanelBrowserTest;
   friend class PanelBrowserWindowCocoaTest;
   Panel* panel() const { return panel_; }  // only for tests
 
