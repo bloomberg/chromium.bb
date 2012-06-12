@@ -23,7 +23,7 @@ chrome.test.getConfig(function(config) {
         chrome.test.assertEq(0, response.status);
       }
 
-      chrome.test.runNextTest();
+      chrome.test.succeed();
     });
   }
 

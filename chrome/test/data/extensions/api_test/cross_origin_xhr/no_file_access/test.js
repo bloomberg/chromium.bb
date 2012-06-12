@@ -16,10 +16,14 @@ chrome.test.getConfig(function(config) {
       }
       req.onerror = function() {
         chrome.test.assertEq(0, req.status);
-        chrome.test.runNextTest();
+        chrome.test.succeed();
       }
 
-      req.send(null);
+      try {
+        req.send(null);
+        chrome.test.fail('expected an error to be thrown');
+      } catch (e) {
+      };
     }
   ]);
 });

@@ -13,7 +13,7 @@ function assertThrowsError(method, opt_expectedError) {
     method();
     fail("error not thrown");
   } catch (e) {
-    assertEq(e.message || e, opt_expectedError || DEFAULT_EXPECTED_ERROR);
+    assertEq(opt_expectedError || DEFAULT_EXPECTED_ERROR, e.message || e);
   }
 }
 

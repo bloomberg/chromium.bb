@@ -7,7 +7,7 @@ function pageUrl(letter) {
 function onCompleteGetCurrentTab(tab) {
   assertEq(tab.url, pageUrl("a"));
   chrome.tabs.remove(tab.id, function() {
-    chrome.test.runNextTest();
+    chrome.test.succeed();
   });
 }
 
@@ -16,7 +16,7 @@ chrome.test.runTests([
     chrome.tabs.getCurrent(function(tab) {
       // There should be no tab.
       assertEq(tab, undefined);
-      chrome.test.runNextTest();
+      chrome.test.succeed();
     });
   },
 

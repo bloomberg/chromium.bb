@@ -42,7 +42,7 @@ chrome.test.getConfig(function(config) {
         chrome.tabs.executeScript(tab.id, {file: 'script.js'});
         window.setTimeout(function() {
           assertEq(0, numReceivedRequests);
-          chrome.test.runNextTest();
+          chrome.test.succeed();
         }, 4000);
       };
     },
@@ -60,7 +60,7 @@ chrome.test.getConfig(function(config) {
                                   {file: 'script.js', allFrames: true});
         window.setTimeout(function() {
           chrome.test.assertEq(3, numReceivedRequests);
-          chrome.test.runNextTest();
+          chrome.test.succeed();
         }, 4000);
       };
     }

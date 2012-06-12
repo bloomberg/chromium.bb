@@ -17,7 +17,7 @@ chrome.test.getConfig(function(config) {
       req.onload = function() {
         chrome.test.assertEq(200, req.status);
         chrome.test.assertEq("Hello!", req.responseText);
-        chrome.test.runNextTest();
+        chrome.test.succeed();
       }
       req.onerror = function() {
         chrome.test.log("status: " + req.status);
@@ -30,7 +30,7 @@ chrome.test.getConfig(function(config) {
       }
       req.onerror = function() {
         chrome.test.assertEq(0, req.status);
-        chrome.test.runNextTest();
+        chrome.test.succeed();
       }
     }
 
