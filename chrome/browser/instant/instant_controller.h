@@ -121,8 +121,8 @@ class InstantController : public InstantLoaderDelegate {
   bool PrepareForCommit();
 
   // Invoked when the user does some gesture that should trigger making the
-  // current previewed page the permanent page.  Returns the TCW that contains
-  // the committed preview.
+  // current previewed page the permanent page.  Returns the TabContents that
+  // contains the committed preview.
   TabContents* CommitCurrentPreview(InstantCommitType type);
 
   // Accepts the currently showing instant preview, if any, and returns true.

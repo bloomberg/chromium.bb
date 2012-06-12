@@ -141,8 +141,9 @@ void WebUILoginView::Init(views::Widget* login_window) {
   webui_login_ = new views::WebView(ProfileManager::GetDefaultProfile());
   AddChildView(webui_login_);
 
-  // We create the WebContents ourselves because the TCW assumes ownership of
-  // it. This should be reworked once we don't need to use the TCW here.
+  // We create the WebContents ourselves because the TabContents assumes
+  // ownership of it. This should be reworked once we don't need to use the
+  // TabContents here.
   WebContents* web_contents =
       WebContents::Create(ProfileManager::GetDefaultProfile(),
                           NULL,
