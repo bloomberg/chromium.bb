@@ -2445,3 +2445,13 @@
    ...
    fun:_ZN2v88internal18GvnBasicBlockState32*
 }
+{
+   bug_132231
+   Memcheck:Leak
+   fun:calloc
+   fun:_internal_class_createInstanceFromZone
+   fun:_internal_class_createInstance
+   fun:+[NSObject(NSObject) allocWithZone:]
+   fun:+[NSObject(NSObject) alloc]
+   fun:_ZN12_GLOBAL__N_112ImageMacTest20CreateBitmapImageRepEiiPP16NSBitmapImageRep
+}
