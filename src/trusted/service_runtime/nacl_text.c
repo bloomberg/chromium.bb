@@ -54,8 +54,6 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
   enum NaClErrorCode          retval = LOAD_INTERNAL;
   uintptr_t                   dynamic_text_size;
   struct NaClDescImcShm       *shm = NULL;
-  struct NaClDescEffectorTrustedMem effector;
-  int                         effector_initialized = 0;
   uintptr_t                   shm_vaddr_base;
   int                         mmap_protections;
   uintptr_t                   mmap_ret;
@@ -122,13 +120,6 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
     retval = LOAD_NO_MEMORY;
     goto cleanup;
   }
-  if (!NaClDescEffectorTrustedMemCtor(&effector)) {
-    NaClLog(4,
-            "NaClMakeDynamicTextShared: effector initialization failed\n");
-    retval = LOAD_INTERNAL;
-    goto cleanup;
-  }
-  effector_initialized = 1;
 
   text_sysaddr = NaClUserToSys(nap, shm_vaddr_base);
 
@@ -162,7 +153,7 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
           NACL_ABI_MAP_SHARED | NACL_ABI_MAP_FIXED);
   mmap_ret = (*((struct NaClDescVtbl const *) shm->base.base.vtbl)->
               Map)((struct NaClDesc *) shm,
-                   (struct NaClDescEffector *) &effector,
+                   NaClDescEffectorTrustedMem(),
                    (void *) text_sysaddr,
                    dynamic_text_size,
                    mmap_protections,
@@ -203,9 +194,6 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
   retval = LOAD_OK;
 
  cleanup:
-  if (effector_initialized) {
-    (*effector.base.vtbl->Dtor)((struct NaClDescEffector *) &effector);
-  }
   if (LOAD_OK != retval) {
     NaClDescSafeUnref((struct NaClDesc *) shm);
     free(shm);
@@ -502,14 +490,7 @@ static uintptr_t CachedMapWritableText(struct NaClApp *nap,
    *
    * We have a cached mmap result stored, that must be unmapped.
    */
-  struct NaClDescEffectorTrustedMem effector;
   struct NaClDesc            *shm = nap->text_shm;
-  if (!NaClDescEffectorTrustedMemCtor(&effector)) {
-    NaClLog(LOG_FATAL,
-            "NaClTextSysDyncode_Copy: effector initialization failed\n");
-
-    return -NACL_ABI_EFAULT;
-  }
 
   if (offset != nap->dynamic_mapcache_offset
           || size != nap->dynamic_mapcache_size) {
@@ -535,7 +516,7 @@ static uintptr_t CachedMapWritableText(struct NaClApp *nap,
       uintptr_t mapping = (*((struct NaClDescVtbl const *)
             shm->base.vtbl)->
               Map)(shm,
-                   (struct NaClDescEffector*) &effector,
+                   NaClDescEffectorTrustedMem(),
                    NULL,
                    size,
                    NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,

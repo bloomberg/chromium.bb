@@ -140,7 +140,7 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
   nap->use_shm_for_dynamic_text = ShouldEnableDynamicLoading();
   nap->text_shm = NULL;
   if (!NaClMutexCtor(&nap->dynamic_load_mutex)) {
-    goto cleanup_effp_dtor;
+    goto cleanup_effp_free;
   }
   nap->dynamic_page_bitmap = NULL;
 
@@ -252,8 +252,6 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
   NaClMutexDtor(&nap->mu);
  cleanup_dynamic_load_mutex:
   NaClMutexDtor(&nap->dynamic_load_mutex);
- cleanup_effp_dtor:
-  (*nap->effp->vtbl->Dtor)(nap->effp);
  cleanup_effp_free:
   free(nap->effp);
  cleanup_mem_io_regions:

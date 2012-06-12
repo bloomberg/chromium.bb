@@ -40,8 +40,6 @@ struct NaClDescEffector {
  */
 
 struct NaClDescEffectorVtbl {
-  void (*Dtor)(struct NaClDescEffector *vself);
-
   /*
    * For service runtime, the NaClDesc's Map virtual function will
    * call this to unmap any existing memory before mapping new pages

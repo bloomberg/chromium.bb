@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -16,12 +16,9 @@
 
 #include "native_client/src/shared/gio/gio.h"
 
-#include "native_client/src/trusted/desc/nacl_desc_effector_trusted_mem.h"
-
 EXTERN_C_BEGIN
 
 struct NaClDesc;
-struct NaClDescEffector;
 
 struct NaClGioShm {
   /* public */
@@ -30,9 +27,6 @@ struct NaClGioShm {
   /*
    * the shmp is public for e.g. xferring via nrd_xfer
    */
-
-  /* private */
-  struct NaClDescEffectorTrustedMem eff;
 
   size_t                            io_offset;
   size_t                            shm_sz;

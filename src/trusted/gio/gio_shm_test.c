@@ -315,9 +315,7 @@ int main(int ac,
   int                   opt;
 
   struct NaClDescImcShm *shmp;
-  struct NaClDescEffectorTrustedMem eff;
   struct NaClDesc *dp;
-  struct NaClDescEffector *effp;
   uintptr_t addr;
   uintptr_t addr2;
   size_t nbytes;
@@ -365,17 +363,11 @@ int main(int ac,
     printf("FAILED\n");
     return EXIT_FAILURE;
   }
-  if (!NaClDescEffectorTrustedMemCtor(&eff)) {
-    printf("NaClDescEffectorTrustedMemCtor failed\n");
-    printf("FAILED\n");
-    return EXIT_FAILURE;
-  }
   dp = &shmp->base;
-  effp = &eff.base;
 
   addr = (*((struct NaClDescVtbl const *) dp->base.vtbl)->
           Map)(dp,
-               effp,
+               NaClDescEffectorTrustedMem(),
                NULL,
                nbytes,
                NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
@@ -396,7 +388,7 @@ int main(int ac,
 
   addr2 = (*((struct NaClDescVtbl const *) dp->base.vtbl)->
            Map)(dp,
-                effp,
+                NaClDescEffectorTrustedMem(),
                 NULL,
                 nbytes,
                 NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
@@ -445,7 +437,6 @@ int main(int ac,
   (*gio_shm.base.vtbl->Dtor)((struct Gio *) &gio_shm);
 
   NaClDescUnref(dp);
-  (*effp->vtbl->Dtor)(effp);
 
   NaClNrdAllModulesFini();
   if (0 != errs) {

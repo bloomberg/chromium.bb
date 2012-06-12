@@ -14,18 +14,6 @@
 #include "native_client/src/trusted/desc/nacl_desc_effector_trusted_mem.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 
-static struct NaClDescEffectorVtbl const NaClDescEffectorTrustedMemVtbl;
-
-int NaClDescEffectorTrustedMemCtor(struct NaClDescEffectorTrustedMem *self) {
-  self->base.vtbl = &NaClDescEffectorTrustedMemVtbl;
-  return 1;
-}
-
-static void NaClDescEffTrustedMemDtor(struct NaClDescEffector *vself) {
-  vself->vtbl = (struct NaClDescEffectorVtbl const *) NULL;
-  return;
-}
-
 static void NaClDescEffTrustedMemUnmapMemory(struct NaClDescEffector  *vself,
                                              uintptr_t                sysaddr,
                                              size_t                   nbytes) {
@@ -36,6 +24,9 @@ static void NaClDescEffTrustedMemUnmapMemory(struct NaClDescEffector  *vself,
 }
 
 static struct NaClDescEffectorVtbl const NaClDescEffectorTrustedMemVtbl = {
-  NaClDescEffTrustedMemDtor,
   NaClDescEffTrustedMemUnmapMemory,
+};
+
+const struct NaClDescEffector NaClDescEffectorTrustedMemStruct = {
+  &NaClDescEffectorTrustedMemVtbl,
 };

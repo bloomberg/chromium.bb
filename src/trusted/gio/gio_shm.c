@@ -83,7 +83,7 @@ static int NaClGioShmSetWindow(struct NaClGioShm  *self,
   map_result =
       (*((struct NaClDescVtbl const *) self->shmp->base.vtbl)->
        Map)(self->shmp,
-            (struct NaClDescEffector *) &self->eff,
+            NaClDescEffectorTrustedMem(),
             (void *) NULL,
             actual_len,
             NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
@@ -302,8 +302,6 @@ static void NaClGioShmDtor(struct Gio *vself) {
     }
   }
 
-  (*self->eff.base.vtbl->Dtor)(&self->eff.base);
-
   self->shmp = NULL;
   self->base.vtbl = NULL;
 }
@@ -410,9 +408,6 @@ static int NaClGioShmCtorIntern(struct NaClGioShm  *self,
 
   rval = 1;
  cleanup:
-  if (!rval) {
-    (*self->eff.base.vtbl->Dtor)(&self->eff.base);
-  }
   return rval;
 }
 
@@ -424,15 +419,8 @@ int NaClGioShmCtor(struct NaClGioShm  *self,
 
   CHECK(shm_size == NaClRoundAllocPage(shm_size));
 
-  if (!NaClDescEffectorTrustedMemCtor(&self->eff)) {
-    return 0;
-  }
-
   rv = NaClGioShmCtorIntern(self, shmp, shm_size);
 
-  if (!rv) {
-    (*self->eff.base.vtbl->Dtor)(&self->eff.base);
-  }
   return rv;
 }
 
@@ -443,17 +431,11 @@ int NaClGioShmAllocCtor(struct NaClGioShm *self,
 
   CHECK(shm_size == NaClRoundAllocPage(shm_size));
 
-  if (!NaClDescEffectorTrustedMemCtor(&self->eff)) {
-    return 0;
-  }
-
   shmp = malloc(sizeof *shmp);
   if (NULL == shmp) {
-    (*self->eff.base.vtbl->Dtor)(&self->eff.base);
     return 0;
   }
   if (!NaClDescImcShmAllocCtor(shmp, shm_size, /* executable= */ 0)) {
-    (*self->eff.base.vtbl->Dtor)(&self->eff.base);
     free(shmp);
     return 0;
   }
@@ -463,7 +445,6 @@ int NaClGioShmAllocCtor(struct NaClGioShm *self,
   if (!rv) {
     NaClDescUnref((struct NaClDesc *) shmp);
     free(shmp);
-    (*self->eff.base.vtbl->Dtor)(&self->eff.base);
   }
   return rv;
 }

@@ -27,14 +27,6 @@ int NaClDescEffectorLdrCtor(struct NaClDescEffectorLdr *self,
   return 1;
 }
 
-static void NaClDescEffLdrDtor(struct NaClDescEffector *vself) {
-  struct NaClDescEffectorLdr *self = (struct NaClDescEffectorLdr *) vself;
-
-  self->nap = NULL;
-  /* we did not take ownership of nap */
-  vself->vtbl = (struct NaClDescEffectorVtbl const *) NULL;
-}
-
 #if NACL_WINDOWS
 static void NaClDescEffLdrUnmapMemory(struct NaClDescEffector  *vself,
                                       uintptr_t                sysaddr,
@@ -85,6 +77,5 @@ static void NaClDescEffLdrUnmapMemory(struct NaClDescEffector  *vself,
 #endif  /* NACL_WINDOWS */
 
 static struct NaClDescEffectorVtbl const NaClDescEffectorLdrVtbl = {
-  NaClDescEffLdrDtor,
   NaClDescEffLdrUnmapMemory,
 };

@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /* @file
@@ -21,17 +21,12 @@
 
 EXTERN_C_BEGIN
 
-/*
- * This effector is a degenerate case used only during shutdown, and
- * as such doesn't do much.
- */
+extern const struct NaClDescEffector NaClDescEffectorTrustedMemStruct;
 
-struct NaClDescEffectorTrustedMem {
-  struct NaClDescEffector base;
-};
-
-extern
-int NaClDescEffectorTrustedMemCtor(struct NaClDescEffectorTrustedMem *self);
+static INLINE struct NaClDescEffector *NaClDescEffectorTrustedMem() {
+  /* This struct is read-only, although other NaClDescEffectors need not be. */
+  return (struct NaClDescEffector *) &NaClDescEffectorTrustedMemStruct;
+}
 
 EXTERN_C_END
 
