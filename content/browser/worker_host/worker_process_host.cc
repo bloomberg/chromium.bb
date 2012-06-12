@@ -311,6 +311,7 @@ void WorkerProcessHost::CreateWorker(const WorkerInstance& instance) {
   for (WorkerInstance::FilterList::const_iterator i =
            instance.filters().begin();
        i != instance.filters().end(); ++i) {
+    CHECK(i->first);
     i->first->Send(new ViewMsg_WorkerCreated(i->second));
   }
 }
@@ -636,6 +637,7 @@ bool WorkerProcessHost::WorkerInstance::Matches(
 
 void WorkerProcessHost::WorkerInstance::AddFilter(WorkerMessageFilter* filter,
                                                   int route_id) {
+  CHECK(filter);
   if (!HasFilter(filter, route_id)) {
     FilterInfo info(filter, route_id);
     filters_.push_back(info);
