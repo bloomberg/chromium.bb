@@ -287,13 +287,25 @@ void FileSystemOperation::Write(
     delete this;
     return;
   }
+
+  FileSystemMountPointProvider* provider = file_system_context()->
+      GetMountPointProvider(src_path_.type());
+  DCHECK(provider);
+  scoped_ptr<FileStreamWriter> writer(provider->CreateFileStreamWriter(
+          path_url, offset, file_system_context()));
+
+  if (!writer.get()) {
+    // Write is not supported.
+    callback.Run(base::PLATFORM_FILE_ERROR_SECURITY, 0, false);
+    delete this;
+    return;
+  }
+
   DCHECK(blob_url.is_valid());
   file_writer_delegate_.reset(new FileWriterDelegate(
       base::Bind(&FileSystemOperation::DidWrite, weak_factory_.GetWeakPtr()),
-      scoped_ptr<FileStreamWriter>(
-          new SandboxFileStreamWriter(file_system_context(),
-                                      path_url,
-                                      offset))));
+      writer.Pass()));
+
   set_write_callback(callback);
   scoped_ptr<net::URLRequest> blob_request(
       new net::URLRequest(blob_url, file_writer_delegate_.get()));

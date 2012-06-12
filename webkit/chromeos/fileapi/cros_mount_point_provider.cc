@@ -20,6 +20,7 @@
 #include "webkit/fileapi/file_system_file_stream_reader.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_util.h"
+#include "webkit/fileapi/local_file_stream_writer.h"
 #include "webkit/glue/webkit_glue.h"
 
 namespace {
@@ -268,10 +269,19 @@ fileapi::FileStreamWriter* CrosMountPointProvider::CreateFileStreamWriter(
     const GURL& url,
     int64 offset,
     fileapi::FileSystemContext* context) const {
-  // TODO(kinaba,kinuko,benchan,satorux): return a writer for remote or local
-  // file system depending on the mount point location.
-  NOTIMPLEMENTED();
-  return NULL;
+  FilePath virtual_path;
+  if (!fileapi::CrackFileSystemURL(url, NULL, NULL, &virtual_path))
+    return NULL;
+  const MountPoint* mount_point = GetMountPoint(virtual_path);
+  if (!mount_point)
+    return NULL;
+  if (mount_point->location == REMOTE) {
+    // TODO(kinaba): return a gdata writer for remote file system.
+    return NULL;
+  }
+  FilePath root_path = mount_point->local_root_path;
+  return new fileapi::LocalFileStreamWriter(
+      root_path.Append(virtual_path), offset);
 }
 
 bool CrosMountPointProvider::GetVirtualPath(const FilePath& filesystem_path,

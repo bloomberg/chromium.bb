@@ -165,4 +165,28 @@ TEST_F(IsolatedContextTest, TestWithVirtualRoot) {
       virtual_path, &cracked_id, &root_path, &cracked_path));
 }
 
+TEST_F(IsolatedContextTest, Writable) {
+  // By default the file system must be read-only.
+  ASSERT_FALSE(isolated_context()->IsWritable(id_));
+
+  // Set writable.
+  ASSERT_TRUE(isolated_context()->SetWritable(id_, true));
+  ASSERT_TRUE(isolated_context()->IsWritable(id_));
+
+  // Set non-writable.
+  ASSERT_TRUE(isolated_context()->SetWritable(id_, false));
+  ASSERT_FALSE(isolated_context()->IsWritable(id_));
+
+  // Set writable again, and revoke the filesystem.
+  ASSERT_TRUE(isolated_context()->SetWritable(id_, true));
+  isolated_context()->RevokeIsolatedFileSystem(id_);
+
+  // IsWritable should return false for non-registered file system.
+  ASSERT_FALSE(isolated_context()->IsWritable(id_));
+  // SetWritable should also return false for non-registered file system
+  // (no matter what value we give).
+  ASSERT_FALSE(isolated_context()->SetWritable(id_, true));
+  ASSERT_FALSE(isolated_context()->SetWritable(id_, false));
+}
+
 }  // namespace fileapi
