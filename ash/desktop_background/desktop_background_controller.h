@@ -46,7 +46,7 @@ class ASH_EXPORT DesktopBackgroundController {
     BACKGROUND_SOLID_COLOR
   };
 
-  explicit DesktopBackgroundController(aura::RootWindow* root_window);
+  DesktopBackgroundController();
   virtual ~DesktopBackgroundController();
 
   // Gets the desktop background mode.
@@ -90,8 +90,6 @@ class ASH_EXPORT DesktopBackgroundController {
   // Creates a new background widget and sets the background mode to image mode.
   // Called after wallpaper loaded successfully.
   void OnWallpaperLoadCompleted(scoped_refptr<WallpaperOperation> wo);
-
-  aura::RootWindow* root_window_;
 
   // Can change at runtime.
   BackgroundMode desktop_background_mode_;

@@ -85,13 +85,10 @@ class DesktopBackgroundController::WallpaperOperation
   DISALLOW_COPY_AND_ASSIGN(WallpaperOperation);
 };
 
-DesktopBackgroundController::DesktopBackgroundController(
-    aura::RootWindow* root_window)
-    : root_window_(root_window),
-      desktop_background_mode_(BACKGROUND_IMAGE),
+DesktopBackgroundController::DesktopBackgroundController()
+    : desktop_background_mode_(BACKGROUND_IMAGE),
       previous_index_(-1),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
-  DCHECK(root_window_);
 }
 
 DesktopBackgroundController::~DesktopBackgroundController() {
@@ -127,8 +124,9 @@ void DesktopBackgroundController::SetDefaultWallpaper(int index) {
 void DesktopBackgroundController::SetCustomWallpaper(
     const gfx::ImageSkia& wallpaper,
     WallpaperLayout layout) {
-  GetRootWindowLayoutManager(root_window_)->SetBackgroundLayer(NULL);
-  internal::CreateDesktopBackground(wallpaper, layout, root_window_);
+  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
+  GetRootWindowLayoutManager(root_window)->SetBackgroundLayer(NULL);
+  internal::CreateDesktopBackground(wallpaper, layout, root_window);
   desktop_background_mode_ = BACKGROUND_IMAGE;
 }
 
@@ -149,21 +147,24 @@ void DesktopBackgroundController::SetDesktopBackgroundSolidColorMode(
   // http://crbug.com/113445
   ui::Layer* background_layer = new ui::Layer(ui::LAYER_SOLID_COLOR);
   background_layer->SetColor(color);
-  root_window_->GetChildById(
+  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
+  Shell::GetContainer(
+      root_window,
       internal::kShellWindowId_DesktopBackgroundContainer)->
       layer()->Add(background_layer);
-  GetRootWindowLayoutManager(root_window_)->SetBackgroundLayer(
+  GetRootWindowLayoutManager(root_window)->SetBackgroundLayer(
       background_layer);
-  GetRootWindowLayoutManager(root_window_)->SetBackgroundWidget(NULL);
+  GetRootWindowLayoutManager(root_window)->SetBackgroundWidget(NULL);
   desktop_background_mode_ = BACKGROUND_SOLID_COLOR;
 }
 
 void DesktopBackgroundController::SetDesktopBackgroundImageMode(
     scoped_refptr<WallpaperOperation> wo) {
-  GetRootWindowLayoutManager(root_window_)->SetBackgroundLayer(NULL);
-  if(wo->wallpaper()) {
+  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
+  GetRootWindowLayoutManager(root_window)->SetBackgroundLayer(NULL);
+  if (wo->wallpaper()) {
     internal::CreateDesktopBackground(
-        *wo->wallpaper(), wo->wallpaper_layout(), root_window_);
+        *wo->wallpaper(), wo->wallpaper_layout(), root_window);
     desktop_background_mode_ = BACKGROUND_IMAGE;
   }
 }
@@ -179,7 +180,8 @@ void DesktopBackgroundController::OnWallpaperLoadCompleted(
 
 void DesktopBackgroundController::CreateEmptyWallpaper() {
   gfx::ImageSkia dummy;
-  internal::CreateDesktopBackground(dummy, CENTER, root_window_);
+  internal::CreateDesktopBackground(
+      dummy, CENTER, Shell::GetPrimaryRootWindow());
   desktop_background_mode_ = BACKGROUND_IMAGE;
 }
 
