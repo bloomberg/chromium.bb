@@ -79,6 +79,9 @@ wl_list_empty(struct wl_list *list)
 WL_EXPORT void
 wl_list_insert_list(struct wl_list *list, struct wl_list *other)
 {
+	if (wl_list_empty(other))
+		return;
+
 	other->next->prev = list;
 	other->prev->next = list->next;
 	list->next->prev = other->prev;
