@@ -4595,6 +4595,7 @@
                 'safe_browsing_tests',
                 'sync_integration_tests',
                 '../third_party/WebKit/Source/WebKit/chromium/WebKitUnitTests.gyp:webkit_unit_tests',
+                'pyautolib',
               ]}],
             ['OS=="mac"', {
               'dependencies': [

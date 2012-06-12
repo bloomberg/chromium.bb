@@ -483,9 +483,12 @@ class Coverage(object):
       if mo:
         gtest_filter = mo.group(2)
         testname = mo.group(1)
-
       if ':' in testname:
         testname = testname.split(':')[1]
+      # We need 'pyautolib' to run pyauto tests and 'pyautolib' itself is not an
+      # executable. So skip this test from adding into coverage_bundles.py.
+      if testname == 'pyautolib':
+        continue
       self.tests += [os.path.join(self.directory, testname)]
       if gtest_filter:
         self.test_filters[testname] = gtest_filter
