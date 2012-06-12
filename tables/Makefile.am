@@ -110,7 +110,7 @@ table_files = \
 	hr.ctb \
 	hu-chardefs.cti \
 	hu-exceptionwords.cti \
-	hu1.ctb \
+	hu-hu-g1.ctb \
 	hu.ctb \
 	hy.ctb \
 	hyph_cs_CZ.dic \

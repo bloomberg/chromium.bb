@@ -6356,5 +6356,5 @@
       ]
     }
   ], 
-  "table": "hu1.ctb"
+  "table": "hu-hu-g1.ctb"
 }
