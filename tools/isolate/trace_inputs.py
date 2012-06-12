@@ -2198,71 +2198,18 @@ class LogmanTrace(ApiBase):
     NULL_GUID = '{00000000-0000-0000-0000-000000000000}'
     USER_DATA = 19
 
-    def trace(self, cmd, cwd, tracename, output):
-      """Uses logman.exe to start and stop the NT Kernel Logger while the
-      executable to be traced is run.
-      """
-      logging.info('trace(%s, %s, %s, %s)' % (cmd, cwd, tracename, output))
-      with self._lock:
-        if not self._initialized:
-          raise TracingFailure(
-              'Called Tracer.trace() on an unitialized object',
-              None, None, None, tracename)
-        assert tracename not in (i['trace'] for i in self._traces)
-
-      # Use "logman -?" for help.
-
-      stdout = stderr = None
-      if output:
-        stdout = subprocess.PIPE
-        stderr = subprocess.STDOUT
-
-      # 1. Start the log collection.
-      self._start_log(self._logname + '.etl')
-
-      # 2. Run the child process.
-      logging.debug('Running: %s' % cmd)
-      try:
-        # Use trace_child_process.py so we have a clear pid owner. Since
-        # trace_inputs.py can be used as a library and could trace mulitple
-        # processes simultaneously, it makes it more complex if the executable
-        # to be traced is executed directly here. It also solves issues related
-        # to logman.exe that needs to be executed to control the kernel trace.
-        child_cmd = [
-          sys.executable,
-          os.path.join(BASE_DIR, 'trace_child_process.py'),
-        ]
-        child = subprocess.Popen(
-            child_cmd + cmd,
-            cwd=cwd,
-            stdin=subprocess.PIPE,
-            stdout=stdout,
-            stderr=stderr)
-        logging.debug('Started child pid: %d' % child.pid)
-        out = child.communicate()[0]
-      finally:
-        # 3. Stop the log collection.
-        self._stop_log()
-
-      with self._lock:
-        assert tracename not in (i['trace'] for i in self._traces)
-        self._traces.append({
-          'command': cmd,
-          'cwd': cwd,
-          'pid': child.pid,
-          'trace': tracename,
-          'output': out,
-        })
-
-      return child.returncode, out
-
-    @classmethod
-    def _start_log(cls, etl):
+    def __init__(self, logname):
       """Starts the log collection.
+
+      Requires administrative access. logman.exe is synchronous so no need for a
+      "warmup" call.  'Windows Kernel Trace' is *localized* so use its GUID
+      instead.  The GUID constant name is SystemTraceControlGuid. Lovely.
 
       One can get the list of potentially interesting providers with:
       "logman query providers | findstr /i file"
       """
+      super(LogmanTrace.Tracer, self).__init__(logname)
+      self._script = os.path.join(BASE_DIR, 'trace_child_process.py')
       cmd_start = [
         'logman.exe',
         'start',
@@ -2270,11 +2217,13 @@ class LogmanTrace(ApiBase):
         '-p', '{9e814aad-3204-11d2-9a82-006008a86939}',
         # splitio,fileiocompletion,syscall,file,cswitch,img
         '(process,fileio,thread)',
-        '-o', etl,
+        '-o', self._logname + '.etl',
         '-ets',  # Send directly to kernel
         # Values extracted out of thin air.
-        '-bs', '1024',
-        '-nb', '200', '512',
+        # Event Trace Session buffer size in kb.
+        '-bs', '10240',
+        # Number of Event Trace Session buffers.
+        '-nb', '16', '256',
       ]
       logging.debug('Running: %s' % cmd_start)
       try:
@@ -2291,21 +2240,86 @@ class LogmanTrace(ApiBase):
               'A kernel trace was already running, stop it and try again')
         raise
 
-    @staticmethod
-    def _stop_log():
-      """Stops the kernel log collection."""
-      cmd_stop = [
-        'logman.exe',
-        'stop',
-        'NT Kernel Logger',
-        '-ets',  # Sends the command directly to the kernel.
+    def trace(self, cmd, cwd, tracename, output):
+      logging.info('trace(%s, %s, %s, %s)' % (cmd, cwd, tracename, output))
+      with self._lock:
+        if not self._initialized:
+          raise TracingFailure(
+              'Called Tracer.trace() on an unitialized object',
+              None, None, None, tracename)
+        assert tracename not in (i['trace'] for i in self._traces)
+
+      # Use "logman -?" for help.
+
+      stdout = stderr = None
+      if output:
+        stdout = subprocess.PIPE
+        stderr = subprocess.STDOUT
+
+      # Run the child process.
+      logging.debug('Running: %s' % cmd)
+      # Use trace_child_process.py so we have a clear pid owner. Since
+      # trace_inputs.py can be used as a library and could trace mulitple
+      # processes simultaneously, it makes it more complex if the executable to
+      # be traced is executed directly here. It also solves issues related to
+      # logman.exe that needs to be executed to control the kernel trace.
+      child_cmd = [
+        sys.executable,
+        self._script,
+        tracename,
       ]
-      logging.debug('Running: %s' % cmd_stop)
-      subprocess.check_call(
-          cmd_stop,
+      child = subprocess.Popen(
+          child_cmd + cmd,
+          cwd=cwd,
           stdin=subprocess.PIPE,
-          stdout=subprocess.PIPE,
-          stderr=subprocess.STDOUT)
+          stdout=stdout,
+          stderr=stderr)
+      logging.debug('Started child pid: %d' % child.pid)
+      out = child.communicate()[0]
+      # This doesn't mean all the grand-children are done. Sadly, we don't have
+      # a good way to determine that.
+
+      with self._lock:
+        assert tracename not in (i['trace'] for i in self._traces)
+        self._traces.append({
+          'command': cmd,
+          'cwd': cwd,
+          'pid': child.pid,
+          'trace': tracename,
+          'output': out,
+        })
+
+      return child.returncode, out
+
+    def close(self, _timeout=None):
+      """Stops the kernel log collection and converts the traces to text
+      representation.
+      """
+      with self._lock:
+        if not self._initialized:
+          raise TracingFailure(
+              'Called Tracer.close() on an unitialized object',
+              None, None, None)
+        # Save metadata, add 'format' key..
+        data = {
+          'format': 'csv',
+          'traces': self._traces,
+        }
+        write_json(self._logname, data, False)
+
+        cmd_stop = [
+          'logman.exe',
+          'stop',
+          'NT Kernel Logger',
+          '-ets',  # Sends the command directly to the kernel.
+        ]
+        logging.debug('Running: %s' % cmd_stop)
+        subprocess.check_call(
+            cmd_stop,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT)
+        self._initialized = False
 
     def post_process_log(self):
       """Converts the .etl file into .csv then into .json."""
@@ -2487,8 +2501,7 @@ class LogmanTrace(ApiBase):
     data = read_json(logname)
     lines = read_json(logname + '.json')
     out = []
-    for index, item in enumerate(data['traces']):
-      print >> sys.stderr, ('%d out of %d' % (index, len(data['traces'])))
+    for item in data['traces']:
       context = cls.Context(blacklist_more, item['pid'])
       for line in lines:
         context.on_line(line)
