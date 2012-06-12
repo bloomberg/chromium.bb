@@ -124,6 +124,10 @@ const char kTermAttr[] = "term";
 const char kTypeAttr[] = "type";
 const char kValueAttr[] = "value";
 
+// Link Prefixes
+const char kOpenWithPrefix[] = "http://schemas.google.com/docs/2007#open-with-";
+const size_t kOpenWithPrefixSize = arraysize(kOpenWithPrefix) - 1;
+
 struct EntryKindMap {
   DocumentEntry::EntryKind kind;
   const char* entry;
@@ -276,25 +280,61 @@ Author* Author::CreateFromXml(XmlReader* xml_reader) {
 Link::Link() : type_(Link::UNKNOWN) {
 }
 
+// static
+bool Link::GetAppID(const base::StringPiece& rel, std::string* app_id) {
+  DCHECK(app_id);
+  // Fast return path if the link clearly isn't an OPEN_WITH link.
+  if (rel.size() < kOpenWithPrefixSize) {
+    app_id->clear();
+    return true;
+  }
+
+  const std::string kOpenWithPrefixStr(kOpenWithPrefix);
+  if (StartsWithASCII(rel.as_string(), kOpenWithPrefixStr, false)) {
+   *app_id = rel.as_string().substr(kOpenWithPrefixStr.size());
+   return true;
+  }
+
+  app_id->clear();
+  return true;
+}
+
 // static.
-bool Link::GetLinkType(const base::StringPiece& rel, Link::LinkType* result) {
+bool Link::GetLinkType(const base::StringPiece& rel, Link::LinkType* type) {
+  DCHECK(type);
   for (size_t i = 0; i < arraysize(kLinkTypeMap); i++) {
     if (rel == kLinkTypeMap[i].rel) {
-      *result = kLinkTypeMap[i].type;
+      *type = kLinkTypeMap[i].type;
       return true;
     }
   }
+
+  // OPEN_WITH links have extra information at the end of the rel that is unique
+  // for each one, so we can't just check the usual map. This check is slightly
+  // redundant to provide a quick skip if it's obviously not an OPEN_WITH url.
+  if (rel.size() >= kOpenWithPrefixSize &&
+      StartsWithASCII(rel.as_string(), kOpenWithPrefix, false)) {
+    *type = OPEN_WITH;
+    return true;
+  }
+
   // Let unknown link types through, just report it; if the link type is needed
   // in the future, add it into LinkType and kLinkTypeMap.
   DVLOG(1) << "Ignoring unknown link type for rel " << rel;
-  *result = UNKNOWN;
+  *type = UNKNOWN;
   return true;
 }
 
 // static
 void Link::RegisterJSONConverter(base::JSONValueConverter<Link>* converter) {
-  converter->RegisterCustomField<Link::LinkType>(
-      kRelField, &Link::type_, &Link::GetLinkType);
+  converter->RegisterCustomField<Link::LinkType>(kRelField,
+                                                 &Link::type_,
+                                                 &Link::GetLinkType);
+  // We have to register kRelField twice because we extract two different pieces
+  // of data from the same rel field.
+  converter->RegisterCustomField<std::string>(kRelField,
+                                              &Link::app_id_,
+                                              &Link::GetAppID);
   converter->RegisterCustomField(kHrefField, &Link::href_, &GetGURLFromString);
   converter->RegisterStringField(kTitleField, &Link::title_);
   converter->RegisterStringField(kTypeField, &Link::mime_type_);
@@ -313,8 +353,11 @@ Link* Link::CreateFromXml(XmlReader* xml_reader) {
       link->href_ = GURL(href);
 
   std::string rel;
-  if (xml_reader->NodeAttribute(kRelAttr, &rel))
+  if (xml_reader->NodeAttribute(kRelAttr, &rel)) {
     GetLinkType(rel, &link->type_);
+    if (link->type_ == OPEN_WITH)
+      GetAppID(rel, &link->app_id_);
+  }
 
   return link;
 }

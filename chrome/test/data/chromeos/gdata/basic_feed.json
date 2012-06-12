@@ -84,7 +84,7 @@
             "href": "https://1_edit_link",
             "rel": "edit",
             "type": "application/atom+xml"
-         } ],
+         }  ],
          "published": {
             "$t": "2010-11-07T05:03:54.719Z"
          },
@@ -178,6 +178,14 @@
             "href": "https://file_edit_media",
             "rel": "edit-media",
             "type": "audio/mpeg"
+         },  {
+            "href": "https://xml_file_entry_open_with_link/",
+            "rel": "http://schemas.google.com/docs/2007#open-with-the_app_id",
+            "type": "application/atom+xml"
+         },  {
+            "href": "https://xml_file_fake_entry_open_with_link/",
+            "rel": "http://schemas.google.com/docs/2007#oh-no-not-open-with-the_app_id",
+            "type": "application/atom+xml"
          } ],
          "published": {
             "$t": "2011-12-14T00:40:47.330Z"
