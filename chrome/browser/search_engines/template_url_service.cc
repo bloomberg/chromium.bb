@@ -938,17 +938,16 @@ SyncError TemplateURLService::ProcessSyncChanges(
         continue;
       }
       std::string guid = turl->sync_guid();
-      if (existing_keyword_turl) {
-        ResolveSyncKeywordConflict(turl.get(), existing_keyword_turl,
-                                   &new_changes);
-      }
-      // Force the local ID to kInvalidTemplateURLID so we can add it.
-      TemplateURLData data(turl->data());
-      data.id = kInvalidTemplateURLID;
-      Add(new TemplateURL(profile_, data));
+      if (!existing_keyword_turl || ResolveSyncKeywordConflict(turl.get(),
+          existing_keyword_turl, &new_changes)) {
+        // Force the local ID to kInvalidTemplateURLID so we can add it.
+        TemplateURLData data(turl->data());
+        data.id = kInvalidTemplateURLID;
+        Add(new TemplateURL(profile_, data));
 
-      // Possibly set the newly added |turl| as the default search provider.
-      SetDefaultSearchProviderIfNewlySynced(guid);
+        // Possibly set the newly added |turl| as the default search provider.
+        SetDefaultSearchProviderIfNewlySynced(guid);
+      }
     } else if (iter->change_type() == SyncChange::ACTION_UPDATE) {
       if (!existing_turl) {
         NOTREACHED() << "Unexpected sync change state.";
@@ -960,9 +959,14 @@ SyncError TemplateURLService::ProcessSyncChanges(
       }
       // Possibly resolve a keyword conflict if they have the same keywords but
       // are not the same entry.
-      if (existing_keyword_turl && existing_keyword_turl != existing_turl) {
-        ResolveSyncKeywordConflict(turl.get(), existing_keyword_turl,
-                                   &new_changes);
+      if (existing_keyword_turl && (existing_keyword_turl != existing_turl) &&
+          !ResolveSyncKeywordConflict(turl.get(), existing_keyword_turl,
+                                      &new_changes)) {
+        // Note that because we're processing changes, this Remove() call won't
+        // generate an ACTION_DELETE; but ResolveSyncKeywordConflict() did
+        // already, so we should be OK.
+        Remove(existing_turl);
+        continue;
       }
       UIThreadSearchTermsData search_terms_data(existing_turl->profile());
       if (UpdateNoNotify(existing_turl, *turl, search_terms_data))
@@ -1081,17 +1085,16 @@ SyncError TemplateURLService::MergeDataAndStartSyncing(
         // extension keywords; see comments in ProcessSyncChanges().
         TemplateURL* existing_keyword_turl =
             FindNonExtensionTemplateURLForKeyword(sync_turl->keyword());
-        if (existing_keyword_turl) {
-          ResolveSyncKeywordConflict(sync_turl.get(), existing_keyword_turl,
-                                     &new_changes);
-        }
-        // Force the local ID to kInvalidTemplateURLID so we can add it.
-        TemplateURLData data(sync_turl->data());
-        data.id = kInvalidTemplateURLID;
-        Add(new TemplateURL(profile_, data));
+        if (!existing_keyword_turl || ResolveSyncKeywordConflict(
+            sync_turl.get(), existing_keyword_turl, &new_changes)) {
+          // Force the local ID to kInvalidTemplateURLID so we can add it.
+          TemplateURLData data(sync_turl->data());
+          data.id = kInvalidTemplateURLID;
+          Add(new TemplateURL(profile_, data));
 
-        // Possibly set the newly added |turl| as the default search provider.
-        SetDefaultSearchProviderIfNewlySynced(guid);
+          // Possibly set the newly added |turl| as the default search provider.
+          SetDefaultSearchProviderIfNewlySynced(guid);
+        }
       }
     }
   }
@@ -2186,7 +2189,7 @@ string16 TemplateURLService::UniquifyKeyword(const TemplateURL& turl) {
   return keyword_candidate;
 }
 
-void TemplateURLService::ResolveSyncKeywordConflict(
+bool TemplateURLService::ResolveSyncKeywordConflict(
     TemplateURL* sync_turl,
     TemplateURL* local_turl,
     SyncChangeList* change_list) {
@@ -2197,9 +2200,28 @@ void TemplateURLService::ResolveSyncKeywordConflict(
   DCHECK(!local_turl->IsExtensionKeyword());
   DCHECK(change_list);
 
-  if (local_turl->last_modified() > sync_turl->last_modified() ||
+  const bool local_is_better =
+      (local_turl->last_modified() > sync_turl->last_modified()) ||
       local_turl->created_by_policy() ||
-      local_turl == GetDefaultSearchProvider()) {
+      (local_turl == GetDefaultSearchProvider());
+  const bool can_replace_local = CanReplace(local_turl);
+  if (CanReplace(sync_turl) && (local_is_better || !can_replace_local)) {
+    SyncData sync_data = CreateSyncDataFromTemplateURL(*sync_turl);
+    change_list->push_back(SyncChange(SyncChange::ACTION_DELETE, sync_data));
+    return false;
+  }
+  if (can_replace_local) {
+    // Since we're processing sync changes, the upcoming Remove() won't generate
+    // an ACTION_DELETE.  We need to do it manually to keep the server in sync
+    // with us.  Note that if we're being called from
+    // MergeDataAndStartSyncing(), and this TemplateURL was pre-existing rather
+    // than having just been brought down, then this is wrong, because the
+    // server doesn't yet know about this entity; but in this case,
+    // PruneSyncChanges() will prune out the ACTION_DELETE we create here.
+    SyncData sync_data = CreateSyncDataFromTemplateURL(*local_turl);
+    change_list->push_back(SyncChange(SyncChange::ACTION_DELETE, sync_data));
+    Remove(local_turl);
+  } else if (local_is_better) {
     string16 new_keyword = UniquifyKeyword(*sync_turl);
     DCHECK(!GetTemplateURLForKeyword(new_keyword));
     sync_turl->data_.SetKeyword(new_keyword);
@@ -2215,18 +2237,18 @@ void TemplateURLService::ResolveSyncKeywordConflict(
     UIThreadSearchTermsData search_terms_data(local_turl->profile());
     if (UpdateNoNotify(local_turl, new_turl, search_terms_data))
       NotifyObservers();
-    if (!models_associated_) {
-      // We're doing our initial sync, so UpdateNoNotify() won't have generated
-      // an ACTION_UPDATE.  If this local URL is one that was just newly brought
-      // down from the sync server, we need to go ahead and generate an update
-      // for it.  If it was pre-existing, then this is unnecessary (and in fact
-      // wrong) because MergeDataAndStartSyncing() will later add an ACTION_ADD
-      // for this URL; but in this case, PruneSyncChanges() will prune out the
-      // ACTION_UPDATE we create here.
-      SyncData sync_data = CreateSyncDataFromTemplateURL(*local_turl);
-      change_list->push_back(SyncChange(SyncChange::ACTION_UPDATE, sync_data));
-    }
+    // Since we're processing sync changes, the UpdateNoNotify() above didn't
+    // generate an ACTION_UPDATE.  We need to do it manually to keep the server
+    // in sync with us.  Note that if we're being called from
+    // MergeDataAndStartSyncing(), and this TemplateURL was pre-existing rather
+    // than having just been brought down, then this is wrong, because the
+    // server won't know about this entity until it processes the ACTION_ADD our
+    // caller will later generate; but in this case, PruneSyncChanges() will
+    // prune out the ACTION_UPDATE we create here.
+    SyncData sync_data = CreateSyncDataFromTemplateURL(*local_turl);
+    change_list->push_back(SyncChange(SyncChange::ACTION_UPDATE, sync_data));
   }
+  return true;
 }
 
 TemplateURL* TemplateURLService::FindDuplicateOfSyncTemplateURL(
@@ -2255,18 +2277,10 @@ void TemplateURLService::MergeSyncAndLocalURLDuplicates(
     if (delete_default)
       default_search_provider_ = NULL;
 
-    if (!models_associated_) {
-      // We're doing our initial sync, so UpdateNoNotify() won't generate an
-      // ACTION_DELETE for the following Remove.  If this local URL is one that
-      // was just newly brought down from the sync server, we need to go ahead
-      // and generate a delete for it.  If it was pre-existing, then this is
-      // unnecessary (and in fact wrong) because the server doesn't know about
-      // it; but in this case, PruneSyncChanges() will prune out the
-      // ACTION_DELETE we create here.
-      SyncData sync_data = CreateSyncDataFromTemplateURL(*local_turl);
-      change_list->push_back(SyncChange(SyncChange::ACTION_DELETE, sync_data));
-    }
-
+    // See comments in ResolveSyncKeywordConflict() regarding generating an
+    // ACTION_DELETE manually since Remove() won't do it.
+    SyncData sync_data = CreateSyncDataFromTemplateURL(*local_turl);
+    change_list->push_back(SyncChange(SyncChange::ACTION_DELETE, sync_data));
     Remove(local_turl);
 
     // Force the local ID to kInvalidTemplateURLID so we can add it.

@@ -196,8 +196,8 @@ class TemplateURLServiceSyncTest : public testing::Test {
                                      const std::string& url,
                                      const std::string& guid = std::string(),
                                      time_t last_mod = 100,
-                                     bool created_by_policy = false,
-                                     bool safe_for_autoreplace = true) const;
+                                     bool safe_for_autoreplace = false,
+                                     bool created_by_policy = false) const;
 
   // Verifies the two TemplateURLs are equal.
   // TODO(stevet): Share this with TemplateURLServiceTest.
@@ -272,8 +272,8 @@ TemplateURL* TemplateURLServiceSyncTest::CreateTestTemplateURL(
     const std::string& url,
     const std::string& guid,
     time_t last_mod,
-    bool created_by_policy,
-    bool safe_for_autoreplace) const {
+    bool safe_for_autoreplace,
+    bool created_by_policy) const {
   TemplateURLData data;
   data.short_name = ASCIIToUTF16("unittest");
   data.SetKeyword(keyword);
@@ -409,7 +409,7 @@ TEST_F(TemplateURLServiceSyncTest, GetAllSyncDataNoManagedEngines) {
   model()->Add(CreateTestTemplateURL(ASCIIToUTF16("key1"), "http://key1.com"));
   model()->Add(CreateTestTemplateURL(ASCIIToUTF16("key2"), "http://key2.com"));
   TemplateURL* managed_turl = CreateTestTemplateURL(ASCIIToUTF16("key3"),
-      "http://key3.com", std::string(), 100, true);
+      "http://key3.com", std::string(), 100, false, true);
   model()->Add(managed_turl);
   SyncDataList all_sync_data =
       model()->GetAllSyncData(syncable::SEARCH_ENGINES);
@@ -454,9 +454,12 @@ TEST_F(TemplateURLServiceSyncTest, UniquifyKeyword) {
   EXPECT_EQ(NULL, model()->GetTemplateURLForKeyword(new_keyword));
 }
 
-TEST_F(TemplateURLServiceSyncTest, ResolveSyncKeywordConflict) {
-  // Create a keyword that conflicts, and make it older.
-  // Conflict, sync keyword is uniquified, and a SyncChange is added.
+TEST_F(TemplateURLServiceSyncTest, SyncKeywordConflictNeitherAutoreplace) {
+  // This tests cases where neither the sync nor the local TemplateURL are
+  // marked safe_for_autoreplace.
+
+  // Create a keyword that conflicts, and make it older.  Sync keyword is
+  // uniquified, and a SyncChange is added.
   string16 original_turl_keyword = ASCIIToUTF16("key1");
   TemplateURL* original_turl = CreateTestTemplateURL(original_turl_keyword,
       "http://key1.com", std::string(), 9000);
@@ -464,66 +467,210 @@ TEST_F(TemplateURLServiceSyncTest, ResolveSyncKeywordConflict) {
   scoped_ptr<TemplateURL> sync_turl(CreateTestTemplateURL(original_turl_keyword,
       "http://new.com", "remote", 8999));
   SyncChangeList changes;
-  model()->ResolveSyncKeywordConflict(sync_turl.get(), original_turl, &changes);
+  EXPECT_TRUE(model()->ResolveSyncKeywordConflict(sync_turl.get(),
+                                                  original_turl, &changes));
   EXPECT_NE(original_turl_keyword, sync_turl->keyword());
   EXPECT_EQ(original_turl_keyword, original_turl->keyword());
   ASSERT_EQ(1U, changes.size());
   EXPECT_EQ("remote", GetGUID(changes[0].sync_data()));
+  EXPECT_EQ(SyncChange::ACTION_UPDATE, changes[0].change_type());
   changes.clear();
-
-  // Sync is newer. Original TemplateURL keyword is uniquified.  A SyncChange is
-  // added (which in a normal run would be deleted by
-  // PreventDuplicateGUIDUpdates() after we subsequently add an ACTION_ADD
-  // change for the local URL).  Also ensure that this does not change the
-  // safe_for_autoreplace flag or the TemplateURLID in the original.
   model()->Remove(original_turl);
+
+  // Sync is newer.  Original TemplateURL keyword is uniquified.  A SyncChange
+  // is added (which in a normal run would be deleted by PruneSyncChanges() when
+  // the local GUID doesn't appear in the sync GUID list).  Also ensure that
+  // this does not change the safe_for_autoreplace flag or the TemplateURLID in
+  // the original.
   original_turl = CreateTestTemplateURL(original_turl_keyword,
-      "http://key1.com", "local", 9000);
+                                        "http://key1.com", "local", 9000);
   model()->Add(original_turl);
   TemplateURLID original_id = original_turl->id();
   sync_turl.reset(CreateTestTemplateURL(original_turl_keyword, "http://new.com",
                                         std::string(), 9001));
-  model()->ResolveSyncKeywordConflict(sync_turl.get(), original_turl, &changes);
+  EXPECT_TRUE(model()->ResolveSyncKeywordConflict(sync_turl.get(),
+                                                  original_turl, &changes));
   EXPECT_EQ(original_turl_keyword, sync_turl->keyword());
   EXPECT_NE(original_turl_keyword, original_turl->keyword());
-  EXPECT_TRUE(original_turl->safe_for_autoreplace());
+  EXPECT_FALSE(original_turl->safe_for_autoreplace());
   EXPECT_EQ(original_id, original_turl->id());
   EXPECT_EQ(NULL, model()->GetTemplateURLForKeyword(original_turl_keyword));
   ASSERT_EQ(1U, changes.size());
   EXPECT_EQ("local", GetGUID(changes[0].sync_data()));
+  EXPECT_EQ(SyncChange::ACTION_UPDATE, changes[0].change_type());
   changes.clear();
+  model()->Remove(original_turl);
 
   // Equal times. Same result as above. Sync left alone, original uniquified so
   // sync_turl can fit.
-  model()->Remove(original_turl);
   original_turl = CreateTestTemplateURL(original_turl_keyword,
-      "http://key1.com", "local2", 9000);
+                                        "http://key1.com", "local2", 9000);
   model()->Add(original_turl);
   sync_turl.reset(CreateTestTemplateURL(original_turl_keyword, "http://new.com",
                                         std::string(), 9000));
-  model()->ResolveSyncKeywordConflict(sync_turl.get(), original_turl, &changes);
+  EXPECT_TRUE(model()->ResolveSyncKeywordConflict(sync_turl.get(),
+                                                  original_turl, &changes));
   EXPECT_EQ(original_turl_keyword, sync_turl->keyword());
   EXPECT_NE(original_turl_keyword, original_turl->keyword());
   EXPECT_EQ(NULL, model()->GetTemplateURLForKeyword(original_turl_keyword));
   ASSERT_EQ(1U, changes.size());
   EXPECT_EQ("local2", GetGUID(changes[0].sync_data()));
+  EXPECT_EQ(SyncChange::ACTION_UPDATE, changes[0].change_type());
   changes.clear();
+  model()->Remove(original_turl);
 
   // Sync is newer, but original TemplateURL is created by policy, so it wins.
   // Sync keyword is uniquified, and a SyncChange is added.
-  model()->Remove(original_turl);
   original_turl = CreateTestTemplateURL(original_turl_keyword,
-      "http://key1.com", std::string(), 9000, true);
+      "http://key1.com", std::string(), 9000, false, true);
   model()->Add(original_turl);
   sync_turl.reset(CreateTestTemplateURL(original_turl_keyword, "http://new.com",
                                         "remote2", 9999));
-  model()->ResolveSyncKeywordConflict(sync_turl.get(), original_turl, &changes);
+  EXPECT_TRUE(model()->ResolveSyncKeywordConflict(sync_turl.get(),
+                                                  original_turl, &changes));
   EXPECT_NE(original_turl_keyword, sync_turl->keyword());
   EXPECT_EQ(original_turl_keyword, original_turl->keyword());
   EXPECT_EQ(NULL, model()->GetTemplateURLForKeyword(sync_turl->keyword()));
   ASSERT_EQ(1U, changes.size());
   EXPECT_EQ("remote2", GetGUID(changes[0].sync_data()));
+  EXPECT_EQ(SyncChange::ACTION_UPDATE, changes[0].change_type());
   changes.clear();
+  model()->Remove(original_turl);
+}
+
+TEST_F(TemplateURLServiceSyncTest, SyncKeywordConflictBothAutoreplace) {
+  // This tests cases where both the sync and the local TemplateURL are marked
+  // safe_for_autoreplace.
+
+  // Create a keyword that conflicts, and make it older.  SyncChange is added,
+  // function returns false.
+  string16 original_turl_keyword = ASCIIToUTF16("key1");
+  TemplateURL* original_turl = CreateTestTemplateURL(original_turl_keyword,
+      "http://key1.com", std::string(), 9000, true);
+  model()->Add(original_turl);
+  scoped_ptr<TemplateURL> sync_turl(CreateTestTemplateURL(original_turl_keyword,
+      "http://new.com", "remote", 8999, true));
+  SyncChangeList changes;
+  EXPECT_FALSE(model()->ResolveSyncKeywordConflict(sync_turl.get(),
+                                                   original_turl, &changes));
+  EXPECT_EQ(original_turl,
+            model()->GetTemplateURLForKeyword(original_turl_keyword));
+  ASSERT_EQ(1U, changes.size());
+  EXPECT_EQ("remote", GetGUID(changes[0].sync_data()));
+  EXPECT_EQ(SyncChange::ACTION_DELETE, changes[0].change_type());
+  changes.clear();
+  model()->Remove(original_turl);
+
+  // Sync is newer.  Original TemplateURL is removed from the model.  A
+  // SyncChange is added (which in a normal run would be deleted by
+  // PruneSyncChanges() when the local GUID doesn't appear in the sync GUID
+  // list).
+  original_turl = CreateTestTemplateURL(original_turl_keyword,
+      "http://key1.com", "local", 9000, true);
+  model()->Add(original_turl);
+  sync_turl.reset(CreateTestTemplateURL(original_turl_keyword, "http://new.com",
+                                        std::string(), 9001, true));
+  EXPECT_TRUE(model()->ResolveSyncKeywordConflict(sync_turl.get(),
+                                                  original_turl, &changes));
+  EXPECT_EQ(original_turl_keyword, sync_turl->keyword());
+  EXPECT_TRUE(model()->GetTemplateURLs().empty());
+  ASSERT_EQ(1U, changes.size());
+  EXPECT_EQ("local", GetGUID(changes[0].sync_data()));
+  EXPECT_EQ(SyncChange::ACTION_DELETE, changes[0].change_type());
+  changes.clear();
+
+  // Equal times. Same result as above. Sync left alone, original removed so
+  // sync_turl can fit.
+  original_turl = CreateTestTemplateURL(original_turl_keyword,
+      "http://key1.com", "local2", 9000, true);
+  model()->Add(original_turl);
+  sync_turl.reset(CreateTestTemplateURL(original_turl_keyword, "http://new.com",
+                                        std::string(), 9000, true));
+  EXPECT_TRUE(model()->ResolveSyncKeywordConflict(sync_turl.get(),
+                                                  original_turl, &changes));
+  EXPECT_EQ(original_turl_keyword, sync_turl->keyword());
+  EXPECT_TRUE(model()->GetTemplateURLs().empty());
+  ASSERT_EQ(1U, changes.size());
+  EXPECT_EQ("local2", GetGUID(changes[0].sync_data()));
+  EXPECT_EQ(SyncChange::ACTION_DELETE, changes[0].change_type());
+  changes.clear();
+
+  // Sync is newer, but original TemplateURL is created by policy, so it wins.
+  // SyncChange is added, function returns false.
+  original_turl = CreateTestTemplateURL(original_turl_keyword,
+      "http://key1.com", std::string(), 9000, true, true);
+  model()->Add(original_turl);
+  sync_turl.reset(CreateTestTemplateURL(original_turl_keyword, "http://new.com",
+                                        "remote2", 9999, true));
+  EXPECT_FALSE(model()->ResolveSyncKeywordConflict(sync_turl.get(),
+                                                   original_turl, &changes));
+  EXPECT_EQ(original_turl,
+            model()->GetTemplateURLForKeyword(original_turl_keyword));
+  ASSERT_EQ(1U, changes.size());
+  EXPECT_EQ("remote2", GetGUID(changes[0].sync_data()));
+  EXPECT_EQ(SyncChange::ACTION_DELETE, changes[0].change_type());
+  changes.clear();
+  model()->Remove(original_turl);
+}
+
+TEST_F(TemplateURLServiceSyncTest, SyncKeywordConflictOneAutoreplace) {
+  // This tests cases where either the sync or the local TemplateURL is marked
+  // safe_for_autoreplace, but the other is not.  Basically, we run the same
+  // tests as in SyncKeywordConflictBothAutoreplace, but mark the keywords so as
+  // to reverse the outcome of each test.
+
+  // Create a keyword that conflicts, and make it older.  Normally the local
+  // TemplateURL would win this.
+  string16 original_turl_keyword = ASCIIToUTF16("key1");
+  TemplateURL* original_turl = CreateTestTemplateURL(original_turl_keyword,
+      "http://key1.com", "local", 9000, true);
+  model()->Add(original_turl);
+  scoped_ptr<TemplateURL> sync_turl(CreateTestTemplateURL(original_turl_keyword,
+      "http://new.com", std::string(), 8999));
+  SyncChangeList changes;
+  EXPECT_TRUE(model()->ResolveSyncKeywordConflict(sync_turl.get(),
+                                                  original_turl, &changes));
+  EXPECT_EQ(original_turl_keyword, sync_turl->keyword());
+  EXPECT_TRUE(model()->GetTemplateURLs().empty());
+  ASSERT_EQ(1U, changes.size());
+  EXPECT_EQ("local", GetGUID(changes[0].sync_data()));
+  EXPECT_EQ(SyncChange::ACTION_DELETE, changes[0].change_type());
+  changes.clear();
+
+  // Sync is newer.  Normally the sync TemplateURL would win this.
+  original_turl = CreateTestTemplateURL(original_turl_keyword,
+      "http://key1.com", std::string(), 9000);
+  model()->Add(original_turl);
+  sync_turl.reset(CreateTestTemplateURL(original_turl_keyword, "http://new.com",
+                                        "remote", 9001, true));
+  EXPECT_FALSE(model()->ResolveSyncKeywordConflict(sync_turl.get(),
+                                                   original_turl, &changes));
+  EXPECT_EQ(original_turl,
+            model()->GetTemplateURLForKeyword(original_turl_keyword));
+  ASSERT_EQ(1U, changes.size());
+  EXPECT_EQ("remote", GetGUID(changes[0].sync_data()));
+  EXPECT_EQ(SyncChange::ACTION_DELETE, changes[0].change_type());
+  changes.clear();
+  model()->Remove(original_turl);
+
+  // Equal times. Same result as above.
+  original_turl = CreateTestTemplateURL(original_turl_keyword,
+      "http://key1.com", std::string(), 9000);
+  model()->Add(original_turl);
+  sync_turl.reset(CreateTestTemplateURL(original_turl_keyword, "http://new.com",
+                                        "remote2", 9000, true));
+  EXPECT_FALSE(model()->ResolveSyncKeywordConflict(sync_turl.get(),
+                                                   original_turl, &changes));
+  EXPECT_EQ(original_turl,
+            model()->GetTemplateURLForKeyword(original_turl_keyword));
+  ASSERT_EQ(1U, changes.size());
+  EXPECT_EQ("remote2", GetGUID(changes[0].sync_data()));
+  EXPECT_EQ(SyncChange::ACTION_DELETE, changes[0].change_type());
+  changes.clear();
+  model()->Remove(original_turl);
+
+  // We don't run the "created by policy" test since URLs created by policy are
+  // never safe_for_autoreplace.
 }
 
 TEST_F(TemplateURLServiceSyncTest, FindDuplicateOfSyncTemplateURL) {
@@ -896,9 +1043,16 @@ TEST_F(TemplateURLServiceSyncTest, ProcessChangesWithConflictsSyncWins) {
 
   // Add one, update one, so we're up to 4.
   EXPECT_EQ(4U, model()->GetAllSyncData(syncable::SEARCH_ENGINES).size());
-  // Sync is always newer here, so it should always win (i.e. - local changes,
-  // nothing pushed to Sync).
-  EXPECT_EQ(0U, processor()->change_list_size());
+  // Sync is always newer here, so it should always win.  We should create
+  // SyncChanges for the changes to the local entities, since they're synced
+  // too.
+  EXPECT_EQ(2U, processor()->change_list_size());
+  ASSERT_TRUE(processor()->contains_guid("key2"));
+  EXPECT_EQ(SyncChange::ACTION_UPDATE,
+            processor()->change_for_guid("key2").change_type());
+  ASSERT_TRUE(processor()->contains_guid("key3"));
+  EXPECT_EQ(SyncChange::ACTION_UPDATE,
+            processor()->change_for_guid("key3").change_type());
 
   // aaa conflicts with key2 and wins, forcing key2's keyword to update.
   EXPECT_TRUE(model()->GetTemplateURLForGUID("aaa"));
@@ -962,6 +1116,37 @@ TEST_F(TemplateURLServiceSyncTest, ProcessChangesWithConflictsLocalWins) {
             processor()->change_for_guid("key1").change_type());
 }
 
+TEST_F(TemplateURLServiceSyncTest, RemoveUpdatedURLOnConflict) {
+  // Updating a local replaceable URL to have the same keyword as a local
+  // non-replaceable URL should result in the former being removed from the
+  // model entirely.
+  SyncDataList initial_data;
+  scoped_ptr<TemplateURL> turl(CreateTestTemplateURL(ASCIIToUTF16("sync"),
+      "http://sync.com", "sync", 100, true));
+  initial_data.push_back(
+      TemplateURLService::CreateSyncDataFromTemplateURL(*turl));
+  model()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES, initial_data,
+      PassProcessor(), CreateAndPassSyncErrorFactory());
+
+  TemplateURL* new_turl =
+      CreateTestTemplateURL(ASCIIToUTF16("local"), "http://local.com", "local");
+  model()->Add(new_turl);
+
+  SyncChangeList changes;
+  changes.push_back(CreateTestSyncChange(SyncChange::ACTION_UPDATE,
+      CreateTestTemplateURL(ASCIIToUTF16("local"), "http://sync.com", "sync",
+                            110, true)));
+  model()->ProcessSyncChanges(FROM_HERE, changes);
+
+  EXPECT_EQ(1U, model()->GetTemplateURLs().size());
+  EXPECT_EQ("local",
+      model()->GetTemplateURLForKeyword(ASCIIToUTF16("local"))->sync_guid());
+  EXPECT_EQ(1U, processor()->change_list_size());
+  ASSERT_TRUE(processor()->contains_guid("sync"));
+  EXPECT_EQ(SyncChange::ACTION_DELETE,
+            processor()->change_for_guid("sync").change_type());
+}
+
 TEST_F(TemplateURLServiceSyncTest, ProcessTemplateURLChange) {
   // Ensure that ProcessTemplateURLChange is called and pushes the correct
   // changes to Sync whenever local changes are made to TemplateURLs.
@@ -1016,10 +1201,10 @@ TEST_F(TemplateURLServiceSyncTest, ProcessChangesWithLocalExtensions) {
   // Create some sync changes that will conflict with the extension keywords.
   SyncChangeList changes;
   changes.push_back(CreateTestSyncChange(SyncChange::ACTION_ADD,
-    CreateTestTemplateURL(ASCIIToUTF16("keyword1"), "http://aaa.com")));
+    CreateTestTemplateURL(ASCIIToUTF16("keyword1"), "http://aaa.com",
+                          std::string(), 100, true)));
   changes.push_back(CreateTestSyncChange(SyncChange::ACTION_ADD,
-    CreateTestTemplateURL(ASCIIToUTF16("keyword2"), "http://bbb.com",
-                          std::string(), 100, false, false)));
+    CreateTestTemplateURL(ASCIIToUTF16("keyword2"), "http://bbb.com")));
   model()->ProcessSyncChanges(FROM_HERE, changes);
 
   // The synced keywords should be added unchanged, and the result of

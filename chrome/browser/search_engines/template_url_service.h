@@ -346,7 +346,11 @@ class TemplateURLService : public WebDataServiceConsumer,
                            CreateTemplateURLFromSyncData);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest, UniquifyKeyword);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest,
-                           ResolveSyncKeywordConflict);
+                           SyncKeywordConflictNeitherAutoreplace);
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest,
+                           SyncKeywordConflictBothAutoreplace);
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest,
+                           SyncKeywordConflictOneAutoreplace);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest,
                            FindDuplicateOfSyncTemplateURL);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest,
@@ -503,18 +507,31 @@ class TemplateURLService : public WebDataServiceConsumer,
   string16 UniquifyKeyword(const TemplateURL& turl);
 
   // Given a TemplateURL from Sync (cloud) and a local, non-extension
-  // TemplateURL with the same keyword, resolves the conflict by uniquifying
-  // either the cloud keyword or the local keyword (whichever is older).  If the
-  // cloud TURL is changed, then an appropriate SyncChange is appended to
-  // |change_list|.  If a local TURL is changed, the service is updated with the
-  // new keyword, and a SyncChange is also appended (though this may be deleted
-  // before being sent to the server; see comments in the implementation).  In
-  // the case of tied last_modified dates, |sync_turl| wins.
+  // TemplateURL with the same keyword, selects "better" and "worse" entries:
+  //   * If one of the TemplateURLs is replaceable and the other is not, the
+  //     non-replaceable entry is better.
+  //   * Otherwise, if |local_turl| was created by policy, is the default
+  //     provider, or was modified more recently, it is better.
+  //   * Otherwise |sync_turl| is better.
+  // Then resolves the conflict:
+  //   * If the "worse" entry is |sync_turl|, and it is replaceable, add a
+  //     SyncChange to delete it, and return false.
+  //   * If the "worse" entry is |local_turl|, and it is replaceable, remove it
+  //     from the service and return true.
+  //   * Otherwise, uniquify the keyword of the "worse" entry.  If it is
+  //     |local_turl|, update it within the service.  Add a SyncChange to update
+  //     things (always for |sync_turl|, sometimes for |local_turl|; see
+  //     comments in implementation), and return true.
+  // When the function returns true, callers can then go ahead and add or update
+  // |sync_turl| within the service.  If it returns false, callers must not add
+  // the |sync_turl|, and must Remove() the |sync_turl| if it was being updated.
+  // (Be careful; calling Remove() could add an ACTION_DELETE sync change, which
+  // this function has already done.  Make sure to avoid duplicates.)
   //
   // Note that we never call this for conflicts with extension keywords because
   // other code (e.g. AddToMaps()) is responsible for correctly prioritizing
   // extension- vs. non-extension-based TemplateURLs with the same keyword.
-  void ResolveSyncKeywordConflict(TemplateURL* sync_turl,
+  bool ResolveSyncKeywordConflict(TemplateURL* sync_turl,
                                   TemplateURL* local_turl,
                                   SyncChangeList* change_list);
 
