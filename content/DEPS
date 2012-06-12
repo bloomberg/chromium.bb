@@ -70,4 +70,7 @@ include_rules = [
   "-ui/aura_shell",
 
   "+webkit",
+
+  # For generated JNI includes
+  "+jni",
 ]

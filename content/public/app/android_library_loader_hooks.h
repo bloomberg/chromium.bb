@@ -17,6 +17,10 @@ namespace content {
 // once the native library has fully loaded.
 bool RegisterLibraryLoaderEntryHook(JNIEnv* env);
 
+// Call on exit to delete the AtExitManager which OnLibraryLoadedOnUIThread
+// created.
+void LibraryLoaderExitHook();
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_APP_ANDROID_LIBRARY_LOADER_HOOKS_H_

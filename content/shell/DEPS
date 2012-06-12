@@ -10,7 +10,4 @@ include_rules = [
 
   # Shell resources
   "+grit/shell_resources.h",
-
-  # Include the generated JNI headers
-  "+jni",
 ]

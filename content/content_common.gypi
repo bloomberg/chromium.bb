@@ -100,6 +100,10 @@
     'common/android/address_parser.h',
     'common/android/address_parser_internal.cc',
     'common/android/address_parser_internal.h',
+    'common/android/surface_callback.cc',
+    'common/android/surface_callback.h',
+    'common/android/surface_texture_peer.cc',
+    'common/android/surface_texture_peer.h',
     'common/appcache/appcache_backend_proxy.cc',
     'common/appcache/appcache_backend_proxy.h',
     'common/appcache/appcache_dispatcher.cc',
@@ -344,6 +348,17 @@
       'sources!': [
         'common/sandbox_policy.cc',
         'common/sandbox_policy.h',
+      ],
+    }],
+    ['OS=="android"',{
+      'link_settings': {
+        'libraries': [
+          '-landroid',  # ANativeWindow
+        ],
+      },
+     'dependencies': [
+        'content.gyp:content_jni_headers',
+        'content.gyp:common_aidl',
       ],
     }],
     ['toolkit_uses_gtk == 1', {

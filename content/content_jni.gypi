@@ -10,6 +10,7 @@
   'variables': {
     'java_sources': [
       'public/android/java/org/chromium/content/app/ContentMain.java',
+      'public/android/java/org/chromium/content/app/SandboxedProcessService.java',
       'public/android/java/org/chromium/content/browser/AndroidBrowserProcess.java',
       'public/android/java/org/chromium/content/browser/CommandLine.java',
       'public/android/java/org/chromium/content/browser/DeviceInfo.java',
@@ -18,10 +19,12 @@
       'public/android/java/org/chromium/content/browser/JNIHelper.java',
       'public/android/java/org/chromium/content/browser/LibraryLoader.java',
       'public/android/java/org/chromium/content/browser/LocationProvider.java',
+      'public/android/java/org/chromium/content/common/SurfaceCallback.java',
       'public/android/java/org/chromium/content/browser/TraceEvent.java',
     ],
     'jni_headers': [
       '<(SHARED_INTERMEDIATE_DIR)/content/jni/content_main_jni.h',
+      '<(SHARED_INTERMEDIATE_DIR)/content/jni/sandboxed_process_service_jni.h',
       '<(SHARED_INTERMEDIATE_DIR)/content/jni/android_browser_process_jni.h',
       '<(SHARED_INTERMEDIATE_DIR)/content/jni/command_line_jni.h',
       '<(SHARED_INTERMEDIATE_DIR)/content/jni/device_info_jni.h',
@@ -30,6 +33,7 @@
       '<(SHARED_INTERMEDIATE_DIR)/content/jni/jni_helper_jni.h',
       '<(SHARED_INTERMEDIATE_DIR)/content/jni/library_loader_jni.h',
       '<(SHARED_INTERMEDIATE_DIR)/content/jni/location_provider_jni.h',
+      '<(SHARED_INTERMEDIATE_DIR)/content/jni/surface_callback_jni.h',
       '<(SHARED_INTERMEDIATE_DIR)/content/jni/trace_event_jni.h',
     ],
   },
