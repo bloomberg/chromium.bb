@@ -26,6 +26,7 @@ const char16 AutocompleteMatch::kInvalidChars[] = {
 AutocompleteMatch::AutocompleteMatch()
     : provider(NULL),
       relevance(0),
+      typed_count(-1),
       deletable(false),
       inline_autocomplete_offset(string16::npos),
       transition(content::PAGE_TRANSITION_GENERATED),
@@ -41,6 +42,7 @@ AutocompleteMatch::AutocompleteMatch(AutocompleteProvider* provider,
                                      Type type)
     : provider(provider),
       relevance(relevance),
+      typed_count(-1),
       deletable(deletable),
       inline_autocomplete_offset(string16::npos),
       transition(content::PAGE_TRANSITION_TYPED),
@@ -53,6 +55,7 @@ AutocompleteMatch::AutocompleteMatch(AutocompleteProvider* provider,
 AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
     : provider(match.provider),
       relevance(match.relevance),
+      typed_count(match.typed_count),
       deletable(match.deletable),
       fill_into_edit(match.fill_into_edit),
       inline_autocomplete_offset(match.inline_autocomplete_offset),
@@ -82,6 +85,7 @@ AutocompleteMatch& AutocompleteMatch::operator=(
 
   provider = match.provider;
   relevance = match.relevance;
+  typed_count = match.typed_count;
   deletable = match.deletable;
   fill_into_edit = match.fill_into_edit;
   inline_autocomplete_offset = match.inline_autocomplete_offset;

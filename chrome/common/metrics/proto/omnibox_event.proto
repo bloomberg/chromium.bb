@@ -88,6 +88,7 @@ message OmniboxEventProto {
   }
 
   // The result set displayed on the completion popup
+  // Next tag: 6
   message Suggestion {
     // Where does this result come from?
     optional ProviderType provider = 1;
@@ -118,6 +119,12 @@ message OmniboxEventProto {
 
     // The relevance score for this suggestion.
     optional int32 relevance = 3;
+
+    // How many times this result was typed in / selected from the omnibox.
+    // Only set for some providers and result_types.  At the time of
+    // writing this comment, it is only set for HistoryURL and
+    // HistoryQuickProvider matches.
+    optional int32 typed_count = 5;
 
     // Whether this item is starred (bookmarked) or not.
     optional bool is_starred = 4;

@@ -203,6 +203,12 @@ struct AutocompleteMatch {
   // rather than being a fairly fixed value defined by the table above.
   int relevance;
 
+  // How many times this result was typed in / selected from the omnibox.
+  // Only set for some providers and result_types.  If it is not set,
+  // its value is -1.  At the time of writing this comment, it is only
+  // set for matches from HistoryURL and HistoryQuickProvider.
+  int typed_count;
+
   // True if the user should be able to delete this match.
   bool deletable;
 

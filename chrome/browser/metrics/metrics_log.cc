@@ -943,6 +943,8 @@ void MetricsLog::RecordOmniboxOpenedURL(const AutocompleteLog& log) {
     suggestion->set_provider(i->provider->AsOmniboxEventProviderType());
     suggestion->set_result_type(AsOmniboxEventResultType(i->type));
     suggestion->set_relevance(i->relevance);
+    if (i->typed_count != -1)
+      suggestion->set_typed_count(i->typed_count);
     suggestion->set_is_starred(i->starred);
   }
   for (ProvidersInfo::const_iterator i(log.providers_info.begin());

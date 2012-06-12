@@ -893,6 +893,7 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
   const history::URLRow& info = history_match.url_info;
   AutocompleteMatch match(this, relevance,
       !!info.visit_count(), AutocompleteMatch::HISTORY_URL);
+  match.typed_count = info.typed_count();
   match.destination_url = info.url();
   DCHECK(match.destination_url.is_valid());
   size_t inline_autocomplete_offset =
