@@ -12,7 +12,6 @@
 
 #include "base/callback_forward.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/media_stream_request.h"
 #include "content/public/common/window_container_type.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
 
@@ -67,8 +66,6 @@ class WebContentsViewDelegate;
 class WebUIControllerFactory;
 struct MainFunctionParams;
 struct ShowDesktopNotificationHostMsgParams;
-
-typedef base::Callback< void(const MediaStreamDevices&) > MediaResponseCallback;
 
 // Embedder API (or SPI) for participating in browser logic, to be implemented
 // by the client of the content browser. See ChromeContentBrowserClient for the
@@ -291,15 +288,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Returns a a class to get notifications about media event. The embedder can
   // return NULL if they're not interested.
   virtual MediaObserver* GetMediaObserver();
-
-  // Asks permission to use the camera and/or microphone. If permission is
-  // granted, a call should be made to |callback| with the devices. If the
-  // request is denied, a call should be made to |callback| with an empty list
-  // of devices. |request| has the details of the request (e.g. which of audio
-  // and/or video devices are requested, and lists of available devices).
-  virtual void RequestMediaAccessPermission(
-      const MediaStreamRequest* request,
-      const MediaResponseCallback& callback) {}
 
   // Asks permission to show desktop notifications.
   virtual void RequestDesktopNotificationPermission(

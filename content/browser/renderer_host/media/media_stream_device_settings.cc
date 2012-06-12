@@ -10,6 +10,8 @@
 #include "base/callback.h"
 #include "base/stl_util.h"
 #include "content/browser/renderer_host/media/media_stream_settings_requester.h"
+#include "content/browser/renderer_host/render_view_host_delegate.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/media/media_stream_options.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -105,6 +107,28 @@ class MediaStreamDeviceSettingsRequest : public MediaStreamRequest {
   // RequestMediaAccessPermission, to make sure that we never post twice to it.
   bool posted_task;
 };
+
+namespace {
+
+// Sends the request to the appropriate WebContents.
+void DoDeviceRequest(
+    const MediaStreamDeviceSettingsRequest* request,
+    const content::MediaResponseCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Send the permission request to the web contents.
+  content::RenderViewHostImpl* host =
+      content::RenderViewHostImpl::FromID(request->render_process_id,
+                                          request->render_view_id);
+
+  // Tab may have gone away.
+  if (!host || !host->GetDelegate())
+    callback.Run(content::MediaStreamDevices());
+
+  host->GetDelegate()->RequestMediaAccessPermission(request, callback);
+}
+
+}  // namespace
 
 MediaStreamDeviceSettings::MediaStreamDeviceSettings(
     SettingsRequester* requester)
@@ -322,19 +346,15 @@ void MediaStreamDeviceSettings::PostRequestToUi(const std::string& label) {
     }
   }
 
-  // Send the permission request to the content client.
   scoped_refptr<ResponseCallbackHelper> helper =
       new ResponseCallbackHelper(AsWeakPtr());
   content::MediaResponseCallback callback =
       base::Bind(&ResponseCallbackHelper::PostResponse,
                  helper.get(), label);
+
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(
-          &content::ContentBrowserClient::RequestMediaAccessPermission,
-          base::Unretained(content::GetContentClient()->browser()),
-          request, callback));
-
+      base::Bind(&DoDeviceRequest, request, callback));
 }
 
 }  // namespace media_stream

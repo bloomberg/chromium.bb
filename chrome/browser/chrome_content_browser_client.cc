@@ -66,7 +66,6 @@
 #include "chrome/browser/tab_contents/tab_contents_ssl_helper.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/toolkit_extra_parts.h"
-#include "chrome/browser/ui/media_stream_infobar_delegate.h"
 #include "chrome/browser/ui/tab_contents/chrome_web_contents_view_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
@@ -1097,39 +1096,6 @@ void ChromeContentBrowserClient::AddNewCertificate(
     int render_view_id) {
   // The handler will run the UI and delete itself when it's finished.
   new SSLAddCertHandler(request, cert, render_process_id, render_view_id);
-}
-
-void ChromeContentBrowserClient::RequestMediaAccessPermission(
-    const content::MediaStreamRequest* request,
-    const content::MediaResponseCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  WebContents* contents = tab_util::GetWebContentsByID(
-      request->render_process_id, request->render_view_id);
-  if (!contents) {
-    // Abort, if the tab was closed after the request was made but before we
-    // got to this point.
-    callback.Run(content::MediaStreamDevices());
-    return;
-  }
-
-  TabContents* tab = TabContents::FromWebContents(contents);
-  DCHECK(tab);
-
-  InfoBarTabHelper* infobar_helper = tab->infobar_tab_helper();
-  InfoBarDelegate* old_infobar = NULL;
-  for (size_t i = 0; i < infobar_helper->infobar_count() && !old_infobar; ++i) {
-    old_infobar =
-        infobar_helper->GetInfoBarDelegateAt(i)->AsMediaStreamInfoBarDelegate();
-  }
-
-  InfoBarDelegate* infobar = new MediaStreamInfoBarDelegate(infobar_helper,
-                                                            request,
-                                                            callback);
-  if (old_infobar)
-    infobar_helper->ReplaceInfoBar(old_infobar, infobar);
-  else
-    infobar_helper->AddInfoBar(infobar);
 }
 
 content::MediaObserver* ChromeContentBrowserClient::GetMediaObserver() {

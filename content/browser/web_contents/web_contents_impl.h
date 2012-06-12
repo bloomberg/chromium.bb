@@ -387,6 +387,9 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void ShowCreatedFullscreenWidget(int route_id) OVERRIDE;
   virtual void ShowContextMenu(
       const content::ContextMenuParams& params) OVERRIDE;
+  virtual void RequestMediaAccessPermission(
+      const content::MediaStreamRequest* request,
+      const content::MediaResponseCallback& callback) OVERRIDE;
 
   // RenderWidgetHostDelegate --------------------------------------------------
 

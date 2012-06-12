@@ -106,6 +106,13 @@ bool ShellWindow::IsFullscreenOrPending() const {
   return false;
 }
 
+void ShellWindow::RequestMediaAccessPermission(
+    content::WebContents* web_contents,
+    const content::MediaStreamRequest* request,
+    const content::MediaResponseCallback& callback) {
+  callback.Run(content::MediaStreamDevices());
+}
+
 void ShellWindow::OnNativeClose() {
   ShellWindowRegistry::Get(profile_)->RemoveShellWindow(this);
   delete this;

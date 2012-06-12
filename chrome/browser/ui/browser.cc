@@ -118,6 +118,7 @@
 #include "chrome/browser/ui/global_error_service_factory.h"
 #include "chrome/browser/ui/hung_plugin_tab_helper.h"
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
+#include "chrome/browser/ui/media_stream_infobar_delegate.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
@@ -3696,6 +3697,29 @@ void Browser::RequestToLockMouse(WebContents* web_contents,
 
 void Browser::LostMouseLock() {
   fullscreen_controller_->LostMouseLock();
+}
+
+void Browser::RequestMediaAccessPermission(
+    content::WebContents* web_contents,
+    const content::MediaStreamRequest* request,
+    const content::MediaResponseCallback& callback) {
+  TabContents* tab = TabContents::FromWebContents(web_contents);
+  DCHECK(tab);
+
+  InfoBarTabHelper* infobar_helper = tab->infobar_tab_helper();
+  InfoBarDelegate* old_infobar = NULL;
+  for (size_t i = 0; i < infobar_helper->infobar_count() && !old_infobar; ++i) {
+    old_infobar =
+        infobar_helper->GetInfoBarDelegateAt(i)->AsMediaStreamInfoBarDelegate();
+  }
+
+  InfoBarDelegate* infobar = new MediaStreamInfoBarDelegate(infobar_helper,
+                                                            request,
+                                                            callback);
+  if (old_infobar)
+    infobar_helper->ReplaceInfoBar(old_infobar, infobar);
+  else
+    infobar_helper->AddInfoBar(infobar);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

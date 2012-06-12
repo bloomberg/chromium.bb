@@ -113,6 +113,10 @@ class ShellWindow : public content::NotificationObserver,
                                           bool enter_fullscreen) OVERRIDE;
   virtual bool IsFullscreenForTabOrPending(
       const content::WebContents* source) const OVERRIDE;
+  virtual void RequestMediaAccessPermission(
+      content::WebContents* web_contents,
+      const content::MediaStreamRequest* request,
+      const content::MediaResponseCallback& callback) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,

@@ -127,9 +127,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       net::X509Certificate* cert,
       int render_process_id,
       int render_view_id) OVERRIDE;
-  virtual void RequestMediaAccessPermission(
-      const content::MediaStreamRequest* request,
-      const content::MediaResponseCallback& callback) OVERRIDE;
   virtual content::MediaObserver* GetMediaObserver() OVERRIDE;
   virtual void RequestDesktopNotificationPermission(
       const GURL& source_origin,

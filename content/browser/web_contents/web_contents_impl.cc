@@ -1316,6 +1316,15 @@ void WebContentsImpl::ShowContextMenu(
   render_view_host_delegate_view_->ShowContextMenu(params);
 }
 
+void WebContentsImpl::RequestMediaAccessPermission(
+    const content::MediaStreamRequest* request,
+    const content::MediaResponseCallback& callback) {
+  if (delegate_)
+    delegate_->RequestMediaAccessPermission(this, request, callback);
+  else
+    callback.Run(content::MediaStreamDevices());
+}
+
 void WebContentsImpl::UpdatePreferredSize(const gfx::Size& pref_size) {
   preferred_size_ = pref_size;
   if (delegate_)

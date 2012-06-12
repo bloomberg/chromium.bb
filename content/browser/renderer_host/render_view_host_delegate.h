@@ -9,11 +9,13 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/i18n/rtl.h"
 #include "base/process_util.h"
 #include "base/string16.h"
 #include "content/common/content_export.h"
 #include "content/public/common/javascript_message_type.h"
+#include "content/public/common/media_stream_request.h"
 #include "ipc/ipc_channel.h"
 #include "net/base/load_states.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
@@ -56,6 +58,8 @@ struct GlobalRequestID;
 struct NativeWebKeyboardEvent;
 struct Referrer;
 struct RendererPreferences;
+
+typedef base::Callback< void(const MediaStreamDevices&) > MediaResponseCallback;
 
 //
 // RenderViewHostDelegate
@@ -114,7 +118,7 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
   // Return this object cast to a WebContents, if it is one. If the object is
   // not a WebContents, returns NULL. DEPRECATED: Be sure to include brettw or
   // jam as reviewers before you use this method. http://crbug.com/82582
-  virtual content::WebContents* GetAsWebContents();
+  virtual WebContents* GetAsWebContents();
 
   // Return the rect where to display the resize corner, if any, otherwise
   // an empty rect.
@@ -139,7 +143,7 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
 
   // The RenderView started a provisional load for a given frame.
   virtual void DidStartProvisionalLoadForFrame(
-      content::RenderViewHost* render_view_host,
+      RenderViewHost* render_view_host,
       int64 frame_id,
       bool main_frame,
       const GURL& opener_url,
@@ -151,7 +155,7 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
   // the ResourceDispatcherHost's RESOURCE_RECEIVED_REDIRECT notification
   // instead.  See http://crbug.com/78512.
   virtual void DidRedirectProvisionalLoad(
-      content::RenderViewHost* render_view_host,
+      RenderViewHost* render_view_host,
       int32 page_id,
       const GURL& opener_url,
       const GURL& source_url,
@@ -159,7 +163,7 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
 
   // A provisional load in the RenderView failed.
   virtual void DidFailProvisionalLoadWithError(
-      content::RenderViewHost* render_view_host,
+      RenderViewHost* render_view_host,
       const ViewHostMsg_DidFailProvisionalLoadWithError_Params& params) {}
 
   // The RenderView was navigated to a different page.
@@ -221,17 +225,17 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
   // The page wants to open a URL with the specified disposition.
   virtual void RequestOpenURL(RenderViewHost* rvh,
                               const GURL& url,
-                              const content::Referrer& referrer,
+                              const Referrer& referrer,
                               WindowOpenDisposition disposition,
                               int64 source_frame_id) {}
 
   // The page wants to transfer the request to a new renderer.
   virtual void RequestTransferURL(
       const GURL& url,
-      const content::Referrer& referrer,
+      const Referrer& referrer,
       WindowOpenDisposition disposition,
       int64 source_frame_id,
-      const content::GlobalRequestID& old_request_id) {}
+      const GlobalRequestID& old_request_id) {}
 
   // The page wants to close the active view in this tab.
   virtual void RouteCloseEvent(RenderViewHost* rvh) {}
@@ -246,7 +250,7 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
                                     const string16& message,
                                     const string16& default_prompt,
                                     const GURL& frame_url,
-                                    content::JavaScriptMessageType type,
+                                    JavaScriptMessageType type,
                                     IPC::Message* reply_msg,
                                     bool* did_suppress_message) {}
 
@@ -263,8 +267,8 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
 
   // Return a dummy RendererPreferences object that will be used by the renderer
   // associated with the owning RenderViewHost.
-  virtual content::RendererPreferences GetRendererPrefs(
-      content::BrowserContext* browser_context) const = 0;
+  virtual RendererPreferences GetRendererPrefs(
+      BrowserContext* browser_context) const = 0;
 
   // Returns a WebPreferences object that will be used by the renderer
   // associated with the owning render view host.
@@ -319,7 +323,7 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
   // Called when a file selection is to be done.
   virtual void RunFileChooser(
       RenderViewHost* render_view_host,
-      const content::FileChooserParams& params) {}
+      const FileChooserParams& params) {}
 
   // Notification that the page wants to go into or out of fullscreen mode.
   virtual void ToggleFullscreenMode(bool enter_fullscreen) {}
@@ -388,7 +392,14 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
 
   // A context menu should be shown, to be built using the context information
   // provided in the supplied params.
-  virtual void ShowContextMenu(const content::ContextMenuParams& params) {}
+  virtual void ShowContextMenu(const ContextMenuParams& params) {}
+
+  // The render view has requested access to media devices listed in
+  // |request|, and the client should grant or deny that permission by
+  // calling |callback|.
+  virtual void RequestMediaAccessPermission(
+      const MediaStreamRequest* request,
+      const MediaResponseCallback& callback) {}
 
  protected:
   virtual ~RenderViewHostDelegate() {}

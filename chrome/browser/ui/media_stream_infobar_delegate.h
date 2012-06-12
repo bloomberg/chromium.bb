@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/infobars/infobar_delegate.h"
-#include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/media_stream_request.h"
 
 class MessageLoop;

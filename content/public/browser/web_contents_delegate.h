@@ -10,9 +10,11 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/string16.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/navigation_type.h"
+#include "content/public/common/media_stream_request.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/window_container_type.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -59,6 +61,8 @@ struct WebIntentServiceData;
 namespace content {
 
 struct OpenURLParams;
+
+typedef base::Callback< void(const MediaStreamDevices&) > MediaResponseCallback;
 
 // Objects implement this interface to get notified about changes in the
 // WebContents and to provide necessary functionality.
@@ -407,11 +411,20 @@ class CONTENT_EXPORT WebContentsDelegate {
   // contents.
   virtual void RequestToLockMouse(WebContents* web_contents,
                                   bool user_gesture,
-                                  bool last_unlocked_by_target) {
-  }
+                                  bool last_unlocked_by_target) {}
 
   // Notification that the page has lost the mouse lock.
   virtual void LostMouseLock() {}
+
+  // Asks permission to use the camera and/or microphone. If permission is
+  // granted, a call should be made to |callback| with the devices. If the
+  // request is denied, a call should be made to |callback| with an empty list
+  // of devices. |request| has the details of the request (e.g. which of audio
+  // and/or video devices are requested, and lists of available devices).
+  virtual void RequestMediaAccessPermission(
+      WebContents* web_contents,
+      const MediaStreamRequest* request,
+      const MediaResponseCallback& callback) {}
 
  protected:
   virtual ~WebContentsDelegate();
