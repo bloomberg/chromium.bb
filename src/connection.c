@@ -403,12 +403,12 @@ wl_connection_put_fd(struct wl_connection *connection, int32_t fd)
 	return 0;
 }
 
-int
-wl_closure_vmarshal(struct wl_closure *closure,
-		    struct wl_object *sender,
+struct wl_closure *
+wl_closure_vmarshal(struct wl_object *sender,
 		    uint32_t opcode, va_list ap,
 		    const struct wl_message *message)
 {
+	struct wl_closure *closure;
 	struct wl_object **objectp, *object;
 	uint32_t length, *p, *start, size, *end;
 	int dup_fd;
@@ -417,11 +417,16 @@ wl_closure_vmarshal(struct wl_closure *closure,
 	char *extra;
 	int i, count, fd, extra_size, *fd_ptr;
 
+	/* FIXME: Match old fixed allocation for now */
+	closure = malloc(sizeof *closure + 1024);
+	if (closure == NULL)
+		return NULL;
+
 	extra_size = wl_message_size_extra(message);
 	count = strlen(message->signature) + 2;
 	extra = (char *) closure->buffer;
 	start = &closure->buffer[DIV_ROUNDUP(extra_size, sizeof *p)];
-	end = &closure->buffer[ARRAY_LENGTH(closure->buffer)];
+	end = &closure->buffer[256];
 	p = &start[2];
 
 	closure->types[0] = &ffi_type_pointer;
@@ -553,18 +558,18 @@ wl_closure_vmarshal(struct wl_closure *closure,
 	ffi_prep_cif(&closure->cif, FFI_DEFAULT_ABI,
 		     closure->count, &ffi_type_void, closure->types);
 
-	return 0;
+	return closure;
 
 err:
 	printf("request too big to marshal, maximum size is %zu\n",
 	       sizeof closure->buffer);
 	errno = ENOMEM;
-	return -1;
+
+	return NULL;
 }
 
-int
+struct wl_closure *
 wl_connection_demarshal(struct wl_connection *connection,
-			struct wl_closure *closure,
 			uint32_t size,
 			struct wl_map *objects,
 			const struct wl_message *message)
@@ -575,23 +580,20 @@ wl_connection_demarshal(struct wl_connection *connection,
 	unsigned int i, count, extra_space;
 	struct wl_object **object;
 	struct wl_array **array;
+	struct wl_closure *closure;
 
 	count = strlen(message->signature) + 2;
 	if (count > ARRAY_LENGTH(closure->types)) {
 		printf("too many args (%d)\n", count);
 		errno = EINVAL;
 		wl_connection_consume(connection, size);
-		return -1;
+		return NULL;
 	}
 
 	extra_space = wl_message_size_extra(message);
-	if (sizeof closure->buffer < size + extra_space) {
-		printf("request too big to demarshal, maximum %zu actual %d\n",
-		       sizeof closure->buffer, size + extra_space);
-		errno = ENOMEM;
-		wl_connection_consume(connection, size);
-		return -1;
-	}
+	closure = malloc(sizeof *closure + 8 + size + extra_space);
+	if (closure == NULL)
+		return NULL;
 
 	closure->message = message;
 	closure->types[0] = &ffi_type_pointer;
@@ -748,14 +750,14 @@ wl_connection_demarshal(struct wl_connection *connection,
 
 	wl_connection_consume(connection, size);
 
-	return 0;
+	return closure;
 
  err:
 	closure->count = i;
 	wl_closure_destroy(closure);
 	wl_connection_consume(connection, size);
 
-	return -1;
+	return NULL;
 }
 
 void
@@ -884,4 +886,5 @@ wl_closure_print(struct wl_closure *closure, struct wl_object *target, int send)
 void
 wl_closure_destroy(struct wl_closure *closure)
 {
+	free(closure);
 }

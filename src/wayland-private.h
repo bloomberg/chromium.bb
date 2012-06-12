@@ -76,19 +76,17 @@ struct wl_closure {
 	ffi_type *types[20];
 	ffi_cif cif;
 	void *args[20];
-	uint32_t buffer[256];
 	uint32_t *start;
+	uint32_t buffer[0];
 };
 
-int
-wl_closure_vmarshal(struct wl_closure *closure,
-		    struct wl_object *sender,
+struct wl_closure *
+wl_closure_vmarshal(struct wl_object *sender,
 		    uint32_t opcode, va_list ap,
 		    const struct wl_message *message);
 
-int
+struct wl_closure *
 wl_connection_demarshal(struct wl_connection *connection,
-			struct wl_closure *closure,
 			uint32_t size,
 			struct wl_map *objects,
 			const struct wl_message *message);

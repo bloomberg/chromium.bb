@@ -190,29 +190,28 @@ wl_proxy_add_listener(struct wl_proxy *proxy,
 WL_EXPORT void
 wl_proxy_marshal(struct wl_proxy *proxy, uint32_t opcode, ...)
 {
-	struct wl_closure closure;
+	struct wl_closure *closure;
 	va_list ap;
-	int ret;
 
 	va_start(ap, opcode);
-	ret = wl_closure_vmarshal(&closure, &proxy->object, opcode, ap,
-				  &proxy->object.interface->methods[opcode]);
+	closure = wl_closure_vmarshal(&proxy->object, opcode, ap,
+				      &proxy->object.interface->methods[opcode]);
 	va_end(ap);
 
-	if (ret) {
+	if (closure == NULL) {
 		fprintf(stderr, "Error marshalling request\n");
 		abort();
 	}
 
-	if (wl_closure_send(&closure, proxy->display->connection)) {
+	if (wl_closure_send(closure, proxy->display->connection)) {
 		fprintf(stderr, "Error sending request: %m\n");
 		abort();
 	}
 
 	if (wl_debug)
-		wl_closure_print(&closure, &proxy->object, true);
+		wl_closure_print(closure, &proxy->object, true);
 
-	wl_closure_destroy(&closure);
+	wl_closure_destroy(closure);
 }
 
 /* Can't do this, there may be more than one instance of an
@@ -468,9 +467,8 @@ handle_event(struct wl_display *display,
 	     uint32_t id, uint32_t opcode, uint32_t size)
 {
 	struct wl_proxy *proxy;
-	struct wl_closure closure;
+	struct wl_closure *closure;
 	const struct wl_message *message;
-	int ret;
 
 	proxy = wl_map_lookup(&display->objects, id);
 
@@ -483,22 +481,22 @@ handle_event(struct wl_display *display,
 	}
 
 	message = &proxy->object.interface->events[opcode];
-	ret = wl_connection_demarshal(display->connection, &closure,
-				      size, &display->objects, message);
+	closure = wl_connection_demarshal(display->connection, size,
+					  &display->objects, message);
 
-	if (ret) {
+	if (closure == NULL) {
 		fprintf(stderr, "Error demarshalling event\n");
 		abort();
 	}
 
 	if (wl_debug)
-		wl_closure_print(&closure, &proxy->object, false);
+		wl_closure_print(closure, &proxy->object, false);
 
-	wl_closure_invoke(&closure, &proxy->object,
+	wl_closure_invoke(closure, &proxy->object,
 			  proxy->object.implementation[opcode],
 			  proxy->user_data);
 
-	wl_closure_destroy(&closure);
+	wl_closure_destroy(closure);
 }
 
 WL_EXPORT void

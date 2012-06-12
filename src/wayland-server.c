@@ -102,54 +102,52 @@ destroy_client(void *data)
 WL_EXPORT void
 wl_resource_post_event(struct wl_resource *resource, uint32_t opcode, ...)
 {
-	struct wl_closure closure;
+	struct wl_closure *closure;
 	struct wl_object *object = &resource->object;
 	va_list ap;
-	int ret;
 
 	va_start(ap, opcode);
-	ret = wl_closure_vmarshal(&closure, object, opcode, ap,
-				  &object->interface->events[opcode]);
+	closure = wl_closure_vmarshal(object, opcode, ap,
+				      &object->interface->events[opcode]);
 	va_end(ap);
 
-	if (ret)
+	if (closure == NULL)
 		return;
 
-	if (wl_closure_send(&closure, resource->client->connection))
+	if (wl_closure_send(closure, resource->client->connection))
 		wl_event_loop_add_idle(resource->client->display->loop,
 				       destroy_client, resource->client);
 
 	if (wl_debug)
-		wl_closure_print(&closure, object, true);
+		wl_closure_print(closure, object, true);
 
-	wl_closure_destroy(&closure);
+	wl_closure_destroy(closure);
 }
 
 
 WL_EXPORT void
 wl_resource_queue_event(struct wl_resource *resource, uint32_t opcode, ...)
 {
-	struct wl_closure closure;
+	struct wl_closure *closure;
 	struct wl_object *object = &resource->object;
 	va_list ap;
-	int ret;
 
 	va_start(ap, opcode);
-	ret = wl_closure_vmarshal(&closure, object, opcode, ap,
-				  &object->interface->events[opcode]);
+	closure = wl_closure_vmarshal(object, opcode, ap,
+				      &object->interface->events[opcode]);
 	va_end(ap);
 
-	if (ret)
+	if (closure == NULL)
 		return;
 
-	if (wl_closure_queue(&closure, resource->client->connection))
+	if (wl_closure_queue(closure, resource->client->connection))
 		wl_event_loop_add_idle(resource->client->display->loop,
 				       destroy_client, resource->client);
 
 	if (wl_debug)
-		wl_closure_print(&closure, object, true);
+		wl_closure_print(closure, object, true);
 
-	wl_closure_destroy(&closure);
+	wl_closure_destroy(closure);
 }
 
 WL_EXPORT void
@@ -187,12 +185,12 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 	struct wl_connection *connection = client->connection;
 	struct wl_resource *resource;
 	struct wl_object *object;
-	struct wl_closure closure;
+	struct wl_closure *closure;
 	const struct wl_message *message;
 	uint32_t p[2];
 	int opcode, size;
 	uint32_t cmask = 0;
-	int len, ret;
+	int len;
 
 	if (mask & WL_EVENT_READABLE)
 		cmask |= WL_CONNECTION_READABLE;
@@ -232,11 +230,11 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 		}
 
 		message = &object->interface->methods[opcode];
-		ret = wl_connection_demarshal(client->connection, &closure,
-					      size, &client->objects, message);
+		closure = wl_connection_demarshal(client->connection, size,
+						  &client->objects, message);
 		len -= size;
 
-		if (ret && errno == EINVAL) {
+		if (closure == NULL && errno == EINVAL) {
 			wl_resource_post_error(client->display_resource,
 					       WL_DISPLAY_ERROR_INVALID_METHOD,
 					       "invalid arguments for %s@%d.%s",
@@ -244,18 +242,18 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 					       object->id,
 					       message->name);
 			break;
-		} else if (ret && errno == ENOMEM) {
+		} else if (closure == NULL && errno == ENOMEM) {
 			wl_resource_post_no_memory(resource);
 			break;
 		}
 
 		if (wl_debug)
-			wl_closure_print(&closure, object, false);
+			wl_closure_print(closure, object, false);
 
-		wl_closure_invoke(&closure, object,
+		wl_closure_invoke(closure, object,
 				  object->implementation[opcode], client);
 
-		wl_closure_destroy(&closure);
+		wl_closure_destroy(closure);
 
 		if (client->error)
 			break;
