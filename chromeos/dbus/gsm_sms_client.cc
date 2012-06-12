@@ -3,6 +3,10 @@
 // found in the LICENSE file.
 #include "chromeos/dbus/gsm_sms_client.h"
 
+#include <map>
+#include <utility>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -21,7 +25,7 @@ namespace chromeos {
 namespace {
 
 // A class actually making method calls for SMS services, used by
-// GsmSMSClietnImpl.
+// GsmSMSClientImpl.
 class SMSProxy {
  public:
   typedef GsmSMSClient::SmsReceivedHandler SmsReceivedHandler;

@@ -38,8 +38,10 @@ class  MockIBusClient;
 class  MockIBusInputContextClient;
 class  MockImageBurnerClient;
 class  MockIntrospectableClient;
+class  MockModemMessagingClient;
 class  MockPowerManagerClient;
 class  MockSessionManagerClient;
+class  MockSMSClient;
 class  MockSpeechSynthesizerClient;
 class  MockUpdateEngineClient;
 
@@ -72,8 +74,10 @@ class MockDBusThreadManager : public DBusThreadManager {
   MOCK_METHOD0(GetGsmSMSClient, GsmSMSClient*(void));
   MOCK_METHOD0(GetImageBurnerClient, ImageBurnerClient*(void));
   MOCK_METHOD0(GetIntrospectableClient, IntrospectableClient*(void));
+  MOCK_METHOD0(GetModemMessagingClient, ModemMessagingClient*(void));
   MOCK_METHOD0(GetPowerManagerClient, PowerManagerClient*(void));
   MOCK_METHOD0(GetSessionManagerClient, SessionManagerClient*(void));
+  MOCK_METHOD0(GetSMSClient, SMSClient*(void));
   MOCK_METHOD0(GetSpeechSynthesizerClient, SpeechSynthesizerClient*(void));
   MOCK_METHOD0(GetUpdateEngineClient, UpdateEngineClient*(void));
   MOCK_METHOD0(GetIBusClient, IBusClient*(void));
@@ -133,11 +137,17 @@ class MockDBusThreadManager : public DBusThreadManager {
   MockIntrospectableClient* mock_introspectable_client() {
     return mock_introspectable_client_.get();
   }
+  MockModemMessagingClient* mock_modem_messaging_client() {
+    return mock_modem_messaging_client_.get();
+  }
   MockPowerManagerClient* mock_power_manager_client() {
     return mock_power_manager_client_.get();
   }
   MockSessionManagerClient* mock_session_manager_client() {
     return mock_session_manager_client_.get();
+  }
+  MockSMSClient* mock_sms_client() {
+    return mock_sms_client_.get();
   }
   MockSpeechSynthesizerClient* mock_speech_synthesizer_client() {
     return mock_speech_synthesizer_client_.get();
@@ -171,8 +181,10 @@ class MockDBusThreadManager : public DBusThreadManager {
   scoped_ptr<MockGsmSMSClient> mock_gsm_sms_client_;
   scoped_ptr<MockImageBurnerClient> mock_image_burner_client_;
   scoped_ptr<MockIntrospectableClient> mock_introspectable_client_;
+  scoped_ptr<MockModemMessagingClient> mock_modem_messaging_client_;
   scoped_ptr<MockPowerManagerClient> mock_power_manager_client_;
   scoped_ptr<MockSessionManagerClient> mock_session_manager_client_;
+  scoped_ptr<MockSMSClient> mock_sms_client_;
   scoped_ptr<MockSpeechSynthesizerClient> mock_speech_synthesizer_client_;
   scoped_ptr<MockUpdateEngineClient> mock_update_engine_client_;
   scoped_ptr<MockIBusClient> mock_ibus_client_;

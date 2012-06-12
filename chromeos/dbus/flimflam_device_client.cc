@@ -225,6 +225,23 @@ class FlimflamDeviceClientStubImpl : public FlimflamDeviceClient {
         flimflam::kDBusObjectProperty,
         base::Value::CreateStringValue("/device/cellular1"));
     stub_devices_.Set(kStubCellular1, cellular_properties);
+
+    // Create a second device stubbing a modem managed by
+    // ModemManager1 interfaces.
+    // Note: name matches Manager entry.
+    const char kStubCellular2[] = "stub_cellular2";
+    cellular_properties = new base::DictionaryValue;
+    cellular_properties->SetWithoutPathExpansion(
+        flimflam::kTypeProperty,
+        base::Value::CreateStringValue(flimflam::kTypeCellular));
+    cellular_properties->SetWithoutPathExpansion(
+        flimflam::kDBusConnectionProperty,
+        base::Value::CreateStringValue(":stub.0"));
+    cellular_properties->SetWithoutPathExpansion(
+        flimflam::kDBusObjectProperty,
+        base::Value::CreateStringValue(
+                "/org/freedesktop/ModemManager1/stub/0"));
+    stub_devices_.Set(kStubCellular2, cellular_properties);
   }
 
   virtual ~FlimflamDeviceClientStubImpl() {}

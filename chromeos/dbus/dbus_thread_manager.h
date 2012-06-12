@@ -43,8 +43,10 @@ class IBusClient;
 class IBusInputContextClient;
 class ImageBurnerClient;
 class IntrospectableClient;
+class ModemMessagingClient;
 class PowerManagerClient;
 class SessionManagerClient;
+class SMSClient;
 class SpeechSynthesizerClient;
 class UpdateEngineClient;
 
@@ -189,6 +191,11 @@ class CHROMEOS_EXPORT DBusThreadManager {
   // down.
   virtual IntrospectableClient* GetIntrospectableClient() = 0;
 
+  // Returns the Modem Messaging client, owned by DBusThreadManager.
+  // Do not cache this pointer and use it after DBusThreadManager is shut
+  // down.
+  virtual ModemMessagingClient* GetModemMessagingClient() = 0;
+
   // Returns the power manager client, owned by DBusThreadManager.
   // See also comments at session_manager_client().
   virtual PowerManagerClient* GetPowerManagerClient() = 0;
@@ -197,6 +204,11 @@ class CHROMEOS_EXPORT DBusThreadManager {
   // Do not cache this pointer and use it after DBusThreadManager is shut
   // down.
   virtual SessionManagerClient* GetSessionManagerClient() = 0;
+
+  // Returns the SMS client, owned by DBusThreadManager.
+  // Do not cache this pointer and use it after DBusThreadManager is shut
+  // down.
+  virtual SMSClient* GetSMSClient() = 0;
 
   // Returns the speech synthesizer client, owned by DBusThreadManager.
   // Do not cache this pointer and use it after DBusThreadManager is shut

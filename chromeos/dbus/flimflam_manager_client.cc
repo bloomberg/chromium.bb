@@ -149,9 +149,11 @@ class FlimflamManagerClientStubImpl : public FlimflamManagerClient {
  public:
   FlimflamManagerClientStubImpl() : weak_ptr_factory_(this) {
     base::ListValue* device_list = new base::ListValue;
-    // Note: name matches Device stub map.
+    // Note: names match Device stub map.
     const char kStubCellular1[] = "stub_cellular1";
+    const char kStubCellular2[] = "stub_cellular2";
     device_list->Append(base::Value::CreateStringValue(kStubCellular1));
+    device_list->Append(base::Value::CreateStringValue(kStubCellular2));
     stub_properties_.Set(flimflam::kDevicesProperty, device_list);
   }
 
