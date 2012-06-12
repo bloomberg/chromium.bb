@@ -232,6 +232,15 @@ void ChromeLauncherController::Open(ash::LauncherID id, int event_flags) {
     if (GetItemStatus(id) == ash::STATUS_IS_PENDING)
       return;
 
+    // Check if this item has any windows in the activation list.
+    for (WindowList::const_iterator i = activation_order_.begin();
+         i != activation_order_.end(); ++i) {
+      if (window_to_id_map_[*i] == id) {
+        ash::wm::ActivateWindow(*i);
+        return;
+      }
+    }
+
     const Extension* extension =
         profile_->GetExtensionService()->GetInstalledExtension(
             id_to_item_map_[id].app_id);
@@ -511,21 +520,26 @@ void ChromeLauncherController::Observe(
 
 void ChromeLauncherController::OnShellWindowAdded(ShellWindow* shell_window) {
   aura::Window* window = shell_window->GetNativeWindow();
-  ash::LauncherItemStatus status =
-      ash::wm::IsActiveWindow(window) ?
-          ash::STATUS_ACTIVE : ash::STATUS_RUNNING;
+  ash::LauncherItemStatus status = ash::wm::IsActiveWindow(window) ?
+      ash::STATUS_ACTIVE : ash::STATUS_RUNNING;
   window->AddObserver(this);
   const std::string app_id = shell_window->extension()->id();
+  ash::LauncherID id = 0;
   for (IDToItemMap::const_iterator i = id_to_item_map_.begin();
        i != id_to_item_map_.end(); ++i) {
     if (i->second.app_id == app_id) {
-      window_to_id_map_[window] = i->first;
-      SetItemStatus(i->first, status);
-      return;
+      id = i->first;
+      SetItemStatus(id, status);
+      break;
     }
   }
-  ash::LauncherID id = CreateAppLauncherItem(NULL, app_id, status);
+  if (id == 0)
+    id = CreateAppLauncherItem(NULL, app_id, status);
   window_to_id_map_[window] = id;
+  if (status == ash::STATUS_ACTIVE)
+    activation_order_.push_front(window);
+  else
+    activation_order_.push_back(window);
 }
 
 void ChromeLauncherController::OnShellWindowRemoved(ShellWindow* shell_window) {
@@ -534,16 +548,19 @@ void ChromeLauncherController::OnShellWindowRemoved(ShellWindow* shell_window) {
 
 void ChromeLauncherController::OnWindowActivated(aura::Window* active,
                                                  aura::Window* old_active) {
-  if (window_to_id_map_.find(old_active) != window_to_id_map_.end()) {
-    if (window_to_id_map_.find(active) != window_to_id_map_.end() &&
-        window_to_id_map_[old_active] == window_to_id_map_[active]) {
+  if (window_to_id_map_.find(active) != window_to_id_map_.end()) {
+    ash::LauncherID active_id = window_to_id_map_[active];
+    activation_order_.remove(active);
+    activation_order_.push_front(active);
+    if (window_to_id_map_.find(old_active) != window_to_id_map_.end() &&
+        window_to_id_map_[old_active] == active_id) {
       // Old and new windows are for the same item. Don't change the status.
       return;
     }
-    SetItemStatus(window_to_id_map_[old_active], ash::STATUS_RUNNING);
+    SetItemStatus(active_id, ash::STATUS_ACTIVE);
   }
-  if (window_to_id_map_.find(active) != window_to_id_map_.end())
-    SetItemStatus(window_to_id_map_[active], ash::STATUS_ACTIVE);
+  if (window_to_id_map_.find(old_active) != window_to_id_map_.end())
+    SetItemStatus(window_to_id_map_[old_active], ash::STATUS_RUNNING);
 }
 
 void ChromeLauncherController::OnWindowRemovingFromRootWindow(
@@ -554,6 +571,7 @@ void ChromeLauncherController::OnWindowRemovingFromRootWindow(
   window_to_id_map_.erase(window);
 
   DCHECK(id_to_item_map_.find(id) != id_to_item_map_.end());
+  activation_order_.remove(window);
   ShellWindowRegistry::ShellWindowSet remaining_windows =
       ShellWindowRegistry::Get(profile_)->GetShellWindowsForApp(
       id_to_item_map_[id].app_id);

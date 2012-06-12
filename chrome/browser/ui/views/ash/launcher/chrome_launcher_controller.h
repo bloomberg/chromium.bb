@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_ASH_LAUNCHER_CHROME_LAUNCHER_CONTROLLER_H_
 #pragma once
 
+#include <list>
 #include <map>
 #include <string>
 
@@ -235,6 +236,7 @@ class ChromeLauncherController : public ash::LauncherDelegate,
 
   typedef std::map<ash::LauncherID, Item> IDToItemMap;
   typedef std::map<aura::Window*, ash::LauncherID> WindowToIDMap;
+  typedef std::list<aura::Window*> WindowList;
 
   // Updates the pinned pref state. The pinned state consists of a list pref.
   // Each item of the list is a dictionary. The key |kAppIDPath| gives the
@@ -284,6 +286,9 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   // Allows us to get from an aura::Window to the id of a launcher item.
   // Currently only used for platform app windows.
   WindowToIDMap window_to_id_map_;
+  // Maintains the activation order. The first element is most recent.
+  // Currently only used for platform app windows.
+  WindowList activation_order_;
 
   // Used to load the image for an app tab.
   scoped_ptr<AppIconLoader> app_icon_loader_;
