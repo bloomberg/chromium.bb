@@ -640,12 +640,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Returns NULL if it does not find the entry.
   GDataEntry* GetGDataEntryByPath(const FilePath& file_path);
 
-  // Converts document feed from gdata service into DirectoryInfo. On failure,
-  // returns NULL and fills in |error| with an appropriate value.
-  GDataDirectory* ParseGDataFeed(GDataErrorCode status,
-                                 base::Value* data,
-                                 base::PlatformFileError *error);
-
   // Callback passed to |LoadFeedFromServer| from |SearchAsync| method.
   // |callback| is that should be run with data received from
   // |LoadFeedFromServer|.
