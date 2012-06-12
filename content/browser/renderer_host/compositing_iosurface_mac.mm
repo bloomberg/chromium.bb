@@ -220,15 +220,14 @@ void CompositingIOSurfaceMac::DrawIOSurface(NSView* view, float scale_factor) {
 
   // TODO: After a resolution change, the DPI-ness of the view and the
   // IOSurface might not be in sync.
-  gfx::Size io_surface_size = pixel_io_surface_size_;
-  io_surface_size = pixel_io_surface_size_.Scale(1.0 / scale_factor);
-  quad_.set_size(io_surface_size, pixel_io_surface_size_);
+  io_surface_size_ = pixel_io_surface_size_.Scale(1.0 / scale_factor);
+  quad_.set_size(io_surface_size_, pixel_io_surface_size_);
 
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
 
   // Note that the projection keeps things in view units, so the use of
-  // window_size / io_surface_size (as opposed to the pixel_ variants) below is
+  // window_size / io_surface_size_ (as opposed to the pixel_ variants) below is
   // correct.
   glOrtho(0, window_size.width(), window_size.height(), 0, -1, 1);
   glMatrixMode(GL_MODELVIEW);
@@ -250,20 +249,20 @@ void CompositingIOSurfaceMac::DrawIOSurface(NSView* view, float scale_factor) {
     glBindTexture(GL_TEXTURE_RECTANGLE_ARB, 0); CHECK_GL_ERROR();
 
     // Fill the resize gutters with white.
-    if (window_size.width() > io_surface_size.width() ||
-        window_size.height() > io_surface_size.height()) {
+    if (window_size.width() > io_surface_size_.width() ||
+        window_size.height() > io_surface_size_.height()) {
       glUseProgram(shader_program_white_);
       SurfaceQuad filler_quad;
-      if (window_size.width() > io_surface_size.width()) {
+      if (window_size.width() > io_surface_size_.width()) {
         // Draw right-side gutter down to the bottom of the window.
-        filler_quad.set_rect(io_surface_size.width(), 0.0f,
+        filler_quad.set_rect(io_surface_size_.width(), 0.0f,
                              window_size.width(), window_size.height());
         DrawQuad(filler_quad);
       }
-      if (window_size.height() > io_surface_size.height()) {
+      if (window_size.height() > io_surface_size_.height()) {
         // Draw bottom gutter to the width of the IOSurface.
-        filler_quad.set_rect(0.0f, io_surface_size.height(),
-                             io_surface_size.width(), window_size.height());
+        filler_quad.set_rect(0.0f, io_surface_size_.height(),
+                             io_surface_size_.width(), window_size.height());
         DrawQuad(filler_quad);
       }
     }
@@ -394,6 +393,10 @@ bool CompositingIOSurfaceMac::MapIOSurfaceToTexture(
   pixel_io_surface_size_.SetSize(
       io_surface_support_->IOSurfaceGetWidth(io_surface_),
       io_surface_support_->IOSurfaceGetHeight(io_surface_));
+
+  // TODO(thakis): Keep track of the view size over IPC. At the moment,
+  // the correct view units are computed on first paint.
+  io_surface_size_ = pixel_io_surface_size_;
 
   quad_.set_size(pixel_io_surface_size_, pixel_io_surface_size_);
 

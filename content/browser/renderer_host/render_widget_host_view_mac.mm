@@ -1088,13 +1088,11 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceSuspend() {
 
 bool RenderWidgetHostViewMac::HasAcceleratedSurface(
       const gfx::Size& desired_size) {
-  // TODO: What coordinates is desired_size in? Should it be
-  // compared to the pixel or logical size of compositing_iosurface_?
   return last_frame_was_accelerated_ &&
          compositing_iosurface_.get() &&
          compositing_iosurface_->HasIOSurface() &&
          (desired_size.IsEmpty() ||
-          compositing_iosurface_->pixel_io_surface_size() == desired_size);
+          compositing_iosurface_->io_surface_size() == desired_size);
 }
 
 void RenderWidgetHostViewMac::AboutToWaitForBackingStoreMsg() {

@@ -54,6 +54,8 @@ class CompositingIOSurfaceMac {
   const gfx::Size& pixel_io_surface_size() const {
     return pixel_io_surface_size_;
   }
+  // In cocoa view units / DIPs.
+  const gfx::Size& io_surface_size() const { return io_surface_size_; }
 
   bool is_vsync_disabled() const { return is_vsync_disabled_; }
 
@@ -128,7 +130,8 @@ class CompositingIOSurfaceMac {
   base::mac::ScopedCFTypeRef<CFTypeRef> io_surface_;
 
   // The width and height of the io surface.
-  gfx::Size pixel_io_surface_size_;
+  gfx::Size pixel_io_surface_size_;  // In pixels.
+  gfx::Size io_surface_size_;  // In view units.
 
   // The "live" OpenGL texture referring to this IOSurfaceRef. Note
   // that per the CGLTexImageIOSurface2D API we do not need to
