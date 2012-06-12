@@ -153,24 +153,12 @@ Handle CreateMemoryObject(size_t length, bool executable) {
   }
 #endif
 
-  // On Mac OS X, shm_open() gives us file descriptors that the OS
-  // won't mmap() with PROT_EXEC, which is no good for the dynamic
-  // code region.  Try open()ing a file in /tmp first, but fall back
-  // to using shm_open() if /tmp is not available, which will be the
-  // case inside the Chromium sandbox.  This means that dynamic
-  // loading will only work with --no-sandbox.
-  //
-  // TODO(mseaborn): We will probably need to do IPC to acquire SHM FDs
-  // inside the Chromium Mac sandbox, as on Linux.
-
-#if NACL_OSX
-  // Try /tmp first.  It would be OK to enable this for Linux, but
-  // there's no need because shm_open() (which uses /dev/shm rather
-  // than /tmp) is fine on Linux.
-  fd = TryShmOrTempOpen(length, kShmTempPrefix, true);
-  if (fd >= 0)
-    return fd;
-#endif
+  if (NACL_OSX && executable) {
+    // On Mac OS X, shm_open() gives us file descriptors that the OS
+    // won't mmap() with PROT_EXEC, which is no good for the dynamic
+    // code region, so we must use /tmp instead.
+    return TryShmOrTempOpen(length, kShmTempPrefix, true);
+  }
 
   // Try shm_open().
   return TryShmOrTempOpen(length, kShmOpenPrefix, false);
