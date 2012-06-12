@@ -114,7 +114,8 @@ class TestGitCl(TestCase):
       ((['git', 'config', 'branch.master.rietveldpatchset'],), ''),
       ((['git', 'log', '--pretty=format:%s%n%n%b', 'master...'],), 'foo'),
       ((['git', 'config', 'user.email'],), 'me@example.com'),
-      ((['git', 'diff', '--no-ext-diff', '--stat', '-M', 'master...'],),
+      ((['git', 'diff', '--no-ext-diff', '--stat', '--find-copies-harder',
+         'master...'],),
        '+dat'),
       ((['git', 'log', '--pretty=format:%s\n\n%b', 'master..'],), 'desc\n'),
     ]
@@ -347,7 +348,8 @@ class TestGitCl(TestCase):
         ((['git', 'config', 'branch.master.rietveldpatchset'],), ''),
         ((['git', 'log', '--pretty=format:%s%n%n%b', 'master...'],), 'foo'),
         ((['git', 'config', 'user.email'],), 'me@example.com'),
-        ((['git', 'diff', '--no-ext-diff', '--stat', '-M', 'master...'],),
+        ((['git', 'diff', '--no-ext-diff', '--stat', '--find-copies-harder',
+           'master...'],),
          '+dat'),
         ]
 

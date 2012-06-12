@@ -1128,7 +1128,8 @@ def CMDupload(parser, args):
   if 'GIT_EXTERNAL_DIFF' in env:
     del env['GIT_EXTERNAL_DIFF']
   subprocess2.call(
-      ['git', 'diff', '--no-ext-diff', '--stat', '-M'] + args, env=env)
+      ['git', 'diff', '--no-ext-diff', '--stat', '--find-copies-harder'] + args,
+      env=env)
 
   if settings.GetIsGerrit():
     return GerritUpload(options, args, cl)
