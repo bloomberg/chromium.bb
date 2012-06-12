@@ -330,6 +330,20 @@ Panel* BasePanelBrowserTest::CreatePanelWithParams(
     EXPECT_TRUE(panel->auto_resizable());
   }
 
+#if defined(OS_LINUX)
+  // On bots, we might have a simple window manager which always activates new
+  // windows, and can't always deactivate them. Keep track of the previously
+  // active window so we can activate that window back to ensure the new window
+  // is inactive.
+  Browser* last_active_browser_to_restore = NULL;
+  if (params.expected_active_state == SHOW_AS_INACTIVE &&
+      ui::GuessWindowManager() == ui::WM_ICE_WM) {
+    last_active_browser_to_restore = BrowserList::GetLastActive();
+    EXPECT_TRUE(last_active_browser_to_restore);
+    EXPECT_NE(last_active_browser_to_restore, panel_browser);
+  }
+#endif
+
   if (params.show_flag == SHOW_AS_ACTIVE) {
     panel->Show();
   } else {
@@ -340,13 +354,9 @@ Panel* BasePanelBrowserTest::CreatePanelWithParams(
     MessageLoopForUI::current()->RunAllPending();
 
 #if defined(OS_LINUX)
-    // On bots, we might have a simple window manager which always activates new
-    // windows, and can't always deactivate them. Re-activate the main tabbed
-    // browser to "deactivate" the newly created panel.
-    if (params.expected_active_state == SHOW_AS_INACTIVE &&
-        ui::GuessWindowManager() == ui::WM_ICE_WM) {
-      browser()->window()->Activate();
-    }
+    // Restore focus where it was. It will deactivate the new panel.
+    if (last_active_browser_to_restore)
+      last_active_browser_to_restore->window()->Activate();
 #endif
     // More waiting, because gaining or losing focus may require inter-process
     // asynchronous communication, and it is not enough to just run the local

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
-#include "chrome/browser/ui/panels/old_base_panel_browser_test.h"
+#include "chrome/browser/ui/panels/base_panel_browser_test.h"
 #include "chrome/browser/ui/panels/detached_panel_strip.h"
 #include "chrome/browser/ui/panels/docked_panel_strip.h"
 #include "chrome/browser/ui/panels/native_panel.h"
@@ -12,16 +12,16 @@
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/test_panel_mouse_watcher.h"
 
-class OldPanelDragBrowserTest : public OldBasePanelBrowserTest {
+class PanelDragBrowserTest : public BasePanelBrowserTest {
  public:
-  OldPanelDragBrowserTest() : OldBasePanelBrowserTest() {
+  PanelDragBrowserTest() : BasePanelBrowserTest() {
   }
 
-  virtual ~OldPanelDragBrowserTest() {
+  virtual ~PanelDragBrowserTest() {
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    OldBasePanelBrowserTest::SetUpOnMainThread();
+    BasePanelBrowserTest::SetUpOnMainThread();
 
     // All the tests here assume using mocked 800x600 screen area for the
     // primary monitor. Do the check now.
@@ -81,7 +81,7 @@ class OldPanelDragBrowserTest : public OldBasePanelBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, DragOneDockedPanel) {
+IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DragOneDockedPanel) {
   static const int big_delta_x = 70;
   static const int big_delta_y = 30;  // Do not exceed the threshold to detach.
 
@@ -173,7 +173,7 @@ IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, DragOneDockedPanel) {
   PanelManager::GetInstance()->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, DragTwoDockedPanels) {
+IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DragTwoDockedPanels) {
   static const gfx::Point small_delta(10, 0);
 
   Panel* panel1 = CreateDockedPanel("1", gfx::Rect(0, 0, 100, 100));
@@ -269,7 +269,7 @@ IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, DragTwoDockedPanels) {
   PanelManager::GetInstance()->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, DragThreeDockedPanels) {
+IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DragThreeDockedPanels) {
   Panel* panel1 = CreateDockedPanel("1", gfx::Rect(0, 0, 100, 100));
   Panel* panel2 = CreateDockedPanel("2", gfx::Rect(0, 0, 100, 100));
   Panel* panel3 = CreateDockedPanel("3", gfx::Rect(0, 0, 100, 100));
@@ -402,7 +402,7 @@ IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, DragThreeDockedPanels) {
   PanelManager::GetInstance()->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, DragMinimizedPanel) {
+IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DragMinimizedPanel) {
   // We'll simulate mouse movements for test.
   PanelMouseWatcher* mouse_watcher = new TestPanelMouseWatcher();
   PanelManager::GetInstance()->SetMouseWatcherForTesting(mouse_watcher);
@@ -444,7 +444,7 @@ IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, DragMinimizedPanel) {
   panel->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest,
+IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest,
                        DragMinimizedPanelWhileDrawingAttention) {
   // We'll simulate mouse movements for test.
   PanelMouseWatcher* mouse_watcher = new TestPanelMouseWatcher();
@@ -492,7 +492,7 @@ IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest,
   PanelManager::GetInstance()->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, CloseDockedPanelOnDrag) {
+IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDockedPanelOnDrag) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   PanelDragController* drag_controller = panel_manager->drag_controller();
   DockedPanelStrip* docked_strip = panel_manager->docked_strip();
@@ -656,7 +656,7 @@ IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, CloseDockedPanelOnDrag) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, DragOneDetachedPanel) {
+IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DragOneDetachedPanel) {
   Panel* panel = CreateDetachedPanel("1", gfx::Rect(300, 200, 250, 200));
 
   // Test that the detached panel can be dragged almost anywhere except getting
@@ -702,7 +702,7 @@ IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, DragOneDetachedPanel) {
   PanelManager::GetInstance()->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, CloseDetachedPanelOnDrag) {
+IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, CloseDetachedPanelOnDrag) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   PanelDragController* drag_controller = panel_manager->drag_controller();
   DetachedPanelStrip* detached_strip = panel_manager->detached_strip();
@@ -841,7 +841,7 @@ IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, CloseDetachedPanelOnDrag) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, Detach) {
+IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, Detach) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelStrip* docked_strip = panel_manager->docked_strip();
   DetachedPanelStrip* detached_strip = panel_manager->detached_strip();
@@ -896,7 +896,7 @@ IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, Detach) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, DetachAndCancel) {
+IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DetachAndCancel) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelStrip* docked_strip = panel_manager->docked_strip();
   DetachedPanelStrip* detached_strip = panel_manager->detached_strip();
@@ -951,7 +951,7 @@ IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, DetachAndCancel) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, Attach) {
+IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, Attach) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelStrip* docked_strip = panel_manager->docked_strip();
   DetachedPanelStrip* detached_strip = panel_manager->detached_strip();
@@ -1010,7 +1010,7 @@ IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, Attach) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, AttachAndCancel) {
+IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, AttachAndCancel) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelStrip* docked_strip = panel_manager->docked_strip();
   DetachedPanelStrip* detached_strip = panel_manager->detached_strip();
@@ -1065,7 +1065,7 @@ IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, AttachAndCancel) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, DetachAttachAndCancel) {
+IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DetachAttachAndCancel) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelStrip* docked_strip = panel_manager->docked_strip();
   DetachedPanelStrip* detached_strip = panel_manager->detached_strip();
@@ -1126,7 +1126,7 @@ IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, DetachAttachAndCancel) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, DetachWithSqueeze) {
+IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DetachWithSqueeze) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelStrip* docked_strip = panel_manager->docked_strip();
   DetachedPanelStrip* detached_strip = panel_manager->detached_strip();
@@ -1207,7 +1207,7 @@ IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, DetachWithSqueeze) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, AttachWithSqueeze) {
+IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, AttachWithSqueeze) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelStrip* docked_strip = panel_manager->docked_strip();
   DetachedPanelStrip* detached_strip = panel_manager->detached_strip();
@@ -1315,7 +1315,7 @@ IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, AttachWithSqueeze) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, DragDetachedPanelToTop) {
+IN_PROC_BROWSER_TEST_F(PanelDragBrowserTest, DragDetachedPanelToTop) {
   // Setup the test areas to have top-aligned bar excluded from work area.
   const gfx::Rect primary_screen_area(0, 0, 800, 600);
   const gfx::Rect work_area(0, 10, 800, 590);

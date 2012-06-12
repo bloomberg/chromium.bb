@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_PANELS_OLD_BASE_PANEL_BROWSER_TEST_H_
-#define CHROME_BROWSER_UI_PANELS_OLD_BASE_PANEL_BROWSER_TEST_H_
+#ifndef CHROME_BROWSER_UI_PANELS_BASE_PANEL_BROWSER_TEST_H_
+#define CHROME_BROWSER_UI_PANELS_BASE_PANEL_BROWSER_TEST_H_
 #pragma once
 
 #include "base/values.h"
@@ -15,7 +15,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "ui/gfx/rect.h"
 
-class OldBasePanelBrowserTest : public InProcessBrowserTest {
+class BasePanelBrowserTest : public InProcessBrowserTest {
  public:
   class MockDisplaySettingsProvider : public DisplaySettingsProvider {
    public:
@@ -33,8 +33,8 @@ class OldBasePanelBrowserTest : public InProcessBrowserTest {
                                         int thickness) = 0;
   };
 
-  OldBasePanelBrowserTest();
-  virtual ~OldBasePanelBrowserTest();
+  BasePanelBrowserTest();
+  virtual ~BasePanelBrowserTest();
 
   // Linux bots use icewm which activate windows in ways that break
   // certain panel tests. Skip those tests when running on the bots.
@@ -124,4 +124,4 @@ class OldBasePanelBrowserTest : public InProcessBrowserTest {
   bool mock_display_settings_enabled_;
 };
 
-#endif  // CHROME_BROWSER_UI_PANELS_OLD_BASE_PANEL_BROWSER_TEST_H_
+#endif  // CHROME_BROWSER_UI_PANELS_BASE_PANEL_BROWSER_TEST_H_

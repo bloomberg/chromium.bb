@@ -36,7 +36,6 @@ class NativePanel {
   friend class Panel;
   friend class PanelBrowserWindow;
   friend class PanelBrowserTest;
-  friend class OldPanelBrowserTest;
 
  protected:
   virtual ~NativePanel() {}

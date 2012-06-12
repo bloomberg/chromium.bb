@@ -3,17 +3,16 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
-#include "chrome/browser/ui/panels/old_base_panel_browser_test.h"
+#include "chrome/browser/ui/panels/base_panel_browser_test.h"
 #include "chrome/browser/ui/panels/detached_panel_strip.h"
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 
-class OldDetachedPanelBrowserTest : public OldBasePanelBrowserTest {
+class DetachedPanelBrowserTest : public BasePanelBrowserTest {
 };
 
-IN_PROC_BROWSER_TEST_F(OldDetachedPanelBrowserTest,
-                       CheckDetachedPanelProperties) {
+IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, CheckDetachedPanelProperties) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   DetachedPanelStrip* detached_strip = panel_manager->detached_strip();
 
@@ -40,7 +39,7 @@ IN_PROC_BROWSER_TEST_F(OldDetachedPanelBrowserTest,
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(OldDetachedPanelBrowserTest, DrawAttentionOnActive) {
+IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, DrawAttentionOnActive) {
   // Create a detached panel that is initially active.
   Panel* panel = CreateDetachedPanel("1", gfx::Rect(300, 200, 250, 200));
   scoped_ptr<NativePanelTesting> native_panel_testing(
@@ -58,7 +57,7 @@ IN_PROC_BROWSER_TEST_F(OldDetachedPanelBrowserTest, DrawAttentionOnActive) {
   panel->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(OldDetachedPanelBrowserTest, DrawAttentionOnInactive) {
+IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, DrawAttentionOnInactive) {
   // Create an inactive detached panel.
   Panel* panel = CreateDetachedPanel("1", gfx::Rect(300, 200, 250, 200));
   panel->Deactivate();
@@ -84,8 +83,7 @@ IN_PROC_BROWSER_TEST_F(OldDetachedPanelBrowserTest, DrawAttentionOnInactive) {
   panel->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(OldDetachedPanelBrowserTest,
-                       DrawAttentionResetOnActivate) {
+IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, DrawAttentionResetOnActivate) {
   // Create 2 panels so we end up with an inactive panel that can
   // be made to draw attention.
   Panel* panel1 = CreatePanel("test panel1");
@@ -110,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(OldDetachedPanelBrowserTest,
   panel2->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(OldDetachedPanelBrowserTest, ClickTitlebar) {
+IN_PROC_BROWSER_TEST_F(DetachedPanelBrowserTest, ClickTitlebar) {
   PanelManager* panel_manager = PanelManager::GetInstance();
 
   Panel* panel = CreateDetachedPanel("1", gfx::Rect(300, 200, 250, 200));

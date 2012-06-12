@@ -11,7 +11,7 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/panels/old_base_panel_browser_test.h"
+#include "chrome/browser/ui/panels/base_panel_browser_test.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/test_panel_mouse_watcher.h"
@@ -24,12 +24,12 @@
 // desktop notification code a chance to process the change notifications,
 // we call MessageLoopForUI::current()->RunAllPending() after any panel change
 // has been made.
-class OldPanelAndDesktopNotificationTest : public OldBasePanelBrowserTest {
+class PanelAndDesktopNotificationTest : public BasePanelBrowserTest {
  public:
-  OldPanelAndDesktopNotificationTest() : OldBasePanelBrowserTest() {
+  PanelAndDesktopNotificationTest() : BasePanelBrowserTest() {
   }
 
-  virtual ~OldPanelAndDesktopNotificationTest() {
+  virtual ~PanelAndDesktopNotificationTest() {
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
@@ -37,7 +37,7 @@ class OldPanelAndDesktopNotificationTest : public OldBasePanelBrowserTest {
     // does not have the hook up for testing work area.
     disable_display_settings_mock();
 
-    OldBasePanelBrowserTest::SetUpOnMainThread();
+    BasePanelBrowserTest::SetUpOnMainThread();
 
     g_browser_process->local_state()->SetInteger(
         prefs::kDesktopNotificationPosition, BalloonCollection::LOWER_RIGHT);
@@ -55,7 +55,7 @@ class OldPanelAndDesktopNotificationTest : public OldBasePanelBrowserTest {
     service_.reset();
     ui_manager_.reset();
 
-    OldBasePanelBrowserTest::CleanUpOnMainThread();
+    BasePanelBrowserTest::CleanUpOnMainThread();
   }
 
   content::ShowDesktopNotificationHostMsgParams StandardTestNotification() {
@@ -120,7 +120,7 @@ class OldPanelAndDesktopNotificationTest : public OldBasePanelBrowserTest {
   scoped_ptr<DesktopNotificationService> service_;
 };
 
-IN_PROC_BROWSER_TEST_F(OldPanelAndDesktopNotificationTest, AddAndClosePanel) {
+IN_PROC_BROWSER_TEST_F(PanelAndDesktopNotificationTest, AddAndClosePanel) {
   Balloon* balloon = CreateBalloon();
   int original_balloon_bottom = GetBalloonBottomPosition(balloon);
 
@@ -139,7 +139,7 @@ IN_PROC_BROWSER_TEST_F(OldPanelAndDesktopNotificationTest, AddAndClosePanel) {
   EXPECT_EQ(original_balloon_bottom, GetBalloonBottomPosition(balloon));
 }
 
-IN_PROC_BROWSER_TEST_F(OldPanelAndDesktopNotificationTest,
+IN_PROC_BROWSER_TEST_F(PanelAndDesktopNotificationTest,
                        ExpandAndCollapsePanel) {
   // Disable mouse watcher since we don't want mouse movements to affect panel
   // testing for title-only state.
@@ -183,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(OldPanelAndDesktopNotificationTest,
   PanelManager::GetInstance()->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(OldPanelAndDesktopNotificationTest, DragNarrowPanel) {
+IN_PROC_BROWSER_TEST_F(PanelAndDesktopNotificationTest, DragNarrowPanel) {
   Balloon* balloon = CreateBalloon();
 
   // Let the panel width be smaller than the balloon width.
@@ -207,7 +207,7 @@ IN_PROC_BROWSER_TEST_F(OldPanelAndDesktopNotificationTest, DragNarrowPanel) {
   PanelManager::GetInstance()->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(OldPanelAndDesktopNotificationTest, DragWidePanel) {
+IN_PROC_BROWSER_TEST_F(PanelAndDesktopNotificationTest, DragWidePanel) {
   Balloon* balloon = CreateBalloon();
 
   // Let the panel width be greater than the balloon width.
@@ -233,8 +233,7 @@ IN_PROC_BROWSER_TEST_F(OldPanelAndDesktopNotificationTest, DragWidePanel) {
   PanelManager::GetInstance()->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(OldPanelAndDesktopNotificationTest,
-                       DetachAndAttachPanel) {
+IN_PROC_BROWSER_TEST_F(PanelAndDesktopNotificationTest, DetachAndAttachPanel) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   Balloon* balloon = CreateBalloon();
   int original_balloon_bottom = GetBalloonBottomPosition(balloon);
@@ -267,7 +266,7 @@ IN_PROC_BROWSER_TEST_F(OldPanelAndDesktopNotificationTest,
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(OldPanelAndDesktopNotificationTest, ResizePanel) {
+IN_PROC_BROWSER_TEST_F(PanelAndDesktopNotificationTest, ResizePanel) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   Balloon* balloon = CreateBalloon();
 
@@ -303,7 +302,7 @@ IN_PROC_BROWSER_TEST_F(OldPanelAndDesktopNotificationTest, ResizePanel) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(OldPanelAndDesktopNotificationTest, ResizePanelByMouse) {
+IN_PROC_BROWSER_TEST_F(PanelAndDesktopNotificationTest, ResizePanelByMouse) {
   Balloon* balloon = CreateBalloon();
 
   // Create a docked panel. Expect that the notification balloon moves up to be
@@ -332,8 +331,7 @@ IN_PROC_BROWSER_TEST_F(OldPanelAndDesktopNotificationTest, ResizePanelByMouse) {
   PanelManager::GetInstance()->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(OldPanelAndDesktopNotificationTest,
-                       InteractWithTwoPanels) {
+IN_PROC_BROWSER_TEST_F(PanelAndDesktopNotificationTest, InteractWithTwoPanels) {
   Balloon* balloon = CreateBalloon();
   int original_balloon_bottom = GetBalloonBottomPosition(balloon);
 
