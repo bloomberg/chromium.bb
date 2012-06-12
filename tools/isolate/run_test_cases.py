@@ -117,7 +117,8 @@ def get_test_cases(executable, whitelist, blacklist):
   return tests
 
 
-def run_test_cases(executable, whitelist, blacklist, jobs, timeout, stats_only):
+def run_test_cases(
+    executable, whitelist, blacklist, jobs, timeout, stats_only, no_dump):
   """Traces test cases one by one."""
   test_cases = get_test_cases(executable, whitelist, blacklist)
   if not test_cases:
@@ -131,8 +132,9 @@ def run_test_cases(executable, whitelist, blacklist, jobs, timeout, stats_only):
     results = pool.join(progress, 0.1)
     duration = time.time() - progress.start
   results = dict((item[0]['test_case'], item) for item in results)
-  trace_inputs.write_json('%s.run_test_cases' % executable, results, False)
-  print ''
+  if not no_dump:
+    trace_inputs.write_json('%s.run_test_cases' % executable, results, False)
+  sys.stderr.write('\n')
   total = len(results)
   if not total:
     return 1
@@ -207,6 +209,10 @@ def main():
       action='count',
       default=int(os.environ.get('ISOLATE_DEBUG', 0)),
       help='Use multiple times')
+  parser.add_option(
+      '--no-dump',
+      action='store_true',
+      help='do not generate a .test_cases file')
   options, args = parser.parse_args()
   levels = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
   logging.basicConfig(
@@ -224,7 +230,8 @@ def main():
       options.blacklist,
       options.jobs,
       options.timeout,
-      options.stats)
+      options.stats,
+      options.no_dump)
 
 
 if __name__ == '__main__':

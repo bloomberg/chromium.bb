@@ -136,8 +136,7 @@ class Progress(object):
           self.next_line,
           ' ' * max(0, len(self.last_printed_line) - len(self.next_line)))
       self.last_printed_line = self.next_line
-    sys.stdout.write(line)
-    sys.stdout.flush()
+    sys.stderr.write(line)
 
   def increase_count(self):
     with self.lock:
