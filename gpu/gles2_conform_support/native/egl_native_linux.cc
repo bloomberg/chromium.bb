@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,6 @@ extern "C" {
 #else
 #include "third_party/gles2_conform/GTF_ES/glsl/GTF/Source/eglNative.h"
 #endif
-}
 
 
 GTFbool GTFNativeCreateDisplay(EGLNativeDisplayType *pNativeDisplay) {
@@ -119,3 +118,6 @@ void GTFDestroyEGLImage(EGLImageKHR image) {
 
   egl_destroy_image_khr_(eglGetCurrentDisplay(), image);
 }
+
+}  // extern "C"
+
