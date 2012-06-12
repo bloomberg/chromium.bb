@@ -82,6 +82,10 @@ class NetflixTestHelper():
       index = 0
       for infobar in infobars:
          if 'netflix' in infobar['text']:
+           # After storage infobar pops up, clicking the Ok button immediately
+           # returns the Storage error on faster machines like Stumpy/Lumpy so
+           # adding a delay of 1 second here.
+           time.sleep(1)
            self._pyauto.PerformActionOnInfobar('accept', infobar_index=index)
            return True
          index = index + 1
@@ -225,9 +229,8 @@ class NetflixGuestModeTest(pyauto.PyUITest, NetflixTestHelper):
     self.CheckNetflixPlaying(
         self.IS_GUEST_MODE_ERROR,
         'Netflix player did not return a Guest mode error.')
-    # Page contents parsing doesn't work : crosbug.com/27977
-    # Uncomment the following line when that bug is fixed.
-    # self.assertTrue('Guest Mode Unsupported' in self.GetTabContents())
+    self.assertTrue('Guest Mode Unsupported' in self.GetTabContents(),
+                    msg='Guest Mode error is not found on the page.')
     
 
 if __name__ == '__main__':
