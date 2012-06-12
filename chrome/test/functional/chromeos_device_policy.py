@@ -33,7 +33,7 @@ class ChromeosDevicePolicy(policy_base.PolicyTestBase):
                       msg='Expected to be logged in.')
     else:
       self.assertRaises(
-          pyauto_errors.LoginError,
+          pyauto_errors.JSONInterfaceError,
           lambda: policy_base.PolicyTestBase.Login(self,
                                                    self._usernames[user_index],
                                                    self._passwords[user_index]))
