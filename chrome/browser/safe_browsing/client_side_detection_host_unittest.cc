@@ -316,21 +316,7 @@ class ClientSideDetectionHostTest : public TabContentsTestHarness {
   scoped_ptr<content::TestBrowserThread> io_thread_;
 };
 
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
-// Crashes on linux_chromeos and win_rel http://crbug.com/115979
-#define MAYBE_OnPhishingDetectionDoneInvalidVerdict \
-    DISABLED_OnPhishingDetectionDoneInvalidVerdict
-#define MAYBE_OnPhishingDetectionDoneVerdictNotPhishing \
-    DISABLED_OnPhishingDetectionDoneVerdictNotPhishing
-#else
-#define MAYBE_OnPhishingDetectionDoneInvalidVerdict \
-    OnPhishingDetectionDoneInvalidVerdict
-#define MAYBE_OnPhishingDetectionDoneVerdictNotPhishing \
-    OnPhishingDetectionDoneVerdictNotPhishing
-#endif
-
-TEST_F(ClientSideDetectionHostTest,
-       MAYBE_OnPhishingDetectionDoneInvalidVerdict) {
+TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneInvalidVerdict) {
   // Case 0: renderer sends an invalid verdict string that we're unable to
   // parse.
   MockBrowserFeatureExtractor* mock_extractor = new MockBrowserFeatureExtractor(
@@ -342,17 +328,7 @@ TEST_F(ClientSideDetectionHostTest,
   EXPECT_TRUE(Mock::VerifyAndClear(mock_extractor));
 }
 
-#if defined(OS_LINUX) || defined(OS_WIN)
-// Crashes on linux_chromeos and win_rel. http://crbug.com/115979
-#define MAYBE_OnPhishingDetectionDoneNotPhishing \
-    DISABLED_OnPhishingDetectionDoneNotPhishing
-#else
-#define MAYBE_OnPhishingDetectionDoneNotPhishing \
-    OnPhishingDetectionDoneNotPhishing
-#endif
-
-TEST_F(ClientSideDetectionHostTest,
-       MAYBE_OnPhishingDetectionDoneNotPhishing) {
+TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneNotPhishing) {
   // Case 1: client thinks the page is phishing.  The server does not agree.
   // No interstitial is shown.
   MockBrowserFeatureExtractor* mock_extractor = new MockBrowserFeatureExtractor(
@@ -384,12 +360,7 @@ TEST_F(ClientSideDetectionHostTest,
   EXPECT_TRUE(Mock::VerifyAndClear(sb_service_.get()));
 }
 
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
-// Crashes on linux_chromeos and win_rel. http://crbug.com/115979
-TEST_F(ClientSideDetectionHostTest, FLAKY_OnPhishingDetectionDoneDisabled) {
-#else
 TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneDisabled) {
-#endif
   // Case 2: client thinks the page is phishing and so does the server but
   // showing the interstitial is disabled => no interstitial is shown.
   MockBrowserFeatureExtractor* mock_extractor = new MockBrowserFeatureExtractor(
@@ -569,7 +540,7 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneMultiplePings) {
 }
 
 TEST_F(ClientSideDetectionHostTest,
-       MAYBE_OnPhishingDetectionDoneVerdictNotPhishing) {
+       OnPhishingDetectionDoneVerdictNotPhishing) {
   // Case 6: renderer sends a verdict string that isn't phishing.
   MockBrowserFeatureExtractor* mock_extractor = new MockBrowserFeatureExtractor(
       contents(),
