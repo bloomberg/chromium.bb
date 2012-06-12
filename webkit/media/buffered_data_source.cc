@@ -18,7 +18,7 @@ namespace webkit_media {
 // of FFmpeg.
 static const int kInitialReadBufferSize = 32768;
 
-// Number of cache misses we allow for a single Read() before signalling an
+// Number of cache misses we allow for a single Read() before signaling an
 // error.
 static const int kNumCacheMissRetries = 3;
 
@@ -27,7 +27,8 @@ BufferedDataSource::BufferedDataSource(
     WebFrame* frame,
     media::MediaLog* media_log,
     const DownloadingCB& downloading_cb)
-    : total_bytes_(kPositionNotSpecified),
+    : cors_mode_(BufferedResourceLoader::kUnspecified),
+      total_bytes_(kPositionNotSpecified),
       buffered_bytes_(0),
       streaming_(false),
       frame_(frame),
@@ -53,7 +54,7 @@ BufferedDataSource::BufferedDataSource(
 BufferedDataSource::~BufferedDataSource() {}
 
 // A factory method to create BufferedResourceLoader using the read parameters.
-// This method can be overrided to inject mock BufferedResourceLoader object
+// This method can be overridden to inject mock BufferedResourceLoader object
 // for testing purpose.
 BufferedResourceLoader* BufferedDataSource::CreateResourceLoader(
     int64 first_byte_position, int64 last_byte_position) {

@@ -54,7 +54,7 @@ FilePickerResult ComparePaths(const FilePath& suggested_path,
 
 }  // namespace
 
-DownloadFilePicker::DownloadFilePicker() {
+DownloadFilePicker::DownloadFilePicker() : download_id_(0) {
 }
 
 void DownloadFilePicker::Init(DownloadManager* download_manager,

@@ -54,7 +54,8 @@ H264Parser::H264BitReader::H264BitReader()
     : data_(NULL),
       bytes_left_(0),
       curr_byte_(0),
-      num_remaining_bits_in_curr_byte_(0) {
+      num_remaining_bits_in_curr_byte_(0),
+      prev_two_bytes_(0) {
 }
 
 H264Parser::H264BitReader::~H264BitReader() {}
