@@ -69,7 +69,8 @@ TEST(MetricsLogManagerTest, StandardFlow) {
   EXPECT_TRUE(log_manager.has_staged_log());
   EXPECT_FALSE(log_manager.staged_log_text().empty());
 
-  log_manager.DiscardStagedLog();
+  log_manager.DiscardStagedLogXml();
+  log_manager.DiscardStagedLogProto();
   EXPECT_EQ(second_log, log_manager.current_log());
   EXPECT_FALSE(log_manager.has_staged_log());
   EXPECT_FALSE(log_manager.has_unsent_logs());
@@ -112,7 +113,8 @@ TEST(MetricsLogManagerTest, InterjectedLog) {
 
   EXPECT_FALSE(log_manager.has_staged_log());
   log_manager.StageNextLogForUpload();
-  log_manager.DiscardStagedLog();
+  log_manager.DiscardStagedLogXml();
+  log_manager.DiscardStagedLogProto();
   EXPECT_FALSE(log_manager.has_unsent_logs());
 }
 
@@ -128,7 +130,8 @@ TEST(MetricsLogManagerTest, InterjectedLogPreservesType) {
   log_manager.FinishCurrentLog();
   log_manager.ResumePausedLog();
   log_manager.StageNextLogForUpload();
-  log_manager.DiscardStagedLog();
+  log_manager.DiscardStagedLogXml();
+  log_manager.DiscardStagedLogProto();
 
   // Verify that the remaining log (which is the original ongoing log) still
   // has the right type.
@@ -194,7 +197,8 @@ TEST(MetricsLogManagerTest, StoreAndLoad) {
     EXPECT_TRUE(log_manager.has_unsent_logs());
 
     log_manager.StageNextLogForUpload();
-    log_manager.DiscardStagedLog();
+    log_manager.DiscardStagedLogXml();
+    log_manager.DiscardStagedLogProto();
     // The initial log should be sent first; update the persisted storage to
     // verify.
     log_manager.PersistUnsentLogs();
@@ -203,12 +207,14 @@ TEST(MetricsLogManagerTest, StoreAndLoad) {
 
     // Handle the first ongoing log.
     log_manager.StageNextLogForUpload();
-    log_manager.DiscardStagedLog();
+    log_manager.DiscardStagedLogXml();
+    log_manager.DiscardStagedLogProto();
     EXPECT_TRUE(log_manager.has_unsent_logs());
 
     // Handle the last log.
     log_manager.StageNextLogForUpload();
-    log_manager.DiscardStagedLog();
+    log_manager.DiscardStagedLogXml();
+    log_manager.DiscardStagedLogProto();
     EXPECT_FALSE(log_manager.has_unsent_logs());
 
     // Nothing should have changed "on disk" since PersistUnsentLogs hasn't been
@@ -310,7 +316,8 @@ TEST(MetricsLogManagerTest, ProvisionalStoreNoop) {
     log_manager.StageNextLogForUpload();
     log_manager.StoreStagedLogAsUnsent(MetricsLogManager::PROVISIONAL_STORE);
     log_manager.StageNextLogForUpload();
-    log_manager.DiscardStagedLog();
+    log_manager.DiscardStagedLogXml();
+    log_manager.DiscardStagedLogProto();
     log_manager.BeginLoggingWithLog(log2, MetricsLogManager::ONGOING_LOG);
     log_manager.FinishCurrentLog();
     log_manager.StageNextLogForUpload();
@@ -344,4 +351,70 @@ TEST(MetricsLogManagerTest, ProvisionalStoreNoop) {
     log_manager.PersistUnsentLogs();
     EXPECT_EQ(1U, serializer->TypeCount(MetricsLogManager::ONGOING_LOG));
   }
+}
+
+// Test that discarding just the XML log, then the protobuf log, works.
+TEST(MetricsLogManagerTest, DiscardXmlLogFirst) {
+  MetricsLogManager log_manager;
+  EXPECT_FALSE(log_manager.has_staged_log());
+  EXPECT_FALSE(log_manager.has_staged_log_xml());
+  EXPECT_FALSE(log_manager.has_staged_log_proto());
+
+  MetricsLogBase* initial_log = new MetricsLogBase("id", 0, "version");
+  log_manager.BeginLoggingWithLog(initial_log, MetricsLogManager::INITIAL_LOG);
+  log_manager.FinishCurrentLog();
+  EXPECT_FALSE(log_manager.has_staged_log());
+  EXPECT_FALSE(log_manager.has_staged_log_xml());
+  EXPECT_FALSE(log_manager.has_staged_log_proto());
+
+  log_manager.StageNextLogForUpload();
+  EXPECT_TRUE(log_manager.has_staged_log());
+  EXPECT_TRUE(log_manager.has_staged_log_xml());
+  EXPECT_TRUE(log_manager.has_staged_log_proto());
+  EXPECT_FALSE(log_manager.staged_log_text().empty());
+
+  log_manager.DiscardStagedLogXml();
+  EXPECT_TRUE(log_manager.has_staged_log());
+  EXPECT_FALSE(log_manager.has_staged_log_xml());
+  EXPECT_TRUE(log_manager.has_staged_log_proto());
+  EXPECT_FALSE(log_manager.staged_log_text().empty());
+
+  log_manager.DiscardStagedLogProto();
+  EXPECT_FALSE(log_manager.has_staged_log());
+  EXPECT_FALSE(log_manager.has_staged_log_xml());
+  EXPECT_FALSE(log_manager.has_staged_log_proto());
+  EXPECT_TRUE(log_manager.staged_log_text().empty());
+}
+
+// Test that discarding just the protobuf log, then the XML log, works.
+TEST(MetricsLogManagerTest, DiscardProtoLogFirst) {
+  MetricsLogManager log_manager;
+  EXPECT_FALSE(log_manager.has_staged_log());
+  EXPECT_FALSE(log_manager.has_staged_log_xml());
+  EXPECT_FALSE(log_manager.has_staged_log_proto());
+
+  MetricsLogBase* initial_log = new MetricsLogBase("id", 0, "version");
+  log_manager.BeginLoggingWithLog(initial_log, MetricsLogManager::INITIAL_LOG);
+  log_manager.FinishCurrentLog();
+  EXPECT_FALSE(log_manager.has_staged_log());
+  EXPECT_FALSE(log_manager.has_staged_log_xml());
+  EXPECT_FALSE(log_manager.has_staged_log_proto());
+
+  log_manager.StageNextLogForUpload();
+  EXPECT_TRUE(log_manager.has_staged_log());
+  EXPECT_TRUE(log_manager.has_staged_log_xml());
+  EXPECT_TRUE(log_manager.has_staged_log_proto());
+  EXPECT_FALSE(log_manager.staged_log_text().empty());
+
+  log_manager.DiscardStagedLogProto();
+  EXPECT_TRUE(log_manager.has_staged_log());
+  EXPECT_TRUE(log_manager.has_staged_log_xml());
+  EXPECT_FALSE(log_manager.has_staged_log_proto());
+  EXPECT_FALSE(log_manager.staged_log_text().empty());
+
+  log_manager.DiscardStagedLogXml();
+  EXPECT_FALSE(log_manager.has_staged_log());
+  EXPECT_FALSE(log_manager.has_staged_log_xml());
+  EXPECT_FALSE(log_manager.has_staged_log_proto());
+  EXPECT_TRUE(log_manager.staged_log_text().empty());
 }

@@ -93,11 +93,17 @@ void MetricsLogManager::StageNextLogForUpload() {
 }
 
 bool MetricsLogManager::has_staged_log() const {
-  return !staged_log_text().empty();
+  return has_staged_log_proto() || has_staged_log_xml();
 }
 
 bool MetricsLogManager::has_staged_log_proto() const {
-  return has_staged_log() && staged_log_text().proto != kDiscardedLog;
+  return !staged_log_text().proto.empty() &&
+      staged_log_text().proto != kDiscardedLog;
+}
+
+bool MetricsLogManager::has_staged_log_xml() const {
+  return !staged_log_text().xml.empty() &&
+      staged_log_text().xml != kDiscardedLog;
 }
 
 void MetricsLogManager::DiscardStagedLog() {
@@ -108,6 +114,18 @@ void MetricsLogManager::DiscardStagedLog() {
 
 void MetricsLogManager::DiscardStagedLogProto() {
   staged_log_text_.proto = kDiscardedLog;
+
+  // If we're discarding the last piece of the log, reset the staged log state.
+  if (!has_staged_log())
+    DiscardStagedLog();
+}
+
+void MetricsLogManager::DiscardStagedLogXml() {
+  staged_log_text_.xml = kDiscardedLog;
+
+  // If we're discarding the last piece of the log, reset the staged log state.
+  if (!has_staged_log())
+    DiscardStagedLog();
 }
 
 void MetricsLogManager::DiscardCurrentLog() {

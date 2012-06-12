@@ -291,7 +291,7 @@ class MetricsService
 
   // Logs debugging details, for the case where the server returns a response
   // code other than 200.
-  void LogBadResponseCode();
+  void LogBadResponseCode(int response_code, bool is_xml);
 
   // Records a window-related notification.
   void LogWindowChange(int type,
@@ -394,12 +394,6 @@ class MetricsService
   // The outstanding transmission appears as a URL Fetch operation.
   scoped_ptr<net::URLFetcher> current_fetch_xml_;
   scoped_ptr<net::URLFetcher> current_fetch_proto_;
-
-  // Cached responses from the XML request while we wait for a response to the
-  // protubuf request.
-  int response_code_;
-  std::string response_status_;
-  std::string response_data_;
 
   // The URLs for the XML and protobuf metrics servers.
   string16 server_url_xml_;

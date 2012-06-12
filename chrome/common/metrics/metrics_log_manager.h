@@ -71,8 +71,13 @@ class MetricsLogManager {
 
   // Returns true if there is a protobuf log that needs to be uploaded.
   // In the case that an XML upload needs to be re-issued due to a previous
-  // failure, has_staged_log() will return true while this returns false.
+  // failure, has_staged_log() can return true while this returns false.
   bool has_staged_log_proto() const;
+
+  // Returns true if there is an xml log that needs to be uploaded.
+  // In the case that a protobuf upload needs to be re-issued due to a previous
+  // failure, has_staged_log() can return true while this returns false.
+  bool has_staged_log_xml() const;
 
   // The text of the staged log, in compressed XML or protobuf format. Empty if
   // there is no staged log, or if compression of the staged log failed.
@@ -87,6 +92,11 @@ class MetricsLogManager {
   // This is useful to prevent needlessly re-issuing successful protobuf uploads
   // due to XML upload failures.
   void DiscardStagedLogProto();
+
+  // Discards the XML data in the staged log.
+  // This is useful to prevent needlessly re-issuing successful XML uploads
+  // due to protobuf upload failures.
+  void DiscardStagedLogXml();
 
   // Closes and discards |current_log|.
   void DiscardCurrentLog();

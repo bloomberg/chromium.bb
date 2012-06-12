@@ -239,11 +239,6 @@ const size_t kUploadLogAvoidRetransmitSize = 50000;
 // Interval, in minutes, between state saves.
 const int kSaveStateIntervalMinutes = 5;
 
-// Used to indicate that the response code is currently not set at all --
-// RESPONSE_CODE_INVALID can sometimes be returned in response to a request if,
-// e.g., the server is down.
-const int kNoResponseCode = net::URLFetcher::RESPONSE_CODE_INVALID - 1;
-
 enum ResponseStatus {
   UNKNOWN_FAILURE,
   SUCCESS,
@@ -1017,8 +1012,12 @@ void MetricsService::PushPendingLogsToPersistentStorage() {
     // We may race here, and send second copy of initial log later.
     if (state_ == INITIAL_LOG_READY)
       state_ = SENDING_OLD_LOGS;
-    MetricsLogManager::StoreType store_type = current_fetch_xml_.get() ?
-        MetricsLogManager::PROVISIONAL_STORE : MetricsLogManager::NORMAL_STORE;
+
+    MetricsLogManager::StoreType store_type;
+    if (current_fetch_xml_.get() || current_fetch_proto_.get())
+      store_type = MetricsLogManager::PROVISIONAL_STORE;
+    else
+      store_type = MetricsLogManager::NORMAL_STORE;
     log_manager_.StoreStagedLogAsUnsent(store_type);
   }
   DCHECK(!log_manager_.has_staged_log());
@@ -1121,14 +1120,6 @@ void MetricsService::OnFinalLogInfoCollectionDone() {
   }
 
   MakeStagedLog();
-
-  // MakeStagedLog should have prepared log text; if it didn't, skip this
-  // upload and hope things work out next time.
-  if (log_manager_.staged_log_text().empty()) {
-    scheduler_->UploadCancelled();
-    return;
-  }
-
   SendStagedLog();
 }
 
@@ -1139,7 +1130,7 @@ void MetricsService::MakeStagedLog() {
   switch (state_) {
     case INITIALIZED:
     case INIT_TASK_SCHEDULED:  // We should be further along by now.
-      DCHECK(false);
+      NOTREACHED();
       return;
 
     case INIT_TASK_DONE:
@@ -1207,26 +1198,21 @@ void MetricsService::SendStagedLog() {
 
   PrepareFetchWithStagedLog();
 
-  if (!current_fetch_xml_.get()) {
-    DCHECK(!current_fetch_proto_.get());
+  if (!current_fetch_xml_.get() && !current_fetch_proto_.get()) {
     // Compression failed, and log discarded :-/.
+    // Skip this upload and hope things work out next time.
     log_manager_.DiscardStagedLog();
     scheduler_->UploadCancelled();
     // TODO(jar): If compression failed, we should have created a tiny log and
     // compressed that, so that we can signal that we're losing logs.
     return;
   }
-  // Currently, the staged log for the protobuf version of the data is discarded
-  // after we create the URL request, so that there is no chance for
-  // re-transmission in case the corresponding XML request fails.  We will
-  // handle protobuf failures more carefully once that becomes the main
-  // pipeline, i.e. once we switch away from the XML pipeline.
-  DCHECK(current_fetch_proto_.get() || !log_manager_.has_staged_log_proto());
 
   DCHECK(!waiting_for_asynchronous_reporting_step_);
-
   waiting_for_asynchronous_reporting_step_ = true;
-  current_fetch_xml_->Start();
+
+  if (current_fetch_xml_.get())
+    current_fetch_xml_->Start();
   if (current_fetch_proto_.get())
     current_fetch_proto_->Start();
 
@@ -1234,20 +1220,22 @@ void MetricsService::SendStagedLog() {
 }
 
 void MetricsService::PrepareFetchWithStagedLog() {
-  DCHECK(!log_manager_.staged_log_text().empty());
+  DCHECK(log_manager_.has_staged_log());
 
   // Prepare the XML version.
   DCHECK(!current_fetch_xml_.get());
-  current_fetch_xml_.reset(content::URLFetcher::Create(
-      GURL(server_url_xml_), net::URLFetcher::POST, this));
-  current_fetch_xml_->SetRequestContext(
-      g_browser_process->system_request_context());
-  current_fetch_xml_->SetUploadData(kMimeTypeXml,
-                                    log_manager_.staged_log_text().xml);
-  // We already drop cookies server-side, but we might as well strip them out
-  // client-side as well.
-  current_fetch_xml_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
-                                   net::LOAD_DO_NOT_SEND_COOKIES);
+  if (log_manager_.has_staged_log_xml()) {
+    current_fetch_xml_.reset(content::URLFetcher::Create(
+        GURL(server_url_xml_), net::URLFetcher::POST, this));
+    current_fetch_xml_->SetRequestContext(
+        g_browser_process->system_request_context());
+    current_fetch_xml_->SetUploadData(kMimeTypeXml,
+                                      log_manager_.staged_log_text().xml);
+    // We already drop cookies server-side, but we might as well strip them out
+    // client-side as well.
+    current_fetch_xml_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
+                                     net::LOAD_DO_NOT_SEND_COOKIES);
+  }
 
   // Prepare the protobuf version.
   DCHECK(!current_fetch_proto_.get());
@@ -1262,12 +1250,6 @@ void MetricsService::PrepareFetchWithStagedLog() {
     // client-side as well.
     current_fetch_proto_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
                                        net::LOAD_DO_NOT_SEND_COOKIES);
-
-    // Discard the protobuf version of the staged log, so that we will avoid
-    // re-uploading it even if we need to re-upload the XML version.
-    // TODO(isherman): Handle protobuf upload failures more gracefully once we
-    // transition away from the XML-based pipeline.
-    log_manager_.DiscardStagedLogProto();
   }
 }
 
@@ -1295,22 +1277,9 @@ static const char* StatusToString(const net::URLRequestStatus& status) {
 }
 
 // We need to wait for two responses: the response to the XML upload, and the
-// response to the protobuf upload.  For now, only the XML upload's response
-// affects decisions like whether to retry the upload, whether to abandon the
-// upload because it is too large, etc.  However, we still need to wait for the
-// protobuf upload, as we cannot reset |current_fetch_proto_| until we have
-// confirmation that the network request was sent; and the easiest way to do
-// that is to wait for the response.  In case the XML upload's response arrives
-// first, we cache that response until the protobuf upload's response also
-// arrives.
-//
-// Note that if the XML upload succeeds but the protobuf upload fails, we will
-// not retry the protobuf upload.  If the XML upload fails while the protobuf
-// upload succeeds, we will still avoid re-uploading the protobuf data because
-// we "zap" the data after the first upload attempt.  This means that we might
-// lose protobuf uploads when XML ones succeed; but we will never duplicate any
-// protobuf uploads.  Protobuf failures should be rare enough to where this
-// should be ok while we have the two pipelines running in parallel.
+// response to the protobuf upload.  In the case that exactly one of the uploads
+// fails and needs to be retried, we "zap" the other pipeline's staged log to
+// avoid incorrectly re-uploading it as well.
 void MetricsService::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(waiting_for_asynchronous_reporting_step_);
 
@@ -1318,72 +1287,76 @@ void MetricsService::OnURLFetchComplete(const net::URLFetcher* source) {
   // Note however that |source| is aliased to one of these, so we should be
   // careful not to delete it too early.
   scoped_ptr<net::URLFetcher> s;
+  bool is_xml;
   if (source == current_fetch_xml_.get()) {
     s.reset(current_fetch_xml_.release());
-
-    // Cache the XML responses, in case we still need to wait for the protobuf
-    // response.
-    response_code_ = source->GetResponseCode();
-    response_status_ = StatusToString(source->GetStatus());
-    source->GetResponseAsString(&response_data_);
-
-    // Log a histogram to track response success vs. failure rates.
-    UMA_HISTOGRAM_ENUMERATION("UMA.UploadResponseStatus.XML",
-                              ResponseCodeToStatus(response_code_),
-                              NUM_RESPONSE_STATUSES);
+    is_xml = true;
   } else if (source == current_fetch_proto_.get()) {
     s.reset(current_fetch_proto_.release());
-
-    // Log a histogram to track response success vs. failure rates.
-    UMA_HISTOGRAM_ENUMERATION("UMA.UploadResponseStatus.Protobuf",
-                              ResponseCodeToStatus(source->GetResponseCode()),
-                              NUM_RESPONSE_STATUSES);
+    is_xml = false;
   } else {
     NOTREACHED();
     return;
   }
 
-  // If we're still waiting for one of the responses, keep waiting...
-  if (current_fetch_xml_.get() || current_fetch_proto_.get())
-    return;
+  int response_code = source->GetResponseCode();
 
-  // We should only be able to reach here once we've received responses to both
-  // the XML and the protobuf requests.  We should always have the response code
-  // available.
-  DCHECK_NE(response_code_, kNoResponseCode);
-  waiting_for_asynchronous_reporting_step_ = false;
+  // Log a histogram to track response success vs. failure rates.
+  if (is_xml) {
+    UMA_HISTOGRAM_ENUMERATION("UMA.UploadResponseStatus.XML",
+                              ResponseCodeToStatus(response_code),
+                              NUM_RESPONSE_STATUSES);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("UMA.UploadResponseStatus.Protobuf",
+                              ResponseCodeToStatus(response_code),
+                              NUM_RESPONSE_STATUSES);
+  }
 
   // If the upload was provisionally stored, drop it now that the upload is
   // known to have gone through.
   log_manager_.DiscardLastProvisionalStore();
 
   // Confirm send so that we can move on.
-  VLOG(1) << "Metrics response code: " << response_code_
-          << " status=" << response_status_;
+  VLOG(1) << "Metrics response code: " << response_code
+          << " status=" << StatusToString(source->GetStatus()) << " for "
+          << (is_xml ? "xml" : "protobuf") << " upload.";
 
-  bool upload_succeeded = response_code_ == 200;
+  bool upload_succeeded = response_code == 200;
 
   // Provide boolean for error recovery (allow us to ignore response_code).
   bool discard_log = false;
-
-  if (!upload_succeeded &&
-      log_manager_.staged_log_text().xml.length() >
-          kUploadLogAvoidRetransmitSize) {
-    UMA_HISTOGRAM_COUNTS(
-        "UMA.Large Rejected Log was Discarded",
-        static_cast<int>(log_manager_.staged_log_text().xml.length()));
+  const size_t log_size = is_xml ?
+      log_manager_.staged_log_text().xml.length() :
+      log_manager_.staged_log_text().proto.length();
+  if (!upload_succeeded && log_size > kUploadLogAvoidRetransmitSize) {
+    UMA_HISTOGRAM_COUNTS("UMA.Large Rejected Log was Discarded",
+                         static_cast<int>(log_size));
     discard_log = true;
-  } else if (response_code_ == 400) {
+  } else if (response_code == 400) {
     // Bad syntax.  Retransmission won't work.
     discard_log = true;
   }
 
   if (!upload_succeeded && !discard_log) {
-    VLOG(1) << "Metrics: transmission attempt returned a failure code: "
-            << response_code_ << ". Verify network connectivity";
-    LogBadResponseCode();
+    LogBadResponseCode(response_code, is_xml);
   } else {  // Successful receipt (or we are discarding log).
-    VLOG(1) << "Metrics response data: " << response_data_;
+    std::string response_data;
+    source->GetResponseAsString(&response_data);
+    VLOG(1) << "Metrics response data: " << response_data;
+
+    if (is_xml)
+      log_manager_.DiscardStagedLogXml();
+    else
+      log_manager_.DiscardStagedLogProto();
+  }
+
+  // If we're still waiting for one of the responses, keep waiting...
+  if (current_fetch_xml_.get() || current_fetch_proto_.get())
+    return;
+
+  waiting_for_asynchronous_reporting_step_ = false;
+
+  if (!log_manager_.has_staged_log()) {
     switch (state_) {
       case INITIAL_LOG_READY:
         state_ = SENDING_OLD_LOGS;
@@ -1402,18 +1375,23 @@ void MetricsService::OnURLFetchComplete(const net::URLFetcher* source) {
         break;
     }
 
-    log_manager_.DiscardStagedLog();
-
     if (log_manager_.has_unsent_logs())
       DCHECK_LT(state_, SENDING_CURRENT_LOGS);
   }
 
   // Error 400 indicates a problem with the log, not with the server, so
   // don't consider that a sign that the server is in trouble.
-  bool server_is_healthy = upload_succeeded || response_code_ == 400;
+  bool server_is_healthy = upload_succeeded || response_code == 400;
 
-  scheduler_->UploadFinished(server_is_healthy,
-                             log_manager_.has_unsent_logs());
+  // Note that we are essentially randomly choosing to report either the XML or
+  // the protobuf server's health status, but this is ok: In the case that the
+  // two statuses are not the same, one of the uploads succeeded but the other
+  // did not. In this case, we'll re-try only the upload that failed. This first
+  // re-try might ignore the server's unhealthiness; but the response to the
+  // re-tried upload will correctly propagate the server's health status for any
+  // subsequent re-tries. Hence, we'll at most delay slowing the upload rate by
+  // one re-try, which is fine.
+  scheduler_->UploadFinished(server_is_healthy, log_manager_.has_unsent_logs());
 
   // Collect network stats if UMA upload succeeded.
   IOThread* io_thread = g_browser_process->io_thread();
@@ -1422,21 +1400,25 @@ void MetricsService::OnURLFetchComplete(const net::URLFetcher* source) {
     chrome_browser_net::CollectPipeliningCapabilityStatsOnUIThread(
         http_pipelining_test_server_, io_thread);
   }
-
-  // Reset the cached response data.
-  response_code_ = kNoResponseCode;
-  response_data_ = std::string();
-  response_status_ = std::string();
 }
 
-void MetricsService::LogBadResponseCode() {
-  VLOG(1) << "Verify your metrics logs are formatted correctly.  Verify server "
-             "is active at " << server_url_xml_;
+void MetricsService::LogBadResponseCode(int response_code, bool is_xml) {
+  VLOG(1) << "Metrics: transmission attempt returned a failure code: "
+          << response_code << ". Verify network connectivity and that your "
+          << "metrics logs are formatted correctly. Verify server is active at "
+          << (is_xml ? server_url_xml_ : server_url_proto_) << ".";
+
   if (!log_manager_.has_staged_log()) {
-    VLOG(1) << "METRICS: Recorder shutdown during log transmission.";
+    // TODO(isherman): I don't think this code is reachable...
+    VLOG(1) << "Metrics: Recorder shutdown during log transmission.";
   } else {
-    VLOG(1) << "METRICS: transmission retry being scheduled for "
-            << log_manager_.staged_log_text().xml;
+    if (is_xml) {
+      VLOG(1) << "Metrics: transmission retry being scheduled for \n"
+              << log_manager_.staged_log_text().xml;
+    } else {
+      VLOG(1)
+          << "Metrics: transmission retry being scheduled for protobuf upload.";
+    }
   }
 }
 
