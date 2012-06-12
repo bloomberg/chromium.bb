@@ -384,6 +384,27 @@ static int r6_surface_init(struct radeon_surface_manager *surf_man,
     /* tiling mode */
     mode = (surf->flags >> RADEON_SURF_MODE_SHIFT) & RADEON_SURF_MODE_MASK;
 
+    /* always enable z & stencil together */
+    if (surf->flags & RADEON_SURF_ZBUFFER) {
+        surf->flags |= RADEON_SURF_SBUFFER;
+    }
+    if (surf->flags & RADEON_SURF_SBUFFER) {
+        surf->flags |= RADEON_SURF_ZBUFFER;
+    }
+    if (surf->flags & RADEON_SURF_ZBUFFER) {
+        /* zbuffer only support 1D or 2D tiled surface */
+        switch (mode) {
+        case RADEON_SURF_MODE_1D:
+        case RADEON_SURF_MODE_2D:
+            break;
+        default:
+            mode = RADEON_SURF_MODE_1D;
+            surf->flags = RADEON_SURF_CLR(surf->flags, MODE);
+            surf->flags |= RADEON_SURF_SET(RADEON_SURF_MODE_1D, MODE);
+            break;
+        }
+    }
+
     /* force 1d on kernel that can't do 2d */
     if (!surf_man->hw_info.allow_2d && mode > RADEON_SURF_MODE_1D) {
         mode = RADEON_SURF_MODE_1D;
@@ -739,6 +760,22 @@ static int eg_surface_init(struct radeon_surface_manager *surf_man,
     /* for some reason eg need to have room for stencil right after depth */
     if (surf->flags & RADEON_SURF_ZBUFFER) {
         surf->flags |= RADEON_SURF_SBUFFER;
+    }
+    if (surf->flags & RADEON_SURF_SBUFFER) {
+        surf->flags |= RADEON_SURF_ZBUFFER;
+    }
+    if (surf->flags & RADEON_SURF_ZBUFFER) {
+        /* zbuffer only support 1D or 2D tiled surface */
+        switch (mode) {
+        case RADEON_SURF_MODE_1D:
+        case RADEON_SURF_MODE_2D:
+            break;
+        default:
+            mode = RADEON_SURF_MODE_1D;
+            surf->flags = RADEON_SURF_CLR(surf->flags, MODE);
+            surf->flags |= RADEON_SURF_SET(RADEON_SURF_MODE_1D, MODE);
+            break;
+        }
     }
 
     r = eg_surface_sanity(surf_man, surf, mode);
