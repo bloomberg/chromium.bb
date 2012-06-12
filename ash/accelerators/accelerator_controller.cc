@@ -159,10 +159,11 @@ bool HandleToggleDesktopBackgroundMode() {
       Shell::GetInstance()->desktop_background_controller();
   if (desktop_background_controller->desktop_background_mode() ==
       DesktopBackgroundController::BACKGROUND_IMAGE) {
-    desktop_background_controller->SetDesktopBackgroundSolidColorMode();
+    desktop_background_controller->SetDesktopBackgroundSolidColorMode(
+        SK_ColorBLACK);
   } else {
-    Shell::GetInstance()->user_wallpaper_delegate()->
-        SetLoggedInUserWallpaper();
+    ash::Shell::GetInstance()->user_wallpaper_delegate()->
+        InitializeWallpaper();
   }
   return true;
 }

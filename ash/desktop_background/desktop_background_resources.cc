@@ -223,6 +223,7 @@ const ash::WallpaperInfo kDefaultWallpapers[] = {
 
 const int kDefaultWallpaperCount = arraysize(kDefaultWallpapers);
 const int kInvalidWallpaperIndex = -1;
+const int kSolidColorIndex = -2;
 
 // TODO(saintlou): These hardcoded indexes, although checked against the size
 // of the array are really hacky.
@@ -242,6 +243,10 @@ const int kGuestWallpaperIndex = kDefaultWallpaperIndex;
 }  // namespace
 
 namespace ash {
+
+int GetSolidColorIndex() {
+  return kSolidColorIndex;
+}
 
 int GetInvalidWallpaperIndex() {
   return kInvalidWallpaperIndex;

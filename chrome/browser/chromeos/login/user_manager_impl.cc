@@ -361,10 +361,23 @@ void UserManagerImpl::StubUserLoggedIn() {
                             kStubDefaultImageIndex);
 }
 
-void UserManagerImpl::SetLoggedInUserWallpaper() {
+void UserManagerImpl::InitializeWallpaper() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!IsUserLoggedIn() || IsLoggedInAsStub()) {
+  if (!IsUserLoggedIn()) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableNewOobe)) {
+      bool show_users = true;
+      bool result = CrosSettings::Get()->GetBoolean(
+          kAccountsPrefShowUserNamesOnSignIn, &show_users);
+      DCHECK(result) << "Unable to fetch setting "
+                     << kAccountsPrefShowUserNamesOnSignIn;
+      if (!show_users) {
+        ash::Shell::GetInstance()->desktop_background_controller()->
+            SetDefaultWallpaper(ash::GetSolidColorIndex());
+      }
+    }
+    return;
+  } else if (IsLoggedInAsStub()) {
     ash::Shell::GetInstance()->desktop_background_controller()->
         SetDefaultWallpaper(ash::GetInvalidWallpaperIndex());
     return;
@@ -1023,8 +1036,9 @@ void UserManagerImpl::GetLoggedInUserWallpaperProperties(
     User::WallpaperType* type,
     int* index) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(logged_in_user_);
 
-  if (!IsUserLoggedIn() || IsLoggedInAsStub()) {
+  if (IsLoggedInAsStub()) {
     *type = current_user_wallpaper_type_ = User::DEFAULT;
     *index = current_user_wallpaper_index_ = ash::GetInvalidWallpaperIndex();
     return;

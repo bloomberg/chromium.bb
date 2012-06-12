@@ -104,10 +104,10 @@ class UserManager {
   // Indicates that a user just logged in as ephemeral.
   virtual void EphemeralUserLoggedIn(const std::string& email) = 0;
 
-  // Loads logged in user wallpaper asynchronously and sets to current wallpaper
-  // after loaded. If not logged in or logged in as stub user, uses an empty
-  // wallpaper.
-  virtual void SetLoggedInUserWallpaper() = 0;
+  // Initializes wallpaper. If logged in, loads user's wallpaper. If not logged
+  // in, uses a solid color wallpaper. If logged in as a stub user, uses an
+  // empty wallpaper.
+  virtual void InitializeWallpaper() = 0;
 
   // Called when user pod with |email| is selected.
   virtual void UserSelected(const std::string& email) = 0;

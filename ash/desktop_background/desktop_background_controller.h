@@ -10,6 +10,7 @@
 #include "ash/desktop_background/desktop_background_resources.h"
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace aura {
 class RootWindow;
@@ -25,9 +26,8 @@ class UserWallpaperDelegate {
  public:
   virtual ~UserWallpaperDelegate() {}
 
-  // Loads logged in user wallpaper asynchronously and sets to current wallpaper
-  // after loaded.
-  virtual void SetLoggedInUserWallpaper() = 0;
+  // Initialize wallpaper.
+  virtual void InitializeWallpaper() = 0;
 
   // Opens the set wallpaper page in the browser.
   virtual void OpenSetWallpaperPage() = 0;
@@ -66,9 +66,9 @@ class ASH_EXPORT DesktopBackgroundController {
   // Cancels the current wallpaper loading operation.
   void CancelPendingWallpaperOperation();
 
-  // Sets the desktop background to solid color mode and creates a solid color
-  // layout.
-  void SetDesktopBackgroundSolidColorMode();
+  // Sets the desktop background to solid color mode and creates a solid
+  // |color| layout.
+  void SetDesktopBackgroundSolidColorMode(SkColor color);
 
   // Creates an empty wallpaper. Some tests require a wallpaper widget is ready
   // when running. However, the wallpaper widgets are now created asynchronously

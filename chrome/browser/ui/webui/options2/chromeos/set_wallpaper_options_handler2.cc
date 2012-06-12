@@ -219,8 +219,7 @@ void SetWallpaperOptionsHandler::HandleDefaultWallpaper(const ListValue* args) {
   if (IsDefaultWallpaperURL(image_url, &user_image_index)) {
     UserManager::Get()->SaveLoggedInUserWallpaperProperties(User::DEFAULT,
                                                             user_image_index);
-    ash::Shell::GetInstance()->user_wallpaper_delegate()->
-        SetLoggedInUserWallpaper();
+    ash::Shell::GetInstance()->user_wallpaper_delegate()->InitializeWallpaper();
   }
 }
 

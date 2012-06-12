@@ -104,6 +104,9 @@ void DesktopBackgroundController::SetDefaultWallpaper(int index) {
   if (index == ash::GetInvalidWallpaperIndex()) {
     CreateEmptyWallpaper();
     return;
+  } else if (index == ash::GetSolidColorIndex()) {
+    SetDesktopBackgroundSolidColorMode(kLoginWallpaperColor);
+    return;
   }
 
   if (previous_index_ == index)
@@ -138,13 +141,14 @@ void DesktopBackgroundController::CancelPendingWallpaperOperation() {
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
-void DesktopBackgroundController::SetDesktopBackgroundSolidColorMode() {
+void DesktopBackgroundController::SetDesktopBackgroundSolidColorMode(
+    SkColor color) {
   // Set a solid black background.
   // TODO(derat): Remove this in favor of having the compositor only clear the
   // viewport when there are regions not covered by a layer:
   // http://crbug.com/113445
   ui::Layer* background_layer = new ui::Layer(ui::LAYER_SOLID_COLOR);
-  background_layer->SetColor(SK_ColorBLACK);
+  background_layer->SetColor(color);
   root_window_->GetChildById(
       internal::kShellWindowId_DesktopBackgroundContainer)->
       layer()->Add(background_layer);
