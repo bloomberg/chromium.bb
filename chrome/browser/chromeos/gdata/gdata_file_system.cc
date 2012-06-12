@@ -832,6 +832,14 @@ CallbackType CreateRelayCallback(const CallbackType& callback) {
                     callback);
 }
 
+// Callback used to find a directory element for file system updates.
+void ReadOnlyFindEntryCallback(GDataEntry** out,
+                               base::PlatformFileError error,
+                               GDataEntry* entry) {
+  if (error == base::PLATFORM_FILE_OK)
+    *out = entry;
+}
+
 }  // namespace
 
 // GDataFileSystem::GetDocumentsParams struct implementation.
@@ -1048,11 +1056,23 @@ void GDataFileSystem::Authenticate(const AuthStatusCallback& callback) {
   documents_service_->Authenticate(callback);
 }
 
-void GDataFileSystem::FindEntryByResourceIdSync(
+void GDataFileSystem::FindEntryByResourceId(const std::string& resource_id,
+                                            const FindEntryCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::IO));
+  RunTaskOnUIThread(
+      base::Bind(&GDataFileSystem::FindEntryByResourceIdOnUIThread,
+                 ui_weak_ptr_,
+                 resource_id,
+                 CreateRelayCallback(callback)));
+}
+
+void GDataFileSystem::FindEntryByResourceIdOnUIThread(
     const std::string& resource_id,
     const FindEntryCallback& callback) {
-  base::AutoLock lock(lock_);  // To access root.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  base::AutoLock lock(lock_);  // To access root.
   GDataFile* file = NULL;
   GDataEntry* entry = root_->GetEntryByResourceId(resource_id);
   if (entry)

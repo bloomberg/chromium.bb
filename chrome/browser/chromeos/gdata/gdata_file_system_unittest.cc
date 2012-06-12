@@ -327,10 +327,8 @@ class GDataFileSystemTest : public testing::Test {
   }
 
   GDataEntry* FindEntry(const FilePath& file_path) {
-    GDataEntry* entry = NULL;
-    file_system_->root_->FindEntryByPath(
-        file_path, base::Bind(&ReadOnlyFindEntryCallback, &entry));
-    return entry;
+    base::AutoLock lock(file_system_->lock_);
+    return file_system_->GetGDataEntryByPath(file_path);
   }
 
   void FindAndTestFilePath(const FilePath& file_path) {
@@ -340,10 +338,8 @@ class GDataFileSystemTest : public testing::Test {
   }
 
   GDataEntry* FindEntryByResourceId(const std::string& resource_id) {
-    GDataEntry* entry = NULL;
-    file_system_->FindEntryByResourceIdSync(
-        resource_id, base::Bind(&ReadOnlyFindEntryCallback, &entry));
-    return entry;
+    GDataEntry* entry = file_system_->root_->GetEntryByResourceId(resource_id);
+    return entry ? entry->AsGDataFile() : NULL;
   }
 
   // Gets the entry info for |file_path| and compares the contents against

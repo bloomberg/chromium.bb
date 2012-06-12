@@ -149,6 +149,11 @@ class GDataURLRequestJob : public net::URLRequestJob {
   // to |file_size|, and notifies result for Start().
   void OnGetFileSize(int64 *file_size);
 
+  // Helper callback for FindEntryByResourceId invoked by StartAsync.
+  void OnFindEntryByResourceId(const std::string& resource_id,
+                               base::PlatformFileError error,
+                               GDataEntry* entry);
+
   // Helper methods for ReadRawData to open file and read from its corresponding
   // stream in a streaming fashion.
   bool ContinueReadFromFile(int* bytes_read);
@@ -320,22 +325,7 @@ void GDataURLRequestJob::Kill() {
 
 bool GDataURLRequestJob::GetMimeType(std::string* mime_type) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  if (!file_system_)
-    return false;
-
-  std::string resource_id;
-  std::string unused_file_name;
-  if (!ParseDriveUrl(request_->url().spec(), &resource_id)) {
-    return false;
-  }
-
-  GDataEntry* entry = NULL;
-  file_system_->FindEntryByResourceIdSync(
-      resource_id, base::Bind(&ReadOnlyFindEntryCallback, &entry));
-  if (!entry || !entry->AsGDataFile())
-    return false;
-  mime_type->assign(entry->AsGDataFile()->content_mime_type());
+  mime_type->assign(mime_type_);
   return !mime_type->empty();
 }
 
@@ -484,11 +474,18 @@ void GDataURLRequestJob::StartAsync(GDataFileSystem** file_system) {
     return;
   }
 
-  // First, check if file metadata is matching our expectations.
-  GDataEntry* entry = NULL;
-  file_system_->FindEntryByResourceIdSync(
-      resource_id, base::Bind(&ReadOnlyFindEntryCallback, &entry));
-  if (entry && entry->AsGDataFile()) {
+  file_system_->FindEntryByResourceId(
+      resource_id,
+      base::Bind(&GDataURLRequestJob::OnFindEntryByResourceId,
+                 weak_ptr_factory_->GetWeakPtr(),
+                 resource_id));
+}
+
+void GDataURLRequestJob::OnFindEntryByResourceId(
+    const std::string& resource_id,
+    base::PlatformFileError error,
+    GDataEntry* entry) {
+  if (error == base::PLATFORM_FILE_OK && entry && entry->AsGDataFile()) {
     mime_type_ = entry->AsGDataFile()->content_mime_type();
     gdata_file_path_ = entry->GetFilePath();
     initial_file_size_ = entry->file_info().size;

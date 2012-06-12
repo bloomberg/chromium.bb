@@ -15,12 +15,15 @@
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/platform_file.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/gdata/gdata_parser.h"
 #include "net/base/io_buffer.h"
 #include "googleurl/src/gurl.h"
 
 namespace gdata {
+
+class GDataEntry;
 
 // Struct for response to ResumeUpload.
 struct ResumeUploadResponse {
@@ -110,6 +113,11 @@ typedef base::Callback<void(GDataErrorCode error,
 typedef base::Callback<void(
     const ResumeUploadResponse& response,
     scoped_ptr<gdata::DocumentEntry> new_entry)> ResumeUploadCallback;
+
+// Callback type used to get result of file search.
+// If |error| is not PLATFORM_FILE_OK, |entry| is set to NULL.
+typedef base::Callback<void(base::PlatformFileError error, GDataEntry* entry)>
+    FindEntryCallback;
 
 }  // namespace gdata
 

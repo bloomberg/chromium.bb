@@ -35,6 +35,8 @@
 #include "net/base/escape.h"
 #include "third_party/libxml/chromium/libxml_utils.h"
 
+using content::BrowserThread;
+
 namespace gdata {
 namespace util {
 
@@ -92,12 +94,29 @@ void GetHostedDocumentURLBlockingThread(const FilePath& gdata_cache_path,
   DVLOG(1) << "edit url " << *url;
 }
 
-void OpenEditURLUIThread(Profile* profile, GURL* edit_url) {
+void OpenEditURLUIThread(Profile* profile, const GURL* edit_url) {
   Browser* browser = browser::FindLastActiveWithProfile(profile);
   if (browser) {
     browser->OpenURL(content::OpenURLParams(*edit_url, content::Referrer(),
         CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));
   }
+}
+
+// Invoked upon completion of FindEntryByResourceId initiated by
+// ModifyGDataFileResourceUrl.
+void OnFindEntryByResourceId(Profile* profile,
+                             const std::string& resource_id,
+                             base::PlatformFileError error,
+                             GDataEntry* entry) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (error != base::PLATFORM_FILE_OK || !entry || !entry->AsGDataFile())
+    return;
+
+  const std::string& file_name = entry->AsGDataFile()->file_name();
+  const GURL edit_url = GetFileResourceUrl(resource_id, file_name);
+  OpenEditURLUIThread(profile, &edit_url);
+  DVLOG(1) << "OnFindEntryByResourceId " << edit_url;
 }
 
 // Invoked upon completion of GetFileInfoByPathAsync initiated by
@@ -184,6 +203,8 @@ GURL GetFileResourceUrl(const std::string& resource_id,
 void ModifyGDataFileResourceUrl(Profile* profile,
                                 const FilePath& gdata_cache_path,
                                 GURL* url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   GDataFileSystem* file_system = GetGDataFileSystem(profile);
   if (!file_system)
     return;
@@ -191,35 +212,27 @@ void ModifyGDataFileResourceUrl(Profile* profile,
   if (!cache)
     return;
 
-  // Handle hosted documents. The edit url is in the temporary file, so we
-  // read it on a blocking thread.
   if (cache->GetCacheDirectoryPath(
           GDataCache::CACHE_TYPE_TMP_DOCUMENTS).IsParent(
       gdata_cache_path)) {
+    // Handle hosted documents. The edit url is in the temporary file, so we
+    // read it on a blocking thread.
     GURL* edit_url = new GURL();
     content::BrowserThread::GetBlockingPool()->PostTaskAndReply(FROM_HERE,
         base::Bind(&GetHostedDocumentURLBlockingThread,
                    gdata_cache_path, edit_url),
         base::Bind(&OpenEditURLUIThread, profile, base::Owned(edit_url)));
     *url = GURL();
-    return;
-  }
-
-  // Handle all other gdata files.
-  if (cache->GetCacheDirectoryPath(
-          GDataCache::CACHE_TYPE_TMP).IsParent(gdata_cache_path)) {
+  } else if (cache->GetCacheDirectoryPath(
+      GDataCache::CACHE_TYPE_TMP).IsParent(gdata_cache_path)) {
+    // Handle all other gdata files.
     const std::string resource_id =
         gdata_cache_path.BaseName().RemoveExtension().AsUTF8Unsafe();
-    GDataEntry* entry = NULL;
-    file_system->FindEntryByResourceIdSync(
-        resource_id, base::Bind(&ReadOnlyFindEntryCallback, &entry));
-
-    std::string file_name;
-    if (entry && entry->AsGDataFile())
-      file_name = entry->AsGDataFile()->file_name();
-
-    *url = gdata::util::GetFileResourceUrl(resource_id, file_name);
-    DVLOG(1) << "ModifyGDataFileResourceUrl " << *url;
+    file_system->FindEntryByResourceId(resource_id,
+                                       base::Bind(&OnFindEntryByResourceId,
+                                                  profile,
+                                                  resource_id));
+    *url = GURL();
   }
 }
 

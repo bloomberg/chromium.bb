@@ -17,7 +17,6 @@
 #include "base/timer.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/chromeos/gdata/find_entry_callback.h"
 #include "chrome/browser/chromeos/gdata/gdata_cache.h"
 #include "chrome/browser/chromeos/gdata/gdata_files.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
@@ -183,13 +182,11 @@ class GDataFileSystemInterface {
   virtual void Authenticate(const AuthStatusCallback& callback) = 0;
 
   // Finds file info by using |resource_id|. This call does not initiate
-  // content refreshing and will invoke one of |callback| methods directly as
-  // it executes.
+  // content refreshing.
   //
-  // Can be called from UI/IO thread. |callback| is run on the calling thread
-  // synchronously.
-  virtual void FindEntryByResourceIdSync(const std::string& resource_id,
-                                         const FindEntryCallback& callback) = 0;
+  // Can be called from UI/IO thread. |callback| is run on the calling thread.
+  virtual void FindEntryByResourceId(const std::string& resource_id,
+                                     const FindEntryCallback& callback) = 0;
 
   // Initiates transfer of |remote_src_file_path| to |local_dest_file_path|.
   // |remote_src_file_path| is the virtual source path on the gdata file system.
@@ -421,7 +418,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   virtual void StopUpdates() OVERRIDE;
   virtual void CheckForUpdates() OVERRIDE;
   virtual void Authenticate(const AuthStatusCallback& callback) OVERRIDE;
-  virtual void FindEntryByResourceIdSync(
+  virtual void FindEntryByResourceId(
       const std::string& resource_id,
       const FindEntryCallback& callback) OVERRIDE;
   virtual void SearchAsync(const std::string& search_query,
@@ -1432,6 +1429,8 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void GetFileInfoByPathAsyncOnUIThread(
       const FilePath& file_path,
       const GetFileInfoCallback& callback);
+  void FindEntryByResourceIdOnUIThread(const std::string& resource_id,
+                                       const FindEntryCallback& callback);
   void ReadDirectoryByPathAsyncOnUIThread(
       const FilePath& file_path,
       const ReadDirectoryCallback& callback);
