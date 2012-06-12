@@ -11,16 +11,14 @@
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
+#include "content/common/accessibility_node_data.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/native_widget_types.h"
-#include "webkit/glue/webaccessibility.h"
 
 class BrowserAccessibility;
 #if defined(OS_WIN)
 class BrowserAccessibilityManagerWin;
 #endif
-
-using webkit_glue::WebAccessibility;
 
 struct AccessibilityHostMsg_NotificationParams;
 
@@ -56,7 +54,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
   // to the caller.
   static BrowserAccessibilityManager* Create(
     gfx::NativeView parent_view,
-    const WebAccessibility& src,
+    const content::AccessibilityNodeData& src,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
 
@@ -64,7 +62,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
   // to the caller.
   static BrowserAccessibilityManager* CreateEmptyDocument(
     gfx::NativeView parent_view,
-    WebAccessibility::State state,
+    content::AccessibilityNodeData::State state,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
 
@@ -143,22 +141,23 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
  protected:
   BrowserAccessibilityManager(
       gfx::NativeView parent_view,
-      const WebAccessibility& src,
+      const content::AccessibilityNodeData& src,
       BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory);
 
  private:
-  // Update an accessibility node with an updated WebAccessibility node
+  // Update an accessibility node with an updated AccessibilityNodeData node
   // received from the renderer process. When |include_children| is true
   // the node's children will also be updated, otherwise only the node
   // itself is updated.
-  void UpdateNode(const WebAccessibility& src, bool include_children);
+  void UpdateNode(const content::AccessibilityNodeData& src,
+                  bool include_children);
 
   // Recursively build a tree of BrowserAccessibility objects from
-  // the WebAccessibility tree received from the renderer process.
+  // the AccessibilityNodeData tree received from the renderer process.
   BrowserAccessibility* CreateAccessibilityTree(
       BrowserAccessibility* parent,
-      const WebAccessibility& src,
+      const content::AccessibilityNodeData& src,
       int index_in_parent,
       bool send_show_events);
 

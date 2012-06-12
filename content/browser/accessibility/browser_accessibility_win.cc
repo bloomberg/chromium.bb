@@ -18,7 +18,7 @@
 #include "ui/base/accessibility/accessible_text_utils.h"
 #include "ui/base/win/accessibility_misc_utils.h"
 
-using webkit_glue::WebAccessibility;
+using content::AccessibilityNodeData;
 
 // The GUID for the ISimpleDOM service is not defined in the IDL files.
 // This is taken directly from the Mozilla sources
@@ -352,7 +352,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accDefaultAction(VARIANT var_id,
     return E_INVALIDARG;
 
   return target->GetStringAttributeAsBstr(
-      WebAccessibility::ATTR_SHORTCUT, def_action);
+      AccessibilityNodeData::ATTR_SHORTCUT, def_action);
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_accDescription(VARIANT var_id,
@@ -368,7 +368,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accDescription(VARIANT var_id,
     return E_INVALIDARG;
 
   return target->GetStringAttributeAsBstr(
-      WebAccessibility::ATTR_DESCRIPTION, desc);
+      AccessibilityNodeData::ATTR_DESCRIPTION, desc);
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_accFocus(VARIANT* focus_child) {
@@ -404,7 +404,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_accHelp(VARIANT var_id, BSTR* help) {
   if (!target)
     return E_INVALIDARG;
 
-  return target->GetStringAttributeAsBstr(WebAccessibility::ATTR_HELP, help);
+  return target->GetStringAttributeAsBstr(
+      AccessibilityNodeData::ATTR_HELP, help);
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_accKeyboardShortcut(VARIANT var_id,
@@ -420,7 +421,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accKeyboardShortcut(VARIANT var_id,
     return E_INVALIDARG;
 
   return target->GetStringAttributeAsBstr(
-      WebAccessibility::ATTR_SHORTCUT, acc_key);
+      AccessibilityNodeData::ATTR_SHORTCUT, acc_key);
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_accName(VARIANT var_id, BSTR* name) {
@@ -439,7 +440,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accName(VARIANT var_id, BSTR* name) {
   // If the name is empty, see if it's labeled by another element.
   if (name_str.empty()) {
     int title_elem_id;
-    if (target->GetIntAttribute(WebAccessibility::ATTR_TITLE_UI_ELEMENT,
+    if (target->GetIntAttribute(AccessibilityNodeData::ATTR_TITLE_UI_ELEMENT,
                                 &title_elem_id)) {
       BrowserAccessibility* title_elem =
           manager_->GetFromRendererID(title_elem_id);
@@ -546,12 +547,12 @@ STDMETHODIMP BrowserAccessibilityWin::get_accSelection(VARIANT* selected) {
   if (!instance_active_)
     return E_FAIL;
 
-  if (role_ != WebAccessibility::ROLE_LISTBOX)
+  if (role_ != AccessibilityNodeData::ROLE_LISTBOX)
     return E_NOTIMPL;
 
   unsigned long selected_count = 0;
   for (size_t i = 0; i < children_.size(); ++i) {
-    if (children_[i]->HasState(WebAccessibility::STATE_SELECTED))
+    if (children_[i]->HasState(AccessibilityNodeData::STATE_SELECTED))
       ++selected_count;
   }
 
@@ -562,7 +563,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accSelection(VARIANT* selected) {
 
   if (selected_count == 1) {
     for (size_t i = 0; i < children_.size(); ++i) {
-      if (children_[i]->HasState(WebAccessibility::STATE_SELECTED)) {
+      if (children_[i]->HasState(AccessibilityNodeData::STATE_SELECTED)) {
         selected->vt = VT_DISPATCH;
         selected->pdispVal =
             children_[i]->ToBrowserAccessibilityWin()->NewReference();
@@ -577,7 +578,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accSelection(VARIANT* selected) {
   enum_variant->AddRef();
   unsigned long index = 0;
   for (size_t i = 0; i < children_.size(); ++i) {
-    if (children_[i]->HasState(WebAccessibility::STATE_SELECTED)) {
+    if (children_[i]->HasState(AccessibilityNodeData::STATE_SELECTED)) {
       enum_variant->ItemAt(index)->vt = VT_DISPATCH;
       enum_variant->ItemAt(index)->pdispVal =
         children_[i]->ToBrowserAccessibilityWin()->NewReference();
@@ -822,9 +823,9 @@ STDMETHODIMP BrowserAccessibilityWin::get_groupPosition(
   if (!group_level || !similar_items_in_group || !position_in_group)
     return E_INVALIDARG;
 
-  if (role_ == WebAccessibility::ROLE_LISTBOX_OPTION &&
+  if (role_ == AccessibilityNodeData::ROLE_LISTBOX_OPTION &&
       parent_ &&
-      parent_->role() == WebAccessibility::ROLE_LISTBOX) {
+      parent_->role() == AccessibilityNodeData::ROLE_LISTBOX) {
     *group_level = 0;
     *similar_items_in_group = parent_->child_count();
     *position_in_group = index_in_parent_ + 1;
@@ -845,7 +846,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_description(BSTR* desc) {
   if (!desc)
     return E_INVALIDARG;
 
-  return GetStringAttributeAsBstr(WebAccessibility::ATTR_DESCRIPTION, desc);
+  return GetStringAttributeAsBstr(
+      AccessibilityNodeData::ATTR_DESCRIPTION, desc);
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_imagePosition(
@@ -904,8 +906,10 @@ STDMETHODIMP BrowserAccessibilityWin::get_accessibleAt(
 
   int columns;
   int rows;
-  if (!GetIntAttribute(WebAccessibility::ATTR_TABLE_COLUMN_COUNT, &columns) ||
-      !GetIntAttribute(WebAccessibility::ATTR_TABLE_ROW_COUNT, &rows) ||
+  if (!GetIntAttribute(
+          AccessibilityNodeData::ATTR_TABLE_COLUMN_COUNT, &columns) ||
+      !GetIntAttribute(
+          AccessibilityNodeData::ATTR_TABLE_ROW_COUNT, &rows) ||
       columns <= 0 ||
       rows <= 0) {
     return S_FALSE;
@@ -950,8 +954,10 @@ STDMETHODIMP BrowserAccessibilityWin::get_childIndex(
 
   int columns;
   int rows;
-  if (!GetIntAttribute(WebAccessibility::ATTR_TABLE_COLUMN_COUNT, &columns) ||
-      !GetIntAttribute(WebAccessibility::ATTR_TABLE_ROW_COUNT, &rows) ||
+  if (!GetIntAttribute(
+          AccessibilityNodeData::ATTR_TABLE_COLUMN_COUNT, &columns) ||
+      !GetIntAttribute(
+          AccessibilityNodeData::ATTR_TABLE_ROW_COUNT, &rows) ||
       columns <= 0 ||
       rows <= 0) {
     return S_FALSE;
@@ -983,8 +989,9 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnDescription(
 
   int columns;
   int rows;
-  if (!GetIntAttribute(WebAccessibility::ATTR_TABLE_COLUMN_COUNT, &columns) ||
-      !GetIntAttribute(WebAccessibility::ATTR_TABLE_ROW_COUNT, &rows) ||
+  if (!GetIntAttribute(
+          AccessibilityNodeData::ATTR_TABLE_COLUMN_COUNT, &columns) ||
+      !GetIntAttribute(AccessibilityNodeData::ATTR_TABLE_ROW_COUNT, &rows) ||
       columns <= 0 ||
       rows <= 0) {
     return S_FALSE;
@@ -997,14 +1004,14 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnDescription(
     int cell_id = cell_ids_[i * columns + column];
     BrowserAccessibilityWin* cell = static_cast<BrowserAccessibilityWin*>(
         manager_->GetFromRendererID(cell_id));
-    if (cell && cell->role_ == WebAccessibility::ROLE_COLUMN_HEADER) {
+    if (cell && cell->role_ == AccessibilityNodeData::ROLE_COLUMN_HEADER) {
       if (cell->name_.size() > 0) {
         *description = SysAllocString(cell->name_.c_str());
         return S_OK;
       }
 
       return cell->GetStringAttributeAsBstr(
-          WebAccessibility::ATTR_DESCRIPTION, description);
+          AccessibilityNodeData::ATTR_DESCRIPTION, description);
     }
   }
 
@@ -1023,8 +1030,9 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnExtentAt(
 
   int columns;
   int rows;
-  if (!GetIntAttribute(WebAccessibility::ATTR_TABLE_COLUMN_COUNT, &columns) ||
-      !GetIntAttribute(WebAccessibility::ATTR_TABLE_ROW_COUNT, &rows) ||
+  if (!GetIntAttribute(
+          AccessibilityNodeData::ATTR_TABLE_COLUMN_COUNT, &columns) ||
+      !GetIntAttribute(AccessibilityNodeData::ATTR_TABLE_ROW_COUNT, &rows) ||
       columns <= 0 ||
       rows <= 0) {
     return S_FALSE;
@@ -1039,7 +1047,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnExtentAt(
   int colspan;
   if (cell &&
       cell->GetIntAttribute(
-          WebAccessibility::ATTR_TABLE_CELL_COLUMN_SPAN, &colspan) &&
+          AccessibilityNodeData::ATTR_TABLE_CELL_COLUMN_SPAN, &colspan) &&
       colspan >= 1) {
     *n_columns_spanned = colspan;
     return S_OK;
@@ -1076,7 +1084,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnIndex(
   int col_index;
   if (cell &&
       cell->GetIntAttribute(
-          WebAccessibility::ATTR_TABLE_CELL_COLUMN_INDEX, &col_index)) {
+          AccessibilityNodeData::ATTR_TABLE_CELL_COLUMN_INDEX, &col_index)) {
     *column_index = col_index;
     return S_OK;
   }
@@ -1093,7 +1101,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_nColumns(
     return E_INVALIDARG;
 
   int columns;
-  if (GetIntAttribute(WebAccessibility::ATTR_TABLE_COLUMN_COUNT, &columns)) {
+  if (GetIntAttribute(
+          AccessibilityNodeData::ATTR_TABLE_COLUMN_COUNT, &columns)) {
     *column_count = columns;
     return S_OK;
   }
@@ -1110,7 +1119,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_nRows(
     return E_INVALIDARG;
 
   int rows;
-  if (GetIntAttribute(WebAccessibility::ATTR_TABLE_ROW_COUNT, &rows)) {
+  if (GetIntAttribute(AccessibilityNodeData::ATTR_TABLE_ROW_COUNT, &rows)) {
     *row_count = rows;
     return S_OK;
   }
@@ -1166,8 +1175,9 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowDescription(
 
   int columns;
   int rows;
-  if (!GetIntAttribute(WebAccessibility::ATTR_TABLE_COLUMN_COUNT, &columns) ||
-      !GetIntAttribute(WebAccessibility::ATTR_TABLE_ROW_COUNT, &rows) ||
+  if (!GetIntAttribute(
+          AccessibilityNodeData::ATTR_TABLE_COLUMN_COUNT, &columns) ||
+      !GetIntAttribute(AccessibilityNodeData::ATTR_TABLE_ROW_COUNT, &rows) ||
       columns <= 0 ||
       rows <= 0) {
     return S_FALSE;
@@ -1180,14 +1190,14 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowDescription(
     int cell_id = cell_ids_[row * columns + i];
     BrowserAccessibilityWin* cell =
         manager_->GetFromRendererID(cell_id)->ToBrowserAccessibilityWin();
-    if (cell && cell->role_ == WebAccessibility::ROLE_ROW_HEADER) {
+    if (cell && cell->role_ == AccessibilityNodeData::ROLE_ROW_HEADER) {
       if (cell->name_.size() > 0) {
         *description = SysAllocString(cell->name_.c_str());
         return S_OK;
       }
 
       return cell->GetStringAttributeAsBstr(
-          WebAccessibility::ATTR_DESCRIPTION, description);
+          AccessibilityNodeData::ATTR_DESCRIPTION, description);
     }
   }
 
@@ -1206,8 +1216,9 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowExtentAt(
 
   int columns;
   int rows;
-  if (!GetIntAttribute(WebAccessibility::ATTR_TABLE_COLUMN_COUNT, &columns) ||
-      !GetIntAttribute(WebAccessibility::ATTR_TABLE_ROW_COUNT, &rows) ||
+  if (!GetIntAttribute(
+          AccessibilityNodeData::ATTR_TABLE_COLUMN_COUNT, &columns) ||
+      !GetIntAttribute(AccessibilityNodeData::ATTR_TABLE_ROW_COUNT, &rows) ||
       columns <= 0 ||
       rows <= 0) {
     return S_FALSE;
@@ -1222,7 +1233,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowExtentAt(
   int rowspan;
   if (cell &&
       cell->GetIntAttribute(
-          WebAccessibility::ATTR_TABLE_CELL_ROW_SPAN, &rowspan) &&
+          AccessibilityNodeData::ATTR_TABLE_CELL_ROW_SPAN, &rowspan) &&
       rowspan >= 1) {
     *n_rows_spanned = rowspan;
     return S_OK;
@@ -1259,7 +1270,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowIndex(
   int cell_row_index;
   if (cell &&
       cell->GetIntAttribute(
-          WebAccessibility::ATTR_TABLE_CELL_ROW_INDEX, &cell_row_index)) {
+          AccessibilityNodeData::ATTR_TABLE_CELL_ROW_INDEX, &cell_row_index)) {
     *row_index = cell_row_index;
     return S_OK;
   }
@@ -1393,9 +1404,9 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowColumnExtentsAtIndex(
   int colspan;
   if (cell &&
       cell->GetIntAttribute(
-          WebAccessibility::ATTR_TABLE_CELL_ROW_SPAN, &rowspan) &&
+          AccessibilityNodeData::ATTR_TABLE_CELL_ROW_SPAN, &rowspan) &&
       cell->GetIntAttribute(
-          WebAccessibility::ATTR_TABLE_CELL_COLUMN_SPAN, &colspan) &&
+          AccessibilityNodeData::ATTR_TABLE_CELL_COLUMN_SPAN, &colspan) &&
       rowspan >= 1 &&
       colspan >= 1) {
     *row_extents = rowspan;
@@ -1478,7 +1489,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnExtent(
 
   int colspan;
   if (GetIntAttribute(
-          WebAccessibility::ATTR_TABLE_CELL_COLUMN_SPAN, &colspan) &&
+          AccessibilityNodeData::ATTR_TABLE_CELL_COLUMN_SPAN, &colspan) &&
       colspan >= 1) {
     *n_columns_spanned = colspan;
     return S_OK;
@@ -1500,12 +1511,12 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnHeaderCells(
 
   int column;
   if (!GetIntAttribute(
-          WebAccessibility::ATTR_TABLE_CELL_COLUMN_INDEX, &column)) {
+          AccessibilityNodeData::ATTR_TABLE_CELL_COLUMN_INDEX, &column)) {
     return S_FALSE;
   }
 
   BrowserAccessibility* table = parent();
-  while (table && table->role() != WebAccessibility::ROLE_TABLE)
+  while (table && table->role() != AccessibilityNodeData::ROLE_TABLE)
     table = table->parent();
   if (!table) {
     NOTREACHED();
@@ -1515,9 +1526,9 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnHeaderCells(
   int columns;
   int rows;
   if (!table->GetIntAttribute(
-          WebAccessibility::ATTR_TABLE_COLUMN_COUNT, &columns) ||
+          AccessibilityNodeData::ATTR_TABLE_COLUMN_COUNT, &columns) ||
       !table->GetIntAttribute(
-          WebAccessibility::ATTR_TABLE_ROW_COUNT, &rows)) {
+          AccessibilityNodeData::ATTR_TABLE_ROW_COUNT, &rows)) {
     return S_FALSE;
   }
   if (columns <= 0 || rows <= 0 || column < 0 || column >= columns)
@@ -1527,7 +1538,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnHeaderCells(
     int cell_id = table->cell_ids()[i * columns + column];
     BrowserAccessibilityWin* cell =
         manager_->GetFromRendererID(cell_id)->ToBrowserAccessibilityWin();
-    if (cell && cell->role_ == WebAccessibility::ROLE_COLUMN_HEADER)
+    if (cell && cell->role_ == AccessibilityNodeData::ROLE_COLUMN_HEADER)
       (*n_column_header_cells)++;
   }
 
@@ -1538,7 +1549,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnHeaderCells(
     int cell_id = table->cell_ids()[i * columns + column];
     BrowserAccessibilityWin* cell =
         manager_->GetFromRendererID(cell_id)->ToBrowserAccessibilityWin();
-    if (cell && cell->role_ == WebAccessibility::ROLE_COLUMN_HEADER) {
+    if (cell && cell->role_ == AccessibilityNodeData::ROLE_COLUMN_HEADER) {
       (*cell_accessibles)[index] =
           static_cast<IAccessible*>(cell->NewReference());
       ++index;
@@ -1558,7 +1569,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnIndex(
 
   int column;
   if (GetIntAttribute(
-          WebAccessibility::ATTR_TABLE_CELL_COLUMN_INDEX, &column)) {
+          AccessibilityNodeData::ATTR_TABLE_CELL_COLUMN_INDEX, &column)) {
     *column_index = column;
     return S_OK;
   }
@@ -1576,7 +1587,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowExtent(
 
   int rowspan;
   if (GetIntAttribute(
-          WebAccessibility::ATTR_TABLE_CELL_ROW_SPAN, &rowspan) &&
+          AccessibilityNodeData::ATTR_TABLE_CELL_ROW_SPAN, &rowspan) &&
       rowspan >= 1) {
     *n_rows_spanned = rowspan;
     return S_OK;
@@ -1598,12 +1609,12 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowHeaderCells(
 
   int row;
   if (!GetIntAttribute(
-          WebAccessibility::ATTR_TABLE_CELL_ROW_INDEX, &row)) {
+          AccessibilityNodeData::ATTR_TABLE_CELL_ROW_INDEX, &row)) {
     return S_FALSE;
   }
 
   BrowserAccessibility* table = parent();
-  while (table && table->role() != WebAccessibility::ROLE_TABLE)
+  while (table && table->role() != AccessibilityNodeData::ROLE_TABLE)
     table = table->parent();
   if (!table) {
     NOTREACHED();
@@ -1613,9 +1624,9 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowHeaderCells(
   int columns;
   int rows;
   if (!table->GetIntAttribute(
-          WebAccessibility::ATTR_TABLE_COLUMN_COUNT, &columns) ||
+          AccessibilityNodeData::ATTR_TABLE_COLUMN_COUNT, &columns) ||
       !table->GetIntAttribute(
-          WebAccessibility::ATTR_TABLE_ROW_COUNT, &rows)) {
+          AccessibilityNodeData::ATTR_TABLE_ROW_COUNT, &rows)) {
     return S_FALSE;
   }
   if (columns <= 0 || rows <= 0 || row < 0 || row >= rows)
@@ -1625,7 +1636,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowHeaderCells(
     int cell_id = table->cell_ids()[row * columns + i];
     BrowserAccessibilityWin* cell =
         manager_->GetFromRendererID(cell_id)->ToBrowserAccessibilityWin();
-    if (cell && cell->role_ == WebAccessibility::ROLE_ROW_HEADER)
+    if (cell && cell->role_ == AccessibilityNodeData::ROLE_ROW_HEADER)
       (*n_row_header_cells)++;
   }
 
@@ -1636,7 +1647,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowHeaderCells(
     int cell_id = table->cell_ids()[row * columns + i];
     BrowserAccessibilityWin* cell =
         manager_->GetFromRendererID(cell_id)->ToBrowserAccessibilityWin();
-    if (cell && cell->role_ == WebAccessibility::ROLE_ROW_HEADER) {
+    if (cell && cell->role_ == AccessibilityNodeData::ROLE_ROW_HEADER) {
       (*cell_accessibles)[index] =
           static_cast<IAccessible*>(cell->NewReference());
       ++index;
@@ -1655,7 +1666,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowIndex(
     return E_INVALIDARG;
 
   int row;
-  if (GetIntAttribute(WebAccessibility::ATTR_TABLE_CELL_ROW_INDEX, &row)) {
+  if (GetIntAttribute(AccessibilityNodeData::ATTR_TABLE_CELL_ROW_INDEX, &row)) {
     *row_index = row;
     return S_OK;
   }
@@ -1695,13 +1706,13 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowColumnExtents(
   int column;
   int rowspan;
   int colspan;
-  if (GetIntAttribute(WebAccessibility::ATTR_TABLE_CELL_ROW_INDEX, &row) &&
+  if (GetIntAttribute(AccessibilityNodeData::ATTR_TABLE_CELL_ROW_INDEX, &row) &&
       GetIntAttribute(
-          WebAccessibility::ATTR_TABLE_CELL_COLUMN_INDEX, &column) &&
+          AccessibilityNodeData::ATTR_TABLE_CELL_COLUMN_INDEX, &column) &&
       GetIntAttribute(
-          WebAccessibility::ATTR_TABLE_CELL_ROW_SPAN, &rowspan) &&
+          AccessibilityNodeData::ATTR_TABLE_CELL_ROW_SPAN, &rowspan) &&
       GetIntAttribute(
-          WebAccessibility::ATTR_TABLE_CELL_COLUMN_SPAN, &colspan)) {
+          AccessibilityNodeData::ATTR_TABLE_CELL_COLUMN_SPAN, &colspan)) {
     *row_index = row;
     *column_index = column;
     *row_extents = rowspan;
@@ -1724,11 +1735,11 @@ STDMETHODIMP BrowserAccessibilityWin::get_table(
 
   int row;
   int column;
-  GetIntAttribute(WebAccessibility::ATTR_TABLE_CELL_ROW_INDEX, &row);
-  GetIntAttribute(WebAccessibility::ATTR_TABLE_CELL_COLUMN_INDEX, &column);
+  GetIntAttribute(AccessibilityNodeData::ATTR_TABLE_CELL_ROW_INDEX, &row);
+  GetIntAttribute(AccessibilityNodeData::ATTR_TABLE_CELL_COLUMN_INDEX, &column);
 
   BrowserAccessibility* find_table = parent();
-  while (find_table && find_table->role() != WebAccessibility::ROLE_TABLE)
+  while (find_table && find_table->role() != AccessibilityNodeData::ROLE_TABLE)
     find_table = find_table->parent();
   if (!find_table) {
     NOTREACHED();
@@ -1763,10 +1774,11 @@ STDMETHODIMP BrowserAccessibilityWin::get_caretOffset(LONG* offset) {
   if (!offset)
     return E_INVALIDARG;
 
-  if (role_ == WebAccessibility::ROLE_TEXT_FIELD ||
-      role_ == WebAccessibility::ROLE_TEXTAREA) {
+  if (role_ == AccessibilityNodeData::ROLE_TEXT_FIELD ||
+      role_ == AccessibilityNodeData::ROLE_TEXTAREA) {
     int sel_start = 0;
-    if (GetIntAttribute(WebAccessibility::ATTR_TEXT_SEL_START, &sel_start)) {
+    if (GetIntAttribute(
+            AccessibilityNodeData::ATTR_TEXT_SEL_START, &sel_start)) {
       *offset = sel_start;
     } else {
       *offset = 0;
@@ -1785,12 +1797,13 @@ STDMETHODIMP BrowserAccessibilityWin::get_nSelections(LONG* n_selections) {
   if (!n_selections)
     return E_INVALIDARG;
 
-  if (role_ == WebAccessibility::ROLE_TEXT_FIELD ||
-      role_ == WebAccessibility::ROLE_TEXTAREA) {
+  if (role_ == AccessibilityNodeData::ROLE_TEXT_FIELD ||
+      role_ == AccessibilityNodeData::ROLE_TEXTAREA) {
     int sel_start = 0;
     int sel_end = 0;
-    if (GetIntAttribute(WebAccessibility::ATTR_TEXT_SEL_START, &sel_start) &&
-        GetIntAttribute(WebAccessibility::ATTR_TEXT_SEL_END, &sel_end) &&
+    if (GetIntAttribute(
+            AccessibilityNodeData::ATTR_TEXT_SEL_START, &sel_start) &&
+        GetIntAttribute(AccessibilityNodeData::ATTR_TEXT_SEL_END, &sel_end) &&
         sel_start != sel_end) {
       *n_selections = 1;
     } else {
@@ -1812,12 +1825,13 @@ STDMETHODIMP BrowserAccessibilityWin::get_selection(LONG selection_index,
   if (!start_offset || !end_offset || selection_index != 0)
     return E_INVALIDARG;
 
-  if (role_ == WebAccessibility::ROLE_TEXT_FIELD ||
-      role_ == WebAccessibility::ROLE_TEXTAREA) {
+  if (role_ == AccessibilityNodeData::ROLE_TEXT_FIELD ||
+      role_ == AccessibilityNodeData::ROLE_TEXTAREA) {
     int sel_start = 0;
     int sel_end = 0;
-    if (GetIntAttribute(WebAccessibility::ATTR_TEXT_SEL_START, &sel_start) &&
-        GetIntAttribute(WebAccessibility::ATTR_TEXT_SEL_END, &sel_end)) {
+    if (GetIntAttribute(
+            AccessibilityNodeData::ATTR_TEXT_SEL_START, &sel_start) &&
+        GetIntAttribute(AccessibilityNodeData::ATTR_TEXT_SEL_END, &sel_end)) {
       *start_offset = sel_start;
       *end_offset = sel_end;
     } else {
@@ -2134,7 +2148,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_currentValue(VARIANT* value) {
     return E_INVALIDARG;
 
   float float_val;
-  if (GetFloatAttribute(WebAccessibility::ATTR_VALUE_FOR_RANGE, &float_val)) {
+  if (GetFloatAttribute(
+          AccessibilityNodeData::ATTR_VALUE_FOR_RANGE, &float_val)) {
     value->vt = VT_R8;
     value->dblVal = float_val;
     return S_OK;
@@ -2152,7 +2167,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_minimumValue(VARIANT* value) {
     return E_INVALIDARG;
 
   float float_val;
-  if (GetFloatAttribute(WebAccessibility::ATTR_MIN_VALUE_FOR_RANGE,
+  if (GetFloatAttribute(AccessibilityNodeData::ATTR_MIN_VALUE_FOR_RANGE,
                         &float_val)) {
     value->vt = VT_R8;
     value->dblVal = float_val;
@@ -2171,7 +2186,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_maximumValue(VARIANT* value) {
     return E_INVALIDARG;
 
   float float_val;
-  if (GetFloatAttribute(WebAccessibility::ATTR_MAX_VALUE_FOR_RANGE,
+  if (GetFloatAttribute(AccessibilityNodeData::ATTR_MAX_VALUE_FOR_RANGE,
                         &float_val)) {
     value->vt = VT_R8;
     value->dblVal = float_val;
@@ -2198,7 +2213,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_URL(BSTR* url) {
   if (!url)
     return E_INVALIDARG;
 
-  return GetStringAttributeAsBstr(WebAccessibility::ATTR_DOC_URL, url);
+  return GetStringAttributeAsBstr(AccessibilityNodeData::ATTR_DOC_URL, url);
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_title(BSTR* title) {
@@ -2208,7 +2223,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_title(BSTR* title) {
   if (!title)
     return E_INVALIDARG;
 
-  return GetStringAttributeAsBstr(WebAccessibility::ATTR_DOC_TITLE, title);
+  return GetStringAttributeAsBstr(AccessibilityNodeData::ATTR_DOC_TITLE, title);
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_mimeType(BSTR* mime_type) {
@@ -2219,7 +2234,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_mimeType(BSTR* mime_type) {
     return E_INVALIDARG;
 
   return GetStringAttributeAsBstr(
-      WebAccessibility::ATTR_DOC_MIMETYPE, mime_type);
+      AccessibilityNodeData::ATTR_DOC_MIMETYPE, mime_type);
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_docType(BSTR* doc_type) {
@@ -2229,7 +2244,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_docType(BSTR* doc_type) {
   if (!doc_type)
     return E_INVALIDARG;
 
-  return GetStringAttributeAsBstr(WebAccessibility::ATTR_DOC_DOCTYPE, doc_type);
+  return GetStringAttributeAsBstr(
+      AccessibilityNodeData::ATTR_DOC_DOCTYPE, doc_type);
 }
 
 //
@@ -2252,7 +2268,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_nodeInfo(
   }
 
   string16 tag;
-  if (GetStringAttribute(WebAccessibility::ATTR_HTML_TAG, &tag))
+  if (GetStringAttribute(AccessibilityNodeData::ATTR_HTML_TAG, &tag))
     *node_name = SysAllocString(tag.c_str());
   else
     *node_name = NULL;
@@ -2343,7 +2359,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_computedStyle(
 
   string16 display;
   if (max_style_properties == 0 ||
-      !GetStringAttribute(WebAccessibility::ATTR_DISPLAY, &display)) {
+      !GetStringAttribute(AccessibilityNodeData::ATTR_DISPLAY, &display)) {
     *num_style_properties = 0;
     return S_OK;
   }
@@ -2373,7 +2389,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_computedStyleForProperties(
     StringToLowerASCII(&name);
     if (name == L"display") {
       string16 display;
-      GetStringAttribute(WebAccessibility::ATTR_DISPLAY, &display);
+      GetStringAttribute(AccessibilityNodeData::ATTR_DISPLAY, &display);
       style_values[i] = SysAllocString(display.c_str());
     } else {
       style_values[i] = NULL;
@@ -2635,23 +2651,23 @@ void BrowserAccessibilityWin::PreInitialize() {
   InitRoleAndState();
 
   // Expose headings levels with the "level" attribute.
-  if (role_ == WebAccessibility::ROLE_HEADING && role_name_.size() == 2 &&
+  if (role_ == AccessibilityNodeData::ROLE_HEADING && role_name_.size() == 2 &&
           IsAsciiDigit(role_name_[1])) {
     ia2_attributes_.push_back(string16(L"level:") + role_name_.substr(1));
   }
 
   // Expose the "display" and "tag" attributes.
-  StringAttributeToIA2(WebAccessibility::ATTR_DISPLAY, "display");
-  StringAttributeToIA2(WebAccessibility::ATTR_HTML_TAG, "tag");
-  StringAttributeToIA2(WebAccessibility::ATTR_ROLE, "xml-roles");
+  StringAttributeToIA2(AccessibilityNodeData::ATTR_DISPLAY, "display");
+  StringAttributeToIA2(AccessibilityNodeData::ATTR_HTML_TAG, "tag");
+  StringAttributeToIA2(AccessibilityNodeData::ATTR_ROLE, "xml-roles");
 
   // Expose "level" attribute for tree nodes.
-  IntAttributeToIA2(WebAccessibility::ATTR_HIERARCHICAL_LEVEL, "level");
+  IntAttributeToIA2(AccessibilityNodeData::ATTR_HIERARCHICAL_LEVEL, "level");
 
   // Expose the set size and position in set for listbox options.
-  if (role_ == WebAccessibility::ROLE_LISTBOX_OPTION &&
+  if (role_ == AccessibilityNodeData::ROLE_LISTBOX_OPTION &&
       parent_ &&
-      parent_->role() == WebAccessibility::ROLE_LISTBOX) {
+      parent_->role() == AccessibilityNodeData::ROLE_LISTBOX) {
     ia2_attributes_.push_back(
         L"setsize:" + base::IntToString16(parent_->child_count()));
     ia2_attributes_.push_back(
@@ -2659,19 +2675,19 @@ void BrowserAccessibilityWin::PreInitialize() {
   }
 
   // Expose live region attributes.
-  StringAttributeToIA2(WebAccessibility::ATTR_LIVE_STATUS, "live");
-  StringAttributeToIA2(WebAccessibility::ATTR_LIVE_RELEVANT, "relevant");
-  BoolAttributeToIA2(WebAccessibility::ATTR_LIVE_ATOMIC, "atomic");
-  BoolAttributeToIA2(WebAccessibility::ATTR_LIVE_BUSY, "busy");
+  StringAttributeToIA2(AccessibilityNodeData::ATTR_LIVE_STATUS, "live");
+  StringAttributeToIA2(AccessibilityNodeData::ATTR_LIVE_RELEVANT, "relevant");
+  BoolAttributeToIA2(AccessibilityNodeData::ATTR_LIVE_ATOMIC, "atomic");
+  BoolAttributeToIA2(AccessibilityNodeData::ATTR_LIVE_BUSY, "busy");
 
   // Expose container live region attributes.
-  StringAttributeToIA2(WebAccessibility::ATTR_CONTAINER_LIVE_STATUS,
+  StringAttributeToIA2(AccessibilityNodeData::ATTR_CONTAINER_LIVE_STATUS,
                        "container-live");
-  StringAttributeToIA2(WebAccessibility::ATTR_CONTAINER_LIVE_RELEVANT,
+  StringAttributeToIA2(AccessibilityNodeData::ATTR_CONTAINER_LIVE_RELEVANT,
                        "container-relevant");
-  BoolAttributeToIA2(WebAccessibility::ATTR_CONTAINER_LIVE_ATOMIC,
+  BoolAttributeToIA2(AccessibilityNodeData::ATTR_CONTAINER_LIVE_ATOMIC,
                      "container-atomic");
-  BoolAttributeToIA2(WebAccessibility::ATTR_CONTAINER_LIVE_BUSY,
+  BoolAttributeToIA2(AccessibilityNodeData::ATTR_CONTAINER_LIVE_BUSY,
                      "container-busy");
 
   // Expose slider value.
@@ -2680,7 +2696,7 @@ void BrowserAccessibilityWin::PreInitialize() {
       ia_role_ == ROLE_SYSTEM_SLIDER) {
     float fval;
     if (value_.empty() &&
-        GetFloatAttribute(WebAccessibility::ATTR_VALUE_FOR_RANGE, &fval)) {
+        GetFloatAttribute(AccessibilityNodeData::ATTR_VALUE_FOR_RANGE, &fval)) {
       // TODO(dmazzoni): Use ICU to localize this?
       value_ = UTF8ToUTF16(base::DoubleToString(fval));
     }
@@ -2690,7 +2706,7 @@ void BrowserAccessibilityWin::PreInitialize() {
   // Expose table cell index.
   if (ia_role_ == ROLE_SYSTEM_CELL) {
     BrowserAccessibility* table = parent();
-    while (table && table->role() != WebAccessibility::ROLE_TABLE)
+    while (table && table->role() != AccessibilityNodeData::ROLE_TABLE)
       table = table->parent();
     if (table) {
       const std::vector<int32>& unique_cell_ids = table->unique_cell_ids();
@@ -2711,9 +2727,9 @@ void BrowserAccessibilityWin::PreInitialize() {
   }
 
   if (name_.empty() &&
-      (role_ == WebAccessibility::ROLE_LISTBOX_OPTION ||
-       role_ == WebAccessibility::ROLE_STATIC_TEXT ||
-       role_ == WebAccessibility::ROLE_LIST_MARKER)) {
+      (role_ == AccessibilityNodeData::ROLE_LISTBOX_OPTION ||
+       role_ == AccessibilityNodeData::ROLE_STATIC_TEXT ||
+       role_ == AccessibilityNodeData::ROLE_LIST_MARKER)) {
     name_.swap(value_);
   }
 
@@ -2721,13 +2737,13 @@ void BrowserAccessibilityWin::PreInitialize() {
   // use the description as its name - because some screen readers only
   // announce the name.
   if (name_.empty())
-    GetStringAttribute(WebAccessibility::ATTR_DESCRIPTION, &name_);
+    GetStringAttribute(AccessibilityNodeData::ATTR_DESCRIPTION, &name_);
 
   // If this doesn't have a value and is linked then set its value to the url
   // attribute. This allows screen readers to read an empty link's destination.
   string16 url;
   if (value_.empty() && (ia_state_ & STATE_SYSTEM_LINKED))
-    GetStringAttribute(WebAccessibility::ATTR_URL, &value_);
+    GetStringAttribute(AccessibilityNodeData::ATTR_URL, &value_);
 
   // Clear any old relationships between this node and other nodes.
   for (size_t i = 0; i < relations_.size(); ++i)
@@ -2736,7 +2752,7 @@ void BrowserAccessibilityWin::PreInitialize() {
 
   // Handle title UI element.
   int title_elem_id;
-  if (GetIntAttribute(WebAccessibility::ATTR_TITLE_UI_ELEMENT,
+  if (GetIntAttribute(AccessibilityNodeData::ATTR_TITLE_UI_ELEMENT,
                       &title_elem_id)) {
     // Add a labelled by relationship.
     CComObject<BrowserAccessibilityRelation>* relation;
@@ -2759,7 +2775,7 @@ void BrowserAccessibilityWin::PostInitialize() {
   hypertext_.clear();
   for (unsigned int i = 0; i < children().size(); ++i) {
     BrowserAccessibility* child = children()[i];
-    if (child->role() == WebAccessibility::ROLE_STATIC_TEXT) {
+    if (child->role() == AccessibilityNodeData::ROLE_STATIC_TEXT) {
       hypertext_ += child->name();
     } else {
       hyperlink_offset_to_index_[hypertext_.size()] = hyperlinks_.size();
@@ -2770,7 +2786,7 @@ void BrowserAccessibilityWin::PostInitialize() {
   DCHECK_EQ(hyperlink_offset_to_index_.size(), hyperlinks_.size());
 
   // Fire an event when an alert first appears.
-  if (role_ == WebAccessibility::ROLE_ALERT && first_time_)
+  if (role_ == AccessibilityNodeData::ROLE_ALERT && first_time_)
     manager_->NotifyAccessibilityEvent(AccessibilityNotificationAlert, this);
 
   // Fire events if text has changed.
@@ -2793,7 +2809,7 @@ void BrowserAccessibilityWin::PostInitialize() {
     // focus for managed descendants is platform-specific.
     // Fire a focus event if the focused descendant in a multi-select
     // list box changes.
-    if (role_ == WebAccessibility::ROLE_LISTBOX_OPTION &&
+    if (role_ == AccessibilityNodeData::ROLE_LISTBOX_OPTION &&
         (ia_state_ & STATE_SYSTEM_FOCUSABLE) &&
         (ia_state_ & STATE_SYSTEM_SELECTABLE) &&
         (ia_state_ & STATE_SYSTEM_FOCUSED) &&
@@ -2857,7 +2873,7 @@ BrowserAccessibilityWin* BrowserAccessibilityWin::GetTargetFromChildID(
 }
 
 HRESULT BrowserAccessibilityWin::GetStringAttributeAsBstr(
-    WebAccessibility::StringAttribute attribute, BSTR* value_bstr) {
+    AccessibilityNodeData::StringAttribute attribute, BSTR* value_bstr) {
   string16 str;
 
   if (!GetStringAttribute(attribute, &str))
@@ -2873,14 +2889,14 @@ HRESULT BrowserAccessibilityWin::GetStringAttributeAsBstr(
 }
 
 void BrowserAccessibilityWin::StringAttributeToIA2(
-    WebAccessibility::StringAttribute attribute, const char* ia2_attr) {
+    AccessibilityNodeData::StringAttribute attribute, const char* ia2_attr) {
   string16 value;
   if (GetStringAttribute(attribute, &value))
     ia2_attributes_.push_back(ASCIIToUTF16(ia2_attr) + L":" + value);
 }
 
 void BrowserAccessibilityWin::BoolAttributeToIA2(
-    WebAccessibility::BoolAttribute attribute, const char* ia2_attr) {
+    AccessibilityNodeData::BoolAttribute attribute, const char* ia2_attr) {
   bool value;
   if (GetBoolAttribute(attribute, &value)) {
     ia2_attributes_.push_back((ASCIIToUTF16(ia2_attr) + L":") +
@@ -2889,7 +2905,7 @@ void BrowserAccessibilityWin::BoolAttributeToIA2(
 }
 
 void BrowserAccessibilityWin::IntAttributeToIA2(
-    WebAccessibility::IntAttribute attribute, const char* ia2_attr) {
+    AccessibilityNodeData::IntAttribute attribute, const char* ia2_attr) {
   int value;
   if (GetIntAttribute(attribute, &value))
     ia2_attributes_.push_back(ASCIIToUTF16(ia2_attr) + L":" +
@@ -2899,7 +2915,7 @@ void BrowserAccessibilityWin::IntAttributeToIA2(
 const string16& BrowserAccessibilityWin::TextForIAccessibleText() {
   if (IsEditableText()) {
     return value_;
-  } else if (role_ == WebAccessibility::ROLE_STATIC_TEXT) {
+  } else if (role_ == AccessibilityNodeData::ROLE_STATIC_TEXT) {
     return name_;
   } else {
     return hypertext_;
@@ -2951,59 +2967,59 @@ void BrowserAccessibilityWin::InitRoleAndState() {
   ia2_state_ = IA2_STATE_OPAQUE;
   ia2_attributes_.clear();
 
-  if (HasState(WebAccessibility::STATE_BUSY))
+  if (HasState(AccessibilityNodeData::STATE_BUSY))
     ia_state_ |= STATE_SYSTEM_BUSY;
-  if (HasState(WebAccessibility::STATE_CHECKED))
+  if (HasState(AccessibilityNodeData::STATE_CHECKED))
     ia_state_ |= STATE_SYSTEM_CHECKED;
-  if (HasState(WebAccessibility::STATE_COLLAPSED))
+  if (HasState(AccessibilityNodeData::STATE_COLLAPSED))
     ia_state_ |= STATE_SYSTEM_COLLAPSED;
-  if (HasState(WebAccessibility::STATE_EXPANDED))
+  if (HasState(AccessibilityNodeData::STATE_EXPANDED))
     ia_state_ |= STATE_SYSTEM_EXPANDED;
-  if (HasState(WebAccessibility::STATE_FOCUSABLE))
+  if (HasState(AccessibilityNodeData::STATE_FOCUSABLE))
     ia_state_ |= STATE_SYSTEM_FOCUSABLE;
-  if (HasState(WebAccessibility::STATE_HASPOPUP))
+  if (HasState(AccessibilityNodeData::STATE_HASPOPUP))
     ia_state_ |= STATE_SYSTEM_HASPOPUP;
-  if (HasState(WebAccessibility::STATE_HOTTRACKED))
+  if (HasState(AccessibilityNodeData::STATE_HOTTRACKED))
     ia_state_ |= STATE_SYSTEM_HOTTRACKED;
-  if (HasState(WebAccessibility::STATE_INDETERMINATE))
+  if (HasState(AccessibilityNodeData::STATE_INDETERMINATE))
     ia_state_ |= STATE_SYSTEM_INDETERMINATE;
-  if (HasState(WebAccessibility::STATE_INVISIBLE))
+  if (HasState(AccessibilityNodeData::STATE_INVISIBLE))
     ia_state_ |= STATE_SYSTEM_INVISIBLE;
-  if (HasState(WebAccessibility::STATE_LINKED))
+  if (HasState(AccessibilityNodeData::STATE_LINKED))
     ia_state_ |= STATE_SYSTEM_LINKED;
-  if (HasState(WebAccessibility::STATE_MULTISELECTABLE)) {
+  if (HasState(AccessibilityNodeData::STATE_MULTISELECTABLE)) {
     ia_state_ |= STATE_SYSTEM_EXTSELECTABLE;
     ia_state_ |= STATE_SYSTEM_MULTISELECTABLE;
   }
   // TODO(ctguil): Support STATE_SYSTEM_EXTSELECTABLE/accSelect.
-  if (HasState(WebAccessibility::STATE_OFFSCREEN))
+  if (HasState(AccessibilityNodeData::STATE_OFFSCREEN))
     ia_state_ |= STATE_SYSTEM_OFFSCREEN;
-  if (HasState(WebAccessibility::STATE_PRESSED))
+  if (HasState(AccessibilityNodeData::STATE_PRESSED))
     ia_state_ |= STATE_SYSTEM_PRESSED;
-  if (HasState(WebAccessibility::STATE_PROTECTED))
+  if (HasState(AccessibilityNodeData::STATE_PROTECTED))
     ia_state_ |= STATE_SYSTEM_PROTECTED;
-  if (HasState(WebAccessibility::STATE_REQUIRED))
+  if (HasState(AccessibilityNodeData::STATE_REQUIRED))
     ia2_state_ |= IA2_STATE_REQUIRED;
-  if (HasState(WebAccessibility::STATE_SELECTABLE))
+  if (HasState(AccessibilityNodeData::STATE_SELECTABLE))
     ia_state_ |= STATE_SYSTEM_SELECTABLE;
-  if (HasState(WebAccessibility::STATE_SELECTED))
+  if (HasState(AccessibilityNodeData::STATE_SELECTED))
     ia_state_ |= STATE_SYSTEM_SELECTED;
-  if (HasState(WebAccessibility::STATE_TRAVERSED))
+  if (HasState(AccessibilityNodeData::STATE_TRAVERSED))
     ia_state_ |= STATE_SYSTEM_TRAVERSED;
-  if (HasState(WebAccessibility::STATE_UNAVAILABLE))
+  if (HasState(AccessibilityNodeData::STATE_UNAVAILABLE))
     ia_state_ |= STATE_SYSTEM_UNAVAILABLE;
-  if (HasState(WebAccessibility::STATE_VERTICAL)) {
+  if (HasState(AccessibilityNodeData::STATE_VERTICAL)) {
     ia2_state_ |= IA2_STATE_VERTICAL;
   } else {
     ia2_state_ |= IA2_STATE_HORIZONTAL;
   }
-  if (HasState(WebAccessibility::STATE_VISITED))
+  if (HasState(AccessibilityNodeData::STATE_VISITED))
     ia_state_ |= STATE_SYSTEM_TRAVERSED;
 
   // WebKit marks everything as readonly unless it's editable text, so if it's
   // not readonly, mark it as editable now. The final computation of the
   // READONLY state for MSAA is below, after the switch.
-  if (!HasState(WebAccessibility::STATE_READONLY))
+  if (!HasState(AccessibilityNodeData::STATE_READONLY))
     ia2_state_ |= IA2_STATE_EDITABLE;
 
   string16 invalid;
@@ -3011,39 +3027,39 @@ void BrowserAccessibilityWin::InitRoleAndState() {
     ia2_state_ |= IA2_STATE_INVALID_ENTRY;
 
   bool mixed = false;
-  GetBoolAttribute(WebAccessibility::ATTR_BUTTON_MIXED, &mixed);
+  GetBoolAttribute(AccessibilityNodeData::ATTR_BUTTON_MIXED, &mixed);
   if (mixed)
     ia_state_ |= STATE_SYSTEM_MIXED;
 
   bool editable = false;
-  GetBoolAttribute(WebAccessibility::ATTR_CAN_SET_VALUE, &editable);
+  GetBoolAttribute(AccessibilityNodeData::ATTR_CAN_SET_VALUE, &editable);
   if (editable)
     ia2_state_ |= IA2_STATE_EDITABLE;
 
   string16 html_tag;
-  GetStringAttribute(WebAccessibility::ATTR_HTML_TAG, &html_tag);
+  GetStringAttribute(AccessibilityNodeData::ATTR_HTML_TAG, &html_tag);
   ia_role_ = 0;
   ia2_role_ = 0;
   switch (role_) {
-    case WebAccessibility::ROLE_ALERT:
+    case AccessibilityNodeData::ROLE_ALERT:
       ia_role_ = ROLE_SYSTEM_ALERT;
       break;
-    case WebAccessibility::ROLE_ALERT_DIALOG:
+    case AccessibilityNodeData::ROLE_ALERT_DIALOG:
       ia_role_ = ROLE_SYSTEM_DIALOG;
       break;
-    case WebAccessibility::ROLE_APPLICATION:
+    case AccessibilityNodeData::ROLE_APPLICATION:
       ia_role_ = ROLE_SYSTEM_APPLICATION;
       break;
-    case WebAccessibility::ROLE_ARTICLE:
+    case AccessibilityNodeData::ROLE_ARTICLE:
       ia_role_ = ROLE_SYSTEM_GROUPING;
       ia2_role_ = IA2_ROLE_SECTION;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_BUSY_INDICATOR:
+    case AccessibilityNodeData::ROLE_BUSY_INDICATOR:
       ia_role_ = ROLE_SYSTEM_ANIMATION;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_BUTTON:
+    case AccessibilityNodeData::ROLE_BUTTON:
       ia_role_ = ROLE_SYSTEM_PUSHBUTTON;
       bool is_aria_pressed_defined;
       bool is_mixed;
@@ -3054,67 +3070,67 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       if (is_mixed)
         ia_state_ |= STATE_SYSTEM_MIXED;
       break;
-    case WebAccessibility::ROLE_CELL:
+    case AccessibilityNodeData::ROLE_CELL:
       ia_role_ = ROLE_SYSTEM_CELL;
       break;
-    case WebAccessibility::ROLE_CHECKBOX:
+    case AccessibilityNodeData::ROLE_CHECKBOX:
       ia_role_ = ROLE_SYSTEM_CHECKBUTTON;
       break;
-    case WebAccessibility::ROLE_COLOR_WELL:
+    case AccessibilityNodeData::ROLE_COLOR_WELL:
       ia_role_ = ROLE_SYSTEM_CLIENT;
       ia2_role_ = IA2_ROLE_COLOR_CHOOSER;
       break;
-    case WebAccessibility::ROLE_COLUMN:
+    case AccessibilityNodeData::ROLE_COLUMN:
       ia_role_ = ROLE_SYSTEM_COLUMN;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_COLUMN_HEADER:
+    case AccessibilityNodeData::ROLE_COLUMN_HEADER:
       ia_role_ = ROLE_SYSTEM_COLUMNHEADER;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_COMBO_BOX:
+    case AccessibilityNodeData::ROLE_COMBO_BOX:
       ia_role_ = ROLE_SYSTEM_COMBOBOX;
       break;
-    case WebAccessibility::ROLE_DEFINITION_LIST_DEFINITION:
+    case AccessibilityNodeData::ROLE_DEFINITION_LIST_DEFINITION:
       role_name_ = html_tag;
       ia2_role_ = IA2_ROLE_PARAGRAPH;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_DEFINITION_LIST_TERM:
+    case AccessibilityNodeData::ROLE_DEFINITION_LIST_TERM:
       ia_role_ = ROLE_SYSTEM_LISTITEM;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_DIALOG:
+    case AccessibilityNodeData::ROLE_DIALOG:
       ia_role_ = ROLE_SYSTEM_DIALOG;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_DISCLOSURE_TRIANGLE:
+    case AccessibilityNodeData::ROLE_DISCLOSURE_TRIANGLE:
       ia_role_ = ROLE_SYSTEM_OUTLINEBUTTON;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_DOCUMENT:
-    case WebAccessibility::ROLE_ROOT_WEB_AREA:
-    case WebAccessibility::ROLE_WEB_AREA:
+    case AccessibilityNodeData::ROLE_DOCUMENT:
+    case AccessibilityNodeData::ROLE_ROOT_WEB_AREA:
+    case AccessibilityNodeData::ROLE_WEB_AREA:
       ia_role_ = ROLE_SYSTEM_DOCUMENT;
       ia_state_ |= STATE_SYSTEM_READONLY;
       ia_state_ |= STATE_SYSTEM_FOCUSABLE;
       break;
-    case WebAccessibility::ROLE_EDITABLE_TEXT:
+    case AccessibilityNodeData::ROLE_EDITABLE_TEXT:
       ia_role_ = ROLE_SYSTEM_TEXT;
       ia2_state_ |= IA2_STATE_SINGLE_LINE;
       ia2_state_ |= IA2_STATE_EDITABLE;
       break;
-    case WebAccessibility::ROLE_FOOTER:
+    case AccessibilityNodeData::ROLE_FOOTER:
       ia_role_ = IA2_ROLE_FOOTER;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_GRID:
+    case AccessibilityNodeData::ROLE_GRID:
       ia_role_ = ROLE_SYSTEM_TABLE;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_GROUP: {
+    case AccessibilityNodeData::ROLE_GROUP: {
       string16 aria_role;
-      GetStringAttribute(WebAccessibility::ATTR_ROLE, &aria_role);
+      GetStringAttribute(AccessibilityNodeData::ATTR_ROLE, &aria_role);
       if (aria_role == L"group" || html_tag == L"fieldset") {
         ia_role_ = ROLE_SYSTEM_GROUPING;
       } else if (html_tag == L"li") {
@@ -3135,243 +3151,243 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     }
-    case WebAccessibility::ROLE_GROW_AREA:
+    case AccessibilityNodeData::ROLE_GROW_AREA:
       ia_role_ = ROLE_SYSTEM_GRIP;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_HEADING:
+    case AccessibilityNodeData::ROLE_HEADING:
       role_name_ = html_tag;
       ia2_role_ = IA2_ROLE_HEADING;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_IMAGE:
+    case AccessibilityNodeData::ROLE_IMAGE:
       ia_role_ = ROLE_SYSTEM_GRAPHIC;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_IMAGE_MAP:
+    case AccessibilityNodeData::ROLE_IMAGE_MAP:
       role_name_ = html_tag;
       ia2_role_ = IA2_ROLE_IMAGE_MAP;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_IMAGE_MAP_LINK:
+    case AccessibilityNodeData::ROLE_IMAGE_MAP_LINK:
       ia_role_ = ROLE_SYSTEM_LINK;
       ia_state_ |= STATE_SYSTEM_LINKED;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_LANDMARK_APPLICATION:
-    case WebAccessibility::ROLE_LANDMARK_BANNER:
-    case WebAccessibility::ROLE_LANDMARK_COMPLEMENTARY:
-    case WebAccessibility::ROLE_LANDMARK_CONTENTINFO:
-    case WebAccessibility::ROLE_LANDMARK_MAIN:
-    case WebAccessibility::ROLE_LANDMARK_NAVIGATION:
-    case WebAccessibility::ROLE_LANDMARK_SEARCH:
+    case AccessibilityNodeData::ROLE_LANDMARK_APPLICATION:
+    case AccessibilityNodeData::ROLE_LANDMARK_BANNER:
+    case AccessibilityNodeData::ROLE_LANDMARK_COMPLEMENTARY:
+    case AccessibilityNodeData::ROLE_LANDMARK_CONTENTINFO:
+    case AccessibilityNodeData::ROLE_LANDMARK_MAIN:
+    case AccessibilityNodeData::ROLE_LANDMARK_NAVIGATION:
+    case AccessibilityNodeData::ROLE_LANDMARK_SEARCH:
       ia_role_ = ROLE_SYSTEM_GROUPING;
       ia2_role_ = IA2_ROLE_SECTION;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_LINK:
-    case WebAccessibility::ROLE_WEBCORE_LINK:
+    case AccessibilityNodeData::ROLE_LINK:
+    case AccessibilityNodeData::ROLE_WEBCORE_LINK:
       ia_role_ = ROLE_SYSTEM_LINK;
       ia_state_ |= STATE_SYSTEM_LINKED;
       break;
-    case WebAccessibility::ROLE_LIST:
+    case AccessibilityNodeData::ROLE_LIST:
       ia_role_ = ROLE_SYSTEM_LIST;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_LISTBOX:
+    case AccessibilityNodeData::ROLE_LISTBOX:
       ia_role_ = ROLE_SYSTEM_LIST;
       break;
-    case WebAccessibility::ROLE_LISTBOX_OPTION:
+    case AccessibilityNodeData::ROLE_LISTBOX_OPTION:
       ia_role_ = ROLE_SYSTEM_LISTITEM;
       if (ia_state_ & STATE_SYSTEM_SELECTABLE) {
         ia_state_ |= STATE_SYSTEM_FOCUSABLE;
-        if (HasState(WebAccessibility::STATE_FOCUSED))
+        if (HasState(AccessibilityNodeData::STATE_FOCUSED))
           ia_state_ |= STATE_SYSTEM_FOCUSED;
       }
       break;
-    case WebAccessibility::ROLE_LIST_ITEM:
+    case AccessibilityNodeData::ROLE_LIST_ITEM:
       ia_role_ = ROLE_SYSTEM_LISTITEM;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_LIST_MARKER:
+    case AccessibilityNodeData::ROLE_LIST_MARKER:
       ia_role_ = ROLE_SYSTEM_TEXT;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_MATH:
+    case AccessibilityNodeData::ROLE_MATH:
       ia_role_ = ROLE_SYSTEM_EQUATION;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_MENU:
-    case WebAccessibility::ROLE_MENU_BUTTON:
+    case AccessibilityNodeData::ROLE_MENU:
+    case AccessibilityNodeData::ROLE_MENU_BUTTON:
       ia_role_ = ROLE_SYSTEM_MENUPOPUP;
       break;
-    case WebAccessibility::ROLE_MENU_BAR:
+    case AccessibilityNodeData::ROLE_MENU_BAR:
       ia_role_ = ROLE_SYSTEM_MENUBAR;
       break;
-    case WebAccessibility::ROLE_MENU_ITEM:
+    case AccessibilityNodeData::ROLE_MENU_ITEM:
       ia_role_ = ROLE_SYSTEM_MENUITEM;
       break;
-    case WebAccessibility::ROLE_MENU_LIST_POPUP:
+    case AccessibilityNodeData::ROLE_MENU_LIST_POPUP:
       ia_role_ = ROLE_SYSTEM_CLIENT;
       break;
-    case WebAccessibility::ROLE_MENU_LIST_OPTION:
+    case AccessibilityNodeData::ROLE_MENU_LIST_OPTION:
       ia_role_ = ROLE_SYSTEM_LISTITEM;
       if (ia_state_ & STATE_SYSTEM_SELECTABLE) {
         ia_state_ |= STATE_SYSTEM_FOCUSABLE;
-        if (HasState(WebAccessibility::STATE_FOCUSED))
+        if (HasState(AccessibilityNodeData::STATE_FOCUSED))
           ia_state_ |= STATE_SYSTEM_FOCUSED;
       }
       break;
-    case WebAccessibility::ROLE_NOTE:
+    case AccessibilityNodeData::ROLE_NOTE:
       ia_role_ = ROLE_SYSTEM_GROUPING;
       ia2_role_ = IA2_ROLE_NOTE;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_OUTLINE:
+    case AccessibilityNodeData::ROLE_OUTLINE:
       ia_role_ = ROLE_SYSTEM_OUTLINE;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_POPUP_BUTTON:
+    case AccessibilityNodeData::ROLE_POPUP_BUTTON:
       if (html_tag == L"select") {
         ia_role_ = ROLE_SYSTEM_COMBOBOX;
       } else {
         ia_role_ = ROLE_SYSTEM_BUTTONMENU;
       }
       break;
-    case WebAccessibility::ROLE_PROGRESS_INDICATOR:
+    case AccessibilityNodeData::ROLE_PROGRESS_INDICATOR:
       ia_role_ = ROLE_SYSTEM_PROGRESSBAR;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_RADIO_BUTTON:
+    case AccessibilityNodeData::ROLE_RADIO_BUTTON:
       ia_role_ = ROLE_SYSTEM_RADIOBUTTON;
       break;
-    case WebAccessibility::ROLE_RADIO_GROUP:
+    case AccessibilityNodeData::ROLE_RADIO_GROUP:
       ia_role_ = ROLE_SYSTEM_GROUPING;
       ia2_role_ = IA2_ROLE_SECTION;
       break;
-    case WebAccessibility::ROLE_REGION:
+    case AccessibilityNodeData::ROLE_REGION:
       ia_role_ = ROLE_SYSTEM_GROUPING;
       ia2_role_ = IA2_ROLE_SECTION;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_ROW:
+    case AccessibilityNodeData::ROLE_ROW:
       ia_role_ = ROLE_SYSTEM_ROW;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_ROW_HEADER:
+    case AccessibilityNodeData::ROLE_ROW_HEADER:
       ia_role_ = ROLE_SYSTEM_ROWHEADER;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_RULER:
+    case AccessibilityNodeData::ROLE_RULER:
       ia_role_ = ROLE_SYSTEM_CLIENT;
       ia2_role_ = IA2_ROLE_RULER;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_SCROLLAREA:
+    case AccessibilityNodeData::ROLE_SCROLLAREA:
       ia_role_ = ROLE_SYSTEM_CLIENT;
       ia2_role_ = IA2_ROLE_SCROLL_PANE;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_SCROLLBAR:
+    case AccessibilityNodeData::ROLE_SCROLLBAR:
       ia_role_ = ROLE_SYSTEM_SCROLLBAR;
       break;
-    case WebAccessibility::ROLE_SLIDER:
+    case AccessibilityNodeData::ROLE_SLIDER:
       ia_role_ = ROLE_SYSTEM_SLIDER;
       break;
-    case WebAccessibility::ROLE_SPLIT_GROUP:
+    case AccessibilityNodeData::ROLE_SPLIT_GROUP:
       ia_role_ = ROLE_SYSTEM_CLIENT;
       ia2_role_ = IA2_ROLE_SPLIT_PANE;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_ANNOTATION:
-    case WebAccessibility::ROLE_STATIC_TEXT:
+    case AccessibilityNodeData::ROLE_ANNOTATION:
+    case AccessibilityNodeData::ROLE_STATIC_TEXT:
       ia_role_ = ROLE_SYSTEM_TEXT;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_STATUS:
+    case AccessibilityNodeData::ROLE_STATUS:
       ia_role_ = ROLE_SYSTEM_STATUSBAR;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_SPLITTER:
+    case AccessibilityNodeData::ROLE_SPLITTER:
       ia_role_ = ROLE_SYSTEM_SEPARATOR;
       break;
-    case WebAccessibility::ROLE_TAB:
+    case AccessibilityNodeData::ROLE_TAB:
       ia_role_ = ROLE_SYSTEM_PAGETAB;
       break;
-    case WebAccessibility::ROLE_TABLE:
+    case AccessibilityNodeData::ROLE_TABLE:
       ia_role_ = ROLE_SYSTEM_TABLE;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_TABLE_HEADER_CONTAINER:
+    case AccessibilityNodeData::ROLE_TABLE_HEADER_CONTAINER:
       ia_role_ = ROLE_SYSTEM_GROUPING;
       ia2_role_ = IA2_ROLE_SECTION;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_TAB_GROUP_UNUSED:
+    case AccessibilityNodeData::ROLE_TAB_GROUP_UNUSED:
       NOTREACHED();
       ia_role_ = ROLE_SYSTEM_PAGETABLIST;
       break;
-    case WebAccessibility::ROLE_TAB_LIST:
+    case AccessibilityNodeData::ROLE_TAB_LIST:
       ia_role_ = ROLE_SYSTEM_PAGETABLIST;
       break;
-    case WebAccessibility::ROLE_TAB_PANEL:
+    case AccessibilityNodeData::ROLE_TAB_PANEL:
       ia_role_ = ROLE_SYSTEM_PROPERTYPAGE;
       break;
-    case WebAccessibility::ROLE_TEXTAREA:
+    case AccessibilityNodeData::ROLE_TEXTAREA:
       ia_role_ = ROLE_SYSTEM_TEXT;
       ia2_state_ |= IA2_STATE_MULTI_LINE;
       ia2_state_ |= IA2_STATE_EDITABLE;
       ia2_state_ |= IA2_STATE_SELECTABLE_TEXT;
       break;
-    case WebAccessibility::ROLE_TEXT_FIELD:
+    case AccessibilityNodeData::ROLE_TEXT_FIELD:
       ia_role_ = ROLE_SYSTEM_TEXT;
       ia2_state_ |= IA2_STATE_SINGLE_LINE;
       ia2_state_ |= IA2_STATE_EDITABLE;
       ia2_state_ |= IA2_STATE_SELECTABLE_TEXT;
       break;
-    case WebAccessibility::ROLE_TIMER:
+    case AccessibilityNodeData::ROLE_TIMER:
       ia_role_ = ROLE_SYSTEM_CLOCK;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_TOOLBAR:
+    case AccessibilityNodeData::ROLE_TOOLBAR:
       ia_role_ = ROLE_SYSTEM_TOOLBAR;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_TOOLTIP:
+    case AccessibilityNodeData::ROLE_TOOLTIP:
       ia_role_ = ROLE_SYSTEM_TOOLTIP;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_TREE:
+    case AccessibilityNodeData::ROLE_TREE:
       ia_role_ = ROLE_SYSTEM_OUTLINE;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_TREE_GRID:
+    case AccessibilityNodeData::ROLE_TREE_GRID:
       ia_role_ = ROLE_SYSTEM_OUTLINE;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_TREE_ITEM:
+    case AccessibilityNodeData::ROLE_TREE_ITEM:
       ia_role_ = ROLE_SYSTEM_OUTLINEITEM;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case WebAccessibility::ROLE_WINDOW:
+    case AccessibilityNodeData::ROLE_WINDOW:
       ia_role_ = ROLE_SYSTEM_WINDOW;
       break;
 
     // TODO(dmazzoni): figure out the proper MSAA role for all of these.
-    case WebAccessibility::ROLE_BROWSER:
-    case WebAccessibility::ROLE_DIRECTORY:
-    case WebAccessibility::ROLE_DRAWER:
-    case WebAccessibility::ROLE_HELP_TAG:
-    case WebAccessibility::ROLE_IGNORED:
-    case WebAccessibility::ROLE_INCREMENTOR:
-    case WebAccessibility::ROLE_LOG:
-    case WebAccessibility::ROLE_MARQUEE:
-    case WebAccessibility::ROLE_MATTE:
-    case WebAccessibility::ROLE_RULER_MARKER:
-    case WebAccessibility::ROLE_SHEET:
-    case WebAccessibility::ROLE_SLIDER_THUMB:
-    case WebAccessibility::ROLE_SYSTEM_WIDE:
-    case WebAccessibility::ROLE_VALUE_INDICATOR:
+    case AccessibilityNodeData::ROLE_BROWSER:
+    case AccessibilityNodeData::ROLE_DIRECTORY:
+    case AccessibilityNodeData::ROLE_DRAWER:
+    case AccessibilityNodeData::ROLE_HELP_TAG:
+    case AccessibilityNodeData::ROLE_IGNORED:
+    case AccessibilityNodeData::ROLE_INCREMENTOR:
+    case AccessibilityNodeData::ROLE_LOG:
+    case AccessibilityNodeData::ROLE_MARQUEE:
+    case AccessibilityNodeData::ROLE_MATTE:
+    case AccessibilityNodeData::ROLE_RULER_MARKER:
+    case AccessibilityNodeData::ROLE_SHEET:
+    case AccessibilityNodeData::ROLE_SLIDER_THUMB:
+    case AccessibilityNodeData::ROLE_SYSTEM_WIDE:
+    case AccessibilityNodeData::ROLE_VALUE_INDICATOR:
     default:
       ia_role_ = ROLE_SYSTEM_CLIENT;
       break;
@@ -3383,14 +3399,14 @@ void BrowserAccessibilityWin::InitRoleAndState() {
   // aria-readonly attribute and for a few roles (in the switch above).
   // We clear the READONLY state on focusable controls and on a document.
   // Everything else, the majority of objects, do not have this state set.
-  if (HasState(WebAccessibility::STATE_FOCUSABLE) &&
+  if (HasState(AccessibilityNodeData::STATE_FOCUSABLE) &&
       ia_role_ != ROLE_SYSTEM_DOCUMENT) {
     ia_state_ &= ~(STATE_SYSTEM_READONLY);
   }
-  if (!HasState(WebAccessibility::STATE_READONLY))
+  if (!HasState(AccessibilityNodeData::STATE_READONLY))
     ia_state_ &= ~(STATE_SYSTEM_READONLY);
   bool aria_readonly = false;
-  GetBoolAttribute(WebAccessibility::ATTR_ARIA_READONLY, &aria_readonly);
+  GetBoolAttribute(AccessibilityNodeData::ATTR_ARIA_READONLY, &aria_readonly);
   if (aria_readonly)
     ia_state_ |= STATE_SYSTEM_READONLY;
 

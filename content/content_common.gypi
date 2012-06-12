@@ -96,6 +96,8 @@
     'public/common/url_fetcher_delegate.h',
     'public/common/zygote_fork_delegate_linux.h',
     'common/accessibility_messages.h',
+    'common/accessibility_node_data.cc',
+    'common/accessibility_node_data.h',
     'common/android/address_parser.cc',
     'common/android/address_parser.h',
     'common/android/address_parser_internal.cc',

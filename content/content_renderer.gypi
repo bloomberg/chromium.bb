@@ -41,6 +41,8 @@
     'public/renderer/render_view_observer_tracker.h',
     'public/renderer/render_view_visitor.h',
     'public/renderer/v8_value_converter.h',
+    'renderer/accessibility_node_serializer.cc',
+    'renderer/accessibility_node_serializer.h',
     'renderer/active_notification_tracker.cc',
     'renderer/active_notification_tracker.h',
     'renderer/android/address_detector.cc',

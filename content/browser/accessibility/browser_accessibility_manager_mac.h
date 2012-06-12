@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,7 +22,7 @@ class BrowserAccessibilityManagerMac : public BrowserAccessibilityManager {
   friend class BrowserAccessibilityManager;
 
   BrowserAccessibilityManagerMac(gfx::NativeView parent_view,
-                                 const webkit_glue::WebAccessibility& src,
+                                 const content::AccessibilityNodeData& src,
                                  BrowserAccessibilityDelegate* delegate,
                                  BrowserAccessibilityFactory* factory);
 

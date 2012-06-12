@@ -12,8 +12,8 @@
 
 #include "base/basictypes.h"
 #include "build/build_config.h"
+#include "content/common/accessibility_node_data.h"
 #include "content/common/content_export.h"
-#include "webkit/glue/webaccessibility.h"
 
 class BrowserAccessibilityManager;
 #if defined(OS_MACOSX) && __OBJC__
@@ -24,11 +24,14 @@ class BrowserAccessibilityWin;
 class BrowserAccessibilityGtk;
 #endif
 
-using webkit_glue::WebAccessibility;
-typedef std::map<WebAccessibility::BoolAttribute, bool> BoolAttrMap;
-typedef std::map<WebAccessibility::FloatAttribute, float> FloatAttrMap;
-typedef std::map<WebAccessibility::IntAttribute, int> IntAttrMap;
-typedef std::map<WebAccessibility::StringAttribute, string16> StringAttrMap;
+typedef std::map<content::AccessibilityNodeData::BoolAttribute, bool>
+    BoolAttrMap;
+typedef std::map<content::AccessibilityNodeData::FloatAttribute, float>
+    FloatAttrMap;
+typedef std::map<content::AccessibilityNodeData::IntAttribute, int>
+    IntAttrMap;
+typedef std::map<content::AccessibilityNodeData::StringAttribute, string16>
+    StringAttrMap;
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -70,7 +73,7 @@ class CONTENT_EXPORT BrowserAccessibility {
       BrowserAccessibility* parent,
       int32 child_id,
       int32 index_in_parent,
-      const WebAccessibility& src);
+      const content::AccessibilityNodeData& src);
 
   // Add a child of this object.
   void AddChild(BrowserAccessibility* child);
@@ -203,23 +206,24 @@ class CONTENT_EXPORT BrowserAccessibility {
 
   // Retrieve the value of a bool attribute from the bool attribute
   // map and returns true if found.
-  bool GetBoolAttribute(WebAccessibility::BoolAttribute attr, bool* value)
-      const;
+  bool GetBoolAttribute(
+      content::AccessibilityNodeData::BoolAttribute attr, bool* value) const;
 
   // Retrieve the value of a float attribute from the float attribute
   // map and returns true if found.
-  bool GetFloatAttribute(WebAccessibility::FloatAttribute attr, float* value)
-      const;
+  bool GetFloatAttribute(content::AccessibilityNodeData::FloatAttribute attr,
+                         float* value) const;
 
   // Retrieve the value of an integer attribute from the integer attribute
   // map and returns true if found.
-  bool GetIntAttribute(WebAccessibility::IntAttribute attribute, int* value)
-      const;
+  bool GetIntAttribute(content::AccessibilityNodeData::IntAttribute attribute,
+                       int* value) const;
 
   // Retrieve the value of a string attribute from the attribute map and
   // returns true if found.
-  bool GetStringAttribute(WebAccessibility::StringAttribute attribute,
-                          string16* value) const;
+  bool GetStringAttribute(
+      content::AccessibilityNodeData::StringAttribute attribute,
+      string16* value) const;
 
   // Retrieve the value of a html attribute from the attribute map and
   // returns true if found.
@@ -242,7 +246,7 @@ class CONTENT_EXPORT BrowserAccessibility {
                        bool* is_mixed) const;
 
   // Returns true if the bit corresponding to the given state enum is 1.
-  bool HasState(WebAccessibility::State state_enum) const;
+  bool HasState(content::AccessibilityNodeData::State state_enum) const;
 
   // Returns true if this node is an editable text field of any kind.
   bool IsEditableText() const;

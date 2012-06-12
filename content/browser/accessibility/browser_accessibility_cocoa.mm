@@ -22,11 +22,12 @@
 // this object.
 extern "C" void NSAccessibilityUnregisterUniqueIdForUIElement(id element);
 
-typedef WebAccessibility::StringAttribute StringAttribute;
+using content::AccessibilityNodeData;
+typedef AccessibilityNodeData::StringAttribute StringAttribute;
 
 namespace {
 
-// Returns an autoreleased copy of the WebAccessibility's attribute.
+// Returns an autoreleased copy of the AccessibilityNodeData's attribute.
 NSString* NSStringForStringAttribute(
     const std::map<StringAttribute, string16>& attributes,
     StringAttribute attribute) {
@@ -40,11 +41,11 @@ NSString* NSStringForStringAttribute(
 }
 
 struct MapEntry {
-  WebAccessibility::Role webKitValue;
+  AccessibilityNodeData::Role webKitValue;
   NSString* nativeValue;
 };
 
-typedef std::map<WebAccessibility::Role, NSString*> RoleMap;
+typedef std::map<AccessibilityNodeData::Role, NSString*> RoleMap;
 
 struct AttributeToMethodNameEntry {
   NSString* attribute;
@@ -87,7 +88,7 @@ const AttributeToMethodNameEntry attributeToMethodNameContainer[] = {
   { @"AXVisited", @"visited" },
 };
 
-// GetState checks the bitmask used in webaccessibility.h to check
+// GetState checks the bitmask used in AccessibilityNodeData to check
 // if the given state was set on the accessibility object.
 bool GetState(BrowserAccessibility* accessibility, int state) {
   return ((accessibility->state() >> state) & 1);
@@ -95,105 +96,118 @@ bool GetState(BrowserAccessibility* accessibility, int state) {
 
 RoleMap BuildRoleMap() {
   const MapEntry roles[] = {
-    { WebAccessibility::ROLE_ALERT, NSAccessibilityGroupRole },
-    { WebAccessibility::ROLE_ALERT_DIALOG, NSAccessibilityGroupRole },
-    { WebAccessibility::ROLE_ANNOTATION, NSAccessibilityUnknownRole },
-    { WebAccessibility::ROLE_APPLICATION, NSAccessibilityGroupRole },
-    { WebAccessibility::ROLE_ARTICLE, NSAccessibilityGroupRole },
-    { WebAccessibility::ROLE_BROWSER, NSAccessibilityBrowserRole },
-    { WebAccessibility::ROLE_BUSY_INDICATOR, NSAccessibilityBusyIndicatorRole },
-    { WebAccessibility::ROLE_BUTTON, NSAccessibilityButtonRole },
-    { WebAccessibility::ROLE_CELL, @"AXCell" },
-    { WebAccessibility::ROLE_CHECKBOX, NSAccessibilityCheckBoxRole },
-    { WebAccessibility::ROLE_COLOR_WELL, NSAccessibilityColorWellRole },
-    { WebAccessibility::ROLE_COLUMN, NSAccessibilityColumnRole },
-    { WebAccessibility::ROLE_COLUMN_HEADER, @"AXCell" },
-    { WebAccessibility::ROLE_DEFINITION_LIST_DEFINITION,
+    { AccessibilityNodeData::ROLE_ALERT, NSAccessibilityGroupRole },
+    { AccessibilityNodeData::ROLE_ALERT_DIALOG, NSAccessibilityGroupRole },
+    { AccessibilityNodeData::ROLE_ANNOTATION, NSAccessibilityUnknownRole },
+    { AccessibilityNodeData::ROLE_APPLICATION, NSAccessibilityGroupRole },
+    { AccessibilityNodeData::ROLE_ARTICLE, NSAccessibilityGroupRole },
+    { AccessibilityNodeData::ROLE_BROWSER, NSAccessibilityBrowserRole },
+    { AccessibilityNodeData::ROLE_BUSY_INDICATOR,
+        NSAccessibilityBusyIndicatorRole },
+    { AccessibilityNodeData::ROLE_BUTTON, NSAccessibilityButtonRole },
+    { AccessibilityNodeData::ROLE_CELL, @"AXCell" },
+    { AccessibilityNodeData::ROLE_CHECKBOX, NSAccessibilityCheckBoxRole },
+    { AccessibilityNodeData::ROLE_COLOR_WELL, NSAccessibilityColorWellRole },
+    { AccessibilityNodeData::ROLE_COLUMN, NSAccessibilityColumnRole },
+    { AccessibilityNodeData::ROLE_COLUMN_HEADER, @"AXCell" },
+    { AccessibilityNodeData::ROLE_DEFINITION_LIST_DEFINITION,
         NSAccessibilityGroupRole },
-    { WebAccessibility::ROLE_DEFINITION_LIST_TERM, NSAccessibilityGroupRole },
-    { WebAccessibility::ROLE_DIALOG, NSAccessibilityGroupRole },
-    { WebAccessibility::ROLE_DIRECTORY, NSAccessibilityListRole },
-    { WebAccessibility::ROLE_DISCLOSURE_TRIANGLE,
+    { AccessibilityNodeData::ROLE_DEFINITION_LIST_TERM,
+        NSAccessibilityGroupRole },
+    { AccessibilityNodeData::ROLE_DIALOG, NSAccessibilityGroupRole },
+    { AccessibilityNodeData::ROLE_DIRECTORY, NSAccessibilityListRole },
+    { AccessibilityNodeData::ROLE_DISCLOSURE_TRIANGLE,
         NSAccessibilityDisclosureTriangleRole },
-    { WebAccessibility::ROLE_DOCUMENT, NSAccessibilityGroupRole },
-    { WebAccessibility::ROLE_DRAWER, NSAccessibilityDrawerRole },
-    { WebAccessibility::ROLE_EDITABLE_TEXT, NSAccessibilityTextFieldRole },
-    { WebAccessibility::ROLE_FOOTER, NSAccessibilityGroupRole },
-    { WebAccessibility::ROLE_GRID, NSAccessibilityGridRole },
-    { WebAccessibility::ROLE_GROUP, NSAccessibilityGroupRole },
-    { WebAccessibility::ROLE_GROW_AREA, NSAccessibilityGrowAreaRole },
-    { WebAccessibility::ROLE_HEADING, @"AXHeading" },
-    { WebAccessibility::ROLE_HELP_TAG, NSAccessibilityHelpTagRole },
-    { WebAccessibility::ROLE_IGNORED, NSAccessibilityUnknownRole },
-    { WebAccessibility::ROLE_IMAGE, NSAccessibilityImageRole },
-    { WebAccessibility::ROLE_IMAGE_MAP, NSAccessibilityGroupRole },
-    { WebAccessibility::ROLE_IMAGE_MAP_LINK, NSAccessibilityLinkRole },
-    { WebAccessibility::ROLE_INCREMENTOR, NSAccessibilityIncrementorRole },
-    { WebAccessibility::ROLE_LANDMARK_APPLICATION, NSAccessibilityGroupRole },
-    { WebAccessibility::ROLE_LANDMARK_BANNER, NSAccessibilityGroupRole },
-    { WebAccessibility::ROLE_LANDMARK_COMPLEMENTARY, NSAccessibilityGroupRole },
-    { WebAccessibility::ROLE_LANDMARK_CONTENTINFO, NSAccessibilityGroupRole },
-    { WebAccessibility::ROLE_LANDMARK_MAIN, NSAccessibilityGroupRole },
-    { WebAccessibility::ROLE_LANDMARK_NAVIGATION, NSAccessibilityGroupRole },
-    { WebAccessibility::ROLE_LANDMARK_SEARCH, NSAccessibilityGroupRole },
-    { WebAccessibility::ROLE_LINK, NSAccessibilityLinkRole },
-    { WebAccessibility::ROLE_LIST, NSAccessibilityListRole },
-    { WebAccessibility::ROLE_LIST_ITEM, NSAccessibilityGroupRole },
-    { WebAccessibility::ROLE_LIST_MARKER, @"AXListMarker" },
-    { WebAccessibility::ROLE_LISTBOX, NSAccessibilityListRole },
-    { WebAccessibility::ROLE_LISTBOX_OPTION, NSAccessibilityGroupRole },
-    { WebAccessibility::ROLE_LOG, NSAccessibilityGroupRole },
-    { WebAccessibility::ROLE_MARQUEE, NSAccessibilityGroupRole },
-    { WebAccessibility::ROLE_MATH, NSAccessibilityGroupRole },
-    { WebAccessibility::ROLE_MATTE, NSAccessibilityMatteRole },
-    { WebAccessibility::ROLE_MENU, NSAccessibilityMenuRole },
-    { WebAccessibility::ROLE_MENU_ITEM, NSAccessibilityMenuItemRole },
-    { WebAccessibility::ROLE_MENU_BUTTON, NSAccessibilityButtonRole },
-    { WebAccessibility::ROLE_MENU_LIST_OPTION, NSAccessibilityMenuItemRole },
-    { WebAccessibility::ROLE_MENU_LIST_POPUP, NSAccessibilityUnknownRole },
-    { WebAccessibility::ROLE_NOTE, NSAccessibilityGroupRole },
-    { WebAccessibility::ROLE_OUTLINE, NSAccessibilityOutlineRole },
-    { WebAccessibility::ROLE_POPUP_BUTTON, NSAccessibilityPopUpButtonRole },
-    { WebAccessibility::ROLE_PROGRESS_INDICATOR,
+    { AccessibilityNodeData::ROLE_DOCUMENT, NSAccessibilityGroupRole },
+    { AccessibilityNodeData::ROLE_DRAWER, NSAccessibilityDrawerRole },
+    { AccessibilityNodeData::ROLE_EDITABLE_TEXT, NSAccessibilityTextFieldRole },
+    { AccessibilityNodeData::ROLE_FOOTER, NSAccessibilityGroupRole },
+    { AccessibilityNodeData::ROLE_GRID, NSAccessibilityGridRole },
+    { AccessibilityNodeData::ROLE_GROUP, NSAccessibilityGroupRole },
+    { AccessibilityNodeData::ROLE_GROW_AREA, NSAccessibilityGrowAreaRole },
+    { AccessibilityNodeData::ROLE_HEADING, @"AXHeading" },
+    { AccessibilityNodeData::ROLE_HELP_TAG, NSAccessibilityHelpTagRole },
+    { AccessibilityNodeData::ROLE_IGNORED, NSAccessibilityUnknownRole },
+    { AccessibilityNodeData::ROLE_IMAGE, NSAccessibilityImageRole },
+    { AccessibilityNodeData::ROLE_IMAGE_MAP, NSAccessibilityGroupRole },
+    { AccessibilityNodeData::ROLE_IMAGE_MAP_LINK, NSAccessibilityLinkRole },
+    { AccessibilityNodeData::ROLE_INCREMENTOR, NSAccessibilityIncrementorRole },
+    { AccessibilityNodeData::ROLE_LANDMARK_APPLICATION,
+        NSAccessibilityGroupRole },
+    { AccessibilityNodeData::ROLE_LANDMARK_BANNER, NSAccessibilityGroupRole },
+    { AccessibilityNodeData::ROLE_LANDMARK_COMPLEMENTARY,
+        NSAccessibilityGroupRole },
+    { AccessibilityNodeData::ROLE_LANDMARK_CONTENTINFO,
+        NSAccessibilityGroupRole },
+    { AccessibilityNodeData::ROLE_LANDMARK_MAIN, NSAccessibilityGroupRole },
+    { AccessibilityNodeData::ROLE_LANDMARK_NAVIGATION,
+        NSAccessibilityGroupRole },
+    { AccessibilityNodeData::ROLE_LANDMARK_SEARCH, NSAccessibilityGroupRole },
+    { AccessibilityNodeData::ROLE_LINK, NSAccessibilityLinkRole },
+    { AccessibilityNodeData::ROLE_LIST, NSAccessibilityListRole },
+    { AccessibilityNodeData::ROLE_LIST_ITEM, NSAccessibilityGroupRole },
+    { AccessibilityNodeData::ROLE_LIST_MARKER, @"AXListMarker" },
+    { AccessibilityNodeData::ROLE_LISTBOX, NSAccessibilityListRole },
+    { AccessibilityNodeData::ROLE_LISTBOX_OPTION, NSAccessibilityGroupRole },
+    { AccessibilityNodeData::ROLE_LOG, NSAccessibilityGroupRole },
+    { AccessibilityNodeData::ROLE_MARQUEE, NSAccessibilityGroupRole },
+    { AccessibilityNodeData::ROLE_MATH, NSAccessibilityGroupRole },
+    { AccessibilityNodeData::ROLE_MATTE, NSAccessibilityMatteRole },
+    { AccessibilityNodeData::ROLE_MENU, NSAccessibilityMenuRole },
+    { AccessibilityNodeData::ROLE_MENU_ITEM, NSAccessibilityMenuItemRole },
+    { AccessibilityNodeData::ROLE_MENU_BUTTON, NSAccessibilityButtonRole },
+    { AccessibilityNodeData::ROLE_MENU_LIST_OPTION,
+        NSAccessibilityMenuItemRole },
+    { AccessibilityNodeData::ROLE_MENU_LIST_POPUP, NSAccessibilityUnknownRole },
+    { AccessibilityNodeData::ROLE_NOTE, NSAccessibilityGroupRole },
+    { AccessibilityNodeData::ROLE_OUTLINE, NSAccessibilityOutlineRole },
+    { AccessibilityNodeData::ROLE_POPUP_BUTTON,
+        NSAccessibilityPopUpButtonRole },
+    { AccessibilityNodeData::ROLE_PROGRESS_INDICATOR,
         NSAccessibilityProgressIndicatorRole },
-    { WebAccessibility::ROLE_RADIO_BUTTON, NSAccessibilityRadioButtonRole },
-    { WebAccessibility::ROLE_RADIO_GROUP, NSAccessibilityRadioGroupRole },
-    { WebAccessibility::ROLE_REGION, NSAccessibilityGroupRole },
-    { WebAccessibility::ROLE_ROOT_WEB_AREA, @"AXWebArea" },
-    { WebAccessibility::ROLE_ROW, NSAccessibilityRowRole },
-    { WebAccessibility::ROLE_ROW_HEADER, @"AXCell" },
-    { WebAccessibility::ROLE_RULER, NSAccessibilityRulerRole },
-    { WebAccessibility::ROLE_RULER_MARKER, NSAccessibilityRulerMarkerRole },
+    { AccessibilityNodeData::ROLE_RADIO_BUTTON,
+        NSAccessibilityRadioButtonRole },
+    { AccessibilityNodeData::ROLE_RADIO_GROUP, NSAccessibilityRadioGroupRole },
+    { AccessibilityNodeData::ROLE_REGION, NSAccessibilityGroupRole },
+    { AccessibilityNodeData::ROLE_ROOT_WEB_AREA, @"AXWebArea" },
+    { AccessibilityNodeData::ROLE_ROW, NSAccessibilityRowRole },
+    { AccessibilityNodeData::ROLE_ROW_HEADER, @"AXCell" },
+    { AccessibilityNodeData::ROLE_RULER, NSAccessibilityRulerRole },
+    { AccessibilityNodeData::ROLE_RULER_MARKER,
+        NSAccessibilityRulerMarkerRole },
     // TODO(dtseng): we don't correctly support the attributes for these roles.
-    // { WebAccessibility::ROLE_SCROLLAREA, NSAccessibilityScrollAreaRole },
-    // { WebAccessibility::ROLE_SCROLLBAR, NSAccessibilityScrollBarRole },
-    { WebAccessibility::ROLE_SHEET, NSAccessibilitySheetRole },
-    { WebAccessibility::ROLE_SLIDER, NSAccessibilitySliderRole },
-    { WebAccessibility::ROLE_SLIDER_THUMB, NSAccessibilityGroupRole },
-    { WebAccessibility::ROLE_SPLITTER, NSAccessibilitySplitterRole },
-    { WebAccessibility::ROLE_SPLIT_GROUP, NSAccessibilitySplitGroupRole },
-    { WebAccessibility::ROLE_STATIC_TEXT, NSAccessibilityStaticTextRole },
-    { WebAccessibility::ROLE_STATUS, NSAccessibilityGroupRole },
-    { WebAccessibility::ROLE_SYSTEM_WIDE, NSAccessibilityUnknownRole },
-    { WebAccessibility::ROLE_TAB, NSAccessibilityRadioButtonRole },
-    { WebAccessibility::ROLE_TAB_LIST, NSAccessibilityTabGroupRole },
-    { WebAccessibility::ROLE_TAB_PANEL, NSAccessibilityGroupRole },
-    { WebAccessibility::ROLE_TABLE, NSAccessibilityTableRole },
-    { WebAccessibility::ROLE_TABLE_HEADER_CONTAINER, NSAccessibilityGroupRole },
-    { WebAccessibility::ROLE_TAB_GROUP_UNUSED, NSAccessibilityTabGroupRole },
-    { WebAccessibility::ROLE_TEXTAREA, NSAccessibilityTextAreaRole },
-    { WebAccessibility::ROLE_TEXT_FIELD, NSAccessibilityTextFieldRole },
-    { WebAccessibility::ROLE_TIMER, NSAccessibilityGroupRole },
-    { WebAccessibility::ROLE_TOOLBAR, NSAccessibilityToolbarRole },
-    { WebAccessibility::ROLE_TOOLTIP, NSAccessibilityGroupRole },
-    { WebAccessibility::ROLE_TREE, NSAccessibilityOutlineRole },
-    { WebAccessibility::ROLE_TREE_GRID, NSAccessibilityTableRole },
-    { WebAccessibility::ROLE_TREE_ITEM, NSAccessibilityRowRole },
-    { WebAccessibility::ROLE_VALUE_INDICATOR,
+    // { AccessibilityNodeData::ROLE_SCROLLAREA,
+    //    NSAccessibilityScrollAreaRole },
+    // { AccessibilityNodeData::ROLE_SCROLLBAR, NSAccessibilityScrollBarRole },
+    { AccessibilityNodeData::ROLE_SHEET, NSAccessibilitySheetRole },
+    { AccessibilityNodeData::ROLE_SLIDER, NSAccessibilitySliderRole },
+    { AccessibilityNodeData::ROLE_SLIDER_THUMB, NSAccessibilityGroupRole },
+    { AccessibilityNodeData::ROLE_SPLITTER, NSAccessibilitySplitterRole },
+    { AccessibilityNodeData::ROLE_SPLIT_GROUP, NSAccessibilitySplitGroupRole },
+    { AccessibilityNodeData::ROLE_STATIC_TEXT, NSAccessibilityStaticTextRole },
+    { AccessibilityNodeData::ROLE_STATUS, NSAccessibilityGroupRole },
+    { AccessibilityNodeData::ROLE_SYSTEM_WIDE, NSAccessibilityUnknownRole },
+    { AccessibilityNodeData::ROLE_TAB, NSAccessibilityRadioButtonRole },
+    { AccessibilityNodeData::ROLE_TAB_LIST, NSAccessibilityTabGroupRole },
+    { AccessibilityNodeData::ROLE_TAB_PANEL, NSAccessibilityGroupRole },
+    { AccessibilityNodeData::ROLE_TABLE, NSAccessibilityTableRole },
+    { AccessibilityNodeData::ROLE_TABLE_HEADER_CONTAINER,
+        NSAccessibilityGroupRole },
+    { AccessibilityNodeData::ROLE_TAB_GROUP_UNUSED,
+        NSAccessibilityTabGroupRole },
+    { AccessibilityNodeData::ROLE_TEXTAREA, NSAccessibilityTextAreaRole },
+    { AccessibilityNodeData::ROLE_TEXT_FIELD, NSAccessibilityTextFieldRole },
+    { AccessibilityNodeData::ROLE_TIMER, NSAccessibilityGroupRole },
+    { AccessibilityNodeData::ROLE_TOOLBAR, NSAccessibilityToolbarRole },
+    { AccessibilityNodeData::ROLE_TOOLTIP, NSAccessibilityGroupRole },
+    { AccessibilityNodeData::ROLE_TREE, NSAccessibilityOutlineRole },
+    { AccessibilityNodeData::ROLE_TREE_GRID, NSAccessibilityTableRole },
+    { AccessibilityNodeData::ROLE_TREE_ITEM, NSAccessibilityRowRole },
+    { AccessibilityNodeData::ROLE_VALUE_INDICATOR,
         NSAccessibilityValueIndicatorRole },
-    { WebAccessibility::ROLE_WEBCORE_LINK, NSAccessibilityLinkRole },
-    { WebAccessibility::ROLE_WEB_AREA, @"AXWebArea" },
-    { WebAccessibility::ROLE_WINDOW, NSAccessibilityUnknownRole },
+    { AccessibilityNodeData::ROLE_WEBCORE_LINK, NSAccessibilityLinkRole },
+    { AccessibilityNodeData::ROLE_WEB_AREA, @"AXWebArea" },
+    { AccessibilityNodeData::ROLE_WINDOW, NSAccessibilityUnknownRole },
   };
 
   RoleMap role_map;
@@ -203,8 +217,8 @@ RoleMap BuildRoleMap() {
 }
 
 // A mapping of webkit roles to native roles.
-NSString* NativeRoleFromWebAccessibilityRole(
-    const WebAccessibility::Role& role) {
+NSString* NativeRoleFromAccessibilityNodeDataRole(
+    const AccessibilityNodeData::Role& role) {
   CR_DEFINE_STATIC_LOCAL(RoleMap, web_accessibility_to_native_role,
                          (BuildRoleMap()));
   RoleMap::iterator it = web_accessibility_to_native_role.find(role);
@@ -216,32 +230,35 @@ NSString* NativeRoleFromWebAccessibilityRole(
 
 RoleMap BuildSubroleMap() {
   const MapEntry subroles[] = {
-    { WebAccessibility::ROLE_ALERT, @"AXApplicationAlert" },
-    { WebAccessibility::ROLE_ALERT_DIALOG, @"AXApplicationAlertDialog" },
-    { WebAccessibility::ROLE_ARTICLE, @"AXDocumentArticle" },
-    { WebAccessibility::ROLE_DEFINITION_LIST_DEFINITION, @"AXDefinition" },
-    { WebAccessibility::ROLE_DEFINITION_LIST_TERM, @"AXTerm" },
-    { WebAccessibility::ROLE_DIALOG, @"AXApplicationDialog" },
-    { WebAccessibility::ROLE_DOCUMENT, @"AXDocument" },
-    { WebAccessibility::ROLE_FOOTER, @"AXLandmarkContentInfo" },
-    { WebAccessibility::ROLE_LANDMARK_APPLICATION, @"AXLandmarkApplication" },
-    { WebAccessibility::ROLE_LANDMARK_BANNER, @"AXLandmarkBanner" },
-    { WebAccessibility::ROLE_LANDMARK_COMPLEMENTARY,
+    { AccessibilityNodeData::ROLE_ALERT, @"AXApplicationAlert" },
+    { AccessibilityNodeData::ROLE_ALERT_DIALOG, @"AXApplicationAlertDialog" },
+    { AccessibilityNodeData::ROLE_ARTICLE, @"AXDocumentArticle" },
+    { AccessibilityNodeData::ROLE_DEFINITION_LIST_DEFINITION, @"AXDefinition" },
+    { AccessibilityNodeData::ROLE_DEFINITION_LIST_TERM, @"AXTerm" },
+    { AccessibilityNodeData::ROLE_DIALOG, @"AXApplicationDialog" },
+    { AccessibilityNodeData::ROLE_DOCUMENT, @"AXDocument" },
+    { AccessibilityNodeData::ROLE_FOOTER, @"AXLandmarkContentInfo" },
+    { AccessibilityNodeData::ROLE_LANDMARK_APPLICATION,
+        @"AXLandmarkApplication" },
+    { AccessibilityNodeData::ROLE_LANDMARK_BANNER, @"AXLandmarkBanner" },
+    { AccessibilityNodeData::ROLE_LANDMARK_COMPLEMENTARY,
         @"AXLandmarkComplementary" },
-    { WebAccessibility::ROLE_LANDMARK_CONTENTINFO, @"AXLandmarkContentInfo" },
-    { WebAccessibility::ROLE_LANDMARK_MAIN, @"AXLandmarkMain" },
-    { WebAccessibility::ROLE_LANDMARK_NAVIGATION, @"AXLandmarkNavigation" },
-    { WebAccessibility::ROLE_LANDMARK_SEARCH, @"AXLandmarkSearch" },
-    { WebAccessibility::ROLE_LOG, @"AXApplicationLog" },
-    { WebAccessibility::ROLE_MARQUEE, @"AXApplicationMarquee" },
-    { WebAccessibility::ROLE_MATH, @"AXDocumentMath" },
-    { WebAccessibility::ROLE_NOTE, @"AXDocumentNote" },
-    { WebAccessibility::ROLE_REGION, @"AXDocumentRegion" },
-    { WebAccessibility::ROLE_STATUS, @"AXApplicationStatus" },
-    { WebAccessibility::ROLE_TAB_PANEL, @"AXTabPanel" },
-    { WebAccessibility::ROLE_TIMER, @"AXApplicationTimer" },
-    { WebAccessibility::ROLE_TOOLTIP, @"AXUserInterfaceTooltip" },
-    { WebAccessibility::ROLE_TREE_ITEM, NSAccessibilityOutlineRowSubrole },
+    { AccessibilityNodeData::ROLE_LANDMARK_CONTENTINFO,
+        @"AXLandmarkContentInfo" },
+    { AccessibilityNodeData::ROLE_LANDMARK_MAIN, @"AXLandmarkMain" },
+    { AccessibilityNodeData::ROLE_LANDMARK_NAVIGATION,
+        @"AXLandmarkNavigation" },
+    { AccessibilityNodeData::ROLE_LANDMARK_SEARCH, @"AXLandmarkSearch" },
+    { AccessibilityNodeData::ROLE_LOG, @"AXApplicationLog" },
+    { AccessibilityNodeData::ROLE_MARQUEE, @"AXApplicationMarquee" },
+    { AccessibilityNodeData::ROLE_MATH, @"AXDocumentMath" },
+    { AccessibilityNodeData::ROLE_NOTE, @"AXDocumentNote" },
+    { AccessibilityNodeData::ROLE_REGION, @"AXDocumentRegion" },
+    { AccessibilityNodeData::ROLE_STATUS, @"AXApplicationStatus" },
+    { AccessibilityNodeData::ROLE_TAB_PANEL, @"AXTabPanel" },
+    { AccessibilityNodeData::ROLE_TIMER, @"AXApplicationTimer" },
+    { AccessibilityNodeData::ROLE_TOOLTIP, @"AXUserInterfaceTooltip" },
+    { AccessibilityNodeData::ROLE_TREE_ITEM, NSAccessibilityOutlineRowSubrole },
   };
 
   RoleMap subrole_map;
@@ -251,8 +268,8 @@ RoleMap BuildSubroleMap() {
 }
 
 // A mapping of webkit roles to native subroles.
-NSString* NativeSubroleFromWebAccessibilityRole(
-    const WebAccessibility::Role& role) {
+NSString* NativeSubroleFromAccessibilityNodeDataRole(
+    const AccessibilityNodeData::Role& role) {
   CR_DEFINE_STATIC_LOCAL(RoleMap, web_accessibility_to_native_subrole,
                          (BuildSubroleMap()));
   RoleMap::iterator it = web_accessibility_to_native_subrole.find(role);
@@ -304,33 +321,33 @@ NSDictionary* attributeToMethodNameMap = nil;
 - (NSString*)accessKey {
   return NSStringForStringAttribute(
       browserAccessibility_->string_attributes(),
-      WebAccessibility::ATTR_ACCESS_KEY);
+      AccessibilityNodeData::ATTR_ACCESS_KEY);
 }
 
 - (NSNumber*)ariaAtomic {
   bool boolValue = false;
   browserAccessibility_->GetBoolAttribute(
-      WebAccessibility::ATTR_LIVE_ATOMIC, &boolValue);
+      AccessibilityNodeData::ATTR_LIVE_ATOMIC, &boolValue);
   return [NSNumber numberWithBool:boolValue];
 }
 
 - (NSNumber*)ariaBusy {
   bool boolValue = false;
   browserAccessibility_->GetBoolAttribute(
-      WebAccessibility::ATTR_LIVE_BUSY, &boolValue);
+      AccessibilityNodeData::ATTR_LIVE_BUSY, &boolValue);
   return [NSNumber numberWithBool:boolValue];
 }
 
 - (NSString*)ariaLive {
   return NSStringForStringAttribute(
       browserAccessibility_->string_attributes(),
-      WebAccessibility::ATTR_LIVE_STATUS);
+      AccessibilityNodeData::ATTR_LIVE_STATUS);
 }
 
 - (NSString*)ariaRelevant {
   return NSStringForStringAttribute(
       browserAccessibility_->string_attributes(),
-      WebAccessibility::ATTR_LIVE_RELEVANT);
+      AccessibilityNodeData::ATTR_LIVE_RELEVANT);
 }
 
 // Returns an array of BrowserAccessibilityCocoa objects, representing the
@@ -392,7 +409,7 @@ NSDictionary* attributeToMethodNameMap = nil;
   const std::map<StringAttribute, string16>& attributes =
       browserAccessibility_->string_attributes();
   std::map<StringAttribute, string16>::const_iterator iter =
-      attributes.find(WebAccessibility::ATTR_DESCRIPTION);
+      attributes.find(AccessibilityNodeData::ATTR_DESCRIPTION);
   if (iter != attributes.end())
     return base::SysUTF16ToNSString(iter->second);
 
@@ -407,7 +424,7 @@ NSDictionary* attributeToMethodNameMap = nil;
 
   // The remaining case is an image where there's no other title.
   // Return the base part of the filename as the description.
-  iter = attributes.find(WebAccessibility::ATTR_URL);
+  iter = attributes.find(AccessibilityNodeData::ATTR_URL);
   if (iter != attributes.end()) {
     string16 filename = iter->second;
     // Given a url like http://foo.com/bar/baz.png, just return the
@@ -425,7 +442,8 @@ NSDictionary* attributeToMethodNameMap = nil;
 
 - (NSNumber*)enabled {
   return [NSNumber numberWithBool:
-      !GetState(browserAccessibility_, WebAccessibility::STATE_UNAVAILABLE)];
+      !GetState(browserAccessibility_,
+                AccessibilityNodeData::STATE_UNAVAILABLE)];
 }
 
 - (NSNumber*)focused {
@@ -438,7 +456,7 @@ NSDictionary* attributeToMethodNameMap = nil;
 - (NSString*)help {
   return NSStringForStringAttribute(
       browserAccessibility_->string_attributes(),
-      WebAccessibility::ATTR_HELP);
+      AccessibilityNodeData::ATTR_HELP);
 }
 
 // Returns whether or not this node should be ignored in the
@@ -454,21 +472,21 @@ NSDictionary* attributeToMethodNameMap = nil;
 - (NSNumber*)loadingProgress {
   float floatValue = 0.0;
   browserAccessibility_->GetFloatAttribute(
-      WebAccessibility::ATTR_DOC_LOADING_PROGRESS, &floatValue);
+      AccessibilityNodeData::ATTR_DOC_LOADING_PROGRESS, &floatValue);
   return [NSNumber numberWithFloat:floatValue];
 }
 
 - (NSNumber*)maxValue {
   float floatValue = 0.0;
   browserAccessibility_->GetFloatAttribute(
-      WebAccessibility::ATTR_MAX_VALUE_FOR_RANGE, &floatValue);
+      AccessibilityNodeData::ATTR_MAX_VALUE_FOR_RANGE, &floatValue);
   return [NSNumber numberWithFloat:floatValue];
 }
 
 - (NSNumber*)minValue {
   float floatValue = 0.0;
   browserAccessibility_->GetFloatAttribute(
-      WebAccessibility::ATTR_MIN_VALUE_FOR_RANGE, &floatValue);
+      AccessibilityNodeData::ATTR_MIN_VALUE_FOR_RANGE, &floatValue);
   return [NSNumber numberWithFloat:floatValue];
 }
 
@@ -501,16 +519,16 @@ NSDictionary* attributeToMethodNameMap = nil;
 
 - (NSNumber*)required {
   return [NSNumber numberWithBool:
-      GetState(browserAccessibility_, WebAccessibility::STATE_REQUIRED)];
+      GetState(browserAccessibility_, AccessibilityNodeData::STATE_REQUIRED)];
 }
 
 // Returns a string indicating the role of this object.
 - (NSString*)role {
-  WebAccessibility::Role browserAccessibilityRole =
-      static_cast<WebAccessibility::Role>( browserAccessibility_->role());
+  AccessibilityNodeData::Role browserAccessibilityRole =
+      static_cast<AccessibilityNodeData::Role>( browserAccessibility_->role());
 
   // Roles that we only determine at runtime.
-  return NativeRoleFromWebAccessibilityRole(browserAccessibilityRole);
+  return NativeRoleFromAccessibilityNodeDataRole(browserAccessibilityRole);
 }
 
 // Returns a string indicating the role description of this object.
@@ -539,12 +557,12 @@ NSDictionary* attributeToMethodNameMap = nil;
       [role isEqualToString:NSAccessibilityRadioButtonRole]) {
     const std::vector<std::pair<string16, string16> >& htmlAttributes =
         browserAccessibility_->html_attributes();
-    WebAccessibility::Role browserAccessibilityRole =
-        static_cast<WebAccessibility::Role>(browserAccessibility_->role());
+    AccessibilityNodeData::Role browserAccessibilityRole =
+        static_cast<AccessibilityNodeData::Role>(browserAccessibility_->role());
 
-    if ((browserAccessibilityRole != WebAccessibility::ROLE_GROUP &&
-         browserAccessibilityRole != WebAccessibility::ROLE_LIST_ITEM) ||
-         browserAccessibilityRole == WebAccessibility::ROLE_TAB) {
+    if ((browserAccessibilityRole != AccessibilityNodeData::ROLE_GROUP &&
+         browserAccessibilityRole != AccessibilityNodeData::ROLE_LIST_ITEM) ||
+         browserAccessibilityRole == AccessibilityNodeData::ROLE_TAB) {
       for (size_t i = 0; i < htmlAttributes.size(); ++i) {
         const std::pair<string16, string16>& htmlAttribute = htmlAttributes[i];
         if (htmlAttribute.first == ASCIIToUTF16("role")) {
@@ -555,8 +573,9 @@ NSDictionary* attributeToMethodNameMap = nil;
     }
   }
 
-  if (static_cast<WebAccessibility::Role>( browserAccessibility_->role()) ==
-      WebAccessibility::ROLE_FOOTER) {
+  AccessibilityNodeData::Role internal_role =
+      static_cast<AccessibilityNodeData::Role>(browserAccessibility_->role());
+  if (internal_role == AccessibilityNodeData::ROLE_FOOTER) {
       return base::SysUTF16ToNSString(content_client->GetLocalizedString(
           IDS_AX_ROLE_FOOTER));
   }
@@ -582,18 +601,18 @@ NSDictionary* attributeToMethodNameMap = nil;
 
 // Returns a subrole based upon the role.
 - (NSString*) subrole {
-  WebAccessibility::Role browserAccessibilityRole =
-      static_cast<WebAccessibility::Role>(browserAccessibility_->role());
-  if (browserAccessibilityRole == WebAccessibility::ROLE_TEXT_FIELD &&
-      GetState(browserAccessibility_, WebAccessibility::STATE_PROTECTED)) {
+  AccessibilityNodeData::Role browserAccessibilityRole =
+      static_cast<AccessibilityNodeData::Role>(browserAccessibility_->role());
+  if (browserAccessibilityRole == AccessibilityNodeData::ROLE_TEXT_FIELD &&
+      GetState(browserAccessibility_, AccessibilityNodeData::STATE_PROTECTED)) {
     return @"AXSecureTextField";
   }
 
   NSString* htmlTag = NSStringForStringAttribute(
       browserAccessibility_->string_attributes(),
-      WebAccessibility::ATTR_HTML_TAG);
+      AccessibilityNodeData::ATTR_HTML_TAG);
 
-  if (browserAccessibilityRole == WebAccessibility::ROLE_LIST) {
+  if (browserAccessibilityRole == AccessibilityNodeData::ROLE_LIST) {
     if ([htmlTag isEqualToString:@"ul"] ||
         [htmlTag isEqualToString:@"ol"]) {
       return @"AXContentList";
@@ -602,14 +621,14 @@ NSDictionary* attributeToMethodNameMap = nil;
     }
   }
 
-  return NativeSubroleFromWebAccessibilityRole(browserAccessibilityRole);
+  return NativeSubroleFromAccessibilityNodeDataRole(browserAccessibilityRole);
 }
 
 // Returns all tabs in this subtree.
 - (NSArray*)tabs {
   NSMutableArray* tabSubtree = [[[NSMutableArray alloc] init] autorelease];
 
-  if (browserAccessibility_->role() == WebAccessibility::ROLE_TAB)
+  if (browserAccessibility_->role() == AccessibilityNodeData::ROLE_TAB)
     [tabSubtree addObject:self];
 
   for (uint i=0; i < [[self children] count]; ++i) {
@@ -628,7 +647,7 @@ NSDictionary* attributeToMethodNameMap = nil;
 - (id)titleUIElement {
   int titleElementId;
   if (browserAccessibility_->GetIntAttribute(
-          WebAccessibility::ATTR_TITLE_UI_ELEMENT, &titleElementId)) {
+          AccessibilityNodeData::ATTR_TITLE_UI_ELEMENT, &titleElementId)) {
     BrowserAccessibility* titleElement =
         browserAccessibility_->manager()->GetFromRendererID(titleElementId);
     if (titleElement)
@@ -640,8 +659,8 @@ NSDictionary* attributeToMethodNameMap = nil;
 - (NSString*)url {
   StringAttribute urlAttribute =
       [[self role] isEqualToString:@"AXWebArea"] ?
-          WebAccessibility::ATTR_DOC_URL :
-          WebAccessibility::ATTR_URL;
+          AccessibilityNodeData::ATTR_DOC_URL :
+          AccessibilityNodeData::ATTR_URL;
   return NSStringForStringAttribute(
       browserAccessibility_->string_attributes(),
       urlAttribute);
@@ -656,7 +675,7 @@ NSDictionary* attributeToMethodNameMap = nil;
     NSString* headingLevel =
         NSStringForStringAttribute(
             browserAccessibility_->string_attributes(),
-            WebAccessibility::ATTR_HTML_TAG);
+            AccessibilityNodeData::ATTR_HTML_TAG);
     if ([headingLevel length] >= 2) {
       return [NSNumber numberWithInt:
           [[headingLevel substringFromIndex:1] intValue]];
@@ -668,13 +687,15 @@ NSDictionary* attributeToMethodNameMap = nil;
              [role isEqualToString:NSAccessibilityRadioButtonRole]) {
     int value = 0;
     value = GetState(
-        browserAccessibility_, WebAccessibility::STATE_CHECKED) ? 1 : 0;
+        browserAccessibility_, AccessibilityNodeData::STATE_CHECKED) ? 1 : 0;
     value = GetState(
-        browserAccessibility_, WebAccessibility::STATE_SELECTED) ? 1 : value;
+        browserAccessibility_, AccessibilityNodeData::STATE_SELECTED) ?
+            1 :
+            value;
 
     bool mixed = false;
     browserAccessibility_->GetBoolAttribute(
-        WebAccessibility::ATTR_BUTTON_MIXED, &mixed);
+        AccessibilityNodeData::ATTR_BUTTON_MIXED, &mixed);
     if (mixed)
       value = 2;
     return [NSNumber numberWithInt:value];
@@ -683,7 +704,7 @@ NSDictionary* attributeToMethodNameMap = nil;
              [role isEqualToString:NSAccessibilityScrollBarRole]) {
     float floatValue;
     if (browserAccessibility_->GetFloatAttribute(
-            WebAccessibility::ATTR_VALUE_FOR_RANGE, &floatValue)) {
+            AccessibilityNodeData::ATTR_VALUE_FOR_RANGE, &floatValue)) {
       return [NSNumber numberWithFloat:floatValue];
     }
   }
@@ -698,7 +719,7 @@ NSDictionary* attributeToMethodNameMap = nil;
 
 - (NSNumber*)visited {
   return [NSNumber numberWithBool:
-      GetState(browserAccessibility_, WebAccessibility::STATE_TRAVERSED)];
+      GetState(browserAccessibility_, AccessibilityNodeData::STATE_TRAVERSED)];
 }
 
 - (id)window {
@@ -716,9 +737,9 @@ NSDictionary* attributeToMethodNameMap = nil;
   // TODO(dtseng): refactor remaining attributes.
   int selStart, selEnd;
   if (browserAccessibility_->GetIntAttribute(
-          WebAccessibility::ATTR_TEXT_SEL_START, &selStart) &&
+          AccessibilityNodeData::ATTR_TEXT_SEL_START, &selStart) &&
       browserAccessibility_->
-          GetIntAttribute(WebAccessibility::ATTR_TEXT_SEL_END, &selEnd)) {
+          GetIntAttribute(AccessibilityNodeData::ATTR_TEXT_SEL_END, &selEnd)) {
     if (selStart > selEnd)
       std::swap(selStart, selEnd);
     int selLength = selEnd - selStart;
@@ -919,14 +940,14 @@ NSDictionary* attributeToMethodNameMap = nil;
   // Live regions.
   string16 s;
   if (browserAccessibility_->GetStringAttribute(
-          WebAccessibility::ATTR_LIVE_STATUS, &s)) {
+          AccessibilityNodeData::ATTR_LIVE_STATUS, &s)) {
     [ret addObjectsFromArray:[NSArray arrayWithObjects:
         @"AXARIALive",
         @"AXARIARelevant",
         nil]];
   }
   if (browserAccessibility_->GetStringAttribute(
-          WebAccessibility::ATTR_CONTAINER_LIVE_STATUS, &s)) {
+          AccessibilityNodeData::ATTR_CONTAINER_LIVE_STATUS, &s)) {
     [ret addObjectsFromArray:[NSArray arrayWithObjects:
         @"AXARIAAtomic",
         @"AXARIABusy",
@@ -936,7 +957,7 @@ NSDictionary* attributeToMethodNameMap = nil;
   // Title UI Element.
   int i;
   if (browserAccessibility_->GetIntAttribute(
-          WebAccessibility::ATTR_TITLE_UI_ELEMENT, &i)) {
+          AccessibilityNodeData::ATTR_TITLE_UI_ELEMENT, &i)) {
     [ret addObjectsFromArray:[NSArray arrayWithObjects:
          NSAccessibilityTitleUIElementAttribute,
          nil]];
@@ -960,11 +981,12 @@ NSDictionary* attributeToMethodNameMap = nil;
 // accessibility API via |accessibilitySetValue:forAttribute:|.
 - (BOOL)accessibilityIsAttributeSettable:(NSString*)attribute {
   if ([attribute isEqualToString:NSAccessibilityFocusedAttribute])
-    return GetState(browserAccessibility_, WebAccessibility::STATE_FOCUSABLE);
+    return GetState(browserAccessibility_,
+        AccessibilityNodeData::STATE_FOCUSABLE);
   if ([attribute isEqualToString:NSAccessibilityValueAttribute]) {
     bool canSetValue = false;
     browserAccessibility_->GetBoolAttribute(
-        WebAccessibility::ATTR_CAN_SET_VALUE, &canSetValue);
+        AccessibilityNodeData::ATTR_CAN_SET_VALUE, &canSetValue);
     return canSetValue;
   }
   if ([attribute isEqualToString:NSAccessibilitySelectedTextRangeAttribute] &&

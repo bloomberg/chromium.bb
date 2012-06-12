@@ -4,15 +4,15 @@
 
 #include "base/utf_string_conversions.h"
 #include "content/common/accessibility_messages.h"
+#include "content/common/accessibility_node_data.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/public/test/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "webkit/glue/webaccessibility.h"
 
-using webkit_glue::WebAccessibility;
+using content::AccessibilityNodeData;
 
 class RendererAccessibilityTest : public content::RenderViewTest {
  public:
@@ -79,11 +79,12 @@ TEST_F(RendererAccessibilityTest, EditableTextModeFocusNotifications) {
     EXPECT_EQ(notification.includes_children, true);
     EXPECT_EQ(notification.id, 1);
     EXPECT_EQ(notification.acc_tree.id, 1);
-    EXPECT_EQ(notification.acc_tree.role, WebAccessibility::ROLE_ROOT_WEB_AREA);
+    EXPECT_EQ(notification.acc_tree.role,
+              AccessibilityNodeData::ROLE_ROOT_WEB_AREA);
     EXPECT_EQ(notification.acc_tree.state,
-              (1U << WebAccessibility::STATE_READONLY) |
-              (1U << WebAccessibility::STATE_FOCUSABLE) |
-              (1U << WebAccessibility::STATE_FOCUSED));
+              (1U << AccessibilityNodeData::STATE_READONLY) |
+              (1U << AccessibilityNodeData::STATE_FOCUSABLE) |
+              (1U << AccessibilityNodeData::STATE_FOCUSED));
     EXPECT_EQ(notification.acc_tree.children.size(), 1U);
   }
 
@@ -99,17 +100,18 @@ TEST_F(RendererAccessibilityTest, EditableTextModeFocusNotifications) {
     EXPECT_EQ(notification.includes_children, true);
     EXPECT_EQ(notification.id, 3);
     EXPECT_EQ(notification.acc_tree.id, 1);
-    EXPECT_EQ(notification.acc_tree.role, WebAccessibility::ROLE_ROOT_WEB_AREA);
+    EXPECT_EQ(notification.acc_tree.role,
+              AccessibilityNodeData::ROLE_ROOT_WEB_AREA);
     EXPECT_EQ(notification.acc_tree.state,
-              (1U << WebAccessibility::STATE_READONLY) |
-              (1U << WebAccessibility::STATE_FOCUSABLE));
+              (1U << AccessibilityNodeData::STATE_READONLY) |
+              (1U << AccessibilityNodeData::STATE_FOCUSABLE));
     EXPECT_EQ(notification.acc_tree.children.size(), 1U);
     EXPECT_EQ(notification.acc_tree.children[0].id, 3);
     EXPECT_EQ(notification.acc_tree.children[0].role,
-              WebAccessibility::ROLE_GROUP);
+              AccessibilityNodeData::ROLE_GROUP);
     EXPECT_EQ(notification.acc_tree.children[0].state,
-              (1U << WebAccessibility::STATE_FOCUSABLE) |
-              (1U << WebAccessibility::STATE_FOCUSED));
+              (1U << AccessibilityNodeData::STATE_FOCUSABLE) |
+              (1U << AccessibilityNodeData::STATE_FOCUSED));
   }
 
   // Check other editable text nodes.
@@ -121,8 +123,8 @@ TEST_F(RendererAccessibilityTest, EditableTextModeFocusNotifications) {
     GetLastAccNotification(&notification);
     EXPECT_EQ(notification.id, 4);
     EXPECT_EQ(notification.acc_tree.children[0].state,
-              (1U << WebAccessibility::STATE_FOCUSABLE) |
-              (1U << WebAccessibility::STATE_FOCUSED));
+              (1U << AccessibilityNodeData::STATE_FOCUSABLE) |
+              (1U << AccessibilityNodeData::STATE_FOCUSED));
   }
 
   {
@@ -133,8 +135,8 @@ TEST_F(RendererAccessibilityTest, EditableTextModeFocusNotifications) {
     GetLastAccNotification(&notification);
     EXPECT_EQ(notification.id, 5);
     EXPECT_EQ(notification.acc_tree.children[0].state,
-              (1U << WebAccessibility::STATE_FOCUSABLE) |
-              (1U << WebAccessibility::STATE_FOCUSED));
+              (1U << AccessibilityNodeData::STATE_FOCUSABLE) |
+              (1U << AccessibilityNodeData::STATE_FOCUSED));
   }
 
   {
@@ -145,8 +147,8 @@ TEST_F(RendererAccessibilityTest, EditableTextModeFocusNotifications) {
     GetLastAccNotification(&notification);
     EXPECT_EQ(notification.id, 6);
     EXPECT_EQ(notification.acc_tree.children[0].state,
-              (1U << WebAccessibility::STATE_FOCUSABLE) |
-              (1U << WebAccessibility::STATE_FOCUSED));
+              (1U << AccessibilityNodeData::STATE_FOCUSABLE) |
+              (1U << AccessibilityNodeData::STATE_FOCUSED));
   }
 
   // Try focusing things that aren't editable text.
@@ -158,9 +160,9 @@ TEST_F(RendererAccessibilityTest, EditableTextModeFocusNotifications) {
     GetLastAccNotification(&notification);
     EXPECT_EQ(notification.id, 7);
     EXPECT_EQ(notification.acc_tree.children[0].state,
-              (1U << WebAccessibility::STATE_FOCUSABLE) |
-              (1U << WebAccessibility::STATE_FOCUSED) |
-              (1U << WebAccessibility::STATE_READONLY));
+              (1U << AccessibilityNodeData::STATE_FOCUSABLE) |
+              (1U << AccessibilityNodeData::STATE_FOCUSED) |
+              (1U << AccessibilityNodeData::STATE_READONLY));
   }
 
   {
@@ -171,9 +173,9 @@ TEST_F(RendererAccessibilityTest, EditableTextModeFocusNotifications) {
     GetLastAccNotification(&notification);
     EXPECT_EQ(notification.id, 8);
     EXPECT_EQ(notification.acc_tree.children[0].state,
-              (1U << WebAccessibility::STATE_FOCUSABLE) |
-              (1U << WebAccessibility::STATE_FOCUSED) |
-              (1U << WebAccessibility::STATE_READONLY));
+              (1U << AccessibilityNodeData::STATE_FOCUSABLE) |
+              (1U << AccessibilityNodeData::STATE_FOCUSED) |
+              (1U << AccessibilityNodeData::STATE_READONLY));
   }
 
   // Clear focus.

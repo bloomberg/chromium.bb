@@ -7,12 +7,9 @@
 #pragma once
 
 #include "content/browser/accessibility/browser_accessibility_manager.h"
-#include "webkit/glue/webaccessibility.h"
 
 class BrowserAccessibilityGtk;
 struct ViewHostMsg_AccessibilityNotification_Params;
-
-using webkit_glue::WebAccessibility;
 
 // Manages a tree of BrowserAccessibilityGtk objects.
 class BrowserAccessibilityManagerGtk : public BrowserAccessibilityManager {
@@ -26,7 +23,7 @@ class BrowserAccessibilityManagerGtk : public BrowserAccessibilityManager {
  private:
   BrowserAccessibilityManagerGtk(
       GtkWidget* parent_window,
-      const WebAccessibility& src,
+      const content::AccessibilityNodeData& src,
       BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory);
 

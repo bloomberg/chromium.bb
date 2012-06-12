@@ -20,7 +20,6 @@
 #include "third_party/isimpledom/ISimpleDOMDocument.h"
 #include "third_party/isimpledom/ISimpleDOMNode.h"
 #include "third_party/isimpledom/ISimpleDOMText.h"
-#include "webkit/glue/webaccessibility.h"
 
 class BrowserAccessibilityRelation;
 
@@ -28,8 +27,6 @@ namespace ui {
 enum TextBoundaryDirection;
 enum TextBoundaryType;
 }
-
-using webkit_glue::WebAccessibility;
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -769,29 +766,33 @@ BrowserAccessibilityWin
   BrowserAccessibilityWin* GetTargetFromChildID(const VARIANT& var_id);
 
   // Initialize the role and state metadata from the role enum and state
-  // bitmasks defined in webkit/glue/webaccessibility.h.
+  // bitmasks defined in AccessibilityNodeData.
   void InitRoleAndState();
 
   // Retrieve the value of an attribute from the string attribute map and
   // if found and nonempty, allocate a new BSTR (with SysAllocString)
   // and return S_OK. If not found or empty, return S_FALSE.
   HRESULT GetStringAttributeAsBstr(
-      WebAccessibility::StringAttribute attribute, BSTR* value_bstr);
+      content::AccessibilityNodeData::StringAttribute attribute,
+      BSTR* value_bstr);
 
   // If the string attribute |attribute| is present, add its value as an
   // IAccessible2 attribute with the name |ia2_attr|.
   void StringAttributeToIA2(
-      WebAccessibility::StringAttribute attribute, const char* ia2_attr);
+      content::AccessibilityNodeData::StringAttribute attribute,
+      const char* ia2_attr);
 
   // If the bool attribute |attribute| is present, add its value as an
   // IAccessible2 attribute with the name |ia2_attr|.
   void BoolAttributeToIA2(
-      WebAccessibility::BoolAttribute attribute, const char* ia2_attr);
+      content::AccessibilityNodeData::BoolAttribute attribute,
+      const char* ia2_attr);
 
   // If the int attribute |attribute| is present, add its value as an
   // IAccessible2 attribute with the name |ia2_attr|.
   void IntAttributeToIA2(
-      WebAccessibility::IntAttribute attribute, const char* ia2_attr);
+      content::AccessibilityNodeData::IntAttribute attribute,
+      const char* ia2_attr);
 
   // Get the text of this node for the purposes of IAccessibleText - it may
   // be the name, it may be the value, etc. depending on the role.

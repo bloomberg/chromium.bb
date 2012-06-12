@@ -59,7 +59,6 @@
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
-#include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/plugins/npapi/plugin_constants_win.h"
 #include "webkit/plugins/npapi/webplugin.h"
@@ -718,8 +717,9 @@ RenderWidgetHostViewWin::GetNativeViewAccessible() {
 
   if (!GetBrowserAccessibilityManager()) {
     // Return busy document tree while renderer accessibility tree loads.
-    WebAccessibility::State busy_state =
-        static_cast<WebAccessibility::State>(1 << WebAccessibility::STATE_BUSY);
+    content::AccessibilityNodeData::State busy_state =
+        static_cast<content::AccessibilityNodeData::State>(
+            1 << content::AccessibilityNodeData::STATE_BUSY);
     SetBrowserAccessibilityManager(
         BrowserAccessibilityManager::CreateEmptyDocument(
             m_hWnd, busy_state, this));
@@ -2336,7 +2336,9 @@ void RenderWidgetHostViewWin::OnAccessibilityNotifications(
   if (!GetBrowserAccessibilityManager()) {
     SetBrowserAccessibilityManager(
         BrowserAccessibilityManager::CreateEmptyDocument(
-            m_hWnd, static_cast<WebAccessibility::State>(0), this));
+            m_hWnd,
+            static_cast<content::AccessibilityNodeData::State>(0),
+            this));
   }
   GetBrowserAccessibilityManager()->OnAccessibilityNotifications(params);
 }

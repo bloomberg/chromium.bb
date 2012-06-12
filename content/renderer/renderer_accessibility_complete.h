@@ -10,6 +10,7 @@
 
 #include "base/hash_tables.h"
 #include "base/memory/weak_ptr.h"
+#include "content/common/accessibility_node_data.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/renderer/renderer_accessibility.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityNotification.h"
@@ -20,10 +21,6 @@ namespace WebKit {
 class WebAccessibilityObject;
 class WebDocument;
 class WebNode;
-};
-
-namespace webkit_glue {
-struct WebAccessibility;
 };
 
 namespace content {
@@ -72,7 +69,7 @@ class RendererAccessibilityComplete : public RendererAccessibility {
 
   // Update our representation of what nodes the browser has, given a
   // tree of nodes.
-  void UpdateBrowserTree(const webkit_glue::WebAccessibility& renderer_node);
+  void UpdateBrowserTree(const AccessibilityNodeData& renderer_node);
 
   // Clear the given node and recursively delete all of its descendants
   // from the browser tree. (Does not delete |browser_node|).
@@ -101,14 +98,14 @@ class RendererAccessibilityComplete : public RendererAccessibility {
   // corresponding WebAccessibility node as a child of |dst|.
   void RecursiveAddEditableTextNodesToTree(
       const WebKit::WebAccessibilityObject& src,
-      webkit_glue::WebAccessibility* dst);
+      AccessibilityNodeData* dst);
 
-  // Build a tree of serializable WebAccessibility nodes to send to the
+  // Build a tree of serializable AccessibilityNodeData nodes to send to the
   // browser process, given a WebAccessibilityObject node from WebKit.
   // Modifies |dst| in-place, it's assumed to be empty.
   void BuildAccessibilityTree(const WebKit::WebAccessibilityObject& src,
                               bool include_children,
-                              webkit_glue::WebAccessibility* dst);
+                              AccessibilityNodeData* dst);
 
   // So we can queue up tasks to be executed later.
   base::WeakPtrFactory<RendererAccessibilityComplete> weak_factory_;

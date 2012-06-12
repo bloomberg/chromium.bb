@@ -51,7 +51,6 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "ui/surface/io_surface_support_mac.h"
-#include "webkit/glue/webaccessibility.h"
 #include "webkit/plugins/npapi/webplugin.h"
 
 using content::BrowserThread;
@@ -1270,7 +1269,9 @@ void RenderWidgetHostViewMac::OnAccessibilityNotifications(
   if (!GetBrowserAccessibilityManager()) {
     SetBrowserAccessibilityManager(
         BrowserAccessibilityManager::CreateEmptyDocument(
-            cocoa_view_, static_cast<WebAccessibility::State>(0), NULL));
+            cocoa_view_,
+            static_cast<content::AccessibilityNodeData::State>(0),
+            NULL));
   }
   GetBrowserAccessibilityManager()->OnAccessibilityNotifications(params);
 }

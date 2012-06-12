@@ -10,10 +10,12 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/common/accessibility_messages.h"
 
-typedef WebAccessibility::BoolAttribute BoolAttribute;
-typedef WebAccessibility::FloatAttribute FloatAttribute;
-typedef WebAccessibility::IntAttribute IntAttribute;
-typedef WebAccessibility::StringAttribute StringAttribute;
+using content::AccessibilityNodeData;
+
+typedef AccessibilityNodeData::BoolAttribute BoolAttribute;
+typedef AccessibilityNodeData::FloatAttribute FloatAttribute;
+typedef AccessibilityNodeData::IntAttribute IntAttribute;
+typedef AccessibilityNodeData::StringAttribute StringAttribute;
 
 #if !defined(OS_MACOSX) && \
     !(defined(OS_WIN) && !defined(USE_AURA)) && \
@@ -55,7 +57,7 @@ void BrowserAccessibility::PreInitialize(
     BrowserAccessibility* parent,
     int32 child_id,
     int32 index_in_parent,
-    const webkit_glue::WebAccessibility& src) {
+    const AccessibilityNodeData& src) {
   manager_ = manager;
   parent_ = parent;
   child_id_ = child_id;
@@ -135,8 +137,8 @@ gfx::Rect BrowserAccessibility::GetLocalBoundsRect() {
   BrowserAccessibility* root = manager_->GetRoot();
   int scroll_x = 0;
   int scroll_y = 0;
-  if (!root->GetIntAttribute(WebAccessibility::ATTR_SCROLL_X, &scroll_x) ||
-      !root->GetIntAttribute(WebAccessibility::ATTR_SCROLL_Y, &scroll_y)) {
+  if (!root->GetIntAttribute(AccessibilityNodeData::ATTR_SCROLL_X, &scroll_x) ||
+      !root->GetIntAttribute(AccessibilityNodeData::ATTR_SCROLL_Y, &scroll_y)) {
     return bounds;
   }
   bounds.Offset(-scroll_x, -scroll_y);
@@ -291,7 +293,8 @@ bool BrowserAccessibility::GetAriaTristate(
   return false;  // Not set
 }
 
-bool BrowserAccessibility::HasState(WebAccessibility::State state_enum) const {
+bool BrowserAccessibility::HasState(
+    AccessibilityNodeData::State state_enum) const {
   return (state_ >> state_enum) & 1;
 }
 
@@ -299,9 +302,9 @@ bool BrowserAccessibility::IsEditableText() const {
   // Note: STATE_READONLY being false means it's either a text control,
   // or contenteditable. We also check for editable text roles to cover
   // another element that has role=textbox set on it.
-  return (!HasState(WebAccessibility::STATE_READONLY) ||
-          role_ == WebAccessibility::ROLE_TEXT_FIELD ||
-          role_ == WebAccessibility::ROLE_TEXTAREA);
+  return (!HasState(AccessibilityNodeData::STATE_READONLY) ||
+          role_ == AccessibilityNodeData::ROLE_TEXT_FIELD ||
+          role_ == AccessibilityNodeData::ROLE_TEXTAREA);
 }
 
 string16 BrowserAccessibility::GetTextRecursive() const {

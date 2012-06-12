@@ -7,12 +7,12 @@
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/common/accessibility_messages.h"
 
-using webkit_glue::WebAccessibility;
+using content::AccessibilityNodeData;
 
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
     gfx::NativeView parent_view,
-    const WebAccessibility& src,
+    const AccessibilityNodeData& src,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory) {
   return new BrowserAccessibilityManagerWin(
@@ -29,7 +29,7 @@ BrowserAccessibilityManager::ToBrowserAccessibilityManagerWin() {
 
 BrowserAccessibilityManagerWin::BrowserAccessibilityManagerWin(
     HWND parent_view,
-    const WebAccessibility& src,
+    const AccessibilityNodeData& src,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
     : BrowserAccessibilityManager(parent_view, src, delegate, factory),

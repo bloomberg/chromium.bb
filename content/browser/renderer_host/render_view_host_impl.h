@@ -16,6 +16,7 @@
 #include "base/process_util.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/common/accessibility_node_data.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/javascript_message_type.h"
@@ -24,7 +25,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
-#include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class ChildProcessSecurityPolicyImpl;
@@ -51,10 +51,6 @@ class PowerSaveBlocker;
 
 namespace ui {
 class Range;
-}
-
-namespace webkit_glue {
-struct WebAccessibility;
 }
 
 namespace content {
@@ -411,7 +407,7 @@ class CONTENT_EXPORT RenderViewHostImpl
     send_accessibility_updated_notifications_ = send;
   }
 
-  const webkit_glue::WebAccessibility& accessibility_tree_for_testing() {
+  const AccessibilityNodeData& accessibility_tree_for_testing() {
     return accessibility_tree_;
   }
 
@@ -642,7 +638,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   bool send_accessibility_updated_notifications_;
 
   // The most recently received accessibility tree - for unit testing only.
-  webkit_glue::WebAccessibility accessibility_tree_;
+  AccessibilityNodeData accessibility_tree_;
 
   // The termination status of the last render view that terminated.
   base::TerminationStatus render_view_termination_status_;

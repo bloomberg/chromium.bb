@@ -6,6 +6,7 @@
 // Multiply-included message file, hence no include guard.
 
 #include "base/basictypes.h"
+#include "content/common/accessibility_node_data.h"
 #include "content/common/content_export.h"
 #include "content/common/view_message_enums.h"
 #include "content/public/common/common_param_traits.h"
@@ -15,7 +16,6 @@
 #include "ipc/param_traits_macros.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebPoint.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
-#include "webkit/glue/webaccessibility.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
@@ -97,14 +97,14 @@ enum AccessibilityNotification {
 
 IPC_ENUM_TRAITS(AccessibilityNotification)
 
-IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::BoolAttribute)
-IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::FloatAttribute)
-IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::IntAttribute)
-IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::Role)
-IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::State)
-IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::StringAttribute)
+IPC_ENUM_TRAITS(content::AccessibilityNodeData::BoolAttribute)
+IPC_ENUM_TRAITS(content::AccessibilityNodeData::FloatAttribute)
+IPC_ENUM_TRAITS(content::AccessibilityNodeData::IntAttribute)
+IPC_ENUM_TRAITS(content::AccessibilityNodeData::Role)
+IPC_ENUM_TRAITS(content::AccessibilityNodeData::State)
+IPC_ENUM_TRAITS(content::AccessibilityNodeData::StringAttribute)
 
-IPC_STRUCT_TRAITS_BEGIN(webkit_glue::WebAccessibility)
+IPC_STRUCT_TRAITS_BEGIN(content::AccessibilityNodeData)
   IPC_STRUCT_TRAITS_MEMBER(id)
   IPC_STRUCT_TRAITS_MEMBER(name)
   IPC_STRUCT_TRAITS_MEMBER(value)
@@ -131,7 +131,7 @@ IPC_STRUCT_BEGIN(AccessibilityHostMsg_NotificationParams)
   IPC_STRUCT_MEMBER(int, id)
 
   // The accessibility node tree.
-  IPC_STRUCT_MEMBER(webkit_glue::WebAccessibility, acc_tree)
+  IPC_STRUCT_MEMBER(content::AccessibilityNodeData, acc_tree)
 
   // Whether children are included in this tree, otherwise it's just an
   // update to this one node and existing children are left in place.

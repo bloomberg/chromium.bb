@@ -2,28 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_WEBACCESSIBILITY_H_
-#define WEBKIT_GLUE_WEBACCESSIBILITY_H_
+#ifndef CONTENT_COMMON_ACCESSIBILITY_NODE_DATA_H_
+#define CONTENT_COMMON_ACCESSIBILITY_NODE_DATA_H_
 
 #include <map>
 #include <string>
 #include <vector>
 
 #include "base/string16.h"
+#include "content/common/content_export.h"
 #include "ui/gfx/rect.h"
-#include "webkit/glue/webkit_glue_export.h"
 
-namespace WebKit {
-class WebAccessibilityObject;
-}
-
-namespace webkit_glue {
+namespace content {
 
 // A compact representation of the accessibility information for a
 // single web object, in a form that can be serialized and sent from
 // the renderer process to the browser process.
-struct WEBKIT_GLUE_EXPORT WebAccessibility {
- public:
+struct CONTENT_EXPORT AccessibilityNodeData {
   // An enumeration of accessibility roles.
   enum Role {
     ROLE_UNKNOWN = 0,
@@ -250,47 +245,15 @@ struct WEBKIT_GLUE_EXPORT WebAccessibility {
     ATTR_CAN_SET_VALUE,
   };
 
-  enum IncludeChildren {
-    NO_CHILDREN,
-    INCLUDE_CHILDREN
-  };
-
-  enum IncludeLineBreaks {
-    NO_LINE_BREAKS,
-    INCLUDE_LINE_BREAKS
-  };
-
-  // Empty constructor, for serialization.
-  WebAccessibility();
-
-  // Construct from a WebAccessibilityObject. Recursively creates child
-  // nodes as needed to complete the tree.
-  WebAccessibility(const WebKit::WebAccessibilityObject& src,
-                   IncludeChildren include_children,
-                   IncludeLineBreaks include_line_breaks);
-
-  ~WebAccessibility();
-
-  // Initialize an already-created struct, same as the constructor above.
-  void Init(const WebKit::WebAccessibilityObject& src,
-            IncludeChildren include_children,
-            IncludeLineBreaks include_line_breaks);
+  AccessibilityNodeData();
+  ~AccessibilityNodeData();
 
 #ifndef NDEBUG
   std::string DebugString(bool recursive) const;
 #endif
 
- private:
-  // Returns true if |ancestor| is the first unignored parent of |child|,
-  // which means that when walking up the parent chain from |child|,
-  // |ancestor| is the *first* ancestor that isn't marked as
-  // accessibilityIsIgnored().
-  bool IsParentUnignoredOf(const WebKit::WebAccessibilityObject& ancestor,
-                           const WebKit::WebAccessibilityObject& child);
-
- public:
   // This is a simple serializable struct. All member variables should be
-  // copyable.
+  // public and copyable.
   int32 id;
   string16 name;
   string16 value;
@@ -301,7 +264,7 @@ struct WEBKIT_GLUE_EXPORT WebAccessibility {
   std::map<IntAttribute, int32> int_attributes;
   std::map<FloatAttribute, float> float_attributes;
   std::map<BoolAttribute, bool> bool_attributes;
-  std::vector<WebAccessibility> children;
+  std::vector<AccessibilityNodeData> children;
   std::vector<int32> indirect_child_ids;
   std::vector<std::pair<string16, string16> > html_attributes;
   std::vector<int32> line_breaks;
@@ -316,6 +279,6 @@ struct WEBKIT_GLUE_EXPORT WebAccessibility {
   std::vector<int32> unique_cell_ids;
 };
 
-}  // namespace webkit_glue
+}  // namespace content
 
-#endif  // WEBKIT_GLUE_WEBACCESSIBILITY_H_
+#endif  // CONTENT_COMMON_ACCESSIBILITY_NODE_DATA_H_

@@ -17,10 +17,6 @@ class WebAccessibilityObject;
 class WebDocument;
 };
 
-namespace webkit_glue {
-struct WebAccessibility;
-};
-
 namespace content {
 
 // The browser process implement native accessibility APIs, allowing

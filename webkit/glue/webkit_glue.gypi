@@ -388,8 +388,6 @@
         'scoped_clipboard_writer_glue.h',
         'simple_webmimeregistry_impl.cc',
         'simple_webmimeregistry_impl.h',
-        'webaccessibility.cc',
-        'webaccessibility.h',
         'webclipboard_impl.cc',
         'webclipboard_impl.h',
         'webcookie.cc',

@@ -11,14 +11,12 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "webkit/glue/webaccessibility.h"
 
 using WebKit::WebAccessibilityNotification;
 using WebKit::WebAccessibilityObject;
 using WebKit::WebDocument;
 using WebKit::WebFrame;
 using WebKit::WebView;
-using webkit_glue::WebAccessibility;
 
 namespace content {
 

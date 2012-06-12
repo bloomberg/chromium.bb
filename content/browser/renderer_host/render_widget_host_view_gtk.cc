@@ -46,7 +46,6 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/gtk_native_view_id_manager.h"
 #include "ui/gfx/gtk_preserve_window.h"
-#include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webcursor_gtk_data.h"
 #include "webkit/plugins/npapi/webplugin.h"
 
@@ -1493,7 +1492,9 @@ void RenderWidgetHostViewGtk::OnAccessibilityNotifications(
     GtkWidget* parent = gtk_widget_get_parent(view_.get());
     browser_accessibility_manager_.reset(
         BrowserAccessibilityManager::CreateEmptyDocument(
-            parent, static_cast<WebAccessibility::State>(0), this));
+            parent,
+            static_cast<content::AccessibilityNodeData::State>(0),
+            this));
   }
   browser_accessibility_manager_->OnAccessibilityNotifications(params);
 }
@@ -1506,7 +1507,9 @@ AtkObject* RenderWidgetHostViewGtk::GetAccessible() {
     GtkWidget* parent = gtk_widget_get_parent(view_.get());
     browser_accessibility_manager_.reset(
         BrowserAccessibilityManager::CreateEmptyDocument(
-            parent, static_cast<WebAccessibility::State>(0), this));
+            parent,
+            static_cast<content::AccessibilityNodeData::State>(0),
+            this));
   }
   BrowserAccessibilityGtk* root =
       browser_accessibility_manager_->GetRoot()->ToBrowserAccessibilityGtk();

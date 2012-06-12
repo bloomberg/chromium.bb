@@ -59,7 +59,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/fileapi/isolated_context.h"
-#include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webdropdata.h"
 
 #if defined(OS_WIN)

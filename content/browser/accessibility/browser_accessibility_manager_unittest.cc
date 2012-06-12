@@ -7,10 +7,10 @@
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/common/accessibility_messages.h"
+#include "content/common/accessibility_node_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/glue/webaccessibility.h"
 
-using webkit_glue::WebAccessibility;
+using content::AccessibilityNodeData;
 
 namespace {
 
@@ -54,33 +54,33 @@ class CountedBrowserAccessibilityFactory
 }  // anonymous namespace
 
 TEST(BrowserAccessibilityManagerTest, TestNoLeaks) {
-  // Create WebAccessibility objects for a simple document tree,
+  // Create AccessibilityNodeData objects for a simple document tree,
   // representing the accessibility information used to initialize
   // BrowserAccessibilityManager.
-  WebAccessibility button;
+  AccessibilityNodeData button;
   button.id = 2;
   button.name = UTF8ToUTF16("Button");
-  button.role = WebAccessibility::ROLE_BUTTON;
+  button.role = AccessibilityNodeData::ROLE_BUTTON;
   button.state = 0;
 
-  WebAccessibility checkbox;
+  AccessibilityNodeData checkbox;
   checkbox.id = 3;
   checkbox.name = UTF8ToUTF16("Checkbox");
-  checkbox.role = WebAccessibility::ROLE_CHECKBOX;
+  checkbox.role = AccessibilityNodeData::ROLE_CHECKBOX;
   checkbox.state = 0;
 
-  WebAccessibility root;
+  AccessibilityNodeData root;
   root.id = 1;
   root.name = UTF8ToUTF16("Document");
-  root.role = WebAccessibility::ROLE_DOCUMENT;
+  root.role = AccessibilityNodeData::ROLE_DOCUMENT;
   root.state = 0;
   root.children.push_back(button);
   root.children.push_back(checkbox);
 
-  // Construct a BrowserAccessibilityManager with this WebAccessibility tree
-  // and a factory for an instance-counting BrowserAccessibility, and ensure
-  // that exactly 3 instances were created. Note that the manager takes
-  // ownership of the factory.
+  // Construct a BrowserAccessibilityManager with this
+  // AccessibilityNodeData tree and a factory for an instance-counting
+  // BrowserAccessibility, and ensure that exactly 3 instances were
+  // created. Note that the manager takes ownership of the factory.
   CountedBrowserAccessibility::global_obj_count_ = 0;
   BrowserAccessibilityManager* manager =
       BrowserAccessibilityManager::Create(
@@ -135,28 +135,28 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects) {
   //   child2
   //   child3
 
-  WebAccessibility tree1_child1;
+  AccessibilityNodeData tree1_child1;
   tree1_child1.id = 2;
   tree1_child1.name = UTF8ToUTF16("Child1");
-  tree1_child1.role = WebAccessibility::ROLE_BUTTON;
+  tree1_child1.role = AccessibilityNodeData::ROLE_BUTTON;
   tree1_child1.state = 0;
 
-  WebAccessibility tree1_child2;
+  AccessibilityNodeData tree1_child2;
   tree1_child2.id = 3;
   tree1_child2.name = UTF8ToUTF16("Child2");
-  tree1_child2.role = WebAccessibility::ROLE_BUTTON;
+  tree1_child2.role = AccessibilityNodeData::ROLE_BUTTON;
   tree1_child2.state = 0;
 
-  WebAccessibility tree1_child3;
+  AccessibilityNodeData tree1_child3;
   tree1_child3.id = 4;
   tree1_child3.name = UTF8ToUTF16("Child3");
-  tree1_child3.role = WebAccessibility::ROLE_BUTTON;
+  tree1_child3.role = AccessibilityNodeData::ROLE_BUTTON;
   tree1_child3.state = 0;
 
-  WebAccessibility tree1_root;
+  AccessibilityNodeData tree1_root;
   tree1_root.id = 1;
   tree1_root.name = UTF8ToUTF16("Document");
-  tree1_root.role = WebAccessibility::ROLE_DOCUMENT;
+  tree1_root.role = AccessibilityNodeData::ROLE_DOCUMENT;
   tree1_root.state = 0;
   tree1_root.children.push_back(tree1_child1);
   tree1_root.children.push_back(tree1_child2);
@@ -170,28 +170,28 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects) {
   //   child2
   //           <-- child3 deleted
 
-  WebAccessibility tree2_child0;
+  AccessibilityNodeData tree2_child0;
   tree2_child0.id = 5;
   tree2_child0.name = UTF8ToUTF16("Child0");
-  tree2_child0.role = WebAccessibility::ROLE_BUTTON;
+  tree2_child0.role = AccessibilityNodeData::ROLE_BUTTON;
   tree2_child0.state = 0;
 
-  WebAccessibility tree2_child1;
+  AccessibilityNodeData tree2_child1;
   tree2_child1.id = 2;
   tree2_child1.name = UTF8ToUTF16("Child1");
-  tree2_child1.role = WebAccessibility::ROLE_BUTTON;
+  tree2_child1.role = AccessibilityNodeData::ROLE_BUTTON;
   tree2_child1.state = 0;
 
-  WebAccessibility tree2_child2;
+  AccessibilityNodeData tree2_child2;
   tree2_child2.id = 3;
   tree2_child2.name = UTF8ToUTF16("Child2");
-  tree2_child2.role = WebAccessibility::ROLE_BUTTON;
+  tree2_child2.role = AccessibilityNodeData::ROLE_BUTTON;
   tree2_child2.state = 0;
 
-  WebAccessibility tree2_root;
+  AccessibilityNodeData tree2_root;
   tree2_root.id = 1;
   tree2_root.name = UTF8ToUTF16("DocumentChanged");
-  tree2_root.role = WebAccessibility::ROLE_DOCUMENT;
+  tree2_root.role = AccessibilityNodeData::ROLE_DOCUMENT;
   tree2_root.state = 0;
   tree2_root.children.push_back(tree2_child0);
   tree2_root.children.push_back(tree2_child1);
@@ -279,58 +279,58 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects2) {
   //     child3
   //       grandchild3
 
-  WebAccessibility tree1_grandchild1;
+  AccessibilityNodeData tree1_grandchild1;
   tree1_grandchild1.id = 4;
   tree1_grandchild1.name = UTF8ToUTF16("GrandChild1");
-  tree1_grandchild1.role = WebAccessibility::ROLE_BUTTON;
+  tree1_grandchild1.role = AccessibilityNodeData::ROLE_BUTTON;
   tree1_grandchild1.state = 0;
 
-  WebAccessibility tree1_child1;
+  AccessibilityNodeData tree1_child1;
   tree1_child1.id = 3;
   tree1_child1.name = UTF8ToUTF16("Child1");
-  tree1_child1.role = WebAccessibility::ROLE_BUTTON;
+  tree1_child1.role = AccessibilityNodeData::ROLE_BUTTON;
   tree1_child1.state = 0;
   tree1_child1.children.push_back(tree1_grandchild1);
 
-  WebAccessibility tree1_grandchild2;
+  AccessibilityNodeData tree1_grandchild2;
   tree1_grandchild2.id = 6;
   tree1_grandchild2.name = UTF8ToUTF16("GrandChild1");
-  tree1_grandchild2.role = WebAccessibility::ROLE_BUTTON;
+  tree1_grandchild2.role = AccessibilityNodeData::ROLE_BUTTON;
   tree1_grandchild2.state = 0;
 
-  WebAccessibility tree1_child2;
+  AccessibilityNodeData tree1_child2;
   tree1_child2.id = 5;
   tree1_child2.name = UTF8ToUTF16("Child2");
-  tree1_child2.role = WebAccessibility::ROLE_BUTTON;
+  tree1_child2.role = AccessibilityNodeData::ROLE_BUTTON;
   tree1_child2.state = 0;
   tree1_child2.children.push_back(tree1_grandchild2);
 
-  WebAccessibility tree1_grandchild3;
+  AccessibilityNodeData tree1_grandchild3;
   tree1_grandchild3.id = 8;
   tree1_grandchild3.name = UTF8ToUTF16("GrandChild3");
-  tree1_grandchild3.role = WebAccessibility::ROLE_BUTTON;
+  tree1_grandchild3.role = AccessibilityNodeData::ROLE_BUTTON;
   tree1_grandchild3.state = 0;
 
-  WebAccessibility tree1_child3;
+  AccessibilityNodeData tree1_child3;
   tree1_child3.id = 7;
   tree1_child3.name = UTF8ToUTF16("Child3");
-  tree1_child3.role = WebAccessibility::ROLE_BUTTON;
+  tree1_child3.role = AccessibilityNodeData::ROLE_BUTTON;
   tree1_child3.state = 0;
   tree1_child3.children.push_back(tree1_grandchild3);
 
-  WebAccessibility tree1_container;
+  AccessibilityNodeData tree1_container;
   tree1_container.id = 2;
   tree1_container.name = UTF8ToUTF16("Container");
-  tree1_container.role = WebAccessibility::ROLE_GROUP;
+  tree1_container.role = AccessibilityNodeData::ROLE_GROUP;
   tree1_container.state = 0;
   tree1_container.children.push_back(tree1_child1);
   tree1_container.children.push_back(tree1_child2);
   tree1_container.children.push_back(tree1_child3);
 
-  WebAccessibility tree1_root;
+  AccessibilityNodeData tree1_root;
   tree1_root.id = 1;
   tree1_root.name = UTF8ToUTF16("Document");
-  tree1_root.role = WebAccessibility::ROLE_DOCUMENT;
+  tree1_root.role = AccessibilityNodeData::ROLE_DOCUMENT;
   tree1_root.state = 0;
   tree1_root.children.push_back(tree1_container);
 
@@ -346,58 +346,58 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects2) {
   //       grandchild2
   //                    <-- child3 (and grandchild3) deleted
 
-  WebAccessibility tree2_grandchild0;
+  AccessibilityNodeData tree2_grandchild0;
   tree2_grandchild0.id = 9;
   tree2_grandchild0.name = UTF8ToUTF16("GrandChild0");
-  tree2_grandchild0.role = WebAccessibility::ROLE_BUTTON;
+  tree2_grandchild0.role = AccessibilityNodeData::ROLE_BUTTON;
   tree2_grandchild0.state = 0;
 
-  WebAccessibility tree2_child0;
+  AccessibilityNodeData tree2_child0;
   tree2_child0.id = 10;
   tree2_child0.name = UTF8ToUTF16("Child0");
-  tree2_child0.role = WebAccessibility::ROLE_BUTTON;
+  tree2_child0.role = AccessibilityNodeData::ROLE_BUTTON;
   tree2_child0.state = 0;
   tree2_child0.children.push_back(tree2_grandchild0);
 
-  WebAccessibility tree2_grandchild1;
+  AccessibilityNodeData tree2_grandchild1;
   tree2_grandchild1.id = 4;
   tree2_grandchild1.name = UTF8ToUTF16("GrandChild1");
-  tree2_grandchild1.role = WebAccessibility::ROLE_BUTTON;
+  tree2_grandchild1.role = AccessibilityNodeData::ROLE_BUTTON;
   tree2_grandchild1.state = 0;
 
-  WebAccessibility tree2_child1;
+  AccessibilityNodeData tree2_child1;
   tree2_child1.id = 3;
   tree2_child1.name = UTF8ToUTF16("Child1");
-  tree2_child1.role = WebAccessibility::ROLE_BUTTON;
+  tree2_child1.role = AccessibilityNodeData::ROLE_BUTTON;
   tree2_child1.state = 0;
   tree2_child1.children.push_back(tree2_grandchild1);
 
-  WebAccessibility tree2_grandchild2;
+  AccessibilityNodeData tree2_grandchild2;
   tree2_grandchild2.id = 6;
   tree2_grandchild2.name = UTF8ToUTF16("GrandChild1");
-  tree2_grandchild2.role = WebAccessibility::ROLE_BUTTON;
+  tree2_grandchild2.role = AccessibilityNodeData::ROLE_BUTTON;
   tree2_grandchild2.state = 0;
 
-  WebAccessibility tree2_child2;
+  AccessibilityNodeData tree2_child2;
   tree2_child2.id = 5;
   tree2_child2.name = UTF8ToUTF16("Child2");
-  tree2_child2.role = WebAccessibility::ROLE_BUTTON;
+  tree2_child2.role = AccessibilityNodeData::ROLE_BUTTON;
   tree2_child2.state = 0;
   tree2_child2.children.push_back(tree2_grandchild2);
 
-  WebAccessibility tree2_container;
+  AccessibilityNodeData tree2_container;
   tree2_container.id = 2;
   tree2_container.name = UTF8ToUTF16("Container");
-  tree2_container.role = WebAccessibility::ROLE_GROUP;
+  tree2_container.role = AccessibilityNodeData::ROLE_GROUP;
   tree2_container.state = 0;
   tree2_container.children.push_back(tree2_child0);
   tree2_container.children.push_back(tree2_child1);
   tree2_container.children.push_back(tree2_child2);
 
-  WebAccessibility tree2_root;
+  AccessibilityNodeData tree2_root;
   tree2_root.id = 1;
   tree2_root.name = UTF8ToUTF16("Document");
-  tree2_root.role = WebAccessibility::ROLE_DOCUMENT;
+  tree2_root.role = AccessibilityNodeData::ROLE_DOCUMENT;
   tree2_root.state = 0;
   tree2_root.children.push_back(tree2_container);
 
@@ -482,20 +482,20 @@ TEST(BrowserAccessibilityManagerTest, TestMoveChildUp) {
   //   3
   //     4
 
-  WebAccessibility tree1_4;
+  AccessibilityNodeData tree1_4;
   tree1_4.id = 4;
   tree1_4.state = 0;
 
-  WebAccessibility tree1_3;
+  AccessibilityNodeData tree1_3;
   tree1_3.id = 3;
   tree1_3.state = 0;
   tree1_3.children.push_back(tree1_4);
 
-  WebAccessibility tree1_2;
+  AccessibilityNodeData tree1_2;
   tree1_2.id = 2;
   tree1_2.state = 0;
 
-  WebAccessibility tree1_1;
+  AccessibilityNodeData tree1_1;
   tree1_1.id = 1;
   tree1_1.state = 0;
   tree1_1.children.push_back(tree1_2);
@@ -508,20 +508,20 @@ TEST(BrowserAccessibilityManagerTest, TestMoveChildUp) {
   //     6  <-- new
   //   5    <-- new
 
-  WebAccessibility tree2_6;
+  AccessibilityNodeData tree2_6;
   tree2_6.id = 6;
   tree2_6.state = 0;
 
-  WebAccessibility tree2_5;
+  AccessibilityNodeData tree2_5;
   tree2_5.id = 5;
   tree2_5.state = 0;
 
-  WebAccessibility tree2_4;
+  AccessibilityNodeData tree2_4;
   tree2_4.id = 4;
   tree2_4.state = 0;
   tree2_4.children.push_back(tree2_6);
 
-  WebAccessibility tree2_1;
+  AccessibilityNodeData tree2_1;
   tree2_1.id = 1;
   tree2_1.state = 0;
   tree2_1.children.push_back(tree2_4);
@@ -558,29 +558,29 @@ TEST(BrowserAccessibilityManagerTest, TestMoveChildUp) {
 TEST(BrowserAccessibilityManagerTest, TestCreateEmptyDocument) {
   // Try creating an empty document with busy state. Readonly is
   // set automatically.
-  const int32 busy_state = 1 << WebAccessibility::STATE_BUSY;
-  const int32 readonly_state = 1 << WebAccessibility::STATE_READONLY;
+  const int32 busy_state = 1 << AccessibilityNodeData::STATE_BUSY;
+  const int32 readonly_state = 1 << AccessibilityNodeData::STATE_READONLY;
   scoped_ptr<BrowserAccessibilityManager> manager;
   manager.reset(BrowserAccessibilityManager::CreateEmptyDocument(
       NULL,
-      static_cast<WebAccessibility::State>(busy_state),
+      static_cast<AccessibilityNodeData::State>(busy_state),
       NULL,
       new CountedBrowserAccessibilityFactory()));
 
   // Verify the root is as we expect by default.
   BrowserAccessibility* root = manager->GetRoot();
   EXPECT_EQ(0, root->renderer_id());
-  EXPECT_EQ(WebAccessibility::ROLE_ROOT_WEB_AREA, root->role());
+  EXPECT_EQ(AccessibilityNodeData::ROLE_ROOT_WEB_AREA, root->role());
   EXPECT_EQ(busy_state | readonly_state, root->state());
 
   // Tree with a child textfield.
-  WebAccessibility tree1_1;
+  AccessibilityNodeData tree1_1;
   tree1_1.id = 1;
-  tree1_1.role = WebAccessibility::ROLE_ROOT_WEB_AREA;
+  tree1_1.role = AccessibilityNodeData::ROLE_ROOT_WEB_AREA;
 
-  WebAccessibility tree1_2;
+  AccessibilityNodeData tree1_2;
   tree1_2.id = 2;
-  tree1_2.role = WebAccessibility::ROLE_TEXT_FIELD;
+  tree1_2.role = AccessibilityNodeData::ROLE_TEXT_FIELD;
 
   tree1_1.children.push_back(tree1_2);
 
@@ -601,17 +601,17 @@ TEST(BrowserAccessibilityManagerTest, TestCreateEmptyDocument) {
   EXPECT_NE(root, manager->GetRoot());
 
   // And the proper child remains.
-  EXPECT_EQ(WebAccessibility::ROLE_TEXT_FIELD, acc1_2->role());
+  EXPECT_EQ(AccessibilityNodeData::ROLE_TEXT_FIELD, acc1_2->role());
   EXPECT_EQ(2, acc1_2->renderer_id());
 
   // Tree with a child button.
-  WebAccessibility tree2_1;
+  AccessibilityNodeData tree2_1;
   tree2_1.id = 1;
-  tree2_1.role = WebAccessibility::ROLE_ROOT_WEB_AREA;
+  tree2_1.role = AccessibilityNodeData::ROLE_ROOT_WEB_AREA;
 
-  WebAccessibility tree2_2;
+  AccessibilityNodeData tree2_2;
   tree2_2.id = 3;
-  tree2_2.role = WebAccessibility::ROLE_BUTTON;
+  tree2_2.role = AccessibilityNodeData::ROLE_BUTTON;
 
   tree2_1.children.push_back(tree2_2);
 
@@ -628,7 +628,7 @@ TEST(BrowserAccessibilityManagerTest, TestCreateEmptyDocument) {
   EXPECT_NE(root, manager->GetRoot());
 
   // And the new child exists.
-  EXPECT_EQ(WebAccessibility::ROLE_BUTTON, acc2_2->role());
+  EXPECT_EQ(AccessibilityNodeData::ROLE_BUTTON, acc2_2->role());
   EXPECT_EQ(3, acc2_2->renderer_id());
 
   // Ensure we properly cleaned up.

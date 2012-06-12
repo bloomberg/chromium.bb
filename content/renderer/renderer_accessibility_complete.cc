@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
+#include "content/renderer/accessibility_node_serializer.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -13,7 +14,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "webkit/glue/webaccessibility.h"
 
 using WebKit::WebAccessibilityNotification;
 using WebKit::WebAccessibilityObject;
@@ -24,7 +24,6 @@ using WebKit::WebPoint;
 using WebKit::WebRect;
 using WebKit::WebSize;
 using WebKit::WebView;
-using webkit_glue::WebAccessibility;
 
 namespace content {
 
@@ -316,11 +315,14 @@ void RendererAccessibilityComplete::SendPendingAccessibilityNotifications() {
     notification_msg.notification_type = notification.notification_type;
     notification_msg.id = notification.id;
     notification_msg.includes_children = includes_children;
-    BuildAccessibilityTree(obj, includes_children, &notification_msg.acc_tree);
+    SerializeAccessibilityNode(obj,
+                               &notification_msg.acc_tree,
+                               includes_children);
     if (obj.axID() == root_id) {
       DCHECK_EQ(notification_msg.acc_tree.role,
-                WebAccessibility::ROLE_WEB_AREA);
-      notification_msg.acc_tree.role = WebAccessibility::ROLE_ROOT_WEB_AREA;
+                AccessibilityNodeData::ROLE_WEB_AREA);
+      notification_msg.acc_tree.role =
+          AccessibilityNodeData::ROLE_ROOT_WEB_AREA;
     }
     notification_msgs.push_back(notification_msg);
 
@@ -342,7 +344,7 @@ void RendererAccessibilityComplete::SendPendingAccessibilityNotifications() {
 }
 
 void RendererAccessibilityComplete::UpdateBrowserTree(
-    const webkit_glue::WebAccessibility& renderer_node) {
+    const AccessibilityNodeData& renderer_node) {
   BrowserTreeNode* browser_node = NULL;
   base::hash_map<int32, BrowserTreeNode*>::iterator iter =
       browser_id_map_.find(renderer_node.id);
@@ -350,7 +352,7 @@ void RendererAccessibilityComplete::UpdateBrowserTree(
     browser_node = iter->second;
     ClearBrowserTreeNode(browser_node);
   } else {
-    DCHECK_EQ(renderer_node.role, WebAccessibility::ROLE_ROOT_WEB_AREA);
+    DCHECK_EQ(renderer_node.role, AccessibilityNodeData::ROLE_ROOT_WEB_AREA);
     if (browser_root_) {
       ClearBrowserTreeNode(browser_root_);
       browser_id_map_.erase(browser_root_->id);
@@ -528,17 +530,6 @@ bool RendererAccessibilityComplete::ShouldIncludeChildren(
     return true;
   }
   return false;
-}
-
-void RendererAccessibilityComplete::BuildAccessibilityTree(
-    const WebAccessibilityObject& src,
-    bool include_children,
-    WebAccessibility* dst) {
-  dst->Init(src,
-            include_children ?
-            WebAccessibility::INCLUDE_CHILDREN :
-            WebAccessibility::NO_CHILDREN,
-            WebAccessibility::INCLUDE_LINE_BREAKS);
 }
 
 }  // namespace content

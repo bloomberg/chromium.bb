@@ -4,18 +4,17 @@
 
 #include "content/renderer/renderer_accessibility_focus_only.h"
 
+#include "content/common/accessibility_node_data.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "webkit/glue/webaccessibility.h"
 
 using WebKit::WebDocument;
 using WebKit::WebFrame;
 using WebKit::WebNode;
 using WebKit::WebView;
-using webkit_glue::WebAccessibility;
 
 namespace {
 // The root node will always have id 1. Let each child node have a new
@@ -87,25 +86,25 @@ void RendererAccessibilityFocusOnly::HandleFocusedNodeChanged(
 
   // Always include the root of the tree, the document. It always has id 1.
   notification.acc_tree.id = 1;
-  notification.acc_tree.role = WebAccessibility::ROLE_ROOT_WEB_AREA;
+  notification.acc_tree.role = AccessibilityNodeData::ROLE_ROOT_WEB_AREA;
   notification.acc_tree.state =
-      (1 << WebAccessibility::STATE_READONLY) |
-      (1 << WebAccessibility::STATE_FOCUSABLE);
+      (1 << AccessibilityNodeData::STATE_READONLY) |
+      (1 << AccessibilityNodeData::STATE_FOCUSABLE);
   if (node.isNull())
-    notification.acc_tree.state |= (1 << WebAccessibility::STATE_FOCUSED);
+    notification.acc_tree.state |= (1 << AccessibilityNodeData::STATE_FOCUSED);
   notification.acc_tree.location = gfx::Rect(render_view_->size());
 
-  notification.acc_tree.children.push_back(WebAccessibility());
-  WebAccessibility& child = notification.acc_tree.children[0];
+  notification.acc_tree.children.push_back(AccessibilityNodeData());
+  AccessibilityNodeData& child = notification.acc_tree.children[0];
   child.id = next_id_;
-  child.role = WebAccessibility::ROLE_GROUP;
+  child.role = AccessibilityNodeData::ROLE_GROUP;
   child.location = gfx::Rect(render_view_->size());
   if (!node.isNull()) {
     child.state =
-        (1 << WebAccessibility::STATE_FOCUSABLE) |
-        (1 << WebAccessibility::STATE_FOCUSED);
+        (1 << AccessibilityNodeData::STATE_FOCUSABLE) |
+        (1 << AccessibilityNodeData::STATE_FOCUSED);
     if (!render_view_->IsEditableNode(node))
-      child.state |= (1 << WebAccessibility::STATE_READONLY);
+      child.state |= (1 << AccessibilityNodeData::STATE_READONLY);
   }
 
 #ifndef NDEBUG

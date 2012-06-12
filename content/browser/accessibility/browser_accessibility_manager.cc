@@ -8,7 +8,7 @@
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/common/accessibility_messages.h"
 
-using webkit_glue::WebAccessibility;
+using content::AccessibilityNodeData;
 
 BrowserAccessibility* BrowserAccessibilityFactory::Create() {
   return BrowserAccessibility::Create();
@@ -29,7 +29,7 @@ int32 BrowserAccessibilityManager::next_child_id_ = -1;
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
     gfx::NativeView parent_view,
-    const WebAccessibility& src,
+    const AccessibilityNodeData& src,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory) {
   return new BrowserAccessibilityManager(
@@ -40,21 +40,21 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::CreateEmptyDocument(
     gfx::NativeView parent_view,
-    WebAccessibility::State state,
+    AccessibilityNodeData::State state,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory) {
   // Use empty document to process notifications
-  webkit_glue::WebAccessibility empty_document;
+  AccessibilityNodeData empty_document;
   empty_document.id = 0;
-  empty_document.role = WebAccessibility::ROLE_ROOT_WEB_AREA;
-  empty_document.state = state | (1 << WebAccessibility::STATE_READONLY);
+  empty_document.role = AccessibilityNodeData::ROLE_ROOT_WEB_AREA;
+  empty_document.state = state | (1 << AccessibilityNodeData::STATE_READONLY);
   return BrowserAccessibilityManager::Create(
       parent_view, empty_document, delegate, factory);
 }
 
 BrowserAccessibilityManager::BrowserAccessibilityManager(
     gfx::NativeView parent_view,
-    const WebAccessibility& src,
+    const AccessibilityNodeData& src,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
     : parent_view_(parent_view),
@@ -239,13 +239,13 @@ gfx::Rect BrowserAccessibilityManager::GetViewBounds() {
 }
 
 void BrowserAccessibilityManager::UpdateNode(
-    const WebAccessibility& src,
+    const AccessibilityNodeData& src,
     bool include_children) {
   BrowserAccessibility* current = NULL;
 
   // Look for the node to replace. Either we're replacing the whole tree
   // (role is ROOT_WEB_AREA) or we look it up based on its renderer ID.
-  if (src.role == WebAccessibility::ROLE_ROOT_WEB_AREA) {
+  if (src.role == AccessibilityNodeData::ROLE_ROOT_WEB_AREA) {
     current = root_;
   } else {
     base::hash_map<int32, int32>::iterator iter =
@@ -306,7 +306,7 @@ void BrowserAccessibilityManager::UpdateNode(
 
 BrowserAccessibility* BrowserAccessibilityManager::CreateAccessibilityTree(
     BrowserAccessibility* parent,
-    const WebAccessibility& src,
+    const AccessibilityNodeData& src,
     int index_in_parent,
     bool send_show_events) {
   BrowserAccessibility* instance = NULL;
@@ -352,7 +352,7 @@ BrowserAccessibility* BrowserAccessibilityManager::CreateAccessibilityTree(
   child_id_map_[child_id] = instance;
   renderer_id_to_child_id_map_[src.id] = child_id;
 
-  if ((src.state >> WebAccessibility::STATE_FOCUSED) & 1)
+  if ((src.state >> AccessibilityNodeData::STATE_FOCUSED) & 1)
     SetFocus(instance, false);
 
   for (int i = 0; i < static_cast<int>(src.children.size()); ++i) {
@@ -361,7 +361,7 @@ BrowserAccessibility* BrowserAccessibilityManager::CreateAccessibilityTree(
     instance->AddChild(child);
   }
 
-  if (src.role == WebAccessibility::ROLE_ROOT_WEB_AREA)
+  if (src.role == AccessibilityNodeData::ROLE_ROOT_WEB_AREA)
     root_ = instance;
 
   // Note: the purpose of send_show_events and children_can_send_show_events

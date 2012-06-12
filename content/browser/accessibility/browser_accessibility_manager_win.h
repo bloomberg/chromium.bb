@@ -10,11 +10,8 @@
 
 #include "base/win/scoped_comptr.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
-#include "webkit/glue/webaccessibility.h"
 
 class BrowserAccessibilityWin;
-
-using webkit_glue::WebAccessibility;
 
 // Manages a tree of BrowserAccessibilityWin objects.
 class BrowserAccessibilityManagerWin : public BrowserAccessibilityManager {
@@ -36,7 +33,7 @@ class BrowserAccessibilityManagerWin : public BrowserAccessibilityManager {
  private:
   BrowserAccessibilityManagerWin(
       HWND parent_window,
-      const WebAccessibility& src,
+      const content::AccessibilityNodeData& src,
       BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory);
 

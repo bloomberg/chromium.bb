@@ -10,9 +10,6 @@
 
 #include "base/compiler_specific.h"
 #include "content/browser/accessibility/browser_accessibility.h"
-#include "webkit/glue/webaccessibility.h"
-
-using webkit_glue::WebAccessibility;
 
 class BrowserAccessibilityGtk;
 class BrowserAccessibilityManagerGtk;
