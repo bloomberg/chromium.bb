@@ -107,9 +107,11 @@ def showCurPos(length, pos1, marker1="^", pos2=None, marker2="*"):
     return "".join(display)
 
 class BrailleTest():
-    def __init__(self, harnessName, table, input, output, mode=0, cursorPos=None, brlCursorPos=None, testmode='translate', comment=None):
+    def __init__(self, harnessName, table, input, output, outputUniBrl=False, mode=0, cursorPos=None, brlCursorPos=None, testmode='translate', comment=None):
         self.harnessName = harnessName
         self.table = table
+        if outputUniBrl:
+            self.table.insert(0, 'unicode.dis')
         self.input = input
         self.expectedOutput = output
         self.mode = mode if not mode else modes[mode]
@@ -182,14 +184,21 @@ def test_allCases():
         f = open(harness, 'r')
         harnessModule = json.load(f, encoding="UTF-8")
         f.close()
-        tableList = [u(harnessModule['table'])]
+        tableList = []
+        if isinstance(harnessModule['table'], list):
+            tableList.extend(harnessModule['table'])
+        else:
+            tableList.append(harnessModule['table'])
+
         origflags = {'testmode':'translate'}
         for section in harnessModule['sections']:
-            flags = section.get('flags', origflags)
+            flags = origflags.copy()
+            flags.update(section.get('flags', {}))
             for testData in section['tests']:
                 test = flags.copy()
+                testTables = tableList[:]
                 test.update(testData)
-                bt = BrailleTest(harness, tableList, **test)
+                bt = BrailleTest(harness, testTables, **test)
                 if test['testmode'] == 'translate':
                     yield bt.check_translate
                     if 'cursorPos' in test:

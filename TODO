@@ -5,19 +5,17 @@ file, with a bit of extra info.
 
 * 2.5
 ** Document the changes to LOUIS_TABLEPATH
-** Extend and document the scriptikng language
+** Extend and document the scripting language
 ** remove runHarness.py, put inplace nosetests (p2/3) and runharnessV2
    [mh] most of the work done, configure.ac needs to do a pymod check for nose, make check needs to test for both python2/3 and nose. for given version.
-
-
+** [mh, ha] harness data braille field should be unicode braille, not ascii braille+liblouis extended braille.
+   Harness updated to include functionality, harness files regenerated easely using Attilas harness generator.
 ** [mh] Document the test harness with its use of json
-
+   Should enclude unicode braille info.
 ** [mh] (google issue 9) bindings should provide variable to pick up table location at runtime.
 
 * near term
 ** all table files should be unicode encoded.
-
-** harness data braille field should be unicode braille, not ascii braille+liblouis extended braille.
 
 ** Mapping between table filenames, human readable names, and translatable strings, needs to be accessible from bindings.
    Will remove the need of redefining translatable names for the tables in orca, nvda, blaster etc.

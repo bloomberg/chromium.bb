@@ -1,43 +1,47 @@
 {
   "sections": [
     {
+      "flags": {
+        "outputUniBrl": true, 
+        "testmode": "backtranslate"
+      }, 
+      "tests": [
+        {
+          "input": "⠮ ⠉⠁⠞ ⠎⠁⠞ ⠕⠝ ⠮ ⠍⠁⠞", 
+          "output": "the cat sat on the mat"
+        }, 
+        {
+          "input": "⠖⠮ ⠍⠕⠕⠝", 
+          "output": "to the moon"
+        }, 
+        {
+          "brlCursorPos": 2, 
+          "cursorPos": 4, 
+          "input": "⠽ ⠺⠑⠝⠞ ⠞⠕", 
+          "mode": "compbrlAtCursor", 
+          "output": "you went to"
+        }
+      ]
+    }, 
+    {
+      "flags": {
+        "outputUniBrl": true
+      }, 
       "tests": [
         {
           "input": "the cat sat on the mat", 
-          "output": "! cat sat on ! mat"
+          "output": "⠮ ⠉⠁⠞ ⠎⠁⠞ ⠕⠝ ⠮ ⠍⠁⠞"
         }, 
         {
           "input": "to the moon", 
-          "output": "6! moon"
+          "output": "⠖⠮ ⠍⠕⠕⠝"
         }, 
         {
           "brlCursorPos": 2, 
           "cursorPos": 4, 
           "input": "you went to", 
           "mode": "compbrlAtCursor", 
-          "output": "y went to"
-        }
-      ]
-    }, 
-    {
-      "flags": {
-        "testmode": "backtranslate"
-      }, 
-      "tests": [
-        {
-          "input": "! cat sat on ! mat", 
-          "output": "the cat sat on the mat"
-        }, 
-        {
-          "input": "6! moon", 
-          "output": "to the moon"
-        }, 
-        {
-          "brlCursorPos": 2, 
-          "cursorPos": 4, 
-          "input": "y went to", 
-          "mode": "compbrlAtCursor", 
-          "output": "you went to"
+          "output": "⠽ ⠺⠑⠝⠞ ⠞⠕"
         }
       ]
     }

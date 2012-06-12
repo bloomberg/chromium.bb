@@ -1,55 +1,58 @@
 {
   "sections": [
     {
+      "flags": {
+        "outputUniBrl": true
+      }, 
       "tests": [
         {
-            "output": "i",
-            "input": "இ"
+          "input": "இ", 
+          "output": "⠊"
         }, 
         {
-            "output": "p",
-            "input": "ப"
+          "input": "ப", 
+          "output": "⠏"
         }, 
         {
-            "output": "pi",
-            "input": "பி"
-        },
+          "input": "பி", 
+          "output": "⠏⠊"
+        }, 
         {
-            "output": "`k",
-            "input": "க்"
-        },
+          "input": "க்", 
+          "output": "⠈⠅"
+        }, 
         {
-            "output": " s ",
-            "input": " ஸ்ரீ "
-        },
+          "input": " ஸ்ரீ ", 
+          "output": " ⠎ "
+        }, 
         {
-            "output": "p`sr9",
-            "input": "பஸ்ரீ"
-        },
+          "input": "பஸ்ரீ", 
+          "output": "⠏⠈⠎⠗⠔"
+        }, 
         {
-            "output": " q ",
-            "input": " க்ஷ "
-        },
+          "input": " க்ஷ ", 
+          "output": " ⠟ "
+        }, 
         {
-            "output": "`q4",
-            "input": "க்ஷ்."
-        },
+          "input": "க்ஷ்.", 
+          "output": "⠈⠟⠲"
+        }, 
         {
-            "output": ",8",
-            "input": "“"
-        },
+          "input": "“", 
+          "output": "⠠⠦"
+        }, 
         {
-            "output": "0'",
-            "input": "”"
-        },
+          "input": "”", 
+          "output": "⠴⠄"
+        }, 
         {
-            "output":"8",
-            "input": "‘"
-        },
+          "input": "‘", 
+          "output": "⠦"
+        }, 
         {
-            "output": "0",
-            "input": "’"
-       }
+          "input": "’", 
+          "output": "⠴"
+        }
       ]
     }
   ], 
