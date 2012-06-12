@@ -397,10 +397,6 @@ class BrowserView : public BrowserWindow,
   // gfx::ScopedSysColorChangeListener overrides:
   virtual void OnSysColorChange() OVERRIDE;
 
-  // Returns the resource ID to use for the OTR icon, which depends on
-  // which layout is being shown and whether we are full-screen.
-  int GetOTRIconResourceID() const;
-
  protected:
   // Appends to |toolbars| a pointer to each AccessiblePaneView that
   // can be traversed using F6, in the order they should be traversed.

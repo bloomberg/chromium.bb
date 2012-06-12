@@ -154,7 +154,6 @@
       <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_L" file="default_200_percent/ev_bubble_l.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_R" file="default_200_percent/ev_bubble_r.png" type="BINDATA" />
       <include name="IDR_OTR_ICON" file="default_100_percent/otr_icon.png" type="BINDATA" />
-      <include name="IDR_OTR_ICON_FULLSCREEN" file="default_100_percent/otr_icon.png" type="BINDATA" />
       <include name="IDR_PLUGIN" file="default_200_percent/plugin.png" type="BINDATA" />
       <if expr="pp_ifdef('toolkit_views')">
         <include name="IDR_RELOAD" file="default_100_percent/ash/browser_reload_normal.png" type="BINDATA" />
