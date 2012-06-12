@@ -122,8 +122,9 @@ init_egl(struct display *display, EGLint alpha_size)
 	ret = eglBindAPI(EGL_OPENGL_ES_API);
 	assert(ret == EGL_TRUE);
 
-	assert(eglChooseConfig(display->egl.dpy, config_attribs,
-			       &display->egl.conf, 1, &n) && n == 1);
+	ret = eglChooseConfig(display->egl.dpy, config_attribs,
+			      &display->egl.conf, 1, &n);
+	assert(ret && n == 1);
 
 	display->egl.ctx = eglCreateContext(display->egl.dpy,
 					    display->egl.conf,
