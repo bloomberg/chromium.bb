@@ -598,6 +598,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 	closure->message = message;
 	closure->types[0] = &ffi_type_pointer;
 	closure->types[1] = &ffi_type_pointer;
+	closure->start = closure->buffer;
 
 	wl_connection_copy(connection, closure->buffer, size);
 	p = &closure->buffer[2];
