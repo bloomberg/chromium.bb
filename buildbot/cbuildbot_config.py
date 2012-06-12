@@ -777,6 +777,12 @@ internal_paladin.add_config('kiev-paladin',
   paladin_builder_name='kiev paladin',
 )
 
+internal_paladin.add_config('parrot-paladin',
+  boards=['parrot'],
+  important=False,
+  paladin_builder_name='parrot paladin',
+)
+
 # TODO(sosa): Test configs for unified paladin builds.
 internal_paladin.add_config('unified-lumpy-paladin',
   master=True,
@@ -928,6 +934,10 @@ _release.add_config('link-release',
 
 _release.add_config('kiev-release',
   boards=['kiev'],
+)
+
+_release.add_config('parrot-release',
+  boards=['parrot'],
 )
 
 _arm_release = _release.derive(arm)
