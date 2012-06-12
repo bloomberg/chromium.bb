@@ -70,6 +70,10 @@ void WebUIBidiCheckerBrowserTestRTL::RunBidiCheckerOnPage(
 }
 
 void WebUIBidiCheckerBrowserTestRTL::SetUpOnMainThread() {
+  // Ensure that no other page (NTP4, home page, e.g.) is loading when we reload
+  // the locale resources.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+
   WebUIBidiCheckerBrowserTest::SetUpOnMainThread();
   FilePath pak_path;
   app_locale_ = base::i18n::GetConfiguredLocale();
@@ -79,7 +83,8 @@ void WebUIBidiCheckerBrowserTestRTL::SetUpOnMainThread() {
   pak_path = pak_path.AppendASCII("fake-bidi");
   pak_path = pak_path.ReplaceExtension(FILE_PATH_LITERAL("pak"));
   ResourceBundle::GetSharedInstance().OverrideLocalePakForTest(pak_path);
-  ResourceBundle::GetSharedInstance().ReloadLocaleResources("he");
+  ASSERT_FALSE(
+      ResourceBundle::GetSharedInstance().ReloadLocaleResources("he").empty());
   base::i18n::SetICUDefaultLocale("he");
 #if defined(OS_POSIX) && defined(TOOLKIT_GTK)
   gtk_widget_set_default_direction(GTK_TEXT_DIR_RTL);
@@ -93,7 +98,9 @@ void WebUIBidiCheckerBrowserTestRTL::CleanUpOnMainThread() {
 #endif
   base::i18n::SetICUDefaultLocale(app_locale_);
   ResourceBundle::GetSharedInstance().OverrideLocalePakForTest(FilePath());
-  ResourceBundle::GetSharedInstance().ReloadLocaleResources(app_locale_);
+  ASSERT_EQ(
+      app_locale_,
+      ResourceBundle::GetSharedInstance().ReloadLocaleResources(app_locale_));
 }
 
 // Tests
