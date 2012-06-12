@@ -608,33 +608,63 @@
   'PERFORMANCE': {
     'all': [
       'perf',
+
+      # ==================================================
+      # Disabled tests that need to be investigated/fixed.
+      # ==================================================
       '-perf.PageCyclerNetSimTest',  # Disable new test until vetted.
+
+      # ===========================
+      # Permanently-disabled tests.
+      # ===========================
       # Invoked outside of the pyauto_tests framework.
       '-perf.BenchmarkPerfTest.testSpaceport',
     ],
     'win': [
+      # ==================================================
+      # Disabled tests that need to be investigated/fixed.
+      # ==================================================
       '-perf.GPUPerfTest',  # Fails. Discuss with prachij@.
       '-perf.LiveGamePerfTest',  # Requires linux /proc/stat.
-      '-perf.MemoryTest',  # Designed only for ChromeOS.
-      '-perf.NetflixPerfTest',  # Netflix plugin not available.
       '-perf.YoutubePerfTest',  # AttributeError: AssertPlayingState.
+
+      # ===========================
+      # Permanently-disabled tests.
+      # ===========================
+      '-perf.MemoryTest',  # Designed only for ChromeOS.
+      '-perf.NetflixPerfTest',  # Designed only for ChromeOS.
     ],
     'mac': [
+      # ==================================================
+      # Disabled tests that need to be investigated/fixed.
+      # ==================================================
       '-perf.GPUPerfTest',  # Fails. Discuss with prachij@.
       '-perf.LiveGamePerfTest',  # Requires linux /proc/stat.
-      '-perf.MemoryTest',  # Designed only for ChromeOS.
-      '-perf.NetflixPerfTest',  # Netflix plugin not available.
       '-perf.YoutubePerfTest',  # AttributeError: AssertPlayingState.
+
+      # ===========================
+      # Permanently-disabled tests.
+      # ===========================
+      '-perf.MemoryTest',  # Designed only for ChromeOS.
+      '-perf.NetflixPerfTest',  # Designed only for ChromeOS.
     ],
     'linux': [
+      # ==================================================
+      # Disabled tests that need to be investigated/fixed.
+      # ==================================================
       '-perf.GPUPerfTest',  # Fails. Discuss with prachij@.
-      '-perf.MemoryTest',  # Designed only for ChromeOS.
-      '-perf.NetflixPerfTest',  # Netflix plugin not available.
       '-perf.WebGLTest',  # May not render WebGL; need to verify on QA bot.
       '-perf.YoutubePerfTest',  # AttributeError: AssertPlayingState.
+
+      # ===========================
+      # Permanently-disabled tests.
+      # ===========================
+      '-perf.MemoryTest',  # Designed only for ChromeOS.
+      '-perf.NetflixPerfTest',  # Designed only for ChromeOS.
     ],
     'chromeos': [
-      '-perf.GPUPerfTest',  # Not designed for ChromeOS.
+      '-perf.GPUPerfTest',  # Designed only for Chrome desktop.
+      '-perf.NetflixPerfTest',  # crosbug.com/p/8499.
     ],
   },
 
