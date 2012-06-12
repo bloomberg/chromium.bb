@@ -533,6 +533,9 @@ function initKeyboardOverlayId(inputMethodId) {
   }
   initLayout();
   update([]);
+  window.webkitRequestAnimationFrame(function() {
+    chrome.send('didPaint');
+  });
 }
 
 /**

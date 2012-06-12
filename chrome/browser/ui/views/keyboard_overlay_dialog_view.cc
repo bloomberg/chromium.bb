@@ -50,25 +50,7 @@ void KeyboardOverlayDialogView::ShowDialog() {
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_TITLE));
   KeyboardOverlayDialogView* view = new KeyboardOverlayDialogView(
       ProfileManager::GetDefaultProfileOrOffTheRecord(), delegate);
-  delegate->set_view(view);
-
-  views::Widget* widget = new views::Widget;
-  views::Widget::InitParams params(
-      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.delegate = view;
-  widget->Init(params);
-
-  // Show the widget at the bottom of the work area.
-  gfx::Size size;
-  delegate->GetDialogSize(&size);
-  gfx::Rect rect = gfx::Screen::GetMonitorNearestWindow(
-      view->GetWidget()->GetNativeView()).work_area();
-  gfx::Rect bounds((rect.width() - size.width()) / 2,
-                   rect.height() - size.height(),
-                   size.width(),
-                   size.height());
-  view->GetWidget()->SetBounds(bounds);
-  view->GetWidget()->Show();
+  delegate->Show(view);
 
   g_instance = view;
 }

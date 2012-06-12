@@ -15,8 +15,7 @@ class KeyboardOverlayDelegate : public ui::WebDialogDelegate {
  public:
   explicit KeyboardOverlayDelegate(const string16& title);
 
-  WebDialogView* view() { return view_; }
-  void set_view(WebDialogView* view) { view_ = view; }
+  void Show(WebDialogView* view);
 
   // Overridden from ui::WebDialogDelegate:
   virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
