@@ -114,7 +114,15 @@
             'grit_grd_file': 'common/extensions_api_resources.grd',
           },
           'includes': [ '../build/grit_action.gypi' ],
-        }
+        },
+        {
+          'action_name': 'tracing_resources',
+          'variables': {
+            'grit_grd_file': '../third_party/trace-viewer/src/tracing.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
+
       ],
       'includes': [ '../build/grit_target.gypi' ],
     },

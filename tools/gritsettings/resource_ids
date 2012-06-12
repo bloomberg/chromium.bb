@@ -199,4 +199,7 @@
   "chrome/common/extensions_api_resources.grd": {
     "includes": [26000],
   },
+  "third_party/trace-viewer/src/tracing.grd": {
+    "includes": [26500],
+  },
 }

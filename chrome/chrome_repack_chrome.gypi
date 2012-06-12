@@ -9,6 +9,7 @@
       '<(grit_out_dir)/common_resources.pak',
       '<(grit_out_dir)/renderer_resources.pak',
       '<(grit_out_dir)/theme_resources.pak',
+      '<(grit_out_dir)/tracing_resources.pak',
       '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.pak',
       '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
       '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.pak',
