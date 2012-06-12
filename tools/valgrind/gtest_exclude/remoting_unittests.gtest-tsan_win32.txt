@@ -1,3 +1,9 @@
+# These test use google_breakpad::CrashGenerationServer that seems to have race
+# conditions. See http://crbug.com/132164
+BreakpadWinDeathTest.TestAccessViolation
+BreakpadWinDeathTest.TestInvalidParameter
+BreakpadWinDeathTest.TestDebugbreak
+
 # Following tests create real libjingle connections, and libjingle has
 # hardcoded timeouts, so these tests fail under TSan.
 JingleSessionTest.Connect
