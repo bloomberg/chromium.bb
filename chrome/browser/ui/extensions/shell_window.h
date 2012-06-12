@@ -55,7 +55,7 @@ class ShellWindow : public content::NotificationObserver,
   static ShellWindow* Create(Profile* profile,
                              const extensions::Extension* extension,
                              const GURL& url,
-                             const CreateParams params);
+                             const CreateParams& params);
 
   const SessionID& session_id() const { return session_id_; }
   const extensions::Extension* extension() const { return extension_; }
@@ -89,7 +89,7 @@ class ShellWindow : public content::NotificationObserver,
   static ShellWindow* CreateImpl(Profile* profile,
                                  const extensions::Extension* extension,
                                  const GURL& url,
-                                 CreateParams params);
+                                 const CreateParams& params);
 
   // content::WebContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

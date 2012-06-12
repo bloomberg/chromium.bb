@@ -27,7 +27,7 @@
 ShellWindowCocoa::ShellWindowCocoa(Profile* profile,
                                    const extensions::Extension* extension,
                                    const GURL& url,
-                                   const ShellWindow::CreateParams params)
+                                   const ShellWindow::CreateParams& params)
     : ShellWindow(profile, extension, url),
       attention_request_id_(0) {
   NSRect rect = NSMakeRect(params.bounds.x(), params.bounds.y(),
@@ -177,6 +177,6 @@ NSWindow* ShellWindowCocoa::window() const {
 ShellWindow* ShellWindow::CreateImpl(Profile* profile,
                                      const extensions::Extension* extension,
                                      const GURL& url,
-                                     const ShellWindow::CreateParams params) {
+                                     const ShellWindow::CreateParams& params) {
   return new ShellWindowCocoa(profile, extension, url, params);
 }

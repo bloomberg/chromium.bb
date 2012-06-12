@@ -15,7 +15,7 @@
 ShellWindowGtk::ShellWindowGtk(Profile* profile,
                                const extensions::Extension* extension,
                                const GURL& url,
-                               const ShellWindow::CreateParams params)
+                               const ShellWindow::CreateParams& params)
     : ShellWindow(profile, extension, url),
       state_(GDK_WINDOW_STATE_WITHDRAWN),
       is_active_(!ui::ActiveWindowWatcherX::WMSupportsActivation()) {
@@ -174,6 +174,6 @@ gboolean ShellWindowGtk::OnWindowState(GtkWidget* sender,
 ShellWindow* ShellWindow::CreateImpl(Profile* profile,
                                      const extensions::Extension* extension,
                                      const GURL& url,
-                                     const ShellWindow::CreateParams params) {
+                                     const ShellWindow::CreateParams& params) {
   return new ShellWindowGtk(profile, extension, url, params);
 }

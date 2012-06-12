@@ -47,7 +47,7 @@ ShellWindow::CreateParams::CreateParams()
 ShellWindow* ShellWindow::Create(Profile* profile,
                                  const extensions::Extension* extension,
                                  const GURL& url,
-                                 const ShellWindow::CreateParams params) {
+                                 const ShellWindow::CreateParams& params) {
   // This object will delete itself when the window is closed.
   ShellWindow* window =
       ShellWindow::CreateImpl(profile, extension, url, params);
