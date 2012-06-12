@@ -31,7 +31,7 @@ class DefaultAccessibilityView : public ActionableView {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     FixedSizedImageView* image =
         new FixedSizedImageView(0, kTrayPopupItemHeight);
-    image->SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_ACCESSIBILITY).
+    image->SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_ACCESSIBILITY_DARK).
                     ToImageSkia());
 
     AddChildView(image);
@@ -91,7 +91,7 @@ views::View* TrayAccessibility::CreateDetailedView(user::LoginStatus status) {
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   views::ImageView* image = new views::ImageView;
-  image->SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_ACCESSIBILITY).
+  image->SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_ACCESSIBILITY_DARK).
       ToImageSkia());
 
   detailed_->AddChildView(image);
