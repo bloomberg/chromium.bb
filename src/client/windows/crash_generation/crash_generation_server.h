@@ -216,8 +216,9 @@ class CrashGenerationServer {
   // asynchronous IO operation.
   void EnterStateWhenSignaled(IPCServerState state);
 
-  // Sync object for thread-safe access to the shared list of clients.
-  CRITICAL_SECTION clients_sync_;
+  // Sync object for thread-safe access to the shared list of clients and
+  // the server's state.
+  CRITICAL_SECTION sync_;
 
   // List of clients.
   std::list<ClientInfo*> clients_;
@@ -271,10 +272,10 @@ class CrashGenerationServer {
   // Note that since we restrict the pipe to one instance, we
   // only need to keep one state of the server. Otherwise, server
   // would have one state per client it is talking to.
-  volatile IPCServerState server_state_;
+  IPCServerState server_state_;
 
   // Whether the server is shutting down.
-  volatile bool shutting_down_;
+  bool shutting_down_;
 
   // Overlapped instance for async I/O on the pipe.
   OVERLAPPED overlapped_;
