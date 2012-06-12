@@ -70,7 +70,7 @@ cr.define('print_preview', function() {
         this,
         localStrings.getString('localDestinationsTitle'),
         0 /*opt_maxSize*/,
-        localStrings.getString('manage'));
+        cr.isChromeOS ? null : localStrings.getString('manage'));
     this.addChild(this.localList_);
 
     /**
