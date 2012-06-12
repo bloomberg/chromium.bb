@@ -87,7 +87,7 @@ void GpuVideoDecoder::Reset(const base::Closure& closure)  {
   if (shutting_down_) {
     // Immediately fire the callback instead of waiting for the reset to
     // complete (which will happen after PipelineImpl::Stop() completes).
-    closure.Run();
+    gvd_loop_proxy_->PostTask(FROM_HERE, closure);
   } else {
     pending_reset_cb_ = closure;
   }
