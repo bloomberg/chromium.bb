@@ -1125,7 +1125,8 @@ WL_EXPORT void
 weston_layer_init(struct weston_layer *layer, struct wl_list *below)
 {
 	wl_list_init(&layer->surface_list);
-	wl_list_insert(below, &layer->link);
+	if (below != NULL)
+		wl_list_insert(below, &layer->link);
 }
 
 WL_EXPORT void

@@ -38,11 +38,17 @@
 #include "../shared/config-parser.h"
 #include "log.h"
 
+#define DEFAULT_NUM_WORKSPACES 1
+
 enum animation_type {
 	ANIMATION_NONE,
 
 	ANIMATION_ZOOM,
 	ANIMATION_FADE
+};
+
+struct workspace {
+	struct weston_layer layer;
 };
 
 struct desktop_shell {
@@ -54,7 +60,6 @@ struct desktop_shell {
 
 	struct weston_layer fullscreen_layer;
 	struct weston_layer panel_layer;
-	struct weston_layer toplevel_layer;
 	struct weston_layer background_layer;
 	struct weston_layer lock_layer;
 
@@ -78,6 +83,12 @@ struct desktop_shell {
 
 	struct wl_list backgrounds;
 	struct wl_list panels;
+
+	struct {
+		struct wl_array array;
+		unsigned int current;
+		unsigned int num;
+	} workspaces;
 
 	struct {
 		char *path;
@@ -276,12 +287,15 @@ shell_configuration(struct desktop_shell *shell)
 	char *config_file;
 	char *path = NULL;
 	int duration = 60;
+	unsigned int num_workspaces = DEFAULT_NUM_WORKSPACES;
 	char *modifier = NULL;
 	char *win_animation = NULL;
 
 	struct config_key shell_keys[] = {
 		{ "binding-modifier",   CONFIG_KEY_STRING, &modifier },
 		{ "animation",          CONFIG_KEY_STRING, &win_animation},
+		{ "num-workspaces",
+			CONFIG_KEY_UNSIGNED_INTEGER, &num_workspaces },
 	};
 
 	struct config_key saver_keys[] = {
@@ -302,6 +316,79 @@ shell_configuration(struct desktop_shell *shell)
 	shell->screensaver.duration = duration;
 	shell->binding_modifier = get_modifier(modifier);
 	shell->win_animation_type = get_animation_type(win_animation);
+	shell->workspaces.num = num_workspaces > 0 ? num_workspaces : 1;
+}
+
+static void
+workspace_destroy(struct workspace *ws)
+{
+	free(ws);
+}
+
+static struct workspace *
+workspace_create(void)
+{
+	struct workspace *ws = malloc(sizeof *ws);
+	if (ws == NULL)
+		return NULL;
+
+	weston_layer_init(&ws->layer, NULL);
+
+	return ws;
+}
+
+static struct workspace *
+get_workspace(struct desktop_shell *shell, unsigned int index)
+{
+	struct workspace **pws = shell->workspaces.array.data;
+	pws += index;
+	return *pws;
+}
+
+static struct workspace *
+get_current_workspace(struct desktop_shell *shell)
+{
+	return get_workspace(shell, shell->workspaces.current);
+}
+
+static void
+activate_workspace(struct desktop_shell *shell, unsigned int index)
+{
+	struct workspace *ws;
+
+	ws = get_workspace(shell, index);
+	wl_list_insert(&shell->panel_layer.link, &ws->layer.link);
+
+	shell->workspaces.current = index;
+}
+
+static void
+change_workspace(struct desktop_shell *shell, unsigned int index)
+{
+	struct workspace *from;
+	struct workspace *to;
+	struct weston_seat *seat;
+
+	if (index == shell->workspaces.current)
+		return;
+
+	/* Don't change workspace when there is any fullscreen surfaces. */
+	if (!wl_list_empty(&shell->fullscreen_layer.surface_list))
+		return;
+
+	/* Clear keyboard focus so that no hidden surfaces will keep it. */
+	wl_list_for_each(seat, &shell->compositor->seat_list, link)
+		if (seat->seat.keyboard)
+			wl_keyboard_set_focus(seat->seat.keyboard, NULL);
+
+	from = get_current_workspace(shell);
+	to = get_workspace(shell, index);
+
+	shell->workspaces.current = index;
+	wl_list_insert(&from->layer.link, &to->layer.link);
+	wl_list_remove(&from->layer.link);
+
+	weston_compositor_damage_all(shell->compositor);
 }
 
 static void
@@ -1540,7 +1627,6 @@ resume_desktop(struct desktop_shell *shell)
 		       &shell->fullscreen_layer.link);
 	wl_list_insert(&shell->fullscreen_layer.link,
 		       &shell->panel_layer.link);
-	wl_list_insert(&shell->panel_layer.link, &shell->toplevel_layer.link);
 
 	shell->locked = false;
 	shell->compositor->idle_time = shell->compositor->option_idle_time;
@@ -1935,6 +2021,8 @@ activate(struct desktop_shell *shell, struct weston_surface *es,
 	 struct weston_seat *seat)
 {
 	struct weston_surface *surf, *prev;
+	struct workspace *ws;
+	struct weston_layer *ws_layer;
 
 	weston_surface_activate(es, seat);
 
@@ -1956,18 +2044,21 @@ activate(struct desktop_shell *shell, struct weston_surface *es,
 		shell_configure_fullscreen(get_shell_surface(es));
 		break;
 	default:
+		ws = get_current_workspace(shell);
+		ws_layer = &ws->layer;
+
 		/* move the fullscreen surfaces down into the toplevel layer */
 		if (!wl_list_empty(&shell->fullscreen_layer.surface_list)) {
 			wl_list_for_each_reverse_safe(surf,
 						      prev, 
 					              &shell->fullscreen_layer.surface_list, 
-						      layer_link)
+						      layer_link) {
 				weston_surface_restack(surf,
-						       &shell->toplevel_layer.surface_list); 
+						       &ws_layer->surface_list);
+			}
 		}
 
-		weston_surface_restack(es,
-				       &shell->toplevel_layer.surface_list);
+		weston_surface_restack(es, &ws_layer->surface_list);
 		break;
 	}
 }
@@ -2033,7 +2124,6 @@ lock(struct wl_listener *listener, void *data)
 	 * input events while we are locked. */
 
 	wl_list_remove(&shell->panel_layer.link);
-	wl_list_remove(&shell->toplevel_layer.link);
 	wl_list_remove(&shell->fullscreen_layer.link);
 	wl_list_insert(&shell->compositor->cursor_layer.link,
 		       &shell->lock_layer.link);
@@ -2101,15 +2191,12 @@ map(struct desktop_shell *shell, struct weston_surface *surface,
     int32_t width, int32_t height, int32_t sx, int32_t sy)
 {
 	struct weston_compositor *compositor = shell->compositor;
-	struct shell_surface *shsurf;
-	enum shell_surface_type surface_type = SHELL_SURFACE_NONE;
+	struct shell_surface *shsurf = get_shell_surface(surface);
+	enum shell_surface_type surface_type = shsurf->type;
 	struct weston_surface *parent;
 	struct weston_seat *seat;
+	struct workspace *ws;
 	int panel_height = 0;
-
-	shsurf = get_shell_surface(surface);
-	if (shsurf)
-		surface_type = shsurf->type;
 
 	surface->geometry.width = width;
 	surface->geometry.height = height;
@@ -2184,8 +2271,8 @@ map(struct desktop_shell *shell, struct weston_surface *surface,
 	case SHELL_SURFACE_NONE:
 		break;
 	default:
-		wl_list_insert(&shell->toplevel_layer.surface_list,
-			       &surface->layer_link); 
+		ws = get_current_workspace(shell);
+		wl_list_insert(&ws->layer.surface_list, &surface->layer_link);
 		break;
 	}
 
@@ -2662,16 +2749,62 @@ force_kill_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
 }
 
 static void
+workspace_up_binding(struct wl_seat *seat, uint32_t time,
+		     uint32_t key, void *data)
+{
+	struct desktop_shell *shell = data;
+	unsigned int new_index = shell->workspaces.current;
+
+	if (new_index != 0)
+		new_index--;
+
+	change_workspace(shell, new_index);
+}
+
+static void
+workspace_down_binding(struct wl_seat *seat, uint32_t time,
+		       uint32_t key, void *data)
+{
+	struct desktop_shell *shell = data;
+	unsigned int new_index = shell->workspaces.current;
+
+	if (new_index < shell->workspaces.num - 1)
+		new_index++;
+
+	change_workspace(shell, new_index);
+}
+
+static void
+workspace_f_binding(struct wl_seat *seat, uint32_t time,
+		    uint32_t key, void *data)
+{
+	struct desktop_shell *shell = data;
+	unsigned int new_index;
+
+	new_index = key - KEY_F1;
+	if (new_index >= shell->workspaces.num)
+		new_index = shell->workspaces.num - 1;
+
+	change_workspace(shell, new_index);
+}
+
+
+static void
 shell_destroy(struct wl_listener *listener, void *data)
 {
 	struct desktop_shell *shell =
 		container_of(listener, struct desktop_shell, destroy_listener);
+	struct workspace **ws;
 
 	if (shell->child.client)
 		wl_client_destroy(shell->child.client);
 
 	wl_list_remove(&shell->lock_listener.link);
 	wl_list_remove(&shell->unlock_listener.link);
+
+	wl_array_for_each(ws, &shell->workspaces.array)
+		workspace_destroy(*ws);
+	wl_array_release(&shell->workspaces.array);
 
 	free(shell->screensaver.path);
 	free(shell);
@@ -2681,6 +2814,7 @@ static void
 shell_add_bindings(struct weston_compositor *ec, struct desktop_shell *shell)
 {
 	uint32_t mod;
+	int i, num_workspace_bindings;
 
 	/* fixed bindings */
 	weston_compositor_add_key_binding(ec, KEY_BACKSPACE,
@@ -2722,6 +2856,21 @@ shell_add_bindings(struct weston_compositor *ec, struct desktop_shell *shell)
 				          debug_repaint_binding, shell);
 	weston_compositor_add_key_binding(ec, KEY_K, mod,
 				          force_kill_binding, shell);
+	weston_compositor_add_key_binding(ec, KEY_UP, mod,
+					  workspace_up_binding, shell);
+	weston_compositor_add_key_binding(ec, KEY_DOWN, mod,
+					  workspace_down_binding, shell);
+
+	/* Add bindings for mod+F[1-6] for workspace 1 to 6. */
+	if (shell->workspaces.num > 1) {
+		num_workspace_bindings = shell->workspaces.num;
+		if (num_workspace_bindings > 6)
+			num_workspace_bindings = 6;
+		for (i = 0; i < num_workspace_bindings; i++)
+			weston_compositor_add_key_binding(ec, KEY_F1 + i, mod,
+							  workspace_f_binding,
+							  shell);
+	}
 }
 
 int
@@ -2731,6 +2880,8 @@ WL_EXPORT int
 shell_init(struct weston_compositor *ec)
 {
 	struct desktop_shell *shell;
+	struct workspace **pws;
+	unsigned int i;
 
 	shell = malloc(sizeof *shell);
 	if (shell == NULL)
@@ -2758,12 +2909,23 @@ shell_init(struct weston_compositor *ec)
 
 	weston_layer_init(&shell->fullscreen_layer, &ec->cursor_layer.link);
 	weston_layer_init(&shell->panel_layer, &shell->fullscreen_layer.link);
-	weston_layer_init(&shell->toplevel_layer, &shell->panel_layer.link);
-	weston_layer_init(&shell->background_layer,
-			  &shell->toplevel_layer.link);
-	wl_list_init(&shell->lock_layer.surface_list);
+	weston_layer_init(&shell->background_layer, &shell->panel_layer.link);
+	weston_layer_init(&shell->lock_layer, NULL);
+
+	wl_array_init(&shell->workspaces.array);
 
 	shell_configuration(shell);
+
+	for (i = 0; i < shell->workspaces.num; i++) {
+		pws = wl_array_add(&shell->workspaces.array, sizeof *pws);
+		if (pws == NULL)
+			return -1;
+
+		*pws = workspace_create();
+		if (*pws == NULL)
+			return -1;
+	}
+	activate_workspace(shell, 0);
 
 	if (wl_display_add_global(ec->wl_display, &wl_shell_interface,
 				  shell, bind_shell) == NULL)
