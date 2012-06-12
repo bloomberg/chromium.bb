@@ -151,7 +151,6 @@ struct weston_output {
 	struct wl_global *global;
 	struct weston_compositor *compositor;
 	struct weston_matrix matrix;
-	struct wl_list frame_callback_list;
 	struct wl_list animation_list;
 	int32_t x, y, mm_width, mm_height;
 	struct weston_border border;

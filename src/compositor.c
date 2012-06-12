@@ -994,6 +994,7 @@ weston_output_repaint(struct weston_output *output, int msecs)
 	struct weston_layer *layer;
 	struct weston_animation *animation, *next;
 	struct weston_frame_callback *cb, *cnext;
+	struct wl_list frame_callback_list;
 	pixman_region32_t opaque, new_damage, output_damage;
 	int32_t width, height;
 
@@ -1007,10 +1008,16 @@ weston_output_repaint(struct weston_output *output, int msecs)
 
 	/* Rebuild the surface list and update surface transforms up front. */
 	wl_list_init(&ec->surface_list);
+	wl_list_init(&frame_callback_list);
 	wl_list_for_each(layer, &ec->layer_list, link) {
 		wl_list_for_each(es, &layer->surface_list, layer_link) {
 			weston_surface_update_transform(es);
 			wl_list_insert(ec->surface_list.prev, &es->link);
+			if (es->output == output) {
+				wl_list_insert_list(&frame_callback_list,
+						    &es->frame_callback_list);
+				wl_list_init(&es->frame_callback_list);
+			}
 		}
 	}
 
@@ -1059,10 +1066,11 @@ weston_output_repaint(struct weston_output *output, int msecs)
 	weston_compositor_repick(ec);
 	wl_event_loop_dispatch(ec->input_loop, 0);
 
-	wl_list_for_each_safe(cb, cnext, &output->frame_callback_list, link) {
+	wl_list_for_each_safe(cb, cnext, &frame_callback_list, link) {
 		wl_callback_send_done(&cb->resource, msecs);
 		wl_resource_destroy(&cb->resource);
 	}
+	wl_list_init(&frame_callback_list);
 
 	wl_list_for_each_safe(animation, next, &output->animation_list, link) {
 		animation->frame(animation, output, msecs);
@@ -1256,12 +1264,6 @@ weston_surface_assign_output(struct weston_surface *es)
 
 	es->output = new_output;
 	weston_surface_update_output_mask(es, mask);
-
-	if (!wl_list_empty(&es->frame_callback_list)) {
-		wl_list_insert_list(new_output->frame_callback_list.prev,
-				    &es->frame_callback_list);
-		wl_list_init(&es->frame_callback_list);
-	}
 }
 
 static void
@@ -1350,13 +1352,7 @@ surface_frame(struct wl_client *client,
 	cb->resource.data = cb;
 
 	wl_client_add_resource(client, &cb->resource);
-
-	if (es->output) {
-		wl_list_insert(es->output->frame_callback_list.prev,
-			       &cb->link);
-	} else {
-		wl_list_insert(es->frame_callback_list.prev, &cb->link);
-	}
+	wl_list_insert(es->frame_callback_list.prev, &cb->link);
 }
 
 static void
@@ -2907,7 +2903,6 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 	weston_output_damage(output);
 
 	wl_signal_init(&output->frame_signal);
-	wl_list_init(&output->frame_callback_list);
 	wl_list_init(&output->animation_list);
 	wl_list_init(&output->resource_list);
 
