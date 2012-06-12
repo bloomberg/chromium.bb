@@ -8,6 +8,7 @@ from __future__ import with_statement
 
 import os.path
 import re
+import subprocess
 import sys
 
 from buildbot_lib import (
@@ -165,6 +166,17 @@ def BuildScript(status, context):
         r'[\\/]([0-9a-fA-F]+\.tmp|\.org\.chrom\w+\.Chrom\w+\..+)$')
     file_name_filter = lambda fn: file_name_re.search(fn) is not None
     TryToCleanContents(tmp_dir, file_name_filter)
+
+    # Mac has an additional temporary directory; clean it up.
+    # TODO(bradnelson): Fix Mac Chromium so that these temp files are created
+    #     with open() + unlink() so that they will not get left behind.
+    if context.Mac():
+      subprocess.call(
+          "find /var/folders -name '.org.chromium.*' -exec rm -v '{}' ';'",
+          shell=True)
+      subprocess.call(
+          "find /var/folders -name '.com.google.Chrome*' -exec rm -v '{}' ';'",
+          shell=True)
 
   # Skip over hooks when run inside the toolchain build because
   # download_toolchains would overwrite the toolchain build.
