@@ -199,15 +199,15 @@ $(HTML_DIR): local-fontconfig-devel.sgml $(DOCS_DEPS)
 	$(DOC2HTML) -V '%use-id-as-filename%' -o $@ local-fontconfig-devel.sgml
 local-fontconfig-user.sgml: $(srcdir)/fontconfig-user.sgml
 	$(AM_V_GEN) $(LN_S) $(srcdir)/fontconfig-user.sgml $@;	\
-	[ ! -f $(builddir)/fontconfig-user.sgml ] && cp -a $(srcdir)/fontconfig-user.sgml $(builddir)/fontconfig-user.sgml
+	[ ! -f $(builddir)/fontconfig-user.sgml ] && cp -a $(srcdir)/fontconfig-user.sgml $(builddir)/fontconfig-user.sgml || :
 local-fontconfig-devel.sgml: $(srcdir)/fontconfig-devel.sgml
 	$(AM_V_GEN) $(LN_S) $(srcdir)/fontconfig-devel.sgml $@;	\
-	[ ! -f $(builddir)/fontconfig-devel.sgml ] && cp -a $(srcdir)/fontconfig-devel.sgml $(builddir)/fontconfig-devel.sgml
+	[ ! -f $(builddir)/fontconfig-devel.sgml ] && cp -a $(srcdir)/fontconfig-devel.sgml $(builddir)/fontconfig-devel.sgml || :
 #
 all-local: $(BUILT_DOCS) $(HTML_DIR)/*
 clean-local:
 	$(RM) -r $(HTML_DIR) devel-man
-	[ "x$(builddir)" != "$(srcdir)" ] && $(RM) $(builddir)/fontconfig-user.sgml $(builddir)/fontconfig-devel.sgml
+	[ "x$(builddir)" != "x$(srcdir)" ] && $(RM) $(builddir)/fontconfig-user.sgml $(builddir)/fontconfig-devel.sgml || :
 else
 htmldoc_DATA += $(srcdir)/$(HTML_DIR)/*
 all-local:
