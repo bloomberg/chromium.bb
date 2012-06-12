@@ -137,17 +137,6 @@ string16 DumpRenderer(WebFrame* web_frame) {
   return web_frame->renderTreeAsText();
 }
 
-bool CounterValueForElementById(WebFrame* web_frame, const std::string& id,
-                                string16* counter_value) {
-  WebString result =
-      web_frame->counterValueForElementById(WebString::fromUTF8(id));
-  if (result.isNull())
-    return false;
-
-  *counter_value = result;
-  return true;
-}
-
 int PageNumberForElementById(WebFrame* web_frame,
                              const std::string& id,
                              float page_width_in_pixels,

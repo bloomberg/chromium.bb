@@ -56,12 +56,6 @@ string16 DumpFramesAsText(WebKit::WebFrame* web_frame, bool recursive);
 // Returns the renderer's description of its tree (its externalRepresentation).
 WEBKIT_GLUE_EXPORT string16 DumpRenderer(WebKit::WebFrame* web_frame);
 
-// Fill the value of counter in the element specified by the id into
-// counter_value.  Return false when the specified id doesn't exist.
-bool CounterValueForElementById(WebKit::WebFrame* web_frame,
-                                const std::string& id,
-                                string16* counter_value);
-
 // Returns the number of page where the specified element will be put.
 int PageNumberForElementById(WebKit::WebFrame* web_frame,
                              const std::string& id,
