@@ -9,6 +9,10 @@
 // This file lists all the command IDs understood by e.g. the browser.
 // It is used by Windows RC files, Mac NIB files, and other platforms too.
 
+// Mac NIB files (e.g. chrome/app/nibs/MainMenu.xib) include ID numbers rather
+// than the corresponding #define labels.  If you change a given command's
+// number, any NIB files that refer to it will also need to be updated.
+
 // Values below IDC_MinimumLabelValue are reserved for dynamic menu items.
 #define IDC_MinimumLabelValue           4000
 
