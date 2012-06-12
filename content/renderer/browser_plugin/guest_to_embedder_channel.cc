@@ -247,7 +247,11 @@ void GuestToEmbedderChannel::OnDidChangeView(
 
 void GuestToEmbedderChannel::OnDidChangeFocus(PP_Instance instance,
                                               PP_Bool has_focus) {
-  NOTIMPLEMENTED();
+  InstanceMap::iterator it = render_view_instances_.find(instance);
+  if (it == render_view_instances_.end())
+    return;
+  RenderViewImpl* render_view = it->second;
+  render_view->GetWebView()->setFocus(PP_ToBool(has_focus));
 }
 
 void GuestToEmbedderChannel::OnHandleMessage(
