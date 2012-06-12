@@ -30,6 +30,7 @@ class Extension;
 class LazyBackgroundTaskQueue;
 class ManagementPolicy;
 class RulesRegistryService;
+class StateStore;
 }
 
 // The ExtensionSystem manages the creation and destruction of services
@@ -73,6 +74,9 @@ class ExtensionSystem : public ProfileKeyedService {
 
   // The AlarmManager is created at startup.
   virtual extensions::AlarmManager* alarm_manager() = 0;
+
+  // The StateStore is created at startup.
+  virtual extensions::StateStore* state_store() = 0;
 
   // Returns the IO-thread-accessible extension data.
   virtual ExtensionInfoMap* info_map() = 0;
@@ -126,6 +130,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
   virtual ExtensionDevToolsManager* devtools_manager() OVERRIDE;
   virtual ExtensionProcessManager* process_manager() OVERRIDE;
   virtual extensions::AlarmManager* alarm_manager() OVERRIDE;
+  virtual extensions::StateStore* state_store() OVERRIDE;
   virtual extensions::LazyBackgroundTaskQueue* lazy_background_task_queue()
       OVERRIDE;  // shared
   virtual ExtensionInfoMap* info_map() OVERRIDE;  // shared
@@ -159,6 +164,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
     void InitInfoMap();
     void Init(bool extensions_enabled);
 
+    extensions::StateStore* state_store();
     ExtensionService* extension_service();
     extensions::ManagementPolicy* management_policy();
     UserScriptMaster* user_script_master();
@@ -173,9 +179,9 @@ class ExtensionSystemImpl : public ExtensionSystem {
 
     // The services that are shared between normal and incognito profiles.
 
-    // Keep extension_prefs_ above extension_service_, because the latter
-    // maintains a pointer to the former and must be destructed first.
+    scoped_ptr<extensions::StateStore> state_store_;
     scoped_ptr<ExtensionPrefs> extension_prefs_;
+    // ExtensionService depends on the 2 above.
     scoped_ptr<ExtensionService> extension_service_;
     scoped_ptr<extensions::ManagementPolicy> management_policy_;
     scoped_refptr<UserScriptMaster> user_script_master_;

@@ -27,6 +27,7 @@
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/lazy_background_task_queue.h"
 #include "chrome/browser/extensions/management_policy.h"
+#include "chrome/browser/extensions/state_store.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -83,6 +84,10 @@ void ExtensionSystemImpl::Shared::InitPrefs() {
       profile_->GetPath().AppendASCII(ExtensionService::kInstallDirectoryName),
       ExtensionPrefValueMapFactory::GetForProfile(profile_)));
   extension_prefs_->Init(extensions_disabled);
+
+  state_store_.reset(new extensions::StateStore(
+      profile_,
+      profile_->GetPath().AppendASCII(ExtensionService::kStateStoreName)));
 }
 
 void ExtensionSystemImpl::Shared::RegisterManagementPolicyProviders() {
@@ -196,6 +201,10 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   rules_registry_service_->RegisterDefaultRulesRegistries();
 }
 
+extensions::StateStore* ExtensionSystemImpl::Shared::state_store() {
+  return state_store_.get();
+}
+
 ExtensionService* ExtensionSystemImpl::Shared::extension_service() {
   return extension_service_.get();
 }
@@ -296,6 +305,10 @@ ExtensionProcessManager* ExtensionSystemImpl::process_manager() {
 
 extensions::AlarmManager* ExtensionSystemImpl::alarm_manager() {
   return alarm_manager_.get();
+}
+
+extensions::StateStore* ExtensionSystemImpl::state_store() {
+  return shared_->state_store();
 }
 
 ExtensionInfoMap* ExtensionSystemImpl::info_map() {

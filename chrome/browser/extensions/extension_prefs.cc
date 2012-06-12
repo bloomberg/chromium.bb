@@ -8,7 +8,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/admin_policy.h"
-#include "chrome/browser/extensions/api/alarms/alarm_manager.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/extensions/extension_menu_manager.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
@@ -170,10 +169,6 @@ const char kPrefIncognitoContentSettings[] = "incognito_content_settings";
 // A list of event names that this extension has registered from its lazy
 // background page.
 const char kRegisteredEvents[] = "events";
-
-// A list of alarms that this extension has set.
-const char kRegisteredAlarms[] = "alarms";
-const char kAlarmScheduledRunTime[] = "scheduled_run_time";
 
 // Persisted value for omnibox.setDefaultSuggestion.
 const char kOmniboxDefaultSuggestion[] = "omnibox_default_suggestion";
@@ -957,43 +952,6 @@ void ExtensionPrefs::SetRegisteredEvents(
   UpdateExtensionPref(extension_id, kRegisteredEvents, value);
 }
 
-std::vector<extensions::AlarmPref> ExtensionPrefs::GetRegisteredAlarms(
-    const std::string& extension_id) {
-  std::vector<extensions::AlarmPref> alarms;
-  const base::DictionaryValue* extension = GetExtensionPref(extension_id);
-  if (!extension)
-    return alarms;
-
-  base::ListValue* list = NULL;
-  if (!extension->GetList(kRegisteredAlarms, &list))
-    return alarms;
-
-  typedef extensions::AlarmManager::Alarm Alarm;
-  for (size_t i = 0; i < list->GetSize(); ++i) {
-    base::DictionaryValue* alarm_dict = NULL;
-    extensions::AlarmPref alarm;
-    alarm.alarm.reset(new Alarm());
-    if (list->GetDictionary(i, &alarm_dict) &&
-        Alarm::Populate(*alarm_dict, alarm.alarm.get())) {
-      alarm.scheduled_run_time = ReadTime(alarm_dict, kAlarmScheduledRunTime);
-      alarms.push_back(alarm);
-    }
-  }
-  return alarms;
-}
-
-void ExtensionPrefs::SetRegisteredAlarms(
-    const std::string& extension_id,
-    const std::vector<extensions::AlarmPref>& alarms) {
-  base::ListValue* list = new ListValue();
-  for (size_t i = 0; i < alarms.size(); ++i) {
-    scoped_ptr<base::DictionaryValue> alarm = alarms[i].alarm->ToValue().Pass();
-    SaveTime(alarm.get(), kAlarmScheduledRunTime, alarms[i].scheduled_run_time);
-    list->Append(alarm.release());
-  }
-  UpdateExtensionPref(extension_id, kRegisteredAlarms, list);
-}
-
 extensions::ExtensionOmniboxSuggestion
 ExtensionPrefs::GetOmniboxDefaultSuggestion(const std::string& extension_id) {
   extensions::ExtensionOmniboxSuggestion suggestion;
@@ -1241,7 +1199,6 @@ void ExtensionPrefs::OnExtensionInstalled(
 
   // Clear state that may be registered from a previous install.
   extension_dict->Remove(kRegisteredEvents, NULL);
-  extension_dict->Remove(kRegisteredAlarms, NULL);
   extension_dict->Remove(kPrefContextMenus, NULL);
 
   if (extension->is_app()) {

@@ -10,6 +10,7 @@
 #include <map>
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/common/extensions/api/alarms.h"
@@ -24,7 +25,9 @@ class ExtensionAlarmsSchedulingTest;
 
 // Manages the currently pending alarms for every extension in a profile.
 // There is one manager per virtual Profile.
-class AlarmManager : public content::NotificationObserver {
+class AlarmManager
+    : public content::NotificationObserver,
+      public base::SupportsWeakPtr<AlarmManager> {
  public:
   typedef extensions::api::alarms::Alarm Alarm;
   typedef std::vector<linked_ptr<Alarm> > AlarmList;
@@ -100,9 +103,10 @@ class AlarmManager : public content::NotificationObserver {
                     const linked_ptr<Alarm>& alarm,
                     base::TimeDelta time_delay);
 
-  // Syncs our alarm data for the given extension to/from the prefs file.
-  void WriteToPrefs(const std::string& extension_id);
-  void ReadFromPrefs(const std::string& extension_id);
+  // Syncs our alarm data for the given extension to/from the state storage.
+  void WriteToStorage(const std::string& extension_id);
+  void ReadFromStorage(const std::string& extension_id,
+                       scoped_ptr<base::Value> value);
 
   // Schedules the next poll of alarms for when the next soonest alarm runs,
   // but do not more often than min_period.
@@ -133,15 +137,6 @@ class AlarmManager : public content::NotificationObserver {
   // The previous and next time that alarms were and will be run.
   base::Time last_poll_time_;
   base::Time next_poll_time_;
-};
-
-// Contains the data we store in the extension prefs for each alarm.
-struct AlarmPref {
-  linked_ptr<AlarmManager::Alarm> alarm;
-  base::Time scheduled_run_time;
-
-  AlarmPref();
-  ~AlarmPref();
 };
 
 } //  namespace extensions
