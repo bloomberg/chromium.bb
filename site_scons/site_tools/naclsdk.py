@@ -300,8 +300,6 @@ def _SetEnvForPnacl(env, root):
 
   if env.Bit('use_sandboxed_translator'):
     sb_flags = ' --pnacl-sb'
-    if env.Bit('sandboxed_translator_is_dynamic'):
-      sb_flags += ' --pnacl-sb-dynamic'
     pnacl_ld_flags += sb_flags
     pnacl_translate_flags += sb_flags
 
