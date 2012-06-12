@@ -19,6 +19,7 @@ bool BalloonCollectionImplAsh::AddWebUIMessageCallback(
     const Notification& notification,
     const std::string& message,
     const chromeos::BalloonViewHost::MessageCallback& callback) {
+#if defined(OS_CHROMEOS)
   Balloon* balloon = base().FindBalloon(notification);
   if (!balloon)
     return false;
@@ -29,6 +30,9 @@ bool BalloonCollectionImplAsh::AddWebUIMessageCallback(
   chromeos::BalloonViewHost* balloon_view_host =
       static_cast<chromeos::BalloonViewHost*>(balloon_host);
   return balloon_view_host->AddWebUIMessageCallback(message, callback);
+#else
+  return false;
+#endif
 }
 
 void BalloonCollectionImplAsh::AddSystemNotification(
