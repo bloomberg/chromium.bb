@@ -23,7 +23,8 @@ class InputMethodDescriptorTest : public testing::Test {
     return InputMethodDescriptor(id,
                                  "",  // name
                                  "us",
-                                 "language_code");
+                                 "language_code",
+                                 false);
   }
 };
 

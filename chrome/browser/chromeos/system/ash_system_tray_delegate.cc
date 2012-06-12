@@ -106,6 +106,7 @@ void ExtractIMEInfo(const input_method::InputMethodDescriptor& ime,
   info->id = ime.id();
   info->name = util.GetInputMethodLongName(ime);
   info->short_name = util.GetInputMethodShortName(ime);
+  info->third_party = ime.third_party();
 }
 
 ash::DriveOperationStatusList GetDriveStatusList(

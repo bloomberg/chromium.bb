@@ -227,7 +227,12 @@ TrayIME::~TrayIME() {
 
 void TrayIME::UpdateTrayLabel(const IMEInfo& current, size_t count) {
   if (tray_label_) {
-    tray_label_->label()->SetText(current.short_name);
+    if (current.third_party) {
+      // TODO(zork): Update this decoration.
+      tray_label_->label()->SetText(current.short_name + UTF8ToUTF16("(3rd)"));
+    } else {
+      tray_label_->label()->SetText(current.short_name);
+    }
     tray_label_->SetVisible(count > 1);
   }
 }

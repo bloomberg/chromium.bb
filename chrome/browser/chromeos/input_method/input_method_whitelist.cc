@@ -34,7 +34,8 @@ InputMethodDescriptors* InputMethodWhitelist::GetSupportedInputMethods() const {
         kInputMethods[i].input_method_id,
         "",
         kInputMethods[i].xkb_layout_id,
-        kInputMethods[i].language_code));
+        kInputMethods[i].language_code,
+        false));
   }
   return input_methods;
 }

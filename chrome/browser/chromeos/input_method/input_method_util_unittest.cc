@@ -48,7 +48,8 @@ class InputMethodUtilTest : public testing::Test {
     return InputMethodDescriptor(id,
                                  "",
                                  raw_layout,
-                                 language_code);
+                                 language_code,
+                                 false);
   }
 
   InputMethodWhitelist whitelist_;

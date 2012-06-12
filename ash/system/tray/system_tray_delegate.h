@@ -89,6 +89,7 @@ struct ASH_EXPORT IMEInfo {
   ~IMEInfo();
 
   bool selected;
+  bool third_party;
   std::string id;
   string16 name;
   string16 short_name;

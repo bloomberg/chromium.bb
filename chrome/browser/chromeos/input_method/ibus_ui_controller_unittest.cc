@@ -15,11 +15,12 @@ namespace input_method {
 TEST(IBusUiControllerTest, TestIsActive) {
   InputMethodDescriptors descriptors;
   EXPECT_FALSE(IsActiveForTesting("mozc", &descriptors));
-  descriptors.push_back(InputMethodDescriptor("mozc", "name", "us", "en-US"));
+  descriptors.push_back(
+      InputMethodDescriptor("mozc", "name", "us", "en-US", false));
   EXPECT_TRUE(IsActiveForTesting("mozc", &descriptors));
   EXPECT_FALSE(IsActiveForTesting("mozc-jp", &descriptors));
   descriptors.push_back(
-      InputMethodDescriptor("xkb:us::eng", "name", "us", "en-US"));
+      InputMethodDescriptor("xkb:us::eng", "name", "us", "en-US", false));
   EXPECT_TRUE(IsActiveForTesting("xkb:us::eng", &descriptors));
   EXPECT_TRUE(IsActiveForTesting("mozc", &descriptors));
   EXPECT_FALSE(IsActiveForTesting("mozc-jp", &descriptors));

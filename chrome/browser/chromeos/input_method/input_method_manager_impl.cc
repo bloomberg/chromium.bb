@@ -303,7 +303,8 @@ void InputMethodManagerImpl::AddInputMethodExtension(
   }
 
   const std::string layout = layouts.empty() ? "" : layouts[0];
-  extra_input_methods_[id] = InputMethodDescriptor(id, name, layout, language);
+  extra_input_methods_[id] =
+      InputMethodDescriptor(id, name, layout, language, true);
 
   if (!Contains(active_input_method_ids_, id)) {
     active_input_method_ids_.push_back(id);

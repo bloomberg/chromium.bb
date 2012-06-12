@@ -19,14 +19,16 @@ const char kFallbackLayout[] = "us";
 InputMethodDescriptor::InputMethodDescriptor(const std::string& id,
                                              const std::string& name,
                                              const std::string& keyboard_layout,
-                                             const std::string& language_code)
+                                             const std::string& language_code,
+                                             bool third_party)
     : id_(id),
       name_(name),
       keyboard_layout_(keyboard_layout),
-      language_code_(language_code) {
+      language_code_(language_code),
+      third_party_(third_party) {
 }
 
-InputMethodDescriptor::InputMethodDescriptor() {
+InputMethodDescriptor::InputMethodDescriptor() : third_party_(false) {
 }
 
 InputMethodDescriptor::~InputMethodDescriptor() {
@@ -48,7 +50,8 @@ InputMethodDescriptor::GetFallbackInputMethodDescriptor() {
   return InputMethodDescriptor("xkb:us::eng",
                                "",
                                kFallbackLayout,
-                               "en-US");
+                               "en-US",
+                               false);
 }
 
 std::string InputMethodDescriptor::ToString() const {
@@ -56,7 +59,8 @@ std::string InputMethodDescriptor::ToString() const {
   stream << "id=" << id()
          << ", name=" << name()
          << ", keyboard_layout=" << keyboard_layout()
-         << ", language_code=" << language_code();
+         << ", language_code=" << language_code()
+         << ", third_party=" << third_party();
   return stream.str();
 }
 

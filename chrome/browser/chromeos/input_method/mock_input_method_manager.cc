@@ -120,7 +120,8 @@ InputMethodDescriptor MockInputMethodManager::GetCurrentInputMethod() const {
     return InputMethodDescriptor(current_input_method_id_,
                                  descriptor.name(),
                                  descriptor.keyboard_layout(),
-                                 descriptor.language_code());
+                                 descriptor.language_code(),
+                                 false);
   }
   return descriptor;
 }

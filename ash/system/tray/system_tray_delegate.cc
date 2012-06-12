@@ -29,7 +29,8 @@ DriveOperationStatus::~DriveOperationStatus() {
 }
 
 IMEInfo::IMEInfo()
-    : selected(false) {
+    : selected(false),
+      third_party(false) {
 }
 
 IMEInfo::~IMEInfo() {

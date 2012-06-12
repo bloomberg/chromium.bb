@@ -47,7 +47,8 @@ class LanguageOptionsHandlerTest : public testing::Test {
     return InputMethodDescriptor(id,
                                  "",  // name
                                  raw_layout,
-                                 language_code);
+                                 language_code,
+                                 false);
   }
 };
 

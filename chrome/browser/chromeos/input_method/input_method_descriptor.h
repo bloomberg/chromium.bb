@@ -23,7 +23,8 @@ class InputMethodDescriptor {
   InputMethodDescriptor(const std::string& id,
                         const std::string& name,
                         const std::string& keyboard_layout,
-                        const std::string& language_code);
+                        const std::string& language_code,
+                        bool third_party);
   ~InputMethodDescriptor();
 
   bool operator==(const InputMethodDescriptor& other) const;
@@ -36,6 +37,7 @@ class InputMethodDescriptor {
   const std::string& name() const { return name_; }
   const std::string& keyboard_layout() const { return keyboard_layout_; }
   const std::string& language_code() const { return language_code_; }
+  bool third_party() const { return third_party_; }
 
   // Returns the fallback input method descriptor (the very basic US
   // keyboard). This function is mostly used for testing, but may be used
@@ -54,6 +56,8 @@ class InputMethodDescriptor {
   std::string keyboard_layout_;
   // Language code like "ko", "ja", "en-US", and "zh-CN".
   std::string language_code_;
+  // Indicates if this is a third party ime
+  bool third_party_;
 };
 
 typedef std::vector<InputMethodDescriptor> InputMethodDescriptors;
