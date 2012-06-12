@@ -19,20 +19,23 @@ class SkBitmap;
 
 namespace chromeos {
 
+class UserImage;
+
 // A facility to read a file containing user image asynchronously in the IO
 // thread. Returns the image in the form of an SkBitmap.
 class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader>,
                         public ImageDecoder::Delegate {
  public:
   // Callback used to inidicate that image has been loaded.
-  typedef base::Callback<void(const SkBitmap& image)> LoadedCallback;
+  typedef base::Callback<void(const UserImage& user_image)> LoadedCallback;
 
   UserImageLoader();
 
   // Start reading the image from |filepath| on the file thread. Calls
   // |loaded_cb| when image has been successfully loaded.
   // If |size| is positive, image is resized to |size|x|size| pixels.
-  void Start(const std::string& filepath, int size,
+  // If |load_raw_image| is true, raw image is also passed to callback.
+  void Start(const std::string& filepath, int size, bool load_raw_image,
              const LoadedCallback& loaded_cb);
 
  private:
@@ -40,10 +43,11 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader>,
 
   // Contains attributes we need to know about each image we decode.
   struct ImageInfo {
-    ImageInfo(int size, const LoadedCallback& loaded_cb);
+    ImageInfo(int size, bool load_raw_image, const LoadedCallback& loaded_cb);
     ~ImageInfo();
 
     int size;
+    bool load_raw_image;
     LoadedCallback loaded_cb;
   };
 

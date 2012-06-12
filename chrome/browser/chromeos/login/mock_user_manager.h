@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/file_path.h"
+#include "chrome/browser/chromeos/login/user_image.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -44,7 +45,7 @@ class MockUserManager : public UserManager {
                                                          int));
   MOCK_CONST_METHOD1(GetUserDisplayEmail, std::string(const std::string&));
   MOCK_METHOD2(SaveUserDefaultImageIndex, void(const std::string&, int));
-  MOCK_METHOD2(SaveUserImage, void(const std::string&, const SkBitmap&));
+  MOCK_METHOD2(SaveUserImage, void(const std::string&, const UserImage&));
   MOCK_METHOD1(SetLoggedInUserCustomWallpaperLayout,void(
       ash::WallpaperLayout));
   MOCK_METHOD2(SaveUserImageFromFile, void(const std::string&,

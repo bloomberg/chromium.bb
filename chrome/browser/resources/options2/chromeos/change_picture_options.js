@@ -186,7 +186,7 @@ cr.define('options', function() {
      */
     get currentUserImageUrl() {
       return 'chrome://userimage/' + BrowserOptions.getLoggedInUsername() +
-          '?id=' + (new Date()).getTime();
+          '?id=' + (new Date()).getTime() + '&animated';
     },
 
     /**
@@ -295,4 +295,3 @@ cr.define('options', function() {
   };
 
 });
-

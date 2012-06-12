@@ -20,6 +20,7 @@ class PrefService;
 namespace chromeos {
 
 class RemoveUserDelegate;
+class UserImage;
 
 // Base class for UserManagerImpl - provides a mechanism for discovering users
 // who have logged into this Chrome OS device before and updating that list.
@@ -185,7 +186,7 @@ class UserManager {
   // Saves image to file, sends LOGIN_USER_IMAGE_CHANGED notification and
   // updates Local State.
   virtual void SaveUserImage(const std::string& username,
-                             const SkBitmap& image) = 0;
+                             const UserImage& user_image) = 0;
 
   // Updates custom wallpaper to selected layout and saves layout to Local
   // State.

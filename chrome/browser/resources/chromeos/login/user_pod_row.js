@@ -352,7 +352,7 @@ cr.define('login', function() {
       this.imageElement.src = this.isGuest ?
           'chrome://theme/IDR_LOGIN_GUEST' :
           'chrome://userimage/' + this.user.username +
-              '?id=' + (new Date()).getTime();
+              '?id=' + (new Date()).getTime() + '&animated';
     },
 
     /**

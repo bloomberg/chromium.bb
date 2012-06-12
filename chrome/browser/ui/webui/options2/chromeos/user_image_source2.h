@@ -28,11 +28,13 @@ class UserImageSource : public ChromeURLDataManager::DataSource {
                                 bool is_incognito,
                                 int request_id) OVERRIDE;
 
-  virtual std::string GetMimeType(const std::string&) const OVERRIDE;
+  virtual std::string GetMimeType(const std::string& path) const OVERRIDE;
 
-  // Returns PNG encoded image for user with specified email.
-  // If there's no user with such email, returns the default image.
-  std::vector<unsigned char> GetUserImage(const std::string& email) const;
+  // Returns PNG or GIF (when possible and if |is_image_animated| flag
+  // is true) encoded image for user with specified email.  If there's
+  // no user with such email, returns the default image.
+  std::vector<unsigned char> GetUserImage(const std::string& email,
+                                          bool is_image_animated) const;
 
  private:
   virtual ~UserImageSource();

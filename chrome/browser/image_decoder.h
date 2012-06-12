@@ -40,6 +40,10 @@ class ImageDecoder : public content::UtilityProcessHostClient {
   // Starts image decoding.
   void Start();
 
+  const std::vector<unsigned char>& get_image_data() const {
+    return image_data_;
+  }
+
  private:
   // It's a reference counted object, so destructor is private.
   virtual ~ImageDecoder();

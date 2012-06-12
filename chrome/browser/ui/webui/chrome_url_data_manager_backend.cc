@@ -13,6 +13,7 @@
 #include "base/debug/trace_event.h"
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
@@ -170,6 +171,9 @@ class URLRequestChromeJob : public net::URLRequestJob {
   virtual bool GetMimeType(std::string* mime_type) const OVERRIDE;
   virtual void GetResponseInfo(net::HttpResponseInfo* info) OVERRIDE;
 
+  // Used to notify that the requested data's |mime_type| is ready.
+  void MimeTypeAvailable(const std::string& mime_type);
+
   // Called by ChromeURLDataManager to notify us that the data blob is ready
   // for us.
   void DataAvailable(base::RefCountedMemory* bytes);
@@ -263,6 +267,11 @@ void URLRequestChromeJob::GetResponseInfo(net::HttpResponseInfo* info) {
     info->headers->AddHeader("Cache-Control: no-cache");
 }
 
+void URLRequestChromeJob::MimeTypeAvailable(const std::string& mime_type) {
+  set_mime_type(mime_type);
+  NotifyHeadersComplete();
+}
+
 void URLRequestChromeJob::DataAvailable(base::RefCountedMemory* bytes) {
   TRACE_EVENT_ASYNC_END0("browser", "DataManager:Request", this);
   if (bytes) {
@@ -317,13 +326,29 @@ void URLRequestChromeJob::StartAsync() {
   if (!request_)
     return;
 
-  if (backend_->StartRequest(request_->url(), this)) {
-    NotifyHeadersComplete();
-  } else {
+  if (!backend_->StartRequest(request_->url(), this)) {
     NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
                                            net::ERR_INVALID_URL));
   }
 }
+
+namespace {
+
+// Gets mime type for data that is available from |source| by |path|.
+// After that, notifies |job| that mime type is available. This method
+// should be called on the UI thread, but notification is performed on
+// the IO thread.
+void GetMimeTypeOnUI(ChromeURLDataManager::DataSource* source,
+                     const std::string& path,
+                     URLRequestChromeJob* job) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  std::string mime_type = source->GetMimeType(path);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&URLRequestChromeJob::MimeTypeAvailable, job, mime_type));
+}
+
+}  // namespace
 
 namespace {
 
@@ -421,10 +446,6 @@ bool ChromeURLDataManagerBackend::StartRequest(const GURL& url,
   RequestID request_id = next_request_id_++;
   pending_requests_.insert(std::make_pair(request_id, job));
 
-  // TODO(eroman): would be nicer if the mimetype were set at the same time
-  // as the data blob. For now do it here, since NotifyHeadersComplete() is
-  // going to get called once we return.
-  job->set_mime_type(source->GetMimeType(path));
   job->set_allow_caching(source->AllowCaching());
 
   const ChromeURLRequestContext* context =
@@ -433,11 +454,24 @@ bool ChromeURLDataManagerBackend::StartRequest(const GURL& url,
   // Forward along the request to the data source.
   MessageLoop* target_message_loop = source->MessageLoopForRequestPath(path);
   if (!target_message_loop) {
+    job->MimeTypeAvailable(source->GetMimeType(path));
+
     // The DataSource is agnostic to which thread StartDataRequest is called
     // on for this path.  Call directly into it from this thread, the IO
     // thread.
     source->StartDataRequest(path, context->is_incognito(), request_id);
   } else {
+    // URLRequestChromeJob should receive mime type before data. This
+    // is guaranteed because request for mime type is placed in the
+    // message loop before request for data. And correspondingly their
+    // replies are put on the IO thread in the same order.
+    target_message_loop->PostTask(
+        FROM_HERE,
+        base::Bind(&GetMimeTypeOnUI,
+                   scoped_refptr<ChromeURLDataManager::DataSource>(source),
+                   path,
+                   scoped_refptr<URLRequestChromeJob>(job)));
+
     // The DataSource wants StartDataRequest to be called on a specific thread,
     // usually the UI thread, for this path.
     target_message_loop->PostTask(

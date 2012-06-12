@@ -32,6 +32,7 @@ class ProfileSyncService;
 namespace chromeos {
 
 class RemoveUserDelegate;
+class UserImage;
 
 // Implementation of the UserManager.
 class UserManagerImpl : public UserManager,
@@ -75,7 +76,7 @@ class UserManagerImpl : public UserManager,
   virtual void SaveUserDefaultImageIndex(const std::string& username,
                                          int image_index) OVERRIDE;
   virtual void SaveUserImage(const std::string& username,
-                             const SkBitmap& image) OVERRIDE;
+                             const UserImage& user_image) OVERRIDE;
   virtual void SetLoggedInUserCustomWallpaperLayout(
       ash::WallpaperLayout layout) OVERRIDE;
   virtual void SaveUserImageFromFile(const std::string& username,
@@ -178,7 +179,7 @@ class UserManagerImpl : public UserManager,
   // If |image| is empty, sets a stub image for the user.
   void SetUserImage(const std::string& username,
                     int image_index,
-                    const SkBitmap& image);
+                    const UserImage& user_image);
 
   void GetUserWallpaperProperties(const std::string& username,
                                  User::WallpaperType* type,
@@ -191,7 +192,7 @@ class UserManagerImpl : public UserManager,
   // and sends LOGIN_USER_IMAGE_CHANGED notification.
   void SaveUserImageInternal(const std::string& username,
                              int image_index,
-                             const SkBitmap& image);
+                             const UserImage& user_image);
 
   // Saves wallpaper to file, post task to generate thumbnail and updates local
   // state preferences.
@@ -199,17 +200,17 @@ class UserManagerImpl : public UserManager,
                                  ash::WallpaperLayout layout,
                                  User::WallpaperType type,
                                  WallpaperDelegate* delegate,
-                                 const SkBitmap& image);
+                                 const UserImage& user_image);
 
   // Sets desktop background to custom wallpaper and loads wallpaper thumbnail
   // asynchronously.
   void OnCustomWallpaperLoaded(const std::string& email,
                                ash::WallpaperLayout layout,
-                               const SkBitmap& wallpaper);
+                               const UserImage& wallpaper);
 
   // Caches the loaded wallpaper for the given user.
   void OnCustomWallpaperThumbnailLoaded(const std::string& email,
-                                        const SkBitmap& wallpaper);
+                                        const UserImage& user_image);
 
   // Updates the custom wallpaper thumbnail in wallpaper picker UI.
   void OnThumbnailUpdated(WallpaperDelegate* delegate);
@@ -224,7 +225,7 @@ class UserManagerImpl : public UserManager,
   // notification. Runs on FILE thread. Posts task for saving image info to
   // Local State on UI thread.
   void SaveImageToFile(const std::string& username,
-                       const SkBitmap& image,
+                       const UserImage& user_image,
                        const FilePath& image_path,
                        int image_index);
 
@@ -251,7 +252,7 @@ class UserManagerImpl : public UserManager,
                                  User::WallpaperType type);
 
   // Saves |image| to the specified |image_path|. Runs on FILE thread.
-  bool SaveBitmapToFile(const SkBitmap& image,
+  bool SaveBitmapToFile(const UserImage& user_image,
                         const FilePath& image_path);
 
   // Initializes |downloaded_profile_image_| with the picture of the logged-in

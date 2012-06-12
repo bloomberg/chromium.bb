@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/camera_detector.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
+#include "chrome/browser/chromeos/login/user_image.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/options/take_photo_dialog.h"
 #include "chrome/browser/profiles/profile.h"
@@ -257,7 +258,8 @@ void ChangePictureOptionsHandler::HandleSelectImage(const ListValue* args) {
     // (profile image, current image from file) is easier.
 
     DCHECK(!previous_image_.empty());
-    user_manager->SaveUserImage(user.email(), previous_image_);
+    user_manager->SaveUserImage(user.email(),
+                                chromeos::UserImage(previous_image_));
 
     UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
                               kHistogramImageOld,
@@ -302,7 +304,8 @@ void ChangePictureOptionsHandler::FileSelected(const FilePath& path,
 
 void ChangePictureOptionsHandler::OnPhotoAccepted(const gfx::ImageSkia& photo) {
   UserManager* user_manager = UserManager::Get();
-  user_manager->SaveUserImage(user_manager->GetLoggedInUser().email(), photo);
+  user_manager->SaveUserImage(user_manager->GetLoggedInUser().email(),
+                              chromeos::UserImage(photo));
   UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
                             kHistogramImageFromCamera,
                             kHistogramImagesCount);
