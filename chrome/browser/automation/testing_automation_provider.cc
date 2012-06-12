@@ -3942,6 +3942,7 @@ void TestingAutomationProvider::InstallExtension(
     DictionaryValue* args, IPC::Message* reply_message) {
   FilePath::StringType path_string;
   bool with_ui;
+  bool from_webstore = false;
   Browser* browser;
   std::string error_msg;
   if (!GetBrowserFromJSONArgs(args, &browser, &error_msg)) {
@@ -3958,6 +3959,8 @@ void TestingAutomationProvider::InstallExtension(
         "Missing or invalid 'with_ui'");
     return;
   }
+  args->GetBoolean("from_webstore", &from_webstore);
+
   ExtensionService* service = browser->profile()->GetExtensionService();
   ExtensionProcessManager* manager =
       browser->profile()->GetExtensionProcessManager();
@@ -3980,6 +3983,8 @@ void TestingAutomationProvider::InstallExtension(
       if (!with_ui)
         installer->set_allow_silent_install(true);
       installer->set_install_cause(extension_misc::INSTALL_CAUSE_AUTOMATION);
+      if (from_webstore)
+        installer->set_creation_flags(Extension::FROM_WEBSTORE);
       installer->InstallCrx(extension_path);
     } else {
       scoped_refptr<extensions::UnpackedInstaller> installer(

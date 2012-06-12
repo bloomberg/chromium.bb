@@ -2045,7 +2045,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
             tab_index=tab_index, window_index=window_index)['page_translated'],
         args=[tab_index, window_index])
 
-  def InstallExtension(self, extension_path, with_ui=False, windex=0):
+  def InstallExtension(self, extension_path, with_ui=False, from_webstore=None,
+                       windex=0):
     """Installs an extension from the given path.
 
     The path must be absolute and may be a crx file or an unpacked extension
@@ -2056,6 +2057,9 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       extension_path: The absolute path to the extension to install. If the
                       extension is packed, it must have a .crx extension.
       with_ui: Whether the extension install confirmation UI should be shown.
+      from_webstore: If True, forces a .crx extension to be recognized as one
+          from the webstore. Can be used to force install an extension with
+          'experimental' permissions.
       windex: Integer index of the browser window to use; defaults to 0
               (first window).
 
@@ -2071,6 +2075,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
         'with_ui': with_ui,
         'windex': windex,
     }
+    if from_webstore:
+      cmd_dict['from_webstore'] = True
     return self._GetResultFromJSONRequest(cmd_dict, windex=None)['id']
 
   def GetExtensionsInfo(self, windex=0):
