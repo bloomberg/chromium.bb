@@ -389,6 +389,27 @@ static void InstallFilter(const std::vector<struct sock_filter>& program) {
   PLOG_IF(FATAL, ret != 0) << "Failed to install filter.";
 }
 
+static bool ShouldEnableGPUSandbox() {
+  // Default setting is: enabled for Linux, disabled for Chrome OS.
+  // '--disable-gpu-sandbox' takes precedence over '--enable-gpu-sandbox'.
+#if defined(OS_CHROMEOS)
+  bool res = false;
+#else
+  bool res = true;
+#endif
+
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+  if (command_line.HasSwitch(switches::kEnableGpuSandbox)) {
+    res = true;
+  }
+  if (command_line.HasSwitch(switches::kDisableGpuSandbox)) {
+    res = false;
+  }
+
+  return res;
+}
+
 }  // anonymous namespace
 
 namespace content {
@@ -402,7 +423,7 @@ void InitializeSandbox() {
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
   if (process_type == switches::kGpuProcess &&
-      command_line.HasSwitch(switches::kDisableGpuSandbox))
+      !ShouldEnableGPUSandbox())
     return;
 
   if (!CanUseSeccompFilters())
@@ -443,4 +464,3 @@ void InitializeSandbox() {
 }  // namespace content
 
 #endif
-

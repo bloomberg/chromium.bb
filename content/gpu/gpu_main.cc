@@ -139,10 +139,20 @@ int GpuMain(const content::MainFunctionParams& parameters) {
     (void) ret;
   }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(OS_LINUX)
   {
     TRACE_EVENT0("gpu", "Initialize sandbox");
-    content::InitializeSandbox();
+    bool do_init_sandbox = true;
+
+#if defined(OS_CHROMEOS) && defined(NDEBUG)
+    // On Chrome OS and when not on a debug build, initialize
+    // the GPU process' sandbox only for Intel GPUs.
+    do_init_sandbox = gpu_info.gpu.vendor_id == 0x8086;   // Intel GPU.
+#endif
+
+    if (do_init_sandbox) {
+      content::InitializeSandbox();
+    }
   }
 #endif
 

@@ -130,6 +130,9 @@ const char kDisableGpuSandbox[]             = "disable-gpu-sandbox";
 // Reduces the GPU process sandbox to be less strict.
 const char kReduceGpuSandbox[]              = "reduce-gpu-sandbox";
 
+// Enable the GPU process sandbox (Linux/Chrome OS only for now).
+const char kEnableGpuSandbox[]              = "enable-gpu-sandbox";
+
 // Suppresses hang monitor dialogs in renderer processes.  This may allow slow
 // unload handlers on a page to prevent the tab from closing, but the Task
 // Manager can be used to terminate the offending process in this case.
