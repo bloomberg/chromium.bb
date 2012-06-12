@@ -17,8 +17,14 @@
 
 #include "base/basictypes.h"
 #include "base/lazy_instance.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class FilePath;
+
+namespace content {
+class RenderProcessHost;
+}
 
 namespace fileapi {
 class IsolatedContext;
@@ -26,7 +32,7 @@ class IsolatedContext;
 
 namespace chrome {
 
-class MediaFileSystemRegistry {
+class MediaFileSystemRegistry : public content::NotificationObserver {
  public:
   // (Filesystem ID, path)
   typedef std::pair<std::string, FilePath> MediaFSIDAndPath;
@@ -34,9 +40,15 @@ class MediaFileSystemRegistry {
   // The instance is lazily created per browser process.
   static MediaFileSystemRegistry* GetInstance();
 
-  // Returns the list of media filesystem IDs and paths.
+  // Returns the list of media filesystem IDs and paths for a given RPH.
   // Called on the UI thread.
-  std::vector<MediaFSIDAndPath> GetMediaFileSystems() const;
+  std::vector<MediaFSIDAndPath> GetMediaFileSystems(
+      const content::RenderProcessHost* rph);
+
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   friend struct base::DefaultLazyInstanceTraits<MediaFileSystemRegistry>;
@@ -44,15 +56,27 @@ class MediaFileSystemRegistry {
   // Mapping of media directories to filesystem IDs.
   typedef std::map<FilePath, std::string> MediaPathToFSIDMap;
 
+  // Mapping of RPH to MediaPathToFSIDMaps.
+  typedef std::map<const content::RenderProcessHost*,
+                   MediaPathToFSIDMap> ChildIdToMediaFSMap;
+
   // Obtain an instance of this class via GetInstance().
   MediaFileSystemRegistry();
   virtual ~MediaFileSystemRegistry();
 
-  // Registers a path as a media file system.
-  void RegisterPathAsFileSystem(const FilePath& path);
+  // Helper functions to register / unregister listening for renderer process
+  // closed / terminiated notifications.
+  void RegisterForRPHGoneNotifications(const content::RenderProcessHost* rph);
+  void UnregisterForRPHGoneNotifications(const content::RenderProcessHost* rph);
+
+  // Registers a path as a media file system and return the filesystem id.
+  std::string RegisterPathAsFileSystem(const FilePath& path);
 
   // Only accessed on the UI thread.
-  MediaPathToFSIDMap media_fs_map_;
+  ChildIdToMediaFSMap media_fs_map_;
+
+  // Is only used on the UI thread.
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaFileSystemRegistry);
 };

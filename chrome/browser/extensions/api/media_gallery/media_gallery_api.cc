@@ -28,11 +28,13 @@ using content::ChildProcessSecurityPolicy;
 GetMediaFileSystemsFunction::~GetMediaFileSystemsFunction() {}
 
 bool GetMediaFileSystemsFunction::RunImpl() {
+  const content::RenderProcessHost* rph = render_view_host()->GetProcess();
   chrome::MediaFileSystemRegistry* media_fs_registry =
       MediaFileSystemRegistry::GetInstance();
   const std::vector<MediaFileSystemRegistry::MediaFSIDAndPath> filesystems =
-      media_fs_registry->GetMediaFileSystems();
+      media_fs_registry->GetMediaFileSystems(rph);
 
+  const int child_id = rph->GetID();
   base::ListValue* list = new base::ListValue();
   for (size_t i = 0; i < filesystems.size(); i++) {
     // TODO(thestig) Check permissions to file systems when that capability
@@ -56,7 +58,6 @@ bool GetMediaFileSystemsFunction::RunImpl() {
         "dirname", Value::CreateStringValue(basepath_utf8));
     list->Append(dict_value);
 
-    const int child_id = render_view_host()->GetProcess()->GetID();
     content::ChildProcessSecurityPolicy* policy =
         ChildProcessSecurityPolicy::GetInstance();
     if (!policy->CanReadFile(child_id, path)) {
