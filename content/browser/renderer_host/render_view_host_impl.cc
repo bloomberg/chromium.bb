@@ -288,11 +288,6 @@ bool RenderViewHostImpl::CreateRenderView(
   // Let our delegate know that we created a RenderView.
   delegate_->RenderViewCreated(this);
 
-  // Invert the color scheme if a flag is set.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kInvertWebContent))
-    Send(new ViewMsg_InvertWebContent(GetRoutingID(), true));
-
   FOR_EACH_OBSERVER(
       content::RenderViewHostObserver, observers_, RenderViewHostInitialized());
 

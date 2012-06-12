@@ -423,10 +423,6 @@ const char kInProcessPlugins[]              = "in-process-plugins";
 // Runs WebGL inside the renderer process.
 const char kInProcessWebGL[]                = "in-process-webgl";
 
-// Invert web content pixels, for users who prefer white-on-black.
-// (Temporary, just during development and testing of this feature.)
-const char kInvertWebContent[]              = "invert-web-content";
-
 // Specifies the flags passed to JS engine
 const char kJavaScriptFlags[]               = "js-flags";
 

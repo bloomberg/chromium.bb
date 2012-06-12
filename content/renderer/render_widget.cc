@@ -33,7 +33,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/skia/include/core/SkShader.h"
-#include "third_party/skia/include/effects/SkTableColorFilter.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skia_util.h"
@@ -107,8 +106,7 @@ RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
       animation_update_pending_(false),
       invalidation_task_posted_(false),
       screen_info_(screen_info),
-      device_scale_factor_(1),
-      invert_(false) {
+      device_scale_factor_(1) {
   if (!swapped_out)
     RenderProcess::current()->AddRefProcess();
   DCHECK(RenderThread::Get());
@@ -239,7 +237,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_Repaint, OnMsgRepaint)
     IPC_MESSAGE_HANDLER(ViewMsg_SetTextDirection, OnSetTextDirection)
     IPC_MESSAGE_HANDLER(ViewMsg_Move_ACK, OnRequestMoveAck)
-    IPC_MESSAGE_HANDLER(ViewMsg_InvertWebContent, OnInvertWebContent)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -631,15 +628,6 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
   canvas->translate(static_cast<SkScalar>(-canvas_origin.x()),
                     static_cast<SkScalar>(-canvas_origin.y()));
 
-  if (invert_) {
-    // Draw everything to a temporary bitmap and then apply an
-    // inverting color map to the result. This is balanced by an extra
-    // call to canvas->restore(), below.
-    DCHECK(invert_paint_.get());
-    SkRect bounds(gfx::RectToSkRect(rect));
-    canvas->saveLayer(&bounds, invert_paint_.get());
-  }
-
   // If there is a custom background, tile it.
   if (!background_.empty()) {
     SkPaint paint;
@@ -696,9 +684,6 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
     // Flush to underlying bitmap.  TODO(darin): is this needed?
     skia::GetTopDevice(*canvas)->accessBitmap(false);
   }
-
-  if (invert_)
-    canvas->restore();
 
   PaintDebugBorder(rect, canvas);
   canvas->restore();
@@ -1492,37 +1477,6 @@ void RenderWidget::OnSetTextDirection(WebTextDirection direction) {
   if (!webwidget_)
     return;
   webwidget_->setTextDirection(direction);
-}
-
-void RenderWidget::OnInvertWebContent(bool invert) {
-  if (invert_ == invert)
-    return;
-
-  invert_ = invert;
-
-  if (invert_ && !invert_paint_.get()) {
-    // Gamma-aware color inversion: each source pixel value x is normally
-    // displayed on a computer monitor with a gamma correction x^gamma,
-    // where gamma is typically in the range 1.8...2.2. By approximating
-    // gamma as exactly 2, the formula to invert one value is sqrt(1 - x^2).
-    uint8_t table[256];
-    for (unsigned int i = 0; i < 256; i++) {
-      double value = i / 255.0;
-      value = sqrt(1 - (value * value));
-      table[i] = static_cast<uint8_t>(255 * value);
-    }
-
-    // Create a Skia Paint with this inverting color map.
-    invert_paint_.reset(new SkPaint());
-    invert_paint_->setStyle(SkPaint::kFill_Style);
-    invert_paint_->setColor(SK_ColorBLACK);
-    SkColorFilter* filter = SkTableColorFilter::CreateARGB(
-        NULL, table, table, table);
-    invert_paint_->setColorFilter(filter);
-    filter->unref();
-  }
-
-  OnMsgRepaint(size_);
 }
 
 webkit::ppapi::PluginInstance* RenderWidget::GetBitmapForOptimizedPluginPaint(

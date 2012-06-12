@@ -1238,11 +1238,6 @@ IPC_MESSAGE_ROUTED2(ViewMsg_SavePageAsMHTML,
 IPC_MESSAGE_CONTROL1(ViewMsg_TempCrashWithData,
                      GURL /* data */)
 
-// Enable or disable inverting of web content pixels, for users who prefer
-// white-on-black.
-IPC_MESSAGE_ROUTED1(ViewMsg_InvertWebContent,
-                    bool /* invert */)
-
 // Change the accessibility mode in the renderer process.
 IPC_MESSAGE_ROUTED1(ViewMsg_SetAccessibilityMode,
                     AccessibilityMode)

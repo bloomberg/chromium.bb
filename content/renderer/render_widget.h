@@ -255,7 +255,6 @@ class CONTENT_EXPORT RenderWidget
   void OnMsgRepaint(const gfx::Size& size_to_paint);
   void OnSetTextDirection(WebKit::WebTextDirection direction);
   void OnGetFPS();
-  void OnInvertWebContent(bool invert);
 
   // Override points to notify derived classes that a paint has happened.
   // WillInitiatePaint happens when we're about to generate a new bitmap and
@@ -528,12 +527,6 @@ class CONTENT_EXPORT RenderWidget
   // The device scale factor. This value is computed from the DPI entries in
   // |screen_info_| on some platforms, and defaults to 1 on other platforms.
   int device_scale_factor_;
-
-  // Set to true if we should invert all pixels.
-  bool invert_;
-
-  // The Skia paint object for inverting.
-  scoped_ptr<SkPaint> invert_paint_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);
 };

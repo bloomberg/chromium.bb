@@ -132,7 +132,6 @@ extern const char kGpuVendorID[];
 extern const char kInProcessGPU[];
 extern const char kInProcessPlugins[];
 CONTENT_EXPORT extern const char kInProcessWebGL[];
-CONTENT_EXPORT extern const char kInvertWebContent[];
 CONTENT_EXPORT extern const char kJavaScriptFlags[];
 extern const char kLoadPlugin[];
 CONTENT_EXPORT extern const char kLoggingLevel[];
