@@ -145,8 +145,6 @@ NSImage* OmniboxViewMac::ImageForResource(int resource_id) {
       image_name = @"omnibox_search.pdf"; break;
     case IDR_OMNIBOX_HTTP:
       image_name = @"omnibox_http.pdf"; break;
-    case IDR_OMNIBOX_HISTORY:
-      image_name = @"omnibox_history.pdf"; break;
     case IDR_OMNIBOX_EXTENSION_APP:
       image_name = @"omnibox_extension_app.pdf"; break;
 

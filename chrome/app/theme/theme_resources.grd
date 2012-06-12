@@ -162,9 +162,6 @@
       <include name="IDR_OMNIBOX_EXTENSION_APP" file="default_100_percent/omnibox_extension_app.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_EXTENSION_APP_DARK" file="default_100_percent/omnibox_extension_app_dark.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_EXTENSION_APP_SELECTED" file="default_100_percent/omnibox_extension_app_selected.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_HISTORY" file="default_100_percent/omnibox_history.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_HISTORY_DARK" file="default_100_percent/omnibox_history_dark.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_HISTORY_SELECTED" file="default_100_percent/omnibox_history_selected.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_HTTP" file="default_100_percent/omnibox_http.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_HTTPS_INVALID" file="default_100_percent/omnibox_https_invalid.png" type="BINDATA" />
       <include name="IDR_OMNIBOX_HTTPS_VALID" file="default_100_percent/omnibox_https_valid.png" type="BINDATA" />

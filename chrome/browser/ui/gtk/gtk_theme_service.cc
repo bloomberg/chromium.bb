@@ -105,8 +105,6 @@ const int kAutocompleteImages[] = {
   IDR_OMNIBOX_EXTENSION_APP,
   IDR_OMNIBOX_HTTP,
   IDR_OMNIBOX_HTTP_DARK,
-  IDR_OMNIBOX_HISTORY,
-  IDR_OMNIBOX_HISTORY_DARK,
   IDR_OMNIBOX_SEARCH,
   IDR_OMNIBOX_SEARCH_DARK,
   IDR_OMNIBOX_STAR,
@@ -975,7 +973,6 @@ SkBitmap GtkThemeService::GenerateGtkThemeBitmap(int id) const {
     // mode because some themes that try to be dark *and* light have very
     // different colors between the omnibox and the normal background area.
     case IDR_OMNIBOX_EXTENSION_APP:
-    case IDR_OMNIBOX_HISTORY:
     case IDR_OMNIBOX_HTTP:
     case IDR_OMNIBOX_SEARCH:
     case IDR_OMNIBOX_STAR:
@@ -989,7 +986,6 @@ SkBitmap GtkThemeService::GenerateGtkThemeBitmap(int id) const {
     // base[GTK_STATE_SELECTED] color, so tint the icons so they won't collide
     // with the selected color.
     case IDR_OMNIBOX_EXTENSION_APP_DARK:
-    case IDR_OMNIBOX_HISTORY_DARK:
     case IDR_OMNIBOX_HTTP_DARK:
     case IDR_OMNIBOX_SEARCH_DARK:
     case IDR_OMNIBOX_STAR_DARK:

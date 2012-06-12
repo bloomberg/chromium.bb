@@ -513,9 +513,6 @@ const gfx::Image* OmniboxPopupViewGtk::IconForMatch(
       case IDR_OMNIBOX_HTTP:
         icon = IDR_OMNIBOX_HTTP_DARK;
         break;
-      case IDR_OMNIBOX_HISTORY:
-        icon = IDR_OMNIBOX_HISTORY_DARK;
-        break;
       case IDR_OMNIBOX_SEARCH:
         icon = IDR_OMNIBOX_SEARCH_DARK;
         break;

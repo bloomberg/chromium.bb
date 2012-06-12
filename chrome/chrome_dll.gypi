@@ -290,7 +290,6 @@
                 'app/theme/menu_overflow_up.pdf',
                 'app/theme/nav.pdf',
                 'app/theme/omnibox_extension_app.pdf',
-                'app/theme/omnibox_history.pdf',
                 'app/theme/omnibox_http.pdf',
                 'app/theme/omnibox_https_invalid.pdf',
                 'app/theme/omnibox_https_valid.pdf',
