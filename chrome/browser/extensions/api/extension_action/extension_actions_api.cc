@@ -46,7 +46,13 @@ bool ExtensionActionFunction::RunImpl() {
   extension_action_ = GetExtension()->browser_action();
   if (!extension_action_)
     extension_action_ = GetExtension()->page_action();
-  EXTENSION_FUNCTION_VALIDATE(extension_action_);
+  if (!extension_action_) {
+    // TODO(kalman): ideally the browserAction/pageAction APIs wouldn't event
+    // exist for extensions that don't have one declared. This should come as
+    // part of the Feature system.
+    error_ = kNoExtensionActionError;
+    return false;
+  }
 
   // There may or may not be details (depends on the function).
   // The tabId might appear in details (if it exists) or as the first
