@@ -538,7 +538,9 @@ bool ChromeRenderViewObserver::allowDisplayingInsecureContent(
   if (allowed_per_settings || allow_displaying_insecure_content_)
     return true;
 
-  Send(new ChromeViewHostMsg_DidBlockDisplayingInsecureContent(routing_id()));
+  if (!IsStrictSecurityHost(origin_host))
+    Send(new ChromeViewHostMsg_DidBlockDisplayingInsecureContent(routing_id()));
+
   return false;
 }
 
@@ -601,7 +603,7 @@ bool ChromeRenderViewObserver::allowRunningInsecureContent(
     SendInsecureContentSignal(INSECURE_CONTENT_RUN_SWF);
 
   if (!allow_running_insecure_content_ && !allowed_per_settings) {
-    if (!warned_about_insecure_content_) {
+    if (!warned_about_insecure_content_ && !IsStrictSecurityHost(origin_host)) {
       warned_about_insecure_content_ = true;
       Send(new ChromeViewHostMsg_DidBlockRunningInsecureContent(routing_id()));
     }
