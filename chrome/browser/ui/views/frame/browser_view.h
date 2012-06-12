@@ -254,6 +254,10 @@ class BrowserView : public BrowserWindow,
       const GURL& url,
       FullscreenExitBubbleType bubble_type) OVERRIDE;
   virtual bool IsFullscreen() const OVERRIDE;
+#if defined(OS_WIN)
+  virtual void SetMetroSnapMode(bool enable) OVERRIDE;
+  virtual bool IsInMetroSnapMode() const OVERRIDE;
+#endif
   virtual LocationBar* GetLocationBar() const OVERRIDE;
   virtual void SetFocusToLocationBar(bool select_all) OVERRIDE;
   virtual void UpdateReloadStopState(bool is_loading, bool force) OVERRIDE;
@@ -443,6 +447,11 @@ class BrowserView : public BrowserWindow,
   FRIEND_TEST_ALL_PREFIXES(BrowserViewsAccessibilityTest,
                            TestAboutChromeViewAccObj);
 
+  enum FullscreenType {
+    FOR_DESKTOP,
+    FOR_METRO
+  };
+
   // We store this on linux because we must call ProcessFullscreen()
   // asynchronously from FullScreenStateChanged() instead of directly from
   // EnterFullscreen().
@@ -506,6 +515,7 @@ class BrowserView : public BrowserWindow,
   // |bubble_type| determines what should be shown in the fullscreen exit
   // bubble.
   void ProcessFullscreen(bool fullscreen,
+                         FullscreenType fullscreen_type,
                          const GURL& url,
                          FullscreenExitBubbleType bubble_type);
 

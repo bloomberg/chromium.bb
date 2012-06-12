@@ -551,6 +551,10 @@ class Browser : public TabStripModelDelegate,
   // See the description of
   // FullscreenController::ToggleFullscreenModeWithExtension.
   void ToggleFullscreenModeWithExtension(const GURL& extension_url);
+#if defined(OS_WIN)
+  // See the description of FullscreenController::ToggleMetroSnapMode.
+  void SetMetroSnapMode(bool enable);
+#endif
 #if defined(OS_MACOSX)
   void TogglePresentationMode();
 #endif
@@ -904,6 +908,18 @@ class Browser : public TabStripModelDelegate,
     BOOKMARK_BAR_STATE_CHANGE_TOGGLE_FULLSCREEN,
   };
 
+  enum FullScreenMode {
+    // Not in fullscreen mode.
+    FULLSCREEN_DISABLED,
+
+    // Fullscreen mode, occupying the whole screen.
+    FULLSCREEN_NORMAL,
+
+    // Fullscreen mode for metro snap, occupying the full height and 20% of
+    // the screen width.
+    FULLSCREEN_METRO_SNAP,
+  };
+
   // Overridden from content::WebContentsDelegate:
   virtual content::WebContents* OpenURLFromTab(
       content::WebContents* source,
@@ -1111,9 +1127,9 @@ class Browser : public TabStripModelDelegate,
   // Set the preference that indicates that the home page has been changed.
   void MarkHomePageAsChanged(PrefService* pref_service);
 
-  // Update commands whose state depends on whether the window is in fullscreen
-  // mode.
-  void UpdateCommandsForFullscreenMode(bool is_fullscreen);
+  // Update commands whose state depends on the type of fullscreen mode the
+  // window is in.
+  void UpdateCommandsForFullscreenMode(FullScreenMode fullscreen_mode);
 
   // Update commands whose state depends on whether multiple profiles are
   // allowed.

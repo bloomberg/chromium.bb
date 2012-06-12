@@ -58,6 +58,12 @@ bool FullscreenController::IsFullscreenForTabOrPending(
   return true;
 }
 
+#if defined(OS_WIN)
+bool FullscreenController::IsInMetroSnapMode() {
+  return window_->IsInMetroSnapMode();
+}
+#endif
+
 bool FullscreenController::IsMouseLockRequested() const {
   return mouse_lock_state_ == MOUSELOCK_REQUESTED;
 }
@@ -169,6 +175,12 @@ void FullscreenController::ToggleFullscreenModeForTab(WebContents* web_contents,
     }
   }
 }
+
+#if defined(OS_WIN)
+void FullscreenController::SetMetroSnapMode(bool enable) {
+  window_->SetMetroSnapMode(enable);
+}
+#endif
 
 #if defined(OS_MACOSX)
 void FullscreenController::TogglePresentationMode() {

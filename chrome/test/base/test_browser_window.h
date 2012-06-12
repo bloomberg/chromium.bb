@@ -62,6 +62,10 @@ class TestBrowserWindow : public BrowserWindow {
       const GURL& url,
       FullscreenExitBubbleType bubble_type) OVERRIDE {}
   virtual bool IsFullscreen() const OVERRIDE;
+#if defined(OS_WIN)
+  virtual void SetMetroSnapMode(bool enable) OVERRIDE {}
+  virtual bool IsInMetroSnapMode() const;
+#endif
   virtual bool IsFullscreenBubbleVisible() const OVERRIDE;
   virtual LocationBar* GetLocationBar() const OVERRIDE;
   virtual void SetFocusToLocationBar(bool select_all) OVERRIDE {}

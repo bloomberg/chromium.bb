@@ -422,6 +422,7 @@ NativeWidgetWin::NativeWidgetWin(internal::NativeWidgetDelegate* delegate)
       accessibility_view_events_(kMaxAccessibilityViewEvents),
       previous_cursor_(NULL),
       fullscreen_(false),
+      metro_snap_(false),
       force_hidden_count_(0),
       lock_updates_count_(0),
       ignore_window_pos_changes_(false),
@@ -990,7 +991,40 @@ void NativeWidgetWin::Restore() {
 
 void NativeWidgetWin::SetFullscreen(bool fullscreen) {
   if (fullscreen_ == fullscreen)
-    return;  // Nothing to do.
+    return;
+
+  gfx::Rect window_rect;
+  if (fullscreen) {
+    MONITORINFO monitor_info;
+    monitor_info.cbSize = sizeof(monitor_info);
+    GetMonitorInfo(MonitorFromWindow(GetNativeView(), MONITOR_DEFAULTTONEAREST),
+      &monitor_info);
+    window_rect = monitor_info.rcMonitor;
+  }
+
+  SetFullscreenInternal(fullscreen, window_rect);
+}
+
+void NativeWidgetWin::SetMetroSnapFullscreen(bool metro_snap) {
+  if (metro_snap_ == metro_snap)
+    return;
+
+  metro_snap_ = metro_snap;
+
+  gfx::Rect window_rect;
+  if (!metro_snap) {
+    MONITORINFO monitor_info;
+    monitor_info.cbSize = sizeof(monitor_info);
+    GetMonitorInfo(MonitorFromWindow(GetNativeView(), MONITOR_DEFAULTTONEAREST),
+                &monitor_info);
+    window_rect = monitor_info.rcMonitor;
+  }
+
+  SetFullscreenInternal(metro_snap, window_rect);
+}
+
+void NativeWidgetWin::SetFullscreenInternal(bool fullscreen,
+                                            const gfx::Rect& window_rect) {
 
   // Reduce jankiness during the following position changes by hiding the window
   // until it's in the final position.
@@ -1013,26 +1047,35 @@ void NativeWidgetWin::SetFullscreen(bool fullscreen) {
 
   if (fullscreen_) {
     // Set new window style and size.
-    MONITORINFO monitor_info;
-    monitor_info.cbSize = sizeof(monitor_info);
-    GetMonitorInfo(MonitorFromWindow(GetNativeView(), MONITOR_DEFAULTTONEAREST),
-                   &monitor_info);
-    gfx::Rect monitor_rect(monitor_info.rcMonitor);
     SetWindowLong(GWL_STYLE,
                   saved_window_info_.style & ~(WS_CAPTION | WS_THICKFRAME));
     SetWindowLong(GWL_EXSTYLE,
                   saved_window_info_.ex_style & ~(WS_EX_DLGMODALFRAME |
                   WS_EX_WINDOWEDGE | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE));
-    SetWindowPos(NULL, monitor_rect.x(), monitor_rect.y(),
-                 monitor_rect.width(), monitor_rect.height(),
-                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+
+    // On expand, if we're given a window_rect, grow to it, otherwise do
+    // not resize.
+    if (window_rect.width() > 0) {
+      SetWindowPos(NULL, window_rect.x(), window_rect.y(),
+                   window_rect.width(), window_rect.height(),
+                   SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+    }
   } else {
     // Reset original window style and size.  The multiple window size/moves
     // here are ugly, but if SetWindowPos() doesn't redraw, the taskbar won't be
     // repainted.  Better-looking methods welcome.
-    gfx::Rect new_rect(saved_window_info_.window_rect);
     SetWindowLong(GWL_STYLE, saved_window_info_.style);
     SetWindowLong(GWL_EXSTYLE, saved_window_info_.ex_style);
+
+    // On restore, if we're given a window_rect resize to that, otherwise
+    // resize to the previous saved rect size.
+    gfx::Rect new_rect;
+    if (window_rect.width() > 0) {
+      new_rect = window_rect;
+    } else {
+      new_rect = saved_window_info_.window_rect;
+    }
+
     SetWindowPos(NULL, new_rect.x(), new_rect.y(), new_rect.width(),
                  new_rect.height(),
                  SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
@@ -1046,6 +1089,10 @@ void NativeWidgetWin::SetFullscreen(bool fullscreen) {
 
 bool NativeWidgetWin::IsFullscreen() const {
   return fullscreen_;
+}
+
+bool NativeWidgetWin::IsInMetroSnapMode() const {
+  return metro_snap_;
 }
 
 void NativeWidgetWin::SetOpacity(unsigned char opacity) {
@@ -2107,9 +2154,10 @@ void NativeWidgetWin::OnWindowPosChanging(WINDOWPOS* window_pos) {
     gfx::Rect monitor_rect, work_area;
     if (GetWindowRect(&window_rect) &&
         GetMonitorAndRects(window_rect, &monitor, &monitor_rect, &work_area)) {
+      bool work_area_changed = (monitor_rect == last_monitor_rect_) &&
+                               (work_area != last_work_area_);
       if (monitor && (monitor == last_monitor_) &&
-          (IsFullscreen() || ((monitor_rect == last_monitor_rect_) &&
-              (work_area != last_work_area_)))) {
+          ((IsFullscreen() && !metro_snap_) || work_area_changed)) {
         // A rect for the monitor we're on changed.  Normally Windows notifies
         // us about this (and thus we're reaching here due to the SetWindowPos()
         // call in OnSettingChange() above), but with some software (e.g.

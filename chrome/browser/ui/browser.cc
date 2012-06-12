@@ -191,6 +191,7 @@
 #include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_WIN)
+#include "base/win/metro.h"
 #include "chrome/browser/autofill/autofill_ie_toolbar_import_win.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
@@ -1293,7 +1294,16 @@ browser::NavigateParams Browser::GetSingletonTabNavigateParams(
 
 void Browser::WindowFullscreenStateChanged() {
   fullscreen_controller_->WindowFullscreenStateChanged();
-  UpdateCommandsForFullscreenMode(window_->IsFullscreen());
+  FullScreenMode fullscreen_mode = FULLSCREEN_DISABLED;
+  if (window_->IsFullscreen()) {
+#if defined(OS_WIN)
+    fullscreen_mode = window_->IsInMetroSnapMode() ? FULLSCREEN_METRO_SNAP :
+                                                     FULLSCREEN_NORMAL;
+#else
+    fullscreen_mode = FULLSCREEN_NORMAL;
+#endif
+  }
+  UpdateCommandsForFullscreenMode(fullscreen_mode);
   UpdateBookmarkBarState(BOOKMARK_BAR_STATE_CHANGE_TOGGLE_FULLSCREEN);
 }
 
@@ -2501,6 +2511,10 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_COPY_URL:              WriteCurrentURLToClipboard();     break;
     case IDC_SHOW_AS_TAB:           ConvertPopupToTabbedBrowser();    break;
     case IDC_FULLSCREEN:            ToggleFullscreenMode();           break;
+#if defined(OS_WIN)
+    case IDC_METRO_SNAP_ENABLE:     SetMetroSnapMode(true);           break;
+    case IDC_METRO_SNAP_DISABLE:    SetMetroSnapMode(false);          break;
+#endif
 #if defined(OS_MACOSX)
     case IDC_PRESENTATION_MODE:     TogglePresentationMode();         break;
 #endif
@@ -4159,6 +4173,11 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_6, normal_window);
   command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_7, normal_window);
   command_updater_.UpdateCommandEnabled(IDC_SELECT_LAST_TAB, normal_window);
+#if defined(OS_WIN)
+  const bool metro_mode = (base::win::GetMetroModule() != NULL);
+  command_updater_.UpdateCommandEnabled(IDC_METRO_SNAP_ENABLE, metro_mode);
+  command_updater_.UpdateCommandEnabled(IDC_METRO_SNAP_DISABLE, metro_mode);
+#endif
 #if defined(OS_MACOSX)
   command_updater_.UpdateCommandEnabled(IDC_TABPOSE, normal_window);
   command_updater_.UpdateCommandEnabled(IDC_PRESENTATION_MODE,
@@ -4190,7 +4209,7 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_TOGGLE_SPEECH_INPUT, true);
 
   // Initialize other commands whose state changes based on fullscreen mode.
-  UpdateCommandsForFullscreenMode(false);
+  UpdateCommandsForFullscreenMode(FULLSCREEN_DISABLED);
 
   UpdateCommandsForContentRestrictionState();
 
@@ -4330,16 +4349,18 @@ void Browser::MarkHomePageAsChanged(PrefService* pref_service) {
   pref_service->SetBoolean(prefs::kHomePageChanged, true);
 }
 
-void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
-  const bool show_main_ui = IsShowingMainUI(is_fullscreen);
-  bool main_not_fullscreen = show_main_ui && !is_fullscreen;
+void Browser::UpdateCommandsForFullscreenMode(FullScreenMode fullscreen_mode) {
+  const bool show_main_ui =
+      IsShowingMainUI(fullscreen_mode != FULLSCREEN_DISABLED);
+  bool main_not_fullscreen = show_main_ui &&
+                             (fullscreen_mode == FULLSCREEN_DISABLED);
 
   // Navigation commands
   command_updater_.UpdateCommandEnabled(IDC_OPEN_CURRENT_URL, show_main_ui);
 
   // Window management commands
   command_updater_.UpdateCommandEnabled(IDC_SHOW_AS_TAB,
-      type_ != TYPE_TABBED && !is_fullscreen);
+      type_ != TYPE_TABBED && (fullscreen_mode == FULLSCREEN_DISABLED));
 
   // Focus various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_FOCUS_TOOLBAR, show_main_ui);
@@ -4375,6 +4396,11 @@ void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
 #if defined (ENABLE_PROFILING) && !defined(NO_TCMALLOC)
   command_updater_.UpdateCommandEnabled(IDC_PROFILING_ENABLED, show_main_ui);
 #endif
+
+  // Disable explicit fullscreen toggling when in metro snap mode.
+  command_updater_.UpdateCommandEnabled(
+      IDC_FULLSCREEN,
+      fullscreen_mode != FULLSCREEN_METRO_SNAP);
 
   UpdateCommandsForBookmarkBar();
   UpdateCommandsForMultipleProfiles();
