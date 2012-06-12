@@ -455,14 +455,11 @@ void ScoredHistoryMatch::FillInDaysAgoToRecencyScoreArray() {
       // Linearly extrapolate between 30 and 90 days so 90 days has a score
       // of 20.
       unnormalized_recency_score = 20 + (90 - days_ago) * (50 - 20) / (90 - 30);
-    } else if (days_ago <= 365) {
+    } else {
       // Linearly extrapolate between 90 and 365 days so 365 days has a score
       // of 10.
       unnormalized_recency_score =
           10 + (365 - days_ago) * (20 - 10) / (365 - 90);
-    } else {
-      // greater than a year.
-      unnormalized_recency_score = 10;
     }
     days_ago_to_recency_score[days_ago] = unnormalized_recency_score / 100.0;
     if (days_ago > 0) {
