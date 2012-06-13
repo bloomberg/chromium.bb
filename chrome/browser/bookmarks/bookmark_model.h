@@ -96,25 +96,7 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   bool is_folder() const { return type_ != URL; }
   bool is_url() const { return type_ == URL; }
 
-  // Returns the favicon. In nearly all cases you should use the method
-  // BookmarkModel::GetFavicon rather than this. BookmarkModel::GetFavicon
-  // takes care of loading the favicon if it isn't already loaded, where as
-  // this does not.
-  const SkBitmap& favicon() const { return favicon_; }
-  void set_favicon(const SkBitmap& icon) { favicon_ = icon; }
-
-  // The following methods are used by the bookmark model, and are not
-  // really useful outside of it.
-
   bool is_favicon_loaded() const { return is_favicon_loaded_; }
-  void set_is_favicon_loaded(bool loaded) { is_favicon_loaded_ = loaded; }
-
-  HistoryService::Handle favicon_load_handle() const {
-    return favicon_load_handle_;
-  }
-  void set_favicon_load_handle(HistoryService::Handle handle) {
-    favicon_load_handle_ = handle;
-  }
 
   // Accessor method for controlling the visibility of a bookmark node/sub-tree.
   // Note that visibility is not propagated down the tree hierarchy so if a
@@ -134,6 +116,18 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
 
   // Called when the favicon becomes invalid.
   void InvalidateFavicon();
+
+  const SkBitmap& favicon() const { return favicon_; }
+  void set_favicon(const SkBitmap& icon) { favicon_ = icon; }
+
+  void set_is_favicon_loaded(bool loaded) { is_favicon_loaded_ = loaded; }
+
+  HistoryService::Handle favicon_load_handle() const {
+    return favicon_load_handle_;
+  }
+  void set_favicon_load_handle(HistoryService::Handle handle) {
+    favicon_load_handle_ = handle;
+  }
 
   // The unique identifier for this node.
   int64 id_;
