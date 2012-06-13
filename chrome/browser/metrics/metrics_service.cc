@@ -646,10 +646,6 @@ void MetricsService::Observe(int type,
   }
 
   HandleIdleSinceLastTransmission(false);
-
-  if (log_manager_.current_log())
-    DVLOG(1) << "METRICS: NUMBER OF EVENTS = "
-             << log_manager_.current_log()->num_events();
 }
 
 void MetricsService::HandleIdleSinceLastTransmission(bool in_idle) {
@@ -1253,29 +1249,6 @@ void MetricsService::PrepareFetchWithStagedLog() {
   }
 }
 
-static const char* StatusToString(const net::URLRequestStatus& status) {
-  switch (status.status()) {
-    case net::URLRequestStatus::SUCCESS:
-      return "SUCCESS";
-
-    case net::URLRequestStatus::IO_PENDING:
-      return "IO_PENDING";
-
-    case net::URLRequestStatus::HANDLED_EXTERNALLY:
-      return "HANDLED_EXTERNALLY";
-
-    case net::URLRequestStatus::CANCELED:
-      return "CANCELED";
-
-    case net::URLRequestStatus::FAILED:
-      return "FAILED";
-
-    default:
-      NOTREACHED();
-      return "Unknown";
-  }
-}
-
 // We need to wait for two responses: the response to the XML upload, and the
 // response to the protobuf upload.  In the case that exactly one of the uploads
 // fails and needs to be retried, we "zap" the other pipeline's staged log to
@@ -1316,11 +1289,6 @@ void MetricsService::OnURLFetchComplete(const net::URLFetcher* source) {
   // known to have gone through.
   log_manager_.DiscardLastProvisionalStore();
 
-  // Confirm send so that we can move on.
-  VLOG(1) << "Metrics response code: " << response_code
-          << " status=" << StatusToString(source->GetStatus()) << " for "
-          << (is_xml ? "xml" : "protobuf") << " upload.";
-
   bool upload_succeeded = response_code == 200;
 
   // Provide boolean for error recovery (allow us to ignore response_code).
@@ -1337,13 +1305,7 @@ void MetricsService::OnURLFetchComplete(const net::URLFetcher* source) {
     discard_log = true;
   }
 
-  if (!upload_succeeded && !discard_log) {
-    LogBadResponseCode(response_code, is_xml);
-  } else {  // Successful receipt (or we are discarding log).
-    std::string response_data;
-    source->GetResponseAsString(&response_data);
-    VLOG(1) << "Metrics response data: " << response_data;
-
+  if (upload_succeeded || discard_log) {
     if (is_xml)
       log_manager_.DiscardStagedLogXml();
     else
@@ -1399,26 +1361,6 @@ void MetricsService::OnURLFetchComplete(const net::URLFetcher* source) {
     chrome_browser_net::CollectNetworkStats(network_stats_server_, io_thread);
     chrome_browser_net::CollectPipeliningCapabilityStatsOnUIThread(
         http_pipelining_test_server_, io_thread);
-  }
-}
-
-void MetricsService::LogBadResponseCode(int response_code, bool is_xml) {
-  VLOG(1) << "Metrics: transmission attempt returned a failure code: "
-          << response_code << ". Verify network connectivity and that your "
-          << "metrics logs are formatted correctly. Verify server is active at "
-          << (is_xml ? server_url_xml_ : server_url_proto_) << ".";
-
-  if (!log_manager_.has_staged_log()) {
-    // TODO(isherman): I don't think this code is reachable...
-    VLOG(1) << "Metrics: Recorder shutdown during log transmission.";
-  } else {
-    if (is_xml) {
-      VLOG(1) << "Metrics: transmission retry being scheduled for \n"
-              << log_manager_.staged_log_text().xml;
-    } else {
-      VLOG(1)
-          << "Metrics: transmission retry being scheduled for protobuf upload.";
-    }
   }
 }
 
