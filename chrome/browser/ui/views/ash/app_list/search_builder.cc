@@ -95,8 +95,6 @@ class SearchBuilderResult : public app_list::SearchResult,
       const extensions::Extension* extension =
           service->GetInstalledApp(match_.destination_url);
       if (extension) {
-        SetIcon(profile_->GetExtensionService()->GetOmniboxPopupIcon(
-            extension->id()));
         LoadExtensionIcon(extension);
         return;
       }
@@ -140,8 +138,12 @@ class SearchBuilderResult : public app_list::SearchResult,
   virtual void OnImageLoaded(const gfx::Image& image,
                              const std::string& extension_id,
                              int tracker_index) OVERRIDE {
-    if (!image.IsEmpty())
+    if (!image.IsEmpty()) {
       SetIcon(*image.ToSkBitmap());
+      return;
+    }
+
+    SetIcon(profile_->GetExtensionService()->GetOmniboxPopupIcon(extension_id));
   }
 
   Profile* profile_;

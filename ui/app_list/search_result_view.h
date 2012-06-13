@@ -41,6 +41,9 @@ class SearchResultView : public views::CustomButton,
   void SetResult(SearchResult* result);
   const SearchResult* result() const { return result_; }
 
+  // Clears reference to SearchResult but don't schedule repaint.
+  void ClearResultNoRepaint();
+
  private:
   void UpdateTitleText();
   void UpdateDetailsText();

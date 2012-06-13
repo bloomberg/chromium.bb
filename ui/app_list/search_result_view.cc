@@ -99,23 +99,26 @@ SearchResultView::SearchResultView(SearchResultListView* list_view,
 }
 
 SearchResultView::~SearchResultView() {
-  if (result_)
-    result_->RemoveObserver(this);
+  ClearResultNoRepaint();
 }
 
 void SearchResultView::SetResult(SearchResult* result) {
-  if (result_)
-    result_->RemoveObserver(this);
+  ClearResultNoRepaint();
 
   result_ = result;
-
   if (result_)
     result_->AddObserver(this);
 
-  icon_->SetImage(result_ ? result_->icon() : gfx::ImageSkia());
+  OnIconChanged();
   UpdateTitleText();
   UpdateDetailsText();
   SchedulePaint();
+}
+
+void SearchResultView::ClearResultNoRepaint() {
+  if (result_)
+    result_->RemoveObserver(this);
+  result_ = NULL;
 }
 
 void SearchResultView::UpdateTitleText() {
@@ -203,7 +206,22 @@ void SearchResultView::OnPaint(gfx::Canvas* canvas) {
 }
 
 void SearchResultView::OnIconChanged() {
-  SchedulePaint();
+  gfx::ImageSkia image(result_ ? result_->icon() : gfx::ImageSkia());
+  // Note this might leave the view with an old icon. But it is needed to avoid
+  // flash when a SearchResult's icon is loaded asynchronously. In this case, it
+  // looks nicer to keep the stale icon for a little while on screen instead of
+  // clearing it out. It should work correctly as long as the SearchResult does
+  // not forget to SetIcon when it's ready.
+  if (image.empty())
+    return;
+
+  // Scales down big icons but leave small ones unchanged.
+  if (image.width() > kIconDimension || image.height() > kIconDimension)
+    icon_->SetImageSize(gfx::Size(kIconDimension, kIconDimension));
+  else
+    icon_->ResetImageSize();
+
+  icon_->SetImage(image);
 }
 
 }  // namespace app_list
