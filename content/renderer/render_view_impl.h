@@ -150,7 +150,6 @@ class WebSpeechInputListener;
 class WebSpeechRecognizer;
 class WebStorageNamespace;
 class WebTouchEvent;
-class WebURLLoader;
 class WebURLRequest;
 class WebUserMediaClient;
 struct WebActiveWheelFlingParameters;
@@ -597,7 +596,6 @@ class RenderViewImpl : public RenderWidget,
       WebKit::WebFrame* frame,
       const WebKit::WebSecurityOrigin& origin,
       const WebKit::WebURL& target);
-  virtual void didAdoptURLLoader(WebKit::WebURLLoader* loader);
   virtual void didExhaustMemoryAvailableForScript(WebKit::WebFrame* frame);
   virtual void didCreateScriptContext(WebKit::WebFrame* frame,
                                       v8::Handle<v8::Context>,

@@ -398,10 +398,6 @@ class ResourceLoaderBridge {
   // response parameter.
   virtual void SyncLoad(SyncLoadResponse* response) = 0;
 
-  // When loader is transferred from one page to another, the IPC routing id
-  // can change (they are associated with pages).
-  virtual void UpdateRoutingId(int new_routing_id) = 0;
-
  protected:
   // Construction must go through
   // WebKitPlatformSupportImpl::CreateResourceLoader()

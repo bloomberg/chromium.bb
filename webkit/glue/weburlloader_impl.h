@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,8 +29,6 @@ class WebURLLoaderImpl : public WebKit::WebURLLoader {
       WebKit::WebURLLoaderClient* client);
   virtual void cancel();
   virtual void setDefersLoading(bool value);
-
-  WEBKIT_GLUE_EXPORT void UpdateRoutingId(int new_routing_id);
 
  private:
   class Context;

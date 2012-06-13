@@ -673,8 +673,6 @@ bool ResourceDispatcherHostImpl::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ResourceHostMsg_DataDownloaded_ACK, OnDataDownloadedACK)
     IPC_MESSAGE_HANDLER(ResourceHostMsg_UploadProgress_ACK, OnUploadProgressACK)
     IPC_MESSAGE_HANDLER(ResourceHostMsg_CancelRequest, OnCancelRequest)
-    IPC_MESSAGE_HANDLER(ResourceHostMsg_TransferRequestToNewPage,
-                        OnTransferRequestToNewPage)
     IPC_MESSAGE_HANDLER(ResourceHostMsg_FollowRedirect, OnFollowRedirect)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SwapOut_ACK, OnSwapOutACK)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidLoadResourceFromMemoryCache,
@@ -1047,24 +1045,6 @@ void ResourceDispatcherHostImpl::OnUploadProgressACK(int request_id) {
 
 void ResourceDispatcherHostImpl::OnCancelRequest(int request_id) {
   CancelRequest(filter_->child_id(), request_id, true);
-}
-
-// Assigns the pending request a new routing_id because it was transferred
-// to a new page.
-void ResourceDispatcherHostImpl::OnTransferRequestToNewPage(int new_routing_id,
-                                                            int request_id) {
-  PendingRequestList::iterator i = pending_requests_.find(
-      GlobalRequestID(filter_->child_id(), request_id));
-  if (i == pending_requests_.end()) {
-    // We probably want to remove this warning eventually, but I wanted to be
-    // able to notice when this happens during initial development since it
-    // should be rare and may indicate a bug.
-    DVLOG(1) << "Updating a request that wasn't found";
-    return;
-  }
-  net::URLRequest* request = i->second;
-  ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(request);
-  info->set_route_id(new_routing_id);
 }
 
 void ResourceDispatcherHostImpl::OnFollowRedirect(

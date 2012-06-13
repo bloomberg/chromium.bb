@@ -120,10 +120,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
     return process_type_;
   }
 
-  // The route_id of pending request can change when it is transferred to a new
-  // page (as in iframe transfer using adoptNode JS API).
-  void set_route_id(int route_id) { route_id_ = route_id; }
-
   // Number of messages we've sent to the renderer that we haven't gotten an
   // ACK for. This allows us to avoid having too many messages in flight.
   int pending_data_count() const { return pending_data_count_; }

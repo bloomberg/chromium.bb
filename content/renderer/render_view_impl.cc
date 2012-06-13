@@ -179,7 +179,6 @@
 #include "webkit/glue/web_intent_service_data.h"
 #include "webkit/glue/webkit_constants.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/glue/weburlloader_impl.h"
 #include "webkit/glue/weburlresponse_extradata_impl.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
 #include "webkit/media/webmediaplayer_impl.h"
@@ -3411,12 +3410,6 @@ void RenderViewImpl::didRunInsecureContent(
       routing_id_,
       origin.toString().utf8(),
       target));
-}
-
-void RenderViewImpl::didAdoptURLLoader(WebKit::WebURLLoader* loader) {
-  webkit_glue::WebURLLoaderImpl* loader_impl =
-      static_cast<webkit_glue::WebURLLoaderImpl*>(loader);
-  loader_impl->UpdateRoutingId(routing_id_);
 }
 
 void RenderViewImpl::didExhaustMemoryAvailableForScript(WebFrame* frame) {
