@@ -459,15 +459,11 @@ TEST_F(ToplevelWindowEventFilterTest, GestureDrag) {
   gfx::Point location(5, 5);
 
   // Snap right;
-  generator.MoveMouseTo(location);
-  generator.PressTouch();
-  generator.SendTouchScrollEvents(location,
-      base::Time::NowFromSystemTime() - base::Time(),
-      100, 0,
-      0,
-      5,
+  gfx::Point end = location;
+  end.Offset(100, 0);
+  generator.GestureScrollSequence(location, end,
+      base::TimeDelta::FromMilliseconds(5),
       10);
-  generator.ReleaseTouch();
   RunAllPendingInMessageLoop();
 
   // Verify that the window has moved after the gesture.
@@ -481,15 +477,11 @@ TEST_F(ToplevelWindowEventFilterTest, GestureDrag) {
   old_bounds = target->bounds();
 
   // Snap left.
-  generator.MoveMouseRelativeTo(target.get(), location);
-  generator.PressTouch();
-  generator.SendTouchScrollEvents(location,
-      base::Time::NowFromSystemTime() - base::Time(),
-      -100, 0,
-      0,
-      5,
+  end = location = target->GetBoundsInRootWindow().CenterPoint();
+  end.Offset(-100, 0);
+  generator.GestureScrollSequence(location, end,
+      base::TimeDelta::FromMilliseconds(5),
       10);
-  generator.ReleaseTouch();
   RunAllPendingInMessageLoop();
 
   EXPECT_NE(old_bounds.ToString(), target->bounds().ToString());
@@ -501,15 +493,11 @@ TEST_F(ToplevelWindowEventFilterTest, GestureDrag) {
 
   old_bounds = target->bounds();
   // Maximize.
-  generator.MoveMouseRelativeTo(target.get(), location);
-  generator.PressTouch();
-  generator.SendTouchScrollEvents(location,
-      base::Time::NowFromSystemTime() - base::Time(),
-      0, -100,
-      0,
-      5,
+  end = location = target->GetBoundsInRootWindow().CenterPoint();
+  end.Offset(0, -100);
+  generator.GestureScrollSequence(location, end,
+      base::TimeDelta::FromMilliseconds(5),
       10);
-  generator.ReleaseTouch();
   RunAllPendingInMessageLoop();
   EXPECT_NE(old_bounds.ToString(), target->bounds().ToString());
   EXPECT_TRUE(wm::IsWindowMaximized(target.get()));
@@ -518,15 +506,11 @@ TEST_F(ToplevelWindowEventFilterTest, GestureDrag) {
   target->SetBounds(old_bounds);
 
   // Minimize.
-  generator.MoveMouseRelativeTo(target.get(), location);
-  generator.PressTouch();
-  generator.SendTouchScrollEvents(location,
-      base::Time::NowFromSystemTime() - base::Time(),
-      0, 100,
-      0,
-      5,
+  end = location = target->GetBoundsInRootWindow().CenterPoint();
+  end.Offset(0, 100);
+  generator.GestureScrollSequence(location, end,
+      base::TimeDelta::FromMilliseconds(5),
       10);
-  generator.ReleaseTouch();
   RunAllPendingInMessageLoop();
   EXPECT_NE(old_bounds.ToString(), target->bounds().ToString());
   EXPECT_TRUE(wm::IsWindowMinimized(target.get()));

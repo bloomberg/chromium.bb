@@ -175,6 +175,51 @@ void EventGenerator::PressMoveAndReleaseTouchToCenterOf(Window* window) {
                                                                   window));
 }
 
+void EventGenerator::GestureTapAt(const gfx::Point& location) {
+  const int kTouchId = 2;
+  TouchEvent press(ui::ET_TOUCH_PRESSED, location, kTouchId,
+      base::Time::NowFromSystemTime() - base::Time());
+  Dispatch(press);
+
+  TouchEvent release(ui::ET_TOUCH_RELEASED, location, kTouchId,
+      press.time_stamp() + base::TimeDelta::FromMilliseconds(50));
+  Dispatch(release);
+}
+
+void EventGenerator::GestureTapDownAndUp(const gfx::Point& location) {
+  const int kTouchId = 3;
+  TouchEvent press(ui::ET_TOUCH_PRESSED, location, kTouchId,
+      base::Time::NowFromSystemTime() - base::Time());
+  Dispatch(press);
+
+  TouchEvent release(ui::ET_TOUCH_RELEASED, location, kTouchId,
+      press.time_stamp() + base::TimeDelta::FromMilliseconds(1000));
+  Dispatch(release);
+}
+
+void EventGenerator::GestureScrollSequence(const gfx::Point& start,
+                                           const gfx::Point& end,
+                                           const base::TimeDelta& step_delay,
+                                           int steps) {
+  const int kTouchId = 5;
+  base::TimeDelta timestamp = base::Time::NowFromSystemTime() - base::Time();
+  TouchEvent press(ui::ET_TOUCH_PRESSED, start, kTouchId, timestamp);
+  Dispatch(press);
+
+  int dx = (end.x() - start.x()) / steps;
+  int dy = (end.y() - start.y()) / steps;
+  gfx::Point location = start;
+  for (int i = 0; i < steps; ++i) {
+    location.Offset(dx, dy);
+    timestamp += step_delay;
+    TouchEvent move(ui::ET_TOUCH_MOVED, location, kTouchId, timestamp);
+    Dispatch(move);
+  }
+
+  TouchEvent release(ui::ET_TOUCH_RELEASED, end, kTouchId, timestamp);
+  Dispatch(release);
+}
+
 void EventGenerator::PressKey(ui::KeyboardCode key_code, int flags) {
   DispatchKeyEvent(true, key_code, flags);
 }

@@ -128,6 +128,18 @@ TEST_F(CustomFrameViewAshTest, ResizeButtonToggleMaximize) {
   RunAllPendingInMessageLoop();
   EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
 
+  generator.GestureTapAt(view->GetScreenBounds().CenterPoint());
+  EXPECT_TRUE(ash::wm::IsWindowMaximized(window));
+
+  generator.GestureTapAt(view->GetScreenBounds().CenterPoint());
+  EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
+
+  generator.GestureTapDownAndUp(view->GetScreenBounds().CenterPoint());
+  EXPECT_TRUE(ash::wm::IsWindowMaximized(window));
+
+  generator.GestureTapDownAndUp(view->GetScreenBounds().CenterPoint());
+  EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
+
   widget->Close();
 }
 
@@ -186,6 +198,59 @@ TEST_F(CustomFrameViewAshTest, ResizeButtonDrag) {
 
     EXPECT_TRUE(ash::wm::IsWindowMinimized(window));
   }
+
+  ash::wm::RestoreWindow(window);
+
+  // Now test the same behaviour for gesture events.
+
+  // Snap right.
+  {
+    center = view->GetScreenBounds().CenterPoint();
+    gfx::Point end = center;
+    end.Offset(40, 0);
+    generator.GestureScrollSequence(center, end,
+        base::TimeDelta::FromMilliseconds(100),
+        3);
+    RunAllPendingInMessageLoop();
+
+    EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
+    EXPECT_FALSE(ash::wm::IsWindowMinimized(window));
+    internal::SnapSizer sizer(window, center,
+        internal::SnapSizer::RIGHT_EDGE, kGridSize);
+    EXPECT_EQ(sizer.target_bounds().ToString(), window->bounds().ToString());
+  }
+
+  // Snap left.
+  {
+    center = view->GetScreenBounds().CenterPoint();
+    gfx::Point end = center;
+    end.Offset(-40, 0);
+    generator.GestureScrollSequence(center, end,
+        base::TimeDelta::FromMilliseconds(100),
+        3);
+    RunAllPendingInMessageLoop();
+
+    EXPECT_FALSE(ash::wm::IsWindowMaximized(window));
+    EXPECT_FALSE(ash::wm::IsWindowMinimized(window));
+    internal::SnapSizer sizer(window, center,
+        internal::SnapSizer::LEFT_EDGE, kGridSize);
+    EXPECT_EQ(sizer.target_bounds().ToString(), window->bounds().ToString());
+  }
+
+  // Minimize.
+  {
+    center = view->GetScreenBounds().CenterPoint();
+    gfx::Point end = center;
+    end.Offset(0, 40);
+    generator.GestureScrollSequence(center, end,
+        base::TimeDelta::FromMilliseconds(100),
+        3);
+    RunAllPendingInMessageLoop();
+
+    EXPECT_TRUE(ash::wm::IsWindowMinimized(window));
+  }
+
+  // Test with gesture events.
 
   widget->Close();
 }

@@ -119,6 +119,23 @@ class EventGenerator {
   // to the center of the window.
   void PressMoveAndReleaseTouchToCenterOf(Window* window);
 
+  // Generates and dispatches touch-events required to generate a TAP gesture.
+  // Note that this can generate a number of other gesture events at the same
+  // time (e.g. GESTURE_BEGIN, TAP_DOWN, END).
+  void GestureTapAt(const gfx::Point& point);
+
+  // Generates press and release touch-events to generate a TAP_DOWN event, but
+  // without generating any scroll or tap events. This can also generate a few
+  // other gesture events (e.g. GESTURE_BEGIN, END).
+  void GestureTapDownAndUp(const gfx::Point& point);
+
+  // Generates press, move, release touch-events to generate a sequence of
+  // scroll events.
+  void GestureScrollSequence(const gfx::Point& start,
+                             const gfx::Point& end,
+                             const base::TimeDelta& duration,
+                             int steps);
+
   // Generates a key press event. On platforms except Windows and X11, a key
   // event without native_event() is generated. Note that ui::EF_ flags should
   // be passed as |flags|, not the native ones like 'ShiftMask' in <X11/X.h>.
