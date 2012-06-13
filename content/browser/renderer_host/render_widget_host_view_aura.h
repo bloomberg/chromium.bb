@@ -88,6 +88,9 @@ class RenderWidgetHostViewAura
   virtual void TextInputStateChanged(ui::TextInputType type,
                                      bool can_compose_inline) OVERRIDE;
   virtual void ImeCancelComposition() OVERRIDE;
+  virtual void ImeCompositionRangeChanged(
+      const ui::Range& range,
+      const std::vector<gfx::Rect>& character_bounds) OVERRIDE;
   virtual void DidUpdateBackingStore(
       const gfx::Rect& scroll_rect, int scroll_dx, int scroll_dy,
       const std::vector<gfx::Rect>& copy_rects) OVERRIDE;
@@ -269,6 +272,9 @@ class RenderWidgetHostViewAura
   // Rectangles before and after the selection.
   gfx::Rect selection_start_rect_;
   gfx::Rect selection_end_rect_;
+
+  // The current composition character bounds.
+  std::vector<gfx::Rect> composition_character_bounds_;
 
   // Indicates if there is onging composition text.
   bool has_composition_text_;

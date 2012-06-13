@@ -483,7 +483,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   void OnMsgSetCursor(const WebCursor& cursor);
   void OnMsgTextInputStateChanged(ui::TextInputType type,
                                   bool can_compose_inline);
-  void OnMsgImeCompositionRangeChanged(const ui::Range& range);
+  void OnMsgImeCompositionRangeChanged(
+      const ui::Range& range,
+      const std::vector<gfx::Rect>& character_bounds);
   void OnMsgImeCancelComposition();
 
   void OnMsgDidActivateAcceleratedCompositing(bool activated);

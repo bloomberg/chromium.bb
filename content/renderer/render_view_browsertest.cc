@@ -1514,3 +1514,67 @@ TEST_F(RenderViewImplTest, TestBackForward) {
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_b, &was_page_b));
   EXPECT_EQ(1, was_page_b);
 }
+
+TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
+  LoadHTML("<textarea id=\"test\"></textarea>");
+  ExecuteJavaScript("document.getElementById('test').focus();");
+
+  const string16 empty_string = UTF8ToUTF16("");
+  const std::vector<WebKit::WebCompositionUnderline> empty_underline;
+  std::vector<gfx::Rect> bounds;
+  view()->OnSetFocus(true);
+  view()->OnSetInputMethodActive(true);
+
+  // ASCII composition
+  const string16 ascii_composition = UTF8ToUTF16("aiueo");
+  view()->OnImeSetComposition(ascii_composition, empty_underline, 0, 0);
+  view()->GetCompositionCharacterBounds(&bounds);
+  ASSERT_EQ(ascii_composition.size(), bounds.size());
+  for (size_t i = 0; i < bounds.size(); ++i)
+    EXPECT_LT(0, bounds[i].width());
+  view()->OnImeConfirmComposition(empty_string, ui::Range::InvalidRange());
+
+  // Non surrogate pair unicode character.
+  const string16 unicode_composition = UTF8ToUTF16(
+      "\xE3\x81\x82\xE3\x81\x84\xE3\x81\x86\xE3\x81\x88\xE3\x81\x8A");
+  view()->OnImeSetComposition(unicode_composition, empty_underline, 0, 0);
+  view()->GetCompositionCharacterBounds(&bounds);
+  ASSERT_EQ(unicode_composition.size(), bounds.size());
+  for (size_t i = 0; i < bounds.size(); ++i)
+    EXPECT_LT(0, bounds[i].width());
+  view()->OnImeConfirmComposition(empty_string, ui::Range::InvalidRange());
+
+  // Surrogate pair character.
+  const string16 surrogate_pair_char = UTF8ToUTF16("\xF0\xA0\xAE\x9F");
+  view()->OnImeSetComposition(surrogate_pair_char,
+                              empty_underline,
+                              0,
+                              0);
+  view()->GetCompositionCharacterBounds(&bounds);
+  ASSERT_EQ(surrogate_pair_char.size(), bounds.size());
+  EXPECT_LT(0, bounds[0].width());
+  EXPECT_EQ(0, bounds[1].width());
+  view()->OnImeConfirmComposition(empty_string, ui::Range::InvalidRange());
+
+  // Mixed string.
+  const string16 surrogate_pair_mixed_composition =
+      surrogate_pair_char + UTF8ToUTF16("\xE3\x81\x82") + surrogate_pair_char +
+      UTF8ToUTF16("b") + surrogate_pair_char;
+  const size_t utf16_length = 8UL;
+  const bool is_surrogate_pair_empty_rect[8] = {
+    false, true, false, false, true, false, false, true };
+  view()->OnImeSetComposition(surrogate_pair_mixed_composition,
+                              empty_underline,
+                              0,
+                              0);
+  view()->GetCompositionCharacterBounds(&bounds);
+  ASSERT_EQ(utf16_length, bounds.size());
+  for (size_t i = 0; i < utf16_length; ++i) {
+    if (is_surrogate_pair_empty_rect[i]) {
+      EXPECT_EQ(0, bounds[i].width());
+    } else {
+      EXPECT_LT(0, bounds[i].width());
+    }
+  }
+  view()->OnImeConfirmComposition(empty_string, ui::Range::InvalidRange());
+}

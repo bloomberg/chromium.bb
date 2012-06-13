@@ -1028,8 +1028,10 @@ void RenderWidgetHostViewWin::ImeCancelComposition() {
 }
 
 void RenderWidgetHostViewWin::ImeCompositionRangeChanged(
-    const ui::Range& range) {
+    const ui::Range& range,
+    const std::vector<gfx::Rect>& character_bounds) {
   composition_range_ = range;
+  composition_character_bounds_ = character_bounds;
 }
 
 BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lparam) {

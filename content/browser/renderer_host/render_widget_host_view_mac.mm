@@ -635,7 +635,8 @@ void RenderWidgetHostViewMac::ImeCancelComposition() {
 }
 
 void RenderWidgetHostViewMac::ImeCompositionRangeChanged(
-    const ui::Range& range) {
+    const ui::Range& range,
+    const std::vector<gfx::Rect>& character_bounds) {
   // The RangeChanged message is only sent with valid values. The current
   // caret position (start == end) will be sent if there is no IME range.
   [cocoa_view_ setMarkedRange:range.ToNSRange()];

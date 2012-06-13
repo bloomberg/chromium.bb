@@ -1830,8 +1830,9 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_TextInputStateChanged,
                     bool /* can_compose_inline */)
 
 // Message sent when the IME text composition range changes.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_ImeCompositionRangeChanged,
-                    ui::Range /* composition range */)
+IPC_MESSAGE_ROUTED2(ViewHostMsg_ImeCompositionRangeChanged,
+                    ui::Range /* composition range */,
+                    std::vector<gfx::Rect> /* character bounds */)
 
 // Required for cancelling an ongoing input method composition.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_ImeCancelComposition)

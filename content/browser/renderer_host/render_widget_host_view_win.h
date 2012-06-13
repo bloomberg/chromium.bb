@@ -179,7 +179,9 @@ class RenderWidgetHostViewWin
   virtual void SelectionBoundsChanged(const gfx::Rect& start_rect,
                                       const gfx::Rect& end_rect) OVERRIDE;
   virtual void ImeCancelComposition() OVERRIDE;
-  virtual void ImeCompositionRangeChanged(const ui::Range& range) OVERRIDE;
+  virtual void ImeCompositionRangeChanged(
+      const ui::Range& range,
+      const std::vector<gfx::Rect>& character_bounds) OVERRIDE;
   virtual void DidUpdateBackingStore(
       const gfx::Rect& scroll_rect, int scroll_dx, int scroll_dy,
       const std::vector<gfx::Rect>& copy_rects) OVERRIDE;
@@ -525,6 +527,9 @@ class RenderWidgetHostViewWin
   bool ignore_mouse_movement_;
 
   ui::Range composition_range_;
+
+  // The current composition character bounds.
+  std::vector<gfx::Rect> composition_character_bounds_;
 
   // TODO(ananta)
   // The WM_POINTERDOWN and on screen keyboard handling related members should

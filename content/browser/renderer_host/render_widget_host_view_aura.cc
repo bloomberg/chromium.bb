@@ -391,6 +391,12 @@ void RenderWidgetHostViewAura::ImeCancelComposition() {
   has_composition_text_ = false;
 }
 
+void RenderWidgetHostViewAura::ImeCompositionRangeChanged(
+    const ui::Range& range,
+    const std::vector<gfx::Rect>& character_bounds) {
+  composition_character_bounds_ = character_bounds;
+}
+
 void RenderWidgetHostViewAura::DidUpdateBackingStore(
     const gfx::Rect& scroll_rect, int scroll_dx, int scroll_dy,
     const std::vector<gfx::Rect>& copy_rects) {

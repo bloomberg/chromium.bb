@@ -1323,6 +1323,17 @@ void RenderWidget::OnSetInputMethodActive(bool is_active) {
   input_method_is_active_ = is_active;
 }
 
+void RenderWidget::UpdateCompositionInfo(
+    const ui::Range& range,
+    const std::vector<gfx::Rect>& character_bounds) {
+  if (!ShouldUpdateCompositionInfo(range, character_bounds))
+    return;
+  composition_character_bounds_ = character_bounds;
+  composition_range_ = range;
+  Send(new ViewHostMsg_ImeCompositionRangeChanged(
+      routing_id(), composition_range_, composition_character_bounds_));
+}
+
 void RenderWidget::OnImeSetComposition(
     const string16& text,
     const std::vector<WebCompositionUnderline>& underlines,
@@ -1345,7 +1356,9 @@ void RenderWidget::OnImeSetComposition(
       range.set_start(location);
       range.set_end(location + length);
     }
-    Send(new ViewHostMsg_ImeCompositionRangeChanged(routing_id(), range));
+    std::vector<gfx::Rect> character_bounds;
+    GetCompositionCharacterBounds(&character_bounds);
+    UpdateCompositionInfo(range, character_bounds);
   } else {
     // If we failed to set the composition text, then we need to let the browser
     // process to cancel the input method's ongoing composition session, to make
@@ -1359,7 +1372,7 @@ void RenderWidget::OnImeSetComposition(
       range.set_start(location);
       range.set_end(location + length);
     }
-    Send(new ViewHostMsg_ImeCompositionRangeChanged(routing_id(), range));
+    UpdateCompositionInfo(range, std::vector<gfx::Rect>());
   }
 }
 
@@ -1379,7 +1392,7 @@ void RenderWidget::OnImeConfirmComposition(
     range.set_start(location);
     range.set_end(location + length);
   }
-  Send(new ViewHostMsg_ImeCompositionRangeChanged(routing_id(), range));
+  UpdateCompositionInfo(range, std::vector<gfx::Rect>());
 }
 
 // This message causes the renderer to render an image of the
@@ -1586,13 +1599,30 @@ void RenderWidget::UpdateSelectionBounds() {
   gfx::Rect start_rect;
   gfx::Rect end_rect;
   GetSelectionBounds(&start_rect, &end_rect);
-  if (selection_start_rect_ == start_rect && selection_end_rect_ == end_rect)
-    return;
+  if (selection_start_rect_ != start_rect || selection_end_rect_ != end_rect) {
+    selection_start_rect_ = start_rect;
+    selection_end_rect_ = end_rect;
+    Send(new ViewHostMsg_SelectionBoundsChanged(
+        routing_id_, selection_start_rect_, selection_end_rect_));
+  }
 
-  selection_start_rect_ = start_rect;
-  selection_end_rect_ = end_rect;
-  Send(new ViewHostMsg_SelectionBoundsChanged(
-      routing_id_, selection_start_rect_, selection_end_rect_));
+  std::vector<gfx::Rect> character_bounds;
+  GetCompositionCharacterBounds(&character_bounds);
+  UpdateCompositionInfo(composition_range_, character_bounds);
+}
+
+bool RenderWidget::ShouldUpdateCompositionInfo(
+    const ui::Range& range,
+    const std::vector<gfx::Rect>& bounds) {
+  if (composition_range_ != range)
+    return true;
+  if (bounds.size() != composition_character_bounds_.size())
+    return true;
+  for (size_t i = 0; i < bounds.size(); ++i) {
+    if (bounds[i] != composition_character_bounds_[i])
+      return true;
+  }
+  return false;
 }
 
 // Check WebKit::WebTextInputType and ui::TextInputType is kept in sync.
@@ -1636,6 +1666,12 @@ ui::TextInputType RenderWidget::GetTextInputType() {
   return ui::TEXT_INPUT_TYPE_NONE;
 }
 
+void RenderWidget::GetCompositionCharacterBounds(
+    std::vector<gfx::Rect>* bounds) {
+  DCHECK(bounds);
+  bounds->clear();
+}
+
 bool RenderWidget::CanComposeInline() {
   return true;
 }
@@ -1668,7 +1704,8 @@ void RenderWidget::resetInputMethod() {
     range.set_start(location);
     range.set_end(location + length);
   }
-  Send(new ViewHostMsg_ImeCompositionRangeChanged(routing_id(), range));
+
+  UpdateCompositionInfo(range, std::vector<gfx::Rect>());
 }
 
 void RenderWidget::SchedulePluginMove(

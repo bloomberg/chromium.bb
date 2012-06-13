@@ -94,7 +94,9 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
   virtual void ImeCancelComposition() = 0;
 
   // Updates the range of the marked text in an IME composition.
-  virtual void ImeCompositionRangeChanged(const ui::Range& range) {}
+  virtual void ImeCompositionRangeChanged(
+      const ui::Range& range,
+      const std::vector<gfx::Rect>& character_bounds) {}
 
   // Informs the view that a portion of the widget's backing store was scrolled
   // and/or painted.  The view should ensure this gets copied to the screen.

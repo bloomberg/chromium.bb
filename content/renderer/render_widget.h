@@ -25,6 +25,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebRect.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/ime/text_input_type.h"
+#include "ui/base/range/range.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -320,12 +321,33 @@ class CONTENT_EXPORT RenderWidget
 
   // Checks if the selection bounds have been changed. If they are changed,
   // the new value will be sent to the browser process.
-  void UpdateSelectionBounds();
+  virtual void UpdateSelectionBounds();
+
+  // Checks if the composition range or composition character bounds have been
+  // changed. If they are changed, the new value will be sent to the browser
+  // process.
+  virtual void UpdateCompositionInfo(
+      const ui::Range& range,
+      const std::vector<gfx::Rect>& character_bounds);
+
 
   // Override point to obtain that the current input method state and caret
   // position.
   virtual ui::TextInputType GetTextInputType();
   virtual void GetSelectionBounds(gfx::Rect* start, gfx::Rect* end);
+
+  // Override point to obtain that the current composition character bounds.
+  // In the case of surrogate pairs, the character is treated as two characters:
+  // the bounds for first character is actual one, and the bounds for second
+  // character is zero width rectangle.
+  virtual void GetCompositionCharacterBounds(
+      std::vector<gfx::Rect>* character_bounds);
+
+  // Returns true if the composition range or composition character bounds
+  // should be sent to the browser process.
+  bool ShouldUpdateCompositionInfo(
+      const ui::Range& range,
+      const std::vector<gfx::Rect>& bounds);
 
   // Override point to obtain that the current input method state about
   // composition text.
@@ -477,6 +499,12 @@ class CONTENT_EXPORT RenderWidget
   // Stores the current selection bounds.
   gfx::Rect selection_start_rect_;
   gfx::Rect selection_end_rect_;
+
+  // Stores the current composition character bounds.
+  std::vector<gfx::Rect> composition_character_bounds_;
+
+  // Stores the current composition range.
+  ui::Range composition_range_;
 
   // The kind of popup this widget represents, NONE if not a popup.
   WebKit::WebPopupType popup_type_;
