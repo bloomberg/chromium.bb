@@ -11,6 +11,7 @@
 #include "ui/base/resource/resource_handle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/gfx/display.h"
 #include "ui/gfx/image/image.h"
 
 namespace {
@@ -22,6 +23,11 @@ FilePath GetResourcesPakFilePath(const std::string& pak_name) {
 
   // Return just the name of the pack file.
   return FilePath(pak_name.c_str());
+}
+
+bool ShouldLoad2xResources() {
+  return (gfx::Display::GetDefaultDeviceScaleFactor() > 1.0f ||
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kLoad2xResources));
 }
 
 }  // namespace
@@ -45,8 +51,7 @@ void ResourceBundle::LoadCommonResources() {
                 SCALE_FACTOR_100P);
     AddDataPack(GetResourcesPakFilePath("ui_resources_touch.pak"),
                 SCALE_FACTOR_100P);
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kLoad2xResources)) {
+    if (ShouldLoad2xResources()) {
       // 2x touch
       AddDataPack(GetResourcesPakFilePath("theme_resources_touch_2x.pak"),
                   SCALE_FACTOR_200P);
@@ -59,8 +64,7 @@ void ResourceBundle::LoadCommonResources() {
                 SCALE_FACTOR_100P);
     AddDataPack(GetResourcesPakFilePath("ui_resources_standard.pak"),
                 SCALE_FACTOR_100P);
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kLoad2xResources)) {
+    if (ShouldLoad2xResources()) {
       // 2x non touch
       AddDataPack(GetResourcesPakFilePath("theme_resources_standard_2x.pak"),
                   SCALE_FACTOR_200P);
