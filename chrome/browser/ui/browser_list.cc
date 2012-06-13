@@ -87,19 +87,19 @@ class BrowserActivityObserver : public content::NotificationObserver {
     for (BrowserList::const_iterator browser_iterator = BrowserList::begin();
          browser_iterator != BrowserList::end(); browser_iterator++) {
       // Record how many tabs each window has open.
+      Browser* browser = (*browser_iterator);
       UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.TabCountPerWindow",
-                                  (*browser_iterator)->tab_count(), 1, 200, 50);
-      tab_count += (*browser_iterator)->tab_count();
+                                  browser->tab_count(), 1, 200, 50);
+      tab_count += browser->tab_count();
+
+      if (browser->window()->IsActive()) {
+        // Record how many tabs the active window has open.
+        UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.TabCountActiveWindow",
+                                    browser->tab_count(), 1, 200, 50);
+      }
     }
     // Record how many tabs total are open (across all windows).
     UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.TabCountPerLoad", tab_count, 1, 200, 50);
-
-    Browser* browser = BrowserList::GetLastActive();
-    if (browser) {
-      // Record how many tabs the active window has open.
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.TabCountActiveWindow",
-                                  browser->tab_count(), 1, 200, 50);
-    }
   }
 
   content::NotificationRegistrar registrar_;
