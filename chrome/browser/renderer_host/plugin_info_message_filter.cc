@@ -161,7 +161,7 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   PluginInstaller::SecurityStatus plugin_status =
-      PluginInstaller::SECURITY_STATUS_REQUIRES_AUTHORIZATION;
+      PluginInstaller::SECURITY_STATUS_UP_TO_DATE;
   PluginInstaller* installer =
       plugin_finder->FindPluginWithIdentifier(group->identifier());
   if (installer)
