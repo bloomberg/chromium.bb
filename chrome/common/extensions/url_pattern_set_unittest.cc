@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,12 +9,27 @@
 
 namespace {
 
-static void AddPattern(URLPatternSet* set, const std::string& pattern) {
+void AddPattern(URLPatternSet* set, const std::string& pattern) {
   int schemes = URLPattern::SCHEME_ALL;
   set->AddPattern(URLPattern(schemes, pattern));
 }
 
+URLPatternSet Patterns(const std::string& pattern) {
+  URLPatternSet set;
+  AddPattern(&set, pattern);
+  return set;
 }
+
+URLPatternSet Patterns(const std::string& pattern1,
+                       const std::string& pattern2) {
+  URLPatternSet set;
+  AddPattern(&set, pattern1);
+  AddPattern(&set, pattern2);
+  return set;
+}
+
+}
+
 TEST(URLPatternSetTest, Empty) {
   URLPatternSet set;
   EXPECT_FALSE(set.MatchesURL(GURL("http://www.foo.com/bar")));
@@ -198,4 +213,157 @@ TEST(URLPatternSetTest, Duplicates) {
 
   // The sets should still be equal after adding a duplicate.
   EXPECT_EQ(set2, set1);
+}
+
+TEST(URLPatternSetTest, NwayUnion) {
+  std::string google_a = "http://www.google.com/a*";
+  std::string google_b = "http://www.google.com/b*";
+  std::string google_c = "http://www.google.com/c*";
+  std::string yahoo_a = "http://www.yahoo.com/a*";
+  std::string yahoo_b = "http://www.yahoo.com/b*";
+  std::string yahoo_c = "http://www.yahoo.com/c*";
+  std::string reddit_a = "http://www.reddit.com/a*";
+  std::string reddit_b = "http://www.reddit.com/b*";
+  std::string reddit_c = "http://www.reddit.com/c*";
+
+  // Empty list.
+  {
+    std::vector<URLPatternSet> empty;
+
+    URLPatternSet result;
+    URLPatternSet::CreateUnion(empty, &result);
+
+    URLPatternSet expected;
+    EXPECT_EQ(expected, result);
+  }
+
+  // Singleton list.
+  {
+    std::vector<URLPatternSet> test;
+    test.push_back(Patterns(google_a));
+
+    URLPatternSet result;
+    URLPatternSet::CreateUnion(test, &result);
+
+    URLPatternSet expected = Patterns(google_a);
+    EXPECT_EQ(expected, result);
+  }
+
+  // List with 2 elements.
+  {
+
+    std::vector<URLPatternSet> test;
+    test.push_back(Patterns(google_a, google_b));
+    test.push_back(Patterns(google_b, google_c));
+
+    URLPatternSet result;
+    URLPatternSet::CreateUnion(test, &result);
+
+    URLPatternSet expected;
+    AddPattern(&expected, google_a);
+    AddPattern(&expected, google_b);
+    AddPattern(&expected, google_c);
+    EXPECT_EQ(expected, result);
+  }
+
+  // List with 3 elements.
+  {
+    std::vector<URLPatternSet> test;
+    test.push_back(Patterns(google_a, google_b));
+    test.push_back(Patterns(google_b, google_c));
+    test.push_back(Patterns(yahoo_a, yahoo_b));
+
+    URLPatternSet result;
+    URLPatternSet::CreateUnion(test, &result);
+
+    URLPatternSet expected;
+    AddPattern(&expected, google_a);
+    AddPattern(&expected, google_b);
+    AddPattern(&expected, google_c);
+    AddPattern(&expected, yahoo_a);
+    AddPattern(&expected, yahoo_b);
+    EXPECT_EQ(expected, result);
+  }
+
+  // List with 7 elements.
+  {
+    std::vector<URLPatternSet> test;
+    test.push_back(Patterns(google_a));
+    test.push_back(Patterns(google_b));
+    test.push_back(Patterns(google_c));
+    test.push_back(Patterns(yahoo_a));
+    test.push_back(Patterns(yahoo_b));
+    test.push_back(Patterns(yahoo_c));
+    test.push_back(Patterns(reddit_a));
+
+    URLPatternSet result;
+    URLPatternSet::CreateUnion(test, &result);
+
+    URLPatternSet expected;
+    AddPattern(&expected, google_a);
+    AddPattern(&expected, google_b);
+    AddPattern(&expected, google_c);
+    AddPattern(&expected, yahoo_a);
+    AddPattern(&expected, yahoo_b);
+    AddPattern(&expected, yahoo_c);
+    AddPattern(&expected, reddit_a);
+    EXPECT_EQ(expected, result);
+  }
+
+  // List with 8 elements.
+  {
+    std::vector<URLPatternSet> test;
+    test.push_back(Patterns(google_a));
+    test.push_back(Patterns(google_b));
+    test.push_back(Patterns(google_c));
+    test.push_back(Patterns(yahoo_a));
+    test.push_back(Patterns(yahoo_b));
+    test.push_back(Patterns(yahoo_c));
+    test.push_back(Patterns(reddit_a));
+    test.push_back(Patterns(reddit_b));
+
+    URLPatternSet result;
+    URLPatternSet::CreateUnion(test, &result);
+
+    URLPatternSet expected;
+    AddPattern(&expected, google_a);
+    AddPattern(&expected, google_b);
+    AddPattern(&expected, google_c);
+    AddPattern(&expected, yahoo_a);
+    AddPattern(&expected, yahoo_b);
+    AddPattern(&expected, yahoo_c);
+    AddPattern(&expected, reddit_a);
+    AddPattern(&expected, reddit_b);
+    EXPECT_EQ(expected, result);
+  }
+
+  // List with 9 elements.
+  {
+
+    std::vector<URLPatternSet> test;
+    test.push_back(Patterns(google_a));
+    test.push_back(Patterns(google_b));
+    test.push_back(Patterns(google_c));
+    test.push_back(Patterns(yahoo_a));
+    test.push_back(Patterns(yahoo_b));
+    test.push_back(Patterns(yahoo_c));
+    test.push_back(Patterns(reddit_a));
+    test.push_back(Patterns(reddit_b));
+    test.push_back(Patterns(reddit_c));
+
+    URLPatternSet result;
+    URLPatternSet::CreateUnion(test, &result);
+
+    URLPatternSet expected;
+    AddPattern(&expected, google_a);
+    AddPattern(&expected, google_b);
+    AddPattern(&expected, google_c);
+    AddPattern(&expected, yahoo_a);
+    AddPattern(&expected, yahoo_b);
+    AddPattern(&expected, yahoo_c);
+    AddPattern(&expected, reddit_a);
+    AddPattern(&expected, reddit_b);
+    AddPattern(&expected, reddit_c);
+    EXPECT_EQ(expected, result);
+  }
 }

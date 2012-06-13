@@ -30,11 +30,12 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/image/image.h"
 
+using content::RenderViewHost;
 using content::WebContents;
 using extensions::Extension;
+using extensions::PageActionController;
 using extensions::ScriptBadgeController;
 using extensions::ScriptExecutorImpl;
-using extensions::PageActionController;
 
 namespace {
 
@@ -48,7 +49,8 @@ ExtensionTabHelper::ExtensionTabHelper(TabContents* tab_contents)
       extension_app_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           extension_function_dispatcher_(tab_contents->profile(), this)),
-      tab_contents_(tab_contents) {
+      tab_contents_(tab_contents),
+      active_tab_permission_manager_(tab_contents) {
   if (extensions::switch_utils::IsActionBoxEnabled()) {
     script_badge_controller_ = new ScriptBadgeController(tab_contents);
   } else {
@@ -73,6 +75,14 @@ void ExtensionTabHelper::PageActionStateChanged() {
 
 void ExtensionTabHelper::GetApplicationInfo(int32 page_id) {
   Send(new ExtensionMsg_GetApplicationInfo(routing_id(), page_id));
+}
+
+int ExtensionTabHelper::tab_id() const {
+  return tab_contents_->restore_tab_helper()->session_id().id();
+}
+
+int ExtensionTabHelper::window_id() const {
+  return tab_contents_->restore_tab_helper()->window_id().id();
 }
 
 void ExtensionTabHelper::SetExtensionApp(const Extension* extension) {
@@ -119,6 +129,11 @@ extensions::LocationBarController*
   if (script_badge_controller_.get())
     return script_badge_controller_.get();
   return location_bar_controller_.get();
+}
+
+void ExtensionTabHelper::RenderViewCreated(RenderViewHost* render_view_host) {
+  render_view_host->Send(
+      new ExtensionMsg_SetTabId(render_view_host->GetRoutingID(), tab_id()));
 }
 
 void ExtensionTabHelper::DidNavigateMainFrame(

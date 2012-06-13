@@ -494,6 +494,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // This method is also aware of certain special pages that extensions are
   // usually not allowed to run script on.
   bool CanExecuteScriptOnPage(const GURL& page_url,
+                              int tab_id,
                               const UserScript* script,
                               std::string* error) const;
 
@@ -505,7 +506,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // page as an image.  Since a page may contain sensitive information, this
   // is restricted to the extension's host permissions as well as the
   // extension page itself.
-  bool CanCaptureVisiblePage(const GURL& page_url, std::string* error) const;
+  bool CanCaptureVisiblePage(const GURL& page_url,
+                             int tab_id,
+                             std::string* error) const;
 
   // Returns true if this extension updates itself using the extension
   // gallery.
@@ -533,6 +536,20 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Returns an ExtensionAction representing the script badge that should be
   // shown for this extension in the location bar.
   ExtensionAction* GetScriptBadge() const;
+
+  // Gets the tab-specific host permissions of |tab_id|, or NULL if there
+  // aren't any.
+  //
+  // This is a weak pointer. Callers should create a copy before mutating any
+  // tab specific permissions.
+  const URLPatternSet* GetTabSpecificHostPermissions(int tab_id) const;
+
+  // Sets the tab-specific host permissions of |tab_id| to |permissions|.
+  void SetTabSpecificHostPermissions(int tab_id,
+                                     const URLPatternSet& permissions) const;
+
+  // Clears the tab-specific host permissions of |tab_id|.
+  void ClearTabSpecificHostPermissions(int tab_id) const;
 
   // Accessors:
 
@@ -685,9 +702,19 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     void SetActivePermissions(const ExtensionPermissionSet* active);
     scoped_refptr<const ExtensionPermissionSet> GetActivePermissions() const;
 
+    const URLPatternSet* GetTabSpecificHostPermissions(int tab_id) const;
+    void SetTabSpecificHostPermissions(int tab_id,
+                                       const URLPatternSet& permissions);
+    void ClearTabSpecificHostPermissions(int tab_id);
+
    private:
     friend class base::RefCountedThreadSafe<RuntimeData>;
+
     scoped_refptr<const ExtensionPermissionSet> active_permissions_;
+
+    typedef std::map<int, linked_ptr<const URLPatternSet> >
+        TabHostPermissionsMap;
+    TabHostPermissionsMap tab_specific_host_permissions_;
   };
 
   // Chooses the extension ID for an extension based on a variety of criteria.

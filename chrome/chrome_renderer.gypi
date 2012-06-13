@@ -111,6 +111,8 @@
         'renderer/extensions/send_request_natives.h',
         'renderer/extensions/set_icon_natives.cc',
         'renderer/extensions/set_icon_natives.h',
+        'renderer/extensions/tab_finder.cc',
+        'renderer/extensions/tab_finder.h',
         'renderer/extensions/tabs_custom_bindings.cc',
         'renderer/extensions/tabs_custom_bindings.h',
         'renderer/extensions/tts_custom_bindings.cc',

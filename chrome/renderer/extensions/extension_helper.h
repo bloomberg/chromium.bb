@@ -59,6 +59,7 @@ class ExtensionHelper
   bool InstallWebApplicationUsingDefinitionFile(WebKit::WebFrame* frame,
                                                 string16* error);
 
+  int tab_id() const { return tab_id_; }
   int browser_window_id() const { return browser_window_id_; }
   chrome::ViewType view_type() const { return view_type_; }
 
@@ -92,6 +93,7 @@ class ExtensionHelper
   void OnExecuteCode(const ExtensionMsg_ExecuteCode_Params& params);
   void OnGetApplicationInfo(int page_id);
   void OnNotifyRendererViewType(chrome::ViewType view_type);
+  void OnSetTabId(int tab_id);
   void OnUpdateBrowserWindowId(int window_id);
 
   // Callback triggered when we finish downloading the application definition
@@ -128,6 +130,9 @@ class ExtensionHelper
 
   // Type of view attached with RenderView.
   chrome::ViewType view_type_;
+
+  // Id of the tab which the RenderView is attached to.
+  int tab_id_;
 
   // Id number of browser window which RenderView is attached to.
   int browser_window_id_;

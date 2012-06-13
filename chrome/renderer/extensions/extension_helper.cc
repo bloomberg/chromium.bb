@@ -144,6 +144,7 @@ ExtensionHelper::ExtensionHelper(content::RenderView* render_view,
       extension_dispatcher_(extension_dispatcher),
       pending_app_icon_requests_(0),
       view_type_(chrome::VIEW_TYPE_INVALID),
+      tab_id_(-1),
       browser_window_id_(-1) {
 }
 
@@ -209,6 +210,7 @@ bool ExtensionHelper::OnMessageReceived(const IPC::Message& message) {
                         OnExtensionDispatchOnDisconnect)
     IPC_MESSAGE_HANDLER(ExtensionMsg_ExecuteCode, OnExecuteCode)
     IPC_MESSAGE_HANDLER(ExtensionMsg_GetApplicationInfo, OnGetApplicationInfo)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_SetTabId, OnSetTabId)
     IPC_MESSAGE_HANDLER(ExtensionMsg_UpdateBrowserWindowId,
                         OnUpdateBrowserWindowId)
     IPC_MESSAGE_HANDLER(ExtensionMsg_NotifyRenderViewType,
@@ -371,6 +373,12 @@ void ExtensionHelper::OnGetApplicationInfo(int page_id) {
 
 void ExtensionHelper::OnNotifyRendererViewType(chrome::ViewType type) {
   view_type_ = type;
+}
+
+void ExtensionHelper::OnSetTabId(int init_tab_id) {
+  CHECK_EQ(tab_id_, -1);
+  CHECK_GE(init_tab_id, 0);
+  tab_id_ = init_tab_id;
 }
 
 void ExtensionHelper::OnUpdateBrowserWindowId(int window_id) {

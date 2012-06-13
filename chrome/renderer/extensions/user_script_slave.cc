@@ -279,8 +279,14 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
     if (!extension)
       continue;
 
-    if (!extension->CanExecuteScriptOnPage(data_source_url, script, NULL))
+    // Content scripts are not tab-specific.
+    int kNoTabId = -1;
+    if (!extension->CanExecuteScriptOnPage(data_source_url,
+                                           kNoTabId,
+                                           script,
+                                           NULL)) {
       continue;
+    }
 
     // We rely on WebCore for CSS injection, but it's still useful to know how
     // many css files there are.

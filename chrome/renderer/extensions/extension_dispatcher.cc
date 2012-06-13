@@ -40,6 +40,7 @@
 #include "chrome/renderer/extensions/page_capture_custom_bindings.h"
 #include "chrome/renderer/extensions/send_request_natives.h"
 #include "chrome/renderer/extensions/set_icon_natives.h"
+#include "chrome/renderer/extensions/tab_finder.h"
 #include "chrome/renderer/extensions/tabs_custom_bindings.h"
 #include "chrome/renderer/extensions/tts_custom_bindings.h"
 #include "chrome/renderer/extensions/user_script_slave.h"
@@ -72,6 +73,7 @@ using WebKit::WebString;
 using WebKit::WebVector;
 using WebKit::WebView;
 using content::RenderThread;
+using content::RenderView;
 using extensions::ApiDefinitionsNatives;
 using extensions::AppWindowCustomBindings;
 using extensions::ContextMenusCustomBindings;
@@ -91,6 +93,7 @@ using extensions::PageCaptureCustomBindings;
 using extensions::SendRequestNatives;
 using extensions::SetIconNatives;
 using extensions::TTSCustomBindings;
+using extensions::TabFinder;
 using extensions::TabsCustomBindings;
 using extensions::UpdatedExtensionPermissionsInfo;
 using extensions::WebRequestCustomBindings;
@@ -153,7 +156,7 @@ class LazyBackgroundPageNativeHandler : public ChromeV8Extension {
         extension_dispatcher()->v8_context_set().GetCurrent();
     if (!context)
       return v8::Undefined();
-    content::RenderView* render_view = context->GetRenderView();
+    RenderView* render_view = context->GetRenderView();
     if (IsContextLazyBackgroundPage(render_view, context->extension())) {
       render_view->Send(new ExtensionHostMsg_IncrementLazyKeepaliveCount(
           render_view->GetRoutingID()));
@@ -166,7 +169,7 @@ class LazyBackgroundPageNativeHandler : public ChromeV8Extension {
         extension_dispatcher()->v8_context_set().GetCurrent();
     if (!context)
       return v8::Undefined();
-    content::RenderView* render_view = context->GetRenderView();
+    RenderView* render_view = context->GetRenderView();
     if (IsContextLazyBackgroundPage(render_view, context->extension())) {
       render_view->Send(new ExtensionHostMsg_DecrementLazyKeepaliveCount(
           render_view->GetRoutingID()));
@@ -175,7 +178,7 @@ class LazyBackgroundPageNativeHandler : public ChromeV8Extension {
   }
 
  private:
-  bool IsContextLazyBackgroundPage(content::RenderView* render_view,
+  bool IsContextLazyBackgroundPage(RenderView* render_view,
                                    const Extension* extension) {
     if (!render_view)
       return false;
@@ -265,6 +268,10 @@ bool ExtensionDispatcher::OnControlMessageReceived(
                         OnSetScriptingWhitelist)
     IPC_MESSAGE_HANDLER(ExtensionMsg_ActivateExtension, OnActivateExtension)
     IPC_MESSAGE_HANDLER(ExtensionMsg_UpdatePermissions, OnUpdatePermissions)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_UpdateTabSpecificPermissions,
+                        OnUpdateTabSpecificPermissions)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_ClearTabSpecificPermissions,
+                        OnClearTabSpecificPermissions)
     IPC_MESSAGE_HANDLER(ExtensionMsg_UpdateUserScripts, OnUpdateUserScripts)
     IPC_MESSAGE_HANDLER(ExtensionMsg_UsingWebRequestAPI, OnUsingWebRequestAPI)
     IPC_MESSAGE_HANDLER(ExtensionMsg_ShouldUnload, OnShouldUnload)
@@ -346,7 +353,7 @@ void ExtensionDispatcher::OnMessageInvoke(const std::string& extension_id,
   const Extension* extension = extensions_.GetByID(extension_id);
   if (extension && extension->has_lazy_background_page() &&
       function_name == kEventDispatchFunction) {
-    content::RenderView* background_view =
+    RenderView* background_view =
         ExtensionHelper::GetBackgroundPage(extension_id);
     if (background_view) {
       background_view->Send(new ExtensionHostMsg_EventAck(
@@ -779,12 +786,13 @@ void ExtensionDispatcher::InitOriginPermissions(const Extension* extension) {
         false);
   }
 
-  UpdateOriginPermissions(UpdatedExtensionPermissionsInfo::ADDED,
-                          extension,
-                          extension->GetActivePermissions()->explicit_hosts());
+  AddOrRemoveOriginPermissions(
+      UpdatedExtensionPermissionsInfo::ADDED,
+      extension,
+      extension->GetActivePermissions()->explicit_hosts());
 }
 
-void ExtensionDispatcher::UpdateOriginPermissions(
+void ExtensionDispatcher::AddOrRemoveOriginPermissions(
     UpdatedExtensionPermissionsInfo::Reason reason,
     const Extension* extension,
     const URLPatternSet& origins) {
@@ -828,15 +836,49 @@ void ExtensionDispatcher::OnUpdatePermissions(
       static_cast<UpdatedExtensionPermissionsInfo::Reason>(reason_id);
 
   const ExtensionPermissionSet* new_active = NULL;
-  if (reason == UpdatedExtensionPermissionsInfo::ADDED) {
-    new_active = ExtensionPermissionSet::CreateUnion(old_active, delta);
-  } else {
-    CHECK_EQ(UpdatedExtensionPermissionsInfo::REMOVED, reason);
-    new_active = ExtensionPermissionSet::CreateDifference(old_active, delta);
+  switch (reason) {
+    case UpdatedExtensionPermissionsInfo::ADDED:
+      new_active = ExtensionPermissionSet::CreateUnion(old_active, delta);
+      break;
+    case UpdatedExtensionPermissionsInfo::REMOVED:
+      new_active = ExtensionPermissionSet::CreateDifference(old_active, delta);
+      break;
   }
 
   extension->SetActivePermissions(new_active);
-  UpdateOriginPermissions(reason, extension, explicit_hosts);
+  AddOrRemoveOriginPermissions(reason, extension, explicit_hosts);
+}
+
+void ExtensionDispatcher::OnUpdateTabSpecificPermissions(
+    int page_id,
+    int tab_id,
+    const std::string& extension_id,
+    const URLPatternSet& origin_set) {
+  RenderView* view = TabFinder::Find(tab_id);
+
+  // For now, the message should only be sent to the render view that contains
+  // the target tab. This may change. Either way, if this is the target tab it
+  // gives us the chance to check against the page ID to avoid races.
+  DCHECK(view);
+  if (view && view->GetPageId() != page_id)
+    return;
+
+  const Extension* extension = extensions_.GetByID(extension_id);
+  if (!extension)
+    return;
+
+  extension->SetTabSpecificHostPermissions(tab_id, origin_set);
+}
+
+void ExtensionDispatcher::OnClearTabSpecificPermissions(
+    int tab_id,
+    const std::vector<std::string>& extension_ids) {
+  for (std::vector<std::string>::const_iterator it = extension_ids.begin();
+       it != extension_ids.end(); ++it) {
+    const Extension* extension = extensions_.GetByID(*it);
+    if (extension)
+      extension->ClearTabSpecificHostPermissions(tab_id);
+  }
 }
 
 void ExtensionDispatcher::OnUpdateUserScripts(

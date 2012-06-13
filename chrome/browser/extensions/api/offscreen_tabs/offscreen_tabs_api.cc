@@ -801,7 +801,7 @@ bool UpdateOffscreenTabFunction::RunImpl() {
 
   tab_contents_ = offscreen_tab->tab_contents();
   bool is_async = false;
-  if (!UpdateURLIfPresent(update_props, &is_async))
+  if (!UpdateURLIfPresent(update_props, offscreen_tab_id, &is_async))
     return false;
 
   // Update the width and height, if specified.

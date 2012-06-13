@@ -3409,6 +3409,7 @@ bool Extension::HasMultipleUISurfaces() const {
 }
 
 bool Extension::CanExecuteScriptOnPage(const GURL& page_url,
+                                       int tab_id,
                                        const UserScript* script,
                                        std::string* error) const {
   base::AutoLock auto_lock(runtime_data_lock_);
@@ -3430,6 +3431,16 @@ bool Extension::CanExecuteScriptOnPage(const GURL& page_url,
   if (page_url.SchemeIs(chrome::kChromeUIScheme) &&
       !CanExecuteScriptEverywhere())
     return false;
+
+  // If a tab ID is specified, try the tab-specific permissions.
+  if (tab_id >= 0) {
+    const URLPatternSet* tab_permissions =
+        runtime_data_.GetTabSpecificHostPermissions(tab_id);
+    if (tab_permissions &&
+        tab_permissions->MatchesSecurityOrigin(page_url)) {
+      return true;
+    }
+  }
 
   // If a script is specified, use its matches.
   if (script)
@@ -3493,7 +3504,17 @@ bool Extension::CanExecuteScriptEverywhere() const {
 }
 
 bool Extension::CanCaptureVisiblePage(const GURL& page_url,
+                                      int tab_id,
                                       std::string *error) const {
+  if (tab_id >= 0) {
+    const URLPatternSet* tab_permissions =
+        GetTabSpecificHostPermissions(tab_id);
+    if (tab_permissions &&
+        tab_permissions->MatchesSecurityOrigin(page_url)) {
+      return true;
+    }
+  }
+
   if (HasHostPermission(page_url) || page_url.GetOrigin() == url())
     return true;
 
@@ -3669,6 +3690,24 @@ ExtensionAction* Extension::GetScriptBadge() const {
   return script_badge_.get();
 }
 
+const URLPatternSet* Extension::GetTabSpecificHostPermissions(
+    int tab_id) const {
+  base::AutoLock auto_lock(runtime_data_lock_);
+  return runtime_data_.GetTabSpecificHostPermissions(tab_id);
+}
+
+void Extension::SetTabSpecificHostPermissions(
+    int tab_id,
+    const URLPatternSet& permissions) const {
+  base::AutoLock auto_lock(runtime_data_lock_);
+  runtime_data_.SetTabSpecificHostPermissions(tab_id, permissions);
+}
+
+void Extension::ClearTabSpecificHostPermissions(int tab_id) const {
+  base::AutoLock auto_lock(runtime_data_lock_);
+  runtime_data_.ClearTabSpecificHostPermissions(tab_id);
+}
+
 bool Extension::CheckPlatformAppFeatures(std::string* utf8_error) {
   if (!is_platform_app())
     return true;
@@ -3712,6 +3751,27 @@ scoped_refptr<const ExtensionPermissionSet>
 void Extension::RuntimeData::SetActivePermissions(
     const ExtensionPermissionSet* active) {
   active_permissions_ = active;
+}
+
+const URLPatternSet*
+    Extension::RuntimeData::GetTabSpecificHostPermissions(int tab_id) const {
+  CHECK_GE(tab_id, 0);
+  TabHostPermissionsMap::const_iterator it =
+      tab_specific_host_permissions_.find(tab_id);
+  return (it != tab_specific_host_permissions_.end()) ? it->second.get() : NULL;
+}
+
+void Extension::RuntimeData::SetTabSpecificHostPermissions(
+    int tab_id,
+    const URLPatternSet& hosts) {
+  CHECK_GE(tab_id, 0);
+  tab_specific_host_permissions_[tab_id] =
+      make_linked_ptr(new URLPatternSet(hosts));
+}
+
+void Extension::RuntimeData::ClearTabSpecificHostPermissions(int tab_id) {
+  CHECK_GE(tab_id, 0);
+  tab_specific_host_permissions_.erase(tab_id);
 }
 
 UnloadedExtensionInfo::UnloadedExtensionInfo(

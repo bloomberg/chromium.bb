@@ -153,6 +153,13 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
                            const ExtensionAPIPermissionSet& apis,
                            const URLPatternSet& explicit_hosts,
                            const URLPatternSet& scriptable_hosts);
+  void OnUpdateTabSpecificPermissions(int page_id,
+                                      int tab_id,
+                                      const std::string& extension_id,
+                                      const URLPatternSet& origin_set);
+  void OnClearTabSpecificPermissions(
+      int tab_id,
+      const std::vector<std::string>& extension_ids);
   void OnUpdateUserScripts(base::SharedMemoryHandle table);
   void OnUsingWebRequestAPI(
       bool adblock,
@@ -170,7 +177,7 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
 
   // Sets up the host permissions for |extension|.
   void InitOriginPermissions(const extensions::Extension* extension);
-  void UpdateOriginPermissions(
+  void AddOrRemoveOriginPermissions(
       extensions::UpdatedExtensionPermissionsInfo::Reason reason,
       const extensions::Extension* extension,
       const URLPatternSet& origins);

@@ -1191,7 +1191,7 @@ bool UpdateTabFunction::RunImpl() {
       error_ = keys::kNoSelectedTabError;
       return false;
     }
-    tab_id = ExtensionTabUtil::GetTabId(contents->web_contents());
+    tab_id = contents->extension_tab_helper()->tab_id();
   } else {
     EXTENSION_FUNCTION_VALIDATE(tab_value->GetAsInteger(&tab_id));
   }
@@ -1211,7 +1211,7 @@ bool UpdateTabFunction::RunImpl() {
 
   // Navigate the tab to a new location if the url is different.
   bool is_async = false;
-  if (!UpdateURLIfPresent(update_props, &is_async))
+  if (!UpdateURLIfPresent(update_props, tab_id, &is_async))
     return false;
 
   bool active = false;
@@ -1275,6 +1275,7 @@ bool UpdateTabFunction::RunImpl() {
 }
 
 bool UpdateTabFunction::UpdateURLIfPresent(DictionaryValue* update_props,
+                                           int tab_id,
                                            bool* is_async) {
   if (!update_props->HasKey(keys::kUrlKey))
     return true;
@@ -1301,7 +1302,7 @@ bool UpdateTabFunction::UpdateURLIfPresent(DictionaryValue* update_props,
   // we need to check host permissions before allowing them.
   if (url.SchemeIs(chrome::kJavaScriptScheme)) {
     if (!GetExtension()->CanExecuteScriptOnPage(
-            tab_contents_->web_contents()->GetURL(), NULL, &error_)) {
+            tab_contents_->web_contents()->GetURL(), tab_id, NULL, &error_)) {
       return false;
     }
 
@@ -1614,8 +1615,12 @@ bool CaptureVisibleTabFunction::RunImpl() {
   // captureVisibleTab() can return an image containing sensitive information
   // that the browser would otherwise protect.  Ensure the extension has
   // permission to do this.
-  if (!GetExtension()->CanCaptureVisiblePage(web_contents->GetURL(), &error_))
+  if (!GetExtension()->CanCaptureVisiblePage(
+        web_contents->GetURL(),
+        tab_contents->extension_tab_helper()->tab_id(),
+        &error_)) {
     return false;
+  }
 
   RenderViewHost* render_view_host = web_contents->GetRenderViewHost();
   content::RenderWidgetHostView* view = render_view_host->GetView();

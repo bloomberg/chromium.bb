@@ -53,6 +53,8 @@
       'sources': [
         # All .cc, .h, .m, and .mm files under browser/extensions except for
         # tests and mocks.
+        'browser/extensions/active_tab_permission_manager.cc',
+        'browser/extensions/active_tab_permission_manager.h',
         'browser/extensions/admin_policy.cc',
         'browser/extensions/admin_policy.h',
         'browser/extensions/api/api_function.cc',

@@ -89,7 +89,6 @@ void ScriptBadgeController::ExecuteScript(
                                  run_at,
                                  world_type,
                                  this_callback);
-
 }
 
 void ScriptBadgeController::OnExecuteScriptFinished(

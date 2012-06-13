@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
+#include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/restore_tab_helper.h"
@@ -41,20 +42,18 @@ int ExtensionTabUtil::GetWindowIdOfTabStripModel(
   return -1;
 }
 
-// TODO(sky): this function should really take a TabContents.
 int ExtensionTabUtil::GetTabId(const WebContents* web_contents) {
   const TabContents* tab = TabContents::FromWebContents(web_contents);
-  return tab ? tab->restore_tab_helper()->session_id().id() : -1;
+  return tab ? tab->extension_tab_helper()->tab_id() : -1;
 }
 
 std::string ExtensionTabUtil::GetTabStatusText(bool is_loading) {
   return is_loading ? keys::kStatusValueLoading : keys::kStatusValueComplete;
 }
 
-// TODO(sky): this function should really take a TabContents.
 int ExtensionTabUtil::GetWindowIdOfTab(const WebContents* web_contents) {
   const TabContents* tab = TabContents::FromWebContents(web_contents);
-  return tab ? tab->restore_tab_helper()->window_id().id() : -1;
+  return tab ? tab->extension_tab_helper()->window_id() : -1;
 }
 
 DictionaryValue* ExtensionTabUtil::CreateTabValue(const WebContents* contents) {

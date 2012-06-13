@@ -7,6 +7,7 @@
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -94,6 +95,9 @@ ExtensionToolbarModel::Action ExtensionToolbarModel::ExecuteBrowserAction(
   int tab_id = ExtensionTabUtil::GetTabId(tab_contents->web_contents());
   if (tab_id < 0)
     return ACTION_NONE;
+
+  tab_contents->extension_tab_helper()->active_tab_permission_manager()->
+      GrantIfRequested(extension);
 
   ExtensionAction* browser_action = extension->browser_action();
   if (browser_action->HasPopup(tab_id)) {

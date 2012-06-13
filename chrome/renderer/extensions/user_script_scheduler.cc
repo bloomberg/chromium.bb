@@ -133,6 +133,7 @@ void UserScriptScheduler::ExecuteCodeImpl(
       params.extension_id);
   content::RenderView* render_view =
       content::RenderView::FromWebView(frame_->view());
+  ExtensionHelper* extension_helper = ExtensionHelper::Get(render_view);
 
   // Since extension info is sent separately from user script info, they can
   // be out of sync. We just ignore this situation.
@@ -162,7 +163,9 @@ void UserScriptScheduler::ExecuteCodeImpl(
       // For child frames, we just skip ones the extension doesn't have access
       // to and carry on.
       if (!extension->CanExecuteScriptOnPage(frame->document().url(),
-                                             NULL, NULL)) {
+                                             extension_helper->tab_id(),
+                                             NULL,
+                                             NULL)) {
         if (frame->parent()) {
           continue;
         } else {

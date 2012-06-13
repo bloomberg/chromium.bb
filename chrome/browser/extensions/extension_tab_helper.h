@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/browser/extensions/active_tab_permission_manager.h"
 #include "chrome/browser/extensions/app_notify_channel_setup.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
@@ -58,6 +59,12 @@ class ExtensionTabHelper
   // the data is available.
   void GetApplicationInfo(int32 page_id);
 
+  // Gets the ID of the tab.
+  int tab_id() const;
+
+  // Gets the window ID of the tab.
+  int window_id() const;
+
   // App extensions ------------------------------------------------------------
 
   // Sets the extension denoting this as an app. If |extension| is non-null this
@@ -102,12 +109,18 @@ class ExtensionTabHelper
 
   extensions::LocationBarController* location_bar_controller();
 
+  extensions::ActiveTabPermissionManager* active_tab_permission_manager() {
+    return &active_tab_permission_manager_;
+  }
+
   // Sets a non-extension app icon associated with WebContents and fires an
   // INVALIDATE_TYPE_TITLE navigation state change to trigger repaint of title.
   void SetAppIcon(const SkBitmap& app_icon);
 
  private:
   // content::WebContentsObserver overrides.
+  virtual void RenderViewCreated(
+      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
@@ -195,6 +208,8 @@ class ExtensionTabHelper
   scoped_ptr<extensions::ScriptExecutor> script_executor_;
   scoped_ptr<extensions::LocationBarController> location_bar_controller_;
   scoped_refptr<extensions::ScriptBadgeController> script_badge_controller_;
+
+  extensions::ActiveTabPermissionManager active_tab_permission_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionTabHelper);
 };

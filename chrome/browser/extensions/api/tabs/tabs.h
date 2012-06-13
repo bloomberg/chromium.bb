@@ -121,6 +121,7 @@ class UpdateTabFunction : public AsyncExtensionFunction {
  protected:
   virtual ~UpdateTabFunction() {}
   virtual bool UpdateURLIfPresent(base::DictionaryValue* update_props,
+                                  int tab_id,
                                   bool* is_async);
   virtual void PopulateResult();
 

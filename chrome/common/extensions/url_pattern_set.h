@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,6 +40,10 @@ class URLPatternSet {
                           const URLPatternSet& set2,
                           URLPatternSet* out);
 
+  // Clears |out| and populates it with the union of all sets in |sets|.
+  static void CreateUnion(const std::vector<URLPatternSet>& sets,
+                          URLPatternSet* out);
+
   URLPatternSet();
   URLPatternSet(const URLPatternSet& rhs);
   explicit URLPatternSet(const std::set<URLPattern>& patterns);
@@ -49,6 +53,7 @@ class URLPatternSet {
   bool operator==(const URLPatternSet& rhs) const;
 
   bool is_empty() const;
+  size_t size() const;
   const std::set<URLPattern>& patterns() const { return patterns_; }
   const_iterator begin() const { return patterns_.begin(); }
   const_iterator end() const { return patterns_.end(); }

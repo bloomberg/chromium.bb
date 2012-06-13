@@ -43,6 +43,7 @@ scoped_refptr<Extension>
 
   extension->SetActivePermissions(
         new ExtensionPermissionSet(apis, explicit_hosts, scriptable_hosts));
+
   return extension;
 }
 

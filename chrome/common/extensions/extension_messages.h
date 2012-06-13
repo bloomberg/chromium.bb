@@ -234,9 +234,13 @@ IPC_MESSAGE_CONTROL1(ExtensionMsg_UpdateUserScripts,
 IPC_MESSAGE_ROUTED1(ExtensionMsg_GetApplicationInfo,
                     int32 /*page_id*/)
 
-// Tell the renderer which browser window it's being attached to.
+// Tell the render view which browser window it's being attached to.
 IPC_MESSAGE_ROUTED1(ExtensionMsg_UpdateBrowserWindowId,
                     int /* id of browser window */)
+
+// Tell the render view what its tab ID is.
+IPC_MESSAGE_ROUTED1(ExtensionMsg_SetTabId,
+                    int /* id of tab */)
 
 // Tell the renderer to update an extension's permission set.
 IPC_MESSAGE_CONTROL5(ExtensionMsg_UpdatePermissions,
@@ -245,6 +249,18 @@ IPC_MESSAGE_CONTROL5(ExtensionMsg_UpdatePermissions,
                      ExtensionAPIPermissionSet /* permissions */,
                      URLPatternSet /* explicit_hosts */,
                      URLPatternSet /* scriptable_hosts */)
+
+// Tell the renderer about new tab-specific permissions for an extension.
+IPC_MESSAGE_CONTROL4(ExtensionMsg_UpdateTabSpecificPermissions,
+                     int32 /* page_id (only relevant for the target tab) */,
+                     int /* tab_id */,
+                     std::string /* extension_id */,
+                     URLPatternSet /* host */)
+
+// Tell the renderer to clear tab-specific permissions for some extensions.
+IPC_MESSAGE_CONTROL2(ExtensionMsg_ClearTabSpecificPermissions,
+                     int /* tab_id */,
+                     std::vector<std::string> /* extension_ids */)
 
 // Tell the renderer which type this view is.
 IPC_MESSAGE_ROUTED1(ExtensionMsg_NotifyRenderViewType,

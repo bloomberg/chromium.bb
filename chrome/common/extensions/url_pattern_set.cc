@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include <iterator>
 
 #include "base/logging.h"
+#include "base/memory/linked_ptr.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/url_pattern.h"
@@ -53,6 +54,39 @@ void URLPatternSet::CreateUnion(const URLPatternSet& set1,
                      out->patterns_, out->patterns_.begin()));
 }
 
+// static
+void URLPatternSet::CreateUnion(const std::vector<URLPatternSet>& sets,
+                                URLPatternSet* out) {
+  out->ClearPatterns();
+  if (sets.empty())
+    return;
+
+  // N-way union algorithm is basic O(nlog(n)) merge algorithm.
+  //
+  // Do the first merge step into a working set so that we don't mutate any of
+  // the input.
+  std::vector<URLPatternSet> working;
+  for (size_t i = 0; i < sets.size(); i += 2) {
+    if (i + 1 < sets.size()) {
+      URLPatternSet u;
+      URLPatternSet::CreateUnion(sets[i], sets[i + 1], &u);
+      working.push_back(u);
+    } else {
+      working.push_back(sets[i]);
+    }
+  }
+
+  for (size_t skip = 1; skip < working.size(); skip *= 2) {
+    for (size_t i = 0; i < (working.size() - skip); i += skip) {
+      URLPatternSet u;
+      URLPatternSet::CreateUnion(working[i], working[i + skip], &u);
+      working[i].patterns_.swap(u.patterns_);
+    }
+  }
+
+  out->patterns_.swap(working[0].patterns_);
+}
+
 URLPatternSet::URLPatternSet() {}
 
 URLPatternSet::URLPatternSet(const URLPatternSet& rhs)
@@ -74,6 +108,10 @@ bool URLPatternSet::operator==(const URLPatternSet& other) const {
 
 bool URLPatternSet::is_empty() const {
   return patterns_.empty();
+}
+
+size_t URLPatternSet::size() const {
+  return patterns_.size();
 }
 
 void URLPatternSet::AddPattern(const URLPattern& pattern) {

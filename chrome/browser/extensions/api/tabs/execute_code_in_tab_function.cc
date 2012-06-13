@@ -90,7 +90,7 @@ bool ExecuteCodeInTabFunction::RunImpl() {
   CHECK(browser);
   CHECK(contents);
   if (!GetExtension()->CanExecuteScriptOnPage(
-          contents->web_contents()->GetURL(), NULL, &error_)) {
+          contents->web_contents()->GetURL(), execute_tab_id_, NULL, &error_)) {
     return false;
   }
 
@@ -120,11 +120,8 @@ bool ExecuteCodeInTabFunction::RunImpl() {
       return false;
   }
 
-  if (!code_string.empty()) {
-    if (!Execute(code_string))
-      return false;
-    return true;
-  }
+  if (!code_string.empty())
+    return Execute(code_string);
 
   std::string relative_path;
   if (script_info->HasKey(keys::kFileKey)) {
@@ -204,7 +201,8 @@ void ExecuteCodeInTabFunction::LocalizeCSS(
 void ExecuteCodeInTabFunction::DidLoadAndLocalizeFile(bool success,
                                                       const std::string& data) {
   if (success) {
-    Execute(data);
+    if (!Execute(data))
+      SendResponse(false);
   } else {
 #if defined(OS_POSIX)
     // TODO(viettrungluu): bug: there's no particular reason the path should be
@@ -227,16 +225,12 @@ bool ExecuteCodeInTabFunction::Execute(const std::string& code_string) {
       execute_tab_id_, profile(), include_incognito(), &browser, NULL,
       &contents, NULL) && contents && browser;
 
-  if (!success) {
-    SendResponse(false);
+  if (!success)
     return false;
-  }
 
   const extensions::Extension* extension = GetExtension();
-  if (!extension) {
-    SendResponse(false);
+  if (!extension)
     return false;
-  }
 
   ScriptExecutor::ScriptType script_type = ScriptExecutor::JAVASCRIPT;
   std::string function_name = name();
