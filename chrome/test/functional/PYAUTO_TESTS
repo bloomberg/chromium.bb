@@ -333,6 +333,7 @@
       # crbug.com/129489
       '-chromeos_file_browser.ChromeosFileBrowserTest.testCopyFolderInDialog',
       '-chromeos_file_browser.ChromeosFileBrowserTest.testCreateFolderInDialog',
+      '-chromeos_file_browser.ChromeosFileBrowserTest.testCreateFolderInFullPage',
       '-chromeos_file_browser.ChromeosFileBrowserTest.testCutFolderInDialog',
       '-chromeos_file_browser.ChromeosFileBrowserTest.testOpenMediaFiles',
       # crbug.com/129469
