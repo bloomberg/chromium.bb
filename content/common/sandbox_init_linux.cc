@@ -76,7 +76,7 @@
 
 namespace {
 
-static void CheckSingleThreaded() {
+static void CheckSingleThreaded(const std::string& process_type) {
   // Possibly racy, but it's ok because this is more of a debug check to catch
   // new threaded situations arising during development.
   int num_threads =
@@ -86,7 +86,9 @@ static void CheckSingleThreaded() {
   // We pass the check if we don't know ( == 0), because the setuid sandbox
   // will prevent /proc access in some contexts.
   DCHECK((num_threads == 1 || num_threads == 0)) << "Counted "
-                                                 << num_threads << " threads";
+                                                 << num_threads << " threads "
+                                                 << "in " << process_type
+                                                 << ".";
 }
 
 static void SIGSYS_Handler(int signal, siginfo_t* info, void* void_context) {
@@ -429,7 +431,7 @@ void InitializeSandbox() {
   if (!CanUseSeccompFilters())
     return;
 
-  CheckSingleThreaded();
+  CheckSingleThreaded(process_type);
 
   std::vector<struct sock_filter> program;
   EmitPreamble(&program);
