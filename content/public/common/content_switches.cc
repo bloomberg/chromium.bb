@@ -383,6 +383,10 @@ const char kExtraPluginDir[]                = "extra-plugin-dir";
 // the base layer even when compositing is not strictly required.
 const char kForceCompositingMode[]          = "force-compositing-mode";
 
+// This flag disables force compositing mode and prevents it from being enabled
+// via field trials.
+const char kDisableForceCompositingMode[]   = "disable-force-compositing-mode";
+
 // Some field trials may be randomized in the browser, and the randomly selected
 // outcome needs to be propagated to the renderer. For instance, this is used
 // to modify histograms recorded in the renderer, or to get the renderer to

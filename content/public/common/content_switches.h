@@ -47,6 +47,7 @@ CONTENT_EXPORT extern const char kBrowserPluginEnabled[];
 extern const char kDisableFileSystem[];
 CONTENT_EXPORT extern const char kDisableFlash3d[];
 CONTENT_EXPORT extern const char kDisableFlashStage3d[];
+CONTENT_EXPORT extern const char kDisableForceCompositingMode[];
 extern const char kDisableGeolocation[];
 extern const char kDisableGpu[];
 CONTENT_EXPORT extern const char kDisableGLMultisampling[];

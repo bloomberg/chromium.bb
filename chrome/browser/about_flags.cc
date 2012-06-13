@@ -102,6 +102,14 @@ const Experiment::Choice kOmniboxInlineHistoryQuickProviderChoices[] = {
     switches::kOmniboxInlineHistoryQuickProviderProhibited }
 };
 
+const Experiment::Choice kForceCompositingModeChoices[] = {
+  { IDS_FLAGS_FORCE_COMPOSITING_MODE_DEFAULT, "", "" },
+  { IDS_FLAGS_FORCE_COMPOSITING_MODE_ENABLED,
+    switches::kForceCompositingMode, ""},
+  { IDS_FLAGS_FORCE_COMPOSITING_MODE_DISABLED,
+    switches::kDisableForceCompositingMode, ""}
+};
+
 const Experiment::Choice kThreadedCompositingModeChoices[] = {
   { IDS_FLAGS_THREADED_COMPOSITING_MODE_DEFAULT, "", "" },
   { IDS_FLAGS_THREADED_COMPOSITING_MODE_DISABLED,
@@ -206,8 +214,8 @@ const Experiment kExperiments[] = {
     "force-compositing-mode-2",
     IDS_FLAGS_FORCE_COMPOSITING_MODE_NAME,
     IDS_FLAGS_FORCE_COMPOSITING_MODE_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kForceCompositingMode)
+    kOsMac | kOsWin | kOsLinux,
+    MULTI_VALUE_TYPE(kForceCompositingModeChoices)
   },
   {
     "threaded-compositing-mode",

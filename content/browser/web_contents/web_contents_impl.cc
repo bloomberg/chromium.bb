@@ -457,7 +457,8 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
       GpuProcessHost::gpu_enabled() &&
       !command_line.HasSwitch(switches::kDisableAcceleratedCompositing);
   prefs.force_compositing_mode =
-      command_line.HasSwitch(switches::kForceCompositingMode);
+      command_line.HasSwitch(switches::kForceCompositingMode) &&
+      !command_line.HasSwitch(switches::kDisableForceCompositingMode);
   prefs.fixed_position_compositing_enabled =
       command_line.HasSwitch(switches::kEnableCompositingForFixedPosition);
   prefs.accelerated_2d_canvas_enabled =

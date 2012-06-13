@@ -5276,6 +5276,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_FORCE_COMPOSITING_MODE_DESCRIPTION" desc="Description of the 'Force compositing mode' lab.">
         Uses GPU accelerated compositing on all pages, not just those that include GPU-accelerated layers.
       </message>
+      <message name="IDS_FLAGS_FORCE_COMPOSITING_MODE_DEFAULT" desc="Option name for leaving compositing mode in its default state.">
+        Default
+      </message>
+      <message name="IDS_FLAGS_FORCE_COMPOSITING_MODE_ENABLED" desc="Option name for turning on force compositing mode">
+        Enabled
+      </message>
+      <message name="IDS_FLAGS_FORCE_COMPOSITING_MODE_DISABLED" desc="Option name for turning off force compositing mode">
+        Disabled
+      </message>
       <message name="IDS_FLAGS_FORCE_HIGH_DPI_NAME" desc="Name of the 'Force high DPI mode' lab.">
         Force high DPI mode
       </message>

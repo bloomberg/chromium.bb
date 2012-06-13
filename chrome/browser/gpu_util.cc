@@ -192,6 +192,12 @@ void InitializeForceCompositingModeFieldTrial() {
     return;
 #endif
 
+  // Don't activate the field trial if force-compositing-mode has been
+  // explicitly disabled from the command line.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableForceCompositingMode))
+    return;
+
   const base::FieldTrial::Probability kDivisor = 100;
   scoped_refptr<base::FieldTrial> trial(
     base::FieldTrialList::FactoryGetFieldTrial(
@@ -369,7 +375,9 @@ Value* GetFeatureStatus() {
             !command_line.HasSwitch(switches::kDisableThreadedCompositing);
         if (kGpuFeatureInfo[i].name == "compositing") {
           bool force_compositing =
-              command_line.HasSwitch(switches::kForceCompositingMode) ||
+              (command_line.HasSwitch(switches::kForceCompositingMode) &&
+               !command_line.HasSwitch(
+                   switches::kDisableForceCompositingMode)) ||
               InForceCompositingModeTrial();
           if (force_compositing)
             status += "_force";
