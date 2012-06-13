@@ -205,7 +205,8 @@ void MobileActivator::TerminateActivation() {
   reenable_ethernet_ = false;
   reenable_cert_check_ = false;
   terminated_ = true;
-  cellular_config_ = NULL;
+  // Release the previous cellular config and setup a new empty one.
+  cellular_config_ = new CellularConfigDocument();
 }
 
 void MobileActivator::OnNetworkManagerChanged(NetworkLibrary* cros) {
