@@ -14,13 +14,18 @@ using base::android::ToJavaArrayOfStrings;
 using base::android::ScopedJavaLocalRef;
 using content::StartSandboxedProcessCallback;
 
+// Called from SandboxedProcessLauncher.java when the SandboxedProcess was
+// started.
+// |client_context| is the pointer to StartSandboxedProcessCallback which was
+// passed in from StartSandboxedProcess.
+// |handle| is the processID of the child process as originated in Java.
 static void OnSandboxedProcessStarted(JNIEnv*,
                                       jclass,
                                       jint client_context,
-                                      jint pid) {
+                                      jint handle) {
   StartSandboxedProcessCallback* callback =
       reinterpret_cast<StartSandboxedProcessCallback*>(client_context);
-  callback->Run(static_cast<base::ProcessHandle>(pid));
+  callback->Run(static_cast<base::ProcessHandle>(handle));
   delete callback;
 }
 

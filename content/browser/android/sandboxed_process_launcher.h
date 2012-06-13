@@ -19,7 +19,7 @@ typedef base::Callback<void(base::ProcessHandle)> StartSandboxedProcessCallback;
 // ActivityManager.
 // The connection object returned may be used with a subsequent call to
 // CancelStartSandboxedProcess().
-// The created process pid is returned to the |callback| on success, 0 is
+// The created process handle is returned to the |callback| on success, 0 is
 // retuned if the process could not be created.
 base::android::ScopedJavaLocalRef<jobject> StartSandboxedProcess(
     const CommandLine::StringVector& argv,
