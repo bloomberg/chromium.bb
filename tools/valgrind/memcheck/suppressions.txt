@@ -5589,6 +5589,13 @@
    fun:_ZN14TestingProfile20CreateHistoryServiceEbb
    fun:_ZN21ShortcutsProviderTest5SetUpEv
 }
+{
+   bug_132621
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN19TestExtensionSystem22CreateExtensionServiceEPK11CommandLineRK8FilePathb
+   fun:_ZN15ExtensionUITest5SetUpEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
