@@ -354,24 +354,16 @@ void PrerenderHistograms::RecordFinalStatus(
     FinalStatus final_status) const {
   DCHECK(final_status != FINAL_STATUS_MAX);
 
-  // There are three cases for MatchCompleteStatus:
-  // MATCH_COMPLETE_DEFAULT:
-  // In this case, Match & MatchComplete line up.  So we record this in both
-  // histograms.
-  // MATCH_COMPLETE_REPLACED: The actual prerender was replaced by a dummy.
-  // So we only record it in (the actual) FinalStatus, but not MatchComplete.
-  // MATCH_COMPLETE_REPLACEMENT: This is a pseudo element to emulate what
-  // the control group would do.  Since it won't actually be swapped in,
-  // it may not go into FinalStatus.  Since in the control group it would be
-  // swapped in though, it must go into MatchComplete.
-
-  if (mc_status != PrerenderContents::MATCH_COMPLETE_REPLACEMENT) {
+  if (mc_status == PrerenderContents::MATCH_COMPLETE_DEFAULT ||
+      mc_status == PrerenderContents::MATCH_COMPLETE_REPLACED) {
     PREFIXED_HISTOGRAM_ORIGIN_EXPERIMENT(
         base::FieldTrial::MakeName("FinalStatus", "Prerender"),
         origin, experiment_id,
         UMA_HISTOGRAM_ENUMERATION(name, final_status, FINAL_STATUS_MAX));
   }
-  if (mc_status != PrerenderContents::MATCH_COMPLETE_REPLACED) {
+  if (mc_status == PrerenderContents::MATCH_COMPLETE_DEFAULT ||
+      mc_status == PrerenderContents::MATCH_COMPLETE_REPLACEMENT ||
+      mc_status == PrerenderContents::MATCH_COMPLETE_REPLACEMENT_PENDING) {
     PREFIXED_HISTOGRAM_ORIGIN_EXPERIMENT(
         base::FieldTrial::MakeName("FinalStatusMatchComplete", "Prerender"),
         origin, experiment_id,

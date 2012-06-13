@@ -527,6 +527,75 @@ TEST_F(PrerenderTest, SourceRenderViewClosed) {
       Referrer(), gfx::Size(), 200));
 }
 
+// Tests that prerendering is cancelled when we launch a second prerender of
+// the same target within a short time interval.
+TEST_F(PrerenderTest, RecentlyVisited) {
+  GURL url("http://www.google.com/");
+
+  prerender_manager()->RecordNavigation(url);
+
+  DummyPrerenderContents* prerender_contents =
+      prerender_manager()->CreateNextPrerenderContents(
+          url, FINAL_STATUS_RECENTLY_VISITED);
+  EXPECT_FALSE(AddSimplePrerender(url));
+  EXPECT_FALSE(prerender_contents->prerendering_has_started());
+}
+
+TEST_F(PrerenderTest, NotSoRecentlyVisited) {
+  GURL url("http://www.google.com/");
+
+  prerender_manager()->RecordNavigation(url);
+  prerender_manager()->AdvanceTimeTicks(
+      base::TimeDelta::FromMilliseconds(
+          prerender_manager()->kNavigationRecordWindowMs + 500));
+
+  DummyPrerenderContents* prerender_contents =
+      prerender_manager()->CreateNextPrerenderContents(
+          url, FINAL_STATUS_USED);
+  EXPECT_TRUE(AddSimplePrerender(url));
+  EXPECT_TRUE(prerender_contents->prerendering_has_started());
+  ASSERT_EQ(prerender_contents, prerender_manager()->GetEntry(url));
+}
+
+// Tests that our PPLT dummy prerender gets created properly.
+TEST_F(PrerenderTest, PPLTDummy) {
+  GURL url("http://www.google.com/");
+  DummyPrerenderContents* prerender_contents =
+      prerender_manager()->CreateNextPrerenderContents(
+          url, FINAL_STATUS_UNSUPPORTED_SCHEME);
+  EXPECT_TRUE(AddSimplePrerender(url));
+  EXPECT_TRUE(prerender_contents->prerendering_has_started());
+
+  DummyPrerenderContents* pplt_dummy_contents =
+      prerender_manager()->CreateNextPrerenderContents(url,
+                                                       FINAL_STATUS_USED);
+  GURL ftp_url("ftp://ftp.google.com/");
+  // Adding this ftp URL will force the expected unsupported scheme error.
+  prerender_contents->AddAliasURL(ftp_url);
+
+  ASSERT_EQ(pplt_dummy_contents, prerender_manager()->GetEntry(url));
+}
+
+// Tests that our PPLT dummy prerender gets created properly, even
+// when navigating to a page that has been recently navigated to.
+TEST_F(PrerenderTest, RecentlyVisitedPPLTDummy) {
+  GURL url("http://www.google.com/");
+  DummyPrerenderContents* prerender_contents =
+      prerender_manager()->CreateNextPrerenderContents(
+          url, FINAL_STATUS_UNSUPPORTED_SCHEME);
+  EXPECT_TRUE(AddSimplePrerender(url));
+  EXPECT_TRUE(prerender_contents->prerendering_has_started());
+
+  DummyPrerenderContents* pplt_dummy_contents =
+      prerender_manager()->CreateNextPrerenderContents(url,
+                                                       FINAL_STATUS_USED);
+  prerender_manager()->RecordNavigation(url);
+  GURL ftp_url("ftp://ftp.google.com/");
+  prerender_contents->AddAliasURL(ftp_url);
+
+  ASSERT_EQ(pplt_dummy_contents, prerender_manager()->GetEntry(url));
+}
+
 // Tests that the prerender manager ignores fragment references when matching
 // prerender URLs in the case the fragment is not in the prerender URL.
 TEST_F(PrerenderTest, PageMatchesFragmentTest) {

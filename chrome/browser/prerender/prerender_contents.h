@@ -70,21 +70,27 @@ class PrerenderContents : public content::NotificationObserver,
   struct PendingPrerenderInfo;
   typedef std::list<PendingPrerenderInfo> PendingPrerenderList;
 
-  // Indicates how this PrerenderContents relates to MatchComplete.
-  // This is important to figure out in what histograms to record the
-  // FinalStatus in, as described below.
+  // Indicates how this PrerenderContents relates to MatchComplete. This is to
+  // figure out which histograms to use to record the FinalStatus, Match (record
+  // all prerenders and control group prerenders) or MatchComplete (record
+  // running prerenders only in the way they would have been recorded in the
+  // control group).
   enum MatchCompleteStatus {
     // A regular prerender which will be recorded both in Match and
     // MatchComplete.
     MATCH_COMPLETE_DEFAULT,
-    // A prerender that used to be a regular prerender, but has since
-    // been replaced by a MatchComplete dummy.  Therefore, we will record
-    // this only for Match, but not for MatchComplete.
+    // A prerender that used to be a regular prerender, but has since been
+    // replaced by a MatchComplete dummy.  Therefore, we will record this only
+    // for Match, but not for MatchComplete.
     MATCH_COMPLETE_REPLACED,
-    // A prerender that is a MatchComplete dummy replacing a regular
-    // prerender.  Therefore, we will record this only for MatchComplete,
-    // but not Match.
-    MATCH_COMPLETE_REPLACEMENT
+    // A prerender that is a MatchComplete dummy replacing a regular prerender.
+    // In the control group, our prerender never would have been canceled, so
+    // we record in MatchComplete but not Match.
+    MATCH_COMPLETE_REPLACEMENT,
+    // A prerender that is a MatchComplete dummy, early in the process of being
+    // created. This prerender should not fail. Record for MatchComplete, but
+    // not Match.
+    MATCH_COMPLETE_REPLACEMENT_PENDING,
   };
 
   virtual ~PrerenderContents();
