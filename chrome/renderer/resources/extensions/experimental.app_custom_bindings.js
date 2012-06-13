@@ -12,8 +12,8 @@ chromeHidden.registerCustomHook('experimental.app', function(bindingsAPI) {
   chrome.experimental.app.onLaunched.dispatch =
       function(launchData, fileSystemId, baseName) {
     if (launchData) {
-      event = this;
-      fs = GetIsolatedFileSystem(fileSystemId);
+      var event = this;
+      var fs = GetIsolatedFileSystem(fileSystemId);
       try {
         fs.root.getFile(baseName, {}, function(fileEntry) {
           launchData.intent.data = fileEntry;
