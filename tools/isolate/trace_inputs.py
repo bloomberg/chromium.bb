@@ -383,13 +383,18 @@ class Results(object):
   """Results of a trace session."""
 
   class File(object):
-    """A file that was accessed."""
-    def __init__(self, root, path):
+    """A file that was accessed.
+
+    If tainted is true, it means it is not a real path anymore as a variable
+    replacement occured.
+    """
+    def __init__(self, root, path, tainted=False):
       """Represents a file accessed. May not be present anymore."""
       logging.debug('%s(%s, %s)' % (self.__class__.__name__, root, path))
       self.root = root
       self.path = path
 
+      self.tainted = tainted
       self._size = None
       # For compatibility with Directory object interface.
       # Shouldn't be used normally, only exists to simplify algorithms.
@@ -397,8 +402,8 @@ class Results(object):
 
       # Check internal consistency.
       assert path, path
-      assert bool(root) != bool(isabs(path)), (root, path)
-      assert (
+      assert tainted or bool(root) != bool(isabs(path)), (root, path)
+      assert tainted or (
           not os.path.exists(self.full_path) or
           self.full_path == get_native_path_case(self.full_path))
 
@@ -409,7 +414,7 @@ class Results(object):
     @property
     def size(self):
       """File's size. -1 is not existent."""
-      if self._size is None:
+      if self._size is None and not self.tainted:
         try:
           self._size = os.stat(self.full_path).st_size
         except OSError:
@@ -431,20 +436,35 @@ class Results(object):
     def strip_root(self, root):
       """Returns a clone of itself with 'root' stripped off."""
       # Check internal consistency.
-      assert isabs(root) and root.endswith(os.path.sep), root
+      assert self.tainted or (isabs(root) and root.endswith(os.path.sep)), root
       if not self.full_path.startswith(root):
         return None
-      out = self.__class__(root, self.full_path[len(root):])
-      # Keep size cache.
-      out._size = self._size
+      return self._clone(root, self.full_path[len(root):], self.tainted)
+
+    def replace_variables(self, variables):
+      """Replaces the root of this File with one of the variables if it matches.
+
+      If a variable replacement occurs, the cloned object becomes tainted.
+      """
+      for variable, root_path in variables.iteritems():
+        if self.path.startswith(root_path):
+          return self._clone(
+              self.root, variable + self.path[len(root_path):], True)
+      # No need to clone, returns ourself.
+      return self
+
+    def _clone(self, new_root, new_path, tainted):
+      """Clones itself keeping meta-data."""
+      out = self.__class__(new_root, new_path, tainted)
+      out._size = self.size
       return out
 
   class Directory(File):
     """A directory of files. Must exist."""
-    def __init__(self, root, path, size, nb_files):
+    def __init__(self, root, path, tainted, size, nb_files):
       """path='.' is a valid value and must be handled appropriately."""
-      super(Results.Directory, self).__init__(root, path)
-      assert not self.path.endswith(os.path.sep)
+      super(Results.Directory, self).__init__(root, path, tainted)
+      assert not self.path.endswith(os.path.sep), self.path
       self.path = self.path + os.path.sep
       self.nb_files = nb_files
       self._size = size
@@ -453,6 +473,15 @@ class Results(object):
       out = super(Results.Directory, self).flatten()
       out['nb_files'] = self.nb_files
       return out
+
+    def _clone(self, new_root, new_path, tainted):
+      """Clones itself keeping meta-data."""
+      return self.__class__(
+          new_root,
+          new_path.rstrip(os.path.sep),
+          tainted,
+          self.size,
+          self.nb_files)
 
   class Process(object):
     """A process that was traced.
@@ -2595,6 +2624,7 @@ def extract_directories(root_dir, files):
       buckets[parent][os.path.basename(directory)] = Results.Directory(
         root_dir,
         directory[root_prefix:],
+        False,
         sum(f.size for f in buckets[directory].itervalues()),
         sum(f.nb_files for f in buckets[directory].itervalues()))
       # Remove the whole bucket.
@@ -2696,10 +2726,13 @@ def CMDread(parser, args):
   if options.root_dir:
     options.root_dir = os.path.abspath(options.root_dir)
 
+  variables = dict(options.variables)
   api = get_api()
   try:
     results = load_trace(options.log, options.root_dir, api)
     simplified = extract_directories(options.root_dir, results.files)
+    simplified = [f.replace_variables(variables) for f in simplified]
+
     if options.json:
       write_json(sys.stdout, results.flatten(), False)
     else:

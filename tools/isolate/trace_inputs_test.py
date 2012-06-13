@@ -25,6 +25,20 @@ class TraceInputs(unittest.TestCase):
     for actual, expected in test_cases:
       self.assertEquals(expected, trace_inputs.process_quoted_arguments(actual))
 
+  def test_variable_abs(self):
+    value = trace_inputs.Results.File(None, '/foo/bar', False)
+    actual = value.replace_variables({'$FOO': '/foo'})
+    self.assertEquals('$FOO/bar', actual.path)
+    self.assertEquals('$FOO/bar', actual.full_path)
+    self.assertEquals(True, actual.tainted)
+
+  def test_variable_rel(self):
+    value = trace_inputs.Results.File('/usr', 'foo/bar', False)
+    actual = value.replace_variables({'$FOO': 'foo'})
+    self.assertEquals('$FOO/bar', actual.path)
+    self.assertEquals(os.path.join('/usr', '$FOO/bar'), actual.full_path)
+    self.assertEquals(True, actual.tainted)
+
 
 def join_norm(*args):
   """Joins and normalizes path in a single step."""
