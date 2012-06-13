@@ -14,6 +14,7 @@
 #include "chrome/service/service_process.h"
 #include "content/public/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_status.h"
 
@@ -150,6 +151,8 @@ void CloudPrintURLFetcher::StartRequestHelper(
   request_->SetMaxRetries(max_retries);
   delegate_ = delegate;
   SetupRequestHeaders();
+  request_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
+                         net::LOAD_DO_NOT_SAVE_COOKIES);
   if (request_type == net::URLFetcher::POST) {
     request_->SetUploadData(post_data_mime_type, post_data);
   }
