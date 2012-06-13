@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/message_loop_proxy.h"
-#include "content/common/net/url_fetcher_core.h"
 #include "content/common/net/url_request_user_data.h"
+#include "net/url_request/url_fetcher_core.h"
 #include "net/url_request/url_fetcher_factory.h"
 
 static net::URLFetcherFactory* g_factory = NULL;
@@ -37,7 +37,7 @@ void content::URLFetcher::CancelAll() {
 
 // static
 void content::URLFetcher::SetEnableInterceptionForTests(bool enabled) {
-  URLFetcherCore::SetEnableInterceptionForTests(enabled);
+  net::URLFetcherCore::SetEnableInterceptionForTests(enabled);
 }
 
 namespace {
@@ -69,7 +69,7 @@ URLFetcherImpl::URLFetcherImpl(const GURL& url,
                                RequestType request_type,
                                net::URLFetcherDelegate* d)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
-        core_(new content::URLFetcherCore(this, url, request_type, d))) {
+        core_(new net::URLFetcherCore(this, url, request_type, d))) {
 }
 
 URLFetcherImpl::~URLFetcherImpl() {
@@ -223,12 +223,12 @@ bool URLFetcherImpl::GetResponseAsFilePath(
 
 // static
 void URLFetcherImpl::CancelAll() {
-  content::URLFetcherCore::CancelAll();
+  net::URLFetcherCore::CancelAll();
 }
 
 // static
 int URLFetcherImpl::GetNumFetcherCores() {
-  return content::URLFetcherCore::GetNumFetcherCores();
+  return net::URLFetcherCore::GetNumFetcherCores();
 }
 
 net::URLFetcherDelegate* URLFetcherImpl::delegate() const {

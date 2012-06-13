@@ -20,12 +20,9 @@
 #include "content/common/content_export.h"
 #include "content/public/common/url_fetcher.h"
 
-namespace content {
+namespace net {
 class URLFetcherCore;
 class URLFetcherDelegate;
-}  // namespace content
-
-namespace net {
 class URLFetcherFactory;
 }  // namespace net
 
@@ -113,7 +110,7 @@ class CONTENT_EXPORT URLFetcherImpl : public net::URLFetcher {
   // NOTE: for safety, this should only be used through ScopedURLFetcherFactory!
   static void set_factory(net::URLFetcherFactory* factory);
 
-  const scoped_refptr<content::URLFetcherCore> core_;
+  const scoped_refptr<net::URLFetcherCore> core_;
 
   DISALLOW_COPY_AND_ASSIGN(URLFetcherImpl);
 };

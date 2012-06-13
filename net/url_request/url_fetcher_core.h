@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_NET_URL_FETCHER_CORE_H_
-#define CONTENT_COMMON_NET_URL_FETCHER_CORE_H_
+#ifndef NET_URL_REQUEST_URL_FETCHER_CORE_H_
+#define NET_URL_REQUEST_URL_FETCHER_CORE_H_
 #pragma once
 
 #include <set>
@@ -19,9 +19,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "base/timer.h"
-#include "content/public/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/net_export.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request.h"
@@ -37,18 +37,16 @@ class IOBuffer;
 class URLFetcherDelegate;
 class URLRequestContextGetter;
 class URLRequestThrottlerEntryInterface;
-}  // namespace net
 
-namespace content {
-
-class URLFetcherCore
+// TODO(akalin): Remove NET_EXPORT once URLFetcherImpl is in net/.
+class NET_EXPORT URLFetcherCore
     : public base::RefCountedThreadSafe<URLFetcherCore>,
-      public net::URLRequest::Delegate {
+      public URLRequest::Delegate {
  public:
-  URLFetcherCore(net::URLFetcher* fetcher,
+  URLFetcherCore(URLFetcher* fetcher,
                  const GURL& original_url,
-                 net::URLFetcher::RequestType request_type,
-                 net::URLFetcherDelegate* d);
+                 URLFetcher::RequestType request_type,
+                 URLFetcherDelegate* d);
 
   // Starts the load.  It's important that this not happen in the constructor
   // because it causes the IO thread to begin AddRef()ing and Release()ing
@@ -79,8 +77,8 @@ class URLFetcherCore
   void SetReferrer(const std::string& referrer);
   void SetExtraRequestHeaders(const std::string& extra_request_headers);
   void AddExtraRequestHeader(const std::string& header_line);
-  void GetExtraRequestHeaders(net::HttpRequestHeaders* headers) const;
-  void SetRequestContext(net::URLRequestContextGetter* request_context_getter);
+  void GetExtraRequestHeaders(HttpRequestHeaders* headers) const;
+  void SetRequestContext(URLRequestContextGetter* request_context_getter);
   // Set the URL that should be consulted for the third-party cookie
   // blocking policy.
   void SetFirstPartyForCookies(const GURL& first_party_for_cookies);
@@ -88,7 +86,7 @@ class URLFetcherCore
   // data on any URLRequest objects this object creates.
   void SetURLRequestUserData(
       const void* key,
-      const net::URLFetcher::CreateDataCallback& create_data_callback);
+      const URLFetcher::CreateDataCallback& create_data_callback);
   void SetStopOnRedirect(bool stop_on_redirect);
   void SetAutomaticallyRetryOn5xx(bool retry);
   void SetMaxRetries(int max_retries);
@@ -99,14 +97,14 @@ class URLFetcherCore
       scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy);
   void SaveResponseToTemporaryFile(
       scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy);
-  net::HttpResponseHeaders* GetResponseHeaders() const;
-  net::HostPortPair GetSocketAddress() const;
+  HttpResponseHeaders* GetResponseHeaders() const;
+  HostPortPair GetSocketAddress() const;
   bool WasFetchedViaProxy() const;
   const GURL& GetOriginalURL() const;
   const GURL& GetURL() const;
-  const net::URLRequestStatus& GetStatus() const;
+  const URLRequestStatus& GetStatus() const;
   int GetResponseCode() const;
-  const net::ResponseCookies& GetCookies() const;
+  const ResponseCookies& GetCookies() const;
   bool FileErrorOccurred(base::PlatformFileError* out_error_code) const;
   // Reports that the received content was malformed (i.e. failed parsing
   // or validation).  This makes the throttling logic that does exponential
@@ -119,15 +117,15 @@ class URLFetcherCore
   bool GetResponseAsFilePath(bool take_ownership,
                              FilePath* out_response_path);
 
-  // Overridden from net::URLRequest::Delegate:
-  virtual void OnReceivedRedirect(net::URLRequest* request,
+  // Overridden from URLRequest::Delegate:
+  virtual void OnReceivedRedirect(URLRequest* request,
                                   const GURL& new_url,
                                   bool* defer_redirect) OVERRIDE;
-  virtual void OnResponseStarted(net::URLRequest* request) OVERRIDE;
-  virtual void OnReadCompleted(net::URLRequest* request,
+  virtual void OnResponseStarted(URLRequest* request) OVERRIDE;
+  virtual void OnReadCompleted(URLRequest* request,
                                int bytes_read) OVERRIDE;
 
-  net::URLFetcherDelegate* delegate() const { return delegate_; }
+  URLFetcherDelegate* delegate() const { return delegate_; }
   static void CancelAll();
   static int GetNumFetcherCores();
   static void SetEnableInterceptionForTests(bool enabled);
@@ -297,12 +295,12 @@ class URLFetcherCore
   void InformDelegateDownloadDataInDelegateThread(
       scoped_ptr<std::string> download_data);
 
-  net::URLFetcher* fetcher_;         // Corresponding fetcher object
+  URLFetcher* fetcher_;              // Corresponding fetcher object
   GURL original_url_;                // The URL we were asked to fetch
   GURL url_;                         // The URL we eventually wound up at
-  net::URLFetcher::RequestType request_type_;  // What type of request is this?
-  net::URLRequestStatus status_;     // Status of the request
-  net::URLFetcherDelegate* delegate_;  // Object to notify on completion
+  URLFetcher::RequestType request_type_;  // What type of request is this?
+  URLRequestStatus status_;          // Status of the request
+  URLFetcherDelegate* delegate_;     // Object to notify on completion
   scoped_refptr<base::MessageLoopProxy> delegate_loop_proxy_;
                                      // Message loop proxy of the creating
                                      // thread.
@@ -312,24 +310,24 @@ class URLFetcherCore
   scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy_;
                                      // The message loop proxy for the thread
                                      // on which file access happens.
-  scoped_ptr<net::URLRequest> request_;   // The actual request this wraps
+  scoped_ptr<URLRequest> request_;   // The actual request this wraps
   int load_flags_;                   // Flags for the load operation
   int response_code_;                // HTTP status code for the request
   std::string data_;                 // Results of the request, when we are
                                      // storing the response as a string.
-  scoped_refptr<net::IOBuffer> buffer_;
+  scoped_refptr<IOBuffer> buffer_;
                                      // Read buffer
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  scoped_refptr<URLRequestContextGetter> request_context_getter_;
                                      // Cookie/cache info for the request
   GURL first_party_for_cookies_;     // The first party URL for the request
   // The user data to add to each newly-created URLRequest.
   const void* url_request_data_key_;
-  net::URLFetcher::CreateDataCallback url_request_create_data_callback_;
-  net::ResponseCookies cookies_;     // Response cookies
-  net::HttpRequestHeaders extra_request_headers_;
-  scoped_refptr<net::HttpResponseHeaders> response_headers_;
+  URLFetcher::CreateDataCallback url_request_create_data_callback_;
+  ResponseCookies cookies_;          // Response cookies
+  HttpRequestHeaders extra_request_headers_;
+  scoped_refptr<HttpResponseHeaders> response_headers_;
   bool was_fetched_via_proxy_;
-  net::HostPortPair socket_address_;
+  HostPortPair socket_address_;
 
   std::string upload_content_;       // HTTP POST payload
   std::string upload_content_type_;  // MIME type of POST payload
@@ -351,9 +349,9 @@ class URLFetcherCore
   //
   // Both of these will be NULL if
   // URLRequestContext::throttler_manager() is NULL.
-  scoped_refptr<net::URLRequestThrottlerEntryInterface>
+  scoped_refptr<URLRequestThrottlerEntryInterface>
       original_url_throttler_entry_;
-  scoped_refptr<net::URLRequestThrottlerEntryInterface> url_throttler_entry_;
+  scoped_refptr<URLRequestThrottlerEntryInterface> url_throttler_entry_;
 
   // |num_retries_| indicates how many times we've failed to successfully
   // fetch this URL.  Once this value exceeds the maximum number of retries
@@ -411,6 +409,6 @@ class URLFetcherCore
   DISALLOW_COPY_AND_ASSIGN(URLFetcherCore);
 };
 
-}  // namespace content
+}  // namespace net
 
-#endif  // CONTENT_COMMON_NET_URL_FETCHER_CORE_H_
+#endif  // NET_URL_REQUEST_URL_FETCHER_CORE_H_

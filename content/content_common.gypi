@@ -263,8 +263,6 @@
     'common/message_router.h',
     'common/mime_registry_messages.h',
     'common/navigation_gesture.h',
-    'common/net/url_fetcher_core.cc',
-    'common/net/url_fetcher_core.h',
     'common/net/url_fetcher_impl.cc',
     'common/net/url_fetcher_impl.h',
     'common/net/url_request_user_data.cc',

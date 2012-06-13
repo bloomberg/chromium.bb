@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/net/url_fetcher_core.h"
+#include "net/url_request/url_fetcher_core.h"
 
 #include "base/bind.h"
 #include "base/file_util_proxy.h"
@@ -28,7 +28,7 @@ bool g_interception_enabled = false;
 
 }  // namespace
 
-namespace content {
+namespace net {
 
 // URLFetcherCore::Registry ---------------------------------------------------
 
@@ -253,10 +253,10 @@ void URLFetcherCore::FileWriter::DidCloseFile(
 base::LazyInstance<URLFetcherCore::Registry>
     URLFetcherCore::g_registry = LAZY_INSTANCE_INITIALIZER;
 
-URLFetcherCore::URLFetcherCore(net::URLFetcher* fetcher,
+URLFetcherCore::URLFetcherCore(URLFetcher* fetcher,
                                const GURL& original_url,
-                               net::URLFetcher::RequestType request_type,
-                               net::URLFetcherDelegate* d)
+                               URLFetcher::RequestType request_type,
+                               URLFetcherDelegate* d)
     : fetcher_(fetcher),
       original_url_(original_url),
       request_type_(request_type),
@@ -264,9 +264,9 @@ URLFetcherCore::URLFetcherCore(net::URLFetcher* fetcher,
       delegate_loop_proxy_(
           base::MessageLoopProxy::current()),
       request_(NULL),
-      load_flags_(net::LOAD_NORMAL),
-      response_code_(net::URLFetcher::RESPONSE_CODE_INVALID),
-      buffer_(new net::IOBuffer(kBufferSize)),
+      load_flags_(LOAD_NORMAL),
+      response_code_(URLFetcher::RESPONSE_CODE_INVALID),
+      buffer_(new IOBuffer(kBufferSize)),
       url_request_data_key_(NULL),
       was_fetched_via_proxy_(false),
       is_chunked_upload_(false),
@@ -363,12 +363,12 @@ void URLFetcherCore::AddExtraRequestHeader(const std::string& header_line) {
 }
 
 void URLFetcherCore::GetExtraRequestHeaders(
-    net::HttpRequestHeaders* headers) const {
+    HttpRequestHeaders* headers) const {
   headers->CopyFrom(extra_request_headers_);
 }
 
 void URLFetcherCore::SetRequestContext(
-    net::URLRequestContextGetter* request_context_getter) {
+    URLRequestContextGetter* request_context_getter) {
   DCHECK(!request_context_getter_);
   request_context_getter_ = request_context_getter;
 }
@@ -381,7 +381,7 @@ void URLFetcherCore::SetFirstPartyForCookies(
 
 void URLFetcherCore::SetURLRequestUserData(
     const void* key,
-    const net::URLFetcher::CreateDataCallback& create_data_callback) {
+    const URLFetcher::CreateDataCallback& create_data_callback) {
   DCHECK(key);
   DCHECK(!create_data_callback.is_null());
   url_request_data_key_ = key;
@@ -413,7 +413,7 @@ void URLFetcherCore::SaveResponseToFileAtPath(
     scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy) {
   DCHECK(delegate_loop_proxy_->BelongsToCurrentThread());
   file_message_loop_proxy_ = file_message_loop_proxy;
-  response_destination_ = content::URLFetcherCore::PERMANENT_FILE;
+  response_destination_ = URLFetcherCore::PERMANENT_FILE;
   response_destination_file_path_ = file_path;
 }
 
@@ -421,17 +421,17 @@ void URLFetcherCore::SaveResponseToTemporaryFile(
     scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy) {
   DCHECK(delegate_loop_proxy_->BelongsToCurrentThread());
   file_message_loop_proxy_ = file_message_loop_proxy;
-  response_destination_ = content::URLFetcherCore::TEMP_FILE;
+  response_destination_ = URLFetcherCore::TEMP_FILE;
 }
 
-net::HttpResponseHeaders* URLFetcherCore::GetResponseHeaders() const {
+HttpResponseHeaders* URLFetcherCore::GetResponseHeaders() const {
   return response_headers_;
 }
 
 // TODO(panayiotis): socket_address_ is written in the IO thread,
 // if this is accessed in the UI thread, this could result in a race.
 // Same for response_headers_ above and was_fetched_via_proxy_ below.
-net::HostPortPair URLFetcherCore::GetSocketAddress() const {
+HostPortPair URLFetcherCore::GetSocketAddress() const {
   return socket_address_;
 }
 
@@ -447,7 +447,7 @@ const GURL& URLFetcherCore::GetURL() const {
   return url_;
 }
 
-const net::URLRequestStatus& URLFetcherCore::GetStatus() const {
+const URLRequestStatus& URLFetcherCore::GetStatus() const {
   return status_;
 }
 
@@ -455,7 +455,7 @@ int URLFetcherCore::GetResponseCode() const {
   return response_code_;
 }
 
-const net::ResponseCookies& URLFetcherCore::GetCookies() const {
+const ResponseCookies& URLFetcherCore::GetCookies() const {
   return cookies_;
 }
 
@@ -484,7 +484,7 @@ void URLFetcherCore::ReceivedContentWasMalformed() {
 
 bool URLFetcherCore::GetResponseAsString(
     std::string* out_response_string) const {
-  if (response_destination_ != content::URLFetcherCore::STRING)
+  if (response_destination_ != URLFetcherCore::STRING)
     return false;
 
   *out_response_string = data_;
@@ -498,8 +498,8 @@ bool URLFetcherCore::GetResponseAsFilePath(bool take_ownership,
                                            FilePath* out_response_path) {
   DCHECK(delegate_loop_proxy_->BelongsToCurrentThread());
   const bool destination_is_file =
-      response_destination_ == content::URLFetcherCore::TEMP_FILE ||
-      response_destination_ == content::URLFetcherCore::PERMANENT_FILE;
+      response_destination_ == URLFetcherCore::TEMP_FILE ||
+      response_destination_ == URLFetcherCore::PERMANENT_FILE;
   if (!destination_is_file || !file_writer_.get())
     return false;
 
@@ -508,12 +508,12 @@ bool URLFetcherCore::GetResponseAsFilePath(bool take_ownership,
   if (take_ownership) {
     io_message_loop_proxy_->PostTask(
         FROM_HERE,
-        base::Bind(&content::URLFetcherCore::DisownFile, this));
+        base::Bind(&URLFetcherCore::DisownFile, this));
   }
   return true;
 }
 
-void URLFetcherCore::OnReceivedRedirect(net::URLRequest* request,
+void URLFetcherCore::OnReceivedRedirect(URLRequest* request,
                                         const GURL& new_url,
                                         bool* defer_redirect) {
   DCHECK_EQ(request, request_.get());
@@ -528,7 +528,7 @@ void URLFetcherCore::OnReceivedRedirect(net::URLRequest* request,
   }
 }
 
-void URLFetcherCore::OnResponseStarted(net::URLRequest* request) {
+void URLFetcherCore::OnResponseStarted(URLRequest* request) {
   DCHECK_EQ(request, request_.get());
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
   if (request_->status().is_success()) {
@@ -542,14 +542,14 @@ void URLFetcherCore::OnResponseStarted(net::URLRequest* request) {
   ReadResponse();
 }
 
-void URLFetcherCore::OnReadCompleted(net::URLRequest* request,
+void URLFetcherCore::OnReadCompleted(URLRequest* request,
                                      int bytes_read) {
   DCHECK(request == request_);
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 
   if (!stopped_on_redirect_)
     url_ = request->url();
-  net::URLRequestThrottlerManager* throttler_manager =
+  URLRequestThrottlerManager* throttler_manager =
       request->context()->throttler_manager();
   if (throttler_manager) {
     url_throttler_entry_ = throttler_manager->RegisterRequestUrl(url_);
@@ -572,14 +572,14 @@ void URLFetcherCore::OnReadCompleted(net::URLRequest* request,
     }
   } while (request_->Read(buffer_, kBufferSize, &bytes_read));
 
-  const net::URLRequestStatus status = request_->status();
+  const URLRequestStatus status = request_->status();
 
   if (status.is_success())
     request_->GetResponseCookies(&cookies_);
 
   // See comments re: HEAD requests in ReadResponse().
   if ((!status.is_io_pending() && !waiting_on_write) ||
-      (request_type_ == net::URLFetcher::HEAD)) {
+      (request_type_ == URLFetcher::HEAD)) {
     status_ = status;
     ReleaseRequest();
 
@@ -661,11 +661,11 @@ void URLFetcherCore::StartURLRequest() {
 
   g_registry.Get().AddURLFetcherCore(this);
   current_response_bytes_ = 0;
-  request_.reset(new net::URLRequest(original_url_, this));
+  request_.reset(new URLRequest(original_url_, this));
   request_->set_stack_trace(stack_trace_);
   int flags = request_->load_flags() | load_flags_;
   if (!g_interception_enabled)
-    flags = flags | net::LOAD_DISABLE_INTERCEPT;
+    flags = flags | LOAD_DISABLE_INTERCEPT;
 
   if (is_chunked_upload_)
     request_->EnableChunkedUpload();
@@ -680,17 +680,17 @@ void URLFetcherCore::StartURLRequest() {
   }
 
   switch (request_type_) {
-    case net::URLFetcher::GET:
+    case URLFetcher::GET:
       break;
 
-    case net::URLFetcher::POST:
-    case net::URLFetcher::PUT:
+    case URLFetcher::POST:
+    case URLFetcher::PUT:
       DCHECK(!upload_content_.empty() || is_chunked_upload_);
       DCHECK(!upload_content_type_.empty());
 
       request_->set_method(
-          request_type_ == net::URLFetcher::POST ? "POST" : "PUT");
-      extra_request_headers_.SetHeader(net::HttpRequestHeaders::kContentType,
+          request_type_ == URLFetcher::POST ? "POST" : "PUT");
+      extra_request_headers_.SetHeader(HttpRequestHeaders::kContentType,
                                        upload_content_type_);
       if (!upload_content_.empty()) {
         request_->AppendBytesToUpload(
@@ -699,7 +699,7 @@ void URLFetcherCore::StartURLRequest() {
 
       current_upload_bytes_ = -1;
       // TODO(kinaba): http://crbug.com/118103. Implement upload callback in the
-      // net:: layer and avoid using timer here.
+      //  layer and avoid using timer here.
       upload_progress_checker_timer_.reset(
           new base::RepeatingTimer<URLFetcherCore>());
       upload_progress_checker_timer_->Start(
@@ -709,11 +709,11 @@ void URLFetcherCore::StartURLRequest() {
           &URLFetcherCore::InformDelegateUploadProgress);
       break;
 
-    case net::URLFetcher::HEAD:
+    case URLFetcher::HEAD:
       request_->set_method("HEAD");
       break;
 
-    case net::URLFetcher::DELETE_REQUEST:
+    case URLFetcher::DELETE_REQUEST:
       request_->set_method("DELETE");
       break;
 
@@ -744,7 +744,7 @@ void URLFetcherCore::StartURLRequestWhenAppropriate() {
 
   int64 delay = 0LL;
   if (original_url_throttler_entry_ == NULL) {
-    net::URLRequestThrottlerManager* manager =
+    URLRequestThrottlerManager* manager =
         request_context_getter_->GetURLRequestContext()->throttler_manager();
     if (manager) {
       original_url_throttler_entry_ =
@@ -805,7 +805,7 @@ void URLFetcherCore::NotifyMalformedContent() {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
   if (url_throttler_entry_ != NULL) {
     int status_code = response_code_;
-    if (status_code == net::URLFetcher::RESPONSE_CODE_INVALID) {
+    if (status_code == URLFetcher::RESPONSE_CODE_INVALID) {
       // The status code will generally be known by the time clients
       // call the |ReceivedContentWasMalformed()| function (which ends up
       // calling the current function) but if it's not, we need to assume
@@ -823,7 +823,7 @@ void URLFetcherCore::RetryOrCompleteUrlFetch() {
 
   // Checks the response from server.
   if (response_code_ >= 500 ||
-      status_.error() == net::ERR_TEMPORARILY_THROTTLED) {
+      status_.error() == ERR_TEMPORARILY_THROTTLED) {
     // When encountering a server error, we will send the request again
     // after backoff time.
     ++num_retries_;
@@ -931,7 +931,7 @@ void URLFetcherCore::ReadResponse() {
   // about is the response code and headers, which we already have).
   int bytes_read = 0;
   if (request_->status().is_success() &&
-      (request_type_ != net::URLFetcher::HEAD))
+      (request_type_ != URLFetcher::HEAD))
     request_->Read(buffer_, kBufferSize, &bytes_read);
   OnReadCompleted(request_.get(), bytes_read);
 }
@@ -1001,4 +1001,4 @@ void URLFetcherCore::InformDelegateDownloadDataInDelegateThread(
     delegate_->OnURLFetchDownloadData(fetcher_, download_data.Pass());
 }
 
-}  // namespace content
+}  // namespace net
