@@ -107,7 +107,7 @@ class IBusClientTest : public testing::Test {
 TEST_F(IBusClientTest, CreateInputContextTest) {
   // Set expectations.
   const dbus::ObjectPath kInputContextObjectPath =
-      dbus::ObjectPath("some.object.path");
+      dbus::ObjectPath("/some/object/path");
   EXPECT_CALL(*mock_proxy_, CallMethodWithErrorCallback(_, _, _, _))
       .WillOnce(Invoke(this, &IBusClientTest::OnCreateInputContext));
   MockCreateInputContextCallback callback;
