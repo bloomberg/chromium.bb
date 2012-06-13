@@ -44,6 +44,10 @@ class GPUTestExpectationsParser {
   int32 GetTestExpectation(const std::string& test_name,
                            const GPUTestBotConfig& bot_config) const;
 
+  // Parse a list of config modifiers. If we have a valid entry with no
+  // conflicts, | config | stores it, and the function returns true.
+  bool ParseConfig(const std::string& config_data, GPUTestConfig* config);
+
  private:
   struct GPUTestExpectationEntry {
     GPUTestExpectationEntry();

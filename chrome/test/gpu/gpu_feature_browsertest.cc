@@ -253,39 +253,22 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MultisamplingAllowed) {
   if (use_gl == gfx::kGLImplementationOSMesaName)
     return;
 
-#if defined(OS_LINUX) || defined(OS_MACOSX)
   // Linux Intel uses mesa driver, where multisampling is not supported.
   // Multisampling is also not supported on virtualized mac os.
-  GPUTestBotConfig test_bot;
-  test_bot.LoadCurrentConfig(NULL);
-
-  const std::vector<uint32>& gpu_vendor = test_bot.gpu_vendor();
-#if defined(OS_LINUX)
-  if (gpu_vendor.size() == 1 && gpu_vendor[0] == 0x8086)
+  std::vector<std::string> configs;
+  configs.push_back("LINUX INTEL");
+  configs.push_back("MAC VMWARE");
+  if (GPUTestBotConfig::CurrentConfigMatches(configs))
     return;
-#endif  // defined(OS_LINUX)
-
-#if defined(OS_MACOSX)
-  if (gpu_vendor.size() == 1 && gpu_vendor[0] == 0x15AD)
-    return;
-#endif  // defined(OS_MACOSX)
-
-#endif  // defined(OS_LINUX) || defined(OS_MACOSX)
 
   const FilePath url(FILE_PATH_LITERAL("feature_multisampling.html"));
   RunTest(url, "\"TRUE\"", true);
 }
 
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MultisamplingBlocked) {
-#if defined(OS_MACOSX)
   // Multisampling fails on virtualized mac os.
-  GPUTestBotConfig test_bot;
-  test_bot.LoadCurrentConfig(NULL);
-
-  const std::vector<uint32>& gpu_vendor = test_bot.gpu_vendor();
-  if (gpu_vendor.size() == 1 && gpu_vendor[0] == 0x15AD)
+  if (GPUTestBotConfig::CurrentConfigMatches("MAC VMWARE"))
     return;
-#endif
 
   const std::string json_blacklist =
       "{\n"
@@ -317,28 +300,18 @@ class WebGLMultisamplingTest : public GpuFeatureTest {
 };
 
 IN_PROC_BROWSER_TEST_F(WebGLMultisamplingTest, MultisamplingDisabled) {
-#if defined(OS_MACOSX)
   // Multisampling fails on virtualized mac os.
-  GPUTestBotConfig test_bot;
-  test_bot.LoadCurrentConfig(NULL);
-
-  const std::vector<uint32>& gpu_vendor = test_bot.gpu_vendor();
-  if (gpu_vendor.size() == 1 && gpu_vendor[0] == 0x15AD)
+  if (GPUTestBotConfig::CurrentConfigMatches("MAC VMWARE"))
     return;
-#endif
 
   const FilePath url(FILE_PATH_LITERAL("feature_multisampling.html"));
   RunTest(url, "\"FALSE\"", true);
 }
 
 IN_PROC_BROWSER_TEST_F(GpuFeatureTest, Canvas2DAllowed) {
-#if defined(OS_WIN)
   // Accelerated canvas 2D is not supported on XP.
-  GPUTestBotConfig test_bot;
-  test_bot.LoadCurrentConfig(NULL);
-  if (test_bot.os() == GPUTestConfig::kOsWinXP)
+  if (GPUTestBotConfig::CurrentConfigMatches("XP"))
     return;
-#endif
 
   GpuFeatureType type = GpuDataManager::GetInstance()->GetGpuFeatureType();
   EXPECT_EQ(type, 0);

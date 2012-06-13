@@ -6,6 +6,7 @@
 #define CONTENT_TEST_GPU_GPU_TEST_CONFIG_H_
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -95,10 +96,15 @@ class GPUTestBotConfig : public GPUTestConfig {
   // Check if a bot config matches a test config, i.e., the test config is a
   // superset of the bot config.
   bool Matches(const GPUTestConfig& config) const;
+  bool Matches(const std::string& config_data) const;
 
   // Setup the config with the current gpu testing environment.
   // If gpu_info is NULL, collect GPUInfo first.
   bool LoadCurrentConfig(const content::GPUInfo* gpu_info);
+
+  // Check if this bot's config matches |config_data| or any of the |configs|.
+  static bool CurrentConfigMatches(const std::string& config_data);
+  static bool CurrentConfigMatches(const std::vector<std::string>& configs);
 };
 
 #endif  // CONTENT_TEST_GPU_GPU_TEST_CONFIG_H_

@@ -140,6 +140,37 @@ TEST_F(GPUTestConfigTest, Matches) {
   }
 }
 
+TEST_F(GPUTestConfigTest, StringMatches) {
+  GPUTestBotConfig config;
+  config.set_os(GPUTestConfig::kOsWin7);
+  config.set_build_type(GPUTestConfig::kBuildTypeRelease);
+  config.AddGPUVendor(0x10de);
+  config.set_gpu_device_id(0x0640);
+  EXPECT_TRUE(config.IsValid());
+
+  EXPECT_TRUE(config.Matches(""));
+
+  // os matching
+  EXPECT_TRUE(config.Matches("WIN"));
+  EXPECT_TRUE(config.Matches("WIN7"));
+  EXPECT_FALSE(config.Matches("MAC"));
+  EXPECT_TRUE(config.Matches("WIN7 LINUX"));
+
+  // gpu vendor matching
+  EXPECT_TRUE(config.Matches("NVIDIA"));
+  EXPECT_TRUE(config.Matches("NVIDIA AMD"));
+  EXPECT_FALSE(config.Matches("INTEL"));
+
+  // build type matching
+  EXPECT_TRUE(config.Matches("RELEASE"));
+  EXPECT_TRUE(config.Matches("RELEASE DEBUG"));
+  EXPECT_FALSE(config.Matches("DEBUG"));
+
+  // exact matching
+  EXPECT_TRUE(config.Matches("WIN7 RELEASE NVIDIA 0X0640"));
+  EXPECT_FALSE(config.Matches("WIN7 RELEASE NVIDIA 0X0641"));
+}
+
 TEST_F(GPUTestConfigTest, OverlapsWith) {
   {  // os
     // win vs win7

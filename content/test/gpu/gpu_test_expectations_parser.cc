@@ -41,6 +41,7 @@ enum Token {
   kConfigNVidia,
   kConfigAMD,
   kConfigIntel,
+  kConfigVMWare,
   // build type
   kConfigRelease,
   kConfigDebug,
@@ -81,6 +82,7 @@ const TokenInfo kTokenData[] = {
   { "nvidia", 0x10DE },
   { "amd", 0x1002 },
   { "intel", 0x8086 },
+  { "vmware", 0x15ad },
   { "release", GPUTestConfig::kBuildTypeRelease },
   { "debug", GPUTestConfig::kBuildTypeDebug },
   { "pass", GPUTestExpectationsParser::kGpuTestPass },
@@ -213,6 +215,47 @@ GPUTestExpectationsParser::GetErrorMessages() const {
   return error_messages_;
 }
 
+bool GPUTestExpectationsParser::ParseConfig(
+    const std::string& config_data, GPUTestConfig* config) {
+  DCHECK(config);
+  std::vector<std::string> tokens;
+  base::SplitStringAlongWhitespace(config_data, &tokens);
+
+  for (size_t i = 0; i < tokens.size(); ++i) {
+    Token token = ParseToken(tokens[i]);
+    switch (token) {
+      case kConfigWinXP:
+      case kConfigWinVista:
+      case kConfigWin7:
+      case kConfigWin:
+      case kConfigMacLeopard:
+      case kConfigMacSnowLeopard:
+      case kConfigMacLion:
+      case kConfigMac:
+      case kConfigLinux:
+      case kConfigChromeOS:
+      case kConfigNVidia:
+      case kConfigAMD:
+      case kConfigIntel:
+      case kConfigVMWare:
+      case kConfigRelease:
+      case kConfigDebug:
+      case kConfigGPUDeviceID:
+        if (token == kConfigGPUDeviceID) {
+          if (!UpdateTestConfig(config, tokens[i], 0))
+            return false;
+        } else {
+          if (!UpdateTestConfig(config, token, 0))
+            return false;
+        }
+        break;
+      default:
+        return false;
+    }
+  }
+  return true;
+}
+
 bool GPUTestExpectationsParser::ParseLine(
     const std::string& line_data, size_t line_number) {
   std::vector<std::string> tokens;
@@ -241,6 +284,7 @@ bool GPUTestExpectationsParser::ParseLine(
       case kConfigNVidia:
       case kConfigAMD:
       case kConfigIntel:
+      case kConfigVMWare:
       case kConfigRelease:
       case kConfigDebug:
       case kConfigGPUDeviceID:
@@ -357,6 +401,7 @@ bool GPUTestExpectationsParser::UpdateTestConfig(
     case kConfigNVidia:
     case kConfigAMD:
     case kConfigIntel:
+    case kConfigVMWare:
       {
         uint32 gpu_vendor =
             static_cast<uint32>(kTokenData[token].flag);

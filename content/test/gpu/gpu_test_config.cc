@@ -8,6 +8,7 @@
 #include "base/sys_info.h"
 #include "content/gpu/gpu_info_collector.h"
 #include "content/public/common/gpu_info.h"
+#include "content/test/gpu/gpu_test_expectations_parser.h"
 
 namespace {
 
@@ -189,6 +190,15 @@ bool GPUTestBotConfig::Matches(const GPUTestConfig& config) const {
   return true;
 }
 
+bool GPUTestBotConfig::Matches(const std::string& config_data) const {
+  GPUTestExpectationsParser parser;
+  GPUTestConfig config;
+
+  if (!parser.ParseConfig(config_data, &config))
+    return false;
+  return Matches(config);
+}
+
 bool GPUTestBotConfig::LoadCurrentConfig(const content::GPUInfo* gpu_info) {
   bool rt;
   if (gpu_info == NULL) {
@@ -207,5 +217,26 @@ bool GPUTestBotConfig::LoadCurrentConfig(const content::GPUInfo* gpu_info) {
   set_build_type(kBuildTypeDebug);
 #endif
   return rt;
+}
+
+// static
+bool GPUTestBotConfig::CurrentConfigMatches(const std::string& config_data) {
+  GPUTestBotConfig my_config;
+  if (!my_config.LoadCurrentConfig(NULL))
+    return false;
+  return my_config.Matches(config_data);
+}
+
+// static
+bool GPUTestBotConfig::CurrentConfigMatches(
+    const std::vector<std::string>& configs) {
+  GPUTestBotConfig my_config;
+  if (!my_config.LoadCurrentConfig(NULL))
+    return false;
+  for (size_t i = 0 ; i < configs.size(); ++i) {
+    if (my_config.Matches(configs[i]))
+      return true;
+  }
+  return false;
 }
 
