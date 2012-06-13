@@ -9477,7 +9477,7 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         Allow
       </message>
       <message name="IDS_COLLECTED_COOKIES_SESSION_ONLY_BUTTON" desc="A button that lets the use create a content settings exception to allow certain domains for a session only. Please consider that this text will be displayed as a button when translating.">
-        Allow for session only
+        Clear on exit
       </message>
       <message name="IDS_COLLECTED_COOKIES_BLOCK_BUTTON" desc="A button that lets the use create a content settings exception to block certain domains.">
         Block
@@ -9489,7 +9489,7 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         Cookies from <ph name="DOMAIN">$1<ex>example.com</ex></ph> blocked.
       </message>
       <message name="IDS_COLLECTED_COOKIES_SESSION_RULE_CREATED" desc="A notification that is displayed when a content exception to allow cookies for session only was created.">
-        Cookies from <ph name="DOMAIN">$1<ex>example.com</ex></ph> allowed for session only.
+        Cookies from <ph name="DOMAIN">$1<ex>example.com</ex></ph> will be cleared on exit.
       </message>
       <message name="IDS_COLLECTED_COOKIES_MULTIPLE_ALLOW_RULES_CREATED" desc="A notification that is displayed when multiple content exceptions to allow cookies were created.">
         Cookies from multiple sites allowed.
@@ -9498,7 +9498,7 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         Cookies from multiple sites blocked.
       </message>
       <message name="IDS_COLLECTED_COOKIES_MULTIPLE_SESSION_RULES_CREATED" desc="A notification that is displayed when multiple content exceptions to allow cookies for session only were created.">
-        Cookies from multiple sites allowed for session only.
+        Cookies from multiple sites will be cleared on exit.
       </message>
       <message name="IDS_COLLECTED_COOKIES_ALLOWED_COOKIES_TAB_LABEL" desc="The label in a tabbed pane that holds the UI controls for the cookies allowed while loading the page.">
         Allowed
@@ -9606,17 +9606,9 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         Remove intent
       </message>
 
-      <!-- Mac users do not close their browser; they quit it. -->
-      <if expr="not is_macosx">
-        <message name="IDS_COOKIES_COOKIE_EXPIRES_SESSION" desc="The Cookie Expires field value for a session cookie">
-          When I close my browser
-        </message>
-      </if>
-      <if expr="is_macosx">
-        <message name="IDS_COOKIES_COOKIE_EXPIRES_SESSION" desc="The Cookie Expires field value for a session cookie (Mac)">
-          When I quit my browser
-        </message>
-      </if>
+      <message name="IDS_COOKIES_COOKIE_EXPIRES_SESSION" desc="The Cookie Expires field value for a session cookie">
+        When the browsing session ends
+      </message>
 
       <message name="IDS_COOKIES_COOKIE_SENDFOR_ANY" desc="Send Cookie for any kind of connection">
         Any kind of connection
