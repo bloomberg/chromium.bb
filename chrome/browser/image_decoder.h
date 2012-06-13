@@ -44,6 +44,8 @@ class ImageDecoder : public content::UtilityProcessHostClient {
     return image_data_;
   }
 
+  void set_delegate(Delegate* delegate) { delegate_ = delegate; }
+
  private:
   // It's a reference counted object, so destructor is private.
   virtual ~ImageDecoder();

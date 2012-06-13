@@ -535,6 +535,9 @@ const char kEnableFileCookies[]             = "enable-file-cookies";
 // Without this flag, pipelining will never be used.
 const char kEnableHttpPipelining[]          = "enable-http-pipelining";
 
+// Enables new WebRTC implementation of user image picker.
+const char kEnableHtml5Camera[]             = "enable-html5-camera";
+
 // Enables IPv6 support, even if probes suggest that it may not be fully
 // supported. Some probes may require internet connections, and this flag will
 // allow support independent of application testing. This flag overrides
