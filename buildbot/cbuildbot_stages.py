@@ -374,7 +374,17 @@ class ManifestVersionedSyncStage(SyncStage):
     """Uses the initialized manifest manager to get the next manifest."""
     assert self.manifest_manager, \
         'Must run GetStageManager before checkout out build.'
-    return self.manifest_manager.GetNextBuildSpec()
+
+    to_return = self.manifest_manager.GetNextBuildSpec()
+    previous_version = self.manifest_manager.latest
+    target_version = self.manifest_manager.current_version
+
+    # Print the Blamelist here.
+    url_prefix = 'http://chromeos-images.corp.google.com/diff/report?'
+    url = url_prefix + 'from=%s&to=%s' % (previous_version, target_version)
+    cros_build_lib.PrintBuildbotLink('Buildbot', url)
+
+    return to_return
 
   def _PerformStage(self):
     self.Initialize()
