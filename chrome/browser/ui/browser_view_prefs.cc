@@ -10,7 +10,7 @@
 namespace {
 
 // How long do we wait before we consider a window hung (in ms).
-const int kDefaultPluginMessageResponseTimeout = 30000;
+const int kDefaultPluginMessageResponseTimeout = 25000;
 
 // How frequently we check for hung plugin windows.
 const int kDefaultHungPluginDetectFrequency = 2000;
