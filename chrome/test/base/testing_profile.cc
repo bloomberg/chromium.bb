@@ -273,8 +273,7 @@ void TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
       HistoryServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           this, BuildHistoryService).get());
   if (!history_service->Init(this->GetPath(),
-                             reinterpret_cast<BookmarkService*>(
-                                 BookmarkModelFactory::GetForProfile(this)),
+                             BookmarkModelFactory::GetForProfile(this),
                              no_db)) {
     HistoryServiceFactory::GetInstance()->SetTestingFactoryAndUse(this, NULL);
   }
