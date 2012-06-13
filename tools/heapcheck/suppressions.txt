@@ -1465,3 +1465,18 @@
    fun:TestingProfile::TestingProfile
    fun:ShortcutsProviderTest::SetUp
 }
+{
+   bug_132431
+   Heapcheck:Leak
+   ...
+   fun:gfx::::LoadDefaults
+   fun:gfx::GetDefaultFontRenderParams
+   fun:renderer_preferences_util::UpdateFromSystemSettings
+   fun:PrefsTabHelper::PrefsTabHelper
+   fun:TabContents::TabContents
+   fun:TabContentsTestHarness::SetContents
+   fun:content::RenderViewHostTestHarness::SetUp
+   fun:ChromeRenderViewHostTestHarness::SetUp
+   fun:TabContentsTestHarness::SetUp
+}
+
