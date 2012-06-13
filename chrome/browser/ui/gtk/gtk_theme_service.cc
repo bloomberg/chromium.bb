@@ -667,8 +667,11 @@ void GtkThemeService::NotifyThemeChanged() {
     gtk_util::SetLabelColor(it->first, color);
   }
 
-  Browser* browser = BrowserList::GetLastActive();
-  if (browser && browser->window()) {
+  for (BrowserList::const_iterator browser_iterator = BrowserList::begin();
+       browser_iterator != BrowserList::end(); browser_iterator++) {
+    Browser* browser = (*browser_iterator);
+    if (!browser->window())
+      continue;
     GtkWindow* window = browser->window()->GetNativeWindow();
     gtk_util::SetDefaultWindowIcon(window);
     gtk_util::SetWindowIcon(window, browser->profile());
