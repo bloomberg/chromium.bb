@@ -68,17 +68,17 @@ const int kTitleFontSize = 14;
 
 // The spacing in pixels between the title and the icon on the left, or the
 // button on the right.
-const int kTitleSpacing = 13;
+const int kTitleSpacing = 11;
 
 // The spacing in pixels between the close button and the right border.
-const int kCloseButtonAndBorderSpacing = 13;
+const int kCloseButtonAndBorderSpacing = 11;
 
 // The spacing in pixels between the close button and the minimize/restore
 // button.
-const int kMinimizeButtonAndCloseButtonSpacing = 13;
+const int kMinimizeButtonAndCloseButtonSpacing = 5;
 
 // Colors used to draw titlebar background under default theme.
-const SkColor kActiveBackgroundDefaultColor = SkColorSetRGB(0x3a, 0x3c, 0x3c);
+const SkColor kActiveBackgroundDefaultColor = SkColorSetRGB(0x3a, 0x3d, 0x3d);
 const SkColor kInactiveBackgroundDefaultColor = SkColorSetRGB(0x7a, 0x7c, 0x7c);
 const SkColor kAttentionBackgroundDefaultColor =
     SkColorSetRGB(0xff, 0xab, 0x57);
@@ -94,7 +94,7 @@ const SkColor kTitleTextDefaultColor = SkColorSetRGB(0xf9, 0xf9, 0xf9);
 #if defined(USE_AURA)
 const SkColor kDividerColor = SkColorSetRGB(0xb5, 0xb5, 0xb5);
 #else
-const SkColor kDividerColor = SkColorSetRGB(0x5a, 0x5c, 0x5c);
+const SkColor kDividerColor = SkColorSetRGB(0x2a, 0x2c, 0x2c);
 #endif
 
 struct ButtonResources {
@@ -465,8 +465,7 @@ void PanelBrowserFrameView::Layout() {
   int right = width();
   gfx::Size close_button_size = close_button_->GetPreferredSize();
   close_button_->SetBounds(
-      width() - NonClientBorderThickness() - kCloseButtonAndBorderSpacing -
-      close_button_size.width(),
+      width() - kCloseButtonAndBorderSpacing - close_button_size.width(),
       (NonClientTopBorderHeight() - close_button_size.height()) / 2,
       close_button_size.width(),
       close_button_size.height());
