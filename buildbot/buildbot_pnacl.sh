@@ -497,14 +497,16 @@ mode-buildbot-arm-hw-try() {
 }
 
 # hackish step to generate pexe for bitcode stability archiving
+# Note, we generate the pexes on x86-32 but test them on all archs in
+# buildbot/buildbot_pnacl_toolchain_tests.sh
 tc-generate-and-archive-pexes() {
-  local build_dir="scons-out/nacl-x86-32-pnacl-pexe-clang"
+  local build_dir="scons-out/nacl_irt_test-x86-32-pnacl-pexe-clang"
   local tarball="archived_pexes.tar.bz2"
   rm -rf ${build_dir}
   scons-stage "x86-32" \
-              "--mode=opt-host,nacl -j8 pnacl_generate_pexe=1 \
+              "--mode=opt-host,nacl_irt_test -j8 pnacl_generate_pexe=1 \
                do_not_run_tests=1 translate_in_build_step=0 " \
-              "smoke_tests large_tests chrome_browser_tests"
+              "small_tests_irt medium_tests_irt large_tests_irt"
   prune-scons-out
   tar cfj ${tarball} --directory ${build_dir} .
   ls -l ${tarball}
