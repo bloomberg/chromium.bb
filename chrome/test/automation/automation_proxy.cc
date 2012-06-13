@@ -322,14 +322,6 @@ void AutomationProxy::OnChannelError() {
     Disconnect();
 }
 
-scoped_refptr<WindowProxy> AutomationProxy::GetActiveWindow() {
-  int handle = 0;
-  if (!Send(new AutomationMsg_ActiveWindow(&handle)))
-    return NULL;
-
-  return ProxyObjectFromHandle<WindowProxy>(handle);
-}
-
 scoped_refptr<BrowserProxy> AutomationProxy::GetBrowserWindow(
     int window_index) {
   int handle = 0;

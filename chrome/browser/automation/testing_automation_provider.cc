@@ -370,7 +370,6 @@ bool TestingAutomationProvider::OnMessageReceived(
     IPC_MESSAGE_HANDLER(AutomationMsg_NormalBrowserWindowCount,
                         GetNormalBrowserWindowCount)
     IPC_MESSAGE_HANDLER(AutomationMsg_BrowserWindow, GetBrowserWindow)
-    IPC_MESSAGE_HANDLER(AutomationMsg_ActiveWindow, GetActiveWindow)
     IPC_MESSAGE_HANDLER(AutomationMsg_FindTabbedBrowserWindow,
                         FindTabbedBrowserWindow)
     IPC_MESSAGE_HANDLER(AutomationMsg_WindowExecuteCommandAsync,
@@ -665,15 +664,6 @@ void TestingAutomationProvider::FindTabbedBrowserWindow(int* handle) {
   Browser* browser = browser::FindTabbedBrowser(profile_, false);
   if (browser)
     *handle = browser_tracker_->Add(browser);
-}
-
-void TestingAutomationProvider::GetActiveWindow(int* handle) {
-  *handle = 0;
-  Browser* browser = BrowserList::GetLastActive();
-  if (browser) {
-    gfx::NativeWindow window = browser->window()->GetNativeWindow();
-    *handle = window_tracker_->Add(window);
-  }
 }
 
 void TestingAutomationProvider::ExecuteBrowserCommandAsync(int handle,

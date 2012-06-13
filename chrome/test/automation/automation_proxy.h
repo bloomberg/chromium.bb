@@ -140,11 +140,6 @@ class AutomationProxy : public IPC::Channel::Listener,
   // On failure, returns NULL.
   scoped_refptr<BrowserProxy> FindTabbedBrowserWindow();
 
-  // Returns the WindowProxy for the currently active window, transferring
-  // ownership of the pointer to the caller.
-  // On failure, returns NULL.
-  scoped_refptr<WindowProxy> GetActiveWindow();
-
   // Sends the browser a new proxy configuration to start using. Returns true
   // if the proxy config was successfully sent, false otherwise.
   bool SendProxyConfig(const std::string& new_proxy_config) WARN_UNUSED_RESULT;

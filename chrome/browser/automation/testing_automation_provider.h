@@ -119,7 +119,6 @@ class TestingAutomationProvider : public AutomationProvider,
   // or in incognito mode.
   void GetBrowserWindow(int index, int* handle);
   void FindTabbedBrowserWindow(int* handle);
-  void GetActiveWindow(int* handle);
   void ExecuteBrowserCommandAsync(int handle, int command, bool* success);
   void ExecuteBrowserCommand(int handle, int command,
                              IPC::Message* reply_message);
@@ -1535,7 +1534,7 @@ class TestingAutomationProvider : public AutomationProvider,
       const string16& frame_xpath, const string16& script,
       IPC::Message* reply_message, content::RenderViewHost* render_view_host);
 
-  // Selects the given |browser| and |tab| if not selected already.
+  // Selects the given |tab| if not selected already.
   void EnsureTabSelected(Browser* browser, content::WebContents* tab);
 
 #if defined(OS_CHROMEOS)

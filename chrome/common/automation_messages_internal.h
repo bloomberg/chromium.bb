@@ -230,7 +230,7 @@ IPC_SYNC_MESSAGE_CONTROL1_0(AutomationMsg_OpenNewBrowserWindow,
 
 // This message requests the handle (int64 app-unique identifier) of the
 // current active top window.  On error, the returned handle value is 0.
-IPC_SYNC_MESSAGE_CONTROL0_1(AutomationMsg_ActiveWindow,
+IPC_SYNC_MESSAGE_CONTROL0_1(AutomationMsg_DEPRECATED_ActiveWindow,
                             int)
 
 // This message requests the window associated with the specified browser
