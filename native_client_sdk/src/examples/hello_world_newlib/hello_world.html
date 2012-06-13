@@ -6,14 +6,39 @@
   found in the LICENSE file.
   -->
 <head>
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="-1" />
   <title>Hello, World!</title>
   <script type="text/javascript">
-    helloWorldModule = null;  // Global application object.
-    statusText = 'NO-STATUS';
+    naclModule = null;  // Global application object.
+    statusText = 'NO-STATUSES';
 
-    // Indicate success when the NaCl module has loaded.
+    function ExtractSearchParameter(name, def_value) {
+      var nameIndex = window.location.search.indexOf(name + "=");
+      if (nameIndex != -1) {
+        var value = location.search.substring(nameIndex + name.length + 1);
+        var endIndex = value.indexOf("&");
+        if (endIndex != -1)
+          value = value.substring(0, endIndex);
+        return value;
+      }
+      return def_value;
+    }
+
+    function createNaClModule(name, tool, width, height) {
+      var listenerDiv = document.getElementById('listener');
+      var naclModule = document.createElement('embed');
+      naclModule.setAttribute('name', 'nacl_module');
+      naclModule.setAttribute('id', 'file_io');
+      naclModule.setAttribute('width', width);
+      naclModule.setAttribute('height',height);
+      naclModule.setAttribute('src', tool + '/' + name + '.nmf');
+      naclModule.setAttribute('type', 'application/x-nacl');
+      listenerDiv.appendChild(naclModule);
+    }
+        // Indicate success when the NaCl module has loaded.
     function moduleDidLoad() {
-      helloWorldModule = document.getElementById('hello_world');
+      naclModule = document.getElementById('nacl_module');
       updateStatus('SUCCESS');
     }
 
@@ -26,14 +51,17 @@
     // status message indicating that the module is still loading.  Otherwise,
     // do not change the status message.
     function pageDidLoad() {
-      if (helloWorldModule == null) {
-        updateStatus('LOADING...');
+      updateStatus('Page loaded.');
+      if (naclModule == null) {
+        tool = ExtractSearchParameter('tool', 'newlib');
+        updateStatus('Creating embed: ' + tool)
+        createNaClModule('hello_world', tool, 200, 200)
       } else {
         // It's possible that the Native Client module onload event fired
         // before the page's onload event.  In this case, the status message
         // will reflect 'SUCCESS', but won't be displayed.  This call will
         // display the current message.
-        updateStatus();
+        updateStatus('Waiting.');
       }
     }
 
@@ -76,12 +104,6 @@
       listener.addEventListener('load', moduleDidLoad, true);
       listener.addEventListener('message', handleMessage, true);
     </script>
-
-    <embed name="nacl_module"
-           id="hello_world"
-           width=200 height=200
-           src="hello_world.nmf"
-           type="application/x-nacl" />
   </div>
 </body>
 </html>

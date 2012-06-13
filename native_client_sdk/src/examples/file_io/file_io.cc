@@ -5,6 +5,8 @@
 /// @file file_io.cc
 /// This example demonstrates the use of persistent file I/O
 
+#include <limits.h>
+#include <stddef.h>
 #include <stdio.h>
 
 #include <sstream>

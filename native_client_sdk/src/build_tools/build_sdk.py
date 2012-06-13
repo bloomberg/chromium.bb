@@ -328,14 +328,15 @@ def BuildToolchains(pepperdir, platform, arch, pepper_ver, toolchains):
 
 EXAMPLE_MAP = {
   'newlib': [
-    'debugging',
+#    'debugging',
     'file_histogram',
-    'file_io',
+#    'file_io',
     'fullscreen_tumbler',
     'gamepad',
     'geturl',
     'hello_world_interactive',
     'hello_world_newlib',
+#    'hello_world_gles',
     'input_events',
     'load_progress',
     'mouselock',
@@ -347,10 +348,10 @@ EXAMPLE_MAP = {
     'websocket'
   ],
   'glibc': [
-    'dlopen',
+#    'dlopen',
   ],
   'pnacl': [
-    'hello_world_pnacl',
+#    'hello_world_pnacl',
   ],
 }
 

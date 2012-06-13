@@ -1,5 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 <html>
   <!--
   Copyright (c) 2012 The Chromium Authors. All rights reserved.
@@ -7,45 +6,57 @@
   found in the LICENSE file.
   -->
 <head>
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="-1" />
   <title>File I/O Example</title>
-
   <script type="text/javascript">
-    FileIoModule = null;  // Global application object.
-    statusText = 'NO-STATUS';
+    naclModule = null;  // Global application object.
+    statusText = 'NO-STATUSES';
 
-    // Request file system space and indicate successful load
-    function moduleDidLoad() {
-      FileIoModule = document.getElementById('file_io');
+    function ExtractSearchParameter(name, def_value) {
+      var nameIndex = window.location.search.indexOf(name + "=");
+      if (nameIndex != -1) {
+        var value = location.search.substring(nameIndex + name.length + 1);
+        var endIndex = value.indexOf("&");
+        if (endIndex != -1)
+          value = value.substring(0, endIndex);
+        return value;
+      }
+      return def_value;
     }
 
-    function createNaClModule() {
-      // Dynamically generate this HTML:
-      // <embed name="nacl_module"
-      // id="file_io"
-      // width=0 height=0
-      // src="file_io.nmf"
-      // type="application/x-nacl" />
+    function createNaClModule(name, tool, width, height) {
       var listenerDiv = document.getElementById('listener');
       var naclModule = document.createElement('embed');
       naclModule.setAttribute('name', 'nacl_module');
       naclModule.setAttribute('id', 'file_io');
-      naclModule.setAttribute('width', 0);
-      naclModule.setAttribute('height', 0);
-      naclModule.setAttribute('src', 'file_io.nmf');
+      naclModule.setAttribute('width', width);
+      naclModule.setAttribute('height',height);
+      naclModule.setAttribute('src', tool + '/' + name + '.nmf');
       naclModule.setAttribute('type', 'application/x-nacl');
       listenerDiv.appendChild(naclModule);
+    }
+
+   // Indicate success when the NaCl module has loaded.
+    function moduleDidLoad() {
+      naclModule = document.getElementById('nacl_module');
+      updateStatus('SUCCESS');
     }
 
     // If the page loads before the Native Client module loads, then set the
     // status message indicating that the module is still loading.  Otherwise,
     // do not change the status message.
     function pageDidLoad() {
+      updateStatus('Page loaded.');
+
       // Request file system space
       updateStatus('Allocating storage...');
       window.webkitStorageInfo.requestQuota(window.PERSISTENT, 1024*1024,
           function(bytes) {
             updateStatus('Allocated '+bytes+' bytes of persistant storage.');
-            createNaClModule();
+            tool = ExtractSearchParameter('tool', 'newlib');
+            updateStatus('Creating embed: ' + tool);
+            createNaClModule('hello_world', tool, 200, 200);
           },
           function(e) { alert('Failed to allocate space') });
     }

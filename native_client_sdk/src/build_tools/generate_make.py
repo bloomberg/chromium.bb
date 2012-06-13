@@ -19,11 +19,23 @@ PPAPI_DIR = os.path.join(SRC_DIR, 'ppapi')
 
 ARCHITECTURES = ['32', '64']
 
+SRC_EXT = {
+  'c': 'CC',
+  'cc' : 'CXX',
+  '.so' : '.so',
+  '.nexe': '.nexe'
+}
+
+
+def Replace(text, replacements):
+  for key in replacements:
+    text = text.replace(key, replacements[key])
+  return text
+
 
 def WriteMakefile(srcpath, dstpath, replacements):
   text = open(srcpath, 'rb').read()
-  for key in replacements:
-    text = text.replace(key, replacements[key])
+  text = Replace(text, replacements)
   open(dstpath, 'wb').write(text)
 
 
@@ -35,8 +47,8 @@ def GetExtType(desc):
   return ext
 
 
-def GenPatsubst(arch, macro, ext, EXT):
-  return '$(patsubst %%.%s,%%_%s.o,$(%s_%s))' % (ext, arch, macro, EXT)
+def GenPatsubst(arch, tool, macro, ext, EXT):
+  return '$(patsubst %%.%s,%s/%%_%s.o,$(%s_%s))' % (ext, tool, arch, macro, EXT)
 
 
 def SetVar(varname, values):
@@ -70,7 +82,77 @@ def GenerateCopyList(desc):
   return sources
 
 
+def BuildToolDict(tc, proj, arch='', ext='.nexe', OBJS='', TARG='', REMAP=''):
+  TC = tc.upper()
+  PROJ = proj.upper()
+
+  if not OBJS:
+    OBJS = '%s_%s_%s_%s_O' % (TC, PROJ, arch, ext)
+  
+  if not TARG:
+    TARG = '%s_x86_%s%s' % (proj,arch,ext)
+
+  replace = {
+    '<ARCH>': arch,
+    '<CC>': '%s_%s' % (TC, SRC_EXT[ext]),
+    '<DUMP>': '%s_DUMP' % TC,
+    '<ext>' : ext,
+    '<EXT>' : SRC_EXT[ext],
+    '<LINK>': '%s_LINK' % TC,
+    '<OBJS>' : OBJS,
+    '<proj>': proj,
+    '<PROJ>': PROJ,
+    '<REMAP>': REMAP,
+    '<TARG>': TARG,
+    '<TAB>': '\t',
+    '<tc>' : tc,
+    '<TC>' : TC
+  }
+  return replace
+
+
+def GenerateNEXE(toolchain, name, ext, cc_sources, cxx_sources):
+  COMPILE_RULE = """
+<OBJS>:=$(patsubst %.<ext>, <tc>/%_<ARCH>.o,$(<PROJ>_<EXT>))
+$(<OBJS>) : <tc>/%_<ARCH>.o : %.<ext> $(THIS_MAKE) | <tc>
+<TAB>$(<CC>) -o $@ $< -m<ARCH> $(<PROJ>_<EXT>FLAGS) -DTCNAME=\\"<tc>\\"
+"""
+  LINK_RULE = """
+<tc>/<TARG> : $(<OBJS>)
+<TAB>$(<LINK>) -o $@ $^ -m<ARCH> $(<PROJ>_LDFLAGS)
+"""
+  rules = ''
+  targs = []
+  for arch in ARCHITECTURES:
+    object_sets = []
+    remap = ''
+    if cc_sources:
+      replace = BuildToolDict(toolchain, name, arch, 'c')
+      rules += Replace(COMPILE_RULE, replace)
+      object_sets.append(replace['<OBJS>'])
+
+    if cxx_sources:
+      replace = BuildToolDict(toolchain, name, arch, 'cc')
+      rules += Replace(COMPILE_RULE, replace)
+      object_sets.append(replace['<OBJS>'])
+
+    objs = ' '.join(object_sets)
+    replace = BuildToolDict(toolchain, name, arch, ext, OBJS=objs)
+    rules += Replace(LINK_RULE, replace) 
+    if ext == '.so':
+      remap = ' -n %s,%s.so' % (replace['<TARG>'], name)
+    rules += '%s_NMF+=%s/%s\n' % (replace['<TC>'], toolchain, replace['<TARG>'])
+    if remap:
+      rules += '%s_REMAP+=%s\n' % (replace['<TC>'], remap)
+  return rules
+
+
 def GenerateReplacements(desc):
+  NMF_RULE = """
+<tc>/<proj>.nmf : $(<TC>_NMF)
+<TAB>$(NMF) -D $(<DUMP>) -o $@ $(<TC>_PATHS) $^ -t <tc> -s <tc> $(<TC>_REMAP)
+
+"""
   # Generate target settings
   tools = desc['TOOLS']
 
@@ -106,38 +188,28 @@ def GenerateReplacements(desc):
     flags = target.get('LDFLAGS', ['$(NACL_LDFLAGS)'])
     settings += SetVar(macro + '_LDFLAGS', flags)
 
-    for arch in ARCHITECTURES:
-      object_sets = []
-      if cc_sources:
-        objs = '%s_%s_CC_O' % (macro, arch)
-        rules += '%s:=%s\n' % (objs, GenPatsubst(arch, macro, 'c', 'CC'))
-        rules += '$(%s) : %%_%s.o : %%.c $(THIS_MAKEFILE)\n' % (objs, arch)
-        rules += '\t$(NACL_CC) -o $@ $< -m%s $(%s_CCFLAGS)\n\n' % (arch, macro)
-        object_sets.append('$(%s)' % objs)
-      if cxx_sources:
-        objs = '%s_%s_CXX_O' % (macro, arch)
-        rules += '%s:=%s\n' % (objs, GenPatsubst(arch, macro, 'cc', 'CXX'))
-        rules += '$(%s) : %%_%s.o : %%.cc $(THIS_MAKEFILE)\n' % (objs, arch)
-        rules += '\t$(NACL_CXX) -o $@ $< -m%s $(%s_CXXFLAGS)\n\n' % (arch,
-                                                                     macro)
-        object_sets.append('$(%s)' % objs)
-      target_name = '%s_x86_%s%s' % (name, arch, ext)
-      targets.append(target_name)
-      rules += '%s : %s\n' % (target_name, ' '.join(object_sets))
-      rules += '\t$(NACL_LINK) -o $@ $^ -m%s $(%s_LDFLAGS)\n\n' % (arch, macro)
-      if target['TYPE'] == 'so':
-        remaps += ' -n %s,%s.so' % (target_name, name)
+  for tc in tools:
+    rules += '#\n# Rules for %s toolchain\n#\n%s:\n\t$(MKDIR) %s\n' % (
+        tc, tc, tc)
+    for target in desc['TARGETS']:
+      name = target['NAME']
+      ext = GetExtType(target)
+      sources = target['SOURCES']
+      cc_sources = [fname for fname in sources if fname.endswith('.c')]
+      cxx_sources = [fname for fname in sources if fname.endswith('.cc')]
+      rules += GenerateNEXE(tc, name, ext, cc_sources, cxx_sources)
+      if target['TYPE'] == 'main':
+        nexe = name
+        targets.append('%s/%s.nmf' % (tc, name))
+    replace = BuildToolDict(tc, nexe)
+    rules += Replace(NMF_RULE, replace)
 
-  nmf = desc['NAME'] + '.nmf'
-  nmfs = '%s : %s\n' % (nmf, ' '.join(targets))
-  nmfs +='\t$(NMF) $(NMF_ARGS) -o $@ $(NMF_PATHS) $^%s\n' % remaps
 
-  targets = 'all : '+ ' '.join(targets + [nmf]) 
+  targets = 'all : '+ ' '.join(targets) 
   return {
       '__PROJECT_SETTINGS__' : settings,
       '__PROJECT_TARGETS__' : targets,
       '__PROJECT_RULES__' : rules,
-      '__PROJECT_NMFS__' : nmfs,
       '__PROJECT_PRELAUNCH__' : prelaunch,
       '__PROJECT_PRERUN__' : prerun,
       '__PROJECT_POSTLAUNCH__' : postlaunch

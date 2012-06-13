@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['newlib', 'glibc'],
+  'TOOLS': ['newlib'],
   'TARGETS': [
     {
       'NAME' : 'file_io',

@@ -1,71 +1,125 @@
 <!DOCTYPE html>
 <html>
   <!--
-  Copyright (c) 2011 The Chromium Authors. All rights reserved.
+  Copyright (c) 2012 The Chromium Authors. All rights reserved.
   Use of this source code is governed by a BSD-style license that can be
   found in the LICENSE file.
   -->
 <head>
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="-1" />
   <title>Magic Eightball</title>
   <script type="text/javascript">
+    naclModule = null;  // Global application object.
+    statusText = 'NO-STATUSES';
 
-  function moduleDidLoad() {
-  }
-
-  function handleMessage(message_event) {
-    if(message_event.data=='Eightball loaded!')
-    {
-      document.getElementById('consolec').innerHTML = " \
-Eightball loaded, type a question below, press the button, and get a response. \
-<br /> \
-<form name='form' Value='Hello Me' onSubmit='return askBall()'> \
-  <input type='textarea' size='64' name='inputtext' /> \
-  <input type='button' NAME='button' Value='ASK!' onClick='askBall()' /> \
-</form>";
+    function ExtractSearchParameter(name, def_value) {
+      var nameIndex = window.location.search.indexOf(name + "=");
+      if (nameIndex != -1) {
+        var value = location.search.substring(nameIndex + name.length + 1);
+        var endIndex = value.indexOf("&");
+        if (endIndex != -1)
+          value = value.substring(0, endIndex);
+        return value;
+      }
+      return def_value;
     }
-    else
-    {
-      if(message_event.data[0]=='!')
-      {
+
+    function createNaClModule(name, tool, width, height) {
+      var listenerDiv = document.getElementById('listener');
+      var naclModule = document.createElement('embed');
+      naclModule.setAttribute('name', 'nacl_module');
+      naclModule.setAttribute('id', 'nacl_module');
+      naclModule.setAttribute('width', width);
+      naclModule.setAttribute('height',height);
+      naclModule.setAttribute('src', tool + '/' + name + '.nmf');
+      naclModule.setAttribute('type', 'application/x-nacl');
+      listenerDiv.appendChild(naclModule);
+    }
+
+    // Indicate success when the NaCl module has loaded.
+    function moduleDidLoad() {
+      updateStatus('SUCCESS');
+      naclModule = document.getElementById('nacl_module');
+    }
+
+    function handleMessage(message_event) {
+      var consolec = document.getElementById('consolec');
+      if(message_event.data[0]=='!') {
         document.getElementById('answerlog').innerHTML +=
-          (document.form.inputtext.value + ": " + message_event.data +"<br />");
+            (consolec.value + ": " + message_event.data +"<br />");
+      } else {
+        document.getElementById('answerlog').innerHTML +=
+            (message_event.data +"<br />");
       }
-      else
-      {
-        document.getElementById('consolec').innerHTML += 
-            message_event.data + "<br />";
-        console.log(message_event.data);
+      updateStatus(message_event.data);
+    }
+
+    function pageDidUnload() {
+        clearInterval(paintInterval);
+    }
+
+    // If the page loads before the Native Client module loads, then set the
+    // status message indicating that the module is still loading.  Otherwise,
+    // do not change the status message.
+    function pageDidLoad() {
+      updateStatus('Page loaded.');
+      if (naclModule == null) {
+        tool = ExtractSearchParameter('tool', 'glibc');
+        updateStatus('Creating embed: ' + tool)
+        createNaClModule('dlopen', tool, 100, 100)
+      } else {
+        // It's possible that the Native Client module onload event fired
+        // before the page's onload event.  In this case, the status message
+        // will reflect 'SUCCESS', but won't be displayed.  This call will
+        // display the current message.
+        updateStatus('Waiting.');
       }
     }
-  }
 
-  function pageDidUnload() {
-      clearInterval(paintInterval);
-  }
+    // Set the global status message.  If the element with id 'statusField'
+    // exists, then set its HTML to the status message as well.
+    // opt_message The message test.  If this is null or undefined, then
+    //     attempt to set the element with id 'statusField' to the value of
+    //     |statusText|.
+    function updateStatus(opt_message) {
+      if (opt_message)
+        statusText = opt_message;
+      var statusField = document.getElementById('statusField');
+      var answerLog = document.getElementById('answerlog');
+      if (statusField) {
+        statusField.innerHTML = statusText;
+      }
+      if (answerLog) {
+        answerLog.innerHTML += (message_event.data +"<br />");
+      }
+    }
 
-  function askBall()
-  {
-    dlopen.postMessage('query');
-    return false;
-  }
+    function askBall()
+    {
+      naclModule = document.getElementById('nacl_module');
+      updateStatus('Posing...');
+      naclModule.postMessage('query');
+      return false;
+    }
   </script>
 </head>
-<body id="bodyId" onunload="pageDidUnload()">
-<div id="listener">
-  <script type="text/javascript">
-    var listener = document.getElementById('listener')
-    listener.addEventListener('load', moduleDidLoad, true);
-    listener.addEventListener('message', handleMessage, true);
-  </script>
-<h1>The Magic 8 Ball </h1>
-<embed name="nacl_module"
-       id="dlopen"
-       width=1 height=1
-       src="dlopen.nmf"
-       type="application/x-nacl" />
-</div>
+<body id="bodyId" onload="pageDidLoad()">
+  <h2>Status: <code id="statusField">NO-STATUS</code></h2>
+  <div id="listener">
+    <script type="text/javascript">
+      var listener = document.getElementById('listener')
+      listener.addEventListener('load', moduleDidLoad, true);
+      listener.addEventListener('message', handleMessage, true);
+    </script>
+  <h1>The Magic 8 Ball </h1>
+  </div>
   <br />
-  <div id="consolec">..loading dynamic libraries...</div>
+  <div>Eightball loaded, type a question below, press the button, and get a response.</div>
+  <input type="text" id="consolec" value=""/>
+  <input type="button" id="button" value="ASK!" onclick="return askBall()"/>
+  </form>
+<br />
 <div id="answerlog"></div>
 </body>
 </html>

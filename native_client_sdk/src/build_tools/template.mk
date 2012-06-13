@@ -8,13 +8,22 @@
 #
 
 #
+# Get pepper directory for toolchain and includes.
+#
+# If NACL_SDK_ROOT is not set, then assume it can be found a two directories up,
+# from the default example directory location.
+#
+THIS_MAKEFILE:=$(abspath $(lastword $(MAKEFILE_LIST)))
+NACL_SDK_ROOT?=$(abspath $(dir $(THIS_MAKEFILE))../..)
+CHROME_PATH?=Undefined
+
+#
 # Defaults
 #
 NACL_WARNINGS:=-Wno-long-long -Wall -Wswitch-enum -Werror -pedantic
 NACL_CCFLAGS:=-O0 -g -pthread $(NACL_WARNINGS)
 NACL_CXXFLAGS:= -O0 -g -pthread -std=gnu++98 $(NACL_WARNINGS)
 NACL_LDFLAGS:=-Wl,-as-needed -g -pthread -lppapi_cpp -lppapi 
-
 
 #
 # Project Settings
@@ -25,17 +34,6 @@ __PROJECT_SETTINGS__
 # Project Targets
 #
 __PROJECT_TARGETS__
-
-
-#
-# Get pepper directory for toolchain and includes.
-#
-# If NACL_SDK_ROOT is not set, then assume it can be found a two directories up,
-# from the default example directory location.
-#
-THIS_MAKEFILE:=$(abspath $(lastword $(MAKEFILE_LIST)))
-NACL_SDK_ROOT?=$(abspath $(dir $(THIS_MAKEFILE))../..)
-CHROME_PATH?=Undefined
 
 
 #
@@ -59,14 +57,7 @@ endif
 # Compute path to requested NaCl Toolchain
 #
 OSNAME:=$(shell python $(NACL_SDK_ROOT)/tools/getos.py)
-TC_PATH:=$(abspath $(NACL_SDK_ROOT)/toolchain/$(OSNAME)_x86_$(TOOLCHAIN))
-
-
-#
-# Compute path to requested NaCl Toolchain
-#
-OSNAME:=$(shell python $(NACL_SDK_ROOT)/tools/getos.py)
-TC_PATH:=$(abspath $(NACL_SDK_ROOT)/toolchain/$(OSNAME)_x86_$(TOOLCHAIN))
+TC_PATH:=$(abspath $(NACL_SDK_ROOT)/toolchain)
 
 
 #
@@ -92,9 +83,28 @@ export CYGWIN
 #
 # NaCl Tools
 #
-NACL_CC?=$(TC_PATH)/bin/i686-nacl-gcc -c
-NACL_CXX?=$(TC_PATH)/bin/i686-nacl-g++ -c
-NACL_LINK?=$(TC_PATH)/bin/i686-nacl-g++
+NEWLIB_CC?=$(TC_PATH)/$(OSNAME)_x86_newlib/bin/i686-nacl-gcc -c
+NEWLIB_CXX?=$(TC_PATH)/$(OSNAME)_x86_newlib/bin/i686-nacl-g++ -c
+NEWLIB_LINK?=$(TC_PATH)/$(OSNAME)_x86_newlib/bin/i686-nacl-g++
+NEWLIB_DUMP?=$(TC_PATH)/$(OSNAME)_x86_newlib/x86_64-nacl/bin/objdump
+NEWLIB_PATHS:=
+
+GLIBC_CC?=$(TC_PATH)/$(OSNAME)_x86_glibc/bin/i686-nacl-gcc -c
+GLIBC_CXX?=$(TC_PATH)/$(OSNAME)_x86_glibc/bin/i686-nacl-g++ -c
+GLIBC_LINK?=$(TC_PATH)/$(OSNAME)_x86_glibc/bin/i686-nacl-g++
+GLIBC_DUMP?=$(TC_PATH)/$(OSNAME)_x86_glibc/x86_64-nacl/bin/objdump
+GLIBC_PATHS:=-L $(TC_PATH)/$(OSNAME)_x86_glibc/x86_64-nacl/lib32
+GLIBC_PATHS+=-L $(TC_PATH)/$(OSNAME)_x86_glibc/x86_64-nacl/lib
+
+#
+# NMF Manifiest generation
+#
+# Use the python script create_nmf to scan the binaries for dependencies using
+# objdump.  Pass in the (-L) paths to the default library toolchains so that we
+# can find those libraries and have it automatically copy the files (-s) to
+# the target directory for us.
+NMF:=python $(NACL_SDK_ROOT)/tools/create_nmf.py
+NMF_PATHS:=-L $(TC_PATH)/x86_64-nacl/lib32 -L $(TC_PATH)/x86_64-nacl/lib
 
 
 #
@@ -111,27 +121,12 @@ endif
 
 
 __PROJECT_RULES__
-#
-# NMF Manifiest generation
-#
-# Use the python script create_nmf to scan the binaries for dependencies using
-# objdump.  Pass in the (-L) paths to the default library toolchains so that we
-# can find those libraries and have it automatically copy the files (-s) to
-# the target directory for us.
-NMF:=python $(NACL_SDK_ROOT)/tools/create_nmf.py
-NMF_ARGS:=-D $(TC_PATH)/x86_64-nacl/bin/objdump -s .
-NMF_PATHS:=-L $(TC_PATH)/x86_64-nacl/lib32 -L $(TC_PATH)/x86_64-nacl/lib
-
-__PROJECT_NMFS__
-
 __PROJECT_PRERUN__
 
 RUN: all
 	python ../httpd.py
 
-__PROJECT_PRELAUNCH__
-
 LAUNCH_NEXE: CHECK_FOR_CHROME all
-	$(CHROME_PATH) $(NEXE_ARGS) "localhost:5103/$(PROJECT).html"
+	$(CHROME_PATH) $(NEXE_ARGS) "localhost:5103/$(PROJECT).html?tool=$(TOOLCHAIN)"
 
-
+__PROJECT_POSTLAUNCH__
