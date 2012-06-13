@@ -22,6 +22,8 @@
 {
   'all': [
     'alerts_tests',
+    # Race condition: https://code.google.com/p/selenium/issues/detail?id=4058
+    '-alerts_tests.AlertsTest.testHandlesTwoAlertsFromOneInteraction',
     'children_finding_tests',
     # Cookie tests try to set the domain explicitly to 'localhost', which
     # is not allowed.
@@ -48,10 +50,6 @@
     # error pages.
     '-page_loading_tests.PageLoadingTests.testShouldReturnWhenGettingAUrlThatDoesNotResolve',
     'rendered_webelement_tests',
-    # Test expects a color keyword, but a rgba tuple is returned.
-    '-rendered_webelement_tests.RenderedWebElementTests.testShouldAllowInheritedStylesToBeUsed',
-    # Test expects hex color, but a rgb tuple is returned.
-    '-rendered_webelement_tests.RenderedWebElementTests.testShouldPickUpStyleOfAnElement',
     'select_element_handling_tests',
     'stale_reference_tests',
     'text_handling_tests',
