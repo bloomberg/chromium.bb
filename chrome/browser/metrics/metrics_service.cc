@@ -1198,13 +1198,13 @@ void MetricsService::SendStagedLog() {
 
   PrepareFetchWithStagedLog();
 
-  if (!current_fetch_xml_.get() && !current_fetch_proto_.get()) {
+  bool upload_created = current_fetch_xml_.get() || current_fetch_proto_.get();
+  UMA_HISTOGRAM_BOOLEAN("UMA.UploadCreation", upload_created);
+  if (!upload_created) {
     // Compression failed, and log discarded :-/.
     // Skip this upload and hope things work out next time.
     log_manager_.DiscardStagedLog();
     scheduler_->UploadCancelled();
-    // TODO(jar): If compression failed, we should have created a tiny log and
-    // compressed that, so that we can signal that we're losing logs.
     return;
   }
 
