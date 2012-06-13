@@ -31,10 +31,6 @@ bool Sandbox::kernelSupportSeccompBPF(int proc_fd) {
       sigprocmask(SIG_BLOCK, &newMask, &oldMask)) {
     die("sigprocmask() failed");
   }
-  int fds[2];
-  if (pipe2(fds, O_NONBLOCK|O_CLOEXEC)) {
-    die("pipe() failed");
-  }
 
   pid_t pid = fork();
   if (pid < 0) {
@@ -52,28 +48,18 @@ bool Sandbox::kernelSupportSeccompBPF(int proc_fd) {
   if (!pid) {
     // Test a very simple sandbox policy to verify that we can
     // successfully turn on sandboxing.
-    dryRun_ = true;
-    if (HANDLE_EINTR(close(fds[0])) ||
-        dup2(fds[1], 2) != 2 ||
-        HANDLE_EINTR(close(fds[1]))) {
-      static const char msg[] = "Failed to set up stderr\n";
-      (void)HANDLE_EINTR(write(fds[1], msg, sizeof(msg)-1));
-    } else {
-      evaluators_.clear();
-      setSandboxPolicy(probeEvaluator, NULL);
-      setProcFd(proc_fd);
-      startSandbox();
-      if (syscall(__NR_getpid) < 0 && errno == EPERM) {
-        syscall(__NR_exit_group, (intptr_t)100);
-      }
+    suppressLogging_ = true;
+    evaluators_.clear();
+    setSandboxPolicy(probeEvaluator, NULL);
+    setProcFd(proc_fd);
+    startSandbox();
+    if (syscall(__NR_getpid) < 0 && errno == EPERM) {
+      syscall(__NR_exit_group, (intptr_t)100);
     }
     die(NULL);
   }
 
   // In the parent process
-  if (HANDLE_EINTR(close(fds[1]))) {
-    die("close() failed");
-  }
   if (sigprocmask(SIG_SETMASK, &oldMask, NULL)) {
     die("sigprocmask() failed");
   }
@@ -81,29 +67,7 @@ bool Sandbox::kernelSupportSeccompBPF(int proc_fd) {
   if (HANDLE_EINTR(waitpid(pid, &status, 0)) != pid) {
     die("waitpid() failed unexpectedly");
   }
-  bool rc = WIFEXITED(status) && WEXITSTATUS(status) == 100;
-
-  // If we fail to support sandboxing, there might be an additional
-  // error message. If so, this was an entirely unexpected and fatal
-  // failure. We should report the failure and somebody most fix
-  // things. This is probably a security-critical bug in the sandboxing
-  // code.
-  if (!rc) {
-    char buf[4096];
-    ssize_t len = HANDLE_EINTR(read(fds[0], buf, sizeof(buf) - 1));
-    if (len > 0) {
-      while (len > 1 && buf[len-1] == '\n') {
-        --len;
-      }
-      buf[len] = '\000';
-      die(buf);
-    }
-  }
-  if (HANDLE_EINTR(close(fds[0]))) {
-    die("close() failed");
-  }
-
-  return rc;
+  return WIFEXITED(status) && WEXITSTATUS(status) == 100;
 }
 
 Sandbox::SandboxStatus Sandbox::supportsSeccompSandbox(int proc_fd) {
@@ -348,12 +312,9 @@ void Sandbox::installFilter() {
   delete program;
 
   // Install BPF filter program
-  if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0)) {
-    die(dryRun_ ? NULL : "Kernel refuses to enable no-new-privs");
-  } else {
-    if (prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, &prog)) {
-      die(dryRun_ ? NULL : "Kernel refuses to turn on BPF filters");
-    }
+  if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) ||
+      prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, &prog)) {
+    goto filter_failed;
   }
 
   return;
@@ -390,7 +351,7 @@ void Sandbox::sigSys(int nr, siginfo_t *info, void *void_context) {
 }
 
 
-bool Sandbox::dryRun_                   = false;
+bool Sandbox::suppressLogging_          = false;
 Sandbox::SandboxStatus Sandbox::status_ = STATUS_UNKNOWN;
 int    Sandbox::proc_fd_                = -1;
 std::vector<std::pair<Sandbox::EvaluateSyscall,
