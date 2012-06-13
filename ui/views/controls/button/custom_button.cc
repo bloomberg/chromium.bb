@@ -195,7 +195,7 @@ bool CustomButton::OnKeyReleased(const KeyEvent& event) {
 
 ui::GestureStatus CustomButton::OnGestureEvent(const GestureEvent& event) {
   if (state_ == BS_DISABLED)
-    return ui::GESTURE_STATUS_UNKNOWN;
+    return Button::OnGestureEvent(event);
 
   if (event.type() == ui::ET_GESTURE_TAP && IsTriggerableEvent(event)) {
     // Set the button state to hot and start the animation fully faded in. The

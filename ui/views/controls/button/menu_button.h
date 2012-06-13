@@ -57,6 +57,7 @@ class VIEWS_EXPORT MenuButton : public TextButton {
   virtual bool OnMousePressed(const MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const MouseEvent& event) OVERRIDE;
+  virtual ui::GestureStatus OnGestureEvent(const GestureEvent& event) OVERRIDE;
   virtual bool OnKeyPressed(const KeyEvent& event) OVERRIDE;
   virtual bool OnKeyReleased(const KeyEvent& event) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;

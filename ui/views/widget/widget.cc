@@ -1111,7 +1111,8 @@ ui::GestureStatus Widget::OnGestureEvent(const GestureEvent& event) {
     case ui::ET_GESTURE_END:
       if (event.delta_x() == 1) {
         is_touch_down_ = false;
-        ReleaseCapture();
+        if (ShouldReleaseCaptureOnMouseReleased())
+          ReleaseCapture();
       }
       break;
 

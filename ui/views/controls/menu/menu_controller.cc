@@ -543,6 +543,14 @@ ui::GestureStatus MenuController::OnGestureEvent(SubmenuView* source,
   } else if (event.type() == ui::ET_GESTURE_LONG_PRESS && possible_drag_) {
     StartDrag(source, event.location());
     return ui::GESTURE_STATUS_CONSUMED;
+  } else if (event.type() == ui::ET_GESTURE_TAP) {
+    if (pending_state_.item) {
+      if (pending_state_.item->HasSubmenu())
+        OpenSubmenuChangeSelectionIfCan();
+      else if (pending_state_.item->enabled())
+        Accept(pending_state_.item, 0);
+      return ui::GESTURE_STATUS_CONSUMED;
+    }
   }
   MenuPart part = GetMenuPart(source, event.location());
   if (!part.submenu)
