@@ -97,6 +97,9 @@ void InputTagSpeechDispatcherHost::OnCancelRecognition(int render_view_id,
   int session_id = manager()->GetSession(render_process_id_,
                                          render_view_id,
                                          request_id);
+
+  // The renderer might provide an invalid |request_id| if the session was not
+  // started as expected, e.g., due to unsatisfied security requirements.
   if (session_id != SpeechRecognitionManager::kSessionIDInvalid)
     manager()->AbortSession(session_id);
 }
@@ -106,8 +109,11 @@ void InputTagSpeechDispatcherHost::OnStopRecording(int render_view_id,
   int session_id = manager()->GetSession(render_process_id_,
                                          render_view_id,
                                          request_id);
-  DCHECK_NE(session_id, SpeechRecognitionManager::kSessionIDInvalid);
-  manager()->StopAudioCaptureForSession(session_id);
+
+  // The renderer might provide an invalid |request_id| if the session was not
+  // started as expected, e.g., due to unsatisfied security requirements.
+  if (session_id != SpeechRecognitionManager::kSessionIDInvalid)
+    manager()->StopAudioCaptureForSession(session_id);
 }
 
 // -------- SpeechRecognitionEventListener interface implementation -----------
