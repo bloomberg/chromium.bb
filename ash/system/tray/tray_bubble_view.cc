@@ -113,7 +113,7 @@ class TrayBubbleBorder : public views::BubbleBorder {
         canvas, 0, owner_->height(), owner_->width(), inset);
 
     // Draw the bottom line.
-    int y = owner_->height() + 1;
+    int y = owner_->height() + inset.top();
     canvas->FillRect(gfx::Rect(inset.left(), y, owner_->width(),
                                kBottomLineHeight), kBorderDarkColor);
 

@@ -33,14 +33,52 @@ const int kAnimationDurationForPopupMS = 200;
 // detailed view.
 const int kDetailedBubbleMaxHeight = kTrayPopupItemHeight * 5;
 
+class TrayPopupItemBorder : public views::Border {
+ public:
+  explicit TrayPopupItemBorder(views::View* owner) : owner_(owner) {}
+  virtual ~TrayPopupItemBorder() {}
+
+ private:
+  // Overridden from views::Border.
+  virtual void Paint(const views::View& view,
+                     gfx::Canvas* canvas) const OVERRIDE {
+    const views::View* parent = view.parent();
+    int index = parent->GetIndexOf(&view);
+
+    // Draw a dark top-border for the first item.
+    if (index == 0)
+      canvas->FillRect(gfx::Rect(0, 0, view.width(), 1), kBorderDarkColor);
+
+    // Bottom border.
+    if (index != parent->child_count() - 1) {
+      canvas->FillRect(gfx::Rect(0, view.height() - 1, view.width(), 1),
+                       kBorderLightColor);
+    }
+
+    // Left and right borders.
+    canvas->FillRect(gfx::Rect(0, 0, 1, view.height()), kBorderDarkColor);
+    canvas->FillRect(gfx::Rect(view.width() - 1, 0, 1, view.height()),
+        kBorderDarkColor);
+  }
+
+  virtual void GetInsets(gfx::Insets* insets) const OVERRIDE {
+    const views::View* parent = owner_->parent();
+    int index = parent->GetIndexOf(owner_);
+    insets->Set(index == 0, 1, index != parent->child_count() - 1, 1);
+  }
+
+  views::View* owner_;
+
+  DISALLOW_COPY_AND_ASSIGN(TrayPopupItemBorder);
+};
+
 // A view with some special behaviour for tray items in the popup:
 // - changes background color on hover.
 class TrayPopupItemContainer : public views::View {
  public:
   explicit TrayPopupItemContainer(views::View* view) : hover_(false) {
     set_notify_enter_exit_on_child(true);
-    set_border(view->border() ? views::Border::CreateEmptyBorder(0, 0, 0, 0) :
-        views::Border::CreateSolidSidedBorder(1, 1, 0, 1, kBorderDarkColor));
+    set_border(new TrayPopupItemBorder(this));
     views::BoxLayout* layout = new views::BoxLayout(
         views::BoxLayout::kVertical, 0, 0, 0);
     layout->set_spread_blank_space(true);

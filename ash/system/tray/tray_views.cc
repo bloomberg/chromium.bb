@@ -36,6 +36,35 @@ views::View* CreatePopupHeaderButtonsContainer() {
   return view;
 }
 
+const int kBorderHeight = 3;
+const SkColor kBorderGradientDark = SkColorSetRGB(0xae, 0xae, 0xae);
+const SkColor kBorderGradientLight = SkColorSetRGB(0xe8, 0xe8, 0xe8);
+
+class SpecialPopupRowBorder : public views::Border {
+ public:
+  SpecialPopupRowBorder()
+      : painter_(views::Painter::CreateVerticalGradient(kBorderGradientDark,
+                                                        kBorderGradientLight)) {
+  }
+
+  virtual ~SpecialPopupRowBorder() {}
+
+ private:
+  virtual void Paint(const views::View& view,
+                     gfx::Canvas* canvas) const OVERRIDE {
+    views::Painter::PaintPainterAt(canvas, painter_.get(),
+        gfx::Rect(gfx::Size(view.width(), kBorderHeight)));
+  }
+
+  virtual void GetInsets(gfx::Insets* insets) const OVERRIDE {
+    insets->Set(kBorderHeight, 0, 0, 0);
+  }
+
+  scoped_ptr<views::Painter> painter_;
+
+  DISALLOW_COPY_AND_ASSIGN(SpecialPopupRowBorder);
+};
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -399,8 +428,7 @@ SpecialPopupRow::SpecialPopupRow()
       views::Painter::CreateVerticalGradient(
         kHeaderBackgroundColorLight,
         kHeaderBackgroundColorDark)));
-  set_border(views::Border::CreateSolidSidedBorder(2, 0, 0, 0,
-      ash::kBorderDarkColor));
+  set_border(new SpecialPopupRowBorder);
   SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
 }
