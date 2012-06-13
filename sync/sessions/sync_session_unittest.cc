@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "sync/engine/conflict_resolver.h"
 #include "sync/engine/syncer_types.h"
+#include "sync/engine/throttled_data_type_tracker.h"
 #include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/sessions/session_state.h"
 #include "sync/sessions/status_controller.h"
@@ -48,6 +49,7 @@ class SyncSessionTest : public testing::Test,
     context_.reset(
         new SyncSessionContext(
             NULL, NULL, routing_info, workers, &extensions_activity_monitor_,
+            throttled_data_type_tracker_.get(),
             std::vector<SyncEngineEventListener*>(), NULL, NULL));
     routes_.clear();
     routes_[syncable::BOOKMARKS] = GROUP_UI;
@@ -63,6 +65,7 @@ class SyncSessionTest : public testing::Test,
     workers_.push_back(ui_worker);
     workers_.push_back(db_worker);
     session_.reset(MakeSession());
+    throttled_data_type_tracker_.reset(new ThrottledDataTypeTracker(NULL));
   }
   virtual void TearDown() {
     session_.reset();
@@ -131,6 +134,7 @@ class SyncSessionTest : public testing::Test,
   std::vector<scoped_refptr<ModelSafeWorker> > workers_;
   ModelSafeRoutingInfo routes_;
   FakeExtensionsActivityMonitor extensions_activity_monitor_;
+  scoped_ptr<ThrottledDataTypeTracker> throttled_data_type_tracker_;
 };
 
 TEST_F(SyncSessionTest, EnabledGroupsEmpty) {

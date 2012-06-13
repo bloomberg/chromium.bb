@@ -18,6 +18,7 @@
 #include "sync/internal_api/change_record.h"
 #include "sync/internal_api/configure_reason.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
+#include "sync/internal_api/public/engine/sync_status.h"
 #include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/protocol/sync_protocol_error.h"
 #include "sync/util/report_unrecoverable_error_function.h"
@@ -89,75 +90,6 @@ class SyncManager {
   // SyncInternal contains the implementation of SyncManager, while abstracting
   // internal types from clients of the interface.
   class SyncInternal;
-
-  // Status encapsulates detailed state about the internals of the SyncManager.
-  struct Status {
-    Status();
-    ~Status();
-
-    bool notifications_enabled;  // True only if subscribed for notifications.
-
-    // Notifications counters updated by the actions in synapi.
-    int notifications_received;
-
-    browser_sync::SyncProtocolError sync_protocol_error;
-
-    // Number of encryption conflicts counted during most recent sync cycle.
-    int encryption_conflicts;
-
-    // Number of hierarchy conflicts counted during most recent sync cycle.
-    int hierarchy_conflicts;
-
-    // Number of simple conflicts counted during most recent sync cycle.
-    int simple_conflicts;
-
-    // Number of items the server refused to commit due to conflict during most
-    // recent sync cycle.
-    int server_conflicts;
-
-    // Number of items successfully committed during most recent sync cycle.
-    int committed_count;
-
-    bool syncing;
-    // True after a client has done a first sync.
-    bool initial_sync_ended;
-
-    // Total updates available.  If zero, nothing left to download.
-    int64 updates_available;
-    // Total updates received by the syncer since browser start.
-    int updates_received;
-    // Total updates received that are echoes of our own changes.
-    int reflected_updates_received;
-    // Of updates_received, how many were tombstones.
-    int tombstone_updates_received;
-
-    // Total successful commits.
-    int num_commits_total;
-
-    // Total number of overwrites due to conflict resolver since browser start.
-    int num_local_overwrites_total;
-    int num_server_overwrites_total;
-
-    // Count of empty and non empty getupdates;
-    int nonempty_get_updates;
-    int empty_get_updates;
-
-    // Count of sync cycles that successfully committed items;
-    int sync_cycles_with_commits;
-    int sync_cycles_without_commits;
-
-    // Count of useless and useful syncs we perform.
-    int useless_sync_cycles;
-    int useful_sync_cycles;
-
-    // Encryption related.
-    syncable::ModelTypeSet encrypted_types;
-    bool cryptographer_ready;
-    bool crypto_has_pending_keys;
-
-    // The unique identifer for this client.
-    std::string unique_id;
-  };
 
   // An interface the embedding application implements to be notified
   // on change events.  Note that these methods may be called on *any*
@@ -528,7 +460,7 @@ class SyncManager {
   void RemoveObserver(Observer* observer);
 
   // Status-related getter.  May be called on any thread.
-  Status GetDetailedStatus() const;
+  SyncStatus GetDetailedStatus() const;
 
   // Whether or not the Nigori node is encrypted using an explicit passphrase.
   // May be called on any thread.

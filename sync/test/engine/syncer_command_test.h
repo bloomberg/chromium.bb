@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "sync/engine/model_changing_syncer_command.h"
+#include "sync/engine/throttled_data_type_tracker.h"
 #include "sync/engine/traffic_recorder.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/sessions/debug_info_getter.h"
@@ -121,9 +122,11 @@ class SyncerCommandTestBase : public testing::Test,
   }
 
   void ResetContext() {
+    throttled_data_type_tracker_.reset(new ThrottledDataTypeTracker(NULL));
     context_.reset(new sessions::SyncSessionContext(
             mock_server_.get(), directory(),
             routing_info_, GetWorkers(), &extensions_activity_monitor_,
+            throttled_data_type_tracker_.get(),
             std::vector<SyncEngineEventListener*>(),
             &mock_debug_info_getter_,
             &traffic_recorder_));
@@ -199,6 +202,7 @@ class SyncerCommandTestBase : public testing::Test,
   ModelSafeRoutingInfo routing_info_;
   NiceMock<MockDebugInfoGetter> mock_debug_info_getter_;
   FakeExtensionsActivityMonitor extensions_activity_monitor_;
+  scoped_ptr<ThrottledDataTypeTracker> throttled_data_type_tracker_;
   TrafficRecorder traffic_recorder_;
   DISALLOW_COPY_AND_ASSIGN(SyncerCommandTestBase);
 };

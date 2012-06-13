@@ -33,6 +33,7 @@ class SyncSessionContext;
 }
 
 class ClientToServerMessage;
+class ThrottledDataTypeTracker;
 class ServerConnectionManager;
 class SyncEntity;
 class CommitResponse_EntryResponse;
@@ -118,10 +119,11 @@ class SyncerProtoUtil {
   static base::TimeDelta GetThrottleDelay(
       const sync_pb::ClientToServerResponse& response);
 
-  static void HandleThrottleError(const SyncProtocolError& error,
-                                  const base::TimeTicks& throttled_until,
-                                  sessions::SyncSessionContext* context,
-                                  sessions::SyncSession::Delegate* delegate);
+  static void HandleThrottleError(
+      const SyncProtocolError& error,
+      const base::TimeTicks& throttled_until,
+      browser_sync::ThrottledDataTypeTracker* tracker,
+      sessions::SyncSession::Delegate* delegate);
 
   friend class SyncerProtoUtilTest;
   FRIEND_TEST_ALL_PREFIXES(SyncerProtoUtilTest, AddRequestBirthday);

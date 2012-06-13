@@ -11,6 +11,7 @@
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "sync/engine/syncproto.h"
+#include "sync/engine/throttled_data_type_tracker.h"
 #include "sync/internal_api/public/syncable/model_type_test_util.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
 #include "sync/protocol/password_specifics.pb.h"
@@ -30,14 +31,6 @@ using ::testing::_;
 
 namespace browser_sync {
 using sessions::SyncSessionContext;
-
-class MockSyncSessionContext : public SyncSessionContext {
- public:
-  MockSyncSessionContext() {}
-  ~MockSyncSessionContext() {}
-  MOCK_METHOD2(SetUnthrottleTime, void(syncable::ModelTypeSet,
-                                       const base::TimeTicks&));
-};
 
 class MockDelegate : public sessions::SyncSession::Delegate {
  public:
@@ -269,7 +262,7 @@ TEST_F(SyncerProtoUtilTest, PostAndProcessHeaders) {
 }
 
 TEST_F(SyncerProtoUtilTest, HandleThrottlingWithDatatypes) {
-  MockSyncSessionContext context;
+  ThrottledDataTypeTracker tracker(NULL);
   SyncProtocolError error;
   error.error_type = browser_sync::THROTTLED;
   syncable::ModelTypeSet types;
@@ -277,22 +270,22 @@ TEST_F(SyncerProtoUtilTest, HandleThrottlingWithDatatypes) {
   types.Put(syncable::PASSWORDS);
   error.error_data_types = types;
 
-  base::TimeTicks ticks = base::TimeTicks::Now();
-
-  EXPECT_CALL(context, SetUnthrottleTime(HasModelTypes(types), ticks));
-
-  SyncerProtoUtil::HandleThrottleError(error, ticks, &context, NULL);
+  base::TimeTicks ticks = base::TimeTicks::FromInternalValue(1);
+  SyncerProtoUtil::HandleThrottleError(error, ticks, &tracker, NULL);
+  EXPECT_TRUE(tracker.GetThrottledTypes().Equals(types));
 }
 
 TEST_F(SyncerProtoUtilTest, HandleThrottlingNoDatatypes) {
+  ThrottledDataTypeTracker tracker(NULL);
   MockDelegate delegate;
   SyncProtocolError error;
   error.error_type = browser_sync::THROTTLED;
 
-  base::TimeTicks ticks = base::TimeTicks::Now();
+  base::TimeTicks ticks = base::TimeTicks::FromInternalValue(1);
 
   EXPECT_CALL(delegate, OnSilencedUntil(ticks));
 
-  SyncerProtoUtil::HandleThrottleError(error, ticks, NULL, &delegate);
+  SyncerProtoUtil::HandleThrottleError(error, ticks, &tracker, &delegate);
+  EXPECT_TRUE(tracker.GetThrottledTypes().Empty());
 }
 }  // namespace browser_sync

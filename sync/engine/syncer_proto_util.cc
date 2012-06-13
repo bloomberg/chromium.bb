@@ -9,6 +9,7 @@
 #include "sync/engine/net/server_connection_manager.h"
 #include "sync/engine/syncer.h"
 #include "sync/engine/syncer_types.h"
+#include "sync/engine/throttled_data_type_tracker.h"
 #include "sync/engine/traffic_logger.h"
 #include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/protocol/sync.pb.h"
@@ -213,14 +214,14 @@ base::TimeDelta SyncerProtoUtil::GetThrottleDelay(
 void SyncerProtoUtil::HandleThrottleError(
     const SyncProtocolError& error,
     const base::TimeTicks& throttled_until,
-    sessions::SyncSessionContext* context,
+    ThrottledDataTypeTracker* tracker,
     sessions::SyncSession::Delegate* delegate) {
   DCHECK_EQ(error.error_type, browser_sync::THROTTLED);
   if (error.error_data_types.Empty()) {
     // No datatypes indicates the client should be completely throttled.
     delegate->OnSilencedUntil(throttled_until);
   } else {
-     context->SetUnthrottleTime(error.error_data_types, throttled_until);
+    tracker->SetUnthrottleTime(error.error_data_types, throttled_until);
   }
 }
 
@@ -393,7 +394,7 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
       LOG(WARNING) << "Client silenced by server.";
       HandleThrottleError(sync_protocol_error,
                           base::TimeTicks::Now() + GetThrottleDelay(*response),
-                          session->context(),
+                          session->context()->throttled_data_type_tracker(),
                           session->delegate());
       return SERVER_RETURN_THROTTLED;
     case browser_sync::TRANSIENT_ERROR:

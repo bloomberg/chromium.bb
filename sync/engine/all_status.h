@@ -16,25 +16,23 @@
 #include "base/synchronization/lock.h"
 #include "sync/engine/sync_engine_event.h"
 #include "sync/engine/syncer_types.h"
+#include "sync/internal_api/public/engine/sync_status.h"
 #include "sync/internal_api/public/syncable/model_type.h"
-#include "sync/internal_api/sync_manager.h"
 
 namespace browser_sync {
 
 class ScopedStatusLock;
 struct ServerConnectionEvent;
 
-// TODO(rlarocque):
+// This class collects data and uses it to update its internal state.  It can
+// return a snapshot of this state as a SyncerStatus object.
+//
 // Most of this data ends up on the about:sync page.  But the page is only
 // 'pinged' to update itself at the end of a sync cycle.  A user could refresh
 // manually, but unless their timing is excellent it's unlikely that a user will
-// see any state in mid-sync cycle.  We have no plans to change this.
-//
-// What we do intend to do is improve the UI so that changes following a sync
-// cycle are more visible.  Without such a change, the status summary for a
-// healthy syncer will constantly display as "READY" and never provide any
-// indication of a sync cycle being performed.  See crbug.com/108100.
-
+// see any state in mid-sync cycle.  We have no plans to change this.  However,
+// we will continue to collect data and update state mid-sync-cycle in case we
+// need to debug slow or stuck sync cycles.
 class AllStatus : public SyncEngineEventListener {
   friend class ScopedStatusLock;
  public:
@@ -43,13 +41,15 @@ class AllStatus : public SyncEngineEventListener {
 
   virtual void OnSyncEngineEvent(const SyncEngineEvent& event) OVERRIDE;
 
-  sync_api::SyncManager::Status status() const;
+  sync_api::SyncStatus status() const;
 
   void SetNotificationsEnabled(bool notifications_enabled);
 
   void IncrementNotifiableCommits();
 
   void IncrementNotificationsReceived();
+
+  void SetThrottledTypes(const syncable::ModelTypeSet &types);
 
   void SetEncryptedTypes(syncable::ModelTypeSet types);
   void SetCryptographerReady(bool ready);
@@ -60,10 +60,10 @@ class AllStatus : public SyncEngineEventListener {
  protected:
   // Examines syncer to calculate syncing and the unsynced count,
   // and returns a Status with new values.
-  sync_api::SyncManager::Status CalcSyncing(const SyncEngineEvent& event) const;
-  sync_api::SyncManager::Status CreateBlankStatus() const;
+  sync_api::SyncStatus CalcSyncing(const SyncEngineEvent& event) const;
+  sync_api::SyncStatus CreateBlankStatus() const;
 
-  sync_api::SyncManager::Status status_;
+  sync_api::SyncStatus status_;
 
   mutable base::Lock mutex_;  // Protects all data members.
   DISALLOW_COPY_AND_ASSIGN(AllStatus);

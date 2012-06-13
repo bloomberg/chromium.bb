@@ -10,6 +10,7 @@
 
 #include "sync/engine/nigori_util.h"
 #include "sync/engine/syncer_util.h"
+#include "sync/engine/throttled_data_type_tracker.h"
 #include "sync/syncable/syncable.h"
 #include "sync/util/cryptographer.h"
 
@@ -50,7 +51,7 @@ SyncerError GetCommitIdsCommand::ExecuteImpl(SyncSession* session) {
   };
 
   const syncable::ModelTypeSet throttled_types =
-       session->context()->GetThrottledTypes();
+       session->context()->throttled_data_type_tracker()->GetThrottledTypes();
   // We filter out all unready entries from the set of unsynced handles. This
   // new set of ready and unsynced items (which excludes throttled items as
   // well) is then what we use to determine what is a candidate for commit.

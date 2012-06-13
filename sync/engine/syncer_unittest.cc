@@ -32,6 +32,7 @@
 #include "sync/engine/syncer_proto_util.h"
 #include "sync/engine/syncer_util.h"
 #include "sync/engine/syncproto.h"
+#include "sync/engine/throttled_data_type_tracker.h"
 #include "sync/engine/traffic_recorder.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/syncable/model_type.h"
@@ -232,11 +233,13 @@ class SyncerTest : public testing::Test,
     GetModelSafeRoutingInfo(&routing_info);
     GetWorkers(&workers);
 
+    throttled_data_type_tracker_.reset(new ThrottledDataTypeTracker(NULL));
+
     context_.reset(
         new SyncSessionContext(
             mock_server_.get(), directory(), routing_info, workers,
-            &extensions_activity_monitor_, listeners, NULL,
-            &traffic_recorder_));
+            &extensions_activity_monitor_, throttled_data_type_tracker_.get(),
+            listeners, NULL, &traffic_recorder_));
     ASSERT_FALSE(context_->resolver());
     syncer_ = new Syncer();
     session_.reset(MakeSession());
@@ -544,6 +547,7 @@ class SyncerTest : public testing::Test,
   TestDirectorySetterUpper dir_maker_;
   FakeEncryptor encryptor_;
   FakeExtensionsActivityMonitor extensions_activity_monitor_;
+  scoped_ptr<ThrottledDataTypeTracker> throttled_data_type_tracker_;
   scoped_ptr<MockConnectionManager> mock_server_;
 
   Syncer* syncer_;
@@ -647,7 +651,7 @@ TEST_F(SyncerTest, GetCommitIdsFiltersThrottledEntries) {
   }
 
   // Now set the throttled types.
-  context_->SetUnthrottleTime(
+  context_->throttled_data_type_tracker()->SetUnthrottleTime(
       throttled_types,
       base::TimeTicks::Now() + base::TimeDelta::FromSeconds(1200));
   SyncShareNudge();
@@ -661,7 +665,7 @@ TEST_F(SyncerTest, GetCommitIdsFiltersThrottledEntries) {
   }
 
   // Now unthrottle.
-  context_->SetUnthrottleTime(
+  context_->throttled_data_type_tracker()->SetUnthrottleTime(
       throttled_types,
       base::TimeTicks::Now() - base::TimeDelta::FromSeconds(1200));
   SyncShareNudge();

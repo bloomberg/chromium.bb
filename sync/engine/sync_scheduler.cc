@@ -14,6 +14,7 @@
 #include "base/message_loop.h"
 #include "base/rand_util.h"
 #include "sync/engine/syncer.h"
+#include "sync/engine/throttled_data_type_tracker.h"
 #include "sync/protocol/proto_enum_conversions.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/util/data_type_histogram.h"
@@ -327,7 +328,7 @@ SyncScheduler::JobProcessDecision SyncScheduler::DecideOnJob(
 
   // See if our type is throttled.
   syncable::ModelTypeSet throttled_types =
-      session_context_->GetThrottledTypes();
+      session_context_->throttled_data_type_tracker()->GetThrottledTypes();
   if (job.purpose == SyncSessionJob::NUDGE &&
       job.session->source().updates_source == GetUpdatesCallerInfo::LOCAL) {
     syncable::ModelTypeSet requested_types;

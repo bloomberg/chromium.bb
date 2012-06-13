@@ -4,6 +4,7 @@
 
 #include "sync/sessions/sync_session_context.h"
 
+#include "sync/engine/throttled_data_type_tracker.h"
 #include "sync/sessions/debug_info_getter.h"
 #include "sync/util/extensions_activity_monitor.h"
 
@@ -19,6 +20,7 @@ SyncSessionContext::SyncSessionContext(
     const ModelSafeRoutingInfo& model_safe_routing_info,
     const std::vector<ModelSafeWorker*>& workers,
     ExtensionsActivityMonitor* extensions_activity_monitor,
+    ThrottledDataTypeTracker* throttled_data_type_tracker,
     const std::vector<SyncEngineEventListener*>& listeners,
     DebugInfoGetter* debug_info_getter,
     browser_sync::TrafficRecorder* traffic_recorder)
@@ -30,6 +32,7 @@ SyncSessionContext::SyncSessionContext(
       extensions_activity_monitor_(extensions_activity_monitor),
       notifications_enabled_(false),
       max_commit_batch_size_(kDefaultMaxCommitBatchSize),
+      throttled_data_type_tracker_(throttled_data_type_tracker),
       debug_info_getter_(debug_info_getter),
       traffic_recorder_(traffic_recorder) {
   std::vector<SyncEngineEventListener*>::const_iterator it;
@@ -37,50 +40,7 @@ SyncSessionContext::SyncSessionContext(
     listeners_.AddObserver(*it);
 }
 
-SyncSessionContext::SyncSessionContext()
-    : connection_manager_(NULL),
-      directory_(NULL),
-      extensions_activity_monitor_(NULL),
-      debug_info_getter_(NULL),
-      traffic_recorder_(NULL) {
-}
-
 SyncSessionContext::~SyncSessionContext() {
-}
-
-void SyncSessionContext::SetUnthrottleTime(syncable::ModelTypeSet types,
-                                           const base::TimeTicks& time) {
-  for (syncable::ModelTypeSet::Iterator it = types.First();
-       it.Good(); it.Inc()) {
-    unthrottle_times_[it.Get()] = time;
-  }
-}
-
-void SyncSessionContext::PruneUnthrottledTypes(const base::TimeTicks& time) {
-  UnthrottleTimes::iterator it = unthrottle_times_.begin();
-  while (it != unthrottle_times_.end()) {
-    if (it->second <= time) {
-      // Delete and increment the iterator.
-      UnthrottleTimes::iterator iterator_to_delete = it;
-      ++it;
-      unthrottle_times_.erase(iterator_to_delete);
-    } else {
-      // Just increment the iterator.
-      ++it;
-    }
-  }
-}
-
-// TODO(lipalani): Call this function and fill the return values in snapshot
-// so it could be shown in the about:sync page.
-syncable::ModelTypeSet SyncSessionContext::GetThrottledTypes() const {
-  syncable::ModelTypeSet types;
-  for (UnthrottleTimes::const_iterator it = unthrottle_times_.begin();
-       it != unthrottle_times_.end();
-       ++it) {
-    types.Put(it->first);
-  }
-  return types;
 }
 
 }  // namespace sessions

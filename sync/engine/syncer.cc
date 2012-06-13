@@ -24,6 +24,7 @@
 #include "sync/engine/store_timestamps_command.h"
 #include "sync/engine/syncer_types.h"
 #include "sync/engine/syncproto.h"
+#include "sync/engine/throttled_data_type_tracker.h"
 #include "sync/engine/verify_updates_command.h"
 #include "sync/syncable/syncable-inl.h"
 #include "sync/syncable/syncable.h"
@@ -107,7 +108,8 @@ void Syncer::SyncShare(sessions::SyncSession* session,
 
     switch (current_step) {
       case SYNCER_BEGIN:
-        session->context()->PruneUnthrottledTypes(base::TimeTicks::Now());
+        session->context()->throttled_data_type_tracker()->
+            PruneUnthrottledTypes(base::TimeTicks::Now());
         session->SendEventNotification(SyncEngineEvent::SYNC_CYCLE_BEGIN);
 
         next_step = CLEANUP_DISABLED_TYPES;

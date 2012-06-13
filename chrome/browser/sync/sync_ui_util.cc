@@ -519,8 +519,7 @@ void ConstructAboutInformation(ProfileSyncService* service,
     // with the last snapshot emitted by the syncer.  Keep in mind, though, that
     // not all events that update these values will ping the UI thread, so you
     // might not see all intermediate values.
-    sync_api::SyncManager::Status full_status(
-        service->QueryDetailedSyncStatus());
+    sync_api::SyncStatus full_status(service->QueryDetailedSyncStatus());
 
     // This is a cache of the last snapshot of type SYNC_CYCLE_ENDED where
     // !snapshot.has_more_to_sync().  In other words, it's the last in this

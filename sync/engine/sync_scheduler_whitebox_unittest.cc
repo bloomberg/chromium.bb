@@ -5,6 +5,7 @@
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "sync/engine/sync_scheduler.h"
+#include "sync/engine/throttled_data_type_tracker.h"
 #include "sync/sessions/sync_session_context.h"
 #include "sync/sessions/test_util.h"
 #include "sync/test/engine/fake_model_worker.h"
@@ -44,10 +45,12 @@ class SyncSchedulerWhiteboxTest : public testing::Test {
     }
 
     connection_.reset(new MockConnectionManager(NULL));
+    throttled_data_type_tracker_.reset(new ThrottledDataTypeTracker(NULL));
     context_.reset(
         new SyncSessionContext(
             connection_.get(), dir_maker_.directory(),
             routes, workers, &extensions_activity_monitor_,
+            throttled_data_type_tracker_.get(),
             std::vector<SyncEngineEventListener*>(), NULL, NULL));
     context_->set_notifications_enabled(true);
     context_->set_account_name("Test");
@@ -116,6 +119,7 @@ class SyncSchedulerWhiteboxTest : public testing::Test {
   scoped_ptr<SyncSessionContext> context_;
   std::vector<scoped_refptr<FakeModelWorker> > workers_;
   FakeExtensionsActivityMonitor extensions_activity_monitor_;
+  scoped_ptr<ThrottledDataTypeTracker> throttled_data_type_tracker_;
   TestDirectorySetterUpper dir_maker_;
 
  protected:
@@ -142,8 +146,8 @@ TEST_F(SyncSchedulerWhiteboxTest, SaveNudgeWhileTypeThrottled) {
   types.Put(syncable::BOOKMARKS);
 
   // Mark bookmarks as throttled.
-  context()->SetUnthrottleTime(types,
-      base::TimeTicks::Now() + base::TimeDelta::FromHours(2));
+  context()->throttled_data_type_tracker()->SetUnthrottleTime(
+      types, base::TimeTicks::Now() + base::TimeDelta::FromHours(2));
 
   syncable::ModelTypePayloadMap types_with_payload;
   types_with_payload[syncable::BOOKMARKS] = "";

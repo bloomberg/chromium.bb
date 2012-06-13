@@ -18,11 +18,12 @@
 #include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "net/base/network_change_notifier.h"
+#include "sync/engine/all_status.h"
 #include "sync/engine/net/server_connection_manager.h"
 #include "sync/engine/nigori_util.h"
 #include "sync/engine/sync_scheduler.h"
 #include "sync/engine/syncer_types.h"
-#include "sync/internal_api/all_status.h"
+#include "sync/engine/throttled_data_type_tracker.h"
 #include "sync/internal_api/base_node.h"
 #include "sync/internal_api/change_reorder_buffer.h"
 #include "sync/internal_api/configure_reason.h"
@@ -144,6 +145,7 @@ class SyncManager::SyncInternal
         initialized_(false),
         testing_mode_(NON_TEST),
         observing_ip_address_changes_(false),
+        throttled_data_type_tracker_(&allstatus_),
         traffic_recorder_(kMaxMessagesToRecord, kMaxMessageSizeToRecord),
         encryptor_(NULL),
         unrecoverable_error_handler_(NULL),
@@ -346,7 +348,7 @@ class SyncManager::SyncInternal
     return share_.name;
   }
 
-  Status GetStatus();
+  SyncStatus GetStatus();
 
   void RequestNudge(const tracked_objects::Location& nudge_location);
 
@@ -602,6 +604,8 @@ class SyncManager::SyncInternal
   JsSyncManagerObserver js_sync_manager_observer_;
   JsMutationEventObserver js_mutation_event_observer_;
 
+  browser_sync::ThrottledDataTypeTracker throttled_data_type_tracker_;
+
   // This is for keeping track of client events to send to the server.
   DebugInfoEventListener debug_info_event_listener_;
 
@@ -701,36 +705,6 @@ SyncManager::Observer::~Observer() {}
 
 SyncManager::SyncManager(const std::string& name)
     : data_(new SyncInternal(name)) {}
-
-SyncManager::Status::Status()
-    : notifications_enabled(false),
-      notifications_received(0),
-      encryption_conflicts(0),
-      hierarchy_conflicts(0),
-      simple_conflicts(0),
-      server_conflicts(0),
-      committed_count(0),
-      syncing(false),
-      initial_sync_ended(false),
-      updates_available(0),
-      updates_received(0),
-      reflected_updates_received(0),
-      tombstone_updates_received(0),
-      num_commits_total(0),
-      num_local_overwrites_total(0),
-      num_server_overwrites_total(0),
-      nonempty_get_updates(0),
-      empty_get_updates(0),
-      sync_cycles_with_commits(0),
-      sync_cycles_without_commits(0),
-      useless_sync_cycles(0),
-      useful_sync_cycles(0),
-      cryptographer_ready(false),
-      crypto_has_pending_keys(false) {
-}
-
-SyncManager::Status::~Status() {
-}
 
 bool SyncManager::Init(
     const FilePath& database_location,
@@ -955,6 +929,7 @@ bool SyncManager::SyncInternal::Init(
         model_safe_routing_info,
         workers,
         extensions_activity_monitor,
+        &throttled_data_type_tracker_,
         listeners,
         &debug_info_event_listener_,
         &traffic_recorder_));
@@ -1959,7 +1934,7 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncer(
   }
 }
 
-SyncManager::Status SyncManager::SyncInternal::GetStatus() {
+SyncStatus SyncManager::SyncInternal::GetStatus() {
   return allstatus_.status();
 }
 
@@ -2378,7 +2353,7 @@ void SyncManager::SyncInternal::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-SyncManager::Status SyncManager::GetDetailedStatus() const {
+SyncStatus SyncManager::GetDetailedStatus() const {
   return data_->GetStatus();
 }
 

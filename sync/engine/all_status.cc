@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/internal_api/all_status.h"
+#include "sync/engine/all_status.h"
 
 #include <algorithm>
 
@@ -24,11 +24,11 @@ AllStatus::AllStatus() {
 AllStatus::~AllStatus() {
 }
 
-sync_api::SyncManager::Status AllStatus::CreateBlankStatus() const {
+sync_api::SyncStatus AllStatus::CreateBlankStatus() const {
   // Status is initialized with the previous status value.  Variables
   // whose values accumulate (e.g. lifetime counters like updates_received)
   // are not to be cleared here.
-  sync_api::SyncManager::Status status = status_;
+  sync_api::SyncStatus status = status_;
   status.encryption_conflicts = 0;
   status.hierarchy_conflicts = 0;
   status.simple_conflicts = 0;
@@ -39,9 +39,9 @@ sync_api::SyncManager::Status AllStatus::CreateBlankStatus() const {
   return status;
 }
 
-sync_api::SyncManager::Status AllStatus::CalcSyncing(
+sync_api::SyncStatus AllStatus::CalcSyncing(
     const SyncEngineEvent &event) const {
-  sync_api::SyncManager::Status status = CreateBlankStatus();
+  sync_api::SyncStatus status = CreateBlankStatus();
   const sessions::SyncSessionSnapshot& snapshot = event.snapshot;
   status.encryption_conflicts = snapshot.num_encryption_conflicts();
   status.hierarchy_conflicts = snapshot.num_hierarchy_conflicts();
@@ -119,7 +119,7 @@ void AllStatus::OnSyncEngineEvent(const SyncEngineEvent& event) {
   }
 }
 
-sync_api::SyncManager::Status AllStatus::status() const {
+sync_api::SyncStatus AllStatus::status() const {
   base::AutoLock lock(mutex_);
   return status_;
 }
@@ -137,6 +137,11 @@ void AllStatus::IncrementNotificationsReceived() {
 void AllStatus::SetEncryptedTypes(syncable::ModelTypeSet types) {
   ScopedStatusLock lock(this);
   status_.encrypted_types = types;
+}
+
+void AllStatus::SetThrottledTypes(const syncable::ModelTypeSet& types) {
+  ScopedStatusLock lock(this);
+  status_.throttled_types = types;
 }
 
 void AllStatus::SetCryptographerReady(bool ready) {
