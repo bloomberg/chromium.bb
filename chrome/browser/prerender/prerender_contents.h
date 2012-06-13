@@ -94,14 +94,14 @@ class PrerenderContents : public content::NotificationObserver,
   static Factory* CreateFactory();
 
   // Start rendering the contents in the prerendered state. If
-  // |is_control_group| is false, this will go through some of the mechanics
-  // of starting a prerender, without actually creating the RenderView.
-  // |creator_child_id| is the id of the child process that caused the
-  // prerender to be created, and is needed so that the prerendered URLs can be
-  // sent to it so render-initiated navigations will swap in the prerendered
-  // page. |size| indicates the rectangular dimensions that the prerendered page
-  // should be. |session_storage_namespace| indicates the namespace that the
-  // prerendered page should be part of.
+  // |is_control_group| is true, this will go through some of the mechanics of
+  // starting a prerender, without actually creating the RenderView.
+  // |creator_child_id| is the id of the child process that caused the prerender
+  // to be created, and is needed so that the prerendered URLs can be sent to it
+  // so render-initiated navigations will swap in the prerendered page. |size|
+  // indicates the rectangular dimensions that the prerendered page should be.
+  // |session_storage_namespace| indicates the namespace that the prerendered
+  // page should be part of.
   virtual void StartPrerendering(
       int creator_child_id,
       const gfx::Size& size,
