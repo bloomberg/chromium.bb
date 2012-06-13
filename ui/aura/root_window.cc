@@ -270,8 +270,7 @@ bool RootWindow::DispatchMouseEvent(MouseEvent* event) {
 
 bool RootWindow::DispatchKeyEvent(KeyEvent* event) {
   DispatchHeldMouseMove();
-  KeyEvent translated_event(*event);
-  if (translated_event.key_code() == ui::VKEY_UNKNOWN)
+  if (event->key_code() == ui::VKEY_UNKNOWN)
     return false;
   client::EventClient* client = client::GetEventClient(GetRootWindow());
   Window* focused_window = focus_manager_->GetFocusedWindow();
@@ -279,7 +278,7 @@ bool RootWindow::DispatchKeyEvent(KeyEvent* event) {
     GetFocusManager()->SetFocusedWindow(NULL, NULL);
     return false;
   }
-  return ProcessKeyEvent(focused_window, &translated_event);
+  return ProcessKeyEvent(focused_window, event);
 }
 
 bool RootWindow::DispatchScrollEvent(ScrollEvent* event) {
