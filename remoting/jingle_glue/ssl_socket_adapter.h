@@ -116,17 +116,14 @@ class SSLSocketAdapter : public talk_base::SSLAdapter {
     SSLSTATE_NONE,
     SSLSTATE_WAIT,
     SSLSTATE_CONNECTED,
-  };
-
-  enum IOState {
-    IOSTATE_NONE,
-    IOSTATE_PENDING,
-    IOSTATE_COMPLETE,
+    SSLSTATE_ERROR,
   };
 
   void OnConnected(int result);
   void OnRead(int result);
-  void OnWrite(int result);
+  void OnWritten(int result);
+
+  void DoWrite();
 
   virtual void OnConnectEvent(talk_base::AsyncSocket* socket) OVERRIDE;
 
@@ -142,10 +139,12 @@ class SSLSocketAdapter : public talk_base::SSLAdapter {
   scoped_ptr<net::SSLClientSocket> ssl_socket_;
 
   SSLState ssl_state_;
-  IOState read_state_;
-  IOState write_state_;
-  scoped_refptr<net::IOBuffer> transport_buf_;
-  int data_transferred_;
+
+  bool read_pending_;
+  scoped_refptr<net::GrowableIOBuffer> read_buffer_;
+
+  bool write_pending_;
+  scoped_refptr<net::DrainableIOBuffer> write_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLSocketAdapter);
 };
