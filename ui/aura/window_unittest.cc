@@ -2213,5 +2213,49 @@ TEST_F(WindowTest, DelegateNotifiedAsBoundsChange) {
   EXPECT_NE("0,0 100x100", window->bounds().ToString());
 }
 
+// Verifies the delegate is notified when the actual bounds of the layer
+// change even when the window is not the layer's delegate
+TEST_F(WindowTest, DelegateNotifiedAsBoundsChangeInHiddenLayer) {
+  BoundsChangeDelegate delegate;
+
+  // We cannot short-circuit animations in this test.
+  ui::LayerAnimator::set_disable_animations_for_test(false);
+
+  scoped_ptr<Window> window(
+      CreateTestWindowWithDelegate(&delegate, 1,
+                                   gfx::Rect(0, 0, 100, 100), NULL));
+  window->layer()->GetAnimator()->set_disable_timer_for_test(true);
+
+  delegate.clear_bounds_changed();
+
+  // Suppress paint on the window since it is hidden (should reset the layer's
+  // delegate to NULL)
+  window->SuppressPaint();
+  EXPECT_EQ(NULL, window->layer()->delegate());
+
+  // Animate to a different position.
+  {
+    ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
+    window->SetBounds(gfx::Rect(100, 100, 110, 100));
+  }
+
+  // Layer delegate is NULL but we should still get bounds changed notification.
+  EXPECT_EQ("100,100 110x100", window->GetTargetBounds().ToString());
+  EXPECT_TRUE(delegate.bounds_changed());
+
+  delegate.clear_bounds_changed();
+
+  // Animate to the end: will *not* notify of the change since we are hidden.
+  base::TimeTicks start_time =
+      window->layer()->GetAnimator()->last_step_time();
+  ui::AnimationContainerElement* element = window->layer()->GetAnimator();
+  element->Step(start_time + base::TimeDelta::FromMilliseconds(1000));
+
+  // No bounds changed notification at the end of animation since layer
+  // delegate is NULL.
+  EXPECT_FALSE(delegate.bounds_changed());
+  EXPECT_NE("0,0 100x100", window->bounds().ToString());
+}
+
 }  // namespace test
 }  // namespace aura

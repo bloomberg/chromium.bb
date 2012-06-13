@@ -597,9 +597,17 @@ void Window::SetBoundsInternal(const gfx::Rect& new_bounds) {
         std::max(min_size.height(), actual_new_bounds.height()));
   }
 
+  gfx::Rect old_bounds = GetTargetBounds();
+
   // Always need to set the layer's bounds -- even if it is to the same thing.
   // This may cause important side effects such as stopping animation.
   layer_->SetBounds(actual_new_bounds);
+
+  // If we are currently not the layer's delegate, we will not get bounds
+  // changed notification from the layer (this typically happens after animating
+  // hidden). We must notify ourselves.
+  if (layer_->delegate() != this)
+    OnLayerBoundsChanged(old_bounds, ContainsMouse());
 }
 
 void Window::SetVisible(bool visible) {
@@ -813,14 +821,8 @@ void Window::OnPaintLayer(gfx::Canvas* canvas) {
 }
 
 base::Closure Window::PrepareForLayerBoundsChange() {
-  bool contains_mouse = false;
-  if (IsVisible()) {
-    RootWindow* root_window = GetRootWindow();
-    contains_mouse =
-        root_window && ContainsPointInRoot(root_window->last_mouse_location());
-  }
   return base::Bind(&Window::OnLayerBoundsChanged, base::Unretained(this),
-                    bounds(), contains_mouse);
+                    bounds(), ContainsMouse());
 }
 
 void Window::UpdateLayerName(const std::string& name) {
@@ -838,6 +840,16 @@ void Window::UpdateLayerName(const std::string& name) {
   }
   layer()->set_name(layer_name);
 #endif
+}
+
+bool Window::ContainsMouse() {
+  bool contains_mouse = false;
+  if (IsVisible()) {
+    RootWindow* root_window = GetRootWindow();
+    contains_mouse =
+        root_window && ContainsPointInRoot(root_window->last_mouse_location());
+  }
+  return contains_mouse;
 }
 
 #ifndef NDEBUG

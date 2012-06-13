@@ -404,6 +404,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Updates the layer name with a name based on the window's name and id.
   void UpdateLayerName(const std::string& name);
 
+  // Returns true if the mouse is currently within our bounds.
+  bool ContainsMouse();
+
 #ifndef NDEBUG
   // These methods are useful when debugging.
   std::string GetDebugInfo() const;
