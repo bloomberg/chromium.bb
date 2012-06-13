@@ -863,6 +863,7 @@ void LauncherView::LauncherItemChanged(int model_index,
     }
 
     case TYPE_APP_SHORTCUT:
+    case TYPE_PLATFORM_APP:
     case TYPE_APP_PANEL: {
       LauncherButton* button = static_cast<LauncherButton*>(view);
       ReflectItemStatus(item, button);

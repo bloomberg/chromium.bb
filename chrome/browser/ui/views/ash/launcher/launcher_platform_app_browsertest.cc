@@ -21,6 +21,7 @@
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/views/ash/launcher/chrome_launcher_controller.h"
@@ -246,4 +247,23 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, WindowActivation) {
   --item_count;
   EXPECT_EQ(item_count, launcher->model()->item_count());
 
+}
+
+IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, BrowserActivation) {
+  ash::Launcher* launcher = ash::Shell::GetInstance()->launcher();
+  int item_count = launcher->model()->item_count();
+
+  // First run app.
+  const Extension* extension1 = LoadAndLaunchPlatformApp("launch");
+  CreateShellWindow(extension1);
+  ++item_count;
+  ASSERT_EQ(item_count, launcher->model()->item_count());
+  ash::LauncherItem item1 =
+      launcher->model()->items()[launcher->model()->item_count() - 2];
+  ash::LauncherID item_id1 = item1.id;
+  EXPECT_EQ(ash::TYPE_PLATFORM_APP, item1.type);
+  EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
+
+  ash::wm::ActivateWindow(browser()->window()->GetNativeWindow());
+  EXPECT_EQ(ash::STATUS_RUNNING, launcher->model()->ItemByID(item_id1)->status);
 }

@@ -193,6 +193,22 @@ class LauncherViewTest : public aura::test::AuraTestBase {
     return id;
   }
 
+  LauncherID AddPlatformAppNoWait() {
+    LauncherItem item;
+    item.type = TYPE_PLATFORM_APP;
+    item.status = STATUS_RUNNING;
+
+    LauncherID id = model_->next_id();
+    model_->Add(item);
+    return id;
+  }
+
+  LauncherID AddPlatformApp() {
+    LauncherID id = AddPlatformAppNoWait();
+    test_api_->RunMessageLoopUntilAnimationsDone();
+    return id;
+  }
+
   void RemoveByID(LauncherID id) {
     model_->RemoveItemAt(model_->ItemIndexByID(id));
     test_api_->RunMessageLoopUntilAnimationsDone();
@@ -418,6 +434,29 @@ TEST_F(LauncherViewTest, LauncherItemStatus) {
 
   // Add tabbed browser.
   LauncherID last_added = AddTabbedBrowser();
+  LauncherItem item = GetItemByID(last_added);
+  int index = model_->ItemIndexByID(last_added);
+  internal::LauncherButton* button = GetButtonByID(last_added);
+  ASSERT_EQ(internal::LauncherButton::STATE_RUNNING, button->state());
+  item.status = ash::STATUS_ACTIVE;
+  model_->Set(index, item);
+  ASSERT_EQ(internal::LauncherButton::STATE_ACTIVE, button->state());
+  item.status = ash::STATUS_ATTENTION;
+  model_->Set(index, item);
+  ASSERT_EQ(internal::LauncherButton::STATE_ATTENTION, button->state());
+  item.status = ash::STATUS_IS_PENDING;
+  model_->Set(index, item);
+  ASSERT_EQ(internal::LauncherButton::STATE_PENDING, button->state());
+}
+
+// Confirm that item status changes are reflected in the buttons
+// for platform apps.
+TEST_F(LauncherViewTest, LauncherItemStatusPlatformApp) {
+  ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
+            test_api_->GetButtonCount());
+
+  // Add tabbed browser.
+  LauncherID last_added = AddPlatformApp();
   LauncherItem item = GetItemByID(last_added);
   int index = model_->ItemIndexByID(last_added);
   internal::LauncherButton* button = GetButtonByID(last_added);
