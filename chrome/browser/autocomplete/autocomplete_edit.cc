@@ -548,6 +548,7 @@ void AutocompleteEditModel::OpenMatch(const AutocompleteMatch& match,
         chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
         content::Source<Profile>(profile_),
         content::Details<AutocompleteLog>(&log));
+    HISTOGRAM_ENUMERATION("Omnibox.EventCount", 1, 2);
   }
 
   TemplateURL* template_url = match.GetTemplateURL(profile_);
