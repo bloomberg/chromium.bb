@@ -80,7 +80,7 @@ def Main(argv):
   if not traces:
     print "No leaks found!"
 
-  for trace in traces:
+  for trace in sorted(traces, key=lambda x: -x["size"]):
     print "Leak of %d bytes at address %s" % (trace["size"], trace["address"])
     for frame in trace["frames"]:
       print "  %s (%s)" % (frame["name"], frame["location"])
