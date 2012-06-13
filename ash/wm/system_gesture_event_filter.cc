@@ -6,6 +6,7 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/launcher/launcher.h"
+#include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -79,9 +80,9 @@ Widget* CreateAffordanceWidget() {
   params.transparent = true;
   widget->Init(params);
   widget->SetOpacity(0xFF);
-  widget->GetNativeWindow()->SetParent(ash::Shell::GetContainer(
-      ash::Shell::GetPrimaryRootWindow(),
-      ash::internal::kShellWindowId_OverlayContainer));
+  widget->GetNativeWindow()->SetParent(
+      ash::Shell::GetPrimaryRootWindowController()->GetContainer(
+          ash::internal::kShellWindowId_OverlayContainer));
   ash::SetWindowVisibilityAnimationTransition(widget->GetNativeView(),
       ash::ANIMATE_HIDE);
   return widget;
