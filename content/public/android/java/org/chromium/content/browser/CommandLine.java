@@ -17,63 +17,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
-// Java mirror of Chrome command-line utilities (e.g. class CommandLine from base/command_line.h).
-// Command line program adb_command_line can be used to set the Chrome command line:
-// adb shell "echo chrome --my-param > /data/local/chrome-command-line"
-
-// TODO(jrg), TODO(tedchoc): some of these command line options are
-// specific to chrome, not content.  transition them to a different
-// location.
-
+/**
+ * Java mirror of Chrome command-line utilities (e.g. class CommandLine from base/command_line.h).
+ * Command line program adb_command_line can be used to set the Chrome command line:
+ * adb shell "echo chrome --my-param > /data/local/chrome-command-line"
+ */
 public abstract class CommandLine {
-    // Switches used from Java.  Please continue switch style used Chrome where options-have-hypens
-    // and are_not_split_with_underscores.
-
     // Block onCreate() of Chrome until a Java debugger is attached.
     public static final String WAIT_FOR_JAVA_DEBUGGER = "wait-for-java-debugger";
-
-    // Disable instant?
-    public static final String DISABLE_INSTANT = "disable-instant";
-
-    // Should we force-enable the "hardware acceleration" preference?
-    public static final String HARDWARE_ACCELERATION = "hardware-acceleration";
-
-    // Give an extra account name for the x-auto-login spinner, for testing.
-    public static final String AUTO_LOGIN_EXTRA_ACCOUNT = "auto-login-extra-account";
-
-    // Enable exact match x-auto-login?  Disabled for now (see
-    // AccountManagerContainer.java).
-    public static final String EXACT_MATCH_AUTO_LOGIN = "exact-match-auto-login";
-
-    // Should we show the NTP cache menu items?
-    public static final String CACHED_NTP_MENU = "cached-ntp-menu";
-
-    // Should we use a preload web view container for the ntp?
-    public static final String PRELOAD_WEBVIEW_CONTAINER = "preload-webview-container";
-
-    // Should thumbnail bitmaps for the thumbnail cache be full size?
-    public static final String FULL_SIZE_THUMBNAILS = "full-size-thumbnails";
-
-    // Should thumbnail bitmaps for the thumbnail cache be a compromise size?
-    public static final String COMPROMISE_SIZE_THUMBNAILS = "compromise-size-thumbnails";
-
-    // Should thumbnail bitmaps for the thumbnail cache be small (1/4 size)?
-    // Uses less memory and is faster but has a significant quality reduction.
-    public static final String SMALL_SIZE_THUMBNAILS = "small-size-thumbnails";
-
-    // Should thumbnail bitmaps be generated at 16-bit?  32-bit?
-    public static final String SIXTEEN_BIT_THUMBNAILS = "sixteen-bit-thumbnails";
-    public static final String THIRTYTWO_BIT_THUMBNAILS = "thirtytwo-bit-thumbnails";
-
-    // How many thumbnails should we allow in the cache (per tab stack)?
-    public static final String THUMBNAILS = "thumbnails";
-
-    // How many "approximated" thumbnails should we allow in the cache
-    // (per tab stack)?  These take very low memory but have poor quality.
-    public static final String APPROXIMATION_THUMBNAILS = "approximation-thumbnails";
-
-    // What scaling to use for the approximation?  Integer.
-    public static final String APPROXIMATION_SCALE = "approximation-scale";
 
     // Tell Java to use the official command line, loaded from the
     // official-command-line.xml files.  WARNING this is not done
@@ -81,66 +32,16 @@ public abstract class CommandLine {
     // these flags.
     public static final String ADD_OFFICIAL_COMMAND_LINE = "add-official-command-line";
 
-    // If specified, enables notification center verbose logging.
-    public static final String NOTIFICATION_CENTER_LOGGING = "notification-center-logging";
-
     // Enables test intent handling.
     public static final String ENABLE_TEST_INTENTS = "enable-test-intents";
-
-    // Override the system fling friction (0.015f). This can make it easier to see scrolling bugs.
-    public static final String FLING_FRICTION = "fling-friction";
-
-    // Enables StrictMode violation detection. By default this logs violations to logcat.
-    public static final String STRICT_MODE = "strict-mode";
-
-    // Enable the First Run Experience
-    // TODO(dtrainor): This should be removed eventually, as it is only used for development and
-    // debugging.
-    public static final String ENABLE_FIRST_RUN_EXPERIENCE = "enable-fre";
-
-    // Disable the First Run Experience
-    // TODO(dtrainor): This should be removed eventually, as it is only used for development and
-    // debugging.
-    public static final String DISABLE_FIRST_RUN_EXPERIENCE = "disable-fre";
-
-    // Force the First Run Experience to show.
-    public static final String FORCE_FIRST_RUN_EXPERIENCE = "force-fre";
-
-    // Default country code to be used for search engine localization.
-    public static final String DEFAULT_COUNTRY_CODE_AT_INSTALL = "default-country-code";
 
     // Sets the max number of sandboxed service processes to use.
     // Unlike renderer-process-limit, this is a hard limit on the number of
     // concurrent sandboxed processes.
     public static final String SANDBOXED_SERVICE_LIMIT = "sandboxed-service-limit";
 
-    // Mirrors of switches defined in native code.  It is up to you,
-    // the developer, to keep these strings in sync with
-    // base/base_switches.h, or content/public/common/content_switches.h, or
-    // wherever.
-
-    // Don't restore persistent state from saved files on startup.
-    public static final String NO_RESTORE_STATE = "no-restore-state";
-
-    // Specifies which page will be displayed on startup.
-    public static final String HOME_PAGE = "homepage";
-
     // Dump frames-per-second to the log
     public static final String LOG_FPS = "log-fps";
-
-    // Override the default server used for profile sync.
-    public static final String SYNC_URL = "sync-url";
-
-    // Sets the max number of render processes to use.
-    public static final String RENDER_PROCESS_LIMIT = "renderer-process-limit";
-
-    // Enable to swap the overview mode between different implementation.
-    // TODO(jscholler): This should be removed eventually, as it is only used for development and
-    // debugging.
-    public static final String ENABLE_OVERVIEW_SWAP = "enable-overview-swap";
-
-    // DO NOT ADD YOUR NEW SWITCH HERE unless it is a mirror of a native switch. Otherwise, see
-    // the "Switches used from Java" section above.
 
     // Public abstract interface, implemented in derived classes.
     // All these methods reflect their native-side counterparts.
