@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
+#include "chrome/browser/ui/webui/web_dialog_controller.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
@@ -79,20 +80,22 @@ CloudPrintSetupFlow* CloudPrintSetupFlow::OpenDialog(
   base::JSONWriter::Write(&args, &json_args);
 
   CloudPrintSetupFlow* flow = new CloudPrintSetupFlow(json_args, profile,
-                                                      delegate, setup_done);
+                                                      browser, delegate,
+                                                      setup_done);
   // We may not always have a browser. This can happen when we are being
   // invoked in the context of a "token expired" notfication. If we don't have
   // a brower, use the underlying dialog system to show the dialog without
   // using a browser.
   if (!parent_window && browser && browser->window())
     parent_window = browser->window()->GetNativeWindow();
-  browser::ShowWebDialog(parent_window, profile, browser, flow);
+  browser::ShowWebDialog(parent_window, profile, flow);
   return flow;
 }
 
 CloudPrintSetupFlow::CloudPrintSetupFlow(
     const std::string& args,
     Profile* profile,
+    Browser* browser,
     const base::WeakPtr<Delegate>& delegate,
     bool setup_done)
     : web_ui_(NULL),
@@ -103,6 +106,10 @@ CloudPrintSetupFlow::CloudPrintSetupFlow(
       delegate_(delegate) {
   // TODO(hclam): The data source should be added once.
   profile_ = profile;
+  if (browser) {
+    web_dialog_controller_.reset(
+        new WebDialogController(this, profile, browser));
+  }
   ChromeURLDataManager::AddDataSource(profile,
       new CloudPrintSetupSource());
 }

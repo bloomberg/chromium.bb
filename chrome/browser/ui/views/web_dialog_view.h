@@ -18,8 +18,6 @@
 #include "ui/views/window/client_view.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
-class Browser;
-class WebDialogController;
 class Profile;
 
 namespace views {
@@ -39,7 +37,7 @@ class WebView;
 // TODO(akalin): Make WebDialogView contain an WebDialogWebContentsDelegate
 // instead of inheriting from it to avoid violating the "no multiple
 // inheritance" rule.
-// TODO(beng): This class should not depend on Browser or Profile, only
+// TODO(beng): This class should not depend on Profile, only
 //             content::BrowserContext.
 class WebDialogView
     : public views::ClientView,
@@ -49,7 +47,6 @@ class WebDialogView
       public TabRenderWatcher::Delegate {
  public:
   WebDialogView(Profile* profile,
-                Browser* browser,
                 ui::WebDialogDelegate* delegate);
   virtual ~WebDialogView();
 
@@ -138,9 +135,6 @@ class WebDialogView
   // closing) we delegate to the creator of this view, which we keep track of
   // using this variable.
   ui::WebDialogDelegate* delegate_;
-
-  // Controls lifetime of dialog.
-  scoped_ptr<WebDialogController> dialog_controller_;
 
   views::WebView* web_view_;
 

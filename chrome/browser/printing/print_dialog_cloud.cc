@@ -684,7 +684,6 @@ void CreateDialogImpl(content::BrowserContext* browser_context,
           callback);
   browser::ShowWebDialog(modal_parent,
                          Profile::FromBrowserContext(browser_context),
-                         NULL,
                          dialog_delegate);
 }
 

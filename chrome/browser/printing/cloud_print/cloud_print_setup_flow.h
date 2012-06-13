@@ -18,6 +18,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
+class Browser;
 class CloudPrintServiceProcessHelper;
 class CloudPrintSetupMessageHandler;
 class GaiaAuthFetcher;
@@ -32,6 +33,8 @@ class DictionaryValue;
 namespace content {
 class WebUI;
 }
+
+class WebDialogController;
 
 // This class is responsible for showing a cloud print setup dialog
 // and perform operations to fill the content of the dialog and handle
@@ -98,7 +101,9 @@ class CloudPrintSetupFlow : public ui::WebDialogDelegate,
   friend class CloudPrintSetupMessageHandler;
 
   // Use static Run method to get an instance.
-  CloudPrintSetupFlow(const std::string& args, Profile* profile,
+  CloudPrintSetupFlow(const std::string& args,
+                      Profile* profile,
+                      Browser* browser,
                       const base::WeakPtr<Delegate>& delegate, bool setup_done);
 
   // Called CloudPrintSetupMessageHandler when a DOM is attached. This method
@@ -149,6 +154,7 @@ class CloudPrintSetupFlow : public ui::WebDialogDelegate,
   // Handle to the ServiceProcessControl which talks to the service process.
   ServiceProcessControl* process_control_;
   base::WeakPtr<Delegate> delegate_;
+  scoped_ptr<WebDialogController> web_dialog_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPrintSetupFlow);
 };

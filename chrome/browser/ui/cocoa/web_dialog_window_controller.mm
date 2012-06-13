@@ -10,6 +10,7 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/browser_command_executor.h"
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
@@ -101,8 +102,9 @@ namespace browser {
 
 gfx::NativeWindow ShowWebDialog(gfx::NativeWindow parent,
                                 Profile* profile,
-                                Browser* browser,
                                 WebDialogDelegate* delegate) {
+  // TODO(mazda): Remove the dependency on Browser.
+  Browser* browser = browser::FindLastActiveWithProfile(profile);
   return [WebDialogWindowController showWebDialog:delegate
                                           profile:profile
                                           browser:browser];

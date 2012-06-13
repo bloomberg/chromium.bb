@@ -10,7 +10,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/webui/web_dialog_controller.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -22,6 +21,8 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/web_dialogs/web_dialog_delegate.h"
+#include "ui/web_dialogs/web_dialog_ui.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/event.h"
@@ -39,10 +40,9 @@ namespace browser {
 // Declared in browser_dialogs.h so that others don't need to depend on our .h.
 gfx::NativeWindow ShowWebDialog(gfx::NativeWindow parent,
                                 Profile* profile,
-                                Browser* browser,
                                 WebDialogDelegate* delegate) {
   views::Widget* widget = views::Widget::CreateWindowWithParent(
-      new WebDialogView(profile, browser, delegate), parent);
+      new WebDialogView(profile, delegate), parent);
   widget->Show();
   return widget->GetNativeWindow();
 }
@@ -53,13 +53,11 @@ gfx::NativeWindow ShowWebDialog(gfx::NativeWindow parent,
 // WebDialogView, public:
 
 WebDialogView::WebDialogView(Profile* profile,
-                             Browser* browser,
                              WebDialogDelegate* delegate)
     : ClientView(NULL, NULL),
       WebDialogWebContentsDelegate(profile),
       initialized_(false),
       delegate_(delegate),
-      dialog_controller_(new WebDialogController(this, profile, browser)),
       web_view_(new views::WebView(profile)) {
   web_view_->set_allow_accelerators(true);
   AddChildView(web_view_);

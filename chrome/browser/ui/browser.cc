@@ -1209,7 +1209,7 @@ gfx::NativeWindow Browser::BrowserShowWebDialog(
   if (!parent_window)
     parent_window = window_->GetNativeWindow();
 
-  return browser::ShowWebDialog(parent_window, profile_, this, delegate);
+  return browser::ShowWebDialog(parent_window, profile_, delegate);
 }
 
 void Browser::BrowserRenderWidgetShowing() {

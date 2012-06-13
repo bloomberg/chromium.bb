@@ -34,9 +34,8 @@ const int kInitialHeight = 40;
 class TestWebDialogView : public WebDialogView {
  public:
   TestWebDialogView(Profile* profile,
-                    Browser* browser,
                     WebDialogDelegate* delegate)
-      : WebDialogView(profile, browser, delegate),
+      : WebDialogView(profile, delegate),
         painted_(false),
         should_quit_on_size_change_(false) {
     delegate->GetDialogSize(&last_size_);
@@ -111,7 +110,7 @@ IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, MAYBE_SizeWindow) {
   delegate->set_size(kInitialWidth, kInitialHeight);
 
   TestWebDialogView* view =
-      new TestWebDialogView(browser()->profile(), browser(), delegate);
+      new TestWebDialogView(browser()->profile(), delegate);
   WebContents* web_contents = browser()->GetActiveWebContents();
   ASSERT_TRUE(web_contents != NULL);
   views::Widget::CreateWindowWithParent(
@@ -191,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, DISABLED_WebContentRendered) {
       GURL(chrome::kChromeUIChromeURLsURL));
 
   TestWebDialogView* view =
-      new TestWebDialogView(browser()->profile(), browser(), delegate);
+      new TestWebDialogView(browser()->profile(), delegate);
   WebContents* web_contents = browser()->GetActiveWebContents();
   ASSERT_TRUE(web_contents != NULL);
   views::Widget::CreateWindowWithParent(

@@ -47,7 +47,6 @@ void SimDialogDelegate::ShowDialog(gfx::NativeWindow owning_window,
                                    SimDialogMode mode) {
   views::Widget::CreateWindowWithParent(
       new WebDialogView(ProfileManager::GetDefaultProfileOrOffTheRecord(),
-                        NULL,
                         new SimDialogDelegate(mode)),
       owning_window)->Show();
 }

@@ -29,7 +29,7 @@ KeyboardOverlayDialogView* g_instance = NULL;
 KeyboardOverlayDialogView::KeyboardOverlayDialogView(
     Profile* profile,
     WebDialogDelegate* delegate)
-    : WebDialogView(profile, NULL, delegate) {
+    : WebDialogView(profile, delegate) {
 }
 
 KeyboardOverlayDialogView::~KeyboardOverlayDialogView() {

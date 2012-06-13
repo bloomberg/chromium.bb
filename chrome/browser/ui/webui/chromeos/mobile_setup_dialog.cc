@@ -96,7 +96,6 @@ void MobileSetupDialogDelegate::ShowDialog(const std::string& service_path) {
   dialog_window_ = browser::ShowWebDialog(
       NULL,
       ProfileManager::GetDefaultProfileOrOffTheRecord(),
-      NULL,
       this);
 }
 

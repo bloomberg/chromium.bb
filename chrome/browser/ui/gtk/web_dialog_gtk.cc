@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/tab_contents_container_gtk.h"
@@ -30,8 +31,9 @@ namespace browser {
 
 gfx::NativeWindow ShowWebDialog(gfx::NativeWindow parent,
                                 Profile* profile,
-                                Browser* browser,
                                 WebDialogDelegate* delegate) {
+  // TODO(mazda): Remove the dependency on Browser.
+  Browser* browser = browser::FindLastActiveWithProfile(profile);
   WebDialogGtk* web_dialog =
       new WebDialogGtk(profile, browser, delegate, parent);
   return web_dialog->InitDialog();
