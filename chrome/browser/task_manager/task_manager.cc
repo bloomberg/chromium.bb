@@ -23,6 +23,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/task_manager_resource_providers.h"
 #include "chrome/browser/task_manager/task_manager_worker_resource_provider.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -1127,9 +1128,9 @@ TaskManager* TaskManager::GetInstance() {
 }
 
 void TaskManager::OpenAboutMemory() {
-  // TODO(beng): find a better way of locating context than this.
-  //             http://crbug.com/129187
-  browser::NavigateParams params(BrowserList::GetLastActive(),
+  Browser* browser = browser::FindOrCreateTabbedBrowser(
+      ProfileManager::GetDefaultProfileOrOffTheRecord());
+  browser::NavigateParams params(browser,
                                  GURL(chrome::kChromeUIMemoryURL),
                                  content::PAGE_TRANSITION_LINK);
   params.disposition = NEW_FOREGROUND_TAB;
