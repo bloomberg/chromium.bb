@@ -622,6 +622,7 @@
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
       '-perf.GPUPerfTest',  # Fails. Discuss with prachij@.
+      '-perf.PageCyclerNetSimTest',  # Dependence missing: crbug.com/132559
       '-perf.LiveGamePerfTest',  # Requires linux /proc/stat.
       '-perf.YoutubePerfTest',  # AttributeError: AssertPlayingState.
 
@@ -636,6 +637,7 @@
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
       '-perf.GPUPerfTest',  # Fails. Discuss with prachij@.
+      '-perf.PageCyclerNetSimTest',  # Dependence missing: crbug.com/132559
       '-perf.LiveGamePerfTest',  # Requires linux /proc/stat.
       '-perf.YoutubePerfTest',  # AttributeError: AssertPlayingState.
 
@@ -650,6 +652,7 @@
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
       '-perf.GPUPerfTest',  # Fails. Discuss with prachij@.
+      '-perf.PageCyclerNetSimTest',  # Dependence missing: crbug.com/132559
       '-perf.WebGLTest',  # May not render WebGL; need to verify on QA bot.
       '-perf.YoutubePerfTest',  # AttributeError: AssertPlayingState.
 
