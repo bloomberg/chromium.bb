@@ -6,6 +6,7 @@
 
 import constants
 import getpass
+import glob
 import logging
 import multiprocessing
 import os
@@ -977,11 +978,12 @@ def BuildFirmwareArchive(buildroot, board, archive_dir):
   Returns the basename of the archived file, or None if the target board does
   not have firmware from source.
   """
-  files = ['image.bin', 'ec.bin', 'legacy_image.bin']
+  patterns = ['image*.bin', 'ec.bin', 'legacy_image.bin']
   firmware_root = os.path.join(buildroot, 'chroot', 'build', board, 'firmware')
-  source_list = [image_file
-                 for image_file in files
-                 if os.path.exists(os.path.join(firmware_root, image_file))]
+  source_list = []
+  for pattern in patterns:
+    source_list += [os.path.relpath(f, firmware_root)
+                    for f in glob.iglob(os.path.join(firmware_root, pattern))]
   if not source_list:
     return None
 
