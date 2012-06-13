@@ -95,12 +95,12 @@ class AutofillPopupView : public content::NotificationObserver {
   // resource isn't recognized.
   int GetIconResourceID(const string16& resource_name);
 
+  // Returns true if the given id refers to an element that can be deleted.
+  bool CanDelete(int id);
+
  private:
   // Returns true if the given id refers to an element that can be accepted.
   bool CanAccept(int id);
-
-  // Returns true if the given id refers to an element that can be deleted.
-  bool CanDelete(int id);
 
   // Returns true if the popup still has non-options entries to show the user.
   bool HasAutofillEntries();

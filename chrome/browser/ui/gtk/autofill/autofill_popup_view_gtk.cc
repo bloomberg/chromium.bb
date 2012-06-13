@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "grit/ui_resources_standard.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAutofillClient.h"
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
@@ -34,19 +35,28 @@ const int kRowHeight = 24;
 const int kSeparatorHeight = 1;
 
 // The amount of minimum padding between the Autofill value and label in pixels.
-const int kMiddlePadding = 10;
+const int kLabelPadding = 15;
 
-// The amount of padding between the label and icon or edge and icon in pixels.
+// The amount of padding between icons in pixels.
 const int kIconPadding = 5;
+
+// The amount of padding at the end of the popup in pixels.
+const int kEndPadding = 3;
 
 // We have a 1 pixel border around the entire results popup.
 const int kBorderThickness = 1;
 
-// Width of the icons in pixels.
-const int kIconWidth = 25;
+// Width of the Autofill icons in pixels.
+const int kAutofillIconWidth = 25;
 
-// Height of the icons in pixels.
-const int kIconHeight = 16;
+// Height of the Autofill icons in pixels.
+const int kAutofillIconHeight = 16;
+
+// Width of the delete icon in pixels.
+const int kDeleteIconWidth = 16;
+
+// Height of the delete icon in pixels.
+const int kDeleteIconHeight = 16;
 
 gfx::Rect GetWindowRect(GdkWindow* window) {
   return gfx::Rect(gdk_window_get_width(window),
@@ -71,7 +81,8 @@ AutofillPopupViewGtk::AutofillPopupViewGtk(
       parent_(parent),
       window_(gtk_window_new(GTK_WINDOW_POPUP)),
       theme_service_(theme_service),
-      render_view_host_(web_contents->GetRenderViewHost()) {
+      render_view_host_(web_contents->GetRenderViewHost()),
+      delete_icon_selected_(false) {
   CHECK(parent != NULL);
   gtk_window_set_resizable(GTK_WINDOW(window_), FALSE);
   gtk_widget_set_app_paintable(window_, TRUE);
@@ -131,10 +142,7 @@ void AutofillPopupViewGtk::ResizePopup() {
   bounds_.set_width(GetPopupRequiredWidth());
   bounds_.set_height(GetPopupRequiredHeight());
 
-  gtk_widget_set_size_request(
-      window_,
-      bounds_.width(),
-      bounds_.height());
+  gtk_widget_set_size_request(window_, bounds_.width(), bounds_.height());
 }
 
 gboolean AutofillPopupViewGtk::HandleButtonRelease(GtkWidget* widget,
@@ -145,7 +153,10 @@ gboolean AutofillPopupViewGtk::HandleButtonRelease(GtkWidget* widget,
 
   DCHECK_EQ(selected_line(), LineFromY(event->y));
 
-  AcceptSelectedLine();
+  if (DeleteIconIsSelected(event->x, event->y))
+    RemoveSelectedLine();
+  else
+    AcceptSelectedLine();
 
   return TRUE;
 }
@@ -206,6 +217,12 @@ gboolean AutofillPopupViewGtk::HandleMotion(GtkWidget* widget,
   int line = LineFromY(event->y);
 
   SetSelectedLine(line);
+
+  bool delete_icon_selected = DeleteIconIsSelected(event->x, event->y);
+  if (delete_icon_selected != delete_icon_selected_) {
+    delete_icon_selected_ = delete_icon_selected;
+    InvalidateRow(selected_line());
+  }
 
   return TRUE;
 }
@@ -295,37 +312,61 @@ void AutofillPopupViewGtk::DrawAutofillEntry(cairo_t* cairo_context,
   pango_cairo_show_layout(cairo_context, layout_);
   cairo_restore(cairo_context);
 
-  // Draw the label.
-  int x_align_left = entry_rect.width() -
-      font_.GetStringWidth(autofill_labels()[index]);
+  // Use this to figure out where all the other Autofill items should be placed.
+  int x_align_left = entry_rect.width() - kEndPadding;
 
-  if (!autofill_icons()[index].empty())
-    x_align_left -= 2 * kIconPadding + kIconWidth;
+  // Draw the delete icon, if one is needed.
+  if (CanDelete(autofill_unique_ids()[index])) {
+    x_align_left -= kDeleteIconWidth;
 
-  gtk_util::SetLayoutText(layout_, autofill_labels()[index]);
+    const gfx::Image* delete_icon;
+    if (static_cast<int>(index) == selected_line() && delete_icon_selected_)
+      delete_icon = theme_service_->GetImageNamed(IDR_CLOSE_BAR_H);
+    else
+      delete_icon = theme_service_->GetImageNamed(IDR_CLOSE_BAR);
 
-  cairo_save(cairo_context);
-  cairo_move_to(cairo_context, x_align_left, content_y);
-  pango_cairo_show_layout(cairo_context, layout_);
-  cairo_restore(cairo_context);
+    // TODO(csharp): Create a custom resource for the delete icon.
+    // http://www.crbug.com/131801
+    cairo_save(cairo_context);
+    gtk_util::DrawFullImage(
+        cairo_context,
+        window_,
+        delete_icon,
+        x_align_left,
+        entry_rect.y() + ((kRowHeight - kDeleteIconHeight) / 2));
+    cairo_restore(cairo_context);
+    cairo_save(cairo_context);
 
-  // Draw the icon, if one exists
+    x_align_left -= kIconPadding;
+  }
+
+  // Draw the Autofill icon, if one exists
   if (!autofill_icons()[index].empty()) {
     int icon = GetIconResourceID(autofill_icons()[index]);
     DCHECK_NE(-1, icon);
-    int icon_y = entry_rect.y() + ((kRowHeight - kIconHeight) / 2);
+    int icon_y = entry_rect.y() + ((kRowHeight - kAutofillIconHeight) / 2);
+    x_align_left -= kAutofillIconWidth;
 
     cairo_save(cairo_context);
     gtk_util::DrawFullImage(cairo_context,
                             window_,
                             theme_service_->GetImageNamed(icon),
-                            entry_rect.width() -
-                            (kIconPadding + kIconWidth),
+                            x_align_left,
                             icon_y);
     cairo_restore(cairo_context);
-  }
-}
 
+    x_align_left -= kIconPadding;
+  }
+
+  // Draw the label text.
+  gtk_util::SetLayoutText(layout_, autofill_labels()[index]);
+  x_align_left -= font_.GetStringWidth(autofill_labels()[index]);
+
+  cairo_save(cairo_context);
+  cairo_move_to(cairo_context, x_align_left, content_y);
+  pango_cairo_show_layout(cairo_context, layout_);
+  cairo_restore(cairo_context);
+}
 
 void AutofillPopupViewGtk::SetBounds() {
   gint origin_x, origin_y;
@@ -361,12 +402,19 @@ int AutofillPopupViewGtk::GetPopupRequiredWidth() {
   DCHECK_EQ(autofill_values().size(), autofill_labels().size());
   for (size_t i = 0; i < autofill_values().size(); ++i) {
     int row_size = font_.GetStringWidth(autofill_values()[i]) +
-        kMiddlePadding +
+        kLabelPadding +
         font_.GetStringWidth(autofill_labels()[i]);
 
-    // Add the icon size if required.
+    // Add the Autofill icon size, if required.
     if (!autofill_icons()[i].empty())
-      row_size += kIconWidth + 2 * kIconPadding;
+      row_size += kAutofillIconWidth + kIconPadding;
+
+    // Add delete icon, if required.
+    if (CanDelete(autofill_unique_ids()[i]))
+      row_size += kDeleteIconWidth + kIconPadding;
+
+    // Add the padding at the end
+    row_size += kEndPadding;
 
     popup_width = std::max(popup_width, row_size);
   }
@@ -405,4 +453,22 @@ gfx::Rect AutofillPopupViewGtk::GetRectForRow(size_t row, int width) {
   }
 
   return gfx::Rect(0, top, width, GetRowHeight(autofill_unique_ids()[row]));
+}
+
+bool AutofillPopupViewGtk::DeleteIconIsSelected(int x, int y) {
+  if (!CanDelete(selected_line()))
+    return false;
+
+  int row_start_y = 0;
+  for (int i = 0; i < selected_line(); ++i) {
+    row_start_y += GetRowHeight(autofill_unique_ids()[i]);
+  }
+
+  gfx::Rect delete_icon_bounds = gfx::Rect(
+      GetPopupRequiredWidth() - kDeleteIconWidth - kIconPadding,
+      row_start_y + ((kRowHeight - kDeleteIconHeight) / 2),
+      kDeleteIconWidth,
+      kDeleteIconHeight);
+
+  return delete_icon_bounds.Contains(x, y);
 }

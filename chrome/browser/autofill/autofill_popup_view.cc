@@ -163,6 +163,8 @@ bool AutofillPopupView::RemoveSelectedLine() {
 
   SetSelectedLine(kNoSelection);
 
+  external_delegate_->ClearPreviewedForm();
+
   if (!HasAutofillEntries())
     Hide();
 
@@ -178,14 +180,14 @@ int AutofillPopupView::GetIconResourceID(const string16& resource_name) {
   return -1;
 }
 
-bool AutofillPopupView::CanAccept(int id) {
-  return id != WebAutofillClient::MenuItemIDSeparator;
-}
-
 bool AutofillPopupView::CanDelete(int id) {
   return id > 0 ||
       id == WebAutofillClient::MenuItemIDAutocompleteEntry ||
       id == WebAutofillClient::MenuItemIDPasswordEntry;
+}
+
+bool AutofillPopupView::CanAccept(int id) {
+  return id != WebAutofillClient::MenuItemIDSeparator;
 }
 
 bool AutofillPopupView::HasAutofillEntries() {

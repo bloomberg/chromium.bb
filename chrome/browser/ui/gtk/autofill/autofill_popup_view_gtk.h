@@ -7,12 +7,14 @@
 #pragma once
 
 #include <pango/pango.h>
+#include <vector>
 
 #include "chrome/browser/autofill/autofill_popup_view.h"
 #include "content/public/browser/keyboard_listener.h"
 #include "ui/base/glib/glib_integers.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/rect.h"
 
 class GtkThemeService;
 class Profile;
@@ -89,6 +91,10 @@ class AutofillPopupViewGtk : public AutofillPopupView,
   // Returns the rectangle containing the item at position |index| in the popup.
   gfx::Rect GetRectForRow(size_t row, int width);
 
+  // Returns true if the given |x| and |y| coordinates refer to a point that
+  // hits the delete icon in the current selected line.
+  bool DeleteIconIsSelected(int x, int y);
+
   GtkWidget* parent_;  // Weak reference.
   GtkWidget* window_;  // Strong reference.
   PangoLayout* layout_;  // Strong reference
@@ -99,6 +105,11 @@ class AutofillPopupViewGtk : public AutofillPopupView,
   gfx::Rect bounds_;
 
   content::RenderViewHost* render_view_host_;  // Weak reference.
+
+  // Used to indicate if the delete icon within a row is currently selected.
+  bool delete_icon_selected_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutofillPopupViewGtk);
 };
 
 #endif  // CHROME_BROWSER_UI_GTK_AUTOFILL_AUTOFILL_POPUP_VIEW_GTK_H_
