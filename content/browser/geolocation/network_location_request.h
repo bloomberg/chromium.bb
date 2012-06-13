@@ -38,7 +38,6 @@ class NetworkLocationRequest : private net::URLFetcherDelegate {
         const content::Geoposition& position,
         bool server_error,
         const string16& access_token,
-        const RadioData& radio_data,
         const WifiData& wifi_data) = 0;
 
    protected:
@@ -54,7 +53,6 @@ class NetworkLocationRequest : private net::URLFetcherDelegate {
   // Makes a new request. Returns true if the new request was successfully
   // started. In all cases, any currently pending request will be canceled.
   bool MakeRequest(const string16& access_token,
-                   const RadioData& radio_data,
                    const WifiData& wifi_data,
                    const base::Time& timestamp);
 
@@ -72,7 +70,6 @@ class NetworkLocationRequest : private net::URLFetcherDelegate {
 
   // Keep a copy of the data sent in the request, so we can refer back to it
   // when the response arrives.
-  RadioData radio_data_;
   WifiData wifi_data_;
   base::Time timestamp_;  // Timestamp of the above data, not of the request.
 

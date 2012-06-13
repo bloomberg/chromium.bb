@@ -129,15 +129,12 @@ class GeolocationNetworkProviderTest : public testing::Test {
  public:
   virtual void SetUp() {
     access_token_store_ = new FakeAccessTokenStore;
-    radio_data_provider_ =
-        MockDeviceDataProviderImpl<RadioData>::CreateInstance();
     wifi_data_provider_ =
         MockDeviceDataProviderImpl<WifiData>::CreateInstance();
   }
 
   virtual void TearDown() {
     WifiDataProvider::ResetFactory();
-    RadioDataProvider::ResetFactory();
   }
 
   LocationProviderBase* CreateProvider(bool set_permission_granted) {
@@ -155,8 +152,6 @@ class GeolocationNetworkProviderTest : public testing::Test {
   GeolocationNetworkProviderTest() : test_server_url_(kTestServerUrl) {
     // TODO(joth): Really these should be in SetUp, not here, but they take no
     // effect on Mac OS Release builds if done there. I kid not. Figure out why.
-    RadioDataProvider::SetFactory(
-        MockDeviceDataProviderImpl<RadioData>::GetInstance);
     WifiDataProvider::SetFactory(
         MockDeviceDataProviderImpl<WifiData>::GetInstance);
   }
@@ -273,7 +268,6 @@ class GeolocationNetworkProviderTest : public testing::Test {
   MessageLoop main_message_loop_;
   scoped_refptr<FakeAccessTokenStore> access_token_store_;
   TestURLFetcherFactory url_fetcher_factory_;
-  scoped_refptr<MockDeviceDataProviderImpl<RadioData> > radio_data_provider_;
   scoped_refptr<MockDeviceDataProviderImpl<WifiData> > wifi_data_provider_;
 };
 
@@ -312,35 +306,6 @@ TEST_F(GeolocationNetworkProviderTest, StartProviderLongRequest) {
   // in the request.
   EXPECT_LT(fetcher->GetOriginalURL().spec().size(), size_t(2048));
   CheckRequestIsValid(fetcher->GetOriginalURL().spec(), 0, 16, 4, "");
-}
-
-TEST_F(GeolocationNetworkProviderTest, MultipleStartProvider) {
-  scoped_ptr<LocationProviderBase> provider_1(CreateProvider(true));
-  scoped_ptr<LocationProviderBase> provider_2(CreateProvider(true));
-  ASSERT_TRUE(radio_data_provider_);
-  ASSERT_TRUE(wifi_data_provider_);
-  EXPECT_EQ(0, radio_data_provider_->start_calls_);
-  EXPECT_EQ(0, wifi_data_provider_->start_calls_);
-  EXPECT_EQ(0, radio_data_provider_->stop_calls_);
-  EXPECT_EQ(0, wifi_data_provider_->stop_calls_);
-
-  // Start first provider.
-  EXPECT_TRUE(provider_1->StartProvider(false));
-  EXPECT_EQ(1, radio_data_provider_->start_calls_);
-  EXPECT_EQ(1, wifi_data_provider_->start_calls_);
-  // Start second provider.
-  EXPECT_TRUE(provider_2->StartProvider(false));
-  EXPECT_EQ(1, radio_data_provider_->start_calls_);
-  EXPECT_EQ(1, wifi_data_provider_->start_calls_);
-
-  // Stop first provider.
-  provider_1->StopProvider();
-  EXPECT_EQ(0, radio_data_provider_->stop_calls_);
-  EXPECT_EQ(0, wifi_data_provider_->stop_calls_);
-  // Stop second provider.
-  provider_2->StopProvider();
-  EXPECT_EQ(1, radio_data_provider_->stop_calls_);
-  EXPECT_EQ(1, wifi_data_provider_->stop_calls_);
 }
 
 TEST_F(GeolocationNetworkProviderTest, MultiRegistrations) {

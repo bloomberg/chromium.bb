@@ -26,7 +26,6 @@ class AccessTokenStore;
 
 class NetworkLocationProvider
     : public LocationProviderBase,
-      public RadioDataProvider::ListenerInterface,
       public WifiDataProvider::ListenerInterface,
       public NetworkLocationRequest::ListenerInterface {
  public:
@@ -90,26 +89,21 @@ class NetworkLocationProvider
   bool IsStarted() const;
 
   // DeviceDataProvider::ListenerInterface implementation.
-  virtual void DeviceDataUpdateAvailable(RadioDataProvider* provider) OVERRIDE;
   virtual void DeviceDataUpdateAvailable(WifiDataProvider* provider) OVERRIDE;
 
   // NetworkLocationRequest::ListenerInterface implementation.
   virtual void LocationResponseAvailable(const content::Geoposition& position,
                                          bool server_error,
                                          const string16& access_token,
-                                         const RadioData& radio_data,
                                          const WifiData& wifi_data) OVERRIDE;
 
   scoped_refptr<content::AccessTokenStore> access_token_store_;
 
-  // The device data providers, acquired via global factories.
-  RadioDataProvider* radio_data_provider_;
+  // The wifi data provider, acquired via global factories.
   WifiDataProvider* wifi_data_provider_;
 
-  // The radio and wifi data, flags to indicate if each data set is complete.
-  RadioData radio_data_;
+  // The  wifi data, flags to indicate if the data set is complete.
   WifiData wifi_data_;
-  bool is_radio_data_complete_;
   bool is_wifi_data_complete_;
 
   // The timestamp for the latest device data update.

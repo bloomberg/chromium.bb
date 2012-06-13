@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,9 +23,7 @@
 #define CONTENT_BROWSER_GEOLOCATION_DEVICE_DATA_PROVIDER_H_
 #pragma once
 
-#include <algorithm>
 #include <set>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/bind.h"
@@ -35,65 +33,6 @@
 #include "base/string_util.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
-
-// The following data structures are used to store cell radio data and wifi
-// data. See the Geolocation API design document at
-// http://code.google.com/p/google-gears/wiki/LocationAPI for a more complete
-// description.
-//
-// For all integer fields, we use kint32min to represent unknown values.
-
-// Cell radio data relating to a single cell tower.
-struct CellData {
-  CellData();
-  bool Matches(const CellData &other) const {
-    // Ignore radio_signal_strength when matching.
-    return cell_id == other.cell_id &&
-           location_area_code == other.location_area_code &&
-           mobile_network_code == other.mobile_network_code &&
-           mobile_country_code == other.mobile_country_code &&
-           timing_advance == other.timing_advance;
-  }
-
-  int cell_id;                // Unique identifier of the cell
-  int location_area_code;     // For current location area
-  int mobile_network_code;    // For current cell
-  int mobile_country_code;    // For current cell
-  int radio_signal_strength;  // Measured in dBm.
-  int timing_advance;         // Timing advance representing the distance from
-                              // the cell tower. Each unit is roughly 550
-                              // meters.
-};
-
-enum RadioType {
-  RADIO_TYPE_UNKNOWN,
-  RADIO_TYPE_GSM,
-  RADIO_TYPE_CDMA,
-  RADIO_TYPE_WCDMA,
-};
-
-// All data for the cell radio.
-// TODO(joth): Remove RadioData and all usage of it; http://crbug.com/103713
-struct CONTENT_EXPORT RadioData {
-  RadioData();
-  ~RadioData();
-
-  bool Matches(const RadioData &other) const;
-
-  // Determines whether a new set of radio data differs significantly from this.
-  bool DiffersSignificantly(const RadioData &other) const {
-    // This is required by MockDeviceDataProviderImpl.
-    // TODO(steveblock): Implement properly.
-    return !Matches(other);
-  }
-
-  string16 device_id;
-  std::vector<CellData> cell_data;
-  int home_mobile_network_code;  // For the device's home network.
-  int home_mobile_country_code;  // For the device's home network.
-  RadioType radio_type;          // Mobile radio type.
-  string16 carrier;              // Carrier name.
-};
 
 // Wifi data relating to a single access point.
 struct CONTENT_EXPORT AccessPointData {
@@ -231,7 +170,6 @@ class DeviceDataProviderImplBase : public DeviceDataProviderImplBaseHack {
   DISALLOW_COPY_AND_ASSIGN(DeviceDataProviderImplBase);
 };
 
-typedef DeviceDataProviderImplBase<RadioData> RadioDataProviderImplBase;
 typedef DeviceDataProviderImplBase<WifiData> WifiDataProviderImplBase;
 
 // A device data provider
@@ -363,7 +301,6 @@ class DeviceDataProvider : public base::NonThreadSafe {
   DISALLOW_COPY_AND_ASSIGN(DeviceDataProvider);
 };
 
-typedef DeviceDataProvider<RadioData> RadioDataProvider;
 typedef DeviceDataProvider<WifiData> WifiDataProvider;
 
 #endif  // CONTENT_BROWSER_GEOLOCATION_DEVICE_DATA_PROVIDER_H_

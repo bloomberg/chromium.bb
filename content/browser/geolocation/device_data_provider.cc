@@ -1,58 +1,14 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "content/browser/geolocation/device_data_provider.h"
 
 // statics
-template<> DeviceDataProvider<RadioData>*
-    DeviceDataProvider<RadioData>::instance_ = NULL;
-template<> DeviceDataProvider<RadioData>::ImplFactoryFunction
-    DeviceDataProvider<RadioData>::factory_function_ = DefaultFactoryFunction;
 template<> DeviceDataProvider<WifiData>*
     DeviceDataProvider<WifiData>::instance_ = NULL;
 template<> DeviceDataProvider<WifiData>::ImplFactoryFunction
     DeviceDataProvider<WifiData>::factory_function_ = DefaultFactoryFunction;
-
-namespace {
-
-bool CellDataMatches(const CellData &data1, const CellData &data2) {
-  return data1.Matches(data2);
-}
-
-}  // namespace
-
-CellData::CellData()
-    : cell_id(kint32min),
-      location_area_code(kint32min),
-      mobile_network_code(kint32min),
-      mobile_country_code(kint32min),
-      radio_signal_strength(kint32min),
-      timing_advance(kint32min) {
-}
-
-RadioData::RadioData()
-    : home_mobile_network_code(kint32min),
-      home_mobile_country_code(kint32min),
-      radio_type(RADIO_TYPE_UNKNOWN) {
-}
-
-RadioData::~RadioData() {}
-
-bool RadioData::Matches(const RadioData &other) const {
-  if (cell_data.size() != other.cell_data.size()) {
-    return false;
-  }
-  if (!std::equal(cell_data.begin(), cell_data.end(), other.cell_data.begin(),
-                  CellDataMatches)) {
-    return false;
-  }
-  return device_id == other.device_id &&
-         home_mobile_network_code == other.home_mobile_network_code &&
-         home_mobile_country_code == other.home_mobile_country_code &&
-         radio_type == other.radio_type &&
-         carrier == other.carrier;
-}
 
 AccessPointData::AccessPointData()
     : radio_signal_strength(kint32min),
