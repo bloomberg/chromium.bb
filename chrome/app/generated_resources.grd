@@ -5831,23 +5831,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Crash reporting is disabled.
       </message>
 
-      <!-- chrome://sessions -->
-      <message name="IDS_SESSIONS_TITLE" desc="Title for the chrome://sessions page.">
-        Sessions
-      </message>
-      <message name="IDS_SESSIONS_SESSION_COUNT_BANNER_FORMAT" desc="Format for sessions count banner on chrome://sessions">
-        Sessions (<ph name="SESSION_COUNT">$1<ex>3</ex></ph>)
-      </message>
-      <message name="IDS_SESSIONS_NO_SESSIONS_MESSAGE" desc="The explanatory message for chrome://sessions when there are no sessions">
-        There are no sessions.
-      </message>
-      <message name="IDS_SESSIONS_MAGIC_LIST_BANNER_FORMAT" desc="Format for magic list count banner on chrome://sessions">
-        Magic List (<ph name="MAGIC_COUNT">$1<ex>3</ex></ph>)
-      </message>
-      <message name="IDS_SESSIONS_NO_MAGIC_MESSAGE" desc="The explanatory message for chrome://sessions when there are no entries in the magic list">
-        There is no magic.
-      </message>
-
       <!-- Instant -->
       <message name="IDS_INSTANT_OPT_IN_MESSAGE" desc="Message shown in the instant confirm dialog">
         With Instant enabled and if supported by your default search engine, search results appear instantly as you type queries in the omnibox, and in-line predictions help guide your search.
