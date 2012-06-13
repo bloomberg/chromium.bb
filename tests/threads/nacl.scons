@@ -189,9 +189,11 @@ env.AddNodeToTestSuite(node, ['small_tests'], 'run_second_tls_create_test')
 # the races are fixed.
 node = env.CommandSelLdrTestNacl('many_threads_sequential_test.out',
                                  many_threads_sequential_nexe)
+# This test is too slow under Valgrind.
 env.AddNodeToTestSuite(node,
                        ['small_tests'],
-                       'run_many_threads_sequential_test')
+                       'run_many_threads_sequential_test',
+                       is_broken = env.IsRunningUnderValgrind())
 
 mutex_leak_nexe = env.ComponentProgram('mutex_leak', ['mutex_leak.c'],
                                        EXTRA_LIBS=['${PTHREAD_LIBS}',
