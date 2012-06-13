@@ -12,7 +12,7 @@
 #include "base/message_loop.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
-#include "third_party/libjingle/overrides/talk/base/thread.h"
+#include "third_party/libjingle/source/talk/base/thread.h"
 
 namespace jingle_glue {
 

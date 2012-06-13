@@ -16,6 +16,7 @@
       'HAVE_WEBRTC_VOICE',
       'JSONCPP_RELATIVE_PATH',
       'LOGGING_INSIDE_LIBJINGLE',
+      'NO_MAIN_THREAD_WRAPPING',
       'NO_SOUND_SYSTEM',
       'SRTP_RELATIVE_PATH',
       'WEBRTC_RELATIVE_PATH',
@@ -57,6 +58,7 @@
         'GTEST_RELATIVE_PATH',
         'JSONCPP_RELATIVE_PATH',
         'WEBRTC_RELATIVE_PATH',
+        'NO_MAIN_THREAD_WRAPPING',
         'NO_SOUND_SYSTEM',
       ],
       'conditions': [
@@ -176,13 +178,6 @@
         'overrides/talk/base/logging.cc',
         'overrides/talk/base/logging.h',
 
-        # TODO(ronghuawu): Remove below overrides once below bug is fixed:
-        # http://crbug.com/115702
-        'overrides/talk/base/messagequeue.cc',
-        'overrides/talk/base/messagequeue.h',
-        'overrides/talk/base/thread.cc',
-        'overrides/talk/base/thread.h',
-
         'source/talk/base/asyncfile.cc',
         'source/talk/base/asyncfile.h',
         'source/talk/base/asynchttprequest.cc',
@@ -247,6 +242,8 @@
         'source/talk/base/messagedigest.h',
         'source/talk/base/messagehandler.cc',
         'source/talk/base/messagehandler.h',
+        'source/talk/base/messagequeue.cc',
+        'source/talk/base/messagequeue.h',
         'source/talk/base/nethelpers.cc',
         'source/talk/base/nethelpers.h',
         'source/talk/base/network.cc',
@@ -304,6 +301,8 @@
         'source/talk/base/taskparent.h',
         'source/talk/base/taskrunner.cc',
         'source/talk/base/taskrunner.h',
+        'source/talk/base/thread.cc',
+        'source/talk/base/thread.h',
         'source/talk/base/timeutils.cc',
         'source/talk/base/timeutils.h',
         'source/talk/base/timing.cc',

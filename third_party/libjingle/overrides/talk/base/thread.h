@@ -116,11 +116,8 @@ class Runnable {
 
 class Thread : public MessageQueue {
  public:
-  Thread();
-  explicit Thread(SocketServer* ss);
+  Thread(SocketServer* ss = NULL);
   virtual ~Thread();
-
-  void Construct();
 
   static inline Thread* Current() {
     return ThreadManager::Instance()->CurrentThread();

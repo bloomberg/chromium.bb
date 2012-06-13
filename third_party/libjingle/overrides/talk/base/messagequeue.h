@@ -171,13 +171,8 @@ class DelayedMessage {
 
 class MessageQueue {
  public:
-  // A phiscal socket server will be created for this ctor.
-  MessageQueue();
-  // If |ss| is NULL, a dummy socket server will be created.
-  explicit MessageQueue(SocketServer* ss);
+  explicit MessageQueue(SocketServer* ss = NULL);
   virtual ~MessageQueue();
-
-  void Construct();
 
   SocketServer* socketserver() { return ss_; }
   void set_socketserver(SocketServer* ss);
@@ -245,7 +240,7 @@ class MessageQueue {
   // The SocketServer is not owned by MessageQueue.
   SocketServer* ss_;
   // If a server isn't supplied in the constructor, use this one.
-  scoped_ptr<SocketServer> owned_ss_;
+  scoped_ptr<SocketServer> default_ss_;
   bool fStop_;
   bool fPeekKeep_;
   Message msgPeek_;
