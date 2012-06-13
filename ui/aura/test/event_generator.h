@@ -98,15 +98,6 @@ class EventGenerator {
   // to be the given |point|.
   void PressMoveAndReleaseTouchTo(const gfx::Point& point);
 
-  // Generates a number of touch-move events to generate scroll-gesture events.
-  void SendTouchScrollEvents(const gfx::Point& start_location,
-                             const base::TimeDelta& start_time,
-                             int dx,
-                             int dy,
-                             int touch_id,
-                             int time_step_ms,
-                             int num_steps);
-
   void PressMoveAndReleaseTouchTo(int x, int y) {
     PressMoveAndReleaseTouchTo(gfx::Point(x, y));
   }
@@ -130,7 +121,10 @@ class EventGenerator {
   void GestureTapDownAndUp(const gfx::Point& point);
 
   // Generates press, move, release touch-events to generate a sequence of
-  // scroll events.
+  // scroll events. |duration| and |steps| affect the velocity of the scroll,
+  // and depending on these values, this may also generate FLING scroll
+  // gestures. If velocity/fling is irrelevant for the test, then any non-zero
+  // values for these should be sufficient.
   void GestureScrollSequence(const gfx::Point& start,
                              const gfx::Point& end,
                              const base::TimeDelta& duration,

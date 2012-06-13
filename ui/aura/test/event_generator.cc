@@ -153,23 +153,6 @@ void EventGenerator::PressMoveAndReleaseTouchTo(const gfx::Point& point) {
   ReleaseTouch();
 }
 
-void EventGenerator::SendTouchScrollEvents(const gfx::Point& start_location,
-                                           const base::TimeDelta& start_time,
-                                           int dx,
-                                           int dy,
-                                           int touch_id,
-                                           int time_step_ms,
-                                           int num_steps) {
-  gfx::Point location = start_location;
-  base::TimeDelta time = start_time;
-  for (int i = 0; i < num_steps; i++) {
-    location.Offset(dx, dy);
-    time = time + base::TimeDelta::FromMilliseconds(time_step_ms);
-    TouchEvent move(ui::ET_TOUCH_MOVED, location, touch_id, time);
-    Dispatch(move);
-  }
-}
-
 void EventGenerator::PressMoveAndReleaseTouchToCenterOf(Window* window) {
   PressMoveAndReleaseTouchTo(CenterOfWindowInRootWindowCoordinate(root_window_,
                                                                   window));
