@@ -321,7 +321,7 @@ scoped_refptr<Extension> Extension::Create(const FilePath& path,
     return NULL;
   }
 
-  std::vector<std::string> install_warnings;
+  InstallWarningVector install_warnings;
   manifest->ValidateManifest(utf8_error, &install_warnings);
   if (!utf8_error->empty())
     return NULL;
@@ -410,7 +410,7 @@ const std::string Extension::VersionString() const {
 }
 
 void Extension::AddInstallWarnings(
-    const std::vector<std::string>& new_warnings) {
+    const InstallWarningVector& new_warnings) {
   install_warnings_.insert(install_warnings_.end(),
                            new_warnings.begin(), new_warnings.end());
 }
@@ -1347,9 +1347,19 @@ bool Extension::LoadManifestVersion(string16* error) {
   if (creation_flags_ & REQUIRE_MODERN_MANIFEST_VERSION &&
       manifest_version_ < kModernManifestVersion &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
-                switches::kAllowLegacyExtensionManifests)) {
-    *error = ASCIIToUTF16(errors::kInvalidManifestVersion);
-    return false;
+          switches::kAllowLegacyExtensionManifests)) {
+      *error = ASCIIToUTF16(errors::kInvalidManifestVersion);
+      return false;
+  }
+
+  if (location() == LOAD && manifest_version_ == 1) {
+    install_warnings_.push_back(Extension::InstallWarning(
+        Extension::InstallWarning::FORMAT_HTML,
+        l10n_util::GetStringFUTF8(
+            IDS_EXTENSION_MANIFEST_VERSION_OLD,
+            ASCIIToUTF16("<a href='http://code.google.com/chrome/extensions/"
+                         "manifestVersion.html'>"),
+            ASCIIToUTF16("</a>"))));
   }
 
   return true;
@@ -3241,7 +3251,9 @@ bool Extension::ParsePermissions(const char* key,
           // Don't fail, but warn the developer that the manifest contains
           // unrecognized permissions. This may happen legitimately if the
           // extensions requests platform- or channel-specific permissions.
-          install_warnings_.push_back(feature->GetErrorMessage(availability));
+          install_warnings_.push_back(
+              InstallWarning(InstallWarning::FORMAT_TEXT,
+                             feature->GetErrorMessage(availability)));
           continue;
         }
 
@@ -3287,9 +3299,11 @@ bool Extension::ParsePermissions(const char* key,
 
       // It's probably an unknown API permission. Do not throw an error so
       // extensions can retain backwards compatability (http://crbug.com/42742).
-      install_warnings_.push_back(base::StringPrintf(
-          "Permission '%s' is unknown or URL pattern is malformed.",
-          permission_str.c_str()));
+      install_warnings_.push_back(InstallWarning(
+          InstallWarning::FORMAT_TEXT,
+          base::StringPrintf(
+              "Permission '%s' is unknown or URL pattern is malformed.",
+              permission_str.c_str())));
     }
   }
   return true;

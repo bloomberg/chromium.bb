@@ -44,8 +44,9 @@ Manifest::Manifest(Extension::Location location,
 Manifest::~Manifest() {
 }
 
-void Manifest::ValidateManifest(std::string* error,
-                                std::vector<std::string>* warnings) const {
+void Manifest::ValidateManifest(
+    std::string* error,
+    Extension::InstallWarningVector* warnings) const {
   *error = "";
   if (type_ == Extension::TYPE_PLATFORM_APP && GetManifestVersion() < 2) {
     *error = errors::kPlatformAppNeedsManifestVersion2;
@@ -72,15 +73,19 @@ void Manifest::ValidateManifest(std::string* error,
         extension_id_, type_, Feature::ConvertLocation(location_),
         GetManifestVersion());
     if (result != Feature::IS_AVAILABLE)
-      warnings->push_back(feature->GetErrorMessage(result));
+      warnings->push_back(Extension::InstallWarning(
+          Extension::InstallWarning::FORMAT_TEXT,
+          feature->GetErrorMessage(result)));
   }
 
   // Also generate warnings for keys that are not features.
   for (DictionaryValue::key_iterator key = value_->begin_keys();
       key != value_->end_keys(); ++key) {
     if (!SimpleFeatureProvider::GetManifestFeatures()->GetFeature(*key)) {
-      warnings->push_back(base::StringPrintf("Unrecognized manifest key '%s'.",
-          (*key).c_str()));
+      warnings->push_back(Extension::InstallWarning(
+          Extension::InstallWarning::FORMAT_TEXT,
+          base::StringPrintf("Unrecognized manifest key '%s'.",
+                             (*key).c_str())));
     }
   }
 }

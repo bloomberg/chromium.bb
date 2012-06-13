@@ -1891,6 +1891,7 @@
         'common/extensions/manifest_tests/extension_manifests_initvalue_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_isolatedapp_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_launch_unittest.cc',
+        'common/extensions/manifest_tests/extension_manifests_manifest_version_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_offline_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_old_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_options_unittest.cc',

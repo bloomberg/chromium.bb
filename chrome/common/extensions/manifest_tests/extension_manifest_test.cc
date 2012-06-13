@@ -127,7 +127,7 @@ scoped_refptr<Extension> ExtensionManifestTest::LoadAndExpectWarning(
   EXPECT_TRUE(extension) << manifest.name();
   EXPECT_EQ("", error) << manifest.name();
   EXPECT_EQ(1u, extension->install_warnings().size());
-  EXPECT_EQ(expected_warning, extension->install_warnings()[0]);
+  EXPECT_EQ(expected_warning, extension->install_warnings()[0].message);
   return extension;
 }
 

@@ -55,9 +55,12 @@ class Manifest;
 // Represents a Chrome extension.
 class Extension : public base::RefCountedThreadSafe<Extension> {
  public:
+  struct InstallWarning;
+
   typedef std::map<const std::string, GURL> URLOverrideMap;
   typedef std::vector<std::string> ScriptingWhitelist;
   typedef std::vector<linked_ptr<FileBrowserHandler> > FileBrowserHandlerList;
+  typedef std::vector<InstallWarning> InstallWarningVector;
 
   // What an extension was loaded from.
   // NOTE: These values are stored as integers in the preferences and used
@@ -180,6 +183,20 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
     std::string client_id;
     std::vector<std::string> scopes;
+  };
+
+  struct InstallWarning {
+    enum Format {
+      // IMPORTANT: Do not build HTML strings from user or developer-supplied
+      // input.
+      FORMAT_TEXT,
+      FORMAT_HTML,
+    };
+    InstallWarning(Format format, const std::string& message)
+        : format(format), message(message) {
+    }
+    Format format;
+    std::string message;
   };
 
   enum InitFromValueFlags {
@@ -628,8 +645,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     return required_permission_set_.get();
   }
   // Appends |new_warnings| to install_warnings().
-  void AddInstallWarnings(const std::vector<std::string>& new_warnings);
-  const std::vector<std::string>& install_warnings() const {
+  void AddInstallWarnings(const InstallWarningVector& new_warnings);
+  const InstallWarningVector& install_warnings() const {
     return install_warnings_;
   }
   const GURL& update_url() const { return update_url_; }
@@ -930,7 +947,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   scoped_refptr<const ExtensionPermissionSet> required_permission_set_;
 
   // Any warnings that occurred when trying to create/parse the extension.
-  std::vector<std::string> install_warnings_;
+  InstallWarningVector install_warnings_;
 
   // The icons for the extension.
   ExtensionIconSet icons_;

@@ -65,7 +65,7 @@ TEST_F(ManifestTest, Extension) {
   scoped_ptr<Manifest> manifest(
       new Manifest(Extension::INTERNAL, manifest_value.Pass()));
   std::string error;
-  std::vector<std::string> warnings;
+  Extension::InstallWarningVector warnings;
   manifest->ValidateManifest(&error, &warnings);
   EXPECT_TRUE(error.empty());
   ASSERT_EQ(1u, warnings.size());
@@ -98,7 +98,7 @@ TEST_F(ManifestTest, Extension) {
     feature.set_name("background_page");
     feature.set_max_manifest_version(1);
     EXPECT_EQ(feature.GetErrorMessage(Feature::INVALID_MAX_MANIFEST_VERSION),
-              warnings[0]);
+              warnings[0].message);
   }
 
   // Test DeepCopy and Equals.
@@ -119,7 +119,7 @@ TEST_F(ManifestTest, ExtensionTypes) {
   scoped_ptr<Manifest> manifest(
       new Manifest(Extension::INTERNAL, value.Pass()));
   std::string error;
-  std::vector<std::string> warnings;
+  Extension::InstallWarningVector warnings;
   manifest->ValidateManifest(&error, &warnings);
   EXPECT_TRUE(error.empty());
   EXPECT_TRUE(warnings.empty());
@@ -168,7 +168,7 @@ TEST_F(ManifestTest, RestrictedKeys) {
   scoped_ptr<Manifest> manifest(
       new Manifest(Extension::INTERNAL, value.Pass()));
   std::string error;
-  std::vector<std::string> warnings;
+  Extension::InstallWarningVector warnings;
   manifest->ValidateManifest(&error, &warnings);
   EXPECT_TRUE(error.empty());
   EXPECT_TRUE(warnings.empty());

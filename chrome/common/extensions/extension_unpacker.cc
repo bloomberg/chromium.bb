@@ -30,6 +30,8 @@ namespace errors = extension_manifest_errors;
 namespace keys = extension_manifest_keys;
 namespace filenames = extension_filenames;
 
+using extensions::Extension;
+
 namespace {
 
 // Errors
@@ -86,7 +88,7 @@ bool PathContainsParentDirectory(const FilePath& path) {
 
 ExtensionUnpacker::ExtensionUnpacker(const FilePath& extension_path,
                                      const std::string& extension_id,
-                                     extensions::Extension::Location location,
+                                     Extension::Location location,
                                      int creation_flags)
     : extension_path_(extension_path),
       extension_id_(extension_id),
@@ -99,7 +101,7 @@ ExtensionUnpacker::~ExtensionUnpacker() {
 
 DictionaryValue* ExtensionUnpacker::ReadManifest() {
   FilePath manifest_path =
-      temp_install_dir_.Append(extensions::Extension::kManifestFilename);
+      temp_install_dir_.Append(Extension::kManifestFilename);
   if (!file_util::PathExists(manifest_path)) {
     SetError(errors::kInvalidManifest);
     return NULL;
@@ -124,7 +126,7 @@ DictionaryValue* ExtensionUnpacker::ReadManifest() {
 bool ExtensionUnpacker::ReadAllMessageCatalogs(
     const std::string& default_locale) {
   FilePath locales_path =
-    temp_install_dir_.Append(extensions::Extension::kLocaleFolder);
+    temp_install_dir_.Append(Extension::kLocaleFolder);
 
   // Not all folders under _locales have to be valid locales.
   file_util::FileEnumerator locales(locales_path,
@@ -140,7 +142,7 @@ bool ExtensionUnpacker::ReadAllMessageCatalogs(
       continue;
 
     FilePath messages_path =
-      locale_path.Append(extensions::Extension::kMessagesFilename);
+      locale_path.Append(Extension::kMessagesFilename);
 
     if (!ReadMessageCatalog(messages_path))
       return false;
@@ -178,7 +180,7 @@ bool ExtensionUnpacker::Run() {
     return false;  // Error was already reported.
 
   std::string error;
-  scoped_refptr<extensions::Extension> extension(extensions::Extension::Create(
+  scoped_refptr<Extension> extension(Extension::Create(
       temp_install_dir_,
       location_,
       *parsed_manifest_,
@@ -190,7 +192,7 @@ bool ExtensionUnpacker::Run() {
     return false;
   }
 
-  std::vector<std::string> warnings;
+  Extension::InstallWarningVector warnings;
   if (!extension_file_util::ValidateExtension(extension.get(),
                                               &error, &warnings)) {
     SetError(error);

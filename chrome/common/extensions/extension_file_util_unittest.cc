@@ -383,7 +383,7 @@ TEST(ExtensionFileUtil, ValidateThemeUTF8) {
       kManifest, temp.path(), Extension::LOAD, 0, &error);
   ASSERT_TRUE(extension.get()) << error;
 
-  std::vector<std::string> warnings;
+  Extension::InstallWarningVector warnings;
   EXPECT_TRUE(extension_file_util::ValidateExtension(extension,
                                                      &error, &warnings)) <<
       error;
@@ -410,7 +410,7 @@ TEST(ExtensionFileUtil, MAYBE_BackgroundScriptsMustExist) {
   value->Set("background.scripts", scripts);
 
   std::string error;
-  std::vector<std::string> warnings;
+  Extension::InstallWarningVector warnings;
   scoped_refptr<Extension> extension = LoadExtensionManifest(
       value.get(), temp.path(), Extension::LOAD, 0, &error);
   ASSERT_TRUE(extension.get()) << error;
@@ -509,10 +509,14 @@ TEST(ExtensionFileUtil, WarnOnPrivateKey) {
       ext_path, "the_id", Extension::EXTERNAL_PREF,
       Extension::NO_FLAGS, &error));
   ASSERT_TRUE(extension.get()) << error;
-  EXPECT_THAT(extension->install_warnings(),
-              testing::ElementsAre(
-                  testing::ContainsRegex(
-                      "extension includes the key file.*ext_root.a_key.pem")));
+  ASSERT_EQ(1u, extension->install_warnings().size());
+  EXPECT_THAT(
+      extension->install_warnings(),
+      testing::ElementsAre(
+          testing::Field(
+              &Extension::InstallWarning::message,
+              testing::ContainsRegex(
+                  "extension includes the key file.*ext_root.a_key.pem"))));
 
   // Turn the warning into an error with ERROR_ON_PRIVATE_KEY.
   extension = extension_file_util::LoadExtension(

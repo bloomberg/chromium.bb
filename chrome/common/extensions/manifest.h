@@ -33,7 +33,7 @@ class Manifest {
   // be populated if there are keys in the manifest that cannot be specified by
   // the extension type.
   void ValidateManifest(std::string* error,
-                        std::vector<std::string>* warnings) const;
+                        Extension::InstallWarningVector* warnings) const;
 
   // The version of this extension's manifest. We increase the manifest
   // version when making breaking changes to the extension system. If the

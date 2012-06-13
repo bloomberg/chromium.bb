@@ -187,13 +187,17 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   }
 
   // Add install warnings (these are not the same as warnings!).
-  const std::vector<std::string>& install_warnings =
+  const Extension::InstallWarningVector& install_warnings =
       extension->install_warnings();
   if (!install_warnings.empty()) {
     scoped_ptr<ListValue> list(new ListValue());
-    for (std::vector<std::string>::const_iterator it = install_warnings.begin();
-         it != install_warnings.end(); ++it) {
-      list->Append(Value::CreateStringValue(*it));
+    for (Extension::InstallWarningVector::const_iterator it =
+             install_warnings.begin(); it != install_warnings.end(); ++it) {
+      DictionaryValue* item = new DictionaryValue();
+      item->SetBoolean("isHTML",
+                       it->format == Extension::InstallWarning::FORMAT_HTML);
+      item->SetString("message", it->message);
+      list->Append(item);
     }
     extension_data->Set("installWarnings", list.release());
   }

@@ -169,6 +169,10 @@ html[dir='rtl'] .extension-list-item {
   display: inline-block;
 }
 
+.install-warnings a {
+  -webkit-margin-start: 0;
+}
+
 .butter-bar,
 .install-warnings,
 .extension-warnings {

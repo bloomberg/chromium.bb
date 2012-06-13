@@ -67,7 +67,7 @@ base::DictionaryValue* LoadManifest(const FilePath& extension_root,
 // returned in |error|.
 bool ValidateExtension(const extensions::Extension* extension,
                        std::string* error,
-                       std::vector<std::string>* warnings);
+                       extensions::Extension::InstallWarningVector* warnings);
 
 // Returns a list of files that contain private keys inside |extension_dir|.
 std::vector<FilePath> FindPrivateKeyFiles(const FilePath& extension_dir);

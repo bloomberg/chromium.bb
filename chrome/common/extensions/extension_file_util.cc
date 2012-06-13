@@ -152,7 +152,7 @@ scoped_refptr<Extension> LoadExtension(const FilePath& extension_path,
   if (!extension.get())
     return NULL;
 
-  std::vector<std::string> warnings;
+  Extension::InstallWarningVector warnings;
   if (!ValidateExtension(extension.get(), error, &warnings))
     return NULL;
   extension->AddInstallWarnings(warnings);
@@ -230,7 +230,7 @@ std::vector<FilePath> FindPrivateKeyFiles(const FilePath& extension_dir) {
 
 bool ValidateExtension(const Extension* extension,
                        std::string* error,
-                       std::vector<std::string>* warnings) {
+                       Extension::InstallWarningVector* warnings) {
   // Validate icons exist.
   for (ExtensionIconSet::IconMap::const_iterator iter =
            extension->icons().map().begin();
@@ -418,9 +418,11 @@ bool ValidateExtension(const Extension* extension,
     }
   } else {
     for (size_t i = 0; i < private_keys.size(); ++i) {
-      warnings->push_back(l10n_util::GetStringFUTF8(
-          IDS_EXTENSION_CONTAINS_PRIVATE_KEY,
-          private_keys[i].LossyDisplayName()));
+      warnings->push_back(Extension::InstallWarning(
+          Extension::InstallWarning::FORMAT_TEXT,
+          l10n_util::GetStringFUTF8(
+              IDS_EXTENSION_CONTAINS_PRIVATE_KEY,
+              private_keys[i].LossyDisplayName())));
     }
     // Only warn; don't block loading the extension.
   }

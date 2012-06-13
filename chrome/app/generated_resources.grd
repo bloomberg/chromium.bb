@@ -4506,6 +4506,9 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
       <message name="IDS_EXTENSION_CANNOT_INSTALL_OWN_PRIVATE_KEY" desc="Error message when a user tries to install an extension that contains its own private key.">
         Cannot install extension that contains its own private key: <ph name="KEY_PATH">$1<ex>relative/path/to/file.pem</ex></ph>
       </message>
+      <message name="IDS_EXTENSION_MANIFEST_VERSION_OLD" desc="Warning message when a developer tries to load an extension that uses a manifest version that will soon be disallowed.">
+        Manifest version 1 will be unsupported soon. You should <ph name="LINK_START">$1<ex>&lt;a href='http://code.google.com/chrome/extensions/manifestVersion.html'&gt;</ex></ph>upgrade to version 2<ph name="LINK_END">$2<ex>&lt;/a&gt;</ex></ph>.
+      </message>
 
       <!-- Extension installed bubble -->
       <message name="IDS_EXTENSION_BUNDLE_INSTALLED_HEADING_EXTENSIONS" desc="First line in the content area of the extension bundle installed bubble. Instructs which extensions were installed.">

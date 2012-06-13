@@ -260,7 +260,9 @@ cr.define('options', function() {
         panel.hidden = false;
         var list = panel.querySelector('ul');
         extension.installWarnings.forEach(function(warning) {
-          list.appendChild(document.createElement('li')).innerText = warning;
+          var li = document.createElement('li');
+          li[warning.isHTML ? 'innerHTML' : 'innerText'] = warning.message;
+          list.appendChild(li);
         });
       }
 

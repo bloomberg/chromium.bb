@@ -189,7 +189,7 @@ TEST(ExtensionTest, GetAbsolutePathNoError) {
       "absolute.json");
   EXPECT_TRUE(extension.get());
   std::string err;
-  std::vector<std::string> warnings;
+  Extension::InstallWarningVector warnings;
   EXPECT_TRUE(extension_file_util::ValidateExtension(extension.get(),
                                                      &err, &warnings));
   EXPECT_EQ(0U, warnings.size());
