@@ -68,6 +68,8 @@
     'command_buffer/service/shader_manager.cc',
     'command_buffer/service/shader_translator.h',
     'command_buffer/service/shader_translator.cc',
+    'command_buffer/service/shader_translator_cache.h',
+    'command_buffer/service/shader_translator_cache.cc',
     'command_buffer/service/stream_texture.h',
     'command_buffer/service/stream_texture_manager.h',
     'command_buffer/service/texture_definition.cc',

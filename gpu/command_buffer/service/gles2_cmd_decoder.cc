@@ -43,6 +43,7 @@
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
 #include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/command_buffer/service/shader_translator.h"
+#include "gpu/command_buffer/service/shader_translator_cache.h"
 #include "gpu/command_buffer/service/stream_texture.h"
 #include "gpu/command_buffer/service/stream_texture_manager.h"
 #include "gpu/command_buffer/service/texture_definition.h"
@@ -1511,8 +1512,8 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   error::Error current_decoder_error_;
 
   bool use_shader_translator_;
-  scoped_ptr<ShaderTranslator> vertex_translator_;
-  scoped_ptr<ShaderTranslator> fragment_translator_;
+  scoped_refptr<ShaderTranslator> vertex_translator_;
+  scoped_refptr<ShaderTranslator> fragment_translator_;
 
   DisallowedFeatures disallowed_features_;
 
@@ -2308,7 +2309,6 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
         feature_info_->feature_flags().arb_texture_rectangle ? 1 : 0;
   }
 
-  vertex_translator_.reset(new ShaderTranslator);
   ShShaderSpec shader_spec = force_webgl_glsl_validation_ ||
       feature_info_->feature_flags().chromium_webglsl ?
           SH_WEBGL_SPEC : SH_GLES2_SPEC;
@@ -2319,17 +2319,21 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
       needs_glsl_built_in_function_emulation_ ?
           ShaderTranslatorInterface::kGlslBuiltInFunctionEmulated :
           ShaderTranslatorInterface::kGlslBuiltInFunctionOriginal;
-  if (!vertex_translator_->Init(
-          SH_VERTEX_SHADER, shader_spec, &resources,
-          implementation_type, function_behavior)) {
+
+  ShaderTranslatorCache* cache = ShaderTranslatorCache::GetInstance();
+  vertex_translator_ = cache->GetTranslator(
+      SH_VERTEX_SHADER, shader_spec, &resources,
+      implementation_type, function_behavior);
+  if (!vertex_translator_.get()) {
     LOG(ERROR) << "Could not initialize vertex shader translator.";
     Destroy(true);
     return false;
   }
-  fragment_translator_.reset(new ShaderTranslator);
-  if (!fragment_translator_->Init(
-          SH_FRAGMENT_SHADER, shader_spec, &resources,
-          implementation_type, function_behavior)) {
+
+  fragment_translator_ = cache->GetTranslator(
+      SH_FRAGMENT_SHADER, shader_spec, &resources,
+      implementation_type, function_behavior);
+  if (!fragment_translator_.get()) {
     LOG(ERROR) << "Could not initialize fragment shader translator.";
     Destroy(true);
     return false;

@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/shader_translator.h"
 
 #include <string.h>
+#include <algorithm>
 
 #include "base/at_exit.h"
 #include "base/logging.h"
@@ -76,6 +77,12 @@ void GetVariableInfo(ShHandle compiler, ShShaderInfo var_type,
 namespace gpu {
 namespace gles2 {
 
+ShaderTranslator::DestructionObserver::DestructionObserver() {
+}
+
+ShaderTranslator::DestructionObserver::~DestructionObserver() {
+}
+
 ShaderTranslator::ShaderTranslator()
     : compiler_(NULL),
       implementation_is_glsl_es_(false),
@@ -83,6 +90,10 @@ ShaderTranslator::ShaderTranslator()
 }
 
 ShaderTranslator::~ShaderTranslator() {
+  FOR_EACH_OBSERVER(DestructionObserver,
+                    destruction_observers_,
+                    OnDestruct(this));
+
   if (compiler_ != NULL)
     ShDestruct(compiler_);
 }
@@ -168,6 +179,16 @@ ShaderTranslator::attrib_map() const {
 const ShaderTranslatorInterface::VariableMap&
 ShaderTranslator::uniform_map() const {
   return uniform_map_;
+}
+
+void ShaderTranslator::AddDestructionObserver(
+    DestructionObserver* observer) {
+  destruction_observers_.AddObserver(observer);
+}
+
+void ShaderTranslator::RemoveDestructionObserver(
+    DestructionObserver* observer) {
+  destruction_observers_.RemoveObserver(observer);
 }
 
 void ShaderTranslator::ClearResults() {

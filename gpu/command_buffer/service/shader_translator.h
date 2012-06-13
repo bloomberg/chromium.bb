@@ -9,7 +9,9 @@
 
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "gpu/gpu_export.h"
 #include "third_party/angle/include/GLSLANG/ShaderLang.h"
 
@@ -74,10 +76,20 @@ class ShaderTranslatorInterface {
 
 // Implementation of ShaderTranslatorInterface
 class GPU_EXPORT ShaderTranslator
-    : NON_EXPORTED_BASE(public ShaderTranslatorInterface) {
+    : public base::RefCounted<ShaderTranslator>,
+      NON_EXPORTED_BASE(public ShaderTranslatorInterface) {
  public:
+  class DestructionObserver {
+   public:
+    DestructionObserver();
+    virtual ~DestructionObserver();
+
+    virtual void OnDestruct(ShaderTranslator* translator) = 0;
+   private:
+    DISALLOW_COPY_AND_ASSIGN(DestructionObserver);
+  };
+
   ShaderTranslator();
-  virtual ~ShaderTranslator();
 
   // Overridden from ShaderTranslatorInterface.
   virtual bool Init(
@@ -98,7 +110,12 @@ class GPU_EXPORT ShaderTranslator
   virtual const VariableMap& attrib_map() const OVERRIDE;
   virtual const VariableMap& uniform_map() const OVERRIDE;
 
+  void AddDestructionObserver(DestructionObserver* observer);
+  void RemoveDestructionObserver(DestructionObserver* observer);
+
  private:
+  virtual ~ShaderTranslator();
+
   void ClearResults();
 
   ShHandle compiler_;
@@ -108,6 +125,9 @@ class GPU_EXPORT ShaderTranslator
   VariableMap uniform_map_;
   bool implementation_is_glsl_es_;
   bool needs_built_in_function_emulation_;
+  ObserverList<DestructionObserver> destruction_observers_;
+
+  friend class base::RefCounted<ShaderTranslator>;
 
   DISALLOW_COPY_AND_ASSIGN(ShaderTranslator);
 };
