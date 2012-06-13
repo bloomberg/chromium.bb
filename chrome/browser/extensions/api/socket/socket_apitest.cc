@@ -127,6 +127,9 @@ IN_PROC_BROWSER_TEST_F(SocketApiTest, SocketUDPExtension) {
   int port = host_port_pair.port();
   ASSERT_TRUE(port > 0);
 
+  // Test that sendTo() is properly resolving hostnames.
+  host_port_pair.set_host("LOCALhost");
+
   ResultCatcher catcher;
   catcher.RestrictToProfile(browser()->profile());
 

@@ -34,11 +34,27 @@ class SocketExtensionFunction : public AsyncAPIFunction {
   virtual bool Respond() OVERRIDE;
 };
 
-// Many of these socket functions are synchronous in the sense that
-// they don't involve blocking operations, but we've made them all
-// AsyncExtensionFunctions because the underlying UDPClientSocket
-// library wants all operations to happen on the same thread as the
-// one that created the socket. Too bad.
+class SocketExtensionWithDnsLookupFunction : public SocketExtensionFunction {
+ protected:
+  SocketExtensionWithDnsLookupFunction();
+  virtual ~SocketExtensionWithDnsLookupFunction();
+
+  void StartDnsLookup(const std::string& hostname);
+  virtual void AfterDnsLookup(int lookup_result) = 0;
+
+  std::string resolved_address_;
+
+ private:
+  void OnDnsLookup(int resolve_result);
+
+  // This instance is widely available through BrowserProcess, but we need to
+  // acquire it on the UI thread and then use it on the IO thread, so we keep a
+  // plain pointer to it here as we move from thread to thread.
+  IOThread* io_thread_;
+
+  scoped_ptr<net::HostResolver::RequestHandle> request_handle_;
+  scoped_ptr<net::AddressList> addresses_;
+};
 
 class SocketCreateFunction : public SocketExtensionFunction {
  public:
@@ -80,7 +96,7 @@ class SocketDestroyFunction : public SocketExtensionFunction {
   int socket_id_;
 };
 
-class SocketConnectFunction : public SocketExtensionFunction {
+class SocketConnectFunction : public SocketExtensionWithDnsLookupFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.connect")
 
@@ -93,24 +109,16 @@ class SocketConnectFunction : public SocketExtensionFunction {
   virtual bool Prepare() OVERRIDE;
   virtual void AsyncWorkStart() OVERRIDE;
 
+  // SocketExtensionWithDnsLookupFunction:
+  virtual void AfterDnsLookup(int lookup_result) OVERRIDE;
+
  private:
-  void StartDnsLookup();
-  void OnDnsLookup(int resolve_result);
   void StartConnect();
   void OnConnect(int result);
 
   int socket_id_;
   std::string hostname_;
-  std::string resolved_address_;
   int port_;
-
-  // This instance is widely available through BrowserProcess, but we need to
-  // acquire it on the UI thread and then use it on the IO thread, so we keep a
-  // plain pointer to it here as we move from thread to thread.
-  IOThread* io_thread_;
-
-  scoped_ptr<net::HostResolver::RequestHandle> request_handle_;
-  scoped_ptr<net::AddressList> addresses_;
 };
 
 class SocketDisconnectFunction : public SocketExtensionFunction {
@@ -204,7 +212,7 @@ class SocketRecvFromFunction : public SocketExtensionFunction {
   scoped_ptr<api::experimental_socket::RecvFrom::Params> params_;
 };
 
-class SocketSendToFunction : public SocketExtensionFunction {
+class SocketSendToFunction : public SocketExtensionWithDnsLookupFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.socket.sendTo")
 
@@ -218,11 +226,16 @@ class SocketSendToFunction : public SocketExtensionFunction {
   virtual void AsyncWorkStart() OVERRIDE;
   void OnCompleted(int result);
 
+  // SocketExtensionWithDnsLookupFunction:
+  virtual void AfterDnsLookup(int lookup_result) OVERRIDE;
+
  private:
+  void StartSendTo();
+
   int socket_id_;
   scoped_refptr<net::IOBuffer> io_buffer_;
   size_t io_buffer_size_;
-  std::string address_;
+  std::string hostname_;
   int port_;
 };
 

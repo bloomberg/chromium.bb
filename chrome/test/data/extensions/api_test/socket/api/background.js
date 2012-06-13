@@ -22,24 +22,23 @@ var succeeded = false;
 var waitCount = 0;
 
 // Many thanks to Dennis for his StackOverflow answer: http://goo.gl/UDanx
+// Since amended to handle BlobBuilder deprecation.
 function string2ArrayBuffer(string, callback) {
-  var bb = new WebKitBlobBuilder();
-  bb.append(string);
+  var blob = new Blob([string]);
   var f = new FileReader();
   f.onload = function(e) {
     callback(e.target.result);
   };
-  f.readAsArrayBuffer(bb.getBlob());
+  f.readAsArrayBuffer(blob);
 }
 
 function arrayBuffer2String(buf, callback) {
-  var bb = new WebKitBlobBuilder();
-  bb.append(buf);
+  var blob = new Blob([new Uint8Array(buf)]);
   var f = new FileReader();
   f.onload = function(e) {
     callback(e.target.result);
   };
-  f.readAsText(bb.getBlob());
+  f.readAsText(blob);
 }
 
 var testSocketCreation = function() {

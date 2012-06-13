@@ -32,12 +32,55 @@ const char kUDPOption[] = "udp";
 
 const char kSocketNotFoundError[] = "Socket not found";
 const char kSocketTypeInvalidError[] = "Socket type is not supported";
+const char kDnsLookupFailedError[] = "DNS resolution failed";
 
 void SocketExtensionFunction::Work() {
 }
 
 bool SocketExtensionFunction::Respond() {
   return error_.empty();
+}
+
+SocketExtensionWithDnsLookupFunction::SocketExtensionWithDnsLookupFunction()
+    : io_thread_(g_browser_process->io_thread()),
+      request_handle_(new net::HostResolver::RequestHandle),
+      addresses_(new net::AddressList) {
+}
+
+SocketExtensionWithDnsLookupFunction::~SocketExtensionWithDnsLookupFunction() {
+}
+
+void SocketExtensionWithDnsLookupFunction::StartDnsLookup(
+    const std::string& hostname) {
+  net::HostResolver* host_resolver =
+      HostResolverWrapper::GetInstance()->GetHostResolver(
+          io_thread_->globals()->host_resolver.get());
+  DCHECK(host_resolver);
+
+  // Yes, we are passing zero as the port. There are some interesting but not
+  // presently relevant reasons why HostResolver asks for the port of the
+  // hostname you'd like to resolve, even though it doesn't use that value in
+  // determining its answer.
+  net::HostPortPair host_port_pair(hostname, 0);
+
+  net::HostResolver::RequestInfo request_info(host_port_pair);
+  int resolve_result = host_resolver->Resolve(
+      request_info, addresses_.get(),
+      base::Bind(&SocketExtensionWithDnsLookupFunction::OnDnsLookup, this),
+      request_handle_.get(), net::BoundNetLog());
+
+  if (resolve_result != net::ERR_IO_PENDING)
+    OnDnsLookup(resolve_result);
+}
+
+void SocketExtensionWithDnsLookupFunction::OnDnsLookup(int resolve_result) {
+  if (resolve_result == net::OK) {
+    DCHECK(!addresses_->empty());
+    resolved_address_ = addresses_->front().ToStringWithoutPort();
+  } else {
+    error_ = kDnsLookupFailedError;
+  }
+  AfterDnsLookup(resolve_result);
 }
 
 SocketCreateFunction::SocketCreateFunction()
@@ -90,10 +133,7 @@ void SocketDestroyFunction::Work() {
     error_ = kSocketNotFoundError;
 }
 
-SocketConnectFunction::SocketConnectFunction()
-    : io_thread_(g_browser_process->io_thread()),
-      request_handle_(new net::HostResolver::RequestHandle()),
-      addresses_(new net::AddressList) {
+SocketConnectFunction::SocketConnectFunction() {
 }
 
 SocketConnectFunction::~SocketConnectFunction() {
@@ -107,41 +147,15 @@ bool SocketConnectFunction::Prepare() {
 }
 
 void SocketConnectFunction::AsyncWorkStart() {
-  StartDnsLookup();
+  StartDnsLookup(hostname_);
 }
 
-void SocketConnectFunction::StartDnsLookup() {
-  net::HostResolver* host_resolver =
-      HostResolverWrapper::GetInstance()->GetHostResolver(
-          io_thread_->globals()->host_resolver.get());
-  DCHECK(host_resolver);
-
-  // Yes, we are passing zero as the port. There are some interesting but not
-  // presently relevant reasons why HostResolver asks for the port of the
-  // hostname you'd like to resolve, even though it doesn't use that value in
-  // determining its answer.
-  net::HostPortPair host_port_pair(hostname_, 0);
-
-  net::HostResolver::RequestInfo request_info(host_port_pair);
-  int resolve_result = host_resolver->Resolve(
-      request_info, addresses_.get(),
-      base::Bind(&SocketConnectFunction::OnDnsLookup, this),
-      request_handle_.get(), net::BoundNetLog());
-
-  // Balanced in OnConnect().
-  AddRef();
-
-  if (resolve_result != net::ERR_IO_PENDING)
-    OnDnsLookup(resolve_result);
-}
-
-void SocketConnectFunction::OnDnsLookup(int resolve_result) {
-  if (resolve_result == net::OK) {
-    DCHECK(!addresses_->empty());
-    resolved_address_ = addresses_->front().ToStringWithoutPort();
+void SocketConnectFunction::AfterDnsLookup(int lookup_result) {
+  if (lookup_result == net::OK) {
     StartConnect();
   } else {
-    OnConnect(resolve_result);
+    result_.reset(Value::CreateIntegerValue(lookup_result));
+    AsyncWorkCompleted();
   }
 }
 
@@ -160,9 +174,6 @@ void SocketConnectFunction::StartConnect() {
 void SocketConnectFunction::OnConnect(int result) {
   result_.reset(Value::CreateIntegerValue(result));
   AsyncWorkCompleted();
-
-  // Added in StartDnsLookup().
-  Release();
 }
 
 bool SocketDisconnectFunction::Prepare() {
@@ -336,7 +347,7 @@ bool SocketSendToFunction::Prepare() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &socket_id_));
   base::BinaryValue *data = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetBinary(1, &data));
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(2, &address_));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(2, &hostname_));
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(3, &port_));
 
   io_buffer_size_ = data->GetSize();
@@ -345,6 +356,19 @@ bool SocketSendToFunction::Prepare() {
 }
 
 void SocketSendToFunction::AsyncWorkStart() {
+  StartDnsLookup(hostname_);
+}
+
+void SocketSendToFunction::AfterDnsLookup(int lookup_result) {
+  if (lookup_result == net::OK) {
+    StartSendTo();
+  } else {
+    result_.reset(Value::CreateIntegerValue(lookup_result));
+    AsyncWorkCompleted();
+  }
+}
+
+void SocketSendToFunction::StartSendTo() {
   Socket* socket = controller()->GetSocket(socket_id_);
   if (!socket) {
     error_ = kSocketNotFoundError;
@@ -352,7 +376,7 @@ void SocketSendToFunction::AsyncWorkStart() {
     return;
   }
 
-  socket->SendTo(io_buffer_, io_buffer_size_, address_, port_,
+  socket->SendTo(io_buffer_, io_buffer_size_, resolved_address_, port_,
                  base::Bind(&SocketSendToFunction::OnCompleted, this));
 }
 
