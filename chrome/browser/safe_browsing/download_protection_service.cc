@@ -425,7 +425,6 @@ class DownloadProtectionService::CheckClientDownloadRequest
     // reference to this object.  We'll eventually wind up in some method on
     // the UI thread that will call FinishRequest() again.  If FinishRequest()
     // is called a second time, it will be a no-op.
-    service_ = NULL;
   }
 
   // From the net::URLFetcherDelegate interface.
@@ -716,6 +715,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
     if (service_) {
       callback_.Run(result);
       service_->RequestFinished(this);
+      service_ = NULL;
     } else {
       callback_.Run(SAFE);
     }
