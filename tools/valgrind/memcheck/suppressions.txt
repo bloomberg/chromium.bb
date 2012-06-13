@@ -5590,11 +5590,20 @@
    fun:_ZN21ShortcutsProviderTest5SetUpEv
 }
 {
-   bug_132621
+   bug_132621_a
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN19TestExtensionSystem22CreateExtensionServiceEPK11CommandLineRK8FilePathb
    fun:_ZN15ExtensionUITest5SetUpEv
+}
+{
+   bug_132621_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN19TestExtensionSystem22CreateExtensionServiceEPK11CommandLineRK8FilePathb
+   fun:_ZN28ChromeLauncherControllerTestC2Ev
+   fun:_ZN*ChromeLauncherControllerTest_*_TestC1Ev
+   fun:_ZN7testing8internal15TestFactoryImplI*ChromeLauncherControllerTest_*_TestE10CreateTestEv
 }
 
 #-----------------------------------------------------------------------
