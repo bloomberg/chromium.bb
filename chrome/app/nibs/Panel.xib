@@ -72,7 +72,7 @@
 					<object class="NSButton" id="310927414">
 						<reference key="NSNextResponder" ref="304499912"/>
 						<int key="NSvFlags">301</int>
-						<string key="NSFrame">{{5, -5}, {14, 16}}</string>
+						<string key="NSFrame">{{5, -5}, {16, 16}}</string>
 						<reference key="NSSuperview" ref="304499912"/>
 						<int key="NSViewLayerContentsRedrawPolicy">2</int>
 						<bool key="NSEnabled">YES</bool>
@@ -97,7 +97,7 @@
 					<object class="NSButton" id="722193969">
 						<reference key="NSNextResponder" ref="304499912"/>
 						<int key="NSvFlags">301</int>
-						<string key="NSFrameSize">{14, 16}</string>
+						<string key="NSFrameSize">{16, 16}</string>
 						<reference key="NSSuperview" ref="304499912"/>
 						<int key="NSViewLayerContentsRedrawPolicy">2</int>
 						<bool key="NSEnabled">YES</bool>
@@ -118,7 +118,7 @@
 					<object class="NSButton" id="39067705">
 						<reference key="NSNextResponder" ref="304499912"/>
 						<int key="NSvFlags">301</int>
-						<string key="NSFrameSize">{14, 16}</string>
+						<string key="NSFrameSize">{16, 16}</string>
 						<reference key="NSSuperview" ref="304499912"/>
 						<int key="NSViewLayerContentsRedrawPolicy">2</int>
 						<bool key="NSEnabled">YES</bool>

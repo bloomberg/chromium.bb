@@ -236,8 +236,8 @@ static NSEvent* MakeMouseEvent(NSEventType type,
       // use solid black-ish colors.
       NSColor* backgroundColor = isActive ?
         [NSColor colorWithCalibratedRed:0x3a/255.0
-                                  green:0x3c/255.0
-                                   blue:0x3c/255.0
+                                  green:0x3d/255.0
+                                   blue:0x3d/255.0
                                   alpha:1.0] :
         [NSColor colorWithCalibratedRed:0x7a/255.0
                                   green:0x7c/255.0
@@ -249,9 +249,9 @@ static NSEvent* MakeMouseEvent(NSEventType type,
     }
 
     strokeColor = isActive ?
-      [NSColor colorWithCalibratedRed:0x4a/255.0
-                                green:0x4c/255.0
-                                 blue:0x4c/255.0
+      [NSColor colorWithCalibratedRed:0x2a/255.0
+                                green:0x2c/255.0
+                                 blue:0x2c/255.0
                                 alpha:1.0] :
       [NSColor colorWithCalibratedRed:0x5a/255.0
                                 green:0x5c/255.0
@@ -443,7 +443,7 @@ static NSEvent* MakeMouseEvent(NSEventType type,
   titleFrame.origin.x = 2 * kIconAndTextPadding + iconWidth;
   // In bottom-heavy text labels, let's compensate for occasional integer
   // rounding to avoid text label to feel too low.
-  titleFrame.origin.y = (NSHeight(bounds) - NSHeight(titleFrame)) / 2 + 1;
+  titleFrame.origin.y = (NSHeight(bounds) - NSHeight(titleFrame)) / 2 + 2;
   titleFrame.size.width = titleWidth;
   [title_ setFrame:titleFrame];
 }
