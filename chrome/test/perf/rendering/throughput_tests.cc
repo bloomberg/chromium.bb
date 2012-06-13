@@ -26,7 +26,6 @@
 #include "chrome/test/perf/perf_test.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
-#include "content/test/gpu/gpu_test_config.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/base/net_util.h"
@@ -65,7 +64,6 @@ class ThroughputTest : public BrowserPerfTest {
       spinup_time_ms_(kSpinUpTimeMs),
       run_time_ms_(kRunTimeMs) {}
 
-  // This indicates running on GPU bots, not necessarily using the GPU.
   bool IsGpuAvailable() const {
     return CommandLine::ForCurrentProcess()->HasSwitch("enable-gpu");
   }
@@ -507,23 +505,14 @@ IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, DrawImageShadowGPU) {
 }
 
 IN_PROC_BROWSER_TEST_F(ThroughputTestSW, CanvasToCanvasDrawSW) {
-  if (IsGpuAvailable() &&
-      GPUTestConfig::CurrentConfigMatches("MAC AMD"))
-    return;
   RunTest("canvas2d_balls_draw_from_canvas", kNone);
 }
 
 IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, CanvasToCanvasDrawGPU) {
-  if (IsGpuAvailable() &&
-      GPUTestConfig::CurrentConfigMatches("MAC AMD"))
-    return;
   RunTest("canvas2d_balls_draw_from_canvas", kNone | kIsGpuCanvasTest);
 }
 
 IN_PROC_BROWSER_TEST_F(ThroughputTestSW, CanvasTextSW) {
-  if (IsGpuAvailable() &&
-      GPUTestConfig::CurrentConfigMatches("MAC AMD"))
-    return;
   RunTest("canvas2d_balls_text", kNone);
 }
 
@@ -550,9 +539,6 @@ IN_PROC_BROWSER_TEST_F(ThroughputTestSW, CanvasSingleImageSW) {
 }
 
 IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, CanvasSingleImageGPU) {
-  if (IsGpuAvailable() &&
-      GPUTestConfig::CurrentConfigMatches("MAC AMD"))
-    return;
   RunCanvasBenchTest("single_image", kNone | kIsGpuCanvasTest);
 }
 
