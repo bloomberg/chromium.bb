@@ -30,7 +30,10 @@ def fix_python_path(cmd):
 def gtest_list_tests(executable):
   cmd = [executable, '--gtest_list_tests']
   cmd = fix_python_path(cmd)
-  p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  try:
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  except OSError, e:
+    raise Failure('Failed to run %s\n%s' % (executable, str(e)))
   out, err = p.communicate()
   if p.returncode:
     raise Failure('Failed to run %s\n%s' % (executable, err), p.returncode)

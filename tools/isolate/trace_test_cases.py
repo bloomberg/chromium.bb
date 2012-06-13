@@ -60,7 +60,9 @@ def trace_test_case(
       except trace_inputs.TracingFailure, e:
         print >> sys.stderr, '\nTracing failed for: %s' % ' '.join(cmd)
         print >> sys.stderr, str(e)
-    simplified = trace_inputs.extract_directories(root_dir, results.files)
+    simplified = [
+      f.path for f in trace_inputs.extract_directories(root_dir, results.files)
+    ]
     if simplified:
       variables = isolate_common.generate_dict(simplified, cwd_dir, product_dir)
     else:
@@ -105,7 +107,8 @@ def get_test_cases(executable, skip):
 
 
 def trace_test_cases(
-    executable, root_dir, cwd_dir, product_dir, leak, skip, jobs, timeout):
+    executable, root_dir, cwd_dir, product_dir, leak, skip, jobs, timeout,
+    output_file):
   """Traces test cases one by one."""
   tests = get_test_cases(executable, skip)
   if not tests:
@@ -117,11 +120,17 @@ def trace_test_cases(
   pool = multiprocessing.Pool(processes=jobs)
   start = time.time()
   try:
-    g = ((t, executable, root_dir, cwd_dir, product_dir, leak) for t in tests)
-    it = pool.imap_unordered(task, g)
+    g = [(t, executable, root_dir, cwd_dir, product_dir, leak) for t in tests]
+    if jobs != 1:
+      it = pool.imap_unordered(task, g)
+    else:
+      it = (task(x) for x in g).__iter__()
     while True:
       try:
-        result = it.next(timeout=timeout)
+        if timeout:
+          result = it.next(timeout=timeout)
+        else:
+          result = it.next()
       except StopIteration:
         break
       case = result.pop('case')
@@ -132,9 +141,9 @@ def trace_test_cases(
             index * 100. / len(tests),
             time.time() - start,
             case)
-      sys.stdout.write(
+      sys.stderr.write(
           '\r%s%s' % (line, ' ' * max(0, len(last_line) - len(line))))
-      sys.stdout.flush()
+      sys.stderr.flush()
       last_line = line
       # TODO(maruel): Retry failed tests.
       out[case] = result
@@ -149,7 +158,7 @@ def trace_test_cases(
     pool.terminate()
     raise
   finally:
-    trace_inputs.write_json('%s.test_cases' % executable, out, len(out) > 20)
+    trace_inputs.write_json(output_file, out, len(out) > 20)
     pool.close()
     pool.join()
 
@@ -158,7 +167,6 @@ def main():
   """CLI frontend to validate arguments."""
   parser = optparse.OptionParser(
       usage='%prog <options> [gtest]')
-  parser.allow_interspersed_args = False
   parser.add_option(
       '-c', '--cwd',
       default='chrome',
@@ -179,6 +187,9 @@ def main():
       action='store_true',
       help='Leak trace files')
   parser.add_option(
+      '-o', '--out',
+      help='output file, defaults to <executable>.test_cases')
+  parser.add_option(
       '-s', '--skip',
       default=[],
       action='append',
@@ -198,7 +209,11 @@ def main():
     parser.error(
         'Please provide the executable line to run, if you need fancy things '
         'like xvfb, start this script from inside xvfb, it\'ll be faster.')
-  executable = os.path.join(options.root_dir, options.product_dir, args[0])
+  executable = args[0]
+  if not os.path.isabs(executable):
+    executable = os.path.join(options.root_dir, options.product_dir, args[0])
+  if not options.out:
+    options.out = '%s.test_cases' % executable
   return trace_test_cases(
       executable,
       options.root_dir,
@@ -207,7 +222,8 @@ def main():
       options.leak,
       options.skip,
       options.jobs,
-      options.timeout)
+      options.timeout,
+      options.out)
 
 
 if __name__ == '__main__':
