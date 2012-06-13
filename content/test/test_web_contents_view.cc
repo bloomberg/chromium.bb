@@ -107,7 +107,8 @@ bool TestWebContentsView::IsEventTracking() const {
 void TestWebContentsView::CloseTabAfterEventTracking() {
 }
 
-void TestWebContentsView::GetViewBounds(gfx::Rect* out) const {
+gfx::Rect TestWebContentsView::GetViewBounds() const {
+  return gfx::Rect();
 }
 
 }  // namespace content

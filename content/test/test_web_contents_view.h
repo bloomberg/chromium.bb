@@ -57,7 +57,7 @@ class TestWebContentsView : public WebContentsView,
   virtual WebDropData* GetDropData() const OVERRIDE;
   virtual bool IsEventTracking() const OVERRIDE;
   virtual void CloseTabAfterEventTracking() OVERRIDE;
-  virtual void GetViewBounds(gfx::Rect* out) const OVERRIDE;
+  virtual gfx::Rect GetViewBounds() const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestWebContentsView);

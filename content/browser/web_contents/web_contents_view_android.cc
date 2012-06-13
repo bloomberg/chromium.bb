@@ -112,8 +112,9 @@ void WebContentsViewAndroid::CloseTabAfterEventTracking() {
   NOTIMPLEMENTED();
 }
 
-void WebContentsViewAndroid::GetViewBounds(gfx::Rect* out) const {
+gfx::Rect WebContentsViewAndroid::GetViewBounds() const {
   NOTIMPLEMENTED();
+  return gfx::Rect();
 }
 
 void WebContentsViewAndroid::ShowContextMenu(

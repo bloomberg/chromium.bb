@@ -392,8 +392,8 @@ bool WebContentsViewAura::IsEventTracking() const {
 void WebContentsViewAura::CloseTabAfterEventTracking() {
 }
 
-void WebContentsViewAura::GetViewBounds(gfx::Rect* out) const {
-  *out = window_->GetBoundsInRootWindow();
+gfx::Rect WebContentsViewAura::GetViewBounds() const {
+  return window_->GetBoundsInRootWindow();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

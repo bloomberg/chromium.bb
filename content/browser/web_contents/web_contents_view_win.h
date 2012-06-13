@@ -72,7 +72,7 @@ class CONTENT_EXPORT WebContentsViewWin
   virtual WebDropData* GetDropData() const OVERRIDE;
   virtual bool IsEventTracking() const OVERRIDE;
   virtual void CloseTabAfterEventTracking() OVERRIDE;
-  virtual void GetViewBounds(gfx::Rect* out) const OVERRIDE;
+  virtual gfx::Rect GetViewBounds() const OVERRIDE;
 
   // Implementation of RenderViewHostDelegateView.
   virtual void ShowContextMenu(

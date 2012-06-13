@@ -22,8 +22,8 @@
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
-#import "ui/base/cocoa/focus_tracker.h"
 #include "ui/base/clipboard/custom_data_helper.h"
+#import "ui/base/cocoa/focus_tracker.h"
 #include "ui/base/dragdrop/cocoa_dnd_util.h"
 
 using WebKit::WebDragOperation;
@@ -320,9 +320,10 @@ void WebContentsViewMac::CloseTabAfterEventTracking() {
                     afterDelay:0.0];
 }
 
-void WebContentsViewMac::GetViewBounds(gfx::Rect* out) const {
+gfx::Rect WebContentsViewMac::GetViewBounds() const {
   // This method is not currently used on mac.
   NOTIMPLEMENTED();
+  return gfx::Rect();
 }
 
 void WebContentsViewMac::CloseTab() {

@@ -52,7 +52,7 @@ class CONTENT_EXPORT WebContentsView {
 
   // Computes the rectangle for the native widget that contains the contents of
   // the tab in the screen coordinate system.
-  virtual void GetContainerBounds(gfx::Rect *out) const = 0;
+  virtual void GetContainerBounds(gfx::Rect* out) const = 0;
 
   // Helper function for GetContainerBounds. Most callers just want to know the
   // size, and this makes it more clear.
@@ -69,8 +69,7 @@ class CONTENT_EXPORT WebContentsView {
   virtual void SetPageTitle(const string16& title) = 0;
 
   // Used to notify the view that a tab has crashed.
-  virtual void OnTabCrashed(base::TerminationStatus status,
-                            int error_code) = 0;
+  virtual void OnTabCrashed(base::TerminationStatus status, int error_code) = 0;
 
   // TODO(brettw) this is a hack. It's used in two places at the time of this
   // writing: (1) when render view hosts switch, we need to size the replaced
@@ -118,8 +117,7 @@ class CONTENT_EXPORT WebContentsView {
   virtual void CloseTabAfterEventTracking() = 0;
 
   // Get the bounds of the View, relative to the parent.
-  // TODO(beng): Return a rect rather than using an out param.
-  virtual void GetViewBounds(gfx::Rect* out) const = 0;
+  virtual gfx::Rect GetViewBounds() const = 0;
 };
 
 }  // namespace content

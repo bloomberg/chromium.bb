@@ -259,15 +259,17 @@ bool WebContentsViewGtk::IsEventTracking() const {
 void WebContentsViewGtk::CloseTabAfterEventTracking() {
 }
 
-void WebContentsViewGtk::GetViewBounds(gfx::Rect* out) const {
+gfx::Rect WebContentsViewGtk::GetViewBounds() const {
+  gfx::Rect rect;
   GdkWindow* window = gtk_widget_get_window(GetNativeView());
   if (!window) {
-    out->SetRect(0, 0, requested_size_.width(), requested_size_.height());
-    return;
+    rect.SetRect(0, 0, requested_size_.width(), requested_size_.height());
+    return rect;
   }
   int x = 0, y = 0, w, h;
   gdk_window_get_geometry(window, &x, &y, &w, &h, NULL);
-  out->SetRect(x, y, w, h);
+  rect.SetRect(x, y, w, h);
+  return rect;
 }
 
 WebContents* WebContentsViewGtk::web_contents() {

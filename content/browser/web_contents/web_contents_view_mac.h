@@ -81,7 +81,7 @@ class WebContentsViewMac
   virtual WebDropData* GetDropData() const OVERRIDE;
   virtual bool IsEventTracking() const OVERRIDE;
   virtual void CloseTabAfterEventTracking() OVERRIDE;
-  virtual void GetViewBounds(gfx::Rect* out) const OVERRIDE;
+  virtual gfx::Rect GetViewBounds() const OVERRIDE;
 
   // Backend implementation of RenderViewHostDelegateView.
   virtual void ShowContextMenu(

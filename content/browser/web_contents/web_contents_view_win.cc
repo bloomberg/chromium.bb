@@ -233,10 +233,10 @@ bool WebContentsViewWin::IsEventTracking() const {
 void WebContentsViewWin::CloseTabAfterEventTracking() {
 }
 
-void WebContentsViewWin::GetViewBounds(gfx::Rect* out) const {
+gfx::Rect WebContentsViewWin::GetViewBounds() const {
   RECT r;
   GetWindowRect(hwnd(), &r);
-  *out = gfx::Rect(r);
+  return gfx::Rect(r);
 }
 
 void WebContentsViewWin::ShowContextMenu(
