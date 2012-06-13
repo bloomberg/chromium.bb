@@ -34,7 +34,7 @@
   <target name="compile" depends="init"
           description="compile the source " >
     <!-- Compile the java code from ${src} into ${dest.dir} -->
-    <javac srcdir="${src}" destdir="${dest.dir}" debug="true">
+    <javac srcdir="${src}" destdir="${dest.dir}" debug="true" includeantruntime="false">
       <classpath>
         <pathelement path="${location.base}/android.jar" />
         <pathelement path="${out.dir}/chromium_base.jar" />

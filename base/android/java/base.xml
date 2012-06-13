@@ -42,7 +42,7 @@
            defaulting to build.sysclasspath=last; 
            set to false for repeatable builds
       -->
-    <javac srcdir="${src}" destdir="${dest.dir}" debug="true">
+    <javac srcdir="${src}" destdir="${dest.dir}" debug="true" includeantruntime="false">
       <classpath>
         <path location="${location.base}/android.jar"/>
       </classpath>

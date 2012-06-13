@@ -37,7 +37,7 @@
     <!-- Compile the java code from ${src} into ${classes.dir} -->
     <!-- Gyp target should have compiled aidl files into java source files in
          lib.jar (see content.gyp:common_aidl). -->
-    <javac srcdir="${src}:${out.dir}" destdir="${classes.dir}" debug="true">
+    <javac srcdir="${src}:${out.dir}" destdir="${classes.dir}" debug="true" includeantruntime="false">
       <classpath>
         <pathelement path="${location.base}/android.jar" />
         <pathelement path="${jar.dir}/chromium_base.jar" />
