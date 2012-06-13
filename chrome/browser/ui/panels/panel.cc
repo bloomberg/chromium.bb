@@ -7,11 +7,17 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/extensions/api/tabs/tabs_constants.h"
+#include "chrome/browser/extensions/extension_window_controller.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_strip.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -21,6 +27,62 @@
 #include "ui/gfx/rect.h"
 
 using content::RenderViewHost;
+
+namespace panel_internal {
+
+class PanelExtensionWindowController : public ExtensionWindowController {
+ public:
+  PanelExtensionWindowController(Panel* panel, Profile* profile);
+
+  // Overridden from ExtensionWindowController.
+  virtual int GetWindowId() const OVERRIDE;
+  virtual std::string GetWindowTypeText() const OVERRIDE;
+  virtual base::DictionaryValue* CreateWindowValueWithTabs() const OVERRIDE;
+  virtual bool CanClose(Reason* reason) const OVERRIDE;
+  virtual void SetFullscreenMode(bool is_fullscreen,
+                                 const GURL& extension_url) const OVERRIDE;
+  virtual bool IsVisibleToExtension(
+      const extensions::Extension* extension) const OVERRIDE;
+
+ private:
+  Panel* panel_;  // Weak pointer. Owns us.
+  DISALLOW_COPY_AND_ASSIGN(PanelExtensionWindowController);
+};
+
+PanelExtensionWindowController::PanelExtensionWindowController(
+    Panel* panel, Profile* profile)
+    : ExtensionWindowController(panel, profile),
+      panel_(panel) {
+}
+
+int PanelExtensionWindowController::GetWindowId() const {
+  return static_cast<int>(panel_->session_id().id());
+}
+
+std::string PanelExtensionWindowController::GetWindowTypeText() const {
+  return extensions::tabs_constants::kWindowTypeValuePanel;
+}
+
+base::DictionaryValue*
+PanelExtensionWindowController::CreateWindowValueWithTabs() const {
+  return CreateWindowValue();
+}
+
+bool PanelExtensionWindowController::CanClose(Reason* reason) const {
+  return true;
+}
+
+void PanelExtensionWindowController::SetFullscreenMode(
+    bool is_fullscreen, const GURL& extension_url) const {
+  // Do nothing. Panels cannot be fullscreen.
+}
+
+bool PanelExtensionWindowController::IsVisibleToExtension(
+    const extensions::Extension* extension) const {
+  return extension->id() == panel_->extension_id();
+}
+
+}  // namespace internal
 
 Panel::Panel(const std::string& app_name,
              const gfx::Size& min_size, const gfx::Size& max_size)
@@ -41,6 +103,11 @@ Panel::Panel(const std::string& app_name,
 
 Panel::~Panel() {
   // Invoked by native panel destructor. Do not access native_panel_ here.
+
+  // Remove shutdown prevention.
+  // TODO(jennb): remove guard after refactor
+  if (extension_window_controller_.get())
+    browser::EndKeepAlive();
 }
 
 void Panel::Initialize(const gfx::Rect& bounds, Browser* browser) {
@@ -51,6 +118,58 @@ void Panel::Initialize(const gfx::Rect& bounds, Browser* browser) {
   initialized_ = true;
   full_size_ = bounds.size();
   native_panel_ = CreateNativePanel(browser, this, bounds);
+}
+
+void Panel::Initialize(Profile* profile, const GURL& url,
+                       const gfx::Rect& bounds) {
+  DCHECK(!initialized_);
+  DCHECK(!panel_strip_);  // Cannot be added to a strip until fully created.
+  DCHECK_EQ(EXPANDED, expansion_state_);
+  DCHECK(!bounds.IsEmpty());
+  initialized_ = true;
+  full_size_ = bounds.size();
+  native_panel_ = CreateNativePanel(this, bounds);
+
+  extension_window_controller_.reset(
+      new panel_internal::PanelExtensionWindowController(this, profile));
+
+  InitCommandState();
+
+  // TODO(jennb): setup for hosting web content
+
+  // Close when the extension is unloaded or the browser is exiting.
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                 content::Source<Profile>(profile));
+  registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
+                 content::NotificationService::AllSources());
+
+  // Prevent the browser process from shutting down while this window is open.
+  browser::StartKeepAlive();
+}
+
+void Panel::InitCommandState() {
+  // All supported commands whose state isn't set automagically some other way
+  // (like Stop during a page load) must have their state initialized here,
+  // otherwise they will be forever disabled.
+
+  // Navigation commands
+  command_updater_.UpdateCommandEnabled(IDC_RELOAD, true);
+  command_updater_.UpdateCommandEnabled(IDC_RELOAD_IGNORING_CACHE, true);
+
+  // Window management commands
+  command_updater_.UpdateCommandEnabled(IDC_CLOSE_WINDOW, true);
+  command_updater_.UpdateCommandEnabled(IDC_EXIT, true);
+
+  // Zoom
+  command_updater_.UpdateCommandEnabled(IDC_ZOOM_MENU, true);
+  command_updater_.UpdateCommandEnabled(IDC_ZOOM_PLUS, true);
+  command_updater_.UpdateCommandEnabled(IDC_ZOOM_NORMAL, true);
+  command_updater_.UpdateCommandEnabled(IDC_ZOOM_MINUS, true);
+
+  // Clipboard
+  command_updater_.UpdateCommandEnabled(IDC_COPY, true);
+  command_updater_.UpdateCommandEnabled(IDC_CUT, true);
+  command_updater_.UpdateCommandEnabled(IDC_PASTE, true);
 }
 
 void Panel::OnNativePanelClosed() {
@@ -75,8 +194,11 @@ CommandUpdater* Panel::command_updater() {
 }
 
 Profile* Panel::profile() const {
-  // TODO(jennb): implement.
-  return NULL;
+  return extension_window_controller_->profile();
+}
+
+const std::string Panel::extension_id() const {
+  return web_app::GetExtensionIdFromApplicationName(app_name_);
 }
 
 content::WebContents* Panel::WebContents() const {
@@ -138,9 +260,10 @@ void Panel::SetAutoResizable(bool resizable) {
     if (web_contents)
       EnableWebContentsAutoResize(web_contents);
   } else {
-    registrar_.RemoveAll();
-
     if (web_contents) {
+      registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_SWAPPED,
+                        content::Source<content::WebContents>(web_contents));
+
       // NULL might be returned if the tab has not been added.
       RenderViewHost* render_view_host = web_contents->GetRenderViewHost();
       if (render_view_host)
@@ -372,11 +495,14 @@ void Panel::EnableWebContentsAutoResize(content::WebContents* web_contents) {
 
   // We also need to know when the render view host changes in order
   // to turn on auto-resize notifications in the new render view host.
-  registrar_.RemoveAll();  // Stop notifications for previous contents, if any.
-  registrar_.Add(
-      this,
-      content::NOTIFICATION_WEB_CONTENTS_SWAPPED,
-      content::Source<content::WebContents>(web_contents));
+  if (!registrar_.IsRegistered(
+          this, content::NOTIFICATION_WEB_CONTENTS_SWAPPED,
+          content::Source<content::WebContents>(web_contents))) {
+    registrar_.Add(
+        this,
+        content::NOTIFICATION_WEB_CONTENTS_SWAPPED,
+        content::Source<content::WebContents>(web_contents));
+  }
 }
 
 void Panel::ExecuteCommandWithDisposition(int id,
@@ -396,8 +522,21 @@ bool Panel::ExecuteCommandIfEnabled(int id) {
 void Panel::Observe(int type,
                     const content::NotificationSource& source,
                     const content::NotificationDetails& details) {
-  DCHECK_EQ(content::NOTIFICATION_WEB_CONTENTS_SWAPPED, type);
-  ConfigureAutoResize(content::Source<content::WebContents>(source).ptr());
+  switch (type) {
+    case content::NOTIFICATION_WEB_CONTENTS_SWAPPED:
+      ConfigureAutoResize(content::Source<content::WebContents>(source).ptr());
+      break;
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED:
+      if (content::Details<extensions::UnloadedExtensionInfo>(
+              details)->extension->id() == extension_id())
+        Close();
+      break;
+    case content::NOTIFICATION_APP_TERMINATING:
+      Close();
+      break;
+    default:
+      NOTREACHED() << "Received unexpected notification " << type;
+  }
 }
 
 void Panel::OnActiveStateChanged(bool active) {

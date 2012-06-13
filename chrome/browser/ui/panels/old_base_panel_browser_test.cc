@@ -259,7 +259,7 @@ void OldBasePanelBrowserTest::WaitForPanelActiveState(
 
 void OldBasePanelBrowserTest::WaitForWindowSizeAvailable(Panel* panel) {
   scoped_ptr<NativePanelTesting> panel_testing(
-      NativePanelTesting::Create(panel->native_panel()));
+      CreateNativePanelTesting(panel));
   ui_test_utils::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_PANEL_WINDOW_SIZE_KNOWN,
       content::Source<Panel>(panel));
@@ -271,7 +271,7 @@ void OldBasePanelBrowserTest::WaitForWindowSizeAvailable(Panel* panel) {
 
 void OldBasePanelBrowserTest::WaitForBoundsAnimationFinished(Panel* panel) {
   scoped_ptr<NativePanelTesting> panel_testing(
-      NativePanelTesting::Create(panel->native_panel()));
+      CreateNativePanelTesting(panel));
   ui_test_utils::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
       content::Source<Panel>(panel));
@@ -395,6 +395,12 @@ Panel* OldBasePanelBrowserTest::CreateDetachedPanel(const std::string& name,
   panel->SetPanelBounds(bounds);
   WaitForBoundsAnimationFinished(panel);
   return panel;
+}
+
+// static
+NativePanelTesting* OldBasePanelBrowserTest::CreateNativePanelTesting(
+    Panel* panel) {
+  return panel->native_panel()->CreateNativePanelTesting();
 }
 
 void OldBasePanelBrowserTest::CreateTestTabContents(Browser* browser) {

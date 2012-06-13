@@ -20,6 +20,7 @@ class Browser;
 class BrowserWindow;
 class DetachedPanelStrip;
 class DockedPanelStrip;
+class GURL;
 class PanelDragController;
 class PanelResizeController;
 class PanelMouseWatcher;
@@ -36,7 +37,16 @@ class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver,
 
   // Creates a panel and returns it. The panel might be queued for display
   // later.
-  Panel* CreatePanel(Browser* browser);
+  // |app_name| is the default title for Panels when the page content does not
+  // provide a title. For extensions, this is usually the application name
+  // generated from the extension id.
+  // |requested_size| is the desired size for the panel, but actual
+  // size may differ after panel layout.
+  Panel* CreatePanel(const std::string& app_name,
+                     Profile* profile,
+                     const GURL& url,
+                     const gfx::Size& requested_size);
+  Panel* CreatePanel(Browser* browser);  // legacy
 
   // Close all panels (asynchronous). Panels will be removed after closing.
   void CloseAll();
@@ -154,6 +164,13 @@ class PanelManager : public DisplaySettingsProvider::DisplayAreaObserver,
 
   PanelManager();
   virtual ~PanelManager();
+
+  // Combined CreatePanel() logic until we can delete legacy CreatePanel().
+  Panel* CreatePanel(Browser* browser,
+                     const std::string& app_name,
+                     Profile* profile,
+                     const GURL& url,
+                     const gfx::Size& requested_size);
 
   // Overridden from DisplaySettingsProvider::DisplayAreaObserver:
   virtual void OnDisplayAreaChanged(const gfx::Rect& display_area) OVERRIDE;

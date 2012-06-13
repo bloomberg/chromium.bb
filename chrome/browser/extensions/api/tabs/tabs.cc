@@ -571,21 +571,40 @@ bool CreateWindowFunction::RunImpl() {
     }
   }
 
-#if defined(USE_ASH)
-  // Aura Panels create a new PanelViewAura.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kAuraPanelManager) &&
-      window_type == Browser::TYPE_PANEL) {
-    // Note: Panels ignore all but the first url provided.
+  if (window_type == Browser::TYPE_PANEL) {
     std::string title =
         web_app::GenerateApplicationNameFromExtensionId(extension_id);
-    PanelViewAura* panel_view = new PanelViewAura(title);
-    panel_view->Init(window_profile, urls[0], panel_bounds);
-    result_.reset(
-        panel_view->extension_window_controller()->CreateWindowValueWithTabs());
-    return true;
-  }
+#if defined(USE_ASH)
+    // Aura Panels create a new PanelViewAura.
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            ash::switches::kAuraPanelManager)) {
+      // Note: Panels ignore all but the first url provided.
+      PanelViewAura* panel_view = new PanelViewAura(title);
+      panel_view->Init(window_profile, urls[0], panel_bounds);
+      result_.reset(panel_view->extension_window_controller()->
+                    CreateWindowValueWithTabs());
+      return true;
+    }
+#else
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kBrowserlessPanels)) {
+      // Note: Panels ignore all but the first url provided.
+      Panel* panel = PanelManager::GetInstance()->CreatePanel(
+          title, window_profile, urls[0], panel_bounds.size());
+
+      // Unlike other window types, Panels do not take focus by default.
+      if (!saw_focus_key || !focused)
+        panel->ShowInactive();
+      else
+        panel->Show();
+
+      result_.reset(
+          panel->extension_window_controller()->CreateWindowValueWithTabs());
+      return true;
+    }
 #endif
+    // else fall through to create BrowserWindow
+  }
 
   // Create a new BrowserWindow.
   Browser::CreateParams create_params;

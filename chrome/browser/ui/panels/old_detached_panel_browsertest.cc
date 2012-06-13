@@ -19,7 +19,7 @@ IN_PROC_BROWSER_TEST_F(OldDetachedPanelBrowserTest,
 
   Panel* panel = CreateDetachedPanel("1", gfx::Rect(300, 200, 250, 200));
   scoped_ptr<NativePanelTesting> panel_testing(
-      NativePanelTesting::Create(panel->native_panel()));
+      CreateNativePanelTesting(panel));
 
   EXPECT_EQ(1, panel_manager->num_panels());
   EXPECT_TRUE(detached_strip->HasPanel(panel));
@@ -44,7 +44,7 @@ IN_PROC_BROWSER_TEST_F(OldDetachedPanelBrowserTest, DrawAttentionOnActive) {
   // Create a detached panel that is initially active.
   Panel* panel = CreateDetachedPanel("1", gfx::Rect(300, 200, 250, 200));
   scoped_ptr<NativePanelTesting> native_panel_testing(
-      NativePanelTesting::Create(panel->native_panel()));
+      CreateNativePanelTesting(panel));
 
   // Test that the attention should not be drawn if the detached panel is in
   // focus.
@@ -65,7 +65,7 @@ IN_PROC_BROWSER_TEST_F(OldDetachedPanelBrowserTest, DrawAttentionOnInactive) {
   WaitForPanelActiveState(panel, SHOW_AS_INACTIVE);
 
   scoped_ptr<NativePanelTesting> native_panel_testing(
-      NativePanelTesting::Create(panel->native_panel()));
+      CreateNativePanelTesting(panel));
 
   // Test that the attention is drawn when the detached panel is not in focus.
   EXPECT_FALSE(panel->IsActive());
@@ -92,7 +92,7 @@ IN_PROC_BROWSER_TEST_F(OldDetachedPanelBrowserTest,
   Panel* panel2 = CreatePanel("test panel2");
 
   scoped_ptr<NativePanelTesting> native_panel_testing(
-      NativePanelTesting::Create(panel1->native_panel()));
+      CreateNativePanelTesting(panel1));
 
   // Test that the attention is drawn when the detached panel is not in focus.
   panel1->FlashFrame(true);
@@ -120,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(OldDetachedPanelBrowserTest, ClickTitlebar) {
   // Clicking on an active detached panel's titlebar has no effect, regardless
   // of modifier.
   scoped_ptr<NativePanelTesting> test_panel(
-      NativePanelTesting::Create(panel->native_panel()));
+      CreateNativePanelTesting(panel));
   test_panel->PressLeftMouseButtonTitlebar(panel->GetBounds().origin());
   test_panel->ReleaseMouseButtonTitlebar();
   EXPECT_TRUE(panel->IsActive());

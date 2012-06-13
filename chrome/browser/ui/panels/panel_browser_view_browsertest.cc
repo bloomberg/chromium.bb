@@ -30,6 +30,10 @@
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/textfield/textfield.h"
 
+// BasePanelBrowserTest now creates refactored Panels. Refactor
+// has only been done for Mac panels so far.
+#if 0
+
 class PanelBrowserViewTest : public BasePanelBrowserTest {
  public:
   PanelBrowserViewTest() : BasePanelBrowserTest() { }
@@ -485,3 +489,5 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserViewTest,
   TestChangeAutoHideTaskBarThickness();
 }
 #endif
+
+#endif  // #if 0 - until Panel refactored for Views

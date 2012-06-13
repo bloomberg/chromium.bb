@@ -138,6 +138,22 @@ int PanelManager::GetMaxPanelHeight() const {
 }
 
 Panel* PanelManager::CreatePanel(Browser* browser) {
+  return CreatePanel(browser, "", NULL, GURL(),
+                     browser->override_bounds().size());
+}
+
+Panel* PanelManager::CreatePanel(const std::string& app_name,
+                                 Profile* profile,
+                                 const GURL& url,
+                                 const gfx::Size& requested_size) {
+  return CreatePanel(NULL, app_name, profile, url, requested_size);
+}
+
+Panel* PanelManager::CreatePanel(Browser* browser,
+                                 const std::string& app_name,
+                                 Profile* profile,
+                                 const GURL& url,
+                                 const gfx::Size& requested_size) {
   // Need to sync the display area if no panel is present. This is because:
   // 1) Display area is not initialized until first panel is created.
   // 2) On windows, display settings notification is tied to a window. When
@@ -149,7 +165,6 @@ Panel* PanelManager::CreatePanel(Browser* browser) {
   }
 
   // Compute initial bounds for the panel.
-  gfx::Size requested_size(browser->override_bounds().size());
   int width = requested_size.width();
   int height = requested_size.height();
   if (width == 0)
@@ -173,9 +188,16 @@ Panel* PanelManager::CreatePanel(Browser* browser) {
   gfx::Rect bounds(docked_strip_->GetDefaultPositionForPanel(panel_size),
                    panel_size);
 
-  // Create the (legacy) panel.
-  Panel* panel = new OldPanel(browser, min_size, max_size);
-  panel->Initialize(bounds, browser);
+  // Create the panel.
+  Panel* panel;
+  if (browser) {
+    // Legacy panel. Delete after refactor.
+    panel = new OldPanel(browser, min_size, max_size);
+    panel->Initialize(bounds, browser);
+  } else {
+    panel = new Panel(app_name, min_size, max_size);
+    panel->Initialize(profile, url, bounds);
+  }
 
   // Auto resizable feature is enabled only if no initial size is requested.
   if (auto_sizing_enabled() && requested_size.width() == 0 &&

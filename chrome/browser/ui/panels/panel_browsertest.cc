@@ -39,6 +39,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/screen.h"
 
+// Refactor has only been done for Mac panels so far.
+#if defined(OS_MACOSX)
+
 using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadItem;
@@ -134,8 +137,7 @@ class PanelBrowserTest : public BasePanelBrowserTest {
         panels.size(), Panel::EXPANDED);
     std::vector<NativePanelTesting*> native_panels_testing(panels.size());
     for (size_t i = 0; i < panels.size(); ++i) {
-      native_panels_testing[i] =
-          NativePanelTesting::Create(panels[i]->native_panel());
+      native_panels_testing[i] = CreateNativePanelTesting(panels[i]);
     }
 
     // Verify titlebar click does not minimize.
@@ -269,11 +271,11 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CheckDockedPanelProperties) {
   panel3->SetExpansionState(Panel::MINIMIZED);
   WaitForExpansionStateChanged(panel3, Panel::MINIMIZED);
   scoped_ptr<NativePanelTesting> panel1_testing(
-      NativePanelTesting::Create(panel1->native_panel()));
+      CreateNativePanelTesting(panel1));
   scoped_ptr<NativePanelTesting> panel2_testing(
-      NativePanelTesting::Create(panel2->native_panel()));
+      CreateNativePanelTesting(panel2));
   scoped_ptr<NativePanelTesting> panel3_testing(
-      NativePanelTesting::Create(panel3->native_panel()));
+      CreateNativePanelTesting(panel3));
 
   // Ensure that the layout message can get a chance to be processed so that
   // the button visibility can be updated.
@@ -453,7 +455,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, ResizePanel) {
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, AnimateBounds) {
   Panel* panel = CreatePanelWithBounds("PanelTest", gfx::Rect(0, 0, 100, 100));
   scoped_ptr<NativePanelTesting> panel_testing(
-      NativePanelTesting::Create(panel->native_panel()));
+      CreateNativePanelTesting(panel));
 
   // Set bounds with animation.
   gfx::Rect bounds = gfx::Rect(10, 20, 150, 160);
@@ -633,11 +635,11 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, RestoreAllWithTitlebarClick) {
   EXPECT_FALSE(panel3->IsMinimized());
 
   scoped_ptr<NativePanelTesting> test_panel1(
-      NativePanelTesting::Create(panel1->native_panel()));
+      CreateNativePanelTesting(panel1));
   scoped_ptr<NativePanelTesting> test_panel2(
-      NativePanelTesting::Create(panel2->native_panel()));
+      CreateNativePanelTesting(panel2));
   scoped_ptr<NativePanelTesting> test_panel3(
-      NativePanelTesting::Create(panel3->native_panel()));
+      CreateNativePanelTesting(panel3));
 
   // Click on an expanded panel's titlebar using the apply-all modifier.
   // Verify expansion state is unchanged.
@@ -844,7 +846,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_ActivateDeactivateBasic) {
   // Create an active panel.
   Panel* panel = CreatePanel("PanelTest");
   scoped_ptr<NativePanelTesting> native_panel_testing(
-      NativePanelTesting::Create(panel->native_panel()));
+      CreateNativePanelTesting(panel));
   EXPECT_TRUE(panel->IsActive());
   EXPECT_TRUE(native_panel_testing->VerifyActiveState(true));
 
@@ -926,7 +928,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionBasic) {
   CreatePanelParams params("Initially Inactive", gfx::Rect(), SHOW_AS_INACTIVE);
   Panel* panel = CreatePanelWithParams(params);
   scoped_ptr<NativePanelTesting> native_panel_testing(
-      NativePanelTesting::Create(panel->native_panel()));
+      CreateNativePanelTesting(panel));
 
   // Test that the attention is drawn when the expanded panel is not in focus.
   EXPECT_EQ(Panel::EXPANDED, panel->expansion_state());
@@ -971,7 +973,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionWhileMinimized) {
   Panel* panel3 = CreatePanel("test panel2");
 
   scoped_ptr<NativePanelTesting> native_panel_testing(
-      NativePanelTesting::Create(panel->native_panel()));
+      CreateNativePanelTesting(panel));
 
   // Test that the attention is drawn and the title-bar is brought up when the
   // minimized panel is drawing attention.
@@ -1082,7 +1084,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionWhenActive) {
   CreatePanelParams params("Initially Active", gfx::Rect(), SHOW_AS_ACTIVE);
   Panel* panel = CreatePanelWithParams(params);
   scoped_ptr<NativePanelTesting> native_panel_testing(
-      NativePanelTesting::Create(panel->native_panel()));
+      CreateNativePanelTesting(panel));
 
   // Test that the attention should not be drawn if the expanded panel is in
   // focus.
@@ -1104,7 +1106,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionResetOnActivate) {
   Panel* panel2 = CreatePanel("test panel2");
 
   scoped_ptr<NativePanelTesting> native_panel_testing(
-      NativePanelTesting::Create(panel->native_panel()));
+      CreateNativePanelTesting(panel));
 
   panel->FlashFrame(true);
   EXPECT_TRUE(panel->IsDrawingAttention());
@@ -1156,7 +1158,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionResetOnClick) {
   CreatePanelParams params("Initially Inactive", gfx::Rect(), SHOW_AS_INACTIVE);
   Panel* panel = CreatePanelWithParams(params);
   scoped_ptr<NativePanelTesting> native_panel_testing(
-      NativePanelTesting::Create(panel->native_panel()));
+      CreateNativePanelTesting(panel));
 
   panel->FlashFrame(true);
   EXPECT_TRUE(panel->IsDrawingAttention());
@@ -1181,7 +1183,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   CreatePanelParams params("Panel Test", gfx::Rect(), SHOW_AS_ACTIVE);
   Panel* panel = CreatePanelWithParams(params);
   scoped_ptr<NativePanelTesting> native_panel_testing(
-      NativePanelTesting::Create(panel->native_panel()));
+      CreateNativePanelTesting(panel));
 
   panel->Minimize();  // this should deactivate.
   MessageLoop::current()->RunAllPending();
@@ -1277,8 +1279,9 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   panel2->Close();
 }
 
+// TODO(jennb): Disabled until refactored panels supports web contents.
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
-                       NonExtensionDomainPanelsCloseOnUninstall) {
+                       DISABLED_NonExtensionDomainPanelsCloseOnUninstall) {
   // Create a test extension.
   DictionaryValue empty_value;
   scoped_refptr<Extension> extension =
@@ -1338,7 +1341,9 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
   panel_other->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, OnBeforeUnloadOnClose) {
+// TODO(jennb): Disabled until refactored panels supports web contents (or
+// delete if onbeforeunload will not be supported.
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_OnBeforeUnloadOnClose) {
   PanelManager* panel_manager = PanelManager::GetInstance();
   EXPECT_EQ(0, panel_manager->num_panels()); // No panels initially.
 
@@ -1473,7 +1478,9 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, SizeClamping) {
   panel->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, TightAutosizeAroundSingleLine) {
+// TODO(jennb): Disabled until refactored panels supports web contents.
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
+                       DISABLED_TightAutosizeAroundSingleLine) {
   PanelManager::GetInstance()->enable_auto_sizing(true);
   // Using 0 sizes triggers auto-sizing.
   CreatePanelParams params("Panel", gfx::Rect(), SHOW_AS_ACTIVE);
@@ -1735,3 +1742,5 @@ IN_PROC_BROWSER_TEST_F(PanelDownloadTest, MAYBE_DownloadNoTabbedBrowser) {
 
   panel_browser->CloseWindow();
 }
+
+#endif // OS_MACOSX

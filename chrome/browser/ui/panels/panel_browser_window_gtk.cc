@@ -649,10 +649,8 @@ class NativePanelTestingGtk : public NativePanelTesting {
   PanelBrowserWindowGtk* panel_browser_window_gtk_;
 };
 
-// static
-NativePanelTesting* NativePanelTesting::Create(NativePanel* native_panel) {
-  return new NativePanelTestingGtk(static_cast<PanelBrowserWindowGtk*>(
-      native_panel));
+NativePanelTesting* PanelBrowserWindowGtk::CreateNativePanelTesting() {
+  return new NativePanelTestingGtk(this);
 }
 
 NativePanelTestingGtk::NativePanelTestingGtk(

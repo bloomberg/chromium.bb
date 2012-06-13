@@ -8,6 +8,12 @@
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/test_panel_mouse_watcher.h"
+#include "chrome/common/chrome_notification_types.h"
+#include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/notification_service.h"
+
+// Refactor has only been done for Mac panels so far.
+#if defined(OS_MACOSX)
 
 class DockedPanelBrowserTest : public BasePanelBrowserTest {
  public:
@@ -177,13 +183,16 @@ IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, MinimizeSqueezedActive) {
   EXPECT_EQ(width_of_panel3_squeezed, panel3->GetBounds().width());
 
   // Minimize the active panel. It should become inactive and shrink in width.
+  ui_test_utils::WindowedNotificationObserver signal(
+      chrome::NOTIFICATION_PANEL_STRIP_UPDATED,
+      content::NotificationService::AllSources());
   panel7->Minimize();
 
   // Wait for active states to settle.
   WaitForPanelActiveState(panel7, SHOW_AS_INACTIVE);
 
   // Wait for the scheduled layout to run.
-  MessageLoopForUI::current()->RunAllPending();
+  signal.Wait();
 
   // The minimized panel should now be at reduced width.
   EXPECT_LT(panel7->GetBounds().width(), panel7->GetRestoredBounds().width());
@@ -260,3 +269,5 @@ IN_PROC_BROWSER_TEST_F(DockedPanelBrowserTest, CloseSqueezedPanels) {
 
   panel_manager->CloseAll();
 }
+
+#endif // OS_MACOSX

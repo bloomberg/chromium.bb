@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/panels/base_panel_browser_test.h"
 
-#include "chrome/browser/ui/browser_list.h"
-
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
@@ -16,7 +14,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/panels/native_panel.h"
-#include "chrome/browser/ui/panels/panel_browser_window.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
@@ -31,6 +28,7 @@
 #include "content/public/test/web_contents_tester.h"
 
 #if defined(OS_LINUX)
+#include "chrome/browser/ui/browser_window.h"
 #include "ui/base/x/x11_util.h"
 #endif
 
@@ -259,7 +257,7 @@ void BasePanelBrowserTest::WaitForPanelActiveState(
 
 void BasePanelBrowserTest::WaitForWindowSizeAvailable(Panel* panel) {
   scoped_ptr<NativePanelTesting> panel_testing(
-      NativePanelTesting::Create(panel->native_panel()));
+      CreateNativePanelTesting(panel));
   ui_test_utils::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_PANEL_WINDOW_SIZE_KNOWN,
       content::Source<Panel>(panel));
@@ -271,7 +269,7 @@ void BasePanelBrowserTest::WaitForWindowSizeAvailable(Panel* panel) {
 
 void BasePanelBrowserTest::WaitForBoundsAnimationFinished(Panel* panel) {
   scoped_ptr<NativePanelTesting> panel_testing(
-      NativePanelTesting::Create(panel->native_panel()));
+      CreateNativePanelTesting(panel));
   ui_test_utils::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
       content::Source<Panel>(panel));
@@ -304,26 +302,18 @@ Panel* BasePanelBrowserTest::CreatePanelWithParams(
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
 #endif
 
-  Browser* panel_browser = Browser::CreateWithParams(
-      Browser::CreateParams::CreateForApp(
-          Browser::TYPE_PANEL, params.name, params.bounds,
-          browser()->profile()));
-  EXPECT_TRUE(panel_browser->is_type_panel());
+  ui_test_utils::WindowedNotificationObserver observer(
+      content::NOTIFICATION_LOAD_STOP,
+      content::NotificationService::AllSources());
 
-  if (!params.url.is_empty()) {
-    ui_test_utils::WindowedNotificationObserver observer(
-        content::NOTIFICATION_LOAD_STOP,
-        content::NotificationService::AllSources());
-    panel_browser->AddSelectedTabWithURL(params.url,
-                                         content::PAGE_TRANSITION_START_PAGE);
+  PanelManager* manager = PanelManager::GetInstance();
+  Panel* panel = manager->CreatePanel(params.name, browser()->profile(),
+                                      params.url, params.bounds.size());
+
+  if (!params.url.is_empty())
     observer.Wait();
-  }
 
-  PanelBrowserWindow* panel_browser_window =
-      static_cast<PanelBrowserWindow*>(panel_browser->window());
-  Panel* panel = panel_browser_window->panel();
-
-  if (!PanelManager::GetInstance()->auto_sizing_enabled() ||
+  if (!manager->auto_sizing_enabled() ||
       params.bounds.width() || params.bounds.height()) {
     EXPECT_FALSE(panel->auto_resizable());
   } else {
@@ -395,6 +385,12 @@ Panel* BasePanelBrowserTest::CreateDetachedPanel(const std::string& name,
   panel->SetPanelBounds(bounds);
   WaitForBoundsAnimationFinished(panel);
   return panel;
+}
+
+// static
+NativePanelTesting* BasePanelBrowserTest::CreateNativePanelTesting(
+    Panel* panel) {
+  return panel->native_panel()->CreateNativePanelTesting();
 }
 
 void BasePanelBrowserTest::CreateTestTabContents(Browser* browser) {

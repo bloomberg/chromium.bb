@@ -9,7 +9,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -22,11 +21,14 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
+// Refactor has only been done for Mac panels so far.
+#if defined(OS_MACOSX)
+
 class PanelAppBrowserTest : public ExtensionBrowserTest {
  public:
   virtual void SetUpCommandLine(CommandLine* command_line) {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnablePanels);
+    command_line->AppendSwitch(switches::kBrowserlessPanels);
   }
 
   void LoadAndLaunchExtension(const char* name) {
@@ -34,7 +36,7 @@ class PanelAppBrowserTest : public ExtensionBrowserTest {
     // Opening panels on a Mac causes NSWindowController of the Panel window
     // to be autoreleased. We need a pool drained after it's done so the test
     // can close correctly. The NSWindowController of the Panel window controls
-    // lifetime of the Browser object so we want to release it as soon as
+    // lifetime of the Panel object so we want to release it as soon as
     // possible. In real Chrome, this is done by message pump.
     // On non-Mac platform, this is an empty class.
     base::mac::ScopedNSAutoreleasePool autorelease_pool;
@@ -47,7 +49,8 @@ class PanelAppBrowserTest : public ExtensionBrowserTest {
         last_loaded_extension_id_, false);
     EXPECT_TRUE(extension);
 
-    size_t browser_count = BrowserList::size();
+    PanelManager* manager = PanelManager::GetInstance();
+    int panel_count = manager->num_panels();
 
     application_launch::OpenApplication(
         browser()->profile(),
@@ -59,25 +62,25 @@ class PanelAppBrowserTest : public ExtensionBrowserTest {
         NULL);
 
     // Now we have a new browser instance.
-    EXPECT_EQ(browser_count + 1, BrowserList::size());
+    EXPECT_EQ(panel_count + 1, manager->num_panels());
   }
 
-  void CloseWindowAndWait(Browser* browser) {
-    // Closing a browser window may involve several async tasks. Need to use
+  void ClosePanelAndWait(Panel* panel) {
+    // Closing a panel window may involve several async tasks. Need to use
     // message pump and wait for the notification.
-    size_t browser_count = BrowserList::size();
+    int panel_count = PanelManager::GetInstance()->num_panels();
     ui_test_utils::WindowedNotificationObserver signal(
-        chrome::NOTIFICATION_BROWSER_CLOSED,
-        content::Source<Browser>(browser));
-    browser->CloseWindow();
+        chrome::NOTIFICATION_PANEL_CLOSED,
+        content::Source<Panel>(panel));
+    panel->Close();
     signal.Wait();
-    // Now we have one less browser instance.
-    EXPECT_EQ(browser_count - 1, BrowserList::size());
+    // Now we have one less panel instance.
+    EXPECT_EQ(panel_count - 1, PanelManager::GetInstance()->num_panels());
   }
 };
 
 IN_PROC_BROWSER_TEST_F(PanelAppBrowserTest, OpenAppInPanel) {
-  // Start with one browser, new Panel will create another.
+  // Start with one browser, new Panel will NOT create another.
   ASSERT_EQ(1u, BrowserList::size());
 
   // No Panels initially.
@@ -86,25 +89,17 @@ IN_PROC_BROWSER_TEST_F(PanelAppBrowserTest, OpenAppInPanel) {
 
   LoadAndLaunchExtension("app_with_panel_container");
 
-  // The launch should have created a new browser, so there should be 2 now.
-  ASSERT_EQ(2u, BrowserList::size());
-
-  // The new browser is the last one.
-  BrowserList::const_reverse_iterator reverse_iterator(BrowserList::end());
-  Browser* new_browser = *(reverse_iterator++);
-
-  ASSERT_TRUE(new_browser);
-  ASSERT_TRUE(new_browser != browser());
-
-  // Expect an app in a panel window.
-  EXPECT_TRUE(new_browser->is_app());
-  EXPECT_TRUE(new_browser->is_type_panel());
+  // The launch should have created no new browsers.
+  ASSERT_EQ(1u, BrowserList::size());
 
   // Now also check that PanelManager has one new Panel under management.
   EXPECT_EQ(1, panel_manager->num_panels());
 
-  CloseWindowAndWait(new_browser);
+  Panel* panel = panel_manager->panels()[0];
+  ClosePanelAndWait(panel);
 
   EXPECT_EQ(0, panel_manager->num_panels());
   EXPECT_EQ(1u, BrowserList::size());
 }
+
+#endif  // OS_MACOSX

@@ -2,33 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_PANELS_PANEL_BROWSER_WINDOW_COCOA_H_
-#define CHROME_BROWSER_UI_PANELS_PANEL_BROWSER_WINDOW_COCOA_H_
+#ifndef CHROME_BROWSER_UI_PANELS_PANEL_COCOA_H_
+#define CHROME_BROWSER_UI_PANELS_PANEL_COCOA_H_
+#pragma once
 
 #import <Foundation/Foundation.h>
-#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/panels/native_panel_cocoa.h"
-#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/rect.h"
 
-class Browser;
 class Panel;
 @class PanelWindowControllerCocoa;
 
-// An implementation of BrowserWindow for native Panel in Cocoa.
+// An implememtation of the native panel in Cocoa.
 // Bridges between C++ and the Cocoa NSWindow. Cross-platform code will
 // interact with this object when it needs to manipulate the window.
-
-class PanelBrowserWindowCocoa : public NativePanelCocoa,
-                                public TabStripModelObserver,
-                                public content::NotificationObserver {
+// TODO(jennb): This class can be removed after the panel refactor once
+// it's safe for PanelWindowController to use PanelCocoa directly.
+class PanelCocoa : public NativePanelCocoa {
  public:
-  PanelBrowserWindowCocoa(Browser* browser, Panel* panel,
-                          const gfx::Rect& bounds);
-  virtual ~PanelBrowserWindowCocoa();
+  PanelCocoa(Panel* panel, const gfx::Rect& bounds);
+  virtual ~PanelCocoa();
 
   // Overridden from NativePanel
   virtual void ShowPanel() OVERRIDE;
@@ -44,10 +38,8 @@ class PanelBrowserWindowCocoa : public NativePanelCocoa,
   virtual gfx::NativeWindow GetNativePanelHandle() OVERRIDE;
   virtual void UpdatePanelTitleBar() OVERRIDE;
   virtual void UpdatePanelLoadingAnimations(bool should_animate) OVERRIDE;
-  virtual void ShowTaskManagerForPanel() OVERRIDE;
   virtual FindBar* CreatePanelFindBar() OVERRIDE;
   virtual void NotifyPanelOnUserChangedTheme() OVERRIDE;
-  virtual void PanelWebContentsFocused(content::WebContents* contents) OVERRIDE;
   virtual void PanelCut() OVERRIDE;
   virtual void PanelCopy() OVERRIDE;
   virtual void PanelPaste() OVERRIDE;
@@ -60,7 +52,6 @@ class PanelBrowserWindowCocoa : public NativePanelCocoa,
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual void FullScreenModeChanged(bool is_full_screen) OVERRIDE;
   virtual Browser* GetPanelBrowser() const OVERRIDE;
-  virtual void DestroyPanelBrowser() OVERRIDE;
   virtual void EnsurePanelFullyVisible() OVERRIDE;
   virtual void SetPanelAlwaysOnTop(bool on_top) OVERRIDE;
   virtual void EnableResizeByMouse(bool enable) OVERRIDE;
@@ -68,7 +59,6 @@ class PanelBrowserWindowCocoa : public NativePanelCocoa,
   virtual void PanelExpansionStateChanging(
       Panel::ExpansionState old_state,
       Panel::ExpansionState new_state) OVERRIDE;
-  virtual NativePanelTesting* CreateNativePanelTesting() OVERRIDE;
 
   // These sizes are in screen coordinates.
   virtual gfx::Size WindowSizeFromContentSize(
@@ -77,55 +67,41 @@ class PanelBrowserWindowCocoa : public NativePanelCocoa,
       const gfx::Size& window_size) const OVERRIDE;
   virtual int TitleOnlyHeight() const OVERRIDE;
 
-  // Overridden from TabStripModelObserver.
-  virtual void TabInsertedAt(TabContents* contents,
-                             int index,
-                             bool foreground) OVERRIDE;
-  virtual void TabDetachedAt(TabContents* contents, int index) OVERRIDE;
-
-  // Overridden from NotificationObserver.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  virtual NativePanelTesting* CreateNativePanelTesting() OVERRIDE;
 
   // Overridden from NativePanelCocoa.
   virtual Panel* panel() const OVERRIDE;
   virtual void DidCloseNativeWindow() OVERRIDE;
 
  private:
-  friend class PanelBrowserWindowCocoaTest;
-  friend class NativePanelTestingCocoa;
-  FRIEND_TEST_ALL_PREFIXES(PanelBrowserWindowCocoaTest, CreateClose);
-  FRIEND_TEST_ALL_PREFIXES(PanelBrowserWindowCocoaTest, NativeBounds);
-  FRIEND_TEST_ALL_PREFIXES(PanelBrowserWindowCocoaTest, TitlebarViewCreate);
-  FRIEND_TEST_ALL_PREFIXES(PanelBrowserWindowCocoaTest, TitlebarViewSizing);
-  FRIEND_TEST_ALL_PREFIXES(PanelBrowserWindowCocoaTest, TitlebarViewClose);
-  FRIEND_TEST_ALL_PREFIXES(PanelBrowserWindowCocoaTest, MenuItems);
-  FRIEND_TEST_ALL_PREFIXES(PanelBrowserWindowCocoaTest, KeyEvent);
-  FRIEND_TEST_ALL_PREFIXES(PanelBrowserWindowCocoaTest, ThemeProvider);
-  FRIEND_TEST_ALL_PREFIXES(PanelBrowserWindowCocoaTest, SetTitle);
-  FRIEND_TEST_ALL_PREFIXES(PanelBrowserWindowCocoaTest, ActivatePanel);
+  friend class CocoaNativePanelTesting;
+  friend class PanelCocoaTest;
+  FRIEND_TEST_ALL_PREFIXES(PanelCocoaTest, CreateClose);
+  FRIEND_TEST_ALL_PREFIXES(PanelCocoaTest, NativeBounds);
+  FRIEND_TEST_ALL_PREFIXES(PanelCocoaTest, TitlebarViewCreate);
+  FRIEND_TEST_ALL_PREFIXES(PanelCocoaTest, TitlebarViewSizing);
+  FRIEND_TEST_ALL_PREFIXES(PanelCocoaTest, TitlebarViewClose);
+  FRIEND_TEST_ALL_PREFIXES(PanelCocoaTest, MenuItems);
+  FRIEND_TEST_ALL_PREFIXES(PanelCocoaTest, KeyEvent);
+  FRIEND_TEST_ALL_PREFIXES(PanelCocoaTest, ThemeProvider);
+  FRIEND_TEST_ALL_PREFIXES(PanelCocoaTest, SetTitle);
+  FRIEND_TEST_ALL_PREFIXES(PanelCocoaTest, ActivatePanel);
 
   bool isClosed();
-
   void setBoundsInternal(const gfx::Rect& bounds, bool animate);
 
-  scoped_ptr<Browser> browser_;
   scoped_ptr<Panel> panel_;
+  PanelWindowControllerCocoa* controller_;  // Weak, owns us.
 
   // These use platform-independent screen coordinates, with (0,0) at
   // top-left of the primary screen. They have to be converted to Cocoa
   // screen coordinates before calling Cocoa API.
   gfx::Rect bounds_;
 
-  PanelWindowControllerCocoa* controller_;  // Weak, owns us.
   bool is_shown_;  // Panel is hidden on creation, Show() changes that forever.
-  bool has_find_bar_; // Find bar should only be created once per panel.
   NSInteger attention_request_id_;  // identifier from requestUserAttention.
 
-  content::NotificationRegistrar registrar_;
-
-  DISALLOW_COPY_AND_ASSIGN(PanelBrowserWindowCocoa);
+  DISALLOW_COPY_AND_ASSIGN(PanelCocoa);
 };
 
-#endif  // CHROME_BROWSER_UI_PANELS_PANEL_BROWSER_WINDOW_COCOA_H_
+#endif  // CHROME_BROWSER_UI_PANELS_PANEL_COCOA_H_

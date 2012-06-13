@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/panels/panel_browser_window_cocoa.h"
-
 #include <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
 
@@ -13,13 +11,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_*
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/run_loop_testing.h"
 #include "chrome/browser/ui/panels/panel.h"
-#include "chrome/browser/ui/panels/panel_browser_window.h"
+#import "chrome/browser/ui/panels/panel_cocoa.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #import "chrome/browser/ui/panels/panel_titlebar_view_cocoa.h"
 #import "chrome/browser/ui/panels/panel_window_controller_cocoa.h"
@@ -40,11 +36,10 @@ class PanelAnimatedBoundsObserver :
 };
 
 // Main test class.
-class PanelBrowserWindowCocoaTest : public CocoaProfileTest {
+class PanelCocoaTest : public CocoaProfileTest {
  public:
   virtual void SetUp() {
     CocoaProfileTest::SetUp();
-    CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnablePanels);
   }
 
   Panel* CreateTestPanel(const std::string& panel_name) {
@@ -56,18 +51,14 @@ class PanelBrowserWindowCocoaTest : public CocoaProfileTest {
     PanelManager* manager = PanelManager::GetInstance();
     int panels_count = manager->num_panels();
 
-    Browser* panel_browser = Browser::CreateWithParams(
-        Browser::CreateParams::CreateForApp(
-            Browser::TYPE_PANEL, panel_name, gfx::Rect(), profile()));
+    Panel* panel = manager->CreatePanel(panel_name, profile(),
+                                        GURL(), gfx::Size());
     EXPECT_EQ(panels_count + 1, manager->num_panels());
 
-    PanelBrowserWindow* panel_browser_window =
-        static_cast<PanelBrowserWindow*>(panel_browser->window());
-    Panel* panel = panel_browser_window->panel();
     EXPECT_TRUE(panel);
     EXPECT_TRUE(panel->native_panel());  // Native panel is created right away.
-    PanelBrowserWindowCocoa* native_window =
-        static_cast<PanelBrowserWindowCocoa*>(panel->native_panel());
+    PanelCocoa* native_window =
+        static_cast<PanelCocoa*>(panel->native_panel());
     EXPECT_EQ(panel, native_window->panel_);  // Back pointer initialized.
 
     PanelAnimatedBoundsObserver bounds_observer(panel);
@@ -122,7 +113,7 @@ class PanelBrowserWindowCocoaTest : public CocoaProfileTest {
   }
 };
 
-TEST_F(PanelBrowserWindowCocoaTest, CreateClose) {
+TEST_F(PanelCocoaTest, CreateClose) {
   PanelManager* manager = PanelManager::GetInstance();
   EXPECT_EQ(0, manager->num_panels());  // No panels initially.
 
@@ -133,8 +124,7 @@ TEST_F(PanelBrowserWindowCocoaTest, CreateClose) {
   EXPECT_TRUE(bounds.width() > 0);
   EXPECT_TRUE(bounds.height() > 0);
 
-  PanelBrowserWindowCocoa* native_window =
-      static_cast<PanelBrowserWindowCocoa*>(panel->native_panel());
+  PanelCocoa* native_window = static_cast<PanelCocoa*>(panel->native_panel());
   ASSERT_TRUE(native_window);
   // NSWindows created by NSWindowControllers don't have this bit even if
   // their NIB has it. The controller's lifetime is the window's lifetime.
@@ -144,7 +134,7 @@ TEST_F(PanelBrowserWindowCocoaTest, CreateClose) {
   EXPECT_EQ(0, manager->num_panels());
 }
 
-TEST_F(PanelBrowserWindowCocoaTest, AssignedBounds) {
+TEST_F(PanelCocoaTest, AssignedBounds) {
   Panel* panel1 = CreateTestPanel("Test Panel 1");
   Panel* panel2 = CreateTestPanel("Test Panel 2");
   Panel* panel3 = CreateTestPanel("Test Panel 3");
@@ -173,17 +163,14 @@ TEST_F(PanelBrowserWindowCocoaTest, AssignedBounds) {
 }
 
 // Same test as AssignedBounds, but checks actual bounds on native OS windows.
-TEST_F(PanelBrowserWindowCocoaTest, NativeBounds) {
+TEST_F(PanelCocoaTest, NativeBounds) {
   Panel* panel1 = CreateTestPanel("Test Panel 1");
   Panel* panel2 = CreateTestPanel("Test Panel 2");
   Panel* panel3 = CreateTestPanel("Test Panel 3");
 
-  PanelBrowserWindowCocoa* native_window1 =
-      static_cast<PanelBrowserWindowCocoa*>(panel1->native_panel());
-  PanelBrowserWindowCocoa* native_window2 =
-      static_cast<PanelBrowserWindowCocoa*>(panel2->native_panel());
-  PanelBrowserWindowCocoa* native_window3 =
-      static_cast<PanelBrowserWindowCocoa*>(panel3->native_panel());
+  PanelCocoa* native_window1 = static_cast<PanelCocoa*>(panel1->native_panel());
+  PanelCocoa* native_window2 = static_cast<PanelCocoa*>(panel2->native_panel());
+  PanelCocoa* native_window3 = static_cast<PanelCocoa*>(panel3->native_panel());
 
   NSRect bounds1 = [[native_window1->controller_ window] frame];
   NSRect bounds2 = [[native_window2->controller_ window] frame];
@@ -222,11 +209,10 @@ TEST_F(PanelBrowserWindowCocoaTest, NativeBounds) {
 }
 
 // Verify the titlebar is being created.
-TEST_F(PanelBrowserWindowCocoaTest, TitlebarViewCreate) {
+TEST_F(PanelCocoaTest, TitlebarViewCreate) {
   Panel* panel = CreateTestPanel("Test Panel");
 
-  PanelBrowserWindowCocoa* native_window =
-      static_cast<PanelBrowserWindowCocoa*>(panel->native_panel());
+  PanelCocoa* native_window = static_cast<PanelCocoa*>(panel->native_panel());
 
   PanelTitlebarViewCocoa* titlebar = [native_window->controller_ titlebarView];
   EXPECT_TRUE(titlebar);
@@ -236,11 +222,10 @@ TEST_F(PanelBrowserWindowCocoaTest, TitlebarViewCreate) {
 }
 
 // Verify the sizing of titlebar - should be affixed on top of regular titlebar.
-TEST_F(PanelBrowserWindowCocoaTest, TitlebarViewSizing) {
+TEST_F(PanelCocoaTest, TitlebarViewSizing) {
   Panel* panel = CreateTestPanel("Test Panel");
 
-  PanelBrowserWindowCocoa* native_window =
-      static_cast<PanelBrowserWindowCocoa*>(panel->native_panel());
+  PanelCocoa* native_window = static_cast<PanelCocoa*>(panel->native_panel());
   PanelTitlebarViewCocoa* titlebar = [native_window->controller_ titlebarView];
 
   NSView* contentView = [[native_window->controller_ window] contentView];
@@ -288,11 +273,9 @@ TEST_F(PanelBrowserWindowCocoaTest, TitlebarViewSizing) {
 }
 
 // Verify closing behavior of titlebar close button.
-TEST_F(PanelBrowserWindowCocoaTest, TitlebarViewClose) {
+TEST_F(PanelCocoaTest, TitlebarViewClose) {
   Panel* panel = CreateTestPanel("Test Panel");
-
-  PanelBrowserWindowCocoa* native_window =
-      static_cast<PanelBrowserWindowCocoa*>(panel->native_panel());
+  PanelCocoa* native_window = static_cast<PanelCocoa*>(panel->native_panel());
 
   PanelTitlebarViewCocoa* titlebar = [native_window->controller_ titlebarView];
   EXPECT_TRUE(titlebar);
@@ -309,7 +292,7 @@ TEST_F(PanelBrowserWindowCocoaTest, TitlebarViewClose) {
 }
 
 // Verify some menu items being properly enabled/disabled for panels.
-TEST_F(PanelBrowserWindowCocoaTest, MenuItems) {
+TEST_F(PanelCocoaTest, MenuItems) {
   Panel* panel = CreateTestPanel("Test Panel");
 
   scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:@""]);
@@ -323,8 +306,7 @@ TEST_F(PanelBrowserWindowCocoaTest, MenuItems) {
       CreateMenuItem(menu, IDC_PRESENTATION_MODE);
   NSMenuItem* sync_menu_item = CreateMenuItem(menu, IDC_SHOW_SYNC_SETUP);
 
-  PanelBrowserWindowCocoa* native_window =
-      static_cast<PanelBrowserWindowCocoa*>(panel->native_panel());
+  PanelCocoa* native_window = static_cast<PanelCocoa*>(panel->native_panel());
   PanelWindowControllerCocoa* panel_controller = native_window->controller_;
   for (NSMenuItem *item in [menu itemArray])
     [item setTarget:panel_controller];
@@ -332,9 +314,10 @@ TEST_F(PanelBrowserWindowCocoaTest, MenuItems) {
   [menu update];  // Trigger validation of menu items.
   EXPECT_FALSE([close_tab_menu_item isEnabled]);
   EXPECT_TRUE([close_window_menu_item isEnabled]);
-  EXPECT_TRUE([find_menu_item isEnabled]);
-  EXPECT_TRUE([find_previous_menu_item isEnabled]);
-  EXPECT_TRUE([find_next_menu_item isEnabled]);
+  // No find support. Panels don't have a find bar.
+  EXPECT_FALSE([find_menu_item isEnabled]);
+  EXPECT_FALSE([find_previous_menu_item isEnabled]);
+  EXPECT_FALSE([find_next_menu_item isEnabled]);
   EXPECT_FALSE([fullscreen_menu_item isEnabled]);
   EXPECT_FALSE([presentation_menu_item isEnabled]);
   EXPECT_FALSE([sync_menu_item isEnabled]);
@@ -342,7 +325,7 @@ TEST_F(PanelBrowserWindowCocoaTest, MenuItems) {
   ClosePanelAndWait(panel);
 }
 
-TEST_F(PanelBrowserWindowCocoaTest, KeyEvent) {
+TEST_F(PanelCocoaTest, KeyEvent) {
   Panel* panel = CreateTestPanel("Test Panel");
   NSEvent* event = [NSEvent keyEventWithType:NSKeyDown
                                     location:NSZeroPoint
@@ -354,32 +337,29 @@ TEST_F(PanelBrowserWindowCocoaTest, KeyEvent) {
                  charactersIgnoringModifiers:@""
                                    isARepeat:NO
                                      keyCode:kVK_Tab];
-  PanelBrowserWindowCocoa* native_window =
-      static_cast<PanelBrowserWindowCocoa*>(panel->native_panel());
+  PanelCocoa* native_window = static_cast<PanelCocoa*>(panel->native_panel());
   [BrowserWindowUtils handleKeyboardEvent:event
                       inWindow:[native_window->controller_ window]];
   ClosePanelAndWait(panel);
 }
 
 // Verify that the theme provider is properly plumbed through.
-TEST_F(PanelBrowserWindowCocoaTest, ThemeProvider) {
+TEST_F(PanelCocoaTest, ThemeProvider) {
   Panel* panel = CreateTestPanel("Test Panel");
   ASSERT_TRUE(panel);
 
-  PanelBrowserWindowCocoa* native_window =
-      static_cast<PanelBrowserWindowCocoa*>(panel->native_panel());
+  PanelCocoa* native_window = static_cast<PanelCocoa*>(panel->native_panel());
   ASSERT_TRUE(native_window);
   EXPECT_TRUE(NULL != [[native_window->controller_ window] themeProvider]);
   ClosePanelAndWait(panel);
 }
 
-TEST_F(PanelBrowserWindowCocoaTest, SetTitle) {
+TEST_F(PanelCocoaTest, SetTitle) {
   NSString *appName = @"Test Panel";
   Panel* panel = CreateTestPanel(base::SysNSStringToUTF8(appName));
   ASSERT_TRUE(panel);
 
-  PanelBrowserWindowCocoa* native_window =
-      static_cast<PanelBrowserWindowCocoa*>(panel->native_panel());
+  PanelCocoa* native_window = static_cast<PanelCocoa*>(panel->native_panel());
   ASSERT_TRUE(native_window);
   NSString* previousTitle = [[native_window->controller_ window] title];
   EXPECT_NSNE(appName, previousTitle);
@@ -391,17 +371,15 @@ TEST_F(PanelBrowserWindowCocoaTest, SetTitle) {
   ClosePanelAndWait(panel);
 }
 
-TEST_F(PanelBrowserWindowCocoaTest, ActivatePanel) {
+TEST_F(PanelCocoaTest, ActivatePanel) {
   Panel* panel = CreateTestPanel("Test Panel");
   Panel* panel2 = CreateTestPanel("Test Panel 2");
   ASSERT_TRUE(panel);
   ASSERT_TRUE(panel2);
 
-  PanelBrowserWindowCocoa* native_window =
-      static_cast<PanelBrowserWindowCocoa*>(panel->native_panel());
+  PanelCocoa* native_window = static_cast<PanelCocoa*>(panel->native_panel());
   ASSERT_TRUE(native_window);
-  PanelBrowserWindowCocoa* native_window2 =
-      static_cast<PanelBrowserWindowCocoa*>(panel2->native_panel());
+  PanelCocoa* native_window2 = static_cast<PanelCocoa*>(panel2->native_panel());
   ASSERT_TRUE(native_window2);
 
   // No one has a good answer why but apparently windows can't take keyboard

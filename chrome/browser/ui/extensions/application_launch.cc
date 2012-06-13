@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
@@ -104,16 +105,21 @@ WebContents* OpenApplication(Profile* profile,
       NOTREACHED();
       break;
     }
-    case extension_misc::LAUNCH_PANEL:
+    case extension_misc::LAUNCH_PANEL: {
+      bool open_panel = false;
 #if defined(USE_ASH)
-      if (extension &&
-          CommandLine::ForCurrentProcess()->HasSwitch(
-              ash::switches::kAuraPanelManager)) {
+      open_panel = CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kAuraPanelManager);
+#else
+      open_panel = CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kBrowserlessPanels);
+#endif
+      if (open_panel) {
         tab = OpenApplicationPanel(profile, extension, override_url);
         break;
       }
       // else fall through to LAUNCH_WINDOW
-#endif
+    }
     case extension_misc::LAUNCH_WINDOW:
       tab = OpenApplicationWindow(profile, extension, container,
                                   override_url, NULL);
@@ -130,7 +136,6 @@ WebContents* OpenApplication(Profile* profile,
   return tab;
 }
 
-#if defined(USE_ASH)
 WebContents* OpenApplicationPanel(
     Profile* profile,
     const Extension* extension,
@@ -141,11 +146,17 @@ WebContents* OpenApplicationPanel(
   gfx::Rect panel_bounds;
   panel_bounds.set_width(extension->launch_width());
   panel_bounds.set_height(extension->launch_height());
+#if defined(USE_ASH)
   PanelViewAura* panel_view = new PanelViewAura(app_name);
   panel_view->Init(profile, url, panel_bounds);
   return panel_view->WebContents();
-}
+#else
+  Panel* panel = PanelManager::GetInstance()->CreatePanel(
+      app_name, profile, url, panel_bounds.size());
+  panel->Show();
+  return panel->WebContents();
 #endif
+}
 
 WebContents* OpenApplicationWindow(
     Profile* profile,

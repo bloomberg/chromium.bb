@@ -135,6 +135,7 @@ class PanelBrowserView : public BrowserView,
   virtual void PanelExpansionStateChanging(
       Panel::ExpansionState old_state,
       Panel::ExpansionState new_state) OVERRIDE;
+  virtual NativePanelTesting* CreateNativePanelTesting() OVERRIDE;
 
   // Overridden from AnimationDelegate:
   virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;

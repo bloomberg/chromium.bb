@@ -15,6 +15,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "ui/gfx/rect.h"
 
+class NativePanelTesting;
+
 class BasePanelBrowserTest : public InProcessBrowserTest {
  public:
   class MockDisplaySettingsProvider : public DisplaySettingsProvider {
@@ -81,6 +83,8 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
 
   Panel* CreateDockedPanel(const std::string& name, const gfx::Rect& bounds);
   Panel* CreateDetachedPanel(const std::string& name, const gfx::Rect& bounds);
+
+  static NativePanelTesting* CreateNativePanelTesting(Panel* panel);
 
   void WaitForPanelActiveState(Panel* panel, ActiveState state);
   void WaitForWindowSizeAvailable(Panel* panel);

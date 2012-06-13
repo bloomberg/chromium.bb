@@ -2,24 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/panels/panel_browser_window_cocoa.h"
+#include "chrome/browser/ui/panels/panel_cocoa.h"
 
 #include "base/logging.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
-#import "chrome/browser/ui/cocoa/browser_window_utils.h"
-#include "chrome/browser/ui/cocoa/find_bar/find_bar_bridge.h"
-#include "chrome/browser/ui/cocoa/task_manager_mac.h"
+#import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
 #include "chrome/browser/ui/panels/panel.h"
-#include "chrome/browser/ui/panels/panel_manager.h"
 #import "chrome/browser/ui/panels/panel_titlebar_view_cocoa.h"
 #import "chrome/browser/ui/panels/panel_utils_cocoa.h"
 #import "chrome/browser/ui/panels/panel_window_controller_cocoa.h"
-#include "chrome/browser/ui/tab_contents/tab_contents.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/native_web_keyboard_event.h"
-#include "content/public/browser/notification_source.h"
 
 using content::NativeWebKeyboardEvent;
 using content::WebContents;
@@ -36,55 +27,37 @@ const int kMinimumWindowSize = 1;
 // This creates a shim window class, which in turn creates a Cocoa window
 // controller which in turn creates actual NSWindow by loading a nib.
 // Overall chain of ownership is:
-// PanelWindowControllerCocoa -> PanelBrowserWindowCocoa -> Panel.
-NativePanel* Panel::CreateNativePanel(Browser* browser, Panel* panel,
-                                      const gfx::Rect& bounds) {
-  return new PanelBrowserWindowCocoa(browser, panel, bounds);
+// PanelWindowControllerCocoa -> PanelCocoa -> Panel.
+// static
+NativePanel* Panel::CreateNativePanel(Panel* panel, const gfx::Rect& bounds) {
+  return new PanelCocoa(panel, bounds);
 }
 
-PanelBrowserWindowCocoa::PanelBrowserWindowCocoa(Browser* browser,
-                                                 Panel* panel,
-                                                 const gfx::Rect& bounds)
-  : browser_(browser),
-    panel_(panel),
-    bounds_(bounds),
-    is_shown_(false),
-    has_find_bar_(false),
-    attention_request_id_(0) {
+PanelCocoa::PanelCocoa(Panel* panel, const gfx::Rect& bounds)
+    : panel_(panel),
+      bounds_(bounds),
+      is_shown_(false),
+      attention_request_id_(0) {
   controller_ = [[PanelWindowControllerCocoa alloc] initWithPanel:this];
-  browser_->tab_strip_model()->AddObserver(this);
-  registrar_.Add(
-      this,
-      chrome::NOTIFICATION_PANEL_CHANGED_EXPANSION_STATE,
-      content::Source<Panel>(panel_.get()));
 }
 
-PanelBrowserWindowCocoa::~PanelBrowserWindowCocoa() {
-  browser_->tab_strip_model()->RemoveObserver(this);
+PanelCocoa::~PanelCocoa() {
 }
 
-bool PanelBrowserWindowCocoa::isClosed() {
+bool PanelCocoa::isClosed() {
   return !controller_;
 }
 
-void PanelBrowserWindowCocoa::ShowPanel() {
-  // The Browser associated with this browser window must become the active
-  // browser at the time |Show()| is called. This is the natural behaviour under
-  // Windows, but |-makeKeyAndOrderFront:| won't send |-windowDidBecomeKey:|
-  // until we return to the runloop. Therefore any calls to
-  // |BrowserList::GetLastActive()| (for example, in bookmark_util), will return
-  // the previous browser instead if we don't explicitly set it here.
-  BrowserList::SetLastActive(GetPanelBrowser());
-
+void PanelCocoa::ShowPanel() {
   ShowPanelInactive();
   ActivatePanel();
 }
 
-void PanelBrowserWindowCocoa::ShowPanelInactive() {
+void PanelCocoa::ShowPanelInactive() {
   if (isClosed())
     return;
 
-  // Browser calls this several times, meaning 'ensure it's shown'.
+  // This method may be called several times, meaning 'ensure it's shown'.
   // Animations don't look good when repeated - hence this flag is needed.
   if (is_shown_) {
     return;
@@ -98,22 +71,21 @@ void PanelBrowserWindowCocoa::ShowPanelInactive() {
   [controller_ revealAnimatedWithFrame:finalFrame];
 }
 
-gfx::Rect PanelBrowserWindowCocoa::GetPanelBounds() const {
+gfx::Rect PanelCocoa::GetPanelBounds() const {
   return bounds_;
 }
 
 // |bounds| is the platform-independent screen coordinates, with (0,0) at
 // top-left of the primary screen.
-void PanelBrowserWindowCocoa::SetPanelBounds(const gfx::Rect& bounds) {
+void PanelCocoa::SetPanelBounds(const gfx::Rect& bounds) {
   setBoundsInternal(bounds, true);
 }
 
-void PanelBrowserWindowCocoa::SetPanelBoundsInstantly(const gfx::Rect& bounds) {
+void PanelCocoa::SetPanelBoundsInstantly(const gfx::Rect& bounds) {
   setBoundsInternal(bounds, false);
 }
 
-void PanelBrowserWindowCocoa::setBoundsInternal(const gfx::Rect& bounds,
-                                                bool animate) {
+void PanelCocoa::setBoundsInternal(const gfx::Rect& bounds, bool animate) {
   // We will call SetPanelBoundsInstantly() once before showing the panel
   // and it should set the panel frame correctly.
   if (bounds_ == bounds && is_shown_)
@@ -130,7 +102,7 @@ void PanelBrowserWindowCocoa::setBoundsInternal(const gfx::Rect& bounds,
   [controller_ setPanelFrame:frame animate:animate];
 }
 
-void PanelBrowserWindowCocoa::ClosePanel() {
+void PanelCocoa::ClosePanel() {
   if (isClosed())
       return;
 
@@ -138,18 +110,18 @@ void PanelBrowserWindowCocoa::ClosePanel() {
   [window performClose:controller_];
 }
 
-void PanelBrowserWindowCocoa::ActivatePanel() {
+void PanelCocoa::ActivatePanel() {
   if (!is_shown_)
     return;
 
   [controller_ activate];
 }
 
-void PanelBrowserWindowCocoa::DeactivatePanel() {
+void PanelCocoa::DeactivatePanel() {
   [controller_ deactivate];
 }
 
-bool PanelBrowserWindowCocoa::IsPanelActive() const {
+bool PanelCocoa::IsPanelActive() const {
   // TODO(dcheng): It seems like a lot of these methods can be called before
   // our NSWindow is created. Do we really need to check in every one of these
   // methods if the NSWindow is created, or is there a better way to
@@ -159,61 +131,47 @@ bool PanelBrowserWindowCocoa::IsPanelActive() const {
   return [[controller_ window] isMainWindow];
 }
 
-void PanelBrowserWindowCocoa::PreventActivationByOS(bool prevent_activation) {
+void PanelCocoa::PreventActivationByOS(bool prevent_activation) {
   [controller_ preventBecomingKeyWindow:prevent_activation];
   return;
 }
 
-gfx::NativeWindow PanelBrowserWindowCocoa::GetNativePanelHandle() {
+gfx::NativeWindow PanelCocoa::GetNativePanelHandle() {
   return [controller_ window];
 }
 
-void PanelBrowserWindowCocoa::UpdatePanelTitleBar() {
+void PanelCocoa::UpdatePanelTitleBar() {
   if (!is_shown_)
     return;
   [controller_ updateTitleBar];
 }
 
-void PanelBrowserWindowCocoa::UpdatePanelLoadingAnimations(
-    bool should_animate) {
+void PanelCocoa::UpdatePanelLoadingAnimations(bool should_animate) {
   [controller_ updateThrobber:should_animate];
 }
 
-void PanelBrowserWindowCocoa::ShowTaskManagerForPanel() {
-  TaskManagerMac::Show(false);
+FindBar* PanelCocoa::CreatePanelFindBar() {
+  NOTREACHED();  // legacy API from browser window. N/A for refactored panels.
+  return NULL;
 }
 
-FindBar* PanelBrowserWindowCocoa::CreatePanelFindBar() {
-  DCHECK(!has_find_bar_) << "find bar should only be created once";
-  has_find_bar_ = true;
-
-  FindBarBridge* bridge = new FindBarBridge();
-  [controller_ addFindBar:bridge->find_bar_cocoa_controller()];
-  return bridge;
-}
-
-void PanelBrowserWindowCocoa::NotifyPanelOnUserChangedTheme() {
+void PanelCocoa::NotifyPanelOnUserChangedTheme() {
   NOTIMPLEMENTED();
 }
 
-void PanelBrowserWindowCocoa::PanelWebContentsFocused(
-    WebContents* contents) {
-  // TODO(jianli): to be implemented.
-}
-
-void PanelBrowserWindowCocoa::PanelCut() {
+void PanelCocoa::PanelCut() {
   // Nothing to do since we do not have panel-specific system menu on Mac.
 }
 
-void PanelBrowserWindowCocoa::PanelCopy() {
+void PanelCocoa::PanelCopy() {
   // Nothing to do since we do not have panel-specific system menu on Mac.
 }
 
-void PanelBrowserWindowCocoa::PanelPaste() {
+void PanelCocoa::PanelPaste() {
   // Nothing to do since we do not have panel-specific system menu on Mac.
 }
 
-void PanelBrowserWindowCocoa::DrawAttention(bool draw_attention) {
+void PanelCocoa::DrawAttention(bool draw_attention) {
   DCHECK((panel_->attention_mode() & Panel::USE_PANEL_ATTENTION) != 0);
 
   PanelTitlebarViewCocoa* titlebar = [controller_ titlebarView];
@@ -234,78 +192,54 @@ void PanelBrowserWindowCocoa::DrawAttention(bool draw_attention) {
   }
 }
 
-bool PanelBrowserWindowCocoa::IsDrawingAttention() const {
+bool PanelCocoa::IsDrawingAttention() const {
   PanelTitlebarViewCocoa* titlebar = [controller_ titlebarView];
   return [titlebar isDrawingAttention];
 }
 
-bool PanelBrowserWindowCocoa::PreHandlePanelKeyboardEvent(
+bool PanelCocoa::PreHandlePanelKeyboardEvent(
     const NativeWebKeyboardEvent& event, bool* is_keyboard_shortcut) {
-  if (![BrowserWindowUtils shouldHandleKeyboardEvent:event])
-    return false;
-
-  int id = [BrowserWindowUtils getCommandId:event];
-  if (id == -1)
-    return false;
-
-  if (GetPanelBrowser()->IsReservedCommandOrKey(id, event)) {
-      return [BrowserWindowUtils handleKeyboardEvent:event.os_event
-                                 inWindow:GetNativePanelHandle()];
-  }
-
-  DCHECK(is_keyboard_shortcut);
-  *is_keyboard_shortcut = true;
+  // TODO(jennb): any shortcut handling needed for Panel?
   return false;
 }
 
-void PanelBrowserWindowCocoa::HandlePanelKeyboardEvent(
+void PanelCocoa::HandlePanelKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
-  if ([BrowserWindowUtils shouldHandleKeyboardEvent:event]) {
-    [BrowserWindowUtils handleKeyboardEvent:event.os_event
-                                   inWindow:GetNativePanelHandle()];
-  }
+  // TODO(jennb): any shortcut handling needed for Panel?
 }
 
-void PanelBrowserWindowCocoa::FullScreenModeChanged(
+void PanelCocoa::FullScreenModeChanged(
     bool is_full_screen) {
   [controller_ fullScreenModeChanged:is_full_screen];
 }
 
-Browser* PanelBrowserWindowCocoa::GetPanelBrowser() const {
-  return browser_.get();
+Browser* PanelCocoa::GetPanelBrowser() const {
+  NOTREACHED();  // legacy API from BrowserWindow. N/A for refactored panels.
+  return NULL;
 }
 
-void PanelBrowserWindowCocoa::DestroyPanelBrowser() {
-  [controller_ close];
-}
-
-void PanelBrowserWindowCocoa::EnsurePanelFullyVisible() {
+void PanelCocoa::EnsurePanelFullyVisible() {
   [controller_ ensureFullyVisible];
 }
 
-void PanelBrowserWindowCocoa::SetPanelAlwaysOnTop(bool on_top) {
+void PanelCocoa::SetPanelAlwaysOnTop(bool on_top) {
   [controller_ updateWindowLevel];
 }
 
-void PanelBrowserWindowCocoa::EnableResizeByMouse(bool enable) {
+void PanelCocoa::EnableResizeByMouse(bool enable) {
   [controller_ enableResizeByMouse:enable];
 }
 
-void PanelBrowserWindowCocoa::UpdatePanelMinimizeRestoreButtonVisibility() {
+void PanelCocoa::UpdatePanelMinimizeRestoreButtonVisibility() {
   [controller_ updateTitleBarMinimizeRestoreButtonVisibility];
 }
 
-Panel* PanelBrowserWindowCocoa::panel() const {
-  return panel_.get();
+void PanelCocoa::PanelExpansionStateChanging(
+    Panel::ExpansionState old_state, Panel::ExpansionState new_state) {
+  [controller_ updateWindowLevel:(new_state != Panel::EXPANDED)];
 }
 
-void PanelBrowserWindowCocoa::DidCloseNativeWindow() {
-  DCHECK(!isClosed());
-  panel_->OnNativePanelClosed();
-  controller_ = NULL;
-}
-
-gfx::Size PanelBrowserWindowCocoa::WindowSizeFromContentSize(
+gfx::Size PanelCocoa::WindowSizeFromContentSize(
     const gfx::Size& content_size) const {
   NSRect content = NSMakeRect(0, 0,
                               content_size.width(), content_size.height());
@@ -313,45 +247,32 @@ gfx::Size PanelBrowserWindowCocoa::WindowSizeFromContentSize(
   return gfx::Size(NSWidth(frame), NSHeight(frame));
 }
 
-gfx::Size PanelBrowserWindowCocoa::ContentSizeFromWindowSize(
+gfx::Size PanelCocoa::ContentSizeFromWindowSize(
     const gfx::Size& window_size) const {
   NSRect frame = NSMakeRect(0, 0, window_size.width(), window_size.height());
   NSRect content = [controller_ contentRectForFrameRect:frame];
   return gfx::Size(NSWidth(content), NSHeight(content));
 }
 
-int PanelBrowserWindowCocoa::TitleOnlyHeight() const {
+int PanelCocoa::TitleOnlyHeight() const {
   return [controller_ titlebarHeightInScreenCoordinates];
 }
 
-void PanelBrowserWindowCocoa::TabInsertedAt(TabContents* contents,
-                                            int index,
-                                            bool foreground) {
-  [controller_ tabInserted:contents->web_contents()];
+Panel* PanelCocoa::panel() const {
+  return panel_.get();
 }
 
-void PanelBrowserWindowCocoa::TabDetachedAt(TabContents* contents,
-                                            int index) {
-  [controller_ tabDetached:contents->web_contents()];
-}
-
-void PanelBrowserWindowCocoa::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_PANEL_CHANGED_EXPANSION_STATE, type);
-  [controller_ updateWindowLevel];
-}
-
-void PanelBrowserWindowCocoa::PanelExpansionStateChanging(
-    Panel::ExpansionState old_state, Panel::ExpansionState new_state) {
+void PanelCocoa::DidCloseNativeWindow() {
+  DCHECK(!isClosed());
+  panel_->OnNativePanelClosed();
+  controller_ = NULL;
 }
 
 // NativePanelTesting implementation.
-class NativePanelTestingCocoa : public NativePanelTesting {
+class CocoaNativePanelTesting : public NativePanelTesting {
  public:
-  NativePanelTestingCocoa(NativePanel* native_panel);
-  virtual ~NativePanelTestingCocoa() { }
+  CocoaNativePanelTesting(NativePanel* native_panel);
+  virtual ~CocoaNativePanelTesting() { }
   // Overridden from NativePanelTesting
   virtual void PressLeftMouseButtonTitlebar(
       const gfx::Point& mouse_location, panel::ClickModifier modifier) OVERRIDE;
@@ -370,22 +291,22 @@ class NativePanelTestingCocoa : public NativePanelTesting {
  private:
   PanelTitlebarViewCocoa* titlebar() const;
   // Weak, assumed always to outlive this test API object.
-  PanelBrowserWindowCocoa* native_panel_window_;
+  PanelCocoa* native_panel_window_;
 };
 
-NativePanelTesting* PanelBrowserWindowCocoa::CreateNativePanelTesting() {
-  return new NativePanelTestingCocoa(this);
+NativePanelTesting* PanelCocoa::CreateNativePanelTesting() {
+  return new CocoaNativePanelTesting(this);
 }
 
-NativePanelTestingCocoa::NativePanelTestingCocoa(NativePanel* native_panel)
-  : native_panel_window_(static_cast<PanelBrowserWindowCocoa*>(native_panel)) {
+CocoaNativePanelTesting::CocoaNativePanelTesting(NativePanel* native_panel)
+  : native_panel_window_(static_cast<PanelCocoa*>(native_panel)) {
 }
 
-PanelTitlebarViewCocoa* NativePanelTestingCocoa::titlebar() const {
+PanelTitlebarViewCocoa* CocoaNativePanelTesting::titlebar() const {
   return [native_panel_window_->controller_ titlebarView];
 }
 
-void NativePanelTestingCocoa::PressLeftMouseButtonTitlebar(
+void CocoaNativePanelTesting::PressLeftMouseButtonTitlebar(
     const gfx::Point& mouse_location, panel::ClickModifier modifier) {
   // Convert from platform-indepedent screen coordinates to Cocoa's screen
   // coordinates because PanelTitlebarViewCocoa method takes Cocoa's screen
@@ -397,14 +318,14 @@ void NativePanelTestingCocoa::PressLeftMouseButtonTitlebar(
            modifiers:modifierFlags];
 }
 
-void NativePanelTestingCocoa::ReleaseMouseButtonTitlebar(
+void CocoaNativePanelTesting::ReleaseMouseButtonTitlebar(
     panel::ClickModifier modifier) {
   int modifierFlags =
       (modifier == panel::APPLY_TO_ALL ? NSShiftKeyMask : 0);
   [titlebar() releaseLeftMouseButtonTitlebar:modifierFlags];
 }
 
-void NativePanelTestingCocoa::DragTitlebar(const gfx::Point& mouse_location) {
+void CocoaNativePanelTesting::DragTitlebar(const gfx::Point& mouse_location) {
   // Convert from platform-indepedent screen coordinates to Cocoa's screen
   // coordinates because PanelTitlebarViewCocoa method takes Cocoa's screen
   // coordinates.
@@ -412,32 +333,32 @@ void NativePanelTestingCocoa::DragTitlebar(const gfx::Point& mouse_location) {
       cocoa_utils::ConvertPointToCocoaCoordinates(mouse_location)];
 }
 
-void NativePanelTestingCocoa::CancelDragTitlebar() {
+void CocoaNativePanelTesting::CancelDragTitlebar() {
   [titlebar() cancelDragTitlebar];
 }
 
-void NativePanelTestingCocoa::FinishDragTitlebar() {
+void CocoaNativePanelTesting::FinishDragTitlebar() {
   [titlebar() finishDragTitlebar];
 }
 
-bool NativePanelTestingCocoa::VerifyDrawingAttention() const {
+bool CocoaNativePanelTesting::VerifyDrawingAttention() const {
   return [titlebar() isDrawingAttention];
 }
 
-bool NativePanelTestingCocoa::VerifyActiveState(bool is_active) {
+bool CocoaNativePanelTesting::VerifyActiveState(bool is_active) {
   // TODO(jianli): to be implemented.
   return false;
 }
 
-bool NativePanelTestingCocoa::IsWindowSizeKnown() const {
+bool CocoaNativePanelTesting::IsWindowSizeKnown() const {
   return true;
 }
 
-bool NativePanelTestingCocoa::IsAnimatingBounds() const {
+bool CocoaNativePanelTesting::IsAnimatingBounds() const {
   return [native_panel_window_->controller_ isAnimatingBounds];
 }
 
-bool NativePanelTestingCocoa::IsButtonVisible(
+bool CocoaNativePanelTesting::IsButtonVisible(
     panel::TitlebarButtonType button_type) const {
   switch (button_type) {
     case panel::CLOSE_BUTTON:

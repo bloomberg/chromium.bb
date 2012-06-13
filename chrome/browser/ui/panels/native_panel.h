@@ -33,9 +33,11 @@ class Rect;
 // still use the BrowserWindow interface as part of their implementation so we
 // use Panel in all the method names to avoid collisions.
 class NativePanel {
+  friend class BasePanelBrowserTest;  // for CreateNativePanelTesting
   friend class Panel;
   friend class PanelBrowserWindow;
   friend class PanelBrowserTest;
+  friend class OldBasePanelBrowserTest;  // for CreateNativePanelTesting
   friend class OldPanelBrowserTest;
 
  protected:
@@ -54,10 +56,11 @@ class NativePanel {
   virtual gfx::NativeWindow GetNativePanelHandle() = 0;
   virtual void UpdatePanelTitleBar() = 0;
   virtual void UpdatePanelLoadingAnimations(bool should_animate) = 0;
-  virtual void ShowTaskManagerForPanel() = 0;
-  virtual FindBar* CreatePanelFindBar() = 0;
+  virtual void ShowTaskManagerForPanel() {}  // legacy
+  virtual FindBar* CreatePanelFindBar() = 0;  // legacy
   virtual void NotifyPanelOnUserChangedTheme() = 0;
-  virtual void PanelWebContentsFocused(content::WebContents* contents) = 0;
+  virtual void PanelWebContentsFocused(
+      content::WebContents* contents) {}  // legacy
   virtual void PanelCut() = 0;
   virtual void PanelCopy() = 0;
   virtual void PanelPaste() = 0;
@@ -72,8 +75,8 @@ class NativePanel {
   virtual void PanelExpansionStateChanging(Panel::ExpansionState old_state,
                                            Panel::ExpansionState new_state) = 0;
 
-  virtual Browser* GetPanelBrowser() const = 0;
-  virtual void DestroyPanelBrowser() = 0;
+  virtual Browser* GetPanelBrowser() const = 0;  // legacy
+  virtual void DestroyPanelBrowser() {}  // legacy
 
   // Returns the exterior size of the panel window given the client content
   // size and vice versa.
@@ -96,13 +99,16 @@ class NativePanel {
 
   // Updates the visibility of the minimize and restore buttons.
   virtual void UpdatePanelMinimizeRestoreButtonVisibility() = 0;
+
+  // Create testing interface for native panel. (Keep this last to separate
+  // it from regular API.)
+  virtual NativePanelTesting* CreateNativePanelTesting() = 0;
 };
 
 // A NativePanel utility interface used for accessing elements of the
 // native panel used only by test automation.
 class NativePanelTesting {
  public:
-  static NativePanelTesting* Create(NativePanel* native_panel);
   virtual ~NativePanelTesting() {}
 
   // Wrappers for the common cases when no modifier is needed.

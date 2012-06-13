@@ -147,7 +147,11 @@ class NativePanelCocoa;
 
 - (void)ensureFullyVisible;
 
+// Adjust NSStatusWindowLevel based on whether panel is always on top
+// and whether the panel is minimized. The first version wraps the second
+// version using the current panel expanstion state.
 - (void)updateWindowLevel;
+- (void)updateWindowLevel:(BOOL)panelIsMinimized;
 
 // Turns on user-resizable corners/sides indications and enables live resize.
 - (void)enableResizeByMouse:(BOOL)enable;

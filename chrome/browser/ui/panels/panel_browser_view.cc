@@ -636,10 +636,8 @@ class NativePanelTestingWin : public NativePanelTesting {
   PanelBrowserView* panel_browser_view_;
 };
 
-// static
-NativePanelTesting* NativePanelTesting::Create(NativePanel* native_panel) {
-  return new NativePanelTestingWin(static_cast<PanelBrowserView*>(
-      native_panel));
+NativePanelTesting* PanelBrowserView::CreateNativePanelTesting() {
+  return new NativePanelTestingWin(this);
 }
 
 NativePanelTestingWin::NativePanelTestingWin(

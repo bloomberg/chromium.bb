@@ -38,13 +38,11 @@ content::WebContents* OpenApplication(Profile* profile,
                                       WindowOpenDisposition disposition,
                                       const CommandLine* command_line);
 
-#if defined(USE_ASH)
 // Opens |url| in a new application panel window for the specified url.
 content::WebContents* OpenApplicationPanel(
     Profile* profile,
     const extensions::Extension* extension,
     const GURL& url);
-#endif
 
 // Opens a new application window for the specified url. If |as_panel| is true,
 // the application will be opened as a Browser::Type::APP_PANEL in app panel

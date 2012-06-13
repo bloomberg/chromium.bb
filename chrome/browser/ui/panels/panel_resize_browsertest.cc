@@ -8,6 +8,9 @@
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_resize_controller.h"
 
+// Refactor has only been done for Mac panels so far.
+#if defined(OS_MACOSX)
+
 class PanelResizeBrowserTest : public BasePanelBrowserTest {
  public:
   PanelResizeBrowserTest() : BasePanelBrowserTest() {
@@ -410,3 +413,5 @@ IN_PROC_BROWSER_TEST_F(PanelResizeBrowserTest, ResizeDetachedPanelToTop) {
 
   panel_manager->CloseAll();
 }
+
+#endif // OS_MACOSX

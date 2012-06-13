@@ -115,6 +115,7 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   virtual void PanelExpansionStateChanging(
       Panel::ExpansionState old_state,
       Panel::ExpansionState new_state) OVERRIDE;
+  virtual NativePanelTesting* CreateNativePanelTesting() OVERRIDE;
 
  private:
   friend class NativePanelTestingGtk;

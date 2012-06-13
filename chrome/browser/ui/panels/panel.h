@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/base_window.h"
 #include "chrome/browser/ui/panels/panel_constants.h"
 #include "content/public/browser/notification_observer.h"
@@ -20,6 +21,8 @@
 
 class Browser;
 class BrowserWindow;
+class ExtensionWindowController;
+class GURL;
 class NativePanel;
 class PanelManager;
 class PanelStrip;
@@ -69,6 +72,12 @@ class Panel : public BaseWindow,
   PanelManager* manager() const;
 
   const std::string& app_name() const { return app_name_; }
+  const SessionID& session_id() const { return session_id_; }
+  const ExtensionWindowController* extension_window_controller() const {
+    return extension_window_controller_.get();
+  }
+  const std::string extension_id() const;
+
   virtual CommandUpdater* command_updater();
   virtual Profile* profile() const;
 
@@ -130,9 +139,13 @@ class Panel : public BaseWindow,
                        const content::NotificationDetails& details) OVERRIDE;
 
   // Construct a native panel BrowserWindow implementation for the specified
-  // |browser|.
+  // |browser|. (legacy)
   static NativePanel* CreateNativePanel(Browser* browser,
                                         Panel* panel,
+                                        const gfx::Rect& bounds);
+
+  // Construct a native panel implementation.
+  static NativePanel* CreateNativePanel(Panel* panel,
                                         const gfx::Rect& bounds);
 
   NativePanel* native_panel() const { return native_panel_; }
@@ -187,6 +200,8 @@ class Panel : public BaseWindow,
   // Only called by PanelManager.
   bool initialized() const { return initialized_; }
   virtual void Initialize(const gfx::Rect& bounds, Browser* browser);  // legacy
+  virtual void Initialize(Profile* profile, const GURL& url,
+                          const gfx::Rect& bounds);
 
   // This is different from BrowserWindow::SetBounds():
   // * SetPanelBounds() is only called by PanelManager to manage its position.
@@ -292,6 +307,9 @@ class Panel : public BaseWindow,
     CUSTOM_MAX_SIZE
   };
 
+  // Initialize state for all supported commands.
+  void InitCommandState();
+
   // Configures the renderer for auto resize (if auto resize is enabled).
   void ConfigureAutoResize(content::WebContents* web_contents);
 
@@ -301,7 +319,7 @@ class Panel : public BaseWindow,
   // The application name that is also the name of the window when the
   // page content does not provide a title.
   // This name should be set when the panel is created.
-  const std::string& app_name_;
+  const std::string app_name_;
 
   // Current collection of panels to which this panel belongs. This determines
   // the panel's screen layout.
@@ -346,6 +364,8 @@ class Panel : public BaseWindow,
   CommandUpdater command_updater_;
 
   content::NotificationRegistrar registrar_;
+  const SessionID session_id_;
+  scoped_ptr<ExtensionWindowController> extension_window_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(Panel);
 };

@@ -51,6 +51,7 @@ extern const char kAutoLaunchAtStartup[];
 extern const char kAutomationClientChannelID[];
 extern const char kAutomationReinitializeOnChannelError[];
 extern const char kBrowserPluginPlatformApps[];
+extern const char kBrowserlessPanels[];
 extern const char kCaptivePortalDetection[];
 extern const char kCheckForUpdateIntervalSec[];
 extern const char kCheckCloudPrintConnectorPolicy[];

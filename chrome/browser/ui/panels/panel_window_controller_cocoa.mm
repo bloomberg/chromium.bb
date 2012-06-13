@@ -989,6 +989,10 @@ enum {
 }
 
 - (void)updateWindowLevel {
+  [self updateWindowLevel:windowShim_->panel()->IsMinimized()];
+}
+
+- (void)updateWindowLevel:(BOOL)panelIsMinimized {
   if (![self isWindowLoaded])
     return;
   // Make sure we don't draw on top of a window in full screen mode.
@@ -1013,7 +1017,7 @@ enum {
   // While this is OK for expanded panels, it makes minimized panels impossible
   // to activate. As a result, we still use NSStatusWindowLevel for minimized
   // panels, since it's impossible to compose IME text in them anyway.
-  if (panel->IsMinimized()) {
+  if (panelIsMinimized) {
     [[self window] setLevel:NSStatusWindowLevel];
     return;
   }
