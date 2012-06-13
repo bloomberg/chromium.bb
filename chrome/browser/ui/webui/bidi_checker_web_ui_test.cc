@@ -7,6 +7,7 @@
 #include "base/base_paths.h"
 #include "base/i18n/rtl.h"
 #include "base/path_service.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/autofill/autofill_common_test.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/browser_thread.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(TOOLKIT_GTK)
@@ -69,6 +71,19 @@ void WebUIBidiCheckerBrowserTestRTL::RunBidiCheckerOnPage(
   WebUIBidiCheckerBrowserTest::RunBidiCheckerOnPage(page_url, true);
 }
 
+// static
+void WebUIBidiCheckerBrowserTestRTL::SetUpOnIOThread(
+    base::WaitableEvent* event) {
+  std::string locale;
+  {
+    base::ThreadRestrictions::ScopedAllowIO allow_io_scope;
+    locale.assign(
+        ResourceBundle::GetSharedInstance().ReloadLocaleResources("he"));
+  }
+  event->Signal();
+  ASSERT_FALSE(locale.empty());
+}
+
 void WebUIBidiCheckerBrowserTestRTL::SetUpOnMainThread() {
   WebUIBidiCheckerBrowserTest::SetUpOnMainThread();
   FilePath pak_path;
@@ -79,8 +94,16 @@ void WebUIBidiCheckerBrowserTestRTL::SetUpOnMainThread() {
   pak_path = pak_path.AppendASCII("fake-bidi");
   pak_path = pak_path.ReplaceExtension(FILE_PATH_LITERAL("pak"));
   ResourceBundle::GetSharedInstance().OverrideLocalePakForTest(pak_path);
-  ASSERT_FALSE(
-      ResourceBundle::GetSharedInstance().ReloadLocaleResources("he").empty());
+
+  // Since synchronization isn't complete for the ResourceBundle class, reload
+  // locale resources on the IO thread.
+  base::WaitableEvent event(true, false);
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&WebUIBidiCheckerBrowserTestRTL::SetUpOnIOThread,
+                 base::Unretained(&event)));
+  ui_test_utils::WaitEventSignaled(&event);
+
   base::i18n::SetICUDefaultLocale("he");
 #if defined(OS_POSIX) && defined(TOOLKIT_GTK)
   gtk_widget_set_default_direction(GTK_TEXT_DIR_RTL);

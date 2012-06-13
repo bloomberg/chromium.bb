@@ -11,6 +11,10 @@
 #include "chrome/browser/ui/webui/web_ui_browsertest.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
+namespace base {
+class WaitableEvent;
+}
+
 // Base class for BidiChecker-based tests. Preloads the BidiChecker JS library
 // for each test.
 class WebUIBidiCheckerBrowserTest : public WebUIBrowserTest {
@@ -42,6 +46,8 @@ class WebUIBidiCheckerBrowserTestRTL : public WebUIBidiCheckerBrowserTest {
  protected:
   virtual void SetUpOnMainThread() OVERRIDE;
   virtual void CleanUpOnMainThread() OVERRIDE;
+
+  static void SetUpOnIOThread(base::WaitableEvent* event);
 
   // The app locale before we change it
   std::string app_locale_;

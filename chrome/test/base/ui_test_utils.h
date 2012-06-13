@@ -54,6 +54,10 @@ class SkBitmap;
 class TabContents;
 class TemplateURLService;
 
+namespace base {
+class WaitableEvent;
+}
+
 namespace browser {
 struct NavigateParams;
 }
@@ -125,6 +129,10 @@ void WaitForLoadStop(content::WebContents* tab);
 // TODO(dubroy): Remove this race hazard (http://crbug.com/119521).
 // Use BrowserAddedObserver instead.
 Browser* WaitForNewBrowser();
+
+// Waits for |event| to be signaled running message loop in the current thread
+// while waiting.
+void WaitEventSignaled(base::WaitableEvent* event);
 
 // Opens |url| in an incognito browser window with the incognito profile of
 // |profile|, blocking until the navigation finishes. This will create a new
