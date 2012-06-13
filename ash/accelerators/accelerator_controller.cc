@@ -283,6 +283,9 @@ bool AcceleratorController::PerformAction(int action,
     return false;
   }
 
+  // You *MUST* return true when some action is performed. Otherwise, this
+  // function might be called *twice*, via BrowserView::PreHandleKeyboardEvent
+  // and BrowserView::HandleKeyboardEvent, for a single accelerator press.
   switch (action) {
     case CYCLE_BACKWARD_MRU:
       return HandleCycleWindowMRU(WindowCycleController::BACKWARD,
@@ -374,7 +377,7 @@ bool AcceleratorController::PerformAction(int action,
       break;
     case SHOW_KEYBOARD_OVERLAY:
       ash::Shell::GetInstance()->delegate()->ShowKeyboardOverlay();
-      break;
+      return true;
     case SHOW_OAK:
       if (CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kAshEnableOak)) {
