@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,12 +14,11 @@
 namespace {
 
 const FilePath::CharType kAutostart[] = "autostart";
-const FilePath::CharType kConfig[] = ".config";
-const char kXdgConfigHome[] = "XDG_CONFIG_HOME";
 
 FilePath GetAutostartDirectory(base::Environment* environment) {
-  FilePath result =
-      base::nix::GetXDGDirectory(environment, kXdgConfigHome, kConfig);
+  FilePath result = base::nix::GetXDGDirectory(environment,
+                                               base::nix::kXdgConfigHomeEnvVar,
+                                               base::nix::kDotConfigDir);
   result = result.Append(kAutostart);
   return result;
 }
