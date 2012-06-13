@@ -17,13 +17,13 @@
 #include "base/time.h"
 #include "chrome/renderer/safe_browsing/features.h"
 #include "chrome/renderer/safe_browsing/mock_feature_extractor_clock.h"
+#include "chrome/renderer/safe_browsing/test_utils.h"
 #include "content/public/test/render_view_fake_resources_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScriptSource.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 
-using ::testing::ContainerEq;
 using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::Return;
@@ -92,8 +92,7 @@ class PhishingDOMFeatureExtractorTest
   base::WeakPtrFactory<PhishingDOMFeatureExtractorTest> weak_factory_;
 };
 
-// This test is disabled. See bug 131999
-TEST_F(PhishingDOMFeatureExtractorTest, DISABLED_FormFeatures) {
+TEST_F(PhishingDOMFeatureExtractorTest, FormFeatures) {
   // This test doesn't exercise the extraction timing.
   EXPECT_CALL(clock_, Now()).WillRepeatedly(Return(base::TimeTicks::Now()));
   responses_["http://host.com/"] =
@@ -113,7 +112,7 @@ TEST_F(PhishingDOMFeatureExtractorTest, DISABLED_FormFeatures) {
   FeatureMap features;
   LoadURL("http://host.com/");
   ASSERT_TRUE(ExtractFeatures(&features));
-  EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
+  ExpectFeatureMapsAreEqual(features, expected_features);
 
   responses_["http://host.com/"] =
       "<html><head><body>"
@@ -126,7 +125,7 @@ TEST_F(PhishingDOMFeatureExtractorTest, DISABLED_FormFeatures) {
   features.Clear();
   LoadURL("http://host.com/");
   ASSERT_TRUE(ExtractFeatures(&features));
-  EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
+  ExpectFeatureMapsAreEqual(features, expected_features);
 
   responses_["http://host.com/"] =
       "<html><head><body><input></body></html>";
@@ -137,7 +136,7 @@ TEST_F(PhishingDOMFeatureExtractorTest, DISABLED_FormFeatures) {
   features.Clear();
   LoadURL("http://host.com/");
   ASSERT_TRUE(ExtractFeatures(&features));
-  EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
+  ExpectFeatureMapsAreEqual(features, expected_features);
 
   responses_["http://host.com/"] =
       "<html><head><body><input type=\"invalid\"></body></html>";
@@ -148,7 +147,7 @@ TEST_F(PhishingDOMFeatureExtractorTest, DISABLED_FormFeatures) {
   features.Clear();
   LoadURL("http://host.com/");
   ASSERT_TRUE(ExtractFeatures(&features));
-  EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
+  ExpectFeatureMapsAreEqual(features, expected_features);
 }
 
 TEST_F(PhishingDOMFeatureExtractorTest, LinkFeatures) {
@@ -170,7 +169,7 @@ TEST_F(PhishingDOMFeatureExtractorTest, LinkFeatures) {
   FeatureMap features;
   LoadURL("http://www.host.com/");
   ASSERT_TRUE(ExtractFeatures(&features));
-  EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
+  ExpectFeatureMapsAreEqual(features, expected_features);
 
   responses_.clear();
   responses_["https://www.host.com/"] =
@@ -190,11 +189,10 @@ TEST_F(PhishingDOMFeatureExtractorTest, LinkFeatures) {
   features.Clear();
   LoadURL("https://www.host.com/");
   ASSERT_TRUE(ExtractFeatures(&features));
-  EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
+  ExpectFeatureMapsAreEqual(features, expected_features);
 }
 
-// This test is disabled. See bug 131999
-TEST_F(PhishingDOMFeatureExtractorTest, DISABLED_ScriptAndImageFeatures) {
+TEST_F(PhishingDOMFeatureExtractorTest, ScriptAndImageFeatures) {
   // This test doesn't exercise the extraction timing.
   EXPECT_CALL(clock_, Now()).WillRepeatedly(Return(base::TimeTicks::Now()));
   responses_["http://host.com/"] =
@@ -206,7 +204,7 @@ TEST_F(PhishingDOMFeatureExtractorTest, DISABLED_ScriptAndImageFeatures) {
   FeatureMap features;
   LoadURL("http://host.com/");
   ASSERT_TRUE(ExtractFeatures(&features));
-  EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
+  ExpectFeatureMapsAreEqual(features, expected_features);
 
   responses_["http://host.com/"] =
       "<html><head><script></script><script></script><script></script>"
@@ -222,11 +220,10 @@ TEST_F(PhishingDOMFeatureExtractorTest, DISABLED_ScriptAndImageFeatures) {
   features.Clear();
   LoadURL("http://host.com/");
   ASSERT_TRUE(ExtractFeatures(&features));
-  EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
+  ExpectFeatureMapsAreEqual(features, expected_features);
 }
 
-// This test is disabled. See bug 131999
-TEST_F(PhishingDOMFeatureExtractorTest, DISABLED_SubFrames) {
+TEST_F(PhishingDOMFeatureExtractorTest, SubFrames) {
   // This test doesn't exercise the extraction timing.
   EXPECT_CALL(clock_, Now()).WillRepeatedly(Return(base::TimeTicks::Now()));
 
@@ -275,7 +272,7 @@ TEST_F(PhishingDOMFeatureExtractorTest, DISABLED_SubFrames) {
   FeatureMap features;
   LoadURL("http://host.com/");
   ASSERT_TRUE(ExtractFeatures(&features));
-  EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
+  ExpectFeatureMapsAreEqual(features, expected_features);
 }
 
 TEST_F(PhishingDOMFeatureExtractorTest, Continuation) {
@@ -333,7 +330,7 @@ TEST_F(PhishingDOMFeatureExtractorTest, Continuation) {
   FeatureMap features;
   LoadURL("http://host.com/");
   ASSERT_TRUE(ExtractFeatures(&features));
-  EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
+  ExpectFeatureMapsAreEqual(features, expected_features);
   // Make sure none of the mock expectations carry over to the next test.
   ::testing::Mock::VerifyAndClearExpectations(&clock_);
 
@@ -400,7 +397,7 @@ TEST_F(PhishingDOMFeatureExtractorTest, SubframeRemoval) {
   FeatureMap features;
   LoadURL("http://host.com/");
   ASSERT_TRUE(ExtractFeatures(&features));
-  EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
+  ExpectFeatureMapsAreEqual(features, expected_features);
 }
 
 }  // namespace safe_browsing

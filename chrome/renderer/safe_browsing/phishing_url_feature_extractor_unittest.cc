@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,11 +7,11 @@
 #include <string>
 #include <vector>
 #include "chrome/renderer/safe_browsing/features.h"
+#include "chrome/renderer/safe_browsing/test_utils.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::ContainerEq;
 using ::testing::ElementsAre;
 
 namespace safe_browsing {
@@ -40,7 +40,7 @@ TEST_F(PhishingUrlFeatureExtractorTest, ExtractFeatures) {
 
   FeatureMap features;
   ASSERT_TRUE(extractor_.ExtractFeatures(GURL(url), &features));
-  EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
+  ExpectFeatureMapsAreEqual(features, expected_features);
 
   url = "http://www.www.cnn.co.uk/sports/sports/index.html?shouldnotappear";
   expected_features.Clear();
@@ -60,7 +60,7 @@ TEST_F(PhishingUrlFeatureExtractorTest, ExtractFeatures) {
 
   features.Clear();
   ASSERT_TRUE(extractor_.ExtractFeatures(GURL(url), &features));
-  EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
+  ExpectFeatureMapsAreEqual(features, expected_features);
 
   url = "http://justadomain.com/";
   expected_features.Clear();
@@ -71,7 +71,7 @@ TEST_F(PhishingUrlFeatureExtractorTest, ExtractFeatures) {
 
   features.Clear();
   ASSERT_TRUE(extractor_.ExtractFeatures(GURL(url), &features));
-  EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
+  ExpectFeatureMapsAreEqual(features, expected_features);
 
   url = "http://witharef.com/#abc";
   expected_features.Clear();
@@ -82,7 +82,7 @@ TEST_F(PhishingUrlFeatureExtractorTest, ExtractFeatures) {
 
   features.Clear();
   ASSERT_TRUE(extractor_.ExtractFeatures(GURL(url), &features));
-  EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
+  ExpectFeatureMapsAreEqual(features, expected_features);
 
   url = "http://...www..lotsodots....com./";
   expected_features.Clear();
@@ -95,7 +95,7 @@ TEST_F(PhishingUrlFeatureExtractorTest, ExtractFeatures) {
 
   features.Clear();
   ASSERT_TRUE(extractor_.ExtractFeatures(GURL(url), &features));
-  EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
+  ExpectFeatureMapsAreEqual(features, expected_features);
 
   url = "http://unrecognized.tld/";
   EXPECT_FALSE(extractor_.ExtractFeatures(GURL(url), &features));

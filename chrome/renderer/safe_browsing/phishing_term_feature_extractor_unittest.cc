@@ -19,10 +19,10 @@
 #include "chrome/renderer/safe_browsing/features.h"
 #include "chrome/renderer/safe_browsing/mock_feature_extractor_clock.h"
 #include "chrome/renderer/safe_browsing/murmurhash3_util.h"
+#include "chrome/renderer/safe_browsing/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::ContainerEq;
 using ::testing::Return;
 
 namespace safe_browsing {
@@ -130,7 +130,7 @@ TEST_F(PhishingTermFeatureExtractorTest, ExtractFeatures) {
 
   FeatureMap features;
   ASSERT_TRUE(ExtractFeatures(&page_text, &features));
-  EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
+  ExpectFeatureMapsAreEqual(features, expected_features);
 
   page_text = ASCIIToUTF16("one one");
   expected_features.Clear();
@@ -141,7 +141,7 @@ TEST_F(PhishingTermFeatureExtractorTest, ExtractFeatures) {
 
   features.Clear();
   ASSERT_TRUE(ExtractFeatures(&page_text, &features));
-  EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
+  ExpectFeatureMapsAreEqual(features, expected_features);
 
   page_text = ASCIIToUTF16("bla bla multi word test bla");
   expected_features.Clear();
@@ -150,7 +150,7 @@ TEST_F(PhishingTermFeatureExtractorTest, ExtractFeatures) {
 
   features.Clear();
   ASSERT_TRUE(ExtractFeatures(&page_text, &features));
-  EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
+  ExpectFeatureMapsAreEqual(features, expected_features);
 
   // This text has all of the words for one of the terms, but they are
   // not in the correct order.
@@ -159,7 +159,7 @@ TEST_F(PhishingTermFeatureExtractorTest, ExtractFeatures) {
 
   features.Clear();
   ASSERT_TRUE(ExtractFeatures(&page_text, &features));
-  EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
+  ExpectFeatureMapsAreEqual(features, expected_features);
 
   page_text = ASCIIToUTF16("Capitalization plus non-space\n"
                            "separator... punctuation!");
@@ -175,14 +175,14 @@ TEST_F(PhishingTermFeatureExtractorTest, ExtractFeatures) {
 
   features.Clear();
   ASSERT_TRUE(ExtractFeatures(&page_text, &features));
-  EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
+  ExpectFeatureMapsAreEqual(features, expected_features);
 
   // Test with empty page text.
   page_text = string16();
   expected_features.Clear();
   features.Clear();
   ASSERT_TRUE(ExtractFeatures(&page_text, &features));
-  EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
+  ExpectFeatureMapsAreEqual(features, expected_features);
 
   // Chinese translation of the phrase "hello goodbye". This tests that
   // we can correctly separate terms in languages that don't use spaces.
@@ -195,7 +195,7 @@ TEST_F(PhishingTermFeatureExtractorTest, ExtractFeatures) {
 
   features.Clear();
   ASSERT_TRUE(ExtractFeatures(&page_text, &features));
-  EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
+  ExpectFeatureMapsAreEqual(features, expected_features);
 }
 
 TEST_F(PhishingTermFeatureExtractorTest, Continuation) {
@@ -245,7 +245,7 @@ TEST_F(PhishingTermFeatureExtractorTest, Continuation) {
 
   FeatureMap features;
   ASSERT_TRUE(ExtractFeatures(&page_text, &features));
-  EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
+  ExpectFeatureMapsAreEqual(features, expected_features);
   // Make sure none of the mock expectations carry over to the next test.
   ::testing::Mock::VerifyAndClearExpectations(&clock_);
 
@@ -309,7 +309,7 @@ TEST_F(PhishingTermFeatureExtractorTest, PartialExtractionTest) {
   FeatureMap expected_features;
   expected_features.AddBooleanFeature(features::kPageTerm +
                                       std::string("multi word test"));
-  EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
+  ExpectFeatureMapsAreEqual(features, expected_features);
 }
 
 }  // namespace safe_browsing

@@ -190,6 +190,8 @@
         'renderer/mock_printer.h',
         'renderer/safe_browsing/mock_feature_extractor_clock.cc',
         'renderer/safe_browsing/mock_feature_extractor_clock.h',
+        'renderer/safe_browsing/test_utils.cc',
+        'renderer/safe_browsing/test_utils.h',
         'test/automation/automation_handle_tracker.cc',
         'test/automation/automation_handle_tracker.h',
         'test/automation/automation_json_requests.cc',
