@@ -238,6 +238,11 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
     popup_parent_host_view_->popup_child_host_view_ = NULL;
   }
   aura::client::SetTooltipText(window_, NULL);
+
+  // This call is usually no-op since |this| object is already removed from the
+  // Aura root window and we don't have a way to get an input method object
+  // associated with the window, but just in case.
+  DetachFromInputMethod();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -959,9 +964,7 @@ void RenderWidgetHostViewAura::OnBlur() {
   host_->SetActive(false);
   host_->Blur();
 
-  ui::InputMethod* input_method = GetInputMethod();
-  if (input_method && input_method->GetTextInputClient() == this)
-    input_method->SetFocusedTextInputClient(NULL);
+  DetachFromInputMethod();
   host_->SetInputMethodActive(false);
 
   // If we lose the focus while fullscreen, close the window; Pepper Flash won't
@@ -1241,6 +1244,8 @@ void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
 
 ui::InputMethod* RenderWidgetHostViewAura::GetInputMethod() const {
   aura::RootWindow* root_window = window_->GetRootWindow();
+  if (!root_window)
+    return NULL;
   return root_window->GetProperty(aura::client::kRootWindowInputMethodKey);
 }
 
@@ -1334,11 +1339,18 @@ void RenderWidgetHostViewAura::RemovingFromRootWindow() {
   ui::Compositor* compositor = GetCompositor();
   if (compositor && compositor->HasObserver(this))
     compositor->RemoveObserver(this);
+  DetachFromInputMethod();
 }
 
 ui::Compositor* RenderWidgetHostViewAura::GetCompositor() {
   aura::RootWindow* root_window = window_->GetRootWindow();
   return root_window ? root_window->compositor() : NULL;
+}
+
+void RenderWidgetHostViewAura::DetachFromInputMethod() {
+  ui::InputMethod* input_method = GetInputMethod();
+  if (input_method && input_method->GetTextInputClient() == this)
+    input_method->SetFocusedTextInputClient(NULL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

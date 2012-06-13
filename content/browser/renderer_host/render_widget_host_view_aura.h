@@ -227,6 +227,9 @@ class RenderWidgetHostViewAura
 
   ui::Compositor* GetCompositor();
 
+  // Detaches |this| from the input method object.
+  void DetachFromInputMethod();
+
   // The model object.
   content::RenderWidgetHostImpl* host_;
 
