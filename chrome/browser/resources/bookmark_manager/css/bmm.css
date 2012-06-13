@@ -123,7 +123,8 @@ list [editing] .url input {
   -webkit-margin-end: 4px;
   -webkit-margin-start: -4px;
   -webkit-padding-end: 3px;
-  -webkit-padding-start: 1px;
+  -webkit-padding-start: 3px;
+  box-sizing: content-box;
   /* Do not inherit the line-height */
   font-family: inherit;
   font-size: inherit;
@@ -131,6 +132,7 @@ list [editing] .url input {
   margin-bottom: 0;
   margin-top: 0;
   max-width: 40%;
+  min-height: 0;
   padding-bottom: 0;
   padding-top: 0;
   text-decoration: none;
