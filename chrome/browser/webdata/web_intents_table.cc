@@ -13,6 +13,7 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/mime_util.h"
 #include "sql/statement.h"
+#include "third_party/sqlite/sqlite3.h"
 
 using webkit_glue::WebIntentServiceData;
 
@@ -64,6 +65,12 @@ bool WebIntentsTable::Init() {
                       " UNIQUE (service_url, action, scheme, type))")) {
       return false;
     }
+    if (!db_->Execute("CREATE INDEX IF NOT EXISTS web_intents_index"
+                      " ON web_intents (action)"))
+      return false;
+    if (!db_->Execute("CREATE INDEX IF NOT EXISTS web_intents_index"
+                      " ON web_intents (scheme)"))
+      return false;
   }
 
   if (!db_->DoesTableExist("web_intents_defaults")) {
@@ -78,24 +85,13 @@ bool WebIntentsTable::Init() {
                       " UNIQUE (action, scheme, type, url_pattern))")) {
       return false;
     }
-  }
+    if (!db_->Execute("CREATE INDEX IF NOT EXISTS web_intents_default_index"
+                      " ON web_intents_defaults (action)"))
+      return false;
 
-  if (!db_->Execute("CREATE INDEX IF NOT EXISTS web_intents_index"
-                    " ON web_intents (action)"))
-    return false;
-
-  if (!db_->Execute("CREATE INDEX IF NOT EXISTS web_intents_default_index"
-                    " ON web_intents_defaults (action)")) {
-    return false;
-  }
-
-  if (!db_->Execute("CREATE INDEX IF NOT EXISTS web_intents_index"
-                    " ON web_intents (scheme)"))
-    return false;
-
-  if (!db_->Execute("CREATE INDEX IF NOT EXISTS web_intents_default_index"
-                    " ON web_intents_defaults (scheme)")) {
-    return false;
+    if (!db_->Execute("CREATE INDEX IF NOT EXISTS web_intents_default_index"
+                      " ON web_intents_defaults (scheme)"))
+      return false;
   }
 
   return true;
@@ -109,6 +105,7 @@ bool WebIntentsTable::IsSyncable() {
 // Updates the table by way of renaming the old tables, rerunning
 // the Init method, then selecting old values into the new tables.
 bool WebIntentsTable::MigrateToVersion46AddSchemeColumn() {
+
   if (!db_->Execute("ALTER TABLE web_intents RENAME TO old_web_intents")) {
     DLOG(WARNING) << "Could not backup web_intents table.";
     return false;
@@ -122,32 +119,29 @@ bool WebIntentsTable::MigrateToVersion46AddSchemeColumn() {
 
   if (!Init()) return false;
 
-  // The database is known to be in an invalid state in the wild
-  // with a missing "title" column. Guard against this.
-  if (db_->DoesColumnExist("old_web_intents", "title")) {
-    if (!db_->Execute(
-        "INSERT INTO web_intents"
-        " (service_url, action, type, title, disposition)"
-        " SELECT "
-        " service_url, action, type, title, disposition"
-        " FROM old_web_intents")) {
+  int error = db_->ExecuteAndReturnErrorCode(
+      "INSERT INTO web_intents"
+      " (service_url, action, type, title, disposition)"
+      " SELECT "
+      " service_url, action, type, title, disposition"
+      " FROM old_web_intents");
 
-      DLOG(WARNING) << "Could not copy old intent data to updated table.";
-    }
-  } else {
-    DLOG(WARNING) << "'title' column missing from old_web_intents table."
-        " Skipping copy.";
+  if (error != SQLITE_OK) {
+    DLOG(WARNING) << "Could not copy old intent data to upgraded table."
+        << db_->GetErrorMessage();
   }
 
-  if (!db_->Execute(
+
+  error = db_->ExecuteAndReturnErrorCode(
       "INSERT INTO web_intents_defaults"
       " (service_url, action, type, url_pattern, user_date, suppression)"
       " SELECT "
       " service_url, action, type, url_pattern, user_date, suppression"
-      " FROM old_web_intents_defaults")) {
+      " FROM old_web_intents_defaults");
 
-    DLOG(WARNING) << "Could not copy old intent defaults data to"
-        " updated table.";
+  if (error != SQLITE_OK) {
+    DLOG(WARNING) << "Could not copy old intent defaults to upgraded table."
+        << db_->GetErrorMessage();
   }
 
   if (!db_->Execute("DROP table old_web_intents")) {

@@ -2162,9 +2162,8 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion45InvalidToCurrent) {
     sql::Statement s2(
         connection.GetUniqueStatement("SELECT * FROM web_intents_defaults"));
 
-    // We were still able to copy the contents of the deafults table.
-    // Further verification is supplied in MigrateVersion45ToCurrent.
-    ASSERT_TRUE(s2.Step());
+    // We were able to create the new tables, but unable to copy any data
+    // Given the initial bad state of the tables.
     ASSERT_FALSE(s2.Step());
 
     // Finally ensure the migration code cleaned up after itself.

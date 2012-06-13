@@ -18,8 +18,8 @@ CREATE TABLE autofill_profiles_trash ( guid VARCHAR);
 CREATE TABLE web_app_icons (url LONGVARCHAR,width int,height int,image BLOB, UNIQUE (url, width, height));
 CREATE TABLE web_apps (url LONGVARCHAR UNIQUE,has_all_images INTEGER NOT NULL);
 CREATE TABLE token_service (service VARCHAR PRIMARY KEY NOT NULL,encrypted_token BLOB);
-CREATE TABLE web_intents (service_url LONGVARCHAR,action VARCHAR,type VARCHAR,disposition VARCHAR,UNIQUE (service_url, action, type));
-CREATE TABLE web_intents_defaults (action VARCHAR,type VARCHAR,url_pattern LONGVARCHAR,user_date INTEGER,suppression INTEGER,service_url LONGVARCHAR,UNIQUE (action, type, url_pattern));
+CREATE TABLE web_intents (INTEGER blabbity);
+CREATE TABLE web_intents_defaults (VARCHAR hammy);
 CREATE TABLE "keywords" (id INTEGER PRIMARY KEY,short_name VARCHAR NOT NULL,keyword VARCHAR NOT NULL,favicon_url VARCHAR NOT NULL,url VARCHAR NOT NULL,safe_for_autoreplace INTEGER,originating_url VARCHAR,date_created INTEGER DEFAULT 0,usage_count INTEGER DEFAULT 0,input_encodings VARCHAR,show_in_default_list INTEGER,suggest_url VARCHAR,prepopulate_id INTEGER DEFAULT 0,created_by_policy INTEGER DEFAULT 0,instant_url VARCHAR,last_modified INTEGER DEFAULT 0,sync_guid VARCHAR);
 CREATE TABLE keywords_backup(
   id INT,
@@ -44,9 +44,7 @@ CREATE INDEX autofill_name ON autofill (name);
 CREATE INDEX autofill_name_value_lower ON autofill (name, value_lower);
 CREATE INDEX autofill_dates_pair_id ON autofill_dates (pair_id);
 CREATE INDEX web_apps_url_index ON web_apps (url);
-CREATE INDEX web_intents_index ON web_intents (action);
-CREATE INDEX web_intents_default_index ON web_intents_defaults (action);
 -- following statements are required for testing migration to version 46
-INSERT INTO web_intents VALUES ('http://poodles.com/fuzzer', 'fuzz', 'poodle/*', 'window');
-INSERT INTO web_intents_defaults VALUES ('fuzz', 'poodle/*', '', 0, 0, 'http://poodles.com/fuzzer');
+INSERT INTO web_intents VALUES (11);
+INSERT INTO web_intents_defaults VALUES ('fuzz');
 COMMIT;
