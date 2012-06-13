@@ -190,12 +190,9 @@ class Sandbox {
  protected:
   // Print an error message and terminate the program. Used for fatal errors.
   static void die(const char *msg) __attribute__((noreturn)) {
-    if (!suppressLogging_) {
-      if (msg) {
-#ifdef SECCOMP_BPF_STANDALONE
-        HANDLE_EINTR(write(2, msg, strlen(msg)));
-        HANDLE_EINTR(write(2, "\n", 1));
-#else
+    if (msg) {
+#ifndef SECCOMP_BPF_STANDALONE
+      if (!dryRun_) {
         // LOG(FATAL) is not neccessarily async-signal safe. It would be
         // better to always use the code for the SECCOMP_BPF_STANDALONE case.
         // But that prevents the logging and reporting infrastructure from
@@ -204,7 +201,17 @@ class Sandbox {
         // LOG(FATAL). In the long run, we probably want to rewrite this code
         // to be async-signal safe.
         LOG(FATAL) << msg;
+      } else
 #endif
+      {
+        // If there is no logging infrastructure in place, we just write error
+        // messages to stderr.
+        // We also write to stderr, if we are called in a child process from
+        // supportsSeccompSandbox(). This makes sure we can actually do the
+        // correct logging from the parent process, which is more likely to
+        // have access to logging infrastructure.
+        HANDLE_EINTR(write(2, msg, strlen(msg)));
+        HANDLE_EINTR(write(2, "\n", 1));
       }
     }
     for (;;) {
@@ -233,7 +240,7 @@ class Sandbox {
   static void      installFilter();
   static void      sigSys(int nr, siginfo_t *info, void *void_context);
 
-  static bool          suppressLogging_;
+  static bool          dryRun_;
   static SandboxStatus status_;
   static int           proc_fd_;
   static std::vector<std::pair<EvaluateSyscall,
