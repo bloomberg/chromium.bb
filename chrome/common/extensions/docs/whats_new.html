@@ -198,6 +198,7 @@ This page lists the API and manifest changes
 made in recent releases.
 </p>
 <ul>
+  <li> <a href="#19">Google Chrome 19</a> </li>
   <li> <a href="#18">Google Chrome 18</a> </li>
   <li> <a href="#17">Google Chrome 17</a> </li>
   <li> <a href="#16">Google Chrome 16</a> </li>
@@ -217,6 +218,41 @@ In addition to the changes listed below,
 check out the
 <a href="experimental.html">experimental APIs</a>.
 </p>
+<h2 id="19"> Google Chrome 19 </h2>
+<h4> New APIs </h4>
+   <ul>
+     <li>The <a href="browsingData.html">browsing data API</a>
+      lets you remove browsing data from a user's local profile.
+    </li><li>The <a href="topSites.html">top sites API</a>
+      gives you access to the top sites
+      that are displayed on the new tab page.
+   </li></ul>
+<h4> Manifest changes </h4>
+  <ul>
+    <li>The new <a href="manifest.html#intents">intents</a>
+      field specifies all intent handlers provided by the extension.
+  </li></ul>
+ <h4> Additions to existing APIs </h4>
+  <ul>
+    <li>The window API's <a href="windows.html#type-Window">Window</a>
+      object now has an <code>alwaysOnTop</code> property and
+       supports the "fullscreen" state.
+     </li><li>The <code>chrome.tabs</code>
+       <a href="tabs.html#method-query">query()</a> method
+       now has the <code>currentWindow</code> and
+      <code>lastFocusedWindow</code> parameters.
+     </li><li>The <a href="browserAction.html">browser action API</a>
+       has the following new getter functions:
+       <a href="browserAction.html#method-getTitle">getTitle</a>,
+       <a href="browserAction.html#method-getBadgeText">getBadgeText</a>,
+       <a href="browserAction.html#method-getBadgeBackgroundColor">getBadgeBackgr
+     oundColor</a>, and
+       <a href="browserAction.html#method-getPopup">getPopup</a>.
+    </li><li>The <a href="pageAction.html">page action API</a>
+      has the following new getter functions:
+       <a href="pageAction.html#method-getTitle">getTitle</a> and
+       <a href="pageAction.html#method-getPopup">getPopup</a>.
+   </li></ul>
 <h2 id="18"> Google Chrome 18 </h2>
 <h4> New APIs </h4>
   <ul>
@@ -363,10 +399,13 @@ check out the
     unless the <code>--enable-panels</code> flag is set.
   </li></ul>
 <h2 id="15"> Google Chrome 15 </h2>
-<p>Chrome 15 had a few minor API additions. Also see the Chrome Web Store’s new
-<a href="http://code.google.com/chrome/webstore/docs/inline_installation.html">inline
-installation</a> feature, which lets your website help users install extensions
-(and apps) without sending them away to the store.</p>
+<h4> New APIs </h4>
+<ul>
+ <li>The <a href="webstore.html">webstore API</a>
+ lets you initiate app and extensions installations
+ <a href="http://code.google.com/chrome/webstore/docs/inline_installation.html">"inline"</a>
+ from your site.
+</li></ul>
 <h4> Manifest changes </h4>
   <ul>
     <li>The new
