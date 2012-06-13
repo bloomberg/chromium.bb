@@ -107,6 +107,16 @@ typedef unsigned long long NSEventMask;
 - (void)setWantsBestResolutionOpenGLSurface:(BOOL)flag;
 @end
 
+static NSString* const NSWindowDidChangeBackingPropertiesNotification =
+    @"NSWindowDidChangeBackingPropertiesNotification";
+static NSString* const NSBackingPropertyOldScaleFactorKey =
+    @"NSBackingPropertyOldScaleFactorKey";
+// Note: Apple's example code (linked from the comment above
+// -windowDidChangeBackingProperties:) uses
+// @"NSWindowBackingPropertiesChangeOldBackingScaleFactorKey", but that always
+// returns an old scale of 0. @"NSBackingPropertyOldScaleFactorKey" seems to
+// work in practice, and it's what's used in Apple's WebKit port.
+
 #endif  // 10.7
 
 
@@ -146,6 +156,7 @@ float ScaleFactor(NSView* view) {
 - (void)setHasHorizontalScrollbar:(BOOL)has_horizontal_scrollbar;
 - (void)keyEvent:(NSEvent*)theEvent wasKeyEquivalent:(BOOL)equiv;
 - (void)cancelChildPopups;
+- (void)windowDidChangeBackingProperties:(NSNotification*)notification;
 - (void)checkForPluginImeCancellation;
 @end
 
@@ -1860,6 +1871,35 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   // We're messing with the window, so do this to ensure no flashes. This one
   // prevents a flash when the current tab is closed.
   [[self window] disableScreenUpdatesUntilFlush];
+
+  if ([self window]) {
+    [[NSNotificationCenter defaultCenter]
+        removeObserver:self
+                  name:NSWindowDidChangeBackingPropertiesNotification
+                object:[self window]];
+
+  }
+  if (newWindow) {
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(windowDidChangeBackingProperties:)
+               name:NSWindowDidChangeBackingPropertiesNotification
+             object:newWindow];
+  }
+}
+
+// http://developer.apple.com/library/mac/#documentation/GraphicsAnimation/Conceptual/HighResolutionOSX/CapturingScreenContents/CapturingScreenContents.html#//apple_ref/doc/uid/TP40012302-CH10-SW4
+- (void)windowDidChangeBackingProperties:(NSNotification*)notification {
+  NSWindow* window = (NSWindow*)[notification object];
+
+  CGFloat newBackingScaleFactor = [window backingScaleFactor];
+  CGFloat oldBackingScaleFactor = [base::mac::ObjCCast<NSNumber>(
+      [[notification userInfo] objectForKey:NSBackingPropertyOldScaleFactorKey])
+      doubleValue];
+  if (newBackingScaleFactor != oldBackingScaleFactor) {
+    // TODO(thakis): Tell renderer and backing store about new DPI,
+    // schedule repaint.
+  }
 }
 
 - (void)globalFrameDidChange:(NSNotification*)notification {
