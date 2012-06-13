@@ -1687,7 +1687,11 @@ class Dtrace(ApiBase):
       trace_cmd = [
         'sudo',
         'dtrace',
-        '-x', 'dynvarsize=4m',
+        # Use a larger buffer if getting 'out of scratch space' errors.
+        # Ref: https://wikis.oracle.com/display/DTrace/Options+and+Tunables
+        '-b', '10m',
+        '-x', 'dynvarsize=10m',
+        #'-x', 'dtrace_global_maxsize=1m',
         '-x', 'evaltime=exec',
         '-o', '/dev/stderr',
         '-q',
