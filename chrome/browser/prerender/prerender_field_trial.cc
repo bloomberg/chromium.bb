@@ -203,7 +203,7 @@ void ConfigureOmniboxPrerender() {
 }
 
 bool IsOmniboxEnabled(Profile* profile) {
-  if (!profile || profile->IsOffTheRecord())
+  if (!profile)
     return false;
 
   if (!PrerenderManager::IsPrerenderingPossible())

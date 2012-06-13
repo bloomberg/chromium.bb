@@ -4,6 +4,7 @@
 
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 
+#include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
@@ -187,6 +188,10 @@ class AutocompleteActionPredictorTest : public testing::Test {
     history::URLDatabase* url_db = history_service->InMemoryDatabase();
     ASSERT_TRUE(url_db);
 
+    // Reset the predictor's |initialized_| flag for the life of this call,
+    // since outside of testing this function is only supposed to be reached
+    // before initialization is completed.
+    AutoReset<bool> initialized_reset(&predictor_->initialized_, false);
     predictor_->DeleteOldIdsFromCaches(url_db, id_list);
   }
 

@@ -34,6 +34,10 @@ AutocompleteActionPredictorFactory::AutocompleteActionPredictorFactory()
 
 AutocompleteActionPredictorFactory::~AutocompleteActionPredictorFactory() {}
 
+bool AutocompleteActionPredictorFactory::ServiceHasOwnInstanceInIncognito() {
+  return true;
+}
+
 ProfileKeyedService*
     AutocompleteActionPredictorFactory::BuildServiceInstanceFor(
         Profile* profile) const {

@@ -30,6 +30,7 @@ class AutocompleteActionPredictorFactory : public ProfileKeyedServiceFactory {
   virtual ~AutocompleteActionPredictorFactory();
 
   // ProfileKeyedServiceFactory:
+  virtual bool ServiceHasOwnInstanceInIncognito() OVERRIDE;
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
 

@@ -19,6 +19,7 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/in_memory_database.h"
+#include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
 #include "chrome/browser/predictors/predictor_database.h"
 #include "chrome/browser/predictors/predictor_database_factory.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
@@ -77,31 +78,45 @@ const int AutocompleteActionPredictor::kMaximumDaysToKeepEntry = 14;
 
 AutocompleteActionPredictor::AutocompleteActionPredictor(Profile* profile)
     : profile_(profile),
-      table_(PredictorDatabaseFactory::GetForProfile(
-          profile)->autocomplete_table()),
+      main_profile_predictor_(NULL),
+      incognito_predictor_(NULL),
       initialized_(false) {
-  // Request the in-memory database from the history to force it to load so it's
-  // available as soon as possible.
-  HistoryService* history_service =
-      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-  if (history_service)
-    history_service->InMemoryDatabase();
+  if (profile_->IsOffTheRecord()) {
+    main_profile_predictor_ = AutocompleteActionPredictorFactory::GetForProfile(
+        profile_->GetOriginalProfile());
+    DCHECK(main_profile_predictor_);
+    main_profile_predictor_->incognito_predictor_ = this;
+    if (main_profile_predictor_->initialized_)
+      CopyFromMainProfile();
+  } else {
+    // Request the in-memory database from the history to force it to load so
+    // it's available as soon as possible.
+    HistoryService* history_service =
+        profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+    if (history_service)
+      history_service->InMemoryDatabase();
 
-  // Create local caches using the database as loaded. We will garbage collect
-  // rows from the caches and the database once the history service is
-  // available.
-  std::vector<AutocompleteActionPredictorTable::Row>* rows =
-      new std::vector<AutocompleteActionPredictorTable::Row>();
-  content::BrowserThread::PostTaskAndReply(
-      content::BrowserThread::DB, FROM_HERE,
-      base::Bind(&AutocompleteActionPredictorTable::GetAllRows,
-                 table_,
-                 rows),
-      base::Bind(&AutocompleteActionPredictor::CreateCaches, AsWeakPtr(),
-                 base::Owned(rows)));
+    table_ =
+        PredictorDatabaseFactory::GetForProfile(profile_)->autocomplete_table();
+
+    // Create local caches using the database as loaded. We will garbage collect
+    // rows from the caches and the database once the history service is
+    // available.
+    std::vector<AutocompleteActionPredictorTable::Row>* rows =
+        new std::vector<AutocompleteActionPredictorTable::Row>();
+    content::BrowserThread::PostTaskAndReply(content::BrowserThread::DB,
+        FROM_HERE,
+        base::Bind(&AutocompleteActionPredictorTable::GetAllRows, table_, rows),
+        base::Bind(&AutocompleteActionPredictor::CreateCaches, AsWeakPtr(),
+                   base::Owned(rows)));
+  }
 }
 
 AutocompleteActionPredictor::~AutocompleteActionPredictor() {
+  if (main_profile_predictor_)
+    main_profile_predictor_->incognito_predictor_ = NULL;
+  else if (incognito_predictor_)
+    incognito_predictor_->main_profile_predictor_ = NULL;
 }
 
 void AutocompleteActionPredictor::RegisterTransitionalMatches(
@@ -217,7 +232,6 @@ void AutocompleteActionPredictor::Observe(
     }
 
     case chrome::NOTIFICATION_HISTORY_LOADED: {
-      DCHECK(!initialized_);
       TryDeleteOldEntries(content::Details<HistoryService>(details).ptr());
 
       notification_registrar_.Remove(this,
@@ -238,9 +252,13 @@ void AutocompleteActionPredictor::DeleteAllRows() {
 
   db_cache_.clear();
   db_id_cache_.clear();
-  content::BrowserThread::PostTask(content::BrowserThread::DB, FROM_HERE,
-      base::Bind(&AutocompleteActionPredictorTable::DeleteAllRows,
-                 table_));
+
+  if (table_.get()) {
+    content::BrowserThread::PostTask(content::BrowserThread::DB, FROM_HERE,
+        base::Bind(&AutocompleteActionPredictorTable::DeleteAllRows,
+                   table_));
+  }
+
   UMA_HISTOGRAM_ENUMERATION("AutocompleteActionPredictor.DatabaseAction",
                             DATABASE_ACTION_DELETE_ALL, DATABASE_ACTION_COUNT);
 }
@@ -265,9 +283,12 @@ void AutocompleteActionPredictor::DeleteRowsWithURLs(
     }
   }
 
-  content::BrowserThread::PostTask(content::BrowserThread::DB, FROM_HERE,
-      base::Bind(&AutocompleteActionPredictorTable::DeleteRows, table_,
-                 id_list));
+  if (table_.get()) {
+    content::BrowserThread::PostTask(content::BrowserThread::DB, FROM_HERE,
+        base::Bind(&AutocompleteActionPredictorTable::DeleteRows, table_,
+                   id_list));
+  }
+
   UMA_HISTOGRAM_ENUMERATION("AutocompleteActionPredictor.DatabaseAction",
                             DATABASE_ACTION_DELETE_SOME, DATABASE_ACTION_COUNT);
 }
@@ -303,14 +324,14 @@ void AutocompleteActionPredictor::OnOmniboxOpenedUrl(
   std::vector<AutocompleteActionPredictorTable::Row> rows_to_update;
 
   for (std::vector<TransitionalMatch>::const_iterator it =
-       transitional_matches_.begin(); it != transitional_matches_.end();
-       ++it) {
+        transitional_matches_.begin(); it != transitional_matches_.end();
+        ++it) {
     if (!StartsWith(lower_user_text, it->user_text, true))
       continue;
 
     // Add entries to the database for those matches.
     for (std::vector<GURL>::const_iterator url_it = it->urls.begin();
-         url_it != it->urls.end(); ++url_it) {
+          url_it != it->urls.end(); ++url_it) {
       DCHECK(it->user_text.length() >= kMinimumUserTextLength);
       const DBCacheKey key = { it->user_text, *url_it };
       const bool is_hit = (*url_it == opened_url);
@@ -386,16 +407,17 @@ void AutocompleteActionPredictor::AddAndUpdateRows(
                               DATABASE_ACTION_UPDATE, DATABASE_ACTION_COUNT);
   }
 
-  content::BrowserThread::PostTask(content::BrowserThread::DB, FROM_HERE,
-      base::Bind(&AutocompleteActionPredictorTable::AddAndUpdateRows,
-                 table_,
-                 rows_to_add,
-                 rows_to_update));
+  if (table_.get()) {
+    content::BrowserThread::PostTask(content::BrowserThread::DB, FROM_HERE,
+        base::Bind(&AutocompleteActionPredictorTable::AddAndUpdateRows,
+                   table_, rows_to_add, rows_to_update));
+  }
 }
 
 void AutocompleteActionPredictor::CreateCaches(
     std::vector<AutocompleteActionPredictorTable::Row>* rows) {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(!profile_->IsOffTheRecord());
   DCHECK(!initialized_);
   DCHECK(db_cache_.empty());
   DCHECK(db_id_cache_.empty());
@@ -420,6 +442,10 @@ void AutocompleteActionPredictor::CreateCaches(
 }
 
 bool AutocompleteActionPredictor::TryDeleteOldEntries(HistoryService* service) {
+  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(!profile_->IsOffTheRecord());
+  DCHECK(!initialized_);
+
   if (!service)
     return false;
 
@@ -434,30 +460,31 @@ bool AutocompleteActionPredictor::TryDeleteOldEntries(HistoryService* service) {
 void AutocompleteActionPredictor::DeleteOldEntries(
     history::URLDatabase* url_db) {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(!profile_->IsOffTheRecord());
   DCHECK(!initialized_);
+  DCHECK(table_.get());
 
   std::vector<AutocompleteActionPredictorTable::Row::Id> ids_to_delete;
   DeleteOldIdsFromCaches(url_db, &ids_to_delete);
 
   content::BrowserThread::PostTask(content::BrowserThread::DB, FROM_HERE,
-      base::Bind(&AutocompleteActionPredictorTable::DeleteRows,
-                 table_,
+      base::Bind(&AutocompleteActionPredictorTable::DeleteRows, table_,
                  ids_to_delete));
 
-  // Register for notifications and set the |initialized_| flag.
-  notification_registrar_.Add(this, chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
-                              content::Source<Profile>(profile_));
-  notification_registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
-                              content::Source<Profile>(profile_));
-  initialized_ = true;
+  FinishInitialization();
+  if (incognito_predictor_)
+    incognito_predictor_->CopyFromMainProfile();
 }
 
 void AutocompleteActionPredictor::DeleteOldIdsFromCaches(
     history::URLDatabase* url_db,
     std::vector<AutocompleteActionPredictorTable::Row::Id>* id_list) {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(!profile_->IsOffTheRecord());
+  DCHECK(!initialized_);
   DCHECK(url_db);
   DCHECK(id_list);
+
   id_list->clear();
   for (DBCacheMap::iterator it = db_cache_.begin(); it != db_cache_.end();) {
     history::URLRow url_row;
@@ -474,6 +501,33 @@ void AutocompleteActionPredictor::DeleteOldIdsFromCaches(
       ++it;
     }
   }
+}
+
+void AutocompleteActionPredictor::CopyFromMainProfile() {
+  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(profile_->IsOffTheRecord());
+  DCHECK(!initialized_);
+  DCHECK(main_profile_predictor_);
+  DCHECK(main_profile_predictor_->initialized_);
+
+  db_cache_ = main_profile_predictor_->db_cache_;
+  db_id_cache_ = main_profile_predictor_->db_id_cache_;
+  FinishInitialization();
+}
+
+void AutocompleteActionPredictor::FinishInitialization() {
+  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(!initialized_);
+
+  // Incognito and normal profiles should listen only to omnibox notifications
+  // from their own profile, but both should listen to history deletions from
+  // the main profile, since opening the history page in either case actually
+  // opens the non-incognito history (and lets users delete from there).
+  notification_registrar_.Add(this, chrome::NOTIFICATION_OMNIBOX_OPENED_URL,
+                              content::Source<Profile>(profile_));
+  notification_registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
+      content::Source<Profile>(profile_->GetOriginalProfile()));
+  initialized_ = true;
 }
 
 double AutocompleteActionPredictor::CalculateConfidence(

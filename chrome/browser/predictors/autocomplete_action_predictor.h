@@ -33,13 +33,18 @@ class URLDatabase;
 namespace predictors {
 
 // This class is responsible for determining the correct predictive network
-// action to take given for a given AutocompleteMatch and entered text. it uses
-// a AutocompleteActionPredictorTable accessed asynchronously on the DB thread
-// to permanently store the data used to make predictions, and keeps local
-// caches of that data to be able to make predictions synchronously on the UI
-// thread where it lives. It can be accessed as a weak pointer so that it can
-// safely use PostTaskAndReply without fear of crashes if it is destroyed before
-// the reply triggers. This is necessary during initialization.
+// action to take given for a given AutocompleteMatch and entered text. It can
+// be instantiated for both normal and incognito profiles.  For normal profiles,
+// it uses an AutocompleteActionPredictorTable accessed asynchronously on the DB
+// thread to permanently store the data used to make predictions, and keeps
+// local caches of that data to be able to make predictions synchronously on the
+// UI thread where it lives.  For incognito profiles, there is no table; the
+// local caches are copied from the main profile at creation and from there on
+// are the only thing used.
+//
+// This class can be accessed as a weak pointer so that it can safely use
+// PostTaskAndReply without fear of crashes if it is destroyed before the reply
+// triggers. This is necessary during initialization.
 class AutocompleteActionPredictor
     : public ProfileKeyedService,
       public content::NotificationObserver,
@@ -158,6 +163,13 @@ class AutocompleteActionPredictor
       history::URLDatabase* url_db,
       std::vector<AutocompleteActionPredictorTable::Row::Id>* id_list);
 
+  // Called on an incognito-owned predictor to copy the current caches from the
+  // main profile.
+  void CopyFromMainProfile();
+
+  // Registers for notifications and sets the |initialized_| flag.
+  void FinishInitialization();
+
   // Uses local caches to calculate an exact percentage prediction that the user
   // will take a particular match given what they have typed. |is_in_db| is set
   // to differentiate trivial zero results resulting from a match not being
@@ -170,7 +182,18 @@ class AutocompleteActionPredictor
   double CalculateConfidenceForDbEntry(DBCacheMap::const_iterator iter) const;
 
   Profile* profile_;
+
+  // Set when this is a predictor for an incognito profile.
+  AutocompleteActionPredictor* main_profile_predictor_;
+
+  // Set when this is a predictor for a non-incognito profile, and the incognito
+  // profile creates a predictor.  If this is non-NULL when we finish
+  // initialization, we should call CopyFromMainProfile() on it.
+  AutocompleteActionPredictor* incognito_predictor_;
+
+  // The backing data store.  This is NULL for incognito-owned predictors.
   scoped_refptr<AutocompleteActionPredictorTable> table_;
+
   content::NotificationRegistrar notification_registrar_;
 
   // This is cleared after every Omnibox navigation.
@@ -180,6 +203,8 @@ class AutocompleteActionPredictor
   // accuracy.  This is cleared after every omnibox navigation.
   mutable std::vector<std::pair<GURL, double> > tracked_urls_;
 
+  // Local caches of the data store.  For incognito-owned predictors this is the
+  // only copy of the data.
   DBCacheMap db_cache_;
   DBIdCacheMap db_id_cache_;
 
