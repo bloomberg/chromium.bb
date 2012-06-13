@@ -111,6 +111,10 @@ TEST_F(SSLConfigServiceManagerPrefTest, BadDisabledCipherSuites) {
 TEST_F(SSLConfigServiceManagerPrefTest, IgnoreLegacySSLSettings) {
   scoped_refptr<TestingPrefStore> user_prefs(new TestingPrefStore());
 
+  PrefServiceMockBuilder builder;
+  builder.WithUserPrefs(user_prefs.get());
+  scoped_ptr<PrefService> pref_service(builder.Create());
+
   // SSL3.0 and TLS1.0 used to be user-definable prefs. They are now used as
   // command-line options. Ensure any existing user prefs are ignored in
   // favour of the command-line flags.
@@ -125,10 +129,6 @@ TEST_F(SSLConfigServiceManagerPrefTest, IgnoreLegacySSLSettings) {
   bool is_tls1_enabled = true;
   EXPECT_TRUE(user_prefs->GetBoolean(prefs::kTLS1Enabled, &is_tls1_enabled));
   EXPECT_FALSE(is_tls1_enabled);
-
-  PrefServiceMockBuilder builder;
-  builder.WithUserPrefs(user_prefs.get());
-  scoped_ptr<PrefService> pref_service(builder.Create());
 
   SSLConfigServiceManager::RegisterPrefs(pref_service.get());
 
@@ -162,6 +162,15 @@ TEST_F(SSLConfigServiceManagerPrefTest, IgnoreLegacySSLSettings) {
 TEST_F(SSLConfigServiceManagerPrefTest, CommandLineOverridesUserPrefs) {
   scoped_refptr<TestingPrefStore> user_prefs(new TestingPrefStore());
 
+  CommandLine command_line(CommandLine::NO_PROGRAM);
+  command_line.AppendSwitch(switches::kDisableSSL3);
+  command_line.AppendSwitch(switches::kDisableTLS1);
+
+  PrefServiceMockBuilder builder;
+  builder.WithUserPrefs(user_prefs.get());
+  builder.WithCommandLine(&command_line);
+  scoped_ptr<PrefService> pref_service(builder.Create());
+
   // Explicitly enable SSL3.0/TLS1.0 in the user preferences, to mirror the
   // more common legacy file.
   user_prefs->SetBoolean(prefs::kSSL3Enabled, true);
@@ -175,15 +184,6 @@ TEST_F(SSLConfigServiceManagerPrefTest, CommandLineOverridesUserPrefs) {
   bool is_tls1_enabled = false;
   EXPECT_TRUE(user_prefs->GetBoolean(prefs::kTLS1Enabled, &is_tls1_enabled));
   EXPECT_TRUE(is_tls1_enabled);
-
-  CommandLine command_line(CommandLine::NO_PROGRAM);
-  command_line.AppendSwitch(switches::kDisableSSL3);
-  command_line.AppendSwitch(switches::kDisableTLS1);
-
-  PrefServiceMockBuilder builder;
-  builder.WithUserPrefs(user_prefs.get());
-  builder.WithCommandLine(&command_line);
-  scoped_ptr<PrefService> pref_service(builder.Create());
 
   SSLConfigServiceManager::RegisterPrefs(pref_service.get());
 
