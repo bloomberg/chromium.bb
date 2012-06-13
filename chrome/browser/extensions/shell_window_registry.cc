@@ -6,6 +6,8 @@
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/extensions/extension.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents.h"
 
 ShellWindowRegistry::ShellWindowRegistry() {}
 
@@ -43,6 +45,17 @@ ShellWindowRegistry::ShellWindowSet ShellWindowRegistry::GetShellWindowsForApp(
       app_windows.insert(*i);
   }
   return app_windows;
+}
+
+ShellWindow* ShellWindowRegistry::GetShellWindowForRenderViewHost(
+    content::RenderViewHost* render_view_host) const {
+  for (ShellWindowSet::const_iterator i = shell_windows_.begin();
+       i != shell_windows_.end(); ++i) {
+    if ((*i)->web_contents()->GetRenderViewHost() == render_view_host)
+      return *i;
+  }
+
+  return NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

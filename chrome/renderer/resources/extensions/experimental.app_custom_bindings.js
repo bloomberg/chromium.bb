@@ -5,8 +5,8 @@
 // Custom bindings for the experimental.app API.
 
 var chromeHidden = requireNative('chrome_hidden').GetChromeHidden();
-var experimentalAppNatives = requireNative('experimental_app');
-var GetIsolatedFileSystem = experimentalAppNatives.GetIsolatedFileSystem;
+var fileSystemHelpers = requireNative('file_system_natives');
+var GetIsolatedFileSystem = fileSystemHelpers.GetIsolatedFileSystem;
 
 chromeHidden.registerCustomHook('experimental.app', function(bindingsAPI) {
   chrome.experimental.app.onLaunched.dispatch =

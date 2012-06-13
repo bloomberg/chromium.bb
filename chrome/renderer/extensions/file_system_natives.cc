@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/experimental.app_custom_bindings.h"
+#include "chrome/renderer/extensions/file_system_natives.h"
 
 #include <string>
 
@@ -48,7 +48,7 @@ static v8::Handle<v8::Value> GetIsolatedFileSystem(
 
 namespace extensions {
 
-ExperimentalAppCustomBindings::ExperimentalAppCustomBindings()
+FileSystemNatives::FileSystemNatives()
     : ChromeV8Extension(NULL) {
   RouteStaticFunction("GetIsolatedFileSystem", &GetIsolatedFileSystem);
 }

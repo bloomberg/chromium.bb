@@ -19,6 +19,21 @@ class FileSystemGetDisplayPathFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
+class FileSystemGetWritableFileEntryFunction : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("fileSystem.getWritableFileEntry");
+
+ protected:
+  virtual ~FileSystemGetWritableFileEntryFunction() {}
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  class FilePicker;
+
+  void FileSelected(const FilePath& path);
+  void FileSelectionCanceled();
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_FILE_SYSTEM_FILE_SYSTEM_API_H_

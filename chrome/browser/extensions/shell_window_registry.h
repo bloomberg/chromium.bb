@@ -17,6 +17,10 @@
 class Profile;
 class ShellWindow;
 
+namespace content {
+class RenderViewHost;
+}
+
 // The ShellWindowRegistry tracks the ShellWindows for all platform apps for a
 // particular profile.
 // This class is planned to evolve into tracking all PlatformApps for a
@@ -56,6 +60,9 @@ class ShellWindowRegistry : public ProfileKeyedService {
   // Returns a set of windows owned by the application identified by app_id.
   ShellWindowSet GetShellWindowsForApp(const std::string app_id) const;
   const ShellWindowSet& shell_windows() const { return shell_windows_; }
+
+  ShellWindow* GetShellWindowForRenderViewHost(
+      content::RenderViewHost* render_view_host) const;
 
  private:
   class Factory : public ProfileKeyedServiceFactory {

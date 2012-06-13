@@ -6,9 +6,12 @@
 
 [nodoc] namespace fileSystem {
   callback GetDisplayPathCallback = void (DOMString displayPath);
+  callback FileEntryCallback = void ([instanceOf=fileEntry] object fileEntry);
 
   interface Functions {
     static void getDisplayPath([instanceOf=FileEntry] object fileEntry,
                                GetDisplayPathCallback onSuccess);
+    static void getWritableFileEntry([instanceOf=FileEntry] object fileEntry,
+                                     FileEntryCallback onSuccess);
   };
 };

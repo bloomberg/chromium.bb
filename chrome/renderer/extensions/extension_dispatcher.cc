@@ -25,7 +25,6 @@
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/context_menus_custom_bindings.h"
 #include "chrome/renderer/extensions/event_bindings.h"
-#include "chrome/renderer/extensions/experimental.app_custom_bindings.h"
 #include "chrome/renderer/extensions/experimental.usb_custom_bindings.h"
 #include "chrome/renderer/extensions/extension_custom_bindings.h"
 #include "chrome/renderer/extensions/extension_groups.h"
@@ -33,6 +32,7 @@
 #include "chrome/renderer/extensions/extension_request_sender.h"
 #include "chrome/renderer/extensions/file_browser_handler_custom_bindings.h"
 #include "chrome/renderer/extensions/file_browser_private_custom_bindings.h"
+#include "chrome/renderer/extensions/file_system_natives.h"
 #include "chrome/renderer/extensions/i18n_custom_bindings.h"
 #include "chrome/renderer/extensions/media_gallery_custom_bindings.h"
 #include "chrome/renderer/extensions/miscellaneous_bindings.h"
@@ -78,13 +78,13 @@ using extensions::ApiDefinitionsNatives;
 using extensions::AppWindowCustomBindings;
 using extensions::ContextMenusCustomBindings;
 using extensions::Extension;
-using extensions::ExperimentalAppCustomBindings;
 using extensions::ExperimentalUsbCustomBindings;
 using extensions::ExtensionAPI;
 using extensions::ExtensionCustomBindings;
 using extensions::Feature;
 using extensions::FileBrowserHandlerCustomBindings;
 using extensions::FileBrowserPrivateCustomBindings;
+using extensions::FileSystemNatives;
 using extensions::I18NCustomBindings;
 using extensions::MiscellaneousBindings;
 using extensions::MediaGalleryCustomBindings;
@@ -500,6 +500,10 @@ void ExtensionDispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
       scoped_ptr<NativeHandler>(
           new SetIconNatives(this, request_sender_.get())));
 
+  // Natives used by multiple APIs.
+  module_system->RegisterNativeHandler("file_system_natives",
+      scoped_ptr<NativeHandler>(new FileSystemNatives()));
+
   // Custom bindings.
   module_system->RegisterNativeHandler("app",
       scoped_ptr<NativeHandler>(new AppBindings(this, context)));
@@ -512,8 +516,6 @@ void ExtensionDispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
           new ExtensionCustomBindings(this)));
   module_system->RegisterNativeHandler("experimental_mediaGalleries",
       scoped_ptr<NativeHandler>(new MediaGalleryCustomBindings()));
-  module_system->RegisterNativeHandler("experimental_app",
-      scoped_ptr<NativeHandler>(new ExperimentalAppCustomBindings()));
   module_system->RegisterNativeHandler("experimental_usb",
       scoped_ptr<NativeHandler>(new ExperimentalUsbCustomBindings()));
   module_system->RegisterNativeHandler("file_browser_handler",
