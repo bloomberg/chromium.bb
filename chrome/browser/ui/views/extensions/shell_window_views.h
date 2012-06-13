@@ -94,6 +94,7 @@ class ShellWindowViews : public ShellWindow,
 
   bool use_custom_frame_;
   gfx::Size minimum_size_;
+  gfx::Size maximum_size_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellWindowViews);
 };

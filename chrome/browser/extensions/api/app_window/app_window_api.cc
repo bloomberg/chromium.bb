@@ -56,8 +56,27 @@ bool AppWindowCreateFunction::RunImpl() {
       minimum_size.set_width(*options->min_width);
     if (options->min_height.get())
       minimum_size.set_height(*options->min_height);
+    gfx::Size& maximum_size = create_params.maximum_size;
+    if (options->max_width.get())
+      maximum_size.set_width(*options->max_width);
+    if (options->max_height.get())
+      maximum_size.set_height(*options->max_height);
+    // In the case that minimum size > maximum size, we consider the minimum
+    // size to be more important.
+    if (maximum_size.width() && maximum_size.width() < minimum_size.width())
+      maximum_size.set_width(minimum_size.width());
+    if (maximum_size.height() && maximum_size.height() < minimum_size.height())
+      maximum_size.set_height(minimum_size.height());
+
+    if (maximum_size.width() &&
+        create_params.bounds.width() > maximum_size.width())
+      create_params.bounds.set_width(maximum_size.width());
     if (create_params.bounds.width() < minimum_size.width())
       create_params.bounds.set_width(minimum_size.width());
+
+    if (maximum_size.height() &&
+        create_params.bounds.height() > maximum_size.height())
+      create_params.bounds.set_height(maximum_size.height());
     if (create_params.bounds.height() < minimum_size.height())
       create_params.bounds.set_height(minimum_size.height());
   }

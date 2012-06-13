@@ -56,6 +56,7 @@ class ShellWindowFrameView : public views::NonClientFrameView {
   virtual void ResetWindowControls() OVERRIDE {}
   virtual void UpdateWindowIcon() OVERRIDE {}
   virtual gfx::Size GetMinimumSize() OVERRIDE;
+  virtual gfx::Size GetMaximumSize() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellWindowFrameView);
@@ -81,6 +82,10 @@ gfx::Rect ShellWindowFrameView::GetWindowBoundsForClientBounds(
 
 gfx::Size ShellWindowFrameView::GetMinimumSize() {
   return window_->minimum_size_;
+}
+
+gfx::Size ShellWindowFrameView::GetMaximumSize() {
+  return window_->maximum_size_;
 }
 
 int ShellWindowFrameView::NonClientHitTest(const gfx::Point& point) {
@@ -191,6 +196,7 @@ ShellWindowViews::ShellWindowViews(Profile* profile,
   params.remove_standard_frame = true;
   params.bounds = win_params.bounds;
   minimum_size_ = win_params.minimum_size;
+  maximum_size_ = win_params.maximum_size;
   if (!use_custom_frame_)
     params.bounds.set_height(params.bounds.height() + kCaptionHeight);
   window_->Init(params);

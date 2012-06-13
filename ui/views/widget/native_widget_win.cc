@@ -1447,7 +1447,11 @@ void NativeWidgetWin::OnGetMinMaxInfo(MINMAXINFO* minmax_info) {
   }
   minmax_info->ptMinTrackSize.x = min_window_size.width();
   minmax_info->ptMinTrackSize.y = min_window_size.height();
-  if (!max_window_size.IsEmpty()) {
+  if (max_window_size.width() || max_window_size.height()) {
+    if (!max_window_size.width())
+      max_window_size.set_width(GetSystemMetrics(SM_CXMAXTRACK));
+    if (!max_window_size.height())
+      max_window_size.set_height(GetSystemMetrics(SM_CYMAXTRACK));
     minmax_info->ptMaxTrackSize.x = max_window_size.width();
     minmax_info->ptMaxTrackSize.y = max_window_size.height();
   }
