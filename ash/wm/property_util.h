@@ -9,6 +9,7 @@
 #include "ash/ash_export.h"
 
 namespace aura {
+class RootWindow;
 class Window;
 }
 
@@ -17,6 +18,9 @@ class Rect;
 }
 
 namespace ash {
+namespace internal {
+class RootWindowController;
+}
 
 // Sets the restore bounds property on |window|. Deletes existing bounds value
 // if exists.
@@ -60,6 +64,13 @@ ASH_EXPORT bool GetPersistsAcrossAllWorkspaces(aura::Window* window);
 // Sets the default value for whether windows persist across all workspaces.
 // The default is false.
 ASH_EXPORT void SetDefaultPersistsAcrossAllWorkspaces(bool value);
+
+// Sets/Gets the RootWindowController for |root_window|.
+ASH_EXPORT void SetRootWindowController(
+    aura::RootWindow* root_window,
+    internal::RootWindowController* controller);
+ASH_EXPORT internal::RootWindowController* GetRootWindowController(
+    aura::RootWindow* root_window);
 
 }
 

@@ -4,6 +4,7 @@
 
 #include "ash/wm/screen_dimmer.h"
 
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/basictypes.h"
@@ -21,7 +22,7 @@ class ScreenDimmerTest : public AshTestBase {
 
   void SetUp() OVERRIDE {
     AshTestBase::SetUp();
-    dimmer_ = Shell::GetInstance()->screen_dimmer();
+    dimmer_ = Shell::GetPrimaryRootWindowController()->screen_dimmer();
     test_api_.reset(new internal::ScreenDimmer::TestApi(dimmer_));
   }
 

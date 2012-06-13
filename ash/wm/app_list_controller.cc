@@ -5,6 +5,7 @@
 #include "ash/wm/app_list_controller.h"
 
 #include "ash/ash_switches.h"
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
@@ -85,8 +86,7 @@ void AppListController::SetVisible(bool visible) {
     app_list::AppListView* view = new app_list::AppListView(
         Shell::GetInstance()->delegate()->CreateAppListViewDelegate());
     view->InitAsBubble(
-        Shell::GetContainer(
-            Shell::GetPrimaryRootWindow(),
+        Shell::GetPrimaryRootWindowController()->GetContainer(
             kShellWindowId_AppListContainer),
         Shell::GetInstance()->launcher()->GetAppListButtonView(),
         GetBubbleArrowLocation());

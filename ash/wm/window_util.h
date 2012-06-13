@@ -9,10 +9,14 @@
 #include "ash/ash_export.h"
 
 namespace aura {
+class RootWindow;
 class Window;
 }
 
 namespace ash {
+namespace internal {
+class RootWindowController;
+}
 namespace wm {
 
 // Convenience setters/getters for |aura::client::kRootWindowActiveWindow|.
@@ -21,6 +25,8 @@ ASH_EXPORT void DeactivateWindow(aura::Window* window);
 ASH_EXPORT bool IsActiveWindow(aura::Window* window);
 ASH_EXPORT aura::Window* GetActiveWindow();
 ASH_EXPORT bool CanActivateWindow(aura::Window* window);
+ASH_EXPORT internal::RootWindowController* GetRootWindowController(
+    aura::RootWindow* root_window);
 
 // Retrieves the activatable window for |window|. If |window| is activatable,
 // this will just return it, otherwise it will climb the parent/transient parent

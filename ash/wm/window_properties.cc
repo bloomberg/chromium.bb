@@ -4,6 +4,7 @@
 
 #include "ash/wm/window_properties.h"
 
+#include "ash/root_window_controller.h"
 #include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/shadow_types.h"
 #include "ui/aura/window_property.h"
@@ -15,6 +16,7 @@ DECLARE_WINDOW_PROPERTY_TYPE(ash::internal::AlwaysOnTopController*);
 DECLARE_WINDOW_PROPERTY_TYPE(ash::internal::ShadowType);
 DECLARE_WINDOW_PROPERTY_TYPE(ash::WindowPersistsAcrossAllWorkspacesType)
 DECLARE_WINDOW_PROPERTY_TYPE(ui_controls::UIControlsAura*)
+DECLARE_WINDOW_PROPERTY_TYPE(ash::internal::RootWindowController*);
 
 namespace ash {
 namespace internal {
@@ -33,6 +35,8 @@ DEFINE_WINDOW_PROPERTY_KEY(ash::WindowPersistsAcrossAllWorkspacesType,
                            kWindowPersistsAcrossAllWorkspacesKey,
                            WINDOW_PERSISTS_ACROSS_ALL_WORKSPACES_VALUE_DEFAULT);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kWindowTrackedByWorkspaceKey, true);
+DEFINE_WINDOW_PROPERTY_KEY(RootWindowController*,
+                           kRootWindowControllerKey, NULL);
 
 }  // namespace internal
 }  // namespace ash

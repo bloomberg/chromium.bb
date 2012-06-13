@@ -8,6 +8,7 @@
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
@@ -72,4 +73,14 @@ void SetDefaultPersistsAcrossAllWorkspaces(bool value) {
   g_default_windows_persist_across_all_workspaces = value;
 }
 
+internal::RootWindowController* GetRootWindowController(
+    aura::RootWindow* root_window) {
+  return root_window->GetProperty(internal::kRootWindowControllerKey);
 }
+
+void SetRootWindowController(aura::RootWindow* root_window,
+                             internal::RootWindowController* controller) {
+  root_window->SetProperty(internal::kRootWindowControllerKey, controller);
+}
+
+}  // namespace ash
