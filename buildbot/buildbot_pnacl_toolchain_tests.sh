@@ -14,7 +14,17 @@ set -o xtrace
 set -o nounset
 set -o errexit
 
-# This hopefully needs to be updated rarely
+# NOTE:
+# The pexes which are referred to below will be translated with
+# translators from DEPS
+# The motivation is to ensure that newer translators can still handle
+# older pexes.
+
+# This will have to be updated whenever there are changes to the tests, e.g.
+# new tests, different expected outcomes, etc.
+ARCHVIED_PEXE_SCONS_REV=8918
+# This hopefully needs to be updated rarely, it contains pexe from
+# the sandboxed llc/gold builds
 ARCHIVED_PEXE_TRANSLATOR_REV=8834
 
 
@@ -22,6 +32,7 @@ readonly PNACL_BUILD="pnacl/build.sh"
 readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
 readonly TORTURE_TEST="tools/toolchain_tester/torture_test.sh"
 readonly LLVM_TESTSUITE="pnacl/scripts/llvm-test-suite.sh"
+
 # build.sh, llvm test suite and torture tests all use this value
 export PNACL_CONCURRENCY=${PNACL_CONCURRENCY:-4}
 
@@ -60,6 +71,27 @@ build-sbtc-prerequisites() {
 }
 
 
+build-canned-prerequisites() {
+  local platform=$1
+
+  local extra=""
+  if [ ${platform} = "x86-64" ] ; then
+      extra="pnacl_irt_shim"
+  fi
+
+  ${SCONS_COMMON} \
+      --mode=opt-host,nacl \
+      -j ${PNACL_CONCURRENCY} \
+      platform=${platform} \
+      ${extra} \
+      sel_ldr \
+      sel_universal \
+      nacl_helper_bootstrap \
+      irt_core \
+      irt
+}
+
+
 scons-tests-pic() {
   local platform=$1
 
@@ -83,6 +115,40 @@ scons-tests-translator() {
       echo "@@@BUILD_STEP scons-sb-translator [${platform}] [${group}]@@@"
       ${SCONS_COMMON} ${extra} platform=${platform} ${group} || handle-error
   done
+}
+
+
+archived-pexe-scons-test() {
+  local arch=$1
+  local build_dir="scons-out/nacl_irt_test-${arch}-pnacl-pexe-clang"
+  local tarball="$(pwd)/scons-out/scons_pexes.tar.bz2"
+
+  rm -rf ${build_dir}
+  mkdir -p ${build_dir}
+
+  ${UP_DOWN_LOAD} DownloadArchivedPexesScons ${ARCHVIED_PEXE_SCONS_REV} \
+      ${tarball}
+  tar xfj ${tarball} --directory ${build_dir}
+
+  local extra="--mode=opt-host,nacl_irt_test -j${PNACL_CONCURRENCY} -k \
+               translate_in_build_step=0 \
+               skip_trusted_tests=1 \
+               built_elsewhere=1"
+
+  build-canned-prerequisites ${arch}
+  # TODO(robertm): enables more tests, e.g. browser_tests
+  local targets="small_tests_irt medium_tests_irt large_tests_irt"
+  # the medium target for arm does not exist because of heavy qemu
+  # filtering
+  if [[ ${arch} == "arm" ]] ; then
+      targets="small_tests_irt large_tests_irt"
+  fi
+  # Without setting A_VM_BOT we do not get the running_on_vm setting in scons.
+  # So we would be tryiog to translate pexe which were not archived as
+  # the pexe generater bot does run with running_on_v
+  # TODO(robertm): figure out what is going o
+  BUILDBOT_BUILDERNAME=A_VM_BOT \
+      ${SCONS_COMMON} ${extra} platform=${arch} ${targets} || handle-error
 }
 
 
@@ -205,13 +271,15 @@ tc-test-bot() {
     # Todo(pnacl-team): rethink this.
     scons-tests-translator ${arch}
 
+    archived-pexe-scons-test ${arch}
+
     archived-pexe-translator-test ${arch}
   done
-
 }
 
 
 if [ $# = 0 ]; then
+    # NOTE: this is used for manual testing only
     tc-test-bot "x86-64 x86-32 arm"
 else
     "$@"
