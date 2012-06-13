@@ -1300,6 +1300,7 @@ void RenderWidgetHostImpl::OnMsgUpdateRect(
           params.bitmap_rect,
           params.copy_rects,
           params.view_size,
+          params.scale_factor,
           base::Bind(&RenderWidgetHostImpl::DidUpdateBackingStore,
                      weak_factory_.GetWeakPtr(), params, paint_start));
     }
@@ -1576,6 +1577,7 @@ bool RenderWidgetHostImpl::PaintBackingStoreRect(
     const gfx::Rect& bitmap_rect,
     const std::vector<gfx::Rect>& copy_rects,
     const gfx::Size& view_size,
+    float scale_factor,
     const base::Closure& completion_callback) {
   // The view may be destroyed already.
   if (!view_)
@@ -1592,7 +1594,8 @@ bool RenderWidgetHostImpl::PaintBackingStoreRect(
   bool needs_full_paint = false;
   bool scheduled_completion_callback = false;
   BackingStoreManager::PrepareBackingStore(this, view_size, bitmap, bitmap_rect,
-                                           copy_rects, completion_callback,
+                                           copy_rects, scale_factor,
+                                           completion_callback,
                                            &needs_full_paint,
                                            &scheduled_completion_callback);
   if (needs_full_paint) {

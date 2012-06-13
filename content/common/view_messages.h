@@ -534,6 +534,10 @@ IPC_STRUCT_BEGIN(ViewHostMsg_UpdateRect_Params)
   // Whether or not the renderer expects a ViewMsg_UpdateRect_ACK for this
   // update. True for 2D painting, but false for accelerated compositing.
   IPC_STRUCT_MEMBER(bool, needs_ack)
+
+  // All the above coordinates are in DIP. This is the scale factor needed
+  // to convert them to pixels.
+  IPC_STRUCT_MEMBER(float, scale_factor)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewMsg_PostMessage_Params)

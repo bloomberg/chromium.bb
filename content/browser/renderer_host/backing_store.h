@@ -45,9 +45,11 @@ class CONTENT_EXPORT BackingStore {
   // information about the color depth.
   virtual size_t MemorySize();
 
-  // Paints the bitmap from the renderer onto the backing store.  bitmap_rect
+  // Paints the bitmap from the renderer onto the backing store. bitmap_rect
   // gives the location of bitmap, and copy_rects specifies the subregion(s) of
-  // the backingstore to be painted from the bitmap.
+  // the backingstore to be painted from the bitmap. All coordinates are in
+  // DIPs. |scale_factor| contains the expected device scale factor of the
+  // backing store.
   //
   // PaintToBackingStore does not need to guarantee that this has happened by
   // the time it returns, in which case it will set |scheduled_callback| to
@@ -57,6 +59,7 @@ class CONTENT_EXPORT BackingStore {
       TransportDIB::Id bitmap,
       const gfx::Rect& bitmap_rect,
       const std::vector<gfx::Rect>& copy_rects,
+      float scale_factor,
       const base::Closure& completion_callback,
       bool* scheduled_completion_callback) = 0;
 

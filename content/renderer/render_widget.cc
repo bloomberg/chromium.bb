@@ -911,6 +911,7 @@ void RenderWidget::DoDeferredUpdate() {
   pending_update_params_->flags = next_paint_flags_;
   pending_update_params_->scroll_offset = GetScrollOffset();
   pending_update_params_->needs_ack = true;
+  pending_update_params_->scale_factor = device_scale_factor_;
   next_paint_flags_ = 0;
   need_update_rect_for_auto_resize_ = false;
 
@@ -1166,6 +1167,7 @@ void RenderWidget::didCompleteSwapBuffers() {
   params.flags = next_paint_flags_;
   params.scroll_offset = GetScrollOffset();
   params.needs_ack = false;
+  params.scale_factor = device_scale_factor_;
 
   Send(new ViewHostMsg_UpdateRect(routing_id_, params));
   next_paint_flags_ = 0;

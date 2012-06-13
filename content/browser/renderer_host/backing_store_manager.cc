@@ -198,6 +198,7 @@ void BackingStoreManager::PrepareBackingStore(
     TransportDIB::Id bitmap,
     const gfx::Rect& bitmap_rect,
     const std::vector<gfx::Rect>& copy_rects,
+    float scale_factor,
     const base::Closure& completion_callback,
     bool* needs_full_paint,
     bool* scheduled_completion_callback) {
@@ -219,7 +220,7 @@ void BackingStoreManager::PrepareBackingStore(
   }
 
   backing_store->PaintToBackingStore(host->GetProcess(), bitmap,
-                                     bitmap_rect, copy_rects,
+                                     bitmap_rect, copy_rects, scale_factor,
                                      completion_callback,
                                      scheduled_completion_callback);
 }

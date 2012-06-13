@@ -537,6 +537,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
                              const gfx::Rect& bitmap_rect,
                              const std::vector<gfx::Rect>& copy_rects,
                              const gfx::Size& view_size,
+                             float scale_factor,
                              const base::Closure& completion_callback);
 
   // Scrolls the given |clip_rect| in the backing by the given dx/dy amount. The

@@ -50,6 +50,7 @@ void BackingStoreMac::PaintToBackingStore(
     TransportDIB::Id bitmap,
     const gfx::Rect& bitmap_rect,
     const std::vector<gfx::Rect>& copy_rects,
+    float scale_factor,
     const base::Closure& completion_callback,
     bool* scheduled_completion_callback) {
   *scheduled_completion_callback = false;
@@ -60,7 +61,7 @@ void BackingStoreMac::PaintToBackingStore(
     return;
 
   gfx::Size pixel_size = size().Scale(device_scale_factor_);
-  gfx::Rect pixel_bitmap_rect = bitmap_rect.Scale(device_scale_factor_);
+  gfx::Rect pixel_bitmap_rect = bitmap_rect.Scale(scale_factor);
 
   base::mac::ScopedCFTypeRef<CGDataProviderRef> data_provider(
       CGDataProviderCreateWithData(NULL, dib->memory(),
@@ -75,7 +76,7 @@ void BackingStoreMac::PaintToBackingStore(
 
   for (size_t i = 0; i < copy_rects.size(); i++) {
     const gfx::Rect& copy_rect = copy_rects[i];
-    gfx::Rect pixel_copy_rect = copy_rect.Scale(device_scale_factor_);
+    gfx::Rect pixel_copy_rect = copy_rect.Scale(scale_factor);
 
     // Only the subpixels given by copy_rect have pixels to copy.
     base::mac::ScopedCFTypeRef<CGImageRef> image(

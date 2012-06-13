@@ -21,6 +21,7 @@ class TestBackingStore : public BackingStore {
       TransportDIB::Id bitmap,
       const gfx::Rect& bitmap_rect,
       const std::vector<gfx::Rect>& copy_rects,
+      float scale_factor,
       const base::Closure& completion_callback,
       bool* scheduled_completion_callback) OVERRIDE;
   virtual bool CopyFromBackingStore(const gfx::Rect& rect,
