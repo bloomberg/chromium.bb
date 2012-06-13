@@ -4,8 +4,15 @@
 
 @echo off
 setlocal
-set HERMETIC_CYGWIN=hermetic_cygwin_1_7_9-0_2
+set HERMETIC_CYGWIN=hermetic_cygwin_1_7_15-0_1
 if exist "%~dp0..\cygwin\%HERMETIC_CYGWIN%.installed" goto :skip_cygwin_install
+if exist "%~dp0..\tools\BUILD\.gcc-extras-version" del "%~dp0..\tools\BUILD\.gcc-extras-version"
+if exist "%~dp0..\tools\BACKPORTS\binutils" rmdir /s /q "%~dp0..\tools\BACKPORTS\binutils"
+if exist "%~dp0..\tools\BACKPORTS\gcc" rmdir /s /q "%~dp0..\tools\BACKPORTS\gcc"
+if exist "%~dp0..\tools\BACKPORTS\gdb" rmdir /s /q "%~dp0..\tools\BACKPORTS\gdb"
+if exist "%~dp0..\tools\BACKPORTS\glibc" rmdir /s /q "%~dp0..\tools\BACKPORTS\glibc"
+if exist "%~dp0..\tools\BACKPORTS\linux-headers-for-nacl" rmdir /s /q "%~dp0..\tools\BACKPORTS\linux-headers-for-nacl"
+if exist "%~dp0..\tools\BACKPORTS\newlib" rmdir /s /q "%~dp0..\tools\BACKPORTS\newlib"
 if not exist "%~dp0..\cygwin" goto :dont_remove_cygwin
 rmdir /s /q "%~dp0..\cygwin"
 if errorlevel 1 goto :rmdir_fail

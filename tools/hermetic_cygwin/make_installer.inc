@@ -1,4 +1,4 @@
-# Copyright 2010, Google Inc.
+# Copyright 2012, Google Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,7 +29,7 @@
 
 
 # Information from setup.ini
-declare -A sdesc ldesc category required requires prefix version install source
+declare -A {s,l}desc category require{d,s} prefix version install source message
 # Contents of categories
 declare -A category_contents
 # Packagenames: in request order and in install order
@@ -44,13 +44,14 @@ declare definsttype=1
 
 parse_setup_ini() {
   if ((verbose)) ; then echo "Parsing setup.ini..." >&2 ; fi
-  local package line acceptmode=0 sdescmode=0 ldescmode=0
+  local package line acceptmode=0 sdescmode=0 ldescmode=0 messagemode=0
   while IFS= read -r line ; do
     if [[ "${line:0:1}" = "@" ]] ; then
       package="${line:2}"
       acceptmode=1
       sdescmode=0
       ldescmode=0
+      messagemode=0
       if ((verbose)) ; then echo "Package: \"$package\"..." >&2 ; fi
     elif [[ "$line" = "[prev]" ]] || [[ "$line" = "[test]" ]] ; then
       acceptmode=0
@@ -65,6 +66,11 @@ parse_setup_ini() {
         if [[ "$line" = *\"* ]] ; then
           ldescmode=0
         fi
+      elif ((messagemode)) ; then
+        message["$package"]="${ldesc[$package]} $line"
+        if [[ "$line" = *\"* ]] ; then
+          messagemode=0
+        fi
       elif [[ "${line:0:6}" = "sdesc:" ]] ; then
         sdesc["$package"]="${line:7}"
         if [[ "${line:7}" = *\"*\"* ]] ; then
@@ -73,6 +79,7 @@ parse_setup_ini() {
           sdescmode=1
         fi
         ldescmode=0
+        messagemode=0
       elif [[ "${line:0:6}" = "ldesc:" ]] ; then
         ldesc["$package"]="${line:7}"
         sdescmode=0
@@ -81,6 +88,7 @@ parse_setup_ini() {
         else
           ldescmode=1
         fi
+        messagemode=0
       elif [[ "${line:0:9}" = "category:" ]] ; then
         category["$package"]="${line:10}"
         for catname in ${category["$package"]} ; do
@@ -88,22 +96,37 @@ parse_setup_ini() {
         done
         sdescmode=0
         ldescmode=0
+        messagemode=0
       elif [[ "${line:0:9}" = "requires:" ]] ; then
+        line="${line/ _autorebase/}"
         requires["$package"]="${line:10}"
         sdescmode=0
         ldescmode=0
+        messagemode=0
       elif [[ "${line:0:8}" = "version:" ]] ; then
         version["$package"]="${line:9}"
         sdescmode=0
         ldescmode=0
+        messagemode=0
       elif [[ "${line:0:8}" = "install:" ]] ; then
         install["$package"]="${line:9}"
         sdescmode=0
         ldescmode=0
+        messagemode=0
       elif [[ "${line:0:7}" = "source:" ]] ; then
         source["$package"]="${line:8}"
         sdescmode=0
         ldescmode=0
+        messagemode=0
+      elif [[ "${line:0:8}" = "message:" ]] ; then
+        message["$package"]="${line:9}"
+        sdescmode=0
+        ldescmode=0
+        if [[ "${line:7}" = *\"*\"* ]] ; then
+          messagemode=0
+        else
+          messagemode=1
+        fi
       elif [[ "$line" != "" ]] &&
            [[ "$line" != "#"* ]] ; then
         echo "Unknown tag in \"$line\"" >&2
@@ -114,92 +137,31 @@ parse_setup_ini() {
 }
 
 fix_setup_inf_info() {
+  sdesc["python-lxml"]="\"Python XML2/XSLT bindings\""
+  ldesc["python-lxml"]="\"lxml is a Pythonic binding for the libxml2 and libxslt libraries. It is unique in that it combines the speed and feature completeness of these libraries with the simplicity of a native Python API, mostly compatible but superior to the well-known ElementTree API.\""
+  category["python-lxml"]="Python"
+  category_contents["Python"]="${category_contents[Python]} python-lxml"
+  requires["python-lxml"]="libxml2 libxslt python"
+  version["python-lxml"]="2.3.2-1"
+  install["python-lxml"]="release-2/Python/python-lxml/python-lxml-2.3.2-1.tar.bz2 626921 53757039add697e01007d77f352ee46e"
+  source["python-lxml"]="release-2/Python/python-lxml/python-lxml-2.3.2-1-src.tar.bz2 3147236 deb8441641fc111eedaf99f738b363c1"
   sdesc["python3"]="\"Py3K language interpreter\""
   ldesc["python3"]="\"Python is an interpreted, interactive object-oriented programming language suitable (amongst other uses) for distributed application development, scripting, numeric computing and system testing.  Python is often compared to Tcl, Perl, Java, JavaScript, Visual Basic or Scheme.\""
   category["python3"]="Python Interpreters"
   category_contents["Python"]="${category_contents[Python]} python3"
   category_contents["Interpreters"]="${category_contents[Interpreters]} python3"
   requires["python3"]="crypt libbz2_1 libexpat1 libffi4 libgcc1 libgdbm4 libintl8 libncursesw10 libreadline7 libsqlite3_0 libopenssl098 zlib0"
-  version["python3"]="3.1.3-1"
-  install["python3"]="release-2/Python/python3/python3-3.1.3-1.tar.bz2 4975090 8debdd0eadfb8672bebcd56ffcec613c"
-  source["python3"]="release-2/Python/python3/python3-3.1.3-1-src.tar.bz2 13708191 5cf02a3eac26ddddad797c0d62e574d4"
-  sdesc["java-ecj"]="\"Eclipse Compiler for Java (library)\""
-  ldesc["java-ecj"]="\"Eclipse Compiler for Java\""
-  category["java-ecj"]="Devel Java"
-  category_contents["Devel"]="${category_contents[Devel]} java-ecj"
-  category_contents["Java"]="${category_contents[Java]} java-ecj"
-  version["java-ecj"]="3.5.2-1"
-  install["java-ecj"]="release-2/Java/ecj/java-ecj/java-ecj-3.5.2-1.tar.bz2 1667730 a1bfd9636a07197f4d2da9b90fa847c4"
-  source["java-ecj"]="release-2/Java/ecj/ecj-3.5.2-1-src.tar.bz2 1250373 30e95a55444836c884b8ca419bf7675a"
-  version["gcc4"]="4.5.2-2"
-  install["gcc4"]="release-2/gcc4/gcc4-4.5.2-2.tar.bz2 14 4059d198768f9f8dc9372dc1c54bc3c3"
-  source["gcc4"]="release-2/gcc4/gcc4-4.5.2-2-src.tar.bz2 66582801 18f9ca9eb0d39b2e7f81a6fa3151d1ad"
-  version["gcc4-ada"]="4.5.2-2"
-  requires["gcc4-ada"]="binutils w32api libgcc1 libgmp3 libintl8 libmpfr1 gcc4-core libgnat4.5 libcloog0 libmpc1 libppl"
-  install["gcc4-ada"]="release-2/gcc4/gcc4-ada/gcc4-ada-4.5.2-2.tar.bz2 14801659 9e35be7a1df1e6fbdec3d8b8dd2bb683"
-  source["gcc4-ada"]="release-2/gcc4/gcc4-4.5.2-2-src.tar.bz2 66582801 18f9ca9eb0d39b2e7f81a6fa3151d1ad"
-  version["gcc4-core"]="4.5.2-2"
-  requires["gcc4-core"]="binutils w32api libgcc1 libgomp1 libssp0 libffi4 libgmp3 libintl8 libmpfr1 libcloog0 libmpc1 libppl"
-  install["gcc4-core"]="release-2/gcc4/gcc4-core/gcc4-core-4.5.2-2.tar.bz2 10749366 d2d54395d79d3dc708f32b13ede04745"
-  source["gcc4-core"]="release-2/gcc4/gcc4-4.5.2-2-src.tar.bz2 66582801 18f9ca9eb0d39b2e7f81a6fa3151d1ad"
-  version["gcc4-fortran"]="4.5.2-2"
-  requires["gcc4-fortran"]="binutils w32api libgcc1 libgfortran3 libgmp3 libintl8 libmpfr1 gcc4-core libcloog0 libmpc1 libppl"
-  install["gcc4-fortran"]="release-2/gcc4/gcc4-fortran/gcc4-fortran-4.5.2-2.tar.bz2 4694636 3bf9e1054006751e249bc3637147a364"
-  source["gcc4-fortran"]="release-2/gcc4/gcc4-4.5.2-2-src.tar.bz2 66582801 18f9ca9eb0d39b2e7f81a6fa3151d1ad"
-  version["gcc4-g++"]="4.5.2-2"
-  requires["gcc4-g++"]="binutils libgcc1 w32api libstdc++6 libstdc++6-devel libgmp3 libintl8 libmpfr1 gcc4-core libcloog0 libmpc1 libppl"
-  install["gcc4-g++"]="release-2/gcc4/gcc4-g++/gcc4-g++-4.5.2-2.tar.bz2 4605327 48a68247e9f0b94415ef2f9cf2ae16d5"
-  source["gcc4-g++"]="release-2/gcc4/gcc4-4.5.2-2-src.tar.bz2 66582801 18f9ca9eb0d39b2e7f81a6fa3151d1ad"
-  version["gcc4-java"]="4.5.2-2"
-  requires["gcc4-java"]="binutils w32api java-ecj libgmp3 libmpfr1 gcc4-g++ gcc4-core libgcc1 libgcj11 libgcj-common libffi4 libcloog0 libintl8 libmpc1 libppl"
-  install["gcc4-java"]="release-2/gcc4/gcc4-java/gcc4-java-4.5.2-2.tar.bz2 55171538 5bfbdf64dc33383f6558d4a3a135482d"
-  source["gcc4-java"]="release-2/gcc4/gcc4-4.5.2-2-src.tar.bz2 66582801 18f9ca9eb0d39b2e7f81a6fa3151d1ad"
-  version["gcc4-objc"]="4.5.2-2"
-  requires["gcc4-objc"]="binutils w32api libgcc1 libgmp3 libintl8 libmpfr1 gcc4-core gcc4-g++ libobjc2 libcloog0 libmpc1 libppl"
-  install["gcc4-objc"]="release-2/gcc4/gcc4-objc/gcc4-objc-4.5.2-2.tar.bz2 7055504 73743b39f95e8b3c17e3437c5458570b"
-  source["gcc4-objc"]="release-2/gcc4/gcc4-4.5.2-2-src.tar.bz2 66582801 18f9ca9eb0d39b2e7f81a6fa3151d1ad"
-  version["libffi4"]="4.5.2-2"
-  requires["libffi4"]="libgcc1"
-  install["libffi4"]="release-2/gcc4/libffi4/libffi4-4.5.2-2.tar.bz2 12011 8eaf537ca7d53df80e6788355e3f1ee8"
-  source["libffi4"]="release-2/gcc4/gcc4-4.5.2-2-src.tar.bz2 66582801 18f9ca9eb0d39b2e7f81a6fa3151d1ad"
-  version["libgcc1"]="4.5.2-2"
-  install["libgcc1"]="release-2/gcc4/libgcc1/libgcc1-4.5.2-2.tar.bz2 39510 910da6c542c3c2ad5fe30739249157cc"
-  source["libgcc1"]="release-2/gcc4/gcc4-4.5.2-2-src.tar.bz2 66582801 18f9ca9eb0d39b2e7f81a6fa3151d1ad"
-  version["libgcj-common"]="4.5.2-2"
-  requires["libgcj-common"]="bash"
-  install["libgcj-common"]="release-2/gcc4/libgcj-common/libgcj-common-4.5.2-2.tar.bz2 2120 ce12c78b3594adb5c28e9caa425fcc0a"
-  source["libgcj-common"]="release-2/gcc4/gcc4-4.5.2-2-src.tar.bz2 66582801 18f9ca9eb0d39b2e7f81a6fa3151d1ad"
-  version["libgcj11"]="4.5.2-2"
-  requires["libgcj11"]="libiconv2 libgcj-common libgcc1"
-  install["libgcj11"]="release-2/gcc4/libgcj11/libgcj11-4.5.2-2.tar.bz2 9720695 835e2dd06238f02ef68aa8abda23b34b"
-  source["libgcj11"]="release-2/gcc4/gcc4-4.5.2-2-src.tar.bz2 66582801 18f9ca9eb0d39b2e7f81a6fa3151d1ad"
-  version["libgfortran3"]="4.5.2-2"
-  requires["libgfortran3"]="libgcc1"
-  install["libgfortran3"]="release-2/gcc4/libgfortran3/libgfortran3-4.5.2-2.tar.bz2 202184 0ab516014a4ec94ea0de37d575947213"
-  source["libgfortran3"]="release-2/gcc4/gcc4-4.5.2-2-src.tar.bz2 66582801 18f9ca9eb0d39b2e7f81a6fa3151d1ad"
-  version["libgnat4.5"]="4.5.2-2"
-  requires["libgnat4.5"]="libgcc1"
-  install["libgnat4.5"]="release-2/gcc4/libgnat4.5/libgnat4.5-4.5.2-2.tar.bz2 866495 58ff56829bbd2963f6a82ff0506c23dd"
-  source["libgnat4.5"]="release-2/gcc4/gcc4-4.5.2-2-src.tar.bz2 66582801 18f9ca9eb0d39b2e7f81a6fa3151d1ad"
-  version["libgomp1"]="4.5.2-2"
-  requires["libgomp1"]="libgcc1"
-  install["libgomp1"]="release-2/gcc4/libgomp1/libgomp1-4.5.2-2.tar.bz2 19479 70c1564321405bc24b998c7ff03320d9"
-  source["libgomp1"]="release-2/gcc4/gcc4-4.5.2-2-src.tar.bz2 66582801 18f9ca9eb0d39b2e7f81a6fa3151d1ad"
-  version["libobjc2"]="4.5.2-2"
-  requires["libobjc2"]="libgcc1"
-  install["libobjc2"]="release-2/gcc4/libobjc2/libobjc2-4.5.2-2.tar.bz2 37645 ecee1a9ffd111d4f09efa71420cfd6f1"
-  source["libobjc2"]="release-2/gcc4/gcc4-4.5.2-2-src.tar.bz2 66582801 18f9ca9eb0d39b2e7f81a6fa3151d1ad"
-  version["libssp0"]="4.5.2-2"
-  requires["libssp0"]="libgcc1"
-  install["libssp0"]="release-2/gcc4/libssp0/libssp0-4.5.2-2.tar.bz2 3798 4b65c6fae1af2f937bbc67fa89a1564b"
-  source["libssp0"]="release-2/gcc4/gcc4-4.5.2-2-src.tar.bz2 66582801 18f9ca9eb0d39b2e7f81a6fa3151d1ad"
-  version["libstdc++6"]="4.5.2-2"
-  requires["libstdc++6"]="libgcc1"
-  install["libstdc++6"]="release-2/gcc4/libstdc++6/libstdc++6-4.5.2-2.tar.bz2 245574 379df93995c956b3a0b3857ade01c2eb"
-  source["libstdc++6"]="release-2/gcc4/gcc4-4.5.2-2-src.tar.bz2 66582801 18f9ca9eb0d39b2e7f81a6fa3151d1ad"
-  version["libstdc++6-devel"]="4.5.2-2"
-  install["libstdc++6-devel"]="release-2/gcc4/libstdc++6-devel/libstdc++6-devel-4.5.2-2.tar.bz2 2677382 e13424866c60017939653d4d24cfd59d"
-  source["libstdc++6-devel"]="release-2/gcc4/gcc4-4.5.2-2-src.tar.bz2 66582801 18f9ca9eb0d39b2e7f81a6fa3151d1ad"
+  version["python3"]="3.1.5rc1-1"
+  install["python3"]="release-2/Python/python3/python3-3.1.5rc1-1.tar.bz2 5027655 16a1d40b4dcff338ec7dbd74a8f85117"
+  source["python3"]="release-2/Python/python3/python3-3.1.5rc1-1-src.tar.bz2 13731931 51e830a5d6a0086debeb6bebb0601a11"
+  sdesc["python3-lxml"]="\"Py3K XML2/XSLT bindings\""
+  ldesc["python3-lxml"]="\"lxml is a Pythonic binding for the libxml2 and libxslt libraries. It is unique in that it combines the speed and feature completeness of these libraries with the simplicity of a native Python API, mostly compatible but superior to the well-known ElementTree API.\""
+  category["python3-lxml"]="Python"
+  category_contents["Python"]="${category_contents[Python]} python3-lxml"
+  requires["python3-lxml"]="libxml2 libxslt python3"
+  version["python3-lxml"]="2.3-1"
+  install["python3-lxml"]="release-2/Python/python3-lxml/python3-lxml-2.3-1.tar.bz2 626673 9ca4a26e629f0027b22d14e609b5ac54"
+  source["python3-lxml"]="release-2/Python/python3-lxml/python3-lxml-2.3-1-src.tar.bz2 3201075 a518251e292516fae73fb515c1234c03"
   requires["coreutils"]="${requires[coreutils]} dash grep patch sed"
   requires["cygwin"]="base-files ${requires[cygwin]} editrights ipc-utils run"
   requires["dash"]="${requires[dash]} cygwin"
@@ -574,6 +536,9 @@ generate_unpack_tarball_text() {
         filename="${filename:0:$((${#filename}-1))}"
         if [[ "${createddirs[$filename]}" != "done" ]] ; then
           echo "  CreateDirectory \"\$INSTDIR\\${prefix[$1]}${filename//\//\\}\""
+          if [[ "$filename" == "bin" ]]; then
+            echo "  CreateDirectory \"\$INSTDIR\\${prefix[$1]}bin-unrebased\""
+          fi
           createddirs["$filename"]="done"
         fi
       fi
@@ -603,6 +568,9 @@ generate_unpack_tarball_text() {
         fname="${fname//\$/\$\$}"
         filename="${filename//\//\\}"
         echo "  File \"/oname=${prefix[$1]}$fname\" \"packages.unpacked\\$pkgname\\$filename\""
+        if [[ "$fname" = bin\\*.dll ]]; then
+          echo "  File \"/oname=${prefix[$1]}bin-unrebased\\${fname:3}\" \"packages.unpacked\\$pkgname\\$filename\""
+        fi
       fi
     done
     echo "  File \"/oname=${prefix[coreutils]}etc\\setup\\$1.lst.gz\" \"setup\\$1.lst.gz\""

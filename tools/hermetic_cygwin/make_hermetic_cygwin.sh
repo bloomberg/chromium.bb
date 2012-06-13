@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2010, Google Inc.
+# Copyright 2012, Google Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -110,7 +110,7 @@ declare -A description packages
 . "${0/.sh/.conf}"
 . "`dirname \"$0\"`"/make_installer.inc
 
-CYGWIN_VERSION=1.7.9-0.2
+CYGWIN_VERSION=1.7.15-0.1
 
 mkdir -p packages{,.src,.unpacked} setup
 
@@ -206,6 +206,7 @@ Section "" sec_PostInstall
   FileClose \$R0
   SetOutPath \$INSTDIR
   nsExec::ExecToLog '"bin\\bash" -c ./postinstall.sh'
+  nsExec::ExecToLog '"bin\dash" -c "bin/rebaseall -v"'
   Delete \$INSTDIR\\postinstall.sh
   FileOpen \$R0 \$INSTDIR\\Cygwin.bat w
   StrCpy \$R1 \$INSTDIR 1
@@ -223,22 +224,22 @@ if ! patch --no-backup-if-mismatch <<END
 --- make_hermetic_cygwin.nsi
 +++ make_hermetic_cygwin.nsi
 @@ -2069,4 +2069,4 @@
-+  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}bin\\awk.exe" "\$INSTDIR\\bin\\gawk.exe"
-   MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}bin\\gawk-3.1.8.exe" "\$INSTDIR\\bin\\gawk.exe"
-   MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}bin\\pgawk-3.1.8.exe" "\$INSTDIR\\bin\\pgawk.exe"
-   MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}usr\\share\\man\\man1\\gawk.1.gz" "\$INSTDIR\\usr\\share\\man\\man1\\pgawk.1.gz"
++  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}bin\\awk.exe" "\$INSTDIR\\${CYGWIN_PREFIX}bin\\gawk-4.0.1.exe"
++  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}bin\\gawk.exe" "\$INSTDIR\\${CYGWIN_PREFIX}bin\\gawk-4.0.1.exe"
+   MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}bin\\pgawk-4.0.1.exe" "\$INSTDIR\\${CYGWIN_PREFIX}bin\\pgawk.exe"
+-  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}bin\\gawk.exe" "\$INSTDIR\\${CYGWIN_PREFIX}bin\\gawk-4.0.1.exe"
+   MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}usr\\share\\man\\man1\\pgawk.1.gz" "\$INSTDIR\\${CYGWIN_PREFIX}usr\\share\\man\\man1\\gawk.1.gz"
 -  MkLink::SoftF "\$INSTDIR\\${CYGWIN_PREFIX}bin\\awk.exe" "gawk.exe"
 @@ -4775,6 +4775,7 @@
-   CreateDirectory "\$INSTDIR\\etc\\postinstall"
    CreateDirectory "\$INSTDIR\\usr"
    CreateDirectory "\$INSTDIR\\bin"
+   CreateDirectory "\$INSTDIR\\bin-unrebased"
 +  CreateDirectory "\$INSTDIR\\dev"
    CreateDirectory "\$INSTDIR\\usr\\share"
    CreateDirectory "\$INSTDIR\\usr\\share\\doc"
    CreateDirectory "\$INSTDIR\\usr\\share\\doc\\bash"
-@@ -24353 +24353,0 @@
--  File "/oname=${CYGWIN_PREFIX}bin\\python.exe" "packages.unpacked\\python-2.6.5-2.tar.bz2\\usr\\bin\\python.exe"
-@@ -24887,2 +24887,4 @@
+@@ -24887,3 +24887,4 @@
+-  MkLink::SoftF "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python.exe" "python2.6.exe"
 -  MkLink::SoftF "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python-config" "python2.6-config"
 -  MkLink::SoftF "\$INSTDIR\\${CYGWIN_PREFIX}lib\\libpython2.6.dll.a" "python2.6\\config\\libpython2.6.dll.a"
 +  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python.exe" "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python2.6.exe"
