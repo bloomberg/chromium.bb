@@ -735,6 +735,7 @@ partword gy\x0171l\x00e9ssz 1456-23456-123-16-234-156	For example gyűlésszíne
 begword ikarossz 24-13-1-1235-135-156-156
 partword kattint\x00e1ssz 13-1-2345-2345-24-1345-2345-4-234-156	For example kattintásszám word
 begword r\x00fazsossz 1235-346-345-135-234-156	For example rúzsosszájú word
+partword form\x00e1nsszint 124-135-1235-134-4-1345-234-156-24-1345-2345	For example formánsszintetizátor word
 
 #ty, lly tty related exceptions
 #This exception part containing english words with need presenting original english braille rules

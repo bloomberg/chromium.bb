@@ -618,6 +618,10 @@
           "output": "forgásszabály"
         }, 
         {
+          "input": "⠋⠕⠗⠍⠈⠝⠎⠱⠊⠝⠞⠑⠞⠊⠣⠈⠞⠕⠗⠕⠅", 
+          "output": "formánsszintetizátorok"
+        }, 
+        {
           "input": "⠋⠕⠗⠗⠈⠎⠱⠟⠧⠑⠛", 
           "output": "forrásszöveg"
         }, 
@@ -3795,6 +3799,10 @@
         {
           "input": "forgásszabály", 
           "output": "⠋⠕⠗⠛⠈⠎⠱⠁⠃⠈⠸"
+        }, 
+        {
+          "input": "formánsszintetizátorok", 
+          "output": "⠋⠕⠗⠍⠈⠝⠎⠱⠊⠝⠞⠑⠞⠊⠣⠈⠞⠕⠗⠕⠅"
         }, 
         {
           "input": "forrásszöveg", 
