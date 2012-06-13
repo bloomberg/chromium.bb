@@ -76,9 +76,6 @@ class ExtensionAppProvider : public AutocompleteProvider,
   // Fetch the current app list and cache it locally.
   void RefreshAppList();
 
-  // Register for install/uninstall notification so we can update our cache.
-  void RegisterForNotifications();
-
   // Calculate the relevance of the match.
   int CalculateRelevance(AutocompleteInput::Type type,
                          int input_length,

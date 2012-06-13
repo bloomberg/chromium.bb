@@ -10,6 +10,7 @@
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/profiles/profile.h"
@@ -23,7 +24,13 @@
 ExtensionAppProvider::ExtensionAppProvider(ACProviderListener* listener,
                                            Profile* profile)
     : AutocompleteProvider(listener, profile, "ExtensionApps") {
-  RegisterForNotifications();
+  // Notifications of extensions loading and unloading always come from the
+  // non-incognito profile, but we need to see them regardless, as the incognito
+  // windows can be affected.
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
+                 content::Source<Profile>(profile_->GetOriginalProfile()));
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
+                 content::Source<Profile>(profile_->GetOriginalProfile()));
   RefreshAppList();
 }
 
@@ -32,7 +39,8 @@ void ExtensionAppProvider::LaunchAppFromOmnibox(
     const AutocompleteMatch& match,
     Profile* profile,
     WindowOpenDisposition disposition) {
-  ExtensionService* service = profile->GetExtensionService();
+  ExtensionService* service =
+      ExtensionSystemFactory::GetForProfile(profile)->extension_service();
   const extensions::Extension* extension =
       service->GetInstalledApp(match.destination_url);
   // While the Omnibox popup is open, the extension can be updated, changing
@@ -138,7 +146,8 @@ ExtensionAppProvider::~ExtensionAppProvider() {
 }
 
 void ExtensionAppProvider::RefreshAppList() {
-  ExtensionService* extension_service = profile_->GetExtensionService();
+  ExtensionService* extension_service =
+      ExtensionSystemFactory::GetForProfile(profile_)->extension_service();
   if (!extension_service)
     return;  // During testing, there is no extension service.
   const ExtensionSet* extensions = extension_service->extensions();
@@ -167,16 +176,6 @@ void ExtensionAppProvider::RefreshAppList() {
     };
     extension_apps_.push_back(extension_app);
   }
-}
-
-void ExtensionAppProvider::RegisterForNotifications() {
-  // Notifications of extensions loading and unloading always come from the
-  // non-incognito profile, but we need to see them regardless, as the incognito
-  // windows can be affected.
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
-                 content::Source<Profile>(profile_->GetOriginalProfile()));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
-                 content::Source<Profile>(profile_->GetOriginalProfile()));
 }
 
 void ExtensionAppProvider::Observe(int type,

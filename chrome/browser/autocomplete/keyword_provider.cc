@@ -361,7 +361,6 @@ bool KeywordProvider::ExtractKeywordFromInput(const AutocompleteInput& input,
 
 // static
 void KeywordProvider::FillInURLAndContents(
-    Profile* profile,
     const string16& remaining_input,
     const TemplateURL* element,
     AutocompleteMatch* match) {
@@ -470,7 +469,7 @@ AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
 
   // Create destination URL and popup entry content by substituting user input
   // into keyword templates.
-  FillInURLAndContents(profile_, remaining_input, element, &match);
+  FillInURLAndContents(remaining_input, element, &match);
 
   match.keyword = keyword;
   match.transition = content::PAGE_TRANSITION_KEYWORD;

@@ -113,8 +113,7 @@ class KeywordProvider : public AutocompleteProvider,
 
   // Fills in the "destination_url" and "contents" fields of |match| with the
   // provided user input and keyword data.
-  static void FillInURLAndContents(Profile* profile,
-                                   const string16& remaining_input,
+  static void FillInURLAndContents(const string16& remaining_input,
                                    const TemplateURL* element,
                                    AutocompleteMatch* match);
 
