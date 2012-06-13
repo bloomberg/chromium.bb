@@ -2,12 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file (temporarily) lives in two places:
-//   src/remoting/host/usb_keycode_map.h
-//   src/webkit/plugins/ppapi/usb_keycode_map.h
-// Changes to this file must be made in both locations.
-// TODO(wez): Move file into shared location (crbug.com/122174).
-
 // Data in this file was created by referencing:
 //  USB HID Usage Tables (v1.11) 27 June 2001
 //  HIToolbox/Events.h (Mac)
@@ -20,8 +14,8 @@ typedef struct {
 
   // Contains one of the following:
   //  On Linux: XKB scancode
-  //  On Windows: Windows OEM scancode TODO(garykac)
-  //  On Mac: Mac keycode TODO(garykac)
+  //  On Windows: Windows OEM scancode
+  //  On Mac: Mac keycode
   uint16_t native_keycode;
 } usb_keymap;
 

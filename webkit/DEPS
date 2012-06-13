@@ -30,6 +30,9 @@ include_rules = [
   "+gpu/command_buffer/service",
   "+third_party/khronos/GLES2",
 
+  # For shared USB keycode conversion tables used by ppapi plugin code.
+  "+ui/base/keycodes",
+
   # TODO(brettw) - review these; move up if it's ok, or remove the dependency
   "+crypto",
   "+net/base",

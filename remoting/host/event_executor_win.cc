@@ -13,7 +13,6 @@
 #include "remoting/host/capturer.h"
 #include "remoting/host/clipboard.h"
 #include "remoting/proto/event.pb.h"
-#include "ui/base/keycodes/keyboard_codes.h"
 
 namespace remoting {
 
@@ -25,7 +24,7 @@ using protocol::MouseEvent;
 
 // USB to XKB keycode map table.
 #define USB_KEYMAP(usb, xkb, win, mac) {usb, win}
-#include "remoting/host/usb_keycode_map.h"
+#include "ui/base/keycodes/usb_keycode_map.h"
 #undef USB_KEYMAP
 
 // A class to generate events on Windows.

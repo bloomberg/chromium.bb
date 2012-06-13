@@ -16,4 +16,5 @@ include_rules = [
   "+third_party/libjingle",
   "+third_party/libvpx",
   "+third_party/skia/include/core",
+  "+ui/base/keycodes",
 ]

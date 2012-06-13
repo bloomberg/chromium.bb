@@ -27,7 +27,7 @@ using protocol::MouseEvent;
 
 // USB to Mac keycode mapping table.
 #define USB_KEYMAP(usb, xkb, win, mac) {usb, mac}
-#include "remoting/host/usb_keycode_map.h"
+#include "ui/base/keycodes/usb_keycode_map.h"
 #undef USB_KEYMAP
 
 // A class to generate events on Mac.

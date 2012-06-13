@@ -15,7 +15,7 @@ namespace ppapi {
 namespace {
 
 #define USB_KEYMAP(usb, xkb, win, mac) {usb, win}
-#include "webkit/plugins/ppapi/usb_keycode_map.h"
+#include "ui/base/keycodes/usb_keycode_map.h"
 #undef USB_KEYMAP
 
 }  // anonymous namespace
