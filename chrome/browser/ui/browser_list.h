@@ -107,7 +107,6 @@ class BrowserList {
   // DO NOT ADD MORE FRIENDS TO THIS LIST. This list should be reduced over
   // time by wiring context through to the relevant code rather than using
   // GetLastActive().
-  friend class BasePanelBrowserTest;
   friend class BrowserView;
   friend class CertificateViewerDialog;
   friend class ChromeShellDelegate;
