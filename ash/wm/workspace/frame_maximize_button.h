@@ -35,6 +35,8 @@ class ASH_EXPORT FrameMaximizeButton : public views::ImageButton {
   virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
+  virtual ui::GestureStatus OnGestureEvent(
+      const views::GestureEvent& event) OVERRIDE;
 
  protected:
   // ImageButton overrides:
@@ -53,6 +55,17 @@ class ASH_EXPORT FrameMaximizeButton : public views::ImageButton {
     SNAP_NONE
   };
 
+  // Initializes the snap-gesture based on the event. This should only be called
+  // when the event is confirmed to have started a snap gesture.
+  void ProcessStartEvent(const views::LocatedEvent& event);
+
+  // Updates the snap-state based on the current event. This should only be
+  // called after the snap gesture has already started.
+  void ProcessUpdateEvent(const views::LocatedEvent& event);
+
+  // Returns true if the window was snapped. Returns false otherwise.
+  bool ProcessEndEvent(const views::LocatedEvent& event);
+
   // Cancels snap behavior.
   void Cancel();
 
@@ -60,9 +73,9 @@ class ASH_EXPORT FrameMaximizeButton : public views::ImageButton {
   void InstallEventFilter();
   void UninstallEventFilter();
 
-  // Updates the snap position from the current location. This is invoked by
+  // Updates the snap position from the event location. This is invoked by
   // |update_timer_|.
-  void UpdateSnapFromCursorScreenPoint();
+  void UpdateSnapFromEventLocation();
 
   // Updates |snap_type_| based on a mouse drag.
   void UpdateSnap(const gfx::Point& location);

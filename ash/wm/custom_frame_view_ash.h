@@ -35,6 +35,21 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView,
   CustomFrameViewAsh();
   virtual ~CustomFrameViewAsh();
 
+  // For testing.
+  class TestApi {
+    public:
+     explicit TestApi(CustomFrameViewAsh* frame) : frame_(frame) {
+     }
+
+     views::ImageButton* maximize_button() const {
+       return frame_->maximize_button_;
+     }
+
+    private:
+     TestApi();
+     CustomFrameViewAsh* frame_;
+  };
+
   void Init(views::Widget* frame);
 
   views::ImageButton* close_button() { return close_button_; }
