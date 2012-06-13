@@ -34,7 +34,7 @@ using content::WebContents;
 namespace {
 
 // Colors used to draw frame background under default theme.
-const SkColor kActiveBackgroundDefaultColor = SkColorSetRGB(0x3a, 0x3c, 0x3c);
+const SkColor kActiveBackgroundDefaultColor = SkColorSetRGB(0x3a, 0x3d, 0x3d);
 const SkColor kInactiveBackgroundDefaultColor = SkColorSetRGB(0x7a, 0x7c, 0x7c);
 const SkColor kAttentionBackgroundDefaultColor =
     SkColorSetRGB(0xff, 0xab, 0x57);
@@ -42,7 +42,7 @@ const SkColor kMinimizeBackgroundDefaultColor = SkColorSetRGB(0xf5, 0xf4, 0xf0);
 const SkColor kMinimizeBorderDefaultColor = SkColorSetRGB(0xc9, 0xc9, 0xc9);
 
 // Color used to draw the divider line between the titlebar and the client area.
-const SkColor kDividerColor = SkColorSetRGB(0x5a, 0x5c, 0x5c);
+const SkColor kDividerColor = SkColorSetRGB(0x2a, 0x2c, 0x2c);
 
 // Set minimium width for window really small.
 const int kMinWindowWidth = 26;

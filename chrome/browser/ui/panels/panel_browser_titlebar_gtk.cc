@@ -29,10 +29,10 @@ namespace {
 const int kPanelTitlebarPaddingTop = 7;
 const int kPanelTitlebarPaddingBottom = 7;
 const int kPanelTitlebarPaddingLeft = 4;
-const int kPanelTitlebarPaddingRight = 9;
+const int kPanelTitlebarPaddingRight = 8;
 
 // Spacing between buttons of panel's titlebar.
-const int kPanelButtonSpacing = 9;
+const int kPanelButtonSpacing = 5;
 
 // Spacing between the icon and the title text.
 const int kPanelIconTitleSpacing = 9;
