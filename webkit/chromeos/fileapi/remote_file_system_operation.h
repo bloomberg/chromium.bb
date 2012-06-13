@@ -14,6 +14,7 @@ class Value;
 
 namespace fileapi {
 class FileSystemOperation;
+class FileWriterDelegate;
 }
 
 namespace chromeos {
@@ -97,6 +98,10 @@ class RemoteFileSystemOperation : public fileapi::FileSystemOperationInterface {
       base::PlatformFileError rv,
       const std::vector<base::FileUtilProxy::Entry>& entries,
       bool has_more);
+  void DidWrite(const WriteCallback& callback,
+                base::PlatformFileError result,
+                int64 bytes,
+                bool complete);
   void DidFinishFileOperation(const StatusCallback& callback,
                               base::PlatformFileError rv);
   void DidCreateSnapshotFile(
@@ -110,6 +115,7 @@ class RemoteFileSystemOperation : public fileapi::FileSystemOperationInterface {
   scoped_refptr<fileapi::RemoteFileSystemProxyInterface> remote_proxy_;
   // A flag to make sure we call operation only once per instance.
   OperationType pending_operation_;
+  scoped_ptr<fileapi::FileWriterDelegate> file_writer_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteFileSystemOperation);
 };

@@ -9,7 +9,9 @@
 #include "base/platform_file.h"
 #include "base/values.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/chromeos/fileapi/remote_file_stream_writer.h"
 #include "webkit/fileapi/file_system_callback_dispatcher.h"
+#include "webkit/fileapi/file_writer_delegate.h"
 
 namespace chromeos {
 
@@ -104,7 +106,23 @@ void RemoteFileSystemOperation::Write(
     const GURL& blob_url,
     int64 offset,
     const WriteCallback& callback) {
-  NOTIMPLEMENTED();
+  DCHECK(SetPendingOperationType(kOperationWrite));
+
+  file_writer_delegate_.reset(
+      new fileapi::FileWriterDelegate(
+          base::Bind(&RemoteFileSystemOperation::DidWrite,
+                     base::Owned(this),
+                     callback),
+          scoped_ptr<fileapi::FileStreamWriter>(
+              new fileapi::RemoteFileStreamWriter(remote_proxy_,
+                                                  path,
+                                                  offset))));
+
+  scoped_ptr<net::URLRequest> blob_request(
+      new net::URLRequest(blob_url, file_writer_delegate_.get()));
+  blob_request->set_context(url_request_context);
+
+  file_writer_delegate_->Start(blob_request.Pass());
 }
 
 void RemoteFileSystemOperation::Truncate(const GURL& path,
@@ -114,6 +132,7 @@ void RemoteFileSystemOperation::Truncate(const GURL& path,
 }
 
 void RemoteFileSystemOperation::Cancel(const StatusCallback& cancel_callback) {
+  // TODO(kinaba): crbug.com/132403. implement.
   NOTIMPLEMENTED();
 }
 
@@ -188,6 +207,16 @@ void RemoteFileSystemOperation::DidReadDirectory(
     const std::vector<base::FileUtilProxy::Entry>& entries,
     bool has_more) {
   callback.Run(rv, entries, has_more /* has_more */);
+}
+
+void RemoteFileSystemOperation::DidWrite(
+    const WriteCallback& callback,
+    base::PlatformFileError rv,
+    int64 bytes,
+    bool complete) {
+  if (rv != base::PLATFORM_FILE_OK || complete)
+    file_writer_delegate_.reset();
+  callback.Run(rv, bytes, complete);
 }
 
 void RemoteFileSystemOperation::DidFinishFileOperation(

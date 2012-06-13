@@ -13,6 +13,12 @@ class GURL;
 
 namespace fileapi {
 
+typedef base::Callback<
+    void(base::PlatformFileError result,
+         const FilePath& platform_path,
+         const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref)>
+    WritableSnapshotFile;
+
 // The interface class for remote file system proxy.
 class RemoteFileSystemProxyInterface :
     public base::RefCountedThreadSafe<RemoteFileSystemProxyInterface> {
@@ -64,6 +70,14 @@ class RemoteFileSystemProxyInterface :
   virtual void CreateSnapshotFile(
       const GURL& path,
       const FileSystemOperationInterface::SnapshotFileCallback& callback) = 0;
+
+  // Creates a local snapshot file for a given |path| and marks it for
+  // modification. A webkit_blob::ShareableFileReference is passed to
+  // |callback|, and when the reference is released, modification to the
+  // snapshot is marked for uploading to the remote file system.
+  virtual void CreateWritableSnapshotFile(
+      const GURL& path,
+      const WritableSnapshotFile& callback) = 0;
 
   // TODO(zelidrag): More methods to follow as we implement other parts of FSO.
 };

@@ -51,6 +51,9 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       const GURL& path,
       const fileapi::FileSystemOperationInterface::SnapshotFileCallback&
       callback) OVERRIDE;
+  virtual void CreateWritableSnapshotFile(
+      const GURL& path,
+      const fileapi::WritableSnapshotFile& callback) OVERRIDE;
   // TODO(zelidrag): More methods to follow as we implement other parts of FSO.
 
  private:
@@ -86,6 +89,18 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
           callback,
       base::PlatformFileError error,
       scoped_ptr<GDataDirectoryProto> directory_proto);
+
+  // Helper callback for relaying reply for CreateWritableSnapshotFile() to
+  // the calling thread.
+  void OnCreateWritableSnapshotFile(
+      const fileapi::WritableSnapshotFile& callback,
+      base::PlatformFileError result,
+      const FilePath& local_path);
+
+  // Helper callback for closing the local cache file and committing the dirty
+  // flag. This is triggered when the callback for CreateWritableSnapshotFile
+  // released the refcounted reference to the file.
+  void CloseWritableSnapshotFile(const FilePath& local_path);
 
   // GDataFileSystemProxy is owned by Profile, which outlives
   // GDataFileSystemProxy, which is owned by CrosMountPointProvider (i.e. by

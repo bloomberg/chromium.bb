@@ -63,6 +63,10 @@ void CallSnapshotFileCallback(
   callback.Run(error, final_file_info, local_path, file_ref);
 }
 
+void OnClose(const FilePath& local_path, base::PlatformFileError error_code) {
+  DVLOG(1) << "Closed: " << local_path.AsUTF8Unsafe() << ": " << error_code;
+}
+
 }  // namespace
 
 namespace gdata {
@@ -142,11 +146,6 @@ void GDataFileSystemProxy::Move(const GURL& src_file_url,
   }
 
   file_system_->Move(src_file_path, dest_file_path, callback);
-}
-
-void DoNothing(base::PlatformFileError /*error*/,
-               int /*bytes_total*/,
-               int /*bytes_used*/) {
 }
 
 void GDataFileSystemProxy::ReadDirectory(const GURL& file_url,
@@ -258,6 +257,26 @@ void GDataFileSystemProxy::OnGetEntryInfoByPathAsync(
                               GetDownloadDataCallback());
 }
 
+void GDataFileSystemProxy::CreateWritableSnapshotFile(
+    const GURL& file_url,
+    const fileapi::WritableSnapshotFile& callback) {
+  FilePath file_path;
+  if (!ValidateUrl(file_url, &file_path)) {
+    MessageLoopProxy::current()->PostTask(FROM_HERE,
+         base::Bind(callback,
+                    base::PLATFORM_FILE_ERROR_NOT_FOUND,
+                    FilePath(),
+                    scoped_refptr<ShareableFileReference>(NULL)));
+    return;
+  }
+
+  file_system_->OpenFile(
+      file_path,
+      base::Bind(&GDataFileSystemProxy::OnCreateWritableSnapshotFile,
+                 this,
+                 callback));
+}
+
 // static.
 bool GDataFileSystemProxy::ValidateUrl(const GURL& url, FilePath* file_path) {
   // what platform you're on.
@@ -316,6 +335,29 @@ void GDataFileSystemProxy::OnReadDirectory(
   }
 
   callback.Run(base::PLATFORM_FILE_OK, entries, false);
+}
+
+void GDataFileSystemProxy::OnCreateWritableSnapshotFile(
+    const fileapi::WritableSnapshotFile& callback,
+    base::PlatformFileError result,
+    const FilePath& local_path) {
+  scoped_refptr<ShareableFileReference> file_ref;
+
+  if (result == base::PLATFORM_FILE_OK) {
+    file_ref = ShareableFileReference::GetOrCreate(
+        local_path,
+        ShareableFileReference::DONT_DELETE_ON_FINAL_RELEASE,
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+    file_ref->AddFinalReleaseCallback(
+        base::Bind(&GDataFileSystemProxy::CloseWritableSnapshotFile, this));
+  }
+
+  callback.Run(result, local_path, file_ref);
+}
+
+void GDataFileSystemProxy::CloseWritableSnapshotFile(
+    const FilePath& local_path) {
+  file_system_->CloseFile(local_path, base::Bind(&OnClose, local_path));
 }
 
 }  // namespace gdata

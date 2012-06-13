@@ -102,6 +102,8 @@
             '../chromeos/fileapi/remote_file_system_operation.cc',
             '../chromeos/fileapi/remote_file_system_operation.h',
             '../chromeos/fileapi/remote_file_system_proxy.h',
+            '../chromeos/fileapi/remote_file_stream_writer.cc',
+            '../chromeos/fileapi/remote_file_stream_writer.h',
           ],
         }],
       ],
