@@ -6668,9 +6668,8 @@ void TestingAutomationProvider::OnRemoveProvider() {
 
 void TestingAutomationProvider::EnsureTabSelected(Browser* browser,
                                                   WebContents* tab) {
-  if (browser->GetActiveWebContents() != tab ||
-      browser != BrowserList::GetLastActive()) {
-    browser->ActivateTabAt(browser->GetIndexOfController(&tab->GetController()),
-        true /* user_gesture */);
+  if (browser->GetActiveWebContents() != tab) {
+    browser->ActivateTabAt(browser->GetIndexOfController(
+        &tab->GetController()), true);
   }
 }
