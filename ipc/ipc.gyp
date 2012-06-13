@@ -6,30 +6,28 @@
   'variables': {
     'chromium_code': 1,
   },
-  'target_defaults': {
-    'sources/': [
-      ['exclude', '/win/'],
-      ['exclude', '_(posix|win)(_unittest)?\\.(cc|mm?)$'],
-      ['exclude', '/win_[^/]*\\.cc$'],
-    ],
-    'conditions': [
-      ['os_posix == 1 and OS != "mac"', {'sources/': [
-        ['include', '_posix(_unittest)?\\.cc$'],
-      ]}],
-      ['OS=="mac"', {'sources/': [
-        ['include', '_posix(_unittest)?\\.(cc|mm?)$'],
-      ]}],
-      ['OS=="win"', {'sources/': [
-        ['include', '_win(_unittest)?\\.cc$'],
-        ['include', '/win/'],
-        ['include', '/win_[^/]*\\.cc$'],
-      ]}],
-    ],
-  },
   'includes': [
     'ipc.gypi',
   ],
   'targets': [
+    {
+      'target_name': 'ipc',
+      'type': '<(component)',
+      'variables': {
+        'ipc_target': 1,
+      },
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+      ],
+      # TODO(gregoryd): direct_dependent_settings should be shared with the
+      # 64-bit target, but it doesn't work due to a bug in gyp
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '..',
+        ],
+      },
+    },
     {
       'target_name': 'ipc_tests',
       'type': '<(gtest_target_type)',
@@ -93,6 +91,33 @@
     },
   ],
   'conditions': [
+    ['OS=="win"', {
+      'targets': [
+        {
+          'target_name': 'ipc_win64',
+          'type': '<(component)',
+          'variables': {
+            'ipc_target': 1,
+          },
+          'dependencies': [
+            '../base/base.gyp:base_nacl_win64',
+            '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations_win64',
+          ],
+          # TODO(gregoryd): direct_dependent_settings should be shared with the
+          # 32-bit target, but it doesn't work due to a bug in gyp
+          'direct_dependent_settings': {
+            'include_dirs': [
+              '..',
+            ],
+          },
+          'configurations': {
+            'Common_Base': {
+              'msvs_target_platform': 'x64',
+            },
+          },
+        },
+      ],
+    }],
     # Special target to wrap a gtest_target_type==shared_library
     # ipc_tests into an android apk for execution.
     # See base.gyp for TODO(jrg)s about this strategy.
