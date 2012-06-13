@@ -7,6 +7,7 @@
 #pragma once
 
 #include "ash/ash_export.h"
+#include "ash/launcher/background_animator.h"
 #include "ash/wm/shelf_auto_hide_behavior.h"
 #include "ui/views/widget/widget.h"
 
@@ -15,6 +16,7 @@ namespace ash {
 class ShellDelegate;
 class SystemTray;
 class SystemTrayDelegate;
+class WebNotificationTray;
 
 namespace internal {
 
@@ -22,30 +24,51 @@ class StatusAreaWidgetDelegate;
 
 class ASH_EXPORT StatusAreaWidget : public views::Widget {
  public:
+  enum UserAction {
+    NON_USER_ACTION,
+    USER_ACTION
+  };
+
   StatusAreaWidget();
   virtual ~StatusAreaWidget();
 
-  // Creates the SystemTray.
+  // Creates the SystemTray and the WebNotificationTray.
   void CreateTrayViews(ShellDelegate* shell_delegate);
 
-  // Destroys the system tray. Called before tearing down the windows to avoid
-  // shutdown ordering issues.
+  // Destroys the system tray and web notification tray. Called before
+  // tearing down the windows to avoid shutdown ordering issues.
   void Shutdown();
 
+  // Update the alignment of the widget and tray views.
   void SetShelfAlignment(ShelfAlignment alignment);
+
+  // Update whether to paint a background for each tray view.
+  void SetPaintsBackground(
+      bool value,
+      internal::BackgroundAnimator::ChangeType change_type);
+
+  // Always used to show/hide the web notification tray. These handle any logic
+  // with hiding/supressing notifications from the system tray.
+  void ShowWebNotificationBubble(UserAction user_action);
+  void HideWebNotificationBubble();
 
   SystemTray* system_tray() { return system_tray_; }
   SystemTrayDelegate* system_tray_delegate() {
     return system_tray_delegate_.get();
   }
+  WebNotificationTray* web_notification_tray() {
+    return web_notification_tray_;
+  }
 
  private:
   void AddSystemTray(SystemTray* system_tray, ShellDelegate* shell_delegate);
+  void AddWebNotificationTray(WebNotificationTray* web_notification_tray);
 
   scoped_ptr<SystemTrayDelegate> system_tray_delegate_;
   // Weak pointers to View classes that are parented to StatusAreaWidget:
   internal::StatusAreaWidgetDelegate* widget_delegate_;
   SystemTray* system_tray_;
+  WebNotificationTray* web_notification_tray_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusAreaWidget);
 };

@@ -80,6 +80,8 @@ class SystemTrayBubble : public aura::EventFilter,
   void StopAutoCloseTimer();
   void RestartAutoCloseTimer();
   void Close();
+  void SetVisible(bool is_visible);
+  bool IsVisible();
 
  private:
   void CreateItemViews(user::LoginStatus login_status);

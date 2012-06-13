@@ -13,6 +13,7 @@
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/web_notification/web_notification_tray.h"
 #include "base/i18n/time_formatting.h"
 #include "base/utf_string_conversions.h"
 #include "ui/aura/window.h"
@@ -282,7 +283,8 @@ namespace internal {
 
 StatusAreaWidget::StatusAreaWidget()
     : widget_delegate_(new internal::StatusAreaWidgetDelegate),
-      system_tray_(NULL) {
+      system_tray_(NULL),
+      web_notification_tray_(NULL) {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.delegate = widget_delegate_;
@@ -300,6 +302,7 @@ StatusAreaWidget::~StatusAreaWidget() {
 }
 
 void StatusAreaWidget::CreateTrayViews(ShellDelegate* shell_delegate) {
+  AddWebNotificationTray(new WebNotificationTray(this));
   AddSystemTray(new SystemTray(), shell_delegate);
 }
 
@@ -309,6 +312,8 @@ void StatusAreaWidget::Shutdown() {
   // in the destructor if Shutdown() is not called (e.g. in tests).
   delete system_tray_;
   system_tray_ = NULL;
+  delete web_notification_tray_;
+  web_notification_tray_ = NULL;
 }
 
 void StatusAreaWidget::AddSystemTray(SystemTray* system_tray,
@@ -327,9 +332,51 @@ void StatusAreaWidget::AddSystemTray(SystemTray* system_tray,
   system_tray->CreateItems();  // Called after delegate is created.
 }
 
+void StatusAreaWidget::AddWebNotificationTray(
+    WebNotificationTray* web_notification_tray) {
+  web_notification_tray_ = web_notification_tray;
+  widget_delegate_->AddTray(web_notification_tray);
+}
+
 void StatusAreaWidget::SetShelfAlignment(ShelfAlignment alignment) {
   widget_delegate_->set_alignment(alignment);
   widget_delegate_->UpdateLayout();
+  if (system_tray_)
+    system_tray_->SetShelfAlignment(alignment);
+  if (web_notification_tray_)
+    web_notification_tray_->SetShelfAlignment(alignment);
+}
+
+void StatusAreaWidget::SetPaintsBackground(
+    bool value,
+    internal::BackgroundAnimator::ChangeType change_type) {
+  if (system_tray_)
+    system_tray_->SetPaintsBackground(value, change_type);
+  if (web_notification_tray_)
+    web_notification_tray_->SetPaintsBackground(value, change_type);
+}
+
+void StatusAreaWidget::ShowWebNotificationBubble(UserAction user_action) {
+  if (system_tray_ && system_tray_->IsBubbleVisible()) {
+    // User actions should always hide the system tray bubble first.
+    DCHECK(user_action != USER_ACTION);
+    // Don't immediately show the web notification bubble if the system tray
+    // bubble is visible.
+    return;
+  }
+  DCHECK(web_notification_tray_);
+  web_notification_tray_->ShowBubble();
+  // Disable showing system notifications while viewing web notifications.
+  if (system_tray_)
+    system_tray_->SetHideNotifications(true);
+}
+
+void StatusAreaWidget::HideWebNotificationBubble() {
+  DCHECK(web_notification_tray_);
+  web_notification_tray_->HideBubble();
+  // Show any hidden or suppressed system notifications.
+  if (system_tray_)
+    system_tray_->SetHideNotifications(false);
 }
 
 }  // namespace internal

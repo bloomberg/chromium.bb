@@ -13,6 +13,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/wm/workspace/workspace_manager.h"
 #include "base/auto_reset.h"
 #include "base/i18n/rtl.h"
@@ -196,10 +197,10 @@ bool ShelfLayoutManager::SetAlignment(ShelfAlignment alignment) {
   alignment_ = alignment;
   if (launcher_)
     launcher_->SetAlignment(alignment);
-  if (Shell::GetInstance()->status_area_widget())
+  StatusAreaWidget* status_area_widget =
+      Shell::GetInstance()->status_area_widget();
+  if (status_area_widget)
     Shell::GetInstance()->status_area_widget()->SetShelfAlignment(alignment);
-  if (Shell::GetInstance()->system_tray())
-    Shell::GetInstance()->system_tray()->SetShelfAlignment(alignment);
   LayoutShelf();
   return true;
 }
@@ -493,10 +494,10 @@ void ShelfLayoutManager::UpdateShelfBackground(
     launcher_->SetPaintsBackground(launcher_paints, type);
   // SystemTray normally draws a background, but we don't want it to draw a
   // background when the launcher does.
-  if (Shell::GetInstance()->system_tray()) {
-    Shell::GetInstance()->system_tray()->SetPaintsBackground(
-        !launcher_paints, type);
-  }
+  StatusAreaWidget* status_area_widget =
+      Shell::GetInstance()->status_area_widget();
+  if (status_area_widget)
+    status_area_widget->SetPaintsBackground(!launcher_paints, type);
 }
 
 bool ShelfLayoutManager::GetLauncherPaintsBackground() const {

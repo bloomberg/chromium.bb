@@ -11,6 +11,8 @@
 #include "ash/shell/toplevel_window.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
+#include "ash/system/status_area_widget.h"
+#include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/wm/shadow_types.h"
 #include "base/bind.h"
 #include "base/time.h"
@@ -223,7 +225,10 @@ WindowTypeLauncher::WindowTypeLauncher()
               this, ASCIIToUTF16("Show/Hide a Window")))),
       ALLOW_THIS_IN_INITIALIZER_LIST(show_screensaver_(
           new views::NativeTextButton(
-              this, ASCIIToUTF16("Show the Screensaver [for 5 seconds]")))) {
+              this, ASCIIToUTF16("Show the Screensaver [for 5 seconds]")))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(show_web_notification_(
+          new views::NativeTextButton(
+              this, ASCIIToUTF16("Show a web/app notification")))) {
   views::GridLayout* layout = new views::GridLayout(this);
   layout->SetInsets(5, 5, 5, 5);
   SetLayoutManager(layout);
@@ -247,6 +252,7 @@ WindowTypeLauncher::WindowTypeLauncher()
   AddViewToLayout(layout, examples_button_);
   AddViewToLayout(layout, show_hide_window_button_);
   AddViewToLayout(layout, show_screensaver_);
+  AddViewToLayout(layout, show_web_notification_);
 #if !defined(OS_MACOSX)
   set_context_menu_controller(this);
 #endif
@@ -320,6 +326,14 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
                                             base::Bind(&ash::CloseScreensaver),
                                             base::TimeDelta::FromSeconds(5));
 
+  } else if (sender == show_web_notification_) {
+    ash::Shell::GetInstance()->status_area_widget()->
+        web_notification_tray()->AddNotification(
+            "id0",
+            ASCIIToUTF16("Test Shell Web Notification"),
+            ASCIIToUTF16("Notification message body."),
+            ASCIIToUTF16("www.testshell.org"),
+            "" /* extension id */);
   }
 #if !defined(OS_MACOSX)
   else if (sender == examples_button_) {

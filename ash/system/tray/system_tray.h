@@ -96,6 +96,12 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView {
   // Updates the items when the shelf alignment changes.
   void UpdateAfterShelfAlignmentChange(ShelfAlignment alignment);
 
+  // Temporarily hides/unhides the notification bubble.
+  void SetHideNotifications(bool hidden);
+
+  // Returns true if the primary bubble is visible.
+  bool IsBubbleVisible() const;
+
   // Returns true if the launcher should show.
   bool should_show_launcher() const {
     return bubble_.get() && should_show_launcher_;
@@ -240,6 +246,10 @@ class ASH_EXPORT SystemTray : public internal::TrayBackgroundView {
   // Keep track of the default view height so that when we create detailed
   // views directly (e.g. from a notification) we know what height to use.
   int default_bubble_height_;
+
+  // Set to true when system notifications should be hidden (e.g. web
+  // notification bubble is visible).
+  bool hide_notifications_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTray);
 };

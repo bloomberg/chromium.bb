@@ -393,6 +393,18 @@ Press Search key to cancel.
       <message name="IDS_ASH_STATUS_TRAY_PREVIOUS_MENU" desc="The accessible text for header entries for detailed versions of status tray items.">
         Previous menu
       </message>
+      <message name="IDS_ASH_WEB_NOTFICATION_TRAY_EXTENSIONS_DISABLE" desc="The menu entry for disabling extensions from a notification.">
+        Disable extension
+      </message>
+      <message name="IDS_ASH_WEB_NOTFICATION_TRAY_SITE_DISABLE" desc="The menu entry for disabling notification from a site.">
+        Disable notifications from <ph name="site">$1<ex>mail.google.com</ex></ph>
+      </message>
+      <message name="IDS_ASH_WEB_NOTFICATION_TRAY_SETTINGS" desc="The menu entry or button for visiting the appropriate settings page.">
+        Settings...
+      </message>
+      <message name="IDS_ASH_WEB_NOTFICATION_TRAY_CLOSE_ALL" desc="The button for closing all notifications.">
+        Close All
+      </message>
     </messages>
   </release>
 </grit>

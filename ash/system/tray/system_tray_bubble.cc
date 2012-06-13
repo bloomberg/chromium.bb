@@ -336,6 +336,7 @@ void SystemTrayBubble::InitView(const InitParams& init_params) {
 
 void SystemTrayBubble::BubbleViewDestroyed() {
   DestroyItemViews();
+  bubble_view_ = NULL;
 }
 
 gfx::Rect SystemTrayBubble::GetAnchorRect() const {
@@ -420,6 +421,19 @@ void SystemTrayBubble::RestartAutoCloseTimer() {
 void SystemTrayBubble::Close() {
   if (bubble_widget_)
     bubble_widget_->Close();
+}
+
+void SystemTrayBubble::SetVisible(bool is_visible) {
+  if (!bubble_widget_)
+    return;
+  if (is_visible)
+    bubble_widget_->Show();
+  else
+    bubble_widget_->Hide();
+}
+
+bool SystemTrayBubble::IsVisible() {
+  return bubble_widget_ && bubble_widget_->IsVisible();
 }
 
 void SystemTrayBubble::CreateItemViews(user::LoginStatus login_status) {

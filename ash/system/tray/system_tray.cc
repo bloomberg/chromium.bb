@@ -138,7 +138,8 @@ SystemTray::SystemTray()
       update_observer_(NULL),
       user_observer_(NULL),
       should_show_launcher_(false),
-      default_bubble_height_(0) {
+      default_bubble_height_(0),
+      hide_notifications_(false) {
   tray_container_ = new internal::SystemTrayContainer;
   tray_container_->SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kHorizontal, 0, 0, 0));
@@ -296,6 +297,16 @@ void SystemTray::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
       ++it) {
     (*it)->UpdateAfterShelfAlignmentChange(alignment);
   }
+}
+
+void SystemTray::SetHideNotifications(bool hide_notifications) {
+  if (notification_bubble_.get())
+    notification_bubble_->SetVisible(!hide_notifications);
+  hide_notifications_ = hide_notifications;
+}
+
+bool SystemTray::IsBubbleVisible() const {
+  return bubble_.get() && bubble_->IsVisible();
 }
 
 bool SystemTray::CloseBubbleForTest() const {
@@ -462,6 +473,8 @@ void SystemTray::UpdateNotificationBubble() {
   if (arrow_offset >= 0)
     init_params.arrow_offset = arrow_offset;
   notification_bubble_->InitView(init_params);
+  if (hide_notifications_)
+    notification_bubble_->SetVisible(false);
 }
 
 void SystemTray::UpdateNotificationAnchor() {

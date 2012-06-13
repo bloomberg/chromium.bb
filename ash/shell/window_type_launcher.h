@@ -78,6 +78,7 @@ class WindowTypeLauncher : public views::WidgetDelegateView,
   views::NativeTextButton* examples_button_;
   views::NativeTextButton* show_hide_window_button_;
   views::NativeTextButton* show_screensaver_;
+  views::NativeTextButton* show_web_notification_;
 #if !defined(OS_MACOSX)
   scoped_ptr<views::MenuRunner> menu_runner_;
 #endif
