@@ -30,7 +30,7 @@ class MediaTest : public InProcessBrowserTest {
     const string16 kFailed = ASCIIToUTF16("FAILED");
     const string16 kError = ASCIIToUTF16("ERROR");
     ui_test_utils::TitleWatcher title_watcher(
-        browser()->GetSelectedWebContents(), kPlaying);
+        browser()->GetActiveWebContents(), kPlaying);
     title_watcher.AlsoWaitForTitle(kFailed);
     title_watcher.AlsoWaitForTitle(kError);
 

@@ -209,8 +209,8 @@ void SearchBuilder::OpenResult(const app_list::SearchResult& result,
 
     if (disposition == CURRENT_TAB) {
       // If current tab is not NTP, change disposition to NEW_FOREGROUND_TAB.
-      const GURL& url = browser->GetSelectedWebContents() ?
-          browser->GetSelectedWebContents()->GetURL() : GURL();
+      const GURL& url = browser->GetActiveWebContents() ?
+          browser->GetActiveWebContents()->GetURL() : GURL();
       if (!url.SchemeIs(chrome::kChromeUIScheme) ||
           url.host() != chrome::kChromeUINewTabHost) {
         disposition = NEW_FOREGROUND_TAB;

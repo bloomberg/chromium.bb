@@ -33,7 +33,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest,
   ui_test_utils::NavigateToURL(browser(), empty_url);
 
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
-      browser()->GetSelectedWebContents()->GetRenderViewHost());
+      browser()->GetActiveWebContents()->GetRenderViewHost());
 
   {
     Value* value = rvh->ExecuteJavascriptAndGetValue(string16(),
@@ -201,7 +201,7 @@ class RenderViewHostTestWebContentsObserver
 IN_PROC_BROWSER_TEST_F(RenderViewHostTest, FrameNavigateSocketAddress) {
   ASSERT_TRUE(test_server()->Start());
   RenderViewHostTestWebContentsObserver observer(
-      browser()->GetSelectedWebContents());
+      browser()->GetActiveWebContents());
 
   GURL test_url = test_server()->GetURL("files/simple.html");
   ui_test_utils::NavigateToURL(browser(), test_url);
@@ -214,7 +214,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest, FrameNavigateSocketAddress) {
 IN_PROC_BROWSER_TEST_F(RenderViewHostTest, BaseURLParam) {
   ASSERT_TRUE(test_server()->Start());
   RenderViewHostTestWebContentsObserver observer(
-      browser()->GetSelectedWebContents());
+      browser()->GetActiveWebContents());
 
   // Base URL is not set if it is the same as the URL.
   GURL test_url = test_server()->GetURL("files/simple.html");

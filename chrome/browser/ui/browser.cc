@@ -1062,11 +1062,6 @@ TabContents* Browser::GetActiveTabContents() const {
   return tab_strip_model_->GetActiveTabContents();
 }
 
-// DEPRECATED
-WebContents* Browser::GetSelectedWebContents() const {
-  return GetActiveWebContents();
-}
-
 WebContents* Browser::GetActiveWebContents() const {
   TabContents* tab_contents = GetActiveTabContents();
   return tab_contents ? tab_contents->web_contents() : NULL;

@@ -56,7 +56,7 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTML) {
   ui_test_utils::NavigateToURL(browser(),
       test_server()->GetURL("files/google/google.html"));
 
-  WebContents* web_contents = browser()->GetSelectedWebContents();
+  WebContents* web_contents = browser()->GetActiveWebContents();
   web_contents->GenerateMHTML(path,
                               base::Bind(&MHTMLGenerationTest::MHTMLGenerated,
                                          this));

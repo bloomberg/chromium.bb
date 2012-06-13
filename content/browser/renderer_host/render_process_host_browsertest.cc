@@ -44,7 +44,7 @@ class RenderProcessHostTest : public InProcessBrowserTest {
   // handle.
   base::ProcessHandle ShowSingletonTab(const GURL& page) {
     browser()->ShowSingletonTab(page);
-    WebContents* wc = browser()->GetSelectedWebContents();
+    WebContents* wc = browser()->GetActiveWebContents();
     CHECK(wc->GetURL() == page);
 
     // Ensure that the backgrounding / foregrounding gets a chance to run.

@@ -84,7 +84,7 @@ class DumpAccessibilityTreeTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
                        PlatformTreeDifferenceTest) {
   RenderWidgetHostViewPort* host_view = static_cast<RenderWidgetHostViewPort*>(
-          browser()->GetSelectedWebContents()->GetRenderWidgetHostView());
+          browser()->GetActiveWebContents()->GetRenderWidgetHostView());
   RenderWidgetHost* host = host_view->GetRenderWidgetHost();
   RenderViewHostImpl* view_host =
       static_cast<RenderViewHostImpl*>(RenderWidgetHostImpl::From(host));

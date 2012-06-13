@@ -404,7 +404,6 @@ class Browser : public TabStripModelDelegate,
   TabContents* GetActiveTabContents() const;
   // A convenient version of the above which returns the TabContents's
   // WebContents.
-  content::WebContents* GetSelectedWebContents() const;  // DEPRECATED
   content::WebContents* GetActiveWebContents() const;
   TabContents* GetTabContentsAt(int index) const;
   // A convenient version of the above which returns the TabContents's

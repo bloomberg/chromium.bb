@@ -202,7 +202,7 @@ class SpeechRecognitionBrowserTest : public InProcessBrowserTest {
     mouse_event.x = 0;
     mouse_event.y = 0;
     mouse_event.clickCount = 1;
-    WebContents* web_contents = browser()->GetSelectedWebContents();
+    WebContents* web_contents = browser()->GetActiveWebContents();
 
     ui_test_utils::WindowedNotificationObserver observer(
         content::NOTIFICATION_LOAD_STOP,
@@ -225,7 +225,7 @@ class SpeechRecognitionBrowserTest : public InProcessBrowserTest {
     // then sets the URL fragment as 'pass' if it received the expected string.
     LoadAndStartSpeechRecognitionTest(filename);
 
-    EXPECT_EQ("pass", browser()->GetSelectedWebContents()->GetURL().ref());
+    EXPECT_EQ("pass", browser()->GetActiveWebContents()->GetURL().ref());
   }
 
   // InProcessBrowserTest methods.

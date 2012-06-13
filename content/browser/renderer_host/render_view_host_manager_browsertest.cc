@@ -65,7 +65,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, NoScriptAccessAfterSwapOut) {
 
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
-      browser()->GetSelectedWebContents()->GetSiteInstance());
+      browser()->GetActiveWebContents()->GetSiteInstance());
   EXPECT_TRUE(orig_site_instance != NULL);
 
   // Open a same-site link in a new tab.
@@ -73,7 +73,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, NoScriptAccessAfterSwapOut) {
       content::Source<content::WebContentsDelegate>(browser())));
   bool success = false;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
+      browser()->GetActiveWebContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(clickSameSiteTargetedLink());",
       &success));
   EXPECT_TRUE(success);
@@ -84,21 +84,21 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, NoScriptAccessAfterSwapOut) {
   EXPECT_EQ(1, browser()->active_index());
 
   // Wait for the navigation in the new tab to finish, if it hasn't.
-  ui_test_utils::WaitForLoadStop(browser()->GetSelectedWebContents());
+  ui_test_utils::WaitForLoadStop(browser()->GetActiveWebContents());
   EXPECT_EQ("/files/navigate_opener.html",
-            browser()->GetSelectedWebContents()->GetURL().path());
+            browser()->GetActiveWebContents()->GetURL().path());
   EXPECT_EQ(1, browser()->active_index());
 
   // Should have the same SiteInstance.
   scoped_refptr<SiteInstance> blank_site_instance(
-      browser()->GetSelectedWebContents()->GetSiteInstance());
+      browser()->GetActiveWebContents()->GetSiteInstance());
   EXPECT_EQ(orig_site_instance, blank_site_instance);
 
   // We should have access to the opened tab's location.
   browser()->ActivateTabAt(0, true);
   success = false;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
+      browser()->GetActiveWebContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(testScriptAccessToWindow());",
       &success));
   EXPECT_TRUE(success);
@@ -108,14 +108,14 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, NoScriptAccessAfterSwapOut) {
   ui_test_utils::NavigateToURL(browser(),
                                https_server.GetURL("files/title1.html"));
   scoped_refptr<SiteInstance> new_site_instance(
-      browser()->GetSelectedWebContents()->GetSiteInstance());
+      browser()->GetActiveWebContents()->GetSiteInstance());
   EXPECT_NE(orig_site_instance, new_site_instance);
 
   // We should no longer have script access to the opened tab's location.
   browser()->ActivateTabAt(0, true);
   success = false;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
+      browser()->GetActiveWebContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(testScriptAccessToWindow());",
       &success));
   EXPECT_FALSE(success);
@@ -144,13 +144,13 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
-      browser()->GetSelectedWebContents()->GetSiteInstance());
+      browser()->GetActiveWebContents()->GetSiteInstance());
   EXPECT_TRUE(orig_site_instance != NULL);
 
   // Test clicking a rel=noreferrer + target=blank link.
   bool success = false;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
+      browser()->GetActiveWebContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(clickNoRefTargetBlankLink());",
       &success));
   EXPECT_TRUE(success);
@@ -163,18 +163,18 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   EXPECT_EQ(2, browser()->tab_count());
   EXPECT_EQ(1, browser()->active_index());
   EXPECT_EQ("/files/title2.html",
-            browser()->GetSelectedWebContents()->GetURL().path());
+            browser()->GetActiveWebContents()->GetURL().path());
 
   // Wait for the cross-site transition in the new tab to finish.
-  ui_test_utils::WaitForLoadStop(browser()->GetSelectedWebContents());
+  ui_test_utils::WaitForLoadStop(browser()->GetActiveWebContents());
   WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
-      browser()->GetSelectedWebContents());
+      browser()->GetActiveWebContents());
   EXPECT_FALSE(web_contents->GetRenderManagerForTesting()->
       pending_render_view_host());
 
   // Should have a new SiteInstance.
   scoped_refptr<SiteInstance> noref_blank_site_instance(
-      browser()->GetSelectedWebContents()->GetSiteInstance());
+      browser()->GetActiveWebContents()->GetSiteInstance());
   EXPECT_NE(orig_site_instance, noref_blank_site_instance);
 }
 
@@ -202,13 +202,13 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
-      browser()->GetSelectedWebContents()->GetSiteInstance());
+      browser()->GetActiveWebContents()->GetSiteInstance());
   EXPECT_TRUE(orig_site_instance != NULL);
 
   // Test clicking a same-site rel=noreferrer + target=foo link.
   bool success = false;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
+      browser()->GetActiveWebContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(clickSameSiteNoRefTargetedLink());",
       &success));
   EXPECT_TRUE(success);
@@ -221,18 +221,18 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   EXPECT_EQ(2, browser()->tab_count());
   EXPECT_EQ(1, browser()->active_index());
   EXPECT_EQ("/files/title2.html",
-            browser()->GetSelectedWebContents()->GetURL().path());
+            browser()->GetActiveWebContents()->GetURL().path());
 
   // Wait for the cross-site transition in the new tab to finish.
-  ui_test_utils::WaitForLoadStop(browser()->GetSelectedWebContents());
+  ui_test_utils::WaitForLoadStop(browser()->GetActiveWebContents());
   WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
-      browser()->GetSelectedWebContents());
+      browser()->GetActiveWebContents());
   EXPECT_FALSE(web_contents->GetRenderManagerForTesting()->
       pending_render_view_host());
 
   // Should have a new SiteInstance (in a new BrowsingInstance).
   scoped_refptr<SiteInstance> noref_blank_site_instance(
-      browser()->GetSelectedWebContents()->GetSiteInstance());
+      browser()->GetActiveWebContents()->GetSiteInstance());
   EXPECT_NE(orig_site_instance, noref_blank_site_instance);
 }
 
@@ -259,13 +259,13 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
-      browser()->GetSelectedWebContents()->GetSiteInstance());
+      browser()->GetActiveWebContents()->GetSiteInstance());
   EXPECT_TRUE(orig_site_instance != NULL);
 
   // Test clicking a target=blank link.
   bool success = false;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
+      browser()->GetActiveWebContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(clickTargetBlankLink());",
       &success));
   EXPECT_TRUE(success);
@@ -279,13 +279,13 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   EXPECT_EQ(1, browser()->active_index());
 
   // Wait for the cross-site transition in the new tab to finish.
-  ui_test_utils::WaitForLoadStop(browser()->GetSelectedWebContents());
+  ui_test_utils::WaitForLoadStop(browser()->GetActiveWebContents());
   EXPECT_EQ("/files/title2.html",
-            browser()->GetSelectedWebContents()->GetURL().path());
+            browser()->GetActiveWebContents()->GetURL().path());
 
   // Should have the same SiteInstance.
   scoped_refptr<SiteInstance> blank_site_instance(
-      browser()->GetSelectedWebContents()->GetSiteInstance());
+      browser()->GetActiveWebContents()->GetSiteInstance());
   EXPECT_EQ(orig_site_instance, blank_site_instance);
 }
 
@@ -312,29 +312,29 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
-      browser()->GetSelectedWebContents()->GetSiteInstance());
+      browser()->GetActiveWebContents()->GetSiteInstance());
   EXPECT_TRUE(orig_site_instance != NULL);
 
   // Test clicking a rel=noreferrer link.
   bool success = false;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
+      browser()->GetActiveWebContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(clickNoRefLink());",
       &success));
   EXPECT_TRUE(success);
 
   // Wait for the cross-site transition in the current tab to finish.
-  ui_test_utils::WaitForLoadStop(browser()->GetSelectedWebContents());
+  ui_test_utils::WaitForLoadStop(browser()->GetActiveWebContents());
 
   // Opens in same tab.
   EXPECT_EQ(1, browser()->tab_count());
   EXPECT_EQ(0, browser()->active_index());
   EXPECT_EQ("/files/title2.html",
-            browser()->GetSelectedWebContents()->GetURL().path());
+            browser()->GetActiveWebContents()->GetURL().path());
 
   // Should have the same SiteInstance.
   scoped_refptr<SiteInstance> noref_site_instance(
-      browser()->GetSelectedWebContents()->GetSiteInstance());
+      browser()->GetActiveWebContents()->GetSiteInstance());
   EXPECT_EQ(orig_site_instance, noref_site_instance);
 }
 
@@ -361,7 +361,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
-      browser()->GetSelectedWebContents()->GetSiteInstance());
+      browser()->GetActiveWebContents()->GetSiteInstance());
   EXPECT_TRUE(orig_site_instance != NULL);
 
   // Test clicking a target=foo link.
@@ -369,7 +369,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
       content::Source<content::WebContentsDelegate>(browser())));
   bool success = false;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
+      browser()->GetActiveWebContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(clickSameSiteTargetedLink());",
       &success));
   EXPECT_TRUE(success);
@@ -380,18 +380,18 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   EXPECT_EQ(1, browser()->active_index());
 
   // Wait for the navigation in the new tab to finish, if it hasn't.
-  ui_test_utils::WaitForLoadStop(browser()->GetSelectedWebContents());
+  ui_test_utils::WaitForLoadStop(browser()->GetActiveWebContents());
   EXPECT_EQ("/files/navigate_opener.html",
-            browser()->GetSelectedWebContents()->GetURL().path());
+            browser()->GetActiveWebContents()->GetURL().path());
   EXPECT_EQ(1, browser()->active_index());
 
   // Should have the same SiteInstance.
   scoped_refptr<SiteInstance> blank_site_instance(
-      browser()->GetSelectedWebContents()->GetSiteInstance());
+      browser()->GetActiveWebContents()->GetSiteInstance());
   EXPECT_EQ(orig_site_instance, blank_site_instance);
 
   // Now navigate the new tab to a different site.
-  content::WebContents* new_contents = browser()->GetSelectedWebContents();
+  content::WebContents* new_contents = browser()->GetActiveWebContents();
   ui_test_utils::NavigateToURL(browser(),
                                https_server.GetURL("files/title1.html"));
   scoped_refptr<SiteInstance> new_site_instance(
@@ -405,7 +405,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
         content::Source<content::NavigationController>(
             &new_contents->GetController()));
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
+      browser()->GetActiveWebContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(clickSameSiteTargetedLink());",
       &success));
   EXPECT_TRUE(success);
@@ -414,7 +414,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   // Should have swapped back and shown the new tab again.
   EXPECT_EQ(1, browser()->active_index());
   scoped_refptr<SiteInstance> revisit_site_instance(
-      browser()->GetSelectedWebContents()->GetSiteInstance());
+      browser()->GetActiveWebContents()->GetSiteInstance());
   EXPECT_EQ(orig_site_instance, revisit_site_instance);
 
   // If it navigates away to another process, the original window should
@@ -422,13 +422,13 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   ui_test_utils::NavigateToURL(browser(),
                                https_server.GetURL("files/title1.html"));
   EXPECT_EQ(new_site_instance,
-            browser()->GetSelectedWebContents()->GetSiteInstance());
+            browser()->GetActiveWebContents()->GetSiteInstance());
   browser()->ActivateTabAt(0, true);
   ui_test_utils::WindowedNotificationObserver close_observer(
         content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
         content::Source<content::WebContents>(new_contents));
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
+      browser()->GetActiveWebContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(testCloseWindow());",
       &success));
   EXPECT_TRUE(success);
@@ -462,7 +462,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
                                test_server()->GetURL(replacement_path));
 
   // Get the original SiteInstance and RVHM for later comparison.
-  content::WebContents* opener_contents = browser()->GetSelectedWebContents();
+  content::WebContents* opener_contents = browser()->GetActiveWebContents();
   scoped_refptr<SiteInstance> orig_site_instance(
       opener_contents->GetSiteInstance());
   EXPECT_TRUE(orig_site_instance != NULL);
@@ -486,7 +486,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
   // Wait for the navigation in the new tab to finish, if it hasn't, then
   // send it to post_message.html on a different site.
-  content::WebContents* foo_contents = browser()->GetSelectedWebContents();
+  content::WebContents* foo_contents = browser()->GetActiveWebContents();
   ui_test_utils::WaitForLoadStop(foo_contents);
   EXPECT_EQ("/files/navigate_opener.html", foo_contents->GetURL().path());
   EXPECT_EQ(1, browser()->active_index());
@@ -501,7 +501,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   ui_test_utils::WindowedTabAddedNotificationObserver new_tab_observer2((
       content::Source<content::WebContentsDelegate>(browser())));
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
+      browser()->GetActiveWebContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(clickSameSiteTargetBlankLink());",
       &success));
   EXPECT_TRUE(success);
@@ -509,7 +509,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
   // Wait for the navigation in the new tab to finish, if it hasn't, then
   // send it to post_message.html on the original site.
-  content::WebContents* new_contents = browser()->GetSelectedWebContents();
+  content::WebContents* new_contents = browser()->GetActiveWebContents();
   ui_test_utils::WaitForLoadStop(new_contents);
   EXPECT_EQ("/files/title2.html", new_contents->GetURL().path());
   EXPECT_EQ(1, browser()->active_index());
@@ -603,9 +603,9 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
                                test_server()->GetURL(replacement_path));
 
   // Get the original tab and SiteInstance for later comparison.
-  content::WebContents* orig_contents = browser()->GetSelectedWebContents();
+  content::WebContents* orig_contents = browser()->GetActiveWebContents();
   scoped_refptr<SiteInstance> orig_site_instance(
-      browser()->GetSelectedWebContents()->GetSiteInstance());
+      browser()->GetActiveWebContents()->GetSiteInstance());
   EXPECT_TRUE(orig_site_instance != NULL);
 
   // Test clicking a target=foo link.
@@ -613,7 +613,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
       content::Source<content::WebContentsDelegate>(browser())));
   bool success = false;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
+      browser()->GetActiveWebContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(clickSameSiteTargetedLink());",
       &success));
   EXPECT_TRUE(success);
@@ -624,14 +624,14 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   EXPECT_EQ(1, browser()->active_index());
 
   // Wait for the navigation in the new tab to finish, if it hasn't.
-  ui_test_utils::WaitForLoadStop(browser()->GetSelectedWebContents());
+  ui_test_utils::WaitForLoadStop(browser()->GetActiveWebContents());
   EXPECT_EQ("/files/navigate_opener.html",
-            browser()->GetSelectedWebContents()->GetURL().path());
+            browser()->GetActiveWebContents()->GetURL().path());
   EXPECT_EQ(1, browser()->active_index());
 
   // Should have the same SiteInstance.
   scoped_refptr<SiteInstance> blank_site_instance(
-      browser()->GetSelectedWebContents()->GetSiteInstance());
+      browser()->GetActiveWebContents()->GetSiteInstance());
   EXPECT_EQ(orig_site_instance, blank_site_instance);
 
   // Now navigate the original (opener) tab to a different site.
@@ -639,7 +639,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   ui_test_utils::NavigateToURL(browser(),
                                https_server.GetURL("files/title1.html"));
   scoped_refptr<SiteInstance> new_site_instance(
-      browser()->GetSelectedWebContents()->GetSiteInstance());
+      browser()->GetActiveWebContents()->GetSiteInstance());
   EXPECT_NE(orig_site_instance, new_site_instance);
 
   // The opened tab should be able to navigate the opener back to its process.
@@ -649,7 +649,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
         content::Source<content::NavigationController>(
             &orig_contents->GetController()));
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
+      browser()->GetActiveWebContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(navigateOpener());",
       &success));
   EXPECT_TRUE(success);
@@ -661,7 +661,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   // Should have swapped back into this process.
   browser()->ActivateTabAt(0, true);
   scoped_refptr<SiteInstance> revisit_site_instance(
-      browser()->GetSelectedWebContents()->GetSiteInstance());
+      browser()->GetActiveWebContents()->GetSiteInstance());
   EXPECT_EQ(orig_site_instance, revisit_site_instance);
 }
 
@@ -689,7 +689,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
-      browser()->GetSelectedWebContents()->GetSiteInstance());
+      browser()->GetActiveWebContents()->GetSiteInstance());
   EXPECT_TRUE(orig_site_instance != NULL);
 
   // Test clicking a target=foo link.
@@ -697,7 +697,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
       content::Source<content::WebContentsDelegate>(browser())));
   bool success = false;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
+      browser()->GetActiveWebContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(clickSameSiteTargetedLink());",
       &success));
   EXPECT_TRUE(success);
@@ -708,21 +708,21 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   EXPECT_EQ(1, browser()->active_index());
 
   // Wait for the navigation in the new tab to finish, if it hasn't.
-  ui_test_utils::WaitForLoadStop(browser()->GetSelectedWebContents());
+  ui_test_utils::WaitForLoadStop(browser()->GetActiveWebContents());
   EXPECT_EQ("/files/navigate_opener.html",
-            browser()->GetSelectedWebContents()->GetURL().path());
+            browser()->GetActiveWebContents()->GetURL().path());
   EXPECT_EQ(1, browser()->active_index());
 
   // Should have the same SiteInstance.
   scoped_refptr<SiteInstance> opened_site_instance(
-      browser()->GetSelectedWebContents()->GetSiteInstance());
+      browser()->GetActiveWebContents()->GetSiteInstance());
   EXPECT_EQ(orig_site_instance, opened_site_instance);
 
   // Now navigate the opened tab to a different site.
   ui_test_utils::NavigateToURL(browser(),
                                https_server.GetURL("files/title1.html"));
   scoped_refptr<SiteInstance> new_site_instance(
-      browser()->GetSelectedWebContents()->GetSiteInstance());
+      browser()->GetActiveWebContents()->GetSiteInstance());
   EXPECT_NE(orig_site_instance, new_site_instance);
 
   // The original process should still be alive, since it is still used in the
@@ -740,7 +740,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
                                https_server.GetURL("files/title1.html"));
   exit_observer.Wait();
   scoped_refptr<SiteInstance> new_site_instance2(
-      browser()->GetSelectedWebContents()->GetSiteInstance());
+      browser()->GetActiveWebContents()->GetSiteInstance());
   EXPECT_EQ(new_site_instance, new_site_instance2);
 }
 
@@ -767,7 +767,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, ClickLinkAfter204Error) {
 
   // Get the original SiteInstance for later comparison.
   scoped_refptr<SiteInstance> orig_site_instance(
-      browser()->GetSelectedWebContents()->GetSiteInstance());
+      browser()->GetActiveWebContents()->GetSiteInstance());
   EXPECT_TRUE(orig_site_instance != NULL);
 
   // Load a cross-site page that fails with a 204 error.
@@ -775,31 +775,31 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, ClickLinkAfter204Error) {
 
   // We should still be looking at the normal page.
   scoped_refptr<SiteInstance> post_nav_site_instance(
-      browser()->GetSelectedWebContents()->GetSiteInstance());
+      browser()->GetActiveWebContents()->GetSiteInstance());
   EXPECT_EQ(orig_site_instance, post_nav_site_instance);
   EXPECT_EQ("/files/click-noreferrer-links.html",
-            browser()->GetSelectedWebContents()->GetURL().path());
+            browser()->GetActiveWebContents()->GetURL().path());
 
   // Renderer-initiated navigations should work.
   bool success = false;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
+      browser()->GetActiveWebContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(clickNoRefLink());",
       &success));
   EXPECT_TRUE(success);
 
   // Wait for the cross-site transition in the current tab to finish.
-  ui_test_utils::WaitForLoadStop(browser()->GetSelectedWebContents());
+  ui_test_utils::WaitForLoadStop(browser()->GetActiveWebContents());
 
   // Opens in same tab.
   EXPECT_EQ(1, browser()->tab_count());
   EXPECT_EQ(0, browser()->active_index());
   EXPECT_EQ("/files/title2.html",
-            browser()->GetSelectedWebContents()->GetURL().path());
+            browser()->GetActiveWebContents()->GetURL().path());
 
   // Should have the same SiteInstance.
   scoped_refptr<SiteInstance> noref_site_instance(
-      browser()->GetSelectedWebContents()->GetSiteInstance());
+      browser()->GetActiveWebContents()->GetSiteInstance());
   EXPECT_EQ(orig_site_instance, noref_site_instance);
 }
 
@@ -848,7 +848,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, BackForwardNotStale) {
                                https_server.GetURL(replacement_path_b3));
 
   // History is now [blank, A1, B1, B2, *B3].
-  content::WebContents* contents = browser()->GetSelectedWebContents();
+  content::WebContents* contents = browser()->GetActiveWebContents();
   EXPECT_EQ(5, contents->GetController().GetEntryCount());
 
   // Open another tab in same process to keep this process alive.
@@ -955,7 +955,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
       content::Source<content::WebContentsDelegate>(browser())));
   bool success = false;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedWebContents()->GetRenderViewHost(), L"",
+      browser()->GetActiveWebContents()->GetRenderViewHost(), L"",
       L"window.domAutomationController.send(clickSameSiteTargetedLink());",
       &success));
   EXPECT_TRUE(success);
@@ -966,13 +966,13 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   EXPECT_EQ(1, browser()->active_index());
 
   // Wait for the navigation in the new tab to finish, if it hasn't.
-  ui_test_utils::WaitForLoadStop(browser()->GetSelectedWebContents());
+  ui_test_utils::WaitForLoadStop(browser()->GetActiveWebContents());
   EXPECT_EQ("/files/navigate_opener.html",
-            browser()->GetSelectedWebContents()->GetURL().path());
+            browser()->GetActiveWebContents()->GetURL().path());
   EXPECT_EQ(1, browser()->active_index());
 
   RenderViewHost* rvh =
-      browser()->GetSelectedWebContents()->GetRenderViewHost();
+      browser()->GetActiveWebContents()->GetRenderViewHost();
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       rvh, L"",
       L"window.domAutomationController.send("
@@ -999,16 +999,16 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
     ui_test_utils::WindowedNotificationObserver back_nav_load_observer(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::Source<content::NavigationController>(
-            &browser()->GetSelectedWebContents()->GetController()));
+            &browser()->GetActiveWebContents()->GetController()));
     browser()->GoBack(CURRENT_TAB);
     back_nav_load_observer.Wait();
   }
 
 
   EXPECT_EQ("/files/navigate_opener.html",
-            browser()->GetSelectedWebContents()->GetURL().path());
+            browser()->GetActiveWebContents()->GetURL().path());
 
-  EXPECT_EQ(rvh, browser()->GetSelectedWebContents()->GetRenderViewHost());
+  EXPECT_EQ(rvh, browser()->GetActiveWebContents()->GetRenderViewHost());
 
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       rvh, L"",
@@ -1083,20 +1083,20 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, LeakingRenderViewHosts) {
   // was a problem.  This is no longer the case.
   GURL navigated_url(test_server()->GetURL("files/title2.html"));
   ui_test_utils::NavigateToURL(browser(), navigated_url);
-  SiteInstance* site_instance1 = browser()->GetSelectedWebContents()->
+  SiteInstance* site_instance1 = browser()->GetActiveWebContents()->
       GetRenderViewHost()->GetSiteInstance();
 
   // Observe the newly created render_view_host to make sure it will not leak.
   RenderViewHostObserverArray rvh_observers;
-  rvh_observers.AddObserverToRVH(browser()->GetSelectedWebContents()->
+  rvh_observers.AddObserverToRVH(browser()->GetActiveWebContents()->
       GetRenderViewHost());
 
   GURL view_source_url(chrome::kViewSourceScheme + std::string(":") +
       navigated_url.spec());
   ui_test_utils::NavigateToURL(browser(), view_source_url);
-  rvh_observers.AddObserverToRVH(browser()->GetSelectedWebContents()->
+  rvh_observers.AddObserverToRVH(browser()->GetActiveWebContents()->
       GetRenderViewHost());
-  SiteInstance* site_instance2 = browser()->GetSelectedWebContents()->
+  SiteInstance* site_instance2 = browser()->GetActiveWebContents()->
       GetRenderViewHost()->GetSiteInstance();
 
   // Ensure that view-source navigations force a new SiteInstance.
@@ -1105,10 +1105,10 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, LeakingRenderViewHosts) {
   // Now navigate to a different instance so that we swap out again.
   ui_test_utils::NavigateToURL(browser(),
                                https_server.GetURL("files/title2.html"));
-  rvh_observers.AddObserverToRVH(browser()->GetSelectedWebContents()->
+  rvh_observers.AddObserverToRVH(browser()->GetActiveWebContents()->
       GetRenderViewHost());
 
   // This used to leak a render view host.
-  browser()->CloseTabContents(browser()->GetSelectedWebContents());
+  browser()->CloseTabContents(browser()->GetActiveWebContents());
   EXPECT_EQ(0U, rvh_observers.GetNumObservers());
 }

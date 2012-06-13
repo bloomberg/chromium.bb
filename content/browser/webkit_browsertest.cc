@@ -28,7 +28,7 @@ IN_PROC_BROWSER_TEST_F(WebKitBrowserTest, AbortOnEnd) {
 
   ui_test_utils::NavigateToURL(browser(), url);
 
-  WebContents* web_contents = browser()->GetSelectedWebContents();
+  WebContents* web_contents = browser()->GetActiveWebContents();
   // If you are seeing this test fail, please strongly investigate the
   // possibility that http://crbug.com/75604 and
   // https://bugs.webkit.org/show_bug.cgi?id=71122 have reverted before
@@ -52,6 +52,6 @@ IN_PROC_BROWSER_TEST_F(WebKitBrowserTest, XsltBadImport) {
 
   ui_test_utils::NavigateToURL(browser(), url);
 
-  WebContents* web_contents = browser()->GetSelectedWebContents();
+  WebContents* web_contents = browser()->GetActiveWebContents();
   EXPECT_FALSE(web_contents->IsCrashed());
 }

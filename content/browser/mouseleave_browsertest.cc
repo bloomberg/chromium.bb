@@ -31,7 +31,7 @@ IN_PROC_BROWSER_TEST_F(MouseLeaveTest, MAYBE_TestOnMouseOut) {
   GURL test_url = ui_test_utils::GetTestUrl(
       FilePath(), FilePath(FILE_PATH_LITERAL("mouseleave.html")));
 
-  content::WebContents* tab = browser()->GetSelectedWebContents();
+  content::WebContents* tab = browser()->GetActiveWebContents();
   gfx::Rect tab_view_bounds;
   tab->GetView()->GetContainerBounds(&tab_view_bounds);
 

@@ -287,7 +287,7 @@ class WorkerTest : public InProcessBrowserTest {
     GURL url = GetTestURL(test_case, query);
     const string16 expected_title = ASCIIToUTF16("OK");
     ui_test_utils::TitleWatcher title_watcher(
-        browser->GetSelectedWebContents(), expected_title);
+        browser->GetActiveWebContents(), expected_title);
     ui_test_utils::NavigateToURL(browser, url);
     string16 final_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, final_title);

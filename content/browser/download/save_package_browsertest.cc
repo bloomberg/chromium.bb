@@ -40,7 +40,7 @@ IN_PROC_BROWSER_TEST_F(SavePackageBrowserTest, ImplicitCancel) {
   FilePath full_file_name, dir;
   GetDestinationPaths("a", &full_file_name, &dir);
   scoped_refptr<SavePackage> save_package(new SavePackage(
-      browser()->GetSelectedWebContents(),
+      browser()->GetActiveWebContents(),
       content::SAVE_PAGE_TYPE_AS_ONLY_HTML, full_file_name, dir));
   ASSERT_TRUE(test_server()->Stop());
 }
@@ -54,7 +54,7 @@ IN_PROC_BROWSER_TEST_F(SavePackageBrowserTest, ExplicitCancel) {
   FilePath full_file_name, dir;
   GetDestinationPaths("a", &full_file_name, &dir);
   scoped_refptr<SavePackage> save_package(new SavePackage(
-      browser()->GetSelectedWebContents(),
+      browser()->GetActiveWebContents(),
       content::SAVE_PAGE_TYPE_AS_ONLY_HTML, full_file_name, dir));
   save_package->Cancel(true);
   ASSERT_TRUE(test_server()->Stop());

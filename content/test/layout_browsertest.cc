@@ -186,7 +186,7 @@ void InProcessBrowserLayoutTest::RunLayoutTestInternal(
   LOG(INFO) << "Navigating to URL " << url << " and blocking.";
   const string16 expected_title = ASCIIToUTF16("done");
   ui_test_utils::TitleWatcher title_watcher(
-      browser()->GetSelectedWebContents(), expected_title);
+      browser()->GetActiveWebContents(), expected_title);
   ui_test_utils::NavigateToURL(browser(), url);
   LOG(INFO) << "Navigation completed, now waiting for title.";
   string16 final_title = title_watcher.WaitAndGetTitle();

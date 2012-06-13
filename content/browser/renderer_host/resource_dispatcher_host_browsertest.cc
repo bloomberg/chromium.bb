@@ -76,7 +76,7 @@ class ResourceDispatcherHostBrowserTest : public InProcessBrowserTest,
   }
 
   content::RenderViewHost* render_view_host() {
-    return browser()->GetSelectedWebContents()->GetRenderViewHost();
+    return browser()->GetActiveWebContents()->GetRenderViewHost();
   }
 
   GURL GetMockURL(const std::string& file) {
@@ -88,7 +88,7 @@ class ResourceDispatcherHostBrowserTest : public InProcessBrowserTest,
                       int expected_navigations) {
     string16 expected_title16(ASCIIToUTF16(expected_title));
     ui_test_utils::TitleWatcher title_watcher(
-        browser()->GetSelectedWebContents(), expected_title16);
+        browser()->GetActiveWebContents(), expected_title16);
     ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
         browser(), url, expected_navigations);
     EXPECT_EQ(expected_title16, title_watcher.WaitAndGetTitle());
@@ -217,7 +217,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest, SyncXMLHttpRequest) {
   // Let's check the XMLHttpRequest ran successfully.
   bool success = false;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedWebContents()->GetRenderViewHost(),
+      browser()->GetActiveWebContents()->GetRenderViewHost(),
       L"",
       L"window.domAutomationController.send(DidSyncRequestSucceed());",
       &success));
@@ -235,7 +235,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
   // Let's check the XMLHttpRequest ran successfully.
   bool success = false;
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedWebContents()->GetRenderViewHost(),
+      browser()->GetActiveWebContents()->GetRenderViewHost(),
       L"",
       L"window.domAutomationController.send(DidSucceed());",
       &success));
@@ -386,7 +386,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
       browser(), failed_url, 2);
 
   EXPECT_NE(ASCIIToUTF16("set cookie on unload"),
-            browser()->GetSelectedWebContents()->GetTitle());
+            browser()->GetActiveWebContents()->GetTitle());
 
   // Check that the cookie was set, meaning that the onunload handler ran.
   EXPECT_EQ("onunloadCookie=foo", GetCookies(url));
@@ -402,7 +402,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
   // off the navigation, and wait to see that the tab loads.
   string16 expected_title16(ASCIIToUTF16("Title Of Awesomeness"));
   ui_test_utils::TitleWatcher title_watcher(
-      browser()->GetSelectedWebContents(), expected_title16);
+      browser()->GetActiveWebContents(), expected_title16);
 
   bool success;
   GURL test_url(test_server()->GetURL("files/title2.html"));
@@ -410,7 +410,7 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
       test_url.possibly_invalid_spec() + "';" +
       "window.domAutomationController.send(true);";
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedWebContents()->GetRenderViewHost(),
+      browser()->GetActiveWebContents()->GetRenderViewHost(),
       L"", ASCIIToWide(redirect_script), &success));
   EXPECT_EQ(expected_title16, title_watcher.WaitAndGetTitle());
 }

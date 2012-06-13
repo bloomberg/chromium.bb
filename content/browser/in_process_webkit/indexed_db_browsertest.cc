@@ -54,11 +54,11 @@ class IndexedDBBrowserTest : public InProcessBrowserTest {
     ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
         the_browser, test_url, 2);
     LOG(INFO) << "Navigation done.";
-    std::string result = the_browser->GetSelectedWebContents()->GetURL().ref();
+    std::string result = the_browser->GetActiveWebContents()->GetURL().ref();
     if (result != "pass") {
       std::string js_result;
       ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractString(
-          the_browser->GetSelectedWebContents()->GetRenderViewHost(), L"",
+          the_browser->GetActiveWebContents()->GetRenderViewHost(), L"",
           L"window.domAutomationController.send(getLog())", &js_result));
       FAIL() << "Failed: " << js_result;
     }
@@ -115,7 +115,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DISABLED_ValueSizeTest) {
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DoesntHangTest) {
   SimpleTest(GetTestURL(FilePath(
       FILE_PATH_LITERAL("transaction_run_forever.html"))));
-  ui_test_utils::CrashTab(browser()->GetSelectedWebContents());
+  ui_test_utils::CrashTab(browser()->GetActiveWebContents());
   SimpleTest(GetTestURL(FilePath(FILE_PATH_LITERAL("transaction_test.html"))));
 }
 
