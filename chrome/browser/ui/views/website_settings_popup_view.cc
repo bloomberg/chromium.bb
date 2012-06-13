@@ -14,9 +14,13 @@
 #include "content/public/browser/cert_store.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
+#include "grit/ui_resources_standard.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/image/image.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -35,7 +39,40 @@ namespace {
 // Omnibox).
 const int kLocationIconBottomMargin = 5;
 
+// Font size of the label for the site identity.
+const int kIdentityNameFontSize = 14;
+// The text color that is used for the site identity status text, if the site's
+// identity was sucessfully verified.
+const int kIdentityVerifiedTextColor = 0xFF298a27;
+
+// Margin and padding values for the |PopupHeader|.
+const int kHeaderMarginBottom = 10;
+const int kHeaderPaddingBottom = 12;
+const int kHeaderPaddingLeft = 10;
+const int kHeaderPaddingRight = 8;
+const int kHeaderPaddingTop = 8;
+
+// Spacing between the site identity label and the site identity status text in
+// the popup header.
+const int kHeaderRowSpacing = 4;
+
+// Padding values for sections.
+const int kSectionPaddingBottom = 6;
+const int kSectionPaddingLeft = 10;
+const int kSectionPaddingTop = 14;
+
+// Space between a section headline and the section content.
+const int kSectionHeadlineMarginBottom = 10;
+// The content of the "Permissions" section and of the "Cookies and Site Data"
+// section, is structured in individual rows. |kSectionRowSpaceing| is the
+// space between these rows.
+const int kSectionRowSpacing = 6;
+
+// The max width of the popup.
 const int kPopupWidth = 300;
+
+// The bottom margin of the tabbed pane view.
+const int kTabbedPaneMarginBottom = 8;
 
 string16 PermissionTypeToString(ContentSettingsType type) {
   return l10n_util::GetStringUTF16(
@@ -92,7 +129,7 @@ PermissionComboboxModel::PermissionComboboxModel(
     ContentSettingsType site_permission,
     ContentSetting default_setting)
     : site_permission_(site_permission),
-      default_setting_(default_setting){
+      default_setting_(default_setting) {
   settings_.push_back(CONTENT_SETTING_DEFAULT);
   settings_.push_back(CONTENT_SETTING_ALLOW);
   settings_.push_back(CONTENT_SETTING_BLOCK);
@@ -137,14 +174,15 @@ string16 PermissionComboboxModel::GetItemAt(int index) {
 // identity check and the name of the site's identity.
 class PopupHeader : public views::View {
  public:
-  PopupHeader();
+  explicit PopupHeader(views::ButtonListener* close_button_listener);
   virtual ~PopupHeader();
 
   // Sets the name of the site's identity.
   void SetIdentityName(const string16& name);
 
-  // Sets the status text for the identity check of this site.
-  void SetIdentityStatus(const string16& status_text);
+  // Sets the |status_text| for the identity check of this site and the
+  // |text_color|.
+  void SetIdentityStatus(const string16& status_text, SkColor text_color);
 
  private:
   // The label that displays the name of the site's identity.
@@ -159,35 +197,60 @@ class PopupHeader : public views::View {
 // Popup Header
 ////////////////////////////////////////////////////////////////////////////////
 
-PopupHeader::PopupHeader() : name_(NULL), status_(NULL) {
+PopupHeader::PopupHeader(views::ButtonListener* close_button_listener)
+  : name_(NULL), status_(NULL) {
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
+
   const int label_column = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(label_column);
+  column_set->AddPaddingColumn(0, kHeaderPaddingLeft);
   column_set->AddColumn(views::GridLayout::FILL,
                         views::GridLayout::FILL,
                         1,
                         views::GridLayout::USE_PREF,
                         0,
                         0);
+  column_set->AddPaddingColumn(1,0);
+  column_set->AddColumn(views::GridLayout::FILL,
+                        views::GridLayout::FILL,
+                        1,
+                        views::GridLayout::USE_PREF,
+                        0,
+                        0);
+  column_set->AddPaddingColumn(0, kHeaderPaddingRight);
 
-  layout->AddPaddingRow(0, 8);
+  layout->AddPaddingRow(0, kHeaderPaddingTop);
 
   layout->StartRow(0, label_column);
   name_ = new views::Label(string16());
-  name_->SetFont(name_->font().DeriveFont(0, gfx::Font::BOLD));
+  gfx::Font headline_font(name_->font().GetFontName(), kIdentityNameFontSize);
+  name_->SetFont(headline_font.DeriveFont(0, gfx::Font::BOLD));
   layout->AddView(name_, 1, 1, views::GridLayout::LEADING,
-                  views::GridLayout::CENTER);
+                  views::GridLayout::TRAILING);
+  views::ImageButton* close_button =
+      new views::ImageButton(close_button_listener);
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  close_button->SetImage(views::CustomButton::BS_NORMAL,
+                         rb.GetImageNamed(IDR_CLOSE_BAR).ToImageSkia());
+  close_button->SetImage(views::CustomButton::BS_HOT,
+                         rb.GetImageNamed(IDR_CLOSE_BAR_H).ToImageSkia());
+  close_button->SetImage(views::CustomButton::BS_PUSHED,
+                         rb.GetImageNamed(IDR_CLOSE_BAR_P).ToImageSkia());
+  layout->AddView(close_button, 1, 1, views::GridLayout::TRAILING,
+                  views::GridLayout::LEADING);
 
-  layout->AddPaddingRow(0, 4);
+  layout->AddPaddingRow(0, kHeaderRowSpacing);
 
-  status_ = new views::Label(string16());
   layout->StartRow(0, label_column);
+  status_ = new views::Label(string16());
   layout->AddView(status_,
                   1,
                   1,
                   views::GridLayout::LEADING,
                   views::GridLayout::CENTER);
+
+  layout->AddPaddingRow(0, kHeaderPaddingBottom);
 }
 
 PopupHeader::~PopupHeader() {
@@ -197,8 +260,10 @@ void PopupHeader::SetIdentityName(const string16& name) {
   name_->SetText(name);
 }
 
-void PopupHeader::SetIdentityStatus(const string16& status) {
+void PopupHeader::SetIdentityStatus(const string16& status,
+                                    SkColor text_color) {
   status_->SetText(status);
+  status_->SetEnabledColor(text_color);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -244,11 +309,11 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
                         0,
                         0);
 
-  header_ = new PopupHeader();
+  header_ = new PopupHeader(this);
   layout->StartRow(1, content_column);
   layout->AddView(header_);
 
-  layout->AddPaddingRow(1, 10);
+  layout->AddPaddingRow(1, kHeaderMarginBottom);
 
   tabbed_pane_ = new views::TabbedPane();
   layout->StartRow(1, content_column);
@@ -265,6 +330,8 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
       CreateIdentityTab());
   tabbed_pane_->SelectTabAt(0);
   tabbed_pane_->set_listener(this);
+
+  layout->AddPaddingRow(0, kTabbedPaneMarginBottom);
 
   views::BubbleDelegateView::CreateBubble(this);
   this->Show();
@@ -307,7 +374,7 @@ void WebsiteSettingsPopupView::SetCookieInfo(
                     views::GridLayout::LEADING,
                     views::GridLayout::CENTER);
 
-    layout->AddPaddingRow(1, 4);
+    layout->AddPaddingRow(1, kSectionRowSpacing);
   }
 
   layout->Layout(site_data_content_);
@@ -367,6 +434,7 @@ void WebsiteSettingsPopupView::SetPermissionInfo(
                     views::GridLayout::LEADING,
                     views::GridLayout::CENTER);
 
+    layout->AddPaddingRow(1, kSectionRowSpacing);
   }
 
   SizeToContents();
@@ -375,12 +443,14 @@ void WebsiteSettingsPopupView::SetPermissionInfo(
 void WebsiteSettingsPopupView::SetIdentityInfo(
     const IdentityInfo& identity_info) {
   string16 identity_status_text;
+  SkColor text_color = SK_ColorBLACK;
   switch (identity_info.identity_status) {
     case WebsiteSettings::SITE_IDENTITY_STATUS_CERT:
     case WebsiteSettings::SITE_IDENTITY_STATUS_DNSSEC_CERT:
     case WebsiteSettings::SITE_IDENTITY_STATUS_EV_CERT:
       identity_status_text =
           l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_IDENTITY_VERIFIED);
+      text_color = kIdentityVerifiedTextColor;
       break;
     default:
       identity_status_text =
@@ -388,7 +458,7 @@ void WebsiteSettingsPopupView::SetIdentityInfo(
       break;
   }
   header_->SetIdentityName(UTF8ToUTF16(identity_info.site_identity));
-  header_->SetIdentityStatus(identity_status_text);
+  header_->SetIdentityStatus(identity_status_text, text_color);
 
   identity_info_text_->SetText(
       UTF8ToUTF16(identity_info.identity_status_description));
@@ -436,12 +506,18 @@ void WebsiteSettingsPopupView::LinkClicked(views::Link* source,
                                            int event_flags) {
   DCHECK_EQ(cookie_dialog_link_, source);
   new CollectedCookiesViews(tab_contents_);
-  GetWidget()->CloseNow();
+  // The popup closes automatically when the collected cookies dialog opens.
 }
 
 void WebsiteSettingsPopupView::TabSelectedAt(int index) {
   tabbed_pane_->GetSelectedTab()->Layout();
   SizeToContents();
+}
+
+void WebsiteSettingsPopupView::ButtonPressed(
+    views::Button* button,
+    const views::Event& event) {
+  GetWidget()->Close();
 }
 
 views::View* WebsiteSettingsPopupView::CreatePermissionsTab() {
@@ -554,6 +630,7 @@ views::View* WebsiteSettingsPopupView::CreateSection(
   container->SetLayoutManager(layout);
   const int content_column = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(content_column);
+  column_set->AddPaddingColumn(0, kSectionPaddingLeft);
   column_set->AddColumn(views::GridLayout::FILL,
                         views::GridLayout::FILL,
                         1,
@@ -561,14 +638,14 @@ views::View* WebsiteSettingsPopupView::CreateSection(
                         0,
                         0);
 
-  layout->AddPaddingRow(1, 4);
+  layout->AddPaddingRow(1, kSectionPaddingTop);
   layout->StartRow(1, content_column);
   views::Label* headline = new views::Label(headline_text);
   headline->SetFont(headline->font().DeriveFont(0, gfx::Font::BOLD));
   layout->AddView(headline, 1, 1, views::GridLayout::LEADING,
                   views::GridLayout::CENTER);
 
-  layout->AddPaddingRow(1, 4);
+  layout->AddPaddingRow(1, kSectionHeadlineMarginBottom);
   layout->StartRow(1, content_column);
   layout->AddView(content, 1, 1, views::GridLayout::LEADING,
                   views::GridLayout::CENTER);
@@ -580,6 +657,7 @@ views::View* WebsiteSettingsPopupView::CreateSection(
                     views::GridLayout::CENTER);
   }
 
+  layout->AddPaddingRow(1, kSectionPaddingBottom);
   return container;
 }
 

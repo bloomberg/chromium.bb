@@ -6,6 +6,10 @@
 
 #include "grit/generated_resources.h"
 
+namespace {
+const int kInvalidRessourceID = -1;
+}
+
 WebsiteSettingsUI::CookieInfo::CookieInfo()
     : allowed(-1), blocked(-1) {
 }
@@ -38,7 +42,7 @@ int WebsiteSettingsUI::PermissionTypeToUIStringID(ContentSettingsType type) {
       return IDS_WEBSITE_SETTINGS_TYPE_NOTIFICATIONS;
     default:
       NOTREACHED();
-      return -1;
+      return kInvalidRessourceID;
   }
 }
 
@@ -53,6 +57,6 @@ int WebsiteSettingsUI::PermissionValueToUIStringID(ContentSetting value) {
       return IDS_WEBSITE_SETTINGS_PERMISSION_ASK;
     default:
       NOTREACHED();
-      return -1;
+      return kInvalidRessourceID;
   }
 }

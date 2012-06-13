@@ -12,6 +12,7 @@
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 #include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane_listener.h"
@@ -42,7 +43,8 @@ class WebsiteSettingsPopupView : public WebsiteSettingsUI,
                                  public views::BubbleDelegateView,
                                  public views::ComboboxListener,
                                  public views::LinkListener,
-                                 public views::TabbedPaneListener {
+                                 public views::TabbedPaneListener,
+                                 public views::ButtonListener {
  public:
   virtual ~WebsiteSettingsPopupView();
 
@@ -80,6 +82,10 @@ class WebsiteSettingsPopupView : public WebsiteSettingsUI,
 
   // views::TabbedPaneListener implementations.
   virtual void TabSelectedAt(int index) OVERRIDE;
+
+  // views::ButtonListener implementation.
+  virtual void ButtonPressed(views::Button* button,
+                             const views::Event& event) OVERRIDE;
 
   // Each tab contains several sections with a |headline| followed by the
   // section |contents| and an optional |link|. This method creates a section
