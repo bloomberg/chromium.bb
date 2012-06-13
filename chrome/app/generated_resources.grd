@@ -7332,6 +7332,12 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_PRINT_PREVIEW_OFFLINE" desc="Shown when printer is currently offline.">
         Currently offline
       </message>
+      <message name="IDS_PRINT_PREVIEW_FEDEX_TOS" desc="Terms-of-service for using the FedEx Office printer.">
+        By printing to FedEx Office, you accept their <ph name="START_LINK">$1</ph>terms of use<ph name="END_LINK">$2</ph>.
+      </message>
+      <message name="IDS_PRINT_PREVIEW_TOS_CHECKBOX_LABEL" desc="Label of the terms-of-service agreement checkbox.">
+        I agree
+      </message>
 
       <!-- Load State -->
       <message name="IDS_LOAD_STATE_WAITING_FOR_DELEGATE">

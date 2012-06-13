@@ -214,6 +214,14 @@ cr.define('print_preview', function() {
         clearTimeout(this.autoSelectTimeout_);
         this.autoSelectTimeout_ = null;
       }
+      if (destination.id == print_preview.Destination.GooglePromotedId.FEDEX &&
+          !destination.isTosAccepted) {
+        assert(this.cloudPrintInterface_ != null,
+               'Selected FedEx Office destination, but Google Cloud Print is ' +
+               'not enabled');
+        destination.isTosAccepted = true;
+        this.cloudPrintInterface_.acceptPrinterTos(destination.id, true);
+      }
       cr.dispatchSimpleEvent(
           this, DestinationStore.EventType.DESTINATION_SELECT);
       if (destination.capabilities == null) {

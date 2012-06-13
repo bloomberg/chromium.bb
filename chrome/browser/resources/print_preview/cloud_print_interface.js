@@ -79,6 +79,7 @@ cr.define('cloudprint', function() {
         params['q'] = '^recent';
       }
       params['connection_status'] = 'ALL';
+      params['client'] = 'chrome';
       this.sendRequest_('GET', 'search', params, null, this.onSearchDone_);
     },
 
@@ -97,6 +98,23 @@ cr.define('cloudprint', function() {
     printer: function(printerId) {
       var params = {'printerid': printerId};
       this.sendRequest_('GET', 'printer', params, null, this.onPrinterDone_);
+    },
+
+    /**
+     * Sends a Google Cloud Print update API request to accept (or reject) the
+     * terms-of-service of the given printer.
+     * @param {string} printerId ID of the printer to accept the
+     *     terms-of-service for.
+     * @param {boolean} isAccepted Whether the user accepted the
+     *     terms-of-service.
+     */
+    updatePrinterTosAcceptance: function(printerId, isAccepted) {
+      var params = {
+        'printerid': printerId,
+        'is_tos_accepted': isAccepted
+      };
+      this.sendRequest_('POST', 'update', params, null,
+                        this.onUpdatePrinterTosAcceptanceDone_);
     },
 
     /**
@@ -271,8 +289,10 @@ cr.define('cloudprint', function() {
      * @private
      */
     onSubmitDone_: function(result) {
-      this.dispatchEvent(
-          new cr.Event(CloudPrintInterface.EventType.SUBMIT_DONE));
+      var submitDoneEvent = new cr.Event(
+          CloudPrintInterface.EventType.SUBMIT_DONE);
+      submitDoneEvent.jobId = result['job']['id'];
+      this.dispatchEvent(submitDoneEvent);
     },
 
     /**
@@ -295,6 +315,16 @@ cr.define('cloudprint', function() {
           new cr.Event(CloudPrintInterface.EventType.PRINTER_DONE);
       printerDoneEvent.printer = printer;
       this.dispatchEvent(printerDoneEvent);
+    },
+
+    /**
+     * Called when the update printer TOS acceptance request completes
+     * successfully.
+     * @param {Object} result JSON response.
+     * @private
+     */
+    onUpdatePrinterTosAcceptanceDone_: function(result) {
+      // Do nothing.
     }
   };
 

@@ -14,15 +14,15 @@ cr.define('print_preview', function() {
    * @param {boolean} isRecent Whether the destination has been used recently.
    * @param {!print_preview.Destination.ConnectionStatus} connectionStatus
    *     Connection status of the print destination.
-   * @param {Array.<string>=} opt_tags Tags associated with the destination.
-   * @param {boolean=} opt_isOwned Whether the destination is owned by the user.
-   *     Only applies to cloud-based destinations.
-   * @param {number=} opt_lastAccessTime Number of milliseconds since the epoch
-   *     when the printer was last accessed.
+   * @param {{tags: Array.<string>,
+   *          isOwned: ?boolean,
+   *          lastAccessTime: ?number,
+   *          isTosAccepted: ?boolean}=} opt_params Optional parameters for the
+   *     destination.
    * @constructor
    */
   function Destination(id, type, displayName, isRecent, connectionStatus,
-                       opt_tags, opt_isOwned, opt_lastAccessTime) {
+                       opt_params) {
     /**
      * ID of the destination.
      * @type {string}
@@ -56,7 +56,7 @@ cr.define('print_preview', function() {
      * @type {!Array.<string>}
      * @private
      */
-    this.tags_ = opt_tags || [];
+    this.tags_ = (opt_params && opt_params.tags) || [];
 
     /**
      * Print capabilities of the destination.
@@ -70,7 +70,7 @@ cr.define('print_preview', function() {
      * @type {boolean}
      * @private
      */
-    this.isOwned_ = opt_isOwned || false;
+    this.isOwned_ = (opt_params && opt_params.isOwned) || false;
 
     /**
      * Cache of destination location fetched from tags.
@@ -92,7 +92,17 @@ cr.define('print_preview', function() {
      * @type {number}
      * @private
      */
-    this.lastAccessTime_ = opt_lastAccessTime || Date.now();
+    this.lastAccessTime_ = (opt_params && opt_params.lastAccessTime) ||
+                           Date.now();
+
+    /**
+     * Whether the user has accepted the terms-of-service for the print
+     * destination. Only applies to the FedEx Office cloud-based printer.
+     * {@code} null if terms-of-service does not apply to the print destination.
+     * @type {?boolean}
+     * @private
+     */
+    this.isTosAccepted_ = (opt_params && opt_params.isTosAccepted) || false;
   };
 
   /**
@@ -271,6 +281,24 @@ cr.define('print_preview', function() {
       } else {
         return Destination.IconUrl_.CLOUD;
       }
+    },
+
+    /**
+     * @return {?boolean} Whether the user has accepted the terms-of-service of
+     *     the print destination or {@code null} if a terms-of-service does not
+     *     apply.
+     */
+    get isTosAccepted() {
+      return this.isTosAccepted_;
+    },
+
+    /**
+     * @param {?boolean} Whether the user has accepted the terms-of-service of
+     *     the print destination or {@code null} if a terms-of-service does not
+     *     apply.
+     */
+    set isTosAccepted(isTosAccepted) {
+      this.isTosAccepted_ = isTosAccepted;
     },
 
     /**

@@ -156,6 +156,8 @@ void PrintPreviewDataSource::Init() {
   AddLocalizedString("offlineForMonth", IDS_PRINT_PREVIEW_OFFLINE_FOR_MONTH);
   AddLocalizedString("offlineForWeek", IDS_PRINT_PREVIEW_OFFLINE_FOR_WEEK);
   AddLocalizedString("offline", IDS_PRINT_PREVIEW_OFFLINE);
+  AddLocalizedString("fedexTos", IDS_PRINT_PREVIEW_FEDEX_TOS);
+  AddLocalizedString("tosCheckboxLabel", IDS_PRINT_PREVIEW_TOS_CHECKBOX_LABEL);
 
   set_json_path("strings.js");
   add_resource_path("print_preview.js", IDR_PRINT_PREVIEW_JS);

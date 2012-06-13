@@ -520,19 +520,26 @@ cr.define('print_preview', function() {
 
     /**
      * Called after successfully submitting a job to Google Cloud Print.
+     * @param {!cr.Event} event Contains the ID of the submitted print job.
      * @private
      */
-    onCloudPrintSubmitDone_: function() {
+    onCloudPrintSubmitDone_: function(event) {
       assert(this.uiState_ == PrintPreview.UiState_.PRINTING,
              'Submited job to Google Cloud Print but not in printing state ' +
                  this.uiState_);
+      if (this.destinationStore_.selectedDestination.id ==
+              print_preview.Destination.GooglePromotedId.FEDEX) {
+        window.open(
+            'https://www.google.com/cloudprint/fedexcode.html?jobid=' +
+            event.jobId);
+      }
       this.close_();
     },
 
     /**
      * Called when there was an error communicating with Google Cloud print.
      * Displays an error message in the print header.
-     * @param {cr.Event} event Contains the error message.
+     * @param {!cr.Event} event Contains the error message.
      * @private
      */
     onCloudPrintError_: function(event) {
@@ -762,6 +769,7 @@ cr.define('print_preview', function() {
 <include src="search/destination_list_item.js"/>
 <include src="search/destination_search.js"/>
 <include src="search/search_box.js"/>
+<include src="search/fedex_tos.js"/>
 
 window.addEventListener('DOMContentLoaded', function() {
   printPreview = new print_preview.PrintPreview();

@@ -20,6 +20,7 @@ cr.define('cloudprint', function() {
     DISPLAY_NAME: 'displayName',
     FORMAT: 'capsFormat',
     ID: 'id',
+    IS_TOS_ACCEPTED: 'isTosAccepted',
     TAGS: 'tags',
     TYPE: 'type'
   };
@@ -64,24 +65,27 @@ cr.define('cloudprint', function() {
         !json.hasOwnProperty(CloudDestinationParser.Field_.DISPLAY_NAME)) {
       throw Error('Cloud destination does not have an ID or a display name');
     }
+    var id = json[CloudDestinationParser.Field_.ID];
     var tags = json[CloudDestinationParser.Field_.TAGS] || [];
-    var isRecent = arrayContains(tags, CloudDestinationParser.RECENT_TAG_);
-    var isOwned = arrayContains(tags, CloudDestinationParser.OWNED_TAG_);
     var connectionStatus =
         json[CloudDestinationParser.Field_.CONNECTION_STATUS] ||
         print_preview.Destination.ConnectionStatus.UNKNOWN;
-    var lastAccess = parseInt(
-        json[CloudDestinationParser.Field_.LAST_ACCESS], 10) || Date.now();
+    var optionalParams = {
+      tags: tags,
+      isOwned: arrayContains(tags, CloudDestinationParser.OWNED_TAG_),
+      lastAccessTime: parseInt(
+          json[CloudDestinationParser.Field_.LAST_ACCESS], 10) || Date.now(),
+      isTosAccepted: (id == print_preview.Destination.GooglePromotedId.FEDEX) ?
+          json[CloudDestinationParser.Field_.IS_TOS_ACCEPTED] : null
+    };
     var cloudDest = new print_preview.Destination(
-        json[CloudDestinationParser.Field_.ID],
+        id,
         CloudDestinationParser.parseType_(
             json[CloudDestinationParser.Field_.TYPE]),
         json[CloudDestinationParser.Field_.DISPLAY_NAME],
-        isRecent,
+        arrayContains(tags, CloudDestinationParser.RECENT_TAG_) /*isRecent*/,
         connectionStatus,
-        tags,
-        isOwned,
-        lastAccess);
+        optionalParams);
     if (json.hasOwnProperty(CloudDestinationParser.Field_.CAPABILITIES) &&
         json.hasOwnProperty(CloudDestinationParser.Field_.FORMAT)) {
       cloudDest.capabilities = CloudCapabilitiesParser.parse(
