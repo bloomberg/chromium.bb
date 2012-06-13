@@ -29,8 +29,24 @@ class MonitorController : public aura::DisplayObserver {
   MonitorController();
   virtual ~MonitorController();
 
+  // Layout options where the secondary monitor should be positioned.
+  enum SecondaryDisplayLayout {
+    TOP,
+    RIGHT,
+    BOTTOM,
+    LEFT
+  };
+
   // Gets all of the root windows.
   void GetAllRootWindows(std::vector<aura::RootWindow*>* windows);
+
+  SecondaryDisplayLayout secondary_display_layout() const {
+    return secondary_display_layout_;
+  }
+  void SetSecondaryDisplayLayout(SecondaryDisplayLayout layout);
+
+  // Is extended desktop enabled?
+  bool IsExtendedDesktopEnabled();
 
   // aura::DisplayObserver overrides:
   virtual void OnDisplayBoundsChanged(
@@ -42,6 +58,8 @@ class MonitorController : public aura::DisplayObserver {
   void Init();
 
   std::map<int, aura::RootWindow*> root_windows_;
+
+  SecondaryDisplayLayout secondary_display_layout_;
 
   DISALLOW_COPY_AND_ASSIGN(MonitorController);
 };

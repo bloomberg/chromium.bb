@@ -20,6 +20,7 @@ ASH_EXPORT extern const char kAshEnableOak[];
 ASH_EXPORT extern const char kAshNotify[];
 ASH_EXPORT extern const char kAshTouchHud[];
 ASH_EXPORT extern const char kAshWindowAnimationsDisabled[];
+ASH_EXPORT extern const char kAuraExtendedDesktop[];
 ASH_EXPORT extern const char kAuraGoogleDialogFrames[];
 ASH_EXPORT extern const char kAuraLegacyPowerButton[];
 ASH_EXPORT extern const char kAuraNoShadows[];

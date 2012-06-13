@@ -19,6 +19,9 @@ const char kAshTouchHud[] = "ash-touch-hud";
 // If present animations are disabled.
 const char kAshWindowAnimationsDisabled[] = "ash-window-animations-disabled";
 
+// Enable extended desktop.
+const char kAuraExtendedDesktop[] = "ash-extended-desktop";
+
 // Use Google-style dialog box frames.
 const char kAuraGoogleDialogFrames[] = "aura-google-dialog-frames";
 

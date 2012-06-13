@@ -4,8 +4,10 @@
 
 #include "ash/monitor/monitor_controller.h"
 
+#include "ash/ash_switches.h"
 #include "ash/monitor/multi_monitor_manager.h"
 #include "ash/shell.h"
+#include "base/command_line.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
@@ -14,7 +16,8 @@
 namespace ash {
 namespace internal {
 
-MonitorController::MonitorController() {
+MonitorController::MonitorController()
+    : secondary_display_layout_(RIGHT) {
   aura::Env::GetInstance()->monitor_manager()->AddObserver(this);
   Init();
 }
@@ -37,6 +40,17 @@ void MonitorController::GetAllRootWindows(
   for (std::map<int, aura::RootWindow*>::const_iterator it =
            root_windows_.begin(); it != root_windows_.end(); ++it)
     windows->push_back(it->second);
+}
+
+void MonitorController::SetSecondaryDisplayLayout(
+    SecondaryDisplayLayout layout) {
+  secondary_display_layout_ = layout;
+}
+
+bool MonitorController::IsExtendedDesktopEnabled(){
+  static bool enabled = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAuraExtendedDesktop);
+  return enabled;
 }
 
 void MonitorController::OnDisplayBoundsChanged(const gfx::Display& display) {
