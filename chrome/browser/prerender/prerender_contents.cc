@@ -521,17 +521,14 @@ bool PrerenderContents::AddAliasURL(const GURL& url) {
   const bool http = url.SchemeIs(chrome::kHttpScheme);
   const bool https = url.SchemeIs(chrome::kHttpsScheme);
   if (!(http || https)) {
-    DCHECK_NE(MATCH_COMPLETE_REPLACEMENT_PENDING, match_complete_status_);
     Destroy(FINAL_STATUS_UNSUPPORTED_SCHEME);
     return false;
   }
   if (https && !prerender_manager_->config().https_allowed) {
-    DCHECK_NE(MATCH_COMPLETE_REPLACEMENT_PENDING, match_complete_status_);
     Destroy(FINAL_STATUS_HTTPS);
     return false;
   }
-  if (match_complete_status_ != MATCH_COMPLETE_REPLACEMENT_PENDING &&
-      prerender_manager_->HasRecentlyBeenNavigatedTo(url)) {
+  if (prerender_manager_->HasRecentlyBeenNavigatedTo(url)) {
     Destroy(FINAL_STATUS_RECENTLY_VISITED);
     return false;
   }

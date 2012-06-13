@@ -69,6 +69,9 @@ const int kPeriodicCleanupIntervalMs = 1000;
 // Time interval before a new prerender is allowed.
 const int kMinTimeBetweenPrerendersMs = 500;
 
+// Time window for which we record old navigations, in milliseconds.
+const int kNavigationRecordWindowMs = 5000;
+
 // Valid HTTP methods for prerendering.
 const char* const kValidHttpMethods[] = {
   "GET",
@@ -480,30 +483,30 @@ void PrerenderManager::MoveEntryToPendingDelete(PrerenderContents* entry,
       // occur in the control group case.
       if (entry->match_complete_status() ==
           PrerenderContents::MATCH_COMPLETE_DEFAULT &&
-          NeedMatchCompleteDummyForFinalStatus(final_status) &&
-          ActuallyPrerendering()) {
+          NeedMatchCompleteDummyForFinalStatus(final_status)) {
         // TODO(tburkard): I'd like to DCHECK that we are actually prerendering.
         // However, what if new conditions are added and
         // NeedMatchCompleteDummyForFinalStatus, is not being updated.  Not sure
         // what's the best thing to do here.  For now, I will just check whether
         // we are actually prerendering.
-        entry->set_match_complete_status(
-            PrerenderContents::MATCH_COMPLETE_REPLACED);
-        if (PrerenderContents* dummy_replacement_prerender_contents =
-                CreatePrerenderContents(entry->prerender_url(),
-                                        entry->referrer(),
-                                        entry->origin(),
-                                        entry->experiment_id())) {
-          dummy_replacement_prerender_contents->set_match_complete_status(
-              PrerenderContents::MATCH_COMPLETE_REPLACEMENT_PENDING);
-          if (!dummy_replacement_prerender_contents->Init())
-            break;
-          dummy_replacement_prerender_contents->
-              AddAliasURLsFromOtherPrerenderContents(entry);
-          dummy_replacement_prerender_contents->set_match_complete_status(
-              PrerenderContents::MATCH_COMPLETE_REPLACEMENT);
-          it->contents_ = dummy_replacement_prerender_contents;
-          swapped_in_dummy_replacement = true;
+        if (ActuallyPrerendering()) {
+          entry->set_match_complete_status(
+              PrerenderContents::MATCH_COMPLETE_REPLACED);
+          PrerenderContents* dummy_replacement_prerender_contents =
+              CreatePrerenderContents(
+                  entry->prerender_url(),
+                  entry->referrer(),
+                  entry->origin(),
+                  entry->experiment_id());
+          if (dummy_replacement_prerender_contents &&
+              dummy_replacement_prerender_contents->Init()) {
+            dummy_replacement_prerender_contents->
+                AddAliasURLsFromOtherPrerenderContents(entry);
+            dummy_replacement_prerender_contents->set_match_complete_status(
+                PrerenderContents::MATCH_COMPLETE_REPLACEMENT);
+            it->contents_ = dummy_replacement_prerender_contents;
+            swapped_in_dummy_replacement = true;
+          }
         }
       }
       if (!swapped_in_dummy_replacement)
