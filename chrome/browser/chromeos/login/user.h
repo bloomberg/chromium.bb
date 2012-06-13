@@ -63,9 +63,16 @@ class User {
   const gfx::ImageSkia& image() const { return user_image_.image(); }
 
   int image_index() const { return image_index_; }
+  bool has_raw_image() const { return user_image_.has_raw_image(); }
+  // Returns raw representation of static user image.
+  const UserImage::RawImage& raw_image() const {
+    return user_image_.raw_image();
+  }
   bool has_animated_image() const { return user_image_.has_animated_image(); }
-
-  bool GetAnimatedImage(UserImage::RawImage* raw_image) const;
+  // Returns raw representation of animated user image.
+  const UserImage::RawImage& animated_image() const {
+    return user_image_.animated_image();
+  }
 
   // The thumbnail of user custom wallpaper.
   const SkBitmap& wallpaper_thumbnail() const { return wallpaper_thumbnail_; }

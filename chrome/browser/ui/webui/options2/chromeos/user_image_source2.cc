@@ -63,15 +63,14 @@ namespace options2 {
 
 std::vector<unsigned char> UserImageSource::GetUserImage(
     const std::string& email, bool is_image_animated) const {
-  std::vector<unsigned char> user_image;
   const chromeos::User* user = chromeos::UserManager::Get()->FindUser(email);
   if (user) {
     if (user->has_animated_image() && is_image_animated)
-      user->GetAnimatedImage(&user_image);
-    else
-      gfx::PNGCodec::EncodeBGRASkBitmap(user->image(), false, &user_image);
-    return user_image;
+      return user->animated_image();
+    else if (user->has_raw_image())
+      return user->raw_image();
   }
+  std::vector<unsigned char> user_image;
   gfx::PNGCodec::EncodeBGRASkBitmap(
       *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           IDR_LOGIN_DEFAULT_USER),

@@ -1329,19 +1329,20 @@ bool UserManagerImpl::SaveBitmapToFile(const UserImage& user_image,
                                        const FilePath& image_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  std::vector<unsigned char> encoded_image;
-  if (user_image.has_raw_image()) {
-    encoded_image = user_image.raw_image();
-  } else if (!gfx::PNGCodec::EncodeBGRASkBitmap(user_image.image(),
-                                                false,
-                                                &encoded_image)) {
-    LOG(ERROR) << "Failed to PNG encode the image.";
+  const UserImage::RawImage* encoded_image = NULL;
+  if (user_image.has_animated_image()) {
+    encoded_image = &user_image.animated_image();
+  } else if (user_image.has_raw_image()) {
+    encoded_image = &user_image.raw_image();
+  } else {
+    LOG(ERROR) << "Failed to encode the image.";
     return false;
   }
+  DCHECK(encoded_image != NULL);
 
   if (file_util::WriteFile(image_path,
-                           reinterpret_cast<char*>(&encoded_image[0]),
-                           encoded_image.size()) == -1) {
+                           reinterpret_cast<const char*>(&(*encoded_image)[0]),
+                           encoded_image->size()) == -1) {
     LOG(ERROR) << "Failed to save image to file.";
     return false;
   }

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/user_image.h"
 
+#include "ui/gfx/codec/png_codec.h"
+
 namespace chromeos {
 
 namespace {
@@ -25,24 +27,37 @@ UserImage::UserImage(const gfx::ImageSkia& image)
     : image_(image),
       has_raw_image_(false),
       has_animated_image_(false) {
+  if (gfx::PNGCodec::EncodeBGRASkBitmap(image_, false, &raw_image_))
+    has_raw_image_ = true;
 }
 
 UserImage::UserImage(const gfx::ImageSkia& image,
                      const RawImage& raw_image)
     : image_(image),
-      has_raw_image_(true),
-      has_animated_image_(IsAnimatedImage(raw_image)),
-      raw_image_(raw_image) {
+      has_raw_image_(false),
+      has_animated_image_(false) {
+  if (IsAnimatedImage(raw_image)) {
+    has_animated_image_ = true;
+    animated_image_ = raw_image;
+  }
+  if (gfx::PNGCodec::EncodeBGRASkBitmap(image_, false, &raw_image_))
+    has_raw_image_ = true;
 }
 
 UserImage::~UserImage() {}
 
 void UserImage::SetImage(const gfx::ImageSkia& image) {
   image_ = image;
-  has_raw_image_ = false;
+  if (gfx::PNGCodec::EncodeBGRASkBitmap(image_, false, &raw_image_)) {
+    has_raw_image_ = true;
+  } else {
+    has_raw_image_ = false;
+    RawImage().swap(raw_image_);  // Clear |raw_image_|.
+  }
+
   has_animated_image_ = false;
-  // Clear |raw_image_|.
-  RawImage().swap(raw_image_);
+  if (!animated_image_.empty())
+    RawImage().swap(animated_image_);  // Clear |animated_image_|.
 }
 
 }  // namespace chromeos

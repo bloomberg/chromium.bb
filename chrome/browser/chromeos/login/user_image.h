@@ -31,18 +31,26 @@ class UserImage {
   virtual ~UserImage();
 
   // Replaces already stored image to new |image|. Note, that
-  // |raw_image| will be reset after that operation.
+  // |raw_image| and |animated_image| will be reset after that
+  // operation.
   void SetImage(const gfx::ImageSkia& image);
   const gfx::ImageSkia& image() const { return image_; }
+
+  // Returns true iff |image| argument of constructors or |SetImage|
+  // can be encoded as a bitmap.
   bool has_raw_image() const { return has_raw_image_; }
-  bool has_animated_image() const { return has_animated_image_; }
   const RawImage& raw_image() const { return raw_image_; }
+
+  // Returns true iff UserImage is constructed from animated image.
+  bool has_animated_image() const { return has_animated_image_; }
+  const RawImage& animated_image() const { return animated_image_; }
 
  private:
   gfx::ImageSkia image_;
   bool has_raw_image_;
-  bool has_animated_image_;
   RawImage raw_image_;
+  bool has_animated_image_;
+  RawImage animated_image_;
 };
 
 }  // namespace chromeos

@@ -77,12 +77,4 @@ string16 User::GetDisplayName() const {
   return display_name_;
 }
 
-bool User::GetAnimatedImage(UserImage::RawImage* raw_image) const {
-  if (raw_image && has_animated_image()) {
-    *raw_image = user_image_.raw_image();
-    return true;
-  }
-  return false;
-}
-
 }  // namespace chromeos
