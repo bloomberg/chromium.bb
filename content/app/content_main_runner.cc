@@ -490,8 +490,7 @@ static void ReleaseFreeMemoryThunk() {
 #endif
 
     // On Android, the command line is initialized when library is loaded.
-    // (But *is* initialized here for content shell bringup)
-#if !defined(OS_ANDROID) || defined(ANDROID_UPSTREAM_BRINGUP)
+#if !defined(OS_ANDROID)
     CommandLine::Init(argc, argv);
 #endif
 
