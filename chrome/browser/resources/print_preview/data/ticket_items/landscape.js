@@ -61,7 +61,10 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     getCapabilityNotAvailableValueInternal: function() {
-      return false;
+      return this.documentInfo_.hasCssMediaStyles ?
+          (this.documentInfo_.pageSize.width >
+              this.documentInfo_.pageSize.height) :
+          false;
     }
   };
 
