@@ -140,19 +140,13 @@
       <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_R" file="default_100_percent/keyword_search_bubble_r.png" type="BINDATA" />
       <include name="IDR_MOBILE" file="default_100_percent/mobile.png" type="BINDATA" />
       <include name="IDR_MOBILE_LIT" file="default_100_percent/mobile_lit.png" type="BINDATA" />
-      <if expr="pp_ifdef('use_ash')">
+      <if expr="pp_ifdef('toolkit_views')">
         <include name="IDR_NEWTAB_BUTTON" file="default_100_percent/ash/newtab_normal.png" type="BINDATA" />
         <include name="IDR_NEWTAB_BUTTON_H" file="default_100_percent/ash/newtab_hover.png" type="BINDATA" />
         <include name="IDR_NEWTAB_BUTTON_P" file="default_100_percent/ash/newtab_pressed.png" type="BINDATA" />
         <include name="IDR_NEWTAB_BUTTON_MASK" file="default_100_percent/ash/newtab_button_mask.png" type="BINDATA" />
       </if>
-      <if expr="pp_ifdef('toolkit_views') and not pp_ifdef('use_ash')">
-        <include name="IDR_NEWTAB_BUTTON" file="default_100_percent/newtab_views.png" type="BINDATA" />
-        <include name="IDR_NEWTAB_BUTTON_H" file="default_100_percent/newtab_hover.png" type="BINDATA" />
-        <include name="IDR_NEWTAB_BUTTON_P" file="default_100_percent/newtab_p_views.png" type="BINDATA" />
-        <include name="IDR_NEWTAB_BUTTON_MASK" file="default_100_percent/newtab_button_mask_views.png" type="BINDATA" />
-      </if>
-      <if expr="not pp_ifdef('toolkit_views') and not pp_ifdef('use_ash')">
+      <if expr="not pp_ifdef('toolkit_views')">
         <include name="IDR_NEWTAB_BUTTON" file="default_100_percent/newtab.png" type="BINDATA" />
         <include name="IDR_NEWTAB_BUTTON_H" file="default_100_percent/newtab_hover.png" type="BINDATA" />
         <include name="IDR_NEWTAB_BUTTON_P" file="default_100_percent/newtab_pressed.png" type="BINDATA" />
