@@ -13,6 +13,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/ash/extension_utils.h"
+#include "chrome/common/url_constants.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/app_list/search_box_model.h"
@@ -170,12 +172,25 @@ void SearchBuilder::OpenResult(const app_list::SearchResult& result,
     if (extension)
       extension_utils::OpenExtension(profile_, extension, event_flags);
   } else {
-    // TODO(xiyuan): What should we do for alternate url case?
+    WindowOpenDisposition disposition =
+        browser::DispositionFromEventFlags(event_flags);
     Browser* browser = browser::FindOrCreateTabbedBrowser(profile_);
+
+    if (disposition == CURRENT_TAB) {
+      // If current tab is not NTP, change disposition to NEW_FOREGROUND_TAB.
+      const GURL& url = browser->GetSelectedWebContents() ?
+          browser->GetSelectedWebContents()->GetURL() : GURL();
+      if (!url.SchemeIs(chrome::kChromeUIScheme) ||
+          url.host() != chrome::kChromeUINewTabHost) {
+        disposition = NEW_FOREGROUND_TAB;
+      }
+    }
+
+    // TODO(xiyuan): What should we do for alternate url case?
     browser->OpenURL(
         content::OpenURLParams(match.destination_url,
                                content::Referrer(),
-                               browser::DispositionFromEventFlags(event_flags),
+                               disposition,
                                match.transition,
                                false));
   }
