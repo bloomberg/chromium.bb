@@ -66,7 +66,7 @@ class Runner(object):
   def map(self, test_case):
     """Traces a single test case and returns its output."""
     cmd = [self.executable, '--gtest_filter=%s' % test_case]
-
+    cmd = list_test_cases.fix_python_path(cmd)
     out = []
     for retry in range(self.retry_count):
       start = time.time()

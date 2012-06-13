@@ -17,8 +17,19 @@ class Failure(Exception):
   pass
 
 
+def fix_python_path(cmd):
+  """Returns the fixed command line to call the right python executable."""
+  out = cmd[:]
+  if out[0] == 'python':
+    out[0] = sys.executable
+  elif out[0].endswith('.py'):
+    out.insert(0, sys.executable)
+  return out
+
+
 def gtest_list_tests(executable):
   cmd = [executable, '--gtest_list_tests']
+  cmd = fix_python_path(cmd)
   p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   out, err = p.communicate()
   if p.returncode:

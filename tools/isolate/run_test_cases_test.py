@@ -25,11 +25,15 @@ class TraceTestCases(unittest.TestCase):
         '--no-dump',
         target,
     ]
+    logging.debug(' '.join(cmd))
     proc = subprocess.Popen(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     # pylint is confused.
     out, err = proc.communicate() or ('', '')
     self.assertEquals(0, proc.returncode)
+    if sys.platform == 'win32':
+      # TODO(maruel): Figure out why replace('\r\n', '\n') doesn't work.
+      out = out.replace('\r', '')
     expected = (
       'Note: Google Test filter = Baz.Fail\n'
       '\n'
