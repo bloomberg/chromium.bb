@@ -1544,6 +1544,8 @@
         'browser/pepper_flash_settings_manager.h',
         'browser/pepper_gtalk_message_filter.cc',
         'browser/pepper_gtalk_message_filter.h',
+        'browser/performance_monitor/database.cc',
+        'browser/performance_monitor/database.h',
         'browser/performance_monitor/event.cc',
         'browser/performance_monitor/event.h',
         'browser/performance_monitor/metric_info.cc',

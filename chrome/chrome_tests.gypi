@@ -1363,6 +1363,7 @@
         'browser/password_manager/password_store_mac_unittest.cc',
         'browser/password_manager/password_store_win_unittest.cc',
         'browser/password_manager/password_store_x_unittest.cc',
+        'browser/performance_monitor/database_unittest.cc',
         'browser/performance_monitor/performance_monitor_util_unittest.cc',
         'browser/plugin_finder_unittest.cc',
         'browser/plugin_installer_unittest.cc',
