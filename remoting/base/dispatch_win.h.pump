@@ -1,0 +1,180 @@
+$$ This is a pump file for generating file templates.  Pump is a python
+$$ script that is part of the Google Test suite of utilities.  Description
+$$ can be found here:
+$$
+$$ http://code.google.com/p/googletest/wiki/PumpManual
+
+$$ MAX_ARITY controls the number of arguments that dispatch::Invoke() supports.
+$$ It is choosen to match the number of arguments base::Bind() supports.
+$var MAX_ARITY = 7
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef REMOTING_BASE_IDISPATCH_DRIVER_WIN_H_
+#define REMOTING_BASE_IDISPATCH_DRIVER_WIN_H_
+
+#include <oaidl.h>
+
+#include "base/basictypes.h"
+#include "base/template_util.h"
+#include "base/win/scoped_variant.h"
+
+namespace remoting {
+
+namespace dispatch {
+
+namespace internal {
+
+// A helper wrapper for |VARIANTARG| that is used to pass parameters to and from
+// IDispatch::Invoke(). The latter accepts parameters as an array of
+// |VARIANTARG| structures. The calling convention is:
+//   - [in] parameters are initialized and freed if needed by the caller.
+//   - [out] parameters are initialized by IDispatch::Invoke(). It is up to
+//         the caller to free leakable variants (such as VT_DISPATCH).
+//   - [in] [out] parameters are combination of both: the caller initializes
+//         them before the call and the callee assigns new values correctly
+//         freeing leakable variants.
+//
+// Using |ScopedVariantArg| instead of naked |VARIANTARG| ensures that
+// the resources allocated during the call will be properly freed. It also
+// provides wraping methods that convert between C++ types and VARIANTs.
+// The current convention is:
+//   - constant references are considered input parameters.
+//   - pointers to non-constant objects are considered output parameters.
+//   - [in] [out] parameters are not supported.
+//
+// It must be possible to cast a pointer to an array of |ScopedVariantArg| to
+// a pointer to an array of |VARIANTARG| structures.
+class ScopedVariantArg : public VARIANTARG {
+ public:
+  ScopedVariantArg() {
+    vt = VT_EMPTY;
+  }
+
+  ~ScopedVariantArg() {
+    VariantClear(this);
+  }
+
+  // Wrap() routines pack the input parameters into VARIANTARG structures so
+  // that they can be passed to IDispatch::Invoke.
+
+  HRESULT Wrap(const VARIANT& param) {
+    return VariantCopy(this, &param);
+  }
+
+  HRESULT Wrap(VARIANT* const & param) {
+    // Do nothing for an [out] parameter.
+    return S_OK;
+  }
+
+  // Unwrap() routines unpack the output parameters from VARIANTARG structures
+  // to the locations specified by the caller.
+
+  void Unwrap(const VARIANT& param_out) {
+    // Do nothing for an [in] parameter.
+  }
+
+  void Unwrap(VARIANT* const & param_out) {
+    *param_out = *this;
+    vt = VT_EMPTY;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScopedVariantArg);
+};
+
+// Make sure the layouts of |VARIANTARG| and |ScopedVariantArg| are identical.
+COMPILE_ASSERT(sizeof(ScopedVariantArg) == sizeof(VARIANTARG),
+               scoped_variant_arg_should_not_add_data_members);
+
+}  // namespace internal
+
+// Invoke() is a convenience wrapper for IDispatch::Invoke. It takes care of
+// calling the desired method by its ID and implements logic for passing
+// a variable number of in/out parameters to the called method.
+//
+// Current limitations:
+//   - in_out parameters are not supported.
+//   - more than $(MAX_ARITY) parameters are not supported.
+//   - the method ID cannot be cached and reused.
+//   - VARIANT is the only supported parameter type at the moment.
+$range ARITY 0..MAX_ARITY
+$for ARITY [[
+$range ARG 1..ARITY
+
+
+$if ARITY > 0 [[template <$for ARG , [[typename P$(ARG)]]>]]
+
+HRESULT Invoke(IDispatch* object,
+               LPOLESTR name,
+               WORD flags,
+$for ARG [[
+
+               const P$(ARG)& p$(ARG),
+]]
+
+               VARIANT* const & result_out) {
+  // Retrieve the ID of the method to be called.
+  DISPID disp_id;
+  HRESULT hr = object->GetIDsOfNames(IID_NULL, &name, 1, LOCALE_USER_DEFAULT,
+                                     &disp_id);
+  if (FAILED(hr))
+    return hr;
+
+  // Request the return value if asked by the caller.
+  internal::ScopedVariantArg result;
+  VARIANT* disp_result = NULL;
+  if (result_out != NULL)
+    disp_result = &result;
+
+$if ARITY > 0 [[
+
+  // Wrap the parameters into an array of VARIANT structures.
+  internal::ScopedVariantArg disp_args[$(ARITY)];
+$for ARG [[
+
+  hr = disp_args[$(ARITY) - $(ARG)].Wrap(p$(ARG));
+  if (FAILED(hr))
+    return hr;
+]]
+]]
+
+
+  // Invoke the method.
+
+$if ARITY > 0 [[
+  DISPPARAMS disp_params = { disp_args, NULL, $(ARITY), 0 };
+]] $else [[
+  DISPPARAMS disp_params = { NULL, NULL, 0, 0 };
+]]
+
+  hr = object->Invoke(disp_id, IID_NULL, LOCALE_USER_DEFAULT, flags,
+                      &disp_params, disp_result, NULL, NULL);
+  if (FAILED(hr))
+    return hr;
+
+$if ARITY > 0 [[
+
+  // Unwrap the parameters.
+$for ARG [[
+
+  disp_args[$(ARITY) - $(ARG)].Unwrap(p$(ARG));
+]]
+]]
+
+
+  // Unwrap the return value.
+  if (result_out != NULL)
+    result.Unwrap(result_out);
+
+  return S_OK;
+}
+
+]]
+
+} // namespace dispatch
+
+} // namespace remoting
+
+#endif // REMOTING_BASE_IDISPATCH_DRIVER_WIN_H_

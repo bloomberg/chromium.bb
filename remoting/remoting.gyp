@@ -855,6 +855,7 @@
         '../third_party/npapi/npapi.gyp:npapi',
       ],
       'sources': [
+        'base/dispatch_win.h',
         'host/branding.cc',
         'host/branding.h',
         'host/host_ui_resource.h',
