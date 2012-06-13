@@ -968,6 +968,10 @@ void RenderWidgetHostImpl::RemoveKeyboardListener(
   keyboard_listeners_.remove(listener);
 }
 
+void RenderWidgetHostImpl::SetDeviceScaleFactor(float scale) {
+  Send(new ViewMsg_SetDeviceScaleFactor(GetRoutingID(), scale));
+}
+
 void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
                                           int exit_code) {
   // Clearing this flag causes us to re-create the renderer when recovering

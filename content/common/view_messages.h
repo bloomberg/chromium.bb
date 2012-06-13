@@ -1149,6 +1149,10 @@ IPC_MESSAGE_ROUTED2(ViewMsg_EnableAutoResize,
 IPC_MESSAGE_ROUTED1(ViewMsg_DisableAutoResize,
                     gfx::Size /* new_size */)
 
+// Updates the device scale factor.
+IPC_MESSAGE_ROUTED1(ViewMsg_SetDeviceScaleFactor,
+                    float /* device_scale_factor */)
+
 // Changes the text direction of the currently selected input field (if any).
 IPC_MESSAGE_ROUTED1(ViewMsg_SetTextDirection,
                     WebKit::WebTextDirection /* direction */)

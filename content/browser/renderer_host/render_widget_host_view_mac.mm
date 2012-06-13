@@ -115,7 +115,8 @@ static NSString* const NSBackingPropertyOldScaleFactorKey =
 // -windowDidChangeBackingProperties:) uses
 // @"NSWindowBackingPropertiesChangeOldBackingScaleFactorKey", but that always
 // returns an old scale of 0. @"NSBackingPropertyOldScaleFactorKey" seems to
-// work in practice, and it's what's used in Apple's WebKit port.
+// work in practice, and it's what's used in Apple's WebKit port
+// (WebKit/mac/WebView/WebView.mm).
 
 #endif  // 10.7
 
@@ -1898,8 +1899,11 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
       [[notification userInfo] objectForKey:NSBackingPropertyOldScaleFactorKey])
       doubleValue];
   if (newBackingScaleFactor != oldBackingScaleFactor) {
-    // TODO(thakis): Tell renderer and backing store about new DPI,
-    // schedule repaint.
+    // TODO(thakis): Tell backing store about new DPI, schedule repaint.
+    if (renderWidgetHostView_->render_widget_host_) {
+      renderWidgetHostView_->render_widget_host_->SetDeviceScaleFactor(
+          newBackingScaleFactor);
+    }
   }
 }
 

@@ -120,6 +120,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   virtual void WasResized() OVERRIDE;
   virtual void AddKeyboardListener(KeyboardListener* listener) OVERRIDE;
   virtual void RemoveKeyboardListener(KeyboardListener* listener) OVERRIDE;
+  virtual void SetDeviceScaleFactor(float scale) OVERRIDE;
 
   // Sets the View of this RenderWidgetHost.
   void SetView(RenderWidgetHostView* view);

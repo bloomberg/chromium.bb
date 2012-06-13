@@ -271,6 +271,9 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   // Remove a keyboard listener.
   virtual void RemoveKeyboardListener(KeyboardListener* listener) = 0;
 
+  // Update the device scale factor.
+  virtual void SetDeviceScaleFactor(float scale) = 0;
+
  protected:
   friend class RenderWidgetHostImpl;
 

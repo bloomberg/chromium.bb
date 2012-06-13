@@ -235,6 +235,7 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_ImeConfirmComposition, OnImeConfirmComposition)
     IPC_MESSAGE_HANDLER(ViewMsg_PaintAtSize, OnMsgPaintAtSize)
     IPC_MESSAGE_HANDLER(ViewMsg_Repaint, OnMsgRepaint)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetDeviceScaleFactor, OnSetDeviceScaleFactor)
     IPC_MESSAGE_HANDLER(ViewMsg_SetTextDirection, OnSetTextDirection)
     IPC_MESSAGE_HANDLER(ViewMsg_Move_ACK, OnRequestMoveAck)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -1484,6 +1485,10 @@ void RenderWidget::OnMsgRepaint(const gfx::Size& size_to_paint) {
     gfx::Rect repaint_rect(size_to_paint.width(), size_to_paint.height());
     didInvalidateRect(repaint_rect);
   }
+}
+
+void RenderWidget::OnSetDeviceScaleFactor(float device_scale_factor) {
+  // TODO(thakis): Set device_scale_factor_, possibly trigger a repaint.
 }
 
 void RenderWidget::OnSetTextDirection(WebTextDirection direction) {
