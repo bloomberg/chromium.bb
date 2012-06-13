@@ -430,11 +430,10 @@ void ExtensionEventRouter::OnEventAck(
   // The event ACK is routed to the background host, so this should never be
   // NULL.
   CHECK(host);
-  if (!host->extension())
-    return;
-
-  CHECK(host->extension()->has_lazy_background_page());
-  pm->DecrementLazyKeepaliveCount(host->extension());
+  // TODO(mpcomplete): We should never get this message unless
+  // has_lazy_background_page is true. Find out why we're getting it anyway.
+  if (host->extension() && host->extension()->has_lazy_background_page())
+    pm->DecrementLazyKeepaliveCount(host->extension());
 }
 
 void ExtensionEventRouter::DispatchPendingEvent(
