@@ -224,13 +224,14 @@ class Sandbox {
   static int getProcFd() { return proc_fd_; }
 
  private:
+  typedef std::vector<struct sock_filter> Program;
+
   static ErrorCode probeEvaluator(int signo);
   static bool      kernelSupportSeccompBPF(int proc_fd);
-
-  static bool    isSingleThreaded(int proc_fd);
-  static bool    disableFilesystem();
-  static void    installFilter();
-  static void    sigSys(int nr, siginfo_t *info, void *void_context);
+  static bool      isSingleThreaded(int proc_fd);
+  static bool      disableFilesystem();
+  static void      installFilter();
+  static void      sigSys(int nr, siginfo_t *info, void *void_context);
 
   static bool          suppressLogging_;
   static SandboxStatus status_;

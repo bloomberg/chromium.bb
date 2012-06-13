@@ -211,23 +211,28 @@ void Sandbox::installFilter() {
     die("Not implemented");
   }
 
+  // Assemble the BPF filter program.
+  Program *program = new Program();
+  if (!program) {
+    die("Out of memory");
+  }
+
   // If the architecture doesn't match SECCOMP_ARCH, disallow the
   // system call.
-  std::vector<struct sock_filter> program;
-  program.push_back((struct sock_filter)
+  program->push_back((struct sock_filter)
     BPF_STMT(BPF_LD+BPF_W+BPF_ABS, offsetof(struct arch_seccomp_data, arch)));
-  program.push_back((struct sock_filter)
+  program->push_back((struct sock_filter)
     BPF_JUMP(BPF_JMP+BPF_JEQ+BPF_K, SECCOMP_ARCH, 1, 0));
 
   // TODO: Instead of killing outright, we should raise a SIGSYS and
   //       report a useful error message. SIGKILL cannot be trapped by the
   //       debugger and essentially makes the program fail in a way that is
   //       almost impossible to debug.
-  program.push_back((struct sock_filter)
+  program->push_back((struct sock_filter)
     BPF_STMT(BPF_RET+BPF_K, SECCOMP_RET_KILL));
 
   // Grab the system call number, so that we can implement jump tables.
-  program.push_back((struct sock_filter)
+  program->push_back((struct sock_filter)
     BPF_STMT(BPF_LD+BPF_W+BPF_ABS, offsetof(struct arch_seccomp_data, nr)));
 
   // On Intel architectures, verify that system call numbers are in the
@@ -235,14 +240,14 @@ void Sandbox::installFilter() {
   // on all system calls. The newer x86-32 API always sets bit 30.
 #if defined(__i386__) || defined(__x86_64__)
 #if defined(__x86_64__) && defined(__ILP32__)
-  program.push_back((struct sock_filter)
+  program->push_back((struct sock_filter)
     BPF_JUMP(BPF_JMP+BPF_JSET+BPF_K, 0x40000000, 1, 0));
 #else
-  program.push_back((struct sock_filter)
+  program->push_back((struct sock_filter)
     BPF_JUMP(BPF_JMP+BPF_JSET+BPF_K, 0x40000000, 0, 1));
 #endif
   // TODO: raise a suitable SIGSYS signal
-  program.push_back((struct sock_filter)
+  program->push_back((struct sock_filter)
     BPF_STMT(BPF_RET+BPF_K, SECCOMP_RET_KILL));
 #endif
 
@@ -278,20 +283,35 @@ void Sandbox::installFilter() {
       }
       break;
     }
-    program.push_back((struct sock_filter)
+    program->push_back((struct sock_filter)
       BPF_JUMP(BPF_JMP+BPF_JEQ+BPF_K, sysnum, 0, 1));
-    program.push_back((struct sock_filter)
+    program->push_back((struct sock_filter)
       BPF_STMT(BPF_RET+BPF_K, ret));
   }
 
   // Everything that isn't allowed is forbidden. Eventually, we would
   // like to have a way to log forbidden calls, when in debug mode.
   // TODO: raise a suitable SIGSYS signal
-  program.push_back((struct sock_filter)
+  program->push_back((struct sock_filter)
     BPF_STMT(BPF_RET+BPF_K, SECCOMP_RET_KILL));
 
+  // We want to be very careful in not imposing any requirements on the
+  // policies that are set with setSandboxPolicy(). This means, as soon as
+  // the sandbox is active, we shouldn't be relying on libraries that could
+  // be making system calls. This, for example, means we should avoid
+  // using the heap and we should avoid using STL functions.
+  // Temporarily copy the contents of the "program" vector into a
+  // stack-allocated array; and then explicitly destroy that object.
+  // This makes sure we don't ex- or implicitly call new/delete after we
+  // installed the BPF filter program in the kernel. Depending on the
+  // system memory allocator that is in effect, these operators can result
+  // in system calls to things like munmap() or brk().
+  struct sock_filter bpf[program->size()];
+  const struct sock_fprog prog = { program->size(), bpf };
+  memcpy(bpf, &(*program)[0], sizeof(bpf));
+  delete program;
+
   // Install BPF filter program
-  const struct sock_fprog prog = { program.size(), &program[0] };
   if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) ||
       prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, &prog)) {
     goto filter_failed;
