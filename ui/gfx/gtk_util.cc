@@ -179,4 +179,20 @@ void InitRCStyles() {
   gtk_rc_parse_string(kRCText);
 }
 
+base::TimeDelta GetCursorBlinkCycle() {
+  // From http://library.gnome.org/devel/gtk/unstable/GtkSettings.html, this is
+  // the default value for gtk-cursor-blink-time.
+  static const gint kGtkDefaultCursorBlinkTime = 1200;
+
+  gint cursor_blink_time = kGtkDefaultCursorBlinkTime;
+  gboolean cursor_blink = TRUE;
+  g_object_get(gtk_settings_get_default(),
+               "gtk-cursor-blink-time", &cursor_blink_time,
+               "gtk-cursor-blink", &cursor_blink,
+               NULL);
+  return cursor_blink ?
+         base::TimeDelta::FromMilliseconds(cursor_blink_time) :
+         base::TimeDelta();
+}
+
 }  // namespace gfx

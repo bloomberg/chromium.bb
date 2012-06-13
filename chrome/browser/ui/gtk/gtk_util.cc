@@ -32,7 +32,6 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/renderer_preferences.h"
 #include "googleurl/src/gurl.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -692,83 +691,6 @@ GtkWidget* IndentWidget(GtkWidget* content) {
                             ui::kGroupIndent, 0);
   gtk_container_add(GTK_CONTAINER(content_alignment), content);
   return content_alignment;
-}
-
-void UpdateGtkFontSettings(content::RendererPreferences* prefs) {
-  DCHECK(prefs);
-
-  // From http://library.gnome.org/devel/gtk/unstable/GtkSettings.html, this is
-  // the default value for gtk-cursor-blink-time.
-  static const gint kGtkDefaultCursorBlinkTime = 1200;
-
-  gint cursor_blink_time = kGtkDefaultCursorBlinkTime;
-  gboolean cursor_blink = TRUE;
-  gint antialias = 0;
-  gint hinting = 0;
-  gchar* hint_style = NULL;
-  gchar* rgba_style = NULL;
-  g_object_get(gtk_settings_get_default(),
-               "gtk-cursor-blink-time", &cursor_blink_time,
-               "gtk-cursor-blink", &cursor_blink,
-               "gtk-xft-antialias", &antialias,
-               "gtk-xft-hinting", &hinting,
-               "gtk-xft-hintstyle", &hint_style,
-               "gtk-xft-rgba", &rgba_style,
-               NULL);
-
-  // Set some reasonable defaults.
-  prefs->should_antialias_text = true;
-  prefs->hinting = content::RENDERER_PREFERENCES_HINTING_SYSTEM_DEFAULT;
-  prefs->subpixel_rendering =
-      content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_SYSTEM_DEFAULT;
-
-  if (cursor_blink) {
-    // Dividing by 2*1000ms follows the WebKit GTK port and makes the blink
-    // frequency appear similar to the omnibox.  Without this the blink is too
-    // slow.
-    prefs->caret_blink_interval = cursor_blink_time / 2000.;
-  } else {
-    prefs->caret_blink_interval = 0;
-  }
-
-  // g_object_get() doesn't tell us whether the properties were present or not,
-  // but if they aren't (because gnome-settings-daemon isn't running), we'll get
-  // NULL values for the strings.
-  if (hint_style && rgba_style) {
-    prefs->should_antialias_text = antialias;
-
-    if (hinting == 0 || strcmp(hint_style, "hintnone") == 0) {
-      prefs->hinting = content::RENDERER_PREFERENCES_HINTING_NONE;
-    } else if (strcmp(hint_style, "hintslight") == 0) {
-      prefs->hinting = content::RENDERER_PREFERENCES_HINTING_SLIGHT;
-    } else if (strcmp(hint_style, "hintmedium") == 0) {
-      prefs->hinting = content::RENDERER_PREFERENCES_HINTING_MEDIUM;
-    } else if (strcmp(hint_style, "hintfull") == 0) {
-      prefs->hinting = content::RENDERER_PREFERENCES_HINTING_FULL;
-    }
-
-    if (strcmp(rgba_style, "none") == 0) {
-      prefs->subpixel_rendering =
-          content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_NONE;
-    } else if (strcmp(rgba_style, "rgb") == 0) {
-      prefs->subpixel_rendering =
-          content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_RGB;
-    } else if (strcmp(rgba_style, "bgr") == 0) {
-      prefs->subpixel_rendering =
-          content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_BGR;
-    } else if (strcmp(rgba_style, "vrgb") == 0) {
-      prefs->subpixel_rendering =
-          content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_VRGB;
-    } else if (strcmp(rgba_style, "vbgr") == 0) {
-      prefs->subpixel_rendering =
-          content::RENDERER_PREFERENCES_SUBPIXEL_RENDERING_VBGR;
-    }
-  }
-
-  if (hint_style)
-    g_free(hint_style);
-  if (rgba_style)
-    g_free(rgba_style);
 }
 
 GdkPoint MakeBidiGdkPoint(gint x, gint y, gint width, bool ltr) {

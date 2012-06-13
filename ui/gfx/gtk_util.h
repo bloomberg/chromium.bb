@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "base/time.h"
 #include "ui/base/ui_export.h"
 
 typedef struct _GdkPixbuf GdkPixbuf;
@@ -42,6 +43,10 @@ UI_EXPORT GdkCursor* GetCursor(int type);
 
 // Initialize some GTK settings so that our dialogs are consistent.
 UI_EXPORT void InitRCStyles();
+
+// Queries GtkSettings for the cursor blink cycle time.  Returns a 0 duration if
+// blinking is disabled.
+UI_EXPORT base::TimeDelta GetCursorBlinkCycle();
 
 }  // namespace gfx
 

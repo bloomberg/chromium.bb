@@ -4,7 +4,6 @@
 
 #include "ui/gfx/render_text_linux.h"
 
-#include <fontconfig/fontconfig.h>
 #include <pango/pangocairo.h>
 #include <algorithm>
 #include <string>
@@ -16,6 +15,7 @@
 #include "ui/base/text/utf16_indexing.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/font_render_params_linux.h"
 #include "ui/gfx/pango_util.h"
 
 namespace gfx {
@@ -44,30 +44,6 @@ bool IsForwardMotion(VisualCursorDirection direction, const PangoItem* item) {
 // |index| == |range.end()|.
 bool IndexInRange(const ui::Range& range, size_t index) {
   return index >= range.start() && index < range.end();
-}
-
-// Sends an empty query to FontConfig and checks whether subpixel rendering is
-// enabled or not in the returned settings.  Caches the result.
-bool IsSubpixelRenderingEnabledInFontConfig() {
-  static bool subpixel_enabled = false;
-  static bool already_queried = false;
-
-  if (already_queried)
-    return subpixel_enabled;
-
-  // TODO(derat): Create font_config_util.h/cc and move this there.
-  FcPattern* pattern = FcPatternCreate();
-  FcResult result;
-  FcPattern* match = FcFontMatch(0, pattern, &result);
-  DCHECK(match);
-  int fc_rgba = FC_RGBA_RGB;
-  FcPatternGetInteger(match, FC_RGBA, 0, &fc_rgba);
-  FcPatternDestroy(pattern);
-  FcPatternDestroy(match);
-
-  already_queried = true;
-  subpixel_enabled = (fc_rgba != FC_RGBA_NONE);
-  return subpixel_enabled;
 }
 
 // Sets underline metrics on |renderer| according to Pango font |desc|.
@@ -398,9 +374,16 @@ void RenderTextLinux::DrawVisualText(Canvas* canvas) {
   internal::SkiaTextRenderer renderer(canvas);
   ApplyFadeEffects(&renderer);
   ApplyTextShadows(&renderer);
+
+  // TODO(derat): Use font-specific params: http://crbug.com/125235
+  const gfx::FontRenderParams& render_params =
+      gfx::GetDefaultFontRenderParams();
+  const bool use_subpixel_rendering =
+      render_params.subpixel_rendering !=
+          gfx::FontRenderParams::SUBPIXEL_RENDERING_NONE;
   renderer.SetFontSmoothingSettings(
-      true /* enable_smoothing */,
-      IsSubpixelRenderingEnabledInFontConfig() && !background_is_transparent());
+      render_params.antialiasing,
+      use_subpixel_rendering && !background_is_transparent());
 
   for (GSList* it = current_line_->runs; it; it = it->next) {
     PangoLayoutRun* run = reinterpret_cast<PangoLayoutRun*>(it->data);
