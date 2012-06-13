@@ -1193,7 +1193,6 @@
         'host/url_fetcher.h',
         'host/url_request_context.cc',
         'host/url_request_context.h',
-        'host/usb_keycode_map.h',
         'host/user_authenticator.h',
         'host/user_authenticator_linux.cc',
         'host/user_authenticator_mac.cc',
