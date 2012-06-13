@@ -33,9 +33,10 @@ class CONTENT_EXPORT WebContentsViewAura
  public:
   WebContentsViewAura(WebContentsImpl* web_contents,
                       content::WebContentsViewDelegate* delegate);
-  virtual ~WebContentsViewAura();
 
  private:
+  virtual ~WebContentsViewAura();
+
   void SizeChangedCommon(const gfx::Size& size);
 
   void EndDrag(WebKit::WebDragOperationsMask ops);

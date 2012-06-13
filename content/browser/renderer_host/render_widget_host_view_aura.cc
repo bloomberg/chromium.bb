@@ -225,26 +225,6 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
   aura::client::SetActivationDelegate(window_, this);
 }
 
-RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
-  if (!shared_surface_handle_.is_null()) {
-    ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-    factory->DestroySharedSurfaceHandle(shared_surface_handle_);
-    factory->RemoveObserver(this);
-  }
-  window_->RemoveObserver(window_observer_.get());
-  UnlockMouse();
-  if (popup_type_ != WebKit::WebPopupTypeNone) {
-    DCHECK(popup_parent_host_view_);
-    popup_parent_host_view_->popup_child_host_view_ = NULL;
-  }
-  aura::client::SetTooltipText(window_, NULL);
-
-  // This call is usually no-op since |this| object is already removed from the
-  // Aura root window and we don't have a way to get an input method object
-  // associated with the window, but just in case.
-  DetachFromInputMethod();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, RenderWidgetHostView implementation:
 
@@ -1231,6 +1211,26 @@ void RenderWidgetHostViewAura::OnLostResources(ui::Compositor* compositor) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, private:
+
+RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
+  if (!shared_surface_handle_.is_null()) {
+    ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
+    factory->DestroySharedSurfaceHandle(shared_surface_handle_);
+    factory->RemoveObserver(this);
+  }
+  window_->RemoveObserver(window_observer_.get());
+  UnlockMouse();
+  if (popup_type_ != WebKit::WebPopupTypeNone) {
+    DCHECK(popup_parent_host_view_);
+    popup_parent_host_view_->popup_child_host_view_ = NULL;
+  }
+  aura::client::SetTooltipText(window_, NULL);
+
+  // This call is usually no-op since |this| object is already removed from the
+  // Aura root window and we don't have a way to get an input method object
+  // associated with the window, but just in case.
+  DetachFromInputMethod();
+}
 
 void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
   const gfx::Point screen_point = gfx::Screen::GetCursorScreenPoint();

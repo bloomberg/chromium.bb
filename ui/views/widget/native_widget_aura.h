@@ -34,7 +34,6 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
                                       public aura::client::DragDropDelegate {
  public:
   explicit NativeWidgetAura(internal::NativeWidgetDelegate* delegate);
-  virtual ~NativeWidgetAura();
 
   // TODO(beng): Find a better place for this, and the similar method on
   //             NativeWidgetWin.
@@ -160,6 +159,8 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   virtual int OnPerformDrop(const aura::DropTargetEvent& event) OVERRIDE;
 
  protected:
+  virtual ~NativeWidgetAura();
+
   internal::NativeWidgetDelegate* delegate() { return delegate_; }
 
  private:

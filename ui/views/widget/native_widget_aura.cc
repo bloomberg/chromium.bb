@@ -153,13 +153,6 @@ NativeWidgetAura::NativeWidgetAura(internal::NativeWidgetDelegate* delegate)
       saved_window_state_(ui::SHOW_STATE_DEFAULT) {
 }
 
-NativeWidgetAura::~NativeWidgetAura() {
-  if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
-    delete delegate_;
-  else
-    CloseNow();
-}
-
 // static
 gfx::Font NativeWidgetAura::GetWindowTitleFont() {
 #if defined(OS_WIN)
@@ -864,6 +857,16 @@ int NativeWidgetAura::OnPerformDrop(const aura::DropTargetEvent& event) {
   DCHECK(drop_helper_.get() != NULL);
   return drop_helper_->OnDrop(event.data(), event.location(),
       last_drop_operation_);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NativeWidgetAura, protected:
+
+NativeWidgetAura::~NativeWidgetAura() {
+  if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
+    delete delegate_;
+  else
+    CloseNow();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

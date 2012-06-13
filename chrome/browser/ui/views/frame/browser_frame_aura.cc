@@ -96,9 +96,6 @@ BrowserFrameAura::BrowserFrameAura(BrowserFrame* browser_frame,
 #endif
 }
 
-BrowserFrameAura::~BrowserFrameAura() {
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserFrameAura, views::ContextMenuController overrides:
 void BrowserFrameAura::ShowContextMenuForView(views::View* source,
@@ -183,4 +180,10 @@ NativeBrowserFrame* NativeBrowserFrame::CreateNativeBrowserFrame(
     BrowserFrame* browser_frame,
     BrowserView* browser_view) {
   return new BrowserFrameAura(browser_frame, browser_view);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// BrowserFrameAura, private:
+
+BrowserFrameAura::~BrowserFrameAura() {
 }

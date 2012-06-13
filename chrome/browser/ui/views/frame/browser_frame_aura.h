@@ -30,7 +30,6 @@ class BrowserFrameAura : public views::ContextMenuController,
                          public NativeBrowserFrame {
  public:
   BrowserFrameAura(BrowserFrame* browser_frame, BrowserView* browser_view);
-  virtual ~BrowserFrameAura();
 
   BrowserView* browser_view() const { return browser_view_; }
 
@@ -51,6 +50,8 @@ class BrowserFrameAura : public views::ContextMenuController,
 
  private:
   class WindowPropertyWatcher;
+
+  virtual ~BrowserFrameAura();
 
   // The BrowserView is our ClientView. This is a pointer to it.
   BrowserView* browser_view_;

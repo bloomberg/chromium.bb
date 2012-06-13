@@ -211,14 +211,14 @@ WebContentsViewAura::WebContentsViewAura(
       current_rvh_for_drag_(NULL) {
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// WebContentsViewAura, private:
+
 WebContentsViewAura::~WebContentsViewAura() {
   // Window needs a valid delegate during its destructor, so we explicitly
   // delete it here.
   window_.reset();
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// WebContentsViewAura, private:
 
 void WebContentsViewAura::SizeChangedCommon(const gfx::Size& size) {
   if (web_contents_->GetInterstitialPage())

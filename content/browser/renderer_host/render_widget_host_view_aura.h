@@ -54,8 +54,6 @@ class RenderWidgetHostViewAura
       public aura::client::ActivationDelegate,
       public ImageTransportFactoryObserver {
  public:
-  virtual ~RenderWidgetHostViewAura();
-
   // RenderWidgetHostView implementation.
   virtual void InitAsChild(gfx::NativeView parent_view) OVERRIDE;
   virtual content::RenderWidgetHost* GetRenderWidgetHost() const OVERRIDE;
@@ -198,6 +196,8 @@ class RenderWidgetHostViewAura
 
   // Overridden from ImageTransportFactoryObserver:
   virtual void OnLostResources(ui::Compositor* compositor) OVERRIDE;
+
+  virtual ~RenderWidgetHostViewAura();
 
   void UpdateCursorIfOverSelf();
   void UpdateExternalTexture();
