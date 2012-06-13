@@ -162,6 +162,63 @@ void TestHelper::SetupTextureManagerInitExpectations(
   }
 }
 
+void TestHelper::SetupTextureDestructionExpectations(
+    ::gfx::MockGLInterface* gl, GLenum target) {
+  GLuint texture_id = 0;
+  switch (target) {
+    case GL_TEXTURE_2D:
+      texture_id = kServiceDefaultTexture2dId;
+      break;
+    case GL_TEXTURE_CUBE_MAP:
+      texture_id = kServiceDefaultTextureCubemapId;
+      break;
+    case GL_TEXTURE_EXTERNAL_OES:
+      texture_id = kServiceDefaultExternalTextureId;
+      break;
+    case GL_TEXTURE_RECTANGLE_ARB:
+      texture_id = kServiceDefaultRectangleTextureId;
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  EXPECT_CALL(*gl, DeleteTextures(1, Pointee(texture_id)))
+      .Times(1)
+      .RetiresOnSaturation();
+}
+
+void TestHelper::SetupTextureManagerDestructionExpectations(
+    ::gfx::MockGLInterface* gl,
+    const char* extensions) {
+  SetupTextureDestructionExpectations(gl, GL_TEXTURE_2D);
+  SetupTextureDestructionExpectations(gl, GL_TEXTURE_CUBE_MAP);
+
+  bool ext_image_external = false;
+  bool arb_texture_rectangle = false;
+  CStringTokenizer t(extensions, extensions + strlen(extensions), " ");
+  while (t.GetNext()) {
+    if (t.token() == "GL_OES_EGL_image_external") {
+      ext_image_external = true;
+      break;
+    }
+    if (t.token() == "GL_ARB_texture_rectangle") {
+      arb_texture_rectangle = true;
+      break;
+    }
+  }
+
+  if (ext_image_external) {
+    SetupTextureDestructionExpectations(gl, GL_TEXTURE_EXTERNAL_OES);
+  }
+  if (arb_texture_rectangle) {
+    SetupTextureDestructionExpectations(gl, GL_TEXTURE_RECTANGLE_ARB);
+  }
+
+  EXPECT_CALL(*gl, DeleteTextures(4, _))
+      .Times(1)
+      .RetiresOnSaturation();
+}
+
 void TestHelper::SetupContextGroupInitExpectations(
       ::gfx::MockGLInterface* gl,
       const DisallowedFeatures& disallowed_features,

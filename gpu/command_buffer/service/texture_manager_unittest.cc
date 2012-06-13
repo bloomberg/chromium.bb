@@ -158,9 +158,7 @@ TEST_F(TextureManagerTest, Destroy) {
   EXPECT_CALL(*gl_, DeleteTextures(1, ::testing::Pointee(kService1Id)))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, DeleteTextures(8, _))
-      .Times(1)
-      .RetiresOnSaturation();
+  TestHelper::SetupTextureManagerDestructionExpectations(gl_.get(), "");
   manager.Destroy(true);
   // Check that resources got freed.
   info1 = manager.GetTextureInfo(kClient1Id);
@@ -182,11 +180,9 @@ TEST_F(TextureManagerTest, DestroyUnowned) {
   // Check texture got created.
   TextureManager::TextureInfo* info1 = manager.GetTextureInfo(kClient1Id);
   ASSERT_TRUE(info1 != NULL);
-  EXPECT_CALL(*gl_, DeleteTextures(8, _))
-      .Times(1)
-      .RetiresOnSaturation();
 
   // Check that it is not freed if it is not owned.
+  TestHelper::SetupTextureManagerDestructionExpectations(gl_.get(), "");
   manager.Destroy(true);
   info1 = manager.GetTextureInfo(kClient1Id);
   ASSERT_TRUE(info1 == NULL);

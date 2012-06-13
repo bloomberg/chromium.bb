@@ -66,8 +66,10 @@ class TestHelper {
       const char* extensions,
       const char* vendor,
       const char* renderer);
-  static void SetupTextureManagerInitExpectations(::gfx::MockGLInterface* gl,
-                                                  const char* extensions);
+  static void SetupTextureManagerInitExpectations(
+      ::gfx::MockGLInterface* gl, const char* extensions);
+  static void SetupTextureManagerDestructionExpectations(
+      ::gfx::MockGLInterface* gl, const char* extensions);
 
   static void SetupExpectationsForClearingUniforms(
       ::gfx::MockGLInterface* gl, UniformInfo* uniforms, size_t num_uniforms);
@@ -79,8 +81,10 @@ class TestHelper {
       GLuint service_id);
 
  private:
-  static void SetupTextureInitializationExpectations(::gfx::MockGLInterface* gl,
-                                                     GLenum target);
+  static void SetupTextureInitializationExpectations(
+       ::gfx::MockGLInterface* gl, GLenum target);
+  static void SetupTextureDestructionExpectations(
+       ::gfx::MockGLInterface* gl, GLenum target);
 };
 
 }  // namespace gles2
