@@ -574,6 +574,9 @@ class CCGenerator(object):
             param_namespace + '::' + cpp_util.Classname(param.name),
             param))
         c.Append()
+      elif param.type_ == PropertyType.ARRAY:
+        c.Concat(self._GeneratePropertyFunctions(
+            param_namespace, [param.item_type]))
       elif param.type_ == PropertyType.CHOICES:
         c.Concat(self._GeneratePropertyFunctions(
             param_namespace, param.choices.values()))

@@ -259,6 +259,9 @@ class HGenerator(object):
       if prop.type_ == PropertyType.OBJECT:
         c.Concat(self._GenerateType(prop))
         c.Append()
+      elif prop.type_ == PropertyType.ARRAY:
+        c.Concat(self._GeneratePropertyStructures([prop.item_type]))
+        c.Append()
       elif prop.type_ == PropertyType.CHOICES:
         c.Concat(self._GenerateEnumDeclaration(
             self._cpp_type_generator.GetChoicesEnumType(prop),

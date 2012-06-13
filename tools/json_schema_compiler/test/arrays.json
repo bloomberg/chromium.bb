@@ -80,6 +80,26 @@
         ]
       },
       {
+        "name": "objectArray",
+        "type": "function",
+        "description": "Takes some Items.",
+        "parameters": [
+          {
+            "name": "objects",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": {"type": "any"}
+            }
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": []
+          }
+        ]
+      },
+      {
         "name": "refArray",
         "type": "function",
         "description": "Takes some Items.",
