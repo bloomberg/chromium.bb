@@ -51,7 +51,7 @@ void TestShellDelegate::NewTab() {
 void TestShellDelegate::NewWindow(bool incognito) {
 }
 
-void TestShellDelegate::OpenFileManager() {
+void TestShellDelegate::OpenFileManager(bool as_dialog) {
 }
 
 void TestShellDelegate::OpenCrosh() {

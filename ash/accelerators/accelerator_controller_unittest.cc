@@ -740,6 +740,14 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
       ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN)));
 
 #if defined(OS_CHROMEOS)
+  // Open file manager dialog
+  EXPECT_TRUE(GetController()->Process(
+      ui::Accelerator(ui::VKEY_O, ui::EF_CONTROL_DOWN)));
+
+  // Open file manager tab
+  EXPECT_TRUE(GetController()->Process(
+      ui::Accelerator(ui::VKEY_M, ui::EF_CONTROL_DOWN)));
+
   // Lock screen
   // NOTE: Accelerators that do not work on the lock screen need to be
   // tested before the sequence below is invoked because it causes a side

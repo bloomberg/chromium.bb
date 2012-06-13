@@ -66,7 +66,7 @@ void ShellDelegateImpl::NewWindow(bool incognito) {
   ash::shell::ToplevelWindow::CreateToplevelWindow(create_params);
 }
 
-void ShellDelegateImpl::OpenFileManager() {
+void ShellDelegateImpl::OpenFileManager(bool as_dialog) {
 }
 
 void ShellDelegateImpl::OpenCrosh() {

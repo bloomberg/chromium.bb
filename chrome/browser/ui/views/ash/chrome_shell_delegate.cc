@@ -146,8 +146,18 @@ void ChromeShellDelegate::NewWindow(bool is_incognito) {
       is_incognito ? profile->GetOffTheRecordProfile() : profile);
 }
 
-void ChromeShellDelegate::OpenFileManager() {
+void ChromeShellDelegate::OpenFileManager(bool as_dialog) {
 #if defined(OS_CHROMEOS)
+  if (as_dialog) {
+    Browser* browser =
+        browser::FindBrowserWithWindow(ash::wm::GetActiveWindow());
+    // Open the select file dialog only if there is an active browser where the
+    // selected file is displayed. Otherwise open a file manager in a tab.
+    if (browser) {
+      browser->OpenFile();
+      return;
+    }
+  }
   file_manager_util::OpenApplication();
 #endif
 }

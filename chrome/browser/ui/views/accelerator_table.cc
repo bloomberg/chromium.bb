@@ -40,7 +40,6 @@ const AcceleratorMapping kAcceleratorMap[] = {
     IDC_DEV_TOOLS_CONSOLE },
   { ui::VKEY_C, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     IDC_DEV_TOOLS_INSPECT },
-  { ui::VKEY_O, ui::EF_CONTROL_DOWN, IDC_OPEN_FILE },
   { ui::VKEY_P, ui::EF_CONTROL_DOWN, IDC_PRINT},
   { ui::VKEY_P, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_ADVANCED_PRINT},
   { ui::VKEY_R, ui::EF_CONTROL_DOWN, IDC_RELOAD },
@@ -143,6 +142,7 @@ const AcceleratorMapping kAcceleratorMap[] = {
     IDC_NEW_INCOGNITO_WINDOW },
   { ui::VKEY_T, ui::EF_CONTROL_DOWN, IDC_NEW_TAB },
   { ui::VKEY_N, ui::EF_CONTROL_DOWN, IDC_NEW_WINDOW },
+  { ui::VKEY_O, ui::EF_CONTROL_DOWN, IDC_OPEN_FILE },
   { ui::VKEY_T, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_RESTORE_TAB },
   { ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN, IDC_TASK_MANAGER },
 #endif
