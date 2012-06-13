@@ -3141,6 +3141,16 @@ nacl_env = MakeArchSpecificEnv().Clone(
     DYNCODE_LIBS = ['nacl_dyncode_private'],
     )
 
+if nacl_env.Bit('target_arm') and not nacl_env.Bit('bitcode'):
+  # arm-nacl-gcc is based on GCC>=4.7, where -Wall includes this new warning.
+  # The COMPILE_ASSERT macro in base/basictypes.h and gpu/command_buffer/common/types.h
+  # triggers this warning and it's proven too painful to find a formulation that
+  # doesn't and also doesn't break any of the other compilers.
+  # TODO(mcgrathr): Get the chromium code cleaned up so it doesn't trigger this
+  # warning one day, perhaps by just compiling with -std=c++0x and using static_assert.
+  # See https://code.google.com/p/chromium/issues/detail?id=132339
+  nacl_env.Append(CCFLAGS=['-Wno-unused-local-typedefs'])
+
 # Bitcode files are assumed to be x86-32 and that causes
 # problems when (bitcode) linking against native x86-64 libs
 # BUG: http://code.google.com/p/nativeclient/issues/detail?id=2420
