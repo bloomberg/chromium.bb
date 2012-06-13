@@ -72,7 +72,16 @@ remoting.HostSession.prototype.createPluginAndConnect =
   this.plugin.onNatTraversalPolicyChanged = onNatTraversalPolicyChanged;
   this.plugin.onStateChanged = onStateChanged;
   this.plugin.logDebugInfo = logDebugInfo;
-  this.plugin.localize(chrome.i18n.getMessage);
+  this.plugin.localize(
+      /** @param {string} id */
+      function(id) {
+          // Plugin takes care of string substitution, so we just keep
+          // $ placeholders.
+          // TODO(sergeyu): Refactor plugin location so that it
+          // doesn't need to do any substitutions. crbug.com/132370 .
+          return chrome.i18n.getMessage(id, ["$1", "$2", "$3"]);
+      }
+  );
   this.plugin.connect(email, 'oauth2:' + accessToken);
 };
 
