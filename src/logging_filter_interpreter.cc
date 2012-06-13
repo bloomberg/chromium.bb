@@ -55,4 +55,8 @@ void LoggingFilterInterpreter::IntWasWritten(IntProperty* prop) {
     log_.Clear();
 };
 
+std::string LoggingFilterInterpreter::EncodeActivityLog() {
+  return log_.Encode();
+}
+
 }  // namespace gestures

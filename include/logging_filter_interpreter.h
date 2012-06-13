@@ -4,6 +4,7 @@
 
 #include <base/memory/scoped_ptr.h>
 #include <gtest/gtest.h>
+#include <string>
 
 #include "gestures/include/activity_log.h"
 #include "gestures/include/gestures.h"
@@ -14,7 +15,6 @@
 #define GESTURES_LOGGING_FILTER_INTERPRETER_H_
 
 namespace gestures {
-
 // This interpreter keeps an ActivityLog of everything that happens, and can
 // log it when requested.
 
@@ -35,6 +35,8 @@ class LoggingFilterInterpreter : public Interpreter, public PropertyDelegate {
   virtual void SetHardwareProperties(const HardwareProperties& hwprops);
 
   virtual void IntWasWritten(IntProperty* prop);
+
+  std::string EncodeActivityLog();
 
  private:
   scoped_ptr<Interpreter> next_;

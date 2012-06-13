@@ -247,7 +247,7 @@ GestureInterpreter::GestureInterpreter(int version)
   temp = new StuckButtonInhibitorFilterInterpreter(temp);
   temp = new T5R2CorrectingFilterInterpreter(prop_reg_.get(), temp);
   temp = new SemiMtCorrectingFilterInterpreter(prop_reg_.get(), temp);
-  temp = new LoggingFilterInterpreter(prop_reg_.get(), temp);
+  temp = loggingFilter_ = new LoggingFilterInterpreter(prop_reg_.get(), temp);
   interpreter_.reset(temp);
   temp = NULL;
 }
@@ -321,6 +321,10 @@ void GestureInterpreter::SetTimerProvider(GesturesTimerProvider* tp,
 void GestureInterpreter::SetPropProvider(GesturesPropProvider* pp,
                                          void* data) {
   prop_reg_->SetPropProvider(pp, data);
+}
+
+std::string GestureInterpreter::EncodeActivityLog() {
+  return loggingFilter_->EncodeActivityLog();
 }
 
 const GestureMove kGestureMove = { 0, 0 };

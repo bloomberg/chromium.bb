@@ -333,6 +333,7 @@ namespace gestures {
 class FingerMetrics;
 class Interpreter;
 class PropRegistry;
+class LoggingFilterInterpreter;
 
 struct GestureInterpreter {
  public:
@@ -354,6 +355,8 @@ struct GestureInterpreter {
 
   Interpreter* interpreter() const { return interpreter_.get(); }
   PropRegistry* prop_reg() const { return prop_reg_.get(); }
+
+  std::string EncodeActivityLog();
  private:
   GestureReadyFunction callback_;
   void* callback_data_;
@@ -368,6 +371,8 @@ struct GestureInterpreter {
 
   GesturesPropProvider* prop_provider_;
   void* prop_provider_data_;
+
+  LoggingFilterInterpreter* loggingFilter_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureInterpreter);
 };

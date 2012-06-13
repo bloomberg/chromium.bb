@@ -73,6 +73,9 @@ class ActivityLog {
   void Dump(const char* filename);
   void Clear() { head_idx_ = size_ = 0; }
 
+  // Returns a JSON string representing all the state in the buffer
+  std::string Encode();
+
   size_t size() const { return size_; }
   size_t MaxSize() const { return kBufferSize; }
   Entry* GetEntry(size_t idx) {
@@ -172,9 +175,6 @@ class ActivityLog {
 
   // Encode user-configurable properties
   ::Value* EncodePropRegistry();
-
-  // Returns a JSON string representing all the state in the buffer
-  std::string Encode();
 
   static const size_t kBufferSize = 16384;
 
