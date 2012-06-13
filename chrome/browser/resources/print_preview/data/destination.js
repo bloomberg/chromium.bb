@@ -123,7 +123,7 @@ cr.define('print_preview', function() {
   };
 
   /**
-   * Enumerations of the connection statuses of printer destinations.
+   * Enumeration of the connection statuses of printer destinations.
    * @enum {string}
    */
   Destination.ConnectionStatus = {
@@ -131,6 +131,20 @@ cr.define('print_preview', function() {
     OFFLINE: 'OFFLINE',
     ONLINE: 'ONLINE',
     UNKNOWN: 'UNKNOWN'
+  };
+
+  /**
+   * Enumeration of relative icon URLs for various types of destinations.
+   * @enum {string}
+   * @private
+   */
+  Destination.IconUrl_ = {
+    CLOUD: 'images/cloud_printer_32.png',
+    CLOUD_SHARED: 'images/cloud_printer_shared_32.png',
+    LOCAL: 'images/classic_printer_32.png',
+    MOBILE: 'images/mobile_32.png',
+    MOBILE_SHARED: 'images/mobile_shared_32.png',
+    GOOGLE_PROMOTED: 'images/google_promoted_printer_32.png'
   };
 
   Destination.prototype = {
@@ -244,6 +258,19 @@ cr.define('print_preview', function() {
      */
     get lastAccessTime() {
       return this.lastAccessTime_;
+    },
+
+    /** @return {string} Relative URL of the destination's icon. */
+    get iconUrl() {
+      if (this.isGooglePromoted) {
+        return Destination.IconUrl_.GOOGLE_PROMOTED;
+      } else if (this.isLocal) {
+        return Destination.IconUrl_.LOCAL;
+      } else if (this.type_ == Destination.Type.MOBILE) {
+        return Destination.IconUrl_.MOBILE;
+      } else {
+        return Destination.IconUrl_.CLOUD;
+      }
     },
 
     /**

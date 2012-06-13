@@ -106,30 +106,15 @@ cr.define('print_preview', function() {
 
       var iconEl = this.getElement().getElementsByClassName(
           DestinationSettings.Classes_.ICON)[0];
-      if (this.iconClass_) {
-        iconEl.classList.remove(this.iconClass_);
-      }
-      if (destination.isGooglePromoted) {
-        this.iconClass_ = DestinationSettings.Classes_.ICON_GOOGLE_PROMOTED;
-      } else if (destination.isLocal) {
-        this.iconClass_ = DestinationSettings.Classes_.ICON_LOCAL;
-      } else if (destination.type ==
-          print_preview.Destination.Type.MOBILE && destination.isOwned) {
-        this.iconClass_ = DestinationSettings.Classes_.ICON_MOBILE;
-      } else if (destination.type ==
-          print_preview.Destination.Type.MOBILE && !destination.isOwned) {
-        this.iconClass_ = DestinationSettings.Classes_.ICON_MOBILE_SHARED;
-      } else if (destination.type ==
-          print_preview.Destination.Type.GOOGLE && destination.isOwned) {
-        this.iconClass_ = DestinationSettings.Classes_.ICON_CLOUD;
-      } else {
-        this.iconClass_ = DestinationSettings.Classes_.ICON_CLOUD_SHARED;
-      }
-      iconEl.classList.add(this.iconClass_);
+      iconEl.src = destination.iconUrl;
 
       var locationEl = this.getElement().getElementsByClassName(
           DestinationSettings.Classes_.LOCATION)[0];
       locationEl.textContent = destination.location;
+
+      setIsVisible(this.getElement().querySelector('.throbber'), false);
+      setIsVisible(
+          this.getElement().querySelector('.destination-settings-box'), true);
     }
   };
 

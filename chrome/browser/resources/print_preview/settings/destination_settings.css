@@ -2,60 +2,57 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-.destination-settings-box {
+#destination-settings h1 {
+  padding-top: 20px;
+  vertical-align: top;
+}
+
+#destination-settings .throbber {
+  display: block;
+  margin-bottom: 14px;
+  margin-top: 8px;
+}
+
+#destination-settings .destination-settings-box {
+  -webkit-box-align: center;
   display: -webkit-box;
+  height: 32px;
+  margin-top: 0;
+  padding-bottom: 6px;
 }
 
 .destination-settings-icon {
   -webkit-margin-end: 8px;
-  height: 32px;
+  height: 24px;
   opacity: 0.4;
-  width: 32px;
+  vertical-align: middle;
+  width: 24px;
 }
 
-.destination-settings-icon-local {
-  background-image: url(images/classic_printer_32.png);
-}
-
-.destination-settings-icon-cloud {
-  background-image: url(images/cloud_printer_32.png);
-}
-
-.destination-settings-icon-cloud-shared {
-  background-image: url(images/cloud_printer_shared_32.png);
-}
-
-.destination-settings-icon-google-promoted {
-  background-image: url(images/google_promoted_printer_32.png);
-}
-
-.destination-settings-icon-mobile {
-  background-image: url(images/mobile_32.png);
-}
-
-.destination-settings-icon-mobile-shared {
-  background-image: url(images/mobile_shared_32.png);
+.destination-settings-info-wrapper {
+  -webkit-box-flex: 1;
+  height: 32px;
+  position: relative;
 }
 
 .destination-settings-info {
-  -webkit-box-flex: 1;
-  position: relative;
+  -webkit-box-orient: vertical;
+  -webkit-box-pack: center;
+  display: -webkit-box;
+  height: 100%;
+  position: absolute;
   white-space: nowrap;
+  width: 100%;
 }
 
 .destination-settings-name {
   font-size: 110%;
   overflow: hidden;
-  position: absolute;
   text-overflow: ellipsis;
-  width: 100%;
 }
 
 .destination-settings-location {
   opacity: 0.4;
   overflow: hidden;
-  position: absolute;
   text-overflow: ellipsis;
-  top: 1.5em;
-  width: 100%;
 }

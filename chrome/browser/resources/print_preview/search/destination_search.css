@@ -20,8 +20,12 @@
   -webkit-user-select: none;
   position: absolute;
   right: 80px;
-  top: 16px;
+  top: 14px;
   white-space: nowrap;
+}
+
+#destination-search .close-button {
+  top: 9px;
 }
 
 [dir='rtl'] .destination-search-user-info {

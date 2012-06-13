@@ -52,20 +52,6 @@ cr.define('print_preview', function() {
     STALE: 'stale'
   };
 
-  /**
-   * URLs of the various destination list item icons.
-   * @enum {string}
-   * @private
-   */
-  DestinationListItem.Icons_ = {
-    CLOUD: 'images/cloud_printer_32.png',
-    CLOUD_SHARED: 'images/cloud_printer_shared_32.png',
-    LOCAL: 'images/classic_printer_32.png',
-    MOBILE: 'images/mobile_32.png',
-    MOBILE_SHARED: 'images/mobile_shared_32.png',
-    GOOGLE_PROMOTED: 'images/google_promoted_printer_32.png'
-  };
-
   DestinationListItem.prototype = {
     __proto__: print_preview.Component.prototype,
 
@@ -76,7 +62,7 @@ cr.define('print_preview', function() {
 
       var iconImg = this.getElement().getElementsByClassName(
           print_preview.DestinationListItem.Classes_.ICON)[0];
-      iconImg.src = this.getIconUrl_();
+      iconImg.src = this.destination_.iconUrl;
 
       var nameEl = this.getElement().getElementsByClassName(
           DestinationListItem.Classes_.NAME)[0];
@@ -116,32 +102,6 @@ cr.define('print_preview', function() {
             '.offline-status');
         offlineStatusEl.textContent = localStrings.getString(offlineMessageId);
         setIsVisible(offlineStatusEl, true);
-      }
-    },
-
-    /**
-     * @param {!print_preview.Destination} dest Destination to get the icon URL
-     *     for.
-     * @return {string} URL of the icon for the given print destination.
-     * @private
-     */
-    getIconUrl_: function() {
-      var dest = this.destination_;
-      if (dest.isGooglePromoted) {
-          return DestinationListItem.Icons_.GOOGLE_PROMOTED;
-      } else if (dest.isLocal) {
-        return DestinationListItem.Icons_.LOCAL;
-      } else if (dest.type == print_preview.Destination.Type.MOBILE &&
-                 dest.isOwned) {
-        return DestinationListItem.Icons_.MOBILE;
-      } else if (dest.type == print_preview.Destination.Type.MOBILE &&
-                 !dest.isOwned) {
-        return DestinationListItem.Icons_.MOBILE_SHARED;
-      } else if (dest.type == print_preview.Destination.Type.GOOGLE &&
-                 dest.isOwned) {
-        return DestinationListItem.Icons_.CLOUD;
-      } else {
-        return DestinationListItem.Icons_.CLOUD_SHARED;
       }
     },
 

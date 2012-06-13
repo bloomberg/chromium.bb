@@ -7293,10 +7293,10 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         Print using system dialog…
       </message>
       <message name="IDS_PRINT_PREVIEW_DESTINATION_SEARCH_TITLE" desc="Title of the destination search UI component.">
-        Destination
+        Select a destination
       </message>
       <message name="IDS_PRINT_PREVIEW_SIGNED_IN_AS_PREFIX" desc="Prefix before the user's email address.">
-        Signed in as
+        Showing destinations for
       </message>
       <message name="IDS_PRINT_PREVIEW_CLOUD_PRINT_PROMOTION" desc="Message describing features of Google Cloud Print.">
         Print to Google Docs and other cloud destinations. <ph name="BEGIN_LINK">$1<ex>&lt;span&gt;</ex></ph>Sign in<ph name="END_LINK">$2<ex>&lt;/span&gt;</ex></ph> to print to Google Cloud Print.

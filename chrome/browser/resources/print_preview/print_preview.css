@@ -83,7 +83,6 @@ header {
   border-bottom: 1px solid #dcdcdc;
   padding-bottom: 10px;
   padding-top: 10px;
-  vertical-align: top;
 }
 
 .two-column:not(.visible) select {
@@ -167,7 +166,6 @@ span.hint.closing {
 
 .collapsible {
   height: 0;
-  overflow: hidden;
 }
 
 .collapsible.visible {
@@ -180,6 +178,7 @@ span.hint.closing {
   -webkit-transition: margin 150ms, height 150ms, opacity 150ms;
   height: 0 !important;
   opacity: 0;
+  overflow: hidden;
 }
 
 select {
