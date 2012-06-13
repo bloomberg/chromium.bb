@@ -233,6 +233,10 @@ net::URLFetcher* GaiaAuthFetcher::CreateGaiaFetcher(
   to_return->SetRequestContext(getter);
   to_return->SetUploadData("application/x-www-form-urlencoded", body);
 
+  DVLOG(2) << "Gaia fetcher URL: " << gaia_gurl.spec();
+  DVLOG(2) << "Gaia fetcher headers: " << headers;
+  DVLOG(2) << "Gaia fetcher body: " << body;
+
   // The Gaia token exchange requests do not require any cookie-based
   // identification as part of requests.  We suppress sending any cookies to
   // maintain a separation between the user's browsing and Chrome's internal
@@ -1073,6 +1077,8 @@ void GaiaAuthFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   int response_code = source->GetResponseCode();
   std::string data;
   source->GetResponseAsString(&data);
+  DVLOG(2) << "Gaia fetcher response code: " << response_code;
+  DVLOG(2) << "Gaia fetcher response data: " << data;
   if (url == client_login_gurl_) {
     OnClientLoginFetched(data, status, response_code);
   } else if (url == issue_auth_token_gurl_) {
