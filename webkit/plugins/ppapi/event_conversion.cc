@@ -217,6 +217,7 @@ WebKeyboardEvent* BuildKeyEvent(const InputEventData& event) {
   key_event->timeStampSeconds = PPTimeTicksToEventTime(event.event_time_stamp);
   key_event->modifiers = event.event_modifiers;
   key_event->windowsKeyCode = event.key_code;
+  key_event->setKeyIdentifierFromWindowsKeyCode();
   return key_event;
 }
 

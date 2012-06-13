@@ -139,7 +139,7 @@ void GuestToEmbedderChannel::OnSetPreferences(const ppapi::Preferences& prefs) {
 }
 
 void GuestToEmbedderChannel::OnReserveInstanceId(PP_Instance instance,
-                                             bool* usable) {
+                                                 bool* usable) {
   *usable =
       render_view_instances_.find(instance) == render_view_instances_.end();
 }
