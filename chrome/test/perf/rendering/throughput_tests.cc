@@ -508,21 +508,21 @@ IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, DrawImageShadowGPU) {
 
 IN_PROC_BROWSER_TEST_F(ThroughputTestSW, CanvasToCanvasDrawSW) {
   if (IsGpuAvailable() &&
-      GPUTestConfig::CurrentConfigMatches("MAC AMD"))
+      GPUTestBotConfig::CurrentConfigMatches("MAC AMD"))
     return;
   RunTest("canvas2d_balls_draw_from_canvas", kNone);
 }
 
 IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, CanvasToCanvasDrawGPU) {
   if (IsGpuAvailable() &&
-      GPUTestConfig::CurrentConfigMatches("MAC AMD"))
+      GPUTestBotConfig::CurrentConfigMatches("MAC AMD"))
     return;
   RunTest("canvas2d_balls_draw_from_canvas", kNone | kIsGpuCanvasTest);
 }
 
 IN_PROC_BROWSER_TEST_F(ThroughputTestSW, CanvasTextSW) {
   if (IsGpuAvailable() &&
-      GPUTestConfig::CurrentConfigMatches("MAC AMD"))
+      GPUTestBotConfig::CurrentConfigMatches("MAC AMD"))
     return;
   RunTest("canvas2d_balls_text", kNone);
 }
@@ -551,7 +551,7 @@ IN_PROC_BROWSER_TEST_F(ThroughputTestSW, CanvasSingleImageSW) {
 
 IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, CanvasSingleImageGPU) {
   if (IsGpuAvailable() &&
-      GPUTestConfig::CurrentConfigMatches("MAC AMD"))
+      GPUTestBotConfig::CurrentConfigMatches("MAC AMD"))
     return;
   RunCanvasBenchTest("single_image", kNone | kIsGpuCanvasTest);
 }
