@@ -4,19 +4,22 @@
 
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 
-#include <algorithm>
-#include <iterator>
-#include <vector>
-
 #if defined(OS_WIN)
 #include <windowsx.h>
 #endif
 
+#include <algorithm>
+#include <iterator>
+#include <string>
+#include <vector>
+
 #include "base/compiler_specific.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_selection_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
@@ -31,7 +34,6 @@
 #include "ui/base/animation/throb_animation.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/layout.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -1291,8 +1293,11 @@ int TabStrip::GetMiniTabCount() const {
 // TabStrip, views::ButtonListener implementation:
 
 void TabStrip::ButtonPressed(views::Button* sender, const views::Event& event) {
-  if (sender == newtab_button_)
+  if (sender == newtab_button_) {
+    UMA_HISTOGRAM_ENUMERATION("Tab.NewTab", TabStripModel::NEW_TAB_BUTTON,
+                              TabStripModel::NEW_TAB_ENUM_COUNT);
     controller()->CreateNewTab();
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

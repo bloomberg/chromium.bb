@@ -7,10 +7,12 @@
 #include <gtk/gtk.h>
 
 #include <algorithm>
+#include <string>
 
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/i18n/rtl.h"
+#include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
@@ -27,6 +29,7 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/tabs/dragged_tab_controller_gtk.h"
 #include "chrome/browser/ui/gtk/tabs/tab_strip_menu_controller.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
@@ -2179,6 +2182,8 @@ void TabStripGtk::OnNewTabClicked(GtkWidget* widget) {
 
   switch (mouse_button) {
     case 1:
+      UMA_HISTOGRAM_ENUMERATION("Tab.NewTab", TabStripModel::NEW_TAB_BUTTON,
+                                TabStripModel::NEW_TAB_ENUM_COUNT);
       model_->delegate()->AddBlankTab(true);
       break;
     case 2: {

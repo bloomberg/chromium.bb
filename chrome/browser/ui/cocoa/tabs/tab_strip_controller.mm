@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
+#include "base/metrics/histogram.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
@@ -152,6 +153,7 @@ private:
 - (void)animationDidStopForController:(TabController*)controller
                              finished:(BOOL)finished;
 - (NSInteger)indexFromModelIndex:(NSInteger)index;
+- (void)clickNewTabButton:(id)sender;
 - (NSInteger)numberOfOpenTabs;
 - (NSInteger)numberOfOpenMiniTabs;
 - (NSInteger)numberOfOpenNonMiniTabs;
@@ -377,9 +379,8 @@ private:
     // the tab view, it draws with all sorts of crazy artifacts."
     newTabButton_ = [view getNewTabButton];
     [self addSubviewToPermanentList:newTabButton_];
-    [newTabButton_ setTarget:nil];
-    [newTabButton_ setAction:@selector(commandDispatch:)];
-    [newTabButton_ setTag:IDC_NEW_TAB];
+    [newTabButton_ setTarget:self];
+    [newTabButton_ setAction:@selector(clickNewTabButton:)];
 
     // Set the images from code because Cocoa fails to find them in our sub
     // bundle during tests.
@@ -586,6 +587,13 @@ private:
   [[controller view] setHidden:YES];
 
   return controller;
+}
+
+// (Private) Handles a click on the new tab button.
+- (void)clickNewTabButton:(id)sender {
+  UMA_HISTOGRAM_ENUMERATION("Tab.NewTab", TabStripModel::NEW_TAB_BUTTON,
+                            TabStripModel::NEW_TAB_ENUM_COUNT);
+  tabStripModel_->delegate()->AddBlankTab(true);
 }
 
 // (Private) Returns the number of open tabs in the tab strip. This is the

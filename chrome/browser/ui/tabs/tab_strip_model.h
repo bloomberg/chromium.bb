@@ -113,6 +113,25 @@ class TabStripModel : public content::NotificationObserver {
     ADD_INHERIT_OPENER = 1 << 4,
   };
 
+  // Enumerates different ways to open a new tab. Does not apply to opening
+  // existing links or searches in a new tab, only to brand new empty tabs.
+  enum NewTab {
+    // New tab was opened using the new tab button on the tab strip.
+    NEW_TAB_BUTTON,
+
+    // New tab was opened using the menu command - either through the keyboard
+    // shortcut, or by opening the menu and selecting the command. Applies to
+    // both Wrench menu and the menu bar's File menu (on platforms that have
+    // one).
+    NEW_TAB_COMMAND,
+
+    // New tab was opened through the context menu on the tab strip.
+    NEW_TAB_CONTEXT_MENU,
+
+    // Number of enum entries, used for UMA histogram reporting macros.
+    NEW_TAB_ENUM_COUNT,
+  };
+
   static const int kNoTab = -1;
 
   // Construct a TabStripModel with a delegate to help it do certain things
@@ -495,7 +514,7 @@ class TabStripModel : public content::NotificationObserver {
   static bool ContextMenuCommandToBrowserCommand(int cmd_id, int* browser_cmd);
 
  private:
-   // Used when making selection notifications.
+  // Used when making selection notifications.
   enum NotifyTypes {
     NOTIFY_DEFAULT,
 

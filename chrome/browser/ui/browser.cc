@@ -1394,6 +1394,11 @@ void Browser::CloseWindow() {
 
 void Browser::NewTab() {
   content::RecordAction(UserMetricsAction("NewTab"));
+  // TODO(asvitkine): This is invoked programmatically from several places.
+  // Audit the code and change it so that the histogram only gets collected for
+  // user-initiated commands.
+  UMA_HISTOGRAM_ENUMERATION("Tab.NewTab", TabStripModel::NEW_TAB_COMMAND,
+                            TabStripModel::NEW_TAB_ENUM_COUNT);
 
   if (is_type_tabbed()) {
     AddBlankTab(true);

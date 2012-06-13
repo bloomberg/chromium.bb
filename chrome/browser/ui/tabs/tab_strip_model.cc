@@ -6,8 +6,10 @@
 
 #include <algorithm>
 #include <map>
+#include <string>
 
 #include "base/command_line.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "build/build_config.h"
@@ -837,6 +839,9 @@ void TabStripModel::ExecuteContextMenuCommand(
   switch (command_id) {
     case CommandNewTab:
       content::RecordAction(UserMetricsAction("TabContextMenu_NewTab"));
+      UMA_HISTOGRAM_ENUMERATION("Tab.NewTab",
+                                TabStripModel::NEW_TAB_CONTEXT_MENU,
+                                TabStripModel::NEW_TAB_ENUM_COUNT);
       delegate()->AddBlankTabAt(context_index + 1, true);
       break;
 
