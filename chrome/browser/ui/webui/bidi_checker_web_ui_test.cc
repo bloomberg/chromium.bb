@@ -70,10 +70,6 @@ void WebUIBidiCheckerBrowserTestRTL::RunBidiCheckerOnPage(
 }
 
 void WebUIBidiCheckerBrowserTestRTL::SetUpOnMainThread() {
-  // Ensure that no other page (NTP4, home page, e.g.) is loading when we reload
-  // the locale resources.
-  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-
   WebUIBidiCheckerBrowserTest::SetUpOnMainThread();
   FilePath pak_path;
   app_locale_ = base::i18n::GetConfiguredLocale();
