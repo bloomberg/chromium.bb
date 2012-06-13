@@ -93,6 +93,9 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
                                const FilePath& path) const OVERRIDE;
   virtual bool OnCanThrottleRequest(
       const net::URLRequest& request) const OVERRIDE;
+  virtual int OnBeforeSocketStreamConnect(
+      net::SocketStream* stream,
+      const net::CompletionCallback& callback) OVERRIDE;
 
   scoped_refptr<ExtensionEventRouterForwarder> event_router_;
   void* profile_;

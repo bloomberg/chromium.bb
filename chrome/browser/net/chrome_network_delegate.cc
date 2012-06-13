@@ -28,6 +28,7 @@
 #include "net/cookies/cookie_monster.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
+#include "net/socket_stream/socket_stream.h"
 #include "net/url_request/url_request.h"
 
 #if defined(OS_CHROMEOS)
@@ -369,4 +370,21 @@ bool ChromeNetworkDelegate::OnCanThrottleRequest(
 
   return request.first_party_for_cookies().scheme() !=
       chrome::kExtensionScheme;
+}
+
+int ChromeNetworkDelegate::OnBeforeSocketStreamConnect(
+    net::SocketStream* socket,
+    const net::CompletionCallback& callback) {
+#if defined(ENABLE_CONFIGURATION_POLICY)
+  if (url_blacklist_manager_ &&
+      url_blacklist_manager_->IsURLBlocked(socket->url())) {
+    // URL access blocked by policy.
+    scoped_refptr<net::NetLog::EventParameters> params;
+    params = new net::NetLogStringParameter("url", socket->url().spec());
+    socket->net_log()->AddEvent(
+        net::NetLog::TYPE_CHROME_POLICY_ABORTED_REQUEST, params);
+    return net::ERR_NETWORK_ACCESS_DENIED;
+  }
+#endif
+  return net::OK;
 }

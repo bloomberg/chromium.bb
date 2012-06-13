@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -206,6 +206,10 @@ bool URLBlacklist::SchemeToFlag(const std::string& scheme, SchemeFlag* flag) {
     *flag = SCHEME_HTTPS;
   } else if (scheme == "ftp") {
     *flag = SCHEME_FTP;
+  } else if (scheme == "ws") {
+    *flag = SCHEME_WS;
+  } else if (scheme == "wss") {
+    *flag = SCHEME_WSS;
   } else {
     return false;
   }

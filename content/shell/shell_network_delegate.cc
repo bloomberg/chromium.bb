@@ -91,4 +91,10 @@ bool ShellNetworkDelegate::OnCanThrottleRequest(
   return false;
 }
 
+int ShellNetworkDelegate::OnBeforeSocketStreamConnect(
+    net::SocketStream* socket,
+    const net::CompletionCallback& callback) {
+  return net::OK;
+}
+
 }  // namespace content

@@ -182,6 +182,11 @@ class TestShellNetworkDelegate : public net::NetworkDelegate {
     return false;
   }
 
+  virtual int OnBeforeSocketStreamConnect(
+      net::SocketStream* stream,
+      const net::CompletionCallback& callback) OVERRIDE {
+    return net::OK;
+  }
 };
 
 TestShellRequestContextParams* g_request_context_params = NULL;

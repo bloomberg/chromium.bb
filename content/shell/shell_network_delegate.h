@@ -56,6 +56,9 @@ class ShellNetworkDelegate : public net::NetworkDelegate {
                                const FilePath& path) const OVERRIDE;
   virtual bool OnCanThrottleRequest(
       const net::URLRequest& request) const OVERRIDE;
+  virtual int OnBeforeSocketStreamConnect(
+      net::SocketStream* stream,
+      const net::CompletionCallback& callback) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ShellNetworkDelegate);
 };

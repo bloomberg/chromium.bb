@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,8 +32,10 @@ class URLBlacklist {
     SCHEME_HTTP   = 1 << 0,
     SCHEME_HTTPS  = 1 << 1,
     SCHEME_FTP    = 1 << 2,
+    SCHEME_WS     = 1 << 3,
+    SCHEME_WSS    = 1 << 4,
 
-    SCHEME_ALL    = (1 << 3) - 1,
+    SCHEME_ALL    = (1 << 5) - 1,
   };
 
   URLBlacklist();

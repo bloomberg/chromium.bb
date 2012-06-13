@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -250,6 +250,10 @@ TEST_F(URLBlacklistManagerTest, SchemeToFlag) {
   EXPECT_EQ(URLBlacklist::SCHEME_HTTPS, flag);
   EXPECT_TRUE(URLBlacklist::SchemeToFlag("ftp", &flag));
   EXPECT_EQ(URLBlacklist::SCHEME_FTP, flag);
+  EXPECT_TRUE(URLBlacklist::SchemeToFlag("ws", &flag));
+  EXPECT_EQ(URLBlacklist::SCHEME_WS, flag);
+  EXPECT_TRUE(URLBlacklist::SchemeToFlag("wss", &flag));
+  EXPECT_EQ(URLBlacklist::SCHEME_WSS, flag);
   EXPECT_TRUE(URLBlacklist::SchemeToFlag("", &flag));
   EXPECT_EQ(URLBlacklist::SCHEME_ALL, flag);
   EXPECT_FALSE(URLBlacklist::SchemeToFlag("wtf", &flag));
@@ -300,15 +304,19 @@ TEST_F(URLBlacklistManagerTest, Filtering) {
   EXPECT_TRUE(blacklist.IsURLBlocked(GURL("http://x.y.google.com/a/b")));
   EXPECT_FALSE(blacklist.IsURLBlocked(GURL("http://youtube.com/")));
 
-  // Filter only http and ftp schemes.
+  // Filter only http, ftp and ws schemes.
   blacklist.Block("http://secure.com");
   blacklist.Block("ftp://secure.com");
+  blacklist.Block("ws://secure.com");
   EXPECT_TRUE(blacklist.IsURLBlocked(GURL("http://secure.com")));
   EXPECT_TRUE(blacklist.IsURLBlocked(GURL("http://secure.com/whatever")));
   EXPECT_TRUE(blacklist.IsURLBlocked(GURL("ftp://secure.com/")));
+  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("ws://secure.com")));
   EXPECT_FALSE(blacklist.IsURLBlocked(GURL("https://secure.com/")));
+  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("wss://secure.com")));
   EXPECT_TRUE(blacklist.IsURLBlocked(GURL("http://www.secure.com")));
   EXPECT_FALSE(blacklist.IsURLBlocked(GURL("https://www.secure.com")));
+  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("wss://www.secure.com")));
 
   // Filter only a certain path prefix.
   blacklist.Block("path.to/ruin");
@@ -328,6 +336,15 @@ TEST_F(URLBlacklistManagerTest, Filtering) {
   EXPECT_FALSE(blacklist.IsURLBlocked(GURL("https://x.aaa.com/path")));
   EXPECT_FALSE(blacklist.IsURLBlocked(GURL("https://s.aaa.com/bbb")));
   EXPECT_FALSE(blacklist.IsURLBlocked(GURL("https://s.aaa.com/")));
+
+  // Filter only ws and wss schemes.
+  blacklist.Block("ws://ws.aaa.com");
+  blacklist.Block("wss://ws.aaa.com");
+  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("ws://ws.aaa.com")));
+  EXPECT_TRUE(blacklist.IsURLBlocked(GURL("wss://ws.aaa.com")));
+  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("http://ws.aaa.com")));
+  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("https://ws.aaa.com")));
+  EXPECT_FALSE(blacklist.IsURLBlocked(GURL("ftp://ws.aaa.com")));
 
   // Test exceptions to path prefixes, and most specific matches.
   blacklist.Block("s.xxx.com/a");
