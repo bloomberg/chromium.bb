@@ -20,15 +20,18 @@
 typedef struct _GtkWidget GtkWidget;
 
 class Browser;
-class Profile;
 class TabContentsContainerGtk;
 class TabContents;
 class WebDialogController;
 
+namespace content {
+class BrowserContext;
+}
+
 class WebDialogGtk : public WebDialogWebContentsDelegate,
                      public ui::WebDialogDelegate {
  public:
-  WebDialogGtk(Profile* profile,
+  WebDialogGtk(content::BrowserContext* context,
                Browser* browser,
                ui::WebDialogDelegate* delegate,
                gfx::NativeWindow parent_window);

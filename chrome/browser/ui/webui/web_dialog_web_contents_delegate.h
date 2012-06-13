@@ -43,7 +43,7 @@ class WebDialogWebContentsDelegate : public content::WebContentsDelegate {
                                        bool user_gesture);
 
   // Profile must be non-NULL.
-  explicit WebDialogWebContentsDelegate(Profile* profile);
+  explicit WebDialogWebContentsDelegate(content::BrowserContext* context);
 
   virtual ~WebDialogWebContentsDelegate();
 

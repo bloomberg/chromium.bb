@@ -17,6 +17,7 @@ class TabModalConfirmDialogDelegate;
 class TemplateURL;
 
 namespace content {
+class BrowserContext;
 class WebContents;
 }
 
@@ -48,7 +49,7 @@ void ShowAboutIPCDialog();
 // Make sure to use the returned window only when you know it is safe
 // to do so, i.e. before OnDialogClosed() is called on the delegate.
 gfx::NativeWindow ShowWebDialog(gfx::NativeWindow parent,
-                                Profile* profile,
+                                content::BrowserContext* context,
                                 ui::WebDialogDelegate* delegate);
 
 // Shows the collected cookies dialog box.

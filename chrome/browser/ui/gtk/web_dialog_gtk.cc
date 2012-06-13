@@ -30,12 +30,13 @@ using ui::WebDialogUI;
 namespace browser {
 
 gfx::NativeWindow ShowWebDialog(gfx::NativeWindow parent,
-                                Profile* profile,
+                                content::BrowserContext* context,
                                 WebDialogDelegate* delegate) {
   // TODO(mazda): Remove the dependency on Browser.
-  Browser* browser = browser::FindLastActiveWithProfile(profile);
+  Browser* browser =
+      browser::FindLastActiveWithProfile(Profile::FromBrowserContext(context));
   WebDialogGtk* web_dialog =
-      new WebDialogGtk(profile, browser, delegate, parent);
+      new WebDialogGtk(context, browser, delegate, parent);
   return web_dialog->InitDialog();
 }
 
@@ -64,15 +65,15 @@ void SetDialogStyle() {
 ////////////////////////////////////////////////////////////////////////////////
 // WebDialogGtk, public:
 
-WebDialogGtk::WebDialogGtk(Profile* profile,
+WebDialogGtk::WebDialogGtk(content::BrowserContext* context,
                            Browser* browser,
                            WebDialogDelegate* delegate,
                            gfx::NativeWindow parent_window)
-    : WebDialogWebContentsDelegate(profile),
+    : WebDialogWebContentsDelegate(context),
       delegate_(delegate),
       parent_window_(parent_window),
       dialog_(NULL),
-      dialog_controller_(new WebDialogController(this, profile, browser)) {
+      dialog_controller_(new WebDialogController(this, context, browser)) {
 }
 
 WebDialogGtk::~WebDialogGtk() {

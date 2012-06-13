@@ -11,7 +11,10 @@
 #include "ui/web_dialogs/web_dialog_ui.h"
 
 class Browser;
-class Profile;
+
+namespace content {
+class BrowserContext;
+}
 
 // This provides the common functionality for WebDialogs of notifying the
 // dialog that it should close when the browser that created it has closed to
@@ -19,7 +22,7 @@ class Profile;
 class WebDialogController : public content::NotificationObserver {
  public:
    WebDialogController(ui::WebDialogDelegate* delegate,
-                       Profile* profile,
+                       content::BrowserContext* context,
                        Browser* browser);
 
   // content::NotificationObserver implementation.

@@ -7,6 +7,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
@@ -15,7 +16,7 @@ using ui::WebDialogDelegate;
 
 WebDialogController::WebDialogController(
     WebDialogDelegate* delegate,
-    Profile* profile,
+    content::BrowserContext* context,
     Browser* browser)
       : dialog_delegate_(delegate) {
   // It's only safe to show an off the record profile under one of two
@@ -23,6 +24,7 @@ WebDialogController::WebDialogController(
   // 1. For a modal dialog where the parent will maintain the profile.
   // 2. If we have a browser which will keep the reference to this profile
   //    alive. The dialog will be closed if this browser is closed.
+  Profile* profile = Profile::FromBrowserContext(context);
   DCHECK(!profile->IsOffTheRecord() ||
          delegate->GetDialogModalType() != ui::MODAL_TYPE_NONE ||
          (browser && browser->profile() == profile));

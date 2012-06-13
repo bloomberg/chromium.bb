@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/test_web_dialog_delegate.h"
 #include "chrome/browser/ui/webui/web_dialog_controller.h"

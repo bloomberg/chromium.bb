@@ -14,9 +14,12 @@
 #include "ui/web_dialogs/web_dialog_ui.h"
 
 class Browser;
-class WebDialogWindowDelegateBridge;
-class Profile;
 class TabContents;
+class WebDialogWindowDelegateBridge;
+
+namespace content {
+class BrowserContext;
+}
 
 // This controller manages a dialog box with properties and HTML content taken
 // from a WebDialogDelegate object.
@@ -36,7 +39,7 @@ class TabContents;
 // Make sure to use the returned window only when you know it is safe
 // to do so, i.e. before OnDialogClosed() is called on the delegate.
 + (NSWindow*)showWebDialog:(ui::WebDialogDelegate*)delegate
-                   profile:(Profile*)profile
+                   context:(content::BrowserContext*)context
                    browser:(Browser*)browser;
 
 @end
@@ -46,7 +49,7 @@ class TabContents;
 // This is the designated initializer.  However, this is exposed only
 // for testing; use showWebDialog instead.
 - (id)initWithDelegate:(ui::WebDialogDelegate*)delegate
-               profile:(Profile*)profile
+               context:(content::BrowserContext*)context
                browser:(Browser*)browser;
 
 // Loads the HTML content from the delegate; this is not a lightweight

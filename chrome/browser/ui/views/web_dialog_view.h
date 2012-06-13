@@ -18,7 +18,9 @@
 #include "ui/views/window/client_view.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace views {
 class WebView;
@@ -37,16 +39,13 @@ class WebView;
 // TODO(akalin): Make WebDialogView contain an WebDialogWebContentsDelegate
 // instead of inheriting from it to avoid violating the "no multiple
 // inheritance" rule.
-// TODO(beng): This class should not depend on Profile, only
-//             content::BrowserContext.
-class WebDialogView
-    : public views::ClientView,
-      public WebDialogWebContentsDelegate,
-      public ui::WebDialogDelegate,
-      public views::WidgetDelegate,
-      public TabRenderWatcher::Delegate {
+class WebDialogView : public views::ClientView,
+                      public WebDialogWebContentsDelegate,
+                      public ui::WebDialogDelegate,
+                      public views::WidgetDelegate,
+                      public TabRenderWatcher::Delegate {
  public:
-  WebDialogView(Profile* profile,
+  WebDialogView(content::BrowserContext* context,
                 ui::WebDialogDelegate* delegate);
   virtual ~WebDialogView();
 

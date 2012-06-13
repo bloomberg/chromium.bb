@@ -38,7 +38,7 @@ class WebDialogWindowDelegateBridge
 public:
   // All parameters must be non-NULL/non-nil.
   WebDialogWindowDelegateBridge(WebDialogWindowController* controller,
-                                Profile* profile,
+                                content::BrowserContext* context,
                                 Browser* browser,
                                 WebDialogDelegate* delegate);
 
@@ -101,12 +101,13 @@ private:
 namespace browser {
 
 gfx::NativeWindow ShowWebDialog(gfx::NativeWindow parent,
-                                Profile* profile,
+                                content::BrowserContext* context,
                                 WebDialogDelegate* delegate) {
   // TODO(mazda): Remove the dependency on Browser.
-  Browser* browser = browser::FindLastActiveWithProfile(profile);
+  Browser* browser =
+      browser::FindLastActiveWithProfile(Profile::FromBrowserContext(context));
   return [WebDialogWindowController showWebDialog:delegate
-                                          profile:profile
+                                          context:context
                                           browser:browser];
 }
 
@@ -118,13 +119,13 @@ void CloseWDialog(gfx::NativeWindow window) {
 
 WebDialogWindowDelegateBridge::WebDialogWindowDelegateBridge(
     WebDialogWindowController* controller,
-    Profile* profile,
+    content::BrowserContext* context,
     Browser* browser,
     WebDialogDelegate* delegate)
-    : WebDialogWebContentsDelegate(profile),
+    : WebDialogWebContentsDelegate(context),
       controller_(controller),
       delegate_(delegate),
-      dialog_controller_(new WebDialogController(this, profile, browser)) {
+      dialog_controller_(new WebDialogController(this, context, browser)) {
   DCHECK(controller_);
   DCHECK(delegate_);
 }
@@ -307,11 +308,11 @@ void WebDialogWindowDelegateBridge::HandleKeyboardEvent(
 // in once we implement modal dialogs.
 
 + (NSWindow*)showWebDialog:(WebDialogDelegate*)delegate
-                   profile:(Profile*)profile
+                   context:(content::BrowserContext*)context
                    browser:(Browser*)browser {
   WebDialogWindowController* webDialogWindowController =
     [[WebDialogWindowController alloc] initWithDelegate:delegate
-                                                profile:profile
+                                                context:context
                                                 browser:browser];
   [webDialogWindowController loadDialogContents];
   [webDialogWindowController showWindow:nil];
@@ -319,10 +320,10 @@ void WebDialogWindowDelegateBridge::HandleKeyboardEvent(
 }
 
 - (id)initWithDelegate:(WebDialogDelegate*)delegate
-               profile:(Profile*)profile
+               context:(content::BrowserContext*)context
                browser:(Browser*)browser {
   DCHECK(delegate);
-  DCHECK(profile);
+  DCHECK(context);
 
   gfx::Size dialogSize;
   delegate->GetDialogSize(&dialogSize);
@@ -348,7 +349,7 @@ void WebDialogWindowDelegateBridge::HandleKeyboardEvent(
   [window setMinSize:dialogRect.size];
   [window center];
   delegate_.reset(
-      new WebDialogWindowDelegateBridge(self, profile, browser, delegate));
+      new WebDialogWindowDelegateBridge(self, context, browser, delegate));
   return self;
 }
 

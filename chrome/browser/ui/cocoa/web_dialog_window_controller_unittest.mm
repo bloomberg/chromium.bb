@@ -91,7 +91,7 @@ TEST_F(WebDialogWindowControllerTest, showDialog) {
 
   WebDialogWindowController* web_dialog_window_controller =
     [[WebDialogWindowController alloc] initWithDelegate:&delegate_
-                                                profile:profile()
+                                                context:profile()
                                                 browser:browser()];
 
   [web_dialog_window_controller loadDialogContents];

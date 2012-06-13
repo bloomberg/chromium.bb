@@ -20,8 +20,9 @@ using content::WebContents;
 // TODO(akalin): Should we make it so that we have a default incognito
 // profile that's long-lived?  Of course, we'd still have to clear it out
 // when all incognito browsers close.
-WebDialogWebContentsDelegate::WebDialogWebContentsDelegate(Profile* profile)
-    : profile_(profile) {
+WebDialogWebContentsDelegate::WebDialogWebContentsDelegate(
+    content::BrowserContext* context)
+    : profile_(Profile::FromBrowserContext(context)) {
 }
 
 WebDialogWebContentsDelegate::~WebDialogWebContentsDelegate() {
