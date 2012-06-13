@@ -78,6 +78,12 @@
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 #endif
 
+#if defined(USE_AURA)
+#include "ui/aura/client/drag_drop_client.h"
+#include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
+#endif
+
 namespace {
 
 // Returns a string constant to be used as the |danger_type| value in
@@ -407,11 +413,12 @@ void DragDownload(const DownloadItem* download,
 
 #if !defined(TOOLKIT_GTK)
 #if defined(USE_AURA)
-  views::Widget* widget = views::Widget::GetWidgetForNativeView(view);
+  aura::RootWindow* root_window = view->GetRootWindow();
+  if (!root_window || !aura::client::GetDragDropClient(root_window))
+    return;
+
   gfx::Point location = gfx::Screen::GetCursorScreenPoint();
-  // We do not care about notifying the DragItemView on completion of drag. So
-  // we pass NULL to RunShellDrag for the source view.
-  widget->RunShellDrag(NULL, data, location,
+  aura::client::GetDragDropClient(root_window)->StartDragAndDrop(data, location,
       ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_LINK);
 #else  // We are on WIN without AURA
   // We cannot use Widget::RunShellDrag on WIN since the |view| is backed by a
