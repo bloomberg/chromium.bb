@@ -1109,7 +1109,7 @@ ui::GestureStatus Widget::OnGestureEvent(const GestureEvent& event) {
       break;
 
     case ui::ET_GESTURE_END:
-      if (event.delta_x() == 1) {
+      if (event.details().touch_points() == 1) {
         is_touch_down_ = false;
         if (ShouldReleaseCaptureOnMouseReleased())
           ReleaseCapture();

@@ -6,10 +6,120 @@
 #define UI_BASE_GESTURES_GESTURE_TYPES_H_
 #pragma once
 
+#include "base/logging.h"
 #include "base/time.h"
 #include "ui/base/events.h"
 
 namespace ui {
+
+struct UI_EXPORT GestureEventDetails {
+ public:
+  GestureEventDetails(EventType type, float delta_x, float delta_y);
+
+  float scroll_x() const {
+    CHECK_EQ(ui::ET_GESTURE_SCROLL_UPDATE, type_);
+    return data.scroll.x;
+  }
+  float scroll_y() const {
+    CHECK_EQ(ui::ET_GESTURE_SCROLL_UPDATE, type_);
+    return data.scroll.y;
+  }
+
+  float velocity_x() const {
+    CHECK_EQ(ui::ET_SCROLL_FLING_START, type_);
+    return data.velocity.x;
+  }
+  float velocity_y() const {
+    CHECK_EQ(ui::ET_SCROLL_FLING_START, type_);
+    return data.velocity.y;
+  }
+
+  float radius_x() const {
+    CHECK_EQ(ui::ET_GESTURE_TAP, type_);
+    return data.radius.x;
+  }
+  float radius_y() const {
+    CHECK_EQ(ui::ET_GESTURE_TAP, type_);
+    return data.radius.y;
+  }
+
+  int touch_id() const {
+    CHECK_EQ(ui::ET_GESTURE_LONG_PRESS, type_);
+    return data.touch_id;
+  }
+
+  int touch_points() const {
+    DCHECK(type_ == ui::ET_GESTURE_BEGIN || type_ == ui::ET_GESTURE_END);
+    return data.touch_points;
+  }
+
+  float scale() const {
+    CHECK_EQ(ui::ET_GESTURE_PINCH_UPDATE, type_);
+    return data.scale;
+  }
+
+  bool swipe_left() const {
+    CHECK_EQ(ui::ET_GESTURE_MULTIFINGER_SWIPE, type_);
+    return data.swipe.left;
+  }
+  bool swipe_right() const {
+    CHECK_EQ(ui::ET_GESTURE_MULTIFINGER_SWIPE, type_);
+    return data.swipe.right;
+  }
+  bool swipe_up() const {
+    CHECK_EQ(ui::ET_GESTURE_MULTIFINGER_SWIPE, type_);
+    return data.swipe.up;
+  }
+  bool swipe_down() const {
+    CHECK_EQ(ui::ET_GESTURE_MULTIFINGER_SWIPE, type_);
+    return data.swipe.down;
+  }
+
+  float generic_x() const {
+    return data.generic.delta_x;
+  }
+
+  float generic_y() const {
+    return data.generic.delta_y;
+  }
+
+ private:
+  ui::EventType type_;
+  union {
+    struct {  // SCROLL delta.
+      float x;
+      float y;
+    } scroll;
+
+    float scale;  // PINCH scale.
+
+    struct {  // FLING velocity.
+      float x;
+      float y;
+    } velocity;
+
+    struct {  // TAP radius.
+      float x;
+      float y;
+    } radius;
+
+    int touch_id;  // LONG_PRESS touch-id.
+
+    int touch_points;  // Number of active touch points for BEGIN/END.
+
+    struct {  // SWIPE direction.
+      bool left;
+      bool right;
+      bool up;
+      bool down;
+    } swipe;
+
+    struct {
+      float delta_x;
+      float delta_y;
+    } generic;
+  } data;
+};
 
 // An abstract type to represent touch-events. The gesture-recognizer uses this
 // interface to communicate with the touch-events.

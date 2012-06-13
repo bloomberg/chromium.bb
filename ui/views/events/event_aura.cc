@@ -73,8 +73,7 @@ ScrollEvent::ScrollEvent(const NativeEvent& native_event)
 
 GestureEvent::GestureEvent(const NativeEvent& event)
     : LocatedEvent(event),
-      delta_x_(static_cast<aura::GestureEvent*>(event)->delta_x()),
-      delta_y_(static_cast<aura::GestureEvent*>(event)->delta_y()) {
+      details_(static_cast<aura::GestureEvent*>(event)->details()) {
 }
 
 int GestureEvent::GetLowestTouchId() const {

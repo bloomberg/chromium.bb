@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/event_types.h"
+#include "base/logging.h"
 #include "base/time.h"
 #include "ui/aura/aura_export.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
@@ -377,8 +378,7 @@ class AURA_EXPORT GestureEvent : public LocatedEvent,
 
   virtual ~GestureEvent();
 
-  float delta_x() const { return delta_x_; }
-  float delta_y() const { return delta_y_; }
+  const ui::GestureEventDetails& details() const { return details_; }
 
   // Returns the lowest touch-id of any of the touches which make up this
   // gesture.
@@ -386,8 +386,7 @@ class AURA_EXPORT GestureEvent : public LocatedEvent,
   virtual int GetLowestTouchId() const OVERRIDE;
 
  private:
-  float delta_x_;
-  float delta_y_;
+  ui::GestureEventDetails details_;
 
   // The set of indices of ones in the binary representation of
   // touch_ids_bitfield_ is the set of touch_ids associate with this gesture.

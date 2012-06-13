@@ -212,8 +212,7 @@ const int MouseWheelEvent::kWheelDelta = 53;
 GestureEvent::GestureEvent(const GestureEvent& model, View* source,
                            View* target)
     : LocatedEvent(model, source, target),
-      delta_x_(model.delta_x_),
-      delta_y_(model.delta_y_) {
+      details_(model.details_) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -221,14 +220,12 @@ GestureEvent::GestureEvent(const GestureEvent& model, View* source,
 
 GestureEvent::GestureEvent(const GestureEvent& model, View* root)
     : LocatedEvent(model, root),
-      delta_x_(model.delta_x_),
-      delta_y_(model.delta_y_) {
+      details_(model.details_) {
 }
 
 GestureEvent::GestureEvent(ui::EventType type, int x, int y, int flags)
     : LocatedEvent(type, gfx::Point(x, y), flags),
-      delta_x_(0),
-      delta_y_(0) {
+      details_(type, 0.f, 0.f) {
 }
 
 GestureEvent::~GestureEvent() {

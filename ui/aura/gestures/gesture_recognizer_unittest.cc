@@ -119,8 +119,8 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   virtual ui::GestureStatus OnGestureEvent(GestureEvent* gesture) OVERRIDE {
     switch (gesture->type()) {
       case ui::ET_GESTURE_TAP:
-        radius_x_ = gesture->delta_x();
-        radius_y_ = gesture->delta_y();
+        radius_x_ = gesture->details().radius_x();
+        radius_y_ = gesture->details().radius_y();
         tap_location_ = gesture->location();
         tap_ = true;
         break;
@@ -142,8 +142,8 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
         break;
       case ui::ET_GESTURE_SCROLL_UPDATE:
         scroll_update_ = true;
-        scroll_x_ += gesture->delta_x();
-        scroll_y_ += gesture->delta_y();
+        scroll_x_ += gesture->details().scroll_x();
+        scroll_y_ += gesture->details().scroll_y();
         break;
       case ui::ET_GESTURE_SCROLL_END:
         EXPECT_TRUE(velocity_x_ == 0 && velocity_y_ == 0);
@@ -160,10 +160,11 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
         break;
       case ui::ET_GESTURE_LONG_PRESS:
         long_press_ = true;
-        touch_id_ = gesture->delta_x();
+        touch_id_ = gesture->details().touch_id();
         break;
       case ui::ET_SCROLL_FLING_START:
-        EXPECT_TRUE(gesture->delta_x() != 0 || gesture->delta_y() != 0);
+        EXPECT_TRUE(gesture->details().velocity_x() != 0 ||
+                    gesture->details().velocity_y() != 0);
         EXPECT_TRUE(scroll_end_);
         fling_ = true;
         break;

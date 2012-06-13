@@ -251,11 +251,17 @@ ui::GestureStatus SubmenuView::OnGestureEvent(const GestureEvent& e) {
       scroll_animator_->Stop();
       break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
-      OnScroll(0, e.delta_y());
+      OnScroll(0, e.details().scroll_y());
       break;
     case ui::ET_GESTURE_SCROLL_END:
-      if (e.delta_y() != 0.0f)
-        scroll_animator_->Start(0, e.delta_y());
+      break;
+    case ui::ET_SCROLL_FLING_START:
+      if (e.details().velocity_y() != 0.0f)
+        scroll_animator_->Start(0, e.details().velocity_y());
+      break;
+    case ui::ET_GESTURE_TAP_DOWN:
+    case ui::ET_SCROLL_FLING_CANCEL:
+      scroll_animator_->Stop();
       break;
     default:
       to_return = ui::GESTURE_STATUS_UNKNOWN;

@@ -186,10 +186,13 @@ ui::GestureStatus BaseScrollBar::OnGestureEvent(const GestureEvent& event) {
     return ui::GESTURE_STATUS_CONSUMED;
   }
 
-  if (event.type() == ui::ET_GESTURE_SCROLL_UPDATE ||
-      event.type() == ui::ET_GESTURE_SCROLL_BEGIN ||
-      event.type() == ui::ET_GESTURE_SCROLL_END) {
-    ScrollByContentsOffset(IsHorizontal() ? event.delta_x() : event.delta_y());
+  if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN ||
+      event.type() == ui::ET_GESTURE_SCROLL_END)
+    return ui::GESTURE_STATUS_CONSUMED;
+
+  if (event.type() == ui::ET_GESTURE_SCROLL_UPDATE) {
+    ScrollByContentsOffset(IsHorizontal() ? event.details().scroll_x() :
+                                            event.details().scroll_y());
     return ui::GESTURE_STATUS_CONSUMED;
   }
 

@@ -163,16 +163,18 @@ ui::GestureStatus ToplevelWindowEventFilter::PreHandleGestureEvent(
       if (!wm::IsWindowNormal(target))
         return ui::GESTURE_STATUS_UNKNOWN;
 
-      if (fabs(event->delta_y()) > kMinVertVelocityForWindowMinimize) {
+      if (fabs(event->details().velocity_y()) >
+          kMinVertVelocityForWindowMinimize) {
         // Minimize/maximize.
         target->SetProperty(aura::client::kShowStateKey,
-            event->delta_y() > 0 ? ui::SHOW_STATE_MINIMIZED :
-                                   ui::SHOW_STATE_MAXIMIZED);
-      } else if (fabs(event->delta_x()) > kMinHorizVelocityForWindowSwipe) {
+            event->details().velocity_y() > 0 ? ui::SHOW_STATE_MINIMIZED :
+                                      ui::SHOW_STATE_MAXIMIZED);
+      } else if (fabs(event->details().velocity_x()) >
+                 kMinHorizVelocityForWindowSwipe) {
         // Snap left/right.
         internal::SnapSizer sizer(target,
             gfx::Point(),
-            event->delta_x() < 0 ? internal::SnapSizer::LEFT_EDGE :
+            event->details().velocity_x() < 0 ? internal::SnapSizer::LEFT_EDGE :
             internal::SnapSizer::RIGHT_EDGE,
             Shell::GetInstance()->GetGridSize());
 

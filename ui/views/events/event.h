@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/time.h"
 #include "ui/base/events.h"
 #include "ui/base/gestures/gesture_types.h"
@@ -416,8 +417,7 @@ class VIEWS_EXPORT GestureEvent : public LocatedEvent,
 
   virtual ~GestureEvent();
 
-  float delta_x() const { return delta_x_; }
-  float delta_y() const { return delta_y_; }
+  const ui::GestureEventDetails& details() const { return details_; }
 
  protected:
   GestureEvent(ui::EventType type, int x, int y, int flags);
@@ -430,8 +430,7 @@ class VIEWS_EXPORT GestureEvent : public LocatedEvent,
   // Overridden from ui::GestureEvent.
   virtual int GetLowestTouchId() const OVERRIDE;
 
-  float delta_x_;
-  float delta_y_;
+  ui::GestureEventDetails details_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureEvent);
 };

@@ -771,7 +771,7 @@ void GestureSequence::AppendLongPressGestureEvent() {
       point->first_touch_position(),
       flags_,
       base::Time::FromDoubleT(point->last_touch_time()),
-      point->point_id(), 0.f, 1 << point->touch_id()));
+      0.f, 0.f, 1 << point->touch_id()));
   helper_->DispatchLongPressGestureEvent(gesture.get());
 }
 

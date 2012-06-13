@@ -162,7 +162,8 @@ ui::GestureStatus FrameMaximizeButton::OnGestureEvent(
     return ui::GESTURE_STATUS_CONSUMED;
   }
 
-  if (event.type() == ui::ET_GESTURE_END && event.delta_x() == 1 &&
+  if (event.type() == ui::ET_GESTURE_END &&
+      event.details().touch_points() == 1 &&
       is_snap_enabled_) {
     snap_type_ = SnapTypeForLocation(event.location());
     ProcessEndEvent(event);

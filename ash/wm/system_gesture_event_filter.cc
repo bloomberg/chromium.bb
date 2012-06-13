@@ -263,7 +263,7 @@ class SystemPinchHandler {
 
     switch (event.type()) {
       case ui::ET_GESTURE_END: {
-        if (event.delta_x() > kSystemPinchPoints)
+        if (event.details().touch_points() > kSystemPinchPoints)
           break;
 
         if (resize_started_) {
@@ -298,15 +298,19 @@ class SystemPinchHandler {
             break;
         } else {
           gfx::Rect bounds = target_->bounds();
-          bounds.set_x(static_cast<int>(bounds.x() + event.delta_x()));
-          bounds.set_y(static_cast<int>(bounds.y() + event.delta_y()));
+          bounds.set_x(
+              static_cast<int>(bounds.x() + event.details().scroll_x()));
+          bounds.set_y(
+              static_cast<int>(bounds.y() + event.details().scroll_y()));
           target_->SetBounds(bounds);
         }
 
         if (phantom_.IsShowing() && phantom_state_ == PHANTOM_WINDOW_NORMAL) {
           gfx::Rect bounds = phantom_.bounds();
-          bounds.set_x(static_cast<int>(bounds.x() + event.delta_x()));
-          bounds.set_y(static_cast<int>(bounds.y() + event.delta_y()));
+          bounds.set_x(
+              static_cast<int>(bounds.x() + event.details().scroll_x()));
+          bounds.set_y(
+              static_cast<int>(bounds.y() + event.details().scroll_y()));
           phantom_.SetBounds(bounds);
         }
         break;
@@ -314,7 +318,7 @@ class SystemPinchHandler {
 
       case ui::ET_GESTURE_PINCH_UPDATE: {
         // The PINCH_UPDATE events contain incremental scaling updates.
-        pinch_factor_ *= event.delta_x();
+        pinch_factor_ *= event.details().scale();
         if (!resize_started_) {
           if (fabs(pinch_factor_ - 1.) < kPinchThresholdForResize)
             break;
@@ -349,13 +353,13 @@ class SystemPinchHandler {
 
       case ui::ET_GESTURE_MULTIFINGER_SWIPE: {
         // Snap for left/right swipes.
-        if (event.delta_x()) {
+        if (event.details().swipe_left() || event.details().swipe_right()) {
           ui::ScopedLayerAnimationSettings settings(
               target_->layer()->GetAnimator());
           SnapSizer sizer(target_,
               gfx::Point(),
-              event.delta_x() < 0 ? internal::SnapSizer::LEFT_EDGE :
-                                    internal::SnapSizer::RIGHT_EDGE,
+              event.details().swipe_left() ? internal::SnapSizer::LEFT_EDGE :
+                                             internal::SnapSizer::RIGHT_EDGE,
               Shell::GetInstance()->GetGridSize());
           target_->SetBounds(sizer.GetSnapBounds(target_->bounds()));
           phantom_.Hide();
@@ -490,16 +494,18 @@ ui::GestureStatus SystemGestureEventFilter::PreHandleGestureEvent(
         if (start_location_ == BEZEL_START_UNSET)
           break;
         if (orientation_ == SCROLL_ORIENTATION_UNSET) {
-          if (!event->delta_x() && !event->delta_y())
+          if (!event->details().scroll_x() && !event->details().scroll_y())
             break;
           // For left and right the scroll angle needs to be much steeper to
           // be accepted for a 'device configuration' gesture.
           if (start_location_ == BEZEL_START_LEFT ||
               start_location_ == BEZEL_START_RIGHT) {
-            orientation_ = abs(event->delta_y()) > abs(event->delta_x()) * 3 ?
+            orientation_ = abs(event->details().scroll_y()) >
+                           abs(event->details().scroll_x()) * 3 ?
                 SCROLL_ORIENTATION_VERTICAL : SCROLL_ORIENTATION_HORIZONTAL;
           } else {
-            orientation_ = abs(event->delta_y()) > abs(event->delta_x()) ?
+            orientation_ = abs(event->details().scroll_y()) >
+                           abs(event->details().scroll_x()) ?
                 SCROLL_ORIENTATION_VERTICAL : SCROLL_ORIENTATION_HORIZONTAL;
           }
         }
@@ -538,7 +544,7 @@ ui::GestureStatus SystemGestureEventFilter::PreHandleGestureEvent(
     return ui::GESTURE_STATUS_CONSUMED;
   } else {
     if (event->type() == ui::ET_GESTURE_BEGIN &&
-        event->delta_x() >= kSystemPinchPoints) {
+        event->details().touch_points() >= kSystemPinchPoints) {
       pinch_handlers_[system_target] = new SystemPinchHandler(system_target);
       system_target->AddObserver(this);
       return ui::GESTURE_STATUS_CONSUMED;
@@ -601,7 +607,7 @@ bool SystemGestureEventFilter::HandleLauncherControl(
     aura::GestureEvent* event) {
   ash::AcceleratorController* accelerator =
       ash::Shell::GetInstance()->accelerator_controller();
-  if (start_location_ == BEZEL_START_BOTTOM && event->delta_y() < 0)
+  if (start_location_ == BEZEL_START_BOTTOM && event->details().scroll_y() < 0)
     // We leave the work to switch to the next window to our accelerators.
     accelerator->AcceleratorPressed(
         ui::Accelerator(ui::VKEY_LWIN, ui::EF_CONTROL_DOWN));
@@ -615,16 +621,18 @@ bool SystemGestureEventFilter::HandleApplicationControl(
     aura::GestureEvent* event) {
   ash::AcceleratorController* accelerator =
       ash::Shell::GetInstance()->accelerator_controller();
-  if (start_location_ == BEZEL_START_LEFT && event->delta_x() > 0)
+  if (start_location_ == BEZEL_START_LEFT && event->details().scroll_x() > 0) {
     // We leave the work to switch to the next window to our accelerators.
     accelerator->AcceleratorPressed(
         ui::Accelerator(ui::VKEY_F5, ui::EF_SHIFT_DOWN));
-  else if (start_location_ == BEZEL_START_RIGHT && event->delta_x() < 0)
+  } else if (start_location_ == BEZEL_START_RIGHT &&
+             event->details().scroll_x() < 0) {
     // We leave the work to switch to the previous window to our accelerators.
     accelerator->AcceleratorPressed(
         ui::Accelerator(ui::VKEY_F5, ui::EF_NONE));
-  else
+  } else {
     return false;
+  }
   // No further notifications for this gesture.
   return true;
 }
