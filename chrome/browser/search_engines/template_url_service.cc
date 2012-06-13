@@ -65,6 +65,10 @@ const char kTemplateParameter[] = "%s";
 // have the same url.
 const char kReplacementTerm[] = "blah.blah.blah.blah.blah";
 
+// The name of the histogram used to track default search changes. See the
+// comment for DefaultSearchChangeOrigin.
+const char kDSPChangeHistogramName[] = "Search.DefaultSearchChangeOrigin";
+
 bool TemplateURLsHaveSamePrefs(const TemplateURL* url1,
                                const TemplateURL* url2) {
   if (url1 == url2)
@@ -209,7 +213,8 @@ TemplateURLService::TemplateURLService(Profile* profile)
       time_provider_(&base::Time::Now),
       models_associated_(false),
       processing_syncer_changes_(false),
-      pending_synced_default_search_(false) {
+      pending_synced_default_search_(false),
+      dsp_change_origin_(DSP_CHANGE_NOT_SYNC) {
   DCHECK(profile_);
   Init(NULL, 0);
 }
@@ -228,7 +233,8 @@ TemplateURLService::TemplateURLService(const Initializer* initializers,
       time_provider_(&base::Time::Now),
       models_associated_(false),
       processing_syncer_changes_(false),
-      pending_synced_default_search_(false) {
+      pending_synced_default_search_(false),
+      dsp_change_origin_(DSP_CHANGE_NOT_SYNC) {
   Init(initializers, count);
 }
 
@@ -837,6 +843,8 @@ void TemplateURLService::Observe(int type,
         prefs->GetString(prefs::kSyncedDefaultSearchProviderGUID));
     if (new_default_search && !is_default_search_managed_) {
       if (new_default_search != GetDefaultSearchProvider()) {
+        AutoReset<DefaultSearchChangeOrigin> change_origin(
+            &dsp_change_origin_, DSP_CHANGE_SYNC_PREF);
         SetDefaultSearchProvider(new_default_search);
         pending_synced_default_search_ = false;
       }
@@ -885,6 +893,12 @@ SyncError TemplateURLService::ProcessSyncChanges(
 
   AutoReset<bool> processing_changes(&processing_syncer_changes_, true);
 
+  // We've started syncing, so set our origin member to the base Sync value.
+  // As we move through Sync Code, we may set this to increasingly specific
+  // origins so we can tell what exactly caused a DSP change.
+  AutoReset<DefaultSearchChangeOrigin> change_origin(&dsp_change_origin_,
+      DSP_CHANGE_SYNC_UNINTENTIONAL);
+
   SyncChangeList new_changes;
   SyncError error;
   for (SyncChangeList::const_iterator iter = change_list.begin();
@@ -925,8 +939,11 @@ SyncError TemplateURLService::ProcessSyncChanges(
 
         Remove(existing_turl);
 
-        if (delete_default)
+        if (delete_default) {
+          AutoReset<DefaultSearchChangeOrigin> change_origin(
+              &dsp_change_origin_, DSP_CHANGE_SYNC_DELETE);
           SetDefaultSearchProvider(FindNewDefaultSearchProvider());
+        }
       }
     } else if (iter->change_type() == SyncChange::ACTION_ADD) {
       if (existing_turl) {
@@ -1018,6 +1035,12 @@ SyncError TemplateURLService::MergeDataAndStartSyncing(
   // We do a lot of calls to Add/Remove/ResetTemplateURL here, so ensure we
   // don't step on our own toes.
   AutoReset<bool> processing_changes(&processing_syncer_changes_, true);
+
+  // We've started syncing, so set our origin member to the base Sync value.
+  // As we move through Sync Code, we may set this to increasingly specific
+  // origins so we can tell what exactly caused a DSP change.
+  AutoReset<DefaultSearchChangeOrigin> change_origin(&dsp_change_origin_,
+      DSP_CHANGE_SYNC_UNINTENTIONAL);
 
   SyncChangeList new_changes;
 
@@ -1946,8 +1969,11 @@ void TemplateURLService::UpdateDefaultSearch() {
     // The likely default should be from Sync if we were waiting on Sync.
     // Otherwise, it should be FindNewDefaultSearchProvider.
     TemplateURL* synced_default = GetPendingSyncedDefaultSearchProvider();
-    if (synced_default)
+    if (synced_default) {
+      AutoReset<DefaultSearchChangeOrigin> change_origin(
+          &dsp_change_origin_, DSP_CHANGE_SYNC_NOT_MANAGED);
       pending_synced_default_search_ = false;
+    }
     SetDefaultSearchProviderNoNotify(synced_default ? synced_default :
         FindNewDefaultSearchProvider());
   }
@@ -1962,6 +1988,9 @@ bool TemplateURLService::SetDefaultSearchProviderNoNotify(TemplateURL* url) {
     // Extension keywords cannot be made default, as they're inherently async.
     DCHECK(!url->IsExtensionKeyword());
   }
+
+  UMA_HISTOGRAM_ENUMERATION(kDSPChangeHistogramName, dsp_change_origin_,
+                            DSP_CHANGE_MAX);
 
   default_search_provider_ = url;
 
@@ -2311,8 +2340,11 @@ void TemplateURLService::SetDefaultSearchProviderIfNewlySynced(
     // Make sure this actually exists. We should not be calling this unless we
     // really just added this TemplateURL.
     TemplateURL* turl_from_sync = GetTemplateURLForGUID(guid);
-    if (turl_from_sync && turl_from_sync->SupportsReplacement())
+    if (turl_from_sync && turl_from_sync->SupportsReplacement()) {
+      AutoReset<DefaultSearchChangeOrigin> change_origin(
+          &dsp_change_origin_, DSP_CHANGE_SYNC_ADD);
       SetDefaultSearchProvider(turl_from_sync);
+    }
     pending_synced_default_search_ = false;
   }
 }

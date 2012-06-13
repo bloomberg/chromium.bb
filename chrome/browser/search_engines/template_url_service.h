@@ -364,6 +364,25 @@ class TemplateURLService : public WebDataServiceConsumer,
   typedef std::map<std::string, TemplateURL*> GUIDToTemplateMap;
   typedef std::list<std::string> PendingExtensionIDs;
 
+  // Declaration of values to be used in an enumerated histogram to tally
+  // changes to the default search provider from various entry points. In
+  // particular, we use this to see what proportion of changes are from Sync
+  // entry points, to help spot erroneous Sync activity.
+  enum DefaultSearchChangeOrigin {
+    // Various known Sync entry points.
+    DSP_CHANGE_SYNC_PREF,
+    DSP_CHANGE_SYNC_ADD,
+    DSP_CHANGE_SYNC_DELETE,
+    DSP_CHANGE_SYNC_NOT_MANAGED,
+    // "Other" origins. We differentiate between Sync and not Sync so we know if
+    // certain changes were intentionally from the system, or possibly some
+    // unintentional change from when we were Syncing.
+    DSP_CHANGE_SYNC_UNINTENTIONAL,
+    DSP_CHANGE_NOT_SYNC,
+    // Boundary value.
+    DSP_CHANGE_MAX,
+  };
+
   // Helper functor for FindMatchingKeywords(), for finding the range of
   // keywords which begin with a prefix.
   class LessWithPrefix;
@@ -651,6 +670,11 @@ class TemplateURLService : public WebDataServiceConsumer,
   // This set is used to determine what entries from the server we want to
   // ignore locally and return a delete command for.
   std::set<std::string> pre_sync_deletes_;
+
+  // This is used to log the origin of changes to the default search provider.
+  // We set this value to increasingly specific values when we know what is the
+  // cause/origin of a default search change.
+  DefaultSearchChangeOrigin dsp_change_origin_;
 
   DISALLOW_COPY_AND_ASSIGN(TemplateURLService);
 };
