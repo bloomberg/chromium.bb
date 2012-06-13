@@ -19,3 +19,22 @@ HelpPageWebUITest.prototype = {
 TEST_F('HelpPageWebUITest', 'testOpenHelpPage', function() {
   assertEquals(this.browsePreload, document.location.href);
 });
+
+GEN('#if defined(OS_LINUX) || defined(GOOGLE_CHROME_BUILD)');
+
+// Test that repeated calls to setUpdateStatus work.
+TEST_F('HelpPageWebUITest', 'testUpdateState', function() {
+  help.HelpPage.setUpdateStatus('disabled', '');
+  expectTrue($('relaunch').hidden);
+  expectTrue($('update-status-container').hidden);
+
+  help.HelpPage.setUpdateStatus('nearly_updated', '');
+  expectTrue(!$('relaunch').hidden);
+  expectTrue(!$('update-status-container').hidden);
+
+  help.HelpPage.setUpdateStatus('disabled', '');
+  expectTrue($('relaunch').hidden);
+  expectTrue($('update-status-container').hidden);
+});
+
+GEN('#endif');

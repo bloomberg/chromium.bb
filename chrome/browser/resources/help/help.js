@@ -112,17 +112,16 @@ cr.define('help', function() {
       } else if (status == 'failed') {
         this.setUpdateImage_('failed');
         $('update-status').innerHTML = message;
-      } else if (status == 'disabled') {
-        var container = $('update-status-container');
-        if (container)
-          container.hidden = true;
-        return;
       }
 
-      if (!cr.isMac)
-        $('update-percentage').hidden = status != 'updating';
+      var container = $('update-status-container');
+      if (container) {
+        container.hidden = status == 'disabled';
+        $('relaunch').hidden = status != 'nearly_updated';
 
-      $('relaunch').hidden = status != 'nearly_updated';
+        if (!cr.isMac)
+          $('update-percentage').hidden = status != 'updating';
+      }
     },
 
     /**

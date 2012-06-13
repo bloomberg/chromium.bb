@@ -71,8 +71,8 @@
           i18n-content="showMoreInfo">
       </button>
 </if>
-<if expr="pp_ifdef('chromeos') or (pp_ifdef('_google_chrome') and (is_win or is_macosx))">
-      <div id="update-status-container">
+<if expr="pp_ifdef('chromeos') or pp_ifdef('_google_chrome') or is_linux">
+      <div id="update-status-container" hidden>
         <div id="update-status-icon" class="up-to-date"></div>
         <span id="update-status" i18n-content="updateCheckStarted"></span>
       </div>
