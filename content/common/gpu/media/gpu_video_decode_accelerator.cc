@@ -10,25 +10,23 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif  // OS_WIN
-
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
-
-#if (defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)) || defined(OS_WIN)
-#if defined(OS_WIN)
-#include "content/common/gpu/media/dxva_video_decode_accelerator.h"
-#else  // OS_WIN
-#include "content/common/gpu/media/omx_video_decode_accelerator.h"
-#endif  // OS_WIN
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface_egl.h"
+
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#include "content/common/gpu/media/dxva_video_decode_accelerator.h"
+#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+#include "content/common/gpu/media/omx_video_decode_accelerator.h"
+#elif defined(OS_MACOSX)
+#include "gpu/command_buffer/service/texture_manager.h"
+#include "content/common/gpu/media/mac_video_decode_accelerator.h"
 #endif
 
 #include "gpu/command_buffer/service/texture_manager.h"
@@ -125,8 +123,6 @@ void GpuVideoDecodeAccelerator::Initialize(
   DCHECK(init_done_msg);
   init_done_msg_ = init_done_msg;
 
-#if (defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)) || defined(OS_WIN)
-  DCHECK(stub_ && stub_->decoder());
 #if defined(OS_WIN)
   if (base::win::GetVersion() < base::win::VERSION_WIN7) {
     NOTIMPLEMENTED() << "HW video decode acceleration not available.";
@@ -134,22 +130,29 @@ void GpuVideoDecodeAccelerator::Initialize(
     return;
   }
   DLOG(INFO) << "Initializing DXVA HW decoder for windows.";
-  DXVAVideoDecodeAccelerator* video_decoder =
-      new DXVAVideoDecodeAccelerator(this);
-#else  // OS_WIN
-  OmxVideoDecodeAccelerator* video_decoder =
-      new OmxVideoDecodeAccelerator(this);
+  scoped_refptr<DXVAVideoDecodeAccelerator> video_decoder(
+      new DXVAVideoDecodeAccelerator(this));
+  video_decode_accelerator_ = video_decoder;
+#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+  scoped_refptr<OmxVideoDecodeAccelerator> video_decoder(
+      new OmxVideoDecodeAccelerator(this));
   video_decoder->SetEglState(
       gfx::GLSurfaceEGL::GetHardwareDisplay(),
       stub_->decoder()->GetGLContext()->GetHandle());
-#endif  // OS_WIN
+#elif defined(OS_MACOSX)
+  scoped_refptr<MacVideoDecodeAccelerator> video_decoder(
+      new MacVideoDecodeAccelerator(this));
+  video_decoder->SetCGLContext(static_cast<CGLContextObj>(
+      stub_->decoder()->GetGLContext()->GetHandle()));
   video_decode_accelerator_ = video_decoder;
-  if (!video_decode_accelerator_->Initialize(profile))
-    NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
-#else  // Update RenderViewImpl::createMediaPlayer when adding clauses.
+#else
   NOTIMPLEMENTED() << "HW video decode acceleration not available.";
   NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
-#endif  // defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+  return;
+#endif
+
+  if (!video_decode_accelerator_->Initialize(profile))
+    NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
 }
 
 void GpuVideoDecodeAccelerator::OnDecode(

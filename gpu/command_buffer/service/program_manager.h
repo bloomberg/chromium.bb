@@ -42,8 +42,8 @@ class GPU_EXPORT ProgramManager {
       ~UniformInfo();
 
       bool IsSampler() const {
-        return type == GL_SAMPLER_2D || type == GL_SAMPLER_CUBE ||
-               type == GL_SAMPLER_EXTERNAL_OES;
+        return type == GL_SAMPLER_2D || type == GL_SAMPLER_2D_RECT_ARB ||
+               type == GL_SAMPLER_CUBE || type == GL_SAMPLER_EXTERNAL_OES;
       }
 
       GLsizei size;
