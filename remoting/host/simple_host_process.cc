@@ -222,10 +222,9 @@ class SimpleHost : public HeartbeatSender::Listener {
 
     if (fake_) {
       scoped_ptr<Capturer> capturer(new CapturerFake());
-      scoped_ptr<EventExecutor> event_executor =
-          EventExecutor::Create(context_.desktop_message_loop(),
-                                context_.ui_message_loop(),
-                                capturer.get());
+      scoped_ptr<EventExecutor> event_executor = EventExecutor::Create(
+          context_.desktop_message_loop()->message_loop_proxy(),
+          context_.ui_message_loop(), capturer.get());
       desktop_environment_ = DesktopEnvironment::CreateFake(
           &context_, capturer.Pass(), event_executor.Pass());
     } else {

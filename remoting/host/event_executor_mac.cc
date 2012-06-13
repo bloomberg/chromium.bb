@@ -10,8 +10,9 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "remoting/host/clipboard.h"
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/message_decoder.h"
@@ -33,7 +34,7 @@ using protocol::MouseEvent;
 // A class to generate events on Mac.
 class EventExecutorMac : public EventExecutor {
  public:
-  EventExecutorMac(MessageLoop* message_loop);
+  EventExecutorMac(scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   virtual ~EventExecutorMac() {}
 
   // ClipboardStub interface.
@@ -49,7 +50,7 @@ class EventExecutorMac : public EventExecutor {
   virtual void OnSessionFinished() OVERRIDE;
 
  private:
-  MessageLoop* message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   SkIPoint mouse_pos_;
   uint32 mouse_button_state_;
   scoped_ptr<Clipboard> clipboard_;
@@ -57,8 +58,9 @@ class EventExecutorMac : public EventExecutor {
   DISALLOW_COPY_AND_ASSIGN(EventExecutorMac);
 };
 
-EventExecutorMac::EventExecutorMac(MessageLoop* message_loop)
-    : message_loop_(message_loop),
+EventExecutorMac::EventExecutorMac(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : task_runner_(task_runner),
       mouse_button_state_(0),
       clipboard_(Clipboard::Create()) {
   // Ensure that local hardware events are not suppressed after injecting
@@ -255,8 +257,8 @@ const int kUsVkeyToKeysym[256] = {
 };
 
 void EventExecutorMac::InjectClipboardEvent(const ClipboardEvent& event) {
-  if (MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(
+  if (!task_runner_->BelongsToCurrentThread()) {
+    task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&EventExecutorMac::InjectClipboardEvent,
                    base::Unretained(this),
@@ -351,8 +353,8 @@ void EventExecutorMac::InjectMouseEvent(const MouseEvent& event) {
 
 void EventExecutorMac::OnSessionStarted(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
-  if (MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(
+  if (!task_runner_->BelongsToCurrentThread()) {
+    task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&EventExecutorMac::OnSessionStarted,
                    base::Unretained(this),
@@ -364,8 +366,8 @@ void EventExecutorMac::OnSessionStarted(
 }
 
 void EventExecutorMac::OnSessionFinished() {
-  if (MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(
+  if (!task_runner_->BelongsToCurrentThread()) {
+    task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&EventExecutorMac::OnSessionFinished,
                    base::Unretained(this)));
@@ -377,11 +379,11 @@ void EventExecutorMac::OnSessionFinished() {
 
 }  // namespace
 
-scoped_ptr<EventExecutor> EventExecutor::Create(MessageLoop* message_loop,
-                                                base::MessageLoopProxy* ui_loop,
-                                                Capturer* capturer) {
-  return scoped_ptr<EventExecutor>(
-      new EventExecutorMac(message_loop));
+scoped_ptr<EventExecutor> EventExecutor::Create(
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    Capturer* capturer) {
+  return scoped_ptr<EventExecutor>(new EventExecutorMac(main_task_runner));
 }
 
 }  // namespace remoting

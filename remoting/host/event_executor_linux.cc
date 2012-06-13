@@ -14,8 +14,9 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "remoting/proto/internal.pb.h"
 
 namespace remoting {
@@ -34,7 +35,7 @@ using protocol::MouseEvent;
 // A class to generate events on Linux.
 class EventExecutorLinux : public EventExecutor {
  public:
-  EventExecutorLinux(MessageLoop* message_loop);
+  EventExecutorLinux(scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   virtual ~EventExecutorLinux();
 
   bool Init();
@@ -59,7 +60,7 @@ class EventExecutorLinux : public EventExecutor {
   void SetAutoRepeatForKey(int keycode, int mode);
   void InjectScrollWheelClicks(int button, int count);
 
-  MessageLoop* message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   std::set<int> pressed_keys_;
 
@@ -267,8 +268,9 @@ int ChromotocolKeycodeToX11Keysym(int32_t keycode) {
   return kUsVkeyToKeysym[keycode];
 }
 
-EventExecutorLinux::EventExecutorLinux(MessageLoop* message_loop)
-    : message_loop_(message_loop),
+EventExecutorLinux::EventExecutorLinux(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : task_runner_(task_runner),
       display_(XOpenDisplay(NULL)),
       root_window_(BadValue) {
 }
@@ -306,8 +308,8 @@ void EventExecutorLinux::InjectKeyEvent(const KeyEvent& event) {
   // HostEventDispatcher should filter events missing the pressed field.
   DCHECK(event.has_pressed());
 
-  if (MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(
+  if (!task_runner_->BelongsToCurrentThread()) {
+    task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&EventExecutorLinux::InjectKeyEvent, base::Unretained(this),
                    event));
@@ -375,8 +377,8 @@ void EventExecutorLinux::InjectScrollWheelClicks(int button, int count) {
 }
 
 void EventExecutorLinux::InjectMouseEvent(const MouseEvent& event) {
-  if (MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(
+  if (!task_runner_->BelongsToCurrentThread()) {
+    task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&EventExecutorLinux::InjectMouseEvent,
                    base::Unretained(this), event));
@@ -431,11 +433,12 @@ void EventExecutorLinux::OnSessionFinished() {
 
 }  // namespace
 
-scoped_ptr<EventExecutor> EventExecutor::Create(MessageLoop* message_loop,
-                                                base::MessageLoopProxy* ui_loop,
-                                                Capturer* capturer) {
+scoped_ptr<EventExecutor> EventExecutor::Create(
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    Capturer* capturer) {
   scoped_ptr<EventExecutorLinux> executor(
-      new EventExecutorLinux(message_loop));
+      new EventExecutorLinux(main_task_runner));
   if (!executor->Init())
     return scoped_ptr<EventExecutor>(NULL);
   return executor.PassAs<EventExecutor>();

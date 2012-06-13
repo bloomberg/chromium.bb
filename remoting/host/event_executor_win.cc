@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop.h"
-#include "base/message_loop_proxy.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "remoting/host/capturer.h"
 #include "remoting/host/clipboard.h"
 #include "remoting/proto/event.pb.h"
@@ -30,8 +30,8 @@ using protocol::MouseEvent;
 // A class to generate events on Windows.
 class EventExecutorWin : public EventExecutor {
  public:
-  EventExecutorWin(MessageLoop* message_loop,
-                   base::MessageLoopProxy* ui_loop,
+  EventExecutorWin(scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+                   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
                    Capturer* capturer);
   virtual ~EventExecutorWin() {}
 
@@ -52,26 +52,27 @@ class EventExecutorWin : public EventExecutor {
   void HandleKey(const KeyEvent& event);
   void HandleMouse(const MouseEvent& event);
 
-  MessageLoop* message_loop_;
-  base::MessageLoopProxy* ui_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   Capturer* capturer_;
   scoped_ptr<Clipboard> clipboard_;
 
   DISALLOW_COPY_AND_ASSIGN(EventExecutorWin);
 };
 
-EventExecutorWin::EventExecutorWin(MessageLoop* message_loop,
-                                   base::MessageLoopProxy* ui_loop,
-                                   Capturer* capturer)
-    : message_loop_(message_loop),
-      ui_loop_(ui_loop),
+EventExecutorWin::EventExecutorWin(
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    Capturer* capturer)
+    : main_task_runner_(main_task_runner),
+      ui_task_runner_(ui_task_runner),
       capturer_(capturer),
       clipboard_(Clipboard::Create()) {
 }
 
 void EventExecutorWin::InjectClipboardEvent(const ClipboardEvent& event) {
-  if (!ui_loop_->BelongsToCurrentThread()) {
-    ui_loop_->PostTask(
+  if (!ui_task_runner_->BelongsToCurrentThread()) {
+    ui_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&EventExecutorWin::InjectClipboardEvent,
                    base::Unretained(this),
@@ -83,8 +84,8 @@ void EventExecutorWin::InjectClipboardEvent(const ClipboardEvent& event) {
 }
 
 void EventExecutorWin::InjectKeyEvent(const KeyEvent& event) {
-  if (MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(
+  if (!main_task_runner_->BelongsToCurrentThread()) {
+    main_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&EventExecutorWin::InjectKeyEvent, base::Unretained(this),
                    event));
@@ -95,8 +96,8 @@ void EventExecutorWin::InjectKeyEvent(const KeyEvent& event) {
 }
 
 void EventExecutorWin::InjectMouseEvent(const MouseEvent& event) {
-  if (MessageLoop::current() != message_loop_) {
-    message_loop_->PostTask(
+  if (!main_task_runner_->BelongsToCurrentThread()) {
+    main_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&EventExecutorWin::InjectMouseEvent, base::Unretained(this),
                    event));
@@ -108,8 +109,8 @@ void EventExecutorWin::InjectMouseEvent(const MouseEvent& event) {
 
 void EventExecutorWin::OnSessionStarted(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
-  if (!ui_loop_->BelongsToCurrentThread()) {
-    ui_loop_->PostTask(
+  if (!ui_task_runner_->BelongsToCurrentThread()) {
+    ui_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&EventExecutorWin::OnSessionStarted,
                    base::Unretained(this),
@@ -121,8 +122,8 @@ void EventExecutorWin::OnSessionStarted(
 }
 
 void EventExecutorWin::OnSessionFinished() {
-  if (!ui_loop_->BelongsToCurrentThread()) {
-    ui_loop_->PostTask(
+  if (!ui_task_runner_->BelongsToCurrentThread()) {
+    ui_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&EventExecutorWin::OnSessionFinished,
                    base::Unretained(this)));
@@ -286,11 +287,12 @@ void EventExecutorWin::HandleMouse(const MouseEvent& event) {
 
 }  // namespace
 
-scoped_ptr<EventExecutor> EventExecutor::Create(MessageLoop* message_loop,
-                                                base::MessageLoopProxy* ui_loop,
-                                                Capturer* capturer) {
+scoped_ptr<EventExecutor> EventExecutor::Create(
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
+    Capturer* capturer) {
   return scoped_ptr<EventExecutor>(
-      new EventExecutorWin(message_loop, ui_loop, capturer));
+      new EventExecutorWin(main_task_runner, ui_task_runner, capturer));
 }
 
 }  // namespace remoting
