@@ -138,8 +138,10 @@ views::View* TrayCapsLock::CreateDetailedView(user::LoginStatus status) {
   const int string_id = search_mapped_to_caps_lock_ ?
       IDS_ASH_STATUS_TRAY_CAPS_LOCK_ENABLED_PRESS_SEARCH :
       IDS_ASH_STATUS_TRAY_CAPS_LOCK_ENABLED_PRESS_SHIFT_AND_SEARCH_KEYS;
-  detailed_->AddChildView(
-      new views::Label(bundle.GetLocalizedString(string_id)));
+  views::Label* label = new views::Label(bundle.GetLocalizedString(string_id));
+  label->SetMultiLine(true);
+  label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  detailed_->AddChildView(label);
 
   return detailed_;
 }
