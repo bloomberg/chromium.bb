@@ -173,9 +173,6 @@ const char kRegisteredEvents[] = "events";
 // Persisted value for omnibox.setDefaultSuggestion.
 const char kOmniboxDefaultSuggestion[] = "omnibox_default_suggestion";
 
-// A preference containing context menu items, persisted for event pages.
-const char kPrefContextMenus[] = "context_menus";
-
 // Provider of write access to a dictionary storing extension prefs.
 class ScopedExtensionPrefUpdate : public DictionaryPrefUpdate {
  public:
@@ -971,37 +968,6 @@ void ExtensionPrefs::SetOmniboxDefaultSuggestion(
   UpdateExtensionPref(extension_id, kOmniboxDefaultSuggestion, dict.release());
 }
 
-ExtensionMenuItem::List ExtensionPrefs::GetContextMenuItems(
-    const std::string& extension_id) {
-  ExtensionMenuItem::List items;
-  const base::ListValue* list = NULL;
-  if (!ReadExtensionPrefList(extension_id, kPrefContextMenus, &list))
-    return items;
-  for (size_t i = 0; i < list->GetSize(); ++i) {
-    base::DictionaryValue* dict = NULL;
-    if (!list->GetDictionary(i, &dict))
-      continue;
-    ExtensionMenuItem* item = ExtensionMenuItem::Populate(
-        extension_id, *dict, NULL);
-    if (!item)
-      continue;
-    items.push_back(item);
-  }
-  return items;
-}
-
-void ExtensionPrefs::SetContextMenuItems(
-    const std::string& extension_id,
-    const ExtensionMenuItem::List& items) {
-  base::ListValue* list = NULL;
-  if (items.size() > 0) {
-    list = new base::ListValue;
-    for (size_t i = 0; i < items.size(); ++i)
-      list->Append(items[i]->ToValue().release());
-  }
-  UpdateExtensionPref(extension_id, kPrefContextMenus, list);
-}
-
 bool ExtensionPrefs::IsIncognitoEnabled(const std::string& extension_id) {
   return ReadExtensionPrefBoolean(extension_id, kPrefIncognitoEnabled);
 }
@@ -1199,7 +1165,6 @@ void ExtensionPrefs::OnExtensionInstalled(
 
   // Clear state that may be registered from a previous install.
   extension_dict->Remove(kRegisteredEvents, NULL);
-  extension_dict->Remove(kPrefContextMenus, NULL);
 
   if (extension->is_app()) {
     StringOrdinal new_page_ordinal = page_ordinal.IsValid() ?

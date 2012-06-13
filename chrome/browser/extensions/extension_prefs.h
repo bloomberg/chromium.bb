@@ -282,11 +282,6 @@ class ExtensionPrefs : public extensions::ContentSettingsStore::Observer,
       const std::string& extension_id,
       const extensions::ExtensionOmniboxSuggestion& suggestion);
 
-  // Controls the context menu items for this extension.
-  ExtensionMenuItem::List GetContextMenuItems(const std::string& extension_id);
-  void SetContextMenuItems(const std::string& extension_id,
-                           const ExtensionMenuItem::List& items);
-
   // Returns true if the user enabled this extension to be loaded in incognito
   // mode.
   bool IsIncognitoEnabled(const std::string& extension_id);

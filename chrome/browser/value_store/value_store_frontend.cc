@@ -12,8 +12,8 @@ using content::BrowserThread;
 
 class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
  public:
-  explicit Backend(const FilePath& db_path) : storage_(NULL) {
-  }
+  Backend() : storage_(NULL) {}
+  explicit Backend(ValueStore* storage) : storage_(storage) {}
 
   void Init(const FilePath& db_path) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
@@ -21,6 +21,12 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
     storage_ = LeveldbValueStore::Create(db_path);
     if (!storage_)
       storage_ = new FailingValueStore();
+  }
+
+  void InitWithStore(ValueStore* storage) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    DCHECK(!storage_);
+    storage_ = storage;
   }
 
   void Get(const std::string& key,
@@ -77,10 +83,14 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
 };
 
 ValueStoreFrontend::ValueStoreFrontend(const FilePath& db_path)
-    : backend_(new Backend(db_path)) {
+    : backend_(new Backend()) {
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       base::Bind(&ValueStoreFrontend::Backend::Init,
                  backend_, db_path));
+}
+
+ValueStoreFrontend::ValueStoreFrontend(ValueStore* value_store)
+    : backend_(new Backend(value_store)) {
 }
 
 ValueStoreFrontend::~ValueStoreFrontend() {

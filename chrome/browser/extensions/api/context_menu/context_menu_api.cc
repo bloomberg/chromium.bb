@@ -258,7 +258,7 @@ bool CreateContextMenuFunction::RunImpl() {
   if (!success)
     return false;
 
-  menu_manager->WriteToPrefs(GetExtension());
+  menu_manager->WriteToStorage(GetExtension());
   return true;
 }
 
@@ -345,7 +345,7 @@ bool UpdateContextMenuFunction::RunImpl() {
   if (!parent && radioItemUpdated && !manager->ItemUpdated(item->id()))
     return false;
 
-  manager->WriteToPrefs(GetExtension());
+  manager->WriteToStorage(GetExtension());
   return true;
 }
 
@@ -367,7 +367,7 @@ bool RemoveContextMenuFunction::RunImpl() {
 
   if (!manager->RemoveContextMenuItem(id))
     return false;
-  manager->WriteToPrefs(GetExtension());
+  manager->WriteToStorage(GetExtension());
   return true;
 }
 
@@ -375,7 +375,7 @@ bool RemoveAllContextMenusFunction::RunImpl() {
   ExtensionService* service = profile()->GetExtensionService();
   ExtensionMenuManager* manager = service->menu_manager();
   manager->RemoveAllContextItems(GetExtension()->id());
-  manager->WriteToPrefs(GetExtension());
+  manager->WriteToStorage(GetExtension());
   return true;
 }
 

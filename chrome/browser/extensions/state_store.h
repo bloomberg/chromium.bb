@@ -26,6 +26,7 @@ class StateStore
   typedef ValueStoreFrontend::ReadCallback ReadCallback;
 
   StateStore(Profile* profile, const FilePath& db_path);
+  StateStore(Profile* profile, ValueStore* store);
   virtual ~StateStore();
 
   // Register a key for removal upon extension install/uninstall. We remove

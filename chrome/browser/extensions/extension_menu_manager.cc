@@ -14,10 +14,10 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_event_names.h"
 #include "chrome/browser/extensions/extension_event_router.h"
-#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/extensions/state_store.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
@@ -32,6 +32,8 @@ using content::WebContents;
 namespace {
 
 // Keys for serialization to and from Value to store in the preferences.
+const char kContextMenusKey[] = "context_menus";
+
 const char kCheckedKey[] = "checked";
 const char kContextsKey[] = "contexts";
 const char kDocumentURLPatternsKey[] = "document_url_patterns";
@@ -50,6 +52,35 @@ void SetIdKeyValue(base::DictionaryValue* properties,
     properties->SetString(key, id.string_uid);
   else
     properties->SetInteger(key, id.uid);
+}
+
+ExtensionMenuItem::List MenuItemsFromValue(const std::string& extension_id,
+                                           base::Value* value) {
+  ExtensionMenuItem::List items;
+
+  base::ListValue* list = NULL;
+  if (!value || !value->GetAsList(&list))
+    return items;
+
+  for (size_t i = 0; i < list->GetSize(); ++i) {
+    base::DictionaryValue* dict = NULL;
+    if (!list->GetDictionary(i, &dict))
+      continue;
+    ExtensionMenuItem* item = ExtensionMenuItem::Populate(
+        extension_id, *dict, NULL);
+    if (!item)
+      continue;
+    items.push_back(item);
+  }
+  return items;
+}
+
+scoped_ptr<base::Value> MenuItemsToValue(
+    const ExtensionMenuItem::List& items) {
+  scoped_ptr<base::ListValue> list(new ListValue());
+  for (size_t i = 0; i < items.size(); ++i)
+    list->Append(items[i]->ToValue().release());
+  return scoped_ptr<Value>(list.release());
 }
 
 }  // namespace
@@ -239,6 +270,10 @@ ExtensionMenuManager::ExtensionMenuManager(Profile* profile)
                  content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(profile));
+
+  extensions::StateStore* store = ExtensionSystem::Get(profile_)->state_store();
+  if (store)
+    store->RegisterKey(kContextMenusKey);
 }
 
 ExtensionMenuManager::~ExtensionMenuManager() {
@@ -599,7 +634,7 @@ void ExtensionMenuManager::ExecuteCommand(
 
     const extensions::Extension* extension = ExtensionSystem::Get(profile_)->
         extension_service()->GetExtensionById(menuItemId.extension_id, false);
-    WriteToPrefs(extension);
+    WriteToStorage(extension);
   }
 
   std::string json_args;
@@ -671,7 +706,7 @@ bool ExtensionMenuManager::ItemUpdated(const ExtensionMenuItem::Id& id) {
   return true;
 }
 
-void ExtensionMenuManager::WriteToPrefs(
+void ExtensionMenuManager::WriteToStorage(
     const extensions::Extension* extension) {
   if (!extension->has_lazy_background_page())
     return;
@@ -683,17 +718,22 @@ void ExtensionMenuManager::WriteToPrefs(
       (*i)->GetFlattenedSubtree(&all_items);
     }
   }
-  ExtensionSystem::Get(profile_)->extension_service()->extension_prefs()->
-      SetContextMenuItems(extension->id(), all_items);
+
+  extensions::StateStore* store = ExtensionSystem::Get(profile_)->state_store();
+  if (store)
+    store->SetExtensionValue(extension->id(), kContextMenusKey,
+                             MenuItemsToValue(all_items));
 }
 
-void ExtensionMenuManager::ReadFromPrefs(
-    const extensions::Extension* extension) {
-  if (!extension->has_lazy_background_page())
+void ExtensionMenuManager::ReadFromStorage(const std::string& extension_id,
+                                           scoped_ptr<base::Value> value) {
+  const extensions::Extension* extension =
+      ExtensionSystem::Get(profile_)->extension_service()->extensions()->
+          GetByID(extension_id);
+  if (!extension)
     return;
-  ExtensionMenuItem::List items =
-      ExtensionSystem::Get(profile_)->extension_service()->extension_prefs()->
-      GetContextMenuItems(extension->id());
+
+  ExtensionMenuItem::List items = MenuItemsFromValue(extension_id, value.get());
   for (size_t i = 0; i < items.size(); ++i) {
     if (items[i]->parent_id()) {
       // Parent IDs are stored in the parent_id field for convenience, but
@@ -723,7 +763,13 @@ void ExtensionMenuManager::Observe(
   } else if (type == chrome::NOTIFICATION_EXTENSION_LOADED) {
     const extensions::Extension* extension =
         content::Details<const extensions::Extension>(details).ptr();
-    ReadFromPrefs(extension);
+    extensions::StateStore* store =
+        ExtensionSystem::Get(profile_)->state_store();
+    if (store && extension->has_lazy_background_page()) {
+      store->GetExtensionValue(extension->id(), kContextMenusKey,
+          base::Bind(&ExtensionMenuManager::ReadFromStorage,
+                     AsWeakPtr(), extension->id()));
+    }
   }
 }
 

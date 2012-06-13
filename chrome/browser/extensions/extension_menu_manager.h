@@ -15,6 +15,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
@@ -242,7 +243,9 @@ class ExtensionMenuItem {
 };
 
 // This class keeps track of menu items added by extensions.
-class ExtensionMenuManager : public content::NotificationObserver {
+class ExtensionMenuManager
+    : public content::NotificationObserver,
+      public base::SupportsWeakPtr<ExtensionMenuManager> {
  public:
   explicit ExtensionMenuManager(Profile* profile);
   virtual ~ExtensionMenuManager();
@@ -307,12 +310,13 @@ class ExtensionMenuManager : public content::NotificationObserver {
   virtual void Observe(int type, const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Stores the menu items for the extension in the preferences.
-  void WriteToPrefs(const extensions::Extension* extension);
+  // Stores the menu items for the extension in the state storage.
+  void WriteToStorage(const extensions::Extension* extension);
 
-  // Reads menu items for the extension from the preferences. Any invalid
+  // Reads menu items for the extension from the state storage. Any invalid
   // items are ignored.
-  void ReadFromPrefs(const extensions::Extension* extension);
+  void ReadFromStorage(const std::string& extension_id,
+                       scoped_ptr<base::Value> value);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtensionMenuManagerTest, DeleteParent);

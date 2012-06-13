@@ -14,8 +14,10 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/state_store.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/value_store/testing_value_store.h"
 #include "chrome/common/chrome_switches.h"
 
 
@@ -54,6 +56,9 @@ ExtensionService* TestExtensionSystem::CreateExtensionService(
       profile_->GetPrefs(),
       install_directory,
       ExtensionPrefValueMapFactory::GetForProfile(profile_)));
+  state_store_.reset(new extensions::StateStore(
+      profile_,
+      new TestingValueStore()));
   extension_prefs_->Init(extensions_disabled);
   extension_service_.reset(new ExtensionService(profile_,
                                                 command_line,
@@ -101,7 +106,7 @@ extensions::AlarmManager* TestExtensionSystem::alarm_manager() {
 }
 
 extensions::StateStore* TestExtensionSystem::state_store() {
-  return NULL;
+  return state_store_.get();
 }
 
 ExtensionInfoMap* TestExtensionSystem::info_map() {

@@ -16,6 +16,8 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/values.h"
 
+class ValueStore;
+
 // A frontend for a LeveldbValueStore, for use on the UI thread.
 class ValueStoreFrontend
     : public base::SupportsWeakPtr<ValueStoreFrontend>,
@@ -24,6 +26,7 @@ class ValueStoreFrontend
   typedef base::Callback<void(scoped_ptr<base::Value>)> ReadCallback;
 
   explicit ValueStoreFrontend(const FilePath& db_path);
+  explicit ValueStoreFrontend(ValueStore* value_store);
   ~ValueStoreFrontend();
 
   // Retrieves a value from the database asynchronously, passing a copy to

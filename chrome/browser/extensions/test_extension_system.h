@@ -63,6 +63,7 @@ class TestExtensionSystem : public ExtensionSystem {
   // The Extension Preferences. Only created if CreateExtensionService is
   // invoked.
   scoped_ptr<ExtensionPrefs> extension_prefs_;
+  scoped_ptr<extensions::StateStore> state_store_;
   scoped_ptr<ExtensionService> extension_service_;
   scoped_ptr<extensions::ManagementPolicy> management_policy_;
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;

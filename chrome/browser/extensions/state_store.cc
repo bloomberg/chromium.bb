@@ -28,6 +28,14 @@ StateStore::StateStore(Profile* profile, const FilePath& db_path)
                  content::Source<Profile>(profile));
 }
 
+StateStore::StateStore(Profile* profile, ValueStore* value_store)
+    : store_(value_store) {
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
+                 content::Source<Profile>(profile));
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
+                 content::Source<Profile>(profile));
+}
+
 StateStore::~StateStore() {
 }
 
