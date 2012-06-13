@@ -61,7 +61,6 @@ struct window {
 		GLuint fbo;
 		GLuint color_rbo;
 
-		GLuint program;
 		GLuint rotation_uniform;
 
 		GLuint pos;
@@ -175,6 +174,7 @@ static void
 init_gl(struct window *window)
 {
 	GLuint frag, vert;
+	GLuint program;
 	GLint status;
 
 	glViewport(0, 0, window->geometry.width, window->geometry.height);
@@ -182,31 +182,31 @@ init_gl(struct window *window)
 	frag = create_shader(window, frag_shader_text, GL_FRAGMENT_SHADER);
 	vert = create_shader(window, vert_shader_text, GL_VERTEX_SHADER);
 
-	window->gl.program = glCreateProgram();
-	glAttachShader(window->gl.program, frag);
-	glAttachShader(window->gl.program, vert);
-	glLinkProgram(window->gl.program);
+	program = glCreateProgram();
+	glAttachShader(program, frag);
+	glAttachShader(program, vert);
+	glLinkProgram(program);
 
-	glGetProgramiv(window->gl.program, GL_LINK_STATUS, &status);
+	glGetProgramiv(program, GL_LINK_STATUS, &status);
 	if (!status) {
 		char log[1000];
 		GLsizei len;
-		glGetProgramInfoLog(window->gl.program, 1000, &len, log);
+		glGetProgramInfoLog(program, 1000, &len, log);
 		fprintf(stderr, "Error: linking:\n%*s\n", len, log);
 		exit(1);
 	}
 
-	glUseProgram(window->gl.program);
+	glUseProgram(program);
 	
 	window->gl.pos = 0;
-	window->gl.pos = 1;
+	window->gl.col = 1;
 
-	glBindAttribLocation(window->gl.program, window->gl.pos, "pos");
-	glBindAttribLocation(window->gl.program, window->gl.col, "color");
-	glLinkProgram(window->gl.program);
+	glBindAttribLocation(program, window->gl.pos, "pos");
+	glBindAttribLocation(program, window->gl.col, "color");
+	glLinkProgram(program);
 
 	window->gl.rotation_uniform =
-		glGetUniformLocation(window->gl.program, "rotation");
+		glGetUniformLocation(program, "rotation");
 }
 
 static void
@@ -339,8 +339,6 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 
 	glDisableVertexAttribArray(window->gl.pos);
 	glDisableVertexAttribArray(window->gl.col);
-
-	glFlush();
 
 	eglSwapBuffers(window->display->egl.dpy, window->egl_surface);
 	if (callback)
