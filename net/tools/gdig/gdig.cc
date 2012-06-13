@@ -18,9 +18,11 @@
 #include "net/base/host_cache.h"
 #include "net/base/host_resolver_impl.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_log.h"
 #include "net/base/net_util.h"
 #include "net/dns/dns_client.h"
 #include "net/dns/dns_config_service.h"
+#include "net/tools/gdig/file_net_log.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -60,6 +62,7 @@ class GDig {
 
   base::CancelableClosure timeout_closure_;
   scoped_ptr<DnsConfigService> dns_config_service_;
+  scoped_ptr<FileNetLog> log_;
   scoped_ptr<HostResolver> resolver_;
 };
 
@@ -71,7 +74,8 @@ GDig::GDig()
 GDig::Result GDig::Main(int argc, const char* argv[]) {
   if (!ParseCommandLine(argc, argv)) {
       fprintf(stderr,
-              "usage: %s [--config_timeout=<seconds>] domain_name\n",
+              "usage: %s [--net_log[=<basic|no_bytes|all>]]"
+              " [--config_timeout=<seconds>] domain_name\n",
               argv[0]);
       return RESULT_WRONG_USAGE;
   }
@@ -137,13 +141,15 @@ void GDig::OnDnsConfig(const DnsConfig& dns_config) {
           HostResolverImpl::ProcTaskParams(NULL, 1),
           scoped_ptr<DnsConfigService>(NULL),
           dns_client.Pass(),
-          NULL));
+          log_.get()));
 
   HostResolver::RequestInfo info(HostPortPair(domain_name_.c_str(), 80));
 
   CompletionCallback callback = base::Bind(&GDig::OnResolveComplete,
                                            base::Unretained(this));
-  int ret = resolver_->Resolve(info, &addrlist_, callback, NULL, BoundNetLog());
+  int ret = resolver_->Resolve(
+      info, &addrlist_, callback, NULL,
+      BoundNetLog::Make(log_.get(), net::NetLog::SOURCE_NONE));
   DCHECK(ret == ERR_IO_PENDING);
 }
 
@@ -168,9 +174,29 @@ bool GDig::ParseCommandLine(int argc, const char* argv[]) {
     if (parsed && timeout_seconds > 0) {
       timeout_ = base::TimeDelta::FromSeconds(timeout_seconds);
     } else {
-      fprintf(stderr,
-              "Invalid config_timeout parameter, using the default value\n");
+      fprintf(stderr, "Invalid config_timeout parameter\n");
+      return false;
     }
+  }
+
+  if (parsed_command_line.HasSwitch("net_log")) {
+    std::string log_param = parsed_command_line.GetSwitchValueASCII("net_log");
+    NetLog::LogLevel level = NetLog::LOG_ALL_BUT_BYTES;
+
+    if (log_param.length() > 0) {
+      std::map<std::string, NetLog::LogLevel> log_levels;
+      log_levels["all"] = NetLog::LOG_ALL;
+      log_levels["no_bytes"] = NetLog::LOG_ALL_BUT_BYTES;
+      log_levels["basic"] = NetLog::LOG_BASIC;
+
+      if (log_levels.find(log_param) != log_levels.end()) {
+        level = log_levels[log_param];
+      } else {
+        fprintf(stderr, "Invalid net_log parameter\n");
+        return false;
+      }
+    }
+    log_.reset(new FileNetLog(stderr, level));
   }
 
   return true;
