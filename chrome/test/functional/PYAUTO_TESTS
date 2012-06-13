@@ -541,6 +541,8 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
+      # crbug.com/128563
+      '-gtalk.test_basic.BasicTest.testBasicFunctionality',
       # crbug.com/109035
       '-youtube.YoutubeTest.testPlayerBytes',
       '-youtube.YoutubeTest.testPlayerResolution',
