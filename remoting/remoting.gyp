@@ -811,6 +811,7 @@
         'remoting_client',
         'remoting_jingle_glue',
         '../media/media.gyp:media',
+        '../net/net.gyp:net',
         '../ppapi/ppapi.gyp:ppapi_cpp_objects',
         '../skia/skia.gyp:skia',
       ],
@@ -850,6 +851,7 @@
         'remoting_base',
         'remoting_host',
         'remoting_jingle_glue',
+        '../net/net.gyp:net',
         '../third_party/npapi/npapi.gyp:npapi',
       ],
       'sources': [
@@ -1301,6 +1303,7 @@
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../media/media.gyp:media',
+        '../net/net.gyp:net',
       ],
       'sources': [
         'host/simple_host_process.cc',
@@ -1326,6 +1329,7 @@
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../media/media.gyp:media',
+        '../net/net.gyp:net',
       ],
       'sources': [
         'host/branding.cc',

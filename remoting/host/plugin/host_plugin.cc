@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/stringize_macros.h"
+#include "net/socket/ssl_server_socket.h"
 #include "remoting/base/plugin_message_loop_proxy.h"
 #include "remoting/host/plugin/constants.h"
 #include "remoting/host/plugin/host_log_handler.h"
@@ -114,6 +115,7 @@ class HostNPPlugin : public remoting::PluginMessageLoopProxy::Delegate {
       return false;
     }
 #endif  // OS_MACOSX
+    net::EnableSSLServerSockets();
     return true;
   }
 

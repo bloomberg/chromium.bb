@@ -21,6 +21,7 @@
 #include "build/build_config.h"
 #include "crypto/nss_util.h"
 #include "net/base/network_change_notifier.h"
+#include "net/socket/ssl_server_socket.h"
 #include "remoting/base/breakpad.h"
 #include "remoting/base/constants.h"
 #include "remoting/host/branding.h"
@@ -545,6 +546,10 @@ int main(int argc, char** argv) {
   // (crbug.com/104377).
   gfx::GtkInitFromCommandLine(*cmd_line);
 #endif  // TOOLKIT_GTK
+
+  // Enable support for SSL server sockets, which must be done while still
+  // single-threaded.
+  net::EnableSSLServerSockets();
 
   remoting::HostProcess me2me_host;
   me2me_host.InitWithCommandLine(cmd_line);

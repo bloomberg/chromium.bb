@@ -31,6 +31,7 @@
 #include "base/threading/thread.h"
 #include "crypto/nss_util.h"
 #include "net/base/network_change_notifier.h"
+#include "net/socket/ssl_server_socket.h"
 #include "remoting/base/constants.h"
 #include "remoting/host/capturer_fake.h"
 #include "remoting/host/chromoting_host.h"
@@ -347,6 +348,10 @@ int main(int argc, char** argv) {
 #if defined(TOOLKIT_GTK)
   gfx::GtkInitFromCommandLine(*cmd_line);
 #endif  // TOOLKIT_GTK
+
+  // Enable support for SSL server sockets, which must be done while still
+  // single-threaded.
+  net::EnableSSLServerSockets();
 
   remoting::SimpleHost simple_host;
 

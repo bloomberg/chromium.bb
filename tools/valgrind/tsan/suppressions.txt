@@ -949,33 +949,6 @@
   fun:base::internal::RunnableAdapter::Run
 }
 {
-   bug_131622a
-   ThreadSanitizer:Race
-   fun:ssl_InitSessionCacheLocks
-   fun:lock_cache
-   fun:ssl_LookupSID
-   fun:ssl2_BeginClientHandshake
-   fun:ssl_Do1stHandshake
-   fun:SSL_ForceHandshake
-   fun:net::SSLClientSocketNSS::Core::DoHandshake
-   fun:net::SSLClientSocketNSS::Core::DoHandshakeLoop
-   fun:net::SSLClientSocketNSS::Core::Connect
-   fun:base::internal::RunnableAdapter::Run
-}
-{
-   bug_131622b
-   ThreadSanitizer:Race
-   fun:lock_cache
-   fun:ssl_LookupSID
-   fun:ssl2_BeginClientHandshake
-   fun:ssl_Do1stHandshake
-   fun:SSL_ForceHandshake
-   fun:net::SSLClientSocketNSS::Core::DoHandshake
-   fun:net::SSLClientSocketNSS::Core::DoHandshakeLoop
-   fun:net::SSLClientSocketNSS::Core::Connect
-   fun:base::internal::RunnableAdapter::Run
-}
-{
    bug_132230a
    ThreadSanitizer:Race
    ...

@@ -6,6 +6,11 @@ include_rules = [
   "+crypto",
   "+media/base",
 
+  # Note: Only for net::EnableSSLServerSockets(), which must be called by
+  # unit tests at process start.
+  "-net",
+  "+net/socket",
+
   "-remoting",
   "+remoting/base",
   "+remoting/proto",

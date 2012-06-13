@@ -8,6 +8,10 @@ include_rules = [
   "+net/test",
   "+net/url_request",
 
+  # Note: Only for net::EnableSSLServerSockets(), which must be called by
+  # at process start.
+  "+net/socket",
+
   "+remoting/protocol",
   "+remoting/jingle_glue",
   "+third_party/jsoncpp",
