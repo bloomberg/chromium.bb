@@ -3046,7 +3046,10 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
             (automation_id, observer_id, mutation_type,
              xpath.replace('"', r'\"'), attribute, expected_string))
     exec_js = exec_js or PyUITest.ExecuteJavascript
-    jsreturn = exec_js(self, js, **kwargs)
+    try:
+      jsreturn = exec_js(self, js, **kwargs)
+    except JSONInterfaceError:
+      raise JSONInterfaceError('Failed to inject DOM mutation observer.')
     if jsreturn != 'success':
       self.RemoveEventObserver(observer_id)
       raise pyauto_errors.JavascriptRuntimeError(jsreturn)

@@ -30,6 +30,14 @@ class PyAutoEventsTest(pyauto.PyUITest):
     self.NewWebDriver().find_element_by_id('login').click()
     self.WaitForDomNode('id("console")', expected_value='.*succeeded.*')
 
+  def testDomMutationGenericXPath(self):
+    """Test mutation observers with a generic xpath and regexp."""
+    url = self.GetHttpURLForDataPath('apptest', 'dom_mutations.html')
+    self.NavigateToURL(url)
+    self.WaitForDomNode('//a', expected_value='Log In')
+    self.NewWebDriver().find_element_by_id('login').click()
+    self.WaitForDomNode('//div', expected_value='.*succeeded.*')
+
   def testDomMutationObservers(self):
     """Tests for the various types of Dom Mutation observers."""
     url = self.GetHttpURLForDataPath('apptest', 'dom_mutations.html')
@@ -45,9 +53,13 @@ class PyAutoEventsTest(pyauto.PyUITest):
   def testWaitUntilNavigationCompletes(self):
     """Basic test for WaitUntilNavigationCompletes."""
     url = self.GetHttpURLForDataPath('apptest', 'dom_mutations.html')
-    js = """window.location.href = "%s";
-            window.domAutomationController.send("done");""" % url
+    js = """window.onunload =
+                function() {
+                  window.domAutomationController.send("done");
+                };
+            window.location.href = "%s";""" % url
     self.ExecuteJavascript(js)
+    self.WaitUntilNavigationCompletes()
     self.WaitUntilNavigationCompletes()
     self.WaitForDomNode('id("login")')
 

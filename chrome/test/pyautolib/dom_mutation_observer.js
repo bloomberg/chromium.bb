@@ -92,8 +92,7 @@ function(automation_id, observer_id, observer_type, xpath, attribute,
    *  observer: The mutation observer object associated with this callback.
    */
   function existsNodeCallback(mutations, observer) {
-    var node = firstXPathNode(xpath);
-    if (node && nodeAttributeValueEquals(node, attribute, expected_value)) {
+    if (findNodeMatchingXPathAndValue(xpath, attribute, expected_value)) {
       raiseEvent();
       observer.disconnect();
       delete observer;
@@ -130,6 +129,25 @@ function(automation_id, observer_id, observer_type, xpath, attribute,
         XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
   }
 
+  /* Returns the first node in the DOM that matches the xpath.
+   *
+   * Args:
+   *  xpath: XPath used to specify the DOM node of interest.
+   *  attribute: The attribute to match |expected_value| against.
+   *  expected_value: A regular expression to match with the node's
+   *      |attribute|. If null the match always succeeds.
+   */
+  function findNodeMatchingXPathAndValue(xpath, attribute, expected_value) {
+    var nodes = document.evaluate(xpath, document, null,
+                                  XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
+    var node;
+    while ( (node = nodes.iterateNext()) ) {
+      if (nodeAttributeValueEquals(node, attribute, expected_value))
+        return node;
+    }
+    return null;
+  }
+
   /* Returns true if the node's |attribute| value is matched by the regular
    * expression |expected_value|, false otherwise.
    *
@@ -137,7 +155,7 @@ function(automation_id, observer_id, observer_type, xpath, attribute,
    *  node: A node object from the DOM.
    *  attribute: The attribute to match |expected_value| against.
    *  expected_value: A regular expression to match with the node's
-   *      textContent attribute. If null the test always passes.
+   *      |attribute|. If null the test always passes.
    */
   function nodeAttributeValueEquals(node, attribute, expected_value) {
     return expected_value == null ||
@@ -151,8 +169,7 @@ function(automation_id, observer_id, observer_type, xpath, attribute,
    */
   function observeAdd(xpath) {
     window.domAutomationController.send("success");
-    var node = firstXPathNode(xpath);
-    if (node && nodeAttributeValueEquals(node, attribute, expected_value)) {
+    if (findNodeMatchingXPathAndValue(xpath, attribute, expected_value)) {
       raiseEvent();
       console.log("Matching node in DOM, assuming it was previously added.");
       return;
@@ -217,8 +234,7 @@ function(automation_id, observer_id, observer_type, xpath, attribute,
    */
   function observeExists(xpath) {
     window.domAutomationController.send("success");
-    var node = firstXPathNode(xpath);
-    if (node && nodeAttributeValueEquals(node, attribute, expected_value)) {
+    if (findNodeMatchingXPathAndValue(xpath, attribute, expected_value)) {
       raiseEvent();
       console.log("Node already exists in DOM.");
       return;
