@@ -7,7 +7,6 @@ package org.chromium.content_shell;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Debug;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -22,8 +21,7 @@ import org.chromium.content.browser.LibraryLoader;
 public class ContentShellActivity extends Activity {
 
     private static final String COMMAND_LINE_FILE = "/data/local/content-shell-command-line";
-    private static final String TAG = "ContentShellActivity";
-    private static final String NATIVE_LIBRARY = "content_shell_content_view";
+    private static final String TAG = ContentShellActivity.class.getName();
 
     private ShellManager mShellManager;
 
@@ -38,16 +36,22 @@ public class ContentShellActivity extends Activity {
             CommandLine.getInstance().appendSwitchesAndArguments(
                     new String[] {ShellView.sanitizeUrl(startupUrl)});
         }
+        waitForDebuggerIfNeeded();
 
-        // TODO(jrg): once command line support is addef (for
-        // --wait-for-debugger), remove this.
-        // Debug.waitForDebugger();
         LibraryLoader.loadAndInitSync();
         initializeContentViewResources();
 
         setContentView(R.layout.content_shell_activity);
         mShellManager = (ShellManager) findViewById(R.id.shell_container);
         ContentView.enableMultiProcess(this, ContentView.MAX_RENDERERS_AUTOMATIC);
+    }
+
+    private void waitForDebuggerIfNeeded() {
+        if (CommandLine.getInstance().hasSwitch(CommandLine.WAIT_FOR_JAVA_DEBUGGER)) {
+            Log.e(TAG, "Waiting for Java debugger to connect...");
+            android.os.Debug.waitForDebugger();
+            Log.e(TAG, "Java debugger connected. Resuming execution.");
+        }
     }
 
     @Override
