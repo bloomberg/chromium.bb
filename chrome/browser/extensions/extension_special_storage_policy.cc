@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -60,6 +60,11 @@ bool ExtensionSpecialStoragePolicy::IsFileHandler(
   return file_handler_extensions_.ContainsExtension(extension_id);
 }
 
+bool ExtensionSpecialStoragePolicy::NeedsProtection(
+    const extensions::Extension* extension) {
+  return extension->is_hosted_app() && !extension->from_bookmark();
+}
+
 void ExtensionSpecialStoragePolicy::GrantRightsForExtension(
     const extensions::Extension* extension) {
   DCHECK(extension);
@@ -72,7 +77,7 @@ void ExtensionSpecialStoragePolicy::GrantRightsForExtension(
   }
   {
     base::AutoLock locker(lock_);
-    if (extension->is_hosted_app() && !extension->from_bookmark())
+    if (NeedsProtection(extension))
       protected_apps_.Add(extension);
     if (extension->HasAPIPermission(ExtensionAPIPermission::kUnlimitedStorage))
       unlimited_extensions_.Add(extension);

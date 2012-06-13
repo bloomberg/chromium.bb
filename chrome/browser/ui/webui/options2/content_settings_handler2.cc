@@ -17,6 +17,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/intents/web_intents_util.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
@@ -59,6 +60,10 @@ enum ExContentSettingsTypeEnum {
 typedef std::map<ContentSettingsPattern, ContentSetting> OnePatternSettings;
 typedef std::map<ContentSettingsPattern, OnePatternSettings>
     AllPatternsSettings;
+
+// The AppFilter is used in AddExceptionsGrantedByHostedApps() to choose
+// extensions which should have their extent displayed.
+typedef bool (*AppFilter)(const extensions::Extension& app, Profile* profile);
 
 const char* kDisplayPattern = "displayPattern";
 const char* kSetting = "setting";
@@ -172,6 +177,23 @@ DictionaryValue* GetNotificationExceptionForPage(
   return exception;
 }
 
+// Returns true whenever the hosted |app|'s extent enjoys protected storage
+// under the current |profile|.
+// Must have the AppFilter signature.
+bool HasProtectedStorage(const extensions::Extension& app, Profile* profile) {
+  ExtensionSpecialStoragePolicy* policy =
+      profile->GetExtensionSpecialStoragePolicy();
+  return policy->NeedsProtection(&app);
+}
+
+// Returns true whenever the |extension| is hosted and has |permission|.
+// Must have the AppFilter signature.
+template <ExtensionAPIPermission::ID permission>
+bool HostedAppHasPermission(
+    const extensions::Extension& extension, Profile* /*profile*/) {
+    return extension.is_hosted_app() && extension.HasAPIPermission(permission);
+}
+
 // Add an "Allow"-entry to the list of |exceptions| for a |url_pattern| from
 // the web extent of a hosted |app|.
 void AddExceptionForHostedApp(const std::string& url_pattern,
@@ -190,8 +212,7 @@ void AddExceptionForHostedApp(const std::string& url_pattern,
 // Asks the |profile| for hosted apps which have the |permission| set, and
 // adds their web extent and launch URL to the |exceptions| list.
 void AddExceptionsGrantedByHostedApps(
-    Profile* profile, ExtensionAPIPermission::ID permission,
-    ListValue* exceptions) {
+    Profile* profile, AppFilter app_filter, ListValue* exceptions) {
   const ExtensionService* extension_service = profile->GetExtensionService();
   // After ExtensionSystem::Init has been called at the browser's start,
   // GetExtensionService() should not return NULL, so this is safe:
@@ -199,9 +220,7 @@ void AddExceptionsGrantedByHostedApps(
 
   for (ExtensionSet::const_iterator extension = extensions->begin();
        extension != extensions->end(); ++extension) {
-    if (!(*extension)->is_hosted_app() ||
-        !(*extension)->HasAPIPermission(permission))
-      continue;
+    if (!app_filter(**extension, profile)) continue;
 
     URLPatternSet web_extent = (*extension)->web_extent();
     // Add patterns from web extent.
@@ -711,7 +730,9 @@ void ContentSettingsHandler::UpdateGeolocationExceptionsView() {
 
   ListValue exceptions;
   AddExceptionsGrantedByHostedApps(
-      profile, ExtensionAPIPermission::kGeolocation, &exceptions);
+      profile,
+      HostedAppHasPermission<ExtensionAPIPermission::kGeolocation>,
+      &exceptions);
 
   for (AllPatternsSettings::iterator i = all_patterns_settings.begin();
        i != all_patterns_settings.end();
@@ -762,8 +783,9 @@ void ContentSettingsHandler::UpdateNotificationExceptionsView() {
   service->GetNotificationsSettings(&settings);
 
   ListValue exceptions;
-  AddExceptionsGrantedByHostedApps(
-      profile, ExtensionAPIPermission::kNotification, &exceptions);
+  AddExceptionsGrantedByHostedApps(profile,
+      HostedAppHasPermission<ExtensionAPIPermission::kNotification>,
+      &exceptions);
 
   for (ContentSettingsForOneType::const_iterator i =
            settings.begin();
@@ -821,6 +843,10 @@ void ContentSettingsHandler::UpdateExceptionsViewFromHostContentSettingsMap(
   GetContentSettingsMap()->GetSettingsForOneType(type, "", &entries);
 
   ListValue exceptions;
+  if (type == CONTENT_SETTINGS_TYPE_COOKIES) {
+    Profile* profile = Profile::FromWebUI(web_ui());
+    AddExceptionsGrantedByHostedApps(profile, HasProtectedStorage, &exceptions);
+  }
   for (size_t i = 0; i < entries.size(); ++i) {
     // Skip default settings from extensions and policy, and the default content
     // settings; all of them will affect the default setting UI.

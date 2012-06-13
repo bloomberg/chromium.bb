@@ -39,6 +39,9 @@ class ExtensionSpecialStoragePolicy : public quota::SpecialStoragePolicy {
   void RevokeRightsForExtension(const extensions::Extension* extension);
   void RevokeRightsForAllExtensions();
 
+  // Decides whether the storage for |extension|'s web extent needs protection.
+  bool NeedsProtection(const extensions::Extension* extension);
+
  protected:
   virtual ~ExtensionSpecialStoragePolicy();
 
