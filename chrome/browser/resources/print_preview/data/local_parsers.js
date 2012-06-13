@@ -42,6 +42,10 @@ cr.define('print_preview', function() {
 
     var hasDuplexCapability = false;
     var defaultIsDuplexEnabled = false;
+    // On Windows, some printers don't specify their duplex values in the
+    // printer schema. If the printer duplex value is UNKNOWN_DUPLEX_MODE,
+    // hide the two sided option in preview tab UI.
+    // Ref bug: http://crbug.com/89204
     if (hasDuplexCapability =
         settingsInfo['printerDefaultDuplexValue'] !=
         print_preview.NativeLayer.DuplexMode.UNKNOWN_DUPLEX_MODE) {

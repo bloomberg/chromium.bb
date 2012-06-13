@@ -27,7 +27,7 @@ cr.define('print_preview', function() {
      * @type {HTMLElement}
      * @private
      */
-    this.headerFooterEl_ = null;
+    this.headerFooterContainer_ = null;
 
     /**
      * Header footer checkbox.
@@ -41,7 +41,7 @@ cr.define('print_preview', function() {
      * @type {HTMLElement}
      * @private
      */
-    this.fitToPageEl_ = null;
+    this.fitToPageContainer_ = null;
 
     /**
      * Fit-to-page checkbox.
@@ -49,26 +49,30 @@ cr.define('print_preview', function() {
      * @private
      */
     this.fitToPageCheckbox_ = null;
-  };
 
-  /**
-   * CSS classes used by the other options component.
-   * @enum {string}
-   * @private
-   */
-  OtherOptionsSettings.Classes_ = {
-    FIT_TO_PAGE: 'other-options-settings-fit-to-page',
-    FIT_TO_PAGE_CHECKBOX: 'other-options-settings-fit-to-page-checkbox',
-    HEADER_FOOTER: 'other-options-settings-header-footer',
-    HEADER_FOOTER_CHECKBOX: 'other-options-settings-header-footer-checkbox'
+    /**
+     * Duplex container element.
+     * @type {HTMLElement}
+     * @private
+     */
+    this.duplexContainer_ = null;
+
+    /**
+     * Duplex checkbox.
+     * @type {HTMLInputElement}
+     * @private
+     */
+    this.duplexCheckbox_ = null;
   };
 
   OtherOptionsSettings.prototype = {
     __proto__: print_preview.Component.prototype,
 
+    /** @param {boolean} isEnabled Whether the settings is enabled. */
     set isEnabled(isEnabled) {
       this.headerFooterCheckbox_.disabled = !isEnabled;
       this.fitToPageCheckbox_.disabled = !isEnabled;
+      this.duplexCheckbox_.disabled = !isEnabled;
     },
 
     /** @override */
@@ -82,6 +86,10 @@ cr.define('print_preview', function() {
           this.fitToPageCheckbox_,
           'click',
           this.onFitToPageCheckboxClick_.bind(this));
+      this.tracker.add(
+          this.duplexCheckbox_,
+          'click',
+          this.onDuplexCheckboxClick_.bind(this));
       this.tracker.add(
           this.printTicketStore_,
           print_preview.PrintTicketStore.EventType.INITIALIZE,
@@ -103,22 +111,28 @@ cr.define('print_preview', function() {
     /** @override */
     exitDocument: function() {
       print_preview.Component.prototype.exitDocument.call(this);
-      this.headerFooterEl_ = null;
+      this.headerFooterContainer_ = null;
       this.headerFooterCheckbox_ = null;
-      this.fitToPageEl_ = null;
+      this.fitToPageContainer_ = null;
       this.fitToPageCheckbox_ = null;
+      this.duplexContainer_ = null;
+      this.duplexCheckbox_ = null;
     },
 
     /** @override */
     decorateInternal: function() {
-      this.headerFooterEl_ = this.getElement().getElementsByClassName(
-          OtherOptionsSettings.Classes_.HEADER_FOOTER)[0];
-      this.headerFooterCheckbox_ = this.getElement().getElementsByClassName(
-          OtherOptionsSettings.Classes_.HEADER_FOOTER_CHECKBOX)[0];
-      this.fitToPageEl_ = this.getElement().getElementsByClassName(
-          OtherOptionsSettings.Classes_.FIT_TO_PAGE)[0];
-      this.fitToPageCheckbox_ = this.getElement().getElementsByClassName(
-          OtherOptionsSettings.Classes_.FIT_TO_PAGE_CHECKBOX)[0];
+      this.headerFooterContainer_ = this.getElement().querySelector(
+          '.header-footer-container');
+      this.headerFooterCheckbox_ = this.headerFooterContainer_.querySelector(
+          '.header-footer-checkbox');
+      this.fitToPageContainer_ = this.getElement().querySelector(
+          '.fit-to-page-container');
+      this.fitToPageCheckbox_ = this.fitToPageContainer_.querySelector(
+          '.fit-to-page-checkbox');
+      this.duplexContainer_ = this.getElement().querySelector(
+          '.duplex-container');
+      this.duplexCheckbox_ = this.duplexContainer_.querySelector(
+          '.duplex-checkbox');
     },
 
     /**
@@ -137,8 +151,15 @@ cr.define('print_preview', function() {
      * @private
      */
     onFitToPageCheckboxClick_: function() {
-      this.printTicketStore_.updateFitToPage(
-          this.fitToPageCheckbox_.checked);
+      this.printTicketStore_.updateFitToPage(this.fitToPageCheckbox_.checked);
+    },
+
+    /**
+     * Called when the duplex checkbox is clicked. Updates the print ticket.
+     * @private
+     */
+    onDuplexCheckboxClick_: function() {
+      this.printTicketStore_.updateDuplex(this.duplexCheckbox_.checked);
     },
 
     /**
@@ -147,17 +168,23 @@ cr.define('print_preview', function() {
      * @private
      */
     onPrintTicketStoreChange_: function() {
-      setIsVisible(this.headerFooterEl_,
+      setIsVisible(this.headerFooterContainer_,
                    this.printTicketStore_.hasHeaderFooterCapability());
       this.headerFooterCheckbox_.checked =
-            this.printTicketStore_.isHeaderFooterEnabled();
-      setIsVisible(this.fitToPageEl_,
+          this.printTicketStore_.isHeaderFooterEnabled();
+
+      setIsVisible(this.fitToPageContainer_,
                    this.printTicketStore_.hasFitToPageCapability());
       this.fitToPageCheckbox_.checked =
           this.printTicketStore_.isFitToPageEnabled();
 
+      setIsVisible(this.duplexContainer_,
+                   this.printTicketStore_.hasDuplexCapability());
+      this.duplexCheckbox_.checked = this.printTicketStore_.isDuplexEnabled();
+
       if (this.printTicketStore_.hasHeaderFooterCapability() ||
-          this.printTicketStore_.hasFitToPageCapability()) {
+          this.printTicketStore_.hasFitToPageCapability() ||
+          this.printTicketStore_.hasDuplexCapability()) {
         fadeInOption(this.getElement());
       } else {
         fadeOutOption(this.getElement());

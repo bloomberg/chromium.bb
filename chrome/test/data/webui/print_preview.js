@@ -296,8 +296,7 @@ TEST_F('PrintPreviewWebUITest',
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 
   checkElementDisplayed(
-      $('other-options-settings').
-          querySelector('.other-options-settings-fit-to-page'),
+      $('other-options-settings').querySelector('.fit-to-page-container'),
       false);
 });
 
@@ -325,8 +324,7 @@ TEST_F('PrintPreviewWebUITest', 'SourceIsHTMLHideFitToPageOption', function() {
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 
   checkElementDisplayed(
-      $('other-options-settings').
-          querySelector('.other-options-settings-fit-to-page'),
+      $('other-options-settings').querySelector('.fit-to-page-container'),
       false);
 });
 
@@ -357,12 +355,11 @@ TEST_F('PrintPreviewWebUITest', 'SourceIsPDFShowFitToPageOption', function() {
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 
   checkElementDisplayed(
-      $('other-options-settings').
-          querySelector('.other-options-settings-fit-to-page'),
+      $('other-options-settings').querySelector('.fit-to-page-container'),
       true);
   expectTrue(
-      $('other-options-settings').querySelector(
-          '.other-options-settings-fit-to-page-checkbox').checked);
+      $('other-options-settings').querySelector('.fit-to-page-checkbox').
+          checked);
 });
 
 // When the print scaling is disabled for the source "PDF", we show the fit
@@ -396,12 +393,11 @@ TEST_F('PrintPreviewWebUITest', 'PrintScalingDisabledForPlugin', function() {
       this.nativeLayer_, print_preview.NativeLayer.EventType.DISABLE_SCALING);
 
   checkElementDisplayed(
-      $('other-options-settings').
-          querySelector('.other-options-settings-fit-to-page'),
+      $('other-options-settings').querySelector('.fit-to-page-container'),
       true);
   expectFalse(
-      $('other-options-settings').querySelector(
-          '.other-options-settings-fit-to-page-checkbox').checked);
+      $('other-options-settings').querySelector('.fit-to-page-checkbox').
+          checked);
 });
 
 // Page layout has zero margins. Hide header and footer option.
@@ -430,8 +426,7 @@ TEST_F('PrintPreviewWebUITest',
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 
   checkElementDisplayed(
-      $('other-options-settings').
-          querySelector('.other-options-settings-header-footer'),
+      $('other-options-settings').querySelector('.header-footer-container'),
       true);
 
   printPreview.printTicketStore_.updateMarginsType(
@@ -440,8 +435,7 @@ TEST_F('PrintPreviewWebUITest',
       new print_preview.Margins(0, 0, 0, 0));
 
   checkElementDisplayed(
-      $('other-options-settings').
-          querySelector('.other-options-settings-header-footer'),
+      $('other-options-settings').querySelector('.header-footer-container'),
       false);
 });
 
@@ -471,8 +465,7 @@ TEST_F('PrintPreviewWebUITest',
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 
   checkElementDisplayed(
-      $('other-options-settings').
-          querySelector('.other-options-settings-header-footer'),
+      $('other-options-settings').querySelector('.header-footer-container'),
       true);
 
   printPreview.printTicketStore_.updateMarginsType(
@@ -481,8 +474,7 @@ TEST_F('PrintPreviewWebUITest',
       new print_preview.Margins(36, 36, 36, 36));
 
   checkElementDisplayed(
-      $('other-options-settings').
-          querySelector('.other-options-settings-header-footer'),
+      $('other-options-settings').querySelector('.header-footer-container'),
       true);
 });
 
@@ -512,8 +504,7 @@ TEST_F('PrintPreviewWebUITest',
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 
   checkElementDisplayed(
-      $('other-options-settings').
-          querySelector('.other-options-settings-header-footer'),
+      $('other-options-settings').querySelector('.header-footer-container'),
       true);
 
   printPreview.printTicketStore_.updateMarginsType(
@@ -522,8 +513,7 @@ TEST_F('PrintPreviewWebUITest',
       new print_preview.Margins(0, 36, 0, 36));
 
   checkElementDisplayed(
-      $('other-options-settings').
-          querySelector('.other-options-settings-header-footer'),
+      $('other-options-settings').querySelector('.header-footer-container'),
       false);
 });
 
@@ -554,8 +544,7 @@ TEST_F('PrintPreviewWebUITest',
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 
   checkElementDisplayed(
-      $('other-options-settings').
-          querySelector('.other-options-settings-header-footer'),
+      $('other-options-settings').querySelector('.header-footer-container'),
       true);
 
   printPreview.printTicketStore_.updateMarginsType(
@@ -564,8 +553,7 @@ TEST_F('PrintPreviewWebUITest',
       new print_preview.Margins(0, 36, 36, 36));
 
   checkElementDisplayed(
-      $('other-options-settings').
-          querySelector('.other-options-settings-header-footer'),
+      $('other-options-settings').querySelector('.header-footer-container'),
       true);
 });
 
@@ -645,10 +633,9 @@ TEST_F('PrintPreviewWebUITest', 'TestDuplexSettings', function() {
   localDestsSetEvent.destinationInfos = this.localDestinationInfos_;
   this.nativeLayer_.dispatchEvent(localDestsSetEvent);
 
-  var copiesDiv = $('copies-settings');
-  var duplexDiv = copiesDiv.getElementsByClassName('copies-settings-duplex')[0];
-  var duplexCheckbox = copiesDiv.getElementsByClassName(
-      'copies-settings-duplex-checkbox')[0];
+  var otherOptionsDiv = $('other-options-settings');
+  var duplexDiv = otherOptionsDiv.querySelector('.duplex-container');
+  var duplexCheckbox = otherOptionsDiv.querySelector('.duplex-checkbox');
 
   var capsSetEvent =
       new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
@@ -661,7 +648,7 @@ TEST_F('PrintPreviewWebUITest', 'TestDuplexSettings', function() {
   };
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 
-  checkSectionVisible(copiesDiv, true);
+  checkSectionVisible(otherOptionsDiv, true);
   expectFalse(duplexDiv.hidden);
   expectFalse(duplexCheckbox.checked);
 
@@ -678,7 +665,7 @@ TEST_F('PrintPreviewWebUITest', 'TestDuplexSettings', function() {
   };
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 
-  checkSectionVisible(copiesDiv, true);
+  checkSectionVisible(otherOptionsDiv, true);
   expectTrue(duplexDiv.hidden);
 
   var capsSetEvent =
@@ -692,7 +679,7 @@ TEST_F('PrintPreviewWebUITest', 'TestDuplexSettings', function() {
   };
   this.nativeLayer_.dispatchEvent(capsSetEvent);
 
-  checkSectionVisible(copiesDiv, true);
+  checkSectionVisible(otherOptionsDiv, true);
   expectFalse(duplexDiv.hidden);
   expectTrue(duplexCheckbox.checked);
 });

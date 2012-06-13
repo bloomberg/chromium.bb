@@ -72,20 +72,6 @@ cr.define('print_preview', function() {
     this.collateCheckbox_ = null;
 
     /**
-     * Container div for the duplex checkbox.
-     * @type {HTMLDivElement}
-     * @private
-     */
-    this.duplexDiv_ = null;
-
-    /**
-     * Checkbox used to enable/disable duplexing.
-     * @type {HTMLInputElement}
-     * @private
-     */
-    this.duplexCheckbox_ = null;
-
-    /**
      * Hint element used to show a hint when the copies value is invalid.
      * @type {HTMLElement}
      * @private
@@ -105,8 +91,6 @@ cr.define('print_preview', function() {
     HINT: 'copies-settings-hint',
     COLLATE: 'copies-settings-collate',
     COLLATE_CHECKBOX: 'copies-settings-collate-checkbox',
-    DUPLEX: 'copies-settings-duplex',
-    DUPLEX_CHECKBOX: 'copies-settings-duplex-checkbox'
   };
 
   /**
@@ -123,7 +107,6 @@ cr.define('print_preview', function() {
     set isEnabled(isEnabled) {
       this.textfield_.disabled = !isEnabled;
       this.collateCheckbox_.disabled = !isEnabled;
-      this.duplexCheckbox_.disabled = !isEnabled;
       this.isEnabled_ = isEnabled;
       if (isEnabled) {
         this.updateState_();
@@ -131,7 +114,6 @@ cr.define('print_preview', function() {
         this.textfield_.disabled = true;
         this.incrementButton_.disabled = true;
         this.decrementButton_.disabled = true;
-        this.duplexCheckbox_.disabled = true;
       }
     },
 
@@ -147,10 +129,6 @@ cr.define('print_preview', function() {
           this.incrementButton_, 'click', this.onButtonClicked_.bind(this, 1));
       this.tracker.add(
           this.decrementButton_, 'click', this.onButtonClicked_.bind(this, -1));
-      this.tracker.add(
-          this.duplexCheckbox_,
-          'click',
-          this.onDuplexCheckboxClick_.bind(this));
       this.tracker.add(
           this.collateCheckbox_,
           'click',
@@ -177,8 +155,6 @@ cr.define('print_preview', function() {
       this.decrementButton_ = null;
       this.collateDiv_ = null;
       this.collateCheckbox_ = null;
-      this.duplexDiv_ = null;
-      this.duplexCheckbox_ = null;
       this.hintEl_ = null;
     },
 
@@ -194,10 +170,6 @@ cr.define('print_preview', function() {
           CopiesSettings.Classes_.COLLATE)[0];
       this.collateCheckbox_ = this.getElement().getElementsByClassName(
           CopiesSettings.Classes_.COLLATE_CHECKBOX)[0];
-      this.duplexDiv_ = this.getElement().getElementsByClassName(
-          CopiesSettings.Classes_.DUPLEX)[0];
-      this.duplexCheckbox_ = this.getElement().getElementsByClassName(
-          CopiesSettings.Classes_.DUPLEX_CHECKBOX)[0];
       this.hintEl_ = this.getElement().getElementsByClassName(
           CopiesSettings.Classes_.HINT)[0];
     },
@@ -244,24 +216,7 @@ cr.define('print_preview', function() {
             this.printTicketStore_.isCollateEnabled();
       }
 
-      // On Windows, some printers don't specify their duplex values in the
-      // printer schema. If the printer duplex value is UNKNOWN_DUPLEX_MODE,
-      // hide the two sided option in preview tab UI.
-      // Ref bug: http://crbug.com/89204
-      if (!(this.duplexDiv_.hidden =
-             !this.printTicketStore_.hasDuplexCapability())) {
-        this.duplexCheckbox_.checked = this.printTicketStore_.isDuplexEnabled();
-      }
-
       fadeInOption(this.getElement());
-    },
-
-    /**
-     * Called when the duplex checkbox changes state. Updates the print ticket.
-     * @private
-     */
-    onDuplexCheckboxClick_: function() {
-      this.printTicketStore_.updateDuplex(this.duplexCheckbox_.checked);
     },
 
     /**

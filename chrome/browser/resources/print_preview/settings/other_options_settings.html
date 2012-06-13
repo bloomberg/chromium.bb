@@ -2,18 +2,22 @@
      class="other-options-settings two-column visible">
   <h1 i18n-content="optionsLabel"></h1>
   <div class="right-column checkbox">
-    <div class="other-options-settings-header-footer">
-      <label>
-        <input class="other-options-settings-header-footer-checkbox"
-            type="checkbox" />
+    <div class="header-footer-container checkbox">
+      <label aria-live="polite">
+        <input class="header-footer-checkbox" type="checkbox" />
         <span i18n-content="optionHeaderFooter"></span>
       </label>
     </div>
-    <div class="other-options-settings-fit-to-page">
-      <label>
-        <input class="other-options-settings-fit-to-page-checkbox"
-            type="checkbox" />
+    <div class="fit-to-page-container checkbox">
+      <label aria-live="polite">
+        <input class="fit-to-page-checkbox" type="checkbox" />
         <span i18n-content="optionFitToPage"></span>
+      </label>
+    </div>
+    <div class="duplex-container checkbox">
+      <label aria-live="polite">
+        <input class="duplex-checkbox" type="checkbox"/>
+        <span i18n-content="optionTwoSided"></span>
       </label>
     </div>
   </div>
