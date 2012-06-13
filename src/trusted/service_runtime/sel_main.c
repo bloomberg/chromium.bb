@@ -177,7 +177,7 @@ int main(int  argc,
   int                           rpc_supplies_nexe = 0;
   int                           export_addr_to = -2;
 
-  struct NaClApp                *nap;
+  struct NaClApp                *nap = &state;
 
   struct GioFile                gout;
   NaClErrorCode                 errcode = LOAD_INTERNAL;
@@ -191,12 +191,9 @@ int main(int  argc,
   int                           fuzzing_quit_after_load = 0;
   int                           debug_mode_bypass_acl_checks = 0;
   int                           debug_mode_ignore_validator = 0;
-  int                           stub_out_mode = 0;
   int                           skip_qualification = 0;
-  int                           enable_debug_stub = 0;
   int                           handle_signals = 0;
   int                           enable_exception_handling = 0;
-  int                           fixed_feature_cpu_mode = 0;
   struct NaClPerfCounter        time_all_main;
   const char                    **envp;
   struct NaClEnvCleanser        env_cleanser;
@@ -234,7 +231,9 @@ int main(int  argc,
     fprintf(stderr, "Could not create general standard output channel\n");
     exit(1);
   }
-
+  if (!NaClAppCtor(&state)) {
+    NaClLog(LOG_FATAL, "NaClAppCtor() failed\n");
+  }
   if (!DynArrayCtor(&env_vars, 0)) {
     NaClLog(LOG_FATAL, "Failed to allocate env var array\n");
   }
@@ -301,7 +300,7 @@ int main(int  argc,
 
       case 'g':
         handle_signals = 1;
-        enable_debug_stub = 1;
+        nap->enable_debug_stub = 1;
         break;
 
       case 'h':
@@ -348,7 +347,7 @@ int main(int  argc,
         break;
       /* case 'r':  with 'h' and 'w' above */
       case 's':
-        stub_out_mode = 1;
+        nap->validator_stub_out_mode = 1;
         break;
       case 'S':
         handle_signals = 1;
@@ -362,7 +361,14 @@ int main(int  argc,
         export_addr_to = strtol(optarg, (char **) 0, 0);
         break;
       case 'Z':
-        fixed_feature_cpu_mode = 1;
+        NaClLog(LOG_WARNING, "Enabling Fixed-Feature CPU Mode\n");
+        nap->fixed_feature_cpu_mode = 1;
+        if (!NaClFixCPUFeatures(&nap->cpu_features)) {
+          NaClLog(LOG_ERROR,
+                  "This CPU lacks features required by "
+                  "fixed-function CPU mode.\n");
+          exit(1);
+        }
         break;
       default:
         fprintf(stderr, "ERROR: unknown option: [%c]\n\n", opt);
@@ -439,15 +445,8 @@ int main(int  argc,
   /* to be passed to NaClMain, eventually... */
   argv[--optind] = (char *) "NaClMain";
 
-  if (!NaClAppCtor(&state)) {
-    fprintf(stderr, "Error while constructing app state\n");
-    goto done_file_dtor;
-  }
-
   state.ignore_validator_result = (debug_mode_ignore_validator > 0);
   state.skip_validator = (debug_mode_ignore_validator > 1);
-  state.validator_stub_out_mode = stub_out_mode;
-  state.enable_debug_stub = enable_debug_stub;
 
   if (getenv("NACL_UNTRUSTED_EXCEPTION_HANDLING") != NULL) {
     enable_exception_handling = 1;
@@ -469,18 +468,7 @@ int main(int  argc,
 #endif
   }
 
-  if (fixed_feature_cpu_mode) {
-    NaClLog(LOG_WARNING, "Enabling Fixed-Feature CPU Mode\n");
-    state.fixed_feature_cpu_mode = 1;
-    if (!NaClFixCPUFeatures(&state.cpu_features)) {
-      NaClLog(LOG_ERROR,
-              "This CPU lacks features required by "
-              "fixed-function CPU mode.\n");
-      goto done_file_dtor;
-    }
-  }
 
-  nap = &state;
   errcode = LOAD_OK;
 
   /*
@@ -878,7 +866,6 @@ int main(int  argc,
     NaClBlockIfCommandChannelExists(nap);
   }
 
- done_file_dtor:
   if (verbosity > 0) {
     printf("Done.\n");
   }
