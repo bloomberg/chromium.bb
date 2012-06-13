@@ -4,6 +4,7 @@
  * found in the LICENSE file.
  */
 
+#include <map>
 #include <string.h>
 
 #include "native_client/src/shared/platform/nacl_log.h"
@@ -20,16 +21,6 @@ const int kX86TrapFlag = 1 << 8;
 
 namespace port {
 
-static IMutex* ThreadGetLock() {
-  static IMutex* mutex_ = IMutex::Allocate();
-  return mutex_;
-}
-
-static IThread::ThreadMap_t *ThreadGetMap() {
-  static IThread::ThreadMap_t* map_ = new IThread::ThreadMap_t;
-  return map_;
-}
-
 class Thread : public IThread {
  public:
   Thread(uint32_t id, struct NaClAppThread *natp)
@@ -38,16 +29,6 @@ class Thread : public IThread {
 
   uint32_t GetId() {
     return id_;
-  }
-
-  virtual bool Suspend() {
-    SuspendOneThread(this, natp_);
-    return true;
-  }
-
-  virtual bool Resume() {
-    ResumeOneThread(this, natp_);
-    return true;
   }
 
   virtual bool SetStep(bool on) {
@@ -90,42 +71,75 @@ class Thread : public IThread {
   friend class IThread;
 };
 
-IThread* IThread::Create(uint32_t id, struct NaClAppThread* natp) {
+
+typedef std::map<uint32_t, Thread*> ThreadMap_t;
+
+static ThreadMap_t *ThreadGetMap() {
+  static ThreadMap_t *map_ = new ThreadMap_t;
+  return map_;
+}
+
+static IMutex *ThreadGetLock() {
+  static IMutex *mutex_ = IMutex::Allocate();
+  return mutex_;
+}
+
+IThread *IThread::Create(uint32_t id, struct NaClAppThread *natp) {
   MutexLock lock(ThreadGetLock());
-  Thread* thread;
   ThreadMap_t &map = *ThreadGetMap();
 
   if (map.count(id)) {
     NaClLog(LOG_FATAL, "IThread::Create: thread 0x%x already exists\n", id);
   }
 
-  thread = new Thread(id, natp);
+  Thread *thread = new Thread(id, natp);
   map[id] = thread;
   return thread;
 }
 
-IThread* IThread::Acquire(uint32_t id) {
+IThread *IThread::Acquire(uint32_t id) {
   MutexLock lock(ThreadGetLock());
-  Thread* thread;
   ThreadMap_t &map = *ThreadGetMap();
 
   if (map.count(id) == 0) {
     NaClLog(LOG_FATAL, "IThread::Acquire: thread 0x%x does not exist\n", id);
   }
 
-  thread = static_cast<Thread*>(map[id]);
+  Thread *thread = map[id];
   thread->ref_++;
   return thread;
 }
 
 void IThread::Release(IThread *ithread) {
   MutexLock lock(ThreadGetLock());
-  Thread* thread = static_cast<Thread*>(ithread);
+  Thread *thread = static_cast<Thread*>(ithread);
   thread->ref_--;
 
   if (thread->ref_ == 0) {
     ThreadGetMap()->erase(thread->id_);
     delete static_cast<IThread*>(thread);
+  }
+}
+
+void IThread::SuspendAllThreadsExceptSignaled(uint32_t signaled_tid) {
+  MutexLock lock(ThreadGetLock());
+  ThreadMap_t &map = *ThreadGetMap();
+  for (ThreadMap_t::iterator it = map.begin(); it != map.end(); ++it) {
+    Thread *thread = it->second;
+    if (thread->id_ != signaled_tid) {
+      SuspendOneThread(thread->natp_, &thread->context_);
+    }
+  }
+}
+
+void IThread::ResumeAllThreadsExceptSignaled(uint32_t signaled_tid) {
+  MutexLock lock(ThreadGetLock());
+  ThreadMap_t &map = *ThreadGetMap();
+  for (ThreadMap_t::iterator it = map.begin(); it != map.end(); ++it) {
+    Thread *thread = it->second;
+    if (thread->id_ != signaled_tid) {
+      ResumeOneThread(thread->natp_, &thread->context_);
+    }
   }
 }
 

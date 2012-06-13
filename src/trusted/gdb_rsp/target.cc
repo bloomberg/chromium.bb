@@ -228,13 +228,7 @@ void Target::Run(Session *ses) {
         sig_thread_ = 0;
 
         // Suspend all threads.
-        uint32_t curId;
-        bool more = GetFirstThreadId(&curId);
-        while (more) {
-          IThread *thread = threads_[curId];
-          thread->Suspend();
-          more = GetNextThreadId(&curId);
-        }
+        IThread::SuspendAllThreadsExceptSignaled(0);
       } else {
         // otherwise, nothing to do so try again.
         continue;
@@ -246,15 +240,7 @@ void Target::Run(Session *ses) {
       // Suspend all threads except signaled.
       // Signaled thread is effectively suspended already, being waiting in
       // a signal handler.
-      uint32_t curId;
-      bool more = GetFirstThreadId(&curId);
-      while (more) {
-        if (curId != id) {
-          IThread *thread = threads_[curId];
-          thread->Suspend();
-        }
-        more = GetNextThreadId(&curId);
-      }
+      IThread::SuspendAllThreadsExceptSignaled(id);
 
       // Reset single stepping.
       IThread *thread = threads_[id];
@@ -294,34 +280,14 @@ void Target::Run(Session *ses) {
       }
     } while (ses->Connected());
 
-
-    // Now that we are done, we want to continue in the "correct order".
-    // This means letting the active thread go first, in case we are single
-    // stepping and want to catch it again.  This is a desired behavior but
-    // it is not guaranteed since another thread may already be in an
-    // exception state and next in line to notify the target.
-
-    // If the run thread is not the exception thread, wake it up now.
-    uint32_t run_thread = GetRunThreadId();
-    if (run_thread != id
-        && run_thread != static_cast<uint32_t>(-1)) {
-      IThread* thread = threads_[run_thread];
-      thread->Resume();
-    }
-
-    // Now wake up everyone else
-    uint32_t curId;
-    bool more = GetFirstThreadId(&curId);
-    while (more) {
-      if ((curId != id) && (curId != GetRunThreadId())) {
-        IThread *thread = threads_[curId];
-        thread->Resume();
-      }
-      more = GetNextThreadId(&curId);
-    }
-
     // Reset the signal value
     cur_signal_ = 0;
+
+    // Resume all threads except signaled.
+    // Signaled thread will be resumed by waking a a signal handler.
+    // TODO(eaeltsin): it might make sense to resume signaled thread before
+    // others, though it is not required by GDB docs.
+    IThread::ResumeAllThreadsExceptSignaled(id);
 
     // If there is no signaled thread, then we were interrupted by GDB, and
     // there is no signal handler waiting.

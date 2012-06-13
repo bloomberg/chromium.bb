@@ -88,9 +88,6 @@ class ThreadMock : public IThread {
     return true;
   }
 
-  bool Suspend() { return true; }
-  bool Resume()  { return true; }
-
   virtual struct NaClSignalContext *GetContext() { return NULL; }
 
  private:
@@ -100,6 +97,12 @@ class ThreadMock : public IThread {
 
 IThread* IThread::Create(uint32_t id, struct NaClAppThread *) {
   return new ThreadMock(id);
+}
+
+void IThread::SuspendAllThreadsExceptSignaled(uint32_t) {
+}
+
+void IThread::ResumeAllThreadsExceptSignaled(uint32_t) {
 }
 
 

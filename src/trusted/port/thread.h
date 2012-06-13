@@ -17,9 +17,6 @@
 #ifndef NATIVE_CLIENT_PORT_THREAD_H_
 #define NATIVE_CLIENT_PORT_THREAD_H_ 1
 
-#include <stdlib.h>
-#include <map>
-
 #include "native_client/src/trusted/port/std_types.h"
 
 struct NaClAppThread;
@@ -30,7 +27,6 @@ namespace port {
 class IThread {
  public:
   typedef void (*CatchFunc_t)(uint32_t id, int8_t sig, void *cookie);
-  typedef std::map<uint32_t, IThread*> ThreadMap_t;
 
   virtual uint32_t GetId() = 0;
 
@@ -39,16 +35,17 @@ class IThread {
   virtual bool GetRegister(uint32_t index, void *dst, uint32_t len) = 0;
   virtual bool SetRegister(uint32_t index, void *src, uint32_t len) = 0;
 
-  virtual bool Suspend() = 0;
-  virtual bool Resume() = 0;
-
   virtual struct NaClSignalContext *GetContext() = 0;
 
   static IThread *Create(uint32_t id, struct NaClAppThread *natp);
   static IThread *Acquire(uint32_t id);
   static void Release(IThread *thread);
-  static void SuspendOneThread(IThread *thread, struct NaClAppThread *natp);
-  static void ResumeOneThread(IThread *thread, struct NaClAppThread *natp);
+  static void SuspendOneThread(struct NaClAppThread *natp,
+                               struct NaClSignalContext *context);
+  static void ResumeOneThread(struct NaClAppThread *natp,
+                              const struct NaClSignalContext *context);
+  static void SuspendAllThreadsExceptSignaled(uint32_t signaled_tid);
+  static void ResumeAllThreadsExceptSignaled(uint32_t signaled_tid);
   static void SetExceptionCatch(CatchFunc_t func, void *cookie);
 
  protected:

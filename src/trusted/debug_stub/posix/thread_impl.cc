@@ -37,11 +37,13 @@ static enum NaClSignalResult SignalHandler(int signal, void *ucontext) {
   }
 }
 
-void IThread::SuspendOneThread(IThread *, struct NaClAppThread *) {
+void IThread::SuspendOneThread(struct NaClAppThread *,
+                               struct NaClSignalContext *) {
   // TODO(eaeltsin): implement this.
 }
 
-void IThread::ResumeOneThread(IThread *, struct NaClAppThread *) {
+void IThread::ResumeOneThread(struct NaClAppThread *,
+                              const struct NaClSignalContext *) {
   // TODO(eaeltsin): implement this.
 }
 

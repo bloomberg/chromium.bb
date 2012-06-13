@@ -129,7 +129,8 @@ static LONG NTAPI ExceptionCatch(PEXCEPTION_POINTERS ep) {
   return EXCEPTION_CONTINUE_EXECUTION;
 }
 
-void IThread::SuspendOneThread(IThread *thread, struct NaClAppThread *natp) {
+void IThread::SuspendOneThread(struct NaClAppThread *natp,
+                               struct NaClSignalContext *context) {
   if (SuspendThread(natp->thread.tid) == -1) {
     NaClLog(LOG_FATAL, "IThread::SuspendOneThread: SuspendThread failed\n");
   }
@@ -139,13 +140,14 @@ void IThread::SuspendOneThread(IThread *thread, struct NaClAppThread *natp) {
   if (!GetThreadContext(natp->thread.tid, &win_context)) {
     NaClLog(LOG_FATAL, "IThread::SuspendOneThread: GetThreadContext failed\n");
   }
-  NaClSignalContextFromHandler(thread->GetContext(), &win_context);
+  NaClSignalContextFromHandler(context, &win_context);
 }
 
-void IThread::ResumeOneThread(IThread *thread, struct NaClAppThread *natp) {
+void IThread::ResumeOneThread(struct NaClAppThread *natp,
+                              const struct NaClSignalContext *context) {
   CONTEXT win_context;
   win_context.ContextFlags = CONTEXT_ALL;
-  NaClSignalContextToHandler(&win_context, thread->GetContext());
+  NaClSignalContextToHandler(&win_context, context);
   if (!SetThreadContext(natp->thread.tid, &win_context)) {
     NaClLog(LOG_FATAL, "IThread::ResumeOneThread: SetThreadContext failed\n");
   }
