@@ -62,6 +62,7 @@ ppapi19	7898
 ppapi20	8428
   gcc		61ff43bd1c3cb25c5f277eb6065c0ebb4be75f83	Replace rip lea with eip
   gcc		a4396cfdb5072df5e727e5da2d5fae30b2d7a59e	Fix one more bug in code generation...
+  gcc		cd8bf176c47dd6c9718e1eb6734c0f22e48f97f7	Fix "-lxxx" command line parsing
   glibc		52e607964e9a432fffe4e88caaafa9c5ed83de4f	add clock() in nacl-glibc
   glibc		447c71ff7c46d6171a92ed302a21b1af04de8f68	Turn waiting stack back into wating queue
   glibc		ef989bae60d93e2906847b367becbd0e7f27679f	Fix pthread_cond_timedwait (and other similar functions)
