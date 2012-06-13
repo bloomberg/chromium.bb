@@ -731,6 +731,10 @@ extern const char kInManagedMode[];
 extern const char kNetworkProfileWarningsLeft[];
 extern const char kNetworkProfileLastWarningTime[];
 
+#if defined(OS_MACOSX)
+extern const char kMacLeopardObsoleteInfobarLastShown[];
+#endif  // defined(OS_MACOSX)
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

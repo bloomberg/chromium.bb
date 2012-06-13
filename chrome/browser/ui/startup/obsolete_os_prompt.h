@@ -6,9 +6,18 @@
 #define CHROME_BROWSER_UI_STARTUP_OBSOLETE_OS_PROMPT_H_
 #pragma once
 
+#include "build/build_config.h"
+
 class Browser;
+class PrefService;
 
 namespace browser {
+
+#if defined(OS_MACOSX)
+// Registers the Mac-specific preference about when to show obsolete OS
+// prompts.
+void RegisterObsoleteOSInfobarPrefs(PrefService* local_state);
+#endif
 
 // Shows a warning notification in |browser| that the app is being run on an
 // unsupported operating system.

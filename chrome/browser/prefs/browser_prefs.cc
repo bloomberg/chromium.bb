@@ -76,6 +76,7 @@
 #if defined(OS_MACOSX)
 #include "chrome/browser/ui/cocoa/confirm_quit.h"
 #include "chrome/browser/ui/cocoa/presentation_mode_prefs.h"
+#include "chrome/browser/ui/startup/obsolete_os_prompt.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS)
@@ -173,6 +174,7 @@ void RegisterLocalState(PrefService* local_state) {
 #endif
 
 #if defined(OS_MACOSX)
+  browser::RegisterObsoleteOSInfobarPrefs(local_state);
   confirm_quit::RegisterLocalState(local_state);
 #endif
 }
