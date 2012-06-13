@@ -171,7 +171,7 @@ bool ProfileSyncServiceHarness::SetupSync(
 
   // Tell the sync service that setup is in progress so we don't start syncing
   // until we've finished configuration.
-  service_->set_setup_in_progress(true);
+  service_->SetSetupInProgress(true);
 
   // Authenticate sync client using GAIA credentials.
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
@@ -238,7 +238,7 @@ bool ProfileSyncServiceHarness::SetupSync(
   }
 
   // Notify ProfileSyncService that we are done with configuration.
-  service_->set_setup_in_progress(false);
+  service_->SetSetupInProgress(false);
 
   // Indicate to the browser that sync setup is complete.
   service()->SetSyncSetupCompleted();

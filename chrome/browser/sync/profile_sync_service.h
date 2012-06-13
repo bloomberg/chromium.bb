@@ -279,9 +279,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // downloading data types yet (we don't start syncing until after sync setup
   // is complete). The UI calls this as soon as any part of the signin wizard is
   // displayed (even just the login UI).
-  void set_setup_in_progress(bool setup_in_progress) {
-      setup_in_progress_ = setup_in_progress;
-  }
+  // If |setup_in_progress| is false, this also kicks the sync engine to ensure
+  // that data download starts.
+  virtual void SetSetupInProgress(bool setup_in_progress);
 
   // Returns true if the SyncBackendHost has told us it's ready to accept
   // changes.

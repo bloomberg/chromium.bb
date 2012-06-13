@@ -152,15 +152,13 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
 
   // Create some tokens in the token service; the service will startup when
   // it is notified that tokens are available.
-  service_->set_setup_in_progress(true);
+  service_->SetSetupInProgress(true);
   service_->signin()->StartSignIn("test_user", "", "", "");
   TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
       GaiaConstants::kSyncService, "sync_token");
   TokenServiceFactory::GetForProfile(profile_.get())->IssueAuthTokenForTest(
       GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth2_login_token");
-  service_->set_setup_in_progress(false);
-  service_->OnUserChoseDatatypes(
-      false, syncable::ModelTypeSet(syncable::BOOKMARKS));
+  service_->SetSetupInProgress(false);
   EXPECT_TRUE(service_->ShouldPushChanges());
 }
 
@@ -193,7 +191,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartNoCredentials) {
   EXPECT_CALL(*data_type_manager, Stop()).Times(1);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
-  service_->set_setup_in_progress(true);
+  service_->SetSetupInProgress(true);
   service_->signin()->StartSignIn("test_user", "", "", "");
   // NOTE: Unlike StartFirstTime, this test does not issue any auth tokens.
   content::NotificationService::current()->Notify(
@@ -201,9 +199,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartNoCredentials) {
       content::Source<TokenService>(
           TokenServiceFactory::GetForProfile(profile_.get())),
       content::NotificationService::NoDetails());
-  service_->set_setup_in_progress(false);
-  service_->OnUserChoseDatatypes(
-      false, syncable::ModelTypeSet(syncable::BOOKMARKS));
+  service_->SetSetupInProgress(false);
   // Backend should initialize using a bogus GAIA token for credentials.
   EXPECT_TRUE(service_->ShouldPushChanges());
 }
@@ -222,7 +218,7 @@ TEST_F(ProfileSyncServiceStartupCrosTest, StartCrosNoCredentials) {
       content::Source<TokenService>(
           TokenServiceFactory::GetForProfile(profile_.get())),
       content::NotificationService::NoDetails());
-  service_->set_setup_in_progress(false);
+  service_->SetSetupInProgress(false);
   // Sync should not start because there are still no tokens.
   EXPECT_FALSE(service_->ShouldPushChanges());
   EXPECT_FALSE(service_->GetBackendForTest());

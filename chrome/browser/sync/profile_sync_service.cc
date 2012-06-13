@@ -1001,6 +1001,15 @@ bool ProfileSyncService::FirstSetupInProgress() const {
   return !HasSyncSetupCompleted() && setup_in_progress_;
 }
 
+void ProfileSyncService::SetSetupInProgress(bool setup_in_progress) {
+  setup_in_progress_ = setup_in_progress;
+  if (!setup_in_progress) {
+    if (sync_initialized()) {
+      ReconfigureDatatypeManager();
+    }
+  }
+}
+
 bool ProfileSyncService::sync_initialized() const {
   return backend_initialized_;
 }

@@ -862,7 +862,7 @@ void SyncSetupHandler::CloseSyncSetup() {
     // Let the various services know that we're no longer active.
     GetLoginUIService()->LoginUIClosed(this);
     if (sync_service)
-      sync_service->set_setup_in_progress(false);
+      sync_service->SetSetupInProgress(false);
 
     // Make sure user isn't left half-logged-in (signed in, but without sync
     // started up). If the user hasn't finished setting up sync, then sign out
@@ -912,7 +912,7 @@ void SyncSetupHandler::OpenSyncSetup(bool force_login) {
 
   // Notify services that we are now active.
   GetLoginUIService()->SetLoginUI(this);
-  service->set_setup_in_progress(true);
+  service->SetSetupInProgress(true);
 
   // There are several different UI flows that can bring the user here:
   // 1) Signin promo (passes force_login=true)
@@ -955,7 +955,7 @@ void SyncSetupHandler::PrepareConfigDialog() {
     signin_tracker_.reset(
         new SigninTracker(GetProfile(), this,
                           SigninTracker::SERVICES_INITIALIZING));
-    service->set_setup_in_progress(true);
+    service->SetSetupInProgress(true);
     service->UnsuppressAndStart();
     DisplaySpinner();
   } else {
