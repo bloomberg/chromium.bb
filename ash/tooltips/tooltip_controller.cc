@@ -104,6 +104,7 @@ class TooltipController::Tooltip {
     label_.set_owned_by_client();
     widget_.reset(CreateTooltip());
     widget_->SetContentsView(&label_);
+    widget_->Activate();
   }
 
   ~Tooltip() {

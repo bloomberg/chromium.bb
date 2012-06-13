@@ -4,7 +4,6 @@
 
 #include "ash/system/status_area_widget.h"
 
-#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
@@ -286,9 +285,9 @@ StatusAreaWidget::StatusAreaWidget()
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.delegate = widget_delegate_;
-  params.parent =
-      Shell::GetPrimaryRootWindowController()->GetContainer(
-          ash::internal::kShellWindowId_StatusContainer);
+  params.parent = Shell::GetContainer(
+      Shell::GetPrimaryRootWindow(),
+      ash::internal::kShellWindowId_StatusContainer);
   params.transparent = true;
   Init(params);
   set_focus_on_creation(false);

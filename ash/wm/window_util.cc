@@ -99,10 +99,5 @@ void CenterWindow(aura::Window* window) {
   window->SetBounds(center);
 }
 
-internal::RootWindowController* GetRootWindowController(
-    aura::RootWindow* root_window) {
-  return root_window->GetProperty(internal::kRootWindowControllerKey);
-}
-
 }  // namespace wm
 }  // namespace ash

@@ -15,7 +15,6 @@
 #include "ash/launcher/launcher_model.h"
 #include "ash/monitor/monitor_controller.h"
 #include "ash/monitor/multi_monitor_manager.h"
-#include "ash/root_window_controller.h"
 #include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -113,9 +112,9 @@ bool HandleShowTaskManager() {
 
 // Rotates the default window container.
 bool HandleRotateWindows() {
-  aura::Window* target =
-      Shell::GetPrimaryRootWindowController()->GetContainer(
-          internal::kShellWindowId_DefaultContainer);
+  aura::Window* target = Shell::GetContainer(
+      Shell::GetPrimaryRootWindow(),
+      internal::kShellWindowId_DefaultContainer);
   scoped_ptr<ui::LayerAnimationSequence> screen_rotation(
       new ui::LayerAnimationSequence(new ui::ScreenRotation(360)));
   target->layer()->GetAnimator()->StartAnimation(
@@ -192,8 +191,8 @@ void PrintWindowHierarchy(aura::Window* window, int indent) {
 bool HandlePrintWindowHierarchy() {
   DLOG(INFO) << "Window hierarchy:";
   aura::Window* container =
-      Shell::GetPrimaryRootWindowController()->GetContainer(
-          internal::kShellWindowId_DefaultContainer);
+      Shell::GetContainer(Shell::GetPrimaryRootWindow(),
+                          internal::kShellWindowId_DefaultContainer);
   PrintWindowHierarchy(container, 0);
   return true;
 }

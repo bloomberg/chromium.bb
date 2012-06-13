@@ -18,7 +18,6 @@ class UIControlsAura;
 namespace ash {
 namespace internal {
 class AlwaysOnTopController;
-class RootWindowController;
 
 // Shell-specific window property keys.
 
@@ -52,9 +51,6 @@ extern const aura::WindowProperty<WindowPersistsAcrossAllWorkspacesType>* const
 // True if the window is controlled by the workspace manager.
 extern const aura::WindowProperty<bool>* const
     kWindowTrackedByWorkspaceKey;
-
-extern const aura::WindowProperty<RootWindowController*>* const
-    kRootWindowControllerKey;
 
 // Alphabetical sort.
 

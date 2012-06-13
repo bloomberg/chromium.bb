@@ -101,8 +101,6 @@
         'monitor/multi_monitor_manager.h',
         'monitor/secondary_monitor_view.cc',
         'monitor/secondary_monitor_view.h',
-        'root_window_controller.cc',
-        'root_window_controller.h',
         'screen_ash.cc',
         'screen_ash.h',
         'screensaver/screensaver_view.cc',

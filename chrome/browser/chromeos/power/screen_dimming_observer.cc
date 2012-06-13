@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/power/screen_dimming_observer.h"
 
 #include "ash/shell.h"
+#include "ash/wm/screen_dimmer.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 
 namespace chromeos {
@@ -18,7 +19,7 @@ ScreenDimmingObserver::~ScreenDimmingObserver() {
 }
 
 void ScreenDimmingObserver::ScreenDimmingRequested(ScreenDimmingState state) {
-  ash::Shell::GetInstance()->SetDimming(
+  ash::Shell::GetInstance()->screen_dimmer()->SetDimming(
       state == PowerManagerClient::Observer::SCREEN_DIMMING_IDLE);
 }
 

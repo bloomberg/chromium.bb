@@ -80,6 +80,7 @@ class ActivationController;
 class AppListController;
 class CaptureController;
 class DragDropController;
+class EventClientImpl;
 class FocusCycler;
 class KeyRewriterEventFilter;
 class MagnificationController;
@@ -87,8 +88,8 @@ class MonitorController;
 class PanelLayoutManager;
 class PartialScreenshotEventFilter;
 class ResizeShadowController;
-class RootWindowController;
 class RootWindowLayoutManager;
+class ScreenDimmer;
 class ShadowController;
 class ShelfLayoutManager;
 class ShellContextMenu;
@@ -143,9 +144,6 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
 
   static void DeleteInstance();
 
-  // Returns the root window controller for the primary root window.
-  static internal::RootWindowController* GetPrimaryRootWindowController();
-
   // Gets the primary RootWindow. The primary RootWindow is the one
   // that has a launcher.
   static aura::RootWindow* GetPrimaryRootWindow();
@@ -170,6 +168,10 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
 
   void set_active_root_window(aura::RootWindow* active_root_window) {
     active_root_window_ = active_root_window;
+  }
+
+  internal::RootWindowLayoutManager* root_window_layout() const {
+    return root_window_layout_;
   }
 
   // Adds or removes |filter| from the aura::Env's CompoundEventFilter.
@@ -281,6 +283,10 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
     return magnification_controller_.get();
   }
 
+  internal::ScreenDimmer* screen_dimmer() {
+    return screen_dimmer_.get();
+  }
+
   Launcher* launcher() { return launcher_.get(); }
 
   const ScreenAsh* screen() { return screen_; }
@@ -295,9 +301,6 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
   void SetShelfAlignment(ShelfAlignment alignment);
   ShelfAlignment GetShelfAlignment();
 
-  // Dims or undims the screen.
-  void SetDimming(bool should_dim);
-
   // TODO(sky): don't expose this!
   internal::ShelfLayoutManager* shelf() const { return shelf_; }
 
@@ -311,6 +314,9 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
 
   // Returns the size of the grid.
   int GetGridSize() const;
+
+  // Returns true if in maximized or fullscreen mode.
+  bool IsInMaximizedMode() const;
 
   static void set_initially_hide_cursor(bool hide) {
     initially_hide_cursor_ = hide;
@@ -342,7 +348,6 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
  private:
   FRIEND_TEST_ALL_PREFIXES(WindowManagerTest, MouseEventCursors);
   FRIEND_TEST_ALL_PREFIXES(WindowManagerTest, TransformActivate);
-  friend class internal::RootWindowController;
 
   typedef std::pair<aura::Window*, gfx::Rect> WindowAndBoundsPair;
 
@@ -351,13 +356,8 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
 
   void Init();
 
-  // Initiailze the root window so that it can host browser windows.
-  void InitRootWindow(aura::RootWindow* root);
-
-  // Initializes the layout managers and event filters specific for
-  // primary display.
-  void InitLayoutManagersForPrimaryDisplay(
-      internal::RootWindowController* root_window_controller);
+  // Initializes the layout managers and event filters.
+  void InitLayoutManagers();
 
   // Disables the workspace grid layout.
   void DisableWorkspaceGridLayout();
@@ -372,7 +372,7 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
   // when the screen is initially created.
   static bool initially_hide_cursor_;
 
-  scoped_ptr<internal::RootWindowController> root_window_controller_;
+  scoped_ptr<aura::RootWindow> root_window_;
   ScreenAsh* screen_;
 
   // Active root window. Never become NULL.
@@ -402,6 +402,7 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
   scoped_ptr<internal::CaptureController> capture_controller_;
   scoped_ptr<internal::WindowModalityController> window_modality_controller_;
   scoped_ptr<internal::DragDropController> drag_drop_controller_;
+  scoped_ptr<internal::WorkspaceController> workspace_controller_;
   scoped_ptr<internal::ResizeShadowController> resize_shadow_controller_;
   scoped_ptr<internal::ShadowController> shadow_controller_;
   scoped_ptr<internal::TooltipController> tooltip_controller_;
@@ -412,9 +413,11 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
   scoped_ptr<VideoDetector> video_detector_;
   scoped_ptr<WindowCycleController> window_cycle_controller_;
   scoped_ptr<internal::FocusCycler> focus_cycler_;
+  scoped_ptr<internal::EventClientImpl> event_client_;
   scoped_ptr<internal::MonitorController> monitor_controller_;
   scoped_ptr<HighContrastController> high_contrast_controller_;
   scoped_ptr<internal::MagnificationController> magnification_controller_;
+  scoped_ptr<internal::ScreenDimmer> screen_dimmer_;
   scoped_ptr<aura::FocusManager> focus_manager_;
   scoped_ptr<aura::client::UserActionClient> user_action_client_;
 
@@ -458,6 +461,9 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
   internal::PanelLayoutManager* panel_layout_manager_;
 
   ObserverList<ShellObserver> observers_;
+
+  // Owned by aura::RootWindow, cached here for type safety.
+  internal::RootWindowLayoutManager* root_window_layout_;
 
   // Widget containing system tray.
   internal::StatusAreaWidget* status_area_widget_;

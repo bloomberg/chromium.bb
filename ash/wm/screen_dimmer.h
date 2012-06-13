@@ -47,7 +47,7 @@ class ASH_EXPORT ScreenDimmer : public aura::RootWindowObserver {
   explicit ScreenDimmer(aura::RootWindow* root_window);
   virtual ~ScreenDimmer();
 
-  // Dim or undim the root window.
+  // Dim or undim the screen.
   void SetDimming(bool should_dim);
 
   // aura::RootWindowObserver overrides:
