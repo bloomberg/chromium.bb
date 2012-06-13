@@ -74,6 +74,9 @@ std::string User::GetAccountName(bool use_display_email) const {
 }
 
 string16 User::GetDisplayName() const {
+  // We should try hard not to return an empty string (crbug.com/131630#c13).
+  if (display_name_.empty())
+    return UTF8ToUTF16(GetAccountName(true));
   return display_name_;
 }
 
