@@ -2,6 +2,11 @@ Copyright (c) 2012 The Native Client Authors. All rights reserved.
 Use of this source code is governed by a BSD-style license that be
 found in the LICENSE file.
 
+************************************************************************
+ NOTE: The Scons version of enuminst is documented in README_scons.txt.
+ It has less functionality than the Makefile version.
+************************************************************************
+
 Exhaustive instruction enumeration test for x86 Native Client decoder.
 Limited testing of validator.
 
