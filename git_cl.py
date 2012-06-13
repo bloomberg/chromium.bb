@@ -69,8 +69,13 @@ def RunGit(args, **kwargs):
 
 def RunGitWithCode(args):
   """Returns return code and stdout."""
-  out, code = subprocess2.communicate(['git'] + args, stdout=subprocess2.PIPE)
-  return code, out[0]
+  try:
+    out, code = subprocess2.communicate(['git'] + args, stdout=subprocess2.PIPE)
+    return code, out[0]
+  except ValueError:
+    # When the subprocess fails, it returns None.  That triggers a ValueError
+    # when trying to unpack the return value into (out, code).
+    return 1, ''
 
 
 def usage(more):
@@ -1136,6 +1141,14 @@ def CMDupload(parser, args):
   return RietveldUpload(options, args, cl)
 
 
+def IsSubmoduleMergeCommit(ref):
+  # When submodules are added to the repo, we expect there to be a single
+  # non-git-svn merge commit at remote HEAD with a signature comment.
+  pattern = '^SVN changes up to revision [0-9]*$'
+  cmd = ['rev-list', '--merges', '--grep="%s"' % pattern, '%s^!' % ref]
+  return RunGit(cmd) != ''
+
+
 def SendUpstream(parser, args, cmd):
   """Common code for CmdPush and CmdDCommit
 
@@ -1167,6 +1180,7 @@ def SendUpstream(parser, args, cmd):
       return 1
 
   base_branch = args[0]
+  base_has_submodules = IsSubmoduleMergeCommit(base_branch)
 
   # Make sure index is up-to-date before running diff-index.
   RunGit(['update-index', '--refresh', '-q'], error_ok=True)
@@ -1184,11 +1198,18 @@ def SendUpstream(parser, args, cmd):
     print 'Run "git merge %s" before attempting to %s.' % (base_branch, cmd)
     return 1
 
+  # This is the revision `svn dcommit` will commit on top of.
+  svn_head = RunGit(['log', '--grep=^git-svn-id:', '-1',
+                     '--pretty=format:%H'])
+
   if cmd == 'dcommit':
-    # This is the revision `svn dcommit` will commit on top of.
-    svn_head = RunGit(['log', '--grep=^git-svn-id:', '-1',
-                       '--pretty=format:%H'])
-    extra_commits = RunGit(['rev-list', '^' + svn_head, base_branch])
+    # If the base_head is a submodule merge commit, the first parent of the
+    # base_head should be a git-svn commit, which is what we're interested in.
+    base_svn_head = base_branch
+    if base_has_submodules:
+      base_svn_head += '^1'
+
+    extra_commits = RunGit(['rev-list', '^' + svn_head, base_svn_head])
     if extra_commits:
       print ('This branch has %d additional commits not upstreamed yet.'
              % len(extra_commits.splitlines()))
@@ -1247,15 +1268,19 @@ def SendUpstream(parser, args, cmd):
     subprocess2.call(['git', 'diff', '--stat'] + branches)
     ask_for_data('About to commit; enter to confirm.')
 
-  # We want to squash all this branch's commits into one commit with the
-  # proper description.
-  # We do this by doing a "reset --soft" to the base branch (which keeps
-  # the working copy the same), then dcommitting that.
+  # We want to squash all this branch's commits into one commit with the proper
+  # description. We do this by doing a "reset --soft" to the base branch (which
+  # keeps the working copy the same), then dcommitting that.  If origin/master
+  # has a submodule merge commit, we'll also need to cherry-pick the squashed
+  # commit onto a branch based on the git-svn head.
   MERGE_BRANCH = 'git-cl-commit'
-  # Delete the merge branch if it already exists.
-  if RunGitWithCode(['show-ref', '--quiet', '--verify',
-                     'refs/heads/' + MERGE_BRANCH])[0] == 0:
-    RunGit(['branch', '-D', MERGE_BRANCH])
+  CHERRY_PICK_BRANCH = 'git-cl-cherry-pick'
+  # Delete the branches if they exist.
+  for branch in [MERGE_BRANCH, CHERRY_PICK_BRANCH]:
+    showref_cmd = ['show-ref', '--quiet', '--verify', 'refs/heads/%s' % branch]
+    result = RunGitWithCode(showref_cmd)
+    if result[0] == 0:
+      RunGit(['branch', '-D', branch])
 
   # We might be in a directory that's present in this branch but not in the
   # trunk.  Move up to the top of the tree so that git commands that expect a
@@ -1275,6 +1300,11 @@ def SendUpstream(parser, args, cmd):
       RunGit(['commit', '--author', options.contributor, '-m', description])
     else:
       RunGit(['commit', '-m', description])
+    if base_has_submodules:
+      cherry_pick_commit = RunGit(['rev-list', 'HEAD^!']).rstrip()
+      RunGit(['branch', CHERRY_PICK_BRANCH, svn_head])
+      RunGit(['checkout', CHERRY_PICK_BRANCH])
+      RunGit(['cherry-pick', cherry_pick_commit])
     if cmd == 'push':
       # push the merge branch.
       remote, branch = cl.FetchUpstreamTuple()
@@ -1289,6 +1319,8 @@ def SendUpstream(parser, args, cmd):
     # And then swap back to the original branch and clean up.
     RunGit(['checkout', '-q', cl.GetBranch()])
     RunGit(['branch', '-D', MERGE_BRANCH])
+    if base_has_submodules:
+      RunGit(['branch', '-D', CHERRY_PICK_BRANCH])
 
   if cl.GetIssue():
     if cmd == 'dcommit' and 'Committed r' in output:
