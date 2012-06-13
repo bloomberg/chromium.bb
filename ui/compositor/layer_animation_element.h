@@ -110,7 +110,7 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
   base::TimeDelta duration() const { return duration_; }
 
   Tween::Type tween_type() const { return tween_type_; }
-  void set_tween_type(Tween::Type tween_type) { tween_type_ = tween_type;}
+  void set_tween_type(Tween::Type tween_type) { tween_type_ = tween_type; }
 
  protected:
   // Called once each time the animation element is run before any call to
@@ -121,6 +121,11 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
   virtual void OnAbort() = 0;
 
  private:
+  // For debugging purposes, we sometimes alter the duration we actually use.
+  // For example, during tests we often set duration = 0, and it is sometimes
+  // useful to slow animations down to see them more clearly.
+  base::TimeDelta GetEffectiveDuration(const base::TimeDelta& delta);
+
   bool first_frame_;
   const AnimatableProperties properties_;
   const base::TimeDelta duration_;

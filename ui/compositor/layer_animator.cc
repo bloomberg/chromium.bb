@@ -231,6 +231,10 @@ void LayerAnimator::RemoveObserver(LayerAnimationObserver* observer) {
   }
 }
 
+int LayerAnimator::slow_animation_scale_factor() {
+  return kSlowAnimationScaleFactor;
+}
+
 // LayerAnimator protected -----------------------------------------------------
 
 bool LayerAnimator::ProgressAnimation(LayerAnimationSequence* sequence,
@@ -587,8 +591,6 @@ void LayerAnimator::OnScheduled(LayerAnimationSequence* sequence) {
 }
 
 base::TimeDelta LayerAnimator::GetTransitionDuration() const {
-  if (slow_animation_mode_)
-    return transition_duration_ * kSlowAnimationScaleFactor;
   return transition_duration_;
 }
 

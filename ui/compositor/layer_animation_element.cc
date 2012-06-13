@@ -256,8 +256,7 @@ LayerAnimationElement::LayerAnimationElement(
     base::TimeDelta duration)
     : first_frame_(true),
       properties_(properties),
-      duration_(LayerAnimator::disable_animations_for_test()
-          ? base::TimeDelta() : duration),
+      duration_(GetEffectiveDuration(duration)),
       tween_type_(Tween::LINEAR) {
 }
 
@@ -280,6 +279,18 @@ void LayerAnimationElement::GetTargetValue(TargetValue* target) const {
 void LayerAnimationElement::Abort() {
   first_frame_ = true;
   OnAbort();
+}
+
+// static
+base::TimeDelta LayerAnimationElement::GetEffectiveDuration(
+    const base::TimeDelta& duration) {
+  if (LayerAnimator::disable_animations_for_test())
+    return base::TimeDelta();
+
+  if (LayerAnimator::slow_animation_mode())
+    return duration * LayerAnimator::slow_animation_scale_factor();
+
+  return duration;
 }
 
 // static

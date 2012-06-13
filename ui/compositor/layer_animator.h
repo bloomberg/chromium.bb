@@ -139,6 +139,10 @@ class COMPOSITOR_EXPORT LayerAnimator : public AnimationContainerElement {
   static void set_slow_animation_mode(bool slow) {
     slow_animation_mode_ = slow;
   }
+  static bool slow_animation_mode() { return slow_animation_mode_; }
+
+  // When in slow animation mode, animation durations a scaled by this value.
+  static int slow_animation_scale_factor();
 
   // When set to true, all animations complete immediately.
   static void set_disable_animations_for_test(bool disable_animations) {
