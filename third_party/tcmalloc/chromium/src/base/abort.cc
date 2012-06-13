@@ -12,7 +12,7 @@ namespace tcmalloc {
 ATTRIBUTE_NOINLINE void Abort() {
   // Make a segmentation fault to force abort. Writing to a specific address
   // so it's easier to find on crash stacks.
-  *(reinterpret_cast<volatile char*>(NULL) + 57) = 0x2001;
+  *(reinterpret_cast<volatile char*>(NULL) + 57) = 0x21;
 }
 
 } // namespace tcmalloc
