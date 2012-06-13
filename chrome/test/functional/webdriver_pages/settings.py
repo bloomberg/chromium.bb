@@ -417,8 +417,8 @@ class ManageExceptionsPage(object):
     behavior_list = list_elem.find_elements_by_xpath(
         './/*[@role="listitem"][@class="deletable-item"]'
         '//*[@class="exception-setting"][@displaymode="static"]')
-    assert (len(pattern_list) == len(behavior_list),
-            'Number of patterns does not match the behaviors.')
+    assert len(pattern_list) == len(behavior_list), \
+           'Number of patterns does not match the behaviors.'
     return dict(zip(pattern_list, [b.text.lower() for b in behavior_list]))
 
   def GetBehaviorForPattern(self, pattern, incognito=False):
@@ -430,8 +430,8 @@ class ManageExceptionsPage(object):
      """
     if incognito:
       self._AssertIncognitoAvailable()
-    assert (self.GetExceptions(incognito).has_key(pattern),
-            'No displayed host name matches pattern "%s"' % pattern)
+    assert self.GetExceptions(incognito).has_key(pattern), \
+           'No displayed host name matches pattern "%s"' % pattern
     return self.GetExceptions(incognito)[pattern]
 
   def SetBehaviorForPattern(self, pattern, behavior, incognito=False):
