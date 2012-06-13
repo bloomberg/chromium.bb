@@ -33,9 +33,12 @@ def process_deps(path, new_rev):
   old_line = r'(\s+)"webkit_revision": "(\d+)",'
   new_line = r'\1"webkit_revision": "%d",' % new_rev
   new_content = re.sub(old_line, new_line, content, 1)
-  if new_content == content:
+  old_rev = re.search(old_line, content).group(2)
+  if not old_rev or new_content == content:
     die_with_error('Failed to update the DEPS file')
+
   open(path, 'w').write(new_content)
+  return old_rev
 
 
 def main():
@@ -54,8 +57,7 @@ def main():
   os.chdir(root_dir)
 
   new_rev = int(args[0])
-  msg = 'Roll webkit revision to %s' % new_rev
-  print msg
+  print 'Roll webkit revision to %s' % new_rev
 
   # Silence the editor.
   os.environ['EDITOR'] = 'true'
@@ -67,8 +69,8 @@ def main():
   subprocess2.check_output(
       ['git', 'checkout', '-b', 'webkit_roll', 'origin/master'])
   try:
-    process_deps(os.path.join(root_dir, 'DEPS'), new_rev)
-    commit_msg = msg + '\n\nTBR=\n'
+    old_rev = process_deps(os.path.join(root_dir, 'DEPS'), new_rev)
+    commit_msg = 'Webkit roll %s:%s\n\nTBR=\n' % (old_rev, new_rev)
     subprocess2.check_output(['git', 'commit', '-m', commit_msg, 'DEPS'])
     subprocess2.check_call(['git', 'diff', 'origin/master'])
     subprocess2.check_call(['git', 'cl', 'upload', '--use-commit-queue'])
