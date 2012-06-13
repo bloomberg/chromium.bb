@@ -77,14 +77,20 @@ struct SelectedGroupIdCompare {
 void GetFieldTrialSelectedGroupIds(
     std::vector<SelectedGroupId>* name_group_ids);
 
-// Associate a chrome_variations::ID value with a FieldTrial group. The group is
-// denoted by |trial_name| and |group_name|. This must be called whenever you
-// prepare a FieldTrial (create the trial and append groups) that needs to have
-// a chrome_variations::ID associated with it so Google servers can recognize
-// the FieldTrial.
+// Associate a chrome_variations::ID value with a FieldTrial group. If an id was
+// previously set for |trial_name| and |group_name|, this does nothing. The
+// group is denoted by |trial_name| and |group_name|. This must be called
+// whenever you prepare a FieldTrial (create the trial and append groups) that
+// needs to have a chrome_variations::ID associated with it so Google servers
+// can recognize the FieldTrial.
 void AssociateGoogleVariationID(const std::string& trial_name,
                                 const std::string& group_name,
                                 chrome_variations::ID id);
+
+// As above, but overwrites any previously set id.
+void AssociateGoogleVariationIDForce(const std::string& trial_name,
+                                     const std::string& group_name,
+                                     chrome_variations::ID id);
 
 // Retrieve the chrome_variations::ID associated with a FieldTrial group. The
 // group is denoted by |trial_name| and |group_name|. This will return

@@ -199,3 +199,21 @@ TEST_F(ExperimentsHelperTest, NoAssociation) {
   EXPECT_EQ(winner, no_id_trial->group_name());
   EXPECT_EQ(chrome_variations::kEmptyID, GetIDForTrial(no_id_trial.get()));
 }
+
+// Ensure that the AssociateGoogleVariationIDForce works as expected.
+TEST_F(ExperimentsHelperTest, ForceAssociation) {
+  EXPECT_EQ(chrome_variations::kEmptyID,
+      experiments_helper::GetGoogleVariationID("trial", "group"));
+  experiments_helper::AssociateGoogleVariationID("trial", "group",
+      chrome_variations::kTestValueA);
+  EXPECT_EQ(chrome_variations::kTestValueA,
+      experiments_helper::GetGoogleVariationID("trial", "group"));
+  experiments_helper::AssociateGoogleVariationID("trial", "group",
+      chrome_variations::kTestValueB);
+  EXPECT_EQ(chrome_variations::kTestValueA,
+      experiments_helper::GetGoogleVariationID("trial", "group"));
+  experiments_helper::AssociateGoogleVariationIDForce("trial", "group",
+      chrome_variations::kTestValueB);
+  EXPECT_EQ(chrome_variations::kTestValueB,
+      experiments_helper::GetGoogleVariationID("trial", "group"));
+}

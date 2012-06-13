@@ -28,12 +28,15 @@ class GroupMapAccessor {
   GroupMapAccessor() {}
   ~GroupMapAccessor() {}
 
+  // Note that this normally only sets the ID for a group the first time, unless
+  // |force| is set to true, in which case it will always override it.
   void AssociateID(const experiments_helper::SelectedGroupId& group_identifier,
-                   chrome_variations::ID id) {
+                   chrome_variations::ID id,
+                   const bool force) {
     base::AutoLock scoped_lock(lock_);
-    DCHECK(group_to_id_map_.find(group_identifier) == group_to_id_map_.end()) <<
-        "You can associate a group with a chrome_variations::ID only once.";
-    group_to_id_map_[group_identifier] = id;
+    if (force ||
+        group_to_id_map_.find(group_identifier) == group_to_id_map_.end())
+      group_to_id_map_[group_identifier] = id;
   }
 
   chrome_variations::ID GetID(
@@ -111,7 +114,14 @@ void AssociateGoogleVariationID(const std::string& trial_name,
                                 const std::string& group_name,
                                 chrome_variations::ID id) {
   GroupMapAccessor::GetInstance()->AssociateID(
-      MakeSelectedGroupId(trial_name, group_name), id);
+      MakeSelectedGroupId(trial_name, group_name), id, false);
+}
+
+void AssociateGoogleVariationIDForce(const std::string& trial_name,
+                                     const std::string& group_name,
+                                     chrome_variations::ID id) {
+  GroupMapAccessor::GetInstance()->AssociateID(
+      MakeSelectedGroupId(trial_name, group_name), id, true);
 }
 
 chrome_variations::ID GetGoogleVariationID(const std::string& trial_name,
