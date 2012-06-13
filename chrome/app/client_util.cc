@@ -42,7 +42,7 @@ typedef void (*RelaunchChromeBrowserWithNewCommandLineIfNeededFunc)();
 bool GetChromeVersion(const wchar_t* exe_dir, const wchar_t* key_path,
                       std::wstring* version) {
   HKEY reg_root = InstallUtil::IsPerUserInstall(exe_dir) ? HKEY_CURRENT_USER :
-                                                            HKEY_LOCAL_MACHINE;
+                                                           HKEY_LOCAL_MACHINE;
   bool success = false;
 
   base::win::RegKey key(reg_root, key_path, KEY_QUERY_VALUE);

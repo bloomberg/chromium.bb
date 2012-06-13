@@ -20,6 +20,7 @@
 #include "base/win/pe_image.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/windows_version.h"
 #include "webkit/plugins/npapi/plugin_constants_win.h"
 #include "webkit/plugins/npapi/plugin_lib.h"
 #include "webkit/plugins/plugin_switches.h"
@@ -78,11 +79,19 @@ bool GetInstalledPath(const char16* app, FilePath* out) {
   reg_path.append(L"\\");
   reg_path.append(app);
 
-  base::win::RegKey key(HKEY_LOCAL_MACHINE, reg_path.c_str(), KEY_READ);
+  base::win::RegKey hkcu_key(HKEY_CURRENT_USER, reg_path.c_str(), KEY_READ);
   std::wstring path;
-  if (key.ReadValue(kRegistryPath, &path) == ERROR_SUCCESS) {
+  // As of Win7 AppPaths can also be registered in HKCU: http://goo.gl/UgFOf.
+  if (base::win::GetVersion() >= base::win::VERSION_WIN7 &&
+      hkcu_key.ReadValue(kRegistryPath, &path) == ERROR_SUCCESS) {
     *out = FilePath(path);
     return true;
+  } else {
+    base::win::RegKey hklm_key(HKEY_LOCAL_MACHINE, reg_path.c_str(), KEY_READ);
+    if (hklm_key.ReadValue(kRegistryPath, &path) == ERROR_SUCCESS) {
+      *out = FilePath(path);
+      return true;
+    }
   }
 
   return false;

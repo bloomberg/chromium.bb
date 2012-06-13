@@ -914,29 +914,39 @@ bool ShellUtil::GetQuickLaunchPath(bool system_level, FilePath* path) {
 void ShellUtil::GetRegisteredBrowsers(
     BrowserDistribution* dist,
     std::map<string16, string16>* browsers) {
-  const HKEY root = HKEY_LOCAL_MACHINE;
+  DCHECK(dist);
+  DCHECK(browsers);
+
   const string16 base_key(ShellUtil::kRegStartMenuInternet);
   string16 client_path;
   RegKey key;
   string16 name;
   string16 command;
-  for (base::win::RegistryKeyIterator iter(root, base_key.c_str());
-       iter.Valid(); ++iter) {
-    client_path.assign(base_key).append(1, L'\\').append(iter.Name());
-    // Read the browser's name (localized according to install language).
-    if (key.Open(root, client_path.c_str(), KEY_QUERY_VALUE) != ERROR_SUCCESS ||
-        key.ReadValue(NULL, &name) != ERROR_SUCCESS) {
-      continue;
+
+  // HKCU has precedence over HKLM for these registrations: http://goo.gl/xjczJ.
+  // Look in HKCU second to override any identical values found in HKLM.
+  const HKEY roots[] = { HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER };
+  for (int i = 0; i < arraysize(roots); ++i) {
+    const HKEY root = roots[i];
+    for (base::win::RegistryKeyIterator iter(root, base_key.c_str());
+         iter.Valid(); ++iter) {
+      client_path.assign(base_key).append(1, L'\\').append(iter.Name());
+      // Read the browser's name (localized according to install language).
+      if (key.Open(root, client_path.c_str(),
+                   KEY_QUERY_VALUE) != ERROR_SUCCESS ||
+          key.ReadValue(NULL, &name) != ERROR_SUCCESS ||
+          name.empty() ||
+          name.find(dist->GetApplicationName()) != string16::npos) {
+        continue;
+      }
+      // Read the browser's reinstall command.
+      if (key.Open(root, (client_path + L"\\InstallInfo").c_str(),
+                   KEY_QUERY_VALUE) == ERROR_SUCCESS &&
+          key.ReadValue(kReinstallCommand, &command) == ERROR_SUCCESS &&
+          !command.empty()) {
+        (*browsers)[name] = command;
+      }
     }
-    // Read the browser's reinstall command.
-    if (key.Open(root, (client_path + L"\\InstallInfo").c_str(),
-                 KEY_QUERY_VALUE) != ERROR_SUCCESS ||
-        key.ReadValue(kReinstallCommand, &command) != ERROR_SUCCESS) {
-      continue;
-    }
-    if (!name.empty() && !command.empty() &&
-        name.find(dist->GetApplicationName()) == string16::npos)
-      (*browsers)[name] = command;
   }
 }
 

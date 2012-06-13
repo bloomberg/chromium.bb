@@ -199,8 +199,12 @@ class ShellUtil {
   // User's profile only affects any new user profiles (not existing ones).
   static bool GetQuickLaunchPath(bool system_level, FilePath* path);
 
-  // Gets a mapping of all registered browser (on local machine) names and
-  // their reinstall command (which usually sets browser as default).
+  // Gets a mapping of all registered browser names (excluding browsers in the
+  // |dist| distribution) and their reinstall command (which usually sets
+  // browser as default).
+  // Given browsers can be registered in HKCU (as of Win7) and/or in HKLM, this
+  // method looks in both and gives precedence to values in HKCU as per the msdn
+  // standard: http://goo.gl/xjczJ.
   static void GetRegisteredBrowsers(BrowserDistribution* dist,
                                     std::map<string16, string16>* browsers);
 
