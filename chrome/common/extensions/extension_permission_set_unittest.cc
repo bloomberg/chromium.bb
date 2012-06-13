@@ -620,9 +620,9 @@ TEST(ExtensionPermissionsTest, PermissionMessages) {
   skip.insert(ExtensionAPIPermission::kDevtools);
 
   // Platform apps. TODO(miket): must we skip?
+  skip.insert(ExtensionAPIPermission::kFileSystem);
   skip.insert(ExtensionAPIPermission::kSocket);
   skip.insert(ExtensionAPIPermission::kUsb);
-  skip.insert(ExtensionAPIPermission::kFileSystem);
 
   ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
   ExtensionAPIPermissionSet permissions = info->GetAll();

@@ -55,6 +55,8 @@ class ExtensionPermissionMessage {
     kPrivacy,
     kManagedMode,
     kInput,
+    kAudioCapture,
+    kVideoCapture,
     kEnumBoundary
   };
 
@@ -102,6 +104,7 @@ class ExtensionAPIPermission {
     kAlarms,
     kAppNotifications,
     kAppWindow,
+    kAudioCapture,
     kBackground,
     kBookmark,
     kBrowsingData,
@@ -116,6 +119,7 @@ class ExtensionAPIPermission {
     kDeclarative,
     kDeclarativeWebRequest,
     kDevtools,
+    kEchoPrivate,
     kExperimental,
     kFileBrowserHandler,
     kFileBrowserPrivate,
@@ -131,7 +135,6 @@ class ExtensionAPIPermission {
     kMediaPlayerPrivate,
     kMetricsPrivate,
     kNotification,
-    kEchoPrivate,
     kPageCapture,
     kPlugin,
     kPrivacy,
@@ -146,6 +149,7 @@ class ExtensionAPIPermission {
     kTtsEngine,
     kUnlimitedStorage,
     kUsb,
+    kVideoCapture,
     kWebNavigation,
     kWebRequest,
     kWebRequestBlocking,

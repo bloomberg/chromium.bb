@@ -21,6 +21,10 @@
     "channel": "stable",
     "extension_types": ["packaged_app", "hosted_app"]
   },
+  "audioCapture": {
+    "channel": "stable",
+    "extension_types": ["platform_app"]
+  },
   "background": {
     "channel": "stable",
     "extension_types": [
@@ -250,6 +254,10 @@
     ]
   },
   "usb": {
+    "channel": "stable",
+    "extension_types": ["platform_app"]
+  },
+  "videoCapture": {
     "channel": "stable",
     "extension_types": ["platform_app"]
   },

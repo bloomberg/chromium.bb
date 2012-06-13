@@ -247,6 +247,7 @@
     "chrome.extension.setUpdateUrlData": "extension.html#method-setUpdateUrlData",
     "chrome.fileBrowserHandler.onExecute": "fileBrowserHandler.html#event-onExecute",
     "chrome.fileBrowserHandler.selectFile": "fileBrowserHandler.html#method-selectFile",
+    "chrome.fileSystem.getDisplayPath": "fileSystem.html#method-getDisplayPath",
     "chrome.history.addUrl": "history.html#method-addUrl",
     "chrome.history.deleteAll": "history.html#method-deleteAll",
     "chrome.history.deleteRange": "history.html#method-deleteRange",
@@ -707,7 +708,7 @@
       "api_calls": [
         "chrome.webRequest.onBeforeRequest"
       ],
-      "crx_path": null,
+      "crx_path": "examples/extensions/catblock.crx",
       "description": "I can't has cheezburger!",
       "features": [
         "background_page",
@@ -806,7 +807,7 @@
         "chrome.browserAction.setTitle",
         "chrome.extension.getURL"
       ],
-      "crx_path": null,
+      "crx_path": "examples/extensions/buildbot.crx",
       "description": "Displays the status of the Chromium buildbot in the toolbar.  Click to see more detailed status in a popup.",
       "features": [
         "background_page",
@@ -1376,7 +1377,7 @@
         "chrome.tabs.onUpdated",
         "chrome.tabs.remove"
       ],
-      "crx_path": null,
+      "crx_path": "examples/extensions/gdocs.crx",
       "description": "Demonstrates how to use OAuth to connect the Google Documents List Data API.",
       "features": [
         "background_page",
@@ -1578,7 +1579,7 @@
         "chrome.windows.create",
         "chrome.windows.update"
       ],
-      "crx_path": null,
+      "crx_path": "examples/extensions/imageinfo.crx",
       "description": "Get image info for images, including EXIF data",
       "features": [
         "background_page",
@@ -1715,7 +1716,7 @@
         "chrome.tabs.get",
         "chrome.tabs.onUpdated"
       ],
-      "crx_path": null,
+      "crx_path": "examples/extensions/mappy.crx",
       "description": "Finds addresses in the web page you're on and pops up a map window.",
       "features": [
         "background_page",
@@ -1867,7 +1868,7 @@
         "chrome.i18n.getMessage",
         "chrome.tabs.create"
       ],
-      "crx_path": null,
+      "crx_path": "examples/extensions/news_i18n.crx",
       "description": "Displays the first 5 items from the 'Google News - top news' RSS feed in a popup.",
       "features": [
         "browser_action",
@@ -2079,7 +2080,7 @@
         "chrome.windows.get",
         "chrome.windows.getCurrent"
       ],
-      "crx_path": null,
+      "crx_path": "examples/extensions/benchmark.crx",
       "description": "Chromium Page Benchmarker.",
       "features": [
         "background_page",
@@ -2141,10 +2142,9 @@
         "manifest.json",
         "page_cycler.css",
         "page_cycler.html",
-        "page_cycler.js",
-        "ui_page_cycler.js"
+        "page_cycler.js"
       ],
-      "source_hash": "959ddab802b06128d041e2aa4d2437f005e81c4d",
+      "source_hash": "504348bff562ac22fafc405d58870f0acd61f004",
       "zip_path": "examples/api/record/page_cycler.zip"
     },
     {
@@ -2413,7 +2413,7 @@
         "chrome.windows.get",
         "chrome.windows.getAll"
       ],
-      "crx_path": null,
+      "crx_path": "examples/extensions/speak_selection.crx",
       "description": "Speaks the current selection out loud.",
       "features": [
         "<all_urls>",
@@ -2563,7 +2563,7 @@
         "chrome.tts.speak",
         "chrome.tts.stop"
       ],
-      "crx_path": null,
+      "crx_path": "examples/extensions/talking_alarm_clock.crx",
       "description": "A clock with two configurable alarms that will play a sound and speak a phrase of your choice.",
       "features": [
         "background",
@@ -2662,7 +2662,7 @@
         "chrome.tts.speak",
         "chrome.tts.stop"
       ],
-      "crx_path": null,
+      "crx_path": "examples/extensions/ttsdebug.crx",
       "description": "Tool for developers of Chrome TTS engine extensions to help them test their engines are implementing the API correctly.",
       "features": [
         "tts"

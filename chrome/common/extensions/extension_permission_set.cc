@@ -367,6 +367,14 @@ void ExtensionAPIPermission::RegisterAllPermissions(
   info->RegisterPermission(
       kSocket, "socket", 0, ExtensionPermissionMessage::kNone,
       kFlagCannotBeOptional);
+  info->RegisterPermission(
+      kAudioCapture, "audioCapture",
+      IDS_EXTENSION_PROMPT_WARNING_AUDIO_CAPTURE,
+      ExtensionPermissionMessage::kAudioCapture, kFlagNone);
+  info->RegisterPermission(
+      kVideoCapture, "videoCapture",
+      IDS_EXTENSION_PROMPT_WARNING_VIDEO_CAPTURE,
+      ExtensionPermissionMessage::kVideoCapture, kFlagNone);
 
   // Register aliases.
   info->RegisterAlias("unlimitedStorage", kOldUnlimitedStoragePermission);
@@ -374,7 +382,6 @@ void ExtensionAPIPermission::RegisterAllPermissions(
   // TODO(mihaip): Should be removed for the M20 branch, see
   // http://crbug.com/120447 for more details.
   info->RegisterAlias("background", kTemporaryBackgroundAlias);
-
 }
 
 //

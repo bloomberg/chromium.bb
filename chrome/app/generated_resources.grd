@@ -4341,6 +4341,12 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
       <message name="IDS_EXTENSION_PROMPT_WARNING_USB" desc="Permission string for access to USB devices.">
         Access your USB peripherals
       </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_AUDIO_CAPTURE" desc="Permission string for access to audio capture devices.">
+        Use your microphone
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_VIDEO_CAPTURE" desc="Permission string for access to video capture devices.">
+        Use your camera
+      </message>
 
       <!-- Extension/App error messages -->
       <message name="IDS_EXTENSION_CANT_GET_ABSOLUTE_PATH" desc="Warning displayed in pack dialog when the absolute path to the extension directory can not be found.">
