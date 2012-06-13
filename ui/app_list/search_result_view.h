@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/app_list/search_result_observer.h"
 #include "ui/views/controls/button/custom_button.h"
 
 namespace gfx {
@@ -26,7 +27,8 @@ class SearchResult;
 class SearchResultListView;
 
 // SearchResultView displays a SearchResult.
-class SearchResultView : public views::CustomButton {
+class SearchResultView : public views::CustomButton,
+                         public SearchResultObserver {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -36,7 +38,7 @@ class SearchResultView : public views::CustomButton {
   virtual ~SearchResultView();
 
   // Sets/gets SearchResult displayed by this view.
-  void SetResult(const SearchResult* result);
+  void SetResult(SearchResult* result);
   const SearchResult* result() const { return result_; }
 
  private:
@@ -49,7 +51,10 @@ class SearchResultView : public views::CustomButton {
   virtual void Layout() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
-  const SearchResult* result_;
+  // SearchResultObserver overrides:
+  virtual void OnIconChanged() OVERRIDE;
+
+  SearchResult* result_;
 
   // Parent list view. Owned by views hierarchy.
   SearchResultListView* list_view_;

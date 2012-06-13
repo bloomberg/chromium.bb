@@ -4,15 +4,19 @@
 
 #include "chrome/browser/ui/views/ash/app_list/search_builder.h"
 
+#include <string>
+
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/event_disposition.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/ash/extension_utils.h"
+#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
@@ -69,7 +73,8 @@ void ACMatchClassificationsToTags(
 
 // SearchBuildResult is an app list SearchResult built from an
 // AutocompleteMatch.
-class SearchBuilderResult : public app_list::SearchResult {
+class SearchBuilderResult : public app_list::SearchResult,
+                            public ImageLoadingTracker::Observer {
  public:
   SearchBuilderResult(Profile* profile,
                       const AutocompleteMatch& match)
@@ -85,17 +90,34 @@ class SearchBuilderResult : public app_list::SearchResult {
 
  private:
   void UpdateIcon() {
-    const TemplateURL* template_url = match_.GetTemplateURL(profile_);
-    if (template_url && template_url->IsExtensionKeyword()) {
-      set_icon(profile_->GetExtensionService()->GetOmniboxPopupIcon(
-          template_url->GetExtensionId()));
-      return;
+    if (match_.type == AutocompleteMatch::EXTENSION_APP) {
+      ExtensionService* service = profile_->GetExtensionService();
+      const extensions::Extension* extension =
+          service->GetInstalledApp(match_.destination_url);
+      if (extension) {
+        SetIcon(profile_->GetExtensionService()->GetOmniboxPopupIcon(
+            extension->id()));
+        LoadExtensionIcon(extension);
+        return;
+      }
     }
 
     int resource_id = match_.starred ?
         IDR_OMNIBOX_STAR : AutocompleteMatch::TypeToIcon(match_.type);
-    set_icon(*ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
+    SetIcon(*ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(
         resource_id));
+  }
+
+  void LoadExtensionIcon(const extensions::Extension* extension) {
+    tracker_.reset(new ImageLoadingTracker(this));
+    // TODO(xiyuan): Fix this for HD.
+    tracker_->LoadImage(extension,
+                        extension->GetIconResource(
+                            ExtensionIconSet::EXTENSION_ICON_SMALL,
+                            ExtensionIconSet::MATCH_BIGGER),
+                        gfx::Size(ExtensionIconSet::EXTENSION_ICON_SMALL,
+                                  ExtensionIconSet::EXTENSION_ICON_SMALL),
+                        ImageLoadingTracker::DONT_CACHE);
   }
 
   void UpdateTitleAndDetails() {
@@ -114,8 +136,17 @@ class SearchBuilderResult : public app_list::SearchResult {
     set_details_tags(details_tags);
   }
 
+  // Overridden from ImageLoadingTracker::Observer:
+  virtual void OnImageLoaded(const gfx::Image& image,
+                             const std::string& extension_id,
+                             int tracker_index) OVERRIDE {
+    if (!image.IsEmpty())
+      SetIcon(*image.ToSkBitmap());
+  }
+
   Profile* profile_;
   AutocompleteMatch match_;
+  scoped_ptr<ImageLoadingTracker> tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchBuilderResult);
 };

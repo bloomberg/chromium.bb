@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/observer_list.h"
 #include "base/string16.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/base/models/list_model.h"
@@ -16,6 +17,8 @@
 #include "ui/gfx/image/image_skia.h"
 
 namespace app_list {
+
+class SearchResultObserver;
 
 // SearchResult consists of an icon, title text and details text. Title and
 // details text can have tagged ranges that are displayed differently from
@@ -46,8 +49,11 @@ class APP_LIST_EXPORT SearchResult {
   SearchResult();
   virtual ~SearchResult();
 
+  void AddObserver(SearchResultObserver* observer);
+  void RemoveObserver(SearchResultObserver* observer);
+
   const gfx::ImageSkia& icon() const { return icon_; }
-  void set_icon(const gfx::ImageSkia& icon) { icon_ = icon; }
+  void SetIcon(const gfx::ImageSkia& icon);
 
   const string16& title() const { return title_; }
   void set_title(const string16& title) { title_ = title;}
@@ -69,6 +75,8 @@ class APP_LIST_EXPORT SearchResult {
 
   string16 details_;
   Tags details_tags_;
+
+  ObserverList<SearchResultObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResult);
 };

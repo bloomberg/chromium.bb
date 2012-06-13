@@ -147,7 +147,7 @@ class ExampleSearchResult : public app_list::SearchResult {
   ExampleSearchResult(WindowTypeLauncherItem::Type type,
                       const string16& query)
       : type_(type) {
-    set_icon(WindowTypeLauncherItem::GetIcon(type_));
+    SetIcon(WindowTypeLauncherItem::GetIcon(type_));
 
     string16 title = UTF8ToUTF16(WindowTypeLauncherItem::GetTitle(type_));
     set_title(title);

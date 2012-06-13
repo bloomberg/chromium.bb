@@ -144,6 +144,10 @@ void SearchResultListView::ListItemsAdded(size_t start, size_t count) {
 }
 
 void SearchResultListView::ListItemsRemoved(size_t start, size_t count) {
+  size_t last = std::min(start + count, static_cast<size_t>(child_count()));
+  for (size_t i = start; i < last; ++i)
+    GetResultViewAt(i)->SetResult(NULL);
+
   ScheduleUpdate();
 }
 

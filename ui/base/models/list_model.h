@@ -59,9 +59,8 @@ class ListModel {
 
   // Removes and deletes all items from the model.
   void DeleteAll() {
-    size_t count = item_count();
-    items_.reset();
-    NotifyItemsRemoved(0, count);
+    ScopedVector<ItemType> to_be_deleted(items_.Pass());
+    NotifyItemsRemoved(0, to_be_deleted.size());
   }
 
   void AddObserver(ListModelObserver* observer) {

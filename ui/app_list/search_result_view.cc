@@ -99,10 +99,18 @@ SearchResultView::SearchResultView(SearchResultListView* list_view,
 }
 
 SearchResultView::~SearchResultView() {
+  if (result_)
+    result_->RemoveObserver(this);
 }
 
-void SearchResultView::SetResult(const SearchResult* result) {
+void SearchResultView::SetResult(SearchResult* result) {
+  if (result_)
+    result_->RemoveObserver(this);
+
   result_ = result;
+
+  if (result_)
+    result_->AddObserver(this);
 
   icon_->SetImage(result_ ? result_->icon() : gfx::ImageSkia());
   UpdateTitleText();
@@ -143,7 +151,7 @@ void SearchResultView::Layout() {
 
   gfx::Rect icon_bounds(rect);
   icon_bounds.set_width(kIconViewWidth);
-  icon_bounds.Inset(kIconPadding, kIconPadding);
+  icon_bounds.Inset(kIconPadding, (rect.height() - kIconDimension) / 2);
   icon_->SetBoundsRect(icon_bounds.Intersect(rect));
 }
 
@@ -192,6 +200,10 @@ void SearchResultView::OnPaint(gfx::Canvas* canvas) {
     title_text_->SetDisplayRect(text_bounds.Center(title_size));
     title_text_->Draw(canvas);
   }
+}
+
+void SearchResultView::OnIconChanged() {
+  SchedulePaint();
 }
 
 }  // namespace app_list
