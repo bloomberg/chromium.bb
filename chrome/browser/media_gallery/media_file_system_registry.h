@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// MediaFileSystemRegistry registers pictures directories as File API
-// filesystems and keeps track of the path to filesystem ID mappings.
-// In the near future, MediaFileSystemRegistry will also support media devices.
+// MediaFileSystemRegistry registers pictures directories and media devices as
+// File API filesystems and keeps track of the path to filesystem ID mappings.
 
 #ifndef CHROME_BROWSER_MEDIA_GALLERY_MEDIA_FILE_SYSTEM_REGISTRY_H_
 #define CHROME_BROWSER_MEDIA_GALLERY_MEDIA_FILE_SYSTEM_REGISTRY_H_
@@ -17,6 +16,7 @@
 
 #include "base/basictypes.h"
 #include "base/lazy_instance.h"
+#include "base/system_monitor/system_monitor.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -32,7 +32,9 @@ class IsolatedContext;
 
 namespace chrome {
 
-class MediaFileSystemRegistry : public content::NotificationObserver {
+class MediaFileSystemRegistry
+    : public base::SystemMonitor::DevicesChangedObserver,
+      public content::NotificationObserver {
  public:
   // (Filesystem ID, path)
   typedef std::pair<std::string, FilePath> MediaFSIDAndPath;
@@ -44,6 +46,10 @@ class MediaFileSystemRegistry : public content::NotificationObserver {
   // Called on the UI thread.
   std::vector<MediaFSIDAndPath> GetMediaFileSystems(
       const content::RenderProcessHost* rph);
+
+  // base::SystemMonitor::DevicesChangedObserver implementation.
+  virtual void OnMediaDeviceDetached(
+      const base::SystemMonitor::DeviceIdType& id) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -60,6 +66,10 @@ class MediaFileSystemRegistry : public content::NotificationObserver {
   typedef std::map<const content::RenderProcessHost*,
                    MediaPathToFSIDMap> ChildIdToMediaFSMap;
 
+  // Mapping of device id to mount path.
+  typedef std::map<base::SystemMonitor::DeviceIdType, FilePath>
+      DeviceIdToMediaPathMap;
+
   // Obtain an instance of this class via GetInstance().
   MediaFileSystemRegistry();
   virtual ~MediaFileSystemRegistry();
@@ -72,8 +82,14 @@ class MediaFileSystemRegistry : public content::NotificationObserver {
   // Registers a path as a media file system and return the filesystem id.
   std::string RegisterPathAsFileSystem(const FilePath& path);
 
+  // Revoke a media file system with a given |path|.
+  void RevokeMediaFileSystem(const FilePath& path);
+
   // Only accessed on the UI thread.
   ChildIdToMediaFSMap media_fs_map_;
+
+  // Only accessed on the UI thread.
+  DeviceIdToMediaPathMap device_id_map_;
 
   // Is only used on the UI thread.
   content::NotificationRegistrar registrar_;

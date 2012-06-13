@@ -21,6 +21,7 @@ namespace chrome {
 static base::LazyInstance<MediaFileSystemRegistry>::Leaky
     g_media_file_system_registry = LAZY_INSTANCE_INITIALIZER;
 
+using base::SystemMonitor;
 using content::BrowserThread;
 using content::RenderProcessHost;
 using fileapi::IsolatedContext;
@@ -54,6 +55,18 @@ MediaFileSystemRegistry::GetMediaFileSystems(
     }
   }
 
+  // TODO(thestig) Handle overlap between devices and media directories.
+  SystemMonitor* monitor = SystemMonitor::Get();
+  const std::vector<SystemMonitor::MediaDeviceInfo> media_devices =
+      monitor->GetAttachedMediaDevices();
+  for (size_t i = 0; i < media_devices.size(); ++i) {
+    const SystemMonitor::DeviceIdType& id = media_devices[i].a;
+    const FilePath& path = media_devices[i].c;
+    device_id_map_.insert(std::make_pair(id, path));
+    std::string fsid = RegisterPathAsFileSystem(path);
+    child_it->second.insert(std::make_pair(path, fsid));
+  }
+
   MediaPathToFSIDMap& child_map = child_it->second;
   for (MediaPathToFSIDMap::const_iterator it = child_map.begin();
        it != child_map.end();
@@ -63,6 +76,17 @@ MediaFileSystemRegistry::GetMediaFileSystems(
     results.push_back(std::make_pair(fsid, path));
   }
   return results;
+}
+
+void MediaFileSystemRegistry::OnMediaDeviceDetached(
+    const base::SystemMonitor::DeviceIdType& id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  DeviceIdToMediaPathMap::iterator it = device_id_map_.find(id);
+  if (it == device_id_map_.end())
+    return;
+  RevokeMediaFileSystem(it->second);
+  device_id_map_.erase(it);
 }
 
 void MediaFileSystemRegistry::Observe(
@@ -125,6 +149,22 @@ std::string MediaFileSystemRegistry::RegisterPathAsFileSystem(
       IsolatedContext::GetInstance()->RegisterIsolatedFileSystem(fileset);
   CHECK(!fsid.empty());
   return fsid;
+}
+
+void MediaFileSystemRegistry::RevokeMediaFileSystem(const FilePath& path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  IsolatedContext* isolated_context = IsolatedContext::GetInstance();
+  for (ChildIdToMediaFSMap::iterator child_it = media_fs_map_.begin();
+       child_it != media_fs_map_.end();
+       ++child_it) {
+    MediaPathToFSIDMap& child_map = child_it->second;
+    MediaPathToFSIDMap::iterator media_path_it = child_map.find(path);
+    if (media_path_it == child_map.end())
+      continue;
+    isolated_context->RevokeIsolatedFileSystem(media_path_it->second);
+    child_map.erase(media_path_it);
+  }
 }
 
 }  // namespace chrome
