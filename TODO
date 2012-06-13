@@ -27,20 +27,6 @@ Core wayland protocol
    is something in the protocol/architecute that makes it harder than
    it should be.
 
- - Key events need a bit more work/thinking/redesign. As it is we need
-   a mechanism to change and synchronize keymaps, repeat rates.  But
-   as we started talking, we decided that we needed to go back and
-   research what other systems do instead of just essentially copying
-   the X model.  Sending out unicode events in addition to keycode
-   events has a lot of benefits (OSK can send out unicode events
-   instead of fake keycode events, apps become much simpler...)  Move
-   keymap handling and repeat to the server?  Needs more research.
-
- - Pointer axis events need modifiers (ctrl-scroll eg), but we either
-   need to send the modifier state with each axis/scroll event or send
-   keys down on pointer_focus and subsequent key events... or just key
-   events for modifier keys... or for the non-repeating subset?
-
  - Add timestamp to touch_cancel, add touch id to touch_cancel (?)
 
  - The output protocol needs to send all the ugly timing details for the modes.
