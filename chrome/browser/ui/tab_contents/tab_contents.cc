@@ -208,18 +208,6 @@ TabContents* TabContents::Clone() {
   return new_tab_contents;
 }
 
-// static deprecated
-TabContents* TabContents::GetCurrentWrapperForContents(
-    WebContents* contents) {
-  return FromWebContents(contents);
-}
-
-// static deprecated
-const TabContents* TabContents::GetCurrentWrapperForContents(
-    const WebContents* contents) {
-  return FromWebContents(contents);
-}
-
 // static
 TabContents* TabContents::FromWebContents(WebContents* contents) {
   TabContents** tab_contents =

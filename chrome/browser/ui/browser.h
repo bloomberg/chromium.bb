@@ -401,13 +401,11 @@ class Browser : public TabStripModelDelegate,
   int GetIndexOfController(
       const content::NavigationController* controller) const;
 
-  TabContents* GetSelectedTabContentsWrapper() const;  // DEPRECATED
   TabContents* GetActiveTabContents() const;
   // A convenient version of the above which returns the TabContents's
   // WebContents.
   content::WebContents* GetSelectedWebContents() const;  // DEPRECATED
   content::WebContents* GetActiveWebContents() const;
-  TabContents* GetTabContentsWrapperAt(int index) const;  // DEPRECATED
   TabContents* GetTabContentsAt(int index) const;
   // A convenient version of the above which returns the TabContents's
   // WebContents.

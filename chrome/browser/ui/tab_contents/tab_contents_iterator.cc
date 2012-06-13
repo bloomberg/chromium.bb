@@ -41,7 +41,7 @@ void TabContentsIterator::Advance() {
     }
 
     TabContents* next_tab =
-        (*browser_iterator_)->GetTabContentsWrapperAt(web_view_index_);
+        (*browser_iterator_)->GetTabContentsAt(web_view_index_);
     if (next_tab) {
       cur_ = next_tab;
       return;

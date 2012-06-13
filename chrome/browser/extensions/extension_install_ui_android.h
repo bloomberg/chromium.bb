@@ -8,9 +8,6 @@
 
 #include "chrome/browser/extensions/extension_install_ui.h"
 
-class InfoBarDelegate;
-class TabContentsWrapper;
-
 class ExtensionInstallUIAndroid : public ExtensionInstallUI {
  public:
   ExtensionInstallUIAndroid();

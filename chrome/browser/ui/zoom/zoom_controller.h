@@ -14,7 +14,6 @@
 #include "content/public/browser/web_contents_observer.h"
 
 class TabContents;
-typedef TabContents TabContentsWrapper;
 class ZoomObserver;
 
 // Per-tab class to manage the Omnibox zoom icon.
@@ -27,7 +26,7 @@ class ZoomController : public content::NotificationObserver,
     ZOOM_MINUS_ICON,
   };
 
-  explicit ZoomController(TabContentsWrapper* tab_contents);
+  explicit ZoomController(TabContents* tab_contents);
   virtual ~ZoomController();
 
   ZoomIconState zoom_icon_state() const { return zoom_icon_state_; }
@@ -61,8 +60,8 @@ class ZoomController : public content::NotificationObserver,
   // Used to access the default zoom level preference.
   DoublePrefMember default_zoom_level_;
 
-  // TabContentsWrapper that owns this instance.
-  TabContentsWrapper* tab_contents_wrapper_;
+  // TabContents that owns this instance.
+  TabContents* tab_contents_;
 
   // Observer receiving notifications on state changes.
   ZoomObserver* observer_;

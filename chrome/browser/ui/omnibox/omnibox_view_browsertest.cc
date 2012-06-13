@@ -583,9 +583,9 @@ class OmniboxViewTest : public InProcessBrowserTest,
     ASSERT_TRUE(SendKeyAndWait(browser(), ui::VKEY_RETURN, ui::EF_CONTROL_DOWN,
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::Source<content::NavigationController>(
-            &browser()->GetSelectedWebContents()->GetController())));
+            &browser()->GetActiveWebContents()->GetController())));
 
-    GURL url = browser()->GetSelectedWebContents()->GetURL();
+    GURL url = browser()->GetActiveWebContents()->GetURL();
     EXPECT_STREQ(kDesiredTLDHostname, url.host().c_str());
   }
 
@@ -619,8 +619,8 @@ class OmniboxViewTest : public InProcessBrowserTest,
     ASSERT_TRUE(SendKeyAndWait(browser(), ui::VKEY_RETURN, 0,
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::Source<content::NavigationController>(
-            &browser()->GetSelectedWebContents()->GetController())));
-    GURL url = browser()->GetSelectedWebContents()->GetURL();
+            &browser()->GetActiveWebContents()->GetController())));
+    GURL url = browser()->GetActiveWebContents()->GetURL();
     EXPECT_STREQ(kSearchTextURL, url.spec().c_str());
 
     // Test that entering a single character then Enter performs a search.
@@ -639,8 +639,8 @@ class OmniboxViewTest : public InProcessBrowserTest,
     ASSERT_TRUE(SendKeyAndWait(browser(), ui::VKEY_RETURN, 0,
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::Source<content::NavigationController>(
-            &browser()->GetSelectedWebContents()->GetController())));
-    url = browser()->GetSelectedWebContents()->GetURL();
+            &browser()->GetActiveWebContents()->GetController())));
+    url = browser()->GetActiveWebContents()->GetURL();
     EXPECT_STREQ(kSearchSingleCharURL, url.spec().c_str());
   }
 

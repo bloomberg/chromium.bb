@@ -15,7 +15,7 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/window_snapshot/window_snapshot.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -207,7 +207,7 @@ class ThroughputTest : public BrowserPerfTest {
 
     gfx::Rect root_bounds = browser()->window()->GetBounds();
     gfx::Rect tab_contents_bounds;
-    browser()->GetSelectedWebContents()->GetContainerBounds(
+    browser()->GetActiveWebContents()->GetContainerBounds(
         &tab_contents_bounds);
 
     gfx::Rect snapshot_bounds(tab_contents_bounds.x() - root_bounds.x(),
@@ -313,7 +313,7 @@ class ThroughputTest : public BrowserPerfTest {
     LOG(INFO) << gurl_.possibly_invalid_spec();
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), gurl_, CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
-    ui_test_utils::WaitForLoadStop(browser()->GetSelectedWebContents());
+    ui_test_utils::WaitForLoadStop(browser()->GetActiveWebContents());
 
     // Let the test spin up.
     LOG(INFO) << "Spinning up test...";

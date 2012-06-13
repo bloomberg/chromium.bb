@@ -41,7 +41,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_action.h"
@@ -137,7 +137,7 @@ class DOMOperationObserver : public content::NotificationObserver,
 
 class FindInPageNotificationObserver : public content::NotificationObserver {
  public:
-  explicit FindInPageNotificationObserver(TabContentsWrapper* parent_tab)
+  explicit FindInPageNotificationObserver(TabContents* parent_tab)
       : parent_tab_(parent_tab),
         active_match_ordinal_(-1),
         number_of_matches_(0) {
@@ -175,7 +175,7 @@ class FindInPageNotificationObserver : public content::NotificationObserver {
 
  private:
   content::NotificationRegistrar registrar_;
-  TabContentsWrapper* parent_tab_;
+  TabContents* parent_tab_;
   // We will at some point (before final update) be notified of the ordinal and
   // we need to preserve it so we can send it later.
   int active_match_ordinal_;
@@ -314,7 +314,7 @@ void RunAllPendingInMessageLoop(content::BrowserThread::ID thread_id) {
 }
 
 bool GetCurrentTabTitle(const Browser* browser, string16* title) {
-  WebContents* web_contents = browser->GetSelectedWebContents();
+  WebContents* web_contents = browser->GetActiveWebContents();
   if (!web_contents)
     return false;
   NavigationEntry* last_entry = web_contents->GetController().GetActiveEntry();
@@ -382,7 +382,7 @@ void OpenURLOffTheRecord(Profile* profile, const GURL& url) {
   Browser::OpenURLOffTheRecord(profile, url);
   Browser* browser = browser::FindTabbedBrowser(
       profile->GetOffTheRecordProfile(), false);
-  WaitForNavigations(&browser->GetSelectedWebContents()->GetController(), 1);
+  WaitForNavigations(&browser->GetActiveWebContents()->GetController(), 1);
 }
 
 void NavigateToURL(browser::NavigateParams* params) {
@@ -411,11 +411,11 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
     int number_of_navigations,
     WindowOpenDisposition disposition,
     int browser_test_flags) {
-  if (disposition == CURRENT_TAB && browser->GetSelectedWebContents())
-    WaitForLoadStop(browser->GetSelectedWebContents());
+  if (disposition == CURRENT_TAB && browser->GetActiveWebContents())
+    WaitForLoadStop(browser->GetActiveWebContents());
   NavigationController* controller =
-      browser->GetSelectedWebContents() ?
-      &browser->GetSelectedWebContents()->GetController() : NULL;
+      browser->GetActiveWebContents() ?
+      &browser->GetActiveWebContents()->GetController() : NULL;
   content::TestNavigationObserver same_tab_observer(
       content::Source<NavigationController>(controller),
       NULL,
@@ -460,7 +460,7 @@ static void NavigateToURLWithDispositionBlockUntilNavigationsComplete(
       (disposition == NEW_FOREGROUND_TAB) ||
       (disposition == SINGLETON_TAB)) {
     // The currently selected tab is the right one.
-    web_contents = browser->GetSelectedWebContents();
+    web_contents = browser->GetActiveWebContents();
   }
   if (disposition == CURRENT_TAB) {
     same_tab_observer.WaitForObservation(
@@ -504,7 +504,7 @@ void NavigateToURLBlockUntilNavigationsComplete(Browser* browser,
 DOMElementProxyRef GetActiveDOMDocument(Browser* browser) {
   JavaScriptExecutionController* executor =
       new InProcessJavaScriptExecutionController(
-          browser->GetSelectedWebContents()->GetRenderViewHost());
+          browser->GetActiveWebContents()->GetRenderViewHost());
   int element_handle;
   executor->ExecuteJavaScriptAndGetReturn("document;", &element_handle);
   return executor->GetObjectProxy<DOMElementProxy>(element_handle);
@@ -600,7 +600,7 @@ void CrashTab(WebContents* tab) {
   observer.Wait();
 }
 
-int FindInPage(TabContentsWrapper* tab_contents, const string16& search_string,
+int FindInPage(TabContents* tab_contents, const string16& search_string,
                bool forward, bool match_case, int* ordinal) {
   tab_contents->
       find_tab_helper()->StartFinding(search_string, forward, match_case);

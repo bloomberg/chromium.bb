@@ -1958,7 +1958,7 @@ bool BrowserView::MaybeShowInfoBar(TabContents* contents) {
 void BrowserView::UpdateDevToolsForContents(TabContents* tab_contents) {
   WebContents* devtools_contents = NULL;
   if (tab_contents) {
-    TabContentsWrapper* devtools_tab_contents =
+    TabContents* devtools_tab_contents =
         DevToolsWindow::GetDevToolsContents(tab_contents->web_contents());
     if (devtools_tab_contents)
       devtools_contents = devtools_tab_contents->web_contents();

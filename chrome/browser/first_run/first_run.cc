@@ -513,7 +513,7 @@ void FirstRunBubbleLauncher::Observe(
     return;
   }
 
-  content::WebContents* contents = browser->GetSelectedWebContents();
+  content::WebContents* contents = browser->GetActiveWebContents();
   if (contents && contents->GetURL().SchemeIs(chrome::kChromeUIScheme)) {
     // Suppress the first run bubble if the sync promo is showing.
     if (contents->GetURL().host() == chrome::kChromeUISyncPromoHost)

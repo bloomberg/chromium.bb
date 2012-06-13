@@ -7,7 +7,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/ui/browser_navigator.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/test/base/testing_profile.h"
@@ -137,8 +137,7 @@ void BrowserWithTestWindowTest::NavigateAndCommit(
 }
 
 void BrowserWithTestWindowTest::NavigateAndCommitActiveTab(const GURL& url) {
-  NavigateAndCommit(&browser()->GetSelectedTabContentsWrapper()->
-      web_contents()->GetController(), url);
+  NavigateAndCommit(&browser()->GetActiveWebContents()->GetController(), url);
 }
 
 void BrowserWithTestWindowTest::DestroyBrowserAndProfile() {

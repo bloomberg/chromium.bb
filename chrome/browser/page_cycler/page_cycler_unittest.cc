@@ -109,7 +109,7 @@ class PageCyclerTest : public BrowserWithTestWindowTest {
 
     BrowserWithTestWindowTest::SetUp();
     AddTab(browser(), kAboutURL);
-    ASSERT_FALSE(browser()->GetSelectedWebContents() == NULL);
+    ASSERT_FALSE(browser()->GetActiveWebContents() == NULL);
   }
 
   void InitFilePaths(const FilePath& temp_path) {

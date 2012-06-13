@@ -6,7 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_types.h"
@@ -15,11 +15,11 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_zoom.h"
 
-ZoomController::ZoomController(TabContentsWrapper* tab_contents)
+ZoomController::ZoomController(TabContents* tab_contents)
     : content::WebContentsObserver(tab_contents->web_contents()),
       zoom_icon_state_(NONE),
       zoom_percent_(100),
-      tab_contents_wrapper_(tab_contents),
+      tab_contents_(tab_contents),
       observer_(NULL) {
   default_zoom_level_.Init(prefs::kDefaultZoomLevel,
                            tab_contents->profile()->GetPrefs(), this);
@@ -60,8 +60,7 @@ void ZoomController::Observe(int type,
 }
 
 void ZoomController::UpdateState() {
-  double current_zoom_level =
-      tab_contents_wrapper_->web_contents()->GetZoomLevel();
+  double current_zoom_level = tab_contents_->web_contents()->GetZoomLevel();
   double default_zoom_level = default_zoom_level_.GetValue();
 
   ZoomIconState state;
@@ -73,19 +72,19 @@ void ZoomController::UpdateState() {
     state = ZOOM_MINUS_ICON;
 
   bool dummy;
-  int zoom_percent = tab_contents_wrapper_->web_contents()->
+  int zoom_percent = tab_contents_->web_contents()->
       GetZoomPercent(&dummy, &dummy);
 
   if (state != zoom_icon_state_) {
     zoom_icon_state_ = state;
     if (observer_)
-      observer_->OnZoomIconChanged(tab_contents_wrapper_, state);
+      observer_->OnZoomIconChanged(tab_contents_, state);
   }
 
   if (zoom_percent != zoom_percent_) {
     zoom_percent_ = zoom_percent;
     if (observer_)
-      observer_->OnZoomChanged(tab_contents_wrapper_,
+      observer_->OnZoomChanged(tab_contents_,
                                zoom_percent,
                                state != NONE);
   }

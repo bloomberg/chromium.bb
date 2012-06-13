@@ -29,7 +29,7 @@ using content::WebContents;
 
 PageCycler::PageCycler(Browser* browser,
                        const FilePath& urls_file)
-    : content::WebContentsObserver(browser->GetSelectedWebContents()),
+    : content::WebContentsObserver(browser->GetActiveWebContents()),
       browser_(browser),
       urls_file_(urls_file),
       url_index_(0),
@@ -132,7 +132,7 @@ void PageCycler::BeginCycle() {
   // result in the browser being in a state of loading when PageCycler is ready
   // to start. Instead of interrupting the load, we wait for it to finish, and
   // will call LoadNextURL() from DidFinishLoad() or DidFailProvisionalLoad().
-  if (browser_->GetSelectedWebContents()->IsLoading())
+  if (browser_->GetActiveWebContents()->IsLoading())
     return;
   LoadNextURL();
 }

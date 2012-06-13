@@ -29,7 +29,7 @@ IN_PROC_BROWSER_TEST_F(LoadTimingObserverTest, FLAKY_CacheHitAfterRedirect) {
   int response_start = 0;
   int response_end = 0;
   content::RenderViewHost* render_view_host =
-      browser()->GetSelectedWebContents()->GetRenderViewHost();
+      browser()->GetActiveWebContents()->GetRenderViewHost();
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractInt(
       render_view_host, L"",
       L"window.domAutomationController.send("

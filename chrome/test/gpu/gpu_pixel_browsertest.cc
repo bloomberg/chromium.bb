@@ -166,7 +166,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
     js_call << ");";
 
     ASSERT_TRUE(ui_test_utils::ExecuteJavaScript(
-        browser()->GetSelectedWebContents()->GetRenderViewHost(),
+        browser()->GetActiveWebContents()->GetRenderViewHost(),
         L"", js_call.str()));
 
     std::string message;
@@ -373,7 +373,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
   // have if the tab contents have the desired size.
   gfx::Rect GetNewTabContainerBounds(const gfx::Size& desired_size) {
     gfx::Rect container_rect;
-    browser()->GetSelectedWebContents()->GetContainerBounds(&container_rect);
+    browser()->GetActiveWebContents()->GetContainerBounds(&container_rect);
     // Size cannot be negative, so use a point.
     gfx::Point correction(
         desired_size.width() - container_rect.size().width(),
@@ -393,7 +393,7 @@ class GpuPixelBrowserTest : public InProcessBrowserTest {
 
     gfx::Rect root_bounds = browser()->window()->GetBounds();
     gfx::Rect tab_contents_bounds;
-    browser()->GetSelectedWebContents()->GetContainerBounds(
+    browser()->GetActiveWebContents()->GetContainerBounds(
         &tab_contents_bounds);
 
     gfx::Rect snapshot_bounds(tab_contents_bounds.x() - root_bounds.x(),

@@ -104,10 +104,6 @@ class TabContents : public content::WebContentsObserver {
   // like callbacks from content/ where only a WebContents is available. In the
   // general case, please do NOT use this; plumb TabContents through the chrome/
   // code instead of WebContents.
-  static TabContents* GetCurrentWrapperForContents(
-      content::WebContents* contents);  // DEPRECATED
-  static const TabContents* GetCurrentWrapperForContents(
-      const content::WebContents* contents);  // DEPRECATED
   static TabContents* FromWebContents(content::WebContents* contents);
   static const TabContents* FromWebContents(
       const content::WebContents* contents);

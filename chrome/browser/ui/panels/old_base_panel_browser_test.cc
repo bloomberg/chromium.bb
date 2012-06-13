@@ -19,7 +19,7 @@
 #include "chrome/browser/ui/panels/panel_browser_window.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_mouse_watcher.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
+#include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -398,9 +398,8 @@ Panel* OldBasePanelBrowserTest::CreateDetachedPanel(const std::string& name,
 }
 
 void OldBasePanelBrowserTest::CreateTestTabContents(Browser* browser) {
-  TabContentsWrapper* tab_contents =
-      new TabContentsWrapper(
-          WebContentsTester::CreateTestWebContents(browser->profile(), NULL));
+  TabContents* tab_contents = new TabContents(
+      WebContentsTester::CreateTestWebContents(browser->profile(), NULL));
   browser->AddTab(tab_contents, content::PAGE_TRANSITION_LINK);
 }
 

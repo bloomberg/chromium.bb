@@ -210,10 +210,10 @@ void RecursiveFindNodeInAccessibilityTree(
 IAccessible*
 AccessibilityWinBrowserTest::GetRendererAccessible() {
   content::RenderViewHostTester::EnableAccessibilityUpdatedNotifications(
-      browser()->GetSelectedWebContents()->GetRenderViewHost());
+      browser()->GetActiveWebContents()->GetRenderViewHost());
 
   HWND hwnd_render_widget_host_view =
-      browser()->GetSelectedWebContents()->GetRenderWidgetHostView()->
+      browser()->GetActiveWebContents()->GetRenderWidgetHostView()->
           GetNativeView();
 
   // Invoke windows screen reader detection by sending the WM_GETOBJECT message
@@ -233,7 +233,7 @@ AccessibilityWinBrowserTest::GetRendererAccessible() {
 }
 
 void AccessibilityWinBrowserTest::ExecuteScript(wstring script) {
-  browser()->GetSelectedWebContents()->GetRenderViewHost()->
+  browser()->GetActiveWebContents()->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(L"", script);
 }
 

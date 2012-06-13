@@ -51,7 +51,7 @@ class RegisterProtocolHandlerBrowserTest : public InProcessBrowserTest {
     params.media_type = WebKit::WebContextMenuData::MediaTypeNone;
     params.link_url = url;
     params.unfiltered_link_url = url;
-    WebContents* web_contents = browser()->GetSelectedWebContents();
+    WebContents* web_contents = browser()->GetActiveWebContents();
     params.page_url = web_contents->GetController().GetActiveEntry()->GetURL();
 #if defined(OS_MACOSX)
     params.writing_direction_default = 0;
@@ -59,7 +59,7 @@ class RegisterProtocolHandlerBrowserTest : public InProcessBrowserTest {
     params.writing_direction_right_to_left = 0;
 #endif  // OS_MACOSX
     TestRenderViewContextMenu* menu = new TestRenderViewContextMenu(
-        browser()->GetSelectedWebContents(), params);
+        browser()->GetActiveWebContents(), params);
     menu->Init();
     return menu;
   }
@@ -107,5 +107,5 @@ IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest, CustomHandler) {
 
   ui_test_utils::NavigateToURL(browser(), GURL("foo:test"));
 
-  ASSERT_EQ(handler_url, browser()->GetSelectedWebContents()->GetURL());
+  ASSERT_EQ(handler_url, browser()->GetActiveWebContents()->GetURL());
 }

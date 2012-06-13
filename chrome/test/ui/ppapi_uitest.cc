@@ -232,7 +232,7 @@ void PPAPITestBase::RunTestURL(const GURL& test_url) {
   // any other value indicates completion (in this case it will start with
   // "PASS" or "FAIL"). This keeps us from timing out on waits for long tests.
   TestFinishObserver observer(
-      browser()->GetSelectedWebContents()->GetRenderViewHost(), kTimeoutMs);
+      browser()->GetActiveWebContents()->GetRenderViewHost(), kTimeoutMs);
 
   ui_test_utils::NavigateToURL(browser(), test_url);
 
@@ -1056,7 +1056,7 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, View_CreateInvisible) {
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, View_PageHideShow) {
   // The plugin will be loaded in the foreground tab and will send us a message.
   TestFinishObserver observer(
-      browser()->GetSelectedWebContents()->GetRenderViewHost(),
+      browser()->GetActiveWebContents()->GetRenderViewHost(),
       TestTimeouts::action_max_timeout_ms());
 
   GURL url = GetTestFileUrl("View_PageHideShow");

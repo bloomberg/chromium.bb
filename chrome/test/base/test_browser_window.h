@@ -66,7 +66,7 @@ class TestBrowserWindow : public BrowserWindow {
   virtual LocationBar* GetLocationBar() const OVERRIDE;
   virtual void SetFocusToLocationBar(bool select_all) OVERRIDE {}
   virtual void UpdateReloadStopState(bool is_loading, bool force) OVERRIDE {}
-  virtual void UpdateToolbar(TabContentsWrapper* contents,
+  virtual void UpdateToolbar(TabContents* contents,
                              bool should_restore_state) OVERRIDE {}
   virtual void FocusToolbar() OVERRIDE {}
   virtual void FocusAppMenu() OVERRIDE {}
@@ -79,7 +79,7 @@ class TestBrowserWindow : public BrowserWindow {
   virtual void HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) OVERRIDE {}
   virtual void ShowCreateWebAppShortcutsDialog(
-      TabContentsWrapper* tab_contents) OVERRIDE {}
+      TabContents* tab_contents) OVERRIDE {}
   virtual void ShowCreateChromeAppShortcutsDialog(
       Profile* profile,
       const extensions::Extension* app) OVERRIDE {}
@@ -115,7 +115,7 @@ class TestBrowserWindow : public BrowserWindow {
                             const content::SSLStatus& ssl,
                             bool show_history) OVERRIDE {}
   virtual void ShowWebsiteSettings(Profile* profile,
-                                   TabContentsWrapper* wrapper,
+                                   TabContents* tab_contents,
                                    const GURL& url,
                                    const content::SSLStatus& ssl,
                                    bool show_history) OVERRIDE {}
@@ -131,7 +131,7 @@ class TestBrowserWindow : public BrowserWindow {
   virtual bool InPresentationMode() OVERRIDE;
 #endif
 
-  virtual void ShowInstant(TabContentsWrapper* preview_contents) OVERRIDE {}
+  virtual void ShowInstant(TabContents* preview_contents) OVERRIDE {}
   virtual void HideInstant() OVERRIDE {}
   virtual gfx::Rect GetInstantBounds() OVERRIDE;
   virtual WindowOpenDisposition GetDispositionForPopupBounds(

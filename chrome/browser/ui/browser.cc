@@ -1061,11 +1061,6 @@ int Browser::GetIndexOfController(
   return tab_strip_model_->GetIndexOfController(controller);
 }
 
-// DEPRECATED
-TabContents* Browser::GetSelectedTabContentsWrapper() const {
-  return GetActiveTabContents();
-}
-
 TabContents* Browser::GetActiveTabContents() const {
   return tab_strip_model_->GetActiveTabContents();
 }
@@ -1078,11 +1073,6 @@ WebContents* Browser::GetSelectedWebContents() const {
 WebContents* Browser::GetActiveWebContents() const {
   TabContents* tab_contents = GetActiveTabContents();
   return tab_contents ? tab_contents->web_contents() : NULL;
-}
-
-// DEPRECATED
-TabContents* Browser::GetTabContentsWrapperAt(int index) const {
-  return GetTabContentsAt(index);
 }
 
 TabContents* Browser::GetTabContentsAt(int index) const {

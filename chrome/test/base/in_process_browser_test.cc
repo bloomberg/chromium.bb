@@ -348,7 +348,7 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
 
   if (!BrowserList::empty()) {
     browser_ = *BrowserList::begin();
-    ui_test_utils::WaitForLoadStop(browser_->GetSelectedWebContents());
+    ui_test_utils::WaitForLoadStop(browser_->GetActiveWebContents());
   }
 
   // Pump any pending events that were created as a result of creating a
