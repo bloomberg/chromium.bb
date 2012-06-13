@@ -172,6 +172,7 @@ void SystemTrayBubble::UpdateView(
   base::TimeDelta swipe_duration =
       base::TimeDelta::FromMilliseconds(kSwipeDelayMS);
   ui::Layer* layer = bubble_view_->RecreateLayer();
+  DCHECK(layer);
   layer->SuppressPaint();
 
   // When transitioning from detailed view to default view, animate the existing

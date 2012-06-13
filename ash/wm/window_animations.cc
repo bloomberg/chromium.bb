@@ -173,8 +173,10 @@ class HidingWindowAnimationObserver : public ui::ImplicitAnimationObserver,
       AcquireAllViewLayers(view->child_at(i));
     if (view->layer()) {
       ui::Layer* layer = view->RecreateLayer();
-      layer->SuppressPaint();
-      layers_.push_back(layer);
+      if (layer) {
+        layer->SuppressPaint();
+        layers_.push_back(layer);
+      }
     }
   }
 
@@ -515,6 +517,7 @@ bool AnimateHideWindow(aura::Window* window) {
 // children, maintaining the hierarchy.
 Layer* RecreateWindowLayers(Window* window) {
   Layer* old_layer = window->RecreateLayer();
+  DCHECK(old_layer);
   for (Window::Windows::const_iterator it = window->children().begin();
        it != window->children().end();
        ++it) {

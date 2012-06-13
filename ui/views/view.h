@@ -284,6 +284,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // the View no longer has a pointer to the old layer (so it won't be able to
   // update the old layer or destroy it). The caller must free the returned
   // layer.
+  // Returns NULL and does not recreate layer if view does not own its layer.
   ui::Layer* RecreateLayer() WARN_UNUSED_RESULT;
 
   // RTL positioning -----------------------------------------------------------

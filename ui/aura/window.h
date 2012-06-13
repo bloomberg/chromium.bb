@@ -81,6 +81,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // caller may wish to set new bounds and other state on the window/layer.
   // Returns the old layer, which can be used for animations. Caller owns the
   // memory for the returned layer and must delete it when animation completes.
+  // Returns NULL and does not recreate layer if window does not own its layer.
   ui::Layer* RecreateLayer() WARN_UNUSED_RESULT;
 
   void set_owned_by_parent(bool owned_by_parent) {

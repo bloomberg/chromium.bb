@@ -1596,6 +1596,43 @@ TEST_F(WindowTest, AcquireLayer) {
   EXPECT_EQ(1U, parent->children().size());
 }
 
+// Make sure that properties which should persist from the old layer to the new
+// layer actually do.
+TEST_F(WindowTest, RecreateLayer) {
+  // Set properties to non default values.
+  Window w(new ColorTestWindowDelegate(SK_ColorWHITE));
+  w.set_id(1);
+  w.Init(ui::LAYER_SOLID_COLOR);
+  w.SetBounds(gfx::Rect(0, 0, 100, 100));
+
+  ui::Layer* layer = w.layer();
+  layer->set_scale_content(false);
+  layer->SetVisible(false);
+
+  ui::Layer child_layer;
+  layer->Add(&child_layer);
+
+  scoped_ptr<ui::Layer> old_layer(w.RecreateLayer());
+  layer = w.layer();
+  EXPECT_EQ(ui::LAYER_SOLID_COLOR, layer->type());
+  EXPECT_EQ(false, layer->scale_content());
+  EXPECT_EQ(false, layer->visible());
+  EXPECT_EQ(1u, layer->children().size());
+}
+
+// Ensure that acquiring a layer then recreating a layer does not crash
+// and that RecreateLayer returns null.
+TEST_F(WindowTest, AcquireThenRecreateLayer) {
+  scoped_ptr<Window> w(
+      CreateTestWindow(SK_ColorWHITE, 1, gfx::Rect(0, 0, 100, 100), NULL));
+  scoped_ptr<ui::Layer>acquired_layer(w->AcquireLayer());
+  scoped_ptr<ui::Layer>doubly_acquired_layer(w->RecreateLayer());
+  EXPECT_EQ(NULL, doubly_acquired_layer.get());
+
+  // Destroy window before layer gets destroyed.
+  w.reset();
+}
+
 TEST_F(WindowTest, StackWindowsWhoseLayersHaveNoDelegate) {
   scoped_ptr<Window> window1(CreateTestWindowWithId(1, NULL));
   scoped_ptr<Window> window2(CreateTestWindowWithId(2, NULL));

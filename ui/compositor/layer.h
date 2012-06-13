@@ -219,6 +219,9 @@ class COMPOSITOR_EXPORT Layer :
   // the correct pixel size.
   void set_scale_content(bool scale_content) { scale_content_ = scale_content; }
 
+  // Returns true if the layer scales its content.
+  bool scale_content() const { return scale_content_; }
+
   // Sometimes the Layer is being updated by something other than SetCanvas
   // (e.g. the GPU process on UI_COMPOSITOR_IMAGE_TRANSPORT).
   bool layer_updated_externally() const { return layer_updated_externally_; }

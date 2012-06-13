@@ -3212,16 +3212,30 @@ TEST_F(ViewLayerTest, ReorderUnderWidget) {
 TEST_F(ViewLayerTest, AcquireLayer) {
   View* content = new View;
   widget()->SetContentsView(content);
-  View* c1 = new View;
+  scoped_ptr<View> c1(new View);
   c1->SetPaintToLayer(true);
   EXPECT_TRUE(c1->layer());
-  content->AddChildView(c1);
+  content->AddChildView(c1.get());
 
   scoped_ptr<ui::Layer> layer(c1->AcquireLayer());
   EXPECT_EQ(layer.get(), c1->layer());
 
-  layer.reset(c1->RecreateLayer());
-  EXPECT_NE(c1->layer(), layer.get());
+  scoped_ptr<ui::Layer> layer2(c1->RecreateLayer());
+  EXPECT_NE(c1->layer(), layer2.get());
+
+  // Destroy view before destroying layer.
+  c1.reset();
+}
+
+// Verify that new layer scales content only if the old layer does.
+TEST_F(ViewLayerTest, RecreateLayer) {
+  scoped_ptr<View> v(new View());
+  v->SetPaintToLayer(true);
+  // Set to non default value.
+  v->layer()->set_scale_content(false);
+  scoped_ptr<ui::Layer> old_layer(v->RecreateLayer());
+  ui::Layer* new_layer = v->layer();
+  EXPECT_EQ(false, new_layer->scale_content());
 }
 
 #endif  // USE_AURA

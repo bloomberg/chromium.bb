@@ -458,7 +458,11 @@ void View::SetPaintToLayer(bool paint_to_layer) {
 
 ui::Layer* View::RecreateLayer() {
   ui::Layer* layer = AcquireLayer();
+  if (!layer)
+    return NULL;
+
   CreateLayer();
+  layer_->set_scale_content(layer->scale_content());
   return layer;
 }
 

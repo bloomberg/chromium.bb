@@ -153,10 +153,14 @@ void Window::Init(ui::LayerType layer_type) {
 ui::Layer* Window::RecreateLayer() {
   // Disconnect the old layer, but don't delete it.
   ui::Layer* old_layer = AcquireLayer();
+  if (!old_layer)
+    return NULL;
+
   old_layer->set_delegate(NULL);
   layer_ = new ui::Layer(old_layer->type());
   layer_owner_.reset(layer_);
   layer_->SetVisible(old_layer->visible());
+  layer_->set_scale_content(old_layer->scale_content());
   layer_->set_delegate(this);
   UpdateLayerName(name_);
   layer_->SetFillsBoundsOpaquely(!transparent_);
