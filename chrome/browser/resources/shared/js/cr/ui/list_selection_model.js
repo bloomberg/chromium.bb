@@ -19,6 +19,9 @@ cr.define('cr.ui', function() {
     // Even though selectedIndexes_ is really a map we use an array here to get
     // iteration in the order of the indexes.
     this.selectedIndexes_ = [];
+
+    // True if any item could be lead or anchor. False if only selected ones.
+    this.independentLeadItem_ = !cr.isMac && !cr.isChromeOS;
   }
 
   ListSelectionModel.prototype = {
@@ -83,6 +86,18 @@ cr.define('cr.ui', function() {
     },
     set selectedIndex(selectedIndex) {
       this.selectedIndexes = selectedIndex != -1 ? [selectedIndex] : [];
+    },
+
+    /**
+     * Returns the last selected index or -1 if no item selected.
+     * @type {number}
+     */
+    get lastSelectedIndex() {
+      var result = -1;
+      for (var i in this.selectedIndexes_) {
+        result = Math.max(result, Number(i));
+      }
+      return result;
     },
 
     /**
@@ -178,6 +193,8 @@ cr.define('cr.ui', function() {
       if (!this.changeCount_) {
         this.changeCount_ = 0;
         this.changedIndexes_ = {};
+        this.oldLeadIndex_ = this.leadIndex_;
+        this.oldAnchorIndex_ = this.anchorIndex_;
       }
       this.changeCount_++;
     },
@@ -191,17 +208,19 @@ cr.define('cr.ui', function() {
       if (!this.changeCount_) {
         // Calls delayed |dispatchPropertyChange|s, only when |leadIndex| or
         // |anchorIndex| has been actually changed in the batch.
-        if (this.oldLeadIndex_ != null) {
+        this.leadIndex_ = this.adjustIndex_(this.leadIndex_);
+        if (this.leadIndex_ != this.oldLeadIndex_) {
           cr.dispatchPropertyChange(this, 'leadIndex',
                                     this.leadIndex_, this.oldLeadIndex_);
-          this.oldLeadIndex_ = null;
         }
+        this.oldLeadIndex_ = null;
 
-        if (this.oldAnchorIndex_ != null) {
+        this.anchorIndex_ = this.adjustIndex_(this.anchorIndex_);
+        if (this.anchorIndex_ != this.oldAnchorIndex_) {
           cr.dispatchPropertyChange(this, 'anchorIndex',
                                     this.anchorIndex_, this.oldAnchorIndex_);
-          this.oldAnchorIndex_ = null;
         }
+        this.oldAnchorIndex_ = null;
 
         var indexes = Object.keys(this.changedIndexes_);
         if (indexes.length) {
@@ -230,19 +249,12 @@ cr.define('cr.ui', function() {
       return this.leadIndex_;
     },
     set leadIndex(leadIndex) {
-      var li = Math.max(-1, Math.min(this.length_ - 1, leadIndex));
-      if (li != this.leadIndex_) {
-        var oldLeadIndex = this.leadIndex_;
-        this.leadIndex_ = li;
-
-        // Delays the call of dispatchPropertyChange if batch is running.
-        if (this.changeCount_) {
-          if (this.oldLeadIndex_ == null)
-            this.oldLeadIndex_ = oldLeadIndex;
-        } else {
-          cr.dispatchPropertyChange(this, 'leadIndex', li, oldLeadIndex);
-        }
-      }
+      var oldValue = this.leadIndex_;
+      var newValue = this.adjustIndex_(leadIndex);
+      this.leadIndex_ = newValue;
+      // Delays the call of dispatchPropertyChange if batch is running.
+      if (!this.changeCount_ && newValue != oldValue)
+        cr.dispatchPropertyChange(this, 'leadIndex', newValue, oldValue);
     },
 
     anchorIndex_: -1,
@@ -256,19 +268,29 @@ cr.define('cr.ui', function() {
       return this.anchorIndex_;
     },
     set anchorIndex(anchorIndex) {
-      var ai = Math.max(-1, Math.min(this.length_ - 1, anchorIndex));
-      if (ai != this.anchorIndex_) {
-        var oldAnchorIndex = this.anchorIndex_;
-        this.anchorIndex_ = ai;
+      var oldValue = this.anchorIndex_;
+      var newValue = this.adjustIndex_(anchorIndex);
+      this.anchorIndex_ = newValue;
+      // Delays the call of dispatchPropertyChange if batch is running.
+      if (!this.changeCount_ && newValue != oldValue)
+        cr.dispatchPropertyChange(this, 'anchorIndex', newValue, oldValue);
+    },
 
-        // Delays the call of dispatchPropertyChange if batch is running.
-        if (this.changeCount_) {
-          if (this.oldAnchorIndex_ == null)
-            this.oldAnchorIndex_ = oldAnchorIndex;
-        } else {
-          cr.dispatchPropertyChange(this, 'anchorIndex', ai, oldAnchorIndex);
-        }
+    /**
+     * Helper method that adjustes a value before assiging it to leadIndex or
+     * anchorIndex.
+     * @param {number} index New value for leadIndex or anchorIndex.
+     * @return {number} Corrected value.
+     */
+    adjustIndex_: function(index) {
+      index = Math.max(-1, Math.min(this.length_ - 1, index));
+      // On Mac and ChromeOS lead and anchor items are forced to be among
+      // selected items. This rule is not enforces until end of batch update.
+      if (!this.changeCount_ && !this.independentLeadItem_ &&
+          !this.getIndexSelected(index)) {
+        index = this.lastSelectedIndex;
       }
+      return index;
     },
 
     /**
@@ -284,17 +306,22 @@ cr.define('cr.ui', function() {
      * @param {!Array.<number>} permutation The reordering permutation.
      */
     adjustToReordering: function(permutation) {
+      this.beginChange();
       var oldLeadIndex = this.leadIndex;
+      var oldAnchorIndex = this.anchorIndex;
 
-      var oldSelectedIndexes = this.selectedIndexes;
-      this.selectedIndexes = oldSelectedIndexes.map(function(oldIndex) {
+      this.selectedIndexes = this.selectedIndexes.map(function(oldIndex) {
         return permutation[oldIndex];
       }).filter(function(index) {
         return index != -1;
       });
 
+      // Will be adjusted in endChange.
       if (oldLeadIndex != -1)
         this.leadIndex = permutation[oldLeadIndex];
+      if (oldAnchorIndex != -1)
+        this.anchorIndex = permutation[oldAnchorIndex];
+      this.endChange();
     },
 
     /**
