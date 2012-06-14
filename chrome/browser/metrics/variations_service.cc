@@ -14,6 +14,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/proto/trials_seed.pb.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/common/metrics/experiments_helper.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
@@ -362,13 +363,19 @@ void VariationsService::CreateTrialFromStudy(
   }
 
   for (int i = 0; i < study.experiment_size(); ++i) {
-    if (study.experiment(i).name() != study.default_experiment_name()) {
-      trial->AppendGroup(study.experiment(i).name(),
-                         study.experiment(i).probability_weight());
+    const chrome_variations::Study_Experiment& experiment = study.experiment(i);
+    if (experiment.name() != study.default_experiment_name())
+      trial->AppendGroup(experiment.name(), experiment.probability_weight());
+
+    if (experiment.has_experiment_id()) {
+      const chrome_variations::ID variation_id =
+          static_cast<chrome_variations::ID>(experiment.experiment_id());
+      experiments_helper::AssociateGoogleVariationIDForce(study.name(),
+                                                          experiment.name(),
+                                                          variation_id);
     }
   }
 
-  // TODO(jwd): Add experiment_id association code.
   trial->SetForced();
   if (IsStudyExpired(study, reference_date))
     trial->Disable();
