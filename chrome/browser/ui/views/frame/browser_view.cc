@@ -2477,6 +2477,6 @@ void BrowserView::ShowPasswordGenerationBubble(
           tab_contents->password_manager());
 
   views::BubbleDelegateView::CreateBubble(bubble);
-  bubble->SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
+  bubble->SetAlignment(views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR);
   bubble->Show();
 }
