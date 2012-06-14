@@ -74,20 +74,24 @@ bool BrowsingDataRemover::removing_ = false;
 
 BrowsingDataRemover::NotificationDetails::NotificationDetails()
     : removal_begin(base::Time()),
-      removal_mask(-1) {
+      removal_mask(-1),
+      origin_set_mask(-1) {
 }
 
 BrowsingDataRemover::NotificationDetails::NotificationDetails(
     const BrowsingDataRemover::NotificationDetails& details)
     : removal_begin(details.removal_begin),
-      removal_mask(details.removal_mask) {
+      removal_mask(details.removal_mask),
+      origin_set_mask(details.origin_set_mask) {
 }
 
 BrowsingDataRemover::NotificationDetails::NotificationDetails(
     base::Time removal_begin,
-    int removal_mask)
+    int removal_mask,
+    int origin_set_mask)
     : removal_begin(removal_begin),
-      removal_mask(removal_mask) {
+      removal_mask(removal_mask),
+      origin_set_mask(origin_set_mask) {
 }
 
 BrowsingDataRemover::NotificationDetails::~NotificationDetails() {}
@@ -505,7 +509,8 @@ void BrowsingDataRemover::NotifyAndDeleteIfDone() {
   set_removing(false);
 
   // Send global notification, then notify any explicit observers.
-  BrowsingDataRemover::NotificationDetails details(delete_begin_, remove_mask_);
+  BrowsingDataRemover::NotificationDetails details(delete_begin_, remove_mask_,
+      origin_set_mask_);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_BROWSING_DATA_REMOVED,
       content::Source<Profile>(profile_),

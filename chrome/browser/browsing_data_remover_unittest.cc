@@ -499,6 +499,10 @@ class BrowsingDataRemoverTest : public testing::Test,
     return called_with_details_->removal_mask;
   }
 
+  int GetOriginSetMask() {
+    return called_with_details_->origin_set_mask;
+  }
+
   quota::MockQuotaManager* GetMockManager() {
     if (!quota_manager_) {
       quota_manager_ = new quota::MockQuotaManager(
@@ -561,6 +565,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveCookieForever) {
       BrowsingDataRemover::REMOVE_COOKIES, false, tester.get());
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_COOKIES, GetRemovalMask());
+  EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
   EXPECT_FALSE(tester->ContainsCookie());
 }
 
@@ -575,6 +580,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveCookieLastHour) {
       BrowsingDataRemover::REMOVE_COOKIES, false, tester.get());
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_COOKIES, GetRemovalMask());
+  EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
   EXPECT_FALSE(tester->ContainsCookie());
 }
 
@@ -590,6 +596,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveSafeBrowsingCookieForever) {
       BrowsingDataRemover::REMOVE_COOKIES, false, tester.get());
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_COOKIES, GetRemovalMask());
+  EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
   EXPECT_FALSE(tester->ContainsCookie());
 }
 
@@ -604,6 +611,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveSafeBrowsingCookieLastHour) {
       BrowsingDataRemover::REMOVE_COOKIES, false, tester.get());
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_COOKIES, GetRemovalMask());
+  EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
   // Removing with time period other than EVERYTHING should not clear safe
   // browsing cookies.
   EXPECT_TRUE(tester->ContainsCookie());
@@ -621,6 +629,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveServerBoundCertForever) {
       BrowsingDataRemover::REMOVE_SERVER_BOUND_CERTS, false, tester.get());
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_SERVER_BOUND_CERTS, GetRemovalMask());
+  EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
   EXPECT_EQ(0, tester->ServerBoundCertCount());
 }
 
@@ -639,6 +648,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveServerBoundCertLastHour) {
       BrowsingDataRemover::REMOVE_SERVER_BOUND_CERTS, false, tester.get());
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_SERVER_BOUND_CERTS, GetRemovalMask());
+  EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
   EXPECT_EQ(1, tester->ServerBoundCertCount());
   net::ServerBoundCertStore::ServerBoundCertList certs;
   tester->GetCertStore()->GetAllServerBoundCerts(&certs);
@@ -665,6 +675,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveUnprotectedLocalStorageForever) {
       BrowsingDataRemover::REMOVE_LOCAL_STORAGE, false, &tester_);
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_LOCAL_STORAGE, GetRemovalMask());
+  EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
   EXPECT_TRUE(tester->DOMStorageExistsForOrigin(kOrigin1));
   EXPECT_FALSE(tester->DOMStorageExistsForOrigin(kOrigin2));
   EXPECT_FALSE(tester->DOMStorageExistsForOrigin(kOrigin3));
@@ -691,6 +702,8 @@ TEST_F(BrowsingDataRemoverTest, RemoveProtectedLocalStorageForever) {
       BrowsingDataRemover::REMOVE_LOCAL_STORAGE, true, &tester_);
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_LOCAL_STORAGE, GetRemovalMask());
+  EXPECT_EQ(BrowsingDataHelper::PROTECTED_WEB |
+      BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
   EXPECT_FALSE(tester->DOMStorageExistsForOrigin(kOrigin1));
   EXPECT_FALSE(tester->DOMStorageExistsForOrigin(kOrigin2));
   EXPECT_FALSE(tester->DOMStorageExistsForOrigin(kOrigin3));
@@ -710,6 +723,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveLocalStorageForLastWeek) {
       BrowsingDataRemover::REMOVE_LOCAL_STORAGE, false, &tester_);
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_LOCAL_STORAGE, GetRemovalMask());
+  EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
   EXPECT_FALSE(tester->DOMStorageExistsForOrigin(kOrigin1));
   EXPECT_FALSE(tester->DOMStorageExistsForOrigin(kOrigin2));
   EXPECT_TRUE(tester->DOMStorageExistsForOrigin(kOrigin3));
@@ -727,6 +741,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveHistoryForever) {
       BrowsingDataRemover::REMOVE_HISTORY, false, tester.get());
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_HISTORY, GetRemovalMask());
+  EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
   EXPECT_FALSE(tester->HistoryContainsURL(kOrigin1));
 }
 
@@ -745,6 +760,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveHistoryForLastHour) {
       BrowsingDataRemover::REMOVE_HISTORY, false, tester.get());
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_HISTORY, GetRemovalMask());
+  EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
   EXPECT_FALSE(tester->HistoryContainsURL(kOrigin1));
   EXPECT_TRUE(tester->HistoryContainsURL(kOrigin2));
 }
@@ -785,6 +801,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverBoth) {
       BrowsingDataRemover::REMOVE_WEBSQL |
       BrowsingDataRemover::REMOVE_APPCACHE |
       BrowsingDataRemover::REMOVE_INDEXEDDB, GetRemovalMask());
+  EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1, kTemporary,
       kClientFile));
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2, kTemporary,
@@ -811,6 +828,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverOnlyTemporary) {
       BrowsingDataRemover::REMOVE_WEBSQL |
       BrowsingDataRemover::REMOVE_APPCACHE |
       BrowsingDataRemover::REMOVE_INDEXEDDB, GetRemovalMask());
+  EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1, kTemporary,
       kClientFile));
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2, kTemporary,
@@ -837,6 +855,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverOnlyPersistent) {
       BrowsingDataRemover::REMOVE_WEBSQL |
       BrowsingDataRemover::REMOVE_APPCACHE |
       BrowsingDataRemover::REMOVE_INDEXEDDB, GetRemovalMask());
+  EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1, kTemporary,
       kClientFile));
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2, kTemporary,
@@ -863,6 +882,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverNeither) {
       BrowsingDataRemover::REMOVE_WEBSQL |
       BrowsingDataRemover::REMOVE_APPCACHE |
       BrowsingDataRemover::REMOVE_INDEXEDDB, GetRemovalMask());
+  EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1, kTemporary,
       kClientFile));
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2, kTemporary,
@@ -891,6 +911,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForeverSpecificOrigin) {
       BrowsingDataRemover::REMOVE_FILE_SYSTEMS |
       BrowsingDataRemover::REMOVE_INDEXEDDB |
       BrowsingDataRemover::REMOVE_WEBSQL, GetRemovalMask());
+  EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1, kTemporary,
       kClientFile));
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2, kTemporary,
@@ -918,6 +939,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForLastHour) {
       BrowsingDataRemover::REMOVE_WEBSQL |
       BrowsingDataRemover::REMOVE_APPCACHE |
       BrowsingDataRemover::REMOVE_INDEXEDDB, GetRemovalMask());
+  EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1, kTemporary,
       kClientFile));
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2, kTemporary,
@@ -945,6 +967,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedDataForLastWeek) {
       BrowsingDataRemover::REMOVE_WEBSQL |
       BrowsingDataRemover::REMOVE_APPCACHE |
       BrowsingDataRemover::REMOVE_INDEXEDDB, GetRemovalMask());
+  EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1, kTemporary,
       kClientFile));
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2, kTemporary,
@@ -978,6 +1001,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedUnprotectedOrigins) {
       BrowsingDataRemover::REMOVE_WEBSQL |
       BrowsingDataRemover::REMOVE_APPCACHE |
       BrowsingDataRemover::REMOVE_INDEXEDDB, GetRemovalMask());
+  EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
   EXPECT_TRUE(GetMockManager()->OriginHasData(kOrigin1, kTemporary,
       kClientFile));
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2, kTemporary,
@@ -1012,6 +1036,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedProtectedSpecificOrigin) {
       BrowsingDataRemover::REMOVE_FILE_SYSTEMS |
       BrowsingDataRemover::REMOVE_INDEXEDDB |
       BrowsingDataRemover::REMOVE_WEBSQL, GetRemovalMask());
+  EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
   EXPECT_TRUE(GetMockManager()->OriginHasData(kOrigin1, kTemporary,
       kClientFile));
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2, kTemporary,
@@ -1046,6 +1071,8 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedProtectedOrigins) {
       BrowsingDataRemover::REMOVE_FILE_SYSTEMS |
       BrowsingDataRemover::REMOVE_INDEXEDDB |
       BrowsingDataRemover::REMOVE_WEBSQL, GetRemovalMask());
+  EXPECT_EQ(BrowsingDataHelper::PROTECTED_WEB |
+      BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1, kTemporary,
       kClientFile));
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin2, kTemporary,
@@ -1073,6 +1100,7 @@ TEST_F(BrowsingDataRemoverTest, RemoveQuotaManagedIgnoreExtensionsAndDevTools) {
       BrowsingDataRemover::REMOVE_FILE_SYSTEMS |
       BrowsingDataRemover::REMOVE_INDEXEDDB |
       BrowsingDataRemover::REMOVE_WEBSQL, GetRemovalMask());
+  EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
 
   // Check that extension and devtools data isn't removed.
   EXPECT_TRUE(GetMockManager()->OriginHasData(kOriginExt, kTemporary,
@@ -1100,6 +1128,7 @@ TEST_F(BrowsingDataRemoverTest, OriginBasedHistoryRemoval) {
       BrowsingDataRemover::REMOVE_HISTORY, kOrigin2, tester.get());
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_HISTORY, GetRemovalMask());
+  EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
   EXPECT_TRUE(tester->HistoryContainsURL(kOrigin1));
   EXPECT_FALSE(tester->HistoryContainsURL(kOrigin2));
 }
@@ -1119,6 +1148,7 @@ TEST_F(BrowsingDataRemoverTest, OriginAndTimeBasedHistoryRemoval) {
       BrowsingDataRemover::REMOVE_HISTORY, kOrigin2, tester.get());
 
   EXPECT_EQ(BrowsingDataRemover::REMOVE_HISTORY, GetRemovalMask());
+  EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
   EXPECT_TRUE(tester->HistoryContainsURL(kOrigin1));
   EXPECT_TRUE(tester->HistoryContainsURL(kOrigin2));
 }

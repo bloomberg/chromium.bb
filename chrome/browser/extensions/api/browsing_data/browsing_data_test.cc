@@ -11,6 +11,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
+#include "chrome/browser/browsing_data_helper.h"
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
@@ -43,6 +44,10 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest,
     return called_with_details_->removal_mask;
   }
 
+  int GetOriginSetMask() {
+    return called_with_details_->origin_set_mask;
+  }
+
  protected:
   virtual void SetUpOnMainThread() {
     called_with_details_.reset(new BrowsingDataRemover::NotificationDetails());
@@ -67,12 +72,24 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest,
             details).ptr()));
   }
 
-  void RunRemoveBrowsingDataFunctionAndCompareMask(const std::string& key,
-                                                  int expected_mask) {
+  void RunRemoveBrowsingDataFunctionAndCompareRemovalMask(
+      const std::string& key,
+      int expected_mask) {
     SCOPED_TRACE(key);
     EXPECT_EQ(NULL, RunFunctionAndReturnResult(new RemoveBrowsingDataFunction(),
         std::string("[{\"since\": 1}, {\"") + key + "\": true}]", browser()));
     EXPECT_EQ(expected_mask, GetRemovalMask());
+    EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
+  }
+
+  void RunRemoveBrowsingDataFunctionAndCompareOriginSetMask(
+      const std::string& protectedStr,
+      int expected_mask) {
+    SCOPED_TRACE(protectedStr);
+    EXPECT_EQ(NULL, RunFunctionAndReturnResult(new RemoveBrowsingDataFunction(),
+        "[{\"originType\": " + protectedStr + "}, {\"cookies\": true}]",
+        browser()));
+    EXPECT_EQ(expected_mask, GetOriginSetMask());
   }
 
  private:
@@ -113,30 +130,57 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest,
       ~BrowsingDataRemover::REMOVE_PLUGIN_DATA, GetRemovalMask());
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, RemoveBrowsingDataMask) {
-  RunRemoveBrowsingDataFunctionAndCompareMask(
+IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, BrowsingDataOriginSetMask) {
+  RunRemoveBrowsingDataFunctionAndCompareOriginSetMask("{}", 0);
+
+  RunRemoveBrowsingDataFunctionAndCompareOriginSetMask(
+      "{\"unprotectedWeb\": true}", BrowsingDataHelper::UNPROTECTED_WEB);
+  RunRemoveBrowsingDataFunctionAndCompareOriginSetMask(
+      "{\"protectedWeb\": true}", BrowsingDataHelper::PROTECTED_WEB);
+  RunRemoveBrowsingDataFunctionAndCompareOriginSetMask(
+      "{\"extension\": true}", BrowsingDataHelper::EXTENSION);
+
+  RunRemoveBrowsingDataFunctionAndCompareOriginSetMask(
+      "{\"unprotectedWeb\": true, \"protectedWeb\": true}",
+      BrowsingDataHelper::UNPROTECTED_WEB | BrowsingDataHelper::PROTECTED_WEB);
+  RunRemoveBrowsingDataFunctionAndCompareOriginSetMask(
+      "{\"unprotectedWeb\": true, \"extension\": true}",
+      BrowsingDataHelper::UNPROTECTED_WEB | BrowsingDataHelper::EXTENSION);
+  RunRemoveBrowsingDataFunctionAndCompareOriginSetMask(
+      "{\"protectedWeb\": true, \"extension\": true}",
+      BrowsingDataHelper::PROTECTED_WEB | BrowsingDataHelper::EXTENSION);
+
+  RunRemoveBrowsingDataFunctionAndCompareOriginSetMask(
+      ("{\"unprotectedWeb\": true, \"protectedWeb\": true, "
+       "\"extension\": true}"),
+      BrowsingDataHelper::UNPROTECTED_WEB | BrowsingDataHelper::PROTECTED_WEB |
+      BrowsingDataHelper::EXTENSION);
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, BrowsingDataRemovalMask) {
+  RunRemoveBrowsingDataFunctionAndCompareRemovalMask(
       "appcache", BrowsingDataRemover::REMOVE_APPCACHE);
-  RunRemoveBrowsingDataFunctionAndCompareMask(
+  RunRemoveBrowsingDataFunctionAndCompareRemovalMask(
       "cache", BrowsingDataRemover::REMOVE_CACHE);
-  RunRemoveBrowsingDataFunctionAndCompareMask(
+  RunRemoveBrowsingDataFunctionAndCompareRemovalMask(
       "cookies", BrowsingDataRemover::REMOVE_COOKIES);
-  RunRemoveBrowsingDataFunctionAndCompareMask(
+  RunRemoveBrowsingDataFunctionAndCompareRemovalMask(
       "downloads", BrowsingDataRemover::REMOVE_DOWNLOADS);
-  RunRemoveBrowsingDataFunctionAndCompareMask(
+  RunRemoveBrowsingDataFunctionAndCompareRemovalMask(
       "fileSystems", BrowsingDataRemover::REMOVE_FILE_SYSTEMS);
-  RunRemoveBrowsingDataFunctionAndCompareMask(
+  RunRemoveBrowsingDataFunctionAndCompareRemovalMask(
       "formData", BrowsingDataRemover::REMOVE_FORM_DATA);
-  RunRemoveBrowsingDataFunctionAndCompareMask(
+  RunRemoveBrowsingDataFunctionAndCompareRemovalMask(
       "history", BrowsingDataRemover::REMOVE_HISTORY);
-  RunRemoveBrowsingDataFunctionAndCompareMask(
+  RunRemoveBrowsingDataFunctionAndCompareRemovalMask(
       "indexedDB", BrowsingDataRemover::REMOVE_INDEXEDDB);
-  RunRemoveBrowsingDataFunctionAndCompareMask(
+  RunRemoveBrowsingDataFunctionAndCompareRemovalMask(
       "localStorage", BrowsingDataRemover::REMOVE_LOCAL_STORAGE);
-  RunRemoveBrowsingDataFunctionAndCompareMask(
+  RunRemoveBrowsingDataFunctionAndCompareRemovalMask(
       "serverBoundCerts", BrowsingDataRemover::REMOVE_SERVER_BOUND_CERTS);
-  RunRemoveBrowsingDataFunctionAndCompareMask(
+  RunRemoveBrowsingDataFunctionAndCompareRemovalMask(
       "passwords", BrowsingDataRemover::REMOVE_PASSWORDS);
   // We can't remove plugin data inside a test profile.
-  RunRemoveBrowsingDataFunctionAndCompareMask(
+  RunRemoveBrowsingDataFunctionAndCompareRemovalMask(
       "webSQL", BrowsingDataRemover::REMOVE_WEBSQL);
 }

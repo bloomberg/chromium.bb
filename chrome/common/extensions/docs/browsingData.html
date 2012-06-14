@@ -200,6 +200,10 @@
               <ol>
               </ol>
             </li><li>
+              <a href="#origin_types">Origin Types</a>
+              <ol>
+              </ol>
+            </li><li>
               <a href="#samples">Examples</a>
               <ol>
               </ol>
@@ -329,6 +333,69 @@ chrome.browsingData.removeCookies({
   heavy lifting in the background, and can take <em>tens of seconds</em> to
   complete, depending on a user's profile. You should use the callback mechanism
   to keep your users up to date on the removal's status.
+</p>
+<h2 id="origin_types">Origin Types</h2>
+<p>
+  Adding an <code>originType</code> property to the API's options object allows
+  you to specify which types of origins ought to be effected. Currently, origins
+  are divided into three categories:
+</p>
+<ul>
+  <li>
+    <code>unprotectedWeb</code> covers the general case of websites that users
+    visit without taking any special action. If you don't specify an
+    <code>originType</code>, the API defaults to removing data from unprotected
+    web origins.
+  </li>
+  <li>
+    <code>protectedWeb</code> covers those web origins that have been installed
+    as hosted applications. Installing <a href="https://chrome.google.com/webstore/detail/aknpkdffaafgjchaibgeefbgmgeghloj">
+    Angry Birds</a>, for example, protects the origin
+    <code>http://chrome.angrybirds.com</code>, and removes it from the
+    <code>unprotectedWeb</code> category. Please do be careful when triggering
+    deletion of data for these origins: make sure your users know what they're
+    getting, as this will irrevocably remove their game data. No one wants to
+    knock tiny pig houses over more often than necessary.
+  </li>
+  <li>
+    <code>extension</code> covers origins under the
+    <code>chrome-extensions:</code> scheme. Removing extension data is, again,
+    something you should be very careful about.
+  </li>
+</ul>
+<p>
+  We could adjust the previous example to remove only data from protected
+  websites as follows:
+</p>
+<pre>var callback = function () {
+  // Do something clever here once data has been removed.
+};
+var millisecondsPerWeek = 1000 * 60 * 60 * 24 * 7;
+var oneWeekAgo = (new Date()).getTime() - millisecondsPerWeek;
+chrome.browsingData.remove({
+  "since": oneWeekAgo,
+  <b>"originType": {
+    "protectedWeb": true
+  }</b>
+}, {
+  "appcache": true,
+  "cache": true,
+  "cookies": true,
+  "downloads": true,
+  "fileSystems": true,
+  "formData": true,
+  "history": true,
+  "indexedDB": true,
+  "localStorage": true,
+  "pluginData": true,
+  "passwords": true,
+  "webSQL": true
+}, callback);</pre>
+<p class="caution">
+  <strong>Seriously</strong>: Be careful with <code>protectedWeb</code> and
+  <code>extension</code>. These are destructive operations that your users
+  will write angry email about if they're not well-informed about what to
+  expect when your extension removes data on their behalf.
 </p>
 <h2 id="samples">Examples</h2>
 <p>
@@ -1819,6 +1886,107 @@ chrome.browsingData.removeCookies({
           </dt>
           <dd>Remove data accumulated on or after this date, represented in milliseconds since the epoch (accessible via the <code>getTime</code> method of the JavaScript <code>Date</code> object). If absent, defaults to 0 (which would remove all browsing data).</dd>
           <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>originTypes</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>An object whose properties specify which origin types ought to be cleared. If this object isn't specified, it defaults to clearing only "unprotected" origins. Please ensure that you <em>really</em> want to remove application data before adding 'protectedWeb' or 'extensions'.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>unprotectedWeb</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>boolean</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Normal websites.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>protectedWeb</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>boolean</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Websites that have been installed as hosted applications (be careful!).</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>extension</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>boolean</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Extensions and packaged applications a user has installed (be _really_ careful!).</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
           <!-- FUNCTION PARAMETERS -->

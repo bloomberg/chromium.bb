@@ -34,7 +34,11 @@ extern const char kPasswordsKey[];
 extern const char kWebSQLKey[];
 
 // Option keys.
+extern const char kExtensionsKey[];
+extern const char kOriginTypesKey[];
+extern const char kProtectedWebKey[];
 extern const char kSinceKey[];
+extern const char kUnprotectedWebKey[];
 
 // Errors!
 extern const char kOneAtATimeError[];
@@ -70,11 +74,16 @@ class BrowsingDataExtensionFunction : public AsyncExtensionFunction,
   void CheckRemovingPluginDataSupported(
       scoped_refptr<PluginPrefs> plugin_prefs);
 
+  // Parse the developer-provided |origin_types| object into an origin_set_mask
+  // that can be used with the BrowsingDataRemover.
+  int ParseOriginSetMask(const base::DictionaryValue& options);
+
   // Called when we're ready to start removing data.
   void StartRemoving();
 
   base::Time remove_since_;
   int removal_mask_;
+  int origin_set_mask_;
 };
 
 class RemoveAppCacheFunction : public BrowsingDataExtensionFunction {

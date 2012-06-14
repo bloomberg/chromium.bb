@@ -93,14 +93,18 @@ class BrowsingDataRemover : public content::NotificationObserver,
     NotificationDetails();
     NotificationDetails(const NotificationDetails& details);
     NotificationDetails(base::Time removal_begin,
-                       int removal_mask);
+                       int removal_mask,
+                       int origin_set_mask);
     ~NotificationDetails();
 
     // The beginning of the removal time range.
     base::Time removal_begin;
 
-    // The removal mask (see the RemoveDataMask enum for details)
+    // The removal mask (see the RemoveDataMask enum for details).
     int removal_mask;
+
+    // The origin set mask (see BrowsingDataHelper::OriginSetMask for details).
+    int origin_set_mask;
   };
 
   // Observer is notified when the removal is done. Done means keywords have
