@@ -876,7 +876,8 @@ Plugin::~Plugin() {
   PLUGIN_PRINTF(("Plugin::~Plugin (this=%p, scriptable_plugin=%p)\n",
                  static_cast<void*>(this),
                  static_cast<void*>(scriptable_plugin())));
-
+  // Destroy the coordinator while the rest of the data is still there
+  pnacl_coordinator_.reset(NULL);
   // If the proxy has been shutdown before now, it's likely the plugin suffered
   // an error while loading.
   if (ppapi_proxy_ != NULL) {

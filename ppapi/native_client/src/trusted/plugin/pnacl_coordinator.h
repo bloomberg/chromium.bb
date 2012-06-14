@@ -16,7 +16,9 @@
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
+#include "native_client/src/trusted/plugin/callback_source.h"
 #include "native_client/src/trusted/plugin/delayed_callback.h"
+#include "native_client/src/trusted/plugin/file_downloader.h"
 #include "native_client/src/trusted/plugin/local_temp_file.h"
 #include "native_client/src/trusted/plugin/nacl_subprocess.h"
 #include "native_client/src/trusted/plugin/plugin_error.h"
@@ -108,7 +110,7 @@ class PnaclRefCount {
 //     Complete when NexeFileWasRenamed is invoked.
 // OPEN_NEXE_FOR_SEL_LDR
 //     Complete when NexeReadDidOpen is invoked.
-class PnaclCoordinator {
+class PnaclCoordinator: public CallbackSource<FileStreamData> {
  public:
   virtual ~PnaclCoordinator();
 
@@ -138,6 +140,12 @@ class PnaclCoordinator {
   void ReportPpapiError(int32_t pp_error, const nacl::string& message);
   void ReportPpapiError(int32_t pp_error);
 
+  // Implement FileDownloader's template of the CallbackSource interface.
+  // This method returns a callback which will be called by the FileDownloader
+  // to stream the bitcode data as it arrives. The callback
+  // (BitcodeStreamGotData) passes it to llc over SRPC.
+  StreamCallback GetCallback();
+
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PnaclCoordinator);
 
@@ -160,6 +168,10 @@ class PnaclCoordinator {
   void DirectoryWasCreated(int32_t pp_error);
   // Invoked after we have checked the PNaCl cache for a translated version.
   void CachedFileDidOpen(int32_t pp_error);
+  // Invoked when a pexe data chunk arrives (when using streaming translation)
+  void BitcodeStreamGotData(int32_t pp_error, FileStreamData data);
+  // Invoked when the pexe download finishes (using streaming translation)
+  void BitcodeStreamDidFinish(int32_t pp_error);
   // Invoked after we have started pulling down the bitcode file.
   void BitcodeFileDidOpen(int32_t pp_error);
   // Invoked when the write descriptor for obj_file_ is created.
@@ -201,8 +213,6 @@ class PnaclCoordinator {
   // Nexe from the final native Link.
   nacl::scoped_ptr<nacl::DescWrapper> translated_fd_;
 
-  // The helper thread used to do translations via SRPC.
-  nacl::scoped_ptr<PnaclTranslateThread> translate_thread_;
   // Translation creates local temporary files.
   nacl::scoped_ptr<pp::FileSystem> file_system_;
   // The manifest used by resource loading and llc's reverse service to look up
@@ -234,11 +244,21 @@ class PnaclCoordinator {
   // Translated nexe file, produced by the linker and consumed by sel_ldr.
   nacl::scoped_ptr<LocalTempFile> nexe_file_;
 
+  // Downloader for streaming translation
+  nacl::scoped_ptr<FileDownloader> streaming_downloader_;
+  bool do_streaming_translation_;
+
   // Used to report information when errors (PPAPI or otherwise) are reported.
   ErrorInfo error_info_;
   // True if an error was already reported, and translate_notify_callback_
   // was already run/consumed.
   bool error_already_reported_;
+
+  // The helper thread used to do translations via SRPC.
+  // Keep this last in declaration order to ensure the other variables
+  // haven't been destroyed yet when its destructor runs.
+  nacl::scoped_ptr<PnaclTranslateThread> translate_thread_;
+
 };
 
 //----------------------------------------------------------------------

@@ -15,6 +15,7 @@
       'plugin.cc',
       'pnacl_coordinator.cc',
       'pnacl_resources.cc',
+      'pnacl_streaming_translate_thread.cc',
       'pnacl_translate_thread.cc',
       'scriptable_plugin.cc',
       'sel_ldr_launcher_chrome.cc',

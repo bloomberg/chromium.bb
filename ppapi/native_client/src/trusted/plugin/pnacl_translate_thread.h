@@ -33,7 +33,7 @@ class PnaclTranslateThread {
   virtual ~PnaclTranslateThread();
   // TODO(jvoung/dschuff): handle surfaway issues when coordinator/plugin
   // goes away. This data may have to be refcounted not touched in that case.
-  void RunTranslate(const pp::CompletionCallback& finish_callback,
+  virtual void RunTranslate(const pp::CompletionCallback& finish_callback,
                     const Manifest* manifest,
                     const Manifest* ld_manifest,
                     LocalTempFile* obj_file,
@@ -42,13 +42,12 @@ class PnaclTranslateThread {
                     ErrorInfo* error_info,
                     PnaclResources* resources,
                     Plugin* plugin);
+  // Returns true if the translate thread and subprocesses should stop.
   bool SubprocessesShouldDie();
   // Signal the translate thread and subprocesses that they should stop.
-  void SetSubprocessesShouldDie(bool subprocesses_should_die);
+  virtual void SetSubprocessesShouldDie();
 
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(PnaclTranslateThread);
-
+ protected:
   // Starts an individual llc or ld subprocess used for translation.
   NaClSubprocess* StartSubprocess(const nacl::string& url,
                                   const Manifest* manifest);
@@ -57,7 +56,11 @@ class PnaclTranslateThread {
   static void WINAPI DoTranslateThread(void* arg);
   // Signal that Pnacl translation failed, from the translation thread only.
   void TranslateFailed(const nacl::string& error_string);
-  // Returns true if a the translate thread and subprocesses should stop.
+  // Run the LD subprocess, returning true on success (static for now)
+  static bool RunLdSubprocess(PnaclTranslateThread* translator,
+                              int is_shared_library,
+                              const nacl::string& soname,
+                              const nacl::string& lib_dependencies);
 
   // Callback to run when tasks are completed or an error has occurred.
   pp::CompletionCallback report_translate_finished_;
@@ -77,6 +80,8 @@ class PnaclTranslateThread {
   ErrorInfo *error_info_;
   PnaclResources* resources_;
   Plugin* plugin_;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(PnaclTranslateThread);
 };
 
 }

@@ -93,10 +93,17 @@ bool NaClSubprocess::VInvokeSrpcMethod(const nacl::string& method_name,
         break;
       }
       case NACL_SRPC_ARG_TYPE_CHAR_ARRAY: {
-        // SrpcParam's destructor *should* free the dup'ed string.
-        const char* orig_str = va_arg(vl, const char*);
-        char* input = strdup(orig_str);
-        params->ins()[i]->arrays.str = input;
+        // SrpcParam's destructor *should* free the allocated array
+        const char* orig_arr = va_arg(vl, const char*);
+        size_t len = va_arg(vl, size_t);
+        char* input = (char *)malloc(len);
+        if (!input) {
+          PLUGIN_PRINTF(("VInvokeSrpcMethod (allocation failure)\n"));
+          return false;
+        }
+        memcpy(input, orig_arr, len);
+        params->ins()[i]->arrays.carr = input;
+        params->ins()[i]->u.count = len;
         break;
       }
       case NACL_SRPC_ARG_TYPE_HANDLE: {
@@ -112,6 +119,17 @@ bool NaClSubprocess::VInvokeSrpcMethod(const nacl::string& method_name,
       case NACL_SRPC_ARG_TYPE_LONG: {
         int64_t input = va_arg(vl, int64_t);
         params->ins()[i]->u.lval = input;
+        break;
+      }
+      case NACL_SRPC_ARG_TYPE_STRING: {
+        // SrpcParam's destructor *should* free the dup'ed string.
+        const char* orig_str = va_arg(vl, const char*);
+        char* input = strdup(orig_str);
+        if (!input) {
+          PLUGIN_PRINTF(("VInvokeSrpcMethod (allocation failure)\n"));
+          return false;
+        }
+        params->ins()[i]->arrays.str = input;
         break;
       }
     }

@@ -13,6 +13,7 @@
 #include "native_client/src/trusted/plugin/manifest.h"
 #include "native_client/src/trusted/plugin/plugin.h"
 #include "native_client/src/trusted/plugin/plugin_error.h"
+#include "native_client/src/trusted/plugin/pnacl_streaming_translate_thread.h"
 #include "native_client/src/trusted/plugin/pnacl_translate_thread.h"
 #include "native_client/src/trusted/plugin/service_runtime.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
@@ -231,18 +232,21 @@ PnaclCoordinator::PnaclCoordinator(
                  static_cast<void*>(this), static_cast<void*>(plugin)));
   callback_factory_.Initialize(this);
   ld_manifest_.reset(new PnaclLDManifest(plugin_->manifest(), manifest_.get()));
+  // TODO(dschuff): stream ALL the translations!
+  do_streaming_translation_ = (getenv("NACL_STREAMING_TRANSLATION") != NULL);
 }
 
 PnaclCoordinator::~PnaclCoordinator() {
-  PLUGIN_PRINTF(("PnaclCoordinator::~PnaclCoordinator (this=%p)\n",
-                 static_cast<void*>(this)));
+  PLUGIN_PRINTF(("PnaclCoordinator::~PnaclCoordinator (this=%p, "
+                 "translate_thread=%p\n",
+                 static_cast<void*>(this), translate_thread_.get()));
   // Stopping the translate thread will cause the translate thread to try to
   // run translation_complete_callback_ on the main thread.  This destructor is
   // running from the main thread, and by the time it exits, callback_factory_
   // will have been destroyed.  This will result in the cancellation of
   // translation_complete_callback_, so no notification will be delivered.
   if (translate_thread_.get() != NULL) {
-    translate_thread_->SetSubprocessesShouldDie(true);
+    translate_thread_->SetSubprocessesShouldDie();
   }
 }
 
@@ -448,12 +452,73 @@ void PnaclCoordinator::CachedFileDidOpen(int32_t pp_error) {
     NexeReadDidOpen(PP_OK);
     return;
   }
-  // Otherwise, load the pexe and set up temp files for translation.
-  pp::CompletionCallback cb =
-      callback_factory_.NewCallback(&PnaclCoordinator::BitcodeFileDidOpen);
-  if (!plugin_->StreamAsFile(pexe_url_, cb.pp_completion_callback())) {
-    ReportNonPpapiError(nacl::string("failed to download ") + pexe_url_ + ".");
+  if (do_streaming_translation_) {
+    // Create the translation thread object immediately. This ensures that any
+    // pieces of the file that get downloaded before the compilation thread
+    // is accepting SRPCs won't get dropped.
+    translate_thread_.reset(new PnaclStreamingTranslateThread());
+    if (translate_thread_ == NULL) {
+      ReportNonPpapiError("could not allocate translation thread.");
+      return;
+    }
+    // In the streaming case we also want to open the object file now so the
+    // translator can start writing to it during streaming translation.
+    // In the non-streaming case this can wait until the bitcode download is
+    // finished.
+    obj_file_.reset(new LocalTempFile(plugin_, file_system_.get(),
+                                    nacl::string(kPnaclTempDir)));
+    pp::CompletionCallback obj_cb =
+      callback_factory_.NewCallback(&PnaclCoordinator::ObjectWriteDidOpen);
+    obj_file_->OpenWrite(obj_cb);
+
+    streaming_downloader_.reset(new FileDownloader());
+    streaming_downloader_->Initialize(plugin_);
+    pp::CompletionCallback cb =
+        callback_factory_.NewCallback(
+            &PnaclCoordinator::BitcodeStreamDidFinish);
+
+    // TODO(dschuff): need to use url_util_->ResolveRelativeToURL?
+    if (!streaming_downloader_->OpenStream(pexe_url_, cb, this)) {
+        ReportNonPpapiError(nacl::string("failed to open stream ") + pexe_url_);
+    }
+
+  } else {
+    translate_thread_.reset(new PnaclTranslateThread());
+    if (translate_thread_ == NULL) {
+      ReportNonPpapiError("could not allocate translation thread.");
+      return;
+    }
+    // load the pexe and set up temp files for translation.
+    pp::CompletionCallback cb =
+        callback_factory_.NewCallback(&PnaclCoordinator::BitcodeFileDidOpen);
+    if (!plugin_->StreamAsFile(pexe_url_, cb.pp_completion_callback())) {
+      ReportNonPpapiError(nacl::string("failed to download ") + pexe_url_+ ".");
+    }
   }
+}
+
+void PnaclCoordinator::BitcodeStreamDidFinish(int32_t pp_error) {
+  PLUGIN_PRINTF(("PnaclCoordinator::BitcodeStreamDidFinish (pp_error=%"
+                 NACL_PRId32")\n", pp_error));
+  if (pp_error != PP_OK) {
+    ReportPpapiError(pp_error, "pexe load failed.");
+    translate_thread_->SetSubprocessesShouldDie();
+  }
+}
+
+void PnaclCoordinator::BitcodeStreamGotData(int32_t pp_error,
+                                            FileStreamData data) {
+  PLUGIN_PRINTF(("PnaclCoordinator::BitcodeStreamGotData (pp_error=%"
+                 NACL_PRId32", data=%p)\n", pp_error, data ? &(*data)[0] : 0));
+  PnaclStreamingTranslateThread* thread =
+    static_cast<PnaclStreamingTranslateThread*>(translate_thread_.get());
+  DCHECK(thread);
+  thread->PutBytes(data, pp_error);
+}
+
+StreamCallback PnaclCoordinator::GetCallback() {
+  return callback_factory_.NewCallbackWithOutput(
+      &PnaclCoordinator::BitcodeStreamGotData);
 }
 
 void PnaclCoordinator::BitcodeFileDidOpen(int32_t pp_error) {
@@ -510,11 +575,8 @@ void PnaclCoordinator::RunTranslate(int32_t pp_error) {
   // blocking RPCs that would otherwise block the JavaScript main thread.
   pp::CompletionCallback report_translate_finished =
       callback_factory_.NewCallback(&PnaclCoordinator::TranslateFinished);
-  translate_thread_.reset(new PnaclTranslateThread());
-  if (translate_thread_ == NULL) {
-    ReportNonPpapiError("could not allocate translation thread.");
-    return;
-  }
+
+  CHECK(translate_thread_ != NULL);
   translate_thread_->RunTranslate(report_translate_finished,
                                   manifest_.get(),
                                   ld_manifest_.get(),
