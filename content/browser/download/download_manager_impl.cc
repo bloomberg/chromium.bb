@@ -193,6 +193,7 @@ DownloadManagerImpl::DownloadManagerImpl(
       shutdown_needed_(false),
       browser_context_(NULL),
       file_manager_(file_manager),
+      delegate_(NULL),
       net_log_(net_log) {
   DCHECK(file_manager);
   if (!factory_.get())
