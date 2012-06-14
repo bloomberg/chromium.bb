@@ -189,6 +189,26 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
   remove_origin_ = origin;
   origin_set_mask_ = origin_set_mask;
 
+  if (origin_set_mask_ & BrowsingDataHelper::UNPROTECTED_WEB) {
+    content::RecordAction(
+        UserMetricsAction("ClearBrowsingData_MaskContainsUnprotectedWeb"));
+  }
+  if (origin_set_mask_ & BrowsingDataHelper::PROTECTED_WEB) {
+    content::RecordAction(
+        UserMetricsAction("ClearBrowsingData_MaskContainsProtectedWeb"));
+  }
+  if (origin_set_mask_ & BrowsingDataHelper::EXTENSION) {
+    content::RecordAction(
+        UserMetricsAction("ClearBrowsingData_MaskContainsExtension"));
+  }
+  // If this fires, we added a new BrowsingDataHelper::OriginSetMask without
+  // updating the user metrics above.
+  COMPILE_ASSERT(
+      BrowsingDataHelper::ALL == (BrowsingDataHelper::UNPROTECTED_WEB |
+                                  BrowsingDataHelper::PROTECTED_WEB |
+                                  BrowsingDataHelper::EXTENSION),
+      forgotten_to_add_origin_mask_type);
+
   if (remove_mask & REMOVE_HISTORY) {
     HistoryService* history_service =
         profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);

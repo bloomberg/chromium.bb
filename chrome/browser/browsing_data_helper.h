@@ -25,6 +25,8 @@ class BrowsingDataHelper {
     UNPROTECTED_WEB = 1 << 0,  // drive-by web.
     PROTECTED_WEB = 1 << 1,    // hosted applications.
     EXTENSION = 1 << 2,        // chrome-extension://*
+    // Always add new items to the enum above ALL and add them to ALL.
+    ALL = UNPROTECTED_WEB | PROTECTED_WEB | EXTENSION,
   };
 
   // Returns true iff the provided scheme is (really) web safe, and suitable
