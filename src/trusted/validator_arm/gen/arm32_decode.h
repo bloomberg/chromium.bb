@@ -162,6 +162,7 @@ class Arm32DecoderState : DecoderState {
   const Defs12To15CondsDontCareRdRnRsRmNotPc Defs12To15CondsDontCareRdRnRsRmNotPc_instance_;
   const Defs12To15CondsDontCareRnRdRmNotPc Defs12To15CondsDontCareRnRdRmNotPc_instance_;
   const Defs12To15RdRmRnNotPc Defs12To15RdRmRnNotPc_instance_;
+  const Defs12To15RdRnNotPc Defs12To15RdRnNotPc_instance_;
   const Defs12To15RdRnRsRmNotPc Defs12To15RdRnRsRmNotPc_instance_;
   const Defs12To19CondsDontCareRdRmRnNotPc Defs12To19CondsDontCareRdRmRnNotPc_instance_;
   const Defs16To19CondsDontCareRdRaRmRnNotPc Defs16To19CondsDontCareRdRaRmRnNotPc_instance_;

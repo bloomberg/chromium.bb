@@ -118,39 +118,55 @@ class Unary1RegisterImmediateOp : public ClassDecoder {
   NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterImmediateOp);
 };
 
-// Models a 1-register binary operation with two immediate 5 values.
-// Op<c> Rd, #lsb, #width
-// +--------+--------------+----------+--------+----------+--------------+
-// |31302928|27262524232221|2019181716|15141312|1110 9 8 7| 6 5 4 3 2 1 0|
-// +--------+--------------+----------+--------+----------+--------------+
-// |  cond  |              |    msb   |   Rd   |   lsb    |              |
-// +--------+--------------+----------+--------+----------+--------------+
-// Definitions
-//    Rd = The destination register.
-//    lsb = The least significant bit to be modified.
-//    msb = lsb + width - 1 - The most significant bit to be modified
-//    width = msb - lsb + 1 - The number of bits to be modified.
+// Models a 2-register binary operation with two immediate values
+// defining a bit range.
+// Op<c> Rd, Rn, #<lsb>, #width
+// +--------+--------------+----------+--------+----------+------+--------+
+// |31302928|27262524232221|2019181716|15141312|1110 9 8 7| 6 5 4| 3 2 1 0|
+// +--------+--------------+----------+--------+----------+------+--------+
+// |  cond  |              |    imm5  |   Rd   |    lsb   |      |   Rn   |
+// +--------+--------------+----------+--------+----------+------+--------+
+// Definitions:
+//   Rd = The destination register.
+//   Rn = The first operand
+//   lsb = The least significant bit to be used.
+//   imm5 = Constant where either:
+//      width = imm5 + 1 = The width of the bitfield.
+//      msb = imm5 = The most significant bit to be used.
 //
-// If Rd is R15, the instruction is unpredictable.
-// NaCl disallows writing to PC to cause a jump.
-// Note: Currently, only implements bfc. (A8-46).
-class Unary1RegisterBitRange : public ClassDecoder {
+// If Rd=R15, the instruction is unpredictable.
+//
+// NaCl disallows writing Pc to cause a jump.
+//
+// Note: The instruction SBFX (an instance of this instruction) sign extends.
+// Hence, we do not assume that this instruction can be used to clear bits.
+class Binary2RegisterBitRange : public ClassDecoder {
  public:
   // Interface for components of the instruction.
+  static const RegNBits0To3Interface n;
   static const Imm5Bits7To11Interface lsb;
   static const RegDBits12To15Interface d;
-  static const Imm5Bits16To20Interface msb;
+  static const Imm5Bits16To20Interface imm5;
   static const ConditionBits28To31Interface cond;
 
   // Methods for class.
-  inline Unary1RegisterBitRange() : ClassDecoder() {}
-  virtual ~Unary1RegisterBitRange() {}
+  inline Binary2RegisterBitRange() {}
+  virtual ~Binary2RegisterBitRange() {}
   virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
-  virtual bool clears_bits(Instruction i, uint32_t mask) const;
-
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterBitRange);
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary2RegisterBitRange);
+};
+
+// A Binary2RegisterBitRange with the additional constraint that
+// if Rn=R15, the instruction is unpredictable.
+class Binary2RegisterBitRangeNotRnIsPc : public Binary2RegisterBitRange {
+ public:
+  inline Binary2RegisterBitRangeNotRnIsPc() {}
+  virtual ~Binary2RegisterBitRangeNotRnIsPc() {}
+  virtual SafetyLevel safety(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary2RegisterBitRangeNotRnIsPc);
 };
 
 // Models a 2-register binary operation with an immediate value.

@@ -124,6 +124,50 @@ class Unary1RegisterBitRangeTester : public Arm32DecoderTester {
   NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterBitRangeTester);
 };
 
+// Models a 2-register binary operation with two immediate values
+// defining a bit range.
+// Op<c> Rd, Rn, #<lsb>, #width
+// +--------+--------------+----------+--------+----------+------+--------+
+// |31302928|27262524232221|2019181716|15141312|1110 9 8 7| 6 5 4| 3 2 1 0|
+// +--------+--------------+----------+--------+----------+------+--------+
+// |  cond  |              |  widthm1 |   Rd   |    lsb   |      |   Rn   |
+// +--------+--------------+----------+--------+----------+------+--------+
+// Definitions:
+//   Rd = The destination register.
+//   Rn = The first operand
+//   lsb = The least significant bit to be modified.
+//   width = widthm1 + 1 = The width of the bitfield.
+//
+// If Rd=R15, the instruction is unpredictable.
+//
+// NaCl disallows writing Pc to cause a jump.
+//
+// Note: The instruction SBFX (an instance of this instruction) sign extends.
+// Hence, we do not assume that this instruction can be used to clear bits.
+class Binary2RegisterBitRangeTester : public Arm32DecoderTester {
+ public:
+  explicit Binary2RegisterBitRangeTester(
+      const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary2RegisterBitRangeTester);
+};
+
+// Implements a Binary2RegisterBitRangeTester with the added constraint
+// that Rn!=PC.
+class Binary2RegisterBitRangeNotRnIsPcTester
+    : public Binary2RegisterBitRangeTester {
+ public:
+  explicit Binary2RegisterBitRangeNotRnIsPcTester(
+      const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Binary2RegisterBitRangeNotRnIsPcTester);
+};
 
 // Implements a decoder tester for decoder BinaryRegisterImmediateTest
 // Op(S)<c> Rn, #<const>
@@ -433,6 +477,22 @@ class Binary4RegisterDualOpTesterRegsNotPc
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Binary4RegisterDualOpTesterRegsNotPc);
+};
+
+// Implements a Binary4RegisterDualOpTesterRegsNotPc with the parse
+// precondition that Ra!=Pc.
+class Binary4RegisterDualOpTesterNotRaIsPcAndRegsNotPc
+    : public Binary4RegisterDualOpTesterRegsNotPc {
+ public:
+  explicit Binary4RegisterDualOpTesterNotRaIsPcAndRegsNotPc(
+      const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(
+      Binary4RegisterDualOpTesterNotRaIsPcAndRegsNotPc);
 };
 
 // Implements a decoder tester for decoder Binary4RegisterDualResult

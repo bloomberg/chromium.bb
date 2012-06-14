@@ -50,7 +50,7 @@ GEN_LIST = [_gen_file(x) for x in
 # armv7.table) that valgen should generate tests for. Allows testing
 # of a small number of tables without the overhead of running tests
 # for all tables.
-GEN_TABLES="dp_immed"
+GEN_TABLES=""
 
 generate = False
 gen_env = env.Clone();

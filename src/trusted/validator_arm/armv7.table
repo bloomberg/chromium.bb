@@ -61,11 +61,13 @@
 #   'd'    - Bit(23) Direction (add vs subtract) of offset.
 #   'p'    - Bit(24) defining if pre-indexing should be used.
 #
-# Constraints can be broken into two categories:
+# Constraints can be broken into three categories:
 #    Parse precondition - Don't test the instruction if the parse
 #        precondition is met.
 #    Safety constraint - Safety should not have allowed the
 #        instruction to be parsed if the given constraint is defined.
+#    Parse precondition and safety constraint - Contains both
+#        parse precondition(s) and safety constraint(s).
 #
 # Parse constraints are only necessary because our pattern language is
 # too simple. In most cases, the decoder tables will chose the
@@ -82,11 +84,16 @@
 #    NotRnIsPc - Rn!=Pc.
 #
 # Safety constraints:
-#    RegsNotPc - All register defined by instruction are not Pc (R15).
+#    RegsNotPc - All registers defined by instruction are not Pc (R15).
 #    RdCanBePc - Overrides Nacl Constraint that Rd!=Pc.
 #    RdCanBePcAndNotRdIsPcAndS - Overrides Nacl Constraint that Rd!=Pc,
 #         and adds constraint Rd not Pc (R15) and S=1 (updates
 #         register bit).
+#
+# Parse precondition and safety constraint:
+#    NotRaIsPcAndRegsNotPc - Parse precondition Ra!=Pc and safety
+#         constraint that all registers defined by the instruction
+#         are not Pc (R15).
 
 ##############################################################
 # The following defines a class decoder hierarchy used to select the
@@ -781,19 +788,41 @@ class Store3RegisterOp : LoadStore3RegisterOp
 
 +-- media (See Section A5.4)
 | op1(24:20) op2(7:5) Rd(15:12) Rn(3:0)
-| 000xx      -        -         -       ->parallel_add_sub_signed
-| 001xx      -        -         -       ->parallel_add_sub_unsigned
-| 01xxx      -        -         -       ->pack_sat_rev
-| 10xxx      -        -         -       ->signed_mult
-| 11000      000      1111      -       =Multiply(v6)    # USAD8
-| "          000      ~1111     -       =Multiply(v6)    # USADA8
-| 1101x      x10      -         -       =DataProc(v6T2)  # SBFX
-| 1110x      x00      -         1111    = Unary1RegisterBitRange
-                                          Bfc_17_A1_P46 (v6T2)
-| "          x00      -         ~1111   =DataProc(v6T2)  # BFI
-| 1111x      x10      -         -       =DataProc(v6T2)  # UBFX
-| 11111      111      -         -       =Roadblock  # Permanently Undefined
-| else:                                 =Undefined  # Note on page A5-21
+| 000xx      -        -         -     ->parallel_add_sub_signed
+| 001xx      -        -         -     ->parallel_add_sub_unsigned
+| 01xxx      -        -         -     ->pack_sat_rev
+| 10xxx      -        -         -     ->signed_mult
+| 11000      000      1111      -     = Binary3RegisterOpAltA
+                                        => Defs16To19CondsDontCareRdRmRnNotPc
+                                        Usad8_Rule_253_A1_P500
+                                        cccc01111000dddd1111mmmm0001nnnn
+                                        RegsNotPc (v6)
+| "          000      ~1111     -     = Binary4RegisterDualOp
+                                        => Defs16To19CondsDontCareRdRaRmRnNotPc
+                                        Usda8_Rule_254_A1_P502
+                                        cccc01111000ddddaaaammmm0001nnnn
+                                        # Note: In baseline class, bits(15:12)
+                                        # is Ra (not Rd as column name suggests).
+                                        NotRaIsPcAndRegsNotPc (v6)
+| 1101x      x10      -         -     = Binary2RegisterBitRangeNotRnIsPc
+                                        => Defs12To15RdRnNotPc
+                                        Sbfx_Rule_154_A1_P308
+                                        cccc0111101wwwwwddddlllll101nnnn (v6T2)
+| 1110x      x00      -         1111  = Unary1RegisterBitRange
+                                        # Note: Alternative form for clearing
+                                        # bits in a memory address (i.e.
+                                        # alternative for bic).
+                                        Bfc_17_A1_P46
+                                        cccc0111110mmmmmddddlllll0011111 (v6T2)
+| "          x00      -         ~1111 = Binary2RegisterBitRange => Defs12To15
+                                        Bfi_Rule_18_A1_P48
+                                        cccc0111110mmmmmddddlllll001nnnn (v6T2)
+| 1111x      x10      -         -     = Binary2RegisterBitRangeNotRnIsPc
+                                        => Defs12To15RdRnNotPc
+                                        Ubfx_Rule_236_A1_P466
+                                        cccc0111111mmmmmddddlllll101nnnn (v6T2)
+| 11111      111      -         -     = Roadblock  # Permanently Undefined
+| else:                               = Undefined  # Note on page A5-21
 +--
 
 +-- parallel_add_sub_signed (See Section A5.4.1)

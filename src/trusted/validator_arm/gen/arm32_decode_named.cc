@@ -754,26 +754,36 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_media(
      const nacl_arm_dec::Instruction insn) const {
 
   if ((insn.Bits() & 0x01F00000) == 0x01800000 /* op1(24:20) == 11000 */ &&
-      (insn.Bits() & 0x000000E0) == 0x00000000 /* op2(7:5) == 000 */)
-    return Multiply_None_instance_;
+      (insn.Bits() & 0x000000E0) == 0x00000000 /* op2(7:5) == 000 */ &&
+      (insn.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12) == ~1111 */)
+    return Binary4RegisterDualOp_Usda8_Rule_254_A1_P502_instance_;
+
+  if ((insn.Bits() & 0x01F00000) == 0x01800000 /* op1(24:20) == 11000 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000000 /* op2(7:5) == 000 */ &&
+      (insn.Bits() & 0x0000F000) == 0x0000F000 /* Rd(15:12) == 1111 */)
+    return Binary3RegisterOpAltA_Usad8_Rule_253_A1_P500_instance_;
 
   if ((insn.Bits() & 0x01F00000) == 0x01F00000 /* op1(24:20) == 11111 */ &&
       (insn.Bits() & 0x000000E0) == 0x000000E0 /* op2(7:5) == 111 */)
     return Roadblock_None_instance_;
 
+  if ((insn.Bits() & 0x01E00000) == 0x01A00000 /* op1(24:20) == 1101x */ &&
+      (insn.Bits() & 0x00000060) == 0x00000040 /* op2(7:5) == x10 */)
+    return Binary2RegisterBitRangeNotRnIsPc_Sbfx_Rule_154_A1_P308_instance_;
+
   if ((insn.Bits() & 0x01E00000) == 0x01C00000 /* op1(24:20) == 1110x */ &&
       (insn.Bits() & 0x00000060) == 0x00000000 /* op2(7:5) == x00 */ &&
       (insn.Bits() & 0x0000000F) != 0x0000000F /* Rn(3:0) == ~1111 */)
-    return DataProc_None_instance_;
+    return Binary2RegisterBitRange_Bfi_Rule_18_A1_P48_instance_;
 
   if ((insn.Bits() & 0x01E00000) == 0x01C00000 /* op1(24:20) == 1110x */ &&
       (insn.Bits() & 0x00000060) == 0x00000000 /* op2(7:5) == x00 */ &&
       (insn.Bits() & 0x0000000F) == 0x0000000F /* Rn(3:0) == 1111 */)
     return Unary1RegisterBitRange_Bfc_17_A1_P46_instance_;
 
-  if ((insn.Bits() & 0x01A00000) == 0x01A00000 /* op1(24:20) == 11x1x */ &&
+  if ((insn.Bits() & 0x01E00000) == 0x01E00000 /* op1(24:20) == 1111x */ &&
       (insn.Bits() & 0x00000060) == 0x00000040 /* op2(7:5) == x10 */)
-    return DataProc_None_instance_;
+    return Binary2RegisterBitRangeNotRnIsPc_Ubfx_Rule_236_A1_P466_instance_;
 
   if ((insn.Bits() & 0x01C00000) == 0x00000000 /* op1(24:20) == 000xx */)
     return decode_parallel_add_sub_signed(insn);

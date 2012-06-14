@@ -111,7 +111,7 @@ class NoPcAssignCondsDontCare : public DontCareInst {
   NACL_DISALLOW_COPY_AND_ASSIGN(NoPcAssignCondsDontCare);
 };
 
-// Computes a value and stores in in Rd (bits 12-15). Doesn't
+// Computes a value and stores in in Rd(15:12). Doesn't
 // allow Rd=PC.
 class Defs12To15 : public NoPcAssignClassDecoder {
  public:
@@ -143,7 +143,27 @@ class Defs12To15CondsDontCare : public NoPcAssignCondsDontCare {
   NACL_DISALLOW_COPY_AND_ASSIGN(Defs12To15CondsDontCare);
 };
 
-// Defs12To15 where registers Rd, Rm, and Rn are not Pc.
+// Defs12To15 where registers Rd(15:12) and Rn(3:0) are not PC.
+//
+// Note: Some instructions may use other names for the registers,
+// but they have the same placement within the instruction, and
+// hence do not need a separate class decoder.
+class Defs12To15RdRnNotPc : public Defs12To15 {
+ public:
+  // We use the following Rd and Rn to capture the
+  // registers that need checking.
+  static const RegNBits0To3Interface n;
+  static const RegDBits12To15Interface d;
+
+  inline Defs12To15RdRnNotPc() {}
+  virtual ~Defs12To15RdRnNotPc() {}
+  virtual SafetyLevel safety(Instruction i) const;
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Defs12To15RdRnNotPc);
+};
+
+// Defs12To15 where registers Rd(15:12), Rm(11:8), and Rn(3:0) are not
+// Pc.
 //
 // Note: Some instructions may use other names for the registers,
 // but they have the same placement within the instruction, and
@@ -157,16 +177,15 @@ class Defs12To15RdRmRnNotPc : public Defs12To15 {
   static const RegDBits12To15Interface d;
 
   inline Defs12To15RdRmRnNotPc() : Defs12To15() {}
-  inline ~Defs12To15RdRmRnNotPc() {}
-
+  virtual ~Defs12To15RdRmRnNotPc() {}
   virtual SafetyLevel safety(Instruction i) const;
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Defs12To15RdRmRnNotPc);
 };
 
-// Defs12To15 where registers Rn(16, 19), Rd(12, 15), Rs (11, 8),
-// and Rm(3, 0) are not Pc.
+// Defs12To15 where registers Rn(19:16), Rd(15:12), Rs(11:8),
+// and Rm(3:0) are not Pc.
 //
 // Disallows any of Rn, Rd, Rs, or Rm to be PC.
 //
@@ -190,7 +209,8 @@ class Defs12To15RdRnRsRmNotPc : public Defs12To15 {
   NACL_DISALLOW_COPY_AND_ASSIGN(Defs12To15RdRnRsRmNotPc);
 };
 
-// Defs12To15CondsDontCare where registers Rn, Rd, Rs, and Rm are not Pc.
+// Defs12To15CondsDontCare where registers Rn(19:16), Rs(11:8), and
+// Rm(3:0) are not Pc.
 //
 // Note: Some instructions may use other names for the registers,
 // but they have the same placement within the instruction, and
@@ -1217,6 +1237,49 @@ class Branch : public OldClassDecoder {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Branch);
+};
+
+//-------------------------------------------------------------------
+// The following are class decoders that are used in the baseline, as
+// well as the actual class decoders. Hence, they do not need to be
+// duplicated in files baseline_classes.{h,cc}.
+//-------------------------------------------------------------------
+
+// Models a 1-register unary operation with two immediate 5 values
+// defining a bit range.
+// Op<c> Rd, #lsb, #width
+// +--------+--------------+----------+--------+----------+--------------+
+// |31302928|27262524232221|2019181716|15141312|1110 9 8 7| 6 5 4 3 2 1 0|
+// +--------+--------------+----------+--------+----------+--------------+
+// |  cond  |              |    msb   |   Rd   |   lsb    |              |
+// +--------+--------------+----------+--------+----------+--------------+
+// Definitions
+//    Rd = The destination register.
+//    lsb = The least significant bit to be modified.
+//    msb = lsb + width - 1 - The most significant bit to be modified
+//    width = msb - lsb + 1 - The number of bits to be modified.
+//
+// If Rd is R15, the instruction is unpredictable.
+// NaCl disallows writing to PC to cause a jump.
+// Note: Currently, only implements bfc. (A8-46), which is used as an
+// alternative form of masking to that of bic.
+class Unary1RegisterBitRange : public ClassDecoder {
+ public:
+  // Interface for components of the instruction.
+  static const Imm5Bits7To11Interface lsb;
+  static const RegDBits12To15Interface d;
+  static const Imm5Bits16To20Interface msb;
+  static const ConditionBits28To31Interface cond;
+
+  // Methods for class.
+  inline Unary1RegisterBitRange() : ClassDecoder() {}
+  virtual ~Unary1RegisterBitRange() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+  virtual bool clears_bits(Instruction i, uint32_t mask) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Unary1RegisterBitRange);
 };
 
 }  // namespace

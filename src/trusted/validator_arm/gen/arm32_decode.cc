@@ -25,6 +25,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Defs12To15CondsDontCareRdRnRsRmNotPc_instance_()
   , Defs12To15CondsDontCareRnRdRmNotPc_instance_()
   , Defs12To15RdRmRnNotPc_instance_()
+  , Defs12To15RdRnNotPc_instance_()
   , Defs12To15RdRnRsRmNotPc_instance_()
   , Defs12To19CondsDontCareRdRmRnNotPc_instance_()
   , Defs16To19CondsDontCareRdRaRmRnNotPc_instance_()
@@ -586,8 +587,14 @@ const ClassDecoder& Arm32DecoderState::decode_media(
 {
 
   if ((insn.Bits() & 0x01F00000) == 0x01800000 /* op1(24:20) == 11000 */ &&
-      (insn.Bits() & 0x000000E0) == 0x00000000 /* op2(7:5) == 000 */)
-    return Multiply_instance_;
+      (insn.Bits() & 0x000000E0) == 0x00000000 /* op2(7:5) == 000 */ &&
+      (insn.Bits() & 0x0000F000) != 0x0000F000 /* Rd(15:12) == ~1111 */)
+    return Defs16To19CondsDontCareRdRaRmRnNotPc_instance_;
+
+  if ((insn.Bits() & 0x01F00000) == 0x01800000 /* op1(24:20) == 11000 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000000 /* op2(7:5) == 000 */ &&
+      (insn.Bits() & 0x0000F000) == 0x0000F000 /* Rd(15:12) == 1111 */)
+    return Defs16To19CondsDontCareRdRmRnNotPc_instance_;
 
   if ((insn.Bits() & 0x01F00000) == 0x01F00000 /* op1(24:20) == 11111 */ &&
       (insn.Bits() & 0x000000E0) == 0x000000E0 /* op2(7:5) == 111 */)
@@ -596,7 +603,7 @@ const ClassDecoder& Arm32DecoderState::decode_media(
   if ((insn.Bits() & 0x01E00000) == 0x01C00000 /* op1(24:20) == 1110x */ &&
       (insn.Bits() & 0x00000060) == 0x00000000 /* op2(7:5) == x00 */ &&
       (insn.Bits() & 0x0000000F) != 0x0000000F /* Rn(3:0) == ~1111 */)
-    return DataProc_instance_;
+    return Defs12To15_instance_;
 
   if ((insn.Bits() & 0x01E00000) == 0x01C00000 /* op1(24:20) == 1110x */ &&
       (insn.Bits() & 0x00000060) == 0x00000000 /* op2(7:5) == x00 */ &&
@@ -605,7 +612,7 @@ const ClassDecoder& Arm32DecoderState::decode_media(
 
   if ((insn.Bits() & 0x01A00000) == 0x01A00000 /* op1(24:20) == 11x1x */ &&
       (insn.Bits() & 0x00000060) == 0x00000040 /* op2(7:5) == x10 */)
-    return DataProc_instance_;
+    return Defs12To15RdRnNotPc_instance_;
 
   if ((insn.Bits() & 0x01C00000) == 0x00000000 /* op1(24:20) == 000xx */)
     return decode_parallel_add_sub_signed(insn);

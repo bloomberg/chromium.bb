@@ -37,29 +37,25 @@ RegisterList Unary1RegisterImmediateOp::defs(const Instruction i) const {
   return RegisterList(d.reg(i)).Add(conditions.conds_if_updated(i));
 }
 
-// Unary1RegisterBitRange
-SafetyLevel Unary1RegisterBitRange::safety(Instruction i) const {
-  if (d.reg(i).Equals(kRegisterPc)) return UNPREDICTABLE;
+// Binary2RegisterBitRange
+SafetyLevel Binary2RegisterBitRange::safety(Instruction i) const {
+  if (d.reg(i).Equals(kRegisterPc))
+    return UNPREDICTABLE;
 
   // Note: We would restrict out PC as well for Rd in NaCl, but no need
   // since the ARM restriction doesn't allow it anyway.
   return MAY_BE_SAFE;
 }
 
-RegisterList Unary1RegisterBitRange::defs(Instruction i) const {
+RegisterList Binary2RegisterBitRange::defs(Instruction i) const {
   return RegisterList(d.reg(i));
 }
 
-bool Unary1RegisterBitRange::clears_bits(Instruction i, uint32_t mask) const {
-  int msbit = msb.value(i);
-  int lsbit = lsb.value(i);
-  int width = msbit + 1 - lsbit;
-  if (width == 32) {
-    return mask == 0;
-  } else {
-    uint32_t bit_mask = (((1 << width) - 1) << lsbit);
-    return (bit_mask & mask) == mask;
-  }
+// Binary2RegisterBitRangeNotRnIsPc
+SafetyLevel Binary2RegisterBitRangeNotRnIsPc::safety(Instruction i) const {
+  if (n.reg(i).Equals(kRegisterPc))
+    return UNPREDICTABLE;
+  return Binary2RegisterBitRange::safety(i);
 }
 
 // Binary2RegisterImmediateOp

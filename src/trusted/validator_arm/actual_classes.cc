@@ -65,6 +65,15 @@ RegisterList Defs12To15CondsDontCare::defs(const Instruction i) const {
   return RegisterList(kCondsDontCare).Add(d.reg(i));
 }
 
+SafetyLevel Defs12To15RdRnNotPc::safety(Instruction i) const {
+  if (RegisterList(d.reg(i)).Add(n.reg(i)).Contains(kRegisterPc))
+    return UNPREDICTABLE;
+
+  // Note: We would restrict out PC as well for Rd in NaCl, but no need
+  // since the ARM restriction doesn't allow it anyway.
+  return MAY_BE_SAFE;
+}
+
 SafetyLevel Defs12To15RdRmRnNotPc::safety(Instruction i) const {
   if (RegisterList(d.reg(i)).Add(m.reg(i)).Add(n.reg(i)).Contains(kRegisterPc))
     return UNPREDICTABLE;
@@ -695,6 +704,31 @@ int32_t Branch::branch_target_offset(const Instruction i) const {
   // Sign extend and shift left 2:
   int32_t offset = (int32_t)(i.Bits(23, 0) << 8) >> 6;
   return offset + 8;  // because r15 reads as 8 bytes ahead
+}
+
+// Unary1RegisterBitRange
+SafetyLevel Unary1RegisterBitRange::safety(Instruction i) const {
+  if (d.reg(i).Equals(kRegisterPc)) return UNPREDICTABLE;
+
+  // Note: We would restrict out PC as well for Rd in NaCl, but no need
+  // since the ARM restriction doesn't allow it anyway.
+  return MAY_BE_SAFE;
+}
+
+RegisterList Unary1RegisterBitRange::defs(Instruction i) const {
+  return RegisterList(d.reg(i));
+}
+
+bool Unary1RegisterBitRange::clears_bits(Instruction i, uint32_t mask) const {
+  int msbit = msb.value(i);
+  int lsbit = lsb.value(i);
+  int width = msbit + 1 - lsbit;
+  if (width == 32) {
+    return mask == 0;
+  } else {
+    uint32_t bit_mask = (((1 << width) - 1) << lsbit);
+    return (bit_mask & mask) == mask;
+  }
 }
 
 }  // namespace

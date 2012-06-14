@@ -23,6 +23,24 @@
  */
 namespace nacl_arm_dec {
 
+class Binary2RegisterBitRange_Bfi_Rule_18_A1_P48
+    : public Binary2RegisterBitRange {
+ public:
+  virtual ~Binary2RegisterBitRange_Bfi_Rule_18_A1_P48() {}
+};
+
+class Binary2RegisterBitRangeNotRnIsPc_Sbfx_Rule_154_A1_P308
+    : public Binary2RegisterBitRangeNotRnIsPc {
+ public:
+  virtual ~Binary2RegisterBitRangeNotRnIsPc_Sbfx_Rule_154_A1_P308() {}
+};
+
+class Binary2RegisterBitRangeNotRnIsPc_Ubfx_Rule_236_A1_P466
+    : public Binary2RegisterBitRangeNotRnIsPc {
+ public:
+  virtual ~Binary2RegisterBitRangeNotRnIsPc_Ubfx_Rule_236_A1_P466() {}
+};
+
 class Binary2RegisterImmedShiftedTest_Cmn_Rule_33_A1_P76
     : public Binary2RegisterImmedShiftedTest {
  public:
@@ -203,6 +221,12 @@ class Binary3RegisterOpAltA_Smulxx_Rule_178_P354
   virtual ~Binary3RegisterOpAltA_Smulxx_Rule_178_P354() {}
 };
 
+class Binary3RegisterOpAltA_Usad8_Rule_253_A1_P500
+    : public Binary3RegisterOpAltA {
+ public:
+  virtual ~Binary3RegisterOpAltA_Usad8_Rule_253_A1_P500() {}
+};
+
 class Binary3RegisterOpAltB_Qadd16_Rule_125_A1_P252
     : public Binary3RegisterOpAltB {
  public:
@@ -357,6 +381,12 @@ class Binary4RegisterDualOp_Smlaxx_Rule_166_A1_P330
     : public Binary4RegisterDualOp {
  public:
   virtual ~Binary4RegisterDualOp_Smlaxx_Rule_166_A1_P330() {}
+};
+
+class Binary4RegisterDualOp_Usda8_Rule_254_A1_P502
+    : public Binary4RegisterDualOp {
+ public:
+  virtual ~Binary4RegisterDualOp_Usda8_Rule_254_A1_P502() {}
 };
 
 class Binary4RegisterDualResult_Smlal_Rule_168_A1_P334
@@ -983,6 +1013,12 @@ class Defs12To15_Asr_Rule_14_A1_P40
   virtual ~Defs12To15_Asr_Rule_14_A1_P40() {}
 };
 
+class Defs12To15_Bfi_Rule_18_A1_P48
+    : public Defs12To15 {
+ public:
+  virtual ~Defs12To15_Bfi_Rule_18_A1_P48() {}
+};
+
 class Defs12To15_Bic_Rule_20_A1_P52
     : public Defs12To15 {
  public:
@@ -1259,6 +1295,18 @@ class Defs12To15RdRmRnNotPc_Ror_Rule_140_A1_P280
   virtual ~Defs12To15RdRmRnNotPc_Ror_Rule_140_A1_P280() {}
 };
 
+class Defs12To15RdRnNotPc_Sbfx_Rule_154_A1_P308
+    : public Defs12To15RdRnNotPc {
+ public:
+  virtual ~Defs12To15RdRnNotPc_Sbfx_Rule_154_A1_P308() {}
+};
+
+class Defs12To15RdRnNotPc_Ubfx_Rule_236_A1_P466
+    : public Defs12To15RdRnNotPc {
+ public:
+  virtual ~Defs12To15RdRnNotPc_Ubfx_Rule_236_A1_P466() {}
+};
+
 class Defs12To15RdRnRsRmNotPc_Adc_Rule_3_A1_P18
     : public Defs12To15RdRnRsRmNotPc {
  public:
@@ -1373,6 +1421,12 @@ class Defs16To19CondsDontCareRdRaRmRnNotPc_Smlaxx_Rule_166_A1_P330
   virtual ~Defs16To19CondsDontCareRdRaRmRnNotPc_Smlaxx_Rule_166_A1_P330() {}
 };
 
+class Defs16To19CondsDontCareRdRaRmRnNotPc_Usda8_Rule_254_A1_P502
+    : public Defs16To19CondsDontCareRdRaRmRnNotPc {
+ public:
+  virtual ~Defs16To19CondsDontCareRdRaRmRnNotPc_Usda8_Rule_254_A1_P502() {}
+};
+
 class Defs16To19CondsDontCareRdRmRnNotPc_Mul_Rule_105_A1_P212
     : public Defs16To19CondsDontCareRdRmRnNotPc {
  public:
@@ -1389,6 +1443,12 @@ class Defs16To19CondsDontCareRdRmRnNotPc_Smulxx_Rule_178_P354
     : public Defs16To19CondsDontCareRdRmRnNotPc {
  public:
   virtual ~Defs16To19CondsDontCareRdRmRnNotPc_Smulxx_Rule_178_P354() {}
+};
+
+class Defs16To19CondsDontCareRdRmRnNotPc_Usad8_Rule_253_A1_P500
+    : public Defs16To19CondsDontCareRdRmRnNotPc {
+ public:
+  virtual ~Defs16To19CondsDontCareRdRmRnNotPc_Usad8_Rule_253_A1_P500() {}
 };
 
 class DontCareInst_Cmn_Rule_32_A1_P74
@@ -1681,6 +1741,45 @@ namespace nacl_arm_test {
  * to select this decoder. Without these names, debugging the
  * output of the test code would be nearly impossible
  */
+
+class NamedBinary2RegisterBitRange_Bfi_Rule_18_A1_P48
+    : public NamedClassDecoder {
+ public:
+  inline NamedBinary2RegisterBitRange_Bfi_Rule_18_A1_P48()
+    : NamedClassDecoder(decoder_, "Binary2RegisterBitRange Bfi_Rule_18_A1_P48")
+  {}
+  virtual ~NamedBinary2RegisterBitRange_Bfi_Rule_18_A1_P48() {}
+
+ private:
+  nacl_arm_dec::Binary2RegisterBitRange_Bfi_Rule_18_A1_P48 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary2RegisterBitRange_Bfi_Rule_18_A1_P48);
+};
+
+class NamedBinary2RegisterBitRangeNotRnIsPc_Sbfx_Rule_154_A1_P308
+    : public NamedClassDecoder {
+ public:
+  inline NamedBinary2RegisterBitRangeNotRnIsPc_Sbfx_Rule_154_A1_P308()
+    : NamedClassDecoder(decoder_, "Binary2RegisterBitRangeNotRnIsPc Sbfx_Rule_154_A1_P308")
+  {}
+  virtual ~NamedBinary2RegisterBitRangeNotRnIsPc_Sbfx_Rule_154_A1_P308() {}
+
+ private:
+  nacl_arm_dec::Binary2RegisterBitRangeNotRnIsPc_Sbfx_Rule_154_A1_P308 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary2RegisterBitRangeNotRnIsPc_Sbfx_Rule_154_A1_P308);
+};
+
+class NamedBinary2RegisterBitRangeNotRnIsPc_Ubfx_Rule_236_A1_P466
+    : public NamedClassDecoder {
+ public:
+  inline NamedBinary2RegisterBitRangeNotRnIsPc_Ubfx_Rule_236_A1_P466()
+    : NamedClassDecoder(decoder_, "Binary2RegisterBitRangeNotRnIsPc Ubfx_Rule_236_A1_P466")
+  {}
+  virtual ~NamedBinary2RegisterBitRangeNotRnIsPc_Ubfx_Rule_236_A1_P466() {}
+
+ private:
+  nacl_arm_dec::Binary2RegisterBitRangeNotRnIsPc_Ubfx_Rule_236_A1_P466 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary2RegisterBitRangeNotRnIsPc_Ubfx_Rule_236_A1_P466);
+};
 
 class NamedBinary2RegisterImmedShiftedTest_Cmn_Rule_33_A1_P76
     : public NamedClassDecoder {
@@ -2072,6 +2171,19 @@ class NamedBinary3RegisterOpAltA_Smulxx_Rule_178_P354
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltA_Smulxx_Rule_178_P354);
 };
 
+class NamedBinary3RegisterOpAltA_Usad8_Rule_253_A1_P500
+    : public NamedClassDecoder {
+ public:
+  inline NamedBinary3RegisterOpAltA_Usad8_Rule_253_A1_P500()
+    : NamedClassDecoder(decoder_, "Binary3RegisterOpAltA Usad8_Rule_253_A1_P500")
+  {}
+  virtual ~NamedBinary3RegisterOpAltA_Usad8_Rule_253_A1_P500() {}
+
+ private:
+  nacl_arm_dec::Binary3RegisterOpAltA_Usad8_Rule_253_A1_P500 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary3RegisterOpAltA_Usad8_Rule_253_A1_P500);
+};
+
 class NamedBinary3RegisterOpAltB_Qadd16_Rule_125_A1_P252
     : public NamedClassDecoder {
  public:
@@ -2408,6 +2520,19 @@ class NamedBinary4RegisterDualOp_Smlaxx_Rule_166_A1_P330
  private:
   nacl_arm_dec::Binary4RegisterDualOp_Smlaxx_Rule_166_A1_P330 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary4RegisterDualOp_Smlaxx_Rule_166_A1_P330);
+};
+
+class NamedBinary4RegisterDualOp_Usda8_Rule_254_A1_P502
+    : public NamedClassDecoder {
+ public:
+  inline NamedBinary4RegisterDualOp_Usda8_Rule_254_A1_P502()
+    : NamedClassDecoder(decoder_, "Binary4RegisterDualOp Usda8_Rule_254_A1_P502")
+  {}
+  virtual ~NamedBinary4RegisterDualOp_Usda8_Rule_254_A1_P502() {}
+
+ private:
+  nacl_arm_dec::Binary4RegisterDualOp_Usda8_Rule_254_A1_P502 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedBinary4RegisterDualOp_Usda8_Rule_254_A1_P502);
 };
 
 class NamedBinary4RegisterDualResult_Smlal_Rule_168_A1_P334
@@ -3762,6 +3887,19 @@ class NamedDefs12To15_Asr_Rule_14_A1_P40
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs12To15_Asr_Rule_14_A1_P40);
 };
 
+class NamedDefs12To15_Bfi_Rule_18_A1_P48
+    : public NamedClassDecoder {
+ public:
+  inline NamedDefs12To15_Bfi_Rule_18_A1_P48()
+    : NamedClassDecoder(decoder_, "Defs12To15 Bfi_Rule_18_A1_P48")
+  {}
+  virtual ~NamedDefs12To15_Bfi_Rule_18_A1_P48() {}
+
+ private:
+  nacl_arm_dec::Defs12To15_Bfi_Rule_18_A1_P48 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs12To15_Bfi_Rule_18_A1_P48);
+};
+
 class NamedDefs12To15_Bic_Rule_20_A1_P52
     : public NamedClassDecoder {
  public:
@@ -4360,6 +4498,32 @@ class NamedDefs12To15RdRmRnNotPc_Ror_Rule_140_A1_P280
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs12To15RdRmRnNotPc_Ror_Rule_140_A1_P280);
 };
 
+class NamedDefs12To15RdRnNotPc_Sbfx_Rule_154_A1_P308
+    : public NamedClassDecoder {
+ public:
+  inline NamedDefs12To15RdRnNotPc_Sbfx_Rule_154_A1_P308()
+    : NamedClassDecoder(decoder_, "Defs12To15RdRnNotPc Sbfx_Rule_154_A1_P308")
+  {}
+  virtual ~NamedDefs12To15RdRnNotPc_Sbfx_Rule_154_A1_P308() {}
+
+ private:
+  nacl_arm_dec::Defs12To15RdRnNotPc_Sbfx_Rule_154_A1_P308 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs12To15RdRnNotPc_Sbfx_Rule_154_A1_P308);
+};
+
+class NamedDefs12To15RdRnNotPc_Ubfx_Rule_236_A1_P466
+    : public NamedClassDecoder {
+ public:
+  inline NamedDefs12To15RdRnNotPc_Ubfx_Rule_236_A1_P466()
+    : NamedClassDecoder(decoder_, "Defs12To15RdRnNotPc Ubfx_Rule_236_A1_P466")
+  {}
+  virtual ~NamedDefs12To15RdRnNotPc_Ubfx_Rule_236_A1_P466() {}
+
+ private:
+  nacl_arm_dec::Defs12To15RdRnNotPc_Ubfx_Rule_236_A1_P466 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs12To15RdRnNotPc_Ubfx_Rule_236_A1_P466);
+};
+
 class NamedDefs12To15RdRnRsRmNotPc_Adc_Rule_3_A1_P18
     : public NamedClassDecoder {
  public:
@@ -4607,6 +4771,19 @@ class NamedDefs16To19CondsDontCareRdRaRmRnNotPc_Smlaxx_Rule_166_A1_P330
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs16To19CondsDontCareRdRaRmRnNotPc_Smlaxx_Rule_166_A1_P330);
 };
 
+class NamedDefs16To19CondsDontCareRdRaRmRnNotPc_Usda8_Rule_254_A1_P502
+    : public NamedClassDecoder {
+ public:
+  inline NamedDefs16To19CondsDontCareRdRaRmRnNotPc_Usda8_Rule_254_A1_P502()
+    : NamedClassDecoder(decoder_, "Defs16To19CondsDontCareRdRaRmRnNotPc Usda8_Rule_254_A1_P502")
+  {}
+  virtual ~NamedDefs16To19CondsDontCareRdRaRmRnNotPc_Usda8_Rule_254_A1_P502() {}
+
+ private:
+  nacl_arm_dec::Defs16To19CondsDontCareRdRaRmRnNotPc_Usda8_Rule_254_A1_P502 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs16To19CondsDontCareRdRaRmRnNotPc_Usda8_Rule_254_A1_P502);
+};
+
 class NamedDefs16To19CondsDontCareRdRmRnNotPc_Mul_Rule_105_A1_P212
     : public NamedClassDecoder {
  public:
@@ -4644,6 +4821,19 @@ class NamedDefs16To19CondsDontCareRdRmRnNotPc_Smulxx_Rule_178_P354
  private:
   nacl_arm_dec::Defs16To19CondsDontCareRdRmRnNotPc_Smulxx_Rule_178_P354 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs16To19CondsDontCareRdRmRnNotPc_Smulxx_Rule_178_P354);
+};
+
+class NamedDefs16To19CondsDontCareRdRmRnNotPc_Usad8_Rule_253_A1_P500
+    : public NamedClassDecoder {
+ public:
+  inline NamedDefs16To19CondsDontCareRdRmRnNotPc_Usad8_Rule_253_A1_P500()
+    : NamedClassDecoder(decoder_, "Defs16To19CondsDontCareRdRmRnNotPc Usad8_Rule_253_A1_P500")
+  {}
+  virtual ~NamedDefs16To19CondsDontCareRdRmRnNotPc_Usad8_Rule_253_A1_P500() {}
+
+ private:
+  nacl_arm_dec::Defs16To19CondsDontCareRdRmRnNotPc_Usad8_Rule_253_A1_P500 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDefs16To19CondsDontCareRdRmRnNotPc_Usad8_Rule_253_A1_P500);
 };
 
 class NamedDontCareInst_Cmn_Rule_32_A1_P74

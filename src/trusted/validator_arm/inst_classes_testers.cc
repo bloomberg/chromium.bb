@@ -183,7 +183,52 @@ ApplySanityChecks(Instruction inst,
   EXPECT_EQ(expected_decoder.lsb.value(inst), inst.Bits(11, 7));
   EXPECT_EQ(expected_decoder.msb.value(inst), inst.Bits(20, 16));
   EXPECT_FALSE(expected_decoder.d.reg(inst).Equals(kRegisterPc))
-        << "Expected FORBIDDEN_OPERANDS for " << InstContents();
+        << "Expected UNPREDICTABLE for " << InstContents();
+
+  return true;
+}
+
+// Binary2RegisterBitRangeTester
+Binary2RegisterBitRangeTester::Binary2RegisterBitRangeTester(
+    const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
+
+bool Binary2RegisterBitRangeTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  nacl_arm_dec::Binary2RegisterBitRange expected_decoder;
+
+  // Check that condition is defined correctly.
+  EXPECT_EQ(expected_decoder.cond.value(inst), inst.Bits(31, 28));
+
+  // Didn't parse undefined conditional.
+  if (expected_decoder.cond.undefined(inst)) {
+    NC_EXPECT_NE_PRECOND(&ExpectedDecoder(), &decoder);
+  }
+  // Check registers and flags used.
+  EXPECT_TRUE(expected_decoder.n.reg(inst).Equals(inst.Reg(3, 0)));
+  EXPECT_TRUE(expected_decoder.d.reg(inst).Equals(inst.Reg(15, 12)));
+  EXPECT_EQ(expected_decoder.lsb.value(inst), inst.Bits(11, 7));
+  EXPECT_EQ(expected_decoder.imm5.value(inst), inst.Bits(20, 16));
+  EXPECT_FALSE(expected_decoder.d.reg(inst).Equals(kRegisterPc))
+        << "Expected UNPREDICTABLE for " << InstContents();
+
+  return true;
+}
+
+// Binary2RegisterBitRangeNotRnIsPcTester
+Binary2RegisterBitRangeNotRnIsPcTester::Binary2RegisterBitRangeNotRnIsPcTester(
+    const NamedClassDecoder& decoder)
+    : Binary2RegisterBitRangeTester(decoder) {}
+
+bool Binary2RegisterBitRangeNotRnIsPcTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  NC_PRECOND(Binary2RegisterBitRangeTester::ApplySanityChecks(inst, decoder));
+
+  nacl_arm_dec::Binary2RegisterBitRange expected_decoder;
+  EXPECT_FALSE(expected_decoder.n.reg(inst).Equals(kRegisterPc))
+        << "Expected UNPREDICTABLE for " << InstContents();
 
   return true;
 }
@@ -669,6 +714,25 @@ ApplySanityChecks(Instruction inst,
 
   return true;
 }
+
+// Binary4RegisterDualOpTesterNotRaIsPcAndRegsNotPc
+Binary4RegisterDualOpTesterNotRaIsPcAndRegsNotPc::
+Binary4RegisterDualOpTesterNotRaIsPcAndRegsNotPc(
+    const NamedClassDecoder& decoder)
+    : Binary4RegisterDualOpTesterRegsNotPc(decoder) {}
+
+bool Binary4RegisterDualOpTesterNotRaIsPcAndRegsNotPc::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  nacl_arm_dec::Binary4RegisterDualOp expected_decoder;
+
+  // Check that we don't parse when bits(15:12)=15.
+  if (expected_decoder.a.reg(inst).Equals(kRegisterPc)) {
+    NC_EXPECT_NE_PRECOND(&ExpectedDecoder(), &decoder);
+  }
+  return Binary4RegisterDualOpTesterRegsNotPc::ApplySanityChecks(inst, decoder);
+}
+
 // Binary4RegisterDualResultTester
 Binary4RegisterDualResultTester::Binary4RegisterDualResultTester(
     const NamedClassDecoder& decoder)
