@@ -6,11 +6,16 @@
 #define CHROME_BROWSER_UI_LIBGTK2UI_GTK2_UTIL_H_
 #pragma once
 
+typedef struct _GdkPixbuf GdkPixbuf;
+
 class CommandLine;
+class SkBitmap;
 
 namespace libgtk2ui {
 
 void GtkInitFromCommandLine(const CommandLine& command_line);
+
+const SkBitmap GdkPixbufToImageSkia(GdkPixbuf* pixbuf);
 
 }  // namespace libgtk2ui
 
