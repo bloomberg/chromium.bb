@@ -28,6 +28,7 @@ import time
 import perf
 import pyauto_functional  # Must be imported before pyauto.
 import pyauto
+import pyauto_errors
 import pyauto_utils
 import remote_inspector_client
 import selenium.common.exceptions
@@ -46,7 +47,8 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
 
   _DEFAULT_TEST_LENGTH_SEC = 60 * 60 * 6  # Tests run for 6 hours.
   _GET_PERF_STATS_INTERVAL = 60 * 5  # Measure perf stats every 5 minutes.
-  _ERROR_COUNT_THRESHOLD = 300  # Number of ChromeDriver errors to tolerate.
+  # TODO(dennisjeffrey): Do we still need to tolerate errors?
+  _ERROR_COUNT_THRESHOLD = 50  # Number of ChromeDriver errors to tolerate.
   _DEEP_MEMORY_PROFILE = False
   _DEEP_MEMORY_PROFILE_INTERVAL = _GET_PERF_STATS_INTERVAL
   _DEEP_MEMORY_PROFILE_SAVE = False
@@ -484,12 +486,11 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
     except selenium.common.exceptions.NoSuchElementException:
       return None
 
-  def _ClickElementByXpath(self, driver, wait, xpath):
+  def _ClickElementByXpath(self, driver, xpath):
     """Given the xpath for a DOM element, clicks on it using WebDriver.
 
     Args:
       driver: A WebDriver object, as returned by self.NewWebDriver().
-      wait: A WebDriverWait object, as returned by WebDriverWait().
       xpath: The string xpath associated with the DOM element to click.
 
     Returns:
@@ -497,41 +498,28 @@ class ChromeEndureBaseTest(perf.BasePerfTest):
       False, otherwise.
     """
     try:
-      element = wait.until(
-          lambda _: self._GetElement(driver.find_element_by_xpath, xpath))
+      self.WaitForDomNode(xpath)
+    except (pyauto_errors.JSONInterfaceError,
+            pyauto_errors.JavascriptRuntimeError) as e:
+      logging.exception('PyAuto exception: %s' % e)
+      return False
+
+    try:
+      element = self._GetElement(driver.find_element_by_xpath, xpath)
       element.click()
     except (selenium.common.exceptions.StaleElementReferenceException,
-            selenium.common.exceptions.TimeoutException), e:
+            selenium.common.exceptions.TimeoutException) as e:
       logging.exception('WebDriver exception: %s' % e)
       return False
-    return True
 
-  def _WaitForElementByXpath(self, driver, wait, xpath):
-    """Given the xpath for a DOM element, waits for it to exist in the DOM.
-
-    Args:
-      driver: A WebDriver object, as returned by self.NewWebDriver().
-      wait: A WebDriverWait object, as returned by WebDriverWait().
-      xpath: The string xpath associated with the DOM element for which to wait.
-
-    Returns:
-      True, if the DOM element was found in the DOM, or
-      False, otherwise.
-    """
-    try:
-      wait.until(lambda _: self._GetElement(driver.find_element_by_xpath,
-                                            xpath))
-    except selenium.common.exceptions.TimeoutException, e:
-      logging.exception('WebDriver exception: %s' % str(e))
-      return False
     return True
 
 
 class ChromeEndureControlTest(ChromeEndureBaseTest):
   """Control tests for Chrome Endure."""
 
-  _webapp_name = 'Control'
-  _tab_title_substring = 'Chrome Endure Control Test'
+  _WEBAPP_NAME = 'Control'
+  _TAB_TITLE_SUBSTRING = 'Chrome Endure Control Test'
 
   def testControlAttachDetachDOMTree(self):
     """Continually attach and detach a DOM tree from a basic document."""
@@ -539,15 +527,15 @@ class ChromeEndureControlTest(ChromeEndureBaseTest):
     url = self.GetHttpURLForDataPath('chrome_endure', 'endurance_control.html')
     self.NavigateToURL(url)
     loaded_tab_title = self.GetActiveTabTitle()
-    self.assertTrue(self._tab_title_substring in loaded_tab_title,
+    self.assertTrue(self._TAB_TITLE_SUBSTRING in loaded_tab_title,
                     msg='Loaded tab title does not contain "%s": "%s"' %
-                        (self._tab_title_substring, loaded_tab_title))
+                        (self._TAB_TITLE_SUBSTRING, loaded_tab_title))
 
     def scenario():
       # Just sleep.  Javascript in the webpage itself does the work.
       time.sleep(5)
 
-    self._RunEndureTest(self._webapp_name, self._tab_title_substring,
+    self._RunEndureTest(self._WEBAPP_NAME, self._TAB_TITLE_SUBSTRING,
                         test_description, scenario)
 
   def testControlAttachDetachDOMTreeWebDriver(self):
@@ -557,31 +545,31 @@ class ChromeEndureControlTest(ChromeEndureBaseTest):
                                      'endurance_control_webdriver.html')
     self.NavigateToURL(url)
     loaded_tab_title = self.GetActiveTabTitle()
-    self.assertTrue(self._tab_title_substring in loaded_tab_title,
+    self.assertTrue(self._TAB_TITLE_SUBSTRING in loaded_tab_title,
                     msg='Loaded tab title does not contain "%s": "%s"' %
-                        (self._tab_title_substring, loaded_tab_title))
+                        (self._TAB_TITLE_SUBSTRING, loaded_tab_title))
 
     driver = self.NewWebDriver()
-    wait = WebDriverWait(driver, timeout=60)
 
-    def scenario(driver, wait):
+    def scenario(driver):
       # Click the "attach" button to attach a large DOM tree (with event
       # listeners) to the document, wait half a second, click "detach" to detach
       # the DOM tree from the document, wait half a second.
-      self._ClickElementByXpath(driver, wait, 'id("attach")')
+      self._ClickElementByXpath(driver, 'id("attach")')
       time.sleep(0.5)
-      self._ClickElementByXpath(driver, wait, 'id("detach")')
+      self._ClickElementByXpath(driver, 'id("detach")')
       time.sleep(0.5)
 
-    self._RunEndureTest(self._webapp_name, self._tab_title_substring,
-                        test_description, lambda: scenario(driver, wait))
+    self._RunEndureTest(self._WEBAPP_NAME, self._TAB_TITLE_SUBSTRING,
+                        test_description, lambda: scenario(driver))
 
 
 class ChromeEndureGmailTest(ChromeEndureBaseTest):
   """Long-running performance tests for Chrome using Gmail."""
 
-  _webapp_name = 'Gmail'
-  _tab_title_substring = 'Gmail'
+  _WEBAPP_NAME = 'Gmail'
+  _TAB_TITLE_SUBSTRING = 'Gmail'
+  _FRAME_XPATH = 'id("canvas_frame")'
 
   def setUp(self):
     ChromeEndureBaseTest.setUp(self)
@@ -590,12 +578,14 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
     self._LoginToGoogleAccount(account_key='test_google_account_gmail')
     self.NavigateToURL('http://www.gmail.com')
     loaded_tab_title = self.GetActiveTabTitle()
-    self.assertTrue(self._tab_title_substring in loaded_tab_title,
+    self.assertTrue(self._TAB_TITLE_SUBSTRING in loaded_tab_title,
                     msg='Loaded tab title does not contain "%s": "%s"' %
-                        (self._tab_title_substring, loaded_tab_title))
+                        (self._TAB_TITLE_SUBSTRING, loaded_tab_title))
 
     self._driver = self.NewWebDriver()
     # Any call to wait.until() will raise an exception if the timeout is hit.
+    # TODO(dennisjeffrey): Remove the need for webdriver's wait using the new
+    # DOM mutation observer mechanism.
     self._wait = WebDriverWait(self._driver, timeout=60)
 
     # Wait until Gmail's 'canvas_frame' loads and the 'Inbox' link is present.
@@ -604,9 +594,8 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
     self._wait.until(
         self._SwitchToCanvasFrame)  # Raises exception if the timeout is hit.
     # Wait for the inbox to appear.
-    self._wait.until(lambda _: self._GetElement(
-                         self._driver.find_element_by_partial_link_text,
-                         'Inbox'))
+    self.WaitForDomNode('//a[starts-with(@title, "Inbox")]',
+                        frame_xpath=self._FRAME_XPATH)
 
   def _SwitchToCanvasFrame(self, driver):
     """Switch the WebDriver to Gmail's 'canvas_frame', if it's available.
@@ -626,10 +615,10 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
 
   def _GetLatencyDomElement(self):
     """Returns a reference to the latency info element in the Gmail DOM."""
-    return self._wait.until(
-        lambda _: self._GetElement(
-            self._driver.find_element_by_xpath,
-            '//span[starts-with(text(), "Why was the last action slow?")]'))
+    latency_xpath = (
+        '//span[starts-with(text(), "Why was the last action slow?")]')
+    self.WaitForDomNode(latency_xpath, frame_xpath=self._FRAME_XPATH)
+    return self._GetElement(self._driver.find_element_by_xpath, latency_xpath)
 
   def _WaitUntilDomElementRemoved(self, dom_element):
     """Waits until the given element is no longer attached to the DOM.
@@ -674,7 +663,7 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
       if elapsed_time > 60:  # Ignore the first minute of latency measurements.
         self._OutputPerfGraphValue(
             '%sLatency' % action_description, [(elapsed_time, latency)], 'msec',
-            graph_name='%s%s-%sLatency' % (self._webapp_name, test_description,
+            graph_name='%s%s-%sLatency' % (self._WEBAPP_NAME, test_description,
                                            action_description),
             units_x='seconds')
     else:
@@ -692,24 +681,28 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
       # Click the "Compose" button, enter some text into the "To" field, enter
       # some text into the "Subject" field, then click the "Discard" button to
       # discard the message.
-      compose_button = self._wait.until(lambda _: self._GetElement(
-                                            self._driver.find_element_by_xpath,
-                                            '//div[text()="COMPOSE"]'))
+      compose_xpath = '//div[text()="COMPOSE"]'
+      self.WaitForDomNode(compose_xpath, frame_xpath=self._FRAME_XPATH)
+      compose_button = self._GetElement(self._driver.find_element_by_xpath,
+                                        compose_xpath)
       self._ClickElementAndRecordLatency(
           compose_button, test_description, 'Compose')
 
-      to_field = self._wait.until(lambda _: self._GetElement(
-                                      self._driver.find_element_by_name, 'to'))
+      to_xpath = '//textarea[@name="to"]'
+      self.WaitForDomNode(to_xpath, frame_xpath=self._FRAME_XPATH)
+      to_field = self._GetElement(self._driver.find_element_by_xpath, to_xpath)
       to_field.send_keys('nobody@nowhere.com')
 
-      subject_field = self._wait.until(lambda _: self._GetElement(
-                                           self._driver.find_element_by_name,
-                                           'subject'))
+      subject_xpath = '//input[@name="subject"]'
+      self.WaitForDomNode(subject_xpath, frame_xpath=self._FRAME_XPATH)
+      subject_field = self._GetElement(self._driver.find_element_by_xpath,
+                                       subject_xpath)
       subject_field.send_keys('This message is about to be discarded')
 
-      discard_button = self._wait.until(lambda _: self._GetElement(
-                                            self._driver.find_element_by_xpath,
-                                            '//div[text()="Discard"]'))
+      discard_xpath = '//div[text()="Discard"]'
+      self.WaitForDomNode(discard_xpath, frame_xpath=self._FRAME_XPATH)
+      discard_button = self._GetElement(self._driver.find_element_by_xpath,
+                                        discard_xpath)
       discard_button.click()
 
       # Wait for the message to be discarded, assumed to be true after the
@@ -717,7 +710,7 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
       self._wait.until(lambda _: not self._GetElement(
                            self._driver.find_element_by_name, 'to'))
 
-    self._RunEndureTest(self._webapp_name, self._tab_title_substring,
+    self._RunEndureTest(self._WEBAPP_NAME, self._TAB_TITLE_SUBSTRING,
                         test_description, scenario)
 
   # TODO(dennisjeffrey): Remove this test once the Gmail team is done analyzing
@@ -734,24 +727,28 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
       # Click the "Compose" button, enter some text into the "To" field, enter
       # some text into the "Subject" field, then click the "Discard" button to
       # discard the message.  Finally, sleep for 30 seconds.
-      compose_button = self._wait.until(lambda _: self._GetElement(
-                                            self._driver.find_element_by_xpath,
-                                            '//div[text()="COMPOSE"]'))
+      compose_xpath = '//div[text()="COMPOSE"]'
+      self.WaitForDomNode(compose_xpath, frame_xpath=self._FRAME_XPATH)
+      compose_button = self._GetElement(self._driver.find_element_by_xpath,
+                                        compose_xpath)
       self._ClickElementAndRecordLatency(
           compose_button, test_description, 'Compose')
 
-      to_field = self._wait.until(lambda _: self._GetElement(
-                                      self._driver.find_element_by_name, 'to'))
+      to_xpath = '//textarea[@name="to"]'
+      self.WaitForDomNode(to_xpath, frame_xpath=self._FRAME_XPATH)
+      to_field = self._GetElement(self._driver.find_element_by_xpath, to_xpath)
       to_field.send_keys('nobody@nowhere.com')
 
-      subject_field = self._wait.until(lambda _: self._GetElement(
-                                           self._driver.find_element_by_name,
-                                           'subject'))
+      subject_xpath = '//input[@name="subject"]'
+      self.WaitForDomNode(subject_xpath, frame_xpath=self._FRAME_XPATH)
+      subject_field = self._GetElement(self._driver.find_element_by_xpath,
+                                       subject_xpath)
       subject_field.send_keys('This message is about to be discarded')
 
-      discard_button = self._wait.until(lambda _: self._GetElement(
-                                            self._driver.find_element_by_xpath,
-                                            '//div[text()="Discard"]'))
+      discard_xpath = '//div[text()="Discard"]'
+      self.WaitForDomNode(discard_xpath, frame_xpath=self._FRAME_XPATH)
+      discard_button = self._GetElement(self._driver.find_element_by_xpath,
+                                        discard_xpath)
       discard_button.click()
 
       # Wait for the message to be discarded, assumed to be true after the
@@ -764,7 +761,7 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
         logging.info('Sleeping 2 minutes.')
         time.sleep(120)
 
-    self._RunEndureTest(self._webapp_name, self._tab_title_substring,
+    self._RunEndureTest(self._WEBAPP_NAME, self._TAB_TITLE_SUBSTRING,
                         test_description, scenario)
 
   def testGmailAlternateThreadlistConversation(self):
@@ -784,21 +781,22 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
       # an "email" attribute.  Then click it and wait for the conversation view
       # to appear (assumed to be visible when a particular div exists on the
       # page).
-      thread = self._wait.until(
-          lambda _: self._GetElement(self._driver.find_element_by_xpath,
-                                     '//span[@email]'))
+      thread_xpath = '//span[@email]'
+      self.WaitForDomNode(thread_xpath, frame_xpath=self._FRAME_XPATH)
+      thread = self._GetElement(self._driver.find_element_by_xpath,
+                                thread_xpath)
       self._ClickElementAndRecordLatency(
           thread, test_description, 'Conversation')
-      self._WaitForElementByXpath(
-          self._driver, self._wait, '//div[text()="Click here to "]')
+      self.WaitForDomNode('//div[text()="Click here to "]',
+                          frame_xpath=self._FRAME_XPATH)
       time.sleep(1)
 
       # Find the inbox link and click it.  Then wait for the inbox to be shown
       # (assumed to be true when the particular div from the conversation view
       # no longer appears on the page).
-      inbox = self._wait.until(
-          lambda _: self._GetElement(self._driver.find_element_by_xpath,
-                                     '//a[starts-with(text(), "Inbox")]'))
+      inbox_xpath = '//a[starts-with(text(), "Inbox")]'
+      self.WaitForDomNode(inbox_xpath, frame_xpath=self._FRAME_XPATH)
+      inbox = self._GetElement(self._driver.find_element_by_xpath, inbox_xpath)
       self._ClickElementAndRecordLatency(inbox, test_description, 'Threadlist')
       self._wait.until(
           lambda _: not self._GetElement(
@@ -806,7 +804,7 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
               '//div[text()="Click here to "]'))
       time.sleep(1)
 
-    self._RunEndureTest(self._webapp_name, self._tab_title_substring,
+    self._RunEndureTest(self._WEBAPP_NAME, self._TAB_TITLE_SUBSTRING,
                         test_description, scenario)
 
   def testGmailAlternateTwoLabels(self):
@@ -823,9 +821,9 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
 
       # Click the "Sent Mail" label, then wait for the tab title to be updated
       # with the substring "sent".
-      sent = self._wait.until(
-          lambda _: self._GetElement(self._driver.find_element_by_xpath,
-                                     '//a[starts-with(text(), "Sent Mail")]'))
+      sent_xpath = '//a[starts-with(text(), "Sent Mail")]'
+      self.WaitForDomNode(sent_xpath, frame_xpath=self._FRAME_XPATH)
+      sent = self._GetElement(self._driver.find_element_by_xpath, sent_xpath)
       self._ClickElementAndRecordLatency(sent, test_description, 'SentMail')
       self.assertTrue(
           self.WaitUntil(lambda: 'Sent Mail' in self.GetActiveTabTitle(),
@@ -835,9 +833,9 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
 
       # Click the "Inbox" label, then wait for the tab title to be updated with
       # the substring "inbox".
-      inbox = self._wait.until(
-          lambda _: self._GetElement(self._driver.find_element_by_xpath,
-                                     '//a[starts-with(text(), "Inbox")]'))
+      inbox_xpath = '//a[starts-with(text(), "Inbox")]'
+      self.WaitForDomNode(inbox_xpath, frame_xpath=self._FRAME_XPATH)
+      inbox = self._GetElement(self._driver.find_element_by_xpath, inbox_xpath)
       self._ClickElementAndRecordLatency(inbox, test_description, 'Inbox')
       self.assertTrue(
           self.WaitUntil(lambda: 'Inbox' in self.GetActiveTabTitle(),
@@ -845,7 +843,7 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
           msg='Timed out waiting for Inbox to appear.')
       time.sleep(1)
 
-    self._RunEndureTest(self._webapp_name, self._tab_title_substring,
+    self._RunEndureTest(self._WEBAPP_NAME, self._TAB_TITLE_SUBSTRING,
                         test_description, scenario)
 
   def testGmailExpandCollapseConversation(self):
@@ -859,12 +857,12 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
     test_description = 'ExpandCollapse'
 
     # Enter conversation view for a particular thread.
-    thread = self._wait.until(
-        lambda _: self._GetElement(self._driver.find_element_by_xpath,
-                                   '//span[@email]'))
+    thread_xpath = '//span[@email]'
+    self.WaitForDomNode(thread_xpath, frame_xpath=self._FRAME_XPATH)
+    thread = self._GetElement(self._driver.find_element_by_xpath, thread_xpath)
     thread.click()
-    self._WaitForElementByXpath(
-        self._driver, self._wait, '//div[text()="Click here to "]')
+    self.WaitForDomNode('//div[text()="Click here to "]',
+                        frame_xpath=self._FRAME_XPATH)
 
     def scenario():
       # Click on the "Expand all" icon, wait for 1 second, click on the
@@ -872,39 +870,39 @@ class ChromeEndureGmailTest(ChromeEndureBaseTest):
 
       # Click the "Expand all" icon, then wait for that icon to be removed from
       # the page.
-      expand = self._wait.until(
-          lambda _: self._GetElement(self._driver.find_element_by_xpath,
-                                     '//img[@alt="Expand all"]'))
+      expand_xpath = '//img[@alt="Expand all"]'
+      self.WaitForDomNode(expand_xpath, frame_xpath=self._FRAME_XPATH)
+      expand = self._GetElement(self._driver.find_element_by_xpath,
+                                expand_xpath)
       self._ClickElementAndRecordLatency(expand, test_description, 'ExpandAll')
-      self._wait.until(
-          lambda _: self._GetElement(
-              self._driver.find_element_by_xpath,
-              '//img[@alt="Expand all"]/parent::*/parent::*/parent::*'
-              '[@style="display: none; "]'))
+      self.WaitForDomNode(
+          '//img[@alt="Expand all"]/parent::*/parent::*/parent::*'
+          '[@style="display: none; "]',
+          frame_xpath=self._FRAME_XPATH)
       time.sleep(1)
 
       # Click the "Collapse all" icon, then wait for that icon to be removed
       # from the page.
-      collapse = self._wait.until(
-          lambda _: self._GetElement(self._driver.find_element_by_xpath,
-                                     '//img[@alt="Collapse all"]'))
+      collapse_xpath = '//img[@alt="Collapse all"]'
+      self.WaitForDomNode(collapse_xpath, frame_xpath=self._FRAME_XPATH)
+      collapse = self._GetElement(self._driver.find_element_by_xpath,
+                                  collapse_xpath)
       collapse.click()
-      self._wait.until(
-          lambda _: self._GetElement(
-              self._driver.find_element_by_xpath,
-              '//img[@alt="Collapse all"]/parent::*/parent::*/parent::*'
-              '[@style="display: none; "]'))
+      self.WaitForDomNode(
+          '//img[@alt="Collapse all"]/parent::*/parent::*/parent::*'
+          '[@style="display: none; "]',
+          frame_xpath=self._FRAME_XPATH)
       time.sleep(1)
 
-    self._RunEndureTest(self._webapp_name, self._tab_title_substring,
+    self._RunEndureTest(self._WEBAPP_NAME, self._TAB_TITLE_SUBSTRING,
                         test_description, scenario)
 
 
 class ChromeEndureDocsTest(ChromeEndureBaseTest):
   """Long-running performance tests for Chrome using Google Docs."""
 
-  _webapp_name = 'Docs'
-  _tab_title_substring = 'Docs'
+  _WEBAPP_NAME = 'Docs'
+  _TAB_TITLE_SUBSTRING = 'Google Drive'
 
   def setUp(self):
     ChromeEndureBaseTest.setUp(self)
@@ -913,59 +911,59 @@ class ChromeEndureDocsTest(ChromeEndureBaseTest):
     self._LoginToGoogleAccount()
     self.NavigateToURL('http://docs.google.com')
     self.assertTrue(
-        self.WaitUntil(lambda: self._tab_title_substring in
+        self.WaitUntil(lambda: self._TAB_TITLE_SUBSTRING in
                                self.GetActiveTabTitle(),
                        timeout=60, expect_retval=True, retry_sleep=1),
         msg='Timed out waiting for Docs to load. Tab title is: %s' %
             self.GetActiveTabTitle())
 
     self._driver = self.NewWebDriver()
-    # Any call to wait.until() will raise an exception if the timeout is hit.
-    self._wait = WebDriverWait(self._driver, timeout=60)
 
   def testDocsAlternatelyClickLists(self):
     """Alternates between two different document lists.
 
-    This test alternately clicks the "Owned by me" and "Home" buttons in
+    This test alternately clicks the "Shared with me" and "My Drive" buttons in
     Google Docs, and periodically gathers performance stats that may reveal
     memory bloat.
     """
     test_description = 'AlternateLists'
 
     def scenario():
-      # Click the "Owned by me" button, wait for 1 second, click the "Home"
-      # button, wait for 1 second.
+      # Click the "Shared with me" button, wait for 1 second, click the
+      # "My Drive" button, wait for 1 second.
 
-      # Click the "Owned by me" button and wait for a resulting div to appear.
+      # Click the "Shared with me" button and wait for a div to appear.
       if not self._ClickElementByXpath(
-          self._driver, self._wait, '//div[text()="Owned by me"]'):
+          self._driver, '//span[starts-with(text(), "Shared with me")]'):
         self._num_errors += 1
-      if not self._WaitForElementByXpath(
-          self._driver, self._wait,
-          '//div[@title="Owned by me filter.  Use backspace or delete to '
-          'remove"]'):
-        self._num_errors += 1
+      self.WaitForDomNode('//div[text()="Share date"]')
       time.sleep(1)
 
-      # Click the "Home" button and wait for a resulting div to appear.
+      # Click the "My Drive" button and wait for a resulting div to appear.
       if not self._ClickElementByXpath(
-          self._driver, self._wait, '//div[text()="Home"]'):
+          self._driver, '//span[starts-with(text(), "My Drive")]'):
         self._num_errors += 1
-      if not self._WaitForElementByXpath(
-          self._driver, self._wait,
-          '//div[@title="Home filter.  Use backspace or delete to remove"]'):
-        self._num_errors += 1
+      self.WaitForDomNode('//div[text()="Quota used"]')
       time.sleep(1)
 
-    self._RunEndureTest(self._webapp_name, self._tab_title_substring,
+    # Open and close the "Sort" menu to get some DOM nodes to appear that are
+    # used by the scenario in this test.
+    sort_xpath = '//div[text()="Sort"]'
+    self.WaitForDomNode(sort_xpath)
+    sort_button = self._GetElement(self._driver.find_element_by_xpath,
+                                   sort_xpath)
+    sort_button.click()
+    sort_button.click()
+
+    self._RunEndureTest(self._WEBAPP_NAME, self._TAB_TITLE_SUBSTRING,
                         test_description, scenario)
 
 
 class ChromeEndurePlusTest(ChromeEndureBaseTest):
   """Long-running performance tests for Chrome using Google Plus."""
 
-  _webapp_name = 'Plus'
-  _tab_title_substring = 'Google+'
+  _WEBAPP_NAME = 'Plus'
+  _TAB_TITLE_SUBSTRING = 'Google+'
 
   def setUp(self):
     ChromeEndureBaseTest.setUp(self)
@@ -974,57 +972,64 @@ class ChromeEndurePlusTest(ChromeEndureBaseTest):
     self._LoginToGoogleAccount()
     self.NavigateToURL('http://plus.google.com')
     loaded_tab_title = self.GetActiveTabTitle()
-    self.assertTrue(self._tab_title_substring in loaded_tab_title,
+    self.assertTrue(self._TAB_TITLE_SUBSTRING in loaded_tab_title,
                     msg='Loaded tab title does not contain "%s": "%s"' %
-                        (self._tab_title_substring, loaded_tab_title))
+                        (self._TAB_TITLE_SUBSTRING, loaded_tab_title))
 
     self._driver = self.NewWebDriver()
-    # Any call to wait.until() will raise an exception if the timeout is hit.
-    self._wait = WebDriverWait(self._driver, timeout=60)
 
   def testPlusAlternatelyClickStreams(self):
     """Alternates between two different streams.
 
-    This test alternately clicks the "Friends" and "Acquaintances" buttons using
+    This test alternately clicks the "Friends" and "Family" buttons using
     Google Plus, and periodically gathers performance stats that may reveal
     memory bloat.
     """
     test_description = 'AlternateStreams'
 
     def scenario():
-      # Click the "Friends" button, wait for 1 second, click the "Acquaintances"
+      # Click the "Friends" button, wait for 1 second, click the "Family"
       # button, wait for 1 second.
 
       # Click the "Friends" button and wait for a resulting div to appear.
       if not self._ClickElementByXpath(
-          self._driver, self._wait,
-          '//a[text()="Friends" and starts-with(@href, "stream/circles")]'):
+          self._driver,
+          '//div[text()="Friends" and '
+          'starts-with(@data-dest, "stream/circles")]'):
         self._num_errors += 1
-      if not self._WaitForElementByXpath(
-          self._driver, self._wait, '//div[text()="Friends"]'):
+
+      try:
+        self.WaitForDomNode('//div[text()="Friends"]')
+      except (pyauto_errors.JSONInterfaceError,
+              pyauto_errors.JavascriptRuntimeError):
         self._num_errors += 1
+
       time.sleep(1)
 
-      # Click the "Acquaintances" button and wait for a resulting div to appear.
+      # Click the "Family" button and wait for a resulting div to appear.
       if not self._ClickElementByXpath(
-          self._driver, self._wait,
-          '//a[text()="Acquaintances" and '
-          'starts-with(@href, "stream/circles")]'):
+          self._driver,
+          '//div[text()="Family" and '
+          'starts-with(@data-dest, "stream/circles")]'):
         self._num_errors += 1
-      if not self._WaitForElementByXpath(
-          self._driver, self._wait, '//div[text()="Acquaintances"]'):
+
+      try:
+        self.WaitForDomNode('//div[text()="Family"]')
+      except (pyauto_errors.JSONInterfaceError,
+              pyauto_errors.JavascriptRuntimeError):
         self._num_errors += 1
+
       time.sleep(1)
 
-    self._RunEndureTest(self._webapp_name, self._tab_title_substring,
+    self._RunEndureTest(self._WEBAPP_NAME, self._TAB_TITLE_SUBSTRING,
                         test_description, scenario)
 
 
 class IndexedDBOfflineTest(ChromeEndureBaseTest):
   """Long-running performance tests for IndexedDB, modeling offline usage."""
 
-  _webapp_name = 'IndexedDBOffline'
-  _tab_title_substring = 'IndexedDB Offline'
+  _WEBAPP_NAME = 'IndexedDBOffline'
+  _TAB_TITLE_SUBSTRING = 'IndexedDB Offline'
 
   def setUp(self):
     ChromeEndureBaseTest.setUp(self)
@@ -1032,13 +1037,11 @@ class IndexedDBOfflineTest(ChromeEndureBaseTest):
     url = self.GetHttpURLForDataPath('indexeddb', 'endure', 'app.html')
     self.NavigateToURL(url)
     loaded_tab_title = self.GetActiveTabTitle()
-    self.assertTrue(self._tab_title_substring in loaded_tab_title,
+    self.assertTrue(self._TAB_TITLE_SUBSTRING in loaded_tab_title,
                     msg='Loaded tab title does not contain "%s": "%s"' %
-                        (self._tab_title_substring, loaded_tab_title))
+                        (self._TAB_TITLE_SUBSTRING, loaded_tab_title))
 
     self._driver = self.NewWebDriver()
-    # Any call to wait.until() will raise an exception if the timeout is hit.
-    self._wait = WebDriverWait(self._driver, timeout=60)
 
   def testOfflineOnline(self):
     """Simulates user input while offline and sync while online.
@@ -1051,24 +1054,30 @@ class IndexedDBOfflineTest(ChromeEndureBaseTest):
 
     def scenario():
       # Click the "Online" button and let simulated sync run for 1 second.
-      if not self._ClickElementByXpath(self._driver, self._wait,
-                                       'id("online")'):
+      if not self._ClickElementByXpath(self._driver, 'id("online")'):
         self._num_errors += 1
-      if not self._WaitForElementByXpath(
-        self._driver, self._wait, 'id("state")[text()="online"]'):
+
+      try:
+        self.WaitForDomNode('id("state")[text()="online"]')
+      except (pyauto_errors.JSONInterfaceError,
+              pyauto_errors.JavascriptRuntimeError):
         self._num_errors += 1
+
       time.sleep(1)
 
       # Click the "Offline" button and let user input occur for 1 second.
-      if not self._ClickElementByXpath(self._driver, self._wait,
-                                       'id("offline")'):
+      if not self._ClickElementByXpath(self._driver, 'id("offline")'):
         self._num_errors += 1
-      if not self._WaitForElementByXpath(
-          self._driver, self._wait, 'id("state")[text()="offline"]'):
+
+      try:
+        self.WaitForDomNode('id("state")[text()="offline"]')
+      except (pyauto_errors.JSONInterfaceError,
+              pyauto_errors.JavascriptRuntimeError):
         self._num_errors += 1
+
       time.sleep(1)
 
-    self._RunEndureTest(self._webapp_name, self._tab_title_substring,
+    self._RunEndureTest(self._WEBAPP_NAME, self._TAB_TITLE_SUBSTRING,
                         test_description, scenario)
 
 
