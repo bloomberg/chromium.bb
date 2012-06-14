@@ -16,6 +16,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebFileSystem.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "webkit/chromeos/fileapi/file_access_permissions.h"
+#include "webkit/chromeos/fileapi/remote_file_stream_writer.h"
 #include "webkit/chromeos/fileapi/remote_file_system_operation.h"
 #include "webkit/fileapi/file_system_file_stream_reader.h"
 #include "webkit/fileapi/file_system_operation.h"
@@ -276,8 +277,9 @@ fileapi::FileStreamWriter* CrosMountPointProvider::CreateFileStreamWriter(
   if (!mount_point)
     return NULL;
   if (mount_point->location == REMOTE) {
-    // TODO(kinaba): return a gdata writer for remote file system.
-    return NULL;
+    return new fileapi::RemoteFileStreamWriter(mount_point->remote_proxy,
+                                               url,
+                                               offset);
   }
   FilePath root_path = mount_point->local_root_path;
   return new fileapi::LocalFileStreamWriter(
