@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 #include "chrome/browser/status_icons/status_icon.h"
 
 class SkBitmap;
+@class MenuController;
 @class NSStatusItem;
 @class StatusItemController;
 
@@ -31,9 +32,12 @@ class StatusIconMac : public StatusIcon {
                               const string16& title,
                               const string16& contents) OVERRIDE;
 
+  bool HasStatusIconMenu();
+  void ShowStatusIconMenu();
+
  protected:
   // Overridden from StatusIcon.
-  virtual void UpdatePlatformContextMenu(ui::MenuModel* menu) OVERRIDE;
+  virtual void UpdatePlatformContextMenu(ui::MenuModel* model) OVERRIDE;
 
  private:
   // Getter for item_ that allows lazy initialization.
@@ -44,6 +48,10 @@ class StatusIconMac : public StatusIcon {
 
   // Notification balloon.
   DesktopNotificationBalloon notification_;
+
+  // Status menu shown when right-clicking the system icon, if it has been
+  // created by |UpdatePlatformContextMenu|.
+  scoped_nsobject<MenuController> menu_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusIconMac);
 };

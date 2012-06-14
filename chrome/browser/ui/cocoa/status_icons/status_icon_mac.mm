@@ -1,11 +1,14 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/cocoa/status_icons/status_icon_mac.h"
 
+#import <AppKit/AppKit.h>
+
 #include "base/logging.h"
 #include "base/sys_string_conversions.h"
+#import "chrome/browser/ui/cocoa/menu_controller.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -27,7 +30,12 @@
 - (void)handleClick:(id)sender {
   // Pass along the click notification to our owner.
   DCHECK(statusIcon_);
-  statusIcon_->DispatchClickEvent();
+  // Bring up the status icon menu if there is one, relay the click event
+  // otherwise.
+  if (statusIcon_->HasStatusIconMenu())
+    statusIcon_->ShowStatusIconMenu();
+  else
+    statusIcon_->DispatchClickEvent();
 }
 
 @end
@@ -82,7 +90,24 @@ void StatusIconMac::DisplayBalloon(const SkBitmap& icon,
   notification_.DisplayBalloon(icon, title, contents);
 }
 
-void StatusIconMac::UpdatePlatformContextMenu(ui::MenuModel* menu) {
-  // TODO(atwilson): Add support for context menus for Mac when actually needed
-  // (not yet used by anything) - http://crbug.com/37375.
+bool StatusIconMac::HasStatusIconMenu() {
+  return menu_.get() != nil;
+}
+
+void StatusIconMac::ShowStatusIconMenu() {
+  if (!menu_.get())
+    return;
+
+  [NSMenu popUpContextMenu:[menu_ menu]
+                 withEvent:[NSApp currentEvent]
+                   forView:[item() view]];
+}
+
+void StatusIconMac::UpdatePlatformContextMenu(ui::MenuModel* model) {
+  if (!model) {
+    menu_.reset();
+  } else {
+    menu_.reset([[MenuController alloc] initWithModel:model
+                               useWithPopUpButtonCell:NO]);
+  }
 }
