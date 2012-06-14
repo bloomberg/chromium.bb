@@ -264,7 +264,7 @@ hyphenate (const widechar * word, int wordSize, char *hyphens)
     prepWord[j++] = (findCharOrDots (word[i], 0))->lowercase;
   prepWord[j++] = '.';
   prepWord[j] = 0;
-  for (i = 0; i < j; i++)
+  for (i = 0; i < wordSize; i++)
     hyphens[i] = '0';
   /* now, run the finite state machine */
   stateNum = 0;
