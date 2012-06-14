@@ -735,6 +735,8 @@ views::View* TrayNetwork::CreateDetailedView(user::LoginStatus status) {
 
 views::View* TrayNetwork::CreateNotificationView(user::LoginStatus status) {
   CHECK(notification_ == NULL);
+  if (errors_->messages().empty())
+    return NULL;  // Error has already been cleared.
   notification_ = new tray::NetworkNotificationView(this);
   return notification_;
 }
