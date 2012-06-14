@@ -199,7 +199,7 @@ std::string ResourceBundle::LoadLocaleResources(
 
   if (locale_file_path.empty()) {
     // It's possible that there is no locale.pak.
-    DLOG(WARNING) << "locale_file_path.empty()";
+    LOG(WARNING) << "locale_file_path.empty()";
     return std::string();
   }
 
@@ -344,7 +344,11 @@ base::StringPiece ResourceBundle::GetRawDataResource(
 
   // TODO(tony): Firm up locking for or constraints of calling
   // ReloadLocaleResources() and how to CHECK for misuse.
-  DCHECK(locale_resources_data_.get());
+  if (!locale_resources_data_.get()) {
+    LOG(ERROR) << "!locale_resources_data_.get())";
+    NOTREACHED();
+  }
+
   if (locale_resources_data_->GetStringPiece(resource_id, &data))
     return data;
 
