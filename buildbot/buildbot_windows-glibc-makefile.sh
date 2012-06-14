@@ -19,7 +19,7 @@ export TOOLCHAINNAME=win_x86
 
 this_toolchain="$TOOLCHAINLOC/$TOOLCHAINNAME"
 
-GSUTIL=buildbot/gsutil
+GSUTIL=buildbot/gsutil.sh
 
 export INST_GLIBC_PROGRAM="$PWD/tools/glibc_download.sh"
 # Workaround for broken autoconf mmap test (WOW64 limitation)
