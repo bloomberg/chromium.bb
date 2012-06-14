@@ -122,8 +122,10 @@ void DoDeviceRequest(
                                           request->render_view_id);
 
   // Tab may have gone away.
-  if (!host || !host->GetDelegate())
+  if (!host || !host->GetDelegate()) {
     callback.Run(content::MediaStreamDevices());
+    return;
+  }
 
   host->GetDelegate()->RequestMediaAccessPermission(request, callback);
 }
