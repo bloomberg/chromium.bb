@@ -28,6 +28,7 @@ ChromeToMobileView::ChromeToMobileView(
       l10n_util::GetStringUTF16(IDS_CHROME_TO_MOBILE_BUBBLE_TOOLTIP));
   SetVisible(command_updater_->IsCommandEnabled(IDC_CHROME_TO_MOBILE_PAGE));
   command_updater_->AddCommandObserver(IDC_CHROME_TO_MOBILE_PAGE, this);
+  TouchableLocationBarView::Init(this);
 }
 
 ChromeToMobileView::~ChromeToMobileView() {
@@ -40,6 +41,10 @@ void ChromeToMobileView::EnabledStateChangedForCommand(int id, bool enabled) {
     SetVisible(enabled);
     location_bar_view_->Update(NULL);
   }
+}
+
+int ChromeToMobileView::GetBuiltInHorizontalPadding() const {
+  return GetBuiltInHorizontalPaddingImpl();
 }
 
 void ChromeToMobileView::GetAccessibleState(ui::AccessibleViewState* state) {

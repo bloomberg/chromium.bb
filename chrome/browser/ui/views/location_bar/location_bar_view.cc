@@ -64,6 +64,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/views/border.h"
 #include "ui/views/button_drag_utils.h"
 #include "ui/views/controls/label.h"
 
@@ -647,27 +648,31 @@ void LocationBarView::Layout() {
   }
 
   if (star_view_ && star_view_->visible()) {
+    offset += star_view_->GetBuiltInHorizontalPadding();
     int star_width = star_view_->GetPreferredSize().width();
     offset -= star_width;
     star_view_->SetBounds(offset, location_y, star_width, location_height);
-    offset -= GetItemPadding();
+    offset -= GetItemPadding() - star_view_->GetBuiltInHorizontalPadding();
   }
 
   if (chrome_to_mobile_view_ && chrome_to_mobile_view_->visible()) {
+    offset += chrome_to_mobile_view_->GetBuiltInHorizontalPadding();
     int icon_width = chrome_to_mobile_view_->GetPreferredSize().width();
     offset -= icon_width;
     chrome_to_mobile_view_->SetBounds(offset, location_y,
                                       icon_width, location_height);
-    offset -= GetItemPadding();
+    offset -= GetItemPadding() -
+        chrome_to_mobile_view_->GetBuiltInHorizontalPadding();
   }
 
   for (PageActionViews::const_iterator i(page_action_views_.begin());
        i != page_action_views_.end(); ++i) {
     if ((*i)->visible()) {
+      offset += (*i)->GetBuiltInHorizontalPadding();
       int page_action_width = (*i)->GetPreferredSize().width();
       offset -= page_action_width;
       (*i)->SetBounds(offset, location_y, page_action_width, location_height);
-      offset -= GetItemPadding();
+      offset -= GetItemPadding() - (*i)->GetBuiltInHorizontalPadding();
     }
   }
   // We use a reverse_iterator here because we're laying out the views from
@@ -676,19 +681,23 @@ void LocationBarView::Layout() {
        i(content_setting_views_.rbegin()); i != content_setting_views_.rend();
        ++i) {
     if ((*i)->visible()) {
+      offset += (*i)->GetBuiltInHorizontalPadding();
       int content_blocked_width = (*i)->GetPreferredSize().width();
       offset -= content_blocked_width;
       (*i)->SetBounds(offset, location_y, content_blocked_width,
                       location_height);
-      offset -= GetItemPadding();
+      offset -= GetItemPadding() - (*i)->GetBuiltInHorizontalPadding();
     }
   }
 
   // Now lay out items to the left of the edit field.
   if (location_icon_view_->visible()) {
-    location_icon_view_->SetBounds(kEdgeThickness + GetEdgeItemPadding(),
+    location_icon_view_->SetBounds(
+        kEdgeThickness + GetEdgeItemPadding() -
+        location_icon_view_->GetBuiltInHorizontalPadding(),
         location_y, location_icon_width, location_height);
-    offset = location_icon_view_->bounds().right() + kItemEditPadding;
+    offset = location_icon_view_->bounds().right() + kItemEditPadding -
+        location_icon_view_->GetBuiltInHorizontalPadding();
   } else if (ev_bubble_view_->visible()) {
     ev_bubble_view_->SetBounds(kEdgeThickness + kBubbleHorizontalPadding,
         location_y + kBubbleVerticalPadding, ev_bubble_width,

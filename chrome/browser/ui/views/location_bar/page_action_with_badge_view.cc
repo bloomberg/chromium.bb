@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@ PageActionWithBadgeView::PageActionWithBadgeView(
     PageActionImageView* image_view) {
   image_view_ = image_view;
   AddChildView(image_view_);
+  TouchableLocationBarView::Init(this);
 }
 
 void PageActionWithBadgeView::GetAccessibleState(
@@ -24,6 +25,10 @@ void PageActionWithBadgeView::GetAccessibleState(
 gfx::Size PageActionWithBadgeView::GetPreferredSize() {
   return gfx::Size(extensions::Extension::kPageActionIconMaxSize,
                    extensions::Extension::kPageActionIconMaxSize);
+}
+
+int PageActionWithBadgeView::GetBuiltInHorizontalPadding() const {
+  return GetBuiltInHorizontalPaddingImpl();
 }
 
 void PageActionWithBadgeView::Layout() {

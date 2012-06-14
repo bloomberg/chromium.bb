@@ -7,6 +7,7 @@
 #pragma once
 
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/ui/views/location_bar/touchable_location_bar_view.h"
 #include "ui/views/controls/image_view.h"
 
 class LocationBarView;
@@ -18,7 +19,8 @@ class MouseEvent;
 
 // A Page Action image view for the Chrome To Mobile bubble.
 class ChromeToMobileView : public views::ImageView,
-                           public CommandUpdater::CommandObserver {
+                           public CommandUpdater::CommandObserver,
+                           public TouchableLocationBarView {
  public:
   ChromeToMobileView(LocationBarView* location_bar_view,
                      CommandUpdater* command_updater);
@@ -26,6 +28,9 @@ class ChromeToMobileView : public views::ImageView,
 
   // CommandUpdater::CommandObserver overrides:
   virtual void EnabledStateChangedForCommand(int id, bool enabled) OVERRIDE;
+
+  // TouchableLocationBarView.
+  virtual int GetBuiltInHorizontalPadding() const OVERRIDE;
 
  private:
   // views::ImageView overrides:

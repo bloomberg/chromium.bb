@@ -21,6 +21,7 @@ StarView::StarView(CommandUpdater* command_updater)
   set_id(VIEW_ID_STAR_BUTTON);
   SetToggled(false);
   set_accessibility_focusable(true);
+  TouchableLocationBarView::Init(this);
 }
 
 StarView::~StarView() {
@@ -31,6 +32,10 @@ void StarView::SetToggled(bool on) {
       on ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR));
   SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       on ? IDR_STAR_LIT : IDR_STAR));
+}
+
+int StarView::GetBuiltInHorizontalPadding() const {
+  return GetBuiltInHorizontalPaddingImpl();
 }
 
 void StarView::GetAccessibleState(ui::AccessibleViewState* state) {

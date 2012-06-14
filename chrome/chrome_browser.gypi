@@ -3608,6 +3608,8 @@
         'browser/ui/views/location_bar/star_view.h',
         'browser/ui/views/location_bar/suggested_text_view.cc',
         'browser/ui/views/location_bar/suggested_text_view.h',
+        'browser/ui/views/location_bar/touchable_location_bar_view.cc',
+        'browser/ui/views/location_bar/touchable_location_bar_view.h',
         'browser/ui/views/login_prompt_views.cc',
         'browser/ui/views/login_view.cc',
         'browser/ui/views/login_view.h',
@@ -5209,7 +5211,7 @@
       # Protobuf compiler / generator for Chrome Variations seed.
       'target_name': 'variations_seed_proto',
       'type': 'static_library',
-      'sources': [ 
+      'sources': [
         'browser/metrics/proto/trials_seed.proto',
         'browser/metrics/proto/study.proto',
       ],

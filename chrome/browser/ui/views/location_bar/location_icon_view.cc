@@ -11,6 +11,7 @@
 LocationIconView::LocationIconView(LocationBarView* location_bar)
     : ALLOW_THIS_IN_INITIALIZER_LIST(page_info_helper_(this, location_bar)) {
   SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_LOCATION_ICON));
+  TouchableLocationBarView::Init(this);
 }
 
 LocationIconView::~LocationIconView() {
@@ -33,6 +34,10 @@ ui::GestureStatus LocationIconView::OnGestureEvent(
     return ui::GESTURE_STATUS_CONSUMED;
   }
   return ui::GESTURE_STATUS_UNKNOWN;
+}
+
+int LocationIconView::GetBuiltInHorizontalPadding() const {
+  return GetBuiltInHorizontalPaddingImpl();
 }
 
 void LocationIconView::ShowTooltip(bool show) {

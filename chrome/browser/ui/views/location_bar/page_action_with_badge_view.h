@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/compiler_specific.h"
+#include "chrome/browser/ui/views/location_bar/touchable_location_bar_view.h"
 #include "ui/gfx/size.h"
 #include "ui/views/view.h"
 
@@ -18,7 +19,9 @@ class WebContents;
 }
 
 // A container for the PageActionImageView plus its badge.
-class PageActionWithBadgeView : public views::View {
+class PageActionWithBadgeView
+    : public views::View,
+      public TouchableLocationBarView {
  public:
   explicit PageActionWithBadgeView(PageActionImageView* image_view);
 
@@ -27,6 +30,9 @@ class PageActionWithBadgeView : public views::View {
   // View overrides:
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
+
+  // TouchableLocationBarView.
+  virtual int GetBuiltInHorizontalPadding() const OVERRIDE;
 
   void UpdateVisibility(content::WebContents* contents, const GURL& url);
 

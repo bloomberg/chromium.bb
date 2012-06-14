@@ -58,6 +58,7 @@ ContentSettingImageView::ContentSettingImageView(
       text_size_(0),
       visible_text_size_(0) {
   SetHorizontalAlignment(ImageView::LEADING);
+  TouchableLocationBarView::Init(this);
 }
 
 ContentSettingImageView::~ContentSettingImageView() {
@@ -263,3 +264,8 @@ void ContentSettingImageView::OnWidgetClosing(views::Widget* widget) {
     slide_animator_->Show();
   }
 }
+
+int ContentSettingImageView::GetBuiltInHorizontalPadding() const {
+  return GetBuiltInHorizontalPaddingImpl();
+}
+
