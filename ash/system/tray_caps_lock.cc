@@ -102,7 +102,8 @@ TrayCapsLock::TrayCapsLock()
       detailed_(NULL),
       search_mapped_to_caps_lock_(false),
       caps_lock_enabled_(
-          Shell::GetInstance()->tray_delegate()->IsCapsLockOn()) {
+          Shell::GetInstance()->tray_delegate()->IsCapsLockOn()),
+      message_shown_(false) {
 }
 
 TrayCapsLock::~TrayCapsLock() {}
@@ -165,10 +166,14 @@ void TrayCapsLock::OnCapsLockChanged(bool enabled,
   if (default_) {
     default_->Update(enabled, search_mapped_to_caps_lock);
   } else {
-    if (enabled)
-      PopupDetailedView(kTrayPopupAutoCloseDelayForTextInSeconds, false);
-    else if (detailed_)
+    if (enabled) {
+      if (!message_shown_) {
+        PopupDetailedView(kTrayPopupAutoCloseDelayForTextInSeconds, false);
+        message_shown_ = true;
+      }
+    } else if (detailed_) {
       detailed_->GetWidget()->Close();
+    }
   }
 }
 

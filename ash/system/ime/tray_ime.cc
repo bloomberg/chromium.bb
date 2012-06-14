@@ -219,7 +219,8 @@ TrayIME::TrayIME()
     : tray_label_(NULL),
       default_(NULL),
       detailed_(NULL),
-      notification_(NULL) {
+      notification_(NULL),
+      message_shown_(false) {
 }
 
 TrayIME::~TrayIME() {
@@ -308,11 +309,11 @@ void TrayIME::OnIMERefresh(bool show_message) {
   if (detailed_)
     detailed_->Update(list, property_list);
 
-  if (show_message) {
-    if (!notification_)
+  if (show_message && !message_shown_) {
+    if (!notification_) {
       ShowNotificationView();
-    else
-      notification_->RestartAutoCloseTimer();
+      message_shown_ = true;
+    }
   }
 }
 

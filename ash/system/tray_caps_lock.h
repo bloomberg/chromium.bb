@@ -50,6 +50,7 @@ class TrayCapsLock : public TrayImageItem,
 
   bool search_mapped_to_caps_lock_;
   bool caps_lock_enabled_;
+  bool message_shown_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayCapsLock);
 };

@@ -56,6 +56,8 @@ class TrayIME : public SystemTrayItem,
   tray::IMEDetailedView* detailed_;
   tray::IMENotificationView* notification_;
 
+  bool message_shown_;
+
   DISALLOW_COPY_AND_ASSIGN(TrayIME);
 };
 
