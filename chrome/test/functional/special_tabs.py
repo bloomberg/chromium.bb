@@ -58,7 +58,6 @@ class SpecialTabsTest(pyauto.PyUITest):
     'chrome://net-internals/help.html': {},
     'chrome://newtab': { 'title': 'New Tab', 'CSP': False },
     'chrome://plugins': { 'title': 'Plug-ins' },
-    'chrome://sessions': { 'title': 'Sessions' },
     'chrome://settings': { 'title': 'Settings' },
     'chrome://settings/autofill': { 'title': 'Settings - Autofill settings' },
     'chrome://settings/clearBrowserData':
