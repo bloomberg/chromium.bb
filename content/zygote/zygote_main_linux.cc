@@ -152,11 +152,14 @@ static LocaltimeFunction g_libc_localtime64;
 static LocaltimeRFunction g_libc_localtime_r;
 static LocaltimeRFunction g_libc_localtime64_r;
 
+// http://crbug.com/123263, see below.
+#if !defined(ADDRESS_SANITIZER)
 static pthread_once_t g_libc_file_io_funcs_guard = PTHREAD_ONCE_INIT;
 static FopenFunction g_libc_fopen;
 static FopenFunction g_libc_fopen64;
 static XstatFunction g_libc_xstat;
 static Xstat64Function g_libc_xstat64;
+#endif
 
 static void InitLibcLocaltimeFunctions() {
   g_libc_localtime = reinterpret_cast<LocaltimeFunction>(
