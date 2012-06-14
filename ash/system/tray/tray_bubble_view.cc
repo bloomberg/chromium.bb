@@ -14,6 +14,7 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
+#include "ui/aura/event.h"
 #include "ui/aura/window.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -299,6 +300,68 @@ void TrayBubbleView::ViewHierarchyChanged(bool is_add,
     parent->layer()->SetMasksToBounds(true);
   }
 }
+
+TrayBubbleView::Host::Host()
+    : widget_(NULL),
+      tray_view_(NULL) {
+  Shell::GetInstance()->AddEnvEventFilter(this);
+}
+
+TrayBubbleView::Host::~Host() {
+  Shell::GetInstance()->RemoveEnvEventFilter(this);
+}
+
+void TrayBubbleView::Host::InitializeHost(views::Widget* widget,
+                                          views::View* tray_view) {
+  widget_ = widget;
+  tray_view_ = tray_view;
+}
+
+bool TrayBubbleView::Host::PreHandleKeyEvent(aura::Window* target,
+                                             aura::KeyEvent* event) {
+  return false;
+}
+
+bool TrayBubbleView::Host::PreHandleMouseEvent(aura::Window* target,
+                                               aura::MouseEvent* event) {
+  if (event->type() == ui::ET_MOUSE_PRESSED)
+    ProcessLocatedEvent(*event);
+  return false;
+}
+
+ui::TouchStatus TrayBubbleView::Host::PreHandleTouchEvent(
+    aura::Window* target,
+    aura::TouchEvent* event) {
+  if (event->type() == ui::ET_TOUCH_PRESSED)
+    ProcessLocatedEvent(*event);
+  return ui::TOUCH_STATUS_UNKNOWN;
+}
+
+ui::GestureStatus TrayBubbleView::Host::PreHandleGestureEvent(
+    aura::Window* target,
+    aura::GestureEvent* event) {
+  return ui::GESTURE_STATUS_UNKNOWN;
+}
+
+void TrayBubbleView::Host::ProcessLocatedEvent(
+    const aura::LocatedEvent& event) {
+  if (!widget_)
+    return;
+  gfx::Rect bounds = widget_->GetNativeWindow()->GetBoundsInRootWindow();
+  if (bounds.Contains(event.root_location()))
+    return;
+  if (tray_view_) {
+    // If the user clicks on the parent tray, don't process the event here,
+    // let the tray logic handle the event and determine show/hide behavior.
+    bounds = tray_view_->ConvertRectToWidget(tray_view_->GetLocalBounds());
+    if (bounds.Contains(event.location()))
+      return;
+  }
+  // Handle clicking outside the bubble and tray. We don't block the event, so
+  // it will also be handled by whatever widget was clicked on.
+  OnClickedOutsideView();
+}
+
 
 }  // namespace internal
 }  // namespace ash

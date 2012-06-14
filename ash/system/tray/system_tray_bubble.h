@@ -11,14 +11,9 @@
 #include "ash/wm/shelf_auto_hide_behavior.h"
 #include "base/base_export.h"
 #include "base/timer.h"
-#include "ui/aura/event_filter.h"
 #include "ui/views/widget/widget.h"
 
 #include <vector>
-
-namespace aura {
-class LocatedEvent;
-}
 
 namespace ash {
 
@@ -27,9 +22,8 @@ class SystemTrayItem;
 
 namespace internal {
 
-class SystemTrayBubble : public aura::EventFilter,
-                         public views::Widget::Observer,
-                         public TrayBubbleView::Host {
+class SystemTrayBubble : public TrayBubbleView::Host,
+                         public views::Widget::Observer {
  public:
   enum BubbleType {
     BUBBLE_TYPE_DEFAULT,
@@ -71,6 +65,7 @@ class SystemTrayBubble : public aura::EventFilter,
   virtual gfx::Rect GetAnchorRect() const OVERRIDE;
   virtual void OnMouseEnteredView() OVERRIDE;
   virtual void OnMouseExitedView() OVERRIDE;
+  virtual void OnClickedOutsideView() OVERRIDE;
 
   BubbleType bubble_type() const { return bubble_type_; }
   TrayBubbleView* bubble_view() const { return bubble_view_; }
@@ -85,21 +80,6 @@ class SystemTrayBubble : public aura::EventFilter,
 
  private:
   void CreateItemViews(user::LoginStatus login_status);
-
-  // Closes the bubble if the event happened outside the bounds.
-  // Returns true if the event should be stopped from being propagated farther.
-  bool ProcessLocatedEvent(const aura::LocatedEvent& event);
-
-  // Overridden from aura::EventFilter.
-  virtual bool PreHandleKeyEvent(aura::Window* target,
-                                 aura::KeyEvent* event) OVERRIDE;
-  virtual bool PreHandleMouseEvent(aura::Window* target,
-                                   aura::MouseEvent* event) OVERRIDE;
-  virtual ui::TouchStatus PreHandleTouchEvent(aura::Window* target,
-                                              aura::TouchEvent* event) OVERRIDE;
-  virtual ui::GestureStatus PreHandleGestureEvent(
-      aura::Window* target,
-      aura::GestureEvent* event) OVERRIDE;
 
   // Overridden from views::Widget::Observer.
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;

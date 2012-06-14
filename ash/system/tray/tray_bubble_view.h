@@ -6,10 +6,16 @@
 #define ASH_SYSTEM_TRAY_TRAY_BUBBLE_VIEW_H_
 #pragma once
 
+#include "ui/aura/event_filter.h"
 #include "ui/views/bubble/bubble_delegate.h"
+
+namespace aura {
+class LocatedEvent;
+}
 
 namespace views {
 class View;
+class Widget;
 }
 
 namespace ash {
@@ -19,17 +25,37 @@ namespace internal {
 // Mostly this handles custom anchor location and arrow and border rendering.
 class TrayBubbleView : public views::BubbleDelegateView {
  public:
-  class Host {
+  class Host : public aura::EventFilter {
    public:
-    Host() {}
-    virtual ~Host() {}
+    Host();
+    virtual ~Host();
+
+    void InitializeHost(views::Widget* widget, views::View* tray_view);
 
     virtual void BubbleViewDestroyed() = 0;
     virtual gfx::Rect GetAnchorRect() const = 0;
     virtual void OnMouseEnteredView() = 0;
     virtual void OnMouseExitedView() = 0;
+    virtual void OnClickedOutsideView() = 0;
+
+    // Overridden from aura::EventFilter.
+    virtual bool PreHandleKeyEvent(aura::Window* target,
+                                   aura::KeyEvent* event) OVERRIDE;
+    virtual bool PreHandleMouseEvent(aura::Window* target,
+                                     aura::MouseEvent* event) OVERRIDE;
+    virtual ui::TouchStatus PreHandleTouchEvent(
+        aura::Window* target,
+        aura::TouchEvent* event) OVERRIDE;
+    virtual ui::GestureStatus PreHandleGestureEvent(
+        aura::Window* target,
+        aura::GestureEvent* event) OVERRIDE;
 
    private:
+    void ProcessLocatedEvent(const aura::LocatedEvent& event);
+
+    views::Widget* widget_;
+    views::View* tray_view_;
+
     DISALLOW_COPY_AND_ASSIGN(Host);
   };
 

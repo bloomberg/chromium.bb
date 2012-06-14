@@ -11,7 +11,6 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/wm/window_animations.h"
 #include "base/message_loop.h"
-#include "ui/aura/event.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -181,14 +180,9 @@ SystemTrayBubble::SystemTrayBubble(
       bubble_type_(bubble_type),
       anchor_type_(ANCHOR_TYPE_TRAY),
       autoclose_delay_(0) {
-  if (bubble_type_ != BUBBLE_TYPE_NOTIFICATION)
-    Shell::GetInstance()->AddEnvEventFilter(this);
 }
 
 SystemTrayBubble::~SystemTrayBubble() {
-  if (bubble_type_ != BUBBLE_TYPE_NOTIFICATION)
-    Shell::GetInstance()->RemoveEnvEventFilter(this);
-
   DestroyItemViews();
   // Reset the host pointer in bubble_view_ in case its destruction is deferred.
   if (bubble_view_)
@@ -331,6 +325,8 @@ void SystemTrayBubble::InitView(const InitParams& init_params) {
       bubble_widget_->GetNativeWindow(),
       base::TimeDelta::FromMilliseconds(kAnimationDurationForPopupMS));
 
+  InitializeHost(bubble_widget_, tray_);
+
   bubble_view_->Show();
 }
 
@@ -379,6 +375,11 @@ void SystemTrayBubble::OnMouseEnteredView() {
 
 void SystemTrayBubble::OnMouseExitedView() {
   RestartAutoCloseTimer();
+}
+
+void SystemTrayBubble::OnClickedOutsideView() {
+  if (bubble_type_ != BUBBLE_TYPE_NOTIFICATION)
+    bubble_widget_->Close();
 }
 
 void SystemTrayBubble::DestroyItemViews() {
@@ -455,50 +456,6 @@ void SystemTrayBubble::CreateItemViews(user::LoginStatus login_status) {
     if (view)
       bubble_view_->AddChildView(new TrayPopupItemContainer(view));
   }
-}
-
-bool SystemTrayBubble::ProcessLocatedEvent(const aura::LocatedEvent& event) {
-  DCHECK_NE(BUBBLE_TYPE_NOTIFICATION, bubble_type_);
-  gfx::Rect bounds = bubble_widget_->GetNativeWindow()->GetBoundsInRootWindow();
-  if (bounds.Contains(event.root_location()))
-    return false;
-
-  bubble_widget_->Close();
-
-  // If the user clicks on the tray while the bubble is up, then the bubble will
-  // close. But after the mouse-up event on the tray, the bubble will show up
-  // again. To prevent this from happening, if this mouse-press event that
-  // closed the bubble is on the system tray, then do not let the event reach
-  // the tray.
-  bounds = tray_->GetWidget()->GetNativeWindow()->GetBoundsInRootWindow();
-  if (bounds.Contains(event.root_location()))
-    return true;
-  return false;
-}
-
-bool SystemTrayBubble::PreHandleKeyEvent(aura::Window* target,
-                                         aura::KeyEvent* event) {
-  return false;
-}
-
-bool SystemTrayBubble::PreHandleMouseEvent(aura::Window* target,
-                                           aura::MouseEvent* event) {
-  if (event->type() == ui::ET_MOUSE_PRESSED)
-    return ProcessLocatedEvent(*event);
-  return false;
-}
-
-ui::TouchStatus SystemTrayBubble::PreHandleTouchEvent(aura::Window* target,
-                                                      aura::TouchEvent* event) {
-  if (event->type() == ui::ET_TOUCH_PRESSED && ProcessLocatedEvent(*event))
-    return ui::TOUCH_STATUS_END;
-  return ui::TOUCH_STATUS_UNKNOWN;
-}
-
-ui::GestureStatus SystemTrayBubble::PreHandleGestureEvent(
-    aura::Window* target,
-    aura::GestureEvent* event) {
-  return ui::GESTURE_STATUS_UNKNOWN;
 }
 
 void SystemTrayBubble::OnWidgetClosing(views::Widget* widget) {

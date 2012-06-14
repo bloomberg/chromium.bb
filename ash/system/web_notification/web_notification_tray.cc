@@ -4,7 +4,6 @@
 
 #include "ash/system/web_notification/web_notification_tray.h"
 
-#include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/tray_bubble_view.h"
 #include "ash/system/tray/tray_constants.h"
@@ -12,7 +11,6 @@
 #include "grit/ash_strings.h"
 #include "grit/ui_resources.h"
 #include "grit/ui_resources_standard.h"
-#include "ui/aura/event.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -183,30 +181,6 @@ class WebNotificationList {
   DISALLOW_COPY_AND_ASSIGN(WebNotificationList);
 };
 
-// A simple view for the text (title and message) of a notification.
-class WebNotificationMessageView : public views::View {
- public:
-  explicit WebNotificationMessageView(const WebNotification& notification) {
-    views::Label* title = new views::Label(notification.title);
-    title->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-    title->SetFont(title->font().DeriveFont(0, gfx::Font::BOLD));
-    views::Label* message = new views::Label(notification.message);
-    message->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-    message->SetMultiLine(true);
-
-    SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
-    AddChildView(title);
-    AddChildView(message);
-  }
-
-  virtual ~WebNotificationMessageView() {
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebNotificationMessageView);
-};
-
 // A dropdown menu for notifications.
 class WebNotificationMenuModel : public ui::SimpleMenuModel,
                                  public ui::SimpleMenuModel::Delegate {
@@ -318,8 +292,12 @@ class WebNotificationView : public views::View,
     icon_ = new views::ImageView;
     icon_->SetImage(notification.image);
 
-    WebNotificationMessageView* message_view
-        = new WebNotificationMessageView(notification);
+    views::Label* title = new views::Label(notification.title);
+    title->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    title->SetFont(title->font().DeriveFont(0, gfx::Font::BOLD));
+    views::Label* message = new views::Label(notification.message);
+    message->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    message->SetMultiLine(true);
 
     close_button_ = new views::ImageButton(this);
     close_button_->SetImage(
@@ -369,18 +347,20 @@ class WebNotificationView : public views::View,
 
     layout->StartRow(0, 0);
     layout->AddView(icon_, 1, 2);
-    layout->AddView(message_view, 1, 2);
-    layout->AddView(close_button_);
+    layout->AddView(title, 1, 1);
+    layout->AddView(close_button_, 1, 1);
 
     layout->StartRow(0, 0);
+    layout->SkipColumns(2);
+    layout->AddView(message, 1, 1);
     if (menu_button_) {
-      layout->SkipColumns(4);
-      layout->AddView(menu_button_);
+      layout->AddView(menu_button_, 1, 1,
+                      views::GridLayout::CENTER, views::GridLayout::LEADING);
     }
     layout->AddPaddingRow(0, kTrayPopupPaddingBetweenItems);
   }
 
-  // view::Views overrodes.
+  // view::Views overrides.
   virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE {
     tray_->OnClicked(notification_.id);
     return true;
@@ -499,11 +479,16 @@ class WebNotificationTray::BubbleContentsView : public views::View {
       WebNotificationView* view = new WebNotificationView(tray_, *iter);
       scroll_content_->AddChildView(view);
     }
-    SizeScrollContent();
-    scroller_->Layout();
-    Layout();
     PreferredSizeChanged();
-    SchedulePaint();
+    GetWidget()->GetRootView()->Layout();
+    GetWidget()->GetRootView()->SchedulePaint();
+  }
+
+  // Overridden from view::View:
+  virtual void Layout() OVERRIDE {
+    SizeScrollContent();
+    views::View::Layout();
+    PreferredSizeChanged();
   }
 
  private:
@@ -514,8 +499,12 @@ class WebNotificationTray::BubbleContentsView : public views::View {
         std::max(scroll_size.height(),
                  kWebNotificationBubbleMinHeight - button_height),
         kWebNotificationBubbleMaxHeight - button_height);
-    scroll_size.set_height(scroll_height);
-    scroller_->set_fixed_size(scroll_size);
+    if (scroll_height < scroll_size.height()) {
+      scroll_size.set_height(scroll_height);
+      scroller_->SetFixedSize(scroll_size);
+    } else {
+      scroller_->SetFixedSize(gfx::Size());
+    }
   }
 
   WebNotificationTray* tray_;
@@ -560,6 +549,8 @@ class WebNotificationTray::Bubble : public internal::TrayBubbleView::Host,
     contents_view_ = new BubbleContentsView(tray);
     bubble_view_->AddChildView(contents_view_);
 
+    InitializeHost(bubble_widget_, tray_);
+
     Update();
     bubble_view_->Show();
   }
@@ -575,8 +566,6 @@ class WebNotificationTray::Bubble : public internal::TrayBubbleView::Host,
 
   void Update() {
     contents_view_->Update(tray_->notification_list()->notifications());
-    bubble_view_->Layout();
-    bubble_view_->SchedulePaint();
   }
 
   views::Widget* bubble_widget() const { return bubble_widget_; }
@@ -596,6 +585,11 @@ class WebNotificationTray::Bubble : public internal::TrayBubbleView::Host,
   }
 
   virtual void OnMouseExitedView() OVERRIDE {
+  }
+
+  virtual void OnClickedOutsideView() OVERRIDE {
+    // May delete |this|.
+    tray_->status_area_widget()->HideWebNotificationBubble();
   }
 
   // Overridden from views::Widget::Observer.
@@ -631,12 +625,9 @@ WebNotificationTray::WebNotificationTray(
   UpdateIcon();  // Hides the tray initially.
 
   SetContents(tray_container_);
-
-  Shell::GetInstance()->AddEnvEventFilter(this);
 }
 
 WebNotificationTray::~WebNotificationTray() {
-  Shell::GetInstance()->RemoveEnvEventFilter(this);
 }
 
 void WebNotificationTray::SetDelegate(Delegate* delegate) {
@@ -738,34 +729,6 @@ void WebNotificationTray::OnClicked(const std::string& id) {
     delegate_->OnClicked(id);
 }
 
-bool WebNotificationTray::PreHandleKeyEvent(aura::Window* target,
-                                            aura::KeyEvent* event) {
-  return false;
-}
-
-bool WebNotificationTray::PreHandleMouseEvent(aura::Window* target,
-                                              aura::MouseEvent* event) {
-  if (event->type() == ui::ET_MOUSE_PRESSED)
-    return ProcessLocatedEvent(*event);
-  return false;
-}
-
-ui::TouchStatus WebNotificationTray::PreHandleTouchEvent(
-    aura::Window* target,
-    aura::TouchEvent* event) {
-  if (event->type() != ui::ET_TOUCH_PRESSED)
-    return ui::TOUCH_STATUS_UNKNOWN;
-  if (ProcessLocatedEvent(*event))
-    return ui::TOUCH_STATUS_END;
-  return ui::TOUCH_STATUS_UNKNOWN;
-}
-
-ui::GestureStatus WebNotificationTray::PreHandleGestureEvent(
-    aura::Window* target,
-    aura::GestureEvent* event) {
-  return ui::GESTURE_STATUS_UNKNOWN;
-}
-
 void WebNotificationTray::SetShelfAlignment(ShelfAlignment alignment) {
   internal::TrayBackgroundView::SetShelfAlignment(alignment);
   tray_container_->SetLayoutManager(new views::BoxLayout(
@@ -807,21 +770,6 @@ void WebNotificationTray::UpdateBubbleAndIcon() {
     status_area_widget_->HideWebNotificationBubble();
   else
     bubble_->Update();
-}
-
-bool WebNotificationTray::ProcessLocatedEvent(const aura::LocatedEvent& event) {
-  if (!bubble())
-    return false;
-  gfx::Rect bounds =
-      bubble_->bubble_widget()->GetNativeWindow()->GetBoundsInRootWindow();
-  if (bounds.Contains(event.root_location()))
-    return false;
-  status_area_widget_->HideWebNotificationBubble();
-  // If the event occurred in the tray widget, don't process the click.
-  bounds = GetWidget()->GetNativeWindow()->GetBoundsInRootWindow();
-  if (bounds.Contains(event.root_location()))
-    return true;
-  return false;
 }
 
 }  // namespace ash

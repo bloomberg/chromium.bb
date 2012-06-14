@@ -255,6 +255,13 @@ void FixedSizedScrollView::SetContentsView(View* view) {
   view->SetBoundsRect(gfx::Rect(view->GetPreferredSize()));
 }
 
+void FixedSizedScrollView::SetFixedSize(gfx::Size size) {
+  if (fixed_size_ == size)
+    return;
+  fixed_size_ = size;
+  PreferredSizeChanged();
+}
+
 gfx::Size FixedSizedScrollView::GetPreferredSize() {
   return fixed_size_.IsEmpty() ? GetContents()->GetPreferredSize() :
                                  fixed_size_;

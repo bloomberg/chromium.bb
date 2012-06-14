@@ -5,7 +5,6 @@
 #include "ash/focus_cycler.h"
 
 #include "ash/shell.h"
-#include "ash/system/tray/system_tray.h"
 #include "ash/wm/window_cycle_controller.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/window.h"

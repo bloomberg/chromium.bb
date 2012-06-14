@@ -147,8 +147,7 @@ class FixedSizedScrollView : public views::ScrollView {
   virtual ~FixedSizedScrollView();
 
   void SetContentsView(View* view);
-
-  void set_fixed_size(gfx::Size size) { fixed_size_ = size; }
+  void SetFixedSize(gfx::Size size);
 
   // views::View public method overrides.
   virtual gfx::Size GetPreferredSize() OVERRIDE;

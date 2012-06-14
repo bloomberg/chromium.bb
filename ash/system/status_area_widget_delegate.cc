@@ -20,7 +20,7 @@
 
 namespace {
 
-int kTraySpacing = 10;
+int kTraySpacing = 1;
 
 }  // namespace
 
@@ -113,8 +113,9 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
 }
 
 void StatusAreaWidgetDelegate::ChildPreferredSizeChanged(View* child) {
-  // Need to re-layout the parent window when trays or items are added/removed.
-  parent()->GetWidget()->GetRootView()->Layout();
+  // Need to resize the window when trays or items are added/removed.
+  if (GetWidget())
+    GetWidget()->SetSize(GetPreferredSize());
 }
 
 }  // namespace internal

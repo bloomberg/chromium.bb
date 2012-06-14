@@ -61,31 +61,24 @@ class SystemTrayContainer : public views::View {
 
   void SetLayoutManager(views::LayoutManager* layout_manager) {
     views::View::SetLayoutManager(layout_manager);
-    UpdateWidgetSize();
+    PreferredSizeChanged();
   }
 
  private:
-  void UpdateWidgetSize() {
-    if (GetWidget())
-      GetWidget()->SetSize(GetWidget()->GetContentsView()->GetPreferredSize());
-  }
-
   // Overridden from views::View.
   virtual void ChildPreferredSizeChanged(views::View* child) {
-    views::View::ChildPreferredSizeChanged(child);
-    UpdateWidgetSize();
+    PreferredSizeChanged();
   }
 
   virtual void ChildVisibilityChanged(View* child) OVERRIDE {
-    views::View::ChildVisibilityChanged(child);
-    UpdateWidgetSize();
+    PreferredSizeChanged();
   }
 
   virtual void ViewHierarchyChanged(bool is_add,
                                     View* parent,
                                     View* child) OVERRIDE {
     if (parent == this)
-      UpdateWidgetSize();
+      PreferredSizeChanged();
   }
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayContainer);
