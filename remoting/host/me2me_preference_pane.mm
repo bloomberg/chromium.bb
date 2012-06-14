@@ -6,23 +6,18 @@
 
 #import <Cocoa/Cocoa.h>
 #include <CommonCrypto/CommonHMAC.h>
+#include <errno.h>
 #include <launch.h>
 #import <PreferencePanes/PreferencePanes.h>
 #import <SecurityInterface/SFAuthorizationView.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 #include <fstream>
 
 #include "base/eintr_wrapper.h"
-#include "base/logging.h"
-#include "base/mac/authorization_util.h"
-#include "base/mac/foundation_util.h"
-#include "base/mac/launchd.h"
-#include "base/mac/mac_logging.h"
 #include "base/mac/scoped_launch_data.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/stringprintf.h"
-#include "base/sys_string_conversions.h"
 #include "remoting/host/host_config.h"
 #import "remoting/host/me2me_preference_pane_confirm_pin.h"
 #import "remoting/host/me2me_preference_pane_disable.h"
@@ -75,7 +70,7 @@ bool IsPinValid(const std::string& pin, const std::string& host_id,
 
   std::string method = host_secret_hash.substr(0, separator);
   if (method != "hmac") {
-    LOG(ERROR) << "Authentication method '" << method << "' not supported";
+    NSLog(@"Authentication method '%s' not supported", method.c_str());
     return false;
   }
 
@@ -90,7 +85,7 @@ bool IsPinValid(const std::string& pin, const std::string& host_id,
   int hash_size = modp_b64_decode(&(hash[0]), hash_base64.data(),
                                   hash_base64_size);
   if (hash_size < 0) {
-    LOG(ERROR) << "Failed to parse host_secret_hash";
+    NSLog(@"Failed to parse host_secret_hash");
     return false;
   }
   hash.resize(hash_size);
@@ -110,6 +105,139 @@ bool IsPinValid(const std::string& pin, const std::string& host_id,
 }
 
 }  // namespace
+
+// These methods are copied from base/mac, but with the logging changed to use
+// NSLog().
+//
+// TODO(lambroslambrou): Once the "base" target supports building for 64-bit
+// on Mac OS X, remove these implementations and use the ones in base/mac.
+namespace base {
+namespace mac {
+
+// MessageForJob sends a single message to launchd with a simple dictionary
+// mapping |operation| to |job_label|, and returns the result of calling
+// launch_msg to send that message. On failure, returns NULL. The caller
+// assumes ownership of the returned launch_data_t object.
+launch_data_t MessageForJob(const std::string& job_label,
+                            const char* operation) {
+  // launch_data_alloc returns something that needs to be freed.
+  ScopedLaunchData message(launch_data_alloc(LAUNCH_DATA_DICTIONARY));
+  if (!message) {
+    NSLog(@"launch_data_alloc");
+    return NULL;
+  }
+
+  // launch_data_new_string returns something that needs to be freed, but
+  // the dictionary will assume ownership when launch_data_dict_insert is
+  // called, so put it in a scoper and .release() it when given to the
+  // dictionary.
+  ScopedLaunchData job_label_launchd(launch_data_new_string(job_label.c_str()));
+  if (!job_label_launchd) {
+    NSLog(@"launch_data_new_string");
+    return NULL;
+  }
+
+  if (!launch_data_dict_insert(message,
+                               job_label_launchd.release(),
+                               operation)) {
+    return NULL;
+  }
+
+  return launch_msg(message);
+}
+
+pid_t PIDForJob(const std::string& job_label) {
+  ScopedLaunchData response(MessageForJob(job_label, LAUNCH_KEY_GETJOB));
+  if (!response) {
+    return -1;
+  }
+
+  launch_data_type_t response_type = launch_data_get_type(response);
+  if (response_type != LAUNCH_DATA_DICTIONARY) {
+    if (response_type == LAUNCH_DATA_ERRNO) {
+      NSLog(@"PIDForJob: error %d", launch_data_get_errno(response));
+    } else {
+      NSLog(@"PIDForJob: expected dictionary, got %d", response_type);
+    }
+    return -1;
+  }
+
+  launch_data_t pid_data = launch_data_dict_lookup(response,
+                                                   LAUNCH_JOBKEY_PID);
+  if (!pid_data)
+    return 0;
+
+  if (launch_data_get_type(pid_data) != LAUNCH_DATA_INTEGER) {
+    NSLog(@"PIDForJob: expected integer");
+    return -1;
+  }
+
+  return launch_data_get_integer(pid_data);
+}
+
+OSStatus ExecuteWithPrivilegesAndGetPID(AuthorizationRef authorization,
+                                        const char* tool_path,
+                                        AuthorizationFlags options,
+                                        const char** arguments,
+                                        FILE** pipe,
+                                        pid_t* pid) {
+  // pipe may be NULL, but this function needs one.  In that case, use a local
+  // pipe.
+  FILE* local_pipe;
+  FILE** pipe_pointer;
+  if (pipe) {
+    pipe_pointer = pipe;
+  } else {
+    pipe_pointer = &local_pipe;
+  }
+
+  // AuthorizationExecuteWithPrivileges wants |char* const*| for |arguments|,
+  // but it doesn't actually modify the arguments, and that type is kind of
+  // silly and callers probably aren't dealing with that.  Put the cast here
+  // to make things a little easier on callers.
+  OSStatus status = AuthorizationExecuteWithPrivileges(authorization,
+                                                       tool_path,
+                                                       options,
+                                                       (char* const*)arguments,
+                                                       pipe_pointer);
+  if (status != errAuthorizationSuccess) {
+    return status;
+  }
+
+  long line_pid = -1;
+  size_t line_length = 0;
+  char* line_c = fgetln(*pipe_pointer, &line_length);
+  if (line_c) {
+    if (line_length > 0 && line_c[line_length - 1] == '\n') {
+      // line_c + line_length is the start of the next line if there is one.
+      // Back up one character.
+      --line_length;
+    }
+    std::string line(line_c, line_length);
+
+    // The version in base/mac used base::StringToInt() here.
+    line_pid = strtol(line.c_str(), NULL, 10);
+    if (line_pid == 0) {
+      NSLog(@"ExecuteWithPrivilegesAndGetPid: funny line: %s", line.c_str());
+      line_pid = -1;
+    }
+  } else {
+    NSLog(@"ExecuteWithPrivilegesAndGetPid: no line");
+  }
+
+  if (!pipe) {
+    fclose(*pipe_pointer);
+  }
+
+  if (pid) {
+    *pid = line_pid;
+  }
+
+  return status;
+}
+
+}  // namespace mac
+}  // namespace base
 
 namespace remoting {
 JsonHostConfig::JsonHostConfig(const std::string& filename)
@@ -215,12 +343,15 @@ std::string JsonHostConfig::GetSerializedData() const {
   [self updateAuthorizationStatus];
   [self updateUI];
 
-  std::string pin_utf8 = base::SysNSStringToUTF8(pin);
+  std::string pin_utf8 = [pin UTF8String];
   std::string host_id, host_secret_hash;
   bool result = (config_->GetString(remoting::kHostIdConfigPath, &host_id) &&
                  config_->GetString(remoting::kHostSecretHashConfigPath,
                                     &host_secret_hash));
-  DCHECK(result);
+  if (!result) {
+    [self showError];
+    return;
+  }
   if (!IsPinValid(pin_utf8, host_id, host_secret_hash)) {
     [self showIncorrectPinMessage];
     return;
@@ -239,7 +370,7 @@ std::string JsonHostConfig::GetSerializedData() const {
 
   if (![self runHelperAsRootWithCommand:"--disable"
                               inputData:""]) {
-    LOG(ERROR) << "Failed to run the helper tool";
+    NSLog(@"Failed to run the helper tool");
     [self showError];
     [self notifyPlugin: kUpdateFailedNotificationName];
     return;
@@ -293,7 +424,7 @@ std::string JsonHostConfig::GetSerializedData() const {
 - (void)readNewConfig {
   std::string file;
   if (!GetTemporaryConfigFilePath(&file)) {
-    LOG(ERROR) << "Failed to get path of configuration data.";
+    NSLog(@"Failed to get path of configuration data.");
     [self showError];
     return;
   }
@@ -305,13 +436,13 @@ std::string JsonHostConfig::GetSerializedData() const {
   if (!new_config_->Read()) {
     // Report the error, because the file exists but couldn't be read.  The
     // case of non-existence is normal and expected.
-    LOG(ERROR) << "Error reading configuration data from " << file.c_str();
+    NSLog(@"Error reading configuration data from %s", file.c_str());
     [self showError];
     return;
   }
   remove(file.c_str());
   if (!IsConfigValid(new_config_.get())) {
-    LOG(ERROR) << "Invalid configuration data read.";
+    NSLog(@"Invalid configuration data read.");
     [self showError];
     return;
   }
@@ -352,14 +483,16 @@ std::string JsonHostConfig::GetSerializedData() const {
     bool result = config_->GetString(remoting::kXmppLoginConfigPath, &email);
 
     // The config has already been checked by |IsConfigValid|.
-    DCHECK(result);
+    if (!result) {
+      [self showError];
+      return;
+    }
   }
-
   [disable_view_ setEnabled:(is_pane_unlocked_ && is_service_running_ &&
                              !restart_pending_or_canceled_)];
   [confirm_pin_view_ setEnabled:(is_pane_unlocked_ &&
                                  !restart_pending_or_canceled_)];
-  [confirm_pin_view_ setEmail:base::SysUTF8ToNSString(email)];
+  [confirm_pin_view_ setEmail:[NSString stringWithUTF8String:email.c_str()]];
   NSString* applyButtonText = is_service_running_ ? @"Confirm" : @"Enable";
   [confirm_pin_view_ setButtonText:applyButtonText];
 
@@ -396,7 +529,7 @@ std::string JsonHostConfig::GetSerializedData() const {
   const char* command = is_service_running_ ? "--save-config" : "--enable";
   if (![self runHelperAsRootWithCommand:command
                               inputData:serialized_config]) {
-    LOG(ERROR) << "Failed to run the helper tool";
+    NSLog(@"Failed to run the helper tool");
     [self showError];
     return;
   }
@@ -410,7 +543,7 @@ std::string JsonHostConfig::GetSerializedData() const {
     if (job_pid > 0) {
       kill(job_pid, SIGHUP);
     } else {
-      LOG(ERROR) << "Failed to obtain PID of service " << kServiceName;
+      NSLog(@"Failed to obtain PID of service " kServiceName);
       [self showError];
     }
   } else {
@@ -427,7 +560,7 @@ std::string JsonHostConfig::GetSerializedData() const {
   AuthorizationRef authorization =
       [[authorization_view_ authorization] authorizationRef];
   if (!authorization) {
-    LOG(ERROR) << "Failed to obtain authorizationRef";
+    NSLog(@"Failed to obtain authorizationRef");
     return NO;
   }
 
@@ -445,18 +578,19 @@ std::string JsonHostConfig::GetSerializedData() const {
       &pipe,
       &pid);
   if (status != errAuthorizationSuccess) {
-    OSSTATUS_LOG(ERROR, status) << "AuthorizationExecuteWithPrivileges";
+    NSLog(@"AuthorizationExecuteWithPrivileges: %s (%d)",
+          GetMacOSStatusErrorString(status), static_cast<int>(status));
     return NO;
   }
   if (pid == -1) {
-    LOG(ERROR) << "Failed to get child PID";
+    NSLog(@"Failed to get child PID");
     if (pipe)
       fclose(pipe);
 
     return NO;
   }
   if (!pipe) {
-    LOG(ERROR) << "Unexpected NULL pipe";
+    NSLog(@"Unexpected NULL pipe");
     return NO;
   }
 
@@ -470,7 +604,7 @@ std::string JsonHostConfig::GetSerializedData() const {
     // According to the fwrite manpage, a partial count is returned only if a
     // write error has occurred.
     if (bytes_written != input_data.size()) {
-      LOG(ERROR) << "Failed to write data to child process";
+      NSLog(@"Failed to write data to child process");
       error = YES;
     }
   }
@@ -480,14 +614,14 @@ std::string JsonHostConfig::GetSerializedData() const {
   // waitpid(), since the child reads until EOF on its stdin, so calling
   // waitpid() first would result in deadlock.
   if (fclose(pipe) != 0) {
-    PLOG(ERROR) << "fclose";
+    NSLog(@"fclose failed with error %d", errno);
     error = YES;
   }
 
   int exit_status;
   pid_t wait_result = HANDLE_EINTR(waitpid(pid, &exit_status, 0));
   if (wait_result != pid) {
-    PLOG(ERROR) << "waitpid";
+    NSLog(@"waitpid failed with error %d", errno);
     error = YES;
   }
 
@@ -498,7 +632,7 @@ std::string JsonHostConfig::GetSerializedData() const {
   if (WIFEXITED(exit_status) && WEXITSTATUS(exit_status) == 0) {
     return YES;
   } else {
-    LOG(ERROR) << kHelperTool << " failed with exit status " << exit_status;
+    NSLog(@"%s failed with exit status %d", kHelperTool, exit_status);
     return NO;
   }
 }
@@ -507,7 +641,7 @@ std::string JsonHostConfig::GetSerializedData() const {
   base::mac::ScopedLaunchData response(
       base::mac::MessageForJob(kServiceName, launch_key));
   if (!response) {
-    LOG(ERROR) << "Failed to send message to launchd";
+    NSLog(@"Failed to send message to launchd");
     [self showError];
     return NO;
   }
@@ -515,14 +649,14 @@ std::string JsonHostConfig::GetSerializedData() const {
   // Expect a response of type LAUNCH_DATA_ERRNO.
   launch_data_type_t type = launch_data_get_type(response.get());
   if (type != LAUNCH_DATA_ERRNO) {
-    LOG(ERROR) << "launchd returned unexpected type: " << type;
+    NSLog(@"launchd returned unexpected type: %d", type);
     [self showError];
     return NO;
   }
 
   int error = launch_data_get_errno(response.get());
   if (error) {
-    LOG(ERROR) << "launchd returned error: " << error;
+    NSLog(@"launchd returned error: %d", error);
     [self showError];
     return NO;
   }
@@ -556,7 +690,7 @@ std::string JsonHostConfig::GetSerializedData() const {
     NSString* disk_version = [disk_plist objectForKey:@"CFBundleVersion"];
 
     if (disk_version == nil) {
-      LOG(ERROR) << "Failed to get installed version information";
+      NSLog(@"Failed to get installed version information");
       [self showError];
       return;
     }
@@ -616,7 +750,7 @@ std::string JsonHostConfig::GetSerializedData() const {
       // There's no point in alerting the user here.  The same error would
       // happen when the pane is eventually restarted, so the user would be
       // alerted at that time.
-      LOG(ERROR) << "Failed to get path of configuration data.";
+      NSLog(@"Failed to get path of configuration data.");
       return;
     }
     if (access(file.c_str(), F_OK) != 0)

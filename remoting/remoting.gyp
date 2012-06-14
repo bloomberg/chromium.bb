@@ -386,10 +386,6 @@
           'type': 'loadable_module',
           'mac_bundle': 1,
           'product_extension': 'prefPane',
-          'dependencies': [
-            'remoting_base',
-            'remoting_host',
-          ],
           'defines': [
             'JSON_USE_EXCEPTION=0',
           ],
@@ -397,13 +393,20 @@
             '../third_party/jsoncpp/overrides/include/',
             '../third_party/jsoncpp/source/include/',
             '../third_party/jsoncpp/source/src/lib_json/',
-          ],
+	  ],
+
+          # These source files are included directly, instead of adding target
+	  # dependencies, because the targets are not yet built for 64-bit on
+	  # Mac OS X - http://crbug.com/125116.
+	  #
+	  # TODO(lambroslambrou): Fix this when Chrome supports building for
+	  # Mac OS X 64-bit - http://crbug.com/128122.
           'sources': [
-            # The jsoncpp target is not yet built for Mac OS X 64-bit, so
-            # include the files directly, instead of depending on the target.
-            '../third_party/jsoncpp/source/src/lib_json/json_reader.cpp',
-            '../third_party/jsoncpp/source/src/lib_json/json_writer.cpp',
-            '../third_party/modp_b64/modp_b64.cc',
+	    '../third_party/jsoncpp/source/src/lib_json/json_reader.cpp',
+	    '../third_party/jsoncpp/overrides/src/lib_json/json_value.cpp',
+	    '../third_party/jsoncpp/source/src/lib_json/json_writer.cpp',
+	    '../third_party/modp_b64/modp_b64.cc',
+	    'host/host_config.cc',
             'host/me2me_preference_pane.h',
             'host/me2me_preference_pane.mm',
             'host/me2me_preference_pane_confirm_pin.h',
@@ -413,10 +416,15 @@
           ],
           'link_settings': {
             'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/Cocoa.framework',
+              '$(SDKROOT)/System/Library/Frameworks/CoreFoundation.framework',
               '$(SDKROOT)/System/Library/Frameworks/PreferencePanes.framework',
+              '$(SDKROOT)/System/Library/Frameworks/Security.framework',
             ],
           },
           'xcode_settings': {
+            'ARCHS': ['i386', 'x86_64'],
+            'GCC_ENABLE_OBJC_GC': 'supported',
             'INFOPLIST_FILE': 'host/me2me_preference_pane-Info.plist',
             'INFOPLIST_PREPROCESS': 'YES',
             'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)" BUNDLE_NAME="<(bundle_name)" BUNDLE_ID="<(bundle_id)" COPYRIGHT_BY="<(copyright_by)" PREF_PANE_ICON_LABEL="<(pref_pane_icon_label)"',
