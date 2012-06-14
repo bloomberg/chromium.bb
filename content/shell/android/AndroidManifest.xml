@@ -26,23 +26,23 @@
         </activity>
         <!-- NOTE: If you change the values of "android:process" for any of the below services,
              you also need to update kHelperProcessExecutableName in chrome_constants.cc. -->
-        <service android:name="org.chromium.content.app.SanboxedProcessService0"
+        <service android:name="org.chromium.content.app.SandboxedProcessService0"
                  android:process=":sandboxed_process0"
                  android:permission="org.chromium.content_shell.permission.SANDBOX"
                  android:exported="false" />
-        <service android:name="org.chromium.content.app.SanboxedProcessService1"
+        <service android:name="org.chromium.content.app.SandboxedProcessService1"
                  android:process=":sandboxed_process1"
                  android:permission="org.chromium.content_shell.permission.SANDBOX"
                  android:exported="false" />
-        <service android:name="org.chromium.content.app.SanboxedProcessService2"
+        <service android:name="org.chromium.content.app.SandboxedProcessService2"
                  android:process=":sandboxed_process2"
                  android:permission="org.chromium.content_shell.permission.SANDBOX"
                  android:exported="false" />
-        <service android:name="org.chromium.content.app.SanboxedProcessService3"
+        <service android:name="org.chromium.content.app.SandboxedProcessService3"
                  android:process=":sandboxed_process3"
                  android:permission="org.chromium.content_shell.permission.SANDBOX"
                  android:exported="false" />
-        <service android:name="org.chromium.content.app.SanboxedProcessService4"
+        <service android:name="org.chromium.content.app.SandboxedProcessService4"
                  android:process=":sandboxed_process4"
                  android:permission="org.chromium.content_shell.permission.SANDBOX"
                  android:exported="false" />
