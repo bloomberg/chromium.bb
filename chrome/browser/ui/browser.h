@@ -937,7 +937,6 @@ class Browser : public TabStripModelDelegate,
   virtual void DetachContents(content::WebContents* source) OVERRIDE;
   virtual bool IsPopupOrPanel(
       const content::WebContents* source) const OVERRIDE;
-  virtual bool CanReloadContents(content::WebContents* source) const OVERRIDE;
   virtual void UpdateTargetURL(content::WebContents* source, int32 page_id,
                                const GURL& url) OVERRIDE;
   virtual void ContentsMouseEvent(content::WebContents* source,
@@ -1041,6 +1040,8 @@ class Browser : public TabStripModelDelegate,
   // Note that the caller is responsible for deleting |old_tab_contents|.
   virtual void SwapTabContents(TabContents* old_tab_contents,
                                TabContents* new_tab_contents) OVERRIDE;
+  virtual bool CanReloadContents(TabContents* source) const OVERRIDE;
+  virtual bool CanSaveContents(TabContents* source) const OVERRIDE;
 
   // Overridden from SearchEngineTabHelperDelegate:
   virtual void ConfirmAddSearchProvider(TemplateURL* template_url,

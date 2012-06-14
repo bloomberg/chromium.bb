@@ -586,10 +586,6 @@ void DevToolsWindow::AddNewContents(WebContents* source,
   }
 }
 
-bool DevToolsWindow::CanReloadContents(WebContents* source) const {
-  return false;
-}
-
 bool DevToolsWindow::PreHandleKeyboardEvent(
     const NativeWebKeyboardEvent& event, bool* is_keyboard_shortcut) {
   if (docked_) {

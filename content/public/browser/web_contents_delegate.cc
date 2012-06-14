@@ -33,10 +33,6 @@ bool WebContentsDelegate::IsApplication() const { return false; }
 
 bool WebContentsDelegate::CanLoadDataURLsInWebUI() const { return false; }
 
-bool WebContentsDelegate::CanReloadContents(WebContents* source) const {
-  return true;
-}
-
 gfx::Rect WebContentsDelegate::GetRootWindowResizerRect() const {
   return gfx::Rect();
 }

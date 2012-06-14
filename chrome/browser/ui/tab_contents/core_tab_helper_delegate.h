@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,15 @@ class TabContents;
 class CoreTabHelperDelegate {
  public:
   virtual void SwapTabContents(TabContents* old_tc,
-                               TabContents* new_tc) = 0;
+                               TabContents* new_tc);
+
+  // Whether the specified TabContent can be reloaded.
+  // Reloading can be disabled e. g. for the DevTools window.
+  virtual bool CanReloadContents(TabContents* source) const;
+
+  // Whether the specified TabContent can be saved.
+  // Saving can be disabled e. g. for the DevTools window.
+  virtual bool CanSaveContents(TabContents* source) const;
 
  protected:
   virtual ~CoreTabHelperDelegate();

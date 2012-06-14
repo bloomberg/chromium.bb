@@ -3309,10 +3309,6 @@ bool Browser::IsPopupOrPanel(const WebContents* source) const {
   return is_type_popup() || is_type_panel();
 }
 
-bool Browser::CanReloadContents(WebContents* source) const {
-  return !is_devtools();
-}
-
 void Browser::UpdateTargetURL(WebContents* source, int32 page_id,
                               const GURL& url) {
   if (!GetStatusBubble())
@@ -3731,6 +3727,14 @@ void Browser::SwapTabContents(TabContents* old_tab_contents,
   int index = tab_strip_model_->GetIndexOfTabContents(old_tab_contents);
   DCHECK_NE(TabStripModel::kNoTab, index);
   tab_strip_model_->ReplaceTabContentsAt(index, new_tab_contents);
+}
+
+bool Browser::CanReloadContents(TabContents* source) const {
+  return !is_devtools();
+}
+
+bool Browser::CanSaveContents(TabContents* source) const {
+  return !is_devtools();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4270,9 +4274,9 @@ void Browser::UpdateCommandsForTabState() {
   command_updater_.UpdateCommandEnabled(IDC_BACK, nc.CanGoBack());
   command_updater_.UpdateCommandEnabled(IDC_FORWARD, nc.CanGoForward());
   command_updater_.UpdateCommandEnabled(
-      IDC_RELOAD, CanReloadContents(current_web_contents));
+      IDC_RELOAD, CanReloadContents(current_tab_contents));
   command_updater_.UpdateCommandEnabled(
-      IDC_RELOAD_IGNORING_CACHE, CanReloadContents(current_web_contents));
+      IDC_RELOAD_IGNORING_CACHE, CanReloadContents(current_tab_contents));
 
   // Window management commands
   command_updater_.UpdateCommandEnabled(IDC_DUPLICATE_TAB,
@@ -4462,6 +4466,7 @@ void Browser::UpdatePrintingState(int content_restrictions) {
 
 void Browser::UpdateSaveAsState(int content_restrictions) {
   bool enabled = !(content_restrictions & content::CONTENT_RESTRICTION_SAVE);
+  enabled = enabled && CanSaveContents(GetActiveTabContents());
   PrefService* state = g_browser_process->local_state();
   if (state)
     enabled = enabled && state->GetBoolean(prefs::kAllowFileSelectionDialogs);

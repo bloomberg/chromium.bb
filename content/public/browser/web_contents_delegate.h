@@ -170,10 +170,6 @@ class CONTENT_EXPORT WebContentsDelegate {
   // a WebContents with a valid WebApp set.
   virtual void ConvertContentsToApplication(WebContents* source) {}
 
-  // Whether the specified tab can be reloaded.
-  // Reloading can be disabled e. g. for the DevTools window.
-  virtual bool CanReloadContents(WebContents* source) const;
-
   // Return the rect where to display the resize corner, if any, otherwise
   // an empty rect.
   virtual gfx::Rect GetRootWindowResizerRect() const;

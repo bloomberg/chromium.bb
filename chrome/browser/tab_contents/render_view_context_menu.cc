@@ -51,6 +51,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
+#include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_constants.h"
@@ -1126,10 +1127,15 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_FORWARD:
       return source_web_contents_->GetController().CanGoForward();
 
-    case IDC_RELOAD:
-      return source_web_contents_->GetDelegate() &&
-          source_web_contents_->GetDelegate()->CanReloadContents(
-              source_web_contents_);
+    case IDC_RELOAD: {
+      TabContents* tab_contents =
+          TabContents::FromWebContents(source_web_contents_);
+      if (!tab_contents)
+        return false;
+      CoreTabHelperDelegate* core_delegate =
+          tab_contents->core_tab_helper()->delegate();
+      return !core_delegate || core_delegate->CanReloadContents(tab_contents);
+    }
 
     case IDC_VIEW_SOURCE:
     case IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE:
@@ -1261,6 +1267,16 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return true;
 
     case IDC_SAVE_PAGE: {
+      TabContents* tab_contents =
+          TabContents::FromWebContents(source_web_contents_);
+      if (!tab_contents)
+        return false;
+
+      CoreTabHelperDelegate* core_delegate =
+          tab_contents->core_tab_helper()->delegate();
+      if (core_delegate && !core_delegate->CanSaveContents(tab_contents))
+        return false;
+
       PrefService* local_state = g_browser_process->local_state();
       DCHECK(local_state);
       // Test if file-selection dialogs are forbidden by policy.

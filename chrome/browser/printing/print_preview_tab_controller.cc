@@ -19,6 +19,8 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tab_contents/core_tab_helper.h"
+#include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
@@ -65,7 +67,6 @@ class PrintPreviewTabDelegate : public WebDialogDelegate {
   explicit PrintPreviewTabDelegate(TabContents* initiator_tab);
   virtual ~PrintPreviewTabDelegate();
 
-  // Overridden from WebDialogDelegate:
   virtual ui::ModalType GetDialogModalType() const OVERRIDE;
   virtual string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;
@@ -150,15 +151,20 @@ bool PrintPreviewTabDelegate::ShouldShowDialogTitle() const {
 }
 
 // WebContentsDelegate that forwards shortcut keys in the print preview
-// renderer to the browser.
-class PrintPreviewWebContentDelegate : public WebDialogWebContentsDelegate {
+// renderer to the browser and makes sure users can't reload/save.
+class PrintPreviewWebContentDelegate : public WebDialogWebContentsDelegate,
+                                       public CoreTabHelperDelegate {
  public:
   PrintPreviewWebContentDelegate(Profile* profile, TabContents* initiator_tab);
   virtual ~PrintPreviewWebContentDelegate();
 
-  virtual bool CanReloadContents(WebContents* source) const OVERRIDE;
+  // Overridden from WebDialogWebContentsDelegate:
   virtual void HandleKeyboardEvent(
       const NativeWebKeyboardEvent& event) OVERRIDE;
+
+  // Overridden from CoreTabHelperDelegate:
+  virtual bool CanReloadContents(TabContents* source) const OVERRIDE;
+  virtual bool CanSaveContents(TabContents* source) const OVERRIDE;
 
  private:
   TabContents* tab_;
@@ -175,13 +181,18 @@ PrintPreviewWebContentDelegate::PrintPreviewWebContentDelegate(
 PrintPreviewWebContentDelegate::~PrintPreviewWebContentDelegate() {}
 
 bool PrintPreviewWebContentDelegate::CanReloadContents(
-    WebContents* source) const {
+    TabContents* source) const {
+  return false;
+}
+
+bool PrintPreviewWebContentDelegate::CanSaveContents(
+    TabContents* source) const {
   return false;
 }
 
 void PrintPreviewWebContentDelegate::HandleKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
-  // Disabled on Mac due to http://crbug.com/112173.
+  // Disabled on Mac due to http://crbug.com/112173
 #if !defined(OS_MACOSX)
   Browser* current_browser =
       browser::FindBrowserWithWebContents(tab_->web_contents());
@@ -439,6 +450,7 @@ TabContents* PrintPreviewTabController::CreatePrintPreviewTab(
           initiator_tab);
   TabContents* preview_tab = constrained_delegate->tab();
   EnableInternalPDFPluginForTab(preview_tab);
+  preview_tab->core_tab_helper()->set_delegate(pp_wcd);
 
   // Add an entry to the map.
   preview_tab_map_[preview_tab] = initiator_tab;
