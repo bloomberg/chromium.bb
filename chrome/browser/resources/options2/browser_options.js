@@ -792,15 +792,17 @@ cr.define('options', function() {
 
     /**
      * Called when the value of the download.default_directory preference
-     * changes. We strip out /special for drive paths on ChromeOS.
+     * changes.
      * @param {Event} event Change event.
      * @private
      */
     onDefaultDownloadDirectoryChanged_: function(event) {
       $('downloadLocationPath').value = event.value['value'];
       if (cr.isChromeOS) {
-          $('downloadLocationPath').value =
-              $('downloadLocationPath').value.replace(/^\/special/, '');
+        // On ChromeOS, strip out /special for drive paths, and
+        // /home/chronos/user for local files.
+        $('downloadLocationPath').value = $('downloadLocationPath').value.
+            replace(/^\/(special|home\/chronos\/user)/, '');
       }
     },
 
