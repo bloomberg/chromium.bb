@@ -63,7 +63,7 @@
 #include "v8/include/v8.h"
 
 #if defined(OS_MACOSX)
-#include "skia/ext/skia_utils_mac.h"
+#include "ui/gfx/image/image_skia_util_mac.h"
 #endif
 #if defined(OS_WIN)
 #include "chrome/browser/app_icon_win.h"
@@ -1387,8 +1387,9 @@ TaskManagerBrowserProcessResource::TaskManagerBrowserProcessResource()
 #elif defined(OS_MACOSX)
   if (!default_icon_) {
     // IDR_PRODUCT_LOGO_16 doesn't quite look like chrome/mac's icns icon. Load
-    // the real app icon (requires a nsimage->skbitmap->nsimage conversion :-().
-    default_icon_ = new gfx::ImageSkia(gfx::AppplicationIconAtSize(16));
+    // the real app icon (requires a nsimage->image_skia->nsimage
+    // conversion :-().
+    default_icon_ = new gfx::ImageSkia(gfx::ApplicationIconAtSize(16));
   }
 #else
   // TODO(port): Port icon code.

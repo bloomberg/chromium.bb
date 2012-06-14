@@ -14,7 +14,7 @@
 #import "chrome/browser/ui/cocoa/speech_recognition_window_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
-#include "skia/ext/skia_utils_mac.h"
+#include "ui/gfx/image/image_skia_util_mac.h"
 
 using content::WebContents;
 
@@ -56,7 +56,7 @@ SpeechRecognitionBubbleImpl::~SpeechRecognitionBubbleImpl() {
 
 void SpeechRecognitionBubbleImpl::UpdateImage() {
   if (window_.get())
-    [window_.get() setImage:gfx::SkBitmapToNSImage(icon_image())];
+    [window_.get() setImage:gfx::NSImageFromImageSkia(icon_image())];
 }
 
 void SpeechRecognitionBubbleImpl::Show() {
@@ -121,7 +121,7 @@ void SpeechRecognitionBubbleImpl::UpdateLayout() {
 
   [window_.get() updateLayout:display_mode()
                   messageText:message_text()
-                    iconImage:gfx::SkBitmapToNSImage(icon_image())];
+                    iconImage:gfx::NSImageFromImageSkia(icon_image())];
 }
 
 }  // namespace

@@ -34,15 +34,14 @@
 #include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "third_party/apple_sample_code/ImageAndTextCell.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_util_mac.h"
 
 namespace {
 // Colors for the infobar.
@@ -415,7 +414,7 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
   icons_.reset([[NSMutableArray alloc] init]);
   for (std::vector<gfx::ImageSkia>::iterator it = skiaIcons.begin();
        it != skiaIcons.end(); ++it) {
-    [icons_ addObject:gfx::SkBitmapToNSImage(*it->bitmap())];
+    [icons_ addObject:gfx::NSImageFromImageSkia(*it)];
   }
 
   // Default icon will be the last item in the array.

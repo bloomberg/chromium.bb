@@ -96,9 +96,6 @@ SK_API NSImage* SkBitmapToNSImageWithColorSpace(const SkBitmap& icon,
 // TODO(thakis): Remove this -- http://crbug.com/69432
 SK_API NSImage* SkBitmapToNSImage(const SkBitmap& icon);
 
-// Returns |[NSImage imageNamed:@"NSApplicationIcon"]| as SkBitmap.
-SK_API SkBitmap AppplicationIconAtSize(int size);
-
 // Converts a SkCanvas temporarily to a CGContext
 class SK_API SkiaBitLocker {
  public:

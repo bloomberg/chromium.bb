@@ -283,11 +283,6 @@ NSImage* SkBitmapToNSImage(const SkBitmap& skiaBitmap) {
   return SkBitmapToNSImageWithColorSpace(skiaBitmap, colorSpace.get());
 }
 
-SkBitmap AppplicationIconAtSize(int size) {
-  NSImage* image = [NSImage imageNamed:@"NSApplicationIcon"];
-  return NSImageToSkBitmap(image, NSMakeSize(size, size), /* is_opaque=*/true);
-}
-
 SkiaBitLocker::SkiaBitLocker(SkCanvas* canvas)
     : canvas_(canvas),
       cgContext_(0) {

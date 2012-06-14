@@ -21,20 +21,15 @@
 #include "ui/gfx/image/cairo_cached_surface.h"
 #elif defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
-#include "skia/ext/skia_utils_mac.h"
+#include "ui/gfx/image/image_skia_util_mac.h"
 #endif
 
 namespace gfx {
 
 namespace internal {
 
-#if defined(OS_MACOSX)
-ImageSkia NSImageToImageSkia(NSImage* image);
-NSImage* ImageSkiaToNSImage(const ImageSkia* image);
-#endif
-
 #if defined(TOOLKIT_GTK)
-const ImageSkia GdkPixbufToImageSkia(GdkPixbuf* pixbuf) {
+const ImageSkia ImageSkiaFromGdkPixbuf(GdkPixbuf* pixbuf) {
   CHECK(pixbuf);
   gfx::Canvas canvas(gfx::Size(gdk_pixbuf_get_width(pixbuf),
                                gdk_pixbuf_get_height(pixbuf)), false);
@@ -375,7 +370,7 @@ internal::ImageRep* Image::GetRepresentation(
     if (storage_->default_representation_type() == Image::kImageRepGdk) {
       internal::ImageRepGdk* pixbuf_rep = default_rep->AsImageRepGdk();
       rep = new internal::ImageRepSkia(new ImageSkia(
-          internal::GdkPixbufToImageSkia(pixbuf_rep->pixbuf())));
+          internal::ImageSkiaFromGdkPixbuf(pixbuf_rep->pixbuf())));
     }
     // We don't do conversions from CairoCachedSurfaces to Skia because the
     // data lives on the display server and we'll always have a GdkPixbuf if we
@@ -383,7 +378,7 @@ internal::ImageRep* Image::GetRepresentation(
 #elif defined(OS_MACOSX)
     if (storage_->default_representation_type() == Image::kImageRepCocoa) {
       internal::ImageRepCocoa* nsimage_rep = default_rep->AsImageRepCocoa();
-      ImageSkia image_skia = internal::NSImageToImageSkia(nsimage_rep->image());
+      ImageSkia image_skia = ImageSkiaFromNSImage(nsimage_rep->image());
       rep = new internal::ImageRepSkia(new ImageSkia(image_skia));
     }
 #endif
@@ -418,8 +413,8 @@ internal::ImageRep* Image::GetRepresentation(
     }
 #elif defined(OS_MACOSX)
     if (rep_type == Image::kImageRepCocoa) {
-      NSImage* image = internal::ImageSkiaToNSImage(
-          default_rep->AsImageRepSkia()->image());
+      NSImage* image = NSImageFromImageSkia(
+          *default_rep->AsImageRepSkia()->image());
       base::mac::NSObjectRetain(image);
       native_rep = new internal::ImageRepCocoa(image);
     }

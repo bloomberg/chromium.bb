@@ -10,12 +10,11 @@
 #import "chrome/browser/ui/cocoa/event_utils.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
-#include "skia/ext/skia_utils_mac.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_util_mac.h"
 
 using base::SysUTF16ToNSString;
-using gfx::SkBitmapToNSImage;
+using gfx::NSImageFromImageSkia;
 
 @implementation BackForwardMenuController
 
@@ -75,7 +74,7 @@ using gfx::SkBitmapToNSImage;
       gfx::ImageSkia icon;
       // Icon (if it has one).
       if (model_->GetIconAt(menuID, &icon))
-        [menuItem setImage:SkBitmapToNSImage(*icon.bitmap())];
+        [menuItem setImage:NSImageFromImageSkia(icon)];
 
       // This will make it call our |-executeMenuItem:| method. We store the
       // |menuID| (or |menu_id|) in the tag.
