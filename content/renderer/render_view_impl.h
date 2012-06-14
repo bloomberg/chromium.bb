@@ -753,6 +753,7 @@ class RenderViewImpl : public RenderWidget,
       int selection_end) OVERRIDE;
   virtual void OnImeConfirmComposition(
       const string16& text, const ui::Range& replacement_range) OVERRIDE;
+  virtual void OnSetDeviceScaleFactor(float device_scale_factor) OVERRIDE;
   virtual ui::TextInputType GetTextInputType() OVERRIDE;
   virtual void GetSelectionBounds(gfx::Rect* start, gfx::Rect* end) OVERRIDE;
   virtual void GetCompositionCharacterBounds(

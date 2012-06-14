@@ -254,7 +254,7 @@ class CONTENT_EXPORT RenderWidget
                         const gfx::Size& page_size,
                         const gfx::Size& desired_size);
   void OnMsgRepaint(const gfx::Size& size_to_paint);
-  void OnSetDeviceScaleFactor(float device_scale_factor);
+  virtual void OnSetDeviceScaleFactor(float device_scale_factor);
   void OnSetTextDirection(WebKit::WebTextDirection direction);
   void OnGetFPS();
 

@@ -27,6 +27,9 @@ class BackingStoreMac : public BackingStore {
   // corresponding Cocoa view has not been inserted into an NSWindow yet.
   CGContextRef cg_bitmap() { return cg_bitmap_; }
 
+  // Called when the view's backing scale factor changes.
+  void ScaleFactorChanged(float device_scale_factor);
+
   // BackingStore implementation.
   virtual size_t MemorySize() OVERRIDE;
   virtual void PaintToBackingStore(

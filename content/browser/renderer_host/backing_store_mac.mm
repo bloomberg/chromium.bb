@@ -41,6 +41,28 @@ BackingStoreMac::BackingStoreMac(content::RenderWidgetHost* widget,
 BackingStoreMac::~BackingStoreMac() {
 }
 
+void BackingStoreMac::ScaleFactorChanged(float device_scale_factor) {
+  if (device_scale_factor == device_scale_factor_)
+    return;
+
+  device_scale_factor_ = device_scale_factor;
+
+  base::mac::ScopedCFTypeRef<CGLayerRef> new_layer(CreateCGLayer());
+  // If we have a layer, copy the old contents. A pixelated flash is better
+  // than a white flash.
+  if (new_layer && cg_layer_) {
+    CGContextRef layer = CGLayerGetContext(new_layer);
+    CGContextDrawLayerAtPoint(layer, CGPointMake(0, 0), cg_layer_);
+  }
+
+  cg_layer_.swap(new_layer);
+  if (!cg_layer_) {
+    // The view isn't in a window yet.  Use a CGBitmapContext for now.
+    cg_bitmap_.reset(CreateCGBitmapContext());
+    CGContextScaleCTM(cg_bitmap_, device_scale_factor_, device_scale_factor_);
+  }
+}
+
 size_t BackingStoreMac::MemorySize() {
   return size().Scale(device_scale_factor_).GetArea() * 4;
 }

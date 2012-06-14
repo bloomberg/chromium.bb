@@ -1490,7 +1490,16 @@ void RenderWidget::OnMsgRepaint(const gfx::Size& size_to_paint) {
 }
 
 void RenderWidget::OnSetDeviceScaleFactor(float device_scale_factor) {
-  // TODO(thakis): Set device_scale_factor_, possibly trigger a repaint.
+  if (device_scale_factor_ == device_scale_factor)
+    return;
+
+  device_scale_factor_ = device_scale_factor;
+
+  if (!is_accelerated_compositing_active_) {
+    didInvalidateRect(gfx::Rect(size_.width(), size_.height()));
+  } else {
+    scheduleComposite();
+  }
 }
 
 void RenderWidget::OnSetTextDirection(WebTextDirection direction) {

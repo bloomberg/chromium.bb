@@ -159,6 +159,7 @@ float ScaleFactor(NSView* view) {
 - (void)cancelChildPopups;
 - (void)windowDidChangeBackingProperties:(NSNotification*)notification;
 - (void)checkForPluginImeCancellation;
+- (void)updateTabBackingStoreScaleFactor;
 @end
 
 // NSEvent subtype for scroll gestures events.
@@ -398,6 +399,10 @@ RenderWidgetHost* RenderWidgetHostViewMac::GetRenderWidgetHost() const {
 void RenderWidgetHostViewMac::DidBecomeSelected() {
   if (!is_hidden_)
     return;
+
+  // Check if the backing scale factor changed while the tab was in the
+  // background.
+  [cocoa_view_ updateTabBackingStoreScaleFactor];
 
   if (web_contents_switch_paint_time_.is_null())
     web_contents_switch_paint_time_ = base::TimeTicks::Now();
@@ -820,8 +825,6 @@ bool RenderWidgetHostViewMac::IsPopup() const {
 
 BackingStore* RenderWidgetHostViewMac::AllocBackingStore(
     const gfx::Size& size) {
-  // TODO(thakis): Register for backing scale factor change events and pass
-  // that on.
   float scale = ScaleFactor(cocoa_view_);
   return new BackingStoreMac(render_widget_host_, size, scale);
 }
@@ -1890,6 +1893,20 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   }
 }
 
+- (void)updateTabBackingStoreScaleFactor {
+  if (!renderWidgetHostView_->render_widget_host_)
+    return;
+
+  float scaleFactor = ScaleFactor(self);
+  BackingStoreMac* backingStore = static_cast<BackingStoreMac*>(
+      renderWidgetHostView_->render_widget_host_->GetBackingStore(false));
+  if (backingStore)  // NULL in hardware path.
+    backingStore->ScaleFactorChanged(scaleFactor);
+
+  renderWidgetHostView_->render_widget_host_->SetDeviceScaleFactor(
+      scaleFactor);
+}
+
 // http://developer.apple.com/library/mac/#documentation/GraphicsAnimation/Conceptual/HighResolutionOSX/CapturingScreenContents/CapturingScreenContents.html#//apple_ref/doc/uid/TP40012302-CH10-SW4
 - (void)windowDidChangeBackingProperties:(NSNotification*)notification {
   NSWindow* window = (NSWindow*)[notification object];
@@ -1899,11 +1916,16 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
       [[notification userInfo] objectForKey:NSBackingPropertyOldScaleFactorKey])
       doubleValue];
   if (newBackingScaleFactor != oldBackingScaleFactor) {
-    // TODO(thakis): Tell backing store about new DPI, schedule repaint.
-    if (renderWidgetHostView_->render_widget_host_) {
-      renderWidgetHostView_->render_widget_host_->SetDeviceScaleFactor(
-          newBackingScaleFactor);
-    }
+    // Background tabs check if their scale factor changed when they become
+    // active, in DidBecomeSelected().
+
+    // Allocating a CGLayerRef with the current scale factor immediately from
+    // this handler doesn't work. Schedule the backing store update on the
+    // next runloop cycle, then things are read for CGLayerRef allocations to
+    // work.
+    [self performSelector:@selector(updateTabBackingStoreScaleFactor)
+               withObject:nil
+               afterDelay:0];
   }
 }
 
