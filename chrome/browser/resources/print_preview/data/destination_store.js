@@ -231,7 +231,8 @@ cr.define('print_preview', function() {
                'Selected FedEx Office destination, but Google Cloud Print is ' +
                'not enabled');
         destination.isTosAccepted = true;
-        this.cloudPrintInterface_.acceptPrinterTos(destination.id, true);
+        this.cloudPrintInterface_.updatePrinterTosAcceptance(destination.id,
+                                                             true);
       }
       cr.dispatchSimpleEvent(
           this, DestinationStore.EventType.DESTINATION_SELECT);
