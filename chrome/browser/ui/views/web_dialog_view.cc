@@ -307,19 +307,6 @@ void WebDialogView::LoadingStateChanged(content::WebContents* source) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// WebDialogView, TabRenderWatcher::Delegate implementation:
-
-void WebDialogView::OnRenderHostCreated(content::RenderViewHost* host) {
-}
-
-void WebDialogView::OnTabMainFrameLoaded() {
-}
-
-void WebDialogView::OnTabMainFrameRender() {
-  tab_watcher_.reset();
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // WebDialogView, private:
 
 void WebDialogView::InitDialog() {
@@ -333,7 +320,6 @@ void WebDialogView::InitDialog() {
   // the comment above WebDialogUI in its header file for why.
   WebDialogUI::GetPropertyAccessor().SetProperty(
       web_contents->GetPropertyBag(), this);
-  tab_watcher_.reset(new TabRenderWatcher(web_contents, this));
 
   if (delegate_) {
     gfx::Size out;

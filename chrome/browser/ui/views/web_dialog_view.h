@@ -11,7 +11,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/tab_render_watcher.h"
 #include "chrome/browser/ui/webui/web_dialog_web_contents_delegate.h"
 #include "ui/gfx/size.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -42,8 +41,7 @@ class WebView;
 class WebDialogView : public views::ClientView,
                       public WebDialogWebContentsDelegate,
                       public ui::WebDialogDelegate,
-                      public views::WidgetDelegate,
-                      public TabRenderWatcher::Delegate {
+                      public views::WidgetDelegate {
  public:
   WebDialogView(content::BrowserContext* context,
                 ui::WebDialogDelegate* delegate);
@@ -109,12 +107,6 @@ class WebDialogView : public views::ClientView,
                               bool user_gesture) OVERRIDE;
   virtual void LoadingStateChanged(content::WebContents* source) OVERRIDE;
 
- protected:
-  // Overridden from TabRenderWatcher::Delegate:
-  virtual void OnRenderHostCreated(content::RenderViewHost* host) OVERRIDE;
-  virtual void OnTabMainFrameLoaded() OVERRIDE;
-  virtual void OnTabMainFrameRender() OVERRIDE;
-
  private:
   FRIEND_TEST_ALL_PREFIXES(WebDialogBrowserTest, WebContentRendered);
 
@@ -125,9 +117,6 @@ class WebDialogView : public views::ClientView,
   // and FreezeUpdates property is set to prevent WM from showing the window
   // until the property is removed.
   bool initialized_;
-
-  // Watches for WebContents rendering.
-  scoped_ptr<TabRenderWatcher> tab_watcher_;
 
   // This view is a delegate to the HTML content since it needs to get notified
   // about when the dialog is closing. For all other actions (besides dialog
