@@ -37,6 +37,7 @@ class MessageThrottlingFilter : public IPC::ChannelProxy::MessageFilter {
       : pending_count_(0), sender_(sender) {}
 
   void SendThrottled(IPC::Message* message);
+  void Shutdown() { sender_ = NULL; }
 
  private:
   virtual ~MessageThrottlingFilter() {}
@@ -64,6 +65,9 @@ void MessageThrottlingFilter::SendThrottled(IPC::Message* message) {
          message->type() == DOMStorageHostMsg_SetItem::ID ||
          message->type() == DOMStorageHostMsg_RemoveItem::ID ||
          message->type() == DOMStorageHostMsg_Clear::ID);
+  DCHECK(sender_);
+  if (!sender_)
+    return;
   const int kMaxPendingMessages = 1000;
   bool need_to_flush = IncrementPendingCount() > kMaxPendingMessages;
   sender_->Send(message);
@@ -157,7 +161,6 @@ class DomStorageDispatcher::ProxyImpl : public DomStorageProxy {
     return &(found->second);
   }
 
-
   RenderThreadImpl* sender_;
   CachedAreaMap cached_areas_;
   CallbackList pending_callbacks_;
@@ -209,6 +212,7 @@ void DomStorageDispatcher::ProxyImpl::CompleteOnePendingCallback(bool success) {
 }
 
 void DomStorageDispatcher::ProxyImpl::Shutdown() {
+  throttling_filter_->Shutdown();
   sender_->RemoveFilter(throttling_filter_);
   sender_ = NULL;
   cached_areas_.clear();
