@@ -429,8 +429,11 @@ OomPriorityManager::TabStatsList OomPriorityManager::GetTabStatsOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TabStatsList stats_list;
   stats_list.reserve(32);  // 99% of users have < 30 tabs open
-  for (BrowserList::const_iterator browser_iterator = BrowserList::begin();
-       browser_iterator != BrowserList::end(); ++browser_iterator) {
+  bool browser_active = true;
+  for (BrowserList::const_reverse_iterator browser_iterator =
+           BrowserList::begin_last_active();
+       browser_iterator != BrowserList::end_last_active();
+       ++browser_iterator) {
     Browser* browser = *browser_iterator;
     const TabStripModel* model = browser->tab_strip_model();
     for (int i = 0; i < model->count(); i++) {
@@ -438,7 +441,7 @@ OomPriorityManager::TabStatsList OomPriorityManager::GetTabStatsOnUIThread() {
       if (!contents->IsCrashed()) {
         TabStats stats;
         stats.is_pinned = model->IsTabPinned(i);
-        stats.is_selected = model->IsTabSelected(i);
+        stats.is_selected = browser_active && model->IsTabSelected(i);
         stats.is_discarded = model->IsTabDiscarded(i);
         stats.sudden_termination_allowed =
             contents->GetRenderProcessHost()->SuddenTerminationAllowed();
@@ -449,6 +452,8 @@ OomPriorityManager::TabStatsList OomPriorityManager::GetTabStatsOnUIThread() {
         stats_list.push_back(stats);
       }
     }
+    // We process the active browser window in the first iteration.
+    browser_active = false;
   }
   // Sort the data we collected so that least desirable to be
   // killed is first, most desirable is last.

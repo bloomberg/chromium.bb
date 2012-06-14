@@ -64,7 +64,7 @@ class OomPriorityManager : public content::NotificationObserver {
     TabStats();
     ~TabStats();
     bool is_pinned;
-    bool is_selected;
+    bool is_selected;  // selected in the currently active browser window
     bool is_discarded;
     bool sudden_termination_allowed;
     base::TimeTicks last_selected;
