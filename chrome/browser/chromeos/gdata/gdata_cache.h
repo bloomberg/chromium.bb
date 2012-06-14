@@ -18,6 +18,10 @@ class Profile;
 
 namespace gdata {
 
+// Callback for SetMountedStateOnUIThread.
+typedef base::Callback<void(base::PlatformFileError error,
+                            const FilePath& file_path)> SetMountedStateCallback;
+
 // GDataCache is used to maintain cache states of GDataFileSystem.
 //
 // All non-static public member functions, unless mentioned otherwise (see
@@ -195,6 +199,11 @@ class GDataCache {
              const std::string& md5,
              FileOperationType file_operation_type,
              base::PlatformFileError* error);
+
+  // Utility method to call SetMountedState on UI thread.
+  void SetMountedStateOnUIThread(const FilePath& file_path,
+                                 bool to_mount,
+                                 const SetMountedStateCallback& callback);
 
   // Modifies cache state, which involves the following:
   // - moves |source_path| to |dest_path|, where

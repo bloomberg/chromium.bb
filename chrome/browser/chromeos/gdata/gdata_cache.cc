@@ -16,6 +16,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
+#include "content/public/browser/browser_thread.h"
+
+using content::BrowserThread;
 
 namespace gdata {
 namespace {
@@ -325,6 +328,20 @@ void DeleteFilesSelectively(const FilePath& path_to_delete_pattern,
     else
       DVLOG(1) << "Deleted " << current.value();
   }
+}
+
+// Runs callback with pointers dereferenced.
+// Used to implement SetMountedStateOnUIThread.
+void RunSetMountedStateCallback(
+    const SetMountedStateCallback& callback,
+    base::PlatformFileError* error,
+    FilePath* cache_file_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(error);
+  DCHECK(cache_file_path);
+
+  if (!callback.is_null())
+    callback.Run(*error, *cache_file_path);
 }
 
 }  // namespace
@@ -697,6 +714,29 @@ void GDataCache::Unpin(const std::string& resource_id,
     int cache_state = ClearCachePinned(cache_entry->cache_state);
     UpdateCache(resource_id, md5, sub_dir_type, cache_state);
   }
+}
+
+void GDataCache::SetMountedStateOnUIThread(
+    const FilePath& file_path,
+    bool to_mount,
+    const SetMountedStateCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  base::PlatformFileError* error =
+      new base::PlatformFileError(base::PLATFORM_FILE_OK);
+  FilePath* cache_file_path = new FilePath;
+  pool_->GetSequencedTaskRunner(sequence_token_)->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&GDataCache::SetMountedState,
+                 base::Unretained(this),
+                 file_path,
+                 to_mount,
+                 error,
+                 cache_file_path),
+      base::Bind(&RunSetMountedStateCallback,
+                 callback,
+                 base::Owned(error),
+                 base::Owned(cache_file_path)));
 }
 
 void GDataCache::SetMountedState(const FilePath& file_path,

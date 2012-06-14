@@ -267,18 +267,6 @@ void RunGetFileFromCacheCallbackHelper(
     callback.Run(*error, resource_id, md5, *cache_file_path);
 }
 
-// Ditto for SetMountedStateCallback
-void RunSetMountedStateCallbackHelper(
-    const SetMountedStateCallback& callback,
-    base::PlatformFileError* error,
-    FilePath* cache_file_path) {
-  DCHECK(error);
-  DCHECK(cache_file_path);
-
-  if (!callback.is_null())
-    callback.Run(*error, *cache_file_path);
-}
-
 void RunGetCacheStateCallbackHelper(
     const GetCacheStateCallback& callback,
     base::PlatformFileError* error,
@@ -2399,50 +2387,6 @@ void GDataFileSystem::SetPinStateOnUIThread(
     Pin(resource_id, md5, cache_callback);
   else
     Unpin(resource_id, md5, cache_callback);
-}
-
-void GDataFileSystem::SetMountedState(const FilePath& file_path,
-                                      bool to_mount,
-                                      const SetMountedStateCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::IO));
-  RunTaskOnUIThread(base::Bind(&GDataFileSystem::SetMountedStateOnUIThread,
-                               ui_weak_ptr_,
-                               file_path,
-                               to_mount,
-                               CreateRelayCallback(callback)));
-}
-
-
-void GDataFileSystem::SetMountedStateOnUIThread(
-    const FilePath& file_path,
-    bool to_mount,
-    const SetMountedStateCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  base::PlatformFileError* error =
-      new base::PlatformFileError(base::PLATFORM_FILE_OK);
-  FilePath* cache_file_path = new FilePath;
-  PostBlockingPoolSequencedTaskAndReply(
-      FROM_HERE,
-      base::Bind(&GDataFileSystem::SetMountedStateOnBlockingPool,
-                 base::Unretained(this),
-                 file_path,
-                 to_mount,
-                 error,
-                 cache_file_path),
-      base::Bind(&RunSetMountedStateCallbackHelper,
-                 callback,
-                 base::Owned(error),
-                 base::Owned(cache_file_path)));
-}
-
-void GDataFileSystem::SetMountedStateOnBlockingPool(
-    const FilePath& file_path,
-    bool to_mount,
-    base::PlatformFileError *error,
-    FilePath* cache_file_path) {
-  cache_->SetMountedState(file_path, to_mount, error, cache_file_path);
 }
 
 void GDataFileSystem::OnSetPinStateCompleted(

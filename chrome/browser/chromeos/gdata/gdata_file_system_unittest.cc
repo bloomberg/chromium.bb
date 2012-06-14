@@ -843,7 +843,7 @@ class GDataFileSystemTest : public testing::Test {
     expected_sub_dir_type_ = expected_sub_dir_type;
     expect_outgoing_symlink_ = false;
 
-    file_system_->SetMountedState(file_path, to_mount,
+    cache_->SetMountedStateOnUIThread(file_path, to_mount,
         base::Bind(&GDataFileSystemTest::VerifySetMountedState,
                    base::Unretained(this), resource_id, md5, to_mount));
 

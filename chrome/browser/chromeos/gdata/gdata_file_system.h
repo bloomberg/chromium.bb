@@ -78,11 +78,6 @@ typedef base::Callback<void(base::PlatformFileError error,
                             scoped_ptr<GDataDirectoryProto> directory_proto)>
     ReadDirectoryCallback;
 
-// Callback for SetMountedState.
-typedef base::Callback<void(base::PlatformFileError error,
-                            const FilePath& file_path)>
-    SetMountedStateCallback;
-
 // Used to open files from the file system. |file_path| is the path on the local
 // file system for the opened file.
 typedef base::Callback<void(base::PlatformFileError error,
@@ -375,12 +370,6 @@ class GDataFileSystemInterface {
   virtual void SetPinState(const FilePath& file_path, bool to_pin,
                            const FileOperationCallback& callback) = 0;
 
-  // Marks or unmarks a file as locally mounted.
-  // When marked as mounted, the file is prevented from being modified
-  // or evicted from cache.
-  virtual void SetMountedState(const FilePath& file_path, bool to_mount,
-                               const SetMountedStateCallback& callback) = 0;
-
   // Creates a new file from |entry| under |virtual_dir_path|. Stored its
   // content from |file_content_path| into the cache.
   virtual void AddUploadedFile(
@@ -469,10 +458,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Calls private Pin or Unpin methods with |callback|.
   virtual void SetPinState(const FilePath& file_path, bool pin,
                            const FileOperationCallback& callback) OVERRIDE;
-  virtual void SetMountedState(
-      const FilePath& file_path,
-      bool to_mount,
-      const SetMountedStateCallback& callback) OVERRIDE;
   virtual void AddUploadedFile(
       const FilePath& virtual_dir_path,
       DocumentEntry* entry,
@@ -1220,19 +1205,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
                            GDataCache::FileOperationType file_operation_type,
                            base::PlatformFileError* error);
 
-  // Task posted from SetMountedState to modify cache state on the blocking
-  // pool, which involves the following:
-  // - moves |source_path| to |dest_path|, where
-  //   if we're mounting: |source_path| is the unmounted path and has .<md5>
-  //       extension, and |dest_path| is the mounted path in persistent dir
-  //       and has .<md5>.mounted extension;
-  //   if we're unmounting: the opposite is true for the two paths, i.e.
-  //       |dest_path| is the mounted path and |source_path| the unmounted path.
-  void SetMountedStateOnBlockingPool(const FilePath& file_path,
-                                     bool to_mount,
-                                     base::PlatformFileError* error,
-                                     FilePath* cache_file_path);
-
   // Task posted from MarkDirtyInCache to modify cache state on the blocking
   // pool, which involves the following:
   // - moves |source_path| to |dest_path| in persistent dir, where
@@ -1442,10 +1414,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void GetAvailableSpaceOnUIThread(const GetAvailableSpaceCallback& callback);
   void SetPinStateOnUIThread(const FilePath& file_path, bool to_pin,
                              const FileOperationCallback& callback);
-  void SetMountedStateOnUIThread(
-      const FilePath& file_path,
-      bool to_mount,
-      const SetMountedStateCallback& callback);
 
   scoped_ptr<GDataRootDirectory> root_;
 

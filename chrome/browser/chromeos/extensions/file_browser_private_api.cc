@@ -1002,12 +1002,9 @@ void AddMountFunction::GetLocalPathsResponseOnUIThread(
   // Check if the source path is under GData cache directory.
   gdata::GDataSystemService* system_service =
       gdata::GDataSystemServiceFactory::GetForProfile(profile_);
-  gdata::GDataFileSystem* file_system =
-      system_service ? system_service->file_system() : NULL;
-  gdata::GDataCache* cache =
-      system_service ? system_service->cache() : NULL;
-  if (file_system && cache && cache->IsUnderGDataCacheDirectory(source_path)) {
-    file_system->SetMountedState(
+  gdata::GDataCache* cache = system_service ? system_service->cache() : NULL;
+  if (cache && cache->IsUnderGDataCacheDirectory(source_path)) {
+    cache->SetMountedStateOnUIThread(
         source_path,
         true,
         base::Bind(&AddMountFunction::OnMountedStateSet, this, mount_type_str,
