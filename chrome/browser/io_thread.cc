@@ -242,8 +242,7 @@ class IOThread::LoggingNetworkChangeObserver
   virtual void OnIPAddressChanged() {
     VLOG(1) << "Observed a change to the network IP addresses";
 
-    net_log_->AddGlobalEntry(net::NetLog::TYPE_NETWORK_IP_ADDRESSES_CHANGED,
-                             NULL);
+    net_log_->AddGlobalEntry(net::NetLog::TYPE_NETWORK_IP_ADDRESSES_CHANGED);
   }
 
  private:

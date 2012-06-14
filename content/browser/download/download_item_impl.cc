@@ -259,15 +259,11 @@ DownloadItemImpl::DownloadItemImpl(
   // Link the event sources.
   bound_net_log_.AddEvent(
       net::NetLog::TYPE_DOWNLOAD_URL_REQUEST,
-      make_scoped_refptr(new net::NetLogSourceParameter(
-          "source_dependency",
-          info.request_bound_net_log.source())));
+      info.request_bound_net_log.source().ToEventParametersCallback());
 
   info.request_bound_net_log.AddEvent(
       net::NetLog::TYPE_DOWNLOAD_STARTED,
-      make_scoped_refptr(new net::NetLogSourceParameter(
-          "source_dependency",
-          bound_net_log_.source())));
+      bound_net_log_.source().ToEventParametersCallback());
 }
 
 // Constructing for the "Save Page As..." feature:
@@ -408,8 +404,8 @@ void DownloadItemImpl::DangerousDownloadValidated() {
 
   bound_net_log_.AddEvent(
       net::NetLog::TYPE_DOWNLOAD_ITEM_SAFETY_STATE_UPDATED,
-      make_scoped_refptr(new download_net_logs::ItemCheckedParameters(
-          GetDangerType(), GetSafetyState())));
+      base::Bind(&download_net_logs::ItemCheckedCallback,
+                 GetDangerType(), GetSafetyState()));
 
   UpdateObservers();
 
@@ -445,8 +441,7 @@ void DownloadItemImpl::UpdateProgress(int64 bytes_so_far,
   if (bound_net_log_.IsLoggingAllEvents()) {
     bound_net_log_.AddEvent(
         net::NetLog::TYPE_DOWNLOAD_ITEM_UPDATED,
-        make_scoped_refptr(
-            new download_net_logs::ItemUpdatedParameters(received_bytes_)));
+        net::NetLog::Int64Callback("bytes_so_far", received_bytes_));
   }
 }
 
@@ -560,24 +555,20 @@ void DownloadItemImpl::TransitionTo(DownloadState new_state) {
     case COMPLETE:
       bound_net_log_.AddEvent(
           net::NetLog::TYPE_DOWNLOAD_ITEM_FINISHED,
-          make_scoped_refptr(
-              new download_net_logs::ItemFinishedParameters(received_bytes_,
-                                                            hash_)));
+          base::Bind(&download_net_logs::ItemFinishedCallback,
+                     received_bytes_, &hash_));
       break;
     case INTERRUPTED:
       bound_net_log_.AddEvent(
           net::NetLog::TYPE_DOWNLOAD_ITEM_INTERRUPTED,
-          make_scoped_refptr(
-              new download_net_logs::ItemInterruptedParameters(last_reason_,
-                                                               received_bytes_,
-                                                               hash_state_)));
+          base::Bind(&download_net_logs::ItemInterruptedCallback,
+                     last_reason_, received_bytes_, &hash_state_));
       break;
     case CANCELLED:
       bound_net_log_.AddEvent(
           net::NetLog::TYPE_DOWNLOAD_ITEM_CANCELED,
-          make_scoped_refptr(
-              new download_net_logs::ItemCanceledParameters(received_bytes_,
-                                                            hash_state_)));
+          base::Bind(&download_net_logs::ItemCanceledCallback,
+                     received_bytes_, &hash_state_));
       break;
     default:
       break;
@@ -590,7 +581,7 @@ void DownloadItemImpl::TransitionTo(DownloadState new_state) {
   bool is_done = (state_ != IN_PROGRESS);
   bool was_done = (old_state != IN_PROGRESS);
   if (is_done && !was_done)
-    bound_net_log_.EndEvent(net::NetLog::TYPE_DOWNLOAD_ITEM_ACTIVE, NULL);
+    bound_net_log_.EndEvent(net::NetLog::TYPE_DOWNLOAD_ITEM_ACTIVE);
 }
 
 void DownloadItemImpl::SetDangerType(content::DownloadDangerType danger_type) {
@@ -603,8 +594,8 @@ void DownloadItemImpl::SetDangerType(content::DownloadDangerType danger_type) {
     safety_state_ = updated_value;
     bound_net_log_.AddEvent(
         net::NetLog::TYPE_DOWNLOAD_ITEM_SAFETY_STATE_UPDATED,
-        make_scoped_refptr(new download_net_logs::ItemCheckedParameters(
-            GetDangerType(), GetSafetyState())));
+        base::Bind(&download_net_logs::ItemCheckedCallback,
+                   GetDangerType(), GetSafetyState()));
     UpdateObservers();
   }
 }
@@ -619,9 +610,8 @@ void DownloadItemImpl::SetFullPath(const FilePath& new_path) {
 
   bound_net_log_.AddEvent(
       net::NetLog::TYPE_DOWNLOAD_ITEM_RENAMED,
-      make_scoped_refptr(
-          new download_net_logs::ItemRenamedParameters(
-              current_path_.AsUTF8Unsafe(), new_path.AsUTF8Unsafe())));
+      base::Bind(&download_net_logs::ItemRenamedCallback,
+                 &current_path_, &new_path));
 }
 
 void DownloadItemImpl::Interrupted(int64 size,
@@ -967,24 +957,16 @@ void DownloadItemImpl::Init(bool active,
 
   bound_net_log_.BeginEvent(
       net::NetLog::TYPE_DOWNLOAD_ITEM_ACTIVE,
-      make_scoped_refptr(new download_net_logs::ItemActivatedParameters(
-          download_type,
-          download_id_.local(),
-          GetOriginalUrl().spec(),
-          GetURL().spec(),
-          file_name,
-          GetDangerType(),
-          GetSafetyState(),
-          received_bytes_)));
+      base::Bind(&download_net_logs::ItemActivatedCallback,
+                 this, download_type, &file_name));
 
   // If this is not an active download, end the ACTIVE event now.
   if (!active) {
     bound_net_log_.AddEvent(
         net::NetLog::TYPE_DOWNLOAD_ITEM_IN_HISTORY,
-        make_scoped_refptr(
-            new download_net_logs::ItemInHistoryParameters(db_handle_)));
+        net::NetLog::Int64Callback("db_handle", db_handle_));
 
-    bound_net_log_.EndEvent(net::NetLog::TYPE_DOWNLOAD_ITEM_ACTIVE, NULL);
+    bound_net_log_.EndEvent(net::NetLog::TYPE_DOWNLOAD_ITEM_ACTIVE);
   }
 
   VLOG(20) << __FUNCTION__ << "() " << DebugString(true);
@@ -1133,8 +1115,7 @@ void DownloadItemImpl::SetDbHandle(int64 handle) {
 
   bound_net_log_.AddEvent(
       net::NetLog::TYPE_DOWNLOAD_ITEM_IN_HISTORY,
-      make_scoped_refptr(
-          new download_net_logs::ItemInHistoryParameters(db_handle_)));
+      net::NetLog::Int64Callback("db_handle", db_handle_));
 }
 
 int64 DownloadItemImpl::GetDbHandle() const { return db_handle_; }

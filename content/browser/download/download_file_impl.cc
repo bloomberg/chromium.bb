@@ -257,8 +257,8 @@ void DownloadFileImpl::StreamActive() {
   if (bound_net_log_.IsLoggingAllEvents()) {
     bound_net_log_.AddEvent(
         net::NetLog::TYPE_DOWNLOAD_STREAM_DRAINED,
-        make_scoped_refptr(new download_net_logs::FileStreamDrainedParameters(
-            total_incoming_data_size, num_buffers)));
+        base::Bind(&download_net_logs::FileStreamDrainedCallback,
+                   total_incoming_data_size, num_buffers));
   }
 }
 

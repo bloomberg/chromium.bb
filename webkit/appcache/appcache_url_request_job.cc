@@ -90,7 +90,7 @@ void AppCacheURLRequestJob::BeginDelivery() {
 
     case ERROR_DELIVERY:
       request()->net_log().AddEvent(
-          net::NetLog::TYPE_APPCACHE_DELIVERING_ERROR_RESPONSE, NULL);
+          net::NetLog::TYPE_APPCACHE_DELIVERING_ERROR_RESPONSE);
       NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
                                              net::ERR_FAILED));
       break;
@@ -99,8 +99,7 @@ void AppCacheURLRequestJob::BeginDelivery() {
       request()->net_log().AddEvent(
           is_fallback_ ?
               net::NetLog::TYPE_APPCACHE_DELIVERING_FALLBACK_RESPONSE :
-              net::NetLog::TYPE_APPCACHE_DELIVERING_CACHED_RESPONSE,
-          NULL);
+              net::NetLog::TYPE_APPCACHE_DELIVERING_CACHED_RESPONSE);
       storage_->LoadResponseInfo(
           manifest_url_, group_id_, entry_.response_id(), this);
       break;

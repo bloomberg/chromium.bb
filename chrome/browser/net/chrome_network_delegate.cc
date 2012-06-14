@@ -169,10 +169,10 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
   if (url_blacklist_manager_ &&
       url_blacklist_manager_->IsURLBlocked(request->url())) {
     // URL access blocked by policy.
-    scoped_refptr<net::NetLog::EventParameters> params;
-    params = new net::NetLogStringParameter("url", request->url().spec());
     request->net_log().AddEvent(
-        net::NetLog::TYPE_CHROME_POLICY_ABORTED_REQUEST, params);
+        net::NetLog::TYPE_CHROME_POLICY_ABORTED_REQUEST,
+        net::NetLog::StringCallback("url",
+                                    &request->url().possibly_invalid_spec()));
     return net::ERR_NETWORK_ACCESS_DENIED;
   }
 #endif
@@ -379,10 +379,10 @@ int ChromeNetworkDelegate::OnBeforeSocketStreamConnect(
   if (url_blacklist_manager_ &&
       url_blacklist_manager_->IsURLBlocked(socket->url())) {
     // URL access blocked by policy.
-    scoped_refptr<net::NetLog::EventParameters> params;
-    params = new net::NetLogStringParameter("url", socket->url().spec());
     socket->net_log()->AddEvent(
-        net::NetLog::TYPE_CHROME_POLICY_ABORTED_REQUEST, params);
+        net::NetLog::TYPE_CHROME_POLICY_ABORTED_REQUEST,
+        net::NetLog::StringCallback("url",
+                                    &socket->url().possibly_invalid_spec()));
     return net::ERR_NETWORK_ACCESS_DENIED;
   }
 #endif

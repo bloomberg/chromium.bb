@@ -24,7 +24,6 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
 
-
 // See download_item.h for usage.
 class CONTENT_EXPORT DownloadItemImpl : public content::DownloadItem {
  public:
