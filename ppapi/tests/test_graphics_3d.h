@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,12 +24,15 @@ class TestGraphics3D : public TestCase {
 
  private:
   // Various tests.
-  std::string TestFrame();
+  std::string TestExtensionsGL();
+  std::string TestFrameGL();
+  std::string TestFramePPAPI();
 
   // Utils used by various tests.
   int32_t SwapBuffersSync(pp::Graphics3D* context);
-  std::string TestPixel(pp::Graphics3D* context,
-                        int x, int y, const uint8_t expected_color[4]);
+  std::string CheckPixelPPAPI(pp::Graphics3D* context,
+                             int x, int y, const uint8_t expected_color[4]);
+  std::string CheckPixelGL(int x, int y, const uint8_t expected_color[4]);
 
   // OpenGL ES2 interface.
   const PPB_OpenGLES2* opengl_es2_;

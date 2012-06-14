@@ -9,6 +9,7 @@ include_rules = [
   "-ppapi",
   "+ppapi/c",
   "+ppapi/cpp",
+  "+ppapi/lib",
   "+ppapi/tests",
   "+ppapi/utility",
 ]

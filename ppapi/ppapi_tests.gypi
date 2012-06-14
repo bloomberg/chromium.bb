@@ -63,6 +63,9 @@
       'include_dirs': [
         'lib/gl/include',
       ],
+      'defines': [
+        'GL_GLEXT_PROTOTYPES',
+      ],
       'sources': [
         '<@(test_common_source_files)',
         '<@(test_trusted_source_files)',

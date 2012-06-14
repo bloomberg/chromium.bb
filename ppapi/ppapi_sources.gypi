@@ -393,6 +393,9 @@
     #
     'test_trusted_source_files': [
       # Test cases (PLEASE KEEP THIS SECTION IN ALPHABETICAL ORDER)
+      'lib/gl/gles2/gles2.c',
+      'lib/gl/gles2/gl2ext_ppapi.c',
+      'lib/gl/gles2/gl2ext_ppapi.h',
       'tests/test_broker.cc',
       'tests/test_broker.h',
       'tests/test_browser_font.cc',
