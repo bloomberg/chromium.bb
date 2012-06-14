@@ -54,6 +54,11 @@ LauncherContextMenu::LauncherContextMenu(ChromeLauncherController* controller,
       }
     } else {
       AddItem(MENU_OPEN, controller->GetTitle(item_));
+      if (item_.type == ash::TYPE_PLATFORM_APP) {
+        AddItem(
+            MENU_PIN,
+            l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_PIN));
+      }
       if (controller->IsOpen(item_.id)) {
         AddItem(MENU_CLOSE,
                 l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_CLOSE));
@@ -98,7 +103,8 @@ bool LauncherContextMenu::IsCommandIdChecked(int command_id) const {
 bool LauncherContextMenu::IsCommandIdEnabled(int command_id) const {
   switch (command_id) {
     case MENU_PIN:
-      return controller_->IsPinnable(item_.id);
+      return item_.type == ash::TYPE_PLATFORM_APP ||
+          controller_->IsPinnable(item_.id);
     default:
       return true;
   }

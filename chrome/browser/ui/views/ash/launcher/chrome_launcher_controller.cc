@@ -191,29 +191,60 @@ void ChromeLauncherController::LauncherItemClosed(ash::LauncherID id) {
 void ChromeLauncherController::Unpin(ash::LauncherID id) {
   DCHECK(id_to_item_map_.find(id) != id_to_item_map_.end());
   DCHECK(!id_to_item_map_[id].controller);
-  LauncherItemClosed(id);
+
+  if (ShellWindowRegistry::Get(profile_)->GetShellWindowsForApp(
+      id_to_item_map_[id].app_id).size() > 0) {
+    int index = model_->ItemIndexByID(id);
+    ash::LauncherItem item = model_->items()[index];
+    item.type = ash::TYPE_PLATFORM_APP;
+    model_->Set(index, item);
+  } else {
+    LauncherItemClosed(id);
+  }
+  if (CanPin())
+    PersistPinnedState();
+}
+
+void ChromeLauncherController::Pin(ash::LauncherID id) {
+  DCHECK(id_to_item_map_.find(id) != id_to_item_map_.end());
+  DCHECK(!id_to_item_map_[id].controller);
+
+  int index = model_->ItemIndexByID(id);
+  ash::LauncherItem item = model_->items()[index];
+
+  if (item.type != ash::TYPE_PLATFORM_APP)
+    return;
+
+  item.type = ash::TYPE_APP_SHORTCUT;
+  model_->Set(index, item);
+
   if (CanPin())
     PersistPinnedState();
 }
 
 bool ChromeLauncherController::IsPinned(ash::LauncherID id) {
-  DCHECK(id_to_item_map_.find(id) != id_to_item_map_.end());
-  return id_to_item_map_[id].is_pinned();
+  int index = model_->ItemIndexByID(id);
+  ash::LauncherItemType type = model_->items()[index].type;
+  return type == ash::TYPE_APP_SHORTCUT;
 }
 
 void ChromeLauncherController::TogglePinned(ash::LauncherID id) {
   if (id_to_item_map_.find(id) == id_to_item_map_.end())
     return;  // May happen if item closed with menu open.
 
-  // Only currently support unpinning.
   if (IsPinned(id))
     Unpin(id);
+  else
+    Pin(id);
 }
 
 bool ChromeLauncherController::IsPinnable(ash::LauncherID id) const {
   int index = model_->ItemIndexByID(id);
-  return (index != -1 &&
-          model_->items()[index].type == ash::TYPE_APP_SHORTCUT &&
+  if (index == -1)
+    return false;
+
+  ash::LauncherItemType type = model_->items()[index].type;
+  return ((type == ash::TYPE_APP_SHORTCUT || type == ash::TYPE_PLATFORM_APP) &&
           CanPin());
 }
 

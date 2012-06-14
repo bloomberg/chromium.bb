@@ -105,6 +105,9 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   // Invoked when the underlying browser/app is closed.
   void LauncherItemClosed(ash::LauncherID id);
 
+  // Pins the specified id. Currently only supports platform apps.
+  void Pin(ash::LauncherID id);
+
   // Unpins the specified id, closing if not running.
   void Unpin(ash::LauncherID id);
 
@@ -220,8 +223,6 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   struct Item {
     Item();
     ~Item();
-
-    bool is_pinned() const { return controller == NULL; }
 
     // Type of item.
     ItemType item_type;

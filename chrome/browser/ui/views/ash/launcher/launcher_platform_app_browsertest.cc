@@ -90,6 +90,102 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, LaunchPinned) {
   EXPECT_EQ(ash::STATUS_CLOSED, item.status);
 }
 
+IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, PinRunning) {
+  // Run.
+  ash::Launcher* launcher = ash::Shell::GetInstance()->launcher();
+  ChromeLauncherController* controller =
+      static_cast<ChromeLauncherController*>(launcher->delegate());
+  int item_count = launcher->model()->item_count();
+  const Extension* extension = LoadAndLaunchPlatformApp("launch");
+  ShellWindow* window = CreateShellWindow(extension);
+  ++item_count;
+  ASSERT_EQ(item_count, launcher->model()->item_count());
+  ash::LauncherItem item =
+      launcher->model()->items()[launcher->model()->item_count() - 2];
+  ash::LauncherID id = item.id;
+  EXPECT_EQ(ash::TYPE_PLATFORM_APP, item.type);
+  EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
+
+  // Create a shortcut. The app item should be after it.
+  ash::LauncherID foo_id = controller->CreateAppLauncherItem(
+      NULL, std::string("foo"), ash::STATUS_CLOSED);
+  ++item_count;
+  ASSERT_EQ(item_count, launcher->model()->item_count());
+  EXPECT_LT(launcher->model()->ItemIndexByID(foo_id),
+            launcher->model()->ItemIndexByID(id));
+
+  // Pin the app. The item should remain.
+  controller->Pin(id);
+  ASSERT_EQ(item_count, launcher->model()->item_count());
+  item = *launcher->model()->ItemByID(id);
+  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, item.type);
+  EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
+
+  // New shortcuts should come after the item.
+  ash::LauncherID bar_id = controller->CreateAppLauncherItem(
+      NULL, std::string("bar"), ash::STATUS_CLOSED);
+  ++item_count;
+  ASSERT_EQ(item_count, launcher->model()->item_count());
+  EXPECT_LT(launcher->model()->ItemIndexByID(id),
+            launcher->model()->ItemIndexByID(bar_id));
+
+  // Then close it, make sure the item remains.
+  CloseShellWindow(window);
+  ASSERT_EQ(item_count, launcher->model()->item_count());
+}
+
+IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, UnpinRunning) {
+  ash::Launcher* launcher = ash::Shell::GetInstance()->launcher();
+  int item_count = launcher->model()->item_count();
+
+  // First get app_id.
+  const Extension* extension = LoadAndLaunchPlatformApp("launch");
+  const std::string app_id = extension->id();
+
+  // Then create a shortcut.
+  ChromeLauncherController* controller =
+      static_cast<ChromeLauncherController*>(launcher->delegate());
+  ash::LauncherID shortcut_id =
+      controller->CreateAppLauncherItem(NULL, app_id, ash::STATUS_CLOSED);
+  ++item_count;
+  ASSERT_EQ(item_count, launcher->model()->item_count());
+  ash::LauncherItem item = *launcher->model()->ItemByID(shortcut_id);
+  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, item.type);
+  EXPECT_EQ(ash::STATUS_CLOSED, item.status);
+
+  // Create a second shortcut. This will be needed to force the first one to
+  // move once it gets unpinned.
+  ash::LauncherID foo_id = controller->CreateAppLauncherItem(
+      NULL, std::string("foo"), ash::STATUS_CLOSED);
+  ++item_count;
+  ASSERT_EQ(item_count, launcher->model()->item_count());
+  EXPECT_LT(launcher->model()->ItemIndexByID(shortcut_id),
+            launcher->model()->ItemIndexByID(foo_id));
+
+  // Open a window. Confirm the item is now running.
+  ShellWindow* window = CreateShellWindow(extension);
+  ash::wm::ActivateWindow(window->GetNativeWindow());
+  ASSERT_EQ(item_count, launcher->model()->item_count());
+  item = *launcher->model()->ItemByID(shortcut_id);
+  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, item.type);
+  EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
+
+  // Unpin the app. The item should remain.
+  controller->Unpin(shortcut_id);
+  ASSERT_EQ(item_count, launcher->model()->item_count());
+  item = *launcher->model()->ItemByID(shortcut_id);
+  EXPECT_EQ(ash::TYPE_PLATFORM_APP, item.type);
+  EXPECT_EQ(ash::STATUS_ACTIVE, item.status);
+  // The item should have moved after the other shortcuts.
+  EXPECT_GT(launcher->model()->ItemIndexByID(shortcut_id),
+            launcher->model()->ItemIndexByID(foo_id));
+
+  // Then close it, make sure the item's gone.
+  CloseShellWindow(window);
+  --item_count;
+  ASSERT_EQ(item_count, launcher->model()->item_count());
+}
+
 // Test that we can launch a platform app with more than one window.
 IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, MultipleWindows) {
   ash::Launcher* launcher = ash::Shell::GetInstance()->launcher();

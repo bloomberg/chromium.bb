@@ -90,12 +90,18 @@ void LauncherModel::Move(int index, int target_index) {
 
 void LauncherModel::Set(int index, const LauncherItem& item) {
   DCHECK(index >= 0 && index < item_count());
+  int new_index = item.type == items_[index].type ?
+      index : ValidateInsertionIndex(item.type, index);
+
   LauncherItem old_item(items_[index]);
   items_[index] = item;
   items_[index].id = old_item.id;
-  items_[index].type = old_item.type;
   FOR_EACH_OBSERVER(LauncherModelObserver, observers_,
                     LauncherItemChanged(index, old_item));
+
+  // If the type changes confirm that the item is still in the right order.
+  if (new_index != index)
+    Move(index, new_index);
 }
 
 int LauncherModel::ItemIndexByID(LauncherID id) {
