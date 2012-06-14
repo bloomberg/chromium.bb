@@ -3351,6 +3351,8 @@
         'browser/ui/views/ash/app_list/search_builder.h',
         'browser/ui/views/ash/balloon_collection_impl_ash.cc',
         'browser/ui/views/ash/balloon_collection_impl_ash.h',
+        'browser/ui/views/ash/balloon_view_ash.cc',
+        'browser/ui/views/ash/balloon_view_ash.h',
         'browser/ui/views/ash/brightness_controller_chromeos.cc',
         'browser/ui/views/ash/brightness_controller_chromeos.h',
         'browser/ui/views/ash/browser_non_client_frame_view_ash.h',

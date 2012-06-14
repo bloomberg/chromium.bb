@@ -75,14 +75,17 @@ void BalloonCollectionBase::CloseAll() {
     (*iter)->CloseByScript();
 }
 
-Balloon* BalloonCollectionBase::FindBalloon(
-    const Notification& notification) {
+Balloon* BalloonCollectionBase::FindBalloonById(
+    const std::string& notification_id) {
   Balloons::iterator iter;
   for (iter = balloons_.begin(); iter != balloons_.end(); ++iter) {
-    if ((*iter)->notification().notification_id() ==
-        notification.notification_id()) {
+    if ((*iter)->notification().notification_id() == notification_id) {
       return *iter;
     }
   }
   return NULL;
+}
+
+Balloon* BalloonCollectionBase::FindBalloon(const Notification& notification) {
+  return FindBalloonById(notification.notification_id());
 }

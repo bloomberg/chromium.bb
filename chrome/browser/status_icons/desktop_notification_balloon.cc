@@ -49,6 +49,9 @@ class DummyNotificationDelegate : public NotificationDelegate {
   virtual void Close(bool by_user) OVERRIDE {}
   virtual void Click() OVERRIDE {}
   virtual std::string id() const OVERRIDE { return id_; }
+  virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE {
+    return NULL;
+  }
 
  private:
   virtual ~DummyNotificationDelegate() {}

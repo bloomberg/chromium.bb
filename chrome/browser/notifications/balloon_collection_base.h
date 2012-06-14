@@ -48,6 +48,10 @@ class BalloonCollectionBase {
 
   const Balloons& balloons() const { return balloons_; }
 
+  // Returns the balloon matching the given notification id, or
+  // NULL if there is no matching balloon.
+  Balloon* FindBalloonById(const std::string& notification_id);
+
   // Returns the balloon matching the given notification, or
   // NULL if there is no matching balloon.
   Balloon* FindBalloon(const Notification& notification);

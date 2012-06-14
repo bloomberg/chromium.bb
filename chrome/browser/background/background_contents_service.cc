@@ -64,13 +64,13 @@ class CrashNotificationDelegate : public NotificationDelegate {
         extension_id_(extension->id()) {
   }
 
-  void Display() {}
+  virtual void Display() OVERRIDE {}
 
-  void Error() {}
+  virtual void Error() OVERRIDE {}
 
-  void Close(bool by_user) {}
+  virtual void Close(bool by_user) OVERRIDE {}
 
-  void Click() {
+  virtual void Click() OVERRIDE {
     if (is_hosted_app_) {
       // There can be a race here: user clicks the balloon, and simultaneously
       // reloads the sad tab for the app. So we check here to be safe before
@@ -88,8 +88,12 @@ class CrashNotificationDelegate : public NotificationDelegate {
     ScheduleCloseBalloon(extension_id_);
   }
 
-  std::string id() const {
+  virtual std::string id() const OVERRIDE {
     return kNotificationPrefix + extension_id_;
+  }
+
+  virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE {
+    return NULL;
   }
 
  private:

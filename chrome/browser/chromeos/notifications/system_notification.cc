@@ -136,4 +136,9 @@ std::string SystemNotification::Delegate::id() const {
   return id_;
 }
 
+content::RenderViewHost*
+SystemNotification::Delegate::GetRenderViewHost() const {
+  return NULL;
+}
+
 }  // namespace chromeos

@@ -8,15 +8,30 @@
 
 #include <set>
 
+#include "ash/system/web_notification/web_notification_tray.h"
 #include "chrome/browser/chromeos/notifications/balloon_view_host_chromeos.h"  // MessageCallback
 #include "chrome/browser/notifications/balloon_collection_impl.h"
 
 // Wrapper on top of ::BalloonCollectionImpl to provide an interface for
 // chromeos::SystemNotification.
-class BalloonCollectionImplAsh : public ::BalloonCollectionImpl {
+class BalloonCollectionImplAsh : public BalloonCollectionImpl,
+                                 public ash::WebNotificationTray::Delegate {
  public:
   BalloonCollectionImplAsh();
   virtual ~BalloonCollectionImplAsh();
+
+  // Overridden from BalloonCollectionImpl.
+  virtual void Add(const Notification& notification,
+                   Profile* profile) OVERRIDE;
+  virtual bool HasSpace() const OVERRIDE;
+
+  // Overridden from WebNotificationTray::Delegate.
+  virtual void NotificationRemoved(const std::string& notifcation_id) OVERRIDE;
+  virtual void DisableExtension(const std::string& notifcation_id) OVERRIDE;
+  virtual void DisableNotificationsFromSource(
+      const std::string& notifcation_id) OVERRIDE;
+  virtual void ShowSettings(const std::string& notifcation_id) OVERRIDE;
+  virtual void OnClicked(const std::string& notifcation_id) OVERRIDE;
 
   // Adds a callback for WebUI message. Returns true if the callback
   // is succssfully registered, or false otherwise. It fails to add if

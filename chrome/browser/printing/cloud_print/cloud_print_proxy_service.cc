@@ -38,21 +38,27 @@ class CloudPrintProxyService::TokenExpiredNotificationDelegate
           : cloud_print_service_(cloud_print_service) {
   }
 
-  void Display() {}
+  virtual void Display() OVERRIDE {}
 
-  void Error() {
+  virtual void Error() OVERRIDE {
     cloud_print_service_->OnTokenExpiredNotificationError();
   }
 
-  void Close(bool by_user) {
+  virtual void Close(bool by_user) OVERRIDE {
     cloud_print_service_->OnTokenExpiredNotificationClosed(by_user);
   }
 
-  void Click() {
+  virtual void Click() OVERRIDE {
     cloud_print_service_->OnTokenExpiredNotificationClick();
   }
 
-  std::string id() const { return "cloudprint.tokenexpired"; }
+  virtual std::string id() const OVERRIDE {
+    return "cloudprint.tokenexpired";
+  }
+
+  virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE {
+    return NULL;
+  }
 
  private:
   virtual ~TokenExpiredNotificationDelegate() {}

@@ -10,15 +10,15 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
-#include "chrome/browser/notifications/notification_object_proxy.h"
+#include "chrome/browser/notifications/notification_delegate.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
+#include "ui/gfx/image/image_skia.h"
 
-class NotificationDelegate;
-
-// Representation of an notification to be shown to the user.  All
-// notifications at this level are HTML, although they may be
-// data: URLs representing simple text+icon notifications.
+// Representation of a notification to be shown to the user.
+// On non-Ash platforms these are rendered as HTML, sometimes described by a
+// data url converted from text + icon data. On Ash they are rendered as
+// formated text and icon data.
 class Notification {
  public:
   // Initializes a notification with HTML content.
@@ -27,9 +27,9 @@ class Notification {
                const string16& display_source,
                const string16& replace_id,
                NotificationDelegate* delegate);
-  // Initializes a notification with text content, and then creates a
-  // HTML representation of it for display (satisfying the invariant outlined
-  // at the top of this class).
+
+  // Initializes a notification with text content. On non-ash platforms, this
+  // creates an HTML representation using a data: URL for display.
   Notification(const GURL& origin_url,
                const GURL& icon_url,
                const string16& title,
@@ -38,6 +38,18 @@ class Notification {
                const string16& display_source,
                const string16& replace_id,
                NotificationDelegate* delegate);
+
+  // Initializes a notification with text content and an icon image. Currently
+  // only used on Ash. Does not generate content_url_.
+  Notification(const GURL& origin_url,
+               const gfx::ImageSkia& icon,
+               const string16& title,
+               const string16& body,
+               WebKit::WebTextDirection dir,
+               const string16& display_source,
+               const string16& replace_id,
+               NotificationDelegate* delegate);
+
   Notification(const Notification& notification);
   ~Notification();
   Notification& operator=(const Notification& notification);
@@ -48,16 +60,23 @@ class Notification {
   // The URL (may be data:) containing the contents for the notification.
   const GURL& content_url() const { return content_url_; }
 
-  // Parameters for text-only notifications.
+  // Title and message text of the notification.
   const string16& title() const { return title_; }
   const string16& body() const { return body_; }
 
   // The origin URL of the script which requested the notification.
   const GURL& origin_url() const { return origin_url_; }
 
+  // A url for the icon to be shown (optional).
+  const GURL& icon_url() const { return icon_url_; }
+
+  // An image for the icon to be shown (optional).
+  const gfx::ImageSkia& icon() const { return icon_; }
+
   // A display string for the source of the notification.
   const string16& display_source() const { return display_source_; }
 
+  // A unique identifier used to update (replace) or remove a notification.
   const string16& replace_id() const { return replace_id_; }
 
   void Display() const { delegate()->Display(); }
@@ -67,11 +86,22 @@ class Notification {
 
   std::string notification_id() const { return delegate()->id(); }
 
+  content::RenderViewHost* GetRenderViewHost() const {
+    return delegate()->GetRenderViewHost();
+  }
+
  private:
   NotificationDelegate* delegate() const { return delegate_.get(); }
 
   // The Origin of the page/worker which created this notification.
   GURL origin_url_;
+
+  // Image data for the associated icon, used by Ash when available.
+  gfx::ImageSkia icon_;
+
+  // URL for the icon associated with the notification. Requires delegate_
+  // to have a non NULL RenderViewHost.
+  GURL icon_url_;
 
   // If this is a HTML notification, the content is in |content_url_|. If
   // false, the data is in |title_| and |body_|.

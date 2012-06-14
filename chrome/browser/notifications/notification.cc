@@ -28,6 +28,7 @@ Notification::Notification(const GURL& origin_url,
                            const string16& replace_id,
                            NotificationDelegate* delegate)
     : origin_url_(origin_url),
+      icon_url_(icon_url),
       is_html_(false),
       title_(title),
       body_(body),
@@ -39,8 +40,28 @@ Notification::Notification(const GURL& origin_url,
       icon_url, title, body, dir));
 }
 
+Notification::Notification(const GURL& origin_url,
+                           const gfx::ImageSkia& icon,
+                           const string16& title,
+                           const string16& body,
+                           WebKit::WebTextDirection dir,
+                           const string16& display_source,
+                           const string16& replace_id,
+                           NotificationDelegate* delegate)
+    : origin_url_(origin_url),
+      icon_(icon),
+      is_html_(false),
+      title_(title),
+      body_(body),
+      display_source_(display_source),
+      replace_id_(replace_id),
+      delegate_(delegate) {
+}
+
 Notification::Notification(const Notification& notification)
     : origin_url_(notification.origin_url()),
+      icon_(notification.icon()),
+      icon_url_(notification.icon_url()),
       is_html_(notification.is_html()),
       content_url_(notification.content_url()),
       title_(notification.title()),
@@ -54,6 +75,8 @@ Notification::~Notification() {}
 
 Notification& Notification::operator=(const Notification& notification) {
   origin_url_ = notification.origin_url();
+  icon_ = notification.icon_;
+  icon_url_ = notification.icon_url();
   is_html_ = notification.is_html();
   content_url_ = notification.content_url();
   title_ = notification.title();

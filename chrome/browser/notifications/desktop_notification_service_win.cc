@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/win/metro.h"
 #include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/notifications/notification_object_proxy.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 
@@ -54,5 +55,3 @@ void DesktopNotificationService::ShowNotification(
   }
   GetUIManager()->Add(notification, profile_);
 }
-
-

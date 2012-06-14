@@ -36,11 +36,14 @@ namespace chromeos {
 class LocaleChangeGuard::Delegate : public NotificationDelegate {
  public:
   explicit Delegate(chromeos::LocaleChangeGuard* master) : master_(master) {}
-  void Close(bool by_user);
-  void Display() {}
-  void Error() {}
-  void Click() {}
-  std::string id() const;
+  virtual void Close(bool by_user) OVERRIDE;
+  virtual void Display() OVERRIDE {}
+  virtual void Error() OVERRIDE {}
+  virtual void Click() OVERRIDE {}
+  virtual std::string id() const OVERRIDE;
+  virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE {
+    return NULL;
+  }
 
  private:
   chromeos::LocaleChangeGuard* master_;
