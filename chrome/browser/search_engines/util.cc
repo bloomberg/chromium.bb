@@ -192,6 +192,7 @@ void MergeEnginesFromPrepopulateData(
       // entries from Sync, the conflict resolution logic knows that this was
       // updated and propagates the new values to the server.
       data.last_modified = base::Time::Now();
+      data.sync_guid = existing_url->sync_guid();
       if (service)
         service->UpdateKeyword(data);
 

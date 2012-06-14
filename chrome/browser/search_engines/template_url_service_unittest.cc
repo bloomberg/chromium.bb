@@ -316,22 +316,26 @@ void TemplateURLServiceTest::TestLoadUpdatingPreloadedURL(
       index_offset_from_default, &prepopulated_url);
 
   string16 original_url = t_url->url_ref().DisplayURL();
-  ASSERT_NE(prepopulated_url, original_url);
+  std::string original_guid = t_url->sync_guid();
+  EXPECT_NE(prepopulated_url, original_url);
 
   // Then add it to the model and save it all.
   test_util_.ChangeModelToLoadState();
   model()->Add(t_url);
   const TemplateURL* keyword_url =
       model()->GetTemplateURLForKeyword(ASCIIToUTF16("unittest"));
-  ASSERT_EQ(t_url, keyword_url);
-  ASSERT_EQ(original_url, keyword_url->url_ref().DisplayURL());
+  ASSERT_TRUE(keyword_url != NULL);
+  EXPECT_EQ(t_url, keyword_url);
+  EXPECT_EQ(original_url, keyword_url->url_ref().DisplayURL());
   test_util_.BlockTillServiceProcessesRequests();
 
-  // Now reload the model and verify that the merge updates the url.
+  // Now reload the model and verify that the merge updates the url, and
+  // preserves the sync GUID.
   test_util_.ResetModel(true);
   keyword_url = model()->GetTemplateURLForKeyword(ASCIIToUTF16("unittest"));
   ASSERT_TRUE(keyword_url != NULL);
-  ASSERT_EQ(prepopulated_url, keyword_url->url_ref().DisplayURL());
+  EXPECT_EQ(prepopulated_url, keyword_url->url_ref().DisplayURL());
+  EXPECT_EQ(original_guid, keyword_url->sync_guid());
 
   // Wait for any saves to finish.
   test_util_.BlockTillServiceProcessesRequests();
@@ -340,7 +344,8 @@ void TemplateURLServiceTest::TestLoadUpdatingPreloadedURL(
   test_util_.ResetModel(true);
   keyword_url = model()->GetTemplateURLForKeyword(ASCIIToUTF16("unittest"));
   ASSERT_TRUE(keyword_url != NULL);
-  ASSERT_EQ(prepopulated_url, keyword_url->url_ref().DisplayURL());
+  EXPECT_EQ(prepopulated_url, keyword_url->url_ref().DisplayURL());
+  EXPECT_EQ(original_guid, keyword_url->sync_guid());
 }
 
 void TemplateURLServiceTest::VerifyObserverCount(int expected_changed_count) {
