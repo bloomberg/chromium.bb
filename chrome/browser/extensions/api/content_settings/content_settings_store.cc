@@ -185,6 +185,10 @@ OriginIdentifierValueMap* ContentSettingsStore::GetValueMap(
     switch (scope) {
       case kExtensionPrefsScopeRegular:
         return &(i->second->settings);
+      case kExtensionPrefsScopeRegularOnly:
+        // TODO(bauerb): Implement regular-only content settings.
+        NOTREACHED();
+        return NULL;
       case kExtensionPrefsScopeIncognitoPersistent:
         return &(i->second->incognito_persistent_settings);
       case kExtensionPrefsScopeIncognitoSessionOnly:
@@ -204,6 +208,10 @@ const OriginIdentifierValueMap* ContentSettingsStore::GetValueMap(
   switch (scope) {
     case kExtensionPrefsScopeRegular:
       return &(i->second->settings);
+    case kExtensionPrefsScopeRegularOnly:
+      // TODO(bauerb): Implement regular-only content settings.
+      NOTREACHED();
+      return NULL;
     case kExtensionPrefsScopeIncognitoPersistent:
       return &(i->second->incognito_persistent_settings);
     case kExtensionPrefsScopeIncognitoSessionOnly:

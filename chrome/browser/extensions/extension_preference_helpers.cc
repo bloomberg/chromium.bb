@@ -17,6 +17,7 @@ namespace {
 const char kIncognitoPersistent[] = "incognito_persistent";
 const char kIncognitoSessionOnly[] = "incognito_session_only";
 const char kRegular[] = "regular";
+const char kRegularOnly[] = "regular_only";
 
 const char kLevelOfControlKey[] = "levelOfControl";
 
@@ -32,6 +33,8 @@ namespace extension_preference_helpers {
 bool StringToScope(const std::string& s, ExtensionPrefsScope* scope) {
   if (s == kRegular)
     *scope = kExtensionPrefsScopeRegular;
+  else if (s == kRegularOnly)
+    *scope = kExtensionPrefsScopeRegularOnly;
   else if (s == kIncognitoPersistent)
     *scope = kExtensionPrefsScopeIncognitoPersistent;
   else if (s == kIncognitoSessionOnly)

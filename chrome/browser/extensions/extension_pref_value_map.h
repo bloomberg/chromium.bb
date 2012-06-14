@@ -22,28 +22,36 @@
 // provided to ExtensionPrefStores.
 //
 // The semantics of the ExtensionPrefValueMap are:
-// - The precedence of extensions is determined by their installation time.
-//   The extension that has been installed later takes higher precedence.
-// - If two extensions set a value for the same preference, the following
-//   rules determine which value becomes effective (visible).
-// - The effective regular extension pref value is determined by the regular
-//   extension pref value of the extension with the highest precedence.
-// - The effective incognito extension pref value is determined by the incognito
-//   extension pref value of the extension with the highest precedence, unless
-//   another extension with higher precedence overrides it with a regular
-//   extension pref value.
+// - A regular setting applies to regular browsing sessions as well as incognito
+//   browsing sessions.
+// - An incognito setting applies only to incognito browsing sessions, not to
+//   regular ones. It takes precedence over a regular setting set by the same
+//   extension.
+// - A regular-only setting applies only to regular browsing sessions, not to
+//   incognito ones. It takes precedence over a regular setting set by the same
+//   extension.
+// - If two different extensions set a value for the same preference (and both
+//   values apply to the regular/incognito browsing session), the extension that
+//   was installed later takes precedence, regardless of whether the settings
+//   are regular, incognito or regular-only.
 //
 // The following table illustrates the behavior:
-//   A.reg | A.inc | B.reg | B.inc | E.reg | E.inc
-//     1   |   -   |   -   |   -   |   1   |   1
-//     1   |   2   |   -   |   -   |   1   |   2
-//     1   |   -   |   3   |   -   |   3   |   3
-//     1   |   -   |   -   |   4   |   1   |   4
-//     1   |   2   |   3   |   -   |   3   |   3(!)
-//     1   |   2   |   -   |   4   |   1   |   4
-//     1   |   2   |   3   |   4   |   3   |   4
+//   A.reg | A.reg_only | A.inc | B.reg | B.reg_only | B.inc | E.reg | E.inc
+//     1   |      -     |   -   |   -   |      -     |   -   |   1   |   1
+//     1   |      2     |   -   |   -   |      -     |   -   |   2   |   1
+//     1   |      -     |   3   |   -   |      -     |   -   |   1   |   3
+//     1   |      2     |   3   |   -   |      -     |   -   |   2   |   3
+//     1   |      -     |   -   |   4   |      -     |   -   |   4   |   4
+//     1   |      2     |   3   |   4   |      -     |   -   |   4   |   4
+//     1   |      -     |   -   |   -   |      5     |   -   |   5   |   1
+//     1   |      -     |   3   |   4   |      5     |   -   |   5   |   4
+//     1   |      -     |   -   |   -   |      -     |   6   |   1   |   6
+//     1   |      2     |   -   |   4   |      -     |   6   |   4   |   6
+//     1   |      2     |   3   |   -   |      5     |   6   |   5   |   6
+//
 // A = extension A, B = extension B, E = effective value
 // .reg = regular value
+// .reg_only = regular-only value
 // .inc = incognito value
 // Extension B has higher precedence than A.
 class ExtensionPrefValueMap : public ProfileKeyedService {

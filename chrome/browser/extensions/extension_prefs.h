@@ -504,12 +504,10 @@ class ExtensionPrefs : public extensions::ContentSettingsStore::Observer,
   // exist.
   const base::DictionaryValue* GetExtensionPref(const std::string& id) const;
 
-  // Returns the dictionary of preferences controlled by the specified extension
-  // or creates a new one. All entries in the dictionary contain non-expanded
-  // paths.
-  const base::DictionaryValue* GetExtensionControlledPrefs(
-      const std::string& id,
-      bool incognito) const;
+  // Loads the preferences controlled by the specified extension from their
+  // dictionary and sets them in the |pref_value_map_|.
+  void LoadExtensionControlledPrefs(const std::string& id,
+                                    ExtensionPrefsScope scope);
 
   // Checks if kPrefBlacklist is set to true in the DictionaryValue.
   // Return false if the value is false or kPrefBlacklist does not exist.

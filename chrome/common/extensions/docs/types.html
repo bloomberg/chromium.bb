@@ -424,7 +424,7 @@ considering the precedence rules. It is used by Chrome.
                 </div>
               </em>
           </dt>
-          <dd>Where to clear the setting (default: regular). One of<br><var>regular</var>: setting for regular profile (which is inherited by the incognito profile if not overridden elsewhere),<br><var>incognito_persistent</var>: setting for incognito profile that survives browser restarts (overrides regular preferences),<br><var>incognito_session_only</var>: setting for incognito profile that can only be set during an incognito session and is deleted when the incognito session ends (overrides regular and incognito_persistent preferences).</dd>
+          <dd>Where to clear the setting (default: regular). One of<br><var>regular</var>: setting for the regular profile (which is inherited by the incognito profile if not overridden elsewhere),<br><var>regular_only</var>: setting for the regular profile only (not inherited by the incognito profile),<br><var>incognito_persistent</var>: setting for the incognito profile that survives browser restarts (overrides regular preferences),<br><var>incognito_session_only</var>: setting for the incognito profile that can only be set during an incognito session and is deleted when the incognito session ends (overrides regular and incognito_persistent preferences).</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -764,14 +764,14 @@ considering the precedence rules. It is used by Chrome.
                     <span id="typeTemplate">
                       <span>
                         <span>string</span>
-                        <span>["regular", "incognito_persistent", "incognito_session_only"]</span>
+                        <span>["regular", "regular_only", "incognito_persistent", "incognito_session_only"]</span>
                       </span>
                     </span>
                   )
                 </div>
               </em>
           </dt>
-          <dd>Where to set the setting (default: regular). One of<br><var>regular</var>: setting for regular profile (which is inherited by the incognito profile if not overridden elsewhere),<br><var>incognito_persistent</var>: setting for incognito profile that survives browser restarts (overrides regular preferences),<br><var>incognito_session_only</var>: setting for incognito profile that can only be set during an incognito session and is deleted when the incognito session ends (overrides regular and incognito_persistent preferences).</dd>
+          <dd>Where to set the setting (default: regular). One of<br><var>regular</var>: setting for the regular profile (which is inherited by the incognito profile if not overridden elsewhere),<br><var>regular_only</var>: setting for the regular profile only (not inherited by the incognito profile),<br><var>incognito_persistent</var>: setting for the incognito profile that survives browser restarts (overrides regular preferences),<br><var>incognito_session_only</var>: setting for the incognito profile that can only be set during an incognito session and is deleted when the incognito session ends (overrides regular and incognito_persistent preferences).</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
