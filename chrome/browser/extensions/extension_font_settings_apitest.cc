@@ -22,7 +22,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FontSettings) {
   prefs->SetInteger(prefs::kWebKitDefaultFontSize, 16);
   prefs->SetInteger(prefs::kWebKitDefaultFixedFontSize, 14);
   prefs->SetInteger(prefs::kWebKitMinimumFontSize, 8);
-  prefs->SetString(prefs::kDefaultCharset, "Shift_JIS");
 
   EXPECT_TRUE(RunExtensionTest("font_settings/standard")) << message_;
 }

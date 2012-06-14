@@ -34,7 +34,6 @@ namespace fonts = extensions::api::experimental_font_settings;
 
 namespace {
 
-const char kCharsetKey[] = "charset";
 const char kFontNameKey[] = "fontName";
 const char kGenericFamilyKey[] = "genericFamily";
 const char kLevelOfControlKey[] = "levelOfControl";
@@ -45,8 +44,6 @@ const char kScriptKey[] = "script";
 const char kSetFromIncognitoError[] =
     "Can't modify regular settings from an incognito context.";
 
-const char kOnDefaultCharacterSetChanged[] =
-    "experimental.fontSettings.onDefaultCharacterSetChanged";
 const char kOnDefaultFixedFontSizeChanged[] =
     "experimental.fontSettings.onDefaultFixedFontSizeChanged";
 const char kOnDefaultFontSizeChanged[] =
@@ -128,9 +125,6 @@ void ExtensionFontSettingsEventRouter::Init() {
   AddPrefToObserve(prefs::kWebKitMinimumFontSize,
                    kOnMinimumFontSizeChanged,
                    kPixelSizeKey);
-  AddPrefToObserve(prefs::kDefaultCharset,
-                   kOnDefaultCharacterSetChanged,
-                   kCharsetKey);
 
   RegisterFontFamilyMapObserver(&registrar_,
                                 prefs::kWebKitStandardFontFamilyMap, this);
@@ -481,24 +475,4 @@ const char* SetMinimumFontSizeFunction::GetPrefName() {
 
 const char* SetMinimumFontSizeFunction::GetKey() {
   return kPixelSizeKey;
-}
-
-const char* ClearDefaultCharacterSetFunction::GetPrefName() {
-  return prefs::kDefaultCharset;
-}
-
-const char* GetDefaultCharacterSetFunction::GetPrefName() {
-  return prefs::kDefaultCharset;
-}
-
-const char* GetDefaultCharacterSetFunction::GetKey() {
-  return kCharsetKey;
-}
-
-const char* SetDefaultCharacterSetFunction::GetPrefName() {
-  return prefs::kDefaultCharset;
-}
-
-const char* SetDefaultCharacterSetFunction::GetKey() {
-  return kCharsetKey;
 }

@@ -102,20 +102,6 @@ chrome.test.runTests([
     }, chrome.test.callbackPass());
   },
 
-  function setDefaultCharacterSet() {
-    var charset = 'GBK';
-    chrome.test.listenOnce(fs.onDefaultCharacterSetChanged, function(details) {
-      chrome.test.assertEq({
-        charset: charset,
-        levelOfControl: CONTROLLED_BY_THIS_EXTENSION
-      }, details);
-    });
-
-    fs.setDefaultCharacterSet({
-      charset: charset
-    }, chrome.test.callbackPass());
-  },
-
   function getFontList() {
     var message = 'getFontList should return an array of objects with ' +
         'fontName and localizedName properties.';
@@ -170,13 +156,6 @@ chrome.test.runTests([
   function getMinimumFontSize() {
     fs.getMinimumFontSize({}, expect({
       pixelSize: 7,
-      levelOfControl: CONTROLLED_BY_THIS_EXTENSION
-    }));
-  },
-
-  function getDefaultCharacterSet() {
-    fs.getDefaultCharacterSet({}, expect({
-      charset: 'GBK',
       levelOfControl: CONTROLLED_BY_THIS_EXTENSION
     }));
   },
@@ -258,17 +237,5 @@ chrome.test.runTests([
     });
 
     fs.clearMinimumFontSize({}, chrome.test.callbackPass());
-  },
-
-  function clearDefaultCharacterSet() {
-    var charset = 'Shift_JIS';
-    chrome.test.listenOnce(fs.onDefaultCharacterSetChanged, function(details) {
-      chrome.test.assertEq({
-        charset: charset,
-        levelOfControl: CONTROLLABLE_BY_THIS_EXTENSION
-      }, details);
-    });
-
-    fs.clearDefaultCharacterSet({}, chrome.test.callbackPass());
-  },
+  }
 ]);

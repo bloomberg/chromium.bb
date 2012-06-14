@@ -305,42 +305,4 @@ class SetMinimumFontSizeFunction : public SetFontPrefExtensionFunction {
   virtual const char* GetKey() OVERRIDE;
 };
 
-class ClearDefaultCharacterSetFunction : public ClearFontPrefExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.fontSettings.clearDefaultCharacterSet")
-
- protected:
-  virtual ~ClearDefaultCharacterSetFunction() {}
-
-  // ClearFontPrefExtensionFunction:
-  virtual const char* GetPrefName() OVERRIDE;
-};
-
-class GetDefaultCharacterSetFunction : public GetFontPrefExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.fontSettings.getDefaultCharacterSet")
-
- protected:
-  virtual ~GetDefaultCharacterSetFunction() {}
-
-  // GetFontPrefExtensionFunction:
-  virtual const char* GetPrefName() OVERRIDE;
-  virtual const char* GetKey() OVERRIDE;
-};
-
-class SetDefaultCharacterSetFunction : public SetFontPrefExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.fontSettings.setDefaultCharacterSet")
-
- protected:
-  virtual ~SetDefaultCharacterSetFunction() {}
-
-  // SetFontPrefExtensionFunction:
-  virtual const char* GetPrefName() OVERRIDE;
-  virtual const char* GetKey() OVERRIDE;
-};
-
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_FONT_SETTINGS_API_H__

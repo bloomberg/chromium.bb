@@ -175,46 +175,6 @@ function initFontSizePref(id, getter, setter, apiEvent) {
   apiEvent.addListener(getFontSizeChangedOnBrowserFunc(elem));
 }
 
-// Updates the encoding list to reflect the browser encoding setting.
-function updateEncoding() {
-  chrome.experimental.fontSettings.getDefaultCharacterSet({},
-                                                          function(details) {
-    var list = document.getElementById('encodingList');
-    var i;
-    for (i = 0; i < list.length; i++) {
-      if (details.charset == list.options[i].value) {
-        list.selectedIndex = i;
-        break;
-      }
-    }
-    if (i == list.length) {
-      console.warn("encoding '" + details.charset + "' not found in list.");
-    }
-    list.disabled = !isControllableLevel(details.levelOfControl);
-  });
-}
-
-// Sets browser encoding setting to currently selected value of the encoding
-// list.
-function setEncoding() {
-  var list = document.getElementById('encodingList');
-  chrome.experimental.fontSettings.setDefaultCharacterSet({
-    charset: list.options[list.selectedIndex].value
-  });
-};
-
-// Adds event handlers for encoding and initializes the selected value of
-// the encoding list.
-function initEncoding() {
-  var list = document.getElementById('encodingList');
-
-  list.addEventListener('change', setEncoding);
-  chrome.experimental.fontSettings.onDefaultCharacterSetChanged.addListener(
-      updateEncoding);
-
-  updateEncoding();
-}
-
 function clearAllSettings() {
   var scripts =
       ["Arab", "Armn", "Beng", "Cans", "Cher", "Cyrl", "Deva", "Ethi", "Geor",
@@ -232,7 +192,6 @@ function clearAllSettings() {
     }
   }
 
-  chrome.experimental.fontSettings.clearDefaultCharacterSet();
   chrome.experimental.fontSettings.clearDefaultFixedFontSize();
   chrome.experimental.fontSettings.clearDefaultFontSize();
   chrome.experimental.fontSettings.clearMinimumFontSize();
@@ -269,7 +228,6 @@ function init() {
                    chrome.experimental.fontSettings.getMinimumFontSize,
                    chrome.experimental.fontSettings.setMinimumFontSize,
                    chrome.experimental.fontSettings.onMinimumFontSizeChanged);
-  initEncoding();
 
   var clearButton = document.getElementById('clearButton');
   clearButton.addEventListener('click', clearAllSettings);
