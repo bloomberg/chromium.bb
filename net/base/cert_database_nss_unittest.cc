@@ -379,7 +379,7 @@ TEST_F(CertDatabaseNSSTest, ImportCA_NotCACert) {
   EXPECT_EQ(0U, ListCertsInSlot(slot_->os_module_handle()).size());
 }
 
-TEST_F(CertDatabaseNSSTest, FLAKY_ImportCACertHierarchy) {
+TEST_F(CertDatabaseNSSTest, ImportCACertHierarchy) {
   CertificateList certs;
   ASSERT_TRUE(ReadCertIntoList("dod_root_ca_2_cert.der", &certs));
   ASSERT_TRUE(ReadCertIntoList("dod_ca_17_cert.der", &certs));
@@ -395,17 +395,18 @@ TEST_F(CertDatabaseNSSTest, FLAKY_ImportCACertHierarchy) {
       certs, CertDatabase::TRUSTED_SSL | CertDatabase::TRUSTED_EMAIL,
       &failed));
 
-  ASSERT_EQ(1U, failed.size());
-  EXPECT_EQ("www.us.army.mil", failed[0].certificate->subject().common_name);
-  EXPECT_EQ(ERR_IMPORT_CA_CERT_NOT_CA, failed[0].net_error);
+  ASSERT_EQ(2U, failed.size());
+  EXPECT_EQ("DOD CA-17", failed[0].certificate->subject().common_name);
+  EXPECT_EQ(ERR_FAILED, failed[0].net_error);  // The certificate expired.
+  EXPECT_EQ("www.us.army.mil", failed[1].certificate->subject().common_name);
+  EXPECT_EQ(ERR_IMPORT_CA_CERT_NOT_CA, failed[1].net_error);
 
   CertificateList cert_list = ListCertsInSlot(slot_->os_module_handle());
-  ASSERT_EQ(2U, cert_list.size());
+  ASSERT_EQ(1U, cert_list.size());
   EXPECT_EQ("DoD Root CA 2", cert_list[0]->subject().common_name);
-  EXPECT_EQ("DOD CA-17", cert_list[1]->subject().common_name);
 }
 
-TEST_F(CertDatabaseNSSTest, FLAKY_ImportCACertHierarchyDupeRoot) {
+TEST_F(CertDatabaseNSSTest, ImportCACertHierarchyDupeRoot) {
   CertificateList certs;
   ASSERT_TRUE(ReadCertIntoList("dod_root_ca_2_cert.der", &certs));
 
@@ -430,16 +431,17 @@ TEST_F(CertDatabaseNSSTest, FLAKY_ImportCACertHierarchyDupeRoot) {
       certs, CertDatabase::TRUSTED_SSL | CertDatabase::TRUSTED_EMAIL,
       &failed));
 
-  ASSERT_EQ(2U, failed.size());
+  ASSERT_EQ(3U, failed.size());
   EXPECT_EQ("DoD Root CA 2", failed[0].certificate->subject().common_name);
   EXPECT_EQ(ERR_IMPORT_CERT_ALREADY_EXISTS, failed[0].net_error);
-  EXPECT_EQ("www.us.army.mil", failed[1].certificate->subject().common_name);
-  EXPECT_EQ(ERR_IMPORT_CA_CERT_NOT_CA, failed[1].net_error);
+  EXPECT_EQ("DOD CA-17", failed[1].certificate->subject().common_name);
+  EXPECT_EQ(ERR_FAILED, failed[1].net_error);  // The certificate expired.
+  EXPECT_EQ("www.us.army.mil", failed[2].certificate->subject().common_name);
+  EXPECT_EQ(ERR_IMPORT_CA_CERT_NOT_CA, failed[2].net_error);
 
   cert_list = ListCertsInSlot(slot_->os_module_handle());
-  ASSERT_EQ(2U, cert_list.size());
+  ASSERT_EQ(1U, cert_list.size());
   EXPECT_EQ("DoD Root CA 2", cert_list[0]->subject().common_name);
-  EXPECT_EQ("DOD CA-17", cert_list[1]->subject().common_name);
 }
 
 TEST_F(CertDatabaseNSSTest, ImportCACertHierarchyUntrusted) {
@@ -463,11 +465,10 @@ TEST_F(CertDatabaseNSSTest, ImportCACertHierarchyUntrusted) {
   EXPECT_EQ("DoD Root CA 2", cert_list[0]->subject().common_name);
 }
 
-TEST_F(CertDatabaseNSSTest, FLAKY_ImportCACertHierarchyTree) {
+TEST_F(CertDatabaseNSSTest, ImportCACertHierarchyTree) {
   CertificateList certs;
   ASSERT_TRUE(ReadCertIntoList("dod_root_ca_2_cert.der", &certs));
-  // This certificate is expired. http://crbug.com/111029
-  // ASSERT_TRUE(ReadCertIntoList("dod_ca_13_cert.der", &certs));
+  ASSERT_TRUE(ReadCertIntoList("dod_ca_13_cert.der", &certs));
   ASSERT_TRUE(ReadCertIntoList("dod_ca_17_cert.der", &certs));
 
   // Import it.
@@ -476,17 +477,15 @@ TEST_F(CertDatabaseNSSTest, FLAKY_ImportCACertHierarchyTree) {
       certs, CertDatabase::TRUSTED_SSL | CertDatabase::TRUSTED_EMAIL,
       &failed));
 
-  EXPECT_EQ(0U, failed.size());
+  EXPECT_EQ(2U, failed.size());
+  EXPECT_EQ("DOD CA-13", failed[0].certificate->subject().common_name);
+  EXPECT_EQ(ERR_FAILED, failed[0].net_error);  // The certificate expired.
+  EXPECT_EQ("DOD CA-17", failed[1].certificate->subject().common_name);
+  EXPECT_EQ(ERR_FAILED, failed[1].net_error);  // The certificate expired.
 
   CertificateList cert_list = ListCertsInSlot(slot_->os_module_handle());
-  // One of the certificates is expired. http://crbug.com/111029
-  // ASSERT_EQ(3U, cert_list.size());
-  // EXPECT_EQ("DOD CA-13", cert_list[0]->subject().common_name);
-  // EXPECT_EQ("DoD Root CA 2", cert_list[1]->subject().common_name);
-  // EXPECT_EQ("DOD CA-17", cert_list[2]->subject().common_name);
-  ASSERT_EQ(2U, cert_list.size());
+  ASSERT_EQ(1U, cert_list.size());
   EXPECT_EQ("DoD Root CA 2", cert_list[0]->subject().common_name);
-  EXPECT_EQ("DOD CA-17", cert_list[1]->subject().common_name);
 }
 
 TEST_F(CertDatabaseNSSTest, ImportCACertNotHierarchy) {
