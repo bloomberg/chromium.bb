@@ -60,6 +60,7 @@ class BrowserPluginChannelManager
   void OnLoadGuest(int instance_id,
                    int guest_renderer_id,
                    const IPC::ChannelHandle& channel_handle);
+  void OnAdvanceFocus(int instance_id, bool reverse);
 
   // RenderProcessObserver override. Call on render thread.
   virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;

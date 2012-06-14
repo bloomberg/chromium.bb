@@ -123,6 +123,11 @@ void BrowserPlugin::LoadGuest(
   Replace(new_guest);
 }
 
+void BrowserPlugin::AdvanceFocus(bool reverse) {
+  // TODO(fsamuel): Uncomment this once http://wkbug.com/88827 lands.
+  // render_view()->GetWebView()->advanceFocus(reverse);
+}
+
 void BrowserPlugin::Replace(
     webkit::ppapi::WebPluginImpl* new_plugin) {
   WebKit::WebPlugin* current_plugin =

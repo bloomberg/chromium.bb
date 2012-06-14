@@ -89,6 +89,7 @@ bool BrowserPluginChannelManager::OnControlMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BrowserPluginChannelManager, message)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_LoadGuest, OnLoadGuest)
+    IPC_MESSAGE_HANDLER(BrowserPluginMsg_AdvanceFocus, OnAdvanceFocus)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -132,6 +133,12 @@ void BrowserPluginChannelManager::OnLoadGuest(
     const IPC::ChannelHandle& channel_handle) {
   BrowserPlugin* browser_plugin = BrowserPlugin::FromID(instance_id);
   browser_plugin->LoadGuest(guest_process_id, channel_handle);
+}
+
+void BrowserPluginChannelManager::OnAdvanceFocus(int instance_id,
+                                                 bool reverse) {
+  BrowserPlugin* browser_plugin = BrowserPlugin::FromID(instance_id);
+  browser_plugin->AdvanceFocus(reverse);
 }
 
 }  // namespace content

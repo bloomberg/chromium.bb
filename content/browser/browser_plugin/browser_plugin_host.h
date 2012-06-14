@@ -88,6 +88,9 @@ class BrowserPluginHost : public WebContentsObserver,
 
   void DestroyGuests();
 
+  // WebContentsDelegate implementation.
+  virtual bool TakeFocus(bool reverse) OVERRIDE;
+
   // WebContentObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   // Used to monitor frame navigation to cleanup guests when a frame navigates
@@ -117,6 +120,8 @@ class BrowserPluginHost : public WebContentsObserver,
   gfx::Size initial_size_;
   GuestMap guests_;
   ContainerInstanceMap guests_by_container_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserPluginHost);
 };
 
 }  // namespace content

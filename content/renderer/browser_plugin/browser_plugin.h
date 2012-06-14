@@ -60,6 +60,8 @@ class BrowserPlugin {
   void LoadGuest(int guest_process_id,
                  const IPC::ChannelHandle& channel_handle);
 
+  void AdvanceFocus(bool reverse);
+
   RenderViewImpl* render_view() { return render_view_; }
 
  private:

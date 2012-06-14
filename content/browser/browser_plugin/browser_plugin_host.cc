@@ -55,6 +55,12 @@ void BrowserPluginHost::RegisterContainerInstance(
   guests_by_container_id_[container_id] = observer;
 }
 
+bool BrowserPluginHost::TakeFocus(bool reverse) {
+  embedder_render_process_host()->Send(
+      new BrowserPluginMsg_AdvanceFocus(instance_id(), reverse));
+  return true;
+}
+
 bool BrowserPluginHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BrowserPluginHost, message)

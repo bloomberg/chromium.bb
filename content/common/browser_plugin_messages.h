@@ -82,7 +82,11 @@ IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_NavigateFromGuest,
 
 // A guest instance is ready to be placed.
 IPC_MESSAGE_CONTROL3(BrowserPluginMsg_LoadGuest,
-                     int /* instance id */,
+                     int /* instance_id */,
                      int /* guest_process_id */,
                      IPC::ChannelHandle /* channel_handle */)
+
+IPC_MESSAGE_CONTROL2(BrowserPluginMsg_AdvanceFocus,
+                     int /* instance_id */,
+                     bool /* reverse */)
 
