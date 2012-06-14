@@ -37,7 +37,7 @@ class Gtk2UI : public ui::LinuxUI {
   // ui::LinuxUI:
   virtual bool UseNativeTheme() const OVERRIDE;
   virtual gfx::Image* GetThemeImageNamed(int id) const OVERRIDE;
-  virtual SkColor GetColor(int id) const OVERRIDE;
+  virtual bool GetColor(int id, SkColor* color) const OVERRIDE;
 
  private:
   typedef std::map<int, SkColor> ColorMap;
@@ -89,6 +89,13 @@ class Gtk2UI : public ui::LinuxUI {
   SkBitmap GenerateTintedIcon(int base_id,
                               const color_utils::HSL& tint) const;
 
+  // Renders a GTK icon as a SkBitmap, with prelight/active border if
+  // appropriate.
+  SkBitmap GenerateGTKIcon(int base_id) const;
+
+  // Renders a GTK button border around a tinted wrench icon.
+  SkBitmap GenerateWrenchIcon(int base_id) const;
+
   // Returns the tint for buttons that contrasts with the normal window
   // background color.
   void GetNormalButtonTintHSL(color_utils::HSL* tint) const;
@@ -100,6 +107,9 @@ class Gtk2UI : public ui::LinuxUI {
   // entry.
   void GetSelectedEntryForegroundHSL(color_utils::HSL* tint) const;
 
+  // Draws the GTK button border for state |gtk_state| onto a bitmap.
+  SkBitmap DrawGtkButtonBorder(int gtk_state, int width, int height) const;
+
   // Frees all calculated images and color data.
   void ClearAllThemeData();
 
@@ -107,7 +117,6 @@ class Gtk2UI : public ui::LinuxUI {
   GtkWidget* fake_frame_;
   OwnedWidgetGtk fake_label_;
   OwnedWidgetGtk fake_entry_;
-  OwnedWidgetGtk fake_menu_item_;
 
   // Tints and colors calculated by LoadGtkValues() that are given to the
   // caller while |use_gtk_| is true.
