@@ -289,10 +289,13 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   FRIEND_TEST_ALL_PREFIXES(PrerenderTest, LinkManagerCancelTwice);
   FRIEND_TEST_ALL_PREFIXES(PrerenderTest, LinkManagerExpireThenAddAgain);
   FRIEND_TEST_ALL_PREFIXES(PrerenderTest, LinkManagerExpireThenCancel);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, NotSoRecentlyVisited);
   FRIEND_TEST_ALL_PREFIXES(PrerenderTest, PageMatchesFragmentTest);
   FRIEND_TEST_ALL_PREFIXES(PrerenderTest, PendingPrerenderTest);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, PPLTDummy);
   FRIEND_TEST_ALL_PREFIXES(PrerenderTest, RateLimitInWindowTest);
   FRIEND_TEST_ALL_PREFIXES(PrerenderTest, RateLimitOutsideWindowTest);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderTest, RecentlyVisitedPPLTDummy);
   FRIEND_TEST_ALL_PREFIXES(PrerenderTest, SourceRenderViewClosed);
   FRIEND_TEST_ALL_PREFIXES(PrerenderTest, TwoElementPrerenderTest);
 
@@ -303,6 +306,9 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   typedef std::list<PrerenderContentsData> PrerenderContentsDataList;
   typedef base::hash_map<content::WebContents*, bool> WouldBePrerenderedMap;
+
+  // Time window for which we record old navigations, in milliseconds.
+  static const int kNavigationRecordWindowMs = 5000;
 
   // Adds a prerender for |url| from referrer |referrer| initiated from the
   // child process specified by |child_id|. The |origin| specifies how the
