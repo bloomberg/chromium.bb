@@ -21,7 +21,7 @@ SUIDSandboxUITest.prototype = {
 // This test is for Linux only.
 GEN('#if defined(OS_LINUX)');
 GEN('#define MAYBE_testSUIDSandboxEnabled \\');
-GEN('    testSUIDSandboxEnabled');
+GEN('    FLAKY_testSUIDSandboxEnabled');
 GEN('#else');
 GEN('#define MAYBE_testSUIDSandboxEnabled \\');
 GEN('    DISABLED_testSUIDSandboxEnabled');
