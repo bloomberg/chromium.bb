@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "ui/base/accelerators/accelerator.h"
 
 namespace views {
 class Widget;
@@ -22,7 +22,7 @@ namespace internal {
 
 // This class handles moving focus between a set of widgets and the main browser
 // window.
-class ASH_EXPORT FocusCycler : public ui::AcceleratorTarget {
+class ASH_EXPORT FocusCycler {
  public:
   enum Direction {
     FORWARD,
@@ -30,14 +30,14 @@ class ASH_EXPORT FocusCycler : public ui::AcceleratorTarget {
   };
 
   FocusCycler();
-  virtual ~FocusCycler();
+  ~FocusCycler();
 
   // Returns the widget the FocusCycler is attempting to activate or NULL if
   // FocusCycler is not activating any widgets.
   const views::Widget* widget_activating() const { return widget_activating_; }
 
-  // Add a widget to the focus cycle and set up accelerators.  The widget needs
-  // to have an AccessiblePaneView as the content view.
+  // Add a widget to the focus cycle. The widget needs to have an
+  // AccessiblePaneView as the content view.
   void AddWidget(views::Widget* widget);
 
   // Move focus to the next widget.
@@ -45,10 +45,6 @@ class ASH_EXPORT FocusCycler : public ui::AcceleratorTarget {
 
   // Moves focus the specified widget. Returns true if the widget was activated.
   bool FocusWidget(views::Widget* widget);
-
-  // ui::AcceleratorTarget overrides
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
-  virtual bool CanHandleAccelerators() const OVERRIDE;
 
  private:
   std::vector<views::Widget*> widgets_;

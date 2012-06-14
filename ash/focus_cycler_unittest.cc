@@ -136,6 +136,95 @@ TEST_F(FocusCyclerTest, CycleFocusBackward) {
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
 }
 
+TEST_F(FocusCyclerTest, CycleFocusForwardBackward) {
+  scoped_ptr<FocusCycler> focus_cycler(new FocusCycler());
+
+  // Add the Status area
+  scoped_ptr<SystemTray> tray(CreateSystemTray());
+  ASSERT_TRUE(tray->GetWidget());
+  focus_cycler->AddWidget(tray->GetWidget());
+  GetStatusAreaWidgetDelegate(tray->GetWidget())->SetFocusCyclerForTesting(
+      focus_cycler.get());
+
+  // Add the launcher
+  Launcher* launcher = Shell::GetInstance()->launcher();
+  ASSERT_TRUE(launcher);
+  views::Widget* launcher_widget = launcher->widget();
+  ASSERT_TRUE(launcher_widget);
+  launcher->SetFocusCycler(focus_cycler.get());
+
+  // Create a single test window.
+  Window* default_container = Shell::GetContainer(
+      Shell::GetPrimaryRootWindow(),
+      internal::kShellWindowId_DefaultContainer);
+  scoped_ptr<Window> window0(CreateTestWindowWithId(0, default_container));
+  wm::ActivateWindow(window0.get());
+  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
+
+  // Cycle focus to the launcher
+  focus_cycler->RotateFocus(FocusCycler::BACKWARD);
+  EXPECT_TRUE(launcher_widget->IsActive());
+
+  // Cycle focus to the status area
+  focus_cycler->RotateFocus(FocusCycler::BACKWARD);
+  EXPECT_TRUE(tray->GetWidget()->IsActive());
+
+  // Cycle focus to the browser
+  focus_cycler->RotateFocus(FocusCycler::BACKWARD);
+  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
+
+  // Cycle focus to the status area
+  focus_cycler->RotateFocus(FocusCycler::FORWARD);
+  EXPECT_TRUE(tray->GetWidget()->IsActive());
+
+  // Cycle focus to the launcher
+  focus_cycler->RotateFocus(FocusCycler::FORWARD);
+  EXPECT_TRUE(launcher_widget->IsActive());
+
+  // Cycle focus to the browser
+  focus_cycler->RotateFocus(FocusCycler::FORWARD);
+  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
+}
+
+TEST_F(FocusCyclerTest, CycleFocusNoBrowser) {
+  scoped_ptr<FocusCycler> focus_cycler(new FocusCycler());
+
+  // Add the Status area
+  scoped_ptr<SystemTray> tray(CreateSystemTray());
+  ASSERT_TRUE(tray->GetWidget());
+  focus_cycler->AddWidget(tray->GetWidget());
+  GetStatusAreaWidgetDelegate(tray->GetWidget())->SetFocusCyclerForTesting(
+      focus_cycler.get());
+
+  // Add the launcher and focus it
+  Launcher* launcher = Shell::GetInstance()->launcher();
+  ASSERT_TRUE(launcher);
+  views::Widget* launcher_widget = launcher->widget();
+  ASSERT_TRUE(launcher_widget);
+  launcher->SetFocusCycler(focus_cycler.get());
+  focus_cycler->FocusWidget(launcher_widget);
+
+  // Cycle focus to the status area
+  focus_cycler->RotateFocus(FocusCycler::FORWARD);
+  EXPECT_TRUE(tray->GetWidget()->IsActive());
+
+  // Cycle focus to the launcher
+  focus_cycler->RotateFocus(FocusCycler::FORWARD);
+  EXPECT_TRUE(launcher_widget->IsActive());
+
+  // Cycle focus to the status area
+  focus_cycler->RotateFocus(FocusCycler::FORWARD);
+  EXPECT_TRUE(tray->GetWidget()->IsActive());
+
+  // Cycle focus to the launcher
+  focus_cycler->RotateFocus(FocusCycler::BACKWARD);
+  EXPECT_TRUE(launcher_widget->IsActive());
+
+  // Cycle focus to the status area
+  focus_cycler->RotateFocus(FocusCycler::BACKWARD);
+  EXPECT_TRUE(tray->GetWidget()->IsActive());
+}
+
 class FocusCyclerLauncherTest : public AshTestBase {
  public:
   FocusCyclerLauncherTest() : AshTestBase() {}

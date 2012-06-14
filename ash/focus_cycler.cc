@@ -7,13 +7,21 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/wm/window_cycle_controller.h"
-#include "ui/views/widget/widget.h"
-#include "ui/views/focus/focus_search.h"
-#include "ui/aura/window.h"
 #include "ui/aura/client/activation_client.h"
+#include "ui/aura/window.h"
 #include "ui/views/accessible_pane_view.h"
+#include "ui/views/focus/focus_search.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
+
+namespace {
+
+bool HasFocusableWindow() {
+  return !WindowCycleController::BuildWindowList().empty();
+}
+
+}  // namespace
 
 namespace internal {
 
@@ -25,21 +33,13 @@ FocusCycler::~FocusCycler() {
 
 void FocusCycler::AddWidget(views::Widget* widget) {
   widgets_.push_back(widget);
-
-  widget->GetFocusManager()->RegisterAccelerator(
-      ui::Accelerator(ui::VKEY_F2, ui::EF_CONTROL_DOWN),
-      ui::AcceleratorManager::kNormalPriority,
-      this);
-  widget->GetFocusManager()->RegisterAccelerator(
-      ui::Accelerator(ui::VKEY_F1, ui::EF_CONTROL_DOWN),
-      ui::AcceleratorManager::kNormalPriority,
-      this);
 }
 
 void FocusCycler::RotateFocus(Direction direction) {
+  const bool has_window = HasFocusableWindow();
   int index = 0;
   int count = static_cast<int>(widgets_.size());
-  int browser_index = count;
+  int browser_index = has_window ? count : -1;
 
   for (; index < count; ++index) {
     if (widgets_[index]->IsActive())
@@ -48,7 +48,8 @@ void FocusCycler::RotateFocus(Direction direction) {
 
   int start_index = index;
 
-  count = count + 1;
+  if (has_window)
+    ++count;
 
   for (;;) {
     if (direction == FORWARD)
@@ -86,24 +87,6 @@ bool FocusCycler::FocusWidget(views::Widget* widget) {
       return true;
   }
   return false;
-}
-
-bool FocusCycler::AcceleratorPressed(const ui::Accelerator& accelerator) {
-  switch (accelerator.key_code()) {
-    case ui::VKEY_F1:
-      RotateFocus(BACKWARD);
-      return true;
-    case ui::VKEY_F2:
-      RotateFocus(FORWARD);
-      return true;
-    default:
-      NOTREACHED();
-      return false;
-  }
-}
-
-bool FocusCycler::CanHandleAccelerators() const {
-  return true;
 }
 
 }  // namespace internal

@@ -111,6 +111,22 @@ bool HandleShowTaskManager() {
   return true;
 }
 
+bool HandleRotatePaneFocus(Shell::Direction direction) {
+  if (!Shell::GetInstance()->delegate()->RotatePaneFocus(direction)) {
+    // No browser window is available. Focus the launcher.
+    Shell* shell = Shell::GetInstance();
+    switch (direction) {
+      case Shell::FORWARD:
+        shell->focus_cycler()->RotateFocus(internal::FocusCycler::FORWARD);
+        break;
+      case Shell::BACKWARD:
+        shell->focus_cycler()->RotateFocus(internal::FocusCycler::BACKWARD);
+        break;
+    }
+  }
+  return true;
+}
+
 // Rotates the default window container.
 bool HandleRotateWindows() {
   aura::Window* target =
@@ -373,6 +389,10 @@ bool AcceleratorController::PerformAction(int action,
       if (shell->launcher())
         return shell->focus_cycler()->FocusWidget(shell->launcher()->widget());
       break;
+    case FOCUS_NEXT_PANE:
+      return HandleRotatePaneFocus(Shell::FORWARD);
+    case FOCUS_PREVIOUS_PANE:
+      return HandleRotatePaneFocus(Shell::BACKWARD);
     case FOCUS_SYSTEM_TRAY:
       if (shell->system_tray())
         return shell->focus_cycler()->FocusWidget(

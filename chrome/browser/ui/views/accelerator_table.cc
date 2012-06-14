@@ -100,8 +100,6 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { ui::VKEY_BACK, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     IDC_CLEAR_BROWSING_DATA },
   { ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, IDC_FEEDBACK },
-  { ui::VKEY_F2, ui::EF_CONTROL_DOWN, IDC_FOCUS_NEXT_PANE },
-  { ui::VKEY_F1, ui::EF_CONTROL_DOWN, IDC_FOCUS_PREVIOUS_PANE },
   { ui::VKEY_BROWSER_FORWARD, ui::EF_NONE, IDC_FORWARD },
   { ui::VKEY_F2, ui::EF_NONE, IDC_FORWARD },
   { ui::VKEY_F4, ui::EF_NONE, IDC_FULLSCREEN },

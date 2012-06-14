@@ -80,6 +80,10 @@ class ASH_EXPORT ShellDelegate {
   // Invoked when the user uses Shift+Ctrl+T to restore the closed tab.
   virtual void RestoreTab() = 0;
 
+  // Moves keyboard focus to the next pane. Returns false if no browser window
+  // is created.
+  virtual bool RotatePaneFocus(Shell::Direction direction) = 0;
+
   // Shows the keyboard shortcut overlay.
   virtual void ShowKeyboardOverlay() = 0;
 

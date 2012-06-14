@@ -221,6 +221,26 @@ void ChromeShellDelegate::RestoreTab() {
   }
 }
 
+bool ChromeShellDelegate::RotatePaneFocus(ash::Shell::Direction direction) {
+  aura::Window* window = ash::wm::GetActiveWindow();
+  if (!window)
+    return false;
+
+  Browser* browser = browser::FindBrowserWithWindow(window);
+  if (!browser)
+    return false;
+
+  switch (direction) {
+    case ash::Shell::FORWARD:
+      browser->FocusNextPane();
+      break;
+    case ash::Shell::BACKWARD:
+      browser->FocusPreviousPane();
+      break;
+  }
+  return true;
+}
+
 void ChromeShellDelegate::ShowKeyboardOverlay() {
 #if defined(OS_CHROMEOS)
   KeyboardOverlayDialogView::ShowDialog();
