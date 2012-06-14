@@ -6,6 +6,7 @@
 import json
 import logging
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -56,8 +57,8 @@ class TraceTestCases(unittest.TestCase):
 
   def _gen_results(self, test_case):
     return {
-      u'processes': 0,
-      u'result': 0,
+      u'processes': 1,
+      u'returncode': 0,
       u'results': {
         u'root': {
           u'children': [],
@@ -76,6 +77,7 @@ class TraceTestCases(unittest.TestCase):
           u'initial_cwd': self.initial_cwd,
         },
       },
+      u'valid': True,
       u'variables': {
         u'isolate_dependency_tracked': [
           u'<(PRODUCT_DIR)/gtest_fake/gtest_fake.py',
@@ -101,7 +103,8 @@ class TraceTestCases(unittest.TestCase):
     cmd = [
         sys.executable,
         os.path.join(ROOT_DIR, 'trace_test_cases.py'),
-        '--jobs', '1',
+        # Forces 4 parallel jobs.
+        '--jobs', '4',
         '--timeout', '0',
         '--out', self.temp_file,
         '--root-dir', ROOT_DIR,
@@ -109,6 +112,7 @@ class TraceTestCases(unittest.TestCase):
         '--product-dir', 'data',
         TARGET_PATH,
     ]
+    logging.debug(' '.join(cmd))
     proc = subprocess.Popen(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = proc.communicate() or ('', '')  # pylint is confused.
@@ -116,21 +120,13 @@ class TraceTestCases(unittest.TestCase):
     if sys.platform == 'win32':
       # TODO(maruel): Figure out why replace('\r\n', '\n') doesn't work.
       out = out.replace('\r', '')
-    expected_out = (
-      'Found 4 test cases in gtest_fake.py\n'
-      '\n'
-      'Failed while running: %(path)s --gtest_filter=Baz.Fail\n'
-      '\n'
-      'Failed while running: %(path)s --gtest_filter=Baz.Fail\n'
-      '\n'
-      'Failed while running: %(path)s --gtest_filter=Baz.Fail\n'
-      '\n'
-      'Failed while running: %(path)s --gtest_filter=Baz.Fail\n'
-      '\n'
-      'Failed while running: %(path)s --gtest_filter=Baz.Fail\n') % {
-        'path': TARGET_PATH,
-      }
-    self.assertEquals(expected_out, out)
+    expected_out_re = '\n'.join([
+        r'',
+        r'\d+\.\ds Done post-processing logs\. Parsing logs\.',
+        r'\d+\.\ds Done parsing logs\.',
+        r'',
+      ])
+    self.assertTrue(re.match('^%s$' % expected_out_re, out), repr(out))
     self.assertTrue(err.startswith('\r'), err)
 
     expected_json = {}
@@ -142,7 +138,7 @@ class TraceTestCases(unittest.TestCase):
     )
     for test_case in test_cases:
       expected_json[unicode(test_case)] = self._gen_results(test_case)
-    expected_json['Baz.Fail']['result'] = 1
+    expected_json['Baz.Fail']['returncode'] = 1
     with open(self.temp_file, 'r') as f:
       result = json.load(f)
 

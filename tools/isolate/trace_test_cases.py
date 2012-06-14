@@ -3,93 +3,71 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""A manual version of trace_inputs.py that is specialized in tracing each
-google-test test case individually.
+"""Traces each test cases of a google-test executable individually.
 
-This is mainly written to work around bugs in strace w.r.t. browser_tests.
+Gives detailed information about each test case. The logs can be read afterward
+with ./trace_inputs.py read -l /path/to/executable.logs
 """
 
 import fnmatch
+import logging
 import multiprocessing
 import optparse
 import os
 import sys
-import tempfile
 import time
 
 import isolate_common
 import list_test_cases
 import trace_inputs
+import worker_pool
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(os.path.dirname(BASE_DIR))
 
 
-def trace_test_case(
-    test_case, executable, root_dir, cwd_dir, product_dir, leak):
-  """Traces a single test case and returns the .isolate compatible variable
-  dict.
-  """
-  # Resolve any symlink
-  root_dir = os.path.realpath(root_dir)
+class Tracer(object):
+  def __init__(self, tracer, executable, cwd_dir, progress):
+    # Constants
+    self.tracer = tracer
+    self.executable = executable
+    self.cwd_dir = cwd_dir
+    self.progress = progress
 
-  api = trace_inputs.get_api()
-  cmd = [executable, '--gtest_filter=%s' % test_case]
+  def map(self, test_case):
+    """Traces a single test case and returns its output."""
+    cmd = [self.executable, '--gtest_filter=%s' % test_case]
+    cmd = list_test_cases.fix_python_path(cmd)
+    tracename = test_case.replace('/', '-')
 
-  if not leak:
-    f, logname = tempfile.mkstemp(prefix='trace')
-    os.close(f)
-  else:
-    logname = '%s.%s.log' % (executable, test_case.replace('/', '-'))
-    f = None
-
-  try:
-    simplified = None
-    processes = 0
-    for i in range(10):
+    out = []
+    for retry in range(5):
       start = time.time()
-      returncode, output = trace_inputs.trace(
-          logname, cmd, os.path.join(root_dir, cwd_dir), api, True)
-      if returncode and i < 5:
-        print '\nFailed while running: %s' % ' '.join(cmd)
-        continue
+      returncode, output = self.tracer.trace(
+          cmd, self.cwd_dir, tracename, True)
       duration = time.time() - start
-      try:
-        results = trace_inputs.load_trace(logname, root_dir, api)
+      # TODO(maruel): Define a way to detect if an strace log is valid.
+      valid = True
+      out.append(
+          {
+            'test_case': test_case,
+            'returncode': returncode,
+            'duration': duration,
+            'valid': valid,
+            'output': output,
+          })
+      if not valid:
+        self.progress.increase_count()
+      if retry:
+        self.progress.update_item('%s - %d' % (test_case, retry))
+      else:
+        self.progress.update_item(test_case)
+      if valid:
         break
-      except trace_inputs.TracingFailure, e:
-        print >> sys.stderr, '\nTracing failed for: %s' % ' '.join(cmd)
-        print >> sys.stderr, str(e)
-    simplified = [
-      f.path for f in trace_inputs.extract_directories(root_dir, results.files)
-    ]
-    if simplified:
-      variables = isolate_common.generate_dict(simplified, cwd_dir, product_dir)
-    else:
-      variables = {}
-    return {
-      'case': test_case,
-      'duration': duration,
-      'output': output,
-      'processes': processes,
-      'result': returncode,
-      'variables': variables,
-      'results': results.flatten(),
-    }
-  finally:
-    if f:
-      os.remove(logname)
+    return out
 
 
-def task(args):
-  """Adaptor for multiprocessing.Pool().imap_unordered().
-
-  It is executed asynchronously.
-  """
-  return trace_test_case(*args)
-
-
-def get_test_cases(executable, skip):
+def get_test_cases(executable, whitelist, blacklist):
   """Returns the filtered list of test cases.
 
   This is done synchronously.
@@ -101,72 +79,113 @@ def get_test_cases(executable, skip):
     return None
 
   tests = list_test_cases.parse_gtest_cases(out)
-  tests = [t for t in tests if not any(fnmatch.fnmatch(t, s) for s in skip)]
-  print 'Found %d test cases in %s' % (len(tests), os.path.basename(executable))
+
+  # Filters the test cases with the two lists.
+  if blacklist:
+    tests = [
+      t for t in tests if not any(fnmatch.fnmatch(t, s) for s in blacklist)
+    ]
+  if whitelist:
+    tests = [
+      t for t in tests if any(fnmatch.fnmatch(t, s) for s in whitelist)
+    ]
+  logging.info(
+      'Found %d test cases in %s' % (len(tests), os.path.basename(executable)))
   return tests
 
 
 def trace_test_cases(
-    executable, root_dir, cwd_dir, product_dir, leak, skip, jobs, timeout,
+    executable, root_dir, cwd_dir, variables, whitelist, blacklist, jobs,
     output_file):
   """Traces test cases one by one."""
-  tests = get_test_cases(executable, skip)
-  if not tests:
+  test_cases = get_test_cases(executable, whitelist, blacklist)
+  if not test_cases:
     return
 
-  last_line = ''
-  out = {}
-  index = 0
-  pool = multiprocessing.Pool(processes=jobs)
-  start = time.time()
-  try:
-    g = [(t, executable, root_dir, cwd_dir, product_dir, leak) for t in tests]
-    if jobs != 1:
-      it = pool.imap_unordered(task, g)
+  # Resolve any symlink.
+  root_dir = os.path.realpath(root_dir)
+  full_cwd_dir = os.path.join(root_dir, cwd_dir)
+  logname = output_file + '.logs'
+
+  progress = worker_pool.Progress(len(test_cases))
+  with worker_pool.ThreadPool(jobs or multiprocessing.cpu_count()) as pool:
+    api = trace_inputs.get_api()
+    api.clean_trace(logname)
+    with api.get_tracer(logname) as tracer:
+      function = Tracer(tracer, executable, full_cwd_dir, progress).map
+      for test_case in test_cases:
+        pool.add_task(function, test_case)
+
+      values = pool.join(progress, 0.1)
+
+  print ''
+  print '%.1fs Done post-processing logs. Parsing logs.' % (
+      time.time() - progress.start)
+  results = api.parse_log(logname, trace_inputs.get_blacklist(api))
+  print '%.1fs Done parsing logs.' % (
+      time.time() - progress.start)
+
+  # Strips to root_dir.
+  results_processed = {}
+  for item in results:
+    if 'results' in item:
+      item = item.copy()
+      item['results'] = item['results'].strip_root(root_dir)
+      results_processed[item['trace']] = item
     else:
-      it = (task(x) for x in g).__iter__()
-    while True:
-      try:
-        if timeout:
-          result = it.next(timeout=timeout)
-        else:
-          result = it.next()
-      except StopIteration:
-        break
-      case = result.pop('case')
-      index += 1
-      line = '%d of %d (%.1f%%), %.1fs: %s' % (
-            index,
-            len(tests),
-            index * 100. / len(tests),
-            time.time() - start,
-            case)
-      sys.stderr.write(
-          '\r%s%s' % (line, ' ' * max(0, len(last_line) - len(line))))
-      sys.stderr.flush()
-      last_line = line
-      # TODO(maruel): Retry failed tests.
-      out[case] = result
-    return 0
-  except multiprocessing.TimeoutError, e:
-    print 'Got a timeout while processing a task item %s' % e
-    # Be sure to stop the pool on exception.
-    pool.terminate()
-    return 1
-  except Exception, e:
-    # Be sure to stop the pool on exception.
-    pool.terminate()
-    raise
-  finally:
-    trace_inputs.write_json(output_file, out, len(out) > 20)
-    pool.close()
-    pool.join()
+      print >> sys.stderr, 'Got exception while tracing %s: %s' % (
+          item['trace'], item['exception'])
+
+  # Flatten.
+  flattened = {}
+  for item_list in values:
+    for item in item_list:
+      if item['valid']:
+        test_case = item['test_case']
+        tracename = test_case.replace('/', '-')
+        flattened[test_case] = results_processed[tracename].copy()
+        item_results = flattened[test_case]['results']
+        flattened[test_case].update({
+            'processes': len(list(item_results.process.all)),
+            'results': item_results.flatten(),
+            'duration': item['duration'],
+            'returncode': item['returncode'],
+            'valid': item['valid'],
+            'variables':
+              isolate_common.generate_dict(
+                sorted(f.path for f in item_results.files),
+                cwd_dir,
+                variables['<(PRODUCT_DIR)']),
+          })
+        del flattened[test_case]['trace']
+  # Make it dense if there is more than 20 results.
+  trace_inputs.write_json(
+      output_file,
+      flattened,
+      False)
+
+  # Also write the .isolate file.
+  # First, get all the files from all results. Use a map to remove dupes.
+  files = {}
+  for item in results_processed.itervalues():
+    files.update((f.full_path, f) for f in item['results'].existent)
+  # Convert back to a list, discard the keys.
+  files = files.values()
+
+  # TODO(maruel): Have isolate_common process a dict of variables.
+  value = isolate_common.generate_dict(
+      sorted(f.path for f in files), cwd_dir, variables['<(PRODUCT_DIR)'])
+  with open('%s.isolate' % output_file, 'wb') as f:
+    isolate_common.pretty_print(value, f)
+  return 0
 
 
 def main():
   """CLI frontend to validate arguments."""
   parser = optparse.OptionParser(
-      usage='%prog <options> [gtest]')
+      usage='%prog <options> [gtest]',
+      description=sys.modules['__main__'].__doc__)
+  parser.format_description = lambda *_: parser.description
   parser.add_option(
       '-c', '--cwd',
       default='chrome',
@@ -183,17 +202,20 @@ def main():
       default=ROOT_DIR,
       help='Root directory to base everything off. Default: %default')
   parser.add_option(
-      '-l', '--leak',
-      action='store_true',
-      help='Leak trace files')
-  parser.add_option(
       '-o', '--out',
       help='output file, defaults to <executable>.test_cases')
   parser.add_option(
-      '-s', '--skip',
+      '-w', '--whitelist',
       default=[],
       action='append',
-      help='filter to apply to test cases to skip, wildcard-style')
+      help='filter to apply to test cases to run, wildcard-style, defaults to '
+           'all test')
+  parser.add_option(
+      '-b', '--blacklist',
+      default=[],
+      action='append',
+      help='filter to apply to test cases to skip, wildcard-style, defaults to '
+           'no test')
   parser.add_option(
       '-j', '--jobs',
       type='int',
@@ -208,21 +230,23 @@ def main():
   if len(args) != 1:
     parser.error(
         'Please provide the executable line to run, if you need fancy things '
-        'like xvfb, start this script from inside xvfb, it\'ll be faster.')
+        'like xvfb, start this script from *inside* xvfb, it\'ll be much faster'
+        '.')
   executable = args[0]
   if not os.path.isabs(executable):
     executable = os.path.join(options.root_dir, options.product_dir, args[0])
   if not options.out:
     options.out = '%s.test_cases' % executable
+  variables = {'<(PRODUCT_DIR)': options.product_dir}
   return trace_test_cases(
       executable,
       options.root_dir,
       options.cwd,
-      options.product_dir,
-      options.leak,
-      options.skip,
+      variables,
+      options.whitelist,
+      options.blacklist,
       options.jobs,
-      options.timeout,
+      # TODO(maruel): options.timeout,
       options.out)
 
 
