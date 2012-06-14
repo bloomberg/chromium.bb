@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -183,6 +183,13 @@ DWORD StartRestrictedProcessInJob(wchar_t *command_line,
   // Start the process
   STARTUPINFO startup_info = {0};
   PROCESS_INFORMATION process_info = {0};
+  DWORD flags = CREATE_SUSPENDED;
+
+  if (base::win::GetVersion() < base::win::VERSION_WIN8) {
+    // Windows 8 implements nested jobs, but for older systems we need to
+    // break out of any job we're in to enforce our restrictions.
+    flags |= CREATE_BREAKAWAY_FROM_JOB;
+  }
 
   if (!::CreateProcessAsUser(primary_token.Get(),
                              NULL,   // No application name.
@@ -190,7 +197,7 @@ DWORD StartRestrictedProcessInJob(wchar_t *command_line,
                              NULL,   // No security attribute.
                              NULL,   // No thread attribute.
                              FALSE,  // Do not inherit handles.
-                             CREATE_SUSPENDED | CREATE_BREAKAWAY_FROM_JOB,
+                             flags,
                              NULL,   // Use the environment of the caller.
                              NULL,   // Use current directory of the caller.
                              &startup_info,

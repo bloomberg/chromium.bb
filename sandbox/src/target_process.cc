@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/win/pe_image.h"
+#include "base/win/windows_version.h"
 #include "sandbox/src/crosscall_server.h"
 #include "sandbox/src/crosscall_client.h"
 #include "sandbox/src/policy_low_level.h"
@@ -149,8 +150,14 @@ DWORD TargetProcess::Create(const wchar_t* exe_path,
   scoped_ptr_malloc<wchar_t> desktop_name(desktop ? _wcsdup(desktop) : NULL);
 
   // Start the target process suspended.
-  const DWORD flags = CREATE_SUSPENDED | CREATE_BREAKAWAY_FROM_JOB |
-                      CREATE_UNICODE_ENVIRONMENT | DETACHED_PROCESS;
+  DWORD flags =
+      CREATE_SUSPENDED | CREATE_UNICODE_ENVIRONMENT | DETACHED_PROCESS;
+
+  if (base::win::GetVersion() < base::win::VERSION_WIN8) {
+    // Windows 8 implements nested jobs, but for older systems we need to
+    // break out of any job we're in to enforce our restrictions.
+    flags |= CREATE_BREAKAWAY_FROM_JOB;
+  }
 
   STARTUPINFO startup_info = {sizeof(STARTUPINFO)};
   if (desktop) {
