@@ -3281,7 +3281,7 @@ void RegisterUserPrefs(PrefService* prefs) {
 int GetDataVersion(PrefService* prefs) {
   // Increment this if you change the above data in ways that mean users with
   // existing data should get a new version.
-  const int kCurrentDataVersion = 39;
+  const int kCurrentDataVersion = 40;
   // Allow tests to override the local version.
   return (prefs && prefs->HasPrefPath(prefs::kSearchProviderOverridesVersion)) ?
       prefs->GetInteger(prefs::kSearchProviderOverridesVersion) :
