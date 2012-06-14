@@ -2364,7 +2364,10 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
   // GpuVideoDecodeAccelerator so we don't even try to use it on other
   // platforms.  This is a startup-time optimization.  When new VDA
   // implementations are added, relax the #if above.
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+  // TODO(posciak,fischman): Temporarily remove this path as it triggers
+  // crbug.com/129103 and webk.it/88815.
+//#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+#if 0
   // Note we don't actually use the result of this blind down-cast unless it's
   // valid (not NULL and of the right type).
   WebGraphicsContext3DCommandBufferImpl* context3d =
