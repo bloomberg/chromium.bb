@@ -231,7 +231,14 @@ TEST_F(MultiMonitorManagerTest, EmulatorTest) {
   reset();
 }
 
-TEST_F(MultiMonitorManagerTest, TestDeviceScaleOnlyChange) {
+// TODO(oshima): Device scale factor is supported on chromeos only for now.
+#if defined(OS_CHROMEOS)
+#define MAYBE_TestDeviceScaleOnlyChange TestDeviceScaleOnlyChange
+#else
+#define MAYBE_TestDeviceScaleOnlyChange DISABLED_TestDeviceScaleOnlyChange
+#endif
+
+TEST_F(MultiMonitorManagerTest, MAYBE_TestDeviceScaleOnlyChange) {
   aura::MonitorManager::set_use_fullscreen_host_window(true);
   UpdateMonitor("0+0-1000x600");
   EXPECT_EQ(1,
