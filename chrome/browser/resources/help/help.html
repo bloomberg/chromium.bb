@@ -76,6 +76,13 @@
         <div id="update-status-icon" class="up-to-date"></div>
         <span id="update-status" i18n-content="updateCheckStarted"></span>
       </div>
+<if expr="is_macosx">
+      <div id="update-obsolete-os-container" hidden>
+        <span id="update-obsolete-os" i18n-content="updateObsoleteOS"></span>
+        <a i18n-values="href:updateObsoleteOSURL" i18n-content="learnMore"
+            target="_blank"></a>
+      </div>
+</if>
       <div id="update-buttons-container">
         <div id="update-percentage" hidden></div>
 <if expr="is_macosx">

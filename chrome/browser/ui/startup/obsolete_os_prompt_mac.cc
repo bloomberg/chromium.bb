@@ -13,17 +13,10 @@
 #include "chrome/browser/ui/startup/obsolete_os_info_bar.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-
-namespace {
-
-// The URL for the Mac OS X 10.5 deprecation help center article.
-const char kMacLeopardDeprecationUrl[] =
-    "https://support.google.com/chrome/?p=ui_mac_leopard_support";
-
-}  // namespace
 
 namespace browser {
 
@@ -63,7 +56,7 @@ void ShowObsoleteOSPrompt(Browser* browser) {
           tab->infobar_tab_helper(),
           l10n_util::GetStringFUTF16(IDS_MAC_10_5_LEOPARD_DEPRECATED,
               l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)),
-          GURL(kMacLeopardDeprecationUrl)));
+          GURL(chrome::kMacLeopardObsoleteURL)));
 
   local_state->SetDouble(prefs::kMacLeopardObsoleteInfobarLastShown,
       time_now.ToDoubleT());

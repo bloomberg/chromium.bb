@@ -149,6 +149,18 @@ cr.define('help', function() {
     /**
      * @private
      */
+    setObsoleteOS_: function(obsolete) {
+      if (cr.isMac) {
+        var updateObsoleteOSContainer = $('update-obsolete-os-container');
+        if (updateObsoleteOSContainer) {
+          updateObsoleteOSContainer.hidden = !obsolete;
+        }
+      }
+    },
+
+    /**
+     * @private
+     */
     setOSVersion_: function(version) {
       if (!cr.isChromeOS)
         console.error('OS version unsupported on non-CrOS');
@@ -233,6 +245,10 @@ cr.define('help', function() {
 
   HelpPage.setPromotionState = function(state) {
     HelpPage.getInstance().setPromotionState_(state);
+  };
+
+  HelpPage.setObsoleteOS = function(obsolete) {
+    HelpPage.getInstance().setObsoleteOS_(obsolete);
   };
 
   HelpPage.setOSVersion = function(version) {

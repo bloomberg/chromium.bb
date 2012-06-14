@@ -79,6 +79,10 @@ body {
   background-size: 17px;
 }
 
+#update-obsolete-os-container {
+  margin-left: 25px;
+}
+
 #more-info-expander {
   -webkit-padding-start: 0;
 }

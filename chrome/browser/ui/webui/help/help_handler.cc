@@ -44,6 +44,10 @@
 #include "content/public/browser/browser_thread.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
+
 using base::ListValue;
 using content::BrowserThread;
 
@@ -155,6 +159,7 @@ void HelpHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
 #endif
 #if defined(OS_MACOSX)
     { "promote", IDS_ABOUT_CHROME_PROMOTE_UPDATER },
+    { "learnMore", IDS_LEARN_MORE },
 #endif
   };
 
@@ -162,6 +167,15 @@ void HelpHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
     localized_strings->SetString(resources[i].name,
                                  l10n_util::GetStringUTF16(resources[i].ids));
   }
+
+#if defined(OS_MACOSX)
+  localized_strings->SetString(
+      "updateObsoleteOS",
+      l10n_util::GetStringFUTF16(IDS_MAC_10_5_LEOPARD_DEPRECATED,
+                                 l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+  localized_strings->SetString("updateObsoleteOSURL",
+                               chrome::kMacLeopardObsoleteURL);
+#endif
 
   localized_strings->SetString(
       "browserVersion",
@@ -279,6 +293,13 @@ void HelpHandler::OnPageLoaded(const ListValue* args) {
 #if defined(OS_CHROMEOS)
   version_updater_->GetReleaseChannel(
       base::Bind(&HelpHandler::OnReleaseChannel, base::Unretained(this)));
+#endif
+
+#if defined(OS_MACOSX)
+  scoped_ptr<base::Value> is_os_obsolete(
+      base::Value::CreateBooleanValue(base::mac::IsOSLeopardOrEarlier()));
+  web_ui()->CallJavascriptFunction("help.HelpPage.setObsoleteOS",
+                                   *is_os_obsolete);
 #endif
 }
 

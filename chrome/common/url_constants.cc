@@ -442,6 +442,10 @@ const char kNaturalScrollHelpURL[] =
     "https://support.google.com/chromeos/?p=simple_scrolling";
 #endif
 
+#if defined(OS_MACOSX)
+const char kMacLeopardObsoleteURL[] =
+    "https://support.google.com/chrome/?p=ui_mac_leopard_support";
+#endif
 
 const char* const kChromeDebugURLs[] = {
   kChromeUICrashURL,
@@ -452,7 +456,8 @@ const char* const kChromeDebugURLs[] = {
   kChromeUIGpuCrashURL,
   kChromeUIGpuHangURL,
 };
-int kNumberOfChromeDebugURLs = static_cast<int>(arraysize(kChromeDebugURLs));
+const int kNumberOfChromeDebugURLs =
+    static_cast<int>(arraysize(kChromeDebugURLs));
 
 const char kExtensionScheme[] = "chrome-extension";
 const char kExtensionResourceScheme[] = "chrome-extension-resource";
