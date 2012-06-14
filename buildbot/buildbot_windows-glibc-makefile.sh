@@ -85,7 +85,7 @@ else
   for suffix in gz gz.sha1hash bz2 bz2.sha1hash xz xz.sha1hash ; do
     $GSUTIL cp -a public-read \
       tools/toolchain.tar.$suffix \
-      gs://nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/toolchain_mac_x86.tar.$suffix
+      gs://nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/toolchain_win_x86.tar.$suffix
   done
   echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/@@@
 
