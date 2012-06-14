@@ -34,6 +34,7 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/screen.h"
 
 using std::max;
 using std::min;
@@ -811,8 +812,15 @@ gfx::Rect RootWindowHostLinux::GetBounds() const {
 }
 
 void RootWindowHostLinux::SetBounds(const gfx::Rect& bounds) {
-  bool size_changed = bounds_.size() != bounds.size();
-  if (bounds == bounds_) {
+  // Even if the host window's size doesn't change, aura's root window
+  // size, which is in DIP, changes when the scale changes.
+  float current_scale = root_window_->compositor()->device_scale_factor();
+  float new_scale =
+      gfx::Screen::GetMonitorNearestWindow(root_window_).device_scale_factor();
+  bool size_changed = bounds_.size() != bounds.size() ||
+      current_scale != new_scale;
+
+  if (!size_changed) {
     root_window_->SchedulePaintInRect(root_window_->bounds());
     return;
   }

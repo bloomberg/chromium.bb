@@ -79,7 +79,9 @@ void MultiMonitorManager::OnNativeMonitorsChanged(
   for (size_t i = 0; i < min; ++i) {
     gfx::Display& current_display = displays_[i];
     const gfx::Display& new_display = new_displays[i];
-    if (current_display.bounds_in_pixel() != new_display.bounds_in_pixel()) {
+    if (current_display.bounds_in_pixel() != new_display.bounds_in_pixel() ||
+        current_display.device_scale_factor() !=
+        new_display.device_scale_factor()) {
       current_display.SetScaleAndBounds(new_display.device_scale_factor(),
                                         new_display.bounds_in_pixel());
       NotifyBoundsChanged(current_display);

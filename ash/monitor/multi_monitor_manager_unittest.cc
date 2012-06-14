@@ -231,5 +231,20 @@ TEST_F(MultiMonitorManagerTest, EmulatorTest) {
   reset();
 }
 
+TEST_F(MultiMonitorManagerTest, TestDeviceScaleOnlyChange) {
+  aura::MonitorManager::set_use_fullscreen_host_window(true);
+  UpdateMonitor("0+0-1000x600");
+  EXPECT_EQ(1,
+            Shell::GetPrimaryRootWindow()->compositor()->device_scale_factor());
+  EXPECT_EQ("1000x600",
+            Shell::GetPrimaryRootWindow()->bounds().size().ToString());
+  UpdateMonitor("0+0-1000x600*2");
+  EXPECT_EQ(2,
+            Shell::GetPrimaryRootWindow()->compositor()->device_scale_factor());
+  EXPECT_EQ("500x300",
+            Shell::GetPrimaryRootWindow()->bounds().size().ToString());
+  aura::MonitorManager::set_use_fullscreen_host_window(false);
+}
+
 }  // namespace test
 }  // namespace ash
