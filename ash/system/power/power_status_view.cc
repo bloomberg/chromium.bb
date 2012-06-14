@@ -94,7 +94,7 @@ void PowerStatusView::UpdateTextForDefaultView() {
     // Change back to use averaged_battery_time_to_empty to display in UI
     // once crosbug.com/31633 is fixed.
     base::TimeDelta time = base::TimeDelta::FromSeconds(
-        supply_status_.battery_seconds_to_empty);
+        supply_status_.averaged_battery_time_to_empty);
     hour = time.InHours();
     min = (time - base::TimeDelta::FromHours(hour)).InMinutes();
   }
