@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
@@ -91,6 +92,10 @@ static const int kStackedPadding = 6;
 // See UpdateLayoutTypeFromMouseEvent() for a description of these.
 const int kMouseMoveTimeMS = 200;
 const int kMouseMoveCountBeforeConsiderReal = 3;
+
+// Constants for the new tab button field trial.
+const char kNewTabButtonFieldTrialName[] = "NewTabButton";
+const char kNewTabButtonFieldTrialPlusGroupName[] = "Plus";
 
 // Horizontal offset for the new tab button to bring it closer to the
 // rightmost tab.
@@ -422,8 +427,17 @@ SkBitmap NewTabButton::GetBackgroundBitmap(
 
 SkBitmap NewTabButton::GetBitmapForState(
     views::CustomButton::ButtonState state) const {
-  int overlay_id = state == views::CustomButton::BS_PUSHED ?
-      IDR_NEWTAB_BUTTON_P : IDR_NEWTAB_BUTTON;
+  int overlay_id = 0;
+  // The new tab button field trial will get created in variations_service.cc
+  // through the variations server.
+  if (base::FieldTrialList::FindFullName(kNewTabButtonFieldTrialName) ==
+          kNewTabButtonFieldTrialPlusGroupName) {
+    overlay_id = state == views::CustomButton::BS_PUSHED ?
+        IDR_NEWTAB_BUTTON_P_PLUS : IDR_NEWTAB_BUTTON_PLUS;
+  } else {
+    overlay_id = state == views::CustomButton::BS_PUSHED ?
+        IDR_NEWTAB_BUTTON_P : IDR_NEWTAB_BUTTON;
+  }
   gfx::ImageSkia* overlay = GetThemeProvider()->GetImageSkiaNamed(overlay_id);
 
   gfx::Canvas canvas(gfx::Size(overlay->width(), overlay->height()), false);

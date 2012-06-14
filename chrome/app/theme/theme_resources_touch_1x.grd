@@ -142,12 +142,16 @@
         <include name="IDR_NEWTAB_BUTTON_H" file="touch_100_percent/newtab_hover.png" type="BINDATA" />
         <include name="IDR_NEWTAB_BUTTON_P" file="touch_100_percent/newtab_pressed.png" type="BINDATA" />
         <include name="IDR_NEWTAB_BUTTON_MASK" file="touch_100_percent/newtab_button_mask.png" type="BINDATA" />
+        <include name="IDR_NEWTAB_BUTTON_PLUS" file="default_100_percent/newtab_views_plus.png" type="BINDATA" />
+        <include name="IDR_NEWTAB_BUTTON_P_PLUS" file="default_100_percent/newtab_p_views_plus.png" type="BINDATA" />
       </if>
       <if expr="pp_ifdef('toolkit_views') and not pp_ifdef('use_ash')">
         <include name="IDR_NEWTAB_BUTTON" file="touch_100_percent/newtab_normal.png" type="BINDATA" />
         <include name="IDR_NEWTAB_BUTTON_H" file="touch_100_percent/newtab_hover.png" type="BINDATA" />
         <include name="IDR_NEWTAB_BUTTON_P" file="touch_100_percent/newtab_pressed.png" type="BINDATA" />
         <include name="IDR_NEWTAB_BUTTON_MASK" file="touch_100_percent/newtab_button_mask.png" type="BINDATA" />
+        <include name="IDR_NEWTAB_BUTTON_PLUS" file="default_100_percent/newtab_views_plus.png" type="BINDATA" />
+        <include name="IDR_NEWTAB_BUTTON_P_PLUS" file="default_100_percent/newtab_p_views_plus.png" type="BINDATA" />
       </if>
       <if expr="not pp_ifdef('toolkit_views') and not pp_ifdef('use_ash')">
         <include name="IDR_NEWTAB_BUTTON" file="default_100_percent/newtab.png" type="BINDATA" />
