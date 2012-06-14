@@ -131,8 +131,11 @@ void BaseLayoutManager::OnWindowPropertyChanged(aura::Window* window,
                                                 const void* key,
                                                 intptr_t old) {
   if (key == aura::client::kShowStateKey) {
-    UpdateBoundsFromShowState(window, true);
-    ShowStateChanged(window, static_cast<ui::WindowShowState>(old));
+    ui::WindowShowState old_state = static_cast<ui::WindowShowState>(old);
+    // Minimized state handles its own animations.
+    bool animate = (old_state != ui::SHOW_STATE_MINIMIZED);
+    UpdateBoundsFromShowState(window, animate);
+    ShowStateChanged(window, old_state);
   }
 }
 
