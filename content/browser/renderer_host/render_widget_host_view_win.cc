@@ -1298,6 +1298,7 @@ void RenderWidgetHostViewWin::SetScrollOffsetPinning(
 // RenderWidgetHostViewWin, private:
 
 LRESULT RenderWidgetHostViewWin::OnCreate(CREATESTRUCT* create_struct) {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnCreate");
   // Call the WM_INPUTLANGCHANGE message handler to initialize the input locale
   // of a browser process.
   OnInputLangChange(0, 0);
@@ -1317,6 +1318,7 @@ LRESULT RenderWidgetHostViewWin::OnCreate(CREATESTRUCT* create_struct) {
 
 void RenderWidgetHostViewWin::OnActivate(UINT action, BOOL minimized,
                                          HWND window) {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnActivate");
   // If the container is a popup, clicking elsewhere on screen should close the
   // popup.
   if (close_on_deactivate_ && action == WA_INACTIVE) {
@@ -1327,6 +1329,7 @@ void RenderWidgetHostViewWin::OnActivate(UINT action, BOOL minimized,
 }
 
 void RenderWidgetHostViewWin::OnDestroy() {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnDestroy");
   // When a tab is closed all its child plugin windows are destroyed
   // automatically. This happens before plugins get any notification that its
   // instances are tearing down.
@@ -1356,6 +1359,7 @@ void RenderWidgetHostViewWin::OnDestroy() {
 }
 
 void RenderWidgetHostViewWin::OnPaint(HDC unused_dc) {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnPaint");
   if (!render_widget_host_)
     return;
 
@@ -1512,6 +1516,7 @@ void RenderWidgetHostViewWin::DrawBackground(const RECT& dirty_rect,
 }
 
 void RenderWidgetHostViewWin::OnNCPaint(HRGN update_region) {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnNCPaint");
   // Do nothing.  This suppresses the resize corner that Windows would
   // otherwise draw for us.
 }
@@ -1521,6 +1526,7 @@ void RenderWidgetHostViewWin::SetClickthroughRegion(SkRegion* region) {
 }
 
 LRESULT RenderWidgetHostViewWin::OnNCHitTest(const CPoint& point) {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnNCHitTest");
   RECT rc;
   GetWindowRect(&rc);
   if (transparent_region_.get() &&
@@ -1533,16 +1539,19 @@ LRESULT RenderWidgetHostViewWin::OnNCHitTest(const CPoint& point) {
 }
 
 LRESULT RenderWidgetHostViewWin::OnEraseBkgnd(HDC dc) {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnEraseBkgnd");
   return 1;
 }
 
 LRESULT RenderWidgetHostViewWin::OnSetCursor(HWND window, UINT hittest_code,
                                              UINT mouse_message_id) {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnSetCursor");
   UpdateCursorIfOverSelf();
   return 0;
 }
 
 void RenderWidgetHostViewWin::OnSetFocus(HWND window) {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnSetFocus");
   if (!render_widget_host_)
     return;
 
@@ -1557,6 +1566,7 @@ void RenderWidgetHostViewWin::OnSetFocus(HWND window) {
 }
 
 void RenderWidgetHostViewWin::OnKillFocus(HWND window) {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnKillFocus");
   if (!render_widget_host_)
     return;
 
@@ -1568,11 +1578,13 @@ void RenderWidgetHostViewWin::OnKillFocus(HWND window) {
 }
 
 void RenderWidgetHostViewWin::OnCaptureChanged(HWND window) {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnCaptureChanged");
   if (render_widget_host_)
     render_widget_host_->LostCapture();
 }
 
 void RenderWidgetHostViewWin::OnCancelMode() {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnCancelMode");
   if (render_widget_host_)
     render_widget_host_->LostCapture();
 
@@ -1593,6 +1605,7 @@ void RenderWidgetHostViewWin::OnCancelMode() {
 
 void RenderWidgetHostViewWin::OnInputLangChange(DWORD character_set,
                                                 HKL input_language_id) {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnInputLangChange");
   // Send the given Locale ID to the ImeInput object and retrieves whether
   // or not the current input context has IMEs.
   // If the current input context has IMEs, a browser process has to send a
@@ -1632,6 +1645,7 @@ void RenderWidgetHostViewWin::OnInputLangChange(DWORD character_set,
 }
 
 void RenderWidgetHostViewWin::OnThemeChanged() {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnThemeChanged");
   if (!render_widget_host_)
     return;
   render_widget_host_->Send(new ViewMsg_ThemeChanged(
@@ -1639,6 +1653,7 @@ void RenderWidgetHostViewWin::OnThemeChanged() {
 }
 
 LRESULT RenderWidgetHostViewWin::OnNotify(int w_param, NMHDR* header) {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnNotify");
   if (tooltip_hwnd_ == NULL)
     return 0;
 
@@ -1668,6 +1683,7 @@ LRESULT RenderWidgetHostViewWin::OnNotify(int w_param, NMHDR* header) {
 
 LRESULT RenderWidgetHostViewWin::OnImeSetContext(
     UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnImeSetContext");
   if (!render_widget_host_)
     return 0;
 
@@ -1696,6 +1712,7 @@ LRESULT RenderWidgetHostViewWin::OnImeSetContext(
 
 LRESULT RenderWidgetHostViewWin::OnImeStartComposition(
     UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnImeStartComposition");
   if (!render_widget_host_)
     return 0;
 
@@ -1711,6 +1728,7 @@ LRESULT RenderWidgetHostViewWin::OnImeStartComposition(
 
 LRESULT RenderWidgetHostViewWin::OnImeComposition(
     UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnImeComposition");
   if (!render_widget_host_)
     return 0;
 
@@ -1758,6 +1776,7 @@ LRESULT RenderWidgetHostViewWin::OnImeComposition(
 
 LRESULT RenderWidgetHostViewWin::OnImeEndComposition(
     UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnImeEndComposition");
   if (!render_widget_host_)
     return 0;
 
@@ -1777,6 +1796,7 @@ LRESULT RenderWidgetHostViewWin::OnImeEndComposition(
 
 LRESULT RenderWidgetHostViewWin::OnImeRequest(
     UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnImeRequest");
   if (!render_widget_host_) {
     handled = FALSE;
     return 0;
@@ -2245,6 +2265,7 @@ LRESULT RenderWidgetHostViewWin::OnMouseActivate(UINT message,
                                                  WPARAM wparam,
                                                  LPARAM lparam,
                                                  BOOL& handled) {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnMouseActivate");
   if (!render_widget_host_)
     return MA_NOACTIVATE;
 
@@ -2628,6 +2649,7 @@ void RenderWidgetHostViewWin::AccessibilitySetTextSelection(
 
 LRESULT RenderWidgetHostViewWin::OnGetObject(UINT message, WPARAM wparam,
                                              LPARAM lparam, BOOL& handled) {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnGetObject");
   if (kIdCustom == lparam) {
     // An MSAA client requestes our custom id. Assume that we have detected an
     // active windows screen reader.
@@ -2654,6 +2676,7 @@ LRESULT RenderWidgetHostViewWin::OnGetObject(UINT message, WPARAM wparam,
 
 LRESULT RenderWidgetHostViewWin::OnParentNotify(UINT message, WPARAM wparam,
                                                 LPARAM lparam, BOOL& handled) {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnParentNotify");
   handled = FALSE;
 
   if (!render_widget_host_)
@@ -2673,6 +2696,7 @@ LRESULT RenderWidgetHostViewWin::OnParentNotify(UINT message, WPARAM wparam,
 
 LRESULT RenderWidgetHostViewWin::OnPointerMessage(
     UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnPointerMessage");
   POINT point = {0};
 
   point.x = GET_X_LPARAM(lparam);
@@ -2697,6 +2721,7 @@ LRESULT RenderWidgetHostViewWin::OnPointerMessage(
 }
 
 void RenderWidgetHostViewWin::OnFinalMessage(HWND window) {
+  TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnFinalMessage");
   // When the render widget host is being destroyed, it ends up calling
   // Destroy() which NULLs render_widget_host_.
   // Note: the following bug http://crbug.com/24248 seems to report that
