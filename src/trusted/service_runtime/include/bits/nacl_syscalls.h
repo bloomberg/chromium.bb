@@ -86,11 +86,6 @@
 #define NACL_sys_sem_post               102
 #define NACL_sys_sem_get_value          103
 
-/*
- * TODO(jansel): remove dyncode_copy once toolchain gets updated
- */
-#define NACL_sys_dyncode_copy           104
-
 #define NACL_sys_dyncode_create         104
 #define NACL_sys_dyncode_modify         105
 #define NACL_sys_dyncode_delete         106

@@ -614,21 +614,21 @@ int32_t NaClTextDyncodeCreate(struct NaClApp *nap,
   NaClPerfCounterCtor(&time_dyncode_create, "NaClTextDyncodeCreate");
 
   if (NULL == nap->text_shm) {
-    NaClLog(1, "NaClTextSysDyncode_Copy: Dynamic loading not enabled\n");
+    NaClLog(1, "NaClTextDyncodeCreate: Dynamic loading not enabled\n");
     return -NACL_ABI_EINVAL;
   }
   if (0 != (dest & (nap->bundle_size - 1)) ||
       0 != (size & (nap->bundle_size - 1))) {
-    NaClLog(1, "NaClTextSysDyncode_Copy: Non-bundle-aligned address or size\n");
+    NaClLog(1, "NaClTextDyncodeCreate: Non-bundle-aligned address or size\n");
     return -NACL_ABI_EINVAL;
   }
   dest_addr = NaClUserToSysAddrRange(nap, dest, size);
   if (kNaClBadAddress == dest_addr) {
-    NaClLog(1, "NaClTextSysDyncode_Copy: Dest address out of range\n");
+    NaClLog(1, "NaClTextDyncodeCreate: Dest address out of range\n");
     return -NACL_ABI_EFAULT;
   }
   if (dest < nap->dynamic_text_start) {
-    NaClLog(1, "NaClTextSysDyncode_Copy: Below dynamic code area\n");
+    NaClLog(1, "NaClTextDyncodeCreate: Below dynamic code area\n");
     return -NACL_ABI_EFAULT;
   }
   /*
@@ -636,7 +636,7 @@ int32_t NaClTextDyncodeCreate(struct NaClApp *nap,
    * be overwritten, just in case of CPU bugs.
    */
   if (dest + size > nap->dynamic_text_end - NACL_HALT_SLED_SIZE) {
-    NaClLog(1, "NaClTextSysDyncode_Copy: Above dynamic code area\n");
+    NaClLog(1, "NaClTextDyncodeCreate: Above dynamic code area\n");
     return -NACL_ABI_EFAULT;
   }
   if (0 == size) {
@@ -670,7 +670,7 @@ int32_t NaClTextDyncodeCreate(struct NaClApp *nap,
   }
 
   if (validator_result != LOAD_OK) {
-    NaClLog(1, "NaClTextSysDyncode_Copy: "
+    NaClLog(1, "NaClTextDyncodeCreate: "
             "Validation of dynamic code failed\n");
     retval = -NACL_ABI_EINVAL;
     goto cleanup_unlock;
@@ -678,7 +678,7 @@ int32_t NaClTextDyncodeCreate(struct NaClApp *nap,
 
   if (NaClDynamicRegionCreate(nap, dest_addr, size) != 1) {
     /* target addr is in use */
-    NaClLog(1, "NaClTextSysDyncode_Copy: Code range already allocated\n");
+    NaClLog(1, "NaClTextDyncodeCreate: Code range already allocated\n");
     retval = -NACL_ABI_EINVAL;
     goto cleanup_unlock;
   }
@@ -718,7 +718,7 @@ int32_t NaClTextSysDyncode_Create(struct NaClAppThread *natp,
 
   src_addr = NaClUserToSysAddrRange(nap, src, size);
   if (kNaClBadAddress == src_addr) {
-    NaClLog(1, "NaClTextSysDyncode_Copy: Source address out of range\n");
+    NaClLog(1, "NaClTextSysDyncode_Create: Source address out of range\n");
     return -NACL_ABI_EFAULT;
   }
 
