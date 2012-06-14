@@ -22,7 +22,7 @@ set -o errexit
 
 # This will have to be updated whenever there are changes to the tests, e.g.
 # new tests, different expected outcomes, etc.
-ARCHVIED_PEXE_SCONS_REV=8918
+ARCHIVED_PEXE_SCONS_REV=8918
 # This hopefully needs to be updated rarely, it contains pexe from
 # the sandboxed llc/gold builds
 ARCHIVED_PEXE_TRANSLATOR_REV=8834
@@ -120,13 +120,16 @@ scons-tests-translator() {
 
 archived-pexe-scons-test() {
   local arch=$1
+  echo "@@@BUILD_STEP archived_pexe_scons \
+        $arch rev ${ARCHIVED_PEXE_SCONS_REV} @@@"
+
   local build_dir="scons-out/nacl_irt_test-${arch}-pnacl-pexe-clang"
   local tarball="$(pwd)/scons-out/scons_pexes.tar.bz2"
 
   rm -rf ${build_dir}
   mkdir -p ${build_dir}
 
-  ${UP_DOWN_LOAD} DownloadArchivedPexesScons ${ARCHVIED_PEXE_SCONS_REV} \
+  ${UP_DOWN_LOAD} DownloadArchivedPexesScons ${ARCHIVED_PEXE_SCONS_REV} \
       ${tarball}
   tar xfj ${tarball} --directory ${build_dir}
 
