@@ -19,7 +19,7 @@ vars = {
   "gtest_rev": "613",
   "gyp_rev": "1415",
   "jsoncpp_revision": "248",
-  "lss_rev": "9",
+  "lss_rev": "11",
 
   "lcov_rev": "54822",
   "python_26_rev": "53573",
