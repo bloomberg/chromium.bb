@@ -59,10 +59,24 @@ void RendererAccessibilityFocusOnly::DidFinishLoad(WebKit::WebFrame* frame) {
 
 void RendererAccessibilityFocusOnly::HandleFocusedNodeChanged(
     const WebNode& node,
-    bool sent_focus_event) {
+    bool send_focus_event) {
   const WebDocument& document = GetMainDocument();
   if (document.isNull())
     return;
+
+  bool node_has_focus;
+  bool node_is_editable_text;
+  // Check HasIMETextFocus first, because it will correctly handle
+  // focus in a text box inside a ppapi plug-in. Otherwise fall back on
+  // checking the focused node in WebKit.
+  if (render_view_->HasIMETextFocus()) {
+    node_has_focus = true;
+    node_is_editable_text = true;
+  } else {
+    node_has_focus = !node.isNull();
+    node_is_editable_text =
+        node_has_focus && render_view_->IsEditableNode(node);
+  }
 
   std::vector<AccessibilityHostMsg_NotificationParams> notifications;
   notifications.push_back(AccessibilityHostMsg_NotificationParams());
@@ -72,7 +86,7 @@ void RendererAccessibilityFocusOnly::HandleFocusedNodeChanged(
   // native focus changed notification, we can send a LayoutComplete
   // notification, which doesn't post a native event on Windows.
   notification.notification_type =
-      sent_focus_event ?
+      send_focus_event ?
       AccessibilityNotificationFocusChanged :
       AccessibilityNotificationLayoutComplete;
 
@@ -82,7 +96,7 @@ void RendererAccessibilityFocusOnly::HandleFocusedNodeChanged(
 
   // Set the id that the notification applies to: the root node if nothing
   // has focus, otherwise the focused node.
-  notification.id = node.isNull() ? 1 : next_id_;
+  notification.id = node_has_focus ? next_id_ : 1;
 
   // Always include the root of the tree, the document. It always has id 1.
   notification.acc_tree.id = 1;
@@ -90,7 +104,7 @@ void RendererAccessibilityFocusOnly::HandleFocusedNodeChanged(
   notification.acc_tree.state =
       (1 << AccessibilityNodeData::STATE_READONLY) |
       (1 << AccessibilityNodeData::STATE_FOCUSABLE);
-  if (node.isNull())
+  if (!node_has_focus)
     notification.acc_tree.state |= (1 << AccessibilityNodeData::STATE_FOCUSED);
   notification.acc_tree.location = gfx::Rect(render_view_->size());
 
@@ -99,11 +113,11 @@ void RendererAccessibilityFocusOnly::HandleFocusedNodeChanged(
   child.id = next_id_;
   child.role = AccessibilityNodeData::ROLE_GROUP;
   child.location = gfx::Rect(render_view_->size());
-  if (!node.isNull()) {
+  if (node_has_focus) {
     child.state =
         (1 << AccessibilityNodeData::STATE_FOCUSABLE) |
         (1 << AccessibilityNodeData::STATE_FOCUSED);
-    if (!render_view_->IsEditableNode(node))
+    if (!node_is_editable_text)
       child.state |= (1 << AccessibilityNodeData::STATE_READONLY);
   }
 

@@ -386,6 +386,11 @@ class RenderViewImpl : public RenderWidget,
   void TransferActiveWheelFlingAnimation(
       const WebKit::WebActiveWheelFlingParameters& params);
 
+  // Returns true if the focused element is editable text from the perspective
+  // of IME support (also used for on-screen keyboard). Works correctly inside
+  // supported PPAPI plug-ins.
+  bool HasIMETextFocus();
+
   // IPC::Channel::Listener implementation -------------------------------------
 
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;

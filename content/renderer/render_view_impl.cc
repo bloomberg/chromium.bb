@@ -841,6 +841,10 @@ void RenderViewImpl::TransferActiveWheelFlingAnimation(
     webview()->transferActiveWheelFlingAnimation(params);
 }
 
+bool RenderViewImpl::HasIMETextFocus() {
+  return GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE;
+}
+
 bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
   WebFrame* main_frame = webview() ? webview()->mainFrame() : NULL;
   if (main_frame)
@@ -5206,6 +5210,8 @@ void RenderViewImpl::PpapiPluginFocusChanged() {
 
 void RenderViewImpl::PpapiPluginTextInputTypeChanged() {
   UpdateTextInputState();
+  if (renderer_accessibility_)
+    renderer_accessibility_->FocusedNodeChanged(WebNode());
 }
 
 void RenderViewImpl::PpapiPluginCaretPositionChanged() {
