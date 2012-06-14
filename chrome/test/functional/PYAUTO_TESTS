@@ -807,4 +807,17 @@
       '-webrtc_call.WebRTCCallTest.testSimpleWebRtcRoapCall',
     ],
   },
+
+  # Pyauto functional tests running on coverage bots.
+  'CODE_COVERAGE': {
+    'all': [
+      '@FULL',
+    ],
+    'linux': [
+      # test_clean_exit does not execute the destruction codepaths by design,
+      # thereby confusing the coverage bots to think that it's a leak. Ignore
+      # it.
+      '-test_clean_exit',
+    ],
+  },
 }
