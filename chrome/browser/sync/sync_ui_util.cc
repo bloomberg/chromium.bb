@@ -708,6 +708,11 @@ void ConstructAboutInformation(ProfileSyncService* service,
     sync_ui_util::AddIntSyncDetail(transient_session, "Entries",
                                    snapshot.num_entries());
 
+    if (!full_status.throttled_types.Empty()) {
+      strings->Set("throttled_data_types", base::Value::CreateStringValue(
+              ModelTypeSetToString(full_status.throttled_types)));
+    }
+
     // Now set the actionable errors.
     if ((full_status.sync_protocol_error.error_type !=
          browser_sync::UNKNOWN_ERROR) &&
