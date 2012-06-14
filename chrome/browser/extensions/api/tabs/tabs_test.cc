@@ -434,6 +434,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, QueryLastFocusedWindowTabs) {
     CreateBrowser(browser()->profile());
 
   Browser* focused_window = CreateBrowser(browser()->profile());
+#if defined(OS_MACOSX)
+  // See BrowserWindowCocoa::Show. In tests, Browser::window()->IsActive won't
+  // work unless we fake the browser being launched by the user.
+  ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
+      focused_window->window()->GetNativeWindow()));
+#endif
+
+  // Needed on Mac and Linux so that the BrowserWindow::IsActive calls work.
+  ui_test_utils::RunAllPendingInMessageLoop();
+
   GURL url;
   AddTabAtIndexToBrowser(focused_window, 0, url, content::PAGE_TRANSITION_LINK);
   int focused_window_id = ExtensionTabUtil::GetWindowId(focused_window);

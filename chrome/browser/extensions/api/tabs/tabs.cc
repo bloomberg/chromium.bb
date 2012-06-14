@@ -575,12 +575,12 @@ bool CreateWindowFunction::RunImpl() {
     std::string title =
         web_app::GenerateApplicationNameFromExtensionId(extension_id);
 #if defined(USE_ASH)
-    // Aura Panels create a new PanelViewAura.
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
+  // Aura Panels create a new PanelViewAura.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
             ash::switches::kAuraPanelManager)) {
-      // Note: Panels ignore all but the first url provided.
-      PanelViewAura* panel_view = new PanelViewAura(title);
-      panel_view->Init(window_profile, urls[0], panel_bounds);
+    // Note: Panels ignore all but the first url provided.
+    PanelViewAura* panel_view = new PanelViewAura(title);
+    panel_view->Init(window_profile, urls[0], panel_bounds);
       result_.reset(panel_view->extension_window_controller()->
                     CreateWindowValueWithTabs());
       return true;
@@ -598,10 +598,10 @@ bool CreateWindowFunction::RunImpl() {
       else
         panel->Show();
 
-      result_.reset(
+    result_.reset(
           panel->extension_window_controller()->CreateWindowValueWithTabs());
-      return true;
-    }
+    return true;
+  }
 #endif
     // else fall through to create BrowserWindow
   }
@@ -922,8 +922,7 @@ bool QueryTabsFunction::RunImpl() {
     if (!MatchesQueryArg(current_window, *browser == GetCurrentBrowser()))
       continue;
 
-    if (!MatchesQueryArg(focused_window,
-        *browser == BrowserList::GetLastActive()))
+    if (!MatchesQueryArg(focused_window, (*browser)->window()->IsActive()))
       continue;
 
     if (!window_type.empty() &&
