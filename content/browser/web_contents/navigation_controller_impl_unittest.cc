@@ -516,10 +516,18 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortCancelsPending) {
   EXPECT_EQ(-1, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(1, delegate->navigation_state_change_count());
 
-  // Now the navigation redirects.  The NavigationController no longer
-  // receives a notification of the redirect, so nothing happens here.
-  // See https://chromiumcodereview.appspot.com/10316020
+  // Now the navigation redirects.
   const GURL kRedirectURL("http://bee");
+  test_rvh()->OnMessageReceived(
+      ViewHostMsg_DidRedirectProvisionalLoad(0,  // routing_id
+                                             -1,  // pending page_id
+                                             GURL(),  // opener
+                                             kNewURL,  // old url
+                                             kRedirectURL));  // new url
+
+  // We don't want to change the NavigationEntry's url, in case it cancels.
+  // Prevents regression of http://crbug.com/77786.
+  EXPECT_EQ(kNewURL, controller.GetPendingEntry()->GetURL());
 
   // It may abort before committing, if it's a download or due to a stop or
   // a new navigation from the user.

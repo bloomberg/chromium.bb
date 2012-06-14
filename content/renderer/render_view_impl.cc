@@ -2919,6 +2919,25 @@ void RenderViewImpl::didStartProvisionalLoad(WebFrame* frame) {
        ds->request().url()));
 }
 
+void RenderViewImpl::didReceiveServerRedirectForProvisionalLoad(
+    WebFrame* frame) {
+  if (frame->parent())
+    return;
+  // Received a redirect on the main frame.
+  WebDataSource* data_source = frame->provisionalDataSource();
+  if (!data_source) {
+    // Should only be invoked when we have a data source.
+    NOTREACHED();
+    return;
+  }
+  std::vector<GURL> redirects;
+  GetRedirectChain(data_source, &redirects);
+  if (redirects.size() >= 2) {
+    Send(new ViewHostMsg_DidRedirectProvisionalLoad(routing_id_, page_id_,
+        GetOpenerUrl(), redirects[redirects.size() - 2], redirects.back()));
+  }
+}
+
 void RenderViewImpl::didFailProvisionalLoad(WebFrame* frame,
                                             const WebURLError& error) {
   // Notify the browser that we failed a provisional load with an error.

@@ -550,6 +550,8 @@ class RenderViewImpl : public RenderWidget,
   virtual void didCreateDataSource(WebKit::WebFrame* frame,
                                    WebKit::WebDataSource* datasource);
   virtual void didStartProvisionalLoad(WebKit::WebFrame* frame);
+  virtual void didReceiveServerRedirectForProvisionalLoad(
+      WebKit::WebFrame* frame);
   virtual void didFailProvisionalLoad(WebKit::WebFrame* frame,
                                       const WebKit::WebURLError& error);
   virtual void didReceiveDocumentData(WebKit::WebFrame* frame,

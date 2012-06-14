@@ -13,10 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/resource_request_details.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "skia/ext/platform_canvas.h"
@@ -135,12 +132,22 @@ PrerenderTabHelper::PrerenderTabHelper(TabContents* tab)
     : content::WebContentsObserver(tab->web_contents()),
       pixel_stats_(new PixelStats(this)),
       tab_(tab) {
-  notification_registrar_.Add(
-        this, content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
-        content::Source<content::WebContents>(web_contents()));
 }
 
 PrerenderTabHelper::~PrerenderTabHelper() {
+}
+
+void PrerenderTabHelper::ProvisionalChangeToMainFrameUrl(
+    const GURL& url,
+    const GURL& opener_url,
+    content::RenderViewHost* render_view_host) {
+  url_ = url;
+  PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
+  if (!prerender_manager)
+    return;
+  if (prerender_manager->IsWebContentsPrerendering(web_contents()))
+    return;
+  prerender_manager->MarkWebContentsAsNotPrerendered(web_contents());
 }
 
 void PrerenderTabHelper::DidCommitProvisionalLoadForFrame(
@@ -239,37 +246,6 @@ void PrerenderTabHelper::PrerenderSwappedIn() {
     actual_load_start_ = pplt_load_start_;
     pplt_load_start_ = base::TimeTicks::Now();
     pixel_stats_->GetBitmap(PixelStats::BITMAP_SWAP_IN, web_contents());
-  }
-}
-
-void PrerenderTabHelper::HandleResourceReceivedRedirect(const GURL& new_url) {
-  url_ = new_url;
-  PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
-  if (!prerender_manager)
-    return;
-  if (prerender_manager->IsWebContentsPrerendering(web_contents()))
-    return;
-  prerender_manager->MarkWebContentsAsNotPrerendered(web_contents());
-}
-
-void PrerenderTabHelper::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  switch (type) {
-    case content::NOTIFICATION_RESOURCE_RECEIVED_REDIRECT: {
-      DCHECK(content::Source<content::WebContents>(source).ptr() ==
-            web_contents());
-      content::ResourceRedirectDetails* resource_redirect_details =
-            content::Details<content::ResourceRedirectDetails>(details).ptr();
-      CHECK(resource_redirect_details);
-      HandleResourceReceivedRedirect(resource_redirect_details->new_url);
-      break;
-    }
-
-    default:
-      NOTREACHED() << "Unexpected notification sent.";
-      break;
   }
 }
 

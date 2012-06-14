@@ -1795,6 +1795,60 @@ void WebContentsImpl::DidStartProvisionalLoadForFrame(
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidStartProvisionalLoadForFrame(frame_id, is_main_frame,
                     validated_url, is_error_page, render_view_host));
+
+  if (is_main_frame) {
+    // Notify observers about the provisional change in the main frame URL.
+    FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                      ProvisionalChangeToMainFrameUrl(validated_url,
+                                                      validated_opener_url,
+                                                      render_view_host));
+  }
+}
+
+void WebContentsImpl::DidRedirectProvisionalLoad(
+    content::RenderViewHost* render_view_host,
+    int32 page_id,
+    const GURL& opener_url,
+    const GURL& source_url,
+    const GURL& target_url) {
+  // TODO(creis): Remove this method and have the pre-rendering code listen to
+  // the ResourceDispatcherHost's RESOURCE_RECEIVED_REDIRECT notification
+  // instead.  See http://crbug.com/78512.
+  GURL validated_source_url(source_url);
+  GURL validated_target_url(target_url);
+  GURL validated_opener_url(opener_url);
+  content::RenderProcessHost* render_process_host =
+      render_view_host->GetProcess();
+  RenderViewHostImpl::FilterURL(
+      ChildProcessSecurityPolicyImpl::GetInstance(),
+      render_process_host->GetID(),
+      false,
+      &validated_source_url);
+  RenderViewHostImpl::FilterURL(
+      ChildProcessSecurityPolicyImpl::GetInstance(),
+      render_process_host->GetID(),
+      false,
+      &validated_target_url);
+  RenderViewHostImpl::FilterURL(
+      ChildProcessSecurityPolicyImpl::GetInstance(),
+      render_process_host->GetID(),
+      true,
+      &validated_opener_url);
+  NavigationEntry* entry;
+  if (page_id == -1) {
+    entry = controller_.GetPendingEntry();
+  } else {
+    entry = controller_.GetEntryWithPageID(render_view_host->GetSiteInstance(),
+                                           page_id);
+  }
+  if (!entry || entry->GetURL() != validated_source_url)
+    return;
+
+  // Notify observers about the provisional change in the main frame URL.
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    ProvisionalChangeToMainFrameUrl(validated_target_url,
+                                                    validated_opener_url,
+                                                    render_view_host));
 }
 
 void WebContentsImpl::DidFailProvisionalLoadWithError(
