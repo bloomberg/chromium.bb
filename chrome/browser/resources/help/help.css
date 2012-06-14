@@ -80,7 +80,7 @@ body {
 }
 
 #update-obsolete-os-container {
-  margin-left: 25px;
+  -webkit-margin-start: 25px;
 }
 
 #more-info-expander {
