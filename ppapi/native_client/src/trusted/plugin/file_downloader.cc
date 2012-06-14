@@ -301,8 +301,10 @@ void FileDownloader::URLBufferStartNotify(int32_t pp_error) {
   // Finish streaming the body asynchronously providing a callback.
   pp::CompletionCallback onread_callback =
       callback_factory_.NewOptionalCallback(&FileDownloader::URLReadBodyNotify);
+
+  int32_t temp_size = static_cast<int32_t>(temp_buffer_.size());
   pp_error = url_loader_.ReadResponseBody(&temp_buffer_[0],
-                                          temp_buffer_.size(),
+                                          temp_size,
                                           onread_callback);
   bool async_notify_ok = (pp_error == PP_OK_COMPLETIONPENDING);
   PLUGIN_PRINTF(("FileDownloader::URLBufferStartNotify (async_notify_ok=%d)\n",
@@ -335,8 +337,9 @@ void FileDownloader::URLReadBodyNotify(int32_t pp_error) {
     pp::CompletionCallback onread_callback =
         callback_factory_.NewOptionalCallback(
             &FileDownloader::URLReadBodyNotify);
+    int32_t temp_size = static_cast<int32_t>(temp_buffer_.size());
     pp_error = url_loader_.ReadResponseBody(&temp_buffer_[0],
-                                            temp_buffer_.size(),
+                                            temp_size,
                                             onread_callback);
     bool async_notify_ok = (pp_error == PP_OK_COMPLETIONPENDING);
     if (!async_notify_ok) {

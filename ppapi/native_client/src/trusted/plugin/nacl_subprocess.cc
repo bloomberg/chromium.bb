@@ -103,7 +103,7 @@ bool NaClSubprocess::VInvokeSrpcMethod(const nacl::string& method_name,
         }
         memcpy(input, orig_arr, len);
         params->ins()[i]->arrays.carr = input;
-        params->ins()[i]->u.count = len;
+        params->ins()[i]->u.count = static_cast<nacl_abi_size_t>(len);
         break;
       }
       case NACL_SRPC_ARG_TYPE_HANDLE: {

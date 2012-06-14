@@ -62,7 +62,7 @@ void PnaclStreamingTranslateThread::PutBytes(std::vector<char>* bytes,
                                              int count) {
   PLUGIN_PRINTF(("PutBytes, this %p bytes %p, size %d, count %d\n", this, bytes,
                  bytes ? bytes->size(): 0, count));
-  int buffer_size = 0;
+  size_t buffer_size = 0;
   // Ensure that the buffer we send to the translation thread is the right size
   // (count can be < the buffer size). This can be done without the lock.
   if (bytes != NULL && count >= 0) {
