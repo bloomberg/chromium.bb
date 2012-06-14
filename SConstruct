@@ -1654,6 +1654,9 @@ def PPAPIBrowserTester(env,
   if env.Bit('pnacl_generate_pexe'):
     # We likely prefer to choose the 'portable' field in nmfs in this mode.
     args = args + ['--prefer_portable_in_manifest']
+    # Pass through env var controlling streaming translation
+    if 'NACL_STREAMING_TRANSLATION' in os.environ:
+      env['ENV']['NACL_STREAMING_TRANSLATION'] = 'true'
 
   # Lint the extra arguments that are being passed to the tester.
   special_args = ['--ppapi_plugin', '--sel_ldr', '--irt_library', '--file',
