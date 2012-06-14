@@ -1001,7 +1001,9 @@ void UserManagerImpl::MigrateWallpaperData() {
     const DictionaryValue* user_wallpapers =
           local_state->GetDictionary(kUserWallpapers);
     int index;
-    if (!user_wallpapers->empty()) {
+    const DictionaryValue* new_user_wallpapers =
+        local_state->GetDictionary(kUserWallpapersProperties);
+    if (new_user_wallpapers->empty()) {
       const UserList& users = GetUsers();
       for (UserList::const_iterator it = users.begin();
            it != users.end();
