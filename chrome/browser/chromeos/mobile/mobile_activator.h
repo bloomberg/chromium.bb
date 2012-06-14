@@ -172,15 +172,15 @@ class MobileActivator
                    const std::string& error_description);
   // Prepares network devices for cellular activation process.
   void SetupActivationProcess(CellularNetwork* network);
-  // Disables ethernet and wifi newtorks since they interefere with
-  // detection of restricted pool on cellular side.
-  void DisableOtherNetworks();
   // Resets network devices after cellular activation process.
   // |network| should be NULL if the activation process failed.
   void CompleteActivation(CellularNetwork* network);
-  // Control routines for handling other types of connections during
-  // cellular activation.
-  void ReEnableOtherConnections();
+  // Disables SSL certificate revocation checking mechanism. In the case
+  // where captive portal connection is the only one present, such revocation
+  // checks could prevent payment portal page from loading.
+  void DisableCertRevocationChecking();
+  // Reenables SSL certificate revocation checking mechanism.
+  void ReEnableCertRevocationChecking();
   // Return error message for a given code.
   std::string GetErrorMessage(const std::string& code);
 
@@ -213,10 +213,8 @@ class MobileActivator
   // change during the activation process even though it is still representing
   // the same service.
   std::string service_path_;
-  // Flags that control if wifi and ethernet connection needs to be restored
+  // Flags that controls if cert_checks needs to be restored
   // after the activation of cellular network.
-  bool reenable_wifi_;
-  bool reenable_ethernet_;
   bool reenable_cert_check_;
   bool evaluating_;
   // True if we think that another tab is already running activation.

@@ -168,8 +168,6 @@ void CellularConfigDocument::SetErrorMap(
 MobileActivator::MobileActivator()
     : cellular_config_(new CellularConfigDocument()),
       state_(PLAN_ACTIVATION_PAGE_LOADING),
-      reenable_wifi_(false),
-      reenable_ethernet_(false),
       reenable_cert_check_(false),
       evaluating_(false),
       terminated_(true),
@@ -195,14 +193,12 @@ void MobileActivator::TerminateActivation() {
   lib->RemoveObserverForAllNetworks(this);
   if (lib->IsLocked())
     lib->Unlock();
-  ReEnableOtherConnections();
+  ReEnableCertRevocationChecking();
   meid_.clear();
   service_path_.clear();
   state_ = PLAN_ACTIVATION_PAGE_LOADING;
   reconnect_wait_count_ = 0;
   evaluating_ = false;
-  reenable_wifi_ = false;
-  reenable_ethernet_ = false;
   reenable_cert_check_ = false;
   terminated_ = true;
   // Release the previous cellular config and setup a new empty one.
@@ -640,9 +636,6 @@ void MobileActivator::EvaluateCellularNetwork(CellularNetwork* network) {
     case PLAN_ACTIVATION_RECONNECTING_PAYMENT:
     case PLAN_ACTIVATION_RECONNECTING: {
       if (network->connected()) {
-        // Make sure other networks are not interfering with our detection of
-        // restricted pool.
-        DisableOtherNetworks();
         // Wait until the service shows up and gets activated.
         switch (network->activation_state()) {
           case ACTIVATION_STATE_PARTIALLY_ACTIVATED:
@@ -687,9 +680,6 @@ void MobileActivator::EvaluateCellularNetwork(CellularNetwork* network) {
     }
     case PLAN_ACTIVATION_RECONNECTING_OTASP: {
       if (network->connected()) {
-        // Make sure other networks are not interfering with our detection of
-        // restricted pool.
-        DisableOtherNetworks();
         // Wait until the service shows up and gets activated.
         switch (network->activation_state()) {
           case ACTIVATION_STATE_PARTIALLY_ACTIVATED:
@@ -857,7 +847,7 @@ void MobileActivator::CompleteActivation(
     network->SetAutoConnect(true);
   // Reactivate other types of connections if we have
   // shut them down previously.
-  ReEnableOtherConnections();
+  ReEnableCertRevocationChecking();
 }
 
 bool MobileActivator::RunningActivation() const {
@@ -962,17 +952,7 @@ void MobileActivator::ChangeState(CellularNetwork* network,
   }
 }
 
-void MobileActivator::ReEnableOtherConnections() {
-  NetworkLibrary* lib = CrosLibrary::Get()->GetNetworkLibrary();
-  if (reenable_ethernet_) {
-    reenable_ethernet_ = false;
-    lib->EnableEthernetNetworkDevice(true);
-  }
-  if (reenable_wifi_) {
-    reenable_wifi_ = false;
-    lib->EnableWifiNetworkDevice(true);
-  }
-
+void MobileActivator::ReEnableCertRevocationChecking() {
   PrefService* prefs = g_browser_process->local_state();
   if (reenable_cert_check_) {
     prefs->SetBoolean(prefs::kCertRevocationCheckingEnabled,
@@ -981,12 +961,10 @@ void MobileActivator::ReEnableOtherConnections() {
   }
 }
 
-void MobileActivator::SetupActivationProcess(CellularNetwork* network) {
-  if (!network)
-    return;
-
-  // Disable SSL cert checks since we will be doing this in
+void MobileActivator::DisableCertRevocationChecking() {
+  // Disable SSL cert checks since we might be performin activation in the
   // restricted pool.
+  // TODO(rkc): We want to do this only if on Cellular.
   PrefService* prefs = g_browser_process->local_state();
   if (!reenable_cert_check_ &&
       prefs->GetBoolean(
@@ -994,28 +972,19 @@ void MobileActivator::SetupActivationProcess(CellularNetwork* network) {
     reenable_cert_check_ = true;
     prefs->SetBoolean(prefs::kCertRevocationCheckingEnabled, false);
   }
+}
 
+void MobileActivator::SetupActivationProcess(CellularNetwork* network) {
+  if (!network)
+    return;
+
+  DisableCertRevocationChecking();
   NetworkLibrary* lib = CrosLibrary::Get()->
       GetNetworkLibrary();
   // Disable autoconnect to cellular network.
   network->SetAutoConnect(false);
 
-  // Prevent any other network interference.
-  DisableOtherNetworks();
   lib->Lock();
-}
-
-void MobileActivator::DisableOtherNetworks() {
-  NetworkLibrary* lib = CrosLibrary::Get()->GetNetworkLibrary();
-  // Disable ethernet and wifi.
-  if (lib->ethernet_enabled()) {
-    reenable_ethernet_ = true;
-    lib->EnableEthernetNetworkDevice(false);
-  }
-  if (lib->wifi_enabled()) {
-    reenable_wifi_ = true;
-    lib->EnableWifiNetworkDevice(false);
-  }
 }
 
 bool MobileActivator::GotActivationError(
