@@ -22,6 +22,13 @@ namespace TemplateURLPrepopulateData {
 
 extern const int kMaxPrepopulatedEngineID;
 
+#if defined(OS_ANDROID)
+// Returns the default country code at the time of install from Android.
+// This could either be the command line value that has been set or the
+// current location code during install.
+extern const std::string GetCountryCodeAtInstall();
+#endif
+
 void RegisterUserPrefs(PrefService* prefs);
 
 // Returns the current version of the prepopulate data, so callers can know when

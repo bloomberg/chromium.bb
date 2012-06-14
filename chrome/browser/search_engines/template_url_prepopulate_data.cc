@@ -2829,8 +2829,11 @@ int GetCurrentCountryID() {
 #elif defined(OS_ANDROID)
 
 int GetCurrentCountryID() {
-  NOTIMPLEMENTED();
-  return kCountryIDUnknown;
+  const std::string country_code_at_install =
+      TemplateURLPrepopulateData::GetCountryCodeAtInstall();
+  return country_code_at_install.empty() ? kCountryIDUnknown :
+      CountryCharsToCountryIDWithUpdate(country_code_at_install[0],
+                                        country_code_at_install[1]);
 }
 
 #elif defined(OS_POSIX)
