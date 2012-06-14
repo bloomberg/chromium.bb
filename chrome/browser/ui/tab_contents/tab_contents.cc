@@ -10,6 +10,7 @@
 #include "chrome/browser/autofill/autofill_external_delegate.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/automation/automation_tab_helper.h"
+#include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
@@ -97,6 +98,10 @@ TabContents::TabContents(WebContents* contents)
 #endif
   blocked_content_tab_helper_.reset(new BlockedContentTabHelper(this));
   bookmark_tab_helper_.reset(new BookmarkTabHelper(this));
+#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+  captive_portal_tab_helper_.reset(
+      new captive_portal::CaptivePortalTabHelper(profile(), web_contents()));
+#endif
   constrained_window_tab_helper_.reset(new ConstrainedWindowTabHelper(this));
   core_tab_helper_.reset(new CoreTabHelper(contents));
   extension_tab_helper_.reset(new ExtensionTabHelper(this));

@@ -1062,6 +1062,8 @@
         'browser/browsing_data_remover_unittest.cc',
         'browser/browsing_data_server_bound_cert_helper_unittest.cc',
         'browser/captive_portal/captive_portal_service_unittest.cc',
+        'browser/captive_portal/captive_portal_tab_helper_unittest.cc',
+        'browser/captive_portal/captive_portal_tab_reloader_unittest.cc',
         'browser/chrome_browser_application_mac_unittest.mm',
         'browser/chrome_browser_main_unittest.cc',
         'browser/chrome_page_zoom_unittest.cc',
@@ -2132,6 +2134,11 @@
             ['exclude', '^browser/ui/webui/print_preview/'],
           ],
         }],
+        ['enable_captive_portal_detection!=1', {
+          'sources/': [
+            ['exclude', '^browser/captive_portal/'],
+          ],
+        }],
         ['enable_session_service!=1', {
           'sources!': [
             'browser/sessions/session_service_unittest.cc',
@@ -2637,6 +2644,7 @@
         'browser/browsing_data_helper_browsertest.h',
         'browser/browsing_data_indexed_db_helper_browsertest.cc',
         'browser/browsing_data_local_storage_helper_browsertest.cc',
+        'browser/captive_portal/captive_portal_browsertest.cc',
         'browser/chrome_main_browsertest.cc',
         'browser/chrome_switches_browsertest.cc',
         'browser/chromeos/bluetooth/test/mock_bluetooth_adapter.cc',
@@ -3165,6 +3173,11 @@
           'sources/': [
             ['exclude', '^browser/safe_browsing/'],
             ['exclude', '^renderer/safe_browsing/'],
+          ],
+        }],
+        ['enable_captive_portal_detection!=1', {
+          'sources/': [
+            ['exclude', '^browser/captive_portal/'],
           ],
         }],
         ['internal_pdf', {

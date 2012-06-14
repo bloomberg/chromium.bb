@@ -79,6 +79,7 @@ class CaptivePortalService : public ProfileKeyedService,
 
  private:
   friend class CaptivePortalServiceTest;
+  friend class CaptivePortalBrowserTest;
 
   // Subclass of BackoffEntry that uses the CaptivePortalService's
   // GetCurrentTime function, for unit testing.
@@ -166,6 +167,8 @@ class CaptivePortalService : public ProfileKeyedService,
   State state() const { return state_; }
 
   RecheckPolicy& recheck_policy() { return recheck_policy_; }
+
+  void set_test_url(const GURL& test_url) { test_url_ = test_url; }
 
   // The profile that owns this CaptivePortalService.
   Profile* profile_;

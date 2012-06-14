@@ -55,6 +55,10 @@ namespace browser_sync {
 class SyncedTabDelegate;
 }
 
+namespace captive_portal {
+class CaptivePortalTabHelper;
+}
+
 namespace extensions {
 class WebNavigationTabObserver;
 }
@@ -137,6 +141,12 @@ class TabContents : public content::WebContentsObserver {
   BookmarkTabHelper* bookmark_tab_helper() {
     return bookmark_tab_helper_.get();
   }
+
+#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+  captive_portal::CaptivePortalTabHelper* captive_portal_tab_helper() {
+    return captive_portal_tab_helper_.get();
+  }
+#endif
 
   ConstrainedWindowTabHelper* constrained_window_tab_helper() {
     return constrained_window_tab_helper_.get();
@@ -242,6 +252,9 @@ class TabContents : public content::WebContentsObserver {
   scoped_ptr<AutomationTabHelper> automation_tab_helper_;
   scoped_ptr<BlockedContentTabHelper> blocked_content_tab_helper_;
   scoped_ptr<BookmarkTabHelper> bookmark_tab_helper_;
+#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+  scoped_ptr<captive_portal::CaptivePortalTabHelper> captive_portal_tab_helper_;
+#endif
   scoped_ptr<ConstrainedWindowTabHelper> constrained_window_tab_helper_;
   scoped_ptr<CoreTabHelper> core_tab_helper_;
   scoped_ptr<ExtensionTabHelper> extension_tab_helper_;

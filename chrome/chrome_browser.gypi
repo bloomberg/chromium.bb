@@ -360,10 +360,16 @@
         'browser/feedback/feedback_util.h',
         'browser/cancelable_request.cc',
         'browser/cancelable_request.h',
+        'browser/captive_portal/captive_portal_login_detector.cc',
+        'browser/captive_portal/captive_portal_login_detector.h',
         'browser/captive_portal/captive_portal_service.cc',
         'browser/captive_portal/captive_portal_service.h',
         'browser/captive_portal/captive_portal_service_factory.cc',
         'browser/captive_portal/captive_portal_service_factory.h',
+        'browser/captive_portal/captive_portal_tab_helper.cc',
+        'browser/captive_portal/captive_portal_tab_helper.h',
+        'browser/captive_portal/captive_portal_tab_reloader.cc',
+        'browser/captive_portal/captive_portal_tab_reloader.h',
         'browser/certificate_manager_model.cc',
         'browser/certificate_manager_model.h',
         'browser/certificate_viewer.cc',
@@ -4666,6 +4672,11 @@
           'sources/': [
             ['exclude', '^browser/printing/'],
             ['exclude', '^browser/ui/webui/print_preview/'],
+          ],
+        }],
+        ['enable_captive_portal_detection!=1', {
+          'sources/': [
+            ['exclude', '^browser/captive_portal/'],
           ],
         }],
         ['enable_session_service!=1', {

@@ -184,7 +184,7 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   BackgroundContentsServiceFactory::GetInstance();
 #endif
   BookmarkModelFactory::GetInstance();
-#if !defined(OS_ANDROID)
+#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
   captive_portal::CaptivePortalServiceFactory::GetInstance();
 #endif
   ChromeURLDataManagerFactory::GetInstance();

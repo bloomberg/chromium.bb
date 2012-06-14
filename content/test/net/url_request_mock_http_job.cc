@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -118,6 +118,15 @@ bool URLRequestMockHTTPJob::GetMimeType(std::string* mime_type) const {
   net::HttpResponseInfo info;
   GetResponseInfoConst(&info);
   return info.headers && info.headers->GetMimeType(mime_type);
+}
+
+int URLRequestMockHTTPJob::GetResponseCode() const {
+  net::HttpResponseInfo info;
+  GetResponseInfoConst(&info);
+  // If we have headers, get the response code from them.
+  if (info.headers)
+    return info.headers->response_code();
+  return net::URLRequestJob::GetResponseCode();
 }
 
 bool URLRequestMockHTTPJob::GetCharset(std::string* charset) {
