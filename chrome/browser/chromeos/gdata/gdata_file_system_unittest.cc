@@ -426,10 +426,37 @@ class GDataFileSystemTest : public testing::Test {
                                     file_origin);
   }
 
+  // Helper function to call GetCacheEntry from origin thread.
+  // Note: This method calls RunAllPendingForIO.
+  scoped_ptr<GDataCache::CacheEntry> GetCacheEntryFromOriginThread(
+      const std::string& resource_id,
+      const std::string& md5) {
+    scoped_ptr<GDataCache::CacheEntry> cache_entry;
+    content::BrowserThread::GetBlockingPool()
+        ->GetSequencedTaskRunner(sequence_token_)->PostTask(
+            FROM_HERE,
+            base::Bind(
+                &GDataFileSystemTest::GetCacheEntryFromOriginThreadInternal,
+                base::Unretained(this),
+                resource_id,
+                md5,
+                &cache_entry));
+    RunAllPendingForIO();
+    return cache_entry.Pass();
+  }
+
+  // Used to implement GetCacheEntry.
+  void GetCacheEntryFromOriginThreadInternal(
+      const std::string& resource_id,
+      const std::string& md5,
+      scoped_ptr<GDataCache::CacheEntry>* cache_entry) {
+    cache_entry->reset(cache_->GetCacheEntry(resource_id, md5).release());
+  }
+
   // Returns true if the cache entry exists for the given resource ID and MD5.
   bool CacheEntryExists(const std::string& resource_id,
                         const std::string& md5) {
-    return file_system_->cache_->GetCacheEntry(resource_id, md5).get();
+    return GetCacheEntryFromOriginThread(resource_id, md5).get();
   }
 
   // Returns true if the cache file exists for the given resource ID and MD5.
@@ -543,7 +570,7 @@ class GDataFileSystemTest : public testing::Test {
 
     // Verify cache map.
     scoped_ptr<GDataCache::CacheEntry> cache_entry =
-        file_system_->cache_->GetCacheEntry(resource_id, md5);
+        GetCacheEntryFromOriginThread(resource_id, md5);
     if (cache_entry.get())
       EXPECT_TRUE(cache_entry->IsDirty());
 
@@ -917,7 +944,7 @@ class GDataFileSystemTest : public testing::Test {
       if (GDataCache::IsCachePresent(resource.cache_state))
          md5 = resource.md5;
       scoped_ptr<GDataCache::CacheEntry> cache_entry =
-          file_system_->cache_->GetCacheEntry(resource.resource_id, md5);
+          GetCacheEntryFromOriginThread(resource.resource_id, md5);
       ASSERT_TRUE(cache_entry.get());
       EXPECT_EQ(resource.cache_state, cache_entry->cache_state);
       EXPECT_EQ(resource.expected_sub_dir_type, cache_entry->sub_dir_type);
@@ -933,7 +960,7 @@ class GDataFileSystemTest : public testing::Test {
 
     // Verify cache map.
     scoped_ptr<GDataCache::CacheEntry> cache_entry =
-        file_system_->cache_->GetCacheEntry(resource_id, md5);
+        GetCacheEntryFromOriginThread(resource_id, md5);
     if (GDataCache::IsCachePresent(expected_cache_state_) ||
         GDataCache::IsCachePinned(expected_cache_state_)) {
       ASSERT_TRUE(cache_entry.get());

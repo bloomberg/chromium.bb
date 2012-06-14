@@ -68,6 +68,9 @@ class GDataCache {
 
   // Structure to store information of an existing cache file.
   struct CacheEntry {
+    CacheEntry() : sub_dir_type(CACHE_TYPE_META),
+                   cache_state(0) {}
+
     CacheEntry(const std::string& md5,
                CacheSubDirectoryType sub_dir_type,
                int cache_state)

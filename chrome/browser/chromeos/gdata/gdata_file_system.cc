@@ -200,6 +200,21 @@ void OnTransferRegularFileCompleteForCopy(
     relay_proxy->PostTask(FROM_HERE, base::Bind(callback, error));
 }
 
+// Gets a cache entry from a GDataCache, must be called on the blocking pool.
+// The result value is copied to cache_entry on success.
+void GetCacheEntryOnBlockingPool(
+    GDataCache* cache,
+    const std::string& resource_id,
+    const std::string& md5,
+    GDataCache::CacheEntry* cache_entry,
+    bool* success) {
+  scoped_ptr<GDataCache::CacheEntry> value(
+      cache->GetCacheEntry(resource_id, md5));
+  *success = value.get();
+  if (*success)
+    *cache_entry = *value;
+}
+
 // Runs GetFileCallback with pointers dereferenced.
 // Used for PostTaskAndReply().
 void RunGetFileCallbackHelper(const GetFileCallback& callback,
@@ -2909,24 +2924,21 @@ void GDataFileSystem::OnFileDownloaded(
   // If user cancels download of a pinned-but-not-fetched file, mark file as
   // unpinned so that we do not sync the file again.
   if (status == GDATA_CANCELLED) {
-    bool pinning_cancelled = false;
-    {
-      // To access root_. Limit the scope as SetPinStateOnUIThread() will
-      // acquire the lock.
-      base::AutoLock lock(lock_);
-      // TODO(satorux): Should not call this on UI thread. crbug.com/131826.
-      scoped_ptr<GDataCache::CacheEntry> cache_entry = cache_->GetCacheEntry(
-          params.resource_id,
-          params.md5);
-      if (cache_entry.get() && cache_entry->IsPinned())
-        pinning_cancelled = true;
-    }
-    // TODO(hshi): http://crbug.com/127138 notify when file properties change.
-    // This allows file manager to clear the "Available offline" checkbox.
-    if (pinning_cancelled) {
-      SetPinStateOnUIThread(params.virtual_file_path, false,
-                            FileOperationCallback());
-    }
+    GDataCache::CacheEntry* cache_entry = new GDataCache::CacheEntry;
+    bool* success = new bool(false);
+    PostBlockingPoolSequencedTaskAndReply(
+        FROM_HERE,
+        base::Bind(&GetCacheEntryOnBlockingPool,
+                   cache_,
+                   params.resource_id,
+                   params.md5,
+                   cache_entry,
+                   success),
+        base::Bind(&GDataFileSystem::UnpinIfPinned,
+                   ui_weak_ptr_,
+                   params.virtual_file_path,
+                   base::Owned(cache_entry),
+                   base::Owned(success)));
   }
 
   // At this point, the disk can be full or nearly full for several reasons:
@@ -2950,6 +2962,16 @@ void GDataFileSystem::OnFileDownloaded(
                  content_url,
                  downloaded_file_path,
                  base::Owned(has_enough_space)));
+}
+
+void GDataFileSystem::UnpinIfPinned(const FilePath& file_path,
+                                    GDataCache::CacheEntry* cache_entry,
+                                    bool* cache_entry_is_valid) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // TODO(hshi): http://crbug.com/127138 notify when file properties change.
+  // This allows file manager to clear the "Available offline" checkbox.
+  if (*cache_entry_is_valid && cache_entry->IsPinned())
+    SetPinStateOnUIThread(file_path, false, FileOperationCallback());
 }
 
 void GDataFileSystem::OnFileDownloadedAndSpaceChecked(

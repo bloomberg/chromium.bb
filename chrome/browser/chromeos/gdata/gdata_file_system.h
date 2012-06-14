@@ -836,6 +836,11 @@ class GDataFileSystem : public GDataFileSystemInterface,
     const GURL& content_url,
     const FilePath& downloaded_file_path);
 
+  // Unpins file if cache entry is pinned.
+  void UnpinIfPinned(const FilePath& file_path,
+                     GDataCache::CacheEntry* cache_entry,
+                     bool* cache_entry_is_valid);
+
   // Similar to OnFileDownloaded() but takes |has_enough_space| so we report
   // an error in case we don't have enough disk space.
   void OnFileDownloadedAndSpaceChecked(

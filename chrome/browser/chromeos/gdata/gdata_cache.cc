@@ -1212,8 +1212,7 @@ void GDataCacheMap::RemoveFromCache(const std::string& resource_id) {
 scoped_ptr<GDataCache::CacheEntry> GDataCacheMap::GetCacheEntry(
     const std::string& resource_id,
     const std::string& md5) {
-  // TODO(satorux): Enable this once all callers are fixed: crbug.com/131826.
-  // AssertOnSequencedWorkerPool();
+  AssertOnSequencedWorkerPool();
 
   CacheMap::iterator iter = cache_map_.find(resource_id);
   if (iter == cache_map_.end()) {
