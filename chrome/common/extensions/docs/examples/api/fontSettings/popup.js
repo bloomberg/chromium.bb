@@ -177,10 +177,23 @@ function initFontSizePref(id, getter, setter, apiEvent) {
 
 function clearAllSettings() {
   var scripts =
-      ["Arab", "Armn", "Beng", "Cans", "Cher", "Cyrl", "Deva", "Ethi", "Geor",
-       "Grek", "Gujr", "Guru", "Hang", "Hans", "Hant", "Hebr", "Hrkt", "Knda",
-       "Khmr", "Laoo", "Mlym", "Mong", "Mymr", "Orya", "Sinh", "Taml", "Telu",
-       "Thaa", "Thai", "Tibt", "Yiii", "Zyyy"];
+      ["Afak", "Arab", "Armi", "Armn", "Avst", "Bali", "Bamu", "Bass", "Batk",
+       "Beng", "Blis", "Bopo", "Brah", "Brai", "Bugi", "Buhd", "Cakm", "Cans",
+       "Cari", "Cham", "Cher", "Cirt", "Copt", "Cprt", "Cyrl", "Cyrs", "Deva",
+       "Dsrt", "Dupl", "Egyd", "Egyh", "Egyp", "Elba", "Ethi", "Geor", "Geok",
+       "Glag", "Goth", "Gran", "Grek", "Gujr", "Guru", "Hang", "Hani", "Hano",
+       "Hans", "Hant", "Hebr", "Hluw", "Hmng", "Hrkt", "Hung", "Inds", "Ital",
+       "Java", "Jurc", "Kali", "Khar", "Khmr", "Khoj", "Knda", "Kpel", "Kthi",
+       "Lana", "Laoo", "Latf", "Latg", "Latn", "Lepc", "Limb", "Lina", "Linb",
+       "Lisu", "Loma", "Lyci", "Lydi", "Mand", "Mani", "Maya", "Mend", "Merc",
+       "Mero", "Mlym", "Moon", "Mong", "Mroo", "Mtei", "Mymr", "Narb", "Nbat",
+       "Nkgb", "Nkoo", "Nshu", "Ogam", "Olck", "Orkh", "Orya", "Osma", "Palm",
+       "Perm", "Phag", "Phli", "Phlp", "Phlv", "Phnx", "Plrd", "Prti", "Rjng",
+       "Roro", "Runr", "Samr", "Sara", "Sarb", "Saur", "Sgnw", "Shaw", "Shrd",
+       "Sind", "Sinh", "Sora", "Sund", "Sylo", "Syrc", "Syre", "Syrj", "Syrn",
+       "Tagb", "Takr", "Tale", "Talu", "Taml", "Tang", "Tavt", "Telu", "Teng",
+       "Tfng", "Tglg", "Thaa", "Thai", "Tibt", "Tirh", "Ugar", "Vaii", "Visp",
+       "Wara", "Wole", "Xpeo", "Xsux", "Yiii", "Zmth", "Zsym", "Zyyy"];
   var families =
       ["standard", "sansserif", "serif", "fixed", "cursive", "fantasy"];
   for (var i = 0; i < scripts.length; i++) {
