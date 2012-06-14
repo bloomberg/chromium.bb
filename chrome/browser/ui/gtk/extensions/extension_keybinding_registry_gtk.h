@@ -39,6 +39,13 @@ class ExtensionKeybindingRegistryGtk
   ExtensionKeybindingRegistryGtk(Profile* profile, gfx::NativeWindow window);
   virtual ~ExtensionKeybindingRegistryGtk();
 
+  static void set_shortcut_handling_suspended(bool suspended) {
+    shortcut_handling_suspended_ = suspended;
+  }
+  static bool shortcut_handling_suspended() {
+    return shortcut_handling_suspended_;
+  }
+
   // Whether this class has any registered keyboard shortcuts that correspond
   // to |event|.
   gboolean HasPriorityHandler(const GdkEventKey* event) const;
@@ -55,6 +62,13 @@ class ExtensionKeybindingRegistryGtk
   // struck.
   CHROMEG_CALLBACK_3(ExtensionKeybindingRegistryGtk, gboolean, OnGtkAccelerator,
                      GtkAccelGroup*, GObject*, guint, GdkModifierType);
+
+  // Keeps track of whether shortcut handling is currently suspended. Shortcuts
+  // are suspended briefly while capturing which shortcut to assign to an
+  // extension command in the Config UI. If handling isn't suspended while
+  // capturing then trying to assign Ctrl+F to a command would instead result
+  // in the Find box opening.
+  static bool shortcut_handling_suspended_;
 
   // Weak pointer to the our profile. Not owned by us.
   Profile* profile_;

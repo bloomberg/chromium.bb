@@ -15,9 +15,10 @@
 // static
 void extensions::ExtensionKeybindingRegistry::SetShortcutHandlingSuspended(
     bool suspended) {
-  // TODO(finnur): Implement.
-  NOTIMPLEMENTED();
+  ExtensionKeybindingRegistryGtk::set_shortcut_handling_suspended(suspended);
 }
+
+bool ExtensionKeybindingRegistryGtk::shortcut_handling_suspended_ = false;
 
 ExtensionKeybindingRegistryGtk::ExtensionKeybindingRegistryGtk(
     Profile* profile, gfx::NativeWindow window)
@@ -42,6 +43,9 @@ ExtensionKeybindingRegistryGtk::~ExtensionKeybindingRegistryGtk() {
 
 gboolean ExtensionKeybindingRegistryGtk::HasPriorityHandler(
     const GdkEventKey* event) const {
+  if (shortcut_handling_suspended_)
+    return FALSE;
+
   ui::AcceleratorGtk accelerator(ui::WindowsKeyCodeForGdkKeyCode(event->keyval),
                                  event->state & GDK_SHIFT_MASK,
                                  event->state & GDK_CONTROL_MASK,

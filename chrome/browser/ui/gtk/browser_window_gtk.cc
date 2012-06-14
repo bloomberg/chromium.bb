@@ -1149,6 +1149,9 @@ bool BrowserWindowGtk::PreHandleKeyboardEvent(
   if (!os_event || event.type != WebKit::WebInputEvent::RawKeyDown)
     return false;
 
+  if (ExtensionKeybindingRegistryGtk::shortcut_handling_suspended())
+    return false;
+
   // We first find out the browser command associated to the |event|.
   // Then if the command is a reserved one, and should be processed immediately
   // according to the |event|, the command will be executed immediately.
