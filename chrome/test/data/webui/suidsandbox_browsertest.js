@@ -21,7 +21,7 @@ SUIDSandboxUITest.prototype = {
 // This test is for Linux only.
 GEN('#if defined(OS_LINUX)');
 GEN('#define MAYBE_testSUIDSandboxEnabled \\');
-GEN('    FLAKY_testSUIDSandboxEnabled');
+GEN('    testSUIDSandboxEnabled');
 GEN('#else');
 GEN('#define MAYBE_testSUIDSandboxEnabled \\');
 GEN('    DISABLED_testSUIDSandboxEnabled');
@@ -40,7 +40,7 @@ TEST_F('SUIDSandboxUITest', 'MAYBE_testSUIDSandboxEnabled', function() {
     var suidyes = document.body.innerText.match(suidyesstring);
     var suidno = document.body.innerText.match(suidnostring);
 
-    expectEquals(null, suidyes);
-    expectFalse(suidno == null);
-    expectEquals(suidnostring, suidno[0]);
+    expectEquals(null, suidno);
+    expectFalse(suidyes == null);
+    expectEquals(suidyesstring, suidyes[0]);
 });
