@@ -281,12 +281,6 @@ SkColor ThemeService::GetColor(int id) const {
   if (theme_pack_.get() && theme_pack_->GetColor(id, &color))
     return color;
 
-#if defined(USE_AURA) && !defined(USE_ASH) && defined(OS_LINUX)
-  const ui::LinuxUI* linux_ui = ui::LinuxUI::instance();
-  if (linux_ui && linux_ui->GetColor(id, &color))
-    return color;
-#endif
-
   // For backward compat with older themes, some newer colors are generated from
   // older ones if they are missing.
   switch (id) {

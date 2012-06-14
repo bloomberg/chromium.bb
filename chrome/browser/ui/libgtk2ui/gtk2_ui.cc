@@ -7,7 +7,6 @@
 #include <set>
 
 #include "base/command_line.h"
-#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -17,7 +16,6 @@
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "grit/ui_resources.h"
-#include "grit/ui_resources_standard.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -36,6 +34,7 @@
 // TODO(erg): There's still a lot that needs ported or done for the first time:
 //
 // - Inject default favicon/folder icons into views somehow.
+// - Inject GTK back/forward/reload/home items.
 // - Render and inject the button overlay from the gtk theme.
 // - Render and inject the omnibox background.
 // - Listen for the "style-set" signal on |fake_frame_| and recreate theme
@@ -111,48 +110,6 @@ const int kAutocompleteImages[] = {
   IDR_GEOLOCATION_DENIED_LOCATIONBAR_ICON,
 };
 
-// This table converts button ids into a pair of gtk-stock id and state.
-struct IDRGtkMapping {
-  int idr;
-  const char* stock_id;
-  GtkStateType gtk_state;
-} const kGtkIcons[] = {
-  { IDR_BACK,      GTK_STOCK_GO_BACK,    GTK_STATE_NORMAL },
-  { IDR_BACK_D,    GTK_STOCK_GO_BACK,    GTK_STATE_INSENSITIVE },
-  { IDR_BACK_H,    GTK_STOCK_GO_BACK,    GTK_STATE_PRELIGHT },
-  { IDR_BACK_P,    GTK_STOCK_GO_BACK,    GTK_STATE_ACTIVE },
-
-  { IDR_FORWARD,   GTK_STOCK_GO_FORWARD, GTK_STATE_NORMAL },
-  { IDR_FORWARD_D, GTK_STOCK_GO_FORWARD, GTK_STATE_INSENSITIVE },
-  { IDR_FORWARD_H, GTK_STOCK_GO_FORWARD, GTK_STATE_PRELIGHT },
-  { IDR_FORWARD_P, GTK_STOCK_GO_FORWARD, GTK_STATE_ACTIVE },
-
-  { IDR_HOME,      GTK_STOCK_HOME,       GTK_STATE_NORMAL },
-  { IDR_HOME_H,    GTK_STOCK_HOME,       GTK_STATE_PRELIGHT },
-  { IDR_HOME_P,    GTK_STOCK_HOME,       GTK_STATE_ACTIVE },
-
-  { IDR_RELOAD,    GTK_STOCK_REFRESH,    GTK_STATE_NORMAL },
-  { IDR_RELOAD_H,  GTK_STOCK_REFRESH,    GTK_STATE_PRELIGHT },
-  { IDR_RELOAD_P,  GTK_STOCK_REFRESH,    GTK_STATE_ACTIVE },
-
-  { IDR_STOP,      GTK_STOCK_STOP,       GTK_STATE_NORMAL },
-  { IDR_STOP_D,    GTK_STOCK_STOP,       GTK_STATE_INSENSITIVE },
-  { IDR_STOP_H,    GTK_STOCK_STOP,       GTK_STATE_PRELIGHT },
-  { IDR_STOP_P,    GTK_STOCK_STOP,       GTK_STATE_ACTIVE },
-};
-
-// The image resources that will be tinted by the 'button' tint value.
-const int kOtherToolbarButtonIDs[] = {
-  IDR_TOOLS, IDR_TOOLS_H, IDR_TOOLS_P,
-
-  // TODO(erg): The rest of these need to have some sort of injection done.
-  IDR_LOCATIONBG_C, IDR_LOCATIONBG_L, IDR_LOCATIONBG_R,
-  IDR_BROWSER_ACTIONS_OVERFLOW, IDR_BROWSER_ACTIONS_OVERFLOW_H,
-  IDR_BROWSER_ACTIONS_OVERFLOW_P,
-  IDR_MENU_DROPARROW,
-  IDR_THROBBER, IDR_THROBBER_WAITING, IDR_THROBBER_LIGHT,
-};
-
 bool IsOverridableImage(int id) {
   CR_DEFINE_STATIC_LOCAL(std::set<int>, images, ());
   if (images.empty()) {
@@ -160,11 +117,11 @@ bool IsOverridableImage(int id) {
     images.insert(kAutocompleteImages,
                   kAutocompleteImages + arraysize(kAutocompleteImages));
 
-    for (unsigned int i = 0; i < arraysize(kGtkIcons); ++i)
-      images.insert(kGtkIcons[i].idr);
-
-    images.insert(kOtherToolbarButtonIDs,
-                  kOtherToolbarButtonIDs + arraysize(kOtherToolbarButtonIDs));
+    // TODO(erg): The original GtkThemeService called ThemeService::
+    // GetTintableToolbarButtons() here. Except that not all of the images
+    // returned are even used; for example, IDR_BACK should have never been
+    // rendered in the old gtk-theme mode. Recreate this list as I refine using
+    // a gtk theme on aura.
   }
 
   return images.count(id) > 0;
@@ -280,6 +237,7 @@ Gtk2UI::Gtk2UI() {
   fake_frame_ = chrome_gtk_frame_new();
   fake_label_.Own(gtk_label_new(""));
   fake_entry_.Own(gtk_entry_new());
+  fake_menu_item_.Own(gtk_menu_item_new());
 
   // Only realized widgets receive style-set notifications, which we need to
   // broadcast new theme images and colors. Only realized widgets have style
@@ -298,6 +256,7 @@ Gtk2UI::~Gtk2UI() {
   gtk_widget_destroy(fake_frame_);
   fake_label_.Destroy();
   fake_entry_.Destroy();
+  fake_menu_item_.Destroy();
 
   ClearAllThemeData();
 }
@@ -321,14 +280,10 @@ gfx::Image* Gtk2UI::GetThemeImageNamed(int id) const {
   return NULL;
 }
 
-bool Gtk2UI::GetColor(int id, SkColor* color) const {
+SkColor Gtk2UI::GetColor(int id) const {
   ColorMap::const_iterator it = colors_.find(id);
-  if (it != colors_.end()) {
-    *color = it->second;
-    return true;
-  }
-
-  return false;
+  DCHECK(it != colors_.end());
+  return it->second;
 }
 
 void Gtk2UI::GetScrollbarColors(GdkColor* thumb_active_color,
@@ -696,32 +651,6 @@ SkBitmap Gtk2UI::GenerateGtkThemeBitmap(int id) const {
     case IDR_OMNIBOX_TTS_DARK: {
       return GenerateTintedIcon(id, selected_entry_tint_);
     }
-    // In GTK mode, we need to manually render several icons.
-    case IDR_BACK:
-    case IDR_BACK_D:
-    case IDR_BACK_H:
-    case IDR_BACK_P:
-    case IDR_FORWARD:
-    case IDR_FORWARD_D:
-    case IDR_FORWARD_H:
-    case IDR_FORWARD_P:
-    case IDR_HOME:
-    case IDR_HOME_H:
-    case IDR_HOME_P:
-    case IDR_RELOAD:
-    case IDR_RELOAD_H:
-    case IDR_RELOAD_P:
-    case IDR_STOP:
-    case IDR_STOP_D:
-    case IDR_STOP_H:
-    case IDR_STOP_P: {
-      return GenerateGTKIcon(id);
-    }
-    case IDR_TOOLS:
-    case IDR_TOOLS_H:
-    case IDR_TOOLS_P: {
-      return GenerateWrenchIcon(id);
-    }
     default: {
       return GenerateTintedIcon(id, button_tint_);
     }
@@ -786,100 +715,6 @@ SkBitmap Gtk2UI::GenerateTintedIcon(
       *rb.GetBitmapNamed(base_id), tint);
 }
 
-SkBitmap Gtk2UI::GenerateGTKIcon(int base_id) const {
-  const char* stock_id = NULL;
-  GtkStateType gtk_state;
-  for (unsigned int i = 0; i < arraysize(kGtkIcons); ++i) {
-    if (kGtkIcons[i].idr == base_id) {
-      stock_id = kGtkIcons[i].stock_id;
-      gtk_state = kGtkIcons[i].gtk_state;
-      break;
-    }
-  }
-  DCHECK(stock_id);
-
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  SkBitmap* default_bitmap = rb.GetBitmapNamed(base_id);
-
-  gtk_widget_ensure_style(fake_frame_);
-  GtkStyle* style = gtk_widget_get_style(fake_frame_);
-  GtkIconSet* icon_set = gtk_style_lookup_icon_set(style, stock_id);
-  if (!icon_set)
-    return *default_bitmap;
-
-  // Ask GTK to render the icon to a buffer, which we will steal from.
-  GdkPixbuf* gdk_icon = gtk_icon_set_render_icon(
-      icon_set,
-      style,
-      base::i18n::IsRTL() ? GTK_TEXT_DIR_RTL : GTK_TEXT_DIR_LTR,
-      gtk_state,
-      GTK_ICON_SIZE_SMALL_TOOLBAR,
-      fake_frame_,
-      NULL);
-
-  if (!gdk_icon) {
-    // This can theoretically happen if an icon theme doesn't provide a
-    // specific image. This should realistically never happen, but I bet there
-    // are some theme authors who don't reliably provide all icons.
-    return *default_bitmap;
-  }
-
-  SkBitmap retval;
-  retval.setConfig(SkBitmap::kARGB_8888_Config,
-                   default_bitmap->width(),
-                   default_bitmap->height());
-  retval.allocPixels();
-  retval.eraseColor(0);
-
-  const SkBitmap icon = GdkPixbufToImageSkia(gdk_icon);
-  g_object_unref(gdk_icon);
-
-  SkCanvas canvas(retval);
-
-  if (gtk_state == GTK_STATE_ACTIVE || gtk_state == GTK_STATE_PRELIGHT) {
-    SkBitmap border = DrawGtkButtonBorder(gtk_state,
-                                          default_bitmap->width(),
-                                          default_bitmap->height());
-    canvas.drawBitmap(border, 0, 0);
-  }
-
-  canvas.drawBitmap(icon,
-                    (default_bitmap->width() / 2) - (icon.width() / 2),
-                    (default_bitmap->height() / 2) - (icon.height() / 2));
-
-  return retval;
-}
-
-SkBitmap Gtk2UI::GenerateWrenchIcon(int base_id) const {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  SkBitmap* default_bitmap = rb.GetBitmapNamed(IDR_TOOLS);
-
-  // Part 1: Tint the wrench icon according to the button tint.
-  SkBitmap shifted = SkBitmapOperations::CreateHSLShiftedBitmap(
-      *default_bitmap, button_tint_);
-
-  // The unhighlighted icon doesn't need to have a border composed onto it.
-  if (base_id == IDR_TOOLS)
-    return shifted;
-
-  SkBitmap retval;
-  retval.setConfig(SkBitmap::kARGB_8888_Config,
-                   default_bitmap->width(),
-                   default_bitmap->height());
-  retval.allocPixels();
-  retval.eraseColor(0);
-
-  SkCanvas canvas(retval);
-  SkBitmap border = DrawGtkButtonBorder(
-      base_id == IDR_TOOLS_H ? GTK_STATE_PRELIGHT : GTK_STATE_ACTIVE,
-      default_bitmap->width(),
-      default_bitmap->height());
-  canvas.drawBitmap(border, 0, 0);
-  canvas.drawBitmap(shifted, 0, 0);
-
-  return retval;
-}
-
 void Gtk2UI::GetNormalButtonTintHSL(color_utils::HSL* tint) const {
   GtkStyle* window_style = gtk_rc_get_style(fake_window_);
   const GdkColor accent_gdk_color = window_style->bg[GTK_STATE_SELECTED];
@@ -909,43 +744,6 @@ void Gtk2UI::GetSelectedEntryForegroundHSL(color_utils::HSL* tint) const {
   GtkStyle* style = gtk_rc_get_style(fake_entry_.get());
   const GdkColor color = style->text[GTK_STATE_SELECTED];
   color_utils::SkColorToHSL(GdkColorToSkColor(color), tint);
-}
-
-SkBitmap Gtk2UI::DrawGtkButtonBorder(int gtk_state,
-                                     int width, int height) const {
-  // Create a temporary GTK button to snapshot
-  GtkWidget* window = gtk_offscreen_window_new();
-  GtkWidget* button = gtk_button_new();
-  gtk_widget_set_size_request(button, width, height);
-  gtk_container_add(GTK_CONTAINER(window), button);
-  gtk_widget_realize(window);
-  gtk_widget_realize(button);
-  gtk_widget_show(button);
-  gtk_widget_show(window);
-
-  gtk_widget_set_state(button, static_cast<GtkStateType>(gtk_state));
-
-  GdkPixmap* pixmap = gtk_widget_get_snapshot(button, NULL);
-  int w, h;
-  gdk_drawable_get_size(GDK_DRAWABLE(pixmap), &w, &h);
-  DCHECK_EQ(w, width);
-  DCHECK_EQ(h, height);
-
-  // We render the Pixmap to a Pixbuf. This can be slow, as we're scrapping
-  // bits from X.
-  GdkColormap* colormap = gdk_drawable_get_colormap(pixmap);
-  GdkPixbuf* pixbuf = gdk_pixbuf_get_from_drawable(NULL,
-                                                   GDK_DRAWABLE(pixmap),
-                                                   colormap,
-                                                   0, 0, 0, 0, w, h);
-
-  // Finally, we convert our pixbuf into a type we can use.
-  SkBitmap border = GdkPixbufToImageSkia(pixbuf);
-  g_object_unref(pixbuf);
-  g_object_unref(pixmap);
-  gtk_widget_destroy(window);
-
-  return border;
 }
 
 void Gtk2UI::ClearAllThemeData() {
