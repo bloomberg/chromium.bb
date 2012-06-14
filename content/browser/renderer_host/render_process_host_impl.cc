@@ -1248,12 +1248,10 @@ void RenderProcessHostImpl::ProcessDied(base::ProcessHandle handle,
   // TODO(darin): clean this up
 }
 
-void RenderProcessHostImpl::OnShutdownRequest() {
-  // Don't shut down if there are more active RenderViews than the one asking
-  // to close, or if there are pending RenderViews being swapped back in.
+int RenderProcessHostImpl::GetActiveViewCount() {
   int num_active_views = 0;
   for (RenderWidgetHostsIterator iter = GetRenderWidgetHostsIterator();
-       iter.IsAtEnd();
+       !iter.IsAtEnd();
        iter.Advance()) {
     const RenderWidgetHost* widget = iter.GetCurrentValue();
     DCHECK(widget);
@@ -1272,6 +1270,13 @@ void RenderProcessHostImpl::OnShutdownRequest() {
     if (!static_cast<RenderViewHostImpl*>(rvh)->is_swapped_out())
       num_active_views++;
   }
+  return num_active_views;
+}
+
+void RenderProcessHostImpl::OnShutdownRequest() {
+  // Don't shut down if there are more active RenderViews than the one asking
+  // to close, or if there are pending RenderViews being swapped back in.
+  int num_active_views = GetActiveViewCount();
   if (pending_views_ || num_active_views > 1)
     return;
 

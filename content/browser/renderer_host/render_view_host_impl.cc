@@ -718,11 +718,10 @@ void RenderViewHostImpl::AllowBindings(int bindings_flags) {
       !ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
           GetProcess()->GetID())) {
     // This process has no bindings yet. Make sure it does not have more
-    // than this single view.
-    RenderProcessHostImpl::RenderWidgetHostsIterator iter(
-        GetProcess()->GetRenderWidgetHostsIterator());
-    iter.Advance();
-    if (!iter.IsAtEnd())
+    // than this single active view.
+    RenderProcessHostImpl* process =
+        static_cast<RenderProcessHostImpl*>(GetProcess());
+    if (process->GetActiveViewCount() > 1)
       return;
   }
 

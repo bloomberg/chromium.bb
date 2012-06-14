@@ -17,6 +17,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_controller_factory.h"
+#include "content/public/common/bindings_policy.h"
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/url_constants.h"
@@ -88,7 +89,7 @@ class RenderViewHostManagerTestWebUIControllerFactory
       BrowserContext* browser_context,
       const GURL& url,
       bool data_urls_allowed) const OVERRIDE {
-    return false;
+    return content::GetContentClient()->HasWebUIScheme(url);
   }
 
  private:
@@ -684,6 +685,7 @@ TEST_F(RenderViewHostManagerTest, WebUI) {
 
   // Commit.
   manager.DidNavigateMainFrame(host);
+  EXPECT_TRUE(host->GetEnabledBindings() & content::BINDINGS_POLICY_WEB_UI);
 }
 
 // Tests that we don't end up in an inconsistent state if a page does a back and
@@ -782,8 +784,6 @@ TEST_F(RenderViewHostManagerTest, CreateSwappedOutOpenerRVHs) {
   // Navigate to an initial URL.
   contents()->NavigateAndCommit(kUrl1);
   RenderViewHostManager* manager = contents()->GetRenderManagerForTesting();
-
-  // Pretend the RVH is alive so it doesn't go away.
   TestRenderViewHost* rvh1 = test_rvh();
 
   // Create 2 new tabs and simulate them being the opener chain for the main
@@ -834,4 +834,43 @@ TEST_F(RenderViewHostManagerTest, CreateSwappedOutOpenerRVHs) {
                    rvh3->GetSiteInstance()));
   EXPECT_FALSE(opener2_manager->GetSwappedOutRenderViewHost(
                    rvh3->GetSiteInstance()));
+}
+
+// Test that RenderViewHosts created for WebUI navigations are properly
+// granted WebUI bindings even if an unprivileged swapped out RenderViewHost
+// is in the same process (http://crbug.com/79918).
+TEST_F(RenderViewHostManagerTest, EnableWebUIWithSwappedOutOpener) {
+  set_should_create_webui(true);
+  const GURL kSettingsUrl("chrome://chrome/settings");
+  const GURL kPluginUrl("chrome://plugins");
+
+  // Navigate to an initial WebUI URL.
+  contents()->NavigateAndCommit(kSettingsUrl);
+
+  // Ensure the RVH has WebUI bindings.
+  TestRenderViewHost* rvh1 = test_rvh();
+  EXPECT_TRUE(rvh1->GetEnabledBindings() & content::BINDINGS_POLICY_WEB_UI);
+
+  // Create a new tab and simulate it being the opener for the main
+  // tab.  It should be in the same SiteInstance.
+  TestWebContents opener1(browser_context(), rvh1->GetSiteInstance());
+  RenderViewHostManager* opener1_manager = opener1.GetRenderManagerForTesting();
+  contents()->SetOpener(&opener1);
+
+  // Navigate to a different WebUI URL (different SiteInstance, same
+  // BrowsingInstance).
+  contents()->NavigateAndCommit(kPluginUrl);
+  TestRenderViewHost* rvh2 = test_rvh();
+  EXPECT_NE(rvh1->GetSiteInstance(), rvh2->GetSiteInstance());
+  EXPECT_TRUE(rvh1->GetSiteInstance()->IsRelatedSiteInstance(
+                  rvh2->GetSiteInstance()));
+
+  // Ensure a swapped out RVH is created in the first opener tab.
+  TestRenderViewHost* opener1_rvh = static_cast<TestRenderViewHost*>(
+      opener1_manager->GetSwappedOutRenderViewHost(rvh2->GetSiteInstance()));
+  EXPECT_TRUE(opener1_manager->IsSwappedOut(opener1_rvh));
+  EXPECT_TRUE(opener1_rvh->is_swapped_out());
+
+  // Ensure the new RVH has WebUI bindings.
+  EXPECT_TRUE(rvh2->GetEnabledBindings() & content::BINDINGS_POLICY_WEB_UI);
 }
