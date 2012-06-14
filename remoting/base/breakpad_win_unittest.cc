@@ -89,10 +89,11 @@ class BreakpadWinDeathTest : public testing::Test {
       crash_server_.reset(
           new google_breakpad::CrashGenerationServer(
               pipe_name_, NULL,
-              NULL, 0,
+              NULL, NULL,
               MockCrashServerCallbacks::OnClientDumpRequestCallback,
               callbacks_.get(),
-              NULL, 0,
+              NULL, NULL,
+              NULL, NULL,
               false, NULL));
 
       result = crash_server_->Start();

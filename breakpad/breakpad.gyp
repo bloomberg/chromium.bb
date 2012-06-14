@@ -474,6 +474,8 @@
             'src/client/linux/crash_generation/crash_generation_client.cc',
             'src/client/linux/crash_generation/crash_generation_client.h',
             'src/client/linux/handler/exception_handler.cc',
+            'src/client/linux/log/log.cc',
+            'src/client/linux/log/log.h',
             'src/client/linux/minidump_writer/directory_reader.h',
             'src/client/linux/minidump_writer/line_reader.h',
             'src/client/linux/minidump_writer/linux_core_dumper.cc',
