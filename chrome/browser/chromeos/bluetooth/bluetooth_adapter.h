@@ -118,9 +118,9 @@ class BluetoothAdapter : private BluetoothManagerClient::Observer,
   // Requests that the adapter either begin discovering new devices when
   // |discovering| is true, or cease any discovery when false.  On success,
   // callback will be called.  On failure, |error_callback| will be called.
-  void SetDiscovering(bool discovering,
-                      const base::Closure& callback,
-                      const ErrorCallback& error_callback);
+  virtual void SetDiscovering(bool discovering,
+                              const base::Closure& callback,
+                              const ErrorCallback& error_callback);
 
   // Requests the list of devices from the adapter, all are returned
   // including those currently connected and those paired. Use the

@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_CHROMEOS_BLUETOOTH_TEST_MOCK_BLUETOOTH_ADAPTER_H_
 #pragma once
 
+#include "base/callback.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
+#include "chrome/browser/chromeos/bluetooth/bluetooth_device.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {
@@ -18,7 +20,10 @@ class MockBluetoothAdapter : public BluetoothAdapter {
 
   MOCK_CONST_METHOD0(IsPresent, bool());
   MOCK_CONST_METHOD0(IsPowered, bool());
-
+  MOCK_METHOD3(SetDiscovering,
+               void(bool discovering,
+                    const base::Closure& callback,
+                    const BluetoothAdapter::ErrorCallback& error_callback));
   MOCK_CONST_METHOD0(GetDevices, ConstDeviceList());
 };
 
