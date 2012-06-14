@@ -295,31 +295,14 @@ class IBusUiControllerImpl : public IBusUiController {
     }
 
     virtual void SetCursorLocation(IBusInputContext* context,
-                                   int32 x,
-                                   int32 y,
-                                   int32 w,
-                                   int32 h) OVERRIDE {
-      // The list of input method IDs for Mozc Japanese IMEs.
-      const char* kMozcJaInputMethodIds[] = { "mozc", "mozc-jp", "mozc-dv" };
-
+                                   const gfx::Rect& cursor_location,
+                                   const gfx::Rect& composition_head) OVERRIDE {
       if (!ui_)
         return;
-
-      scoped_ptr<InputMethodDescriptors> input_methods(
-          InputMethodManager::GetInstance()->GetSupportedInputMethods());
-      for (size_t i = 0; i < arraysize(kMozcJaInputMethodIds); ++i) {
-        if (IsActive(kMozcJaInputMethodIds[i], input_methods.get())) {
-          // Mozc Japanese IMEs require cursor location information to show the
-          // suggestion window in a correct position.
-          ui::internal::IBusClientImpl::SetCursorLocation(context, x, y, w, h);
-          break;  // call IBusUiControllerImpl::SetCursorLocation() as well.
-        }
-      }
-
       // We don't have to call ibus_input_context_set_cursor_location() on
       // Chrome OS because the candidate window for IBus is integrated with
       // Chrome.
-      ui_->SetCursorLocation(NULL, x, y, w, h);
+      ui_->SetCursorLocation(NULL, cursor_location, composition_head);
     }
 
     void set_ui(IBusUiControllerImpl* ui) {
@@ -383,7 +366,8 @@ class IBusUiControllerImpl : public IBusUiController {
                                      gint x, gint y, gint width, gint height,
                                      gpointer userdata) {
     return reinterpret_cast<IBusUiControllerImpl*>(userdata)
-        ->SetCursorLocation(sender, x, y, width, height);
+        ->SetCursorLocation(sender, gfx::Rect(x, y, width, height),
+                            gfx::Rect());
   }
   static void UpdateLookupTableThunk(IBusPanelService* sender,
                                      IBusLookupTable* table, gboolean visible,
@@ -567,13 +551,11 @@ class IBusUiControllerImpl : public IBusUiController {
 
   // Handles IBusPanelService's |SetCursorLocation| method call.
   void SetCursorLocation(IBusPanelService *panel,
-                         gint x,
-                         gint y,
-                         gint width,
-                         gint height) {
+                         const gfx::Rect& cursor_location,
+                         const gfx::Rect& composition_head) {
     // Note: |panel| might be NULL. See IBusChromeOSClientImpl above.
     FOR_EACH_OBSERVER(Observer, observers_,
-                      OnSetCursorLocation(x, y, width, height));
+                      OnSetCursorLocation(cursor_location, composition_head));
   }
 
   // Handles IBusPanelService's |UpdatePreeditText| method call.

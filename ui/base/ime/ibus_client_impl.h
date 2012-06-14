@@ -36,10 +36,8 @@ public:
   virtual void Reset(IBusInputContext* context) OVERRIDE;
   virtual InputMethodType GetInputMethodType() OVERRIDE;
   virtual void SetCursorLocation(IBusInputContext* context,
-                                 int32 x,
-                                 int32 y,
-                                 int32 w,
-                                 int32 h) OVERRIDE;
+                                 const gfx::Rect& cursor_location,
+                                 const gfx::Rect& composition_head) OVERRIDE;
   virtual void SendKeyEvent(IBusInputContext* context,
                             uint32 keyval,
                             uint32 keycode,

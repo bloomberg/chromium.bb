@@ -78,6 +78,7 @@ class UI_EXPORT TextInputClient {
   // screen coordinates. The |index| is zero-based index of character position
   // in composition text.
   // Returns false if there is no composition text or |index| is out of range.
+  // The |rect| is not touched in the case of failure.
   virtual bool GetCompositionCharacterBounds(uint32 index, gfx::Rect* rect) = 0;
 
   // Returns true if there is composition text.

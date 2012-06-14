@@ -334,9 +334,14 @@ void InputMethodIBus::OnCaretBoundsChanged(const TextInputClient* client) {
   DCHECK(!IsTextInputTypeNone());
   const gfx::Rect rect = GetTextInputClient()->GetCaretBounds();
 
+  gfx::Rect composition_head;
+  if (!GetTextInputClient()->GetCompositionCharacterBounds(0,
+                                                           &composition_head)) {
+    composition_head = gfx::Rect();
+  }
+
   // This function runs asynchronously.
-  ibus_client_->SetCursorLocation(
-      context_, rect.x(), rect.y(), rect.width(), rect.height());
+  ibus_client_->SetCursorLocation(context_, rect, composition_head);
 }
 
 void InputMethodIBus::CancelComposition(const TextInputClient* client) {

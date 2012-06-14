@@ -199,10 +199,8 @@ IBusClient::InputMethodType MockIBusClient::GetInputMethodType() {
 }
 
 void MockIBusClient::SetCursorLocation(IBusInputContext* context,
-                                       int32 x,
-                                       int32 y,
-                                       int32 w,
-                                       int32 h) {
+                                       const gfx::Rect& cursor_location,
+                                       const gfx::Rect& composition_head) {
   ++set_cursor_location_call_count_;
 }
 

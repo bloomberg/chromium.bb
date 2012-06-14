@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "ui/base/ime/composition_text.h"
+#include "ui/gfx/rect.h"
 
 // input_method_ibus.cc assumes X and IBus use the same mask for Lock, Control,
 // Shift, Alt, and buttons. Check if the assumption is really correct.
@@ -125,11 +126,13 @@ IBusClient::InputMethodType IBusClientImpl::GetInputMethodType() {
 }
 
 void IBusClientImpl::SetCursorLocation(IBusInputContext* context,
-                                       int32 x,
-                                       int32 y,
-                                       int32 w,
-                                       int32 h) {
-  ibus_input_context_set_cursor_location(context, x, y, w, h);
+                                       const gfx::Rect& cursor_location,
+                                       const gfx::Rect& composition_head) {
+  ibus_input_context_set_cursor_location(context,
+                                         cursor_location.x(),
+                                         cursor_location.y(),
+                                         cursor_location.width(),
+                                         cursor_location.height());
 }
 
 void IBusClientImpl::SendKeyEvent(IBusInputContext* context,

@@ -131,7 +131,15 @@ class CandidateWindowView : public views::View {
     cursor_location_ = cursor_location;
   }
 
+  void set_composition_head_location(
+      const gfx::Rect& composition_head_location) {
+    composition_head_location_ = composition_head_location;
+  }
+
   const gfx::Rect& cursor_location() const { return cursor_location_; }
+  const gfx::Rect& composition_head_location() const {
+    return composition_head_location_;
+  }
 
  protected:
   // Override View::VisibilityChanged()
@@ -201,15 +209,12 @@ class CandidateWindowView : public views::View {
   // The last cursor location.
   gfx::Rect cursor_location_;
 
-  // This location is used by suggestion window rendering which is mostly used
-  // by ibus-mozc. The suggestion window should be aligned with the composition
-  // text as opposed to the cursor. In case of ibus-mozc, suggestion window
-  // location is calculated by engine and it carried by update_lookup_table
-  // signal as additional information. This value is available when
-  // is_suggestion_window_available is true.
-  gfx::Rect suggestion_window_location_;
+  // The last compostion head location.
+  gfx::Rect composition_head_location_;
 
-  bool is_suggestion_window_location_available_;
+  // True if the candidate window should be shown with aligning with composition
+  // text as opposed to the cursor.
+  bool should_show_at_composition_head_;
 
   // True if the candidate window should be shonw on the upper side of
   // composition text.

@@ -35,28 +35,13 @@ void InitializeMozcCandidates(InputMethodLookupTable* table) {
   table->mozc_candidates.set_size(0);
 }
 
-void SetCaretRectIntoMozcCandidates(
-    InputMethodLookupTable* table,
-    mozc::commands::Candidates::CandidateWindowLocation location,
-    int x,
-    int y,
-    int width,
-    int height) {
-  table->mozc_candidates.set_window_location(location);
-  mozc::commands::Rectangle *rect =
-      table->mozc_candidates.mutable_composition_rectangle();
-  rect->set_x(x);
-  rect->set_y(y);
-  rect->set_width(width);
-  rect->set_height(height);
-}
-
-void AppendCandidateIntoMozcCandidates(InputMethodLookupTable* table,
-                                       std::string value) {
+void AppendCandidateIntoLookupTable(InputMethodLookupTable* table,
+                                    const std::string& value) {
   mozc::commands::Candidates::Candidate *candidate =
       table->mozc_candidates.add_candidate();
 
   int current_entry_count = table->mozc_candidates.candidate_size();
+  table->candidates.push_back(value);
   candidate->set_index(current_entry_count);
   candidate->set_value(value);
   candidate->set_id(current_entry_count);
@@ -198,16 +183,6 @@ TEST_F(CandidateWindowViewTest, MozcSuggestWindowShouldUpdateTest) {
   const char* kSampleCandidate1 = "Sample Candidate 1";
   const char* kSampleCandidate2 = "Sample Candidate 2";
 
-  const int kCaretPositionX1 = 10;
-  const int kCaretPositionY1 = 20;
-  const int kCaretPositionWidth1 = 30;
-  const int kCaretPositionHeight1 = 40;
-
-  const int kCaretPositionX2 = 15;
-  const int kCaretPositionY2 = 25;
-  const int kCaretPositionWidth2 = 35;
-  const int kCaretPositionHeight2 = 45;
-
   const size_t kPageSize = 10;
 
   InputMethodLookupTable old_table;
@@ -219,13 +194,7 @@ TEST_F(CandidateWindowViewTest, MozcSuggestWindowShouldUpdateTest) {
 
   old_table.candidates.push_back(kSampleCandidate1);
   InitializeMozcCandidates(&new_table);
-  AppendCandidateIntoMozcCandidates(&new_table, kSampleCandidate1);
-  SetCaretRectIntoMozcCandidates(&new_table,
-                                 mozc::commands::Candidates::COMPOSITION,
-                                 kCaretPositionX1,
-                                 kCaretPositionY1,
-                                 kCaretPositionWidth1,
-                                 kCaretPositionHeight1);
+  AppendCandidateIntoLookupTable(&new_table, kSampleCandidate2);
 
   EXPECT_TRUE(CandidateWindowView::ShouldUpdateCandidateViews(old_table,
                                                               new_table));
@@ -235,15 +204,9 @@ TEST_F(CandidateWindowViewTest, MozcSuggestWindowShouldUpdateTest) {
   ClearInputMethodLookupTable(kPageSize, &new_table);
 
   InitializeMozcCandidates(&old_table);
-  AppendCandidateIntoMozcCandidates(&old_table, kSampleCandidate1);
-  SetCaretRectIntoMozcCandidates(&old_table,
-                                 mozc::commands::Candidates::COMPOSITION,
-                                 kCaretPositionX1,
-                                 kCaretPositionY1,
-                                 kCaretPositionWidth1,
-                                 kCaretPositionHeight1);
+  AppendCandidateIntoLookupTable(&old_table, kSampleCandidate1);
 
-  new_table.candidates.push_back(kSampleCandidate1);
+  new_table.candidates.push_back(kSampleCandidate2);
 
   EXPECT_TRUE(CandidateWindowView::ShouldUpdateCandidateViews(old_table,
                                                               new_table));
@@ -255,95 +218,22 @@ TEST_F(CandidateWindowViewTest, MozcSuggestWindowShouldUpdateTest) {
   ClearInputMethodLookupTable(kPageSize, &new_table);
 
   InitializeMozcCandidates(&old_table);
-  AppendCandidateIntoMozcCandidates(&old_table, kSampleCandidate1);
-  SetCaretRectIntoMozcCandidates(&old_table,
-                                 mozc::commands::Candidates::COMPOSITION,
-                                 kCaretPositionX1,
-                                 kCaretPositionY1,
-                                 kCaretPositionWidth1,
-                                 kCaretPositionHeight1);
+  AppendCandidateIntoLookupTable(&old_table, kSampleCandidate1);
 
   InitializeMozcCandidates(&new_table);
-  AppendCandidateIntoMozcCandidates(&new_table, kSampleCandidate1);
-  SetCaretRectIntoMozcCandidates(&new_table,
-                                 mozc::commands::Candidates::COMPOSITION,
-                                 kCaretPositionX1,
-                                 kCaretPositionY1,
-                                 kCaretPositionWidth1,
-                                 kCaretPositionHeight1);
+  AppendCandidateIntoLookupTable(&new_table, kSampleCandidate1);
 
   EXPECT_FALSE(CandidateWindowView::ShouldUpdateCandidateViews(old_table,
                                                                new_table));
-  // Position change only
+  // Candidate contents
   ClearInputMethodLookupTable(kPageSize, &old_table);
   ClearInputMethodLookupTable(kPageSize, &new_table);
 
   InitializeMozcCandidates(&old_table);
-  AppendCandidateIntoMozcCandidates(&old_table, kSampleCandidate1);
-  SetCaretRectIntoMozcCandidates(&old_table,
-                                 mozc::commands::Candidates::COMPOSITION,
-                                 kCaretPositionX1,
-                                 kCaretPositionY1,
-                                 kCaretPositionWidth1,
-                                 kCaretPositionHeight1);
+  AppendCandidateIntoLookupTable(&old_table, kSampleCandidate1);
 
   InitializeMozcCandidates(&new_table);
-  AppendCandidateIntoMozcCandidates(&new_table, kSampleCandidate1);
-  SetCaretRectIntoMozcCandidates(&new_table,
-                                 mozc::commands::Candidates::COMPOSITION,
-                                 kCaretPositionX2,
-                                 kCaretPositionY2,
-                                 kCaretPositionWidth2,
-                                 kCaretPositionHeight2);
-
-  EXPECT_TRUE(CandidateWindowView::ShouldUpdateCandidateViews(old_table,
-                                                              new_table));
-  // Candidate contents only
-  ClearInputMethodLookupTable(kPageSize, &old_table);
-  ClearInputMethodLookupTable(kPageSize, &new_table);
-
-  InitializeMozcCandidates(&old_table);
-  AppendCandidateIntoMozcCandidates(&old_table, kSampleCandidate1);
-  SetCaretRectIntoMozcCandidates(&old_table,
-                                 mozc::commands::Candidates::COMPOSITION,
-                                 kCaretPositionX1,
-                                 kCaretPositionY1,
-                                 kCaretPositionWidth1,
-                                 kCaretPositionHeight1);
-
-  InitializeMozcCandidates(&new_table);
-  AppendCandidateIntoMozcCandidates(&new_table, kSampleCandidate2);
-  SetCaretRectIntoMozcCandidates(&new_table,
-                                 mozc::commands::Candidates::COMPOSITION,
-                                 kCaretPositionX1,
-                                 kCaretPositionY1,
-                                 kCaretPositionWidth1,
-                                 kCaretPositionHeight1);
-
-  EXPECT_TRUE(CandidateWindowView::ShouldUpdateCandidateViews(old_table,
-                                                              new_table));
-
-  // Both candidate and position
-  ClearInputMethodLookupTable(kPageSize, &old_table);
-  ClearInputMethodLookupTable(kPageSize, &new_table);
-
-  InitializeMozcCandidates(&old_table);
-  AppendCandidateIntoMozcCandidates(&old_table, kSampleCandidate1);
-  SetCaretRectIntoMozcCandidates(&old_table,
-                                 mozc::commands::Candidates::COMPOSITION,
-                                 kCaretPositionX1,
-                                 kCaretPositionY1,
-                                 kCaretPositionWidth1,
-                                 kCaretPositionHeight1);
-
-  InitializeMozcCandidates(&new_table);
-  AppendCandidateIntoMozcCandidates(&new_table, kSampleCandidate2);
-  SetCaretRectIntoMozcCandidates(&new_table,
-                                 mozc::commands::Candidates::COMPOSITION,
-                                 kCaretPositionX2,
-                                 kCaretPositionY2,
-                                 kCaretPositionWidth2,
-                                 kCaretPositionHeight2);
+  AppendCandidateIntoLookupTable(&new_table, kSampleCandidate2);
 
   EXPECT_TRUE(CandidateWindowView::ShouldUpdateCandidateViews(old_table,
                                                               new_table));
@@ -363,68 +253,21 @@ TEST_F(CandidateWindowViewTest, MozcUpdateCandidateTest) {
   CandidateWindowView candidate_window_view(widget);
   candidate_window_view.Init();
 
-  const int kCaretPositionX1 = 10;
-  const int kCaretPositionY1 = 20;
-  const int kCaretPositionWidth1 = 30;
-  const int kCaretPositionHeight1 = 40;
-
-  const int kCaretPositionX2 = 15;
-  const int kCaretPositionY2 = 25;
-  const int kCaretPositionWidth2 = 35;
-  const int kCaretPositionHeight2 = 45;
-
   const size_t kPageSize = 10;
 
   InputMethodLookupTable new_table;
   ClearInputMethodLookupTable(kPageSize, &new_table);
   InitializeMozcCandidates(&new_table);
 
-  // If window location is CARET, use default position. So
-  // is_suggestion_window_location_available_ should be false.
-  SetCaretRectIntoMozcCandidates(&new_table,
-                                 mozc::commands::Candidates::CARET,
-                                 kCaretPositionX1,
-                                 kCaretPositionY1,
-                                 kCaretPositionWidth1,
-                                 kCaretPositionHeight1);
+  // If candidate category is SUGGESTION, should not show at composition head.
+  new_table.mozc_candidates.set_category(mozc::commands::CONVERSION);
   candidate_window_view.UpdateCandidates(new_table);
-  EXPECT_FALSE(candidate_window_view.is_suggestion_window_location_available_);
+  EXPECT_FALSE(candidate_window_view.should_show_at_composition_head_);
 
-  // If window location is COMPOSITION, update position and set
-  // is_suggestion_window_location_available_ as true.
-  SetCaretRectIntoMozcCandidates(&new_table,
-                                 mozc::commands::Candidates::COMPOSITION,
-                                 kCaretPositionX1,
-                                 kCaretPositionY1,
-                                 kCaretPositionWidth1,
-                                 kCaretPositionHeight1);
+  // If candidate category is SUGGESTION, should show at composition head.
+  new_table.mozc_candidates.set_category(mozc::commands::SUGGESTION);
   candidate_window_view.UpdateCandidates(new_table);
-  EXPECT_TRUE(candidate_window_view.is_suggestion_window_location_available_);
-  EXPECT_EQ(kCaretPositionX1,
-            candidate_window_view.suggestion_window_location_.x());
-  EXPECT_EQ(kCaretPositionY1,
-            candidate_window_view.suggestion_window_location_.y());
-  EXPECT_EQ(kCaretPositionWidth1,
-            candidate_window_view.suggestion_window_location_.width());
-  EXPECT_EQ(kCaretPositionHeight1,
-            candidate_window_view.suggestion_window_location_.height());
-
-  SetCaretRectIntoMozcCandidates(&new_table,
-                                 mozc::commands::Candidates::COMPOSITION,
-                                 kCaretPositionX2,
-                                 kCaretPositionY2,
-                                 kCaretPositionWidth2,
-                                 kCaretPositionHeight2);
-  candidate_window_view.UpdateCandidates(new_table);
-  EXPECT_TRUE(candidate_window_view.is_suggestion_window_location_available_);
-  EXPECT_EQ(kCaretPositionX2,
-            candidate_window_view.suggestion_window_location_.x());
-  EXPECT_EQ(kCaretPositionY2,
-            candidate_window_view.suggestion_window_location_.y());
-  EXPECT_EQ(kCaretPositionWidth2,
-            candidate_window_view.suggestion_window_location_.width());
-  EXPECT_EQ(kCaretPositionHeight2,
-            candidate_window_view.suggestion_window_location_.height());
+  EXPECT_TRUE(candidate_window_view.should_show_at_composition_head_);
 
   // We should call CloseNow method, otherwise this test will leak memory.
   widget->CloseNow();

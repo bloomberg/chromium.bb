@@ -17,6 +17,10 @@
 #include "base/observer_list.h"
 #include "third_party/mozc/session/candidates_lite.pb.h"
 
+namespace gfx {
+class Rect;
+}  // namespace gfx
+
 namespace chromeos {
 namespace input_method {
 
@@ -85,7 +89,8 @@ class IBusUiController {
     virtual void OnHidePreeditText() = 0;
 
     // Called when the cursor location is set.
-    virtual void OnSetCursorLocation(int x, int y, int width, int height) = 0;
+    virtual void OnSetCursorLocation(const gfx::Rect& cusor_location,
+                                     const gfx::Rect& composition_head) = 0;
 
     // Called when the auxiliary text is updated.
     virtual void OnUpdateAuxiliaryText(const std::string& text,

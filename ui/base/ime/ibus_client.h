@@ -18,6 +18,9 @@ typedef struct _IBusBus IBusBus;
 typedef struct _IBusInputContext IBusInputContext;
 typedef struct _IBusText IBusText;
 
+namespace gfx {
+class Rect;
+}  // namespace gfx
 namespace ui {
 
 struct CompositionText;
@@ -97,10 +100,8 @@ class UI_EXPORT IBusClient {
 
   // Resets the cursor location asynchronously.
   virtual void SetCursorLocation(IBusInputContext* context,
-                                 int32 x,
-                                 int32 y,
-                                 int32 w,
-                                 int32 h) = 0;
+                                 const gfx::Rect& cursor_location,
+                                 const gfx::Rect& composition_head) = 0;
 
   // Sends the key to ibus-daemon asynchronously.
   virtual void SendKeyEvent(IBusInputContext* context,

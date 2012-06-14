@@ -534,7 +534,8 @@ class CandidateWindowControllerImpl : public CandidateWindowController,
   virtual void OnHideAuxiliaryText();
   virtual void OnHideLookupTable();
   virtual void OnHidePreeditText();
-  virtual void OnSetCursorLocation(int x, int y, int width, int height);
+  virtual void OnSetCursorLocation(const gfx::Rect& cursor_position,
+                                   const gfx::Rect& composition_head);
   virtual void OnUpdateAuxiliaryText(const std::string& utf8_text,
                                      bool visible);
   virtual void OnUpdateLookupTable(const InputMethodLookupTable& lookup_table);
@@ -782,7 +783,7 @@ CandidateWindowView::CandidateWindowView(views::Widget* parent_frame)
       previous_shortcut_column_size_(0, 0),
       previous_candidate_column_size_(0, 0),
       previous_annotation_column_size_(0, 0),
-      is_suggestion_window_location_available_(false),
+      should_show_at_composition_head_(false),
       should_show_upper_side_(false),
       was_candidate_window_open_(false) {
 }
@@ -917,21 +918,14 @@ bool CandidateWindowView::ShouldUpdateCandidateViews(
     const InputMethodLookupTable& old_table,
     const InputMethodLookupTable& new_table) {
 
-  // Check if mozc lookup table location is changed.
-  if (old_table.mozc_candidates.has_window_location() ||
-      new_table.mozc_candidates.has_window_location()) {
-
-    if (!old_table.mozc_candidates.IsInitialized() ||
-        !new_table.mozc_candidates.IsInitialized()) {
+  // Check only candidate category because other fields are not used in
+  // CandidateWindowView.
+  // TODO(nona): Remove mozc_candidates(crbug.com/129403).
+  if (old_table.mozc_candidates.has_category() ||
+      new_table.mozc_candidates.has_category()) {
+    if (old_table.mozc_candidates.category() !=
+        new_table.mozc_candidates.category())
       return true;
-    }
-
-    std::string old_serialized_msg;
-    std::string new_serialized_msg;
-
-    old_table.mozc_candidates.SerializeToString(&old_serialized_msg);
-    new_table.mozc_candidates.SerializeToString(&new_serialized_msg);
-    return old_serialized_msg != new_serialized_msg;
   }
 
   // Check if most table contents are identical.
@@ -958,22 +952,12 @@ void CandidateWindowView::UpdateCandidates(
     // Initialize candidate views if necessary.
     MaybeInitializeCandidateViews(new_lookup_table);
 
-    // Store mozc specific window location.
-    if (new_lookup_table.mozc_candidates.has_window_location() &&
-        new_lookup_table.mozc_candidates.window_location() ==
-            mozc::commands::Candidates::COMPOSITION) {
-      DCHECK(new_lookup_table.mozc_candidates.has_composition_rectangle());
-      suggestion_window_location_.set_x(
-          new_lookup_table.mozc_candidates.composition_rectangle().x());
-      suggestion_window_location_.set_y(
-          new_lookup_table.mozc_candidates.composition_rectangle().y());
-      suggestion_window_location_.set_width(
-          new_lookup_table.mozc_candidates.composition_rectangle().width());
-      suggestion_window_location_.set_height(
-          new_lookup_table.mozc_candidates.composition_rectangle().height());
-      is_suggestion_window_location_available_ = true;
+    if (new_lookup_table.mozc_candidates.has_category() &&
+        new_lookup_table.mozc_candidates.category() ==
+            mozc::commands::SUGGESTION) {
+      should_show_at_composition_head_ = true;
     } else {
-      is_suggestion_window_location_available_ = false;
+      should_show_at_composition_head_ = false;
     }
 
     // Compute the index of the current page.
@@ -1161,7 +1145,7 @@ void CandidateWindowView::MaybeInitializeCandidateViews(
 }
 
 bool CandidateWindowView::IsCandidateWindowOpen() const {
-  return !is_suggestion_window_location_available_ &&
+  return !should_show_at_composition_head_ &&
       candidate_area_->visible() && candidate_area_->IsShown();
 }
 
@@ -1219,13 +1203,13 @@ void CandidateWindowView::CommitCandidate() {
 void CandidateWindowView::ResizeAndMoveParentFrame() {
   // If rendering operation comes from mozc-engine, uses mozc specific location,
   // otherwise lookup table is shown under the cursor.
-  const int x = is_suggestion_window_location_available_ ?
-      suggestion_window_location_.x() : cursor_location_.x();
+  const int x = should_show_at_composition_head_?
+      composition_head_location_.x() : cursor_location_.x();
   // To avoid lookup-table overlapping, uses maximum y-position of mozc specific
   // location and cursor location, because mozc-engine does not consider about
   // multi-line composition.
-  const int y = is_suggestion_window_location_available_ ?
-      std::max(suggestion_window_location_.y(), cursor_location_.y()) :
+  const int y = should_show_at_composition_head_?
+      std::max(composition_head_location_.y(), cursor_location_.y()) :
       cursor_location_.y();
   const int height = cursor_location_.height();
   const int horizontal_offset = GetHorizontalOffset();
@@ -1664,24 +1648,23 @@ void CandidateWindowControllerImpl::OnHidePreeditText() {
 }
 
 void CandidateWindowControllerImpl::OnSetCursorLocation(
-    int x,
-    int y,
-    int width,
-    int height) {
+    const gfx::Rect& cursor_location,
+    const gfx::Rect& composition_head) {
   // A workaround for http://crosbug.com/6460. We should ignore very short Y
   // move to prevent the window from shaking up and down.
   const int kKeepPositionThreshold = 2;  // px
   const gfx::Rect& last_location =
       candidate_window_->cursor_location();
-  const int delta_y = abs(last_location.y() - y);
-  if ((last_location.x() == x) && (delta_y <= kKeepPositionThreshold)) {
+  const int delta_y = abs(last_location.y() - cursor_location.y());
+  if ((last_location.x() == cursor_location.x()) &&
+      (delta_y <= kKeepPositionThreshold)) {
     DVLOG(1) << "Ignored set_cursor_location signal to prevent window shake";
     return;
   }
 
   // Remember the cursor location.
-  candidate_window_->set_cursor_location(
-      gfx::Rect(x, y, width, height));
+  candidate_window_->set_cursor_location(cursor_location);
+  candidate_window_->set_composition_head_location(composition_head);
   // Move the window per the cursor location.
   candidate_window_->ResizeAndMoveParentFrame();
   infolist_window_->ResizeAndMoveParentFrame();
