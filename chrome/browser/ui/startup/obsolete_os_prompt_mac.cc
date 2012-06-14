@@ -4,19 +4,16 @@
 
 #include "chrome/browser/ui/startup/obsolete_os_prompt.h"
 
-#include "base/mac/mac_util.h"
 #include "base/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/cocoa/obsolete_os.h"
 #include "chrome/browser/ui/startup/obsolete_os_info_bar.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace browser {
 
@@ -28,7 +25,7 @@ void RegisterObsoleteOSInfobarPrefs(PrefService* local_state) {
 }
 
 void ShowObsoleteOSPrompt(Browser* browser) {
-  if (!base::mac::IsOSLeopard())
+  if (!IsOSObsoleteOrNearlySo())
     return;
 
   PrefService* local_state = g_browser_process->local_state();
@@ -54,8 +51,7 @@ void ShowObsoleteOSPrompt(Browser* browser) {
   tab->infobar_tab_helper()->AddInfoBar(
       new ObsoleteOSInfoBar(
           tab->infobar_tab_helper(),
-          l10n_util::GetStringFUTF16(IDS_MAC_10_5_LEOPARD_DEPRECATED,
-              l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)),
+          LocalizedObsoleteOSString(),
           GURL(chrome::kMacLeopardObsoleteURL)));
 
   local_state->SetDouble(prefs::kMacLeopardObsoleteInfobarLastShown,

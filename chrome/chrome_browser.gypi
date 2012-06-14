@@ -2715,6 +2715,8 @@
         'browser/ui/cocoa/nsmenuitem_additions.mm',
         'browser/ui/cocoa/nsview_additions.h',
         'browser/ui/cocoa/nsview_additions.mm',
+        'browser/ui/cocoa/obsolete_os.cc',
+        'browser/ui/cocoa/obsolete_os.h',
         'browser/ui/cocoa/omnibox/omnibox_popup_view_mac.h',
         'browser/ui/cocoa/omnibox/omnibox_popup_view_mac.mm',
         'browser/ui/cocoa/omnibox/omnibox_view_mac.h',

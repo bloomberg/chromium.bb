@@ -45,7 +45,7 @@
 #endif
 
 #if defined(OS_MACOSX)
-#include "base/mac/mac_util.h"
+#include "chrome/browser/ui/cocoa/obsolete_os.h"
 #endif
 
 using base::ListValue;
@@ -169,10 +169,8 @@ void HelpHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
   }
 
 #if defined(OS_MACOSX)
-  localized_strings->SetString(
-      "updateObsoleteOS",
-      l10n_util::GetStringFUTF16(IDS_MAC_10_5_LEOPARD_DEPRECATED,
-                                 l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+  localized_strings->SetString("updateObsoleteOS",
+                               browser::LocalizedObsoleteOSString());
   localized_strings->SetString("updateObsoleteOSURL",
                                chrome::kMacLeopardObsoleteURL);
 #endif
@@ -297,7 +295,7 @@ void HelpHandler::OnPageLoaded(const ListValue* args) {
 
 #if defined(OS_MACOSX)
   scoped_ptr<base::Value> is_os_obsolete(
-      base::Value::CreateBooleanValue(base::mac::IsOSLeopardOrEarlier()));
+      base::Value::CreateBooleanValue(browser::IsOSObsoleteOrNearlySo()));
   web_ui()->CallJavascriptFunction("help.HelpPage.setObsoleteOS",
                                    *is_os_obsolete);
 #endif

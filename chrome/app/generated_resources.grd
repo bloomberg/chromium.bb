@@ -12688,7 +12688,10 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
 
       <!-- Mac 10.5 deprecation -->
-      <message name="IDS_MAC_10_5_LEOPARD_DEPRECATED" desc="A message displayed on the New Tab Page warning the user that the OS they are running will not be supported soon.">
+      <message name="IDS_MAC_10_5_LEOPARD_OBSOLETE_SOON" desc="A message displayed on a weekly infobar and About (Help) page warning the user that the OS they are running is about to become unsupported.">
+        This computer will soon stop receiving updates of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> because it's running Mac OS X 10.5.
+      </message>
+      <message name="IDS_MAC_10_5_LEOPARD_OBSOLETE_NOW" desc="A message displayed on a weekly infobar and About (Help) page warning the user that the OS they are running is no longer supported.">
         This computer will no longer receive updates of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> because it's running Mac OS X 10.5.
       </message>
     </if>
