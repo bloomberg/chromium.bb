@@ -744,6 +744,9 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
 #if defined(OS_MACOSX)
     switches::kEnableSandboxLogging,
 #endif
+#if defined(OS_CHROMEOS)
+    switches::kEnableVaapi,
+#endif
     switches::kGpuNoContextLost,
     switches::kGpuStartupDialog,
     switches::kLoggingLevel,
