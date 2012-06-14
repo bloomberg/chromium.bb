@@ -184,6 +184,17 @@ cr.define('print_preview', function() {
         var candidate = this.destinationMap_[this.initialDestinationId_];
         if (candidate != null) {
           this.selectDestination(candidate);
+        } else {
+          // Try and fetch the destination
+          // TODO(rltoscano): Since we don't know if the initialDestinationId is
+          // a local printer or a cloud printer, we are going to assume based on
+          // platform. The C++ layer should be modified to return more
+          // information about the initially selected printer so this assumption
+          // does not have to be made. See http://crbug.com/132831.
+          if (!cr.isChromeOS) {
+            this.nativeLayer_.startGetLocalDestinationCapabilities(
+                initialDestinationId);
+          }
         }
       }
     },
@@ -400,25 +411,34 @@ cr.define('print_preview', function() {
 
     /**
      * Called when the native layer retrieves the capabilities for the selected
-     * local destination.
+     * local destination. Updates the destination with new capabilities if the
+     * destination already exists, otherwise it creates a new destination and
+     * then updates its capabilities.
      * @param {cr.Event} event Contains the capabilities of the local print
      *     destination.
      * @private
      */
     onLocalDestinationCapabilitiesSet_: function(event) {
-      // TODO(rltoscano): There may be a race condition here. This method is
-      // assumed to return capabilities for the currently selected printer. But
-      // between the time the local printer was selected and the capabilities
-      // were retrieved, the selected printer can change. One way to address
-      // this is to include the destination ID in the event.settingsInfo
-      // parameter.
-      if (this.selectedDestination_ && this.selectedDestination_.isLocal) {
-        var capabilities = print_preview.LocalCapabilitiesParser.parse(
+      var destinationId = event.settingsInfo['printerId'];
+      var destination = this.destinationMap_[destinationId];
+      var capabilities = print_preview.LocalCapabilitiesParser.parse(
             event.settingsInfo);
-        this.selectedDestination_.capabilities = capabilities;
-        cr.dispatchSimpleEvent(
-            this,
-            DestinationStore.EventType.SELECTED_DESTINATION_CAPABILITIES_READY);
+      if (destination) {
+        destination.capabilities = capabilities;
+        if (this.selectedDestination_ &&
+            this.selectedDestination_.id == destinationId) {
+          cr.dispatchSimpleEvent(this,
+                                 DestinationStore.EventType.
+                                     SELECTED_DESTINATION_CAPABILITIES_READY);
+        }
+      } else {
+        // TODO(rltoscano): This makes the assumption that the "deviceName" is
+        // the same as "printerName". We should include the "printerName" in the
+        // response. See http://crbug.com/132831.
+        destination = print_preview.LocalDestinationParser.parse(
+            {deviceName: destinationId, printerName: destinationId});
+        destination.capabilities = capabilities;
+        this.insertDestination(destination);
       }
     },
 

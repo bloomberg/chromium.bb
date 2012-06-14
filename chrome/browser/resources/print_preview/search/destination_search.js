@@ -223,7 +223,7 @@ cr.define('print_preview', function() {
       this.tracker.add(
           this.destinationStore_,
           print_preview.DestinationStore.EventType.DESTINATIONS_INSERTED,
-          this.onDestinationsInserted_.bind(this));
+          this.renderDestinations_.bind(this));
       this.tracker.add(
           this.destinationStore_,
           print_preview.DestinationStore.EventType.DESTINATION_SELECT,
@@ -247,6 +247,9 @@ cr.define('print_preview', function() {
           this.userInfo_,
           print_preview.UserInfo.EventType.EMAIL_CHANGE,
           this.onEmailChange_.bind(this));
+
+      // Render any destinations already in the store.
+      this.renderDestinations_();
     },
 
     /** @override */
@@ -303,6 +306,29 @@ cr.define('print_preview', function() {
     },
 
     /**
+     * Renders all of the destinations in the destination store.
+     * @private
+     */
+    renderDestinations_: function() {
+      var recentDestinations = [];
+      var localDestinations = [];
+      var cloudDestinations = [];
+      this.destinationStore_.destinations.forEach(function(destination) {
+        if (destination.isRecent) {
+          recentDestinations.push(destination);
+        }
+        if (destination.isLocal) {
+          localDestinations.push(destination);
+        } else {
+          cloudDestinations.push(destination);
+        }
+      });
+      this.recentList_.updateDestinations(recentDestinations);
+      this.localList_.updateDestinations(localDestinations);
+      this.cloudList_.updateDestinations(cloudDestinations);
+    },
+
+    /**
      * Called when a destination search should be executed. Filters the
      * destination lists with the given query.
      * @param {cr.Event} evt Contains the search query.
@@ -335,30 +361,6 @@ cr.define('print_preview', function() {
       this.destinationStore_.selectDestination(evt.destination);
       this.metrics_.increment(
           print_preview.Metrics.Bucket.DESTINATION_SELECTED);
-    },
-
-    /**
-     * Called when destinations are added to the destination store. Refreshes UI
-     * with new destinations.
-     * @private
-     */
-    onDestinationsInserted_: function() {
-      var recentDestinations = [];
-      var localDestinations = [];
-      var cloudDestinations = [];
-      this.destinationStore_.destinations.forEach(function(destination) {
-        if (destination.isRecent) {
-          recentDestinations.push(destination);
-        }
-        if (destination.isLocal) {
-          localDestinations.push(destination);
-        } else {
-          cloudDestinations.push(destination);
-        }
-      });
-      this.recentList_.updateDestinations(recentDestinations);
-      this.localList_.updateDestinations(localDestinations);
-      this.cloudList_.updateDestinations(cloudDestinations);
     },
 
     /**

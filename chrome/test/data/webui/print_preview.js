@@ -250,6 +250,7 @@ TEST_F('PrintPreviewWebUITest', 'TestSectionsDisabled', function() {
   var capsSetEvent =
       new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
   capsSetEvent.settingsInfo = {
+    'printerId': 'FooDevice',
     'disableColorOption': true,
     'setColorAsDefault': true,
     'disableCopiesOption': true,
@@ -287,6 +288,7 @@ TEST_F('PrintPreviewWebUITest',
   var capsSetEvent =
       new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
   capsSetEvent.settingsInfo = {
+    'printerId': 'FooDevice',
     'disableColorOption': false,
     'setColorAsDefault': true,
     'disableCopiesOption': true,
@@ -315,6 +317,7 @@ TEST_F('PrintPreviewWebUITest', 'SourceIsHTMLHideFitToPageOption', function() {
   var capsSetEvent =
       new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
   capsSetEvent.settingsInfo = {
+    'printerId': 'FooDevice',
     'disableColorOption': false,
     'setColorAsDefault': true,
     'disableCopiesOption': true,
@@ -346,6 +349,7 @@ TEST_F('PrintPreviewWebUITest', 'SourceIsPDFShowFitToPageOption', function() {
   var capsSetEvent =
       new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
   capsSetEvent.settingsInfo = {
+    'printerId': 'FooDevice',
     'disableColorOption': false,
     'setColorAsDefault': true,
     'disableCopiesOption': true,
@@ -380,6 +384,7 @@ TEST_F('PrintPreviewWebUITest', 'PrintScalingDisabledForPlugin', function() {
   var capsSetEvent =
       new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
   capsSetEvent.settingsInfo = {
+    'printerId': 'FooDevice',
     'disableColorOption': false,
     'setColorAsDefault': true,
     'disableCopiesOption': true,
@@ -417,6 +422,7 @@ TEST_F('PrintPreviewWebUITest',
   var capsSetEvent =
       new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
   capsSetEvent.settingsInfo = {
+    'printerId': 'FooDevice',
     'disableColorOption': false,
     'setColorAsDefault': true,
     'disableCopiesOption': true,
@@ -456,6 +462,7 @@ TEST_F('PrintPreviewWebUITest',
   var capsSetEvent =
       new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
   capsSetEvent.settingsInfo = {
+    'printerId': 'FooDevice',
     'disableColorOption': false,
     'setColorAsDefault': true,
     'disableCopiesOption': true,
@@ -495,6 +502,7 @@ TEST_F('PrintPreviewWebUITest',
   var capsSetEvent =
       new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
   capsSetEvent.settingsInfo = {
+    'printerId': 'FooDevice',
     'disableColorOption': false,
     'setColorAsDefault': true,
     'disableCopiesOption': true,
@@ -535,6 +543,7 @@ TEST_F('PrintPreviewWebUITest',
   var capsSetEvent =
       new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
   capsSetEvent.settingsInfo = {
+    'printerId': 'FooDevice',
     'disableColorOption': false,
     'setColorAsDefault': true,
     'disableCopiesOption': true,
@@ -574,6 +583,7 @@ TEST_F('PrintPreviewWebUITest', 'TestColorSettings', function() {
   var capsSetEvent =
       new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
   capsSetEvent.settingsInfo = {
+    'printerId': 'FooDevice',
     'disableColorOption': false,
     'setColorAsDefault': true,
     'disableCopiesOption': true,
@@ -594,6 +604,7 @@ TEST_F('PrintPreviewWebUITest', 'TestColorSettings', function() {
   var capsSetEvent =
       new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
   capsSetEvent.settingsInfo = {
+    'printerId': 'FooDevice',
     'disableColorOption': false,
     'setColorAsDefault': false,
     'disableCopiesOption': false,
@@ -640,6 +651,7 @@ TEST_F('PrintPreviewWebUITest', 'TestDuplexSettings', function() {
   var capsSetEvent =
       new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
   capsSetEvent.settingsInfo = {
+    'printerId': 'FooDevice',
     'disableColorOption': false,
     'setColorAsDefault': true,
     'disableCopiesOption': false,
@@ -657,6 +669,7 @@ TEST_F('PrintPreviewWebUITest', 'TestDuplexSettings', function() {
   var capsSetEvent =
       new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
   capsSetEvent.settingsInfo = {
+    'printerId': 'FooDevice',
     'disableColorOption': false,
     'setColorAsDefault': false,
     'disableCopiesOption': false,
@@ -671,6 +684,7 @@ TEST_F('PrintPreviewWebUITest', 'TestDuplexSettings', function() {
   var capsSetEvent =
       new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
   capsSetEvent.settingsInfo = {
+    'printerId': 'FooDevice',
     'disableColorOption': false,
     'setColorAsDefault': false,
     'disableCopiesOption': false,
@@ -700,6 +714,7 @@ TEST_F('PrintPreviewWebUITest', 'TestPrinterChangeUpdatesPreview', function() {
   var capsSetEvent =
       new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
   capsSetEvent.settingsInfo = {
+    'printerId': 'FooDevice',
     'disableColorOption': false,
     'setColorAsDefault': true,
     'disableCopiesOption': true,
@@ -726,6 +741,7 @@ TEST_F('PrintPreviewWebUITest', 'TestPrinterChangeUpdatesPreview', function() {
   var capsSetEvent =
       new cr.Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
   capsSetEvent.settingsInfo = {
+    'printerId': 'BarDevice',
     'disableColorOption': true,
     'setColorAsDefault': false,
     'disableCopiesOption': true,

@@ -117,6 +117,7 @@ using content::BrowserThread;
 
 namespace {
 
+const char kPrinterId[] = "printerId";
 const char kDisableColorOption[] = "disableColorOption";
 const char kSetColorAsDefault[] = "setColorAsDefault";
 const char kSetDuplexAsDefault[] = "setDuplexAsDefault";
@@ -559,6 +560,7 @@ void PrintSystemTaskProxy::GetPrinterCapabilities(
                                  printer_color_space_for_black));
 
   DictionaryValue settings_info;
+  settings_info.SetString(kPrinterId, printer_name);
   settings_info.SetBoolean(kDisableColorOption, disable_color_options);
   if (printer_color_space_for_color == printing::UNKNOWN_COLOR_MODEL)
     printer_color_space_for_color = printing::COLOR;
