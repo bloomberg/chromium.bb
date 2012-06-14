@@ -276,7 +276,8 @@ void ExtensionSystemImpl::Init(bool extensions_enabled) {
   shared_->InitInfoMap();
 
   extension_process_manager_.reset(ExtensionProcessManager::Create(profile_));
-  alarm_manager_.reset(new extensions::AlarmManager(profile_));
+  alarm_manager_.reset(new extensions::AlarmManager(profile_,
+                                                    &base::Time::Now));
 
   shared_->Init(extensions_enabled);
 }

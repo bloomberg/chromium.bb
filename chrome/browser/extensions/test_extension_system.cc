@@ -36,8 +36,9 @@ void TestExtensionSystem::CreateExtensionProcessManager() {
   extension_process_manager_.reset(ExtensionProcessManager::Create(profile_));
 }
 
-void TestExtensionSystem::CreateAlarmManager() {
-  alarm_manager_.reset(new extensions::AlarmManager(profile_));
+void TestExtensionSystem::CreateAlarmManager(
+    extensions::AlarmManager::TimeProvider now) {
+  alarm_manager_.reset(new extensions::AlarmManager(profile_, now));
 }
 
 ExtensionService* TestExtensionSystem::CreateExtensionService(

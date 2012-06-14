@@ -26,7 +26,7 @@ const char kOnAlarmEvent[] = "alarms.onAlarm";
 
 // A list of alarms that this extension has set.
 const char kRegisteredAlarms[] = "alarms";
-const char kAlarmScheduledRunTime[] = "scheduled_run_time";
+const char kAlarmGranularity[] = "granularity";
 
 // The minimum period between polling for alarms to run.
 const base::TimeDelta kDefaultMinPollPeriod = base::TimeDelta::FromMinutes(5);
@@ -37,10 +37,10 @@ class DefaultAlarmDelegate : public AlarmManager::Delegate {
   virtual ~DefaultAlarmDelegate() {}
 
   virtual void OnAlarm(const std::string& extension_id,
-                       const AlarmManager::Alarm& alarm) {
+                       const Alarm& alarm) {
     ListValue args;
     std::string json_args;
-    args.Append(alarm.ToValue().release());
+    args.Append(alarm.js_alarm->ToValue().release());
     base::JSONWriter::Write(&args, &json_args);
     ExtensionSystem::Get(profile_)->event_router()->DispatchEventToExtension(
         extension_id, kOnAlarmEvent, json_args, NULL, GURL());
@@ -50,33 +50,22 @@ class DefaultAlarmDelegate : public AlarmManager::Delegate {
   Profile* profile_;
 };
 
-// Contains the state we persist for each alarm.
-struct AlarmState {
-  linked_ptr<AlarmManager::Alarm> alarm;
-  base::Time scheduled_run_time;
-
-  AlarmState() {}
-  ~AlarmState() {}
-};
-
 // Creates a TimeDelta from a delay as specified in the API.
 base::TimeDelta TimeDeltaFromDelay(double delay_in_minutes) {
   return base::TimeDelta::FromMicroseconds(
       delay_in_minutes * base::Time::kMicrosecondsPerMinute);
 }
 
-std::vector<AlarmState> AlarmsFromValue(const base::ListValue* list) {
-  typedef AlarmManager::Alarm Alarm;
-  std::vector<AlarmState> alarms;
+std::vector<Alarm> AlarmsFromValue(const base::ListValue* list) {
+  std::vector<Alarm> alarms;
   for (size_t i = 0; i < list->GetSize(); ++i) {
     base::DictionaryValue* alarm_dict = NULL;
-    AlarmState alarm;
-    alarm.alarm.reset(new Alarm());
+    Alarm alarm;
     if (list->GetDictionary(i, &alarm_dict) &&
-        Alarm::Populate(*alarm_dict, alarm.alarm.get())) {
+        api::alarms::Alarm::Populate(*alarm_dict, alarm.js_alarm.get())) {
       base::Value* time_value = NULL;
-      if (alarm_dict->Get(kAlarmScheduledRunTime, &time_value))
-        base::GetValueAsTime(*time_value, &alarm.scheduled_run_time);
+      if (alarm_dict->Get(kAlarmGranularity, &time_value))
+        base::GetValueAsTimeDelta(*time_value, &alarm.granularity);
       alarms.push_back(alarm);
     }
   }
@@ -84,12 +73,13 @@ std::vector<AlarmState> AlarmsFromValue(const base::ListValue* list) {
 }
 
 scoped_ptr<base::ListValue> AlarmsToValue(
-    const std::vector<AlarmState>& alarms) {
+    const std::vector<Alarm>& alarms) {
   scoped_ptr<base::ListValue> list(new ListValue());
   for (size_t i = 0; i < alarms.size(); ++i) {
-    scoped_ptr<base::DictionaryValue> alarm = alarms[i].alarm->ToValue().Pass();
-    alarm->Set(kAlarmScheduledRunTime,
-               base::CreateTimeValue(alarms[i].scheduled_run_time));
+    scoped_ptr<base::DictionaryValue> alarm =
+        alarms[i].js_alarm->ToValue().Pass();
+    alarm->Set(kAlarmGranularity,
+               base::CreateTimeDeltaValue(alarms[i].granularity));
     list->Append(alarm.release());
   }
   return list.Pass();
@@ -100,8 +90,9 @@ scoped_ptr<base::ListValue> AlarmsToValue(
 
 // AlarmManager
 
-AlarmManager::AlarmManager(Profile* profile)
+AlarmManager::AlarmManager(Profile* profile, TimeProvider now)
     : profile_(profile),
+      now_(now),
       delegate_(new DefaultAlarmDelegate(profile)),
       last_poll_time_(base::Time()) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
@@ -116,18 +107,17 @@ AlarmManager::~AlarmManager() {
 }
 
 void AlarmManager::AddAlarm(const std::string& extension_id,
-                            const linked_ptr<Alarm>& alarm) {
-  base::TimeDelta alarm_time = TimeDeltaFromDelay(alarm->delay_in_minutes);
-  AddAlarmImpl(extension_id, alarm, alarm_time);
+                            const Alarm& alarm) {
+  AddAlarmImpl(extension_id, alarm);
   WriteToStorage(extension_id);
 }
 
-const AlarmManager::Alarm* AlarmManager::GetAlarm(
+const Alarm* AlarmManager::GetAlarm(
     const std::string& extension_id, const std::string& name) {
   AlarmIterator it = GetAlarmIterator(extension_id, name);
   if (it.first == alarms_.end())
     return NULL;
-  return it.second->get();
+  return &*it.second;
 }
 
 const AlarmManager::AlarmList* AlarmManager::GetAllAlarms(
@@ -146,7 +136,7 @@ AlarmManager::AlarmIterator AlarmManager::GetAlarmIterator(
 
   for (AlarmList::iterator it = list->second.begin();
        it != list->second.end(); ++it) {
-    if ((*it)->name == name)
+    if (it->js_alarm->name == name)
       return make_pair(list, it);
   }
 
@@ -179,51 +169,45 @@ void AlarmManager::RemoveAllAlarms(const std::string& extension_id) {
 }
 
 void AlarmManager::RemoveAlarmIterator(const AlarmIterator& iter) {
-  // Cancel the timer if there are no more alarms.
-  // We don't need to reschedule the poll otherwise, because in
-  // the worst case we would just poll one extra time.
-  scheduled_times_.erase(iter.second->get());
-  if (scheduled_times_.empty())
-    timer_.Stop();
-
-  // Clean up our alarm list.
   AlarmList& list = iter.first->second;
   list.erase(iter.second);
   if (list.empty())
     alarms_.erase(iter.first);
+
+  // Cancel the timer if there are no more alarms.
+  // We don't need to reschedule the poll otherwise, because in
+  // the worst case we would just poll one extra time.
+  if (alarms_.empty())
+    timer_.Stop();
 }
 
-void AlarmManager::OnAlarm(const std::string& extension_id,
-                           const std::string& name) {
-  AlarmIterator it = GetAlarmIterator(extension_id, name);
+void AlarmManager::OnAlarm(AlarmIterator it) {
   CHECK(it.first != alarms_.end());
-  const Alarm* alarm = it.second->get();
-  delegate_->OnAlarm(extension_id, *alarm);
+  Alarm& alarm = *it.second;
+  std::string extension_id_copy(it.first->first);
+  delegate_->OnAlarm(extension_id_copy, alarm);
 
-  std::string extension_id_copy(extension_id);
-  if (!alarm->repeating) {
-    RemoveAlarmIterator(it);
+  // Update our scheduled time for the next alarm.
+  if (double* period_in_minutes =
+      alarm.js_alarm->period_in_minutes.get()) {
+    alarm.js_alarm->scheduled_time =
+        (last_poll_time_ +
+         TimeDeltaFromDelay(*period_in_minutes)).ToJsTime();
   } else {
-    // Update our scheduled time for the next alarm.
-    scheduled_times_[alarm].time =
-        last_poll_time_ + TimeDeltaFromDelay(alarm->delay_in_minutes);
+    RemoveAlarmIterator(it);
   }
   WriteToStorage(extension_id_copy);
 }
 
 void AlarmManager::AddAlarmImpl(const std::string& extension_id,
-                                const linked_ptr<Alarm>& alarm,
-                                base::TimeDelta time_delay) {
+                                const Alarm& alarm) {
   // Override any old alarm with the same name.
-  AlarmIterator old_alarm = GetAlarmIterator(extension_id, alarm->name);
+  AlarmIterator old_alarm = GetAlarmIterator(extension_id,
+                                             alarm.js_alarm->name);
   if (old_alarm.first != alarms_.end())
     RemoveAlarmIterator(old_alarm);
 
   alarms_[extension_id].push_back(alarm);
-  AlarmRuntimeInfo info;
-  info.extension_id = extension_id;
-  info.time = base::Time::Now() + time_delay;
-  scheduled_times_[alarm.get()] = info;
 
   // TODO(yoz): Is 0 really sane? There could be thrashing.
   ScheduleNextPoll(base::TimeDelta::FromMinutes(0));
@@ -234,19 +218,12 @@ void AlarmManager::WriteToStorage(const std::string& extension_id) {
   if (!storage)
     return;
 
-  std::vector<AlarmState> alarm_states;
+  scoped_ptr<Value> alarms;
   AlarmMap::iterator list = alarms_.find(extension_id);
-  if (list != alarms_.end()) {
-    for (AlarmList::iterator it = list->second.begin();
-         it != list->second.end(); ++it) {
-      AlarmState pref;
-      pref.alarm = *it;
-      pref.scheduled_run_time = scheduled_times_[it->get()].time;
-      alarm_states.push_back(pref);
-    }
-  }
-
-  scoped_ptr<Value> alarms(AlarmsToValue(alarm_states).release());
+  if (list != alarms_.end())
+    alarms.reset(AlarmsToValue(list->second).release());
+  else
+    alarms.reset(AlarmsToValue(std::vector<Alarm>()).release());
   storage->SetExtensionValue(extension_id, kRegisteredAlarms, alarms.Pass());
 }
 
@@ -256,20 +233,15 @@ void AlarmManager::ReadFromStorage(const std::string& extension_id,
   if (!value.get() || !value->GetAsList(&list))
     return;
 
-  std::vector<AlarmState> alarm_states = AlarmsFromValue(list);
+  std::vector<Alarm> alarm_states = AlarmsFromValue(list);
   for (size_t i = 0; i < alarm_states.size(); ++i) {
-    base::TimeDelta delay =
-        alarm_states[i].scheduled_run_time - base::Time::Now();
-    if (delay < base::TimeDelta::FromSeconds(0))
-      delay = base::TimeDelta::FromSeconds(0);
-
-    AddAlarmImpl(extension_id, alarm_states[i].alarm, delay);
+    AddAlarmImpl(extension_id, alarm_states[i]);
   }
 }
 
 void AlarmManager::ScheduleNextPoll(base::TimeDelta min_period) {
   // 0. If there are no alarms, stop the timer.
-  if (scheduled_times_.empty()) {
+  if (alarms_.empty()) {
     timer_.Stop();
     return;
   }
@@ -280,13 +252,19 @@ void AlarmManager::ScheduleNextPoll(base::TimeDelta min_period) {
   base::Time next_poll(last_poll_time_ + min_period);
 
   // Find the soonest alarm that is scheduled to run.
-  AlarmRuntimeInfoMap::iterator min_it = scheduled_times_.begin();
-  for (AlarmRuntimeInfoMap::iterator it = min_it;
-           it != scheduled_times_.end(); ++it) {
-    if (it->second.time < min_it->second.time)
-      min_it = it;
+  // alarms_ guarantees that none of its contained lists are empty.
+  base::Time soonest_alarm_time = base::Time::FromJsTime(
+      alarms_.begin()->second.begin()->js_alarm->scheduled_time);
+  for (AlarmMap::const_iterator m_it = alarms_.begin(), m_end = alarms_.end();
+       m_it != m_end; ++m_it) {
+    for (AlarmList::const_iterator l_it = m_it->second.begin();
+         l_it != m_it->second.end(); ++l_it) {
+      base::Time cur_alarm_time =
+          base::Time::FromJsTime(l_it->js_alarm->scheduled_time);
+      if (cur_alarm_time < soonest_alarm_time)
+        soonest_alarm_time = cur_alarm_time;
+    }
   }
-  base::Time soonest_alarm_time(min_it->second.time);
 
   // If the next alarm is more than min_period in the future, wait for it.
   // Otherwise, only poll as often as min_period.
@@ -297,7 +275,7 @@ void AlarmManager::ScheduleNextPoll(base::TimeDelta min_period) {
   // Schedule the poll.
   next_poll_time_ = next_poll;
   base::TimeDelta delay = std::max(base::TimeDelta::FromSeconds(0),
-                                   next_poll - base::Time::Now());
+                                   next_poll - now_());
   timer_.Start(FROM_HERE,
                delay,
                this,
@@ -305,27 +283,39 @@ void AlarmManager::ScheduleNextPoll(base::TimeDelta min_period) {
 }
 
 void AlarmManager::PollAlarms() {
-  last_poll_time_ = base::Time::Now();
+  last_poll_time_ = now_();
 
-  // Run any alarms scheduled in the past. Note that we could remove alarms
-  // during iteration if they are non-repeating.
-  AlarmRuntimeInfoMap::iterator iter = scheduled_times_.begin();
-  while (iter != scheduled_times_.end()) {
-    AlarmRuntimeInfoMap::iterator it = iter;
-    ++iter;
-    if (it->second.time <= next_poll_time_) {
-      OnAlarm(it->second.extension_id, it->first->name);
+  // Run any alarms scheduled in the past. OnAlarm uses vector::erase to remove
+  // elements from the AlarmList, and map::erase to remove AlarmLists from the
+  // AlarmMap.
+  for (AlarmMap::iterator m_it = alarms_.begin(), m_end = alarms_.end();
+       m_it != m_end;) {
+    AlarmMap::iterator cur_extension = m_it++;
+
+    // Iterate (a) backwards so that removing elements doesn't affect
+    // upcoming iterations, and (b) with indices so that if the last
+    // iteration destroys the AlarmList, I'm not about to use the end
+    // iterator that the destruction invalidates.
+    for (size_t i = cur_extension->second.size(); i > 0; --i) {
+      AlarmList::iterator cur_alarm = cur_extension->second.begin() + i - 1;
+      if (base::Time::FromJsTime(cur_alarm->js_alarm->scheduled_time) <=
+          next_poll_time_) {
+        OnAlarm(make_pair(cur_extension, cur_alarm));
+      }
     }
   }
 
   // Schedule the next poll. The soonest it may happen is after
-  // kDefaultMinPollPeriod or after the shortest scheduled delay of any alarm,
+  // kDefaultMinPollPeriod or after the shortest granularity of any alarm,
   // whichever comes sooner.
   base::TimeDelta min_poll_period = kDefaultMinPollPeriod;
-  for (AlarmRuntimeInfoMap::iterator it = scheduled_times_.begin();
-       it != scheduled_times_.end(); ++it) {
-    min_poll_period = std::min(TimeDeltaFromDelay(it->first->delay_in_minutes),
-                               min_poll_period);
+  for (AlarmMap::const_iterator m_it = alarms_.begin(), m_end = alarms_.end();
+       m_it != m_end; ++m_it) {
+    for (AlarmList::const_iterator l_it = m_it->second.begin();
+         l_it != m_it->second.end(); ++l_it) {
+      if (l_it->granularity < min_poll_period)
+        min_poll_period = l_it->granularity;
+    }
   }
   ScheduleNextPoll(min_poll_period);
 }
@@ -350,6 +340,49 @@ void AlarmManager::Observe(
       NOTREACHED();
       break;
   }
+}
+
+// AlarmManager::Alarm
+
+Alarm::Alarm()
+    : js_alarm(new api::alarms::Alarm()) {
+}
+
+Alarm::Alarm(const std::string& name,
+             const api::alarms::AlarmCreateInfo& create_info,
+             base::TimeDelta min_granularity,
+             TimeProvider now)
+    : js_alarm(new api::alarms::Alarm()) {
+  js_alarm->name = name;
+
+  if (create_info.when.get()) {
+    // Absolute scheduling.
+    js_alarm->scheduled_time = *create_info.when;
+    granularity = base::Time::FromJsTime(js_alarm->scheduled_time) - now();
+  } else {
+    // Relative scheduling.
+    double* delay_in_minutes = create_info.delay_in_minutes.get();
+    if (delay_in_minutes == NULL)
+      delay_in_minutes = create_info.period_in_minutes.get();
+    CHECK(delay_in_minutes != NULL)
+        << "ValidateAlarmCreateInfo in alarms_api.cc should have "
+        << "prevented this call.";
+    base::TimeDelta delay = TimeDeltaFromDelay(*delay_in_minutes);
+    js_alarm->scheduled_time = (now() + delay).ToJsTime();
+    granularity = delay;
+  }
+
+  if (granularity < min_granularity)
+    granularity = min_granularity;
+
+  // Check for repetition.
+  if (create_info.period_in_minutes.get()) {
+    js_alarm->period_in_minutes.reset(
+        new double(*create_info.period_in_minutes));
+  }
+}
+
+Alarm::~Alarm() {
 }
 
 }  // namespace extensions

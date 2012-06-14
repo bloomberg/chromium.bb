@@ -23,14 +23,33 @@ namespace extensions {
 
 class ExtensionAlarmsSchedulingTest;
 
+struct Alarm {
+  typedef base::Time (*TimeProvider)();
+
+  Alarm();
+  Alarm(const std::string& name,
+        const api::alarms::AlarmCreateInfo& create_info,
+        base::TimeDelta min_granularity,
+        TimeProvider now);
+  ~Alarm();
+
+  linked_ptr<api::alarms::Alarm> js_alarm;
+  // The granularity isn't exposed to the extension's javascript, but we poll at
+  // least as often as the shortest alarm's granularity.  It's initialized as
+  // the relative delay requested in creation, even if creation uses an absolute
+  // time.  This will always be at least as large as the min_granularity
+  // constructor argument.
+  base::TimeDelta granularity;
+};
+
 // Manages the currently pending alarms for every extension in a profile.
 // There is one manager per virtual Profile.
 class AlarmManager
     : public content::NotificationObserver,
       public base::SupportsWeakPtr<AlarmManager> {
  public:
-  typedef extensions::api::alarms::Alarm Alarm;
-  typedef std::vector<linked_ptr<Alarm> > AlarmList;
+  typedef base::Time (*TimeProvider)();
+  typedef std::vector<Alarm> AlarmList;
 
   class Delegate {
    public:
@@ -40,7 +59,8 @@ class AlarmManager
                          const Alarm& alarm) = 0;
   };
 
-  explicit AlarmManager(Profile* profile);
+  // 'now' is usually &base::Time::Now.
+  explicit AlarmManager(Profile* profile, TimeProvider now);
   virtual ~AlarmManager();
 
   // Override the default delegate. Callee assumes onwership. Used for testing.
@@ -48,7 +68,7 @@ class AlarmManager
 
   // Adds |alarm| for the given extension, and starts the timer.
   void AddAlarm(const std::string& extension_id,
-                const linked_ptr<Alarm>& alarm);
+                const Alarm& alarm);
 
   // Returns the alarm with the given name, or NULL if none exists.
   const Alarm* GetAlarm(const std::string& extension_id,
@@ -70,6 +90,8 @@ class AlarmManager
   FRIEND_TEST_ALL_PREFIXES(ExtensionAlarmsTest, Clear);
   friend class ExtensionAlarmsSchedulingTest;
   FRIEND_TEST_ALL_PREFIXES(ExtensionAlarmsSchedulingTest, PollScheduling);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionAlarmsSchedulingTest,
+                           ReleasedExtensionPollsInfrequently);
   FRIEND_TEST_ALL_PREFIXES(ExtensionAlarmsSchedulingTest, TimerRunning);
 
   typedef std::string ExtensionId;
@@ -78,12 +100,6 @@ class AlarmManager
   // Iterator used to identify a particular alarm within the Map/List pair.
   // "Not found" is represented by <alarms_.end(), invalid_iterator>.
   typedef std::pair<AlarmMap::iterator, AlarmList::iterator> AlarmIterator;
-
-  struct AlarmRuntimeInfo {
-    std::string extension_id;
-    base::Time time;
-  };
-  typedef std::map<const Alarm*, AlarmRuntimeInfo> AlarmRuntimeInfoMap;
 
   // Helper to return the iterators within the AlarmMap and AlarmList for the
   // matching alarm, or an iterator to the end of the AlarmMap if none were
@@ -96,12 +112,11 @@ class AlarmManager
   void RemoveAlarmIterator(const AlarmIterator& iter);
 
   // Callback for when an alarm fires.
-  void OnAlarm(const std::string& extension_id, const std::string& name);
+  void OnAlarm(AlarmIterator iter);
 
   // Internal helper to add an alarm and start the timer with the given delay.
   void AddAlarmImpl(const std::string& extension_id,
-                    const linked_ptr<Alarm>& alarm,
-                    base::TimeDelta time_delay);
+                    const Alarm& alarm);
 
   // Syncs our alarm data for the given extension to/from the state storage.
   void WriteToStorage(const std::string& extension_id);
@@ -122,6 +137,7 @@ class AlarmManager
                        const content::NotificationDetails& details) OVERRIDE;
 
   Profile* profile_;
+  const TimeProvider now_;
   content::NotificationRegistrar registrar_;
   scoped_ptr<Delegate> delegate_;
 
@@ -129,10 +145,8 @@ class AlarmManager
   base::OneShotTimer<AlarmManager> timer_;
 
   // A map of our pending alarms, per extension.
+  // Invariant: None of the AlarmLists are empty.
   AlarmMap alarms_;
-
-  // A map of the next scheduled times associated with each alarm.
-  AlarmRuntimeInfoMap scheduled_times_;
 
   // The previous and next time that alarms were and will be run.
   base::Time last_poll_time_;

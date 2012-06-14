@@ -11,12 +11,18 @@
 namespace extensions {
 
 class AlarmsCreateFunction : public SyncExtensionFunction {
+  typedef base::Time (*TimeProvider)();
+ public:
+  AlarmsCreateFunction();
+  explicit AlarmsCreateFunction(TimeProvider now) : now_(now) {}
  protected:
   virtual ~AlarmsCreateFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("alarms.create");
+ private:
+  TimeProvider now_;
 };
 
 class AlarmsGetFunction : public SyncExtensionFunction {

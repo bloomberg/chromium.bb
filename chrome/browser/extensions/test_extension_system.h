@@ -10,6 +10,9 @@
 
 class CommandLine;
 class FilePath;
+namespace base {
+class Time;
+}
 
 // Test ExtensionSystem, for use with TestingProfile.
 class TestExtensionSystem : public ExtensionSystem {
@@ -35,7 +38,7 @@ class TestExtensionSystem : public ExtensionSystem {
   void CreateExtensionProcessManager();
 
   // Creates an AlarmManager. Will be NULL otherwise.
-  void CreateAlarmManager();
+  void CreateAlarmManager(base::Time (*now)());
 
   virtual void Init(bool extensions_enabled) OVERRIDE {}
   virtual ExtensionService* extension_service() OVERRIDE;
