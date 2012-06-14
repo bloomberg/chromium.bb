@@ -15,6 +15,9 @@ import sys
 KEY_TRACKED = 'isolate_dependency_tracked'
 KEY_UNTRACKED = 'isolate_dependency_untracked'
 
+_GIT_PATH = os.path.sep + '.git' + os.path.sep
+_SVN_PATH = os.path.sep + '.svn' + os.path.sep
+
 
 def posix_relpath(path, root):
   """posix.relpath() that keeps trailing slash."""
@@ -46,6 +49,14 @@ def get_flavor():
     'freebsd8': 'freebsd',
   }
   return flavors.get(sys.platform, 'linux')
+
+
+def default_blacklist(f):
+  """Filters unimportant files normally ignored."""
+  return (
+      f.endswith('.pyc') or
+      _GIT_PATH in f or
+      _SVN_PATH in f)
 
 
 def generate_dict(files, cwd_dir, product_dir):

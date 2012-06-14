@@ -592,7 +592,8 @@ def MODEtrace(_outdir, state):
             'default',
             True)
 
-    results = trace_inputs.load_trace(logfile, state.root_dir, api)
+    results = trace_inputs.load_trace(
+        logfile, state.root_dir, api, isolate_common.default_blacklist)
     simplified = trace_inputs.extract_directories(state.root_dir, results.files)
     variables = isolate_common.generate_dict(
             (f.path for f in simplified),

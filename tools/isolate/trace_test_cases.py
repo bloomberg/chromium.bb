@@ -121,7 +121,7 @@ def trace_test_cases(
   print ''
   print '%.1fs Done post-processing logs. Parsing logs.' % (
       time.time() - progress.start)
-  results = api.parse_log(logname, trace_inputs.get_blacklist(api))
+  results = api.parse_log(logname, isolate_common.default_blacklist)
   print '%.1fs Done parsing logs.' % (
       time.time() - progress.start)
 

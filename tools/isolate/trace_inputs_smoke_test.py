@@ -152,7 +152,10 @@ class TraceInputs(TraceInputsBase):
       'child2',
     )) + '\n'
     trace_actual = self._trace(False)
-    actual = self._execute('read', ['--root-dir', ROOT_DIR], cwd=ROOT_DIR)
+    actual = self._execute(
+        'read',
+        ['--root-dir', ROOT_DIR, '--blacklist', '.+\\.pyc'],
+        cwd=ROOT_DIR)
     self.assertEquals(expected, actual)
     self.assertEquals(trace_expected, trace_actual)
 
@@ -208,7 +211,9 @@ class TraceInputs(TraceInputsBase):
     )) + '\n'
     trace_actual = self._trace(True)
     actual_text = self._execute(
-        'read', ['--root-dir', ROOT_DIR, '--json'], cwd=ROOT_DIR)
+        'read',
+        ['--root-dir', ROOT_DIR, '--blacklist', '.+\\.pyc', '--json'],
+        cwd=ROOT_DIR)
     actual_json = json.loads(actual_text)
     # Removes the pids.
     self.assertTrue(actual_json['root'].pop('pid'))
@@ -238,7 +243,9 @@ class TraceInputsImport(TraceInputsBase):
     # TODO(maruel): Check
     #self.assertEquals(0, returncode)
     #self.assertEquals('', output)
-    return self.trace_inputs.load_trace(self.log, ROOT_DIR, api)
+    def blacklist(f):
+      return f.endswith('.pyc')
+    return self.trace_inputs.load_trace(self.log, ROOT_DIR, api, blacklist)
 
   def _gen_dict_wrong_path(self):
     """Returns the expected flattened Results when child1.py is called with the
@@ -411,8 +418,9 @@ class TraceInputsImport(TraceInputsBase):
         pool.add_task(
             trace, tracer, self.get_child_command(True), self.cwd, 'trace8')
         trace_results = pool.join()
-    actual_results = api.parse_log(
-        self.log, self.trace_inputs.get_blacklist(api))
+    def blacklist(f):
+      return f.endswith('.pyc')
+    actual_results = api.parse_log(self.log, blacklist)
     self.assertEquals(8, len(trace_results))
     self.assertEquals(8, len(actual_results))
 

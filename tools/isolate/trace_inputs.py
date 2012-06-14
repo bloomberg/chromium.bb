@@ -42,6 +42,7 @@ if sys.platform == 'win32':
   from ctypes.wintypes import GetLastError  # pylint: disable=E0611
 elif sys.platform == 'darwin':
   import Carbon.File  #  pylint: disable=F0401
+  import MacOS  # pylint: disable=F0401
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -152,6 +153,7 @@ if sys.platform == 'win32':
       if not self._MAPPING:
         # This is related to UNC resolver on windows. Ignore that.
         self._MAPPING['\\Device\\Mup'] = None
+        self._MAPPING['\\SystemRoot'] = os.environ['SystemRoot']
 
         for letter in (chr(l) for l in xrange(ord('C'), ord('Z')+1)):
           try:
@@ -234,10 +236,17 @@ elif sys.platform == 'darwin':
       raise ValueError(
           'Can\'t get native path case for a non-absolute path: %s' % path,
           path)
+    if path.startswith('/dev'):
+      # /dev is not visible from Carbon, causing an exception.
+      return path
     # Technically, it's only HFS+ on OSX that is case insensitive. It's the
     # default setting on HFS+ but can be changed.
-    rel_ref, _ = Carbon.File.FSPathMakeRef(path)
-    return rel_ref.FSRefMakePath()
+    try:
+      rel_ref, _ = Carbon.File.FSPathMakeRef(path)
+      return rel_ref.FSRefMakePath()
+    except MacOS.Error, e:
+      raise OSError(
+          e.args[0], 'Failed to get native path for %s' % path, path, e.args[1])
 
 
 else:  # OSes other than Windows and OSX.
@@ -740,18 +749,6 @@ class ApiBase(object):
 
 class Strace(ApiBase):
   """strace implies linux."""
-  IGNORED = (
-    '/bin',
-    '/dev',
-    '/etc',
-    '/lib',
-    '/proc',
-    '/sys',
-    '/tmp',
-    '/usr',
-    '/var',
-  )
-
   class Context(ApiBase.Context):
     """Processes a strace log line and keeps the list of existent and non
     existent files accessed.
@@ -1147,18 +1144,6 @@ class Dtrace(ApiBase):
   errno is not printed in the log since this implementation currently care only
   about files that were successfully opened.
   """
-  IGNORED = (
-    '/.vol',
-    '/Library',
-    '/System',
-    '/dev',
-    '/etc',
-    '/private/var',
-    '/tmp',
-    '/usr',
-    '/var',
-  )
-
   class Context(ApiBase.Context):
     # Format: index pid function(args)
     RE_HEADER = re.compile(r'^\d+ (\d+) ([a-zA-Z_\-]+)\((.*?)\)$')
@@ -2489,34 +2474,6 @@ class LogmanTrace(ApiBase):
           stdout=sys.stderr,
           stderr=sys.stderr)
 
-  def __init__(self):
-    super(LogmanTrace, self).__init__()
-    # Most ignores need to be determined at runtime.
-    self.IGNORED = set([os.path.dirname(sys.executable)])
-    # Add many directories from environment variables.
-    vars_to_ignore = (
-      'APPDATA',
-      'LOCALAPPDATA',
-      'ProgramData',
-      'ProgramFiles',
-      'ProgramFiles(x86)',
-      'ProgramW6432',
-      'SystemRoot',
-      'TEMP',
-      'TMP',
-    )
-    for i in vars_to_ignore:
-      if os.environ.get(i):
-        self.IGNORED.add(os.environ[i])
-
-    # Also add their short path name equivalents.
-    for i in list(self.IGNORED):
-      self.IGNORED.add(GetShortPathName(i.replace('/', os.path.sep)))
-
-    # Add these last since they have no short path name equivalent.
-    self.IGNORED.add('\\SystemRoot')
-    self.IGNORED = tuple(sorted(self.IGNORED))
-
   @staticmethod
   def clean_trace(logname):
     for ext in ('', '.csv', '.etl', '.json', '.xml'):
@@ -2561,17 +2518,6 @@ def get_api():
   }
   # Defaults to strace.
   return flavors.get(sys.platform, Strace)()
-
-
-def get_blacklist(api):
-  """Returns a function to filter unimportant files normally ignored."""
-  git_path = os.path.sep + '.git' + os.path.sep
-  svn_path = os.path.sep + '.svn' + os.path.sep
-  return lambda f: (
-      f.startswith(api.IGNORED) or
-      f.endswith('.pyc') or
-      git_path in f or
-      svn_path in f)
 
 
 def extract_directories(root_dir, files):
@@ -2654,7 +2600,7 @@ def trace(logfile, cmd, cwd, api, output):
     return tracer.trace(cmd, cwd, 'default', output)
 
 
-def load_trace(logfile, root_dir, api):
+def load_trace(logfile, root_dir, api, blacklist):
   """Loads a trace file and returns the Results instance.
 
   Arguments:
@@ -2662,8 +2608,9 @@ def load_trace(logfile, root_dir, api):
   - root_dir: Root directory to use to determine if a file is relevant to the
               trace or not.
   - api: A tracing api instance.
+  - blacklist: Optional blacklist function to filter out unimportant files.
   """
-  data = api.parse_log(logfile, get_blacklist(api))
+  data = api.parse_log(logfile, (blacklist or (lambda _: False)))
   assert len(data) == 1, 'More than one trace was detected!'
   results = data[0]['results']
   if root_dir:
@@ -2721,6 +2668,9 @@ def CMDread(parser, args):
   parser.add_option(
       '-j', '--json', action='store_true',
       help='Outputs raw result data as json')
+  parser.add_option(
+      '-b', '--blacklist', action='append', default=[],
+      help='List of regexp to use as blacklist filter')
   options, args = parser.parse_args(args)
 
   if options.root_dir:
@@ -2729,7 +2679,9 @@ def CMDread(parser, args):
   variables = dict(options.variables)
   api = get_api()
   try:
-    results = load_trace(options.log, options.root_dir, api)
+    def blacklist(f):
+      return any(re.match(b, f) for b in options.blacklist)
+    results = load_trace(options.log, options.root_dir, api, blacklist)
     simplified = extract_directories(options.root_dir, results.files)
     simplified = [f.replace_variables(variables) for f in simplified]
 
