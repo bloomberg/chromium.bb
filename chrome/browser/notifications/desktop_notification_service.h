@@ -23,12 +23,17 @@
 
 class ContentSettingsPattern;
 class Notification;
+class NotificationDelegate;
 class NotificationUIManager;
 class Profile;
 
 namespace content {
 class WebContents;
 struct ShowDesktopNotificationHostMsgParams;
+}
+
+namespace gfx {
+class ImageSkia;
 }
 
 // The DesktopNotificationService is an object, owned by the Profile,
@@ -93,6 +98,24 @@ class DesktopNotificationService : public content::NotificationObserver,
   // notifications.
   static string16 CreateDataUrl(int resource,
                                 const std::vector<std::string>& subst);
+
+  // Add a desktop notification. On non-Ash platforms this will generate a HTML
+  // notification from the input parameters. On Ash it will generate a normal
+  // ash notification. Returns the notification id.
+  static std::string AddNotification(const GURL& origin_url,
+                                     const string16& title,
+                                     const string16& message,
+                                     const GURL& icon_url,
+                                     NotificationDelegate* delegate,
+                                     Profile* profile);
+
+  // Same as above, but takes a gfx::ImageSkia for the icon instead.
+  static std::string AddIconNotification(const GURL& origin_url,
+                                     const string16& title,
+                                     const string16& message,
+                                     const gfx::ImageSkia& icon,
+                                     NotificationDelegate* delegate,
+                                     Profile* profile);
 
   // The default content setting determines how to handle origins that haven't
   // been allowed or denied yet. If |provider_id| is not NULL, the id of the

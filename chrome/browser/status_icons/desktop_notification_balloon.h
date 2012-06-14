@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,8 +25,7 @@ class DesktopNotificationBalloon {
                       const string16& contents);
 
  private:
-  // Notification balloon.
-  scoped_ptr<Notification> notification_;
+  std::string notification_id_;
 
   // Counter to provide unique ids to notifications.
   static int id_count_;

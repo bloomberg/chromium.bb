@@ -138,18 +138,14 @@ bool CloudPrintProxyService::ShowTokenExpiredNotification() {
   if (token_expired_delegate_.get())
     return false;
 
-  // TODO(sanjeevr): Get icon for this notification.
-  GURL icon_url;
-
+  // TODO(sanjeevr): Get icon for this notification. crbug.com/132848.
   string16 title = l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT);
   string16 message =
       l10n_util::GetStringFUTF16(IDS_CLOUD_PRINT_TOKEN_EXPIRED_MESSAGE, title);
-  string16 content_url = DesktopNotificationService::CreateDataUrl(
-      icon_url, title, message, WebKit::WebTextDirectionDefault);
   token_expired_delegate_ = new TokenExpiredNotificationDelegate(this);
-  Notification notification(GURL(), GURL(content_url), string16(), string16(),
-                            token_expired_delegate_.get());
-  g_browser_process->notification_ui_manager()->Add(notification, profile_);
+  DesktopNotificationService::AddNotification(
+      GURL(), title, message, GURL(),
+      token_expired_delegate_.get(), profile_);
   // Keep the browser alive while we are showing the notification.
   browser::StartKeepAlive();
   return true;

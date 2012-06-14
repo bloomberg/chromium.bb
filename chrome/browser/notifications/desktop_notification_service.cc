@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
+#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_pattern.h"
@@ -43,6 +44,19 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
+
+#if defined(USE_ASH)
+#include "ash/ash_switches.h"
+#include "base/command_line.h"
+
+namespace {
+
+bool IsAshNotifyEnabled() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(ash::switches::kAshNotify);
+}
+
+}  // namespace
+#endif
 
 using content::BrowserThread;
 using content::RenderViewHost;
@@ -216,6 +230,58 @@ string16 DesktopNotificationService::CreateDataUrl(
   std::string data = ReplaceStringPlaceholders(template_html, subst, NULL);
   return UTF8ToUTF16("data:text/html;charset=utf-8," +
                       net::EscapeQueryParamValue(data, false));
+}
+
+// static
+std::string DesktopNotificationService::AddNotification(
+    const GURL& origin_url,
+    const string16& title,
+    const string16& message,
+    const GURL& icon_url,
+    NotificationDelegate* delegate,
+    Profile* profile) {
+#if defined(USE_ASH)
+  if (IsAshNotifyEnabled()) {
+    // For Ash create a non-HTML notification with |icon_url|.
+    Notification notification(GURL(), icon_url, title, message,
+                              WebKit::WebTextDirectionDefault,
+                              string16(), string16(), delegate);
+    g_browser_process->notification_ui_manager()->Add(notification, profile);
+    return notification.notification_id();
+  }
+#endif
+  // Generate a data URL embedding the icon URL, title, and message.
+  GURL content_url(CreateDataUrl(
+      icon_url, title, message, WebKit::WebTextDirectionDefault));
+  Notification notification(
+      GURL(), content_url, string16(), string16(), delegate);
+  g_browser_process->notification_ui_manager()->Add(notification, profile);
+  return notification.notification_id();
+}
+
+// static
+std::string DesktopNotificationService::AddIconNotification(
+    const GURL& origin_url,
+    const string16& title,
+    const string16& message,
+    const gfx::ImageSkia& icon,
+    NotificationDelegate* delegate,
+    Profile* profile) {
+#if defined(USE_ASH)
+  if (IsAshNotifyEnabled()) {
+    // For Ash create a non-HTML notification with |icon|.
+    Notification notification(GURL(), icon, title, message,
+                              WebKit::WebTextDirectionDefault,
+                              string16(), string16(), delegate);
+    g_browser_process->notification_ui_manager()->Add(notification, profile);
+    return notification.notification_id();
+  }
+#endif
+  GURL icon_url;
+  if (!icon.empty())
+    icon_url = GURL(web_ui_util::GetImageDataUrl(icon));
+  return AddNotification(
+      origin_url, title, message, icon_url, delegate, profile);
 }
 
 DesktopNotificationService::DesktopNotificationService(Profile* profile,

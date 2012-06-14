@@ -108,18 +108,16 @@ class CrashNotificationDelegate : public NotificationDelegate {
 
 void ShowBalloon(const Extension* extension, Profile* profile) {
 #if defined(ENABLE_NOTIFICATIONS)
+  string16 title;  // no notifiaction title
   string16 message = l10n_util::GetStringFUTF16(
       extension->is_app() ?  IDS_BACKGROUND_CRASHED_APP_BALLOON_MESSAGE :
       IDS_BACKGROUND_CRASHED_EXTENSION_BALLOON_MESSAGE,
       UTF8ToUTF16(extension->name()));
-  string16 content_url = DesktopNotificationService::CreateDataUrl(
-      extension->GetIconURL(ExtensionIconSet::EXTENSION_ICON_SMALLISH,
-                            ExtensionIconSet::MATCH_BIGGER),
-      string16(), message, WebKit::WebTextDirectionDefault);
-  Notification notification(
-      extension->url(), GURL(content_url), string16(), string16(),
-      new CrashNotificationDelegate(profile, extension));
-  g_browser_process->notification_ui_manager()->Add(notification, profile);
+  GURL icon_url(extension->GetIconURL(ExtensionIconSet::EXTENSION_ICON_SMALLISH,
+                                      ExtensionIconSet::MATCH_BIGGER));
+  DesktopNotificationService::AddNotification(
+      extension->url(), title, message, icon_url,
+      new CrashNotificationDelegate(profile, extension), profile);
 #endif
 }
 
