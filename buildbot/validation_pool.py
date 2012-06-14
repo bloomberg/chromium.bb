@@ -460,6 +460,7 @@ class ValidationPool(object):
     if _CanSubmit(status_url):
       return True
     # Loop until either we run out of time or the tree is open.
+    logging.info('Waiting for the tree to open...')
     while time.time() - start_time < max_timeout:
       if _CanSubmit(status_url):
         return True
