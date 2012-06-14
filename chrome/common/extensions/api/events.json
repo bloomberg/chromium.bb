@@ -187,6 +187,11 @@
             "description": "Matches if the path segment of the URL ends with a specified string.",
             "optional": true
           },
+          "queryContains": {
+            "type": "string",
+            "description": "Matches if the query segment of the URL contains a specified string.",
+            "optional": true
+          },
           "queryEquals": {
             "type": "string",
             "description": "Matches if the query segment of the URL is equal to a specified string.",
@@ -202,9 +207,9 @@
             "description": "Matches if the query segment of the URL ends with a specified string.",
             "optional": true
           },
-          "urlSuffix": {
+          "urlContains": {
             "type": "string",
-            "description": "Matches if the URL ends with a specified string.",
+            "description": "Matches if the URL contains a specified string.",
             "optional": true
           },
           "urlEquals": {
