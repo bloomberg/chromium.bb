@@ -357,7 +357,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
     std::string username =
         parsed_command_line().GetSwitchValueASCII(switches::kLoginUser);
     VLOG(1) << "Relaunching browser for user: " << username;
-    chromeos::UserManager::Get()->UserLoggedIn(username);
+    chromeos::UserManager::Get()->UserLoggedIn(username, true);
 
     // Redirects Chrome logging to the user data dir.
     logging::RedirectChromeLogging(parsed_command_line());

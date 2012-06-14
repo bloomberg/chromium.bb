@@ -236,7 +236,8 @@ const UserList& UserManagerImpl::GetUsers() const {
   return users_;
 }
 
-void UserManagerImpl::UserLoggedIn(const std::string& email) {
+void UserManagerImpl::UserLoggedIn(const std::string& email,
+                                   bool browser_restart) {
   // Remove the stub user if it is still around.
   if (logged_in_user_) {
     DCHECK(IsLoggedInAsStub());
@@ -324,8 +325,10 @@ void UserManagerImpl::UserLoggedIn(const std::string& email) {
                               kHistogramImagesCount);
   }
 
-  // For GAIA login flow, logged in user wallpaper may not be loaded.
-  EnsureLoggedInUserWallpaperLoaded();
+  if (!browser_restart) {
+    // For GAIA login flow, logged in user wallpaper may not be loaded.
+    EnsureLoggedInUserWallpaperLoaded();
+  }
 
   NotifyOnLogin();
 }

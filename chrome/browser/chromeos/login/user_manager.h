@@ -94,7 +94,9 @@ class UserManager {
 
   // Indicates that a user with the given email has just logged in. The
   // persistent list is updated accordingly if the user is not ephemeral.
-  virtual void UserLoggedIn(const std::string& email) = 0;
+  // |browser_restart| is true when reloading Chrome after crash to distinguish
+  // from normal sign in flow.
+  virtual void UserLoggedIn(const std::string& email, bool browser_restart) = 0;
 
   // Indicates that user just logged on as the demo user.
   virtual void DemoUserLoggedIn() = 0;

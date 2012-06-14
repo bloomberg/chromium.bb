@@ -431,7 +431,7 @@ void LoginUtilsImpl::PrepareProfile(
 
   btl->AddLoginTimeMarker("UserLoggedIn-Start", false);
   UserManager* user_manager = UserManager::Get();
-  user_manager->UserLoggedIn(username);
+  user_manager->UserLoggedIn(username, false);
   btl->AddLoginTimeMarker("UserLoggedIn-End", false);
 
   // Switch log file as soon as possible.

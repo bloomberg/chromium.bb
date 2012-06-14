@@ -21,7 +21,7 @@ class MockUserManager : public UserManager {
   virtual ~MockUserManager();
 
   MOCK_CONST_METHOD0(GetUsers, const UserList&(void));
-  MOCK_METHOD1(UserLoggedIn, void(const std::string&));
+  MOCK_METHOD2(UserLoggedIn, void(const std::string&, bool));
   MOCK_METHOD0(DemoUserLoggedIn, void(void));
   MOCK_METHOD0(GuestUserLoggedIn, void(void));
   MOCK_METHOD1(EphemeralUserLoggedIn, void(const std::string&));

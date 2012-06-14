@@ -44,7 +44,8 @@ class UserManagerImpl : public UserManager,
   virtual ~UserManagerImpl();
 
   virtual const UserList& GetUsers() const OVERRIDE;
-  virtual void UserLoggedIn(const std::string& email) OVERRIDE;
+  virtual void UserLoggedIn(const std::string& email,
+                            bool browser_restart) OVERRIDE;
   virtual void DemoUserLoggedIn() OVERRIDE;
   virtual void GuestUserLoggedIn() OVERRIDE;
   virtual void EphemeralUserLoggedIn(const std::string& email) OVERRIDE;

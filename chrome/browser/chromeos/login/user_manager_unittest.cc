@@ -153,11 +153,11 @@ TEST_F(UserManagerTest, RetrieveTrustedDevicePolicies) {
 }
 
 TEST_F(UserManagerTest, RemoveAllExceptOwnerFromList) {
-  UserManager::Get()->UserLoggedIn("owner@invalid.domain");
+  UserManager::Get()->UserLoggedIn("owner@invalid.domain", true);
   ResetUserManager();
-  UserManager::Get()->UserLoggedIn("user0@invalid.domain");
+  UserManager::Get()->UserLoggedIn("user0@invalid.domain", true);
   ResetUserManager();
-  UserManager::Get()->UserLoggedIn("user1@invalid.domain");
+  UserManager::Get()->UserLoggedIn("user1@invalid.domain", true);
   ResetUserManager();
 
   const UserList* users = &UserManager::Get()->GetUsers();
@@ -178,9 +178,9 @@ TEST_F(UserManagerTest, EphemeralUserLoggedIn) {
   SetDeviceSettings(true, "owner@invalid.domain");
   RetrieveTrustedDevicePolicies();
 
-  UserManager::Get()->UserLoggedIn("owner@invalid.domain");
+  UserManager::Get()->UserLoggedIn("owner@invalid.domain", true);
   ResetUserManager();
-  UserManager::Get()->UserLoggedIn("user0@invalid.domain");
+  UserManager::Get()->UserLoggedIn("user0@invalid.domain", true);
   ResetUserManager();
 
   const UserList* users = &UserManager::Get()->GetUsers();
