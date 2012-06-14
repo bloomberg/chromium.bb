@@ -608,6 +608,11 @@
     'all': [
       'perf',
 
+      # ==================================================
+      # Disabled tests that need to be investigated/fixed.
+      # ==================================================
+      '-perf.WebGLTest.testWebGLField',  # crbug.com/132797
+
       # ===========================
       # Permanently-disabled tests.
       # ===========================
