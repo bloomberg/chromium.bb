@@ -24,7 +24,7 @@ class Plugin;
 typedef enum {
   DOWNLOAD_TO_FILE = 0,
   DOWNLOAD_TO_BUFFER,
-  DOWNLOAD_STREAM,
+  DOWNLOAD_STREAM
 } DownloadMode;
 
 typedef enum {
