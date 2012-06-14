@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/values.h"
@@ -176,205 +177,127 @@ ExtensionAPIPermission::ExtensionAPIPermission(
 void ExtensionAPIPermission::RegisterAllPermissions(
     ExtensionPermissionsInfo* info) {
 
-  // Register permissions for all extension types.
-  info->RegisterPermission(
-      kBackground, "background", 0,
-      ExtensionPermissionMessage::kNone, kFlagNone);
-  info->RegisterPermission(
-      kClipboardRead, "clipboardRead", IDS_EXTENSION_PROMPT_WARNING_CLIPBOARD,
-      ExtensionPermissionMessage::kClipboard, kFlagNone);
-  info->RegisterPermission(
-      kClipboardWrite, "clipboardWrite",  0,
-      ExtensionPermissionMessage::kNone, kFlagNone);
-  info->RegisterPermission(
-      kDeclarative, "declarative", 0,
-      ExtensionPermissionMessage::kNone, kFlagNone);
-  info->RegisterPermission(
-      kDeclarativeWebRequest, "declarativeWebRequest", 0,
-      ExtensionPermissionMessage::kNone, kFlagNone);
-  info->RegisterPermission(
-      kExperimental, "experimental", 0,
-      ExtensionPermissionMessage::kNone, kFlagCannotBeOptional);
-  info->RegisterPermission(
-      kGeolocation, "geolocation", IDS_EXTENSION_PROMPT_WARNING_GEOLOCATION,
-      ExtensionPermissionMessage::kGeolocation,
-      kFlagCannotBeOptional);
-  info->RegisterPermission(
-      kNotification, "notifications", 0,
-      ExtensionPermissionMessage::kNone, kFlagNone);
-  info->RegisterPermission(
-      kUnlimitedStorage, "unlimitedStorage", 0,
-      ExtensionPermissionMessage::kNone, kFlagCannotBeOptional);
+  struct PermissionRegistration {
+    ExtensionAPIPermission::ID id;
+    const char* name;
+    int flags;
+    int l10n_message_id;
+    ExtensionPermissionMessage::ID message_id;
+  } PermissionsToRegister[] = {
+    // Register permissions for all extension types.
+    { kBackground, "background" },
+    { kClipboardRead, "clipboardRead", kFlagNone,
+      IDS_EXTENSION_PROMPT_WARNING_CLIPBOARD,
+      ExtensionPermissionMessage::kClipboard },
+    { kClipboardWrite, "clipboardWrite" },
+    { kDeclarative, "declarative" },
+    { kDeclarativeWebRequest, "declarativeWebRequest" },
+    { kExperimental, "experimental", kFlagCannotBeOptional },
+    { kGeolocation, "geolocation", kFlagCannotBeOptional,
+      IDS_EXTENSION_PROMPT_WARNING_GEOLOCATION,
+      ExtensionPermissionMessage::kGeolocation },
+    { kNotification, "notifications" },
+    { kUnlimitedStorage, "unlimitedStorage", kFlagCannotBeOptional },
 
-  // Register hosted and packaged app permissions.
-  info->RegisterPermission(
-      kAppNotifications, "appNotifications", 0,
-      ExtensionPermissionMessage::kNone, kFlagNone);
+    // Register hosted and packaged app permissions.
+    { kAppNotifications, "appNotifications" },
 
-  // Register extension permissions.
-  info->RegisterPermission(
-      kActiveTab, "activeTab", 0,
-      ExtensionPermissionMessage::kNone, kFlagNone);
-  info->RegisterPermission(
-      kAlarms, "alarms", 0,
-      ExtensionPermissionMessage::kNone, kFlagNone);
-  info->RegisterPermission(
-      kAppWindow, "appWindow", 0,
-      ExtensionPermissionMessage::kNone, kFlagNone);
-  info->RegisterPermission(
-      kBookmark, "bookmarks", IDS_EXTENSION_PROMPT_WARNING_BOOKMARKS,
-      ExtensionPermissionMessage::kBookmarks, kFlagNone);
-  info->RegisterPermission(
-      kBrowsingData, "browsingData", 0,
-      ExtensionPermissionMessage::kNone, kFlagNone);
-  info->RegisterPermission(
-      kContentSettings, "contentSettings",
+    // Register extension permissions.
+    { kActiveTab, "activeTab" },
+    { kAlarms, "alarms" },
+    { kAppWindow, "appWindow" },
+    { kBookmark, "bookmarks", kFlagNone,
+      IDS_EXTENSION_PROMPT_WARNING_BOOKMARKS,
+      ExtensionPermissionMessage::kBookmarks },
+    { kBrowsingData, "browsingData" },
+    { kContentSettings, "contentSettings", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_CONTENT_SETTINGS,
-      ExtensionPermissionMessage::kContentSettings, kFlagNone);
-  info->RegisterPermission(
-      kContextMenus, "contextMenus", 0,
-      ExtensionPermissionMessage::kNone, kFlagNone);
-  info->RegisterPermission(
-      kCookie, "cookies", 0,
-      ExtensionPermissionMessage::kNone, kFlagNone);
-  info->RegisterPermission(
-      kFileBrowserHandler, "fileBrowserHandler", 0,
-      ExtensionPermissionMessage::kNone, kFlagCannotBeOptional);
-  info->RegisterPermission(
-      kFileSystem, "fileSystem", 0,
-      ExtensionPermissionMessage::kNone, kFlagNone);
-  info->RegisterPermission(
-      kHistory, "history", IDS_EXTENSION_PROMPT_WARNING_BROWSING_HISTORY,
-      ExtensionPermissionMessage::kBrowsingHistory,
-      kFlagNone);
-  info->RegisterPermission(
-      kKeybinding, "keybinding", 0,
-      ExtensionPermissionMessage::kNone, kFlagNone);
-  info->RegisterPermission(
-      kIdle, "idle", 0, ExtensionPermissionMessage::kNone, kFlagNone);
-  info->RegisterPermission(
-      kInput, "input", IDS_EXTENSION_PROMPT_WARNING_INPUT,
-      ExtensionPermissionMessage::kInput, kFlagNone);
-  info->RegisterPermission(
-      kManagement, "management", IDS_EXTENSION_PROMPT_WARNING_MANAGEMENT,
-      ExtensionPermissionMessage::kManagement, kFlagNone);
-  info->RegisterPermission(
-      kPageCapture, "pageCapture",
+      ExtensionPermissionMessage::kContentSettings },
+    { kContextMenus, "contextMenus" },
+    { kCookie, "cookies" },
+    { kFileBrowserHandler, "fileBrowserHandler", kFlagCannotBeOptional },
+    { kFileSystem, "fileSystem" },
+    { kHistory, "history", kFlagNone,
+      IDS_EXTENSION_PROMPT_WARNING_BROWSING_HISTORY,
+      ExtensionPermissionMessage::kBrowsingHistory },
+    { kKeybinding, "keybinding" },
+    { kIdle, "idle" },
+    { kInput, "input", kFlagNone,
+      IDS_EXTENSION_PROMPT_WARNING_INPUT,
+      ExtensionPermissionMessage::kInput },
+    { kManagement, "management", kFlagNone,
+      IDS_EXTENSION_PROMPT_WARNING_MANAGEMENT,
+      ExtensionPermissionMessage::kManagement },
+    { kPageCapture, "pageCapture", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_ALL_PAGES_CONTENT,
-      ExtensionPermissionMessage::kAllPageContent, kFlagNone);
-  info->RegisterPermission(
-      kPrivacy, "privacy", IDS_EXTENSION_PROMPT_WARNING_PRIVACY,
-      ExtensionPermissionMessage::kPrivacy, kFlagNone);
-  info->RegisterPermission(
-      kStorage, "storage", 0,
-      ExtensionPermissionMessage::kNone, kFlagNone);
-  info->RegisterPermission(
-      kTab, "tabs", IDS_EXTENSION_PROMPT_WARNING_TABS,
-      ExtensionPermissionMessage::kTabs, kFlagNone);
-  info->RegisterPermission(
-      kTopSites, "topSites", IDS_EXTENSION_PROMPT_WARNING_BROWSING_HISTORY,
-      ExtensionPermissionMessage::kBrowsingHistory, kFlagNone);
-  info->RegisterPermission(
-      kTts, "tts", 0,
-      ExtensionPermissionMessage::kNone, kFlagCannotBeOptional);
-  info->RegisterPermission(
-      kTtsEngine, "ttsEngine", IDS_EXTENSION_PROMPT_WARNING_TTS_ENGINE,
-      ExtensionPermissionMessage::kTtsEngine,
-      kFlagCannotBeOptional);
-  info->RegisterPermission(
-      kUsb, "usb", IDS_EXTENSION_PROMPT_WARNING_USB,
-      ExtensionPermissionMessage::kNone, kFlagNone);
-  info->RegisterPermission(
-      kWebNavigation, "webNavigation",
-      IDS_EXTENSION_PROMPT_WARNING_TABS, ExtensionPermissionMessage::kTabs,
-      kFlagNone);
-  info->RegisterPermission(
-      kWebRequest, "webRequest", 0, ExtensionPermissionMessage::kNone,
-      kFlagNone);
-  info->RegisterPermission(
-      kWebRequestBlocking, "webRequestBlocking", 0,
-      ExtensionPermissionMessage::kNone, kFlagNone);
+      ExtensionPermissionMessage::kAllPageContent },
+    { kPrivacy, "privacy", kFlagNone,
+      IDS_EXTENSION_PROMPT_WARNING_PRIVACY,
+      ExtensionPermissionMessage::kPrivacy },
+    { kStorage, "storage" },
+    { kTab, "tabs", kFlagNone,
+      IDS_EXTENSION_PROMPT_WARNING_TABS,
+      ExtensionPermissionMessage::kTabs },
+    { kTopSites, "topSites", kFlagNone,
+      IDS_EXTENSION_PROMPT_WARNING_BROWSING_HISTORY,
+      ExtensionPermissionMessage::kBrowsingHistory },
+    { kTts, "tts", 0, kFlagCannotBeOptional },
+    { kTtsEngine, "ttsEngine", kFlagCannotBeOptional,
+      IDS_EXTENSION_PROMPT_WARNING_TTS_ENGINE,
+      ExtensionPermissionMessage::kTtsEngine },
+    { kUsb, "usb", kFlagNone,
+      IDS_EXTENSION_PROMPT_WARNING_USB,
+      ExtensionPermissionMessage::kNone },
+    { kWebNavigation, "webNavigation", kFlagNone,
+      IDS_EXTENSION_PROMPT_WARNING_TABS, ExtensionPermissionMessage::kTabs },
+    { kWebRequest, "webRequest" },
+    { kWebRequestBlocking, "webRequestBlocking" },
 
-  // Register private permissions.
-  info->RegisterPermission(
-      kChromeosInfoPrivate, "chromeosInfoPrivate", 0,
-      ExtensionPermissionMessage::kNone,
-      kFlagCannotBeOptional);
-  info->RegisterPermission(
-      kFileBrowserPrivate, "fileBrowserPrivate", 0,
-      ExtensionPermissionMessage::kNone,
-      kFlagCannotBeOptional);
-  info->RegisterPermission(
-      kManagedModePrivate, "managedModePrivate", 0,
-      ExtensionPermissionMessage::kNone, kFlagCannotBeOptional);
-  info->RegisterPermission(
-      kMediaPlayerPrivate, "mediaPlayerPrivate", 0,
-      ExtensionPermissionMessage::kNone,
-      kFlagCannotBeOptional);
-  info->RegisterPermission(
-      kMetricsPrivate, "metricsPrivate", 0,
-      ExtensionPermissionMessage::kNone,
-      kFlagCannotBeOptional);
-  info->RegisterPermission(
-      kSystemPrivate, "systemPrivate", 0,
-      ExtensionPermissionMessage::kNone,
-      kFlagCannotBeOptional);
-  info->RegisterPermission(
-      kChromeAuthPrivate, "chromeAuthPrivate", 0,
-      ExtensionPermissionMessage::kNone,
-      kFlagCannotBeOptional);
-  info->RegisterPermission(
-      kInputMethodPrivate, "inputMethodPrivate", 0,
-      ExtensionPermissionMessage::kNone, kFlagCannotBeOptional);
-  info->RegisterPermission(
-      kEchoPrivate, "echoPrivate", 0, ExtensionPermissionMessage::kNone,
-      kFlagCannotBeOptional);
-  info->RegisterPermission(
-      kTerminalPrivate, "terminalPrivate", 0, ExtensionPermissionMessage::kNone,
-      kFlagCannotBeOptional);
-  info->RegisterPermission(
-      kWebRequestInternal, "webRequestInternal", 0,
-      ExtensionPermissionMessage::kNone, kFlagCannotBeOptional);
-  info->RegisterPermission(
-      kWebSocketProxyPrivate, "webSocketProxyPrivate", 0,
-      ExtensionPermissionMessage::kNone,
-      kFlagCannotBeOptional);
-  info->RegisterPermission(
-      kWebstorePrivate, "webstorePrivate", 0,
-      ExtensionPermissionMessage::kNone,
-      kFlagCannotBeOptional);
+    // Register private permissions.
+    { kChromeosInfoPrivate, "chromeosInfoPrivate", kFlagCannotBeOptional },
+    { kFileBrowserPrivate, "fileBrowserPrivate", kFlagCannotBeOptional },
+    { kManagedModePrivate, "managedModePrivate", kFlagCannotBeOptional },
+    { kMediaPlayerPrivate, "mediaPlayerPrivate", kFlagCannotBeOptional },
+    { kMetricsPrivate, "metricsPrivate", kFlagCannotBeOptional },
+    { kSystemPrivate, "systemPrivate", kFlagCannotBeOptional },
+    { kChromeAuthPrivate, "chromeAuthPrivate", kFlagCannotBeOptional },
+    { kInputMethodPrivate, "inputMethodPrivate", kFlagCannotBeOptional },
+    { kEchoPrivate, "echoPrivate", kFlagCannotBeOptional },
+    { kTerminalPrivate, "terminalPrivate", kFlagCannotBeOptional },
+    { kWebRequestInternal, "webRequestInternal", kFlagCannotBeOptional },
+    { kWebSocketProxyPrivate, "webSocketProxyPrivate", kFlagCannotBeOptional },
+    { kWebstorePrivate, "webstorePrivate", kFlagCannotBeOptional },
 
-  // Full url access permissions.
-  info->RegisterPermission(
-      kProxy, "proxy", 0, ExtensionPermissionMessage::kNone,
-      kFlagImpliesFullURLAccess | kFlagCannotBeOptional);
+    // Full url access permissions.
+    { kProxy, "proxy", kFlagImpliesFullURLAccess | kFlagCannotBeOptional },
+    { kDebugger, "debugger", kFlagImpliesFullURLAccess | kFlagCannotBeOptional,
+      IDS_EXTENSION_PROMPT_WARNING_DEBUGGER,
+      ExtensionPermissionMessage::kDebugger },
+    { kDevtools, "devtools",
+      kFlagImpliesFullURLAccess | kFlagCannotBeOptional },
+    { kPlugin, "plugin",
+      kFlagImpliesFullURLAccess | kFlagImpliesFullAccess |
+          kFlagCannotBeOptional,
+      IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS,
+      ExtensionPermissionMessage::kFullAccess },
 
-  info->RegisterPermission(
-      kDebugger, "debugger", IDS_EXTENSION_PROMPT_WARNING_DEBUGGER,
-      ExtensionPermissionMessage::kDebugger,
-      kFlagImpliesFullURLAccess | kFlagCannotBeOptional);
-
-  info->RegisterPermission(
-      kDevtools, "devtools", 0, ExtensionPermissionMessage::kNone,
-      kFlagImpliesFullURLAccess | kFlagCannotBeOptional);
-
-  info->RegisterPermission(
-      kPlugin, "plugin", IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS,
-      ExtensionPermissionMessage::kFullAccess, kFlagImpliesFullURLAccess |
-      kFlagImpliesFullAccess | kFlagCannotBeOptional);
-
-  // Platform-app permissions.
-  info->RegisterPermission(
-      kSocket, "socket", 0, ExtensionPermissionMessage::kNone,
-      kFlagCannotBeOptional);
-  info->RegisterPermission(
-      kAudioCapture, "audioCapture",
+    // Platform-app permissions.
+    { kSocket, "socket", kFlagCannotBeOptional },
+    { kAudioCapture, "audioCapture", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_AUDIO_CAPTURE,
-      ExtensionPermissionMessage::kAudioCapture, kFlagNone);
-  info->RegisterPermission(
-      kVideoCapture, "videoCapture",
+      ExtensionPermissionMessage::kAudioCapture },
+    { kVideoCapture, "videoCapture", kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_VIDEO_CAPTURE,
-      ExtensionPermissionMessage::kVideoCapture, kFlagNone);
+      ExtensionPermissionMessage::kVideoCapture },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(PermissionsToRegister); ++i) {
+    const PermissionRegistration& pr = PermissionsToRegister[i];
+    info->RegisterPermission(
+        pr.id, pr.name, pr.l10n_message_id,
+        pr.message_id ? pr.message_id : ExtensionPermissionMessage::kNone,
+        pr.flags);
+  }
 
   // Register aliases.
   info->RegisterAlias("unlimitedStorage", kOldUnlimitedStoragePermission);
@@ -712,9 +635,33 @@ ExtensionPermissionMessages
 std::vector<string16> ExtensionPermissionSet::GetWarningMessages() const {
   std::vector<string16> messages;
   ExtensionPermissionMessages permissions = GetPermissionMessages();
+
+  bool audio_capture = false;
+  bool video_capture = false;
   for (ExtensionPermissionMessages::const_iterator i = permissions.begin();
-       i != permissions.end(); ++i)
+       i != permissions.end(); ++i) {
+    if (i->id() == ExtensionPermissionMessage::kAudioCapture)
+      audio_capture = true;
+    if (i->id() == ExtensionPermissionMessage::kVideoCapture)
+      video_capture = true;
+  }
+
+  for (ExtensionPermissionMessages::const_iterator i = permissions.begin();
+       i != permissions.end(); ++i) {
+    if (audio_capture && video_capture) {
+      if (i->id() == ExtensionPermissionMessage::kAudioCapture) {
+        messages.push_back(l10n_util::GetStringUTF16(
+            IDS_EXTENSION_PROMPT_WARNING_AUDIO_AND_VIDEO_CAPTURE));
+        continue;
+      } else if (i->id() == ExtensionPermissionMessage::kVideoCapture) {
+        // The combined message will be pushed above.
+        continue;
+      }
+    }
+
     messages.push_back(i->message());
+  }
+
   return messages;
 }
 

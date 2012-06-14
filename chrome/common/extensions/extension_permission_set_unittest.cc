@@ -67,6 +67,21 @@ static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
   extent->AddPattern(URLPattern(schemes, pattern));
 }
 
+static size_t IndexOf(const std::vector<string16>& warnings,
+                      const std::string& warning) {
+  for (size_t i = 0; i < warnings.size(); ++i) {
+    if (warnings[i] == ASCIIToUTF16(warning))
+      return i;
+  }
+
+  return warnings.size();
+}
+
+static bool Contains(const std::vector<string16>& warnings,
+                     const std::string& warning) {
+  return IndexOf(warnings, warning) != warnings.size();
+}
+
 } // namespace
 
 class ExtensionPermissionsTest : public testing::Test {
@@ -736,6 +751,39 @@ TEST(ExtensionPermissionsTest, GetWarningMessages_Plugins) {
   EXPECT_EQ("Access all data on your computer and the websites you visit",
             UTF16ToUTF8(warnings[0]));
 #endif
+}
+
+TEST(ExtensionPermissionsTest, GetWarningMessages_AudioVideo) {
+  // Both audio and video present.
+  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnablePlatformApps);
+  scoped_refptr<Extension> extension =
+      LoadManifest("permissions", "audio-video.json");
+  ExtensionPermissionSet* set =
+      const_cast<ExtensionPermissionSet*>(
+          extension->GetActivePermissions().get());
+  std::vector<string16> warnings = set->GetWarningMessages();
+  EXPECT_FALSE(Contains(warnings, "Use your microphone"));
+  EXPECT_FALSE(Contains(warnings, "Use your camera"));
+  EXPECT_TRUE(Contains(warnings, "Use your microphone and camera"));
+  size_t combined_index = IndexOf(warnings, "Use your microphone and camera");
+  size_t combined_size = warnings.size();
+
+  // Just audio present.
+  set->apis_.erase(ExtensionAPIPermission::kVideoCapture);
+  warnings = set->GetWarningMessages();
+  EXPECT_EQ(combined_size, warnings.size());
+  EXPECT_EQ(combined_index, IndexOf(warnings, "Use your microphone"));
+  EXPECT_FALSE(Contains(warnings, "Use your camera"));
+  EXPECT_FALSE(Contains(warnings, "Use your microphone and camera"));
+
+  // Just video present.
+  set->apis_.erase(ExtensionAPIPermission::kAudioCapture);
+  set->apis_.insert(ExtensionAPIPermission::kVideoCapture);
+  warnings = set->GetWarningMessages();
+  EXPECT_EQ(combined_size, warnings.size());
+  EXPECT_FALSE(Contains(warnings, "Use your microphone"));
+  EXPECT_FALSE(Contains(warnings, "Use your microphone and camera"));
+  EXPECT_TRUE(Contains(warnings, "Use your camera"));
 }
 
 TEST(ExtensionPermissionsTest, GetDistinctHostsForDisplay) {

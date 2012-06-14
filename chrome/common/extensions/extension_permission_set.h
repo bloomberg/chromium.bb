@@ -413,6 +413,8 @@ class ExtensionPermissionSet
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtensionPermissionsTest,
                            HasLessHostPrivilegesThan);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionPermissionsTest,
+                           GetWarningMessages_AudioVideo);
   friend class base::RefCountedThreadSafe<ExtensionPermissionSet>;
 
   ~ExtensionPermissionSet();

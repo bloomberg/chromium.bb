@@ -4347,6 +4347,9 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
       <message name="IDS_EXTENSION_PROMPT_WARNING_VIDEO_CAPTURE" desc="Permission string for access to video capture devices.">
         Use your camera
       </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_AUDIO_AND_VIDEO_CAPTURE" desc="Permission string for access to both audio and video capture devices.">
+        Use your microphone and camera
+      </message>
 
       <!-- Extension/App error messages -->
       <message name="IDS_EXTENSION_CANT_GET_ABSOLUTE_PATH" desc="Warning displayed in pack dialog when the absolute path to the extension directory can not be found.">
