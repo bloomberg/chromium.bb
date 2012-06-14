@@ -141,7 +141,6 @@ class NativeThemeBase : public NativeTheme {
   SkColor SaturateAndBrighten(SkScalar* hsv,
                               SkScalar saturate_amount,
                               SkScalar brighten_amount) const;
-
  private:
   void DrawVertLine(SkCanvas* canvas,
                     int x,
@@ -160,6 +159,35 @@ class NativeThemeBase : public NativeTheme {
                  SkScalar min,
                  SkScalar max) const;
   SkColor OutlineColor(SkScalar* hsv1, SkScalar* hsv2) const;
+
+  // Returns whether the new experimental vector-graphics based checkbox and
+  // radiobutton style is enabled.
+  bool IsNewCheckboxStyleEnabled(SkCanvas* canvas) const;
+
+  // Paint the common parts of the new (experimental) checkboxes and radio
+  // buttons.
+  // borderRadius specifies how rounded the corners should be.
+  SkRect PaintCheckboxRadioNewCommon(
+      SkCanvas* canvas,
+      State state,
+      const gfx::Rect& rect,
+      const SkScalar borderRadius) const;
+
+  // Paint an (experimental) vector-graphics based checkbox on the supplied
+  // canvas at the specified co-ordinates.
+  void PaintCheckboxNew(
+      SkCanvas* canvas,
+      State state,
+      const gfx::Rect& rect,
+      const ButtonExtraParams& button) const;
+
+  // Paint an (experimental) vector-graphics based radio button on the
+  // supplied canbas at the specified co-ordinates.
+  void PaintRadioNew(
+      SkCanvas* canvas,
+      State state,
+      const gfx::Rect& rect,
+      const ButtonExtraParams& button) const;
 
   unsigned int scrollbar_width_;
   unsigned int scrollbar_button_length_;

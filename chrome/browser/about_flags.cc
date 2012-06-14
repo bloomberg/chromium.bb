@@ -788,6 +788,13 @@ const Experiment kExperiments[] = {
     kOsWin,
     SINGLE_VALUE_TYPE(switches::kEnableViewsTextfield),
   },
+  {
+    "new-checkbox-style",
+    IDS_FLAGS_NEW_CHECKBOX_STYLE,
+    IDS_FLAGS_NEW_CHECKBOX_STYLE_DESCRIPTION,
+    kOsLinux | kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kNewCheckboxStyle),
+  },
 };
 
 const Experiment* experiments = kExperiments;

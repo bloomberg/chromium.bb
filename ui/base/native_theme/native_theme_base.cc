@@ -6,15 +6,18 @@
 
 #include <limits>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "grit/ui_resources_standard.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
+#include "ui/gfx/skia_util.h"
 
 namespace {
 
@@ -37,6 +40,29 @@ const SkColor kMenuPopupBackgroundColor = SkColorSetRGB(210, 225, 246);
 
 const unsigned int kDefaultScrollbarWidth = 15;
 const unsigned int kDefaultScrollbarButtonLength = 14;
+
+const SkColor kCheckboxTinyColor = SK_ColorGRAY;
+const SkColor kCheckboxShadowColor = SkColorSetARGB(0x15, 0, 0, 0);
+const SkColor kCheckboxShadowHoveredColor = SkColorSetARGB(0x1F, 0, 0, 0);
+const SkColor kCheckboxGradientColors[] = {
+    SkColorSetRGB(0xed, 0xed, 0xed),
+    SkColorSetRGB(0xde, 0xde, 0xde) };
+const SkColor kCheckboxGradientPressedColors[] = {
+    SkColorSetRGB(0xe7, 0xe7, 0xe7),
+    SkColorSetRGB(0xd7, 0xd7, 0xd7) };
+const SkColor kCheckboxGradientHoveredColors[] = {
+    SkColorSetRGB(0xf0, 0xf0, 0xf0),
+    SkColorSetRGB(0xe0, 0xe0, 0xe0) };
+const SkColor kCheckboxGradientDisabledColors[] = {
+    SkColorSetARGB(0xB3, 0xed, 0xed, 0xed),
+    SkColorSetARGB(0xB3, 0xde, 0xde, 0xde) };
+const SkColor kCheckboxBorderColor = SkColorSetARGB(0x40, 0, 0, 0);
+const SkColor kCheckboxBorderHoveredColor = SkColorSetARGB(0x4D, 0, 0, 0);
+const SkColor kCheckboxBorderDisabledColor = SkColorSetARGB(0x30, 0, 0, 0);
+const SkColor kCheckboxStrokeColor = SkColorSetARGB(0xB3, 0, 0, 0);
+const SkColor kCheckboxStrokeDisabledColor = SkColorSetARGB(0x86, 0, 0, 0);
+const SkColor kRadioDotColor = SkColorSetRGB(0x66, 0x66, 0x66);
+const SkColor kRadioDotDisabledColor = SkColorSetARGB(0xC0, 0x66, 0x66, 0x66);
 
 // Get lightness adjusted color.
 SkColor BrightenColor(const color_utils::HSL& hsl, SkAlpha alpha,
@@ -440,10 +466,30 @@ void NativeThemeBase::PaintScrollbarThumb(SkCanvas* canvas,
   }
 }
 
+bool NativeThemeBase::IsNewCheckboxStyleEnabled(SkCanvas* canvas) const {
+  // Mostly this new style is experimental behind a flag.
+  // TODO(rbyers): Enable new style by default.  http://crbug.com/125773
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kNewCheckboxStyle))
+    return true;
+
+  // Also enable explicitly when high-DPI is being used (since this is the only
+  // way we have to get nice looking widgets in high-DPI.
+  if (canvas->getTotalMatrix().getScaleX() > 1)
+    return true;
+
+  return false;
+}
+
 void NativeThemeBase::PaintCheckbox(SkCanvas* canvas,
                                     State state,
                                     const gfx::Rect& rect,
                                     const ButtonExtraParams& button) const {
+  if (IsNewCheckboxStyleEnabled(canvas)) {
+    PaintCheckboxNew(canvas, state, rect, button);
+    return;
+  }
+
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   gfx::ImageSkia* image = NULL;
   if (button.indeterminate) {
@@ -465,10 +511,132 @@ void NativeThemeBase::PaintCheckbox(SkCanvas* canvas,
       bounds.x(), bounds.y(), bounds.width(), bounds.height());
 }
 
+// Draws the common elements of checkboxes and radio buttons.
+// Returns the rectangle within which any additional decorations should be
+// drawn, or empty if none.
+SkRect NativeThemeBase::PaintCheckboxRadioNewCommon(
+    SkCanvas* canvas,
+    State state,
+    const gfx::Rect& rect,
+    const SkScalar borderRadius) const {
+
+  SkRect skrect = gfx::RectToSkRect(rect);
+
+  // If the rectangle is too small then paint only a rectangle.  We don't want
+  // to have to worry about '- 1' and '+ 1' calculations below having overflow
+  // or underflow.
+  if (rect.width() <= 2 || rect.height() <= 2) {
+    SkPaint paint;
+    paint.setColor(kCheckboxTinyColor);
+    paint.setStyle(SkPaint::kFill_Style);
+    canvas->drawRect(skrect, paint);
+    // Too small to draw anything more.
+    return SkRect::MakeEmpty();
+  }
+
+  // Make room for the drop shadow.
+  skrect.iset(skrect.x(), skrect.y(), skrect.right() - 1, skrect.bottom() - 1);
+
+  // Draw the drop shadow below the widget.
+  if (state != kPressed) {
+    SkPaint paint;
+    paint.setAntiAlias(true);
+    SkRect shadowRect = skrect;
+    shadowRect.offset(0, 1);
+    if (state == kHovered)
+      paint.setColor(kCheckboxShadowHoveredColor);
+    else
+      paint.setColor(kCheckboxShadowColor);
+    paint.setStyle(SkPaint::kFill_Style);
+    canvas->drawRoundRect(shadowRect, borderRadius, borderRadius, paint);
+  }
+
+  // Draw the gradient-filled rectangle
+  SkPoint gradient_bounds[3];
+  gradient_bounds[0].set(skrect.x(), skrect.y());
+  gradient_bounds[1].set(skrect.x(), skrect.y() + skrect.height() * 0.38);
+  gradient_bounds[2].set(skrect.x(), skrect.bottom());
+  const SkColor* startEndColors;
+  if (state == kPressed)
+    startEndColors = kCheckboxGradientPressedColors;
+  else if (state == kHovered)
+    startEndColors = kCheckboxGradientHoveredColors;
+  else if (state == kDisabled)
+    startEndColors = kCheckboxGradientDisabledColors;
+  else /* kNormal */
+    startEndColors = kCheckboxGradientColors;
+  SkColor colors[3] = {startEndColors[0], startEndColors[0], startEndColors[1]};
+  SkShader* shader = SkGradientShader::CreateLinear(
+      gradient_bounds, colors, NULL, 3, SkShader::kClamp_TileMode, NULL);
+  SkPaint paint;
+  paint.setAntiAlias(true);
+  paint.setShader(shader);
+  shader->unref();
+  paint.setStyle(SkPaint::kFill_Style);
+  canvas->drawRoundRect(skrect, borderRadius, borderRadius, paint);
+  paint.setShader(NULL);
+
+  // Draw the border.
+  if (state == kHovered)
+    paint.setColor(kCheckboxBorderHoveredColor);
+  else if (state == kDisabled)
+    paint.setColor(kCheckboxBorderDisabledColor);
+  else
+    paint.setColor(kCheckboxBorderColor);
+  paint.setStyle(SkPaint::kStroke_Style);
+  paint.setStrokeWidth(SkIntToScalar(1));
+  skrect.inset(SkFloatToScalar(.5f), SkFloatToScalar(.5f));
+  canvas->drawRoundRect(skrect, borderRadius, borderRadius, paint);
+
+  // Return the rectangle excluding the drop shadow for drawing any additional
+  // decorations.
+  return skrect;
+}
+
+void NativeThemeBase::PaintCheckboxNew(SkCanvas* canvas,
+                                       State state,
+                                       const gfx::Rect& rect,
+                                       const ButtonExtraParams& button) const {
+  SkRect skrect = PaintCheckboxRadioNewCommon(canvas, state, rect,
+                                              SkIntToScalar(2));
+  if (!skrect.isEmpty()) {
+    // Draw the checkmark / dash.
+    SkPaint paint;
+    paint.setAntiAlias(true);
+    paint.setStyle(SkPaint::kStroke_Style);
+    if (state == kDisabled)
+      paint.setColor(kCheckboxStrokeDisabledColor);
+    else
+      paint.setColor(kCheckboxStrokeColor);
+    if (button.indeterminate) {
+      SkPath dash;
+      dash.moveTo(skrect.x() + skrect.width() * 0.16,
+                  (skrect.y() + skrect.bottom()) / 2);
+      dash.rLineTo(skrect.width() * 0.68, 0);
+      paint.setStrokeWidth(SkFloatToScalar(skrect.height() * 0.08));
+      canvas->drawPath(dash, paint);
+    } else if (button.checked) {
+      SkPath check;
+      check.moveTo(skrect.x() + skrect.width() * 0.2,
+                   skrect.y() + skrect.height() * 0.5);
+      check.rLineTo(skrect.width() * 0.2, skrect.height() * 0.2);
+      paint.setStrokeWidth(SkFloatToScalar(skrect.height() * 0.23));
+      check.lineTo(skrect.right() - skrect.width() * 0.2,
+                   skrect.y() + skrect.height() * 0.2);
+      canvas->drawPath(check, paint);
+    }
+  }
+}
+
 void NativeThemeBase::PaintRadio(SkCanvas* canvas,
                                   State state,
                                   const gfx::Rect& rect,
                                   const ButtonExtraParams& button) const {
+  if (IsNewCheckboxStyleEnabled(canvas)) {
+    PaintRadioNew(canvas, state, rect, button);
+    return;
+  }
+
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   gfx::ImageSkia* image = NULL;
   if (state == kDisabled) {
@@ -484,6 +652,32 @@ void NativeThemeBase::PaintRadio(SkCanvas* canvas,
   gfx::Rect bounds = rect.Center(gfx::Size(image->width(), image->height()));
   DrawImageInt(canvas, *image, 0, 0, image->width(), image->height(),
       bounds.x(), bounds.y(), bounds.width(), bounds.height());
+}
+
+void NativeThemeBase::PaintRadioNew(SkCanvas* canvas,
+                                  State state,
+                                  const gfx::Rect& rect,
+                                  const ButtonExtraParams& button) const {
+
+  // Most of a radio button is the same as a checkbox, except the the rounded
+  // square is a circle (i.e. border radius >= 100%).
+  const SkScalar radius = SkFloatToScalar(
+      static_cast<float>(std::max(rect.width(), rect.height())) / 2);
+  SkRect skrect = PaintCheckboxRadioNewCommon(canvas, state, rect, radius);
+  if (!skrect.isEmpty() && button.checked) {
+    // Draw the dot.
+    SkPaint paint;
+    paint.setAntiAlias(true);
+    paint.setStyle(SkPaint::kFill_Style);
+    if (state == kDisabled)
+      paint.setColor(kRadioDotDisabledColor);
+    else
+      paint.setColor(kRadioDotColor);
+    skrect.inset(skrect.width() * 0.25, skrect.height() * 0.25);
+    // Use drawRoundedRect instead of drawOval to be completely consistent
+    // with the border in PaintCheckboxRadioNewCommon.
+    canvas->drawRoundRect(skrect, radius, radius, paint);
+  }
 }
 
 void NativeThemeBase::PaintButton(SkCanvas* canvas,

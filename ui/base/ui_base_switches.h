@@ -22,6 +22,7 @@ UI_EXPORT extern const char kHighlightMissing2xResources[];
 UI_EXPORT extern const char kLang[];
 UI_EXPORT extern const char kLoad2xResources[];
 UI_EXPORT extern const char kLocalePak[];
+UI_EXPORT extern const char kNewCheckboxStyle[];
 UI_EXPORT extern const char kNoMessageBox[];
 UI_EXPORT extern const char kTouchOptimizedUI[];
 UI_EXPORT extern const char kTouchOptimizedUIAuto[];

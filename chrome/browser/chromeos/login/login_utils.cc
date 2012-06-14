@@ -745,6 +745,7 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       ::switches::kFlingTapSuppressMaxGap,
       ::switches::kTouchDevices,
       ::switches::kTouchOptimizedUI,
+      ::switches::kNewCheckboxStyle,
       ash::switches::kAshTouchHud,
       ash::switches::kAshWindowAnimationsDisabled,
       ash::switches::kAuraLegacyPowerButton,

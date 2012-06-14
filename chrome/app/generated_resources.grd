@@ -5811,6 +5811,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_CAPTIVE_PORTAL_CHECK_ON_ERROR_DESCRIPTION" desc="Description for the flag to enable automatic checking for captive portals.">
         Check for captive portals and open a new tab at the login page if one is found.
       </message>
+      <message name="IDS_FLAGS_NEW_CHECKBOX_STYLE" desc="Name of the flag to turn on the new checkbox style.">
+        Enable new checkbox style.
+      </message>
+      <message name="IDS_FLAGS_NEW_CHECKBOX_STYLE_DESCRIPTION" desc="Description of the flag to turn on the new checkbox style.">
+        Enables new appearance and sizing behavior for checkboxes and radio buttons.
+      </message>
+
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">
         Crashes
