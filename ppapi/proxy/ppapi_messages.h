@@ -62,6 +62,9 @@ IPC_ENUM_TRAITS(PP_InputEvent_Type)
 IPC_ENUM_TRAITS(PP_NetAddressFamily_Private)
 IPC_ENUM_TRAITS(PP_NetworkListType_Private)
 IPC_ENUM_TRAITS(PP_NetworkListState_Private)
+IPC_ENUM_TRAITS(PP_PrintOrientation_Dev)
+IPC_ENUM_TRAITS(PP_PrintOutputFormat_Dev)
+IPC_ENUM_TRAITS(PP_PrintScalingOption_Dev)
 IPC_ENUM_TRAITS(PP_TextInput_Type)
 IPC_ENUM_TRAITS(PP_VideoDecodeError_Dev)
 IPC_ENUM_TRAITS(PP_VideoDecoder_Profile)
@@ -111,6 +114,17 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(PP_HostResolver_Private_Hint)
   IPC_STRUCT_TRAITS_MEMBER(family)
   IPC_STRUCT_TRAITS_MEMBER(flags)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(PP_PrintSettings_Dev)
+  IPC_STRUCT_TRAITS_MEMBER(printable_area)
+  IPC_STRUCT_TRAITS_MEMBER(content_area)
+  IPC_STRUCT_TRAITS_MEMBER(paper_size)
+  IPC_STRUCT_TRAITS_MEMBER(dpi)
+  IPC_STRUCT_TRAITS_MEMBER(orientation)
+  IPC_STRUCT_TRAITS_MEMBER(print_scaling_option)
+  IPC_STRUCT_TRAITS_MEMBER(grayscale)
+  IPC_STRUCT_TRAITS_MEMBER(format)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(ppapi::DeviceRefData)
@@ -935,6 +949,10 @@ IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBInstance_LockMouse,
                     PP_Instance /* instance */)
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBInstance_UnlockMouse,
                     PP_Instance /* instance */)
+IPC_SYNC_MESSAGE_ROUTED1_2(PpapiHostMsg_PPBPInstance_GetDefaultPrintSettings,
+                           PP_Instance /* instance */,
+                           PP_PrintSettings_Dev /* settings */,
+                           bool /* result */)
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBInstance_ResolveRelativeToDocument,
                            PP_Instance /* instance */,
                            ppapi::proxy::SerializedVar /* relative */,

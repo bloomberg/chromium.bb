@@ -5,6 +5,7 @@
 #ifndef PPAPI_THUNK_INSTANCE_API_H_
 #define PPAPI_THUNK_INSTANCE_API_H_
 
+#include "ppapi/c/dev/pp_print_settings_dev.h"
 #include "ppapi/c/dev/ppb_console_dev.h"
 #include "ppapi/c/dev/ppb_text_input_dev.h"
 #include "ppapi/c/dev/ppb_url_util_dev.h"
@@ -110,6 +111,11 @@ class PPB_Instance_API {
   virtual int32_t LockMouse(PP_Instance instance,
                             PP_CompletionCallback callback) = 0;
   virtual void UnlockMouse(PP_Instance instance) = 0;
+
+  // Printing.
+  virtual PP_Bool GetDefaultPrintSettings(
+      PP_Instance instance,
+      PP_PrintSettings_Dev* print_settings) = 0;
 
   // TextInput.
   virtual void SetTextInputType(PP_Instance instance,

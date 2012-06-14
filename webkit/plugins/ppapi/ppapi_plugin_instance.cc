@@ -1977,6 +1977,13 @@ void PluginInstance::UnlockMouse(PP_Instance instance) {
   delegate()->UnlockMouse(this);
 }
 
+PP_Bool PluginInstance::GetDefaultPrintSettings(
+    PP_Instance instance,
+    PP_PrintSettings_Dev* print_settings) {
+  // TODO(raymes): Not implemented for in-process.
+  return PP_FALSE;
+}
+
 void PluginInstance::SetTextInputType(PP_Instance instance,
                                       PP_TextInput_Type type) {
   int itype = type;

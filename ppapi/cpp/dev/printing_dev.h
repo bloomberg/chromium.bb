@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,6 +29,11 @@ class Printing_Dev {
                               uint32_t page_range_count) = 0;
   virtual void PrintEnd() = 0;
   virtual bool IsPrintScalingDisabled() = 0;
+
+  // PPB_Printing_Dev functions.
+  // Outputs the default print settings for the default printer into
+  // |print_settings|. Returns false on error.
+  bool GetDefaultPrintSettings(PP_PrintSettings_Dev* print_settings);
 
  private:
   InstanceHandle associated_instance_;

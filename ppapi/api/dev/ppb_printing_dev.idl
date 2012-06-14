@@ -1,0 +1,22 @@
+/* Copyright (c) 2012 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/**
+ * Definition of the PPB_Printing interface.
+ */
+
+// Note: This version should always match the PPP_Printing_Dev interface.
+label Chrome {
+  M21 = 0.6
+};
+
+interface PPB_Printing_Dev {
+  /**
+   * Outputs the default print settings for the default printer into
+   * <code>print_settings</code>. Returns <code>PP_FALSE</code> on error.
+   */
+  PP_Bool GetDefaultPrintSettings([in] PP_Instance instance,
+                                  [out] PP_PrintSettings_Dev print_settings);
+};

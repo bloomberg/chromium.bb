@@ -1,9 +1,10 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "ppapi/cpp/dev/printing_dev.h"
 
+#include "ppapi/c/dev/ppb_printing_dev.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/module.h"
@@ -14,6 +15,10 @@ namespace pp {
 namespace {
 
 static const char kPPPPrintingInterface[] = PPP_PRINTING_DEV_INTERFACE;
+
+template <> const char* interface_name<PPB_Printing_Dev_0_6>() {
+  return PPB_PRINTING_DEV_INTERFACE_0_6;
+}
 
 uint32_t QuerySupportedFormats(PP_Instance instance) {
   void* object =
@@ -79,6 +84,15 @@ Printing_Dev::Printing_Dev(Instance* instance)
 Printing_Dev::~Printing_Dev() {
   Instance::RemovePerInstanceObject(associated_instance_,
                                     kPPPPrintingInterface, this);
+}
+
+bool Printing_Dev::GetDefaultPrintSettings(
+    PP_PrintSettings_Dev* print_settings) {
+  if (!has_interface<PPB_Printing_Dev_0_6>())
+    return PP_FALSE;
+  return PP_ToBool(
+      get_interface<PPB_Printing_Dev_0_6>()->GetDefaultPrintSettings(
+          associated_instance_.pp_instance(), print_settings));
 }
 
 }  // namespace pp

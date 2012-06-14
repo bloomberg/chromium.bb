@@ -378,6 +378,9 @@ class WEBKIT_PLUGINS_EXPORT PluginInstance :
   virtual int32_t LockMouse(PP_Instance instance,
                             PP_CompletionCallback callback) OVERRIDE;
   virtual void UnlockMouse(PP_Instance instance) OVERRIDE;
+  virtual PP_Bool GetDefaultPrintSettings(
+      PP_Instance instance,
+      PP_PrintSettings_Dev* print_settings) OVERRIDE;
   virtual void SetTextInputType(PP_Instance instance,
                                 PP_TextInput_Type type) OVERRIDE;
   virtual void UpdateCaretPosition(PP_Instance instance,

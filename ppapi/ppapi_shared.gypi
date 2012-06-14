@@ -225,6 +225,7 @@
         'thunk/ppb_network_monitor_private_api.h',
         'thunk/ppb_network_monitor_private_thunk.cc',
         'thunk/ppb_pdf_api.h',
+        'thunk/ppb_printing_thunk.cc',
         'thunk/ppb_resource_array_api.h',
         'thunk/ppb_resource_array_thunk.cc',
         'thunk/ppb_scrollbar_api.h',

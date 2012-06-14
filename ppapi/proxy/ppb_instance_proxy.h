@@ -87,6 +87,9 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   virtual int32_t LockMouse(PP_Instance instance,
                             PP_CompletionCallback callback) OVERRIDE;
   virtual void UnlockMouse(PP_Instance instance) OVERRIDE;
+  virtual PP_Bool GetDefaultPrintSettings(
+      PP_Instance instance,
+      PP_PrintSettings_Dev* print_settings) OVERRIDE;
   virtual void SetTextInputType(PP_Instance instance,
                                 PP_TextInput_Type type) OVERRIDE;
   virtual void UpdateCaretPosition(PP_Instance instance,
@@ -153,6 +156,9 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                             SerializedVarReceiveInput message);
   void OnHostMsgLockMouse(PP_Instance instance);
   void OnHostMsgUnlockMouse(PP_Instance instance);
+  void OnHostMsgGetDefaultPrintSettings(PP_Instance instance,
+                                        PP_PrintSettings_Dev* settings,
+                                        bool* result);
   void OnHostMsgSetCursor(PP_Instance instance,
                           int32_t type,
                           const ppapi::HostResource& custom_image,

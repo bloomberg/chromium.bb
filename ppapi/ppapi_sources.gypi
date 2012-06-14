@@ -70,6 +70,7 @@
       'c/dev/ppb_ime_input_event_dev.h',
       'c/dev/ppb_memory_dev.h',
       'c/dev/ppb_message_loop_dev.h',
+      'c/dev/ppb_printing_dev.h',
       'c/dev/ppb_resource_array_dev.h',
       'c/dev/ppb_scrollbar_dev.h',
       'c/dev/ppb_testing_dev.h',

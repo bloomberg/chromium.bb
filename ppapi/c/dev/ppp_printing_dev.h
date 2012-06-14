@@ -3,11 +3,12 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppp_printing_dev.idl modified Tue May 15 15:17:01 2012. */
+/* From dev/ppp_printing_dev.idl modified Wed Jun 13 09:20:40 2012. */
 
 #ifndef PPAPI_C_DEV_PPP_PRINTING_DEV_H_
 #define PPAPI_C_DEV_PPP_PRINTING_DEV_H_
 
+#include "ppapi/c/dev/pp_print_settings_dev.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_macros.h"
@@ -22,58 +23,14 @@
 
 /**
  * @file
- * Implementation of the Printing interface.
+ * Definition of the PPP_Printing interface.
  */
 
-
-/**
- * @addtogroup Enums
- * @{
- */
-typedef enum {
-  PP_PRINTORIENTATION_NORMAL = 0,
-  PP_PRINTORIENTATION_ROTATED_90_CW = 1,
-  PP_PRINTORIENTATION_ROTATED_180 = 2,
-  PP_PRINTORIENTATION_ROTATED_90_CCW = 3
-} PP_PrintOrientation_Dev;
-PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_PrintOrientation_Dev, 4);
-
-typedef enum {
-  PP_PRINTOUTPUTFORMAT_RASTER = 1u << 0,
-  PP_PRINTOUTPUTFORMAT_PDF = 1u << 1,
-  PP_PRINTOUTPUTFORMAT_POSTSCRIPT = 1u << 2,
-  PP_PRINTOUTPUTFORMAT_EMF = 1u << 3
-} PP_PrintOutputFormat_Dev;
-PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_PrintOutputFormat_Dev, 4);
-
-typedef enum {
-  PP_PRINTSCALINGOPTION_NONE = 0,
-  PP_PRINTSCALINGOPTION_FIT_TO_PRINTABLE_AREA = 1,
-  PP_PRINTSCALINGOPTION_SOURCE_SIZE = 2
-} PP_PrintScalingOption_Dev;
-PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_PrintScalingOption_Dev, 4);
-/**
- * @}
- */
 
 /**
  * @addtogroup Structs
  * @{
  */
-struct PP_PrintSettings_Dev {
-  /** This is the size of the printable area in points (1/72 of an inch) */
-  struct PP_Rect printable_area;
-  struct PP_Rect content_area;
-  struct PP_Size paper_size;
-  int32_t dpi;
-  PP_PrintOrientation_Dev orientation;
-  PP_PrintScalingOption_Dev print_scaling_option;
-  PP_Bool grayscale;
-  /** Note that Chrome currently only supports PDF printing. */
-  PP_PrintOutputFormat_Dev format;
-};
-PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_PrintSettings_Dev, 60);
-
 /**
  * Specifies a contiguous range of page numbers to be printed.
  * The page numbers use a zero-based index.
