@@ -16,11 +16,21 @@
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
 
+typedef int (*TYPE_nacl_test_syscall_1)(struct SuspendTestShm *test_shm);
+
+
 static void MutatorThread(struct SuspendTestShm *test_shm) {
   uint32_t next_val = 0;
   while (!test_shm->should_exit) {
     test_shm->var = next_val++;
   }
+}
+
+static void SyscallReturnThread(struct SuspendTestShm *test_shm) {
+  int rc = NACL_SYSCALL(test_syscall_1)(test_shm);
+  assert(rc == 0);
+  /* Set value to indicate that the syscall returned. */
+  test_shm->var = 99;
 }
 
 static void SyscallInvokerThread(struct SuspendTestShm *test_shm) {
@@ -129,6 +139,8 @@ int main(int argc, char **argv) {
 
   if (strcmp(test_type, "MutatorThread") == 0) {
     MutatorThread(test_shm);
+  } else if (strcmp(test_type, "SyscallReturnThread") == 0) {
+    SyscallReturnThread(test_shm);
   } else if (strcmp(test_type, "SyscallInvokerThread") == 0) {
     SyscallInvokerThread(test_shm);
   } else if (strcmp(test_type, "RegisterSetterThread") == 0) {

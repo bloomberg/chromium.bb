@@ -93,6 +93,12 @@
 #define NACL_sys_test_infoleak          109
 #define NACL_sys_test_crash             110
 
-#define NACL_MAX_SYSCALLS               111
+/*
+ * This syscall number is set aside for use in tests that add a
+ * syscall that must coexist with the normal syscalls.
+ */
+#define NACL_sys_test_syscall_1         111
+
+#define NACL_MAX_SYSCALLS               112
 
 #endif

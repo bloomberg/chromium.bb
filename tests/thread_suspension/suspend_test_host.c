@@ -13,9 +13,11 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/service_runtime/include/bits/mman.h"
+#include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
+#include "native_client/src/trusted/service_runtime/nacl_copy.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
 #include "native_client/src/trusted/service_runtime/nacl_valgrind_hooks.h"
@@ -127,6 +129,71 @@ static void TrySuspendingMutatorThread(struct NaClApp *nap) {
   }
   test_shm->should_exit = 1;
   CHECK(NaClWaitForMainThreadToExit(nap) == 0);
+}
+
+/* This implements a NaCl syscall. */
+static int32_t SuspendTestSyscall(struct NaClAppThread *natp) {
+  uint32_t test_shm_uptr;
+  struct SuspendTestShm *test_shm;
+  uint32_t next_val = 0;
+
+  NaClCopyInDropLock(natp->nap);
+  CHECK(NaClCopyInFromUser(natp->nap, &test_shm_uptr, natp->usr_syscall_args,
+                           sizeof(test_shm_uptr)));
+  test_shm = (struct SuspendTestShm *) NaClUserToSysAddrRange(
+      natp->nap, test_shm_uptr, sizeof(*test_shm));
+
+  while (!test_shm->should_exit) {
+    /*
+     * Assign a new value so that this syscall can be observed to be
+     * executing, but avoid small values which have special meanings
+     * in this test.
+     */
+    test_shm->var = 0x100 + (next_val++ & 0xff);
+  }
+  /* Indicate that we are exiting. */
+  test_shm->var = 1;
+  return 0;
+}
+
+/*
+ * This test checks that a thread running a NaCl syscall will not be
+ * suspended until the syscall returns to untrusted code.
+ */
+static void TrySuspendingSyscall(struct NaClApp *nap) {
+  int iteration;
+  uint32_t snapshot;
+  struct SuspendTestShm *test_shm;
+
+  NaClAddSyscall(NACL_sys_test_syscall_1, SuspendTestSyscall);
+  test_shm = StartGuestWithSharedMemory(nap, "SyscallReturnThread");
+
+  /* Wait for the syscall to be entered and stop. */
+  while (test_shm->var == 0) { /* do nothing */ }
+  NaClUntrustedThreadsSuspendAll(nap, /* save_registers= */ 0);
+  /*
+   * The syscall should continue to execute, so we should see the
+   * value change.
+   */
+  snapshot = test_shm->var;
+  while (test_shm->var == snapshot) { /* do nothing */ }
+  /* Tell the syscall to return. */
+  test_shm->should_exit = 1;
+  /* Wait for the syscall to return. */
+  while (test_shm->var != 1) { /* do nothing */ }
+  /*
+   * Once the syscall has returned, we should see no change to the
+   * variable because the thread is suspended.
+   */
+  for (iteration = 0; iteration < 1000; iteration++) {
+    CHECK(test_shm->var == 1);
+  }
+  /*
+   * But once we resume the thread, untrusted code will run and set
+   * the value.
+   */
+  NaClUntrustedThreadsResumeAll(nap);
+  while (test_shm->var != 99) { /* do nothing */ }
 }
 
 /*
@@ -273,6 +340,9 @@ int main(int argc, char **argv) {
 
   printf("Running TrySuspendingMutatorThread...\n");
   TrySuspendingMutatorThread(&app);
+
+  printf("Running TrySuspendingSyscall...\n");
+  TrySuspendingSyscall(&app);
 
   printf("Running TrySuspendingSyscallInvokerThread...\n");
   TrySuspendingSyscallInvokerThread(&app);
