@@ -108,6 +108,10 @@ struct arch_seccomp_data {
 #ifdef SECCOMP_BPF_STANDALONE
 #define arraysize(x) sizeof(x)/sizeof(*(x)))
 #define HANDLE_EINTR TEMP_FAILURE_RETRY
+#define DISALLOW_IMPLICIT_CONSTRUCTORS(TypeName) \
+  TypeName();                                    \
+  TypeName(const TypeName&);                     \
+  void operator=(const TypeName&)
 #endif
 
 
@@ -115,6 +119,7 @@ namespace playground2 {
 
 class Sandbox {
   friend class Util;
+  friend class Verifier;
 
  public:
   enum SandboxStatus {
@@ -153,6 +158,7 @@ class Sandbox {
   typedef ErrorCode (*EvaluateSyscall)(int sysno);
   typedef int       (*EvaluateArguments)(int sysno, int arg,
                                          Constraint *constraint);
+  typedef std::vector<std::pair<EvaluateSyscall,EvaluateArguments> >Evaluators;
 
   // There are a lot of reasons why the Seccomp sandbox might not be available.
   // This could be because the kernel does not support Seccomp mode, or it
@@ -243,8 +249,7 @@ class Sandbox {
   static bool          dryRun_;
   static SandboxStatus status_;
   static int           proc_fd_;
-  static std::vector<std::pair<EvaluateSyscall,
-                               EvaluateArguments> > evaluators_;
+  static Evaluators    evaluators_;
 };
 
 }  // namespace

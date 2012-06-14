@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
+#include "sandbox/linux/seccomp-bpf/verifier.h"
 
 // The kernel gives us a sandbox, we turn it into a playground :-)
 // This is version 2 of the playground; version 1 was built on top of
@@ -296,7 +297,7 @@ void Sandbox::installFilter() {
   // O(log_2(M)) with M being the number of system calls that need special
   // treatment.
   EvaluateSyscall evaluateSyscall = evaluators_.begin()->first;
-  for (int sysnum = MIN_SYSCALL; sysnum <= MAX_SYSCALL; ++sysnum) {
+  for (uint32_t sysnum = MIN_SYSCALL; sysnum <= MAX_SYSCALL+1; ++sysnum) {
     ErrorCode err = evaluateSyscall(sysnum);
     int ret;
     switch (err) {
@@ -319,8 +320,15 @@ void Sandbox::installFilter() {
       }
       break;
     }
-    program->push_back((struct sock_filter)
-      BPF_JUMP(BPF_JMP+BPF_JEQ+BPF_K, sysnum, 0, 1));
+    if (sysnum <= MAX_SYSCALL) {
+      // We compute the default behavior (e.g. fail open or fail closed) by
+      // calling the system call evaluator with a system call bigger than
+      // MAX_SYSCALL.
+      // In other words, the very last iteration in our loop becomes the
+      // fallback case and we don't need to do any comparisons.
+      program->push_back((struct sock_filter)
+        BPF_JUMP(BPF_JMP+BPF_JEQ+BPF_K, sysnum, 0, 1));
+    }
     program->push_back((struct sock_filter)
       BPF_STMT(BPF_RET+BPF_K, ret));
   }
@@ -330,6 +338,16 @@ void Sandbox::installFilter() {
   // TODO: raise a suitable SIGSYS signal
   program->push_back((struct sock_filter)
     BPF_STMT(BPF_RET+BPF_K, SECCOMP_RET_KILL));
+
+  // Make sure compilation resulted in BPF program that executes
+  // correctly. Otherwise, there is an internal error in our BPF compiler.
+  // There is really nothing the caller can do until the bug is fixed.
+#ifndef NDEBUG
+  const char *err = NULL;
+  if (!Verifier::verifyBPF(*program, evaluators_, &err)) {
+    die(err);
+  }
+#endif
 
   // We want to be very careful in not imposing any requirements on the
   // policies that are set with setSandboxPolicy(). This means, as soon as
@@ -393,7 +411,6 @@ void Sandbox::sigSys(int nr, siginfo_t *info, void *void_context) {
 bool Sandbox::dryRun_                   = false;
 Sandbox::SandboxStatus Sandbox::status_ = STATUS_UNKNOWN;
 int    Sandbox::proc_fd_                = -1;
-std::vector<std::pair<Sandbox::EvaluateSyscall,
-                      Sandbox::EvaluateArguments> > Sandbox::evaluators_;
+Sandbox::Evaluators Sandbox::evaluators_;
 
 }  // namespace

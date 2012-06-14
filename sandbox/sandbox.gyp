@@ -159,6 +159,8 @@
               'sources': [
                 'linux/seccomp-bpf/sandbox_bpf.cc',
                 'linux/seccomp-bpf/sandbox_bpf.h',
+                'linux/seccomp-bpf/verifier.cc',
+                'linux/seccomp-bpf/verifier.h',
               ],
               'dependencies': [
                 '../base/base.gyp:base',
