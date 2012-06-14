@@ -789,9 +789,6 @@
         '../third_party/skia/src/utils',
       ],
       'msvs_disabled_warnings': [4244, 4267, 4341, 4345, 4390, 4554, 4800],
-      'mac_framework_dirs': [
-        '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
-      ],
       'defines': [
         'SK_BUILD_NO_IMAGE_ENCODE',
         'GR_GL_CUSTOM_SETUP_HEADER="GrGLConfig_chrome.h"',
@@ -1055,9 +1052,6 @@
           '../third_party/skia/include/ports',
           '../third_party/skia/include/utils',
           'ext',
-        ],
-        'mac_framework_dirs': [
-          '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
         ],
         'defines': [
           'SK_BUILD_NO_IMAGE_ENCODE',

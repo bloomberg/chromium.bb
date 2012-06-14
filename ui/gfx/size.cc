@@ -7,7 +7,7 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #elif defined(OS_MACOSX)
-#include <CoreGraphics/CGGeometry.h>
+#include <ApplicationServices/ApplicationServices.h>
 #endif
 
 #include "base/logging.h"
