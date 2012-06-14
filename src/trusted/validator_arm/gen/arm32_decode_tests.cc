@@ -987,6 +987,15 @@ class MaskedBinaryRegisterImmediateTestTester_Tst_Rule_230_A1_P454_
   {}
 };
 
+class MoveImmediate12ToApsrTester_Msr_Rule_103_A1_P208_
+    : public MoveImmediate12ToApsrTester {
+ public:
+  MoveImmediate12ToApsrTester_Msr_Rule_103_A1_P208_()
+    : MoveImmediate12ToApsrTester(
+      state_.MoveImmediate12ToApsr_Msr_Rule_103_A1_P208_instance_)
+  {}
+};
+
 class Store2RegisterImm12OpTester_Str_Rule_194_A1_P384_
     : public LoadStore2RegisterImm12OpTester {
  public:
@@ -1852,7 +1861,7 @@ TEST_F(Arm32DecoderStateTests,
 TEST_F(Arm32DecoderStateTests,
        CondNopTester_Dbg_Rule_40_A1_P88__cccc001100100000111100001111iiii_Test) {
   CondNopTester_Dbg_Rule_40_A1_P88_ baseline_tester;
-  NamedEffectiveNoOp_Dbg_Rule_40_A1_P88 actual;
+  NamedDontCareInst_Dbg_Rule_40_A1_P88 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc001100100000111100001111iiii");
 }
@@ -1860,7 +1869,7 @@ TEST_F(Arm32DecoderStateTests,
 TEST_F(Arm32DecoderStateTests,
        CondNopTester_Nop_Rule_110_A1_P222__cccc0011001000001111000000000000_Test) {
   CondNopTester_Nop_Rule_110_A1_P222_ baseline_tester;
-  NamedEffectiveNoOp_Nop_Rule_110_A1_P222 actual;
+  NamedDontCareInst_Nop_Rule_110_A1_P222 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc0011001000001111000000000000");
 }
@@ -1868,7 +1877,7 @@ TEST_F(Arm32DecoderStateTests,
 TEST_F(Arm32DecoderStateTests,
        CondNopTester_Yield_Rule_413_A1_P812__cccc0011001000001111000000000001_Test) {
   CondNopTester_Yield_Rule_413_A1_P812_ baseline_tester;
-  NamedEffectiveNoOp_Yield_Rule_413_A1_P812 actual;
+  NamedDontCareInst_Yield_Rule_413_A1_P812 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc0011001000001111000000000001");
 }

@@ -310,6 +310,17 @@ class Imm4Bits16To19Interface {
   NACL_DISALLOW_COPY_AND_ASSIGN(Imm4Bits16To19Interface);
 };
 
+// Interface class to pull out an immediate value in bits 18 through 19.
+class Imm2Bits18To19Interface {
+ public:
+  static inline uint32_t value(const Instruction& i) {
+    return i.Bits(19, 18);
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(Imm2Bits18To19Interface);
+};
+
 // Interface class to pull out S (update) bit 20, which
 // defines if the condition bits in APSR are updated by the instruction.
 class UpdatesConditionsBit20Interface {

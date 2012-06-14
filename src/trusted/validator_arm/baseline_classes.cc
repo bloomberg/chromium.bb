@@ -24,6 +24,20 @@ RegisterList CondNop::defs(const Instruction i) const {
   return RegisterList();
 }
 
+// MoveImmediate12ToApsr
+SafetyLevel MoveImmediate12ToApsr::safety(const Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return MAY_BE_SAFE;
+}
+
+RegisterList MoveImmediate12ToApsr::defs(const Instruction i) const {
+  RegisterList regs;
+  if (UpdatesConditions(i)) {
+    regs.Add(kConditions);
+  }
+  return regs;
+}
+
 // Unary1RegisterImmediateOp
 SafetyLevel Unary1RegisterImmediateOp::safety(const Instruction i) const {
   if (d.reg(i).Equals(kRegisterPc)) return UNPREDICTABLE;

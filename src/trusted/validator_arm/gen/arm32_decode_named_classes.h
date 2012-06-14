@@ -755,6 +755,12 @@ class MoveFromCoprocessor_None
   virtual ~MoveFromCoprocessor_None() {}
 };
 
+class MoveImmediate12ToApsr_Msr_Rule_103_A1_P208
+    : public MoveImmediate12ToApsr {
+ public:
+  virtual ~MoveImmediate12ToApsr_Msr_Rule_103_A1_P208() {}
+};
+
 class MoveToStatusRegister_None
     : public MoveToStatusRegister {
  public:
@@ -1475,6 +1481,24 @@ class DontCareInst_Cmp_Rule_36_A1_P82
   virtual ~DontCareInst_Cmp_Rule_36_A1_P82() {}
 };
 
+class DontCareInst_Dbg_Rule_40_A1_P88
+    : public DontCareInst {
+ public:
+  virtual ~DontCareInst_Dbg_Rule_40_A1_P88() {}
+};
+
+class DontCareInst_Msr_Rule_103_A1_P208
+    : public DontCareInst {
+ public:
+  virtual ~DontCareInst_Msr_Rule_103_A1_P208() {}
+};
+
+class DontCareInst_Nop_Rule_110_A1_P222
+    : public DontCareInst {
+ public:
+  virtual ~DontCareInst_Nop_Rule_110_A1_P222() {}
+};
+
 class DontCareInst_Teq_Rule_227_A1_P448
     : public DontCareInst {
  public:
@@ -1491,6 +1515,12 @@ class DontCareInst_Tst_Rule_231_A1_P456
     : public DontCareInst {
  public:
   virtual ~DontCareInst_Tst_Rule_231_A1_P456() {}
+};
+
+class DontCareInst_Yield_Rule_413_A1_P812
+    : public DontCareInst {
+ public:
+  virtual ~DontCareInst_Yield_Rule_413_A1_P812() {}
 };
 
 class DontCareInstRnRsRmNotPc_Cmn_Rule_34_A1_P78
@@ -1515,24 +1545,6 @@ class DontCareInstRnRsRmNotPc_Tst_Rule_232_A1_P458
     : public DontCareInstRnRsRmNotPc {
  public:
   virtual ~DontCareInstRnRsRmNotPc_Tst_Rule_232_A1_P458() {}
-};
-
-class EffectiveNoOp_Dbg_Rule_40_A1_P88
-    : public EffectiveNoOp {
- public:
-  virtual ~EffectiveNoOp_Dbg_Rule_40_A1_P88() {}
-};
-
-class EffectiveNoOp_Nop_Rule_110_A1_P222
-    : public EffectiveNoOp {
- public:
-  virtual ~EffectiveNoOp_Nop_Rule_110_A1_P222() {}
-};
-
-class EffectiveNoOp_Yield_Rule_413_A1_P812
-    : public EffectiveNoOp {
- public:
-  virtual ~EffectiveNoOp_Yield_Rule_413_A1_P812() {}
 };
 
 class Forbidden_Msr_Rule_B6_1_6_A1_PB6_12
@@ -3328,6 +3340,19 @@ class NamedMoveFromCoprocessor_None
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedMoveFromCoprocessor_None);
 };
 
+class NamedMoveImmediate12ToApsr_Msr_Rule_103_A1_P208
+    : public NamedClassDecoder {
+ public:
+  inline NamedMoveImmediate12ToApsr_Msr_Rule_103_A1_P208()
+    : NamedClassDecoder(decoder_, "MoveImmediate12ToApsr Msr_Rule_103_A1_P208")
+  {}
+  virtual ~NamedMoveImmediate12ToApsr_Msr_Rule_103_A1_P208() {}
+
+ private:
+  nacl_arm_dec::MoveImmediate12ToApsr_Msr_Rule_103_A1_P208 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedMoveImmediate12ToApsr_Msr_Rule_103_A1_P208);
+};
+
 class NamedMoveToStatusRegister_None
     : public NamedClassDecoder {
  public:
@@ -4888,6 +4913,45 @@ class NamedDontCareInst_Cmp_Rule_36_A1_P82
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedDontCareInst_Cmp_Rule_36_A1_P82);
 };
 
+class NamedDontCareInst_Dbg_Rule_40_A1_P88
+    : public NamedClassDecoder {
+ public:
+  inline NamedDontCareInst_Dbg_Rule_40_A1_P88()
+    : NamedClassDecoder(decoder_, "DontCareInst Dbg_Rule_40_A1_P88")
+  {}
+  virtual ~NamedDontCareInst_Dbg_Rule_40_A1_P88() {}
+
+ private:
+  nacl_arm_dec::DontCareInst_Dbg_Rule_40_A1_P88 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDontCareInst_Dbg_Rule_40_A1_P88);
+};
+
+class NamedDontCareInst_Msr_Rule_103_A1_P208
+    : public NamedClassDecoder {
+ public:
+  inline NamedDontCareInst_Msr_Rule_103_A1_P208()
+    : NamedClassDecoder(decoder_, "DontCareInst Msr_Rule_103_A1_P208")
+  {}
+  virtual ~NamedDontCareInst_Msr_Rule_103_A1_P208() {}
+
+ private:
+  nacl_arm_dec::DontCareInst_Msr_Rule_103_A1_P208 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDontCareInst_Msr_Rule_103_A1_P208);
+};
+
+class NamedDontCareInst_Nop_Rule_110_A1_P222
+    : public NamedClassDecoder {
+ public:
+  inline NamedDontCareInst_Nop_Rule_110_A1_P222()
+    : NamedClassDecoder(decoder_, "DontCareInst Nop_Rule_110_A1_P222")
+  {}
+  virtual ~NamedDontCareInst_Nop_Rule_110_A1_P222() {}
+
+ private:
+  nacl_arm_dec::DontCareInst_Nop_Rule_110_A1_P222 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDontCareInst_Nop_Rule_110_A1_P222);
+};
+
 class NamedDontCareInst_Teq_Rule_227_A1_P448
     : public NamedClassDecoder {
  public:
@@ -4925,6 +4989,19 @@ class NamedDontCareInst_Tst_Rule_231_A1_P456
  private:
   nacl_arm_dec::DontCareInst_Tst_Rule_231_A1_P456 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedDontCareInst_Tst_Rule_231_A1_P456);
+};
+
+class NamedDontCareInst_Yield_Rule_413_A1_P812
+    : public NamedClassDecoder {
+ public:
+  inline NamedDontCareInst_Yield_Rule_413_A1_P812()
+    : NamedClassDecoder(decoder_, "DontCareInst Yield_Rule_413_A1_P812")
+  {}
+  virtual ~NamedDontCareInst_Yield_Rule_413_A1_P812() {}
+
+ private:
+  nacl_arm_dec::DontCareInst_Yield_Rule_413_A1_P812 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedDontCareInst_Yield_Rule_413_A1_P812);
 };
 
 class NamedDontCareInstRnRsRmNotPc_Cmn_Rule_34_A1_P78
@@ -4977,45 +5054,6 @@ class NamedDontCareInstRnRsRmNotPc_Tst_Rule_232_A1_P458
  private:
   nacl_arm_dec::DontCareInstRnRsRmNotPc_Tst_Rule_232_A1_P458 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedDontCareInstRnRsRmNotPc_Tst_Rule_232_A1_P458);
-};
-
-class NamedEffectiveNoOp_Dbg_Rule_40_A1_P88
-    : public NamedClassDecoder {
- public:
-  inline NamedEffectiveNoOp_Dbg_Rule_40_A1_P88()
-    : NamedClassDecoder(decoder_, "EffectiveNoOp Dbg_Rule_40_A1_P88")
-  {}
-  virtual ~NamedEffectiveNoOp_Dbg_Rule_40_A1_P88() {}
-
- private:
-  nacl_arm_dec::EffectiveNoOp_Dbg_Rule_40_A1_P88 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedEffectiveNoOp_Dbg_Rule_40_A1_P88);
-};
-
-class NamedEffectiveNoOp_Nop_Rule_110_A1_P222
-    : public NamedClassDecoder {
- public:
-  inline NamedEffectiveNoOp_Nop_Rule_110_A1_P222()
-    : NamedClassDecoder(decoder_, "EffectiveNoOp Nop_Rule_110_A1_P222")
-  {}
-  virtual ~NamedEffectiveNoOp_Nop_Rule_110_A1_P222() {}
-
- private:
-  nacl_arm_dec::EffectiveNoOp_Nop_Rule_110_A1_P222 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedEffectiveNoOp_Nop_Rule_110_A1_P222);
-};
-
-class NamedEffectiveNoOp_Yield_Rule_413_A1_P812
-    : public NamedClassDecoder {
- public:
-  inline NamedEffectiveNoOp_Yield_Rule_413_A1_P812()
-    : NamedClassDecoder(decoder_, "EffectiveNoOp Yield_Rule_413_A1_P812")
-  {}
-  virtual ~NamedEffectiveNoOp_Yield_Rule_413_A1_P812() {}
-
- private:
-  nacl_arm_dec::EffectiveNoOp_Yield_Rule_413_A1_P812 decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedEffectiveNoOp_Yield_Rule_413_A1_P812);
 };
 
 class NamedForbidden_Msr_Rule_B6_1_6_A1_PB6_12

@@ -994,11 +994,11 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_msr_and_hints(
 
   if ((insn.Bits() & 0x00400000) == 0x00000000 /* op(22:22) == 0 */ &&
       (insn.Bits() & 0x000F0000) == 0x00040000 /* op1(19:16) == 0100 */)
-    return MoveToStatusRegister_None_instance_;
+    return MoveImmediate12ToApsr_Msr_Rule_103_A1_P208_instance_;
 
   if ((insn.Bits() & 0x00400000) == 0x00000000 /* op(22:22) == 0 */ &&
       (insn.Bits() & 0x000B0000) == 0x00080000 /* op1(19:16) == 1x00 */)
-    return MoveToStatusRegister_None_instance_;
+    return MoveImmediate12ToApsr_Msr_Rule_103_A1_P208_instance_;
 
   if ((insn.Bits() & 0x00400000) == 0x00000000 /* op(22:22) == 0 */ &&
       (insn.Bits() & 0x00030000) == 0x00010000 /* op1(19:16) == xx01 */)

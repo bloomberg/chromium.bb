@@ -788,12 +788,12 @@ const ClassDecoder& Arm32DecoderState::decode_msr_and_hints(
   if ((insn.Bits() & 0x00400000) == 0x00000000 /* op(22:22) == 0 */ &&
       (insn.Bits() & 0x000F0000) == 0x00000000 /* op1(19:16) == 0000 */ &&
       (insn.Bits() & 0x000000FF) == 0x00000000 /* op2(7:0) == 00000000 */)
-    return EffectiveNoOp_instance_;
+    return DontCareInst_instance_;
 
   if ((insn.Bits() & 0x00400000) == 0x00000000 /* op(22:22) == 0 */ &&
       (insn.Bits() & 0x000F0000) == 0x00000000 /* op1(19:16) == 0000 */ &&
       (insn.Bits() & 0x000000FF) == 0x00000001 /* op2(7:0) == 00000001 */)
-    return EffectiveNoOp_instance_;
+    return DontCareInst_instance_;
 
   if ((insn.Bits() & 0x00400000) == 0x00000000 /* op(22:22) == 0 */ &&
       (insn.Bits() & 0x000F0000) == 0x00000000 /* op1(19:16) == 0000 */ &&
@@ -808,15 +808,15 @@ const ClassDecoder& Arm32DecoderState::decode_msr_and_hints(
   if ((insn.Bits() & 0x00400000) == 0x00000000 /* op(22:22) == 0 */ &&
       (insn.Bits() & 0x000F0000) == 0x00000000 /* op1(19:16) == 0000 */ &&
       (insn.Bits() & 0x000000F0) == 0x000000F0 /* op2(7:0) == 1111xxxx */)
-    return EffectiveNoOp_instance_;
+    return DontCareInst_instance_;
 
   if ((insn.Bits() & 0x00400000) == 0x00000000 /* op(22:22) == 0 */ &&
       (insn.Bits() & 0x000F0000) == 0x00040000 /* op1(19:16) == 0100 */)
-    return MoveToStatusRegister_instance_;
+    return DontCareInst_instance_;
 
   if ((insn.Bits() & 0x00400000) == 0x00000000 /* op(22:22) == 0 */ &&
       (insn.Bits() & 0x000B0000) == 0x00080000 /* op1(19:16) == 1x00 */)
-    return MoveToStatusRegister_instance_;
+    return DontCareInst_instance_;
 
   if ((insn.Bits() & 0x00400000) == 0x00000000 /* op(22:22) == 0 */ &&
       (insn.Bits() & 0x00030000) == 0x00010000 /* op1(19:16) == xx01 */)

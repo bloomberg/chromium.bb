@@ -78,6 +78,45 @@ class ForbiddenCondNop : public UnsafeCondNop {
   NACL_DISALLOW_COPY_AND_ASSIGN(ForbiddenCondNop);
 };
 
+// Models a move of an immediate 12 value to the corresponding
+// bits in the APSR.
+// MSR<c> <spec_reg>, #<const>
+// +--------+----------------+----+------------+------------------------+
+// |31302928|2726252423222120|1918|171615141312|1110 9 8 7 6 5 4 3 2 1 0|
+// +--------+----------------+----+------------+------------------------+
+// |  cond  |                |mask|            |         imm12          |
+// +--------+----------------+----+------------+------------------------+
+// Definitions:
+//    mask = Defines which parts of the APSR is set. When mask<1>=1,
+//           the N, Z, C, V, and Q bits (31:27) are updated. When
+//           mask<0>=1, the GE bits (3:0 and 19:16) are updated.
+// Note: If mask=3, then N, Z, C, V, Q, and GE bits are updated.
+// Note: mask=0 should not parse.
+class MoveImmediate12ToApsr : public ClassDecoder {
+ public:
+  // Interfaces for components in the instruction.
+  static const Imm12Bits0To11Interface imm12;
+  static const Imm2Bits18To19Interface mask;
+  static const ConditionBits28To31Interface cond;
+
+  // Methods for class.
+  inline MoveImmediate12ToApsr() {}
+  virtual ~MoveImmediate12ToApsr() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+  // Defines when condition flags N, Z, C, V, and Q are updated.
+  bool UpdatesConditions(const Instruction i) const {
+    return (mask.value(i) & 0x02) == 0x2;
+  }
+  // Defines when GE bits are updated.
+  bool UpdatesApsrGe(const Instruction i) const {
+    return (mask.value(i) & 0x1) == 0x1;
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(MoveImmediate12ToApsr);
+};
+
 // Models a 1-register assignment of a 16-bit immediate.
 // Op(S)<c> Rd, #const
 // +--------+--------------+--+--------+--------+------------------------+

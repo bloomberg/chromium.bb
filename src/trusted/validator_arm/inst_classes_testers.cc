@@ -70,6 +70,43 @@ ApplySanityChecks(Instruction inst,
   return true;
 }
 
+// MoveImmediate12ToApsrTester
+MoveImmediate12ToApsrTester::MoveImmediate12ToApsrTester(
+    const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
+
+bool MoveImmediate12ToApsrTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  nacl_arm_dec::MoveImmediate12ToApsr expected_decoder;
+
+  // Check that condition is defined correctly.
+  EXPECT_EQ(expected_decoder.cond.value(inst), inst.Bits(31, 28));
+
+  // Didn't parse undefined conditional.
+  if (expected_decoder.cond.undefined(inst)) {
+    NC_EXPECT_NE_PRECOND(&ExpectedDecoder(), &decoder);
+  }
+
+  // Check if expected class name found.
+  NC_PRECOND(Arm32DecoderTester::ApplySanityChecks(inst, decoder));
+
+  // Check if mask and immediate values are correctly defined.
+  EXPECT_EQ(expected_decoder.mask.value(inst), inst.Bits(19, 18));
+  EXPECT_EQ(expected_decoder.imm12.value(inst), inst.Bits(11, 0));
+
+  // Check that mask not zero.
+  EXPECT_NE(static_cast<uint32_t>(0), expected_decoder.mask.value(inst));
+
+  // Check that mask tests match mask.
+  EXPECT_EQ(expected_decoder.mask.value(inst),
+            ((static_cast<uint32_t>(
+                expected_decoder.UpdatesConditions(inst)) << 1) |
+             static_cast<uint32_t>(expected_decoder.UpdatesApsrGe(inst))));
+
+  return true;
+}
+
 // Unary1RegisterImmediateOpTester
 Unary1RegisterImmediateOpTester::Unary1RegisterImmediateOpTester(
     const NamedClassDecoder& decoder)

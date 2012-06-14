@@ -46,6 +46,29 @@ class CondNopTester : public Arm32DecoderTester {
   NACL_DISALLOW_COPY_AND_ASSIGN(CondNopTester);
 };
 
+// Implements a decoder tester for decoder MoveImmediate12ToApsr.
+// MSR<c> <spec_reg>, #<const>
+// +--------+----------------+----+------------+------------------------+
+// |31302928|2726252423222120|1918|171615141312|1110 9 8 7 6 5 4 3 2 1 0|
+// +--------+----------------+----+------------+------------------------+
+// |  cond  |                |mask|            |         imm12          |
+// +--------+----------------+----+------------+------------------------+
+// Definitions:
+//    mask = Defines which parts of the APSR is set. When mask<1>=1,
+//           the N, Z, C, V, and Q bits (31:27) are updated. When
+//           mask<0>=1, the GE bits (3:0 and 19:16) are updated.
+// Note: If mask=3, then N, Z, C, V, Q, and GE bits are updated.
+// Note: mask=0 should not parse.
+class MoveImmediate12ToApsrTester : public Arm32DecoderTester {
+ public:
+  explicit MoveImmediate12ToApsrTester(const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(MoveImmediate12ToApsrTester);
+};
+
 // Implements a decoder tester for decoder Unary1RegisterImmediateOp.
 // Op(S)<c> Rd, #const
 // +--------+--------------+--+--------+--------+------------------------+
