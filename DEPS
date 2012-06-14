@@ -101,6 +101,9 @@ deps = {
   "src/third_party/icu":
     "/trunk/deps/third_party/icu46@140144",
 
+  "src/third_party/libexif/sources":
+    "/trunk/deps/third_party/libexif/sources@141967",
+
   "src/third_party/hunspell":
    "/trunk/deps/third_party/hunspell@132738",
 
