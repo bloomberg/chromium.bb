@@ -40,6 +40,32 @@ void BackingStoreSkia::SkiaShowRect(const gfx::Point& point,
       SkIntToScalar(scaled_point.x()), SkIntToScalar(scaled_point.y()));
 }
 
+void BackingStoreSkia::ScaleFactorChanged(float device_scale_factor) {
+  if (device_scale_factor == device_scale_factor_)
+    return;
+
+  gfx::Size old_pixel_size = size().Scale(device_scale_factor_);
+  device_scale_factor_ = device_scale_factor;
+
+  gfx::Size pixel_size = size().Scale(device_scale_factor_);
+  SkBitmap new_bitmap;
+  new_bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+      pixel_size.width(), pixel_size.height());
+  new_bitmap.allocPixels();
+  scoped_ptr<SkCanvas> new_canvas(new SkCanvas(new_bitmap));
+
+  // Copy old contents; a low-res flash is better than a black flash.
+  SkPaint copy_paint;
+  copy_paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+  SkIRect src_rect = SkIRect::MakeWH(old_pixel_size.width(),
+                                     old_pixel_size.height());
+  SkRect dst_rect = SkRect::MakeWH(pixel_size.width(), pixel_size.height());
+  new_canvas.get()->drawBitmapRect(bitmap_, &src_rect, dst_rect, &copy_paint);
+
+  canvas_.swap(new_canvas);
+  bitmap_ = new_bitmap;
+}
+
 size_t BackingStoreSkia::MemorySize() {
   // NOTE: The computation may be different when the canvas is a subrectangle of
   // a larger bitmap.

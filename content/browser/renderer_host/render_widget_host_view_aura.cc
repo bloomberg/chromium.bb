@@ -1146,8 +1146,15 @@ void RenderWidgetHostViewAura::OnPaint(gfx::Canvas* canvas) {
 
 void RenderWidgetHostViewAura::OnDeviceScaleFactorChanged(
     float device_scale_factor) {
-  // TODO(fsamuel|rbyers): Notify renderer that the device scale factor has
-  // changed. crbug.com/128267.
+  if (!host_)
+    return;
+
+  BackingStoreSkia* backing_store = static_cast<BackingStoreSkia*>(
+      host_->GetBackingStore(false));
+  if (backing_store)  // NULL in hardware path.
+    backing_store->ScaleFactorChanged(device_scale_factor);
+
+  host_->SetDeviceScaleFactor(device_scale_factor);
 }
 
 void RenderWidgetHostViewAura::OnWindowDestroying() {

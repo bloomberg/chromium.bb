@@ -36,6 +36,9 @@ class BackingStoreSkia : public BackingStore {
   CONTENT_EXPORT void SkiaShowRect(const gfx::Point& point,
                                    gfx::Canvas* canvas);
 
+  // Called when the view's backing scale factor changes.
+  void ScaleFactorChanged(float device_scale_factor);
+
   // BackingStore implementation.
   virtual size_t MemorySize() OVERRIDE;
   virtual void PaintToBackingStore(
