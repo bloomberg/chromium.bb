@@ -70,8 +70,6 @@ ShutdownType shutdown_type_ = NOT_VALID;
 int shutdown_num_processes_;
 int shutdown_num_processes_slow_;
 
-bool delete_resources_on_shutdown = true;
-
 const char kShutdownMsFile[] = "chrome_shutdown_ms.txt";
 
 void RegisterPrefs(PrefService* local_state) {
@@ -179,9 +177,6 @@ void ShutdownPostThreadsStop(bool restart_last_session) {
 
   // Uninstall Jank-O-Meter here after the IO thread is no longer running.
   UninstallJankometer();
-
-  if (delete_resources_on_shutdown)
-    ResourceBundle::CleanupSharedInstance();
 
 #if defined(OS_WIN)
   if (!browser_util::IsBrowserAlreadyRunning() &&

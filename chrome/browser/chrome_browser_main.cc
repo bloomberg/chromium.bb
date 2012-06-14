@@ -390,12 +390,6 @@ Profile* CreateProfile(const content::MainFunctionParams& parameters,
   // with the new dir.
   // http://code.google.com/p/chromium/issues/detail?id=11510
   FilePath new_user_data_dir = browser::ShowUserDataDirDialog(user_data_dir);
-  if (!parameters.ui_task && browser_shutdown::delete_resources_on_shutdown) {
-    // Only delete the resources if we're not running tests. If we're running
-    // tests the resources need to be reused as many places in the UI cache
-    // ImageSkias from the ResourceBundle.
-    ResourceBundle::CleanupSharedInstance();
-  }
 
   if (!new_user_data_dir.empty()) {
     // Because of the way CommandLine parses, it's sufficient to append a new
