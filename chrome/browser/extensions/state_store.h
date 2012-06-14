@@ -26,6 +26,7 @@ class StateStore
   typedef ValueStoreFrontend::ReadCallback ReadCallback;
 
   StateStore(Profile* profile, const FilePath& db_path);
+  // This variant is useful for testing (using a mock ValueStore).
   StateStore(Profile* profile, ValueStore* store);
   virtual ~StateStore();
 

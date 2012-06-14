@@ -1479,16 +1479,3 @@
    fun:ChromeRenderViewHostTestHarness::SetUp
    fun:TabContentsTestHarness::SetUp
 }
-{
-   bug_132621_a
-   Heapcheck:Leak
-   fun:TestExtensionSystem::CreateExtensionService
-   fun:ChromeLauncherControllerTest::ChromeLauncherControllerTest
-   fun:ChromeLauncherControllerTest_*_Test::ChromeLauncherControllerTest_*
-}
-{
-   bug_132621_b
-   Heapcheck:Leak
-   fun:TestExtensionSystem::CreateExtensionService
-   fun:ExtensionUITest::SetUp
-}

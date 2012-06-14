@@ -26,6 +26,7 @@ class ValueStoreFrontend
   typedef base::Callback<void(scoped_ptr<base::Value>)> ReadCallback;
 
   explicit ValueStoreFrontend(const FilePath& db_path);
+  // This variant is useful for testing (using a mock ValueStore).
   explicit ValueStoreFrontend(ValueStore* value_store);
   ~ValueStoreFrontend();
 
