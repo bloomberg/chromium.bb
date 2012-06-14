@@ -1615,6 +1615,13 @@ gboolean BrowserWindowGtk::OnWindowState(GtkWidget* sender,
     }
   }
 
+  if (event->changed_mask & GDK_WINDOW_STATE_MAXIMIZED) {
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_BROWSER_WINDOW_MAXIMIZED,
+        content::Source<BrowserWindow>(this),
+        content::NotificationService::NoDetails());
+  }
+
   titlebar_->UpdateCustomFrame(UseCustomFrame() && !IsFullscreen());
   UpdateWindowShape(bounds_.width(), bounds_.height());
   SaveWindowPosition();

@@ -182,6 +182,9 @@ class Automation {
                      const Rect& bounds,
                      Error** error);
 
+  // Maximizes the given view.
+  void MaximizeView(const WebViewId& view_id, Error** error);
+
   // Gets the active JavaScript modal dialog's message.
   void GetAppModalDialogMessage(std::string* message, Error** error);
 
@@ -262,6 +265,7 @@ class Automation {
   Error* CheckAdvancedInteractionsSupported();
   Error* CheckNewExtensionInterfaceSupported();
   Error* CheckGeolocationSupported();
+  Error* CheckMaximizeSupported();
   Error* IsNewMouseApiSupported(bool* supports_new_api);
 
   const Logger& logger_;

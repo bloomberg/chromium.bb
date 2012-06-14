@@ -184,6 +184,9 @@ class Session {
   // Sets the bounds for the specified window.
   Error* SetWindowBounds(const WebViewId& window, const Rect& bounds);
 
+  // Maximizes the specified window.
+  Error* MaximizeWindow(const WebViewId& window);
+
   // Gets the message of the currently active JavaScript modal dialog.
   Error* GetAlertMessage(std::string* text);
 
@@ -367,7 +370,7 @@ class Session {
   Error* ClearStorage(StorageType type);
 
   // Gets the keys of all items of the HTML5 localStorage object. If there are
-  // no errors, the function sets |value| and the caller takes ownership.
+  // no errors, the function sets |keys| and the caller takes ownership.
   Error* GetStorageKeys(StorageType type, base::ListValue** keys);
 
   // Gets the current geolocation.

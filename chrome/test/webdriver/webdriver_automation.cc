@@ -881,6 +881,17 @@ void Automation::SetViewBounds(const WebViewId& view_id,
     *error = Error::FromAutomationError(auto_error);
 }
 
+void Automation::MaximizeView(const WebViewId& view_id, Error** error) {
+  *error = CheckMaximizeSupported();
+  if (*error)
+    return;
+
+  automation::Error auto_error;
+  if (!SendMaximizeJSONRequest(
+          automation(), view_id, &auto_error))
+    *error = Error::FromAutomationError(auto_error);
+}
+
 void Automation::GetAppModalDialogMessage(std::string* message, Error** error) {
   *error = CheckAlertsSupported();
   if (*error)
@@ -1157,6 +1168,13 @@ Error* Automation::CheckGeolocationSupported() {
       "Geolocation automation interface is not supported for this version of "
       "Chrome.";
   return CheckVersion(1119, message);
+}
+
+Error* Automation::CheckMaximizeSupported() {
+  const char* message =
+      "Maximize automation interface is not supported for this version of "
+      "Chrome.";
+  return CheckVersion(1160, message);
 }
 
 }  // namespace webdriver

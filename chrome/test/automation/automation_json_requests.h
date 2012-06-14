@@ -424,6 +424,12 @@ bool SendSetViewBoundsJSONRequest(
     int height,
     automation::Error* error) WARN_UNUSED_RESULT;
 
+// Requests to maximize the given view. Returns true on success.
+bool SendMaximizeJSONRequest(
+    AutomationMessageSender* sender,
+    const WebViewId& id,
+    automation::Error* error) WARN_UNUSED_RESULT;
+
 // Requests to get the active JavaScript modal dialog's message. Returns true
 // on success.
 bool SendGetAppModalDialogMessageJSONRequest(

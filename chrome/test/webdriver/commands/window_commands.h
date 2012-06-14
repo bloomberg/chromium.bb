@@ -48,6 +48,20 @@ class WindowPositionCommand : public WebDriverCommand {
   DISALLOW_COPY_AND_ASSIGN(WindowPositionCommand);
 };
 
+class WindowMaximizeCommand : public WebDriverCommand {
+ public:
+  WindowMaximizeCommand(const std::vector<std::string>& path_segments,
+                        const base::DictionaryValue* parameters);
+  virtual ~WindowMaximizeCommand();
+
+  virtual bool DoesPost() OVERRIDE;
+  virtual void ExecutePost(Response* const response) OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WindowMaximizeCommand);
+};
+
+
 }  // namespace webdriver
 
 #endif  // CHROME_TEST_WEBDRIVER_COMMANDS_WINDOW_COMMANDS_H_

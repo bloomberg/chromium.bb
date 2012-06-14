@@ -3022,3 +3022,30 @@ void ExtensionPopupObserver::Observe(
     delete this;
   }
 }
+
+#if defined(OS_LINUX)
+WindowMaximizedObserver::WindowMaximizedObserver(
+    AutomationProvider* automation,
+    IPC::Message* reply_message)
+    : automation_(automation->AsWeakPtr()),
+      reply_message_(reply_message) {
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_WINDOW_MAXIMIZED,
+                 content::NotificationService::AllSources());
+}
+
+WindowMaximizedObserver::~WindowMaximizedObserver() {}
+
+void WindowMaximizedObserver::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK_EQ(chrome::NOTIFICATION_BROWSER_WINDOW_MAXIMIZED, type);
+
+  if (automation_) {
+    AutomationJSONReply(automation_, reply_message_.release())
+        .SendSuccess(NULL);
+  }
+  delete this;
+}
+#endif  // defined(OS_LINUX)
+

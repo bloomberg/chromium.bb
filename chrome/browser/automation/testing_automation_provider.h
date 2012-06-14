@@ -1094,6 +1094,14 @@ class TestingAutomationProvider : public AutomationProvider,
   //   output: none
   void SetViewBounds(base::DictionaryValue* args, IPC::Message* reply_message);
 
+  // Maximizes the web view.
+  // The single |auto_id| must be given to specify the view.
+  // This method currently is only supported for tabs.
+  // Example:
+  //   input: { "auto_id": { "type": 0, "id": "awoein" } }
+  //   output: none
+  void MaximizeView(base::DictionaryValue* args, IPC::Message* reply_message);
+
   // Sends the WebKit events for a mouse click at a given coordinate.
   // The pair |windex| and |tab_index| or the single |auto_id| must be given
   // to specify the render view.

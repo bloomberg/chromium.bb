@@ -132,7 +132,7 @@ void WindowPositionCommand::ExecuteGet(Response* const response) {
 }
 
 void WindowPositionCommand::ExecutePost(Response* const response) {
-  // Path segment: "/session/$sessionId/window/$windowHandle/size"
+  // Path segment: "/session/$sessionId/window/$windowHandle/position"
   WebViewId window_id;
   WebViewId current_id = session_->current_target().view_id;
   if (!GetWindowId(GetPathVariable(4), current_id, &window_id, response))
@@ -152,6 +152,33 @@ void WindowPositionCommand::ExecutePost(Response* const response) {
     bounds = Rect(Point(x, y), bounds.size());
     error = session_->SetWindowBounds(window_id, bounds);
   }
+  if (error) {
+    response->SetError(error);
+    return;
+  }
+}
+
+WindowMaximizeCommand::WindowMaximizeCommand(
+    const std::vector<std::string>& path_segments,
+    const base::DictionaryValue* parameters)
+    : WebDriverCommand(path_segments, parameters) {
+}
+
+WindowMaximizeCommand::~WindowMaximizeCommand() {
+}
+
+bool WindowMaximizeCommand::DoesPost() {
+  return true;
+}
+
+void WindowMaximizeCommand::ExecutePost(Response* const response) {
+  // Path segment: "/session/$sessionId/window/$windowHandle/maximize"
+  WebViewId window_id;
+  WebViewId current_id = session_->current_target().view_id;
+  if (!GetWindowId(GetPathVariable(4), current_id, &window_id, response))
+    return;
+
+  Error* error = session_->MaximizeWindow(window_id);
   if (error) {
     response->SetError(error);
     return;

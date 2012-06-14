@@ -146,6 +146,8 @@ void InitCallbacks(Dispatcher* dispatcher,
   dispatcher->Add<WindowSizeCommand>(   "/session/*/window/*/size");
   dispatcher->Add<WindowPositionCommand>(
                                         "/session/*/window/*/position");
+  dispatcher->Add<WindowMaximizeCommand>(
+                                        "/session/*/window/*/maximize");
   dispatcher->Add<SetAsyncScriptTimeoutCommand>(
                                         "/session/*/timeouts/async_script");
   dispatcher->Add<ImplicitWaitCommand>( "/session/*/timeouts/implicit_wait");

@@ -979,42 +979,59 @@ class AlertTest(ChromeDriverTest):
 
 
 class WindowTest(ChromeDriverTest):
-  def testSizeAndPosition(self):
-    driver = self.GetNewDriver()
+  """Tests for WebDriver window commands."""
 
-    # Test size.
-    size = driver.get_window_size()
-    driver.set_window_size(size['width'], size['height'])
-    self.assertEquals(size, driver.get_window_size())
-    driver.set_window_size(800, 600)
-    self.assertEquals(800, driver.get_window_size()['width'])
-    self.assertEquals(600, driver.get_window_size()['height'])
-    # Test position.
-    pos = driver.get_window_position()
-    driver.set_window_position(pos['x'], pos['y'])
-    self.assertEquals(pos, driver.get_window_position())
-    driver.set_window_position(100, 200)
-    self.assertEquals(100, driver.get_window_position()['x'])
-    self.assertEquals(200, driver.get_window_position()['y'])
-    # Test specifying window handle.
-    driver.execute_script(
+  def setUp(self):
+    super(WindowTest, self).setUp()
+    self._driver = self.GetNewDriver()
+
+  def testSize(self):
+    size = self._driver.get_window_size()
+    self._driver.set_window_size(size['width'], size['height'])
+    self.assertEquals(size, self._driver.get_window_size())
+    self._driver.set_window_size(800, 600)
+    self.assertEquals(800, self._driver.get_window_size()['width'])
+    self.assertEquals(600, self._driver.get_window_size()['height'])
+
+  def testPosition(self):
+    pos = self._driver.get_window_position()
+    self._driver.set_window_position(pos['x'], pos['y'])
+    self.assertEquals(pos, self._driver.get_window_position())
+    self._driver.set_window_position(100, 200)
+    self.assertEquals(100, self._driver.get_window_position()['x'])
+    self.assertEquals(200, self._driver.get_window_position()['y'])
+
+  # Systems without window manager (Xvfb, Xvnc) do not implement maximization.
+  @SkipIf(util.IsLinux())
+  def testMaximize(self):
+    old_size = self._driver.get_window_size()
+    self._driver.maximize_window()
+    new_size = self._driver.get_window_size()
+    self.assertTrue(old_size['width'] <= new_size['width'])
+    self.assertTrue(old_size['height'] <= new_size['height'])
+
+  def testWindowHandle(self):
+    """Test specifying window handle."""
+    self._driver.execute_script(
         'window.open("about:blank", "name", "height=200, width=200")')
-    windows = driver.window_handles
+    windows = self._driver.window_handles
     self.assertEquals(2, len(windows))
-    driver.set_window_size(400, 300, windows[1])
-    self.assertEquals(400, driver.get_window_size(windows[1])['width'])
-    self.assertEquals(300, driver.get_window_size(windows[1])['height'])
-    self.assertNotEquals(driver.get_window_size(windows[1]),
-                         driver.get_window_size(windows[0]))
-    # Test specifying invalid handle.
+    self._driver.set_window_size(400, 300, windows[1])
+    self.assertEquals(400, self._driver.get_window_size(windows[1])['width'])
+    self.assertEquals(300, self._driver.get_window_size(windows[1])['height'])
+    self.assertNotEquals(self._driver.get_window_size(windows[1]),
+                         self._driver.get_window_size(windows[0]))
+
+  def testInvalidWindowHandle(self):
+    """Tests specifying invalid handle."""
     invalid_handle = 'f1-120'
-    self.assertRaises(WebDriverException, driver.set_window_size, 400, 300,
+    self.assertRaises(WebDriverException, self._driver.set_window_size,
+                      400, 300, invalid_handle)
+    self.assertRaises(NoSuchWindowException, self._driver.get_window_size,
                       invalid_handle)
-    self.assertRaises(NoSuchWindowException, driver.get_window_size,
-                      invalid_handle)
-    self.assertRaises(NoSuchWindowException, driver.set_window_position, 1, 1,
-                      invalid_handle)
-    self.assertRaises(NoSuchWindowException, driver.get_window_position,
+    self.assertRaises(NoSuchWindowException, self._driver.set_window_position,
+                      1, 1, invalid_handle)
+    self.assertRaises(NoSuchWindowException, self._driver.get_window_position,
                       invalid_handle)
 
 

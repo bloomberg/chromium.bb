@@ -54,6 +54,14 @@ enum NotificationType {
   // that was closed, no details are expected.
   NOTIFICATION_WINDOW_CLOSED,
 
+#if defined(OS_LINUX)
+  // On Linux maximize can be an asynchronous operation. This notification
+  // indicates that the window has been maximized. The source is
+  // a Source<BrowserWindow> containing the BrowserWindow that was maximized.
+  // No details are expected.
+  NOTIFICATION_BROWSER_WINDOW_MAXIMIZED,
+#endif  // defined(OS_LINUX)
+
   // Sent when the language (English, French...) for a page has been detected.
   // The details Details<std::string> contain the ISO 639-1 language code and
   // the source is Source<WebContents>.

@@ -106,9 +106,10 @@ class InitialLoadObserver : public content::NotificationObserver {
   InitialLoadObserver(size_t tab_count, AutomationProvider* automation);
   virtual ~InitialLoadObserver();
 
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Caller owns the return value and is responsible for deleting it.
   // Example return value:
@@ -161,9 +162,11 @@ class NetworkManagerInitObserver
 class OOBEWebuiReadyObserver : public content::NotificationObserver {
  public:
   explicit OOBEWebuiReadyObserver(AutomationProvider* automation);
+
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   void OOBEWebuiReady();
@@ -182,9 +185,10 @@ class NewTabUILoadObserver : public content::NotificationObserver {
                                 Profile* profile);
   virtual ~NewTabUILoadObserver();
 
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   content::NotificationRegistrar registrar_;
@@ -202,9 +206,10 @@ class NavigationControllerRestoredObserver
       IPC::Message* reply_message);
   virtual ~NavigationControllerRestoredObserver();
 
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   bool FinishedRestoring();
@@ -228,9 +233,10 @@ class NavigationNotificationObserver : public content::NotificationObserver {
                                  bool use_json_interface);
   virtual ~NavigationNotificationObserver();
 
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   void ConditionMet(AutomationMsg_NavigationResponseValues navigation_result);
 
@@ -252,9 +258,10 @@ class TabStripNotificationObserver : public content::NotificationObserver {
                                AutomationProvider* automation);
   virtual ~TabStripNotificationObserver();
 
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   virtual void ObserveTab(content::NavigationController* controller) = 0;
 
@@ -339,10 +346,10 @@ class ExtensionUninstallObserver : public content::NotificationObserver {
                              const std::string& id);
   virtual ~ExtensionUninstallObserver();
 
-  // Implementation of content::NotificationObserver.
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   content::NotificationRegistrar registrar_;
@@ -365,10 +372,10 @@ class ExtensionReadyNotificationObserver
                                      IPC::Message* reply_message);
   virtual ~ExtensionReadyNotificationObserver();
 
-  // Implementation of NotificationObserver.
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   void Init();
@@ -389,10 +396,10 @@ class ExtensionUnloadNotificationObserver
   ExtensionUnloadNotificationObserver();
   virtual ~ExtensionUnloadNotificationObserver();
 
-  // Implementation of NotificationObserver.
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   bool did_receive_unload_notification() {
     return did_receive_unload_notification_;
@@ -416,10 +423,10 @@ class ExtensionsUpdatedObserver : public content::NotificationObserver {
                             IPC::Message* reply_message);
   virtual ~ExtensionsUpdatedObserver();
 
-  // Implementation of NotificationObserver.
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   content::NotificationRegistrar registrar_;
@@ -440,9 +447,10 @@ class BrowserOpenedNotificationObserver : public content::NotificationObserver {
                                     IPC::Message* reply_message);
   virtual ~BrowserOpenedNotificationObserver();
 
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   void set_for_browser_command(bool for_browser_command);
 
@@ -463,9 +471,10 @@ class BrowserClosedNotificationObserver : public content::NotificationObserver {
                                     IPC::Message* reply_message);
   virtual ~BrowserClosedNotificationObserver();
 
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   void set_for_browser_command(bool for_browser_command);
 
@@ -486,9 +495,10 @@ class BrowserCountChangeNotificationObserver
                                          IPC::Message* reply_message);
   virtual ~BrowserCountChangeNotificationObserver();
 
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   int target_count_;
@@ -508,9 +518,10 @@ class ExecuteBrowserCommandObserver : public content::NotificationObserver {
                                         int command,
                                         IPC::Message* reply_message);
 
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   ExecuteBrowserCommandObserver(AutomationProvider* automation,
@@ -536,9 +547,10 @@ class FindInPageNotificationObserver : public content::NotificationObserver {
                                  IPC::Message* reply_message);
   virtual ~FindInPageNotificationObserver();
 
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // The Find mechanism is over asynchronous IPC, so a search is kicked off and
   // we wait for notification to find out what the results are. As the user is
@@ -567,6 +579,7 @@ class DomOperationObserver : public content::NotificationObserver {
   explicit DomOperationObserver(int automation_id);
   virtual ~DomOperationObserver();
 
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
@@ -612,9 +625,10 @@ class MetricEventDurationObserver : public content::NotificationObserver {
   // Get the duration of an event.  Returns -1 if we haven't seen the event.
   int GetEventDurationMs(const std::string& event_name);
 
-  // NotificationObserver interface.
-  virtual void Observe(int type, const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+  // Overridden from content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   content::NotificationRegistrar registrar_;
@@ -632,10 +646,10 @@ class PageTranslatedObserver : public content::NotificationObserver {
                          content::WebContents* web_contents);
   virtual ~PageTranslatedObserver();
 
-  // content::NotificationObserver interface.
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   content::NotificationRegistrar registrar_;
@@ -653,10 +667,10 @@ class TabLanguageDeterminedObserver : public content::NotificationObserver {
                                 TranslateInfoBarDelegate* translate_bar);
   virtual ~TabLanguageDeterminedObserver();
 
-  // content::NotificationObserver interface.
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   content::NotificationRegistrar registrar_;
@@ -676,10 +690,10 @@ class InfoBarCountObserver : public content::NotificationObserver {
                        size_t target_count);
   virtual ~InfoBarCountObserver();
 
-  // content::NotificationObserver interface.
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   // Checks whether the infobar count matches our target, and if so
@@ -769,9 +783,10 @@ class ScreenLockUnlockObserver : public content::NotificationObserver {
                            bool lock_screen);
   virtual ~ScreenLockUnlockObserver();
 
-  // content::NotificationObserver interface.
-  virtual void Observe(int type, const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+  // Overridden from content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  protected:
   base::WeakPtr<AutomationProvider> automation_;
@@ -1221,10 +1236,10 @@ class PasswordStoreLoginsChangedObserver
   // Schedules a task on the DB thread to register the appropriate observers.
   virtual void Init();
 
-  // content::NotificationObserver interface.
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   friend struct content::BrowserThread::DeleteOnThread<
@@ -1280,9 +1295,10 @@ class OmniboxAcceptNotificationObserver : public content::NotificationObserver {
                                      IPC::Message* reply_message);
   virtual ~OmniboxAcceptNotificationObserver();
 
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   content::NotificationRegistrar registrar_;
@@ -1301,9 +1317,10 @@ class SavePackageNotificationObserver : public content::NotificationObserver {
                                   IPC::Message* reply_message);
   virtual ~SavePackageNotificationObserver();
 
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   content::NotificationRegistrar registrar_;
@@ -1327,15 +1344,16 @@ class PageSnapshotTaker : public TabEventObserver,
   void Start();
 
  private:
-  // TabEventObserver overrides.
+  // Overridden from TabEventObserver:
   virtual void OnSnapshotEntirePageACK(
       bool success,
       const std::vector<unsigned char>& png_data,
       const std::string& error_msg) OVERRIDE;
-  // NotificationObserver overrides.
+
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Helper method to send a response back to the client. Deletes this.
   void SendMessage(bool success, const std::string& error_msg);
@@ -1375,11 +1393,11 @@ class AutomationMouseEventProcessor : public content::RenderViewHostObserver,
       bool success,
       const std::string& error_msg);
 
-  // RenderViewHostObserver overrides.
+  // Overriden from RenderViewHostObserver.
   virtual void RenderViewHostDestroyed(content::RenderViewHost* host) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  // NotificationObserver overrides.
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
@@ -1404,9 +1422,10 @@ class NTPInfoObserver : public content::NotificationObserver {
                   CancelableRequestConsumer* consumer);
   virtual ~NTPInfoObserver();
 
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   void OnTopSitesLoaded();
@@ -1433,9 +1452,10 @@ class AppLaunchObserver : public content::NotificationObserver {
                     extension_misc::LaunchContainer launch_container);
   virtual ~AppLaunchObserver();
 
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   content::NavigationController* controller_;
@@ -1461,10 +1481,10 @@ class AutofillDisplayedObserver : public content::NotificationObserver {
                             IPC::Message* reply_message);
   virtual ~AutofillDisplayedObserver();
 
-  // content::NotificationObserver interface.
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   int notification_;
@@ -1493,10 +1513,10 @@ class AutofillChangedObserver
   // Schedules a task on the DB thread to register the appropriate observers.
   virtual void Init();
 
-  // content::NotificationObserver interface.
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   friend struct content::BrowserThread::DeleteOnThread<
@@ -1541,10 +1561,10 @@ class AutofillFormSubmittedObserver
   virtual void OnPersonalDataChanged() OVERRIDE;
   virtual void OnInsufficientFormData() OVERRIDE;
 
-  // content::NotificationObserver interface.
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   content::NotificationRegistrar registrar_;
@@ -1562,9 +1582,10 @@ class GetAllNotificationsObserver : public content::NotificationObserver {
                               IPC::Message* reply_message);
   virtual ~GetAllNotificationsObserver();
 
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   // Sends a message via the |AutomationProvider|. |automation_| must be valid.
@@ -1587,9 +1608,11 @@ class NewNotificationBalloonObserver : public content::NotificationObserver {
   NewNotificationBalloonObserver(AutomationProvider* provider,
                                  IPC::Message* reply_message);
   virtual ~NewNotificationBalloonObserver();
+
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   content::NotificationRegistrar registrar_;
@@ -1614,9 +1637,10 @@ class OnNotificationBalloonCountObserver
   // message is sent or if |automation_| is invalid.
   void CheckBalloonCount();
 
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   content::NotificationRegistrar registrar_;
@@ -1637,9 +1661,10 @@ class RendererProcessClosedObserver : public content::NotificationObserver {
                                 IPC::Message* reply_message);
   virtual ~RendererProcessClosedObserver();
 
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   content::NotificationRegistrar registrar_;
@@ -1658,9 +1683,10 @@ class InputEventAckNotificationObserver : public content::NotificationObserver {
                                     int event_type, int count);
   virtual ~InputEventAckNotificationObserver();
 
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   content::NotificationRegistrar registrar_;
@@ -1690,7 +1716,7 @@ class AllViewsStoppedLoadingObserver : public TabEventObserver,
   virtual void OnNoMorePendingLoads(
       content::WebContents* web_contents) OVERRIDE;
 
-  // content::NotificationObserver implementation.
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
@@ -1716,6 +1742,7 @@ class NewTabObserver : public content::NotificationObserver {
  public:
   NewTabObserver(AutomationProvider* automation, IPC::Message* reply_message);
 
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
@@ -1775,9 +1802,10 @@ class DragTargetDropAckNotificationObserver
                                         IPC::Message* reply_message);
   virtual ~DragTargetDropAckNotificationObserver();
 
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   content::NotificationRegistrar registrar_;
@@ -1812,9 +1840,10 @@ class V8HeapStatsObserver : public content::NotificationObserver {
                       base::ProcessId renderer_id);
   virtual ~V8HeapStatsObserver();
 
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   content::NotificationRegistrar registrar_;
@@ -1834,9 +1863,10 @@ class FPSObserver : public content::NotificationObserver {
               int routing_id);
   virtual ~FPSObserver();
 
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   content::NotificationRegistrar registrar_;
@@ -1863,9 +1893,10 @@ class BrowserOpenedWithNewProfileNotificationObserver
       IPC::Message* reply_message);
   virtual ~BrowserOpenedWithNewProfileNotificationObserver();
 
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   content::NotificationRegistrar registrar_;
@@ -1885,6 +1916,7 @@ class ExtensionPopupObserver : public content::NotificationObserver {
       const std::string& extension_id);
   ~ExtensionPopupObserver();
 
+  // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
@@ -1897,5 +1929,29 @@ class ExtensionPopupObserver : public content::NotificationObserver {
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionPopupObserver);
 };
+
+#if defined(OS_LINUX)
+// Allows the automation provider to wait for a WINDOW_MAXIMIZED notification.
+class WindowMaximizedObserver : public content::NotificationObserver {
+ public:
+  WindowMaximizedObserver(AutomationProvider* automation,
+                          IPC::Message* reply_message);
+  virtual ~WindowMaximizedObserver();
+
+  // Overridden from content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+ private:
+  content::NotificationRegistrar registrar_;
+  base::WeakPtr<AutomationProvider> automation_;
+  scoped_ptr<IPC::Message> reply_message_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowMaximizedObserver);
+};
+#endif  // defined(OS_LINUX)
+
+
 
 #endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_OBSERVERS_H_

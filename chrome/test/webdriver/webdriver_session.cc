@@ -665,7 +665,7 @@ Error* Session::SwitchToFrameWithIndex(int index) {
   // tagName of the frameElement. If child frame N is from another domain, then
   // the following will run afoul of the same origin policy:
   //   window.frames[N].frameElement;
-  // Instead of indexing window.frames, we use a an XPath expression to index
+  // Instead of indexing window.frames, we use an XPath expression to index
   // into the list of all IFRAME and FRAME elements on the page - if we find
   // something, then that XPath expression can be used as the new frame's XPath.
   std::string script =
@@ -787,6 +787,16 @@ Error* Session::SetWindowBounds(
       window,
       bounds,
       &error));
+  return error;
+}
+
+Error* Session::MaximizeWindow(const WebViewId& window) {
+  Error* error = NULL;
+  RunSessionTask(base::Bind(
+        &Automation::MaximizeView,
+        base::Unretained(automation_.get()),
+        window,
+        &error));
   return error;
 }
 

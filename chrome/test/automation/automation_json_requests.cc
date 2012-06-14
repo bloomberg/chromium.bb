@@ -712,6 +712,18 @@ bool SendSetViewBoundsJSONRequest(
   return SendAutomationJSONRequest(sender, dict, &reply_dict, error);
 }
 
+bool SendMaximizeJSONRequest(
+    AutomationMessageSender* sender,
+    const WebViewId& id,
+    automation::Error* error) {
+  DictionaryValue dict;
+  dict.SetString("command", "MaximizeView");
+  id.UpdateDictionary(&dict, "auto_id");
+
+  DictionaryValue reply_dict;
+  return SendAutomationJSONRequest(sender, dict, &reply_dict, error);
+}
+
 bool SendGetAppModalDialogMessageJSONRequest(
     AutomationMessageSender* sender,
     std::string* message,

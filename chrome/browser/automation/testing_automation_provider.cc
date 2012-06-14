@@ -1700,6 +1700,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::CloseTabJSON;
   handler_map["SetViewBounds"] =
       &TestingAutomationProvider::SetViewBounds;
+  handler_map["MaximizeView"] =
+      &TestingAutomationProvider::MaximizeView;
   handler_map["WebkitMouseMove"] =
       &TestingAutomationProvider::WebkitMouseMove;
   handler_map["WebkitMouseClick"] =
@@ -6501,8 +6503,37 @@ void TestingAutomationProvider::SetViewBounds(
     reply.SendError(Error(automation::kInvalidId, error));
     return;
   }
-  browser->window()->SetBounds(gfx::Rect(x, y, width, height));
+  BrowserWindow* browser_window = browser->window();
+  if (browser_window->IsMaximized()) {
+    browser_window->Restore();
+  }
+  browser_window->SetBounds(gfx::Rect(x, y, width, height));
   reply.SendSuccess(NULL);
+}
+
+void TestingAutomationProvider::MaximizeView(
+    base::DictionaryValue* args,
+    IPC::Message* reply_message) {
+  Browser* browser;
+  std::string error;
+  if (!GetBrowserFromJSONArgs(args, &browser, &error)) {
+    AutomationJSONReply(this, reply_message)
+        .SendError(Error(automation::kInvalidId, error));
+    return;
+  }
+
+#if defined(OS_LINUX)
+  // Maximization on Linux is asynchronous, so create an observer object to be
+  // notified upon maximization completion.
+  new WindowMaximizedObserver(this, reply_message);
+#endif  // defined(OS_LINUX)
+
+  browser->window()->Maximize();
+
+#if !defined(OS_LINUX)
+  // Send success reply right away for OS's with synchronous maximize command.
+  AutomationJSONReply(this, reply_message).SendSuccess(NULL);
+#endif  // !defined(OS_LINUX)
 }
 
 void TestingAutomationProvider::ActivateTabJSON(
