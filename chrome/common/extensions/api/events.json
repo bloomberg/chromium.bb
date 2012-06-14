@@ -22,7 +22,7 @@
           {
             "name": "addRules",
             "type": "function",
-            "description": "Registers rules to handle events. Note that you cannot call this function as <code>chrome.declarative.addRules(...)</code>. Instead a function of this signature is provided for event objects supporting the declarative API such as <code>chrome.declarativeWebRequest.onRequest</code>.",
+            "description": "Registers rules to handle events.",
             "parameters": [
               {
                 "nodoc": "true",
@@ -55,7 +55,7 @@
           {
             "name": "getRules",
             "type": "function",
-            "description": "Returns currently registered rules. Note that you cannot call this function as <code>chrome.declarative.getRules(...)</code>. Instead a function of this signature is provided for event objects supporting the declarative API such as <code>chrome.declarativeWebRequest.onRequest</code>.",
+            "description": "Returns currently registered rules.",
             "parameters": [
               {
                 "nodoc": "true",
@@ -88,7 +88,7 @@
           {
             "name": "removeRules",
             "type": "function",
-            "description": "Unregisters currently registered rules. Note that you cannot call this function as <code>chrome.declarative.removeRules(...)</code>. Instead a function of this signature is provided for event objects supporting the declarative API such as <code>chrome.declarativeWebRequest.onRequest</code>.",
+            "description": "Unregisters currently registered rules.",
             "parameters": [
               {
                 "nodoc": "true",
