@@ -63,7 +63,7 @@ time after <code>onDOMContentLoaded</code>, even after
 <h2>Relation to webRequest events</h2>
 <p>
 There is no defined ordering between events of the <a
-href="experimental.webRequest.html">webRequest API</a> and the events of the
+href="webRequest.html">webRequest API</a> and the events of the
 webNavigation API. It is possible that webRequest events are still received for
 frames that already started a new navigation, or that a navigation only
 proceeds after the network resources are already fully loaded.
@@ -85,4 +85,49 @@ offset between them, but comparing them to the current time inside the
 extension (via <code>(new Date()).getTime()</code>, for instance) might give
 unexpected results.
 </p>
+
+<h2>Transition types and qualifiers</h2>
+<p>
+The webNavigation API's <code>onCommitted</code> event has a
+<code>transitionType</code> and a <code>transitionQualifiers</code> property.
+The <em>transition type</em> is the same as used in the <a
+href="history.html#transition_types">history API</a> describing how the browser
+navigated to this particular URL. In addition, several <em>transition
+qualifiers</em> can be returned that further define the navigation.
+</p>
+<p>
+The following transition qualifiers exist:
+</p>
+<table>
+<tr>
+  <th> Transition qualifier </th> <th> Description </th>
+</tr>
+<tr>
+  <td>"client_redirect"</td>
+  <td>
+    One or more redirects caused by JavaScript or meta refresh tags on the page
+    happened during the navigation.
+  </td>
+</tr>
+<tr>
+  <td>"server_redirect"</td>
+  <td>
+    One or more redirects caused by HTTP headers sent from the server happened
+    during the navigation.
+  </td>
+</tr>
+<tr>
+  <td>"forward_back"</td>
+  <td>
+    The user used the Forward or Back button to initiate the navigation.
+  </td>
+</tr>
+<tr>
+  <td>"from_address_bar"</td>
+  <td>
+    The user initiated the navigation from the address bar (aka Omnibox).
+  </td>
+</tr>
+</table>
+
 <!-- END AUTHORED CONTENT -->
