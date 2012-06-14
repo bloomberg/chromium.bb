@@ -29,6 +29,8 @@ namespace {
 // which controls mouse pointer acceleration. If you need to update this value,
 // please update the bug (crosbug.com/31628) first and make sure that the
 // driver will use the same value.
+// This value also has to be kept in sync with the value in
+// chromeos/monitor/output_configurator.cc. See crbug.com/130188
 const unsigned int kHighDensityDIPThreshold = 160;
 
 // 1 inch in mm.
@@ -44,7 +46,7 @@ XRRModeInfo* FindMode(XRRScreenResources* screen_resources, XID current_mode) {
 }
 
 bool CompareDisplayY(const gfx::Display& lhs, const gfx::Display& rhs) {
-  return lhs.bounds_in_pixel().y() > rhs.bounds_in_pixel().y();
+  return lhs.bounds_in_pixel().y() < rhs.bounds_in_pixel().y();
 }
 
 }  // namespace

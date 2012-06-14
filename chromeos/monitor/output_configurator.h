@@ -39,6 +39,8 @@ struct CachedOutputDescription {
   bool is_connected;
   bool is_powered_on;
   bool is_internal;
+  unsigned long mm_width;
+  unsigned long mm_height;
 };
 
 // Used to describe the state of a multi-monitor configuration.

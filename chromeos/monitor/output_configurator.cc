@@ -22,9 +22,22 @@ const float kMmInInch = 25.4;
 const float kDpi96 = 96.0;
 const float kPixelsToMmScale = kMmInInch / kDpi96;
 
+// The DPI threshold to detech high density screen.
+// Higher DPI than this will use device_scale_factor=2
+// Should be kept in sync with monitor_change_observer_x11.cc
+const unsigned int kHighDensityDIPThreshold = 160;
+
 // Prefixes for the built-in displays.
 const char kInternal_LVDS[] = "LVDS";
 const char kInternal_eDP[] = "eDP";
+
+// Gap between screens so cursor at bottom of active monitor doesn't partially
+// appear on top of inactive monitor. Higher numbers guard against larger
+// cursors, but also waste more memory. We will double this gap for screens
+// with a device_scale_factor of 2. While this gap will not guard against all
+// possible cursors in X, it should handle the ones we actually use. See
+// crbug.com/130188
+const int kVerticalGap = 30;
 
 // TODO: Determine if we need to organize modes in a way which provides better
 // than O(n) lookup time.  In many call sites, for example, the "next" mode is
@@ -178,6 +191,17 @@ static void GetOutputConfiguration(Display* display,
   }
   XRRFreeOutputInfo(output_info);
 }
+
+// A helper to determine the device_scale_factor given pixel width and mm_width.
+// This currently only reports two scale factors (1.0 and 2.0)
+static float ComputeDeviceScaleFactor(unsigned int width,
+                                      unsigned long mm_width) {
+  float device_scale_factor = 1.0f;
+  if (mm_width > 0 && (kMmInInch * width / mm_width) > kHighDensityDIPThreshold)
+    device_scale_factor = 2.0f;
+  return device_scale_factor;
+}
+
 }  // namespace
 
 bool OutputConfigurator::TryRecacheOutputs(Display* display,
@@ -230,6 +254,8 @@ bool OutputConfigurator::TryRecacheOutputs(Display* display,
       RRMode ideal_mode = None;
       int x = 0;
       int y = 0;
+      unsigned long mm_width = output->mm_width;
+      unsigned long mm_height = output->mm_height;
       bool is_internal = false;
 
       if (is_connected) {
@@ -277,7 +303,9 @@ bool OutputConfigurator::TryRecacheOutputs(Display* display,
               << ", x: " << x
               << ", y: " << y
               << ", is connected: " << is_connected
-              << ", is_internal: " << is_internal;
+              << ", is_internal: " << is_internal
+              << ", mm_width: " << mm_width
+              << ", mm_height: " << mm_height;
       output_cache_[i].output = this_id;
       output_cache_[i].crtc = crtc;
       output_cache_[i].mirror_mode = None;
@@ -287,6 +315,8 @@ bool OutputConfigurator::TryRecacheOutputs(Display* display,
       output_cache_[i].is_connected = is_connected;
       output_cache_[i].is_powered_on = true;
       output_cache_[i].is_internal = is_internal;
+      output_cache_[i].mm_width = mm_width;
+      output_cache_[i].mm_height = mm_height;
     }
 
     // Now, detect the mirror modes if we have two connected outputs.
@@ -380,6 +410,7 @@ void OutputConfigurator::UpdateCacheAndXrandrToState(
   int height = 0;
   int primary_height = 0;
   int secondary_height = 0;
+  int vertical_gap = 0;
   if (new_state == STATE_SINGLE) {
     CHECK_NE(-1, primary_output_index_);
 
@@ -408,8 +439,23 @@ void OutputConfigurator::UpdateCacheAndXrandrToState(
     XRRModeInfo* two_ideal = ModeInfoForID(
         screen,
         output_cache_[secondary_output_index_].ideal_mode);
+
+    // Compute the device scale factor for the topmost display. We only need
+    // to take this device's scale factor into account as we are creating a gap
+    // to avoid the cursor drawing onto the second (unused) display when the
+    // cursor is near the bottom of the topmost display.
+    float top_scale_factor;
+    if (new_state == STATE_DUAL_PRIMARY_ONLY) {
+      top_scale_factor = ComputeDeviceScaleFactor(one_ideal->width,
+          output_cache_[primary_output_index_].mm_width);
+    } else {
+      top_scale_factor = ComputeDeviceScaleFactor(two_ideal->width,
+          output_cache_[secondary_output_index_].mm_width);
+    }
+    vertical_gap = kVerticalGap * top_scale_factor;
+
     width = std::max<int>(one_ideal->width, two_ideal->width);
-    height = one_ideal->height + two_ideal->height;
+    height = one_ideal->height + two_ideal->height + vertical_gap;
     primary_height = one_ideal->height;
     secondary_height = two_ideal->height;
   }
@@ -442,9 +488,9 @@ void OutputConfigurator::UpdateCacheAndXrandrToState(
         secondary_mode = output_cache_[secondary_output_index_].ideal_mode;
       }
       if (new_state == STATE_DUAL_PRIMARY_ONLY)
-        secondary_y = y + primary_height;
+        secondary_y = y + primary_height + vertical_gap;
       if (new_state == STATE_DUAL_SECONDARY_ONLY)
-        primary_y = y + secondary_height;
+        primary_y = y + secondary_height + vertical_gap;
 
       ConfigureCrtc(display,
                     screen,
