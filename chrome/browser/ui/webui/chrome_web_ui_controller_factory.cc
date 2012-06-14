@@ -70,6 +70,10 @@
 #include "chrome/browser/ui/webui/chromeos/system_info_ui.h"
 #endif
 
+#if defined(USE_AURA)
+#include "chrome/browser/ui/webui/gesture_config_ui.h"
+#endif
+
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 #include "chrome/browser/ui/webui/sync_promo/sync_promo_ui.h"
 #endif
@@ -288,6 +292,11 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       url.host() == chrome::kChromeUITabModalConfirmDialogHost) {
     return &NewWebUI<ConstrainedWebDialogUI>;
   }
+#endif
+
+#if defined(USE_AURA)
+  if (url.host() == chrome::kChromeUIGestureConfigHost)
+    return &NewWebUI<GestureConfigUI>;
 #endif
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)

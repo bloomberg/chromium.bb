@@ -3734,8 +3734,6 @@
         'browser/ui/webui/about_ui.h',
         'browser/ui/webui/bookmarks_ui.cc',
         'browser/ui/webui/bookmarks_ui.h',
-        'browser/ui/webui/feedback_ui.cc',
-        'browser/ui/webui/feedback_ui.h',
         'browser/ui/webui/certificate_viewer_webui.cc',
         'browser/ui/webui/certificate_viewer_webui.h',
         'browser/ui/webui/certificate_viewer_ui.cc',
@@ -3820,6 +3818,8 @@
         'browser/ui/webui/extensions/pack_extension_handler.h',
         'browser/ui/webui/favicon_source.cc',
         'browser/ui/webui/favicon_source.h',
+        'browser/ui/webui/feedback_ui.cc',
+        'browser/ui/webui/feedback_ui.h',
         'browser/ui/webui/fileicon_source.cc',
         'browser/ui/webui/fileicon_source.h',
         'browser/ui/webui/flags_ui.cc',
@@ -3828,6 +3828,8 @@
         'browser/ui/webui/flash_ui.h',
         'browser/ui/webui/generic_handler.cc',
         'browser/ui/webui/generic_handler.h',
+        'browser/ui/webui/gesture_config_ui.cc',
+        'browser/ui/webui/gesture_config_ui.h',
         'browser/ui/webui/gpu_internals_ui.cc',
         'browser/ui/webui/gpu_internals_ui.h',
         'browser/ui/webui/help/help_handler.cc',
@@ -4585,6 +4587,12 @@
             }],
           ],
         }],
+        ['use_aura==0', {
+          'sources/': [
+            ['exclude', '^browser/ui/webui/gesture_config_ui.cc'],
+            ['exclude', '^browser/ui/webui/gesture_config_ui.h']
+          ],
+        }],
         ['use_nss==1', {
           'sources': [
             'third_party/mozilla_security_manager/nsNSSCertHelper.cpp',
@@ -5022,7 +5030,7 @@
                 # Exclude all of views.
                 ['exclude', '^browser/ui/views/'],
                 ['exclude', '^browser/ui/webui/tab_modal_confirm_dialog_webui.cc'],
-                ['exclude', '^browser/ui/webui/tab_modal_confirm_dialog_webui.h'],
+                ['exclude', '^browser/ui/webui/tab_modal_confirm_dialog_webui.h']
               ]
             }],
             # Build Aura on desktop linux

@@ -105,6 +105,11 @@ const char kChromeUITransparencyURL[] = "chrome://transparency/";
 const char kChromeUIFileManagerURL[] = "chrome://files/";
 #endif
 
+#if defined(USE_AURA)
+const char kChromeUIGestureConfigURL[] = "chrome://gesture/";
+const char kChromeUIGestureConfigHost[] = "gesture";
+#endif
+
 #if (defined(OS_LINUX) && defined(TOOLKIT_VIEWS)) || defined(USE_AURA)
 const char kChromeUICollectedCookiesURL[] = "chrome://collected-cookies/";
 const char kChromeUIHttpAuthURL[] = "chrome://http-auth/";

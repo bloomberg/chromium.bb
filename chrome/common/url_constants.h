@@ -99,6 +99,11 @@ extern const char kChromeUITransparencyURL[];
 extern const char kChromeUIFileManagerURL[];
 #endif
 
+#if defined(USE_AURA)
+extern const char kChromeUIGestureConfigURL[];
+extern const char kChromeUIGestureConfigHost[];
+#endif
+
 #if (defined(OS_LINUX) && defined(TOOLKIT_VIEWS)) || defined(USE_AURA)
 extern const char kChromeUICollectedCookiesURL[];
 extern const char kChromeUIHttpAuthURL[];
