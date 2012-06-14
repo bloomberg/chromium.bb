@@ -180,7 +180,9 @@ function bb_goma_make {
     COMMON_JAVAC="$COMMON_JAVAC" \
     "$@"
 
+  local make_exit_status=$?
   bb_stop_goma_internal
+  return $make_exit_status
 }
 
 # Compile step
