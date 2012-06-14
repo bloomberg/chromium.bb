@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rule.h"
 #include "chrome/common/extensions/api/events.h"
 #include "googleurl/src/gurl.h"
+#include "unicode/regex.h"
 
 namespace base {
 class DictionaryValue;
@@ -47,6 +48,7 @@ class WebRequestAction {
     ACTION_REDIRECT_REQUEST,
     ACTION_REDIRECT_TO_TRANSPARENT_IMAGE,
     ACTION_REDIRECT_TO_EMPTY_DOCUMENT,
+    ACTION_REDIRECT_BY_REGEX_DOCUMENT,
     ACTION_SET_REQUEST_HEADER,
     ACTION_REMOVE_REQUEST_HEADER,
     ACTION_ADD_RESPONSE_HEADER,
@@ -214,6 +216,37 @@ class WebRequestRedirectToEmptyDocumentAction : public WebRequestAction {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebRequestRedirectToEmptyDocumentAction);
+};
+
+// Action that instructs to redirect a network request.
+class WebRequestRedirectByRegExAction : public WebRequestAction {
+ public:
+  // The |to_pattern| has to be passed in ICU syntax.
+  // TODO(battre): Change this to Perl style when migrated to RE2.
+  explicit WebRequestRedirectByRegExAction(
+      scoped_ptr<icu::RegexPattern> from_pattern,
+      const std::string& to_pattern);
+  virtual ~WebRequestRedirectByRegExAction();
+
+  // Conversion of capture group styles between Perl style ($1, $2, ...) and
+  // RE2 (\1, \2, ...).
+  static std::string PerlToRe2Style(const std::string& perl);
+
+  // Implementation of WebRequestAction:
+  virtual int GetStages() const OVERRIDE;
+  virtual Type GetType() const OVERRIDE;
+  virtual LinkedPtrEventResponseDelta CreateDelta(
+      net::URLRequest* request,
+      RequestStages request_stage,
+      const WebRequestRule::OptionalRequestData& optional_request_data,
+      const std::string& extension_id,
+      const base::Time& extension_install_time) const OVERRIDE;
+
+ private:
+  scoped_ptr<icu::RegexPattern> from_pattern_;
+  icu::UnicodeString to_pattern_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebRequestRedirectByRegExAction);
 };
 
 // Action that instructs to set a request header.

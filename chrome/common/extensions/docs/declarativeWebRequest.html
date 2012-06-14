@@ -223,11 +223,11 @@
             <a href="#types">Types</a>
             <ol>
               <li>
-                <a href="#type-RequestMatcher">RequestMatcher</a>
+                <a href="#type-declarativeWebRequest.RedirectByRegEx">declarativeWebRequest.RedirectByRegEx</a>
                 <ol>
                 </ol>
               </li><li>
-                <a href="#type-CancelRequest">CancelRequest</a>
+                <a href="#type-RequestMatcher">RequestMatcher</a>
                 <ol>
                 </ol>
               </li><li>
@@ -240,6 +240,10 @@
                 </ol>
               </li><li>
                 <a href="#type-declarativeWebRequest.RedirectToEmptyDocument">declarativeWebRequest.RedirectToEmptyDocument</a>
+                <ol>
+                </ol>
+              </li><li>
+                <a href="#type-CancelRequest">CancelRequest</a>
                 <ol>
                 </ol>
               </li><li>
@@ -467,6 +471,15 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
                     </div><div>
                       <div>
           <dt>
+            <a href="declarativeWebRequest.html#type-declarativeWebRequest.RedirectByRegEx">declarativeWebRequest.RedirectByRegEx</a>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+        </div>
+                    </div><div>
+                      <div>
+          <dt>
             <a href="declarativeWebRequest.html#type-declarativeWebRequest.SetRequestHeader">declarativeWebRequest.SetRequestHeader</a>
           </dt>
           <dd class="todo">
@@ -512,6 +525,81 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
             <h3 id="types">Types</h3>
             <!-- iterates over all types -->
             <div class="apiItem">
+              <a name="type-declarativeWebRequest.RedirectByRegEx"></a>
+              <h4>declarativeWebRequest.RedirectByRegEx</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Redirects a request by applying a regular expression on the URL. The regular expressions use the <a href="http://code.google.com/p/re2/wiki/Syntax">RE2 syntax</a>.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>from</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>A match pattern that may contain capture groups. Capture groups are referenced in the Perl syntax ($1, $2, ...) instead of the RE2 syntax (\1, \2, ...) in order to be closer to JavaScript Regular Expressions.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>to</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Destination pattern.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div class="apiItem">
               <a name="type-RequestMatcher"></a>
               <h4>RequestMatcher</h4>
               <div>
@@ -601,62 +689,6 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
                       <span>
                         <span>string</span>
                         <span>["declarativeWebRequest.RequestMatcher"]</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div>
-            </dl>
-          </dd>
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-            </div><div class="apiItem">
-              <a name="type-CancelRequest"></a>
-              <h4>CancelRequest</h4>
-              <div>
-          <dt>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>object</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Declarative event action that cancels a network request.</dd>
-          <!-- OBJECT PROPERTIES -->
-          <dd>
-            <dl>
-              <div>
-                <div>
-          <dt>
-            <var>instanceType</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="enum">enumerated</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <span>string</span>
-                        <span>["declarativeWebRequest.CancelRequest"]</span>
                       </span>
                     </span>
                   )
@@ -807,6 +839,62 @@ very fast URL matching algorithm for hundreds of thousands of URLs.
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
+            </dl>
+          </dd>
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+            </div><div class="apiItem">
+              <a name="type-CancelRequest"></a>
+              <h4>CancelRequest</h4>
+              <div>
+          <dt>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Declarative event action that cancels a network request.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>instanceType</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="enum">enumerated</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>string</span>
+                        <span>["declarativeWebRequest.CancelRequest"]</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div>
             </dl>
           </dd>
           <!-- OBJECT METHODS -->

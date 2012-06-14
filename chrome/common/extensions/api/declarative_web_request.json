@@ -66,6 +66,25 @@
         }
       },
       {
+        "id": "declarativeWebRequest.RedirectByRegEx",
+        "description": "Redirects a request by applying a regular expression on the URL. The regular expressions use the <a href=\"http://code.google.com/p/re2/wiki/Syntax\">RE2 syntax</a>.",
+        "type": "object",
+        "properties": {
+          "instanceType": {
+            "type": "string", "enum": ["declarativeWebRequest.RedirectByRegEx"],
+            "nodoc": true
+          },
+          "from": {
+            "type": "string",
+            "description": "A match pattern that may contain capture groups. Capture groups are referenced in the Perl syntax ($1, $2, ...) instead of the RE2 syntax (\\1, \\2, ...) in order to be closer to JavaScript Regular Expressions."
+          },
+          "to": {
+            "type": "string",
+            "description": "Destination pattern."
+          }
+        }
+      },
+      {
         "id": "declarativeWebRequest.SetRequestHeader",
         "description": "Sets the request header of the specified name to the specified value. If a header with the specified name did not exist before, a new one is created. Header name comparison is always case-insensitive. Each request header name occurs only once in each request.",
         "type": "object",
@@ -169,6 +188,7 @@
             "declarativeWebRequest.RedirectRequest",
             "declarativeWebRequest.RedirectToTransparentImage",
             "declarativeWebRequest.RedirectToEmptyDocument",
+            "declarativeWebRequest.RedirectByRegEx",
             "declarativeWebRequest.SetRequestHeader",
             "declarativeWebRequest.RemoveRequestHeader",
             "declarativeWebRequest.RemoveResponseHeader",

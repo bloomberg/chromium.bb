@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stages.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
@@ -56,6 +57,31 @@ scoped_ptr<WebRequestAction> CreateRedirectRequestAction(
   GURL redirect_url(redirect_url_string);
   return scoped_ptr<WebRequestAction>(
       new WebRequestRedirectAction(redirect_url));
+}
+
+scoped_ptr<WebRequestAction> CreateRedirectRequestByRegExAction(
+    const base::DictionaryValue* dict,
+    std::string* error,
+    bool* bad_message) {
+  std::string from;
+  std::string to;
+  INPUT_FORMAT_VALIDATE(dict->GetString(keys::kFromKey, &from));
+  INPUT_FORMAT_VALIDATE(dict->GetString(keys::kToKey, &to));
+
+  // TODO(battre): Add this line once we migrate from ICU RegEx to RE2 RegEx.s
+  // to = WebRequestRedirectByRegExAction::PerlToRe2Style(to);
+
+  UParseError parse_error;
+  UErrorCode status = U_ZERO_ERROR;
+  scoped_ptr<icu::RegexPattern> pattern(
+      icu::RegexPattern::compile(icu::UnicodeString(from.data(), from.size()),
+                                 0, parse_error, status));
+  if (U_FAILURE(status) || !pattern.get()) {
+    *error = "Invalid pattern '" + from + "' -> '" + to + "'";
+    return scoped_ptr<WebRequestAction>(NULL);
+  }
+  return scoped_ptr<WebRequestAction>(
+      new WebRequestRedirectByRegExAction(pattern.Pass(), to));
 }
 
 scoped_ptr<WebRequestAction> CreateSetRequestHeaderAction(
@@ -132,6 +158,8 @@ struct WebRequestActionFactory {
         &CreateAddResponseHeaderAction;
     factory_methods[keys::kCancelRequestType] =
         &CallConstructorFactoryMethod<WebRequestCancelAction>;
+    factory_methods[keys::kRedirectByRegExType] =
+        &CreateRedirectRequestByRegExAction;
     factory_methods[keys::kRedirectRequestType] =
         &CreateRedirectRequestAction;
     factory_methods[keys::kRedirectToTransparentImageType] =
@@ -384,6 +412,113 @@ WebRequestRedirectToEmptyDocumentAction::CreateDelta(
 }
 
 //
+// WebRequestRedirectByRegExAction
+//
+
+WebRequestRedirectByRegExAction::WebRequestRedirectByRegExAction(
+    scoped_ptr<icu::RegexPattern> from_pattern,
+    const std::string& to_pattern)
+    : from_pattern_(from_pattern.Pass()),
+      to_pattern_(to_pattern.data(), to_pattern.size()) {}
+
+WebRequestRedirectByRegExAction::~WebRequestRedirectByRegExAction() {}
+
+// About the syntax of the two languages:
+//
+// ICU (Perl) states:
+// $n The text of capture group n will be substituted for $n. n must be >= 0
+//    and not greater than the number of capture groups. A $ not followed by a
+//    digit has no special meaning, and will appear in the substitution text
+//    as itself, a $.
+// \  Treat the following character as a literal, suppressing any special
+//    meaning. Backslash escaping in substitution text is only required for
+//    '$' and '\', but may be used on any other character without bad effects.
+//
+// RE2, derived from RE2::Rewrite()
+// \  May only be followed by a digit or another \. If followed by a single
+//    digit, both characters represent the respective capture group. If followed
+//    by another \, it is used as an escape sequence.
+
+// static
+std::string WebRequestRedirectByRegExAction::PerlToRe2Style(
+    const std::string& perl) {
+  std::string::const_iterator i = perl.begin();
+  std::string result;
+  while (i != perl.end()) {
+    if (*i == '$') {
+      ++i;
+      if (i == perl.end()) {
+        result += '$';
+      } else if (isdigit(*i)) {
+        result += '\\';
+        result += *i;
+      } else {
+        result += '$';
+        result += *i;
+      }
+    } else if (*i == '\\') {
+      ++i;
+      if (i == perl.end()) {
+        result += '\\';
+      } else if (*i == '$') {
+        result += '$';
+      } else if (*i == '\\') {
+        result += "\\\\";
+      } else {
+        result += *i;
+      }
+    } else {
+      result += *i;
+    }
+    ++i;
+  }
+  return result;
+}
+
+int WebRequestRedirectByRegExAction::GetStages() const {
+  return ON_BEFORE_REQUEST;
+}
+
+WebRequestAction::Type WebRequestRedirectByRegExAction::GetType() const {
+  return WebRequestAction::ACTION_REDIRECT_BY_REGEX_DOCUMENT;
+}
+
+LinkedPtrEventResponseDelta WebRequestRedirectByRegExAction::CreateDelta(
+    net::URLRequest* request,
+    RequestStages request_stage,
+    const WebRequestRule::OptionalRequestData& optional_request_data,
+    const std::string& extension_id,
+    const base::Time& extension_install_time) const {
+  CHECK(request_stage & GetStages());
+  CHECK(from_pattern_.get());
+
+  UErrorCode status = U_ZERO_ERROR;
+  const std::string& old_url = request->url().spec();
+  icu::UnicodeString old_url_unicode(old_url.data(), old_url.size());
+
+  scoped_ptr<icu::RegexMatcher> matcher(
+      from_pattern_->matcher(old_url_unicode, status));
+  if (U_FAILURE(status) || !matcher.get())
+    return LinkedPtrEventResponseDelta(NULL);
+
+  icu::UnicodeString new_url = matcher->replaceAll(to_pattern_, status);
+  if (U_FAILURE(status))
+    return LinkedPtrEventResponseDelta(NULL);
+
+  std::string new_url_utf8;
+  UTF16ToUTF8(new_url.getBuffer(), new_url.length(), &new_url_utf8);
+
+  if (new_url_utf8 == request->url().spec())
+    return LinkedPtrEventResponseDelta(NULL);
+
+  LinkedPtrEventResponseDelta result(
+      new extension_web_request_api_helpers::EventResponseDelta(
+          extension_id, extension_install_time));
+  result->new_url = GURL(new_url_utf8);
+  return result;
+}
+
+//
 // WebRequestSetRequestHeaderAction
 //
 
@@ -485,19 +620,18 @@ WebRequestAddResponseHeaderAction::CreateDelta(
     const std::string& extension_id,
     const base::Time& extension_install_time) const {
   CHECK(request_stage & GetStages());
-  LinkedPtrEventResponseDelta result(
-      new extension_web_request_api_helpers::EventResponseDelta(
-          extension_id, extension_install_time));
-
   net::HttpResponseHeaders* headers =
       optional_request_data.original_response_headers;
   if (!headers)
-    return result;
+    return LinkedPtrEventResponseDelta(NULL);
 
   // Don't generate the header if it exists already.
   if (headers->HasHeaderValue(name_, value_))
-    return result;
+    return LinkedPtrEventResponseDelta(NULL);
 
+  LinkedPtrEventResponseDelta result(
+      new extension_web_request_api_helpers::EventResponseDelta(
+          extension_id, extension_install_time));
   result->added_response_headers.push_back(make_pair(name_, value_));
   return result;
 }
@@ -534,13 +668,14 @@ WebRequestRemoveResponseHeaderAction::CreateDelta(
     const std::string& extension_id,
     const base::Time& extension_install_time) const {
   CHECK(request_stage & GetStages());
-  LinkedPtrEventResponseDelta result(
-      new extension_web_request_api_helpers::EventResponseDelta(
-          extension_id, extension_install_time));
   net::HttpResponseHeaders* headers =
       optional_request_data.original_response_headers;
   if (!headers)
-    return result;
+    return LinkedPtrEventResponseDelta(NULL);
+
+  LinkedPtrEventResponseDelta result(
+      new extension_web_request_api_helpers::EventResponseDelta(
+          extension_id, extension_install_time));
   void* iter = NULL;
   std::string current_value;
   while (headers->EnumerateHeader(&iter, name_, &current_value)) {

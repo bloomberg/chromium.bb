@@ -7,6 +7,7 @@ var AddResponseHeader =
     chrome.declarativeWebRequest.AddResponseHeader;
 var RequestMatcher = chrome.declarativeWebRequest.RequestMatcher;
 var CancelRequest = chrome.declarativeWebRequest.CancelRequest;
+var RedirectByRegEx = chrome.declarativeWebRequest.RedirectByRegEx;
 var RedirectRequest = chrome.declarativeWebRequest.RedirectRequest;
 var RedirectToTransparentImage =
     chrome.declarativeWebRequest.RedirectToTransparentImage;
@@ -28,6 +29,10 @@ function getURLEchoUserAgent() {
 
 function getURLHttpSimple() {
   return getServerURL("files/extensions/api_test/webrequest/simpleLoad/a.html");
+}
+
+function getURLHttpSimpleB() {
+  return getServerURL("files/extensions/api_test/webrequest/simpleLoad/b.html");
 }
 
 function getURLHttpComplex() {
@@ -183,6 +188,32 @@ runTests([
          actions: [new RedirectToEmptyDocument()]},
       ],
       function() {navigateAndWait(getURLHttpRedirectTest());}
+    );
+  },
+
+  function testRedirectByRegEx() {
+    ignoreUnexpected = true;
+    expect(
+      [
+        { label: "onCompleted",
+          event: "onCompleted",
+          details: {
+            ip: "127.0.0.1",
+            url: getURLHttpSimpleB(),
+            fromCache: false,
+            statusCode: 200,
+            statusLine: "HTTP/1.0 200 OK",
+          }
+        },
+      ],
+      [ ["onCompleted"] ]);
+
+    onRequest.addRules(
+      [ {conditions: [new RequestMatcher({url: {pathSuffix: ".html"}})],
+         actions: [
+             new RedirectByRegEx({from: "^(.*)/a.html$", to: "$1/b.html"})]}
+      ],
+      function() {navigateAndWait(getURLHttpSimple());}
     );
   },
 

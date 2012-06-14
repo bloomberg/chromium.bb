@@ -100,4 +100,20 @@ TEST(WebRequestActionTest, CreateActionSet) {
   EXPECT_FALSE(result.get());
 }
 
+// Test capture group syntax conversions of WebRequestRedirectByRegExAction
+TEST(WebRequestActionTest, PerlToRe2Style) {
+#define CallPerlToRe2Style WebRequestRedirectByRegExAction::PerlToRe2Style
+  // foo$1bar -> foo\1bar
+  EXPECT_EQ("foo\\1bar", CallPerlToRe2Style("foo$1bar"));
+  // foo\$1bar -> foo$1bar
+  EXPECT_EQ("foo$1bar", CallPerlToRe2Style("foo\\$1bar"));
+  // foo\\$1bar -> foo\\\1bar
+  EXPECT_EQ("foo\\\\\\1bar", CallPerlToRe2Style("foo\\\\$1bar"));
+  // foo\bar -> foobar
+  EXPECT_EQ("foobar", CallPerlToRe2Style("foo\\bar"));
+  // foo$bar -> foo$bar
+  EXPECT_EQ("foo$bar", CallPerlToRe2Style("foo$bar"));
+#undef CallPerlToRe2Style
+}
+
 }  // namespace extensions

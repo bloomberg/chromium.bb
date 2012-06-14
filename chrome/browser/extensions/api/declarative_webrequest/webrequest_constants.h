@@ -15,11 +15,13 @@ namespace declarative_webrequest_constants {
 extern const char kOnRequest[];
 
 // Keys of dictionaries.
+extern const char kFromKey[];
 extern const char kInstanceTypeKey[];
 extern const char kLowerPriorityThanKey[];
 extern const char kNameKey[];
 extern const char kRedirectUrlKey[];
 extern const char kResourceTypeKey[];
+extern const char kToKey[];
 extern const char kUrlKey[];
 extern const char kValueKey[];
 
@@ -27,6 +29,7 @@ extern const char kValueKey[];
 extern const char kAddResponseHeaderType[];
 extern const char kCancelRequestType[];
 extern const char kIgnoreRulesType[];
+extern const char kRedirectByRegExType[];
 extern const char kRedirectRequestType[];
 extern const char kRedirectToEmptyDocumentType[];
 extern const char kRedirectToTransparentImageType[];
