@@ -273,38 +273,4 @@ TEST_F(NetworkStatsTestTCP, VerifyBytes) {
   EXPECT_EQ(1u, network_stats.packets_received_mask());
 }
 
-TEST_F(NetworkStatsTest, GetHistogramNames) {
-  // Test TCP, large packet, success histogram name.
-  std::string rtt_histogram_name;
-  std::string status_histogram_name;
-  std::string packet_loss_histogram_name;
-  NetworkStats::GetHistogramNames(NetworkStats::PROTOCOL_TCP,
-                                  NetworkStats::PORT_53,
-                                  1024,
-                                  net::OK,
-                                  &rtt_histogram_name,
-                                  &status_histogram_name,
-                                  &packet_loss_histogram_name);
-  EXPECT_EQ("NetConnectivity.TCP.Success.53.1K.RTT", rtt_histogram_name);
-  EXPECT_EQ("NetConnectivity.TCP.Status.53.1K", status_histogram_name);
-  EXPECT_EQ("NetConnectivity.TCP.PacketLoss6.53.1K",
-            packet_loss_histogram_name);
-
-  // Test UDP, small packet, failure histogram name.
-  std::string rtt_histogram_name1;
-  std::string status_histogram_name1;
-  std::string packet_loss_histogram_name1;
-  NetworkStats::GetHistogramNames(NetworkStats::PROTOCOL_UDP,
-                                  NetworkStats::PORT_6121,
-                                  100,
-                                  net::ERR_INVALID_ARGUMENT,
-                                  &rtt_histogram_name1,
-                                  &status_histogram_name1,
-                                  &packet_loss_histogram_name1);
-  EXPECT_EQ("", rtt_histogram_name1);
-  EXPECT_EQ("NetConnectivity.UDP.Status.6121.100B", status_histogram_name1);
-  EXPECT_EQ("NetConnectivity.UDP.PacketLoss6.6121.100B",
-            packet_loss_histogram_name1);
-}
-
 }  // namespace chrome_browser_net

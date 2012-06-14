@@ -165,6 +165,8 @@ class NetworkStats {
   // server and if connectivity failed, at what stage (Connect or Write or Read)
   // did it fail?
   // b) What is RTT for the echo message.
+  // c) Packet loss correlation and other network connectivity data by calling
+  // RecordAcksReceivedHistograms() and RecordStatusAndRTTHistograms().
   void RecordHistograms(const ProtocolValue& protocol,
                         const Status& status,
                         int result);
@@ -228,28 +230,24 @@ class NetworkStats {
   // if all the bytes are verified.
   NetworkStats::Status VerifyBytes(const std::string& response);
 
-  // Returns the histogram names for collecting network connectivity stats.
-  // This is called by RecordHistograms. It sets the histogram names in
-  // |rtt_histogram_name| and |status_histogram_name|.
-  // If |result| equals to net::OK, it returns
-  // "NetConnectivity.<protocol>.Success.<port>.<load_size>.RTT" as histogram
-  // name for RTT histogram,
-  // "NetConnectivity.<protocol>.Status.<port>.<load_size>" as histogram name
-  // for status histogram and
-  // "NetConnectivity.<protocol>.PacketLoss.<port>.<load_size>" as histogram
-  // name for packet loss histogram.
-  // |protocol| argument sets <protocol> in the histogram name. It would be
-  // either TCP or UDP. <port> is the string representation of |histogram_port|.
-  // |load_size| argument determines <load_size> in the histogram name. It would
-  // be either 100B or 1K.
-  static void GetHistogramNames(const ProtocolValue& protocol,
-                                HistogramPortSelector histogram_port,
-                                uint32 load_size,
-                                int result,
-                                std::string* rtt_histogram_name,
-                                std::string* status_histogram_name,
-                                std::string* packet_loss_histogram_name);
+  // Collect the following network connectivity stats when
+  // kMaximumSequentialPackets (21) packets are sent.
+  // a) Received the "echo response" for at least one packet.
+  // b) Received the "echo response" for the nth packet.
+  // c) Count the number of "echo responses" received for each of the initial
+  // sequences of packets 1...n.
+  void RecordAcksReceivedHistograms();
 
+  // Collect the following network connectivity stats.
+  // a) What percentage of users can get a message end-to-end to a TCP/UDP
+  // server and if connectivity failed, at what stage (Connect or Write or Read)
+  // did it fail?
+  // b) What is RTT for the echo message.
+  // c) Records if there is a probabalistic dependency in packet loss when
+  // kMaximumCorrelationPackets packets are sent consecutively.
+  void RecordStatusAndRTTHistograms(const ProtocolValue& protocol,
+                                    const Status& status,
+                                    int result);
   // The socket handle for this session.
   scoped_ptr<net::Socket> socket_;
 

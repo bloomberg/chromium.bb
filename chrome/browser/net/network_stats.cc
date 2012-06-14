@@ -91,7 +91,7 @@ static uint32 g_packet_number_ = 0;
 static const uint32 kMaximumCorrelationPackets = 6;
 
 // Maximum number of packets that can be sent to the server.
-static const uint32 kMaximumPackets = 21;
+static const uint32 kMaximumSequentialPackets = 21;
 
 // NetworkStats methods and members.
 NetworkStats::NetworkStats()
@@ -119,7 +119,7 @@ bool NetworkStats::Start(net::HostResolver* host_resolver,
                          const net::CompletionCallback& finished_callback) {
   DCHECK(host_resolver);
   DCHECK(bytes_to_send);   // We should have data to send.
-  DCHECK_LE(packets_to_send, kMaximumPackets);
+  DCHECK_LE(packets_to_send, kMaximumSequentialPackets);
 
   Initialize(bytes_to_send,
              histogram_port,
@@ -510,150 +510,93 @@ NetworkStats::Status NetworkStats::VerifyBytes(const std::string& response) {
   return SUCCESS;
 }
 
-// static
-void NetworkStats::GetHistogramNames(const ProtocolValue& protocol,
-                                     HistogramPortSelector port,
-                                     uint32 load_size,
-                                     int result,
-                                     std::string* rtt_histogram_name,
-                                     std::string* status_histogram_name,
-                                     std::string* packet_loss_histogram_name) {
-  CHECK_GE(port, PORT_53);
-  CHECK_LE(port, HISTOGRAM_PORT_MAX);
+void NetworkStats::RecordAcksReceivedHistograms() {
+  bool received_atleast_one_packet = packets_received_mask_ > 0;
+  std::string histogram_name = base::StringPrintf(
+      "NetConnectivity.Sent%d.GotAnAck", kMaximumSequentialPackets);
+  base::Histogram* got_an_ack_histogram = base::BooleanHistogram::FactoryGet(
+      histogram_name, base::Histogram::kUmaTargetedHistogramFlag);
+  got_an_ack_histogram->AddBoolean(received_atleast_one_packet);
 
-  // Build <protocol> string.
-  const char* kTcpString = "TCP";
-  const char* kUdpString = "UDP";
-  const char* protocol_string;
-  if (protocol == PROTOCOL_TCP)
-    protocol_string = kTcpString;
-  else
-    protocol_string = kUdpString;
+  if (!received_atleast_one_packet)
+    return;
+
+  histogram_name = base::StringPrintf(
+      "NetConnectivity.Sent%d.AckReceivedForNthPacket",
+      kMaximumSequentialPackets);
+  base::Histogram* ack_received_for_nth_packet_histogram =
+      base::Histogram::FactoryGet(
+          histogram_name,
+          1, kMaximumSequentialPackets, kMaximumSequentialPackets + 1,
+          base::Histogram::kUmaTargetedHistogramFlag);
+
+  int count = 0;
+  for (size_t j = 0; j < packets_to_send_; j++) {
+    int packet_number = j + 1;
+    if (packets_received_mask_ & (1 << j)) {
+      ack_received_for_nth_packet_histogram->Add(packet_number);
+      count++;
+    }
+    if (packet_number < 2)
+      continue;
+    histogram_name = base::StringPrintf(
+        "NetConnectivity.Sent%d.AcksReceivedFromFirst%dPackets",
+        kMaximumSequentialPackets, packet_number);
+    base::Histogram* acks_received_count_histogram =
+        base::Histogram::FactoryGet(
+            histogram_name, 1, packet_number, packet_number + 1,
+            base::Histogram::kUmaTargetedHistogramFlag);
+    acks_received_count_histogram->Add(count);
+  }
+}
+
+void NetworkStats::RecordStatusAndRTTHistograms(const ProtocolValue& protocol,
+                                                const Status& status,
+                                                int result) {
+  if (packets_to_send_ < 2 || protocol != PROTOCOL_UDP)
+    return;
 
   // Build <load_size> string.
   const char* kSmallLoadString = "100B";
   const char* kLargeLoadString = "1K";
   const char* load_size_string;
-  if (load_size == kSmallTestBytesToSend)
+  if (load_size_ == kSmallTestBytesToSend)
     load_size_string = kSmallLoadString;
   else
     load_size_string = kLargeLoadString;
 
-  // Build "NetConnectivity.<protocol>.Success.<port>.<load_size>.RTT"
-  // histogram name. Total number of histograms are 2*5*2.
-  if (result == net::OK) {
-    *rtt_histogram_name = base::StringPrintf(
-        "NetConnectivity.%s.Success.%d.%s.RTT",
-        protocol_string,
-        kPorts[port],
-        load_size_string);
-  }
-
-  // Build "NetConnectivity.<protocol>.Status.<port>.<load_size>" histogram
-  // name. Total number of histograms are 2*5*2.
-  *status_histogram_name = base::StringPrintf(
-      "NetConnectivity.%s.Status.%d.%s",
-      protocol_string,
-      kPorts[port],
-      load_size_string);
-
   // Build "NetConnectivity.<protocol>.PacketLoss.<port>.<load_size>" histogram
   // name. Total number of histograms are 5*2 (because we do this test for UDP
   // only).
-  *packet_loss_histogram_name = base::StringPrintf(
-      "NetConnectivity.%s.PacketLoss6.%d.%s",
-      protocol_string,
-      kPorts[port],
+  std::string packet_loss_histogram_name = base::StringPrintf(
+      "NetConnectivity.UDP.PacketLoss6.%d.%s",
+      kPorts[histogram_port_],
       load_size_string);
-}
-
-void NetworkStats::RecordHistograms(const ProtocolValue& protocol,
-                                    const Status& status,
-                                    int result) {
-  if (packets_to_send_ == kMaximumPackets) {
-    bool received_atleast_one_packet = packets_received_mask_ > 0;
-    std::string block_histogram_name = base::StringPrintf(
-        "NetConnectivity.BlockUnblock");
-    base::Histogram* block_histogram = base::BooleanHistogram::FactoryGet(
-        block_histogram_name, base::Histogram::kUmaTargetedHistogramFlag);
-    block_histogram->AddBoolean(received_atleast_one_packet);
-
-    if (!received_atleast_one_packet)
-      return;
-
-    std::string probability_histogram_name = base::StringPrintf(
-        "NetConnectivity.ProbabilityOfPacketLoss.%d", kMaximumPackets);
-    base::Histogram* probability_histogram = base::Histogram::FactoryGet(
-        probability_histogram_name, 1, kMaximumPackets, kMaximumPackets + 1,
-        base::Histogram::kUmaTargetedHistogramFlag);
-
-    int count = 0;
-    for (size_t j = 0; j < packets_to_send_; j++) {
-      int packet_number = j + 1;
-      if (packets_received_mask_ & (1 << j)) {
-        probability_histogram->Add(packet_number);
-        count++;
-      }
-      if (packet_number < 2)
-        continue;
-      std::string unblock_histogram_name = base::StringPrintf(
-          "NetConnectivity.UnblockRcvFrom.%d.%d",
-          kMaximumPackets, packet_number);
-      base::Histogram* unblock_histogram = base::Histogram::FactoryGet(
-          unblock_histogram_name, 1, packet_number, packet_number + 1,
-          base::Histogram::kUmaTargetedHistogramFlag);
-      unblock_histogram->Add(count);
-    }
-    return;
-  }
-
-  base::TimeDelta duration = base::TimeTicks::Now() - start_time();
-
-  std::string rtt_histogram_name;
-  std::string status_histogram_name;
-  std::string packet_loss_histogram_name;
-  GetHistogramNames(protocol,
-                    histogram_port_,
-                    load_size_,
-                    result,
-                    &rtt_histogram_name,
-                    &status_histogram_name,
-                    &packet_loss_histogram_name);
 
   // If we are running without a proxy, we'll generate 2 distinct histograms in
   // each case, one will have the ".NoProxy" suffix.
   size_t histogram_count = has_proxy_server_ ? 1 : 2;
   for (size_t i = 0; i < histogram_count; i++) {
     // For packet loss test, just record packet loss data.
-    if (packets_to_send_ > 1) {
-      base::Histogram* histogram = base::LinearHistogram::FactoryGet(
-          packet_loss_histogram_name,
-          1,
-          2 << kMaximumCorrelationPackets,
-          (2 << kMaximumCorrelationPackets) + 1,
-          base::Histogram::kUmaTargetedHistogramFlag);
-      histogram->Add(packets_received_mask_);
-      packet_loss_histogram_name.append(".NoProxy");
-      // Packet loss histograms don't measure times or status.
-      continue;
-    }
-
-    if (result == net::OK) {
-      base::Histogram* rtt_histogram = base::Histogram::FactoryTimeGet(
-          rtt_histogram_name,
-          base::TimeDelta::FromMilliseconds(10),
-          base::TimeDelta::FromSeconds(60), 50,
-          base::Histogram::kUmaTargetedHistogramFlag);
-      rtt_histogram->AddTime(duration);
-      rtt_histogram_name.append(".NoProxy");
-    }
-
-    base::Histogram* status_histogram = base::LinearHistogram::FactoryGet(
-        status_histogram_name, 1, STATUS_MAX, STATUS_MAX+1,
+    base::Histogram* histogram = base::LinearHistogram::FactoryGet(
+        packet_loss_histogram_name,
+        1,
+        2 << kMaximumCorrelationPackets,
+        (2 << kMaximumCorrelationPackets) + 1,
         base::Histogram::kUmaTargetedHistogramFlag);
-    status_histogram->Add(status);
-    status_histogram_name.append(".NoProxy");
+    histogram->Add(packets_received_mask_);
+    packet_loss_histogram_name.append(".NoProxy");
   }
+}
+
+void NetworkStats::RecordHistograms(const ProtocolValue& protocol,
+                                    const Status& status,
+                                    int result) {
+  if (packets_to_send_ == kMaximumSequentialPackets) {
+    RecordAcksReceivedHistograms();
+    return;
+  }
+  RecordStatusAndRTTHistograms(protocol, status, result);
 }
 
 // UDPStatsClient methods and members.
@@ -916,68 +859,24 @@ void StartNetworkStatsTest(net::HostResolver* host_resolver,
                            const net::HostPortPair& server_address,
                            NetworkStats::HistogramPortSelector histogram_port,
                            bool has_proxy_server) {
-  int experiment_to_run = base::RandInt(6, 7);
+  int experiment_to_run = base::RandInt(1, 2);
   switch (experiment_to_run) {
     case 1:
       {
-        UDPStatsClient* small_udp_stats = new UDPStatsClient();
-        small_udp_stats->Start(
-            host_resolver, server_address, histogram_port, has_proxy_server,
-            kSmallTestBytesToSend, 1, net::CompletionCallback());
-      }
-      break;
-
-    case 2:
-      {
-        UDPStatsClient* large_udp_stats = new UDPStatsClient();
-        large_udp_stats->Start(
-            host_resolver, server_address, histogram_port, has_proxy_server,
-            kLargeTestBytesToSend, 1, net::CompletionCallback());
-      }
-      break;
-
-    case 3:
-      {
-        TCPStatsClient* small_tcp_client = new TCPStatsClient();
-        small_tcp_client->Start(
-            host_resolver, server_address, histogram_port, has_proxy_server,
-            kSmallTestBytesToSend, 1, net::CompletionCallback());
-      }
-      break;
-
-    case 4:
-      {
-        TCPStatsClient* large_tcp_client = new TCPStatsClient();
-        large_tcp_client->Start(
-            host_resolver, server_address, histogram_port, has_proxy_server,
-            kLargeTestBytesToSend, 1, net::CompletionCallback());
-      }
-      break;
-
-    case 5:
-      {
-        UDPStatsClient* packet_loss_udp_stats = new UDPStatsClient();
-        packet_loss_udp_stats->Start(
-            host_resolver, server_address, histogram_port, has_proxy_server,
-            kLargeTestBytesToSend, kMaximumCorrelationPackets,
-            net::CompletionCallback());
-      }
-      break;
-    case 6:
-      {
-        UDPStatsClient* packet_loss_udp_stats = new UDPStatsClient();
-        packet_loss_udp_stats->Start(
+        UDPStatsClient* udp_stats_client = new UDPStatsClient();
+        udp_stats_client->Start(
             host_resolver, server_address, histogram_port, has_proxy_server,
             kSmallTestBytesToSend, kMaximumCorrelationPackets,
             net::CompletionCallback());
       }
       break;
-    case 7:
+    case 2:
       {
-        UDPStatsClient* packet_loss_udp_stats = new UDPStatsClient();
-        packet_loss_udp_stats->Start(
+        UDPStatsClient* udp_stats_client = new UDPStatsClient();
+        udp_stats_client->Start(
             host_resolver, server_address, histogram_port, has_proxy_server,
-            kSmallTestBytesToSend, kMaximumPackets, net::CompletionCallback());
+            kSmallTestBytesToSend, kMaximumSequentialPackets,
+            net::CompletionCallback());
       }
       break;
   }
