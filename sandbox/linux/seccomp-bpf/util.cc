@@ -139,10 +139,12 @@ void Util::closeAllBut(int fd, ...) {
             // Never ever close 0..2. If we cannot redirect to /dev/null,
             // then we are better off leaving the standard descriptors open.
             if (dev_null >= 0) {
-              HANDLE_EINTR(dup2(dev_null, i));
+              if (HANDLE_EINTR(dup2(dev_null, i))) {
+                Sandbox::die("Cannot dup2()");
+              }
             }
           } else {
-            HANDLE_EINTR(close(i));
+            if (HANDLE_EINTR(close(i))) { }
           }
           break;
         } else if (i == f) {
@@ -154,7 +156,7 @@ void Util::closeAllBut(int fd, ...) {
   }
   closedir(dir);
   if (dev_null >= 0) {
-    HANDLE_EINTR(close(dev_null));
+    if (HANDLE_EINTR(close(dev_null))) { }
   }
   return;
 }

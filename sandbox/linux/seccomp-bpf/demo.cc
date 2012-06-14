@@ -166,6 +166,7 @@ static void *threadFnc(void *arg) {
 }
 
 static void *sendmsgStressThreadFnc(void *arg) {
+  if (arg) { }
   static const int repetitions = 100;
   static const int kNumFds = 3;
   for (int rep = 0; rep < repetitions; ++rep) {
@@ -199,6 +200,8 @@ static void *sendmsgStressThreadFnc(void *arg) {
 }
 
 int main(int argc, char *argv[]) {
+  if (argc) { }
+  if (argv) { }
   int proc_fd = open("/proc", O_RDONLY|O_DIRECTORY);
   if (playground2::Sandbox::supportsSeccompSandbox(proc_fd) !=
       playground2::Sandbox::STATUS_AVAILABLE) {

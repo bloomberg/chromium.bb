@@ -1,5 +1,4 @@
-CFLAGS = -g -O3 -Wall -Werror -Wextra -Wno-missing-field-initializers         \
-         -Wno-unused-parameter -Wno-unused-value -Wno-array-bounds -fPIC -I.
+CFLAGS = -g -O3 -Wall -Werror -Wextra -Wno-missing-field-initializers -fPIC -I.
 CPPFLAGS = -D_GNU_SOURCE -DSECCOMP_BPF_STANDALONE -iquote ../../..
 LDFLAGS = -g -lpthread
 DEPFLAGS = -MMD -MF .$@.d
