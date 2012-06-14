@@ -130,7 +130,6 @@ class PrerenderTabHelper::PixelStats {
 
 PrerenderTabHelper::PrerenderTabHelper(TabContents* tab)
     : content::WebContentsObserver(tab->web_contents()),
-      pixel_stats_(new PixelStats(this)),
       tab_(tab) {
 }
 
@@ -189,7 +188,7 @@ void PrerenderTabHelper::DidStopLoading() {
     PrerenderManager::RecordPerceivedPageLoadTime(
         now - pplt_load_start_, fraction_elapsed_at_swapin, web_contents(),
         url_);
-    if (IsPrerendered())
+    if (IsPrerendered() && pixel_stats_.get())
       pixel_stats_->GetBitmap(PixelStats::BITMAP_ON_LOAD, web_contents());
   }
 
@@ -245,7 +244,8 @@ void PrerenderTabHelper::PrerenderSwappedIn() {
     // rebase the start time to now.
     actual_load_start_ = pplt_load_start_;
     pplt_load_start_ = base::TimeTicks::Now();
-    pixel_stats_->GetBitmap(PixelStats::BITMAP_SWAP_IN, web_contents());
+    if (pixel_stats_.get())
+      pixel_stats_->GetBitmap(PixelStats::BITMAP_SWAP_IN, web_contents());
   }
 }
 

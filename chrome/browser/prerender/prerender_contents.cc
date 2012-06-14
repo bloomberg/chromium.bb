@@ -480,9 +480,7 @@ void PrerenderContents::Observe(int type,
         // size, is also sets itself to be visible, which would then break the
         // visibility API.
         new_render_view_host->WasResized();
-        // TODO(tburkard): Put this back in once pixel counting experiments
-        // are done.
-        //        prerender_contents_->web_contents()->HideContents();
+        prerender_contents_->web_contents()->HideContents();
       }
       break;
     }

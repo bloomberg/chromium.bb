@@ -168,10 +168,8 @@ class TestPrerenderContents : public PrerenderContents {
     // navigation, so this should be happen for every PrerenderContents for
     // which a RenderViewHost is created, regardless of whether or not it's
     // used.
-    // TODO(tburkard): Temporarily disabled for pixel stats since we do not
-    // hide any more.  Needs to be re-enabled once pixel stats are removed.
-    // if (new_render_view_host_)
-    //   EXPECT_TRUE(was_hidden_);
+    if (new_render_view_host_)
+      EXPECT_TRUE(was_hidden_);
 
     // A used PrerenderContents will only be destroyed when we swap out
     // WebContents, at the end of a navigation caused by a call to
@@ -179,9 +177,7 @@ class TestPrerenderContents : public PrerenderContents {
     if (final_status() == FINAL_STATUS_USED)
       EXPECT_TRUE(new_render_view_host_);
 
-    // TODO(tburkard): Temporarily disabled for pixel stats since we do not
-    // hide any more.  Needs to be re-enabled once pixel stats are removed.
-    // EXPECT_EQ(should_be_shown_, was_shown_);
+    EXPECT_EQ(should_be_shown_, was_shown_);
 
     // When the PrerenderContents is destroyed, quit the UI message loop.
     // This happens on navigation to used prerendered pages, and soon
@@ -1040,7 +1036,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderIncognito) {
 }
 
 // Checks that the visibility API works.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderVisibility) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderVisibility) {
   PrerenderTestURL("files/prerender/prerender_visibility.html",
                    FINAL_STATUS_USED,
                    1);
