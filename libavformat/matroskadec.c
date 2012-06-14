@@ -2072,6 +2072,7 @@ static int matroska_parse_block(MatroskaDemuxContext *matroska, uint8_t *data,
                     offset = matroska_decode_buffer(&pkt_data,&pkt_size, track);
                     if (offset < 0)
                         continue;
+                    av_assert0(offset + pkt_size >= pkt_size);
                 }
 
                 pkt = av_mallocz(sizeof(AVPacket));
