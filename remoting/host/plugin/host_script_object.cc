@@ -96,10 +96,6 @@ HostNPScriptObject::HostNPScriptObject(
 HostNPScriptObject::~HostNPScriptObject() {
   CHECK_EQ(base::PlatformThread::CurrentId(), np_thread_id_);
 
-  // Shutdown It2MeHostUserInterface first so that it doesn't try to post
-  // tasks on the UI thread while we are stopping the host.
-  it2me_host_user_interface_.reset();
-
   HostLogHandler::UnregisterLoggingScriptObject(this);
 
   plugin_message_loop_proxy_->Detach();
@@ -120,6 +116,13 @@ HostNPScriptObject::~HostNPScriptObject() {
     disconnected_event_.Reset();
     DisconnectInternal();
     disconnected_event_.Wait();
+
+    // UI needs to be shut down on the UI thread before we destroy the
+    // host context (because it depends on the context object), but
+    // only after the host has been shut down (becase the UI object is
+    // registered as status observer for the host, and we can't
+    // unregister it from this thread).
+    it2me_host_user_interface_.reset();
 
     // Stops all threads.
     host_context_.reset();
