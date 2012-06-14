@@ -379,7 +379,7 @@ TEST_F(CertDatabaseNSSTest, ImportCA_NotCACert) {
   EXPECT_EQ(0U, ListCertsInSlot(slot_->os_module_handle()).size());
 }
 
-TEST_F(CertDatabaseNSSTest, ImportCACertHierarchy) {
+TEST_F(CertDatabaseNSSTest, FLAKY_ImportCACertHierarchy) {
   CertificateList certs;
   ASSERT_TRUE(ReadCertIntoList("dod_root_ca_2_cert.der", &certs));
   ASSERT_TRUE(ReadCertIntoList("dod_ca_17_cert.der", &certs));
@@ -405,7 +405,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACertHierarchy) {
   EXPECT_EQ("DOD CA-17", cert_list[1]->subject().common_name);
 }
 
-TEST_F(CertDatabaseNSSTest, ImportCACertHierarchyDupeRoot) {
+TEST_F(CertDatabaseNSSTest, FLAKY_ImportCACertHierarchyDupeRoot) {
   CertificateList certs;
   ASSERT_TRUE(ReadCertIntoList("dod_root_ca_2_cert.der", &certs));
 
@@ -463,7 +463,7 @@ TEST_F(CertDatabaseNSSTest, ImportCACertHierarchyUntrusted) {
   EXPECT_EQ("DoD Root CA 2", cert_list[0]->subject().common_name);
 }
 
-TEST_F(CertDatabaseNSSTest, ImportCACertHierarchyTree) {
+TEST_F(CertDatabaseNSSTest, FLAKY_ImportCACertHierarchyTree) {
   CertificateList certs;
   ASSERT_TRUE(ReadCertIntoList("dod_root_ca_2_cert.der", &certs));
   // This certificate is expired. http://crbug.com/111029
