@@ -147,7 +147,23 @@ void RemoteFileSystemOperation::OpenFile(const GURL& path,
                                          int file_flags,
                                          base::ProcessHandle peer_handle,
                                          const OpenFileCallback& callback) {
-  NOTIMPLEMENTED();
+  // TODO(zelidrag): Implement file write operations.
+  if ((file_flags & base::PLATFORM_FILE_CREATE) ||
+      (file_flags & base::PLATFORM_FILE_WRITE) ||
+      (file_flags & base::PLATFORM_FILE_EXCLUSIVE_WRITE) ||
+      (file_flags & base::PLATFORM_FILE_CREATE_ALWAYS) ||
+      (file_flags & base::PLATFORM_FILE_OPEN_TRUNCATED) ||
+      (file_flags & base::PLATFORM_FILE_DELETE_ON_CLOSE)) {
+    NOTIMPLEMENTED() << "File write operations not supported " << path.spec();
+    return;
+  }
+  DCHECK(SetPendingOperationType(kOperationOpenFile));
+  remote_proxy_->OpenFile(
+      path,
+      file_flags,
+      peer_handle,
+      base::Bind(&RemoteFileSystemOperation::DidOpenFile,
+                 base::Owned(this), callback));
 }
 
 fileapi::FileSystemOperation*
@@ -232,6 +248,14 @@ void RemoteFileSystemOperation::DidCreateSnapshotFile(
     const FilePath& platform_path,
     const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
   callback.Run(result, file_info, platform_path, file_ref);
+}
+
+void RemoteFileSystemOperation::DidOpenFile(
+    const OpenFileCallback& callback,
+    base::PlatformFileError result,
+    base::PlatformFile file,
+    base::ProcessHandle peer_handle) {
+  callback.Run(result, file, peer_handle);
 }
 
 }  // namespace chromeos

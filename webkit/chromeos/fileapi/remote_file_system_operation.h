@@ -110,6 +110,11 @@ class RemoteFileSystemOperation : public fileapi::FileSystemOperationInterface {
       const base::PlatformFileInfo& file_info,
       const FilePath& platform_path,
       const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
+  void DidOpenFile(
+      const OpenFileCallback& callback,
+      base::PlatformFileError result,
+      base::PlatformFile file,
+      base::ProcessHandle peer_handle);
 
 
   scoped_refptr<fileapi::RemoteFileSystemProxyInterface> remote_proxy_;

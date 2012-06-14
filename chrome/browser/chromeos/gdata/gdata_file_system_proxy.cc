@@ -31,6 +31,62 @@ namespace {
 const char kGDataRootDirectory[] = "drive";
 const char kFeedField[] = "feed";
 
+
+// Helper function that creates platform file on bocking IO thread pool.
+void CreatePlatformFileOnIOPool(const FilePath& local_path,
+                                int file_flags,
+                                base::PlatformFile* platform_file,
+                                base::PlatformFileError* open_error) {
+  bool created;
+  *platform_file = base::CreatePlatformFile(local_path,
+                                            file_flags,
+                                            &created,
+                                            open_error);
+}
+
+// Helper function to run reply on results of CreatePlatformFileOnIOPool() on
+// IO thread.
+void OnPlatformFileCreated(
+    const FileSystemOperationInterface::OpenFileCallback& callback,
+    base::ProcessHandle peer_handle,
+    base::PlatformFile* platform_file,
+    base::PlatformFileError* open_error) {
+  callback.Run(*open_error, *platform_file, peer_handle);
+}
+
+// Helper function to run OpenFileCallback from
+// GDataFileSystemProxy::OpenFile().
+void OnGetFileByPathForOpen(
+    const FileSystemOperationInterface::OpenFileCallback& callback,
+    int file_flags,
+    base::ProcessHandle peer_handle,
+    base::PlatformFileError error,
+    const FilePath& local_path,
+    const std::string& unused_mime_type,
+    gdata::GDataFileType file_type) {
+  if (error != base::PLATFORM_FILE_OK) {
+    callback.Run(error, base::kInvalidPlatformFileValue, peer_handle);
+    return;
+  }
+
+  base::PlatformFile* platform_file = new base::PlatformFile(
+      base::kInvalidPlatformFileValue);
+  base::PlatformFileError* open_error =
+      new base::PlatformFileError(base::PLATFORM_FILE_ERROR_FAILED);
+  BrowserThread::GetBlockingPool()->PostTaskAndReply(FROM_HERE,
+      base::Bind(&CreatePlatformFileOnIOPool,
+                 local_path,
+                 file_flags,
+                 platform_file,
+                 open_error),
+      base::Bind(&OnPlatformFileCreated,
+                 callback,
+                 peer_handle,
+                 base::Owned(platform_file),
+                 base::Owned(open_error)));
+
+}
+
 // Helper function to run SnapshotFileCallback from
 // GDataFileSystemProxy::CreateSnapshotFile().
 void CallSnapshotFileCallback(
@@ -208,6 +264,29 @@ void GDataFileSystemProxy::CreateDirectory(
   }
 
   file_system_->CreateDirectory(file_path, exclusive, recursive, callback);
+}
+
+void GDataFileSystemProxy::OpenFile(
+    const GURL& file_url,
+    int file_flags,
+    base::ProcessHandle peer_handle,
+    const FileSystemOperationInterface::OpenFileCallback& callback) {
+  FilePath file_path;
+  if (!ValidateUrl(file_url, &file_path)) {
+    MessageLoopProxy::current()->PostTask(FROM_HERE,
+         base::Bind(callback,
+                    base::PLATFORM_FILE_ERROR_NOT_FOUND,
+                    base::kInvalidPlatformFileValue,
+                    peer_handle));
+    return;
+  }
+
+  file_system_->GetFileByPath(file_path,
+                              base::Bind(&OnGetFileByPathForOpen,
+                                         callback,
+                                         file_flags,
+                                         peer_handle),
+                              GetDownloadDataCallback());
 }
 
 void GDataFileSystemProxy::CreateSnapshotFile(

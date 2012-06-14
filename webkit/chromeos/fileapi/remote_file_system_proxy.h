@@ -79,6 +79,13 @@ class RemoteFileSystemProxyInterface :
       const GURL& path,
       const WritableSnapshotFile& callback) = 0;
 
+  // Opens file for a give |path| with specified |flags| (see
+  // base::PlatformFileFlags for details).
+  virtual void OpenFile(
+      const GURL& path,
+      int flags,
+      base::ProcessHandle peer_handle,
+      const FileSystemOperationInterface::OpenFileCallback& callback) = 0;
   // TODO(zelidrag): More methods to follow as we implement other parts of FSO.
 };
 
