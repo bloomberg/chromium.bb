@@ -407,6 +407,7 @@ void TestShell::BindJSObjectsToWindow(WebFrame* frame) {
   // Only bind the test classes if we're running tests.
   if (layout_test_mode_) {
     layout_test_controller_->BindToJavascript(frame, "layoutTestController");
+    layout_test_controller_->BindToJavascript(frame, "testRunner");
   }
 }
 

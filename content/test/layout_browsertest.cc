@@ -84,6 +84,7 @@ static const std::string preamble =
       "  this.workerThreadCount = 0; \n"
       "}\n"
       "window.layoutTestController = new LayoutTestController();\n"
+      "window.testRunner = window.layoutTestController;\n"
       "window.addEventListener('load', layoutTestController.OnEvent, false);\n"
       "</script>";
 

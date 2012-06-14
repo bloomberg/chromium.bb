@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 var layoutTestController = layoutTestController || {};
+var testRunner = testRunner || {};
 
 (function() {
   native function NotifyDone();
@@ -21,4 +22,7 @@ var layoutTestController = layoutTestController || {};
         SetShouldStayOnPageAfterHandlingBeforeUnload;
     this.waitUntilDone = SetWaitUntilDone;
   }();
+
+  testRunner = layoutTestController;
+
 })();
