@@ -35,6 +35,7 @@ from tests import test_server
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 SDK_SRC_DIR = os.path.dirname(SCRIPT_DIR)
 SDK_EXAMPLE_DIR = os.path.join(SDK_SRC_DIR, 'examples')
+SDK_LIBRARY_DIR = os.path.join(SDK_SRC_DIR, 'libraries')
 SDK_DIR = os.path.dirname(SDK_SRC_DIR)
 SRC_DIR = os.path.dirname(SDK_DIR)
 NACL_DIR = os.path.join(SRC_DIR, 'native_client')
@@ -230,6 +231,10 @@ def InstallHeaders(tc_dst_inc, pepper_ver, tc_name):
           os.path.join(PPAPI_DIR,'lib','gl','include','KHR', '*.h'),
           os.path.join(tc_dst_inc, 'KHR'))
 
+  # Copy the lib files
+  buildbot_common.MakeDir(os.path.join(tc_dst_inc, 'lib'))
+  buildbot_common.CopyDir(os.path.join(PPAPI_DIR,'lib'), tc_dst_inc)
+
 
 def UntarToolchains(pepperdir, platform, arch, toolchains):
   buildbot_common.BuildStep('Untar Toolchains')
@@ -328,9 +333,9 @@ def BuildToolchains(pepperdir, platform, arch, pepper_ver, toolchains):
 
 EXAMPLE_MAP = {
   'newlib': [
-#    'debugging',
+    'debugging',
     'file_histogram',
-#    'file_io',
+    'file_io',
     'fullscreen_tumbler',
     'gamepad',
     'geturl',
@@ -348,11 +353,20 @@ EXAMPLE_MAP = {
     'websocket'
   ],
   'glibc': [
-#    'dlopen',
+    'dlopen',
   ],
   'pnacl': [
 #    'hello_world_pnacl',
   ],
+}
+
+
+LIBRARY_MAP = {
+  'newlib': [
+    'gles2',
+  ],
+  'glibc': [],
+  'pnacl': []
 }
 
 
@@ -378,11 +392,20 @@ def CopyExamples(pepperdir, toolchains):
   for tc in toolchains:
     examples.extend(EXAMPLE_MAP[tc])
 
+  libraries = []
+  for tc in toolchains:
+    libraries.extend(LIBRARY_MAP[tc])
+
   print 'Process: ' + ' '.join(examples)
+  print 'Process: ' + ' '.join(libraries)
   args = ['--dstroot=%s' % pepperdir, '--master']
   for example in examples:
     dsc = os.path.join(SDK_EXAMPLE_DIR, example, 'example.dsc')
     args.append(dsc)
+  for library in libraries:
+    dsc = os.path.join(SDK_LIBRARY_DIR, library, 'library.dsc')
+    args.append(dsc)
+
   if generate_make.main(args):
     buildbot_common.ErrorExit('Failed to build examples.')
 
@@ -445,7 +468,7 @@ def main(args):
   buildbot_common.RemoveDir(pepperold)
   if not skip_untar:
     buildbot_common.RemoveDir(pepperdir)
-    buildbot_common.MakeDir(os.path.join(pepperdir, 'libraries'))
+    buildbot_common.MakeDir(os.path.join(pepperdir, 'src'))
     buildbot_common.MakeDir(os.path.join(pepperdir, 'toolchain'))
     buildbot_common.MakeDir(os.path.join(pepperdir, 'tools'))
   else:
@@ -464,7 +487,7 @@ def main(args):
 
   if not skip_build:
     BuildToolchains(pepperdir, platform, arch, pepper_ver, toolchains)
-    InstallHeaders(os.path.join(pepperdir, 'libraries'), pepper_ver, 'libs')
+    InstallHeaders(os.path.join(pepperdir, 'src'), pepper_ver, 'libs')
 
   if not skip_build:
     buildbot_common.BuildStep('Copy make OS helpers')

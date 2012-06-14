@@ -22,6 +22,21 @@
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/ppp_messaging.h"
 
+/**
+ * The toolchain name macro will be once of these three values, so we will use
+ * it to select which string we print.
+ */
+enum {
+  newlib = 0,
+  glibc = 1,
+  pnacl = 2
+};
+
+static const char* s_HelloMsg[3] = {
+  "Hello World (newlib)",
+  "Hello World (glibc)",
+  "Hello World (pnacl)"
+};
 
 static PPB_Messaging* ppb_messaging_interface = NULL;
 static PPB_Var* ppb_var_interface = NULL;
@@ -68,8 +83,7 @@ static PP_Bool Instance_DidCreate(PP_Instance instance,
                                   uint32_t argc,
                                   const char* argn[],
                                   const char* argv[]) {
-  ppb_messaging_interface->PostMessage(instance,
-                                       CStrToVar("Hello World: " TCNAME));
+  ppb_messaging_interface->PostMessage(instance, CStrToVar(s_HelloMsg[TCNAME]));
   return PP_TRUE;
 }
 

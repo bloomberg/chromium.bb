@@ -23,7 +23,8 @@ SRC_EXT = {
   'c': 'CC',
   'cc' : 'CXX',
   '.so' : '.so',
-  '.nexe': '.nexe'
+  '.nexe': '.nexe',
+  '.a' : '.a'
 }
 
 
@@ -42,6 +43,8 @@ def WriteMakefile(srcpath, dstpath, replacements):
 def GetExtType(desc):
   if desc['TYPE'] in ['main', 'nexe']:
     ext = '.nexe'
+  elif desc['TYPE'] == 'lib':
+    ext = '.a'
   else:
     ext = '.so'
   return ext
@@ -75,9 +78,10 @@ def GenerateCopyList(desc):
   # Add sources for each target
   for target in desc['TARGETS']:
     sources.extend(target['SOURCES'])
+    if target['TYPE'] == 'main':
+      sources.append(desc['NAME'] + '.html')
 
   # And HTML and data files
-  sources.append(desc['NAME'] + '.html')
   sources.extend(desc.get('DATA', []))
   return sources
 
@@ -115,7 +119,7 @@ def GenerateNEXE(toolchain, name, ext, cc_sources, cxx_sources):
   COMPILE_RULE = """
 <OBJS>:=$(patsubst %.<ext>, <tc>/%_<ARCH>.o,$(<PROJ>_<EXT>))
 $(<OBJS>) : <tc>/%_<ARCH>.o : %.<ext> $(THIS_MAKE) | <tc>
-<TAB>$(<CC>) -o $@ $< -m<ARCH> $(<PROJ>_<EXT>FLAGS) -DTCNAME=\\"<tc>\\"
+<TAB>$(<CC>) -o $@ $< -m<ARCH> $(<PROJ>_<EXT>FLAGS) -DTCNAME=<tc>
 """
   LINK_RULE = """
 <tc>/<TARG> : $(<OBJS>)
@@ -139,6 +143,9 @@ $(<OBJS>) : <tc>/%_<ARCH>.o : %.<ext> $(THIS_MAKE) | <tc>
     objs = ' '.join(object_sets)
     replace = BuildToolDict(toolchain, name, arch, ext, OBJS=objs)
     rules += Replace(LINK_RULE, replace) 
+    if ext == '.a':
+      rules += '\n'
+      continue
     if ext == '.so':
       remap = ' -n %s,%s.so' % (replace['<TARG>'], name)
     rules += '%s_NMF+=%s/%s\n' % (replace['<TC>'], toolchain, replace['<TARG>'])
@@ -189,6 +196,7 @@ def GenerateReplacements(desc):
     settings += SetVar(macro + '_LDFLAGS', flags)
 
   for tc in tools:
+    nexe = None
     rules += '#\n# Rules for %s toolchain\n#\n%s:\n\t$(MKDIR) %s\n' % (
         tc, tc, tc)
     for target in desc['TARGETS']:
@@ -201,14 +209,23 @@ def GenerateReplacements(desc):
       if target['TYPE'] == 'main':
         nexe = name
         targets.append('%s/%s.nmf' % (tc, name))
-    replace = BuildToolDict(tc, nexe)
-    rules += Replace(NMF_RULE, replace)
+    if nexe: 
+      replace = BuildToolDict(tc, nexe)
+      rules += Replace(NMF_RULE, replace)
 
+  prereqs = desc.get('PREREQ', [])
+  target_def = ''
+  if prereqs:
+    target_def = '.PHONY : PREREQS\nPREREQS:\n'
+    for prereq in prereqs:
+      target_def += '\t+$(MAKE) -C %s all\n' % prereq
+    target_def+= '\nall : PREREQS ' + (' '.join(targets))
+  else:
+    target_def += 'all : ' + ' '.join(targets) 
 
-  targets = 'all : '+ ' '.join(targets) 
   return {
       '__PROJECT_SETTINGS__' : settings,
-      '__PROJECT_TARGETS__' : targets,
+      '__PROJECT_TARGETS__' : target_def,
       '__PROJECT_RULES__' : rules,
       '__PROJECT_PRELAUNCH__' : prelaunch,
       '__PROJECT_PRERUN__' : prerun,
@@ -219,14 +236,16 @@ def GenerateReplacements(desc):
 # 'KEY' : ( <TYPE>, [Accepted Values], <Required?>)
 DSC_FORMAT = {
     'TOOLS' : (list, ['newlib', 'glibc', 'pnacl'], True),
+    'PREREQ' : (list, '', False),
     'TARGETS' : (list, {
         'NAME': (str, '', True),
-        'TYPE': (str, ['main', 'nexe', 'so'], True),
+        'TYPE': (str, ['main', 'nexe', 'lib', 'so'], True),
         'SOURCES': (list, '', True),
         'CCFLAGS': (list, '', False),
         'CXXFLAGS': (list, '', False),
         'LDFLAGS': (list, '', False)
     }, True),
+    'SEARCH': (list, '', False),
     'POST': (str, '', False),
     'PRE': (str, '', False),
     'DEST': (str, ['examples', 'src'], True),
@@ -337,10 +356,30 @@ def AddMakeBat(pepperdir, makepath):
   fp.close()
 
 
-def ProcessProject(dstroot, template, filename):
+def FindFile(name, srcroot, srcdirs):
+  checks = []
+  for srcdir in srcdirs:
+    srcfile = os.path.join(srcroot, srcdir, name)
+    srcfile = os.path.abspath(srcfile)
+    if os.path.exists(srcfile):
+      return srcfile
+    else:
+      checks.append(srcfile)
+
+  ErrorMsgFunc('%s not found in:\n\t%s' % (name, '\n\t'.join(checks)))
+  return None
+
+
+def IsNexe(desc):
+  for target in desc['TARGETS']:
+    if target['TYPE'] == 'main':
+      return True
+  return False
+
+def ProcessProject(dstroot, filename):
   print '\n\nProcessing %s...' % filename
   # Default src directory is the directory the description was found in 
-  src_dir = os.path.dirname(os.path.abspath(filename))
+  srcroot = os.path.dirname(os.path.abspath(filename))
   desc = open(filename, 'rb').read()
   desc = eval(desc, {}, {})
   if not ValidateFormat(desc, DSC_FORMAT):
@@ -350,12 +389,22 @@ def ProcessProject(dstroot, template, filename):
   out_dir = os.path.join(dstroot, desc['DEST'], name)
   buildbot_common.MakeDir(out_dir)
 
+  srcdirs = desc.get('SEARCH', ['.'])
+
   # Copy sources to example directory
   sources = GenerateCopyList(desc)
   for src_name in sources:
-    src_file = os.path.join(src_dir, src_name)
+    src_file = FindFile(src_name, srcroot, srcdirs)
+    if not src_file:
+      return (None, None)
     dst_file = os.path.join(out_dir, src_name)
     buildbot_common.CopyFile(src_file, dst_file)
+
+  if IsNexe(desc):
+    template=os.path.join(SCRIPT_DIR, 'template.mk')
+  else:
+    template=os.path.join(SCRIPT_DIR, 'library.mk')
+
 
   # Add Makefile
   repdict = GenerateReplacements(desc)
@@ -400,15 +449,13 @@ def main(argv):
   parser = optparse.OptionParser()
   parser.add_option('--dstroot', help='Set root for destination.',
       dest='dstroot', default=OUT_DIR)
-  parser.add_option('--template', help='Set the makefile template.',
-      dest='template', default=os.path.join(SCRIPT_DIR, 'template.mk'))
   parser.add_option('--master', help='Create master Makefile.',
       action='store_true', dest='master', default=False)
 
   examples = []
   options, args = parser.parse_args(argv)
   for filename in args:
-    name, dest = ProcessProject(options.dstroot, options.template, filename)
+    name, dest = ProcessProject(options.dstroot, filename)
     if not name:
       print '\n*** Failed to process project: %s ***' % filename
       return 1

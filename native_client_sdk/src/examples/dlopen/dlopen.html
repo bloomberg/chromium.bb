@@ -44,14 +44,6 @@
     }
 
     function handleMessage(message_event) {
-      var consolec = document.getElementById('consolec');
-      if(message_event.data[0]=='!') {
-        document.getElementById('answerlog').innerHTML +=
-            (consolec.value + ": " + message_event.data +"<br />");
-      } else {
-        document.getElementById('answerlog').innerHTML +=
-            (message_event.data +"<br />");
-      }
       updateStatus(message_event.data);
     }
 
@@ -91,14 +83,15 @@
         statusField.innerHTML = statusText;
       }
       if (answerLog) {
-        answerLog.innerHTML += (message_event.data +"<br />");
+        answerLog.innerHTML += (opt_message  +"<br />");
       }
     }
 
     function askBall()
     {
       naclModule = document.getElementById('nacl_module');
-      updateStatus('Posing...');
+      var consolec = document.getElementById('consolec');
+      updateStatus('ASK: ' + consolec.value);
       naclModule.postMessage('query');
       return false;
     }
