@@ -1119,8 +1119,7 @@ GDataCacheMap::GDataCacheMap(
 }
 
 GDataCacheMap::~GDataCacheMap() {
-  // TODO(satorux): Enable this once all callers are fixed: crbug.com/131826.
-  // AssertOnSequencedWorkerPool();
+  AssertOnSequencedWorkerPool();
   cache_map_.clear();
 }
 

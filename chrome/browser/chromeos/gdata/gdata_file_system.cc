@@ -1999,7 +1999,6 @@ void GDataFileSystem::OnGetDocumentEntry(const FilePath& cache_file_path,
 
 void GDataFileSystem::FreeDiskSpaceIfNeededFor(int64 num_bytes,
                                                bool* has_enough_space) {
-  base::AutoLock lock(lock_);  // For cache access.
   cache_->FreeDiskSpaceIfNeededFor(num_bytes, has_enough_space);
 }
 
@@ -2443,7 +2442,6 @@ void GDataFileSystem::SetMountedStateOnBlockingPool(
     bool to_mount,
     base::PlatformFileError *error,
     FilePath* cache_file_path) {
-  base::AutoLock lock(lock_);  // For cache access.
   cache_->SetMountedState(file_path, to_mount, error, cache_file_path);
 }
 
@@ -3834,7 +3832,6 @@ void GDataFileSystem::RequestInitializeCacheForTesting() {
 //========= GDataFileSystem: Cache tasks that ran on blocking pool ============
 
 void GDataFileSystem::InitializeCacheOnBlockingPool() {
-  base::AutoLock lock(lock_);  // For cache access.
   cache_->Initialize();
   NotifyCacheInitialized();
 }
@@ -3844,7 +3841,6 @@ void GDataFileSystem::GetFileFromCacheOnBlockingPool(
     const std::string& md5,
     base::PlatformFileError* error,
     FilePath* cache_file_path) {
-  base::AutoLock lock(lock_);  // For cache access.
   cache_->GetFile(resource_id, md5, error, cache_file_path);
 }
 
@@ -3857,7 +3853,7 @@ void GDataFileSystem::GetCacheStateOnBlockingPool(
   DCHECK(error);
   DCHECK(cache_state);
 
-  base::AutoLock lock(lock_);  // For cache access.
+  base::AutoLock lock(lock_);  // For |root_| access.
 
   *error = base::PLATFORM_FILE_OK;
   *cache_state = GDataCache::CACHE_STATE_NONE;
@@ -3881,7 +3877,6 @@ void GDataFileSystem::StoreToCacheOnBlockingPool(
     const FilePath& source_path,
     GDataCache::FileOperationType file_operation_type,
     base::PlatformFileError* error) {
-  base::AutoLock lock(lock_);  // For cache access.
   cache_->Store(resource_id, md5, source_path, file_operation_type, error);
 }
 
@@ -3890,7 +3885,6 @@ void GDataFileSystem::PinOnBlockingPool(
     const std::string& md5,
     GDataCache::FileOperationType file_operation_type,
     base::PlatformFileError* error) {
-  base::AutoLock lock(lock_);  // For cache access.
   cache_->Pin(resource_id, md5, file_operation_type, error);
 }
 
@@ -3899,7 +3893,6 @@ void GDataFileSystem::UnpinOnBlockingPool(
     const std::string& md5,
     GDataCache::FileOperationType file_operation_type,
     base::PlatformFileError* error) {
-  base::AutoLock lock(lock_);  // For cache access.
   cache_->Unpin(resource_id, md5, file_operation_type, error);
 }
 
@@ -3909,7 +3902,6 @@ void GDataFileSystem::MarkDirtyInCacheOnBlockingPool(
     GDataCache::FileOperationType file_operation_type,
     base::PlatformFileError* error,
     FilePath* cache_file_path) {
-  base::AutoLock lock(lock_);  // For cache access.
   cache_->MarkDirty(
       resource_id, md5, file_operation_type, error, cache_file_path);
 }
@@ -3919,7 +3911,6 @@ void GDataFileSystem::CommitDirtyInCacheOnBlockingPool(
     const std::string& md5,
     GDataCache::FileOperationType file_operation_type,
     base::PlatformFileError* error) {
-  base::AutoLock lock(lock_);  // For cache access.
   cache_->CommitDirty(resource_id, md5, file_operation_type, error);
 }
 
@@ -3928,14 +3919,12 @@ void GDataFileSystem::ClearDirtyInCacheOnBlockingPool(
     const std::string& md5,
     GDataCache::FileOperationType file_operation_type,
     base::PlatformFileError* error) {
-  base::AutoLock lock(lock_);  // For cache access.
   cache_->ClearDirty(resource_id, md5, file_operation_type, error);
 }
 
 void GDataFileSystem::RemoveFromCacheOnBlockingPool(
     const std::string& resource_id,
     base::PlatformFileError* error) {
-  base::AutoLock lock(lock_);  // For cache access.
   cache_->Remove(resource_id, error);
 }
 
