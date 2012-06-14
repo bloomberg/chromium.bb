@@ -215,7 +215,7 @@ MessageType GetStatusInfo(ProfileSyncService* service,
     // The order or priority is going to be: 1. Unrecoverable errors.
     // 2. Auth errors. 3. Protocol errors. 4. Passphrase errors.
 
-    if (service->unrecoverable_error_detected()) {
+    if (service->HasUnrecoverableError()) {
       if (status_label) {
         status_label->assign(l10n_util::GetStringFUTF16(
             IDS_SYNC_STATUS_UNRECOVERABLE_ERROR,
@@ -297,7 +297,7 @@ MessageType GetStatusInfo(ProfileSyncService* service,
         }
         result_type = SYNC_ERROR;
       }
-    } else if (service->unrecoverable_error_detected()) {
+    } else if (service->HasUnrecoverableError()) {
       result_type = SYNC_ERROR;
       ProfileSyncService::Status status(service->QueryDetailedSyncStatus());
       if (ShouldShowActionOnUI(status.sync_protocol_error)) {
@@ -746,7 +746,7 @@ void ConstructAboutInformation(ProfileSyncService* service,
           failed_datatypes_handler.GetErrorString());
     }
 
-    if (service->unrecoverable_error_detected()) {
+    if (service->HasUnrecoverableError()) {
       strings->Set("unrecoverable_error_detected",
                    new base::FundamentalValue(true));
       tracked_objects::Location loc(service->unrecoverable_error_location());

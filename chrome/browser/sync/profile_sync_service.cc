@@ -92,6 +92,9 @@ static const char* kRelevantTokenServices[] = {
 static const int kRelevantTokenServicesCount =
     arraysize(kRelevantTokenServices);
 
+static const char* kSyncUnrecoverableErrorHistogram =
+    "Sync.UnrecoverableErrors";
+
 // Helper to check if the given token service is relevant for sync.
 static bool IsTokenServiceRelevant(const std::string& service) {
   for (int i = 0; i < kRelevantTokenServicesCount; ++i) {
@@ -122,7 +125,7 @@ ProfileSyncService::ProfileSyncService(ProfileSyncComponentsFactory* factory,
       backend_initialized_(false),
       is_auth_in_progress_(false),
       signin_(signin_manager),
-      unrecoverable_error_detected_(false),
+      unrecoverable_error_reason_(ERROR_REASON_UNSET),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       expect_sync_configuration_aborted_(false),
       clear_server_data_state_(CLEAR_NOT_STARTED),
@@ -396,8 +399,10 @@ void ProfileSyncService::OnSyncConfigureRetry() {
   // Note: In those scenarios the UI does not wait for the configuration
   // to finish.
   if (!auto_start_enabled_ && !backend_initialized_) {
-    OnUnrecoverableError(FROM_HERE,
-                         "Configure failed to download.");
+    OnInternalUnrecoverableError(FROM_HERE,
+                                 "Configure failed to download.",
+                                 true,
+                                 ERROR_REASON_CONFIGURATION_RETRY);
   }
 
   NotifyObservers();
@@ -567,7 +572,7 @@ void ProfileSyncService::ClearStaleErrors() {
 }
 
 void ProfileSyncService::ClearUnrecoverableError() {
-  unrecoverable_error_detected_ = false;
+  unrecoverable_error_reason_ = ERROR_REASON_UNSET;
   unrecoverable_error_message_.clear();
   unrecoverable_error_location_ = tracked_objects::Location();
 }
@@ -596,6 +601,9 @@ void ProfileSyncService::RegisterNewDataType(syncable::ModelType data_type) {
 void ProfileSyncService::OnUnrecoverableError(
     const tracked_objects::Location& from_here,
     const std::string& message) {
+  // Unrecoverable errors that arrive via the UnrecoverableErrorHandler
+  // interface are assumed to originate within the syncer.
+  unrecoverable_error_reason_ = ERROR_REASON_SYNCER;
   OnUnrecoverableErrorImpl(from_here, message, true);
 }
 
@@ -603,10 +611,13 @@ void ProfileSyncService::OnUnrecoverableErrorImpl(
     const tracked_objects::Location& from_here,
     const std::string& message,
     bool delete_sync_database) {
-  unrecoverable_error_detected_ = true;
+  DCHECK(HasUnrecoverableError());
   unrecoverable_error_message_ = message;
   unrecoverable_error_location_ = from_here;
 
+  UMA_HISTOGRAM_ENUMERATION(kSyncUnrecoverableErrorHistogram,
+                            unrecoverable_error_reason_,
+                            ERROR_REASON_LIMIT);
   NotifyObservers();
   std::string location;
   from_here.Write(true, true, &location);
@@ -657,7 +668,10 @@ void ProfileSyncService::OnBackendInitialized(
     // Keep the directory around for now so that on restart we will retry
     // again and potentially succeed in presence of transient file IO failures
     // or permissions issues, etc.
-    OnUnrecoverableErrorImpl(FROM_HERE, "BackendInitialize failure", false);
+    OnInternalUnrecoverableError(FROM_HERE,
+                                 "BackendInitialize failure",
+                                 false,
+                                 ERROR_REASON_BACKEND_INIT_FAILURE);
     return;
   }
 
@@ -865,7 +879,7 @@ void ProfileSyncService::OnPassphraseRequired(
   DCHECK(backend_->IsNigoriEnabled());
 
   // TODO(lipalani) : add this check to other locations as well.
-  if (unrecoverable_error_detected_) {
+  if (HasUnrecoverableError()) {
     // When unrecoverable error is detected we post a task to shutdown the
     // backend. The task might not have executed yet.
     return;
@@ -954,7 +968,10 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
         expect_sync_configuration_aborted_ = true;
       }
       // Trigger an unrecoverable error to stop syncing.
-      OnUnrecoverableError(FROM_HERE, last_actionable_error_.error_description);
+      OnInternalUnrecoverableError(FROM_HERE,
+                                   last_actionable_error_.error_description,
+                                   true,
+                                   ERROR_REASON_ACTIONABLE_ERROR);
       break;
     case browser_sync::DISABLE_SYNC_ON_CLIENT:
       OnStopSyncingPermanently();
@@ -966,7 +983,7 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
 }
 
 std::string ProfileSyncService::QuerySyncStatusSummary() {
-  if (unrecoverable_error_detected_) {
+  if (HasUnrecoverableError()) {
     return "Unrecoverable error detected";
   } else if (!backend_.get()) {
     return "Syncing not enabled";
@@ -1018,8 +1035,8 @@ bool ProfileSyncService::waiting_for_auth() const {
   return is_auth_in_progress_;
 }
 
-bool ProfileSyncService::unrecoverable_error_detected() const {
-  return unrecoverable_error_detected_;
+bool ProfileSyncService::HasUnrecoverableError() const {
+  return unrecoverable_error_reason_ != ERROR_REASON_UNSET;
 }
 
 bool ProfileSyncService::IsPassphraseRequired() const {
@@ -1124,8 +1141,7 @@ void ProfileSyncService::RefreshSpareBootstrapToken(
 
 void ProfileSyncService::OnUserChoseDatatypes(bool sync_everything,
     syncable::ModelTypeSet chosen_types) {
-  if (!backend_.get() &&
-      unrecoverable_error_detected_ == false) {
+  if (!backend_.get() && !HasUnrecoverableError()) {
     NOTREACHED();
     return;
   }
@@ -1461,7 +1477,10 @@ void ProfileSyncService::Observe(int type,
           ": " + error.message();
         LOG(ERROR) << "ProfileSyncService error: "
                    << message;
-        OnUnrecoverableError(error.location(), message);
+        OnInternalUnrecoverableError(error.location(),
+                                     message,
+                                     true,
+                                     ERROR_REASON_CONFIGURATION_FAILURE);
         return;
       }
 
@@ -1608,7 +1627,7 @@ bool ProfileSyncService::ShouldPushChanges() {
   // True only after all bootstrapping has succeeded: the sync backend
   // is initialized, all enabled data types are consistent with one
   // another, and no unrecoverable error has transpired.
-  if (unrecoverable_error_detected_)
+  if (HasUnrecoverableError())
     return false;
 
   if (!data_type_manager_.get())
@@ -1643,7 +1662,7 @@ void ProfileSyncService::ReconfigureDatatypeManager() {
   if (backend_initialized_) {
     DCHECK(backend_.get());
     ConfigureDataTypeManager();
-  } else if (unrecoverable_error_detected()) {
+  } else if (HasUnrecoverableError()) {
     // There is nothing more to configure. So inform the listeners,
     NotifyObservers();
 
@@ -1657,6 +1676,16 @@ void ProfileSyncService::ReconfigureDatatypeManager() {
 
 const FailedDatatypesHandler& ProfileSyncService::failed_datatypes_handler() {
   return failed_datatypes_handler_;
+}
+
+void ProfileSyncService::OnInternalUnrecoverableError(
+    const tracked_objects::Location& from_here,
+    const std::string& message,
+    bool delete_sync_database,
+    UnrecoverableErrorReason reason) {
+  DCHECK(!HasUnrecoverableError());
+  unrecoverable_error_reason_ = reason;
+  OnUnrecoverableErrorImpl(from_here, message, delete_sync_database);
 }
 
 void ProfileSyncService::ResetForTest() {

@@ -86,11 +86,11 @@ TEST(SyncUIUtilTest, ConstructAboutInformationWithUnrecoverableErrorTest) {
   EXPECT_CALL(service, QueryDetailedSyncStatus())
               .WillOnce(Return(status));
 
-  EXPECT_CALL(service, unrecoverable_error_detected())
-             .WillOnce(Return(true));
+  EXPECT_CALL(service, HasUnrecoverableError())
+              .WillRepeatedly(Return(true));
 
   EXPECT_CALL(service, GetLastSyncedTimeString())
-             .WillOnce(Return(str));
+              .WillOnce(Return(str));
 
   sync_ui_util::ConstructAboutInformation(&service, &strings);
 
@@ -217,7 +217,7 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
                   .WillOnce(Return(false));
       EXPECT_CALL(service, FirstSetupInProgress())
                   .WillOnce(Return(false));
-      EXPECT_CALL(service, unrecoverable_error_detected())
+      EXPECT_CALL(service, HasUnrecoverableError())
                   .WillOnce(Return(true));
       EXPECT_CALL(signin, AuthInProgress()).WillRepeatedly(Return(false));
       browser_sync::SyncBackendHost::Status status;
@@ -231,7 +231,7 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
       browser_sync::SyncBackendHost::Status status;
       EXPECT_CALL(service, QueryDetailedSyncStatus())
                   .WillOnce(Return(status));
-      EXPECT_CALL(service, unrecoverable_error_detected())
+      EXPECT_CALL(service, HasUnrecoverableError())
                   .WillOnce(Return(false));
       EXPECT_CALL(signin, AuthInProgress()).WillRepeatedly(Return(true));
       *auth_error = new GoogleServiceAuthError(GoogleServiceAuthError::NONE);
@@ -247,7 +247,7 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
                   .WillOnce(Return(status));
       *auth_error = new GoogleServiceAuthError(
          GoogleServiceAuthError::SERVICE_UNAVAILABLE);
-      EXPECT_CALL(service, unrecoverable_error_detected())
+      EXPECT_CALL(service, HasUnrecoverableError())
                   .WillOnce(Return(false));
       EXPECT_CALL(signin, AuthInProgress()).WillRepeatedly(Return(false));
       EXPECT_CALL(service, GetAuthError())
@@ -267,7 +267,7 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
       EXPECT_CALL(service, GetAuthError())
                   .WillOnce(ReturnRef(**auth_error));
       EXPECT_CALL(signin, AuthInProgress()).WillRepeatedly(Return(false));
-      EXPECT_CALL(service, unrecoverable_error_detected())
+      EXPECT_CALL(service, HasUnrecoverableError())
                   .WillOnce(Return(false));
       return;
     }
@@ -280,7 +280,7 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
       *auth_error = new GoogleServiceAuthError(GoogleServiceAuthError::NONE);
       EXPECT_CALL(service, GetAuthError())
                   .WillOnce(ReturnRef(**auth_error));
-      EXPECT_CALL(service, unrecoverable_error_detected())
+      EXPECT_CALL(service, HasUnrecoverableError())
                   .WillOnce(Return(false));
       EXPECT_CALL(signin, AuthInProgress()).WillRepeatedly(Return(false));
       EXPECT_CALL(service, IsPassphraseRequired())
@@ -299,7 +299,7 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
       EXPECT_CALL(service, GetAuthError())
                   .WillOnce(ReturnRef(**auth_error));
       EXPECT_CALL(signin, AuthInProgress()).WillRepeatedly(Return(false));
-      EXPECT_CALL(service, unrecoverable_error_detected())
+      EXPECT_CALL(service, HasUnrecoverableError())
                   .WillOnce(Return(false));
       EXPECT_CALL(service, IsPassphraseRequired())
                   .WillOnce(Return(false));

@@ -668,7 +668,7 @@ void SyncSetupHandler::SigninFailed(const GoogleServiceAuthError& error) {
   // On ChromeOS, this condition should trigger the orange badge on wrench menu
   // and prompt to sign out.
 #if !defined(OS_CHROMEOS)
-  DisplayGaiaLogin(GetSyncService()->unrecoverable_error_detected());
+  DisplayGaiaLogin(GetSyncService()->HasUnrecoverableError());
 #else
   CloseOverlay();
 #endif

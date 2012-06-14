@@ -351,7 +351,7 @@ TEST_F(ProfileSyncServicePreferenceTest, ModelAssociationCloudHasData) {
 
 TEST_F(ProfileSyncServicePreferenceTest, FailModelAssociation) {
   ASSERT_TRUE(StartSyncService(base::Closure(), true));
-  EXPECT_TRUE(service_->unrecoverable_error_detected());
+  EXPECT_TRUE(service_->HasUnrecoverableError());
 }
 
 TEST_F(ProfileSyncServicePreferenceTest, UpdatedPreferenceWithDefaultValue) {

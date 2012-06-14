@@ -389,7 +389,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartFailure) {
       GaiaConstants::kSyncService, "sync_token");
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, "test_user");
   service_->Initialize();
-  EXPECT_TRUE(service_->unrecoverable_error_detected());
+  EXPECT_TRUE(service_->HasUnrecoverableError());
 }
 
 TEST_F(ProfileSyncServiceStartupTest, StartDownloadFailed) {

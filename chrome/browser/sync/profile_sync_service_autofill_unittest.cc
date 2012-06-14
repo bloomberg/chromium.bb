@@ -786,7 +786,7 @@ bool IncludesField(const AutofillProfile& profile1,
 TEST_F(ProfileSyncServiceAutofillTest, FailModelAssociation) {
   // Don't create the root autofill node so startup fails.
   StartSyncService(base::Closure(), true, syncable::AUTOFILL);
-  EXPECT_TRUE(service_->unrecoverable_error_detected());
+  EXPECT_TRUE(service_->HasUnrecoverableError());
 }
 
 TEST_F(ProfileSyncServiceAutofillTest, EmptyNativeEmptySync) {

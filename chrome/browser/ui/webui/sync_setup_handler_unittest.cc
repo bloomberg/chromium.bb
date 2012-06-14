@@ -491,7 +491,7 @@ TEST_P(SyncSetupHandlerTest, HandleGaiaAuthFailure) {
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
       .WillRepeatedly(Return(false));
-  EXPECT_CALL(*mock_pss_, unrecoverable_error_detected())
+  EXPECT_CALL(*mock_pss_, HasUnrecoverableError())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
@@ -523,7 +523,7 @@ TEST_P(SyncSetupHandlerTest, HandleCaptcha) {
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
       .WillRepeatedly(Return(false));
-  EXPECT_CALL(*mock_pss_, unrecoverable_error_detected())
+  EXPECT_CALL(*mock_pss_, HasUnrecoverableError())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
@@ -592,7 +592,7 @@ TEST_P(SyncSetupHandlerTest, UnrecoverableErrorInitializingSync) {
             web_ui_.call_data()[1].function_name);
   // Now fake a sync error.
   GoogleServiceAuthError none(GoogleServiceAuthError::NONE);
-  EXPECT_CALL(*mock_pss_, unrecoverable_error_detected())
+  EXPECT_CALL(*mock_pss_, HasUnrecoverableError())
       .WillRepeatedly(Return(true));
   mock_signin_->SignOut();
   handler_->SigninFailed(none);
@@ -632,7 +632,7 @@ TEST_P(SyncSetupHandlerTest, GaiaErrorInitializingSync) {
   // Now fake a sync gaia error.
   GoogleServiceAuthError unavailable(
       GoogleServiceAuthError::SERVICE_UNAVAILABLE);
-  EXPECT_CALL(*mock_pss_, unrecoverable_error_detected())
+  EXPECT_CALL(*mock_pss_, HasUnrecoverableError())
       .WillRepeatedly(Return(false));
   mock_signin_->SignOut();
   handler_->SigninFailed(unavailable);

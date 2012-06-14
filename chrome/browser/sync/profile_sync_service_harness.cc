@@ -400,7 +400,7 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
       DVLOG(1) << GetClientInfoString("WAITING_FOR_ACTIONABLE_ERROR");
       ProfileSyncService::Status status = GetStatus();
       if (status.sync_protocol_error.action != browser_sync::UNKNOWN_ACTION &&
-          service_->unrecoverable_error_detected() == true) {
+          service_->HasUnrecoverableError() == true) {
         // An actionable error has been detected.
         SignalStateCompleteWithNextState(WAITING_FOR_NOTHING);
       }
@@ -603,7 +603,7 @@ bool ProfileSyncServiceHarness::AwaitActionableError() {
       "Waiting for actionable error");
   status = GetStatus();
   return (status.sync_protocol_error.action != browser_sync::UNKNOWN_ACTION &&
-          service_->unrecoverable_error_detected());
+          service_->HasUnrecoverableError());
 }
 
 bool ProfileSyncServiceHarness::AwaitMigration(

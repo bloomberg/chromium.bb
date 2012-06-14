@@ -375,7 +375,7 @@ TEST_F(ProfileSyncServiceSessionTest, DISABLED_WriteFilledSessionToNode) {
 // Test that we fail on a failed model association.
 TEST_F(ProfileSyncServiceSessionTest, FailModelAssociation) {
   ASSERT_TRUE(StartSyncService(base::Closure(), true));
-  ASSERT_TRUE(sync_service_->unrecoverable_error_detected());
+  ASSERT_TRUE(sync_service_->HasUnrecoverableError());
 }
 
 // Write a foreign session to a node, and then retrieve it.

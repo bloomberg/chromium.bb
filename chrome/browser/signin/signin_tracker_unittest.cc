@@ -117,7 +117,7 @@ static void ExpectSignedInSyncService(ProfileSyncServiceMock* sync_service,
       Return(true));
   EXPECT_CALL(*sync_service, waiting_for_auth()).WillRepeatedly(Return(false));
   EXPECT_CALL(*sync_service, GetAuthError()).WillRepeatedly(ReturnRef(error));
-  EXPECT_CALL(*sync_service, unrecoverable_error_detected()).WillRepeatedly(
+  EXPECT_CALL(*sync_service, HasUnrecoverableError()).WillRepeatedly(
       Return(false));
   EXPECT_CALL(*sync_service, sync_initialized()).WillRepeatedly(Return(true));
 

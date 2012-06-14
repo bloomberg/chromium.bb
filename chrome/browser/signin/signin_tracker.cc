@@ -177,5 +177,5 @@ bool SigninTracker::AreServicesSignedIn(Profile* profile) {
   return (service->IsSyncEnabledAndLoggedIn() &&
           service->IsSyncTokenAvailable() &&
           service->GetAuthError().state() == GoogleServiceAuthError::NONE &&
-          !service->unrecoverable_error_detected());
+          !service->HasUnrecoverableError());
 }

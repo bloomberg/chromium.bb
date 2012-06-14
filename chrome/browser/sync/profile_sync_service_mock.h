@@ -81,7 +81,7 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_CONST_METHOD0(GetAuthError, const GoogleServiceAuthError&());
   MOCK_CONST_METHOD0(FirstSetupInProgress, bool());
   MOCK_CONST_METHOD0(GetLastSyncedTimeString, string16());
-  MOCK_CONST_METHOD0(unrecoverable_error_detected, bool());
+  MOCK_CONST_METHOD0(HasUnrecoverableError, bool());
   MOCK_CONST_METHOD0(sync_initialized, bool());
   MOCK_CONST_METHOD0(waiting_for_auth, bool());
   MOCK_METHOD1(OnActionableError, void(

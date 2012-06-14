@@ -292,7 +292,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // TODO(timsteele): What happens if the bookmark model is loaded, a change
   // takes place, and the backend isn't initialized yet?
   virtual bool sync_initialized() const;
-  virtual bool unrecoverable_error_detected() const;
+
+  virtual bool HasUnrecoverableError() const;
   const std::string& unrecoverable_error_message() {
     return unrecoverable_error_message_;
   }
@@ -558,6 +559,15 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   sync_api::PassphraseRequiredReason passphrase_required_reason_;
 
  private:
+  enum UnrecoverableErrorReason {
+    ERROR_REASON_UNSET,
+    ERROR_REASON_SYNCER,
+    ERROR_REASON_BACKEND_INIT_FAILURE,
+    ERROR_REASON_CONFIGURATION_RETRY,
+    ERROR_REASON_CONFIGURATION_FAILURE,
+    ERROR_REASON_ACTIONABLE_ERROR,
+    ERROR_REASON_LIMIT
+  };
   friend class ProfileSyncServicePasswordTest;
   friend class SyncTest;
   friend class TestProfileSyncService;
@@ -631,6 +641,20 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   void RefreshSpareBootstrapToken(const std::string& passphrase);
 #endif
 
+  // Internal unrecoverable error handler. Used to track error reason via
+  // Sync.UnrecoverableErrors histogram.
+  void OnInternalUnrecoverableError(const tracked_objects::Location& from_here,
+                                    const std::string& message,
+                                    bool delete_sync_database,
+                                    UnrecoverableErrorReason reason);
+
+  // Destroys / recreates an instance of ProfileSyncService. Used exclusively by
+  // the sync integration tests so they can restart sync from scratch without
+  // tearing down and recreating the browser process. Needed because simply
+  // calling Shutdown() and Initialize() will not recreate other internal
+  // objects like SyncBackendHost, SyncManager, etc.
+  void ResetForTest();
+
   // Factory used to create various dependent objects.
   scoped_ptr<ProfileSyncComponentsFactory> factory_;
 
@@ -666,12 +690,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // email address.
   SigninManager* signin_;
 
-  // True if an unrecoverable error (e.g. violation of an assumed invariant)
-  // occurred during syncer operation.  This value should be checked before
-  // doing any work that might corrupt things further.
-  bool unrecoverable_error_detected_;
-
-  // A message sent when an unrecoverable error occurred.
+  // Information describing an unrecoverable error.
+  UnrecoverableErrorReason unrecoverable_error_reason_;
   std::string unrecoverable_error_message_;
   tracked_objects::Location unrecoverable_error_location_;
 
@@ -699,13 +719,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // Keep track of where we are in a server clear operation
   ClearServerDataState clear_server_data_state_;
-
-  // Destroys / recreates an instance of ProfileSyncService. Used exclusively by
-  // the sync integration tests so they can restart sync from scratch without
-  // tearing down and recreating the browser process. Needed because simply
-  // calling Shutdown() and Initialize() will not recreate other internal
-  // objects like SyncBackendHost, SyncManager, etc.
-  void ResetForTest();
 
   // Timeout for the clear data command.  This timeout is a temporary hack
   // and is necessary because the nudge sync framework can drop nudges for

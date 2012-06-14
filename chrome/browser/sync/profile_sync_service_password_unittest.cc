@@ -302,7 +302,7 @@ void AddPasswordEntriesCallback(ProfileSyncServicePasswordTest* test,
 
 TEST_F(ProfileSyncServicePasswordTest, FailModelAssociation) {
   StartSyncService(base::Closure(), base::Closure());
-  EXPECT_TRUE(service_->unrecoverable_error_detected());
+  EXPECT_TRUE(service_->HasUnrecoverableError());
 }
 
 TEST_F(ProfileSyncServicePasswordTest, EmptyNativeEmptySync) {
