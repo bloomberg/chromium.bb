@@ -11,6 +11,8 @@
 #include <sys/utsname.h>
 #endif
 
+#include <limits>
+
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -316,7 +318,11 @@ void PlatformFileInfoToWebFileInfo(
     const base::PlatformFileInfo& file_info,
     WebKit::WebFileInfo* web_file_info) {
   DCHECK(web_file_info);
-  web_file_info->modificationTime = file_info.last_modified.ToDoubleT();
+  // WebKit now expects NaN as uninitialized/null Date.
+  if (file_info.last_modified.is_null())
+    web_file_info->modificationTime = std::numeric_limits<double>::quiet_NaN();
+  else
+    web_file_info->modificationTime = file_info.last_modified.ToDoubleT();
   web_file_info->length = file_info.size;
   if (file_info.is_directory)
     web_file_info->type = WebKit::WebFileInfo::TypeDirectory;
@@ -496,5 +502,7 @@ void ConfigureURLRequestForReferrerPolicy(
   }
   request->set_referrer_policy(net_referrer_policy);
 }
+
+COMPILE_ASSERT(std::numeric_limits<double>::has_quiet_NaN, has_quiet_NaN);
 
 } // namespace webkit_glue
