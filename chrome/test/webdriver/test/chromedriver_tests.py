@@ -807,14 +807,14 @@ class FileUploadControlTest(ChromeDriverTest):
     """Verify a file path is set to the file upload control."""
     self._driver.get(self.GetTestDataUrl() + '/upload.html')
 
-    file = tempfile.NamedTemporaryFile()
+    tmp_file = tempfile.NamedTemporaryFile()
 
     fileupload_single = self._driver.find_element_by_name('fileupload_single')
     multiple = fileupload_single.get_attribute('multiple')
     self.assertEqual('false', multiple)
-    fileupload_single.send_keys(file.name)
+    fileupload_single.send_keys(tmp_file.name)
     path = fileupload_single.get_attribute('value')
-    self.assertTrue(path.endswith(os.path.basename(file.name)))
+    self.assertTrue(path.endswith(os.path.basename(tmp_file.name)))
 
   def testSetMultipleFilePathsToFileuploadControlWithoutMultipleWillFail(self):
     """Verify setting file paths to the file upload control without 'multiple'
@@ -824,11 +824,11 @@ class FileUploadControlTest(ChromeDriverTest):
     files = []
     filepaths = []
     for index in xrange(4):
-      file = tempfile.NamedTemporaryFile()
+      tmp_file = tempfile.NamedTemporaryFile()
       # We need to hold the file objects because the files will be deleted on
       # GC.
-      files.append(file)
-      filepath = file.name
+      files.append(tmp_file)
+      filepath = tmp_file.name
       filepaths.append(filepath)
 
     fileupload_single = self._driver.find_element_by_name('fileupload_single')
@@ -845,9 +845,9 @@ class FileUploadControlTest(ChromeDriverTest):
     filepaths = []
     filenames = set()
     for index in xrange(4):
-      file = tempfile.NamedTemporaryFile()
-      files.append(file)
-      filepath = file.name
+      tmp_file = tempfile.NamedTemporaryFile()
+      files.append(tmp_file)
+      filepath = tmp_file.name
       filepaths.append(filepath)
       filenames.add(os.path.basename(filepath))
 
