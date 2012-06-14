@@ -332,7 +332,7 @@
                       <var><span>name</span></var></span><span class="null"><span>, </span><span>alarms.AlarmCreateInfo</span>
                       <var><span>alarmInfo</span></var></span>)</div>
               <div class="description">
-                <p>Creates an alarm. After the delay is elapsed, the onAlarm event is fired. If there is another alarm with the same name (or no name if none is specified), it will be cancelled and replaced by this alarm. string.</p>
+                <p>Creates an alarm.  Near the time(s) specified by 'alarmInfo', the onAlarm event is fired. If there is another alarm with the same name (or no name if none is specified), it will be cancelled and replaced by this alarm. Note that granularity is not guaranteed: times are more of a hint to the browser. For performance reasons, alarms may be delayed an arbitrary amount of time before firing. string. be specified by either |when| or |delayInMinutes| (but not both).  If minutes after the initial event.  If neither |when| or |delayInMinutes| is set for a repeating alarm, |periodInMinutes| is used as the default for |delayInMinutes|.</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
@@ -377,9 +377,7 @@
                 </div>
               </em>
           </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
+          <dd>Describes when the alarm should fire.  The initial time must</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -750,29 +748,6 @@
               <div>
                 <div>
           <dt>
-            <var>delayInMinutes</var>
-              <em>
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span id="typeTemplate">
-                      <span>
-                        <span>number</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-              </em>
-          </dt>
-          <dd>Original length of time in minutes after which the onAlarm event should fire. TODO: need minimum=0</dd>
-          <!-- OBJECT PROPERTIES -->
-          <!-- OBJECT METHODS -->
-          <!-- OBJECT EVENT FIELDS -->
-          <!-- FUNCTION PARAMETERS -->
-        </div>
-              </div><div>
-                <div>
-          <dt>
             <var>name</var>
               <em>
                 <!-- TYPE -->
@@ -796,21 +771,45 @@
               </div><div>
                 <div>
           <dt>
-            <var>repeating</var>
+            <var>periodInMinutes</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
+                    <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <span>boolean</span>
+                        <span>number</span>
                       </span>
                     </span>
                   )
                 </div>
               </em>
           </dt>
-          <dd>True if the alarm repeatedly fires at regular intervals, false if it only fires once.</dd>
+          <dd>If not null, the alarm is a repeating alarm and will fire again in 'periodInMinutes' minutes.</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>scheduledTime</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span id="typeTemplate">
+                      <span>
+                        <span>number</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Time at which this alarm was scheduled to fire, in milliseconds past the epoch (e.g. Date.now() + n).  For performance reasons, the alarm may have been delayed an arbitrary amount beyond this.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -855,6 +854,7 @@
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
+                    <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
                         <span>number</span>
@@ -864,7 +864,7 @@
                 </div>
               </em>
           </dt>
-          <dd>Length of time in minutes after which the onAlarm event should fire. Note that granularity is not guaranteed: this value is more of a hint to the browser. For performance reasons, alarms may be delayed an arbitrary amount of time before firing. TODO: need minimum=0</dd>
+          <dd>Length of time in minutes after which the onAlarm event should fire. TODO: need minimum=0</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -873,7 +873,7 @@
               </div><div>
                 <div>
           <dt>
-            <var>repeating</var>
+            <var>periodInMinutes</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
@@ -881,14 +881,38 @@
                     <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <span>boolean</span>
+                        <span>number</span>
                       </span>
                     </span>
                   )
                 </div>
               </em>
           </dt>
-          <dd>True if the alarm should repeatedly fire at regular intervals. Defaults to false.</dd>
+          <dd>If set, the onAlarm event should fire every |periodInMinutes| minutes after the initial event specified by |when| or |delayInMinutes|.  If not set, the alarm will only fire once. TODO: need minimum=0</dd>
+          <!-- OBJECT PROPERTIES -->
+          <!-- OBJECT METHODS -->
+          <!-- OBJECT EVENT FIELDS -->
+          <!-- FUNCTION PARAMETERS -->
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>when</var>
+              <em>
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <span>number</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+              </em>
+          </dt>
+          <dd>Time at which the alarm should fire, in milliseconds past the epoch (e.g. Date.now() + n).</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->

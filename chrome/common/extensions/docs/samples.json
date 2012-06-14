@@ -248,6 +248,7 @@
     "chrome.fileBrowserHandler.onExecute": "fileBrowserHandler.html#event-onExecute",
     "chrome.fileBrowserHandler.selectFile": "fileBrowserHandler.html#method-selectFile",
     "chrome.fileSystem.getDisplayPath": "fileSystem.html#method-getDisplayPath",
+    "chrome.fileSystem.getWritableFileEntry": "fileSystem.html#method-getWritableFileEntry",
     "chrome.history.addUrl": "history.html#method-addUrl",
     "chrome.history.deleteAll": "history.html#method-deleteAll",
     "chrome.history.deleteRange": "history.html#method-deleteRange",
@@ -708,7 +709,7 @@
       "api_calls": [
         "chrome.webRequest.onBeforeRequest"
       ],
-      "crx_path": "examples/extensions/catblock.crx",
+      "crx_path": null,
       "description": "I can't has cheezburger!",
       "features": [
         "background_page",
@@ -807,7 +808,7 @@
         "chrome.browserAction.setTitle",
         "chrome.extension.getURL"
       ],
-      "crx_path": "examples/extensions/buildbot.crx",
+      "crx_path": null,
       "description": "Displays the status of the Chromium buildbot in the toolbar.  Click to see more detailed status in a popup.",
       "features": [
         "background_page",
@@ -1377,7 +1378,7 @@
         "chrome.tabs.onUpdated",
         "chrome.tabs.remove"
       ],
-      "crx_path": "examples/extensions/gdocs.crx",
+      "crx_path": null,
       "description": "Demonstrates how to use OAuth to connect the Google Documents List Data API.",
       "features": [
         "background_page",
@@ -1579,7 +1580,7 @@
         "chrome.windows.create",
         "chrome.windows.update"
       ],
-      "crx_path": "examples/extensions/imageinfo.crx",
+      "crx_path": null,
       "description": "Get image info for images, including EXIF data",
       "features": [
         "background_page",
@@ -1716,7 +1717,7 @@
         "chrome.tabs.get",
         "chrome.tabs.onUpdated"
       ],
-      "crx_path": "examples/extensions/mappy.crx",
+      "crx_path": null,
       "description": "Finds addresses in the web page you're on and pops up a map window.",
       "features": [
         "background_page",
@@ -1868,7 +1869,7 @@
         "chrome.i18n.getMessage",
         "chrome.tabs.create"
       ],
-      "crx_path": "examples/extensions/news_i18n.crx",
+      "crx_path": null,
       "description": "Displays the first 5 items from the 'Google News - top news' RSS feed in a popup.",
       "features": [
         "browser_action",
@@ -2080,7 +2081,7 @@
         "chrome.windows.get",
         "chrome.windows.getCurrent"
       ],
-      "crx_path": "examples/extensions/benchmark.crx",
+      "crx_path": null,
       "description": "Chromium Page Benchmarker.",
       "features": [
         "background_page",
@@ -2413,7 +2414,7 @@
         "chrome.windows.get",
         "chrome.windows.getAll"
       ],
-      "crx_path": "examples/extensions/speak_selection.crx",
+      "crx_path": null,
       "description": "Speaks the current selection out loud.",
       "features": [
         "<all_urls>",
@@ -2563,7 +2564,7 @@
         "chrome.tts.speak",
         "chrome.tts.stop"
       ],
-      "crx_path": "examples/extensions/talking_alarm_clock.crx",
+      "crx_path": null,
       "description": "A clock with two configurable alarms that will play a sound and speak a phrase of your choice.",
       "features": [
         "background",
@@ -2662,7 +2663,7 @@
         "chrome.tts.speak",
         "chrome.tts.stop"
       ],
-      "crx_path": "examples/extensions/ttsdebug.crx",
+      "crx_path": null,
       "description": "Tool for developers of Chrome TTS engine extensions to help them test their engines are implementing the API correctly.",
       "features": [
         "tts"
