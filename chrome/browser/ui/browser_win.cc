@@ -66,7 +66,7 @@ void Browser::PinCurrentPageToStartScreen() {
     TabContents* tab = GetActiveTabContents();
     bookmark_utils::GetURLAndTitleToBookmark(tab->web_contents(), &url, &title);
 
-    typedef BOOL (*MetroPinUrlToStartScreen)(string16, string16);
+    typedef BOOL (*MetroPinUrlToStartScreen)(const string16&, const string16&);
     MetroPinUrlToStartScreen metro_pin_url_to_start_screen =
         reinterpret_cast<MetroPinUrlToStartScreen>(
             ::GetProcAddress(metro_module, "MetroPinUrlToStartScreen"));
