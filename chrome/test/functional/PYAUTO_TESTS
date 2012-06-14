@@ -263,8 +263,6 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
-      # crbug.com/131722
-      '-chromoting_basic.ChromotingBasic.testChromoting',
       # crbug.com/85310
       '-instant',
       # crbug.com/91033
