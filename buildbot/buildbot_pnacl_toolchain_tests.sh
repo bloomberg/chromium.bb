@@ -73,22 +73,14 @@ build-sbtc-prerequisites() {
 
 build-canned-prerequisites() {
   local platform=$1
+  local flags="--mode=opt-host,nacl -j ${PNACL_CONCURRENCY} platform=${platform}"
+  local targets="sel_ldr sel_universal nacl_helper_bootstrap irt_core irt"
+  ${SCONS_COMMON} ${flags} ${targets}
 
-  local extra=""
   if [ ${platform} = "x86-64" ] ; then
-      extra="pnacl_irt_shim"
+      ${SCONS_COMMON} ${flags} pnacl_irt_shim
+      ${SCONS_COMMON} ${flags} translate_fast=1 pnacl_irt_shim
   fi
-
-  ${SCONS_COMMON} \
-      --mode=opt-host,nacl \
-      -j ${PNACL_CONCURRENCY} \
-      platform=${platform} \
-      ${extra} \
-      sel_ldr \
-      sel_universal \
-      nacl_helper_bootstrap \
-      irt_core \
-      irt
 }
 
 
@@ -109,19 +101,25 @@ scons-tests-translator() {
   echo "@@@BUILD_STEP scons-sb-translator [${platform}] [prereq]@@@"
   build-sbtc-prerequisites ${platform}
 
-  local use_sbtc="use_sandboxed_translator=1"
-  local extra="--mode=opt-host,nacl -j${PNACL_CONCURRENCY} ${use_sbtc} -k"
-  for group in smoke_tests large_tests ; do
-      echo "@@@BUILD_STEP scons-sb-translator [${platform}] [${group}]@@@"
-      ${SCONS_COMMON} ${extra} platform=${platform} ${group} || handle-error
-  done
+  local flags="--mode=opt-host,nacl \
+               -j${PNACL_CONCURRENCY} \
+               use_sandboxed_translator=1 \
+               platform=${platform} \
+               -k"
+  local targets="small_tests medium_tests large_tests"
+
+  echo "@@@BUILD_STEP scons-sb-translator [${platform}] [${targets}]@@@"
+  ${SCONS_COMMON} ${flags} ${targets} || handle-error
+
+  echo "@@@BUILD_STEP scons-sb-translator [fast] [${platform}] [${targets}]@@@"
+  ${SCONS_COMMON} ${flags} translate_fast=1 ${targets} || handle-error
 }
 
 
 archived-pexe-scons-test() {
   local arch=$1
-  echo "@@@BUILD_STEP archived_pexe_scons \
-        $arch rev ${ARCHIVED_PEXE_SCONS_REV} @@@"
+  echo "@@@BUILD_STEP archived_pexe_scons prereqs\
+        [$arch] rev ${ARCHIVED_PEXE_SCONS_REV} @@@"
 
   local build_dir="scons-out/nacl_irt_test-${arch}-pnacl-pexe-clang"
   local tarball="$(pwd)/scons-out/scons_pexes.tar.bz2"
@@ -133,9 +131,12 @@ archived-pexe-scons-test() {
       ${tarball}
   tar xfj ${tarball} --directory ${build_dir}
 
-  local extra="--mode=opt-host,nacl_irt_test -j${PNACL_CONCURRENCY} -k \
+  local flags="--mode=opt-host,nacl_irt_test \
+               -j${PNACL_CONCURRENCY} \
+               -k \
                translate_in_build_step=0 \
                skip_trusted_tests=1 \
+               platform=${arch} \
                built_elsewhere=1"
 
   build-canned-prerequisites ${arch}
@@ -150,8 +151,13 @@ archived-pexe-scons-test() {
   # So we would be tryiog to translate pexe which were not archived as
   # the pexe generater bot does run with running_on_v
   # TODO(robertm): figure out what is going o
+  echo "@@@BUILD_STEP archived_pexe_scons [$arch] @@@"
   BUILDBOT_BUILDERNAME=A_VM_BOT \
-      ${SCONS_COMMON} ${extra} platform=${arch} ${targets} || handle-error
+      ${SCONS_COMMON} ${flags} ${targets} || handle-error
+
+  echo "@@@BUILD_STEP archived_pexe_scons [fast] [$arch] @@@"
+  BUILDBOT_BUILDERNAME=A_VM_BOT \
+      ${SCONS_COMMON} ${flags} translate_fast=1 ${targets} || handle-error
 }
 
 
