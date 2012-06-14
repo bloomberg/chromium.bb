@@ -830,6 +830,8 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 }
 
 std::string ChromeContentBrowserClient::GetApplicationLocale() {
+  if (BrowserThread::CurrentlyOn(BrowserThread::IO))
+    return io_thread_application_locale_;
   return g_browser_process->GetApplicationLocale();
 }
 
@@ -1576,5 +1578,30 @@ crypto::CryptoModuleBlockingPasswordDelegate*
       browser::kCryptoModulePasswordKeygen, url.host());
 }
 #endif
+
+void ChromeContentBrowserClient::SetApplicationLocale(
+    const std::string& locale) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // This object is guaranteed to outlive all threads so we don't have to
+  // worry about the lack of refcounting and can just post as Unretained.
+  //
+  // The common case is that this function is called early in Chrome startup
+  // before any threads are created (it will also be called later if the user
+  // changes the pref). In this case, there will be no threads created and
+  // posting will fail. When there are no threads, we can just set the string
+  // without worrying about threadsafety.
+  if (!BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+          base::Bind(
+              &ChromeContentBrowserClient::SetApplicationLocaleOnIOThread,
+              base::Unretained(this), locale)))
+    io_thread_application_locale_ = locale;
+}
+
+void ChromeContentBrowserClient::SetApplicationLocaleOnIOThread(
+    const std::string& locale) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  io_thread_application_locale_ = locale;
+}
 
 }  // namespace chrome

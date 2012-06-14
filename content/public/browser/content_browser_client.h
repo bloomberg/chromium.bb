@@ -168,6 +168,7 @@ class CONTENT_EXPORT ContentBrowserClient {
                                               int child_process_id) {}
 
   // Returns the locale used by the application.
+  // This is called on the UI and IO threads.
   virtual std::string GetApplicationLocale();
 
   // Returns the languages used in the Accept-Languages HTTP header.

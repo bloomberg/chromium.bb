@@ -21,6 +21,7 @@
 #include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_trial.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_plugin_service_filter.h"
 #include "chrome/browser/component_updater/component_updater_configurator.h"
@@ -538,6 +539,8 @@ const std::string& BrowserProcessImpl::GetApplicationLocale() {
 void BrowserProcessImpl::SetApplicationLocale(const std::string& locale) {
   locale_ = locale;
   extension_l10n_util::SetProcessLocale(locale);
+  static_cast<chrome::ChromeContentBrowserClient*>(
+      content::GetContentClient()->browser())->SetApplicationLocale(locale);
 }
 
 DownloadStatusUpdater* BrowserProcessImpl::download_status_updater() {
