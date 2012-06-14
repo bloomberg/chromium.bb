@@ -422,8 +422,10 @@ CountryNames* CountryNames::GetInstance() {
 }
 
 const std::string CountryNames::ApplicationLocale() {
-  if (application_locale_.empty())
+  if (application_locale_.empty()) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     application_locale_ = g_browser_process->GetApplicationLocale();
+  }
 
   return application_locale_;
 }

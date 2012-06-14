@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,8 +14,21 @@
 
 using content::BrowserThread;
 
+class AddressTest : public testing::Test {
+ public:
+  // In order to access the application locale -- which the tested functions do
+  // internally -- this test must run on the UI thread.
+  AddressTest() : ui_thread_(BrowserThread::UI, &message_loop_) {}
+
+ private:
+  MessageLoopForUI message_loop_;
+  content::TestBrowserThread ui_thread_;
+
+  DISALLOW_COPY_AND_ASSIGN(AddressTest);
+};
+
 // Test that the getters and setters for country code are working.
-TEST(AddressTest, CountryCode) {
+TEST_F(AddressTest, CountryCode) {
   Address address;
   EXPECT_EQ(std::string(), address.country_code());
 
@@ -27,7 +40,7 @@ TEST(AddressTest, CountryCode) {
 }
 
 // Test that country codes are properly decoded as country names.
-TEST(AddressTest, GetCountry) {
+TEST_F(AddressTest, GetCountry) {
   Address address;
   EXPECT_EQ(std::string(), address.country_code());
 
@@ -45,7 +58,7 @@ TEST(AddressTest, GetCountry) {
 }
 
 // Test that we properly detect country codes appropriate for each country.
-TEST(AddressTest, SetCountry) {
+TEST_F(AddressTest, SetCountry) {
   Address address;
   EXPECT_EQ(std::string(), address.country_code());
 
@@ -81,7 +94,7 @@ TEST(AddressTest, SetCountry) {
 }
 
 // Test that we properly match typed values to stored country data.
-TEST(AddressTest, IsCountry) {
+TEST_F(AddressTest, IsCountry) {
   Address address;
   address.set_country_code("US");
 
