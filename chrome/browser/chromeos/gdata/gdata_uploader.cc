@@ -362,7 +362,7 @@ void GDataUploader::MoveFileToCache(UploadFileInfo* upload_file_info) {
       upload_file_info->gdata_path.DirName(),
       upload_file_info->entry.get(),
       upload_file_info->file_path,
-      GDataFileSystemInterface::FILE_OPERATION_MOVE);
+      GDataCache::FILE_OPERATION_MOVE);
   DeleteUpload(upload_file_info);
 }
 

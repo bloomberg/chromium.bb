@@ -167,13 +167,6 @@ class GDataFileSystemInterface {
   // Checks for updates on the server.
   virtual void CheckForUpdates() = 0;
 
-  // Enum defining type of file operation e.g. copy or move, etc.
-  // For now, it's used for StoreToCache.
-  enum FileOperationType {
-    FILE_OPERATION_MOVE = 0,
-    FILE_OPERATION_COPY,
-  };
-
   // Authenticates the user by fetching the auth token as
   // needed. |callback| will be run with the error code and the auth
   // token, on the thread this function is run.
@@ -390,10 +383,11 @@ class GDataFileSystemInterface {
 
   // Creates a new file from |entry| under |virtual_dir_path|. Stored its
   // content from |file_content_path| into the cache.
-  virtual void AddUploadedFile(const FilePath& virtual_dir_path,
-                               DocumentEntry* entry,
-                               const FilePath& file_content_path,
-                               FileOperationType cache_operation) = 0;
+  virtual void AddUploadedFile(
+      const FilePath& virtual_dir_path,
+      DocumentEntry* entry,
+      const FilePath& file_content_path,
+      GDataCache::FileOperationType cache_operation) = 0;
 
   // Returns true if hosted documents should be hidden.
   virtual bool hide_hosted_documents() = 0;
@@ -479,10 +473,11 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const FilePath& file_path,
       bool to_mount,
       const SetMountedStateCallback& callback) OVERRIDE;
-  virtual void AddUploadedFile(const FilePath& virtual_dir_path,
-                               DocumentEntry* entry,
-                               const FilePath& file_content_path,
-                               FileOperationType cache_operation) OVERRIDE;
+  virtual void AddUploadedFile(
+      const FilePath& virtual_dir_path,
+      DocumentEntry* entry,
+      const FilePath& file_content_path,
+      GDataCache::FileOperationType cache_operation) OVERRIDE;
   virtual bool hide_hosted_documents() OVERRIDE;
 
   // content::NotificationObserver implementation.
@@ -1050,7 +1045,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void StoreToCache(const std::string& resource_id,
                     const std::string& md5,
                     const FilePath& source_path,
-                    FileOperationType file_operation_type,
+                    GDataCache::FileOperationType file_operation_type,
                     const CacheOperationCallback& callback);
 
   // Pin file corresponding to |resource_id| and |md5|.
@@ -1154,6 +1149,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   // Cache tasks that run on blocking pool, posted from above cache entry
   // points.
+  // TODO(hashimoto): Move cache functions wrappers. crbug.com/131756
 
   // Task posted from InitializeCacheIfNecessary to run on blocking pool.
   // Creates cache directory and its sub-directories if they don't exist,
@@ -1195,7 +1191,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const std::string& resource_id,
       const std::string& md5,
       const FilePath& source_path,
-      FileOperationType file_operation_type,
+      GDataCache::FileOperationType file_operation_type,
       base::PlatformFileError* error);
 
   // Task posted from Pin to modify cache state on the blocking pool, which
@@ -1206,7 +1202,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   //   modified file
   void PinOnBlockingPool(const std::string& resource_id,
                          const std::string& md5,
-                         FileOperationType file_operation_type,
+                         GDataCache::FileOperationType file_operation_type,
                          base::PlatformFileError* error);
 
   // Task posted from Unpin to modify cache state on the blocking pool, which
@@ -1216,7 +1212,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // - deletes symlink from pinned dir
   void UnpinOnBlockingPool(const std::string& resource_id,
                            const std::string& md5,
-                           FileOperationType file_operation_type,
+                           GDataCache::FileOperationType file_operation_type,
                            base::PlatformFileError* error);
 
   // Task posted from SetMountedState to modify cache state on the blocking
@@ -1237,19 +1233,21 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // - moves |source_path| to |dest_path| in persistent dir, where
   //   |source_path| has .<md5> extension and |dest_path| has .local extension
   // - if file is pinned, updates symlink in pinned dir to reference dirty file
-  void MarkDirtyInCacheOnBlockingPool(const std::string& resource_id,
-                                      const std::string& md5,
-                                      FileOperationType file_operation_type,
-                                      base::PlatformFileError* error,
-                                      FilePath* cache_file_path);
+  void MarkDirtyInCacheOnBlockingPool(
+      const std::string& resource_id,
+      const std::string& md5,
+      GDataCache::FileOperationType file_operation_type,
+      base::PlatformFileError* error,
+      FilePath* cache_file_path);
 
   // Task posted from CommitDirtyInCache to modify cache state on the blocking
   // pool, i.e. creates symlink in outgoing dir to reference dirty file in
   // persistent dir.
-  void CommitDirtyInCacheOnBlockingPool(const std::string& resource_id,
-                                        const std::string& md5,
-                                        FileOperationType file_operation_type,
-                                        base::PlatformFileError* error);
+  void CommitDirtyInCacheOnBlockingPool(
+      const std::string& resource_id,
+      const std::string& md5,
+      GDataCache::FileOperationType file_operation_type,
+      base::PlatformFileError* error);
 
   // Task posted from ClearDirtyInCache to modify cache state on the blocking
   // pool, which involves the following:
@@ -1259,10 +1257,11 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // - deletes symlink in outgoing dir
   // - if file is pinned, updates symlink in pinned dir to reference
   //   |dest_path|
-  void ClearDirtyInCacheOnBlockingPool(const std::string& resource_id,
-                                       const std::string& md5,
-                                       FileOperationType file_operation_type,
-                                       base::PlatformFileError* error);
+  void ClearDirtyInCacheOnBlockingPool(
+      const std::string& resource_id,
+      const std::string& md5,
+      GDataCache::FileOperationType file_operation_type,
+      base::PlatformFileError* error);
 
   // Task posted from RemoveFromCache to do the following on the blocking pool:
   // - remove all delete stale cache versions corresponding to |resource_id| in
@@ -1324,12 +1323,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                       bool* has_enough_space);
 
   // Cache internal helper functions.
-
-  // Scans cache subdirectory |sub_dir_type| and build or update |cache_map|
-  // with found file blobs or symlinks.
-  void ScanCacheDirectory(
-      GDataCache::CacheSubDirectoryType sub_dir_type,
-      GDataCache::CacheMap* cache_map);
 
   // Wrapper task around any sequenced task that runs on blocking pool that
   // makes sure |in_shutdown_| and |on_io_completed_| are handled properly in
@@ -1492,26 +1485,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // The token is used to post tasks to the blocking pool in sequence.
   const base::SequencedWorkerPool::SequenceToken sequence_token_;
 };
-
-// The minimum free space to keep. GDataFileSystem::GetFileByPath() returns
-// base::PLATFORM_FILE_ERROR_NO_SPACE if the available space is smaller than
-// this value.
-//
-// Copied from cryptohome/homedirs.h.
-// TODO(satorux): Share the constant.
-const int64 kMinFreeSpace = 512 * 1LL << 20;
-
-// Interface class used for getting the free disk space. Only for testing.
-class FreeDiskSpaceGetterInterface {
- public:
-  virtual ~FreeDiskSpaceGetterInterface() {}
-  virtual int64 AmountOfFreeDiskSpace() const = 0;
-};
-
-// Sets the free disk space getter for testing.
-// The existing getter is deleted.
-void SetFreeDiskSpaceGetterForTesting(
-    FreeDiskSpaceGetterInterface* getter);
 
 }  // namespace gdata
 

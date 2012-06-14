@@ -88,10 +88,11 @@ class MockGDataFileSystem : public GDataFileSystemInterface {
   MOCK_METHOD3(SetMountedState, void(const FilePath&,
                                      bool,
                                      const SetMountedStateCallback& callback));
-  MOCK_METHOD4(AddUploadedFile, void(const FilePath& file,
-                                     DocumentEntry* entry,
-                                     const FilePath& file_content_path,
-                                     FileOperationType cache_operation));
+  MOCK_METHOD4(AddUploadedFile,
+               void(const FilePath& file,
+                    DocumentEntry* entry,
+                    const FilePath& file_content_path,
+                    GDataCache::FileOperationType cache_operation));
   MOCK_METHOD0(hide_hosted_documents, bool());
 };
 

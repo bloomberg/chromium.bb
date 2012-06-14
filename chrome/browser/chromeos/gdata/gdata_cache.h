@@ -11,6 +11,7 @@
 
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/platform_file.h"
 #include "base/threading/sequenced_worker_pool.h"
 
 class Profile;
@@ -59,13 +60,17 @@ class GDataCache {
     CACHED_FILE_MOUNTED,
   };
 
-  static const char kMountedArchiveFileExtension[];
+  // Enum defining type of file operation e.g. copy or move, etc.
+  enum FileOperationType {
+    FILE_OPERATION_MOVE = 0,
+    FILE_OPERATION_COPY,
+  };
 
   // Structure to store information of an existing cache file.
   struct CacheEntry {
     CacheEntry(const std::string& md5,
-              CacheSubDirectoryType sub_dir_type,
-              int cache_state)
+               CacheSubDirectoryType sub_dir_type,
+               int cache_state)
     : md5(md5),
       sub_dir_type(sub_dir_type),
       cache_state(cache_state) {
@@ -146,8 +151,101 @@ class GDataCache {
   // Can be called on any thread.
   bool IsUnderGDataCacheDirectory(const FilePath& path) const;
 
+  // Frees up disk space to store the given number of bytes, while keeping
+  // kMinFreSpace bytes on the disk, if needed.  |has_enough_space| is
+  // updated to indicate if we have enough space.
+  void FreeDiskSpaceIfNeededFor(int64 num_bytes,
+                                bool* has_enough_space);
+
+  // Checks if file corresponding to |resource_id| and |md5| exists in cache.
+  void GetFile(const std::string& resource_id,
+               const std::string& md5,
+               base::PlatformFileError* error,
+               FilePath* cache_file_path);
+
+  // Modifies cache state, which involves the following:
+  // - moves or copies (per |file_operation_type|) |source_path|
+  //   to |dest_path| in the cache dir
+  // - if necessary, creates symlink
+  // - deletes stale cached versions of |resource_id| in
+  // |dest_path|'s directory.
+  void Store(const std::string& resource_id,
+             const std::string& md5,
+             const FilePath& source_path,
+             FileOperationType file_operation_type,
+             base::PlatformFileError* error);
+
+  // Modifies cache state, which involves the following:
+  // - moves |source_path| to |dest_path| in persistent dir if
+  //   file is not dirty
+  // - creates symlink in pinned dir that references downloaded or locally
+  //   modified file
+  void Pin(const std::string& resource_id,
+           const std::string& md5,
+           FileOperationType file_operation_type,
+           base::PlatformFileError* error);
+
+  // Modifies cache state, which involves the following:
+  // - moves |source_path| to |dest_path| in tmp dir if file is not dirty
+  // - deletes symlink from pinned dir
+  void Unpin(const std::string& resource_id,
+             const std::string& md5,
+             FileOperationType file_operation_type,
+             base::PlatformFileError* error);
+
+  // Modifies cache state, which involves the following:
+  // - moves |source_path| to |dest_path|, where
+  //   if we're mounting: |source_path| is the unmounted path and has .<md5>
+  //       extension, and |dest_path| is the mounted path in persistent dir
+  //       and has .<md5>.mounted extension;
+  //   if we're unmounting: the opposite is true for the two paths, i.e.
+  //       |dest_path| is the mounted path and |source_path| the unmounted path.
+  void SetMountedState(const FilePath& file_path,
+                       bool to_mount,
+                       base::PlatformFileError* error,
+                       FilePath* cache_file_path);
+
+  // Modifies cache state, which involves the following:
+  // - moves |source_path| to |dest_path| in persistent dir, where
+  //   |source_path| has .<md5> extension and |dest_path| has .local extension
+  // - if file is pinned, updates symlink in pinned dir to reference dirty file
+  void MarkDirty(const std::string& resource_id,
+                 const std::string& md5,
+                 FileOperationType file_operation_type,
+                 base::PlatformFileError* error,
+                 FilePath* cache_file_path);
+
+  // Modifies cache state, i.e. creates symlink in outgoing
+  // dir to reference dirty file in persistent dir.
+  void CommitDirty(const std::string& resource_id,
+                   const std::string& md5,
+                   FileOperationType file_operation_type,
+                   base::PlatformFileError* error);
+
+  // Modifies cache state, which involves the following:
+  // - moves |source_path| to |dest_path| in persistent dir if
+  //   file is pinned or tmp dir otherwise, where |source_path| has .local
+  //   extension and |dest_path| has .<md5> extension
+  // - deletes symlink in outgoing dir
+  // - if file is pinned, updates symlink in pinned dir to reference
+  //   |dest_path|
+  void ClearDirty(const std::string& resource_id,
+                  const std::string& md5,
+                  FileOperationType file_operation_type,
+                  base::PlatformFileError* error);
+
+  // Does the following:
+  // - remove all delete stale cache versions corresponding to |resource_id| in
+  //   persistent, tmp and pinned directories
+  // - remove entry corresponding to |resource_id| from cache map.
+  void Remove(const std::string& resource_id,
+              base::PlatformFileError* error);
+
   // TODO(hashimoto): Remove this method when crbug.com/131756 is fixed.
   const std::vector<FilePath>& cache_paths() const { return cache_paths_; }
+
+  // Initializes cache.
+  virtual void Initialize() = 0;
 
   // Sets |cache_map_| data member to formal parameter |new_cache_map|.
   virtual void SetCacheMap(const CacheMap& new_cache_map) = 0;
@@ -210,6 +308,27 @@ class GDataCache {
 
   DISALLOW_COPY_AND_ASSIGN(GDataCache);
 };
+
+
+// The minimum free space to keep. GDataFileSystem::GetFileByPath() returns
+// base::PLATFORM_FILE_ERROR_NO_SPACE if the available space is smaller than
+// this value.
+//
+// Copied from cryptohome/homedirs.h.
+// TODO(satorux): Share the constant.
+const int64 kMinFreeSpace = 512 * 1LL << 20;
+
+// Interface class used for getting the free disk space. Only for testing.
+class FreeDiskSpaceGetterInterface {
+ public:
+  virtual ~FreeDiskSpaceGetterInterface() {}
+  virtual int64 AmountOfFreeDiskSpace() const = 0;
+};
+
+// Sets the free disk space getter for testing.
+// The existing getter is deleted.
+void SetFreeDiskSpaceGetterForTesting(
+    FreeDiskSpaceGetterInterface* getter);
 
 }  // namespace gdata
 
