@@ -215,14 +215,6 @@ std::vector<FilePath> FindPrivateKeyFiles(const FilePath& extension_dir) {
       continue;
     }
 
-    // TODO(jyasskin): Use crypto::RSAPrivateKey to get the public key
-    // out of the key file, so the caller can check whether the found
-    // private key is the same one used to sign this extension.  This
-    // requires refactoring the RSAPrivateKey implementation a bit,
-    // since at least on Mac, CSSMInitSingleton accesses some files
-    // that aren't available in the utility process where this check
-    // needs to run.
-
     result.push_back(current);
   }
   return result;
@@ -404,8 +396,6 @@ bool ValidateExtension(const Extension* extension,
   }
 
   // Check that extensions don't include private key files.
-  // TODO(jyasskin): When ERROR_ON_PRIVATE_KEY is not set, still block
-  // installing an extension that contains its own private key.
   std::vector<FilePath> private_keys = FindPrivateKeyFiles(extension->path());
   if (extension->creation_flags() & Extension::ERROR_ON_PRIVATE_KEY) {
     if (!private_keys.empty()) {
