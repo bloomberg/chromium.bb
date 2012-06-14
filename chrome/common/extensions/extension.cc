@@ -1029,8 +1029,7 @@ bool Extension::LoadAppFeatures(string16* error) {
   if (!LoadExtent(keys::kWebURLs, &extent_,
                   errors::kInvalidWebURLs, errors::kInvalidWebURL, error) ||
       !LoadLaunchURL(error) ||
-      !LoadLaunchContainer(error) ||
-      !LoadOAuth2Info(error))
+      !LoadLaunchContainer(error))
     return false;
 
   return true;
@@ -1310,7 +1309,8 @@ bool Extension::LoadSharedFeatures(
       !LoadBackgroundPage(api_permissions, error) ||
       !LoadBackgroundPersistent(api_permissions, error) ||
       !LoadBackgroundAllowJSAccess(api_permissions, error) ||
-      !LoadWebIntentServices(error))
+      !LoadWebIntentServices(error) ||
+      !LoadOAuth2Info(error))
     return false;
 
   return true;

@@ -1883,6 +1883,7 @@
         'common/extensions/features/feature_unittest.cc',
         'common/extensions/features/simple_feature_provider_unittest.cc',
         'common/extensions/manifest_tests/extension_manifest_test.cc',
+        'common/extensions/manifest_tests/extension_manifests_auth_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_background_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_chromepermission_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_command_unittest.cc',
