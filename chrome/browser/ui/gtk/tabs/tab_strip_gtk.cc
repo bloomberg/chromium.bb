@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -49,6 +50,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/point.h"
 
+using content::UserMetricsAction;
 using content::WebContents;
 
 namespace {
@@ -2182,6 +2184,7 @@ void TabStripGtk::OnNewTabClicked(GtkWidget* widget) {
 
   switch (mouse_button) {
     case 1:
+      content::RecordAction(UserMetricsAction("NewTab_Button"));
       UMA_HISTOGRAM_ENUMERATION("Tab.NewTab", TabStripModel::NEW_TAB_BUTTON,
                                 TabStripModel::NEW_TAB_ENUM_COUNT);
       model_->delegate()->AddBlankTab(true);

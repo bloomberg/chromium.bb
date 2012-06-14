@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/touch_tab_strip_layout.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -55,6 +56,7 @@
 #include "ui/views/widget/monitor_win.h"
 #endif
 
+using content::UserMetricsAction;
 using views::DropTargetEvent;
 
 namespace {
@@ -1294,6 +1296,7 @@ int TabStrip::GetMiniTabCount() const {
 
 void TabStrip::ButtonPressed(views::Button* sender, const views::Event& event) {
   if (sender == newtab_button_) {
+    content::RecordAction(UserMetricsAction("NewTab_Button"));
     UMA_HISTOGRAM_ENUMERATION("Tab.NewTab", TabStripModel::NEW_TAB_BUTTON,
                               TabStripModel::NEW_TAB_ENUM_COUNT);
     controller()->CreateNewTab();

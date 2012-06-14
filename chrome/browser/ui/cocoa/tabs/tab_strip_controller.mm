@@ -591,6 +591,7 @@ private:
 
 // (Private) Handles a click on the new tab button.
 - (void)clickNewTabButton:(id)sender {
+  content::RecordAction(UserMetricsAction("NewTab_Button"));
   UMA_HISTOGRAM_ENUMERATION("Tab.NewTab", TabStripModel::NEW_TAB_BUTTON,
                             TabStripModel::NEW_TAB_ENUM_COUNT);
   tabStripModel_->delegate()->AddBlankTab(true);

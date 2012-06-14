@@ -347,7 +347,6 @@ bool BrowserTabStripController::IsCompatibleWith(TabStrip* other) const {
 }
 
 void BrowserTabStripController::CreateNewTab() {
-  content::RecordAction(UserMetricsAction("NewTab_Button"));
   model_->delegate()->AddBlankTab(true);
 }
 
