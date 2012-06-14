@@ -27,7 +27,6 @@
 #include "chrome/browser/webdata/web_intents_table.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/guid.h"
 #include "chrome/test/base/thread_observer_helper.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"

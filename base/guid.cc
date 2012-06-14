@@ -1,13 +1,13 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/guid.h"
+#include "base/guid.h"
 
 #include "base/rand_util.h"
 #include "base/stringprintf.h"
 
-namespace guid {
+namespace base {
 
 bool IsValidGUID(const std::string& guid) {
   const size_t kGUIDLength = 36U;

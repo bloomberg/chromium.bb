@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/guid.h"
 #include "base/logging.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
@@ -21,7 +22,6 @@
 #include "chrome/browser/autofill/phone_number_i18n.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
-#include "chrome/common/guid.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
@@ -572,8 +572,8 @@ void AutofillOptionsHandler::SetAddress(const ListValue* args) {
   if (args->GetList(10, &list_value))
     SetValueList(list_value, EMAIL_ADDRESS, &profile);
 
-  if (!guid::IsValidGUID(profile.guid())) {
-    profile.set_guid(guid::GenerateGUID());
+  if (!base::IsValidGUID(profile.guid())) {
+    profile.set_guid(base::GenerateGUID());
     personal_data_->AddProfile(profile);
   } else {
     personal_data_->UpdateProfile(profile);
@@ -602,8 +602,8 @@ void AutofillOptionsHandler::SetCreditCard(const ListValue* args) {
   if (args->GetString(4, &value))
     credit_card.SetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, value);
 
-  if (!guid::IsValidGUID(credit_card.guid())) {
-    credit_card.set_guid(guid::GenerateGUID());
+  if (!base::IsValidGUID(credit_card.guid())) {
+    credit_card.set_guid(base::GenerateGUID());
     personal_data_->AddCreditCard(credit_card);
   } else {
     personal_data_->UpdateCreditCard(credit_card);

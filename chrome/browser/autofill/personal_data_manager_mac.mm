@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #import <AddressBook/AddressBook.h>
 
 #include "base/format_macros.h"
+#include "base/guid.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -16,7 +17,6 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/phone_number.h"
-#include "chrome/common/guid.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -107,7 +107,7 @@ void AuxiliaryProfilesImpl::GetAddressBookMeCard() {
     DCHECK_EQ(kGUIDLength, guid.size());
 
     scoped_ptr<AutofillProfile> profile(new AutofillProfile(guid));
-    DCHECK(guid::IsValidGUID(profile->guid()));
+    DCHECK(base::IsValidGUID(profile->guid()));
 
     // Fill in name and company information.
     GetAddressBookNames(me, addressLabelRaw, profile.get());

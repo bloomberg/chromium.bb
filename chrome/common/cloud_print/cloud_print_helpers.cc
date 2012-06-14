@@ -10,7 +10,6 @@
 #include "base/rand_util.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
-#include "chrome/common/guid.h"
 #include "googleurl/src/gurl.h"
 
 namespace cloud_print {

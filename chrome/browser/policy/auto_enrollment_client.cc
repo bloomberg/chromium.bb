@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/guid.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
@@ -16,7 +17,6 @@
 #include "chrome/browser/policy/device_management_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/guid.h"
 #include "chrome/common/pref_names.h"
 #include "crypto/sha2.h"
 
@@ -77,7 +77,7 @@ AutoEnrollmentClient::AutoEnrollmentClient(const base::Closure& callback,
                                            int power_limit)
     : completion_callback_(callback),
       should_auto_enroll_(false),
-      device_id_(guid::GenerateGUID()),
+      device_id_(base::GenerateGUID()),
       power_initial_(power_initial),
       power_limit_(power_limit),
       requests_sent_(0),

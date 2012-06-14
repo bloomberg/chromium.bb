@@ -6,13 +6,13 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/guid.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
-#include "chrome/common/guid.h"
 #include "chrome/installer/gcapi/gcapi.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,7 +27,7 @@ class GCAPILastRunTest : public ::testing::Test {
   void SetUp() {
     // Override keys - this is undone during destruction.
     std::wstring hkcu_override = base::StringPrintf(
-        L"hkcu_override\\%ls", ASCIIToWide(guid::GenerateGUID()));
+        L"hkcu_override\\%ls", ASCIIToWide(base::GenerateGUID()));
     override_manager_.OverrideRegistry(HKEY_CURRENT_USER, hkcu_override);
 
     // Create the client state key in the right places.

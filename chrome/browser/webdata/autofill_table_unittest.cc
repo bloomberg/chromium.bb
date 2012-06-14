@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "base/file_util.h"
+#include "base/guid.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_number_conversions.h"
@@ -19,7 +20,6 @@
 #include "chrome/browser/webdata/autofill_table.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/guid.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/forms/form_field.h"
@@ -581,7 +581,7 @@ TEST_F(AutofillTableTest, AutofillProfile) {
 
   // Add a 'Billing' profile.
   AutofillProfile billing_profile = home_profile;
-  billing_profile.set_guid(guid::GenerateGUID());
+  billing_profile.set_guid(base::GenerateGUID());
   billing_profile.SetInfo(ADDRESS_HOME_LINE1,
                           ASCIIToUTF16("5678 Bottom Street"));
   billing_profile.SetInfo(ADDRESS_HOME_LINE2, ASCIIToUTF16("suite 3"));

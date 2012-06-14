@@ -11,6 +11,7 @@
 #include <set>
 
 #include "base/basictypes.h"
+#include "base/guid.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -19,7 +20,6 @@
 #include "chrome/browser/autofill/contact_info.h"
 #include "chrome/browser/autofill/phone_number.h"
 #include "chrome/browser/autofill/phone_number_i18n.h"
-#include "chrome/common/guid.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -214,7 +214,7 @@ AutofillProfile::AutofillProfile(const std::string& guid)
 }
 
 AutofillProfile::AutofillProfile()
-    : guid_(guid::GenerateGUID()),
+    : guid_(base::GenerateGUID()),
       name_(1),
       email_(1),
       home_number_(1, PhoneNumber(this)) {

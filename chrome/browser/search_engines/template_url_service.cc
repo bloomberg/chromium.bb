@@ -7,6 +7,7 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/environment.h"
+#include "base/guid.h"
 #include "base/i18n/case_conversion.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
@@ -38,7 +39,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/guid.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_service.h"
@@ -2371,7 +2371,7 @@ void TemplateURLService::PatchMissingSyncGUIDs(
     // should be persisted to disk and synced.
     if (template_url->sync_guid().empty() &&
         !template_url->IsExtensionKeyword()) {
-      template_url->data_.sync_guid = guid::GenerateGUID();
+      template_url->data_.sync_guid = base::GenerateGUID();
       if (service_.get())
         service_->UpdateKeyword(template_url->data());
     }

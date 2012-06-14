@@ -8,10 +8,10 @@
 #include <string>
 #include <vector>
 
+#include "base/guid.h"
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
-#include "chrome/common/guid.h"
 #include "sql/statement.h"
 
 namespace {
@@ -22,7 +22,7 @@ namespace {
 void BindShortcutToStatement(
     const history::ShortcutsBackend::Shortcut& shortcut,
     sql::Statement* s) {
-  DCHECK(guid::IsValidGUID(shortcut.id));
+  DCHECK(base::IsValidGUID(shortcut.id));
   s->BindString(0, shortcut.id);
   s->BindString16(1, shortcut.text);
   s->BindString(2, shortcut.url.spec());

@@ -6,8 +6,8 @@
 
 #include <richedit.h>
 
+#include "base/guid.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/common/guid.h"
 #include "chrome_frame/chrome_frame_automation.h"
 
 const int kMaxFindChars = 1024;
@@ -26,7 +26,7 @@ LRESULT CFFindDialog::OnDestroy(UINT msg, WPARAM wparam, LPARAM lparam,
   // do a fake search for a string that is unlikely to appear on the page.
   // TODO(robertshield): Change this to plumb through a StopFinding automation
   // message that triggers a ViewMsg_StopFinding.
-  std::string guid(guid::GenerateGUID());
+  std::string guid(base::GenerateGUID());
   automation_client_->FindInPage(ASCIIToWide(guid), FWD, CASE_SENSITIVE, false);
 
   UninstallMessageHook();

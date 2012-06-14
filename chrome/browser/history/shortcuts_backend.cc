@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/guid.h"
 #include "base/i18n/case_conversion.h"
 #include "base/string_util.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
@@ -19,7 +20,6 @@
 #include "chrome/browser/history/shortcuts_database.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/guid.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -259,7 +259,7 @@ void ShortcutsBackend::Observe(int type,
       return;
     }
   }
-  AddShortcut(Shortcut(guid::GenerateGUID(), log->text, match.destination_url,
+  AddShortcut(Shortcut(base::GenerateGUID(), log->text, match.destination_url,
       match.contents, match.contents_class, match.description,
       match.description_class, base::Time::Now(), 1));
 }

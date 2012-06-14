@@ -4,6 +4,7 @@
 
 #include "chrome/browser/search_engines/template_url.h"
 
+#include "base/guid.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/i18n/rtl.h"
@@ -16,7 +17,6 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
-#include "chrome/common/guid.h"
 #include "chrome/common/url_constants.h"
 #include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -558,7 +558,7 @@ TemplateURLData::TemplateURLData()
       created_by_policy(false),
       usage_count(0),
       prepopulate_id(0),
-      sync_guid(guid::GenerateGUID()),
+      sync_guid(base::GenerateGUID()),
       keyword_(ASCIIToUTF16("dummy")),
       url_("x") {
 }

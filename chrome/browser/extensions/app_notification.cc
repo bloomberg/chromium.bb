@@ -4,10 +4,10 @@
 
 #include "chrome/browser/extensions/app_notification.h"
 
+#include "base/guid.h"
 #include "base/json/json_writer.h"
 #include "base/string_number_conversions.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/guid.h"
 
 namespace {
 
@@ -33,7 +33,7 @@ AppNotification::AppNotification(bool is_local,
       extension_id_(extension_id),
       title_(title),
       body_(body) {
-  guid_ = guid.empty() ? guid::GenerateGUID() : guid;
+  guid_ = guid.empty() ? base::GenerateGUID() : guid;
 }
 
 AppNotification::~AppNotification() {}

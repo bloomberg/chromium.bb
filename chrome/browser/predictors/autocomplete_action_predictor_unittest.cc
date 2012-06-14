@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
+#include "base/guid.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
@@ -17,7 +18,6 @@
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/guid.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -138,7 +138,7 @@ class AutocompleteActionPredictorTest : public testing::Test {
   AutocompleteActionPredictorTable::Row CreateRowFromTestUrlInfo(
       const TestUrlInfo& test_row) const {
     AutocompleteActionPredictorTable::Row row;
-    row.id = guid::GenerateGUID();
+    row.id = base::GenerateGUID();
     row.user_text = test_row.user_text;
     row.url = test_row.url;
     row.number_of_hits = test_row.number_of_hits;

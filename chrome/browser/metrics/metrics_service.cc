@@ -145,6 +145,7 @@
 #include "chrome/browser/metrics/metrics_service.h"
 
 #include "base/bind.h"
+#include "base/guid.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/md5.h"
@@ -178,7 +179,6 @@
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/guid.h"
 #include "chrome/common/metrics/metrics_log_manager.h"
 #include "chrome/common/net/test_server_locations.h"
 #include "chrome/common/pref_names.h"
@@ -914,7 +914,7 @@ int MetricsService::GetLowEntropySource() {
 
 // static
 std::string MetricsService::GenerateClientID() {
-  return guid::GenerateGUID();
+  return base::GenerateGUID();
 }
 
 //------------------------------------------------------------------------------

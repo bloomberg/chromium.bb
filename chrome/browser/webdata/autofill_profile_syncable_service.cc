@@ -4,6 +4,7 @@
 
 #include "chrome/browser/webdata/autofill_profile_syncable_service.h"
 
+#include "base/guid.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
@@ -14,7 +15,6 @@
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/guid.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -315,7 +315,7 @@ void AutofillProfileSyncableService::WriteAutofillProfile(
   sync_pb::AutofillProfileSpecifics* specifics =
       profile_specifics->mutable_autofill_profile();
 
-  DCHECK(guid::IsValidGUID(profile.guid()));
+  DCHECK(base::IsValidGUID(profile.guid()));
 
   // Reset all multi-valued fields in the protobuf.
   specifics->clear_name_first();

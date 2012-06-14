@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/guid.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
@@ -24,7 +25,6 @@
 #include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_entry.h"
-#include "chrome/common/guid.h"
 #include "sql/statement.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "webkit/forms/form_field.h"
@@ -52,7 +52,7 @@ string16 LimitDataSize(const string16& data) {
 
 void BindAutofillProfileToStatement(const AutofillProfile& profile,
                                     sql::Statement* s) {
-  DCHECK(guid::IsValidGUID(profile.guid()));
+  DCHECK(base::IsValidGUID(profile.guid()));
   s->BindString(0, profile.guid());
 
   string16 text = profile.GetInfo(COMPANY_NAME);
@@ -77,7 +77,7 @@ void BindAutofillProfileToStatement(const AutofillProfile& profile,
 AutofillProfile* AutofillProfileFromStatement(const sql::Statement& s) {
   AutofillProfile* profile = new AutofillProfile;
   profile->set_guid(s.ColumnString(0));
-  DCHECK(guid::IsValidGUID(profile->guid()));
+  DCHECK(base::IsValidGUID(profile->guid()));
 
   profile->SetInfo(COMPANY_NAME, s.ColumnString16(1));
   profile->SetInfo(ADDRESS_HOME_LINE1, s.ColumnString16(2));
@@ -94,7 +94,7 @@ AutofillProfile* AutofillProfileFromStatement(const sql::Statement& s) {
 
 void BindCreditCardToStatement(const CreditCard& credit_card,
                                sql::Statement* s) {
-  DCHECK(guid::IsValidGUID(credit_card.guid()));
+  DCHECK(base::IsValidGUID(credit_card.guid()));
   s->BindString(0, credit_card.guid());
 
   string16 text = credit_card.GetInfo(CREDIT_CARD_NAME);
@@ -115,7 +115,7 @@ CreditCard* CreditCardFromStatement(const sql::Statement& s) {
   CreditCard* credit_card = new CreditCard;
 
   credit_card->set_guid(s.ColumnString(0));
-  DCHECK(guid::IsValidGUID(credit_card->guid()));
+  DCHECK(base::IsValidGUID(credit_card->guid()));
 
   credit_card->SetInfo(CREDIT_CARD_NAME, s.ColumnString16(1));
   credit_card->SetInfo(CREDIT_CARD_EXP_MONTH, s.ColumnString16(2));
@@ -882,7 +882,7 @@ bool AutofillTable::AddAutofillProfile(const AutofillProfile& profile) {
 
 bool AutofillTable::GetAutofillProfile(const std::string& guid,
                                        AutofillProfile** profile) {
-  DCHECK(guid::IsValidGUID(guid));
+  DCHECK(base::IsValidGUID(guid));
   DCHECK(profile);
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT guid, company_name, address_line_1, address_line_2, city, state,"
@@ -930,7 +930,7 @@ bool AutofillTable::GetAutofillProfiles(
 }
 
 bool AutofillTable::UpdateAutofillProfile(const AutofillProfile& profile) {
-  DCHECK(guid::IsValidGUID(profile.guid()));
+  DCHECK(base::IsValidGUID(profile.guid()));
 
   // Don't update anything until the trash has been emptied.  There may be
   // pending modifications to process.
@@ -965,7 +965,7 @@ bool AutofillTable::UpdateAutofillProfile(const AutofillProfile& profile) {
 }
 
 bool AutofillTable::UpdateAutofillProfileMulti(const AutofillProfile& profile) {
-  DCHECK(guid::IsValidGUID(profile.guid()));
+  DCHECK(base::IsValidGUID(profile.guid()));
 
   // Don't update anything until the trash has been emptied.  There may be
   // pending modifications to process.
@@ -1003,7 +1003,7 @@ bool AutofillTable::UpdateAutofillProfileMulti(const AutofillProfile& profile) {
 }
 
 bool AutofillTable::RemoveAutofillProfile(const std::string& guid) {
-  DCHECK(guid::IsValidGUID(guid));
+  DCHECK(base::IsValidGUID(guid));
 
   if (IsAutofillGUIDInTrash(guid)) {
     sql::Statement s_trash(db_->GetUniqueStatement(
@@ -1067,7 +1067,7 @@ bool AutofillTable::AddCreditCard(const CreditCard& credit_card) {
 
 bool AutofillTable::GetCreditCard(const std::string& guid,
                                   CreditCard** credit_card) {
-  DCHECK(guid::IsValidGUID(guid));
+  DCHECK(base::IsValidGUID(guid));
   sql::Statement s(db_->GetUniqueStatement(
       "SELECT guid, name_on_card, expiration_month, expiration_year, "
       "card_number_encrypted, date_modified "
@@ -1103,7 +1103,7 @@ bool AutofillTable::GetCreditCards(
 }
 
 bool AutofillTable::UpdateCreditCard(const CreditCard& credit_card) {
-  DCHECK(guid::IsValidGUID(credit_card.guid()));
+  DCHECK(base::IsValidGUID(credit_card.guid()));
 
   CreditCard* tmp_credit_card = NULL;
   if (!GetCreditCard(credit_card.guid(), &tmp_credit_card))
@@ -1128,7 +1128,7 @@ bool AutofillTable::UpdateCreditCard(const CreditCard& credit_card) {
 }
 
 bool AutofillTable::RemoveCreditCard(const std::string& guid) {
-  DCHECK(guid::IsValidGUID(guid));
+  DCHECK(base::IsValidGUID(guid));
   sql::Statement s(db_->GetUniqueStatement(
       "DELETE FROM credit_cards WHERE guid = ?"));
   s.BindString(0, guid);
@@ -1641,7 +1641,7 @@ bool AutofillTable::MigrateToVersion31AddGUIDToCreditCardsAndProfiles() {
       sql::Statement update_s(
           db_->GetUniqueStatement("UPDATE autofill_profiles "
                                   "SET guid=? WHERE unique_id=?"));
-      update_s.BindString(0, guid::GenerateGUID());
+      update_s.BindString(0, base::GenerateGUID());
       update_s.BindInt(1, s.ColumnInt(0));
 
       if (!update_s.Run())
@@ -1669,7 +1669,7 @@ bool AutofillTable::MigrateToVersion31AddGUIDToCreditCardsAndProfiles() {
       sql::Statement update_s(
           db_->GetUniqueStatement("UPDATE credit_cards "
                                   "set guid=? WHERE unique_id=?"));
-      update_s.BindString(0, guid::GenerateGUID());
+      update_s.BindString(0, base::GenerateGUID());
       update_s.BindInt(1, s.ColumnInt(0));
 
       if (!update_s.Run())
@@ -1782,7 +1782,7 @@ bool AutofillTable::MigrateToVersion33ProfilesBasedOnFirstName() {
     while (s.Step()) {
       AutofillProfile profile;
       profile.set_guid(s.ColumnString(0));
-      DCHECK(guid::IsValidGUID(profile.guid()));
+      DCHECK(base::IsValidGUID(profile.guid()));
 
       profile.SetInfo(NAME_FIRST, s.ColumnString16(1));
       profile.SetInfo(NAME_MIDDLE, s.ColumnString16(2));

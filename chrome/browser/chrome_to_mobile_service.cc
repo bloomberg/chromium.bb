@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram.h"
@@ -24,7 +25,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/cloud_print/cloud_print_helpers.h"
-#include "chrome/common/guid.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/net/gaia/oauth2_access_token_fetcher.h"
@@ -250,7 +250,7 @@ void ChromeToMobileService::SendToMobile(const string16& mobile_id,
   data.title = web_contents->GetTitle();
   data.snapshot_path = snapshot;
   bool send_snapshot = !snapshot.empty();
-  data.snapshot_id = send_snapshot ? guid::GenerateGUID() : std::string();
+  data.snapshot_id = send_snapshot ? base::GenerateGUID() : std::string();
   data.type = send_snapshot ? DELAYED_SNAPSHOT : URL;
 
   net::URLFetcher* submit_url = CreateRequest(data);
@@ -383,7 +383,7 @@ void ChromeToMobileService::RequestAccountInfo() {
     return;
 
   std::string url_string = StringPrintf(kAccountInfoURL,
-      guid::GenerateGUID().c_str(), kChromeToMobileRequestor);
+      base::GenerateGUID().c_str(), kChromeToMobileRequestor);
   GURL url(url_string);
 
   // Account information is read from the profile's cookie. If cookies are

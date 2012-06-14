@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/guid.h"
 #include "base/logging.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
@@ -20,7 +21,6 @@
 #include "chrome/browser/autofill/autofill_regexes.h"
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/field_types.h"
-#include "chrome/common/guid.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "unicode/dtfmtsym.h"
@@ -205,7 +205,7 @@ CreditCard::CreditCard()
     : type_(kGenericCard),
       expiration_month_(0),
       expiration_year_(0),
-      guid_(guid::GenerateGUID()) {
+      guid_(base::GenerateGUID()) {
 }
 
 CreditCard::CreditCard(const CreditCard& credit_card) : FormGroup() {

@@ -5,10 +5,10 @@
 #include "chrome/browser/policy/cloud_policy_client.h"
 
 #include "base/bind.h"
+#include "base/guid.h"
 #include "base/logging.h"
 #include "chrome/browser/policy/device_management_service.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
-#include "chrome/common/guid.h"
 
 namespace em = enterprise_management;
 
@@ -58,7 +58,7 @@ void CloudPolicyClient::Register(const std::string& auth_token) {
   // Generate a new client ID. This is intentionally done on each new
   // registration request in order to preserve privacy. Reusing IDs would mean
   // the server could track clients by their registration attempts.
-  client_id_ = guid::GenerateGUID();
+  client_id_ = base::GenerateGUID();
 
   request_job_.reset(
       service_->CreateJob(DeviceManagementRequestJob::TYPE_REGISTRATION));

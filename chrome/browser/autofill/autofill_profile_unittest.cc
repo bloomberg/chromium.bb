@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/basictypes.h"
+#include "base/guid.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/stl_util.h"
@@ -10,7 +11,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_common_test.h"
 #include "chrome/browser/autofill/autofill_profile.h"
-#include "chrome/common/guid.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -567,8 +567,8 @@ TEST_F(AutofillProfileTest, Compare) {
   EXPECT_EQ(0, a.Compare(b));
 
   // GUIDs don't count.
-  a.set_guid(guid::GenerateGUID());
-  b.set_guid(guid::GenerateGUID());
+  a.set_guid(base::GenerateGUID());
+  b.set_guid(base::GenerateGUID());
   EXPECT_EQ(0, a.Compare(b));
 
   // Different values produce non-zero results.

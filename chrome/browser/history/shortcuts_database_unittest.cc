@@ -9,7 +9,6 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/shortcuts_database.h"
-#include "chrome/common/guid.h"
 #include "sql/statement.h"
 
 #include "testing/gtest/include/gtest/gtest.h"

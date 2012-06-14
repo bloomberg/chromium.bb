@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/guid.h"
 #include "base/logging.h"
 #include "base/string16.h"
 #include "base/string_util.h"
@@ -47,7 +48,6 @@
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/guid.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -950,11 +950,11 @@ bool AutofillManager::GetProfileOrCreditCard(
   GUIDPair credit_card_guid;
   GUIDPair profile_guid;
   UnpackGUIDs(unique_id, &credit_card_guid, &profile_guid);
-  DCHECK(!guid::IsValidGUID(credit_card_guid.first) ||
-         !guid::IsValidGUID(profile_guid.first));
+  DCHECK(!base::IsValidGUID(credit_card_guid.first) ||
+         !base::IsValidGUID(profile_guid.first));
 
   // Find the profile that matches the |profile_guid|, if one is specified.
-  if (guid::IsValidGUID(profile_guid.first)) {
+  if (base::IsValidGUID(profile_guid.first)) {
     for (std::vector<AutofillProfile*>::const_iterator iter = profiles.begin();
          iter != profiles.end(); ++iter) {
       if ((*iter)->guid() == profile_guid.first) {
@@ -968,7 +968,7 @@ bool AutofillManager::GetProfileOrCreditCard(
   }
 
   // Find the credit card that matches the |credit_card_guid|, if specified.
-  if (guid::IsValidGUID(credit_card_guid.first)) {
+  if (base::IsValidGUID(credit_card_guid.first)) {
     for (std::vector<CreditCard*>::const_iterator iter = credit_cards.begin();
          iter != credit_cards.end(); ++iter) {
       if ((*iter)->guid() == credit_card_guid.first) {
@@ -1345,7 +1345,7 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
 }
 
 int AutofillManager::GUIDToID(const GUIDPair& guid) const {
-  if (!guid::IsValidGUID(guid.first))
+  if (!base::IsValidGUID(guid.first))
     return 0;
 
   std::map<GUIDPair, int>::const_iterator iter = guid_id_map_.find(guid);

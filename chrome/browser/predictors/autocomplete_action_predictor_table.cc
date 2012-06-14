@@ -4,11 +4,11 @@
 
 #include "chrome/browser/predictors/autocomplete_action_predictor_table.h"
 
+#include "base/guid.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/common/guid.h"
 #include "content/public/browser/browser_thread.h"
 #include "sql/statement.h"
 
@@ -23,7 +23,7 @@ const size_t kMaxDataLength = 2048;
 void BindRowToStatement(
     const predictors::AutocompleteActionPredictorTable::Row& row,
     sql::Statement* statement) {
-  DCHECK(guid::IsValidGUID(row.id));
+  DCHECK(base::IsValidGUID(row.id));
   statement->BindString(0, row.id);
   statement->BindString16(1, row.user_text.substr(0, kMaxDataLength));
   statement->BindString(2, row.url.spec().substr(0, kMaxDataLength));

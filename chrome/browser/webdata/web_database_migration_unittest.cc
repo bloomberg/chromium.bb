@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/file_util.h"
+#include "base/guid.h"
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "base/stl_util.h"
@@ -22,7 +23,6 @@
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/browser/webdata/web_intents_table.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/guid.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/test_browser_thread.h"
 #include "sql/statement.h"
@@ -58,7 +58,7 @@ void AutofillProfile31FromStatement(const sql::Statement& s,
   profile->SetInfo(PHONE_HOME_WHOLE_NUMBER, s.ColumnString16(13));
   *date_modified = s.ColumnInt64(15);
   profile->set_guid(s.ColumnString(16));
-  EXPECT_TRUE(guid::IsValidGUID(profile->guid()));
+  EXPECT_TRUE(base::IsValidGUID(profile->guid()));
 }
 
 void AutofillProfile33FromStatement(const sql::Statement& s,
@@ -67,7 +67,7 @@ void AutofillProfile33FromStatement(const sql::Statement& s,
   DCHECK(profile);
   DCHECK(date_modified);
   profile->set_guid(s.ColumnString(0));
-  EXPECT_TRUE(guid::IsValidGUID(profile->guid()));
+  EXPECT_TRUE(base::IsValidGUID(profile->guid()));
   profile->SetInfo(COMPANY_NAME, s.ColumnString16(1));
   profile->SetInfo(ADDRESS_HOME_LINE1, s.ColumnString16(2));
   profile->SetInfo(ADDRESS_HOME_LINE2, s.ColumnString16(3));
@@ -102,7 +102,7 @@ void CreditCard31FromStatement(const sql::Statement& s,
   }
   *date_modified = s.ColumnInt64(12);
   credit_card->set_guid(s.ColumnString(13));
-  EXPECT_TRUE(guid::IsValidGUID(credit_card->guid()));
+  EXPECT_TRUE(base::IsValidGUID(credit_card->guid()));
 }
 
 void CreditCard32FromStatement(const sql::Statement& s,
@@ -113,7 +113,7 @@ void CreditCard32FromStatement(const sql::Statement& s,
   DCHECK(encrypted_number);
   DCHECK(date_modified);
   credit_card->set_guid(s.ColumnString(0));
-  EXPECT_TRUE(guid::IsValidGUID(credit_card->guid()));
+  EXPECT_TRUE(base::IsValidGUID(credit_card->guid()));
   credit_card->SetInfo(CREDIT_CARD_NAME, s.ColumnString16(1));
   credit_card->SetInfo(CREDIT_CARD_EXP_MONTH, s.ColumnString16(2));
   credit_card->SetInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, s.ColumnString16(3));
@@ -693,11 +693,11 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion30ToCurrent) {
 
     ASSERT_TRUE(s.Step());
     std::string guid1 = s.ColumnString(0);
-    EXPECT_TRUE(guid::IsValidGUID(guid1));
+    EXPECT_TRUE(base::IsValidGUID(guid1));
 
     ASSERT_TRUE(s.Step());
     std::string guid2 = s.ColumnString(0);
-    EXPECT_TRUE(guid::IsValidGUID(guid2));
+    EXPECT_TRUE(base::IsValidGUID(guid2));
 
     EXPECT_NE(guid1, guid2);
   }
