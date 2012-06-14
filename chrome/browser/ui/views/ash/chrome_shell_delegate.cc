@@ -243,7 +243,8 @@ bool ChromeShellDelegate::RotatePaneFocus(ash::Shell::Direction direction) {
 
 void ChromeShellDelegate::ShowKeyboardOverlay() {
 #if defined(OS_CHROMEOS)
-  KeyboardOverlayDialogView::ShowDialog();
+  KeyboardOverlayDialogView::ShowDialog(
+      ProfileManager::GetDefaultProfileOrOffTheRecord());
 #endif
 }
 

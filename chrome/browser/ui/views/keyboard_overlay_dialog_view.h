@@ -9,7 +9,9 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/views/web_dialog_view.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace ui {
 class WebDialogDelegate;
@@ -18,11 +20,12 @@ class WebDialogDelegate;
 // A customized dialog view for the keyboard overlay.
 class KeyboardOverlayDialogView : public WebDialogView {
  public:
-  KeyboardOverlayDialogView(Profile* profile, ui::WebDialogDelegate* delegate);
+  KeyboardOverlayDialogView(content::BrowserContext* context,
+                            ui::WebDialogDelegate* delegate);
   virtual ~KeyboardOverlayDialogView();
 
   // Shows the keyboard overlay.
-  static void ShowDialog();
+  static void ShowDialog(content::BrowserContext* context);
 
  private:
   // Overridden from views::WidgetDelegate:

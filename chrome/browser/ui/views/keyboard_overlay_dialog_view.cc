@@ -5,10 +5,8 @@
 #include "chrome/browser/ui/views/keyboard_overlay_dialog_view.h"
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/keyboard_overlay_delegate.h"
+#include "content/public/browser/browser_context.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/screen.h"
@@ -27,15 +25,15 @@ KeyboardOverlayDialogView* g_instance = NULL;
 }
 
 KeyboardOverlayDialogView::KeyboardOverlayDialogView(
-    Profile* profile,
+    content::BrowserContext* context,
     WebDialogDelegate* delegate)
-    : WebDialogView(profile, delegate) {
+    : WebDialogView(context, delegate) {
 }
 
 KeyboardOverlayDialogView::~KeyboardOverlayDialogView() {
 }
 
-void KeyboardOverlayDialogView::ShowDialog() {
+void KeyboardOverlayDialogView::ShowDialog(content::BrowserContext* context) {
   // Ignore the call if another view is already shown.
   if (g_instance)
     return;
@@ -48,8 +46,8 @@ void KeyboardOverlayDialogView::ShowDialog() {
 #endif
   KeyboardOverlayDelegate* delegate = new KeyboardOverlayDelegate(
       l10n_util::GetStringUTF16(IDS_KEYBOARD_OVERLAY_TITLE));
-  KeyboardOverlayDialogView* view = new KeyboardOverlayDialogView(
-      ProfileManager::GetDefaultProfileOrOffTheRecord(), delegate);
+  KeyboardOverlayDialogView* view =
+      new KeyboardOverlayDialogView(context, delegate);
   delegate->Show(view);
 
   g_instance = view;
