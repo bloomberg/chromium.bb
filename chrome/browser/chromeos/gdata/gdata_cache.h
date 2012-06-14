@@ -17,10 +17,16 @@ class Profile;
 
 namespace gdata {
 
+// GDataCache is used to maintain cache states of GDataFileSystem.
+//
+// All non-static public member functions, unless mentioned otherwise (see
+// GetCacheFilePath() for example), should be called from the sequenced
+// worker pool with the sequence token set by CreateGDataCache(). This
+// threading model is enforced by AssertOnSequencedWorkerPool().
 class GDataCache {
  public:
   // Enum defining GCache subdirectory location.
-  // This indexes into |GDataFileSystem::cache_paths_| vector.
+  // This indexes into |GDataCache::cache_paths_| vector.
   enum CacheSubDirectoryType {
     CACHE_TYPE_META = 0,       // Downloaded feeds.
     CACHE_TYPE_PINNED,         // Symlinks to files in persistent dir that are
@@ -122,9 +128,13 @@ class GDataCache {
 
   // Returns the sub-directory under gdata cache directory for the given sub
   // directory type. Example:  <user_profile_dir>/GCache/v1/tmp
+  //
+  // Can be called on any thread.
   FilePath GetCacheDirectoryPath(CacheSubDirectoryType sub_dir_type) const;
 
   // Returns absolute path of the file if it were cached or to be cached.
+  //
+  // Can be called on any thread.
   FilePath GetCacheFilePath(const std::string& resource_id,
                             const std::string& md5,
                             CacheSubDirectoryType sub_dir_type,
@@ -132,6 +142,8 @@ class GDataCache {
 
   // Returns true if the given path is under gdata cache directory, i.e.
   // <user_profile_dir>/GCache/v1
+  //
+  // Can be called on any thread.
   bool IsUnderGDataCacheDirectory(const FilePath& path) const;
 
   // TODO(hashimoto): Remove this method when crbug.com/131756 is fixed.
@@ -192,7 +204,7 @@ class GDataCache {
   const FilePath cache_root_path_;
   // Paths for all subdirectories of GCache, one for each
   // GDataCache::CacheSubDirectoryType enum.
-  std::vector<FilePath> cache_paths_;
+  const std::vector<FilePath> cache_paths_;
   base::SequencedWorkerPool* pool_;
   const base::SequencedWorkerPool::SequenceToken sequence_token_;
 

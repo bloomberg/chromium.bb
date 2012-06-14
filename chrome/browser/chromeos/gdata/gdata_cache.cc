@@ -56,6 +56,21 @@ std::string CacheSubDirectoryTypeToString(
   return "unknown subdir";
 }
 
+// Returns file paths for all the cache sub directories under
+// |cache_root_path|.
+std::vector<FilePath> GetCachePaths(const FilePath& cache_root_path) {
+  std::vector<FilePath> cache_paths;
+  // The order should match GDataCache::CacheSubDirectoryType enum.
+  cache_paths.push_back(cache_root_path.Append(kGDataCacheMetaDir));
+  cache_paths.push_back(cache_root_path.Append(kGDataCachePinnedDir));
+  cache_paths.push_back(cache_root_path.Append(kGDataCacheOutgoingDir));
+  cache_paths.push_back(cache_root_path.Append(kGDataCachePersistentDir));
+  cache_paths.push_back(cache_root_path.Append(kGDataCacheTmpDir));
+  cache_paths.push_back(cache_root_path.Append(kGDataCacheTmpDownloadsDir));
+  cache_paths.push_back(cache_root_path.Append(kGDataCacheTmpDocumentsDir));
+  return cache_paths;
+}
+
 }  // namespace
 
 const char GDataCache::kMountedArchiveFileExtension[] = "mounted";
@@ -80,16 +95,9 @@ GDataCache::GDataCache(
     base::SequencedWorkerPool* pool,
     const base::SequencedWorkerPool::SequenceToken& sequence_token)
     : cache_root_path_(cache_root_path),
+      cache_paths_(GetCachePaths(cache_root_path_)),
       pool_(pool),
       sequence_token_(sequence_token) {
-  // Insert into |cache_paths_| in order defined in enum CacheSubDirectoryType.
-  cache_paths_.push_back(cache_root_path_.Append(kGDataCacheMetaDir));
-  cache_paths_.push_back(cache_root_path_.Append(kGDataCachePinnedDir));
-  cache_paths_.push_back(cache_root_path_.Append(kGDataCacheOutgoingDir));
-  cache_paths_.push_back(cache_root_path_.Append(kGDataCachePersistentDir));
-  cache_paths_.push_back(cache_root_path_.Append(kGDataCacheTmpDir));
-  cache_paths_.push_back(cache_root_path_.Append(kGDataCacheTmpDownloadsDir));
-  cache_paths_.push_back(cache_root_path_.Append(kGDataCacheTmpDocumentsDir));
 }
 
 GDataCache::~GDataCache() {
