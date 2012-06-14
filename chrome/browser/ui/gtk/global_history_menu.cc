@@ -18,6 +18,7 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
+#include "chrome/browser/ui/gtk/event_utils.h"
 #include "chrome/browser/ui/gtk/global_menu_bar.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
@@ -375,7 +376,7 @@ void GlobalHistoryMenu::TabRestoreServiceDestroyed(
 
 void GlobalHistoryMenu::OnRecentlyClosedItemActivated(GtkWidget* sender) {
   WindowOpenDisposition disposition =
-      gtk_util::DispositionForCurrentButtonPressEvent();
+      event_utils::DispositionForCurrentButtonPressEvent();
   HistoryItem* item = HistoryItemForMenuItem(sender);
 
   // If this item can be restored using TabRestoreService, do so. Otherwise,

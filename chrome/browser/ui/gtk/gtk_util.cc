@@ -21,7 +21,6 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/event_disposition.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -35,7 +34,6 @@
 #include "googleurl/src/gurl.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
-#include "ui/base/events.h"
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/gtk/gtk_screen_util.h"
@@ -50,7 +48,6 @@
 
 // These conflict with base/tracked_objects.h, so need to come last.
 #include <gdk/gdkx.h>  // NOLINT
-#include <gtk/gtk.h>   // NOLINT
 
 using content::RenderWidgetHost;
 using content::WebContents;
@@ -293,28 +290,6 @@ GtkWidget* GetBrowserWindowFocusedWidget(BrowserWindow* window) {
 }
 
 }  // namespace
-
-namespace event_utils {
-
-// TODO(shinyak) This function will be removed after refactoring.
-WindowOpenDisposition DispositionFromGdkState(guint state) {
-  int event_flags = EventFlagsFromGdkState(state);
-  return browser::DispositionFromEventFlags(event_flags);
-}
-
-int EventFlagsFromGdkState(guint state) {
-  int flags = 0;
-  flags |= (state & GDK_LOCK_MASK) ? ui::EF_CAPS_LOCK_DOWN : 0;
-  flags |= (state & GDK_CONTROL_MASK) ? ui::EF_CONTROL_DOWN : 0;
-  flags |= (state & GDK_SHIFT_MASK) ? ui::EF_SHIFT_DOWN : 0;
-  flags |= (state & GDK_MOD1_MASK) ? ui::EF_ALT_DOWN : 0;
-  flags |= (state & GDK_BUTTON1_MASK) ? ui::EF_LEFT_MOUSE_BUTTON : 0;
-  flags |= (state & GDK_BUTTON2_MASK) ? ui::EF_MIDDLE_MOUSE_BUTTON : 0;
-  flags |= (state & GDK_BUTTON3_MASK) ? ui::EF_RIGHT_MOUSE_BUTTON : 0;
-  return flags;
-}
-
-}  // namespace event_utils
 
 namespace gtk_util {
 
@@ -850,18 +825,6 @@ gfx::Rect GetWidgetRectRelativeToToplevel(GtkWidget* widget) {
 void SuppressDefaultPainting(GtkWidget* container) {
   g_signal_connect(container, "expose-event",
                    G_CALLBACK(PaintNoBackground), NULL);
-}
-
-WindowOpenDisposition DispositionForCurrentButtonPressEvent() {
-  GdkEvent* event = gtk_get_current_event();
-  if (!event) {
-    NOTREACHED();
-    return NEW_FOREGROUND_TAB;
-  }
-
-  guint state = event->button.state;
-  gdk_event_free(event);
-  return event_utils::DispositionFromGdkState(state);
 }
 
 bool GrabAllInput(GtkWidget* widget) {

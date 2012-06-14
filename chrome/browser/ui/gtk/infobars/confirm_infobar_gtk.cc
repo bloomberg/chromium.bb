@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include <gtk/gtk.h>
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/ui/gtk/event_utils.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_shrinkable_hbox.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
@@ -94,6 +95,6 @@ void ConfirmInfoBarGtk::OnCancelButton(GtkWidget* widget) {
 
 void ConfirmInfoBarGtk::OnLinkClicked(GtkWidget* widget) {
   if (delegate()->AsConfirmInfoBarDelegate()->LinkClicked(
-        gtk_util::DispositionForCurrentButtonPressEvent()))
+        event_utils::DispositionForCurrentButtonPressEvent()))
     RemoveSelf();
 }

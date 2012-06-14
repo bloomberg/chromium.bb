@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/gtk/bookmarks/bookmark_utils_gtk.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
+#include "chrome/browser/ui/gtk/event_utils.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
@@ -1149,7 +1150,7 @@ void BookmarkBarGtk::OnClicked(GtkWidget* sender) {
   Profile* profile = browser_->profile();
   RecordAppLaunch(profile, node->url());
   bookmark_utils::OpenAll(window_->GetNativeWindow(), profile, page_navigator_,
-      node, gtk_util::DispositionForCurrentButtonPressEvent());
+      node, event_utils::DispositionForCurrentButtonPressEvent());
 
   content::RecordAction(UserMetricsAction("ClickedBookmarkBarURLButton"));
 }

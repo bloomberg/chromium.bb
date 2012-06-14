@@ -1,14 +1,18 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gtk_util.h"
+#include "chrome/browser/ui/gtk/event_utils.h"
 
 #include "base/stringprintf.h"
 #include "ui/base/events.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-static const guint states[] = {
+namespace event_utils {
+
+namespace {
+
+const guint states[] = {
   GDK_LOCK_MASK,
   GDK_CONTROL_MASK,
   GDK_SHIFT_MASK,
@@ -18,7 +22,7 @@ static const guint states[] = {
   GDK_BUTTON3_MASK
 };
 
-static const int flags[] = {
+const int flags[] = {
   ui::EF_CAPS_LOCK_DOWN,
   ui::EF_CONTROL_DOWN,
   ui::EF_SHIFT_DOWN,
@@ -28,22 +32,26 @@ static const int flags[] = {
   ui::EF_RIGHT_MOUSE_BUTTON
 };
 
-TEST(GTKUtilTest, TestEventFlagsFromGdkState) {
+}  // namespace
+
+TEST(EventUtilsTest, EventFlagsFromGdkState) {
   ASSERT_EQ(arraysize(states), arraysize(flags));
 
   const int size = arraysize(states);
   for (int i = 0; i < size; ++i) {
     SCOPED_TRACE(base::StringPrintf(
-                   "Checking EventFlagsFromGdkState: i = %d", i));
-    EXPECT_EQ(flags[i], event_utils::EventFlagsFromGdkState(states[i]));
+        "Checking EventFlagsFromGdkState: i = %d", i));
+    EXPECT_EQ(flags[i], EventFlagsFromGdkState(states[i]));
   }
 
   for (int i = 0; i < size; ++i) {
     for (int j = i + 1; j < size; ++j) {
       SCOPED_TRACE(base::StringPrintf(
-                     "Checking EventFlagsFromGdkState: i = %d, j = %d", i, j));
+          "Checking EventFlagsFromGdkState: i = %d, j = %d", i, j));
       EXPECT_EQ(flags[i] | flags[j],
-                event_utils::EventFlagsFromGdkState(states[i] | states[j]));
+                EventFlagsFromGdkState(states[i] | states[j]));
     }
   }
 }
+
+}  // namespace event_utils

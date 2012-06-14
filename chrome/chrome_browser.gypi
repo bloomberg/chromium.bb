@@ -2959,6 +2959,8 @@
         'browser/ui/gtk/download/download_started_animation_gtk.cc',
         'browser/ui/gtk/edit_search_engine_dialog.cc',
         'browser/ui/gtk/edit_search_engine_dialog.h',
+        'browser/ui/gtk/event_utils.cc',
+        'browser/ui/gtk/event_utils.h',
         'browser/ui/gtk/extensions/bundle_installed_bubble_gtk.cc',
         'browser/ui/gtk/extensions/bundle_installed_bubble_gtk.h',
         'browser/ui/gtk/extensions/extension_install_dialog_gtk.cc',

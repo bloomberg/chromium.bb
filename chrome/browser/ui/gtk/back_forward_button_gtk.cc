@@ -11,6 +11,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/gtk/event_utils.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
@@ -91,7 +92,7 @@ void BackForwardButtonGtk::OnClick(GtkWidget* widget) {
 
   browser_->ExecuteCommandWithDisposition(
       is_forward_ ? IDC_FORWARD : IDC_BACK,
-      gtk_util::DispositionForCurrentButtonPressEvent());
+      event_utils::DispositionForCurrentButtonPressEvent());
 }
 
 gboolean BackForwardButtonGtk::OnButtonPress(GtkWidget* widget,

@@ -29,17 +29,6 @@ namespace gfx {
 class Image;
 }
 
-namespace event_utils {
-
-// Translates GdkEvent state into what kind of disposition they represent.
-// For example, a middle click would mean to open a background tab.
-WindowOpenDisposition DispositionFromGdkState(guint state);
-
-// Translates event flags into plaform independent event flags.
-int EventFlagsFromGdkState(guint state);
-
-}  // namespace event_utils
-
 namespace gtk_util {
 
 // Create a table of labeled controls, using proper spacing and alignment.
@@ -246,11 +235,6 @@ gfx::Rect GetWidgetRectRelativeToToplevel(GtkWidget* widget);
 // except that it will always work, and it should be called after any custom
 // expose events are connected.
 void SuppressDefaultPainting(GtkWidget* container);
-
-// Get the window open disposition from the state in gtk_get_current_event().
-// This is designed to be called inside a "clicked" event handler. It is an
-// error to call it when gtk_get_current_event() won't return a GdkEventButton*.
-WindowOpenDisposition DispositionForCurrentButtonPressEvent();
 
 // Safely grabs all input (with X grabs and an application grab), returning true
 // for success.

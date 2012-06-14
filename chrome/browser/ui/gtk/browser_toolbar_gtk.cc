@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/gtk/browser_toolbar_gtk.h"
 
-#include <X11/XF86keysym.h>
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
+#include <X11/XF86keysym.h>
 
 #include "base/base_paths.h"
 #include "base/command_line.h"
@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/gtk/browser_actions_toolbar_gtk.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
+#include "chrome/browser/ui/gtk/event_utils.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
@@ -594,14 +595,14 @@ gboolean BrowserToolbarGtk::OnLocationHboxExpose(GtkWidget* location_hbox,
 
 void BrowserToolbarGtk::OnButtonClick(GtkWidget* button) {
   if ((button == back_->widget()) || (button == forward_->widget())) {
-    if (gtk_util::DispositionForCurrentButtonPressEvent() == CURRENT_TAB)
+    if (event_utils::DispositionForCurrentButtonPressEvent() == CURRENT_TAB)
       location_bar_->Revert();
     return;
   }
 
   DCHECK(home_.get() && button == home_->widget()) <<
       "Unexpected button click callback";
-  browser_->Home(gtk_util::DispositionForCurrentButtonPressEvent());
+  browser_->Home(event_utils::DispositionForCurrentButtonPressEvent());
 }
 
 gboolean BrowserToolbarGtk::OnMenuButtonPressEvent(GtkWidget* button,
