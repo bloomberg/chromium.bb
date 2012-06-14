@@ -29,7 +29,7 @@ import org.chromium.content.common.SurfaceCallback;
  * to more than one distinct process (i.e. one process per service number, up to limit of N).
  * The embedding application must declare these service instances in the application section
  * of its AndroidManifest.xml, for example with N entries of the form:-
- *     <service android:name="org.chromium.content.browser.SandboxedProcessServiceX"
+ *     <service android:name="org.chromium.content.app.SandboxedProcessServiceX"
  *              android:process=":sandboxed_processX" />
  * for X in 0...N-1 (where N is {@link SandboxedProcessLauncher#MAX_REGISTERED_SERVICES})
  */
