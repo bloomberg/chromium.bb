@@ -85,6 +85,12 @@ void WriteCache(const FilePath& filename, const Pickle* pickle) {
                        pickle->size());
 }
 
+void RemoveCache(const FilePath& filename, const base::Closure& callback) {
+  file_util::Delete(filename, false);
+  content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+                                   callback);
+}
+
 void LogCacheQuery(ValidationCacheStatus status) {
   UMA_HISTOGRAM_ENUMERATION("NaCl.ValidationCache.Query", status, CACHE_MAX);
 }
@@ -109,6 +115,7 @@ NaClBrowser::NaClBrowser()
       validation_cache_state_(NaClResourceUninitialized),
       ok_(true) {
   InitIrtFilePath();
+  InitValidationCacheFilePath();
 }
 
 NaClBrowser::~NaClBrowser() {
@@ -198,26 +205,29 @@ void NaClBrowser::OnIrtOpened(base::PlatformFileError error_code,
   CheckWaiting();
 }
 
+void NaClBrowser::InitValidationCacheFilePath() {
+  // Determine where the validation cache resides in the file system.  It
+  // exists in Chrome's cache directory and is not tied to any specific
+  // profile.
+  // Start by finding the user data directory.
+  FilePath user_data_dir;
+  if (!PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
+    RunWithoutValidationCache();
+    return;
+  }
+  // The cache directory may or may not be the user data directory.
+  FilePath cache_file_path;
+  chrome::GetUserCacheDirectory(user_data_dir, &cache_file_path);
+  // Append the base file name to the cache directory.
+
+  validation_cache_file_path_ =
+      cache_file_path.Append(kValidationCacheFileName);
+}
+
 void NaClBrowser::EnsureValidationCacheAvailable() {
   if (IsOk() && validation_cache_state_ == NaClResourceUninitialized) {
     if (ValidationCacheIsEnabled()) {
       validation_cache_state_ = NaClResourceRequested;
-
-      // Determine where the validation cache resides in the file system.  It
-      // exists in Chrome's cache directory and is not tied to any specific
-      // profile.
-      // Start by finding the user data directory.
-      FilePath user_data_dir;
-      if (!PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
-        RunWithoutValidationCache();
-        return;
-      }
-      // The cache directory may or may not be the user data directory.
-      FilePath cache_file_path;
-      chrome::GetUserCacheDirectory(user_data_dir, &cache_file_path);
-      // Append the base file name to the cache directory.
-      validation_cache_file_path_ =
-          cache_file_path.Append(kValidationCacheFileName);
 
       // Structure for carrying data between the callbacks.
       std::string* data = new std::string();
@@ -239,6 +249,11 @@ void NaClBrowser::EnsureValidationCacheAvailable() {
 }
 
 void NaClBrowser::OnValidationCacheLoaded(const std::string *data) {
+  // Did the cache get cleared before the load completed?  If so, ignore the
+  // incoming data.
+  if (validation_cache_state_ == NaClResourceReady)
+    return;
+
   if (data->size() == 0) {
     // No file found.
     validation_cache_.Reset();
@@ -315,6 +330,44 @@ void NaClBrowser::SetKnownToValidate(const std::string& signature,
   }
 }
 
+void NaClBrowser::ClearValidationCache(const base::Closure& callback) {
+  // Note: this method may be called before EnsureValidationCacheAvailable has
+  // been invoked.  In other words, this method may be called before any NaCl
+  // processes have been created.  This method must succeed and invoke the
+  // callback in such a case.  If it does not invoke the callback, Chrome's UI
+  // will hang in that case.
+  validation_cache_.Reset();
+  off_the_record_validation_cache_.Reset();
+
+  if (validation_cache_file_path_.empty()) {
+    // Can't figure out what file to remove, but don't drop the callback.
+    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+                                     callback);
+  } else {
+    // Delegate the removal of the cache from the filesystem to another thread
+    // to avoid blocking the IO thread.
+    // This task is dispatched immediately, not delayed and coalesced, because
+    // the user interface for cache clearing is likely waiting for the callback.
+    // In addition, we need to make sure the cache is actually cleared before
+    // invoking the callback to meet the implicit guarantees of the UI.
+    content::BrowserThread::PostBlockingPoolSequencedTask(
+        kValidationCacheSequenceName,
+        FROM_HERE,
+        base::Bind(RemoveCache, validation_cache_file_path_, callback));
+  }
+
+  // Make sure any delayed tasks to persist the cache to the filesystem are
+  // squelched.
+  validation_cache_is_modified_ = false;
+
+  // If the cache is cleared before it is loaded from the filesystem, act as if
+  // we just loaded an empty cache.
+  if (validation_cache_state_ != NaClResourceReady) {
+    validation_cache_state_ = NaClResourceReady;
+    CheckWaiting();
+  }
+}
+
 void NaClBrowser::MarkValidationCacheAsModified() {
   if (!validation_cache_is_modified_) {
     // Wait before persisting to disk.  This can coalesce multiple cache
@@ -329,7 +382,11 @@ void NaClBrowser::MarkValidationCacheAsModified() {
 }
 
 void NaClBrowser::PersistValidationCache() {
-  if (!validation_cache_file_path_.empty()) {
+  // validation_cache_is_modified_ may be false if the cache was cleared while
+  // this delayed task was pending.
+  // validation_cache_file_path_ may be empty if something went wrong during
+  // initialization.
+  if (validation_cache_is_modified_ && !validation_cache_file_path_.empty()) {
     Pickle* pickle = new Pickle();
     validation_cache_.Serialize(pickle);
 

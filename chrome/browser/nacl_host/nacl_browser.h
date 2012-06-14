@@ -54,6 +54,7 @@ class NaClBrowser {
 
   bool QueryKnownToValidate(const std::string& signature, bool off_the_record);
   void SetKnownToValidate(const std::string& signature, bool off_the_record);
+  void ClearValidationCache(const base::Closure& callback);
 
  private:
   friend struct DefaultSingletonTraits<NaClBrowser>;
@@ -74,6 +75,7 @@ class NaClBrowser {
   void OnIrtOpened(base::PlatformFileError error_code,
                    base::PassPlatformFile file, bool created);
 
+  void InitValidationCacheFilePath();
   void EnsureValidationCacheAvailable();
   void OnValidationCacheLoaded(const std::string* data);
   void RunWithoutValidationCache();

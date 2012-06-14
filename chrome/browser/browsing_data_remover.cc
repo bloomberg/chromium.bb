@@ -23,6 +23,7 @@
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/io_thread.h"
+#include "chrome/browser/nacl_host/nacl_browser.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/password_manager/password_store.h"
@@ -112,6 +113,7 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       media_context_getter_(profile->GetRequestContextForMedia()),
       deauthorize_content_licenses_request_id_(0),
       waiting_for_clear_cache_(false),
+      waiting_for_clear_nacl_cache_(false),
       waiting_for_clear_cookies_count_(0),
       waiting_for_clear_history_(false),
       waiting_for_clear_local_storage_(false),
@@ -141,6 +143,7 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       media_context_getter_(profile->GetRequestContextForMedia()),
       deauthorize_content_licenses_request_id_(0),
       waiting_for_clear_cache_(false),
+      waiting_for_clear_nacl_cache_(false),
       waiting_for_clear_cookies_count_(0),
       waiting_for_clear_history_(false),
       waiting_for_clear_local_storage_(false),
@@ -156,7 +159,7 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
 }
 
 BrowsingDataRemover::~BrowsingDataRemover() {
-  DCHECK(all_done());
+  DCHECK(AllDone());
 }
 
 // Static.
@@ -411,6 +414,15 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
         base::Bind(&BrowsingDataRemover::ClearCacheOnIOThread,
                    base::Unretained(this)));
 
+#if !defined(DISABLE_NACL)
+    waiting_for_clear_nacl_cache_ = true;
+
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&BrowsingDataRemover::ClearNaClCacheOnIOThread,
+                   base::Unretained(this)));
+#endif
+
     // The PrerenderManager may have a page actively being prerendered, which
     // is essentially a preemptively cached page.
     prerender::PrerenderManager* prerender_manager =
@@ -486,6 +498,20 @@ base::Time BrowsingDataRemover::CalculateBeginDeleteTime(
   return delete_begin_time - diff;
 }
 
+bool BrowsingDataRemover::AllDone() {
+  return registrar_.IsEmpty() &&
+      !waiting_for_clear_cache_ &&
+      !waiting_for_clear_nacl_cache_ &&
+      !waiting_for_clear_cookies_count_&&
+      !waiting_for_clear_history_ &&
+      !waiting_for_clear_local_storage_ &&
+      !waiting_for_clear_networking_history_ &&
+      !waiting_for_clear_server_bound_certs_ &&
+      !waiting_for_clear_plugin_data_ &&
+      !waiting_for_clear_quota_managed_data_ &&
+      !waiting_for_clear_content_licenses_;
+}
+
 void BrowsingDataRemover::Observe(int type,
                                   const content::NotificationSource& source,
                                   const content::NotificationDetails& details) {
@@ -503,7 +529,7 @@ void BrowsingDataRemover::Observe(int type,
 
 void BrowsingDataRemover::NotifyAndDeleteIfDone() {
   // TODO(brettw) bug 1139736: see TODO in Observe() above.
-  if (!all_done())
+  if (!AllDone())
     return;
 
   set_removing(false);
@@ -629,6 +655,36 @@ void BrowsingDataRemover::DoClearCache(int rv) {
     }
   }
 }
+
+#if !defined(DISABLE_NACL)
+void BrowsingDataRemover::ClearedNaClCache() {
+  // This function should be called on the UI thread.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  waiting_for_clear_nacl_cache_ = false;
+
+  NotifyAndDeleteIfDone();
+}
+
+void BrowsingDataRemover::ClearedNaClCacheOnIOThread() {
+  // This function should be called on the IO thread.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  // Notify the UI thread that we are done.
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&BrowsingDataRemover::ClearedNaClCache,
+                 base::Unretained(this)));
+}
+
+void BrowsingDataRemover::ClearNaClCacheOnIOThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  NaClBrowser::GetInstance()->ClearValidationCache(
+      base::Bind(&BrowsingDataRemover::ClearedNaClCacheOnIOThread,
+                 base::Unretained(this)));
+}
+#endif
 
 void BrowsingDataRemover::ClearLocalStorageOnUIThread() {
   DCHECK(waiting_for_clear_local_storage_);

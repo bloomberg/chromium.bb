@@ -220,6 +220,18 @@ class BrowsingDataRemover : public content::NotificationObserver,
   // Performs the actual work to delete the cache.
   void DoClearCache(int rv);
 
+#if !defined(DISABLE_NACL)
+  // Callback for when the NaCl cache has been deleted. Invokes
+  // NotifyAndDeleteIfDone.
+  void ClearedNaClCache();
+
+  // Invokes the ClearedNaClCache on the UI thread.
+  void ClearedNaClCacheOnIOThread();
+
+  // Invoked on the IO thread to delete the NaCl cache.
+  void ClearNaClCacheOnIOThread();
+#endif
+
   // Invoked on the UI thread to delete local storage.
   void ClearLocalStorageOnUIThread();
 
@@ -270,17 +282,7 @@ class BrowsingDataRemover : public content::NotificationObserver,
   base::Time CalculateBeginDeleteTime(TimePeriod time_period);
 
   // Returns true if we're all done.
-  bool all_done() {
-    return registrar_.IsEmpty() && !waiting_for_clear_cache_ &&
-           !waiting_for_clear_cookies_count_&&
-           !waiting_for_clear_history_ &&
-           !waiting_for_clear_local_storage_ &&
-           !waiting_for_clear_networking_history_ &&
-           !waiting_for_clear_server_bound_certs_ &&
-           !waiting_for_clear_plugin_data_ &&
-           !waiting_for_clear_quota_managed_data_ &&
-           !waiting_for_clear_content_licenses_;
-  }
+  bool AllDone();
 
   // Setter for removing_; DCHECKs that we can only start removing if we're not
   // already removing, and vice-versa.
@@ -328,6 +330,7 @@ class BrowsingDataRemover : public content::NotificationObserver,
   // True if we're waiting for various data to be deleted.
   // These may only be accessed from UI thread in order to avoid races!
   bool waiting_for_clear_cache_;
+  bool waiting_for_clear_nacl_cache_;
   // Non-zero if waiting for cookies to be cleared.
   int waiting_for_clear_cookies_count_;
   bool waiting_for_clear_history_;
