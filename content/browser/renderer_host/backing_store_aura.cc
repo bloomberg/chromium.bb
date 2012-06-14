@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/backing_store_skia.h"
+#include "content/browser/renderer_host/backing_store_aura.h"
 
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -19,7 +19,7 @@
 // Max height and width for layers
 static const int kMaxVideoLayerSize = 23170;
 
-BackingStoreSkia::BackingStoreSkia(content::RenderWidgetHost* widget,
+BackingStoreAura::BackingStoreAura(content::RenderWidgetHost* widget,
                                    const gfx::Size& size)
     : BackingStore(widget, size),
       device_scale_factor_(content::GetDIPScaleFactor(widget->GetView())) {
@@ -30,17 +30,17 @@ BackingStoreSkia::BackingStoreSkia(content::RenderWidgetHost* widget,
   canvas_.reset(new SkCanvas(bitmap_));
 }
 
-BackingStoreSkia::~BackingStoreSkia() {
+BackingStoreAura::~BackingStoreAura() {
 }
 
-void BackingStoreSkia::SkiaShowRect(const gfx::Point& point,
+void BackingStoreAura::SkiaShowRect(const gfx::Point& point,
                                     gfx::Canvas* canvas) {
   const gfx::Point scaled_point = point.Scale(device_scale_factor_);
   canvas->sk_canvas()->drawBitmap(bitmap_,
       SkIntToScalar(scaled_point.x()), SkIntToScalar(scaled_point.y()));
 }
 
-void BackingStoreSkia::ScaleFactorChanged(float device_scale_factor) {
+void BackingStoreAura::ScaleFactorChanged(float device_scale_factor) {
   if (device_scale_factor == device_scale_factor_)
     return;
 
@@ -66,13 +66,13 @@ void BackingStoreSkia::ScaleFactorChanged(float device_scale_factor) {
   bitmap_ = new_bitmap;
 }
 
-size_t BackingStoreSkia::MemorySize() {
+size_t BackingStoreAura::MemorySize() {
   // NOTE: The computation may be different when the canvas is a subrectangle of
   // a larger bitmap.
   return size().Scale(device_scale_factor_).GetArea() * 4;
 }
 
-void BackingStoreSkia::PaintToBackingStore(
+void BackingStoreAura::PaintToBackingStore(
     content::RenderProcessHost* process,
     TransportDIB::Id bitmap,
     const gfx::Rect& bitmap_rect,
@@ -122,7 +122,7 @@ void BackingStoreSkia::PaintToBackingStore(
   }
 }
 
-void BackingStoreSkia::ScrollBackingStore(int dx, int dy,
+void BackingStoreAura::ScrollBackingStore(int dx, int dy,
                                           const gfx::Rect& clip_rect,
                                           const gfx::Size& view_size) {
   gfx::Rect pixel_rect = clip_rect.Scale(device_scale_factor_);
@@ -134,7 +134,7 @@ void BackingStoreSkia::ScrollBackingStore(int dx, int dy,
   bitmap_.scrollRect(&rect, dx, dy);
 }
 
-bool BackingStoreSkia::CopyFromBackingStore(const gfx::Rect& rect,
+bool BackingStoreAura::CopyFromBackingStore(const gfx::Rect& rect,
                                             skia::PlatformCanvas* output) {
   const int width =
       std::min(size().width(), rect.width()) * device_scale_factor_;

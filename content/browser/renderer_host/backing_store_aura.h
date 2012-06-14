@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_BACKING_STORE_SKIA_H_
-#define CONTENT_BROWSER_RENDERER_HOST_BACKING_STORE_SKIA_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_BACKING_STORE_AURA_H_
+#define CONTENT_BROWSER_RENDERER_HOST_BACKING_STORE_AURA_H_
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
@@ -22,16 +22,15 @@ namespace content {
 class RenderProcessHost;
 }
 
-// A backing store that uses skia. This is a temporary backing store used by
-// RenderWidgetHostViewViews. In time, only GPU rendering will be used for
-// RWHVV, and then this backing store will be removed.
-class BackingStoreSkia : public BackingStore {
+// A backing store that uses skia. This is the backing store used by
+// RenderWidgetHostViewAura.
+class BackingStoreAura : public BackingStore {
  public:
-  CONTENT_EXPORT BackingStoreSkia(
+  CONTENT_EXPORT BackingStoreAura(
       content::RenderWidgetHost* widget,
       const gfx::Size& size);
 
-  virtual ~BackingStoreSkia();
+  virtual ~BackingStoreAura();
 
   CONTENT_EXPORT void SkiaShowRect(const gfx::Point& point,
                                    gfx::Canvas* canvas);
@@ -61,7 +60,7 @@ class BackingStoreSkia : public BackingStore {
   scoped_ptr<SkCanvas> canvas_;
   int device_scale_factor_;
 
-  DISALLOW_COPY_AND_ASSIGN(BackingStoreSkia);
+  DISALLOW_COPY_AND_ASSIGN(BackingStoreAura);
 };
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_BACKING_STORE_SKIA_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_BACKING_STORE_AURA_H_

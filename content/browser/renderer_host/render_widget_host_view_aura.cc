@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
-#include "content/browser/renderer_host/backing_store_skia.h"
+#include "content/browser/renderer_host/backing_store_aura.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/image_transport_client.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -440,7 +440,7 @@ void RenderWidgetHostViewAura::SelectionBoundsChanged(
 
 BackingStore* RenderWidgetHostViewAura::AllocBackingStore(
     const gfx::Size& size) {
-  return new BackingStoreSkia(host_, size);
+  return new BackingStoreAura(host_, size);
 }
 
 void RenderWidgetHostViewAura::CopyFromCompositingSurface(
@@ -1137,7 +1137,7 @@ void RenderWidgetHostViewAura::OnPaint(gfx::Canvas* canvas) {
   BackingStore* backing_store = host_->GetBackingStore(true);
   paint_canvas_ = NULL;
   if (backing_store) {
-    static_cast<BackingStoreSkia*>(backing_store)->SkiaShowRect(gfx::Point(),
+    static_cast<BackingStoreAura*>(backing_store)->SkiaShowRect(gfx::Point(),
                                                                 canvas);
   } else {
     canvas->FillRect(gfx::Rect(window_->bounds().size()), SK_ColorWHITE);
@@ -1149,7 +1149,7 @@ void RenderWidgetHostViewAura::OnDeviceScaleFactorChanged(
   if (!host_)
     return;
 
-  BackingStoreSkia* backing_store = static_cast<BackingStoreSkia*>(
+  BackingStoreAura* backing_store = static_cast<BackingStoreAura*>(
       host_->GetBackingStore(false));
   if (backing_store)  // NULL in hardware path.
     backing_store->ScaleFactorChanged(device_scale_factor);
