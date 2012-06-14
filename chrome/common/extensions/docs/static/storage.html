@@ -104,7 +104,7 @@ function saveChanges() {
     return;
   }
   // Save it using the Chrome extension storage API.
-  chrome.experimental.storage.sync.set({'value': theValue}, function() {
+  chrome.storage.sync.set({'value': theValue}, function() {
     // Notify that we saved.
     message('Settings saved');
   });

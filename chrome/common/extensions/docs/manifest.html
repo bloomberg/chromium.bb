@@ -984,11 +984,12 @@ in a sandbox with a custom CSP:</p>
   ...
 }</pre>
 <p>
-The sandbox is enforced by using the
-<a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/the-iframe-element.html#attr-iframe-sandbox">HTML5 sandbox</a>
-with the tokens <code>allow-scripts allow-forms</code>. You can specify a
-different CSP value to use instead, but it must have the <code>sandbox</code>
-directive and may not have the <code>allow-same-origin</code> token.
+If not specified, the default <code>content_security_policy</code> value is
+<code>sandbox allow-scripts allow-forms</code>. You can specify your CSP
+value to restrict the sandbox even further, but it must have the <code>sandbox</code>
+directive and may not have the <code>allow-same-origin</code> token (see
+<a href="http://www.whatwg.org/specs/web-apps/current-work/multipage/the-iframe-element.html#attr-iframe-sandbox">the
+HTML5 specification</a> for possible sandbox tokens).
 </p>
 <p>
 Note that you only need to list pages that you expected to be loaded in
