@@ -212,7 +212,8 @@ class WorkerXHRHttpLayoutTest : public InProcessBrowserLayoutTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(WorkerXHRHttpLayoutTest, Tests) {
+// Disabled: http://crbug.com/132672
+IN_PROC_BROWSER_TEST_F(WorkerXHRHttpLayoutTest, DISABLED_Tests) {
   static const char* kLayoutTestFiles[] = {
     "abort-exception-assert.html",
 #if defined(OS_WIN)
