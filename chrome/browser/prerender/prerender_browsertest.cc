@@ -1599,6 +1599,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5VideoNetwork) {
 #if defined(TOOLKIT_VIEWS)
 // TODO(beng): Widget hierarchy split causes this to fail http://crbug.com/82363
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderWindowSize) {
+#elif defined(OS_MACOSX)
+// TODO(cbentzel): Failing on Mac10.5 Tests bot. http://crbug.com/132670
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderWindowSize) {
 #else
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderWindowSize) {
 #endif
