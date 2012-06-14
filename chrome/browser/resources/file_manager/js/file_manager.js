@@ -3341,8 +3341,11 @@ FileManager.prototype = {
 
   FileManager.prototype.onCheckboxClick_ = function(event) {
     var sm = this.directoryModel_.getFileListSelection();
-    var listItem = this.findListItemForEvent_(event);
-    sm.setIndexSelected(listItem.listIndex, event.target.checked);
+    var listIndex = this.findListItemForEvent_(event).listIndex;
+    sm.setIndexSelected(listIndex, event.target.checked);
+    sm.leadIndex = listIndex;
+    if (sm.anchorIndex == -1)
+      sm.anchorIndex = listIndex;
   };
 
   FileManager.prototype.onPinClick_ = function(checkbox, entry, event) {
