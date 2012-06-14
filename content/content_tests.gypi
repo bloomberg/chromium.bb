@@ -272,6 +272,7 @@
         'browser/renderer_host/render_widget_host_view_mac_unittest.mm',
         'browser/renderer_host/resource_dispatcher_host_unittest.cc',
         'browser/renderer_host/text_input_client_mac_unittest.mm',
+        'browser/renderer_host/web_input_event_aura_unittest.cc',
         'browser/resolve_proxy_msg_helper_unittest.cc',
         'browser/site_instance_impl_unittest.cc',
         'browser/speech/chunked_byte_buffer_unittest.cc',

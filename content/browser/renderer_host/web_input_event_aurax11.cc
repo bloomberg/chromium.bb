@@ -57,6 +57,32 @@ namespace {
 // This matches Firefox behavior.
 const int kPixelsPerTick = 53;
 
+// Normalizes event.flags() to make it Windows/Mac compatible. Since the way
+// of setting modifier mask on X is very different than Windows/Mac as shown
+// in http://crbug.com/127142#c8, the normalization is necessary.
+int NormalizeEventFlags(const aura::KeyEvent& event) {
+  int mask = 0;
+  switch (event.key_code()) {
+    case ui::VKEY_CONTROL:
+      mask = ui::EF_CONTROL_DOWN;
+      break;
+    case ui::VKEY_SHIFT:
+      mask = ui::EF_SHIFT_DOWN;
+      break;
+    case ui::VKEY_MENU:
+      mask = ui::EF_ALT_DOWN;
+      break;
+    case ui::VKEY_CAPITAL:
+      mask = ui::EF_CAPS_LOCK_DOWN;
+      break;
+    default:
+      return event.flags();
+  }
+  if (event.type() == ui::ET_KEY_PRESSED)
+    return event.flags() | mask;
+  return event.flags() & ~mask;
+}
+
 int EventFlagsToWebEventModifiers(int flags) {
   int modifiers = 0;
   if (flags & ui::EF_SHIFT_DOWN)
@@ -74,28 +100,6 @@ int EventFlagsToWebEventModifiers(int flags) {
     modifiers |= WebKit::WebInputEvent::RightButtonDown;
   if (flags & ui::EF_CAPS_LOCK_DOWN)
     modifiers |= WebKit::WebInputEvent::CapsLockOn;
-  return modifiers;
-}
-
-int XStateToWebEventModifiers(unsigned int state) {
-  int modifiers = 0;
-  if (state & ShiftMask)
-    modifiers |= WebKit::WebInputEvent::ShiftKey;
-  if (state & ControlMask)
-    modifiers |= WebKit::WebInputEvent::ControlKey;
-  if (state & Mod1Mask)
-    modifiers |= WebKit::WebInputEvent::AltKey;
-  // TODO(beng): MetaKey/META_MASK
-  if (state & Button1Mask)
-    modifiers |= WebKit::WebInputEvent::LeftButtonDown;
-  if (state & Button2Mask)
-    modifiers |= WebKit::WebInputEvent::MiddleButtonDown;
-  if (state & Button3Mask)
-    modifiers |= WebKit::WebInputEvent::RightButtonDown;
-  if (state & LockMask)
-    modifiers |= WebKit::WebInputEvent::CapsLockOn;
-  if (state & Mod2Mask)
-    modifiers |= WebKit::WebInputEvent::NumLockOn;
   return modifiers;
 }
 
@@ -283,7 +287,8 @@ WebKit::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
   XKeyEvent* native_key_event = &native_event->xkey;
 
   webkit_event.timeStampSeconds = event->time_stamp().InSecondsF();
-  webkit_event.modifiers = XStateToWebEventModifiers(native_key_event->state);
+  webkit_event.modifiers =
+      EventFlagsToWebEventModifiers(NormalizeEventFlags(*event));
 
   switch (native_event->type) {
     case KeyPress:

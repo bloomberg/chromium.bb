@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_WEB_INPUT_EVENT_AURA_H_
 #pragma once
 
+#include "content/common/content_export.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
 namespace aura {
@@ -18,12 +19,18 @@ class TouchEvent;
 
 namespace content {
 
-WebKit::WebMouseEvent MakeWebMouseEvent(aura::MouseEvent* event);
-WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(aura::MouseEvent* event);
-WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(aura::ScrollEvent* event);
-WebKit::WebKeyboardEvent MakeWebKeyboardEvent(aura::KeyEvent* event);
-WebKit::WebGestureEvent MakeWebGestureEvent(aura::GestureEvent* event);
-WebKit::WebGestureEvent MakeWebGestureEvent(aura::ScrollEvent* event);
+CONTENT_EXPORT WebKit::WebMouseEvent MakeWebMouseEvent(
+    aura::MouseEvent* event);
+CONTENT_EXPORT WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(
+    aura::MouseEvent* event);
+CONTENT_EXPORT WebKit::WebMouseWheelEvent MakeWebMouseWheelEvent(
+    aura::ScrollEvent* event);
+CONTENT_EXPORT WebKit::WebKeyboardEvent MakeWebKeyboardEvent(
+    aura::KeyEvent* event);
+CONTENT_EXPORT WebKit::WebGestureEvent MakeWebGestureEvent(
+    aura::GestureEvent* event);
+CONTENT_EXPORT WebKit::WebGestureEvent MakeWebGestureEvent(
+    aura::ScrollEvent* event);
 
 // Updates the WebTouchEvent based on the TouchEvent. It returns the updated
 // WebTouchPoint contained in the WebTouchEvent, or NULL if no point was
