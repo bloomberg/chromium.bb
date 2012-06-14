@@ -531,11 +531,13 @@ IntranetRedirectDetector* BrowserProcessImpl::intranet_redirect_detector() {
 }
 
 const std::string& BrowserProcessImpl::GetApplicationLocale() {
+  DCHECK(CalledOnValidThread());
   DCHECK(!locale_.empty());
   return locale_;
 }
 
 void BrowserProcessImpl::SetApplicationLocale(const std::string& locale) {
+  DCHECK(CalledOnValidThread());
   locale_ = locale;
   extension_l10n_util::SetProcessLocale(locale);
 }
