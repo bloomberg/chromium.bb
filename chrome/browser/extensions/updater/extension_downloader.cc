@@ -544,7 +544,8 @@ void ExtensionDownloader::FetchUpdatedExtension(const std::string& id,
                                                 const std::string& version) {
   if (!url.is_valid()) {
     // TODO(asargent): This can sometimes be invalid. See crbug.com/130881.
-    LOG(ERROR) << "Invalid URL: " << url.spec();
+    LOG(ERROR) << "Invalid URL: '" << url.possibly_invalid_spec()
+               << "' for extension " << id;
     return;
   }
 
