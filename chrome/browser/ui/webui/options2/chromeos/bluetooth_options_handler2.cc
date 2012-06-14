@@ -255,9 +255,11 @@ void BluetoothOptionsHandler::UpdateDeviceCallback(
       // Connection request.
       DVLOG(1) << "Connect: " << address;
       device->Connect(
-          this, base::Bind(&BluetoothOptionsHandler::ConnectError,
-                           weak_ptr_factory_.GetWeakPtr(),
-                           device->address()));
+          this,
+          base::Closure(),
+          base::Bind(&BluetoothOptionsHandler::ConnectError,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     device->address()));
     }
   } else if (command == kCancelCommand) {
     // Cancel pairing.
@@ -274,9 +276,11 @@ void BluetoothOptionsHandler::UpdateDeviceCallback(
   } else if (command == kDisconnectCommand) {
     // Disconnect from device.
     DVLOG(1) << "Disconnect device: " << address;
-    device->Disconnect(base::Bind(&BluetoothOptionsHandler::DisconnectError,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  device->address()));
+    device->Disconnect(
+        base::Closure(),
+        base::Bind(&BluetoothOptionsHandler::DisconnectError,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   device->address()));
   } else if (command == kForgetCommand) {
     // Disconnect from device and delete pairing information.
     DVLOG(1) << "Forget device: " << address;

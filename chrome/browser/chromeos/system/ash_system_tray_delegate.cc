@@ -406,10 +406,16 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     BluetoothDevice* device = bluetooth_adapter_->GetDevice(address);
     if (!device)
       return;
-    if (device->IsConnected())
-      device->Disconnect(base::Bind(&BluetoothDeviceDisconnectError));
-    else if (device->IsPaired())
-      device->Connect(NULL, base::Bind(&BluetoothDeviceConnectError));
+    if (device->IsConnected()) {
+      device->Disconnect(
+          base::Closure(),
+          base::Bind(&BluetoothDeviceDisconnectError));
+    } else if (device->IsPaired()) {
+      device->Connect(
+          NULL,
+          base::Closure(),
+          base::Bind(&BluetoothDeviceConnectError));
+    }
   }
 
   virtual void GetCurrentIME(ash::IMEInfo* info) OVERRIDE {

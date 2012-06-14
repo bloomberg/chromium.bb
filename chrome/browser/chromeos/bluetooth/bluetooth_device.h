@@ -184,7 +184,7 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
 
   // Indicates whether this device provides the given service.
   void ProvidesServiceWithName(const std::string& name,
-      ProvidesServiceCallback callback);
+                               const ProvidesServiceCallback& callback);
 
   // Indicates whether the device is currently pairing and expecting a
   // PIN Code to be returned.
@@ -213,9 +213,11 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
   // calls. To explicitly force a low-security connection without bonding,
   // pass NULL, though this is ignored if the device is already paired.
   //
-  // If the request fails, |error_callback| will be called.
+  // If the request fails, |error_callback| will be called; otherwise,
+  // |callback| is called when the request is complete.
   void Connect(PairingDelegate* pairing_delegate,
-               ErrorCallback error_callback);
+               const base::Closure& callback,
+               const ErrorCallback& error_callback);
 
   // Sends the PIN code |pincode| to the remote device during pairing.
   //
@@ -243,15 +245,19 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
   // Disconnects the device, terminating the low-level ACL connection
   // and any application connections using it. Link keys and other pairing
   // information are not discarded, and the device object is not deleted.
-  // If the request fails, |error_callback| will be called.
-  void Disconnect(ErrorCallback error_callback);
+  // If the request fails, |error_callback| will be called; otherwise,
+  // |callback| is called when the request is complete.
+  void Disconnect(const base::Closure& callback,
+                  const ErrorCallback& error_callback);
 
   // Disconnects the device, terminating the low-level ACL connection
   // and any application connections using it, and then discards link keys
   // and other pairing information. The device object remainds valid until
   // returing from the calling function, after which it should be assumed to
   // have been deleted. If the request fails, |error_callback| will be called.
-  void Forget(ErrorCallback error_callback);
+  // There is no callback for success beause this object is often deleted
+  // before that callback would be called.
+  void Forget(const ErrorCallback& error_callback);
 
   // SocketCallback is used by ConnectToService to return a BluetoothSocket
   // to the caller, or NULL if there was an error.  The socket will remain open
@@ -265,7 +271,7 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
   // BluetoothSocket object can outlive both this BluetoothDevice and the
   // BluetoothAdapter for this device.
   void ConnectToService(const std::string& service_uuid,
-                        SocketCallback callback);
+                        const SocketCallback& callback);
 
  private:
   friend class BluetoothAdapter;
@@ -285,35 +291,42 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
 
   // Called by BluetoothAdapterClient when a call to CreateDevice() or
   // CreatePairedDevice() succeeds, provides the new object path for the remote
-  // device in |device_path|. |error_callback| is the callback provided to
-  // Connect().
-  void ConnectCallback(ErrorCallback error_callback,
+  // device in |device_path|. |callback| and |error_callback| are the callbacks
+  // provided to Connect().
+  void ConnectCallback(const base::Closure& callback,
+                       const ErrorCallback& error_callback,
                        const dbus::ObjectPath& device_path);
 
   // Called by BluetoothAdapterClient when a call to CreateDevice() or
   // CreatePairedDevice() fails with the error named |error_name| and
   // optional message |error_message|, |error_callback| is the callback
   // provided to Connect().
-  void ConnectErrorCallback(ErrorCallback error_callback,
+  void ConnectErrorCallback(const ErrorCallback& error_callback,
                             const std::string& error_name,
                             const std::string& error_message);
 
   // Called by BluetoothProperty when the call to Set() for the Trusted
   // property completes. |success| indicates whether or not the request
-  // succeed, |error_callback| is the callback provided to Connect().
-  void OnSetTrusted(ErrorCallback error_callback, bool success);
+  // succeeded, |callback| and |error_callback| are the callbacks provided to
+  // Connect().
+  void OnSetTrusted(const base::Closure& callback,
+                    const ErrorCallback& error_callback,
+                    bool success);
 
   // Connect application-level protocols of the device to the system, called
   // on a successful connection or to reconnect to a device that is already
   // paired or previously connected. |error_callback| is called on failure.
-  void ConnectApplications(ErrorCallback error_callback);
+  // Otherwise, |callback| is called when the request is complete.
+  void ConnectApplications(const base::Closure& callback,
+                           const ErrorCallback& error_callback);
 
   // Called by IntrospectableClient when a call to Introspect() completes.
-  // |success| indicates whether or not the request succeeded, |error_callback|
-  // is the callback provided to ConnectApplications(), |service_name| and
-  // |device_path| specify the remote object being introspected and
-  // |xml_data| contains the XML-formatted protocol data.
-  void OnIntrospect(ErrorCallback error_callback,
+  // |success| indicates whether or not the request succeeded, |callback| and
+  // |error_callback| are the callbacks provided to ConnectApplications(),
+  // |service_name| and |device_path| specify the remote object being
+  // introspected and |xml_data| contains the XML-formatted protocol data.
+  void OnIntrospect(const base::Closure& callback,
+                    const ErrorCallback& error_callback,
                     const std::string& service_name,
                     const dbus::ObjectPath& device_path,
                     const std::string& xml_data, bool success);
@@ -322,7 +335,8 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
   // |error_callback| is the callback provided to ConnectApplications(),
   // |interface_name| specifies the interface being connected and
   // |device_path| the remote object path.
-  void OnConnect(const std::string& interface_name,
+  void OnConnect(const base::Closure& callback,
+                 const std::string& interface_name,
                  const dbus::ObjectPath& device_path);
 
   // Called by BluetoothInputClient when the call to Connect() fails.
@@ -330,24 +344,25 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
   // |interface_name| specifies the interface being connected,
   // |device_path| the remote object path,
   // |error_name| the error name and |error_message| the optional message.
-  void OnConnectError(ErrorCallback error_callback,
+  void OnConnectError(const ErrorCallback& error_callback,
                       const std::string& interface_name,
                       const dbus::ObjectPath& device_path,
                       const std::string& error_name,
                       const std::string& error_message);
 
   // Called by BluetoothDeviceClient when a call to Disconnect() completes,
-  // |success| indicates whether or not the request succeeded, |error_callback|
-  // is the callback provided to Disconnect() and |device_path| is the device
-  // disconnected.
-  void DisconnectCallback(ErrorCallback error_callback,
+  // |success| indicates whether or not the request succeeded, |callback| and
+  // |error_callback| are the callbacks provided to Disconnect() and
+  // |device_path| is the device disconnected.
+  void DisconnectCallback(const base::Closure& callback,
+                          const ErrorCallback& error_callback,
                           const dbus::ObjectPath& device_path, bool success);
 
   // Called by BluetoothAdapterClient when a call to RemoveDevice() completes,
   // |success| indicates whether or not the request succeeded, |error_callback|
   // is the callback provided to Forget() and |adapter_path| is the d-bus
   // object path of the adapter that performed the removal.
-  void ForgetCallback(ErrorCallback error_callback,
+  void ForgetCallback(const ErrorCallback& error_callback,
                       const dbus::ObjectPath& adapter_path, bool success);
 
   // Called by BluetoothDeviceClient when a call to DiscoverServices() that was
@@ -357,7 +372,7 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
   // BluetoothDeviceClient::ServicesCallback.
   void SearchServicesForNameCallback(
       const std::string& name,
-      ProvidesServiceCallback callback,
+      const ProvidesServiceCallback& callback,
       const dbus::ObjectPath& object_path,
       const BluetoothDeviceClient::ServiceMap& service_map,
       bool success);
@@ -368,7 +383,7 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
   // parameters are as documented for a BluetoothDeviceClient::ServicesCallback.
   void ConnectToMatchingService(
       const std::string& service_uuid,
-      SocketCallback callback,
+      const SocketCallback& callback,
       const dbus::ObjectPath& object_path,
       const BluetoothDeviceClient::ServiceMap& service_map,
       bool success);
@@ -546,6 +561,9 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
   PinCodeCallback pincode_callback_;
   PasskeyCallback passkey_callback_;
   ConfirmationCallback confirmation_callback_;
+
+  // Used to keep track of pending application connection requests.
+  int connecting_applications_counter_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothDevice);
 };
