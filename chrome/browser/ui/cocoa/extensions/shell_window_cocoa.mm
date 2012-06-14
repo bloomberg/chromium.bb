@@ -163,7 +163,7 @@ bool ShellWindowCocoa::IsAlwaysOnTop() const {
 
 void ShellWindowCocoa::WindowWillClose() {
   [window_controller_ setShellWindow:NULL];
-  delete this;
+  OnNativeClose();
 }
 
 ShellWindowCocoa::~ShellWindowCocoa() {

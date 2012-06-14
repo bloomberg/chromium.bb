@@ -28,6 +28,30 @@ ShellWindowGtk::ShellWindowGtk(Profile* profile,
   gtk_window_set_default_size(
       window_, params.bounds.width(), params.bounds.height());
 
+  int min_width = params.minimum_size.width();
+  int min_height = params.minimum_size.height();
+  int max_width = params.maximum_size.width();
+  int max_height = params.maximum_size.height();
+  GdkGeometry hints;
+  int hints_mask = 0;
+  if (min_width || min_height) {
+    hints.min_height = min_height;
+    hints.min_width = min_width;
+    hints_mask |= GDK_HINT_MIN_SIZE;
+  }
+  if (max_width || max_height) {
+    hints.max_height = max_height ? max_height : G_MAXINT;
+    hints.max_width = max_width ? max_width : G_MAXINT;
+    hints_mask |= GDK_HINT_MAX_SIZE;
+  }
+  if (hints_mask) {
+    gtk_window_set_geometry_hints(
+        window_,
+        GTK_WIDGET(window_),
+        &hints,
+        static_cast<GdkWindowHints>(hints_mask));
+  }
+
   // TODO(mihaip): Mirror contents of <title> tag in window title
   gtk_window_set_title(window_, extension->name().c_str());
 
@@ -89,7 +113,7 @@ void ShellWindowGtk::Close() {
   window_ = NULL;
 
   gtk_widget_destroy(window);
-  delete this;
+  OnNativeClose();
 }
 
 void ShellWindowGtk::Activate() {
