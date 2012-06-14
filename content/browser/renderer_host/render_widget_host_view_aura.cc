@@ -829,10 +829,11 @@ gfx::Rect RenderWidgetHostViewAura::GetCaretBounds() {
 
 bool RenderWidgetHostViewAura::GetCompositionCharacterBounds(uint32 index,
                                                              gfx::Rect* rect) {
-  // TODO(nona): implement this method. Need patch to WebKit.
-  // https://bugs.webkit.org/show_bug.cgi?id=87911
   DCHECK(rect);
-  return false;
+  if (index >= composition_character_bounds_.size())
+    return false;
+  *rect = composition_character_bounds_[index];
+  return true;
 }
 
 bool RenderWidgetHostViewAura::HasCompositionText() {
