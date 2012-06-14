@@ -14,15 +14,15 @@
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_throttle.h"
-#include "content/public/browser/resource_throttle_controller.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::ResourceController;
 using content::ResourceThrottle;
-using content::ResourceThrottleController;
 using extensions::Extension;
 
 namespace {
@@ -32,7 +32,7 @@ const char kNotMatchingUrl[] = "http://example.com/";
 const char kTestData[] = "Hello, World!";
 
 class ThrottleController : public base::SupportsUserData::Data,
-                           public ResourceThrottleController {
+                           public ResourceController {
  public:
   ThrottleController(net::URLRequest* request, ResourceThrottle* throttle)
       : request_(request),
@@ -40,7 +40,7 @@ class ThrottleController : public base::SupportsUserData::Data,
     throttle_->set_controller_for_testing(this);
   }
 
-  // ResourceThrottleController implementation:
+  // ResourceController implementation:
   virtual void Resume() {
     request_->Start();
   }

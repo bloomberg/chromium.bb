@@ -54,12 +54,15 @@ class CrossSiteResourceHandler : public LayeredResourceHandler {
       const GlobalRequestID& global_id,
       bool* defer);
 
+  void ResumeIfDeferred();
+
   int render_process_host_id_;
   int render_view_id_;
   bool has_started_response_;
   bool in_cross_site_transition_;
   int request_id_;
   bool completed_during_transition_;
+  bool did_defer_;
   net::URLRequestStatus completed_status_;
   std::string completed_security_info_;
   ResourceResponse* response_;

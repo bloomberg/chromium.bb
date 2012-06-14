@@ -47,6 +47,7 @@ CrossSiteResourceHandler::CrossSiteResourceHandler(
       in_cross_site_transition_(false),
       request_id_(-1),
       completed_during_transition_(false),
+      did_defer_(false),
       completed_status_(),
       response_(NULL),
       rdh_(rdh) {
@@ -170,11 +171,11 @@ void CrossSiteResourceHandler::ResumeResponse() {
     DCHECK(response_);
     bool defer = false;
     if (!next_handler_->OnResponseStarted(request_id_, response_, &defer)) {
-      rdh_->CancelRequest(render_process_host_id_, request_id_, false);
+      controller()->Cancel();
     } else if (!defer) {
       // Unpause the request to resume reading.  Any further reads will be
       // directed toward the new renderer.
-      rdh_->ResumeDeferredRequest(render_process_host_id_, request_id_);
+      ResumeIfDeferred();
     }
   }
 
@@ -186,11 +187,10 @@ void CrossSiteResourceHandler::ResumeResponse() {
   // If the response completed during the transition, notify the next
   // event handler.
   if (completed_during_transition_) {
-    next_handler_->OnResponseCompleted(request_id_, completed_status_,
-                                       completed_security_info_);
-    // TODO(darin): OnResponseCompleted can return false to defer
-    // RemovePendingRequest.
-    rdh_->RemovePendingRequest(render_process_host_id_, request_id_);
+    if (next_handler_->OnResponseCompleted(request_id_, completed_status_,
+                                           completed_security_info_)) {
+      ResumeIfDeferred();
+    }
   }
 }
 
@@ -219,7 +219,7 @@ void CrossSiteResourceHandler::StartCrossSiteTransition(
   if (has_started_response_) {
     // Defer the request until the old renderer is finished and the new
     // renderer is ready.
-    *defer = true;
+    did_defer_ = *defer = true;
   }
   // If our OnResponseStarted wasn't called, then we're being called by
   // OnResponseCompleted after a failure.  We don't need to pause, because
@@ -239,6 +239,13 @@ void CrossSiteResourceHandler::StartCrossSiteTransition(
 
   // TODO(creis): If the above call should fail, then we need to notify the IO
   // thread to proceed anyway, using ResourceDispatcherHost::OnClosePageACK.
+}
+
+void CrossSiteResourceHandler::ResumeIfDeferred() {
+  if (did_defer_) {
+    did_defer_ = false;
+    controller()->Resume();
+  }
 }
 
 }  // namespace content

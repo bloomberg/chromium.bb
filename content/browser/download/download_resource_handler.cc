@@ -412,9 +412,8 @@ void DownloadResourceHandler::ResumeRequest() {
     total_pause_time_ += (base::TimeTicks::Now() - last_stream_pause_time_);
     last_stream_pause_time_ = base::TimeTicks();
   }
-  ResourceDispatcherHostImpl::Get()->ResumeDeferredRequest(
-      global_id_.child_id,
-      global_id_.request_id);
+
+  controller()->Resume();
 }
 
 void DownloadResourceHandler::CancelRequest() {
@@ -460,4 +459,3 @@ DownloadResourceHandler::~DownloadResourceHandler() {
   UMA_HISTOGRAM_TIMES("SB2.DownloadDuration",
                       base::TimeTicks::Now() - download_start_time_);
 }
-

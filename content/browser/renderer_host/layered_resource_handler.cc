@@ -16,6 +16,17 @@ LayeredResourceHandler::LayeredResourceHandler(
 LayeredResourceHandler::~LayeredResourceHandler() {
 }
 
+void LayeredResourceHandler::SetController(ResourceController* controller) {
+  ResourceHandler::SetController(controller);
+
+  // Pass the controller down to the next handler.  This method is intended to
+  // be overriden by subclasses of LayeredResourceHandler that need to insert a
+  // different ResourceController.
+
+  DCHECK(next_handler_.get());
+  next_handler_->SetController(controller);
+}
+
 bool LayeredResourceHandler::OnUploadProgress(int request_id, uint64 position,
                                               uint64 size) {
   DCHECK(next_handler_.get());

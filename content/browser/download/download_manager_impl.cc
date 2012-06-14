@@ -53,11 +53,8 @@ void BeginDownload(content::DownloadUrlParameters* params) {
   // ResourceDispatcherHost{Base} is-not-a URLRequest::Delegate, and
   // DownloadUrlParameters can-not include resource_dispatcher_host_impl.h, so
   // we must down cast. RDHI is the only subclass of RDH as of 2012 May 4.
-  content::ResourceDispatcherHostImpl* resource_dispatcher_host =
-    static_cast<content::ResourceDispatcherHostImpl*>(
-        params->resource_dispatcher_host());
   scoped_ptr<net::URLRequest> request(new net::URLRequest(
-      params->url(), resource_dispatcher_host));
+      params->url(), NULL));
   request->set_referrer(params->referrer().url.spec());
   webkit_glue::ConfigureURLRequestForReferrerPolicy(
       request.get(), params->referrer().policy);
@@ -84,7 +81,7 @@ void BeginDownload(content::DownloadUrlParameters* params) {
     request->SetExtraRequestHeaderByName(
         iter->first, iter->second, false/*overwrite*/);
   }
-  resource_dispatcher_host->BeginDownload(
+  params->resource_dispatcher_host()->BeginDownload(
       request.Pass(),
       params->content_initiated(),
       params->resource_context(),

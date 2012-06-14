@@ -20,12 +20,14 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "content/browser/download/download_resource_handler.h"
-#include "content/browser/ssl/ssl_error_handler.h"
+#include "content/browser/renderer_host/resource_loader.h"
+#include "content/browser/renderer_host/resource_loader_delegate.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/notification_types.h"
@@ -61,8 +63,7 @@ struct Referrer;
 
 class CONTENT_EXPORT ResourceDispatcherHostImpl
     : public ResourceDispatcherHost,
-      public net::URLRequest::Delegate,
-      public SSLErrorHandler::Delegate,
+      public ResourceLoaderDelegate,
       public base::SupportsWeakPtr<ResourceDispatcherHostImpl> {
  public:
   ResourceDispatcherHostImpl();
@@ -121,36 +122,18 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
                      int request_id,
                      bool from_renderer);
 
-  // Follows a deferred redirect for the given request.
-  // new_first_party_for_cookies, if non-empty, is the new cookie policy URL
-  // for the redirected URL.  If the cookie policy URL needs changing, pass
-  // true as has_new_first_party_for_cookies and the new cookie policy URL as
-  // new_first_party_for_cookies.  Otherwise, pass false as
-  // has_new_first_party_for_cookies, and new_first_party_for_cookies will not
-  // be used.
-  void FollowDeferredRedirect(int child_id,
-                              int request_id,
-                              bool has_new_first_party_for_cookies,
-                              const GURL& new_first_party_for_cookies);
-
-  // Starts a request that was deferred during ResourceHandler::OnWillStart().
-  void StartDeferredRequest(int child_id, int request_id);
-
-  // Resumes network activity for a particular request.
-  void ResumeDeferredRequest(int child_id, int request_id);
-
   // Returns true if it's ok to send the data. If there are already too many
   // data messages pending, it pauses the request and returns false. In this
   // case the caller should not send the data.
-  bool WillSendData(int child_id, int request_id);
+  bool WillSendData(int child_id, int request_id, bool* defer);
 
   // Marks the request as "parked". This happens if a request is
   // redirected cross-site and needs to be resumed by a new render view.
-  void MarkAsTransferredNavigation(net::URLRequest* request);
+  void MarkAsTransferredNavigation(const GlobalRequestID& id);
 
   // Returns the number of pending requests. This is designed for the unittests
   int pending_requests() const {
-    return static_cast<int>(pending_requests_.size());
+    return static_cast<int>(pending_loaders_.size());
   }
 
   // Intended for unit-tests only. Returns the memory cost of all the
@@ -191,33 +174,10 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // acts like CancelRequestsForProcess when route_id is -1.
   void CancelRequestsForRoute(int child_id, int route_id);
 
-  // net::URLRequest::Delegate:
-  virtual void OnReceivedRedirect(net::URLRequest* request,
-                                  const GURL& new_url,
-                                  bool* defer_redirect) OVERRIDE;
-  virtual void OnAuthRequired(net::URLRequest* request,
-                              net::AuthChallengeInfo* auth_info) OVERRIDE;
-  virtual void OnCertificateRequested(
-      net::URLRequest* request,
-      net::SSLCertRequestInfo* cert_request_info) OVERRIDE;
-  virtual void OnSSLCertificateError(net::URLRequest* request,
-                                     const net::SSLInfo& ssl_info,
-                                     bool fatal) OVERRIDE;
-  virtual void OnResponseStarted(net::URLRequest* request) OVERRIDE;
-  virtual void OnReadCompleted(net::URLRequest* request,
-                               int bytes_read) OVERRIDE;
-
-  // SSLErrorHandler::Delegate:
-  virtual void CancelSSLRequest(const GlobalRequestID& id,
-                                int error,
-                                const net::SSLInfo* ssl_info) OVERRIDE;
-  virtual void ContinueSSLRequest(const GlobalRequestID& id) OVERRIDE;
-
   void OnUserGesture(WebContentsImpl* contents);
 
   // Retrieves a net::URLRequest.  Must be called from the IO thread.
-  net::URLRequest* GetURLRequest(
-      const GlobalRequestID& request_id) const;
+  net::URLRequest* GetURLRequest(const GlobalRequestID& request_id);
 
   void RemovePendingRequest(int child_id, int request_id);
 
@@ -268,6 +228,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       const DownloadSaveInfo& save_info,
       const DownloadResourceHandler::OnStartedCallback& started_cb);
 
+  void ClearSSLClientAuthHandlerForRequest(net::URLRequest* request);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
                            TestBlockedRequestsProcessDies);
@@ -280,6 +242,24 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   friend class ShutdownTask;
 
+  // ResourceLoaderDelegate implementation:
+  virtual ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
+      ResourceLoader* loader,
+      net::AuthChallengeInfo* auth_info) OVERRIDE;
+  virtual bool AcceptAuthRequest(
+      ResourceLoader* loader,
+      net::AuthChallengeInfo* auth_info) OVERRIDE;
+  virtual bool AcceptSSLClientCertificateRequest(
+      ResourceLoader* loader,
+      net::SSLCertRequestInfo* cert_info) OVERRIDE;
+  virtual bool HandleExternalProtocol(ResourceLoader* loader,
+                                      const GURL& url) OVERRIDE;
+  virtual void DidStartRequest(ResourceLoader* loader) OVERRIDE;
+  virtual void DidReceiveRedirect(ResourceLoader* loader,
+                                  const GURL& new_url) OVERRIDE;
+  virtual void DidReceiveResponse(ResourceLoader* loader) OVERRIDE;
+  virtual void DidFinishLoading(ResourceLoader* loader) OVERRIDE;
+
   // Extracts the render view/process host's identifiers from the given request
   // and places them in the given out params (both required). If there are no
   // such IDs associated with the request (such as non-page-related requests),
@@ -291,44 +271,12 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // A shutdown helper that runs on the IO thread.
   void OnShutdown();
 
-  void StartRequest(net::URLRequest* request);
-
-  // Returns true if the request is paused.
-  bool PauseRequestIfNeeded(ResourceRequestInfoImpl* info);
-
-  // Pause or resume network activity for a particular request.
-  void PauseRequest(int child_id, int request_id, bool pause);
-
-  // Resumes the given request by calling OnResponseStarted or OnReadCompleted.
-  void ResumeRequest(const GlobalRequestID& request_id);
-
-  // Internal function to start reading for the first time.
-  void StartReading(net::URLRequest* request);
-
-  // Reads data from the response using our internal buffer as async IO.
-  // Returns true if data is available immediately, false otherwise.  If the
-  // return value is false, we will receive a OnReadComplete() callback later.
-  bool Read(net::URLRequest* request, int* bytes_read);
-
-  // Internal function to finish an async IO which has completed.  Returns
-  // true if there is more data to read (e.g. we haven't read EOF yet and
-  // no errors have occurred).
-  bool CompleteRead(net::URLRequest*, int* bytes_read);
-
-  // Internal function to finish handling the ResponseStarted message.  Returns
-  // true on success.
-  bool CompleteResponseStarted(net::URLRequest* request);
-
-  void ResponseCompleted(net::URLRequest* request);
-  void CallResponseCompleted(int child_id, int request_id);
-
   // Helper function for regular and download requests.
-  void BeginRequestInternal(net::URLRequest* request);
+  void BeginRequestInternal(scoped_ptr<net::URLRequest> request,
+                            scoped_ptr<ResourceHandler> handler);
 
-  // Helper function that cancels |request|.  Returns whether the
-  // request was actually cancelled.  If a renderer cancels a request
-  // for a download, we ignore the cancellation.
-  bool CancelRequestInternal(net::URLRequest* request, bool from_renderer);
+  void StartLoading(ResourceRequestInfoImpl* info,
+                    const linked_ptr<ResourceLoader>& loader);
 
   // Updates the "cost" of outstanding requests for |child_id|.
   // The "cost" approximates how many bytes are consumed by all the in-memory
@@ -349,39 +297,16 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // It may be enhanced in the future to provide some kind of prioritization
   // mechanism. We should also consider a hashtable or binary tree if it turns
   // out we have a lot of things here.
-  typedef std::map<GlobalRequestID, net::URLRequest*>
-      PendingRequestList;
+  typedef std::map<GlobalRequestID, linked_ptr<ResourceLoader> > LoaderMap;
 
   // Deletes the pending request identified by the iterator passed in.
   // This function will invalidate the iterator passed in. Callers should
   // not rely on this iterator being valid on return.
-  void RemovePendingRequest(const PendingRequestList::iterator& iter);
-
-  // Notify our observers that we started receiving a response for a request.
-  void NotifyResponseStarted(net::URLRequest* request, int child_id);
-
-  // Notify our observers that a request has been redirected.
-  void NotifyReceivedRedirect(net::URLRequest* request,
-                              int child_id,
-                              const GURL& new_url);
-
-  // Tries to handle the url with an external protocol. If the request is
-  // handled, the function returns true. False otherwise.
-  bool HandleExternalProtocol(int request_id,
-                              int child_id,
-                              int route_id,
-                              const GURL& url,
-                              ResourceType::Type resource_type,
-                              const net::URLRequestJobFactory& job_factory,
-                              ResourceHandler* handler);
+  void RemovePendingLoader(const LoaderMap::iterator& iter);
 
   // Checks all pending requests and updates the load states and upload
   // progress if necessary.
   void UpdateLoadStates();
-
-  // Checks the upload state and sends an update if one is necessary.
-  void MaybeUpdateUploadProgress(ResourceRequestInfoImpl *info,
-                                 net::URLRequest *request);
 
   // Resumes or cancels (if |cancel_requests| is true) any blocked requests.
   void ProcessBlockedRequestsForRoute(int child_id,
@@ -410,22 +335,10 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // Creates ResourceRequestInfoImpl for a download or page save.
   // |download| should be true if the request is a file download.
   ResourceRequestInfoImpl* CreateRequestInfo(
-      scoped_ptr<ResourceHandler> handler,
       int child_id,
       int route_id,
       bool download,
       ResourceContext* context);
-
-  // Returns true if |request| is in |pending_requests_|.
-  bool IsValidRequest(net::URLRequest* request);
-
-  // Sends the given notification on the UI thread.  The RenderViewHost's
-  // controller is used as the source.
-  template <class T>
-  static void NotifyOnUI(int type,
-                         int render_process_id,
-                         int render_view_id,
-                         T* detail);
 
   // Relationship of resource being authenticated with the top level page.
   enum HttpAuthResourceType {
@@ -445,7 +358,10 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   bool IsTransferredNavigation(
       const GlobalRequestID& transferred_request_id) const;
 
-  PendingRequestList pending_requests_;
+  ResourceLoader* GetLoader(const GlobalRequestID& id) const;
+  ResourceLoader* GetLoader(int child_id, int request_id) const;
+
+  LoaderMap pending_loaders_;
 
   // Collection of temp files downloaded for child processes via
   // the download_to_file mechanism. We avoid deleting them until
@@ -479,10 +395,10 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // True if the resource dispatcher host has been shut down.
   bool is_shutdown_;
 
-  typedef std::vector<net::URLRequest*> BlockedRequestsList;
+  typedef std::vector<linked_ptr<ResourceLoader> > BlockedLoadersList;
   typedef std::pair<int, int> ProcessRouteIDs;
-  typedef std::map<ProcessRouteIDs, BlockedRequestsList*> BlockedRequestMap;
-  BlockedRequestMap blocked_requests_map_;
+  typedef std::map<ProcessRouteIDs, BlockedLoadersList*> BlockedLoadersMap;
+  BlockedLoadersMap blocked_loaders_map_;
 
   // Maps the child_ids to the approximate number of bytes
   // being used to service its resource requests. No entry implies 0 cost.
@@ -510,11 +426,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   ResourceDispatcherHostDelegate* delegate_;
 
   bool allow_cross_origin_auth_prompt_;
-
-  // Maps the request ID of request that is being transferred to a new RVH
-  // to the respective request.
-  typedef std::map<GlobalRequestID, net::URLRequest*> TransferredNavigations;
-  TransferredNavigations transferred_navigations_;
 
   // http://crbug.com/90971 - Assists in tracking down use-after-frees on
   // shutdown.

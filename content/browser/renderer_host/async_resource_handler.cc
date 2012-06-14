@@ -207,7 +207,7 @@ bool AsyncResourceHandler::OnReadCompleted(int request_id, int* bytes_read,
     next_buffer_size_ = std::min(next_buffer_size_ * 2, kMaxReadBufSize);
   }
 
-  if (!rdh_->WillSendData(filter_->child_id(), request_id)) {
+  if (!rdh_->WillSendData(filter_->child_id(), request_id, defer)) {
     // We should not send this data now, we have too many pending requests.
     return true;
   }

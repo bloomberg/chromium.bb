@@ -39,6 +39,7 @@ RedirectToFileResourceHandler::RedirectToFileResourceHandler(
       buf_write_pending_(false),
       write_cursor_(0),
       write_callback_pending_(false),
+      did_defer_(false),
       completed_during_write_(false) {
 }
 
@@ -74,7 +75,7 @@ bool RedirectToFileResourceHandler::OnWillStart(int request_id,
     // Defer starting the request until we have created the temporary file.
     // TODO(darin): This is sub-optimal.  We should not delay starting the
     // network request like this.
-    *defer = true;
+    did_defer_ = *defer = true;
     base::FileUtilProxy::CreateTemporary(
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
         base::PLATFORM_FILE_ASYNC,
@@ -127,7 +128,7 @@ bool RedirectToFileResourceHandler::OnReadCompleted(int request_id,
   buf_->set_offset(new_offset);
 
   if (BufIsFull())
-    *defer = true;
+    did_defer_ = *defer = true;
 
   return WriteMore();
 }
@@ -158,7 +159,7 @@ void RedirectToFileResourceHandler::DidCreateTemporaryFile(
                                          NULL));
   host_->RegisterDownloadedTempFile(
       process_id_, request_id_, deletable_file_.get());
-  host_->StartDeferredRequest(process_id_, request_id_);
+  ResumeIfDeferred();
 }
 
 void RedirectToFileResourceHandler::DidWriteToFile(int result) {
@@ -174,13 +175,12 @@ void RedirectToFileResourceHandler::DidWriteToFile(int result) {
   }
 
   if (failed) {
-    host_->CancelRequest(process_id_, request_id_, false);
+    ResumeIfDeferred();
   } else if (completed_during_write_) {
-    next_handler_->OnResponseCompleted(request_id_, completed_status_,
-                                       completed_security_info_);
-    // TODO(darin): OnResponseCompleted can return false to defer
-    // RemovePendingRequest.
-    host_->RemovePendingRequest(process_id_, request_id_);
+    if (next_handler_->OnResponseCompleted(request_id_, completed_status_,
+                                           completed_security_info_)) {
+      ResumeIfDeferred();
+    }
   }
 }
 
@@ -192,7 +192,7 @@ bool RedirectToFileResourceHandler::WriteMore() {
       // appending more data to the buffer.
       if (!buf_write_pending_) {
         if (BufIsFull())
-          host_->ResumeDeferredRequest(process_id_, request_id_);
+          ResumeIfDeferred();
         buf_->set_offset(0);
         write_cursor_ = 0;
       }
@@ -234,6 +234,13 @@ bool RedirectToFileResourceHandler::BufIsFull() const {
   // 2 * net::kMaxBytesToSniff from its OnWillRead method.
   // TODO(darin): Fix this retardation!
   return buf_->RemainingCapacity() <= (2 * net::kMaxBytesToSniff);
+}
+
+void RedirectToFileResourceHandler::ResumeIfDeferred() {
+  if (did_defer_) {
+    did_defer_ = false;
+    controller()->Resume();
+  }
 }
 
 }  // namespace content

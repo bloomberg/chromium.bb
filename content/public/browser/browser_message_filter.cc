@@ -122,13 +122,13 @@ bool BrowserMessageFilter::CheckCanDispatchOnUI(const IPC::Message& message,
   return true;
 }
 
-BrowserMessageFilter::~BrowserMessageFilter() {
-  base::CloseProcessHandle(peer_handle_);
-}
-
 void BrowserMessageFilter::BadMessageReceived() {
   base::KillProcess(peer_handle(), content::RESULT_CODE_KILLED_BAD_MESSAGE,
                     false);
+}
+
+BrowserMessageFilter::~BrowserMessageFilter() {
+  base::CloseProcessHandle(peer_handle_);
 }
 
 bool BrowserMessageFilter::DispatchMessage(const IPC::Message& message) {

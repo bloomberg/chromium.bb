@@ -20,6 +20,7 @@ class CONTENT_EXPORT LayeredResourceHandler : public ResourceHandler {
   virtual ~LayeredResourceHandler();
 
   // ResourceHandler implementation:
+  virtual void SetController(ResourceController* controller) OVERRIDE;
   virtual bool OnUploadProgress(int request_id, uint64 position,
                                 uint64 size) OVERRIDE;
   virtual bool OnRequestRedirected(int request_id, const GURL& url,

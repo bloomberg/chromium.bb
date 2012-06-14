@@ -12,8 +12,8 @@
 #include "chrome/common/extensions/url_pattern.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_throttle.h"
-#include "content/public/browser/resource_throttle_controller.h"
 #include "net/url_request/url_request.h"
 
 using content::BrowserThread;

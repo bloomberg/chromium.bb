@@ -4,21 +4,18 @@
 
 #include "content/browser/renderer_host/throttling_resource_handler.h"
 
-#include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/resource_response.h"
 
 namespace content {
 
 ThrottlingResourceHandler::ThrottlingResourceHandler(
-    ResourceDispatcherHostImpl* host,
     scoped_ptr<ResourceHandler> next_handler,
     int child_id,
     int request_id,
     ScopedVector<ResourceThrottle> throttles)
     : LayeredResourceHandler(next_handler.Pass()),
       deferred_stage_(DEFERRED_NONE),
-      host_(host),
       child_id_(child_id),
       request_id_(request_id),
       throttles_(throttles.Pass()),
@@ -96,7 +93,7 @@ bool ThrottlingResourceHandler::OnResponseStarted(int request_id,
 }
 
 void ThrottlingResourceHandler::Cancel() {
-  host_->CancelRequest(child_id_, request_id_, false);
+  controller()->Cancel();
 }
 
 void ThrottlingResourceHandler::Resume() {
@@ -123,9 +120,9 @@ void ThrottlingResourceHandler::ResumeStart() {
 
   bool defer = false;
   if (!OnWillStart(request_id_, url, &defer)) {
-    Cancel();
+    controller()->Cancel();
   } else if (!defer) {
-    host_->StartDeferredRequest(child_id_, request_id_);
+    controller()->Resume();
   }
 }
 
@@ -137,9 +134,9 @@ void ThrottlingResourceHandler::ResumeRedirect() {
 
   bool defer = false;
   if (!OnRequestRedirected(request_id_, new_url, response, &defer)) {
-    Cancel();
+    controller()->Cancel();
   } else if (!defer) {
-    host_->FollowDeferredRedirect(child_id_, request_id_, false, GURL());
+    controller()->Resume();
   }
 }
 
@@ -149,9 +146,9 @@ void ThrottlingResourceHandler::ResumeResponse() {
 
   bool defer = false;
   if (!OnResponseStarted(request_id_, response, &defer)) {
-    Cancel();
+    controller()->Cancel();
   } else if (!defer) {
-    host_->ResumeDeferredRequest(child_id_, request_id_);
+    controller()->Resume();
   }
 }
 

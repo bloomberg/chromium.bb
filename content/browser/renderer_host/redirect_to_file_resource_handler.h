@@ -60,6 +60,7 @@ class RedirectToFileResourceHandler : public LayeredResourceHandler {
   void DidWriteToFile(int result);
   bool WriteMore();
   bool BufIsFull() const;
+  void ResumeIfDeferred();
 
   base::WeakPtrFactory<RedirectToFileResourceHandler> weak_factory_;
 
@@ -85,8 +86,7 @@ class RedirectToFileResourceHandler : public LayeredResourceHandler {
   // file created as  a result of the download.
   scoped_refptr<webkit_blob::ShareableFileReference> deletable_file_;
 
-  // True if OnRequestClosed() has already been called.
-  bool request_was_closed_;
+  bool did_defer_ ;
 
   bool completed_during_write_;
   net::URLRequestStatus completed_status_;

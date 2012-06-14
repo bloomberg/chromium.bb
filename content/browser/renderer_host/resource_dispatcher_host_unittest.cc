@@ -936,7 +936,7 @@ TEST_F(ResourceDispatcherHostTest, TestBlockedRequestsProcessDies) {
   CheckSuccessfulRequest(msgs[0], net::URLRequestTestJob::test_data_1());
   CheckSuccessfulRequest(msgs[1], net::URLRequestTestJob::test_data_3());
 
-  EXPECT_TRUE(host_.blocked_requests_map_.empty());
+  EXPECT_TRUE(host_.blocked_loaders_map_.empty());
 }
 
 // Tests that blocked requests don't leak when the ResourceDispatcherHost goes
@@ -1378,7 +1378,7 @@ TEST_F(ResourceDispatcherHostTest, CancelRequestsForContextTransferred) {
   MakeTestRequest(render_view_id, request_id, GURL("http://example.com/blah"));
 
   GlobalRequestID global_request_id(filter_->child_id(), request_id);
-  host_.MarkAsTransferredNavigation(host_.GetURLRequest(global_request_id));
+  host_.MarkAsTransferredNavigation(global_request_id);
 
   // And now simulate a cancellation coming from the renderer.
   ResourceHostMsg_CancelRequest msg(filter_->child_id(), request_id);

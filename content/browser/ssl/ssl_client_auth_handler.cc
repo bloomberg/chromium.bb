@@ -5,6 +5,7 @@
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 
 #include "base/bind.h"
+#include "content/browser/renderer_host/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/resource_request_info_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -14,6 +15,7 @@
 #include "net/url_request/url_request_context.h"
 
 using content::BrowserThread;
+using content::ResourceDispatcherHostImpl;
 using content::ResourceRequestInfo;
 using content::ResourceRequestInfoImpl;
 
@@ -78,11 +80,8 @@ void SSLClientAuthHandler::DoCertificateSelected(net::X509Certificate* cert) {
   if (request_) {
     request_->ContinueWithCertificate(cert);
 
-    ResourceRequestInfoImpl* info =
-        ResourceRequestInfoImpl::ForRequest(request_);
-    if (info)
-      info->set_ssl_client_auth_handler(NULL);
-
+    ResourceDispatcherHostImpl::Get()->
+        ClearSSLClientAuthHandlerForRequest(request_);
     request_ = NULL;
   }
 }

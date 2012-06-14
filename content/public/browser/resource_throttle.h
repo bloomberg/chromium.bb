@@ -11,13 +11,13 @@ class GURL;
 
 namespace content {
 
-class ResourceThrottleController;
+class ResourceController;
 
 // A ResourceThrottle gets notified at various points during the process of
 // loading a resource.  At each stage, it has the opportunity to defer the
-// resource load.  The ResourceThrottleController interface may be used to
-// resume a deferred resource load, or it may be used to cancel a resource
-// load at any time.
+// resource load.  The ResourceController interface may be used to resume a
+// deferred resource load, or it may be used to cancel a resource load at any
+// time.
 class ResourceThrottle {
  public:
   virtual ~ResourceThrottle() {}
@@ -26,19 +26,19 @@ class ResourceThrottle {
   virtual void WillRedirectRequest(const GURL& new_url, bool* defer) {}
   virtual void WillProcessResponse(bool* defer) {}
 
-  void set_controller_for_testing(ResourceThrottleController* c) {
+  void set_controller_for_testing(ResourceController* c) {
     controller_ = c;
   }
 
  protected:
   ResourceThrottle() : controller_(NULL) {}
-  ResourceThrottleController* controller() { return controller_; }
+  ResourceController* controller() { return controller_; }
 
  private:
   friend class ThrottlingResourceHandler;
-  void set_controller(ResourceThrottleController* c) { controller_ = c; }
+  void set_controller(ResourceController* c) { controller_ = c; }
 
-  ResourceThrottleController* controller_;
+  ResourceController* controller_;
 };
 
 }  // namespace content

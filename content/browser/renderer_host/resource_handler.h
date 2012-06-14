@@ -28,6 +28,7 @@ class URLRequestStatus;
 }  // namespace net
 
 namespace content {
+class ResourceController;
 struct ResourceResponse;
 
 // The resource dispatcher host uses this interface to process network events
@@ -37,6 +38,9 @@ class CONTENT_EXPORT ResourceHandler
     : public NON_EXPORTED_BASE(base::NonThreadSafe) {
  public:
   virtual ~ResourceHandler() {}
+
+  // Sets the controller for this handler.
+  virtual void SetController(ResourceController* controller);
 
   // Called as upload progress is made.  The return value is ignored.
   virtual bool OnUploadProgress(int request_id,
@@ -101,6 +105,13 @@ class CONTENT_EXPORT ResourceHandler
   // calls are consumed by the RedirectToFileResourceHandler and replaced
   // with OnDataDownloaded calls.
   virtual void OnDataDownloaded(int request_id, int bytes_downloaded) {}
+
+ protected:
+  ResourceHandler() : controller_(NULL) {}
+  ResourceController* controller() { return controller_; }
+
+ private:
+  ResourceController* controller_;
 };
 
 }  // namespace content

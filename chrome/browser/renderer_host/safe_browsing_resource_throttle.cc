@@ -8,7 +8,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/renderer_host/chrome_url_request_user_data.h"
-#include "content/public/browser/resource_throttle_controller.h"
+#include "content/public/browser/resource_controller.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
 

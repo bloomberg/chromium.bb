@@ -71,12 +71,12 @@ class CONTENT_EXPORT BrowserMessageFilter :
   static bool CheckCanDispatchOnUI(const IPC::Message& message,
                                    IPC::Message::Sender* sender);
 
- protected:
-  virtual ~BrowserMessageFilter();
-
   // Call this if a message couldn't be deserialized.  This kills the renderer.
   // Can be called on any thread.
   virtual void BadMessageReceived();
+
+ protected:
+  virtual ~BrowserMessageFilter();
 
  private:
   // Dispatches a message to the derived class.

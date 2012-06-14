@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "chrome/browser/download/download_util.h"
-#include "content/public/browser/resource_throttle_controller.h"
+#include "content/public/browser/resource_controller.h"
 
 DownloadResourceThrottle::DownloadResourceThrottle(
     DownloadRequestLimiter* limiter,

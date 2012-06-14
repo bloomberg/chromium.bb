@@ -397,6 +397,7 @@ bool BufferedResourceHandler::UseAlternateResourceHandler(
   // This is handled entirely within the new ResourceHandler, so just reset the
   // original ResourceHandler.
   next_handler_ = handler.Pass();
+  next_handler_->SetController(controller());
 
   next_handler_needs_response_started_ = true;
   next_handler_needs_will_read_ = true;
@@ -446,14 +447,13 @@ void BufferedResourceHandler::OnPluginsLoaded(
 
   ResourceRequestInfoImpl* info =
       ResourceRequestInfoImpl::ForRequest(request_);
-  int child_id = info->GetChildID();
   int request_id = info->GetRequestID();
 
   bool defer = false;
   if (!CompleteResponseStarted(request_id, &defer)) {
-    host_->CancelRequest(child_id, request_id, false);
+    controller()->Cancel();
   } else if (!defer && needs_resume) {
-    host_->ResumeDeferredRequest(child_id, request_id);
+    controller()->Resume();
   }
 }
 

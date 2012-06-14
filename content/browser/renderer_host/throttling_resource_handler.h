@@ -9,22 +9,20 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "content/browser/renderer_host/layered_resource_handler.h"
-#include "content/public/browser/resource_throttle_controller.h"
+#include "content/public/browser/resource_controller.h"
 #include "googleurl/src/gurl.h"
 
 namespace content {
 
-class ResourceDispatcherHostImpl;
 class ResourceThrottle;
 struct ResourceResponse;
 
 // Used to apply a list of ResourceThrottle instances to an URLRequest.
 class ThrottlingResourceHandler : public LayeredResourceHandler,
-                                  public ResourceThrottleController {
+                                  public ResourceController {
  public:
   // Takes ownership of the ResourceThrottle instances.
-  ThrottlingResourceHandler(ResourceDispatcherHostImpl* host,
-                            scoped_ptr<ResourceHandler> next_handler,
+  ThrottlingResourceHandler(scoped_ptr<ResourceHandler> next_handler,
                             int child_id,
                             int request_id,
                             ScopedVector<ResourceThrottle> throttles);
@@ -57,7 +55,6 @@ class ThrottlingResourceHandler : public LayeredResourceHandler,
   };
   DeferredStage deferred_stage_;
 
-  ResourceDispatcherHostImpl* host_;
   int child_id_;
   int request_id_;
 
