@@ -135,7 +135,7 @@ weston_zoom_frame(struct weston_animation *animation,
 	struct weston_surface *es = zoom->surface;
 	GLfloat scale;
 
-	if (animation->frame_counter == 0)
+	if (animation->frame_counter <= 1)
 		zoom->spring.timestamp = msecs;
 
 	weston_spring_update(&zoom->spring, msecs);
@@ -472,7 +472,7 @@ weston_fade_frame(struct weston_animation *animation,
 	struct weston_surface *es = fade->surface;
 	float fade_factor;
 
-	if (animation->frame_counter == 0)
+	if (animation->frame_counter <= 1)
 		fade->spring.timestamp = msecs;
 
 	weston_spring_update(&fade->spring, msecs);

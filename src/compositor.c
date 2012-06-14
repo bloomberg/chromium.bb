@@ -956,7 +956,7 @@ fade_frame(struct weston_animation *animation,
 			     struct weston_compositor, fade.animation);
 	struct weston_surface *surface;
 
-	if (animation->frame_counter == 0)
+	if (animation->frame_counter <= 1)
 		compositor->fade.spring.timestamp = msecs;
 
 	surface = compositor->fade.surface;
@@ -1073,8 +1073,8 @@ weston_output_repaint(struct weston_output *output, int msecs)
 	wl_list_init(&frame_callback_list);
 
 	wl_list_for_each_safe(animation, next, &output->animation_list, link) {
-		animation->frame(animation, output, msecs);
 		animation->frame_counter++;
+		animation->frame(animation, output, msecs);
 	}
 }
 
@@ -2735,7 +2735,7 @@ static void
 weston_zoom_frame_z(struct weston_animation *animation,
 		struct weston_output *output, uint32_t msecs)
 {
-	if (animation->frame_counter == 0)
+	if (animation->frame_counter <= 1)
 		output->zoom.spring_z.timestamp = msecs;
 
 	weston_spring_update(&output->zoom.spring_z, msecs);
