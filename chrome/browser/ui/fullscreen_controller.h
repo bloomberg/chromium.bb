@@ -51,6 +51,11 @@ class FullscreenController : public base::RefCounted<FullscreenController> {
   bool IsFullscreenForTabOrPending(
       const content::WebContents* web_contents) const;
 
+#if defined(OS_WIN)
+  // Returns whether we are currently in a Metro snap view.
+  bool IsInMetroSnapMode();
+#endif
+
   bool IsMouseLockRequested() const;
   bool IsMouseLocked() const;
 
@@ -60,6 +65,11 @@ class FullscreenController : public base::RefCounted<FullscreenController> {
                           bool last_unlocked_by_target);
   void ToggleFullscreenModeForTab(content::WebContents* web_contents,
                                   bool enter_fullscreen);
+#if defined(OS_WIN)
+  // API that puts the window into a mode suitable for rendering when Chrome
+  // is rendered in a 20% screen-width Metro snap view on Windows 8.
+  void SetMetroSnapMode(bool enable);
+#endif
 #if defined(OS_MACOSX)
   void TogglePresentationMode();
 #endif

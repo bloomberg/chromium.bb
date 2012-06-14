@@ -52,6 +52,12 @@ bool TestBrowserWindow::IsFullscreen() const {
   return false;
 }
 
+#if defined(OS_WIN)
+bool TestBrowserWindow::IsInMetroSnapMode() const {
+  return false;
+}
+#endif
+
 bool TestBrowserWindow::IsFullscreenBubbleVisible() const {
   return false;
 }

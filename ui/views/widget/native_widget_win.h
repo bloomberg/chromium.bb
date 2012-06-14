@@ -115,6 +115,13 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   // the top of the stack. See PushForceHidden.
   void PopForceHidden();
 
+  // Places the window in a pseudo-fullscreen mode where it looks and acts as
+  // like a fullscreen window except that it remains within the boundaries
+  // of the metro snap divider.
+  void SetMetroSnapFullscreen(bool metro_snap);
+
+  bool IsInMetroSnapMode() const;
+
   BOOL IsWindow() const {
     return ::IsWindow(GetNativeView());
   }
@@ -531,6 +538,18 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   // Overridden from internal::InputMethodDelegate
   virtual void DispatchKeyEventPostIME(const KeyEvent& key) OVERRIDE;
 
+  // Common implementation of fullscreen-related code. This method handles
+  // changing from windowed mode to a display mode (dubbed fullscreen mode)
+  // where the window occupies a fixed portion (possibly 100%) of the screen.
+  // |fullscreen| specifies whether we are entering or leaving fullscreen mode.
+  // |window_rect| contains sizing information that describes the portion of the
+  //               screen to be occupied. |window_rect| may be a rect of width
+  //               0, which indicates that sizing should be skipped when
+  //               entering fullscreen mode and previously-stored size should
+  //               be used when exiting fullscreen mode.
+  void SetFullscreenInternal(bool fullscreen,
+                             const gfx::Rect& window_rect);
+
   // A delegate implementation that handles events received here.
   // See class documentation for Widget in widget.h for a note about ownership.
   internal::NativeWidgetDelegate* delegate_;
@@ -611,6 +630,9 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
 
   // True if we're in fullscreen mode.
   bool fullscreen_;
+
+  // True if we're in metro snap mode.
+  bool metro_snap_;
 
   // If this is greater than zero, we should prevent attempts to make the window
   // visible when we handle WM_WINDOWPOSCHANGING. Some calls like
