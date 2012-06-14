@@ -5,6 +5,11 @@
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
+#include "grit/theme_resources_standard.h"
+#include "grit/ui_resources.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image.h"
 
 namespace {
 const int kInvalidRessourceID = -1;
@@ -59,4 +64,93 @@ int WebsiteSettingsUI::PermissionValueToUIStringID(ContentSetting value) {
       NOTREACHED();
       return kInvalidRessourceID;
   }
+}
+
+// static
+const gfx::Image& WebsiteSettingsUI::GetPermissionIcon(
+    ContentSettingsType type,
+    ContentSetting setting) {
+  bool use_blocked = (setting == CONTENT_SETTING_BLOCK);
+  int resource_id = IDR_INFO;
+  switch (type) {
+    case CONTENT_SETTINGS_TYPE_COOKIES:
+      resource_id = use_blocked ? IDR_BLOCKED_COOKIES
+                                : IDR_COOKIE_ICON;
+      break;
+    case CONTENT_SETTINGS_TYPE_POPUPS:
+      resource_id = use_blocked ? IDR_BLOCKED_POPUPS
+                                : IDR_INFO;
+      break;
+    case CONTENT_SETTINGS_TYPE_PLUGINS:
+      resource_id = use_blocked ? IDR_BLOCKED_PLUGINS
+                                : IDR_EXTENSIONS_FAVICON;
+      break;
+    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+      resource_id = use_blocked ? IDR_GEOLOCATION_DENIED_LOCATIONBAR_ICON
+                                : IDR_GEOLOCATION_ALLOWED_LOCATIONBAR_ICON;
+      break;
+    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  return rb.GetNativeImageNamed(resource_id);
+}
+
+// static
+const gfx::Image& WebsiteSettingsUI::GetIdentityIcon(
+    WebsiteSettings::SiteIdentityStatus status) {
+  int resource_id = IDR_PAGEINFO_INFO;
+  switch (status) {
+    case WebsiteSettings::SITE_IDENTITY_STATUS_UNKNOWN:
+      break;
+    case WebsiteSettings::SITE_IDENTITY_STATUS_CERT:
+    case WebsiteSettings::SITE_IDENTITY_STATUS_EV_CERT:
+    case WebsiteSettings::SITE_IDENTITY_STATUS_DNSSEC_CERT:
+      resource_id = IDR_PAGEINFO_GOOD;
+      break;
+    case WebsiteSettings::SITE_IDENTITY_STATUS_CERT_REVOCATION_UNKNOWN:
+      resource_id = IDR_PAGEINFO_WARNING_MINOR;
+      break;
+    case WebsiteSettings::SITE_IDENTITY_STATUS_NO_CERT:
+      resource_id = IDR_PAGEINFO_WARNING_MAJOR;
+      break;
+    case WebsiteSettings::SITE_IDENTITY_STATUS_ERROR:
+      resource_id = IDR_PAGEINFO_BAD;
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  return rb.GetNativeImageNamed(resource_id);
+}
+
+// static
+const gfx::Image& WebsiteSettingsUI::GetConnectionIcon(
+    WebsiteSettings::SiteConnectionStatus status) {
+  int resource_id = IDR_PAGEINFO_INFO;
+  switch (status) {
+    case WebsiteSettings::SITE_CONNECTION_STATUS_UNKNOWN:
+      break;
+    case WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED:
+      resource_id = IDR_PAGEINFO_GOOD;
+      break;
+    case WebsiteSettings::SITE_CONNECTION_STATUS_MIXED_CONTENT:
+      resource_id = IDR_PAGEINFO_WARNING_MINOR;
+      break;
+    case WebsiteSettings::SITE_CONNECTION_STATUS_UNENCRYPTED:
+      resource_id = IDR_PAGEINFO_WARNING_MAJOR;
+      break;
+    case WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED_ERROR:
+      resource_id = IDR_PAGEINFO_BAD;
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  return rb.GetNativeImageNamed(resource_id);
 }

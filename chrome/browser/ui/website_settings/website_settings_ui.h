@@ -25,6 +25,10 @@ namespace content {
 struct SSLStatus;
 }
 
+namespace gfx {
+class Image;
+}
+
 // The class |WebsiteSettingsUI| specifies the platform independent
 // interface of the website settings UI. The website settings UI displays
 // information and controls for site specific data (local stored objects like
@@ -87,6 +91,18 @@ class WebsiteSettingsUI {
 
   // Returns the resource ID of the UI string for the given permission |value|.
   static int PermissionValueToUIStringID(ContentSetting value);
+
+  // Returns the icon for the given permission |type| and |setting|.
+  static const gfx::Image& GetPermissionIcon(ContentSettingsType type,
+                                       ContentSetting setting);
+
+  // Returns the identity icon for the given identity |status|.
+  static const gfx::Image& GetIdentityIcon(
+      WebsiteSettings::SiteIdentityStatus status);
+
+  // Returns the connection icon for the given connection |status|.
+  static const gfx::Image& GetConnectionIcon(
+      WebsiteSettings::SiteConnectionStatus status);
 
   // Sets cookie information.
   virtual void SetCookieInfo(const CookieInfoList& cookie_info_list) = 0;

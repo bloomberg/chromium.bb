@@ -28,6 +28,7 @@ struct SSLStatus;
 
 namespace views {
 class Combobox;
+class ImageView;
 class Link;
 class Label;
 class TabbedPane;
@@ -87,23 +88,6 @@ class WebsiteSettingsPopupView : public WebsiteSettingsUI,
   virtual void ButtonPressed(views::Button* button,
                              const views::Event& event) OVERRIDE;
 
-  // Each tab contains several sections with a |headline| followed by the
-  // section |contents| and an optional |link|. This method creates a section
-  // for the given |headline|, |contents| and |link|. |link| can be NULL if the
-  // section should not contain a link.
-  views::View* CreateSection(const string16& headline,
-                             views::View* contents,
-                             views::Link* link) WARN_UNUSED_RESULT;
-
-  // Creates a single row for the "Permissions" section from the "Permissions"
-  // tab. Such a row contains a |permissions_label| with the name of the
-  // permission and a |combobox| that allows to select setting for the given
-  // permission. The ownership of the returned view is transferred to the
-  // caller.
-  views::View* CreatePermissionRow(
-      views::Label* permission_label,
-      views::Combobox* combobox) WARN_UNUSED_RESULT;
-
   // Creates the contents of the "Permissions" tab. The ownership of the
   // returned view is transferred to the caller.
   views::View* CreatePermissionsTab() WARN_UNUSED_RESULT;
@@ -112,9 +96,32 @@ class WebsiteSettingsPopupView : public WebsiteSettingsUI,
   // view is transferred to the caller.
   views::View* CreateIdentityTab() WARN_UNUSED_RESULT;
 
-  // Creates a multiline text label that is initialized with the given |text|.
-  // The ownership of the returned label is transferred to the caller.
-  views::Label* CreateTextLabel(const string16& text) WARN_UNUSED_RESULT;
+  // Each tab contains several sections with a |headline| followed by the
+  // section |contents| and an optional |link|. This method creates a section
+  // for the given |headline|, |contents| and |link|. |link| can be NULL if the
+  // section should not contain a link.
+  views::View* CreateSection(const string16& headline,
+                             views::View* contents,
+                             views::Link* link) WARN_UNUSED_RESULT;
+
+  // Resets the |content_container| and adds the passed |icon| and |text| to
+  // it. All existing child views of the |content_container| are cleared and
+  // destroyed. The |icon| and |text| are added to the |content_container|
+  // using a two column layout that is common to all sections on the identity
+  // tab.
+  void ResetContentContainer(views::View* content_container,
+                             const gfx::Image& icon,
+                             const string16& text);
+
+  // Creates a single row for the "Permissions" section from the "Permissions"
+  // tab. Such a row contains a |permissions_label| with the name of the
+  // permission and a |combobox| that allows to select setting for the given
+  // permission. The ownership of the returned view is transferred to the
+  // caller.
+  views::View* CreatePermissionRow(
+      views::ImageView* icon,
+      views::Label* permission_label,
+      views::Combobox* combobox) WARN_UNUSED_RESULT;
 
   // The tab contents of the current tab. The popup can't live longer than a
   // tab.
@@ -138,9 +145,9 @@ class WebsiteSettingsPopupView : public WebsiteSettingsUI,
   // "Permissions" tab.
   views::View* permissions_content_;
 
-  views::Label* identity_info_text_;
-  views::Label* connection_info_text_;
-  views::Label* page_info_text_;
+  views::View* identity_info_content_;
+  views::View* connection_info_content_;
+  views::View* page_info_content_;
 
   // A |ComboboxModel| is not owned by a |Combobox|. Therefor the popup owns
   // all |PermissionComboboxModels| and deletes them when it is destroyed.

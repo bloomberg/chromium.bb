@@ -15,13 +15,16 @@
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_resources_standard.h"
+#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/combobox/combobox.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
@@ -45,6 +48,9 @@ const int kIdentityNameFontSize = 14;
 // identity was sucessfully verified.
 const int kIdentityVerifiedTextColor = 0xFF298a27;
 
+// Left icon margin.
+const int kIconMarginLeft = 6;
+
 // Margin and padding values for the |PopupHeader|.
 const int kHeaderMarginBottom = 10;
 const int kHeaderPaddingBottom = 12;
@@ -67,6 +73,11 @@ const int kSectionHeadlineMarginBottom = 10;
 // section, is structured in individual rows. |kSectionRowSpaceing| is the
 // space between these rows.
 const int kSectionRowSpacing = 6;
+
+// The width of the column that contains the permissions icons.
+const int kPermissionIconColumnWidth = 20;
+// Left margin of the label that displays the permission types.
+const int kPermissionsRowLabelMarginLeft = 8;
 
 // The max width of the popup.
 const int kPopupWidth = 300;
@@ -149,7 +160,7 @@ ContentSetting PermissionComboboxModel::GetSettingAt(int index) const {
 }
 
 int PermissionComboboxModel::GetItemCount() const {
- return settings_.size();
+  return settings_.size();
 }
 
 string16 PermissionComboboxModel::GetItemAt(int index) {
@@ -295,9 +306,9 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
       site_data_content_(NULL),
       cookie_dialog_link_(NULL),
       permissions_content_(NULL),
-      identity_info_text_(NULL),
-      connection_info_text_(NULL),
-      page_info_text_(NULL) {
+      identity_info_content_(NULL),
+      connection_info_content_(NULL),
+      page_info_content_(NULL) {
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
   const int content_column = 0;
@@ -358,6 +369,13 @@ void WebsiteSettingsPopupView::SetCookieInfo(
                         views::GridLayout::USE_PREF,
                         0,
                         0);
+  column_set->AddPaddingColumn(0, kIconMarginLeft);
+  column_set->AddColumn(views::GridLayout::FILL,
+                        views::GridLayout::FILL,
+                        1,
+                        views::GridLayout::USE_PREF,
+                        0,
+                        0);
 
   for (CookieInfoList::const_iterator it = cookie_info_list.begin();
        it != cookie_info_list.end();
@@ -368,6 +386,11 @@ void WebsiteSettingsPopupView::SetCookieInfo(
         base::IntToString16(it->allowed),
         base::IntToString16(it->allowed));
     layout->StartRow(1, site_data_content_column);
+    views::ImageView* icon = new views::ImageView();
+    const gfx::Image& image = WebsiteSettingsUI::GetPermissionIcon(
+        CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_ALLOW);
+    icon->SetImage(image.ToImageSkia());
+    layout->AddView(icon);
     layout->AddView(new views::Label(label_text),
                     1,
                     1,
@@ -427,8 +450,16 @@ void WebsiteSettingsPopupView::SetPermissionInfo(
     }
     combobox->set_listener(this);
 
+    views::ImageView* icon = new views::ImageView();
+    ContentSetting setting = permission->setting;
+    if (setting == CONTENT_SETTING_DEFAULT)
+      setting = permission->default_setting;
+    const gfx::Image& image = WebsiteSettingsUI::GetPermissionIcon(
+        permission->type, setting);
+    icon->SetImage(image.ToImageSkia());
+
     layout->StartRow(1, content_column);
-    layout->AddView(CreatePermissionRow(label, combobox),
+    layout->AddView(CreatePermissionRow(icon, label, combobox),
                     1,
                     1,
                     views::GridLayout::LEADING,
@@ -460,12 +491,30 @@ void WebsiteSettingsPopupView::SetIdentityInfo(
   header_->SetIdentityName(UTF8ToUTF16(identity_info.site_identity));
   header_->SetIdentityStatus(identity_status_text, text_color);
 
-  identity_info_text_->SetText(
+  ResetContentContainer(
+      identity_info_content_,
+      WebsiteSettingsUI::GetIdentityIcon(identity_info.identity_status),
       UTF8ToUTF16(identity_info.identity_status_description));
-
-  connection_info_text_->SetText(
+  ResetContentContainer(
+      connection_info_content_,
+      WebsiteSettingsUI::GetConnectionIcon(identity_info.connection_status),
       UTF8ToUTF16(identity_info.connection_status_description));
 
+  // Layout.
+  GetLayoutManager()->Layout(this);
+  SizeToContents();
+}
+
+void WebsiteSettingsPopupView::SetFirstVisit(const string16& first_visit) {
+  // TODO(markusheintz): Display a minor warning icon if the page is visited
+  // the first time.
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ResetContentContainer(
+      page_info_content_,
+      rb.GetImageNamed(IDR_PAGEINFO_INFO),
+      first_visit);
+
+  // Layout.
   GetLayoutManager()->Layout(this);
   SizeToContents();
 }
@@ -478,10 +527,6 @@ gfx::Size WebsiteSettingsPopupView::GetPreferredSize() {
     height += tabbed_pane_->GetPreferredSize().height();
 
   return gfx::Size(kPopupWidth, height);
-}
-
-void WebsiteSettingsPopupView::SetFirstVisit(const string16& first_visit) {
-  page_info_text_->SetText(first_visit);
 }
 
 gfx::Rect WebsiteSettingsPopupView::GetAnchorRect() {
@@ -565,9 +610,9 @@ views::View* WebsiteSettingsPopupView::CreateIdentityTab() {
                         views::GridLayout::USE_PREF,
                         0,
                         0);
-  identity_info_text_ = CreateTextLabel(string16());
+  identity_info_content_ = new views::View();
   layout->StartRow(1, content_column);
-  layout->AddView(identity_info_text_, 1, 1, views::GridLayout::LEADING,
+  layout->AddView(identity_info_content_, 1, 1, views::GridLayout::LEADING,
                   views::GridLayout::CENTER);
   views::View* section =
       CreateSection(l10n_util::GetStringUTF16(
@@ -577,23 +622,10 @@ views::View* WebsiteSettingsPopupView::CreateIdentityTab() {
   pane->AddChildView(section);
 
   // Add connection section.
-  section_content = new views::View();
-  layout = new views::GridLayout(section_content);
-  section_content->SetLayoutManager(layout);
-  column_set = layout->AddColumnSet(content_column);
-  column_set->AddColumn(views::GridLayout::FILL,
-                        views::GridLayout::FILL,
-                        1,
-                        views::GridLayout::USE_PREF,
-                        0,
-                        0);
-  connection_info_text_ = CreateTextLabel(string16());
-  layout->StartRow(1, content_column);
-  layout->AddView(connection_info_text_, 1, 1, views::GridLayout::LEADING,
-                  views::GridLayout::CENTER);
+  connection_info_content_ = new views::View();
   section = CreateSection(l10n_util::GetStringUTF16(
                               IDS_WEBSITE_SETTINGS_TITEL_CONNECTION),
-                          section_content,
+                          connection_info_content_,
                           NULL);
   pane->AddChildView(section);
 
@@ -608,9 +640,9 @@ views::View* WebsiteSettingsPopupView::CreateIdentityTab() {
                         views::GridLayout::USE_PREF,
                         0,
                         0);
-  page_info_text_ = CreateTextLabel(string16());
+  page_info_content_ = new views::View();
   layout->StartRow(1, content_column);
-  layout->AddView(page_info_text_, 1, 1, views::GridLayout::LEADING,
+  layout->AddView(page_info_content_, 1, 1, views::GridLayout::LEADING,
                   views::GridLayout::CENTER);
   section = CreateSection(l10n_util::GetStringUTF16(
                               IDS_PAGE_INFO_SITE_INFO_TITLE),
@@ -661,7 +693,44 @@ views::View* WebsiteSettingsPopupView::CreateSection(
   return container;
 }
 
+void WebsiteSettingsPopupView::ResetContentContainer(
+    views::View* content_container,
+    const gfx::Image& icon,
+    const string16& text) {
+  views::ImageView* icon_view = new views::ImageView();
+  icon_view->SetImage(icon.ToImageSkia());
+  views::Label* label = new views::Label(text);
+  label->SetMultiLine(true);
+  label->SetAllowCharacterBreak(true);
+  label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+
+  content_container->RemoveAllChildViews(true);
+  views::GridLayout* layout = new views::GridLayout(content_container);
+  content_container->SetLayoutManager(layout);
+  views::ColumnSet* column_set = layout->AddColumnSet(0);
+  column_set->AddColumn(views::GridLayout::FILL,
+                        views::GridLayout::FILL,
+                        0,
+                        views::GridLayout::USE_PREF,
+                        0,
+                        0);
+  column_set->AddPaddingColumn(0, kIconMarginLeft);
+  column_set->AddColumn(views::GridLayout::FILL,
+                        views::GridLayout::FILL,
+                        1,
+                        views::GridLayout::USE_PREF,
+                        0,
+                        0);
+
+  layout->StartRow(1, 0);
+  layout->AddView(icon_view, 1, 1, views::GridLayout::LEADING,
+                  views::GridLayout::LEADING);
+  layout->AddView(label, 1, 1, views::GridLayout::LEADING,
+                  views::GridLayout::LEADING);
+}
+
 views::View* WebsiteSettingsPopupView::CreatePermissionRow(
+    views::ImageView* icon,
     views::Label* label,
     views::Combobox* combobox) {
   views::View* container = new views::View();
@@ -672,10 +741,17 @@ views::View* WebsiteSettingsPopupView::CreatePermissionRow(
   column_set->AddColumn(views::GridLayout::FILL,
                         views::GridLayout::FILL,
                         1,
+                        views::GridLayout::FIXED,
+                        kPermissionIconColumnWidth,
+                        0);
+  column_set->AddPaddingColumn(0, kIconMarginLeft);
+  column_set->AddColumn(views::GridLayout::FILL,
+                        views::GridLayout::FILL,
+                        1,
                         views::GridLayout::USE_PREF,
                         0,
                         0);
-  column_set->AddPaddingColumn(0, 8);
+  column_set->AddPaddingColumn(0, kPermissionsRowLabelMarginLeft);
   column_set->AddColumn(views::GridLayout::FILL,
                         views::GridLayout::FILL,
                         1,
@@ -684,15 +760,11 @@ views::View* WebsiteSettingsPopupView::CreatePermissionRow(
                         0);
 
   layout->StartRow(1, two_column_layout);
-  layout->AddView(label);
+
+  layout->AddView(icon, 1, 1, views::GridLayout::CENTER,
+                  views::GridLayout::CENTER);
+  layout->AddView(label, 1,1, views::GridLayout::LEADING,
+                  views::GridLayout::CENTER);
   layout->AddView(combobox);
   return container;
-}
-
-views::Label* WebsiteSettingsPopupView::CreateTextLabel(const string16& text) {
-  views::Label* label = new views::Label(text);
-  label->SetMultiLine(true);
-  label->SetAllowCharacterBreak(true);
-  label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  return label;
 }
