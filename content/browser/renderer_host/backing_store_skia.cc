@@ -58,10 +58,10 @@ void BackingStoreSkia::PaintToBackingStore(
   if (bitmap_rect.IsEmpty())
     return;
 
-  gfx::Rect pixel_rect = bitmap_rect.Scale(device_scale_factor_);
+  gfx::Rect pixel_bitmap_rect = bitmap_rect.Scale(scale_factor);
 
-  const int width = pixel_rect.width();
-  const int height = pixel_rect.height();
+  const int width = pixel_bitmap_rect.width();
+  const int height = pixel_bitmap_rect.height();
 
   if (width <= 0 || width > kMaxVideoLayerSize ||
       height <= 0 || height > kMaxVideoLayerSize)
@@ -78,15 +78,20 @@ void BackingStoreSkia::PaintToBackingStore(
   sk_bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
   sk_bitmap.setPixels(dib->memory());
   for (size_t i = 0; i < copy_rects.size(); i++) {
-    const gfx::Rect copy_rect = copy_rects[i].Scale(device_scale_factor_);
-    int x = copy_rect.x() - pixel_rect.x();
-    int y = copy_rect.y() - pixel_rect.y();
-    int w = copy_rect.width();
-    int h = copy_rect.height();
-    SkIRect srcrect = SkIRect::MakeXYWH(x, y, w, h);
+    const gfx::Rect pixel_copy_rect = copy_rects[i].Scale(scale_factor);
+    int x = pixel_copy_rect.x() - pixel_bitmap_rect.x();
+    int y = pixel_copy_rect.y() - pixel_bitmap_rect.y();
+    SkIRect srcrect = SkIRect::MakeXYWH(x, y,
+        pixel_copy_rect.width(),
+        pixel_copy_rect.height());
+
+    const gfx::Rect pixel_copy_dst_rect =
+        copy_rects[i].Scale(device_scale_factor_);
     SkRect dstrect = SkRect::MakeXYWH(
-        SkIntToScalar(copy_rect.x()), SkIntToScalar(copy_rect.y()),
-        SkIntToScalar(w), SkIntToScalar(h));
+        SkIntToScalar(pixel_copy_dst_rect.x()),
+        SkIntToScalar(pixel_copy_dst_rect.y()),
+        SkIntToScalar(pixel_copy_dst_rect.width()),
+        SkIntToScalar(pixel_copy_dst_rect.height()));
     canvas_.get()->drawBitmapRect(sk_bitmap, &srcrect, dstrect, &copy_paint);
   }
 }
