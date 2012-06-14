@@ -112,6 +112,11 @@ class CHROMEOS_EXPORT OutputConfigurator : public MessageLoop::Dispatcher {
   // regards to the state of X or this method may return incorrect results.
   State InferCurrentState(Display* display, XRRScreenResources* screen) const;
 
+  // Scans the |output_cache_| to determine whether or not we are in a
+  // "projecting" state and then calls the DBus kSetIsProjectingMethod on powerd
+  // with the result.
+  void CheckIsProjectingAndNotify();
+
   // This is detected by the constructor to determine whether or not we should
   // be enabled.  If we aren't running on ChromeOS, we can't assume that the
   // Xrandr X11 extension is supported.

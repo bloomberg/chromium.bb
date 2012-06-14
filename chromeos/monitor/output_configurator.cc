@@ -12,6 +12,7 @@
 #include "dbus/exported_object.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
+#include "dbus/object_proxy.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -385,6 +386,7 @@ OutputConfigurator::OutputConfigurator()
     // Relinquish X resources.
     XRRFreeScreenResources(screen);
     XUngrabServer(display);
+    CheckIsProjectingAndNotify();
   }
 }
 
@@ -741,11 +743,43 @@ bool OutputConfigurator::Dispatch(const base::NativeEvent& event) {
       if ((output_change_event->connection == RR_Connected) ||
           (output_change_event->connection == RR_Disconnected)) {
         RecacheAndUseDefaultState();
+        CheckIsProjectingAndNotify();
       }
       // Ignore the case of RR_UnkownConnection.
     }
   }
   return true;
+}
+
+void OutputConfigurator::CheckIsProjectingAndNotify() {
+  // Determine if there is an "internal" output and how many outputs are
+  // connected.
+  bool has_internal_output = false;
+  int connected_output_count = 0;
+  for (int i = 0; i < output_count_; ++i) {
+    if (output_cache_[i].is_connected) {
+      connected_output_count += 1;
+      has_internal_output |= output_cache_[i].is_internal;
+    }
+  }
+
+  // "Projecting" is defined as having more than 1 output connected while at
+  // least one of them is an internal output.
+  bool is_projecting = has_internal_output && (connected_output_count > 1);
+  chromeos::DBusThreadManager* manager = chromeos::DBusThreadManager::Get();
+  dbus::Bus* bus = manager->GetSystemBus();
+  dbus::ObjectProxy* power_manager_proxy = bus->GetObjectProxy(
+      power_manager::kPowerManagerServiceName,
+      dbus::ObjectPath(power_manager::kPowerManagerServicePath));
+  dbus::MethodCall method_call(
+      power_manager::kPowerManagerInterface,
+      power_manager::kSetIsProjectingMethod);
+  dbus::MessageWriter writer(&method_call);
+  writer.AppendBool(is_projecting);
+  power_manager_proxy->CallMethod(
+      &method_call,
+      dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+      dbus::ObjectProxy::EmptyResponseCallback());
 }
 
 }  // namespace chromeos
