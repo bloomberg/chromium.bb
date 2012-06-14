@@ -509,6 +509,10 @@ class GPU_EXPORT TextureManager {
     }
   }
 
+  uint32 mem_represented() const {
+    return mem_represented_;
+  }
+
  private:
   // Helper for Initialize().
   TextureInfo::Ref CreateDefaultAndBlackTextures(

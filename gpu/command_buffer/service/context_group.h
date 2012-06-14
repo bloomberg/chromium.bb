@@ -122,6 +122,8 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
 
   IdAllocatorInterface* GetIdAllocator(unsigned namespace_id);
 
+  uint32 GetMemRepresented() const;
+
  private:
   friend class base::RefCounted<ContextGroup>;
   ~ContextGroup();

@@ -183,6 +183,10 @@ class GPU_EXPORT BufferManager {
     allow_buffers_on_multiple_targets_ = allow;
   }
 
+  size_t mem_represented() const {
+    return mem_represented_;
+  }
+
  private:
   void UpdateMemRepresented();
 

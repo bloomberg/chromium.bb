@@ -160,6 +160,10 @@ class GPU_EXPORT RenderbufferManager {
   // Gets a client id for a given service id.
   bool GetClientId(GLuint service_id, GLuint* client_id) const;
 
+  size_t mem_represented() const {
+    return mem_represented_;
+  }
+
  private:
   void UpdateMemRepresented();
 

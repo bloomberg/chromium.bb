@@ -239,6 +239,17 @@ IdAllocatorInterface* ContextGroup::GetIdAllocator(unsigned namespace_id) {
   return id_namespaces_[namespace_id].get();
 }
 
+uint32 ContextGroup::GetMemRepresented() const {
+  uint32 total = 0;
+  if (buffer_manager_.get())
+    total += buffer_manager_->mem_represented();
+  if (renderbuffer_manager_.get())
+    total += renderbuffer_manager_->mem_represented();
+  if (texture_manager_.get())
+    total += texture_manager_->mem_represented();
+  return total;
+}
+
 ContextGroup::~ContextGroup() {
   CHECK(num_contexts_ == 0);
 }
