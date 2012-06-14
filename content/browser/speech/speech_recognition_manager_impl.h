@@ -50,7 +50,6 @@ class SpeechRecognizerImpl;
 //    the catch-all snoop listener (optionally) provided by the delegate.
 class CONTENT_EXPORT SpeechRecognitionManagerImpl :
     public NON_EXPORTED_BASE(content::SpeechRecognitionManager),
-    public base::SupportsWeakPtr<SpeechRecognitionManagerImpl>,
     public content::SpeechRecognitionEventListener {
  public:
   // Returns the current SpeechRecognitionManagerImpl or NULL if the call is
@@ -163,6 +162,11 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl :
   int last_session_id_;
   bool is_dispatching_event_;
   scoped_ptr<content::SpeechRecognitionManagerDelegate> delegate_;
+
+  // Used for posting asynchronous tasks (on the IO thread) without worrying
+  // about this class being destroyed in the meanwhile (due to browser shutdown)
+  // since tasks pending on a destroyed WeakPtr are automatically discarded.
+  base::WeakPtrFactory<SpeechRecognitionManagerImpl> weak_factory_;
 };
 
 }  // namespace speech

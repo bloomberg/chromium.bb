@@ -39,6 +39,14 @@ SpeechRecognitionManager* SpeechRecognitionManager::GetInstance() {
 
 namespace {
 speech::SpeechRecognitionManagerImpl* g_speech_recognition_manager_impl;
+
+void ShowAudioInputSettingsOnFileThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  media::AudioManager* audio_manager = BrowserMainLoop::GetAudioManager();
+  DCHECK(audio_manager->CanShowAudioInputSettings());
+  if (audio_manager->CanShowAudioInputSettings())
+    audio_manager->ShowAudioInputSettings();
+}
 }  // namespace
 
 namespace speech {
@@ -52,7 +60,8 @@ SpeechRecognitionManagerImpl::SpeechRecognitionManagerImpl()
       last_session_id_(kSessionIDInvalid),
       is_dispatching_event_(false),
       delegate_(content::GetContentClient()->browser()->
-                    GetSpeechRecognitionManagerDelegate()) {
+                    GetSpeechRecognitionManagerDelegate()),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   DCHECK(!g_speech_recognition_manager_impl);
   g_speech_recognition_manager_impl = this;
 }
@@ -117,7 +126,7 @@ void SpeechRecognitionManagerImpl::StartSession(int session_id) {
     delegate_->CheckRecognitionIsAllowed(
         session_id,
         base::Bind(&SpeechRecognitionManagerImpl::RecognitionAllowedCallback,
-                   this->AsWeakPtr()));
+                   weak_factory_.GetWeakPtr()));
 }
 
 void SpeechRecognitionManagerImpl::RecognitionAllowedCallback(int session_id,
@@ -125,9 +134,9 @@ void SpeechRecognitionManagerImpl::RecognitionAllowedCallback(int session_id,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(SessionExists(session_id));
   if (is_allowed) {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+    MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(&SpeechRecognitionManagerImpl::DispatchEvent,
-                   this->AsWeakPtr(), session_id, EVENT_START));
+                   weak_factory_.GetWeakPtr(), session_id, EVENT_START));
   } else {
     sessions_.erase(session_id);
   }
@@ -138,9 +147,9 @@ void SpeechRecognitionManagerImpl::AbortSession(int session_id) {
   if (!SessionExists(session_id))
     return;
 
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+  MessageLoop::current()->PostTask(FROM_HERE,
       base::Bind(&SpeechRecognitionManagerImpl::DispatchEvent,
-                 this->AsWeakPtr(), session_id, EVENT_ABORT));
+                 weak_factory_.GetWeakPtr(), session_id, EVENT_ABORT));
 }
 
 void SpeechRecognitionManagerImpl::StopAudioCaptureForSession(int session_id) {
@@ -148,9 +157,9 @@ void SpeechRecognitionManagerImpl::StopAudioCaptureForSession(int session_id) {
   if (!SessionExists(session_id))
     return;
 
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+  MessageLoop::current()->PostTask(FROM_HERE,
       base::Bind(&SpeechRecognitionManagerImpl::DispatchEvent,
-                 this->AsWeakPtr(), session_id, EVENT_STOP_CAPTURE));
+                 weak_factory_.GetWeakPtr(), session_id, EVENT_STOP_CAPTURE));
 }
 
 // Here begins the SpeechRecognitionEventListener interface implementation,
@@ -227,9 +236,9 @@ void SpeechRecognitionManagerImpl::OnAudioEnd(int session_id) {
     delegate_listener->OnAudioEnd(session_id);
   if (SpeechRecognitionEventListener* listener = GetListener(session_id))
     listener->OnAudioEnd(session_id);
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+  MessageLoop::current()->PostTask(FROM_HERE,
       base::Bind(&SpeechRecognitionManagerImpl::DispatchEvent,
-                 this->AsWeakPtr(), session_id, EVENT_AUDIO_ENDED));
+                 weak_factory_.GetWeakPtr(), session_id, EVENT_AUDIO_ENDED));
 }
 
 void SpeechRecognitionManagerImpl::OnRecognitionResult(
@@ -277,9 +286,11 @@ void SpeechRecognitionManagerImpl::OnRecognitionEnd(int session_id) {
     delegate_listener->OnRecognitionEnd(session_id);
   if (SpeechRecognitionEventListener* listener = GetListener(session_id))
     listener->OnRecognitionEnd(session_id);
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+  MessageLoop::current()->PostTask(FROM_HERE,
       base::Bind(&SpeechRecognitionManagerImpl::DispatchEvent,
-                 this->AsWeakPtr(), session_id, EVENT_RECOGNITION_ENDED));
+                 weak_factory_.GetWeakPtr(),
+                 session_id,
+                 EVENT_RECOGNITION_ENDED));
 }
 
 int SpeechRecognitionManagerImpl::GetSession(
@@ -504,18 +515,8 @@ string16 SpeechRecognitionManagerImpl::GetAudioInputDeviceModel() {
 void SpeechRecognitionManagerImpl::ShowAudioInputSettings() {
   // Since AudioManager::ShowAudioInputSettings can potentially launch external
   // processes, do that in the FILE thread to not block the calling threads.
-  if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&SpeechRecognitionManagerImpl::ShowAudioInputSettings,
-                   this->AsWeakPtr()));
-    return;
-  }
-
-  media::AudioManager* audio_manager = BrowserMainLoop::GetAudioManager();
-  DCHECK(audio_manager->CanShowAudioInputSettings());
-  if (audio_manager->CanShowAudioInputSettings())
-    audio_manager->ShowAudioInputSettings();
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                          base::Bind(&ShowAudioInputSettingsOnFileThread));
 }
 
 SpeechRecognitionManagerImpl::Session::Session()
