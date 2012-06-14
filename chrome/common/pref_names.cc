@@ -1037,8 +1037,8 @@ const char kProfileInfoCache[] = "profile.info_cache";
 
 // Prefs for SSLConfigServicePref.
 const char kCertRevocationCheckingEnabled[] = "ssl.rev_checking.enabled";
-const char kSSL3Enabled[] = "ssl.ssl3.enabled";
-const char kTLS1Enabled[] = "ssl.tls1.enabled";
+const char kSSLVersionMin[] = "ssl.version_min";
+const char kSSLVersionMax[] = "ssl.version_max";
 const char kCipherSuiteBlacklist[] = "ssl.cipher_suites.blacklist";
 const char kEnableOriginBoundCerts[] = "ssl.origin_bound_certs.enabled";
 const char kDisableSSLRecordSplitting[] = "ssl.ssl_record_splitting.disabled";

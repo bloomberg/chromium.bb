@@ -378,9 +378,6 @@ const char kDisableRestoreSessionState[]    = "disable-restore-session-state";
 // Disables the ShortcutsProvider for autocomplete results.
 const char kDisableShortcutsProvider[]      = "disable-shortcuts-provider";
 
-// Disables SSL v3 (usually for testing purposes).
-const char kDisableSSL3[]                   = "disable-ssl3";
-
 // Disables syncing browser data to a Google Account.
 const char kDisableSync[]                   = "disable-sync";
 
@@ -422,9 +419,6 @@ const char kDisableSyncThemes[]             = "disable-sync-themes";
 
 // Disables syncing browser typed urls.
 const char kDisableSyncTypedUrls[]          = "disable-sync-typed-urls";
-
-// Disables TLS v1.0 (usually for testing purposes).
-const char kDisableTLS1[]                   = "disable-tls1";
 
 // Allows disabling of translate from the command line to assist with automated
 // browser testing (e.g. Selenium/WebDriver). Normal browser users should
@@ -1164,6 +1158,14 @@ const char kSimulateUpgrade[]               = "simulate-upgrade";
 // Socket reuse policy. The value should be of type enum
 // ClientSocketReusePolicy.
 const char kSocketReusePolicy[]             = "socket-reuse-policy";
+
+// Specifies the maximum SSL/TLS version ("ssl3", "tls1", "tls1.1", or
+// "tls1.2").
+const char kSSLVersionMax[]                 = "ssl-version-max";
+
+// Specifies the minimum SSL/TLS version ("ssl3", "tls1", "tls1.1", or
+// "tls1.2").
+const char kSSLVersionMin[]                 = "ssl-version-min";
 
 // Starts the browser maximized, regardless of any previous settings.
 const char kStartMaximized[]                = "start-maximized";

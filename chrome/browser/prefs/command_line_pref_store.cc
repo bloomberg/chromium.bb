@@ -25,6 +25,8 @@ const CommandLinePrefStore::StringSwitchToPreferenceMapEntry
           prefs::kAuthNegotiateDelegateWhitelist },
       { switches::kGSSAPILibraryName, prefs::kGSSAPILibraryName },
       { switches::kDiskCacheDir, prefs::kDiskCacheDir },
+      { switches::kSSLVersionMin, prefs::kSSLVersionMin },
+      { switches::kSSLVersionMax, prefs::kSSLVersionMax },
 };
 
 const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
@@ -47,8 +49,6 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
         prefs::kWebKitAllowDisplayingInsecureContent, false },
       { switches::kAllowCrossOriginAuthPrompt,
         prefs::kAllowCrossOriginAuthPrompt, true },
-      { switches::kDisableSSL3, prefs::kSSL3Enabled, false },
-      { switches::kDisableTLS1, prefs::kTLS1Enabled, false },
       { switches::kEnableOriginBoundCerts, prefs::kEnableOriginBoundCerts,
           true },
       { switches::kDisableSSLFalseStart, prefs::kDisableSSLRecordSplitting,

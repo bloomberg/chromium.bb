@@ -106,29 +106,14 @@ TEST_F(SSLConfigServiceManagerPrefTest, BadDisabledCipherSuites) {
   EXPECT_EQ(0x0005, config.disabled_cipher_suites[1]);
 }
 
-// Test that existing user settings for TLS1.0/SSL3.0 are both ignored and
-// cleared from user preferences.
-TEST_F(SSLConfigServiceManagerPrefTest, IgnoreLegacySSLSettings) {
+// Test that without command-line settings for minimum and maximum SSL
+// versions, SSL 3.0 ~ default_version_max() are enabled.
+TEST_F(SSLConfigServiceManagerPrefTest, NoCommandLinePrefs) {
   scoped_refptr<TestingPrefStore> user_prefs(new TestingPrefStore());
 
   PrefServiceMockBuilder builder;
   builder.WithUserPrefs(user_prefs.get());
   scoped_ptr<PrefService> pref_service(builder.Create());
-
-  // SSL3.0 and TLS1.0 used to be user-definable prefs. They are now used as
-  // command-line options. Ensure any existing user prefs are ignored in
-  // favour of the command-line flags.
-  user_prefs->SetBoolean(prefs::kSSL3Enabled, false);
-  user_prefs->SetBoolean(prefs::kTLS1Enabled, false);
-
-  // Ensure the preferences exist initially.
-  bool is_ssl3_enabled = true;
-  EXPECT_TRUE(user_prefs->GetBoolean(prefs::kSSL3Enabled, &is_ssl3_enabled));
-  EXPECT_FALSE(is_ssl3_enabled);
-
-  bool is_tls1_enabled = true;
-  EXPECT_TRUE(user_prefs->GetBoolean(prefs::kTLS1Enabled, &is_tls1_enabled));
-  EXPECT_FALSE(is_tls1_enabled);
 
   SSLConfigServiceManager::RegisterPrefs(pref_service.get());
 
@@ -146,44 +131,31 @@ TEST_F(SSLConfigServiceManagerPrefTest, IgnoreLegacySSLSettings) {
   EXPECT_EQ(net::SSLConfigService::default_version_max(),
             ssl_config.version_max);
 
-  // The existing user settings should be removed from the pref_service.
-  EXPECT_FALSE(pref_service->HasPrefPath(prefs::kSSL3Enabled));
-  EXPECT_FALSE(pref_service->HasPrefPath(prefs::kTLS1Enabled));
+  // The user settings should not be added to the pref_service.
+  EXPECT_FALSE(pref_service->HasPrefPath(prefs::kSSLVersionMin));
+  EXPECT_FALSE(pref_service->HasPrefPath(prefs::kSSLVersionMax));
 
   // Explicitly double-check the settings are not in the user preference
   // store.
-  EXPECT_FALSE(user_prefs->GetBoolean(prefs::kSSL3Enabled, &is_ssl3_enabled));
-  EXPECT_FALSE(user_prefs->GetBoolean(prefs::kTLS1Enabled, &is_tls1_enabled));
+  std::string version_min_str;
+  std::string version_max_str;
+  EXPECT_FALSE(user_prefs->GetString(prefs::kSSLVersionMin, &version_min_str));
+  EXPECT_FALSE(user_prefs->GetString(prefs::kSSLVersionMax, &version_max_str));
 }
 
-// Test that command-line settings for TLS1.0/SSL3.0 are respected, that they
-// disregard any existing user preferences, and that they do not persist to
-// the user preferences files.
-TEST_F(SSLConfigServiceManagerPrefTest, CommandLineOverridesUserPrefs) {
+// Test that command-line settings for minimum and maximum SSL versions are
+// respected and that they do not persist to the user preferences files.
+TEST_F(SSLConfigServiceManagerPrefTest, CommandLinePrefs) {
   scoped_refptr<TestingPrefStore> user_prefs(new TestingPrefStore());
 
   CommandLine command_line(CommandLine::NO_PROGRAM);
-  command_line.AppendSwitch(switches::kDisableSSL3);
-  command_line.AppendSwitch(switches::kDisableTLS1);
+  command_line.AppendSwitchASCII(switches::kSSLVersionMin, "tls1");
+  command_line.AppendSwitchASCII(switches::kSSLVersionMax, "ssl3");
 
   PrefServiceMockBuilder builder;
   builder.WithUserPrefs(user_prefs.get());
   builder.WithCommandLine(&command_line);
   scoped_ptr<PrefService> pref_service(builder.Create());
-
-  // Explicitly enable SSL3.0/TLS1.0 in the user preferences, to mirror the
-  // more common legacy file.
-  user_prefs->SetBoolean(prefs::kSSL3Enabled, true);
-  user_prefs->SetBoolean(prefs::kTLS1Enabled, true);
-
-  // Ensure the preferences exist initially.
-  bool is_ssl3_enabled = false;
-  EXPECT_TRUE(user_prefs->GetBoolean(prefs::kSSL3Enabled, &is_ssl3_enabled));
-  EXPECT_TRUE(is_ssl3_enabled);
-
-  bool is_tls1_enabled = false;
-  EXPECT_TRUE(user_prefs->GetBoolean(prefs::kTLS1Enabled, &is_tls1_enabled));
-  EXPECT_TRUE(is_tls1_enabled);
 
   SSLConfigServiceManager::RegisterPrefs(pref_service.get());
 
@@ -195,21 +167,22 @@ TEST_F(SSLConfigServiceManagerPrefTest, CommandLineOverridesUserPrefs) {
 
   SSLConfig ssl_config;
   config_service->GetSSLConfig(&ssl_config);
-  // Command-line flags to disable should override the user preferences to
-  // enable.
+  // Command-line flags should be respected.
   EXPECT_EQ(net::SSL_PROTOCOL_VERSION_TLS1, ssl_config.version_min);
   EXPECT_EQ(net::SSL_PROTOCOL_VERSION_SSL3, ssl_config.version_max);
 
   // Explicitly double-check the settings are not in the user preference
   // store.
-  const PrefService::Preference* ssl3_enabled_pref =
-      pref_service->FindPreference(prefs::kSSL3Enabled);
-  EXPECT_FALSE(ssl3_enabled_pref->IsUserModifiable());
+  const PrefService::Preference* version_min_pref =
+      pref_service->FindPreference(prefs::kSSLVersionMin);
+  EXPECT_FALSE(version_min_pref->IsUserModifiable());
 
-  const PrefService::Preference* tls1_enabled_pref =
-      pref_service->FindPreference(prefs::kTLS1Enabled);
-  EXPECT_FALSE(tls1_enabled_pref->IsUserModifiable());
+  const PrefService::Preference* version_max_pref =
+      pref_service->FindPreference(prefs::kSSLVersionMax);
+  EXPECT_FALSE(version_max_pref->IsUserModifiable());
 
-  EXPECT_FALSE(user_prefs->GetBoolean(prefs::kSSL3Enabled, &is_ssl3_enabled));
-  EXPECT_FALSE(user_prefs->GetBoolean(prefs::kTLS1Enabled, &is_tls1_enabled));
+  std::string version_min_str;
+  std::string version_max_str;
+  EXPECT_FALSE(user_prefs->GetString(prefs::kSSLVersionMin, &version_min_str));
+  EXPECT_FALSE(user_prefs->GetString(prefs::kSSLVersionMax, &version_max_str));
 }
