@@ -2018,8 +2018,14 @@ bool TemplateURLService::SetDefaultSearchProviderNoNotify(TemplateURL* url) {
 
     // If we are syncing, we want to set the synced pref that will notify other
     // instances to change their default to this new search provider.
+    // Note: we don't update the pref if we're waiting on a default search
+    // engine that hasn't arrive via sync yet. Otherwise, if sync first deletes
+    // the old default, we may automatically search for a new default, call
+    // through to here, and promptly clobber the GUID of the pending default
+    // that we were waiting on, causing this and other synced clients to wind
+    // up with what is effectively a random default search provider.
     if (sync_processor_.get() && url && !url->sync_guid().empty() &&
-        GetPrefs()) {
+        GetPrefs() && !pending_synced_default_search_) {
       GetPrefs()->SetString(prefs::kSyncedDefaultSearchProviderGUID,
                             url->sync_guid());
     }

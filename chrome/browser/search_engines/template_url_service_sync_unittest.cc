@@ -1551,6 +1551,61 @@ TEST_F(TemplateURLServiceSyncTest, SyncedDefaultGUIDArrivesFirst) {
   ASSERT_EQ("newdefault", model()->GetDefaultSearchProvider()->sync_guid());
 }
 
+TEST_F(TemplateURLServiceSyncTest, DefaultGuidDeletedAndReplaced) {
+  SyncDataList initial_data;
+  // The default search provider should support replacement.
+  scoped_ptr<TemplateURL> turl1(CreateTestTemplateURL(ASCIIToUTF16("key1"),
+      "http://key1.com/{searchTerms}", "key1", 90));
+  // Create a second default search provider for the
+  // FindNewDefaultSearchProvider method to find.
+  scoped_ptr<TemplateURL> turl2(CreateTestTemplateURL(ASCIIToUTF16("key2"),
+      "http://key2.com/{searchTerms}", "key2", 100));
+  initial_data.push_back(TemplateURLService::CreateSyncDataFromTemplateURL(
+      *turl1));
+  initial_data.push_back(TemplateURLService::CreateSyncDataFromTemplateURL(
+      *turl2));
+  model()->MergeDataAndStartSyncing(syncable::SEARCH_ENGINES, initial_data,
+      PassProcessor(), CreateAndPassSyncErrorFactory());
+  model()->SetDefaultSearchProvider(model()->GetTemplateURLForGUID("key1"));
+  ASSERT_EQ("key1", model()->GetDefaultSearchProvider()->sync_guid());
+
+  EXPECT_EQ(2U, model()->GetAllSyncData(syncable::SEARCH_ENGINES).size());
+  const TemplateURL* default_search = model()->GetDefaultSearchProvider();
+  ASSERT_TRUE(default_search);
+
+  // Change kSyncedDefaultSearchProviderGUID to a GUID that does not exist in
+  // the model yet. Ensure that the default has not changed in any way.
+  profile_a()->GetTestingPrefService()->SetString(
+      prefs::kSyncedDefaultSearchProviderGUID, "newdefault");
+
+  ASSERT_EQ(default_search, model()->GetDefaultSearchProvider());
+
+  // Delete the old default. This will change the default to the next available
+  // (turl2), but should not affect the synced preference.
+  SyncChangeList changes1;
+  changes1.push_back(CreateTestSyncChange(SyncChange::ACTION_DELETE,
+                                          turl1.release()));
+  model()->ProcessSyncChanges(FROM_HERE, changes1);
+
+  EXPECT_EQ(1U, model()->GetAllSyncData(syncable::SEARCH_ENGINES).size());
+  EXPECT_EQ("key2", model()->GetDefaultSearchProvider()->sync_guid());
+  EXPECT_EQ("newdefault", profile_a()->GetTestingPrefService()->GetString(
+      prefs::kSyncedDefaultSearchProviderGUID));
+
+  // Finally, bring in the expected entry with the right GUID. Ensure that
+  // the default has changed to the new search engine.
+  SyncChangeList changes2;
+  changes2.push_back(CreateTestSyncChange(SyncChange::ACTION_ADD,
+      CreateTestTemplateURL(ASCIIToUTF16("new"), "http://new.com/{searchTerms}",
+                            "newdefault")));
+  model()->ProcessSyncChanges(FROM_HERE, changes2);
+
+  EXPECT_EQ(2U, model()->GetAllSyncData(syncable::SEARCH_ENGINES).size());
+  EXPECT_EQ("newdefault", model()->GetDefaultSearchProvider()->sync_guid());
+  EXPECT_EQ("newdefault", profile_a()->GetTestingPrefService()->GetString(
+      prefs::kSyncedDefaultSearchProviderGUID));
+}
+
 TEST_F(TemplateURLServiceSyncTest, SyncedDefaultArrivesAfterStartup) {
   // Start with the default set to something in the model before we start
   // syncing.
