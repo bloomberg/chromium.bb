@@ -10,7 +10,9 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/spellchecker/spelling_service_client.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/spellcheck_result.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_url_fetcher_factory.h"
@@ -258,6 +260,10 @@ TEST_F(SpellingServiceClientTest, RequestTextCheck) {
     },
   };
 
+  PrefService* pref = profile_.GetPrefs();
+  pref->SetBoolean(prefs::kEnableSpellCheck, true);
+  pref->SetBoolean(prefs::kSpellCheckUseSpellingService, true);
+
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTests); ++i) {
     client_.SetHTTPRequest(kTests[i].request_type, kTests[i].request_text);
     client_.SetHTTPResponse(kTests[i].response_status, kTests[i].response_data);
@@ -271,5 +277,53 @@ TEST_F(SpellingServiceClientTest, RequestTextCheck) {
         base::Bind(&SpellingServiceClientTest::OnTextCheckComplete,
                    base::Unretained(this)));
     client_.CallOnURLFetchComplete();
+  }
+}
+
+// Verify that SpellingServiceClient::IsAvailable() returns true only when it
+// can send suggest requests or spellcheck requests.
+TEST_F(SpellingServiceClientTest, AvailableServices) {
+  const SpellingServiceClient::ServiceType kSuggest =
+      SpellingServiceClient::SUGGEST;
+  const SpellingServiceClient::ServiceType kSpellcheck =
+      SpellingServiceClient::SPELLCHECK;
+
+  // When a user disables spellchecking or prevent using the Spelling service,
+  // this function should return false both for suggestions and for spellcheck.
+  PrefService* pref = profile_.GetPrefs();
+  pref->SetBoolean(prefs::kEnableSpellCheck, false);
+  pref->SetBoolean(prefs::kSpellCheckUseSpellingService, false);
+  EXPECT_FALSE(client_.IsAvailable(&profile_, kSuggest));
+  EXPECT_FALSE(client_.IsAvailable(&profile_, kSpellcheck));
+
+  pref->SetBoolean(prefs::kEnableSpellCheck, true);
+  pref->SetBoolean(prefs::kSpellCheckUseSpellingService, true);
+
+  // For locales supported by the SpellCheck service, this function returns
+  // false for suggestions and true for spellcheck. (The comment in
+  // SpellingServiceClient::IsAvailable() describes why this function returns
+  // false for suggestions.)
+  static const char* kSupported[] = {
+    "", "en-AU", "en-CA", "en-GB", "en-US",
+  };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kSupported); ++i) {
+    pref->SetString(prefs::kSpellCheckDictionary, kSupported[i]);
+    EXPECT_FALSE(client_.IsAvailable(&profile_, kSuggest));
+    EXPECT_TRUE(client_.IsAvailable(&profile_, kSpellcheck));
+  }
+
+  // On the other hand, this function returns true for suggestions and false for
+  // spellcheck for unsupported locales.
+  static const char* kUnsupported[] = {
+    "af-ZA", "bg-BG", "ca-ES", "cs-CZ", "da-DK", "de-DE", "el-GR", "es-ES",
+    "et-EE", "fo-FO", "fr-FR", "he-IL", "hi-IN", "hr-HR", "hu-HU", "id-ID",
+    "it-IT", "lt-LT", "lv-LV", "nb-NO", "nl-NL", "pl-PL", "pt-BR", "pt-PT",
+    "ro-RO", "ru-RU", "sk-SK", "sl-SI", "sh", "sr", "sv-SE", "tr-TR",
+    "uk-UA", "vi-VN",
+  };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kUnsupported); ++i) {
+    pref->SetString(prefs::kSpellCheckDictionary, kUnsupported[i]);
+    EXPECT_TRUE(client_.IsAvailable(&profile_, kSuggest));
+    EXPECT_FALSE(client_.IsAvailable(&profile_, kSpellcheck));
   }
 }

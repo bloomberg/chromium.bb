@@ -89,6 +89,9 @@ class SpellingServiceClient : public net::URLFetcherDelegate {
                         const string16& text,
                         const TextCheckCompleteCallback& callback);
 
+  // Returns whether the specified service is available for the given profile.
+  static bool IsAvailable(Profile* profile, ServiceType type);
+
  private:
   // Creates a URLFetcher object used for sending a JSON-RPC request. This
   // function is overriden by unit tests to prevent them from actually sending

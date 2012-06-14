@@ -72,7 +72,7 @@ bool SpellingServiceClient::RequestTextCheck(
     uloc_getLanguage(id, language, arraysize(language), &error);
     country = uloc_getISO3Country(id);
   }
-  if (type == SPELLCHECK && base::strcasecmp(language, ULOC_ENGLISH))
+  if (!IsAvailable(profile, SPELLCHECK))
     return false;
 
   // Format the JSON request to be sent to the Spelling service.
@@ -110,6 +110,22 @@ bool SpellingServiceClient::RequestTextCheck(
   text_ = text;
   callback_ = callback;
   return true;
+}
+
+bool SpellingServiceClient::IsAvailable(Profile* profile, ServiceType type) {
+  const PrefService* pref = profile->GetPrefs();
+  if (!pref->GetBoolean(prefs::kEnableSpellCheck) ||
+      !pref->GetBoolean(prefs::kSpellCheckUseSpellingService))
+    return false;
+
+  // Enable the suggest service only on languages not supported by the
+  // spellcheck service. When this client calls the spellcheck service, it
+  // returns not only spellcheck results but also spelling suggestions provided
+  // by the suggest service. That is, it is not useful to use the suggest
+  // service when this client can use the spellcheck service.
+  std::string locale = pref->GetString(prefs::kSpellCheckDictionary);
+  bool spellcheck_available = locale.empty() || !locale.compare(0, 2, "en");
+  return type == SUGGEST ? !spellcheck_available : spellcheck_available;
 }
 
 void SpellingServiceClient::OnURLFetchComplete(
