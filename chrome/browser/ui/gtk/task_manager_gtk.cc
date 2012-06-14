@@ -177,7 +177,9 @@ bool TreeViewColumnIsVisible(GtkWidget* treeview, TaskManagerColumn colid) {
   return gtk_tree_view_column_get_visible(column);
 }
 
-void TreeViewInsertColumnWithPixbuf(GtkWidget* treeview, int resid) {
+// The task column is special because it has an icon and it gets special
+// treatment with respect to resizing the columns.
+void TreeViewInsertTaskColumn(GtkWidget* treeview, int resid) {
   int colid = TaskManagerResourceIDToColumnID(resid);
   GtkTreeViewColumn* column = gtk_tree_view_column_new();
   gtk_tree_view_column_set_title(column,
@@ -224,6 +226,19 @@ void TreeViewInsertColumnWithName(GtkWidget* treeview,
 void TreeViewInsertColumn(GtkWidget* treeview, int resid) {
   TreeViewInsertColumnWithName(treeview, TaskManagerResourceIDToColumnID(resid),
                                l10n_util::GetStringUTF8(resid).c_str());
+}
+
+// Set the current width of the column without forcing a fixed or maximum
+// width as gtk_tree_view_column_set_[fixed|maximum]_width() would. This would
+// basically be gtk_tree_view_column_set_width() except that there is no such
+// function. It turns out that other applications have done similar hacks to do
+// the same thing - search the web for that nonexistent function name! :)
+void TreeViewColumnSetWidth(GtkTreeViewColumn* column, gint width) {
+  column->width = width;
+  column->resized_width = width;
+  column->use_resized_width = TRUE;
+  // Needed for use_resized_width to be effective.
+  gtk_widget_queue_resize(column->tree_view);
 }
 
 }  // namespace
@@ -522,6 +537,10 @@ void TaskManagerGtk::Init() {
 }
 
 void TaskManagerGtk::SetInitialDialogSize() {
+  // Hook up to the realize event so we can size the task column to the
+  // size of the leftover space after packing the other columns.
+  g_signal_connect(treeview_, "realize",
+                   G_CALLBACK(OnTreeViewRealizeThunk), this);
   // If we previously saved the dialog's bounds, use them.
   if (g_browser_process->local_state()) {
     const DictionaryValue* placement_pref =
@@ -611,9 +630,8 @@ void TaskManagerGtk::CreateTaskManagerTreeview() {
   treeview_ = gtk_tree_view_new_with_model(process_list_sort_);
 
   // Insert all the columns.
-  TreeViewInsertColumnWithPixbuf(treeview_, IDS_TASK_MANAGER_TASK_COLUMN);
-  TreeViewInsertColumnWithPixbuf(treeview_,
-                                 IDS_TASK_MANAGER_PROFILE_NAME_COLUMN);
+  TreeViewInsertTaskColumn(treeview_, IDS_TASK_MANAGER_TASK_COLUMN);
+  TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_PROFILE_NAME_COLUMN);
   TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_SHARED_MEM_COLUMN);
   TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN);
   TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_CPU_COLUMN);
@@ -895,6 +913,37 @@ void TaskManagerGtk::OnResponse(GtkWidget* dialog, int response_id) {
   } else if (response_id == kTaskManagerPurgeMemory) {
     MemoryPurger::PurgeAll();
   }
+}
+
+void TaskManagerGtk::OnTreeViewRealize(GtkTreeView* treeview) {
+  // Five columns show by default: the task column, the memory column, the CPU
+  // column, the network column, and the FPS column. Initially we set the task
+  // tolumn to take all the extra space, with the other columns being sized to
+  // fit the column names. Here we turn off the expand property of the first
+  // column (to make the table behave sanely when the user resizes it), and set
+  // the effective sizes of all five default columns to the automatically chosen
+  // sizes before any rows are added. This causes them to stay at those sizes
+  // even if the data would overflow, preventing a horizontal scroll bar from
+  // appearing due to the row data.
+  static const TaskManagerColumn dfl_columns[] = {kTaskManagerPrivateMem,
+                                                  kTaskManagerCPU,
+                                                  kTaskManagerNetwork,
+                                                  kTaskManagerFPS};
+  GtkTreeViewColumn* column = NULL;
+  gint width;
+  for (size_t i = 0; i < arraysize(dfl_columns); ++i) {
+    column = gtk_tree_view_get_column(treeview,
+        TreeViewColumnIndexFromID(dfl_columns[i]));
+    width = gtk_tree_view_column_get_width(column);
+    TreeViewColumnSetWidth(column, width);
+  }
+  // Do the task column separately since it's a little different.
+  column = gtk_tree_view_get_column(treeview,
+      TreeViewColumnIndexFromID(kTaskManagerTask));
+  width = gtk_tree_view_column_get_width(column);
+  // Turn expanding back off to make resizing columns behave sanely.
+  gtk_tree_view_column_set_expand(column, FALSE);
+  TreeViewColumnSetWidth(column, width);
 }
 
 void TaskManagerGtk::OnSelectionChanged(GtkTreeSelection* selection) {
