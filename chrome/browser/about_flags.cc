@@ -713,11 +713,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableStackedTabStrip)
   },
   {
-    "default-device-scale-factor",
+    "force-device-scale-factor",
     IDS_FLAGS_FORCE_HIGH_DPI_NAME,
     IDS_FLAGS_FORCE_HIGH_DPI_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE_AND_VALUE(switches::kDefaultDeviceScaleFactor, "2")
+    SINGLE_VALUE_TYPE_AND_VALUE(switches::kForceDeviceScaleFactor, "2")
   },
 #if defined(OS_CHROMEOS)
   {

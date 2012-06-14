@@ -14,12 +14,16 @@
 namespace gfx {
 namespace {
 
-float GetDefaultDeviceScaleFactorImpl() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+bool HasForceDeviceScaleFactor() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kForceDeviceScaleFactor);
+}
+
+float GetForcedDeviceScaleFactorImpl() {
   double scale_in_double = 1.0;
-  if (command_line.HasSwitch(switches::kDefaultDeviceScaleFactor)) {
-    std::string value =
-        command_line.GetSwitchValueASCII(switches::kDefaultDeviceScaleFactor);
+  if (HasForceDeviceScaleFactor()) {
+    std::string value = CommandLine::ForCurrentProcess()->
+        GetSwitchValueASCII(switches::kForceDeviceScaleFactor);
     if (!base::StringToDouble(value, &scale_in_double))
       LOG(ERROR) << "Failed to parse the deafult device scale factor:" << value;
   }
@@ -29,27 +33,27 @@ float GetDefaultDeviceScaleFactorImpl() {
 } // namespace
 
 // static
-float Display::GetDefaultDeviceScaleFactor() {
-  static const float kDefaultDeviceScaleFactor =
-      GetDefaultDeviceScaleFactorImpl();
-  return kDefaultDeviceScaleFactor;
+float Display::GetForcedDeviceScaleFactor() {
+  static const float kForcedDeviceScaleFactor =
+      GetForcedDeviceScaleFactorImpl();
+  return kForcedDeviceScaleFactor;
 }
 
 Display::Display()
     : id_(-1),
-      device_scale_factor_(GetDefaultDeviceScaleFactor()) {
+      device_scale_factor_(GetForcedDeviceScaleFactor()) {
 }
 
 Display::Display(int id)
     : id_(id),
-      device_scale_factor_(GetDefaultDeviceScaleFactor()) {
+      device_scale_factor_(GetForcedDeviceScaleFactor()) {
 }
 
 Display::Display(int id, const gfx::Rect& bounds)
     : id_(id),
       bounds_(bounds),
       work_area_(bounds),
-      device_scale_factor_(GetDefaultDeviceScaleFactor()) {
+      device_scale_factor_(GetForcedDeviceScaleFactor()) {
 #if defined(USE_AURA)
   SetScaleAndBounds(device_scale_factor_, bounds);
 #endif
@@ -69,7 +73,8 @@ void Display::SetScaleAndBounds(
     float device_scale_factor,
     const gfx::Rect& bounds_in_pixel) {
   Insets insets = bounds_.InsetsFrom(work_area_);
-  device_scale_factor_ = device_scale_factor;
+  if (!HasForceDeviceScaleFactor())
+    device_scale_factor_ = device_scale_factor;
 #if defined(USE_AURA)
   bounds_in_pixel_ = bounds_in_pixel;
 #endif

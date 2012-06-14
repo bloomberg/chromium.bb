@@ -26,8 +26,8 @@ FilePath GetResourcesPakFilePath(const std::string& pak_name) {
 }
 
 bool ShouldLoad2xResources() {
-  return (gfx::Display::GetDefaultDeviceScaleFactor() > 1.0f ||
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kLoad2xResources));
+  return gfx::Display::GetForcedDeviceScaleFactor() > 1.0f ||
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kLoad2xResources);
 }
 
 }  // namespace
@@ -38,9 +38,6 @@ void ResourceBundle::LoadCommonResources() {
   // Always load the 1x data pack first as the 2x data pack contains both 1x and
   // 2x images. The 1x data pack only has 1x images, thus passes in an accurate
   // scale factor to gfx::ImageSkia::AddBitmapForScale.
-  // TODO(pkotwicz): Fix this in cases where it is intended for the 2x bitmap
-  // not to be 2 * size of the 1x bitmap for HDA.
-  // TODO(oshima): Fix this where it is unintended.
 
   AddDataPack(GetResourcesPakFilePath("chrome.pak"),
               SCALE_FACTOR_100P);

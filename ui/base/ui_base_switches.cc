@@ -6,10 +6,6 @@
 
 namespace switches {
 
-// The default device scale factor to apply to the browser UI and
-// the contents in the absence of a viewport meta tag.
-const char kDefaultDeviceScaleFactor[] = "default-device-scale-factor";
-
 // Let text glyphs have X-positions that aren't snapped to the pixel grid.
 const char kEnableTextSubpixelPositioning[] =
     "enable-text-subpixel-positioning";
@@ -22,6 +18,10 @@ const char kEnableTouchEvents[] = "enable-touch-events";
 
 // Enables the Views textfield on Windows.
 const char kEnableViewsTextfield[] = "enable-views-textfield";
+
+// Overrides the device scale factor for the browser UI and the
+// contents.
+const char kForceDeviceScaleFactor[] = "force-device-scale-factor";
 
 // Generates a 2x version of resources for which no 2x version is available or
 // the 2x version is of an incorrect size and applies a red mask to the

@@ -19,9 +19,9 @@ namespace gfx {
 // system, not in backing pixels.
 class UI_EXPORT Display {
  public:
-  // Returns the default value for the device scale factor, which is
-  // given by "--default-device-scale-factor".
-  static float GetDefaultDeviceScaleFactor();
+  // Returns the forced device scale factor, which is given by
+  // "--force-device-scale-factor".
+  static float GetForcedDeviceScaleFactor();
 
   // Creates a display with invalid id(-1) as default.
   Display();
