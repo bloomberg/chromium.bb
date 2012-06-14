@@ -127,7 +127,10 @@ sign_installer() {
   local keychain="${2}"
   local id="${3}"
 
-  sign "${input_dir}/${PKG_DIR}/${PKG_FINAL}" "${keychain}" "${id}"
+  local package="${input_dir}/${PKG_DIR}/${PKG_FINAL}"
+  productsign --sign "${id}" --keychain "${keychain}" \
+      "${package}" "${package}.signed"
+  mv -f "${package}.signed" "${package}"
 }
 
 build_package() {
