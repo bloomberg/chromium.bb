@@ -23,75 +23,24 @@
 using content::PageNavigator;
 using content::UserMetricsAction;
 
-BookmarkContextMenuControllerViews::BookmarkContextMenuControllerViews(
-    views::Widget* parent_widget,
-    BookmarkContextMenuControllerViewsDelegate* delegate,
-    Profile* profile,
-    PageNavigator* navigator,
-    const BookmarkNode* parent,
-    const std::vector<const BookmarkNode*>& selection)
-    : parent_widget_(parent_widget),
-      delegate_(delegate),
-      profile_(profile),
-      navigator_(navigator),
-      parent_(parent),
-      selection_(selection),
-      model_(profile->GetBookmarkModel()) {
-  DCHECK(profile_);
-  DCHECK(model_->IsLoaded());
-  model_->AddObserver(this);
+#if !defined(OS_WIN)
+// static
+BookmarkContextMenuControllerViews* BookmarkContextMenuControllerViews::Create(
+      views::Widget* parent_widget,
+      BookmarkContextMenuControllerViewsDelegate* delegate,
+      Profile* profile,
+      content::PageNavigator* navigator,
+      const BookmarkNode* parent,
+      const std::vector<const BookmarkNode*>& selection) {
+  return new BookmarkContextMenuControllerViews(parent_widget, delegate,
+                                                profile, navigator, parent,
+                                                selection);
 }
+#endif  // !defined(OS_WIN)
 
 BookmarkContextMenuControllerViews::~BookmarkContextMenuControllerViews() {
   if (model_)
     model_->RemoveObserver(this);
-}
-
-void BookmarkContextMenuControllerViews::BuildMenu() {
-  if (selection_.size() == 1 && selection_[0]->is_url()) {
-    delegate_->AddItemWithStringId(IDC_BOOKMARK_BAR_OPEN_ALL,
-                                   IDS_BOOKMARK_BAR_OPEN_IN_NEW_TAB);
-    delegate_->AddItemWithStringId(IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW,
-                                   IDS_BOOKMARK_BAR_OPEN_IN_NEW_WINDOW);
-    delegate_->AddItemWithStringId(IDC_BOOKMARK_BAR_OPEN_ALL_INCOGNITO,
-                                   IDS_BOOKMARK_BAR_OPEN_INCOGNITO);
-  } else {
-    delegate_->AddItemWithStringId(IDC_BOOKMARK_BAR_OPEN_ALL,
-                                   IDS_BOOKMARK_BAR_OPEN_ALL);
-    delegate_->AddItemWithStringId(IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW,
-                                   IDS_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW);
-    delegate_->AddItemWithStringId(IDC_BOOKMARK_BAR_OPEN_ALL_INCOGNITO,
-                                   IDS_BOOKMARK_BAR_OPEN_ALL_INCOGNITO);
-  }
-
-  delegate_->AddSeparator();
-  if (selection_.size() == 1 && selection_[0]->is_folder()) {
-    delegate_->AddItemWithStringId(IDC_BOOKMARK_BAR_RENAME_FOLDER,
-                                   IDS_BOOKMARK_BAR_RENAME_FOLDER);
-  } else {
-    delegate_->AddItemWithStringId(IDC_BOOKMARK_BAR_EDIT,
-                                   IDS_BOOKMARK_BAR_EDIT);
-  }
-
-  delegate_->AddSeparator();
-  delegate_->AddItemWithStringId(IDC_CUT, IDS_CUT);
-  delegate_->AddItemWithStringId(IDC_COPY, IDS_COPY);
-  delegate_->AddItemWithStringId(IDC_PASTE, IDS_PASTE);
-
-  delegate_->AddSeparator();
-  delegate_->AddItemWithStringId(IDC_BOOKMARK_BAR_REMOVE,
-                                 IDS_BOOKMARK_BAR_REMOVE);
-
-  delegate_->AddSeparator();
-  delegate_->AddItemWithStringId(IDC_BOOKMARK_BAR_ADD_NEW_BOOKMARK,
-                                 IDS_BOOKMARK_BAR_ADD_NEW_BOOKMARK);
-  delegate_->AddItemWithStringId(IDC_BOOKMARK_BAR_NEW_FOLDER,
-                                 IDS_BOOKMARK_BAR_NEW_FOLDER);
-
-  delegate_->AddSeparator();
-  delegate_->AddItemWithStringId(IDC_BOOKMARK_MANAGER, IDS_BOOKMARK_MANAGER);
-  delegate_->AddCheckboxItem(IDC_BOOKMARK_BAR_ALWAYS_SHOW,
-                             IDS_SHOW_BOOKMARK_BAR);
 }
 
 void BookmarkContextMenuControllerViews::ExecuteCommand(int id) {
@@ -291,6 +240,72 @@ bool BookmarkContextMenuControllerViews::IsCommandEnabled(int id) const {
               bookmark_utils::CanPasteFromClipboard(parent_));
   }
   return true;
+}
+
+void BookmarkContextMenuControllerViews::BuildMenu() {
+  if (selection_.size() == 1 && selection_[0]->is_url()) {
+    delegate_->AddItemWithStringId(IDC_BOOKMARK_BAR_OPEN_ALL,
+                                   IDS_BOOKMARK_BAR_OPEN_IN_NEW_TAB);
+    delegate_->AddItemWithStringId(IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW,
+                                   IDS_BOOKMARK_BAR_OPEN_IN_NEW_WINDOW);
+    delegate_->AddItemWithStringId(IDC_BOOKMARK_BAR_OPEN_ALL_INCOGNITO,
+                                   IDS_BOOKMARK_BAR_OPEN_INCOGNITO);
+  } else {
+    delegate_->AddItemWithStringId(IDC_BOOKMARK_BAR_OPEN_ALL,
+                                   IDS_BOOKMARK_BAR_OPEN_ALL);
+    delegate_->AddItemWithStringId(IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW,
+                                   IDS_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW);
+    delegate_->AddItemWithStringId(IDC_BOOKMARK_BAR_OPEN_ALL_INCOGNITO,
+                                   IDS_BOOKMARK_BAR_OPEN_ALL_INCOGNITO);
+  }
+
+  delegate_->AddSeparator();
+  if (selection_.size() == 1 && selection_[0]->is_folder()) {
+    delegate_->AddItemWithStringId(IDC_BOOKMARK_BAR_RENAME_FOLDER,
+                                   IDS_BOOKMARK_BAR_RENAME_FOLDER);
+  } else {
+    delegate_->AddItemWithStringId(IDC_BOOKMARK_BAR_EDIT,
+                                   IDS_BOOKMARK_BAR_EDIT);
+  }
+
+  delegate_->AddSeparator();
+  delegate_->AddItemWithStringId(IDC_CUT, IDS_CUT);
+  delegate_->AddItemWithStringId(IDC_COPY, IDS_COPY);
+  delegate_->AddItemWithStringId(IDC_PASTE, IDS_PASTE);
+
+  delegate_->AddSeparator();
+  delegate_->AddItemWithStringId(IDC_BOOKMARK_BAR_REMOVE,
+                                 IDS_BOOKMARK_BAR_REMOVE);
+
+  delegate_->AddSeparator();
+  delegate_->AddItemWithStringId(IDC_BOOKMARK_BAR_ADD_NEW_BOOKMARK,
+                                 IDS_BOOKMARK_BAR_ADD_NEW_BOOKMARK);
+  delegate_->AddItemWithStringId(IDC_BOOKMARK_BAR_NEW_FOLDER,
+                                 IDS_BOOKMARK_BAR_NEW_FOLDER);
+
+  delegate_->AddSeparator();
+  delegate_->AddItemWithStringId(IDC_BOOKMARK_MANAGER, IDS_BOOKMARK_MANAGER);
+  delegate_->AddCheckboxItem(IDC_BOOKMARK_BAR_ALWAYS_SHOW,
+                             IDS_SHOW_BOOKMARK_BAR);
+}
+
+BookmarkContextMenuControllerViews::BookmarkContextMenuControllerViews(
+    views::Widget* parent_widget,
+    BookmarkContextMenuControllerViewsDelegate* delegate,
+    Profile* profile,
+    PageNavigator* navigator,
+    const BookmarkNode* parent,
+    const std::vector<const BookmarkNode*>& selection)
+    : parent_widget_(parent_widget),
+      delegate_(delegate),
+      profile_(profile),
+      navigator_(navigator),
+      parent_(parent),
+      selection_(selection),
+      model_(profile->GetBookmarkModel()) {
+  DCHECK(profile_);
+  DCHECK(model_->IsLoaded());
+  model_->AddObserver(this);
 }
 
 void BookmarkContextMenuControllerViews::BookmarkModelChanged() {

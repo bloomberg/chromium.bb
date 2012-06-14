@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,6 +47,45 @@ class BookmarkContextMenuControllerViewsDelegate {
 // menu shown for any bookmark item.
 class BookmarkContextMenuControllerViews : public BaseBookmarkModelObserver {
  public:
+  // Factory function for creating an instance of the
+  // BookmarkContextMenuControllerViews class which in turn creates the
+  // bookmark context menu.
+  // |parent_widget| is the window that this menu should be added to.
+  // |delegate| is described above.
+  // |profile| is used for opening urls as well as enabling 'open incognito'.
+  // |navigator| is used if |browser| is null, and is provided for testing.
+  // |parent| is the parent for newly created nodes if |selection| is empty.
+  // |selection| is the nodes the context menu operates on and may be empty.
+  static BookmarkContextMenuControllerViews* Create(
+      views::Widget* parent_widget,
+      BookmarkContextMenuControllerViewsDelegate* delegate,
+      Profile* profile,
+      content::PageNavigator* navigator,
+      const BookmarkNode* parent,
+      const std::vector<const BookmarkNode*>& selection);
+
+  virtual ~BookmarkContextMenuControllerViews();
+
+  virtual void ExecuteCommand(int id);
+  virtual bool IsItemChecked(int id) const;
+  virtual bool IsCommandEnabled(int id) const;
+
+  void BuildMenu();
+
+  Profile* profile() const { return profile_; }
+
+  void set_navigator(content::PageNavigator* navigator) {
+    navigator_ = navigator;
+  }
+  content::PageNavigator* navigator() const { return navigator_; }
+
+  views::Widget* parent_widget() const { return parent_widget_; }
+
+  const std::vector<const BookmarkNode*>& selection() const {
+    return selection_;
+  }
+
+ protected:
   // Creates the bookmark context menu.
   // |parent_widget| is the window that this menu should be added to.
   // |delegate| is described above.
@@ -61,20 +100,6 @@ class BookmarkContextMenuControllerViews : public BaseBookmarkModelObserver {
       content::PageNavigator* navigator,
       const BookmarkNode* parent,
       const std::vector<const BookmarkNode*>& selection);
-  virtual ~BookmarkContextMenuControllerViews();
-
-  void BuildMenu();
-
-  void ExecuteCommand(int id);
-  bool IsItemChecked(int id) const;
-  bool IsCommandEnabled(int id) const;
-
-  Profile* profile() const { return profile_; }
-
-  void set_navigator(content::PageNavigator* navigator) {
-    navigator_ = navigator;
-  }
-  content::PageNavigator* navigator() const { return navigator_; }
 
  private:
   // Overridden from BaseBookmarkModelObserver:

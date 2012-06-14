@@ -3416,6 +3416,8 @@
         'browser/ui/views/bookmarks/bookmark_context_menu.h',
         'browser/ui/views/bookmarks/bookmark_context_menu_controller_views.cc',
         'browser/ui/views/bookmarks/bookmark_context_menu_controller_views.h',
+        'browser/ui/views/bookmarks/bookmark_context_menu_controller_views_win.cc',
+        'browser/ui/views/bookmarks/bookmark_context_menu_controller_views_win.h',
         'browser/ui/views/bookmarks/bookmark_editor_view.cc',
         'browser/ui/views/bookmarks/bookmark_editor_view.h',
         'browser/ui/views/bookmarks/bookmark_menu_controller_views.cc',
