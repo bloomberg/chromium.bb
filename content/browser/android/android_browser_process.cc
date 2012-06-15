@@ -7,10 +7,7 @@
 #include "base/android/jni_string.h"
 #include "base/debug/debugger.h"
 #include "base/logging.h"
-#if !defined(ANDROID_UPSTREAM_BRINGUP)
 #include "content/browser/android/content_startup_flags.h"
-#include "content/common/android/command_line.h"
-#endif
 #include "content/public/common/content_constants.h"
 #include "jni/android_browser_process_jni.h"
 
@@ -21,9 +18,7 @@ static void SetCommandLineFlags(JNIEnv*env,
                                 jint max_render_process_count,
                                 jstring plugin_descriptor) {
   std::string plugin_str = ConvertJavaStringToUTF8(env, plugin_descriptor);
-#if !defined(ANDROID_UPSTREAM_BRINGUP)
-  SetContentCommandLineFlags(max_render_process_count, plugin_str);
-#endif
+  content::SetContentCommandLineFlags(max_render_process_count, plugin_str);
 }
 
 static jboolean IsOfficialBuild(JNIEnv* env, jclass clazz) {

@@ -189,6 +189,8 @@
     'browser/android/android_browser_process.h',
     'browser/android/command_line.cc',
     'browser/android/command_line.h',
+    'browser/android/content_startup_flags.cc',
+    'browser/android/content_startup_flags.h',
     'browser/android/content_util.cc',
     'browser/android/content_util.h',
     'browser/android/content_view_impl.cc',
