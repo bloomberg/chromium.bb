@@ -7,12 +7,7 @@
 #   http://www.gnu.org/software/make/manual/make.html
 #
 
-# =SNIP=
-# This Makefile is used as a template to generate the real Makefile that is
-# included in the SDK distribution. The toolchain-specific project lists can be
-# found in build_tools/build_sdk.py.
-$(error MISSING PROJECTS)
-# =SNIP=
+__PROJECT_LIST__
 
 # Define the default target
 all:

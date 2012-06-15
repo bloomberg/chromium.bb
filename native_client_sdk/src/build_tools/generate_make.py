@@ -28,6 +28,11 @@ SRC_EXT = {
 }
 
 
+def ErrorExit(text):
+  sys.stderr.write(text + '\n')
+  sys.exit(1)
+
+
 def Replace(text, replacements):
   for key in replacements:
     text = text.replace(key, replacements[key])
@@ -89,19 +94,27 @@ def GenerateCopyList(desc):
 def BuildToolDict(tc, proj, arch='', ext='.nexe', OBJS='', TARG='', REMAP=''):
   TC = tc.upper()
   PROJ = proj.upper()
+  EXT= SRC_EXT[ext]
 
   if not OBJS:
-    OBJS = '%s_%s_%s_%s_O' % (TC, PROJ, arch, ext)
+    OBJS = '%s_%s_%s_%s_O' % (TC, PROJ, arch, EXT)
   
-  if not TARG:
-    TARG = '%s_x86_%s%s' % (proj,arch,ext)
+  if tc in ['newlib', 'glibc']:
+    machine = '-m' + arch
+    if not TARG:
+      TARG = '%s_x86_%s%s' % (proj,arch,ext)
+  else:
+    machine = ''
+    if not TARG:
+      TARG = proj + '.pexe'
 
   replace = {
-    '<ARCH>': arch,
+    '<arch>': arch,
+    '<ARCH>': machine,
     '<CC>': '%s_%s' % (TC, SRC_EXT[ext]),
     '<DUMP>': '%s_DUMP' % TC,
     '<ext>' : ext,
-    '<EXT>' : SRC_EXT[ext],
+    '<EXT>' : EXT,
     '<LINK>': '%s_LINK' % TC,
     '<OBJS>' : OBJS,
     '<proj>': proj,
@@ -117,17 +130,22 @@ def BuildToolDict(tc, proj, arch='', ext='.nexe', OBJS='', TARG='', REMAP=''):
 
 def GenerateNEXE(toolchain, name, ext, cc_sources, cxx_sources):
   COMPILE_RULE = """
-<OBJS>:=$(patsubst %.<ext>, <tc>/%_<ARCH>.o,$(<PROJ>_<EXT>))
-$(<OBJS>) : <tc>/%_<ARCH>.o : %.<ext> $(THIS_MAKE) | <tc>
-<TAB>$(<CC>) -o $@ $< -m<ARCH> $(<PROJ>_<EXT>FLAGS) -DTCNAME=<tc>
+<OBJS>:=$(patsubst %.<ext>, <tc>/%_<arch>.o,$(<PROJ>_<EXT>))
+$(<OBJS>) : <tc>/%_<arch>.o : %.<ext> $(THIS_MAKE) | <tc>
+<TAB>$(<CC>) -o $@ $< <ARCH> $(<PROJ>_<EXT>FLAGS) -DTCNAME=<tc>
 """
   LINK_RULE = """
 <tc>/<TARG> : $(<OBJS>)
-<TAB>$(<LINK>) -o $@ $^ -m<ARCH> $(<PROJ>_LDFLAGS)
+<TAB>$(<LINK>) -o $@ $^ <ARCH> $(<PROJ>_LDFLAGS)
 """
   rules = ''
   targs = []
-  for arch in ARCHITECTURES:
+  if toolchain in ['newlib', 'glibc']:
+    archs = ['32', '64']
+  else:
+    archs = [ toolchain.upper() ]
+
+  for arch in archs:
     object_sets = []
     remap = ''
     if cc_sources:
@@ -148,21 +166,36 @@ $(<OBJS>) : <tc>/%_<ARCH>.o : %.<ext> $(THIS_MAKE) | <tc>
       continue
     if ext == '.so':
       remap = ' -n %s,%s.so' % (replace['<TARG>'], name)
-    rules += '%s_NMF+=%s/%s\n' % (replace['<TC>'], toolchain, replace['<TARG>'])
+    if toolchain in ['newlib', 'glibc']:
+      rules += '%s_NMF+=%s/%s\n' % (replace['<TC>'], toolchain, replace['<TARG>'])
     if remap:
       rules += '%s_REMAP+=%s\n' % (replace['<TC>'], remap)
   return rules
 
 
-def GenerateReplacements(desc):
+def GenerateReplacements(desc, toolchains):
+  TRANSLATE_RULE = """
+<tc>/<proj>_x86_32.nexe : <tc>/<proj>.pexe
+<TAB>$(TRANSLATE) -arch x86-32 $< -o $@ 
+
+<tc>/<proj>_x86_64.nexe : <tc>/<proj>.pexe
+<TAB>$(TRANSLATE) -arch x86-64 $< -o $@ 
+
+<tc>/<proj>_arm.nexe : <tc>/<proj>.pexe
+<TAB>$(TRANSLATE) -arch arm $< -o $@ 
+PNACL_NMF:=<tc>/<proj>_x86_32.nexe <tc>/<proj>_x86_64.nexe <tc>/<proj>_arm.nexe
+"""
   NMF_RULE = """
 <tc>/<proj>.nmf : $(<TC>_NMF)
 <TAB>$(NMF) -D $(<DUMP>) -o $@ $(<TC>_PATHS) $^ -t <tc> -s <tc> $(<TC>_REMAP)
 
 """
   # Generate target settings
-  tools = desc['TOOLS']
-
+  tools = []
+  for tool in desc['TOOLS']:
+    if tool in toolchains:
+      tools.append(tool)
+  
   prerun = desc.get('PRE', '')
   postlaunch = desc.get('POST', '')
   prelaunch = desc.get('LAUNCH', '')
@@ -210,6 +243,9 @@ def GenerateReplacements(desc):
         nexe = name
         targets.append('%s/%s.nmf' % (tc, name))
     if nexe: 
+      if tc == 'pnacl':
+        replace = BuildToolDict(tc, nexe)
+        rules += Replace(TRANSLATE_RULE, replace)
       replace = BuildToolDict(tc, nexe)
       rules += Replace(NMF_RULE, replace)
 
@@ -329,7 +365,6 @@ def ValidateFormat(src, format, ErrorMsg=ErrorMsgFunc):
     # If we got this far, it's an unexpected type
     ErrorMsg('Unexpected type %s for key %s.' % (str(type(src[key])), key))
     continue
-
   return not failed
 
 
@@ -376,19 +411,38 @@ def IsNexe(desc):
       return True
   return False
 
-def ProcessProject(dstroot, filename):
+
+def LoadProject(filename, toolchains):
+  """Generate a Master Makefile that builds all examples. 
+
+  Load a project desciption file, verifying it conforms and checking
+  if it matches the set of requested toolchains.  Return None if the
+  project is filtered out."""
+
   print '\n\nProcessing %s...' % filename
   # Default src directory is the directory the description was found in 
-  srcroot = os.path.dirname(os.path.abspath(filename))
-  desc = open(filename, 'rb').read()
+  desc = open(filename, 'r').read()
   desc = eval(desc, {}, {})
-  if not ValidateFormat(desc, DSC_FORMAT):
-    return (None, None)
 
+  # Verify the format of this file
+  if not ValidateFormat(desc, DSC_FORMAT):
+    ErrorExit('Failed to validate: ' + filename)
+
+  # Check if we are actually interested in this example
+  match = False
+  for toolchain in toolchains:
+    if toolchain in desc['TOOLS']:
+      match = True
+      break
+  if not match:
+    return None
+  return desc
+
+
+def ProcessProject(srcroot, dstroot, desc, toolchains):
   name = desc['NAME']
   out_dir = os.path.join(dstroot, desc['DEST'], name)
   buildbot_common.MakeDir(out_dir)
-
   srcdirs = desc.get('SEARCH', ['.'])
 
   # Copy sources to example directory
@@ -405,9 +459,8 @@ def ProcessProject(dstroot, filename):
   else:
     template=os.path.join(SCRIPT_DIR, 'library.mk')
 
-
   # Add Makefile
-  repdict = GenerateReplacements(desc)
+  repdict = GenerateReplacements(desc, toolchains)
   make_path = os.path.join(out_dir, 'Makefile')
   WriteMakefile(template, make_path, repdict)
 
@@ -418,32 +471,14 @@ def ProcessProject(dstroot, filename):
 
 
 def GenerateExamplesMakefile(in_path, out_path, examples):
-  """Generate a Makefile that includes only the examples supported by this
-  SDK."""
-  # Line wrap the PROJECTS variable
-  wrap_width = 80
-  projects_text = SetVar('PROJECTS', examples)
+  """Generate a Master Makefile that builds all examples. """
+  replace = {  '__PROJECT_LIST__' : SetVar('PROJECTS', examples) }
+  WriteMakefile(in_path, out_path, replace)
 
-  out_makefile_text = ''
-  wrote_projects_text = False
-  snipping = False
-  for line in open(in_path, 'r'):
-    if line.startswith('# =SNIP='):
-      snipping = not snipping
-      continue
-
-    if snipping:
-      if not wrote_projects_text:
-        out_makefile_text += projects_text
-      wrote_projects_text = True
-    else:
-      out_makefile_text += line
-  open(out_path, 'w').write(out_makefile_text)
-  
   outdir = os.path.dirname(os.path.abspath(out_path))
   pepperdir = os.path.dirname(outdir)
   AddMakeBat(pepperdir, outdir)
-
+  
 
 def main(argv):
   parser = optparse.OptionParser()
@@ -451,23 +486,49 @@ def main(argv):
       dest='dstroot', default=OUT_DIR)
   parser.add_option('--master', help='Create master Makefile.',
       action='store_true', dest='master', default=False)
+  parser.add_option('--newlib', help='Create newlib examples.',
+      action='store_true', dest='newlib', default=False)
+  parser.add_option('--glibc', help='Create glibc examples.',
+      action='store_true', dest='glibc', default=False)
+  parser.add_option('--pnacl', help='Create pnacl examples.',
+      action='store_true', dest='pnacl', default=False)
+  parser.add_option('--host', help='Create host examples.',
+      action='store_true', dest='host', default=False)
+
+  toolchains = []
+  options, args = parser.parse_args(argv)
+  if options.newlib:
+    toolchains.append('newlib')
+  if options.glibc:
+    toolchains.append('glibc')
+  if options.pnacl:
+    toolchains.append('pnacl')
+  if options.host:
+    toolchains.append('host')
+
+  # By default support newlib and glibc
+  if not toolchains:
+    toolchains = ['newlib', 'glibc']
+    print 'Using default toolchains: ' + ' '.join(toolchains)
 
   examples = []
-  options, args = parser.parse_args(argv)
   for filename in args:
-    name, dest = ProcessProject(options.dstroot, filename)
-    if not name:
-      print '\n*** Failed to process project: %s ***' % filename
-      return 1
+    desc = LoadProject(filename, toolchains)
+    if not desc:
+      print 'Skipping %s, not in [%s].' % (filename, ', '.join(toolchains))
+      continue
 
-    if dest == 'examples':
-      examples.append(name)
+    srcroot = os.path.dirname(os.path.abspath(filename))
+    if not ProcessProject(srcroot, options.dstroot, desc, toolchains):
+      ErrorExit('\n*** Failed to process project: %s ***' % filename)
+
+    if desc['DEST'] == 'examples':
+      examples.append(desc['NAME'])
 
   if options.master:
     master_in = os.path.join(SDK_EXAMPLE_DIR, 'Makefile')
     master_out = os.path.join(options.dstroot, 'examples', 'Makefile')
     GenerateExamplesMakefile(master_in, master_out, examples)
-
   return 0
 
 

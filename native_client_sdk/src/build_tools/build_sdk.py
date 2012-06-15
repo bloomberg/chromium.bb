@@ -232,8 +232,8 @@ def InstallHeaders(tc_dst_inc, pepper_ver, tc_name):
           os.path.join(tc_dst_inc, 'KHR'))
 
   # Copy the lib files
-  buildbot_common.MakeDir(os.path.join(tc_dst_inc, 'lib'))
-  buildbot_common.CopyDir(os.path.join(PPAPI_DIR,'lib'), tc_dst_inc)
+  buildbot_common.CopyDir(os.path.join(PPAPI_DIR,'lib'), 
+          os.path.join(tc_dst_inc, 'ppapi'))
 
 
 def UntarToolchains(pepperdir, platform, arch, toolchains):
@@ -330,44 +330,31 @@ def BuildToolchains(pepperdir, platform, arch, pepper_ver, toolchains):
   else:
     buildbot_common.ErrorExit('Missing arch %s' % arch)
 
+EXAMPLE_LIST = [
+  'debugging',
+  'file_histogram',
+  'file_io',
+  'fullscreen_tumbler',
+  'gamepad',
+  'geturl',
+  'hello_world_interactive',
+  'hello_world',
+  'hello_world_gles',
+  'input_events',
+  'load_progress',
+  'mouselock',
+  'multithreaded_input_events',
+  'pi_generator',
+  'pong',
+  'sine_synth',
+  'tumbler',
+  'websocket',
+  'dlopen',
+]
 
-EXAMPLE_MAP = {
-  'newlib': [
-    'debugging',
-    'file_histogram',
-    'file_io',
-    'fullscreen_tumbler',
-    'gamepad',
-    'geturl',
-    'hello_world_interactive',
-    'hello_world',
-#    'hello_world_gles',
-    'input_events',
-    'load_progress',
-    'mouselock',
-    'multithreaded_input_events',
-    'pi_generator',
-    'pong',
-    'sine_synth',
-    'tumbler',
-    'websocket'
-  ],
-  'glibc': [
-    'dlopen',
-  ],
-  'pnacl': [
-#    'hello_world_pnacl',
-  ],
-}
-
-
-LIBRARY_MAP = {
-  'newlib': [
-    'gles2',
-  ],
-  'glibc': [],
-  'pnacl': []
-}
+LIBRARY_LIST = [
+  'gles2',
+]
 
 
 def CopyExamples(pepperdir, toolchains):
@@ -387,22 +374,15 @@ def CopyExamples(pepperdir, toolchains):
   for filename in files:
     oshelpers.Copy(['-v', os.path.join(SDK_EXAMPLE_DIR, filename), exampledir])
 
-  # Add examples for supported toolchains
-  examples = []
-  for tc in toolchains:
-    examples.extend(EXAMPLE_MAP[tc])
-
-  libraries = []
-  for tc in toolchains:
-    libraries.extend(LIBRARY_MAP[tc])
-
-  print 'Process: ' + ' '.join(examples)
-  print 'Process: ' + ' '.join(libraries)
   args = ['--dstroot=%s' % pepperdir, '--master']
-  for example in examples:
+  for toolchain in toolchains:
+    args.append('--' + toolchain)
+
+  for example in EXAMPLE_LIST:
     dsc = os.path.join(SDK_EXAMPLE_DIR, example, 'example.dsc')
     args.append(dsc)
-  for library in libraries:
+
+  for library in LIBRARY_LIST:
     dsc = os.path.join(SDK_LIBRARY_DIR, library, 'library.dsc')
     args.append(dsc)
 

@@ -7,10 +7,10 @@
       'SOURCES' : ['hello_world.cc', 'matrix.cc', 'matrix.h'],
       'CXXFLAGS': [
         '$(NACL_CXXFLAGS)', 
-        '-I../../libraries',
-        '-I$../../libraries/ppapi/lib/gl'
+        '-I../../src',
+        '-I../../src/ppapi/lib/gl'
       ],
-      'LDFLAGS': ['$(NACL_LDFLAGS)', '-lppapi_gles2']
+      'LDFLAGS': ['-g', '-pthread', '-lppapi', '-lppapi_gles2']
     }
   ],
   'DATA': [

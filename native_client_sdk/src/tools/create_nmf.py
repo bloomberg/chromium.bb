@@ -36,6 +36,12 @@ ARCH_LOCATION = {
     'x86-64': 'lib64',
 }
 
+NAME_ARCH_MAP = {
+    '32.nexe': 'x86-32',
+    '64.nexe': 'x64-64',
+    'arm.nexe': 'arm'
+}
+
 # These constants are used within nmf files.
 RUNNABLE_LD = 'runnable-ld.so'  # Name of the dynamic loader
 MAIN_NEXE = 'main.nexe'  # Name of entry point for execution
@@ -195,8 +201,12 @@ class NmfUtils(object):
           Includes the input files as well, with arch filled in if absent.
           Example: { '/path/to/my.nexe': ArchFile(my.nexe),
                      '/path/to/libfoo.so': ArchFile(libfoo.so) }'''
-    if not self.needed:
-      DebugPrint('GetNeeded(%s)' % self.main_files)
+    if self.needed:
+      return self.needed
+
+    runnable = (self.toolchain != 'newlib' and self.toolchain != 'pnacl')
+    DebugPrint('GetNeeded(%s)' % self.main_files)
+    if runnable:    
       examined = set()
       all_files, unexamined = self.GleanFromObjdump(
           dict([(file, None) for file in self.main_files]))
@@ -221,6 +231,15 @@ class NmfUtils(object):
         if arch_map.name in ldso:
           del all_files[name]
       self.needed = all_files
+    else:
+      need = {}
+      for filename in self.main_files:
+        arch = filename.split('_')[-1]
+        arch = NAME_ARCH_MAP[arch]
+        url = os.path.split(filename)[1]
+        need[filename] = ArchFile(arch=arch, name=os.path.basename(filename),
+                                  path=filename, url=url)
+      self.needed = need        
     return self.needed
 
   def StageDependencies(self, destination_dir):
@@ -255,9 +274,9 @@ class NmfUtils(object):
     FILES key mapped as 'main.exe' instead of it's original name so that the
     loader can find it.'''
     manifest = { FILES_KEY: {}, PROGRAM_KEY: {} }
-    needed = self.GetNeeded()
+    runnable = (self.toolchain != 'newlib' and self.toolchain != 'pnacl')
 
-    runnable = self.toolchain != 'newlib' 
+    needed = self.GetNeeded()
     for need in needed:
       archinfo = needed[need]
       urlinfo = { URL_KEY: archinfo.url }
@@ -352,7 +371,7 @@ def Main(argv):
   if not options.toolchain:
     options.toolchain = DetermineToolchain(os.path.abspath(options.objdump))
 
-  if options.toolchain not in ['newlib', 'glibc']:
+  if options.toolchain not in ['newlib', 'glibc', 'pnacl']:
     ErrorOut('Unknown toolchain: ' + str(options.toolchain))
 
   if len(args) < 1:
