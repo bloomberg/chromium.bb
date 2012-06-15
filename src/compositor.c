@@ -2064,13 +2064,59 @@ notify_touch(struct wl_seat *seat, uint32_t time, int touch_id,
 }
 
 static void
-pointer_attach(struct wl_client *client, struct wl_resource *resource,
-	       uint32_t serial, struct wl_resource *buffer_resource,
-	       int32_t x, int32_t y)
+pointer_handle_sprite_destroy(struct wl_listener *listener, void *data)
+{
+	struct weston_seat *seat = container_of(listener, struct weston_seat,
+						sprite_destroy_listener);
+
+	seat->sprite = NULL;
+}
+
+static void
+pointer_cursor_surface_configure(struct weston_surface *es,
+				 int32_t dx, int32_t dy)
+{
+	struct weston_seat *seat = es->private;
+	int x, y;
+
+	assert(es == seat->sprite);
+
+	seat->hotspot_x -= dx;
+	seat->hotspot_y -= dy;
+
+	x = wl_fixed_to_int(seat->seat.pointer->x) - seat->hotspot_x;
+	y = wl_fixed_to_int(seat->seat.pointer->y) - seat->hotspot_y;
+
+	weston_surface_configure(seat->sprite, x, y,
+				 es->buffer->width, es->buffer->height);
+
+	if (!weston_surface_is_mapped(es)) {
+		wl_list_insert(&es->compositor->cursor_layer.surface_list,
+			       &es->layer_link);
+		weston_surface_assign_output(es);
+		empty_region(&es->input);
+	}
+}
+
+static void
+pointer_unmap_sprite(struct weston_seat *seat)
+{
+	if (weston_surface_is_mapped(seat->sprite))
+		weston_surface_unmap(seat->sprite);
+
+	wl_list_remove(&seat->sprite_destroy_listener.link);
+	seat->sprite->configure = NULL;
+	seat->sprite->private = NULL;
+	seat->sprite = NULL;
+}
+
+static void
+pointer_set_cursor(struct wl_client *client, struct wl_resource *resource,
+		   uint32_t serial, struct wl_resource *surface_resource,
+		   int32_t x, int32_t y)
 {
 	struct weston_seat *seat = resource->data;
-	struct weston_compositor *compositor = seat->compositor;
-	struct wl_buffer *buffer = NULL;
+	struct weston_surface *surface = NULL;
 
 	if (serial < seat->seat.pointer->focus_serial)
 		return;
@@ -2079,35 +2125,41 @@ pointer_attach(struct wl_client *client, struct wl_resource *resource,
 	if (seat->seat.pointer->focus->resource.client != client)
 		return;
 
-	if (buffer_resource)
-		buffer = buffer_resource->data;
+	if (surface_resource)
+		surface = container_of(surface_resource->data,
+				       struct weston_surface, surface);
 
-	weston_surface_attach(&seat->sprite->surface, buffer);
-	empty_region(&seat->sprite->input);
-
-	if (!buffer)
+	if (surface && surface != seat->sprite && surface->configure) {
+		wl_resource_post_error(&surface->surface.resource,
+				       WL_DISPLAY_ERROR_INVALID_OBJECT,
+				       "surface->configure already set");
 		return;
-
-	if (!weston_surface_is_mapped(seat->sprite)) {
-		wl_list_insert(&compositor->cursor_layer.surface_list,
-			       &seat->sprite->layer_link);
-		weston_surface_assign_output(seat->sprite);
 	}
 
+	if (seat->sprite)
+		pointer_unmap_sprite(seat);
 
+	if (!surface)
+		return;
+
+	wl_signal_add(&surface->surface.resource.destroy_signal,
+		      &seat->sprite_destroy_listener);
+
+	surface->configure = pointer_cursor_surface_configure;
+	surface->private = seat;
+	empty_region(&surface->input);
+
+	seat->sprite = surface;
 	seat->hotspot_x = x;
 	seat->hotspot_y = y;
-	weston_surface_configure(seat->sprite,
-				 wl_fixed_to_int(seat->seat.pointer->x) - x,
-				 wl_fixed_to_int(seat->seat.pointer->y) - y,
-				 buffer->width, buffer->height);
 
-	surface_damage(NULL, &seat->sprite->surface.resource,
-		       0, 0, buffer->width, buffer->height);
+	weston_surface_set_position(surface,
+				    wl_fixed_to_int(seat->seat.pointer->x) - x,
+				    wl_fixed_to_int(seat->seat.pointer->y) - y);
 }
 
 static const struct wl_pointer_interface pointer_interface = {
-	pointer_attach,
+	pointer_set_cursor
 };
 
 static void
@@ -2428,8 +2480,8 @@ weston_seat_init(struct weston_seat *seat, struct weston_compositor *ec)
 	wl_display_add_global(ec->wl_display, &wl_seat_interface, seat,
 			      bind_seat);
 
-	seat->sprite = weston_surface_create(ec);
-	seat->sprite->surface.resource.data = seat->sprite;
+	seat->sprite = NULL;
+	seat->sprite_destroy_listener.notify = pointer_handle_sprite_destroy;
 
 	seat->compositor = ec;
 	seat->hotspot_x = 16;
@@ -2456,7 +2508,7 @@ weston_seat_release(struct weston_seat *seat)
 	/* The global object is destroyed at wl_display_destroy() time. */
 
 	if (seat->sprite)
-		destroy_surface(&seat->sprite->surface.resource);
+		pointer_unmap_sprite(seat);
 
 	if (seat->xkb_state.state != NULL)
 		xkb_state_unref(seat->xkb_state.state);
@@ -2512,12 +2564,18 @@ device_release_drag_surface(struct weston_seat *seat)
 static void
 device_map_drag_surface(struct weston_seat *seat)
 {
+	struct wl_list *list;
+
 	if (weston_surface_is_mapped(seat->drag_surface) ||
 	    !seat->drag_surface->buffer)
 		return;
 
-	wl_list_insert(&seat->sprite->layer_link,
-		       &seat->drag_surface->layer_link);
+	if (seat->sprite && weston_surface_is_mapped(seat->sprite))
+		list = &seat->sprite->layer_link;
+	else
+		list = &seat->compositor->cursor_layer.surface_list;
+
+	wl_list_insert(list, &seat->drag_surface->layer_link);
 	weston_surface_assign_output(seat->drag_surface);
 	empty_region(&seat->drag_surface->input);
 }

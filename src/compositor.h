@@ -207,6 +207,7 @@ struct weston_seat {
 
 	struct weston_compositor *compositor;
 	struct weston_surface *sprite;
+	struct wl_listener sprite_destroy_listener;
 	struct weston_surface *drag_surface;
 	struct wl_listener drag_surface_destroy_listener;
 	int32_t hotspot_x, hotspot_y;

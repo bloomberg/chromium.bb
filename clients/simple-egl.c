@@ -360,7 +360,7 @@ pointer_handle_enter(void *data, struct wl_pointer *pointer,
 	struct display *display = data;
 
 	if (display->window->fullscreen)
-		wl_pointer_attach(pointer, serial, NULL, 0, 0);
+		wl_pointer_set_cursor(pointer, serial, NULL, 0, 0);
 }
 
 static void

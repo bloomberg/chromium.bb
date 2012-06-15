@@ -505,7 +505,7 @@ input_handle_pointer_enter(void *data, struct wl_pointer *pointer,
 
 	output = wl_surface_get_user_data(surface);
 	notify_pointer_focus(&c->base.seat->seat, &output->base, x, y);
-	wl_pointer_attach(input->pointer, serial, NULL, 0, 0);
+	wl_pointer_set_cursor(input->pointer, serial, NULL, 0, 0);
 }
 
 static void

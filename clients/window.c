@@ -189,6 +189,7 @@ struct input {
 	struct window *pointer_focus;
 	struct window *keyboard_focus;
 	int current_cursor;
+	struct wl_surface *pointer_surface;
 	uint32_t modifiers;
 	uint32_t pointer_enter_serial;
 	float sx, sy;
@@ -2295,8 +2296,12 @@ input_set_pointer_image_index(struct input *input, int pointer, int index)
 		return;
 
 	input->current_cursor = pointer;
-	wl_pointer_attach(input->pointer, input->pointer_enter_serial,
-			  buffer, image->hotspot_x, image->hotspot_y);
+	wl_pointer_set_cursor(input->pointer, input->display->serial,
+			      input->pointer_surface,
+			      image->hotspot_x, image->hotspot_y);
+	wl_surface_attach(input->pointer_surface, buffer, 0, 0);
+	wl_surface_damage(input->pointer_surface, 0, 0,
+			  image->width, image->height);
 }
 
 void
@@ -3168,6 +3173,8 @@ display_add_input(struct display *d, uint32_t id)
 						       input->seat);
 	wl_data_device_add_listener(input->data_device, &data_device_listener,
 				    input);
+
+	input->pointer_surface = wl_compositor_create_surface(d->compositor);
 }
 
 static void
@@ -3189,6 +3196,8 @@ input_destroy(struct input *input)
 
 	wl_data_device_destroy(input->data_device);
 	fini_xkb(input);
+
+	wl_surface_destroy(input->pointer_surface);
 
 	wl_list_remove(&input->link);
 	wl_seat_destroy(input->seat);
