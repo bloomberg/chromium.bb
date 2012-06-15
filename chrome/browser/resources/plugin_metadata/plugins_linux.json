@@ -28,6 +28,7 @@
       "application/x-java-applet,version=1.4.2",
       "application/x-java-applet,version=1.5",
       "application/x-java-applet,version=1.6",
+      "application/x-java-applet,version=1.7",
       "application/x-java-bean",
       "application/x-java-bean,version=1.1",
       "application/x-java-bean,version=1.1.1",
@@ -43,11 +44,12 @@
       "application/x-java-bean,version=1.4.2",
       "application/x-java-bean,version=1.5",
       "application/x-java-bean,version=1.6",
+      "application/x-java-bean,version=1.7",
       "application/x-java-vm"
     ],
     "versions": [
       {
-        "version": "1.6.0.31",
+        "version": "1.6.0.33",
         "status": "requires_authorization"
       },
       {
@@ -55,7 +57,7 @@
         "status": "out_of_date"
       },
       {
-        "version": "1.7.0.3",
+        "version": "1.7.0.5",
         "status": "requires_authorization"
       }
     ],
