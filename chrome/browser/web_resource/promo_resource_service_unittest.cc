@@ -354,7 +354,7 @@ TEST_F(PromoResourceServiceTest, NotificationPromoTest) {
   // Set up start and end dates and promo line in a Dictionary as if parsed
   // from the service.
   promo_test.Init("{"
-                  "  \"ntp_notification_promo\":"
+                  "  \"ntp_notification_promo\": ["
                   "    {"
                   "      \"date\":"
                   "        ["
@@ -384,6 +384,7 @@ TEST_F(PromoResourceServiceTest, NotificationPromoTest) {
                   "        },"
                   "      \"max_views\":30"
                   "    }"
+                  "  ]"
                   "}",
                   "What do you think of Chrome?",
                   1326653485,  // unix epoch for 15 Jan 2012 10:50:85 PST.

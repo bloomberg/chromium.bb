@@ -96,13 +96,18 @@ NotificationPromo::NotificationPromo(Profile* profile)
 NotificationPromo::~NotificationPromo() {}
 
 void NotificationPromo::InitFromJson(const DictionaryValue& json) {
-  DictionaryValue* root = NULL;
-  if (!json.GetDictionary("ntp_notification_promo", &root))
+  ListValue* promo_list = NULL;
+  if (!json.GetList("ntp_notification_promo", &promo_list))
+    return;
+
+  // No support for multiple promos yet. Only consider the first one.
+  DictionaryValue* promo = NULL;
+  if (!promo_list->GetDictionary(0, &promo))
     return;
 
   // Strings. Assume the first one is the promo text.
   DictionaryValue* strings;
-  if (root->GetDictionary("strings", &strings)) {
+  if (promo->GetDictionary("strings", &strings)) {
     DictionaryValue::Iterator iter(*strings);
     iter.value().GetAsString(&promo_text_);
     DVLOG(1) << "promo_text_=" << promo_text_;
@@ -110,7 +115,7 @@ void NotificationPromo::InitFromJson(const DictionaryValue& json) {
 
   // Date.
   ListValue* date_list;
-  if (root->GetList("date", &date_list)) {
+  if (promo->GetList("date", &date_list)) {
     DictionaryValue* date;
     if (date_list->GetDictionary(0, &date)) {
       std::string time_str;
@@ -132,7 +137,7 @@ void NotificationPromo::InitFromJson(const DictionaryValue& json) {
 
   // Grouping.
   DictionaryValue* grouping;
-  if (root->GetDictionary("grouping", &grouping)) {
+  if (promo->GetDictionary("grouping", &grouping)) {
     grouping->GetInteger("buckets", &num_groups_);
     grouping->GetInteger("segment", &initial_segment_);
     grouping->GetInteger("increment", &increment_);
@@ -148,13 +153,13 @@ void NotificationPromo::InitFromJson(const DictionaryValue& json) {
 
   // Payload.
   DictionaryValue* payload;
-  if (root->GetDictionary("payload", &payload)) {
+  if (promo->GetDictionary("payload", &payload)) {
     payload->GetBoolean("gplus_required", &gplus_required_);
 
     DVLOG(1) << "gplus_required_ = " << gplus_required_;
   }
 
-  root->GetInteger("max_views", &max_views_);
+  promo->GetInteger("max_views", &max_views_);
   DVLOG(1) << "max_views_ " << max_views_;
 
   CheckForNewNotification();
