@@ -10,4 +10,10 @@ MockIBusClient::MockIBusClient() {}
 
 MockIBusClient::~MockIBusClient() {}
 
+void MockIBusClient::CreateInputContext(
+    const std::string& client_name,
+    const CreateInputContextCallback& callback,
+    const ErrorCallback& error_callback) {
+}
+
 }  // namespace chromeos

@@ -8,7 +8,6 @@
 
 #include <string>
 #include "chromeos/dbus/ibus/ibus_client.h"
-#include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {
 
@@ -17,10 +16,9 @@ class MockIBusClient : public IBusClient {
   MockIBusClient();
   virtual ~MockIBusClient();
 
-  MOCK_METHOD3(CreateInputContext,
-               void(const std::string& client_name,
-                    const CreateInputContextCallback& callback,
-                    const ErrorCallback& error_callback));
+  virtual void CreateInputContext(const std::string& client_name,
+                                  const CreateInputContextCallback& callback,
+                                  const ErrorCallback& error_callback) OVERRIDE;
 };
 
 }  // namespace chromeos

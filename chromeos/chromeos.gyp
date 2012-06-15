@@ -122,10 +122,6 @@
         'chromeos',
       ],
       'sources': [
-        'dbus/ibus/mock_ibus_client.cc',
-        'dbus/ibus/mock_ibus_client.h',
-        'dbus/ibus/mock_ibus_input_context_client.cc',
-        'dbus/ibus/mock_ibus_input_context_client.h',
         'dbus/mock_bluetooth_adapter_client.cc',
         'dbus/mock_bluetooth_adapter_client.h',
         'dbus/mock_bluetooth_device_client.cc',
@@ -178,12 +174,29 @@
         'dbus/mock_speech_synthesizer_client.h',
         'dbus/mock_update_engine_client.cc',
         'dbus/mock_update_engine_client.h',
-        'dbus/ibus/mock_ibus_input_context_client.cc',
-        'dbus/ibus/mock_ibus_input_context_client.h',
       ],
       'include_dirs': [
         '..',
       ],
+    },
+    {
+        'target_name': 'chromeos_test_support_without_gmock',
+        'type': 'static_library',
+        'dependencies': [
+          '../build/linux/system.gyp:dbus',
+          'chromeos',
+        ],
+        'sources': [
+          'dbus/mock_dbus_thread_manager_without_gmock.cc',
+          'dbus/mock_dbus_thread_manager_without_gmock.h',
+          'dbus/ibus/mock_ibus_client.cc',
+          'dbus/ibus/mock_ibus_client.h',
+          'dbus/ibus/mock_ibus_input_context_client.cc',
+          'dbus/ibus/mock_ibus_input_context_client.h',
+        ],
+        'include_dirs': [
+          '..',
+        ],
     },
     {
       'target_name': 'chromeos_unittests',

@@ -35,8 +35,6 @@ class  MockFlimflamNetworkClient;
 class  MockFlimflamProfileClient;
 class  MockFlimflamServiceClient;
 class  MockGsmSMSClient;
-class  MockIBusClient;
-class  MockIBusInputContextClient;
 class  MockImageBurnerClient;
 class  MockIntrospectableClient;
 class  MockModemMessagingClient;
@@ -160,12 +158,6 @@ class MockDBusThreadManager : public DBusThreadManager {
   MockUpdateEngineClient* mock_update_engine_client() {
     return mock_update_engine_client_.get();
   }
-  MockIBusClient* mock_ibus_client() {
-    return mock_ibus_client_.get();
-  }
-  MockIBusInputContextClient* mock_ibus_input_context_client() {
-    return mock_ibus_input_context_client_.get();
-  }
 
  private:
   scoped_ptr<MockBluetoothAdapterClient> mock_bluetooth_adapter_client_;
@@ -193,8 +185,6 @@ class MockDBusThreadManager : public DBusThreadManager {
   scoped_ptr<MockSMSClient> mock_sms_client_;
   scoped_ptr<MockSpeechSynthesizerClient> mock_speech_synthesizer_client_;
   scoped_ptr<MockUpdateEngineClient> mock_update_engine_client_;
-  scoped_ptr<MockIBusClient> mock_ibus_client_;
-  scoped_ptr<MockIBusInputContextClient> mock_ibus_input_context_client_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDBusThreadManager);
 };

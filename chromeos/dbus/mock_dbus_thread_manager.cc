@@ -4,8 +4,6 @@
 
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
 
-#include "chromeos/dbus/ibus/mock_ibus_client.h"
-#include "chromeos/dbus/ibus/mock_ibus_input_context_client.h"
 #include "chromeos/dbus/mock_bluetooth_adapter_client.h"
 #include "chromeos/dbus/mock_bluetooth_device_client.h"
 #include "chromeos/dbus/mock_bluetooth_input_client.h"
@@ -63,9 +61,7 @@ MockDBusThreadManager::MockDBusThreadManager()
       mock_session_manager_client_(new MockSessionManagerClient),
       mock_sms_client_(new MockSMSClient),
       mock_speech_synthesizer_client_(new MockSpeechSynthesizerClient),
-      mock_update_engine_client_(new MockUpdateEngineClient),
-      mock_ibus_client_(new MockIBusClient),
-      mock_ibus_input_context_client_(new MockIBusInputContextClient) {
+      mock_update_engine_client_(new MockUpdateEngineClient) {
   EXPECT_CALL(*this, GetBluetoothAdapterClient())
       .WillRepeatedly(Return(mock_bluetooth_adapter_client_.get()));
   EXPECT_CALL(*this, GetBluetoothDeviceClient())
@@ -116,10 +112,6 @@ MockDBusThreadManager::MockDBusThreadManager()
       .WillRepeatedly(Return(mock_speech_synthesizer_client_.get()));
   EXPECT_CALL(*this, GetUpdateEngineClient())
       .WillRepeatedly(Return(mock_update_engine_client_.get()));
-  EXPECT_CALL(*this, GetIBusClient())
-      .WillRepeatedly(Return(mock_ibus_client_.get()));
-  EXPECT_CALL(*this, GetIBusInputContextClient())
-      .WillRepeatedly(Return(mock_ibus_input_context_client_.get()));
 
   // These observers calls are used in ChromeBrowserMainPartsChromeos.
   EXPECT_CALL(*mock_power_manager_client_.get(), AddObserver(_))

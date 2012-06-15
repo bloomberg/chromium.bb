@@ -6,7 +6,6 @@
 #define CHROMEOS_DBUS_IBUS_MOCK_IBUS_INPUT_CONTEXT_CLIENT_H_
 
 #include "chromeos/dbus/ibus/ibus_input_context_client.h"
-#include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {
 class MockIBusInputContextClient : public IBusInputContextClient {
@@ -14,35 +13,32 @@ class MockIBusInputContextClient : public IBusInputContextClient {
   MockIBusInputContextClient();
   virtual ~MockIBusInputContextClient();
 
-  MOCK_METHOD2(Initialize, void(dbus::Bus* bus,
-                                const dbus::ObjectPath& object_path));
-  MOCK_METHOD0(ResetObjectProxy, void());
-  MOCK_CONST_METHOD0(IsConnected, bool());
-  MOCK_METHOD1(SetCommitTextHandler,
-               void(const CommitTextHandler& commit_text_handler));
-  MOCK_METHOD1(SetForwardKeyEventHandler,
-               void(const ForwardKeyEventHandler& forward_key_event_handler));
-  MOCK_METHOD1(
-      SetUpdatePreeditTextHandler,
-      void(const UpdatePreeditTextHandler& update_preedit_text_handler));
-  MOCK_METHOD1(SetShowPreeditTextHandler,
-               void(const ShowPreeditTextHandler& show_preedit_text_handler));
-  MOCK_METHOD1(SetHidePreeditTextHandler,
-               void(const HidePreeditTextHandler& hide_preedit_text_handler));
-  MOCK_METHOD0(UnsetCommitTextHandler, void());
-  MOCK_METHOD0(UnsetForwardKeyEventHandler, void());
-  MOCK_METHOD0(UnsetUpdatePreeditTextHandler, void());
-  MOCK_METHOD0(UnsetShowPreeditTextHandler, void());
-  MOCK_METHOD0(UnsetHidePreeditTextHandler, void());
-  MOCK_METHOD1(SetCapabilities, void(uint32 capabilities));
-  MOCK_METHOD0(FocusIn, void());
-  MOCK_METHOD0(FocusOut, void());
-  MOCK_METHOD0(Reset, void());
-  MOCK_METHOD4(SetCursorLocation, void(int32 x, int32 y, int32 w, int32 h));
-  MOCK_METHOD4(ProcessKeyEvent, void(uint32 keyval,
-                                     uint32 keycode,
-                                     uint32 state,
-                                     const ProcessKeyEventCallback& callback));
+  virtual void Initialize(dbus::Bus* bus,
+                          const dbus::ObjectPath& object_path) OVERRIDE;
+  virtual void ResetObjectProxy() OVERRIDE;
+  virtual bool IsConnected() const OVERRIDE;
+  virtual void SetCommitTextHandler(
+      const CommitTextHandler& commit_text_handler) OVERRIDE;
+  virtual void SetForwardKeyEventHandler(
+      const ForwardKeyEventHandler& forward_key_event_handler) OVERRIDE;
+  virtual void SetUpdatePreeditTextHandler(
+      const UpdatePreeditTextHandler& update_preedit_text_handler) OVERRIDE;
+  virtual void SetShowPreeditTextHandler(
+      const ShowPreeditTextHandler& show_preedit_text_handler) OVERRIDE;
+  virtual void SetHidePreeditTextHandler(
+      const HidePreeditTextHandler& hide_preedit_text_handler) OVERRIDE;
+  virtual void UnsetCommitTextHandler() OVERRIDE;
+  virtual void UnsetForwardKeyEventHandler() OVERRIDE;
+  virtual void UnsetUpdatePreeditTextHandler() OVERRIDE;
+  virtual void UnsetShowPreeditTextHandler() OVERRIDE;
+  virtual void UnsetHidePreeditTextHandler() OVERRIDE;
+  virtual void SetCapabilities(uint32 capabilities) OVERRIDE;
+  virtual void FocusIn() OVERRIDE;
+  virtual void FocusOut() OVERRIDE;
+  virtual void Reset() OVERRIDE;
+  virtual void SetCursorLocation(int32 x, int32 y, int32 w, int32 h) OVERRIDE;
+  virtual void ProcessKeyEvent(uint32 keyval, uint32 keycode, uint32 state,
+                       const ProcessKeyEventCallback& callback) OVERRIDE;
 };
 }  // namespace chromeos
 
