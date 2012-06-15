@@ -2276,8 +2276,6 @@
         'browser/tab_contents/web_drag_bookmark_handler_mac.mm',
         'browser/tab_contents/web_drag_bookmark_handler_win.cc',
         'browser/tab_contents/web_drag_bookmark_handler_win.h',
-        'browser/tab_render_watcher.cc',
-        'browser/tab_render_watcher.h',
         'browser/task_manager/task_manager.cc',
         'browser/task_manager/task_manager.h',
         'browser/task_manager/task_manager_notification_resource_provider.cc',

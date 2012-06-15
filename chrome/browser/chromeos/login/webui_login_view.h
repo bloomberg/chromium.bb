@@ -9,7 +9,6 @@
 #include <map>
 #include <string>
 
-#include "chrome/browser/tab_render_watcher.h"
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -37,8 +36,7 @@ namespace chromeos {
 // WebUI based start up and lock screens. It contains a WebView.
 class WebUILoginView : public views::WidgetDelegateView,
                        public content::WebContentsDelegate,
-                       public content::NotificationObserver,
-                       public TabRenderWatcher::Delegate {
+                       public content::NotificationObserver {
  public:
   WebUILoginView();
   virtual ~WebUILoginView();
@@ -84,11 +82,6 @@ class WebUILoginView : public views::WidgetDelegateView,
   virtual void OnLocaleChanged() OVERRIDE;
   virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
   virtual void AboutToRequestFocusFromTabTraversal(bool reverse) OVERRIDE;
-
-  // TabRenderWatcher::Delegate implementation.
-  virtual void OnRenderHostCreated(content::RenderViewHost* host) OVERRIDE;
-  virtual void OnTabMainFrameLoaded() OVERRIDE;
-  virtual void OnTabMainFrameRender() OVERRIDE;
 
   // Overridden from content::NotificationObserver.
   virtual void Observe(int type,
@@ -136,9 +129,6 @@ class WebUILoginView : public views::WidgetDelegateView,
 
   // Maps installed accelerators to OOBE webui accelerator identifiers.
   AccelMap accel_map_;
-
-  // Watches webui_login_'s WebContents rendering.
-  scoped_ptr<TabRenderWatcher> tab_watcher_;
 
   // Whether the host window is frozen.
   bool host_window_frozen_;

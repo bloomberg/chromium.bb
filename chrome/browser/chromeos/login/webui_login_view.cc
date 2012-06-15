@@ -158,7 +158,9 @@ void WebUILoginView::Init(views::Widget* login_window) {
       web_contents->GetMutableRendererPrefs(),
       ProfileManager::GetDefaultProfile());
 
-  tab_watcher_.reset(new TabRenderWatcher(web_contents, this));
+  registrar_.Add(this,
+                 content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB,
+                 content::Source<WebContents>(web_contents));
 }
 
 std::string WebUILoginView::GetClassName() const {
@@ -256,26 +258,21 @@ void WebUILoginView::AboutToRequestFocusFromTabTraversal(bool reverse) {
   GetWidget()->Activate();
 }
 
-void WebUILoginView::OnRenderHostCreated(RenderViewHost* host) {
-  new SnifferObserver(host, GetWebUI());
-}
-
-void WebUILoginView::OnTabMainFrameLoaded() {
-  VLOG(1) << "WebUI login main frame loaded.";
-  tab_watcher_.reset();
-}
-
-void WebUILoginView::OnTabMainFrameRender() {
-}
-
 void WebUILoginView::Observe(int type,
                              const content::NotificationSource& source,
                              const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE:
+    case chrome::NOTIFICATION_LOGIN_WEBUI_VISIBLE: {
       OnLoginPromptVisible();
       registrar_.RemoveAll();
       break;
+    }
+    case content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB: {
+      RenderViewHost* render_view_host =
+          content::Details<RenderViewHost>(details).ptr();
+      new SnifferObserver(render_view_host, GetWebUI());
+      break;
+    }
     default:
       NOTREACHED() << "Unexpected notification " << type;
   }
