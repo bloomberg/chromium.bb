@@ -818,7 +818,7 @@ class Strace(ApiBase):
           return str(self.render())
 
       def __init__(self, root, pid):
-        logging.info('%s(%s, %d)' % (self.__class__.__name__, root, pid))
+        logging.info('%s(%d)' % (self.__class__.__name__, pid))
         super(Strace.Context.Process, self).__init__(root, pid, None, None)
         # The dict key is the function name of the pending call, like 'open'
         # or 'execve'.
@@ -1038,7 +1038,9 @@ class Strace(ApiBase):
             None,
             None,
             pid)
-      return self.processes.setdefault(pid, self.Process(self, pid))
+      if pid not in self.processes:
+        self.processes[pid] = self.Process(self, pid)
+      return self.processes[pid]
 
     @classmethod
     def traces(cls):
