@@ -111,8 +111,7 @@ void RemoteFileSystemOperation::Write(
   file_writer_delegate_.reset(
       new fileapi::FileWriterDelegate(
           base::Bind(&RemoteFileSystemOperation::DidWrite,
-                     // FileWriterDelegate is owned by |this|. So Unretained.
-                     base::Unretained(this),
+                     base::Owned(this),
                      callback),
           scoped_ptr<fileapi::FileStreamWriter>(
               new fileapi::RemoteFileStreamWriter(remote_proxy_,
@@ -231,16 +230,9 @@ void RemoteFileSystemOperation::DidWrite(
     base::PlatformFileError rv,
     int64 bytes,
     bool complete) {
+  if (rv != base::PLATFORM_FILE_OK || complete)
+    file_writer_delegate_.reset();
   callback.Run(rv, bytes, complete);
-  if (rv != base::PLATFORM_FILE_OK || complete) {
-    // Other Did*'s doesn't have "delete this", because it is automatic since
-    // they are base::Owned by the caller of the callback. For DidWrite, the
-    // owner is file_writer_delegate_ which itself is owned by this Operation
-    // object. Hence we need manual life time management here.
-    // TODO(kinaba): think about refactoring FileWriterDelegate to be self
-    // destructing, for avoiding the manual management.
-    delete this;
-  }
 }
 
 void RemoteFileSystemOperation::DidFinishFileOperation(

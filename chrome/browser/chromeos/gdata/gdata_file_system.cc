@@ -413,14 +413,6 @@ void CreateDocumentJsonFileOnBlockingPool(
       temp_file_path->clear();
 }
 
-// Gets the information of the file at local path |path|. The information is
-// filled in |file_info|, and if it fails |result| will be assigned false.
-void GetFileInfoOnBlockingPool(const FilePath& path,
-                               base::PlatformFileInfo* file_info,
-                               bool* result) {
-  *result = file_util::GetFileInfo(path, file_info);
-}
-
 // Tests if we are allowed to create new directory in the provided directory.
 bool ShouldCreateDirectory(const FilePath& directory_path) {
   // We allow directory creation for paths that are on gdata file system
@@ -3784,78 +3776,27 @@ void GDataFileSystem::CloseFileOnUIThread(const FilePath& file_path,
                                           const CloseFileCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // CloseFile should only be applied for a previously OpenFile'd file, so the
-  // file should already be cached. The sole purpose of the following call to
-  // GetFileByPathOnUIThread is to get the path to the local cache file.
-  GetFileByPathOnUIThread(
-      file_path,
-      base::Bind(&GDataFileSystem::OnGetFileCompleteForCloseFile,
-                 ui_weak_ptr_,
-                 file_path,
-                 callback),
-      GetDownloadDataCallback());
-}
-
-void GDataFileSystem::OnGetFileCompleteForCloseFile(
-    const FilePath& file_path,
-    const CloseFileCallback& callback,
-    base::PlatformFileError error,
-    const FilePath& local_cache_path,
-    const std::string& /* mime_type */,
-    GDataFileType /* file_type */) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (error != base::PLATFORM_FILE_OK) {
-    if (!callback.is_null())
-      callback.Run(error);
-    return;
-  }
-
-  base::PlatformFileInfo* file_info = new base::PlatformFileInfo;
-  bool* get_file_info_result = new bool(false);
-  PostBlockingPoolSequencedTaskAndReply(
-      FROM_HERE,
-      base::Bind(&GetFileInfoOnBlockingPool,
-                 local_cache_path,
-                 base::Unretained(file_info),
-                 base::Unretained(get_file_info_result)),
-      base::Bind(&GDataFileSystem::OnGetModifiedFileInfoCompleteForCloseFile,
-                 ui_weak_ptr_,
-                 file_path,
-                 base::Owned(file_info),
-                 base::Owned(get_file_info_result),
-                 callback));
-}
-
-void GDataFileSystem::OnGetModifiedFileInfoCompleteForCloseFile(
-    const FilePath& file_path,
-    base::PlatformFileInfo* file_info,
-    bool* get_file_info_result,
-    const CloseFileCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (!*get_file_info_result) {
-    if (!callback.is_null())
-      callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND);
-    return;
-  }
-
-  FindEntryByPathAsyncOnUIThread(
+  GetFileInfoByPathAsync(
       file_path,
       base::Bind(&GDataFileSystem::OnGetFileInfoCompleteForCloseFile,
                  ui_weak_ptr_,
                  file_path,
-                 *file_info,
                  callback));
 }
 
 void GDataFileSystem::OnGetFileInfoCompleteForCloseFile(
     const FilePath& file_path,
-    const base::PlatformFileInfo& file_info,
     const CloseFileCallback& callback,
     base::PlatformFileError error,
-    GDataEntry* entry) {
+    scoped_ptr<GDataFileProto> file_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (error == base::PLATFORM_FILE_OK) {
+    if (file_info->file_md5().empty() || file_info->is_hosted_document()) {
+      // No support for opening a directory or hosted document.
+      error = base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+    }
+  }
 
   if (error != base::PLATFORM_FILE_OK) {
     if (!callback.is_null())
@@ -3863,29 +3804,15 @@ void GDataFileSystem::OnGetFileInfoCompleteForCloseFile(
     return;
   }
 
-  DCHECK(entry);
-  GDataFile* file = entry->AsGDataFile();
-  if (!file || file->file_md5().empty() || file->is_hosted_document()) {
-    // No support for opening a directory or hosted document.
-    if (!callback.is_null())
-      callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
-    return;
-  }
-  DCHECK(!file->resource_id().empty());
-
-  // Update the in-memory meta data. Until the committed cache is uploaded in
-  // background to the server and the change is propagated back, this in-memory
-  // meta data is referred by subsequent file operations. So it needs to reflect
-  // the modification made before committing.
-  file->set_file_info(file_info);
+  DCHECK(!file_info->gdata_entry().resource_id().empty());
 
   // TODO(benchan,kinaba): Call ClearDirtyInCache instead of CommitDirtyInCache
   // if the file has not been modified. Come up with a way to detect the
   // intactness effectively, or provide a method for user to declare it when
   // calling CloseFile().
   cache_->CommitDirtyOnUIThread(
-      file->resource_id(),
-      file->file_md5(),
+      file_info->gdata_entry().resource_id(),
+      file_info->file_md5(),
       base::Bind(&GDataFileSystem::OnCommitDirtyInCacheCompleteForCloseFile,
                  ui_weak_ptr_,
                  callback));

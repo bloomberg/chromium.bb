@@ -230,7 +230,6 @@ class GDataFile : public GDataEntry {
   void set_file_md5(const std::string& file_md5) { file_md5_ = file_md5; }
   const std::string& document_extension() const { return document_extension_; }
   bool is_hosted_document() const { return is_hosted_document_; }
-  void set_file_info(const base::PlatformFileInfo& info) { file_info_ = info; }
 
   // Overrides GDataEntry::SetFileNameFromTitle() to set |file_name_| based
   // on the value of |title_| as well as |is_hosted_document_| and

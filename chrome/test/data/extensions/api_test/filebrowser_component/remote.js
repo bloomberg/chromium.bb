@@ -15,9 +15,6 @@
 var kDirectoryPath = 'drive/Folder';
 var kFileName = 'File.aBc';
 var kExpectedContents = 'hello, world\0';
-var kWriteOffset = 12;
-var kWriteData = '!!!';
-var kExpectedAfterWrite = 'hello, world!!!';
 var kNewDirectoryPath = 'drive/FolderNew';
 
 // Gets local filesystem used in tests.
@@ -62,26 +59,6 @@ TestRunner.prototype.runReadFileTest = function(fileName, expectedText) {
             chrome.test.succeed();
           },
           self.errorCallback_.bind(self, 'Error reading file: '));
-      },
-      self.errorCallback_.bind(self, 'Error opening file: '));
-};
-
-TestRunner.prototype.runWriteFileTest = function(fileName) {
-  var self = this;
-  chrome.test.assertTrue(!!this.directoryEntry_);
-  this.directoryEntry_.getFile(fileName, {},
-      function(entry) {
-        entry.createWriter(
-          function(writer) {
-            writer.onerror = self.errorCallback_.bind(self,
-                                                      'Error writing file: ');
-            writer.onwriteend = function(e) {
-              chrome.test.succeed();
-            };
-            writer.seek(kWriteOffset);
-            writer.write(new Blob([kWriteData], {'type': 'text/plain'}));
-          },
-          self.errorCallback_.bind(self, 'Error creating writer: '));
       },
       self.errorCallback_.bind(self, 'Error opening file: '));
 };
@@ -203,13 +180,6 @@ chrome.test.runTests([function initTests() {
   function executeReadTask() {
     // Invokes a handler that reads the file opened in the previous test.
     testRunner.runExecuteReadTask();
-  },
-  function writeFile() {
-    // Opens a file in the directory and Write.
-    testRunner.runWriteFileTest(kFileName);
-  },
-  function readFileAfterWrite() {
-    testRunner.runReadFileTest(kFileName, kExpectedAfterWrite);
   },
   function createDir() {
     // Creates new directory.

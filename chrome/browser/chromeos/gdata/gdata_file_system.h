@@ -611,7 +611,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const GetDownloadDataCallback& get_download_data_callback,
       base::PlatformFileError error,
       scoped_ptr<GDataFileProto> file_info);
-
   // Invoked upon completion of GetFileInfoByPathAsync initiated by OpenFile.
   // It then continues to invoke GetResolvedFileByPath and proceeds to
   // OnGetFileCompleteForOpenFile.
@@ -619,38 +618,13 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                         const OpenFileCallback& callback,
                                         base::PlatformFileError error,
                                         scoped_ptr<GDataFileProto> file_info);
-
-  // Invoked during the process of CloseFile. It first gets the path of local
-  // cache and receives it with OnGetFileCompleteForCloseFile. Then it reads the
-  // metadata of the modified cache and send the information to
-  // OnGetModifiedFileInfoCompleteForCloseFile./ Then it continues to get and
-  // update the GData entry by FindEntryByPathAsyncOnUIThread
-  // and invokes OnGetFileInfoCompleteForCloseFile. It then continues to
-  // invoke CommitDirtyInCache to commit the change, and finally proceeds to
-  // OnCommitDirtyInCacheCompleteForCloseFile and calls user-supplied callback.
-  void OnGetFileCompleteForCloseFile(
-      const FilePath& file_path,
-      const CloseFileCallback& callback,
-      base::PlatformFileError error,
-      const FilePath& local_cache_path,
-      const std::string& mime_type,
-      GDataFileType file_type);
-  void OnGetModifiedFileInfoCompleteForCloseFile(
-      const FilePath& file_path,
-      base::PlatformFileInfo* file_info,
-      bool* get_file_info_result,
-      const CloseFileCallback& callback);
-  void OnGetFileInfoCompleteForCloseFile(
-      const FilePath& file_path,
-      const base::PlatformFileInfo& file_info,
-      const CloseFileCallback& callback,
-      base::PlatformFileError error,
-      GDataEntry* entry);
-  void OnCommitDirtyInCacheCompleteForCloseFile(
-      const CloseFileCallback& callback,
-      base::PlatformFileError error,
-      const std::string& resource_id,
-      const std::string& md5);
+  // Invoked upon completion of GetFileInfoByPathAsync initiated by CloseFile.
+  // It then continues to invoke CommitDirtyInCache and proceeds to
+  // OnCommitDirtyInCacheCompleteForCloseFile.
+  void OnGetFileInfoCompleteForCloseFile(const FilePath& file_path,
+                                         const CloseFileCallback& callback,
+                                         base::PlatformFileError error,
+                                         scoped_ptr<GDataFileProto> file_info);
 
   // Invoked upon completion of GetFileByPath initiated by Copy. If
   // GetFileByPath reports no error, calls TransferRegularFile to transfer
@@ -756,6 +730,16 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const std::string& resource_id,
       const std::string& md5,
       const FilePath& cache_file_path);
+
+  // Invoked upon completion of CommitDirtyInCache initiated by CloseFile.
+  // Invokes |callback| with any |error| reported by CommitDirtyInCache.
+  //
+  // Must be called on UI thread.
+  void OnCommitDirtyInCacheCompleteForCloseFile(
+      const CloseFileCallback& callback,
+      base::PlatformFileError error,
+      const std::string& resource_id,
+      const std::string& md5);
 
   // Callback for handling resource rename attempt.
   void OnRenameResourceCompleted(const FilePath& file_path,
