@@ -9,6 +9,7 @@
   hashtable Puts a manifest file and hard links each of the inputs into the
             output directory.
   noop      Do nothing, used for transition purposes.
+  read      Reads a trace generated with mode=trace.
   remap     Stores all the inputs files in a directory without running the
             executable.
   run       Recreates a tree with all the inputs files and run the executable
@@ -279,9 +280,10 @@ class Flattenable(object):
       if member in data:
         value = data.pop(member)
         setattr(out, member, value)
-    # Temporary
-    logging.warning('Dropping data: %s' % data)
-    #assert not data, data
+    if data:
+      raise ValueError(
+          'Found unexpected entry %s while constructing an object %s' %
+            (data, cls.__name__), data, cls.__name__)
     return out
 
   @classmethod
@@ -558,16 +560,12 @@ def MODErun(_outdir, state):
     run_test_from_archive.rmtree(outdir)
 
 
-def MODEtrace(_outdir, state):
-  """Shortcut to use trace_inputs.py properly.
-
-  It constructs the equivalent of dictfiles. It is hardcoded to base the
-  checkout at src/.
-  """
-  logging.info(
-      'Running %s, cwd=%s' % (
-          state.result.command,
-          os.path.join(state.root_dir, state.result.relative_cwd)))
+def MODEread(_outdir, state):
+  """Reads the trace file generated with --mode=trace."""
+  api = trace_inputs.get_api()
+  logfile = state.result_file + '.log'
+  if not os.path.isfile(logfile):
+    return 1
   product_dir = None
   if state.resultdir and state.root_dir:
     # Defaults to none if both are the same directory.
@@ -577,21 +575,7 @@ def MODEtrace(_outdir, state):
       # This happens on Windows if state.resultdir is one drive, let's say
       # 'C:\' and state.root_dir on another one like 'D:\'.
       product_dir = None
-  if not state.result.command:
-    print 'No command to run'
-    return 1
-  api = trace_inputs.get_api()
-  logfile = state.result_file + '.log'
   try:
-    result = 0
-    if not os.path.isfile(logfile):
-      with api.get_tracer(logfile) as tracer:
-        result, _ = tracer.trace(
-            state.result.command,
-            os.path.join(state.root_dir, state.result.relative_cwd),
-            'default',
-            True)
-
     results = trace_inputs.load_trace(
         logfile, state.root_dir, api, isolate_common.default_blacklist)
     simplified = trace_inputs.extract_directories(state.root_dir, results.files)
@@ -608,6 +592,33 @@ def MODEtrace(_outdir, state):
       ],
     }
     isolate_common.pretty_print(value, sys.stdout)
+    return 0
+  except trace_inputs.TracingFailure, e:
+    print >> sys.stderr, (
+        '\nReading traces failed for: %s' % ' '.join(state.result.command))
+    print >> sys.stderr, str(e)
+    return 1
+
+
+def MODEtrace(_outdir, state):
+  """Traces the target using trace_inputs.py."""
+  logging.info(
+      'Running %s, cwd=%s' % (
+          state.result.command,
+          os.path.join(state.root_dir, state.result.relative_cwd)))
+  if not state.result.command:
+    print 'No command to run'
+    return 1
+  api = trace_inputs.get_api()
+  logfile = state.result_file + '.log'
+  try:
+    result = 0
+    with api.get_tracer(logfile) as tracer:
+      result, _ = tracer.trace(
+          state.result.command,
+          os.path.join(state.root_dir, state.result.relative_cwd),
+          'default',
+          True)
     return result
   except trace_inputs.TracingFailure, e:
     print >> sys.stderr, (
@@ -620,6 +631,7 @@ def MODEtrace(_outdir, state):
 VALID_MODES = {
   'check': MODEcheck,
   'hashtable': MODEhashtable,
+  'read': MODEread,
   'remap': MODEremap,
   'run': MODErun,
   'trace': MODEtrace,
@@ -630,6 +642,7 @@ VALID_MODES = {
 LEVELS = {
   'check': NO_INFO,
   'hashtable': WITH_HASH,
+  'read': NO_INFO,
   'remap': STATS_ONLY,
   'run': STATS_ONLY,
   'trace': STATS_ONLY,

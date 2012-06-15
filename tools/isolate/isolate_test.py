@@ -56,11 +56,16 @@ class Isolate(unittest.TestCase):
     values = {
       'foo': 'bar',
     }
+    expected = (
+      ("Found unexpected entry {'foo': 'bar'} while constructing an "
+          "object Result"),
+      {'foo': 'bar'},
+      'Result')
     try:
       isolate.Result.load(values)
       self.fail()
-    except AssertionError:
-      pass
+    except ValueError, e:
+      self.assertEquals(expected, e.args)
 
   def test_savedstate_load_empty(self):
     values = {

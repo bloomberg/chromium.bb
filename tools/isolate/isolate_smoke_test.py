@@ -22,7 +22,7 @@ VERBOSE = False
 
 
 # Keep the list hard coded.
-EXPECTED_MODES = ('check', 'hashtable', 'remap', 'run', 'trace')
+EXPECTED_MODES = ('check', 'hashtable', 'read', 'remap', 'run', 'trace')
 # These are per test case, not per mode.
 RELATIVE_CWD = {
   'fail': '.',
@@ -96,6 +96,7 @@ class IsolateBase(unittest.TestCase):
     self.outdir = os.path.join(self.tempdir, 'isolated')
 
   def tearDown(self):
+    logging.debug(self.tempdir)
     shutil.rmtree(self.tempdir)
 
   @staticmethod
@@ -282,7 +283,8 @@ class Isolate(unittest.TestCase):
     )
     self.assertEquals(sorted(RELATIVE_CWD), files)
     self.assertEquals(sorted(DEPENDENCIES), files)
-    for mode in ('check', 'hashtable', 'remap', 'run', 'trace'):
+    # --mode=read and --mode=trace are tested together.
+    for mode in ('check', 'hashtable', 'read_trace', 'remap', 'run'):
       expected_cases = set('test_%s' % f for f in files)
       fixture_name = 'Isolate_%s' % mode
       fixture = getattr(sys.modules[__name__], fixture_name)
@@ -481,7 +483,8 @@ class Isolate_run(IsolateModeBase):
         ['with_flag.py', 'run'], None, {u'FLAG': u'run'})
 
 
-class Isolate_trace(IsolateModeBase):
+class Isolate_read_trace(IsolateModeBase):
+  # Tests both trace and read.
   LEVEL = isolate.STATS_ONLY
 
   def test_fail(self):
@@ -490,18 +493,17 @@ class Isolate_trace(IsolateModeBase):
       self._execute('trace', 'fail.isolate', ['-v'], True)
       self.fail()
     except subprocess.CalledProcessError, e:
-      out = e.output
+      self.assertEquals('', e.output)
     self._expect_no_tree()
     self._expect_results(['fail.py'], None, None)
-    # Even if it returns an error, isolate.py still prints the trace.
     expected = self._wrap_in_condition(
         {
           isolate.isolate_common.KEY_TRACKED: [
             'fail.py',
           ],
         })
-    lines = out.strip().splitlines()
-    self.assertEquals(expected.splitlines(), lines)
+    out = self._execute('read', 'fail.isolate', [], True) or ''
+    self.assertEquals(expected.splitlines(), out.splitlines())
 
   def test_missing_trailing_slash(self):
     try:
@@ -548,6 +550,7 @@ class Isolate_trace(IsolateModeBase):
 
   def test_touch_root(self):
     out = self._execute('trace', 'touch_root.isolate', [], True)
+    self.assertEquals('', out)
     self._expect_no_tree()
     self._expect_results(['touch_root.py'], None, None)
     expected = self._wrap_in_condition(
@@ -557,11 +560,13 @@ class Isolate_trace(IsolateModeBase):
             '../../isolate.py',
           ],
         })
+    out = self._execute('read', 'touch_root.isolate', [], True)
     self.assertEquals(expected, out)
 
   def test_with_flag(self):
     out = self._execute(
         'trace', 'with_flag.isolate', ['-V', 'FLAG', 'trace'], True)
+    self.assertEquals('', out)
     self._expect_no_tree()
     self._expect_results(['with_flag.py', 'trace'], None, {u'FLAG': u'trace'})
     expected = {
@@ -573,6 +578,7 @@ class Isolate_trace(IsolateModeBase):
         'files1/',
       ],
     }
+    out = self._execute('read', 'with_flag.isolate', [], True)
     self.assertEquals(self._wrap_in_condition(expected), out)
 
 
@@ -690,15 +696,11 @@ class IsolateNoOutdir(IsolateBase):
     ]
     self.assertEquals(files, list_files_tree(self.tempdir))
 
-  def test_trace(self):
-    output = self._execute('trace', [self.filename()], True)
-    files = [
-      'isolate_smoke_test.results',
-      'isolate_smoke_test.state',
-      os.path.join('root', 'data', 'isolate', 'touch_root.isolate'),
-      os.path.join('root', 'data', 'isolate', 'touch_root.py'),
-      os.path.join('root', 'isolate.py'),
-    ]
+  def test_read_trace(self):
+    self._execute('trace', [self.filename()], False)
+    # Read the trace before cleaning up. No need to specify self.filename()
+    # because add the needed information is in the .state file.
+    output = self._execute('read', [], True)
     expected = {
       isolate.isolate_common.KEY_TRACKED: [
         'touch_root.py',
@@ -710,6 +712,13 @@ class IsolateNoOutdir(IsolateBase):
     # Clean the directory from the logs, which are OS-specific.
     isolate.trace_inputs.get_api().clean_trace(
         os.path.join(self.tempdir, 'isolate_smoke_test.results.log'))
+    files = [
+      'isolate_smoke_test.results',
+      'isolate_smoke_test.state',
+      os.path.join('root', 'data', 'isolate', 'touch_root.isolate'),
+      os.path.join('root', 'data', 'isolate', 'touch_root.py'),
+      os.path.join('root', 'isolate.py'),
+    ]
     self.assertEquals(files, list_files_tree(self.tempdir))
 
 
