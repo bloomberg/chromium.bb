@@ -1016,26 +1016,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                       const FilePath& cache_file_path,
                                       bool* has_enough_space);
 
-  // Cache internal helper functions.
-
-  // Wrapper task around any sequenced task that runs on blocking pool that
-  // makes sure |in_shutdown_| and |on_io_completed_| are handled properly in
-  // the right order.
-  void RunTaskOnBlockingPool(const base::Closure& task);
-
-  // Wrapper around BrowserThread::PostTask to post
-  // RunTaskOnBlockingPool task to the blocking pool.
-  void PostBlockingPoolSequencedTask(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task);
-
-  // Similar to PostBlockingPoolSequencedTask() but this one takes a reply
-  // callback that runs on the calling thread.
-  void PostBlockingPoolSequencedTaskAndReply(
-    const tracked_objects::Location& from_here,
-    const base::Closure& request_task,
-    const base::Closure& reply_task);
-
   // Helper function used to perform synchronous file search on UI thread.
   void FindEntryByPathSyncOnUIThread(const FilePath& search_file_path,
                                      const FindEntryCallback& callback);
@@ -1145,14 +1125,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   // The document service owned by GDataSystemService.
   DocumentsServiceInterface* documents_service_;
-
-  // Waitable events used to block destructor until all the tasks on blocking
-  // pool are run.
-  scoped_ptr<base::WaitableEvent> on_io_completed_;
-
-  // Number of pending tasks on the blocking pool.
-  int num_pending_tasks_;
-  base::Lock num_pending_tasks_lock_;
 
   // Periodic timer for checking updates.
   base::Timer update_timer_;

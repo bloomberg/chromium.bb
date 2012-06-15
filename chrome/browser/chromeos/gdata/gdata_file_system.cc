@@ -563,6 +563,38 @@ void ReadOnlyFindEntryCallback(GDataEntry** out,
     *out = entry;
 }
 
+// Wrapper around BrowserThread::PostTask to post a task to the blocking
+// pool with the given sequence token.
+void PostBlockingPoolSequencedTask(
+    const tracked_objects::Location& from_here,
+    const base::SequencedWorkerPool::SequenceToken& sequence_token,
+    const base::Closure& task) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
+  const bool posted = pool->GetSequencedTaskRunner(sequence_token)->
+      PostTask(from_here, task);
+  DCHECK(posted);
+}
+
+// Similar to PostBlockingPoolSequencedTask() but this one takes a reply
+// callback that runs on the calling thread.
+void PostBlockingPoolSequencedTaskAndReply(
+    const tracked_objects::Location& from_here,
+    const base::SequencedWorkerPool::SequenceToken& sequence_token,
+    const base::Closure& request_task,
+    const base::Closure& reply_task) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
+  const bool posted = pool->GetSequencedTaskRunner(sequence_token)->
+      PostTaskAndReply(
+          from_here,
+          request_task,
+          reply_task);
+  DCHECK(posted);
+}
+
 }  // namespace
 
 // GDataFileSystem::GetDocumentsParams struct implementation.
@@ -656,9 +688,6 @@ GDataFileSystem::GDataFileSystem(
     : profile_(profile),
       cache_(cache),
       documents_service_(documents_service),
-      on_io_completed_(new base::WaitableEvent(
-          true /* manual reset */, true /* initially signaled */)),
-      num_pending_tasks_(0),
       update_timer_(true /* retain_user_task */, true /* is_repeating */),
       hide_hosted_docs_(false),
       ui_weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(
@@ -714,25 +743,6 @@ GDataFileSystem::~GDataFileSystem() {
 
   pref_registrar_.reset(NULL);
 
-  // ui_weak_ptr_factory_ must be deleted on UI thread.
-  ui_weak_ptr_factory_.reset();
-
-  {
-    // http://crbug.com/125220
-    base::ThreadRestrictions::ScopedAllowWait allow_wait;
-    // We should wait if there is any pending tasks posted to the blocking
-    // pool. on_io_completed_ won't be signaled iff |num_pending_tasks_|
-    // is greater that 0.
-    // We don't have to lock with |num_pending_tasks_lock_| here, since number
-    // of pending tasks can only decrease at this point (Number of pending class
-    // can be increased only on UI and IO thread. We are on UI thread, and there
-    // will be no more tasks run on IO thread.
-    on_io_completed_->Wait();
-  }
-
-  // Now that we are sure that there are no more pending tasks bound to this on
-  // other threads, we are safe to destroy the data members.
-
   // Cancel all the in-flight operations.
   // This asynchronously cancels the URL fetch operations.
   documents_service_->CancelAll();
@@ -741,10 +751,6 @@ GDataFileSystem::~GDataFileSystem() {
   // Lock to let root destroy cache map and resource map.
   base::AutoLock lock(lock_);
   root_.reset();
-
-  // Let's make sure that num_pending_tasks_lock_ has been released on all
-  // other threads.
-  base::AutoLock tasks_lock(num_pending_tasks_lock_);
 }
 
 void GDataFileSystem::AddObserver(Observer* observer) {
@@ -1059,6 +1065,7 @@ void GDataFileSystem::TransferFileFromLocalToRemote(
   std::string* resource_id = new std::string;
   PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
+      sequence_token_,
       base::Bind(&GetDocumentResourceIdOnBlockingPool,
                  local_src_file_path,
                  resource_id),
@@ -1106,6 +1113,7 @@ void GDataFileSystem::TransferRegularFile(
   UploadFileInfo* upload_file_info = new UploadFileInfo;
   PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
+      sequence_token_,
       base::Bind(&CreateUploadFileInfoOnBlockingPool,
                  local_file_path,
                  remote_dest_file_path,
@@ -1319,6 +1327,7 @@ void GDataFileSystem::OnGetFileCompleteForTransferFile(
       new base::PlatformFileError(base::PLATFORM_FILE_OK);
   PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
+      sequence_token_,
       base::Bind(&CopyLocalFileOnBlockingPool,
                  local_file_path,
                  local_dest_file_path,
@@ -1782,6 +1791,7 @@ void GDataFileSystem::GetResolvedFileByPath(
     GDataFileType* file_type = new GDataFileType(REGULAR_FILE);
     PostBlockingPoolSequencedTaskAndReply(
         FROM_HERE,
+        sequence_token_,
         base::Bind(&CreateDocumentJsonFileOnBlockingPool,
                    cache_->GetCacheDirectoryPath(
                        GDataCache::CACHE_TYPE_TMP_DOCUMENTS),
@@ -1960,6 +1970,7 @@ void GDataFileSystem::OnGetDocumentEntry(const FilePath& cache_file_path,
   bool* has_enough_space = new bool(false);
   PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
+      sequence_token_,
       base::Bind(&GDataCache::FreeDiskSpaceIfNeededFor,
                  base::Unretained(cache_),
                  file_size,
@@ -2303,6 +2314,7 @@ void GDataFileSystem::GetCacheStateOnUIThread(
   bool* success = new bool(false);
   PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
+      sequence_token_,
       base::Bind(&GetCacheEntryOnBlockingPool,
                  cache_,
                  resource_id,
@@ -2600,6 +2612,7 @@ void GDataFileSystem::OnGetDocuments(ContentOrigin initial_origin,
                          params->start_changestamp);
   PostBlockingPoolSequencedTask(
       FROM_HERE,
+      sequence_token_,
       base::Bind(&SaveFeedOnBlockingPoolForDebugging,
                  cache_->GetCacheDirectoryPath(
                      GDataCache::CACHE_TYPE_META).Append(file_name),
@@ -2748,6 +2761,7 @@ void GDataFileSystem::SaveFileSystemAsProto() {
   root_->set_serialized_size(serialized_proto->size());
   PostBlockingPoolSequencedTask(
       FROM_HERE,
+      sequence_token_,
       base::Bind(&SaveProtoOnBlockingPool, path,
                  base::Passed(serialized_proto.Pass())));
 }
@@ -2886,6 +2900,7 @@ void GDataFileSystem::OnFileDownloaded(
     bool* success = new bool(false);
     PostBlockingPoolSequencedTaskAndReply(
         FROM_HERE,
+        sequence_token_,
         base::Bind(&GetCacheEntryOnBlockingPool,
                    cache_,
                    params.resource_id,
@@ -2910,6 +2925,7 @@ void GDataFileSystem::OnFileDownloaded(
   bool* has_enough_space = new bool(false);
   PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
+      sequence_token_,
       base::Bind(&GDataCache::FreeDiskSpaceIfNeededFor,
                  base::Unretained(cache_),
                  0,
@@ -2960,6 +2976,7 @@ void GDataFileSystem::OnFileDownloadedAndSpaceChecked(
       // report "no space" error.
       PostBlockingPoolSequencedTask(
           FROM_HERE,
+          sequence_token_,
           base::Bind(base::IgnoreResult(&file_util::Delete),
                      downloaded_file_path,
                      false /* recursive*/));
@@ -3584,66 +3601,6 @@ void GDataFileSystem::SetHideHostedDocuments(bool hide) {
 
 //============= GDataFileSystem: internal helper functions =====================
 
-void GDataFileSystem::RunTaskOnBlockingPool(const base::Closure& task) {
-  DCHECK(BrowserThread::GetBlockingPool()->IsRunningSequenceOnCurrentThread(
-      sequence_token_));
-
-  task.Run();
-
-  {
-    base::AutoLock lock(num_pending_tasks_lock_);
-    --num_pending_tasks_;
-    // Signal when the last task is completed.
-    if (num_pending_tasks_ == 0)
-      on_io_completed_->Signal();
-  }
-}
-
-void GDataFileSystem::PostBlockingPoolSequencedTask(
-    const tracked_objects::Location& from_here,
-    const base::Closure& task) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  PostBlockingPoolSequencedTaskAndReply(
-      from_here,
-      task,
-      base::Bind(&base::DoNothing));
-}
-
-void GDataFileSystem::PostBlockingPoolSequencedTaskAndReply(
-    const tracked_objects::Location& from_here,
-    const base::Closure& request_task,
-    const base::Closure& reply_task) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  {
-    // Note that we cannot use |lock_| as lock_ can be held before this
-    // function is called (i.e. InitializeCacheOnBlockingPool does).
-    base::AutoLock lock(num_pending_tasks_lock_);
-
-    // Initiate the sequenced task. We should Reset() here rather than on the
-    // blocking pool, as Reset() will cause a deadlock if it's called while
-    // Wait() is being called in the destructor.
-    //
-    // Signaling on_io_completed_ is closely coupled with number of pending
-    // tasks. We signal it when the number decreases to 0. Because of that, we
-    // should do the reset under |num_pending_tasks_lock_|. Otherwise, we could
-    // get in trouble if |num_pending_tasks_| gets decreased after the event is
-    // reset, but before we increase the number here.
-    on_io_completed_->Reset();
-
-    ++num_pending_tasks_;
-  }
-  base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
-  const bool posted = pool->GetSequencedTaskRunner(sequence_token_)->
-      PostTaskAndReply(
-          from_here,
-          base::Bind(&GDataFileSystem::RunTaskOnBlockingPool,
-                     base::Unretained(this),
-                     request_task),
-          reply_task);
-  DCHECK(posted);
-}
-
 void GDataFileSystem::InitializePreferenceObserver() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -3791,6 +3748,7 @@ void GDataFileSystem::OnGetFileCompleteForCloseFile(
   bool* get_file_info_result = new bool(false);
   PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
+      sequence_token_,
       base::Bind(&GetFileInfoOnBlockingPool,
                  local_cache_path,
                  base::Unretained(file_info),
