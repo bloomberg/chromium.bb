@@ -20,29 +20,32 @@ chromeHidden.registerCustomHook('fileSystem', function(bindingsAPI) {
   }
   ['getDisplayPath', 'getWritableFileEntry'].forEach(bindFileEntryFunction);
 
-  apiFunctions.setCustomCallback('getWritableFileEntry',
-      function(name, request, response) {
-    if (request.callback && response) {
-      var callback = request.callback;
-      request.callback = null;
+  function bindFileEntryCallback(functionName) {
+    apiFunctions.setCustomCallback(functionName,
+        function(name, request, response) {
+      if (request.callback && response) {
+        var callback = request.callback;
+        request.callback = null;
 
-      var fileSystemId = response.fileSystemId;
-      var baseName = response.baseName;
-      var fs = GetIsolatedFileSystem(fileSystemId);
+        var fileSystemId = response.fileSystemId;
+        var baseName = response.baseName;
+        var fs = GetIsolatedFileSystem(fileSystemId);
 
-      try {
-        fs.root.getFile(baseName, {}, function(fileEntry) {
-          callback(fileEntry);
-        }, function(fileError) {
-          chrome.extension.lastError =
-              'Error getting fileEntry, code: ' + fileError.code;
+        try {
+          fs.root.getFile(baseName, {}, function(fileEntry) {
+            callback(fileEntry);
+          }, function(fileError) {
+            chrome.extension.lastError = {"message":
+                'Error getting fileEntry, code: ' + fileError.code};
+            callback();
+          });
+        } catch (e) {
+          chrome.extension.lastError = {"message":
+              'Error in event handler for onLaunched: ' + e.stack};
           callback();
-        });
-      } catch (e) {
-        chrome.extension.lastError =
-            'Error in event handler for onLaunched: ' + e.stack;
-        callback();
+        }
       }
-    }
-  });
+    });
+  }
+  ['getWritableFileEntry', 'chooseFile'].forEach(bindFileEntryCallback);
 });

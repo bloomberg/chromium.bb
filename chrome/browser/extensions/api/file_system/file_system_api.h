@@ -19,19 +19,48 @@ class FileSystemGetDisplayPathFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class FileSystemGetWritableFileEntryFunction : public AsyncExtensionFunction {
+class FileSystemPickerFunction : public AsyncExtensionFunction {
+ protected:
+  class FilePicker;
+
+  virtual ~FileSystemPickerFunction() {}
+  bool ShowPicker(const FilePath& suggested_path, bool for_save);
+
+ private:
+  // FileSelected and FileSelectionCanceled are called by the file picker.
+  void FileSelected(const FilePath& path, bool for_save);
+  void FileSelectionCanceled();
+
+  // called on the FILE thread. This is only called when a file is being chosen
+  // to save. The function will ensure the file exists, creating it if
+  // necessary, and also check that the file is not a link.
+  void CheckWritableFile(const FilePath& path);
+
+  // This will finish the choose file process. This is either called directly
+  // from FileSelected, or from CreateFileIfNecessary. It is called on the UI
+  // thread.
+  void RegisterFileSystemAndSendResponse(const FilePath& path, bool for_save);
+
+  // called on the UI thread if there is a problem checking a writable file.
+  void HandleWritableFileError();
+};
+
+class FileSystemGetWritableFileEntryFunction : public FileSystemPickerFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME("fileSystem.getWritableFileEntry");
 
  protected:
   virtual ~FileSystemGetWritableFileEntryFunction() {}
   virtual bool RunImpl() OVERRIDE;
+};
 
- private:
-  class FilePicker;
+class FileSystemChooseFileFunction : public FileSystemPickerFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("fileSystem.chooseFile");
 
-  void FileSelected(const FilePath& path);
-  void FileSelectionCanceled();
+ protected:
+  virtual ~FileSystemChooseFileFunction() {}
+  virtual bool RunImpl() OVERRIDE;
 };
 
 }  // namespace extensions

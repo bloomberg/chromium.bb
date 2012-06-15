@@ -5,13 +5,19 @@
 // File-level comment to appease parser. Eventually this will not be necessary.
 
 [nodoc] namespace fileSystem {
+  dictionary ChooseFileOptions {
+    // type can be 'openFile' or 'saveFile'. Default is 'openFile'.
+    DOMString? type;
+  };
   callback GetDisplayPathCallback = void (DOMString displayPath);
   callback FileEntryCallback = void ([instanceOf=fileEntry] object fileEntry);
 
   interface Functions {
     static void getDisplayPath([instanceOf=FileEntry] object fileEntry,
-                               GetDisplayPathCallback onSuccess);
+                               GetDisplayPathCallback callback);
     static void getWritableFileEntry([instanceOf=FileEntry] object fileEntry,
-                                     FileEntryCallback onSuccess);
+                                     FileEntryCallback callback);
+    static void chooseFile(optional ChooseFileOptions options,
+                           FileEntryCallback callback);
   };
 };
