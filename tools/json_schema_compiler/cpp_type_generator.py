@@ -200,10 +200,11 @@ class CppTypeGenerator(object):
     """Returns the #include lines for self._namespace.
     """
     c = Code()
-    for dependency in sorted(self._NamespaceTypeDependencies().keys()):
-      c.Append('#include "%s/%s.h"' % (
-            dependency.source_file_dir,
-            self._cpp_namespaces[dependency]))
+    for header in sorted(
+        ['%s/%s.h' % (dependency.source_file_dir,
+                      self._cpp_namespaces[dependency])
+         for dependency in self._NamespaceTypeDependencies().keys()]):
+      c.Append('#include "%s"' % header)
     return c
 
   def _ResolveTypeNamespace(self, ref_type):
