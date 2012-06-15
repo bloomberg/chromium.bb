@@ -94,6 +94,9 @@ void MultiMonitorManager::OnNativeMonitorsChanged(
       const gfx::Display& new_display = new_displays[i];
       displays_.push_back(gfx::Display(new_display.id()));
       gfx::Display& display = displays_.back();
+      // Force the primary display's ID to be 0.
+      if (i == 0)
+        display.set_id(0);
       display.SetScaleAndBounds(new_display.device_scale_factor(),
                                 new_display.bounds_in_pixel());
       NotifyDisplayAdded(display);
@@ -180,8 +183,10 @@ void MultiMonitorManager::Init() {
        iter != parts.end(); ++iter) {
     displays_.push_back(CreateMonitorFromSpec(*iter));
   }
-  if (displays_.empty())
+  if (displays_.empty()) {
     displays_.push_back(CreateMonitorFromSpec("" /* default */));
+    displays_.back().set_id(0);
+  }
 }
 
 void MultiMonitorManager::AddRemoveMonitorImpl() {

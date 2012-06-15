@@ -111,6 +111,7 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_W, ui::EF_ALT_DOWN, CYCLE_FORWARD_MRU },
   { true, ui::VKEY_W, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, CYCLE_BACKWARD_MRU },
   { true, ui::VKEY_F4, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, MONITOR_CYCLE },
+  { true, ui::VKEY_F4, ui::EF_SHIFT_DOWN, MONITOR_ADD_REMOVE },
   { true, ui::VKEY_HOME, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     MONITOR_TOGGLE_SCALE },
 #endif

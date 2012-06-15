@@ -110,6 +110,9 @@ class WorkspaceController;
 // takes ownership of the Shell.
 class ASH_EXPORT Shell : aura::CursorDelegate {
  public:
+  typedef std::vector<aura::RootWindow*> RootWindowList;
+  typedef std::vector<internal::RootWindowController*> RootWindowControllerList;
+
   enum Direction {
     FORWARD,
     BACKWARD
@@ -146,20 +149,28 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
   // Returns the root window controller for the primary root window.
   static internal::RootWindowController* GetPrimaryRootWindowController();
 
-  // Gets the primary RootWindow. The primary RootWindow is the one
+  // Returns all root window controllers. In non extended desktop
+  // mode, this return a RootWindowController for the primary root window only.
+  static RootWindowControllerList GetAllRootWindowControllers();
+
+  // Returns the primary RootWindow. The primary RootWindow is the one
   // that has a launcher.
   static aura::RootWindow* GetPrimaryRootWindow();
 
-  // Gets the active RootWindow. The active RootWindow is the one that
+  // Returns the active RootWindow. The active RootWindow is the one that
   // contains the current active window as a decendant child. The active
   // RootWindow remains the same even when the active window becomes NULL,
   // until the another window who has a different root window becomes active.
   static aura::RootWindow* GetActiveRootWindow();
 
-  // Gets the RootWindow at |point| in the virtual screen coordinates.
+  // Returns the RootWindow at |point| in the virtual screen coordinates.
   // Returns NULL if the root window does not exist at the given
   // point.
   static aura::RootWindow* GetRootWindowAt(const gfx::Point& point);
+
+  // Returns all root windows. In non extended desktop mode, this
+  // returns the primary root window only.
+  static RootWindowList GetAllRootWindows();
 
   static aura::Window* GetContainer(aura::RootWindow* root_window,
                                     int container_id);
@@ -330,7 +341,7 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
     browser_context_ = browser_context;
   }
 
-  // Initialize the root window to be used for a secondary monitor.
+  // Initializes the root window to be used for a secondary monitor.
   void InitRootWindowForSecondaryMonitor(aura::RootWindow* root);
 
 #if defined(OS_CHROMEOS)
@@ -351,8 +362,9 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
 
   void Init();
 
-  // Initiailze the root window so that it can host browser windows.
-  void InitRootWindow(aura::RootWindow* root);
+  // Initializes the root window and root window controller so that it
+  // can host browser windows.
+  void InitRootWindowController(internal::RootWindowController* root);
 
   // Initializes the layout managers and event filters specific for
   // primary display.
@@ -372,7 +384,6 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
   // when the screen is initially created.
   static bool initially_hide_cursor_;
 
-  scoped_ptr<internal::RootWindowController> root_window_controller_;
   ScreenAsh* screen_;
 
   // Active root window. Never become NULL.

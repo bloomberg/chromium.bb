@@ -133,7 +133,8 @@ void WorkspaceManager::SetActiveWorkspaceByWindow(aura::Window* window) {
 }
 
 void WorkspaceManager::UpdateShelfVisibility() {
-  shelf_->UpdateVisibilityState();
+  if (shelf_)
+    shelf_->UpdateVisibilityState();
 }
 
 WorkspaceManager::WindowState WorkspaceManager::GetWindowState() {

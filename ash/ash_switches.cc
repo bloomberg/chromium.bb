@@ -14,6 +14,9 @@ const char kAppListShowAppsOnly[] = "app-list-show-apps-only";
 // Enables the Oak tree viewer.
 const char kAshEnableOak[] = "ash-enable-oak";
 
+// Enable extended desktop.
+const char kAshExtendedDesktop[] = "ash-extended-desktop";
+
 // Use Ash notifications.
 const char kAshNotify[] = "ash-notify";
 
@@ -22,9 +25,6 @@ const char kAshTouchHud[] = "ash-touch-hud";
 
 // If present animations are disabled.
 const char kAshWindowAnimationsDisabled[] = "ash-window-animations-disabled";
-
-// Enable extended desktop.
-const char kAuraExtendedDesktop[] = "ash-extended-desktop";
 
 // Use Google-style dialog box frames.
 const char kAuraGoogleDialogFrames[] = "aura-google-dialog-frames";

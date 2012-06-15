@@ -166,6 +166,7 @@ internal::WorkspaceController* Shell::TestApi::workspace_controller() {
 
 Shell::Shell(ShellDelegate* delegate)
     : screen_(new ScreenAsh),
+      active_root_window_(NULL),
       env_filter_(NULL),
       delegate_(delegate),
 #if defined(OS_CHROMEOS)
@@ -215,17 +216,14 @@ Shell::~Shell() {
   // TODO(xiyuan): Move it back when app list container is no longer needed.
   app_list_controller_.reset();
 
-  // Destroy secondary monitor's widgets before all the windows are destroyed.
-  monitor_controller_.reset();
-
-  root_window_controller_->CloseChildWindows();
+  // Destroy all child windows including widgets.
+  monitor_controller_->CloseChildWindows();
 
   // These need a valid Shell instance to clean up properly, so explicitly
   // delete them before invalidating the instance.
   // Alphabetical.
   drag_drop_controller_.reset();
   magnification_controller_.reset();
-  monitor_controller_.reset();
   power_button_controller_.reset();
   resize_shadow_controller_.reset();
   shadow_controller_.reset();
@@ -236,7 +234,8 @@ Shell::~Shell() {
   user_action_client_.reset();
   visibility_controller_.reset();
 
-  root_window_controller_.reset();
+  // This also deletes all RootWindows.
+  monitor_controller_.reset();
 
   // Launcher widget has a InputMethodBridge that references to
   // input_method_filter_'s input_method_. So explicitly release launcher_
@@ -289,12 +288,18 @@ void Shell::DeleteInstance() {
 
 // static
 internal::RootWindowController* Shell::GetPrimaryRootWindowController() {
-  return GetInstance()->root_window_controller_.get();
+  return wm::GetRootWindowController(GetPrimaryRootWindow());
+}
+
+// static
+Shell::RootWindowControllerList Shell::GetAllRootWindowControllers() {
+  return Shell::GetInstance()->monitor_controller()->
+      GetAllRootWindowControllers();
 }
 
 // static
 aura::RootWindow* Shell::GetPrimaryRootWindow() {
-  return GetPrimaryRootWindowController()->root_window();
+  return GetInstance()->monitor_controller()->GetPrimaryRootWindow();
 }
 
 // static
@@ -306,6 +311,12 @@ aura::RootWindow* Shell::GetActiveRootWindow() {
 aura::RootWindow* Shell::GetRootWindowAt(const gfx::Point& point) {
   // TODO(oshima): Support multiple root windows.
   return GetPrimaryRootWindow();
+}
+
+// static
+Shell::RootWindowList Shell::GetAllRootWindows() {
+  return Shell::GetInstance()->monitor_controller()->
+      GetAllRootWindows();
 }
 
 // static
@@ -334,11 +345,16 @@ void Shell::Init() {
   aura::Env::GetInstance()->SetEventFilter(env_filter_);
 
   aura::Env::GetInstance()->cursor_manager()->set_delegate(this);
-  aura::RootWindow* root_window =
-      aura::MonitorManager::CreateRootWindowForPrimaryMonitor();
-  active_root_window_ = root_window;
+
 
   focus_manager_.reset(new aura::FocusManager);
+  activation_controller_.reset(
+      new internal::ActivationController(focus_manager_.get()));
+
+  monitor_controller_.reset(new internal::MonitorController);
+  monitor_controller_->InitPrimaryDisplay();
+  aura::RootWindow* root_window = monitor_controller_->GetPrimaryRootWindow();
+  active_root_window_ = root_window;
 
 #if !defined(OS_MACOSX)
   nested_dispatcher_controller_.reset(new NestedDispatcherController);
@@ -375,9 +391,6 @@ void Shell::Init() {
   slow_animation_filter_.reset(new internal::SlowAnimationEventFilter);
   AddEnvEventFilter(slow_animation_filter_.get());
 
-  activation_controller_.reset(
-      new internal::ActivationController(focus_manager_.get()));
-
   capture_controller_.reset(new internal::CaptureController);
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -386,10 +399,9 @@ void Shell::Init() {
     touch_observer_hud_.reset(new internal::TouchObserverHUD);
     AddEnvEventFilter(touch_observer_hud_.get());
   }
-
-  root_window_controller_.reset(
-      new internal::RootWindowController(root_window));
-  root_window_controller_->CreateContainers();
+  internal::RootWindowController* root_window_controller =
+      new internal::RootWindowController(root_window);
+  root_window_controller->CreateContainers();
 
   // Create Controllers that may need root window.
   // TODO(oshima): Move as many controllers before creating
@@ -409,9 +421,8 @@ void Shell::Init() {
   high_contrast_controller_.reset(new HighContrastController);
   video_detector_.reset(new VideoDetector);
   window_cycle_controller_.reset(new WindowCycleController);
-  monitor_controller_.reset(new internal::MonitorController);
 
-  InitRootWindow(root_window);
+  InitRootWindowController(root_window_controller);
 
   // Initialize Primary RootWindow specific items.
   status_area_widget_ = new internal::StatusAreaWidget();
@@ -428,7 +439,7 @@ void Shell::Init() {
   if (!user_wallpaper_delegate_.get())
     user_wallpaper_delegate_.reset(new DummyUserWallpaperDelegate());
 
-  InitLayoutManagersForPrimaryDisplay(root_window_controller_.get());
+  InitLayoutManagersForPrimaryDisplay(root_window_controller);
 
   if (!command_line->HasSwitch(switches::kAuraNoShadows)) {
     resize_shadow_controller_.reset(new internal::ResizeShadowController());
@@ -439,7 +450,7 @@ void Shell::Init() {
     CreateLauncher();
 
   // Force Layout
-  root_window_controller_->root_window_layout()->OnWindowResized();
+  root_window_controller->root_window_layout()->OnWindowResized();
 
   // It needs to be created after OnWindowResized has been called, otherwise the
   // widget will not paint when restoring after a browser crash.
@@ -447,6 +458,8 @@ void Shell::Init() {
 
   power_button_controller_.reset(new PowerButtonController);
   AddShellObserver(power_button_controller_.get());
+
+  monitor_controller_->InitSecondaryDisplays();
 
   if (initially_hide_cursor_)
     aura::Env::GetInstance()->cursor_manager()->ShowCursor(false);
@@ -587,7 +600,10 @@ ShelfAlignment Shell::GetShelfAlignment() {
 }
 
 void Shell::SetDimming(bool should_dim) {
-  GetPrimaryRootWindowController()->screen_dimmer()->SetDimming(should_dim);
+  RootWindowControllerList controllers = GetAllRootWindowControllers();
+  for (RootWindowControllerList::iterator iter = controllers.begin();
+       iter != controllers.end(); ++iter)
+    (*iter)->screen_dimmer()->SetDimming(should_dim);
 }
 
 SystemTrayDelegate* Shell::tray_delegate() {
@@ -605,22 +621,34 @@ int Shell::GetGridSize() const {
 
 void Shell::InitRootWindowForSecondaryMonitor(aura::RootWindow* root) {
   root->set_focus_manager(focus_manager_.get());
-  root->SetFocusWhenShown(false);
-  root->SetLayoutManager(new internal::RootWindowLayoutManager(root));
-  aura::Window* container = new aura::Window(NULL);
-  container->SetName("SecondaryMonitorContainer");
-  container->Init(ui::LAYER_NOT_DRAWN);
-  root->AddChild(container);
-  container->SetLayoutManager(new internal::BaseLayoutManager(root));
-  CreateSecondaryMonitorWidget(container);
-  container->Show();
-  root->layout_manager()->OnWindowResized();
-  root->ShowRootWindow();
-
-  aura::client::SetCaptureClient(root, capture_controller_.get());
+  if (internal::MonitorController::IsExtendedDesktopEnabled()) {
+    internal::RootWindowController* controller =
+        new internal::RootWindowController(root);
+    controller->CreateContainers();
+    InitRootWindowController(controller);
+    controller->root_window_layout()->OnWindowResized();
+    root->ShowRootWindow();
+    // Activate new root for testing.
+    active_root_window_ = root;
+  } else {
+    root->SetFocusWhenShown(false);
+    root->SetLayoutManager(new internal::RootWindowLayoutManager(root));
+    aura::Window* container = new aura::Window(NULL);
+    container->SetName("SecondaryMonitorContainer");
+    container->Init(ui::LAYER_NOT_DRAWN);
+    root->AddChild(container);
+    container->SetLayoutManager(new internal::BaseLayoutManager(root));
+    CreateSecondaryMonitorWidget(container);
+    container->Show();
+    root->layout_manager()->OnWindowResized();
+    root->ShowRootWindow();
+    aura::client::SetCaptureClient(root, capture_controller_.get());
+  }
 }
 
-void Shell::InitRootWindow(aura::RootWindow* root_window) {
+void Shell::InitRootWindowController(
+    internal::RootWindowController* controller) {
+  aura::RootWindow* root_window = controller->root_window();
   DCHECK(activation_controller_.get());
   DCHECK(visibility_controller_.get());
   DCHECK(drag_drop_controller_.get());
@@ -642,7 +670,7 @@ void Shell::InitRootWindow(aura::RootWindow* root_window) {
     aura::client::SetUserActionClient(root_window, user_action_client_.get());
 
   root_window->SetCursor(ui::kCursorPointer);
-  root_window_controller_->InitLayoutManagers();
+  controller->InitLayoutManagers();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -686,17 +714,24 @@ void Shell::InitLayoutManagersForPrimaryDisplay(
 }
 
 void Shell::DisableWorkspaceGridLayout() {
-  GetPrimaryRootWindowController()->
-      workspace_controller()->workspace_manager()->set_grid_size(0);
+  RootWindowControllerList controllers = GetAllRootWindowControllers();
+  for (RootWindowControllerList::iterator iter = controllers.begin();
+       iter != controllers.end(); ++iter)
+    (*iter)->workspace_controller()->workspace_manager()->set_grid_size(0);
 }
 
 void Shell::SetCursor(gfx::NativeCursor cursor) {
-  // TODO(oshima): set cursor to all root windows.
-  GetPrimaryRootWindow()->SetCursor(cursor);
+  RootWindowList root_windows = GetAllRootWindows();
+  for (RootWindowList::iterator iter = root_windows.begin();
+       iter != root_windows.end(); ++iter)
+    (*iter)->SetCursor(cursor);
 }
 
 void Shell::ShowCursor(bool visible) {
-  GetPrimaryRootWindow()->ShowCursor(visible);
+  RootWindowList root_windows = GetAllRootWindows();
+  for (RootWindowList::iterator iter = root_windows.begin();
+       iter != root_windows.end(); ++iter)
+    (*iter)->ShowCursor(visible);
 }
 
 }  // namespace ash

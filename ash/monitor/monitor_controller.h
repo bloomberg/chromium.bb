@@ -21,14 +21,13 @@ class RootWindow;
 
 namespace ash {
 namespace internal {
+class RootWindowController;
 
-// MonitorController creates and maintains RootWindows for each
-// attached monitor, keeping them in sync with monitor configuration changes.
+// MonitorController owns and maintains RootWindows for each attached
+// display, keeping them in sync with display configuration changes.
+// TODO(oshima): Rename MonitorXXX to DisplayXXX.
 class MonitorController : public aura::DisplayObserver {
  public:
-  MonitorController();
-  virtual ~MonitorController();
-
   // Layout options where the secondary monitor should be positioned.
   enum SecondaryDisplayLayout {
     TOP,
@@ -37,16 +36,35 @@ class MonitorController : public aura::DisplayObserver {
     LEFT
   };
 
-  // Gets all of the root windows.
-  void GetAllRootWindows(std::vector<aura::RootWindow*>* windows);
+  MonitorController();
+  virtual ~MonitorController();
+
+  // Initializes primary display.
+  void InitPrimaryDisplay();
+
+  // Initialize secondary display. This is separated because in non
+  // extended desktop mode, this creates background widgets, which
+  // requires other controllers.
+  void InitSecondaryDisplays();
+
+  // Returns the root window for primary display.
+  aura::RootWindow* GetPrimaryRootWindow();
+
+  // Closes all child windows in the all root windows.
+  void CloseChildWindows();
+
+  // Returns all root windows. In non extended desktop mode, this
+  // returns the primary root window only.
+  std::vector<aura::RootWindow*> GetAllRootWindows();
+
+  // Returns all oot window controllers. In non extended desktop
+  // mode, this return a RootWindowController for the primary root window only.
+  std::vector<internal::RootWindowController*> GetAllRootWindowControllers();
 
   SecondaryDisplayLayout secondary_display_layout() const {
     return secondary_display_layout_;
   }
   void SetSecondaryDisplayLayout(SecondaryDisplayLayout layout);
-
-  // Is extended desktop enabled?
-  bool IsExtendedDesktopEnabled();
 
   // aura::DisplayObserver overrides:
   virtual void OnDisplayBoundsChanged(
@@ -54,9 +72,12 @@ class MonitorController : public aura::DisplayObserver {
   virtual void OnDisplayAdded(const gfx::Display& display) OVERRIDE;
   virtual void OnDisplayRemoved(const gfx::Display& display) OVERRIDE;
 
- private:
-  void Init();
+  // Is extended desktop enabled?
+  static bool IsExtendedDesktopEnabled();
+  // Change the extended desktop mode. Used for testing.
+  static void SetExtendedDesktopEnabled(bool enabled);
 
+ private:
   std::map<int, aura::RootWindow*> root_windows_;
 
   SecondaryDisplayLayout secondary_display_layout_;

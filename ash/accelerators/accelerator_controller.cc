@@ -343,9 +343,7 @@ bool AcceleratorController::PerformAction(int action,
       return HandleRestoreTab();
     case TAKE_SCREENSHOT:
       if (screenshot_delegate_.get()) {
-        std::vector<aura::RootWindow*> root_windows;
-        ash::Shell::GetInstance()->monitor_controller()->GetAllRootWindows(
-            &root_windows);
+        Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
         for (size_t i = 0; i < root_windows.size(); ++i)
           screenshot_delegate_->HandleTakeScreenshot(root_windows[i]);
       }
