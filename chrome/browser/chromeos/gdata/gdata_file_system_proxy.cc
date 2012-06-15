@@ -226,7 +226,6 @@ void GDataFileSystemProxy::ReadDirectory(const GURL& file_url,
         file_path.BaseName().value(),
         base::Bind(&GDataFileSystemProxy::OnReadDirectory,
                    this,
-                   file_system_->hide_hosted_documents(),
                    callback));
     return;
   }
@@ -235,7 +234,6 @@ void GDataFileSystemProxy::ReadDirectory(const GURL& file_url,
       file_path,
       base::Bind(&GDataFileSystemProxy::OnReadDirectory,
                  this,
-                 file_system_->hide_hosted_documents(),
                  callback));
 }
 
@@ -390,10 +388,10 @@ void GDataFileSystemProxy::OnGetMetadata(
 }
 
 void GDataFileSystemProxy::OnReadDirectory(
-    bool hide_hosted_documents,
     const FileSystemOperationInterface::ReadDirectoryCallback&
     callback,
     base::PlatformFileError error,
+    bool hide_hosted_documents,
     scoped_ptr<gdata::GDataDirectoryProto> directory_proto) {
   if (error != base::PLATFORM_FILE_OK) {
     callback.Run(error, std::vector<base::FileUtilProxy::Entry>(), false);

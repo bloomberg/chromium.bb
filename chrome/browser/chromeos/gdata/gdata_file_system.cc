@@ -2126,7 +2126,9 @@ void GDataFileSystem::OnReadDirectory(const ReadDirectoryCallback& callback,
 
   if (error != base::PLATFORM_FILE_OK) {
     if (!callback.is_null())
-      callback.Run(error, scoped_ptr<GDataDirectoryProto>());
+      callback.Run(error,
+                   hide_hosted_docs_,
+                   scoped_ptr<GDataDirectoryProto>());
     return;
   }
   DCHECK(entry);
@@ -2135,6 +2137,7 @@ void GDataFileSystem::OnReadDirectory(const ReadDirectoryCallback& callback,
   if (!directory) {
     if (!callback.is_null())
       callback.Run(base::PLATFORM_FILE_ERROR_NOT_FOUND,
+                   hide_hosted_docs_,
                    scoped_ptr<GDataDirectoryProto>());
     return;
   }
@@ -2143,7 +2146,9 @@ void GDataFileSystem::OnReadDirectory(const ReadDirectoryCallback& callback,
   directory->ToProto(directory_proto.get());
 
   if (!callback.is_null())
-    callback.Run(base::PLATFORM_FILE_OK, directory_proto.Pass());
+    callback.Run(base::PLATFORM_FILE_OK,
+                 hide_hosted_docs_,
+                 directory_proto.Pass());
 }
 
 void GDataFileSystem::RequestDirectoryRefresh(const FilePath& file_path) {
@@ -2463,7 +2468,9 @@ void GDataFileSystem::OnSearch(const ReadDirectoryCallback& callback,
 
   if (error != base::PLATFORM_FILE_OK) {
     if (!callback.is_null())
-      callback.Run(error, scoped_ptr<GDataDirectoryProto>());
+      callback.Run(error,
+                   hide_hosted_docs_,
+                   scoped_ptr<GDataDirectoryProto>());
     return;
   }
 
@@ -2510,7 +2517,7 @@ void GDataFileSystem::OnSearch(const ReadDirectoryCallback& callback,
   search_dir->ToProto(directory_proto.get());
 
   if (!callback.is_null())
-    callback.Run(error, directory_proto.Pass());
+    callback.Run(error, hide_hosted_docs_, directory_proto.Pass());
 }
 
 void GDataFileSystem::SearchAsync(const std::string& search_query,
@@ -3562,27 +3569,16 @@ void GDataFileSystem::Observe(int type,
   }
 }
 
-bool GDataFileSystem::hide_hosted_documents() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::IO));
-  base::AutoLock lock(lock_);
-  return hide_hosted_docs_;
-}
-
 void GDataFileSystem::SetHideHostedDocuments(bool hide) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  FilePath root_path;
-  {
-    base::AutoLock lock(lock_);
-    if (hide == hide_hosted_docs_)
-      return;
+  if (hide == hide_hosted_docs_)
+    return;
 
-    hide_hosted_docs_ = hide;
-    root_path = root_->GetFilePath();
-  }
+  hide_hosted_docs_ = hide;
+  const FilePath root_path = root_->GetFilePath();
 
-  // Kick of directory refresh when this setting changes.
+  // Kick off directory refresh when this setting changes.
   NotifyDirectoryChanged(root_path);
 }
 

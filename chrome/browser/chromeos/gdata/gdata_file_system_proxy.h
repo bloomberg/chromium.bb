@@ -90,10 +90,10 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   // Helper callback for relaying reply for ReadDirectory() to the calling
   // thread.
   void OnReadDirectory(
-      bool hide_hosted_documents,
       const fileapi::FileSystemOperationInterface::ReadDirectoryCallback&
           callback,
       base::PlatformFileError error,
+      bool hide_hosted_documents,
       scoped_ptr<GDataDirectoryProto> directory_proto);
 
   // Helper callback for relaying reply for CreateWritableSnapshotFile() to

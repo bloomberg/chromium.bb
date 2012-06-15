@@ -129,6 +129,7 @@ struct SearchResultPair {
 // "<resource_id>.<file_name>".
 void ContentSearchCallback(MessageLoop* message_loop,
                            base::PlatformFileError error,
+                           bool /* hide_hosted_documents, */,
                            scoped_ptr<GDataDirectoryProto> dir_proto) {
   ASSERT_EQ(base::PLATFORM_FILE_OK, error);
   ASSERT_TRUE(dir_proto.get());
@@ -1245,6 +1246,7 @@ class GDataFileSystemTest : public testing::Test {
 
     virtual void ReadDirectoryCallback(
         base::PlatformFileError error,
+        bool /* hide_hosted_documents */,
         scoped_ptr<GDataDirectoryProto> directory_proto) {
       last_error_ = error;
       directory_proto_ = directory_proto.Pass();
@@ -1295,6 +1297,7 @@ void AsyncInitializationCallback(
     const FilePath& expected_file_path,
     MessageLoop* message_loop,
     base::PlatformFileError error,
+    bool /* hide_hosted_documents */,
     scoped_ptr<GDataDirectoryProto> directory_proto) {
   ASSERT_EQ(base::PLATFORM_FILE_OK, error);
   ASSERT_TRUE(directory_proto.get());

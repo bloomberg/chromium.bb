@@ -63,6 +63,7 @@ typedef base::Callback<void(base::PlatformFileError error,
 // Used to read a directory from the file system.
 // If |error| is not PLATFORM_FILE_OK, |directory_info| is set to NULL.
 typedef base::Callback<void(base::PlatformFileError error,
+                            bool hide_hosted_documents,
                             scoped_ptr<GDataDirectoryProto> directory_proto)>
     ReadDirectoryCallback;
 
@@ -352,9 +353,6 @@ class GDataFileSystemInterface {
       DocumentEntry* entry,
       const FilePath& file_content_path,
       GDataCache::FileOperationType cache_operation) = 0;
-
-  // Returns true if hosted documents should be hidden.
-  virtual bool hide_hosted_documents() = 0;
 };
 
 // The production implementation of GDataFileSystemInterface.
@@ -438,7 +436,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
       DocumentEntry* entry,
       const FilePath& file_content_path,
       GDataCache::FileOperationType cache_operation) OVERRIDE;
-  virtual bool hide_hosted_documents() OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,

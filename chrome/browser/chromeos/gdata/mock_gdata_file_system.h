@@ -93,7 +93,6 @@ class MockGDataFileSystem : public GDataFileSystemInterface {
                     DocumentEntry* entry,
                     const FilePath& file_content_path,
                     GDataCache::FileOperationType cache_operation));
-  MOCK_METHOD0(hide_hosted_documents, bool());
 };
 
 }  // namespace gdata
