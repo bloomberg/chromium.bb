@@ -401,7 +401,11 @@ void ImageTransportFactory::Initialize() {
   if (ui::IsTestCompositorEnabled()) {
     g_factory = new TestTransportFactory();
   } else {
+#if defined(OS_WIN)
+    g_factory = new DefaultTransportFactory();
+#else
     g_factory = new GpuProcessTransportFactory();
+#endif
   }
   ui::ContextFactory::SetInstance(g_factory->AsContextFactory());
 }
