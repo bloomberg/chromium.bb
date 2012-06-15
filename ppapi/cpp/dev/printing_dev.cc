@@ -92,7 +92,7 @@ bool Printing_Dev::IsAvailable() {
 }
 
 bool Printing_Dev::GetDefaultPrintSettings(
-    PP_PrintSettings_Dev* print_settings) {
+    PP_PrintSettings_Dev* print_settings) const {
   if (!has_interface<PPB_Printing_Dev_0_6>())
     return false;
   return PP_ToBool(

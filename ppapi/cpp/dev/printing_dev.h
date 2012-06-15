@@ -37,7 +37,7 @@ class Printing_Dev {
 
   // Outputs the default print settings for the default printer into
   // |print_settings|. Returns false on error.
-  bool GetDefaultPrintSettings(PP_PrintSettings_Dev* print_settings);
+  bool GetDefaultPrintSettings(PP_PrintSettings_Dev* print_settings) const;
 
  private:
   InstanceHandle associated_instance_;
