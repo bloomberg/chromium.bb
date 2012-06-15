@@ -691,7 +691,7 @@ class CommitQueueCompletionStage(LKGMCandidateSyncCompletionStage):
     CommitQueueSyncStage.pool.HandleValidationTimeout()
 
   def _PerformStage(self):
-    if not self.success:
+    if not self.success and self._build_config['important']:
       CommitQueueSyncStage.pool.HandleValidationFailure()
 
     super(CommitQueueCompletionStage, self)._PerformStage()
