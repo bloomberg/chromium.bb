@@ -201,8 +201,7 @@ PrerenderManager::PrerenderManager(Profile* profile,
           base::TimeDelta::FromMilliseconds(kMinTimeBetweenPrerendersMs)),
       weak_factory_(this),
       prerender_history_(new PrerenderHistory(kHistoryLength)),
-      histograms_(new PrerenderHistograms()),
-      local_predictor_(new PrerenderLocalPredictor(this)) {
+      histograms_(new PrerenderHistograms()) {
   // There are some assumptions that the PrerenderManager is on the UI thread.
   // Any other checks simply make sure that the PrerenderManager is accessed on
   // the same thread that it was created on.
@@ -545,8 +544,10 @@ void PrerenderManager::RecordPerceivedPageLoadTime(
         perceived_page_load_time, was_prerender, was_complete_prerender, url);
     prerender_manager->histograms_->RecordPercentLoadDoneAtSwapin(
         fraction_plt_elapsed_at_swap_in);
-    prerender_manager->local_predictor_->
-        OnPLTEventForURL(url, perceived_page_load_time);
+    if (prerender_manager->local_predictor_.get()) {
+      prerender_manager->local_predictor_->
+          OnPLTEventForURL(url, perceived_page_load_time);
+    }
   }
 }
 
