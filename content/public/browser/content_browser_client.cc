@@ -199,8 +199,12 @@ std::string ContentBrowserClient::GetDefaultDownloadName() {
   return std::string();
 }
 
-bool ContentBrowserClient::AllowSocketAPI(BrowserContext* browser_context,
-                                          const GURL& url) {
+bool ContentBrowserClient::AllowPepperSocketAPI(
+    BrowserContext* browser_context, const GURL& url) {
+  return false;
+}
+
+bool ContentBrowserClient::AllowPepperPrivateFileAPI() {
   return false;
 }
 

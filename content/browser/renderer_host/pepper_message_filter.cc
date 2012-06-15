@@ -767,7 +767,7 @@ bool PepperMessageFilter::CanUseSocketAPIs(int32 render_id) {
   if (!site_instance)
     return false;
 
-  if (!content::GetContentClient()->browser()->AllowSocketAPI(
+  if (!content::GetContentClient()->browser()->AllowPepperSocketAPI(
           site_instance->GetBrowserContext(),
           site_instance->GetSite())) {
     LOG(ERROR) << "Host " << site_instance->GetSite().host()

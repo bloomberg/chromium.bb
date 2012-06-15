@@ -1493,7 +1493,7 @@ std::string ChromeContentBrowserClient::GetDefaultDownloadName() {
   return l10n_util::GetStringUTF8(IDS_DEFAULT_DOWNLOAD_FILENAME);
 }
 
-bool ChromeContentBrowserClient::AllowSocketAPI(
+bool ChromeContentBrowserClient::AllowPepperSocketAPI(
     content::BrowserContext* browser_context, const GURL& url) {
   if (!url.is_valid())
     return false;
@@ -1534,6 +1534,11 @@ bool ChromeContentBrowserClient::AllowSocketAPI(
     return true;
 
   return false;
+}
+
+bool ChromeContentBrowserClient::AllowPepperPrivateFileAPI() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kPpapiFlashInProcess);
 }
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)

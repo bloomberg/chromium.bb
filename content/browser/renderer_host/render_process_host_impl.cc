@@ -482,7 +482,10 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   channel_->AddFilter(new media_stream::MediaStreamDispatcherHost(
       resource_context, GetID(), BrowserMainLoop::GetAudioManager()));
 #endif
-  channel_->AddFilter(new PepperFileMessageFilter(GetID()));
+  channel_->AddFilter(
+      GetContentClient()->browser()->AllowPepperPrivateFileAPI() ?
+      new PepperUnsafeFileMessageFilter(GetID(), browser_context->GetPath()) :
+      new PepperFileMessageFilter(GetID()));
   channel_->AddFilter(new PepperMessageFilter(PepperMessageFilter::RENDERER,
                                               GetID(), browser_context));
 #if defined(ENABLE_INPUT_SPEECH)
