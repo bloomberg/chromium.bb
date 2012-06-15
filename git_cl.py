@@ -1145,7 +1145,7 @@ def IsSubmoduleMergeCommit(ref):
   # When submodules are added to the repo, we expect there to be a single
   # non-git-svn merge commit at remote HEAD with a signature comment.
   pattern = '^SVN changes up to revision [0-9]*$'
-  cmd = ['rev-list', '--merges', '--grep="%s"' % pattern, '%s^!' % ref]
+  cmd = ['rev-list', '--merges', '--grep=%s' % pattern, '%s^!' % ref]
   return RunGit(cmd) != ''
 
 

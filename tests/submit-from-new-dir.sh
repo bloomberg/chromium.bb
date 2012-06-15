@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 # Check that we're able to submit from a directory that doesn't exist on the
 # trunk.  This tests for a previous bug where we ended up with an invalid CWD
 # after switching to the merge branch.

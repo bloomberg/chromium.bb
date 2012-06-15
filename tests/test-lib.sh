@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 # Abort on error.
 set -e
 
@@ -46,6 +50,28 @@ setup_gitsvn() {
   git svn -q clone -s $REPO_URL git-svn >/dev/null 2>&1
 }
 
+# Set up a git-svn checkout of the repo and apply merge commits
+# (like the submodule repo layout).
+setup_gitsvn_submodule() {
+  echo "Setting up test remote git-svn-submodule repo..."
+  rm -rf git-svn-submodule
+  git svn -q clone -s $REPO_URL git-svn-submodule >/dev/null 2>&1
+  svn_revision=`svn info file://$PWD/svnrepo | grep ^Revision | \
+                sed s/^.*:// | xargs`
+  (
+    cd git-svn-submodule
+    echo 'merge-file line 1' > merge-file
+    git add merge-file; git commit -q -m 'First non-svn commit on master'
+    git checkout -q refs/remotes/trunk
+    git merge -q --no-commit --no-ff refs/heads/master >/dev/null 2>&1
+    echo 'merge-edit-file line 1' > merge-edit-file
+    git add merge-edit-file
+    git commit -q -m "SVN changes up to revision $svn_revision"
+    git update-ref refs/heads/master HEAD
+    git checkout master
+  )
+}
+
 # Set up a git repo that has a few commits to master.
 setup_initgit() {
   echo "Setting up test upstream git repo..."
@@ -74,7 +100,7 @@ setup_gitgit() {
 }
 
 cleanup() {
-  rm -rf gitrepo svnrepo svn git-git git-svn
+  rm -rf gitrepo svnrepo svn git-git git-svn git-svn-submodule
 }
 
 # Usage: test_expect_success "description of test" "test code".

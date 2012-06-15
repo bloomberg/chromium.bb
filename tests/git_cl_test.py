@@ -148,7 +148,7 @@ class TestGitCl(TestCase):
       ((['git', 'config', 'branch.working.merge'],), 'refs/heads/master'),
       ((['git', 'config', 'branch.working.remote'],), 'origin'),
       ((['git', 'rev-list', '--merges',
-         '--grep="^SVN changes up to revision [0-9]*$"',
+         '--grep=^SVN changes up to revision [0-9]*$',
          'refs/remotes/origin/master^!'],), ''),
       ((['git', 'update-index', '--refresh', '-q'],), ''),
       ((['git', 'diff-index', 'HEAD'],), ''),
