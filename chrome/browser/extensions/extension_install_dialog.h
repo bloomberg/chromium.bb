@@ -12,19 +12,19 @@
 #include "base/string16.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 
-class Profile;
+class Browser;
 
 namespace base {
 class DictionaryValue;
 }
 
-void ShowExtensionInstallDialog(Profile* profile,
+void ShowExtensionInstallDialog(Browser* browser,
                                 ExtensionInstallPrompt::Delegate* delegate,
                                 const ExtensionInstallPrompt::Prompt& prompt);
 
 // The implementations of this function are platform-specific.
 void ShowExtensionInstallDialogImpl(
-    Profile* profile,
+    Browser* browser,
     ExtensionInstallPrompt::Delegate* delegate,
     const ExtensionInstallPrompt::Prompt& prompt);
 

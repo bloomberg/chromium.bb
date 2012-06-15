@@ -59,7 +59,7 @@ AutoConfirmForTest CheckAutoConfirmCommandLineSwitch() {
 
 }  // namespace
 
-void ShowExtensionInstallDialog(Profile* profile,
+void ShowExtensionInstallDialog(Browser* browser,
                                 ExtensionInstallPrompt::Delegate* delegate,
                                 const ExtensionInstallPrompt::Prompt& prompt) {
   AutoConfirmForTest auto_confirm = CheckAutoConfirmCommandLineSwitch();
@@ -67,5 +67,5 @@ void ShowExtensionInstallDialog(Profile* profile,
     DoAutoConfirm(auto_confirm, delegate);
     return;
   }
-  ShowExtensionInstallDialogImpl(profile, delegate, prompt);
+  ShowExtensionInstallDialogImpl(browser, delegate, prompt);
 }

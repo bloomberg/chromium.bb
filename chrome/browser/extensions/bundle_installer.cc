@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/extension_install_dialog.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
@@ -100,11 +101,11 @@ string16 BundleInstaller::Item::GetNameForDisplay() {
   return l10n_util::GetStringFUTF16(IDS_EXTENSION_PERMISSION_LINE, name);
 }
 
-BundleInstaller::BundleInstaller(Profile* profile,
+BundleInstaller::BundleInstaller(Browser* browser,
                                  const BundleInstaller::ItemList& items)
     : approved_(false),
-      browser_(NULL),
-      profile_(profile),
+      browser_(browser),
+      profile_(browser->profile()),
       delegate_(NULL) {
   BrowserList::AddObserver(this);
   for (size_t i = 0; i < items.size(); ++i) {
@@ -134,11 +135,9 @@ void BundleInstaller::PromptForApproval(Delegate* delegate) {
 }
 
 void BundleInstaller::CompleteInstall(NavigationController* controller,
-                                      Browser* browser,
                                       Delegate* delegate) {
   CHECK(approved_);
 
-  browser_ = browser;
   delegate_ = delegate;
 
   AddRef();  // Balanced in ReportComplete();
@@ -267,7 +266,13 @@ void BundleInstaller::ShowPrompt() {
   } else if (g_auto_approve_for_test == ABORT) {
     InstallUIAbort(true);
   } else {
-    install_ui_.reset(new ExtensionInstallPrompt(profile_));
+    Browser* browser = browser_;
+    if (!browser) {
+      // The browser that we got initially could have gone away during our
+      // thread hopping.
+      browser = browser::FindLastActiveWithProfile(profile_);
+    }
+    install_ui_.reset(new ExtensionInstallPrompt(browser));
     install_ui_->ConfirmBundleInstall(this, permissions);
   }
 }

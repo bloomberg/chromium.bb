@@ -847,7 +847,7 @@ void ViewFilesFunction::GetLocalPathsResponseOnUIThread(
        iter != files.end();
        ++iter) {
     bool handled = file_manager_util::ExecuteBuiltinHandler(
-        profile(), iter->path, internal_task_id);
+        GetCurrentBrowser(), iter->path, internal_task_id);
     if (!handled && files.size() == 1)
       success = false;
   }

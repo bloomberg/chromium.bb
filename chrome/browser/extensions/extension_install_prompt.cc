@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_install_dialog.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
@@ -237,11 +238,11 @@ scoped_refptr<Extension>
       error);
 }
 
-ExtensionInstallPrompt::ExtensionInstallPrompt(Profile* profile)
-    : profile_(profile),
+ExtensionInstallPrompt::ExtensionInstallPrompt(Browser* browser)
+    : browser_(browser),
       ui_loop_(MessageLoop::current()),
       extension_(NULL),
-      install_ui_(ExtensionInstallUI::Create(profile)),
+      install_ui_(ExtensionInstallUI::Create(browser)),
       delegate_(NULL),
       prompt_(UNSET_PROMPT_TYPE),
       prompt_type_(UNSET_PROMPT_TYPE),
@@ -394,12 +395,12 @@ void ExtensionInstallPrompt::ShowConfirmation() {
     case INSTALL_PROMPT: {
       prompt_.set_extension(extension_);
       prompt_.set_icon(gfx::Image(icon_));
-      ShowExtensionInstallDialog(profile_, delegate_, prompt_);
+      ShowExtensionInstallDialog(browser_, delegate_, prompt_);
       break;
     }
     case BUNDLE_INSTALL_PROMPT: {
       prompt_.set_bundle(bundle_);
-      ShowExtensionInstallDialog(profile_, delegate_, prompt_);
+      ShowExtensionInstallDialog(browser_, delegate_, prompt_);
       break;
     }
     default:

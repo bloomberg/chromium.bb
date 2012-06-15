@@ -110,16 +110,12 @@ class BrowserList {
   friend class BrowserView;
   friend class CertificateViewerDialog;
   friend class ChromeShellDelegate;
-  friend class ExtensionInstallDialogView;
   friend class FeedbackHandler;
-  friend class GtkThemeService;
   friend class NetworkProfileBubble;
   friend class PrintPreviewHandler;
-  friend class QueryTabsFunction;
   friend class SelectFileDialogExtension;
   friend class StartupBrowserCreatorImpl;
   friend class TaskManager;
-  friend class TestingAutomationProvider;
   friend class WindowSizer;
   friend class browser::BrowserActivityObserver;
 #if defined(OS_CHROMEOS)
@@ -127,9 +123,6 @@ class BrowserList {
 #endif
 #if defined(OS_MACOSX)
   friend Browser* browser::GetLastActiveBrowser();
-#endif
-#if defined(TOOLKIT_GTK)
-  friend class browser::ExtensionInstallDialog;
 #endif
 #if defined(USE_ASH)
   friend content::WebContents* GetActiveWebContents();

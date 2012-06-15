@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/extension_install_dialog.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -341,8 +342,8 @@ void WebstoreInlineInstaller::OnWebstoreParseSuccess(
   manifest_.reset(manifest);
   icon_ = icon;
 
-  Profile* profile = Profile::FromBrowserContext(
-      web_contents()->GetBrowserContext());
+  Browser* browser = browser::FindBrowserWithWebContents(web_contents());
+  CHECK(browser);
 
   ExtensionInstallPrompt::Prompt prompt(
       ExtensionInstallPrompt::INLINE_INSTALL_PROMPT);
@@ -358,7 +359,7 @@ void WebstoreInlineInstaller::OnWebstoreParseSuccess(
     return;
   }
 
-  install_ui_.reset(new ExtensionInstallPrompt(profile));
+  install_ui_.reset(new ExtensionInstallPrompt(browser));
   install_ui_->ConfirmInlineInstall(this, dummy_extension_, &icon_, prompt);
   // Control flow finishes up in InstallUIProceed or InstallUIAbort.
 }

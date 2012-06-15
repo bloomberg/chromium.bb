@@ -20,7 +20,7 @@ void ExtensionInstallUIAndroid::SetSkipPostInstallUI(bool skip_ui) {
 }
 
 // static
-ExtensionInstallUI* ExtensionInstallUI::Create(Profile* profile) {
+ExtensionInstallUI* ExtensionInstallUI::Create(Browser* browser) {
   NOTIMPLEMENTED();
   return NULL;
 }

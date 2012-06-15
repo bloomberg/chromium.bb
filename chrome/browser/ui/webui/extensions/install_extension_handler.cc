@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/extensions/extension_switch_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -79,11 +80,13 @@ void InstallExtensionHandler::HandleInstallMessage(const ListValue* args) {
     return;
   }
 
-  Profile* profile = Profile::FromWebUI(web_ui());
+  Browser* browser = browser::FindBrowserWithWebContents(
+      web_ui()->GetWebContents());
+  Profile* profile = browser->profile();
   scoped_refptr<CrxInstaller> crx_installer(
       CrxInstaller::Create(
           ExtensionSystem::Get(profile)->extension_service(),
-          new ExtensionInstallPrompt(profile)));
+          new ExtensionInstallPrompt(browser)));
   crx_installer->set_off_store_install_allow_reason(
       CrxInstaller::OffStoreInstallAllowedFromSettingsPage);
 

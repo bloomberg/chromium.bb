@@ -12,7 +12,6 @@
 #include "base/string16.h"
 
 class Browser;
-class Profile;
 class SkBitmap;
 
 namespace extensions {
@@ -24,7 +23,7 @@ class ExtensionWebstorePrivateApiTest;
 // around extension installation.
 class ExtensionInstallUI {
  public:
-  static ExtensionInstallUI* Create(Profile* profile);
+  static ExtensionInstallUI* Create(Browser* browser);
 
   virtual ~ExtensionInstallUI();
 

@@ -119,9 +119,9 @@ TEST_F(ExtensionInstallDialogControllerTest, BasicsNormalCancel) {
   scoped_nsobject<ExtensionInstallDialogController>
     controller([[ExtensionInstallDialogController alloc]
                  initWithParentWindow:test_window()
-                              profile:profile()
-                            delegate:&delegate
-                              prompt:prompt]);
+                              browser:browser()
+                             delegate:&delegate
+                               prompt:prompt]);
 
   [controller window];  // force nib load
 
@@ -175,7 +175,7 @@ TEST_F(ExtensionInstallDialogControllerTest, BasicsNormalOK) {
   scoped_nsobject<ExtensionInstallDialogController>
   controller([[ExtensionInstallDialogController alloc]
                initWithParentWindow:test_window()
-                            profile:profile()
+                            browser:browser()
                            delegate:&delegate
                              prompt:prompt]);
 
@@ -210,7 +210,7 @@ TEST_F(ExtensionInstallDialogControllerTest, MultipleWarnings) {
   scoped_nsobject<ExtensionInstallDialogController>
   controller1([[ExtensionInstallDialogController alloc]
                 initWithParentWindow:test_window()
-                             profile:profile()
+                             browser:browser()
                             delegate:&delegate1
                               prompt:one_warning_prompt]);
 
@@ -219,7 +219,7 @@ TEST_F(ExtensionInstallDialogControllerTest, MultipleWarnings) {
   scoped_nsobject<ExtensionInstallDialogController>
   controller2([[ExtensionInstallDialogController alloc]
                 initWithParentWindow:test_window()
-                             profile:profile()
+                             browser:browser()
                             delegate:&delegate2
                               prompt:two_warnings_prompt]);
 
@@ -255,7 +255,7 @@ TEST_F(ExtensionInstallDialogControllerTest, BasicsSkinny) {
   scoped_nsobject<ExtensionInstallDialogController>
   controller([[ExtensionInstallDialogController alloc]
                initWithParentWindow:test_window()
-                            profile:profile()
+                            browser:browser()
                            delegate:&delegate
                              prompt:no_warnings_prompt]);
 
@@ -301,7 +301,7 @@ TEST_F(ExtensionInstallDialogControllerTest, BasicsInline) {
   scoped_nsobject<ExtensionInstallDialogController>
   controller([[ExtensionInstallDialogController alloc]
                initWithParentWindow:test_window()
-                            profile:profile()
+                            browser:browser()
                            delegate:&delegate
                              prompt:inline_prompt]);
 

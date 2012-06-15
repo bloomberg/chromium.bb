@@ -170,8 +170,8 @@ class MockAbortExtensionInstallPrompt : public ExtensionInstallPrompt {
 // installation.
 class MockAutoConfirmExtensionInstallPrompt : public ExtensionInstallPrompt {
  public:
-  explicit MockAutoConfirmExtensionInstallPrompt(Profile* profile)
-      : ExtensionInstallPrompt(profile) {}
+  explicit MockAutoConfirmExtensionInstallPrompt(Browser* browser)
+      : ExtensionInstallPrompt(browser) {}
 
   // Proceed without confirmation prompt.
   virtual void ConfirmInstall(Delegate* delegate, const Extension* extension) {
@@ -1717,7 +1717,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInstallAcceptPermissions) {
   // Install a mock install UI that simulates a user allowing permission to
   // finish the install.
   download_crx_util::SetMockInstallPromptForTesting(
-      new MockAutoConfirmExtensionInstallPrompt(browser()->profile()));
+      new MockAutoConfirmExtensionInstallPrompt(browser()));
 
   scoped_ptr<DownloadTestObserver> observer(
       DangerousDownloadWaiter(
@@ -1748,7 +1748,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInvalid) {
   // finish the install, and dismisses any error message.  We check that the
   // install failed below.
   download_crx_util::SetMockInstallPromptForTesting(
-      new MockAutoConfirmExtensionInstallPrompt(browser()->profile()));
+      new MockAutoConfirmExtensionInstallPrompt(browser()));
 
   scoped_ptr<DownloadTestObserver> observer(
       DangerousDownloadWaiter(
@@ -1776,7 +1776,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxLargeTheme) {
   // Install a mock install UI that simulates a user allowing permission to
   // finish the install.
   download_crx_util::SetMockInstallPromptForTesting(
-      new MockAutoConfirmExtensionInstallPrompt(browser()->profile()));
+      new MockAutoConfirmExtensionInstallPrompt(browser()));
 
   scoped_ptr<DownloadTestObserver> observer(
       DangerousDownloadWaiter(

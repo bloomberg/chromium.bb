@@ -9,11 +9,12 @@
 #include "chrome/browser/extensions/extension_install_ui.h"
 
 class InfoBarDelegate;
+class Profile;
 class TabContents;
 
 class ExtensionInstallUIDefault : public ExtensionInstallUI {
  public:
-  explicit ExtensionInstallUIDefault(Profile* profile);
+  explicit ExtensionInstallUIDefault(Browser* browser);
   virtual ~ExtensionInstallUIDefault();
 
   // ExtensionInstallUI implementation:
@@ -39,7 +40,7 @@ class ExtensionInstallUIDefault : public ExtensionInstallUI {
       const std::string& previous_theme_id,
       bool previous_using_native_theme);
 
-  Profile* profile_;
+  Browser* browser_;
 
   // Whether or not to show the default UI after completing the installation.
   bool skip_post_install_ui_;

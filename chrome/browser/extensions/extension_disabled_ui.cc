@@ -71,7 +71,7 @@ class ExtensionDisabledDialogDelegate
     : public ExtensionInstallPrompt::Delegate,
       public base::RefCountedThreadSafe<ExtensionDisabledDialogDelegate> {
  public:
-  ExtensionDisabledDialogDelegate(Profile* profile,
+  ExtensionDisabledDialogDelegate(Browser* browser,
                                   ExtensionService* service,
                                   const Extension* extension);
 
@@ -92,13 +92,13 @@ class ExtensionDisabledDialogDelegate
 };
 
 ExtensionDisabledDialogDelegate::ExtensionDisabledDialogDelegate(
-    Profile* profile,
+    Browser* browser,
     ExtensionService* service,
     const Extension* extension)
     : service_(service), extension_(extension) {
   AddRef();  // Balanced in Proceed or Abort.
 
-  install_ui_.reset(new ExtensionInstallPrompt(profile));
+  install_ui_.reset(new ExtensionInstallPrompt(browser));
   install_ui_->ConfirmReEnable(this, extension_);
 }
 
@@ -256,8 +256,7 @@ void ExtensionDisabledGlobalError::OnBubbleViewDidClose(Browser* browser) {
 
 void ExtensionDisabledGlobalError::BubbleViewAcceptButtonPressed(
     Browser* browser) {
-  new ExtensionDisabledDialogDelegate(service_->profile(), service_,
-                                      extension_);
+  new ExtensionDisabledDialogDelegate(browser, service_, extension_);
 }
 
 void ExtensionDisabledGlobalError::BubbleViewCancelButtonPressed(
@@ -318,10 +317,10 @@ void AddExtensionDisabledError(ExtensionService* service,
       AddGlobalError(new ExtensionDisabledGlobalError(service, extension));
 }
 
-void ShowExtensionDisabledDialog(ExtensionService* service, Profile* profile,
+void ShowExtensionDisabledDialog(ExtensionService* service, Browser* browser,
                                  const Extension* extension) {
   // This object manages its own lifetime.
-  new ExtensionDisabledDialogDelegate(profile, service, extension);
+  new ExtensionDisabledDialogDelegate(browser, service, extension);
 }
 
 }  // namespace extensions

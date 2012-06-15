@@ -76,7 +76,7 @@ class BundleInstaller : public WebstoreInstallHelper::Delegate,
 
   typedef std::vector<Item> ItemList;
 
-  BundleInstaller(Profile* profile, const ItemList& items);
+  BundleInstaller(Browser* browser, const ItemList& items);
 
   // Returns true if the user has approved the bundle's permissions.
   bool approved() const { return approved_; }
@@ -97,7 +97,6 @@ class BundleInstaller : public WebstoreInstallHelper::Delegate,
   // the specified |browser|.
   // Note: the |delegate| must stay alive until receiving the callback.
   void CompleteInstall(content::NavigationController* controller,
-                       Browser* browser,
                        Delegate* delegate);
 
   // We change the headings in the install prompt and installed bubble depending

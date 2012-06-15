@@ -983,8 +983,9 @@ ExtensionUninstallDialog* AppLauncherHandler::GetExtensionUninstallDialog() {
 
 ExtensionInstallPrompt* AppLauncherHandler::GetExtensionInstallPrompt() {
   if (!extension_install_ui_.get()) {
-    extension_install_ui_.reset(
-        new ExtensionInstallPrompt(Profile::FromWebUI(web_ui())));
+    Browser* browser = browser::FindBrowserWithWebContents(
+        web_ui()->GetWebContents());
+    extension_install_ui_.reset(new ExtensionInstallPrompt(browser));
   }
   return extension_install_ui_.get();
 }

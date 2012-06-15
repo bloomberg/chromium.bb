@@ -19,10 +19,10 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
 
+class Browser;
 class ExtensionInstallUI;
 class ExtensionPermissionSet;
 class MessageLoop;
-class Profile;
 class InfoBarDelegate;
 
 namespace base {
@@ -149,7 +149,7 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer {
       const std::string& localized_description,
       std::string* error);
 
-  explicit ExtensionInstallPrompt(Profile* profile);
+  explicit ExtensionInstallPrompt(Browser* browser);
   virtual ~ExtensionInstallPrompt();
 
   ExtensionInstallUI* install_ui() const { return install_ui_.get(); }
@@ -231,7 +231,7 @@ class ExtensionInstallPrompt : public ImageLoadingTracker::Observer {
   // Shows the actual UI (the icon should already be loaded).
   void ShowConfirmation();
 
-  Profile* profile_;
+  Browser* browser_;
   MessageLoop* ui_loop_;
 
   // The extensions installation icon.

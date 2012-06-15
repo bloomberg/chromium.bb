@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_DISABLED_UI_H_
 #pragma once
 
+class Browser;
 class ExtensionService;
-class Profile;
 
 namespace extensions {
 
@@ -19,7 +19,7 @@ void AddExtensionDisabledError(ExtensionService* service,
                                const Extension* extension);
 
 // Shows the extension install dialog.
-void ShowExtensionDisabledDialog(ExtensionService* service, Profile* profile,
+void ShowExtensionDisabledDialog(ExtensionService* service, Browser* browser,
                                  const Extension* extension);
 
 }  // namespace extensions

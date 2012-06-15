@@ -576,9 +576,10 @@ bool ExtensionService::UpdateExtension(
 
   // We want a silent install only for non-pending extensions and
   // pending extensions that have install_silently set.
+  Browser* browser = browser::FindLastActiveWithProfile(profile_);
   ExtensionInstallPrompt* client =
       (!pending_extension_info || pending_extension_info->install_silently()) ?
-      NULL : new ExtensionInstallPrompt(profile_);
+      NULL : new ExtensionInstallPrompt(browser);
 
   scoped_refptr<CrxInstaller> installer(CrxInstaller::Create(this, client));
   installer->set_expected_id(id);
@@ -1804,7 +1805,7 @@ void ExtensionService::UnloadExtension(
   // Clean up runtime data.
   extension_runtime_data_.erase(extension_id);
 
-  if (disabled_extensions_.Contains(extension->id())) {
+if (disabled_extensions_.Contains(extension->id())) {
     UnloadedExtensionInfo details(extension, reason);
     details.already_disabled = true;
     disabled_extensions_.Remove(extension->id());

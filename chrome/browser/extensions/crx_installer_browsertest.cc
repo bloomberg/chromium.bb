@@ -27,8 +27,8 @@ namespace {
 
 class MockInstallPrompt : public ExtensionInstallPrompt {
  public:
-  explicit MockInstallPrompt(Profile* profile) :
-      ExtensionInstallPrompt(profile),
+  explicit MockInstallPrompt(Browser* browser) :
+      ExtensionInstallPrompt(browser),
       did_succeed_(false),
       confirmation_requested_(false) {}
 
@@ -68,8 +68,7 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
   bool DidWhitelistInstallPrompt(const std::string& ext_relpath,
                                  const std::string& id) {
     ExtensionService* service = browser()->profile()->GetExtensionService();
-    MockInstallPrompt* mock_install_prompt =
-        new MockInstallPrompt(browser()->profile());
+    MockInstallPrompt* mock_install_prompt = new MockInstallPrompt(browser());
     FilePath ext_path = test_data_dir_.AppendASCII(ext_relpath);
 
     std::string error;
@@ -153,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, PackAndInstallExtension) {
   std::string crx_path_string(crx_path.value().begin(), crx_path.value().end());
   GURL url = GURL(std::string("file:///").append(crx_path_string));
 
-  MockInstallPrompt* mock_prompt = new MockInstallPrompt(browser()->profile());
+  MockInstallPrompt* mock_prompt = new MockInstallPrompt(browser());
   download_crx_util::SetMockInstallPromptForTesting(mock_prompt);
 
   LOG(ERROR) << "PackAndInstallExtension: Getting download manager";
@@ -186,8 +185,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, MAYBE_AllowOffStore) {
   const bool kTestData[] = {false, true};
 
   for (size_t i = 0; i < arraysize(kTestData); ++i) {
-    MockInstallPrompt* mock_prompt =
-        new MockInstallPrompt(browser()->profile());
+    MockInstallPrompt* mock_prompt = new MockInstallPrompt(browser());
     scoped_refptr<CrxInstaller> crx_installer(
         CrxInstaller::Create(service, mock_prompt));
     crx_installer->set_install_cause(

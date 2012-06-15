@@ -92,9 +92,9 @@ class ExtensionBrowserTest
   const extensions::Extension* InstallExtensionWithUIAutoConfirm(
       const FilePath& path,
       int expected_change,
-      Profile* profile) {
+      Browser* browser) {
     return InstallOrUpdateExtension("", path, INSTALL_UI_TYPE_AUTO_CONFIRM,
-                                    expected_change, profile, false);
+                                    expected_change, browser, false);
   }
 
   // Begins install process but simulates a user cancel.
@@ -187,7 +187,7 @@ class ExtensionBrowserTest
                                                         const FilePath& path,
                                                         InstallUIType ui_type,
                                                         int expected_change,
-                                                        Profile* profile,
+                                                        Browser* browser,
                                                         bool from_webstore);
 
   bool WaitForExtensionViewsToLoad();

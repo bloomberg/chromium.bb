@@ -89,7 +89,7 @@ void AppendRatingStarsShim(const gfx::ImageSkia* skiaImage, void* data) {
 @synthesize userCountField = userCountField_;
 
 - (id)initWithParentWindow:(NSWindow*)window
-                   profile:(Profile*)profile
+                   browser:(Browser*)browser
                   delegate:(ExtensionInstallPrompt::Delegate*)delegate
                     prompt:(const ExtensionInstallPrompt::Prompt&)prompt {
   NSString* nibpath = nil;
@@ -117,7 +117,7 @@ void AppendRatingStarsShim(const gfx::ImageSkia* skiaImage, void* data) {
 
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
     parentWindow_ = window;
-    profile_ = profile;
+    browser_ = browser;
     delegate_ = delegate;
     prompt_.reset(new ExtensionInstallPrompt::Prompt(prompt));
   }
@@ -135,7 +135,7 @@ void AppendRatingStarsShim(const gfx::ImageSkia* skiaImage, void* data) {
 - (IBAction)storeLinkClicked:(id)sender {
   GURL store_url(extension_urls::GetWebstoreItemDetailURLPrefix() +
                  prompt_->extension()->id());
-  browser::FindLastActiveWithProfile(profile_)->OpenURL(OpenURLParams(
+  browser_->OpenURL(OpenURLParams(
       store_url, Referrer(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK,
       false));
 
@@ -318,15 +318,9 @@ void AppendRatingStarsShim(const gfx::ImageSkia* skiaImage, void* data) {
 @end  // ExtensionInstallDialogController
 
 void ShowExtensionInstallDialogImpl(
-    Profile* profile,
+    Browser* browser,
     ExtensionInstallPrompt::Delegate* delegate,
     const ExtensionInstallPrompt::Prompt& prompt) {
-  Browser* browser = browser::FindLastActiveWithProfile(profile);
-  if (!browser) {
-    delegate->InstallUIAbort(false);
-    return;
-  }
-
   BrowserWindow* window = browser->window();
   if (!window) {
     delegate->InstallUIAbort(false);
@@ -338,7 +332,7 @@ void ShowExtensionInstallDialogImpl(
   ExtensionInstallDialogController* controller =
       [[ExtensionInstallDialogController alloc]
         initWithParentWindow:native_window
-                     profile:profile
+                     browser:browser
                     delegate:delegate
                       prompt:prompt];
 

@@ -119,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, InstallRequiresConfirm) {
 
   // And the install should succeed when the permissions are accepted.
   ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(
-      test_data_dir_.AppendASCII("good.crx"), 1, browser()->profile()));
+      test_data_dir_.AppendASCII("good.crx"), 1, browser()));
   UninstallExtension(id);
 }
 

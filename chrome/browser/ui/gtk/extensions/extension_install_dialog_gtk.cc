@@ -57,7 +57,8 @@ namespace browser {
 // ExtensionInstallPrompt::Delegate instance.
 class ExtensionInstallDialog {
  public:
-  ExtensionInstallDialog(GtkWindow* parent,
+  ExtensionInstallDialog(Browser* browser,
+                         GtkWindow* parent,
                          ExtensionInstallPrompt::Delegate *delegate,
                          const ExtensionInstallPrompt::Prompt& prompt);
  private:
@@ -66,16 +67,19 @@ class ExtensionInstallDialog {
   CHROMEGTK_CALLBACK_1(ExtensionInstallDialog, void, OnResponse, int);
   CHROMEGTK_CALLBACK_0(ExtensionInstallDialog, void, OnStoreLinkClick);
 
+  Browser* browser_;
   ExtensionInstallPrompt::Delegate* delegate_;
   std::string extension_id_;  // Set for INLINE_INSTALL_PROMPT.
   GtkWidget* dialog_;
 };
 
 ExtensionInstallDialog::ExtensionInstallDialog(
+    Browser* browser,
     GtkWindow* parent,
     ExtensionInstallPrompt::Delegate *delegate,
     const ExtensionInstallPrompt::Prompt& prompt)
-    : delegate_(delegate),
+    : browser_(browser),
+      delegate_(delegate),
       dialog_(NULL) {
   bool show_permissions = prompt.GetPermissionCount() > 0;
   bool is_inline_install =
@@ -257,7 +261,7 @@ void ExtensionInstallDialog::OnResponse(GtkWidget* dialog, int response_id) {
 void ExtensionInstallDialog::OnStoreLinkClick(GtkWidget* sender) {
   GURL store_url(
       extension_urls::GetWebstoreItemDetailURLPrefix() + extension_id_);
-  BrowserList::GetLastActive()->OpenURL(OpenURLParams(
+  browser_->OpenURL(OpenURLParams(
       store_url, content::Referrer(), NEW_FOREGROUND_TAB,
       content::PAGE_TRANSITION_LINK, false));
 
@@ -267,15 +271,9 @@ void ExtensionInstallDialog::OnStoreLinkClick(GtkWidget* sender) {
 }  // namespace browser
 
 void ShowExtensionInstallDialogImpl(
-    Profile* profile,
+    Browser* browser,
     ExtensionInstallPrompt::Delegate* delegate,
     const ExtensionInstallPrompt::Prompt& prompt) {
-  Browser* browser = browser::FindLastActiveWithProfile(profile);
-  if (!browser) {
-    delegate->InstallUIAbort(false);
-    return;
-  }
-
   BrowserWindowGtk* browser_window = static_cast<BrowserWindowGtk*>(
       browser->window());
   if (!browser_window) {
@@ -283,6 +281,6 @@ void ShowExtensionInstallDialogImpl(
     return;
   }
 
-  new browser::ExtensionInstallDialog(browser_window->window(), delegate,
-                                      prompt);
+  new browser::ExtensionInstallDialog(browser, browser_window->window(),
+                                      delegate, prompt);
 }

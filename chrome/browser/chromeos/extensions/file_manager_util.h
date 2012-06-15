@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/select_file_dialog.h"
 #include "googleurl/src/gurl.h"
 
+class Browser;
 class Profile;
 
 namespace base {
@@ -78,11 +79,11 @@ void OpenApplication();
 // Executes the built-in File Manager handler or tries to open |file| directly
 // in the browser. Returns false if neither is possible.
 bool ExecuteBuiltinHandler(
-    Profile* profile,
+    Browser* browser,
     const FilePath& path,
     const std::string& internal_task_id);
 
-void InstallCRX(Profile* profile, const FilePath& path);
+void InstallCRX(Browser* browser, const FilePath& path);
 
 bool ShouldBeOpenedWithPdfPlugin(Profile* profile, const char* file_extension);
 

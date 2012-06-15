@@ -28,6 +28,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/background_contents.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/view_type_utils.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -45,6 +46,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "content/public/browser/web_ui.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -600,8 +602,10 @@ void ExtensionSettingsHandler::HandleEnableMessage(const ListValue* args) {
   if (enable_str == "true") {
     ExtensionPrefs* prefs = extension_service_->extension_prefs();
     if (prefs->DidExtensionEscalatePermissions(extension_id)) {
+      Browser* browser = browser::FindBrowserWithWebContents(
+          web_ui()->GetWebContents());
       extensions::ShowExtensionDisabledDialog(
-          extension_service_, Profile::FromWebUI(web_ui()), extension);
+          extension_service_, browser, extension);
     } else {
       extension_service_->EnableExtension(extension_id);
     }

@@ -498,6 +498,7 @@ bool ExecuteDefaultHandler(Profile* profile, const FilePath& path) {
 
   std::string extension_id = handler->extension_id();
   std::string action_id = handler->id();
+  Browser* browser = browser::FindLastActiveWithProfile(profile);
   if (extension_id == kFileBrowserDomain) {
     // Only two of the built-in File Browser tasks require opening the File
     // Browser tab.
@@ -510,7 +511,7 @@ bool ExecuteDefaultHandler(Profile* profile, const FilePath& path) {
       OpenFileBrowser(path, REUSE_SAME_PATH, "");
       return true;
     } else {
-      return ExecuteBuiltinHandler(profile, path, action_id);
+      return ExecuteBuiltinHandler(browser, path, action_id);
     }
   } else {
     // We are executing the task on behalf of File Browser extension.
@@ -531,7 +532,7 @@ bool ExecuteDefaultHandler(Profile* profile, const FilePath& path) {
     executor->Execute(urls);
     return true;
   }
-  return ExecuteBuiltinHandler(profile, path, std::string());
+  return ExecuteBuiltinHandler(browser, path, std::string());
 }
 
 void ViewFile(const FilePath& path) {
@@ -583,11 +584,12 @@ void ReadUrlFromGDocOnFileThread(const FilePath& file_path) {
       base::Bind(OpenNewTab, GURL(edit_url_string), (Profile*)NULL));
 }
 
-bool ExecuteBuiltinHandler(Profile* profile, const FilePath& path,
+bool ExecuteBuiltinHandler(Browser* browser, const FilePath& path,
     const std::string& internal_task_id) {
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  Profile* profile = browser->profile();
   std::string file_extension = path.Extension();
   // For things supported natively by the browser, we should open it
   // in a tab.
@@ -608,7 +610,7 @@ bool ExecuteBuiltinHandler(Profile* profile, const FilePath& path,
           base::Bind(&OnGDataFileFound, profile, path, gdata::REGULAR_FILE));
       return true;
     }
-    OpenNewTab(page_url, (Profile*)NULL);
+    OpenNewTab(page_url, NULL);
     return true;
   }
 
@@ -665,7 +667,7 @@ bool ExecuteBuiltinHandler(Profile* profile, const FilePath& path,
   }
 
   if (IsCRXFile(file_extension.data())) {
-    InstallCRX(profile, path);
+    InstallCRX(browser, path);
     return true;
   }
 
@@ -679,14 +681,12 @@ bool ExecuteBuiltinHandler(Profile* profile, const FilePath& path,
   return false;
 }
 
-void InstallCRX(Profile* profile, const FilePath& path) {
-  ExtensionService* service = profile->GetExtensionService();
+void InstallCRX(Browser* browser, const FilePath& path) {
+  ExtensionService* service = browser->profile()->GetExtensionService();
   CHECK(service);
-  if (!service)
-    return;
 
   scoped_refptr<CrxInstaller> installer(
-      CrxInstaller::Create(service, new ExtensionInstallPrompt(profile)));
+      CrxInstaller::Create(service, new ExtensionInstallPrompt(browser)));
   installer->set_is_gallery_install(false);
   installer->set_allow_silent_install(false);
   installer->InstallCrx(path);

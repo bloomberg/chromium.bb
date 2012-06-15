@@ -75,7 +75,8 @@ void AddResourceIcon(const gfx::ImageSkia* skia_image, void* data) {
 class ExtensionInstallDialogView : public views::DialogDelegateView,
                                    public views::LinkListener {
  public:
-  ExtensionInstallDialogView(ExtensionInstallPrompt::Delegate* delegate,
+  ExtensionInstallDialogView(Browser* browser,
+                             ExtensionInstallPrompt::Delegate* delegate,
                              const ExtensionInstallPrompt::Prompt& prompt);
   virtual ~ExtensionInstallDialogView();
 
@@ -102,6 +103,7 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
     return prompt_.type() == ExtensionInstallPrompt::BUNDLE_INSTALL_PROMPT;
   }
 
+  Browser* browser_;
   ExtensionInstallPrompt::Delegate* delegate_;
   ExtensionInstallPrompt::Prompt prompt_;
 
@@ -109,9 +111,11 @@ class ExtensionInstallDialogView : public views::DialogDelegateView,
 };
 
 ExtensionInstallDialogView::ExtensionInstallDialogView(
+    Browser* browser,
     ExtensionInstallPrompt::Delegate* delegate,
     const ExtensionInstallPrompt::Prompt& prompt)
-    : delegate_(delegate),
+    : browser_(browser),
+      delegate_(delegate),
       prompt_(prompt) {
   // Possible grid layouts:
   // Inline install
@@ -345,20 +349,14 @@ void ExtensionInstallDialogView::LinkClicked(views::Link* source,
   OpenURLParams params(
       store_url, Referrer(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK,
       false);
-  BrowserList::GetLastActive()->OpenURL(params);
+  browser_->OpenURL(params);
   GetWidget()->Close();
 }
 
 void ShowExtensionInstallDialogImpl(
-    Profile* profile,
+    Browser* browser,
     ExtensionInstallPrompt::Delegate* delegate,
     const ExtensionInstallPrompt::Prompt& prompt) {
-  Browser* browser = browser::FindLastActiveWithProfile(profile);
-  if (!browser) {
-    delegate->InstallUIAbort(false);
-    return;
-  }
-
   BrowserWindow* browser_window = browser->window();
   if (!browser_window) {
     delegate->InstallUIAbort(false);
@@ -366,7 +364,7 @@ void ShowExtensionInstallDialogImpl(
   }
 
   ExtensionInstallDialogView* dialog = new ExtensionInstallDialogView(
-      delegate, prompt);
+      browser, delegate, prompt);
 
   views::Widget* window =  views::Widget::CreateWindowWithParent(
       dialog, browser_window->GetNativeWindow());

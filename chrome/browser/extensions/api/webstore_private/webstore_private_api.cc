@@ -197,7 +197,7 @@ bool InstallBundleFunction::RunImpl() {
   if (!ReadBundleInfo(extensions, &items))
     return false;
 
-  bundle_ = new BundleInstaller(profile(), items);
+  bundle_ = new BundleInstaller(GetCurrentBrowser(), items);
 
   AddRef();  // Balanced in OnBundleInstallCompleted / OnBundleInstallCanceled.
 
@@ -228,7 +228,6 @@ bool InstallBundleFunction::ReadBundleInfo(ListValue* extensions,
 void InstallBundleFunction::OnBundleInstallApproved() {
   bundle_->CompleteInstall(
       &(dispatcher()->delegate()->GetAssociatedWebContents()->GetController()),
-      GetCurrentBrowser(),
       this);
 }
 
@@ -367,7 +366,7 @@ void BeginInstallWithManifestFunction::OnWebstoreParseSuccess(
     return;
   }
 
-  install_prompt_.reset(new ExtensionInstallPrompt(profile()));
+  install_prompt_.reset(new ExtensionInstallPrompt(GetCurrentBrowser()));
   install_prompt_->ConfirmWebstoreInstall(this, dummy_extension_, &icon_);
   // Control flow finishes up in InstallUIProceed or InstallUIAbort.
 }

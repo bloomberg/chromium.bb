@@ -245,8 +245,8 @@ class MockAbortExtensionInstallPrompt : public ExtensionInstallPrompt {
 
 class MockAutoConfirmExtensionInstallPrompt : public ExtensionInstallPrompt {
  public:
-  explicit MockAutoConfirmExtensionInstallPrompt(Profile* profile) :
-      ExtensionInstallPrompt(profile) {}
+  explicit MockAutoConfirmExtensionInstallPrompt(Browser* browser) :
+      ExtensionInstallPrompt(browser) {}
 
   // Proceed without confirmation prompt.
   virtual void ConfirmInstall(Delegate* delegate, const Extension* extension) {
@@ -258,8 +258,7 @@ const Extension* ExtensionBrowserTest::InstallExtensionFromWebstore(
     const FilePath& path,
     int expected_change) {
   return InstallOrUpdateExtension("", path, INSTALL_UI_TYPE_NONE,
-                                  expected_change, browser()->profile(),
-                                  true);
+                                  expected_change, browser(), true);
 }
 
 const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
@@ -268,7 +267,7 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
     InstallUIType ui_type,
     int expected_change) {
   return InstallOrUpdateExtension(id, path, ui_type, expected_change,
-                                  browser()->profile(), false);
+                                  browser(), false);
 }
 
 const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
@@ -276,9 +275,9 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
     const FilePath& path,
     InstallUIType ui_type,
     int expected_change,
-    Profile* profile,
+    Browser* browser,
     bool from_webstore) {
-  ExtensionService* service = profile->GetExtensionService();
+  ExtensionService* service = browser->profile()->GetExtensionService();
   service->set_show_extensions_prompts(false);
   size_t num_before = service->extensions()->size();
 
@@ -287,9 +286,9 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
     if (ui_type == INSTALL_UI_TYPE_CANCEL)
       install_ui = new MockAbortExtensionInstallPrompt();
     else if (ui_type == INSTALL_UI_TYPE_NORMAL)
-      install_ui = new ExtensionInstallPrompt(profile);
+      install_ui = new ExtensionInstallPrompt(browser);
     else if (ui_type == INSTALL_UI_TYPE_AUTO_CONFIRM)
-      install_ui = new MockAutoConfirmExtensionInstallPrompt(profile);
+      install_ui = new MockAutoConfirmExtensionInstallPrompt(browser);
 
     // TODO(tessamac): Update callers to always pass an unpacked extension
     //                 and then always pack the extension here.

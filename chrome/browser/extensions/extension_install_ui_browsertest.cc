@@ -64,8 +64,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
 
   // Install theme once and undo to verify we go back to default theme.
   FilePath theme_crx = PackExtension(test_data_dir_.AppendASCII("theme"));
-  ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(
-      theme_crx, 1, browser()->profile()));
+  ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(theme_crx, 1, browser()));
   const Extension* theme = GetTheme();
   ASSERT_TRUE(theme);
   std::string theme_id = theme->id();
@@ -76,13 +75,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
   // We set the |expected_change| to zero in these 'InstallExtensionWithUI'
   // calls since the theme has already been installed above and this is an
   // overinstall to set the active theme.
-  ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(
-      theme_crx, 0, browser()->profile()));
+  ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(theme_crx, 0, browser()));
   theme = GetTheme();
   ASSERT_TRUE(theme);
   ASSERT_EQ(theme_id, theme->id());
-  ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(
-      theme_crx, 0, browser()->profile()));
+  ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(theme_crx, 0, browser()));
   theme = GetTheme();
   ASSERT_TRUE(theme);
   ASSERT_EQ(theme_id, theme->id());
@@ -96,16 +93,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
 
   // Install first theme.
   FilePath theme_path = test_data_dir_.AppendASCII("theme");
-  ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(
-      theme_path, 1, browser()->profile()));
+  ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(theme_path, 1, browser()));
   const Extension* theme = GetTheme();
   ASSERT_TRUE(theme);
   std::string theme_id = theme->id();
 
   // Then install second theme.
   FilePath theme_path2 = test_data_dir_.AppendASCII("theme2");
-  ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(
-      theme_path2, 1, browser()->profile()));
+  ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(theme_path2, 1, browser()));
   const Extension* theme2 = GetTheme();
   ASSERT_TRUE(theme2);
   EXPECT_FALSE(theme_id == theme2->id());
@@ -120,8 +115,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
   int num_tabs = browser()->tab_count();
 
   FilePath app_dir = test_data_dir_.AppendASCII("app");
-  ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(app_dir, 1,
-                                                browser()->profile()));
+  ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(app_dir, 1, browser()));
 
   if (NewTabUI::ShouldShowApps()) {
     EXPECT_EQ(num_tabs + 1, browser()->tab_count());
@@ -145,7 +139,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
 
   FilePath app_dir = test_data_dir_.AppendASCII("app");
   ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(app_dir, 1,
-                                                incognito_profile));
+                                                incognito_browser));
 
   EXPECT_EQ(num_incognito_tabs, incognito_browser->tab_count());
   if (NewTabUI::ShouldShowApps()) {

@@ -3835,7 +3835,7 @@ void Browser::OnInstallApplication(TabContents* source,
   scoped_refptr<CrxInstaller> installer(CrxInstaller::Create(
       extension_service,
       extension_service->show_extensions_prompts() ?
-      new ExtensionInstallPrompt(profile()) : NULL));
+      new ExtensionInstallPrompt(this) : NULL));
   installer->InstallWebApp(web_app);
 }
 
