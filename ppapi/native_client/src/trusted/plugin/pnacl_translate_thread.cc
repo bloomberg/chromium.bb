@@ -80,26 +80,29 @@ NaClSubprocess* PnaclTranslateThread::StartSubprocess(
 void WINAPI PnaclTranslateThread::DoTranslateThread(void* arg) {
   PnaclTranslateThread* translator =
       reinterpret_cast<PnaclTranslateThread*>(arg);
+  translator->DoTranslate();
+}
+
+void PnaclTranslateThread::DoTranslate() {
   nacl::scoped_ptr<NaClSubprocess> llc_subprocess(
-      translator->StartSubprocess(PnaclUrls::GetLlcUrl(),
-                                  translator->manifest_));
+      StartSubprocess(PnaclUrls::GetLlcUrl(), manifest_));
   if (llc_subprocess == NULL) {
-    translator->TranslateFailed("Compile process could not be created.");
+    TranslateFailed("Compile process could not be created.");
     return;
   }
   // Run LLC.
   SrpcParams params;
-  nacl::DescWrapper* llc_out_file = translator->obj_file_->write_wrapper();
+  nacl::DescWrapper* llc_out_file = obj_file_->write_wrapper();
   PluginReverseInterface* llc_reverse =
       llc_subprocess->service_runtime()->rev_interface();
-  llc_reverse->AddQuotaManagedFile(translator->obj_file_->identifier(),
-                                   translator->obj_file_->write_file_io());
+  llc_reverse->AddQuotaManagedFile(obj_file_->identifier(),
+                                   obj_file_->write_file_io());
   if (!llc_subprocess->InvokeSrpcMethod("RunWithDefaultCommandLine",
                                         "hh",
                                         &params,
-                                        translator->pexe_wrapper_->desc(),
+                                        pexe_wrapper_->desc(),
                                         llc_out_file->desc())) {
-    translator->TranslateFailed("compile failed.");
+    TranslateFailed("compile failed.");
     return;
   }
   // LLC returns values that are used to determine how linking is done.
@@ -108,42 +111,39 @@ void WINAPI PnaclTranslateThread::DoTranslateThread(void* arg) {
   nacl::string lib_dependencies = params.outs()[2]->arrays.str;
   PLUGIN_PRINTF(("PnaclCoordinator: compile (translator=%p) succeeded"
                  " is_shared_library=%d, soname='%s', lib_dependencies='%s')\n",
-                 arg, is_shared_library, soname.c_str(),
+                 this, is_shared_library, soname.c_str(),
                  lib_dependencies.c_str()));
   // Shut down the llc subprocess.
   llc_subprocess.reset(NULL);
-  if (translator->SubprocessesShouldDie()) {
-    translator->TranslateFailed("stopped by coordinator.");
+  if (SubprocessesShouldDie()) {
+    TranslateFailed("stopped by coordinator.");
     return;
   }
-  if(!RunLdSubprocess(translator, is_shared_library, soname,
-                      lib_dependencies)) {
+  if(!RunLdSubprocess(is_shared_library, soname, lib_dependencies)) {
     return;
   }
   pp::Core* core = pp::Module::Get()->core();
-  core->CallOnMainThread(0, translator->report_translate_finished_, PP_OK);
+  core->CallOnMainThread(0, report_translate_finished_, PP_OK);
 }
 
-bool PnaclTranslateThread::RunLdSubprocess(PnaclTranslateThread* translator,
-                                           int is_shared_library,
+bool PnaclTranslateThread::RunLdSubprocess(int is_shared_library,
                                            const nacl::string& soname,
                                            const nacl::string& lib_dependencies
                                            ) {
   nacl::scoped_ptr<NaClSubprocess> ld_subprocess(
-      translator->StartSubprocess(PnaclUrls::GetLdUrl(),
-                                  translator->ld_manifest_));
+      StartSubprocess(PnaclUrls::GetLdUrl(), ld_manifest_));
   if (ld_subprocess == NULL) {
-    translator->TranslateFailed("Link process could not be created.");
+    TranslateFailed("Link process could not be created.");
     return false;
   }
   // Run LD.
   SrpcParams params;
-  nacl::DescWrapper* ld_in_file = translator->obj_file_->read_wrapper();
-  nacl::DescWrapper* ld_out_file = translator->nexe_file_->write_wrapper();
+  nacl::DescWrapper* ld_in_file = obj_file_->read_wrapper();
+  nacl::DescWrapper* ld_out_file = nexe_file_->write_wrapper();
   PluginReverseInterface* ld_reverse =
       ld_subprocess->service_runtime()->rev_interface();
-  ld_reverse->AddQuotaManagedFile(translator->nexe_file_->identifier(),
-                                  translator->nexe_file_->write_file_io());
+  ld_reverse->AddQuotaManagedFile(nexe_file_->identifier(),
+                                  nexe_file_->write_file_io());
   if (!ld_subprocess->InvokeSrpcMethod("RunWithDefaultCommandLine",
                                        "hhiss",
                                        &params,
@@ -152,15 +152,15 @@ bool PnaclTranslateThread::RunLdSubprocess(PnaclTranslateThread* translator,
                                        is_shared_library,
                                        soname.c_str(),
                                        lib_dependencies.c_str())) {
-    translator->TranslateFailed("link failed.");
+    TranslateFailed("link failed.");
     return false;
   }
   PLUGIN_PRINTF(("PnaclCoordinator: link (translator=%p) succeeded\n",
-                 translator));
+                 this));
   // Shut down the ld subprocess.
   ld_subprocess.reset(NULL);
-  if (translator->SubprocessesShouldDie()) {
-    translator->TranslateFailed("stopped by coordinator.");
+  if (SubprocessesShouldDie()) {
+    TranslateFailed("stopped by coordinator.");
     return false;
   }
   return true;

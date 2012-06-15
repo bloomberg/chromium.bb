@@ -20,7 +20,7 @@ class PnaclStreamingTranslateThread : public PnaclTranslateThread {
   virtual ~PnaclStreamingTranslateThread();
 
   // Start the translation process. It will continue to run and consume data
-  // as it is passed in with PutBytes
+  // as it is passed in with PutBytes.
   virtual void RunTranslate(const pp::CompletionCallback& finish_callback,
                             const Manifest* manifest,
                             const Manifest* ld_manifest,
@@ -31,7 +31,7 @@ class PnaclStreamingTranslateThread : public PnaclTranslateThread {
                             PnaclResources* resources,
                             Plugin* plugin);
 
-  // Kill the translation and/or linking processes
+  // Kill the translation and/or linking processes.
   virtual void SetSubprocessesShouldDie();
 
   // Send bitcode bytes to the translator. Called from the main thread.
@@ -39,11 +39,19 @@ class PnaclStreamingTranslateThread : public PnaclTranslateThread {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(PnaclStreamingTranslateThread);
-  static void WINAPI DoStreamingTranslateThread(void* arg);
+  // Run the streaming translation. Call on the translation/SRPC thread.
+  void DoTranslate();
 
   bool done_;
+  // Condition variable to synchronize communication with the SRPC thread.
+  // SRPC thread waits on this condvar if data_buffers_ is empty (meaning
+  // there is no bitcode to send to the translator), and the main thread
+  // appends to data_buffers_ and signals it when it receives bitcode.
   struct NaClCondVar buffer_cond_;
+  // Mutex for buffer_cond_.
   struct NaClMutex cond_mu_;
+  // Data buffers from FileDownloader are enqueued here to pass from the
+  // main thread to the SRPC thread. Protected by cond_mu_
   std::deque<std::vector<char> > data_buffers_;
 };
 

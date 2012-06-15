@@ -49,7 +49,7 @@ void PnaclStreamingTranslateThread::RunTranslate(
   }
   const int32_t kArbitraryStackSize = 128 * 1024;
   if (!NaClThreadCreateJoinable(translate_thread_.get(),
-                                DoStreamingTranslateThread,
+                                DoTranslateThread,
                                 this,
                                 kArbitraryStackSize)) {
     TranslateFailed("could not create thread.");
@@ -82,62 +82,58 @@ void PnaclStreamingTranslateThread::PutBytes(std::vector<char>* bytes,
   if (bytes != NULL) bytes->resize(buffer_size);
 }
 
-void WINAPI PnaclStreamingTranslateThread::DoStreamingTranslateThread(
-    void* arg) {
-  PnaclStreamingTranslateThread* translator =
-      reinterpret_cast<PnaclStreamingTranslateThread*>(arg);
+void PnaclStreamingTranslateThread::DoTranslate() {
   nacl::scoped_ptr<NaClSubprocess> llc_subprocess(
-      translator->StartSubprocess(PnaclUrls::GetLlcUrl(),
-                                  translator->manifest_));
+      StartSubprocess(PnaclUrls::GetLlcUrl(), manifest_));
   if (llc_subprocess == NULL) {
-    translator->TranslateFailed("Compile process could not be created.");
+    TranslateFailed("Compile process could not be created.");
     return;
   }
   // Run LLC.
   SrpcParams params;
-  nacl::DescWrapper* llc_out_file = translator->obj_file_->write_wrapper();
+  nacl::DescWrapper* llc_out_file = obj_file_->write_wrapper();
   PluginReverseInterface* llc_reverse =
       llc_subprocess->service_runtime()->rev_interface();
-  llc_reverse->AddQuotaManagedFile(translator->obj_file_->identifier(),
-                                   translator->obj_file_->write_file_io());
+  llc_reverse->AddQuotaManagedFile(obj_file_->identifier(),
+                                   obj_file_->write_file_io());
 
   if (!llc_subprocess->InvokeSrpcMethod("StreamInit",
                                         "h",
                                         &params,
                                         llc_out_file->desc())) {
     // StreamInit returns an error message if the RPC fails.
-    translator->TranslateFailed(nacl::string("Stream init failed: ") +
-                                nacl::string(params.outs()[0]->arrays.str));
+    TranslateFailed(nacl::string("Stream init failed: ") +
+                    nacl::string(params.outs()[0]->arrays.str));
     return;
   }
 
   PLUGIN_PRINTF(("PnaclCoordinator: StreamInit successful\n"));
 
   // llc process is started.
-  while(!translator->done_ || translator->data_buffers_.size() > 0) {
-    NaClXMutexLock(&translator->cond_mu_);
-    while(!translator->done_ && translator->data_buffers_.size() == 0) {
-      NaClXCondVarWait(&translator->buffer_cond_, &translator->cond_mu_);
+  while(!done_ || data_buffers_.size() > 0) {
+    NaClXMutexLock(&cond_mu_);
+    while(!done_ && data_buffers_.size() == 0) {
+      NaClXCondVarWait(&buffer_cond_, &cond_mu_);
     }
     PLUGIN_PRINTF(("PnaclTranslateThread awake, done %d, size %d\n",
-                   translator->done_, translator->data_buffers_.size()));
-    if (translator->data_buffers_.size() > 0) {
+                   done_, data_buffers_.size()));
+    if (data_buffers_.size() > 0) {
       std::vector<char> data;
-      data.swap(translator->data_buffers_.front());
-      translator->data_buffers_.pop_front();
-      NaClXMutexUnlock(&translator->cond_mu_);
+      data.swap(data_buffers_.front());
+      data_buffers_.pop_front();
+      NaClXMutexUnlock(&cond_mu_);
       PLUGIN_PRINTF(("StreamChunk\n"));
       if (!llc_subprocess->InvokeSrpcMethod("StreamChunk",
                                             "C",
                                             &params,
                                             &data[0],
                                             data.size())) {
-        translator->TranslateFailed("Compile stream chunk failed.");
+        TranslateFailed("Compile stream chunk failed.");
         return;
       }
       PLUGIN_PRINTF(("StreamChunk Successful\n"));
     } else {
-      NaClXMutexUnlock(&translator->cond_mu_);
+      NaClXMutexUnlock(&cond_mu_);
     }
   }
   PLUGIN_PRINTF(("PnaclTranslateThread done with chunks\n"));
@@ -146,7 +142,7 @@ void WINAPI PnaclStreamingTranslateThread::DoStreamingTranslateThread(
                                        "",
                                        &params)) {
     PLUGIN_PRINTF(("PnaclTranslateThread StreamEnd failed\n"));
-    translator->TranslateFailed(params.outs()[3]->arrays.str);
+    TranslateFailed(params.outs()[3]->arrays.str);
     return;
   }
   // LLC returns values that are used to determine how linking is done.
@@ -155,22 +151,21 @@ void WINAPI PnaclStreamingTranslateThread::DoStreamingTranslateThread(
   nacl::string lib_dependencies = params.outs()[2]->arrays.str;
   PLUGIN_PRINTF(("PnaclCoordinator: compile (translator=%p) succeeded"
                  " is_shared_library=%d, soname='%s', lib_dependencies='%s')\n",
-                 arg, is_shared_library, soname.c_str(),
+                 this, is_shared_library, soname.c_str(),
                  lib_dependencies.c_str()));
 
   // Shut down the llc subprocess.
   llc_subprocess.reset(NULL);
-  if (translator->SubprocessesShouldDie()) {
-    translator->TranslateFailed("stopped by coordinator.");
+  if (SubprocessesShouldDie()) {
+    TranslateFailed("stopped by coordinator.");
     return;
   }
 
-  if(!RunLdSubprocess(translator, is_shared_library, soname,
-                      lib_dependencies)) {
+  if(!RunLdSubprocess(is_shared_library, soname, lib_dependencies)) {
     return;
   }
   pp::Core* core = pp::Module::Get()->core();
-  core->CallOnMainThread(0, translator->report_translate_finished_, PP_OK);
+  core->CallOnMainThread(0, report_translate_finished_, PP_OK);
 }
 
 void PnaclStreamingTranslateThread::SetSubprocessesShouldDie() {

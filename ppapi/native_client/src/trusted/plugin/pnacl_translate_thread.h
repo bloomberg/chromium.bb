@@ -51,16 +51,17 @@ class PnaclTranslateThread {
   // Starts an individual llc or ld subprocess used for translation.
   NaClSubprocess* StartSubprocess(const nacl::string& url,
                                   const Manifest* manifest);
-  // Creates a helper thread to allow translations to be
-  // invoked via SRPC.  This is the helper thread function for translation.
+  // Helper thread entry point for translation. Takes a pointer to
+  // PnaclTranslateThread and calls DoTranslate().
   static void WINAPI DoTranslateThread(void* arg);
+  // Runs the SRPCs that control translation. Called from the helper thread.
+  virtual void DoTranslate();
   // Signal that Pnacl translation failed, from the translation thread only.
   void TranslateFailed(const nacl::string& error_string);
-  // Run the LD subprocess, returning true on success (static for now)
-  static bool RunLdSubprocess(PnaclTranslateThread* translator,
-                              int is_shared_library,
-                              const nacl::string& soname,
-                              const nacl::string& lib_dependencies);
+  // Run the LD subprocess, returning true on success
+  bool RunLdSubprocess(int is_shared_library,
+                       const nacl::string& soname,
+                       const nacl::string& lib_dependencies);
 
   // Callback to run when tasks are completed or an error has occurred.
   pp::CompletionCallback report_translate_finished_;
@@ -77,7 +78,7 @@ class PnaclTranslateThread {
   LocalTempFile* obj_file_;
   LocalTempFile* nexe_file_;
   nacl::DescWrapper* pexe_wrapper_;
-  ErrorInfo *error_info_;
+  ErrorInfo* error_info_;
   PnaclResources* resources_;
   Plugin* plugin_;
  private:
