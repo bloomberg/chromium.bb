@@ -45,11 +45,14 @@ class SURFACE_EXPORT AcceleratedPresenter
   // thread.
   void Suspend();
 
+  // Indicates that the presenter has become invisible.
+  void WasHidden();
+
   // Schedule the presenter to release its reference to the shared surface.
   void ReleaseSurface();
 
   // The public member functions are called on the main thread.
-  bool Present();
+  bool Present(HDC dc);
   bool CopyTo(const gfx::Size& size, void* buf);
   void Invalidate();
 
@@ -65,8 +68,8 @@ class SURFACE_EXPORT AcceleratedPresenter
       int64 surface_handle,
       const base::Callback<void(bool)>& completion_task);
   void DoSuspend();
-  void DoPresent(bool* presented);
-  bool DoRealPresent();
+  void DoPresent(HDC dc, bool* presented);
+  bool DoRealPresent(HDC dc);
   void DoReleaseSurface();
 
   // The thread with which this presenter has affinity.
@@ -84,8 +87,14 @@ class SURFACE_EXPORT AcceleratedPresenter
   base::WaitableEvent event_;
 
   // The current size of the swap chain. This is only accessed on the thread
-  // with which the surface has affinity.
-  gfx::Size size_;
+  // with which the surface has affinity. The swap chain size is rounded up and
+  // is not necessarily the same as the window size.
+  gfx::Size quantized_size_;
+
+  // The size of the window on the last present. This is used to trigger the
+  // compositor instead of presenting the last frame in the case where the
+  // window has been resized.
+  gfx::Size present_size_;
 
   // This is a shared texture that is being presented from.
   base::win::ScopedComPtr<IDirect3DTexture9> source_texture_;
@@ -93,6 +102,8 @@ class SURFACE_EXPORT AcceleratedPresenter
   // The swap chain is presented to the child window. Copy semantics
   // are used so it is possible to represent it to quickly validate the window.
   base::win::ScopedComPtr<IDirect3DSwapChain9> swap_chain_;
+
+  bool hidden_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratedPresenter);
 };
@@ -103,7 +114,7 @@ class SURFACE_EXPORT AcceleratedSurface {
   ~AcceleratedSurface();
 
   // Synchronously present a frame with no acknowledgement.
-  bool Present();
+  bool Present(HDC dc);
 
   // Copies the surface data to |buf|. The image data is transformed so that it
   // fits in |size|.
@@ -115,6 +126,9 @@ class SURFACE_EXPORT AcceleratedSurface {
   // presented. Present will not be able to represent the last surface after
   // calling this and will return false.
   void Suspend();
+
+  // Indicates that the surface has become invisible.
+  void WasHidden();
 
  private:
   const scoped_refptr<AcceleratedPresenter> presenter_;

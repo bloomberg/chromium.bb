@@ -285,7 +285,8 @@ scoped_refptr<AcceleratedPresenter> AcceleratedPresenterMap::GetPresenter(
 AcceleratedPresenter::AcceleratedPresenter(gfx::NativeWindow window)
     : present_thread_(g_present_thread_pool.Pointer()->NextThread()),
       window_(window),
-      event_(false, false) {
+      event_(false, false),
+      hidden_(true) {
 }
 
 scoped_refptr<AcceleratedPresenter> AcceleratedPresenter::GetForWindow(
@@ -311,7 +312,7 @@ void AcceleratedPresenter::AsyncPresentAndAcknowledge(
                  completion_task));
 }
 
-bool AcceleratedPresenter::Present() {
+bool AcceleratedPresenter::Present(HDC dc) {
   TRACE_EVENT0("gpu", "Present");
 
   bool result;
@@ -320,6 +321,7 @@ bool AcceleratedPresenter::Present() {
       FROM_HERE,
       base::Bind(&AcceleratedPresenter::DoPresent,
                  this,
+                 dc,
                  &result));
   // http://crbug.com/125391
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
@@ -327,37 +329,58 @@ bool AcceleratedPresenter::Present() {
   return result;
 }
 
-void AcceleratedPresenter::DoPresent(bool* result)
+void AcceleratedPresenter::DoPresent(HDC dc, bool* result)
 {
-  *result = DoRealPresent();
+  *result = DoRealPresent(dc);
   event_.Signal();
 }
 
-bool AcceleratedPresenter::DoRealPresent()
+bool AcceleratedPresenter::DoRealPresent(HDC dc)
 {
   TRACE_EVENT0("gpu", "DoRealPresent");
   HRESULT hr;
 
   base::AutoLock locked(lock_);
 
+  // If invalidated, do nothing. The window is gone.
+  if (!window_)
+    return true;
+
+
+  RECT window_rect;
+  GetClientRect(window_, &window_rect);
+  if (window_rect.right != present_size_.width() ||
+      window_rect.bottom != present_size_.height()) {
+    // If the window is a different size than the swap chain that was previously
+    // presented and it is becoming visible then signal the caller to
+    // recomposite at the new size.
+    if (hidden_)
+      return false;
+
+    HBRUSH brush = static_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
+    RECT fill_rect = window_rect;
+    fill_rect.top = present_size_.height();
+    FillRect(dc, &fill_rect, brush);
+    fill_rect = window_rect;
+    fill_rect.left = present_size_.width();
+    fill_rect.bottom = present_size_.height();
+    FillRect(dc, &fill_rect, brush);
+  }
+
   // Signal the caller to recomposite if the presenter has been suspended or no
   // surface has ever been presented.
   if (!swap_chain_)
     return false;
 
-  // If invalidated, do nothing. The window is gone.
-  if (!window_)
-    return true;
-
-  RECT rect = {
+  RECT present_rect = {
     0, 0,
-    size_.width(), size_.height()
+    present_size_.width(), present_size_.height()
   };
 
   {
     TRACE_EVENT0("gpu", "PresentEx");
-    hr = swap_chain_->Present(&rect,
-                              &rect,
+    hr = swap_chain_->Present(&present_rect,
+                              &present_rect,
                               window_,
                               NULL,
                               D3DPRESENT_INTERVAL_IMMEDIATE);
@@ -475,6 +498,11 @@ void AcceleratedPresenter::Suspend() {
                  this));
 }
 
+void AcceleratedPresenter::WasHidden() {
+  base::AutoLock locked(lock_);
+  hidden_ = true;
+}
+
 void AcceleratedPresenter::ReleaseSurface() {
   present_thread_->message_loop()->PostTask(
       FROM_HERE,
@@ -532,6 +560,15 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
   if (!window_)
     return;
 
+  // If the window is a different size than the swap chain that is being
+  // presented then drop the frame.
+  RECT window_rect;
+  GetClientRect(window_, &window_rect);
+  if (hidden_ && (window_rect.right != size.width() ||
+      window_rect.bottom != size.height())) {
+    return;
+  }
+
   // Round up size so the swap chain is not continuously resized with the
   // surface, which could lead to memory fragmentation.
   const int kRound = 64;
@@ -541,9 +578,9 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
 
   // Ensure the swap chain exists and is the same size (rounded up) as the
   // surface to be presented.
-  if (!swap_chain_ || size_ != quantized_size) {
+  if (!swap_chain_ || quantized_size_ != quantized_size) {
     TRACE_EVENT0("gpu", "CreateAdditionalSwapChain");
-    size_ = quantized_size;
+    quantized_size_ = quantized_size;
 
     D3DPRESENT_PARAMETERS parameters = { 0 };
     parameters.BackBufferWidth = quantized_size.width();
@@ -615,14 +652,7 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
   // being resized.
   present_thread_->query()->GetData(NULL, 0, D3DGETDATA_FLUSH);
 
-  ::SetWindowPos(
-      window_,
-      NULL,
-      0, 0,
-      size.width(), size.height(),
-      SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOMOVE |SWP_NOOWNERZORDER |
-          SWP_NOREDRAW | SWP_NOSENDCHANGING | SWP_NOSENDCHANGING |
-          SWP_ASYNCWINDOWPOS | SWP_NOZORDER);
+  present_size_ = size;
 
   // Wait for the StretchRect to complete before notifying the GPU process
   // that it is safe to write to its backing store again.
@@ -648,6 +678,8 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
       present_thread_->ResetDevice();
     }
   }
+
+  hidden_ = false;
 }
 
 void AcceleratedPresenter::DoSuspend() {
@@ -670,8 +702,8 @@ AcceleratedSurface::~AcceleratedSurface() {
   presenter_->Invalidate();
 }
 
-bool AcceleratedSurface::Present() {
-  return presenter_->Present();
+bool AcceleratedSurface::Present(HDC dc) {
+  return presenter_->Present(dc);
 }
 
 bool AcceleratedSurface::CopyTo(const gfx::Size& size, void* buf) {
@@ -680,4 +712,8 @@ bool AcceleratedSurface::CopyTo(const gfx::Size& size, void* buf) {
 
 void AcceleratedSurface::Suspend() {
   presenter_->Suspend();
+}
+
+void AcceleratedSurface::WasHidden() {
+  presenter_->WasHidden();
 }

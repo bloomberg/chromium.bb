@@ -674,6 +674,9 @@ void RenderWidgetHostViewWin::WasHidden() {
   // reduce its resource utilization.
   if (render_widget_host_)
     render_widget_host_->WasHidden();
+
+  if (accelerated_surface_.get())
+    accelerated_surface_->WasHidden();
 }
 
 void RenderWidgetHostViewWin::SetSize(const gfx::Size& size) {
@@ -1365,10 +1368,11 @@ void RenderWidgetHostViewWin::OnPaint(HDC unused_dc) {
 
   DCHECK(render_widget_host_->GetProcess()->HasConnection());
 
-  // If the GPU process is rendering directly into the View, compositing is
+  // If the GPU process is rendering to a child window, compositing is
   // already triggered by damage to compositor_host_window_, so all we need to
   // do here is clear borders during resize.
-  if (render_widget_host_->is_accelerated_compositing_active()) {
+  if (compositor_host_window_ &&
+      render_widget_host_->is_accelerated_compositing_active()) {
     // We initialize paint_dc here so that BeginPaint()/EndPaint()
     // get called to validate the region.
     CPaintDC paint_dc(m_hWnd);
@@ -1397,7 +1401,7 @@ void RenderWidgetHostViewWin::OnPaint(HDC unused_dc) {
   base::win::ScopedGDIObject<HRGN> damage_region(CreateRectRgn(0, 0, 0, 0));
   GetUpdateRgn(damage_region, FALSE);
 
-  if (hide_compositor_window_at_next_paint_) {
+  if (compositor_host_window_ && hide_compositor_window_at_next_paint_) {
     ::ShowWindow(compositor_host_window_, SW_HIDE);
     hide_compositor_window_at_next_paint_ = false;
   }
@@ -1407,6 +1411,12 @@ void RenderWidgetHostViewWin::OnPaint(HDC unused_dc) {
   gfx::Rect damaged_rect(paint_dc.m_ps.rcPaint);
   if (damaged_rect.IsEmpty())
     return;
+
+  if (accelerated_surface_.get() &&
+      render_widget_host_->is_accelerated_compositing_active()) {
+    AcceleratedPaint(paint_dc.m_hDC);
+    return;
+  }
 
   if (backing_store) {
     gfx::Rect bitmap_rect(gfx::Point(), backing_store->size());
@@ -2451,7 +2461,7 @@ static void PaintCompositorHostWindow(HWND hWnd) {
       ui::GetWindowUserData(hWnd));
   // Trigger composite to rerender window.
   if (win)
-    win->ScheduleComposite();
+    win->AcceleratedPaint(paint.hdc);
 
   EndPaint(hWnd, &paint);
 }
@@ -2474,11 +2484,11 @@ static LRESULT CALLBACK CompositorHostWindowProc(HWND hWnd, UINT message,
   }
 }
 
-void RenderWidgetHostViewWin::ScheduleComposite() {
+void RenderWidgetHostViewWin::AcceleratedPaint(HDC dc) {
   // If we have a previous frame then present it immediately. Otherwise request
   // a new frame be composited.
   if (!accelerated_surface_.get() ||
-      !accelerated_surface_->Present()) {
+      !accelerated_surface_->Present(dc)) {
     if (render_widget_host_)
       render_widget_host_->ScheduleComposite();
   }
@@ -2492,6 +2502,16 @@ gfx::GLSurfaceHandle RenderWidgetHostViewWin::GetCompositingSurface() {
   if (compositor_host_window_)
     return gfx::GLSurfaceHandle(compositor_host_window_, true);
 
+  // On Vista and later we present directly to the view window rather than a
+  // child window.
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
+    if (!accelerated_surface_.get())
+      accelerated_surface_.reset(new AcceleratedSurface(m_hWnd));
+    return gfx::GLSurfaceHandle(m_hWnd, true);
+  }
+
+  // On XP we need a child window that can be resized independently of the
+  // partent.
   static ATOM atom = 0;
   static HMODULE instance = NULL;
   if (!atom) {
@@ -2526,9 +2546,6 @@ gfx::GLSurfaceHandle RenderWidgetHostViewWin::GetCompositingSurface() {
   ui::SetWindowUserData(compositor_host_window_, this);
 
   gfx::GLSurfaceHandle surface_handle(compositor_host_window_, true);
-
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA)
-    accelerated_surface_.reset(new AcceleratedSurface(compositor_host_window_));
 
   return surface_handle;
 }

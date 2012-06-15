@@ -89,7 +89,7 @@ class RenderWidgetHostViewWin
 
   CONTENT_EXPORT void CreateWnd(HWND parent);
 
-  void ScheduleComposite();
+  void AcceleratedPaint(HDC dc);
 
   DECLARE_WND_CLASS_EX(kRenderWidgetHostHWNDClass, CS_DBLCLKS, 0);
 
