@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -50,7 +50,7 @@ void TestingAutomationProvider::WindowGetViewBounds(int handle,
   if (!tab)
     return;
 
-  NSRect rect = [tab convertRectToBase:[tab bounds]];
+  NSRect rect = [tab convertRect:[tab bounds] toView:nil];
   // The origin of the bounding box should be the top left of the tab contents,
   // not bottom left, to match other platforms.
   rect.origin.y += rect.size.height;
