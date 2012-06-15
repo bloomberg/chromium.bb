@@ -18,6 +18,8 @@
 #include "chrome/common/string_ordinal.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
+#include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using extensions::Extension;
@@ -70,6 +72,16 @@ std::string SyncExtensionHelper::InstallExtension(
     NOTREACHED() << "Could not install extension " << name;
     return "";
   }
+  // extensions::ExtensionGarbageCollector requires that there be a file present
+  // on the file system for all extensions; we mimic this here. This also better
+  // simulates the actual install process.
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(
+          base::IgnoreResult(&file_util::CreateDirectory),
+          profile->GetExtensionService()->install_directory()
+              .AppendASCII(extension->id())));
+  ui_test_utils::RunAllPendingInMessageLoop(content::BrowserThread::FILE);
   profile->GetExtensionService()->OnExtensionInstalled(
       extension, extension->UpdatesFromGallery(), StringOrdinal());
   return extension->id();

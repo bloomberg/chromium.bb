@@ -27,6 +27,7 @@
 #include "chrome/browser/extensions/app_shortcut_manager.h"
 #include "chrome/browser/extensions/app_sync_bundle.h"
 #include "chrome/browser/extensions/apps_promo.h"
+#include "chrome/browser/extensions/extension_garbage_collector.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
 #include "chrome/browser/extensions/extension_menu_manager.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -710,6 +711,11 @@ class ExtensionService
 
   // Preferences for the owning profile (weak reference).
   ExtensionPrefs* extension_prefs_;
+
+  // The ExtensionGarbageCollector associated with this service; this is
+  // responsible for cleaning up old or partially deleted extensions.
+  scoped_ptr<extensions::ExtensionGarbageCollector>
+      extension_garbage_collector_;
 
   // Settings for the owning profile.
   scoped_ptr<extensions::SettingsFrontend> settings_frontend_;

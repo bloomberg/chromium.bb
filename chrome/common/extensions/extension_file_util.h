@@ -72,19 +72,6 @@ bool ValidateExtension(const extensions::Extension* extension,
 // Returns a list of files that contain private keys inside |extension_dir|.
 std::vector<FilePath> FindPrivateKeyFiles(const FilePath& extension_dir);
 
-// Cleans up the extension install directory. It can end up with garbage in it
-// if extensions can't initially be removed when they are uninstalled (eg if a
-// file is in use).
-//
-// |extensions_dir| is the install directory to look in. |extension_paths| is a
-// map from extension id to full installation path.
-//
-// Obsolete version directories are removed, as are directories that aren't
-// found in |extension_paths|.
-void GarbageCollectExtensions(
-    const FilePath& extensions_dir,
-    const std::map<std::string, FilePath>& extension_paths);
-
 // Loads extension message catalogs and returns message bundle.
 // Returns NULL on error, or if extension is not localized.
 ExtensionMessageBundle* LoadExtensionMessageBundle(
