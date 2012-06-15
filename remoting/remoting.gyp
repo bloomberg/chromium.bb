@@ -1194,6 +1194,8 @@
         'host/server_log_entry.h',
         'host/session_event_executor_win.cc',
         'host/session_event_executor_win.h',
+        'host/session_manager_factory.cc',
+        'host/session_manager_factory.h',
         'host/signaling_connector.cc',
         'host/signaling_connector.h',
         'host/scoped_thread_desktop_win.cc',

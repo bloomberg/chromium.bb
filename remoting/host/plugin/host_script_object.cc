@@ -22,11 +22,13 @@
 #include "remoting/host/host_key_pair.h"
 #include "remoting/host/host_secret.h"
 #include "remoting/host/it2me_host_user_interface.h"
+#include "remoting/host/network_settings.h"
 #include "remoting/host/pin_hash.h"
 #include "remoting/host/plugin/daemon_controller.h"
 #include "remoting/host/plugin/host_log_handler.h"
 #include "remoting/host/policy_hack/nat_policy.h"
 #include "remoting/host/register_support_host_request.h"
+#include "remoting/host/session_manager_factory.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/protocol/it2me_host_authenticator_factory.h"
 
@@ -560,9 +562,11 @@ void HostNPScriptObject::FinishConnectNetworkThread(
   LOG(INFO) << "NAT state: " << nat_traversal_enabled_;
   host_ = new ChromotingHost(
       host_context_.get(), signal_strategy_.get(), desktop_environment_.get(),
-      NetworkSettings(nat_traversal_enabled_ ?
-                      NetworkSettings::NAT_TRAVERSAL_ENABLED :
-                      NetworkSettings::NAT_TRAVERSAL_DISABLED));
+      CreateHostSessionManager(
+          NetworkSettings(nat_traversal_enabled_ ?
+                          NetworkSettings::NAT_TRAVERSAL_ENABLED :
+                          NetworkSettings::NAT_TRAVERSAL_DISABLED),
+          host_context_->url_request_context_getter()));
   host_->AddStatusObserver(this);
   log_to_server_.reset(
       new LogToServer(host_, ServerLogEntry::IT2ME, signal_strategy_.get()));

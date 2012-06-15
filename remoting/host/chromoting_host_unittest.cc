@@ -92,10 +92,12 @@ class ChromotingHostTest : public testing::Test {
         &context_,
         capturer.Pass(),
         event_executor.Pass());
+    scoped_ptr<protocol::SessionManager> session_manager(
+        new protocol::MockSessionManager());
 
     host_ = new ChromotingHost(
         &context_, &signal_strategy_, desktop_environment_.get(),
-        NetworkSettings());
+        session_manager.Pass());
 
     disconnect_window_ = new MockDisconnectWindow();
     continue_window_ = new MockContinueWindow();

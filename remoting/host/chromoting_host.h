@@ -19,10 +19,7 @@
 #include "remoting/host/host_key_pair.h"
 #include "remoting/host/host_status_observer.h"
 #include "remoting/host/mouse_move_observer.h"
-#include "remoting/host/network_settings.h"
 #include "remoting/host/ui_strings.h"
-#include "remoting/jingle_glue/jingle_thread.h"
-#include "remoting/jingle_glue/signal_strategy.h"
 #include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/session_manager.h"
 #include "remoting/protocol/connection_to_client.h"
@@ -74,7 +71,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   ChromotingHost(ChromotingHostContext* context,
                  SignalStrategy* signal_strategy,
                  DesktopEnvironment* environment,
-                 const NetworkSettings& network_settings);
+                 scoped_ptr<protocol::SessionManager> session_manager);
 
   // Asynchronously start the host process.
   //
@@ -184,11 +181,10 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // Parameters specified when the host was created.
   ChromotingHostContext* context_;
   DesktopEnvironment* desktop_environment_;
-  NetworkSettings network_settings_;
+  scoped_ptr<protocol::SessionManager> session_manager_;
 
   // Connection objects.
   SignalStrategy* signal_strategy_;
-  scoped_ptr<protocol::SessionManager> session_manager_;
 
   // Must be used on the network thread only.
   ObserverList<HostStatusObserver> status_observers_;

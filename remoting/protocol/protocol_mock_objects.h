@@ -10,6 +10,7 @@
 #include "net/base/ip_endpoint.h"
 #include "remoting/proto/internal.pb.h"
 #include "remoting/proto/video.pb.h"
+#include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/connection_to_client.h"
@@ -17,6 +18,7 @@
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/input_stub.h"
 #include "remoting/protocol/session.h"
+#include "remoting/protocol/session_manager.h"
 #include "remoting/protocol/transport.h"
 #include "remoting/protocol/video_stub.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -174,6 +176,39 @@ class MockSession : public Session {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockSession);
+};
+
+class MockSessionManager : public SessionManager {
+ public:
+  MockSessionManager();
+  virtual ~MockSessionManager();
+
+  MOCK_METHOD2(Init, void(SignalStrategy*, Listener*));
+  MOCK_METHOD4(ConnectPtr, Session*(
+      const std::string&,
+      Authenticator*,
+      CandidateSessionConfig*,
+      const Session::StateChangeCallback&));
+  MOCK_METHOD0(Close, void());
+  MOCK_METHOD1(set_authenticator_factory_ptr, void(AuthenticatorFactory*));
+  virtual scoped_ptr<Session> Connect(
+      const std::string& host_jid,
+      scoped_ptr<Authenticator> authenticator,
+      scoped_ptr<CandidateSessionConfig> config,
+      const Session::StateChangeCallback& state_change_callback) {
+    return scoped_ptr<Session>(ConnectPtr(
+        host_jid,
+        authenticator.get(),
+        config.get(),
+        state_change_callback));
+  };
+  virtual void set_authenticator_factory(
+      scoped_ptr<AuthenticatorFactory> authenticator_factory) {
+    set_authenticator_factory_ptr(authenticator_factory.release());
+  };
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockSessionManager);
 };
 
 }  // namespace protocol

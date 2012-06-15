@@ -45,7 +45,9 @@
 #include "remoting/host/it2me_host_user_interface.h"
 #include "remoting/host/json_host_config.h"
 #include "remoting/host/log_to_server.h"
+#include "remoting/host/network_settings.h"
 #include "remoting/host/register_support_host_request.h"
+#include "remoting/host/session_manager_factory.h"
 #include "remoting/host/signaling_connector.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/proto/video.pb.h"
@@ -232,8 +234,10 @@ class SimpleHost : public HeartbeatSender::Listener {
       desktop_environment_ = DesktopEnvironment::Create(&context_);
     }
 
-    host_ = new ChromotingHost(&context_, signal_strategy_.get(),
-                               desktop_environment_.get(), network_settings_);
+    host_ = new ChromotingHost(
+        &context_, signal_strategy_.get(), desktop_environment_.get(),
+        CreateHostSessionManager(network_settings_,
+                                 context_.url_request_context_getter()));
 
     ServerLogEntry::Mode mode =
         is_it2me_ ? ServerLogEntry::IT2ME : ServerLogEntry::ME2ME;

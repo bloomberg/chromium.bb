@@ -38,7 +38,9 @@
 #include "remoting/host/host_user_interface.h"
 #include "remoting/host/json_host_config.h"
 #include "remoting/host/log_to_server.h"
+#include "remoting/host/network_settings.h"
 #include "remoting/host/policy_hack/nat_policy.h"
+#include "remoting/host/session_manager_factory.h"
 #include "remoting/host/signaling_connector.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/protocol/me2me_host_authenticator_factory.h"
@@ -385,7 +387,8 @@ class HostProcess
 
     host_ = new ChromotingHost(
         context_.get(), signal_strategy_.get(), desktop_environment_.get(),
-        network_settings);
+        CreateHostSessionManager(network_settings,
+                                 context_->url_request_context_getter()));
 
     heartbeat_sender_.reset(new HeartbeatSender(
         this, host_id_, signal_strategy_.get(), &key_pair_));

@@ -54,5 +54,9 @@ MockSession::MockSession() {}
 
 MockSession::~MockSession() {}
 
+MockSessionManager::MockSessionManager() {}
+
+MockSessionManager::~MockSessionManager() {}
+
 }  // namespace protocol
 }  // namespace remoting

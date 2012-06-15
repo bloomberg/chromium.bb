@@ -17,14 +17,11 @@
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/host_config.h"
-#include "remoting/host/host_port_allocator.h"
 #include "remoting/host/screen_recorder.h"
 #include "remoting/protocol/connection_to_client.h"
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/input_stub.h"
-#include "remoting/protocol/jingle_session_manager.h"
-#include "remoting/protocol/libjingle_transport_factory.h"
 #include "remoting/protocol/session_config.h"
 
 using remoting::protocol::ConnectionToClient;
@@ -66,10 +63,10 @@ ChromotingHost::ChromotingHost(
     ChromotingHostContext* context,
     SignalStrategy* signal_strategy,
     DesktopEnvironment* environment,
-    const NetworkSettings& network_settings)
+    scoped_ptr<protocol::SessionManager> session_manager)
     : context_(context),
       desktop_environment_(environment),
-      network_settings_(network_settings),
+      session_manager_(session_manager.Pass()),
       signal_strategy_(signal_strategy),
       stopping_recorders_(0),
       state_(kInitial),
@@ -97,24 +94,7 @@ void ChromotingHost::Start() {
     return;
   state_ = kStarted;
 
-  // Create port allocator and transport factory.
-  scoped_ptr<HostPortAllocator> port_allocator(
-      HostPortAllocator::Create(context_->url_request_context_getter(),
-                                network_settings_));
-
-  bool incoming_only = network_settings_.nat_traversal_mode ==
-      NetworkSettings::NAT_TRAVERSAL_DISABLED;
-
-  scoped_ptr<protocol::TransportFactory> transport_factory(
-      new protocol::LibjingleTransportFactory(
-          port_allocator.PassAs<cricket::HttpPortAllocatorBase>(),
-          incoming_only));
-
-  // Create and start session manager.
-  bool fetch_stun_relay_info = network_settings_.nat_traversal_mode ==
-      NetworkSettings::NAT_TRAVERSAL_ENABLED;
-  session_manager_.reset(new protocol::JingleSessionManager(
-      transport_factory.Pass(), fetch_stun_relay_info));
+  // Start the SessionManager, supplying this ChromotingHost as the listener.
   session_manager_->Init(signal_strategy_, this);
 }
 
