@@ -4,8 +4,7 @@
 
 #include "chrome/browser/chromeos/gdata/gdata_operation_registry.h"
 
-#include <sstream>
-
+#include "base/string_number_conversions.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -49,16 +48,21 @@ GDataOperationRegistry::ProgressStatus::ProgressStatus(OperationType type,
       progress_total(-1) {
 }
 
-std::string GDataOperationRegistry::ProgressStatus::ToString() const {
-  std::stringstream stream;
-  stream << "id=" << operation_id
-         << "type="
-         << GDataOperationRegistry::OperationTypeToString(operation_type)
-         << "path=" << file_path.AsUTF8Unsafe()
-         << "state=" << OperationTransferStateToString(transfer_state)
-         << ", progress=" << progress_current
-         << "/ " << progress_total;
-  return stream.str();
+std::string GDataOperationRegistry::ProgressStatus::DebugString() const {
+  std::string str;
+  str += "id=";
+  str += base::IntToString(operation_id);
+  str += " type=";
+  str += OperationTypeToString(operation_type);
+  str += " path=";
+  str += file_path.AsUTF8Unsafe();
+  str += " state=";
+  str += OperationTransferStateToString(transfer_state);
+  str += " progress=";
+  str += base::Int64ToString(progress_current);
+  str += "/";
+  str += base::Int64ToString(progress_total);
+  return str;
 }
 
 GDataOperationRegistry::Operation::Operation(GDataOperationRegistry* registry)
@@ -197,8 +201,8 @@ void GDataOperationRegistry::OnOperationProgress(OperationID id) {
   Operation* operation = in_flight_operations_.Lookup(id);
   DCHECK(operation);
 
-  DVLOG(1) << "GDataOperation[" << id << "] " <<
-      operation->progress_status().ToString();
+  DVLOG(1) << "GDataOperation[" << id << "] "
+           << operation->progress_status().DebugString();
   if (IsFileTransferOperation(operation)) {
     FOR_EACH_OBSERVER(Observer, observer_list_,
                       OnProgressUpdate(GetProgressStatusList()));

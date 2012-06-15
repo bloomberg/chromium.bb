@@ -22,7 +22,7 @@ namespace gdata {
 class GDataOperationRegistry {
  public:
   GDataOperationRegistry();
-  virtual ~GDataOperationRegistry();
+  ~GDataOperationRegistry();
 
   // Unique ID to identify each operation.
   typedef int32 OperationID;
@@ -43,6 +43,9 @@ class GDataOperationRegistry {
     OPERATION_SUSPENDED,
   };
 
+  // Returns string representations of the operation type and state, which are
+  // exposed to the private extension API as in:
+  // operation.chrome/common/extensions/api/file_browser_private.json
   static std::string OperationTypeToString(OperationType type);
   static std::string OperationTransferStateToString(
       OperationTransferState state);
@@ -51,7 +54,7 @@ class GDataOperationRegistry {
   struct ProgressStatus {
     ProgressStatus(OperationType type, const FilePath& file_path);
     // For debugging
-    std::string ToString() const;
+    std::string DebugString() const;
 
     OperationID operation_id;
 
@@ -83,8 +86,9 @@ class GDataOperationRegistry {
   };
 
   // Base class for operations that this registry class can maintain.
-  // The Operation objects are owned by the registry. In particular, calling
-  // NotifyFinish() causes the registry to delete the Operation object itself.
+  // NotifyStart() passes the ownership of the Operation object to the registry.
+  // In particular, calling NotifyFinish() causes the registry to delete the
+  // Operation object itself.
   class Operation {
    public:
     explicit Operation(GDataOperationRegistry* registry);
@@ -135,14 +139,16 @@ class GDataOperationRegistry {
   // Obtains the list of currently active operations.
   ProgressStatusList GetProgressStatusList();
 
-  // Sets the observer.
+  // Sets an observer. The registry do NOT own observers; before destruction
+  // they need to be removed from the registry.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
  private:
   // Handlers for notifications from Operations.
   friend class Operation;
-  // The registry assigns a fresh operation ID and return it to *id.
+  // Notifies that an operation has started. This method passes the ownership of
+  // the operation to the registry. A fresh operation ID is returned to *id.
   void OnOperationStart(Operation* operation, OperationID* id);
   void OnOperationProgress(OperationID operation);
   void OnOperationFinish(OperationID operation);
