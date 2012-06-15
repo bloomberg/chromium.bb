@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/logging.h"
 #include "base/platform_file.h"
 #include "base/process_util.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -23,6 +24,8 @@
 
 using content::BrowserThread;
 
+namespace {
+
 // Used to check if the renderer has permission for the requested operation.
 // TODO(viettrungluu): Verify these. They don't necessarily quite make sense,
 // but it seems to be approximately what the file system code does.
@@ -36,6 +39,28 @@ const int kWritePermissions = base::PLATFORM_FILE_OPEN |
                               base::PLATFORM_FILE_WRITE |
                               base::PLATFORM_FILE_EXCLUSIVE_WRITE |
                               base::PLATFORM_FILE_WRITE_ATTRIBUTES;
+
+IPC::PlatformFileForTransit PlatformFileToPlatformFileForTransit(
+    base::ProcessHandle peer_handle,
+    base::PlatformFile file_handle,
+    base::PlatformFileError* error) {
+  IPC::PlatformFileForTransit file;
+#if defined(OS_WIN)
+  // Duplicate the file handle so that the renderer process can access the file.
+  if (!DuplicateHandle(GetCurrentProcess(), file_handle,
+                       peer_handle, &file, 0, false,
+                       DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
+    // file_handle is closed whether or not DuplicateHandle succeeds.
+    *error = base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
+    file = INVALID_HANDLE_VALUE;
+  }
+#else
+  file = base::FileDescriptor(file_handle, true);
+#endif
+  return file;
+}
+
+}  // namespace
 
 PepperFileMessageFilter::PepperFileMessageFilter(int child_id)
         : child_id_(child_id),
@@ -59,6 +84,8 @@ bool PepperFileMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(PepperFileMsg_CreateDir, OnCreateDir)
     IPC_MESSAGE_HANDLER(PepperFileMsg_QueryFile, OnQueryFile)
     IPC_MESSAGE_HANDLER(PepperFileMsg_GetDirContents, OnGetDirContents)
+    IPC_MESSAGE_HANDLER(PepperFileMsg_CreateTemporaryFile,
+                        OnCreateTemporaryFile)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;
@@ -110,18 +137,8 @@ void PepperFileMessageFilter::OnOpenFile(
     return;
   }
 
-#if defined(OS_WIN)
-  // Duplicate the file handle so that the renderer process can access the file.
-  if (!DuplicateHandle(GetCurrentProcess(), file_handle,
-                       peer_handle(), file, 0, false,
-                       DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
-    // file_handle is closed whether or not DuplicateHandle succeeds.
-    *error = base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
-    *file = INVALID_HANDLE_VALUE;
-  }
-#else
-  *file = base::FileDescriptor(file_handle, true);
-#endif
+  *file = PlatformFileToPlatformFileForTransit(peer_handle(), file_handle,
+                                               error);
 }
 
 void PepperFileMessageFilter::OnRenameFile(
@@ -218,6 +235,43 @@ void PepperFileMessageFilter::OnGetDirContents(
   }
 
   *error = base::PLATFORM_FILE_OK;
+}
+
+void PepperFileMessageFilter::OnCreateTemporaryFile(
+    base::PlatformFileError* error,
+    IPC::PlatformFileForTransit* file) {
+  *error = base::PLATFORM_FILE_ERROR_FAILED;
+  *file = IPC::InvalidPlatformFileForTransit();
+
+  ppapi::PepperFilePath dir_path(
+      ppapi::PepperFilePath::DOMAIN_MODULE_LOCAL, FilePath());
+  FilePath validated_dir_path = ValidateAndConvertPepperFilePath(
+      dir_path, kReadPermissions | kWritePermissions);
+  if (validated_dir_path.empty() ||
+      (!file_util::DirectoryExists(validated_dir_path) &&
+       !file_util::CreateDirectory(validated_dir_path))) {
+    *error = base::PLATFORM_FILE_ERROR_ACCESS_DENIED;
+    return;
+  }
+
+  FilePath file_path;
+  if (!file_util::CreateTemporaryFileInDir(validated_dir_path, &file_path))
+    return;
+
+  base::PlatformFile file_handle = base::CreatePlatformFile(
+      file_path,
+      base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_READ |
+      base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_TEMPORARY |
+      base::PLATFORM_FILE_DELETE_ON_CLOSE,
+      NULL, error);
+
+  if (*error != base::PLATFORM_FILE_OK) {
+    DCHECK_EQ(file_handle, base::kInvalidPlatformFileValue);
+    return;
+  }
+
+  *file = PlatformFileToPlatformFileForTransit(peer_handle(), file_handle,
+                                               error);
 }
 
 FilePath PepperFileMessageFilter::ValidateAndConvertPepperFilePath(

@@ -237,6 +237,11 @@ base::PlatformFileError MockPluginDelegate::GetDirContents(
   return base::PLATFORM_FILE_ERROR_FAILED;
 }
 
+base::PlatformFileError MockPluginDelegate::CreateTemporaryFile(
+    base::PlatformFile* file) {
+  return base::PLATFORM_FILE_ERROR_FAILED;
+}
+
 void MockPluginDelegate::SyncGetFileSystemPlatformPath(
     const GURL& url,
     FilePath* platform_path) {

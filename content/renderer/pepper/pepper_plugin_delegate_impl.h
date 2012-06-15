@@ -268,6 +268,8 @@ class PepperPluginDelegateImpl
   virtual base::PlatformFileError GetDirContents(
       const ppapi::PepperFilePath& path,
       ppapi::DirContents* contents) OVERRIDE;
+  virtual base::PlatformFileError CreateTemporaryFile(
+      base::PlatformFile* file) OVERRIDE;
   virtual void SyncGetFileSystemPlatformPath(
       const GURL& url,
       FilePath* platform_path) OVERRIDE;

@@ -74,6 +74,8 @@ class PepperFileMessageFilter : public content::BrowserMessageFilter {
   void OnGetDirContents(const ppapi::PepperFilePath& path,
                         ppapi::DirContents* contents,
                         base::PlatformFileError* error);
+  void OnCreateTemporaryFile(base::PlatformFileError* error,
+                             IPC::PlatformFileForTransit* file);
 
   // Validate and convert the Pepper file path to a "real" |FilePath|. Returns
   // an empty |FilePath| on error.

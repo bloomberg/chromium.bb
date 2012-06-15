@@ -978,6 +978,20 @@ base::PlatformFileError PepperPluginDelegateImpl::GetDirContents(
   return error;
 }
 
+base::PlatformFileError PepperPluginDelegateImpl::CreateTemporaryFile(
+    base::PlatformFile* file) {
+  IPC::PlatformFileForTransit transit_file;
+  base::PlatformFileError error;
+  IPC::Message* msg = new PepperFileMsg_CreateTemporaryFile(&error,
+                                                            &transit_file);
+  if (!render_view_->Send(msg)) {
+    *file = base::kInvalidPlatformFileValue;
+    return base::PLATFORM_FILE_ERROR_FAILED;
+  }
+  *file = IPC::PlatformFileForTransitToPlatformFile(transit_file);
+  return error;
+}
+
 void PepperPluginDelegateImpl::SyncGetFileSystemPlatformPath(
     const GURL& url, FilePath* platform_path) {
   RenderThreadImpl::current()->Send(new FileSystemHostMsg_SyncGetPlatformPath(

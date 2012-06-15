@@ -1116,4 +1116,7 @@ TEST_PPAPI_IN_PROCESS(MouseCursor)
 TEST_PPAPI_OUT_OF_PROCESS(MouseCursor)
 TEST_PPAPI_NACL_VIA_HTTP(MouseCursor)
 
+// Only enabled in out-of-process mode.
+TEST_PPAPI_OUT_OF_PROCESS(FlashFile_CreateTemporaryFile)
+
 #endif // ADDRESS_SANITIZER

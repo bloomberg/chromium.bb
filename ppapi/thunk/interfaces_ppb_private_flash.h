@@ -34,8 +34,11 @@ PROXIED_IFACE(PPB_Flash,
               PPB_FLASH_CLIPBOARD_INTERFACE_4_0,
               PPB_Flash_Clipboard_4_0)
 PROXIED_IFACE(PPB_Flash,
-              PPB_FLASH_FILE_MODULELOCAL_INTERFACE,
-              PPB_Flash_File_ModuleLocal)
+              PPB_FLASH_FILE_MODULELOCAL_INTERFACE_2_0,
+              PPB_Flash_File_ModuleLocal_2_0)
+PROXIED_IFACE(PPB_Flash,
+              PPB_FLASH_FILE_MODULELOCAL_INTERFACE_3_0,
+              PPB_Flash_File_ModuleLocal_3_0)
 PROXIED_IFACE(PPB_Flash,
               PPB_FLASH_FILE_FILEREF_INTERFACE,
               PPB_Flash_File_FileRef)

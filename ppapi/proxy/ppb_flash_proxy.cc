@@ -498,6 +498,25 @@ int32_t PPB_Flash_Proxy::GetDirContents(PP_Instance,
   return ppapi::PlatformFileErrorToPepperError(error);
 }
 
+int32_t PPB_Flash_Proxy::CreateTemporaryFile(PP_Instance instance,
+                                             PP_FileHandle* file) {
+  if (!file)
+    return PP_ERROR_BADARGUMENT;
+
+  base::PlatformFileError error;
+  IPC::PlatformFileForTransit transit_file;
+
+  if (PluginGlobals::Get()->plugin_proxy_delegate()->SendToBrowser(
+          new PepperFileMsg_CreateTemporaryFile(&error, &transit_file))) {
+    *file = IPC::PlatformFileForTransitToPlatformFile(transit_file);
+  } else {
+    error = base::PLATFORM_FILE_ERROR_FAILED;
+    *file = base::kInvalidPlatformFileValue;
+  }
+
+  return ppapi::PlatformFileErrorToPepperError(error);
+}
+
 int32_t PPB_Flash_Proxy::OpenFileRef(PP_Instance instance,
                                      PP_Resource file_ref_id,
                                      int32_t mode,

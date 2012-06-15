@@ -114,6 +114,8 @@ class MockPluginDelegate : public PluginDelegate {
   virtual base::PlatformFileError GetDirContents(
       const ::ppapi::PepperFilePath& path,
       ::ppapi::DirContents* contents);
+  virtual base::PlatformFileError CreateTemporaryFile(
+      base::PlatformFile* file);
   virtual void SyncGetFileSystemPlatformPath(const GURL& url,
                                              FilePath* platform_path);
   virtual scoped_refptr<base::MessageLoopProxy>

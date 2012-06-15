@@ -107,6 +107,8 @@ class PPB_Flash_Proxy : public InterfaceProxy, public PPB_Flash_Shared {
   virtual int32_t GetDirContents(PP_Instance instance,
                                  const char* path,
                                  PP_DirContents_Dev** contents) OVERRIDE;
+  virtual int32_t CreateTemporaryFile(PP_Instance instance,
+                                      PP_FileHandle* file) OVERRIDE;
   virtual int32_t OpenFileRef(PP_Instance instance,
                               PP_Resource file_ref,
                               int32_t mode,

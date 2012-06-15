@@ -474,6 +474,8 @@ class PluginDelegate {
   virtual base::PlatformFileError GetDirContents(
       const ::ppapi::PepperFilePath& path,
       ::ppapi::DirContents* contents) = 0;
+  virtual base::PlatformFileError CreateTemporaryFile(
+      base::PlatformFile* file) = 0;
 
   // Synchronously returns the platform file path for a filesystem URL.
   virtual void SyncGetFileSystemPlatformPath(const GURL& url,

@@ -529,6 +529,22 @@ int32_t PPB_Flash_Impl::GetDirContents(PP_Instance pp_instance,
   return PP_OK;
 }
 
+int32_t PPB_Flash_Impl::CreateTemporaryFile(PP_Instance instance,
+                                            PP_FileHandle* file) {
+  if (!file)
+    return PP_ERROR_BADARGUMENT;
+
+  PluginInstance* plugin_instance = HostGlobals::Get()->GetInstance(instance);
+  if (!plugin_instance) {
+    *file = PP_kInvalidFileHandle;
+    return PP_ERROR_FAILED;
+  }
+
+  base::PlatformFileError result =
+      plugin_instance->delegate()->CreateTemporaryFile(file);
+  return ::ppapi::PlatformFileErrorToPepperError(result);
+}
+
 int32_t PPB_Flash_Impl::OpenFileRef(PP_Instance pp_instance,
                                     PP_Resource file_ref_id,
                                     int32_t mode,

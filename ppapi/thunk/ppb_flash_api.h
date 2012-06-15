@@ -82,6 +82,8 @@ class PPAPI_THUNK_EXPORT PPB_Flash_API {
                                  PP_DirContents_Dev** contents) = 0;
   virtual void FreeDirContents(PP_Instance instance,
                                PP_DirContents_Dev* contents) = 0;
+  virtual int32_t CreateTemporaryFile(PP_Instance instance,
+                                      PP_FileHandle* file) = 0;
 
   // FlashFile_FileRef.
   virtual int32_t OpenFileRef(PP_Instance instance,

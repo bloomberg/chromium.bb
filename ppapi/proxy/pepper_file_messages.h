@@ -76,3 +76,7 @@ IPC_SYNC_MESSAGE_CONTROL1_2(PepperFileMsg_GetDirContents,
                             ppapi::DirContents, /* contents */
                             base::PlatformFileError /* error_code */)
 
+// Create a temporary file.
+IPC_SYNC_MESSAGE_CONTROL0_2(PepperFileMsg_CreateTemporaryFile,
+                            base::PlatformFileError /* error_code */,
+                            IPC::PlatformFileForTransit /* file */)
