@@ -709,6 +709,8 @@ void GDataFileSystem::CheckForUpdates() {
 void GDataFileSystem::OnUpdateChecked(ContentOrigin initial_origin,
                                       base::PlatformFileError error,
                                       GDataEntry* /* entry */) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   if (error != base::PLATFORM_FILE_OK) {
     base::AutoLock lock(lock_);
     root_->set_origin(initial_origin);
@@ -755,14 +757,18 @@ GDataFileSystem::~GDataFileSystem() {
 }
 
 void GDataFileSystem::AddObserver(Observer* observer) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observers_.AddObserver(observer);
 }
 
 void GDataFileSystem::RemoveObserver(Observer* observer) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observers_.RemoveObserver(observer);
 }
 
 void GDataFileSystem::StartUpdates() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   DCHECK(!update_timer_.IsRunning());
   update_timer_.Start(FROM_HERE,
                       base::TimeDelta::FromSeconds(
@@ -772,6 +778,7 @@ void GDataFileSystem::StartUpdates() {
 }
 
 void GDataFileSystem::StopUpdates() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(update_timer_.IsRunning());
   update_timer_.Stop();
 }
@@ -997,6 +1004,8 @@ void GDataFileSystem::LoadFeedFromServer(
 
 void GDataFileSystem::OnFeedFromServerLoaded(GetDocumentsParams* params,
                                              base::PlatformFileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   if (error != base::PLATFORM_FILE_OK) {
     if (!params->callback.is_null())
       params->callback.Run(error, NULL);
@@ -1155,7 +1164,9 @@ void GDataFileSystem::OnTransferCompleted(
     const FileOperationCallback& callback,
     base::PlatformFileError error,
     UploadFileInfo* upload_file_info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(upload_file_info);
+
   if (error == base::PLATFORM_FILE_OK && upload_file_info->entry.get()) {
     AddUploadedFile(upload_file_info->gdata_path.DirName(),
                     upload_file_info->entry.get(),
@@ -1917,6 +1928,8 @@ void GDataFileSystem::OnGetDocumentEntry(const FilePath& cache_file_path,
                                          const GetFileFromCacheParams& params,
                                          GDataErrorCode status,
                                          scoped_ptr<base::Value> data) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   base::PlatformFileError error = GDataToPlatformError(status);
 
   scoped_ptr<GDataEntry> fresh_entry;
@@ -2377,6 +2390,7 @@ void GDataFileSystem::OnSetPinStateCompleted(
     base::PlatformFileError error,
     const std::string& resource_id,
     const std::string& md5) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   callback.Run(error);
 }
 
@@ -2384,6 +2398,7 @@ void GDataFileSystem::OnGetAvailableSpace(
     const GetAvailableSpaceCallback& callback,
     GDataErrorCode status,
     scoped_ptr<base::Value> data) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   base::PlatformFileError error = GDataToPlatformError(status);
   if (error != base::PLATFORM_FILE_OK) {
@@ -2408,6 +2423,7 @@ void GDataFileSystem::OnCreateDirectoryCompleted(
     const CreateDirectoryParams& params,
     GDataErrorCode status,
     scoped_ptr<base::Value> data) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   base::PlatformFileError error = GDataToPlatformError(status);
   if (error != base::PLATFORM_FILE_OK) {
@@ -2450,6 +2466,8 @@ void GDataFileSystem::OnCreateDirectoryCompleted(
 void GDataFileSystem::OnSearch(const ReadDirectoryCallback& callback,
                                GetDocumentsParams* params,
                                base::PlatformFileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   if (error != base::PLATFORM_FILE_OK) {
     if (!callback.is_null())
       callback.Run(error, scoped_ptr<GDataDirectoryProto>());
@@ -2515,6 +2533,8 @@ void GDataFileSystem::SearchAsync(const std::string& search_query,
 void GDataFileSystem::SearchAsyncOnUIThread(
     const std::string& search_query,
     const ReadDirectoryCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   scoped_ptr<std::vector<DocumentFeed*> > feed_list(
       new std::vector<DocumentFeed*>);
 
@@ -2709,6 +2729,8 @@ void GDataFileSystem::OnProtoLoaded(LoadRootFeedParams* params) {
 }
 
 void GDataFileSystem::SaveFileSystemAsProto() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   DVLOG(1) << "SaveFileSystemAsProto";
   base::AutoLock lock(lock_);  // To access root_.
 
@@ -2733,6 +2755,7 @@ void GDataFileSystem::SaveFileSystemAsProto() {
 void GDataFileSystem::OnFilePathUpdated(const FileOperationCallback& callback,
                                         base::PlatformFileError error,
                                         const FilePath& file_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!callback.is_null())
     callback.Run(error);
 }
@@ -2743,6 +2766,8 @@ void GDataFileSystem::OnRenameResourceCompleted(
     const FilePathUpdateCallback& callback,
     GDataErrorCode status,
     const GURL& document_url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   FilePath updated_file_path;
   base::PlatformFileError error = GDataToPlatformError(status);
   if (error == base::PLATFORM_FILE_OK)
@@ -2756,6 +2781,8 @@ void GDataFileSystem::OnCopyDocumentCompleted(
     const FilePathUpdateCallback& callback,
     GDataErrorCode status,
     scoped_ptr<base::Value> data) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   base::PlatformFileError error = GDataToPlatformError(status);
   if (error != base::PLATFORM_FILE_OK) {
     if (!callback.is_null())
@@ -2800,6 +2827,8 @@ void GDataFileSystem::OnAddEntryToDirectoryCompleted(
     const FilePath& dir_path,
     GDataErrorCode status,
     const GURL& document_url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   base::PlatformFileError error = GDataToPlatformError(status);
   if (error == base::PLATFORM_FILE_OK)
     error = AddEntryToDirectoryOnFilesystem(file_path, dir_path);
@@ -2814,6 +2843,8 @@ void GDataFileSystem::OnRemoveEntryFromDirectoryCompleted(
     const FilePath& dir_path,
     GDataErrorCode status,
     const GURL& document_url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   FilePath updated_file_path = file_path;
   base::PlatformFileError error = GDataToPlatformError(status);
   if (error == base::PLATFORM_FILE_OK)
@@ -2829,6 +2860,8 @@ void GDataFileSystem::OnRemovedDocument(
     const FilePath& file_path,
     GDataErrorCode status,
     const GURL& document_url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   base::PlatformFileError error = GDataToPlatformError(status);
 
   if (error == base::PLATFORM_FILE_OK)
@@ -2944,6 +2977,7 @@ void GDataFileSystem::OnFileDownloadedAndSpaceChecked(
 void GDataFileSystem::OnDownloadStoredToCache(base::PlatformFileError error,
                                               const std::string& resource_id,
                                               const std::string& md5) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Nothing much to do here for now.
 }
 
@@ -2951,6 +2985,7 @@ base::PlatformFileError GDataFileSystem::RenameFileOnFilesystem(
     const FilePath& file_path,
     const FilePath::StringType& new_name,
     FilePath* updated_file_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(updated_file_path);
 
   base::AutoLock lock(lock_);
@@ -2978,6 +3013,8 @@ base::PlatformFileError GDataFileSystem::RenameFileOnFilesystem(
 
 base::PlatformFileError GDataFileSystem::AddEntryToDirectoryOnFilesystem(
     const FilePath& file_path, const FilePath& dir_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   base::AutoLock lock(lock_);
   GDataEntry* entry = GetGDataEntryByPath(file_path);
   if (!entry)
@@ -3003,6 +3040,7 @@ base::PlatformFileError GDataFileSystem::AddEntryToDirectoryOnFilesystem(
 base::PlatformFileError GDataFileSystem::RemoveEntryFromDirectoryOnFilesystem(
     const FilePath& file_path, const FilePath& dir_path,
     FilePath* updated_file_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(updated_file_path);
 
   base::AutoLock lock(lock_);
@@ -3030,6 +3068,7 @@ base::PlatformFileError GDataFileSystem::RemoveEntryFromDirectoryOnFilesystem(
 
 base::PlatformFileError GDataFileSystem::RemoveEntryFromFileSystem(
     const FilePath& file_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   std::string resource_id;
   base::PlatformFileError error = RemoveEntryFromGData(file_path, &resource_id);
@@ -3048,6 +3087,7 @@ base::PlatformFileError GDataFileSystem::UpdateFromFeed(
     ContentOrigin origin,
     int start_changestamp,
     int root_feed_changestamp) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DVLOG(1) << "Updating directory with a feed";
 
   bool is_delta_feed = start_changestamp != 0;
@@ -3094,6 +3134,8 @@ void GDataFileSystem::ApplyFeedFromFileUrlMap(
     bool is_delta_feed,
     int feed_changestamp,
     FileResourceIdMap* file_map) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   lock_.AssertAcquired();
   // Don't send directory content change notification while performing
   // the initial content retrieval.
@@ -3198,6 +3240,7 @@ GDataDirectory* GDataFileSystem::FindDirectoryForNewEntry(
     GDataEntry* new_entry,
     const FileResourceIdMap& file_map,
     GDataRootDirectory* orphaned_entries_dir) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   GDataDirectory* dir = NULL;
   // Added file.
   const std::string& parent_id = new_entry->parent_resource_id();
@@ -3232,6 +3275,7 @@ base::PlatformFileError GDataFileSystem::FeedToFileResourceMap(
     int* feed_changestamp,
     int* num_regular_files,
     int* num_hosted_documents) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   lock_.AssertAcquired();
 
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
@@ -3346,6 +3390,8 @@ void GDataFileSystem::NotifyDocumentFeedFetched(int num_accumulated_entries) {
 
 base::PlatformFileError GDataFileSystem::AddNewDirectory(
     const FilePath& directory_path, base::Value* entry_value) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   if (!entry_value)
     return base::PLATFORM_FILE_ERROR_FAILED;
 
@@ -3391,6 +3437,8 @@ GDataFileSystem::FindFirstMissingParentDirectory(
     const FilePath& directory_path,
     GURL* last_dir_content_url,
     FilePath* first_missing_parent_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   // Let's find which how deep is the existing directory structure and
   // get the first element that's missing.
   std::vector<FilePath::StringType> path_parts;
@@ -3420,6 +3468,8 @@ GDataFileSystem::FindFirstMissingParentDirectory(
 
 GURL GDataFileSystem::GetUploadUrlForDirectory(
     const FilePath& destination_directory) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   // Find directory element within the cached file system snapshot.
   base::AutoLock lock(lock_);
   GDataEntry* entry = GetGDataEntryByPath(destination_directory);
@@ -3429,6 +3479,8 @@ GURL GDataFileSystem::GetUploadUrlForDirectory(
 
 base::PlatformFileError GDataFileSystem::RemoveEntryFromGData(
     const FilePath& file_path, std::string* resource_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   resource_id->clear();
 
   // We need to lock here as well (despite FindEntryByPath lock) since
@@ -3502,6 +3554,8 @@ void GDataFileSystem::AddUploadedFile(
 void GDataFileSystem::Observe(int type,
                               const content::NotificationSource& source,
                               const content::NotificationDetails& details) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   if (type == chrome::NOTIFICATION_PREF_CHANGED) {
     PrefService* pref_service = profile_->GetPrefs();
     std::string* pref_name = content::Details<std::string>(details).ptr();
@@ -3515,11 +3569,15 @@ void GDataFileSystem::Observe(int type,
 }
 
 bool GDataFileSystem::hide_hosted_documents() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::IO));
   base::AutoLock lock(lock_);
   return hide_hosted_docs_;
 }
 
 void GDataFileSystem::SetHideHostedDocuments(bool hide) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   FilePath root_path;
   {
     base::AutoLock lock(lock_);
@@ -3651,6 +3709,7 @@ void GDataFileSystem::RunTaskOnBlockingPool(const base::Closure& task) {
 void GDataFileSystem::PostBlockingPoolSequencedTask(
     const tracked_objects::Location& from_here,
     const base::Closure& task) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   PostBlockingPoolSequencedTaskAndReply(
       from_here,
       task,
@@ -3661,6 +3720,8 @@ void GDataFileSystem::PostBlockingPoolSequencedTaskAndReply(
     const tracked_objects::Location& from_here,
     const base::Closure& request_task,
     const base::Closure& reply_task) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   {
     // Note that we cannot use |lock_| as lock_ can be held before this
     // function is called (i.e. InitializeCacheOnBlockingPool does).
@@ -3691,6 +3752,8 @@ void GDataFileSystem::PostBlockingPoolSequencedTaskAndReply(
 }
 
 void GDataFileSystem::InitializePreferenceObserver() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   pref_registrar_.reset(new PrefChangeRegistrar());
   pref_registrar_->Init(profile_->GetPrefs());
   pref_registrar_->Add(prefs::kDisableGDataHostedFiles, this);

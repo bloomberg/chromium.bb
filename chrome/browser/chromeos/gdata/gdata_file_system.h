@@ -710,7 +710,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // file.
   // Return PLATFORM_FILE_OK if successful.
   base::PlatformFileError RemoveEntryFromGData(const FilePath& file_path,
-                                              std::string* resource_id);
+                                               std::string* resource_id);
 
   // Callback for handling response from |GDataDocumentsService::GetDocuments|.
   // Invokes |callback| when done.
