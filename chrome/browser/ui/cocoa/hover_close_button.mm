@@ -50,6 +50,12 @@ NSString* const kFadeOutValueKeyPath = @"fadeOutValue";
                      xPath:(NSBezierPath*)xPath
                 circlePath:(NSBezierPath*)circlePath
                 hoverState:(HoverState)hoverState;
+
++ (NSBitmapImageRep*)imageRepForBounds:(NSRect)bounds
+                                 scale:(float)scale
+                                 xPath:(NSBezierPath*)xPath
+                            circlePath:(NSBezierPath*)circlePath
+                            hoverState:(HoverState)hoverState;
 @end
 
 @implementation HoverCloseButton
@@ -248,21 +254,39 @@ NSString* const kFadeOutValueKeyPath = @"fadeOutValue";
                      xPath:(NSBezierPath*)xPath
                 circlePath:(NSBezierPath*)circlePath
                 hoverState:(HoverState)hoverState {
+  NSImage* image = [[[NSImage alloc] initWithSize:bounds.size] autorelease];
+  for (int scale = 1; scale <= 2; ++scale) {
+    [image addRepresentation:
+        [self imageRepForBounds:bounds
+                          scale:scale
+                          xPath:xPath
+                     circlePath:circlePath
+                     hoverState:hoverState]];
+  }
+  return image;
+}
+
++ (NSBitmapImageRep*)imageRepForBounds:(NSRect)bounds
+                                 scale:(float)scale
+                                 xPath:(NSBezierPath*)xPath
+                            circlePath:(NSBezierPath*)circlePath
+                            hoverState:(HoverState)hoverState {
   gfx::ScopedNSGraphicsContextSaveGState graphicsStateSaver;
 
-  scoped_nsobject<NSBitmapImageRep> imageRep(
-      [[NSBitmapImageRep alloc]
+  NSBitmapImageRep* imageRep =
+      [[[NSBitmapImageRep alloc]
         initWithBitmapDataPlanes:NULL
-                      pixelsWide:NSWidth(bounds)
-                      pixelsHigh:NSHeight(bounds)
+                      pixelsWide:NSWidth(bounds) * scale
+                      pixelsHigh:NSHeight(bounds) * scale
                    bitsPerSample:8
                  samplesPerPixel:4
                         hasAlpha:YES
                         isPlanar:NO
                   colorSpaceName:NSCalibratedRGBColorSpace
                     bitmapFormat:0
-                     bytesPerRow:kButtonWidth * 4
-                    bitsPerPixel:32]);
+                     bytesPerRow:0
+                    bitsPerPixel:0] autorelease];
+  [imageRep setSize:bounds.size];
   NSGraphicsContext* gc =
       [NSGraphicsContext graphicsContextWithBitmapImageRep:imageRep];
   [NSGraphicsContext setCurrentContext:gc];
@@ -291,11 +315,9 @@ NSString* const kFadeOutValueKeyPath = @"fadeOutValue";
       kXShadowCircleAlpha : kXShadowAlpha;
   [shadow setShadowColor:[NSColor colorWithCalibratedWhite:0.15 alpha:alpha]];
   [shadow setShadowOffset:NSMakeSize(0.0, 0.0)];
-  [shadow setShadowBlurRadius:2.5];
-  [xPath fillWithInnerShadow:shadow];
-  NSImage* image = [[[NSImage alloc] initWithSize:bounds.size] autorelease];
-  [image addRepresentation:imageRep];
-  return image;
+  [shadow setShadowBlurRadius:2.75 * scale];
+  [xPath fillWithInnerShadow:shadow scale:scale];
+  return imageRep;
 }
 
 @end
