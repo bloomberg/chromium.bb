@@ -179,9 +179,6 @@ class LocalProcessWindowFinder : public BaseWindowFinder {
 // static
 DockInfo DockInfo::GetDockInfoAtPoint(const gfx::Point& screen_point,
                                       const std::set<GtkWidget*>& ignore) {
-  if (factory_)
-    return factory_->GetDockInfoAtPoint(screen_point, ignore);
-
   NOTIMPLEMENTED();
   return DockInfo();
 }
@@ -190,9 +187,6 @@ DockInfo DockInfo::GetDockInfoAtPoint(const gfx::Point& screen_point,
 GtkWindow* DockInfo::GetLocalProcessWindowAtPoint(
     const gfx::Point& screen_point,
     const std::set<GtkWidget*>& ignore) {
-  if (factory_)
-    return factory_->GetLocalProcessWindowAtPoint(screen_point, ignore);
-
   XID xid =
       LocalProcessWindowFinder::GetProcessWindowAtPoint(screen_point, ignore);
   return BrowserWindowGtk::GetBrowserWindowForXID(xid);

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,9 +22,6 @@ const int kPopupWidth = 70;
 const int kPopupHeight = 70;
 
 }  // namespace
-
-// static
-DockInfo::Factory* DockInfo::factory_ = NULL;
 
 // static
 bool DockInfo::IsCloseToPoint(const gfx::Point& screen_loc,
