@@ -11,6 +11,7 @@
 #include "ash/launcher/launcher_button.h"
 #include "ash/launcher/launcher_icon_observer.h"
 #include "ash/launcher/launcher_model.h"
+#include "ash/launcher/launcher_tooltip_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/launcher_view_test_api.h"
@@ -255,6 +256,14 @@ class LauncherViewTest : public aura::test::AuraTestBase {
     return button;
   }
 
+  views::View* GetTooltipAnchorView() {
+    return launcher_view_->tooltip_manager()->anchor_;
+  }
+
+  void ShowTooltip() {
+    launcher_view_->tooltip_manager()->ShowInternal();
+  }
+
   MockLauncherDelegate delegate_;
   scoped_ptr<LauncherModel> model_;
   scoped_ptr<internal::LauncherView> launcher_view_;
@@ -470,6 +479,94 @@ TEST_F(LauncherViewTest, LauncherItemStatusPlatformApp) {
   item.status = ash::STATUS_IS_PENDING;
   model_->Set(index, item);
   ASSERT_EQ(internal::LauncherButton::STATE_PENDING, button->state());
+}
+
+TEST_F(LauncherViewTest, LauncherTooltipTest) {
+  ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
+            test_api_->GetButtonCount());
+
+  // Prepare some items to the launcher.
+  LauncherID app_button_id = AddAppShortcut();
+  LauncherID tab_button_id = AddTabbedBrowser();
+
+  internal::LauncherButton* app_button = GetButtonByID(app_button_id);
+  internal::LauncherButton* tab_button = GetButtonByID(tab_button_id);
+
+  internal::LauncherButtonHost* button_host = launcher_view_.get();
+  internal::LauncherTooltipManager* tooltip_manager =
+      launcher_view_->tooltip_manager();
+
+  button_host->MouseEnteredButton(app_button);
+  // There's a delay to show the tooltip, so it's not visible yet.
+  EXPECT_FALSE(tooltip_manager->IsVisible());
+  EXPECT_EQ(app_button, GetTooltipAnchorView());
+
+  ShowTooltip();
+  EXPECT_TRUE(tooltip_manager->IsVisible());
+
+  // Once it's visible, it keeps visibility and is pointing to the same
+  // item.
+  button_host->MouseExitedButton(app_button);
+  EXPECT_TRUE(tooltip_manager->IsVisible());
+  EXPECT_EQ(app_button, GetTooltipAnchorView());
+
+  // When entered to another item, it switches to the new item.  There is no
+  // delay for the visibility.
+  button_host->MouseEnteredButton(tab_button);
+  EXPECT_TRUE(tooltip_manager->IsVisible());
+  EXPECT_EQ(tab_button, GetTooltipAnchorView());
+
+  button_host->MouseExitedButton(tab_button);
+  tooltip_manager->Close();
+
+  // Next time: enter app_button -> move immediately to tab_button.
+  button_host->MouseEnteredButton(app_button);
+  button_host->MouseExitedButton(app_button);
+  button_host->MouseEnteredButton(tab_button);
+  EXPECT_FALSE(tooltip_manager->IsVisible());
+  EXPECT_EQ(tab_button, GetTooltipAnchorView());
+}
+
+TEST_F(LauncherViewTest, ShouldHideTooltipTest) {
+  LauncherID app_button_id = AddAppShortcut();
+  LauncherID tab_button_id = AddTabbedBrowser();
+
+  // The tooltip shouldn't hide if the mouse is on normal buttons.
+  for (int i = 0; i < test_api_->GetButtonCount() - 1; i++) {
+    internal::LauncherButton* button = test_api_->GetButton(i);
+    EXPECT_FALSE(launcher_view_->ShouldHideTooltip(
+        button->GetMirroredBounds().CenterPoint()))
+        << "LauncherView tries to hide on button " << i;
+  }
+
+  // The tooltip should hide on the app-list button.
+  views::View* app_list_button = launcher_view_->GetAppListButtonView();
+  EXPECT_TRUE(launcher_view_->ShouldHideTooltip(
+      app_list_button->GetMirroredBounds().CenterPoint()));
+
+  // The tooltip shouldn't hide if the mouse is in the gap between two buttons.
+  gfx::Rect app_button_rect = GetButtonByID(app_button_id)->GetMirroredBounds();
+  gfx::Rect tab_button_rect = GetButtonByID(tab_button_id)->GetMirroredBounds();
+  ASSERT_FALSE(app_button_rect.Intersects(tab_button_rect));
+  EXPECT_FALSE(launcher_view_->ShouldHideTooltip(
+      app_button_rect.Union(tab_button_rect).CenterPoint()));
+
+  // The tooltip should hide if it's outside of all buttons.
+  gfx::Rect all_area;
+  for (int i = 0; i < test_api_->GetButtonCount() - 1; i++) {
+    all_area = all_area.Union(test_api_->GetButton(i)->GetMirroredBounds());
+  }
+  EXPECT_FALSE(launcher_view_->ShouldHideTooltip(all_area.origin()));
+  EXPECT_FALSE(launcher_view_->ShouldHideTooltip(
+      gfx::Point(all_area.right() - 1, all_area.bottom() - 1)));
+  EXPECT_TRUE(launcher_view_->ShouldHideTooltip(
+      gfx::Point(all_area.right(), all_area.y())));
+  EXPECT_TRUE(launcher_view_->ShouldHideTooltip(
+      gfx::Point(all_area.x() - 1, all_area.y())));
+  EXPECT_TRUE(launcher_view_->ShouldHideTooltip(
+      gfx::Point(all_area.x(), all_area.y() - 1 )));
+  EXPECT_TRUE(launcher_view_->ShouldHideTooltip(
+      gfx::Point(all_area.x(), all_area.bottom())));
 }
 
 }  // namespace test

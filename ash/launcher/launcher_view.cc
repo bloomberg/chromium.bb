@@ -10,6 +10,7 @@
 #include "ash/launcher/launcher_delegate.h"
 #include "ash/launcher/launcher_icon_observer.h"
 #include "ash/launcher/launcher_model.h"
+#include "ash/launcher/launcher_tooltip_manager.h"
 #include "ash/launcher/tabbed_launcher_button.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -265,7 +266,7 @@ LauncherView::LauncherView(LauncherModel* model, LauncherDelegate* delegate)
       view_model_(new views::ViewModel),
       last_visible_index_(-1),
       overflow_button_(NULL),
-      dragging_(NULL),
+      dragging_(false),
       drag_view_(NULL),
       drag_offset_(0),
       start_drag_index_(-1),
@@ -275,6 +276,7 @@ LauncherView::LauncherView(LauncherModel* model, LauncherDelegate* delegate)
   bounds_animator_.reset(new views::BoundsAnimator(this));
   set_context_menu_controller(this);
   focus_search_.reset(new LauncherFocusSearch(view_model_.get()));
+  tooltip_.reset(new LauncherTooltipManager(alignment_));
 }
 
 LauncherView::~LauncherView() {
@@ -320,6 +322,7 @@ void LauncherView::SetAlignment(ShelfAlignment alignment) {
   alignment_ = alignment;
   UpdateFirstButtonPadding();
   LayoutToIdealBounds();
+  tooltip_->SetArrowLocation(alignment_);
 }
 
 gfx::Rect LauncherView::GetIdealBoundsOfItemIcon(LauncherID id) {
@@ -509,8 +512,6 @@ views::View* LauncherView::CreateViewForItem(const LauncherItem& item) {
           rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_APPLIST_PUSHED).
               ToImageSkia());
       button->SetAccessibleName(
-          l10n_util::GetStringUTF16(IDS_AURA_APP_LIST_TITLE));
-      button->SetTooltipText(
           l10n_util::GetStringUTF16(IDS_AURA_APP_LIST_TITLE));
       view = button;
       break;
@@ -725,6 +726,22 @@ void LauncherView::UpdateFirstButtonPadding() {
   }
 }
 
+bool LauncherView::ShouldHideTooltip(const gfx::Point& cursor_location) {
+  views::View* app_list_view = GetAppListButtonView();
+  gfx::Rect active_bounds;
+
+  for (int i = 0; i < child_count(); ++i) {
+    views::View* child = child_at(i);
+    if (child == overflow_button_ || child == app_list_view)
+      continue;
+
+    gfx::Rect child_bounds = child->GetMirroredBounds();
+    active_bounds = active_bounds.Union(child_bounds);
+  }
+
+  return !active_bounds.Contains(cursor_location);
+}
+
 int LauncherView::CancelDrag(int modified_index) {
   if (!drag_view_)
     return modified_index;
@@ -775,6 +792,20 @@ void LauncherView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 
 views::FocusTraversable* LauncherView::GetPaneFocusTraversable() {
   return this;
+}
+
+void LauncherView::OnMouseMoved(const views::MouseEvent& event) {
+  if (ShouldHideTooltip(event.location()) && tooltip_->IsVisible())
+    tooltip_->Close();
+}
+
+void LauncherView::OnMouseExited(const views::MouseEvent& event) {
+  // Mouse exit events are fired for entering to a launcher button from
+  // the launcher view, so it checks the location by ShouldHideTooltip().
+  gfx::Point point = event.location();
+  views::View::ConvertPointToView(parent(), this, &point);
+  if (ShouldHideTooltip(point) && tooltip_->IsVisible())
+    tooltip_->Close();
 }
 
 void LauncherView::LauncherItemAdded(int model_index) {
@@ -888,6 +919,7 @@ void LauncherView::LauncherItemMoved(int start_index, int target_index) {
 
 void LauncherView::MousePressedOnButton(views::View* view,
                                         const views::MouseEvent& event) {
+  tooltip_->Close();
   int index = view_model_->GetIndexOfView(view);
   if (index == -1 ||
       view_model_->view_size() <= 1 ||
@@ -921,7 +953,23 @@ void LauncherView::MouseReleasedOnButton(views::View* view,
   }
 }
 
+void LauncherView::MouseMovedOverButton(views::View* view) {
+  if (!tooltip_->IsVisible())
+    tooltip_->ResetTimer();
+}
+
+void LauncherView::MouseEnteredButton(views::View* view) {
+  if (tooltip_->IsVisible()) {
+    tooltip_->Close();
+    tooltip_->ShowImmediately(view, GetAccessibleName(view));
+  } else {
+    tooltip_->ShowDelayed(view, GetAccessibleName(view));
+  }
+}
+
 void LauncherView::MouseExitedButton(views::View* view) {
+  if (!tooltip_->IsVisible())
+    tooltip_->StopTimer();
 }
 
 ShelfAlignment LauncherView::GetShelfAlignment() const {

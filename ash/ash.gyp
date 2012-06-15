@@ -87,6 +87,8 @@
         'launcher/launcher_model_observer.h',
         'launcher/launcher_navigator.cc',
         'launcher/launcher_navigator.h',
+        'launcher/launcher_tooltip_manager.cc',
+        'launcher/launcher_tooltip_manager.h',
         'launcher/launcher_types.cc',
         'launcher/launcher_types.h',
         'launcher/launcher_view.cc',

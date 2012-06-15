@@ -86,12 +86,11 @@ class LauncherButton : public views::CustomButton {
   virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
   virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseMoved(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual void Layout() OVERRIDE;
-  virtual bool GetTooltipText(const gfx::Point& p,
-                              string16* tooltip) const OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
 

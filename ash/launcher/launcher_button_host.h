@@ -34,6 +34,12 @@ class ASH_EXPORT LauncherButtonHost {
   virtual void MouseReleasedOnButton(views::View* view,
                                      bool canceled) = 0;
 
+  // Invoked when the mouse moves on the item.
+  virtual void MouseMovedOverButton(views::View* view) = 0;
+
+  // Invoked when the mouse enters the item.
+  virtual void MouseEnteredButton(views::View* view) = 0;
+
   // Invoked when the mouse exits the item.
   virtual void MouseExitedButton(views::View* view) = 0;
 

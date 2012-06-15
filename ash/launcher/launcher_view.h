@@ -39,6 +39,7 @@ class LauncherModel;
 namespace internal {
 
 class LauncherButton;
+class LauncherTooltipManager;
 
 class ASH_EXPORT LauncherView : public views::View,
                                 public LauncherModelObserver,
@@ -49,6 +50,8 @@ class ASH_EXPORT LauncherView : public views::View,
  public:
   LauncherView(LauncherModel* model, LauncherDelegate* delegate);
   virtual ~LauncherView();
+
+  LauncherTooltipManager* tooltip_manager() { return tooltip_.get(); }
 
   void Init();
 
@@ -65,6 +68,12 @@ class ASH_EXPORT LauncherView : public views::View,
   bool IsShowingMenu() const;
 
   views::View* GetAppListButtonView() const;
+
+  // Returns true if the mouse cursor exits the area for launcher tooltip.
+  // There are thin gaps between launcher buttons but the tooltip shouldn't hide
+  // in the gaps, but the tooltip should hide if the mouse moved totally outside
+  // of the buttons area.
+  bool ShouldHideTooltip(const gfx::Point& cursor_location);
 
   // Overridden from FocusTraversable:
   virtual views::FocusSearch* GetFocusSearch() OVERRIDE;
@@ -146,6 +155,8 @@ class ASH_EXPORT LauncherView : public views::View,
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
   virtual FocusTraversable* GetPaneFocusTraversable() OVERRIDE;
+  virtual void OnMouseMoved(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
 
   // Overridden from LauncherModelObserver:
   virtual void LauncherItemAdded(int model_index) OVERRIDE;
@@ -161,6 +172,8 @@ class ASH_EXPORT LauncherView : public views::View,
                                     const views::MouseEvent& event) OVERRIDE;
   virtual void MouseReleasedOnButton(views::View* view,
                                      bool canceled) OVERRIDE;
+  virtual void MouseMovedOverButton(views::View* view) OVERRIDE;
+  virtual void MouseEnteredButton(views::View* view) OVERRIDE;
   virtual void MouseExitedButton(views::View* view) OVERRIDE;
   virtual ShelfAlignment GetShelfAlignment() const OVERRIDE;
   virtual string16 GetAccessibleName(const views::View* view) OVERRIDE;
@@ -190,6 +203,8 @@ class ASH_EXPORT LauncherView : public views::View,
   scoped_ptr<views::BoundsAnimator> bounds_animator_;
 
   views::ImageButton* overflow_button_;
+
+  scoped_ptr<LauncherTooltipManager> tooltip_;
 
   // Are we dragging? This is only set if the mouse is dragged far enough to
   // trigger a drag.

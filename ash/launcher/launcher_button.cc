@@ -348,10 +348,15 @@ bool LauncherButton::OnMouseDragged(const views::MouseEvent& event) {
   return true;
 }
 
+void LauncherButton::OnMouseMoved(const views::MouseEvent& event) {
+  CustomButton::OnMouseMoved(event);
+  host_->MouseMovedOverButton(this);
+}
+
 void LauncherButton::OnMouseEntered(const views::MouseEvent& event) {
   AddState(STATE_HOVERED);
   CustomButton::OnMouseEntered(event);
-  host_->MouseExitedButton(this);
+  host_->MouseEnteredButton(this);
 }
 
 void LauncherButton::OnMouseExited(const views::MouseEvent& event) {
@@ -389,13 +394,6 @@ void LauncherButton::Layout() {
 
   icon_view_->SetPosition(gfx::Point(image_x, image_y));
   bar_->SetBoundsRect(rect);
-}
-
-bool LauncherButton::GetTooltipText(
-    const gfx::Point& p, string16* tooltip) const {
-  DCHECK(tooltip);
-  tooltip->assign(host_->GetAccessibleName(this));
-  return true;
 }
 
 void LauncherButton::OnFocus() {
