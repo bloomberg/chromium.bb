@@ -26,9 +26,7 @@ namespace ppapi {
 class PepperFilePath;
 }
 
-// A message filter for Pepper-specific File I/O messages. Used on
-// renderer channels, this denys the renderer the trusted operations
-// permitted only by plugin processes.
+// A message filter for Pepper-specific File I/O messages.
 class PepperFileMessageFilter : public content::BrowserMessageFilter {
  public:
   explicit PepperFileMessageFilter(int child_id);
@@ -90,8 +88,7 @@ class PepperFileMessageFilter : public content::BrowserMessageFilter {
   DISALLOW_COPY_AND_ASSIGN(PepperFileMessageFilter);
 };
 
-// Message filter used with out-of-process pepper flash plugin channels that
-// provides the trusted operations permitted only by plugin processes.
+// Class for out-of-process plugins providing relaxed path validation.
 class PepperTrustedFileMessageFilter : public PepperFileMessageFilter {
  public:
   PepperTrustedFileMessageFilter(int child_id,
@@ -105,33 +102,10 @@ class PepperTrustedFileMessageFilter : public PepperFileMessageFilter {
   virtual FilePath ValidateAndConvertPepperFilePath(
       const ppapi::PepperFilePath& pepper_path, int flags) OVERRIDE;
 
-  // The path to the per-plugin directory under the per-profile data directory
-  // (includes module name).
+  // The path to the per-plugin directory under the per-profile data directory.
   FilePath plugin_data_directory_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperTrustedFileMessageFilter);
-};
-
-// Message filter used with in-process pepper flash plugins that provides the
-// renderer channels with the trusted operations permitted only by plugin
-// process. This should not be used as part of normal operations, and may
-// only be applied under the control of a command-line flag.
-class PepperUnsafeFileMessageFilter : public PepperFileMessageFilter {
- public:
-  PepperUnsafeFileMessageFilter(int child_id,
-                                const FilePath& profile_data_directory);
-
- protected:
-  virtual ~PepperUnsafeFileMessageFilter();
-
- private:
-  virtual FilePath ValidateAndConvertPepperFilePath(
-      const ppapi::PepperFilePath& pepper_path, int flags) OVERRIDE;
-
-  // The per-profile data directory (not including module name).
-  FilePath profile_data_directory_;
-
-  DISALLOW_COPY_AND_ASSIGN(PepperUnsafeFileMessageFilter);
 };
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_PEPPER_FILE_MESSAGE_FILTER_H_
