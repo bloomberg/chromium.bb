@@ -494,10 +494,10 @@ class Coverage(object):
         self.test_filters[testname] = gtest_filter
 
     # Add 'src/test/functional/pyauto_functional.py' to self.tests.
-    # This file with '-v --suite=CONTINUOUS' arguments runs all pyauto tests.
+    # This file with '-v --suite=CODE_COVERAGE' arguments runs all pyauto tests.
     self.tests += [['src/chrome/test/functional/pyauto_functional.py',
                     '-v',
-                    '--suite=CONTINUOUS']]
+                    '--suite=CODE_COVERAGE']]
 
     # Medium tests?
     # Not sure all of these work yet (e.g. page_cycler_tests)
