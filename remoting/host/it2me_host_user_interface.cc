@@ -107,7 +107,7 @@ void It2MeHostUserInterface::OnContinueWindowTimer() {
       FROM_HERE,
       base::Bind(&It2MeHostUserInterface::OnShutdownHostTimer,
                  timer_weak_factory_.GetWeakPtr()),
-      kContinueWindowHideTimeoutMs);
+      base::TimeDelta::FromMilliseconds(kContinueWindowHideTimeoutMs));
 }
 
 void It2MeHostUserInterface::OnShutdownHostTimer() {
@@ -138,7 +138,7 @@ void It2MeHostUserInterface::StartContinueWindowTimer(bool start) {
         FROM_HERE,
         base::Bind(&It2MeHostUserInterface::OnContinueWindowTimer,
                    timer_weak_factory_.GetWeakPtr()),
-        kContinueWindowShowTimeoutMs);
+        base::TimeDelta::FromMilliseconds(kContinueWindowShowTimeoutMs));
   }
 }
 
