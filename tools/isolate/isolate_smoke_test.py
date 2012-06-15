@@ -98,6 +98,29 @@ class IsolateBase(unittest.TestCase):
   def tearDown(self):
     shutil.rmtree(self.tempdir)
 
+  @staticmethod
+  def _isolate_dict_to_string(values):
+    buf = cStringIO.StringIO()
+    isolate.isolate_common.pretty_print(values, buf)
+    return buf.getvalue()
+
+  @classmethod
+  def _wrap_in_condition(cls, variables):
+    """Wraps a variables dict inside the current OS condition.
+
+    Returns the equivalent string.
+    """
+    return cls._isolate_dict_to_string(
+        {
+          'conditions': [
+            ['OS=="%s"' % isolate.isolate_common.get_flavor(), {
+              'variables': variables
+            }],
+          ],
+        })
+
+
+class IsolateModeBase(IsolateBase):
   def _expect_no_tree(self):
     self.assertFalse(os.path.exists(self.outdir))
 
@@ -174,8 +197,6 @@ class IsolateBase(unittest.TestCase):
   def _execute(self, mode, case, args, need_output):
     """Executes isolate.py."""
     self.assertEquals(
-        mode, self.mode(), 'Rename the test fixture to Isolate_%s' % mode)
-    self.assertEquals(
         case,
         self.case() + '.isolate',
         'Rename the test case to test_%s()' % case)
@@ -184,7 +205,7 @@ class IsolateBase(unittest.TestCase):
       '--result', self.result,
       '--outdir', self.outdir,
       self.filename(),
-      '--mode', self.mode(),
+      '--mode', mode,
     ]
     cmd.extend(args)
 
@@ -218,13 +239,6 @@ class IsolateBase(unittest.TestCase):
       self.assertEquals('', err)
     return out
 
-  def mode(self):
-    """Returns the execution mode corresponding to this test case."""
-    test_id = self.id().split('.')
-    self.assertEquals(3, len(test_id))
-    self.assertEquals('__main__', test_id[0])
-    return re.match('^Isolate_([a-z]+)$', test_id[1]).group(1)
-
   def case(self):
     """Returns the filename corresponding to this test case."""
     test_id = self.id().split('.')
@@ -242,6 +256,7 @@ class IsolateBase(unittest.TestCase):
 
 
 class Isolate(unittest.TestCase):
+  # Does not inherit from the other *Base classes.
   def test_help_modes(self):
     # Check coherency in the help and implemented modes.
     p = subprocess.Popen(
@@ -267,7 +282,7 @@ class Isolate(unittest.TestCase):
     )
     self.assertEquals(sorted(RELATIVE_CWD), files)
     self.assertEquals(sorted(DEPENDENCIES), files)
-    for mode in EXPECTED_MODES:
+    for mode in ('check', 'hashtable', 'remap', 'run', 'trace'):
       expected_cases = set('test_%s' % f for f in files)
       fixture_name = 'Isolate_%s' % mode
       fixture = getattr(sys.modules[__name__], fixture_name)
@@ -276,7 +291,7 @@ class Isolate(unittest.TestCase):
       self.assertFalse(missing, '%s.%s' % (fixture_name, missing))
 
 
-class Isolate_check(IsolateBase):
+class Isolate_check(IsolateModeBase):
   LEVEL = isolate.NO_INFO
 
   def test_fail(self):
@@ -319,7 +334,7 @@ class Isolate_check(IsolateBase):
         ['with_flag.py', 'gyp'], None, {u'FLAG': u'gyp'})
 
 
-class Isolate_hashtable(IsolateBase):
+class Isolate_hashtable(IsolateModeBase):
   LEVEL = isolate.WITH_HASH
 
   def _expected_hash_tree(self):
@@ -368,7 +383,7 @@ class Isolate_hashtable(IsolateBase):
         ['with_flag.py', 'gyp'], None, {u'FLAG': u'gyp'})
 
 
-class Isolate_remap(IsolateBase):
+class Isolate_remap(IsolateModeBase):
   LEVEL = isolate.STATS_ONLY
 
   def test_fail(self):
@@ -411,7 +426,7 @@ class Isolate_remap(IsolateBase):
         ['with_flag.py', 'gyp'], None, {u'FLAG': u'gyp'})
 
 
-class Isolate_run(IsolateBase):
+class Isolate_run(IsolateModeBase):
   LEVEL = isolate.STATS_ONLY
 
   def _expect_empty_tree(self):
@@ -466,16 +481,11 @@ class Isolate_run(IsolateBase):
         ['with_flag.py', 'run'], None, {u'FLAG': u'run'})
 
 
-class Isolate_trace(IsolateBase):
+class Isolate_trace(IsolateModeBase):
   LEVEL = isolate.STATS_ONLY
 
-  @staticmethod
-  def _to_string(values):
-    buf = cStringIO.StringIO()
-    isolate.isolate_common.pretty_print(values, buf)
-    return buf.getvalue()
-
   def test_fail(self):
+    # Even if the process returns non-zero, the trace will still be good.
     try:
       self._execute('trace', 'fail.isolate', ['-v'], True)
       self.fail()
@@ -484,16 +494,10 @@ class Isolate_trace(IsolateBase):
     self._expect_no_tree()
     self._expect_results(['fail.py'], None, None)
     # Even if it returns an error, isolate.py still prints the trace.
-    expected = self._to_string(
+    expected = self._wrap_in_condition(
         {
-          'conditions': [
-            ['OS=="%s"' % isolate.isolate_common.get_flavor(), {
-              'variables': {
-                isolate.isolate_common.KEY_TRACKED: [
-                  'fail.py',
-                ],
-              },
-            }],
+          isolate.isolate_common.KEY_TRACKED: [
+            'fail.py',
           ],
         })
     lines = out.strip().splitlines()
@@ -546,17 +550,11 @@ class Isolate_trace(IsolateBase):
     out = self._execute('trace', 'touch_root.isolate', [], True)
     self._expect_no_tree()
     self._expect_results(['touch_root.py'], None, None)
-    expected = self._to_string(
+    expected = self._wrap_in_condition(
         {
-          'conditions': [
-            ['OS=="%s"' % isolate.isolate_common.get_flavor(), {
-              'variables': {
-                isolate.isolate_common.KEY_TRACKED: [
-                  'touch_root.py',
-                  '../../isolate.py',
-                ],
-              },
-            }],
+          isolate.isolate_common.KEY_TRACKED: [
+            'touch_root.py',
+            '../../isolate.py',
           ],
         })
     self.assertEquals(expected, out)
@@ -567,21 +565,15 @@ class Isolate_trace(IsolateBase):
     self._expect_no_tree()
     self._expect_results(['with_flag.py', 'trace'], None, {u'FLAG': u'trace'})
     expected = {
-      'conditions': [
-        ['OS=="%s"' % isolate.isolate_common.get_flavor(), {
-          'variables': {
-            isolate.isolate_common.KEY_TRACKED: [
-              'with_flag.py',
-            ],
-            isolate.isolate_common.KEY_UNTRACKED: [
-              # Note that .isolate format mandates / and not os.path.sep.
-              'files1/',
-            ],
-          },
-        }],
+      isolate.isolate_common.KEY_TRACKED: [
+        'with_flag.py',
+      ],
+      isolate.isolate_common.KEY_UNTRACKED: [
+        # Note that .isolate format mandates / and not os.path.sep.
+        'files1/',
       ],
     }
-    self.assertEquals(self._to_string(expected), out)
+    self.assertEquals(self._wrap_in_condition(expected), out)
 
 
 class IsolateNoOutdir(IsolateBase):
@@ -600,19 +592,12 @@ class IsolateNoOutdir(IsolateBase):
           os.path.join(ROOT_DIR, 'isolate.py'),
           os.path.join(self.root, 'isolate.py'))
 
-  def _execute(self, mode, case, args, need_output):
+  def _execute(self, mode, args, need_output):
     """Executes isolate.py."""
-    self.assertEquals(
-        mode, self.mode(), 'Rename the test fixture to Isolate_%s' % mode)
-    self.assertEquals(
-        case,
-        self.case() + '.isolate',
-        'Rename the test case to test_%s()' % case)
     cmd = [
       sys.executable, os.path.join(ROOT_DIR, 'isolate.py'),
       '--result', self.result,
-      self.filename(),
-      '--mode', self.mode(),
+      '--mode', mode,
     ]
     cmd.extend(args)
 
@@ -649,19 +634,14 @@ class IsolateNoOutdir(IsolateBase):
     self.assertEquals('__main__', test_id[0])
     return re.match('^test_([a-z]+)$', test_id[2]).group(1)
 
-  def case(self):
-    """Returns the filename corresponding to this test case."""
-    return 'touch_root'
-
   def filename(self):
     """Returns the filename corresponding to this test case."""
-    filename = os.path.join(
-        self.root, 'data', 'isolate', self.case() + '.isolate')
+    filename = os.path.join(self.root, 'data', 'isolate', 'touch_root.isolate')
     self.assertTrue(os.path.isfile(filename), filename)
     return filename
 
   def test_check(self):
-    self._execute('check', 'touch_root.isolate', [], False)
+    self._execute('check', [self.filename()], False)
     files = [
       'isolate_smoke_test.results',
       'isolate_smoke_test.state',
@@ -672,7 +652,7 @@ class IsolateNoOutdir(IsolateBase):
     self.assertEquals(files, list_files_tree(self.tempdir))
 
   def test_hashtable(self):
-    self._execute('hashtable', 'touch_root.isolate', [], False)
+    self._execute('hashtable', [self.filename()], False)
     files = sorted([
       os.path.join(
           'hashtable', calc_sha1(os.path.join(ROOT_DIR, 'isolate.py'))),
@@ -689,7 +669,7 @@ class IsolateNoOutdir(IsolateBase):
     self.assertEquals(files, list_files_tree(self.tempdir))
 
   def test_remap(self):
-    self._execute('remap', 'touch_root.isolate', [], False)
+    self._execute('remap', [self.filename()], False)
     files = [
       'isolate_smoke_test.results',
       'isolate_smoke_test.state',
@@ -700,7 +680,7 @@ class IsolateNoOutdir(IsolateBase):
     self.assertEquals(files, list_files_tree(self.tempdir))
 
   def test_run(self):
-    self._execute('run', 'touch_root.isolate', [], False)
+    self._execute('run', [self.filename()], False)
     files = [
       'isolate_smoke_test.results',
       'isolate_smoke_test.state',
@@ -711,7 +691,7 @@ class IsolateNoOutdir(IsolateBase):
     self.assertEquals(files, list_files_tree(self.tempdir))
 
   def test_trace(self):
-    self._execute('trace', 'touch_root.isolate', [], False)
+    output = self._execute('trace', [self.filename()], True)
     files = [
       'isolate_smoke_test.results',
       'isolate_smoke_test.state',
@@ -719,6 +699,14 @@ class IsolateNoOutdir(IsolateBase):
       os.path.join('root', 'data', 'isolate', 'touch_root.py'),
       os.path.join('root', 'isolate.py'),
     ]
+    expected = {
+      isolate.isolate_common.KEY_TRACKED: [
+        'touch_root.py',
+        '../../isolate.py',
+      ],
+    }
+    self.assertEquals(self._wrap_in_condition(expected), output)
+
     # Clean the directory from the logs, which are OS-specific.
     isolate.trace_inputs.get_api().clean_trace(
         os.path.join(self.tempdir, 'isolate_smoke_test.results.log'))
