@@ -21,6 +21,7 @@ static const char* kSdpNameId = "0x0100";
 static const char* kSequenceNode = "sequence";
 static const char* kTextNode = "text";
 static const char* kUint8Node = "uint8";
+static const char* kUuidId = "0x0001";
 static const char* kUuidNode = "uuid";
 static const char* kValueAttribute = "value";
 
@@ -63,6 +64,10 @@ BluetoothServiceRecord::BluetoothServiceRecord(
         if (AdvanceToTag(&reader, kSequenceNode)) {
           ExtractChannels(&reader);
         }
+      } else if (id == kUuidId) {
+        if (AdvanceToTag(&reader, kSequenceNode)) {
+          ExtractUuid(&reader);
+        }
       }
     }
     // We don't care about anything else here, so find the closing tag
@@ -95,7 +100,21 @@ void BluetoothServiceRecord::ExtractChannels(XmlReader* reader) {
       }
     }
   } while (AdvanceToTag(reader, kSequenceNode) &&
-      reader->Depth() != start_depth);
+           reader->Depth() != start_depth);
+}
+
+void BluetoothServiceRecord::ExtractUuid(XmlReader* reader) {
+  const int start_depth = reader->Depth();
+  do {
+    if (reader->NodeName() == kSequenceNode) {
+      if (AdvanceToTag(reader, kUuidNode)) {
+        std::string uuid;
+        if (!reader->NodeAttribute(kValueAttribute, &uuid_))
+          uuid_.clear();
+      }
+    }
+  } while (AdvanceToTag(reader, kSequenceNode) &&
+           reader->Depth() != start_depth);
 }
 
 }  // namespace chromeos

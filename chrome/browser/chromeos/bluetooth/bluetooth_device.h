@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "chromeos/dbus/bluetooth_agent_service_provider.h"
@@ -22,6 +23,7 @@
 namespace chromeos {
 
 class BluetoothAdapter;
+class BluetoothServiceRecord;
 class BluetoothSocket;
 
 // The BluetoothDevice class represents a remote Bluetooth device, both
@@ -176,6 +178,17 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
   typedef std::vector<std::string> ServiceList;
   const ServiceList& GetServices() const { return service_uuids_; }
 
+  // The ErrorCallback is used for methods that can fail in which case it
+  // is called, in the success case the callback is simply not called.
+  typedef base::Callback<void()> ErrorCallback;
+
+  // Returns the services (as BluetoothServiceRecord objects) that this device
+  // provides.
+  typedef ScopedVector<BluetoothServiceRecord> ServiceRecordList;
+  typedef base::Callback<void(const ServiceRecordList&)> ServiceRecordsCallback;
+  void GetServiceRecords(const ServiceRecordsCallback& callback,
+                         const ErrorCallback& error_callback);
+
   // Indicates whether this device provides the given service.
   virtual bool ProvidesServiceWithUUID(const std::string& uuid) const;
 
@@ -200,10 +213,6 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
   bool ExpectingConfirmation() const {
     return !confirmation_callback_.is_null();
   }
-
-  // The ErrorCallback is used for methods that can fail in which case it
-  // is called, in the success case the callback is simply not called.
-  typedef base::Callback<void()> ErrorCallback;
 
   // The VoidResultCallback is used for methods that do not return any data, to
   // indicate that the action requested is complete.
@@ -322,6 +331,16 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
   void ConnectErrorCallback(const ErrorCallback& error_callback,
                             const std::string& error_name,
                             const std::string& error_message);
+
+  // Called by BluetoothAdapterClient when a call to DiscoverServices()
+  // completes.  |callback| and |error_callback| are the callbacks provided to
+  // GetServiceRecords.
+  void CollectServiceRecordsCallback(
+      const ServiceRecordsCallback& callback,
+      const ErrorCallback& error_callback,
+      const dbus::ObjectPath& device_path,
+      const BluetoothDeviceClient::ServiceMap& service_map,
+      bool success);
 
   // Called by BluetoothProperty when the call to Set() for the Trusted
   // property completes. |success| indicates whether or not the request

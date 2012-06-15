@@ -14,6 +14,7 @@
 namespace {
 
 static const char* kAddress = "01:02:03:04:05:06";
+static const char* kUuid = "00001101-0000-1000-8000-0123456789ab";
 
 }  // namespace
 
@@ -40,6 +41,7 @@ TEST_F(BluetoothServiceRecordTest, RfcommService) {
   EXPECT_EQ("Headset Audio Gateway", service_record.name());
   EXPECT_TRUE(service_record.SupportsRfcomm());
   EXPECT_EQ((uint8_t)12, service_record.rfcomm_channel());
+  EXPECT_EQ(kUuid, service_record.uuid());
 }
 
 }  // namespace chromeos

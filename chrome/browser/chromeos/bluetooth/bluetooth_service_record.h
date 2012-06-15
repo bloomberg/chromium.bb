@@ -30,6 +30,10 @@ class BluetoothServiceRecord {
    // The address of the BluetoothDevice providing this service.
    const std::string& address() const { return address_; }
 
+   // The UUID of the service.  This field may be empty if no UUID was
+   // specified in the service record.
+   const std::string& uuid() const { return uuid_; }
+
    // Indicates if this service supports RFCOMM communication.
    bool SupportsRfcomm() const { return supports_rfcomm_; }
 
@@ -39,9 +43,11 @@ class BluetoothServiceRecord {
 
  private:
   void ExtractChannels(XmlReader* reader);
+  void ExtractUuid(XmlReader* reader);
 
   std::string address_;
   std::string name_;
+  std::string uuid_;
 
   bool supports_rfcomm_;
   uint8_t rfcomm_channel_;

@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 #include "base/string_util.h"
@@ -199,6 +200,18 @@ bool BluetoothDevice::IsConnected() const {
   return connected_;
 }
 
+void BluetoothDevice::GetServiceRecords(const ServiceRecordsCallback& callback,
+                                        const ErrorCallback& error_callback) {
+  DBusThreadManager::Get()->GetBluetoothDeviceClient()->
+      DiscoverServices(
+          object_path_,
+          "",  // empty pattern to browse all services
+          base::Bind(&BluetoothDevice::CollectServiceRecordsCallback,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     callback,
+                     error_callback));
+}
+
 bool BluetoothDevice::ProvidesServiceWithUUID(const std::string& uuid) const {
   const BluetoothDevice::ServiceList& services = GetServices();
   for (BluetoothDevice::ServiceList::const_iterator j = services.begin();
@@ -335,6 +348,26 @@ void BluetoothDevice::ConnectErrorCallback(const ErrorCallback& error_callback,
   LOG(WARNING) << "Connection failed: " << address_
                << ": " << error_name << ": " << error_message;
   error_callback.Run();
+}
+
+void BluetoothDevice::CollectServiceRecordsCallback(
+    const ServiceRecordsCallback& callback,
+    const ErrorCallback& error_callback,
+    const dbus::ObjectPath& device_path,
+    const BluetoothDeviceClient::ServiceMap& service_map,
+    bool success) {
+  if (!success) {
+    error_callback.Run();
+    return;
+  }
+
+  ScopedVector<BluetoothServiceRecord> records;
+  for (BluetoothDeviceClient::ServiceMap::const_iterator i =
+      service_map.begin(); i != service_map.end(); ++i) {
+    records.push_back(
+        new BluetoothServiceRecord(address(), i->second));
+  }
+  callback.Run(records);
 }
 
 void BluetoothDevice::OnSetTrusted(const base::Closure& callback,
