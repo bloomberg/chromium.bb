@@ -4143,6 +4143,7 @@
         'browser/webdata/web_database_table.h',
         'browser/webdata/web_intents_table.cc',
         'browser/webdata/web_intents_table.h',
+        # These files are needed by page_cycler.cc
         'test/base/test_switches.cc',
         'test/base/test_switches.h',
         'test/base/chrome_process_util.cc',
