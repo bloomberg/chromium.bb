@@ -52,6 +52,10 @@ uint32_t Verifier::evaluateBPF(const std::vector<struct sock_filter>& program,
                                const struct arch_seccomp_data& data,
                                const char **err) {
   *err = NULL;
+  if (program.size() < 1 || program.size() >= SECCOMP_MAX_PROGRAM_SIZE) {
+    *err = "Invalid program length";
+    return 0;
+  }
   for (State state(program, data); !*err; ++state.ip) {
     if (state.ip >= program.size()) {
       *err = "Invalid instruction pointer in BPF program";

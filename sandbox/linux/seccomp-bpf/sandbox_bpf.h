@@ -74,6 +74,11 @@
 #define SYS_SECCOMP                   1
 #endif
 
+// Impose some reasonable maximum BPF program size. Realistically, the
+// kernel probably has much lower limits. But by limiting to less than
+// 30 bits, we can ease requirements on some of our data types.
+#define SECCOMP_MAX_PROGRAM_SIZE (1<<30)
+
 #if defined(__i386__)
 #define MIN_SYSCALL  0u
 #define MAX_SYSCALL  1024u
@@ -326,7 +331,14 @@ class Sandbox {
     uint32_t  from, to;
     ErrorCode err;
   };
+  struct FixUp {
+    FixUp(unsigned int a, bool j) :
+      jt(j), addr(a) { }
+    bool     jt:1;
+    unsigned addr:31;
+  };
   typedef std::vector<Range> Ranges;
+  typedef std::map<uint32_t, std::vector<FixUp> > RetInsns;
   typedef std::vector<struct sock_filter> Program;
   typedef std::vector<ErrorCode> Traps;
   typedef std::map<std::pair<TrapFnc, const void *>, int> TrapIds;
@@ -339,7 +351,10 @@ class Sandbox {
                                       EvaluateArguments argumentEvaluator);
   static void      installFilter();
   static void      findRanges(Ranges *ranges);
-  static void      rangesToBPF(Program *program, const Ranges& ranges);
+  static void      emitJumpStatements(Program *program, RetInsns *rets,
+                                      Ranges::const_iterator start,
+                                      Ranges::const_iterator stop);
+  static void      emitReturnStatements(Program *prog, const RetInsns& rets);
   static void      sigSys(int nr, siginfo_t *info, void *void_context);
   static intptr_t  bpfFailure(const struct arch_seccomp_data& data, void *aux);
   static int       getTrapId(TrapFnc fnc, const void *aux);

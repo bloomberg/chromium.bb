@@ -343,19 +343,18 @@ void Sandbox::installFilter() {
                        "Illegal mixing of system call ABIs")));
 #endif
 
-  // Evaluate all possible system calls and group their ErrorCodes into
-  // ranges of identical codes.
-  Ranges ranges;
-  findRanges(&ranges);
 
-  // Compile the system call ranges to an optimized BPF program.
-  rangesToBPF(program, ranges);
+  {
+    // Evaluate all possible system calls and group their ErrorCodes into
+    // ranges of identical codes.
+    Ranges ranges;
+    findRanges(&ranges);
 
-  // Unless there is a bug in the compiler, there is no execution path through
-  // the BPF program that falls through to the end.
-  program->push_back((struct sock_filter)
-    BPF_STMT(BPF_RET+BPF_K,
-             ErrorCode(bpfFailure, "Detected unfiltered system call")));
+    // Compile the system call ranges to an optimized BPF program
+    RetInsns rets;
+    emitJumpStatements(program, &rets, ranges.begin(), ranges.end());
+    emitReturnStatements(program, rets);
+  }
 
   // Make sure compilation resulted in BPF program that executes
   // correctly. Otherwise, there is an internal error in our BPF compiler.
@@ -435,37 +434,104 @@ void Sandbox::findRanges(Ranges *ranges) {
     Range(oldSysnum, std::numeric_limits<unsigned>::max(), oldErr));
 }
 
-void Sandbox::rangesToBPF(Program *program, const Ranges& ranges) {
-  // TODO: We currently search linearly through all ranges. An improved
-  //       algorithm should be doing a binary search.
-
-  // System call ranges must cover the entire number range.
-  if (ranges.empty() ||
-      ranges.begin()->from != 0 ||
-      ranges.back().to != std::numeric_limits<unsigned>::max()) {
-  rangeError:
+void Sandbox::emitJumpStatements(Program *program, RetInsns *rets,
+                                 Ranges::const_iterator start,
+                                 Ranges::const_iterator stop) {
+  // We convert the list of system call ranges into jump table that performs
+  // a binary search over the ranges.
+  // As a sanity check, we need to have at least two distinct ranges for us
+  // to be able to build a jump table.
+  if (stop - start <= 1) {
     die("Invalid set of system call ranges");
   }
-  uint32_t from = 0;
-  for (Ranges::const_iterator iter = ranges.begin();
-       iter != ranges.end();
-       ++iter) {
-    // Ranges must be contiguous and monotonically increasing.
-    if (iter->from > iter->to ||
-        iter->from != from) {
-      goto rangeError;
-    }
-    from = iter->to + 1;
 
-    // Emit BPF instructions matching this range.
-    if (iter->to != std::numeric_limits<unsigned>::max()) {
-      program->push_back((struct sock_filter)
-        BPF_JUMP(BPF_JMP+BPF_JGT+BPF_K, iter->to, 1, 0));
+  // Pick the range object that is located at the mid point of our list.
+  // We compare our system call number against the lowest valid system call
+  // number in this range object. If our number is lower, it is outside of
+  // this range object. If it is greater or equal, it might be inside.
+  Ranges::const_iterator mid = start + (stop - start)/2;
+  Program::size_type jmp = program->size();
+  if (jmp >= SECCOMP_MAX_PROGRAM_SIZE) {
+  compiler_err:
+    die("Internal compiler error; failed to compile jump table");
+  }
+  program->push_back((struct sock_filter)
+    BPF_JUMP(BPF_JMP+BPF_JGE+BPF_K, mid->from,
+             // Jump targets are place-holders that will be fixed up later.
+             0, 0));
+
+  // The comparison turned out to be false; i.e. our system call number is
+  // less than the range object at the mid point of the list.
+  if (mid - start == 1) {
+    // If we have narrowed things down to a single range object, we can
+    // return from the BPF filter program.
+    // Instead of emitting a BPF_RET statement, we want to coalesce all
+    // identical BPF_RET statements into a single instance. This results in
+    // a more efficient BPF program that uses less CPU cache.
+    // Since all branches in BPF programs have to be forward branches, we
+    // keep track of our current instruction pointer and then fix up the
+    // branch when we emit the BPF_RET statement in emitReturnStatements().
+    (*rets)[start->err].push_back(FixUp(jmp, false));
+  } else {
+    // Sub-divide the list of ranges and continue recursively.
+    emitJumpStatements(program, rets, start, mid);
+  }
+
+  // The comparison turned out to be true; i.e. our system call number is
+  // greater or equal to the range object at the mid point of the list.
+  if (stop - mid == 1) {
+    // We narrowed things down to a single range object. Remember instruction
+    // pointer and exit code, so that we can patch up the target of the jump
+    // instruction in emitReturnStatements().
+    (*rets)[mid->err].push_back(FixUp(jmp, true));
+  } else {
+    // We now know where the block of instructions for the "true" comparison
+    // starts. Patch up the jump target of the BPF_JMP instruction that we
+    // emitted earlier.
+    int distance = program->size() - jmp - 1;
+    if (distance < 0 || distance > 255) {
+      goto compiler_err;
+    }
+    (*program)[jmp].jt = distance;
+
+    // Sub-divide the list of ranges and continue recursively.
+    emitJumpStatements(program, rets, mid, stop);
+  }
+}
+
+void Sandbox::emitReturnStatements(Program *program, const RetInsns& rets) {
+  // Iterate over the list of distinct exit codes from our BPF filter
+  // program and emit the BPF_RET statements.
+  for (RetInsns::const_iterator ret_iter = rets.begin();
+       ret_iter != rets.end();
+       ++ret_iter) {
+    Program::size_type ip = program->size();
+    if (ip >= SECCOMP_MAX_PROGRAM_SIZE) {
+      die("Internal compiler error; failed to compile jump table");
     }
     program->push_back((struct sock_filter)
-      BPF_STMT(BPF_RET+BPF_K, iter->err));
+      BPF_STMT(BPF_RET+BPF_K, ret_iter->first));
+
+    // Iterate over the instruction pointers for the BPF_JMP instructions
+    // that need to be patched up.
+    for (std::vector<FixUp>::const_iterator insn_iter=ret_iter->second.begin();
+         insn_iter != ret_iter->second.end();
+         ++insn_iter) {
+      // Jumps are always relative and they are always forward.
+      int distance = ip - insn_iter->addr - 1;
+      if (distance < 0 || distance > 255) {
+        die("Internal compiler error; failed to compile jump table");
+      }
+
+      // Decide whether we need to patch up the "true" or the "false" jump
+      // target.
+      if (insn_iter->jt) {
+        (*program)[insn_iter->addr].jt = distance;
+      } else {
+        (*program)[insn_iter->addr].jf = distance;
+      }
+    }
   }
-  return;
 }
 
 void Sandbox::sigSys(int nr, siginfo_t *info, void *void_context) {
@@ -560,8 +626,8 @@ int Sandbox::getTrapId(Sandbox::TrapFnc fnc, const void *aux) {
     if (!traps_) {
       traps_ = new Traps();
     }
-    int id   = traps_->size() + 1;
-    if (id > static_cast<int>(SECCOMP_RET_DATA)) {
+    Traps::size_type id = traps_->size() + 1;
+    if (id > SECCOMP_RET_DATA) {
       // In practice, this is pretty much impossible to trigger, as there
       // are other kernel limitations that restrict overall BPF program sizes.
       die("Too many SECCOMP_RET_TRAP callback instances");
