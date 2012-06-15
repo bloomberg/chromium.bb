@@ -121,15 +121,18 @@ archived-pexe-scons-test() {
   echo "@@@BUILD_STEP archived_pexe_scons prereqs\
         [$arch] rev ${ARCHIVED_PEXE_SCONS_REV} @@@"
 
-  local build_dir="scons-out/nacl_irt_test-${arch}-pnacl-pexe-clang"
   local tarball="$(pwd)/scons-out/scons_pexes.tar.bz2"
-
-  rm -rf ${build_dir}
-  mkdir -p ${build_dir}
-
   ${UP_DOWN_LOAD} DownloadArchivedPexesScons ${ARCHIVED_PEXE_SCONS_REV} \
       ${tarball}
+
+  # Note: the directory cleaning has to happen before
+  #       "build-canned-prerequisites"
+  local build_dir="scons-out/nacl_irt_test-${arch}-pnacl-pexe-clang"
+  local build_dir_fast="scons-out/nacl_irt_test-${arch}-pnacl-fast-pexe-clang"
+  rm -rf ${build_dir} ${build_dir_fast}
+  mkdir -p ${build_dir} ${build_dir_fast}
   tar xfj ${tarball} --directory ${build_dir}
+  tar xfj ${tarball} --directory ${build_dir_fast}
 
   local flags="--mode=opt-host,nacl_irt_test \
                -j${PNACL_CONCURRENCY} \
