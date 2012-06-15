@@ -1102,7 +1102,7 @@ socket_data(int fd, uint32_t mask, void *data)
 	client_fd = wl_os_accept_cloexec(fd, (struct sockaddr *) &name,
 					 &length);
 	if (client_fd < 0)
-		wl_log("failed to accept, errno: %d\n", errno);
+		wl_log("failed to accept: %m\n");
 	else
 		wl_client_create(display, client_fd);
 

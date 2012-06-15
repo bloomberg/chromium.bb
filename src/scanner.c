@@ -1086,7 +1086,7 @@ int main(int argc, char *argv[])
 		buf = XML_GetBuffer(ctx.parser, XML_BUFFER_SIZE);
 		len = fread(buf, 1, XML_BUFFER_SIZE, stdin);
 		if (len < 0) {
-			fprintf(stderr, "fread: %s\n", strerror(errno));
+			fprintf(stderr, "fread: %m\n");
 			exit(EXIT_FAILURE);
 		}
 		XML_ParseBuffer(ctx.parser, len, len == 0);
