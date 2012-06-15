@@ -226,10 +226,6 @@
     "message": "You must enable remote connections if you want to use Chromoting to access this computer.",
     "description": "Message displayed when the current computer is not accepting remote connections, instructing the user how to enable them."
   },
-  "HOST_SETUP_CRASH_REPORTING_MESSAGE": {
-    "message": "Help us improve Chromoting by allowing us to collect usage statistics and crash reports.",
-    "description": "Message displayed next to the checkbox that the user can select to allow crash dump collection and reporting."
-  },
   "HOST_SETUP_DIALOG_DESCRIPTION": {
     "message": "To protect access to this computer, please choose a PIN. This PIN will be required when connecting from another location.",
     "description": "Explanatory text displayed when the user enables remote access or changes the PIN."
