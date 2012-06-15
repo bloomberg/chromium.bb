@@ -24,7 +24,7 @@ cr.define('oobe', function() {
   /**
    * Sets the |isAutoEnrollment| flag of the OAuthEnrollmentScreen class and
    * updates the UI.
-   * @param is_auto_enrollment {bool} the new value of the flag.
+   * @param {boolean} is_auto_enrollment the new value of the flag.
    */
   OAuthEnrollmentScreen.setIsAutoEnrollment = function(is_auto_enrollment) {
     $('oauth-enrollment').setIsAutoEnrollment(is_auto_enrollment);
@@ -32,7 +32,7 @@ cr.define('oobe', function() {
 
   /**
    * Switches between the different steps in the enrollment flow.
-   * @param screen {string} the steps to show, one of "signin", "working",
+   * @param {string} screen the steps to show, one of "signin", "working",
    * "error", "success".
    */
   OAuthEnrollmentScreen.showStep = function(step) {
@@ -41,8 +41,8 @@ cr.define('oobe', function() {
 
   /**
    * Sets an error message and switches to the error screen.
-   * @param message {string} the error message.
-   * @param retry {bool} whether the retry link should be shown.
+   * @param {string} message the error message.
+   * @param {boolean} retry whether the retry link should be shown.
    */
   OAuthEnrollmentScreen.showError = function(message, retry) {
     $('oauth-enrollment').showError(message, retry);
@@ -50,7 +50,7 @@ cr.define('oobe', function() {
 
   /**
    * Sets a progressing message and switches to the working screen.
-   * @param message {string} the progress message.
+   * @param {string} message the progress message.
    */
 
   OAuthEnrollmentScreen.showWorking = function(message) {
@@ -179,7 +179,7 @@ cr.define('oobe', function() {
 
     /**
      * Event handler that is invoked just before the frame is shown.
-     * @param data {dictionary} Screen init payload, contains the signin frame
+     * @param {Object} data Screen init payload, contains the signin frame
      * URL.
      */
     onBeforeShow: function(data) {
@@ -210,7 +210,7 @@ cr.define('oobe', function() {
 
     /**
      * Switches between the different steps in the enrollment flow.
-     * @param step {string} the steps to show, one of "signin", "working",
+     * @param {string} step the steps to show, one of "signin", "working",
      * "error", "success".
      */
     showStep: function(step) {
@@ -233,8 +233,8 @@ cr.define('oobe', function() {
 
     /**
      * Sets an error message and switches to the error screen.
-     * @param message {string} the error message.
-     * @param retry {bool} whether the retry link should be shown.
+     * @param {string} message the error message.
+     * @param {boolean} retry whether the retry link should be shown.
      */
     showError: function(message, retry) {
       $('oauth-enroll-error-message').textContent = message;
@@ -244,7 +244,7 @@ cr.define('oobe', function() {
 
     /**
      * Sets a progressing message and switches to the working screen.
-     * @param message {string} the progress message.
+     * @param {string} message the progress message.
      */
     showWorking: function(message) {
       $('oauth-enroll-working-message').textContent = message;
@@ -257,7 +257,7 @@ cr.define('oobe', function() {
      * profile, so that the next attempt is performed with a clean state.
      */
     doRetry_: function() {
-      chrome.send('oauthEnrollRetry', []);
+      chrome.send('oauthEnrollRetry');
     },
 
     /**
@@ -287,8 +287,8 @@ cr.define('oobe', function() {
     /**
      * Checks if a given HTML5 message comes from the URL loaded into the signin
      * frame.
-     * @param m {object} HTML5 message.
-     * @type {bool} whether the message comes from the signin frame.
+     * @param {Object} m HTML5 message.
+     * @type {boolean} whether the message comes from the signin frame.
      */
     isSigninMessage_: function(m) {
       return this.signInUrl_ != null &&
@@ -298,12 +298,12 @@ cr.define('oobe', function() {
 
     /**
      * Event handler for HTML5 messages.
-     * @param m {object} HTML5 message.
+     * @param {Object} m HTML5 message.
      */
     onMessage_: function(m) {
       var msg = m.data;
       if (msg.method == 'completeLogin' && this.isSigninMessage_(m))
-        chrome.send('oauthEnrollCompleteLogin', [ msg.email, msg.password ]);
+        chrome.send('oauthEnrollCompleteLogin', [msg.email, msg.password]);
     }
   };
 

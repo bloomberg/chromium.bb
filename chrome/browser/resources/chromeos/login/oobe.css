@@ -235,6 +235,10 @@ html[oobe=new] #user-image .step-contents {
   -webkit-margin-start: 31px;
 }
 
+html[oobe=new] #oauth-enrollment .step-contents {
+  -webkit-margin-after: 10px;
+}
+
 html[oobe=new] #user-image-screen-curtain {
   -webkit-margin-start: 8px;
 }
@@ -399,6 +403,12 @@ html[oobe=new] #gaia-signin {
 
 html[oobe=new] #user-image {
   min-height: 352px;
+  padding: 70px 17px 21px;
+  width: 688px;
+}
+
+html[oobe=new] #oauth-enrollment {
+  min-height: 518px;
   padding: 70px 17px 21px;
   width: 688px;
 }
@@ -965,7 +975,7 @@ html[oobe=new] #oem-eula {
 
 /* Styling for OAuth enrollment screen. */
 
-#oauth-enroll-container {
+html[oobe=old] #oauth-enroll-container {
   bottom: 0;
   display: -webkit-box;
   left: 0;
@@ -974,20 +984,39 @@ html[oobe=new] #oem-eula {
   top: 0;
 }
 
+html[oobe=new] #oauth-enroll-container {
+  display: -webkit-box;
+}
+
+html[oobe=old] #oauth-enroll-signin-frame {
+  height: 100%;
+}
+
+html[oobe=new] #oauth-enroll-signin-frame {
+  height: 456px;
+}
+
 #oauth-enroll-signin-frame {
   border: 0 none;
-  height: 100%;
   width: 100%;
+}
+
+html[oobe=old] #oauth-enroll-signin-frame-container {
+  height: 100%;
 }
 
 #oauth-enroll-signin-frame-container {
   box-sizing: border-box;
-  height: 100%;
   padding-bottom: 20px;
   width: 100%;
 }
 
-#oauth-enroll-signin-link-container {
+html[oobe=new] #oauth-enroll-signin-link-container {
+  -webkit-box-pack: end;
+  display: -webkit-box;
+}
+
+html[oobe=old] #oauth-enroll-signin-link-container {
   bottom: 0;
   position: absolute;
   right: 0;
@@ -997,9 +1026,16 @@ html[oobe=new] #oem-eula {
   width: 100%;
 }
 
+html[oobe=old] .oauth-enroll-step-center {
+  height: 100%;
+}
+
+html[oobe=new] .oauth-enroll-step-center {
+  height: 480px;
+}
+
 .oauth-enroll-step-center {
   display: table;
-  height: 100%;
   margin: 0 auto;
 }
 
