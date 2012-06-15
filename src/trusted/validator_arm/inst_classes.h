@@ -26,6 +26,8 @@ enum SafetyLevel {
 
   // This instruction is left undefined by the ARMv7 ISA spec.
   UNDEFINED,
+  // This instruction is not recognized by the decoder functions.
+  NOT_IMPLEMENTED,
   // This instruction has unpredictable effects at runtime.
   UNPREDICTABLE,
   // This instruction is deprecated in ARMv7.
@@ -619,6 +621,16 @@ class Undefined : public UnsafeClassDecoder {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Undefined);
+};
+
+// Represents that the instruction is not implemented.
+class NotImplemented : public UnsafeClassDecoder {
+ public:
+  inline NotImplemented() : UnsafeClassDecoder(NOT_IMPLEMENTED) {}
+  virtual ~NotImplemented() {}
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(NotImplemented);
 };
 
 // Represents instructions that have been deprecated in ARMv7.

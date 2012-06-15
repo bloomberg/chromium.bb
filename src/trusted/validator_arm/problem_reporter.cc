@@ -25,6 +25,7 @@ static nacl_arm_dec::SafetyLevel Int2SafetyLevel(uint32_t index) {
   static nacl_arm_dec::SafetyLevel Int2SafetyLevelMap[] = {
     nacl_arm_dec::UNKNOWN,
     nacl_arm_dec::UNDEFINED,
+    nacl_arm_dec::NOT_IMPLEMENTED,
     nacl_arm_dec::UNPREDICTABLE,
     nacl_arm_dec::DEPRECATED,
     nacl_arm_dec::FORBIDDEN,
@@ -159,7 +160,10 @@ static const char* SafetyLevelFormatDirective[nacl_arm_dec::MAY_BE_SAFE] = {
   "Unknown error occurred decoding this instruction.",
   // UNDEFINED - This instruction is left undefined by the ARMv7 ISA
   // spec.
-  "Instruction not understood by the ARM validator.",
+  "Instruction is undefined according to the ARMv7 ISA specifications.",
+  // NOT_IMPLEMENTED - This instruction is not recognized by the decoder
+  // functions.
+  "Instruction not understood by Native Client.",
   // UNPREDICTABLE - This instruction has unpredictable effects at
   // runtime.
   "Instruction has unpredictable effects at runtime.",

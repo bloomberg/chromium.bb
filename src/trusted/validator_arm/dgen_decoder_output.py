@@ -87,6 +87,7 @@ DECODER_DECLARE_FIELD="""
   const %(decoder)s %(decoder)s_instance_;"""
 
 DECODER_DECLARE_FOOTER="""
+  const NotImplemented not_implemented_;
 };
 """
 
@@ -133,8 +134,6 @@ CC_HEADER="""%(FILE_HEADER)s
 
 #include "%(header_filename)s"
 
-#include <stdio.h>
-
 namespace nacl_arm_dec {
 
 """
@@ -146,6 +145,7 @@ CONSTRUCTOR_FIELD_INIT="""
   , %(decoder)s_instance_()"""
 
 CONSTRUCTOR_FOOTER="""
+  , not_implemented_()
 {}
 
 %(decoder_name)s::~%(decoder_name)s() {}
@@ -177,9 +177,7 @@ METHOD_DISPATCH_SUBMETHOD="""
 
 METHOD_FOOTER="""
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: %(table_name)s could not parse %%08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 """
 

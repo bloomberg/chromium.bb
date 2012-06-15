@@ -9,8 +9,6 @@
 
 #include "native_client/src/trusted/validator_arm/gen/arm32_decode.h"
 
-#include <stdio.h>
-
 namespace nacl_arm_dec {
 
 
@@ -66,6 +64,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Unpredictable_instance_()
   , VectorLoad_instance_()
   , VectorStore_instance_()
+  , not_implemented_()
 {}
 
 Arm32DecoderState::~Arm32DecoderState() {}
@@ -106,9 +105,7 @@ const ClassDecoder& Arm32DecoderState::decode_ARMv7(
     return decode_unconditional(insn);
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: ARMv7 could not parse %08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 
 // Implementation of table: branch_block_xfer.
@@ -130,9 +127,7 @@ const ClassDecoder& Arm32DecoderState::decode_branch_block_xfer(
     return Branch_instance_;
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: branch_block_xfer could not parse %08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 
 // Implementation of table: dp_immed.
@@ -178,9 +173,7 @@ const ClassDecoder& Arm32DecoderState::decode_dp_immed(
     return Defs12To15_instance_;
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: dp_immed could not parse %08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 
 // Implementation of table: dp_misc.
@@ -256,9 +249,7 @@ const ClassDecoder& Arm32DecoderState::decode_dp_misc(
     return decode_dp_immed(insn);
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: dp_misc could not parse %08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 
 // Implementation of table: dp_reg.
@@ -308,9 +299,7 @@ const ClassDecoder& Arm32DecoderState::decode_dp_reg(
     return Defs12To15_instance_;
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: dp_reg could not parse %08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 
 // Implementation of table: dp_reg_shifted.
@@ -344,9 +333,7 @@ const ClassDecoder& Arm32DecoderState::decode_dp_reg_shifted(
     return Defs12To15RdRnRsRmNotPc_instance_;
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: dp_reg_shifted could not parse %08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 
 // Implementation of table: ext_reg_load_store.
@@ -380,9 +367,7 @@ const ClassDecoder& Arm32DecoderState::decode_ext_reg_load_store(
     return StoreCoprocessor_instance_;
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: ext_reg_load_store could not parse %08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 
 // Implementation of table: ext_reg_move.
@@ -418,9 +403,7 @@ const ClassDecoder& Arm32DecoderState::decode_ext_reg_move(
     return Undefined_instance_;
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: ext_reg_move could not parse %08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 
 // Implementation of table: ext_reg_transfers.
@@ -433,9 +416,7 @@ const ClassDecoder& Arm32DecoderState::decode_ext_reg_transfers(
     return MoveDoubleFromCoprocessor_instance_;
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: ext_reg_transfers could not parse %08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 
 // Implementation of table: extra_load_store.
@@ -485,9 +466,7 @@ const ClassDecoder& Arm32DecoderState::decode_extra_load_store(
     return LdrImmediate_instance_;
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: extra_load_store could not parse %08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 
 // Implementation of table: half_mult.
@@ -514,9 +493,7 @@ const ClassDecoder& Arm32DecoderState::decode_half_mult(
     return Defs16To19CondsDontCareRdRmRnNotPc_instance_;
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: half_mult could not parse %08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 
 // Implementation of table: load_store_word_byte.
@@ -576,9 +553,7 @@ const ClassDecoder& Arm32DecoderState::decode_load_store_word_byte(
     return Forbidden_instance_;
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: load_store_word_byte could not parse %08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 
 // Implementation of table: media.
@@ -631,9 +606,7 @@ const ClassDecoder& Arm32DecoderState::decode_media(
     return Undefined_instance_;
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: media could not parse %08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 
 // Implementation of table: misc.
@@ -696,9 +669,7 @@ const ClassDecoder& Arm32DecoderState::decode_misc(
     return Undefined_instance_;
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: misc could not parse %08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 
 // Implementation of table: misc_hints_simd.
@@ -775,9 +746,7 @@ const ClassDecoder& Arm32DecoderState::decode_misc_hints_simd(
     return Undefined_instance_;
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: misc_hints_simd could not parse %08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 
 // Implementation of table: msr_and_hints.
@@ -834,9 +803,7 @@ const ClassDecoder& Arm32DecoderState::decode_msr_and_hints(
     return Forbidden_instance_;
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: msr_and_hints could not parse %08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 
 // Implementation of table: mult.
@@ -864,9 +831,7 @@ const ClassDecoder& Arm32DecoderState::decode_mult(
     return Defs12To19CondsDontCareRdRmRnNotPc_instance_;
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: mult could not parse %08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 
 // Implementation of table: other_vfp_data_proc.
@@ -903,9 +868,7 @@ const ClassDecoder& Arm32DecoderState::decode_other_vfp_data_proc(
     return CoprocessorOp_instance_;
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: other_vfp_data_proc could not parse %08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 
 // Implementation of table: pack_sat_rev.
@@ -954,9 +917,7 @@ const ClassDecoder& Arm32DecoderState::decode_pack_sat_rev(
     return Undefined_instance_;
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: pack_sat_rev could not parse %08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 
 // Implementation of table: parallel_add_sub_signed.
@@ -993,9 +954,7 @@ const ClassDecoder& Arm32DecoderState::decode_parallel_add_sub_signed(
     return Undefined_instance_;
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: parallel_add_sub_signed could not parse %08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 
 // Implementation of table: parallel_add_sub_unsigned.
@@ -1032,9 +991,7 @@ const ClassDecoder& Arm32DecoderState::decode_parallel_add_sub_unsigned(
     return Undefined_instance_;
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: parallel_add_sub_unsigned could not parse %08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 
 // Implementation of table: sat_add_sub.
@@ -1047,9 +1004,7 @@ const ClassDecoder& Arm32DecoderState::decode_sat_add_sub(
     return SatAddSub_instance_;
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: sat_add_sub could not parse %08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 
 // Implementation of table: signed_mult.
@@ -1087,9 +1042,7 @@ const ClassDecoder& Arm32DecoderState::decode_signed_mult(
     return Undefined_instance_;
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: signed_mult could not parse %08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 
 // Implementation of table: simd_dp.
@@ -1164,9 +1117,7 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp(
     return Undefined_instance_;
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: simd_dp could not parse %08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 
 // Implementation of table: simd_dp_1imm.
@@ -1199,9 +1150,7 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_1imm(
     return EffectiveNoOp_instance_;
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: simd_dp_1imm could not parse %08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 
 // Implementation of table: simd_dp_2misc.
@@ -1262,9 +1211,7 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_2misc(
     return Undefined_instance_;
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: simd_dp_2misc could not parse %08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 
 // Implementation of table: simd_dp_2scalar.
@@ -1294,9 +1241,7 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_2scalar(
     return Undefined_instance_;
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: simd_dp_2scalar could not parse %08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 
 // Implementation of table: simd_dp_2shift.
@@ -1345,9 +1290,7 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_2shift(
     return Undefined_instance_;
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: simd_dp_2shift could not parse %08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 
 // Implementation of table: simd_dp_3diff.
@@ -1374,9 +1317,7 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_3diff(
     return Undefined_instance_;
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: simd_dp_3diff could not parse %08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 
 // Implementation of table: simd_dp_3same.
@@ -1457,9 +1398,7 @@ const ClassDecoder& Arm32DecoderState::decode_simd_dp_3same(
     return Undefined_instance_;
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: simd_dp_3same could not parse %08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 
 // Implementation of table: simd_load_store.
@@ -1475,9 +1414,7 @@ const ClassDecoder& Arm32DecoderState::decode_simd_load_store(
     return decode_simd_load_store_l1(insn);
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: simd_load_store could not parse %08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 
 // Implementation of table: simd_load_store_l0.
@@ -1514,9 +1451,7 @@ const ClassDecoder& Arm32DecoderState::decode_simd_load_store_l0(
     return Undefined_instance_;
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: simd_load_store_l0 could not parse %08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 
 // Implementation of table: simd_load_store_l1.
@@ -1548,9 +1483,7 @@ const ClassDecoder& Arm32DecoderState::decode_simd_load_store_l1(
     return Undefined_instance_;
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: simd_load_store_l1 could not parse %08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 
 // Implementation of table: super_cop.
@@ -1618,9 +1551,7 @@ const ClassDecoder& Arm32DecoderState::decode_super_cop(
     return decode_ext_reg_load_store(insn);
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: super_cop could not parse %08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 
 // Implementation of table: sync.
@@ -1654,9 +1585,7 @@ const ClassDecoder& Arm32DecoderState::decode_sync(
     return Undefined_instance_;
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: sync could not parse %08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 
 // Implementation of table: unconditional.
@@ -1720,9 +1649,7 @@ const ClassDecoder& Arm32DecoderState::decode_unconditional(
     return Undefined_instance_;
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: unconditional could not parse %08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 
 // Implementation of table: vfp_data_proc.
@@ -1742,9 +1669,7 @@ const ClassDecoder& Arm32DecoderState::decode_vfp_data_proc(
     return CoprocessorOp_instance_;
 
   // Catch any attempt to fall though ...
-  fprintf(stderr, "TABLE IS INCOMPLETE: vfp_data_proc could not parse %08X",
-          insn.Bits());
-  return Forbidden_instance_;
+  return not_implemented_;
 }
 
 const ClassDecoder& Arm32DecoderState::decode(const Instruction insn) const {

@@ -424,6 +424,9 @@ class NamedArm32DecoderState : nacl_arm_dec::DecoderState {
       const nacl_arm_dec::Instruction insn) const;
   inline const NamedClassDecoder& decode_vfp_data_proc(
       const nacl_arm_dec::Instruction insn) const;
+  // Defines default action if parse tables don't define what action
+  // to take.
+  const NotImplementedNamed not_implemented_;
 };
 
 } // namespace nacl_arm_test

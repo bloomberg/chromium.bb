@@ -211,14 +211,6 @@ def _install_baseline_and_actuals(key, pattern, values):
   for basis in ['baseline', 'actual']:
     _install_key_pattern(key, pattern, basis, values)
 
-def _install_forbidden(values):
-  # Install the 'Forbidden' instance into values.
-  vals = {'baseline': 'Forbidden',
-          'rule': None}
-  _install_key_pattern('DECODER_class', CLASS, 'baseline', vals)
-  _install_key_pattern('DECODER_instance', INSTANCE, 'baseline', vals)
-  values['forbidden'] = vals['baseline_instance']
-
 def _generate_baseline_and_actual(code, decoder,
                                   values, out, actions=['rule']):
   # Generate code for 'baseline' and 'actual' decoders, filtering
@@ -304,6 +296,20 @@ NAMED_CLASS_DECLARE="""class %(named_DECODER_class)s
 """
 
 NAMED_CLASSES_H_FOOTER="""
+// Defines the default parse action if the table doesn't define
+// an action.
+class NotImplementedNamed : public NamedClassDecoder {
+ public:
+  inline NotImplementedNamed()
+    : NamedClassDecoder(decoder_, "not implemented")
+  {}
+  virtual ~NotImplementedNamed() {}
+
+ private:
+  nacl_arm_dec::NotImplemented decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NotImplementedNamed);
+};
+
 } // namespace nacl_arm_test
 #endif  // %(IFDEF_NAME)s
 """
@@ -387,6 +393,9 @@ DECODER_STATE_DECODER="""
       const nacl_arm_dec::Instruction insn) const;"""
 
 NAMED_DECODER_H_FOOTER="""
+  // Defines default action if parse tables don't define what action
+  // to take.
+  const NotImplementedNamed not_implemented_;
 };
 
 } // namespace nacl_arm_test
@@ -425,8 +434,6 @@ NAMED_CC_HEADER="""%(FILE_HEADER)s
 %(NOT_TCB_MESSAGE)s
 #include "%(FILENAME_BASE)s_decoder.h"
 
-#include <stdio.h>
-
 using nacl_arm_dec::ClassDecoder;
 using nacl_arm_dec::Instruction;
 
@@ -461,9 +468,7 @@ PARSE_TABLE_METHOD_ROW="""
 
 PARSE_TABLE_METHOD_FOOTER="""
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: %(table_name)s could not parse %%08X",
-          insn.Bits());
-  return %(forbidden)s;
+  return not_implemented_;
 }
 
 """
@@ -501,7 +506,6 @@ def generate_named_cc(decoder, decoder_name, filename, out):
         'decoder_name': decoder_name,
         'entry_table_name': decoder.primary.name,
         }
-    _install_forbidden(values)
     out.write(NAMED_CC_HEADER % values)
     _generate_decoder_method_bodies(decoder, values, out)
     out.write(NAMED_CC_FOOTER % values)

@@ -5720,5 +5720,19 @@ class NamedTestIfAddressMasked_Tst_Rule_230_A1_P454
 };
 
 
+// Defines the default parse action if the table doesn't define
+// an action.
+class NotImplementedNamed : public NamedClassDecoder {
+ public:
+  inline NotImplementedNamed()
+    : NamedClassDecoder(decoder_, "not implemented")
+  {}
+  virtual ~NotImplementedNamed() {}
+
+ private:
+  nacl_arm_dec::NotImplemented decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NotImplementedNamed);
+};
+
 } // namespace nacl_arm_test
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_ARM_GEN_ARM32_DECODE_NAMED_CLASSES_H_

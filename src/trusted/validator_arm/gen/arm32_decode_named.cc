@@ -12,8 +12,6 @@
 
 #include "native_client/src/trusted/validator_arm/gen/arm32_decode_named_decoder.h"
 
-#include <stdio.h>
-
 using nacl_arm_dec::ClassDecoder;
 using nacl_arm_dec::Instruction;
 
@@ -61,9 +59,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_ARMv7(
     return decode_unconditional(insn);
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: ARMv7 could not parse %08X",
-          insn.Bits());
-  return Forbidden_None_instance_;
+  return not_implemented_;
 }
 
 
@@ -87,9 +83,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_branch_block_xfer(
     return Branch_None_instance_;
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: branch_block_xfer could not parse %08X",
-          insn.Bits());
-  return Forbidden_None_instance_;
+  return not_implemented_;
 }
 
 
@@ -167,9 +161,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_dp_immed(
     return Unary1RegisterImmediateOp_Mvn_Rule_106_A1_P214_instance_;
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: dp_immed could not parse %08X",
-          insn.Bits());
-  return Forbidden_None_instance_;
+  return not_implemented_;
 }
 
 
@@ -247,9 +239,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_dp_misc(
     return decode_dp_immed(insn);
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: dp_misc could not parse %08X",
-          insn.Bits());
-  return Forbidden_None_instance_;
+  return not_implemented_;
 }
 
 
@@ -334,9 +324,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_dp_reg(
     return Unary2RegisterImmedShiftedOp_Mvn_Rule_107_A1_P216_instance_;
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: dp_reg could not parse %08X",
-          insn.Bits());
-  return Forbidden_None_instance_;
+  return not_implemented_;
 }
 
 
@@ -409,9 +397,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_dp_reg_shifted(
     return Unary3RegisterShiftedOp_Mvn_Rule_108_A1_P218_instance_;
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: dp_reg_shifted could not parse %08X",
-          insn.Bits());
-  return Forbidden_None_instance_;
+  return not_implemented_;
 }
 
 
@@ -447,9 +433,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_ext_reg_load_store(
     return StoreCoprocessor_None_instance_;
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: ext_reg_load_store could not parse %08X",
-          insn.Bits());
-  return Forbidden_None_instance_;
+  return not_implemented_;
 }
 
 
@@ -487,9 +471,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_ext_reg_move(
     return Undefined_None_instance_;
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: ext_reg_move could not parse %08X",
-          insn.Bits());
-  return Forbidden_None_instance_;
+  return not_implemented_;
 }
 
 
@@ -504,9 +486,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_ext_reg_transfers(
     return MoveDoubleFromCoprocessor_None_instance_;
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: ext_reg_transfers could not parse %08X",
-          insn.Bits());
-  return Forbidden_None_instance_;
+  return not_implemented_;
 }
 
 
@@ -590,9 +570,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_extra_load_store(
     return Load2RegisterImm8Op_Ldrsh_Rule_83_A1_P170_instance_;
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: extra_load_store could not parse %08X",
-          insn.Bits());
-  return Forbidden_None_instance_;
+  return not_implemented_;
 }
 
 
@@ -621,9 +599,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_half_mult(
     return Binary3RegisterOpAltA_Smulxx_Rule_178_P354_instance_;
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: half_mult could not parse %08X",
-          insn.Bits());
-  return Forbidden_None_instance_;
+  return not_implemented_;
 }
 
 
@@ -740,9 +716,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_load_store_word_byte(
     return Forbidden_None_instance_;
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: load_store_word_byte could not parse %08X",
-          insn.Bits());
-  return Forbidden_None_instance_;
+  return not_implemented_;
 }
 
 
@@ -801,9 +775,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_media(
     return Undefined_None_instance_;
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: media could not parse %08X",
-          insn.Bits());
-  return Forbidden_None_instance_;
+  return not_implemented_;
 }
 
 
@@ -868,9 +840,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_misc(
     return Undefined_None_instance_;
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: misc could not parse %08X",
-          insn.Bits());
-  return Forbidden_None_instance_;
+  return not_implemented_;
 }
 
 
@@ -949,9 +919,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_misc_hints_simd(
     return Undefined_None_instance_;
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: misc_hints_simd could not parse %08X",
-          insn.Bits());
-  return Forbidden_None_instance_;
+  return not_implemented_;
 }
 
 
@@ -1015,9 +983,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_msr_and_hints(
     return Forbidden_None_instance_;
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: msr_and_hints could not parse %08X",
-          insn.Bits());
-  return Forbidden_None_instance_;
+  return not_implemented_;
 }
 
 
@@ -1056,9 +1022,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_mult(
     return Binary4RegisterDualResult_Smlal_Rule_168_A1_P334_instance_;
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: mult could not parse %08X",
-          insn.Bits());
-  return Forbidden_None_instance_;
+  return not_implemented_;
 }
 
 
@@ -1097,9 +1061,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_other_vfp_data_proc(
     return CoprocessorOp_None_instance_;
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: other_vfp_data_proc could not parse %08X",
-          insn.Bits());
-  return Forbidden_None_instance_;
+  return not_implemented_;
 }
 
 
@@ -1150,9 +1112,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_pack_sat_rev(
     return Undefined_None_instance_;
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: pack_sat_rev could not parse %08X",
-          insn.Bits());
-  return Forbidden_None_instance_;
+  return not_implemented_;
 }
 
 
@@ -1239,9 +1199,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_add_sub_signed(
     return Undefined_None_instance_;
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: parallel_add_sub_signed could not parse %08X",
-          insn.Bits());
-  return Forbidden_None_instance_;
+  return not_implemented_;
 }
 
 
@@ -1280,9 +1238,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_add_sub_unsigne
     return Undefined_None_instance_;
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: parallel_add_sub_unsigned could not parse %08X",
-          insn.Bits());
-  return Forbidden_None_instance_;
+  return not_implemented_;
 }
 
 
@@ -1297,9 +1253,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_sat_add_sub(
     return SatAddSub_None_instance_;
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: sat_add_sub could not parse %08X",
-          insn.Bits());
-  return Forbidden_None_instance_;
+  return not_implemented_;
 }
 
 
@@ -1339,9 +1293,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_signed_mult(
     return Undefined_None_instance_;
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: signed_mult could not parse %08X",
-          insn.Bits());
-  return Forbidden_None_instance_;
+  return not_implemented_;
 }
 
 
@@ -1418,9 +1370,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp(
     return Undefined_None_instance_;
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: simd_dp could not parse %08X",
-          insn.Bits());
-  return Forbidden_None_instance_;
+  return not_implemented_;
 }
 
 
@@ -1455,9 +1405,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_1imm(
     return EffectiveNoOp_None_instance_;
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: simd_dp_1imm could not parse %08X",
-          insn.Bits());
-  return Forbidden_None_instance_;
+  return not_implemented_;
 }
 
 
@@ -1520,9 +1468,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_2misc(
     return Undefined_None_instance_;
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: simd_dp_2misc could not parse %08X",
-          insn.Bits());
-  return Forbidden_None_instance_;
+  return not_implemented_;
 }
 
 
@@ -1554,9 +1500,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_2scalar(
     return Undefined_None_instance_;
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: simd_dp_2scalar could not parse %08X",
-          insn.Bits());
-  return Forbidden_None_instance_;
+  return not_implemented_;
 }
 
 
@@ -1607,9 +1551,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_2shift(
     return Undefined_None_instance_;
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: simd_dp_2shift could not parse %08X",
-          insn.Bits());
-  return Forbidden_None_instance_;
+  return not_implemented_;
 }
 
 
@@ -1638,9 +1580,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_3diff(
     return Undefined_None_instance_;
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: simd_dp_3diff could not parse %08X",
-          insn.Bits());
-  return Forbidden_None_instance_;
+  return not_implemented_;
 }
 
 
@@ -1723,9 +1663,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_dp_3same(
     return Undefined_None_instance_;
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: simd_dp_3same could not parse %08X",
-          insn.Bits());
-  return Forbidden_None_instance_;
+  return not_implemented_;
 }
 
 
@@ -1743,9 +1681,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_load_store(
     return decode_simd_load_store_l1(insn);
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: simd_load_store could not parse %08X",
-          insn.Bits());
-  return Forbidden_None_instance_;
+  return not_implemented_;
 }
 
 
@@ -1784,9 +1720,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_load_store_l0(
     return Undefined_None_instance_;
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: simd_load_store_l0 could not parse %08X",
-          insn.Bits());
-  return Forbidden_None_instance_;
+  return not_implemented_;
 }
 
 
@@ -1820,9 +1754,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_simd_load_store_l1(
     return Undefined_None_instance_;
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: simd_load_store_l1 could not parse %08X",
-          insn.Bits());
-  return Forbidden_None_instance_;
+  return not_implemented_;
 }
 
 
@@ -1892,9 +1824,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_super_cop(
     return decode_ext_reg_load_store(insn);
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: super_cop could not parse %08X",
-          insn.Bits());
-  return Forbidden_None_instance_;
+  return not_implemented_;
 }
 
 
@@ -1936,9 +1866,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_sync(
     return Undefined_None_instance_;
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: sync could not parse %08X",
-          insn.Bits());
-  return Forbidden_None_instance_;
+  return not_implemented_;
 }
 
 
@@ -2004,9 +1932,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_unconditional(
     return Undefined_None_instance_;
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: unconditional could not parse %08X",
-          insn.Bits());
-  return Forbidden_None_instance_;
+  return not_implemented_;
 }
 
 
@@ -2028,9 +1954,7 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_vfp_data_proc(
     return CoprocessorOp_None_instance_;
 
   // Catch any attempt to fall through...
-  fprintf(stderr, "TABLE IS INCOMPLETE: vfp_data_proc could not parse %08X",
-          insn.Bits());
-  return Forbidden_None_instance_;
+  return not_implemented_;
 }
 
 
