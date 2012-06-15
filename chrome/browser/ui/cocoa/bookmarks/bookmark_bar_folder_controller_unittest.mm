@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -263,15 +263,16 @@ TEST_F(BookmarkBarFolderControllerTest, BasicPosition) {
                       barController:bar_]);
   [bbfc window];
   NSPoint pt = [bbfc windowTopLeftForWidth:0 height:100];  // screen coords
+  NSPoint buttonOriginInWindow =
+      [parentButton convertRect:[parentButton bounds]
+                         toView:nil].origin;
   NSPoint buttonOriginInScreen =
-      [[parentButton window]
-        convertBaseToScreen:[parentButton
-                              convertRectToBase:[parentButton frame]].origin];
+      [[parentButton window] convertBaseToScreen:buttonOriginInWindow];
   // Within margin
   EXPECT_LE(abs(pt.x - buttonOriginInScreen.x),
-            bookmarks::kBookmarkMenuOverlap+1);
+            bookmarks::kBookmarkMenuOverlap + 1);
   EXPECT_LE(abs(pt.y - buttonOriginInScreen.y),
-            bookmarks::kBookmarkMenuOverlap+1);
+            bookmarks::kBookmarkMenuOverlap + 1);
 
   // Make sure we see the window shift left if it spills off the screen
   pt = [bbfc windowTopLeftForWidth:0 height:100];
