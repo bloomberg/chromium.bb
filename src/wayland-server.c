@@ -1153,7 +1153,8 @@ WL_EXPORT int
 wl_display_add_socket(struct wl_display *display, const char *name)
 {
 	struct wl_socket *s;
-	socklen_t size, name_size;
+	socklen_t size;
+	int name_size;
 	const char *runtime_dir;
 
 	runtime_dir = getenv("XDG_RUNTIME_DIR");
@@ -1185,6 +1186,19 @@ wl_display_add_socket(struct wl_display *display, const char *name)
 	s->addr.sun_family = AF_LOCAL;
 	name_size = snprintf(s->addr.sun_path, sizeof s->addr.sun_path,
 			     "%s/%s", runtime_dir, name) + 1;
+
+	assert(name_size > 0);
+	if (name_size > (int)sizeof s->addr.sun_path) {
+		wl_log("error: socket path \"%s/%s\" plus null terminator"
+		       " exceeds 108 bytes\n", runtime_dir, name);
+		close(s->fd);
+		free(s);
+		/* to prevent programs reporting
+		 * "failed to add socket: Success" */
+		errno = ENAMETOOLONG;
+		return -1;
+	};
+
 	wl_log("using socket %s\n", s->addr.sun_path);
 
 	s->fd_lock = get_socket_lock(s);
