@@ -12,6 +12,7 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #import "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/framed_browser_window.h"
+#import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -148,18 +149,17 @@ static BOOL gCanGetCornerRadius = NO;
 
   // Pinstripe the top.
   if (themed) {
-    NSSize windowPixel = [self convertSizeFromBase:NSMakeSize(1, 1)];
-
+    CGFloat lineWidth = [self cr_lineWidth];
     windowRect = [self convertRect:[window frame] fromView:nil];
     windowRect.origin = NSMakePoint(0, 0);
-    windowRect.origin.y -= 0.5 * windowPixel.height;
-    windowRect.origin.x -= 0.5 * windowPixel.width;
-    windowRect.size.width += windowPixel.width;
+    windowRect.origin.y -= 0.5 * lineWidth;
+    windowRect.origin.x -= 0.5 * lineWidth;
+    windowRect.size.width += lineWidth;
     [[NSColor colorWithCalibratedWhite:1.0 alpha:0.5] set];
     NSBezierPath* path = [NSBezierPath bezierPathWithRoundedRect:windowRect
                                                          xRadius:cornerRadius
                                                          yRadius:cornerRadius];
-    [path setLineWidth:windowPixel.width];
+    [path setLineWidth:lineWidth];
     [path stroke];
   }
 }
