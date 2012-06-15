@@ -31,14 +31,7 @@ class WebContents;
 }
 
 #if defined(TOOLKIT_VIEWS)
-
 // TODO(beng): Move all views-related code to a views-specific sub-interface.
-
-class AutocompleteEditController;
-class LocationBarView;
-class Profile;
-class ToolbarModel;
-
 namespace gfx {
 class Font;
 }
@@ -47,20 +40,10 @@ namespace views {
 class DropTargetEvent;
 class View;
 }
-
 #endif
 
 class OmniboxView {
  public:
-#if defined(TOOLKIT_VIEWS)
-  static OmniboxView* CreateOmniboxView(AutocompleteEditController* controller,
-                                        ToolbarModel* toolbar_model,
-                                        Profile* profile,
-                                        CommandUpdater* command_updater,
-                                        bool popup_window_mode,
-                                        LocationBarView* location_bar);
-#endif
-
   // Used by the automation system for getting at the model from the view.
   virtual AutocompleteEditModel* model() = 0;
   virtual const AutocompleteEditModel* model() const = 0;

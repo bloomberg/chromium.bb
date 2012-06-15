@@ -3634,6 +3634,8 @@
         'browser/ui/views/notifications/balloon_view_host.h',
         'browser/ui/views/notifications/balloon_view_views.cc',
         'browser/ui/views/notifications/balloon_view_views.h',
+        'browser/ui/views/omnibox/omnibox_views.cc',
+        'browser/ui/views/omnibox/omnibox_views.h',
         'browser/ui/views/omnibox/omnibox_view_views.cc',
         'browser/ui/views/omnibox/omnibox_view_views.h',
         'browser/ui/views/omnibox/omnibox_view_win.cc',

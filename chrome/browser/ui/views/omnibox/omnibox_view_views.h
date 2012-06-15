@@ -25,6 +25,7 @@
 class AutocompleteEditController;
 class AutocompleteEditModel;
 class AutocompletePopupView;
+class LocationBarView;
 class Profile;
 
 namespace ui {

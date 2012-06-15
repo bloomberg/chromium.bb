@@ -26,12 +26,6 @@
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/drag_controller.h"
 
-#if defined(USE_AURA)
-#include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
-#elif defined(OS_WIN)
-#include "chrome/browser/ui/views/omnibox/omnibox_view_win.h"
-#endif
-
 class ActionBoxButtonView;
 class ChromeToMobileView;
 class CommandUpdater;
@@ -377,12 +371,6 @@ class LocationBarView : public LocationBar,
 
   // Returns true if the suggest text is valid.
   bool HasValidSuggestText() const;
-
-#if !defined(USE_AURA)
-  // Returns |location_entry_| cast to OmniboxViewWin, or NULL if
-  // |location_entry_| is of a different type.
-  OmniboxViewWin* GetOmniboxViewWin();
-#endif
 
   // Helper to show the first run info bubble.
   void ShowFirstRunBubbleInternal();

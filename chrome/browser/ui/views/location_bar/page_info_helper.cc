@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/location_bar/page_info_helper.h"
 
+#include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "content/public/browser/navigation_controller.h"

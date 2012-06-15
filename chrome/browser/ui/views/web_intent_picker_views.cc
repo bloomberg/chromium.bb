@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_vector.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/intents/web_intent_inline_disposition_delegate.h"

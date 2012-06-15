@@ -13,6 +13,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/metrics/histogram.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"

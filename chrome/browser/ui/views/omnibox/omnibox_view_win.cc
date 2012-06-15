@@ -2679,21 +2679,3 @@ bool OmniboxViewWin::IsCaretAtEnd() const {
   GetSelection(sel);
   return sel.cpMin == sel.cpMax && sel.cpMin == length;
 }
-
-#if !defined(USE_AURA)
-// static
-OmniboxView* OmniboxView::CreateOmniboxView(
-    AutocompleteEditController* controller,
-    ToolbarModel* toolbar_model,
-    Profile* profile,
-    CommandUpdater* command_updater,
-    bool popup_window_mode,
-    LocationBarView* location_bar) {
-  return new OmniboxViewWin(controller,
-                            toolbar_model,
-                            location_bar,
-                            command_updater,
-                            popup_window_mode,
-                            location_bar);
-}
-#endif

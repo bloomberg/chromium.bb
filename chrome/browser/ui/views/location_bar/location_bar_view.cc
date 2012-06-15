@@ -43,6 +43,7 @@
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/location_bar/suggested_text_view.h"
+#include "chrome/browser/ui/views/omnibox/omnibox_views.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -60,6 +61,7 @@
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
@@ -68,10 +70,13 @@
 #include "ui/views/button_drag_utils.h"
 #include "ui/views/controls/label.h"
 
+#if defined(OS_WIN) && !defined(USE_AURA)
+#include "chrome/browser/ui/views/omnibox/omnibox_view_win.h"
+#endif
+
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/first_run_bubble.h"
 #endif
-
 
 using content::WebContents;
 using views::View;
@@ -83,10 +88,26 @@ WebContents* GetWebContentsFromDelegate(LocationBarView::Delegate* delegate) {
   return tab_contents ? tab_contents->web_contents() : NULL;
 }
 
-// A utility function to cast OmniboxView to OmniboxViewViews.
-OmniboxViewViews* AsViews(OmniboxView* view) {
-  return static_cast<OmniboxViewViews*>(view);
+bool UseOmniboxViews() {
+#if defined(OS_WIN) && !defined(USE_AURA)
+  static bool kUseOmniboxViews = CommandLine::ForCurrentProcess()->
+                                     HasSwitch(switches::kEnableViewsTextfield);
+  return kUseOmniboxViews;
+#endif
+  return true;
 }
+
+// Return |view| as an OmniboxViewViews, or NULL if it is of a different type.
+OmniboxViewViews* GetOmniboxViewViews(OmniboxView* view) {
+  return UseOmniboxViews() ? static_cast<OmniboxViewViews*>(view) : NULL;
+}
+
+#if defined(OS_WIN) && !defined(USE_AURA)
+// Return |view| as an OmniboxViewWin, or NULL if it is of a different type.
+OmniboxViewWin* GetOmniboxViewWin(OmniboxView* view) {
+  return UseOmniboxViews() ? NULL : static_cast<OmniboxViewWin*>(view);
+}
+#endif
 
 // Height of the location bar's round corner region.
 const int kBorderRoundCornerHeight = 5;
@@ -200,13 +221,8 @@ void LocationBarView::Init() {
 
   // URL edit field.
   // View container for URL edit field.
-  location_entry_.reset(OmniboxView::CreateOmniboxView(
-      this,
-      model_,
-      profile_,
-      command_updater_,
-      mode_ == POPUP,
-      this));
+  location_entry_.reset(CreateOmniboxView(this, model_, profile_,
+      command_updater_, mode_ == POPUP, this));
   SetLocationEntryFocusable(true);
 
   location_entry_view_ = location_entry_->AddToView(this);
@@ -493,19 +509,18 @@ string16 LocationBarView::GetInstantSuggestion() const {
 }
 
 void LocationBarView::SetLocationEntryFocusable(bool focusable) {
-#if defined(USE_AURA)
-    AsViews(location_entry_.get())->SetLocationEntryFocusable(focusable);
-#else
+  OmniboxViewViews* omnibox_views = GetOmniboxViewViews(location_entry_.get());
+  if (omnibox_views)
+    omnibox_views->SetLocationEntryFocusable(focusable);
+  else
     set_focusable(focusable);
-#endif
 }
 
 bool LocationBarView::IsLocationEntryFocusableInRootView() const {
-#if defined(USE_AURA)
-  return AsViews(location_entry_.get())->IsLocationEntryFocusableInRootView();
-#else
+  OmniboxViewViews* omnibox_views = GetOmniboxViewViews(location_entry_.get());
+  if (omnibox_views)
+    return omnibox_views->IsLocationEntryFocusableInRootView();
   return views::View::IsFocusable();
-#endif
 }
 
 gfx::Size LocationBarView::GetPreferredSize() {
@@ -874,7 +889,9 @@ void LocationBarView::OnMouseReleased(const views::MouseEvent& event) {
 }
 
 void LocationBarView::OnMouseCaptureLost() {
-  GetOmniboxViewWin()->HandleExternalMsg(WM_CAPTURECHANGED, 0, CPoint());
+  OmniboxViewWin* omnibox_win = GetOmniboxViewWin(location_entry_.get());
+  if (omnibox_win)
+    omnibox_win->HandleExternalMsg(WM_CAPTURECHANGED, 0, CPoint());
 }
 #endif
 
@@ -1069,10 +1086,13 @@ void LocationBarView::RefreshPageActionViews() {
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 void LocationBarView::OnMouseEvent(const views::MouseEvent& event, UINT msg) {
-  UINT flags = event.native_event().wParam;
-  gfx::Point screen_point(event.location());
-  ConvertPointToScreen(this, &screen_point);
-  GetOmniboxViewWin()->HandleExternalMsg(msg, flags, screen_point.ToPOINT());
+  OmniboxViewWin* omnibox_win = GetOmniboxViewWin(location_entry_.get());
+  if (omnibox_win) {
+    UINT flags = event.native_event().wParam;
+    gfx::Point screen_point(event.location());
+    ConvertPointToScreen(this, &screen_point);
+    omnibox_win->HandleExternalMsg(msg, flags, screen_point.ToPOINT());
+  }
 }
 #endif
 
@@ -1136,14 +1156,15 @@ bool LocationBarView::SkipDefaultKeyEventProcessing(
   NOTIMPLEMENTED();
   return false;
 #else
-  return GetOmniboxViewWin()->SkipDefaultKeyEventProcessing(event);
-#endif
+  OmniboxViewWin* omnibox_win = GetOmniboxViewWin(location_entry_.get());
+  if (omnibox_win)
+    return omnibox_win->SkipDefaultKeyEventProcessing(event);
+#endif  // USE_AURA
+#endif  // OS_WIN
 
-#else
   // This method is not used for Linux ports. See FocusManager::OnKeyEvent() in
   // src/ui/views/focus/focus_manager.cc for details.
   return false;
-#endif
 }
 
 void LocationBarView::GetAccessibleState(ui::AccessibleViewState* state) {
@@ -1352,9 +1373,3 @@ bool LocationBarView::HasValidSuggestText() const {
   return suggested_text_view_ && !suggested_text_view_->size().IsEmpty() &&
       !suggested_text_view_->text().empty();
 }
-
-#if !defined(USE_AURA)
-OmniboxViewWin* LocationBarView::GetOmniboxViewWin() {
-  return static_cast<OmniboxViewWin*>(location_entry_.get());
-}
-#endif

@@ -47,10 +47,6 @@
 #include "ui/aura/root_window.h"
 #endif
 
-#if defined(OS_WIN)
-#include "chrome/browser/ui/views/omnibox/omnibox_view_win.h"
-#endif
-
 using content::WebContents;
 
 namespace {
@@ -672,11 +668,7 @@ gfx::NativeView OmniboxViewViews::GetNativeView() const {
 }
 
 gfx::NativeView OmniboxViewViews::GetRelativeWindowForPopup() const {
-#if defined(OS_WIN) && !defined(USE_AURA)
-  return OmniboxViewWin::GetRelativeWindowForNativeView(GetNativeView());
-#else
   return GetWidget()->GetTopLevelWidget()->GetNativeView();
-#endif
 }
 
 CommandUpdater* OmniboxViewViews::GetCommandUpdater() {
@@ -900,23 +892,3 @@ string16 OmniboxViewViews::GetSelectedText() const {
   // TODO(oshima): Support instant, IME.
   return textfield_->GetSelectedText();
 }
-
-#if defined(USE_AURA)
-// static
-OmniboxView* OmniboxView::CreateOmniboxView(
-    AutocompleteEditController* controller,
-    ToolbarModel* toolbar_model,
-    Profile* profile,
-    CommandUpdater* command_updater,
-    bool popup_window_mode,
-    LocationBarView* location_bar) {
-  OmniboxViewViews* omnibox_view = new OmniboxViewViews(controller,
-                                                        toolbar_model,
-                                                        profile,
-                                                        command_updater,
-                                                        popup_window_mode,
-                                                        location_bar);
-  omnibox_view->Init();
-  return omnibox_view;
-}
-#endif
