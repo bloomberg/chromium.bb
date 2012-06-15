@@ -261,6 +261,22 @@ class BrowserActionButton : public content::NotificationObserver,
   }
 
  private:
+  // Activate the browser action.
+  void Activate(GtkWidget* widget) {
+    ExtensionToolbarModel* model = toolbar_->model();
+    const Extension* extension = extension_;
+    Browser* browser = toolbar_->browser();
+    GURL popup_url;
+
+    switch (model->ExecuteBrowserAction(extension, browser, &popup_url)) {
+      case ExtensionToolbarModel::ACTION_NONE:
+        break;
+      case ExtensionToolbarModel::ACTION_SHOW_POPUP:
+        ExtensionPopupGtk::Show(popup_url, browser, widget);
+        break;
+    }
+  }
+
   // MenuGtk::Delegate implementation.
   virtual void StoppedShowing() {
     button_->UnsetPaintOverride();
@@ -304,18 +320,7 @@ class BrowserActionButton : public content::NotificationObserver,
   }
 
   static void OnClicked(GtkWidget* widget, BrowserActionButton* action) {
-    ExtensionToolbarModel* model = action->toolbar_->model();
-    const Extension* extension = action->extension_;
-    Browser* browser = action->toolbar_->browser();
-    GURL popup_url;
-
-    switch (model->ExecuteBrowserAction(extension, browser, &popup_url)) {
-      case ExtensionToolbarModel::ACTION_NONE:
-        break;
-      case ExtensionToolbarModel::ACTION_SHOW_POPUP:
-        ExtensionPopupGtk::Show(popup_url, browser, widget);
-        break;
-    }
+    action->Activate(widget);
   }
 
   static gboolean OnExposeEvent(GtkWidget* widget,
@@ -350,10 +355,13 @@ class BrowserActionButton : public content::NotificationObserver,
                                    GObject* acceleratable,
                                    guint keyval,
                                    GdkModifierType modifier,
-                                   void* user_data) {
+                                   BrowserActionButton* button) {
     // Open the popup for this extension.
-    BrowserActionButton::OnClicked(
-        NULL, static_cast<BrowserActionButton*>(user_data));
+    GtkWidget* anchor = button->widget();
+    // The anchor might be in the overflow menu. Then we point to the chevron.
+    if (!gtk_widget_get_visible(anchor))
+      anchor = button->toolbar_->chevron();
+    button->Activate(anchor);
     return TRUE;
   }
 
