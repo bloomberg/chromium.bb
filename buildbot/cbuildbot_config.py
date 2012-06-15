@@ -772,6 +772,7 @@ internal_paladin.add_config('link-paladin',
   boards=['link'],
   paladin_builder_name='link paladin',
   vm_tests=constants.SIMPLE_AU_TEST_TYPE,
+  important=False,
 )
 
 internal_paladin.add_config('kiev-paladin',
