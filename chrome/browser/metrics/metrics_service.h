@@ -308,6 +308,7 @@ class MetricsService
   // Records a renderer process crash.
   void LogRendererCrash(content::RenderProcessHost* host,
                         base::TerminationStatus status,
+                        int exit_code,
                         bool was_alive);
 
   // Records a renderer process hang.

@@ -144,6 +144,8 @@
 
 #include "chrome/browser/metrics/metrics_service.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/callback.h"
@@ -178,6 +180,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/metrics/metrics_log_manager.h"
 #include "chrome/common/net/test_server_locations.h"
@@ -201,6 +204,10 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/external_metrics.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
+#endif
+
+#if defined(OS_WIN)
+#include <windows.h>  // Needed for STATUS_* codes
 #endif
 
 using base::Time;
@@ -269,6 +276,68 @@ const uint32 kMaxEntropySize = (1 << 13);
 // activities.
 int GenerateLowEntropySource() {
   return base::RandInt(1, kMaxEntropySize);
+}
+
+// Converts an exit code into something that can be inserted into our
+// histograms (which expect non-negative numbers less than MAX_INT).
+int MapCrashExitCodeForHistogram(int exit_code) {
+#if defined(OS_WIN)
+  // Since |abs(STATUS_GUARD_PAGE_VIOLATION) == MAX_INT| it causes problems in
+  // histograms.cc. Solve this by remapping it to a smaller value, which
+  // hopefully doesn't conflict with other codes.
+  if (exit_code == STATUS_GUARD_PAGE_VIOLATION)
+    return 0x1FCF7EC3;  // Randomly picked number.
+#endif
+
+  return std::abs(exit_code);
+}
+
+// Returns a list of all the likely exit codes for crashed renderer processes.
+// The exit codes are all positive, since that is what histograms expect.
+std::vector<int> GetAllCrashExitCodes() {
+  std::vector<int> codes;
+
+  // Chrome defines its own exit codes in the range
+  // 1 to RESULT_CODE_CHROME_LAST_CODE.
+  for (int i = 1; i < chrome::RESULT_CODE_CHROME_LAST_CODE; ++i)
+    codes.push_back(i);
+
+#if defined(OS_WIN)
+  // The exit code when crashing will be one of the Windows exception codes.
+  int kExceptionCodes[] = {
+    0xe06d7363,  // C++ EH exception
+    STATUS_ACCESS_VIOLATION,
+    STATUS_ARRAY_BOUNDS_EXCEEDED,
+    STATUS_BREAKPOINT,
+    STATUS_CONTROL_C_EXIT,
+    STATUS_DATATYPE_MISALIGNMENT,
+    STATUS_FLOAT_DENORMAL_OPERAND,
+    STATUS_FLOAT_DIVIDE_BY_ZERO,
+    STATUS_FLOAT_INEXACT_RESULT,
+    STATUS_FLOAT_INVALID_OPERATION,
+    STATUS_FLOAT_OVERFLOW,
+    STATUS_FLOAT_STACK_CHECK,
+    STATUS_FLOAT_UNDERFLOW,
+    STATUS_GUARD_PAGE_VIOLATION,
+    STATUS_ILLEGAL_INSTRUCTION,
+    STATUS_INTEGER_DIVIDE_BY_ZERO,
+    STATUS_INTEGER_OVERFLOW,
+    STATUS_INVALID_DISPOSITION,
+    STATUS_INVALID_HANDLE,
+    STATUS_INVALID_PARAMETER,
+    STATUS_IN_PAGE_ERROR,
+    STATUS_NONCONTINUABLE_EXCEPTION,
+    STATUS_NO_MEMORY,
+    STATUS_PRIVILEGED_INSTRUCTION,
+    STATUS_SINGLE_STEP,
+    STATUS_STACK_OVERFLOW,
+  };
+
+  for (size_t i = 0; i < arraysize(kExceptionCodes); ++i)
+    codes.push_back(MapCrashExitCodeForHistogram(kExceptionCodes[i]));
+#endif
+
+  return codes;
 }
 
 }
@@ -606,7 +675,8 @@ void MetricsService::Observe(int type,
         content::RenderProcessHost* host =
             content::Source<content::RenderProcessHost>(source).ptr();
         LogRendererCrash(
-            host, process_details->status, process_details->was_alive);
+            host, process_details->status, process_details->exit_code,
+            process_details->was_alive);
       }
       break;
 
@@ -1449,6 +1519,7 @@ void MetricsService::LogLoadStarted() {
 
 void MetricsService::LogRendererCrash(content::RenderProcessHost* host,
                                       base::TerminationStatus status,
+                                      int exit_code,
                                       bool was_alive) {
   Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
   ExtensionService* service = profile->GetExtensionService();
@@ -1456,10 +1527,19 @@ void MetricsService::LogRendererCrash(content::RenderProcessHost* host,
       service && service->process_map()->Contains(host->GetID());
   if (status == base::TERMINATION_STATUS_PROCESS_CRASHED ||
       status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION) {
-    if (was_extension_process)
+    if (was_extension_process) {
       IncrementPrefValue(prefs::kStabilityExtensionRendererCrashCount);
-    else
+
+      UMA_HISTOGRAM_CUSTOM_ENUMERATION("CrashExitCodes.Extension",
+                                       MapCrashExitCodeForHistogram(exit_code),
+                                       GetAllCrashExitCodes());
+    } else {
       IncrementPrefValue(prefs::kStabilityRendererCrashCount);
+
+      UMA_HISTOGRAM_CUSTOM_ENUMERATION("CrashExitCodes.Renderer",
+                                       MapCrashExitCodeForHistogram(exit_code),
+                                       GetAllCrashExitCodes());
+    }
 
     UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.ChildCrashes",
                              was_extension_process ? 2 : 1);
