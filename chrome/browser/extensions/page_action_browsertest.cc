@@ -1,0 +1,192 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension.h"
+#include "chrome/test/base/ui_test_utils.h"
+
+using extensions::Extension;
+
+const std::string kFeedPage = "files/feeds/feed.html";
+const std::string kNoFeedPage = "files/feeds/no_feed.html";
+const std::string kLocalization =
+    "files/extensions/browsertest/title_localized_pa/simple.html";
+
+const std::string kHashPageA =
+    "files/extensions/api_test/page_action/hash_change/test_page_A.html";
+const std::string kHashPageAHash = kHashPageA + "#asdf";
+const std::string kHashPageB =
+    "files/extensions/api_test/page_action/hash_change/test_page_B.html";
+
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionCrash25562) {
+  ASSERT_TRUE(test_server()->Start());
+
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAllowLegacyExtensionManifests);
+
+  // This page action will not show an icon, since it doesn't specify one but
+  // is included here to test for a crash (http://crbug.com/25562).
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("browsertest")
+                    .AppendASCII("crash_25562")));
+
+  // Navigate to the feed page.
+  GURL feed_url = test_server()->GetURL(kFeedPage);
+  ui_test_utils::NavigateToURL(browser(), feed_url);
+  // We should now have one page action ready to go in the LocationBar.
+  ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
+}
+
+// Tests that we can load page actions in the Omnibox.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageAction) {
+  ASSERT_TRUE(test_server()->Start());
+
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("subscribe_page_action")));
+
+  ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(0));
+
+  // Navigate to the feed page.
+  GURL feed_url = test_server()->GetURL(kFeedPage);
+  ui_test_utils::NavigateToURL(browser(), feed_url);
+  // We should now have one page action ready to go in the LocationBar.
+  ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
+
+  // Navigate to a page with no feed.
+  GURL no_feed = test_server()->GetURL(kNoFeedPage);
+  ui_test_utils::NavigateToURL(browser(), no_feed);
+  // Make sure the page action goes away.
+  ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(0));
+}
+
+// Tests that we don't lose the page action icon on in-page navigations.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionInPageNavigation) {
+  ASSERT_TRUE(test_server()->Start());
+
+  FilePath extension_path(test_data_dir_.AppendASCII("api_test")
+                                        .AppendASCII("page_action")
+                                        .AppendASCII("hash_change"));
+  ASSERT_TRUE(LoadExtension(extension_path));
+
+  // Page action should become visible when we navigate here.
+  GURL feed_url = test_server()->GetURL(kHashPageA);
+  ui_test_utils::NavigateToURL(browser(), feed_url);
+  ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
+
+  // In-page navigation, page action should remain.
+  feed_url = test_server()->GetURL(kHashPageAHash);
+  ui_test_utils::NavigateToURL(browser(), feed_url);
+  ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
+
+  // Not an in-page navigation, page action should go away.
+  feed_url = test_server()->GetURL(kHashPageB);
+  ui_test_utils::NavigateToURL(browser(), feed_url);
+  ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(0));
+}
+
+// Tests that the location bar forgets about unloaded page actions.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, UnloadPageAction) {
+  ASSERT_TRUE(test_server()->Start());
+
+  FilePath extension_path(test_data_dir_.AppendASCII("subscribe_page_action"));
+  ASSERT_TRUE(LoadExtension(extension_path));
+
+  // Navigation prompts the location bar to load page actions.
+  GURL feed_url = test_server()->GetURL(kFeedPage);
+  ui_test_utils::NavigateToURL(browser(), feed_url);
+  ASSERT_TRUE(WaitForPageActionCountChangeTo(1));
+
+  UnloadExtension(last_loaded_extension_id_);
+
+  // Make sure the page action goes away when it's unloaded.
+  ASSERT_TRUE(WaitForPageActionCountChangeTo(0));
+}
+
+// Tests that we can load page actions in the Omnibox.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionRefreshCrash) {
+  base::TimeTicks start_time = base::TimeTicks::Now();
+
+  ExtensionService* service = browser()->profile()->GetExtensionService();
+
+  size_t size_before = service->extensions()->size();
+
+  FilePath base_path = test_data_dir_.AppendASCII("browsertest")
+                                     .AppendASCII("crash_44415");
+  // Load extension A.
+  const Extension* extensionA = LoadExtension(base_path.AppendASCII("ExtA"));
+  ASSERT_TRUE(extensionA);
+  ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
+  ASSERT_EQ(size_before + 1, service->extensions()->size());
+
+  LOG(INFO) << "Load extension A done  : "
+            << (base::TimeTicks::Now() - start_time).InMilliseconds()
+            << " ms" << std::flush;
+
+  // Load extension B.
+  const Extension* extensionB = LoadExtension(base_path.AppendASCII("ExtB"));
+  ASSERT_TRUE(extensionB);
+  ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(2));
+  ASSERT_EQ(size_before + 2, service->extensions()->size());
+
+  LOG(INFO) << "Load extension B done  : "
+            << (base::TimeTicks::Now() - start_time).InMilliseconds()
+            << " ms" << std::flush;
+
+  std::string idA = extensionA->id();
+  ReloadExtension(extensionA->id());
+  // ExtensionA has changed, so refetch it.
+  ASSERT_EQ(size_before + 2, service->extensions()->size());
+  extensionA = service->extensions()->GetByID(idA);
+
+  LOG(INFO) << "Reload extension A done: "
+            << (base::TimeTicks::Now() - start_time).InMilliseconds()
+            << " ms" << std::flush;
+
+  ReloadExtension(extensionB->id());
+
+  LOG(INFO) << "Reload extension B done: "
+            << (base::TimeTicks::Now() - start_time).InMilliseconds()
+            << " ms" << std::flush;
+
+  // This is where it would crash, before http://crbug.com/44415 was fixed.
+  ReloadExtension(extensionA->id());
+
+  LOG(INFO) << "Test completed         : "
+            << (base::TimeTicks::Now() - start_time).InMilliseconds()
+            << " ms" << std::flush;
+}
+
+// Tests that tooltips of a page action icon can be specified using UTF8.
+// See http://crbug.com/25349.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationPageAction) {
+  ASSERT_TRUE(test_server()->Start());
+
+  ExtensionService* service = browser()->profile()->GetExtensionService();
+  const size_t size_before = service->extensions()->size();
+
+  FilePath extension_path(test_data_dir_.AppendASCII("browsertest")
+                                        .AppendASCII("title_localized_pa"));
+  const Extension* extension = LoadExtension(extension_path);
+  ASSERT_TRUE(extension);
+
+  // Any navigation prompts the location bar to load the page action.
+  GURL url = test_server()->GetURL(kLocalization);
+  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
+
+  ASSERT_EQ(size_before + 1, service->extensions()->size());
+
+  EXPECT_STREQ(WideToUTF8(L"Hreggvi\u00F0ur: l10n page action").c_str(),
+               extension->description().c_str());
+  EXPECT_STREQ(WideToUTF8(L"Hreggvi\u00F0ur is my name").c_str(),
+               extension->name().c_str());
+  int tab_id = ExtensionTabUtil::GetTabId(browser()->GetActiveWebContents());
+  EXPECT_STREQ(WideToUTF8(L"Hreggvi\u00F0ur").c_str(),
+               extension->page_action()->GetTitle(tab_id).c_str());
+}

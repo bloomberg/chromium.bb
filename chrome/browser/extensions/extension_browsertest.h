@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/scoped_temp_dir.h"
+#include "chrome/browser/extensions/extension_host.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
@@ -150,6 +151,13 @@ class ExtensionBrowserTest
   // Simulates a page navigating itself to an URL and waits for the
   // navigation.
   void NavigateInRenderer(content::WebContents* contents, const GURL& url);
+
+  // Looks for an ExtensionHost whose URL has the given path component
+  // (including leading slash).  Also verifies that the expected number of hosts
+  // are loaded.
+  ExtensionHost* FindHostWithPath(ExtensionProcessManager* manager,
+                                  const std::string& path,
+                                  int expected_hosts);
 
   // content::NotificationObserver
   virtual void Observe(int type,

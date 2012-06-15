@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
+#include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
@@ -519,6 +520,26 @@ void ExtensionBrowserTest::NavigateInRenderer(content::WebContents* contents,
   ASSERT_TRUE(result);
   observer.Wait();
   EXPECT_EQ(url, contents->GetController().GetLastCommittedEntry()->GetURL());
+}
+
+ExtensionHost* ExtensionBrowserTest::FindHostWithPath(
+    ExtensionProcessManager* manager,
+    const std::string& path,
+    int expected_hosts) {
+  ExtensionHost* host = NULL;
+  int num_hosts = 0;
+  ExtensionProcessManager::ExtensionHostSet background_hosts =
+      manager->background_hosts();
+  for (ExtensionProcessManager::const_iterator iter = background_hosts.begin();
+       iter != background_hosts.end(); ++iter) {
+    if ((*iter)->GetURL().path() == path) {
+      EXPECT_FALSE(host);
+      host = *iter;
+    }
+    num_hosts++;
+  }
+  EXPECT_EQ(expected_hosts, num_hosts);
+  return host;
 }
 
 void ExtensionBrowserTest::Observe(
