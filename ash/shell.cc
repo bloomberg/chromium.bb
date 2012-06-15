@@ -409,13 +409,10 @@ void Shell::Init() {
   stacking_controller_.reset(new internal::StackingController);
   visibility_controller_.reset(new internal::VisibilityController);
   drag_drop_controller_.reset(new internal::DragDropController);
-  tooltip_controller_.reset(new internal::TooltipController(
-      drag_drop_controller_.get()));
   if (delegate_.get())
     user_action_client_.reset(delegate_->CreateUserActionClient());
   window_modality_controller_.reset(new internal::WindowModalityController);
   AddEnvEventFilter(window_modality_controller_.get());
-  AddEnvEventFilter(tooltip_controller_.get());
 
   magnification_controller_.reset(new internal::MagnificationController);
   high_contrast_controller_.reset(new HighContrastController);
@@ -445,6 +442,13 @@ void Shell::Init() {
     resize_shadow_controller_.reset(new internal::ResizeShadowController());
     shadow_controller_.reset(new internal::ShadowController());
   }
+
+  // Tooltip controller must be created after shadow controller so that the
+  // tooltip window can be initialized with appropriate shadows.
+  tooltip_controller_.reset(new internal::TooltipController(
+      drag_drop_controller_.get()));
+  AddEnvEventFilter(tooltip_controller_.get());
+  aura::client::SetTooltipClient(root_window, tooltip_controller_.get());
 
   if (!delegate_.get() || delegate_->IsUserLoggedIn())
     CreateLauncher();
@@ -659,7 +663,6 @@ void Shell::InitRootWindowController(
   aura::client::SetActivationClient(root_window, activation_controller_.get());
   aura::client::SetVisibilityClient(root_window, visibility_controller_.get());
   aura::client::SetDragDropClient(root_window, drag_drop_controller_.get());
-  aura::client::SetTooltipClient(root_window, tooltip_controller_.get());
   aura::client::SetCaptureClient(root_window, capture_controller_.get());
 
   if (nested_dispatcher_controller_.get()) {
