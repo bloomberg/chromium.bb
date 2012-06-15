@@ -590,19 +590,22 @@ proxySettingsToString = function(config) {
     modes.push(lines);
   }
 
-  // If we didn't find any proxy settings modes, we are using DIRECT.
-  if (modes.length < 1)
-    return 'Use DIRECT connections.';
-
-  // If there was just one mode, don't bother numbering it.
-  if (modes.length == 1)
-    return modes[0].join('\n');
-
-  // Otherwise concatenate all of the modes into a numbered list
-  // (which correspond with the fallback order).
   var result = [];
-  for (var i = 0; i < modes.length; ++i)
-    result.push(indentLines('(' + (i + 1) + ') ', modes[i]));
+  if (modes.length < 1) {
+    // If we didn't find any proxy settings modes, we are using DIRECT.
+    result.push('Use DIRECT connections.');
+  } else if (modes.length == 1) {
+    // If there was just one mode, don't bother numbering it.
+    result.push(modes[0].join('\n'));
+  } else {
+    // Otherwise concatenate all of the modes into a numbered list
+    // (which correspond with the fallback order).
+    for (var i = 0; i < modes.length; ++i)
+      result.push(indentLines('(' + (i + 1) + ') ', modes[i]));
+  }
+
+  if (config.source != undefined && config.source != 'UNKNOWN')
+    result.push('Source: ' + config.source);
 
   return result.join('\n');
 };

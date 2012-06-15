@@ -1167,7 +1167,8 @@ function painterTestProxyConfig() {
              '<local>'
            ],
            'pac_url': 'https://config/wpad.dat',
-           'single_proxy': 'cache-proxy:3128'
+           'single_proxy': 'cache-proxy:3128',
+           'source': 'SYSTEM'
          },
          'old_config': {
            'auto_detect': true
@@ -1194,7 +1195,8 @@ function painterTestProxyConfig() {
     '                                   Bypass list: \n' +
     '                                     *.local\n' +
     '                                     foo\n' +
-    '                                     <local>';
+    '                                     <local>\n' +
+    '                               Source: SYSTEM';
 
   return testCase;
 }
