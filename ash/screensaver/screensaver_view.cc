@@ -22,6 +22,10 @@ namespace {
 
 ash::internal::ScreensaverView* g_instance = NULL;
 
+// Do not restart the screensaver again if it has
+// terminated kMaxTerminations times already.
+const int kMaxTerminations = 3;
+
 }  // namespace
 
 namespace ash {
@@ -62,16 +66,26 @@ views::View* ScreensaverView::GetContentsView() {
 // ScreensaverView, content::WebContentsObserver implementation.
 void ScreensaverView::RenderViewGone(
     base::TerminationStatus status) {
-  LOG(ERROR) << "Screensaver terminated with status " << status
-             << ", reloading.";
-  // Reload the screensaver url into the webcontents.
-  LoadScreensaver();
+  LOG(ERROR) << "Screensaver terminated with status " << status;
+  termination_count_++;
+
+  if (termination_count_ < kMaxTerminations) {
+    LOG(ERROR) << termination_count_
+               << " terminations is under the threshold of "
+               << kMaxTerminations
+               << "; reloading Screensaver.";
+    LoadScreensaver();
+  } else {
+    LOG(ERROR) << "Exceeded termination threshold, closing Screensaver.";
+    ScreensaverView::CloseScreensaver();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // ScreensaverView private methods.
 ScreensaverView::ScreensaverView(const GURL& url)
     : url_(url),
+      termination_count_(0),
       screensaver_webview_(NULL),
       container_window_(NULL) {
 }

@@ -72,6 +72,10 @@ class ScreensaverView : public views::WidgetDelegateView,
   // URL to show in the screensaver.
   GURL url_;
 
+  // Number of times the screensaver has been terminated (usually this will be
+  // synonymous with the number of times it has crashed).
+  int termination_count_;
+
   // Host for the extension that implements this dialog.
   views::WebView* screensaver_webview_;
 
