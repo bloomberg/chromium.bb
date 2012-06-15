@@ -802,6 +802,13 @@ const Experiment kExperiments[] = {
     kOsLinux | kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kNewCheckboxStyle),
   },
+  {
+    "disable-non-fullscreen-mouse-lock",
+    IDS_FLAGS_DISABLE_NON_FULLSCREEN_MOUSE_LOCK_NAME,
+    IDS_FLAGS_DISABLE_NON_FULLSCREEN_MOUSE_LOCK_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kDisableNonFullscreenMouseLock),
+  },
 };
 
 const Experiment* experiments = kExperiments;

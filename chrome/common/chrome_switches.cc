@@ -352,6 +352,11 @@ const char kDisableIPv6[]                   = "disable-ipv6";
 // attempt to use the existing connection.
 const char kDisableIPPooling[]              = "disable-ip-pooling";
 
+// Disables Mouse Lock being permitted when the browser is not currently
+// in tab fullscreen.
+const char kDisableNonFullscreenMouseLock[] =
+    "disable-non-fullscreen-mouse-lock";
+
 // Avoid doing expensive animations upon login.
 const char kDisableLoginAnimations[]        = "disable-login-animations";
 

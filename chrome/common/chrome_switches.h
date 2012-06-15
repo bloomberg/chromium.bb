@@ -103,6 +103,7 @@ extern const char kDisableInBrowserThumbnailing[];
 extern const char kDisableInternalFlash[];
 extern const char kDisableIPv6[];
 extern const char kDisableIPPooling[];
+extern const char kDisableNonFullscreenMouseLock[];
 extern const char kDisableNTPOtherSessionsMenu[];
 extern const char kDisableLoginAnimations[];
 extern const char kDisablePreconnect[];
