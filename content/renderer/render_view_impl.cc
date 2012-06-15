@@ -175,8 +175,8 @@
 #include "webkit/glue/alt_error_page_resource_fetcher.h"
 #include "webkit/glue/dom_operations.h"
 #include "webkit/glue/glue_serialize.h"
-#include "webkit/glue/webdropdata.h"
 #include "webkit/glue/web_intent_service_data.h"
+#include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webkit_constants.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/weburlresponse_extradata_impl.h"
@@ -528,7 +528,6 @@ RenderViewImpl::RenderViewImpl(
       cached_has_main_frame_vertical_scrollbar_(false),
       context_has_swapbuffers_complete_callback_(false),
       queried_for_swapbuffers_complete_callback_(false),
-      context_is_web_graphics_context_3d_command_buffer_impl_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(cookie_jar_(this)),
       geolocation_dispatcher_(NULL),
       input_tag_speech_dispatcher_(NULL),
@@ -1755,7 +1754,6 @@ WebGraphicsContext3D* RenderViewImpl::createGraphicsContext3D(
             false /* bind generates resources */,
             content::CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE))
       return NULL;
-    context_is_web_graphics_context_3d_command_buffer_impl_ = true;
     return context.release();
   }
 }
@@ -2365,15 +2363,14 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
   // platforms.  This is a startup-time optimization.  When new VDA
   // implementations are added, relax the #if above.
   // TODO(posciak,fischman): Temporarily remove this path as it triggers
-  // crbug.com/129103 and webk.it/88815.
+  // webk.it/88815.
 //#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
 #if 0
-  // Note we don't actually use the result of this blind down-cast unless it's
-  // valid (not NULL and of the right type).
   WebGraphicsContext3DCommandBufferImpl* context3d =
-      static_cast<WebGraphicsContext3DCommandBufferImpl*>(
-          webview()->graphicsContext3D());
-  if (context_is_web_graphics_context_3d_command_buffer_impl_ && context3d) {
+      WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
+          RenderThreadImpl::current(),
+          WebKit::WebGraphicsContext3D::Attributes());
+  if (context3d) {
     MessageLoop* factories_loop =
         RenderThreadImpl::current()->compositor_thread() ?
         RenderThreadImpl::current()->compositor_thread()->GetWebThread()

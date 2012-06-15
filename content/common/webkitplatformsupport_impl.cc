@@ -62,19 +62,8 @@ WebKitPlatformSupportImpl::createOffscreenGraphicsContext3D(
     return webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWebView(
             attributes, false);
   } else {
-    base::WeakPtr<WebGraphicsContext3DSwapBuffersClient> null_client;
-    GpuChannelHostFactory* factory = GetGpuChannelHostFactory();
-    if (!factory)
-      return NULL;
-    scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
-        new WebGraphicsContext3DCommandBufferImpl(
-            0, GURL(), factory, null_client));
-    if (!context->Initialize(
-        attributes,
-        false,
-        CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE))
-      return NULL;
-    return context.release();
+    return WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
+        GetGpuChannelHostFactory(), attributes);
   }
 }
 

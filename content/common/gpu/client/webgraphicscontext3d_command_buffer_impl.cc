@@ -24,6 +24,7 @@
 #include "base/synchronization/lock.h"
 #include "content/common/gpu/gpu_memory_allocation.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
+#include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
@@ -1437,7 +1438,7 @@ bool WebGraphicsContext3DCommandBufferImpl::IsCommandBufferContextLost() {
 
 // static
 WebGraphicsContext3DCommandBufferImpl*
-    WebGraphicsContext3DCommandBufferImpl::CreateViewContext (
+WebGraphicsContext3DCommandBufferImpl::CreateViewContext(
       GpuChannelHostFactory* factory,
       int32 surface_id,
       const char* allowed_extensions,
@@ -1457,6 +1458,24 @@ WebGraphicsContext3DCommandBufferImpl*
     return NULL;
   }
   return context;
+}
+
+// static
+WebGraphicsContext3DCommandBufferImpl*
+WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
+    GpuChannelHostFactory* factory,
+    const WebGraphicsContext3D::Attributes& attributes) {
+  if (!factory)
+    return NULL;
+  base::WeakPtr<WebGraphicsContext3DSwapBuffersClient> null_client;
+  scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
+      new WebGraphicsContext3DCommandBufferImpl(
+          0, GURL(), factory, null_client));
+  content::CauseForGpuLaunch cause =
+      content::CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
+  if (context->Initialize(attributes, false, cause))
+    return context.release();
+  return NULL;
 }
 
 void WebGraphicsContext3DCommandBufferImpl::

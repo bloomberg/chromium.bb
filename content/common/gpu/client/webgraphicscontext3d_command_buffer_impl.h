@@ -127,6 +127,12 @@ class WebGraphicsContext3DCommandBufferImpl
       const GURL& active_url,
       content::CauseForGpuLaunch cause);
 
+  // Create & initialize a WebGraphicsContext3DCommandBufferImpl.  Return NULL
+  // on any failure.
+  static WebGraphicsContext3DCommandBufferImpl* CreateOffscreenContext(
+      GpuChannelHostFactory* factory,
+      const WebGraphicsContext3D::Attributes& attributes);
+
   //----------------------------------------------------------------------
   // WebGraphicsContext3D methods
 

@@ -1272,13 +1272,6 @@ class RenderViewImpl : public RenderWidget,
   bool context_has_swapbuffers_complete_callback_;
   bool queried_for_swapbuffers_complete_callback_;
 
-  // Whether the WebGraphicsContext3D handed out by createGraphicsContext3D() a
-  // WebGraphicsContext3DCommandBufferImpl.  This is a HACK required by the fact
-  // that there's no other way to tell whether webview()->graphicsContext3D()
-  // has a ContentGLContext (and thus a CommandBufferProxy & associated
-  // route_id) or not.
-  bool context_is_web_graphics_context_3d_command_buffer_impl_;
-
   // Helper objects ------------------------------------------------------------
 
   RendererWebCookieJarImpl cookie_jar_;
