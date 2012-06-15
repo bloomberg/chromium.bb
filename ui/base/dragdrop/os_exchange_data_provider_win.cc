@@ -246,7 +246,7 @@ IDataObject* OSExchangeDataProviderWin::GetIDataObject(
 }
 
 // static
-IAsyncOperation* OSExchangeDataProviderWin::GetIAsyncOperation(
+IDataObjectAsyncCapability* OSExchangeDataProviderWin::GetIAsyncOperation(
     const OSExchangeData& data) {
   return static_cast<const OSExchangeDataProviderWin*>(&data.provider())->
       async_operation();
@@ -754,7 +754,7 @@ HRESULT DataObjectImpl::EnumDAdvise(IEnumSTATDATA** enumerator) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// DataObjectImpl, IAsyncOperation implementation:
+// DataObjectImpl, IDataObjectAsyncCapability implementation:
 
 HRESULT DataObjectImpl::EndOperation(
     HRESULT result, IBindCtx* reserved, DWORD effects) {
@@ -790,8 +790,9 @@ HRESULT DataObjectImpl::QueryInterface(const IID& iid, void** object) {
     return E_POINTER;
   if (IsEqualIID(iid, IID_IDataObject) || IsEqualIID(iid, IID_IUnknown)) {
     *object = static_cast<IDataObject*>(this);
-  } else if (in_async_mode_ && IsEqualIID(iid, IID_IAsyncOperation)) {
-    *object = static_cast<IAsyncOperation*>(this);
+  } else if (in_async_mode_ &&
+             IsEqualIID(iid, IID_IDataObjectAsyncCapability)) {
+    *object = static_cast<IDataObjectAsyncCapability*>(this);
   } else {
     *object = NULL;
     return E_NOINTERFACE;

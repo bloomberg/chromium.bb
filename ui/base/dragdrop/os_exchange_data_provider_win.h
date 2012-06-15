@@ -10,6 +10,15 @@
 #include <shlobj.h>
 #include <string>
 
+// Win8 SDK compatibility, see http://goo.gl/fufvl for more information.
+// "Note: This interface has been renamed IDataObjectAsyncCapability."
+// If we're building on pre-8 we define it to its old name. It's documented as
+// being binary compatible.
+#ifndef __IDataObjectAsyncCapability_FWD_DEFINED__
+#define IDataObjectAsyncCapability IAsyncOperation
+#define IID_IDataObjectAsyncCapability IID_IAsyncOperation
+#endif
+
 #include "base/win/scoped_comptr.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/ui_export.h"
@@ -18,7 +27,7 @@ namespace ui {
 
 class DataObjectImpl : public DownloadFileObserver,
                        public IDataObject,
-                       public IAsyncOperation {
+                       public IDataObjectAsyncCapability {
  public:
   class Observer {
    public:
@@ -55,7 +64,7 @@ class DataObjectImpl : public DownloadFileObserver,
   HRESULT __stdcall DUnadvise(DWORD connection);
   HRESULT __stdcall EnumDAdvise(IEnumSTATDATA** enumerator);
 
-  // IAsyncOperation implementation:
+  // IDataObjectAsyncCapability implementation:
   HRESULT __stdcall EndOperation(
       HRESULT result, IBindCtx* reserved, DWORD effects);
   HRESULT __stdcall GetAsyncMode(BOOL* is_op_async);
@@ -138,7 +147,8 @@ class UI_EXPORT OSExchangeDataProviderWin : public OSExchangeData::Provider {
 
   static DataObjectImpl* GetDataObjectImpl(const OSExchangeData& data);
   static IDataObject* GetIDataObject(const OSExchangeData& data);
-  static IAsyncOperation* GetIAsyncOperation(const OSExchangeData& data);
+  static IDataObjectAsyncCapability* GetIAsyncOperation(
+      const OSExchangeData& data);
 
   explicit OSExchangeDataProviderWin(IDataObject* source);
   OSExchangeDataProviderWin();
@@ -146,7 +156,7 @@ class UI_EXPORT OSExchangeDataProviderWin : public OSExchangeData::Provider {
   virtual ~OSExchangeDataProviderWin();
 
   IDataObject* data_object() const { return data_.get(); }
-  IAsyncOperation* async_operation() const { return data_.get(); }
+  IDataObjectAsyncCapability* async_operation() const { return data_.get(); }
 
   // OSExchangeData::Provider methods.
   virtual void SetString(const string16& data);
