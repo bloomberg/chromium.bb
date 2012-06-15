@@ -9,24 +9,12 @@
 namespace chromeos {
 
 MockBluetoothDevice::MockBluetoothDevice(MockBluetoothAdapter* adapter,
-                                         const std::string& name,
-                                         const std::string& address,
-                                         bool paired,
-                                         bool bonded,
-                                         bool connected)
-    : BluetoothDevice(adapter),
-      name_(UTF8ToUTF16(name)),
-      address_(address) {
+      const std::string& name, const std::string& address)
+    : BluetoothDevice(adapter), name_(UTF8ToUTF16(name)), address_(address) {
   ON_CALL(*this, GetName())
       .WillByDefault(testing::Return(name_));
   ON_CALL(*this, address())
       .WillByDefault(testing::ReturnRef(address_));
-  ON_CALL(*this, IsPaired())
-      .WillByDefault(testing::Return(paired));
-  ON_CALL(*this, IsBonded())
-      .WillByDefault(testing::Return(bonded));
-  ON_CALL(*this, IsConnected())
-      .WillByDefault(testing::Return(connected));
 }
 
 MockBluetoothDevice::~MockBluetoothDevice() {}

@@ -43,23 +43,6 @@ chromeos::BluetoothAdapter* GetMutableAdapter(Profile* profile) {
   return GetEventRouter(profile)->GetMutableAdapter();
 }
 
-// Fill in a Device object from a chromeos::BluetoothDevice.
-void PopulateApiDevice(const chromeos::BluetoothDevice& device,
-                       extensions::api::experimental_bluetooth::Device* out) {
-  out->name = UTF16ToUTF8(device.GetName());
-  out->address = device.address();
-  out->paired = device.IsPaired();
-  out->bonded = device.IsBonded();
-  out->connected = device.IsConnected();
-}
-
-// The caller takes ownership of the returned pointer.
-base::Value* BluetoothDeviceToValue(const chromeos::BluetoothDevice& device) {
-  extensions::api::experimental_bluetooth::Device api_device;
-  PopulateApiDevice(device, &api_device);
-  return api_device.ToValue().release();
-}
-
 }  // namespace
 #endif
 
@@ -120,8 +103,12 @@ bool BluetoothGetDevicesWithServiceUUIDFunction::RunImpl() {
   ListValue* matches = new ListValue;
   for (BluetoothAdapter::ConstDeviceList::const_iterator i =
       devices.begin(); i != devices.end(); ++i) {
-    if ((*i)->ProvidesServiceWithUUID(params->uuid))
-      matches->Append(BluetoothDeviceToValue(**i));
+    if ((*i)->ProvidesServiceWithUUID(params->uuid)) {
+      experimental_bluetooth::Device device;
+      device.name = UTF16ToUTF8((*i)->GetName());
+      device.address = (*i)->address();
+      matches->Append(device.ToValue().release());
+    }
   }
   result_.reset(matches);
 
@@ -135,8 +122,12 @@ void BluetoothGetDevicesWithServiceNameFunction::AddDeviceIfTrue(
     ListValue* list, const BluetoothDevice* device, bool result) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  if (result)
-    list->Append(BluetoothDeviceToValue(*device));
+  if (result) {
+    experimental_bluetooth::Device device_result;
+    device_result.name = UTF16ToUTF8(device->GetName());
+    device_result.address = device->address();
+    list->Append(device_result.ToValue().release());
+  }
 
   callbacks_pending_--;
   if (callbacks_pending_ == 0) {
@@ -184,7 +175,8 @@ void BluetoothConnectFunction::ConnectToServiceCallback(
     int socket_id = GetEventRouter(profile())->RegisterSocket(socket);
 
     experimental_bluetooth::Socket result_socket;
-    PopulateApiDevice(*device, &result_socket.device);
+    result_socket.device.address = device->address();
+    result_socket.device.name = UTF16ToUTF8(device->GetName());
     result_socket.service_uuid = service_uuid;
     result_socket.id = socket_id;
     result_.reset(result_socket.ToValue().release());

@@ -16,19 +16,12 @@ namespace chromeos {
 
 class MockBluetoothDevice : public BluetoothDevice {
  public:
-  MockBluetoothDevice(MockBluetoothAdapter* adapter,
-                      const std::string& name,
-                      const std::string& address,
-                      bool paired,
-                      bool bonded,
-                      bool connected);
+  explicit MockBluetoothDevice(MockBluetoothAdapter* adapter,
+      const std::string& name, const std::string& address);
   virtual ~MockBluetoothDevice();
 
   MOCK_CONST_METHOD0(address, const std::string&());
   MOCK_CONST_METHOD0(GetName, string16());
-  MOCK_CONST_METHOD0(IsPaired, bool());
-  MOCK_CONST_METHOD0(IsBonded, bool());
-  MOCK_CONST_METHOD0(IsConnected, bool());
   MOCK_CONST_METHOD1(ProvidesServiceWithUUID, bool(const std::string&));
 
   MOCK_METHOD3(SetOutOfBandPairingData,

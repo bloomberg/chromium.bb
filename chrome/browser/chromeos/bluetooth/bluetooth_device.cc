@@ -194,10 +194,6 @@ string16 BluetoothDevice::GetAddressWithLocalizedDeviceTypeName() const {
   }
 }
 
-bool BluetoothDevice::IsPaired() const { return !object_path_.value().empty(); }
-
-bool BluetoothDevice::IsBonded() const { return bonded_; }
-
 bool BluetoothDevice::IsConnected() const {
   // TODO(keybuk): examine protocol-specific connected state, such as Input
   return connected_;

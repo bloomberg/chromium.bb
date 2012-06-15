@@ -135,11 +135,9 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, IsPowered) {
 
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevicesWithServiceUUID) {
   testing::NiceMock<chromeos::MockBluetoothDevice> device1(
-      mock_adapter_, "d1", "11:12:13:14:15:16",
-      true /* paired */, false /* bonded */, true /* connected */);
+      mock_adapter_, "d1", "11:12:13:14:15:16");
   testing::NiceMock<chromeos::MockBluetoothDevice> device2(
-      mock_adapter_, "d2", "21:22:23:24:25:26",
-      false /* paired */, true /* bonded */, false /* connected */);
+      mock_adapter_, "d2", "21:22:23:24:25:26");
   chromeos::BluetoothAdapter::ConstDeviceList devices;
   devices.push_back(&device1);
   devices.push_back(&device2);
@@ -173,18 +171,6 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevicesWithServiceUUID) {
   std::string name;
   ASSERT_TRUE(device->GetString("name", &name));
   EXPECT_EQ("d2", name);
-  std::string address;
-  ASSERT_TRUE(device->GetString("address", &address));
-  EXPECT_EQ("21:22:23:24:25:26", address);
-  bool paired;
-  ASSERT_TRUE(device->GetBoolean("paired", &paired));
-  EXPECT_EQ(false, paired);
-  bool bonded;
-  ASSERT_TRUE(device->GetBoolean("bonded", &bonded));
-  EXPECT_EQ(true, bonded);
-  bool connected;
-  ASSERT_TRUE(device->GetBoolean("connected", &connected));
-  EXPECT_EQ(false, connected);
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetLocalOutOfBandPairingData) {
