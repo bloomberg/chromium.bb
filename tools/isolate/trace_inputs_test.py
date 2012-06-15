@@ -14,6 +14,11 @@ ROOT_DIR = os.path.dirname(FILE_NAME)
 import trace_inputs
 
 
+def join_norm(*args):
+  """Joins and normalizes path in a single step."""
+  return unicode(os.path.normpath(os.path.join(*args)))
+
+
 class TraceInputs(unittest.TestCase):
   def test_process_quoted_arguments(self):
     test_cases = (
@@ -39,10 +44,13 @@ class TraceInputs(unittest.TestCase):
     self.assertEquals(os.path.join('/usr', '$FOO/bar'), actual.full_path)
     self.assertEquals(True, actual.tainted)
 
-
-def join_norm(*args):
-  """Joins and normalizes path in a single step."""
-  return unicode(os.path.normpath(os.path.join(*args)))
+  def test_native_case_windows(self):
+    if sys.platform != 'win32':
+      return
+    windows_path = os.environ['SystemRoot']
+    self.assertEquals(
+        trace_inputs.get_native_path_case(windows_path.lower()),
+        trace_inputs.get_native_path_case(windows_path.upper()))
 
 
 if sys.platform != 'win32':

@@ -208,8 +208,10 @@ if sys.platform == 'win32':
     # Go figure why GetShortPathName() is needed.
     path = GetLongPathName(GetShortPathName(path))
     if path.startswith('\\\\?\\'):
-      return path[4:]
-    return path
+      path = path[4:]
+    # Always upper case the first letter since GetLongPathName() will return the
+    # drive letter in the case it was given.
+    return path[0].upper() + path[1:]
 
 
   def CommandLineToArgvW(command_line):
