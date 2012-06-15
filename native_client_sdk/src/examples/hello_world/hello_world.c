@@ -22,6 +22,20 @@
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/ppp_messaging.h"
 
+enum {
+  newlib = 0,
+  glibc = 1,
+  pnacl = 2,
+  host = 3,
+  TCMAX
+};
+
+static const char *s_TCNames[TCMAX] = {
+  "Hello World (newlib)!",
+  "Hello World (glibc)!",
+  "Hello World (pnacl)!",
+  "Hello World (host plugin)!",
+};
 
 static PPB_Messaging* ppb_messaging_interface = NULL;
 static PPB_Var* ppb_var_interface = NULL;
@@ -69,7 +83,7 @@ static PP_Bool Instance_DidCreate(PP_Instance instance,
                                   const char* argn[],
                                   const char* argv[]) {
   ppb_messaging_interface->PostMessage(instance,
-                                       CStrToVar("Hello World: " TCNAME));
+                                       CStrToVar(s_TCNames[TCNAME]));
   return PP_TRUE;
 }
 
