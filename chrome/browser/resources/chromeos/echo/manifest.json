@@ -2,10 +2,10 @@
   // chrome-extension://dfgpjpjbeeflfdhdpabeeeheghdmeigc
   "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCzzB6c4Z0cusW6trA/issIOyMaxXtPfMYQclO0Dg5rOrS8SZLOAio0G4TpYDvY8z/BPdAH3a1BOSeetey8tBSdcIhOoYpqN3i9yIFuZVwHuOt83AWnJrxinVUpY05HtTblopGvGtQNlCR5crMdG+uc2yI3NlPOFZVDrFXtOv/LXQIDAQAB",
   "name": "Chrome OS ECHO Extension",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Chrome OS ECHO Extension",
   "manifest_version": 2,
-  "content_security_policy": "default-src 'self'; script-src 'self' https://apis.google.com; style-src 'self'; frame-src 'self' https://chromeos-registration.googleapis.com",
+  "content_security_policy": "default-src 'self'; connect-src 'self' https://chromeos-registration.googleapis.com",
   "permissions": [
       "cookies",
       "echoPrivate",
