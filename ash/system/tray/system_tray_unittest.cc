@@ -103,7 +103,14 @@ TEST_F(SystemTrayTest, SystemTrayDefaultView) {
   ASSERT_FALSE(tray->CloseBubbleForTest());
 }
 
-TEST_F(SystemTrayTest, SystemTrayTestItems) {
+#if defined(OS_WIN)
+// This test is crashing on windows. See http://crbug.com/127539.
+#define MAYBE_SystemTrayTestItems DISABLED_SystemTrayTestItems
+#else
+#define MAYBE_SystemTrayTestItems SystemTrayTestItems
+#endif
+
+TEST_F(SystemTrayTest, MAYBE_SystemTrayTestItems) {
   SystemTray* tray = GetSystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
