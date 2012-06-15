@@ -79,6 +79,20 @@ var pyautoAPI = {
     this.sendDone_();
   },
 
+  /**
+   * Execute the default task for the selected item.
+   */
+  executeDefaultTask: function() {
+    switch (fileManager.dialogType_) {
+      case FileManager.DialogType.FULL_PAGE:
+        fileManager.dispatchDefaultTask_();
+        break;
+      default:
+        throw new Error('Cannot execute a task in this dialog type.');
+    }
+    this.sendDone_();
+  },
+
   executeClipboardCommand_: function(command) {
     // Input should not be focused, or the cut/cop/paste command
     // will be treated as textual editing.
