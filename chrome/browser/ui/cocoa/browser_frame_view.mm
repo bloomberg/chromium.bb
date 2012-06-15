@@ -230,6 +230,8 @@ static BOOL gCanGetCornerRadius = NO;
 
     // Align the phase to physical pixels so resizing the window under HiDPI
     // doesn't cause wiggling of the theme.
+    // NOTE: This is a correct use of base coordinate system, to perform pixel
+    // alignment.
     phase = [frameView convertPointToBase:phase];
     phase.x = floor(phase.x);
     phase.y = floor(phase.y);
