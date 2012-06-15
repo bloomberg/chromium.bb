@@ -213,8 +213,59 @@ bool Sandbox::isSingleThreaded(int proc_fd) {
   return true;
 }
 
+static bool isDenied(Sandbox::ErrorCode code) {
+  return code == Sandbox::SB_TRAP ||
+        (code >= (Sandbox::ErrorCode)1 &&
+         code <= (Sandbox::ErrorCode)4095);  // errno value
+}
+
+void Sandbox::policySanityChecks(EvaluateSyscall syscallEvaluator,
+                                 EvaluateArguments) {
+  // Do some sanity checks on the policy. This will warn users if they do
+  // things that are likely unsafe and unintended.
+  // We also have similar checks later, when we actually compile the BPF
+  // program. That catches problems with incorrectly stacked evaluators.
+  if (!isDenied(syscallEvaluator(-1))) {
+    die("Negative system calls should always be disallowed by policy");
+  }
+#ifndef NDEBUG
+#if defined(__i386__) || defined(__x86_64__)
+#if defined(__x86_64__) && defined(__ILP32__)
+  for (unsigned int sysnum = MIN_SYSCALL & ~0x40000000u;
+       sysnum <= (MAX_SYSCALL & ~0x40000000u);
+       ++sysnum) {
+    if (!isDenied(syscallEvaluator(sysnum))) {
+      die("In x32 mode, you should not allow any non-x32 system calls");
+    }
+  }
+#else
+  for (unsigned int sysnum = MIN_SYSCALL | 0x40000000u;
+       sysnum <= (MAX_SYSCALL | 0x40000000u);
+       ++sysnum) {
+    if (!isDenied(syscallEvaluator(sysnum))) {
+      die("x32 system calls should be explicitly disallowed");
+    }
+  }
+#endif
+#endif
+#endif
+  // Check interesting boundary values just outside of the valid system call
+  // range: 0x7FFFFFFF, 0x80000000, 0xFFFFFFFF, MIN_SYSCALL-1, MAX_SYSCALL+1.
+  // They all should be denied.
+  if (!isDenied(syscallEvaluator(std::numeric_limits<int>::max())) ||
+      !isDenied(syscallEvaluator(std::numeric_limits<int>::min())) ||
+      !isDenied(syscallEvaluator(-1)) ||
+      !isDenied(syscallEvaluator(static_cast<int>(MIN_SYSCALL) - 1)) ||
+      !isDenied(syscallEvaluator(static_cast<int>(MAX_SYSCALL) + 1))) {
+    die("Even for default-allow policies, you must never allow system calls "
+        "outside of the standard system call range");
+  }
+  return;
+}
+
 void Sandbox::setSandboxPolicy(EvaluateSyscall syscallEvaluator,
                                EvaluateArguments argumentEvaluator) {
+  policySanityChecks(syscallEvaluator, argumentEvaluator);
   evaluators_.push_back(std::make_pair(syscallEvaluator, argumentEvaluator));
 }
 
@@ -288,56 +339,18 @@ void Sandbox::installFilter() {
     BPF_STMT(BPF_RET+BPF_K, SECCOMP_RET_KILL));
 #endif
 
-  // Evaluate all possible system calls and depending on their
-  // exit codes generate a BPF filter.
-  // This is very inefficient right now. We need to be much smarter
-  // eventually.
-  // We currently incur a O(N) overhead on each system call, with N
-  // being the number of system calls. It is easy to get this down to
-  // O(log_2(M)) with M being the number of system calls that need special
-  // treatment.
-  EvaluateSyscall evaluateSyscall = evaluators_.begin()->first;
-  for (uint32_t sysnum = MIN_SYSCALL; sysnum <= MAX_SYSCALL+1; ++sysnum) {
-    ErrorCode err = evaluateSyscall(sysnum);
-    int ret;
-    switch (err) {
-    case SB_INSPECT_ARG_1...SB_INSPECT_ARG_6:
-      die("Not implemented");
-    case SB_TRAP:
-      ret = SECCOMP_RET_TRAP;
-      break;
-    case SB_ALLOWED:
-      ret = SECCOMP_RET_ALLOW;
-      break;
-    default:
-      if (err >= static_cast<ErrorCode>(1) &&
-          err <= static_cast<ErrorCode>(4096)) {
-        // We limit errno values to a reasonable range. In fact, the Linux ABI
-        // doesn't support errno values outside of this range.
-        ret = SECCOMP_RET_ERRNO + err;
-      } else {
-        die("Invalid ErrorCode reported by sandbox system call evaluator");
-      }
-      break;
-    }
-    if (sysnum <= MAX_SYSCALL) {
-      // We compute the default behavior (e.g. fail open or fail closed) by
-      // calling the system call evaluator with a system call bigger than
-      // MAX_SYSCALL.
-      // In other words, the very last iteration in our loop becomes the
-      // fallback case and we don't need to do any comparisons.
-      program->push_back((struct sock_filter)
-        BPF_JUMP(BPF_JMP+BPF_JEQ+BPF_K, sysnum, 0, 1));
-    }
-    program->push_back((struct sock_filter)
-      BPF_STMT(BPF_RET+BPF_K, ret));
-  }
+  // Evaluate all possible system calls and group their ErrorCodes into
+  // ranges of identical codes.
+  Ranges ranges;
+  findRanges(&ranges);
+
+  // Compile the system call ranges to an optimized BPF program.
+  rangesToBPF(program, ranges);
 
   // Everything that isn't allowed is forbidden. Eventually, we would
   // like to have a way to log forbidden calls, when in debug mode.
-  // TODO: raise a suitable SIGSYS signal
   program->push_back((struct sock_filter)
-    BPF_STMT(BPF_RET+BPF_K, SECCOMP_RET_KILL));
+    BPF_STMT(BPF_RET+BPF_K, SECCOMP_RET_ERRNO + SECCOMP_DENY_ERRNO));
 
   // Make sure compilation resulted in BPF program that executes
   // correctly. Otherwise, there is an internal error in our BPF compiler.
@@ -374,6 +387,100 @@ void Sandbox::installFilter() {
     }
   }
 
+  return;
+}
+
+void Sandbox::findRanges(Ranges *ranges) {
+  // Please note that "struct seccomp_data" defines system calls as a signed
+  // int32_t, but BPF instructions always operate on unsigned quantities. We
+  // deal with this disparity by enumerating from MIN_SYSCALL to MAX_SYSCALL,
+  // and then verifying that the rest of the number range (both positive and
+  // negative) all return the same ErrorCode.
+  EvaluateSyscall evaluateSyscall = evaluators_.begin()->first;
+  uint32_t oldSysnum              = 0;
+  ErrorCode oldErr                = evaluateSyscall(oldSysnum);
+  for (uint32_t sysnum = std::max(1u, MIN_SYSCALL);
+       sysnum <= MAX_SYSCALL + 1;
+       ++sysnum) {
+    ErrorCode err = evaluateSyscall(static_cast<int>(sysnum));
+    if (err != oldErr) {
+      ranges->push_back(Range(oldSysnum, sysnum-1, oldErr));
+      oldSysnum = sysnum;
+      oldErr    = err;
+    }
+  }
+
+  // As we looped all the way past the valid system calls (i.e. MAX_SYSCALL+1),
+  // "oldErr" should at this point be the "default" policy for all system  call
+  // numbers that don't have an explicit handler in the system call evaluator.
+  // But as we are quite paranoid, we perform some more sanity checks to verify
+  // that there actually is a consistent "default" policy in the first place.
+  // We don't actually iterate over all possible 2^32 values, though. We just
+  // perform spot checks at the boundaries.
+  // The cases that we test are:  0x7FFFFFFF, 0x80000000, 0xFFFFFFFF.
+  if (oldErr != evaluateSyscall(std::numeric_limits<int>::max()) ||
+      oldErr != evaluateSyscall(std::numeric_limits<int>::min()) ||
+      oldErr != evaluateSyscall(-1)) {
+    die("Invalid seccomp policy");
+  }
+  ranges->push_back(
+    Range(oldSysnum, std::numeric_limits<unsigned>::max(), oldErr));
+}
+
+void Sandbox::rangesToBPF(Program *program, const Ranges& ranges) {
+  // TODO: We currently search linearly through all ranges. An improved
+  //       algorithm should be doing a binary search.
+
+  // System call ranges must cover the entire number range.
+  if (ranges.empty() ||
+      ranges.begin()->from != 0 ||
+      ranges.back().to != std::numeric_limits<unsigned>::max()) {
+  rangeError:
+    die("Invalid set of system call ranges");
+  }
+  uint32_t from = 0;
+  for (Ranges::const_iterator iter = ranges.begin();
+       iter != ranges.end();
+       ++iter) {
+    // Ranges must be contiguous and monotonically increasing.
+    if (iter->from > iter->to ||
+        iter->from != from) {
+      goto rangeError;
+    }
+    from = iter->to + 1;
+
+    // Convert ErrorCodes to return values that are acceptable for
+    // BPF filters.
+    int ret;
+    switch (iter->err) {
+    case SB_INSPECT_ARG_1...SB_INSPECT_ARG_6:
+      die("Not implemented");
+    case SB_TRAP:
+      ret = SECCOMP_RET_TRAP;
+      break;
+    case SB_ALLOWED:
+      ret = SECCOMP_RET_ALLOW;
+      break;
+    default:
+      if (iter->err >= static_cast<ErrorCode>(1) &&
+          iter->err <= static_cast<ErrorCode>(4096)) {
+        // We limit errno values to a reasonable range. In fact, the Linux ABI
+        // doesn't support errno values outside of this range.
+        ret = SECCOMP_RET_ERRNO + iter->err;
+      } else {
+        die("Invalid ErrorCode reported by sandbox system call evaluator");
+      }
+      break;
+    }
+
+    // Emit BPF instructions matching this range.
+    if (iter->to != std::numeric_limits<unsigned>::max()) {
+      program->push_back((struct sock_filter)
+        BPF_JUMP(BPF_JMP+BPF_JGT+BPF_K, iter->to, 1, 0));
+    }
+    program->push_back((struct sock_filter)
+      BPF_STMT(BPF_RET+BPF_K, ret));
+  }
   return;
 }
 

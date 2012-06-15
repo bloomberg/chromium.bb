@@ -33,6 +33,7 @@
 #include <unistd.h>
 
 #include <algorithm>
+#include <limits>
 #include <utility>
 #include <vector>
 
@@ -71,8 +72,8 @@
 #endif
 
 #if defined(__i386__)
-#define MIN_SYSCALL  0
-#define MAX_SYSCALL  1024
+#define MIN_SYSCALL  0u
+#define MAX_SYSCALL  1024u
 #define SECCOMP_ARCH AUDIT_ARCH_I386
 #define REG_RESULT   REG_EAX
 #define REG_SYSCALL  REG_EAX
@@ -83,8 +84,8 @@
 #define REG_PARM5    REG_EDI
 #define REG_PARM6    REG_EBP
 #elif defined(__x86_64__)
-#define MIN_SYSCALL  0
-#define MAX_SYSCALL  1024
+#define MIN_SYSCALL  0u
+#define MAX_SYSCALL  1024u
 #define SECCOMP_ARCH AUDIT_ARCH_X86_64
 #define REG_RESULT   REG_RAX
 #define REG_SYSCALL  REG_RAX
@@ -139,6 +140,8 @@ class Sandbox {
     SB_INSPECT_ARG_4 = 0x8008,
     SB_INSPECT_ARG_5 = 0x8010,
     SB_INSPECT_ARG_6 = 0x8020
+
+    // Also, any errno value is valid when cast to ErrorCode.
   };
 
   enum Operation {
@@ -237,13 +240,27 @@ class Sandbox {
   static int getProcFd() { return proc_fd_; }
 
  private:
+  struct Range {
+    Range(uint32_t f, uint32_t t, ErrorCode e) :
+      from(f),
+      to(t),
+      err(e) {
+    }
+    uint32_t  from, to;
+    ErrorCode err;
+  };
+  typedef std::vector<Range> Ranges;
   typedef std::vector<struct sock_filter> Program;
 
-  static ErrorCode probeEvaluator(int signo);
+  static ErrorCode probeEvaluator(int signo) __attribute__((const));
   static bool      kernelSupportSeccompBPF(int proc_fd);
   static bool      isSingleThreaded(int proc_fd);
   static bool      disableFilesystem();
+  static void      policySanityChecks(EvaluateSyscall syscallEvaluator,
+                                      EvaluateArguments argumentEvaluator);
   static void      installFilter();
+  static void      findRanges(Ranges *ranges);
+  static void      rangesToBPF(Program *program, const Ranges& ranges);
   static void      sigSys(int nr, siginfo_t *info, void *void_context);
 
   static bool          dryRun_;

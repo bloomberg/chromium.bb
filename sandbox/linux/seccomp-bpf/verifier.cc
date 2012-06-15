@@ -17,7 +17,7 @@ bool Verifier::verifyBPF(const std::vector<struct sock_filter>& program,
     return false;
   }
   Sandbox::EvaluateSyscall evaluateSyscall = evaluators.begin()->first;
-  for (int nr = MIN_SYSCALL-1; nr <= MAX_SYSCALL+1; ++nr) {
+  for (int nr = MIN_SYSCALL-1; nr <= static_cast<int>(MAX_SYSCALL)+1; ++nr) {
     // We ideally want to iterate over the full system call range and values
     // just above and just below this range. This gives us the full result set
     // of the "evaluators".
@@ -167,7 +167,7 @@ void Verifier::jmp(State *state, const struct sock_filter& insn,
   }
 }
 
-uint32_t Verifier::ret(State *state, const struct sock_filter& insn,
+uint32_t Verifier::ret(State *, const struct sock_filter& insn,
                        const char **err) {
   if (BPF_SRC(insn.code) != BPF_K) {
     *err = "Invalid BPF_RET instruction";
