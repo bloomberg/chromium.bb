@@ -252,9 +252,7 @@ def BuildAndTest(options):
 
   # The chromium bots don't get the pnacl compiler, but the integration
   # bots do. So, only run pnacl tests on the integration bot.
-  if (not options.disable_pnacl and options.integration_bot and
-      sys.platform == 'linux2'):
-    # TODO(dschuff): add back win32/mac when it's fixed
+  if (not options.disable_pnacl and options.integration_bot):
     sys.stdout.write('\n\nBuilding files needed for pnacl testing...\n\n')
     RunCommand(pnacl_cmd + ['bitcode=1', 'do_not_run_tests=1', '-j8'],
                nacl_dir, env)
