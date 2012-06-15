@@ -121,7 +121,7 @@
         <include name="IDR_AURA_UBER_TRAY_NETWORK_DATA_NONE" file="default_100_percent/ash/status_data_none.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_SMS" file="default_100_percent/ash/status_sms.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_MORE" file="default_200_percent/ash/status_more.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_LESS" file="default_100_percent/ash/status_less.png" type="BINDATA" />
+        <include name="IDR_AURA_UBER_TRAY_LESS" file="default_200_percent/ash/status_less.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_ACCESSIBILITY" file="default_100_percent/ash/status_accessibility_mode.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_ACCESSIBILITY_DARK" file="default_200_percent/ash/status_accessibility_dark.png" type="BINDATA" />
         <include name="IDR_AURA_UBER_TRAY_CAPS_LOCK" file="default_200_percent/ash/status_capslock.png" type="BINDATA" />
