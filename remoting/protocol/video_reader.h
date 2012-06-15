@@ -10,6 +10,7 @@
 #define REMOTING_PROTOCOL_VIDEO_READER_H_
 
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "remoting/protocol/video_stub.h"
 
 namespace remoting {
@@ -20,13 +21,13 @@ class SessionConfig;
 
 class VideoReader {
  public:
-  static VideoReader* Create(const SessionConfig& config);
-
   // The callback is called when initialization is finished. The
   // parameter is set to true on success.
   typedef base::Callback<void(bool)> InitializedCallback;
 
   virtual ~VideoReader();
+
+  static scoped_ptr<VideoReader> Create(const SessionConfig& config);
 
   // Initializies the reader. Doesn't take ownership of either |connection|
   // or |video_stub|.

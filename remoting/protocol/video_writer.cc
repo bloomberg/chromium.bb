@@ -13,12 +13,12 @@ namespace protocol {
 VideoWriter::~VideoWriter() { }
 
 // static
-VideoWriter* VideoWriter::Create(const SessionConfig& config) {
+scoped_ptr<VideoWriter> VideoWriter::Create(const SessionConfig& config) {
   const ChannelConfig& video_config = config.video_config();
   if (video_config.transport == ChannelConfig::TRANSPORT_STREAM) {
-    return new ProtobufVideoWriter();
+    return scoped_ptr<VideoWriter>(new ProtobufVideoWriter());
   }
-  return NULL;
+  return scoped_ptr<VideoWriter>(NULL);
 }
 
 }  // namespace protocol

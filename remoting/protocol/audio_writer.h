@@ -32,7 +32,7 @@ class AudioWriter : public AudioStub {
   // parameter is set to true on success.
   typedef base::Callback<void(bool)> InitializedCallback;
 
-  static AudioWriter* Create(const SessionConfig& config);
+  static scoped_ptr<AudioWriter> Create(const SessionConfig& config);
 
   // Initializes the writer.
   void Init(Session* session, const InitializedCallback& callback);

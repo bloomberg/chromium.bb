@@ -27,7 +27,7 @@ class VideoWriter : public VideoStub {
   // parameter is set to true on success.
   typedef base::Callback<void(bool)> InitializedCallback;
 
-  static VideoWriter* Create(const SessionConfig& config);
+  static scoped_ptr<VideoWriter> Create(const SessionConfig& config);
 
   // Initializes the writer.
   virtual void Init(Session* session, const InitializedCallback& callback) = 0;

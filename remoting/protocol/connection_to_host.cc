@@ -158,7 +158,7 @@ void ConnectionToHost::OnSessionStateChange(
       break;
 
     case Session::AUTHENTICATED:
-      video_reader_.reset(VideoReader::Create(session_->config()));
+      video_reader_ = VideoReader::Create(session_->config());
       video_reader_->Init(session_.get(), video_stub_, base::Bind(
           &ConnectionToHost::OnChannelInitialized, base::Unretained(this)));
 

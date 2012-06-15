@@ -67,9 +67,9 @@ void AudioWriter::ProcessAudioPacket(scoped_ptr<AudioPacket> packet,
 }
 
 // static
-AudioWriter* AudioWriter::Create(const SessionConfig& config) {
+scoped_ptr<AudioWriter> AudioWriter::Create(const SessionConfig& config) {
   // TODO(kxing): Support different session configurations.
-  return new AudioWriter();
+  return scoped_ptr<AudioWriter>(new AudioWriter());
 }
 
 }  // namespace protocol

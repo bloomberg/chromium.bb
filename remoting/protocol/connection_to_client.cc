@@ -116,7 +116,7 @@ void ConnectionToClient::OnSessionStateChange(Session::State state) {
       event_dispatcher_->set_sequence_number_callback(base::Bind(
           &ConnectionToClient::UpdateSequenceNumber, base::Unretained(this)));
 
-      video_writer_.reset(VideoWriter::Create(session_->config()));
+      video_writer_ = VideoWriter::Create(session_->config());
       video_writer_->Init(session_.get(), base::Bind(
           &ConnectionToClient::OnChannelInitialized, base::Unretained(this)));
 
