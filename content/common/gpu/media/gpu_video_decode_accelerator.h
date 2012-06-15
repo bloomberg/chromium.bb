@@ -81,6 +81,9 @@ class GpuVideoDecodeAccelerator
   // Pointer to the underlying VideoDecodeAccelerator.
   scoped_refptr<media::VideoDecodeAccelerator> video_decode_accelerator_;
 
+  // Closure for making the relevant context current for GL calls.
+  base::Closure make_context_current_;
+
   DISALLOW_IMPLICIT_CONSTRUCTORS(GpuVideoDecodeAccelerator);
 };
 

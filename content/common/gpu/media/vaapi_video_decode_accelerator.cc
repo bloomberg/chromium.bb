@@ -49,8 +49,10 @@ void VaapiVideoDecodeAccelerator::NotifyError(Error error) {
   client_ = NULL;
 }
 
-VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(Client* client)
-    : state_(kUninitialized),
+VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
+    Client* client, const base::Closure& make_context_current)
+    : make_context_current_(make_context_current),
+      state_(kUninitialized),
       input_ready_(&lock_),
       output_ready_(&lock_),
       message_loop_(MessageLoop::current()),
@@ -79,7 +81,7 @@ bool VaapiVideoDecodeAccelerator::Initialize(
                                PLATFORM_FAILURE, false);
 
   res = decoder_.Initialize(
-      profile, x_display_, glx_context_,
+      profile, x_display_, glx_context_, make_context_current_,
       base::Bind(&VaapiVideoDecodeAccelerator::OutputPicCallback, this));
   RETURN_AND_NOTIFY_ON_FAILURE(res, "Failed initializing decoder",
                                PLATFORM_FAILURE, false);

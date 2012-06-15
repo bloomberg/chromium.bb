@@ -75,6 +75,7 @@ class VaapiH264Decoder {
   bool Initialize(media::VideoCodecProfile profile,
                   Display* x_display,
                   GLXContext glx_context,
+                  const base::Closure& make_context_current,
                   const OutputPicCB& output_pic_cb) WARN_UNUSED_RESULT;
   void Destroy();
 
@@ -309,9 +310,11 @@ class VaapiH264Decoder {
   // output picture if a frame is decoded successfully.
   int32 curr_input_id_;
 
+  // Any method that uses GL/VA routines probably wants to make sure
+  // make_context_current_.Run() is called at the top of the method.
   // X/GLX handles.
   Display* x_display_;
-  GLXContext parent_glx_context_;
+  base::Closure make_context_current_;
   GLXFBConfig fb_config_;
 
   // VA handles.
@@ -332,4 +335,3 @@ class VaapiH264Decoder {
 }  // namespace content
 
 #endif  // CONTENT_COMMON_GPU_MEDIA_VAAPI_H264_DECODER_H_
-

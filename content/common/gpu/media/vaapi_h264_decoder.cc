@@ -156,6 +156,7 @@ class VaapiH264Decoder::DecodeSurface {
   DecodeSurface(const GLXFBConfig& fb_config,
                 Display* x_display,
                 VADisplay va_display,
+                const base::Closure& make_context_current,
                 VASurfaceID va_surface_id,
                 int32 picture_buffer_id,
                 uint32 texture_id,
@@ -204,6 +205,7 @@ class VaapiH264Decoder::DecodeSurface {
  private:
   Display* x_display_;
   VADisplay va_display_;
+  base::Closure make_context_current_;
   VASurfaceID va_surface_id_;
 
   // Client-provided ids.
@@ -227,15 +229,18 @@ class VaapiH264Decoder::DecodeSurface {
   DISALLOW_COPY_AND_ASSIGN(DecodeSurface);
 };
 
-VaapiH264Decoder::DecodeSurface::DecodeSurface(const GLXFBConfig& fb_config,
-                                               Display* x_display,
-                                               VADisplay va_display,
-                                               VASurfaceID va_surface_id,
-                                               int32 picture_buffer_id,
-                                               uint32 texture_id,
-                                               int width, int height)
+VaapiH264Decoder::DecodeSurface::DecodeSurface(
+    const GLXFBConfig& fb_config,
+    Display* x_display,
+    VADisplay va_display,
+    const base::Closure& make_context_current,
+    VASurfaceID va_surface_id,
+    int32 picture_buffer_id,
+    uint32 texture_id,
+    int width, int height)
     : x_display_(x_display),
       va_display_(va_display),
+      make_context_current_(make_context_current),
       va_surface_id_(va_surface_id),
       picture_buffer_id_(picture_buffer_id),
       texture_id_(texture_id),
@@ -244,6 +249,7 @@ VaapiH264Decoder::DecodeSurface::DecodeSurface(const GLXFBConfig& fb_config,
       available_(false) {
   // Bind the surface to a texture of the given width and height,
   // allocating pixmaps as needed.
+  make_context_current_.Run();
   glEnable(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, texture_id_);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -275,6 +281,7 @@ VaapiH264Decoder::DecodeSurface::DecodeSurface(const GLXFBConfig& fb_config,
 }
 
 VaapiH264Decoder::DecodeSurface::~DecodeSurface() {
+  make_context_current_.Run();
   // Unbind surface from texture and deallocate resources.
   glXReleaseTexImageEXT(x_display_, glx_pixmap_, GLX_FRONT_LEFT_EXT);
   glXDestroyGLXPixmap(x_display_, glx_pixmap_);
@@ -293,6 +300,7 @@ void VaapiH264Decoder::DecodeSurface::Release() {
 }
 
 bool VaapiH264Decoder::DecodeSurface::Sync() {
+  make_context_current_.Run();
   // Put the decoded data into XPixmap bound to the texture.
   VAStatus va_res = VAAPI_PutSurface(va_display_,
                                      va_surface_id_, x_pixmap_,
@@ -386,6 +394,7 @@ void VaapiH264Decoder::Destroy() {
       DestroyVASurfaces();
       // fallthrough
     case kInitialized:
+      make_context_current_.Run();
       va_res = VAAPI_DestroyConfig(va_display_, va_config_id_);
       VA_LOG_ON_ERROR(va_res, "vaDestroyConfig failed");
       va_res = VAAPI_Terminate(va_display_);
@@ -448,14 +457,16 @@ bool VaapiH264Decoder::InitializeFBConfig() {
 bool VaapiH264Decoder::Initialize(media::VideoCodecProfile profile,
                                   Display* x_display,
                                   GLXContext glx_context,
+                                  const base::Closure& make_context_current,
                                   const OutputPicCB& output_pic_cb) {
   DCHECK_EQ(state_, kUninitialized);
 
   output_pic_cb_ = output_pic_cb;
 
   x_display_ = x_display;
-  parent_glx_context_ = glx_context;
+  make_context_current_ = make_context_current;
 
+  make_context_current_.Run();
   if (!SetProfile(profile)) {
     DVLOG(1) << "Unsupported profile";
     return false;
@@ -525,7 +536,7 @@ bool VaapiH264Decoder::AssignPictureBuffer(int32 picture_buffer_id,
 
   // This will not work if we start using VDA.DismissPicture()
   linked_ptr<DecodeSurface> dec_surface(new DecodeSurface(
-      fb_config_, x_display_, va_display_,
+      fb_config_, x_display_, va_display_, make_context_current_,
       va_surface_ids_[decode_surfaces_.size()], picture_buffer_id, texture_id,
       pic_width_, pic_height_));
   if (!dec_surface->available()) {
@@ -549,6 +560,7 @@ bool VaapiH264Decoder::CreateVASurfaces() {
   DCHECK_NE(pic_width_, -1);
   DCHECK_NE(pic_height_, -1);
   DCHECK_EQ(state_, kInitialized);
+  make_context_current_.Run();
 
   // Allocate VASurfaces in driver.
   VAStatus va_res = VAAPI_CreateSurfaces(va_display_, pic_width_,
@@ -571,6 +583,7 @@ bool VaapiH264Decoder::CreateVASurfaces() {
 
 void VaapiH264Decoder::DestroyVASurfaces() {
   DCHECK(state_ == kDecoding || state_ == kError || state_ == kAfterReset);
+  make_context_current_.Run();
 
   decode_surfaces_.clear();
 
@@ -686,6 +699,7 @@ VaapiH264Decoder::DecodeSurface* VaapiH264Decoder::UnassignSurfaceFromPoC(
 
 // Fill a VAPictureParameterBufferH264 to be later sent to the HW decoder.
 bool VaapiH264Decoder::SendPPS() {
+  make_context_current_.Run();
   const H264PPS* pps = parser_.GetPPS(curr_pps_id_);
   DCHECK(pps);
 
@@ -783,6 +797,7 @@ bool VaapiH264Decoder::SendPPS() {
 
 // Fill a VAIQMatrixBufferH264 to be later sent to the HW decoder.
 bool VaapiH264Decoder::SendIQMatrix() {
+  make_context_current_.Run();
   const H264PPS* pps = parser_.GetPPS(curr_pps_id_);
   DCHECK(pps);
 
@@ -829,6 +844,7 @@ bool VaapiH264Decoder::SendIQMatrix() {
 }
 
 bool VaapiH264Decoder::SendVASliceParam(H264SliceHeader* slice_hdr) {
+  make_context_current_.Run();
   const H264PPS* pps = parser_.GetPPS(slice_hdr->pic_parameter_set_id);
   DCHECK(pps);
 
@@ -932,6 +948,7 @@ bool VaapiH264Decoder::SendVASliceParam(H264SliceHeader* slice_hdr) {
 
 bool VaapiH264Decoder::SendSliceData(const uint8* ptr, size_t size)
 {
+    make_context_current_.Run();
     // Can't help it, blame libva...
     void* non_const_ptr = const_cast<uint8*>(ptr);
 
@@ -964,6 +981,7 @@ bool VaapiH264Decoder::QueueSlice(H264SliceHeader* slice_hdr) {
 bool VaapiH264Decoder::DecodePicture() {
   DCHECK(!frame_ready_at_hw_);
   DCHECK(curr_pic_.get());
+  make_context_current_.Run();
 
   static const size_t kMaxVABuffers = 32;
   DCHECK_LE(pending_va_bufs_.size(), kMaxVABuffers);
@@ -2060,4 +2078,3 @@ size_t VaapiH264Decoder::GetRequiredNumOfPictures() {
 }
 
 }  // namespace content
-

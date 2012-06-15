@@ -37,6 +37,11 @@
 
 using gpu::gles2::TextureManager;
 
+static void MakeDecoderContextCurrent(gpu::gles2::GLES2Decoder* decoder) {
+  bool success = decoder->MakeCurrent();
+  DCHECK(success);
+}
+
 GpuVideoDecodeAccelerator::GpuVideoDecodeAccelerator(
     IPC::Message::Sender* sender,
     int32 host_route_id,
@@ -46,6 +51,8 @@ GpuVideoDecodeAccelerator::GpuVideoDecodeAccelerator(
       host_route_id_(host_route_id),
       stub_(stub),
       video_decode_accelerator_(NULL) {
+  make_context_current_ =
+      base::Bind(&MakeDecoderContextCurrent, stub_->decoder());
 }
 
 GpuVideoDecodeAccelerator::~GpuVideoDecodeAccelerator() {
@@ -126,6 +133,15 @@ void GpuVideoDecodeAccelerator::Initialize(
   DCHECK(init_done_msg);
   init_done_msg_ = init_done_msg;
 
+#if !defined(OS_WIN)
+  // Ensure we will be able to get a GL context at all before initializing
+  // non-Windows VDAs.
+  if (stub_->decoder()->MakeCurrent()) {
+    NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
+    return;
+  }
+#endif
+
 #if defined(OS_WIN)
   if (base::win::GetVersion() < base::win::VERSION_WIN7) {
     NOTIMPLEMENTED() << "HW video decode acceleration not available.";
@@ -145,7 +161,7 @@ void GpuVideoDecodeAccelerator::Initialize(
   video_decode_accelerator_ = video_decoder;
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
   scoped_refptr<VaapiVideoDecodeAccelerator> video_decoder(
-      new VaapiVideoDecodeAccelerator(this));
+      new VaapiVideoDecodeAccelerator(this, make_context_current_));
   gfx::GLContextGLX* glx_context =
       static_cast<gfx::GLContextGLX*>(stub_->decoder()->GetGLContext());
   GLXContext glx_context_handle =
