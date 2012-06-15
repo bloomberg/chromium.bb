@@ -86,10 +86,15 @@ Printing_Dev::~Printing_Dev() {
                                     kPPPPrintingInterface, this);
 }
 
+// static
+bool Printing_Dev::IsAvailable() {
+  return has_interface<PPB_Printing_Dev_0_6>();
+}
+
 bool Printing_Dev::GetDefaultPrintSettings(
     PP_PrintSettings_Dev* print_settings) {
   if (!has_interface<PPB_Printing_Dev_0_6>())
-    return PP_FALSE;
+    return false;
   return PP_ToBool(
       get_interface<PPB_Printing_Dev_0_6>()->GetDefaultPrintSettings(
           associated_instance_.pp_instance(), print_settings));

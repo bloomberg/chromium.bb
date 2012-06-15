@@ -31,6 +31,10 @@ class Printing_Dev {
   virtual bool IsPrintScalingDisabled() = 0;
 
   // PPB_Printing_Dev functions.
+  // Returns true if the browser supports the required PPB_Printing_Dev
+  // interface.
+  static bool IsAvailable();
+
   // Outputs the default print settings for the default printer into
   // |print_settings|. Returns false on error.
   bool GetDefaultPrintSettings(PP_PrintSettings_Dev* print_settings);
