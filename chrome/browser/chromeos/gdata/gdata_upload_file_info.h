@@ -78,7 +78,7 @@ struct UploadFileInfo {
 
   // Callback to be invoked once the upload has completed.
   typedef base::Callback<void(base::PlatformFileError error,
-      UploadFileInfo* upload_file_info)> UploadCompletionCallback;
+      scoped_ptr<UploadFileInfo> upload_file_info)> UploadCompletionCallback;
   UploadCompletionCallback completion_callback;
 };
 

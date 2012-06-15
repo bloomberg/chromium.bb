@@ -376,9 +376,10 @@ scoped_ptr<UploadFileInfo> GDataDownloadObserver::CreateUploadFileInfo(
   return upload_file_info.Pass();
 }
 
-void GDataDownloadObserver::OnUploadComplete(int32 download_id,
-                                             base::PlatformFileError error,
-                                             UploadFileInfo* upload_file_info) {
+void GDataDownloadObserver::OnUploadComplete(
+    int32 download_id,
+    base::PlatformFileError error,
+    scoped_ptr<UploadFileInfo> upload_file_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DownloadMap::iterator iter = pending_downloads_.find(download_id);
   if (iter == pending_downloads_.end()) {

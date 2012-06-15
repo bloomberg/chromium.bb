@@ -86,11 +86,12 @@ class MockGDataFileSystem : public GDataFileSystemInterface {
   MOCK_METHOD3(SetPinState, void(const FilePath&,
                                  bool,
                                  const FileOperationCallback& callback));
-  MOCK_METHOD4(AddUploadedFile,
+  MOCK_METHOD5(AddUploadedFile,
                void(const FilePath& file,
                     DocumentEntry* entry,
                     const FilePath& file_content_path,
-                    GDataCache::FileOperationType cache_operation));
+                    GDataCache::FileOperationType cache_operation,
+                    const base::Closure& callback));
 };
 
 }  // namespace gdata

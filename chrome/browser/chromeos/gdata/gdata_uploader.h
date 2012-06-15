@@ -43,10 +43,6 @@ class GDataUploader {
   // Returns the count of bytes confirmed as uploaded so far.
   int64 GetUploadedBytes(int upload_id) const;
 
-  // TODO(achuith): Make this private.
-  // Destroys |upload_file_info|.
-  void DeleteUpload(UploadFileInfo* upload_file_info);
-
  private:
   // Lookup UploadFileInfo* in pending_uploads_.
   UploadFileInfo* GetUploadFileInfo(int upload_id) const;
@@ -80,8 +76,13 @@ class GDataUploader {
   void MoveFileToCache(UploadFileInfo* upload_file_info);
 
   // Handle failed uploads.
-  void UploadFailed(UploadFileInfo* upload_file_info,
+  void UploadFailed(scoped_ptr<UploadFileInfo> upload_file_info,
                     base::PlatformFileError error);
+
+  // Removes |upload_id| from UploadFileInfoMap |pending_uploads_|.
+  // Note that this does not delete the UploadFileInfo object itself,
+  // because it may still be in use by an asynchronous function.
+  void RemoveUpload(int upload_id);
 
   // Pointers to GDataFileSystem and DocumentsServiceInterface objects owned by
   // GDataSystemService. The lifetime of these two objects is guaranteed to

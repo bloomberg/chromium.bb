@@ -24,6 +24,11 @@ UploadFileInfo::UploadFileInfo()
 }
 
 UploadFileInfo::~UploadFileInfo() {
+  // The file stream is closed by the destructor asynchronously.
+  if (file_stream) {
+    delete file_stream;
+    file_stream = NULL;
+  }
 }
 
 int64 UploadFileInfo::SizeRemaining() const {

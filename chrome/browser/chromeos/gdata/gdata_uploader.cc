@@ -73,6 +73,8 @@ int GDataUploader::UploadFile(scoped_ptr<UploadFileInfo> upload_file_info) {
 
 void GDataUploader::UpdateUpload(int upload_id,
                                  content::DownloadItem* download) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   UploadFileInfo* upload_file_info = GetUploadFileInfo(upload_id);
   if (!upload_file_info)
     return;
@@ -178,7 +180,8 @@ void GDataUploader::OpenCompletionCallback(int upload_id, int result) {
         upload_file_info->num_file_open_tries >= kMaxFileOpenTries;
     upload_file_info->should_retry_file_open = !exceeded_max_attempts;
     if (exceeded_max_attempts)
-      UploadFailed(upload_file_info, base::PLATFORM_FILE_ERROR_NOT_FOUND);
+      UploadFailed(scoped_ptr<UploadFileInfo>(upload_file_info),
+                   base::PLATFORM_FILE_ERROR_NOT_FOUND);
 
     return;
   }
@@ -188,7 +191,8 @@ void GDataUploader::OpenCompletionCallback(int upload_id, int result) {
   const GURL destination_directory_url = file_system_->GetUploadUrlForDirectory(
       upload_file_info->gdata_path.DirName());
   if (destination_directory_url.is_empty()) {
-    UploadFailed(upload_file_info, base::PLATFORM_FILE_ERROR_ABORT);
+    UploadFailed(scoped_ptr<UploadFileInfo>(upload_file_info),
+                 base::PLATFORM_FILE_ERROR_ABORT);
     return;
   }
 
@@ -218,7 +222,8 @@ void GDataUploader::OnUploadLocationReceived(
 
   if (code != HTTP_SUCCESS) {
     // TODO(achuith): Handle error codes from Google Docs server.
-    UploadFailed(upload_file_info, base::PLATFORM_FILE_ERROR_ABORT);
+    UploadFailed(scoped_ptr<UploadFileInfo>(upload_file_info),
+                 base::PLATFORM_FILE_ERROR_ABORT);
     return;
   }
 
@@ -313,14 +318,17 @@ void GDataUploader::OnResumeUploadResponseReceived(
     DVLOG(1) << "Successfully created uploaded file=["
              << upload_file_info->title;
 
+    // Remove |upload_id| from the UploadFileInfoMap. The UploadFileInfo object
+    // will be deleted upon completion of completion_callback.
+    RemoveUpload(upload_id);
+
     // Done uploading.
     upload_file_info->entry = entry.Pass();
     if (!upload_file_info->completion_callback.is_null()) {
-      upload_file_info->completion_callback.Run(base::PLATFORM_FILE_OK,
-                                                upload_file_info);
+      upload_file_info->completion_callback.Run(
+          base::PLATFORM_FILE_OK,
+          scoped_ptr<UploadFileInfo>(upload_file_info));
     }
-    // TODO(achuith): DeleteUpload() here and let clients call
-    // GDataFileSystem::AddUploadedFile.
     return;
   }
 
@@ -337,7 +345,8 @@ void GDataUploader::OnResumeUploadResponseReceived(
                << ", start_range_received=" << response.start_range_received
                << ", end_range_received=" << response.end_range_received
                << ", expected end range=" << upload_file_info->end_range;
-    UploadFailed(upload_file_info,
+    UploadFailed(
+        scoped_ptr<UploadFileInfo>(upload_file_info),
         response.code == HTTP_FORBIDDEN ?
             base::PLATFORM_FILE_ERROR_NO_SPACE :
             base::PLATFORM_FILE_ERROR_ABORT);
@@ -357,35 +366,36 @@ void GDataUploader::MoveFileToCache(UploadFileInfo* upload_file_info) {
   if (upload_file_info->entry == NULL)
     return;
 
+  // Remove |upload_id| from the UploadFileInfoMap. The UploadFileInfo object
+  // will be deleted upon completion of AddUploadedFile.
+  RemoveUpload(upload_file_info->upload_id);
+
   DVLOG(1) << "MoveFileToCache " << upload_file_info->file_path.value();
   file_system_->AddUploadedFile(
       upload_file_info->gdata_path.DirName(),
       upload_file_info->entry.get(),
       upload_file_info->file_path,
-      GDataCache::FILE_OPERATION_MOVE);
-  DeleteUpload(upload_file_info);
+      GDataCache::FILE_OPERATION_MOVE,
+      base::Bind(&base::DeletePointer<UploadFileInfo>,
+                 upload_file_info));
 }
 
-void GDataUploader::UploadFailed(UploadFileInfo* upload_file_info,
+void GDataUploader::UploadFailed(scoped_ptr<UploadFileInfo> upload_file_info,
                                  base::PlatformFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  RemoveUpload(upload_file_info->upload_id);
+
   LOG(ERROR) << "Upload failed " << upload_file_info->DebugString();
   if (!upload_file_info->completion_callback.is_null()) {
     upload_file_info->completion_callback.Run(error,
-                                              upload_file_info);
+                                              upload_file_info.Pass());
   }
-  DeleteUpload(upload_file_info);
 }
 
-void GDataUploader::DeleteUpload(UploadFileInfo* upload_file_info) {
+void GDataUploader::RemoveUpload(int upload_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  DVLOG(1) << "Deleting upload " << upload_file_info->gdata_path.value();
-  pending_uploads_.erase(upload_file_info->upload_id);
-
-  // The file stream is closed by the destructor asynchronously.
-  delete upload_file_info->file_stream;
-  delete upload_file_info;
+  pending_uploads_.erase(upload_id);
 }
 
 }  // namespace gdata

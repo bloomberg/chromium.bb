@@ -118,7 +118,7 @@ class GDataDownloadObserver : public content::DownloadManager::Observer,
   // method on the DownloadItem to allow it to complete.
   void OnUploadComplete(int32 download_id,
                         base::PlatformFileError error,
-                        UploadFileInfo* upload_file_info);
+                        scoped_ptr<UploadFileInfo> upload_file_info);
 
   // Private data.
   // Use GDataUploader to trigger file uploads.

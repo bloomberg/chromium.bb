@@ -373,11 +373,13 @@ class GDataFileSystemInterface {
 
   // Creates a new file from |entry| under |virtual_dir_path|. Stored its
   // content from |file_content_path| into the cache.
-  virtual void AddUploadedFile(
-      const FilePath& virtual_dir_path,
-      DocumentEntry* entry,
-      const FilePath& file_content_path,
-      GDataCache::FileOperationType cache_operation) = 0;
+  //
+  // |callback| will be called on the UI thread upon completion of operation.
+  virtual void AddUploadedFile(const FilePath& virtual_dir_path,
+                               DocumentEntry* entry,
+                               const FilePath& file_content_path,
+                               GDataCache::FileOperationType cache_operation,
+                               const base::Closure& callback) = 0;
 };
 
 // The production implementation of GDataFileSystemInterface.
@@ -457,11 +459,11 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Calls private Pin or Unpin methods with |callback|.
   virtual void SetPinState(const FilePath& file_path, bool pin,
                            const FileOperationCallback& callback) OVERRIDE;
-  virtual void AddUploadedFile(
-      const FilePath& virtual_dir_path,
-      DocumentEntry* entry,
-      const FilePath& file_content_path,
-      GDataCache::FileOperationType cache_operation) OVERRIDE;
+  virtual void AddUploadedFile(const FilePath& virtual_dir_path,
+                               DocumentEntry* entry,
+                               const FilePath& file_content_path,
+                               GDataCache::FileOperationType cache_operation,
+                               const base::Closure& callback) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -1005,7 +1007,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void OnTransferCompleted(
       const FileOperationCallback& callback,
       base::PlatformFileError error,
-      UploadFileInfo* upload_file_info);
+      scoped_ptr<UploadFileInfo> upload_file_info);
 
   // Kicks off file upload once it receives |upload_file_info|.
   void StartFileUploadOnUIThread(
@@ -1139,6 +1141,11 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void GetAvailableSpaceOnUIThread(const GetAvailableSpaceCallback& callback);
   void SetPinStateOnUIThread(const FilePath& file_path, bool to_pin,
                              const FileOperationCallback& callback);
+  void AddUploadedFileOnUIThread(const FilePath& virtual_dir_path,
+                                 DocumentEntry* entry,
+                                 const FilePath& file_content_path,
+                                 GDataCache::FileOperationType cache_operation,
+                                 const base::Closure& callback);
 
   // All members should be accessed only on UI thread. Do not post tasks to
   // other threads with base::Unretained(this).

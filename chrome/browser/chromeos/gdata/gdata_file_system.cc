@@ -234,6 +234,28 @@ void RunFileOperationCallbackHelper(
     callback.Run(*error);
 }
 
+// Callback for StoreToCache invoked by AddUploadedFileOnUIThread.
+void OnStoreToCacheForAddUploadedFile(
+    const base::Closure& callback,
+    base::PlatformFileError /* error */,
+    const std::string& /* resource_id */,
+    const std::string& /* md5 */) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!callback.is_null())
+    callback.Run();
+}
+
+// Helper function called upon completion of AddUploadFile invoked by
+// OnTransferCompleted.
+void OnAddUploadFileCompleted(
+    const FileOperationCallback& callback,
+    base::PlatformFileError error,
+    scoped_ptr<UploadFileInfo> /* upload_file_info */){
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!callback.is_null())
+    callback.Run(error);
+}
+
 // Used to implement GetCacheState.
 void RunGetCacheStateCallbackHelper(
     const GetCacheStateCallback& callback,
@@ -1151,28 +1173,26 @@ void GDataFileSystem::StartFileUploadOnUIThread(
 void GDataFileSystem::OnTransferCompleted(
     const FileOperationCallback& callback,
     base::PlatformFileError error,
-    UploadFileInfo* upload_file_info) {
+    scoped_ptr<UploadFileInfo> upload_file_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(upload_file_info);
+  DCHECK(upload_file_info.get());
 
   if (error == base::PLATFORM_FILE_OK && upload_file_info->entry.get()) {
-    AddUploadedFile(upload_file_info->gdata_path.DirName(),
-                    upload_file_info->entry.get(),
-                    upload_file_info->file_path,
-                    GDataCache::FILE_OPERATION_COPY);
-  }
-  if (!callback.is_null())
+    // Save a local copy of the UploadFileInfo pointer. Depending on order of
+    // argument evaluation, base::Passed() may invalidate the scoped pointer
+    // |upload_file_info| before it can be dereferenced to access its members.
+    const UploadFileInfo* upload_file_info_ptr = upload_file_info.get();
+    AddUploadedFile(upload_file_info_ptr->gdata_path.DirName(),
+                    upload_file_info_ptr->entry.get(),
+                    upload_file_info_ptr->file_path,
+                    GDataCache::FILE_OPERATION_COPY,
+                    base::Bind(&OnAddUploadFileCompleted,
+                               callback,
+                               error,
+                               base::Passed(&upload_file_info)));
+  } else if (!callback.is_null()) {
     callback.Run(error);
-
-  // In case of error upload_file_info will be deleted by the uploader.
-  if (error != base::PLATFORM_FILE_OK)
-    return;
-
-  // TODO(achuith): GDataFileSystem should not have to call DeleteUpload.
-  GDataSystemService* service =
-      GDataSystemServiceFactory::GetForProfile(profile_);
-  if (service)
-    service->uploader()->DeleteUpload(upload_file_info);
+  }
 }
 
 void GDataFileSystem::Copy(const FilePath& src_file_path,
@@ -3483,26 +3503,56 @@ void GDataFileSystem::AddUploadedFile(
     const FilePath& virtual_dir_path,
     DocumentEntry* entry,
     const FilePath& file_content_path,
-    GDataCache::FileOperationType cache_operation) {
+    GDataCache::FileOperationType cache_operation,
+    const base::Closure& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Post a task to the same thread, rather than calling it here, as
+  // AddUploadedFile() is asynchronous.
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&GDataFileSystem::AddUploadedFileOnUIThread,
+                 ui_weak_ptr_,
+                 virtual_dir_path,
+                 entry,
+                 file_content_path,
+                 cache_operation,
+                 callback));
+}
+
+void GDataFileSystem::AddUploadedFileOnUIThread(
+    const FilePath& virtual_dir_path,
+    DocumentEntry* entry,
+    const FilePath& file_content_path,
+    GDataCache::FileOperationType cache_operation,
+    const base::Closure& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
   if (!entry) {
     NOTREACHED();
+    callback.Run();
     return;
   }
 
   GDataEntry* dir_entry = GetGDataEntryByPath(virtual_dir_path);
-  if (!dir_entry)
+  if (!dir_entry) {
+    callback.Run();
     return;
+  }
 
   GDataDirectory* parent_dir  = dir_entry->AsGDataDirectory();
-  if (!parent_dir)
+  if (!parent_dir) {
+    callback.Run();
     return;
+  }
 
   scoped_ptr<GDataEntry> new_entry(
       GDataEntry::FromDocumentEntry(parent_dir, entry, root_.get()));
-  if (!new_entry.get())
+  if (!new_entry.get()) {
+    callback.Run();
     return;
+  }
 
   GDataFile* file = new_entry->AsGDataFile();
   DCHECK(file);
@@ -3513,7 +3563,8 @@ void GDataFileSystem::AddUploadedFile(
   NotifyDirectoryChanged(virtual_dir_path);
 
   cache_->StoreOnUIThread(resource_id, md5, file_content_path, cache_operation,
-                          CacheOperationCallback());
+                          base::Bind(&OnStoreToCacheForAddUploadedFile,
+                                     callback));
 }
 
 void GDataFileSystem::Observe(int type,
