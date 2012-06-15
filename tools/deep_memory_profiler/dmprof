@@ -19,14 +19,23 @@ COMMITTED = 1
 ALLOC_COUNT = 2
 FREE_COUNT = 3
 NULL_REGEX = re.compile('')
-PPROF_PATH = os.path.join(os.path.dirname(__file__),
-                          os.pardir,
-                          os.pardir,
-                          'third_party',
-                          'tcmalloc',
-                          'chromium',
-                          'src',
-                          'pprof')
+
+# If an executable pprof script is in the directory of deep_memory_profiler,
+# use it.  Otherwise, use tcmalloc's pprof.
+#
+# A pprof script in deep_memory_profiler/ is prioritized to allow packaging
+# deep_memory_profiler files with a pprof script.  The packaged
+# deep_memory_profiler is downloaded with pprof by using download.sh.
+PPROF_PATH = os.path.join(os.path.dirname(__file__), 'pprof')
+if not (os.path.isfile(PPROF_PATH) and os.access(PPROF_PATH, os.X_OK)):
+  PPROF_PATH = os.path.join(os.path.dirname(__file__),
+                            os.pardir,
+                            os.pardir,
+                            'third_party',
+                            'tcmalloc',
+                            'chromium',
+                            'src',
+                            'pprof')
 
 # Heap Profile Dump versions
 
