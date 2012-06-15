@@ -81,6 +81,15 @@ class TrayBubbleBorder : public views::BubbleBorder {
   virtual ~TrayBubbleBorder() {}
 
  private:
+  views::Background* FindAppropriateBackground(views::View* view,
+                                               const gfx::Point& point) const {
+    views::Background* background = NULL;
+    views::View* target = view->GetEventHandlerForPoint(point);
+    for (; target && !background; target = target->parent())
+      background = target->background();
+    return background;
+  }
+
   // Overridden from views::BubbleBorder.
   // Override views::BubbleBorder to set the bubble on top of the anchor when
   // it has no arrow.
@@ -122,6 +131,8 @@ class TrayBubbleBorder : public views::BubbleBorder {
         arrow_location() == views::BubbleBorder::NONE)
       return;
 
+    gfx::Point arrow_reference;
+
     // Draw the arrow after drawing child borders, so that the arrow can cover
     // the its overlap section with child border.
     SkPath path;
@@ -138,6 +149,7 @@ class TrayBubbleBorder : public views::BubbleBorder {
       path.lineTo(SkIntToScalar(tip_x), SkIntToScalar(tip_y));
       path.lineTo(SkIntToScalar(left_base_x + kArrowWidth),
                   SkIntToScalar(left_base_y));
+      arrow_reference.SetPoint(tip_x, left_base_y - kArrowHeight);
     } else {
       int tip_y = y - tray_arrow_offset_;
       tip_y = std::min(std::max(kArrowMinOffset, tip_y),
@@ -147,11 +159,13 @@ class TrayBubbleBorder : public views::BubbleBorder {
       if (arrow_location() == views::BubbleBorder::LEFT_BOTTOM) {
         top_base_x = inset.left() + kSystemTrayBubbleHorizontalInset;
         tip_x = top_base_x - kArrowHeight;
+        arrow_reference.SetPoint(top_base_x + kArrowHeight, tip_y);
       } else {
         DCHECK(arrow_location() == views::BubbleBorder::RIGHT_BOTTOM);
         top_base_x = inset.left() + owner_->width() -
             kSystemTrayBubbleHorizontalInset;
         tip_x = top_base_x + kArrowHeight;
+        arrow_reference.SetPoint(top_base_x - kArrowHeight, tip_y);
       }
       path.moveTo(SkIntToScalar(top_base_x), SkIntToScalar(top_base_y));
       path.lineTo(SkIntToScalar(tip_x), SkIntToScalar(tip_y));
@@ -159,9 +173,12 @@ class TrayBubbleBorder : public views::BubbleBorder {
                   SkIntToScalar(top_base_y + kArrowWidth));
     }
 
+    views::Background* background = FindAppropriateBackground(owner_,
+                                                              arrow_reference);
+
     SkPaint paint;
     paint.setStyle(SkPaint::kFill_Style);
-    paint.setColor(kHeaderBackgroundColorDark);
+    paint.setColor(background ? background->get_color() : kBackgroundColor);
     canvas->DrawPath(path, paint);
 
     // Now draw the arrow border.

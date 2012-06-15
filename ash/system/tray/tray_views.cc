@@ -431,10 +431,11 @@ void TrayPopupHeaderButton::StateChanged() {
 SpecialPopupRow::SpecialPopupRow()
     : content_(NULL),
       button_container_(NULL) {
-  set_background(views::Background::CreateBackgroundPainter(true,
-      views::Painter::CreateVerticalGradient(
-        kHeaderBackgroundColorLight,
-        kHeaderBackgroundColorDark)));
+  views::Background* background = views::Background::CreateBackgroundPainter(
+      true, views::Painter::CreateVerticalGradient(kHeaderBackgroundColorLight,
+                                                   kHeaderBackgroundColorDark));
+  background->SetNativeControlColor(kHeaderBackgroundColorDark);
+  set_background(background);
   set_border(new SpecialPopupRowBorder);
   SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));

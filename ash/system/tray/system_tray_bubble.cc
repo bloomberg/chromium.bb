@@ -72,10 +72,12 @@ class TrayPopupItemBorder : public views::Border {
 };
 
 // A view with some special behaviour for tray items in the popup:
-// - changes background color on hover.
+// - optionally changes background color on hover.
 class TrayPopupItemContainer : public views::View {
  public:
-  explicit TrayPopupItemContainer(views::View* view) : hover_(false) {
+  TrayPopupItemContainer(views::View* view, bool change_background)
+      : hover_(false),
+        change_background_(change_background) {
     set_notify_enter_exit_on_child(true);
     set_border(new TrayPopupItemBorder(this));
     views::BoxLayout* layout = new views::BoxLayout(
@@ -120,12 +122,13 @@ class TrayPopupItemContainer : public views::View {
 
     views::View* view = child_at(0);
     if (!view->background()) {
-      canvas->FillRect(gfx::Rect(size()),
-          hover_ ? kHoverBackgroundColor : kBackgroundColor);
+      canvas->FillRect(gfx::Rect(size()), (hover_ && change_background_) ?
+          kHoverBackgroundColor : kBackgroundColor);
     }
   }
 
   bool hover_;
+  bool change_background_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayPopupItemContainer);
 };
@@ -453,8 +456,10 @@ void SystemTrayBubble::CreateItemViews(user::LoginStatus login_status) {
         view = (*it)->CreateNotificationView(login_status);
         break;
     }
-    if (view)
-      bubble_view_->AddChildView(new TrayPopupItemContainer(view));
+    if (view) {
+      bubble_view_->AddChildView(new TrayPopupItemContainer(
+          view, bubble_type_ == BUBBLE_TYPE_DEFAULT));
+    }
   }
 }
 
