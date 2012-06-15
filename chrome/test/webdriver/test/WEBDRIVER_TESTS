@@ -31,8 +31,8 @@
     'correct_event_firing_tests',
     'driver_element_finding_tests',
     'element_attribute_tests',
-    'executing_async_javascript_test',
-    'executing_javascript_test',
+    'executing_async_javascript_tests',
+    'executing_javascript_tests',
     'form_handling_tests',
     'frame_switching_tests',
     # Test is asserting the wrong thing.
