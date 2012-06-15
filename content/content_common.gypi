@@ -157,6 +157,8 @@
     'common/fileapi/webfilewriter_impl.cc',
     'common/fileapi/webfilewriter_impl.h',
     'common/file_utilities_messages.h',
+    'common/find_match_rect_android.cc',
+    'common/find_match_rect_android.h',
     'common/font_cache_dispatcher_win.cc',
     'common/font_cache_dispatcher_win.h',
     'common/font_config_ipc_linux.cc',

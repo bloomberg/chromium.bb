@@ -21,6 +21,7 @@ import android.widget.TextView.OnEditorActionListener;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.content.browser.ContentView;
+import org.chromium.content.browser.ContentViewClient;
 
 /**
  * Container for the various UI components that make up a shell window.
@@ -30,6 +31,7 @@ public class ShellView extends LinearLayout {
     private static final long COMPLETED_PROGRESS_TIMEOUT_MS = 200;
 
     private int mNativeShellView;
+    // TODO(jrg): a mContentView.destroy() call is needed, both upstream and downstream.
     private ContentView mContentView;
     private EditText mUrlTextView;
     private ImageButton mPrevButton;
@@ -144,6 +146,7 @@ public class ShellView extends LinearLayout {
                 new FrameLayout.LayoutParams(
                         FrameLayout.LayoutParams.MATCH_PARENT,
                         FrameLayout.LayoutParams.MATCH_PARENT));
+        mContentView.setContentViewClient(new ShellContentViewClient());
     }
 
     /**
@@ -164,4 +167,33 @@ public class ShellView extends LinearLayout {
     }
 
     private native int nativeInit();
+
+    private class ShellContentViewClient extends ContentViewClient {
+        private Runnable mClearProgressRunnable = new Runnable() {
+            @Override
+            public void run() {
+                mProgressDrawable.setLevel(0);
+            }
+        };
+
+        @Override
+        public void onUpdateUrl(String url) {
+            super.onUpdateUrl(url);
+            mUrlTextView.setText(url);
+        }
+
+        @Override
+        public void onLoadProgressChanged(final double progress) {
+            super.onLoadProgressChanged(progress);
+            removeCallbacks(mClearProgressRunnable);
+            mProgressDrawable.setLevel((int) (10000.0 * progress));
+            if (progress == 1.0) postDelayed(mClearProgressRunnable, COMPLETED_PROGRESS_TIMEOUT_MS);
+        }
+
+        @Override
+        public void onTabCrash(int pid) {
+            super.onTabCrash(pid);
+            mProgressDrawable.setLevel(0);
+        }
+    }
 }

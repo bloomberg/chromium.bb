@@ -45,6 +45,7 @@
       ],
       'dependencies': [
         'content.gyp:content_jni_headers',
+        '../skia/skia.gyp:skia',
       ],
     }],
   ],

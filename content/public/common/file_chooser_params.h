@@ -46,6 +46,13 @@ struct CONTENT_EXPORT FileChooserParams {
   // A list of valid lower-cased MIME types or file extensions specified in an
   // input element. It is used to restrict selectable files to such types.
   std::vector<string16> accept_types;
+
+#if defined(OS_ANDROID)
+  // Used to select items other than files, i.e. camera/mic. See
+  // SelectFileDialog.java for more details.
+  // TODO(jrg): upstream SelectFileDialog.java!  Currently lives in chrome/.
+  string16 capture;
+#endif
 };
 
 }  // namespace content

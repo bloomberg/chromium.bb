@@ -5,16 +5,55 @@
 package org.chromium.content.browser;
 
 import android.content.Context;
+import android.util.Log;
 import android.widget.FrameLayout;
 
 import org.chromium.content.browser.AndroidBrowserProcess;
 
 public class ContentView extends FrameLayout {
+    private static final String TAG = "ContentView";
 
     /**
      * Automatically decide the number of renderer processes to use based on device memory class.
      * */
     public static final int MAX_RENDERERS_AUTOMATIC = -1;
+
+
+    // content_view_client.cc depends on ContentView.java holding a ref to the current client
+    // instance since the native side only holds a weak pointer to the client. We chose this
+    // solution over the managed object owning the C++ object's memory since it's a lot simpler
+    // in terms of clean up.
+    private ContentViewClient mContentViewClient;
+
+    // Native pointer to C++ ContentView object which will be set by nativeInit()
+    private int mNativeContentView = 0;
+
+    public void setContentViewClient(ContentViewClient client) {
+        if (client == null) {
+            throw new IllegalArgumentException("The client can't be null.");
+        }
+        mContentViewClient = client;
+        if (mNativeContentView != 0) {
+
+            // TODO(jrg): upstream this chain.  nativeSetClient(),
+            // ContentView::SetClient(), add a content_view_client_,
+            // add web_contents_, pass web_contents into native ContentView ctor, ...
+            /* nativeSetClient(mNativeContentView, mContentViewClient); */
+        }
+    }
+
+    ContentViewClient getContentViewClient() {
+        if (mContentViewClient == null) {
+            // We use the Null Object pattern to avoid having to perform a null check in this class.
+            // We create it lazily because most of the time a client will be set almost immediately
+            // after ChromeView is created.
+            mContentViewClient = new ContentViewClient();
+            // We don't set the native ContentViewClient pointer here on purpose. The native
+            // implementation doesn't mind a null delegate and using one is better than passing a
+            // Null Object, since we cut down on the number of JNI calls.
+        }
+        return mContentViewClient;
+    }
 
     /**
      * Enable multi-process ContentView. This should be called by the application before
@@ -55,7 +94,28 @@ public class ContentView extends FrameLayout {
 
     public ContentView(Context context) {
         super(context, null);
+        initialize(context);
     }
+
+    // TODO(jrg): incomplete; upstream the rest of this method.
+    private void initialize(Context context) {
+        mNativeContentView = nativeInit();
+        Log.i(TAG, "mNativeContentView=0x"+ Integer.toHexString(mNativeContentView));
+    }
+
+    /**
+     * Destroy the internal state of the WebView. This method may only be called
+     * after the WebView has been removed from the view system. No other methods
+     * may be called on this WebView after this method has been called.
+     */
+    // TODO(jrg): incomplete; upstream the rest of this method.
+    public void destroy() {
+        if (mNativeContentView != 0) {
+            nativeDestroy(mNativeContentView);
+            mNativeContentView = 0;
+        }
+    }
+
 
     /**
      * Load url without fixing up the url string. Calls from Chrome should be not
@@ -112,4 +172,19 @@ public class ContentView extends FrameLayout {
     public void reload() {
         // TODO(tedchoc): Implement.
     }
+
+    /**
+     * Initialize the ContentView native side.
+     * Should be called with a valid native WebContents.
+     * If nativeInitProcess is never called, the first time this method is called, nativeInitProcess
+     * will be called implicitly with the default settings.
+     * @param hardwareAccelerated if true, the View uses hardware accelerated rendering.
+     * @param nativeWebContents the ContentView does not create a new native WebContents and uses
+     *         the provided one.
+     * @return a native pointer to the native ContentView object.
+     */
+    private native int nativeInit();
+
+    private native void nativeDestroy(int nativeContentView);
+
 }

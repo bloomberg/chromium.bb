@@ -407,7 +407,11 @@ void FileSelectHelper::RunFileChooserOnUIThread(
       FILE_PATH_LITERAL(""),
       web_contents_,
       owning_window,
+#if defined(OS_ANDROID)
+      const_cast<content::FileChooserParams*>(&params);
+#else
       NULL);
+#endif
 
   select_file_types_.reset();
 }
