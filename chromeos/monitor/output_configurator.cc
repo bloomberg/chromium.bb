@@ -630,13 +630,6 @@ bool OutputConfigurator::CycleDisplayMode() {
   VLOG(1) << "CycleDisplayMode";
   bool did_change = false;
   if (is_running_on_chrome_os_) {
-    Display* display = base::MessagePumpAuraX11::GetDefaultXDisplay();
-    CHECK(display != NULL);
-    XGrabServer(display);
-    Window window = DefaultRootWindow(display);
-    XRRScreenResources* screen = XRRGetScreenResources(display, window);
-    CHECK(screen != NULL);
-
     // Rules:
     // - if there are 0 or 1 displays, do nothing and return false.
     // - use y-coord of CRTCs to determine if we are mirror, primary-first, or
@@ -659,16 +652,8 @@ bool OutputConfigurator::CycleDisplayMode() {
         // Do nothing - we aren't in a mode which we can rotate.
         break;
     }
-    if (STATE_INVALID != new_state) {
-      UpdateCacheAndXrandrToState(display,
-                                  screen,
-                                  window,
-                                  new_state);
-      did_change = true;
-    }
-
-    XRRFreeScreenResources(screen);
-    XUngrabServer(display);
+    if (STATE_INVALID != new_state)
+      did_change = SetDisplayMode(new_state);
   }
   return did_change;
 }
@@ -730,6 +715,28 @@ bool OutputConfigurator::ScreenPowerSet(bool power_on, bool all_displays) {
   return success;
 }
 
+bool OutputConfigurator::SetDisplayMode(State new_state) {
+  if (output_state_ == STATE_INVALID ||
+      output_state_ == STATE_HEADLESS ||
+      output_state_ == STATE_SINGLE)
+    return false;
+
+  Display* display = base::MessagePumpAuraX11::GetDefaultXDisplay();
+  CHECK(display != NULL);
+  XGrabServer(display);
+  Window window = DefaultRootWindow(display);
+  XRRScreenResources* screen = XRRGetScreenResources(display, window);
+  CHECK(screen != NULL);
+
+  UpdateCacheAndXrandrToState(display,
+                              screen,
+                              window,
+                              new_state);
+  XRRFreeScreenResources(screen);
+  XUngrabServer(display);
+  return true;
+}
+
 bool OutputConfigurator::Dispatch(const base::NativeEvent& event) {
   // Ignore this event if the Xrandr extension isn't supported.
   if (is_running_on_chrome_os_ &&
@@ -783,4 +790,3 @@ void OutputConfigurator::CheckIsProjectingAndNotify() {
 }
 
 }  // namespace chromeos
-
