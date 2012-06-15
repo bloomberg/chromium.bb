@@ -700,17 +700,11 @@ GDataProvider.prototype.callApi_ = function() {
 };
 
 /**
- * Pattern for Docs urls that are available in the offline mode.
- */
-GDataProvider.OFFLINE_DOCS_REGEXP = /\/(document|spreadsheet)\//;
-
-/**
  * @param {GDataFileProperties} data GData file properties.
  * @return {boolean} True if the file is available offline.
  */
 GDataProvider.isAvailableOffline = function(data) {
-  return data.isPresent ||
-      (data.isHosted && GDataProvider.OFFLINE_DOCS_REGEXP.test(data.editUrl));
+  return data.isPresent;
 };
 
 /**

@@ -1137,18 +1137,9 @@ list .detail-name > .file-checkbox::before,
 
 /* GData-specfic styles */
 
-[gdata][connection='offline'] .table-row.dim-offline,
-[gdata][connection='offline'] .thumbnail-item.dim-offline,
-[gdata][connection='metered'] .table-row.dim-metered,
-[gdata][connection='metered'] .thumbnail-item.dim-metered {
-  color: #808080;
-}
-
-[gdata][connection='offline'] .table-row.dim-offline .detail-icon,
-[gdata][connection='offline'] .thumbnail-item.dim-offline .img-container,
-[gdata][connection='metered'] .table-row.dim-metered .detail-icon,
-[gdata][connection='metered'] .thumbnail-item.dim-metered .img-container {
-  opacity: 0.3;
+[gdata][connection='offline'] .dim-offline,
+[gdata][connection='metered'] .dim-metered {
+  opacity: 0.4;
 }
 
 /* Overlay pane covering the entire file manager window (e.g. image editor)*/
