@@ -33,6 +33,7 @@ class CONTENT_EXPORT WebUIImpl : public content::WebUI,
   virtual content::WebContents* GetWebContents() const OVERRIDE;
   virtual content::WebUIController* GetController() const OVERRIDE;
   virtual void SetController(content::WebUIController* controller) OVERRIDE;
+  virtual float GetDeviceScale() const OVERRIDE;
   virtual bool ShouldHideFavicon() const OVERRIDE;
   virtual void HideFavicon() OVERRIDE;
   virtual bool ShouldFocusLocationBarByDefault() const OVERRIDE;

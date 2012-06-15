@@ -64,9 +64,6 @@ class InternetOptionsHandler
   void CreateModalPopup(views::WidgetDelegate* view);
   gfx::NativeWindow GetNativeWindow() const;
 
-  // Get preferred scale factor for network icons.
-  float GetIconScaleFactor();
-
   // Returns the last active browser. If there is no such browser, creates a new
   // browser window with an empty tab and returns it.
   Browser* GetAppropriateBrowser();

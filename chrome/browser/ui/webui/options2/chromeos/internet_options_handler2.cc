@@ -1135,12 +1135,6 @@ Browser* InternetOptionsHandler::GetAppropriateBrowser() {
       ProfileManager::GetDefaultProfileOrOffTheRecord());
 }
 
-float InternetOptionsHandler::GetIconScaleFactor() {
-  gfx::NativeWindow window = GetNativeWindow();
-  gfx::Display display = gfx::Screen::GetMonitorNearestWindow(window);
-  return display.device_scale_factor();
-}
-
 void InternetOptionsHandler::NetworkCommandCallback(const ListValue* args) {
   std::string str_type;
   std::string service_path;
@@ -1332,7 +1326,7 @@ ListValue* InternetOptionsHandler::GetWiredList() {
         cros_->ethernet_network();
     if (ethernet_network) {
       NetworkInfoDictionary network_dict(ethernet_network,
-                                         GetIconScaleFactor());
+                                         web_ui()->GetDeviceScale());
       network_dict.set_name(
           l10n_util::GetStringUTF8(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET)),
       list->Append(network_dict.BuildDictionary());
@@ -1347,7 +1341,7 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
   const chromeos::WifiNetworkVector& wifi_networks = cros_->wifi_networks();
   for (chromeos::WifiNetworkVector::const_iterator it =
       wifi_networks.begin(); it != wifi_networks.end(); ++it) {
-    NetworkInfoDictionary network_dict(*it, GetIconScaleFactor());
+    NetworkInfoDictionary network_dict(*it, web_ui()->GetDeviceScale());
     network_dict.set_connectable(cros_->CanConnectToNetwork(*it));
     list->Append(network_dict.BuildDictionary());
   }
@@ -1355,7 +1349,7 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
   const chromeos::WimaxNetworkVector& wimax_networks = cros_->wimax_networks();
   for (chromeos::WimaxNetworkVector::const_iterator it =
       wimax_networks.begin(); it != wimax_networks.end(); ++it) {
-    NetworkInfoDictionary network_dict(*it, GetIconScaleFactor());
+    NetworkInfoDictionary network_dict(*it, web_ui()->GetDeviceScale());
     network_dict.set_connectable(cros_->CanConnectToNetwork(*it));
     list->Append(network_dict.BuildDictionary());
   }
@@ -1364,7 +1358,7 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
       cros_->cellular_networks();
   for (chromeos::CellularNetworkVector::const_iterator it =
       cellular_networks.begin(); it != cellular_networks.end(); ++it) {
-    NetworkInfoDictionary network_dict(*it, GetIconScaleFactor());
+    NetworkInfoDictionary network_dict(*it, web_ui()->GetDeviceScale());
     network_dict.set_connectable(cros_->CanConnectToNetwork(*it));
     network_dict.set_activation_state((*it)->activation_state());
     network_dict.set_needs_new_plan(
@@ -1375,7 +1369,7 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
   const chromeos::NetworkDevice* cellular_device = cros_->FindCellularDevice();
   if (cellular_device && cellular_device->support_network_scan() &&
       cros_->cellular_enabled()) {
-    NetworkInfoDictionary network_dict(GetIconScaleFactor());
+    NetworkInfoDictionary network_dict(web_ui()->GetDeviceScale());
     network_dict.set_service_path(kOtherNetworksFakePath);
     network_dict.set_icon(
         chromeos::NetworkMenuIcon::GetDisconnectedImage(
@@ -1399,7 +1393,7 @@ ListValue* InternetOptionsHandler::GetVPNList() {
       cros_->virtual_networks();
   for (chromeos::VirtualNetworkVector::const_iterator it =
       virtual_networks.begin(); it != virtual_networks.end(); ++it) {
-    NetworkInfoDictionary network_dict(*it, GetIconScaleFactor());
+    NetworkInfoDictionary network_dict(*it, web_ui()->GetDeviceScale());
     network_dict.set_connectable(cros_->CanConnectToNetwork(*it));
     list->Append(network_dict.BuildDictionary());
   }
@@ -1419,7 +1413,7 @@ ListValue* InternetOptionsHandler::GetRememberedList() {
 
     NetworkInfoDictionary network_dict(wifi,
                                        remembered,
-                                       GetIconScaleFactor());
+                                       web_ui()->GetDeviceScale());
     list->Append(network_dict.BuildDictionary());
   }
 
@@ -1432,7 +1426,7 @@ ListValue* InternetOptionsHandler::GetRememberedList() {
 
     NetworkInfoDictionary network_dict(vpn,
                                        remembered,
-                                       GetIconScaleFactor());
+                                       web_ui()->GetDeviceScale());
     list->Append(network_dict.BuildDictionary());
   }
 

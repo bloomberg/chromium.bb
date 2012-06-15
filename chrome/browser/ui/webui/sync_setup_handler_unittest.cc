@@ -255,6 +255,9 @@ class TestWebUI : public content::WebUI {
     return NULL;
   }
   virtual void SetController(content::WebUIController* controller) OVERRIDE {}
+  virtual float GetDeviceScale() const OVERRIDE {
+    return 1.0f;
+  }
   virtual bool ShouldHideFavicon() const OVERRIDE {
     return false;
   }
