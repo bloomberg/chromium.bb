@@ -186,20 +186,19 @@ release_marshal_data(struct marshal_data *data)
 static void
 marshal(struct marshal_data *data, const char *format, int size, ...)
 {
-	struct wl_closure closure;
+	struct wl_closure *closure;
 	static const uint32_t opcode = 4444;
 	static struct wl_object sender = { NULL, NULL, 1234 };
 	struct wl_message message = { "test", format, NULL };
 	va_list ap;
-	int ret;
 
 	va_start(ap, size);
-	ret = wl_closure_vmarshal(&closure, &sender, opcode, ap, &message);
+	closure = wl_closure_vmarshal(&sender, opcode, ap, &message);
 	va_end(ap);
 
-	assert(ret == 0);
-	assert(wl_closure_send(&closure, data->write_connection) == 0);
-	wl_closure_destroy(&closure);
+	assert(closure);
+	assert(wl_closure_send(closure, data->write_connection) == 0);
+	wl_closure_destroy(closure);
 	assert(data->write_mask ==
 	       (WL_CONNECTION_WRITABLE | WL_CONNECTION_READABLE));
 	assert(wl_connection_data(data->write_connection,
@@ -300,10 +299,10 @@ demarshal(struct marshal_data *data, const char *format,
 	  uint32_t *msg, void (*func)(void))
 {
 	struct wl_message message = { "test", format, NULL };
-	struct wl_closure closure;
+	struct wl_closure *closure;
 	struct wl_map objects;
 	struct wl_object object;
-	int size = msg[1], ret;
+	int size = msg[1];
 
 	assert(write(data->s[1], msg, size) == size);
 	assert(wl_connection_data(data->read_connection,
@@ -311,10 +310,11 @@ demarshal(struct marshal_data *data, const char *format,
 
 	wl_map_init(&objects);
 	object.id = msg[0];
-	ret = wl_connection_demarshal(data->read_connection,
-				      &closure, size, &objects, &message);
-	assert(ret == 0);
-	wl_closure_invoke(&closure, &object, func, data);
+	closure = wl_connection_demarshal(data->read_connection,
+					  size, &objects, &message);
+	assert(closure);
+	wl_closure_invoke(closure, &object, func, data);
+	wl_closure_destroy(closure);
 }
 
 TEST(connection_demarshal)
@@ -356,7 +356,7 @@ static void
 marshal_demarshal(struct marshal_data *data, 
 		  void (*func)(void), int size, const char *format, ...)
 {
-	struct wl_closure closure;
+	struct wl_closure *closure;
 	static const int opcode = 4444;
 	static struct wl_object sender = { NULL, NULL, 1234 };
 	struct wl_message message = { "test", format, NULL };
@@ -364,15 +364,14 @@ marshal_demarshal(struct marshal_data *data,
 	struct wl_object object;
 	va_list ap;
 	uint32_t msg[1] = { 1234 };
-	int ret;
 
 	va_start(ap, format);
-	ret = wl_closure_vmarshal(&closure, &sender, opcode, ap, &message);
+	closure = wl_closure_vmarshal(&sender, opcode, ap, &message);
 	va_end(ap);
 
-	assert(ret == 0);
-	assert(wl_closure_send(&closure, data->write_connection) == 0);
-	wl_closure_destroy(&closure);
+	assert(closure);
+	assert(wl_closure_send(closure, data->write_connection) == 0);
+	wl_closure_destroy(closure);
 	assert(data->write_mask ==
 	       (WL_CONNECTION_WRITABLE | WL_CONNECTION_READABLE));
 	assert(wl_connection_data(data->write_connection,
@@ -384,10 +383,10 @@ marshal_demarshal(struct marshal_data *data,
 
 	wl_map_init(&objects);
 	object.id = msg[0];
-	ret  = wl_connection_demarshal(data->read_connection,
-				       &closure, size, &objects, &message);
-	wl_closure_invoke(&closure, &object, func, data);
-	wl_closure_destroy(&closure);
+	closure = wl_connection_demarshal(data->read_connection,
+					  size, &objects, &message);
+	wl_closure_invoke(closure, &object, func, data);
+	wl_closure_destroy(closure);
 }
 
 TEST(connection_marshal_demarshal)
@@ -454,21 +453,21 @@ TEST(connection_marshal_alot)
 static void
 marshal_helper(const char *format, void *handler, ...)
 {
-	struct wl_closure closure;
+	struct wl_closure *closure;
 	static struct wl_object sender = { NULL, NULL, 1234 }, object;
 	static const int opcode = 4444;
 	struct wl_message message = { "test", format, NULL };
 	va_list ap;
-	int ret, done;
+	int done;
 
 	va_start(ap, handler);
-	ret = wl_closure_vmarshal(&closure, &sender, opcode, ap, &message);
+	closure = wl_closure_vmarshal(&sender, opcode, ap, &message);
 	va_end(ap);
 
-	assert(ret == 0);
+	assert(closure);
 	done = 0;
-	wl_closure_invoke(&closure, &object, handler, &done);
-	wl_closure_destroy(&closure);
+	wl_closure_invoke(closure, &object, handler, &done);
+	wl_closure_destroy(closure);
 	assert(done);
 }
 
