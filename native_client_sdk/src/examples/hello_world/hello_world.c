@@ -22,6 +22,7 @@
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/ppp_messaging.h"
 
+
 static PPB_Messaging* ppb_messaging_interface = NULL;
 static PPB_Var* ppb_var_interface = NULL;
 
@@ -68,7 +69,7 @@ static PP_Bool Instance_DidCreate(PP_Instance instance,
                                   const char* argn[],
                                   const char* argv[]) {
   ppb_messaging_interface->PostMessage(instance,
-                                       CStrToVar("Hello a World (PNACL)"));
+                                       CStrToVar("Hello World: " TCNAME));
   return PP_TRUE;
 }
 

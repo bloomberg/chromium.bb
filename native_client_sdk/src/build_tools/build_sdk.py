@@ -340,7 +340,7 @@ EXAMPLE_MAP = {
     'gamepad',
     'geturl',
     'hello_world_interactive',
-    'hello_world_newlib',
+    'hello_world',
 #    'hello_world_gles',
     'input_events',
     'load_progress',
