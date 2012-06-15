@@ -1,9 +1,15 @@
-Current Status as of Apr 23, 2012
+Current Status as of Jun 14, 2012
 
 
 Upstream cherry-picks:
 
+59c122b matroskadec: add assert on lack of overflow in pkt_size+offset
+4b7c523 matroskadec: change size check in matroska_decode_buffer() to unsigned
+08169fc matroskadec: move lace_size check up so it catches all code pathes
+88a740a matroskadec: change assert to av_assert0()
+71529bd Fix incorrect unsigned->signed conversion.
 e0eaf10 oggdec: fix regression that caused reading the whole file during open
+
 
 Current patches:
 
