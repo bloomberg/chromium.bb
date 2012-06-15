@@ -1323,7 +1323,7 @@ xserver_map_shell_surface(struct weston_wm *wm,
 						      &shell_client);
 
 	/* ICCCM 4.1.1 */
-	if (!window->override_redirect) {
+	if (!window->override_redirect || !window->transient_for) {
 		shell_interface->set_toplevel(window->shsurf);
 		return;
 	}
