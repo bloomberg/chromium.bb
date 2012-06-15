@@ -51,6 +51,10 @@ def MakePythonExtension(env, module_name, sources):
   # interpreter.
   env.FilterOut(CCFLAGS=['-fvisibility=hidden'])
 
+  # Avoid an error because __BIG_ENDIAN__ is not defined but a Python
+  # header does "#if __BIG_ENDIAN__".
+  env.FilterOut(CCFLAGS=['-Wundef'])
+
   # We need to leave out the definitions of these symbols because they
   # conflict with pyconfig.h's own definitions of them.
   env['CPPDEFINES'] = [item for item in env['CPPDEFINES']

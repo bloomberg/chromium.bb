@@ -24,7 +24,9 @@ if env.Bit('linux') or env.Bit('mac'):
   # anonymous variadic macros were introduced in C99
   #
   # testing/gtest/src/gtest-all.cc skips an enum value
-  env.FilterOut(CCFLAGS=['-pedantic', '-Wswitch-enum'])
+  #
+  # gtest does not compile successfully with "-Wundef"
+  env.FilterOut(CCFLAGS=['-pedantic', '-Wswitch-enum', '-Wundef'])
 
 if env.Bit('linux') or env.Bit('clang'):
   # because of: testing/gtest/src/gtest-printers.cc:291: error:

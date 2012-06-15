@@ -296,7 +296,8 @@
               '-Wextra',
               '-Wno-long-long',
               '-Wswitch-enum',
-              '-Wsign-compare'
+              '-Wsign-compare',
+              '-Wundef',
             ],
           }],
           [ 'target_arch=="arm"', {
@@ -587,7 +588,8 @@
                 '-Wextra',
                 '-Wno-long-long',
                 '-Wswitch-enum',
-                '-Wsign-compare'
+                '-Wsign-compare',
+                '-Wundef',
               ],
             },
           }],

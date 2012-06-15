@@ -2559,9 +2559,10 @@ def MakeGTestEnv(env):
 
   # gtest does not compile with our stringent settings.
   if gtest_env.Bit('linux') or gtest_env.Bit('mac'):
-    # because of: gtest-typed-test.h:236:46: error:
+    # "-pedantic" is because of: gtest-typed-test.h:236:46: error:
     # anonymous variadic macros were introduced in C99
-    gtest_env.FilterOut(CCFLAGS=['-pedantic'])
+    # Also, gtest does not compile successfully with "-Wundef".
+    gtest_env.FilterOut(CCFLAGS=['-pedantic', '-Wundef'])
   gtest_env.FilterOut(CXXFLAGS=['-fno-rtti', '-Weffc++'])
 
   # gtest is incompatible with static linking due to obscure libstdc++
@@ -2894,6 +2895,7 @@ def MakeUnixLikeEnv():
         '-Wno-long-long',
         '-Wswitch-enum',
         '-Wsign-compare',
+        '-Wundef',
         '-fvisibility=hidden',
         '-fstack-protector',
         ] + werror_flags,

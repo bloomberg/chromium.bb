@@ -62,10 +62,8 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
   sp_user = NaClGetThreadCtxSp(user);
 
   /* sp must be okay for control to have gotten here */
-#if !BENCHMARK
   NaClLog(4, "Entered NaClSyscallCSegHook\n");
   NaClLog(4, "user sp %"NACL_PRIxPTR"\n", sp_user);
-#endif
 
   /*
    * on x86_32 user stack:
@@ -100,9 +98,7 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
   sysnum = (tramp_ret - (nap->mem_start + NACL_SYSCALL_START_ADDR))
       >> NACL_SYSCALL_BLOCK_SHIFT;
 
-#if !BENCHMARK
   NaClLog(4, "system call %"NACL_PRIuS"\n", sysnum);
-#endif
 
   /*
    * getting user return address (the address where we need to return after
@@ -135,15 +131,12 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
     natp->sysret = -NACL_ABI_EINVAL;
     NaClCopyInDropLock(nap);
   } else {
-#if !BENCHMARK
     NaClLog(4, "making system call %"NACL_PRIdS", "
             "handler 0x%08"NACL_PRIxPTR"\n",
             sysnum, (uintptr_t) nap->syscall_table[sysnum].handler);
-#endif
     natp->sysret = (*(nap->syscall_table[sysnum].handler))(natp);
     /* Implicitly drops lock */
   }
-#if !BENCHMARK
   NaClLog(4,
           ("returning from system call %"NACL_PRIdS", return value %"NACL_PRId32
            " (0x%"NACL_PRIx32")\n"),
@@ -151,7 +144,6 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
 
   NaClLog(4, "return target 0x%08"NACL_PRIxNACL_REG"\n", user_ret);
   NaClLog(4, "user sp %"NACL_PRIxPTR"\n", sp_user);
-#endif
 
   /*
    * before switching back to user module, we need to make sure that the
