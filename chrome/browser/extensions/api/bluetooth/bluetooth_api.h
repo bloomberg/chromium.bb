@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_EXTENSIONS_API_BLUETOOTH_BLUETOOTH_API_H_
 #pragma once
 
+#include <string>
+
 #include "chrome/browser/extensions/api/api_function.h"
 #include "chrome/browser/extensions/extension_function.h"
 
@@ -17,6 +19,7 @@ namespace chromeos {
 
 class BluetoothDevice;
 class BluetoothSocket;
+struct BluetoothOutOfBandPairingData;
 
 }  // namespace chromeos
 #endif
@@ -166,7 +169,7 @@ class BluetoothWriteFunction : public AsyncAPIFunction {
 };
 
 class BluetoothSetOutOfBandPairingDataFunction
-    : public SyncExtensionFunction {
+    : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME(
       "experimental.bluetooth.setOutOfBandPairingData")
@@ -174,18 +177,46 @@ class BluetoothSetOutOfBandPairingDataFunction
  protected:
   virtual ~BluetoothSetOutOfBandPairingDataFunction() {}
 
+#if defined(OS_CHROMEOS)
+  void OnSuccessCallback();
+  void OnErrorCallback();
+#endif
+
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };
 
-class BluetoothGetOutOfBandPairingDataFunction
-    : public SyncExtensionFunction {
+class BluetoothGetLocalOutOfBandPairingDataFunction
+    : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.bluetooth.getOutOfBandPairingData")
+      "experimental.bluetooth.getLocalOutOfBandPairingData")
 
  protected:
-  virtual ~BluetoothGetOutOfBandPairingDataFunction() {}
+  virtual ~BluetoothGetLocalOutOfBandPairingDataFunction() {}
+
+#if defined(OS_CHROMEOS)
+  void ReadCallback(const chromeos::BluetoothOutOfBandPairingData& data);
+  void ErrorCallback();
+#endif
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+};
+
+class BluetoothClearOutOfBandPairingDataFunction
+    : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME(
+      "experimental.bluetooth.clearOutOfBandPairingData")
+
+ protected:
+  virtual ~BluetoothClearOutOfBandPairingDataFunction() {}
+
+#if defined(OS_CHROMEOS)
+  void OnSuccessCallback();
+  void OnErrorCallback();
+#endif
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;

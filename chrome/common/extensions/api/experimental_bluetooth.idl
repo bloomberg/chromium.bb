@@ -91,15 +91,24 @@
 
     // Get the local Out of Band Pairing data.
     // |callback| : Called with the data.
-    static void getOutOfBandPairingData(OutOfBandPairingDataCallback callback);
+    static void getLocalOutOfBandPairingData(
+        OutOfBandPairingDataCallback callback);
 
-    // Set the Out of Band Pairing data for the bluetooth device at |address|.
+    // Set the Out Of Band Pairing Data for the bluetooth device at |address|.
+    // Any previous Out Of Band Pairing Data for this device is overwritten.
     // |address|  : The bluetooth address of the device sending the data.
     // |data|     : The data.
     // |callback| : Called to indicate success or failure.
     static void setOutOfBandPairingData(
         DOMString address,
         OutOfBandPairingData data,
+        optional ResultCallback callback);
+
+    // Clear any Out Of Band Pairing Data for the bluetooth device at |address|.
+    // |address|  : The bluetooth address for which data should be cleared.
+    // |callback| : Called to indicate success or failure.
+    static void clearOutOfBandPairingData(
+        DOMString address,
         optional ResultCallback callback);
   };
 

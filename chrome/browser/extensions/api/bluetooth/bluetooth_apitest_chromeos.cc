@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string.h>
+
+#include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
 #include "chrome/browser/chromeos/bluetooth/test/mock_bluetooth_adapter.h"
 #include "chrome/browser/chromeos/bluetooth/test/mock_bluetooth_device.h"
 #include "chrome/browser/chromeos/extensions/bluetooth_event_router.h"
@@ -11,6 +14,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/ui/browser.h"
+#include "chromeos/dbus/bluetooth_out_of_band_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using extensions::Extension;
@@ -42,6 +46,7 @@ class BluetoothApiTest : public PlatformAppApiTest {
                            const std::string& args) {
     scoped_ptr<base::Value> result(
         utils::RunFunctionAndReturnResult(function, args, browser()));
+    ASSERT_TRUE(result.get() != NULL);
     ASSERT_EQ(base::Value::TYPE_BOOLEAN, result->GetType());
     bool boolean_value;
     result->GetAsBoolean(&boolean_value);
@@ -67,6 +72,30 @@ class BluetoothApiTest : public PlatformAppApiTest {
   chromeos::BluetoothAdapter* original_adapter_;
   scoped_refptr<Extension> empty_extension_;
 };
+
+static const char kOutOfBandPairingDataHash[] = "0123456789ABCDEh";
+static const char kOutOfBandPairingDataRandomizer[] = "0123456789ABCDEr";
+
+static chromeos::BluetoothOutOfBandPairingData GetOutOfBandPairingData() {
+  chromeos::BluetoothOutOfBandPairingData data;
+  memcpy(&(data.hash), kOutOfBandPairingDataHash,
+      chromeos::kBluetoothOutOfBandPairingDataSize);
+  memcpy(&(data.randomizer), kOutOfBandPairingDataRandomizer,
+      chromeos::kBluetoothOutOfBandPairingDataSize);
+  return data;
+}
+
+static bool CallClosure(const base::Closure& callback) {
+  callback.Run();
+  return true;
+}
+
+static bool CallOutOfBandPairingDataCallback(
+      const chromeos::BluetoothAdapter::BluetoothOutOfBandPairingDataCallback&
+          callback) {
+  callback.Run(GetOutOfBandPairingData());
+  return true;
+}
 
 }  // namespace
 
@@ -142,4 +171,89 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevicesWithServiceUUID) {
   std::string name;
   ASSERT_TRUE(device->GetString("name", &name));
   EXPECT_EQ("d2", name);
+}
+
+IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetLocalOutOfBandPairingData) {
+  EXPECT_CALL(*mock_adapter_,
+              ReadLocalOutOfBandPairingData(
+                  testing::Truly(CallOutOfBandPairingDataCallback),
+                  testing::_));
+
+  scoped_refptr<api::BluetoothGetLocalOutOfBandPairingDataFunction>
+      get_oob_function(setupFunction(
+            new api::BluetoothGetLocalOutOfBandPairingDataFunction));
+
+  scoped_ptr<base::Value> result(
+      utils::RunFunctionAndReturnResult(get_oob_function, "[]", browser()));
+
+  base::DictionaryValue* dict;
+  EXPECT_TRUE(result->GetAsDictionary(&dict));
+
+  base::BinaryValue* binary_value;
+  EXPECT_TRUE(dict->GetBinary("hash", &binary_value));
+  EXPECT_STREQ(kOutOfBandPairingDataHash,
+      std::string(binary_value->GetBuffer(), binary_value->GetSize()).c_str());
+  EXPECT_TRUE(dict->GetBinary("randomizer", &binary_value));
+  EXPECT_STREQ(kOutOfBandPairingDataRandomizer,
+      std::string(binary_value->GetBuffer(), binary_value->GetSize()).c_str());
+
+  // Try again with an error
+  testing::Mock::VerifyAndClearExpectations(mock_adapter_);
+  EXPECT_CALL(*mock_adapter_,
+              ReadLocalOutOfBandPairingData(
+                  testing::_,
+                  testing::Truly(CallClosure)));
+
+  get_oob_function =
+      setupFunction(new api::BluetoothGetLocalOutOfBandPairingDataFunction);
+
+  std::string error(
+      utils::RunFunctionAndReturnError(get_oob_function, "[]", browser()));
+  EXPECT_FALSE(error.empty());
+}
+
+IN_PROC_BROWSER_TEST_F(BluetoothApiTest, DISABLED_SetOutOfBandPairingData) {
+  // TODO(bryeung): Fill in this test once it is possible to include an
+  // ArrayBuffer in the arguments to the RunFunctionAnd* methods.
+  // crbug.com/132796
+}
+
+IN_PROC_BROWSER_TEST_F(BluetoothApiTest, ClearOutOfBandPairingData) {
+  std::string device_address("11:12:13:14:15:16");
+  testing::NiceMock<chromeos::MockBluetoothDevice> device(
+      mock_adapter_, "d1", device_address);
+  EXPECT_CALL(*mock_adapter_, GetDevice(device_address))
+      .WillOnce(testing::Return(&device));
+  EXPECT_CALL(device,
+              ClearOutOfBandPairingData(
+                  testing::Truly(CallClosure),
+                  testing::_));
+
+  char buf[32];
+  snprintf(buf, sizeof(buf), "[\"%s\"]", device_address.c_str());
+  std::string params(buf);
+
+  scoped_refptr<api::BluetoothClearOutOfBandPairingDataFunction>
+      clear_oob_function;
+  clear_oob_function = setupFunction(
+      new api::BluetoothClearOutOfBandPairingDataFunction);
+  // There isn't actually a result.
+  (void)utils::RunFunctionAndReturnResult(
+      clear_oob_function, params, browser());
+
+  // Try again with an error
+  testing::Mock::VerifyAndClearExpectations(mock_adapter_);
+  testing::Mock::VerifyAndClearExpectations(&device);
+  EXPECT_CALL(*mock_adapter_, GetDevice(device_address))
+      .WillOnce(testing::Return(&device));
+  EXPECT_CALL(device,
+              ClearOutOfBandPairingData(
+                  testing::_,
+                  testing::Truly(CallClosure)));
+
+  clear_oob_function = setupFunction(
+      new api::BluetoothClearOutOfBandPairingDataFunction);
+  std::string error(
+      utils::RunFunctionAndReturnError(clear_oob_function, params, browser()));
+  EXPECT_FALSE(error.empty());
 }
