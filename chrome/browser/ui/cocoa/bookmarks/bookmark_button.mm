@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -203,7 +203,7 @@ BookmarkButton* gDraggedButton = nil; // Weak
     content::RecordAction(UserMetricsAction("BookmarkBar_DragStart"));
   }
 
-  dragMouseOffset_ = [self convertPointFromBase:[event locationInWindow]];
+  dragMouseOffset_ = [self convertPoint:[event locationInWindow] fromView:nil];
   dragPending_ = YES;
   gDraggedButton = self;
 
