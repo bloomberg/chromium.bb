@@ -58,9 +58,13 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     getCapabilityNotAvailableValueInternal: function() {
-      return this.destinationStore_.selectedDestination &&
-          this.destinationStore_.selectedDestination.id ==
-              print_preview.Destination.GooglePromotedId.SAVE_AS_PDF;
+      var dest = this.destinationStore_.selectedDestination;
+      if (!dest) {
+        return false;
+      }
+      return dest.id == print_preview.Destination.GooglePromotedId.DOCS ||
+          dest.id == print_preview.Destination.GooglePromotedId.SAVE_AS_PDF ||
+          dest.type == print_preview.Destination.Type.MOBILE;
     }
   };
 
