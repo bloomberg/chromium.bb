@@ -753,11 +753,6 @@ const char kEnableAutoSpellCorrect[] = "browser.enable_autospellcorrect";
 const char kSpeechRecognitionFilterProfanities[] =
     "browser.speechinput_censor_results";
 
-// Boolean pref to determine if the tray notification balloon for speech input
-// extension API has been already shown once to the user.
-const char kSpeechInputTrayNotificationShown[] =
-    "browser.speechinput_tray_notification_shown";
-
 // List of speech recognition context names (extensions or websites) for which
 // the tray notification balloon has already been shown.
 const char kSpeechRecognitionTrayNotificationShownContexts[] =

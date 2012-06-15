@@ -10,8 +10,7 @@ SpeechRecognitionSessionContext::SpeechRecognitionSessionContext()
     : render_process_id(0),
       render_view_id(0),
       request_id(0),
-      requested_by_page_element(true),
-      is_first_request_for_context(false) {
+      requested_by_page_element(true) {
 }
 
 SpeechRecognitionSessionContext::~SpeechRecognitionSessionContext() {

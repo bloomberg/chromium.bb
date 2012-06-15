@@ -9,18 +9,20 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/speech_recognition_manager.h"
 #include "content/public/browser/speech_recognition_session_config.h"
 #include "content/public/browser/speech_recognition_session_context.h"
@@ -95,7 +97,6 @@ class SpeechInputExtensionManager::Factory : public ProfileKeyedServiceFactory {
   // ProfileKeyedServiceFactory methods:
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
-  virtual void RegisterUserPrefs(PrefService* prefs) OVERRIDE;
   virtual bool ServiceRedirectedInIncognito() OVERRIDE { return false; }
   virtual bool ServiceIsNULLWhileTesting() OVERRIDE { return true; }
   virtual bool ServiceIsCreatedWithProfile() OVERRIDE { return true; }
@@ -133,13 +134,6 @@ ProfileKeyedService*
   scoped_refptr<SpeechInputExtensionManager> manager(
       new SpeechInputExtensionManager(profile));
   return new SpeechInputExtensionManagerWrapper(manager);
-}
-
-void SpeechInputExtensionManager::Factory::RegisterUserPrefs(
-    PrefService* prefs) {
-  prefs->RegisterBooleanPref(prefs::kSpeechInputTrayNotificationShown,
-                             false,
-                             PrefService::UNSYNCABLE_PREF);
 }
 
 SpeechInputExtensionInterface::SpeechInputExtensionInterface() {
@@ -241,8 +235,8 @@ void SpeechInputExtensionManager::ExtensionUnloaded(
 }
 
 void SpeechInputExtensionManager::SetSpeechInputExtensionInterface(
-    SpeechInputExtensionInterface* interface) {
-  speech_interface_ = interface;
+    SpeechInputExtensionInterface* speech_interface) {
+  speech_interface_ = speech_interface;
 }
 
 SpeechInputExtensionInterface*
@@ -254,6 +248,18 @@ void SpeechInputExtensionManager::ResetToIdleState() {
   VLOG(1) << "State changed to idle. Deassociating any extensions.";
   state_ = kIdle;
   extension_id_in_use_.clear();
+}
+
+int SpeechInputExtensionManager::GetRenderProcessIDForExtension(
+    const std::string& extension_id) const {
+  ExtensionProcessManager* epm =
+      ExtensionSystem::Get(profile_)->process_manager();
+  DCHECK(epm);
+  ExtensionHost* eh = epm->GetBackgroundHostForExtension(extension_id);
+  DCHECK(eh);
+  content::RenderProcessHost* rph = eh->render_process_host();
+  DCHECK(rph);
+  return rph->GetID();
 }
 
 void SpeechInputExtensionManager::OnRecognitionResult(
@@ -341,8 +347,6 @@ void SpeechInputExtensionManager::DidStartReceivingAudioOnUIThread() {
   state_ = kRecording;
 
   DCHECK(profile_);
-  profile_->GetPrefs()->SetBoolean(
-      prefs::kSpeechInputTrayNotificationShown, true);
 
   VLOG(1) << "Sending start notification";
   content::NotificationService::current()->Notify(
@@ -538,34 +542,32 @@ bool SpeechInputExtensionManager::Start(
   const extensions::Extension* extension = profile_->GetExtensionService()->
       GetExtensionById(extension_id, true);
   DCHECK(extension);
-  const string16& extension_name = UTF8ToUTF16(extension->name());
+  const std::string& extension_name = extension->name();
 
   extension_id_in_use_ = extension_id;
   VLOG(1) << "State changed to starting";
   state_ = kStarting;
 
-  // Checks if the security notification balloon has been already shown (only
-  // once for a profile). It is reset on DidStartReceivingAudioOnUIThread.
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter =
       profile_->GetRequestContext();
-  const bool show_notification = !profile_->GetPrefs()->GetBoolean(
-       prefs::kSpeechInputTrayNotificationShown);
+
+  const int render_process_id = GetRenderProcessIDForExtension(extension_id);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&SpeechInputExtensionManager::StartOnIOThread, this,
                  url_request_context_getter, extension_name, language, grammar,
-                 filter_profanities, show_notification));
+                 filter_profanities, render_process_id));
   return true;
 }
 
 void SpeechInputExtensionManager::StartOnIOThread(
     scoped_refptr<net::URLRequestContextGetter> context_getter,
-    const string16& extension_name,
+    const std::string& extension_name,
     const std::string& language,
     const std::string& grammar,
     bool filter_profanities,
-    bool show_notification) {
+    int render_process_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   VLOG(1) << "Requesting start (IO thread)";
 
@@ -603,7 +605,7 @@ void SpeechInputExtensionManager::StartOnIOThread(
                                                      language,
                                                      grammar,
                                                      filter_profanities,
-                                                     show_notification);
+                                                     render_process_id);
 }
 
 bool SpeechInputExtensionManager::HasAudioInputDevices() {
@@ -647,16 +649,16 @@ void SpeechInputExtensionManager::IsRecordingOnUIThread(
 void SpeechInputExtensionManager::StartRecording(
     content::SpeechRecognitionEventListener* listener,
     net::URLRequestContextGetter* context_getter,
-    const string16& extension_name,
+    const std::string& extension_name,
     const std::string& language,
     const std::string& grammar,
     bool filter_profanities,
-    bool show_notification) {
+    int render_process_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   content::SpeechRecognitionSessionContext context;
   context.requested_by_page_element = false;
-  context.is_first_request_for_context = show_notification;
+  context.render_process_id = render_process_id;
   context.context_name = extension_name;
 
   content::SpeechRecognitionSessionConfig config;

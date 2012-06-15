@@ -160,7 +160,7 @@ void ChromeSpeechRecognitionPreferences::ToggleFilterProfanities() {
 }
 
 bool ChromeSpeechRecognitionPreferences::ShouldShowSecurityNotification(
-    const string16& context_name) const {
+    const std::string& context_name) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(notifications_shown_.get());
   scoped_ptr<base::StringValue> match_name(
@@ -169,7 +169,7 @@ bool ChromeSpeechRecognitionPreferences::ShouldShowSecurityNotification(
 }
 
 void ChromeSpeechRecognitionPreferences::SetHasShownSecurityNotification(
-    const string16& context_name) {
+    const std::string& context_name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(notifications_shown_.get());
   notifications_shown_->AppendIfNotPresent(

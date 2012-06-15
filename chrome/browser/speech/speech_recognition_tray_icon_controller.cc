@@ -91,8 +91,7 @@ void SpeechRecognitionTrayIconController::Show(const string16& tooltip,
     SetVUMeterVolume(0.0f);
     tray_icon_->SetToolTip(l10n_util::GetStringFUTF16(
         IDS_SPEECH_INPUT_TRAY_TOOLTIP,
-        tooltip,
-        l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+        tooltip));
   } else {
     VLOG(1) << "This platform doesn't support notification icons.";
     return;
@@ -192,8 +191,7 @@ void SpeechRecognitionTrayIconController::ShowNotificationBalloon(
       IDS_SPEECH_INPUT_TRAY_BALLOON_TITLE);
   string16 message = l10n_util::GetStringFUTF16(
           IDS_SPEECH_INPUT_TRAY_BALLOON_BODY,
-          text,
-          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+          text);
 
   tray_icon_->DisplayBalloon(*g_images.Get().balloon_icon(), title, message);
 }

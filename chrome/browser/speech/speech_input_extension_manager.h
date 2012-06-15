@@ -11,7 +11,6 @@
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string16.h"
 #include "base/synchronization/lock.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
@@ -39,11 +38,11 @@ class SpeechInputExtensionInterface {
   virtual void StartRecording(
       content::SpeechRecognitionEventListener* listener,
       net::URLRequestContextGetter* context_getter,
-      const string16& extension_name,
+      const std::string& extension_name,
       const std::string& language,
       const std::string& grammar,
       bool filter_profanities,
-      bool show_notification) = 0;
+      int render_process_id) = 0;
 
   virtual void StopRecording(bool recognition_failed) = 0;
   virtual bool HasAudioInputDevices() = 0;
@@ -133,7 +132,8 @@ class SpeechInputExtensionManager
 
   // Methods for API testing.
   void SetSpeechInputExtensionInterface(
-      SpeechInputExtensionInterface* interface);
+      SpeechInputExtensionInterface* speech_interface);
+
   SpeechInputExtensionInterface* GetSpeechInputExtensionInterface();
 
  private:
@@ -144,22 +144,22 @@ class SpeechInputExtensionManager
   virtual void StartRecording(
       content::SpeechRecognitionEventListener* listener,
       net::URLRequestContextGetter* context_getter,
-      const string16& extension_name,
+      const std::string& extension_name,
       const std::string& language,
       const std::string& grammar,
       bool filter_profanities,
-      bool show_notification) OVERRIDE;
+      int render_process_id) OVERRIDE;
 
   virtual void StopRecording(bool recognition_failed) OVERRIDE;
 
   // Internal methods.
   void StartOnIOThread(
       scoped_refptr<net::URLRequestContextGetter> context_getter,
-      const string16& extension_name,
+      const std::string& extension_name,
       const std::string& language,
       const std::string& grammar,
       bool filter_profanities,
-      bool show_notification);
+      int render_process_id);
   void ForceStopOnIOThread();
   void IsRecordingOnIOThread(const IsRecordingCallback& callback);
 
@@ -179,6 +179,8 @@ class SpeechInputExtensionManager
   void ResetToIdleState();
 
   void AbortAllSessionsOnIOThread();
+
+  int GetRenderProcessIDForExtension(const std::string& extension_id) const;
 
   virtual ~SpeechInputExtensionManager();
 

@@ -10,7 +10,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
-#include "base/string16.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
@@ -55,8 +54,8 @@ class ChromeSpeechRecognitionPreferences
   // Called only by Chrome (on UI thread).
   void SetFilterProfanities(bool filter_profanities);
   void ToggleFilterProfanities();
-  bool ShouldShowSecurityNotification(const string16& context_name) const;
-  void SetHasShownSecurityNotification(const string16& context_name);
+  bool ShouldShowSecurityNotification(const std::string& context_name) const;
+  void SetHasShownSecurityNotification(const std::string& context_name);
 
  private:
   // The two classes below are needed to handle storage of speech recognition

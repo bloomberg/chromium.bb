@@ -81,11 +81,11 @@ class SpeechInputExtensionApiTest : public ExtensionApiTest,
   virtual void StartRecording(
       content::SpeechRecognitionEventListener* listener,
       net::URLRequestContextGetter* context_getter,
-      const string16& extension_name,
+      const std::string& extension_name,
       const std::string& language,
       const std::string& grammar,
       bool filter_profanities,
-      bool show_notification) OVERRIDE;
+      int render_process_id) OVERRIDE;
 
   virtual void StopRecording(bool recognition_failed) OVERRIDE;
 
@@ -136,11 +136,11 @@ SpeechInputExtensionApiTest::~SpeechInputExtensionApiTest() {
 void SpeechInputExtensionApiTest::StartRecording(
       content::SpeechRecognitionEventListener* listener,
       net::URLRequestContextGetter* context_getter,
-      const string16& extension_name,
+      const std::string& extension_name,
       const std::string& language,
       const std::string& grammar,
       bool filter_profanities,
-      bool show_notification) {
+      int render_process_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   recognizer_is_valid_ = true;
 

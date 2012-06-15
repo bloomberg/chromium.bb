@@ -73,9 +73,11 @@ void SpeechRecognitionDispatcherHost::OnStartRequest(
     const SpeechRecognitionHostMsg_StartRequest_Params& params) {
 
   SpeechRecognitionSessionContext context;
+  context.context_name = params.origin_url;
   context.render_process_id = render_process_id_;
   context.render_view_id = params.render_view_id;
   context.request_id = params.request_id;
+  context.requested_by_page_element = false;
 
   SpeechRecognitionSessionConfig config;
   config.is_one_shot = params.is_one_shot;

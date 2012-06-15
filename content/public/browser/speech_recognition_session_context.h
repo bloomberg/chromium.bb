@@ -6,7 +6,8 @@
 #define CONTENT_PUBLIC_BROWSER_SPEECH_RECOGNITION_SESSION_CONTEXT_H_
 #pragma once
 
-#include "base/string16.h"
+#include <string>
+
 #include "content/common/content_export.h"
 #include "ui/gfx/rect.h"
 
@@ -35,16 +36,9 @@ struct CONTENT_EXPORT SpeechRecognitionSessionContext {
   // |requested_by_page_element| = true).
   gfx::Rect element_rect;
 
-  // Determines whether this is the first time that this context (identified by
-  // |context_name|) is requesting a recognition.
-  // TODO(primiano) This is really temporary, remove after CL1.12 which will
-  // refactor SpeechRecognitionPreferences and move this check entirely whithin
-  // chrome, without involving content.
-  bool is_first_request_for_context;
-
   // A texual description of the context (website, extension name) that is
   // requesting recognition, for prompting security notifications to the user.
-  string16 context_name;
+  std::string context_name;
 };
 
 }  // namespace content

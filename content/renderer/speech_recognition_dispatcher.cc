@@ -69,7 +69,7 @@ void SpeechRecognitionDispatcher::start(
   }
   msg_params.language = UTF16ToUTF8(params.language());
   msg_params.is_one_shot = !params.continuous();
-  msg_params.origin_url = "";  // TODO(primiano) we need an origin from WebKit.
+  msg_params.origin_url = params.origin().toString().utf8();
   msg_params.render_view_id = routing_id();
   msg_params.request_id = GetIDForHandle(handle);
   Send(new SpeechRecognitionHostMsg_StartRequest(msg_params));

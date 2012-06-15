@@ -59,6 +59,15 @@ class ChromeSpeechRecognitionManagerDelegate
  private:
   class OptionalRequestInfo;
 
+  // Shows the recognition tray icon for a given |context_name|, eventually
+  // with a notification balloon. The balloon is shown only once per profile
+  // for a given context_name. |render_process_id| is required to lookup the
+  // profile associated with the renderer that initiated the recognition.
+  static void ShowTrayIconOnUIThread(
+      const std::string& context_name,
+      int render_process_id,
+      scoped_refptr<SpeechRecognitionTrayIconController> tray_icon_controller);
+
   // Checks for VIEW_TYPE_TAB_CONTENTS host in the UI thread and notifies back
   // the result in the IO thread through |callback|.
   static void CheckRenderViewType(
