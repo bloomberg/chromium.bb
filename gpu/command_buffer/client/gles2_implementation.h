@@ -472,6 +472,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation {
 
   IdHandlerInterface* GetIdHandler(int id_namespace) const;
 
+  void FinishHelper();
+
   GLES2Util util_;
   GLES2CmdHelper* helper_;
   TransferBufferInterface* transfer_buffer_;

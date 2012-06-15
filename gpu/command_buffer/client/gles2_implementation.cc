@@ -1036,6 +1036,10 @@ void GLES2Implementation::Flush() {
 
 void GLES2Implementation::Finish() {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
+  FinishHelper();
+}
+
+void GLES2Implementation::FinishHelper() {
   GPU_CLIENT_LOG("[" << this << "] glFinish()");
   TRACE_EVENT0("gpu", "GLES2::Finish");
   // Insert the cmd to call glFinish
@@ -3002,13 +3006,13 @@ void GLES2Implementation::DeleteQueriesEXTHelper(
   }
 
   if (query_pending) {
-    Finish();
+    FinishHelper();
   }
 
   for (GLsizei ii = 0; ii < n; ++ii) {
     QueryTracker::Query* query = query_tracker_->GetQuery(queries[ii]);
     if (query && query->Pending()) {
-      GPU_CHECK(!query->CheckResultsAvailable(helper_));
+      GPU_CHECK(query->CheckResultsAvailable(helper_));
     }
     query_tracker_->RemoveQuery(queries[ii]);
   }
@@ -3141,7 +3145,7 @@ void GLES2Implementation::GetQueryObjectuivEXT(
         helper_->WaitForToken(query->token());
         if (!query->CheckResultsAvailable(helper_)) {
           // TODO(gman): Speed this up.
-          Finish();
+          FinishHelper();
           GPU_CHECK(query->CheckResultsAvailable(helper_));
         }
       }
