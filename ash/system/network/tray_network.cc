@@ -343,6 +343,7 @@ class NetworkDetailedView : public TrayDetailsView,
             list[i].description.empty() ? list[i].name : list[i].description,
             list[i].highlight ? gfx::Font::BOLD : gfx::Font::NORMAL);
         container->Layout();
+        container->SchedulePaint();
 
         // Reordering the view if necessary.
         views::View* child = scroll_content()->child_at(i);
