@@ -367,10 +367,6 @@ class GDataFileSystemInterface {
   // and returns it to the callback.
   virtual void GetAvailableSpace(const GetAvailableSpaceCallback& callback) = 0;
 
-  // Pin or unpin file.
-  virtual void SetPinState(const FilePath& file_path, bool to_pin,
-                           const FileOperationCallback& callback) = 0;
-
   // Creates a new file from |entry| under |virtual_dir_path|. Stored its
   // content from |file_content_path| into the cache.
   //
@@ -456,9 +452,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const FilePath& file_path) OVERRIDE;
   virtual void GetAvailableSpace(
       const GetAvailableSpaceCallback& callback) OVERRIDE;
-  // Calls private Pin or Unpin methods with |callback|.
-  virtual void SetPinState(const FilePath& file_path, bool pin,
-                           const FileOperationCallback& callback) OVERRIDE;
   virtual void AddUploadedFile(const FilePath& virtual_dir_path,
                                DocumentEntry* entry,
                                const FilePath& file_content_path,
@@ -839,7 +832,8 @@ class GDataFileSystem : public GDataFileSystemInterface,
     const FilePath& downloaded_file_path);
 
   // Unpins file if cache entry is pinned.
-  void UnpinIfPinned(const FilePath& file_path,
+  void UnpinIfPinned(const std::string& resource_id,
+                     const std::string& md5,
                      GDataCache::CacheEntry* cache_entry,
                      bool* cache_entry_is_valid);
 
@@ -1049,11 +1043,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void FindEntryByPathSyncOnUIThread(const FilePath& search_file_path,
                                      const FindEntryCallback& callback);
 
-  void OnSetPinStateCompleted(const FileOperationCallback& callback,
-                              base::PlatformFileError error,
-                              const std::string& resource_id,
-                              const std::string& md5);
-
   // Changes state of hosted documents visibility, triggers directory refresh.
   void SetHideHostedDocuments(bool hide);
 
@@ -1139,8 +1128,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                const std::string& md5,
                                const GetCacheStateCallback& callback);
   void GetAvailableSpaceOnUIThread(const GetAvailableSpaceCallback& callback);
-  void SetPinStateOnUIThread(const FilePath& file_path, bool to_pin,
-                             const FileOperationCallback& callback);
   void AddUploadedFileOnUIThread(const FilePath& virtual_dir_path,
                                  DocumentEntry* entry,
                                  const FilePath& file_content_path,

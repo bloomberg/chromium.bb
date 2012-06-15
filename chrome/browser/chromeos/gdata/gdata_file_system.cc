@@ -2334,61 +2334,6 @@ void GDataFileSystem::GetAvailableSpaceOnUIThread(
                  callback));
 }
 
-void GDataFileSystem::SetPinState(const FilePath& file_path,
-                                  bool to_pin,
-                                  const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
-         BrowserThread::CurrentlyOn(BrowserThread::IO));
-  RunTaskOnUIThread(base::Bind(&GDataFileSystem::SetPinStateOnUIThread,
-                               ui_weak_ptr_,
-                               file_path,
-                               to_pin,
-                               CreateRelayCallback(callback)));
-}
-
-void GDataFileSystem::SetPinStateOnUIThread(
-    const FilePath& file_path,
-    bool to_pin,
-    const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  GDataEntry* entry = GetGDataEntryByPath(file_path);
-  GDataFile* file = entry ? entry->AsGDataFile() : NULL;
-
-  if (!file) {
-    if (!callback.is_null()) {
-      MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
-    }
-    return;
-  }
-  const std::string& resource_id = file->resource_id();
-  const std::string& md5 = file->file_md5();
-
-  CacheOperationCallback cache_callback;
-
-  if (!callback.is_null()) {
-    cache_callback = base::Bind(&GDataFileSystem::OnSetPinStateCompleted,
-                                ui_weak_ptr_,
-                                callback);
-  }
-
-  if (to_pin)
-    cache_->PinOnUIThread(resource_id, md5, cache_callback);
-  else
-    cache_->UnpinOnUIThread(resource_id, md5, cache_callback);
-}
-
-void GDataFileSystem::OnSetPinStateCompleted(
-    const FileOperationCallback& callback,
-    base::PlatformFileError error,
-    const std::string& resource_id,
-    const std::string& md5) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  callback.Run(error);
-}
-
 void GDataFileSystem::OnGetAvailableSpace(
     const GetAvailableSpaceCallback& callback,
     GDataErrorCode status,
@@ -2898,7 +2843,8 @@ void GDataFileSystem::OnFileDownloaded(
                    success),
         base::Bind(&GDataFileSystem::UnpinIfPinned,
                    ui_weak_ptr_,
-                   params.virtual_file_path,
+                   params.resource_id,
+                   params.md5,
                    base::Owned(cache_entry),
                    base::Owned(success)));
   }
@@ -2928,14 +2874,15 @@ void GDataFileSystem::OnFileDownloaded(
                  base::Owned(has_enough_space)));
 }
 
-void GDataFileSystem::UnpinIfPinned(const FilePath& file_path,
+void GDataFileSystem::UnpinIfPinned(const std::string& resource_id,
+                                    const std::string& md5,
                                     GDataCache::CacheEntry* cache_entry,
                                     bool* cache_entry_is_valid) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // TODO(hshi): http://crbug.com/127138 notify when file properties change.
   // This allows file manager to clear the "Available offline" checkbox.
   if (*cache_entry_is_valid && cache_entry->IsPinned())
-    SetPinStateOnUIThread(file_path, false, FileOperationCallback());
+    cache_->UnpinOnUIThread(resource_id, md5, CacheOperationCallback());
 }
 
 void GDataFileSystem::OnFileDownloadedAndSpaceChecked(

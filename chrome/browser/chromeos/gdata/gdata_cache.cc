@@ -528,8 +528,8 @@ void GDataCache::StoreOnUIThread(const std::string& resource_id,
 }
 
 void GDataCache::PinOnUIThread(const std::string& resource_id,
-                                    const std::string& md5,
-                                    const CacheOperationCallback& callback) {
+                               const std::string& md5,
+                               const CacheOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   base::PlatformFileError* error =

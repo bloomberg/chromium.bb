@@ -1538,8 +1538,16 @@ GetGDataFilePropertiesFunction::~GetGDataFilePropertiesFunction() {
 }
 
 void GetGDataFilePropertiesFunction::DoOperation(
-    const FilePath& path, base::DictionaryValue* property_dict) {
-  OnOperationComplete(path, property_dict, base::PLATFORM_FILE_OK);
+    const FilePath& file_path,
+    base::DictionaryValue* property_dict,
+    scoped_ptr<gdata::GDataFileProto> file_proto) {
+  DCHECK(property_dict);
+
+  // Nothing to do here so simply call OnOperationComplete().
+  OnOperationComplete(file_path,
+                      property_dict,
+                      base::PLATFORM_FILE_OK,
+                      file_proto.Pass());
 }
 
 bool GetGDataFilePropertiesFunction::RunImpl() {
@@ -1576,8 +1584,17 @@ void GetGDataFilePropertiesFunction::GetNextFileProperties() {
 
   base::DictionaryValue* property_dict = new base::DictionaryValue;
   property_dict->SetString("fileUrl", file_url.spec());
-  DoOperation(file_path, property_dict);
   file_properties_->Append(property_dict);
+
+  // Start getting the file info.
+  gdata::GDataSystemService* system_service =
+      gdata::GDataSystemServiceFactory::GetForProfile(profile_);
+  system_service->file_system()->GetFileInfoByPathAsync(
+      file_path,
+      base::Bind(&GetGDataFilePropertiesFunction::OnGetFileInfo,
+                 this,
+                 file_path,
+                 property_dict));
 }
 
 void GetGDataFilePropertiesFunction::CompleteGetFileProperties() {
@@ -1588,33 +1605,24 @@ void GetGDataFilePropertiesFunction::CompleteGetFileProperties() {
       Bind(&GetGDataFilePropertiesFunction::GetNextFileProperties, this));
 }
 
-void GetGDataFilePropertiesFunction::OnOperationComplete(
-    const FilePath& path,
-    base::DictionaryValue* property_dict,
-    base::PlatformFileError error) {
-  if (error != base::PLATFORM_FILE_OK) {
-    property_dict->SetInteger("errorCode", error);
-    CompleteGetFileProperties();
-    return;
-  }
-
-  gdata::GDataSystemService* system_service =
-      gdata::GDataSystemServiceFactory::GetForProfile(profile_);
-  system_service->file_system()->GetFileInfoByPathAsync(
-      path,
-      base::Bind(&GetGDataFilePropertiesFunction::OnGetFileInfo,
-                 this,
-                 property_dict,
-                 path));
-}
-
 void GetGDataFilePropertiesFunction::OnGetFileInfo(
-    base::DictionaryValue* property_dict,
     const FilePath& file_path,
+    base::DictionaryValue* property_dict,
     base::PlatformFileError error,
     scoped_ptr<gdata::GDataFileProto> file_proto) {
   DCHECK(property_dict);
 
+  if (error == base::PLATFORM_FILE_OK)
+    DoOperation(file_path, property_dict, file_proto.Pass());
+  else
+    OnOperationComplete(file_path, property_dict, error, file_proto.Pass());
+}
+
+void GetGDataFilePropertiesFunction::OnOperationComplete(
+    const FilePath& file_path,
+    base::DictionaryValue* property_dict,
+    base::PlatformFileError error,
+    scoped_ptr<gdata::GDataFileProto> file_proto) {
   if (error != base::PLATFORM_FILE_OK) {
     property_dict->SetInteger("errorCode", error);
     CompleteGetFileProperties();
@@ -1698,22 +1706,42 @@ bool PinGDataFileFunction::RunImpl() {
   return true;
 }
 
-void PinGDataFileFunction::DoOperation(const FilePath& path,
-                                       base::DictionaryValue* properties) {
+void PinGDataFileFunction::DoOperation(
+    const FilePath& file_path,
+    base::DictionaryValue* properties,
+    scoped_ptr<gdata::GDataFileProto> file_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   gdata::GDataSystemService* system_service =
       gdata::GDataSystemServiceFactory::GetForProfile(profile_);
-  system_service->file_system()->SetPinState(path, set_pin_, base::Bind(
-      &PinGDataFileFunction::OnPinStateSet, this, path, properties));
+  // This is subtle but we should take references of resource_id and md5
+  // before |file_info| is passed to |callback| by base::Passed(). Otherwise,
+  // file_info->whatever() crashes.
+  const std::string& resource_id = file_proto->gdata_entry().resource_id();
+  const std::string& md5 = file_proto->file_md5();
+  const gdata::CacheOperationCallback callback =
+      base::Bind(&PinGDataFileFunction::OnPinStateSet,
+                 this,
+                 file_path,
+                 properties,
+                 base::Passed(&file_proto));
+
+  if (set_pin_)
+    system_service->cache()->PinOnUIThread(resource_id, md5, callback);
+  else
+    system_service->cache()->UnpinOnUIThread(resource_id, md5, callback);
 }
 
-void PinGDataFileFunction::OnPinStateSet(const FilePath& path,
-                                         base::DictionaryValue* properties,
-                                         base::PlatformFileError error) {
+void PinGDataFileFunction::OnPinStateSet(
+    const FilePath& path,
+    base::DictionaryValue* properties,
+    scoped_ptr<gdata::GDataFileProto> file_proto,
+    base::PlatformFileError error,
+    const std::string& /* resource_id */,
+    const std::string& /* md5 */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  MessageLoop::current()->PostTask(FROM_HERE,
-      Bind(&PinGDataFileFunction::OnOperationComplete,
-           this, path, properties, error));
+
+  OnOperationComplete(path, properties, error, file_proto.Pass());
 }
 
 GetFileLocationsFunction::GetFileLocationsFunction() {

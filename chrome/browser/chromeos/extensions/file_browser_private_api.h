@@ -415,12 +415,14 @@ class GetGDataFilePropertiesFunction : public FileBrowserFunction {
 
   // Virtual function that can be overridden to do operations on each virtual
   // file path and update its the properties.
-  virtual void DoOperation(const FilePath& file,
-                           base::DictionaryValue* properties);
-
-  void OnOperationComplete(const FilePath& file,
+  virtual void DoOperation(const FilePath& file_path,
                            base::DictionaryValue* properties,
-                           base::PlatformFileError error);
+                           scoped_ptr<gdata::GDataFileProto> file_proto);
+
+  void OnOperationComplete(const FilePath& file_path,
+                           base::DictionaryValue* properties,
+                           base::PlatformFileError error,
+                           scoped_ptr<gdata::GDataFileProto> file_proto);
 
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
@@ -429,8 +431,8 @@ class GetGDataFilePropertiesFunction : public FileBrowserFunction {
   void PrepareResults();
 
  private:
-  void OnGetFileInfo(base::DictionaryValue* property_dict,
-                     const FilePath& file_path,
+  void OnGetFileInfo(const FilePath& file_path,
+                     base::DictionaryValue* property_dict,
                      base::PlatformFileError error,
                      scoped_ptr<gdata::GDataFileProto> file_proto);
 
@@ -463,13 +465,18 @@ class PinGDataFileFunction : public GetGDataFilePropertiesFunction {
 
  private:
   // Actually do the pinning/unpinning of each file.
-  virtual void DoOperation(const FilePath& path,
-                           base::DictionaryValue* properties) OVERRIDE;
+  virtual void DoOperation(
+      const FilePath& file_path,
+      base::DictionaryValue* properties,
+      scoped_ptr<gdata::GDataFileProto> file_proto) OVERRIDE;
 
   // Callback for SetPinState. Updates properties with error.
   void OnPinStateSet(const FilePath& path,
                      base::DictionaryValue* properties,
-                     base::PlatformFileError error);
+                     scoped_ptr<gdata::GDataFileProto> file_proto,
+                     base::PlatformFileError error,
+                     const std::string& resource_id,
+                     const std::string& md5);
 
   // True for pin, false for unpin.
   bool set_pin_;
