@@ -28,6 +28,7 @@ class BluetoothDeviceClient;
 class BluetoothInputClient;
 class BluetoothManagerClient;
 class BluetoothNodeClient;
+class BluetoothOutOfBandClient;
 class CashewClient;
 class CrosDisksClient;
 class CryptohomeClient;
@@ -125,6 +126,11 @@ class CHROMEOS_EXPORT DBusThreadManager {
   // Do not cache this pointer and use it after DBusThreadManager is shut
   // down.
   virtual BluetoothNodeClient* GetBluetoothNodeClient() = 0;
+
+  // Returns the bluetooth node client, owned by DBusThreadManager.
+  // Do not cache this pointer and use it after DBusThreadManager is shut
+  // down.
+  virtual BluetoothOutOfBandClient* GetBluetoothOutOfBandClient() = 0;
 
   // Returns the Cashew client, owned by DBusThreadManager.
   // Do not cache this pointer and use it after DBusThreadManager is shut

@@ -16,6 +16,7 @@
 #include "chromeos/dbus/bluetooth_adapter_client.h"
 #include "chromeos/dbus/bluetooth_device_client.h"
 #include "chromeos/dbus/bluetooth_manager_client.h"
+#include "chromeos/dbus/bluetooth_out_of_band_client.h"
 #include "dbus/object_path.h"
 
 namespace chromeos {
@@ -91,6 +92,11 @@ class BluetoothAdapter : private BluetoothManagerClient::Observer,
   // is called, in the success case the callback is simply not called.
   typedef base::Callback<void()> ErrorCallback;
 
+  // The BluetoothOutOfBandPairingDataCallback is used to return
+  // BluetoothOutOfBandPairingData to the caller.
+  typedef base::Callback<void(const BluetoothOutOfBandPairingData& data)>
+      BluetoothOutOfBandPairingDataCallback;
+
   // The address of this adapter.  The address format is "XX:XX:XX:XX:XX:XX",
   // where each XX is a hexadecimal number.
   const std::string& address() const { return address_; }
@@ -132,8 +138,13 @@ class BluetoothAdapter : private BluetoothManagerClient::Observer,
 
   // Returns a pointer to the device with the given address |address| or
   // NULL if no such device is known.
-  BluetoothDevice* GetDevice(const std::string& address);
-  const BluetoothDevice* GetDevice(const std::string& address) const;
+  virtual BluetoothDevice* GetDevice(const std::string& address);
+  virtual const BluetoothDevice* GetDevice(const std::string& address) const;
+
+  // Requests the local Out Of Band pairing data.
+  virtual void ReadLocalOutOfBandPairingData(
+      const BluetoothOutOfBandPairingDataCallback& callback,
+      const ErrorCallback& error_callback);
 
   // Creates the instance for the default adapter, whichever that may
   // be at the time. Use IsPresent() and the AdapterPresentChanged() observer
@@ -213,6 +224,12 @@ class BluetoothAdapter : private BluetoothManagerClient::Observer,
   // |discovering| and notifies observers. Called on receipt of a property
   // changed signal, and directly using values obtained from properties.
   void DiscoveringChanged(bool discovering);
+
+  // Called by dbus:: in response to the ReadLocalData method call.
+  void OnReadLocalData(const BluetoothOutOfBandPairingDataCallback& callback,
+                       const ErrorCallback& error_callback,
+                       const BluetoothOutOfBandPairingData& data,
+                       bool success);
 
   // BluetoothAdapterClient::Observer override.
   //

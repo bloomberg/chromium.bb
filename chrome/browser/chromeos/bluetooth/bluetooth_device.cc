@@ -22,6 +22,7 @@
 #include "chromeos/dbus/bluetooth_agent_service_provider.h"
 #include "chromeos/dbus/bluetooth_device_client.h"
 #include "chromeos/dbus/bluetooth_input_client.h"
+#include "chromeos/dbus/bluetooth_out_of_band_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/introspectable_client.h"
 #include "dbus/bus.h"
@@ -551,6 +552,15 @@ void BluetoothDevice::ConnectToMatchingService(
   callback.Run(NULL);
 }
 
+void BluetoothDevice::OnRemoteDataCallback(const base::Closure& callback,
+                                           const ErrorCallback& error_callback,
+                                           bool success) {
+  if (success)
+    callback.Run();
+  else
+    error_callback.Run();
+}
+
 void BluetoothDevice::ConnectToService(const std::string& service_uuid,
                                        const SocketCallback& callback) {
   DBusThreadManager::Get()->GetBluetoothDeviceClient()->
@@ -561,6 +571,34 @@ void BluetoothDevice::ConnectToService(const std::string& service_uuid,
                      weak_ptr_factory_.GetWeakPtr(),
                      service_uuid,
                      callback));
+}
+
+void BluetoothDevice::SetOutOfBandPairingData(
+    const chromeos::BluetoothOutOfBandPairingData& data,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  DBusThreadManager::Get()->GetBluetoothOutOfBandClient()->
+      AddRemoteData(
+          object_path_,
+          address(),
+          data,
+          base::Bind(&BluetoothDevice::OnRemoteDataCallback,
+              weak_ptr_factory_.GetWeakPtr(),
+              callback,
+              error_callback));
+}
+
+void BluetoothDevice::ClearOutOfBandPairingData(
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  DBusThreadManager::Get()->GetBluetoothOutOfBandClient()->
+      RemoveRemoteData(
+          object_path_,
+          address(),
+          base::Bind(&BluetoothDevice::OnRemoteDataCallback,
+              weak_ptr_factory_.GetWeakPtr(),
+              callback,
+              error_callback));
 }
 
 void BluetoothDevice::ForgetCallback(const ErrorCallback& error_callback,

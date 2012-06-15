@@ -24,6 +24,14 @@ class MockBluetoothDevice : public BluetoothDevice {
   MOCK_CONST_METHOD0(GetName, string16());
   MOCK_CONST_METHOD1(ProvidesServiceWithUUID, bool(const std::string&));
 
+  MOCK_METHOD3(SetOutOfBandPairingData,
+      void(const chromeos::BluetoothOutOfBandPairingData& data,
+           const base::Closure& callback,
+           const BluetoothDevice::ErrorCallback& error_callback));
+  MOCK_METHOD2(ClearOutOfBandPairingData,
+      void(const base::Closure& callback,
+           const BluetoothDevice::ErrorCallback& error_callback));
+
  private:
   string16 name_;
   std::string address_;

@@ -6,9 +6,12 @@
 #define CHROME_BROWSER_CHROMEOS_BLUETOOTH_TEST_MOCK_BLUETOOTH_ADAPTER_H_
 #pragma once
 
+#include <string>
+
 #include "base/callback.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_device.h"
+#include "chromeos/dbus/bluetooth_out_of_band_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {
@@ -25,6 +28,14 @@ class MockBluetoothAdapter : public BluetoothAdapter {
                     const base::Closure& callback,
                     const BluetoothAdapter::ErrorCallback& error_callback));
   MOCK_CONST_METHOD0(GetDevices, ConstDeviceList());
+  MOCK_METHOD1(GetDevice, BluetoothDevice*(const std::string& address));
+  MOCK_CONST_METHOD1(GetDevice,
+                     const BluetoothDevice*(const std::string& address));
+  MOCK_METHOD2(
+      ReadLocalOutOfBandPairingData,
+      void(const BluetoothAdapter::BluetoothOutOfBandPairingDataCallback&
+               callback,
+           const BluetoothAdapter::ErrorCallback& error_callback));
 };
 
 }  // namespace chromeos

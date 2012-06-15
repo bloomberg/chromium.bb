@@ -12,6 +12,7 @@
 #include "chromeos/dbus/bluetooth_adapter_client.h"
 #include "chromeos/dbus/bluetooth_device_client.h"
 #include "chromeos/dbus/bluetooth_manager_client.h"
+#include "chromeos/dbus/bluetooth_out_of_band_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "dbus/object_path.h"
 
@@ -246,6 +247,17 @@ void BluetoothAdapter::DiscoveringChanged(bool discovering) {
                     AdapterDiscoveringChanged(this, discovering_));
 }
 
+void BluetoothAdapter::OnReadLocalData(
+    const BluetoothOutOfBandPairingDataCallback& callback,
+    const ErrorCallback& error_callback,
+    const BluetoothOutOfBandPairingData& data,
+    bool success) {
+  if (success)
+    callback.Run(data);
+  else
+    error_callback.Run();
+}
+
 void BluetoothAdapter::AdapterPropertyChanged(
     const dbus::ObjectPath& adapter_path,
     const std::string& property_name) {
@@ -289,7 +301,7 @@ void BluetoothAdapter::UpdateDevice(const dbus::ObjectPath& device_path) {
   // or it may be the device going from discovered to connected and gaining
   // an object path. Update the existing object and notify observers.
   DevicesMap::iterator iter = devices_.find(address);
-  if (iter != devices_.end()){
+  if (iter != devices_.end()) {
     BluetoothDevice* device = iter->second;
 
     if (!device->IsPaired())
@@ -344,6 +356,17 @@ const BluetoothDevice* BluetoothAdapter::GetDevice(
     return iter->second;
 
   return NULL;
+}
+
+void BluetoothAdapter::ReadLocalOutOfBandPairingData(
+    const BluetoothOutOfBandPairingDataCallback& callback,
+    const ErrorCallback& error_callback) {
+  DBusThreadManager::Get()->GetBluetoothOutOfBandClient()->
+      ReadLocalData(object_path_,
+          base::Bind(&BluetoothAdapter::OnReadLocalData,
+              weak_ptr_factory_.GetWeakPtr(),
+              callback,
+              error_callback));
 }
 
 void BluetoothAdapter::ClearDevices() {

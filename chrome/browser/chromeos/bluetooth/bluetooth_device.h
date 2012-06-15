@@ -16,6 +16,7 @@
 #include "base/string16.h"
 #include "chromeos/dbus/bluetooth_agent_service_provider.h"
 #include "chromeos/dbus/bluetooth_device_client.h"
+#include "chromeos/dbus/bluetooth_out_of_band_client.h"
 #include "dbus/object_path.h"
 
 namespace chromeos {
@@ -204,6 +205,10 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
   // is called, in the success case the callback is simply not called.
   typedef base::Callback<void()> ErrorCallback;
 
+  // The VoidResultCallback is used for methods that do not return any data, to
+  // indicate that the action requested is complete.
+  typedef base::Callback<void()> VoidResultCallback;
+
   // Initiates a connection to the device, pairing first if necessary.
   //
   // Method calls will be made on the supplied object |pairing_delegate|
@@ -272,6 +277,19 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
   // BluetoothAdapter for this device.
   void ConnectToService(const std::string& service_uuid,
                         const SocketCallback& callback);
+
+  // Sets the Out Of Band pairing data for this device to |data|.  Exactly one
+  // of |callback| or |error_callback| will be run.
+  virtual void SetOutOfBandPairingData(
+      const chromeos::BluetoothOutOfBandPairingData& data,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback);
+
+  // Clears the Out Of Band pairing data for this device.  Exactly one of
+  // |callback| or |error_callback| will be run.
+  virtual void ClearOutOfBandPairingData(
+      const base::Closure& callback,
+      const ErrorCallback& error_callback);
 
  private:
   friend class BluetoothAdapter;
@@ -387,6 +405,12 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
       const dbus::ObjectPath& object_path,
       const BluetoothDeviceClient::ServiceMap& service_map,
       bool success);
+
+  // Called by BlueoothDeviceClient in response to the AddRemoteData and
+  // RemoveRemoteData method calls.
+  void OnRemoteDataCallback(const base::Closure& callback,
+                            const ErrorCallback& error_callback,
+                            bool success);
 
   // BluetoothDeviceClient::Observer override.
   //
