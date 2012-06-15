@@ -48,6 +48,10 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
+
 using content::BrowserThread;
 using content::DevToolsAgentHost;
 using content::DevToolsAgentHostRegistry;
@@ -1595,11 +1599,13 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderHTML5VideoNetwork) {
 #if defined(TOOLKIT_VIEWS)
 // TODO(beng): Widget hierarchy split causes this to fail http://crbug.com/82363
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderWindowSize) {
-#elif defined(OS_MACOSX)
-// TODO(cbentzel): Failing on Mac10.5 Tests bot. http://crbug.com/132670
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderWindowSize) {
 #else
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderWindowSize) {
+#endif
+#if defined(OS_MACOSX)
+  // Disabled on Leopard. http://crbug.com/132670
+  if (base::mac::IsOSLeopard())
+    return;
 #endif
   PrerenderTestURL("files/prerender/prerender_size.html",
                    FINAL_STATUS_USED,
