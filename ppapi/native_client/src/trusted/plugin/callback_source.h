@@ -24,6 +24,7 @@ namespace plugin {
 template<class T>
 class CallbackSource {
  public:
+  virtual ~CallbackSource();
   // Returns a callback from callback_factory's NewCallbackWithOutput,
   // bound to the implementing object.
   virtual pp::CompletionCallbackWithOutput<T> GetCallback() = 0;

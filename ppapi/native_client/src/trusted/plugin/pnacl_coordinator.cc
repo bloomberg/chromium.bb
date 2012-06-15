@@ -166,6 +166,12 @@ class PnaclLDManifest : public Manifest {
 //////////////////////////////////////////////////////////////////////
 //  The coordinator class.
 //////////////////////////////////////////////////////////////////////
+
+// Out-of-line destructor to keep it from getting put in every .o where
+// callback_source.h is included
+template<>
+CallbackSource<FileStreamData>::~CallbackSource() {}
+
 PnaclCoordinator* PnaclCoordinator::BitcodeToNative(
     Plugin* plugin,
     const nacl::string& pexe_url,
