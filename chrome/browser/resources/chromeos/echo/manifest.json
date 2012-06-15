@@ -11,6 +11,9 @@
       "echoPrivate",
       "https://*/*"
    ],
+  "icons": {
+    "16": "chrome16.png"
+    },
   "default_locale": "en",
   "web_accessible_resources": [
     "main.html",
@@ -20,7 +23,7 @@
   "intents": {
     "https://crosecho.com/startEcho": [{
       "type" : ["application/vnd.chromeos.echo"],
-      "title" : "",
+      "title" : "chrome",
       "path" : "main.html",
       "disposition" : "inline"
     }]
