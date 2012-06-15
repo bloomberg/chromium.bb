@@ -13,6 +13,7 @@
 #include "chrome/common/extensions/url_pattern_set.h"
 #include "chrome/common/view_type.h"
 #include "chrome/common/web_apps.h"
+#include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 
 #define IPC_MESSAGE_START ExtensionMsgStart
@@ -324,6 +325,11 @@ IPC_MESSAGE_ROUTED2(ExtensionMsg_DispatchOnDisconnect,
 // Informs the renderer what channel (dev, beta, stable, etc) is running.
 IPC_MESSAGE_CONTROL1(ExtensionMsg_SetChannel,
                      int /* channel */)
+
+// Adds a logging message to the renderer's root frame DevTools console.
+IPC_MESSAGE_ROUTED2(ExtensionMsg_AddMessageToConsole,
+                    content::ConsoleMessageLevel /* level */,
+                    std::string /* message */)
 
 // Messages sent from the renderer to the browser.
 

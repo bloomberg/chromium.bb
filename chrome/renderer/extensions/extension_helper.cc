@@ -32,6 +32,7 @@
 #include "webkit/glue/image_resource_fetcher.h"
 #include "webkit/glue/resource_fetcher.h"
 
+using content::ConsoleMessageLevel;
 using extensions::MiscellaneousBindings;
 using WebKit::WebConsoleMessage;
 using WebKit::WebDataSource;
@@ -215,6 +216,8 @@ bool ExtensionHelper::OnMessageReceived(const IPC::Message& message) {
                         OnUpdateBrowserWindowId)
     IPC_MESSAGE_HANDLER(ExtensionMsg_NotifyRenderViewType,
                         OnNotifyRendererViewType)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_AddMessageToConsole,
+                        OnAddMessageToConsole)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -385,6 +388,11 @@ void ExtensionHelper::OnUpdateBrowserWindowId(int window_id) {
   browser_window_id_ = window_id;
 }
 
+void ExtensionHelper::OnAddMessageToConsole(ConsoleMessageLevel level,
+                                            const std::string& message) {
+  AddMessageToRootConsole(level, UTF8ToUTF16(message));
+}
+
 void ExtensionHelper::DidDownloadApplicationDefinition(
     const WebKit::WebURLResponse& response,
     const std::string& data) {
@@ -396,14 +404,16 @@ void ExtensionHelper::DidDownloadApplicationDefinition(
   std::string error_message;
   scoped_ptr<Value> result(serializer.Deserialize(&error_code, &error_message));
   if (!result.get()) {
-    AddErrorToRootConsole(UTF8ToUTF16(error_message));
+    AddMessageToRootConsole(
+        content::CONSOLE_MESSAGE_LEVEL_ERROR, UTF8ToUTF16(error_message));
     return;
   }
 
   string16 error_message_16;
   if (!web_apps::ParseWebAppFromDefinitionFile(result.get(), app_info.get(),
                                                &error_message_16)) {
-    AddErrorToRootConsole(error_message_16);
+    AddMessageToRootConsole(
+        content::CONSOLE_MESSAGE_LEVEL_ERROR, error_message_16);
     return;
   }
 
@@ -466,8 +476,10 @@ void ExtensionHelper::DidDownloadApplicationIcon(ImageResourceFetcher* fetcher,
   for (size_t i = 0; i < pending_app_info_->icons.size(); ++i) {
     size_t current_size = pending_app_info_->icons[i].data.getSize();
     if (current_size > kMaxIconSize - actual_icon_size) {
-      AddErrorToRootConsole(ASCIIToUTF16(
-        "Icons are too large. Maximum total size for app icons is 128 KB."));
+      AddMessageToRootConsole(
+          content::CONSOLE_MESSAGE_LEVEL_ERROR,
+          ASCIIToUTF16("Icons are too large. "
+              "Maximum total size for app icons is 128 KB."));
       return;
     }
     actual_icon_size += current_size;
@@ -478,9 +490,25 @@ void ExtensionHelper::DidDownloadApplicationIcon(ImageResourceFetcher* fetcher,
   pending_app_info_.reset(NULL);
 }
 
-void ExtensionHelper::AddErrorToRootConsole(const string16& message) {
+void ExtensionHelper::AddMessageToRootConsole(ConsoleMessageLevel level,
+                                              const string16& message) {
   if (render_view()->GetWebView() && render_view()->GetWebView()->mainFrame()) {
+    WebConsoleMessage::Level target_level = WebConsoleMessage::LevelLog;
+    switch (level) {
+      case content::CONSOLE_MESSAGE_LEVEL_TIP:
+        target_level = WebConsoleMessage::LevelTip;
+        break;
+      case content::CONSOLE_MESSAGE_LEVEL_LOG:
+        target_level = WebConsoleMessage::LevelLog;
+        break;
+      case content::CONSOLE_MESSAGE_LEVEL_WARNING:
+        target_level = WebConsoleMessage::LevelWarning;
+        break;
+      case content::CONSOLE_MESSAGE_LEVEL_ERROR:
+        target_level = WebConsoleMessage::LevelError;
+        break;
+    }
     render_view()->GetWebView()->mainFrame()->addMessageToConsole(
-        WebConsoleMessage(WebConsoleMessage::LevelError, message));
+        WebConsoleMessage(target_level, message));
   }
 }

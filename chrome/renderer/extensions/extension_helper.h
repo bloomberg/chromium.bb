@@ -12,6 +12,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/view_type.h"
+#include "content/public/common/console_message_level.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_observer_tracker.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURLResponse.h"
@@ -95,6 +96,8 @@ class ExtensionHelper
   void OnNotifyRendererViewType(chrome::ViewType view_type);
   void OnSetTabId(int tab_id);
   void OnUpdateBrowserWindowId(int window_id);
+  void OnAddMessageToConsole(content::ConsoleMessageLevel level,
+                             const std::string& message);
 
   // Callback triggered when we finish downloading the application definition
   // file.
@@ -106,8 +109,9 @@ class ExtensionHelper
   void DidDownloadApplicationIcon(webkit_glue::ImageResourceFetcher* fetcher,
                                   const SkBitmap& image);
 
-  // Helper to add an error message to the root frame's console.
-  void AddErrorToRootConsole(const string16& message);
+  // Helper to add an logging message to the root frame's console.
+  void AddMessageToRootConsole(content::ConsoleMessageLevel level,
+                               const string16& message);
 
   ExtensionDispatcher* extension_dispatcher_;
 

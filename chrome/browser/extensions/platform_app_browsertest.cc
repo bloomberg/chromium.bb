@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/ui_test_utils.h"
 
 using content::WebContents;
@@ -257,3 +258,13 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, GetDisplayPath) {
 }
 
 #endif  // defined(OS_CHROMEOS)
+
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, OpenLink) {
+  ASSERT_TRUE(StartTestServer());
+  ui_test_utils::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_TAB_ADDED,
+      content::Source<content::WebContentsDelegate>(browser()));
+  LoadAndLaunchPlatformApp("open_link");
+  observer.Wait();
+  ASSERT_EQ(2, browser()->tab_count());
+}

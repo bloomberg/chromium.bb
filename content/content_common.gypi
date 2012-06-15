@@ -140,7 +140,6 @@
     'common/debug_flags.h',
     'common/desktop_notification_messages.h',
     'common/device_orientation_messages.h',
-    'common/devtools_messages.cc',
     'common/devtools_messages.h',
     'common/dom_storage_messages.h',
     'common/drag_messages.h',

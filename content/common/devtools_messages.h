@@ -43,6 +43,7 @@
 #include <string>
 
 #include "content/common/content_export.h"
+#include "content/public/common/common_param_traits.h"
 #include "content/public/common/console_message_level.h"
 #include "ipc/ipc_message_macros.h"
 
@@ -50,24 +51,6 @@
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
 #define IPC_MESSAGE_START DevToolsMsgStart
-
-// Singly-included section since need custom serialization.
-#ifndef CONTENT_COMMON_DEVTOOLS_MESSAGES_H_
-#define CONTENT_COMMON_DEVTOOLS_MESSAGES_H_
-
-namespace IPC {
-
-template<>
-struct ParamTraits<content::ConsoleMessageLevel> {
-  typedef content::ConsoleMessageLevel param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-}  // namespace IPC
-
-#endif  // CONTENT_COMMON_DEVTOOLS_MESSAGES_H_
 
 // These are messages sent from DevToolsAgent to DevToolsClient through the
 // browser.

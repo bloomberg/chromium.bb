@@ -14,6 +14,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/console_message_level.h"
 #include "ui/gfx/rect.h"
 
 class ExtensionWindowController;
@@ -118,6 +119,14 @@ class ShellWindow : public content::NotificationObserver,
       content::WebContents* web_contents,
       const content::MediaStreamRequest* request,
       const content::MediaResponseCallback& callback) OVERRIDE;
+  virtual content::WebContents* OpenURLFromTab(
+      content::WebContents* source,
+      const content::OpenURLParams& params) OVERRIDE;
+  virtual void AddNewContents(content::WebContents* source,
+                              content::WebContents* new_contents,
+                              WindowOpenDisposition disposition,
+                              const gfx::Rect& initial_pos,
+                              bool user_gesture) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -130,6 +139,10 @@ class ShellWindow : public content::NotificationObserver,
 
   // Message handlers.
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
+
+  // Helper method to add a message to the renderer's DevTools console.
+  void AddMessageToDevToolsConsole(content::ConsoleMessageLevel level,
+                                   const std::string& message);
 
   Profile* profile_;  // weak pointer - owned by ProfileManager.
   // weak pointer - owned by ExtensionService.

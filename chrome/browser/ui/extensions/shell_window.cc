@@ -13,6 +13,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/view_type_utils.h"
@@ -31,6 +33,7 @@
 #include "content/public/browser/web_intents_dispatcher.h"
 #include "content/public/common/renderer_preferences.h"
 
+using content::ConsoleMessageLevel;
 using content::SiteInstance;
 using content::WebContents;
 
@@ -128,6 +131,68 @@ void ShellWindow::RequestMediaAccessPermission(
   }
 
   callback.Run(devices);
+}
+
+WebContents* ShellWindow::OpenURLFromTab(WebContents* source,
+                                         const content::OpenURLParams& params) {
+  DCHECK(source == web_contents_);
+
+  if (params.url.host() == extension_->id()) {
+    AddMessageToDevToolsConsole(
+        content::CONSOLE_MESSAGE_LEVEL_ERROR,
+        base::StringPrintf(
+            "Can't navigate to \"%s\"; apps do not support navigation.",
+            params.url.spec().c_str()));
+    return NULL;
+  }
+
+  // Don't allow the current tab to be navigated. It would be nice to map all
+  // anchor tags (even those without target="_blank") to new tabs, but right
+  // now we can't distinguish between those and <meta> refreshes, which we
+  // don't want to allow.
+  // TOOD(mihaip): Can we check for user gestures instead?
+  WindowOpenDisposition disposition = params.disposition;
+  if (disposition == CURRENT_TAB) {
+    AddMessageToDevToolsConsole(
+        content::CONSOLE_MESSAGE_LEVEL_ERROR,
+        base::StringPrintf(
+            "Can't open same-window link to \"%s\"; try target=\"_blank\".",
+            params.url.spec().c_str()));
+    return NULL;
+  }
+
+  // These dispositions aren't really navigations.
+  if (disposition == SUPPRESS_OPEN || disposition == SAVE_TO_DISK ||
+      disposition == IGNORE_ACTION) {
+    return NULL;
+  }
+
+  // Force all links to open in a new tab, even if they were trying to open a
+  // window.
+  content::OpenURLParams new_tab_params = params;
+  new_tab_params.disposition =
+      disposition == NEW_BACKGROUND_TAB ? disposition : NEW_FOREGROUND_TAB;
+  Browser* browser = browser::FindOrCreateTabbedBrowser(profile_);
+  WebContents* new_tab = browser->OpenURL(new_tab_params);
+  browser->window()->Show();
+  return new_tab;
+}
+
+void ShellWindow::AddNewContents(WebContents* source,
+                                 WebContents* new_contents,
+                                 WindowOpenDisposition disposition,
+                                 const gfx::Rect& initial_pos,
+                                 bool user_gesture) {
+  DCHECK(source == web_contents_);
+  DCHECK(Profile::FromBrowserContext(new_contents->GetBrowserContext()) ==
+      profile_);
+  Browser* browser = browser::FindOrCreateTabbedBrowser(profile_);
+  // Force all links to open in a new tab, even if they were trying to open a
+  // new window.
+  disposition =
+      disposition == NEW_BACKGROUND_TAB ? disposition : NEW_FOREGROUND_TAB;
+  browser->AddWebContents(
+      new_contents, disposition, initial_pos, user_gesture);
 }
 
 void ShellWindow::OnNativeClose() {
@@ -236,4 +301,11 @@ ExtensionWindowController* ShellWindow::GetExtensionWindowController() const {
 void ShellWindow::OnRequest(const ExtensionHostMsg_Request_Params& params) {
   extension_function_dispatcher_.Dispatch(params,
                                           web_contents_->GetRenderViewHost());
+}
+
+void ShellWindow::AddMessageToDevToolsConsole(ConsoleMessageLevel level,
+                                              const std::string& message) {
+  content::RenderViewHost* rvh = web_contents_->GetRenderViewHost();
+  rvh->Send(new ExtensionMsg_AddMessageToConsole(
+      rvh->GetRoutingID(), level, message));
 }
