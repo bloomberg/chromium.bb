@@ -819,10 +819,25 @@
       '@FULL',
     ],
     'linux': [
-      # test_clean_exit does not execute the destruction codepaths by design,
-      # thereby confusing the coverage bots to think that it's a leak. Ignore
-      # it.
+      # These tests fail on coverage bots. Disabling for now.
       '-test_clean_exit',
+      '-about_plugins_ui',
+      '-autofill',
+      '-pyauto_webdriver',
+      '-chromoting_basic',
+      '-extensions',
+      '-flash',
+      '-fullscreen_mouselock',
+      '-gtalk.test_basic',
+      '-infobars',
+      '-multiprofile',
+      '-policy',
+      '-prefs',
+      '-prefs_ui',
+      '-apptest',
+      '-plugins',
+      '-omnibox',
+      '-special_tabs',
     ],
   },
 }
