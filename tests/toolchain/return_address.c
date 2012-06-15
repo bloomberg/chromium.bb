@@ -4,46 +4,59 @@
  * found in the LICENSE file.
  */
 
-/* NOTE: because of fun pointer casting we need to disable -padantic. */
-/* NOTE: because of aggressive inlining we need to disable -O2. */
-
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "native_client/tests/toolchain/utils.h"
 
-int main(int argc, char* argv[]);
+int main(int argc, char *argv[]);
+void recurse(int n, int is_first);
 
-void recurse(int n, int is_first) {
-  /* c.f.  http://gcc.gnu.org/onlinedocs/gcc/Return-Address.html */
-  void* ra = (void*) __builtin_return_address (0);
-  printf("ra: %p\n", ra);
+#define MAIN_ADDR       ((uintptr_t) &main)
+#define RECURSE_ADDR    ((uintptr_t) &recurse)
 
-  if (is_first) {
-    ASSERT((void*) main < ra,
-           "ERROR: ra to main is off\n");
-  } else {
-    ASSERT((void*) recurse < ra && ra < (void*) main,
-           "ERROR: ra to recurse is off\n");
-  }
-
-  if (n == 0) return;
-  recurse(n - 1, 0);
-   /* NOTE: this print statement also prevents this function
-   * from tail recursing into itself.
-   * On gcc this behavior can also be controlled using
-   *   -foptimize-sibling-calls
-   */
-  printf("recurse <- %d\n", n);
+static bool inside_main(uintptr_t addr) {
+  if (MAIN_ADDR > RECURSE_ADDR)
+    return addr >= MAIN_ADDR;
+  return addr < RECURSE_ADDR;
 }
 
-int main(int argc, char* argv[]) {
-    /* NOTE: confuse optimizer, argc is never 5555 */
-  if (argc != 5555 ) {
+static bool inside_recurse(uintptr_t addr) {
+  if (MAIN_ADDR > RECURSE_ADDR)
+    return addr < MAIN_ADDR;
+  return addr >= RECURSE_ADDR;
+}
+
+__attribute__((noinline)) void recurse(int n, int is_first) {
+  /* c.f.  http://gcc.gnu.org/onlinedocs/gcc/Return-Address.html */
+  uintptr_t ra = (uintptr_t) __builtin_return_address(0);
+  printf("ra: %#x\n", ra);
+
+  if (is_first) {
+    ASSERT(inside_main(ra), "ERROR: ra to main is off\n");
+  } else {
+    ASSERT(inside_recurse(ra), "ERROR: ra to recurse is off\n");
+  }
+
+  if (n != 0) {
+    recurse(n - 1, 0);
+    /* NOTE: this print statement also prevents this function
+     * from tail recursing into itself.
+     * On gcc this behavior can also be controlled using
+     *   -foptimize-sibling-calls
+     */
+    printf("recurse <- %d\n", n);
+  }
+}
+
+int main(int argc, char *argv[]) {
+  /* NOTE: confuse optimizer, argc is never 5555 */
+  if (argc != 5555) {
     argc = 10;
   }
-  printf("main %p recurse %p\n", (void*) main, (void*) recurse);
-  ASSERT((void*) recurse < (void*) main,
-         "ERROR: this test assumes that main() follows recurse()\n");
+  printf("main %#x recurse %#x\n", (uintptr_t) main, (uintptr_t) recurse);
 
   recurse(argc, 1);
   return 55;
