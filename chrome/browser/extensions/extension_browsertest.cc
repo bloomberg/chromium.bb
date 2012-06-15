@@ -467,6 +467,14 @@ bool ExtensionBrowserTest::WaitForExtensionCrash(
   return (service->GetExtensionById(extension_id, true) == NULL);
 }
 
+bool ExtensionBrowserTest::WaitForCrxInstallerDone() {
+  int before = crx_installers_done_observed_;
+  ui_test_utils::RegisterAndWait(this,
+                                 chrome::NOTIFICATION_CRX_INSTALLER_DONE,
+                                 content::NotificationService::AllSources());
+  return crx_installers_done_observed_ == (before + 1);
+}
+
 void ExtensionBrowserTest::OpenWindow(content::WebContents* contents,
                                       const GURL& url,
                                       bool newtab_process_should_equal_opener,
@@ -536,6 +544,7 @@ void ExtensionBrowserTest::Observe(
         else
           last_loaded_extension_id_ = "";
       }
+      ++crx_installers_done_observed_;
       MessageLoopForUI::current()->Quit();
       break;
 

@@ -137,6 +137,9 @@ class ExtensionBrowserTest
   // crashed.
   bool WaitForExtensionCrash(const std::string& extension_id);
 
+  // Wait for the crx installer to be done. Returns true if it really is done.
+  bool WaitForCrxInstallerDone();
+
   // Simulates a page calling window.open on an URL and waits for the
   // navigation.
   void OpenWindow(content::WebContents* contents,
@@ -161,6 +164,7 @@ class ExtensionBrowserTest
   std::string last_loaded_extension_id_;
   int extension_installs_observed_;
   int extension_load_errors_observed_;
+  int crx_installers_done_observed_;
 
  private:
   // Temporary directory for testing.

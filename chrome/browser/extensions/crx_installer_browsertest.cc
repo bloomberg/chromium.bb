@@ -139,14 +139,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, PlatformAppCrx) {
       test_data_dir_.AppendASCII("minimal_platform_app.crx"), 1));
 }
 
-// This test is disabled on Windows. See bug http://crbug.com/130951
-#if defined(OS_WIN)
-#define MAYBE_PackAndInstallExtension DISABLED_PackAndInstallExtension
-#else
-#define MAYBE_PackAndInstallExtension PackAndInstallExtension
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
-                       MAYBE_PackAndInstallExtension) {
+IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, PackAndInstallExtension) {
   if (!extensions::switch_utils::IsEasyOffStoreInstallEnabled())
     return;
 
@@ -176,7 +169,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
   ui_test_utils::NavigateToURLWithDisposition(browser(), url, CURRENT_TAB,
       ui_test_utils::BROWSER_TEST_NONE);
 
-  EXPECT_TRUE(WaitForExtensionInstall());
+  EXPECT_TRUE(WaitForCrxInstallerDone());
   LOG(ERROR) << "PackAndInstallExtension: Extension install";
   EXPECT_TRUE(mock_prompt->confirmation_requested());
   LOG(ERROR) << "PackAndInstallExtension: Extension install confirmed";
