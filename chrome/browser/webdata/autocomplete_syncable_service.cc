@@ -135,18 +135,13 @@ SyncError AutocompleteSyncableService::MergeDataAndStartSyncing(
   sync_processor_ = sync_processor.Pass();
 
   std::vector<AutofillEntry> new_synced_entries;
-  std::vector<AutofillEntry> synced_expired_entries;
   // Go through and check for all the entries that sync already knows about.
   // CreateOrUpdateEntry() will remove entries that are same with the synced
   // ones from |new_db_entries|.
   for (SyncDataList::const_iterator sync_iter = initial_sync_data.begin();
        sync_iter != initial_sync_data.end(); ++sync_iter) {
-    CreateOrUpdateEntry(*sync_iter, &new_db_entries,
-                        &new_synced_entries, &synced_expired_entries);
+    CreateOrUpdateEntry(*sync_iter, &new_db_entries, &new_synced_entries);
   }
-
-  // Check if newly received items need culling.
-  bool need_to_cull_data = !synced_expired_entries.empty();
 
   if (!SaveChangesToWebData(new_synced_entries)) {
     return error_handler_->CreateAndUploadError(
@@ -155,43 +150,18 @@ SyncError AutocompleteSyncableService::MergeDataAndStartSyncing(
   }
 
   WebDataService::NotifyOfMultipleAutofillChanges(web_data_service_);
-  keys_to_ignore_.clear();
 
   SyncChangeList new_changes;
   for (AutocompleteEntryMap::iterator i = new_db_entries.begin();
        i != new_db_entries.end(); ++i) {
-    // Sync back only the data that appeared after
-    // |AutofillEntry::ExpirationTime()|.
-    if (!i->second.second->IsExpired()) {
-      new_changes.push_back(
-          SyncChange(i->second.first, CreateSyncData(*(i->second.second))));
-    } else {
-      need_to_cull_data = true;
-      // Key is not on the server and is too old, it will not ever be synced -
-      // delete it locally.
-      if (i->second.first == SyncChange::ACTION_ADD)
-        keys_to_ignore_.insert(i->first);
-    }
+    new_changes.push_back(
+        SyncChange(i->second.first, CreateSyncData(*(i->second.second))));
   }
 
   if (ShouldCullSyncedData()) {
-    // Delete only the changes never synced to the db as they are too old.
-    for (size_t i = 0; i < synced_expired_entries.size(); ++i) {
-      // Key is on the server and not local and is too old, we need to notify
-      // sync that it has expired.
-      if (keys_to_ignore_.find(synced_expired_entries[i].key()) ==
-          keys_to_ignore_.end()) {
-        new_changes.push_back(SyncChange(SyncChange::ACTION_DELETE,
-            CreateSyncData(synced_expired_entries[i])));
-      }
-    }
-
-    if (need_to_cull_data) {
-      // This will schedule deletion operation later on DB thread and we will
-      // be notified on the results of the deletion and deletes will be synced
-      // to the sync.
-      web_data_service_->RemoveExpiredFormElements();
-    }
+    // This will schedule a deletion operation on the DB thread, which will
+    // trigger a notification to propagate the deletion to Sync.
+    web_data_service_->RemoveExpiredFormElements();
   }
 
   SyncError error = sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes);
@@ -243,7 +213,6 @@ SyncError AutocompleteSyncableService::ProcessSyncChanges(
   std::vector<AutofillEntry> entries;
   scoped_ptr<AutocompleteEntryMap> db_entries;
   std::vector<AutofillEntry> new_entries;
-  std::vector<AutofillEntry> ignored_entries;
 
   SyncError list_processing_error;
 
@@ -266,8 +235,7 @@ SyncError AutocompleteSyncableService::ProcessSyncChanges(
                 std::make_pair(SyncChange::ACTION_ADD, it);
           }
         }
-        CreateOrUpdateEntry(i->sync_data(), db_entries.get(),
-                            &new_entries, &ignored_entries);
+        CreateOrUpdateEntry(i->sync_data(), db_entries.get(), &new_entries);
         break;
       case SyncChange::ACTION_DELETE: {
         DCHECK(i->sync_data().GetSpecifics().has_autofill())
@@ -296,18 +264,13 @@ SyncError AutocompleteSyncableService::ProcessSyncChanges(
         "Failed to update webdata.");
   }
 
-  // Remove already expired data.
-  for (size_t i = 0; i < ignored_entries.size(); ++i) {
-    if (db_entries.get() &&
-        db_entries->find(ignored_entries[i].key()) != db_entries->end()) {
-      bool success = web_data_service_->GetDatabase()->GetAutofillTable()->
-              RemoveFormElement(ignored_entries[i].key().name(),
-                                ignored_entries[i].key().value());
-      DCHECK(success);
-    }
-  }
-
   WebDataService::NotifyOfMultipleAutofillChanges(web_data_service_);
+
+  if (ShouldCullSyncedData()) {
+    // This will schedule a deletion operation on the DB thread, which will
+    // trigger a notification to propagate the deletion to Sync.
+    web_data_service_->RemoveExpiredFormElements();
+  }
 
   return list_processing_error;
 }
@@ -354,8 +317,7 @@ bool AutocompleteSyncableService::SaveChangesToWebData(
 void AutocompleteSyncableService::CreateOrUpdateEntry(
     const SyncData& data,
     AutocompleteEntryMap* loaded_data,
-    std::vector<AutofillEntry>* new_entries,
-    std::vector<AutofillEntry>* ignored_entries) {
+    std::vector<AutofillEntry>* new_entries) {
   const sync_pb::EntitySpecifics& specifics = data.GetSpecifics();
   const sync_pb::AutofillSpecifics& autofill_specifics(
       specifics.autofill());
@@ -383,10 +345,7 @@ void AutocompleteSyncableService::CreateOrUpdateEntry(
           autofill_specifics.usage_timestamp(timestamps_count - 1)));
     }
     AutofillEntry new_entry(key, timestamps);
-    if (new_entry.IsExpired())
-      ignored_entries->push_back(new_entry);
-    else
-      new_entries->push_back(new_entry);
+    new_entries->push_back(new_entry);
   } else {
     // Entry already present - merge if necessary.
     std::vector<base::Time> timestamps;
@@ -394,14 +353,10 @@ void AutocompleteSyncableService::CreateOrUpdateEntry(
         autofill_specifics, it->second.second->timestamps(), &timestamps);
     if (different) {
       AutofillEntry new_entry(it->second.second->key(), timestamps);
-      if (new_entry.IsExpired()) {
-        ignored_entries->push_back(new_entry);
-      } else {
-        new_entries->push_back(new_entry);
-        // Update the sync db if the list of timestamps have changed.
-        *(it->second.second) = new_entry;
-        it->second.first = SyncChange::ACTION_UPDATE;
-      }
+      new_entries->push_back(new_entry);
+      // Update the sync db if the list of timestamps have changed.
+      *(it->second.second) = new_entry;
+      it->second.first = SyncChange::ACTION_UPDATE;
     } else {
       loaded_data->erase(it);
     }
@@ -460,12 +415,10 @@ void AutocompleteSyncableService::ActOnChanges(
         break;
       }
       case AutofillChange::REMOVE: {
-        if (keys_to_ignore_.find(change->key()) == keys_to_ignore_.end()) {
-          std::vector<base::Time> timestamps;
-          AutofillEntry entry(change->key(), timestamps);
-          new_changes.push_back(SyncChange(SyncChange::ACTION_DELETE,
-                                           CreateSyncData(entry)));
-        }
+        std::vector<base::Time> timestamps;
+        AutofillEntry entry(change->key(), timestamps);
+        new_changes.push_back(SyncChange(SyncChange::ACTION_DELETE,
+                                         CreateSyncData(entry)));
         break;
       }
       default:
@@ -479,8 +432,6 @@ void AutocompleteSyncableService::ActOnChanges(
                   << " Failed processing change:"
                   << " Error:" << error.message();
   }
-  // |keys_to_ignore_| are only needed for the very first notification.
-  keys_to_ignore_.clear();
 }
 
 SyncData AutocompleteSyncableService::CreateSyncData(
