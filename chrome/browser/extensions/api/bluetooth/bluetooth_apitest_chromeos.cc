@@ -178,13 +178,13 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevicesWithServiceUUID) {
   EXPECT_EQ("21:22:23:24:25:26", address);
   bool paired;
   ASSERT_TRUE(device->GetBoolean("paired", &paired));
-  EXPECT_EQ(false, paired);
+  EXPECT_FALSE(paired);
   bool bonded;
   ASSERT_TRUE(device->GetBoolean("bonded", &bonded));
-  EXPECT_EQ(true, bonded);
+  EXPECT_TRUE(bonded);
   bool connected;
   ASSERT_TRUE(device->GetBoolean("connected", &connected));
-  EXPECT_EQ(false, connected);
+  EXPECT_FALSE(connected);
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetLocalOutOfBandPairingData) {
