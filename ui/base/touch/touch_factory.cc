@@ -34,6 +34,7 @@ TouchFactory::TouchFactory()
       cursor_timer_(),
       pointer_device_lookup_(),
       touch_device_available_(false),
+      touch_present_called_(false),
       touch_device_list_(),
 #if defined(USE_XI2_MT)
       min_available_slot_(0),
@@ -132,6 +133,7 @@ void TouchFactory::UpdateDeviceList(Display* display) {
   // If XInput2 is not supported, this will return null (with count of -1) so
   // we assume there cannot be any touch devices.
   int count = 0;
+  bool last_touch_device_available = touch_device_available_;
   touch_device_available_ = false;
   touch_device_lookup_.reset();
   touch_device_list_.clear();
@@ -187,6 +189,16 @@ void TouchFactory::UpdateDeviceList(Display* display) {
   }
   if (devices)
     XIFreeDeviceInfo(devices);
+
+  if ((last_touch_device_available != touch_device_available_) &&
+      touch_events_allowed_ && touch_present_called_) {
+    // Touch_device_available_ has changed after it's been queried.
+    // TODO(rbyers): Should dispatch an event to indicate that the availability
+    // of touch devices has changed.  crbug.com/124399.
+    LOG(WARNING) << "Touch screen "
+        << (touch_device_available_ ? "added" : "removed")
+        << " after startup, which is not yet fully supported.";
+  }
 }
 
 bool TouchFactory::ShouldProcessXI2Event(XEvent* xev) {
@@ -400,6 +412,7 @@ void TouchFactory::SetCursorVisible(bool show, bool start_timer) {
 }
 
 bool TouchFactory::IsTouchDevicePresent() {
+  touch_present_called_ = true;
   return (touch_device_available_ && touch_events_allowed_);
 }
 

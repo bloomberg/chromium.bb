@@ -139,6 +139,9 @@ class UI_EXPORT TouchFactory {
   // Indicates whether a touch device is currently available or not.
   bool touch_device_available_;
 
+  // Whether IsTouchDevicePresent() has been called yet.
+  bool touch_present_called_;
+
   // The list of touch devices. For testing/debugging purposes, a single-pointer
   // device (mouse or touch screen without sufficient X/driver support for MT)
   // can sometimes be treated as a touch device. The key in the map represents

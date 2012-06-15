@@ -25,8 +25,9 @@ namespace {
 bool UseTouchOptimizedUI() {
   // If --touch-optimized-ui is specified and not set to "auto", then override
   // the hardware-determined setting (eg. for testing purposes).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kTouchOptimizedUI)) {
+  static bool has_touch_optimized_ui = CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kTouchOptimizedUI);
+  if (has_touch_optimized_ui) {
     const std::string switch_value = CommandLine::ForCurrentProcess()->
         GetSwitchValueASCII(switches::kTouchOptimizedUI);
 
@@ -47,9 +48,20 @@ bool UseTouchOptimizedUI() {
   return base::win::GetMetroModule() != NULL;
 #elif defined(USE_AURA) && defined(USE_X11)
   // Determine whether touch-screen hardware is currently available.
-  // For now we assume this won't change over the life of the process, but
-  // we'll probably want to support that.  crbug.com/124399
-  return ui::TouchFactory::GetInstance()->IsTouchDevicePresent();
+  // For now we must ensure this won't change over the life of the process,
+  // since we don't yet support updating the UI.  crbug.com/124399
+  static bool has_touch_device =
+      ui::TouchFactory::GetInstance()->IsTouchDevicePresent();
+
+  // Work-around for late device detection in some cases.  If we've asked for
+  // touch calibration then we're certainly expecting a touch screen, it must
+  // just not be ready yet.  Force-enable touch-ui mode in this case.
+  static bool enable_touch_calibration = CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kEnableTouchCalibration);
+  if (!has_touch_device && enable_touch_calibration)
+    has_touch_device = true;
+
+  return has_touch_device;
 #else
   return false;
 #endif
