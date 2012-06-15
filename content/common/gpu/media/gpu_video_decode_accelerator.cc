@@ -139,6 +139,7 @@ void GpuVideoDecodeAccelerator::Initialize(
   video_decoder->SetEglState(
       gfx::GLSurfaceEGL::GetHardwareDisplay(),
       stub_->decoder()->GetGLContext()->GetHandle());
+  video_decode_accelerator_ = video_decoder;
 #elif defined(OS_MACOSX)
   scoped_refptr<MacVideoDecodeAccelerator> video_decoder(
       new MacVideoDecodeAccelerator(this));
