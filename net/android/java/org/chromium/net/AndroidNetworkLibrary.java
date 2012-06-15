@@ -13,6 +13,8 @@ import org.chromium.base.CalledByNative;
 import org.chromium.base.CalledByNativeUnchecked;
 
 import java.io.ByteArrayInputStream;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.URLConnection;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -21,6 +23,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.Enumeration;
 
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
@@ -56,6 +59,34 @@ class AndroidNetworkLibrary {
     @CalledByNative
     static public String getMimeTypeFromExtension(String extension) {
         return URLConnection.guessContentTypeFromName("foo." + extension);
+    }
+
+    // Returns true if it can determine that only loopback addresses are configured.
+    // i.e. if only 127.0.0.1 and ::1 are routable.
+    // Also returns false if it cannot determine this.
+    @CalledByNative
+    static public boolean haveOnlyLoopbackAddresses() {
+        boolean result = true;
+        try {
+            Enumeration list = NetworkInterface.getNetworkInterfaces();
+            if (list == null) return false;
+
+            while (list.hasMoreElements()) {
+                NetworkInterface netIf = (NetworkInterface)list.nextElement();
+                try {
+                    if (!netIf.isUp() || netIf.isLoopback())
+                        continue;
+                    result = false;
+                    break;
+                } catch (SocketException e) {
+                    continue;
+                }
+            }
+        } catch (SocketException e) {
+            Log.w(TAG, "could not get network interfaces: " + e);
+            return false;
+        }
+        return result;
     }
 
     /**
