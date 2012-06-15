@@ -7,7 +7,6 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/format_macros.h"
-#include "base/string_split.h"
 #include "base/stringprintf.h"
 #include "ui/aura/display_observer.h"
 #include "ui/aura/env.h"
@@ -20,22 +19,6 @@ namespace test {
 
 using std::vector;
 using std::string;
-
-namespace {
-
-vector<gfx::Display> CreateDisplaysFromString(
-    const std::string specs) {
-  vector<gfx::Display> displays;
-  vector<string> parts;
-  base::SplitString(specs, ',', &parts);
-  for (vector<string>::const_iterator iter = parts.begin();
-       iter != parts.end(); ++iter) {
-    displays.push_back(aura::MonitorManager::CreateMonitorFromSpec(*iter));
-  }
-  return displays;
-}
-
-}  // namespace
 
 class MultiMonitorManagerTest : public test::AshTestBase,
                                 public aura::DisplayObserver,
@@ -95,11 +78,6 @@ class MultiMonitorManagerTest : public test::AshTestBase,
   virtual void OnWindowDestroying(aura::Window* window) {
     ASSERT_EQ(Shell::GetPrimaryRootWindow(), window);
     root_window_destroyed_ = true;
-  }
-
-  void UpdateMonitor(const std::string str) {
-    vector<gfx::Display> displays = CreateDisplaysFromString(str);
-    monitor_manager()->OnNativeMonitorsChanged(displays);
   }
 
  private:

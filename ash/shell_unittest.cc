@@ -10,10 +10,8 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/root_window_layout_manager.h"
 #include "ash/wm/shelf_layout_manager.h"
-#include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/size.h"
@@ -115,14 +113,7 @@ class ModalWindow : public views::WidgetDelegateView {
 
 }  // namespace
 
-class ShellTest : public test::AshTestBase {
- public:
-  ShellTest() {}
-  virtual ~ShellTest() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ShellTest);
-};
+typedef test::AshTestBase ShellTest;
 
 TEST_F(ShellTest, CreateWindow) {
   // Normal window should be created in default container.

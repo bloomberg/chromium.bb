@@ -4,10 +4,12 @@
 
 #include "ash/test/ash_test_base.h"
 
+#include <string>
 #include <vector>
 
 #include "ash/shell.h"
 #include "ash/test/test_shell_delegate.h"
+#include "base/string_split.h"
 #include "content/public/test/web_contents_tester.h"
 #include "ui/aura/env.h"
 #include "ui/aura/monitor_manager.h"
@@ -19,6 +21,21 @@
 
 namespace ash {
 namespace test {
+namespace {
+
+std::vector<gfx::Display> CreateDisplaysFromString(
+    const std::string specs) {
+  std::vector<gfx::Display> displays;
+  std::vector<std::string> parts;
+  base::SplitString(specs, ',', &parts);
+  for (std::vector<std::string>::const_iterator iter = parts.begin();
+       iter != parts.end(); ++iter) {
+    displays.push_back(aura::MonitorManager::CreateMonitorFromSpec(*iter));
+  }
+  return displays;
+}
+
+}  // namespace
 
 content::WebContents* AshTestViewsDelegate::CreateWebContents(
     content::BrowserContext* browser_context,
@@ -63,6 +80,12 @@ void AshTestBase::ChangeMonitorConfig(float scale,
   displays.push_back(display);
   aura::Env::GetInstance()->monitor_manager()->OnNativeMonitorsChanged(
       displays);
+}
+
+void AshTestBase::UpdateMonitor(const std::string& display_specs) {
+  std::vector<gfx::Display> displays = CreateDisplaysFromString(display_specs);
+  aura::Env::GetInstance()->monitor_manager()->
+      OnNativeMonitorsChanged(displays);
 }
 
 void AshTestBase::RunAllPendingInMessageLoop() {

@@ -351,6 +351,7 @@ class ASH_EXPORT Shell : aura::CursorDelegate {
 #endif  // defined(OS_CHROMEOS)
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ExtendedDesktopTest, TestCursor);
   FRIEND_TEST_ALL_PREFIXES(WindowManagerTest, MouseEventCursors);
   FRIEND_TEST_ALL_PREFIXES(WindowManagerTest, TransformActivate);
   friend class internal::RootWindowController;

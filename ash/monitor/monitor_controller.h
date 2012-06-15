@@ -9,6 +9,7 @@
 #include <map>
 #include <vector>
 
+#include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/aura/display_observer.h"
@@ -26,7 +27,7 @@ class RootWindowController;
 // MonitorController owns and maintains RootWindows for each attached
 // display, keeping them in sync with display configuration changes.
 // TODO(oshima): Rename MonitorXXX to DisplayXXX.
-class MonitorController : public aura::DisplayObserver {
+class ASH_EXPORT MonitorController : public aura::DisplayObserver {
  public:
   // Layout options where the secondary monitor should be positioned.
   enum SecondaryDisplayLayout {

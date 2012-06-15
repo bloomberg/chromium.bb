@@ -95,6 +95,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   gfx::Point last_mouse_location() const { return last_mouse_location_; }
   gfx::NativeCursor last_cursor() const { return last_cursor_; }
   Window* mouse_pressed_handler() { return mouse_pressed_handler_; }
+  bool cursor_shown() const { return cursor_shown_; }
 
   void set_focus_manager(FocusManager* focus_manager) {
     focus_manager_ = focus_manager;

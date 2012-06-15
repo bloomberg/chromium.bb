@@ -377,6 +377,7 @@
         'accelerators/nested_dispatcher_controller_unittest.cc',
         'dip_unittest.cc',
         'drag_drop/drag_drop_controller_unittest.cc',
+        'extended_desktop_unittest.cc',
         'focus_cycler_unittest.cc',
         'launcher/launcher_context_menu_unittest.cc',
         'launcher/launcher_model_unittest.cc',
