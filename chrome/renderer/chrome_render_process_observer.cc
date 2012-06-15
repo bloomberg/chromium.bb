@@ -190,7 +190,7 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver(
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && defined(USE_NSS)
-  // Remoting requires NSS to function properly.
+  // On platforms where we use system NSS libraries, the .so's must be loaded.
   if (!command_line.HasSwitch(switches::kSingleProcess)) {
     // We are going to fork to engage the sandbox and we have not loaded
     // any security modules so it is safe to disable the fork check in NSS.
