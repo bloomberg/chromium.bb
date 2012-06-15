@@ -199,10 +199,6 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   static const char kMergeSessionFormat[];
   // The format of the URL for UberAuthToken.
   static const char kUberAuthTokenURLFormat[];
-  // The format of the body for ClientOAuth.
-  static const char kClientOAuthFormat[];
-  // The format of the body for ClientOAuth challenge responses.
-  static const char kClientOAuthChallengeResponseFormat[];
   // The format of the body for OAuthLogin.
   static const char kOAuthLoginFormat[];
 
@@ -401,7 +397,9 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
       ParseClientLoginToOAuth2Response);
   FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, ParseOAuth2TokenPairResponse);
   FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, ClientOAuthSuccess);
+  FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, ClientOAuthWithQuote);
   FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, ClientOAuthChallengeSuccess);
+  FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, ClientOAuthChallengeQuote);
 
   DISALLOW_COPY_AND_ASSIGN(GaiaAuthFetcher);
 };

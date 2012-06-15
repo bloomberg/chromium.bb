@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -100,28 +101,6 @@ const char GaiaAuthFetcher::kMergeSessionFormat[] =
 const char GaiaAuthFetcher::kUberAuthTokenURLFormat[] =
     "%s?source=%s&"
     "issueuberauth=1";
-// static
-const char GaiaAuthFetcher::kClientOAuthFormat[] =
-    "{"
-    "\"email\": \"%s\","
-    "\"password\": \"%s\","
-    "\"scopes\": [%s],"
-    "\"oauth2_client_id\": \"%s\","
-    "\"friendly_device_name\": \"%s\","
-    "\"accepts_challenges\": [\"Captcha\", \"TwoStep\"],"
-    "\"locale\": \"%s\","
-    "%s"  // persistent_id
-    "\"fallback\": { \"name\": \"GetOAuth2Token\" }"
-    "}";
-
-const char GaiaAuthFetcher::kClientOAuthChallengeResponseFormat[] =
-    "{"
-    "  \"challenge_reply\" : {"
-    "    \"name\" : \"%s\","
-    "    \"challenge_token\" : \"%s\","
-    "    \"%s\" : \"%s\""
-    "  }"
-    "}";
 
 const char GaiaAuthFetcher::kOAuthLoginFormat[] = "service=%s&source=%s";
 
@@ -398,25 +377,35 @@ std::string GaiaAuthFetcher::MakeClientOAuthBody(
     const std::string& persistent_id,
     const std::string& friendly_name,
     const std::string& locale) {
-  // Convert the scope list info a comma-separated list of strings, surrounded
-  // by double quotes.
-  std::string scope_list;
-  for (size_t i = 0; i < scopes.size(); ++i) {
-    base::StringAppendF(&scope_list, "\"%s\"", scopes[i].c_str());
-    if (i < scopes.size() - 1)
-      scope_list += ',';
-  }
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+  dict->SetString(GaiaConstants::kClientOAuthEmailKey, username);
+  dict->SetString(GaiaConstants::kClientOAuthPasswordKey, password);
 
-  std::string persistent_id_line;
-  if (!persistent_id.empty())
-    persistent_id_line = base::StringPrintf("\"persistent_id\": \"%s\",",
-                                            persistent_id.c_str());
+  scoped_ptr<base::ListValue> scope_list(new base::ListValue);
+  for (size_t i = 0; i < scopes.size(); ++i)
+    scope_list->Append(base::Value::CreateStringValue(scopes[i]));
+  dict->Set(GaiaConstants::kClientOAuthScopesKey, scope_list.release());
 
-  return StringPrintf(
-      kClientOAuthFormat, username.c_str(), password.c_str(),
-      scope_list.c_str(),
-      GaiaUrls::GetInstance()->oauth2_chrome_client_id().c_str(),
-      friendly_name.c_str(), locale.c_str(), persistent_id_line.c_str());
+  dict->SetString(GaiaConstants::kClientOAuthOAuth2ClientIdKey,
+                  GaiaUrls::GetInstance()->oauth2_chrome_client_id());
+  // crbug.com/129600: use a less generic friendly name.
+  dict->SetString(GaiaConstants::kClientOAuthFriendlyDeviceNameKey,
+                  friendly_name);
+
+  scoped_ptr<base::ListValue> accepts_challenge_list(new base::ListValue);
+  accepts_challenge_list->Append(base::Value::CreateStringValue(kCaptcha));
+  accepts_challenge_list->Append(base::Value::CreateStringValue(kTwoFactor));
+  dict->Set(GaiaConstants::kClientOAuthAcceptsChallengesKey,
+            accepts_challenge_list.release());
+
+  dict->SetString(GaiaConstants::kClientOAuthLocaleKey, locale);
+  // Chrome presently does not not support a web-fallback for ClientOAuth,
+  // but need to hardcode an arbitrary one here since the endpoint expects it.
+  dict->SetString(GaiaConstants::kClientOAuthFallbackNameKey, "GetOAuth2Token");
+
+  std::string json_string;
+  base::JSONWriter::Write(dict.get(), &json_string);
+  return json_string;
 }
 
 // static
@@ -424,10 +413,20 @@ std::string GaiaAuthFetcher::MakeClientOAuthChallengeResponseBody(
     const std::string& name,
     const std::string& token,
     const std::string& solution) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   std::string field_name = name == kTwoFactor ? "otp" : "solution";
 
-  return StringPrintf(kClientOAuthChallengeResponseFormat, name.c_str(),
-                      token.c_str(), field_name.c_str(), solution.c_str());
+  scoped_ptr<base::DictionaryValue> challenge_reply(new base::DictionaryValue);
+  challenge_reply->SetString(GaiaConstants::kClientOAuthNameKey, name);
+  challenge_reply->SetString(GaiaConstants::kClientOAuthChallengeTokenKey,
+                             token);
+  challenge_reply->SetString(field_name, solution);
+  dict->Set(GaiaConstants::kClientOAuthchallengeReplyKey,
+            challenge_reply.release());
+
+  std::string json_string;
+  base::JSONWriter::Write(dict.get(), &json_string);
+  return json_string;
 }
 
 // static

@@ -827,6 +827,34 @@ TEST_F(GaiaAuthFetcherTest, ClientOAuthSuccess) {
   EXPECT_TRUE(expected->Equals(actual.get()));
 }
 
+TEST_F(GaiaAuthFetcherTest, ClientOAuthWithQuote) {
+  MockURLFetcherFactory<MockFetcher> factory;
+  factory.set_results(kClientOAuthValidResponse);
+
+  MockGaiaConsumer consumer;
+  EXPECT_CALL(consumer, OnClientOAuthSuccess(
+      GaiaAuthConsumer::ClientOAuthResult("rt1", "at1", 3600))).Times(1);
+
+  GaiaAuthFetcher auth(&consumer, "te\"sts", profile_.GetRequestContext());
+  std::vector<std::string> scopes;
+  scopes.push_back("https://some.\"other.scope.com");
+  auth.StartClientOAuth("user\"name", "pass\"word", scopes, "", "e\"n");
+
+  scoped_ptr<base::Value> actual(base::JSONReader::Read(auth.request_body_));
+  scoped_ptr<base::Value> expected(base::JSONReader::Read(
+      "{"
+      "\"email\": \"user\\\"name\","
+      "\"password\": \"pass\\\"word\","
+      "\"scopes\": [\"https://some.\\\"other.scope.com\"],"
+      "\"oauth2_client_id\": \"77185425430.apps.googleusercontent.com\","
+      "\"friendly_device_name\": \"te\\\"sts\","
+      "\"accepts_challenges\": [\"Captcha\", \"TwoStep\"],"
+      "\"locale\": \"e\\\"n\","
+      "\"fallback\": { \"name\": \"GetOAuth2Token\" }"
+      "}"));
+  EXPECT_TRUE(expected->Equals(actual.get()));
+}
+
 TEST_F(GaiaAuthFetcherTest, ClientOAuthBadAuth) {
   MockURLFetcherFactory<MockFetcher> factory;
   factory.set_success(false);
@@ -942,6 +970,30 @@ TEST_F(GaiaAuthFetcherTest, ClientOAuthChallengeSuccess) {
       "  }"
       "}"));
   EXPECT_TRUE(expected2->Equals(actual2.get()));
+}
+
+TEST_F(GaiaAuthFetcherTest, ClientOAuthChallengeQuote) {
+  MockURLFetcherFactory<MockFetcher> factory;
+  factory.set_results(kClientOAuthValidResponse);
+
+  MockGaiaConsumer consumer;
+  EXPECT_CALL(consumer, OnClientOAuthSuccess(
+      GaiaAuthConsumer::ClientOAuthResult("rt1", "at1", 3600))).Times(1);
+
+  GaiaAuthFetcher auth(&consumer, std::string(), profile_.GetRequestContext());
+  auth.StartClientOAuthChallengeResponse(GoogleServiceAuthError::TWO_FACTOR,
+                                         "to\"ken", "my\"solution");
+
+  scoped_ptr<base::Value> actual(base::JSONReader::Read(auth.request_body_));
+  scoped_ptr<base::Value> expected(base::JSONReader::Read(
+      "{"
+      "  \"challenge_reply\" : {"
+      "    \"name\" : \"TwoStep\","
+      "    \"challenge_token\" : \"to\\\"ken\","
+      "    \"otp\" : \"my\\\"solution\""
+      "  }"
+      "}"));
+  EXPECT_TRUE(expected->Equals(actual.get()));
 }
 
 TEST_F(GaiaAuthFetcherTest, StartOAuthLogin) {

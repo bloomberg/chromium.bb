@@ -46,4 +46,50 @@ const char kGaiaOAuthDuration[] = "3600";
 const char kGaiaOAuth2LoginRefreshToken[] = "oauth2LoginRefreshToken";
 const char kGaiaOAuth2LoginAccessToken[] = "oauth2LoginAccessToken";
 
+
+// Used to build ClientOAuth requests.  These are the names of keys used when
+// building base::DictionaryValue that represent the json data that makes up
+// the ClientOAuth endpoint protocol.  The comment above each constant explains
+// what value is associated with that key.
+
+// Canonical email and password of the account to sign in.
+const char kClientOAuthEmailKey[] = "email";
+const char kClientOAuthPasswordKey[] = "password";
+
+// Scopes required for the returned oauth2 token.  For GaiaAuthFetcher, the
+// value is the OAuthLogin scope.
+const char kClientOAuthScopesKey[] = "scopes";
+
+// Chrome's client id from the API console.
+const char kClientOAuthOAuth2ClientIdKey[] = "oauth2_client_id";
+
+// A friendly name to describe this instance of chrome to the user.
+const char kClientOAuthFriendlyDeviceNameKey[] = "friendly_device_name";
+
+// A list of challenge types that chrome accepts.  At a minimum this must
+// include Captcha.  To support OTPs should also include TwoFactor.
+const char kClientOAuthAcceptsChallengesKey[] = "accepts_challenges";
+
+// The locale of the browser, so that ClientOAuth can return localized error
+// messages.
+const char kClientOAuthLocaleKey[] = "locale";
+
+// The name of the web-based fallback method to use if ClientOAuth decides it
+// cannot continue otherwise.  Note that this name has a dot because its in
+// sub dictionary.
+const char kClientOAuthFallbackNameKey[] = "fallback.name";
+
+// The following three key names are used with ClientOAuth challenge responses.
+
+// The type of response.  Must match the name given in the response to the
+// original ClientOAuth request and is a subset of the challenge types listed
+// in kClientOAuthAcceptsChallengesKey from that original request.
+const char kClientOAuthNameKey[] = "name";
+
+// The challenge token received in the original ClientOAuth request.
+const char kClientOAuthChallengeTokenKey[] = "challenge_token";
+
+// The dictionary that contains the challenge response.
+const char kClientOAuthchallengeReplyKey[] = "challenge_reply";
+
 }  // namespace GaiaConstants
