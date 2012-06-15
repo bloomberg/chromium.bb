@@ -20,9 +20,6 @@ class Panel;
 class PanelBoundsAnimation;
 class PanelBrowserFrameView;
 class TaskbarWindowThumbnailerWin;
-namespace ui {
-class HWNDSubclass;
-}
 
 // A browser view that implements Panel specific behavior.
 class PanelBrowserView : public BrowserView,
@@ -198,12 +195,7 @@ class PanelBrowserView : public BrowserView,
 
 #if defined(OS_WIN) && !defined(USE_ASH) && !defined(USE_AURA)
   // Used to provide custom taskbar thumbnail for Windows 7 and later.
-  // Note that once the subclass has been triggered, it should be kept alive
-  // for the live of the window.
-  scoped_ptr<ui::HWNDSubclass> thumbnail_subclass_;
-
-  // Weak, owned by thumbnail_subclass_.
-  TaskbarWindowThumbnailerWin* thumbnailer_;
+  scoped_ptr<TaskbarWindowThumbnailerWin> thumbnailer_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(PanelBrowserView);

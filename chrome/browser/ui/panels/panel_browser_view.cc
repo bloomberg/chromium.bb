@@ -586,11 +586,10 @@ void PanelBrowserView::PanelExpansionStateChanging(
 
   HWND native_window = GetNativeWindow();
 
-  if (!thumbnail_subclass_.get()) {
-    thumbnail_subclass_.reset(new ui::HWNDSubclass(native_window));
-    // thumbnailer_ is owned by thumbnail_subclass_.
-    thumbnailer_ = new TaskbarWindowThumbnailerWin(native_window);
-    thumbnail_subclass_->SetFilter(thumbnailer_);
+  if (!thumbnailer_.get()) {
+    DCHECK(native_window);
+    thumbnailer_.reset(new TaskbarWindowThumbnailerWin(native_window));
+    ui::HWNDSubclass::AddFilterToTarget(native_window, thumbnailer_.get());
   }
 
   // Cache the image at this point.

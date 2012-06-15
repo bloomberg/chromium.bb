@@ -26,7 +26,7 @@ class RootWindowCaptureClient;
 
 namespace ui {
 #if defined(OS_WIN)
-class HWNDSubclass;
+class HWNDMessageFilter;
 #endif
 }
 
@@ -86,7 +86,7 @@ class VIEWS_EXPORT DesktopNativeWidgetHelperAura
   scoped_ptr<aura::client::ScreenPositionClient> position_client_;
 
 #if defined(OS_WIN)
-  scoped_ptr<ui::HWNDSubclass> subclass_;
+  scoped_ptr<ui::HWNDMessageFilter> hwnd_message_filter_;
 #elif defined(USE_X11)
   scoped_ptr<X11WindowEventFilter> x11_window_event_filter_;
 #endif

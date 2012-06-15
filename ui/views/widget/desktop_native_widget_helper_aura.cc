@@ -153,9 +153,11 @@ void DesktopNativeWidgetHelperAura::PreInitialize(
 
 void DesktopNativeWidgetHelperAura::PostInitialize() {
 #if defined(OS_WIN)
-  subclass_.reset(new ui::HWNDSubclass(root_window_->GetAcceleratedWidget()));
-  subclass_->SetFilter(new WidgetMessageFilter(root_window_.get(),
-                                               widget_->GetWidget()));
+  DCHECK(root_window_->GetAcceleratedWidget());
+  hwnd_message_filter_.reset(new WidgetMessageFilter(root_window_.get(),
+      widget_->GetWidget()));
+  ui::HWNDSubclass::AddFilterToTarget(root_window_->GetAcceleratedWidget(),
+                                      hwnd_message_filter_.get());
 #endif
 }
 

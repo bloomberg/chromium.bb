@@ -74,27 +74,89 @@ TEST_F(HWNDSubclassTest, Filtering) {
   EXPECT_TRUE(window.hwnd() != NULL);
 
   {
-    TestMessageFilter* mf = new TestMessageFilter;
-    HWNDSubclass subclass(window.hwnd());
-    subclass.SetFilter(mf);
+    TestMessageFilter mf;
+    HWNDSubclass::AddFilterToTarget(window.hwnd(), &mf);
 
     // We are not filtering, so both the filter and the window should receive
     // this message:
     ::SendMessage(window.hwnd(), WM_NCHITTEST, 0, 0);
 
-    EXPECT_TRUE(mf->saw_message);
+    EXPECT_TRUE(mf.saw_message);
     EXPECT_TRUE(window.saw_message);
 
-    mf->saw_message = false;
+    mf.saw_message = false;
     window.saw_message = false;
 
-    mf->consume_messages = true;
+    mf.consume_messages = true;
 
     // We are now filtering, so only the filter should see this message:
     ::SendMessage(window.hwnd(), WM_NCHITTEST, 0, 0);
 
-    EXPECT_TRUE(mf->saw_message);
+    EXPECT_TRUE(mf.saw_message);
     EXPECT_FALSE(window.saw_message);
+  }
+}
+
+TEST_F(HWNDSubclassTest, FilteringMultipleFilters) {
+  TestWindow window;
+  window.Init(NULL, gfx::Rect(0, 0, 100, 100));
+  EXPECT_TRUE(window.hwnd() != NULL);
+
+  {
+    TestMessageFilter mf1;
+    TestMessageFilter mf2;
+    HWNDSubclass::AddFilterToTarget(window.hwnd(), &mf1);
+    HWNDSubclass::AddFilterToTarget(window.hwnd(), &mf2);
+
+    // We are not filtering, so both the filter and the window should receive
+    // this message:
+    ::SendMessage(window.hwnd(), WM_NCHITTEST, 0, 0);
+
+    EXPECT_TRUE(mf1.saw_message);
+    EXPECT_TRUE(mf2.saw_message);
+    EXPECT_TRUE(window.saw_message);
+
+    mf1.saw_message = false;
+    mf2.saw_message = false;
+    window.saw_message = false;
+
+    mf1.consume_messages = true;
+
+    // We are now filtering, so only the filter |mf1| should see this message:
+    ::SendMessage(window.hwnd(), WM_NCHITTEST, 0, 0);
+
+    EXPECT_TRUE(mf1.saw_message);
+    EXPECT_FALSE(mf2.saw_message);
+    EXPECT_FALSE(window.saw_message);
+  }
+}
+
+TEST_F(HWNDSubclassTest, RemoveFilter) {
+  TestWindow window;
+  window.Init(NULL, gfx::Rect(0, 0, 100, 100));
+  EXPECT_TRUE(window.hwnd() != NULL);
+
+  {
+    TestMessageFilter mf1;
+    TestMessageFilter mf2;
+    HWNDSubclass::AddFilterToTarget(window.hwnd(), &mf1);
+    HWNDSubclass::AddFilterToTarget(window.hwnd(), &mf2);
+
+    ::SendMessage(window.hwnd(), WM_NCHITTEST, 0, 0);
+    EXPECT_TRUE(mf1.saw_message);
+    EXPECT_TRUE(mf2.saw_message);
+    EXPECT_TRUE(window.saw_message);
+
+    mf1.saw_message = false;
+    mf2.saw_message = false;
+    window.saw_message = false;
+
+    // Remove a filter and try sending message again.
+    HWNDSubclass::RemoveFilterFromAllTargets(&mf1);
+    ::SendMessage(window.hwnd(), WM_NCHITTEST, 0, 0);
+    EXPECT_FALSE(mf1.saw_message);
+    EXPECT_TRUE(mf2.saw_message);
+    EXPECT_TRUE(window.saw_message);
   }
 }
 

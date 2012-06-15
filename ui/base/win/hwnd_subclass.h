@@ -6,6 +6,7 @@
 #define UI_BASE_WIN_HWND_SUBCLASS_H_
 #pragma once
 
+#include <vector>
 #include <windows.h>
 
 #include "base/gtest_prod_util.h"
@@ -19,12 +20,16 @@ namespace ui {
 // messages before they are sent to their target HWND.
 class UI_EXPORT HWNDMessageFilter {
  public:
-  virtual ~HWNDMessageFilter() {}
+  virtual ~HWNDMessageFilter();
 
-  // A derived class overrides this method to perform filtering of the messages
-  // before the |original_wnd_proc_| sees them. Return true to consume the
-  // message and prevent |original_wnd_proc_| from seeing them at all, false to
-  // allow it to process them.
+  // A derived class overrides this method to perform filtering of the messages.
+  // Return true to prevent other HWNDMessageFilter's of the target HWND and the
+  // system message handler |original_wnd_proc_| from receiving the message.
+  // Return false to propagate the message further to other HWNDMessageFilters
+  // and eventually to |original_wnd_proc|.
+  // The order in which HWNDMessageFilters are added in HWNDSubclass::AddFilter
+  // determines which filter gets to see the message first (a filter added first
+  // will see the message first).
   virtual bool FilterMessage(HWND hwnd,
                              UINT message,
                              WPARAM w_param,
@@ -36,17 +41,38 @@ class UI_EXPORT HWNDMessageFilter {
 // instance-subclassed, that subclassing is lost.
 class UI_EXPORT HWNDSubclass {
  public:
-  explicit HWNDSubclass(HWND target);
   ~HWNDSubclass();
 
-  // HWNDSubclass takes ownership of the filter.
-  void SetFilter(HWNDMessageFilter* filter);
+  // Adds |filter| to the HWNDSubclass of |target|. Caller retains ownership of
+  // |filter|. See the comment about the order in which filters are added in
+  // HWNDMessageFilter::FilterMessage.
+  static void AddFilterToTarget(HWND target, HWNDMessageFilter* filter);
+
+  // Removes |filter| from any HWNDSubclass that has it.
+  static void RemoveFilterFromAllTargets(HWNDMessageFilter* filter);
+
+  // Returns a non-null HWNDSubclass corresponding to the HWND |target|. Creates
+  // one if none exists. Retains ownership of the returned pointer.
+  static HWNDSubclass* GetHwndSubclassForTarget(HWND target);
+
+  // Adds |filter| if not already added to this HWNDSubclass. Caller retains
+  // ownership of |filter|. See the comment about the order in which filters are
+  // added in HWNDMessageFilter::FilterMessage.
+  void AddFilter(HWNDMessageFilter* filter);
+
+  // Removes |filter|  from this HWNDSubclass instance if present.
+  void RemoveFilter(HWNDMessageFilter* filter);
 
   LRESULT OnWndProc(HWND hwnd, UINT message, WPARAM w_param, LPARAM l_param);
 
  private:
+  class HWNDSubclassFactory;
+  friend class HWNDSubclassFactory;
+
+  explicit HWNDSubclass(HWND target);
+
   HWND target_;
-  scoped_ptr<HWNDMessageFilter> filter_;
+  std::vector<HWNDMessageFilter*> filters_;
   WNDPROC original_wnd_proc_;
   ui::ViewProp prop_;
 
