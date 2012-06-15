@@ -16,6 +16,7 @@
 #include <netinet/tcp.h>
 #include <netinet/udp.h>
 #include <sched.h>
+#include <signal.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -34,6 +35,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <map>
 #include <utility>
 #include <vector>
 
@@ -63,6 +65,7 @@
 #define SECCOMP_RET_ERRNO   0x00050000U  // Returns an errno
 #define SECCOMP_RET_TRACE   0x7ff00000U  // Pass to a tracer or disallow
 #define SECCOMP_RET_ALLOW   0x7fff0000U  // Allow
+#define SECCOMP_RET_INVALID 0x8f8f8f8fU  // Illegal return value
 #define SECCOMP_RET_ACTION  0xffff0000U  // Masks for the return value
 #define SECCOMP_RET_DATA    0x0000ffffU  //   sections
 #endif
@@ -77,6 +80,7 @@
 #define SECCOMP_ARCH AUDIT_ARCH_I386
 #define REG_RESULT   REG_EAX
 #define REG_SYSCALL  REG_EAX
+#define REG_IP       REG_EIP
 #define REG_PARM1    REG_EBX
 #define REG_PARM2    REG_ECX
 #define REG_PARM3    REG_EDX
@@ -89,6 +93,7 @@
 #define SECCOMP_ARCH AUDIT_ARCH_X86_64
 #define REG_RESULT   REG_RAX
 #define REG_SYSCALL  REG_RAX
+#define REG_IP       REG_RIP
 #define REG_PARM1    REG_RDI
 #define REG_PARM2    REG_RSI
 #define REG_PARM3    REG_RDX
@@ -100,10 +105,16 @@
 #endif
 
 struct arch_seccomp_data {
-  int nr;
+  int      nr;
   uint32_t arch;
   uint64_t instruction_pointer;
   uint64_t args[6];
+};
+
+struct arch_sigsys {
+  void         *ip;
+  int          nr;
+  unsigned int arch;
 };
 
 #ifdef SECCOMP_BPF_STANDALONE
@@ -131,8 +142,8 @@ class Sandbox {
     STATUS_ENABLED       // The sandbox is now active
   };
 
-  enum ErrorCode {
-    SB_TRAP          = -1,
+  enum {
+    SB_INVALID       = -1,
     SB_ALLOWED       = 0x0000,
     SB_INSPECT_ARG_1 = 0x8001,
     SB_INSPECT_ARG_2 = 0x8002,
@@ -140,8 +151,74 @@ class Sandbox {
     SB_INSPECT_ARG_4 = 0x8008,
     SB_INSPECT_ARG_5 = 0x8010,
     SB_INSPECT_ARG_6 = 0x8020
+  };
 
-    // Also, any errno value is valid when cast to ErrorCode.
+  // TrapFnc is a pointer to a function that handles Seccomp traps in
+  // user-space. The seccomp policy can request that a trap handler gets
+  // installed; it does so by returning a suitable ErrorCode() from the
+  // syscallEvaluator. See the ErrorCode() constructor for how to pass in
+  // the function pointer.
+  // Please note that TrapFnc is executed from signal context and must be
+  // async-signal safe:
+  // http://pubs.opengroup.org/onlinepubs/009695399/functions/xsh_chap02_04.html
+  typedef intptr_t (*TrapFnc)(const struct arch_seccomp_data& args, void *aux);
+
+  class ErrorCode {
+    friend class Sandbox;
+  public:
+    // We can either wrap a symbolic ErrorCode (i.e. enum values), an errno
+    // value (in the range 1..4095), or a pointer to a TrapFnc callback
+    // handling a SECCOMP_RET_TRAP trap.
+    // All of these different values are stored in the "err_" field. So, code
+    // that is using the ErrorCode class typically operates on a single 32bit
+    // field.
+    // This is not only quiet efficient, it also makes the API really easy to
+    // use.
+    ErrorCode(int err = SB_INVALID) {
+      switch (err) {
+      case SB_INVALID:
+        err_ = SECCOMP_RET_INVALID;
+        break;
+      case SB_ALLOWED:
+        err_ = SECCOMP_RET_ALLOW;
+        break;
+      case SB_INSPECT_ARG_1...SB_INSPECT_ARG_6:
+        die("Not implemented");
+        break;
+      case 1 ... 4095:
+        err_ = SECCOMP_RET_ERRNO + err;
+        break;
+      default:
+        die("Invalid use of ErrorCode object");
+      }
+    }
+
+    // If we are wrapping a callback, we must assign a unique id. This id is
+    // how the kernel tells us which one of our different SECCOMP_RET_TRAP
+    // cases has been triggered.
+    // The getTrapId() function assigns one unique id (starting at 1) for
+    // each distinct pair of TrapFnc and auxiliary data.
+    ErrorCode(TrapFnc fnc, const void *aux, int id = 0) :
+      id_(id ? id : getTrapId(fnc, aux)),
+      fnc_(fnc),
+      aux_(const_cast<void *>(aux)),
+      err_(SECCOMP_RET_TRAP + id_) {
+    }
+
+    // Destructor doesn't need to do anything.
+    ~ErrorCode() { }
+
+    // Always return the value that goes into the BPF filter program.
+    operator uint32_t() const { return err_; }
+
+  protected:
+    // Fields needed for SECCOMP_RET_TRAP callbacks
+    int      id_;
+    TrapFnc  fnc_;
+    void     *aux_;
+
+    // 32bit field used for all possible types of ErrorCode values
+    uint32_t err_;
   };
 
   enum Operation {
@@ -251,6 +328,8 @@ class Sandbox {
   };
   typedef std::vector<Range> Ranges;
   typedef std::vector<struct sock_filter> Program;
+  typedef std::vector<ErrorCode> Traps;
+  typedef std::map<std::pair<TrapFnc, const void *>, int> TrapIds;
 
   static ErrorCode probeEvaluator(int signo) __attribute__((const));
   static bool      kernelSupportSeccompBPF(int proc_fd);
@@ -262,11 +341,17 @@ class Sandbox {
   static void      findRanges(Ranges *ranges);
   static void      rangesToBPF(Program *program, const Ranges& ranges);
   static void      sigSys(int nr, siginfo_t *info, void *void_context);
+  static intptr_t  bpfFailure(const struct arch_seccomp_data& data, void *aux);
+  static int       getTrapId(TrapFnc fnc, const void *aux);
 
   static bool          dryRun_;
   static SandboxStatus status_;
   static int           proc_fd_;
   static Evaluators    evaluators_;
+  static Traps         *traps_;
+  static TrapIds       trapIds_;
+  static ErrorCode     *trapArray_;
+  static size_t        trapArraySize_;
 };
 
 }  // namespace

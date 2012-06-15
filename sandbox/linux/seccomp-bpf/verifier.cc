@@ -36,31 +36,11 @@ bool Verifier::verifyBPF(const std::vector<struct sock_filter>& program,
 #endif
 
     struct arch_seccomp_data data = { sysnum, SECCOMP_ARCH };
-    uint32_t expectedRet;
     Sandbox::ErrorCode code = evaluateSyscall(sysnum);
-    switch (code) {
-    case Sandbox::SB_TRAP:
-      expectedRet = SECCOMP_RET_TRAP;
-      break;
-    case Sandbox::SB_ALLOWED:
-      expectedRet = SECCOMP_RET_ALLOW;
-      break;
-    case Sandbox::SB_INSPECT_ARG_1...Sandbox::SB_INSPECT_ARG_6:
-      *err = "Not implemented";
-      return false;
-    default:
-      if (code >= 1 && code < 4096) {
-        expectedRet = SECCOMP_RET_ERRNO + static_cast<int>(code);
-      } else {
-        *err = "Invalid errno value";
-        return false;
-      }
-      break;
-    }
     uint32_t computedRet = evaluateBPF(program, data, err);
     if (*err) {
       return false;
-    } else if (computedRet != expectedRet) {
+    } else if (computedRet != code) {
       *err = "Exit code from BPF program doesn't match";
       return false;
     }

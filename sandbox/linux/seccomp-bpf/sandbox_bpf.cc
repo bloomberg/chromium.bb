@@ -10,17 +10,19 @@
 // pre-BPF seccomp mode.
 namespace playground2 {
 
+// We define a really simple sandbox policy. It is just good enough for us
+// to tell that the sandbox has actually been activated.
 Sandbox::ErrorCode Sandbox::probeEvaluator(int signo) {
   switch (signo) {
   case __NR_getpid:
     // Return EPERM so that we can check that the filter actually ran.
-    return (ErrorCode)EPERM;
+    return EPERM;
   case __NR_exit_group:
     // Allow exit() with a non-default return code.
     return SB_ALLOWED;
   default:
     // Make everything else fail in an easily recognizable way.
-    return (ErrorCode)EINVAL;
+    return EINVAL;
   }
 }
 
@@ -214,9 +216,9 @@ bool Sandbox::isSingleThreaded(int proc_fd) {
 }
 
 static bool isDenied(Sandbox::ErrorCode code) {
-  return code == Sandbox::SB_TRAP ||
-        (code >= (Sandbox::ErrorCode)1 &&
-         code <= (Sandbox::ErrorCode)4095);  // errno value
+  return (code & SECCOMP_RET_ACTION) == SECCOMP_RET_TRAP ||
+         (code >= (SECCOMP_RET_ERRNO + 1) &&
+          code <= (SECCOMP_RET_ERRNO + 4095));
 }
 
 void Sandbox::policySanityChecks(EvaluateSyscall syscallEvaluator,
@@ -265,6 +267,9 @@ void Sandbox::policySanityChecks(EvaluateSyscall syscallEvaluator,
 
 void Sandbox::setSandboxPolicy(EvaluateSyscall syscallEvaluator,
                                EvaluateArguments argumentEvaluator) {
+  if (status_ == STATUS_ENABLED) {
+    die("Cannot change policy after sandbox has started");
+  }
   policySanityChecks(syscallEvaluator, argumentEvaluator);
   evaluators_.push_back(std::make_pair(syscallEvaluator, argumentEvaluator));
 }
@@ -312,12 +317,10 @@ void Sandbox::installFilter() {
   program->push_back((struct sock_filter)
     BPF_JUMP(BPF_JMP+BPF_JEQ+BPF_K, SECCOMP_ARCH, 1, 0));
 
-  // TODO: Instead of killing outright, we should raise a SIGSYS and
-  //       report a useful error message. SIGKILL cannot be trapped by the
-  //       debugger and essentially makes the program fail in a way that is
-  //       almost impossible to debug.
   program->push_back((struct sock_filter)
-    BPF_STMT(BPF_RET+BPF_K, SECCOMP_RET_KILL));
+    BPF_STMT(BPF_RET+BPF_K,
+             ErrorCode(bpfFailure,
+                       "Invalid audit architecture in BPF filter")));
 
   // Grab the system call number, so that we can implement jump tables.
   program->push_back((struct sock_filter)
@@ -334,9 +337,10 @@ void Sandbox::installFilter() {
   program->push_back((struct sock_filter)
     BPF_JUMP(BPF_JMP+BPF_JSET+BPF_K, 0x40000000, 0, 1));
 #endif
-  // TODO: raise a suitable SIGSYS signal
   program->push_back((struct sock_filter)
-    BPF_STMT(BPF_RET+BPF_K, SECCOMP_RET_KILL));
+    BPF_STMT(BPF_RET+BPF_K,
+             ErrorCode(bpfFailure,
+                       "Illegal mixing of system call ABIs")));
 #endif
 
   // Evaluate all possible system calls and group their ErrorCodes into
@@ -347,10 +351,11 @@ void Sandbox::installFilter() {
   // Compile the system call ranges to an optimized BPF program.
   rangesToBPF(program, ranges);
 
-  // Everything that isn't allowed is forbidden. Eventually, we would
-  // like to have a way to log forbidden calls, when in debug mode.
+  // Unless there is a bug in the compiler, there is no execution path through
+  // the BPF program that falls through to the end.
   program->push_back((struct sock_filter)
-    BPF_STMT(BPF_RET+BPF_K, SECCOMP_RET_ERRNO + SECCOMP_DENY_ERRNO));
+    BPF_STMT(BPF_RET+BPF_K,
+             ErrorCode(bpfFailure, "Detected unfiltered system call")));
 
   // Make sure compilation resulted in BPF program that executes
   // correctly. Otherwise, there is an internal error in our BPF compiler.
@@ -377,6 +382,9 @@ void Sandbox::installFilter() {
   const struct sock_fprog prog = { program->size(), bpf };
   memcpy(bpf, &(*program)[0], sizeof(bpf));
   delete program;
+
+  // Release memory that is no longer needed
+  evaluators_.clear();
 
   // Install BPF filter program
   if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0)) {
@@ -449,75 +457,138 @@ void Sandbox::rangesToBPF(Program *program, const Ranges& ranges) {
     }
     from = iter->to + 1;
 
-    // Convert ErrorCodes to return values that are acceptable for
-    // BPF filters.
-    int ret;
-    switch (iter->err) {
-    case SB_INSPECT_ARG_1...SB_INSPECT_ARG_6:
-      die("Not implemented");
-    case SB_TRAP:
-      ret = SECCOMP_RET_TRAP;
-      break;
-    case SB_ALLOWED:
-      ret = SECCOMP_RET_ALLOW;
-      break;
-    default:
-      if (iter->err >= static_cast<ErrorCode>(1) &&
-          iter->err <= static_cast<ErrorCode>(4096)) {
-        // We limit errno values to a reasonable range. In fact, the Linux ABI
-        // doesn't support errno values outside of this range.
-        ret = SECCOMP_RET_ERRNO + iter->err;
-      } else {
-        die("Invalid ErrorCode reported by sandbox system call evaluator");
-      }
-      break;
-    }
-
     // Emit BPF instructions matching this range.
     if (iter->to != std::numeric_limits<unsigned>::max()) {
       program->push_back((struct sock_filter)
         BPF_JUMP(BPF_JMP+BPF_JGT+BPF_K, iter->to, 1, 0));
     }
     program->push_back((struct sock_filter)
-      BPF_STMT(BPF_RET+BPF_K, ret));
+      BPF_STMT(BPF_RET+BPF_K, iter->err));
   }
   return;
 }
 
 void Sandbox::sigSys(int nr, siginfo_t *info, void *void_context) {
-  if (nr != SIGSYS || info->si_code != SYS_SECCOMP || !void_context) {
+  // Various sanity checks to make sure we actually received a signal
+  // triggered by a BPF filter. If something else triggered SIGSYS
+  // (e.g. kill()), there is really nothing we can do with this signal.
+  if (nr != SIGSYS || info->si_code != SYS_SECCOMP || !void_context ||
+      info->si_errno <= 0 ||
+      static_cast<size_t>(info->si_errno) > trapArraySize_) {
     // die() can call LOG(FATAL). This is not normally async-signal safe
     // and can lead to bugs. We should eventually implement a different
     // logging and reporting mechanism that is safe to be called from
     // the sigSys() handler.
+    // TODO: If we feel confident that our code otherwise works correctly, we
+    //       could actually make an argument that spurious SIGSYS should
+    //       just get silently ignored. TBD
+  sigsys_err:
     die("Unexpected SIGSYS received");
   }
-  ucontext_t *ctx = reinterpret_cast<ucontext_t *>(void_context);
+
+  // Signal handlers should always preserve "errno". Otherwise, we could
+  // trigger really subtle bugs.
   int old_errno   = errno;
 
-  // In case of error, set the REG_RESULT CPU register to the default
-  // errno value (i.e. EPERM).
-  // We need to be very careful when doing this, as some of our target
-  // platforms have pointer types and CPU registers that are wider than
-  // ints. Furthermore, the kernel ABI requires us to return a negative
-  // value, but errno values are usually positive. And in fact, it would
-  // be perfectly reasonable for somebody to have defined them as unsigned
-  // properties. This makes the correct incantation of type casts rather
-  // subtle. Sometimes, C++ is just too smart for its own good.
-  void *rc        = (void *)(intptr_t)-(int)SECCOMP_DENY_ERRNO;
+  // Obtain the signal context. This, most notably, gives us access to
+  // all CPU registers at the time of the signal.
+  ucontext_t *ctx = reinterpret_cast<ucontext_t *>(void_context);
 
-  // This is where we can add extra code to handle complex system calls.
-  // ...
+  // Obtain the siginfo information that is specific to SIGSYS. Unfortunately,
+  // most versions of glibc don't include this information in siginfo_t. So,
+  // we need to explicitly copy it into a arch_sigsys structure.
+  struct arch_sigsys sigsys;
+  memcpy(&sigsys, &info->_sifields, sizeof(sigsys));
 
-  ctx->uc_mcontext.gregs[REG_RESULT] = reinterpret_cast<greg_t>(rc);
+  // Some more sanity checks.
+  if (sigsys.ip != reinterpret_cast<void *>(ctx->uc_mcontext.gregs[REG_IP]) ||
+      sigsys.nr != static_cast<int>(ctx->uc_mcontext.gregs[REG_SYSCALL]) ||
+      sigsys.arch != SECCOMP_ARCH) {
+    goto sigsys_err;
+  }
+
+  // Copy the seccomp-specific data into a arch_seccomp_data structure. This
+  // is what we are showing to TrapFnc callbacks that the system call evaluator
+  // registered with the sandbox.
+  struct arch_seccomp_data data = {
+    sigsys.nr,
+    SECCOMP_ARCH,
+    reinterpret_cast<uint64_t>(sigsys.ip),
+    {
+      static_cast<uint64_t>(ctx->uc_mcontext.gregs[REG_PARM1]),
+      static_cast<uint64_t>(ctx->uc_mcontext.gregs[REG_PARM2]),
+      static_cast<uint64_t>(ctx->uc_mcontext.gregs[REG_PARM3]),
+      static_cast<uint64_t>(ctx->uc_mcontext.gregs[REG_PARM4]),
+      static_cast<uint64_t>(ctx->uc_mcontext.gregs[REG_PARM5]),
+      static_cast<uint64_t>(ctx->uc_mcontext.gregs[REG_PARM6])
+    }
+  };
+
+  // Now call the TrapFnc callback associated with this particular instance
+  // of SECCOMP_RET_TRAP.
+  const ErrorCode& err = trapArray_[info->si_errno - 1];
+  intptr_t rc          = err.fnc_(data, err.aux_);
+
+  // Update the CPU register that stores the return code of the system call
+  // that we just handled, and restore "errno" to the value that it had
+  // before entering the signal handler.
+  ctx->uc_mcontext.gregs[REG_RESULT] = static_cast<greg_t>(rc);
   errno                              = old_errno;
+
   return;
 }
 
+intptr_t Sandbox::bpfFailure(const struct arch_seccomp_data&, void *aux) {
+  die(static_cast<char *>(aux));
+}
+
+int Sandbox::getTrapId(Sandbox::TrapFnc fnc, const void *aux) {
+  // Each unique pair of TrapFnc and auxiliary data make up a distinct instance
+  // of a SECCOMP_RET_TRAP.
+  std::pair<TrapFnc, const void *> key(fnc, aux);
+  TrapIds::const_iterator iter = trapIds_.find(key);
+  if (iter != trapIds_.end()) {
+    // We have seen this pair before. Return the same id that we assigned
+    // earlier.
+    return iter->second;
+  } else {
+    // This is a new pair. Remember it and assign a new id.
+    // Please note that we have to store traps in memory that doesn't get
+    // deallocated when the program is shutting down. A memory leak is
+    // intentional, because we might otherwise not be able to execute
+    // system calls part way through the program shutting down
+    if (!traps_) {
+      traps_ = new Traps();
+    }
+    int id   = traps_->size() + 1;
+    if (id > static_cast<int>(SECCOMP_RET_DATA)) {
+      // In practice, this is pretty much impossible to trigger, as there
+      // are other kernel limitations that restrict overall BPF program sizes.
+      die("Too many SECCOMP_RET_TRAP callback instances");
+    }
+
+    traps_->push_back(ErrorCode(fnc, aux, id));
+    trapIds_[key] = id;
+
+    // We want to access the traps_ vector from our signal handler. But
+    // we are not assured that doing so is async-signal safe. On the other
+    // hand, C++ guarantees that the contents of a vector is stored in a
+    // contiguous C-style array.
+    // So, we look up the address and size of this array outside of the
+    // signal handler, where we can safely do so.
+    trapArray_     = &(*traps_)[0];
+    trapArraySize_ = id;
+    return id;
+  }
+}
 
 bool Sandbox::dryRun_                   = false;
 Sandbox::SandboxStatus Sandbox::status_ = STATUS_UNKNOWN;
 int    Sandbox::proc_fd_                = -1;
 Sandbox::Evaluators Sandbox::evaluators_;
+Sandbox::Traps *Sandbox::traps_         = NULL;
+Sandbox::TrapIds Sandbox::trapIds_;
+Sandbox::ErrorCode *Sandbox::trapArray_ = NULL;
+size_t Sandbox::trapArraySize_          = 0;
 
 }  // namespace

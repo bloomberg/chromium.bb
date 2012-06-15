@@ -28,6 +28,9 @@
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/seccomp-bpf/util.h"
 
+using playground2::Sandbox;
+using playground2::Util;
+
 #define ERR EPERM
 
 // We don't expect our sandbox to do anything useful yet. So, we will fail
@@ -36,7 +39,103 @@
 // actually enforce restrictions in a meaningful way:
 #define _exit(x) do { } while (0)
 
-static playground2::Sandbox::ErrorCode evaluator(int sysno) {
+
+// POSIX doesn't define any async-signal safe function for converting
+// an integer to ASCII. We'll have to define our own version.
+// itoa_r() converts a (signed) integer to ASCII. It returns "buf", if the
+// conversion was successful or NULL otherwise. It never writes more than "sz"
+// bytes. Output will be truncated as needed, and a NUL character is always
+// appended.
+static char *itoa_r(int i, char *buf, size_t sz) {
+  // Make sure we can write at least one NUL byte.
+  size_t n = 1;
+  if (n > sz) {
+    return NULL;
+  }
+
+  // Handle negative numbers.
+  char *start = buf;
+  int minint = 0;
+  if (i < 0) {
+    // Make sure we can write the '-' character.
+    if (++n > sz) {
+      *start = '\000';
+      return NULL;
+    }
+    *start++ = '-';
+
+    // Turn our number positive.
+    if (i == -i) {
+      // The lowest-most negative integer needs special treatment.
+      minint = 1;
+      i = -(i + 1);
+    } else {
+      // "Normal" negative numbers are easy.
+      i = -i;
+    }
+  }
+
+  // Loop until we have converted the entire number. Output at least one
+  // character (i.e. '0').
+  char *ptr = start;
+  do {
+    // Make sure there is still enough space left in our output buffer.
+    if (++n > sz) {
+      buf = NULL;
+      goto truncate;
+    }
+
+    // Output the next digit and (if necessary) compensate for the lowest-most
+    // negative integer needing special treatment. This works because, no
+    // matter the bit width of the integer, the lowest-most integer always ends
+    // in 2, 4, 6, or 8.
+    *ptr++ = i%10 + '0' + minint;
+    minint = 0;
+    i /= 10;
+  } while (i);
+ truncate:  // Terminate the output with a NUL character.
+  *ptr = '\000';
+
+  // Conversion to ASCII actually resulted in the digits being in reverse
+  // order. We can't easily generate them in forward order, as we can't tell
+  // the number of characters needed until we are done converting.
+  // So, now, we reverse the string (except for the possible "-" sign).
+  while (--ptr > start) {
+    char ch = *ptr;
+    *ptr = *start;
+    *start++ = ch;
+  }
+  return buf;
+}
+
+// This handler gets called, whenever we encounter a system call that we
+// don't recognize explicitly. For the purposes of this program, we just
+// log the system call and then deny it. More elaborate sandbox policies
+// might try to evaluate the system call in user-space, instead.
+// The only notable complication is that this function must be async-signal
+// safe. This restricts the libary functions that we can call.
+static intptr_t defaultHandler(const struct arch_seccomp_data& data,
+                               void *) {
+  static const char msg0[] = "Disallowed system call #";
+  static const char msg1[] = "\n";
+  char buf[sizeof(msg0) - 1 + 25 + sizeof(msg1)];
+
+  *buf = '\000';
+  strncat(buf, msg0, sizeof(buf));
+
+  char *ptr = strrchr(buf, '\000');
+  itoa_r(data.nr, ptr, sizeof(buf) - (ptr - buf));
+
+  ptr = strrchr(ptr, '\000');
+  strncat(ptr, msg1, sizeof(buf) - (ptr - buf));
+
+  ptr = strrchr(ptr, '\000');
+  if (HANDLE_EINTR(write(2, buf, ptr - buf))) { }
+
+  return -ERR;
+}
+
+static Sandbox::ErrorCode evaluator(int sysno) {
   switch (sysno) {
   #if defined(__NR_accept)
     case __NR_accept: case __NR_accept4:
@@ -121,7 +220,7 @@ static playground2::Sandbox::ErrorCode evaluator(int sysno) {
     case __NR_time:
     case __NR_uname:
     case __NR_write: case __NR_writev:
-      return playground2::Sandbox::SB_ALLOWED;
+      return Sandbox::SB_ALLOWED;
 
   // The following system calls are temporarily permitted. This must be
   // tightened later. But we currently don't implement enough of the sandboxing
@@ -153,11 +252,11 @@ static playground2::Sandbox::ErrorCode evaluator(int sysno) {
   case __NR_clone:
   case __NR_munmap: case __NR_mprotect: case __NR_madvise:
   case __NR_remap_file_pages:
-      return playground2::Sandbox::SB_ALLOWED;
+      return Sandbox::SB_ALLOWED;
 
   // Everything that isn't explicitly allowed is denied.
   default:
-    return (playground2::Sandbox::ErrorCode)ERR;
+    return Sandbox::ErrorCode(defaultHandler, NULL);
   }
 }
 
@@ -177,10 +276,8 @@ static void *sendmsgStressThreadFnc(void *arg) {
     }
     size_t len = 4;
     char buf[4];
-    if (!playground2::Util::sendFds(fds[0], "test", 4,
-                                    fds[1], fds[1], fds[1], -1) ||
-        !playground2::Util::getFds(fds[1], buf, &len,
-                                   fds+2, fds+3, fds+4, NULL) ||
+    if (!Util::sendFds(fds[0], "test", 4, fds[1], fds[1], fds[1], -1) ||
+        !Util::getFds(fds[1], buf, &len, fds+2, fds+3, fds+4, NULL) ||
         len != 4 ||
         memcmp(buf, "test", len) ||
         write(fds[2], "demo", 4) != 4 ||
@@ -203,14 +300,14 @@ int main(int argc, char *argv[]) {
   if (argc) { }
   if (argv) { }
   int proc_fd = open("/proc", O_RDONLY|O_DIRECTORY);
-  if (playground2::Sandbox::supportsSeccompSandbox(proc_fd) !=
-      playground2::Sandbox::STATUS_AVAILABLE) {
+  if (Sandbox::supportsSeccompSandbox(proc_fd) !=
+      Sandbox::STATUS_AVAILABLE) {
     perror("sandbox");
     _exit(1);
   }
-  playground2::Sandbox::setProcFd(proc_fd);
-  playground2::Sandbox::setSandboxPolicy(evaluator, NULL);
-  playground2::Sandbox::startSandbox();
+  Sandbox::setProcFd(proc_fd);
+  Sandbox::setSandboxPolicy(evaluator, NULL);
+  Sandbox::startSandbox();
 
   // Check that we can create threads
   pthread_t thr;
@@ -268,8 +365,8 @@ int main(int argc, char *argv[]) {
   }
   size_t len = 4;
   char buf[4];
-  if (!playground2::Util::sendFds(fds[0], "test", 4, fds[1], -1) ||
-      !playground2::Util::getFds(fds[1], buf, &len, fds+2, NULL) ||
+  if (!Util::sendFds(fds[0], "test", 4, fds[1], -1) ||
+      !Util::getFds(fds[1], buf, &len, fds+2, NULL) ||
       len != 4 ||
       memcmp(buf, "test", len) ||
       write(fds[2], "demo", 4) != 4 ||
