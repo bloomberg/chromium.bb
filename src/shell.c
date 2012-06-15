@@ -844,8 +844,6 @@ set_busy_cursor(struct shell_surface *shsurf, struct wl_pointer *pointer)
 {
 	struct shell_grab *grab;
 	struct desktop_shell *shell = shsurf->shell;
-	struct weston_seat *seat = (struct weston_seat *) pointer->seat;
-	struct weston_surface *sprite;
 
 	grab = malloc(sizeof *grab);
 	if (!grab)
@@ -855,9 +853,6 @@ set_busy_cursor(struct shell_surface *shsurf, struct wl_pointer *pointer)
 	grab->grab.focus = &shsurf->surface->surface;
 	wl_pointer_start_grab(pointer, &grab->grab);
 	wl_pointer_set_focus(pointer, &shell->busy_surface->surface, 0, 0);
-
-	sprite = (struct weston_surface *) seat->sprite;
-	shell->busy_surface->output = sprite->output;
 }
 
 static void
