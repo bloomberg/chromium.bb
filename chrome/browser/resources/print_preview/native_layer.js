@@ -129,12 +129,9 @@ cr.define('print_preview', function() {
       assert(printTicketStore.isTicketValidForPreview(),
              'Trying to generate preview when ticket is not valid');
 
-      var pageRanges = [];
-      if (requestId > 0 &&
-          !printTicketStore.isDocumentModifiable &&
-          printTicketStore.hasPageRangeCapability()) {
-        pageRanges = printTicketStore.getPageNumberSet().getPageRanges();
-      }
+      var pageRanges =
+          (requestId > 0 && printTicketStore.hasPageRangeCapability()) ?
+          printTicketStore.getPageNumberSet().getPageRanges() : [];
 
       var ticket = {
         'pageRange': pageRanges, // pageRanges,
@@ -180,7 +177,9 @@ cr.define('print_preview', function() {
 
       chrome.send(
           'getPreview',
-          [JSON.stringify(ticket), -1, printTicketStore.isDocumentModifiable]);
+          [JSON.stringify(ticket),
+           requestId > 0 ? printTicketStore.pageCount : -1,
+           printTicketStore.isDocumentModifiable]);
     },
 
     /**

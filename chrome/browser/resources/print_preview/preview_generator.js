@@ -223,14 +223,14 @@ cr.define('print_preview', function() {
      * Dispatches a PREVIEW_START event. Signals that the preview should be
      * reloaded.
      * @param {string} previewUid Unique identifier of the preview.
+     * @param {number} index Index of the first page of the preview.
      * @private
      */
-    dispatchPreviewStartEvent_: function(previewUid) {
+    dispatchPreviewStartEvent_: function(previewUid, index) {
       var previewStartEvent = new cr.Event(
           PreviewGenerator.EventType.PREVIEW_START);
-      var index = -1;
-      if (this.printTicketStore_.isDocumentModifiable) {
-        index = 0;
+      if (!this.printTicketStore_.isDocumentModifiable) {
+        index = -1;
       }
       previewStartEvent.previewUrl =
           'chrome://print/' + previewUid + '/' + index + '/print.pdf';
@@ -325,8 +325,9 @@ cr.define('print_preview', function() {
       if (this.inFlightRequestId_ != event.previewResponseId) {
         return; // Ignore old response.
       }
-      this.dispatchPreviewStartEvent_(event.previewUid);
       var pageNumberSet = this.printTicketStore_.getPageNumberSet();
+      this.dispatchPreviewStartEvent_(
+          event.previewUid, pageNumberSet.getPageNumberAt(0) - 1);
       for (var i = 0; i < pageNumberSet.size; i++) {
         var pageNumber = pageNumberSet.getPageNumberAt(i);
         this.dispatchPageReadyEvent_(i, pageNumber, event.previewUid);
@@ -349,7 +350,7 @@ cr.define('print_preview', function() {
         var previewIndex = this.printTicketStore_.getPageNumberSet()
             .getPageNumberIndex(pageNumber);
         if (previewIndex == 0) {
-          this.dispatchPreviewStartEvent_(event.previewUid);
+          this.dispatchPreviewStartEvent_(event.previewUid, event.pageIndex);
         }
         this.dispatchPageReadyEvent_(
             previewIndex, pageNumber, event.previewUid);
@@ -369,7 +370,7 @@ cr.define('print_preview', function() {
       // Dispatch a PREVIEW_START event since non-modifiable documents don't
       // trigger PAGE_READY events.
       if (!this.printTicketStore_.isDocumentModifiable) {
-        this.dispatchPreviewStartEvent_(event.previewUid);
+        this.dispatchPreviewStartEvent_(event.previewUid, 0);
       }
       cr.dispatchSimpleEvent(this, PreviewGenerator.EventType.DOCUMENT_READY);
     },
