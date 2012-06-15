@@ -99,7 +99,15 @@ class KeyRewriterTest : public testing::Test {
         keycode_num_pad_up_(XKeysymToKeycode(display_, XK_KP_Up)),
         keycode_super_l_(XKeysymToKeycode(display_, XK_Super_L)),
         keycode_super_r_(XKeysymToKeycode(display_, XK_Super_R)),
-        keycode_void_symbol_(XKeysymToKeycode(display_, XK_VoidSymbol)) {
+        keycode_void_symbol_(XKeysymToKeycode(display_, XK_VoidSymbol)),
+        keycode_delete_(XKeysymToKeycode(display_, XK_Delete)),
+        keycode_backspace_(XKeysymToKeycode(display_, XK_BackSpace)),
+        keycode_up_(XKeysymToKeycode(display_, XK_Up)),
+        keycode_down_(XKeysymToKeycode(display_, XK_Down)),
+        keycode_prior_(XKeysymToKeycode(display_, XK_Prior)),
+        keycode_next_(XKeysymToKeycode(display_, XK_Next)),
+        keycode_home_(XKeysymToKeycode(display_, XK_Home)),
+        keycode_end_(XKeysymToKeycode(display_, XK_End)) {
   }
   virtual ~KeyRewriterTest() {}
 
@@ -139,6 +147,14 @@ class KeyRewriterTest : public testing::Test {
   const KeyCode keycode_super_l_;
   const KeyCode keycode_super_r_;
   const KeyCode keycode_void_symbol_;
+  const KeyCode keycode_delete_;
+  const KeyCode keycode_backspace_;
+  const KeyCode keycode_up_;
+  const KeyCode keycode_down_;
+  const KeyCode keycode_prior_;
+  const KeyCode keycode_next_;
+  const KeyCode keycode_home_;
+  const KeyCode keycode_end_;
 };
 
 }  // namespace
@@ -1374,5 +1390,150 @@ TEST_F(KeyRewriterTest, TestRewriteModifiersRemapToCapsLock) {
                                       keycode_caps_lock_,
                                       LockMask));
   EXPECT_FALSE(xkeyboard.caps_lock_is_enabled_);
+}
+
+TEST_F(KeyRewriterTest, TestRewriteBackspaceAndArrowKeys) {
+  TestingPrefService prefs;
+  KeyRewriter rewriter;
+  rewriter.set_pref_service_for_testing(&prefs);
+
+  // Alt+Backspace -> Delete
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_DELETE,
+                                      0,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_delete_,
+                                      0U,
+                                      KeyPress),
+            GetRewrittenEventAsString(&rewriter,
+                                      ui::VKEY_BACK,
+                                      ui::EF_ALT_DOWN,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_backspace_,
+                                      Mod1Mask));
+
+  // Ctrl+Alt+Backspace -> Ctrl+Delete
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_DELETE,
+                                      ui::EF_CONTROL_DOWN,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_delete_,
+                                      ControlMask,
+                                      KeyPress),
+            GetRewrittenEventAsString(&rewriter,
+                                      ui::VKEY_BACK,
+                                      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_backspace_,
+                                      Mod1Mask | ControlMask));
+
+  // Alt+Up -> Prior
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_PRIOR,
+                                      0,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_prior_,
+                                      0U,
+                                      KeyPress),
+            GetRewrittenEventAsString(&rewriter,
+                                      ui::VKEY_UP,
+                                      ui::EF_ALT_DOWN,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_up_,
+                                      Mod1Mask));
+
+  // Alt+Down -> Next
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_NEXT,
+                                      0,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_next_,
+                                      0U,
+                                      KeyPress),
+            GetRewrittenEventAsString(&rewriter,
+                                      ui::VKEY_DOWN,
+                                      ui::EF_ALT_DOWN,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_down_,
+                                      Mod1Mask));
+
+  // Ctrl+Alt+Up -> Home
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_HOME,
+                                      0,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_home_,
+                                      0U,
+                                      KeyPress),
+            GetRewrittenEventAsString(&rewriter,
+                                      ui::VKEY_UP,
+                                      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_up_,
+                                      Mod1Mask | ControlMask));
+
+  // Ctrl+Alt+Down -> End
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_END,
+                                      0,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_end_,
+                                      0U,
+                                      KeyPress),
+            GetRewrittenEventAsString(&rewriter,
+                                      ui::VKEY_DOWN,
+                                      ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_down_,
+                                      Mod1Mask | ControlMask));
+
+  // Shift+Ctrl+Alt+Down -> Shift+End
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_END,
+                                      ui::EF_SHIFT_DOWN,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_end_,
+                                      ShiftMask,
+                                      KeyPress),
+            GetRewrittenEventAsString(&rewriter,
+                                      ui::VKEY_DOWN,
+                                      ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN |
+                                      ui::EF_CONTROL_DOWN,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_down_,
+                                      ShiftMask | Mod1Mask | ControlMask));
+}
+
+TEST_F(KeyRewriterTest, TestRewriteBackspaceAndArrowKeysWithSearchRemapped) {
+  // Remap Search to Control.
+  TestingPrefService prefs;
+  chromeos::Preferences::RegisterUserPrefs(&prefs);
+  IntegerPrefMember search;
+  search.Init(prefs::kLanguageXkbRemapSearchKeyTo, &prefs, NULL);
+  search.SetValue(chromeos::input_method::kControlKey);
+
+  KeyRewriter rewriter;
+  rewriter.set_pref_service_for_testing(&prefs);
+
+  // Alt+Search+Down -> End
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_END,
+                                      0,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_end_,
+                                      0U,
+                                      KeyPress),
+            GetRewrittenEventAsString(&rewriter,
+                                      ui::VKEY_DOWN,
+                                      ui::EF_ALT_DOWN,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_down_,
+                                      Mod1Mask | Mod4Mask));
+
+  // Shift+Alt+Search+Down -> Shift+End
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_END,
+                                      ui::EF_SHIFT_DOWN,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_end_,
+                                      ShiftMask,
+                                      KeyPress),
+            GetRewrittenEventAsString(&rewriter,
+                                      ui::VKEY_DOWN,
+                                      ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
+                                      ui::ET_KEY_PRESSED,
+                                      keycode_down_,
+                                      ShiftMask | Mod1Mask | Mod4Mask));
 }
 #endif  // OS_CHROMEOS

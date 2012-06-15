@@ -109,6 +109,14 @@ class KeyRewriter : public ash::KeyRewriterDelegate,
   // press/release with the lock.  Returns true when |event| is rewritten.
   bool RewriteNumPadKeys(aura::KeyEvent* event);
 
+  // Rewrites Backspace and Arrow keys following the Chrome OS keyboard spec.
+  //  * Alt+Backspace -> Delete
+  //  * Alt+Up -> Prior (aka PageUp)
+  //  * Alt+Down -> Next (aka PageDown)
+  //  * Ctrl+Alt+Up -> Home
+  //  * Ctrl+Alt+Down -> End
+  bool RewriteBackspaceAndArrowKeys(aura::KeyEvent* event);
+
   // Overwrites |event| with the keycodes and flags.
   void OverwriteEvent(aura::KeyEvent* event,
                       unsigned int new_native_keycode,
@@ -134,6 +142,11 @@ class KeyRewriter : public ash::KeyRewriterDelegate,
   unsigned int windows_l_xkeycode_;
   unsigned int caps_lock_xkeycode_;
   unsigned int void_symbol_xkeycode_;
+  unsigned int delete_xkeycode_;
+  unsigned int home_xkeycode_;
+  unsigned int end_xkeycode_;
+  unsigned int prior_xkeycode_;
+  unsigned int next_xkeycode_;
   unsigned int kp_0_xkeycode_;
   unsigned int kp_1_xkeycode_;
   unsigned int kp_2_xkeycode_;

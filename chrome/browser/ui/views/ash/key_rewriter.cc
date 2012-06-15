@@ -246,6 +246,11 @@ void KeyRewriter::RefreshKeycodes() {
   windows_l_xkeycode_ = XKeysymToKeycode(display, XK_Super_L);
   caps_lock_xkeycode_ = XKeysymToKeycode(display, XK_Caps_Lock);
   void_symbol_xkeycode_ = XKeysymToKeycode(display, XK_VoidSymbol);
+  delete_xkeycode_ = XKeysymToKeycode(display, XK_Delete);
+  home_xkeycode_ = XKeysymToKeycode(display, XK_Home);
+  end_xkeycode_ = XKeysymToKeycode(display, XK_End);
+  prior_xkeycode_ = XKeysymToKeycode(display, XK_Prior);
+  next_xkeycode_ = XKeysymToKeycode(display, XK_Next);
   kp_0_xkeycode_ = XKeysymToKeycode(display, XK_KP_0);
   kp_1_xkeycode_ = XKeysymToKeycode(display, XK_KP_1);
   kp_2_xkeycode_ = XKeysymToKeycode(display, XK_KP_2);
@@ -279,6 +284,16 @@ KeyCode KeyRewriter::NativeKeySymToNativeKeycode(KeySym keysym) {
       return caps_lock_xkeycode_;
     case XK_VoidSymbol:
       return void_symbol_xkeycode_;
+    case XK_Delete:
+      return delete_xkeycode_;
+    case XK_Home:
+      return home_xkeycode_;
+    case XK_End:
+      return end_xkeycode_;
+    case XK_Prior:
+      return prior_xkeycode_;
+    case XK_Next:
+      return next_xkeycode_;
     case XK_KP_0:
       return kp_0_xkeycode_;
     case XK_KP_1:
@@ -312,6 +327,7 @@ void KeyRewriter::Rewrite(aura::KeyEvent* event) {
   RewriteCommandToControl(event);
   RewriteModifiers(event);
   RewriteNumPadKeys(event);
+  RewriteBackspaceAndArrowKeys(event);
   // TODO(yusukes): Implement crosbug.com/27167 (allow sending function keys).
 }
 
@@ -535,6 +551,53 @@ bool KeyRewriter::RewriteNumPadKeys(aura::KeyEvent* event) {
       break;
     default:
       break;
+  }
+#else
+  // TODO(yusukes): Support Ash on other platforms if needed.
+#endif
+  return rewritten;
+}
+
+bool KeyRewriter::RewriteBackspaceAndArrowKeys(aura::KeyEvent* event) {
+  bool rewritten = false;
+#if defined(OS_CHROMEOS)
+  XEvent* xev = event->native_event();
+  XKeyEvent* xkey = &(xev->xkey);
+
+  const KeySym keysym = XLookupKeysym(xkey, 0);
+  if (keysym == XK_BackSpace && (xkey->state & Mod1Mask)) {
+    // Remap Alt+Backspace to Delete.
+    OverwriteEvent(event, delete_xkeycode_, xkey->state & ~Mod1Mask,
+                   ui::VKEY_DELETE, event->flags() & ~ui::EF_ALT_DOWN);
+    rewritten = true;
+  } else if (keysym == XK_Up &&
+             (xkey->state & ControlMask) && (xkey->state & Mod1Mask)) {
+    // Remap Ctrl+Alt+Up to Home.
+    OverwriteEvent(event,
+                   home_xkeycode_,
+                   xkey->state & ~(Mod1Mask | ControlMask),
+                   ui::VKEY_HOME,
+                   event->flags() & ~(ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN));
+    rewritten = true;
+  } else if (keysym == XK_Up && (xkey->state & Mod1Mask)) {
+    // Remap Alt+Up to Prior (aka PageUp).
+    OverwriteEvent(event, prior_xkeycode_, xkey->state & ~Mod1Mask,
+                 ui::VKEY_PRIOR, event->flags() & ~ui::EF_ALT_DOWN);
+    rewritten = true;
+  } else if (keysym == XK_Down &&
+             (xkey->state & ControlMask) && (xkey->state & Mod1Mask)) {
+    // Remap Ctrl+Alt+Down to End.
+    OverwriteEvent(event,
+                   end_xkeycode_,
+                   xkey->state & ~(Mod1Mask | ControlMask),
+                   ui::VKEY_END,
+                   event->flags() & ~(ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN));
+    rewritten = true;
+  } else if (keysym == XK_Down && (xkey->state & Mod1Mask)) {
+    // Remap Alt+Down to Next (aka PageDown).
+    OverwriteEvent(event, next_xkeycode_, xkey->state & ~Mod1Mask,
+                   ui::VKEY_NEXT, event->flags() & ~ui::EF_ALT_DOWN);
+    rewritten = true;
   }
 #else
   // TODO(yusukes): Support Ash on other platforms if needed.
