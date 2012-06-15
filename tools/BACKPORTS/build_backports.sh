@@ -126,7 +126,7 @@ while read name id comment ; do
 	+++ native_client/tools/glibc_download.sh
 	@@ -42 +42 @@
 	-  for ((j=glibc_revision+1;j<glibc_revision+revisions_count;j++)); do
-	+  for ((j=\${glibc_revision%@*}+1;j<\${glibc_revision%@*}+revisions_count;j++)); do
+	+  for ((j=\${glibc_revision%~*}+1;j<\${glibc_revision%~*}+revisions_count;j++)); do
 	--- native_client/tools/glibc_revision.sh
 	+++ native_client/tools/glibc_revision.sh
 	@@ -13 +13 @@
@@ -134,7 +134,7 @@ while read name id comment ; do
 	+for i in ../../../VERSIONS ../../../build_backports.sh REVISIONS glibc_revision.sh Makefile ; do
 	@@ -20 +20 @@
 	-echo "\$REVISION"
-	+echo "\$REVISION@$name"
+	+echo "\$REVISION~$name"
 	END
       declare -r rev="$(native_client/tools/glibc_revision.sh)"
       patch -p0 <<-END
@@ -250,7 +250,7 @@ while read name id comment ; do
 	+rm -rf ../scons-out sdk-out sdk ../toolchain BUILD/*
 	@@ -61 +61 @@
 	-      \${GS_BASE}/latest/naclsdk_\${PLATFORM}_x86.tgz
-	+      \${GS_BASE}/latest@"$name"/naclsdk_\${PLATFORM}_x86.tgz
+	+      \${GS_BASE}/latest~"$name"/naclsdk_\${PLATFORM}_x86.tgz
 	END
       elif [[ "$name" == ppapi1[567] ]]; then
 	patch -p0 <<-END
@@ -261,7 +261,7 @@ while read name id comment ; do
 	+rm -rf ../scons-out sdk-out sdk ../toolchain BUILD/*
 	@@ -69 +69 @@
 	-    for destrevision in \${BUILDBOT_GOT_REVISION} latest ; do
-	+    for destrevision in \${BUILDBOT_GOT_REVISION} latest@"$name" ; do
+	+    for destrevision in \${BUILDBOT_GOT_REVISION} latest~"$name" ; do
 	@@ -73 +73 @@
 	-          \${GS_BASE}/\${destrevision}/naclsdk_\${PLATFORM}_x86.\${suffix}
 	+          \${GS_BASE}/"\${destrevision}"/naclsdk_\${PLATFORM}_x86.\${suffix}
@@ -275,7 +275,7 @@ while read name id comment ; do
 	+rm -rf ../scons-out sdk-out sdk ../toolchain/*_newlib BUILD/*
 	@@ -69 +69 @@
 	-    for destrevision in \${BUILDBOT_GOT_REVISION} latest ; do
-	+    for destrevision in \${BUILDBOT_GOT_REVISION} latest@"$name" ; do
+	+    for destrevision in \${BUILDBOT_GOT_REVISION} latest~"$name" ; do
 	@@ -73 +73 @@
 	-          \${GS_BASE}/\${destrevision}/naclsdk_\${PLATFORM}_x86.\${suffix}
 	+          \${GS_BASE}/"\${destrevision}"/naclsdk_\${PLATFORM}_x86.\${suffix}
