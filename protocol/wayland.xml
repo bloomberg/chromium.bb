@@ -773,15 +773,30 @@
   </interface>
 
   <interface name="wl_pointer" version="1">
-    <request name="attach">
-      <description summary="set the pointer image">
-	Set the pointer's image.  This request only takes effect if
-	the pointer focus for this device is one of the requesting
-	clients surfaces.
+    <request name="set_cursor">
+      <description summary="set the pointer surface">
+	Set the pointer surface, i.e., the surface that contains the
+	pointer image. This request only takes effect if the pointer
+	focus for this device is one of the requesting client surfaces.
+	If there was a previous surface set with this request it is
+	replaced. If surface is NULL, the pointer image is hidden.
+
+	The parameters hotspot_x and hotspot_y define the position of
+	the pointer surface relative to the pointer location. Its
+	top-left corner is always at (x, y) - (hotspot_x, hotspot_y),
+	where (x, y) are the coordinates of the pointer location.
+
+	On surface.attach requests to the pointer surface, hotspot_x
+	and hotspot_y are decremented by the x and y parameters
+	passed to the request.
+
+	The hotspot can also be updated by passing the current set
+	pointer surface to this request with new values for hotspot_x
+	and/or hotspot_y.
       </description>
 
       <arg name="serial" type="uint"/>
-      <arg name="buffer" type="object" interface="wl_buffer"/>
+      <arg name="surface" type="object" interface="wl_surface"/>
       <arg name="hotspot_x" type="int"/>
       <arg name="hotspot_y" type="int"/>
     </request>
