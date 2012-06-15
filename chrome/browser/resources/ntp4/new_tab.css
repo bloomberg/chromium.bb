@@ -380,6 +380,7 @@ html[dir='rtl'] #chrome-web-store-title {
 }
 
 #vertical-separator {
+  -webkit-box-ordinal-group: 3;
   background-color: rgb(178, 178, 178);
   display: none;
   height: 20px;
@@ -390,7 +391,7 @@ html[dir='rtl'] #chrome-web-store-title {
 
 /* Show the separator only if one of the menus is visible. */
 .footer-menu-button:not(.invisible) ~ #vertical-separator {
-  display: inline-block;
+  display: block;
 }
 
 /* In trash mode, hide the menus and web store link. */
@@ -402,17 +403,20 @@ html[dir='rtl'] #chrome-web-store-title {
 }
 
 #footer .menu-container {
-  -webkit-align-items: center;
-  /* Put menus in a flexible box so the order can easily be swapped. */
-  display: -webkit-flex;
+  -webkit-box-align: center;
+  /* Put menus in a box so the order can easily be swapped. */
+  display: -webkit-box;
   height: 100%;
   margin: 0;
 }
 
-/* Put the recently closed menu to the left when it's not visible. */
 #recently-closed-menu-button.invisible {
-  -webkit-flex-order: -1;
   visibility: hidden;
+}
+
+#recently-closed-menu-button:not(.invisible) {
+  /* Put the recently closed menu to the right when it's visible. */
+  -webkit-box-ordinal-group: 2;
 }
 
 #other-sessions-menu-button.invisible {
