@@ -388,8 +388,13 @@ class CONTENT_EXPORT ContentBrowserClient {
   // else we should do with the file.
   virtual std::string GetDefaultDownloadName();
 
-  // Returns true if given origin can use TCP/UDP sockets.
-  virtual bool AllowSocketAPI(BrowserContext* browser_context, const GURL& url);
+  // Returns true if renderer processes can use Pepper TCP/UDP sockets from
+  // the given origin.
+  virtual bool AllowPepperSocketAPI(BrowserContext* browser_context,
+                                    const GURL& url);
+
+  // Returns true if renderer processes can use private Pepper File APIs.
+  virtual bool AllowPepperPrivateFileAPI();
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Can return an optional fd for crash handling, otherwise returns -1. The

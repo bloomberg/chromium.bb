@@ -248,7 +248,7 @@ FilePath PepperTrustedFileMessageFilter::ValidateAndConvertPepperFilePath(
     const ppapi::PepperFilePath& pepper_path,
     int flags) {
   FilePath file_path;  // Empty path returned on error.
-  switch(pepper_path.domain()) {
+  switch (pepper_path.domain()) {
     case ppapi::PepperFilePath::DOMAIN_ABSOLUTE:
       if (pepper_path.path().IsAbsolute() &&
           ChildProcessSecurityPolicyImpl::GetInstance()->HasPermissionsForFile(
@@ -256,9 +256,46 @@ FilePath PepperTrustedFileMessageFilter::ValidateAndConvertPepperFilePath(
         file_path = pepper_path.path();
       break;
     case ppapi::PepperFilePath::DOMAIN_MODULE_LOCAL:
+      // This filter provides the module name portion of the path to prevent
+      // plugins from accessing each other's data.
       if (!pepper_path.path().IsAbsolute() &&
           !pepper_path.path().ReferencesParent())
         file_path = plugin_data_directory_.Append(pepper_path.path());
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+  return file_path;
+}
+
+PepperUnsafeFileMessageFilter::PepperUnsafeFileMessageFilter(
+    int child_id,
+    const FilePath& profile_data_directory)
+    : PepperFileMessageFilter(child_id) {
+  profile_data_directory_ = GetDataDirName(profile_data_directory);
+}
+
+PepperUnsafeFileMessageFilter::~PepperUnsafeFileMessageFilter() {
+}
+
+FilePath PepperUnsafeFileMessageFilter::ValidateAndConvertPepperFilePath(
+    const ppapi::PepperFilePath& pepper_path,
+    int flags) {
+  FilePath file_path;  // Empty path returned on error.
+  switch (pepper_path.domain()) {
+    case ppapi::PepperFilePath::DOMAIN_ABSOLUTE:
+      if (pepper_path.path().IsAbsolute() &&
+          ChildProcessSecurityPolicyImpl::GetInstance()->HasPermissionsForFile(
+              child_id(), pepper_path.path(), flags))
+        file_path = pepper_path.path();
+      break;
+    case ppapi::PepperFilePath::DOMAIN_MODULE_LOCAL:
+      // The message supplies the module portion of the path (so it can't
+      // really be trusted).
+      if (!pepper_path.path().IsAbsolute() &&
+          !pepper_path.path().ReferencesParent())
+        file_path = profile_data_directory_.Append(pepper_path.path());
       break;
     default:
       NOTREACHED();
