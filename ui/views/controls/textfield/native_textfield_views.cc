@@ -147,6 +147,19 @@ void NativeTextfieldViews::OnMouseReleased(const MouseEvent& event) {
   OnAfterUserAction();
 }
 
+ui::GestureStatus NativeTextfieldViews::OnGestureEvent(
+    const GestureEvent& event) {
+  if (event.type() == ui::ET_GESTURE_TAP) {
+    OnBeforeUserAction();
+    textfield_->RequestFocus();
+    if (MoveCursorTo(event.location(), false))
+      SchedulePaint();
+    OnAfterUserAction();
+    return ui::GESTURE_STATUS_CONSUMED;
+  }
+  return TouchSelectionClientView::OnGestureEvent(event);
+}
+
 bool NativeTextfieldViews::OnKeyPressed(const KeyEvent& event) {
   // OnKeyPressed/OnKeyReleased/OnFocus/OnBlur will never be invoked on
   // NativeTextfieldViews as it will never gain focus.
