@@ -121,7 +121,7 @@ class ProjectAndPathTest(mox.MoxTestBase):
   FAKE_SRCROOT = '/there/is/no/srcroot'
   FAKE_EBUILD_PATH = '/path/to/test_package/test_package-9999.ebuild'
 
-  def _MockParseWorkonVariables(self, fake_project, _fake_localname,
+  def _MockParseWorkonVariables(self, fake_projects, _fake_localname,
                                 _fake_subdir, fake_ebuild_contents):
     """Mock the necessary calls, start Replay mode, call GetSourcePath()."""
     self.mox.StubOutWithMock(fileinput, 'input')
@@ -132,9 +132,10 @@ class ProjectAndPathTest(mox.MoxTestBase):
     fileinput.input(self.FAKE_EBUILD_PATH).AndReturn('')
     open(self.FAKE_EBUILD_PATH, 'r').AndReturn(
         contextlib.closing(StringIO.StringIO(fake_ebuild_contents)))
-    os.path.isdir(mox.IgnoreArg()).AndReturn(True)
-    portage_utilities.EBuild.GetGitProjectName(
-        mox.IgnoreArg()).AndReturn(fake_project)
+    for p in fake_projects:
+      os.path.isdir(mox.IgnoreArg()).AndReturn(True)
+      portage_utilities.EBuild.GetGitProjectName(
+          mox.IgnoreArg()).AndReturn(p)
 
     self.mox.ReplayAll()
 
@@ -146,9 +147,9 @@ class ProjectAndPathTest(mox.MoxTestBase):
     self.mox.VerifyAll()
     return result
 
-  def testParseWorkonVariables(self):
-    """Test shell parsing of the variables provided by ebuild."""
-    fake_project = 'my_project'
+  def testParseLegacyWorkonVariables(self):
+    """Tests if ebuilds in a single item format are correctly parsed."""
+    fake_project = 'my_project1'
     fake_localname = 'foo'
     fake_subdir = 'bar'
     fake_ebuild_contents = """
@@ -157,10 +158,34 @@ CROS_WORKON_LOCALNAME=%s
 CROS_WORKON_SUBDIR=%s
     """ % (fake_project, fake_localname, fake_subdir)
     project, subdir = self._MockParseWorkonVariables(
-        fake_project, fake_localname, fake_subdir, fake_ebuild_contents)
-    self.assertEquals(project, fake_project)
-    self.assertEquals(subdir, os.path.join(
-        self.FAKE_SRCROOT, 'platform', '%s/%s' % (fake_localname, fake_subdir)))
+        [fake_project], [fake_localname], [fake_subdir], fake_ebuild_contents)
+    self.assertEquals(project, [fake_project])
+    self.assertEquals(subdir, [os.path.join(
+       self.FAKE_SRCROOT, 'platform', '%s/%s' % (fake_localname, fake_subdir))])
+
+  def testParseArrayWorkonVariables(self):
+    """Tests if ebuilds in an array format are correctly parsed."""
+    fake_projects = ['my_project1', 'my_project2', 'my_project3']
+    fake_localname = ['foo', 'bar', 'bas']
+    fake_subdir = ['sub1', 'sub2', 'sub3']
+    # The test content is formatted using the same function that
+    # formats ebuild output, ensuring that we can parse our own
+    # products.
+    fake_ebuild_contents = """
+CROS_WORKON_PROJECT=%s
+CROS_WORKON_LOCALNAME=%s
+CROS_WORKON_SUBDIR=%s
+    """ % (portage_utilities.EBuild.FormatBashArray(fake_projects),
+           portage_utilities.EBuild.FormatBashArray(fake_localname),
+           portage_utilities.EBuild.FormatBashArray(fake_subdir))
+    project, subdir = self._MockParseWorkonVariables(
+        fake_projects, fake_localname, fake_subdir, fake_ebuild_contents)
+    self.assertEquals(project, fake_projects)
+    fake_path = ['%s/%s' % (fake_localname[i], fake_subdir[i])
+                 for i in range(0, len(fake_projects))]
+    fake_path = map(lambda x: os.path.realpath(
+        os.path.join(self.FAKE_SRCROOT, 'platform', x)), fake_path)
+    self.assertEquals(subdir, fake_path)
 
 
 class StubEBuild(portage_utilities.EBuild):
@@ -173,8 +198,13 @@ class StubEBuild(portage_utilities.EBuild):
     pass
 
   def GetCommitId(self, srcpath):
-    if srcpath == 'p1_path':
-      return 'my_id'
+    id_map = {
+      'p1_path' : 'my_id',
+      'p1_path1' : 'my_id1',
+      'p1_path2' : 'my_id2'
+    }
+    if srcpath in id_map:
+      return id_map[srcpath]
     else:
       return 'you_lose'
 
@@ -186,8 +216,12 @@ class EBuildRevWorkonTest(mox.MoxTestBase):
   # loop.
   _mock_ebuild = ['EAPI=2\n',
                   'CROS_WORKON_COMMIT=old_id\n',
-                  'KEYWORDS=\"~x86 ~arm\"\n',
+                  'KEYWORDS=\"~x86 ~arm ~amd64\"\n',
                   'src_unpack(){}\n']
+  _mock_ebuild_multi = ['EAPI=2\n',
+                        'CROS_WORKON_COMMIT=("old_id1","old_id2")\n',
+                        'KEYWORDS=\"~x86 ~arm ~amd64\"\n',
+                        'src_unpack(){}\n']
 
   def setUp(self):
     mox.MoxTestBase.setUp(self)
@@ -198,7 +232,7 @@ class EBuildRevWorkonTest(mox.MoxTestBase):
     self.m_ebuild = StubEBuild(ebuild_path)
     self.revved_ebuild_path = package_name + '-r2.ebuild'
 
-  def createRevWorkOnMocks(self, ebuild_content, rev):
+  def createRevWorkOnMocks(self, ebuild_content, rev, multi=False):
     self.mox.StubOutWithMock(os.path, 'exists')
     self.mox.StubOutWithMock(cros_build_lib, 'Die')
     self.mox.StubOutWithMock(portage_utilities.shutil, 'copyfile')
@@ -211,10 +245,18 @@ class EBuildRevWorkonTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(portage_utilities.EBuild, 'GetSourcePath')
     self.mox.StubOutWithMock(portage_utilities.EBuild, 'GetTreeId')
 
-    portage_utilities.EBuild.GetSourcePath('/sources').AndReturn(
-        ('fake_project1', 'p1_path'))
+    if multi:
+      portage_utilities.EBuild.GetSourcePath('/sources').AndReturn(
+          (['fake_project1','fake_project2'], ['p1_path1','p1_path2']))
+    else:
+      portage_utilities.EBuild.GetSourcePath('/sources').AndReturn(
+          (['fake_project1'], ['p1_path']))
     portage_utilities.EBuild.GetVersion('/sources', '0.0.1').AndReturn('0.0.1')
-    portage_utilities.EBuild.GetTreeId('p1_path').AndReturn('treehash')
+    if multi:
+      portage_utilities.EBuild.GetTreeId('p1_path1').AndReturn('treehash1')
+      portage_utilities.EBuild.GetTreeId('p1_path2').AndReturn('treehash2')
+    else:
+      portage_utilities.EBuild.GetTreeId('p1_path').AndReturn('treehash')
 
     ebuild_9999 = self.m_ebuild._unstable_ebuild_path
     os.path.exists(ebuild_9999).AndReturn(True)
@@ -225,10 +267,15 @@ class EBuildRevWorkonTest(mox.MoxTestBase):
     m_file = self.mox.CreateMock(file)
     portage_utilities.fileinput.input(self.revved_ebuild_path,
                                       inplace=1).AndReturn(ebuild_content)
-    m_file.write('CROS_WORKON_COMMIT="my_id"\n')
-    m_file.write('CROS_WORKON_TREE="treehash"\n')
+    if multi:
+      m_file.write('CROS_WORKON_COMMIT=("my_id1" "my_id2")\n')
+      m_file.write('CROS_WORKON_TREE=("treehash1" "treehash2")\n')
+    else:
+      m_file.write('CROS_WORKON_COMMIT="my_id"\n')
+      m_file.write('CROS_WORKON_TREE="treehash"\n')
+
     m_file.write('EAPI=2\n')
-    m_file.write('KEYWORDS=\"x86 arm\"\n')
+    m_file.write('KEYWORDS=\"x86 arm amd64\"\n')
     m_file.write('src_unpack(){}\n')
     # MarkAsStable() returns here
 
@@ -243,8 +290,12 @@ class EBuildRevWorkonTest(mox.MoxTestBase):
         portage_utilities.EBuild._RunCommand(
             ['git', 'rm', self.m_ebuild.ebuild_path],
             cwd=self.overlay)
-      message = portage_utilities._GIT_COMMIT_MESSAGE % (
-        self.m_ebuild.package, 'my_id')
+      if multi:
+        message = portage_utilities._GIT_COMMIT_MESSAGE % (
+          self.m_ebuild.package, 'my_id1,my_id2')
+      else:
+        message = portage_utilities._GIT_COMMIT_MESSAGE % (
+          self.m_ebuild.package, 'my_id')
       cros_build_lib.RunCommand(
           ['git', 'commit', '-a', '-m', message], cwd=self.overlay,
           print_cmd=False)
@@ -255,7 +306,17 @@ class EBuildRevWorkonTest(mox.MoxTestBase):
 
 
   def testRevWorkOnEBuild(self):
+    """Test Uprev of a single project ebuild."""
     m_file = self.createRevWorkOnMocks(self._mock_ebuild, rev=True)
+    self.mox.ReplayAll()
+    result = self.m_ebuild.RevWorkOnEBuild('/sources', redirect_file=m_file)
+    self.mox.VerifyAll()
+    self.assertEqual(result, 'category/test_package-0.0.1-r2')
+
+  def testRevWorkOnMultiEBuild(self):
+    """Test Uprev of a multi-project (array) ebuild."""
+    m_file = self.createRevWorkOnMocks(self._mock_ebuild_multi, rev=True,
+                                       multi=True)
     self.mox.ReplayAll()
     result = self.m_ebuild.RevWorkOnEBuild('/sources', redirect_file=m_file)
     self.mox.VerifyAll()
@@ -330,7 +391,7 @@ class EBuildRevWorkonTest(mox.MoxTestBase):
                                                 addEBuild)
 
     ebuild1.GetSourcePath(os.path.join(build_root, 'src')).AndReturn(
-        ('fake_project1', 'p1_path'))
+        (['fake_project1'], ['p1_path']))
 
     self.mox.StubOutWithMock(gerrit_helper, 'GetGerritHelperForChange')
     helper = self.mox.CreateMock(gerrit_helper.GerritHelper)

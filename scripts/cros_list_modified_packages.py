@@ -108,10 +108,10 @@ class WorkonPackageInfo(object):
     src_ebuild_mtime: The modification time of the source ebuild.
   """
 
-  def __init__(self, cp, mtime, project, src_ebuild_mtime):
+  def __init__(self, cp, mtime, projects, src_ebuild_mtime):
     self.cp = cp
     self.pkg_mtime = int(mtime)
-    self.project = project
+    self.projects = projects
     self.src_ebuild_mtime = src_ebuild_mtime
 
 
@@ -128,12 +128,26 @@ def ListWorkonPackages(board, host):
   return result.output.split()
 
 
+def ParseBashArray(value):
+  """Parse a valid bash array into python list."""
+  # The syntax for bash arrays is nontrivial, so let's use bash to do the
+  # heavy lifting for us.
+  sep = ','
+  # Because %s may contain bash comments (#), put a clever newline in the way.
+  cmd = ('CROS_WORKON_PROJECT=%s ;\n:; '
+        'IFS=%s; echo -n "${CROS_WORKON_PROJECT[*]}"' % (value, sep))
+  return cros_build_lib.RunCommandCaptureOutput(cmd, print_cmd=False,
+      shell=True).output.split(sep)
+
+
 def ListWorkonPackagesInfo(board, host):
   """Find the specified workon packages for the specified board.
 
   Args:
     board: The board to look at. If host is True, this should be set to None.
     host: Whether to look at workon packages for the host.
+
+  Returns a list of unique packages being worked on.
   """
   packages = ListWorkonPackages(board, host)
   if not packages:
@@ -144,14 +158,14 @@ def ListWorkonPackagesInfo(board, host):
   root, both = constants.SOURCE_ROOT, constants.BOTH_OVERLAYS
   for overlay in portage_utilities.FindOverlays(root, both, board):
     # Search ebuilds for project names, ignoring non-existent directories.
-    cmd = ['grep', '^CROS_WORKON_PROJECT=[^ \t#]*', '--include',
-           '*-9999.ebuild', '-Hsro'] + list(packages)
+    cmd = ['grep', '^CROS_WORKON_PROJECT=',
+           '--include', '*-9999.ebuild', '-Hsr'] + list(packages)
     result = cros_build_lib.RunCommandCaptureOutput(
         cmd, cwd=overlay, error_code_ok=True, print_cmd=False)
     for grep_line in result.output.splitlines():
       filename, _, line = grep_line.partition(':')
       value = line.partition('=')[2]
-      project = value.strip('"\'')
+      projects = ParseBashArray(value)
 
       # chromeos-base/power_manager/power_manager-9999
       # cp = chromeos-base/power_manager; pv = power_manager-9999
@@ -174,7 +188,7 @@ def ListWorkonPackagesInfo(board, host):
 
       # Write info into the results dictionary, overwriting any previous
       # values. This ensures that overlays override appropriately.
-      results[cp] = WorkonPackageInfo(cp, pkg_mtime, project, src_ebuild_mtime)
+      results[cp] = WorkonPackageInfo(cp, pkg_mtime, projects, src_ebuild_mtime)
 
   return results.values()
 
@@ -186,12 +200,15 @@ def ListModifiedWorkonPackages(board, host):
     board: The board to look at. If host is True, this should be set to None.
     host: Whether to look at workon packages for the host.
   """
-  packages = set(ListWorkonPackagesInfo(board, host))
+  packages = ListWorkonPackagesInfo(board, host)
   if packages:
-    projects = set(info.project for info in packages)
+    projects = []
+    for info in packages:
+      projects.extend(info.projects)
     mtimes = WorkonProjectsMonitor(projects).GetProjectModificationTimes()
     for info in packages:
-      mtime = int(max(mtimes.get(info.project, 0), info.src_ebuild_mtime))
+      mtime = int(max([mtimes.get(p, 0) for p in info.projects] +
+                      [info.src_ebuild_mtime]))
       if mtime >= info.pkg_mtime:
         yield info.cp
 

@@ -22,7 +22,7 @@ _PUBLIC_OVERLAY = '%(build_root)s/src/third_party/chromiumos-overlay'
 _OVERLAY_LIST_CMD = '%(build_root)s/src/platform/dev/host/cros_overlay_list'
 
 # Takes two strings, package_name and commit_id.
-_GIT_COMMIT_MESSAGE = 'Marking 9999 ebuild for %s with commit %s as stable.'
+_GIT_COMMIT_MESSAGE = 'Marking 9999 ebuild for %s with commit(s) %s as stable.'
 
 
 def FindOverlays(srcroot, overlay_type, board=None):
@@ -121,6 +121,12 @@ class EBuildVersionFormatException(Exception):
     super(EBuildVersionFormatException, self).__init__(message)
 
 
+class EbuildFormatIncorrectException(Exception):
+  def __init__(self, filename, message):
+    message = 'Ebuild %s has invalid format: %s ' % (filename, message)
+    super(EbuildFormatIncorrectException, self).__init__(message)
+
+
 class EBuild(object):
   """Wrapper class for information about an ebuild."""
 
@@ -168,7 +174,7 @@ class EBuild(object):
       if not written and not line.startswith('#'):
         for key, value in sorted(variables.items()):
           assert key is not None and value is not None
-          redirect_file.write('%s="%s"\n' % (key, value))
+          redirect_file.write('%s=%s\n' % (key, value))
         written = True
 
       # Mark KEYWORDS as stable by removing ~'s.
@@ -273,15 +279,43 @@ class EBuild(object):
 
     The path is guaranteed to exist, be a directory, and be absolute.
     """
+    sep = ','
     # Grab and evaluate CROS_WORKON variables from this ebuild.
-    cmd = ('export CROS_WORKON_LOCALNAME="%s" CROS_WORKON_PROJECT="%s"; '
-           'eval $(grep -E "^CROS_WORKON") && '
-           'echo $CROS_WORKON_PROJECT '
-           '$CROS_WORKON_LOCALNAME/$CROS_WORKON_SUBDIR'
-           % (self._pkgname, self._pkgname))
+
+    cmd = ('eval $(grep "^CROS_WORKON") && '
+           '( IFS=%s; '
+           'echo "${CROS_WORKON_PROJECT[*]}" && '
+           'echo "${CROS_WORKON_LOCALNAME[*]}" && '
+           'echo "${CROS_WORKON_SUBDIR[*]}"'
+           ')'
+           % sep)
+
+    extra_env = dict(CROS_WORKON_LOCALNAME=self._pkgname,
+                     CROS_WORKON_PROJECT=self._pkgname)
     with open(self._unstable_ebuild_path, 'r') as f:
-      project, subdir = self._RunCommand(cmd, shell=True,
-                                         input=f.read()).split()
+      projects_out, localnames_out, subdirs_out = self._RunCommand(
+          cmd, shell=True, input=f.read(),
+          extra_env=extra_env).splitlines()
+
+    projects = projects_out.split(sep)
+    localnames = localnames_out.split(sep)
+    subdirs = subdirs_out.split(sep)
+
+    # Sanity checks and completion.
+    # Each project specification has to have the same amount of items.
+    if len(projects) != len(localnames):
+      raise EbuildFormatIncorrectException(self._unstable_ebuild_path,
+          'Number of _PROJECT and _LOCALNAME items don\'t match.')
+    # Subdir must be either 0,1 or len(project)
+    if len(projects) != len(subdirs) and len(subdirs) > 1:
+      raise EbuildFormatIncorrectException(self._unstable_ebuild_path,
+          'Incorrect number of _SUBDIR items.')
+    # If there's one, apply it to all.
+    if len(subdirs) == 1:
+      subdirs = subdirs * len(projects)
+    # If there is none, make an empty list to avoid exceptions later.
+    if len(subdirs) == 0:
+      subdirs = [''] * len(projects)
 
     # Calculate srcdir.
     if self._category == 'chromeos-base':
@@ -289,20 +323,22 @@ class EBuild(object):
     else:
       dir_ = 'third_party'
 
-    subdir_path = os.path.realpath(os.path.join(srcroot, dir_, subdir))
+    subdir_paths = [os.path.realpath(os.path.join(srcroot, dir_, l, s))
+                    for l, s in zip(localnames, subdirs)]
 
-    if not os.path.isdir(subdir_path):
-      cros_build_lib.Die('Source repository %s '
-                         'for project %s does not exist.' % (
-                            subdir_path, self._pkgname))
-
-    real_project = self.GetGitProjectName(subdir_path)
-    if project != real_project:
-      cros_build_lib.Die('Project name mismatch for %s '
-                         '(found %s, expected %s)' % (
-                             subdir_path, real_project, project))
-
-    return project, subdir_path
+    for subdir_path, project in zip(subdir_paths, projects):
+      if not os.path.isdir(subdir_path):
+        cros_build_lib.Die('Source repository %s '
+                           'for project %s does not exist.' % (subdir_path,
+                                                               self._pkgname))
+      # Verify that we're grabbing the commit id from the right project name.
+      real_project = self.GetGitProjectName(subdir_path)
+      if project != real_project:
+        cros_build_lib.Die('Project name mismatch for %s '
+                           '(found %s, expected %s)' % (subdir_path,
+                                                        real_project,
+                                                        project))
+    return projects, subdir_paths
 
   def GetCommitId(self, srcdir):
     """Get the commit id for this ebuild."""
@@ -334,12 +370,12 @@ class EBuild(object):
     if not os.path.exists(vers_script):
       return default
 
-    _project, srcdir = self.GetSourcePath(srcroot)
+    srcdirs = self.GetSourcePath(srcroot)[1]
 
     # The chromeos-version script will output a usable raw version number,
     # or nothing in case of error or no available version
     try:
-      output = self._RunCommand([vers_script, srcdir]).strip()
+      output = self._RunCommand([vers_script] + srcdirs).strip()
     except cros_build_lib.RunCommandError as e:
       cros_build_lib.Die('Package %s chromeos-version.sh failed: %s' %
                          (self._pkgname, e))
@@ -347,9 +383,28 @@ class EBuild(object):
     if not output:
       cros_build_lib.Die('Package %s has a chromeos-version.sh script but '
                          'it returned no valid version for "%s"' %
-                         (self._pkgname, srcdir))
+                         (self._pkgname, ' '.join(srcdirs)))
 
     return output
+
+  @staticmethod
+  def FormatBashArray(unformatted_list):
+    """Returns a python list in a bash array format.
+
+    If the list only has one item, format as simple quoted value.
+    That is both backwards-compatible and more readable.
+
+    Args:
+      unformatted_list: an iterable to format as a bash array. This variable
+        has to be sanitized first, as we don't do any safeties.
+
+    Returns:
+      A text string that can be used by bash as array declaration.
+    """
+    if len(unformatted_list) > 1:
+      return '("%s")' % '" "'.join(unformatted_list)
+    else:
+      return '"%s"' % unformatted_list[0]
 
   def RevWorkOnEBuild(self, srcroot, redirect_file=None):
     """Revs a workon ebuild given the git commit hash.
@@ -372,6 +427,7 @@ class EBuild(object):
       If the revved package is different than the old ebuild, return the full
       revved package name, including the version number. Otherwise, return None.
     """
+
     if self.is_stable:
       stable_version_no_rev = self.GetVersion(srcroot, self._version_no_rev)
     else:
@@ -388,10 +444,11 @@ class EBuild(object):
       cros_build_lib.Die('Missing unstable ebuild: %s' %
                          self._unstable_ebuild_path)
 
-    srcdir = self.GetSourcePath(srcroot)[1]
-    commit_id = self.GetCommitId(srcdir)
-    variables = dict(CROS_WORKON_COMMIT=commit_id,
-                     CROS_WORKON_TREE=self.GetTreeId(srcdir))
+    srcdirs = self.GetSourcePath(srcroot)[1]
+    commit_ids = map(self.GetCommitId, srcdirs)
+    tree_ids = map(self.GetTreeId, srcdirs)
+    variables = dict(CROS_WORKON_COMMIT=self.FormatBashArray(commit_ids),
+                     CROS_WORKON_TREE=self.FormatBashArray(tree_ids))
     self.MarkAsStable(self._unstable_ebuild_path, new_stable_ebuild_path,
                       variables, redirect_file)
 
@@ -409,7 +466,7 @@ class EBuild(object):
         self._RunCommand(['git', 'rm', old_ebuild_path],
                          cwd=self._overlay)
 
-      message = _GIT_COMMIT_MESSAGE % (self.package, commit_id)
+      message = _GIT_COMMIT_MESSAGE % (self.package, ','.join(commit_ids))
       self.CommitChange(message, self._overlay)
       return '%s-%s' % (self.package, new_version)
 
@@ -438,13 +495,14 @@ class EBuild(object):
     modified_overlays = set()
     for overlay, ebuilds in overlay_dict.items():
       for ebuild in ebuilds:
-        project = ebuild.GetSourcePath(directory_src)[0]
-        project_ebuilds = project_ebuild_map.get(project)
-        # This is not None if there already is an entry in project_ebuilds
-        # for the given project.
-        if project_ebuilds is not None:
-          project_ebuilds.append(ebuild)
-          modified_overlays.add(overlay)
+        projects = ebuild.GetSourcePath(directory_src)[0]
+        for project in projects:
+          project_ebuilds = project_ebuild_map.get(project)
+          # This is not None if there already is an entry in project_ebuilds
+          # for the given project.
+          if project_ebuilds is not None:
+            project_ebuilds.append(ebuild)
+            modified_overlays.add(overlay)
 
     # Now go through each change and update the ebuilds they affect.
     for change in changes:
