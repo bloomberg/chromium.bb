@@ -16289,7 +16289,7 @@ Battery full
       Deny
     </message>
     <message name="IDS_MEDIA_CAPTURE_DEVICES_MENU_TITLE" desc="Label for a drop-down menu button that will, when clicked, list the available and selected camera and/or microphone devices.">
-      Devices
+      Options
     </message>
 
     <!-- MediaStream capture status tray icon -->

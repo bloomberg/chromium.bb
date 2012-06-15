@@ -88,8 +88,8 @@ class MediaStreamCaptureIndicator
   // Creates the status tray if it has not been created.
   void CreateStatusTray();
 
-  // Makes sure we have done one-time initialization of the |icon_image_|.
-  void EnsureStatusTrayIcon();
+  // Makes sure we have done one-time initialization of the images.
+  void EnsureStatusTrayIconResources();
 
   // Adds the new tab to the device usage list.
   void AddCaptureDeviceTab(int render_process_id,
@@ -121,18 +121,19 @@ class MediaStreamCaptureIndicator
   // triggered by both AddCaptureDeviceTab() and RemoveCaptureDeviceTab().
   void UpdateStatusTrayIconContextMenu();
 
-  // Updates the status tray tooltip with the new device list. This function is
-  // called by UpdateStatusTrayIconContextMenu().
-  void UpdateStatusTrayIconTooltip(bool audio, bool video);
+  // Updates the status tray tooltip and image according to which kind of
+  // devices are being used. This function is called by
+  // UpdateStatusTrayIconContextMenu().
+  void UpdateStatusTrayIconDisplay(bool audio, bool video);
 
   // Reference to our status icon - owned by the StatusTray. If null,
   // the platform doesn't support status icons.
   StatusIcon* status_icon_;
 
-  // Icon to be displayed on the status tray.
-  gfx::ImageSkia tray_image_;
-
-  gfx::ImageSkia balloon_image_;
+  // These images are owned by ResourceBundle and need not be destroyed.
+  gfx::ImageSkia* mic_image_;
+  gfx::ImageSkia* camera_image_;
+  gfx::ImageSkia* balloon_image_;
 
   // A list that contains the usage information of the opened capture devices.
   typedef std::vector<CaptureDeviceTab> CaptureDeviceTabs;

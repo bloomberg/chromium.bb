@@ -20,6 +20,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "grit/theme_resources_standard.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -39,7 +40,10 @@ bool MediaStreamCaptureIndicator::TabEquals::operator() (
 }
 
 MediaStreamCaptureIndicator::MediaStreamCaptureIndicator()
-    : status_icon_(NULL) {
+    : status_icon_(NULL),
+      mic_image_(NULL),
+      camera_image_(NULL),
+      balloon_image_(NULL) {
 }
 
 MediaStreamCaptureIndicator::~MediaStreamCaptureIndicator() {
@@ -149,23 +153,26 @@ void MediaStreamCaptureIndicator::CreateStatusTray() {
 
   status_icon_ = status_tray->CreateStatusIcon();
 
-  EnsureStatusTrayIcon();
-  DCHECK(!tray_image_.empty());
-  DCHECK(!balloon_image_.empty());
-
-  status_icon_->SetImage(tray_image_);
+  EnsureStatusTrayIconResources();
 }
 
-void MediaStreamCaptureIndicator::EnsureStatusTrayIcon() {
+void MediaStreamCaptureIndicator::EnsureStatusTrayIconResources() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (tray_image_.empty()) {
-    tray_image_ = *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-        IDR_MEDIA_STREAM_CAPTURE_LED);
+  if (!mic_image_) {
+    mic_image_ = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+        IDR_INFOBAR_MEDIA_STREAM_MIC);
   }
-  if (balloon_image_.empty()) {
-    balloon_image_ = *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+  if (!camera_image_) {
+    camera_image_ = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+        IDR_INFOBAR_MEDIA_STREAM_CAMERA);
+  }
+  if (!balloon_image_) {
+    balloon_image_ = ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
         IDR_PRODUCT_LOGO_32);
   }
+  DCHECK(mic_image_);
+  DCHECK(camera_image_);
+  DCHECK(balloon_image_);
 }
 
 void MediaStreamCaptureIndicator::ShowBalloon(
@@ -186,7 +193,7 @@ void MediaStreamCaptureIndicator::ShowBalloon(
   string16 body = l10n_util::GetStringFUTF16(
       message_id, GetSecurityOrigin(render_process_id, render_view_id));
 
-  status_icon_->DisplayBalloon(balloon_image_, title, body);
+  status_icon_->DisplayBalloon(*balloon_image_, title, body);
 }
 
 void MediaStreamCaptureIndicator::Hide() {
@@ -241,18 +248,24 @@ void MediaStreamCaptureIndicator::UpdateStatusTrayIconContextMenu() {
 
   // The icon will take the ownership of the passed context menu.
   status_icon_->SetContextMenu(menu.release());
-  UpdateStatusTrayIconTooltip(audio, video);
+  UpdateStatusTrayIconDisplay(audio, video);
 }
 
-void MediaStreamCaptureIndicator::UpdateStatusTrayIconTooltip(
+void MediaStreamCaptureIndicator::UpdateStatusTrayIconDisplay(
     bool audio, bool video) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(audio || video);
-  int message_id = IDS_MEDIA_STREAM_STATUS_TRAY_TEXT_AUDIO_AND_VIDEO;
-  if (audio && !video)
+  int message_id = 0;
+  if (audio && video) {
+    message_id = IDS_MEDIA_STREAM_STATUS_TRAY_TEXT_AUDIO_AND_VIDEO;
+    status_icon_->SetImage(*camera_image_);
+  } else if (audio && !video) {
     message_id = IDS_MEDIA_STREAM_STATUS_TRAY_TEXT_AUDIO_ONLY;
-  else if (!audio && video)
+    status_icon_->SetImage(*mic_image_);
+  } else if (!audio && video) {
     message_id = IDS_MEDIA_STREAM_STATUS_TRAY_TEXT_VIDEO_ONLY;
+    status_icon_->SetImage(*camera_image_);
+  }
 
   status_icon_->SetToolTip(l10n_util::GetStringFUTF16(
       message_id, l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
