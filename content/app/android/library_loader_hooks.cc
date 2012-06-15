@@ -22,13 +22,14 @@
 #include "content/public/common/content_switches.h"
 #include "media/base/android/media_jni_registrar.h"
 #include "net/android/net_jni_registrar.h"
+#include "jni/library_loader_jni.h"
 
 namespace {
 base::AtExitManager* g_at_exit_manager = NULL;
 }
 
-jboolean LibraryLoaderEntryHook(JNIEnv* env, jclass clazz,
-                                jobjectArray init_command_line) {
+jboolean LibraryLoadedOnMainThread(JNIEnv* env, jclass clazz,
+                                   jobjectArray init_command_line) {
   // We need the Chrome AtExitManager to be created before we do any tracing or
   // logging.
   g_at_exit_manager = new base::AtExitManager();
@@ -82,23 +83,7 @@ void LibraryLoaderExitHook() {
 }
 
 bool RegisterLibraryLoaderEntryHook(JNIEnv* env) {
-  // TODO(bulach): use the jni generator once we move jni_helper methods here.
-  const JNINativeMethod kMethods[] = {
-      { "nativeLibraryLoadedOnMainThread", "([Ljava/lang/String;)Z",
-          reinterpret_cast<void*>(LibraryLoaderEntryHook) },
-  };
-  const int kMethodsSize = arraysize(kMethods);
-  const char kLibraryLoaderPath[] =
-    "org/chromium/content/browser/LibraryLoader";
-  base::android::ScopedJavaLocalRef<jclass> clazz =
-      base::android::GetClass(env, kLibraryLoaderPath);
-
-  if (env->RegisterNatives(clazz.obj(),
-                           kMethods,
-                           kMethodsSize) < 0) {
-    return false;
-  }
-  return true;
+  return RegisterNativesImpl(env);
 }
 
 }  // namespace content
