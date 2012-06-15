@@ -216,9 +216,7 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
     handle.parent_context_id = data->shared_context->GetContextID();
     handle.parent_texture_id[0] = data->shared_context->createTexture();
     handle.parent_texture_id[1] = data->shared_context->createTexture();
-    // Finish is overkill, but flush semantics don't apply cross-channel.
-    // TODO(piman): Use a cross-channel synchronization mechanism instead.
-    data->shared_context->finish();
+    handle.sync_point = data->shared_context->insertSyncPoint();
 
     return handle;
   }

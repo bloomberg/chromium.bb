@@ -146,6 +146,7 @@ IPC_STRUCT_TRAITS_BEGIN(gfx::GLSurfaceHandle)
   IPC_STRUCT_TRAITS_MEMBER(parent_context_id)
   IPC_STRUCT_TRAITS_MEMBER(parent_texture_id[0])
   IPC_STRUCT_TRAITS_MEMBER(parent_texture_id[1])
+  IPC_STRUCT_TRAITS_MEMBER(sync_point)
 IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS(content::CauseForGpuLaunch)

@@ -267,6 +267,7 @@ class GpuCommandBufferStub
 
   // A queue of sync points associated with this stub.
   std::deque<uint32> sync_points_;
+  int sync_point_wait_count_;
 
   scoped_refptr<gpu::RefCountedCounter> preempt_by_counter_;
 

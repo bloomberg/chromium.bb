@@ -63,7 +63,8 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       last_flush_count_(0),
       parent_stub_for_initialization_(),
       parent_texture_for_initialization_(0),
-      watchdog_(watchdog) {
+      watchdog_(watchdog),
+      sync_point_wait_count_(0) {
   if (share_group) {
     context_group_ = share_group->context_group_;
   } else {
@@ -72,6 +73,8 @@ GpuCommandBufferStub::GpuCommandBufferStub(
   if (surface_id != 0)
     surface_state_.reset(new GpuCommandBufferStubBase::SurfaceState(
         surface_id, true, base::TimeTicks::Now()));
+  if (handle_.sync_point)
+    OnWaitSyncPoint(handle_.sync_point);
 }
 
 GpuCommandBufferStub::~GpuCommandBufferStub() {
@@ -153,7 +156,8 @@ bool GpuCommandBufferStub::Send(IPC::Message* message) {
 }
 
 bool GpuCommandBufferStub::IsScheduled() {
-  return !scheduler_.get() || scheduler_->IsScheduled();
+  return sync_point_wait_count_ == 0 &&
+      (!scheduler_.get() || scheduler_->IsScheduled());
 }
 
 bool GpuCommandBufferStub::HasMoreWork() {
@@ -196,6 +200,8 @@ void GpuCommandBufferStub::DelayEcho(IPC::Message* message) {
 }
 
 void GpuCommandBufferStub::OnReschedule() {
+  if (!IsScheduled())
+    return;
   while (!delayed_echos_.empty()) {
     scoped_ptr<IPC::Message> message(delayed_echos_.front());
     delayed_echos_.pop_front();
@@ -309,6 +315,8 @@ void GpuCommandBufferStub::OnInitialize(
   }
 
   if (!context_->MakeCurrent(surface_.get())) {
+    // Ensure the decoder is not destroyed if it is not initialized.
+    decoder_.reset();
     LOG(ERROR) << "Failed to make context current.";
     OnInitializeFailed(reply_message);
     return;
@@ -628,9 +636,11 @@ void GpuCommandBufferStub::OnRetireSyncPoint(uint32 sync_point) {
 }
 
 void GpuCommandBufferStub::OnWaitSyncPoint(uint32 sync_point) {
-  if (!scheduler_.get())
-    return;
-  scheduler_->SetScheduled(false);
+  if (sync_point_wait_count_ == 0) {
+    TRACE_EVENT_ASYNC_BEGIN1("gpu", "WaitSyncPoint", this,
+                             "GpuCommandBufferStub", this);
+  }
+  ++sync_point_wait_count_;
   GpuChannelManager* manager = channel_->gpu_channel_manager();
   manager->sync_point_manager()->AddSyncPointCallback(
       sync_point,
@@ -639,9 +649,12 @@ void GpuCommandBufferStub::OnWaitSyncPoint(uint32 sync_point) {
 }
 
 void GpuCommandBufferStub::OnSyncPointRetired() {
-  if (!scheduler_.get())
-    return;
-  scheduler_->SetScheduled(true);
+  --sync_point_wait_count_;
+  if (sync_point_wait_count_ == 0) {
+    TRACE_EVENT_ASYNC_END1("gpu", "WaitSyncPoint", this,
+                           "GpuCommandBufferStub", this);
+  }
+  OnReschedule();
 }
 
 void GpuCommandBufferStub::OnSetClientHasMemoryAllocationChangedCallback(
