@@ -52,8 +52,10 @@ class BubbleGtk : public content::NotificationObserver {
   // Where should the arrow be placed relative to the bubble?
   enum ArrowLocationGtk {
     ARROW_LOCATION_TOP_LEFT,
+    ARROW_LOCATION_TOP_MIDDLE,
     ARROW_LOCATION_TOP_RIGHT,
     ARROW_LOCATION_BOTTOM_LEFT,
+    ARROW_LOCATION_BOTTOM_MIDDLE,
     ARROW_LOCATION_BOTTOM_RIGHT,
     ARROW_LOCATION_NONE,  // No arrow. Positioned under the supplied rect.
     ARROW_LOCATION_FLOAT,  // No arrow. Centered over the supplied rect.

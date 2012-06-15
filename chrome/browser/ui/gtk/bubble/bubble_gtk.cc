@@ -55,6 +55,11 @@ bool IsArrowLeft(BubbleGtk::ArrowLocationGtk location) {
       location == BubbleGtk::ARROW_LOCATION_BOTTOM_LEFT;
 }
 
+bool IsArrowMiddle(BubbleGtk::ArrowLocationGtk location) {
+  return location == BubbleGtk::ARROW_LOCATION_TOP_MIDDLE ||
+      location == BubbleGtk::ARROW_LOCATION_BOTTOM_MIDDLE;
+}
+
 bool IsArrowRight(BubbleGtk::ArrowLocationGtk location) {
   return location == BubbleGtk::ARROW_LOCATION_TOP_RIGHT ||
       location == BubbleGtk::ARROW_LOCATION_BOTTOM_RIGHT;
@@ -62,11 +67,13 @@ bool IsArrowRight(BubbleGtk::ArrowLocationGtk location) {
 
 bool IsArrowTop(BubbleGtk::ArrowLocationGtk location) {
   return location == BubbleGtk::ARROW_LOCATION_TOP_LEFT ||
+      location == BubbleGtk::ARROW_LOCATION_TOP_MIDDLE ||
       location == BubbleGtk::ARROW_LOCATION_TOP_RIGHT;
 }
 
 bool IsArrowBottom(BubbleGtk::ArrowLocationGtk location) {
   return location == BubbleGtk::ARROW_LOCATION_BOTTOM_LEFT ||
+      location == BubbleGtk::ARROW_LOCATION_BOTTOM_MIDDLE ||
       location == BubbleGtk::ARROW_LOCATION_BOTTOM_RIGHT;
 }
 
@@ -198,10 +205,9 @@ void BubbleGtk::Init(GtkWidget* anchor_widget,
 
   gtk_widget_show_all(window_);
 
-  if (grab_input_) {
+  if (grab_input_)
     gtk_grab_add(window_);
-    GrabPointerAndKeyboard();
-  }
+  GrabPointerAndKeyboard();
 
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(theme_service_));
@@ -244,14 +250,16 @@ std::vector<GdkPoint> BubbleGtk::MakeFramePolygonPoints(
 
   // The top arrow.
   if (top_arrow_size) {
+    int arrow_x = arrow_location == ARROW_LOCATION_TOP_MIDDLE ?
+        width / 2 : kArrowX;
     points.push_back(MakeBidiGdkPoint(
-        kArrowX - top_arrow_size + x_off_r, top_arrow_size, width, on_left));
+        arrow_x - top_arrow_size + x_off_r, top_arrow_size, width, on_left));
     points.push_back(MakeBidiGdkPoint(
-        kArrowX + x_off_r, 0, width, on_left));
+        arrow_x + x_off_r, 0, width, on_left));
     points.push_back(MakeBidiGdkPoint(
-        kArrowX + 1 + x_off_l, 0, width, on_left));
+        arrow_x + 1 + x_off_l, 0, width, on_left));
     points.push_back(MakeBidiGdkPoint(
-        kArrowX + top_arrow_size + 1 + x_off_l, top_arrow_size,
+        arrow_x + top_arrow_size + 1 + x_off_l, top_arrow_size,
         width, on_left));
   }
 
@@ -271,17 +279,19 @@ std::vector<GdkPoint> BubbleGtk::MakeFramePolygonPoints(
 
   // The bottom arrow.
   if (bottom_arrow_size) {
+    int arrow_x = arrow_location == ARROW_LOCATION_BOTTOM_MIDDLE ?
+        width / 2 : kArrowX;
     points.push_back(MakeBidiGdkPoint(
-        kArrowX + bottom_arrow_size + 1 + x_off_l,
+        arrow_x + bottom_arrow_size + 1 + x_off_l,
         height - bottom_arrow_size + y_off,
         width,
         on_left));
     points.push_back(MakeBidiGdkPoint(
-        kArrowX + 1 + x_off_l, height + y_off, width, on_left));
+        arrow_x + 1 + x_off_l, height + y_off, width, on_left));
     points.push_back(MakeBidiGdkPoint(
-        kArrowX + x_off_r, height + y_off, width, on_left));
+        arrow_x + x_off_r, height + y_off, width, on_left));
     points.push_back(MakeBidiGdkPoint(
-        kArrowX - bottom_arrow_size + x_off_r,
+        arrow_x - bottom_arrow_size + x_off_r,
         height - bottom_arrow_size + y_off,
         width,
         on_left));
@@ -315,19 +325,25 @@ BubbleGtk::ArrowLocationGtk BubbleGtk::GetArrowLocation(
 
   ArrowLocationGtk arrow_location_none;
   ArrowLocationGtk arrow_location_left;
+  ArrowLocationGtk arrow_location_middle;
   ArrowLocationGtk arrow_location_right;
   if (top_is_onscreen && (wants_top || !bottom_is_onscreen)) {
     arrow_location_none = ARROW_LOCATION_NONE;
     arrow_location_left = ARROW_LOCATION_TOP_LEFT;
+    arrow_location_middle = ARROW_LOCATION_TOP_MIDDLE;
     arrow_location_right =ARROW_LOCATION_TOP_RIGHT;
   } else {
     arrow_location_none = ARROW_LOCATION_FLOAT;
     arrow_location_left = ARROW_LOCATION_BOTTOM_LEFT;
+    arrow_location_middle = ARROW_LOCATION_BOTTOM_MIDDLE;
     arrow_location_right =ARROW_LOCATION_BOTTOM_RIGHT;
   }
 
   if (!HasArrow(preferred_location))
     return arrow_location_none;
+
+  if (IsArrowMiddle(preferred_location))
+    return arrow_location_middle;
 
   bool wants_left = IsArrowLeft(preferred_location);
   bool left_is_onscreen = (arrow_x - kArrowX + width < screen_width);
@@ -408,7 +424,8 @@ void BubbleGtk::MoveWindow() {
   gtk_widget_get_allocation(window_, &allocation);
 
   gint screen_x = 0;
-  if (!HasArrow(current_arrow_location_)) {
+  if (!HasArrow(current_arrow_location_) ||
+      IsArrowMiddle(current_arrow_location_)) {
     screen_x =
         toplevel_x + offset_x + (rect_.width() / 2) - allocation.width / 2;
   } else if (IsArrowLeft(current_arrow_location_)) {
@@ -475,7 +492,10 @@ void BubbleGtk::GrabPointerAndKeyboard() {
   GdkWindow* gdk_window = gtk_widget_get_window(window_);
 
   // Install X pointer and keyboard grabs to make sure that we have the focus
-  // and get all mouse and keyboard events until we're closed.
+  // and get all mouse and keyboard events until we're closed. As a hack, grab
+  // the pointer even if |grab_input_| is false to prevent a weird error
+  // rendering the bubble's frame. See
+  // https://code.google.com/p/chromium/issues/detail?id=130820.
   GdkGrabStatus pointer_grab_status =
       gdk_pointer_grab(gdk_window,
                        TRUE,                   // owner_events
@@ -489,13 +509,17 @@ void BubbleGtk::GrabPointerAndKeyboard() {
     DLOG(ERROR) << "Unable to grab pointer (status="
                 << pointer_grab_status << ")";
   }
-  GdkGrabStatus keyboard_grab_status =
-      gdk_keyboard_grab(gdk_window,
-                        FALSE,  // owner_events
-                        GDK_CURRENT_TIME);
-  if (keyboard_grab_status != GDK_GRAB_SUCCESS) {
-    DLOG(ERROR) << "Unable to grab keyboard (status="
-                << keyboard_grab_status << ")";
+
+  // Only grab the keyboard input if |grab_input_| is true.
+  if (grab_input_) {
+    GdkGrabStatus keyboard_grab_status =
+        gdk_keyboard_grab(gdk_window,
+                          FALSE,  // owner_events
+                          GDK_CURRENT_TIME);
+    if (keyboard_grab_status != GDK_GRAB_SUCCESS) {
+      DLOG(ERROR) << "Unable to grab keyboard (status="
+                  << keyboard_grab_status << ")";
+    }
   }
 }
 
@@ -569,6 +593,14 @@ gboolean BubbleGtk::OnExpose(GtkWidget* widget, GdkEventExpose* expose) {
       current_arrow_location_, allocation.width, allocation.height,
       FRAME_STROKE);
   gdk_draw_polygon(drawable, gc, FALSE, &points[0], points.size());
+
+  // If |grab_input_| is false, pointer input has been grabbed as a hack in
+  // |GrabPointerAndKeyboard()| to ensure that the polygon frame is drawn
+  // correctly. Since the intention is not actually to grab the pointer, release
+  // it now that the frame is drawn to prevent clicks from being missed. See
+  // https://code.google.com/p/chromium/issues/detail?id=130820.
+  if (!grab_input_)
+    gdk_pointer_ungrab(GDK_CURRENT_TIME);
 
   g_object_unref(gc);
   return FALSE;  // Propagate so our children paint, etc.

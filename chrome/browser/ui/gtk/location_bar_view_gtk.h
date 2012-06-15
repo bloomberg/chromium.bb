@@ -24,6 +24,8 @@
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
+#include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/content_settings_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -95,11 +97,20 @@ class LocationBarViewGtk : public AutocompleteEditController,
   // restore saved state that the tab holds.
   void Update(const content::WebContents* tab_for_state_restoring);
 
+  // Show the zoom bubble.
+  void ShowZoomBubble(int zoom_percent);
+
   // Show the bookmark bubble.
   void ShowStarBubble(const GURL& url, bool newly_boomkarked);
 
   // Shows the Chrome To Mobile bubble.
   void ShowChromeToMobileBubble();
+
+  // Sets the tooltip for the zoom icon.
+  void SetZoomIconTooltipPercent(int zoom_percent);
+
+  // Sets the zoom icon state.
+  void SetZoomIconState(ZoomController::ZoomIconState zoom_icon_state);
 
   // Set the starred state of the bookmark star.
   void SetStarred(bool starred);
@@ -352,6 +363,8 @@ class LocationBarViewGtk : public AutocompleteEditController,
                        GtkAllocation*);
   CHROMEGTK_CALLBACK_1(LocationBarViewGtk, void, OnEntryBoxSizeAllocate,
                        GtkAllocation*);
+  CHROMEGTK_CALLBACK_1(LocationBarViewGtk, gboolean, OnZoomButtonPress,
+                       GdkEventButton*);
   CHROMEGTK_CALLBACK_1(LocationBarViewGtk, gboolean, OnStarButtonPress,
                        GdkEventButton*);
   CHROMEGTK_CALLBACK_1(LocationBarViewGtk, gboolean,
@@ -382,9 +395,19 @@ class LocationBarViewGtk : public AutocompleteEditController,
   // available horizontal space in the location bar.
   void AdjustChildrenVisibility();
 
-  // Build the star and Chrome To Mobile icons.
+  // Build the zoom, star, and Chrome To Mobile icons.
+  GtkWidget* CreateIconButton(
+      GtkWidget** image,
+      int image_id,
+      ViewID debug_id,
+      int tooltip_id,
+      gboolean (click_callback)(GtkWidget*, GdkEventButton*, gpointer));
+  void CreateZoomButton();
   void CreateStarButton();
   void CreateChromeToMobileButton();
+
+  // Update the zoom icon after zoom changes.
+  void UpdateZoomIcon();
 
   // Update the star icon after it is toggled or the theme changes.
   void UpdateStarIcon();
@@ -398,6 +421,10 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
   // The outermost widget we want to be hosted.
   ui::OwnedWidgetGtk hbox_;
+
+  // Zoom button.
+  ui::OwnedWidgetGtk zoom_;
+  GtkWidget* zoom_image_;
 
   // Star button.
   ui::OwnedWidgetGtk star_;

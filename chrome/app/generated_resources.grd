@@ -970,7 +970,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           &#8722;
         </message>
         <message name="IDS_ZOOM_PERCENT" desc="Current pages zoom factor; shown in merged menu">
-        <ph name="VALUE">$1<ex>100</ex></ph>%
+          <ph name="VALUE">$1<ex>100</ex></ph>%
         </message>
         <message name="IDS_ENCODING_MENU" desc="The text label of the Encoding submenu">
           &amp;Encoding
@@ -6306,6 +6306,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_TOOLTIP_ACTION_BOX_BUTTON" desc="The tooltip for action box button">
         Actions
+      </message>
+      <message name="IDS_TOOLTIP_ZOOM" desc="The tooltip for zoom icon">
+        Zoom: <ph name="VALUE">$1<ex>100</ex></ph>%
       </message>
 
       <!--Accessible name/action strings-->
