@@ -58,6 +58,7 @@
 using WebKit::WebAccessibilityObject;
 using WebKit::WebCString;
 using WebKit::WebDataSource;
+using WebKit::WebDocument;
 using WebKit::WebFrame;
 using WebKit::WebIconURL;
 using WebKit::WebRect;
@@ -480,6 +481,32 @@ bool ChromeRenderViewObserver::allowWriteToClipboard(WebFrame* frame,
       routing_id(), GURL(frame->document().securityOrigin().toString().utf8()),
       &allowed));
   return allowed;
+}
+
+bool ChromeRenderViewObserver::IsExperimentalWebFeatureAllowed(
+    const WebDocument& document) {
+  // Experimental Web API is enabled when
+  // - The specific API is allowed from command line flag, or
+  // - If the document is running extensions or apps which
+  //   has the "experimental" permission, or
+  // - The document is running Web UI.
+  WebSecurityOrigin origin = document.securityOrigin();
+  if (EqualsASCII(origin.protocol(), chrome::kChromeUIScheme))
+    return true;
+  const extensions::Extension* extension =
+      extension_dispatcher_->extensions()->GetExtensionOrAppByURL(
+          ExtensionURLInfo(origin, document.url()));
+  if (!extension)
+    return false;
+  return (extension_dispatcher_->IsExtensionActive(extension->id()) &&
+          extension->HasAPIPermission(ExtensionAPIPermission::kExperimental));
+}
+
+bool ChromeRenderViewObserver::allowWebComponents(const WebDocument& document,
+                                                  bool defaultValue) {
+  if (defaultValue)
+    return true;
+  return IsExperimentalWebFeatureAllowed(document);
 }
 
 static void SendInsecureContentSignal(int signal) {

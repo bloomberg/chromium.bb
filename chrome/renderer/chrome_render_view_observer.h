@@ -104,6 +104,7 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
                                       bool default_value) OVERRIDE;
   virtual bool allowWriteToClipboard(WebKit::WebFrame* frame,
                                      bool default_value) OVERRIDE;
+  virtual bool allowWebComponents(const WebKit::WebDocument&, bool) OVERRIDE;
   virtual void didNotAllowPlugins(WebKit::WebFrame* frame) OVERRIDE;
   virtual void didNotAllowScript(WebKit::WebFrame* frame) OVERRIDE;
   virtual bool allowDisplayingInsecureContent(
@@ -181,6 +182,9 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
 
   // Determines if a host is in the strict security host set.
   bool IsStrictSecurityHost(const std::string& host);
+
+  // Determines if the document has a permission to use experimental Web API
+  bool IsExperimentalWebFeatureAllowed(const WebKit::WebDocument& document);
 
   // Save the JavaScript to preload if a ViewMsg_WebUIJavaScript is received.
   scoped_ptr<WebUIJavaScript> webui_javascript_;
