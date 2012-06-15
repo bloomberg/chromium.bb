@@ -8,6 +8,8 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
+#include "ui/gfx/display.h"
+#include "ui/gfx/screen.h"
 
 #if defined(TOOLKIT_GTK)
 #include <gdk/gdkx.h>
@@ -93,6 +95,21 @@ BrowserAccessibilityManager*
 void RenderWidgetHostViewBase::SetBrowserAccessibilityManager(
     BrowserAccessibilityManager* manager) {
   browser_accessibility_manager_.reset(manager);
+}
+
+void RenderWidgetHostViewBase::UpdateScreenInfo() {
+  gfx::Display monitor = gfx::Screen::GetMonitorNearestPoint(
+      GetViewBounds().origin());
+  if (current_display_area_ == monitor.bounds() &&
+      current_device_scale_factor_ == monitor.device_scale_factor())
+    return;
+  current_display_area_ = monitor.bounds();
+  current_device_scale_factor_ = monitor.device_scale_factor();
+  if (GetRenderWidgetHost()) {
+    RenderWidgetHostImpl* impl =
+        RenderWidgetHostImpl::From(GetRenderWidgetHost());
+    impl->NotifyScreenInfoChanged();
+  }
 }
 
 }  // namespace content

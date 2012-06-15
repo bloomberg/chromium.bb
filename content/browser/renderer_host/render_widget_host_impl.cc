@@ -38,6 +38,9 @@
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
+#if defined(OS_WIN)
+#include "third_party/WebKit/Source/WebKit/chromium/public/win/WebScreenInfoFactory.h"
+#endif
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "webkit/glue/webcursor.h"
@@ -968,6 +971,12 @@ void RenderWidgetHostImpl::RemoveKeyboardListener(
   keyboard_listeners_.remove(listener);
 }
 
+void RenderWidgetHostImpl::NotifyScreenInfoChanged() {
+  WebKit::WebScreenInfo screen_info;
+  GetWebScreenInfo(&screen_info);
+  Send(new ViewMsg_ScreenInfoChanged(GetRoutingID(), screen_info));
+}
+
 void RenderWidgetHostImpl::SetDeviceScaleFactor(float scale) {
   Send(new ViewMsg_SetDeviceScaleFactor(GetRoutingID(), scale));
 }
@@ -1097,6 +1106,20 @@ bool RenderWidgetHostImpl::IsFullscreen() const {
 
 void RenderWidgetHostImpl::SetShouldAutoResize(bool enable) {
   should_auto_resize_ = enable;
+}
+
+void RenderWidgetHostImpl::GetWebScreenInfo(WebKit::WebScreenInfo* result) {
+#if defined(OS_POSIX) || defined(USE_AURA)
+  if (GetView()) {
+    static_cast<content::RenderWidgetHostViewPort*>(
+        GetView())->GetScreenInfo(result);
+  } else {
+    content::RenderWidgetHostViewPort::GetDefaultScreenInfo(result);
+  }
+#else
+  *result = WebKit::WebScreenInfoFactory::screenInfo(
+      gfx::NativeViewFromId(GetNativeViewId()));
+#endif
 }
 
 void RenderWidgetHostImpl::Destroy() {

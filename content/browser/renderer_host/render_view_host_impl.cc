@@ -248,19 +248,8 @@ bool RenderViewHostImpl::CreateRenderView(
   params.opener_route_id = opener_route_id;
   params.swapped_out = is_swapped_out_;
   params.next_page_id = next_page_id;
-#if defined(OS_POSIX) || defined(USE_AURA)
-  if (GetView()) {
-    static_cast<content::RenderWidgetHostViewPort*>(
-        GetView())->GetScreenInfo(&params.screen_info);
-  } else {
-    content::RenderWidgetHostViewPort::GetDefaultScreenInfo(
-        &params.screen_info);
-  }
-#else
-  params.screen_info =
-      WebKit::WebScreenInfoFactory::screenInfo(
-          gfx::NativeViewFromId(GetNativeViewId()));
-#endif
+  GetWebScreenInfo(&params.screen_info);
+
   params.embedder_channel_name = embedder_channel_name;
   params.embedder_container_id = embedder_container_id;
   params.accessibility_mode =

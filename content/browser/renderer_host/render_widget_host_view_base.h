@@ -22,6 +22,7 @@
 #include "content/common/content_export.h"
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "ui/base/range/range.h"
+#include "ui/gfx/rect.h"
 
 namespace content {
 
@@ -61,6 +62,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
 
   void SetBrowserAccessibilityManager(BrowserAccessibilityManager* manager);
 
+  // Notification that a resize or move session ended on the native widget.
+  void UpdateScreenInfo();
+
  protected:
   // Interface class only, do not construct.
   RenderWidgetHostViewBase();
@@ -96,6 +100,9 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
  private:
   // Manager of the tree representation of the WebKit render tree.
   scoped_ptr<BrowserAccessibilityManager> browser_accessibility_manager_;
+
+  gfx::Rect current_display_area_;
+  float current_device_scale_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewBase);
 };

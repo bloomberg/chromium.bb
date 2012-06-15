@@ -24,6 +24,10 @@ namespace content {
 class WebContentsViewDelegate;
 }
 
+namespace ui {
+class HWNDMessageFilter;
+}
+
 // An implementation of WebContentsView for Windows.
 class CONTENT_EXPORT WebContentsViewWin
     : public content::WebContentsView,
@@ -35,6 +39,7 @@ class CONTENT_EXPORT WebContentsViewWin
   virtual ~WebContentsViewWin();
 
   BEGIN_MSG_MAP_EX(WebContentsViewWin)
+    MESSAGE_HANDLER(WM_CREATE, OnCreate)
     MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
     MESSAGE_HANDLER(WM_WINDOWPOSCHANGED, OnWindowPosChanged)
     MESSAGE_HANDLER(WM_LBUTTONDOWN, OnMouseDown)
@@ -98,6 +103,8 @@ class CONTENT_EXPORT WebContentsViewWin
   void EndDragging();
   void CloseTab();
 
+  LRESULT OnCreate(
+      UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
   LRESULT OnDestroy(
       UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled);
   LRESULT OnWindowPosChanged(
@@ -139,6 +146,8 @@ class CONTENT_EXPORT WebContentsViewWin
 
   // Used to close the tab after the stack has unwound.
   base::OneShotTimer<WebContentsViewWin> close_tab_timer_;
+
+  scoped_ptr<ui::HWNDMessageFilter> hwnd_message_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewWin);
 };

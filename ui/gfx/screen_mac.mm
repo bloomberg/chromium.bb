@@ -147,4 +147,18 @@ int Screen::GetNumMonitors() {
   return display_count;
 }
 
+// static
+gfx::Display Screen::GetMonitorNearestPoint(const gfx::Point& point) {
+  NSPoint ns_point = NSPointFromCGPoint(point.ToCGPoint());
+
+  NSArray* screens = [NSScreen screens];
+  NSScreen* primary = [screens objectAtIndex:0];
+  for (NSScreen* screen in screens) {
+    if (NSMouseInRect(ns_point, [screen frame], NO))
+      return GetDisplayForScreen(screen, screen == primary);
+  }
+  NOTREACHED();
+  return gfx::Display();
+}
+
 }  // namespace gfx

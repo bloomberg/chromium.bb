@@ -122,6 +122,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   virtual void RemoveKeyboardListener(KeyboardListener* listener) OVERRIDE;
   virtual void SetDeviceScaleFactor(float scale) OVERRIDE;
 
+  // Notification that the screen info has changed.
+  virtual void NotifyScreenInfoChanged();
+
   // Sets the View of this RenderWidgetHost.
   void SetView(RenderWidgetHostView* view);
 
@@ -430,6 +433,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // RenderViewHostImpl can account for in-flight beforeunload/unload events.
   int increment_in_flight_event_count() { return ++in_flight_event_count_; }
   int decrement_in_flight_event_count() { return --in_flight_event_count_; }
+
+  void GetWebScreenInfo(WebKit::WebScreenInfo* result);
 
   // The View associated with the RenderViewHost. The lifetime of this object
   // is associated with the lifetime of the Render process. If the Renderer

@@ -257,6 +257,7 @@ class CONTENT_EXPORT RenderWidget
   virtual void OnSetDeviceScaleFactor(float device_scale_factor);
   void OnSetTextDirection(WebKit::WebTextDirection direction);
   void OnGetFPS();
+  void OnScreenInfoChanged(const WebKit::WebScreenInfo& screen_info);
 
   // Override points to notify derived classes that a paint has happened.
   // WillInitiatePaint happens when we're about to generate a new bitmap and

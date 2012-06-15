@@ -5,6 +5,7 @@
 #include "content/browser/web_contents/web_contents_view_win.h"
 
 #include "base/bind.h"
+#include "base/memory/scoped_vector.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_win.h"
@@ -14,6 +15,7 @@
 #include "content/browser/web_contents/web_drag_dest_win.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view_delegate.h"
+#include "ui/base/win/hwnd_subclass.h"
 #include "ui/gfx/screen.h"
 
 using content::RenderViewHost;
@@ -71,6 +73,60 @@ class TempParent : public ui::WindowImpl {
   END_MSG_MAP()
 };
 
+typedef std::map<HWND, WebContentsViewWin*> HwndToWcvMap;
+HwndToWcvMap hwnd_to_wcv_map;
+
+void RemoveHwndToWcvMapEntry(WebContentsViewWin* wcv) {
+  HwndToWcvMap::iterator it;
+  for (it = hwnd_to_wcv_map.begin(); it != hwnd_to_wcv_map.end();) {
+    if (it->second == wcv)
+      hwnd_to_wcv_map.erase(it++);
+    else
+      ++it;
+  }
+}
+
+BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam) {
+  HwndToWcvMap::iterator it = hwnd_to_wcv_map.find(hwnd);
+  if (it == hwnd_to_wcv_map.end())
+    return TRUE;  // must return TRUE to continue enumeration.
+  WebContentsViewWin* wcv = it->second;
+  RenderWidgetHostViewWin* rwhv = static_cast<RenderWidgetHostViewWin*>(
+      wcv->web_contents()->GetRenderWidgetHostView());
+  if (rwhv)
+    rwhv->UpdateScreenInfo();
+
+  return TRUE;  // must return TRUE to continue enumeration.
+}
+
+class PositionChangedMessageFilter : public ui::HWNDMessageFilter {
+ public:
+  PositionChangedMessageFilter() {}
+
+ private:
+  // Overridden from ui::HWNDMessageFilter:
+  virtual bool FilterMessage(HWND hwnd,
+                             UINT message,
+                             WPARAM w_param,
+                             LPARAM l_param,
+                             LRESULT* l_result) OVERRIDE {
+    if (message == WM_WINDOWPOSCHANGED)
+      EnumChildWindows(hwnd, EnumChildProc, 0);
+
+    return false;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(PositionChangedMessageFilter);
+};
+
+void AddFilterToParentHwndSubclass(HWND hwnd, ui::HWNDMessageFilter* filter) {
+  HWND parent = ::GetAncestor(hwnd, GA_ROOT);
+  if (parent) {
+    ui::HWNDSubclass::RemoveFilterFromAllTargets(filter);
+    ui::HWNDSubclass::AddFilterToTarget(parent, filter);
+  }
+}
+
 }  // namespace namespace
 
 WebContentsViewWin::WebContentsViewWin(WebContentsImpl* web_contents,
@@ -78,10 +134,13 @@ WebContentsViewWin::WebContentsViewWin(WebContentsImpl* web_contents,
     : web_contents_(web_contents),
       view_(NULL),
       delegate_(delegate),
-      close_tab_after_drag_ends_(false) {
+      close_tab_after_drag_ends_(false),
+      hwnd_message_filter_(new PositionChangedMessageFilter) {
 }
 
 WebContentsViewWin::~WebContentsViewWin() {
+  RemoveHwndToWcvMapEntry(this);
+
   if (IsWindow(hwnd()))
     DestroyWindow(hwnd());
 }
@@ -299,6 +358,13 @@ void WebContentsViewWin::CloseTab() {
   rvh->GetDelegate()->Close(rvh);
 }
 
+LRESULT WebContentsViewWin::OnCreate(
+    UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
+  hwnd_to_wcv_map.insert(std::make_pair(hwnd(), this));
+  AddFilterToParentHwndSubclass(hwnd(), hwnd_message_filter_.get());
+  return 0;
+}
+
 LRESULT WebContentsViewWin::OnDestroy(
     UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
   if (drag_dest_.get()) {
@@ -310,6 +376,10 @@ LRESULT WebContentsViewWin::OnDestroy(
 
 LRESULT WebContentsViewWin::OnWindowPosChanged(
     UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
+
+  // Our parent might have changed. So we re-install our hwnd message filter.
+  AddFilterToParentHwndSubclass(hwnd(), hwnd_message_filter_.get());
+
   WINDOWPOS* window_pos = reinterpret_cast<WINDOWPOS*>(lparam);
   if (window_pos->flags & SWP_HIDEWINDOW) {
     web_contents_->HideContents();
@@ -321,6 +391,12 @@ LRESULT WebContentsViewWin::OnWindowPosChanged(
   if (window_pos->flags & SWP_SHOWWINDOW)
     web_contents_->ShowContents();
 
+  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
+  if (rwhv) {
+    RenderWidgetHostViewWin* view = static_cast<RenderWidgetHostViewWin*>(rwhv);
+    view->UpdateScreenInfo();
+  }
+
   // Unless we were specifically told not to size, cause the renderer to be
   // sized to the new bounds, which forces a repaint. Not required for the
   // simple minimize-restore case described above, for example, since the
@@ -331,7 +407,6 @@ LRESULT WebContentsViewWin::OnWindowPosChanged(
   gfx::Size size(window_pos->cx, window_pos->cy);
   if (web_contents_->GetInterstitialPage())
     web_contents_->GetInterstitialPage()->SetSize(size);
-  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
   if (rwhv)
     rwhv->SetSize(size);
 

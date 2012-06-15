@@ -26,6 +26,11 @@ gfx::Display Screen::GetMonitorNearestWindow(gfx::NativeView view) {
 }
 
 // static
+gfx::Display Screen::GetMonitorNearestPoint(const gfx::Point& point) {
+  return GetPrimaryMonitor();
+}
+
+// static
 int Screen::GetNumMonitors() {
   return 1;
 }

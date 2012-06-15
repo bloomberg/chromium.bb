@@ -158,6 +158,7 @@ float ScaleFactor(NSView* view) {
 - (void)keyEvent:(NSEvent*)theEvent wasKeyEquivalent:(BOOL)equiv;
 - (void)cancelChildPopups;
 - (void)windowDidChangeBackingProperties:(NSNotification*)notification;
+- (void)windowChangedScreen:(NSNotification*)notification;
 - (void)checkForPluginImeCancellation;
 - (void)updateTabBackingStoreScaleFactor;
 @end
@@ -1328,10 +1329,17 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     }
     handlingGlobalFrameDidChange_ = NO;
     [[NSNotificationCenter defaultCenter]
-         addObserver:self
-            selector:@selector(globalFrameDidChange:)
-                name:NSViewGlobalFrameDidChangeNotification
-              object:self];
+        addObserver:self
+           selector:@selector(globalFrameDidChange:)
+               name:NSViewGlobalFrameDidChangeNotification
+             object:self];
+    if ([self window]) {
+      [[NSNotificationCenter defaultCenter]
+          addObserver:self
+             selector:@selector(windowChangedScreen:)
+                 name:NSWindowDidChangeScreenNotification
+               object:[self window]];
+    }
   }
   return self;
 }
@@ -1882,13 +1890,21 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
         removeObserver:self
                   name:NSWindowDidChangeBackingPropertiesNotification
                 object:[self window]];
-
+    [[NSNotificationCenter defaultCenter]
+        removeObserver:self
+                  name:NSWindowDidChangeScreenNotification
+                object:[self window]];
   }
   if (newWindow) {
     [[NSNotificationCenter defaultCenter]
         addObserver:self
            selector:@selector(windowDidChangeBackingProperties:)
                name:NSWindowDidChangeBackingPropertiesNotification
+             object:newWindow];
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(windowChangedScreen:)
+               name:NSWindowDidChangeScreenNotification
              object:newWindow];
   }
 }
@@ -1937,6 +1953,10 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   if (renderWidgetHostView_->compositing_iosurface_.get())
     renderWidgetHostView_->compositing_iosurface_->GlobalFrameDidChange();
   handlingGlobalFrameDidChange_ = NO;
+}
+
+- (void)windowChangedScreen:(NSNotification*)notification {
+  renderWidgetHostView_->UpdateScreenInfo();
 }
 
 - (void)setFrameSize:(NSSize)newSize {

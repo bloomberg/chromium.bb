@@ -1133,6 +1133,9 @@ IPC_MESSAGE_ROUTED1(ViewMsg_Repaint,
 // started.
 IPC_MESSAGE_ROUTED0(ViewMsg_MoveOrResizeStarted)
 
+IPC_MESSAGE_ROUTED1(ViewMsg_ScreenInfoChanged,
+                    WebKit::WebScreenInfo /* screen_info */)
+
 // Reply to ViewHostMsg_RequestMove, ViewHostMsg_ShowView, and
 // ViewHostMsg_ShowWidget to inform the renderer that the browser has
 // processed the move.  The browser may have ignored the move, but it finished
