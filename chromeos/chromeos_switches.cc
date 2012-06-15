@@ -10,5 +10,8 @@ namespace switches {
 // Forces the stub implementation of dbus clients.
 const char kDbusStub[] = "dbus-stub";
 
+// Sends test messages on first call to RequestUpdate (stub only).
+const char kSmsTestMessages[] = "sms-test-messages";
+
 }  // namespace switches
 }  // namespace chromeos

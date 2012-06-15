@@ -8,12 +8,14 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
 #include "base/stl_util.h"
 #include "base/values.h"
+#include "chromeos/chromeos_switches.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
@@ -295,6 +297,9 @@ class GsmSMSClientStubImpl : public GsmSMSClient {
   // GsmSMSClient override.
   virtual void RequestUpdate(const std::string& service_name,
                              const dbus::ObjectPath& object_path) {
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+            chromeos::switches::kSmsTestMessages))
+      return;
     if (test_index_ >= 0)
       return;
     test_index_ = 0;

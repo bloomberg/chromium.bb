@@ -20,11 +20,8 @@ namespace test {
 
 namespace {
 
-SystemTray* CreateSystemTray() {
-  internal::StatusAreaWidget* widget = new internal::StatusAreaWidget;
-  widget->CreateTrayViews(NULL);
-  widget->Show();
-  return widget->system_tray();
+SystemTray* GetSystemTray() {
+  return Shell::GetInstance()->status_area_widget()->system_tray();
 }
 
 // Trivial item implementation that tracks its views for testing.
@@ -95,7 +92,7 @@ class TestItem : public SystemTrayItem {
 typedef AshTestBase SystemTrayTest;
 
 TEST_F(SystemTrayTest, SystemTrayDefaultView) {
-  scoped_ptr<SystemTray> tray(CreateSystemTray());
+  SystemTray* tray = GetSystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
   tray->ShowDefaultView(BUBBLE_CREATE_NEW);
@@ -107,7 +104,7 @@ TEST_F(SystemTrayTest, SystemTrayDefaultView) {
 }
 
 TEST_F(SystemTrayTest, SystemTrayTestItems) {
-  scoped_ptr<SystemTray> tray(CreateSystemTray());
+  SystemTray* tray = GetSystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
   TestItem* test_item = new TestItem;
@@ -138,7 +135,7 @@ TEST_F(SystemTrayTest, SystemTrayTestItems) {
 }
 
 TEST_F(SystemTrayTest, TrayWidgetAutoResizes) {
-  scoped_ptr<SystemTray> tray(CreateSystemTray());
+  SystemTray* tray = GetSystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
   gfx::Size widget_size = tray->GetWidget()->GetWindowScreenBounds().size();
@@ -164,7 +161,7 @@ TEST_F(SystemTrayTest, TrayWidgetAutoResizes) {
 
 // Disabled due to a use-after-free, see http://crbug.com/127539.
 TEST_F(SystemTrayTest, DISABLED_SystemTrayNotifications) {
-  scoped_ptr<SystemTray> tray(CreateSystemTray());
+  SystemTray* tray = GetSystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
   TestItem* test_item = new TestItem;
@@ -199,7 +196,7 @@ TEST_F(SystemTrayTest, DISABLED_SystemTrayNotifications) {
 }
 
 TEST_F(SystemTrayTest, BubbleCreationTypesTest) {
-  scoped_ptr<SystemTray> tray(CreateSystemTray());
+  SystemTray* tray = GetSystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
   TestItem* test_item = new TestItem;

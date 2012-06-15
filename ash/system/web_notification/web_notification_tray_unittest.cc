@@ -19,11 +19,8 @@ namespace ash {
 
 namespace {
 
-WebNotificationTray* CreateWebNotificationTray() {
-  internal::StatusAreaWidget* widget = new internal::StatusAreaWidget;
-  widget->CreateTrayViews(NULL);
-  widget->Show();
-  return widget->web_notification_tray();
+WebNotificationTray* GetWebNotificationTray() {
+  return Shell::GetInstance()->status_area_widget()->web_notification_tray();
 }
 
 class TestDelegate : public WebNotificationTray::Delegate {
@@ -77,28 +74,28 @@ class TestDelegate : public WebNotificationTray::Delegate {
 typedef test::AshTestBase WebNotificationTrayTest;
 
 TEST_F(WebNotificationTrayTest, WebNotifications) {
-  scoped_ptr<WebNotificationTray> tray(CreateWebNotificationTray());
+  WebNotificationTray* tray = GetWebNotificationTray();
   scoped_ptr<TestDelegate> delegate(new TestDelegate);
   tray->SetDelegate(delegate.get());
 
   ASSERT_TRUE(tray->GetWidget());
 
   // Adding a notification should show the bubble.
-  delegate->AddNotification(tray.get(), "test_id1");
+  delegate->AddNotification(tray, "test_id1");
   EXPECT_TRUE(tray->bubble() != NULL);
   EXPECT_EQ(1, tray->GetNotificationCount());
-  delegate->AddNotification(tray.get(), "test_id2");
-  delegate->AddNotification(tray.get(), "test_id2");
+  delegate->AddNotification(tray, "test_id2");
+  delegate->AddNotification(tray, "test_id2");
   EXPECT_EQ(2, tray->GetNotificationCount());
   // Ensure that removing a notification removes it from the tray, and signals
   // the delegate.
   EXPECT_TRUE(delegate->HasNotificationId("test_id2"));
-  delegate->RemoveNotification(tray.get(), "test_id2");
+  delegate->RemoveNotification(tray, "test_id2");
   EXPECT_FALSE(delegate->HasNotificationId("test_id2"));
   EXPECT_EQ(1, tray->GetNotificationCount());
 
   // Removing the last notification should hide the bubble.
-  delegate->RemoveNotification(tray.get(), "test_id1");
+  delegate->RemoveNotification(tray, "test_id1");
   EXPECT_EQ(0, tray->GetNotificationCount());
   EXPECT_TRUE(tray->bubble() == NULL);
 }

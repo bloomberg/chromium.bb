@@ -7,12 +7,14 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
 #include "base/stl_util.h"
 #include "base/values.h"
+#include "chromeos/chromeos_switches.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
@@ -82,6 +84,10 @@ class SMSClientStubImpl : public SMSClient {
   virtual void GetAll(const std::string& service_name,
                       const dbus::ObjectPath& object_path,
                       const GetAllCallback& callback) OVERRIDE {
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+            chromeos::switches::kSmsTestMessages))
+      return;
+
     // Ownership passed to callback
     base::DictionaryValue *sms = new base::DictionaryValue();
     sms->SetString("Number", "000-000-0000");
