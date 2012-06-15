@@ -45,6 +45,7 @@ const wchar_t* const kTroublesomeDlls[] = {
   L"babylonchromepi.dll",         // Babylon translator.
   L"btkeyind.dll",                // Widcomm Bluetooth.
   L"cmcsyshk.dll",                // CMC Internet Security.
+  L"cmsetac.dll",                 // Unknown (suspected malware).
   L"cooliris.dll",                // CoolIris.
   L"dockshellhook.dll",           // Stardock Objectdock.
   L"easyhook32.dll",              // GDIPP and others.
@@ -62,6 +63,7 @@ const wchar_t* const kTroublesomeDlls[] = {
   L"madchook.dll",                // Madshi (generic hooking library).
   L"mdnsnsp.dll",                 // Bonjour.
   L"moonsysh.dll",                // Moon Secure Antivirus.
+  L"mpk.dll",                     // KGB Spy.
   L"npdivx32.dll",                // DivX.
   L"npggNT.des",                  // GameGuard 2008.
   L"npggNT.dll",                  // GameGuard (older).
@@ -84,6 +86,7 @@ const wchar_t* const kTroublesomeDlls[] = {
   L"pctavhook.dll",               // PC Tools Antivirus.
   L"pctgmhk.dll",                 // PC Tools Spyware Doctor.
   L"prntrack.dll",                // Pharos Systems.
+  L"protector.dll",               // Unknown (suspected malware).
   L"radhslib.dll",                // Radiant Naomi Internet Filter.
   L"radprlib.dll",                // Radiant Naomi Internet Filter.
   L"rapportnikko.dll",            // Trustware Rapport.
