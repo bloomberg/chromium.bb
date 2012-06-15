@@ -744,6 +744,7 @@ class Manifest(object):
     self.default = None
     self.projects = {}
     self.remotes = {}
+    self.revision = None
     self._RunParser(source)
 
   def _RunParser(self, source):
@@ -765,6 +766,8 @@ class Manifest(object):
       self.remotes[attrs['name']] = attrs
     elif name == 'project':
       self.projects[attrs['name']] = attrs
+    elif name == 'manifest':
+      self.revision = attrs.get('revision')
 
   def ProjectExists(self, project):
     """Returns True if a project is in this manifest."""
@@ -807,6 +810,9 @@ class Manifest(object):
 
       attrs['push_remote_url'] = constants.CROS_REMOTES[remote]
       attrs['push_url'] = '%s/%s' % (attrs['push_remote_url'], attrs['name'])
+    groups = set(attrs.get('groups', 'default').replace(',', ' ').split())
+    groups.add('default')
+    attrs['groups'] = frozenset(groups)
 
     # Compute the local ref space.
     # Sanitize a couple path fragments to simplify assumptions in this
@@ -883,6 +889,7 @@ class ManifestCheckout(Manifest):
     self.manifest_branch = self._GetManifestsBranch(self.root)
     self.default_branch = 'refs/remotes/m/%s' % self.manifest_branch
     self._content_merging = {}
+    self.configured_groups = self._GetManifestGroups(self.root)
     Manifest.__init__(self, manifest_path)
 
   @staticmethod
@@ -963,6 +970,25 @@ class ManifestCheckout(Manifest):
   def _FinalizeProjectData(self, attrs):
     Manifest._FinalizeProjectData(self, attrs)
     attrs['local_path'] = os.path.join(self.root, attrs['path'])
+
+  @staticmethod
+  def _GetManifestGroups(root):
+    """Discern which manifest groups were enabled for this checkout."""
+    path = os.path.join(root, '.repo', 'manifests.git')
+    try:
+      result = RunGitCommand(path, ['config', '--get', 'manifest.groups'])
+    except RunCommandError, e:
+      if e.result.returncode == 1:
+        # Value wasn't found, which is fine.
+        return frozenset(['default'])
+      # If exit code 2, multiple values matched (broken checkout).  Anything
+      # else, git internal error.
+      raise
+
+    result = result.output.replace(',', ' ').split()
+    if not result:
+      result = ['default']
+    return frozenset(result)
 
   @staticmethod
   def _GetManifestsBranch(root):
