@@ -736,7 +736,7 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
   NSRect bounds = [controlView bounds];
   if (window) {
     NSPoint mousePoint = [window mouseLocationOutsideOfEventStream];
-    mousePoint = [controlView convertPointFromBase:mousePoint];
+    mousePoint = [controlView convertPoint:mousePoint fromView:nil];
     mouseInView = [controlView mouse:mousePoint inRect:bounds];
   }
   return mouseInView;
