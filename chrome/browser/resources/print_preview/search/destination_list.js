@@ -127,7 +127,7 @@ cr.define('print_preview', function() {
    * @const
    * @private
    */
-  DestinationList.SHORT_LIST_SIZE_ = 5;
+  DestinationList.SHORT_LIST_SIZE_ = 4;
 
   DestinationList.prototype = {
     __proto__: print_preview.Component.prototype,
