@@ -85,9 +85,6 @@ class MockGDataFileSystem : public GDataFileSystemInterface {
   MOCK_METHOD3(SetPinState, void(const FilePath&,
                                  bool,
                                  const FileOperationCallback& callback));
-  MOCK_METHOD3(SetMountedState, void(const FilePath&,
-                                     bool,
-                                     const SetMountedStateCallback& callback));
   MOCK_METHOD4(AddUploadedFile,
                void(const FilePath& file,
                     DocumentEntry* entry,
