@@ -12,6 +12,7 @@ const char kChromotingTokenDefaultServiceName[] = "chromiumsync";
 
 const char kChromotingXmlNamespace[] = "google:remoting";
 
+const char kAudioChannelName[] = "audio";
 const char kControlChannelName[] = "control";
 const char kEventChannelName[] = "event";
 const char kVideoChannelName[] = "video";
