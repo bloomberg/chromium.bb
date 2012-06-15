@@ -30,16 +30,15 @@ std::string Channel::GenerateUniqueRandomChannelID() {
   // component. The strong random component prevents other processes from
   // hijacking or squatting on predictable channel names.
 
-  int process_id;
 #if !defined(OS_NACL)
-  process_id = base::GetCurrentProcId();
-#else
-  process_id = 0;
-#endif
+  int process_id = base::GetCurrentProcId();
   return base::StringPrintf("%d.%u.%d",
       process_id,
       g_last_id.GetNext(),
       base::RandInt(0, std::numeric_limits<int32>::max()));
+#else
+  return std::string();
+#endif
 }
 
 }  // namespace IPC
