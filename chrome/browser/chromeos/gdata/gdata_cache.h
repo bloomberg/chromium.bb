@@ -11,6 +11,8 @@
 
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/platform_file.h"
 #include "base/threading/sequenced_worker_pool.h"
 
@@ -22,12 +24,20 @@ namespace gdata {
 typedef base::Callback<void(base::PlatformFileError error,
                             const FilePath& file_path)> SetMountedStateCallback;
 
+// Callback for completion of cache operation.
+typedef base::Callback<void(base::PlatformFileError error,
+                            const std::string& resource_id,
+                            const std::string& md5)> CacheOperationCallback;
+
 // GDataCache is used to maintain cache states of GDataFileSystem.
 //
 // All non-static public member functions, unless mentioned otherwise (see
 // GetCacheFilePath() for example), should be called from the sequenced
-// worker pool with the sequence token set by CreateGDataCache(). This
+// worker pool with the sequence token set by CreateGDataCacheOnUIThread(). This
 // threading model is enforced by AssertOnSequencedWorkerPool().
+//
+// TODO(hashimoto): Change threading model of this class to make public methods
+// being called on UI thread unless mentioned otherwise. crbug.com/132926
 class GDataCache {
  public:
   // Enum defining GCache subdirectory location.
@@ -68,6 +78,24 @@ class GDataCache {
   enum FileOperationType {
     FILE_OPERATION_MOVE = 0,
     FILE_OPERATION_COPY,
+  };
+
+  // Used to notify events. All events are notified on UI thread.
+  class Observer {
+   public:
+    // Triggered when the cache has been initialized.
+    virtual void OnCacheInitialized() {}
+
+    // Triggered when a file has been pinned successfully.
+    virtual void OnCachePinned(const std::string& resource_id,
+                               const std::string& md5) {}
+
+    // Triggered when a file has been unpinned successfully.
+    virtual void OnCacheUnpinned(const std::string& resource_id,
+                                 const std::string& md5) {}
+
+   protected:
+    virtual ~Observer() {}
   };
 
   // Structure to store information of an existing cache file.
@@ -136,8 +164,6 @@ class GDataCache {
   // A map table of cache file's resource id to its CacheEntry* entry.
   typedef std::map<std::string, CacheEntry> CacheMap;
 
-  virtual ~GDataCache();
-
   // Returns the sub-directory under gdata cache directory for the given sub
   // directory type. Example:  <user_profile_dir>/GCache/v1/tmp
   //
@@ -158,6 +184,14 @@ class GDataCache {
   // Can be called on any thread.
   bool IsUnderGDataCacheDirectory(const FilePath& path) const;
 
+  // Adds observer.
+  // Must be called on UI thread.
+  void AddObserver(Observer* observer);
+
+  // Removes observer.
+  // Must be called on UI thread.
+  void RemoveObserver(Observer* observer);
+
   // Frees up disk space to store the given number of bytes, while keeping
   // kMinFreSpace bytes on the disk, if needed.  |has_enough_space| is
   // updated to indicate if we have enough space.
@@ -176,34 +210,27 @@ class GDataCache {
   // - if necessary, creates symlink
   // - deletes stale cached versions of |resource_id| in
   // |dest_path|'s directory.
-  void Store(const std::string& resource_id,
-             const std::string& md5,
-             const FilePath& source_path,
-             FileOperationType file_operation_type,
-             base::PlatformFileError* error);
+  void StoreOnUIThread(const std::string& resource_id,
+                       const std::string& md5,
+                       const FilePath& source_path,
+                       FileOperationType file_operation_type,
+                       const CacheOperationCallback& callback);
 
   // Modifies cache state, which involves the following:
   // - moves |source_path| to |dest_path| in persistent dir if
   //   file is not dirty
   // - creates symlink in pinned dir that references downloaded or locally
   //   modified file
-  void Pin(const std::string& resource_id,
-           const std::string& md5,
-           FileOperationType file_operation_type,
-           base::PlatformFileError* error);
+  void PinOnUIThread(const std::string& resource_id,
+                     const std::string& md5,
+                     const CacheOperationCallback& callback);
 
   // Modifies cache state, which involves the following:
   // - moves |source_path| to |dest_path| in tmp dir if file is not dirty
   // - deletes symlink from pinned dir
-  void Unpin(const std::string& resource_id,
-             const std::string& md5,
-             FileOperationType file_operation_type,
-             base::PlatformFileError* error);
-
-  // Utility method to call SetMountedState on UI thread.
-  void SetMountedStateOnUIThread(const FilePath& file_path,
-                                 bool to_mount,
-                                 const SetMountedStateCallback& callback);
+  void UnpinOnUIThread(const std::string& resource_id,
+                       const std::string& md5,
+                       const CacheOperationCallback& callback);
 
   // Modifies cache state, which involves the following:
   // - moves |source_path| to |dest_path|, where
@@ -212,10 +239,9 @@ class GDataCache {
   //       and has .<md5>.mounted extension;
   //   if we're unmounting: the opposite is true for the two paths, i.e.
   //       |dest_path| is the mounted path and |source_path| the unmounted path.
-  void SetMountedState(const FilePath& file_path,
-                       bool to_mount,
-                       base::PlatformFileError* error,
-                       FilePath* cache_file_path);
+  void SetMountedStateOnUIThread(const FilePath& file_path,
+                                 bool to_mount,
+                                 const SetMountedStateCallback& callback);
 
   // Modifies cache state, which involves the following:
   // - moves |source_path| to |dest_path| in persistent dir, where
@@ -229,10 +255,9 @@ class GDataCache {
 
   // Modifies cache state, i.e. creates symlink in outgoing
   // dir to reference dirty file in persistent dir.
-  void CommitDirty(const std::string& resource_id,
-                   const std::string& md5,
-                   FileOperationType file_operation_type,
-                   base::PlatformFileError* error);
+  void CommitDirtyOnUIThread(const std::string& resource_id,
+                             const std::string& md5,
+                             const CacheOperationCallback& callback);
 
   // Modifies cache state, which involves the following:
   // - moves |source_path| to |dest_path| in persistent dir if
@@ -241,20 +266,22 @@ class GDataCache {
   // - deletes symlink in outgoing dir
   // - if file is pinned, updates symlink in pinned dir to reference
   //   |dest_path|
-  void ClearDirty(const std::string& resource_id,
-                  const std::string& md5,
-                  FileOperationType file_operation_type,
-                  base::PlatformFileError* error);
+  void ClearDirtyOnUIThread(const std::string& resource_id,
+                            const std::string& md5,
+                            const CacheOperationCallback& callback);
 
   // Does the following:
   // - remove all delete stale cache versions corresponding to |resource_id| in
   //   persistent, tmp and pinned directories
   // - remove entry corresponding to |resource_id| from cache map.
-  void Remove(const std::string& resource_id,
-              base::PlatformFileError* error);
+  void RemoveOnUIThread(const std::string& resource_id,
+                        const CacheOperationCallback& callback);
 
   // TODO(hashimoto): Remove this method when crbug.com/131756 is fixed.
   const std::vector<FilePath>& cache_paths() const { return cache_paths_; }
+
+  // Utility method to call Initialize on UI thread.
+  void RequestInitializeOnUIThread();
 
   // Initializes cache.
   virtual void Initialize() = 0;
@@ -289,10 +316,13 @@ class GDataCache {
   //
   // For testing, the thread assertion can be disabled by passing NULL and
   // the default value of SequenceToken.
-  static scoped_ptr<GDataCache> CreateGDataCache(
+  static GDataCache* CreateGDataCacheOnUIThread(
       const FilePath& cache_root_path,
       base::SequencedWorkerPool* pool,
       const base::SequencedWorkerPool::SequenceToken& sequence_token);
+
+  // Deletes the cache.
+  void DestroyOnUIThread();
 
   // Gets the cache root path (i.e. <user_profile_dir>/GCache/v1) from the
   // profile.
@@ -304,12 +334,74 @@ class GDataCache {
       const FilePath& cache_root_path,
       base::SequencedWorkerPool* pool_,
       const base::SequencedWorkerPool::SequenceToken& sequence_token);
+  virtual ~GDataCache();
 
   // Checks whether the current thread is on the right sequenced worker pool
   // with the right sequence ID. If not, DCHECK will fail.
   void AssertOnSequencedWorkerPool();
 
  private:
+  friend class GDataCacheTest;
+
+  // Deletes the cache.
+  void Destroy();
+
+  // Used to implement StoreOnUIThread.
+  void Store(const std::string& resource_id,
+             const std::string& md5,
+             const FilePath& source_path,
+             FileOperationType file_operation_type,
+             base::PlatformFileError* error);
+
+  // Used to implement PinOnUIThread.
+  void Pin(const std::string& resource_id,
+           const std::string& md5,
+           FileOperationType file_operation_type,
+           base::PlatformFileError* error);
+
+  // Used to implement UnpinOnUIThread.
+  void Unpin(const std::string& resource_id,
+             const std::string& md5,
+             FileOperationType file_operation_type,
+             base::PlatformFileError* error);
+
+  // Used to implement SetMountedStateOnUIThread.
+  void SetMountedState(const FilePath& file_path,
+                       bool to_mount,
+                       base::PlatformFileError* error,
+                       FilePath* cache_file_path);
+
+  // Used to implement CommitDirtyOnUIThread.
+  void CommitDirty(const std::string& resource_id,
+                   const std::string& md5,
+                   FileOperationType file_operation_type,
+                   base::PlatformFileError* error);
+
+  // Used to implement ClearDirtyOnUIThread.
+  void ClearDirty(const std::string& resource_id,
+                  const std::string& md5,
+                  FileOperationType file_operation_type,
+                  base::PlatformFileError* error);
+
+  // Used to implement RemoveOnUIThread.
+  void Remove(const std::string& resource_id,
+              base::PlatformFileError* error);
+
+  // Notifies the observers when cache is initialized.
+  void OnInitialized();
+
+  // Runs callback and notifies the observers when file is pinned.
+  void OnPinned(base::PlatformFileError* error,
+                const std::string& resource_id,
+                const std::string& md5,
+                const CacheOperationCallback& callback);
+
+  // Runs callback and notifies the observers when file is unpinned.
+  void OnUnpinned(base::PlatformFileError* error,
+                  const std::string& resource_id,
+                  const std::string& md5,
+                  const CacheOperationCallback& callback);
+
   // The root directory of the cache (i.e. <user_profile_dir>/GCache/v1).
   const FilePath cache_root_path_;
   // Paths for all subdirectories of GCache, one for each
@@ -317,6 +409,13 @@ class GDataCache {
   const std::vector<FilePath> cache_paths_;
   base::SequencedWorkerPool* pool_;
   const base::SequencedWorkerPool::SequenceToken sequence_token_;
+
+  // WeakPtrFactory and WeakPtr bound to the UI thread.
+  base::WeakPtrFactory<GDataCache> ui_weak_ptr_factory_;
+  base::WeakPtr<GDataCache> ui_weak_ptr_;
+
+  // List of observers, this member must be accessed on UI thread.
+  ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(GDataCache);
 };

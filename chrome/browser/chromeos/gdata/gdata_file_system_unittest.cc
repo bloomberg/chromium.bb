@@ -196,24 +196,25 @@ class GDataFileSystemTest : public testing::Test {
     mock_free_disk_space_checker_ = new MockFreeDiskSpaceGetter;
     SetFreeDiskSpaceGetterForTesting(mock_free_disk_space_checker_);
 
-    cache_.reset(GDataCache::CreateGDataCache(
+    cache_ = GDataCache::CreateGDataCacheOnUIThread(
         GDataCache::GetCacheRootPath(profile_.get()),
         content::BrowserThread::GetBlockingPool(),
-        sequence_token_).release());
+        sequence_token_);
 
     ASSERT_FALSE(file_system_);
     file_system_ = new GDataFileSystem(profile_.get(),
-                                       cache_.get(),
+                                       cache_,
                                        mock_doc_service_,
                                        sequence_token_);
 
     mock_sync_client_.reset(new StrictMock<MockGDataSyncClient>);
-    file_system_->AddObserver(mock_sync_client_.get());
+    cache_->AddObserver(mock_sync_client_.get());
 
     mock_directory_observer_.reset(new StrictMock<MockDirectoryChangeObserver>);
     file_system_->AddObserver(mock_directory_observer_.get());
 
     file_system_->Initialize();
+    cache_->RequestInitializeOnUIThread();
     // Initialize() initiates the cache initialization on the blocking thread
     // pool. Block until it's done to ensure that the cache initialization is
     // done for every test. Otherwise, completion timing is nondeterministic.
@@ -229,10 +230,7 @@ class GDataFileSystemTest : public testing::Test {
     delete mock_doc_service_;
     mock_doc_service_ = NULL;
     SetFreeDiskSpaceGetterForTesting(NULL);
-    content::BrowserThread::GetBlockingPool()
-        ->GetSequencedTaskRunner(sequence_token_)->PostTask(
-            FROM_HERE,
-            base::Bind(&base::DeletePointer<GDataCache>, cache_.release()));
+    cache_->DestroyOnUIThread();
 
     // Run the remaining tasks on both the main thread and the IO thread, so
     // that all PostTaskAndReply round trip finish (that is, both the 1st and
@@ -505,7 +503,8 @@ class GDataFileSystemTest : public testing::Test {
     expected_cache_state_ = expected_cache_state;
     expected_sub_dir_type_ = expected_sub_dir_type;
 
-    file_system_->StoreToCache(resource_id, md5, source_path,
+    cache_->StoreOnUIThread(
+        resource_id, md5, source_path,
         GDataCache::FILE_OPERATION_COPY,
         base::Bind(&GDataFileSystemTest::VerifyCacheFileState,
                    base::Unretained(this)));
@@ -554,7 +553,8 @@ class GDataFileSystemTest : public testing::Test {
                            base::PlatformFileError expected_error) {
     expected_error_ = expected_error;
 
-    file_system_->RemoveFromCache(resource_id,
+    cache_->RemoveOnUIThread(
+        resource_id,
         base::Bind(&GDataFileSystemTest::VerifyRemoveFromCache,
                    base::Unretained(this)));
 
@@ -666,7 +666,8 @@ class GDataFileSystemTest : public testing::Test {
     expected_cache_state_ = expected_cache_state;
     expected_sub_dir_type_ = expected_sub_dir_type;
 
-    file_system_->Pin(resource_id, md5,
+    cache_->PinOnUIThread(
+        resource_id, md5,
         base::Bind(&GDataFileSystemTest::VerifyCacheFileState,
                    base::Unretained(this)));
 
@@ -683,7 +684,8 @@ class GDataFileSystemTest : public testing::Test {
     expected_cache_state_ = expected_cache_state;
     expected_sub_dir_type_ = expected_sub_dir_type;
 
-    file_system_->Unpin(resource_id, md5,
+    cache_->UnpinOnUIThread(
+        resource_id, md5,
         base::Bind(&GDataFileSystemTest::VerifyCacheFileState,
                    base::Unretained(this)));
 
@@ -760,7 +762,8 @@ class GDataFileSystemTest : public testing::Test {
     expected_sub_dir_type_ = expected_sub_dir_type;
     expect_outgoing_symlink_ = true;
 
-    file_system_->CommitDirtyInCache(resource_id, md5,
+    cache_->CommitDirtyOnUIThread(
+        resource_id, md5,
         base::Bind(&GDataFileSystemTest::VerifyCacheFileState,
                    base::Unretained(this)));
 
@@ -778,7 +781,7 @@ class GDataFileSystemTest : public testing::Test {
     expected_sub_dir_type_ = expected_sub_dir_type;
     expect_outgoing_symlink_ = false;
 
-    file_system_->ClearDirtyInCache(resource_id, md5,
+    cache_->ClearDirtyOnUIThread(resource_id, md5,
         base::Bind(&GDataFileSystemTest::VerifyCacheFileState,
                    base::Unretained(this)));
 
@@ -919,10 +922,10 @@ class GDataFileSystemTest : public testing::Test {
     // Temporarily remove the mock sync client while rescanning. Otherwise,
     // OnCacheInitialized() is called again here, which breaks the
     // expectation set in SetUp().
-    file_system_->RemoveObserver(mock_sync_client_.get());
-    file_system_->RequestInitializeCacheForTesting();  // Force a re-scan.
+    cache_->RemoveObserver(mock_sync_client_.get());
+    cache_->RequestInitializeOnUIThread();  // Force a re-scan.
     RunAllPendingForIO();  // Wait until the initialization is done.
-    file_system_->AddObserver(mock_sync_client_.get());
+    cache_->AddObserver(mock_sync_client_.get());
   }
 
   void TestInitializeCache() {
@@ -1263,7 +1266,7 @@ class GDataFileSystemTest : public testing::Test {
   const base::SequencedWorkerPool::SequenceToken sequence_token_;
   scoped_ptr<TestingProfile> profile_;
   scoped_refptr<CallbackHelper> callback_helper_;
-  scoped_ptr<GDataCache> cache_;
+  GDataCache* cache_;
   GDataFileSystem* file_system_;
   MockDocumentsService* mock_doc_service_;
   MockFreeDiskSpaceGetter* mock_free_disk_space_checker_;
@@ -2460,8 +2463,8 @@ TEST_F(GDataFileSystemTest, PinAndUnpin) {
 
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
-  EXPECT_CALL(*mock_sync_client_, OnFilePinned(resource_id, md5)).Times(2);
-  EXPECT_CALL(*mock_sync_client_, OnFileUnpinned(resource_id, md5)).Times(1);
+  EXPECT_CALL(*mock_sync_client_, OnCachePinned(resource_id, md5)).Times(2);
+  EXPECT_CALL(*mock_sync_client_, OnCacheUnpinned(resource_id, md5)).Times(1);
 
   // First store a file to cache.
   TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
@@ -2491,8 +2494,8 @@ TEST_F(GDataFileSystemTest, PinAndUnpin) {
 
   // Pin a non-existent file in cache.
   resource_id = "document:1a2b";
-  EXPECT_CALL(*mock_sync_client_, OnFilePinned(resource_id, md5)).Times(1);
-  EXPECT_CALL(*mock_sync_client_, OnFileUnpinned(resource_id, md5)).Times(1);
+  EXPECT_CALL(*mock_sync_client_, OnCachePinned(resource_id, md5)).Times(1);
+  EXPECT_CALL(*mock_sync_client_, OnCacheUnpinned(resource_id, md5)).Times(1);
 
   num_callback_invocations_ = 0;
   TestPin(resource_id, md5, base::PLATFORM_FILE_OK,
@@ -2510,8 +2513,8 @@ TEST_F(GDataFileSystemTest, PinAndUnpin) {
   // Unpin a file that doesn't exist in cache and is not pinned, i.e. cache
   // has zero knowledge of the file.
   resource_id = "not-in-cache:1a2b";
-  // Because unpinning will fail, OnFileUnpinned() won't be run.
-  EXPECT_CALL(*mock_sync_client_, OnFileUnpinned(resource_id, md5)).Times(0);
+  // Because unpinning will fail, OnCacheUnpinned() won't be run.
+  EXPECT_CALL(*mock_sync_client_, OnCacheUnpinned(resource_id, md5)).Times(0);
 
   num_callback_invocations_ = 0;
   TestUnpin(resource_id, md5, base::PLATFORM_FILE_ERROR_NOT_FOUND,
@@ -2523,7 +2526,7 @@ TEST_F(GDataFileSystemTest, PinAndUnpin) {
 TEST_F(GDataFileSystemTest, StoreToCachePinned) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
-  EXPECT_CALL(*mock_sync_client_, OnFilePinned(resource_id, md5)).Times(1);
+  EXPECT_CALL(*mock_sync_client_, OnCachePinned(resource_id, md5)).Times(1);
 
   // Pin a non-existent file.
   TestPin(resource_id, md5, base::PLATFORM_FILE_OK,
@@ -2552,7 +2555,7 @@ TEST_F(GDataFileSystemTest, StoreToCachePinned) {
 TEST_F(GDataFileSystemTest, GetFromCachePinned) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
-  EXPECT_CALL(*mock_sync_client_, OnFilePinned(resource_id, md5)).Times(1);
+  EXPECT_CALL(*mock_sync_client_, OnCachePinned(resource_id, md5)).Times(1);
 
   // Pin a non-existent file.
   TestPin(resource_id, md5, base::PLATFORM_FILE_OK,
@@ -2583,7 +2586,7 @@ TEST_F(GDataFileSystemTest, RemoveFromCachePinned) {
   // Use alphanumeric characters for resource_id.
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
-  EXPECT_CALL(*mock_sync_client_, OnFilePinned(resource_id, md5)).Times(1);
+  EXPECT_CALL(*mock_sync_client_, OnCachePinned(resource_id, md5)).Times(1);
 
   // Store a file to cache, and pin it.
   TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
@@ -2601,7 +2604,7 @@ TEST_F(GDataFileSystemTest, RemoveFromCachePinned) {
   // Repeat using non-alphanumeric characters for resource id, including '.'
   // which is an extension separator.
   resource_id = "pdf:`~!@#$%^&*()-_=+[{|]}\\;',<.>/?";
-  EXPECT_CALL(*mock_sync_client_, OnFilePinned(resource_id, md5)).Times(1);
+  EXPECT_CALL(*mock_sync_client_, OnCachePinned(resource_id, md5)).Times(1);
 
   TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
                    base::PLATFORM_FILE_OK, GDataCache::CACHE_STATE_PRESENT,
@@ -2650,7 +2653,7 @@ TEST_F(GDataFileSystemTest, DirtyCacheSimple) {
 TEST_F(GDataFileSystemTest, DirtyCachePinned) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
-  EXPECT_CALL(*mock_sync_client_, OnFilePinned(resource_id, md5)).Times(1);
+  EXPECT_CALL(*mock_sync_client_, OnCachePinned(resource_id, md5)).Times(1);
 
   // First store a file to cache and pin it.
   TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
@@ -2693,8 +2696,8 @@ TEST_F(GDataFileSystemTest, PinAndUnpinDirtyCache) {
 
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
-  EXPECT_CALL(*mock_sync_client_, OnFilePinned(resource_id, md5)).Times(1);
-  EXPECT_CALL(*mock_sync_client_, OnFileUnpinned(resource_id, md5)).Times(1);
+  EXPECT_CALL(*mock_sync_client_, OnCachePinned(resource_id, md5)).Times(1);
+  EXPECT_CALL(*mock_sync_client_, OnCacheUnpinned(resource_id, md5)).Times(1);
 
   // First store a file to cache and mark it as dirty.
   TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
@@ -2863,7 +2866,7 @@ TEST_F(GDataFileSystemTest, DirtyCacheInvalid) {
 TEST_F(GDataFileSystemTest, RemoveFromDirtyCache) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
-  EXPECT_CALL(*mock_sync_client_, OnFilePinned(resource_id, md5)).Times(1);
+  EXPECT_CALL(*mock_sync_client_, OnCachePinned(resource_id, md5)).Times(1);
 
   // Store a file to cache, pin it, mark it dirty and commit it.
   TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
@@ -2927,7 +2930,7 @@ TEST_F(GDataFileSystemTest, GetCacheState) {
     std::string resource_id = file->resource_id();
     std::string md5 = file->file_md5();
 
-    EXPECT_CALL(*mock_sync_client_, OnFilePinned(resource_id, md5)).Times(1);
+    EXPECT_CALL(*mock_sync_client_, OnCachePinned(resource_id, md5)).Times(1);
 
     // Store a file corresponding to |resource_id| and |md5| to cache, and pin
     // it.

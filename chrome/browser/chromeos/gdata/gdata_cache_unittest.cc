@@ -8,8 +8,10 @@
 #include <utility>
 #include <vector>
 
+#include "base/message_loop.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gdata {
@@ -28,60 +30,79 @@ void InsertIntoMap(GDataCache::CacheMap* cache_map,
 
 }  // namespace
 
-// Test all the api methods of GDataCache except for RemoveTemporaryFiles.
-TEST(GDataCacheTest, CacheTest) {
-  scoped_ptr<GDataCache> cache(GDataCache::CreateGDataCache(
-      FilePath(kTestCacheRootPath),
-      NULL,
-      base::SequencedWorkerPool::SequenceToken()));
+class GDataCacheTest : public testing::Test {
+ public:
+  GDataCacheTest()
+      : ui_thread_(content::BrowserThread::UI, &message_loop_),
+        cache_(NULL) {}
 
+  virtual void SetUp() OVERRIDE {
+    cache_ = GDataCache::CreateGDataCacheOnUIThread(
+        FilePath(kTestCacheRootPath),
+        NULL,
+        base::SequencedWorkerPool::SequenceToken());
+  }
+
+  virtual void TearDown() OVERRIDE {
+    delete cache_;
+    cache_ = NULL;
+  }
+
+ protected:
+  MessageLoopForUI message_loop_;
+  content::TestBrowserThread ui_thread_;
+  GDataCache* cache_;
+};
+
+// Test all the api methods of GDataCache except for RemoveTemporaryFiles.
+TEST_F(GDataCacheTest, CacheTest) {
   // Save an initial entry.
   std::string test_resource_id("test_resource_id");
   std::string test_file_md5("test_file_md5");
   GDataCache::CacheSubDirectoryType test_sub_dir_type(
       GDataCache::CACHE_TYPE_PERSISTENT);
   int test_cache_state(GDataCache::CACHE_STATE_PRESENT);
-  cache->UpdateCache(test_resource_id, test_file_md5,
+  cache_->UpdateCache(test_resource_id, test_file_md5,
       test_sub_dir_type, test_cache_state);
 
   // Test that the entry can be retrieved.
   scoped_ptr<GDataCache::CacheEntry> cache_entry =
-      cache->GetCacheEntry(test_resource_id, test_file_md5);
+      cache_->GetCacheEntry(test_resource_id, test_file_md5);
   ASSERT_TRUE(cache_entry.get());
   EXPECT_EQ(test_file_md5, cache_entry->md5);
   EXPECT_EQ(test_sub_dir_type, cache_entry->sub_dir_type);
   EXPECT_EQ(test_cache_state, cache_entry->cache_state);
 
   // Empty md5 should also work.
-  cache_entry = cache->GetCacheEntry(test_resource_id, std::string()).Pass();
+  cache_entry = cache_->GetCacheEntry(test_resource_id, std::string()).Pass();
   ASSERT_TRUE(cache_entry.get());
   EXPECT_EQ(test_file_md5, cache_entry->md5);
 
   // resource_id doesn't exist.
-  cache_entry = cache->GetCacheEntry("not_found_resource_id",
+  cache_entry = cache_->GetCacheEntry("not_found_resource_id",
       std::string()).Pass();
   EXPECT_FALSE(cache_entry.get());
 
   // md5 doesn't match.
-  cache_entry = cache->GetCacheEntry(test_resource_id, "mismatch_md5").Pass();
+  cache_entry = cache_->GetCacheEntry(test_resource_id, "mismatch_md5").Pass();
   EXPECT_FALSE(cache_entry.get());
 
   // Update all attributes.
   test_file_md5 = "test_file_md5_2";
   test_sub_dir_type = GDataCache::CACHE_TYPE_PINNED;
   test_cache_state = GDataCache::CACHE_STATE_PINNED;
-  cache->UpdateCache(test_resource_id, test_file_md5, test_sub_dir_type,
+  cache_->UpdateCache(test_resource_id, test_file_md5, test_sub_dir_type,
       test_cache_state);
 
   // Make sure the values took.
-  cache_entry = cache->GetCacheEntry(test_resource_id, test_file_md5).Pass();
+  cache_entry = cache_->GetCacheEntry(test_resource_id, test_file_md5).Pass();
   ASSERT_TRUE(cache_entry.get());
   EXPECT_EQ(test_file_md5, cache_entry->md5);
   EXPECT_EQ(test_sub_dir_type, cache_entry->sub_dir_type);
   EXPECT_EQ(test_cache_state, cache_entry->cache_state);
 
   // Empty m5 should work.
-  cache_entry = cache->GetCacheEntry(test_resource_id, std::string()).Pass();
+  cache_entry = cache_->GetCacheEntry(test_resource_id, std::string()).Pass();
   ASSERT_TRUE(cache_entry.get());
   EXPECT_EQ(test_file_md5, cache_entry->md5);
 
@@ -89,29 +110,29 @@ TEST(GDataCacheTest, CacheTest) {
   test_file_md5 = "test_file_md5_3";
   test_sub_dir_type = GDataCache::CACHE_TYPE_TMP;
   test_cache_state = GDataCache::CACHE_STATE_DIRTY;
-  cache->UpdateCache(test_resource_id, test_file_md5, test_sub_dir_type,
+  cache_->UpdateCache(test_resource_id, test_file_md5, test_sub_dir_type,
       test_cache_state);
 
   // Make sure the values took.
-  cache_entry = cache->GetCacheEntry(test_resource_id, test_file_md5).Pass();
+  cache_entry = cache_->GetCacheEntry(test_resource_id, test_file_md5).Pass();
   ASSERT_TRUE(cache_entry.get());
   EXPECT_EQ(test_file_md5, cache_entry->md5);
   EXPECT_EQ(test_sub_dir_type, cache_entry->sub_dir_type);
   EXPECT_EQ(test_cache_state, cache_entry->cache_state);
 
   // Empty md5 should work.
-  cache_entry = cache->GetCacheEntry(test_resource_id, std::string()).Pass();
+  cache_entry = cache_->GetCacheEntry(test_resource_id, std::string()).Pass();
   ASSERT_TRUE(cache_entry.get());
   EXPECT_EQ(test_file_md5, cache_entry->md5);
 
   // Mismatched md5 should also work for dirty entries.
-  cache_entry = cache->GetCacheEntry(test_resource_id, "mismatch_md5").Pass();
+  cache_entry = cache_->GetCacheEntry(test_resource_id, "mismatch_md5").Pass();
   ASSERT_TRUE(cache_entry.get());
   EXPECT_EQ(test_file_md5, cache_entry->md5);
 
   // Remove the entry.
-  cache->RemoveFromCache(test_resource_id);
-  cache_entry = cache->GetCacheEntry(test_resource_id, std::string()).Pass();
+  cache_->RemoveFromCache(test_resource_id);
+  cache_entry = cache_->GetCacheEntry(test_resource_id, std::string()).Pass();
   EXPECT_FALSE(cache_entry.get());
 
   // Add another one.
@@ -119,11 +140,11 @@ TEST(GDataCacheTest, CacheTest) {
   test_file_md5 = "test_file_md5_4";
   test_sub_dir_type = GDataCache::CACHE_TYPE_TMP_DOWNLOADS;
   test_cache_state = GDataCache::CACHE_STATE_PRESENT;
-  cache->UpdateCache(test_resource_id, test_file_md5, test_sub_dir_type,
+  cache_->UpdateCache(test_resource_id, test_file_md5, test_sub_dir_type,
       test_cache_state);
 
   // Make sure the values took.
-  cache_entry = cache->GetCacheEntry(test_resource_id, test_file_md5).Pass();
+  cache_entry = cache_->GetCacheEntry(test_resource_id, test_file_md5).Pass();
   ASSERT_TRUE(cache_entry.get());
   EXPECT_EQ(test_file_md5, cache_entry->md5);
   EXPECT_EQ(test_sub_dir_type, cache_entry->sub_dir_type);
@@ -133,15 +154,15 @@ TEST(GDataCacheTest, CacheTest) {
   test_file_md5 = "test_file_md5_5";
   test_sub_dir_type = GDataCache::CACHE_TYPE_TMP_DOCUMENTS;
   test_cache_state = GDataCache::CACHE_STATE_NONE;
-  cache->UpdateCache(test_resource_id, test_file_md5, test_sub_dir_type,
+  cache_->UpdateCache(test_resource_id, test_file_md5, test_sub_dir_type,
       test_cache_state);
 
-  cache_entry = cache->GetCacheEntry(test_resource_id, std::string()).Pass();
+  cache_entry = cache_->GetCacheEntry(test_resource_id, std::string()).Pass();
   EXPECT_FALSE(cache_entry.get());
 }
 
 // Test GDataCache::RemoveTemporaryFiles.
-TEST(GDataCacheTest, RemoveTemporaryFilesTest) {
+TEST_F(GDataCacheTest, RemoveTemporaryFilesTest) {
   GDataCache::CacheMap cache_map;
   InsertIntoMap(&cache_map,
       "<resource_id_1>",
@@ -164,17 +185,13 @@ TEST(GDataCacheTest, RemoveTemporaryFilesTest) {
       GDataCache::CACHE_TYPE_TMP,
       GDataCache::CACHE_STATE_PRESENT);
 
-  scoped_ptr<GDataCache> cache(GDataCache::CreateGDataCache(
-      FilePath(kTestCacheRootPath),
-      NULL,
-      base::SequencedWorkerPool::SequenceToken()));
-  cache->SetCacheMap(cache_map);
-  cache->RemoveTemporaryFiles();
+  cache_->SetCacheMap(cache_map);
+  cache_->RemoveTemporaryFiles();
   // resource 1 and 4 should be gone, as these are CACHE_TYPE_TMP.
-  EXPECT_FALSE(cache->GetCacheEntry("<resource_id_1>", "").get());
-  EXPECT_TRUE(cache->GetCacheEntry("<resource_id_2>", "").get());
-  EXPECT_TRUE(cache->GetCacheEntry("<resource_id_3>", "").get());
-  EXPECT_FALSE(cache->GetCacheEntry("<resource_id_4>", "").get());
+  EXPECT_FALSE(cache_->GetCacheEntry("<resource_id_1>", "").get());
+  EXPECT_TRUE(cache_->GetCacheEntry("<resource_id_2>", "").get());
+  EXPECT_TRUE(cache_->GetCacheEntry("<resource_id_3>", "").get());
+  EXPECT_FALSE(cache_->GetCacheEntry("<resource_id_4>", "").get());
 }
 
 }  // namespace gdata

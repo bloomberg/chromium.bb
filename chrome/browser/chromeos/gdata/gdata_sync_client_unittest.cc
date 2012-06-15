@@ -57,22 +57,18 @@ class GDataSyncClientTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     // Initialize the sync client.
-    cache_.reset(GDataCache::CreateGDataCache(
+    cache_ = GDataCache::CreateGDataCacheOnUIThread(
         temp_dir_.path(),
         content::BrowserThread::GetBlockingPool(),
-        sequence_token_).release());
+        sequence_token_);
     sync_client_.reset(new GDataSyncClient(profile_.get(),
                                            mock_file_system_.get(),
-                                           cache_.get()));
+                                           cache_));
 
     EXPECT_CALL(*mock_network_library_, AddNetworkManagerObserver(
         sync_client_.get())).Times(1);
     EXPECT_CALL(*mock_network_library_, RemoveNetworkManagerObserver(
         sync_client_.get())).Times(1);
-    EXPECT_CALL(*mock_file_system_, AddObserver(sync_client_.get()))
-        .Times(1);
-    EXPECT_CALL(*mock_file_system_, RemoveObserver(sync_client_.get()))
-        .Times(1);
 
     sync_client_->Initialize();
   }
@@ -82,10 +78,7 @@ class GDataSyncClientTest : public testing::Test {
     // client registers itself as observer of NetworkLibrary.
     sync_client_.reset();
     chromeos::CrosLibrary::Shutdown();
-    content::BrowserThread::GetBlockingPool()
-        ->GetSequencedTaskRunner(sequence_token_)->PostTask(
-            FROM_HERE,
-            base::Bind(&base::DeletePointer<GDataCache>, cache_.release()));
+    cache_->DestroyOnUIThread();
     RunAllPendingForIO();
   }
 
@@ -209,7 +202,7 @@ class GDataSyncClientTest : public testing::Test {
   ScopedTempDir temp_dir_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<MockGDataFileSystem> mock_file_system_;
-  scoped_ptr<GDataCache> cache_;
+  GDataCache* cache_;
   scoped_ptr<GDataSyncClient> sync_client_;
   chromeos::MockNetworkLibrary* mock_network_library_;
   scoped_ptr<chromeos::Network> active_network_;
@@ -381,7 +374,7 @@ TEST_F(GDataSyncClientTest, StartFetchLoop_GDataDisabled) {
   sync_client_->StartFetchLoop();
 }
 
-TEST_F(GDataSyncClientTest, OnFilePinned) {
+TEST_F(GDataSyncClientTest, OnCachePinned) {
   SetUpTestFiles();
   ConnectToWifi();
 
@@ -395,10 +388,10 @@ TEST_F(GDataSyncClientTest, OnFilePinned) {
           std::string("mime_type_does_not_matter"),
           REGULAR_FILE));
 
-  sync_client_->OnFilePinned("resource_id_not_fetched_foo", "md5");
+  sync_client_->OnCachePinned("resource_id_not_fetched_foo", "md5");
 }
 
-TEST_F(GDataSyncClientTest, OnFileUnpinned) {
+TEST_F(GDataSyncClientTest, OnCacheUnpinned) {
   SetUpTestFiles();
 
   sync_client_->AddResourceIdForTesting("resource_id_not_fetched_foo");
@@ -406,7 +399,7 @@ TEST_F(GDataSyncClientTest, OnFileUnpinned) {
   sync_client_->AddResourceIdForTesting("resource_id_not_fetched_baz");
   ASSERT_EQ(3U, sync_client_->GetResourceIdsForTesting().size());
 
-  sync_client_->OnFileUnpinned("resource_id_not_fetched_bar", "md5");
+  sync_client_->OnCacheUnpinned("resource_id_not_fetched_bar", "md5");
   // "bar" should be gone.
   std::deque<std::string> resource_ids =
       sync_client_->GetResourceIdsForTesting();
@@ -414,13 +407,13 @@ TEST_F(GDataSyncClientTest, OnFileUnpinned) {
   EXPECT_EQ("resource_id_not_fetched_foo", resource_ids[0]);
   EXPECT_EQ("resource_id_not_fetched_baz", resource_ids[1]);
 
-  sync_client_->OnFileUnpinned("resource_id_not_fetched_foo", "md5");
+  sync_client_->OnCacheUnpinned("resource_id_not_fetched_foo", "md5");
   // "foo" should be gone.
   resource_ids = sync_client_->GetResourceIdsForTesting();
   ASSERT_EQ(1U, resource_ids.size());
   EXPECT_EQ("resource_id_not_fetched_baz", resource_ids[1]);
 
-  sync_client_->OnFileUnpinned("resource_id_not_fetched_baz", "md5");
+  sync_client_->OnCacheUnpinned("resource_id_not_fetched_baz", "md5");
   // "baz" should be gone.
   resource_ids = sync_client_->GetResourceIdsForTesting();
   ASSERT_TRUE(resource_ids.empty());

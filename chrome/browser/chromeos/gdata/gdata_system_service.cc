@@ -29,11 +29,10 @@ namespace gdata {
 GDataSystemService::GDataSystemService(Profile* profile)
     : profile_(profile),
       sequence_token_(BrowserThread::GetBlockingPool()->GetSequenceToken()),
-      // TODO(hashimoto): Create cache_ on the blocking pool. crbug.com/131756
-      cache_(
-          GDataCache::CreateGDataCache(GDataCache::GetCacheRootPath(profile_),
-                                       BrowserThread::GetBlockingPool(),
-                                       sequence_token_)),
+      cache_(GDataCache::CreateGDataCacheOnUIThread(
+          GDataCache::GetCacheRootPath(profile_),
+          BrowserThread::GetBlockingPool(),
+          sequence_token_)),
       documents_service_(new DocumentsService),
       file_system_(new GDataFileSystem(profile,
                                        cache(),
@@ -48,10 +47,7 @@ GDataSystemService::GDataSystemService(Profile* profile)
 
 GDataSystemService::~GDataSystemService() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(sequence_token_)
-      ->PostTask(
-          FROM_HERE,
-          base::Bind(&base::DeletePointer<GDataCache>, cache_.release()));
+  cache_->DestroyOnUIThread();
 }
 
 void GDataSystemService::Initialize() {
@@ -61,6 +57,7 @@ void GDataSystemService::Initialize() {
   // OnCacheInitialized() notification.
   sync_client_->Initialize();
   file_system_->Initialize();
+  cache_->RequestInitializeOnUIThread();
 
   content::DownloadManager* download_manager =
     g_browser_process->download_status_updater() ?

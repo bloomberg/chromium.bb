@@ -21,17 +21,17 @@ class GDataFileSystemInterface;
 
 // Mock for GDataSyncClientInterface.
 class MockGDataSyncClient : public GDataSyncClientInterface,
-                            public GDataFileSystem::Observer {
+                            public GDataCache::Observer {
  public:
   MockGDataSyncClient();
   virtual ~MockGDataSyncClient();
 
   MOCK_METHOD0(Initialize, void());
   MOCK_METHOD0(OnCacheInitialized, void());
-  MOCK_METHOD2(OnFilePinned, void(const std::string& resource_id,
-                                  const std::string& md5));
-  MOCK_METHOD2(OnFileUnpinned, void(const std::string& resource_id,
-                                    const std::string& md5));
+  MOCK_METHOD2(OnCachePinned, void(const std::string& resource_id,
+                                   const std::string& md5));
+  MOCK_METHOD2(OnCacheUnpinned, void(const std::string& resource_id,
+                                     const std::string& md5));
   // GDataSyncClient is not interested in OnDirectoryChanged.
 };
 

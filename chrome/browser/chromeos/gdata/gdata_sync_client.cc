@@ -86,8 +86,8 @@ GDataSyncClient::GDataSyncClient(Profile* profile,
 
 GDataSyncClient::~GDataSyncClient() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (file_system_)
-    file_system_->RemoveObserver(this);
+  if (cache_)
+    cache_->RemoveObserver(this);
 
   chromeos::NetworkLibrary* network_library =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
@@ -98,7 +98,7 @@ GDataSyncClient::~GDataSyncClient() {
 void GDataSyncClient::Initialize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  file_system_->AddObserver(this);
+  cache_->AddObserver(this);
 
   chromeos::NetworkLibrary* network_library =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
@@ -199,8 +199,8 @@ void GDataSyncClient::OnCacheInitialized() {
                               weak_ptr_factory_.GetWeakPtr()));
 }
 
-void GDataSyncClient::OnFilePinned(const std::string& resource_id,
-                                   const std::string& md5) {
+void GDataSyncClient::OnCachePinned(const std::string& resource_id,
+                                    const std::string& md5) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Add it to the queue, kick off the loop.
@@ -208,8 +208,8 @@ void GDataSyncClient::OnFilePinned(const std::string& resource_id,
   StartFetchLoop();
 }
 
-void GDataSyncClient::OnFileUnpinned(const std::string& resource_id,
-                                     const std::string& md5) {
+void GDataSyncClient::OnCacheUnpinned(const std::string& resource_id,
+                                      const std::string& md5) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Remove the resource_id if it's in the queue. This can happen if the user

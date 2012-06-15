@@ -40,11 +40,6 @@ struct LoadRootFeedParams;
 typedef base::Callback<void(base::PlatformFileError error)>
     FileOperationCallback;
 
-// Callback for completion of cache operation.
-typedef base::Callback<void(base::PlatformFileError error,
-                            const std::string& resource_id,
-                            const std::string& md5)> CacheOperationCallback;
-
 // Callback for GetFileFromCache.
 typedef base::Callback<void(base::PlatformFileError error,
                             const std::string& resource_id,
@@ -118,19 +113,6 @@ class GDataFileSystemInterface {
   // All events are notified on UI thread.
   class Observer {
    public:
-    // Triggered when the cache has been initialized.
-    virtual void OnCacheInitialized() {}
-
-    // Triggered when a file has been pinned successfully, after the cache
-    // state is updated, and the callback to Pin() is run.
-    virtual void OnFilePinned(const std::string& resource_id,
-                              const std::string& md5) {}
-
-    // Triggered when a file has been unpinned successfully, after the cache
-    // state is updated, and the callback to Unpin() is run.
-    virtual void OnFileUnpinned(const std::string& resource_id,
-                                const std::string& md5) {}
-
     // Triggered when a content of a directory has been changed.
     // |directory_path| is a virtual directory path (/gdata/...) representing
     // changed directory.
@@ -981,11 +963,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void SaveFileSystemAsProto();
 
   // Notifies events to observers on UI thread.
-  void NotifyCacheInitialized();
-  void NotifyFilePinned(const std::string& resource_id,
-                        const std::string& md5);
-  void NotifyFileUnpinned(const std::string& resource_id,
-                          const std::string& md5);
   void NotifyDirectoryChanged(const FilePath& directory_path);
   void NotifyInitialLoadFinished();
   void NotifyDocumentFeedFetched(int num_accumulated_entries);
@@ -1023,53 +1000,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const std::string& md5,
       const GetFileFromCacheCallback& callback);
 
-  // Stores |source_path| corresponding to |resource_id| and |md5| to cache.
-  // |file_operation_type| specifies if |source_path| is to be moved or copied.
-  // Initializes cache if it has not been initialized.
-  // If file was previously pinned, it is stored in persistent directory, with
-  // the symlink in pinned dir updated to point to this new file (refer to
-  // comments for Pin for explanation of symlinks for pinned files).
-  // Otherwise, the file is stored in tmp dir.
-  // Upon completion, |callback| is invoked on the thread where this method was
-  // called.
-  void StoreToCache(const std::string& resource_id,
-                    const std::string& md5,
-                    const FilePath& source_path,
-                    GDataCache::FileOperationType file_operation_type,
-                    const CacheOperationCallback& callback);
-
-  // Pin file corresponding to |resource_id| and |md5|.
-  // Initializes cache if it has not been initialized.
-  // Pinned files have symlinks in pinned dir, that reference actual blob files
-  // downloaded from server or locally modified in persistent dir.
-  // If the file to be pinned does not exist in cache, a special symlink (with
-  // target /dev/null) is created in pinned dir, and base::PLATFORM_FILE_OK is
-  // be returned in |callback|.
-  // So unless there's an error with file operations involving pinning, no
-  // error, i.e. base::PLATFORM_FILE_OK, will be returned in |callback|.
-  // GDataSyncClient will pick up these special symlinks during low time and
-  // download pinned non-existent files.
-  // We'll try not to evict pinned cache files unless there's not enough space
-  // on disk and pinned files are the only ones left.
-  // Upon completion, |callback| is invoked on the thread where this method was
-  // called.
-  void Pin(const std::string& resource_id,
-           const std::string& md5,
-           const CacheOperationCallback& callback);
-
-  // Unpin file corresponding to |resource_id| and |md5|, opposite of Pin.
-  // Initializes cache if it has not been initialized.
-  // If the file was pinned, delete the symlink in pinned dir, and if file blob
-  // exists, move it to tmp directory.
-  // If the file is not known to cache i.e. wasn't pinned or cached,
-  // base::PLATFORM_FILE_ERROR_NOT_FOUND is returned to |callback|.
-  // Unpinned files would be evicted when space on disk runs out.
-  // Upon completion, |callback| is invoked on the thread where this method was
-  // called.
-  void Unpin(const std::string& resource_id,
-             const std::string& md5,
-             const CacheOperationCallback& callback);
-
   // Mark file corresponding to |resource_id| and |md5| as dirty, so that it
   // can modified locally.
   // Initializes cache if it has not been initialized.
@@ -1086,66 +1016,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void MarkDirtyInCache(const std::string& resource_id,
                         const std::string& md5,
                         const GetFileFromCacheCallback& callback);
-
-  // Commit dirty the file corresponding to |resource_id| and |md5|.
-  // Must be called after MarkDirtyInCache to indicate that file modification
-  // has completed and file is ready for uploading.
-  // Initializes cache if it has not been initialized.
-  // Committed dirty files have symlinks in outgoing dir, that reference actual
-  // modified blob files in persistent dir.
-  // If the file to be committed dirty does not exist in cache,
-  // base::PLATFORM_FILE_ERROR_NOT_FOUND is returned in |callback|.
-  // If the file is not marked dirty (via MarkDirtyInCache),
-  // base::PLATFORM_FILE_ERROR_INVALID_OPERATION is returned in |callback|.
-  // An uploader will pick up symlinks in outgoing dir and upload the dirty
-  // files they reference.
-  // Upon completion, |callback| is invoked on the thread where this method was
-  // called.
-  void CommitDirtyInCache(const std::string& resource_id,
-                          const std::string& md5,
-                          const CacheOperationCallback& callback);
-
-  // Clear a dirty file corresponding to |resource_id| and |md5|.
-  // |md5| is also the new extension for the file in cache.
-  // Must be called after MarkDirtyInCache and CommitDirtyInCache to clear
-  // dirty state of file, i.e. after dirty file has been uploaded and new md5
-  // received from server.
-  // Initializes cache if it has not been initialized.
-  // If the file was dirty, delete the symlink in outgoing dir, move file to
-  // tmp if it's unpinned, and rename filename extension to .<md5>.
-  // If the file to be cleared does not exist in cache,
-  // base::PLATFORM_FILE_ERROR_NOT_FOUND is returned in |callback|.
-  // If the file is not marked dirty (via MarkDirtyInCache),
-  // base::PLATFORM_FILE_ERROR_INVALID_OPERATION is returned in |callback|.
-  // Files that are not dirty would be evicted when space on disk runs out.
-  // Upon completion, |callback| is invoked on the thread where this method was
-  // called.
-  void ClearDirtyInCache(const std::string& resource_id,
-                         const std::string& md5,
-                         const CacheOperationCallback& callback);
-
-  // Removes all files corresponding to |resource_id| from cache persistent,
-  // tmp and pinned directories and in-memory cache map.
-  // Initializes cache if it has not been initialized.
-  // Upon completion, |callback| is invoked on the thread where this method was
-  // called.
-  void RemoveFromCache(const std::string& resource_id,
-                       const CacheOperationCallback& callback);
-
-  // Requests to initialize the cache for testing.
-  //
-  // Must be called on UI thread.
-  void RequestInitializeCacheForTesting();
-
-  // Cache tasks that run on blocking pool, posted from above cache entry
-  // points.
-  // TODO(hashimoto): Move cache functions wrappers. crbug.com/131756
-
-  // Task posted from InitializeCacheIfNecessary to run on blocking pool.
-  // Creates cache directory and its sub-directories if they don't exist,
-  // or scans blobs sub-directory for files and their attributes and updates the
-  // info into cache map.
-  void InitializeCacheOnBlockingPool();
 
   // Task posted from GetFileFromCacheInternal to run on blocking pool.
   // Checks if file corresponding to |resource_id| and |md5| exists in cache
@@ -1171,40 +1041,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
       base::PlatformFileError* error,
       int* cache_state);
 
-  // Task posted from StoreToCache to run on blocking pool:
-  // - moves or copies (per |file_operation_type|) |source_path|
-  //   to |dest_path| in the cache dir
-  // - if necessary, creates symlink
-  // - deletes stale cached versions of |resource_id| in
-  //   |dest_path|'s directory.
-  void StoreToCacheOnBlockingPool(
-      const std::string& resource_id,
-      const std::string& md5,
-      const FilePath& source_path,
-      GDataCache::FileOperationType file_operation_type,
-      base::PlatformFileError* error);
-
-  // Task posted from Pin to modify cache state on the blocking pool, which
-  // involves the following:
-  // - moves |source_path| to |dest_path| in persistent dir if
-  //   file is not dirty
-  // - creates symlink in pinned dir that references downloaded or locally
-  //   modified file
-  void PinOnBlockingPool(const std::string& resource_id,
-                         const std::string& md5,
-                         GDataCache::FileOperationType file_operation_type,
-                         base::PlatformFileError* error);
-
-  // Task posted from Unpin to modify cache state on the blocking pool, which
-  // involves the following:
-  // - moves |source_path| to |dest_path| in tmp dir if file is
-  //   not dirty
-  // - deletes symlink from pinned dir
-  void UnpinOnBlockingPool(const std::string& resource_id,
-                           const std::string& md5,
-                           GDataCache::FileOperationType file_operation_type,
-                           base::PlatformFileError* error);
-
   // Task posted from MarkDirtyInCache to modify cache state on the blocking
   // pool, which involves the following:
   // - moves |source_path| to |dest_path| in persistent dir, where
@@ -1217,50 +1053,8 @@ class GDataFileSystem : public GDataFileSystemInterface,
       base::PlatformFileError* error,
       FilePath* cache_file_path);
 
-  // Task posted from CommitDirtyInCache to modify cache state on the blocking
-  // pool, i.e. creates symlink in outgoing dir to reference dirty file in
-  // persistent dir.
-  void CommitDirtyInCacheOnBlockingPool(
-      const std::string& resource_id,
-      const std::string& md5,
-      GDataCache::FileOperationType file_operation_type,
-      base::PlatformFileError* error);
-
-  // Task posted from ClearDirtyInCache to modify cache state on the blocking
-  // pool, which involves the following:
-  // - moves |source_path| to |dest_path| in persistent dir if
-  //   file is pinned or tmp dir otherwise, where |source_path| has .local
-  //   extension and |dest_path| has .<md5> extension
-  // - deletes symlink in outgoing dir
-  // - if file is pinned, updates symlink in pinned dir to reference
-  //   |dest_path|
-  void ClearDirtyInCacheOnBlockingPool(
-      const std::string& resource_id,
-      const std::string& md5,
-      GDataCache::FileOperationType file_operation_type,
-      base::PlatformFileError* error);
-
-  // Task posted from RemoveFromCache to do the following on the blocking pool:
-  // - remove all delete stale cache versions corresponding to |resource_id| in
-  //   persistent, tmp and pinned directories
-  // - remove entry corresponding to |resource_id| from cache map.
-  void RemoveFromCacheOnBlockingPool(const std::string& resource_id,
-                                     base::PlatformFileError* error);
-
   // Cache intermediate callbacks, that run on calling thread, for above cache
   // tasks that were run on blocking pool.
-
-  // Callback for Pin. Runs |callback| and notifies the observers.
-  void OnFilePinned(base::PlatformFileError* error,
-                    const std::string& resource_id,
-                    const std::string& md5,
-                    const CacheOperationCallback& callback);
-
-  // Callback for Unpin. Runs |callback| and notifies the observers.
-  void OnFileUnpinned(base::PlatformFileError* error,
-                      const std::string& resource_id,
-                      const std::string& md5,
-                      const CacheOperationCallback& callback);
 
   // Helper function for internally handling responses from
   // GetFileFromCacheByResourceIdAndMd5() calls during processing of

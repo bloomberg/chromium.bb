@@ -241,18 +241,6 @@ void RunFileOperationCallbackHelper(
     callback.Run(*error);
 }
 
-// Ditto for CacheOperationCallback.
-void RunCacheOperationCallbackHelper(
-    const CacheOperationCallback& callback,
-    base::PlatformFileError* error,
-    const std::string& resource_id,
-    const std::string& md5) {
-  DCHECK(error);
-
-  if (!callback.is_null())
-    callback.Run(*error, resource_id, md5);
-}
-
 // Ditto for GetFileFromCacheCallback.
 void RunGetFileFromCacheCallbackHelper(
     const GetFileFromCacheCallback& callback,
@@ -701,11 +689,6 @@ void GDataFileSystem::Initialize() {
   hide_hosted_docs_ = pref_service->GetBoolean(prefs::kDisableGDataHostedFiles);
 
   InitializePreferenceObserver();
-
-  PostBlockingPoolSequencedTask(
-      FROM_HERE,
-      base::Bind(&GDataFileSystem::InitializeCacheOnBlockingPool,
-                 base::Unretained(this)));
 }
 
 void GDataFileSystem::CheckForUpdates() {
@@ -2384,9 +2367,9 @@ void GDataFileSystem::SetPinStateOnUIThread(
   }
 
   if (to_pin)
-    Pin(resource_id, md5, cache_callback);
+    cache_->PinOnUIThread(resource_id, md5, cache_callback);
   else
-    Unpin(resource_id, md5, cache_callback);
+    cache_->UnpinOnUIThread(resource_id, md5, cache_callback);
 }
 
 void GDataFileSystem::OnSetPinStateCompleted(
@@ -2931,12 +2914,13 @@ void GDataFileSystem::OnFileDownloadedAndSpaceChecked(
   // downloaded file.
   if (error == base::PLATFORM_FILE_OK) {
     if (*has_enough_space) {
-      StoreToCache(params.resource_id,
-                   params.md5,
-                   downloaded_file_path,
-                   GDataCache::FILE_OPERATION_MOVE,
-                   base::Bind(&GDataFileSystem::OnDownloadStoredToCache,
-                              ui_weak_ptr_));
+      cache_->StoreOnUIThread(
+          params.resource_id,
+          params.md5,
+          downloaded_file_path,
+          GDataCache::FILE_OPERATION_MOVE,
+          base::Bind(&GDataFileSystem::OnDownloadStoredToCache,
+                     ui_weak_ptr_));
     } else {
       // If we don't have enough space, remove the downloaded file, and
       // report "no space" error.
@@ -3054,7 +3038,7 @@ base::PlatformFileError GDataFileSystem::RemoveEntryFromFileSystem(
 
   // If resource_id is not empty, remove its corresponding file from cache.
   if (!resource_id.empty())
-    RemoveFromCache(resource_id, CacheOperationCallback());
+    cache_->RemoveOnUIThread(resource_id, CacheOperationCallback());
 
   return base::PLATFORM_FILE_OK;
 }
@@ -3313,58 +3297,6 @@ base::PlatformFileError GDataFileSystem::FeedToFileResourceMap(
   return error;
 }
 
-
-void GDataFileSystem::NotifyCacheInitialized() {
-  DVLOG(1) << "Cache initialized";
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&GDataFileSystem::NotifyCacheInitialized,
-                   ui_weak_ptr_));
-    return;
-  }
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // Notify the observers that the cache is initialized.
-  FOR_EACH_OBSERVER(Observer, observers_, OnCacheInitialized());
-}
-
-void GDataFileSystem::NotifyFilePinned(const std::string& resource_id,
-                                       const std::string& md5) {
-  DVLOG(1) << "File pinned " << resource_id << ": " << md5;
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&GDataFileSystem::NotifyFilePinned,
-                   ui_weak_ptr_,
-                   resource_id,
-                   md5));
-    return;
-  }
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // Notify the observers that a file is pinned with |resource_id| and |md5|.
-  FOR_EACH_OBSERVER(Observer, observers_, OnFilePinned(resource_id, md5));
-}
-
-void GDataFileSystem::NotifyFileUnpinned(const std::string& resource_id,
-                                         const std::string& md5) {
-  DVLOG(1) << "File unpinned " << resource_id << ": " << md5;
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&GDataFileSystem::NotifyFileUnpinned,
-                   ui_weak_ptr_,
-                   resource_id,
-                   md5));
-    return;
-  }
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // Notify the observers that a file is unpinned with |resource_id| and |md5|.
-  FOR_EACH_OBSERVER(Observer, observers_, OnFileUnpinned(resource_id, md5));
-}
-
 void GDataFileSystem::NotifyDirectoryChanged(const FilePath& directory_path) {
   DVLOG(1) << "Content changed of " << directory_path.value();
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
@@ -3563,8 +3495,8 @@ void GDataFileSystem::AddUploadedFile(
   }
   NotifyDirectoryChanged(virtual_dir_path);
 
-  StoreToCache(resource_id, md5, file_content_path, cache_operation,
-               CacheOperationCallback());
+  cache_->StoreOnUIThread(resource_id, md5, file_content_path, cache_operation,
+                          CacheOperationCallback());
 }
 
 void GDataFileSystem::Observe(int type,
@@ -3604,76 +3536,6 @@ void GDataFileSystem::SetHideHostedDocuments(bool hide) {
 
 //===================== GDataFileSystem: Cache entry points ====================
 
-void GDataFileSystem::StoreToCache(
-    const std::string& resource_id,
-    const std::string& md5,
-    const FilePath& source_path,
-    GDataCache::FileOperationType file_operation_type,
-    const CacheOperationCallback& callback) {
-  base::PlatformFileError* error =
-      new base::PlatformFileError(base::PLATFORM_FILE_OK);
-  PostBlockingPoolSequencedTaskAndReply(
-      FROM_HERE,
-      base::Bind(&GDataFileSystem::StoreToCacheOnBlockingPool,
-                 base::Unretained(this),
-                 resource_id,
-                 md5,
-                 source_path,
-                 file_operation_type,
-                 error),
-      base::Bind(&RunCacheOperationCallbackHelper,
-                 callback,
-                 base::Owned(error),
-                 resource_id,
-                 md5));
-}
-
-void GDataFileSystem::Pin(const std::string& resource_id,
-                          const std::string& md5,
-                          const CacheOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  base::PlatformFileError* error =
-      new base::PlatformFileError(base::PLATFORM_FILE_OK);
-  PostBlockingPoolSequencedTaskAndReply(
-      FROM_HERE,
-      base::Bind(&GDataFileSystem::PinOnBlockingPool,
-                 base::Unretained(this),
-                 resource_id,
-                 md5,
-                 GDataCache::FILE_OPERATION_MOVE,
-                 error),
-      base::Bind(&GDataFileSystem::OnFilePinned,
-                 ui_weak_ptr_,
-                 base::Owned(error),
-                 resource_id,
-                 md5,
-                 callback));
-}
-
-void GDataFileSystem::Unpin(const std::string& resource_id,
-                            const std::string& md5,
-                            const CacheOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  base::PlatformFileError* error =
-      new base::PlatformFileError(base::PLATFORM_FILE_OK);
-  PostBlockingPoolSequencedTaskAndReply(
-      FROM_HERE,
-      base::Bind(&GDataFileSystem::UnpinOnBlockingPool,
-                 base::Unretained(this),
-                 resource_id,
-                 md5,
-                 GDataCache::FILE_OPERATION_MOVE,
-                 error),
-      base::Bind(&GDataFileSystem::OnFileUnpinned,
-                 ui_weak_ptr_,
-                 base::Owned(error),
-                 resource_id,
-                 md5,
-                 callback));
-}
-
 void GDataFileSystem::MarkDirtyInCache(
     const std::string& resource_id,
     const std::string& md5,
@@ -3700,85 +3562,7 @@ void GDataFileSystem::MarkDirtyInCache(
                  base::Owned(cache_file_path)));
 }
 
-void GDataFileSystem::CommitDirtyInCache(
-    const std::string& resource_id,
-    const std::string& md5,
-    const CacheOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  base::PlatformFileError* error =
-      new base::PlatformFileError(base::PLATFORM_FILE_OK);
-  PostBlockingPoolSequencedTaskAndReply(
-      FROM_HERE,
-      base::Bind(&GDataFileSystem::CommitDirtyInCacheOnBlockingPool,
-                 base::Unretained(this),
-                 resource_id,
-                 md5,
-                 GDataCache::FILE_OPERATION_MOVE,
-                 error),
-      base::Bind(&RunCacheOperationCallbackHelper,
-                 callback,
-                 base::Owned(error),
-                 resource_id,
-                 md5));
-}
-
-void GDataFileSystem::ClearDirtyInCache(
-    const std::string& resource_id,
-    const std::string& md5,
-    const CacheOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  base::PlatformFileError* error =
-      new base::PlatformFileError(base::PLATFORM_FILE_OK);
-  PostBlockingPoolSequencedTaskAndReply(
-      FROM_HERE,
-      base::Bind(&GDataFileSystem::ClearDirtyInCacheOnBlockingPool,
-                 base::Unretained(this),
-                 resource_id,
-                 md5,
-                 GDataCache::FILE_OPERATION_MOVE,
-                 error),
-      base::Bind(&RunCacheOperationCallbackHelper,
-                 callback,
-                 base::Owned(error),
-                 resource_id,
-                 md5));
-}
-
-void GDataFileSystem::RemoveFromCache(const std::string& resource_id,
-                                      const CacheOperationCallback& callback) {
-  base::PlatformFileError* error =
-      new base::PlatformFileError(base::PLATFORM_FILE_OK);
-
-  PostBlockingPoolSequencedTaskAndReply(
-      FROM_HERE,
-      base::Bind(&GDataFileSystem::RemoveFromCacheOnBlockingPool,
-                 base::Unretained(this),
-                 resource_id,
-                 error),
-      base::Bind(&RunCacheOperationCallbackHelper,
-                 callback,
-                 base::Owned(error),
-                 resource_id,
-                 ""  /* md5 */));
-}
-
-void GDataFileSystem::RequestInitializeCacheForTesting() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  PostBlockingPoolSequencedTask(
-      FROM_HERE,
-      base::Bind(&GDataFileSystem::InitializeCacheOnBlockingPool,
-                 base::Unretained(this)));
-}
-
 //========= GDataFileSystem: Cache tasks that ran on blocking pool ============
-
-void GDataFileSystem::InitializeCacheOnBlockingPool() {
-  cache_->Initialize();
-  NotifyCacheInitialized();
-}
 
 void GDataFileSystem::GetFileFromCacheOnBlockingPool(
     const std::string& resource_id,
@@ -3815,31 +3599,6 @@ void GDataFileSystem::GetCacheStateOnBlockingPool(
   }
 }
 
-void GDataFileSystem::StoreToCacheOnBlockingPool(
-    const std::string& resource_id,
-    const std::string& md5,
-    const FilePath& source_path,
-    GDataCache::FileOperationType file_operation_type,
-    base::PlatformFileError* error) {
-  cache_->Store(resource_id, md5, source_path, file_operation_type, error);
-}
-
-void GDataFileSystem::PinOnBlockingPool(
-    const std::string& resource_id,
-    const std::string& md5,
-    GDataCache::FileOperationType file_operation_type,
-    base::PlatformFileError* error) {
-  cache_->Pin(resource_id, md5, file_operation_type, error);
-}
-
-void GDataFileSystem::UnpinOnBlockingPool(
-    const std::string& resource_id,
-    const std::string& md5,
-    GDataCache::FileOperationType file_operation_type,
-    base::PlatformFileError* error) {
-  cache_->Unpin(resource_id, md5, file_operation_type, error);
-}
-
 void GDataFileSystem::MarkDirtyInCacheOnBlockingPool(
     const std::string& resource_id,
     const std::string& md5,
@@ -3848,65 +3607,6 @@ void GDataFileSystem::MarkDirtyInCacheOnBlockingPool(
     FilePath* cache_file_path) {
   cache_->MarkDirty(
       resource_id, md5, file_operation_type, error, cache_file_path);
-}
-
-void GDataFileSystem::CommitDirtyInCacheOnBlockingPool(
-    const std::string& resource_id,
-    const std::string& md5,
-    GDataCache::FileOperationType file_operation_type,
-    base::PlatformFileError* error) {
-  cache_->CommitDirty(resource_id, md5, file_operation_type, error);
-}
-
-void GDataFileSystem::ClearDirtyInCacheOnBlockingPool(
-    const std::string& resource_id,
-    const std::string& md5,
-    GDataCache::FileOperationType file_operation_type,
-    base::PlatformFileError* error) {
-  cache_->ClearDirty(resource_id, md5, file_operation_type, error);
-}
-
-void GDataFileSystem::RemoveFromCacheOnBlockingPool(
-    const std::string& resource_id,
-    base::PlatformFileError* error) {
-  cache_->Remove(resource_id, error);
-}
-
-//=== GDataFileSystem: Cache callbacks for tasks that ran on blocking pool ====
-
-void GDataFileSystem::OnFilePinned(base::PlatformFileError* error,
-                                   const std::string& resource_id,
-                                   const std::string& md5,
-                                   const CacheOperationCallback& callback) {
-  DCHECK(error);
-
-  if (!callback.is_null())
-    callback.Run(*error, resource_id, md5);
-
-  if (*error == base::PLATFORM_FILE_OK)
-    NotifyFilePinned(resource_id, md5);
-}
-
-void GDataFileSystem::OnFileUnpinned(base::PlatformFileError* error,
-                                     const std::string& resource_id,
-                                     const std::string& md5,
-                                     const CacheOperationCallback& callback) {
-  DCHECK(error);
-
-  if (!callback.is_null())
-    callback.Run(*error, resource_id, md5);
-
-  if (*error == base::PLATFORM_FILE_OK)
-    NotifyFileUnpinned(resource_id, md5);
-
-  // Now the file is moved from "persistent" to "tmp" directory.
-  // It's a chance to free up space if needed.
-  bool* has_enough_space = new bool(false);
-  PostBlockingPoolSequencedTask(
-      FROM_HERE,
-      base::Bind(&GDataFileSystem::FreeDiskSpaceIfNeeded,
-                 base::Unretained(this),
-                 base::Owned(has_enough_space)));
 }
 
 //============= GDataFileSystem: internal helper functions =====================
@@ -4138,13 +3838,12 @@ void GDataFileSystem::OnGetFileInfoCompleteForCloseFile(
   // if the file has not been modified. Come up with a way to detect the
   // intactness effectively, or provide a method for user to declare it when
   // calling CloseFile().
-  CommitDirtyInCache(
+  cache_->CommitDirtyOnUIThread(
       file_info->gdata_entry().resource_id(),
       file_info->file_md5(),
-      base::Bind(
-          &GDataFileSystem::OnCommitDirtyInCacheCompleteForCloseFile,
-          ui_weak_ptr_,
-          callback));
+      base::Bind(&GDataFileSystem::OnCommitDirtyInCacheCompleteForCloseFile,
+                 ui_weak_ptr_,
+                 callback));
 }
 
 void GDataFileSystem::OnCommitDirtyInCacheCompleteForCloseFile(

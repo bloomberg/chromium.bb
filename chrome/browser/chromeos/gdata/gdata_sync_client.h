@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/gdata/gdata_cache.h"
 #include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
@@ -54,7 +55,7 @@ class GDataSyncClientInterface {
 // The production implementation of GDataSyncClientInterface.
 class GDataSyncClient
     : public GDataSyncClientInterface,
-      public GDataFileSystem::Observer,
+      public GDataCache::Observer,
       public chromeos::NetworkLibrary::NetworkManagerObserver,
       public content::NotificationObserver {
  public:
@@ -69,12 +70,12 @@ class GDataSyncClient
   // GDataSyncClientInterface overrides.
   virtual void Initialize() OVERRIDE;
 
-  // GDataFileSystem::Observer overrides.
+  // GDataCache::Observer overrides.
   virtual void OnCacheInitialized() OVERRIDE;
-  virtual void OnFilePinned(const std::string& resource_id,
-                            const std::string& md5) OVERRIDE;
-  virtual void OnFileUnpinned(const std::string& resource_id,
-                              const std::string& md5) OVERRIDE;
+  virtual void OnCachePinned(const std::string& resource_id,
+                             const std::string& md5) OVERRIDE;
+  virtual void OnCacheUnpinned(const std::string& resource_id,
+                               const std::string& md5) OVERRIDE;
 
   // Starts scanning the pinned directory in the cache to collect
   // pinned-but-not-fetched files. |closure| is run on the calling thread
