@@ -247,7 +247,7 @@ cr.define('print_preview', function() {
       this.tracker.add(
           $('cloud-print-dialog-link'),
           'click',
-          this.openSystemPrintDialog_.bind(this));
+          this.onCloudPrintDialogLinkClick_.bind(this));
       this.tracker.add(
           $('open-pdf-in-preview-link'),
           'click',
@@ -275,6 +275,10 @@ cr.define('print_preview', function() {
           print_preview.DestinationStore.EventType.
               SELECTED_DESTINATION_CAPABILITIES_READY,
           this.printIfReady_.bind(this));
+      this.tracker.add(
+          this.destinationStore_,
+          print_preview.DestinationStore.EventType.DESTINATION_SELECT,
+          this.onDestinationSelect_.bind(this));
 
       this.tracker.add(
           this.printHeader_,
@@ -319,8 +323,6 @@ cr.define('print_preview', function() {
       this.otherOptionsSettings_.decorate($('other-options-settings'));
       this.previewArea_.decorate($('preview-area'));
 
-      setIsVisible($('cloud-print-dialog-link'), cr.isChromeOS);
-      setIsVisible($('system-dialog-link'), !cr.isChromeOS);
       setIsVisible($('open-pdf-in-preview-link'), cr.isMac);
     },
 
@@ -419,7 +421,7 @@ cr.define('print_preview', function() {
     openSystemPrintDialog_: function() {
       assert(this.uiState_ == PrintPreview.UiState_.READY,
              'Opening system dialog when not in ready state: ' + this.uiState_);
-      setIsVisible($('dialog-throbber'), true);
+      setIsVisible($('system-dialog-throbber'), true);
       this.setIsEnabled_(false);
       this.uiState_ = PrintPreview.UiState_.OPENING_NATIVE_PRINT_DIALOG;
       this.nativeLayer_.startShowSystemDialog();
@@ -704,6 +706,32 @@ cr.define('print_preview', function() {
      */
     onDisableScaling_: function() {
       this.printTicketStore_.updateFitToPage(false);
+    },
+
+    /**
+     * Called when the open-cloud-print-dialog link is clicked. Opens the Google
+     * Cloud Print web dialog.
+     * @private
+     */
+    onCloudPrintDialogLinkClick_: function() {
+      assert(this.uiState_ == PrintPreview.UiState_.READY,
+             'Opening Google Cloud Print dialog when not in ready state: ' +
+                 this.uiState_);
+      setIsVisible($('cloud-print-dialog-throbber'), true);
+      this.setIsEnabled_(false);
+      this.uiState_ = PrintPreview.UiState_.OPENING_NATIVE_PRINT_DIALOG;
+      this.nativeLayer_.startShowCloudPrintDialog();
+    },
+
+    /**
+     * Called when a print destination is selected. Shows/hides the "Print with
+     * Cloud Print" link in the navbar.
+     * @private
+     */
+    onDestinationSelect_: function() {
+      var selectedDest = this.destinationStore_.selectedDestination;
+      setIsVisible($('cloud-print-dialog-link'),
+                   !cr.isChromeOS && !selectedDest.isLocal);
     }
   };
 

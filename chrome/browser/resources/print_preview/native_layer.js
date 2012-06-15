@@ -279,6 +279,11 @@ cr.define('print_preview', function() {
       chrome.send('showSystemDialog');
     },
 
+    /** Shows Google Cloud Print's web-based print dialog. */
+    startShowCloudPrintDialog: function() {
+      chrome.send('printWithCloudPrint');
+    },
+
     /** Closes the print preview dialog. */
     startCloseDialog: function() {
       chrome.send('closePrintPreviewTab');

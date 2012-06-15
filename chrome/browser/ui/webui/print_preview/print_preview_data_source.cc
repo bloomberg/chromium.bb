@@ -93,7 +93,7 @@ void PrintPreviewDataSource::Init() {
                      IDS_PRINT_PREVIEW_PAGE_LABEL_PLURAL);
   const string16 shortcut_text(UTF8ToUTF16(kAdvancedPrintShortcut));
 #if defined(OS_CHROMEOS)
-  AddString("cloudPrintDialogOption", l10n_util::GetStringFUTF16(
+  AddString("systemDialogOption", l10n_util::GetStringFUTF16(
       IDS_PRINT_PREVIEW_CLOUD_DIALOG_OPTION,
       l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT),
       shortcut_text));
@@ -102,6 +102,10 @@ void PrintPreviewDataSource::Init() {
       IDS_PRINT_PREVIEW_SYSTEM_DIALOG_OPTION,
       shortcut_text));
 #endif
+  AddString("cloudPrintDialogOption",
+            l10n_util::GetStringFUTF16(
+                IDS_PRINT_PREVIEW_CLOUD_DIALOG_OPTION_NO_SHORTCUT,
+                l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT)));
 #if defined(OS_MACOSX)
   AddLocalizedString("openPdfInPreviewOption",
                      IDS_PRINT_PREVIEW_OPEN_PDF_IN_PREVIEW_APP);

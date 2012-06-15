@@ -279,6 +279,9 @@ void PrintPreviewHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("reportDestinationEvent",
       base::Bind(&PrintPreviewHandler::HandleReportDestinationEvent,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("printWithCloudPrint",
+      base::Bind(&PrintPreviewHandler::HandlePrintWithCloudPrint,
+                 base::Unretained(this)));
 }
 
 TabContents* PrintPreviewHandler::preview_tab_contents() const {
@@ -420,7 +423,7 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
   } else if (print_to_pdf) {
     HandlePrintToPdf(*settings);
   } else if (is_cloud_dialog) {
-    HandlePrintWithCloudPrint();
+    HandlePrintWithCloudPrint(NULL);
   } else {
     ReportPrintSettingsStats(*settings);
     ReportUserActionHistogram(PRINT_TO_PRINTER);
@@ -550,7 +553,7 @@ void PrintPreviewHandler::HandleSignin(const ListValue* /*args*/) {
       base::Bind(&PrintPreviewHandler::OnSigninComplete, AsWeakPtr()));
 }
 
-void PrintPreviewHandler::HandlePrintWithCloudPrint() {
+void PrintPreviewHandler::HandlePrintWithCloudPrint(const ListValue* /*args*/) {
   // Record the number of times the user asks to print via cloud print
   // instead of the print preview dialog.
   ReportStats();
