@@ -305,7 +305,7 @@ connect_to_socket(struct wl_display *display, const char *name)
 	struct sockaddr_un addr;
 	socklen_t size;
 	const char *runtime_dir;
-	size_t name_size;
+	int name_size;
 
 	runtime_dir = getenv("XDG_RUNTIME_DIR");
 	if (!runtime_dir) {
@@ -332,6 +332,18 @@ connect_to_socket(struct wl_display *display, const char *name)
 	name_size =
 		snprintf(addr.sun_path, sizeof addr.sun_path,
 			 "%s/%s", runtime_dir, name) + 1;
+
+	assert(name_size > 0);
+	if (name_size > (int)sizeof addr.sun_path) {
+		fprintf(stderr,
+		       "error: socket path \"%s/%s\" plus null terminator"
+		       " exceeds 108 bytes\n", runtime_dir, name);
+		close(display->fd);
+		/* to prevent programs reporting
+		 * "failed to add socket: Success" */
+		errno = ENAMETOOLONG;
+		return -1;
+	};
 
 	size = offsetof (struct sockaddr_un, sun_path) + name_size;
 
