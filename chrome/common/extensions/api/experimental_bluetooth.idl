@@ -7,8 +7,22 @@
 
 [nodoc] namespace experimental.bluetooth {
   dictionary Device {
+    // The address of the device, in the format 'XX:XX:XX:XX:XX:XX'.
     DOMString address;
+
+    // The human-readable name of the device.
     DOMString name;
+
+    // Indicates whether or not the device is paired with the system.
+    boolean paired;
+
+    // Indicates whether or not the device is bonded with the system.  A device
+    // is bonded if it is paired and high-security link keys have been
+    // exchanged so that connections may be encrypted.
+    boolean bonded;
+
+    // Indicates whether the device is currently connected to the system.
+    boolean connected;
   };
 
   dictionary Socket {

@@ -161,16 +161,16 @@ class BluetoothDevice : private BluetoothDeviceClient::Observer,
 
   // Indicates whether the device is paired to the adapter, whether or not
   // that pairing is permanent or temporary.
-  bool IsPaired() const { return !object_path_.value().empty(); }
+  virtual bool IsPaired() const;
 
   // Indicates whether the device is bonded to the adapter, bonding is
   // formed by pairing and exchanging high-security link keys so that
   // connections may be encrypted.
-  bool IsBonded() const { return bonded_; }
+  virtual bool IsBonded() const;
 
   // Indicates whether the device is currently connected to the adapter
   // and at least one service available for use.
-  bool IsConnected() const;
+  virtual bool IsConnected() const;
 
   // Returns the services (as UUID strings) that this device provides.
   typedef std::vector<std::string> ServiceList;
