@@ -223,6 +223,7 @@
     var args = Array.prototype.slice.call(arguments);
     var validationErrors = this.validateEventArgs_(args);
     if (validationErrors) {
+      console.error(validationErrors);
       return {validationErrors: validationErrors};
     }
     var results = [];
