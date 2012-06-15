@@ -547,6 +547,8 @@ cr.define('print_preview', function() {
     onCloudPrintError_: function(event) {
       if (event.message == '403') {
         this.destinationSearch_.showCloudPrintPromo();
+      } else if (event.message == '0') {
+        return; // Ignore, the system does not have internet connectivity.
       } else {
         this.printHeader_.setErrorMessage(event.message);
       }
