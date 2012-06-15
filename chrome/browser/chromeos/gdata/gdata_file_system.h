@@ -973,28 +973,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
       base::PlatformFileError* error,
       UploadFileInfo* upload_file_info);
 
-  // Cache entry points from within GDataFileSystem.
-  // The functionalities of GData blob cache include:
-  // - stores downloaded gdata files on disk, indexed by the resource_id and md5
-  //   of the gdata file.
-  // - provides absolute path for files to be cached or cached.
-  // - updates the cached file on disk after user has edited it locally
-  // - handles eviction when disk runs out of space
-  // - uploads dirty files to gdata server.
-  // - etc.
-
-  // Task posted from GetCacheState to run on blocking pool.
-  // Checks if file corresponding to |resource_id| and |md5| exists in cache
-  // map.  If yes, returns its cache state; otherwise, returns CACHE_STATE_NONE.
-  // Even though this task doesn't involve IO operations, it still runs on the
-  // blocking pool, to force synchronization of all tasks on blocking pool,
-  // e.g. this absolutely must execute after InitailizeCacheOnIOTheadPool.
-  void GetCacheStateOnBlockingPool(
-      const std::string& resource_id,
-      const std::string& md5,
-      base::PlatformFileError* error,
-      int* cache_state);
-
   // Cache intermediate callbacks, that run on calling thread, for above cache
   // tasks that were run on blocking pool.
 

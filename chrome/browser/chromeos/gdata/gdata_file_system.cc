@@ -99,13 +99,6 @@ struct LoadRootFeedParams {
   const FindEntryCallback callback;
 };
 
-// Helper to call IsRunningSequenceOnCurrentThread().
-bool IsRunningSequenceOnCurrentThread(
-    const base::SequencedWorkerPool::SequenceToken& sequence_token) {
-  return BrowserThread::GetBlockingPool()->IsRunningSequenceOnCurrentThread(
-      sequence_token);
-}
-
 // Returns true if file system is due to be serialized on disk based on it
 // |serialized_size| and |last_serialized| timestamp.
 bool ShouldSerializeFileSystemNow(size_t serialized_size,
@@ -241,15 +234,19 @@ void RunFileOperationCallbackHelper(
     callback.Run(*error);
 }
 
+// Used to implement GetCacheState.
 void RunGetCacheStateCallbackHelper(
     const GetCacheStateCallback& callback,
-    base::PlatformFileError* error,
-    int* cache_state) {
-  DCHECK(error);
-  DCHECK(cache_state);
+    GDataCache::CacheEntry* cache_entry,
+    bool* success) {
+  DCHECK(cache_entry);
+  DCHECK(success);
+  if (callback.is_null())
+    return;
 
-  if (!callback.is_null())
-    callback.Run(*error, *cache_state);
+  callback.Run(
+      base::PLATFORM_FILE_OK,
+      *success ? cache_entry->cache_state : GDataCache::CACHE_STATE_NONE);
 }
 
 // The class to wait for the initial load of root feed and runs the callback
@@ -2239,6 +2236,8 @@ void GDataFileSystem::OnRequestDirectoryRefresh(
 
 GDataEntry* GDataFileSystem::GetGDataEntryByPath(
     const FilePath& file_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   lock_.AssertAcquired();
   // Find directory element within the cached file system snapshot.
   GDataEntry* entry = NULL;
@@ -2274,24 +2273,33 @@ void GDataFileSystem::GetCacheStateOnUIThread(
     const GetCacheStateCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::PlatformFileError* error =
-      new base::PlatformFileError(base::PLATFORM_FILE_OK);
-  int* cache_state = new int(GDataCache::CACHE_STATE_NONE);
+  base::AutoLock lock(lock_);  // For |root_| access.
+  GDataEntry* entry = root_->GetEntryByResourceId(resource_id);
+  if (!entry || !entry->AsGDataFile()) {
+    const bool posted = BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(callback,
+                   base::PLATFORM_FILE_ERROR_NOT_FOUND,
+                   GDataCache::CACHE_STATE_NONE));
+    DCHECK(posted);
+    return;
+  }
 
-  // GetCacheStateOnBlockingPool won't do file IO, but post it to the thread
-  // pool, as it must be performed after the cache is initialized.
+  GDataCache::CacheEntry* cache_entry = new GDataCache::CacheEntry;
+  bool* success = new bool(false);
   PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
-      base::Bind(&GDataFileSystem::GetCacheStateOnBlockingPool,
-                 base::Unretained(this),
+      base::Bind(&GetCacheEntryOnBlockingPool,
+                 cache_,
                  resource_id,
                  md5,
-                 error,
-                 cache_state),
+                 cache_entry,
+                 success),
       base::Bind(&RunGetCacheStateCallbackHelper,
                  callback,
-                 base::Owned(error),
-                 base::Owned(cache_state)));
+                 base::Owned(cache_entry),
+                 base::Owned(success)));
 }
 
 void GDataFileSystem::GetAvailableSpace(
@@ -3570,39 +3578,11 @@ void GDataFileSystem::SetHideHostedDocuments(bool hide) {
   NotifyDirectoryChanged(root_path);
 }
 
-//========= GDataFileSystem: Cache tasks that ran on blocking pool ============
-
-void GDataFileSystem::GetCacheStateOnBlockingPool(
-    const std::string& resource_id,
-    const std::string& md5,
-    base::PlatformFileError* error,
-    int* cache_state) {
-  DCHECK(IsRunningSequenceOnCurrentThread(sequence_token_));
-  DCHECK(error);
-  DCHECK(cache_state);
-
-  base::AutoLock lock(lock_);  // For |root_| access.
-
-  *error = base::PLATFORM_FILE_OK;
-  *cache_state = GDataCache::CACHE_STATE_NONE;
-
-  // Get file object for |resource_id|.
-  GDataEntry* entry = root_->GetEntryByResourceId(resource_id);
-  if (!entry || !entry->AsGDataFile()) {
-    *error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
-  } else {
-    // Get cache state of file corresponding to |resource_id| and |md5|.
-    scoped_ptr<GDataCache::CacheEntry> cache_entry = cache_->GetCacheEntry(
-        resource_id, md5);
-    if (cache_entry.get())
-      *cache_state = cache_entry->cache_state;
-  }
-}
-
 //============= GDataFileSystem: internal helper functions =====================
 
 void GDataFileSystem::RunTaskOnBlockingPool(const base::Closure& task) {
-  DCHECK(IsRunningSequenceOnCurrentThread(sequence_token_));
+  DCHECK(BrowserThread::GetBlockingPool()->IsRunningSequenceOnCurrentThread(
+      sequence_token_));
 
   task.Run();
 
