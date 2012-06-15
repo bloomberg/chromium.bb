@@ -40,6 +40,7 @@ class WorkerThread(threading.Thread):
     super(WorkerThread, self).__init__(*args, **kwargs)
     self._tasks = tasks
     self.outputs = []
+    self.exceptions = []
 
     self.daemon = True
     self.start()
@@ -54,8 +55,8 @@ class WorkerThread(threading.Thread):
       try:
         func, args, kwargs = task
         self.outputs.append(func(*args, **kwargs))
-      except Exception, e:
-        self.outputs.append(e)
+      except Exception:
+        self.exceptions.append(sys.exc_info())
       finally:
         self._tasks.task_done()
 
@@ -85,8 +86,11 @@ class ThreadPool(object):
       self._tasks.join()
     out = []
     for w in self._workers:
+      if w.exceptions:
+        raise w.exceptions[0][0], w.exceptions[0][1], w.exceptions[0][2]
       out.extend(w.outputs)
       w.outputs = []
+    # Look for exceptions.
     return out
 
   def close(self):
