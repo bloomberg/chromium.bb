@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -23,29 +23,41 @@ class ThemesTest(pyauto.PyUITest):
       raw_input('Hit <enter> to dump info.. ')
       self.pprint(self.GetThemeInfo())
 
+  def _SetThemeAndVerify(self, crx_file, theme_name):
+    """Set theme and verify infobar appears and the theme name is correct.
+
+    Args:
+      crx_file: Path to .crx file to be set as theme.
+      theme_name: String to be compared to GetThemeInfo()['name'].
+    """
+    # Starting infobar count is the number of non-themes infobars.
+    infobars = self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars']
+    infobar_count = 0
+    for infobar in infobars:
+      if not (('text' in infobar) and
+              infobar['text'].startswith('Installed theme')):
+        infobar_count += 1
+    self.SetTheme(crx_file)
+    # Verify infobar shows up.
+    self.assertTrue(self.WaitForInfobarCount(infobar_count + 1))
+    self.assertTrue(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
+    # Verify theme name is correct.
+    self.assertEqual(theme_name, self.GetThemeInfo()['name'])
+
   def testSetTheme(self):
     """Verify theme install."""
     self.assertFalse(self.GetThemeInfo())  # Verify there's no theme at startup
     crx_file = os.path.abspath(
         os.path.join(self.DataDir(), 'extensions', 'theme.crx'))
-    self.SetTheme(crx_file)
-    # Verify "theme installed" infobar shows up
-    self.assertTrue(self.WaitForInfobarCount(1))
-    theme = self.GetThemeInfo()
-    self.assertEqual('camo theme', theme['name'])
-    self.assertTrue(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
+    self._SetThemeAndVerify(crx_file, 'camo theme')
 
   def testThemeInFullScreen(self):
     """Verify theme can be installed in FullScreen mode."""
-    self.ApplyAccelerator(pyauto.IDC_FULLSCREEN )
+    self.ApplyAccelerator(pyauto.IDC_FULLSCREEN)
     self.assertFalse(self.GetThemeInfo())  # Verify there's no theme at startup
     crx_file = os.path.abspath(
         os.path.join(self.DataDir(), 'extensions', 'theme.crx'))
-    self.SetTheme(crx_file)
-    # Verify "theme installed" infobar shows up
-    self.assertTrue(self.WaitForInfobarCount(1))
-    theme = self.GetThemeInfo()
-    self.assertEqual('camo theme', theme['name'])
+    self._SetThemeAndVerify(crx_file, 'camo theme')
 
   def testThemeReset(self):
     """Verify theme reset."""
@@ -54,6 +66,31 @@ class ThemesTest(pyauto.PyUITest):
     self.SetTheme(crx_file)
     self.assertTrue(self.ResetToDefaultTheme())
     self.assertFalse(self.GetThemeInfo())
+
+  def testThemeUndo(self):
+    """Verify theme undo."""
+    crx_file = os.path.abspath(
+        os.path.join(self.DataDir(), 'extensions', 'theme.crx'))
+    self._SetThemeAndVerify(crx_file, 'camo theme')
+    # Undo theme install.
+    infobars = self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars']
+    for index, infobar in enumerate(infobars):
+      if (('text' in infobar) and
+          infobar['text'].startswith('Installed theme')):
+        theme_index = index
+        break
+    self.PerformActionOnInfobar('cancel', infobar_index=theme_index)
+    self.assertFalse(self.GetThemeInfo())
+
+  def testThemeOverInstall(self):
+    """Verify that can install a theme over an existing theme."""
+    crx_file = os.path.abspath(
+        os.path.join(self.DataDir(), 'extensions', 'theme.crx'))
+    self._SetThemeAndVerify(crx_file, 'camo theme')
+    # Install a different theme.
+    crx_file = os.path.abspath(
+        os.path.join(self.DataDir(), 'extensions', 'theme2.crx'))
+    self._SetThemeAndVerify(crx_file, 'snowflake theme')
 
   def _ReturnCrashingThemes(self, themes, group_size, urls):
     """Install the given themes in groups of group_size and return the
@@ -65,6 +102,9 @@ class ThemesTest(pyauto.PyUITest):
       themes: A list of themes to install.
       group_size: The number of themes to install at one time.
       urls: The list of urls to visit.
+
+    Returns:
+      Group of themes that crashed (if any).
     """
     self.RestartBrowser()
     curr_theme = 0
