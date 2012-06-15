@@ -9,7 +9,6 @@ namespace extensions {
 namespace web_navigation_api_constants {
 
 const char kErrorKey[] = "error";
-const char kErrorOccurredKey[] = "errorOccurred";
 const char kFrameIdKey[] = "frameId";
 const char kSourceTabIdKey[] = "sourceTabId";
 const char kSourceFrameIdKey[] = "sourceFrameId";

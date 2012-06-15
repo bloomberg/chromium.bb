@@ -25,6 +25,7 @@
           'permissions.json',
           'storage.json',
           'tabs.json',
+          'web_navigation.json',
           'windows.json',
         ],
         'idl_schema_files': [
