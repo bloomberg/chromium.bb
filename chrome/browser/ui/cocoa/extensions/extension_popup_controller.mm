@@ -288,7 +288,7 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
   frame.size.height += info_bubble::kBubbleArrowHeight +
                        info_bubble::kBubbleCornerRadius;
   frame.size.width += info_bubble::kBubbleCornerRadius;
-  frame = [extensionView_ convertRectToBase:frame];
+  frame = [extensionView_ convertRect:frame toView:nil];
   // Adjust the origin according to the height and width so that the arrow is
   // positioned correctly at the middle and slightly down from the button.
   NSPoint windowOrigin = self.anchorPoint;

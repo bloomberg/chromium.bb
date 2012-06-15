@@ -1323,7 +1323,7 @@ enum {
 
   // Pushes tabView's frame back inside the tabstrip.
   NSSize tabOverflow =
-      [self overflowFrom:[tabStrip convertRectToBase:sourceTabRect]
+      [self overflowFrom:[tabStrip convertRect:sourceTabRect toView:nil]
                       to:[tabStrip frame]];
   NSRect tabRect = NSOffsetRect(sourceTabRect,
                                 -tabOverflow.width, -tabOverflow.height);
