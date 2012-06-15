@@ -136,7 +136,8 @@ void GpuVideoDecodeAccelerator::Initialize(
 #if !defined(OS_WIN)
   // Ensure we will be able to get a GL context at all before initializing
   // non-Windows VDAs.
-  if (stub_->decoder()->MakeCurrent()) {
+  if (!stub_->decoder()->MakeCurrent()) {
+    DLOG(ERROR) << "Failed to MakeCurrent()";
     NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
     return;
   }
