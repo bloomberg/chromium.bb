@@ -34,6 +34,83 @@ typedef HRESULT (WINAPI *Direct3DCreate9ExFunc)(UINT sdk_version,
 
 const wchar_t kD3D9ModuleName[] = L"d3d9.dll";
 const char kCreate3D9DeviceExName[] = "Direct3DCreate9Ex";
+const char kReverseImageTransportSurfaceRows[] =
+    "reverse-image-transport-surface-rows";
+
+struct Vertex {
+  float x, y, z, w;
+  float u, v;
+};
+
+// See accelerated_surface_win.hlsl for source and compilation instructions.
+const BYTE g_vertexMain[] = {
+    0,   2, 254, 255, 254, 255,
+   22,   0,  67,  84,  65,  66,
+   28,   0,   0,   0,  35,   0,
+    0,   0,   0,   2, 254, 255,
+    0,   0,   0,   0,   0,   0,
+    0,   0,   0,   1,   0,   0,
+   28,   0,   0,   0, 118, 115,
+   95,  50,  95,  48,   0,  77,
+  105,  99, 114, 111, 115, 111,
+  102, 116,  32,  40,  82,  41,
+   32,  72,  76,  83,  76,  32,
+   83, 104,  97, 100, 101, 114,
+   32,  67, 111, 109, 112, 105,
+  108, 101, 114,  32,  57,  46,
+   50,  57,  46,  57,  53,  50,
+   46,  51,  49,  49,  49,   0,
+   31,   0,   0,   2,   0,   0,
+    0, 128,   0,   0,  15, 144,
+   31,   0,   0,   2,   5,   0,
+    0, 128,   1,   0,  15, 144,
+    1,   0,   0,   2,   0,   0,
+   15, 192,   0,   0, 228, 144,
+    1,   0,   0,   2,   0,   0,
+    3, 224,   1,   0, 228, 144,
+  255, 255,   0,   0
+};
+
+const BYTE g_pixelMain[] = {
+    0,   2, 255, 255, 254, 255,
+   32,   0,  67,  84,  65,  66,
+   28,   0,   0,   0,  75,   0,
+    0,   0,   0,   2, 255, 255,
+    1,   0,   0,   0,  28,   0,
+    0,   0,   0,   1,   0,   0,
+   68,   0,   0,   0,  48,   0,
+    0,   0,   3,   0,   0,   0,
+    1,   0,   0,   0,  52,   0,
+    0,   0,   0,   0,   0,   0,
+  115,   0, 171, 171,   4,   0,
+   12,   0,   1,   0,   1,   0,
+    1,   0,   0,   0,   0,   0,
+    0,   0, 112, 115,  95,  50,
+   95,  48,   0,  77, 105,  99,
+  114, 111, 115, 111, 102, 116,
+   32,  40,  82,  41,  32,  72,
+   76,  83,  76,  32,  83, 104,
+   97, 100, 101, 114,  32,  67,
+  111, 109, 112, 105, 108, 101,
+  114,  32,  57,  46,  50,  57,
+   46,  57,  53,  50,  46,  51,
+   49,  49,  49,   0,  31,   0,
+    0,   2,   0,   0,   0, 128,
+    0,   0,   3, 176,  31,   0,
+    0,   2,   0,   0,   0, 144,
+    0,   8,  15, 160,  66,   0,
+    0,   3,   0,   0,  15, 128,
+    0,   0, 228, 176,   0,   8,
+  228, 160,   1,   0,   0,   2,
+    0,   8,  15, 128,   0,   0,
+  228, 128, 255, 255,   0,   0
+};
+
+const static D3DVERTEXELEMENT9 g_vertexElements[] = {
+  { 0, 0, D3DDECLTYPE_FLOAT4, 0, D3DDECLUSAGE_POSITION, 0 },
+  { 0, 16, D3DDECLTYPE_FLOAT2, 0, D3DDECLUSAGE_TEXCOORD, 0 },
+  D3DDECL_END()
+};
 
 UINT GetPresentationInterval() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableGpuVsync))
@@ -212,8 +289,44 @@ void PresentThread::ResetDevice() {
     return;
 
   hr = device_->CreateQuery(D3DQUERYTYPE_EVENT, query_.Receive());
-  if (FAILED(hr))
+  if (FAILED(hr)) {
     device_ = NULL;
+    return;
+  }
+
+  base::win::ScopedComPtr<IDirect3DVertexShader9> vertex_shader;
+  hr = device_->CreateVertexShader(reinterpret_cast<const DWORD*>(g_vertexMain),
+                                   vertex_shader.Receive());
+  if (FAILED(hr)) {
+    device_ = NULL;
+    query_ = NULL;
+    return;
+  }
+
+  device_->SetVertexShader(vertex_shader);
+
+  base::win::ScopedComPtr<IDirect3DPixelShader9> pixel_shader;
+  hr = device_->CreatePixelShader(reinterpret_cast<const DWORD*>(g_pixelMain),
+                                  pixel_shader.Receive());
+
+  if (FAILED(hr)) {
+    device_ = NULL;
+    query_ = NULL;
+    return;
+  }
+
+  device_->SetPixelShader(pixel_shader);
+
+  base::win::ScopedComPtr<IDirect3DVertexDeclaration9> vertex_declaration;
+  hr = device_->CreateVertexDeclaration(g_vertexElements,
+                                        vertex_declaration.Receive());
+  if (FAILED(hr)) {
+    device_ = NULL;
+    query_ = NULL;
+    return;
+  }
+
+  device_->SetVertexDeclaration(vertex_declaration);
 }
 
 void PresentThread::CleanUp() {
@@ -287,6 +400,8 @@ AcceleratedPresenter::AcceleratedPresenter(gfx::NativeWindow window)
       window_(window),
       event_(false, false),
       hidden_(true) {
+  reverse_rows_ = CommandLine::ForCurrentProcess()->HasSwitch(
+      kReverseImageTransportSurfaceRows);
 }
 
 scoped_refptr<AcceleratedPresenter> AcceleratedPresenter::GetForWindow(
@@ -634,14 +749,54 @@ void AcceleratedPresenter::DoPresentAndAcknowledge(
   };
 
   {
-    TRACE_EVENT0("gpu", "StretchRect");
-    hr = present_thread_->device()->StretchRect(source_surface,
-                                                &rect,
-                                                dest_surface,
-                                                &rect,
-                                                D3DTEXF_NONE);
-    if (FAILED(hr))
-      return;
+    TRACE_EVENT0("gpu", "Copy");
+
+    if (reverse_rows_) {
+      // Use a simple pixel / vertex shader pair to render a quad that flips the
+      // source texture on the vertical axis.
+      IDirect3DSurface9 *default_render_target = NULL;
+      present_thread_->device()->GetRenderTarget(0, &default_render_target);
+
+      present_thread_->device()->SetRenderTarget(0, dest_surface);
+      present_thread_->device()->SetTexture(0, source_texture_);
+
+      D3DVIEWPORT9 viewport = {
+        0, 0,
+        size.width(), size.height(),
+        0, 1
+      };
+      present_thread_->device()->SetViewport(&viewport);
+
+      float halfPixelX = -1.0f / size.width();
+      float halfPixelY = 1.0f / size.height();
+      Vertex vertices[] = {
+        { halfPixelX - 1, halfPixelY + 1, 0.5f, 1, 0, 1 },
+        { halfPixelX + 1, halfPixelY + 1, 0.5f, 1, 1, 1 },
+        { halfPixelX + 1, halfPixelY - 1, 0.5f, 1, 1, 0 },
+        { halfPixelX - 1, halfPixelY - 1, 0.5f, 1, 0, 0 }
+      };
+
+      present_thread_->device()->BeginScene();
+      present_thread_->device()->DrawPrimitiveUP(D3DPT_TRIANGLEFAN,
+                                                 arraysize(vertices),
+                                                 vertices,
+                                                 sizeof(vertices[0]));
+      present_thread_->device()->EndScene();
+
+      present_thread_->device()->SetTexture(0, NULL);
+      present_thread_->device()->SetRenderTarget(0, default_render_target);
+      default_render_target->Release();
+    } else {
+      // Copy the source texture directly into the swap chain without reversing
+      // the rows.
+      hr = present_thread_->device()->StretchRect(source_surface,
+                                                  &rect,
+                                                  dest_surface,
+                                                  &rect,
+                                                  D3DTEXF_NONE);
+      if (FAILED(hr))
+        return;
+    }
   }
 
   hr = present_thread_->query()->Issue(D3DISSUE_END);

@@ -103,6 +103,9 @@ class SURFACE_EXPORT AcceleratedPresenter
   // are used so it is possible to represent it to quickly validate the window.
   base::win::ScopedComPtr<IDirect3DSwapChain9> swap_chain_;
 
+  // Whether surfaces are flipped vertically prior to presentation.
+  bool reverse_rows_;
+
   bool hidden_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratedPresenter);
