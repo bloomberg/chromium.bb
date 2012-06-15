@@ -198,10 +198,12 @@ void NewTabUI::StartTimingPaint(RenderViewHost* render_view_host) {
   content::NotificationSource source =
       content::Source<content::RenderWidgetHost>(render_view_host);
   if (!registrar_.IsRegistered(this,
-          content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
+          content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
           source)) {
-    registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
-                   source);
+    registrar_.Add(
+        this,
+        content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
+        source);
   }
 
   timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(kTimeoutMs), this,
@@ -245,7 +247,7 @@ void NewTabUI::Observe(int type,
       break;
     }
 #endif
-    case content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT: {
+    case content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE: {
       last_paint_ = base::TimeTicks::Now();
       break;
     }

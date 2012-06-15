@@ -32,7 +32,7 @@ void TabRenderWatcher::Observe(int type,
     case content::NOTIFICATION_RENDER_VIEW_HOST_CREATED_FOR_TAB: {
       RenderWidgetHost* rwh = content::Details<RenderWidgetHost>(details).ptr();
       registrar_.Add(this,
-          content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
+          content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
           content::Source<RenderWidgetHost>(rwh));
       delegate_->OnRenderHostCreated(
           content::Details<content::RenderViewHost>(details).ptr());
@@ -44,7 +44,7 @@ void TabRenderWatcher::Observe(int type,
         delegate_->OnTabMainFrameLoaded();
       }
       break;
-    case content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT:
+    case content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE:
       if (loaded_)
         delegate_->OnTabMainFrameRender();
       break;

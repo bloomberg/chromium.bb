@@ -219,8 +219,10 @@ void TabLoader::StartLoading() {
   // eventually.
   if (loading_)
     return;
-  registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
-                 content::NotificationService::AllSources());
+  registrar_.Add(
+      this,
+      content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
+      content::NotificationService::AllSources());
   this_retainer_ = this;
 #if defined(OS_CHROMEOS)
   if (!net::NetworkChangeNotifier::IsOffline()) {
@@ -318,10 +320,11 @@ void TabLoader::Observe(int type,
       HandleTabClosedOrLoaded(tab);
       break;
     }
-    case content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT: {
-      if (!got_first_paint_) {
-        RenderWidgetHost* render_widget_host =
-            content::Source<RenderWidgetHost>(source).ptr();
+    case content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE: {
+      RenderWidgetHost* render_widget_host =
+          content::Source<RenderWidgetHost>(source).ptr();
+      if (!got_first_paint_ && render_widget_host->GetView() &&
+          render_widget_host->GetView()->IsShowing()) {
         if (render_widget_hosts_to_paint_.find(render_widget_host) !=
             render_widget_hosts_to_paint_.end()) {
           // Got a paint for one of our renderers, so record time.

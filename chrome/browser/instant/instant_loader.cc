@@ -400,8 +400,10 @@ void InstantLoader::TabContentsDelegateImpl::RegisterForPaintNotifications(
   registered_render_widget_host_ = render_widget_host;
   content::Source<RenderWidgetHost> source =
       content::Source<RenderWidgetHost>(registered_render_widget_host_);
-  registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
-                 source);
+  registrar_.Add(
+      this,
+      content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
+      source);
   registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
                  source);
 }
@@ -410,8 +412,10 @@ void InstantLoader::TabContentsDelegateImpl::UnregisterForPaintNotifications() {
   if (registered_render_widget_host_) {
     content::Source<RenderWidgetHost> source =
         content::Source<RenderWidgetHost>(registered_render_widget_host_);
-    registrar_.Remove(this, content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
-                      source);
+    registrar_.Remove(
+        this,
+        content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
+        source);
     registrar_.Remove(this, content::NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
                       source);
     registered_render_widget_host_ = NULL;
@@ -423,7 +427,7 @@ void InstantLoader::TabContentsDelegateImpl::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT:
+    case content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE:
       UnregisterForPaintNotifications();
       PreviewPainted();
       break;

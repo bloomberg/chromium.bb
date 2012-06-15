@@ -1355,6 +1355,11 @@ void RenderWidgetHostImpl::DidUpdateBackingStore(
   if (view_)
     view_->MovePluginWindows(params.plugin_window_moves);
 
+  NotificationService::current()->Notify(
+      NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
+      Source<RenderWidgetHost>(this),
+      NotificationService::NoDetails());
+
   // We don't need to update the view if the view is hidden. We must do this
   // early return after the ACK is sent, however, or the renderer will not send
   // us more data.
@@ -1368,11 +1373,6 @@ void RenderWidgetHostImpl::DidUpdateBackingStore(
                                  params.copy_rects);
     view_being_painted_ = false;
   }
-
-  NotificationService::current()->Notify(
-      NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
-      Source<RenderWidgetHost>(this),
-      NotificationService::NoDetails());
 
   // If we got a resize ack, then perhaps we have another resize to send?
   bool is_resize_ack =

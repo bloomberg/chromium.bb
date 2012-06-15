@@ -276,9 +276,9 @@ enum NotificationType {
   // the RenderWidgetHost, the details are not used.
   NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
 
-  // Sent after the widget has painted. The source is the RenderWidgetHost,
-  // the details are not used.
-  NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT,
+  // Sent after the backing store has been updated but before the widget has
+  // painted. The source is the RenderWidgetHost, the details are not used.
+  NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
 
   // This notifies the observer that a PaintAtSizeACK was received. The source
   // is the RenderWidgetHost, the details are an instance of
