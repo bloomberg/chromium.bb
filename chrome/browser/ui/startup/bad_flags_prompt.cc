@@ -24,6 +24,7 @@ void ShowBadFlagsPrompt(Browser* browser) {
     switches::kSingleProcess,
     switches::kNoSandbox,
     switches::kInProcessWebGL,
+    switches::kDisableWebSecurity,
     NULL
   };
 
