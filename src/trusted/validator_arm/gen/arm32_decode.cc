@@ -1580,11 +1580,19 @@ const ClassDecoder& Arm32DecoderState::decode_super_cop(
     return MoveFromCoprocessor_instance_;
 
   if ((insn.Bits() & 0x02100000) == 0x00000000 /* op1(25:20) == 0xxxx0 */ &&
-      (insn.Bits() & 0x00000E00) != 0x00000A00 /* coproc(11:8) == ~101x */)
+      (insn.Bits() & 0x00000E00) != 0x00000A00 /* coproc(11:8) == ~101x */ &&
+      (insn.Bits() & 0x03A00000) != 0x00000000 /* op1_repeated(25:20) == ~000x0x */)
     return StoreCoprocessor_instance_;
 
   if ((insn.Bits() & 0x02100000) == 0x00100000 /* op1(25:20) == 0xxxx1 */ &&
-      (insn.Bits() & 0x00000E00) != 0x00000A00 /* coproc(11:8) == ~101x */)
+      (insn.Bits() & 0x00000E00) != 0x00000A00 /* coproc(11:8) == ~101x */ &&
+      (insn.Bits() & 0x000F0000) != 0x000F0000 /* Rn(19:16) == ~1111 */ &&
+      (insn.Bits() & 0x03A00000) != 0x00000000 /* op1_repeated(25:20) == ~000x0x */)
+    return LoadCoprocessor_instance_;
+
+  if ((insn.Bits() & 0x02100000) == 0x00100000 /* op1(25:20) == 0xxxx1 */ &&
+      (insn.Bits() & 0x00000E00) != 0x00000A00 /* coproc(11:8) == ~101x */ &&
+      (insn.Bits() & 0x000F0000) == 0x000F0000 /* Rn(19:16) == 1111 */)
     return LoadCoprocessor_instance_;
 
   if ((insn.Bits() & 0x03000000) == 0x02000000 /* op1(25:20) == 10xxxx */ &&
@@ -1605,7 +1613,8 @@ const ClassDecoder& Arm32DecoderState::decode_super_cop(
     return Forbidden_instance_;
 
   if ((insn.Bits() & 0x02000000) == 0x00000000 /* op1(25:20) == 0xxxxx */ &&
-      (insn.Bits() & 0x00000E00) == 0x00000A00 /* coproc(11:8) == 101x */)
+      (insn.Bits() & 0x00000E00) == 0x00000A00 /* coproc(11:8) == 101x */ &&
+      (insn.Bits() & 0x03A00000) != 0x00000000 /* op1_repeated(25:20) == ~000x0x */)
     return decode_ext_reg_load_store(insn);
 
   // Catch any attempt to fall though ...
