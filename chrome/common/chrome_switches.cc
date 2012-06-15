@@ -1448,6 +1448,9 @@ const char kDisableDesktopShortcuts[]       = "disable-desktop-shortcuts";
 #if defined(USE_AURA)
 // Use NativeTabContentsViewAura instead of the default implementation.
 const char kDisableTCVA[]                    = "disable-tcva";
+
+// Opens an Ash window on startup.
+extern const char kOpenAsh[]                 = "open-ash";
 #endif
 
 #ifndef NDEBUG

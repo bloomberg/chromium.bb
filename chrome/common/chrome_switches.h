@@ -410,6 +410,7 @@ extern const char kDisableDesktopShortcuts[];
 
 #if defined(USE_AURA)
 extern const char kDisableTCVA[];
+extern const char kOpenAsh[];
 #endif
 
 #ifndef NDEBUG
