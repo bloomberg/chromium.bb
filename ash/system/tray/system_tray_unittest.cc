@@ -202,7 +202,14 @@ TEST_F(SystemTrayTest, DISABLED_SystemTrayNotifications) {
   ASSERT_TRUE(test_item->notification_view() != NULL);
 }
 
-TEST_F(SystemTrayTest, BubbleCreationTypesTest) {
+#if defined(OS_WIN)
+// This test is crashing on windows. See http://crbug.com/127539.
+#define MAYBE_BubbleCreationTypesTest DISABLED_BubbleCreationTypesTest
+#else
+#define MAYBE_BubbleCreationTypesTest BubbleCreationTypesTest
+#endif
+
+TEST_F(SystemTrayTest, MAYBE_BubbleCreationTypesTest) {
   SystemTray* tray = GetSystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
