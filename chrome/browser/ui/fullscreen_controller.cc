@@ -466,7 +466,6 @@ ContentSetting
 
   return profile_->GetHostContentSettingsMap()->GetContentSetting(url, url,
       CONTENT_SETTINGS_TYPE_FULLSCREEN, std::string());
-
 }
 
 ContentSetting

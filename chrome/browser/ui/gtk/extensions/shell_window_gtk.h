@@ -54,6 +54,10 @@ class ShellWindowGtk : public ShellWindow,
   virtual void ActiveWindowChanged(GdkWindow* active_window) OVERRIDE;
 
  private:
+  // ShellWindow implementation.
+  virtual void SetFullscreen(bool fullscreen) OVERRIDE;
+  virtual bool IsFullscreenOrPending() const OVERRIDE;
+
   virtual ~ShellWindowGtk();
 
   CHROMEGTK_CALLBACK_1(ShellWindowGtk, gboolean, OnMainWindowDeleteEvent,
@@ -76,6 +80,10 @@ class ShellWindowGtk : public ShellWindow,
 
   // The position and size of the non-maximized, non-fullscreen window.
   gfx::Rect restored_bounds_;
+
+  // True if the RVH is in fullscreen mode. The window may not actually be in
+  // fullscreen, however: some WMs don't support fullscreen.
+  bool content_thinks_its_fullscreen_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellWindowGtk);
 };

@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -191,7 +192,28 @@ gboolean ShellWindowGtk::OnConfigure(GtkWidget* widget,
 gboolean ShellWindowGtk::OnWindowState(GtkWidget* sender,
                                        GdkEventWindowState* event) {
   state_ = event->new_window_state;
+
+  if (content_thinks_its_fullscreen_ &&
+      !(state_ & GDK_WINDOW_STATE_FULLSCREEN)) {
+    content_thinks_its_fullscreen_ = false;
+    content::RenderViewHost* rvh = web_contents()->GetRenderViewHost();
+    if (rvh)
+      rvh->ExitFullscreen();
+  }
+
   return FALSE;
+}
+
+void ShellWindowGtk::SetFullscreen(bool fullscreen) {
+  content_thinks_its_fullscreen_ = fullscreen;
+  if (fullscreen)
+    gtk_window_fullscreen(window_);
+  else
+    gtk_window_unfullscreen(window_);
+}
+
+bool ShellWindowGtk::IsFullscreenOrPending() const {
+  return content_thinks_its_fullscreen_;
 }
 
 // static
