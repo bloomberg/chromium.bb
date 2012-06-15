@@ -24,7 +24,7 @@ class ChromeFrameAutomationProvider : public AutomationProvider {
   explicit ChromeFrameAutomationProvider(Profile* profile);
   virtual ~ChromeFrameAutomationProvider();
 
-  // IPC::Channel::Listener overrides.
+  // IPC::Listener overrides.
   virtual bool OnMessageReceived(const IPC::Message& message);
 
  protected:

@@ -63,7 +63,7 @@ class TestingAutomationProvider : public AutomationProvider,
 
   virtual IPC::Channel::Mode GetChannelMode(bool use_named_interface);
 
-  // IPC::Channel::Listener:
+  // IPC::Listener:
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
 

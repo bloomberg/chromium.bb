@@ -6,7 +6,7 @@
 #define CHROME_RENDERER_EXTERNAL_HOST_BINDINGS_H_
 #pragma once
 
-#include "ipc/ipc_message.h"
+#include "ipc/ipc_sender.h"
 #include "webkit/glue/cpp_bound_class.h"
 
 // ExternalHostBindings is the class backing the "externalHost" object
@@ -16,7 +16,7 @@
 //  postMessage(String message[, String target]);
 class ExternalHostBindings : public webkit_glue::CppBoundClass {
  public:
-  ExternalHostBindings(IPC::Message::Sender* sender, int routing_id);
+  ExternalHostBindings(IPC::Sender* sender, int routing_id);
   virtual ~ExternalHostBindings();
 
   // Invokes the registered onmessage handler.
@@ -40,7 +40,7 @@ class ExternalHostBindings : public webkit_glue::CppBoundClass {
 
   webkit_glue::CppVariant on_message_handler_;
   WebKit::WebFrame* frame_;
-  IPC::Message::Sender* sender_;
+  IPC::Sender* sender_;
   int routing_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalHostBindings);

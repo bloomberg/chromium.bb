@@ -35,7 +35,7 @@ struct NaClDesc;
 // This object must be threadsafe since the nacl environment determines which
 // thread every function is called on.
 class NaClIPCAdapter : public base::RefCountedThreadSafe<NaClIPCAdapter>,
-                       public IPC::Channel::Listener {
+                       public IPC::Listener {
  public:
   // Chrome's IPC message format varies by platform, NaCl's does not. In
   // particular, the header has some extra fields on Posix platforms. Since

@@ -11,7 +11,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile.h"
-#include "ipc/ipc_message.h"
+#include "ipc/ipc_sender.h"
 #include "googleurl/src/gurl.h"
 
 class ChromeRenderMessageFilter;
@@ -120,12 +120,12 @@ class ExtensionFunctionDispatcher
       const extensions::ProcessMap& process_map,
       extensions::ExtensionAPI* api,
       void* profile,
-      IPC::Message::Sender* ipc_sender,
+      IPC::Sender* ipc_sender,
       int routing_id);
 
   // Helper to send an access denied error to the requesting renderer. Can be
   // called on any thread.
-  static void SendAccessDenied(IPC::Message::Sender* ipc_sender,
+  static void SendAccessDenied(IPC::Sender* ipc_sender,
                                int routing_id,
                                int request_id);
 

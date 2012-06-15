@@ -273,7 +273,7 @@ struct ExtensionWebRequestEventRouter::EventListener {
   std::string sub_event_name;
   RequestFilter filter;
   int extra_info_spec;
-  base::WeakPtr<IPC::Message::Sender> ipc_sender;
+  base::WeakPtr<IPC::Sender> ipc_sender;
   mutable std::set<uint64> blocked_requests;
 
   // Comparator to work with std::set.
@@ -991,7 +991,7 @@ bool ExtensionWebRequestEventRouter::AddEventListener(
     const std::string& sub_event_name,
     const RequestFilter& filter,
     int extra_info_spec,
-    base::WeakPtr<IPC::Message::Sender> ipc_sender) {
+    base::WeakPtr<IPC::Sender> ipc_sender) {
   if (!IsWebRequestEvent(event_name))
     return false;
 

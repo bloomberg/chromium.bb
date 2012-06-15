@@ -73,9 +73,9 @@ v8::Handle<v8::Value> AppWindowCustomBindings::GetView(
 
   // TODO(jeremya): there exists a direct map of routing_id -> RenderView as
   // ChildThread::current()->ResolveRoute(), but ResolveRoute returns an
-  // IPC::Channel::Listener*, which RenderView doesn't inherit from
-  // (RenderViewImpl does, indirectly, via RenderWidget, but the link isn't
-  // exposed outside of content/.)
+  // IPC::Listener*, which RenderView doesn't inherit from (RenderViewImpl
+  // does, indirectly, via RenderWidget, but the link isn't exposed outside of
+  // content/.)
   FindViewByID view_finder(view_id);
   content::RenderView::ForEach(&view_finder);
   content::RenderView* view = view_finder.view();

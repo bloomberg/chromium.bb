@@ -7,8 +7,7 @@
 #include "chrome/browser/native_window_notification_source.h"
 #include "chrome/common/chrome_notification_types.h"
 
-AutomationWindowTracker::AutomationWindowTracker(
-    IPC::Message::Sender* automation)
+AutomationWindowTracker::AutomationWindowTracker(IPC::Sender* automation)
     : AutomationResourceTracker<gfx::NativeWindow>(automation) {
 }
 

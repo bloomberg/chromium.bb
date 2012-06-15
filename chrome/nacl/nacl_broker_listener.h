@@ -13,14 +13,14 @@
 
 // The BrokerThread class represents the thread that handles the messages from
 // the browser process and starts NaCl loader processes.
-class NaClBrokerListener : public IPC::Channel::Listener {
+class NaClBrokerListener : public IPC::Listener {
  public:
   NaClBrokerListener();
   ~NaClBrokerListener();
 
   void Listen();
 
-  // IPC::Channel::Listener implementation.
+  // IPC::Listener implementation.
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;

@@ -9,20 +9,20 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "ipc/ipc_channel_handle.h"
+#include "ipc/ipc_listener.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
-#include "ipc/ipc_message.h"
+#include "ipc/ipc_sender.h"
 
 // This class handles IPC commands for the service process.
-class ServiceIPCServer : public IPC::Channel::Listener,
-                         public IPC::Message::Sender {
+class ServiceIPCServer : public IPC::Listener, public IPC::Sender {
  public:
   explicit ServiceIPCServer(const IPC::ChannelHandle& handle);
   virtual ~ServiceIPCServer();
 
   bool Init();
 
-  // IPC::Message::Sender implementation.
+  // IPC::Sender implementation.
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
   IPC::SyncChannel* channel() { return channel_.get(); }
@@ -37,7 +37,7 @@ class ServiceIPCServer : public IPC::Channel::Listener,
  private:
   friend class MockServiceIPCServer;
 
-  // IPC::Channel::Listener implementation.
+  // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;

@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/extensions/extension_message_bundle.h"
 #include "chrome/common/extensions/extension_localization_peer.h"
-#include "ipc/ipc_message.h"
+#include "ipc/ipc_sender.h"
 #include "ipc/ipc_sync_message.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_status.h"
@@ -36,7 +36,7 @@ void MessageDeleter(IPC::Message* message) {
   delete message;
 }
 
-class MockIpcMessageSender : public IPC::Message::Sender {
+class MockIpcMessageSender : public IPC::Sender {
  public:
   MockIpcMessageSender() {
     ON_CALL(*this, Send(_))

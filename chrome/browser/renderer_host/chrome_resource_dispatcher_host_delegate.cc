@@ -315,7 +315,7 @@ bool ChromeResourceDispatcherHostDelegate::ShouldForceDownloadResource(
 void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
     net::URLRequest* request,
     content::ResourceResponse* response,
-    IPC::Message::Sender* sender) {
+    IPC::Sender* sender) {
   LoadTimingObserver::PopulateTimingInfo(request, response);
 
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);

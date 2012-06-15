@@ -13,7 +13,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
-#include "ipc/ipc_message.h"
+#include "ipc/ipc_sender.h"
 
 // Template trick so that AutomationResourceTracker can be used with non-pointer
 // types.
@@ -31,7 +31,7 @@ struct AutomationResourceTraits<T*> {
 // of AutomationResourceTracker to live in a .cc file.
 class AutomationResourceTrackerImpl {
  public:
-  explicit AutomationResourceTrackerImpl(IPC::Message::Sender* sender);
+  explicit AutomationResourceTrackerImpl(IPC::Sender* sender);
   virtual ~AutomationResourceTrackerImpl();
 
  protected:
@@ -57,7 +57,7 @@ class AutomationResourceTrackerImpl {
   ResourceToHandleMap resource_to_handle_;
   HandleToResourceMap handle_to_resource_;
 
-  IPC::Message::Sender* sender_;
+  IPC::Sender* sender_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationResourceTrackerImpl);
 };
@@ -71,8 +71,8 @@ template <class T>
 class AutomationResourceTracker : public AutomationResourceTrackerImpl,
                                   public content::NotificationObserver {
  public:
-  explicit AutomationResourceTracker(IPC::Message::Sender* automation)
-    : AutomationResourceTrackerImpl(automation) {}
+  explicit AutomationResourceTracker(IPC::Sender* automation)
+      : AutomationResourceTrackerImpl(automation) {}
 
   // The implementations for these should call the NotificationService
   // to add and remove this object as an observer for the appropriate

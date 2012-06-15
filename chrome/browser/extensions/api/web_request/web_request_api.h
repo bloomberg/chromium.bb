@@ -19,7 +19,7 @@
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/url_pattern_set.h"
-#include "ipc/ipc_message.h"
+#include "ipc/ipc_sender.h"
 #include "net/base/completion_callback.h"
 #include "net/base/network_delegate.h"
 #include "net/http/http_request_headers.h"
@@ -238,7 +238,7 @@ class ExtensionWebRequestEventRouter {
       const std::string& sub_event_name,
       const RequestFilter& filter,
       int extra_info_spec,
-      base::WeakPtr<IPC::Message::Sender> ipc_sender);
+      base::WeakPtr<IPC::Sender> ipc_sender);
 
   // Removes the listener for the given sub-event.
   void RemoveEventListener(

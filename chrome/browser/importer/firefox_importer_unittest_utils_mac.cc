@@ -70,12 +70,12 @@ bool LaunchNSSDecrypterChildProcess(const FilePath& nss_path,
 // Method calls are sent over IPC and replies are read back into class
 // variables.
 // This class needs to be called on a single thread.
-class FFDecryptorServerChannelListener : public IPC::Channel::Listener {
+class FFDecryptorServerChannelListener : public IPC::Listener {
  public:
   FFDecryptorServerChannelListener()
       : got_result(false), sender_(NULL) {}
 
-  void SetSender(IPC::Message::Sender* sender) {
+  void SetSender(IPC::Sender* sender) {
     sender_ = sender;
   }
 
@@ -121,7 +121,7 @@ class FFDecryptorServerChannelListener : public IPC::Channel::Listener {
   bool got_result;
 
  private:
-  IPC::Message::Sender* sender_;  // weak
+  IPC::Sender* sender_;  // weak
 };
 
 FFUnitTestDecryptorProxy::FFUnitTestDecryptorProxy()
@@ -219,12 +219,12 @@ string16 FFUnitTestDecryptorProxy::Decrypt(const std::string& crypt) {
 
 // Class to listen on the client side of the ipc channel, it calls through
 // to the NSSDecryptor and sends back a reply.
-class FFDecryptorClientChannelListener : public IPC::Channel::Listener {
+class FFDecryptorClientChannelListener : public IPC::Listener {
  public:
   FFDecryptorClientChannelListener()
       : sender_(NULL) {}
 
-  void SetSender(IPC::Message::Sender* sender) {
+  void SetSender(IPC::Sender* sender) {
     sender_ = sender;
   }
 
@@ -259,7 +259,7 @@ class FFDecryptorClientChannelListener : public IPC::Channel::Listener {
 
  private:
   NSSDecryptor decryptor_;
-  IPC::Message::Sender* sender_;
+  IPC::Sender* sender_;
 };
 
 // Entry function in child process.

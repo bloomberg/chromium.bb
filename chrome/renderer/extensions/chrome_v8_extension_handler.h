@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "ipc/ipc_channel.h"
+#include "ipc/ipc_listener.h"
 #include "v8/include/v8.h"
 
 class ChromeV8Context;
@@ -17,11 +17,11 @@ class ChromeV8Context;
 // Base class for context-scoped handlers used with ChromeV8Extension.
 // TODO(koz): Rename/refactor this somehow. Maybe just pull it into
 // ChromeV8Extension.
-class ChromeV8ExtensionHandler : public IPC::Channel::Listener {
+class ChromeV8ExtensionHandler : public IPC::Listener {
  public:
   virtual ~ChromeV8ExtensionHandler();
 
-  // IPC::Channel::Listener
+  // IPC::Listener
   virtual bool OnMessageReceived(const IPC::Message& message) = 0;
 
  protected:

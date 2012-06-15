@@ -31,7 +31,7 @@ PP_Bool LaunchSelLdr(PP_Instance instance,
                      const char* alleged_url, int socket_count,
                      void* imc_handles) {
   std::vector<nacl::FileDescriptor> sockets;
-  IPC::Message::Sender* sender = content::RenderThread::Get();
+  IPC::Sender* sender = content::RenderThread::Get();
   if (sender == NULL)
     sender = g_background_thread_sender.Pointer()->get();
 

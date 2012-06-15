@@ -162,7 +162,7 @@ class ExtensionFunction
 
   // Common implementation for SendResponse.
   void SendResponseImpl(base::ProcessHandle process,
-                        IPC::Message::Sender* ipc_sender,
+                        IPC::Sender* ipc_sender,
                         int routing_id,
                         bool success);
 

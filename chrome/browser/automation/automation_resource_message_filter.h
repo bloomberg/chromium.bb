@@ -33,7 +33,7 @@ class URLRequestContext;
 // starting a network request will not interfere with browser UI.
 class AutomationResourceMessageFilter
     : public IPC::ChannelProxy::MessageFilter,
-      public IPC::Message::Sender {
+      public IPC::Sender {
  public:
   // Information needed to send IPCs through automation.
   struct AutomationDetails {
@@ -64,7 +64,7 @@ class AutomationResourceMessageFilter
   virtual void OnFilterAdded(IPC::Channel* channel);
   virtual void OnFilterRemoved();
 
-  // IPC::Channel::Listener implementation.
+  // IPC::Listener implementation.
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
   virtual void OnChannelClosing() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

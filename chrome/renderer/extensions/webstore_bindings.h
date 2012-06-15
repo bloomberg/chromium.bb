@@ -21,7 +21,7 @@ class WebstoreBindings : public ChromeV8Extension,
   explicit WebstoreBindings(ExtensionDispatcher* dispatcher,
                             ChromeV8Context* context);
 
-  // IPC::Channel::Listener
+  // IPC::Listener
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  private:

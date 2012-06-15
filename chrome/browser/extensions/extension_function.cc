@@ -120,7 +120,7 @@ bool ExtensionFunction::HasOptionalArgument(size_t index) {
 }
 
 void ExtensionFunction::SendResponseImpl(base::ProcessHandle process,
-                                         IPC::Message::Sender* ipc_sender,
+                                         IPC::Sender* ipc_sender,
                                          int routing_id,
                                          bool success) {
   DCHECK(ipc_sender);

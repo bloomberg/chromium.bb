@@ -13,7 +13,7 @@
 class AutomationWindowTracker
     : public AutomationResourceTracker<gfx::NativeWindow> {
  public:
-  explicit AutomationWindowTracker(IPC::Message::Sender* automation);
+  explicit AutomationWindowTracker(IPC::Sender* automation);
   virtual ~AutomationWindowTracker();
 
   virtual void AddObserver(gfx::NativeWindow resource);

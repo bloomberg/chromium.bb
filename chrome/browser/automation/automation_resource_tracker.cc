@@ -7,7 +7,7 @@
 #include "chrome/common/automation_messages.h"
 
 AutomationResourceTrackerImpl::AutomationResourceTrackerImpl(
-    IPC::Message::Sender* sender)
+    IPC::Sender* sender)
     : sender_(sender) {
 }
 

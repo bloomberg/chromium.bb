@@ -15,7 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ipc/ipc_message.h"
+#include "ipc/ipc_sender.h"
 
 class GURL;
 class ExtensionHost;
@@ -42,7 +42,7 @@ class ExtensionEventRouter : public content::NotificationObserver {
 
   // Sends an event via ipc_sender to the given extension. Can be called on
   // any thread.
-  static void DispatchEvent(IPC::Message::Sender* ipc_sender,
+  static void DispatchEvent(IPC::Sender* ipc_sender,
                             const std::string& extension_id,
                             const std::string& event_name,
                             const std::string& event_args,

@@ -80,7 +80,7 @@ class PortalFrameLoadObserver : public content::RenderViewHostObserver {
                                              UTF8ToUTF16("paymentForm")));
   }
 
-  // IPC::Channel::Listener implementation.
+  // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(PortalFrameLoadObserver, message)

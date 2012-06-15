@@ -31,7 +31,7 @@ class ExternalProcessImporterBridge : public ImporterBridge {
  public:
   ExternalProcessImporterBridge(
       const base::DictionaryValue& localized_strings,
-      IPC::Message::Sender* sender,
+      IPC::Sender* sender,
       base::TaskRunner* task_runner);
 
   // Begin ImporterBridge implementation:
@@ -76,7 +76,7 @@ class ExternalProcessImporterBridge : public ImporterBridge {
   // bundle isn't available to the external process.
   scoped_ptr<base::DictionaryValue> localized_strings_;
 
-  IPC::Message::Sender* sender_;
+  IPC::Sender* sender_;
   scoped_refptr<base::TaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalProcessImporterBridge);

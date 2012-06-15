@@ -4,13 +4,14 @@
 
 #include "chrome/browser/automation/automation_tab_tracker.h"
 
+#include "base/logging.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_source.h"
 
 using content::NavigationController;
 
-AutomationTabTracker::AutomationTabTracker(IPC::Message::Sender* automation)
+AutomationTabTracker::AutomationTabTracker(IPC::Sender* automation)
     : AutomationResourceTracker<NavigationController*>(automation) {
 }
 

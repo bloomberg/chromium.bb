@@ -27,7 +27,7 @@ class AppBindings : public ChromeV8Extension, public ChromeV8ExtensionHandler {
                        ChromeV8Context* context);
 
  private:
-  // IPC::Channel::Listener
+  // IPC::Listener
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   v8::Handle<v8::Value> GetIsInstalled(const v8::Arguments& args);

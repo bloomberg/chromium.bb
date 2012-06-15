@@ -250,7 +250,7 @@ ExtensionFunction* ExtensionFunctionDispatcher::CreateExtensionFunction(
     const extensions::ProcessMap& process_map,
     extensions::ExtensionAPI* api,
     void* profile,
-    IPC::Message::Sender* ipc_sender,
+    IPC::Sender* ipc_sender,
     int routing_id) {
   if (!extension) {
     LOG(ERROR) << "Specified extension does not exist.";
@@ -288,7 +288,7 @@ ExtensionFunction* ExtensionFunctionDispatcher::CreateExtensionFunction(
 
 // static
 void ExtensionFunctionDispatcher::SendAccessDenied(
-    IPC::Message::Sender* ipc_sender, int routing_id, int request_id) {
+    IPC::Sender* ipc_sender, int routing_id, int request_id) {
   ListValue empty_list;
   ipc_sender->Send(new ExtensionMsg_Response(
       routing_id, request_id, false, empty_list,

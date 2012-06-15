@@ -87,7 +87,7 @@ struct ExtensionEventRouter::ExtensionEvent {
 };
 
 // static
-void ExtensionEventRouter::DispatchEvent(IPC::Message::Sender* ipc_sender,
+void ExtensionEventRouter::DispatchEvent(IPC::Sender* ipc_sender,
                                          const std::string& extension_id,
                                          const std::string& event_name,
                                          const std::string& event_args,

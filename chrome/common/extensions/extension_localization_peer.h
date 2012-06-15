@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "ipc/ipc_message.h"
+#include "ipc/ipc_sender.h"
 #include "webkit/glue/resource_loader_bridge.h"
 
 // The ExtensionLocalizationPeer is a proxy to a
@@ -25,7 +25,7 @@ class ExtensionLocalizationPeer
 
   static ExtensionLocalizationPeer* CreateExtensionLocalizationPeer(
       webkit_glue::ResourceLoaderBridge::Peer* peer,
-      IPC::Message::Sender* message_sender,
+      IPC::Sender* message_sender,
       const std::string& mime_type,
       const GURL& request_url);
 
@@ -53,7 +53,7 @@ class ExtensionLocalizationPeer
   // Use CreateExtensionLocalizationPeer to create an instance.
   ExtensionLocalizationPeer(
       webkit_glue::ResourceLoaderBridge::Peer* peer,
-      IPC::Message::Sender* message_sender,
+      IPC::Sender* message_sender,
       const GURL& request_url);
 
   // Loads message catalogs, and replaces all __MSG_some_name__ templates within
@@ -68,7 +68,7 @@ class ExtensionLocalizationPeer
 
   // Sends ExtensionHostMsg_GetMessageBundle message to the browser to fetch
   // message catalog.
-  IPC::Message::Sender* message_sender_;
+  IPC::Sender* message_sender_;
 
   // Buffer for incoming data. We wait until OnCompletedRequest before using it.
   std::string data_;

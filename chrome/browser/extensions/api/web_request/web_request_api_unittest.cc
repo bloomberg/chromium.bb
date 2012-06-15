@@ -77,7 +77,7 @@ bool Contains(const Collection& collection, const Key& key) {
 
 // A mock event router that responds to events with a pre-arranged queue of
 // Tasks.
-class TestIPCSender : public IPC::Message::Sender {
+class TestIPCSender : public IPC::Sender {
  public:
   typedef std::list<linked_ptr<IPC::Message> > SentMessages;
 
@@ -98,7 +98,7 @@ class TestIPCSender : public IPC::Message::Sender {
   }
 
  private:
-  // IPC::Message::Sender
+  // IPC::Sender
   virtual bool Send(IPC::Message* message) {
     EXPECT_EQ(ExtensionMsg_MessageInvoke::ID, message->type());
 

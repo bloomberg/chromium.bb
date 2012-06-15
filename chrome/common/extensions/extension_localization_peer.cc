@@ -16,7 +16,7 @@
 
 ExtensionLocalizationPeer::ExtensionLocalizationPeer(
     webkit_glue::ResourceLoaderBridge::Peer* peer,
-    IPC::Message::Sender* message_sender,
+    IPC::Sender* message_sender,
     const GURL& request_url)
     : original_peer_(peer),
       message_sender_(message_sender),
@@ -30,7 +30,7 @@ ExtensionLocalizationPeer::~ExtensionLocalizationPeer() {
 ExtensionLocalizationPeer*
 ExtensionLocalizationPeer::CreateExtensionLocalizationPeer(
     webkit_glue::ResourceLoaderBridge::Peer* peer,
-    IPC::Message::Sender* message_sender,
+    IPC::Sender* message_sender,
     const std::string& mime_type,
     const GURL& request_url) {
   // Return NULL if content is not text/css or it doesn't belong to extension

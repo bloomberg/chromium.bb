@@ -30,7 +30,7 @@
 using content::BrowserThread;
 
 class PepperFlashSettingsManager::Core
-    : public IPC::Channel::Listener,
+    : public IPC::Listener,
       public base::RefCountedThreadSafe<Core, BrowserThread::DeleteOnIOThread> {
  public:
   Core(PepperFlashSettingsManager* manager,
@@ -52,7 +52,7 @@ class PepperFlashSettingsManager::Core
                          PP_Flash_BrowserOperations_SettingType setting_type,
                          const ppapi::FlashSiteSettings& sites);
 
-  // IPC::Channel::Listener implementation.
+  // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
 

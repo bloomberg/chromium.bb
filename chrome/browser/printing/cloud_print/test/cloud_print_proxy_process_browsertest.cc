@@ -77,7 +77,7 @@ void ShutdownTask() {
   g_service_process->Shutdown();
 }
 
-class TestStartupClientChannelListener : public IPC::Channel::Listener {
+class TestStartupClientChannelListener : public IPC::Listener {
  public:
   virtual bool OnMessageReceived(const IPC::Message& message) { return false; }
 };
@@ -279,7 +279,7 @@ MULTIPROCESS_TEST_MAIN(CloudPrintMockService_StartEnabledExpectDisabled) {
 }
 
 class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
-                                         public IPC::Channel::Listener {
+                                         public IPC::Listener {
  public:
   CloudPrintProxyPolicyStartupTest();
   ~CloudPrintProxyPolicyStartupTest();
@@ -293,7 +293,7 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
   bool Send(IPC::Message* message);
   void ShutdownAndWaitForExitWithTimeout(base::ProcessHandle handle);
 
-  // IPC::Channel::Listener implementation
+  // IPC::Listener implementation
   virtual bool OnMessageReceived(const IPC::Message& message) { return false; }
   virtual void OnChannelConnected(int32 peer_pid);
 

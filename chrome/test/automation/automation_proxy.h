@@ -23,7 +23,7 @@
 #include "chrome/test/automation/browser_proxy.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel_proxy.h"
-#include "ipc/ipc_message.h"
+#include "ipc/ipc_sender.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/native_widget_types.h"
@@ -35,7 +35,7 @@ struct ExternalTabSettings;
 
 // This is an interface that AutomationProxy-related objects can use to
 // access the message-sending abilities of the Proxy.
-class AutomationMessageSender : public IPC::Message::Sender {
+class AutomationMessageSender : public IPC::Sender {
  public:
   // Sends a message synchronously; it doesn't return until a response has been
   // received or a timeout has expired.
@@ -53,8 +53,7 @@ class AutomationMessageSender : public IPC::Message::Sender {
 
 // This is the interface that external processes can use to interact with
 // a running instance of the app.
-class AutomationProxy : public IPC::Channel::Listener,
-                        public AutomationMessageSender {
+class AutomationProxy : public IPC::Listener, public AutomationMessageSender {
  public:
   AutomationProxy(int action_timeout_ms, bool disconnect_on_failure);
   virtual ~AutomationProxy();
