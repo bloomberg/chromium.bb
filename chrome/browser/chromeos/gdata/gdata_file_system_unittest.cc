@@ -1220,10 +1220,12 @@ class GDataFileSystemTest : public testing::Test {
                                   const FilePath& file_path) {
       last_error_ = error;
       opened_file_path_ = file_path;
+      MessageLoop::current()->Quit();
     }
 
     virtual void CloseFileCallback(base::PlatformFileError error) {
       last_error_ = error;
+      MessageLoop::current()->Quit();
     }
 
     virtual void GetEntryInfoCallback(
@@ -3827,10 +3829,7 @@ TEST_F(GDataFileSystemTest, OpenAndCloseFile) {
 
   // Open kFileInRoot ("drive/File 1.txt").
   file_system_->OpenFile(kFileInRoot, callback);
-  RunAllPendingForIO();  // Try to get from the cache.
-  RunAllPendingForIO();  // Check if we have space before downloading.
-  RunAllPendingForIO();  // Check if we have space after downloading.
-  RunAllPendingForIO();  // Mark dirty in cache.
+  message_loop_.Run();
 
   // Verify that the file was properly opened.
   EXPECT_EQ(base::PLATFORM_FILE_OK, callback_helper_->last_error_);
@@ -3849,7 +3848,7 @@ TEST_F(GDataFileSystemTest, OpenAndCloseFile) {
 
   // Close kFileInRoot ("drive/File 1.txt").
   file_system_->CloseFile(kFileInRoot, close_file_callback);
-  RunAllPendingForIO();  // Commit dirty in cache.
+  message_loop_.Run();
 
   // Verify that the file was properly closed.
   EXPECT_EQ(base::PLATFORM_FILE_OK, callback_helper_->last_error_);

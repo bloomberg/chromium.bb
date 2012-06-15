@@ -353,6 +353,7 @@ void GDataFileSystemProxy::CreateWritableSnapshotFile(
       file_path,
       base::Bind(&GDataFileSystemProxy::OnCreateWritableSnapshotFile,
                  this,
+                 file_path,
                  callback));
 }
 
@@ -417,6 +418,7 @@ void GDataFileSystemProxy::OnReadDirectory(
 }
 
 void GDataFileSystemProxy::OnCreateWritableSnapshotFile(
+    const FilePath& virtual_path,
     const fileapi::WritableSnapshotFile& callback,
     base::PlatformFileError result,
     const FilePath& local_path) {
@@ -428,15 +430,19 @@ void GDataFileSystemProxy::OnCreateWritableSnapshotFile(
         ShareableFileReference::DONT_DELETE_ON_FINAL_RELEASE,
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
     file_ref->AddFinalReleaseCallback(
-        base::Bind(&GDataFileSystemProxy::CloseWritableSnapshotFile, this));
+        base::Bind(&GDataFileSystemProxy::CloseWritableSnapshotFile,
+                   this,
+                   virtual_path));
   }
 
   callback.Run(result, local_path, file_ref);
 }
 
 void GDataFileSystemProxy::CloseWritableSnapshotFile(
+    const FilePath& virtual_path,
     const FilePath& local_path) {
-  file_system_->CloseFile(local_path, base::Bind(&OnClose, local_path));
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  file_system_->CloseFile(virtual_path, base::Bind(&OnClose, virtual_path));
 }
 
 }  // namespace gdata
