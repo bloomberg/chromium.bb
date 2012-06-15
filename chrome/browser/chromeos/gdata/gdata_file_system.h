@@ -1153,10 +1153,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // pool are run.
   scoped_ptr<base::WaitableEvent> on_io_completed_;
 
-  // True if cache initialization has started, is in progress or has completed,
-  // we only want to initialize cache once.
-  bool cache_initialization_started_;
-
   // Number of pending tasks on the blocking pool.
   int num_pending_tasks_;
   base::Lock num_pending_tasks_lock_;
