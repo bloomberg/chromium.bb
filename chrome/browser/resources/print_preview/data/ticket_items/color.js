@@ -64,6 +64,7 @@ cr.define('print_preview.ticket_items', function() {
       }
       return dest.id == print_preview.Destination.GooglePromotedId.DOCS ||
           dest.id == print_preview.Destination.GooglePromotedId.SAVE_AS_PDF ||
+          dest.id == print_preview.Destination.GooglePromotedId.FEDEX ||
           dest.type == print_preview.Destination.Type.MOBILE;
     }
   };
