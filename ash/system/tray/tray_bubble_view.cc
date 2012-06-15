@@ -69,11 +69,13 @@ void DrawBlurredShadowAroundView(gfx::Canvas* canvas,
 class TrayBubbleBorder : public views::BubbleBorder {
  public:
   TrayBubbleBorder(views::View* owner,
+                   views::View* anchor,
                    views::BubbleBorder::ArrowLocation arrow_location,
                    int arrow_offset)
       : views::BubbleBorder(arrow_location,
                             views::BubbleBorder::NO_SHADOW),
         owner_(owner),
+        anchor_(anchor),
         tray_arrow_offset_(arrow_offset) {
     set_alignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
   }
@@ -137,11 +139,19 @@ class TrayBubbleBorder : public views::BubbleBorder {
     // the its overlap section with child border.
     SkPath path;
     path.incReserve(4);
-    if (arrow_location() == views::BubbleBorder::BOTTOM_RIGHT) {
-      int tip_x = base::i18n::IsRTL() ? tray_arrow_offset_ :
-          owner_->width() - tray_arrow_offset_;
-      tip_x = std::min(std::max(kArrowMinOffset, tip_x),
-                       owner_->width() - kArrowMinOffset);
+    if (arrow_location() == views::BubbleBorder::BOTTOM_RIGHT ||
+        arrow_location() == views::BubbleBorder::BOTTOM_LEFT) {
+      // Do not let the arrow too close to the edge of the bubble and
+      // and the edge of the anchor.
+      int tip_x = base::i18n::IsRTL() ?
+          std::min(std::max(tray_arrow_offset_, kArrowMinOffset),
+                   std::min(owner_->width(), anchor_->width())
+                       - kArrowMinOffset) :
+          std::min(std::max(owner_->width() - tray_arrow_offset_,
+                            owner_->width() -
+                                std::min(owner_->width(), anchor_->width()) +
+                                    kArrowMinOffset),
+                   owner_->width() - kArrowMinOffset);
       int left_base_x = tip_x - kArrowWidth / 2;
       int left_base_y = y;
       int tip_y = left_base_y + kArrowHeight;
@@ -189,6 +199,7 @@ class TrayBubbleBorder : public views::BubbleBorder {
   }
 
   views::View* owner_;
+  views::View* anchor_;
   const int tray_arrow_offset_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayBubbleBorder);
@@ -227,7 +238,7 @@ TrayBubbleView::~TrayBubbleView() {
 void TrayBubbleView::SetBubbleBorder(int arrow_offset) {
   DCHECK(GetWidget());
   TrayBubbleBorder* bubble_border = new TrayBubbleBorder(
-      this, arrow_location(), arrow_offset);
+      this, anchor_view(), arrow_location(), arrow_offset);
   GetBubbleFrameView()->SetBubbleBorder(bubble_border);
   // Recalculate size with new border.
   SizeToContents();

@@ -285,7 +285,9 @@ void SystemTrayBubble::InitView(const InitParams& init_params) {
   views::BubbleBorder::ArrowLocation arrow_location;
   if (anchor_type_ == ANCHOR_TYPE_TRAY) {
     if (tray_->shelf_alignment() == SHELF_ALIGNMENT_BOTTOM) {
-      arrow_location = views::BubbleBorder::BOTTOM_RIGHT;
+      arrow_location = base::i18n::IsRTL() ?
+                            views::BubbleBorder::BOTTOM_LEFT :
+                            views::BubbleBorder::BOTTOM_RIGHT;
     } else if (tray_->shelf_alignment() == SHELF_ALIGNMENT_LEFT) {
       arrow_location = views::BubbleBorder::LEFT_BOTTOM;
     } else {
