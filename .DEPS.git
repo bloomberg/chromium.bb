@@ -5,7 +5,7 @@
 # FOR HOW TO ROLL DEPS
 vars = {
     'ffmpeg_hash':
-         '@425c0ec6975cba904785e4277454c2ecdd694fbf',
+         '@23f177366e3bce3a628a7d3feedceed4e18dcc04',
     'webkit_url':
          'http://git.chromium.org/external/WebKit_trimmed.git',
     'git_url':
