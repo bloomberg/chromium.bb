@@ -2,35 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# This is the "public" ppapi.gyp file, which must have dependencies on the
+# redistributable portions of PPAPI only. This prevents circular dependencies
+# in the .gyp files (since ppapi_internal depends on parts of Chrome).
+
 {
-  'variables': {
-    'chromium_code': 1,
-  },
-  'includes': [
-    '../native_client/build/untrusted.gypi',
-    'ppapi_proxy.gypi',
-  ],
   'conditions': [
-    ['disable_nacl==0 and disable_nacl_untrusted==0', {
-      'targets': [
-        {
-          'target_name': 'ppapi_proxy_untrusted',
-          'type': 'none',
-          'variables': {
-            'ppapi_proxy_target': 1,
-            'nacl_untrusted_build': 1,
-            'nlib_target': 'libppapi_proxy_untrusted.a',
-            'build_glibc': 0,
-            'build_newlib': 1,
-          },
-          'dependencies': [
-            '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
-            '../base/base_untrusted.gyp:base_untrusted',
-            '../ipc/ipc_untrusted.gyp:ipc_untrusted',
-            '../ppapi/ppapi_shared_untrusted.gyp:ppapi_shared_untrusted',
-          ],
-        },
-      ],
+    ['disable_nacl==0 and build_ppapi_ipc_proxy_untrusted==1', {
+      'includes': ['ppapi_proxy_untrusted.gypi'],
     }],
   ],
+  'targets': [],
 }
