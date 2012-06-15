@@ -18,11 +18,6 @@ Core wayland protocol
    that can group together multiple surface.attach requests into a
    bigger atomic change.  To be researched a bit.
 
- - We should make pointer sprites regular surfaces.  Something like
-   input_device.set_sprite(surface).  This also make client side
-   animated cursors simple/possible, since we now get a frame event
-   that can drive the animation.
-
  - Maybe try to make remote wayland actually happen, to see if there
    is something in the protocol/architecute that makes it harder than
    it should be.
