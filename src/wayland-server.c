@@ -46,11 +46,21 @@
 #include "wayland-server-protocol.h"
 #include "wayland-os.h"
 
+/* This is the size of the char array in struct sock_addr_un.
+   No Wayland socket can be created with a path longer than this,
+   including the null terminator. */
+#ifndef UNIX_PATH_MAX
+#define UNIX_PATH_MAX	108
+#endif
+
+#define LOCK_SUFFIX	".lock"
+#define LOCK_SUFFIXLEN	5
+
 struct wl_socket {
 	int fd;
 	int fd_lock;
 	struct sockaddr_un addr;
-	char lock_addr[113];
+	char lock_addr[UNIX_PATH_MAX + LOCK_SUFFIXLEN];
 	struct wl_list link;
 	struct wl_event_source *source;
 };
@@ -1100,13 +1110,12 @@ socket_data(int fd, uint32_t mask, void *data)
 }
 
 static int
-get_socket_lock(struct wl_socket *socket, socklen_t name_size)
+get_socket_lock(struct wl_socket *socket)
 {
 	struct stat socket_stat;
-	int lock_size = name_size + 5;
 
-	snprintf(socket->lock_addr, lock_size,
-		 "%s.lock", socket->addr.sun_path);
+	snprintf(socket->lock_addr, sizeof socket->lock_addr,
+		 "%s%s", socket->addr.sun_path, LOCK_SUFFIX);
 
 	socket->fd_lock = open(socket->lock_addr, O_CREAT | O_CLOEXEC,
 			       (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP));
@@ -1177,7 +1186,7 @@ wl_display_add_socket(struct wl_display *display, const char *name)
 			     "%s/%s", runtime_dir, name) + 1;
 	wl_log("using socket %s\n", s->addr.sun_path);
 
-	if (get_socket_lock(s,name_size) < 0) {
+	if (get_socket_lock(s) < 0) {
 		close(s->fd);
 		free(s);
 		return -1;
