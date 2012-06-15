@@ -20,6 +20,7 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/user/update_observer.h"
 #include "ash/system/user/user_observer.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/chromeos/chromeos_version.h"
 #include "base/logging.h"
@@ -408,12 +409,12 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       return;
     if (device->IsConnected()) {
       device->Disconnect(
-          base::Closure(),
+          base::Bind(&base::DoNothing),
           base::Bind(&BluetoothDeviceDisconnectError));
     } else if (device->IsPaired()) {
       device->Connect(
           NULL,
-          base::Closure(),
+          base::Bind(&base::DoNothing),
           base::Bind(&BluetoothDeviceConnectError));
     }
   }
@@ -687,7 +688,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   virtual void ToggleBluetooth() OVERRIDE {
     bluetooth_adapter_->SetPowered(!bluetooth_adapter_->IsPowered(),
-                                   base::Closure(),
+                                   base::Bind(&base::DoNothing),
                                    base::Bind(&BluetoothPowerFailure));
   }
 
