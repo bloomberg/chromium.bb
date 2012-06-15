@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include "../src/wayland-private.h"
+#include "wayland-private.h"
 #include "test-runner.h"
 
 TEST(fixed_double_conversions)

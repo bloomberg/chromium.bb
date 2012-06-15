@@ -36,9 +36,9 @@
 #include <stdio.h>
 #include <sys/epoll.h>
 
-#include "../src/wayland-private.h"
+#include "wayland-private.h"
 #include "test-runner.h"
-#include "../src/wayland-os.h"
+#include "wayland-os.h"
 
 static int fall_back;
 

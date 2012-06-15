@@ -32,7 +32,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include "../src/wayland-private.h"
+#include "wayland-private.h"
 #include "test-runner.h"
 
 static const char message[] = "Hello, world";

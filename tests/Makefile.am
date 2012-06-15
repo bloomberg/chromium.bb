@@ -34,7 +34,8 @@ os_wrappers_test_SOURCES = 			\
 	../src/wayland-os.c			\
 	$(test_runner_src)
 
-AM_CFLAGS = $(GCC_CFLAGS) $(FFI_CFLAGS) -I../src
+AM_CPPFLAGS = -I$(top_builddir)/src -I$(top_srcdir)/src
+AM_CFLAGS = $(GCC_CFLAGS) $(FFI_CFLAGS)
 LDADD = $(top_builddir)/src/libwayland-util.la \
 	$(top_builddir)/src/libwayland-server.la \
 	-lrt -ldl $(FFI_LIBS)

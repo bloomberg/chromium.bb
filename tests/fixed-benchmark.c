@@ -25,7 +25,7 @@
 #include <string.h>
 #include <time.h>
 #include <assert.h>
-#include "../src/wayland-private.h"
+#include "wayland-private.h"
 
 volatile double global_d;
 

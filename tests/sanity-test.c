@@ -27,7 +27,7 @@
 #include <unistd.h>
 
 #include "test-runner.h"
-#include "../src/wayland-util.h"
+#include "wayland-util.h"
 
 TEST(empty)
 {

@@ -24,7 +24,7 @@
 #include <assert.h>
 #include <unistd.h>
 #include <signal.h>
-#include "../src/wayland-server.h"
+#include "wayland-server.h"
 #include "test-runner.h"
 
 static int

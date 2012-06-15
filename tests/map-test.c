@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "../src/wayland-private.h"
+#include "wayland-private.h"
 #include "test-runner.h"
 
 TEST(map_insert_new)
