@@ -24,6 +24,9 @@
 #include "content/common/gpu/media/dxva_video_decode_accelerator.h"
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
 #include "content/common/gpu/media/omx_video_decode_accelerator.h"
+#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
+#include "ui/gl/gl_context_glx.h"
+#include "content/common/gpu/media/vaapi_video_decode_accelerator.h"
 #elif defined(OS_MACOSX)
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "content/common/gpu/media/mac_video_decode_accelerator.h"
@@ -139,6 +142,15 @@ void GpuVideoDecodeAccelerator::Initialize(
   video_decoder->SetEglState(
       gfx::GLSurfaceEGL::GetHardwareDisplay(),
       stub_->decoder()->GetGLContext()->GetHandle());
+  video_decode_accelerator_ = video_decoder;
+#elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
+  scoped_refptr<VaapiVideoDecodeAccelerator> video_decoder(
+      new VaapiVideoDecodeAccelerator(this));
+  gfx::GLContextGLX* glx_context =
+      static_cast<gfx::GLContextGLX*>(stub_->decoder()->GetGLContext());
+  GLXContext glx_context_handle =
+      static_cast<GLXContext>(glx_context->GetHandle());
+  video_decoder->SetGlxState(glx_context->display(), glx_context_handle);
   video_decode_accelerator_ = video_decoder;
 #elif defined(OS_MACOSX)
   scoped_refptr<MacVideoDecodeAccelerator> video_decoder(
