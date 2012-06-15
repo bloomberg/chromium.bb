@@ -40,9 +40,6 @@ class UserManager {
   // A vector pref of the users who have logged into the device.
   static const char kLoggedInUsers[];
 
-  // Username for stub login when not running on ChromeOS.
-  static const char kStubUser[];
-
   // A dictionary that maps usernames to file paths to their wallpapers.
   // Deprecated. Will remove this const char after done migration.
   static const char kUserWallpapers[];

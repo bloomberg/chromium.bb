@@ -149,6 +149,9 @@ class UserManagerImpl : public UserManager,
   // list. Returns |NULL| otherwise.
   const User* FindUserInList(const std::string& email) const;
 
+  // Makes stub user the current logged-in user (for test paths).
+  void StubUserLoggedIn();
+
   // Notifies on new user session.
   void NotifyOnLogin();
 
@@ -289,7 +292,8 @@ class UserManagerImpl : public UserManager,
 
   // The logged-in user. NULL until a user has logged in, then points to one
   // of the User instances in |users_|, the |guest_user_| instance or an
-  // ephemeral user instance.
+  // ephemeral user instance. In test paths without login points to the
+  // |stub_user_| instance.
   User* logged_in_user_;
 
   // True if SessionStarted() has been called.

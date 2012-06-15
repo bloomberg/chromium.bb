@@ -62,6 +62,7 @@ class UserManagerTest : public testing::Test {
     UserManager::RegisterPrefs(local_state_.get());
 
     old_user_manager_ = UserManager::Get();
+    // A stub user is automatically logged in by UserManager. Reset this.
     ResetUserManager();
   }
 
@@ -100,6 +101,11 @@ class UserManagerTest : public testing::Test {
 
   void ResetUserManager() {
     user_manager_impl.reset(new UserManagerImpl());
+    // Clean up the stub user that gets created in the UserManagerImpl
+    // constructor.
+    delete user_manager_impl->logged_in_user_;
+    user_manager_impl->logged_in_user_ = NULL;
+    user_manager_impl->is_current_user_ephemeral_ = false;
     UserManager::Set(user_manager_impl.get());
   }
 
