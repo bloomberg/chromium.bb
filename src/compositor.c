@@ -661,6 +661,11 @@ weston_surface_unmap(struct weston_surface *surface)
 	wl_list_remove(&surface->link);
 	wl_list_remove(&surface->layer_link);
 
+	/* If a surface is mapped and unmapped before a repaint occurs, it
+	 * won't be added to the compositor's surface list, so make sure the
+	 * call to wl_list_remove(&surface->link) won't fail next time */
+	wl_list_init(&surface->link);
+
 	wl_list_for_each(seat, &surface->compositor->seat_list, link) {
 		if (seat->seat.keyboard &&
 		    seat->seat.keyboard->focus == &surface->surface)
