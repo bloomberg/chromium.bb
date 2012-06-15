@@ -11,6 +11,7 @@
 #include "base/string_number_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -119,8 +120,8 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest, DetachToOwnWindow) {
 
   // There should now be another browser.
   ASSERT_EQ(2u, BrowserList::size());
-  Browser* new_browser = BrowserList::GetLastActive();
-  ASSERT_NE(browser(), new_browser);
+  Browser* new_browser = *(++BrowserList::begin());
+  ASSERT_TRUE(new_browser->window()->IsActive());
   TabStrip* tab_strip2 = GetTabStripForBrowser(new_browser);
   ASSERT_FALSE(tab_strip2->IsDragSessionActive());
 

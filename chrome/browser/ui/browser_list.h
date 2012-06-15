@@ -128,11 +128,6 @@ class BrowserList {
   friend content::WebContents* GetActiveWebContents();
 #endif
   friend void browser::internal::NotifyNotDefaultBrowserCallback();
-  FRIEND_TEST_ALL_PREFIXES(DetachToBrowserTabDragControllerTest,
-                           DetachToOwnWindow);
-  FRIEND_TEST_ALL_PREFIXES(DetachToBrowserTabDragControllerTest,
-                           DeleteSourceDetached);
-  FRIEND_TEST_ALL_PREFIXES(TabDragControllerTest, DetachToOwnWindow);
   // DO NOT ADD MORE FRIENDS TO THIS LIST.
 
   // Returns the Browser object whose window was most recently active.  If the

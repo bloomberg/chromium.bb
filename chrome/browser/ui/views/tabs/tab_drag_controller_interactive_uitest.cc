@@ -266,8 +266,8 @@ IN_PROC_BROWSER_TEST_F(DetachToBrowserTabDragControllerTest,
 
   // There should now be another browser.
   ASSERT_EQ(2u, BrowserList::size());
-  Browser* new_browser = BrowserList::GetLastActive();
-  ASSERT_NE(browser(), new_browser);
+  Browser* new_browser = *(++BrowserList::begin());
+  ASSERT_TRUE(new_browser->window()->IsActive());
   TabStrip* tab_strip2 = GetTabStripForBrowser(new_browser);
   ASSERT_FALSE(tab_strip2->IsDragSessionActive());
 
@@ -404,7 +404,8 @@ IN_PROC_BROWSER_TEST_F(DetachToBrowserTabDragControllerTest,
   MessageLoop::current()->Run();
 
   // Should not be dragging.
-  Browser* new_browser = BrowserList::GetLastActive();
+  ASSERT_EQ(1u, BrowserList::size());
+  Browser* new_browser = *BrowserList::begin();
   ASSERT_FALSE(GetTabStripForBrowser(new_browser)->IsDragSessionActive());
   ASSERT_FALSE(TabDragController::IsActive());
 
