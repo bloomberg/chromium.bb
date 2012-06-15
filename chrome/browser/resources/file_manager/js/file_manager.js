@@ -3457,7 +3457,9 @@ FileManager.prototype = {
     var selectable;
 
     if (this.dialogType_ == FileManager.DialogType.SELECT_FOLDER) {
-      selectable = this.selection.directoryCount == 1 &&
+      // In SELECT_FOLDER mode, we allow to select current directory
+      // when nothing is selected.
+      selectable = this.selection.directoryCount <= 1 &&
           this.selection.fileCount == 0;
     } else if (this.dialogType_ == FileManager.DialogType.SELECT_OPEN_FILE) {
       selectable = (this.isSelectionAvailable() &&
@@ -4291,6 +4293,18 @@ FileManager.prototype = {
 
     var files = [];
     var selectedIndexes = this.currentList_.selectionModel.selectedIndexes;
+
+    if (this.dialogType_ == FileManager.DialogType.SELECT_FOLDER &&
+        selectedIndexes.length == 0) {
+      var url = this.getSearchOrCurrentDirectoryURL();
+      var singleSelection = {
+        urls: [url],
+        multiple: false,
+        filterIndex: this.getSelectedFilterIndex_(url)
+      };
+      this.selectFilesAndClose_(singleSelection);
+      return;
+    }
 
     // All other dialog types require at least one selected list item.
     // The logic to control whether or not the ok button is enabled should
