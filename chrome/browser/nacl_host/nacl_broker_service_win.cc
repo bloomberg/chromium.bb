@@ -91,7 +91,11 @@ void NaClBrokerService::OnDebugExceptionHandlerLaunched(int32 pid,
 
 NaClBrokerHost* NaClBrokerService::GetBrokerHost() {
   BrowserChildProcessHostIterator iter(content::PROCESS_TYPE_NACL_BROKER);
-  if (iter.Done())
-    return NULL;
-  return static_cast<NaClBrokerHost*>(iter.GetDelegate());
+  while (!iter.Done()) {
+    NaClBrokerHost* host = static_cast<NaClBrokerHost*>(iter.GetDelegate());
+    if (!host->IsTerminating())
+      return host;
+    ++iter;
+  }
+  return NULL;
 }

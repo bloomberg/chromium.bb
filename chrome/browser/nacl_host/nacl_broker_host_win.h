@@ -35,6 +35,11 @@ class NaClBrokerHost : public content::BrowserChildProcessHostDelegate {
   // Stop the broker process.
   void StopBroker();
 
+  // Returns true if the process has been asked to terminate. If true, this
+  // object should no longer be used; it will eventually be destroyed by
+  // BrowserChildProcessHostImpl::OnChildDisconnected()
+  bool IsTerminating() { return is_terminating_; }
+
  private:
   // Handler for NaClProcessMsg_LoaderLaunched message
   void OnLoaderLaunched(const std::string& loader_channel_id,
@@ -46,6 +51,7 @@ class NaClBrokerHost : public content::BrowserChildProcessHostDelegate {
   virtual bool OnMessageReceived(const IPC::Message& msg);
 
   scoped_ptr<content::BrowserChildProcessHost> process_;
+  bool is_terminating_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClBrokerHost);
 };

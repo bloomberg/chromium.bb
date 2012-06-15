@@ -18,7 +18,7 @@
 #include "content/public/browser/child_process_data.h"
 #include "content/public/common/child_process_host.h"
 
-NaClBrokerHost::NaClBrokerHost() {
+NaClBrokerHost::NaClBrokerHost() : is_terminating_(false) {
   process_.reset(content::BrowserChildProcessHost::Create(
       content::PROCESS_TYPE_NACL_BROKER, this));
 }
@@ -91,5 +91,6 @@ void NaClBrokerHost::OnDebugExceptionHandlerLaunched(int32 pid, bool success) {
 }
 
 void NaClBrokerHost::StopBroker() {
+  is_terminating_ = true;
   process_->Send(new NaClProcessMsg_StopBroker());
 }
