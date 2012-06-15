@@ -777,13 +777,11 @@ internal_paladin.add_config('link-paladin',
 
 internal_paladin.add_config('kiev-paladin',
   boards=['kiev'],
-  important=False,
   paladin_builder_name='kiev paladin',
 )
 
 internal_paladin.add_config('parrot-paladin',
   boards=['parrot'],
-  important=False,
   paladin_builder_name='parrot paladin',
 )
 
