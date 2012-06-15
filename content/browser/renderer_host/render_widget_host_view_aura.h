@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "content/browser/renderer_host/image_transport_factory.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_export.h"
@@ -53,8 +52,7 @@ class RenderWidgetHostViewAura
       public ui::TextInputClient,
       public aura::WindowDelegate,
       public aura::client::ActivationDelegate,
-      public ImageTransportFactoryObserver,
-      public base::SupportsWeakPtr<RenderWidgetHostViewAura> {
+      public ImageTransportFactoryObserver {
  public:
   // RenderWidgetHostView implementation.
   virtual void InitAsChild(gfx::NativeView parent_view) OVERRIDE;
@@ -118,8 +116,7 @@ class RenderWidgetHostViewAura
       int32 width_in_pixel,
       int32 height_in_pixel,
       uint64* surface_id,
-      TransportDIB::Handle* surface_handle,
-      int32 route_id) OVERRIDE;
+      TransportDIB::Handle* surface_handle) OVERRIDE;
   virtual void AcceleratedSurfaceRelease(uint64 surface_id) OVERRIDE;
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
   virtual gfx::Rect GetRootWindowBounds() OVERRIDE;
@@ -231,22 +228,6 @@ class RenderWidgetHostViewAura
   // Called when window_ is removed from the window tree.
   void RemovingFromRootWindow();
 
-  // After resetting |current_surface_|, we must wait for any compositor pending
-  // draws finish to be sure the old surface is not in use. This is the callback
-  // that waits for OnCompositingEnded in such a case.
-  void SetSurfaceNotInUseByCompositor();
-
-  // This is called every time |current_surface_| usage changes (by thumbnailer,
-  // compositor draws, and tab visibility). Every time usage of current surface
-  // changes between "may be used" and "certain to not be used" by the ui, we
-  // inform the gpu process.
-  void AdjustSurfaceProtection();
-
-  // Called after async thumbnailer task completes.  Used to call
-  // AdjustSurfaceProtection.
-  void CopyFromCompositingSurfaceFinished(base::Callback<void(bool)> callback,
-                                          bool result);
-
   ui::Compositor* GetCompositor();
 
   // Detaches |this| from the input method object.
@@ -307,20 +288,6 @@ class RenderWidgetHostViewAura
       image_transport_clients_;
 
   uint64 current_surface_;
-
-  // Protected means that the |current_surface_| may be in use by ui and cannot
-  // be safely discarded. Things to consider are thumbnailer, compositor draw
-  // pending, and tab visibility.
-  bool current_surface_is_protected_;
-  bool current_surface_in_use_by_compositor_;
-
-  int pending_thumbnail_tasks_;
-
-  // This id increments every time surface_is_protected changes.
-  // Keeps gpu/browser IPC messages relying on protection state in sync.
-  uint32 protection_state_id_;
-
-  int32 surface_route_id_;
 
   gfx::GLSurfaceHandle shared_surface_handle_;
 

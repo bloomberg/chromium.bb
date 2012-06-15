@@ -220,8 +220,7 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView {
       int32 width_in_pixel,
       int32 height_in_pixel,
       uint64* surface_id,
-      TransportDIB::Handle* surface_handle,
-      int32 route_id) = 0;
+      TransportDIB::Handle* surface_handle) = 0;
   virtual void AcceleratedSurfaceRelease(uint64 surface_id) = 0;
 #endif
 
