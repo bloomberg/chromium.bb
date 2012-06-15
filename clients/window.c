@@ -189,6 +189,8 @@ struct input {
 	struct window *pointer_focus;
 	struct window *keyboard_focus;
 	int current_cursor;
+	uint32_t cursor_anim_start;
+	struct wl_callback *cursor_frame_cb;
 	struct wl_surface *pointer_surface;
 	uint32_t modifiers;
 	uint32_t pointer_enter_serial;
@@ -2274,14 +2276,14 @@ static const struct wl_data_device_listener data_device_listener = {
 	data_device_selection
 };
 
-void
-input_set_pointer_image_index(struct input *input, int pointer, int index)
+static void
+input_set_pointer_image_index(struct input *input, int index)
 {
 	struct wl_buffer *buffer;
 	struct wl_cursor *cursor;
 	struct wl_cursor_image *image;
 
-	cursor = input->display->cursors[pointer];
+	cursor = input->display->cursors[input->current_cursor];
 	if (!cursor)
 		return;
 
@@ -2295,7 +2297,6 @@ input_set_pointer_image_index(struct input *input, int pointer, int index)
 	if (!buffer)
 		return;
 
-	input->current_cursor = pointer;
 	wl_pointer_set_cursor(input->pointer, input->display->serial,
 			      input->pointer_surface,
 			      image->hotspot_x, image->hotspot_y);
@@ -2304,13 +2305,61 @@ input_set_pointer_image_index(struct input *input, int pointer, int index)
 			  image->width, image->height);
 }
 
+static const struct wl_callback_listener pointer_surface_listener;
+
+static void
+pointer_surface_frame_callback(void *data, struct wl_callback *callback,
+			       uint32_t time)
+{
+	struct input *input = data;
+	struct wl_cursor *cursor =
+		input->display->cursors[input->current_cursor];
+	int i;
+
+	if (callback) {
+		assert(callback == input->cursor_frame_cb);
+		wl_callback_destroy(callback);
+		input->cursor_frame_cb = NULL;
+	}
+
+	if (input->current_cursor == CURSOR_UNSET)
+		return;
+
+	/* FIXME We don't have the current time on the first call so we set
+	 * the animation start to the time of the first frame callback. */
+	if (time == 0)
+		input->cursor_anim_start = 0;
+	else if (input->cursor_anim_start == 0)
+		input->cursor_anim_start = time;
+
+	if (time == 0 || input->cursor_anim_start == 0)
+		i = 0;
+	else
+		i = wl_cursor_frame(cursor, time - input->cursor_anim_start);
+
+	input_set_pointer_image_index(input, i);
+
+	if (cursor->image_count == 1)
+		return;
+
+	input->cursor_frame_cb = wl_surface_frame(input->pointer_surface);
+	wl_callback_add_listener(input->cursor_frame_cb,
+				 &pointer_surface_listener, input);
+}
+
+static const struct wl_callback_listener pointer_surface_listener = {
+	pointer_surface_frame_callback
+};
+
 void
 input_set_pointer_image(struct input *input, int pointer)
 {
 	if (pointer == input->current_cursor)
 		return;
 
-	input_set_pointer_image_index(input, pointer, 0);
+	input->current_cursor = pointer;
+	if (!input->cursor_frame_cb)
+		pointer_surface_frame_callback(input, NULL, 0);
 }
 
 struct wl_data_device *

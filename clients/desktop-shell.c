@@ -767,42 +767,10 @@ background_create(struct desktop *desktop)
 	return background;
 }
 
-static const struct wl_callback_listener busy_cursor_listener;
-
-static void
-busy_cursor_frame_callback(void *data,
-			   struct wl_callback *callback, uint32_t time)
-{
-	struct input *input = data;
-	struct display *display = input_get_display(input);
-	struct desktop *desktop = display_get_user_data(display);
-	struct wl_surface *surface;
-	int index;
-
-	if (callback)
-		wl_callback_destroy(callback);
-	if (input_get_focus_widget(input) != desktop->busy_widget)
-		return;
-
-	/* FIXME: Get frame duration and number of frames from cursor. */
-	index = (time / 100) % 8;
-	input_set_pointer_image_index(input, CURSOR_WATCH, index);
-
-	surface = window_get_wl_surface(desktop->busy_window);
-	callback = wl_surface_frame(surface);
-	wl_callback_add_listener(callback, &busy_cursor_listener, input);
-}
-
-static const struct wl_callback_listener busy_cursor_listener = {
-	busy_cursor_frame_callback
-};
-
 static int
 busy_surface_enter_handler(struct widget *widget, struct input *input,
 			   float x, float y, void *data)
 {
-	busy_cursor_frame_callback(input, NULL, 0);
-
 	return CURSOR_WATCH;
 }
 
