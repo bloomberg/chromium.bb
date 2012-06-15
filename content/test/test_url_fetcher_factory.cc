@@ -10,21 +10,21 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
-#include "content/common/net/url_fetcher_impl.h"
 #include "net/base/host_port_pair.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "net/url_request/url_fetcher_impl.h"
 #include "net/url_request/url_request_status.h"
 
 ScopedURLFetcherFactory::ScopedURLFetcherFactory(
     net::URLFetcherFactory* factory) {
-  DCHECK(!URLFetcherImpl::factory());
-  URLFetcherImpl::set_factory(factory);
+  DCHECK(!net::URLFetcherImpl::factory());
+  net::URLFetcherImpl::set_factory(factory);
 }
 
 ScopedURLFetcherFactory::~ScopedURLFetcherFactory() {
-  DCHECK(URLFetcherImpl::factory());
-  URLFetcherImpl::set_factory(NULL);
+  DCHECK(net::URLFetcherImpl::factory());
+  net::URLFetcherImpl::set_factory(NULL);
 }
 
 TestURLFetcher::TestURLFetcher(int id,
@@ -338,5 +338,5 @@ net::URLFetcher* URLFetcherImplFactory::CreateURLFetcher(
     const GURL& url,
     net::URLFetcher::RequestType request_type,
     net::URLFetcherDelegate* d) {
-  return new URLFetcherImpl(url, request_type, d);
+  return new net::URLFetcherImpl(url, request_type, d);
 }

@@ -6,6 +6,8 @@
 #define CONTENT_PUBLIC_TEST_TEST_URL_FETCHER_FACTORY_H_
 #pragma once
 
+// TODO(akalin): Move this to net/.
+
 #include <list>
 #include <map>
 #include <string>

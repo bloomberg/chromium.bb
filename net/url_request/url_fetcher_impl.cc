@@ -2,74 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/net/url_fetcher_impl.h"
+#include "net/url_request/url_fetcher_impl.h"
 
 #include "base/bind.h"
 #include "base/message_loop_proxy.h"
-#include "content/common/net/url_request_user_data.h"
 #include "net/url_request/url_fetcher_core.h"
 #include "net/url_request/url_fetcher_factory.h"
 
-static net::URLFetcherFactory* g_factory = NULL;
+namespace net {
 
-// static
-net::URLFetcher* content::URLFetcher::Create(
-    const GURL& url,
-    net::URLFetcher::RequestType request_type,
-    net::URLFetcherDelegate* d) {
-  return new URLFetcherImpl(url, request_type, d);
-}
-
-// static
-net::URLFetcher* content::URLFetcher::Create(
-    int id,
-    const GURL& url,
-    net::URLFetcher::RequestType request_type,
-    net::URLFetcherDelegate* d) {
-  return g_factory ? g_factory->CreateURLFetcher(id, url, request_type, d) :
-                     new URLFetcherImpl(url, request_type, d);
-}
-
-// static
-void content::URLFetcher::CancelAll() {
-  URLFetcherImpl::CancelAll();
-}
-
-// static
-void content::URLFetcher::SetEnableInterceptionForTests(bool enabled) {
-  net::URLFetcherCore::SetEnableInterceptionForTests(enabled);
-}
-
-namespace {
-
-base::SupportsUserData::Data* CreateURLRequestUserData(
-    int render_process_id,
-    int render_view_id) {
-  return new URLRequestUserData(render_process_id, render_view_id);
-}
-
-}  // namespace
-
-namespace content {
-
-void AssociateURLFetcherWithRenderView(net::URLFetcher* url_fetcher,
-                                       const GURL& first_party_for_cookies,
-                                       int render_process_id,
-                                       int render_view_id) {
-  url_fetcher->SetFirstPartyForCookies(first_party_for_cookies);
-  url_fetcher->SetURLRequestUserData(
-      URLRequestUserData::kUserDataKey,
-      base::Bind(&CreateURLRequestUserData,
-                 render_process_id, render_view_id));
-}
-
-}  // namespace content
+static URLFetcherFactory* g_factory = NULL;
 
 URLFetcherImpl::URLFetcherImpl(const GURL& url,
                                RequestType request_type,
-                               net::URLFetcherDelegate* d)
+                               URLFetcherDelegate* d)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
-        core_(new net::URLFetcherCore(this, url, request_type, d))) {
+        core_(new URLFetcherCore(this, url, request_type, d))) {
 }
 
 URLFetcherImpl::~URLFetcherImpl() {
@@ -113,12 +61,12 @@ void URLFetcherImpl::AddExtraRequestHeader(const std::string& header_line) {
 }
 
 void URLFetcherImpl::GetExtraRequestHeaders(
-    net::HttpRequestHeaders* headers) const {
+    HttpRequestHeaders* headers) const {
   GetExtraRequestHeaders(headers);
 }
 
 void URLFetcherImpl::SetRequestContext(
-    net::URLRequestContextGetter* request_context_getter) {
+    URLRequestContextGetter* request_context_getter) {
   core_->SetRequestContext(request_context_getter);
 }
 
@@ -165,11 +113,11 @@ void URLFetcherImpl::SaveResponseToTemporaryFile(
   core_->SaveResponseToTemporaryFile(file_message_loop_proxy);
 }
 
-net::HttpResponseHeaders* URLFetcherImpl::GetResponseHeaders() const {
+HttpResponseHeaders* URLFetcherImpl::GetResponseHeaders() const {
   return core_->GetResponseHeaders();
 }
 
-net::HostPortPair URLFetcherImpl::GetSocketAddress() const {
+HostPortPair URLFetcherImpl::GetSocketAddress() const {
   return core_->GetSocketAddress();
 }
 
@@ -189,7 +137,7 @@ const GURL& URLFetcherImpl::GetURL() const {
   return core_->GetURL();
 }
 
-const net::URLRequestStatus& URLFetcherImpl::GetStatus() const {
+const URLRequestStatus& URLFetcherImpl::GetStatus() const {
   return core_->GetStatus();
 }
 
@@ -197,7 +145,7 @@ int URLFetcherImpl::GetResponseCode() const {
   return core_->GetResponseCode();
 }
 
-const net::ResponseCookies& URLFetcherImpl::GetCookies() const {
+const ResponseCookies& URLFetcherImpl::GetCookies() const {
   return core_->GetCookies();
 }
 
@@ -223,24 +171,31 @@ bool URLFetcherImpl::GetResponseAsFilePath(
 
 // static
 void URLFetcherImpl::CancelAll() {
-  net::URLFetcherCore::CancelAll();
+  URLFetcherCore::CancelAll();
+}
+
+// static
+void URLFetcherImpl::SetEnableInterceptionForTests(bool enabled) {
+  URLFetcherCore::SetEnableInterceptionForTests(enabled);
 }
 
 // static
 int URLFetcherImpl::GetNumFetcherCores() {
-  return net::URLFetcherCore::GetNumFetcherCores();
+  return URLFetcherCore::GetNumFetcherCores();
 }
 
-net::URLFetcherDelegate* URLFetcherImpl::delegate() const {
+URLFetcherDelegate* URLFetcherImpl::delegate() const {
   return core_->delegate();
 }
 
 // static
-net::URLFetcherFactory* URLFetcherImpl::factory() {
+URLFetcherFactory* URLFetcherImpl::factory() {
   return g_factory;
 }
 
 // static
-void URLFetcherImpl::set_factory(net::URLFetcherFactory* factory) {
+void URLFetcherImpl::set_factory(URLFetcherFactory* factory) {
   g_factory = factory;
 }
+
+}  // namespace net

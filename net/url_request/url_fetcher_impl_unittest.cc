@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/net/url_fetcher_impl.h"
+#include "net/url_request/url_fetcher_impl.h"
 
 #include <string>
 
@@ -26,6 +26,8 @@
 #include "net/ocsp/nss_ocsp.h"
 #endif
 
+namespace net {
+
 using base::Time;
 using base::TimeDelta;
 
@@ -33,6 +35,7 @@ using base::TimeDelta;
 
 namespace {
 
+// TODO(akalin): Move all the test data to somewhere under net/.
 const FilePath::CharType kDocRoot[] = FILE_PATH_LITERAL("chrome/test/data");
 const char kTestServerFilePrefix[] = "files/";
 
@@ -45,7 +48,7 @@ class ThrottlingTestURLRequestContext : public TestURLRequestContext {
   }
 
  private:
-  net::URLRequestThrottlerManager throttler_manager_;
+  URLRequestThrottlerManager throttler_manager_;
 };
 
 class ThrottlingTestURLRequestContextGetter
@@ -71,7 +74,7 @@ class ThrottlingTestURLRequestContextGetter
 }  // namespace
 
 class URLFetcherTest : public testing::Test,
-                       public net::URLFetcherDelegate {
+                       public URLFetcherDelegate {
  public:
   URLFetcherTest()
       : fetcher_(NULL),
@@ -85,11 +88,11 @@ class URLFetcherTest : public testing::Test,
   // Creates a URLFetcher, using the program's main thread to do IO.
   virtual void CreateFetcher(const GURL& url);
 
-  // net::URLFetcherDelegate
+  // URLFetcherDelegate
   // Subclasses that override this should either call this function or
   // CleanupAfterFetchComplete() at the end of their processing, depending on
   // whether they want to check for a non-empty HTTP 200 response or not.
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
 
   // Deletes |fetcher| and terminates the message loop.
   void CleanupAfterFetchComplete();
@@ -110,13 +113,13 @@ class URLFetcherTest : public testing::Test,
 
 #if defined(USE_NSS)
     crypto::EnsureNSSInit();
-    net::EnsureNSSHttpIOInit();
+    EnsureNSSHttpIOInit();
 #endif
   }
 
   virtual void TearDown() OVERRIDE {
 #if defined(USE_NSS)
-    net::ShutdownNSSHttpIO();
+    ShutdownNSSHttpIO();
 #endif
   }
 
@@ -132,13 +135,13 @@ class URLFetcherTest : public testing::Test,
 };
 
 void URLFetcherTest::CreateFetcher(const GURL& url) {
-  fetcher_ = new URLFetcherImpl(url, net::URLFetcher::GET, this);
+  fetcher_ = new URLFetcherImpl(url, URLFetcher::GET, this);
   fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
       io_message_loop_proxy(), request_context()));
   fetcher_->Start();
 }
 
-void URLFetcherTest::OnURLFetchComplete(const net::URLFetcher* source) {
+void URLFetcherTest::OnURLFetchComplete(const URLFetcher* source) {
   EXPECT_TRUE(source->GetStatus().is_success());
   EXPECT_EQ(200, source->GetResponseCode());  // HTTP OK
 
@@ -167,8 +170,8 @@ class URLFetcherPostTest : public URLFetcherTest {
   // URLFetcherTest override.
   virtual void CreateFetcher(const GURL& url) OVERRIDE;
 
-  // net::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  // URLFetcherDelegate
+  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
 };
 
 // Version of URLFetcherTest that tests download progress reports.
@@ -177,8 +180,8 @@ class URLFetcherDownloadProgressTest : public URLFetcherTest {
   // URLFetcherTest override.
   virtual void CreateFetcher(const GURL& url) OVERRIDE;
 
-  // net::URLFetcherDelegate
-  virtual void OnURLFetchDownloadProgress(const net::URLFetcher* source,
+  // URLFetcherDelegate
+  virtual void OnURLFetchDownloadProgress(const URLFetcher* source,
                                           int64 current, int64 total) OVERRIDE;
  protected:
   int64 previous_progress_;
@@ -191,9 +194,9 @@ class URLFetcherDownloadProgressCancelTest : public URLFetcherTest {
   // URLFetcherTest override.
   virtual void CreateFetcher(const GURL& url) OVERRIDE;
 
-  // net::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
-  virtual void OnURLFetchDownloadProgress(const net::URLFetcher* source,
+  // URLFetcherDelegate
+  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
+  virtual void OnURLFetchDownloadProgress(const URLFetcher* source,
                                           int64 current, int64 total) OVERRIDE;
  protected:
   bool cancelled_;
@@ -204,8 +207,8 @@ class URLFetcherUploadProgressTest : public URLFetcherTest {
  public:
   virtual void CreateFetcher(const GURL& url);
 
-  // net::URLFetcherDelegate
-  virtual void OnURLFetchUploadProgress(const net::URLFetcher* source,
+  // URLFetcherDelegate
+  virtual void OnURLFetchUploadProgress(const URLFetcher* source,
                                         int64 current, int64 total);
  protected:
   int64 previous_progress_;
@@ -216,15 +219,15 @@ class URLFetcherUploadProgressTest : public URLFetcherTest {
 // Version of URLFetcherTest that tests headers.
 class URLFetcherHeadersTest : public URLFetcherTest {
  public:
-  // net::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  // URLFetcherDelegate
+  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
 };
 
 // Version of URLFetcherTest that tests SocketAddress.
 class URLFetcherSocketAddressTest : public URLFetcherTest {
  public:
-  // net::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  // URLFetcherDelegate
+  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
  protected:
   std::string expected_host_;
   uint16 expected_port_;
@@ -238,8 +241,8 @@ class URLFetcherStopOnRedirectTest : public URLFetcherTest {
 
   // URLFetcherTest override.
   virtual void CreateFetcher(const GURL& url) OVERRIDE;
-  // net::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  // URLFetcherDelegate
+  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
 
  protected:
   // The URL we should be redirected to.
@@ -253,8 +256,8 @@ class URLFetcherProtectTest : public URLFetcherTest {
  public:
   // URLFetcherTest override.
   virtual void CreateFetcher(const GURL& url) OVERRIDE;
-  // net::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  // URLFetcherDelegate
+  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
  private:
   Time start_time_;
 };
@@ -265,8 +268,8 @@ class URLFetcherProtectTestPassedThrough : public URLFetcherTest {
  public:
   // URLFetcherTest override.
   virtual void CreateFetcher(const GURL& url) OVERRIDE;
-  // net::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  // URLFetcherDelegate
+  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
  private:
   Time start_time_;
 };
@@ -276,8 +279,8 @@ class URLFetcherBadHTTPSTest : public URLFetcherTest {
  public:
   URLFetcherBadHTTPSTest();
 
-  // net::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  // URLFetcherDelegate
+  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
 
  private:
   FilePath cert_dir_;
@@ -288,8 +291,8 @@ class URLFetcherCancelTest : public URLFetcherTest {
  public:
   // URLFetcherTest override.
   virtual void CreateFetcher(const GURL& url) OVERRIDE;
-  // net::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  // URLFetcherDelegate
+  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
 
   void CancelRequest();
 };
@@ -329,8 +332,8 @@ class CancelTestURLRequestContextGetter
       //     new_backoff = 2.0 * old_backoff + 0
       // The initial backoff is 2 seconds and maximum backoff is 4 seconds.
       // Maximum retries allowed is set to 2.
-      scoped_refptr<net::URLRequestThrottlerEntry> entry(
-          new net::URLRequestThrottlerEntry(
+      scoped_refptr<URLRequestThrottlerEntry> entry(
+          new URLRequestThrottlerEntry(
               context_->throttler_manager(),
               "", 200, 3, 2000, 2.0, 0.0, 4000));
       context_->throttler_manager()->OverrideEntryForTests(
@@ -360,8 +363,8 @@ class CancelTestURLRequestContextGetter
 // Version of URLFetcherTest that tests retying the same request twice.
 class URLFetcherMultipleAttemptTest : public URLFetcherTest {
  public:
-  // net::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  // URLFetcherDelegate
+  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
  private:
   std::string data_;
 };
@@ -374,8 +377,8 @@ class URLFetcherFileTest : public URLFetcherTest {
   void CreateFetcherForFile(const GURL& url, const FilePath& file_path);
   void CreateFetcherForTempFile(const GURL& url);
 
-  // net::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+  // URLFetcherDelegate
+  virtual void OnURLFetchComplete(const URLFetcher* source) OVERRIDE;
 
  protected:
   FilePath expected_file_;
@@ -392,7 +395,7 @@ class URLFetcherFileTest : public URLFetcherTest {
 };
 
 void URLFetcherPostTest::CreateFetcher(const GURL& url) {
-  fetcher_ = new URLFetcherImpl(url, net::URLFetcher::POST, this);
+  fetcher_ = new URLFetcherImpl(url, URLFetcher::POST, this);
   fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
       io_message_loop_proxy(), request_context()));
   fetcher_->SetUploadData("application/x-www-form-urlencoded",
@@ -400,7 +403,7 @@ void URLFetcherPostTest::CreateFetcher(const GURL& url) {
   fetcher_->Start();
 }
 
-void URLFetcherPostTest::OnURLFetchComplete(const net::URLFetcher* source) {
+void URLFetcherPostTest::OnURLFetchComplete(const URLFetcher* source) {
   std::string data;
   EXPECT_TRUE(source->GetResponseAsString(&data));
   EXPECT_EQ(std::string("bobsyeruncle"), data);
@@ -408,7 +411,7 @@ void URLFetcherPostTest::OnURLFetchComplete(const net::URLFetcher* source) {
 }
 
 void URLFetcherDownloadProgressTest::CreateFetcher(const GURL& url) {
-  fetcher_ = new URLFetcherImpl(url, net::URLFetcher::GET, this);
+  fetcher_ = new URLFetcherImpl(url, URLFetcher::GET, this);
   fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
       io_message_loop_proxy(), request_context()));
   previous_progress_ = 0;
@@ -416,7 +419,7 @@ void URLFetcherDownloadProgressTest::CreateFetcher(const GURL& url) {
 }
 
 void URLFetcherDownloadProgressTest::OnURLFetchDownloadProgress(
-    const net::URLFetcher* source, int64 current, int64 total) {
+    const URLFetcher* source, int64 current, int64 total) {
   // Increasing between 0 and total.
   EXPECT_LE(0, current);
   EXPECT_GE(total, current);
@@ -426,7 +429,7 @@ void URLFetcherDownloadProgressTest::OnURLFetchDownloadProgress(
 }
 
 void URLFetcherDownloadProgressCancelTest::CreateFetcher(const GURL& url) {
-  fetcher_ = new URLFetcherImpl(url, net::URLFetcher::GET, this);
+  fetcher_ = new URLFetcherImpl(url, URLFetcher::GET, this);
   fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
       io_message_loop_proxy(), request_context()));
   cancelled_ = false;
@@ -434,7 +437,7 @@ void URLFetcherDownloadProgressCancelTest::CreateFetcher(const GURL& url) {
 }
 
 void URLFetcherDownloadProgressCancelTest::OnURLFetchDownloadProgress(
-    const net::URLFetcher* source, int64 current, int64 total) {
+    const URLFetcher* source, int64 current, int64 total) {
   EXPECT_FALSE(cancelled_);
   if (!cancelled_) {
     cancelled_ = true;
@@ -443,14 +446,14 @@ void URLFetcherDownloadProgressCancelTest::OnURLFetchDownloadProgress(
 }
 
 void URLFetcherDownloadProgressCancelTest::OnURLFetchComplete(
-    const net::URLFetcher* source) {
+    const URLFetcher* source) {
   // Should have been cancelled.
   ADD_FAILURE();
   CleanupAfterFetchComplete();
 }
 
 void URLFetcherUploadProgressTest::CreateFetcher(const GURL& url) {
-  fetcher_ = new URLFetcherImpl(url, net::URLFetcher::POST, this);
+  fetcher_ = new URLFetcherImpl(url, URLFetcher::POST, this);
   fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
       io_message_loop_proxy(), request_context()));
   previous_progress_ = 0;
@@ -464,7 +467,7 @@ void URLFetcherUploadProgressTest::CreateFetcher(const GURL& url) {
 }
 
 void URLFetcherUploadProgressTest::OnURLFetchUploadProgress(
-    const net::URLFetcher* source, int64 current, int64 total) {
+    const URLFetcher* source, int64 current, int64 total) {
   // Increasing between 0 and total.
   EXPECT_LE(0, current);
   EXPECT_GE(static_cast<int64>(chunk_.size()) * number_of_chunks_added_,
@@ -480,7 +483,7 @@ void URLFetcherUploadProgressTest::OnURLFetchUploadProgress(
 }
 
 void URLFetcherHeadersTest::OnURLFetchComplete(
-    const net::URLFetcher* source) {
+    const URLFetcher* source) {
   std::string header;
   EXPECT_TRUE(source->GetResponseHeaders()->GetNormalizedHeader("cache-control",
                                                                 &header));
@@ -489,7 +492,7 @@ void URLFetcherHeadersTest::OnURLFetchComplete(
 }
 
 void URLFetcherSocketAddressTest::OnURLFetchComplete(
-    const net::URLFetcher* source) {
+    const URLFetcher* source) {
   EXPECT_EQ("127.0.0.1", source->GetSocketAddress().host());
   EXPECT_EQ(expected_port_, source->GetSocketAddress().port());
   URLFetcherTest::OnURLFetchComplete(source);
@@ -507,7 +510,7 @@ URLFetcherStopOnRedirectTest::~URLFetcherStopOnRedirectTest() {
 }
 
 void URLFetcherStopOnRedirectTest::CreateFetcher(const GURL& url) {
-  fetcher_ = new URLFetcherImpl(url, net::URLFetcher::GET, this);
+  fetcher_ = new URLFetcherImpl(url, URLFetcher::GET, this);
   fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
       io_message_loop_proxy(), request_context()));
   fetcher_->SetStopOnRedirect(true);
@@ -515,16 +518,16 @@ void URLFetcherStopOnRedirectTest::CreateFetcher(const GURL& url) {
 }
 
 void URLFetcherStopOnRedirectTest::OnURLFetchComplete(
-    const net::URLFetcher* source) {
+    const URLFetcher* source) {
   callback_called_ = true;
   EXPECT_EQ(GURL(kRedirectTarget), source->GetURL());
-  EXPECT_EQ(net::URLRequestStatus::CANCELED, source->GetStatus().status());
+  EXPECT_EQ(URLRequestStatus::CANCELED, source->GetStatus().status());
   EXPECT_EQ(301, source->GetResponseCode());
   CleanupAfterFetchComplete();
 }
 
 void URLFetcherProtectTest::CreateFetcher(const GURL& url) {
-  fetcher_ = new URLFetcherImpl(url, net::URLFetcher::GET, this);
+  fetcher_ = new URLFetcherImpl(url, URLFetcher::GET, this);
   fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
       io_message_loop_proxy(), request_context()));
   start_time_ = Time::Now();
@@ -532,7 +535,7 @@ void URLFetcherProtectTest::CreateFetcher(const GURL& url) {
   fetcher_->Start();
 }
 
-void URLFetcherProtectTest::OnURLFetchComplete(const net::URLFetcher* source) {
+void URLFetcherProtectTest::OnURLFetchComplete(const URLFetcher* source) {
   const TimeDelta one_second = TimeDelta::FromMilliseconds(1000);
   if (source->GetResponseCode() >= 500) {
     // Now running ServerUnavailable test.
@@ -562,7 +565,7 @@ void URLFetcherProtectTest::OnURLFetchComplete(const net::URLFetcher* source) {
 }
 
 void URLFetcherProtectTestPassedThrough::CreateFetcher(const GURL& url) {
-  fetcher_ = new URLFetcherImpl(url, net::URLFetcher::GET, this);
+  fetcher_ = new URLFetcherImpl(url, URLFetcher::GET, this);
   fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
       io_message_loop_proxy(), request_context()));
   fetcher_->SetAutomaticallyRetryOn5xx(false);
@@ -572,7 +575,7 @@ void URLFetcherProtectTestPassedThrough::CreateFetcher(const GURL& url) {
 }
 
 void URLFetcherProtectTestPassedThrough::OnURLFetchComplete(
-    const net::URLFetcher* source) {
+    const URLFetcher* source) {
   const TimeDelta one_minute = TimeDelta::FromMilliseconds(60000);
   if (source->GetResponseCode() >= 500) {
     // Now running ServerUnavailable test.
@@ -605,13 +608,13 @@ URLFetcherBadHTTPSTest::URLFetcherBadHTTPSTest() {
 
 // The "server certificate expired" error should result in automatic
 // cancellation of the request by
-// net::URLRequest::Delegate::OnSSLCertificateError.
+// URLRequest::Delegate::OnSSLCertificateError.
 void URLFetcherBadHTTPSTest::OnURLFetchComplete(
-    const net::URLFetcher* source) {
+    const URLFetcher* source) {
   // This part is different from URLFetcherTest::OnURLFetchComplete
   // because this test expects the request to be cancelled.
-  EXPECT_EQ(net::URLRequestStatus::CANCELED, source->GetStatus().status());
-  EXPECT_EQ(net::ERR_ABORTED, source->GetStatus().error());
+  EXPECT_EQ(URLRequestStatus::CANCELED, source->GetStatus().status());
+  EXPECT_EQ(ERR_ABORTED, source->GetStatus().error());
   EXPECT_EQ(-1, source->GetResponseCode());
   EXPECT_TRUE(source->GetCookies().empty());
   std::string data;
@@ -621,21 +624,21 @@ void URLFetcherBadHTTPSTest::OnURLFetchComplete(
 }
 
 void URLFetcherCancelTest::CreateFetcher(const GURL& url) {
-  fetcher_ = new URLFetcherImpl(url, net::URLFetcher::GET, this);
+  fetcher_ = new URLFetcherImpl(url, URLFetcher::GET, this);
   CancelTestURLRequestContextGetter* context_getter =
       new CancelTestURLRequestContextGetter(io_message_loop_proxy(),
                                             url);
   fetcher_->SetRequestContext(context_getter);
   fetcher_->SetMaxRetries(2);
   fetcher_->Start();
-  // We need to wait for the creation of the net::URLRequestContext, since we
+  // We need to wait for the creation of the URLRequestContext, since we
   // rely on it being destroyed as a signal to end the test.
   context_getter->WaitForContextCreation();
   CancelRequest();
 }
 
 void URLFetcherCancelTest::OnURLFetchComplete(
-    const net::URLFetcher* source) {
+    const URLFetcher* source) {
   // We should have cancelled the request before completion.
   ADD_FAILURE();
   CleanupAfterFetchComplete();
@@ -649,7 +652,7 @@ void URLFetcherCancelTest::CancelRequest() {
 }
 
 void URLFetcherMultipleAttemptTest::OnURLFetchComplete(
-    const net::URLFetcher* source) {
+    const URLFetcher* source) {
   EXPECT_TRUE(source->GetStatus().is_success());
   EXPECT_EQ(200, source->GetResponseCode());  // HTTP OK
   std::string data;
@@ -668,7 +671,7 @@ void URLFetcherMultipleAttemptTest::OnURLFetchComplete(
 
 void URLFetcherFileTest::CreateFetcherForFile(const GURL& url,
                                               const FilePath& file_path) {
-  fetcher_ = new URLFetcherImpl(url, net::URLFetcher::GET, this);
+  fetcher_ = new URLFetcherImpl(url, URLFetcher::GET, this);
   fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
       io_message_loop_proxy(), request_context()));
 
@@ -678,7 +681,7 @@ void URLFetcherFileTest::CreateFetcherForFile(const GURL& url,
 }
 
 void URLFetcherFileTest::CreateFetcherForTempFile(const GURL& url) {
-  fetcher_ = new URLFetcherImpl(url, net::URLFetcher::GET, this);
+  fetcher_ = new URLFetcherImpl(url, URLFetcher::GET, this);
   fetcher_->SetRequestContext(new ThrottlingTestURLRequestContextGetter(
       io_message_loop_proxy(), request_context()));
 
@@ -687,7 +690,7 @@ void URLFetcherFileTest::CreateFetcherForTempFile(const GURL& url) {
   fetcher_->Start();
 }
 
-void URLFetcherFileTest::OnURLFetchComplete(const net::URLFetcher* source) {
+void URLFetcherFileTest::OnURLFetchComplete(const URLFetcher* source) {
   if (expected_file_error_ == base::PLATFORM_FILE_OK) {
     EXPECT_TRUE(source->GetStatus().is_success());
     EXPECT_EQ(source->GetResponseCode(), 200);
@@ -708,9 +711,9 @@ void URLFetcherFileTest::OnURLFetchComplete(const net::URLFetcher* source) {
 }
 
 TEST_F(URLFetcherTest, SameThreadsTest) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP,
-                              net::TestServer::kLocalhost,
-                              FilePath(kDocRoot));
+  TestServer test_server(TestServer::TYPE_HTTP,
+                         TestServer::kLocalhost,
+                         FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   // Create the fetcher on the main thread.  Since IO will happen on the main
@@ -727,9 +730,9 @@ TEST_F(URLFetcherTest, DISABLED_DifferentThreadsTest) {
 #else
 TEST_F(URLFetcherTest, DifferentThreadsTest) {
 #endif
-  net::TestServer test_server(net::TestServer::TYPE_HTTP,
-                              net::TestServer::kLocalhost,
-                              FilePath(kDocRoot));
+  TestServer test_server(TestServer::TYPE_HTTP,
+                         TestServer::kLocalhost,
+                         FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   // Create a separate thread that will create the URLFetcher.  The current
@@ -756,9 +759,9 @@ void CancelAllOnIO() {
 
 // Tests to make sure CancelAll() will successfully cancel existing URLFetchers.
 TEST_F(URLFetcherTest, CancelAll) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP,
-                              net::TestServer::kLocalhost,
-                              FilePath(kDocRoot));
+  TestServer test_server(TestServer::TYPE_HTTP,
+                         TestServer::kLocalhost,
+                         FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
   EXPECT_EQ(0, GetNumFetcherCores());
 
@@ -778,9 +781,9 @@ TEST_F(URLFetcherPostTest, DISABLED_Basic) {
 #else
 TEST_F(URLFetcherPostTest, Basic) {
 #endif
-  net::TestServer test_server(net::TestServer::TYPE_HTTP,
-                              net::TestServer::kLocalhost,
-                              FilePath(kDocRoot));
+  TestServer test_server(TestServer::TYPE_HTTP,
+                         TestServer::kLocalhost,
+                         FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   CreateFetcher(test_server.GetURL("echo"));
@@ -793,9 +796,9 @@ TEST_F(URLFetcherUploadProgressTest, DISABLED_Basic) {
 #else
 TEST_F(URLFetcherUploadProgressTest, Basic) {
 #endif
-  net::TestServer test_server(net::TestServer::TYPE_HTTP,
-                              net::TestServer::kLocalhost,
-                              FilePath(kDocRoot));
+  TestServer test_server(TestServer::TYPE_HTTP,
+                         TestServer::kLocalhost,
+                         FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   CreateFetcher(test_server.GetURL("echo"));
@@ -803,9 +806,9 @@ TEST_F(URLFetcherUploadProgressTest, Basic) {
 }
 
 TEST_F(URLFetcherDownloadProgressTest, Basic) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP,
-                              net::TestServer::kLocalhost,
-                              FilePath(kDocRoot));
+  TestServer test_server(TestServer::TYPE_HTTP,
+                         TestServer::kLocalhost,
+                         FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   // Get a file large enough to require more than one read into
@@ -820,9 +823,9 @@ TEST_F(URLFetcherDownloadProgressTest, Basic) {
 }
 
 TEST_F(URLFetcherDownloadProgressCancelTest, CancelWhileProgressReport) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP,
-                              net::TestServer::kLocalhost,
-                              FilePath(kDocRoot));
+  TestServer test_server(TestServer::TYPE_HTTP,
+                         TestServer::kLocalhost,
+                         FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   // Get a file large enough to require more than one read into
@@ -835,9 +838,9 @@ TEST_F(URLFetcherDownloadProgressCancelTest, CancelWhileProgressReport) {
 }
 
 TEST_F(URLFetcherHeadersTest, Headers) {
-  net::TestServer test_server(
-      net::TestServer::TYPE_HTTP,
-      net::TestServer::kLocalhost,
+  TestServer test_server(
+      TestServer::TYPE_HTTP,
+      TestServer::kLocalhost,
       FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
   ASSERT_TRUE(test_server.Start());
 
@@ -847,9 +850,9 @@ TEST_F(URLFetcherHeadersTest, Headers) {
 }
 
 TEST_F(URLFetcherSocketAddressTest, SocketAddress) {
-  net::TestServer test_server(
-      net::TestServer::TYPE_HTTP,
-      net::TestServer::kLocalhost,
+  TestServer test_server(
+      TestServer::TYPE_HTTP,
+      TestServer::kLocalhost,
       FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
   ASSERT_TRUE(test_server.Start());
   expected_port_ = test_server.host_port_pair().port();
@@ -861,9 +864,9 @@ TEST_F(URLFetcherSocketAddressTest, SocketAddress) {
 }
 
 TEST_F(URLFetcherStopOnRedirectTest, StopOnRedirect) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP,
-                              net::TestServer::kLocalhost,
-                              FilePath(kDocRoot));
+  TestServer test_server(TestServer::TYPE_HTTP,
+                         TestServer::kLocalhost,
+                         FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   CreateFetcher(
@@ -873,17 +876,17 @@ TEST_F(URLFetcherStopOnRedirectTest, StopOnRedirect) {
 }
 
 TEST_F(URLFetcherProtectTest, Overload) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP,
-                              net::TestServer::kLocalhost,
-                              FilePath(kDocRoot));
+  TestServer test_server(TestServer::TYPE_HTTP,
+                         TestServer::kLocalhost,
+                         FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   GURL url(test_server.GetURL("defaultresponse"));
 
   // Registers an entry for test url. It only allows 3 requests to be sent
   // in 200 milliseconds.
-  scoped_refptr<net::URLRequestThrottlerEntry> entry(
-      new net::URLRequestThrottlerEntry(
+  scoped_refptr<URLRequestThrottlerEntry> entry(
+      new URLRequestThrottlerEntry(
           request_context()->throttler_manager(),
           "", 200, 3, 1, 2.0, 0.0, 256));
   request_context()->throttler_manager()->OverrideEntryForTests(url, entry);
@@ -894,9 +897,9 @@ TEST_F(URLFetcherProtectTest, Overload) {
 }
 
 TEST_F(URLFetcherProtectTest, ServerUnavailable) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP,
-                              net::TestServer::kLocalhost,
-                              FilePath(kDocRoot));
+  TestServer test_server(TestServer::TYPE_HTTP,
+                         TestServer::kLocalhost,
+                         FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   GURL url(test_server.GetURL("files/server-unavailable.html"));
@@ -905,8 +908,8 @@ TEST_F(URLFetcherProtectTest, ServerUnavailable) {
   //     new_backoff = 2.0 * old_backoff + 0
   // and maximum backoff time is 256 milliseconds.
   // Maximum retries allowed is set to 11.
-  scoped_refptr<net::URLRequestThrottlerEntry> entry(
-      new net::URLRequestThrottlerEntry(
+  scoped_refptr<URLRequestThrottlerEntry> entry(
+      new URLRequestThrottlerEntry(
           request_context()->throttler_manager(),
           "", 200, 3, 1, 2.0, 0.0, 256));
   request_context()->throttler_manager()->OverrideEntryForTests(url, entry);
@@ -917,9 +920,9 @@ TEST_F(URLFetcherProtectTest, ServerUnavailable) {
 }
 
 TEST_F(URLFetcherProtectTestPassedThrough, ServerUnavailablePropagateResponse) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP,
-                              net::TestServer::kLocalhost,
-                              FilePath(kDocRoot));
+  TestServer test_server(TestServer::TYPE_HTTP,
+                         TestServer::kLocalhost,
+                         FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   GURL url(test_server.GetURL("files/server-unavailable.html"));
@@ -928,8 +931,8 @@ TEST_F(URLFetcherProtectTestPassedThrough, ServerUnavailablePropagateResponse) {
   //     new_backoff = 2.0 * old_backoff + 0
   // and maximum backoff time is 150000 milliseconds.
   // Maximum retries allowed is set to 11.
-  scoped_refptr<net::URLRequestThrottlerEntry> entry(
-      new net::URLRequestThrottlerEntry(
+  scoped_refptr<URLRequestThrottlerEntry> entry(
+      new URLRequestThrottlerEntry(
           request_context()->throttler_manager(),
           "", 200, 3, 100, 2.0, 0.0, 150000));
   // Total time if *not* for not doing automatic backoff would be 150s.
@@ -947,9 +950,9 @@ TEST_F(URLFetcherBadHTTPSTest, DISABLED_BadHTTPSTest) {
 #else
 TEST_F(URLFetcherBadHTTPSTest, BadHTTPSTest) {
 #endif
-  net::TestServer::HTTPSOptions https_options(
-      net::TestServer::HTTPSOptions::CERT_EXPIRED);
-  net::TestServer test_server(https_options, FilePath(kDocRoot));
+  TestServer::HTTPSOptions https_options(
+      TestServer::HTTPSOptions::CERT_EXPIRED);
+  TestServer test_server(https_options, FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   CreateFetcher(test_server.GetURL("defaultresponse"));
@@ -962,9 +965,9 @@ TEST_F(URLFetcherCancelTest, DISABLED_ReleasesContext) {
 #else
 TEST_F(URLFetcherCancelTest, ReleasesContext) {
 #endif
-  net::TestServer test_server(net::TestServer::TYPE_HTTP,
-                              net::TestServer::kLocalhost,
-                              FilePath(kDocRoot));
+  TestServer test_server(TestServer::TYPE_HTTP,
+                         TestServer::kLocalhost,
+                         FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   GURL url(test_server.GetURL("files/server-unavailable.html"));
@@ -985,9 +988,9 @@ TEST_F(URLFetcherCancelTest, ReleasesContext) {
 }
 
 TEST_F(URLFetcherCancelTest, CancelWhileDelayedStartTaskPending) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP,
-                              net::TestServer::kLocalhost,
-                              FilePath(kDocRoot));
+  TestServer test_server(TestServer::TYPE_HTTP,
+                         TestServer::kLocalhost,
+                         FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   GURL url(test_server.GetURL("files/server-unavailable.html"));
@@ -995,8 +998,8 @@ TEST_F(URLFetcherCancelTest, CancelWhileDelayedStartTaskPending) {
   // Register an entry for test url.
   // Using a sliding window of 4 seconds, and max of 1 request, under a fast
   // run we expect to have a 4 second delay when posting the Start task.
-  scoped_refptr<net::URLRequestThrottlerEntry> entry(
-      new net::URLRequestThrottlerEntry(
+  scoped_refptr<URLRequestThrottlerEntry> entry(
+      new URLRequestThrottlerEntry(
           request_context()->throttler_manager(),
           "", 4000, 1, 2000, 2.0, 0.0, 4000));
   request_context()->throttler_manager()->OverrideEntryForTests(url, entry);
@@ -1017,9 +1020,9 @@ TEST_F(URLFetcherCancelTest, CancelWhileDelayedStartTaskPending) {
 }
 
 TEST_F(URLFetcherMultipleAttemptTest, SameData) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP,
-                              net::TestServer::kLocalhost,
-                              FilePath(kDocRoot));
+  TestServer test_server(TestServer::TYPE_HTTP,
+                         TestServer::kLocalhost,
+                         FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   // Create the fetcher on the main thread.  Since IO will happen on the main
@@ -1031,9 +1034,9 @@ TEST_F(URLFetcherMultipleAttemptTest, SameData) {
 }
 
 TEST_F(URLFetcherFileTest, SmallGet) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP,
-                              net::TestServer::kLocalhost,
-                              FilePath(kDocRoot));
+  TestServer test_server(TestServer::TYPE_HTTP,
+                         TestServer::kLocalhost,
+                         FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   ScopedTempDir temp_dir;
@@ -1053,9 +1056,9 @@ TEST_F(URLFetcherFileTest, SmallGet) {
 }
 
 TEST_F(URLFetcherFileTest, LargeGet) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP,
-                              net::TestServer::kLocalhost,
-                              FilePath(kDocRoot));
+  TestServer test_server(TestServer::TYPE_HTTP,
+                         TestServer::kLocalhost,
+                         FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   ScopedTempDir temp_dir;
@@ -1073,9 +1076,9 @@ TEST_F(URLFetcherFileTest, LargeGet) {
 }
 
 TEST_F(URLFetcherFileTest, CanTakeOwnershipOfFile) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP,
-                              net::TestServer::kLocalhost,
-                              FilePath(kDocRoot));
+  TestServer test_server(TestServer::TYPE_HTTP,
+                         TestServer::kLocalhost,
+                         FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   ScopedTempDir temp_dir;
@@ -1097,9 +1100,9 @@ TEST_F(URLFetcherFileTest, CanTakeOwnershipOfFile) {
 
 
 TEST_F(URLFetcherFileTest, OverwriteExistingFile) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP,
-                              net::TestServer::kLocalhost,
-                              FilePath(kDocRoot));
+  TestServer test_server(TestServer::TYPE_HTTP,
+                         TestServer::kLocalhost,
+                         FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   ScopedTempDir temp_dir;
@@ -1124,9 +1127,9 @@ TEST_F(URLFetcherFileTest, OverwriteExistingFile) {
 }
 
 TEST_F(URLFetcherFileTest, TryToOverwriteDirectory) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP,
-                              net::TestServer::kLocalhost,
-                              FilePath(kDocRoot));
+  TestServer test_server(TestServer::TYPE_HTTP,
+                         TestServer::kLocalhost,
+                         FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   ScopedTempDir temp_dir;
@@ -1151,9 +1154,9 @@ TEST_F(URLFetcherFileTest, TryToOverwriteDirectory) {
 }
 
 TEST_F(URLFetcherFileTest, SmallGetToTempFile) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP,
-                              net::TestServer::kLocalhost,
-                              FilePath(kDocRoot));
+  TestServer test_server(TestServer::TYPE_HTTP,
+                         TestServer::kLocalhost,
+                         FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   // Get a small file.
@@ -1169,9 +1172,9 @@ TEST_F(URLFetcherFileTest, SmallGetToTempFile) {
 }
 
 TEST_F(URLFetcherFileTest, LargeGetToTempFile) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP,
-                              net::TestServer::kLocalhost,
-                              FilePath(kDocRoot));
+  TestServer test_server(TestServer::TYPE_HTTP,
+                         TestServer::kLocalhost,
+                         FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   // Get a file large enough to require more than one read into
@@ -1185,9 +1188,9 @@ TEST_F(URLFetcherFileTest, LargeGetToTempFile) {
 }
 
 TEST_F(URLFetcherFileTest, CanTakeOwnershipOfTempFile) {
-  net::TestServer test_server(net::TestServer::TYPE_HTTP,
-                              net::TestServer::kLocalhost,
-                              FilePath(kDocRoot));
+  TestServer test_server(TestServer::TYPE_HTTP,
+                         TestServer::kLocalhost,
+                         FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
 
   // Get a small file.
@@ -1203,4 +1206,6 @@ TEST_F(URLFetcherFileTest, CanTakeOwnershipOfTempFile) {
       << file_path_.value() << " not removed.";
 }
 
-}  // namespace.
+}  // namespace
+
+}  // namespace net
