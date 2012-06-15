@@ -1515,8 +1515,7 @@ void HistoryBackend::QueryFilteredURLs(
 
     if (extended_info) {
       VisitVector visits;
-      db_->GetVisitsForURL(
-          db_->GetSegmentRepresentationURL(current_data->GetID()), &visits);
+      db_->GetVisitsForURL(current_data->GetID(), &visits);
       if (visits.size() > 0) {
         url.extended_info.total_visits = visits.size();
         for (size_t i = 0; i < visits.size(); ++i) {

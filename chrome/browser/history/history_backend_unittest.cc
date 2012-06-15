@@ -1251,6 +1251,7 @@ TEST_F(HistoryBackendTest, QueryFilteredURLs) {
   const char* yahoo_sports_with_article2 =
       "http://sports.yahoo.com/article2.htm";
   const char* yahoo_sports_soccer = "http://sports.yahoo.com/soccer";
+  const char* apple = "http://www.apple.com/";
 
   // Clear all history.
   backend_->DeleteAllHistory();
@@ -1263,6 +1264,8 @@ TEST_F(HistoryBackendTest, QueryFilteredURLs) {
 
   const content::PageTransition kTypedTransition =
       content::PAGE_TRANSITION_TYPED;
+  const content::PageTransition kKeywordGeneratedTransition =
+      content::PAGE_TRANSITION_KEYWORD_GENERATED;
 
   const char* redirect_sequence[2];
   redirect_sequence[1] = NULL;
@@ -1277,13 +1280,22 @@ TEST_F(HistoryBackendTest, QueryFilteredURLs) {
   AddRedirectChainWithTransitionAndTime(
       redirect_sequence, 0,
       kTypedTransition, tested_time - half_an_hour / 2);
-  AddRedirectChainWithTransitionAndTime(redirect_sequence, 0,
-                                        kTypedTransition, tested_time);
+  AddRedirectChainWithTransitionAndTime(
+      redirect_sequence, 0,
+      kTypedTransition, tested_time);
+
+  // Add a visit with a transition that will make sure that no segment gets
+  // created for this page (so the subsequent entries will have different URLIDs
+  // and SegmentIDs).
+  redirect_sequence[0] = apple;
+  AddRedirectChainWithTransitionAndTime(
+      redirect_sequence, 0, kKeywordGeneratedTransition,
+      tested_time - one_day + one_hour * 6);
 
   redirect_sequence[0] = yahoo;
-  AddRedirectChainWithTransitionAndTime(redirect_sequence, 0,
-                                        kTypedTransition,
-                                        tested_time - one_day + half_an_hour);
+  AddRedirectChainWithTransitionAndTime(
+      redirect_sequence, 0, kTypedTransition,
+      tested_time - one_day + half_an_hour);
   AddRedirectChainWithTransitionAndTime(
       redirect_sequence, 0, kTypedTransition,
       tested_time - one_day + half_an_hour * 2);
@@ -1292,8 +1304,9 @@ TEST_F(HistoryBackendTest, QueryFilteredURLs) {
   AddRedirectChainWithTransitionAndTime(
       redirect_sequence, 0, kTypedTransition,
       tested_time - one_day - half_an_hour * 2);
-  AddRedirectChainWithTransitionAndTime(redirect_sequence, 0, kTypedTransition,
-                                        tested_time - one_day);
+  AddRedirectChainWithTransitionAndTime(
+      redirect_sequence, 0, kTypedTransition,
+      tested_time - one_day);
   int transition1, transition2;
   AddClientRedirect(GURL(yahoo_sports), GURL(yahoo_sports_with_article1), false,
                     tested_time - one_day + half_an_hour,
@@ -1409,12 +1422,18 @@ TEST_F(HistoryBackendTest, QueryFilteredURLs) {
   cancellable_request.MockScheduleOfRequest<QueryFilteredURLsRequest>(
       request6);
   filter.SetFilterTime(tested_time);
-  filter.SetFilterWidth(one_hour);
+  filter.SetFilterWidth(one_hour * 2);
   backend_->QueryFilteredURLs(request6, 100, filter, true);
 
-  ASSERT_GE(get_filtered_list().size(), 1U);
+  // If the SegmentID is used by QueryFilteredURLs when generating the debug
+  // data instead of the URLID, the |total_visits| for the |yahoo_sports_soccer|
+  // entry will be zero instead of 1.
+  ASSERT_GE(get_filtered_list().size(), 2U);
   EXPECT_EQ(std::string(google), get_filtered_list()[0].url.spec());
+  EXPECT_EQ(std::string(yahoo_sports_soccer),
+      get_filtered_list()[1].url.spec());
   EXPECT_EQ(4U, get_filtered_list()[0].extended_info.total_visits);
+  EXPECT_EQ(1U, get_filtered_list()[1].extended_info.total_visits);
 }
 
 TEST_F(HistoryBackendTest, UpdateVisitDuration) {
