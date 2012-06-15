@@ -2960,7 +2960,8 @@ FileManager.prototype = {
       var shareActions = [];
       for (var index = 0; index < tasks.length; index++) {
         var task = tasks[index];
-        if (task.taskId != this.getExtensionId_() + '|gallery') {
+        var task_parts = task.taskId.split('|');
+        if (task_parts[0] != this.getExtensionId_()) {
           // Add callback, so gallery can execute the task.
           task.execute = this.dispatchFileTask_.bind(this, task.taskId);
           shareActions.push(task);
