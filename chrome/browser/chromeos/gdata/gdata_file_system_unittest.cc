@@ -520,7 +520,8 @@ class GDataFileSystemTest : public testing::Test {
     expected_error_ = expected_error;
     expected_file_extension_ = expected_file_extension;
 
-    file_system_->GetFileFromCacheByResourceIdAndMd5(resource_id, md5,
+    cache_->GetFileOnUIThread(
+        resource_id, md5,
         base::Bind(&GDataFileSystemTest::VerifyGetFromCache,
                    base::Unretained(this)));
 
@@ -726,7 +727,8 @@ class GDataFileSystemTest : public testing::Test {
     expected_sub_dir_type_ = expected_sub_dir_type;
     expect_outgoing_symlink_ = false;
 
-    file_system_->MarkDirtyInCache(resource_id, md5,
+    cache_->MarkDirtyOnUIThread(
+        resource_id, md5,
         base::Bind(&GDataFileSystemTest::VerifyMarkDirty,
                    base::Unretained(this)));
 

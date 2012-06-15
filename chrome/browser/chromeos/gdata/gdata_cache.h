@@ -29,6 +29,13 @@ typedef base::Callback<void(base::PlatformFileError error,
                             const std::string& resource_id,
                             const std::string& md5)> CacheOperationCallback;
 
+// Callback for GetFileFromCache.
+typedef base::Callback<void(base::PlatformFileError error,
+                            const std::string& resource_id,
+                            const std::string& md5,
+                            const FilePath& cache_file_path)>
+    GetFileFromCacheCallback;
+
 // GDataCache is used to maintain cache states of GDataFileSystem.
 //
 // All non-static public member functions, unless mentioned otherwise (see
@@ -199,10 +206,9 @@ class GDataCache {
                                 bool* has_enough_space);
 
   // Checks if file corresponding to |resource_id| and |md5| exists in cache.
-  void GetFile(const std::string& resource_id,
-               const std::string& md5,
-               base::PlatformFileError* error,
-               FilePath* cache_file_path);
+  void GetFileOnUIThread(const std::string& resource_id,
+                         const std::string& md5,
+                         const GetFileFromCacheCallback& callback);
 
   // Modifies cache state, which involves the following:
   // - moves or copies (per |file_operation_type|) |source_path|
@@ -247,11 +253,9 @@ class GDataCache {
   // - moves |source_path| to |dest_path| in persistent dir, where
   //   |source_path| has .<md5> extension and |dest_path| has .local extension
   // - if file is pinned, updates symlink in pinned dir to reference dirty file
-  void MarkDirty(const std::string& resource_id,
-                 const std::string& md5,
-                 FileOperationType file_operation_type,
-                 base::PlatformFileError* error,
-                 FilePath* cache_file_path);
+  void MarkDirtyOnUIThread(const std::string& resource_id,
+                           const std::string& md5,
+                           const GetFileFromCacheCallback& callback);
 
   // Modifies cache state, i.e. creates symlink in outgoing
   // dir to reference dirty file in persistent dir.
@@ -346,6 +350,12 @@ class GDataCache {
   // Deletes the cache.
   void Destroy();
 
+  // Used to implement GetFileOnUIThread.
+  void GetFile(const std::string& resource_id,
+               const std::string& md5,
+               base::PlatformFileError* error,
+               FilePath* cache_file_path);
+
   // Used to implement StoreOnUIThread.
   void Store(const std::string& resource_id,
              const std::string& md5,
@@ -370,6 +380,13 @@ class GDataCache {
                        bool to_mount,
                        base::PlatformFileError* error,
                        FilePath* cache_file_path);
+
+  // Used to implement MarkDirtyOnUIThread.
+  void MarkDirty(const std::string& resource_id,
+                 const std::string& md5,
+                 FileOperationType file_operation_type,
+                 base::PlatformFileError* error,
+                 FilePath* cache_file_path);
 
   // Used to implement CommitDirtyOnUIThread.
   void CommitDirty(const std::string& resource_id,

@@ -40,13 +40,6 @@ struct LoadRootFeedParams;
 typedef base::Callback<void(base::PlatformFileError error)>
     FileOperationCallback;
 
-// Callback for GetFileFromCache.
-typedef base::Callback<void(base::PlatformFileError error,
-                            const std::string& resource_id,
-                            const std::string& md5,
-                            const FilePath& cache_file_path)>
-    GetFileFromCacheCallback;
-
 // Used to get files from the file system.
 typedef base::Callback<void(base::PlatformFileError error,
                             const FilePath& file_path,
@@ -990,45 +983,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // - uploads dirty files to gdata server.
   // - etc.
 
-  // Checks if file corresponding to |resource_id| and |md5| exists in cache.
-  // Initializes cache if it has not been initialized.
-  // Upon completion, |callback| is invoked on the thread where this method was
-  // called, with the cache file path if it exists or empty otherwise.
-  // otherwise.
-  void GetFileFromCacheByResourceIdAndMd5(
-      const std::string& resource_id,
-      const std::string& md5,
-      const GetFileFromCacheCallback& callback);
-
-  // Mark file corresponding to |resource_id| and |md5| as dirty, so that it
-  // can modified locally.
-  // Initializes cache if it has not been initialized.
-  // Dirty files are actual blob files in persistent dir with .local extension.
-  // If the file to be marked dirty does not exist in cache,
-  // base::PLATFORM_FILE_ERROR_NOT_FOUND is returned in |callback|.
-  // If a file is already dirty (i.e. MarkDirtyInCache was called before), and
-  // if outgoing symlink was already created (i.e CommitDirtyInCache was also
-  // called before, refer to comments for CommitDirtyInCache), outgoing symlink
-  // is deleted. Otherwise, it's a no-operation.
-  // We'll not evict dirty files.
-  // Upon completion, |callback| is invoked on the thread where this method was
-  // called, with the absolute path of the dirty file.
-  void MarkDirtyInCache(const std::string& resource_id,
-                        const std::string& md5,
-                        const GetFileFromCacheCallback& callback);
-
-  // Task posted from GetFileFromCacheInternal to run on blocking pool.
-  // Checks if file corresponding to |resource_id| and |md5| exists in cache
-  // map.
-  // Even though this task doesn't involve IO operations, it still runs on the
-  // blocking pool, to force synchronization of all tasks on blocking pool,
-  // e.g. this absolute must execute after InitailizeCacheOnIOTheadPool.
-  void GetFileFromCacheOnBlockingPool(
-      const std::string& resource_id,
-      const std::string& md5,
-      base::PlatformFileError* error,
-      FilePath* cache_file_path);
-
   // Task posted from GetCacheState to run on blocking pool.
   // Checks if file corresponding to |resource_id| and |md5| exists in cache
   // map.  If yes, returns its cache state; otherwise, returns CACHE_STATE_NONE.
@@ -1040,18 +994,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const std::string& md5,
       base::PlatformFileError* error,
       int* cache_state);
-
-  // Task posted from MarkDirtyInCache to modify cache state on the blocking
-  // pool, which involves the following:
-  // - moves |source_path| to |dest_path| in persistent dir, where
-  //   |source_path| has .<md5> extension and |dest_path| has .local extension
-  // - if file is pinned, updates symlink in pinned dir to reference dirty file
-  void MarkDirtyInCacheOnBlockingPool(
-      const std::string& resource_id,
-      const std::string& md5,
-      GDataCache::FileOperationType file_operation_type,
-      base::PlatformFileError* error,
-      FilePath* cache_file_path);
 
   // Cache intermediate callbacks, that run on calling thread, for above cache
   // tasks that were run on blocking pool.
@@ -1075,16 +1017,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
                           const GetFileFromCacheParams& params,
                           GDataErrorCode status,
                           scoped_ptr<base::Value> data);
-
-  // Frees up disk space to store the given number of bytes, while keeping
-  // kMinFreSpace bytes on the disk, if needed.  |has_enough_space| is
-  // updated to indicate if we have enough space.
-  void FreeDiskSpaceIfNeededFor(int64 num_bytes,
-                                bool* has_enough_space);
-
-  // Frees up disk space if we have less than kMinFreSpace. |has_enough_space|
-  // is updated to indicate if we have enough space.
-  void FreeDiskSpaceIfNeeded(bool* has_enough_space);
 
   // Starts downloading a file if we have enough disk space indicated by
   // |has_enough_space|.

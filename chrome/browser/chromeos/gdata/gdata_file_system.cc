@@ -241,20 +241,6 @@ void RunFileOperationCallbackHelper(
     callback.Run(*error);
 }
 
-// Ditto for GetFileFromCacheCallback.
-void RunGetFileFromCacheCallbackHelper(
-    const GetFileFromCacheCallback& callback,
-    base::PlatformFileError* error,
-    const std::string& resource_id,
-    const std::string& md5,
-    FilePath* cache_file_path) {
-  DCHECK(error);
-  DCHECK(cache_file_path);
-
-  if (!callback.is_null())
-    callback.Run(*error, resource_id, md5, *cache_file_path);
-}
-
 void RunGetCacheStateCallbackHelper(
     const GetCacheStateCallback& callback,
     base::PlatformFileError* error,
@@ -1815,7 +1801,7 @@ void GDataFileSystem::GetResolvedFileByPath(
       file_proto->file_md5(),
       GDataCache::CACHE_TYPE_TMP,
       GDataCache::CACHED_FILE_FROM_SERVER);
-  GetFileFromCacheByResourceIdAndMd5(
+  cache_->GetFileOnUIThread(
       file_proto->gdata_entry().resource_id(),
       file_proto->file_md5(),
       base::Bind(
@@ -1969,8 +1955,8 @@ void GDataFileSystem::OnGetDocumentEntry(const FilePath& cache_file_path,
   bool* has_enough_space = new bool(false);
   PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
-      base::Bind(&GDataFileSystem::FreeDiskSpaceIfNeededFor,
-                 base::Unretained(this),
+      base::Bind(&GDataCache::FreeDiskSpaceIfNeededFor,
+                 base::Unretained(cache_),
                  file_size,
                  has_enough_space),
       base::Bind(&GDataFileSystem::StartDownloadFileIfEnoughSpace,
@@ -1979,15 +1965,6 @@ void GDataFileSystem::OnGetDocumentEntry(const FilePath& cache_file_path,
                  content_url,
                  cache_file_path,
                  base::Owned(has_enough_space)));
-}
-
-void GDataFileSystem::FreeDiskSpaceIfNeededFor(int64 num_bytes,
-                                               bool* has_enough_space) {
-  cache_->FreeDiskSpaceIfNeededFor(num_bytes, has_enough_space);
-}
-
-void GDataFileSystem::FreeDiskSpaceIfNeeded(bool* has_enough_space) {
-  FreeDiskSpaceIfNeededFor(0, has_enough_space);
 }
 
 void GDataFileSystem::StartDownloadFileIfEnoughSpace(
@@ -2910,8 +2887,9 @@ void GDataFileSystem::OnFileDownloaded(
   bool* has_enough_space = new bool(false);
   PostBlockingPoolSequencedTaskAndReply(
       FROM_HERE,
-      base::Bind(&GDataFileSystem::FreeDiskSpaceIfNeeded,
-                 base::Unretained(this),
+      base::Bind(&GDataCache::FreeDiskSpaceIfNeededFor,
+                 base::Unretained(cache_),
+                 0,
                  has_enough_space),
       base::Bind(&GDataFileSystem::OnFileDownloadedAndSpaceChecked,
                  ui_weak_ptr_,
@@ -3592,43 +3570,7 @@ void GDataFileSystem::SetHideHostedDocuments(bool hide) {
   NotifyDirectoryChanged(root_path);
 }
 
-//===================== GDataFileSystem: Cache entry points ====================
-
-void GDataFileSystem::MarkDirtyInCache(
-    const std::string& resource_id,
-    const std::string& md5,
-    const GetFileFromCacheCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  base::PlatformFileError* error =
-      new base::PlatformFileError(base::PLATFORM_FILE_OK);
-  FilePath* cache_file_path = new FilePath;
-  PostBlockingPoolSequencedTaskAndReply(
-      FROM_HERE,
-      base::Bind(&GDataFileSystem::MarkDirtyInCacheOnBlockingPool,
-                 base::Unretained(this),
-                 resource_id,
-                 md5,
-                 GDataCache::FILE_OPERATION_MOVE,
-                 error,
-                 cache_file_path),
-      base::Bind(&RunGetFileFromCacheCallbackHelper,
-                 callback,
-                 base::Owned(error),
-                 resource_id,
-                 md5,
-                 base::Owned(cache_file_path)));
-}
-
 //========= GDataFileSystem: Cache tasks that ran on blocking pool ============
-
-void GDataFileSystem::GetFileFromCacheOnBlockingPool(
-    const std::string& resource_id,
-    const std::string& md5,
-    base::PlatformFileError* error,
-    FilePath* cache_file_path) {
-  cache_->GetFile(resource_id, md5, error, cache_file_path);
-}
 
 void GDataFileSystem::GetCacheStateOnBlockingPool(
     const std::string& resource_id,
@@ -3657,40 +3599,7 @@ void GDataFileSystem::GetCacheStateOnBlockingPool(
   }
 }
 
-void GDataFileSystem::MarkDirtyInCacheOnBlockingPool(
-    const std::string& resource_id,
-    const std::string& md5,
-    GDataCache::FileOperationType file_operation_type,
-    base::PlatformFileError* error,
-    FilePath* cache_file_path) {
-  cache_->MarkDirty(
-      resource_id, md5, file_operation_type, error, cache_file_path);
-}
-
 //============= GDataFileSystem: internal helper functions =====================
-
-void GDataFileSystem::GetFileFromCacheByResourceIdAndMd5(
-    const std::string& resource_id,
-    const std::string& md5,
-    const GetFileFromCacheCallback& callback) {
-  base::PlatformFileError* error =
-      new base::PlatformFileError(base::PLATFORM_FILE_OK);
-  FilePath* cache_file_path = new FilePath;
-  PostBlockingPoolSequencedTaskAndReply(
-      FROM_HERE,
-      base::Bind(&GDataFileSystem::GetFileFromCacheOnBlockingPool,
-                 base::Unretained(this),
-                 resource_id,
-                 md5,
-                 error,
-                 cache_file_path),
-      base::Bind(&RunGetFileFromCacheCallbackHelper,
-                 callback,
-                 base::Owned(error),
-                 resource_id,
-                 md5,
-                 base::Owned(cache_file_path)));
-}
 
 void GDataFileSystem::RunTaskOnBlockingPool(const base::Closure& task) {
   DCHECK(IsRunningSequenceOnCurrentThread(sequence_token_));
@@ -3833,7 +3742,7 @@ void GDataFileSystem::OnGetFileCompleteForOpenFile(
   // OpenFileOnUIThread ensures that the file is a regular file.
   DCHECK_EQ(REGULAR_FILE, file_type);
 
-  MarkDirtyInCache(
+  cache_->MarkDirtyOnUIThread(
       file_info.resource_id,
       file_info.md5,
       base::Bind(&GDataFileSystem::OnMarkDirtyInCacheCompleteForOpenFile,
