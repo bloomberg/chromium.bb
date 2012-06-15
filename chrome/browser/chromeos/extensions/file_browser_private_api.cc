@@ -2096,6 +2096,67 @@ void GetPathForDriveSearchResultFunction::OnEntryFound(
   SendResponse(true);
 }
 
+bool SearchDriveFunction::RunImpl() {
+  if (!args_->GetString(0, &query_))
+    return false;
+
+  BrowserContext::GetFileSystemContext(profile())->OpenFileSystem(
+      source_url_.GetOrigin(), fileapi::kFileSystemTypeExternal, false,
+      base::Bind(&SearchDriveFunction::OnFileSystemOpened, this));
+  return true;
+}
+
+void SearchDriveFunction::OnFileSystemOpened(
+    base::PlatformFileError result,
+    const std::string& file_system_name,
+    const GURL& file_system_url) {
+  if (result != base::PLATFORM_FILE_OK) {
+    SendResponse(false);
+    return;
+  }
+
+  file_system_name_ = file_system_name;
+  file_system_url_ = file_system_url;
+
+  gdata::GDataSystemService* system_service =
+      gdata::GDataSystemServiceFactory::GetForProfile(profile_);
+  if (!system_service || !system_service->file_system()) {
+    SendResponse(false);
+    return;
+  }
+
+  system_service->file_system()->SearchAsync(
+      query_,
+      base::Bind(&SearchDriveFunction::OnSearch, this),
+      gdata::ReadDirectoryCallback());
+}
+
+void SearchDriveFunction::OnSearch(
+    base::PlatformFileError error,
+    scoped_ptr<std::vector<gdata::SearchResultInfo> > results) {
+  if (error != base::PLATFORM_FILE_OK) {
+    SendResponse(false);
+    return;
+  }
+
+  DCHECK(results.get());
+
+  base::ListValue* entries = new ListValue();
+  // Convert gdata files to something File API stack can understand.
+  for (size_t i = 0; i < results->size(); ++i) {
+    DictionaryValue* entry = new DictionaryValue();
+    entry->SetString("fileSystemName", file_system_name_);
+    entry->SetString("fileSystemRoot", file_system_url_.spec());
+    entry->SetString("fileFullPath", "/" + results->at(i).path.value());
+    entry->SetBoolean("fileIsDirectory", results->at(i).is_directory);
+
+    entries->Append(entry);
+  }
+
+  result_.reset(entries);
+  SendResponse(true);
+}
+
 bool GetNetworkConnectionStateFunction::RunImpl() {
   chromeos::NetworkLibrary* network_library =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();

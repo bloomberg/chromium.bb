@@ -224,6 +224,7 @@ void GDataFileSystemProxy::ReadDirectory(const GURL& file_url,
   if (util::GetSearchPathStatus(file_path) == util::GDATA_SEARCH_PATH_QUERY) {
     file_system_->SearchAsync(
         file_path.BaseName().value(),
+        gdata::SearchCallback(),
         base::Bind(&GDataFileSystemProxy::OnReadDirectory,
                    this,
                    callback));

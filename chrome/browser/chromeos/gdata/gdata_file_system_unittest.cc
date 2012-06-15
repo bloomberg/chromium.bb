@@ -124,19 +124,51 @@ struct SearchResultPair {
 };
 
 // Callback to GDataFileSystem::SearchAsync used in ContentSearch test.
-// Verifies that returned proto buffer contains entries specified in search
-// feed, and that treing file names are formatted like
-// "<resource_id>.<file_name>".
-void ContentSearchCallback(MessageLoop* message_loop,
-                           base::PlatformFileError error,
-                           bool /* hide_hosted_documents, */,
-                           scoped_ptr<GDataDirectoryProto> dir_proto) {
-  ASSERT_EQ(base::PLATFORM_FILE_OK, error);
-  ASSERT_TRUE(dir_proto.get());
-
+// Verifies returned vector of results.
+//
+// |should_next_callback_quit_loop| is owned by ContentSearch test function,
+// and it is shared with |ContentSearchCallback|.
+void DriveSearchCallback(
+    MessageLoop* message_loop,
+    bool* should_next_callback_quit_loop,
+    base::PlatformFileError error,
+    scoped_ptr<std::vector<SearchResultInfo> > results) {
   // Search feed contains 2 entries. One file (SubDirectory File 1.txt) and one
   // directory (Directory 1). Entries generated from the feed should have names
   // in format resource_id.actual_file_name.
+  ASSERT_TRUE(results.get());
+  ASSERT_EQ(2u, results->size());
+
+  EXPECT_EQ(FilePath("drive/Directory 1/SubDirectory File 1.txt"),
+            results->at(0).path);
+  EXPECT_FALSE(results->at(0).is_directory);
+
+  EXPECT_EQ(FilePath("drive/Directory 1"), results->at(1).path);
+  EXPECT_TRUE(results->at(1).is_directory);
+
+  if (*should_next_callback_quit_loop) {
+    message_loop->Quit();
+  } else {
+    *should_next_callback_quit_loop = true;
+  }
+}
+
+// Another callback to GDataFileSystem::SearchAsync used in ContentSearch test.
+// Verifies that returned proto buffer contains entries specified in search
+// feed, and that treing file names are formatted like
+// "<resource_id>.<file_name>".
+//
+// |should_next_callback_quit_loop| is owned by ContentSearch test function,
+// and it is shared with |DriveSearchCallback|.
+void ContentSearchCallback(
+    MessageLoop* message_loop,
+    bool* should_next_callback_quit_loop,
+    base::PlatformFileError error,
+    bool /* hide_hosted_documents, */,
+    scoped_ptr<GDataDirectoryProto> dir_proto) {
+  ASSERT_EQ(base::PLATFORM_FILE_OK, error);
+  ASSERT_TRUE(dir_proto.get());
+
   ASSERT_EQ(1, dir_proto->child_files_size());
   EXPECT_EQ("file:2_file_resouce_id.SubDirectory File 1.txt",
             dir_proto->child_files(0).gdata_entry().file_name());
@@ -145,7 +177,11 @@ void ContentSearchCallback(MessageLoop* message_loop,
   EXPECT_EQ("folder:1_folder_resource_id.Directory 1",
             dir_proto->child_directories(0).gdata_entry().file_name());
 
-  message_loop->Quit();
+  if (*should_next_callback_quit_loop) {
+    message_loop->Quit();
+  } else {
+    *should_next_callback_quit_loop = true;
+  }
 }
 
 // Action used to set mock expectations for GetDocuments.
@@ -3335,11 +3371,17 @@ TEST_F(GDataFileSystemTest, ContentSearch) {
   EXPECT_CALL(*mock_doc_service_, GetDocuments(Eq(GURL()), _, "foo", _, _))
       .Times(1);
 
+  bool should_next_callback_quit_loop = false;
+  SearchCallback search_callback = base::Bind(
+      &DriveSearchCallback,
+      &message_loop_,
+      &should_next_callback_quit_loop);
   ReadDirectoryCallback callback = base::Bind(
       &ContentSearchCallback,
-      &message_loop_);
+      &message_loop_,
+      &should_next_callback_quit_loop);
 
-  file_system_->SearchAsync("foo", callback);
+  file_system_->SearchAsync("foo", search_callback, callback);
   message_loop_.Run();  // Wait to get our result
 
   const SearchResultPair kSearchResultPairs[] = {

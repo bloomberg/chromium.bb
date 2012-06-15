@@ -36,6 +36,19 @@ namespace {
 struct LoadRootFeedParams;
 }
 
+// Information about search result returned by Search Async callback.
+// This is data needed to create a file system entry that will be used by file
+// browser.
+struct SearchResultInfo {
+  SearchResultInfo(const FilePath& in_path, bool in_is_directory)
+      : path(in_path),
+        is_directory(in_is_directory) {
+  }
+
+  FilePath path;
+  bool is_directory;
+};
+
 // Used for file operations like removing files.
 typedef base::Callback<void(base::PlatformFileError error)>
     FileOperationCallback;
@@ -66,6 +79,12 @@ typedef base::Callback<void(base::PlatformFileError error,
                             bool hide_hosted_documents,
                             scoped_ptr<GDataDirectoryProto> directory_proto)>
     ReadDirectoryCallback;
+
+// Used to get drive content search results.
+// If |error| is not PLATFORM_FILE_OK, |result_paths| is empty.
+typedef base::Callback<void(
+    base::PlatformFileError error,
+    scoped_ptr<std::vector<SearchResultInfo> > result_paths)> SearchCallback;
 
 // Used to open files from the file system. |file_path| is the path on the local
 // file system for the opened file.
@@ -330,12 +349,18 @@ class GDataFileSystemInterface {
   // Can be called from UI/IO thread.
   virtual void RequestDirectoryRefresh(const FilePath& file_path) = 0;
 
-  // Does server side content search for |search_query|. Search results will be
-  // returned as gdata entries in temp directory proto, and their
-  // title/file_name will be formatted as |<resource_id>.<original_file_name>|.
+  // Does server side content search for |search_query|.
+  // Search results will be returned in two ways:
+  // 1' As list of results' |SearchResultInfo| structs, which contains file's
+  //    path and is_directory flag. This is done using |search_callback|.
+  // 2' As gdata entries in temp directory proto, and their
+  //    title/file_name will be formatted |<resource_id>.<original_file_name>|.
+  //    This will be returned via |callback|.
   //
+  // TODO(tbarzic): Get rid of 2' once we're ready.
   // Can be called from UI/IO thread. |callback| is run on the calling thread.
   virtual void SearchAsync(const std::string& search_query,
+                           const SearchCallback& search_callback,
                            const ReadDirectoryCallback& callback) = 0;
 
   // Fetches the user's Account Metadata to find out current quota information
@@ -378,6 +403,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const std::string& resource_id,
       const FindEntryCallback& callback) OVERRIDE;
   virtual void SearchAsync(const std::string& search_query,
+                           const SearchCallback& search_callback,
                            const ReadDirectoryCallback& callback) OVERRIDE;
   virtual void TransferFileFromRemoteToLocal(
       const FilePath& remote_src_file_path,
@@ -573,7 +599,8 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // |LoadFeedFromServer|.
   // |params| params used for getting document feed for content search.
   // |error| error code returned by |LoadFeedFromServer|.
-  void OnSearch(const ReadDirectoryCallback& callback,
+  void OnSearch(const SearchCallback& search_callback,
+                const ReadDirectoryCallback& callback,
                 GetDocumentsParams* params,
                 base::PlatformFileError error);
 
@@ -1064,6 +1091,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // The following functions are used to forward calls to asynchronous public
   // member functions to UI thread.
   void SearchAsyncOnUIThread(const std::string& search_query,
+                             const SearchCallback& search_callback,
                              const ReadDirectoryCallback& callback);
   void OpenFileOnUIThread(const FilePath& file_path,
                           const OpenFileCallback& callback);

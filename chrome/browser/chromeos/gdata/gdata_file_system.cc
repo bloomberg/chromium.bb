@@ -2438,7 +2438,8 @@ void GDataFileSystem::OnCreateDirectoryCompleted(
   }
 }
 
-void GDataFileSystem::OnSearch(const ReadDirectoryCallback& callback,
+void GDataFileSystem::OnSearch(const SearchCallback& search_callback,
+                               const ReadDirectoryCallback& callback,
                                GetDocumentsParams* params,
                                base::PlatformFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -2448,6 +2449,8 @@ void GDataFileSystem::OnSearch(const ReadDirectoryCallback& callback,
       callback.Run(error,
                    hide_hosted_docs_,
                    scoped_ptr<GDataDirectoryProto>());
+    if (!search_callback.is_null())
+      search_callback.Run(error, scoped_ptr<std::vector<SearchResultInfo> >());
     return;
   }
 
@@ -2455,6 +2458,8 @@ void GDataFileSystem::OnSearch(const ReadDirectoryCallback& callback,
   // The directory is not really part of the file system, so it has no parent or
   // root.
   scoped_ptr<GDataDirectory> search_dir(new GDataDirectory(NULL, NULL));
+  scoped_ptr<std::vector<SearchResultInfo> > results(
+      new std::vector<SearchResultInfo>());
 
   DCHECK_EQ(1u, params->feed_list->size());
   DocumentFeed* feed = params->feed_list->at(0);
@@ -2467,6 +2472,18 @@ void GDataFileSystem::OnSearch(const ReadDirectoryCallback& callback,
 
     if (!entry)
       continue;
+
+    GDataEntry* old_entry = root_->GetEntryByResourceId(entry->resource_id());
+
+    // If a result is not present in our local file system snapshot, ignore it.
+    // For example, this may happen if the entry has recently been added to the
+    // drive (and we still haven't received its delta feed).
+    if (!old_entry)
+      continue;
+
+    bool is_directory = old_entry->AsGDataDirectory() != NULL;
+    results->push_back(SearchResultInfo(old_entry->GetFilePath(),
+                                        is_directory));
 
     DCHECK_EQ(doc->resource_id(), entry->resource_id());
     DCHECK(!entry->is_deleted());
@@ -2492,20 +2509,25 @@ void GDataFileSystem::OnSearch(const ReadDirectoryCallback& callback,
 
   if (!callback.is_null())
     callback.Run(error, hide_hosted_docs_, directory_proto.Pass());
+  if (!search_callback.is_null())
+    search_callback.Run(error, results.Pass());
 }
 
 void GDataFileSystem::SearchAsync(const std::string& search_query,
+                                  const SearchCallback& search_callback,
                                   const ReadDirectoryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   RunTaskOnUIThread(base::Bind(&GDataFileSystem::SearchAsyncOnUIThread,
                                ui_weak_ptr_,
                                search_query,
+                               CreateRelayCallback(search_callback),
                                CreateRelayCallback(callback)));
 }
 
 void GDataFileSystem::SearchAsyncOnUIThread(
     const std::string& search_query,
+    const SearchCallback& search_callback,
     const ReadDirectoryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -2524,7 +2546,7 @@ void GDataFileSystem::SearchAsyncOnUIThread(
                      std::string(),  // No directory resource ID.
                      FindEntryCallback(),  // Not used.
                      base::Bind(&GDataFileSystem::OnSearch,
-                                ui_weak_ptr_, callback));
+                                ui_weak_ptr_, search_callback, callback));
 }
 
 void GDataFileSystem::OnGetDocuments(ContentOrigin initial_origin,

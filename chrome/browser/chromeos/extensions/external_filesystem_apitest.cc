@@ -27,6 +27,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "webkit/fileapi/file_system_context.h"
@@ -141,10 +142,11 @@ void CreateDownloadFile(const FilePath& path) {
 
 // Action used to set mock expectations for DownloadFile().
 ACTION_P(MockDownloadFileCallback, status) {
-  ASSERT_TRUE(base::WorkerPool::PostTaskAndReply(FROM_HERE,
+  ASSERT_TRUE(content::BrowserThread::PostTaskAndReply(
+      content::BrowserThread::FILE,
+      FROM_HERE,
       base::Bind(&CreateDownloadFile, arg1),
-      base::Bind(arg3, status, arg2, arg1),
-      false));
+      base::Bind(arg3, status, arg2, arg1)));
 }
 
 }  // namespace
@@ -305,5 +307,52 @@ IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest,
   // All is set... RUN THE TEST.
   EXPECT_TRUE(RunExtensionTest("filesystem_handler")) << message_;
   EXPECT_TRUE(RunExtensionSubtest("filebrowser_component", "remote.html",
+      kComponentFlags)) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(RemoteFileSystemExtensionApiTest,
+                       ContentSearch) {
+  SetupGDataFileSystemForTest();
+
+  EXPECT_CALL(*mock_documents_service_, GetAccountMetadata(_)).Times(1);
+
+  // First, test will get drive root directory, to init file system.
+  scoped_ptr<base::Value> documents_value(LoadJSONFile(kTestRootFeed));
+  EXPECT_CALL(*mock_documents_service_,
+              GetDocuments(_, _, "", _, _))
+      .WillOnce(MockGetDocumentsCallback(gdata::HTTP_SUCCESS,
+                                         &documents_value));
+
+  // We return the whole test file system in serch results.
+  scoped_ptr<base::Value> search_value(LoadJSONFile(kTestRootFeed));
+  EXPECT_CALL(*mock_documents_service_,
+              GetDocuments(_, _, "foo", _, _))
+      .WillOnce(MockGetDocumentsCallback(gdata::HTTP_SUCCESS,
+                                         &search_value));
+
+  // Test will try to create a snapshot of the returned file.
+  scoped_ptr<base::Value> document_to_download_value(
+      LoadJSONFile(kTestDocumentToDownloadEntry));
+  EXPECT_CALL(*mock_documents_service_,
+              GetDocumentEntry("file:1_file_resource_id", _))
+      .WillOnce(MockGetDocumentEntryCallback(gdata::HTTP_SUCCESS,
+                                             &document_to_download_value));
+
+  // We expect to download url defined in document entry returned by
+  // GetDocumentEntry mock implementation.
+  EXPECT_CALL(*mock_documents_service_,
+              DownloadFile(_, _, GURL("https://file_content_url_changed"),
+                           _, _))
+      .WillOnce(MockDownloadFileCallback(gdata::HTTP_SUCCESS));
+
+  // On exit, all operations in progress should be cancelled.
+  EXPECT_CALL(*mock_documents_service_, CancelAll());
+  // This one is called on exit, but we don't care much about it, as long as it
+  // retunrs something valid (i.e. not NULL).
+  EXPECT_CALL(*mock_documents_service_, operation_registry()).
+      WillRepeatedly(Return(operation_registry_.get()));
+
+  // All is set... RUN THE TEST.
+  EXPECT_TRUE(RunExtensionSubtest("filebrowser_component", "remote_search.html",
       kComponentFlags)) << message_;
 }

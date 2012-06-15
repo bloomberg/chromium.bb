@@ -371,6 +371,7 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<GetGDataPreferencesFunction>();
   RegisterFunction<SetGDataPreferencesFunction>();
   RegisterFunction<GetPathForDriveSearchResultFunction>();
+  RegisterFunction<SearchDriveFunction>();
   RegisterFunction<GetNetworkConnectionStateFunction>();
   RegisterFunction<RequestDirectoryRefreshFunction>();
 

@@ -11,6 +11,7 @@
 #include <queue>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "chrome/browser/chromeos/extensions/file_browser_event_router.h"
 #include "chrome/browser/extensions/extension_function.h"
@@ -21,6 +22,10 @@ class GURL;
 
 namespace content {
 struct SelectedFileInfo;
+}
+
+namespace gdata {
+struct SearchResultInfo;
 }
 
 // Implements the chrome.fileBrowserPrivate.requestLocalFileSystem method.
@@ -612,6 +617,29 @@ class GetPathForDriveSearchResultFunction : public AsyncExtensionFunction {
  private:
   DECLARE_EXTENSION_FUNCTION_NAME(
       "fileBrowserPrivate.getPathForDriveSearchResult");
+};
+
+class SearchDriveFunction : public AsyncExtensionFunction {
+ protected:
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  // Callback fo OpenFileSystem called from RunImpl.
+  void OnFileSystemOpened(base::PlatformFileError result,
+                          const std::string& file_system_name,
+                          const GURL& file_system_url);
+  // Callback for gdata::SearchAsync called after file system is opened.
+  void OnSearch(base::PlatformFileError error,
+                scoped_ptr<std::vector<gdata::SearchResultInfo> > result_paths);
+
+  // Query for which the search is being performed.
+  std::string query_;
+  // Information about remote file system we will need to create file entries
+  // to represent search results.
+  std::string file_system_name_;
+  GURL file_system_url_;
+
+  DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.searchGData");
 };
 
 // Implements the chrome.fileBrowserPrivate.getNetworkConnectionState method.

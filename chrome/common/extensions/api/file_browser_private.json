@@ -931,6 +931,33 @@
         ]
       },
       {
+        "name": "searchGData",
+        "type": "function",
+        "description": "Performs drive content search.",
+        "parameters": [
+          {
+            "name": "query",
+            "description": "Search query.",
+            "type": "string"
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "entries",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "isInstanceOf": "Entry",
+                  "description": "Entry representing a search result."
+                }  
+              }
+            ]
+          }
+        ]
+      },
+      {
         "name": "getNetworkConnectionState",
         "description": "Retrieves the state of the currently active network connection.",
         "parameters": [
