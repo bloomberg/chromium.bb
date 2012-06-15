@@ -7,7 +7,8 @@ TESTS =						\
 	list-test				\
 	map-test				\
 	os-wrappers-test			\
-	sanity-test
+	sanity-test				\
+	socket-test
 
 check_PROGRAMS =				\
 	$(TESTS)				\
@@ -26,6 +27,7 @@ fixed_test_SOURCES = fixed-test.c $(test_runner_src)
 list_test_SOURCES = list-test.c $(test_runner_src)
 map_test_SOURCES = map-test.c $(test_runner_src)
 sanity_test_SOURCES = sanity-test.c $(test_runner_src)
+socket_test_SOURCES = socket-test.c $(test_runner_src)
 
 fixed_benchmark_SOURCES = fixed-benchmark.c
 
@@ -37,6 +39,7 @@ os_wrappers_test_SOURCES = 			\
 AM_CPPFLAGS = -I$(top_builddir)/src -I$(top_srcdir)/src
 AM_CFLAGS = $(GCC_CFLAGS) $(FFI_CFLAGS)
 LDADD = $(top_builddir)/src/libwayland-util.la \
+	$(top_builddir)/src/libwayland-client.la \
 	$(top_builddir)/src/libwayland-server.la \
 	-lrt -ldl $(FFI_LIBS)
 
