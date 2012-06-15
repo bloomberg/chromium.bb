@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -82,6 +83,8 @@ void Create2xResourceIfMissing(gfx::ImageSkia image, int idr) {
 }  // namespace
 
 ResourceBundle* ResourceBundle::g_shared_instance_ = NULL;
+static bool g_locale_initialized_ = false;
+static bool g_locale_reloading_ = false;
 
 // static
 std::string ResourceBundle::InitSharedInstanceWithLocale(
@@ -90,7 +93,9 @@ std::string ResourceBundle::InitSharedInstanceWithLocale(
   g_shared_instance_ = new ResourceBundle(delegate);
 
   g_shared_instance_->LoadCommonResources();
-  return g_shared_instance_->LoadLocaleResources(pref_locale);
+  std::string result = g_shared_instance_->LoadLocaleResources(pref_locale);
+  g_locale_initialized_ = true;
+  return result;
 }
 
 // static
@@ -208,7 +213,8 @@ std::string ResourceBundle::LoadLocaleResources(
   if (!data_pack->Load(locale_file_path)) {
     UMA_HISTOGRAM_ENUMERATION("ResourceBundle.LoadLocaleResourcesError",
                               logging::GetLastSystemErrorCode(), 16000);
-    NOTREACHED() << "failed to load locale.pak";
+    LOG(ERROR) << "failed to load locale.pak";
+    NOTREACHED();
     return std::string();
   }
 
@@ -248,6 +254,7 @@ const FilePath& ResourceBundle::GetOverriddenPakPath() {
 std::string ResourceBundle::ReloadLocaleResources(
     const std::string& pref_locale) {
   base::AutoLock lock_scope(*locale_resources_data_lock_);
+  AutoReset<bool> reset_reloading(&g_locale_reloading_, true);
   UnloadLocaleResources();
   return LoadLocaleResources(pref_locale);
 }
@@ -345,7 +352,9 @@ base::StringPiece ResourceBundle::GetRawDataResource(
   // TODO(tony): Firm up locking for or constraints of calling
   // ReloadLocaleResources() and how to CHECK for misuse.
   if (!locale_resources_data_.get()) {
-    LOG(ERROR) << "!locale_resources_data_.get())";
+    LOG(ERROR)
+        << "!locale_resources_data_.get()), init=" << g_locale_initialized_
+        << ", reloading=" << g_locale_reloading_;
     NOTREACHED();
   }
 
