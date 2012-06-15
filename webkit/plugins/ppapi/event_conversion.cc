@@ -270,6 +270,14 @@ WebMouseEvent* BuildMouseEvent(const InputEventData& event) {
   mouse_event->modifiers = event.event_modifiers;
   mouse_event->button =
       static_cast<WebMouseEvent::Button>(event.mouse_button);
+  if (mouse_event->type == WebInputEvent::MouseMove) {
+    if (mouse_event->modifiers & WebInputEvent::LeftButtonDown)
+      mouse_event->button = WebMouseEvent::ButtonLeft;
+    else if (mouse_event->modifiers & WebInputEvent::MiddleButtonDown)
+      mouse_event->button = WebMouseEvent::ButtonMiddle;
+    else if (mouse_event->modifiers & WebInputEvent::RightButtonDown)
+      mouse_event->button = WebMouseEvent::ButtonRight;
+  }
   mouse_event->x = event.mouse_position.x;
   mouse_event->y = event.mouse_position.y;
   mouse_event->clickCount = event.mouse_click_count;
