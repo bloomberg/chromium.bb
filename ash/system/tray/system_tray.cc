@@ -66,7 +66,7 @@ class SystemTrayContainer : public views::View {
 
  private:
   // Overridden from views::View.
-  virtual void ChildPreferredSizeChanged(views::View* child) {
+  virtual void ChildPreferredSizeChanged(views::View* child) OVERRIDE {
     PreferredSizeChanged();
   }
 

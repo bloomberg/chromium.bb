@@ -84,6 +84,10 @@ void TrayBackgroundView::OnMouseExited(const views::MouseEvent& event) {
       internal::BackgroundAnimator::CHANGE_ANIMATE);
 }
 
+void TrayBackgroundView::ChildPreferredSizeChanged(views::View* child) {
+  PreferredSizeChanged();
+}
+
 bool TrayBackgroundView::PerformAction(const views::Event& event) {
   return false;
 }
