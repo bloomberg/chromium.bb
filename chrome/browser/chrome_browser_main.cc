@@ -122,6 +122,7 @@
 #include "net/url_request/url_request.h"
 #include "net/websockets/websocket_job.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/resource/resource_handle.h"
 
@@ -156,6 +157,7 @@
 #include "net/base/net_util.h"
 #include "printing/printed_document.h"
 #include "ui/base/l10n/l10n_util_win.h"
+#include "ui/base/win/dpi.h"
 #endif  // defined(OS_WIN)
 
 #if defined(OS_MACOSX)
@@ -1059,6 +1061,22 @@ void ChromeBrowserMainParts::SetupUniformityFieldTrials() {
   }
 }
 
+void ChromeBrowserMainParts::DisableNewTabFieldTrialIfNecesssary() {
+  // The new tab button field trial will get created in variations_service.cc
+  // through the variations server. However, since there are no HiDPI assets
+  // for it, disable it for non-desktop layouts.
+  base::FieldTrial* trial = base::FieldTrialList::Find("NewTabButton");
+  if (trial) {
+    bool using_hidpi_assets = false;
+#if defined(ENABLE_HIDPI) && defined(OS_WIN)
+    // Mirrors logic in resource_bundle_win.cc.
+    using_hidpi_assets = ui::GetDPIScale() > 1.5;
+#endif
+    if (ui::GetDisplayLayout() != ui::LAYOUT_DESKTOP || using_hidpi_assets)
+      trial->Disable();
+  }
+}
+
 // ChromeBrowserMainParts: |SetupMetricsAndFieldTrials()| related --------------
 
 void ChromeBrowserMainParts::SetupFieldTrials(bool metrics_recording_enabled,
@@ -1081,6 +1099,7 @@ void ChromeBrowserMainParts::SetupFieldTrials(bool metrics_recording_enabled,
   gpu_util::InitializeForceCompositingModeFieldTrial();
   SetupUniformityFieldTrials();
   AutocompleteFieldTrial::Activate();
+  DisableNewTabFieldTrialIfNecesssary();
 }
 
 void ChromeBrowserMainParts::StartMetricsRecording() {

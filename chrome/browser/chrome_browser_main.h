@@ -133,6 +133,9 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // correctness of the field trial control, bucketing and reporting systems.
   void SetupUniformityFieldTrials();
 
+  // Disables the new tab field trial if not running in desktop mode.
+  void DisableNewTabFieldTrialIfNecesssary();
+
   // Methods for |SetupMetricsAndFieldTrials()| --------------------------------
 
   // Constructs metrics service and does related initialization, including
