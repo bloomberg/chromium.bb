@@ -399,8 +399,7 @@ class LoginUtilsBlockingLoginTest
 
 TEST_F(LoginUtilsTest, NormalLoginDoesntBlock) {
   UserManager* user_manager = UserManager::Get();
-  ASSERT_TRUE(!user_manager->IsUserLoggedIn() ||
-              user_manager->IsLoggedInAsStub());
+  ASSERT_TRUE(!user_manager->IsUserLoggedIn());
   EXPECT_FALSE(connector_->IsEnterpriseManaged());
   EXPECT_FALSE(prepared_profile_);
 
@@ -408,23 +407,20 @@ TEST_F(LoginUtilsTest, NormalLoginDoesntBlock) {
   PrepareProfile(kUsername);
 
   EXPECT_TRUE(prepared_profile_);
-  ASSERT_TRUE(user_manager->IsUserLoggedIn() &&
-              !user_manager->IsLoggedInAsStub());
+  ASSERT_TRUE(user_manager->IsUserLoggedIn());
   EXPECT_EQ(kUsername, user_manager->GetLoggedInUser().email());
 }
 
 TEST_F(LoginUtilsTest, EnterpriseLoginDoesntBlockForNormalUser) {
   UserManager* user_manager = UserManager::Get();
-  ASSERT_TRUE(!user_manager->IsUserLoggedIn() ||
-              user_manager->IsLoggedInAsStub());
+  ASSERT_TRUE(!user_manager->IsUserLoggedIn());
   EXPECT_FALSE(connector_->IsEnterpriseManaged());
   EXPECT_FALSE(prepared_profile_);
 
   // Enroll the device.
   LockDevice(kUsername);
 
-  ASSERT_TRUE(!user_manager->IsUserLoggedIn() ||
-              user_manager->IsLoggedInAsStub());
+  ASSERT_TRUE(!user_manager->IsUserLoggedIn());
   EXPECT_TRUE(connector_->IsEnterpriseManaged());
   EXPECT_EQ(kDomain, connector_->GetEnterpriseDomain());
   EXPECT_FALSE(prepared_profile_);
@@ -433,23 +429,20 @@ TEST_F(LoginUtilsTest, EnterpriseLoginDoesntBlockForNormalUser) {
   PrepareProfile(kUsernameOtherDomain);
 
   EXPECT_TRUE(prepared_profile_);
-  ASSERT_TRUE(user_manager->IsUserLoggedIn() &&
-              !user_manager->IsLoggedInAsStub());
+  ASSERT_TRUE(user_manager->IsUserLoggedIn());
   EXPECT_EQ(kUsernameOtherDomain, user_manager->GetLoggedInUser().email());
 }
 
 TEST_P(LoginUtilsBlockingLoginTest, EnterpriseLoginBlocksForEnterpriseUser) {
   UserManager* user_manager = UserManager::Get();
-  ASSERT_TRUE(!user_manager->IsUserLoggedIn() ||
-              user_manager->IsLoggedInAsStub());
+  ASSERT_TRUE(!user_manager->IsUserLoggedIn());
   EXPECT_FALSE(connector_->IsEnterpriseManaged());
   EXPECT_FALSE(prepared_profile_);
 
   // Enroll the device.
   LockDevice(kUsername);
 
-  ASSERT_TRUE(!user_manager->IsUserLoggedIn() ||
-              user_manager->IsLoggedInAsStub());
+  ASSERT_TRUE(!user_manager->IsUserLoggedIn());
   EXPECT_TRUE(connector_->IsEnterpriseManaged());
   EXPECT_EQ(kDomain, connector_->GetEnterpriseDomain());
   EXPECT_FALSE(prepared_profile_);
@@ -458,8 +451,7 @@ TEST_P(LoginUtilsBlockingLoginTest, EnterpriseLoginBlocksForEnterpriseUser) {
   PrepareProfile(kUsername);
 
   EXPECT_FALSE(prepared_profile_);
-  ASSERT_TRUE(user_manager->IsUserLoggedIn() &&
-              !user_manager->IsLoggedInAsStub());
+  ASSERT_TRUE(user_manager->IsUserLoggedIn());
 
   GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
   TestURLFetcher* fetcher;
