@@ -45,11 +45,12 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
 
   MOCK_METHOD1(RequestNudge, void(const tracked_objects::Location&));
 
-  // Called when a nudge comes in.
-  void SimulateSyncCycleCompletedInitialSyncEnded(
-      const tracked_objects::Location&);
-
-  virtual void StartConfiguration(const base::Closure& callback) OVERRIDE;
+  virtual void RequestConfigureSyncer(
+      sync_api::ConfigureReason reason,
+      syncable::ModelTypeSet types_to_config,
+      const browser_sync::ModelSafeRoutingInfo& routing_info,
+      const base::Callback<void(syncable::ModelTypeSet)>& ready_task,
+      const base::Closure& retry_callback) OVERRIDE;
 
   static void SetHistoryServiceExpectations(ProfileMock* profile);
 

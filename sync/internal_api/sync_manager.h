@@ -26,11 +26,13 @@
 #include "sync/util/weak_handle.h"
 
 namespace browser_sync {
+struct ConfigurationParams;
 class Encryptor;
 struct Experiments;
 class ExtensionsActivityMonitor;
 class JsBackend;
 class JsEventHandler;
+class SyncScheduler;
 
 namespace sessions {
 class SyncSessionSnapshot;
@@ -431,23 +433,23 @@ class SyncManager {
   // error to call this when we don't have pending keys.
   void SetDecryptionPassphrase(const std::string& passphrase);
 
-  // Puts the SyncScheduler into a mode where no normal nudge or poll traffic
-  // will occur, but calls to RequestConfig will be supported.  If |callback|
-  // is provided, it will be invoked (from the internal SyncScheduler) when
-  // the thread has changed to configuration mode.
-  void StartConfigurationMode(const base::Closure& callback);
-
-  // Switches the mode of operation to CONFIGURATION_MODE and
-  // schedules a config task to fetch updates for |types|.
-  void RequestConfig(const browser_sync::ModelSafeRoutingInfo& routing_info,
-                     const syncable::ModelTypeSet& types,
-                     sync_api::ConfigureReason reason);
-
-  void RequestCleanupDisabledTypes(
-      const browser_sync::ModelSafeRoutingInfo& routing_info);
-
   // Request a clearing of all data on the server
   void RequestClearServerData();
+
+  // Switches the mode of operation to CONFIGURATION_MODE and performs
+  // any configuration tasks needed as determined by the params. Once complete,
+  // syncer will remain in CONFIGURATION_MODE until StartSyncingNormally is
+  // called.
+  // |ready_task| is invoked when the configuration completes.
+  // |retry_task| is invoked if the configuration job could not immediately
+  //              execute. |ready_task| will still be called when it eventually
+  //              does finish.
+  void ConfigureSyncer(
+      ConfigureReason reason,
+      const syncable::ModelTypeSet& types_to_config,
+      const browser_sync::ModelSafeRoutingInfo& new_routing_info,
+      const base::Closure& ready_task,
+      const base::Closure& retry_task);
 
   // Adds a listener to be notified of sync events.
   // NOTE: It is OK (in fact, it's probably a good idea) to call this before
@@ -543,10 +545,16 @@ class SyncManager {
   static const FilePath::CharType kSyncDatabaseFilename[];
 
  private:
+  friend class SyncManagerTest;
   FRIEND_TEST_ALL_PREFIXES(SyncManagerTest, NudgeDelayTest);
 
   // For unit tests.
   base::TimeDelta GetNudgeDelayTimeDelta(const syncable::ModelType& model_type);
+
+  // Set the internal scheduler for testing purposes.
+  // TODO(sync): Use dependency injection instead. crbug.com/133061
+  void SetSyncSchedulerForTest(
+      scoped_ptr<browser_sync::SyncScheduler> scheduler);
 
   base::ThreadChecker thread_checker_;
 

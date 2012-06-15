@@ -34,11 +34,11 @@ class BackendDataTypeConfigurer {
   // Nigori.
   virtual void ConfigureDataTypes(
       sync_api::ConfigureReason reason,
-      syncable::ModelTypeSet types_to_add,
-      syncable::ModelTypeSet types_to_remove,
+      const syncable::ModelTypeSet& types_to_add,
+      const syncable::ModelTypeSet& types_to_remove,
       NigoriState nigori_state,
-      base::Callback<void(syncable::ModelTypeSet)> ready_task,
-      base::Callback<void()> retry_callback) = 0;
+      const base::Callback<void(syncable::ModelTypeSet)>& ready_task,
+      const base::Callback<void()>& retry_callback) = 0;
 
  protected:
   virtual ~BackendDataTypeConfigurer() {}
