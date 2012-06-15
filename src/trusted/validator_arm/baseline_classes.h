@@ -378,6 +378,54 @@ class Binary3RegisterOp : public ClassDecoder {
   NACL_DISALLOW_COPY_AND_ASSIGN(Binary3RegisterOp);
 };
 
+// Modes a 2-register load (exclusive) operation.
+// Op<c> <Rt>, [<Rn>]
+// +--------+----------------+--------+--------+------------------------+
+// |31302928|2726252423222120|19181716|15141312|1110 9 8 7 6 5 4 3 2 1 0|
+// +--------+----------------+--------+--------+------------------------+
+// |  cond  |                |   Rn   |   Rt   |                        |
+// +--------+----------------+--------+--------+------------------------+
+// Definitions:
+//    Rn - The base register.
+//    Rt - The destination register.
+//
+// if Rt or Rn is R15, then unpredictable.
+// NaCl disallows writing to PC to cause a jump.
+class LoadExclusive2RegisterOp : public ClassDecoder {
+ public:
+  static const RegTBits12To15Interface t;
+  static const RegNBits16To19Interface n;
+  static const ConditionBits28To31Interface cond;
+
+  inline LoadExclusive2RegisterOp() {}
+  virtual ~LoadExclusive2RegisterOp() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+  virtual Register base_address_register(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadExclusive2RegisterOp);
+};
+
+// Modes a 2-register load (exclusive) operation where the source is double
+// wide (i.e. Rt and Rt2).
+//
+// Additional ARM constraints:
+//    Rt<0>=1 then unpredictable.
+//    Rt=14, then unpredictable (i.e. Rt2=R15).
+class LoadExclusive2RegisterDoubleOp : public LoadExclusive2RegisterOp {
+ public:
+  static const RegT2Bits12To15Interface t2;
+
+  inline LoadExclusive2RegisterDoubleOp() {}
+  virtual ~LoadExclusive2RegisterDoubleOp() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadExclusive2RegisterDoubleOp);
+};
+
 // Models a 2-register load/store 8-bit immediate operation of the forms:
 // Op<c> <Rt>, [<Rn>{, #+/-<imm8>}]
 // Op<c> <Rt>, [<Rn>], #+/-<imm8>
@@ -843,6 +891,59 @@ class Store3RegisterDoubleOp : public LoadStore3RegisterDoubleOp {
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(Store3RegisterDoubleOp);
 };
+
+// Models a 2-register store (exclusive) operation with a register to hold the
+// status of the update.
+// Op<c><q> <Rd>, <Rt>, [<Rn>]
+// +--------+----------------+--------+--------+-----------------+--------+
+// |31302928|2726252423222120|19181716|15141312|1110 9 8 7 6 5 4 | 3 2 1 0|
+// +--------+----------------+--------+--------+-----------------+--------+
+// |  cond  |                |   Rn   |   Rd   |                 |   Rt   |
+// +--------+----------------+--------+--------+-----------------+--------+
+// Definitions:
+//    Rd - The destination register for the returned status value.
+//    Rt - The source register
+//    Rn - The base register
+//
+// If Rd, Rt, or Rn is R15, then unpredictable.
+// If Rd=Rn || Rd==Rt, then unpredictable.
+// NaCl disallows writing to PC to cause a jump.
+class StoreExclusive3RegisterOp : public ClassDecoder {
+ public:
+  static const RegTBits0To3Interface t;
+  static const RegDBits12To15Interface d;
+  static const RegNBits16To19Interface n;
+  static const ConditionBits28To31Interface cond;
+
+  inline StoreExclusive3RegisterOp() {}
+  virtual ~StoreExclusive3RegisterOp() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+  virtual Register base_address_register(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(StoreExclusive3RegisterOp);
+};
+
+// Models a 2-register store (exclusive) operation with a register to hold the
+// status of the update, and the source is double wide (i.e. Rt and Rt2).
+//
+// Additional ARM constraints:
+//    Rt<0>=1 then unpredictable.
+//    Rt=14, then unpredictable (i.e. Rt2=R15).
+//    Rd=Rt2, then unpredictable.
+class StoreExclusive3RegisterDoubleOp : public StoreExclusive3RegisterOp {
+ public:
+  static const RegT2Bits0To3Interface t2;
+
+  inline StoreExclusive3RegisterDoubleOp() {}
+  virtual ~StoreExclusive3RegisterDoubleOp() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(StoreExclusive3RegisterDoubleOp);
+};
+
 
 // Models a 3-register with (shifted) immediate 5 load/store operation of
 // the forms:

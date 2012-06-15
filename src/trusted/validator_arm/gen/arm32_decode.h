@@ -176,9 +176,9 @@ class Arm32DecoderState : DecoderState {
   const LdrImmediateDouble LdrImmediateDouble_instance_;
   const LdrRegister LdrRegister_instance_;
   const LdrRegisterDouble LdrRegisterDouble_instance_;
+  const LoadBasedMemory LoadBasedMemory_instance_;
+  const LoadBasedMemoryDouble LoadBasedMemoryDouble_instance_;
   const LoadCoprocessor LoadCoprocessor_instance_;
-  const LoadDoubleExclusive LoadDoubleExclusive_instance_;
-  const LoadExclusive LoadExclusive_instance_;
   const LoadMultiple LoadMultiple_instance_;
   const LongMultiply LongMultiply_instance_;
   const MaskAddress MaskAddress_instance_;
@@ -189,8 +189,9 @@ class Arm32DecoderState : DecoderState {
   const PackSatRev PackSatRev_instance_;
   const Roadblock Roadblock_instance_;
   const SatAddSub SatAddSub_instance_;
+  const StoreBasedMemoryDoubleRtBits0To3 StoreBasedMemoryDoubleRtBits0To3_instance_;
+  const StoreBasedMemoryRtBits0To3 StoreBasedMemoryRtBits0To3_instance_;
   const StoreCoprocessor StoreCoprocessor_instance_;
-  const StoreExclusive StoreExclusive_instance_;
   const StoreImmediate StoreImmediate_instance_;
   const StrImmediate StrImmediate_instance_;
   const StrImmediateDouble StrImmediateDouble_instance_;

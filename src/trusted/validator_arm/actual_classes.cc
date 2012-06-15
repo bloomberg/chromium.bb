@@ -181,6 +181,88 @@ bool MaskAddress::clears_bits(const Instruction i, uint32_t mask) const {
   return (imm12.get_modified_immediate(i) & mask) == mask;
 }
 
+Register BasedAddressUsingRn::base_address_register(Instruction i) const {
+  return n.reg(i);
+}
+
+SafetyLevel LoadBasedMemory::safety(const Instruction i) const {
+  // Unsafe if any register contains PC (ARM restriction).
+  if (RegisterList(n.reg(i)).Add(t.reg(i)).Contains(kRegisterPc)) {
+    return UNPREDICTABLE;
+  }
+
+  // Note: We would restrict out PC as well for Rt in NaCl, but no need
+  // since the ARM restriction doesn't allow it anyway.
+  return MAY_BE_SAFE;
+}
+
+RegisterList LoadBasedMemory::defs(Instruction i) const {
+  return RegisterList(t.reg(i));
+}
+
+SafetyLevel LoadBasedMemoryDouble::safety(const Instruction i) const {
+  // Arm restrictions for this instruction, based on double width.
+  // Unsafe if any register contains PC (ARM restriction).
+  if (RegisterList(n.reg(i)).Add(t2.reg(i)).Contains(kRegisterPc)) {
+    return UNPREDICTABLE;
+  }
+
+  if (!t.IsEven(i)) {
+    return UNDEFINED;
+  }
+
+  // Note: We would restrict out PC as well for Rt in NaCl, but no need
+  // since the ARM restriction doesn't allow it anyway.
+  return MAY_BE_SAFE;
+}
+
+RegisterList LoadBasedMemoryDouble::defs(Instruction i) const {
+  return RegisterList(t.reg(i)).Add(t2.reg(i));
+}
+
+SafetyLevel StoreBasedMemoryRtBits0To3::safety(const Instruction i) const {
+  // Arm restrictions for this instruction.
+  if (RegisterList(d.reg(i)).Add(t.reg(i)).Add(n.reg(i)).
+      Contains(kRegisterPc)) {
+    return UNPREDICTABLE;
+  }
+
+  if (d.reg(i).Equals(n.reg(i)) || d.reg(i).Equals(t.reg(i))) {
+    return UNPREDICTABLE;
+  }
+
+  // Note: We would restrict out PC as well for Rd in NaCl, but no need
+  // since the ARM restriction doesn't allow it anyway.
+  return MAY_BE_SAFE;
+}
+
+RegisterList StoreBasedMemoryRtBits0To3::defs(Instruction i) const {
+  return RegisterList(d.reg(i));
+}
+
+SafetyLevel StoreBasedMemoryDoubleRtBits0To3::
+safety(const Instruction i) const {
+  // Arm restrictions for this instruction.
+  if (RegisterList(d.reg(i)).Add(t2.reg(i)).Add(n.reg(i)).
+      Contains(kRegisterPc)) {
+    return UNPREDICTABLE;
+  }
+
+  if (!t.IsEven(i)) {
+    return UNDEFINED;
+  }
+
+  if (d.reg(i).Equals(n.reg(i)) ||
+      d.reg(i).Equals(t.reg(i)) ||
+      d.reg(i).Equals(t2.reg(i))) {
+    return UNPREDICTABLE;
+  }
+
+  // Note: We would restrict out PC as well for Rd in NaCl, but no need
+  // since the ARM restriction doesn't allow it anyway.
+  return MAY_BE_SAFE;
+}
+
 // **************************************************************
 //      O L D    C L A S S    D E C O D E R S
 // **************************************************************
@@ -370,22 +452,6 @@ SafetyLevel StrRegister::safety(const Instruction i) const {
   return MAY_BE_SAFE;
 }
 
-SafetyLevel StoreExclusive::safety(const Instruction i) const {
-  // Don't let addressing writeback alter PC.
-  if (defs(i).Contains(kRegisterPc))
-    return FORBIDDEN_OPERANDS;
-  return MAY_BE_SAFE;
-}
-
-RegisterList StoreExclusive::defs(const Instruction i) const {
-  return RegisterList(Rd(i));
-}
-
-Register StoreExclusive::base_address_register(const Instruction i) const {
-  return Rn(i);
-}
-
-
 // Loads
 
 bool AbstractLoad::writeback(const Instruction i) const {
@@ -404,7 +470,6 @@ SafetyLevel AbstractLoad::safety(const Instruction i) const {
 RegisterList AbstractLoad::defs(const Instruction i) const {
   return immediate_addressing_defs(i).Add(Rt(i));
 }
-
 
 SafetyLevel LoadRegister::safety(const Instruction i) const {
   bool pre_index = PreindexingFlag(i);
@@ -553,19 +618,6 @@ SafetyLevel StrRegisterDouble::safety(const Instruction i) const {
   // Now apply non-double width restrictions for this instruction.
   return StrRegister::safety(i);
 }
-
-Register LoadExclusive::base_address_register(const Instruction i) const {
-  return Rn(i);
-}
-
-RegisterList LoadDoubleExclusive::defs(const Instruction i) const {
-  return LoadExclusive::defs(i).Add(Rt2(i));
-}
-
-Register LoadDoubleExclusive::base_address_register(const Instruction i) const {
-  return Rn(i);
-}
-
 
 SafetyLevel LoadMultiple::safety(const Instruction i) const {
   // Bottom 16 bits is a register list.

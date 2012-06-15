@@ -39,9 +39,9 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , LdrImmediateDouble_instance_()
   , LdrRegister_instance_()
   , LdrRegisterDouble_instance_()
+  , LoadBasedMemory_instance_()
+  , LoadBasedMemoryDouble_instance_()
   , LoadCoprocessor_instance_()
-  , LoadDoubleExclusive_instance_()
-  , LoadExclusive_instance_()
   , LoadMultiple_instance_()
   , LongMultiply_instance_()
   , MaskAddress_instance_()
@@ -52,8 +52,9 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , PackSatRev_instance_()
   , Roadblock_instance_()
   , SatAddSub_instance_()
+  , StoreBasedMemoryDoubleRtBits0To3_instance_()
+  , StoreBasedMemoryRtBits0To3_instance_()
   , StoreCoprocessor_instance_()
-  , StoreExclusive_instance_()
   , StoreImmediate_instance_()
   , StrImmediate_instance_()
   , StrImmediateDouble_instance_()
@@ -1620,25 +1621,25 @@ const ClassDecoder& Arm32DecoderState::decode_sync(
 {
   UNREFERENCED_PARAMETER(insn);
   if ((insn.Bits() & 0x00F00000) == 0x00800000 /* op(23:20) == 1000 */)
-    return StoreExclusive_instance_;
+    return StoreBasedMemoryRtBits0To3_instance_;
 
   if ((insn.Bits() & 0x00F00000) == 0x00900000 /* op(23:20) == 1001 */)
-    return LoadExclusive_instance_;
+    return LoadBasedMemory_instance_;
+
+  if ((insn.Bits() & 0x00F00000) == 0x00A00000 /* op(23:20) == 1010 */)
+    return StoreBasedMemoryDoubleRtBits0To3_instance_;
 
   if ((insn.Bits() & 0x00F00000) == 0x00B00000 /* op(23:20) == 1011 */)
-    return LoadDoubleExclusive_instance_;
-
-  if ((insn.Bits() & 0x00F00000) == 0x00C00000 /* op(23:20) == 1100 */)
-    return StoreExclusive_instance_;
+    return LoadBasedMemoryDouble_instance_;
 
   if ((insn.Bits() & 0x00B00000) == 0x00000000 /* op(23:20) == 0x00 */)
     return Deprecated_instance_;
 
-  if ((insn.Bits() & 0x00B00000) == 0x00A00000 /* op(23:20) == 1x10 */)
-    return StoreExclusive_instance_;
+  if ((insn.Bits() & 0x00D00000) == 0x00C00000 /* op(23:20) == 11x0 */)
+    return StoreBasedMemoryRtBits0To3_instance_;
 
   if ((insn.Bits() & 0x00D00000) == 0x00D00000 /* op(23:20) == 11x1 */)
-    return LoadExclusive_instance_;
+    return LoadBasedMemory_instance_;
 
   if (true)
     return Undefined_instance_;

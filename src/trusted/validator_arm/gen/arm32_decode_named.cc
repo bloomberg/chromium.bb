@@ -1897,25 +1897,31 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_sync(
      const nacl_arm_dec::Instruction insn) const {
   UNREFERENCED_PARAMETER(insn);
   if ((insn.Bits() & 0x00F00000) == 0x00800000 /* op(23:20) == 1000 */)
-    return StoreExclusive_None_instance_;
+    return StoreExclusive3RegisterOp_Strex_Rule_202_A1_P400_instance_;
 
   if ((insn.Bits() & 0x00F00000) == 0x00900000 /* op(23:20) == 1001 */)
-    return LoadExclusive_None_instance_;
+    return LoadExclusive2RegisterOp_Ldrex_Rule_69_A1_P142_instance_;
+
+  if ((insn.Bits() & 0x00F00000) == 0x00A00000 /* op(23:20) == 1010 */)
+    return StoreExclusive3RegisterDoubleOp_Strexd_Rule_204_A1_P404_instance_;
 
   if ((insn.Bits() & 0x00F00000) == 0x00B00000 /* op(23:20) == 1011 */)
-    return LoadDoubleExclusive_None_instance_;
+    return LoadExclusive2RegisterDoubleOp_Ldrexd_Rule_71_A1_P146_instance_;
 
   if ((insn.Bits() & 0x00F00000) == 0x00C00000 /* op(23:20) == 1100 */)
-    return StoreExclusive_None_instance_;
+    return StoreExclusive3RegisterOp_Strexb_Rule_203_A1_P402_instance_;
+
+  if ((insn.Bits() & 0x00F00000) == 0x00D00000 /* op(23:20) == 1101 */)
+    return LoadExclusive2RegisterOp_Ldrexb_Rule_70_A1_P144_instance_;
+
+  if ((insn.Bits() & 0x00F00000) == 0x00E00000 /* op(23:20) == 1110 */)
+    return StoreExclusive3RegisterOp_cccc00011110nnnndddd11111001tttt_instance_;
+
+  if ((insn.Bits() & 0x00F00000) == 0x00F00000 /* op(23:20) == 1111 */)
+    return LoadExclusive2RegisterOp_Ldrexh_Rule_72_A1_P148_instance_;
 
   if ((insn.Bits() & 0x00B00000) == 0x00000000 /* op(23:20) == 0x00 */)
     return Deprecated_None_instance_;
-
-  if ((insn.Bits() & 0x00B00000) == 0x00A00000 /* op(23:20) == 1x10 */)
-    return StoreExclusive_None_instance_;
-
-  if ((insn.Bits() & 0x00D00000) == 0x00D00000 /* op(23:20) == 11x1 */)
-    return LoadExclusive_None_instance_;
 
   if (true)
     return Undefined_None_instance_;

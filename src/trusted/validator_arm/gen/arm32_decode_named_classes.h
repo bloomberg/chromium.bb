@@ -707,16 +707,28 @@ class LoadCoprocessor_None
   virtual ~LoadCoprocessor_None() {}
 };
 
-class LoadDoubleExclusive_None
-    : public LoadDoubleExclusive {
+class LoadExclusive2RegisterDoubleOp_Ldrexd_Rule_71_A1_P146
+    : public LoadExclusive2RegisterDoubleOp {
  public:
-  virtual ~LoadDoubleExclusive_None() {}
+  virtual ~LoadExclusive2RegisterDoubleOp_Ldrexd_Rule_71_A1_P146() {}
 };
 
-class LoadExclusive_None
-    : public LoadExclusive {
+class LoadExclusive2RegisterOp_Ldrex_Rule_69_A1_P142
+    : public LoadExclusive2RegisterOp {
  public:
-  virtual ~LoadExclusive_None() {}
+  virtual ~LoadExclusive2RegisterOp_Ldrex_Rule_69_A1_P142() {}
+};
+
+class LoadExclusive2RegisterOp_Ldrexb_Rule_70_A1_P144
+    : public LoadExclusive2RegisterOp {
+ public:
+  virtual ~LoadExclusive2RegisterOp_Ldrexb_Rule_70_A1_P144() {}
+};
+
+class LoadExclusive2RegisterOp_Ldrexh_Rule_72_A1_P148
+    : public LoadExclusive2RegisterOp {
+ public:
+  virtual ~LoadExclusive2RegisterOp_Ldrexh_Rule_72_A1_P148() {}
 };
 
 class LoadMultiple_None
@@ -845,10 +857,28 @@ class StoreCoprocessor_None
   virtual ~StoreCoprocessor_None() {}
 };
 
-class StoreExclusive_None
-    : public StoreExclusive {
+class StoreExclusive3RegisterDoubleOp_Strexd_Rule_204_A1_P404
+    : public StoreExclusive3RegisterDoubleOp {
  public:
-  virtual ~StoreExclusive_None() {}
+  virtual ~StoreExclusive3RegisterDoubleOp_Strexd_Rule_204_A1_P404() {}
+};
+
+class StoreExclusive3RegisterOp_Strex_Rule_202_A1_P400
+    : public StoreExclusive3RegisterOp {
+ public:
+  virtual ~StoreExclusive3RegisterOp_Strex_Rule_202_A1_P400() {}
+};
+
+class StoreExclusive3RegisterOp_Strexb_Rule_203_A1_P402
+    : public StoreExclusive3RegisterOp {
+ public:
+  virtual ~StoreExclusive3RegisterOp_Strexb_Rule_203_A1_P402() {}
+};
+
+class StoreExclusive3RegisterOp_cccc00011110nnnndddd11111001tttt
+    : public StoreExclusive3RegisterOp {
+ public:
+  virtual ~StoreExclusive3RegisterOp_cccc00011110nnnndddd11111001tttt() {}
 };
 
 class StoreImmediate_None
@@ -1679,10 +1709,58 @@ class LdrRegisterDouble_Ldrd_Rule_68_A1_P140
   virtual ~LdrRegisterDouble_Ldrd_Rule_68_A1_P140() {}
 };
 
+class LoadBasedMemory_Ldrex_Rule_69_A1_P142
+    : public LoadBasedMemory {
+ public:
+  virtual ~LoadBasedMemory_Ldrex_Rule_69_A1_P142() {}
+};
+
+class LoadBasedMemory_Ldrexb_Rule_70_A1_P144
+    : public LoadBasedMemory {
+ public:
+  virtual ~LoadBasedMemory_Ldrexb_Rule_70_A1_P144() {}
+};
+
+class LoadBasedMemory_Ldrexh_Rule_72_A1_P148
+    : public LoadBasedMemory {
+ public:
+  virtual ~LoadBasedMemory_Ldrexh_Rule_72_A1_P148() {}
+};
+
+class LoadBasedMemoryDouble_Ldrexd_Rule_71_A1_P146
+    : public LoadBasedMemoryDouble {
+ public:
+  virtual ~LoadBasedMemoryDouble_Ldrexd_Rule_71_A1_P146() {}
+};
+
 class MaskAddress_Bic_Rule_19_A1_P50
     : public MaskAddress {
  public:
   virtual ~MaskAddress_Bic_Rule_19_A1_P50() {}
+};
+
+class StoreBasedMemoryDoubleRtBits0To3_Strexd_Rule_204_A1_P404
+    : public StoreBasedMemoryDoubleRtBits0To3 {
+ public:
+  virtual ~StoreBasedMemoryDoubleRtBits0To3_Strexd_Rule_204_A1_P404() {}
+};
+
+class StoreBasedMemoryRtBits0To3_Strex_Rule_202_A1_P400
+    : public StoreBasedMemoryRtBits0To3 {
+ public:
+  virtual ~StoreBasedMemoryRtBits0To3_Strex_Rule_202_A1_P400() {}
+};
+
+class StoreBasedMemoryRtBits0To3_Strexb_Rule_203_A1_P402
+    : public StoreBasedMemoryRtBits0To3 {
+ public:
+  virtual ~StoreBasedMemoryRtBits0To3_Strexb_Rule_203_A1_P402() {}
+};
+
+class StoreBasedMemoryRtBits0To3_cccc00011110nnnndddd11111001tttt
+    : public StoreBasedMemoryRtBits0To3 {
+ public:
+  virtual ~StoreBasedMemoryRtBits0To3_cccc00011110nnnndddd11111001tttt() {}
 };
 
 class StrImmediate_Str_Rule_194_A1_P384
@@ -3236,30 +3314,56 @@ class NamedLoadCoprocessor_None
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadCoprocessor_None);
 };
 
-class NamedLoadDoubleExclusive_None
+class NamedLoadExclusive2RegisterDoubleOp_Ldrexd_Rule_71_A1_P146
     : public NamedClassDecoder {
  public:
-  inline NamedLoadDoubleExclusive_None()
-    : NamedClassDecoder(decoder_, "LoadDoubleExclusive None")
+  inline NamedLoadExclusive2RegisterDoubleOp_Ldrexd_Rule_71_A1_P146()
+    : NamedClassDecoder(decoder_, "LoadExclusive2RegisterDoubleOp Ldrexd_Rule_71_A1_P146")
   {}
-  virtual ~NamedLoadDoubleExclusive_None() {}
+  virtual ~NamedLoadExclusive2RegisterDoubleOp_Ldrexd_Rule_71_A1_P146() {}
 
  private:
-  nacl_arm_dec::LoadDoubleExclusive_None decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadDoubleExclusive_None);
+  nacl_arm_dec::LoadExclusive2RegisterDoubleOp_Ldrexd_Rule_71_A1_P146 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadExclusive2RegisterDoubleOp_Ldrexd_Rule_71_A1_P146);
 };
 
-class NamedLoadExclusive_None
+class NamedLoadExclusive2RegisterOp_Ldrex_Rule_69_A1_P142
     : public NamedClassDecoder {
  public:
-  inline NamedLoadExclusive_None()
-    : NamedClassDecoder(decoder_, "LoadExclusive None")
+  inline NamedLoadExclusive2RegisterOp_Ldrex_Rule_69_A1_P142()
+    : NamedClassDecoder(decoder_, "LoadExclusive2RegisterOp Ldrex_Rule_69_A1_P142")
   {}
-  virtual ~NamedLoadExclusive_None() {}
+  virtual ~NamedLoadExclusive2RegisterOp_Ldrex_Rule_69_A1_P142() {}
 
  private:
-  nacl_arm_dec::LoadExclusive_None decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadExclusive_None);
+  nacl_arm_dec::LoadExclusive2RegisterOp_Ldrex_Rule_69_A1_P142 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadExclusive2RegisterOp_Ldrex_Rule_69_A1_P142);
+};
+
+class NamedLoadExclusive2RegisterOp_Ldrexb_Rule_70_A1_P144
+    : public NamedClassDecoder {
+ public:
+  inline NamedLoadExclusive2RegisterOp_Ldrexb_Rule_70_A1_P144()
+    : NamedClassDecoder(decoder_, "LoadExclusive2RegisterOp Ldrexb_Rule_70_A1_P144")
+  {}
+  virtual ~NamedLoadExclusive2RegisterOp_Ldrexb_Rule_70_A1_P144() {}
+
+ private:
+  nacl_arm_dec::LoadExclusive2RegisterOp_Ldrexb_Rule_70_A1_P144 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadExclusive2RegisterOp_Ldrexb_Rule_70_A1_P144);
+};
+
+class NamedLoadExclusive2RegisterOp_Ldrexh_Rule_72_A1_P148
+    : public NamedClassDecoder {
+ public:
+  inline NamedLoadExclusive2RegisterOp_Ldrexh_Rule_72_A1_P148()
+    : NamedClassDecoder(decoder_, "LoadExclusive2RegisterOp Ldrexh_Rule_72_A1_P148")
+  {}
+  virtual ~NamedLoadExclusive2RegisterOp_Ldrexh_Rule_72_A1_P148() {}
+
+ private:
+  nacl_arm_dec::LoadExclusive2RegisterOp_Ldrexh_Rule_72_A1_P148 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadExclusive2RegisterOp_Ldrexh_Rule_72_A1_P148);
 };
 
 class NamedLoadMultiple_None
@@ -3535,17 +3639,56 @@ class NamedStoreCoprocessor_None
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreCoprocessor_None);
 };
 
-class NamedStoreExclusive_None
+class NamedStoreExclusive3RegisterDoubleOp_Strexd_Rule_204_A1_P404
     : public NamedClassDecoder {
  public:
-  inline NamedStoreExclusive_None()
-    : NamedClassDecoder(decoder_, "StoreExclusive None")
+  inline NamedStoreExclusive3RegisterDoubleOp_Strexd_Rule_204_A1_P404()
+    : NamedClassDecoder(decoder_, "StoreExclusive3RegisterDoubleOp Strexd_Rule_204_A1_P404")
   {}
-  virtual ~NamedStoreExclusive_None() {}
+  virtual ~NamedStoreExclusive3RegisterDoubleOp_Strexd_Rule_204_A1_P404() {}
 
  private:
-  nacl_arm_dec::StoreExclusive_None decoder_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreExclusive_None);
+  nacl_arm_dec::StoreExclusive3RegisterDoubleOp_Strexd_Rule_204_A1_P404 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreExclusive3RegisterDoubleOp_Strexd_Rule_204_A1_P404);
+};
+
+class NamedStoreExclusive3RegisterOp_Strex_Rule_202_A1_P400
+    : public NamedClassDecoder {
+ public:
+  inline NamedStoreExclusive3RegisterOp_Strex_Rule_202_A1_P400()
+    : NamedClassDecoder(decoder_, "StoreExclusive3RegisterOp Strex_Rule_202_A1_P400")
+  {}
+  virtual ~NamedStoreExclusive3RegisterOp_Strex_Rule_202_A1_P400() {}
+
+ private:
+  nacl_arm_dec::StoreExclusive3RegisterOp_Strex_Rule_202_A1_P400 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreExclusive3RegisterOp_Strex_Rule_202_A1_P400);
+};
+
+class NamedStoreExclusive3RegisterOp_Strexb_Rule_203_A1_P402
+    : public NamedClassDecoder {
+ public:
+  inline NamedStoreExclusive3RegisterOp_Strexb_Rule_203_A1_P402()
+    : NamedClassDecoder(decoder_, "StoreExclusive3RegisterOp Strexb_Rule_203_A1_P402")
+  {}
+  virtual ~NamedStoreExclusive3RegisterOp_Strexb_Rule_203_A1_P402() {}
+
+ private:
+  nacl_arm_dec::StoreExclusive3RegisterOp_Strexb_Rule_203_A1_P402 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreExclusive3RegisterOp_Strexb_Rule_203_A1_P402);
+};
+
+class NamedStoreExclusive3RegisterOp_cccc00011110nnnndddd11111001tttt
+    : public NamedClassDecoder {
+ public:
+  inline NamedStoreExclusive3RegisterOp_cccc00011110nnnndddd11111001tttt()
+    : NamedClassDecoder(decoder_, "StoreExclusive3RegisterOp cccc00011110nnnndddd11111001tttt")
+  {}
+  virtual ~NamedStoreExclusive3RegisterOp_cccc00011110nnnndddd11111001tttt() {}
+
+ private:
+  nacl_arm_dec::StoreExclusive3RegisterOp_cccc00011110nnnndddd11111001tttt decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreExclusive3RegisterOp_cccc00011110nnnndddd11111001tttt);
 };
 
 class NamedStoreImmediate_None
@@ -5342,6 +5485,58 @@ class NamedLdrRegisterDouble_Ldrd_Rule_68_A1_P140
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedLdrRegisterDouble_Ldrd_Rule_68_A1_P140);
 };
 
+class NamedLoadBasedMemory_Ldrex_Rule_69_A1_P142
+    : public NamedClassDecoder {
+ public:
+  inline NamedLoadBasedMemory_Ldrex_Rule_69_A1_P142()
+    : NamedClassDecoder(decoder_, "LoadBasedMemory Ldrex_Rule_69_A1_P142")
+  {}
+  virtual ~NamedLoadBasedMemory_Ldrex_Rule_69_A1_P142() {}
+
+ private:
+  nacl_arm_dec::LoadBasedMemory_Ldrex_Rule_69_A1_P142 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadBasedMemory_Ldrex_Rule_69_A1_P142);
+};
+
+class NamedLoadBasedMemory_Ldrexb_Rule_70_A1_P144
+    : public NamedClassDecoder {
+ public:
+  inline NamedLoadBasedMemory_Ldrexb_Rule_70_A1_P144()
+    : NamedClassDecoder(decoder_, "LoadBasedMemory Ldrexb_Rule_70_A1_P144")
+  {}
+  virtual ~NamedLoadBasedMemory_Ldrexb_Rule_70_A1_P144() {}
+
+ private:
+  nacl_arm_dec::LoadBasedMemory_Ldrexb_Rule_70_A1_P144 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadBasedMemory_Ldrexb_Rule_70_A1_P144);
+};
+
+class NamedLoadBasedMemory_Ldrexh_Rule_72_A1_P148
+    : public NamedClassDecoder {
+ public:
+  inline NamedLoadBasedMemory_Ldrexh_Rule_72_A1_P148()
+    : NamedClassDecoder(decoder_, "LoadBasedMemory Ldrexh_Rule_72_A1_P148")
+  {}
+  virtual ~NamedLoadBasedMemory_Ldrexh_Rule_72_A1_P148() {}
+
+ private:
+  nacl_arm_dec::LoadBasedMemory_Ldrexh_Rule_72_A1_P148 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadBasedMemory_Ldrexh_Rule_72_A1_P148);
+};
+
+class NamedLoadBasedMemoryDouble_Ldrexd_Rule_71_A1_P146
+    : public NamedClassDecoder {
+ public:
+  inline NamedLoadBasedMemoryDouble_Ldrexd_Rule_71_A1_P146()
+    : NamedClassDecoder(decoder_, "LoadBasedMemoryDouble Ldrexd_Rule_71_A1_P146")
+  {}
+  virtual ~NamedLoadBasedMemoryDouble_Ldrexd_Rule_71_A1_P146() {}
+
+ private:
+  nacl_arm_dec::LoadBasedMemoryDouble_Ldrexd_Rule_71_A1_P146 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedLoadBasedMemoryDouble_Ldrexd_Rule_71_A1_P146);
+};
+
 class NamedMaskAddress_Bic_Rule_19_A1_P50
     : public NamedClassDecoder {
  public:
@@ -5353,6 +5548,58 @@ class NamedMaskAddress_Bic_Rule_19_A1_P50
  private:
   nacl_arm_dec::MaskAddress_Bic_Rule_19_A1_P50 decoder_;
   NACL_DISALLOW_COPY_AND_ASSIGN(NamedMaskAddress_Bic_Rule_19_A1_P50);
+};
+
+class NamedStoreBasedMemoryDoubleRtBits0To3_Strexd_Rule_204_A1_P404
+    : public NamedClassDecoder {
+ public:
+  inline NamedStoreBasedMemoryDoubleRtBits0To3_Strexd_Rule_204_A1_P404()
+    : NamedClassDecoder(decoder_, "StoreBasedMemoryDoubleRtBits0To3 Strexd_Rule_204_A1_P404")
+  {}
+  virtual ~NamedStoreBasedMemoryDoubleRtBits0To3_Strexd_Rule_204_A1_P404() {}
+
+ private:
+  nacl_arm_dec::StoreBasedMemoryDoubleRtBits0To3_Strexd_Rule_204_A1_P404 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreBasedMemoryDoubleRtBits0To3_Strexd_Rule_204_A1_P404);
+};
+
+class NamedStoreBasedMemoryRtBits0To3_Strex_Rule_202_A1_P400
+    : public NamedClassDecoder {
+ public:
+  inline NamedStoreBasedMemoryRtBits0To3_Strex_Rule_202_A1_P400()
+    : NamedClassDecoder(decoder_, "StoreBasedMemoryRtBits0To3 Strex_Rule_202_A1_P400")
+  {}
+  virtual ~NamedStoreBasedMemoryRtBits0To3_Strex_Rule_202_A1_P400() {}
+
+ private:
+  nacl_arm_dec::StoreBasedMemoryRtBits0To3_Strex_Rule_202_A1_P400 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreBasedMemoryRtBits0To3_Strex_Rule_202_A1_P400);
+};
+
+class NamedStoreBasedMemoryRtBits0To3_Strexb_Rule_203_A1_P402
+    : public NamedClassDecoder {
+ public:
+  inline NamedStoreBasedMemoryRtBits0To3_Strexb_Rule_203_A1_P402()
+    : NamedClassDecoder(decoder_, "StoreBasedMemoryRtBits0To3 Strexb_Rule_203_A1_P402")
+  {}
+  virtual ~NamedStoreBasedMemoryRtBits0To3_Strexb_Rule_203_A1_P402() {}
+
+ private:
+  nacl_arm_dec::StoreBasedMemoryRtBits0To3_Strexb_Rule_203_A1_P402 decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreBasedMemoryRtBits0To3_Strexb_Rule_203_A1_P402);
+};
+
+class NamedStoreBasedMemoryRtBits0To3_cccc00011110nnnndddd11111001tttt
+    : public NamedClassDecoder {
+ public:
+  inline NamedStoreBasedMemoryRtBits0To3_cccc00011110nnnndddd11111001tttt()
+    : NamedClassDecoder(decoder_, "StoreBasedMemoryRtBits0To3 cccc00011110nnnndddd11111001tttt")
+  {}
+  virtual ~NamedStoreBasedMemoryRtBits0To3_cccc00011110nnnndddd11111001tttt() {}
+
+ private:
+  nacl_arm_dec::StoreBasedMemoryRtBits0To3_cccc00011110nnnndddd11111001tttt decoder_;
+  NACL_DISALLOW_COPY_AND_ASSIGN(NamedStoreBasedMemoryRtBits0To3_cccc00011110nnnndddd11111001tttt);
 };
 
 class NamedStrImmediate_Str_Rule_194_A1_P384

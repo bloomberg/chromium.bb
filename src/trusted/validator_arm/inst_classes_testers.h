@@ -561,6 +561,51 @@ class Binary4RegisterDualResultTesterRegsNotPc
   NACL_DISALLOW_COPY_AND_ASSIGN(Binary4RegisterDualResultTesterRegsNotPc);
 };
 
+// Tests a 2-register load (exclusive) operation.
+// Op<c> <Rt>, [<Rn>]
+// +--------+----------------+--------+--------+------------------------+
+// |31302928|2726252423222120|19181716|15141312|1110 9 8 7 6 5 4 3 2 1 0|
+// +--------+----------------+--------+--------+------------------------+
+// |  cond  |                |   Rn   |   Rt   |                        |
+// +--------+----------------+--------+--------+------------------------+
+// Definitions:
+//    Rn - The base register.
+//    Rt - The destination register.
+//
+// if Rt or Rn is R15, then unpredictable.
+// NaCl disallows writing to PC to cause a jump.
+class LoadExclusive2RegisterOpTester : public Arm32DecoderTester {
+ public:
+  explicit LoadExclusive2RegisterOpTester(
+      const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadExclusive2RegisterOpTester);
+};
+
+// Tests a 2-register load (exclusive) operation where the source is double
+// wide (i.e. Rt and Rt2).
+//
+// Additional ARM constraints:
+//    Rt<0>=1 then unpredictable.
+//    Rt=14, then unpredictable (i.e. Rt2=R15).
+//    Rn=Rt2, then unpredictable.
+class LoadExclusive2RegisterDoubleOpTester
+    : public LoadExclusive2RegisterOpTester {
+ public:
+  explicit LoadExclusive2RegisterDoubleOpTester(
+      const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadExclusive2RegisterDoubleOpTester);
+};
+
 // Models a 2-register load/store immediate operation of the forms:
 // Op<c> <Rt>, [<Rn>{, #+/-<imm8>}]
 // Op<c> <Rt>, [<Rn>], #+/-<imm8>
@@ -721,6 +766,49 @@ class LoadStore3RegisterDoubleOpTester : public LoadStore3RegisterOpTester {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(LoadStore3RegisterDoubleOpTester);
+};
+
+// Models a 2-register store operation with a register to hold the
+// status of the update.
+// Op<c><q> <Rd>, <Rt>, [<Rn>]
+// +--------+----------------+--------+--------+-----------------+--------+
+// |31302928|2726252423222120|19181716|15141312|1110 9 8 7 6 5 4 | 3 2 1 0|
+// +--------+----------------+--------+--------+-----------------+--------+
+// |  cond  |                |   Rn   |   Rd   |                 |   Rt   |
+// +--------+----------------+--------+--------+-----------------+--------+
+// Definitions:
+//    Rd - The destination register for the returned status value.
+//    Rt - The source register
+//    Rn - The base register
+//
+// If Rd, Rt, or Rn is R15, then unpredictable.
+// If Rd=Rn || Rd==Rt, then unpredictable.
+// NaCl disallows writing to PC to cause a jump.
+class StoreExclusive3RegisterOpTester : public Arm32DecoderTester {
+ public:
+  explicit StoreExclusive3RegisterOpTester(
+      const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(StoreExclusive3RegisterOpTester);
+};
+
+// Models a 2-register store (exclusive) operation with a register to hold the
+// status of the update, and the source is double wide (i.e. Rt and Rt2).
+class StoreExclusive3RegisterDoubleOpTester
+    : public  StoreExclusive3RegisterOpTester {
+ public:
+  explicit StoreExclusive3RegisterDoubleOpTester(
+      const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(
+      nacl_arm_dec::Instruction inst,
+      const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(StoreExclusive3RegisterDoubleOpTester);
 };
 
 // Models a 3-register with (shifted) immediate 5 load/store operation of

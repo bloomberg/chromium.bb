@@ -209,6 +209,40 @@ class RegSBits8To11Interface {
   NACL_DISALLOW_COPY_AND_ASSIGN(RegSBits8To11Interface);
 };
 
+// Interface class to pull out Register T from bits 0 through 3.
+class RegTBits0To3Interface {
+ public:
+  static inline uint32_t number(const Instruction& i) {
+    return i.Bits(3, 0);
+  }
+  static inline Register reg(const Instruction& i) {
+    return Register(number(i));
+  }
+  // Only used when Rt2 is defined. Makes sure register
+  // index is even (and hence, Rt2 is odd).
+  static inline bool IsEven(const Instruction& i) {
+    return (number(i) & 0x1) == 0;
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(RegTBits0To3Interface);
+};
+
+// Interface to pull out Register T2 from Register T is defined from
+// bits 0 through 3.
+class RegT2Bits0To3Interface {
+ public:
+  static inline uint32_t number(const Instruction& i) {
+    return i.Bits(3, 0) + 1;
+  }
+  static inline Register reg(const Instruction& i) {
+    return Register(number(i));
+  }
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(RegT2Bits0To3Interface);
+};
+
 // Interface class to pull out Register T from bits 12 through 15.
 class RegTBits12To15Interface {
  public:

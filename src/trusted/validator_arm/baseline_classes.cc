@@ -223,6 +223,45 @@ RegisterList Binary4RegisterDualResult::defs(const Instruction i) const {
       Add(conditions.conds_if_updated(i));
 }
 
+// LoadExclusive2RegisterOp
+SafetyLevel LoadExclusive2RegisterOp::safety(const Instruction i) const {
+  // Unsafe if any register contains PC (ARM restriction).
+  if (RegisterList(n.reg(i)).Add(t.reg(i)).Contains(kRegisterPc)) {
+    return UNPREDICTABLE;
+  }
+
+  // Note: We would restrict out PC as well for Rd in NaCl, but no need
+  // since the ARM restriction doesn't allow it anyway.
+  return MAY_BE_SAFE;
+}
+
+RegisterList LoadExclusive2RegisterOp::defs(const Instruction i) const {
+  return RegisterList(t.reg(i));
+}
+
+Register LoadExclusive2RegisterOp::base_address_register(
+    const Instruction i) const {
+  return n.reg(i);
+}
+
+// LoadExclusive2RegisterDoubleOp
+SafetyLevel LoadExclusive2RegisterDoubleOp::safety(const Instruction i) const {
+  // Arm restrictions for this instruction, based on double width.
+  if (!t.IsEven(i)) {
+    return UNDEFINED;
+  }
+
+  if (t2.reg(i).Equals(kRegisterPc)) {
+    return UNPREDICTABLE;
+  }
+
+  return LoadExclusive2RegisterOp::safety(i);
+}
+
+RegisterList LoadExclusive2RegisterDoubleOp::defs(const Instruction i) const {
+  return RegisterList(t.reg(i)).Add(t2.reg(i));
+}
+
 // LoadStore2RegisterImm8Op
 SafetyLevel LoadStore2RegisterImm8Op::safety(const Instruction i) const {
   // Arm restrictions for this instruction.
@@ -440,6 +479,51 @@ SafetyLevel LoadStore3RegisterDoubleOp::safety(const Instruction i) const {
 
   // Now apply non-double width restrictions for this instruction.
   return LoadStore3RegisterOp::safety(i);
+}
+
+// StoreExclusive3RegisterOp
+SafetyLevel StoreExclusive3RegisterOp::safety(const Instruction i) const {
+  // Arm restrictions for this instruction.
+  if (RegisterList(d.reg(i)).Add(t.reg(i)).Add(n.reg(i)).
+      Contains(kRegisterPc)) {
+    return UNPREDICTABLE;
+  }
+
+  if (d.reg(i).Equals(n.reg(i)) || d.reg(i).Equals(t.reg(i))) {
+    return UNPREDICTABLE;
+  }
+
+  // Note: We would restrict out PC as well for Rd in NaCl, but no need
+  // since the ARM restriction doesn't allow it anyway.
+  return MAY_BE_SAFE;
+}
+
+RegisterList StoreExclusive3RegisterOp::defs(const Instruction i) const {
+  return RegisterList(d.reg(i));
+}
+
+Register StoreExclusive3RegisterOp::base_address_register(
+    const Instruction i) const {
+  return n.reg(i);
+}
+
+// StoreExclusive3RegisterDoubleOp
+SafetyLevel StoreExclusive3RegisterDoubleOp::safety(const Instruction i) const {
+  // Arm restrictions for this instruction, based on double width.
+  if (!t.IsEven(i)) {
+    return UNDEFINED;
+  }
+
+  if (t2.reg(i).Equals(kRegisterPc)) {
+    return UNPREDICTABLE;
+  }
+
+  if (d.reg(i).Equals(t2.reg(i))) {
+    return UNPREDICTABLE;
+  }
+
+  // Now apply non-double width restrictions for this instruction.
+  return StoreExclusive3RegisterOp::safety(i);
 }
 
 // Load3RegisterDoubleOp

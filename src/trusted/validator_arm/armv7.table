@@ -639,16 +639,32 @@ class Store3RegisterOp : LoadStore3RegisterOp
 
 +-- sync (See Section A5.2.10)
 | op(23:20)
-| 0x00      =Deprecated      # SWP, SWPB  TODO(cbiffle): model these?
-| 1000      =StoreExclusive(v6)        # STREX
-| 1001      =LoadExclusive(v6)         # LDREX
-| 1010      =StoreExclusive(v6K)       # STREXD
-| 1011      =LoadDoubleExclusive(v6K)  # LDREXD
-| 1100      =StoreExclusive(v6K)       # STREXB
-| 1101      =LoadExclusive(v6K)        # LDREXB
-| 1110      =StoreExclusive(v6K)       # STREXH
-| 1111      =LoadExclusive(v6K)        # LDREXH
-| else:     =Undefined(v6K)            # Note on page A5-16
+| 0x00      = Deprecated      # SWP, SWPB  TODO(karl): model these? a8-432
+| 1000      = StoreExclusive3RegisterOp => StoreBasedMemoryRtBits0To3
+              Strex_Rule_202_A1_P400
+              cccc00011000nnnndddd11111001tttt (v6)
+| 1001      = LoadExclusive2RegisterOp => LoadBasedMemory
+              Ldrex_Rule_69_A1_P142
+              cccc00011001nnnntttt111110011111 (v6)
+| 1010      = StoreExclusive3RegisterDoubleOp
+              => StoreBasedMemoryDoubleRtBits0To3
+              Strexd_Rule_204_A1_P404
+              cccc00011010nnnndddd11111001tttt (v6K)
+| 1011      = LoadExclusive2RegisterDoubleOp => LoadBasedMemoryDouble
+              Ldrexd_Rule_71_A1_P146
+              cccc00011011nnnntttt111110011111 (v6K)
+| 1100      = StoreExclusive3RegisterOp => StoreBasedMemoryRtBits0To3
+              Strexb_Rule_203_A1_P402
+              cccc00011100nnnndddd11111001tttt (v6K)
+| 1101      = LoadExclusive2RegisterOp => LoadBasedMemory
+              Ldrexb_Rule_70_A1_P144
+              cccc00011101nnnndddd111110011111 (v6K)
+| 1110      = StoreExclusive3RegisterOp  => StoreBasedMemoryRtBits0To3
+              cccc00011110nnnndddd11111001tttt (v6K)
+| 1111      = LoadExclusive2RegisterOp => LoadBasedMemory
+              Ldrexh_Rule_72_A1_P148
+              cccc00011111nnnntttt111110011111 (v6K)
+| else:     = Undefined (v6K)            # Note on page A5-16
 +--
 
 +-- msr_and_hints (See Section A5.2.11)

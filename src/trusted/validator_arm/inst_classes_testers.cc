@@ -845,6 +845,63 @@ ApplySanityChecks(Instruction inst,
   return true;
 }
 
+// LoadExclusive2RegisterOpTester
+LoadExclusive2RegisterOpTester::LoadExclusive2RegisterOpTester(
+    const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
+
+bool LoadExclusive2RegisterOpTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  nacl_arm_dec::LoadExclusive2RegisterOp expected_decoder;
+  // Check that condition is defined correctly.
+  EXPECT_EQ(expected_decoder.cond.value(inst), inst.Bits(31, 28));
+
+  // Didn't parse undefined conditional.
+  if (expected_decoder.cond.undefined(inst)) {
+    NC_EXPECT_NE_PRECOND(&ExpectedDecoder(), &decoder);
+  }
+
+  // Check if expected class name found.
+  NC_PRECOND(Arm32DecoderTester::ApplySanityChecks(inst, decoder));
+
+  // Check Registers and flags used.
+  EXPECT_TRUE(expected_decoder.t.reg(inst).Equals(inst.Reg(15, 12)));
+  EXPECT_TRUE(expected_decoder.n.reg(inst).Equals(inst.Reg(19, 16)));
+
+  // Other ARM constraints about this instruction.
+  EXPECT_FALSE(expected_decoder.n.reg(inst).Equals(kRegisterPc))
+      << "Expected UNPREDICTABLE for " << InstContents();
+  EXPECT_FALSE(expected_decoder.t.reg(inst).Equals(kRegisterPc))
+      << "Expected UNPREDICTABLE for " << InstContents();
+
+  return true;
+}
+
+// LoadExclusive2RegisterDoubleOpTester
+LoadExclusive2RegisterDoubleOpTester::LoadExclusive2RegisterDoubleOpTester(
+    const NamedClassDecoder& decoder)
+    : LoadExclusive2RegisterOpTester(decoder) {}
+
+bool LoadExclusive2RegisterDoubleOpTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  NC_PRECOND(LoadExclusive2RegisterOpTester::ApplySanityChecks(inst, decoder));
+
+  // Check Registers and flags used.
+  nacl_arm_dec::LoadExclusive2RegisterDoubleOp expected_decoder;
+  EXPECT_EQ(expected_decoder.t.number(inst) + 1,
+            expected_decoder.t2.number(inst));
+
+  // Other ARM constraints about this instruction.
+  EXPECT_TRUE(expected_decoder.t.IsEven(inst));
+  EXPECT_FALSE(expected_decoder.t2.reg(inst).Equals(kRegisterPc))
+      << "Expected UNPREDICTABLE for " << InstContents();
+
+  return true;
+}
+
+
 // LoadStore2RegisterImm8OpTester
 LoadStore2RegisterImm8OpTester::LoadStore2RegisterImm8OpTester(
     const NamedClassDecoder& decoder) : Arm32DecoderTester(decoder) {}
@@ -1046,7 +1103,6 @@ ApplySanityChecks(Instruction inst,
   return LoadStore2RegisterImm12OpTester::ApplySanityChecks(inst, decoder);
 }
 
-
 // LoadStore3RegisterOpTester
 LoadStore3RegisterOpTester::LoadStore3RegisterOpTester(
     const NamedClassDecoder& decoder) : Arm32DecoderTester(decoder) {}
@@ -1138,6 +1194,75 @@ ApplySanityChecks(Instruction inst,
   //              expected_decoder.n.reg(inst).Equals(
   //                  expected_decoder.t2.reg(inst)))
   //     << "Expected UNPREDICTABLE for " << InstContents();
+
+  return true;
+}
+
+// StoreExclusive3RegisterOpTester
+StoreExclusive3RegisterOpTester::StoreExclusive3RegisterOpTester(
+    const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
+
+bool StoreExclusive3RegisterOpTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  nacl_arm_dec::StoreExclusive3RegisterOp expected_decoder;
+
+  // Check that condition is defined correctly.
+  EXPECT_EQ(expected_decoder.cond.value(inst), inst.Bits(31, 28));
+
+  // Didn't parse undefined conditional.
+  if (expected_decoder.cond.undefined(inst)) {
+    NC_EXPECT_NE_PRECOND(&ExpectedDecoder(), &decoder);
+  }
+
+  // Check if expected class name found.
+  NC_PRECOND(Arm32DecoderTester::ApplySanityChecks(inst, decoder));
+
+  // Check Registers and flags used.
+  EXPECT_TRUE(expected_decoder.t.reg(inst).Equals(inst.Reg(3, 0)));
+  EXPECT_TRUE(expected_decoder.d.reg(inst).Equals(inst.Reg(15, 12)));
+  EXPECT_TRUE(expected_decoder.n.reg(inst).Equals(inst.Reg(19, 16)));
+
+  // Other ARM constraints about this instruction.
+  EXPECT_FALSE(expected_decoder.n.reg(inst).Equals(kRegisterPc))
+      << "Expected UNPREDICTABLE for " << InstContents();
+  EXPECT_FALSE(expected_decoder.d.reg(inst).Equals(kRegisterPc))
+      << "Expected UNPREDICTABLE for " << InstContents();
+  EXPECT_FALSE(expected_decoder.t.reg(inst).Equals(kRegisterPc))
+      << "Expected UNPREDICTABLE for " << InstContents();
+  EXPECT_FALSE(expected_decoder.d.reg(inst).
+               Equals(expected_decoder.n.reg(inst)))
+      << "Expected UNPREDICTABLE for " << InstContents();
+  EXPECT_FALSE(expected_decoder.d.reg(inst).
+               Equals(expected_decoder.t.reg(inst)))
+      << "Expected UNPREDICTABLE for " << InstContents();
+
+  return true;
+}
+
+// StoreExclusive3RegisterDoubleOpTester
+StoreExclusive3RegisterDoubleOpTester::StoreExclusive3RegisterDoubleOpTester(
+    const NamedClassDecoder& decoder)
+    : StoreExclusive3RegisterOpTester(decoder) {}
+
+bool StoreExclusive3RegisterDoubleOpTester::
+ApplySanityChecks(Instruction inst,
+                  const NamedClassDecoder& decoder) {
+  NC_PRECOND(StoreExclusive3RegisterOpTester::ApplySanityChecks(inst, decoder));
+
+  // Check Registers and flags used.
+  nacl_arm_dec::StoreExclusive3RegisterDoubleOp expected_decoder;
+  EXPECT_EQ(expected_decoder.t.number(inst) + 1,
+            expected_decoder.t2.number(inst));
+
+  // Other ARM constraints about this instruction.
+  EXPECT_TRUE(expected_decoder.t.IsEven(inst));
+  EXPECT_FALSE(expected_decoder.t2.reg(inst).Equals(kRegisterPc))
+      << "Expected UNPREDICTABLE for " << InstContents();
+  EXPECT_FALSE(expected_decoder.d.reg(inst).
+               Equals(expected_decoder.t2.reg(inst)))
+      << "Expected UNPREDICTABLE for " << InstContents();
 
   return true;
 }

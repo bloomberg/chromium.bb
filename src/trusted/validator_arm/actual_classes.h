@@ -372,6 +372,82 @@ class MaskAddress : public Defs12To15 {
   NACL_DISALLOW_COPY_AND_ASSIGN(MaskAddress);
 };
 
+// Defines a register based memory class decoder.
+class BasedAddressUsingRn : public ClassDecoder {
+ public:
+  // The base address register.
+  static const RegNBits16To19Interface n;
+
+  inline BasedAddressUsingRn() {}
+  virtual ~BasedAddressUsingRn() {}
+  virtual Register base_address_register(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(BasedAddressUsingRn);
+};
+
+// Defines a based memory load on register Rn, class decoder.
+class LoadBasedMemory : public BasedAddressUsingRn {
+ public:
+  // The base address register.
+  static const RegNBits16To19Interface n;
+  // The destination register (May be named different than t,
+  // but appears in the same bit locations).
+  static const RegTBits12To15Interface t;
+
+  inline LoadBasedMemory() {}
+  virtual ~LoadBasedMemory() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadBasedMemory);
+};
+
+// Defines a LoadBasedMemory class decoder that is double wide (i.e.
+// uses Rt2 as defined by Rt).
+class LoadBasedMemoryDouble : public LoadBasedMemory {
+ public:
+  static const RegT2Bits12To15Interface t2;
+
+  inline LoadBasedMemoryDouble() {}
+  virtual ~LoadBasedMemoryDouble() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(LoadBasedMemoryDouble);
+};
+
+// Defines a based memory store from register Rt(3:0).
+class StoreBasedMemoryRtBits0To3 : public BasedAddressUsingRn {
+ public:
+  static const RegTBits0To3Interface t;
+  static const RegDBits12To15Interface d;
+
+  inline StoreBasedMemoryRtBits0To3() {}
+  virtual ~StoreBasedMemoryRtBits0To3() {}
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(StoreBasedMemoryRtBits0To3);
+};
+
+// Defines a StoreBasedMemoryRtBits0To3 class decoder that is double
+// wide (i.e uses Rt2 as defined by Rt).
+class StoreBasedMemoryDoubleRtBits0To3 : public StoreBasedMemoryRtBits0To3 {
+ public:
+  static const RegT2Bits0To3Interface t2;
+
+  inline StoreBasedMemoryDoubleRtBits0To3() {}
+  virtual ~StoreBasedMemoryDoubleRtBits0To3() {}
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(StoreBasedMemoryDoubleRtBits0To3);
+};
+
 // **************************************************************
 //      O L D    C L A S S    D E C O D E R S
 // **************************************************************
@@ -753,33 +829,6 @@ class StrRegister : public StoreRegister {
   }
 };
 
-// STREX - a lot like a store, but with restricted addressing modes and more
-// register writes.  Unfortunately the encodings aren't compatible, so they
-// don't share code.
-//
-// Includes:
-// STREX, STREXD, STREXB, STREXH
-class StoreExclusive : public OldClassDecoder {
- public:
-  inline StoreExclusive() {}
-  virtual ~StoreExclusive() {}
-
-  virtual SafetyLevel safety(Instruction i) const;
-  virtual RegisterList defs(Instruction i) const;
-  virtual Register base_address_register(Instruction i) const;
-  // Defines the base register.
-  inline Register Rn(const Instruction& i) const {
-    return i.Reg(19, 16);
-  }
-  // Defines the destination register.
-  inline Register Rd(const Instruction& i) const {
-    return i.Reg(15, 12);
-  }
-
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(StoreExclusive);
-};
-
 // Abstract base class for single- and double-register load instructions,
 // below.  These instructions have common characteristics:
 // - They aren't permitted to alter PC.
@@ -952,42 +1001,6 @@ class StrRegisterDouble : public StrRegister {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(StrRegisterDouble);
-};
-
-
-// LDREX and friends, where writeback is unavailable.
-//
-// Includes:
-// LDREX, LDREXB, LDREXH
-class LoadExclusive : public AbstractLoad {
- public:
-  inline LoadExclusive() {}
-  virtual ~LoadExclusive() {}
-  virtual Register base_address_register(Instruction i) const;
-  // Defines the base register.
-  inline Register Rn(const Instruction& i) const {
-    return i.Reg(19, 16);
-  }
-
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(LoadExclusive);
-};
-
-// LDREXD, which also writes Rt+1.
-class LoadDoubleExclusive : public LoadExclusive {
- public:
-  inline LoadDoubleExclusive() {}
-  virtual ~LoadDoubleExclusive() {}
-
-  virtual RegisterList defs(Instruction i) const;
-  virtual Register base_address_register(Instruction i) const;
-  // Defines the second destination register.
-  inline Register Rt2(const Instruction& i) const {
-    return Register(Rt(i).number() + 1);
-  }
-
- private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(LoadDoubleExclusive);
 };
 
 // And, finally, the oddest class of loads: LDM.  In addition to the base
