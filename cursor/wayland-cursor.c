@@ -129,6 +129,11 @@ struct cursor_image {
 	int offset; /* data offset of this image in the shm pool */
 };
 
+struct cursor {
+	struct wl_cursor cursor;
+	uint32_t total_delay; /* length of the animation in ms */
+};
+
 /** Get an shm buffer for a cursor image
  *
  * \param image The cursor image
@@ -180,7 +185,7 @@ static struct wl_cursor *
 wl_cursor_create_from_xcursor_images(XcursorImages *images,
 				     struct wl_cursor_theme *theme)
 {
-	struct wl_cursor *cursor;
+	struct cursor *cursor;
 	struct cursor_image *image;
 	int i, size;
 
@@ -188,18 +193,20 @@ wl_cursor_create_from_xcursor_images(XcursorImages *images,
 	if (!cursor)
 		return NULL;
 
-	cursor->image_count = images->nimage;
-	cursor->images = malloc(images->nimage * sizeof cursor->images[0]);
-	if (!cursor->images) {
+	cursor->cursor.image_count = images->nimage;
+	cursor->cursor.images =
+		malloc(images->nimage * sizeof cursor->cursor.images[0]);
+	if (!cursor->cursor.images) {
 		free(cursor);
 		return NULL;
 	}
 
-	cursor->name = strdup(images->name);
+	cursor->cursor.name = strdup(images->name);
+	cursor->total_delay = 0;
 
 	for (i = 0; i < images->nimage; i++) {
 		image = malloc(sizeof *image);
-		cursor->images[i] = (struct wl_cursor_image *) image;
+		cursor->cursor.images[i] = (struct wl_cursor_image *) image;
 
 		image->theme = theme;
 		image->buffer = NULL;
@@ -209,6 +216,7 @@ wl_cursor_create_from_xcursor_images(XcursorImages *images,
 		image->image.hotspot_x = images->images[i]->xhot;
 		image->image.hotspot_y = images->images[i]->yhot;
 		image->image.delay = images->images[i]->delay;
+		cursor->total_delay += image->image.delay;
 
 		/* copy pixels to shm pool */
 		size = image->image.width * image->image.height * 4;
@@ -217,7 +225,7 @@ wl_cursor_create_from_xcursor_images(XcursorImages *images,
 		       images->images[i]->pixels, size);
 	}
 
-	return cursor;
+	return &cursor->cursor;
 }
 
 static void
@@ -317,4 +325,31 @@ wl_cursor_theme_get_cursor(struct wl_cursor_theme *theme,
 	}
 
 	return NULL;
+}
+
+/** Find the frame for a given elapsed time in a cursor animation
+ *
+ * \param cursor The cursor
+ * \param time Elapsed time since the beginning of the animation
+ *
+ * \return The index of the image that should be displayed for the
+ * given time in the cursor animation.
+ */
+WL_EXPORT int
+wl_cursor_frame(struct wl_cursor *_cursor, uint32_t time)
+{
+	struct cursor *cursor = (struct cursor *) _cursor;
+	uint32_t t;
+	int i;
+
+	if (cursor->cursor.image_count == 1)
+		return 0;
+
+	i = 0;
+	t = time % cursor->total_delay;
+
+	while (t - cursor->cursor.images[i]->delay < t)
+		t -= cursor->cursor.images[i++]->delay;
+
+	return i;
 }

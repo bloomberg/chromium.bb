@@ -60,6 +60,9 @@ wl_cursor_theme_get_cursor(struct wl_cursor_theme *theme,
 struct wl_buffer *
 wl_cursor_image_get_buffer(struct wl_cursor_image *image);
 
+int
+wl_cursor_frame(struct wl_cursor *cursor, uint32_t time);
+
 #ifdef  __cplusplus
 }
 #endif
