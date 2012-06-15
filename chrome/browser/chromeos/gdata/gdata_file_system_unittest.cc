@@ -326,7 +326,6 @@ class GDataFileSystemTest : public testing::Test {
   }
 
   GDataEntry* FindEntry(const FilePath& file_path) {
-    base::AutoLock lock(file_system_->lock_);
     return file_system_->GetGDataEntryByPath(file_path);
   }
 
@@ -2972,8 +2971,6 @@ TEST_F(GDataFileSystemTest, InitializeCache) {
 TEST_F(GDataFileSystemTest, GetGDataEntryByPath) {
   LoadRootFeedDocument("root_feed.json");
 
-  // Lock to call GetGDataEntryByPath.
-  base::AutoLock lock(file_system_->lock_);
   GDataEntry* entry = file_system_->GetGDataEntryByPath(
       FilePath(FILE_PATH_LITERAL("drive/File 1.txt")));
   ASSERT_TRUE(entry != NULL);

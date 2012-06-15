@@ -1112,10 +1112,10 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void SetPinStateOnUIThread(const FilePath& file_path, bool to_pin,
                              const FileOperationCallback& callback);
 
-  scoped_ptr<GDataRootDirectory> root_;
+  // All members should be accessed only on UI thread. Do not post tasks to
+  // other threads with base::Unretained(this).
 
-  // This guards regular states.
-  base::Lock lock_;
+  scoped_ptr<GDataRootDirectory> root_;
 
   // The profile hosts the GDataFileSystem via GDataSystemService.
   Profile* profile_;

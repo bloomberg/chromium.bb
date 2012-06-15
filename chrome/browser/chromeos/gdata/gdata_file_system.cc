@@ -713,7 +713,6 @@ void GDataFileSystem::Initialize() {
 
 void GDataFileSystem::CheckForUpdates() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  base::AutoLock lock(lock_);
   ContentOrigin initial_origin = root_->origin();
   if (initial_origin == FROM_SERVER) {
     root_->set_origin(REFRESHING);
@@ -732,7 +731,6 @@ void GDataFileSystem::OnUpdateChecked(ContentOrigin initial_origin,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error != base::PLATFORM_FILE_OK) {
-    base::AutoLock lock(lock_);
     root_->set_origin(initial_origin);
   }
 }
@@ -748,8 +746,6 @@ GDataFileSystem::~GDataFileSystem() {
   documents_service_->CancelAll();
   documents_service_ = NULL;
 
-  // Lock to let root destroy cache map and resource map.
-  base::AutoLock lock(lock_);
   root_.reset();
 }
 
@@ -803,7 +799,6 @@ void GDataFileSystem::FindEntryByResourceIdOnUIThread(
     const FindEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::AutoLock lock(lock_);  // To access root.
   GDataFile* file = NULL;
   GDataEntry* entry = root_->GetEntryByResourceId(resource_id);
   if (entry)
@@ -820,7 +815,6 @@ void GDataFileSystem::FindEntryByPathAsyncOnUIThread(
     const FindEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::AutoLock lock(lock_);
   if (root_->origin() == INITIALIZING) {
     // If root feed is not initialized but the initilization process has
     // already started, add an observer to execute the remaining task after
@@ -857,7 +851,6 @@ void GDataFileSystem::FindEntryByPathSyncOnUIThread(
     const FindEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::AutoLock lock(lock_);  // To access root_, and an entry in |callback|.
   root_->FindEntryByPath(search_file_path, callback);
 }
 
@@ -932,10 +925,7 @@ void GDataFileSystem::OnGetAccountMetadata(
                    << ", server = "
                    << account_metadata->largest_changestamp();
     }
-    {
-      base::AutoLock lock(lock_);
-      root_->set_origin(initial_origin);
-    }
+    root_->set_origin(initial_origin);
     changes_detected = false;
   }
 
@@ -1051,7 +1041,6 @@ void GDataFileSystem::TransferFileFromLocalToRemote(
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::AutoLock lock(lock_);
   // Make sure the destination directory exists
   GDataEntry* dest_dir = GetGDataEntryByPath(
       remote_dest_file_path.DirName());
@@ -1211,33 +1200,31 @@ void GDataFileSystem::CopyOnUIThread(const FilePath& original_src_file_path,
 
   std::string src_file_resource_id;
   bool src_file_is_hosted_document = false;
-  {
-    base::AutoLock lock(lock_);
-    GDataEntry* src_entry = GetGDataEntryByPath(original_src_file_path);
-    GDataEntry* dest_parent = GetGDataEntryByPath(dest_parent_path);
-    if (!src_entry || !dest_parent) {
-      error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
-    } else if (!dest_parent->AsGDataDirectory()) {
-      error = base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
-    } else if (!src_entry->AsGDataFile() || dest_parent->is_detached()) {
-      // TODO(benchan): Implement copy for directories. In the interim,
-      // we handle recursive directory copy in the file manager.
-      error = base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-    } else {
-      src_file_resource_id = src_entry->resource_id();
-      src_file_is_hosted_document =
-          src_entry->AsGDataFile()->is_hosted_document();
-      // |original_src_file_path| and |original_dest_file_path| don't have to
-      // necessary be equal to |src_entry|'s or |dest_entry|'s file path (e.g.
-      // paths used to display gdata content search results).
-      // That's why, instead of using |original_src_file_path| and
-      // |original_dest_file_path|, we will get file paths to use in copy
-      // operation from the entries.
-      src_file_path = src_entry->GetFilePath();
-      dest_parent_path = dest_parent->GetFilePath();
-      dest_file_path = dest_parent_path.Append(
-          original_dest_file_path.BaseName());
-    }
+
+  GDataEntry* src_entry = GetGDataEntryByPath(original_src_file_path);
+  GDataEntry* dest_parent = GetGDataEntryByPath(dest_parent_path);
+  if (!src_entry || !dest_parent) {
+    error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+  } else if (!dest_parent->AsGDataDirectory()) {
+    error = base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
+  } else if (!src_entry->AsGDataFile() || dest_parent->is_detached()) {
+    // TODO(benchan): Implement copy for directories. In the interim,
+    // we handle recursive directory copy in the file manager.
+    error = base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+  } else {
+    src_file_resource_id = src_entry->resource_id();
+    src_file_is_hosted_document =
+        src_entry->AsGDataFile()->is_hosted_document();
+    // |original_src_file_path| and |original_dest_file_path| don't have to
+    // necessary be equal to |src_entry|'s or |dest_entry|'s file path (e.g.
+    // paths used to display gdata content search results).
+    // That's why, instead of using |original_src_file_path| and
+    // |original_dest_file_path|, we will get file paths to use in copy
+    // operation from the entries.
+    src_file_path = src_entry->GetFilePath();
+    dest_parent_path = dest_parent->GetFilePath();
+    dest_file_path = dest_parent_path.Append(
+        original_dest_file_path.BaseName());
   }
 
   if (error != base::PLATFORM_FILE_OK) {
@@ -1370,7 +1357,6 @@ void GDataFileSystem::Rename(const FilePath& file_path,
     return;
   }
 
-  base::AutoLock lock(lock_);
   GDataEntry* entry = GetGDataEntryByPath(file_path);
   if (!entry) {
     if (!callback.is_null()) {
@@ -1425,50 +1411,46 @@ void GDataFileSystem::MoveOnUIThread(const FilePath& original_src_file_path,
   FilePath dest_file_path;
   FilePath dest_name = original_dest_file_path.BaseName();
 
-  {
-    // This scoped lock needs to be released before calling Rename() below.
-    base::AutoLock lock(lock_);
-    GDataEntry* src_entry = GetGDataEntryByPath(original_src_file_path);
-    GDataEntry* dest_parent = GetGDataEntryByPath(dest_parent_path);
-    if (!src_entry || !dest_parent) {
-      error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
-    } else if (!dest_parent->AsGDataDirectory()) {
-        error = base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
-    } else if (dest_parent->is_detached()) {
-      // We allow moving to a directory without file system root only if it's
-      // done as part of renaming (i.e. source and destination parent paths are
-      // the same).
-      if (original_src_file_path.DirName() != dest_parent_path) {
-        error = base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
-      } else {
-        // If we are indeed renaming, we have to strip resource id from the file
-        // name.
-        std::string resource_id;
-        std::string file_name;
-        util::ParseSearchFileName(dest_name.value(), &resource_id, &file_name);
-        if (!file_name.empty())
-          dest_name = FilePath(file_name);
-      }
+  GDataEntry* src_entry = GetGDataEntryByPath(original_src_file_path);
+  GDataEntry* dest_parent = GetGDataEntryByPath(dest_parent_path);
+  if (!src_entry || !dest_parent) {
+    error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+  } else if (!dest_parent->AsGDataDirectory()) {
+    error = base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
+  } else if (dest_parent->is_detached()) {
+    // We allow moving to a directory without file system root only if it's
+    // done as part of renaming (i.e. source and destination parent paths are
+    // the same).
+    if (original_src_file_path.DirName() != dest_parent_path) {
+      error = base::PLATFORM_FILE_ERROR_INVALID_OPERATION;
+    } else {
+      // If we are indeed renaming, we have to strip resource id from the file
+      // name.
+      std::string resource_id;
+      std::string file_name;
+      util::ParseSearchFileName(dest_name.value(), &resource_id, &file_name);
+      if (!file_name.empty())
+        dest_name = FilePath(file_name);
     }
-
-    if (error != base::PLATFORM_FILE_OK) {
-      if (!callback.is_null()) {
-        MessageLoop::current()->PostTask(FROM_HERE,
-            base::Bind(callback, error));
-      }
-      return;
-    }
-    // |original_src_file_path| and |original_dest_file_path| don't have to
-    // necessary be equal to |src_entry|'s or |dest_entry|'s file path (e.g.
-    // paths used to display gdata content search results).
-    // That's why, instead of using |original_src_file_path| and
-    // |original_dest_file_path|, we will get file paths to use in move
-    // operation from the entries.
-    src_file_path = src_entry->GetFilePath();
-    if (!dest_parent->is_detached())
-      dest_parent_path = dest_parent->GetFilePath();
-    dest_file_path = dest_parent_path.Append(dest_name);
   }
+
+  if (error != base::PLATFORM_FILE_OK) {
+    if (!callback.is_null()) {
+      MessageLoop::current()->PostTask(FROM_HERE,
+                                       base::Bind(callback, error));
+    }
+    return;
+  }
+  // |original_src_file_path| and |original_dest_file_path| don't have to
+  // necessary be equal to |src_entry|'s or |dest_entry|'s file path (e.g.
+  // paths used to display gdata content search results).
+  // That's why, instead of using |original_src_file_path| and
+  // |original_dest_file_path|, we will get file paths to use in move
+  // operation from the entries.
+  src_file_path = src_entry->GetFilePath();
+  if (!dest_parent->is_detached())
+    dest_parent_path = dest_parent->GetFilePath();
+  dest_file_path = dest_parent_path.Append(dest_name);
 
   DCHECK(!src_file_path.empty());
   DCHECK(!dest_file_path.empty());
@@ -1517,7 +1499,6 @@ void GDataFileSystem::AddEntryToDirectory(
     const FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::AutoLock lock(lock_);
   GDataEntry* entry = GetGDataEntryByPath(file_path);
   GDataEntry* dir_entry = GetGDataEntryByPath(dir_path);
   if (error == base::PLATFORM_FILE_OK) {
@@ -1554,7 +1535,6 @@ void GDataFileSystem::RemoveEntryFromDirectory(
     const FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::AutoLock lock(lock_);
   GDataEntry* entry = GetGDataEntryByPath(file_path);
   GDataEntry* dir = GetGDataEntryByPath(dir_path);
   if (error == base::PLATFORM_FILE_OK) {
@@ -1604,7 +1584,6 @@ void GDataFileSystem::RemoveOnUIThread(
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::AutoLock lock(lock_);
   GDataEntry* entry = GetGDataEntryByPath(file_path);
   if (!entry) {
     if (!callback.is_null()) {
@@ -1853,14 +1832,11 @@ void GDataFileSystem::GetFileByResourceIdOnUIThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   FilePath file_path;
-  {
-    base::AutoLock lock(lock_);  // To access root.
-    GDataEntry* entry = root_->GetEntryByResourceId(resource_id);
-    if (entry) {
-      GDataFile* file = entry->AsGDataFile();
-      if (file)
-        file_path = file->GetFilePath();
-    }
+  GDataEntry* entry = root_->GetEntryByResourceId(resource_id);
+  if (entry) {
+    GDataFile* file = entry->AsGDataFile();
+    if (file)
+      file_path = file->GetFilePath();
   }
 
   // Report an error immediately if the file for the resource ID is not
@@ -1959,13 +1935,10 @@ void GDataFileSystem::OnGetDocumentEntry(const FilePath& cache_file_path,
   GURL content_url = fresh_entry->content_url();
   int64 file_size = fresh_entry->file_info().size;
 
-  {
-    base::AutoLock lock(lock_);  // We're accessing the root.
-    DCHECK_EQ(params.resource_id, fresh_entry->resource_id());
-    scoped_ptr<GDataFile> fresh_entry_as_file(
-        fresh_entry.release()->AsGDataFile());
-    root_->RefreshFile(fresh_entry_as_file.Pass());
-  }
+  DCHECK_EQ(params.resource_id, fresh_entry->resource_id());
+  scoped_ptr<GDataFile> fresh_entry_as_file(
+      fresh_entry.release()->AsGDataFile());
+  root_->RefreshFile(fresh_entry_as_file.Pass());
 
   bool* has_enough_space = new bool(false);
   PostBlockingPoolSequencedTaskAndReply(
@@ -2175,7 +2148,6 @@ void GDataFileSystem::RequestDirectoryRefreshOnUIThread(
     const FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::AutoLock lock(lock_);  // To use GetGDataEntryByPath() and root_.
   GDataEntry* entry = GetGDataEntryByPath(file_path);
   if (!entry || !entry->AsGDataDirectory()) {
     LOG(ERROR) << "Directory entry not found: " << file_path.value();
@@ -2212,8 +2184,6 @@ void GDataFileSystem::OnRequestDirectoryRefresh(
                << ": " << error;
     return;
   }
-
-  base::AutoLock lock(lock_);  // To use FeedToFileResourceMap() and root_.
 
   int unused_delta_feed_changestamp = 0;
   int unused_num_regular_files = 0;
@@ -2262,7 +2232,6 @@ GDataEntry* GDataFileSystem::GetGDataEntryByPath(
     const FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  lock_.AssertAcquired();
   // Find directory element within the cached file system snapshot.
   GDataEntry* entry = NULL;
   root_->FindEntryByPath(file_path, base::Bind(&ReadOnlyFindEntryCallback,
@@ -2297,7 +2266,6 @@ void GDataFileSystem::GetCacheStateOnUIThread(
     const GetCacheStateCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::AutoLock lock(lock_);  // For |root_| access.
   GDataEntry* entry = root_->GetEntryByResourceId(resource_id);
   if (!entry || !entry->AsGDataFile()) {
     const bool posted = BrowserThread::PostTask(
@@ -2364,22 +2332,19 @@ void GDataFileSystem::SetPinStateOnUIThread(
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  std::string resource_id, md5;
-  {
-    base::AutoLock lock(lock_);
-    GDataEntry* entry = GetGDataEntryByPath(file_path);
-    GDataFile* file = entry ? entry->AsGDataFile() : NULL;
+  GDataEntry* entry = GetGDataEntryByPath(file_path);
+  GDataFile* file = entry ? entry->AsGDataFile() : NULL;
 
-    if (!file) {
-      if (!callback.is_null()) {
-        MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback,
-            base::PLATFORM_FILE_ERROR_NOT_FOUND));
-      }
-      return;
+  if (!file) {
+    if (!callback.is_null()) {
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
     }
-    resource_id = file->resource_id();
-    md5 = file->file_md5();
+    return;
   }
+  const std::string& resource_id = file->resource_id();
+  const std::string& md5 = file->file_md5();
 
   CacheOperationCallback cache_callback;
 
@@ -2486,9 +2451,6 @@ void GDataFileSystem::OnSearch(const ReadDirectoryCallback& callback,
     return;
   }
 
-  // We will refresh values in root for entries received in the feed.
-  base::AutoLock lock(lock_);
-
   // The search results will be returned using virtual directory.
   // The directory is not really part of the file system, so it has no parent or
   // root.
@@ -2550,7 +2512,6 @@ void GDataFileSystem::SearchAsyncOnUIThread(
   scoped_ptr<std::vector<DocumentFeed*> > feed_list(
       new std::vector<DocumentFeed*>);
 
-  base::AutoLock lock(lock_);
   ContentOrigin initial_origin = root_->origin();
   LoadFeedFromServer(initial_origin,
                      0, 0,  // We don't use change stamps when fetching search
@@ -2580,14 +2541,10 @@ void GDataFileSystem::OnGetDocuments(ContentOrigin initial_origin,
   }
 
   if (error != base::PLATFORM_FILE_OK) {
-    {
-      base::AutoLock lock(lock_);
-      root_->set_origin(initial_origin);
-    }
+    root_->set_origin(initial_origin);
 
-    if (!callback.is_null()) {
+    if (!callback.is_null())
       callback.Run(params, error);
-    }
 
     return;
   }
@@ -2680,18 +2637,15 @@ void GDataFileSystem::LoadRootFeedFromCache(
 void GDataFileSystem::OnProtoLoaded(LoadRootFeedParams* params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  {
-    base::AutoLock lock(lock_);
-    // If we have already received updates from the server, bail out.
-    if (root_->origin() == FROM_SERVER)
-      return;
-  }
+  // If we have already received updates from the server, bail out.
+  if (root_->origin() == FROM_SERVER)
+    return;
+
   int local_changestamp = 0;
   // Update directory structure only if everything is OK and we haven't yet
   // received the feed from the server yet.
   if (params->load_error == base::PLATFORM_FILE_OK) {
     DVLOG(1) << "ParseFromString";
-    base::AutoLock lock(lock_);  // To access root_.
     if (root_->ParseFromString(params->proto)) {
       root_->set_last_serialized(params->last_modified);
       root_->set_serialized_size(params->proto.size());
@@ -2722,14 +2676,11 @@ void GDataFileSystem::OnProtoLoaded(LoadRootFeedParams* params) {
   // By default, if directory content is not yet initialized, restore content
   // origin to UNINITIALIZED in case of failure.
   ContentOrigin initial_origin = UNINITIALIZED;
-  {
-    base::AutoLock lock(lock_);
-    if (root_->origin() != INITIALIZING) {
-      // If directory content is already initialized, restore content origin
-      // to FROM_CACHE in case of failure.
-      initial_origin = FROM_CACHE;
-      root_->set_origin(REFRESHING);
-    }
+  if (root_->origin() != INITIALIZING) {
+    // If directory content is already initialized, restore content origin
+    // to FROM_CACHE in case of failure.
+    initial_origin = FROM_CACHE;
+    root_->set_origin(REFRESHING);
   }
 
   // Kick of the retrieval of the feed from server. If we have previously
@@ -2745,7 +2696,6 @@ void GDataFileSystem::SaveFileSystemAsProto() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DVLOG(1) << "SaveFileSystemAsProto";
-  base::AutoLock lock(lock_);  // To access root_.
 
   if (!ShouldSerializeFileSystemNow(root_->serialized_size(),
                                     root_->last_serialized())) {
@@ -2814,20 +2764,17 @@ void GDataFileSystem::OnCopyDocumentCompleted(
   }
 
   FilePath file_path;
-  {
-    base::AutoLock lock(lock_);
-    GDataEntry* entry =
-        GDataEntry::FromDocumentEntry(
-            root_.get(), doc_entry.get(), root_.get());
-    if (!entry) {
-      if (!callback.is_null())
-        callback.Run(base::PLATFORM_FILE_ERROR_FAILED, FilePath());
+  GDataEntry* entry =
+      GDataEntry::FromDocumentEntry(
+          root_.get(), doc_entry.get(), root_.get());
+  if (!entry) {
+    if (!callback.is_null())
+      callback.Run(base::PLATFORM_FILE_ERROR_FAILED, FilePath());
 
-      return;
-    }
-    root_->AddEntry(entry);
-    file_path = entry->GetFilePath();
+    return;
   }
+  root_->AddEntry(entry);
+  file_path = entry->GetFilePath();
 
   NotifyDirectoryChanged(file_path.DirName());
 
@@ -3006,7 +2953,6 @@ base::PlatformFileError GDataFileSystem::RenameFileOnFilesystem(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(updated_file_path);
 
-  base::AutoLock lock(lock_);
   GDataEntry* entry = GetGDataEntryByPath(file_path);
   if (!entry)
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
@@ -3033,7 +2979,6 @@ base::PlatformFileError GDataFileSystem::AddEntryToDirectoryOnFilesystem(
     const FilePath& file_path, const FilePath& dir_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  base::AutoLock lock(lock_);
   GDataEntry* entry = GetGDataEntryByPath(file_path);
   if (!entry)
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
@@ -3061,7 +3006,6 @@ base::PlatformFileError GDataFileSystem::RemoveEntryFromDirectoryOnFilesystem(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(updated_file_path);
 
-  base::AutoLock lock(lock_);
   GDataEntry* entry = GetGDataEntryByPath(file_path);
   if (!entry)
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
@@ -3109,9 +3053,6 @@ base::PlatformFileError GDataFileSystem::UpdateFromFeed(
   DVLOG(1) << "Updating directory with a feed";
 
   bool is_delta_feed = start_changestamp != 0;
-  // We need to lock here as well (despite FindEntryByPath lock) since directory
-  // instance below is a 'live' object.
-  base::AutoLock lock(lock_);
   bool should_notify_initial_load = root_->origin() == INITIALIZING;
 
   root_->set_origin(origin);
@@ -3154,7 +3095,6 @@ void GDataFileSystem::ApplyFeedFromFileUrlMap(
     FileResourceIdMap* file_map) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  lock_.AssertAcquired();
   // Don't send directory content change notification while performing
   // the initial content retrieval.
   const bool should_notify_directory_changed = is_delta_feed;
@@ -3294,7 +3234,6 @@ base::PlatformFileError GDataFileSystem::FeedToFileResourceMap(
     int* num_regular_files,
     int* num_hosted_documents) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  lock_.AssertAcquired();
 
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
   *num_regular_files = 0;
@@ -3418,10 +3357,6 @@ base::PlatformFileError GDataFileSystem::AddNewDirectory(
   if (!doc_entry.get())
     return base::PLATFORM_FILE_ERROR_FAILED;
 
-  // We need to lock here as well (despite FindEntryByPath lock) since directory
-  // instance below is a 'live' object.
-  base::AutoLock lock(lock_);
-
   // Find parent directory element within the cached file system snapshot.
   GDataEntry* entry = GetGDataEntryByPath(directory_path);
   if (!entry)
@@ -3463,7 +3398,6 @@ GDataFileSystem::FindFirstMissingParentDirectory(
   directory_path.GetComponents(&path_parts);
   FilePath current_path;
 
-  base::AutoLock lock(lock_);
   for (std::vector<FilePath::StringType>::const_iterator iter =
           path_parts.begin();
        iter != path_parts.end(); ++iter) {
@@ -3489,7 +3423,6 @@ GURL GDataFileSystem::GetUploadUrlForDirectory(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Find directory element within the cached file system snapshot.
-  base::AutoLock lock(lock_);
   GDataEntry* entry = GetGDataEntryByPath(destination_directory);
   GDataDirectory* dir = entry ? entry->AsGDataDirectory() : NULL;
   return dir ? dir->upload_url() : GURL();
@@ -3500,10 +3433,6 @@ base::PlatformFileError GDataFileSystem::RemoveEntryFromGData(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   resource_id->clear();
-
-  // We need to lock here as well (despite FindEntryByPath lock) since
-  // directory instance below is a 'live' object.
-  base::AutoLock lock(lock_);
 
   // Find directory element within the cached file system snapshot.
   GDataEntry* entry = GetGDataEntryByPath(file_path);
@@ -3540,29 +3469,25 @@ void GDataFileSystem::AddUploadedFile(
     return;
   }
 
-  std::string resource_id;
-  std::string md5;
-  {
-    base::AutoLock lock(lock_);
-    GDataEntry* dir_entry = GetGDataEntryByPath(virtual_dir_path);
-    if (!dir_entry)
-      return;
+  GDataEntry* dir_entry = GetGDataEntryByPath(virtual_dir_path);
+  if (!dir_entry)
+    return;
 
-    GDataDirectory* parent_dir  = dir_entry->AsGDataDirectory();
-    if (!parent_dir)
-      return;
+  GDataDirectory* parent_dir  = dir_entry->AsGDataDirectory();
+  if (!parent_dir)
+    return;
 
-    scoped_ptr<GDataEntry> new_entry(
-        GDataEntry::FromDocumentEntry(parent_dir, entry, root_.get()));
-    if (!new_entry.get())
-      return;
+  scoped_ptr<GDataEntry> new_entry(
+      GDataEntry::FromDocumentEntry(parent_dir, entry, root_.get()));
+  if (!new_entry.get())
+    return;
 
-    GDataFile* file = new_entry->AsGDataFile();
-    DCHECK(file);
-    resource_id = file->resource_id();
-    md5 = file->file_md5();
-    parent_dir->AddEntry(new_entry.release());
-  }
+  GDataFile* file = new_entry->AsGDataFile();
+  DCHECK(file);
+  const std::string& resource_id = file->resource_id();
+  const std::string& md5 = file->file_md5();
+  parent_dir->AddEntry(new_entry.release());
+
   NotifyDirectoryChanged(virtual_dir_path);
 
   cache_->StoreOnUIThread(resource_id, md5, file_content_path, cache_operation,
