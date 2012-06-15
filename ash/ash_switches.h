@@ -16,6 +16,7 @@ namespace switches {
 // see chromeos::LoginUtil::GetOffTheRecordCommandLine().)
 
 // Please keep alphabetized.
+ASH_EXPORT extern const char kAppListShowAppsOnly[];
 ASH_EXPORT extern const char kAshEnableOak[];
 ASH_EXPORT extern const char kAshNotify[];
 ASH_EXPORT extern const char kAshTouchHud[];

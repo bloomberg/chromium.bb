@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
 #include "ui/app_list/app_list_model.h"
@@ -17,6 +18,8 @@ class SearchResult;
 }
 
 class AutocompleteController;
+class AutocompleteResult;
+class ExtensionAppProvider;
 class Profile;
 
 // SearchBuilder creates app list search results via AutoCompleteController.
@@ -33,6 +36,9 @@ class SearchBuilder : public AutocompleteControllerDelegate {
   void OpenResult(const app_list::SearchResult& result, int event_flags);
 
  private:
+  // Populates result list from AutocompleteResult.
+  void PopulateFromACResult(const AutocompleteResult& result);
+
   // AutocompleteControllerDelegate overrides:
   virtual void OnResultChanged(bool default_match_changed) OVERRIDE;
 
@@ -45,6 +51,10 @@ class SearchBuilder : public AutocompleteControllerDelegate {
   // The omnibox AutocompleteController that collects/sorts/dup-
   // eliminates the results as they come in.
   scoped_ptr<AutocompleteController> controller_;
+
+  // ExtensionAppProvider used for apps only mode. If apps only mode becomes the
+  // only mode, remove the AutocompleteController above. Otherwise, remove this.
+  scoped_refptr<ExtensionAppProvider> apps_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchBuilder);
 };

@@ -6,8 +6,11 @@
 
 #include <string>
 
+#include "ash/ash_switches.h"
+#include "base/command_line.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/autocomplete/extension_app_provider.h"
 #include "chrome/browser/event_disposition.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
@@ -161,35 +164,53 @@ SearchBuilder::SearchBuilder(
     app_list::AppListModel::SearchResults* results)
     : profile_(profile),
       search_box_(search_box),
-      results_(results),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          controller_(new AutocompleteController(profile, this))) {
+      results_(results) {
   search_box_->SetHintText(
       l10n_util::GetStringUTF16(IDS_SEARCH_BOX_HINT));
   search_box_->SetIcon(*ResourceBundle::GetSharedInstance().
       GetBitmapNamed(IDR_OMNIBOX_SEARCH));
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kAppListShowAppsOnly)) {
+    // ExtensionAppProvider is a synchronous provider and does not really need a
+    // listener.
+    apps_provider_ = new ExtensionAppProvider(NULL, profile);
+  } else {
+    controller_.reset(new AutocompleteController(profile, this));
+  }
 }
 
 SearchBuilder::~SearchBuilder() {
 }
 
 void SearchBuilder::StartSearch() {
-  string16 user_text = search_box_->text();
-  string16 empty_string;
+  const string16& user_text = search_box_->text();
 
-  // Omnibox features such as keyword selection/accepting and instant query
-  // are not implemented.
-  // TODO(xiyuan): Figure out the features that need to support here.
-  controller_->Start(user_text,
-                     empty_string,  // desired TLD.
-                     false,  // don't prevent inline autocompletion
-                     false,  // no preferred keyword provider
-                     true,  // allow exact keyword matches
-                     AutocompleteInput::ALL_MATCHES);
+  if (controller_.get()) {
+    // Omnibox features such as keyword selection/accepting and instant query
+    // are not implemented.
+    // TODO(xiyuan): Figure out the features that need to support here.
+    controller_->Start(user_text, string16(), false, false, true,
+        AutocompleteInput::ALL_MATCHES);
+  } else {
+    AutocompleteInput input(user_text, string16(), false, false, true,
+        AutocompleteInput::ALL_MATCHES);
+    apps_provider_->Start(input, false);
+
+    // ExtensionAppProvider is a synchronous provider and results are ready
+    // after returning from Start.
+    AutocompleteResult ac_result;
+    ac_result.AppendMatches(apps_provider_->matches());
+    ac_result.SortAndCull(input);
+    PopulateFromACResult(ac_result);
+  }
 }
 
 void SearchBuilder::StopSearch() {
-  controller_->Stop(true /* clear_result */);
+  if (controller_.get())
+    controller_->Stop(true);
+  else
+    apps_provider_->Stop();
 }
 
 void SearchBuilder::OpenResult(const app_list::SearchResult& result,
@@ -229,13 +250,17 @@ void SearchBuilder::OpenResult(const app_list::SearchResult& result,
   }
 }
 
-void SearchBuilder::OnResultChanged(bool default_match_changed) {
-  // TODO(xiyuan): Handle default match properly.
-  const AutocompleteResult& ac_result = controller_->result();
+void SearchBuilder::PopulateFromACResult(const AutocompleteResult& ac_result) {
   results_->DeleteAll();
   for (ACMatches::const_iterator it = ac_result.begin();
        it != ac_result.end();
        ++it) {
     results_->Add(new SearchBuilderResult(profile_, *it));
   }
+}
+
+void SearchBuilder::OnResultChanged(bool default_match_changed) {
+  // TODO(xiyuan): Handle default match properly.
+  const AutocompleteResult& ac_result = controller_->result();
+  PopulateFromACResult(ac_result);
 }

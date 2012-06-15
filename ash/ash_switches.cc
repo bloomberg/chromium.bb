@@ -7,6 +7,10 @@
 namespace ash {
 namespace switches {
 
+// Show only apps result in app list search.
+// TODO(xiyuan): Create an app_list_switches.cc to put all app list switches.
+const char kAppListShowAppsOnly[] = "app-list-show-apps-only";
+
 // Enables the Oak tree viewer.
 const char kAshEnableOak[] = "ash-enable-oak";
 

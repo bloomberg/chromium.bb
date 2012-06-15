@@ -764,6 +764,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnablePinch),
   },
+  {
+    "app-list-show-apps-only",
+    IDS_FLAGS_ENABLE_APP_LIST_SHOW_APPS_ONLY_NAME,
+    IDS_FLAGS_ENABLE_APP_LIST_SHOW_APPS_ONLY_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(ash::switches::kAppListShowAppsOnly),
+  },
 #endif  // defined(USE_ASH)
 #if defined(OS_CHROMEOS)
   {
