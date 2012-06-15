@@ -29,7 +29,7 @@
     # is not allowed.
     #'cookie_tests',
     'correct_event_firing_tests',
-    'driver_element_finding_test',
+    'driver_element_finding_tests',
     'element_attribute_tests',
     'executing_async_javascript_test',
     'executing_javascript_test',
