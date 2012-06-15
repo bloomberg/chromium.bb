@@ -253,3 +253,18 @@
   fun:media::AudioOutputController::DoClose
   fun:base::internal::RunnableAdapter::Run
 }
+{
+  bug_133074_a
+  ThreadSanitizer:Race
+  fun:CAMutex::~CAMutex
+  fun:AudioQueueDispose
+  fun:media::PCMQueueOutAudioOutputStream::Close
+}
+{
+   bug_133074_b
+   ThreadSanitizer:Race
+   fun:media::AUAudioOutputStream::Stop
+   fun:media::AudioOutputMixer::ClosePhysicalStream
+   fun:media::AudioOutputMixer::Shutdown
+   fun:media::AudioManagerBase::ShutdownOnAudioThread
+}
