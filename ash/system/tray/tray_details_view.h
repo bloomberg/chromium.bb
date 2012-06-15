@@ -15,6 +15,7 @@ namespace ash {
 namespace internal {
 
 class FixedSizedScrollView;
+class ScrollBorder;
 class SpecialPopupRow;
 class ViewClickListener;
 
@@ -27,7 +28,8 @@ class TrayDetailsView : public views::View {
   // bottom-most row in the popup.
   void CreateSpecialRow(int string_id, ViewClickListener* listener);
 
-  // Creates a scrollable list.
+  // Creates a scrollable list. The list has a border at the bottom if there is
+  // any other view between the list and the footer row at the bottom.
   void CreateScrollableList();
 
   // Removes (and destroys) all child views.
@@ -40,11 +42,13 @@ class TrayDetailsView : public views::View {
  protected:
   // Overridden from views::View.
   virtual void Layout() OVERRIDE;
+  virtual void OnPaintBorder(gfx::Canvas* canvas) OVERRIDE;
 
  private:
   SpecialPopupRow* footer_;
   FixedSizedScrollView* scroller_;
   views::View* scroll_content_;
+  ScrollBorder* scroll_border_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayDetailsView);
 };
