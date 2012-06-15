@@ -2445,3 +2445,20 @@
    ...
    fun:_ZN2v88internal18GvnBasicBlockState32*
 }
+{
+   bug_133076_a
+   Memcheck:Uninitialized
+   fun:_ZNK7WebCore15DynamicNodeList4nodeEv
+   fun:_ZNK7WebCore13ChildNodeList6lengthEv
+   fun:_ZNK6WebKit11WebNodeList6lengthEv
+}
+{
+   bug_133076_b
+   Memcheck:Uninitialized
+   fun:_ZNK7WebCore15DynamicNodeList4nodeEv
+   fun:_ZN7WebCore13ChildNodeListD2Ev
+   fun:_ZN7WebCore13ChildNodeListD1Ev
+   fun:_ZN7WebCore13ChildNodeListD0Ev
+   fun:_ZN3WTF10RefCountedIN7WebCore8NodeListEE5derefEv
+   fun:_ZN6WebKit11WebNodeList6assignEPN7WebCore8NodeListE
+}
