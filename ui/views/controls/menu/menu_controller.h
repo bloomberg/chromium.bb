@@ -271,6 +271,13 @@ class VIEWS_EXPORT MenuController : public MessageLoop::Dispatcher {
 
   bool ShowSiblingMenu(SubmenuView* source, const gfx::Point& mouse_location);
 
+  // Shows a context menu for |menu_item| as a result of a located event if
+  // appropriate. This is invoked on long press and releasing the right mouse
+  // button. Returns whether a context menu was shown.
+  bool ShowContextMenu(MenuItemView* menu_item,
+                       SubmenuView* source,
+                       const LocatedEvent& event);
+
   // Closes all menus, including any menus of nested invocations of Run.
   void CloseAllNestedMenus();
 

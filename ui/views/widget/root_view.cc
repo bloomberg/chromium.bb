@@ -452,7 +452,7 @@ ui::GestureStatus RootView::OnGestureEvent(const GestureEvent& event) {
     // TODO: should only do this for the last touch id that goes up.
     if (event.type() == ui::ET_GESTURE_END)
       gesture_handler_ = NULL;
-    return handler->OnGestureEvent(handler_event);
+    return handler->ProcessGestureEvent(handler_event);
   }
 
   // Walk up the tree until we find a view that wants the gesture event.
@@ -466,7 +466,7 @@ ui::GestureStatus RootView::OnGestureEvent(const GestureEvent& event) {
 
     // See if this view wants to handle the Gesture.
     GestureEvent gesture_event(e, this, gesture_handler_);
-    status = gesture_handler_->OnGestureEvent(gesture_event);
+    status = gesture_handler_->ProcessGestureEvent(gesture_event);
 
     // The view could have removed itself from the tree when handling
     // OnGestureEvent(). So handle as per OnMousePressed. NB: we

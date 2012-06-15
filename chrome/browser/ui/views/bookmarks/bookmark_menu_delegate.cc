@@ -113,7 +113,9 @@ string16 BookmarkMenuDelegate::GetTooltipText(
 
 bool BookmarkMenuDelegate::IsTriggerableEvent(views::MenuItemView* menu,
                                               const views::Event& e) {
-  return event_utils::IsPossibleDispositionEvent(e);
+  return e.type() == ui::ET_GESTURE_TAP ||
+         e.type() == ui::ET_GESTURE_TAP_DOWN ||
+         event_utils::IsPossibleDispositionEvent(e);
 }
 
 void BookmarkMenuDelegate::ExecuteCommand(int id, int mouse_event_flags) {

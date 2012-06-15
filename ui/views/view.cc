@@ -825,11 +825,6 @@ ui::TouchStatus View::OnTouchEvent(const TouchEvent& event) {
 }
 
 ui::GestureStatus View::OnGestureEvent(const GestureEvent& event) {
-  if (event.type() == ui::ET_GESTURE_LONG_PRESS) {
-    // TODO(XXX): Call CanStartDragForView first?
-    return DoDrag(event, event.location()) ?
-        ui::GESTURE_STATUS_CONSUMED : ui::GESTURE_STATUS_UNKNOWN;
-  }
   return ui::GESTURE_STATUS_UNKNOWN;
 }
 
@@ -1942,6 +1937,16 @@ ui::TouchStatus View::ProcessTouchEvent(const TouchEvent& event) {
   // TODO(rjkroege): Implement a grab scheme similar to as as is found in
   //                 MousePressed.
   return OnTouchEvent(event);
+}
+
+ui::GestureStatus View::ProcessGestureEvent(const GestureEvent& event) {
+  if (context_menu_controller_ && event.type() == ui::ET_GESTURE_LONG_PRESS) {
+    gfx::Point location(event.location());
+    ConvertPointToScreen(this, &location);
+    ShowContextMenu(location, true);
+    return ui::GESTURE_STATUS_CONSUMED;
+  }
+  return OnGestureEvent(event);
 }
 
 // Accelerators ----------------------------------------------------------------

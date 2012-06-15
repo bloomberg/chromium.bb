@@ -477,21 +477,8 @@ void MenuController::OnMouseReleased(SubmenuView* source,
   MenuPart part = GetMenuPart(source, event.location());
   if (event.IsRightMouseButton() && (part.type == MenuPart::MENU_ITEM &&
                                      part.menu)) {
-    // Set the selection immediately, making sure the submenu is only open
-    // if it already was.
-    int selection_types = SELECTION_UPDATE_IMMEDIATELY;
-    if (state_.item == pending_state_.item && state_.submenu_open)
-      selection_types |= SELECTION_OPEN_SUBMENU;
-    SetSelection(pending_state_.item, selection_types);
-    gfx::Point loc(event.location());
-    View::ConvertPointToScreen(source->GetScrollViewContainer(), &loc);
-
-    // If we open a context menu just return now
-    if (part.menu->GetDelegate()->ShowContextMenu(
-            part.menu, part.menu->GetCommand(), loc, true)) {
-      SendMouseCaptureLostToActiveView();
+    if (ShowContextMenu(part.menu, source, event))
       return;
-    }
   }
 
   // We can use Ctrl+click or the middle mouse button to recursively open urls
@@ -537,22 +524,30 @@ bool MenuController::OnMouseWheel(SubmenuView* source,
 
 ui::GestureStatus MenuController::OnGestureEvent(SubmenuView* source,
                                                  const GestureEvent& event) {
+  MenuPart part = GetMenuPart(source, event.location());
   if (event.type() == ui::ET_GESTURE_TAP_DOWN) {
     SetSelectionOnPointerDown(source, event);
     return ui::GESTURE_STATUS_CONSUMED;
-  } else if (event.type() == ui::ET_GESTURE_LONG_PRESS && possible_drag_) {
-    StartDrag(source, event.location());
-    return ui::GESTURE_STATUS_CONSUMED;
+  } else if (event.type() == ui::ET_GESTURE_LONG_PRESS) {
+    if (part.type == MenuPart::MENU_ITEM && part.menu) {
+      if (ShowContextMenu(part.menu, source, event))
+        return ui::GESTURE_STATUS_CONSUMED;
+    }
   } else if (event.type() == ui::ET_GESTURE_TAP) {
-    if (pending_state_.item) {
-      if (pending_state_.item->HasSubmenu())
-        OpenSubmenuChangeSelectionIfCan();
-      else if (pending_state_.item->enabled())
-        Accept(pending_state_.item, 0);
+    if (!part.is_scroll() && part.menu &&
+        !(part.menu->HasSubmenu())) {
+      if (part.menu->GetDelegate()->IsTriggerableEvent(
+          part.menu, event)) {
+        Accept(part.menu, 0);
+      }
+      return ui::GESTURE_STATUS_CONSUMED;
+    } else if (part.type == MenuPart::MENU_ITEM) {
+      // User either tapped on empty space, or a menu that has children.
+      SetSelection(part.menu ? part.menu : state_.item,
+                   SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
       return ui::GESTURE_STATUS_CONSUMED;
     }
   }
-  MenuPart part = GetMenuPart(source, event.location());
   if (!part.submenu)
     return ui::GESTURE_STATUS_UNKNOWN;
   return part.submenu->OnGestureEvent(event);
@@ -1189,6 +1184,26 @@ bool MenuController::ShowSiblingMenu(SubmenuView* source,
   alt_menu->controller_ = this;
   SetSelection(alt_menu, SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
   return true;
+}
+
+bool MenuController::ShowContextMenu(MenuItemView* menu_item,
+                                     SubmenuView* source,
+                                     const LocatedEvent& event) {
+  // Set the selection immediately, making sure the submenu is only open
+  // if it already was.
+  int selection_types = SELECTION_UPDATE_IMMEDIATELY;
+  if (state_.item == pending_state_.item && state_.submenu_open)
+    selection_types |= SELECTION_OPEN_SUBMENU;
+  SetSelection(pending_state_.item, selection_types);
+  gfx::Point loc(event.location());
+  View::ConvertPointToScreen(source->GetScrollViewContainer(), &loc);
+
+  if (menu_item->GetDelegate()->ShowContextMenu(
+          menu_item, menu_item->GetCommand(), loc, true)) {
+    SendMouseCaptureLostToActiveView();
+    return true;
+  }
+  return false;
 }
 
 void MenuController::CloseAllNestedMenus() {

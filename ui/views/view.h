@@ -1276,6 +1276,10 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // of OnTouchEvent.
   ui::TouchStatus ProcessTouchEvent(const TouchEvent& event);
 
+  // RootView will invoke this with incoming GestureEvents. This will invoke
+  // OnGestureEvent and return the result.
+  ui::GestureStatus ProcessGestureEvent(const GestureEvent& event);
+
   // Accelerators --------------------------------------------------------------
 
   // Registers this view's keyboard accelerators that are not registered to
