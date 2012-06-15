@@ -10662,7 +10662,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_REMOVABLE_DIRECTORY_LABEL" desc="/removable directory label.">
         External Storage
       </message>
-      <message name="IDS_FILE_BROWSER_GDATA_DIRECTORY_LABEL" translateable="false" desc="/gdata directory label.">
+      <message name="IDS_FILE_BROWSER_GDATA_DIRECTORY_LABEL" desc="/drive directory label.">
         Google Drive
       </message>
       <message name="IDS_FILE_BROWSER_MEDIA_DIRECTORY_LABEL" desc="/media directory label.">
@@ -11000,9 +11000,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_FILE_BROWSER_CONFIRM_MOBILE_DATA_USE_PLURAL" desc="Message informing the user that opening several files from Google Drive will use mobile data.">
         Fetching these files will use approximately <ph name="FILE_SIZE">$1<ex>44 MB</ex></ph> of mobile data.
       </message>
-      <message name="IDS_FILE_BROWSER_GDATA_PRODUCT_NAME" desc="Google Drive product name." translateable="false">
-        Google Drive
-      </message>
       <message name="IDS_FILE_BROWSER_GDATA_MOBILE_CONNECTION_OPTION" desc="Options that determines if we will allow Google Drive content sync over mobile conntections.">
         Do not use mobile data for sync
       </message>
@@ -11013,7 +11010,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         You have run out of space
       </message>
       <message name="IDS_FILE_BROWSER_GDATA_SERVER_OUT_OF_SPACE_HEADER" desc="Message informing the user that there is not enough space on server side to store a new file.">
-        You have run out of space in <ph name="PRODUCT_NAME">$1<ex>Google Drive</ex></ph>
+        You have run out of space in Google Drive
       </message>
       <message name="IDS_FILE_BROWSER_GDATA_LOADING" desc="Message informing the user that we are loading content of Google Drive.">
         Hang with us. We’re fetching your files.
@@ -11022,7 +11019,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <ph name="FILE_COUNT">$1<ex>100</ex></ph> files fetched
       </message>
       <message name="IDS_FILE_BROWSER_GDATA_CANNOT_REACH" desc="Message informing the user that Google Drive can not be reached at this moment.">
-        <ph name="PRODUCT_NAME">$1<ex>Google Drive</ex></ph> cannot be reached at this time.
+        Google Drive cannot be reached at this time.
       </message>
       <message name="IDS_FILE_BROWSER_GDATA_LEARN_MORE" desc="In the Loading Google Drive page and in the Welcome to Google Drive banner, a text on the Learn More link.">
         Learn more
@@ -11036,19 +11033,19 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <ph name="MARKUP_4">&lt;li&gt;<ex>&lt;li&gt;</ex></ph>delete files from your Downloads folder<ph name="MARKUP_5">&lt;/li&gt;&lt;/ul&gt;<ex>&lt;/li&gt;&lt;/ul&gt;</ex></ph>
       </message>
       <message name="IDS_FILE_BROWSER_GDATA_SERVER_OUT_OF_SPACE_MESSAGE" desc="Message informing the user how to make more space available on Google Drive server side.">
-        You do not have enough space in <ph name="PRODUCT_NAME">$1<ex>Google Drive</ex></ph> to save "<ph name="FILE_NAME">$2<ex>document.pdf</ex></ph>". Please remove files or <ph name="BEGIN_LINK">&lt;a target='_blank' href='$3'&gt;</ph>buy more storage space<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
+        You do not have enough space in Google Drive to save "<ph name="FILE_NAME">$1<ex>document.pdf</ex></ph>". Please remove files or <ph name="BEGIN_LINK">&lt;a target='_blank' href='$2'&gt;</ph>buy more storage space<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
       </message>
       <message name="IDS_FILE_BROWSER_GDATA_WELCOME_TITLE" desc="In the Welcome to Google Drive banner, title of banner.">
-        Welcome to <ph name="PRODUCT_NAME">$1<ex>Google Drive</ex></ph>!
+        Welcome to Google Drive!
       </message>
       <message name="IDS_FILE_BROWSER_GDATA_WELCOME_TEXT_SHORT" desc="In the Welcome to Google Drive banner, text of the welcome message, short version.">
         All files saved in this folder are backed up online automatically
       </message>
       <message name="IDS_FILE_BROWSER_GDATA_WELCOME_TEXT_LONG" desc="In the Welcome to Google Drive banner, text of the welcome message, long version.">
         <ph name="MARKUP_1">&lt;p&gt;&lt;strong&gt;<ex>&lt;strong&gt;</ex></ph>Access files from everywhere, even offline.<ph name="MARKUP_2">&lt;/strong&gt;<ex>&lt;/strong&gt;</ex></ph>
-        Files in <ph name="PRODUCT_NAME">$1<ex>Google Drive</ex></ph> are up-to-date and available from any device.<ph name="MARKUP_3">&lt;/p&gt;<ex>&lt;/p&gt;</ex></ph>
+        Files in Google Drive are up-to-date and available from any device.<ph name="MARKUP_3">&lt;/p&gt;<ex>&lt;/p&gt;</ex></ph>
         <ph name="MARKUP_4">&lt;p&gt;&lt;strong&gt;<ex>&lt;strong&gt;</ex></ph>Keep your files safe.<ph name="MARKUP_5">&lt;/strong&gt;<ex>&lt;/strong&gt;</ex></ph>
-        No matter what happens to your device, your files are safely stored in <ph name="PRODUCT_NAME">$1<ex>Google Drive</ex></ph>.<ph name="MARKUP_6">&lt;/p&gt;<ex>&lt;/p&gt;</ex></ph>
+        No matter what happens to your device, your files are safely stored in Google Drive.<ph name="MARKUP_6">&lt;/p&gt;<ex>&lt;/p&gt;</ex></ph>
         <ph name="MARKUP_7">&lt;p&gt;&lt;strong&gt;<ex>&lt;strong&gt;</ex></ph>Share, create and collaborate<ph name="MARKUP_8">&lt;/strong&gt;<ex>&lt;/strong&gt;</ex></ph>
         on files with others all in one place.<ph name="MARKUP_9">&lt;/p&gt;<ex>&lt;/p&gt;</ex></ph>
       </message>

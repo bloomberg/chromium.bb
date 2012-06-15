@@ -528,21 +528,20 @@ chrome.fileBrowserPrivate = {
       GDATA_SHOW_HOSTED_FILES_OPTION: 'Show Google Docs files',
 
       OFFLINE_COLUMN_LABEL: 'Available offline',
-      GDATA_PRODUCT_NAME: 'Google Drive',
       GDATA_LOADING: 'Hang with us. We\'re fetching your files.',
       GDATA_RETRY: 'Retry',
       GDATA_LEARN_MORE: 'Learn more',
       GDATA_CANNOT_REACH: '$1 cannot be reached at this time',
 
-      GDATA_WELCOME_TITLE: 'Welcome to $1!',
+      GDATA_WELCOME_TITLE: 'Welcome to Google Drive!',
       GDATA_WELCOME_TEXT_SHORT:
           'All files saved in this folder are backed up online automatically',
       GDATA_WELCOME_TEXT_LONG:
           '<p><strong>Access files from everywhere, even offline.</strong> ' +
-          'Files in $1 are up-to-date and available from any device.</p>' +
+          'Files in Google Drive are up-to-date and available from any device.</p>' +
           '<p><strong>Keep your files safe.</strong> ' +
           'No matter what happens to your device, your files are ' +
-          'safely stored in $1.</p>' +
+          'safely stored in Google Drive .</p>' +
           '<p><strong>Share, create and collaborate</strong> ' +
           'on files with others all in one place .</p>',
       GDATA_WELCOME_DISMISS: 'Dismiss',

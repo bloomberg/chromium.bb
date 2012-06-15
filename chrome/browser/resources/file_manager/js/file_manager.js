@@ -839,8 +839,7 @@ FileManager.prototype = {
           progress.textContent = strf('GDATA_LOADING_PROGRESS', fileCount);
         });
 
-    create(panel, 'div', 'error',
-           strf('GDATA_CANNOT_REACH', str('GDATA_PRODUCT_NAME')));
+    create(panel, 'div', 'error', str('GDATA_CANNOT_REACH'));
 
     var retryButton = create(panel, 'button', 'retry', str('GDATA_RETRY'));
     retryButton.hidden = true;
@@ -1305,10 +1304,8 @@ FileManager.prototype = {
               event.error.data.code == FileError.QUOTA_EXCEEDED_ERR) {
             this.hideButter();
             this.alert.showHtml(
-                strf('GDATA_SERVER_OUT_OF_SPACE_HEADER',
-                    str('GDATA_PRODUCT_NAME')),
+                strf('GDATA_SERVER_OUT_OF_SPACE_HEADER'),
                 strf('GDATA_SERVER_OUT_OF_SPACE_MESSAGE',
-                    str('GDATA_PRODUCT_NAME'),
                     decodeURIComponent(
                         event.error.data.sourceFileUrl.split('/').pop()),
                     GOOGLE_DRIVE_BUY_STORAGE));
@@ -3598,7 +3595,7 @@ FileManager.prototype = {
   FileManager.prototype.updateTitle_ = function() {
     this.document_.title = this.getCurrentDirectory().substr(1).replace(
         new RegExp('^' + DirectoryModel.GDATA_DIRECTORY),
-        str('GDATA_PRODUCT_NAME'));
+        str('GDATA_DIRECTORY_LABEL'));
   },
 
   /**
@@ -4592,11 +4589,10 @@ FileManager.prototype = {
       var message = createDiv('gdrive-welcome-message', wrapper);
 
       var title = createDiv('gdrive-welcome-title', message);
-      title.textContent =
-          strf('GDATA_WELCOME_TITLE', str('GDATA_PRODUCT_NAME'));
+      title.textContent = str('GDATA_WELCOME_TITLE');
 
       var text = createDiv('gdrive-welcome-text', message);
-      text.innerHTML = strf(messageId, str('GDATA_PRODUCT_NAME'));
+      text.innerHTML = str(messageId);
 
       var links = createDiv('gdrive-welcome-links', message);
 
