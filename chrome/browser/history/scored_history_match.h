@@ -97,6 +97,10 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   static float GetPopularityScore(int typed_count,
                                   int visit_count);
 
+  // Sets use_new_scoring based on command line flags and/or
+  // field trial state.
+  static void InitializeNewScoringField();
+
   // End of functions used only in "new" scoring --------------------------
 
   // An interim score taking into consideration location and completeness
@@ -127,7 +131,7 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   static float* raw_term_score_to_topicality_score;
 
   // Allows us to determing setting for use_new_scoring_ only once.
-  static bool initialized;
+  static bool initialized_;
 
   // Whether to use new-score or old-scoring.  Set in the constructor
   // by examining command line flags.

@@ -14,8 +14,10 @@
 
 #include "base/command_line.h"
 #include "base/i18n/case_conversion.h"
+#include "base/metrics/histogram.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/autocomplete/autocomplete_field_trial.h"
 #include "chrome/browser/autocomplete/url_prefix.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
@@ -35,18 +37,15 @@ const int kScoreRank[] = { 1450, 1200, 900, 400 };
 
 // ScoredHistoryMatch ----------------------------------------------------------
 
-bool ScoredHistoryMatch::initialized = false;
+bool ScoredHistoryMatch::initialized_ = false;
 bool ScoredHistoryMatch::use_new_scoring = false;
 
 ScoredHistoryMatch::ScoredHistoryMatch()
     : raw_score(0),
       can_inline(false) {
-  if (!initialized) {
-    const std::string switch_value = CommandLine::ForCurrentProcess()->
-        GetSwitchValueASCII(switches::kOmniboxHistoryQuickProviderNewScoring);
-    if (switch_value == switches::kOmniboxHistoryQuickProviderNewScoringEnabled)
-      use_new_scoring = true;
-    initialized = true;
+  if (!initialized_) {
+    InitializeNewScoringField();
+    initialized_ = true;
   }
 }
 
@@ -58,12 +57,9 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
     : HistoryMatch(row, 0, false, false),
       raw_score(0),
       can_inline(false) {
-  if (!initialized) {
-    const std::string switch_value = CommandLine::ForCurrentProcess()->
-        GetSwitchValueASCII(switches::kOmniboxHistoryQuickProviderNewScoring);
-    if (switch_value == switches::kOmniboxHistoryQuickProviderNewScoringEnabled)
-      use_new_scoring = true;
-    initialized = true;
+  if (!initialized_) {
+    InitializeNewScoringField();
+    initialized_ = true;
   }
 
   GURL gurl = row.url();
@@ -474,6 +470,66 @@ float ScoredHistoryMatch::GetPopularityScore(int typed_count,
   // The max()s are to guard against database corruption.
   return (std::max(typed_count, 0) * 5.0 + std::max(visit_count, 0) * 3.0) /
       (5.0 + 3.0);
+}
+
+void ScoredHistoryMatch::InitializeNewScoringField() {
+  enum NewScoringOption {
+    OLD_SCORING = 0,
+    NEW_SCORING = 1,
+    NEW_SCORING_AUTO_BUT_NOT_IN_FIELD_TRIAL = 2,
+    NEW_SCORING_FIELD_TRIAL_DEFAULT_GROUP = 3,
+    NEW_SCORING_FIELD_TRIAL_EXPERIMENT_GROUP = 4,
+    NUM_OPTIONS = 5
+  };
+  // should always be overwritten
+  NewScoringOption new_scoring_option = NUM_OPTIONS;
+
+  const std::string switch_value = CommandLine::ForCurrentProcess()->
+      GetSwitchValueASCII(switches::kOmniboxHistoryQuickProviderNewScoring);
+  if (switch_value == switches::kOmniboxHistoryQuickProviderNewScoringEnabled) {
+    new_scoring_option = NEW_SCORING;
+    use_new_scoring = true;
+  } else if (switch_value ==
+             switches::kOmniboxHistoryQuickProviderNewScoringDisabled) {
+    new_scoring_option = OLD_SCORING;
+    use_new_scoring = false;
+  } else {
+    // We'll assume any other flag means automatic.
+    // Automatic means eligible for the field trial.
+
+    // For the field trial stuff to work correctly, we must be running
+    // on the same thread as the thread that created the field trial,
+    // which happens via a call to AutocompleteFieldTrial::Active in
+    // chrome_browser_main.cc on the main thread.  Let's check this to
+    // be sure.  We check "if we've heard of the UI thread then we'd better
+    // be on it."  The first part is necessary so unit tests pass.  (Many
+    // unit tests don't set up the threading naming system; hence
+    // CurrentlyOn(UI thread) will fail.)
+    DCHECK(!content::BrowserThread::IsWellKnownThread(
+               content::BrowserThread::UI) ||
+           content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    if (AutocompleteFieldTrial::InHQPNewScoringFieldTrial()) {
+      if (AutocompleteFieldTrial::
+          InHQPNewScoringFieldTrialExperimentGroup()) {
+        new_scoring_option = NEW_SCORING_FIELD_TRIAL_EXPERIMENT_GROUP;
+        use_new_scoring = true;
+      } else {
+        new_scoring_option = NEW_SCORING_FIELD_TRIAL_DEFAULT_GROUP;
+        use_new_scoring = false;
+      }
+    } else {
+      new_scoring_option = NEW_SCORING_AUTO_BUT_NOT_IN_FIELD_TRIAL;
+      use_new_scoring = false;
+    }
+  }
+
+  // Add a beacon to the logs that'll allow us to identify later what
+  // new scoring state a user is in.  Do this by incrementing a bucket in
+  // a histogram, where the bucket represents the user's new scoring state.
+  UMA_HISTOGRAM_ENUMERATION(
+      "Omnibox.HistoryQuickProviderNewScoringFieldTrialBeacon",
+      new_scoring_option, NUM_OPTIONS);
+
 }
 
 }  // namespace history

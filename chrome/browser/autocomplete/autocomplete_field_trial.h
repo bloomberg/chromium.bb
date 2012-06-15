@@ -51,6 +51,21 @@ class AutocompleteFieldTrial {
   // to create.)
   static int GetSuggestNumberOfGroups();
 
+  // ---------------------------------------------------------
+  // For the History Quick Provider new scoring field trial.
+
+  // Returns whether the user is in any field trial group for this
+  // field trial.  False indicates that the field trial wasn't
+  // successfully created for some reason.
+  static bool InHQPNewScoringFieldTrial();
+
+  // Returns whether the user should get the experimental setup or
+  // the default setup for this field trial.  The experiment
+  // group uses "new scoring" (a complex multiplicative calculation
+  // that, among other differences from "old scoring", uses word
+  // break information).
+  static bool InHQPNewScoringFieldTrialExperimentGroup();
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(AutocompleteFieldTrial);
 };
