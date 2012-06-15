@@ -1506,6 +1506,8 @@
         'remoting_jingle_glue',
       ],
       'sources': [
+        'protocol/audio_reader.cc',
+        'protocol/audio_reader.h',
         'protocol/audio_stub.h',
         'protocol/audio_writer.cc',
         'protocol/audio_writer.h',
