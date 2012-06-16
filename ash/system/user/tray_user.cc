@@ -121,14 +121,13 @@ class UserView : public views::View,
     set_background(views::Background::CreateSolidBackground(kBackgroundColor));
 
     bool guest = login_ == ash::user::LOGGED_IN_GUEST;
-    bool kiosk = login_ == ash::user::LOGGED_IN_KIOSK;
     bool locked = login_ == ash::user::LOGGED_IN_LOCKED;
 
     container_ = new TrayPopupTextButtonContainer;
     container_->layout()->set_spread_blank_space(false);
     AddChildView(container_);
 
-    if (!guest && !kiosk)
+    if (!guest)
       AddUserInfo();
 
     // A user should not be able to modify logged in state when screen is
@@ -146,16 +145,6 @@ class UserView : public views::View,
 
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
 
-    if (kiosk) {
-      views::Label* label = new views::Label;
-      label->SetText(
-          bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_KIOSK_LABEL));
-      label->set_border(views::Border::CreateEmptyBorder(
-            0, kTrayPopupPaddingHorizontal, 0, 1));
-      label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-      container_->AddChildView(label);
-    }
-
     TrayPopupTextButton* button =
         new TrayPopupTextButton(this, bundle.GetLocalizedString(
           guest ? IDS_ASH_STATUS_TRAY_EXIT_GUEST :
@@ -171,6 +160,19 @@ class UserView : public views::View,
     user_info_->SetLayoutManager(new views::BoxLayout(
         views::BoxLayout::kHorizontal, kTrayPopupPaddingHorizontal,
         kUserInfoVerticalPadding, kTrayPopupPaddingBetweenItems));
+    container_->AddChildView(user_info_);
+
+    if (login_ == ash::user::LOGGED_IN_KIOSK) {
+      views::Label* label = new views::Label;
+      ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+      label->SetText(
+          bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_KIOSK_LABEL));
+      label->set_border(views::Border::CreateEmptyBorder(
+            0, 4, 0, 1));
+      label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+      user_info_->AddChildView(label);
+      return;
+    }
 
     RoundedImageView* image = new RoundedImageView(kTrayRoundedBorderRadius);
     image->SetImage(ash::Shell::GetInstance()->tray_delegate()->GetUserImage(),
@@ -193,7 +195,6 @@ class UserView : public views::View,
     user->AddChildView(email_);
 
     user_info_->AddChildView(user);
-    container_->AddChildView(user_info_);
   }
 
   // Overridden from views::ButtonListener.
