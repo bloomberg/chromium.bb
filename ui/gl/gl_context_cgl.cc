@@ -30,9 +30,10 @@ bool GLContextCGL::Initialize(GLSurface* compatible_surface,
       static_cast<GLContextCGL*>(share_group()->GetContext()) : NULL;
 
   std::vector<CGLPixelFormatAttribute> attribs;
-  // Allow offline renderers for every context, so that they can all be in the
-  // same share group.
-  attribs.push_back(kCGLPFAAllowOfflineRenderers);
+  // If the system supports dual gpus then allow offline renderers for every
+  // context, so that they can all be in the same share group.
+  if (SupportsDualGpus())
+    attribs.push_back(kCGLPFAAllowOfflineRenderers);
   if (GetGLImplementation() == kGLImplementationAppleGL) {
     attribs.push_back(kCGLPFARendererID);
     attribs.push_back((CGLPixelFormatAttribute) kCGLRendererGenericFloatID);
