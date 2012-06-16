@@ -23,7 +23,8 @@ namespace views {
 BoundsAnimator::BoundsAnimator(View* parent)
     : parent_(parent),
       container_(new AnimationContainer()),
-      animation_duration_ms_(kDefaultAnimationDuration) {
+      animation_duration_ms_(kDefaultAnimationDuration),
+      tween_type_(Tween::EASE_OUT) {
   container_->set_observer(this);
 }
 
@@ -154,7 +155,7 @@ SlideAnimation* BoundsAnimator::CreateAnimation() {
   SlideAnimation* animation = new SlideAnimation(this);
   animation->SetContainer(container_.get());
   animation->SetSlideDuration(animation_duration_ms_);
-  animation->SetTweenType(Tween::EASE_OUT);
+  animation->SetTweenType(tween_type_);
   return animation;
 }
 

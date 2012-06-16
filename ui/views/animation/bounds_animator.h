@@ -13,6 +13,7 @@
 #include "base/observer_list.h"
 #include "ui/base/animation/animation_container_observer.h"
 #include "ui/base/animation/animation_delegate.h"
+#include "ui/base/animation/tween.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/views_export.h"
 
@@ -90,6 +91,9 @@ class VIEWS_EXPORT BoundsAnimator : public ui::AnimationDelegate,
   // Overrides default animation duration. |duration_ms| is the new duration in
   // milliseconds.
   void SetAnimationDuration(int duration_ms);
+
+  // Sets the tween type for new animations. Default is EASE_OUT.
+  void set_tween_type(ui::Tween::Type type) { tween_type_ = type; }
 
   void AddObserver(BoundsAnimatorObserver* observer);
   void RemoveObserver(BoundsAnimatorObserver* observer);
@@ -181,6 +185,8 @@ class VIEWS_EXPORT BoundsAnimator : public ui::AnimationDelegate,
   gfx::Rect repaint_bounds_;
 
   int animation_duration_ms_;
+
+  ui::Tween::Type tween_type_;
 
   DISALLOW_COPY_AND_ASSIGN(BoundsAnimator);
 };
