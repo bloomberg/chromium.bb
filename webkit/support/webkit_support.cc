@@ -422,6 +422,12 @@ GraphicsContext3DImplementation GetGraphicsContext3DImplementation() {
 
 WebKit::WebGraphicsContext3D* CreateGraphicsContext3D(
     const WebKit::WebGraphicsContext3D::Attributes& attributes,
+    WebKit::WebView* web_view) {
+    return CreateGraphicsContext3D(attributes, web_view, true);
+}
+
+WebKit::WebGraphicsContext3D* CreateGraphicsContext3D(
+    const WebKit::WebGraphicsContext3D::Attributes& attributes,
     WebKit::WebView* web_view,
     bool direct) {
   switch (webkit_support::GetGraphicsContext3DImplementation()) {
