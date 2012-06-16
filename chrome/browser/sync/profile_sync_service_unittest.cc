@@ -362,29 +362,6 @@ TEST_F(ProfileSyncServiceTest, TestStartupWithOldSyncData) {
   ASSERT_NE(file2text.compare(nonsense2), 0);
 }
 
-// Disabled because of crbug.com/109668.
-TEST_F(ProfileSyncServiceTest, DISABLED_CorruptDatabase) {
-  const char* nonesense = "not a database";
-
-  FilePath temp_directory = profile_->GetPath().AppendASCII("Sync Data");
-  FilePath sync_db_file = temp_directory.AppendASCII("SyncData.sqlite3");
-
-  ASSERT_TRUE(file_util::CreateDirectory(temp_directory));
-  ASSERT_NE(-1,
-            file_util::WriteFile(sync_db_file, nonesense, strlen(nonesense)));
-
-  // Initialize with HasSyncSetupCompleted() set to true and InitialSyncEnded
-  // false.  This is to model the scenario that would result when opening the
-  // sync database fails.
-  StartSyncServiceAndSetInitialSyncEnded(false, true, true, true, false, true);
-
-  // The backend is not ready.  Ensure the PSS knows this.
-  EXPECT_FALSE(service_->sync_initialized());
-
-  // Ensure we will be prepared to initialize a fresh DB next time.
-  EXPECT_FALSE(service_->HasSyncSetupCompleted());
-}
-
 }  // namespace
 
 }  // namespace browser_sync

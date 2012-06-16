@@ -2084,25 +2084,6 @@ TEST_F(DirectoryBackingStoreTest, ModelTypeIds) {
   }
 }
 
-// TODO(109668): This had to be disabled because the latest API will
-// intentionally crash when a database is this badly corrupted.
-TEST_F(DirectoryBackingStoreTest, DISABLED_Corruption) {
-  {
-    scoped_ptr<OnDiskDirectoryBackingStore> dbs(
-        new OnDiskDirectoryBackingStore(GetUsername(), GetDatabasePath()));
-    EXPECT_TRUE(LoadAndIgnoreReturnedData(dbs.get()));
-  }
-  std::string bad_data("BAD DATA");
-  EXPECT_TRUE(file_util::WriteFile(GetDatabasePath(), bad_data.data(),
-                                   bad_data.size()));
-  {
-    scoped_ptr<OnDiskDirectoryBackingStore> dbs(
-        new OnDiskDirectoryBackingStore(GetUsername(), GetDatabasePath()));
-
-    EXPECT_FALSE(LoadAndIgnoreReturnedData(dbs.get()));
-  }
-}
-
 TEST_F(DirectoryBackingStoreTest, DeleteEntries) {
   sql::Connection connection;
   ASSERT_TRUE(connection.OpenInMemory());
