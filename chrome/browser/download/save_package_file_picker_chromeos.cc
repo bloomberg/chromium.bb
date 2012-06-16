@@ -9,8 +9,6 @@
 #include "base/i18n/file_util_icu.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/gdata/gdata_download_observer.h"
-#include "chrome/browser/chromeos/gdata/gdata_file_system.h"
-#include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -80,10 +78,7 @@ void SavePackageFilePickerChromeOS::FileSelected(
       web_contents()->GetBrowserContext());
   DCHECK(profile);
 
-  gdata::GDataSystemService* system_service =
-      gdata::GDataSystemServiceFactory::GetForProfile(profile);
-  // system_service is NULL in incognito.
-  if (system_service && gdata::util::IsUnderGDataMountPoint(selected_path)) {
+  if (gdata::util::IsUnderGDataMountPoint(selected_path)) {
     // Here's a map to the callback chain:
     // GetGDataTempDownloadPath ->
     //   ContinueSettingUpGDataDownload ->
