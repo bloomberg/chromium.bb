@@ -307,24 +307,22 @@ class GDataFileSystemInterface {
   // retrieve and refresh file system content from server and disk cache.
   //
   // Can be called from UI/IO thread. |callback| is run on the calling thread.
-  virtual void GetEntryInfoByPathAsync(
-      const FilePath& file_path,
-      const GetEntryInfoCallback& callback) = 0;
+  virtual void GetEntryInfoByPath(const FilePath& file_path,
+                                  const GetEntryInfoCallback& callback) = 0;
 
   // Finds a file (not a directory) by |file_path|. This call will also
   // retrieve and refresh file system content from server and disk cache.
   //
   // Can be called from UI/IO thread. |callback| is run on the calling thread.
-  virtual void GetFileInfoByPathAsync(const FilePath& file_path,
-                                      const GetFileInfoCallback& callback) = 0;
+  virtual void GetFileInfoByPath(const FilePath& file_path,
+                                 const GetFileInfoCallback& callback) = 0;
 
   // Finds and reads a directory by |file_path|. This call will also retrieve
   // and refresh file system content from server and disk cache.
   //
   // Can be called from UI/IO thread. |callback| is run on the calling thread.
-  virtual void ReadDirectoryByPathAsync(
-      const FilePath& file_path,
-      const ReadDirectoryCallback& callback) = 0;
+  virtual void ReadDirectoryByPath(const FilePath& file_path,
+                                   const ReadDirectoryCallback& callback) = 0;
 
   // Requests a refresh of the directory pointed by |file_path| (i.e. fetches
   // the latest metadata of files in the target directory).
@@ -352,9 +350,9 @@ class GDataFileSystemInterface {
   //
   // TODO(tbarzic): Get rid of 2' once we're ready.
   // Can be called from UI/IO thread. |callback| is run on the calling thread.
-  virtual void SearchAsync(const std::string& search_query,
-                           const SearchCallback& search_callback,
-                           const ReadDirectoryCallback& callback) = 0;
+  virtual void Search(const std::string& search_query,
+                      const SearchCallback& search_callback,
+                      const ReadDirectoryCallback& callback) = 0;
 
   // Fetches the user's Account Metadata to find out current quota information
   // and returns it to the callback.
@@ -392,9 +390,9 @@ class GDataFileSystem : public GDataFileSystemInterface,
   virtual void FindEntryByResourceId(
       const std::string& resource_id,
       const FindEntryCallback& callback) OVERRIDE;
-  virtual void SearchAsync(const std::string& search_query,
-                           const SearchCallback& search_callback,
-                           const ReadDirectoryCallback& callback) OVERRIDE;
+  virtual void Search(const std::string& search_query,
+                      const SearchCallback& search_callback,
+                      const ReadDirectoryCallback& callback) OVERRIDE;
   virtual void TransferFileFromRemoteToLocal(
       const FilePath& remote_src_file_path,
       const FilePath& local_dest_file_path,
@@ -431,13 +429,13 @@ class GDataFileSystem : public GDataFileSystemInterface,
   virtual void GetCacheState(const std::string& resource_id,
                              const std::string& md5,
                              const GetCacheStateCallback& callback) OVERRIDE;
-  virtual void GetEntryInfoByPathAsync(
+  virtual void GetEntryInfoByPath(
       const FilePath& file_path,
       const GetEntryInfoCallback& callback) OVERRIDE;
-  virtual void GetFileInfoByPathAsync(
+  virtual void GetFileInfoByPath(
       const FilePath& file_path,
       const GetFileInfoCallback& callback) OVERRIDE;
-  virtual void ReadDirectoryByPathAsync(
+  virtual void ReadDirectoryByPath(
       const FilePath& file_path,
       const ReadDirectoryCallback& callback) OVERRIDE;
   virtual void RequestDirectoryRefresh(
@@ -581,7 +579,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Returns NULL if it does not find the entry.
   GDataEntry* GetGDataEntryByPath(const FilePath& file_path);
 
-  // Callback passed to |LoadFeedFromServer| from |SearchAsync| method.
+  // Callback passed to |LoadFeedFromServer| from |Search| method.
   // |callback| is that should be run with data received from
   // |LoadFeedFromServer|.
   // |params| params used for getting document feed for content search.
@@ -614,7 +612,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
                            const FilePath& remote_dest_file_path,
                            const FileOperationCallback& callback);
 
-  // Invoked upon completion of GetFileInfoByPathAsync initiated by
+  // Invoked upon completion of GetFileInfoByPath initiated by
   // GetFileByPath. It then continues to invoke GetResolvedFileByPath.
   void OnGetFileInfoCompleteForGetFileByPath(
       const FilePath& file_path,
@@ -623,7 +621,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
       base::PlatformFileError error,
       scoped_ptr<GDataFileProto> file_info);
 
-  // Invoked upon completion of GetFileInfoByPathAsync initiated by OpenFile.
+  // Invoked upon completion of GetFileInfoByPath initiated by OpenFile.
   // It then continues to invoke GetResolvedFileByPath and proceeds to
   // OnGetFileCompleteForOpenFile.
   void OnGetFileInfoCompleteForOpenFile(const FilePath& file_path,
@@ -1041,17 +1039,17 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // Initializes preference change observer.
   void InitializePreferenceObserver();
 
-  // Called when an entry is found for GetEntryInfoByPathAsync().
+  // Called when an entry is found for GetEntryInfoByPath().
   void OnGetEntryInfo(const GetEntryInfoCallback& callback,
                       base::PlatformFileError error,
                       GDataEntry* entry);
 
-  // Called when an entry is found for GetFileInfoByPathAsync().
+  // Called when an entry is found for GetFileInfoByPath().
   void OnGetFileInfo(const GetFileInfoCallback& callback,
                      base::PlatformFileError error,
                      GDataEntry* entry);
 
-  // Called when an entry is found for ReadDirectoryByPathAsync().
+  // Called when an entry is found for ReadDirectoryByPath().
   void OnReadDirectory(const ReadDirectoryCallback& callback,
                        base::PlatformFileError error,
                        GDataEntry* entry);
@@ -1062,7 +1060,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                       const FindEntryCallback& callback);
 
   // Gets |file_path| from the file system after the file info is already
-  // resolved with GetFileInfoByPathAsync(). This function is called by
+  // resolved with GetFileInfoByPath(). This function is called by
   // OnGetFileInfoCompleteForGetFileByPath and OnGetFileInfoCompleteForOpenFile.
   void GetResolvedFileByPath(
       const FilePath& file_path,

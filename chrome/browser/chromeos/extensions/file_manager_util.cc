@@ -605,7 +605,7 @@ bool ExecuteBuiltinHandler(Browser* browser, const FilePath& path,
         return false;
 
       // Open the file once the file is found.
-      system_service->file_system()->GetFileInfoByPathAsync(
+      system_service->file_system()->GetFileInfoByPath(
           gdata::util::ExtractGDataPath(path),
           base::Bind(&OnGDataFileFound, profile, path, gdata::REGULAR_FILE));
       return true;
@@ -622,7 +622,7 @@ bool ExecuteBuiltinHandler(Browser* browser, const FilePath& path,
       if (!system_service)
         return false;
 
-      system_service->file_system()->GetFileInfoByPathAsync(
+      system_service->file_system()->GetFileInfoByPath(
           gdata::util::ExtractGDataPath(path),
           base::Bind(&OnGDataFileFound, profile, path,
                      gdata::HOSTED_DOCUMENT));

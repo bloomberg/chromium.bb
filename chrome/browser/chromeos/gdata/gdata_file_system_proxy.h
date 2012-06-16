@@ -78,9 +78,9 @@ class GDataFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       const FilePath& entry_path,
       scoped_ptr<gdata::GDataEntryProto> entry_proto);
 
-  // Helper callback for relaying reply for GetEntryInfoByPathAsync() to the
+  // Helper callback for relaying reply for GetEntryInfoByPath() to the
   // calling thread.
-  void OnGetEntryInfoByPathAsync(
+  void OnGetEntryInfoByPath(
       const fileapi::FileSystemOperationInterface::SnapshotFileCallback&
           callback,
       base::PlatformFileError error,

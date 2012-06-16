@@ -168,7 +168,7 @@ void GDataFileSystemProxy::GetFileInfo(const GURL& file_url,
     return;
   }
 
-  file_system_->GetEntryInfoByPathAsync(
+  file_system_->GetEntryInfoByPath(
       file_path,
       base::Bind(&GDataFileSystemProxy::OnGetMetadata,
                  this,
@@ -222,7 +222,7 @@ void GDataFileSystemProxy::ReadDirectory(const GURL& file_url,
   // name equals to search query. So to get their contents, we have to kick off
   // content search.
   if (util::GetSearchPathStatus(file_path) == util::GDATA_SEARCH_PATH_QUERY) {
-    file_system_->SearchAsync(
+    file_system_->Search(
         file_path.BaseName().value(),
         gdata::SearchCallback(),
         base::Bind(&GDataFileSystemProxy::OnReadDirectory,
@@ -231,7 +231,7 @@ void GDataFileSystemProxy::ReadDirectory(const GURL& file_url,
     return;
   }
 
-  file_system_->ReadDirectoryByPathAsync(
+  file_system_->ReadDirectoryByPath(
       file_path,
       base::Bind(&GDataFileSystemProxy::OnReadDirectory,
                  this,
@@ -302,13 +302,13 @@ void GDataFileSystemProxy::CreateSnapshotFile(
     return;
   }
 
-  file_system_->GetEntryInfoByPathAsync(
+  file_system_->GetEntryInfoByPath(
       file_path,
-      base::Bind(&GDataFileSystemProxy::OnGetEntryInfoByPathAsync,
+      base::Bind(&GDataFileSystemProxy::OnGetEntryInfoByPath,
                  this, callback));
 }
 
-void GDataFileSystemProxy::OnGetEntryInfoByPathAsync(
+void GDataFileSystemProxy::OnGetEntryInfoByPath(
     const FileSystemOperationInterface::SnapshotFileCallback& callback,
     base::PlatformFileError error,
     const FilePath& entry_path,

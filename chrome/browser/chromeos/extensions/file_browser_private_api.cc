@@ -1589,7 +1589,7 @@ void GetGDataFilePropertiesFunction::GetNextFileProperties() {
   // Start getting the file info.
   gdata::GDataSystemService* system_service =
       gdata::GDataSystemServiceFactory::GetForProfile(profile_);
-  system_service->file_system()->GetFileInfoByPathAsync(
+  system_service->file_system()->GetFileInfoByPath(
       file_path,
       base::Bind(&GetGDataFilePropertiesFunction::OnGetFileInfo,
                  this,
@@ -2105,7 +2105,7 @@ bool GetPathForDriveSearchResultFunction::RunImpl() {
     return false;
 
   FilePath entry_path =  GetVirtualPathFromURL(GURL(file_url_as_string));
-  system_service->file_system()->GetEntryInfoByPathAsync(
+  system_service->file_system()->GetEntryInfoByPath(
       entry_path,
       base::Bind(&GetPathForDriveSearchResultFunction::OnEntryFound, this));
   return true;
@@ -2153,7 +2153,7 @@ void SearchDriveFunction::OnFileSystemOpened(
     return;
   }
 
-  system_service->file_system()->SearchAsync(
+  system_service->file_system()->Search(
       query_,
       base::Bind(&SearchDriveFunction::OnSearch, this),
       gdata::ReadDirectoryCallback());

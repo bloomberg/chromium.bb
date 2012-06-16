@@ -119,7 +119,7 @@ void OnFindEntryByResourceId(Profile* profile,
   DVLOG(1) << "OnFindEntryByResourceId " << edit_url;
 }
 
-// Invoked upon completion of GetFileInfoByPathAsync initiated by
+// Invoked upon completion of GetFileInfoByPath initiated by
 // InsertGDataCachePathPermissions.
 void OnGetFileInfoForInsertGDataCachePathsPermissions(
     Profile* profile,
@@ -324,13 +324,13 @@ void InsertGDataCachePathsPermissions(
   FilePath gdata_path = gdata_paths->back();
   gdata_paths->pop_back();
 
-  // Call GetFileInfoByPathAsync() to get file info for |gdata_path| then insert
+  // Call GetFileInfoByPath() to get file info for |gdata_path| then insert
   // all possible cache paths to the output vector |cache_paths|.
   // Note that we can only process one file path at a time. Upon completion
   // of OnGetFileInfoForInsertGDataCachePathsPermissions(), we recursively call
   // InsertGDataCachePathsPermissions() to process the next file path from the
   // back of the input vector |gdata_paths| until it is empty.
-  file_system->GetFileInfoByPathAsync(
+  file_system->GetFileInfoByPath(
       gdata_path,
       base::Bind(&OnGetFileInfoForInsertGDataCachePathsPermissions,
                  profile,

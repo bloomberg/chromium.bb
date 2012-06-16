@@ -852,7 +852,7 @@ void GDataFileSystem::FindEntryByPathAsyncOnUIThread(
   }
 
   // Post a task to the same thread, rather than calling it here, as
-  // FindEntryByPathAsync() is asynchronous.
+  // FindEntryByPath() is asynchronous.
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(&GDataFileSystem::FindEntryByPathSyncOnUIThread,
@@ -1725,7 +1725,7 @@ void GDataFileSystem::GetFileByPathOnUIThread(
     const GetDownloadDataCallback& get_download_data_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  GetFileInfoByPathAsync(
+  GetFileInfoByPath(
       file_path,
       base::Bind(&GDataFileSystem::OnGetFileInfoCompleteForGetFileByPath,
                  ui_weak_ptr_,
@@ -1998,9 +1998,8 @@ void GDataFileSystem::StartDownloadFileIfEnoughSpace(
       params.get_download_data_callback);
 }
 
-void GDataFileSystem::GetEntryInfoByPathAsync(
-    const FilePath& file_path,
-    const GetEntryInfoCallback& callback) {
+void GDataFileSystem::GetEntryInfoByPath(const FilePath& file_path,
+                                         const GetEntryInfoCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   RunTaskOnUIThread(
@@ -2043,9 +2042,8 @@ void GDataFileSystem::OnGetEntryInfo(const GetEntryInfoCallback& callback,
                  entry_proto.Pass());
 }
 
-void GDataFileSystem::GetFileInfoByPathAsync(
-    const FilePath& file_path,
-    const GetFileInfoCallback& callback) {
+void GDataFileSystem::GetFileInfoByPath(const FilePath& file_path,
+                                        const GetFileInfoCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   RunTaskOnUIThread(
@@ -2092,7 +2090,7 @@ void GDataFileSystem::OnGetFileInfo(const GetFileInfoCallback& callback,
     callback.Run(base::PLATFORM_FILE_OK, file_proto.Pass());
 }
 
-void GDataFileSystem::ReadDirectoryByPathAsync(
+void GDataFileSystem::ReadDirectoryByPath(
     const FilePath& file_path,
     const ReadDirectoryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
@@ -2471,9 +2469,9 @@ void GDataFileSystem::OnSearch(const SearchCallback& search_callback,
     search_callback.Run(error, results.Pass());
 }
 
-void GDataFileSystem::SearchAsync(const std::string& search_query,
-                                  const SearchCallback& search_callback,
-                                  const ReadDirectoryCallback& callback) {
+void GDataFileSystem::Search(const std::string& search_query,
+                             const SearchCallback& search_callback,
+                             const ReadDirectoryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   RunTaskOnUIThread(base::Bind(&GDataFileSystem::SearchAsyncOnUIThread,
@@ -3561,7 +3559,7 @@ void GDataFileSystem::OpenFileOnUIThread(const FilePath& file_path,
                                          const OpenFileCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  GetFileInfoByPathAsync(
+  GetFileInfoByPath(
       file_path,
       base::Bind(&GDataFileSystem::OnGetFileInfoCompleteForOpenFile,
                  ui_weak_ptr_,

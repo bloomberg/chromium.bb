@@ -29,9 +29,9 @@ class MockGDataFileSystem : public GDataFileSystemInterface {
   MOCK_METHOD2(FindEntryByResourceId,
                void(const std::string& resource_id,
                     const FindEntryCallback& callback));
-  MOCK_METHOD3(SearchAsync, void(const std::string& search_query,
-                                 const SearchCallback& search_callback,
-                                 const ReadDirectoryCallback& callback));
+  MOCK_METHOD3(Search, void(const std::string& search_query,
+                            const SearchCallback& search_callback,
+                            const ReadDirectoryCallback& callback));
   MOCK_METHOD3(TransferFileFromRemoteToLocal,
                void(const FilePath& local_src_file_path,
                     const FilePath& remote_dest_file_path,
@@ -69,13 +69,11 @@ class MockGDataFileSystem : public GDataFileSystemInterface {
   MOCK_METHOD3(GetCacheState, void(const std::string& resource_id,
                                    const std::string& md5,
                                    const GetCacheStateCallback& callback));
-  MOCK_METHOD2(GetFileInfoByPathAsync,
-               void(const FilePath& file_path,
-                    const GetFileInfoCallback& callback));
-  MOCK_METHOD2(GetEntryInfoByPathAsync,
-               void(const FilePath& file_path,
-                    const GetEntryInfoCallback& callback));
-  MOCK_METHOD2(ReadDirectoryByPathAsync,
+  MOCK_METHOD2(GetFileInfoByPath, void(const FilePath& file_path,
+                                       const GetFileInfoCallback& callback));
+  MOCK_METHOD2(GetEntryInfoByPath, void(const FilePath& file_path,
+                                        const GetEntryInfoCallback& callback));
+  MOCK_METHOD2(ReadDirectoryByPath,
                void(const FilePath& file_path,
                     const ReadDirectoryCallback& callback));
   MOCK_METHOD1(RequestDirectoryRefresh,

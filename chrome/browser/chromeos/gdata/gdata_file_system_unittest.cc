@@ -123,7 +123,7 @@ struct SearchResultPair {
   const char* real_path;
 };
 
-// Callback to GDataFileSystem::SearchAsync used in ContentSearch test.
+// Callback to GDataFileSystem::Search used in ContentSearch test.
 // Verifies returned vector of results.
 //
 // |should_next_callback_quit_loop| is owned by ContentSearch test function,
@@ -153,7 +153,7 @@ void DriveSearchCallback(
   }
 }
 
-// Another callback to GDataFileSystem::SearchAsync used in ContentSearch test.
+// Another callback to GDataFileSystem::Search used in ContentSearch test.
 // Verifies that returned proto buffer contains entries specified in search
 // feed, and that treing file names are formatted like
 // "<resource_id>.<file_name>".
@@ -380,7 +380,7 @@ class GDataFileSystemTest : public testing::Test {
   // |entry|. Returns true if the entry info matches |entry|.
   bool GetEntryInfoAndCompare(const FilePath& file_path,
                               GDataEntry* entry) {
-    file_system_->GetEntryInfoByPathAsync(
+    file_system_->GetEntryInfoByPath(
         file_path,
         base::Bind(&CallbackHelper::GetEntryInfoCallback,
                    callback_helper_.get()));
@@ -405,7 +405,7 @@ class GDataFileSystemTest : public testing::Test {
   // |file|. Returns true if the file info matches |file|.
   bool GetFileInfoAndCompare(const FilePath& file_path,
                              GDataFile* file) {
-    file_system_->GetFileInfoByPathAsync(
+    file_system_->GetFileInfoByPath(
         file_path,
         base::Bind(&CallbackHelper::GetFileInfoCallback,
                    callback_helper_.get()));
@@ -430,7 +430,7 @@ class GDataFileSystemTest : public testing::Test {
   // |directory|. Returns true if the file info matches |directory|.
   bool ReadDirectoryAndCompare(const FilePath& file_path,
                                GDataDirectory* directory) {
-    file_system_->ReadDirectoryByPathAsync(
+    file_system_->ReadDirectoryByPath(
         file_path,
         base::Bind(&CallbackHelper::ReadDirectoryCallback,
                    callback_helper_.get()));
@@ -1357,9 +1357,9 @@ TEST_F(GDataFileSystemTest, DuplicatedAsyncInitialization) {
   EXPECT_CALL(*mock_doc_service_,
               GetDocuments(Eq(GURL()), _, _, _, _)).Times(1);
 
-  file_system_->ReadDirectoryByPathAsync(
+  file_system_->ReadDirectoryByPath(
       FilePath(FILE_PATH_LITERAL("drive")), callback);
-  file_system_->ReadDirectoryByPathAsync(
+  file_system_->ReadDirectoryByPath(
       FilePath(FILE_PATH_LITERAL("drive")), callback);
   message_loop_.Run();  // Wait to get our result
   EXPECT_EQ(2, counter);
@@ -3381,7 +3381,7 @@ TEST_F(GDataFileSystemTest, ContentSearch) {
       &message_loop_,
       &should_next_callback_quit_loop);
 
-  file_system_->SearchAsync("foo", search_callback, callback);
+  file_system_->Search("foo", search_callback, callback);
   message_loop_.Run();  // Wait to get our result
 
   const SearchResultPair kSearchResultPairs[] = {
