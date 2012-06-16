@@ -1260,6 +1260,70 @@ TEST_F(SyncableDirectoryTest,
   EXPECT_EQ(OPENED, SimulateSaveAndReloadDir());
 }
 
+// Ensure that the unsynced, is_del and server unkown entries that may have been
+// left in the database by old clients will be deleted when we open the old
+// database.
+TEST_F(SyncableDirectoryTest, OldClientLeftUnsyncedDeletedLocalItem) {
+  // We must create an entry with the offending properties.  This is done with
+  // some abuse of the MutableEntry's API; it doesn't expect us to modify an
+  // item after it is deleted.  If this hack becomes impractical we will need to
+  // find a new way to simulate this scenario.
+
+  TestIdFactory id_factory;
+
+  // Happy-path: These valid entries should not get deleted.
+  Id server_knows_id = id_factory.NewServerId();
+  Id not_is_del_id = id_factory.NewLocalId();
+
+  // The ID of the entry which will be unsynced, is_del and !ServerKnows().
+  Id zombie_id = id_factory.NewLocalId();
+
+  {
+    WriteTransaction trans(FROM_HERE, UNITTEST, dir_.get());
+
+    // Create an uncommitted tombstone entry.
+    MutableEntry server_knows(&trans, CREATE, id_factory.root(),
+                              "server_knows");
+    server_knows.Put(ID, server_knows_id);
+    server_knows.Put(IS_UNSYNCED, true);
+    server_knows.Put(IS_DEL, true);
+    server_knows.Put(BASE_VERSION, 5);
+    server_knows.Put(SERVER_VERSION, 4);
+
+    // Create a valid update entry.
+    MutableEntry not_is_del(&trans, CREATE, id_factory.root(), "not_is_del");
+    not_is_del.Put(ID, not_is_del_id);
+    not_is_del.Put(IS_DEL, false);
+    not_is_del.Put(IS_UNSYNCED, true);
+
+    // Create a tombstone which should never be sent to the server because the
+    // server never knew about the item's existence.
+    //
+    // New clients should never put entries into this state.  We work around
+    // this by setting IS_DEL before setting IS_UNSYNCED, something which the
+    // client should never do in practice.
+    MutableEntry zombie(&trans, CREATE, id_factory.root(), "zombie");
+    zombie.Put(ID, zombie_id);
+    zombie.Put(IS_DEL, true);
+    zombie.Put(IS_UNSYNCED, true);
+  }
+
+  ASSERT_EQ(OPENED, SimulateSaveAndReloadDir());
+
+  {
+    ReadTransaction trans(FROM_HERE, dir_.get());
+
+    Entry server_knows(&trans, GET_BY_ID, server_knows_id);
+    EXPECT_TRUE(server_knows.good());
+
+    Entry not_is_del(&trans, GET_BY_ID, not_is_del_id);
+    EXPECT_TRUE(not_is_del.good());
+
+    Entry zombie(&trans, GET_BY_ID, zombie_id);
+    EXPECT_FALSE(zombie.good());
+  }
+}
+
 // A variant of SyncableDirectoryTest that uses a real sqlite database.
 class OnDiskSyncableDirectoryTest : public SyncableDirectoryTest {
  protected:

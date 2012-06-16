@@ -127,6 +127,14 @@ bool IsEntryReadyForCommit(syncable::ModelTypeSet throttled_types,
   if (throttled_types.Has(type))
     return false;
 
+  if (entry.Get(syncable::IS_DEL) && !entry.Get(syncable::ID).ServerKnows()) {
+    // New clients (following the resolution of crbug.com/125381) should not
+    // create such items.  Old clients may have left some in the database
+    // (crbug.com/132905), but we should now be cleaning them on startup.
+    NOTREACHED() << "Found deleted and unsynced local item: " << entry;
+    return false;
+  }
+
   // Extra validity checks.
   syncable::Id id = entry.Get(syncable::ID);
   if (id == entry.Get(syncable::PARENT_ID)) {
