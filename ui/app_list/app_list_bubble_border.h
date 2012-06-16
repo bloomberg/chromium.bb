@@ -22,6 +22,8 @@ class AppListBubbleBorder : public views::BubbleBorder {
   bool ArrowAtTopOrBottom() const;
   bool ArrowOnLeftOrRight() const;
 
+  void GetMask(const gfx::Rect& bounds, gfx::Path* mask) const;
+
   void set_offset(const gfx::Point& offset) { offset_ = offset; }
   const gfx::Point& offset() const { return offset_; }
 

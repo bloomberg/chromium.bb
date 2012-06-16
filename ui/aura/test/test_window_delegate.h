@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/gfx/rect.h"
 
 namespace aura {
 namespace test {
@@ -42,6 +43,8 @@ class TestWindowDelegate : public WindowDelegate {
   virtual void OnWindowDestroying() OVERRIDE;
   virtual void OnWindowDestroyed() OVERRIDE;
   virtual void OnWindowVisibilityChanged(bool visible) OVERRIDE;
+  virtual bool HasHitTestMask() const OVERRIDE;
+  virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE;
 
  private:
   int window_component_;
@@ -68,6 +71,21 @@ class ColorTestWindowDelegate : public TestWindowDelegate {
   ui::KeyboardCode last_key_code_;
 
   DISALLOW_COPY_AND_ASSIGN(ColorTestWindowDelegate);
+};
+
+// A simple WindowDelegate that has a hit-test mask.
+class MaskedWindowDelegate : public TestWindowDelegate {
+ public:
+  explicit MaskedWindowDelegate(const gfx::Rect mask_rect);
+
+  // Overridden from TestWindowDelegate:
+  virtual bool HasHitTestMask() const OVERRIDE;
+  virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE;
+
+ private:
+  gfx::Rect mask_rect_;
+
+  DISALLOW_COPY_AND_ASSIGN(MaskedWindowDelegate);
 };
 
 }  // namespace test

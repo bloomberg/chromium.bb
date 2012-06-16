@@ -146,6 +146,8 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   virtual void OnWindowDestroying() OVERRIDE;
   virtual void OnWindowDestroyed() OVERRIDE;
   virtual void OnWindowVisibilityChanged(bool visible) OVERRIDE;
+  virtual bool HasHitTestMask() const OVERRIDE;
+  virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE;
 
   // Overridden from aura::client::ActivationDelegate:
   virtual bool ShouldActivate(const aura::Event* event) OVERRIDE;

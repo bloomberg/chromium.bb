@@ -148,7 +148,7 @@ bool ShouldReleaseFrontSurface() {
 // RenderWidgetHostViewAura.
 class RenderWidgetHostViewAura::WindowObserver : public aura::WindowObserver {
  public:
-  WindowObserver(RenderWidgetHostViewAura* view) : view_(view) {}
+  explicit WindowObserver(RenderWidgetHostViewAura* view) : view_(view) {}
   virtual ~WindowObserver() {}
 
     // Overridden from aura::WindowObserver:
@@ -162,8 +162,8 @@ class RenderWidgetHostViewAura::WindowObserver : public aura::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(WindowObserver);
 };
 
-class RenderWidgetHostViewAura::ResizeLock :
-    public base::SupportsWeakPtr<RenderWidgetHostViewAura::ResizeLock> {
+class RenderWidgetHostViewAura::ResizeLock
+    : public base::SupportsWeakPtr<RenderWidgetHostViewAura::ResizeLock> {
  public:
   ResizeLock(aura::RootWindow* root_window, const gfx::Size new_size)
       : root_window_(root_window),
@@ -1296,6 +1296,13 @@ void RenderWidgetHostViewAura::OnWindowDestroyed() {
 }
 
 void RenderWidgetHostViewAura::OnWindowVisibilityChanged(bool visible) {
+}
+
+bool RenderWidgetHostViewAura::HasHitTestMask() const {
+  return false;
+}
+
+void RenderWidgetHostViewAura::GetHitTestMask(gfx::Path* mask) const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////

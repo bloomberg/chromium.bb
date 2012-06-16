@@ -99,6 +99,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     virtual void OnWidgetVisibilityChanged(Widget* widget, bool visible) {}
     virtual void OnWidgetActivationChanged(Widget* widget, bool active) {}
     virtual void OnWidgetMoved(Widget* widget) {}
+   protected:
+    virtual ~Observer() {}
   };
 
   typedef std::set<Widget*> Widgets;
@@ -646,6 +648,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   virtual ui::GestureStatus OnGestureEvent(const GestureEvent& event) OVERRIDE;
   virtual bool ExecuteCommand(int command_id) OVERRIDE;
   virtual InputMethod* GetInputMethodDirect() OVERRIDE;
+  virtual bool HasHitTestMask() const OVERRIDE;
+  virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE;
   virtual Widget* AsWidget() OVERRIDE;
   virtual const Widget* AsWidget() const OVERRIDE;
 

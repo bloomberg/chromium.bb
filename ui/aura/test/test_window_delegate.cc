@@ -8,6 +8,8 @@
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/path.h"
+#include "ui/gfx/skia_util.h"
 
 namespace aura {
 namespace test {
@@ -82,6 +84,12 @@ void TestWindowDelegate::OnWindowDestroyed() {
 void TestWindowDelegate::OnWindowVisibilityChanged(bool visible) {
 }
 
+bool TestWindowDelegate::HasHitTestMask() const {
+  return false;
+}
+
+void TestWindowDelegate::GetHitTestMask(gfx::Path* mask) const {
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // ColorTestWindowDelegate
@@ -102,6 +110,21 @@ void ColorTestWindowDelegate::OnWindowDestroyed() {
 }
 void ColorTestWindowDelegate::OnPaint(gfx::Canvas* canvas) {
   canvas->DrawColor(color_, SkXfermode::kSrc_Mode);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// MaskedWindowDelegate
+
+MaskedWindowDelegate::MaskedWindowDelegate(const gfx::Rect mask_rect)
+    : mask_rect_(mask_rect) {
+}
+
+bool MaskedWindowDelegate::HasHitTestMask() const {
+  return true;
+}
+
+void MaskedWindowDelegate::GetHitTestMask(gfx::Path* mask) const {
+  mask->addRect(RectToSkRect(mask_rect_));
 }
 
 }  // namespace test

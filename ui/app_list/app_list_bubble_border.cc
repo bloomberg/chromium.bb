@@ -8,6 +8,7 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
 
 namespace {
@@ -124,7 +125,7 @@ AppListBubbleBorder::AppListBubbleBorder(views::View* app_list_view,
       app_list_view_(app_list_view),
       search_box_view_(search_box_view) {
   const gfx::ShadowValue kShadows[] = {
-    // Offset (0, 5), blur=8, color=0.36 black
+    // Offset (0, 5), blur=30, color=0.36 black
     gfx::ShadowValue(gfx::Point(0, 5), 30, SkColorSetARGB(0x72, 0, 0, 0)),
   };
   shadows_.assign(kShadows, kShadows + arraysize(kShadows));
@@ -145,6 +146,21 @@ bool AppListBubbleBorder::ArrowOnLeftOrRight() const {
       arrow_location() == views::BubbleBorder::LEFT_BOTTOM ||
       arrow_location() == views::BubbleBorder::RIGHT_TOP ||
       arrow_location() == views::BubbleBorder::RIGHT_BOTTOM;
+}
+
+void AppListBubbleBorder::GetMask(const gfx::Rect& bounds,
+                                  gfx::Path* mask) const {
+  gfx::Insets insets;
+  GetInsets(&insets);
+
+  gfx::Rect content_bounds(bounds);
+  content_bounds.Inset(insets);
+
+  BuildShape(content_bounds,
+             arrow_location(),
+             SkIntToScalar(GetArrowOffset()),
+             SkIntToScalar(kBorderSize),
+             mask);
 }
 
 int AppListBubbleBorder::GetArrowOffset() const {

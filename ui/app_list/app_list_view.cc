@@ -115,6 +115,15 @@ views::View* AppListView::GetInitiallyFocusedView() {
   return search_box_view_->search_box();
 }
 
+bool AppListView::HasHitTestMask() const {
+  return true;
+}
+
+void AppListView::GetHitTestMask(gfx::Path* mask) const {
+  DCHECK(mask);
+  bubble_border_->GetMask(GetBubbleFrameView()->bounds(), mask);
+}
+
 bool AppListView::OnKeyPressed(const views::KeyEvent& event) {
   if (event.key_code() == ui::VKEY_ESCAPE) {
     Close();

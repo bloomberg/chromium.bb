@@ -12,6 +12,7 @@
 
 namespace gfx {
 class Canvas;
+class Path;
 class Point;
 class Rect;
 class Size;
@@ -83,6 +84,16 @@ class AURA_EXPORT WindowDelegate {
   // TODO: this should be renamed to OnWindowTargetVisibilityChanged() to
   // match when it's sent.
   virtual void OnWindowVisibilityChanged(bool visible) = 0;
+
+  // Called from Window::HitTest to check if the window has a custom hit test
+  // mask. It works similar to the views counterparts. That is, if the function
+  // returns true, GetHitTestMask below will be called to get the mask.
+  // Otherwise, Window will hit-test against its bounds.
+  virtual bool HasHitTestMask() const = 0;
+
+  // Called from Window::HitTest to retrieve hit test mask when HasHitTestMask
+  // above returns true.
+  virtual void GetHitTestMask(gfx::Path* mask) const = 0;
 
  protected:
   virtual ~WindowDelegate() {}

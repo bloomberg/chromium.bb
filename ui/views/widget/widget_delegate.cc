@@ -142,6 +142,14 @@ bool WidgetDelegate::WillProcessWorkAreaChange() const {
   return false;
 }
 
+bool WidgetDelegate::HasHitTestMask() const {
+  return false;
+}
+
+void WidgetDelegate::GetHitTestMask(gfx::Path* mask) const {
+  DCHECK(mask);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetDelegateView:
 

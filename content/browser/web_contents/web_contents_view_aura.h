@@ -6,6 +6,8 @@
 #define CONTENT_BROWSER_WEB_CONTENTS_WEB_CONTENTS_VIEW_AURA_H_
 #pragma once
 
+#include <vector>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
@@ -102,6 +104,8 @@ class CONTENT_EXPORT WebContentsViewAura
   virtual void OnWindowDestroying() OVERRIDE;
   virtual void OnWindowDestroyed() OVERRIDE;
   virtual void OnWindowVisibilityChanged(bool visible) OVERRIDE;
+  virtual bool HasHitTestMask() const OVERRIDE;
+  virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE;
 
   // Overridden from aura::client::DragDropDelegate:
   virtual void OnDragEntered(const aura::DropTargetEvent& event) OVERRIDE;

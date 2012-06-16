@@ -4,6 +4,8 @@
 
 #include "ui/aura/window.h"
 
+#include <utility>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/stringprintf.h"
@@ -320,6 +322,26 @@ TEST_F(WindowTest, HitTest) {
   EXPECT_FALSE(w1.HitTest(gfx::Point(-2, -2)));
 
   // TODO(beng): clip Window to parent.
+}
+
+TEST_F(WindowTest, HitTestMask) {
+  Window w1(new MaskedWindowDelegate(gfx::Rect(5, 6, 20, 30)));
+  w1.Init(ui::LAYER_NOT_DRAWN);
+  w1.SetBounds(gfx::Rect(10, 20, 50, 60));
+  w1.Show();
+  w1.SetParent(NULL);
+
+  // Points inside the mask.
+  EXPECT_TRUE(w1.HitTest(gfx::Point(5, 6)));  // top-left
+  EXPECT_TRUE(w1.HitTest(gfx::Point(15, 21)));  // center
+  EXPECT_TRUE(w1.HitTest(gfx::Point(24, 35)));  // bottom-right
+
+  // Points outside the mask.
+  EXPECT_FALSE(w1.HitTest(gfx::Point(0, 0)));
+  EXPECT_FALSE(w1.HitTest(gfx::Point(60, 80)));
+  EXPECT_FALSE(w1.HitTest(gfx::Point(4, 6)));
+  EXPECT_FALSE(w1.HitTest(gfx::Point(5, 5)));
+  EXPECT_FALSE(w1.HitTest(gfx::Point(25, 36)));
 }
 
 TEST_F(WindowTest, GetEventHandlerForPoint) {
@@ -1680,7 +1702,7 @@ TEST_F(WindowTest, StackTransientsWhoseLayersHaveNoDelegate) {
 }
 
 class TestVisibilityClient : public client::VisibilityClient {
-public:
+ public:
   explicit TestVisibilityClient(RootWindow* root_window)
       : ignore_visibility_changes_(false) {
     client::SetVisibilityClient(root_window, this);

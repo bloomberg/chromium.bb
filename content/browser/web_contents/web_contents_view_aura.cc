@@ -329,7 +329,6 @@ void WebContentsViewAura::SizeContents(const gfx::Size& size) {
     // Our size matches what we want but the renderers size may not match.
     // Pretend we were resized so that the renderers size is updated too.
     SizeChangedCommon(size);
-
   }
 }
 
@@ -564,6 +563,14 @@ void WebContentsViewAura::OnWindowVisibilityChanged(bool visible) {
   else
     web_contents_->HideContents();
 }
+
+bool WebContentsViewAura::HasHitTestMask() const {
+  return false;
+}
+
+void WebContentsViewAura::GetHitTestMask(gfx::Path* mask) const {
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WebContentsViewAura, aura::client::DragDropDelegate implementation:
 

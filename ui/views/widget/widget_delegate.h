@@ -146,6 +146,12 @@ class VIEWS_EXPORT WidgetDelegate {
   // manage the positions by ourselves.
   virtual bool WillProcessWorkAreaChange() const;
 
+  // Returns true if window has a hit-test mask.
+  virtual bool HasHitTestMask() const;
+
+  // Provides the hit-test mask if HasHitTestMask above returns true.
+  virtual void GetHitTestMask(gfx::Path* mask) const;
+
  protected:
   virtual ~WidgetDelegate() {}
 

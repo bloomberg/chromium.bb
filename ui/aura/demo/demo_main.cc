@@ -68,6 +68,8 @@ class DemoWindowDelegate : public aura::WindowDelegate {
   virtual void OnWindowDestroying() OVERRIDE {}
   virtual void OnWindowDestroyed() OVERRIDE {}
   virtual void OnWindowVisibilityChanged(bool visible) OVERRIDE {}
+  virtual bool HasHitTestMask() const OVERRIDE { return false; }
+  virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE {}
 
  private:
   SkColor color_;

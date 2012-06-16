@@ -91,9 +91,9 @@ void AdjustScreenBounds(aura::Window* window, gfx::Rect* bounds) {
 
 // Used when SetInactiveRenderingDisabled() is invoked to track when active
 // status changes in such a way that we should enable inactive rendering.
-class NativeWidgetAura::ActiveWindowObserver :
-    public aura::WindowObserver,
-    public aura::client::ActivationChangeObserver {
+class NativeWidgetAura::ActiveWindowObserver
+    : public aura::WindowObserver,
+      public aura::client::ActivationChangeObserver {
  public:
   explicit ActiveWindowObserver(NativeWidgetAura* host) : host_(host) {
     host_->GetNativeView()->GetRootWindow()->AddObserver(this);
@@ -318,7 +318,7 @@ TooltipManager* NativeWidgetAura::GetTooltipManager() const {
 
 bool NativeWidgetAura::IsScreenReaderActive() const {
   // http://crbug.com/102570
-  //NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
   return false;
 }
 
@@ -326,7 +326,7 @@ void NativeWidgetAura::SendNativeAccessibilityEvent(
     View* view,
     ui::AccessibilityTypes::Event event_type) {
   // http://crbug.com/102570
-  //NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 void NativeWidgetAura::SetCapture() {
@@ -403,17 +403,17 @@ void NativeWidgetAura::SetWindowIcons(const gfx::ImageSkia& window_icon,
 
 void NativeWidgetAura::SetAccessibleName(const string16& name) {
   // http://crbug.com/102570
-  //NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 void NativeWidgetAura::SetAccessibleRole(ui::AccessibilityTypes::Role role) {
   // http://crbug.com/102570
-  //NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 void NativeWidgetAura::SetAccessibleState(ui::AccessibilityTypes::State state) {
   // http://crbug.com/102570
-  //NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
 }
 
 void NativeWidgetAura::InitModalType(ui::ModalType modal_type) {
@@ -610,7 +610,7 @@ void NativeWidgetAura::FlashFrame(bool flash) {
 
 bool NativeWidgetAura::IsAccessibleWidget() const {
   // http://crbug.com/102570
-  //NOTIMPLEMENTED();
+  // NOTIMPLEMENTED();
   return false;
 }
 
@@ -807,6 +807,15 @@ void NativeWidgetAura::OnWindowDestroyed() {
 
 void NativeWidgetAura::OnWindowVisibilityChanged(bool visible) {
   delegate_->OnNativeWidgetVisibilityChanged(visible);
+}
+
+bool NativeWidgetAura::HasHitTestMask() const {
+  return delegate_->HasHitTestMask();
+}
+
+void NativeWidgetAura::GetHitTestMask(gfx::Path* mask) const {
+  DCHECK(mask);
+  delegate_->GetHitTestMask(mask);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

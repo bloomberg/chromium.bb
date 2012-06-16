@@ -11,6 +11,7 @@
 
 namespace gfx {
 class Canvas;
+class Path;
 class Point;
 class Size;
 }
@@ -112,6 +113,12 @@ class VIEWS_EXPORT NativeWidgetDelegate {
   // Note that this does not use the top level widget, so may return NULL
   // if the widget doesn't have input method.
   virtual InputMethod* GetInputMethodDirect() = 0;
+
+  // Returns true if window has a hit-test mask.
+  virtual bool HasHitTestMask() const = 0;
+
+  // Provides the hit-test mask if HasHitTestMask above returns true.
+  virtual void GetHitTestMask(gfx::Path* mask) const = 0;
 
   //
   virtual Widget* AsWidget() = 0;

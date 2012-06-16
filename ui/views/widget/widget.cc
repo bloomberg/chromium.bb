@@ -1130,6 +1130,15 @@ InputMethod* Widget::GetInputMethodDirect() {
   return input_method_.get();
 }
 
+bool Widget::HasHitTestMask() const {
+  return widget_delegate_->HasHitTestMask();
+}
+
+void Widget::GetHitTestMask(gfx::Path* mask) const {
+  DCHECK(mask);
+  widget_delegate_->GetHitTestMask(mask);
+}
+
 Widget* Widget::AsWidget() {
   return this;
 }
