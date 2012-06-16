@@ -824,7 +824,7 @@ void ContentSettingsHandler::UpdateFlashCameraMicExceptionsView() {
     exception->SetString(
         kSetting,
         ContentSettingToString(FlashPermissionToContentSetting(iter->second)));
-    exception->SetString(kSource, kPreferencesSource);
+    exception->SetString(kSource, "preference");
     exceptions.Append(exception);
   }
 
