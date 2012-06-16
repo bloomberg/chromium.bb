@@ -11,6 +11,10 @@ include_rules = [
   # dependencies, so we allow that (and the output traits it depends on).
   "-ppapi/cpp",
   "+ppapi/cpp/completion_callback.h",
-  "+ppapi/cpp/output_traits.h"
+  "+ppapi/cpp/output_traits.h",
+
+  # The untrusted build references the NaCl integrated runtime (IRT).
+  "+native_client/src/shared",
+  "+native_client/src/untrusted"
 ]
 
