@@ -244,14 +244,12 @@ void FlashDOMHandler::MaybeRespondToPage() {
 #if defined(OS_WIN)
   base::win::OSInfo* os = base::win::OSInfo::GetInstance();
   switch (os->version()) {
-    case base::win::VERSION_XP: os_label += " XP"; break;
-    case base::win::VERSION_SERVER_2003:
-      os_label += " Server 2003 or XP Pro 64 bit";
+    case base::win::VERSION_XP:
+      os_label += " XP or Server 2003 or XP Pro 64 bit";
       break;
-    case base::win::VERSION_VISTA: os_label += " Vista"; break;
-    case base::win::VERSION_SERVER_2008: os_label += " Server 2008"; break;
-    case base::win::VERSION_WIN7: os_label += " 7"; break;
-    case base::win::VERSION_WIN8: os_label += " 8"; break;
+    case base::win::VERSION_VISTA: os_label += " Vista or Server 2008"; break;
+    case base::win::VERSION_WIN7: os_label += " 7 or Server 2008 R2"; break;
+    case base::win::VERSION_WIN8: os_label += " 8 or Server 2012"; break;
     default:  os_label += " UNKNOWN"; break;
   }
   os_label += " SP" + base::IntToString(os->service_pack().major);
