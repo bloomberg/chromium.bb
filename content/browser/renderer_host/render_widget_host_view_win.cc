@@ -1279,9 +1279,8 @@ bool RenderWidgetHostViewWin::DispatchLongPressGestureEvent(
 
 bool RenderWidgetHostViewWin::DispatchCancelTouchEvent(
     ui::TouchEvent* event) {
-  if (!render_widget_host_)
+  if (!render_widget_host_ || !touch_events_enabled_)
     return false;
-
   DCHECK(event->GetEventType() == WebKit::WebInputEvent::TouchCancel);
   LocalTouchEvent touchEvent(event->GetEventType(),
     event->GetLocation(), event->GetTouchId(), event->GetTimestamp());
@@ -1571,7 +1570,7 @@ void RenderWidgetHostViewWin::OnSetFocus(HWND window) {
   render_widget_host_->GotFocus();
   render_widget_host_->SetActive(true);
 
-  if (touch_state_->ReleaseTouchPoints())
+  if (touch_state_->ReleaseTouchPoints() && touch_events_enabled_)
     render_widget_host_->ForwardTouchEvent(touch_state_->touch_event());
 }
 
@@ -1583,7 +1582,7 @@ void RenderWidgetHostViewWin::OnKillFocus(HWND window) {
   render_widget_host_->SetActive(false);
   render_widget_host_->Blur();
 
-  if (touch_state_->ReleaseTouchPoints())
+  if (touch_state_->ReleaseTouchPoints() && touch_events_enabled_)
     render_widget_host_->ForwardTouchEvent(touch_state_->touch_event());
 }
 
@@ -2237,7 +2236,8 @@ LRESULT RenderWidgetHostViewWin::OnTouchEvent(UINT message, WPARAM wparam,
     return 0;
   }
 
-  bool has_touch_handler = render_widget_host_->has_touch_handler();
+  bool has_touch_handler = render_widget_host_->has_touch_handler() &&
+      touch_events_enabled_;
 
   // Send a copy of the touch events on to the gesture recognizer.
   for (size_t start = 0; start < total;) {
@@ -2314,6 +2314,7 @@ LRESULT RenderWidgetHostViewWin::OnGestureEvent(
       UINT message, WPARAM wparam, LPARAM lparam, BOOL& handled) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewWin::OnGestureEvent");
 
+  DCHECK(!touch_events_enabled_);
   handled = FALSE;
 
   GESTUREINFO gi = {sizeof(GESTUREINFO)};
