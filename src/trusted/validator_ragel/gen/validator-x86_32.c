@@ -6633,6 +6633,7 @@ case 211:
 		case 180u: goto st9;
 		case 188u: goto st9;
 		case 239u: goto tr19;
+		case 251u: goto tr19;
 	}
 	if ( (*p) < 128u ) {
 		if ( (*p) < 64u ) {
