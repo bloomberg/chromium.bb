@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "chrome/common/chrome_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Test the behavior of chrome::GetUserCacheDirectory.
@@ -42,3 +43,22 @@ TEST(ChromePaths, UserCacheDir) {
   chrome::GetUserCacheDirectory(test_profile_dir, &cache_dir);
   EXPECT_EQ(test_profile_dir.value(), cache_dir.value());
 }
+
+#if defined(OS_WINDOWS)
+TEST(ChromePaths, AlternateUserDataDir) {
+  FilePath current_dir;
+  FilePath alternate_dir;
+
+  ASSERT_TRUE(PathService::Get(chrome::DIR_USER_DATA, current_dir));
+
+  // Check that we can get the alternate dir.
+  EXPECT_TRUE(PathService::Get(chrome::DIR_ALT_USER_DATA, alternate_dir));
+
+  // And that it's not the same as the current dir.
+  EXPECTE_NE(current_dir.value(), alternate_dir.value());
+
+  // And that it's the metro dir.
+  EXPECT_EQ(FilePath::StringType(kMetroChromeUserDataSubDir),
+            alternate_dir.DirName().BaseName().value());
+}
+#endif

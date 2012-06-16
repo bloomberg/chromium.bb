@@ -148,6 +148,15 @@ bool PathProvider(int key, FilePath* result) {
       }
       create_dir = true;
       break;
+#if defined(OS_WIN)
+    case chrome::DIR_ALT_USER_DATA:
+      if (!GetAlternateUserDataDirectory(&cur)) {
+        NOTREACHED();
+        return false;
+      }
+      create_dir = false;
+      break;
+#endif  // OS_WIN
     case chrome::DIR_USER_DOCUMENTS:
       if (!GetUserDocumentsDirectory(&cur))
         return false;

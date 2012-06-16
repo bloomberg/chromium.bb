@@ -19,6 +19,10 @@ enum {
   DIR_APP = PATH_START,         // Directory where dlls and data reside.
   DIR_LOGS,                     // Directory where logs should be written.
   DIR_USER_DATA,                // Directory where user data can be written.
+#if defined(OS_WIN)
+  DIR_ALT_USER_DATA,            // Directory of the desktop or metro user data
+                                // (the one that isn't in use).
+#endif
   DIR_CRASH_DUMPS,              // Directory where crash dumps are written.
   DIR_USER_DESKTOP,             // Directory that correspond to the desktop.
   DIR_RESOURCES,                // Directory containing separate file resources

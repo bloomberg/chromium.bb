@@ -20,15 +20,29 @@
 
 namespace chrome {
 
-bool GetDefaultUserDataDirectory(FilePath* result) {
+namespace {
+
+// Gets the default user data directory for either the current environment
+// (desktop or metro) or for the other one (metro or desktop).
+bool GetUserDataDirectoryForEnvironment(bool current, FilePath* result) {
   if (!PathService::Get(base::DIR_LOCAL_APP_DATA, result))
     return false;
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   *result = result->Append(dist->GetInstallSubDir());
-  if (base::win::GetMetroModule())
+  if (base::win::GetMetroModule() ? current : !current)
     *result = result->Append(kMetroChromeUserDataSubDir);
   *result = result->Append(chrome::kUserDataDirname);
   return true;
+}
+
+}  // namespace
+
+bool GetDefaultUserDataDirectory(FilePath* result) {
+  return GetUserDataDirectoryForEnvironment(true, result);
+}
+
+bool GetAlternateUserDataDirectory(FilePath *result) {
+  return GetUserDataDirectoryForEnvironment(false, result);
 }
 
 bool GetChromeFrameUserDataDirectory(FilePath* result) {
