@@ -34,7 +34,8 @@ _TEST_ONLY_WARNING = (
 _BANNED_OBJC_FUNCTIONS = (
     (
       'addTrackingRect:',
-      ('The use of -[NSView addTrackingRect:owner:userData:assumeInside:] is'
+      (
+       'The use of -[NSView addTrackingRect:owner:userData:assumeInside:] is'
        'prohibited. Please use CrTrackingArea instead.',
        'http://dev.chromium.org/developers/coding-style/cocoa-dos-and-donts',
       ),
@@ -42,7 +43,8 @@ _BANNED_OBJC_FUNCTIONS = (
     ),
     (
       'NSTrackingArea',
-      ('The use of NSTrackingAreas is prohibited. Please use CrTrackingArea',
+      (
+       'The use of NSTrackingAreas is prohibited. Please use CrTrackingArea',
        'instead.',
        'http://dev.chromium.org/developers/coding-style/cocoa-dos-and-donts',
       ),
@@ -50,7 +52,8 @@ _BANNED_OBJC_FUNCTIONS = (
     ),
     (
       'convertPointFromBase:',
-      ('The use of -[NSView convertPointFromBase:] is almost certainly wrong.',
+      (
+       'The use of -[NSView convertPointFromBase:] is almost certainly wrong.',
        'Please use |convertPoint:(point) fromView:nil| instead.',
        'http://dev.chromium.org/developers/coding-style/cocoa-dos-and-donts',
       ),
@@ -58,7 +61,8 @@ _BANNED_OBJC_FUNCTIONS = (
     ),
     (
       'convertPointToBase:',
-      ('The use of -[NSView convertPointToBase:] is almost certainly wrong.',
+      (
+       'The use of -[NSView convertPointToBase:] is almost certainly wrong.',
        'Please use |convertPoint:(point) toView:nil| instead.',
        'http://dev.chromium.org/developers/coding-style/cocoa-dos-and-donts',
       ),
@@ -66,7 +70,8 @@ _BANNED_OBJC_FUNCTIONS = (
     ),
     (
       'convertRectFromBase:',
-      ('The use of -[NSView convertRectFromBase:] is almost certainly wrong.',
+      (
+       'The use of -[NSView convertRectFromBase:] is almost certainly wrong.',
        'Please use |convertRect:(point) fromView:nil| instead.',
        'http://dev.chromium.org/developers/coding-style/cocoa-dos-and-donts',
       ),
@@ -74,7 +79,8 @@ _BANNED_OBJC_FUNCTIONS = (
     ),
     (
       'convertRectToBase:',
-      ('The use of -[NSView convertRectToBase:] is almost certainly wrong.',
+      (
+       'The use of -[NSView convertRectToBase:] is almost certainly wrong.',
        'Please use |convertRect:(point) toView:nil| instead.',
        'http://dev.chromium.org/developers/coding-style/cocoa-dos-and-donts',
       ),
@@ -82,7 +88,8 @@ _BANNED_OBJC_FUNCTIONS = (
     ),
     (
       'convertSizeFromBase:',
-      ('The use of -[NSView convertSizeFromBase:] is almost certainly wrong.',
+      (
+       'The use of -[NSView convertSizeFromBase:] is almost certainly wrong.',
        'Please use |convertSize:(point) fromView:nil| instead.',
        'http://dev.chromium.org/developers/coding-style/cocoa-dos-and-donts',
       ),
@@ -90,7 +97,8 @@ _BANNED_OBJC_FUNCTIONS = (
     ),
     (
       'convertSizeToBase:',
-      ('The use of -[NSView convertSizeToBase:] is almost certainly wrong.',
+      (
+       'The use of -[NSView convertSizeToBase:] is almost certainly wrong.',
        'Please use |convertSize:(point) toView:nil| instead.',
        'http://dev.chromium.org/developers/coding-style/cocoa-dos-and-donts',
       ),
@@ -100,28 +108,35 @@ _BANNED_OBJC_FUNCTIONS = (
 
 
 _BANNED_CPP_FUNCTIONS = (
+    # Make sure that gtest's FRIEND_TEST() macro is not used; the
+    # FRIEND_TEST_ALL_PREFIXES() macro from base/gtest_prod_util.h should be
+    # used instead since that allows for FLAKY_, FAILS_ and DISABLED_ prefixes.
+    (
+      'FRIEND_TEST(',
+      (
+       'Chromium code should not use gtest\'s FRIEND_TEST() macro. Include'
+       'base/gtest_prod_util.h and use FRIEND_TEST_ALL_PREFIXES() instead.',
+      ),
+      False,
+    ),
+    (
+      'ScopedAllowIO',
+      (
+       'New code should not use ScopedAllowIO. Post a task to the blocking pool'
+       'or the FILE thread instead.',
+      ),
+      False,
+    ),
+    (
+      'FilePathWatcher::Delegate',
+      (
+       'New code should not use FilePathWatcher::Delegate. Use the callback'
+       'interface instead.',
+      ),
+      False,
+    ),
 )
 
-
-
-def _CheckNoInterfacesInBase(input_api, output_api):
-  """Checks to make sure no files in libbase.a have |@interface|."""
-  pattern = input_api.re.compile(r'^\s*@interface', input_api.re.MULTILINE)
-  files = []
-  for f in input_api.AffectedSourceFiles(input_api.FilterSourceFile):
-    if (f.LocalPath().startswith('base/') and
-        not f.LocalPath().endswith('_unittest.mm')):
-      contents = input_api.ReadFile(f)
-      if pattern.search(contents):
-        files.append(f)
-
-  if len(files):
-    return [ output_api.PresubmitError(
-        'Objective-C interfaces or categories are forbidden in libbase. ' +
-        'See http://groups.google.com/a/chromium.org/group/chromium-dev/' +
-        'browse_thread/thread/efb28c10435987fd',
-        files) ]
-  return []
 
 
 def _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api):
@@ -238,59 +253,6 @@ def _CheckNoDEPSGIT(input_api, output_api):
   return []
 
 
-def _CheckNoFRIEND_TEST(input_api, output_api):
-  """Make sure that gtest's FRIEND_TEST() macro is not used, the
-  FRIEND_TEST_ALL_PREFIXES() macro from base/gtest_prod_util.h should be used
-  instead since that allows for FLAKY_, FAILS_ and DISABLED_ prefixes."""
-  problems = []
-
-  file_filter = lambda f: f.LocalPath().endswith(('.cc', '.h'))
-  for f in input_api.AffectedFiles(file_filter=file_filter):
-    for line_num, line in f.ChangedContents():
-      if 'FRIEND_TEST(' in line:
-        problems.append('    %s:%d' % (f.LocalPath(), line_num))
-
-  if not problems:
-    return []
-  return [output_api.PresubmitPromptWarning('Chromium code should not use '
-      'gtest\'s FRIEND_TEST() macro. Include base/gtest_prod_util.h and use '
-      'FRIEND_TEST_ALL_PREFIXES() instead.\n' + '\n'.join(problems))]
-
-
-def _CheckNoScopedAllowIO(input_api, output_api):
-  """Make sure that ScopedAllowIO is not used."""
-  problems = []
-
-  file_filter = lambda f: f.LocalPath().endswith(('.cc', '.h'))
-  for f in input_api.AffectedFiles(file_filter=file_filter):
-    for line_num, line in f.ChangedContents():
-      if 'ScopedAllowIO' in line:
-        problems.append('    %s:%d' % (f.LocalPath(), line_num))
-
-  if not problems:
-    return []
-  return [output_api.PresubmitPromptWarning('New code should not use '
-      'ScopedAllowIO. Post a task to the blocking pool or the FILE thread '
-      'instead.\n' + '\n'.join(problems))]
-
-
-def _CheckNoFilePathWatcherDelegate(input_api, output_api):
-  """Make sure that FilePathWatcher::Delegate is not used."""
-  problems = []
-
-  file_filter = lambda f: f.LocalPath().endswith(('.cc', '.h'))
-  for f in input_api.AffectedFiles(file_filter=file_filter):
-    for line_num, line in f.ChangedContents():
-      if 'FilePathWatcher::Delegate' in line:
-        problems.append('    %s:%d' % (f.LocalPath(), line_num))
-
-  if not problems:
-    return []
-  return [output_api.PresubmitPromptWarning('New code should not use '
-      'FilePathWatcher::Delegate. Use the callback interface instead.\n' +
-      '\n'.join(problems))]
-
-
 def _CheckNoBannedFunctions(input_api, output_api):
   """Make sure that banned functions are not used."""
   warnings = []
@@ -336,16 +298,12 @@ def _CommonChecks(input_api, output_api):
   results = []
   results.extend(input_api.canned_checks.PanProjectChecks(
       input_api, output_api, excluded_paths=_EXCLUDED_PATHS))
-  results.extend(_CheckNoInterfacesInBase(input_api, output_api))
   results.extend(_CheckAuthorizedAuthor(input_api, output_api))
   results.extend(
     _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api))
   results.extend(_CheckNoIOStreamInHeaders(input_api, output_api))
   results.extend(_CheckNoNewWStrings(input_api, output_api))
   results.extend(_CheckNoDEPSGIT(input_api, output_api))
-  results.extend(_CheckNoFRIEND_TEST(input_api, output_api))
-  results.extend(_CheckNoScopedAllowIO(input_api, output_api))
-  results.extend(_CheckNoFilePathWatcherDelegate(input_api, output_api))
   results.extend(_CheckNoBannedFunctions(input_api, output_api))
   return results
 
