@@ -4512,8 +4512,17 @@ Update checks have repeatedly failed for the extension "<ph name="EXTENSION_NAME
       <message name="IDS_EXTENSION_CONTAINS_PRIVATE_KEY" desc="Error message when an extension includes a file containing a private key.">
         This extension includes the key file '<ph name="KEY_PATH">$1<ex>relative/path/to/file.pem</ex></ph>'. You probably don't want to do that.
       </message>
+
+      <!-- This version of the message is used temporarily, until we have the
+           blog post up describing the transition process. -->
       <message name="IDS_EXTENSION_MANIFEST_VERSION_OLD" desc="Warning message when a developer tries to load an extension that uses a manifest version that will soon be disallowed.">
-        Manifest version 1 will be unsupported soon. You should <ph name="LINK_START">$1<ex>&lt;a href='http://code.google.com/chrome/extensions/manifestVersion.html'&gt;</ex></ph>upgrade to version 2<ph name="LINK_END">$2<ex>&lt;/a&gt;</ex></ph>.
+        Support for manifest version 1 is being phased out. Please <ph name="LINK_START">$1<ex>&lt;a&gt;</ex></ph>upgrade to version 2<ph name="LINK_END">$2<ex>&lt;/a&gt;</ex></ph>.
+      </message>
+
+      <!-- We'll switch to this version of the message once we have a blog post
+           written for the first link. -->
+      <message name="IDS_EXTENSION_MANIFEST_VERSION_OLD_2_LINKS" desc="Warning message when a developer tries to load an extension that uses a manifest version that will soon be disallowed.">
+        Support for manifest version 1 is being <ph name="LINK_START_1">$1<ex>&lt;a&gt;</ex></ph>phased out<ph name="LINK_END_1">$2<ex>&lt;/a&gt;</ex></ph>. Please <ph name="LINK_START_2">$3<ex>&lt;a&gt;</ex></ph>upgrade to version 2<ph name="LINK_END_2">$4<ex>&lt;/a&gt;</ex></ph>.
       </message>
 
       <!-- Extension installed bubble -->
