@@ -74,7 +74,9 @@ bool PPB_URLResponseInfo_Impl::Initialize(const WebURLResponse& response) {
   WebString file_path = response.downloadFilePath();
   if (!file_path.isEmpty()) {
     body_ = PPB_FileRef_Impl::CreateExternal(
-        pp_instance(), webkit_glue::WebStringToFilePath(file_path));
+        pp_instance(),
+        webkit_glue::WebStringToFilePath(file_path),
+        std::string());
   }
   return true;
 }

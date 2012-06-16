@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,7 +34,8 @@ class PPB_FileRef_Impl : public ::ppapi::PPB_FileRef_Shared {
 
   // The returned object will have a refcount of 0 (just like "new").
   static PPB_FileRef_Impl* CreateExternal(PP_Instance instance,
-                                          const FilePath& external_file_path);
+                                          const FilePath& external_file_path,
+                                          const std::string& display_name);
 
   // PPB_FileRef_API implementation (not provided by PPB_FileRef_Shared).
   virtual PP_Resource GetParent() OVERRIDE;

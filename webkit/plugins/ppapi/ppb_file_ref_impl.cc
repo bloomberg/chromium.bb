@@ -130,11 +130,15 @@ PPB_FileRef_Impl* PPB_FileRef_Impl::CreateInternal(PP_Resource pp_file_system,
 // static
 PPB_FileRef_Impl* PPB_FileRef_Impl::CreateExternal(
     PP_Instance instance,
-    const FilePath& external_file_path) {
+    const FilePath& external_file_path,
+    const std::string& display_name) {
   PPB_FileRef_CreateInfo info;
   info.resource = HostResource::MakeInstanceOnly(instance);
   info.file_system_type = PP_FILESYSTEMTYPE_EXTERNAL;
-  info.name = GetNameForExternalFilePath(external_file_path);
+  if (display_name.empty())
+    info.name = GetNameForExternalFilePath(external_file_path);
+  else
+    info.name = display_name;
 
   return new PPB_FileRef_Impl(info, external_file_path);
 }

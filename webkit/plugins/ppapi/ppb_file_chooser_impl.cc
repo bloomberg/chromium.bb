@@ -52,9 +52,12 @@ class FileChooserCompletionImpl : public WebFileChooserCompletion {
   virtual ~FileChooserCompletionImpl() {}
 
   virtual void didChooseFile(const WebVector<WebString>& file_names) {
-    std::vector<std::string> files;
-    for (size_t i = 0; i < file_names.size(); i++)
-      files.push_back(file_names[i].utf8());
+    std::vector<PPB_FileChooser_Impl::ChosenFileInfo> files;
+    for (size_t i = 0; i < file_names.size(); i++) {
+      files.push_back(
+          PPB_FileChooser_Impl::ChosenFileInfo(file_names[i].utf8(),
+                                               std::string()));
+    }
 
     file_chooser_->StoreChosenFiles(files);
 
@@ -62,9 +65,13 @@ class FileChooserCompletionImpl : public WebFileChooserCompletion {
     delete this;
   }
   virtual void didChooseFile(const WebVector<SelectedFileInfo>& file_names) {
-    std::vector<std::string> files;
-    for (size_t i = 0; i < file_names.size(); i++)
-      files.push_back(file_names[i].path.utf8());
+    std::vector<PPB_FileChooser_Impl::ChosenFileInfo> files;
+    for (size_t i = 0; i < file_names.size(); i++) {
+      files.push_back(
+          PPB_FileChooser_Impl::ChosenFileInfo(
+              file_names[i].path.utf8(),
+              file_names[i].displayName.utf8()));
+    }
 
     file_chooser_->StoreChosenFiles(files);
 
@@ -77,6 +84,13 @@ class FileChooserCompletionImpl : public WebFileChooserCompletion {
 };
 
 }  // namespace
+
+PPB_FileChooser_Impl::ChosenFileInfo::ChosenFileInfo(
+    const std::string& path,
+    const std::string& display_name)
+    : path(path),
+      display_name(display_name) {
+}
 
 PPB_FileChooser_Impl::PPB_FileChooser_Impl(
     PP_Instance instance,
@@ -113,7 +127,7 @@ PPB_FileChooser_API* PPB_FileChooser_Impl::AsPPB_FileChooser_API() {
 }
 
 void PPB_FileChooser_Impl::StoreChosenFiles(
-    const std::vector<std::string>& files) {
+    const std::vector<ChosenFileInfo>& files) {
   next_chosen_file_index_ = 0;
 
   // It is possible that |callback_| has been run: before the user takes action
@@ -128,16 +142,18 @@ void PPB_FileChooser_Impl::StoreChosenFiles(
   }
 
   std::vector< scoped_refptr<Resource> > chosen_files;
-  for (std::vector<std::string>::const_iterator it = files.begin();
+  for (std::vector<ChosenFileInfo>::const_iterator it = files.begin();
        it != files.end(); ++it) {
 #if defined(OS_WIN)
-    FilePath file_path(base::SysUTF8ToWide(*it));
+    FilePath file_path(base::SysUTF8ToWide(it->path));
 #else
-    FilePath file_path(*it);
+    FilePath file_path(it->path);
 #endif
 
     chosen_files.push_back(scoped_refptr<Resource>(
-        PPB_FileRef_Impl::CreateExternal(pp_instance(), file_path)));
+        PPB_FileRef_Impl::CreateExternal(pp_instance(),
+                                         file_path,
+                                         it->display_name)));
   }
 
   int32_t result_code = (chosen_files.size() > 0) ? PP_OK : PP_ERROR_USERCANCEL;

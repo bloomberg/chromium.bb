@@ -34,6 +34,14 @@ class PPB_FileRef_Impl;
 class PPB_FileChooser_Impl : public ::ppapi::Resource,
                              public ::ppapi::thunk::PPB_FileChooser_API {
  public:
+  // Structure to store the information of chosen files.
+  struct ChosenFileInfo {
+    ChosenFileInfo(const std::string& path, const std::string& display_name);
+    std::string path;
+    // |display_name| may be empty.
+    std::string display_name;
+  };
+
   PPB_FileChooser_Impl(PP_Instance instance,
                        PP_FileChooserMode_Dev mode,
                        const char* accept_types);
@@ -50,7 +58,7 @@ class PPB_FileChooser_Impl : public ::ppapi::Resource,
   virtual ::ppapi::thunk::PPB_FileChooser_API* AsPPB_FileChooser_API() OVERRIDE;
 
   // Stores the list of selected files.
-  void StoreChosenFiles(const std::vector<std::string>& files);
+  void StoreChosenFiles(const std::vector<ChosenFileInfo>& files);
 
   // Check that |callback| is valid (only non-blocking operation is supported)
   // and that no callback is already pending. Returns |PP_OK| if okay, else
