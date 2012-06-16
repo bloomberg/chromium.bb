@@ -48,6 +48,8 @@
 #ifndef WEBKIT_MEDIA_WEBMEDIAPLAYER_IMPL_H_
 #define WEBKIT_MEDIA_WEBMEDIAPLAYER_IMPL_H_
 
+#include <string>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -57,6 +59,7 @@
 #include "media/base/filters.h"
 #include "media/base/message_loop_factory.h"
 #include "media/base/pipeline.h"
+#include "media/crypto/aes_decryptor.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAudioSourceProvider.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayer.h"
@@ -213,7 +216,6 @@ class WebMediaPlayerImpl
       const WebKit::WebString& key_system,
       const WebKit::WebString& session_id);
 
-
   // As we are closing the tab or even the browser, |main_loop_| is destroyed
   // even before this object gets destructed, so we need to know when
   // |main_loop_| is being destroyed and we can stop posting repaint task
@@ -227,7 +229,20 @@ class WebMediaPlayerImpl
   void OnPipelineEnded(media::PipelineStatus status);
   void OnPipelineError(media::PipelineStatus error);
   void OnDemuxerOpened();
-  void OnKeyNeeded(scoped_array<uint8> init_data, int init_data_size);
+  void OnKeyAdded(const std::string& key_system, const std::string& session_id);
+  void OnKeyError(const std::string& key_system,
+                  const std::string& session_id,
+                  media::AesDecryptor::KeyError error_code,
+                  int system_code);
+  void OnKeyMessage(const std::string& key_system,
+                    const std::string& session_id,
+                    scoped_array<uint8> message,
+                    int message_length,
+                    const std::string& default_url);
+  void OnNeedKey(const std::string& key_system,
+                 const std::string& session_id,
+                 scoped_array<uint8> init_data,
+                 int init_data_size);
   void SetOpaque(bool);
 
  private:

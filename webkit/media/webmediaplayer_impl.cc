@@ -6,6 +6,7 @@
 
 #include <limits>
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -154,7 +155,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   filter_collection_->AddAudioRenderer(
       new media::AudioRendererImpl(new media::NullAudioSink()));
 
-  decryptor_.reset(new media::AesDecryptor());
+  decryptor_.reset(new media::AesDecryptor(proxy_.get()));
 }
 
 WebMediaPlayerImpl::~WebMediaPlayerImpl() {
@@ -690,7 +691,7 @@ void WebMediaPlayerImpl::sourceEndOfStream(
   DCHECK_EQ(main_loop_, MessageLoop::current());
   media::PipelineStatus pipeline_status = media::PIPELINE_OK;
 
-  switch(status) {
+  switch (status) {
     case WebMediaPlayer::EndOfStreamStatusNoError:
       break;
     case WebMediaPlayer::EndOfStreamStatusNetworkError:
@@ -713,36 +714,12 @@ WebMediaPlayerImpl::generateKeyRequest(const WebString& key_system,
   if (!IsSupportedKeySystem(key_system))
     return WebKit::WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
 
-  // Every request call creates a unique ID.
-  // TODO(ddorwin): Move this to the CDM implementations since the CDMs may
-  // create their own IDs and since CDMs supporting multiple renderer processes
-  // need globally unique IDs.
-  // Everything from here until the return should probably be handled by
-  // the decryptor - see http://crbug.com/123260.
-  static uint32_t next_available_session_id = 1;
-  uint32_t session_id = next_available_session_id++;
-
-  WebString session_id_string(base::UintToString16(session_id));
-
   DVLOG(1) << "generateKeyRequest: " << key_system.utf8().data() << ": "
            << std::string(reinterpret_cast<const char*>(init_data),
-                          static_cast<size_t>(init_data_length))
-           << " [" << session_id_string.utf8().data() << "]";
+                          static_cast<size_t>(init_data_length));
 
-  // TODO(ddorwin): Generate a key request in the decryptor and fire
-  // keyMessage when it completes.
-  // For now, just fire the event with the init_data as the request.
-  const unsigned char* message = init_data;
-  unsigned message_length = init_data_length;
-
-  MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-      &WebKit::WebMediaPlayerClient::keyMessage,
-      base::Unretained(GetClient()),
-      key_system,
-      session_id_string,
-      message,
-      message_length));
-
+  decryptor_->GenerateKeyRequest(key_system.utf8(),
+                                 init_data, init_data_length);
   return WebKit::WebMediaPlayer::MediaKeyExceptionNoError;
 }
 
@@ -759,7 +736,6 @@ WebKit::WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::addKey(
   if (!IsSupportedKeySystem(key_system))
     return WebKit::WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
 
-
   DVLOG(1) << "addKey: " << key_system.utf8().data() << ": "
            << std::string(reinterpret_cast<const char*>(key),
                           static_cast<size_t>(key_length)) << ", "
@@ -767,38 +743,8 @@ WebKit::WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::addKey(
                           static_cast<size_t>(init_data_length))
            << " [" << session_id.utf8().data() << "]";
 
-  // TODO(ddorwin): Everything from here until the return should probably be
-  // handled by the decryptor - see http://crbug.com/123260.
-  // Temporarily, fire an error for invalid key length so we can test the error
-  // event and fire the keyAdded event in all other cases.
-  const unsigned kSupportedKeyLength = 16;  // 128-bit key.
-  if (key_length != kSupportedKeyLength) {
-    DLOG(ERROR) << "addKey: invalid key length: " << key_length;
-    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-        &WebKit::WebMediaPlayerClient::keyError,
-        base::Unretained(GetClient()),
-        key_system,
-        session_id,
-        WebKit::WebMediaPlayerClient::MediaKeyErrorCodeUnknown,
-        0));
-  } else {
-    // TODO(ddorwin): Fix the decryptor to accept no |init_data|. See
-    // http://crbug.com/123265. Until then, ensure a non-empty value is passed.
-    static const unsigned char kDummyInitData[1] = {0};
-    if (!init_data) {
-      init_data = kDummyInitData;
-      init_data_length = arraysize(kDummyInitData);
-    }
-
-    decryptor_->AddKey(init_data, init_data_length, key, key_length);
-
-    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-        &WebKit::WebMediaPlayerClient::keyAdded,
-        base::Unretained(GetClient()),
-        key_system,
-        session_id));
-  }
-
+  decryptor_->AddKey(key_system.utf8(), key, key_length,
+                     init_data, init_data_length, session_id.utf8());
   return WebKit::WebMediaPlayer::MediaKeyExceptionNoError;
 }
 
@@ -808,8 +754,7 @@ WebKit::WebMediaPlayer::MediaKeyException WebMediaPlayerImpl::cancelKeyRequest(
   if (!IsSupportedKeySystem(key_system))
     return WebKit::WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
 
-  // TODO(ddorwin): Cancel the key request in the decryptor.
-
+  decryptor_->CancelKeyRequest(key_system.utf8(), session_id.utf8());
   return WebKit::WebMediaPlayer::MediaKeyExceptionNoError;
 }
 
@@ -926,11 +871,50 @@ void WebMediaPlayerImpl::OnDemuxerOpened() {
   GetClient()->sourceOpened();
 }
 
-void WebMediaPlayerImpl::OnKeyNeeded(scoped_array<uint8> init_data,
-                                     int init_data_size) {
+void WebMediaPlayerImpl::OnKeyAdded(const std::string& key_system,
+                                    const std::string& session_id) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
 
-  GetClient()->keyNeeded("", "", init_data.get(), init_data_size);
+  GetClient()->keyAdded(WebString::fromUTF8(key_system),
+                        WebString::fromUTF8(session_id));
+}
+
+void WebMediaPlayerImpl::OnNeedKey(const std::string& key_system,
+                                   const std::string& session_id,
+                                   scoped_array<uint8> init_data,
+                                   int init_data_size) {
+  DCHECK_EQ(main_loop_, MessageLoop::current());
+
+  GetClient()->keyNeeded(WebString::fromUTF8(key_system),
+                         WebString::fromUTF8(session_id),
+                         init_data.get(),
+                         init_data_size);
+}
+
+void WebMediaPlayerImpl::OnKeyError(const std::string& key_system,
+                                    const std::string& session_id,
+                                    media::AesDecryptor::KeyError error_code,
+                                    int system_code) {
+  DCHECK_EQ(main_loop_, MessageLoop::current());
+
+  GetClient()->keyError(
+      WebString::fromUTF8(key_system),
+      WebString::fromUTF8(session_id),
+      static_cast<WebKit::WebMediaPlayerClient::MediaKeyErrorCode>(error_code),
+      system_code);
+}
+
+void WebMediaPlayerImpl::OnKeyMessage(const std::string& key_system,
+                                      const std::string& session_id,
+                                      scoped_array<uint8> message,
+                                      int message_length,
+                                      const std::string& /* default_url */) {
+  DCHECK_EQ(main_loop_, MessageLoop::current());
+
+  GetClient()->keyMessage(WebString::fromUTF8(key_system),
+                          WebString::fromUTF8(session_id),
+                          message.get(),
+                          message_length);
 }
 
 void WebMediaPlayerImpl::SetOpaque(bool opaque) {

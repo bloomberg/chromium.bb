@@ -25,7 +25,11 @@ class ChunkDemuxerClient {
   // A decryption key associated with |init_data| may be needed to decrypt the
   // media being demuxed before decoding. Note that the demuxing itself does not
   // need decryption.
-  virtual void KeyNeeded(scoped_array<uint8> init_data, int init_data_size) = 0;
+  virtual void DemuxerNeedKey(scoped_array<uint8> init_data,
+                              int init_data_size) = 0;
+
+ protected:
+  virtual ~ChunkDemuxerClient() {}
 };
 
 }  // namespace media

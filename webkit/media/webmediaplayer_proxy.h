@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "media/base/pipeline.h"
+#include "media/crypto/decryptor_client.h"
 #include "media/filters/chunk_demuxer.h"
 #include "media/filters/chunk_demuxer_client.h"
 #include "media/filters/ffmpeg_video_decoder.h"
@@ -41,7 +42,8 @@ class WebMediaPlayerImpl;
 // the render thread that WebMediaPlayerImpl is running on.
 class WebMediaPlayerProxy
     : public base::RefCountedThreadSafe<WebMediaPlayerProxy>,
-      public media::ChunkDemuxerClient {
+      public media::ChunkDemuxerClient,
+      public media::DecryptorClient {
  public:
   WebMediaPlayerProxy(const scoped_refptr<base::MessageLoopProxy>& render_loop,
                       WebMediaPlayerImpl* webmediaplayer);
@@ -89,8 +91,8 @@ class WebMediaPlayerProxy
   // ChunkDemuxerClient implementation.
   virtual void DemuxerOpened(media::ChunkDemuxer* demuxer) OVERRIDE;
   virtual void DemuxerClosed() OVERRIDE;
-  virtual void KeyNeeded(scoped_array<uint8> init_data,
-                         int init_data_size) OVERRIDE;
+  virtual void DemuxerNeedKey(scoped_array<uint8> init_data,
+                              int init_data_size) OVERRIDE;
 
   // Methods for Demuxer communication.
   void DemuxerStartWaitingForSeek();
@@ -105,9 +107,22 @@ class WebMediaPlayerProxy
   void DemuxerEndOfStream(media::PipelineStatus status);
   void DemuxerShutdown();
 
-  void DemuxerOpenedTask(const scoped_refptr<media::ChunkDemuxer>& demuxer);
-  void DemuxerClosedTask();
-  void KeyNeededTask(scoped_array<uint8> init_data, int init_data_size);
+  // DecryptorClient implementation.
+  virtual void KeyAdded(const std::string& key_system,
+                        const std::string& session_id) OVERRIDE;
+  virtual void KeyError(const std::string& key_system,
+                        const std::string& session_id,
+                        media::AesDecryptor::KeyError error_code,
+                        int system_code) OVERRIDE;
+  virtual void KeyMessage(const std::string& key_system,
+                          const std::string& session_id,
+                          scoped_array<uint8> message,
+                          int message_length,
+                          const std::string& default_url) OVERRIDE;
+  virtual void NeedKey(const std::string& key_system,
+                       const std::string& session_id,
+                       scoped_array<uint8> init_data,
+                       int init_data_size) OVERRIDE;
 
  private:
   friend class base::RefCountedThreadSafe<WebMediaPlayerProxy>;
@@ -131,6 +146,32 @@ class WebMediaPlayerProxy
 
   // Inform |webmediaplayer_| whether the video content is opaque.
   void SetOpaqueTask(bool opaque);
+
+  void DemuxerOpenedTask(const scoped_refptr<media::ChunkDemuxer>& demuxer);
+  void DemuxerClosedTask();
+
+  // Notify |webmediaplayer_| that a key has been added.
+  void KeyAddedTask(const std::string& key_system,
+                    const std::string& session_id);
+
+  // Notify |webmediaplayer_| that a key error occurred.
+  void KeyErrorTask(const std::string& key_system,
+                    const std::string& session_id,
+                    media::AesDecryptor::KeyError error_code,
+                    int system_code);
+
+  // Notify |webmediaplayer_| that a key message has been generated.
+  void KeyMessageTask(const std::string& key_system,
+                      const std::string& session_id,
+                      scoped_array<uint8> message,
+                      int message_length,
+                      const std::string& default_url);
+
+  // Notify |webmediaplayer_| that a key is needed for decryption.
+  void NeedKeyTask(const std::string& key_system,
+                   const std::string& session_id,
+                   scoped_array<uint8> init_data,
+                   int init_data_size);
 
   // The render message loop where WebKit lives.
   scoped_refptr<base::MessageLoopProxy> render_loop_;
