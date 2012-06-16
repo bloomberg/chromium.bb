@@ -121,7 +121,7 @@ class CNSWorkerThread(worker_thread.WorkerThread):
       unique_url: A unique identifier of the test page.
       task: A (series_name, settings, file_name, run_epp) tuple.
     Returns:
-      True if the tests run as expected.
+      True if at least one iteration of the tests run as expected.
     """
     ttp_results = []
     epp_results = []
@@ -163,11 +163,11 @@ class CNSWorkerThread(worker_thread.WorkerThread):
     # End of iterations, print results,
     pyauto_utils.PrintPerfResult('ttp', graph_name, ttp_results, 'ms')
 
+    # Return true if we got at least one result to report.
     if run_epp:
       pyauto_utils.PrintPerfResult('epp', graph_name, epp_results, '%')
-
-    # Check if any of the tests failed to report the metrics.
-    return len(ttp_results) == len(epp_results) == self._test_iterations
+      return len(epp_results) != 0
+    return len(ttp_results) != 0
 
 
 class MediaConstrainedNetworkPerfTest(cns_test_base.CNSTestBase):
