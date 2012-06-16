@@ -348,7 +348,7 @@ void DaemonControllerMac::PreferencePaneCallbackDelegate(CFStringRef name) {
     result = RESULT_OK;
   } else if (CFStringCompare(name, CFSTR(kUpdateFailedNotificationName), 0) ==
           kCFCompareEqualTo) {
-    result = RESULT_CANCELLED;
+    result = RESULT_FAILED;
   } else {
     LOG(WARNING) << "Ignoring unexpected notification: " << name;
     return;

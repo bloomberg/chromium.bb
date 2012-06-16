@@ -327,8 +327,8 @@ std::string JsonHostConfig::GetSerializedData() const {
   [service_status_timer_ invalidate];
   [service_status_timer_ release];
   service_status_timer_ = nil;
-  if (have_new_config_)
-    [self notifyPlugin:kUpdateFailedNotificationName];
+
+  [self notifyPlugin:kUpdateFailedNotificationName];
 }
 
 - (void)applyConfiguration:(id)sender
@@ -753,8 +753,6 @@ std::string JsonHostConfig::GetSerializedData() const {
       NSLog(@"Failed to get path of configuration data.");
       return;
     }
-    if (access(file.c_str(), F_OK) != 0)
-      return;
 
     remove(file.c_str());
     [self notifyPlugin:kUpdateFailedNotificationName];
