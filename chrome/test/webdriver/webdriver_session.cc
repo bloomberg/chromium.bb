@@ -111,6 +111,7 @@ Error* Session::Init(const DictionaryValue* capabilities_dict) {
   browser_options.user_data_dir = capabilities_.profile;
   if (!capabilities_.no_website_testing_defaults) {
     browser_options.ignore_certificate_errors = true;
+    browser_options.disable_popup_blocking = true;
   }
   RunSessionTask(base::Bind(
       &Session::InitOnSessionThread,

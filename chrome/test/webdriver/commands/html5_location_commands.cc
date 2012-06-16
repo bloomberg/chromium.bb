@@ -37,9 +37,13 @@ void HTML5LocationCommand::ExecuteGet(Response* const response) {
 }
 
 void HTML5LocationCommand::ExecutePost(Response* const response) {
-  base::DictionaryValue geolocation;
-  geolocation.MergeDictionary(parameters_.get());
-  Error* error = session_->OverrideGeolocation(&geolocation);
+  base::DictionaryValue* geolocation;
+  if (!GetDictionaryParameter("location", &geolocation)) {
+    response->SetError(new Error(
+        kBadRequest, "Missing or invalid 'location'"));
+    return;
+  }
+  Error* error = session_->OverrideGeolocation(geolocation);
   if (error)
     response->SetError(error);
 }

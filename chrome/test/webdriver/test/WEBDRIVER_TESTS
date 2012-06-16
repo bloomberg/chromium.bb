@@ -31,6 +31,8 @@
     'correct_event_firing_tests',
     'driver_element_finding_tests',
     'element_attribute_tests',
+    # Test needs to be updated to get fix in r16983.
+    '-element_attribute_tests.ElementAttributeTests.testShouldReturnTheValueOfTheDisabledAttributeAsFalseIfNotSet',
     'executing_async_javascript_tests',
     'executing_javascript_tests',
     'form_handling_tests',

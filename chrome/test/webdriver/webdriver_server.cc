@@ -240,7 +240,7 @@ int RunChromeDriver() {
   std::string root;
   std::string url_base;
   int http_threads = 4;
-  bool enable_keep_alive = true;
+  bool enable_keep_alive = false;
   if (cmd_line->HasSwitch("port"))
     port = cmd_line->GetSwitchValueASCII("port");
   if (cmd_line->HasSwitch("log-path"))
@@ -259,8 +259,8 @@ int RunChromeDriver() {
       return 1;
     }
   }
-  if (cmd_line->HasSwitch("disable-keep-alive"))
-    enable_keep_alive = false;
+  if (cmd_line->HasSwitch("enable-keep-alive"))
+    enable_keep_alive = true;
 
   bool logging_success = InitWebDriverLogging(log_path, kAllLogLevel);
   std::string chromedriver_info = base::StringPrintf(

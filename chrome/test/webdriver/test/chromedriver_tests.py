@@ -832,8 +832,7 @@ class FileUploadControlTest(ChromeDriverTest):
       filepaths.append(filepath)
 
     fileupload_single = self._driver.find_element_by_name('fileupload_single')
-    multiple = fileupload_single.get_attribute('multiple')
-    self.assertEqual('false', multiple)
+    self.assertFalse(fileupload_single.get_attribute('multiple'))
     self.assertRaises(WebDriverException, fileupload_single.send_keys,
                       '\n'.join(filepaths))
 
@@ -1050,7 +1049,7 @@ class GeolocationTest(ChromeDriverTest):
     def getLocation():
       return driver.execute('getLoc')['value']
     def setLocation(location):
-      driver.execute('setLoc', location)
+      driver.execute('setLoc', {'location': location})
     expected_location = {'latitude': 50, 'longitude': 50, 'altitude': 300}
     setLocation(expected_location)
     location = getLocation()
