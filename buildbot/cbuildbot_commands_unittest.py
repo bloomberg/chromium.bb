@@ -16,7 +16,6 @@ import unittest
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
 from chromite.buildbot import cbuildbot_commands as commands
-from chromite.buildbot import configure_repo
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 
@@ -298,14 +297,14 @@ class CBuildBotTest(mox.MoxTestBase):
     buildroot = '/bob'
     board = 'board_name'
 
-    cros_build_lib.RunCommand(
+    cros_build_lib.RunCommandCaptureOutput(
         ['./upload_symbols', '--board=board_name', '--yes', '--verbose',
-         '--official_build'], cwd='/bob/src/scripts', error_ok=True,
-        enter_chroot=True)
+         '--official_build'], cwd='/bob/src/scripts',
+        enter_chroot=True, combine_stdout_stderr=True)
 
-    cros_build_lib.RunCommand(
+    cros_build_lib.RunCommandCaptureOutput(
         ['./upload_symbols', '--board=board_name', '--yes', '--verbose'],
-        cwd='/bob/src/scripts', error_ok=True, enter_chroot=True)
+        cwd='/bob/src/scripts', enter_chroot=True, combine_stdout_stderr=True)
 
     self.mox.ReplayAll()
     commands.UploadSymbols(buildroot, board, official=True)

@@ -806,7 +806,13 @@ def UploadSymbols(buildroot, board, official):
 
   cwd = os.path.join(buildroot, 'src', 'scripts')
 
-  cros_build_lib.RunCommand(cmd, cwd=cwd, error_ok=True, enter_chroot=True)
+  try:
+    cros_build_lib.RunCommandCaptureOutput(cmd, cwd=cwd, enter_chroot=True,
+                                           combine_stdout_stderr=True)
+  except cros_build_lib.RunCommandError, e:
+    # TODO(davidjames): Convert this to a fatal error after July 1, 2012.
+    print '@@@STEP_WARNINGS@@@'
+    print e.result.output
 
 
 def PushImages(buildroot, board, branch_name, archive_url, profile):
