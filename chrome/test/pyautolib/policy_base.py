@@ -279,31 +279,32 @@ class PolicyTestBase(pyauto.PyUITest):
   def _SetUserPolicyMac(self, user_policy=None):
     """Writes the given user policy to the plist policy file read by Chrome."""
     assert self.IsMac()
-    sudo_cmd_file = os.path.join(os.path.dirname(__file__),
-                                 'policy_posix_util.py')
 
     if self.GetBrowserInfo()['properties']['branding'] == 'Google Chrome':
-      policies_file_base = 'com.google.Chrome.plist'
+      bundle = 'com.google.Chrome'
     else:
-      policies_file_base = 'org.chromium.Chromium.plist'
+      bundle = 'org.chromium.Chromium'
 
-    policies_location = os.path.join('/Library', 'Managed Preferences',
-                                     getpass.getuser())
+    if user_policy:
+      mcx = {
+        bundle: dict(
+            [ (k, { 'state': 'always', 'value': v })
+              for (k,v) in user_policy.iteritems() ])
+      }
 
-    if os.path.exists(policies_location):
-      logging.debug('Removing directory %s' % policies_location)
-      subprocess.call(['suid-python', sudo_cmd_file,
-                       'remove_dir', policies_location])
+      tmp_file = tempfile.mktemp(dir='/tmp')
+      plistlib.writePlist(mcx, tmp_file)
+    else:
+      tmp_file = ''
 
-    if user_policy is not None:
-      policies_tmp_file = os.path.join('/tmp', policies_file_base)
-      plistlib.writePlist(user_policy, policies_tmp_file)
-      subprocess.call(['suid-python', sudo_cmd_file,
-                       'setup_dir', policies_location])
-      # Copy policy file to the managed directory
-      subprocess.call(['suid-python', sudo_cmd_file,
-                       'copy', policies_tmp_file, policies_location])
-      os.remove(policies_tmp_file)
+    user = getpass.getuser()
+    sudo_cmd_file = os.path.join(os.path.dirname(__file__),
+                                 'policy_posix_util.py')
+    subprocess.call(['suid-python', sudo_cmd_file,
+                     'mcximport', user, bundle, tmp_file])
+
+    if tmp_file:
+      os.remove(tmp_file)
 
   def SetUserPolicy(self, user_policy=None):
     """Sets the user policy provided as a dict.

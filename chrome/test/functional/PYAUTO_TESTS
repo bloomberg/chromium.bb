@@ -212,10 +212,6 @@
       '-passwords',
       # crbug.com/97140
       '-plugins.PluginsTest.testDisableEnableAllPlugins',
-      # crbug.com/130094
-      '-policy',
-      '-policy_prefs_ui.PolicyPrefsUITest.testToggleUserPolicyTogglesBanner',
-      '-policy_prefs_ui.PolicyPrefsUITest.testUserPoliciesShowBanner',
       # crbug.com/69619
       '-search_engines.SearchEnginesTest.testDiscoverSearchEngine',
       # Keychain popups make sync tests difficult on Mac.  crbug.com/49378

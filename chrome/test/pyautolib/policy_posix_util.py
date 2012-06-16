@@ -7,6 +7,7 @@
 
 import os
 import shutil
+import subprocess
 import sys
 
 
@@ -25,10 +26,24 @@ def main():
     os.system('chmod -R 755 "%s/../.."' % sys.argv[2])
   elif sys.argv[1] == 'remove_dir':
     os.system('rm -rf "%s"' % sys.argv[2])
+  elif sys.argv[1] == 'mcximport':
+    assert sys.platform == 'darwin'
+    user = sys.argv[2]
+    bundle = sys.argv[3]
+    mcx_file = sys.argv[4]
+    # Note: os.system() drops the euid priviledges on mac.
+    # Clear the current preferences.
+    subprocess.call(['dscl', '.', '-mcxdelete', '/Users/' + user, bundle, '='])
+    # Import the new preferences, if a file was specified.
+    if mcx_file:
+      subprocess.call(['dscl', '.', '-mcximport', '/Users/' + user, mcx_file])
+    # Make sure the cache is refreshed.
+    subprocess.call(['mcxrefresh', '-n', user])
   else:
+    mac_opt_cmds = ', [mcximport]' if sys.platform == 'darwin' else ''
     print >>sys.stderr, (
         'Invalid syntax. Possible values are [copy], [setup_dir], '
-        '[perm_dir], [remove_dir]')
+        '[perm_dir], [remove_dir]%s' % mac_opt_cmds)
     return 1
   return 0
 
