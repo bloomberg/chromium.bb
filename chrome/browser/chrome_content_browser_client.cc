@@ -1499,7 +1499,7 @@ bool ChromeContentBrowserClient::AllowPepperSocketAPI(
     return false;
 
   std::string host = url.host();
-  if (allowed_socket_origins_.count(host))
+  if (url.SchemeIs(kExtensionScheme) && allowed_socket_origins_.count(host))
     return true;
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
