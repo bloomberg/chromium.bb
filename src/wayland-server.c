@@ -1113,23 +1113,24 @@ static int
 get_socket_lock(struct wl_socket *socket)
 {
 	struct stat socket_stat;
+	int fd_lock;
 
 	snprintf(socket->lock_addr, sizeof socket->lock_addr,
 		 "%s%s", socket->addr.sun_path, LOCK_SUFFIX);
 
-	socket->fd_lock = open(socket->lock_addr, O_CREAT | O_CLOEXEC,
-			       (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP));
+	fd_lock = open(socket->lock_addr, O_CREAT | O_CLOEXEC,
+	               (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP));
 
-	if (socket->fd_lock < 0) {
+	if (fd_lock < 0) {
 		wl_log("unable to open lockfile %s check permissions\n",
 			socket->lock_addr);
 		return -1;
 	}
 
-	if (flock(socket->fd_lock, LOCK_EX | LOCK_NB) < 0) {
+	if (flock(fd_lock, LOCK_EX | LOCK_NB) < 0) {
 		wl_log("unable to lock lockfile %s, maybe another compositor is running\n",
 			socket->lock_addr);
-		close(socket->fd_lock);
+		close(fd_lock);
 		return -1;
 	}
 
@@ -1137,7 +1138,7 @@ get_socket_lock(struct wl_socket *socket)
 		if (errno != ENOENT) {
 			wl_log("did not manage to stat file %s\n",
 				socket->addr.sun_path);
-			close(socket->fd_lock);
+			close(fd_lock);
 			return -1;
 		}
 	} else if (socket_stat.st_mode & S_IWUSR ||
@@ -1145,7 +1146,7 @@ get_socket_lock(struct wl_socket *socket)
 		unlink(socket->addr.sun_path);
 	}
 
-	return 0;
+	return fd_lock;
 }
 
 WL_EXPORT int
@@ -1186,7 +1187,8 @@ wl_display_add_socket(struct wl_display *display, const char *name)
 			     "%s/%s", runtime_dir, name) + 1;
 	wl_log("using socket %s\n", s->addr.sun_path);
 
-	if (get_socket_lock(s) < 0) {
+	s->fd_lock = get_socket_lock(s);
+	if (s->fd_lock < 0) {
 		close(s->fd);
 		free(s);
 		return -1;
@@ -1194,12 +1196,16 @@ wl_display_add_socket(struct wl_display *display, const char *name)
 
 	size = offsetof (struct sockaddr_un, sun_path) + name_size;
 	if (bind(s->fd, (struct sockaddr *) &s->addr, size) < 0) {
+		close(s->fd_lock);
+		unlink(s->lock_addr);
 		close(s->fd);
 		free(s);
 		return -1;
 	}
 
 	if (listen(s->fd, 1) < 0) {
+		close(s->fd_lock);
+		unlink(s->lock_addr);
 		close(s->fd);
 		unlink(s->addr.sun_path);
 		free(s);
@@ -1210,6 +1216,8 @@ wl_display_add_socket(struct wl_display *display, const char *name)
 					 WL_EVENT_READABLE,
 					 socket_data, display);
 	if (s->source == NULL) {
+		close(s->fd_lock);
+		unlink(s->lock_addr);
 		close(s->fd);
 		unlink(s->addr.sun_path);
 		free(s);
