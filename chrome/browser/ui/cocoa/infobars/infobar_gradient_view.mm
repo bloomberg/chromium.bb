@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,7 +49,8 @@ const CGFloat kTipWidth = 23;
   bounds.size.height = infobars::kBaseHeight;
 
   const CGFloat kHalfWidth = kTipWidth / 2.0;
-  const CGFloat kTipXOffset = self.tipApex.x - kHalfWidth;
+  NSPoint localApex = [self convertPoint:self.tipApex fromView:nil];
+  CGFloat tipXOffset = localApex.x - kHalfWidth;
 
   // Around the bounds of the infobar, continue drawing the path into which the
   // gradient will be drawn.
@@ -57,7 +58,7 @@ const CGFloat kTipWidth = 23;
   [infoBarPath moveToPoint:NSMakePoint(NSMinX(bounds), NSMaxY(bounds))];
 
   // Draw the tip.
-  [infoBarPath lineToPoint:NSMakePoint(kTipXOffset, NSMaxY(bounds))];
+  [infoBarPath lineToPoint:NSMakePoint(tipXOffset, NSMaxY(bounds))];
   [infoBarPath relativeLineToPoint:NSMakePoint(kHalfWidth,
                                                infobars::kTipHeight)];
   [infoBarPath relativeLineToPoint:NSMakePoint(kHalfWidth,
@@ -92,7 +93,7 @@ const CGFloat kTipWidth = 23;
   const CGFloat kHighlightTipHeight = infobars::kTipHeight - 1;
   NSBezierPath* highlightPath = [NSBezierPath bezierPath];
   [highlightPath moveToPoint:NSMakePoint(NSMinX(bounds), NSMaxY(bounds) - 1)];
-  [highlightPath relativeLineToPoint:NSMakePoint(kTipXOffset + 1, 0)];
+  [highlightPath relativeLineToPoint:NSMakePoint(tipXOffset + 1, 0)];
   [highlightPath relativeLineToPoint:NSMakePoint(kHalfWidth - 1,
                                                  kHighlightTipHeight)];
   [highlightPath relativeLineToPoint:NSMakePoint(kHalfWidth - 1,

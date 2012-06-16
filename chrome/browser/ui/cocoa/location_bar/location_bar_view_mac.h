@@ -90,17 +90,17 @@ class LocationBarViewMac : public AutocompleteEditController,
   // Set ChromeToMobileDecoration's lit state (to update the icon).
   void SetChromeToMobileDecorationLit(bool lit);
 
-  // Get the point on the star for the bookmark bubble to aim at.
+  // Get the point in window coordinates on the star for the bookmark bubble to
+  // aim at.
   NSPoint GetBookmarkBubblePoint() const;
 
-  // Get the point on the Chrome To Mobile icon for anchoring its bubble.
+  // Get the point in window coordinates on the Chrome To Mobile icon for
+  // anchoring its bubble.
   NSPoint GetChromeToMobileBubblePoint() const;
 
-  // Get the point in the security icon at which the page info bubble aims.
+  // Get the point in window coordinates in the security icon at which the page
+  // info bubble aims.
   NSPoint GetPageInfoBubblePoint() const;
-
-  // Get the point in the omnibox at which the first run bubble aims.
-  NSPoint GetFirstRunBubblePoint() const;
 
   // Updates the location bar.  Resets the bar's permanent text and
   // security style, and if |should_restore_state| is true, restores

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,8 +17,8 @@
   NSPoint tipApex_;
 }
 
-// The point, in this view's coordinates, at which the infobar tip is the
-// highest and pointing at the omnibox decoration.
+// The point, in window coordinates, at which the infobar tip is the highest and
+// pointing at the omnibox decoration.
 @property(assign, nonatomic) NSPoint tipApex;
 
 // Sets the infobar type. This will change the view's gradient.

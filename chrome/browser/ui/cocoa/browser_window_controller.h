@@ -309,10 +309,12 @@ class WebContents;
 // Gets the pattern phase for the window.
 - (NSPoint)themePatternPhase;
 
-// Return the point to which a bubble window's arrow should point.
+// Return the point to which a bubble window's arrow should point, in window
+// coordinates.
 - (NSPoint)bookmarkBubblePoint;
 
-// Return the Chrome To Mobile bubble window's arrow anchor point.
+// Return the Chrome To Mobile bubble window's arrow anchor point, in window
+// coordinates.
 - (NSPoint)chromeToMobileBubblePoint;
 
 // Shows or hides the Instant preview contents.

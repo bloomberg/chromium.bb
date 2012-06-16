@@ -40,8 +40,8 @@ const float kAnimateCloseDuration = 0.12;
 // infobar from its container, if necessary.
 - (void)cleanUpAfterAnimation:(BOOL)finished;
 
-// Returns the point, in gradient view coordinates, at which the apex of the
-// infobar tip should be drawn.
+// Returns the point, in window coordinates, at which the apex of the infobar
+// tip should be drawn.
 - (NSPoint)pointForTipApex;
 @end
 
@@ -94,9 +94,9 @@ const float kAnimateCloseDuration = 0.12;
 }
 
 // Called when someone clicks on the embedded link.
-- (BOOL) textView:(NSTextView*)textView
-    clickedOnLink:(id)link
-          atIndex:(NSUInteger)charIndex {
+- (BOOL)textView:(NSTextView*)textView
+   clickedOnLink:(id)link
+         atIndex:(NSUInteger)charIndex {
   if ([self respondsToSelector:@selector(linkClicked)])
     [self performSelector:@selector(linkClicked)];
   return YES;
@@ -269,9 +269,7 @@ const float kAnimateCloseDuration = 0.12;
   }
 
   LocationBarViewMac* locationBar = [windowController locationBarBridge];
-  NSPoint point = locationBar->GetPageInfoBubblePoint();
-  point = [infoBarView_ convertPoint:point fromView:nil];
-  return point;
+  return locationBar->GetPageInfoBubblePoint();
 }
 
 @end
