@@ -18,6 +18,10 @@ var kExpectedContents = 'hello, world\0';
 var kWriteOffset = 12;
 var kWriteData = '!!!';
 var kExpectedAfterWrite = 'hello, world!!!';
+var kTruncateShortLength = 5;
+var kExpectedAfterTruncateShort = 'hello';
+var kTruncateLongLength = 7;
+var kExpectedAfterTruncateLong = 'hello\0\0';
 var kNewDirectoryPath = 'drive/FolderNew';
 
 // Gets local filesystem used in tests.
@@ -80,6 +84,25 @@ TestRunner.prototype.runWriteFileTest = function(fileName) {
             };
             writer.seek(kWriteOffset);
             writer.write(new Blob([kWriteData], {'type': 'text/plain'}));
+          },
+          self.errorCallback_.bind(self, 'Error creating writer: '));
+      },
+      self.errorCallback_.bind(self, 'Error opening file: '));
+};
+
+TestRunner.prototype.runTruncateFileTest = function(fileName, length) {
+  var self = this;
+  chrome.test.assertTrue(!!this.directoryEntry_);
+  this.directoryEntry_.getFile(fileName, {},
+      function(entry) {
+        entry.createWriter(
+          function(writer) {
+            writer.onerror = self.errorCallback_.bind(self,
+                                                      'Error writing file: ');
+            writer.onwriteend = function(e) {
+              chrome.test.succeed();
+            };
+            writer.truncate(length);
           },
           self.errorCallback_.bind(self, 'Error creating writer: '));
       },
@@ -210,6 +233,20 @@ chrome.test.runTests([function initTests() {
   },
   function readFileAfterWrite() {
     testRunner.runReadFileTest(kFileName, kExpectedAfterWrite);
+  },
+  function truncateFileShort() {
+    // Opens a file in the directory and make it shorter.
+    testRunner.runTruncateFileTest(kFileName, kTruncateShortLength);
+  },
+  function readFileAfterTruncateShort() {
+    testRunner.runReadFileTest(kFileName, kExpectedAfterTruncateShort);
+  },
+  function truncateFileLong() {
+    // Opens a file in the directory and make it longer.
+    testRunner.runTruncateFileTest(kFileName, kTruncateLongLength);
+  },
+  function readFileAfterTruncateLong() {
+    testRunner.runReadFileTest(kFileName, kExpectedAfterTruncateLong);
   },
   function createDir() {
     // Creates new directory.

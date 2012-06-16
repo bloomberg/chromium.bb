@@ -123,6 +123,34 @@ void OnClose(const FilePath& local_path, base::PlatformFileError error_code) {
   DVLOG(1) << "Closed: " << local_path.AsUTF8Unsafe() << ": " << error_code;
 }
 
+void DoTruncateOnFileThread(
+    const FilePath& local_cache_path,
+    int64 length,
+    base::PlatformFileError* result) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  base::PlatformFile file = base::CreatePlatformFile(
+      local_cache_path,
+      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_WRITE,
+      NULL,
+      result);
+  if (*result == base::PLATFORM_FILE_OK) {
+    DCHECK_NE(base::kInvalidPlatformFileValue, file);
+    if (!base::TruncatePlatformFile(file, length))
+      *result = base::PLATFORM_FILE_ERROR_FAILED;
+    base::ClosePlatformFile(file);
+  }
+}
+
+void DidCloseFileForTruncate(
+    const fileapi::FileSystemOperationInterface::StatusCallback& callback,
+    base::PlatformFileError truncate_result,
+    base::PlatformFileError close_result) {
+  // Reports the first error.
+  callback.Run(truncate_result == base::PLATFORM_FILE_OK ? close_result
+                                                         : truncate_result);
+}
+
 }  // namespace
 
 namespace gdata {
@@ -263,6 +291,74 @@ void GDataFileSystemProxy::CreateDirectory(
   }
 
   file_system_->CreateDirectory(file_path, exclusive, recursive, callback);
+}
+
+void GDataFileSystemProxy::Truncate(const GURL& file_url, int64 length,
+    const fileapi::FileSystemOperationInterface::StatusCallback& callback) {
+  if (length < 0) {
+    MessageLoopProxy::current()->PostTask(FROM_HERE,
+        base::Bind(callback, base::PLATFORM_FILE_ERROR_INVALID_OPERATION));
+    return;
+  }
+
+  FilePath file_path;
+  if (!ValidateUrl(file_url, &file_path)) {
+    MessageLoopProxy::current()->PostTask(FROM_HERE,
+         base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
+    return;
+  }
+
+  // TODO(kinaba): http://crbug.com/132780.
+  // Optimize the cases for small |length|, at least for |length| == 0.
+  // CreateWritableSnapshotFile downloads the whole content unnecessarily.
+  file_system_->OpenFile(
+      file_path,
+      base::Bind(&GDataFileSystemProxy::OnFileOpenedForTruncate,
+                 this,
+                 file_path,
+                 length,
+                 callback));
+}
+
+void GDataFileSystemProxy::OnFileOpenedForTruncate(
+    const FilePath& virtual_path,
+    int64 length,
+    const fileapi::FileSystemOperationInterface::StatusCallback& callback,
+    base::PlatformFileError open_result,
+    const FilePath& local_cache_path) {
+  if (open_result != base::PLATFORM_FILE_OK) {
+    callback.Run(open_result);
+    return;
+  }
+
+  // Cache file prepared for modification is available. Truncate it.
+  // File operation must be done on FILE thread, so relay the operation.
+  base::PlatformFileError* result =
+      new base::PlatformFileError(base::PLATFORM_FILE_ERROR_FAILED);
+  bool posted = BrowserThread::GetMessageLoopProxyForThread(
+      BrowserThread::FILE)->PostTaskAndReply(
+          FROM_HERE,
+          base::Bind(&DoTruncateOnFileThread,
+                     local_cache_path,
+                     length,
+                     result),
+          base::Bind(&GDataFileSystemProxy::DidTruncate,
+                     this,
+                     virtual_path,
+                     callback,
+                     base::Owned(result)));
+  DCHECK(posted);
+}
+
+void GDataFileSystemProxy::DidTruncate(
+    const FilePath& virtual_path,
+    const fileapi::FileSystemOperationInterface::StatusCallback& callback,
+    base::PlatformFileError* truncate_result) {
+  // Truncation finished. We must close the file no matter |truncate_result|
+  // indicates an error or not.
+  file_system_->CloseFile(virtual_path, base::Bind(&DidCloseFileForTruncate,
+                                                   callback,
+                                                   *truncate_result));
 }
 
 void GDataFileSystemProxy::OpenFile(

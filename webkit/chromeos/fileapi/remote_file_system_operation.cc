@@ -129,7 +129,11 @@ void RemoteFileSystemOperation::Write(
 void RemoteFileSystemOperation::Truncate(const GURL& path,
                                          int64 length,
                                          const StatusCallback& callback) {
-  NOTIMPLEMENTED();
+  DCHECK(SetPendingOperationType(kOperationTruncate));
+
+  remote_proxy_->Truncate(path, length,
+      base::Bind(&RemoteFileSystemOperation::DidFinishFileOperation,
+                 base::Owned(this), callback));
 }
 
 void RemoteFileSystemOperation::Cancel(const StatusCallback& cancel_callback) {

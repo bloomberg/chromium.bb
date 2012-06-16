@@ -64,6 +64,14 @@ class RemoteFileSystemProxyInterface :
       bool recursive,
       const FileSystemOperationInterface::StatusCallback& callback) = 0;
 
+  // Changes the length of an existing file at |path| to |length|. If |length|
+  // is negative, an error is raised. If |length| is more than the current size
+  // of the file, zero is padded for the extended part.
+  virtual void Truncate(
+      const GURL& path,
+      int64 length,
+      const FileSystemOperationInterface::StatusCallback& callback) = 0;
+
   // Creates a local snapshot file for a given |path| and returns the
   // metadata and platform path of the snapshot file via |callback|.
   // See also FileSystemOperationInterface::CreateSnapshotFile().
