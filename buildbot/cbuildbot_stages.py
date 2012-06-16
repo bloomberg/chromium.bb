@@ -376,13 +376,13 @@ class ManifestVersionedSyncStage(SyncStage):
         'Must run GetStageManager before checkout out build.'
 
     to_return = self.manifest_manager.GetNextBuildSpec()
-    previous_version = self.manifest_manager.latest
+    previous_version = self.manifest_manager.latest_passed
     target_version = self.manifest_manager.current_version
 
     # Print the Blamelist here.
     url_prefix = 'http://chromeos-images.corp.google.com/diff/report?'
     url = url_prefix + 'from=%s&to=%s' % (previous_version, target_version)
-    cros_build_lib.PrintBuildbotLink('Buildbot', url)
+    cros_build_lib.PrintBuildbotLink('Blamelist', url)
 
     return to_return
 
