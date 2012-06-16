@@ -13,4 +13,3 @@ shadows on paths, for example).
 Local Modifications:
  - Added LICENSE file based on email correspondence with Sean.
  - Added header guards.
- - Added a "scale:" parameter to fillWithInnerShadow:.

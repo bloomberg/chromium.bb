@@ -16,7 +16,7 @@
 
 - (NSBezierPath*)pathWithStrokeWidth:(CGFloat)strokeWidth;
 
-- (void)fillWithInnerShadow:(NSShadow *)shadow scale:(float)scale;
+- (void)fillWithInnerShadow:(NSShadow *)shadow;
 - (void)drawBlurWithColor:(NSColor*)color radius:(CGFloat)radius;
 
 - (void)strokeInside;

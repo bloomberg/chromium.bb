@@ -315,8 +315,8 @@ NSString* const kFadeOutValueKeyPath = @"fadeOutValue";
       kXShadowCircleAlpha : kXShadowAlpha;
   [shadow setShadowColor:[NSColor colorWithCalibratedWhite:0.15 alpha:alpha]];
   [shadow setShadowOffset:NSMakeSize(0.0, 0.0)];
-  [shadow setShadowBlurRadius:2.75 * scale];
-  [xPath fillWithInnerShadow:shadow scale:scale];
+  [shadow setShadowBlurRadius:2.5];
+  [xPath fillWithInnerShadow:shadow];
   return imageRep;
 }
 

@@ -92,7 +92,7 @@ static void CGPathCallback(void *info, const CGPathElement *element)
 #endif  // MCBEZIER_USE_PRIVATE_FUNCTION
 }
 
-- (void)fillWithInnerShadow:(NSShadow *)shadow scale:(float)scale
+- (void)fillWithInnerShadow:(NSShadow *)shadow
 {
 	[NSGraphicsContext saveGraphicsState];
 	
@@ -102,7 +102,7 @@ static void CGPathCallback(void *info, const CGPathElement *element)
 	NSRect bounds = NSInsetRect(self.bounds, -(ABS(offset.width) + radius), -(ABS(offset.height) + radius));
 
 	// The context's user transform isn't automatically applied to shadow offsets.
-	offset.height += scale * bounds.size.height;
+        offset.height += bounds.size.height;
 	shadow.shadowOffset = offset;
 	NSAffineTransform *transform = [NSAffineTransform transform];
 	if ([[NSGraphicsContext currentContext] isFlipped])
