@@ -19,8 +19,6 @@
 
 namespace {
 
-using ::testing::_;
-
 class OneClickSigninBubbleControllerTest : public CocoaProfileTest {
  public:
   OneClickSigninBubbleControllerTest()
@@ -54,7 +52,7 @@ class OneClickSigninBubbleControllerTest : public CocoaProfileTest {
 
 // Test that the dialog loads from its nib properly.
 TEST_F(OneClickSigninBubbleControllerTest, NibLoad) {
-  EXPECT_CALL(*this, OnStartSync(_)).Times(0);
+  EXPECT_CALL(*this, OnStartSync(testing::_)).Times(0);
 
   // Force nib load.
   [controller_ window];
@@ -62,7 +60,6 @@ TEST_F(OneClickSigninBubbleControllerTest, NibLoad) {
 }
 
 // Test that the dialog calls the callback if the OK button is clicked.
-// Callback should be called to setup sync with default settings.
 TEST_F(OneClickSigninBubbleControllerTest, ShowAndOK) {
   EXPECT_CALL(*this, OnStartSync(
       OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS)).Times(1);
@@ -71,14 +68,8 @@ TEST_F(OneClickSigninBubbleControllerTest, ShowAndOK) {
   [controller_.release() ok:nil];
 }
 
-// Test that the dialog doesn't call the callback if the Undo button
-// is clicked.
-TEST_F(OneClickSigninBubbleControllerTest, ShowAndUndo) {
-  EXPECT_CALL(*this, OnStartSync(_)).Times(0);
-
-  [controller_ showWindow:nil];
-  [controller_.release() onClickUndo:nil];
-}
+// TODO(akalin): Test that the dialog doesn't call the callback if the Undo
+// button is clicked.
 
 // Test that the advanced callback is run if its corresponding button
 // is clicked.
@@ -88,16 +79,6 @@ TEST_F(OneClickSigninBubbleControllerTest, ShowAndClickAdvanced) {
 
   [controller_ showWindow:nil];
   [controller_.release() onClickAdvancedLink:nil];
-}
-
-// Test that the dialog calls the callback if the bubble is closed.
-// Callback should be called to setup sync with default settings.
-TEST_F(OneClickSigninBubbleControllerTest, ShowAndClose) {
-  EXPECT_CALL(*this, OnStartSync(
-      OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS)).Times(1);
-
-  [controller_ showWindow:nil];
-  [controller_.release() close];
 }
 
 }  // namespace
