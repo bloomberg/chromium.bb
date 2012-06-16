@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/intents/web_intents_util.h"
+#include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
@@ -91,6 +92,11 @@ ShellWindow::ShellWindow(Profile* profile,
   // apps are no longer tied to the browser process).
   registrar_.Add(this, content::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
+
+  // Automatically dismiss all infobars.
+  TabContents* tab_contents = TabContents::FromWebContents(web_contents_);
+  InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
+  infobar_helper->set_infobars_enabled(false);
 
   // Prevent the browser process from shutting down while this window is open.
   browser::StartKeepAlive();

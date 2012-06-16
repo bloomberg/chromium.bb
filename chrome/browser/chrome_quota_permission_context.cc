@@ -67,7 +67,6 @@ class RequestQuotaInfoBarDelegate : public ConfirmInfoBarDelegate {
   }
 
   virtual string16 GetMessageText() const OVERRIDE;
-  virtual void InfoBarDismissed() OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
 
@@ -78,12 +77,6 @@ class RequestQuotaInfoBarDelegate : public ConfirmInfoBarDelegate {
   PermissionCallback callback_;
   DISALLOW_COPY_AND_ASSIGN(RequestQuotaInfoBarDelegate);
 };
-
-void RequestQuotaInfoBarDelegate::InfoBarDismissed() {
-  context_->DispatchCallbackOnIOThread(
-      callback_,
-      QuotaPermissionContext::QUOTA_PERMISSION_RESPONSE_CANCELLED);
-}
 
 string16 RequestQuotaInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringFUTF16(
