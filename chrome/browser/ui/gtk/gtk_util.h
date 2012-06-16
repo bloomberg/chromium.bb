@@ -113,9 +113,6 @@ void ConvertWidgetPointToScreen(GtkWidget* widget, gfx::Point* p);
 GtkWidget* CenterWidgetInHBox(GtkWidget* hbox, GtkWidget* widget,
                               bool pack_at_end, int padding);
 
-// Enumerates the top-level gdk windows of the current display.
-void EnumerateTopLevelWindows(ui::EnumerateWindowsDelegate* delegate);
-
 // Set that clicking the button with the given mouse buttons will cause a click
 // event.
 // NOTE: If you need to connect to the button-press-event or

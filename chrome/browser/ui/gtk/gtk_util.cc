@@ -517,25 +517,6 @@ GtkWidget* CenterWidgetInHBox(GtkWidget* hbox, GtkWidget* widget,
   return centering_vbox;
 }
 
-void EnumerateTopLevelWindows(ui::EnumerateWindowsDelegate* delegate) {
-  std::vector<XID> stack;
-  if (!ui::GetXWindowStack(ui::GetX11RootWindow(), &stack)) {
-    // Window Manager doesn't support _NET_CLIENT_LIST_STACKING, so fall back
-    // to old school enumeration of all X windows.  Some WMs parent 'top-level'
-    // windows in unnamed actual top-level windows (ion WM), so extend the
-    // search depth to all children of top-level windows.
-    const int kMaxSearchDepth = 1;
-    ui::EnumerateAllWindows(delegate, kMaxSearchDepth);
-    return;
-  }
-
-  std::vector<XID>::iterator iter;
-  for (iter = stack.begin(); iter != stack.end(); iter++) {
-    if (delegate->ShouldStopIterating(*iter))
-      return;
-  }
-}
-
 void SetButtonClickableByMouseButtons(GtkWidget* button,
                                       bool left, bool middle, bool right) {
   gint button_mask = 0;

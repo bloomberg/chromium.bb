@@ -4,15 +4,14 @@
 
 #include "chrome/browser/ui/tabs/dock_info.h"
 
-#include <gtk/gtk.h>
-
-#include "base/logging.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/gtk/browser_window_gtk.h"
-#include "chrome/browser/ui/gtk/gtk_util.h"
+#include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
 #include "ui/base/x/x11_util.h"
-#include "ui/gfx/native_widget_types.h"
+#include "ui/views/widget/desktop_native_widget_helper_aura.h"
+
+#if !defined(USE_ASH)
+
+namespace {
 
 ////////////////////////////////////////////////////////////////////////////////
 // BaseWindowFinder
@@ -21,10 +20,10 @@
 // ShouldStopIterating to determine when iteration should stop.
 class BaseWindowFinder : public ui::EnumerateWindowsDelegate {
  public:
-  explicit BaseWindowFinder(const std::set<GtkWidget*>& ignore) {
-    std::set<GtkWidget*>::iterator iter;
+  explicit BaseWindowFinder(const std::set<aura::Window*>& ignore) {
+    std::set<aura::Window*>::iterator iter;
     for (iter = ignore.begin(); iter != ignore.end(); iter++) {
-      XID xid = ui::GetX11WindowFromGtkWidget(*iter);
+      XID xid = (*iter)->GetRootWindow()->GetAcceleratedWidget();
       ignore_.insert(xid);
     }
   }
@@ -59,7 +58,7 @@ class TopMostFinder : public BaseWindowFinder {
   // location |screen_loc|, not including the windows in |ignore|.
   static bool IsTopMostWindowAtPoint(XID window,
                                      const gfx::Point& screen_loc,
-                                     const std::set<GtkWidget*>& ignore) {
+                                     const std::set<aura::Window*>& ignore) {
     TopMostFinder finder(window, screen_loc, ignore);
     return finder.is_top_most_;
   }
@@ -95,7 +94,7 @@ class TopMostFinder : public BaseWindowFinder {
  private:
   TopMostFinder(XID window,
                 const gfx::Point& screen_loc,
-                const std::set<GtkWidget*>& ignore)
+                const std::set<aura::Window*>& ignore)
     : BaseWindowFinder(ignore),
       target_(window),
       screen_loc_(screen_loc),
@@ -126,7 +125,7 @@ class LocalProcessWindowFinder : public BaseWindowFinder {
   // Returns the XID from our process at screen_loc that is not obscured by
   // another window. Returns 0 otherwise.
   static XID GetProcessWindowAtPoint(const gfx::Point& screen_loc,
-                                     const std::set<GtkWidget*>& ignore) {
+                                     const std::set<aura::Window*>& ignore) {
     LocalProcessWindowFinder finder(screen_loc, ignore);
     if (finder.result_ &&
         TopMostFinder::IsTopMostWindowAtPoint(finder.result_, screen_loc,
@@ -142,7 +141,7 @@ class LocalProcessWindowFinder : public BaseWindowFinder {
       return false;
 
     // Check if this window is in our process.
-    if (!BrowserWindowGtk::GetBrowserWindowForXID(window))
+    if (!aura::RootWindow::GetForAcceleratedWidget(window))
       return false;
 
     if (!ui::IsWindowVisible(window))
@@ -159,7 +158,7 @@ class LocalProcessWindowFinder : public BaseWindowFinder {
 
  private:
   LocalProcessWindowFinder(const gfx::Point& screen_loc,
-                           const std::set<GtkWidget*>& ignore)
+                           const std::set<aura::Window*>& ignore)
     : BaseWindowFinder(ignore),
       screen_loc_(screen_loc),
       result_(0) {
@@ -176,34 +175,46 @@ class LocalProcessWindowFinder : public BaseWindowFinder {
   DISALLOW_COPY_AND_ASSIGN(LocalProcessWindowFinder);
 };
 
+}  // namespace
+
 // static
 DockInfo DockInfo::GetDockInfoAtPoint(const gfx::Point& screen_point,
-                                      const std::set<GtkWidget*>& ignore) {
+                                      const std::set<gfx::NativeView>& ignore) {
+  // TODO(beng):
   NOTIMPLEMENTED();
   return DockInfo();
 }
 
 // static
-GtkWindow* DockInfo::GetLocalProcessWindowAtPoint(
+gfx::NativeView DockInfo::GetLocalProcessWindowAtPoint(
     const gfx::Point& screen_point,
-    const std::set<GtkWidget*>& ignore) {
+    const std::set<gfx::NativeView>& ignore) {
+  // The X11 server is the canonical state of what the window stacking order
+  // is.
   XID xid =
       LocalProcessWindowFinder::GetProcessWindowAtPoint(screen_point, ignore);
-  return BrowserWindowGtk::GetBrowserWindowForXID(xid);
+  aura::RootWindow* root_window =
+      aura::RootWindow::GetForAcceleratedWidget(xid);
+
+  if (!root_window)
+    return NULL;
+
+  // We now have the aura::RootWindow, but most of views isn't interested in
+  // that; instead it wants the aura::Window that is contained by the
+  // RootWindow.
+  return views::DesktopNativeWidgetHelperAura::GetViewsWindowForRootWindow(
+      root_window);
 }
 
 bool DockInfo::GetWindowBounds(gfx::Rect* bounds) const {
   if (!window())
     return false;
-
-  int x, y, w, h;
-  gtk_window_get_position(window(), &x, &y);
-  gtk_window_get_size(window(), &w, &h);
-  bounds->SetRect(x, y, w, h);
+  *bounds = window_->bounds();
   return true;
 }
 
 void DockInfo::SizeOtherWindowTo(const gfx::Rect& bounds) const {
-  gtk_window_move(window(), bounds.x(), bounds.y());
-  gtk_window_resize(window(), bounds.width(), bounds.height());
+  window_->SetBounds(bounds);
 }
+
+#endif

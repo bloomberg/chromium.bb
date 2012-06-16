@@ -46,6 +46,11 @@ class VIEWS_EXPORT DesktopNativeWidgetHelperAura
   explicit DesktopNativeWidgetHelperAura(NativeWidgetAura* widget);
   virtual ~DesktopNativeWidgetHelperAura();
 
+  // In general, views/ does not care about the aura::RootWindow, even though
+  // at any join point with the native OS, we're going to be dealing in
+  // RootWindows.
+  static aura::Window* GetViewsWindowForRootWindow(aura::RootWindow* root);
+
   // Overridden from aura::NativeWidgetHelperAura:
   virtual void PreInitialize(aura::Window* window,
                              const Widget::InitParams& params) OVERRIDE;

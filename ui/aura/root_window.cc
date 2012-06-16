@@ -159,6 +159,13 @@ RootWindow::~RootWindow() {
   layer()->GetAnimator()->RemoveObserver(this);
 }
 
+// static
+RootWindow* RootWindow::GetForAcceleratedWidget(
+    gfx::AcceleratedWidget widget) {
+  RootWindowHost* host = RootWindowHost::GetForAcceleratedWidget(widget);
+  return host ? host->GetRootWindow() : NULL;
+}
+
 void RootWindow::Init() {
   compositor()->SetScaleAndSize(GetDeviceScaleFactorFromMonitor(this),
                                 host_->GetBounds().size());

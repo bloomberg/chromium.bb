@@ -84,6 +84,8 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   explicit RootWindow(const gfx::Rect& initial_bounds);
   virtual ~RootWindow();
 
+  static RootWindow* GetForAcceleratedWidget(gfx::AcceleratedWidget widget);
+
   static void set_hide_host_cursor(bool hide) {
     hide_host_cursor_ = hide;
   }

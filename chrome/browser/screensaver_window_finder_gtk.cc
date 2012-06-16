@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@
 #include <gdk/gdkx.h>
 
 #include "base/basictypes.h"
-#include "chrome/browser/ui/gtk/gtk_util.h"
 #include "ui/base/x/x11_util.h"
 
 
@@ -19,7 +18,7 @@ ScreensaverWindowFinder::ScreensaverWindowFinder()
 bool ScreensaverWindowFinder::ScreensaverWindowExists() {
   gdk_error_trap_push();
   ScreensaverWindowFinder finder;
-  gtk_util::EnumerateTopLevelWindows(&finder);
+  ui::EnumerateTopLevelWindows(&finder);
   bool got_error = gdk_error_trap_pop();
   return finder.exists_ && !got_error;
 }

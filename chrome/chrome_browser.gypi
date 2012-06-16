@@ -2337,7 +2337,7 @@
         'browser/ui/ash/tabs/dock_info_ash.cc',
         'browser/ui/aura/chrome_browser_main_extra_parts_aura.cc',
         'browser/ui/aura/chrome_browser_main_extra_parts_aura.h',
-        'browser/ui/aura/tabs/dock_info_aura.cc',
+        'browser/ui/aura/tabs/dock_info_aurax11.cc',
         'browser/ui/auto_login_info_bar_delegate.cc',
         'browser/ui/auto_login_info_bar_delegate.h',
         'browser/ui/auto_login_prompter.cc',

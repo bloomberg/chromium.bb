@@ -188,6 +188,9 @@ class EnumerateWindowsDelegate {
 UI_EXPORT bool EnumerateAllWindows(EnumerateWindowsDelegate* delegate,
                                    int max_depth);
 
+// Enumerates the top-level windows of the current display.
+UI_EXPORT void EnumerateTopLevelWindows(ui::EnumerateWindowsDelegate* delegate);
+
 // Returns all children windows of a given window in top-to-bottom stacking
 // order.
 UI_EXPORT bool GetXWindowStack(XID window, std::vector<XID>* windows);

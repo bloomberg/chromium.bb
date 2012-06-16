@@ -14,6 +14,7 @@
 #include "ui/aura/shared/compound_event_filter.h"
 #include "ui/aura/shared/input_method_event_filter.h"
 #include "ui/aura/shared/root_window_capture_client.h"
+#include "ui/aura/window_property.h"
 #include "ui/views/widget/native_widget_aura.h"
 
 #if defined(OS_WIN)
@@ -23,7 +24,12 @@
 #include "ui/views/widget/x11_window_event_filter.h"
 #endif
 
+DECLARE_WINDOW_PROPERTY_TYPE(aura::Window*);
+
 namespace views {
+
+DEFINE_WINDOW_PROPERTY_KEY(
+    aura::Window*, kViewsWindowForRootWindow, NULL);
 
 namespace {
 
@@ -85,6 +91,12 @@ DesktopNativeWidgetHelperAura::~DesktopNativeWidgetHelperAura() {
   }
 }
 
+// static
+aura::Window* DesktopNativeWidgetHelperAura::GetViewsWindowForRootWindow(
+    aura::RootWindow* root) {
+  return root ? root->GetProperty(kViewsWindowForRootWindow) : NULL;
+}
+
 void DesktopNativeWidgetHelperAura::PreInitialize(
     aura::Window* window,
     const Widget::InitParams& params) {
@@ -115,6 +127,7 @@ void DesktopNativeWidgetHelperAura::PreInitialize(
   // cursor's shape and visibility.
 
   root_window_.reset(new aura::RootWindow(bounds));
+  root_window_->SetProperty(kViewsWindowForRootWindow, window);
   root_window_->Init();
   root_window_->set_focus_manager(new aura::FocusManager);
 
