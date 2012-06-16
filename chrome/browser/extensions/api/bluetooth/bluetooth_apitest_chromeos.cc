@@ -133,7 +133,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, IsPowered) {
   expectBooleanResult(true, is_powered, "[]");
 }
 
-IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevicesWithServiceUUID) {
+IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevices) {
   testing::NiceMock<chromeos::MockBluetoothDevice> device1(
       mock_adapter_, "d1", "11:12:13:14:15:16",
       true /* paired */, false /* bonded */, true /* connected */);
@@ -152,12 +152,13 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevicesWithServiceUUID) {
   EXPECT_CALL(*mock_adapter_, GetDevices())
       .WillOnce(testing::Return(devices));
 
-  scoped_refptr<api::BluetoothGetDevicesWithServiceUUIDFunction> get_devices;
+  scoped_refptr<api::BluetoothGetDevicesFunction> get_devices;
 
-  get_devices =
-      setupFunction(new api::BluetoothGetDevicesWithServiceUUIDFunction);
-  scoped_ptr<base::Value> result(
-      utils::RunFunctionAndReturnResult(get_devices, "[\"foo\"]", browser()));
+  get_devices = setupFunction(new api::BluetoothGetDevicesFunction);
+  scoped_ptr<base::Value> result(utils::RunFunctionAndReturnResult(
+        get_devices,
+        "[{\"uuid\":\"foo\"}]",
+        browser()));
 
   ASSERT_EQ(base::Value::TYPE_LIST, result->GetType());
   base::ListValue* list;
@@ -185,6 +186,20 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevicesWithServiceUUID) {
   bool connected;
   ASSERT_TRUE(device->GetBoolean("connected", &connected));
   EXPECT_FALSE(connected);
+
+  // Try again with no options
+  testing::Mock::VerifyAndClearExpectations(mock_adapter_);
+  EXPECT_CALL(*mock_adapter_, GetDevices())
+      .WillOnce(testing::Return(devices));
+
+  get_devices = setupFunction(new api::BluetoothGetDevicesFunction);
+  result.reset(
+      utils::RunFunctionAndReturnResult(get_devices, "[{}]", browser()));
+
+  ASSERT_EQ(base::Value::TYPE_LIST, result->GetType());
+  ASSERT_TRUE(result->GetAsList(&list));
+
+  EXPECT_EQ(2u, list->GetSize());
 }
 
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetLocalOutOfBandPairingData) {
@@ -226,13 +241,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetLocalOutOfBandPairingData) {
   EXPECT_FALSE(error.empty());
 }
 
-IN_PROC_BROWSER_TEST_F(BluetoothApiTest, DISABLED_SetOutOfBandPairingData) {
-  // TODO(bryeung): Fill in this test once it is possible to include an
-  // ArrayBuffer in the arguments to the RunFunctionAnd* methods.
-  // crbug.com/132796
-}
-
-IN_PROC_BROWSER_TEST_F(BluetoothApiTest, ClearOutOfBandPairingData) {
+IN_PROC_BROWSER_TEST_F(BluetoothApiTest, SetOutOfBandPairingData) {
   std::string device_address("11:12:13:14:15:16");
   testing::NiceMock<chromeos::MockBluetoothDevice> device(
       mock_adapter_, "d1", device_address,
@@ -240,21 +249,19 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, ClearOutOfBandPairingData) {
   EXPECT_CALL(*mock_adapter_, GetDevice(device_address))
       .WillOnce(testing::Return(&device));
   EXPECT_CALL(device,
-              ClearOutOfBandPairingData(
-                  testing::Truly(CallClosure),
-                  testing::_));
+              ClearOutOfBandPairingData(testing::Truly(CallClosure),
+                                        testing::_));
 
-  char buf[32];
-  snprintf(buf, sizeof(buf), "[\"%s\"]", device_address.c_str());
+  char buf[64];
+  snprintf(buf, sizeof(buf),
+           "[{\"device_address\":\"%s\"}]", device_address.c_str());
   std::string params(buf);
 
-  scoped_refptr<api::BluetoothClearOutOfBandPairingDataFunction>
-      clear_oob_function;
-  clear_oob_function = setupFunction(
-      new api::BluetoothClearOutOfBandPairingDataFunction);
+  scoped_refptr<api::BluetoothSetOutOfBandPairingDataFunction> set_oob_function;
+  set_oob_function = setupFunction(
+      new api::BluetoothSetOutOfBandPairingDataFunction);
   // There isn't actually a result.
-  (void)utils::RunFunctionAndReturnResult(
-      clear_oob_function, params, browser());
+  (void)utils::RunFunctionAndReturnResult(set_oob_function, params, browser());
 
   // Try again with an error
   testing::Mock::VerifyAndClearExpectations(mock_adapter_);
@@ -262,13 +269,16 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, ClearOutOfBandPairingData) {
   EXPECT_CALL(*mock_adapter_, GetDevice(device_address))
       .WillOnce(testing::Return(&device));
   EXPECT_CALL(device,
-              ClearOutOfBandPairingData(
-                  testing::_,
-                  testing::Truly(CallClosure)));
+              ClearOutOfBandPairingData(testing::_,
+                                        testing::Truly(CallClosure)));
 
-  clear_oob_function = setupFunction(
-      new api::BluetoothClearOutOfBandPairingDataFunction);
+  set_oob_function = setupFunction(
+      new api::BluetoothSetOutOfBandPairingDataFunction);
   std::string error(
-      utils::RunFunctionAndReturnError(clear_oob_function, params, browser()));
+      utils::RunFunctionAndReturnError(set_oob_function, params, browser()));
   EXPECT_FALSE(error.empty());
+
+  // TODO(bryeung): Also test setting the data when there is support for
+  // ArrayBuffers in the arguments to the RunFunctionAnd* methods.
+  // crbug.com/132796
 }
