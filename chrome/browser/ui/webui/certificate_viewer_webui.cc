@@ -195,10 +195,7 @@ std::string CertificateViewerDialog::GetDialogArgs() const {
   // Set the last node as the top of the certificate hierarchy.
   cert_info.Set("hierarchy", children);
 
-    base::JSONWriter::WriteWithOptions(
-          &cert_info,
-          base::JSONWriter::OPTIONS_DO_NOT_ESCAPE,
-          &data);
+  base::JSONWriter::Write(&cert_info, &data);
 
   return data;
 }
