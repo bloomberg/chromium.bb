@@ -198,6 +198,7 @@ cr.define('cr.ui', function() {
           span.classList.add('bold');
         var image = this.ownerDocument.createElement('img');
         image.alt = '';
+        image.classList.add('dropdown-image');
         if (item.icon)
           image.src = item.icon;
       }
@@ -219,7 +220,6 @@ cr.define('cr.ui', function() {
           wrapperDiv.setAttribute('aria-disabled', 'true');
         wrapperDiv.classList.add('dropdown-item-container');
         var imageDiv = this.ownerDocument.createElement('div');
-        imageDiv.classList.add('dropdown-image');
         imageDiv.appendChild(image);
         wrapperDiv.appendChild(imageDiv);
         wrapperDiv.appendChild(itemElement);
@@ -266,6 +266,7 @@ cr.define('cr.ui', function() {
     createTitle_: function() {
       var image = this.ownerDocument.createElement('img');
       image.alt = '';
+      image.classList.add('dropdown-image');
       var text = this.ownerDocument.createElement('div');
 
       var el = this.ownerDocument.createElement('div');

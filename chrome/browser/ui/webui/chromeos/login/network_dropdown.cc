@@ -75,8 +75,12 @@ base::ListValue* NetworkMenuWebUI::ConvertMenuModel(ui::MenuModel* model) {
     item->SetInteger("id", id);
     item->SetString("label", model->GetLabelAt(i));
     gfx::ImageSkia icon;
-    if (model->GetIconAt(i, &icon))
-      item->SetString("icon", web_ui_util::GetImageDataUrl(icon));
+    if (model->GetIconAt(i, &icon)) {
+      float icon_scale;
+      SkBitmap icon_bitmap = icon.GetBitmapForScale(
+          web_ui_->GetDeviceScale(), &icon_scale);
+      item->SetString("icon", web_ui_util::GetImageDataUrl(icon_bitmap));
+    }
     if (id >= 0) {
       item->SetBoolean("enabled", model->IsEnabledAt(i));
       const gfx::Font* font = model->GetLabelFontAt(i);
@@ -150,9 +154,12 @@ void NetworkDropdown::NetworkMenuIconChanged() {
 void NetworkDropdown::SetNetworkIconAndText() {
   string16 text;
   const gfx::ImageSkia icon_image = network_icon_->GetIconAndText(&text);
+  float icon_scale;
+  SkBitmap icon_bitmap = icon_image.GetBitmapForScale(
+      web_ui_->GetDeviceScale(), &icon_scale);
   std::string icon_str =
       icon_image.empty() ?
-          std::string() : web_ui_util::GetImageDataUrl(icon_image);
+          std::string() : web_ui_util::GetImageDataUrl(icon_bitmap);
   base::StringValue title(text);
   base::StringValue icon(icon_str);
   web_ui_->CallJavascriptFunction("cr.ui.DropDown.updateNetworkTitle",
