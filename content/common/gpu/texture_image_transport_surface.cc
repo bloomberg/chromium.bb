@@ -69,6 +69,8 @@ TextureImageTransportSurface::TextureImageTransportSurface(
         stub_destroyed_(false),
         backbuffer_suggested_allocation_(true),
         frontbuffer_suggested_allocation_(true),
+        frontbuffer_is_protected_(true),
+        protection_state_id_(0),
         handle_(handle),
         parent_stub_(NULL) {
   helper_.reset(new ImageTransportHelper(this,
@@ -182,16 +184,36 @@ void TextureImageTransportSurface::SetBackbufferAllocation(bool allocation) {
   if (!helper_->MakeCurrent())
     return;
 
-  if (backbuffer_suggested_allocation_)
+  if (backbuffer_suggested_allocation_) {
+    DCHECK(!textures_[back()].info->service_id() ||
+           !textures_[back()].sent_to_client);
     CreateBackTexture(textures_[back()].size);
-  else
-    ReleaseBackTexture();
+  } else {
+    ReleaseTexture(back());
+  }
 }
 
 void TextureImageTransportSurface::SetFrontbufferAllocation(bool allocation) {
   if (frontbuffer_suggested_allocation_ == allocation)
     return;
   frontbuffer_suggested_allocation_ = allocation;
+  AdjustFrontBufferAllocation();
+}
+
+void TextureImageTransportSurface::AdjustFrontBufferAllocation() {
+  if (!helper_->MakeCurrent())
+    return;
+
+  if (!frontbuffer_suggested_allocation_ && !frontbuffer_is_protected_ &&
+      textures_[front()].info->service_id()) {
+    ReleaseTexture(front());
+    if (textures_[front()].sent_to_client) {
+      GpuHostMsg_AcceleratedSurfaceRelease_Params params;
+      params.identifier = textures_[front()].client_id;
+      helper_->SendAcceleratedSurfaceRelease(params);
+      textures_[front()].sent_to_client = false;
+    }
+  }
 }
 
 void* TextureImageTransportSurface::GetShareHandle() {
@@ -232,7 +254,7 @@ void TextureImageTransportSurface::OnWillDestroyStub(
 
 bool TextureImageTransportSurface::SwapBuffers() {
   DCHECK(backbuffer_suggested_allocation_);
-  if (!frontbuffer_suggested_allocation_)
+  if (!frontbuffer_suggested_allocation_ || !frontbuffer_is_protected_)
     return true;
   if (!parent_stub_) {
     LOG(ERROR) << "SwapBuffers failed because no parent stub.";
@@ -241,12 +263,14 @@ bool TextureImageTransportSurface::SwapBuffers() {
 
   glFlush();
   front_ = back();
-  previous_damage_rect_ = gfx::Rect(textures_[front_].size);
+  previous_damage_rect_ = gfx::Rect(textures_[front()].size);
 
-  DCHECK(textures_[front_].client_id != 0);
+  DCHECK(textures_[front()].client_id != 0);
 
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
-  params.surface_handle = textures_[front_].client_id;
+  params.surface_handle = textures_[front()].client_id;
+  params.protection_state_id = protection_state_id_;
+  params.skip_ack = false;
   helper_->SendAcceleratedSurfaceBuffersSwapped(params);
   helper_->SetScheduled(false);
   return true;
@@ -255,31 +279,29 @@ bool TextureImageTransportSurface::SwapBuffers() {
 bool TextureImageTransportSurface::PostSubBuffer(
     int x, int y, int width, int height) {
   DCHECK(backbuffer_suggested_allocation_);
-  if (!frontbuffer_suggested_allocation_)
+  DCHECK(textures_[back()].info->service_id());
+  if (!frontbuffer_suggested_allocation_ || !frontbuffer_is_protected_)
     return true;
   // If we are recreating the frontbuffer with this swap, make sure we are
   // drawing a full frame.
-  DCHECK(textures_[front_].info->service_id() ||
+  DCHECK(textures_[front()].info->service_id() ||
          (!x && !y && gfx::Size(width, height) == textures_[back()].size));
   if (!parent_stub_) {
     LOG(ERROR) << "PostSubBuffer failed because no parent stub.";
     return false;
   }
 
-  DCHECK(textures_[back()].info);
-  int back_texture_service_id = textures_[back()].info->service_id();
-
-  DCHECK(textures_[front_].info);
-  int front_texture_service_id = textures_[front_].info->service_id();
-
-  gfx::Size expected_size = textures_[back()].size;
-  bool surfaces_same_size = textures_[front_].size == expected_size;
-
   const gfx::Rect new_damage_rect(x, y, width, height);
 
   // An empty damage rect is a successful no-op.
   if (new_damage_rect.IsEmpty())
     return true;
+
+  int back_texture_service_id = textures_[back()].info->service_id();
+  int front_texture_service_id = textures_[front()].info->service_id();
+
+  gfx::Size expected_size = textures_[back()].size;
+  bool surfaces_same_size = textures_[front()].size == expected_size;
 
   if (surfaces_same_size) {
     std::vector<gfx::Rect> regions_to_copy;
@@ -307,17 +329,19 @@ bool TextureImageTransportSurface::PostSubBuffer(
 
   glFlush();
   front_ = back();
+  previous_damage_rect_ = new_damage_rect;
+
+  DCHECK(textures_[front()].client_id);
 
   GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params params;
-  params.surface_handle = textures_[front_].client_id;
+  params.surface_handle = textures_[front()].client_id;
   params.x = x;
   params.y = y;
   params.width = width;
   params.height = height;
+  params.protection_state_id = protection_state_id_;
   helper_->SendAcceleratedSurfacePostSubBuffer(params);
   helper_->SetScheduled(false);
-
-  previous_damage_rect_ = new_damage_rect;
   return true;
 }
 
@@ -342,10 +366,35 @@ void TextureImageTransportSurface::OnNewSurfaceACK(
     uint64 surface_handle, TransportDIB::Handle /*shm_handle*/) {
 }
 
+void TextureImageTransportSurface::OnSetFrontSurfaceIsProtected(
+    bool is_protected, uint32 protection_state_id) {
+  protection_state_id_ = protection_state_id;
+  if (frontbuffer_is_protected_ == is_protected)
+    return;
+  frontbuffer_is_protected_ = is_protected;
+  AdjustFrontBufferAllocation();
+
+  // If surface is set to protected, and we haven't actually released it yet,
+  // we can set the ui surface handle now just by sending a swap message.
+  if (is_protected && textures_[front()].info->service_id() &&
+      textures_[front()].sent_to_client) {
+    GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
+    params.surface_handle = textures_[front()].client_id;
+    params.protection_state_id = protection_state_id_;
+    params.skip_ack = true;
+    helper_->SendAcceleratedSurfaceBuffersSwapped(params);
+  }
+}
+
 void TextureImageTransportSurface::OnBuffersSwappedACK() {
   if (helper_->MakeCurrent()) {
-    if (textures_[front_].size != textures_[back()].size) {
-      CreateBackTexture(textures_[front_].size);
+    if (textures_[front()].size != textures_[back()].size ||
+        !textures_[back()].info->service_id() ||
+        !textures_[back()].sent_to_client) {
+      // We may get an ACK from a stale swap just to reschedule.  In that case,
+      // we may not have a backbuffer suggestion and should not recreate one.
+      if (backbuffer_suggested_allocation_)
+        CreateBackTexture(textures_[front()].size);
     } else {
       AttachBackTextureToFBO();
     }
@@ -364,10 +413,11 @@ void TextureImageTransportSurface::OnResizeViewACK() {
   NOTREACHED();
 }
 
-void TextureImageTransportSurface::ReleaseBackTexture() {
+void TextureImageTransportSurface::ReleaseTexture(int id) {
   if (!parent_stub_)
     return;
-  TextureInfo* info = textures_[back()].info;
+  Texture& texture = textures_[id];
+  TextureInfo* info = texture.info;
   DCHECK(info);
 
   GLuint service_id = info->service_id();
@@ -392,7 +442,7 @@ void TextureImageTransportSurface::CreateBackTexture(const gfx::Size& size) {
 
   GLuint service_id = info->service_id();
 
-  if (service_id && texture.size == size)
+  if (service_id && texture.size == size && texture.sent_to_client)
     return;
 
   if (!service_id) {
@@ -443,13 +493,14 @@ void TextureImageTransportSurface::CreateBackTexture(const gfx::Size& size) {
 void TextureImageTransportSurface::AttachBackTextureToFBO() {
   if (!parent_stub_)
     return;
-  DCHECK(textures_[back()].info);
+  TextureInfo* info = textures_[back()].info;
+  DCHECK(info);
 
   ScopedFrameBufferBinder fbo_binder(fbo_id_);
   glFramebufferTexture2DEXT(GL_FRAMEBUFFER,
       GL_COLOR_ATTACHMENT0,
       GL_TEXTURE_2D,
-      textures_[back()].info->service_id(),
+      info->service_id(),
       0);
   glFlush();
   CHECK_GL_ERROR();
