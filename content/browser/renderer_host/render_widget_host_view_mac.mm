@@ -996,6 +996,13 @@ bool RenderWidgetHostViewMac::CompositorSwapBuffers(uint64 surface_handle) {
 
   GotAcceleratedFrame();
 
+  gfx::Size window_size(NSSizeToCGSize([cocoa_view_ frame].size));
+  if (window_size.IsEmpty()) {
+    // setNeedsDisplay will never display and we'll never ack if the window is
+    // empty, so ack now and don't bother calling setNeedsDisplay below.
+    return true;
+  }
+
   // No need to draw the surface if we are inside a drawRect. It will be done
   // later.
   if (!about_to_validate_and_paint_) {
