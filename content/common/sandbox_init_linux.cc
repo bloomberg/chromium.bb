@@ -355,8 +355,7 @@ static void ApplyFlashPolicy(std::vector<struct sock_filter>* program) {
   EmitAllowSyscall(__NR_shutdown, program);
   EmitAllowSyscall(__NR_sched_getaffinity, program);  // 3D
   EmitAllowSyscall(__NR_dup, program);  // Flash Access.
-  // TODO(jorgelo): restrict this.
-  EmitAllowSyscall(__NR_ioctl, program);  // Flash Access.
+  EmitFailSyscall(__NR_ioctl, ENOTTY, program);  // Flash Access.
   EmitAllowSignalSelf(program);
 
   // These are under investigation, and hopefully not here for the long term.
