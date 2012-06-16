@@ -389,8 +389,6 @@ void ExtensionAPI::InitDefaultConfiguration() {
       IDR_EXTENSION_API_JSON_EXTENSION));
   RegisterSchema("fileBrowserHandler", ReadFromResource(
       IDR_EXTENSION_API_JSON_FILEBROWSERHANDLER));
-  RegisterSchema("fileBrowserHandlerInternal", ReadFromResource(
-      IDR_EXTENSION_API_JSON_FILEBROWSERHANDLERINTERNAL));
   RegisterSchema("fileBrowserPrivate", ReadFromResource(
       IDR_EXTENSION_API_JSON_FILEBROWSERPRIVATE));
   RegisterSchema("history", ReadFromResource(

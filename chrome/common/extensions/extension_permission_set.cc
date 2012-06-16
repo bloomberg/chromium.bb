@@ -255,8 +255,6 @@ void ExtensionAPIPermission::RegisterAllPermissions(
 
     // Register private permissions.
     { kChromeosInfoPrivate, "chromeosInfoPrivate", kFlagCannotBeOptional },
-    { kFileBrowserHandlerInternal, "fileBrowserHandlerInternal",
-      kFlagCannotBeOptional },
     { kFileBrowserPrivate, "fileBrowserPrivate", kFlagCannotBeOptional },
     { kManagedModePrivate, "managedModePrivate", kFlagCannotBeOptional },
     { kMediaPlayerPrivate, "mediaPlayerPrivate", kFlagCannotBeOptional },
@@ -847,10 +845,6 @@ void ExtensionPermissionSet::InitImplicitExtensionPermissions(
   // The webRequest permission implies the internal version as well.
   if (apis_.find(ExtensionAPIPermission::kWebRequest) != apis_.end())
     apis_.insert(ExtensionAPIPermission::kWebRequestInternal);
-
-  // The fileBrowserHandler permission implies the internal version as well.
-  if (apis_.find(ExtensionAPIPermission::kFileBrowserHandler) != apis_.end())
-    apis_.insert(ExtensionAPIPermission::kFileBrowserHandlerInternal);
 
   // Add the scriptable hosts.
   for (UserScriptList::const_iterator content_script =

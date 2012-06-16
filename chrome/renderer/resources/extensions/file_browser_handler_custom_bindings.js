@@ -22,26 +22,3 @@ chromeHidden.Event.registerArgumentMassager('fileBrowserHandler.onExecute',
   for (var i = 0; i < fileList.length; i++)
     fileList[i] = GetExternalFileEntry(fileList[i]);
 });
-
-chromeHidden.registerCustomHook('fileBrowserHandler', function(bindingsAPI) {
-  var apiFunctions = bindingsAPI.apiFunctions;
-
-  apiFunctions.setHandleRequest('selectFile',
-                                function(selectionParams, callback) {
-    function internalCallback(externalCallback, internalResult) {
-      if (!externalCallback)
-        return;
-      var result = undefined;
-      if (internalResult) {
-        result = { success: internalResult.success, entry: null };
-        if (internalResult.success)
-          result.entry = GetExternalFileEntry(internalResult.entry);
-      }
-
-      externalCallback(result);
-    }
-
-    return chromeHidden.internalAPIs.fileBrowserHandlerInternal.selectFile(
-        selectionParams, internalCallback.bind(null, callback));
-  });
-});
