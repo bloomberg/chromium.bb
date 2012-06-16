@@ -4,3 +4,10 @@ ProfileManagerTest.CreateAndUseTwoProfiles
 
 # Crashing - http://crbug.com/84536
 HttpBridgeTest.*
+
+# These tests time out on linux-tsan bot. crbug.com/133171
+HistoryURLProviderTest.IntranetURLsWithPaths: 
+HistoryURLProviderTest.DontAutocompleteOnTrailingWhitespace: 
+HistoryURLProviderTest.*
+SearchProviderTest.*
+ShortcutsProviderTest.CalculateScore: 
