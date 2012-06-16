@@ -116,9 +116,9 @@ URLRequestContextGetter::URLRequestContextGetter(
     base::MessageLoopProxy* ui_message_loop,
     MessageLoop* io_message_loop,
     MessageLoopForIO* file_message_loop)
-    : io_message_loop_proxy_(io_message_loop->message_loop_proxy()) {
+    : network_task_runner_(io_message_loop->message_loop_proxy()) {
   proxy_config_service_.reset(CreateSystemProxyConfigService(
-      ui_message_loop, io_message_loop_proxy_, file_message_loop));
+      ui_message_loop, network_task_runner_, file_message_loop));
 }
 
 net::URLRequestContext* URLRequestContextGetter::GetURLRequestContext() {
@@ -129,9 +129,9 @@ net::URLRequestContext* URLRequestContextGetter::GetURLRequestContext() {
   return url_request_context_.get();
 }
 
-scoped_refptr<base::MessageLoopProxy>
-URLRequestContextGetter::GetIOMessageLoopProxy() const {
-  return io_message_loop_proxy_;
+scoped_refptr<base::SingleThreadTaskRunner>
+URLRequestContextGetter::GetNetworkTaskRunner() const {
+  return network_task_runner_;
 }
 
 URLRequestContextGetter::~URLRequestContextGetter() {}

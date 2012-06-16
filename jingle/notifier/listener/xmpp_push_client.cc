@@ -15,7 +15,7 @@ namespace notifier {
 XmppPushClient::XmppPushClient(const NotifierOptions& notifier_options)
     : notifier_options_(notifier_options) {
   DCHECK(notifier_options_.request_context_getter->
-         GetIOMessageLoopProxy()->BelongsToCurrentThread());
+         GetNetworkTaskRunner()->BelongsToCurrentThread());
 }
 
 XmppPushClient::~XmppPushClient() {

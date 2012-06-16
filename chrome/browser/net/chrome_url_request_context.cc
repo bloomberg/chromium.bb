@@ -146,8 +146,8 @@ net::URLRequestContext* ChromeURLRequestContextGetter::GetURLRequestContext() {
   return url_request_context_;
 }
 
-scoped_refptr<base::MessageLoopProxy>
-ChromeURLRequestContextGetter::GetIOMessageLoopProxy() const {
+scoped_refptr<base::SingleThreadTaskRunner>
+ChromeURLRequestContextGetter::GetNetworkTaskRunner() const {
   return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
 }
 

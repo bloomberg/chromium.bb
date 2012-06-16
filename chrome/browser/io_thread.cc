@@ -255,15 +255,16 @@ class SystemURLRequestContextGetter : public net::URLRequestContextGetter {
   explicit SystemURLRequestContextGetter(IOThread* io_thread);
 
   // Implementation for net::UrlRequestContextGetter.
-  virtual net::URLRequestContext* GetURLRequestContext();
-  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const;
+  virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;
+  virtual scoped_refptr<base::SingleThreadTaskRunner>
+      GetNetworkTaskRunner() const OVERRIDE;
 
  protected:
   virtual ~SystemURLRequestContextGetter();
 
  private:
   IOThread* const io_thread_;  // Weak pointer, owned by BrowserProcess.
-  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 
   base::debug::LeakTracker<SystemURLRequestContextGetter> leak_tracker_;
 };
@@ -271,7 +272,7 @@ class SystemURLRequestContextGetter : public net::URLRequestContextGetter {
 SystemURLRequestContextGetter::SystemURLRequestContextGetter(
     IOThread* io_thread)
     : io_thread_(io_thread),
-      io_message_loop_proxy_(
+      network_task_runner_(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)) {
 }
 
@@ -284,9 +285,9 @@ net::URLRequestContext* SystemURLRequestContextGetter::GetURLRequestContext() {
   return io_thread_->globals()->system_request_context.get();
 }
 
-scoped_refptr<base::MessageLoopProxy>
-SystemURLRequestContextGetter::GetIOMessageLoopProxy() const {
-  return io_message_loop_proxy_;
+scoped_refptr<base::SingleThreadTaskRunner>
+SystemURLRequestContextGetter::GetNetworkTaskRunner() const {
+  return network_task_runner_;
 }
 
 IOThread::Globals::

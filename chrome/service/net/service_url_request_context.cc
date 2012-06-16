@@ -154,7 +154,7 @@ ServiceURLRequestContext::~ServiceURLRequestContext() {
 }
 
 ServiceURLRequestContextGetter::ServiceURLRequestContextGetter()
-    : io_message_loop_proxy_(
+    : network_task_runner_(
           g_service_process->io_thread()->message_loop_proxy()) {
   // Build the default user agent.
   user_agent_ = MakeUserAgentForServiceProcess();
@@ -177,9 +177,9 @@ ServiceURLRequestContextGetter::GetURLRequestContext() {
   return url_request_context_.get();
 }
 
-scoped_refptr<base::MessageLoopProxy>
-ServiceURLRequestContextGetter::GetIOMessageLoopProxy() const {
-  return io_message_loop_proxy_;
+scoped_refptr<base::SingleThreadTaskRunner>
+ServiceURLRequestContextGetter::GetNetworkTaskRunner() const {
+  return network_task_runner_;
 }
 
 ServiceURLRequestContextGetter::~ServiceURLRequestContextGetter() {}

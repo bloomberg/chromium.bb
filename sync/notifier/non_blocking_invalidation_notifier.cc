@@ -4,9 +4,11 @@
 
 #include "sync/notifier/non_blocking_invalidation_notifier.h"
 
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "jingle/notifier/listener/push_client.h"
 #include "sync/notifier/invalidation_notifier.h"
@@ -54,7 +56,7 @@ class NonBlockingInvalidationNotifier::Core
   // The variables below should be used only on the I/O thread.
   const browser_sync::WeakHandle<SyncNotifierObserver> delegate_observer_;
   scoped_ptr<InvalidationNotifier> invalidation_notifier_;
-  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
@@ -79,9 +81,9 @@ void NonBlockingInvalidationNotifier::Core::Initialize(
   DCHECK(notifier_options.request_context_getter);
   DCHECK_EQ(notifier::NOTIFICATION_SERVER,
             notifier_options.notification_method);
-  io_message_loop_proxy_ = notifier_options.request_context_getter->
-      GetIOMessageLoopProxy();
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  network_task_runner_ = notifier_options.request_context_getter->
+      GetNetworkTaskRunner();
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
   invalidation_notifier_.reset(
       new InvalidationNotifier(
           notifier::PushClient::CreateDefaultOnIOThread(notifier_options),
@@ -94,40 +96,40 @@ void NonBlockingInvalidationNotifier::Core::Initialize(
 
 
 void NonBlockingInvalidationNotifier::Core::Teardown() {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
   invalidation_notifier_->RemoveObserver(this);
   invalidation_notifier_.reset();
-  io_message_loop_proxy_ = NULL;
+  network_task_runner_ = NULL;
 }
 
 void NonBlockingInvalidationNotifier::Core::SetUniqueId(
     const std::string& unique_id) {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
   invalidation_notifier_->SetUniqueId(unique_id);
 }
 
 void NonBlockingInvalidationNotifier::Core::SetStateDeprecated(
     const std::string& state) {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
   invalidation_notifier_->SetStateDeprecated(state);
 }
 
 void NonBlockingInvalidationNotifier::Core::UpdateCredentials(
     const std::string& email, const std::string& token) {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
   invalidation_notifier_->UpdateCredentials(email, token);
 }
 
 void NonBlockingInvalidationNotifier::Core::UpdateEnabledTypes(
     syncable::ModelTypeSet enabled_types) {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
   invalidation_notifier_->UpdateEnabledTypes(enabled_types);
 }
 
 void NonBlockingInvalidationNotifier::Core::OnIncomingNotification(
         const syncable::ModelTypePayloadMap& type_payloads,
         IncomingNotificationSource source) {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
   delegate_observer_.Call(FROM_HERE,
                           &SyncNotifierObserver::OnIncomingNotification,
                           type_payloads,
@@ -136,7 +138,7 @@ void NonBlockingInvalidationNotifier::Core::OnIncomingNotification(
 
 void NonBlockingInvalidationNotifier::Core::OnNotificationStateChange(
         bool notifications_enabled) {
-  DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
   delegate_observer_.Call(FROM_HERE,
                           &SyncNotifierObserver::OnNotificationStateChange,
                           notifications_enabled);
@@ -153,11 +155,11 @@ NonBlockingInvalidationNotifier::NonBlockingInvalidationNotifier(
           core_(
               new Core(browser_sync::MakeWeakHandle(
                   weak_ptr_factory_.GetWeakPtr()))),
-          parent_message_loop_proxy_(
-              base::MessageLoopProxy::current()),
-          io_message_loop_proxy_(notifier_options.request_context_getter->
-              GetIOMessageLoopProxy()) {
-  if (!io_message_loop_proxy_->PostTask(
+          parent_task_runner_(
+              base::ThreadTaskRunnerHandle::Get()),
+          network_task_runner_(notifier_options.request_context_getter->
+              GetNetworkTaskRunner()) {
+  if (!network_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(
               &NonBlockingInvalidationNotifier::Core::Initialize,
@@ -172,8 +174,8 @@ NonBlockingInvalidationNotifier::NonBlockingInvalidationNotifier(
 }
 
 NonBlockingInvalidationNotifier::~NonBlockingInvalidationNotifier() {
-  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
-  if (!io_message_loop_proxy_->PostTask(
+  DCHECK(parent_task_runner_->BelongsToCurrentThread());
+  if (!network_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(&NonBlockingInvalidationNotifier::Core::Teardown,
                      core_.get()))) {
@@ -183,20 +185,20 @@ NonBlockingInvalidationNotifier::~NonBlockingInvalidationNotifier() {
 
 void NonBlockingInvalidationNotifier::AddObserver(
     SyncNotifierObserver* observer) {
-  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(parent_task_runner_->BelongsToCurrentThread());
   observers_.AddObserver(observer);
 }
 
 void NonBlockingInvalidationNotifier::RemoveObserver(
     SyncNotifierObserver* observer) {
-  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(parent_task_runner_->BelongsToCurrentThread());
   observers_.RemoveObserver(observer);
 }
 
 void NonBlockingInvalidationNotifier::SetUniqueId(
     const std::string& unique_id) {
-  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
-  if (!io_message_loop_proxy_->PostTask(
+  DCHECK(parent_task_runner_->BelongsToCurrentThread());
+  if (!network_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(&NonBlockingInvalidationNotifier::Core::SetUniqueId,
                      core_.get(), unique_id))) {
@@ -206,8 +208,8 @@ void NonBlockingInvalidationNotifier::SetUniqueId(
 
 void NonBlockingInvalidationNotifier::SetStateDeprecated(
     const std::string& state) {
-  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
-  if (!io_message_loop_proxy_->PostTask(
+  DCHECK(parent_task_runner_->BelongsToCurrentThread());
+  if (!network_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(
               &NonBlockingInvalidationNotifier::Core::SetStateDeprecated,
@@ -218,8 +220,8 @@ void NonBlockingInvalidationNotifier::SetStateDeprecated(
 
 void NonBlockingInvalidationNotifier::UpdateCredentials(
     const std::string& email, const std::string& token) {
-  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
-  if (!io_message_loop_proxy_->PostTask(
+  DCHECK(parent_task_runner_->BelongsToCurrentThread());
+  if (!network_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(&NonBlockingInvalidationNotifier::Core::UpdateCredentials,
                      core_.get(), email, token))) {
@@ -229,8 +231,8 @@ void NonBlockingInvalidationNotifier::UpdateCredentials(
 
 void NonBlockingInvalidationNotifier::UpdateEnabledTypes(
     syncable::ModelTypeSet enabled_types) {
-  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
-  if (!io_message_loop_proxy_->PostTask(
+  DCHECK(parent_task_runner_->BelongsToCurrentThread());
+  if (!network_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(&NonBlockingInvalidationNotifier::Core::UpdateEnabledTypes,
                      core_.get(), enabled_types))) {
@@ -240,7 +242,7 @@ void NonBlockingInvalidationNotifier::UpdateEnabledTypes(
 
 void NonBlockingInvalidationNotifier::SendNotification(
     syncable::ModelTypeSet changed_types) {
-  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(parent_task_runner_->BelongsToCurrentThread());
   // InvalidationClient doesn't implement SendNotification(), so no
   // need to forward on the call.
 }
@@ -248,14 +250,14 @@ void NonBlockingInvalidationNotifier::SendNotification(
 void NonBlockingInvalidationNotifier::OnIncomingNotification(
         const syncable::ModelTypePayloadMap& type_payloads,
         IncomingNotificationSource source) {
-  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(parent_task_runner_->BelongsToCurrentThread());
   FOR_EACH_OBSERVER(SyncNotifierObserver, observers_,
                     OnIncomingNotification(type_payloads, source));
 }
 
 void NonBlockingInvalidationNotifier::OnNotificationStateChange(
         bool notifications_enabled) {
-  DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
+  DCHECK(parent_task_runner_->BelongsToCurrentThread());
   FOR_EACH_OBSERVER(SyncNotifierObserver, observers_,
                     OnNotificationStateChange(notifications_enabled));
 }

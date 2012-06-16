@@ -27,13 +27,13 @@ scoped_ptr<PushClient> CreateXmppPushClient(
 scoped_ptr<PushClient> PushClient::CreateDefault(
     const NotifierOptions& notifier_options) {
   return scoped_ptr<PushClient>(new NonBlockingPushClient(
-      notifier_options.request_context_getter->GetIOMessageLoopProxy(),
+      notifier_options.request_context_getter->GetNetworkTaskRunner(),
       base::Bind(&CreateXmppPushClient, notifier_options)));
 }
 
 scoped_ptr<PushClient> PushClient::CreateDefaultOnIOThread(
     const NotifierOptions& notifier_options) {
-  CHECK(notifier_options.request_context_getter->GetIOMessageLoopProxy()->
+  CHECK(notifier_options.request_context_getter->GetNetworkTaskRunner()->
         BelongsToCurrentThread());
   return CreateXmppPushClient(notifier_options);
 }

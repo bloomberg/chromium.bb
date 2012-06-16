@@ -49,8 +49,8 @@ HttpBridge::RequestContextGetter::GetURLRequestContext() {
   return context_.get();
 }
 
-scoped_refptr<base::MessageLoopProxy>
-HttpBridge::RequestContextGetter::GetIOMessageLoopProxy() const {
+scoped_refptr<base::SingleThreadTaskRunner>
+HttpBridge::RequestContextGetter::GetNetworkTaskRunner() const {
   return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
 }
 

@@ -117,7 +117,8 @@ class TestExtensionURLRequestContextGetter
       context_.reset(new TestExtensionURLRequestContext());
     return context_.get();
   }
-  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const {
+  virtual scoped_refptr<base::SingleThreadTaskRunner>
+      GetNetworkTaskRunner() const OVERRIDE {
     return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
   }
 

@@ -235,8 +235,8 @@ class DeviceManagementRequestContextGetter
 
   // Overridden from net::URLRequestContextGetter:
   virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;
-  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy()
-      const OVERRIDE;
+  virtual scoped_refptr<base::SingleThreadTaskRunner>
+      GetNetworkTaskRunner() const OVERRIDE;
 
  protected:
   virtual ~DeviceManagementRequestContextGetter() {}
@@ -258,8 +258,8 @@ DeviceManagementRequestContextGetter::GetURLRequestContext() {
   return context_.get();
 }
 
-scoped_refptr<base::MessageLoopProxy>
-DeviceManagementRequestContextGetter::GetIOMessageLoopProxy() const {
+scoped_refptr<base::SingleThreadTaskRunner>
+DeviceManagementRequestContextGetter::GetNetworkTaskRunner() const {
   return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
 }
 

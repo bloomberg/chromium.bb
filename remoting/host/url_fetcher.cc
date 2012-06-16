@@ -51,7 +51,7 @@ class UrlFetcher::Core : public base::RefCountedThreadSafe<Core>,
   Method method_;
 
   scoped_refptr<base::MessageLoopProxy> delegate_message_loop_;
-  scoped_refptr<base::MessageLoopProxy> io_message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
@@ -100,29 +100,29 @@ void UrlFetcher::Core::SetHeader(const std::string& key,
 
 void UrlFetcher::Core::Start(const UrlFetcher::DoneCallback& done_callback) {
   done_callback_ = done_callback;
-  io_message_loop_ = request_context_getter_->GetIOMessageLoopProxy();
-  DCHECK(io_message_loop_);
-  io_message_loop_->PostTask(FROM_HERE, base::Bind(
+  network_task_runner_ = request_context_getter_->GetNetworkTaskRunner();
+  DCHECK(network_task_runner_);
+  network_task_runner_->PostTask(FROM_HERE, base::Bind(
       &UrlFetcher::Core::DoStart, this));
 }
 
 void UrlFetcher::Core::Detach() {
   DCHECK(delegate_message_loop_->BelongsToCurrentThread());
-  io_message_loop_->PostTask(
+  network_task_runner_->PostTask(
       FROM_HERE, base::Bind(&UrlFetcher::Core::CancelRequest, this));
   done_callback_.Reset();
 }
 
 void UrlFetcher::Core::OnResponseStarted(net::URLRequest* request) {
   DCHECK_EQ(request, request_.get());
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
   ReadResponse();
 }
 
 void UrlFetcher::Core::OnReadCompleted(net::URLRequest* request,
                                        int bytes_read) {
   DCHECK_EQ(request, request_.get());
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
 
   do {
     if (!request_->status().is_success() || bytes_read <= 0)
@@ -141,7 +141,7 @@ void UrlFetcher::Core::OnReadCompleted(net::URLRequest* request,
 }
 
 void UrlFetcher::Core::DoStart() {
-  DCHECK(io_message_loop_->BelongsToCurrentThread());
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
 
   request_.reset(new net::URLRequest(url_, this));
   request_->set_context(request_context_getter_->GetURLRequestContext());

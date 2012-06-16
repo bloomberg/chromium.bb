@@ -120,15 +120,15 @@ class SafeBrowsingURLRequestContextGetter
 
   // Implementation for net::UrlRequestContextGetter.
   virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;
-  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const
-      OVERRIDE;
+  virtual scoped_refptr<base::SingleThreadTaskRunner>
+      GetNetworkTaskRunner() const OVERRIDE;
 
  protected:
   virtual ~SafeBrowsingURLRequestContextGetter();
 
  private:
   SafeBrowsingService* const sb_service_;  // Owned by BrowserProcess.
-  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 
   base::debug::LeakTracker<SafeBrowsingURLRequestContextGetter> leak_tracker_;
 };
@@ -136,7 +136,7 @@ class SafeBrowsingURLRequestContextGetter
 SafeBrowsingURLRequestContextGetter::SafeBrowsingURLRequestContextGetter(
     SafeBrowsingService* sb_service)
     : sb_service_(sb_service),
-      io_message_loop_proxy_(
+      network_task_runner_(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)) {
 }
 
@@ -150,9 +150,9 @@ SafeBrowsingURLRequestContextGetter::GetURLRequestContext() {
   return sb_service_->url_request_context_.get();
 }
 
-scoped_refptr<base::MessageLoopProxy>
-SafeBrowsingURLRequestContextGetter::GetIOMessageLoopProxy() const {
-  return io_message_loop_proxy_;
+scoped_refptr<base::SingleThreadTaskRunner>
+SafeBrowsingURLRequestContextGetter::GetNetworkTaskRunner() const {
+  return network_task_runner_;
 }
 
 // static

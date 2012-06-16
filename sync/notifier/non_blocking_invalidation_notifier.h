@@ -23,8 +23,8 @@
 #include "sync/util/weak_handle.h"
 
 namespace base {
-class MessageLoopProxy;
-}
+class SingleThreadTaskRunner;
+}  // namespace base
 
 namespace sync_notifier {
 
@@ -73,8 +73,8 @@ class NonBlockingInvalidationNotifier
   // The real guts of NonBlockingInvalidationNotifier, which allows
   // this class to live completely on the parent thread.
   scoped_refptr<Core> core_;
-  scoped_refptr<base::MessageLoopProxy> parent_message_loop_proxy_;
-  scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> parent_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> network_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(NonBlockingInvalidationNotifier);
 };
