@@ -94,12 +94,12 @@ class WebDragSourceAura : public MessageLoopForUI::Observer {
 // Utility to fill a ui::OSExchangeDataProviderAura object from WebDropData.
 void PrepareDragData(const WebDropData& drop_data,
                      ui::OSExchangeDataProviderAura* provider) {
-  if (!drop_data.plain_text.empty())
-    provider->SetString(drop_data.plain_text);
+  if (!drop_data.text.string().empty())
+    provider->SetString(drop_data.text.string());
   if (drop_data.url.is_valid())
     provider->SetURL(drop_data.url, drop_data.url_title);
-  if (!drop_data.text_html.empty())
-    provider->SetHtml(drop_data.text_html, drop_data.html_base_url);
+  if (!drop_data.html.string().empty())
+    provider->SetHtml(drop_data.html.string(), drop_data.html_base_url);
   if (!drop_data.filenames.empty()) {
     std::vector<ui::OSExchangeData::FileInfo> filenames;
     for (std::vector<WebDropData::FileInfo>::const_iterator it =
@@ -123,20 +123,26 @@ void PrepareDragData(const WebDropData& drop_data,
 // Utility to fill a WebDropData object from ui::OSExchangeData.
 void PrepareWebDropData(WebDropData* drop_data,
                         const ui::OSExchangeData& data) {
-  string16 plain_text, url_title;
-  GURL url;
-
+  string16 plain_text;
   data.GetString(&plain_text);
   if (!plain_text.empty())
-    drop_data->plain_text = plain_text;
+    drop_data->text = NullableString16(plain_text, false);
 
+  GURL url;
+  string16 url_title;
   data.GetURLAndTitle(&url, &url_title);
   if (url.is_valid()) {
     drop_data->url = url;
     drop_data->url_title = url_title;
   }
 
-  data.GetHtml(&drop_data->text_html, &drop_data->html_base_url);
+  string16 html;
+  GURL html_base_url;
+  data.GetHtml(&html, &html_base_url);
+  if (!html.empty())
+    drop_data->html = NullableString16(html, false);
+  if (html_base_url.is_valid())
+    drop_data->html_base_url = html_base_url;
 
   std::vector<ui::OSExchangeData::FileInfo> files;
   if (data.GetFilenames(&files) && !files.empty()) {

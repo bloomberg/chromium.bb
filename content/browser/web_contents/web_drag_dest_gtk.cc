@@ -176,8 +176,9 @@ void WebDragDestGtk::OnDragDataReceived(
     if (target == ui::GetAtomForTarget(ui::TEXT_PLAIN)) {
       guchar* text = gtk_selection_data_get_text(data);
       if (text) {
-        drop_data_->plain_text =
-            UTF8ToUTF16(std::string(reinterpret_cast<const char*>(text)));
+        drop_data_->text = NullableString16(
+            UTF8ToUTF16(std::string(reinterpret_cast<const char*>(text))),
+            false);
         g_free(text);
       }
     } else if (target == ui::GetAtomForTarget(ui::TEXT_URI_LIST)) {
@@ -199,7 +200,7 @@ void WebDragDestGtk::OnDragDataReceived(
             // This is a hack. Some file managers also populate text/plain with
             // a file URL when dragging files, so we clear it to avoid exposing
             // it to the web content.
-            drop_data_->plain_text.clear();
+            drop_data_->text = NullableString16(true);
           } else if (!drop_data_->url.is_valid()) {
             // Also set the first non-file URL as the URL content for the drop.
             drop_data_->url = url;
@@ -209,9 +210,10 @@ void WebDragDestGtk::OnDragDataReceived(
       }
     } else if (target == ui::GetAtomForTarget(ui::TEXT_HTML)) {
       // TODO(estade): Can the html have a non-UTF8 encoding?
-      drop_data_->text_html =
+      drop_data_->html = NullableString16(
           UTF8ToUTF16(std::string(reinterpret_cast<const char*>(raw_data),
-                                  data_length));
+                                  data_length)),
+          false);
       // We leave the base URL empty.
     } else if (target == ui::GetAtomForTarget(ui::NETSCAPE_URL)) {
       std::string netscape_url(reinterpret_cast<const char*>(raw_data),

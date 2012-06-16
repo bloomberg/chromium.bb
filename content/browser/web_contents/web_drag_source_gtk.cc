@@ -85,14 +85,14 @@ void WebDragSourceGtk::StartDragging(const WebDropData& drop_data,
 
   int targets_mask = 0;
 
-  if (!drop_data.plain_text.empty())
+  if (!drop_data.text.string().empty())
     targets_mask |= ui::TEXT_PLAIN;
   if (drop_data.url.is_valid()) {
     targets_mask |= ui::TEXT_URI_LIST;
     targets_mask |= ui::CHROME_NAMED_URL;
     targets_mask |= ui::NETSCAPE_URL;
   }
-  if (!drop_data.text_html.empty())
+  if (!drop_data.html.string().empty())
     targets_mask |= ui::TEXT_HTML;
   if (!drop_data.file_contents.empty())
     targets_mask |= ui::CHROME_WEBDROP_FILE_CONTENTS;
@@ -183,7 +183,7 @@ void WebDragSourceGtk::OnDragDataGet(GtkWidget* sender,
 
   switch (target_type) {
     case ui::TEXT_PLAIN: {
-      std::string utf8_text = UTF16ToUTF8(drop_data_->plain_text);
+      std::string utf8_text = UTF16ToUTF8(drop_data_->text.string());
       gtk_selection_data_set_text(selection_data, utf8_text.c_str(),
                                   utf8_text.length());
       break;
@@ -192,7 +192,7 @@ void WebDragSourceGtk::OnDragDataGet(GtkWidget* sender,
     case ui::TEXT_HTML: {
       // TODO(estade): change relative links to be absolute using
       // |html_base_url|.
-      std::string utf8_text = UTF16ToUTF8(drop_data_->text_html);
+      std::string utf8_text = UTF16ToUTF8(drop_data_->html.string());
       gtk_selection_data_set(selection_data,
                              ui::GetAtomForTarget(ui::TEXT_HTML),
                              kBitsPerByte,

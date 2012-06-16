@@ -31,14 +31,16 @@ WebDropData::FileInfo::FileInfo(const string16& path,
 }
 
 WebDropData::WebDropData(const WebDragData& drag_data)
-    : referrer_policy(WebKit::WebReferrerPolicyDefault) {
+    : referrer_policy(WebKit::WebReferrerPolicyDefault),
+      text(NullableString16(true)),
+      html(NullableString16(true)) {
   const WebVector<WebDragData::Item>& item_list = drag_data.items();
   for (size_t i = 0; i < item_list.size(); ++i) {
     const WebDragData::Item& item = item_list[i];
     switch (item.storageType) {
       case WebDragData::Item::StorageTypeString: {
         if (EqualsASCII(item.stringType, ui::Clipboard::kMimeTypeText)) {
-          plain_text = item.stringData;
+          text = NullableString16(item.stringData, false);
           break;
         }
         if (EqualsASCII(item.stringType, ui::Clipboard::kMimeTypeURIList)) {
@@ -51,7 +53,7 @@ WebDropData::WebDropData(const WebDragData& drag_data)
           break;
         }
         if (EqualsASCII(item.stringType, ui::Clipboard::kMimeTypeHTML)) {
-          text_html = item.stringData;
+          html = NullableString16(item.stringData, false);
           html_base_url = item.baseURL;
           break;
         }
@@ -73,7 +75,9 @@ WebDropData::WebDropData(const WebDragData& drag_data)
 }
 
 WebDropData::WebDropData()
-    : referrer_policy(WebKit::WebReferrerPolicyDefault) {
+    : referrer_policy(WebKit::WebReferrerPolicyDefault),
+      text(NullableString16(true)),
+      html(NullableString16(true)) {
 }
 
 WebDropData::~WebDropData() {
@@ -87,15 +91,16 @@ WebDragData WebDropData::ToDragData() const {
   DCHECK(file_contents.empty());
   DCHECK(file_description_filename.empty());
 
-  // TODO(dcheng): We need a way to distinguish between null and empty strings.
-  if (!plain_text.empty()) {
+  if (!text.is_null()) {
     WebDragData::Item item;
     item.storageType = WebDragData::Item::StorageTypeString;
     item.stringType = WebString::fromUTF8(ui::Clipboard::kMimeTypeText);
-    item.stringData = plain_text;
+    item.stringData = text.string();
     item_list.push_back(item);
   }
 
+  // TODO(dcheng): Do we need to distinguish between null and empty URLs? Is it
+  // meaningful to write an empty URL to the clipboard?
   if (!url.is_empty()) {
     WebDragData::Item item;
     item.storageType = WebDragData::Item::StorageTypeString;
@@ -105,11 +110,11 @@ WebDragData WebDropData::ToDragData() const {
     item_list.push_back(item);
   }
 
-  if (!text_html.empty()) {
+  if (!html.is_null()) {
     WebDragData::Item item;
     item.storageType = WebDragData::Item::StorageTypeString;
     item.stringType = WebString::fromUTF8(ui::Clipboard::kMimeTypeHTML);
-    item.stringData = text_html;
+    item.stringData = html.string();
     item.baseURL = html_base_url;
     item_list.push_back(item);
   }

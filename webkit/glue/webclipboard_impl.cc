@@ -235,8 +235,10 @@ void WebClipboardImpl::writeDataObject(const WebDragData& data) {
 
   WebDropData data_object(data);
   // TODO(dcheng): Properly support text/uri-list here.
-  scw.WriteText(data_object.plain_text);
-  scw.WriteHTML(data_object.text_html, "");
+  if (!data_object.text.is_null())
+    scw.WriteText(data_object.text.string());
+  if (!data_object.html.is_null())
+    scw.WriteHTML(data_object.html.string(), "");
   // If there is no custom data, avoid calling WritePickledData. This ensures
   // that ScopedClipboardWriterGlue's dtor remains a no-op if the page didn't
   // modify the DataTransfer object, which is important to avoid stomping on
