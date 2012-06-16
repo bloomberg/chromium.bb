@@ -13,6 +13,7 @@
 #include "ash/launcher/launcher_model_observer.h"
 #include "ash/wm/shelf_auto_hide_behavior.h"
 #include "base/observer_list.h"
+#include "ui/views/animation/bounds_animator_observer.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/focus/focus_manager.h"
@@ -46,7 +47,8 @@ class ASH_EXPORT LauncherView : public views::View,
                                 public views::ButtonListener,
                                 public LauncherButtonHost,
                                 public views::ContextMenuController,
-                                public views::FocusTraversable {
+                                public views::FocusTraversable,
+                                public views::BoundsAnimatorObserver {
  public:
   LauncherView(LauncherModel* model, LauncherDelegate* delegate);
   virtual ~LauncherView();
@@ -178,13 +180,18 @@ class ASH_EXPORT LauncherView : public views::View,
   virtual ShelfAlignment GetShelfAlignment() const OVERRIDE;
   virtual string16 GetAccessibleName(const views::View* view) OVERRIDE;
 
-  // Overriden from views::ButtonListener:
+  // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event) OVERRIDE;
 
-  // Overriden from views::ContextMenuController:
+  // Overridden from views::ContextMenuController:
   virtual void ShowContextMenuForView(views::View* source,
                                       const gfx::Point& point) OVERRIDE;
+
+  // Overridden from views::BoundsAnimatorObserver:
+  virtual void OnBoundsAnimatorProgressed(
+      views::BoundsAnimator* animator) OVERRIDE;
+  virtual void OnBoundsAnimatorDone(views::BoundsAnimator* animator) OVERRIDE;
 
   // The model; owned by Launcher.
   LauncherModel* model_;

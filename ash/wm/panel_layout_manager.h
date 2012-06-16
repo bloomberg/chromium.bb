@@ -43,8 +43,8 @@ namespace internal {
 // its layout manager to this instance, e.g.:
 // panel_container->SetLayoutManager(new PanelLayoutManager(panel_container));
 
-class ASH_EXPORT PanelLayoutManager :
-      public aura::LayoutManager,
+class ASH_EXPORT PanelLayoutManager
+    : public aura::LayoutManager,
       public ash::LauncherIconObserver,
       public aura::client::ActivationChangeObserver {
  public:

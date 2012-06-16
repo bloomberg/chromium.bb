@@ -274,12 +274,14 @@ LauncherView::LauncherView(LauncherModel* model, LauncherDelegate* delegate)
       alignment_(SHELF_ALIGNMENT_BOTTOM) {
   DCHECK(model_);
   bounds_animator_.reset(new views::BoundsAnimator(this));
+  bounds_animator_->AddObserver(this);
   set_context_menu_controller(this);
   focus_search_.reset(new LauncherFocusSearch(view_model_.get()));
   tooltip_.reset(new LauncherTooltipManager(alignment_));
 }
 
 LauncherView::~LauncherView() {
+  bounds_animator_->RemoveObserver(this);
   model_->RemoveObserver(this);
 }
 
@@ -837,9 +839,6 @@ void LauncherView::LauncherItemAdded(int model_index) {
     // Undo the hiding if animation does not run.
     view->layer()->SetOpacity(1.0f);
   }
-
-  FOR_EACH_OBSERVER(LauncherIconObserver, observers_,
-                    OnLauncherIconPositionsChanged());
 }
 
 void LauncherView::LauncherItemRemoved(int model_index, LauncherID id) {
@@ -855,14 +854,6 @@ void LauncherView::LauncherItemRemoved(int model_index, LauncherID id) {
   bounds_animator_->AnimateViewTo(view, view->bounds());
   bounds_animator_->SetAnimationDelegate(
       view, new FadeOutAnimationDelegate(this, view), true);
-
-  // The animation will eventually update the ideal bounds, but we want to
-  // force an update immediately so we can notify launcher icon observers.
-  IdealBounds ideal_bounds;
-  CalculateIdealBounds(&ideal_bounds);
-
-  FOR_EACH_OBSERVER(LauncherIconObserver, observers_,
-                    OnLauncherIconPositionsChanged());
 }
 
 void LauncherView::LauncherItemChanged(int model_index,
@@ -913,8 +904,6 @@ void LauncherView::LauncherItemChanged(int model_index,
 void LauncherView::LauncherItemMoved(int start_index, int target_index) {
   view_model_->Move(start_index, target_index);
   AnimateToIdealBounds();
-  FOR_EACH_OBSERVER(LauncherIconObserver, observers_,
-                    OnLauncherIconPositionsChanged());
 }
 
 void LauncherView::MousePressedOnButton(views::View* view,
@@ -1069,6 +1058,14 @@ void LauncherView::ShowContextMenuForView(views::View* source,
 
   Shell::GetInstance()->UpdateShelfVisibility();
 #endif
+}
+
+void LauncherView::OnBoundsAnimatorProgressed(views::BoundsAnimator* animator) {
+  FOR_EACH_OBSERVER(LauncherIconObserver, observers_,
+                    OnLauncherIconPositionsChanged());
+}
+
+void LauncherView::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
 }
 
 }  // namespace internal

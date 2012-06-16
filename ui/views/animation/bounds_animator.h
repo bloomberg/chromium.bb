@@ -22,14 +22,8 @@ class SlideAnimation;
 
 namespace views {
 
-class BoundsAnimator;
+class BoundsAnimatorObserver;
 class View;
-
-class VIEWS_EXPORT BoundsAnimatorObserver {
- public:
-  // Invoked when all animations are complete.
-  virtual void OnBoundsAnimatorDone(BoundsAnimator* animator) = 0;
-};
 
 // Bounds animator is responsible for animating the bounds of a view from the
 // the views current location and size to a target position and size. To use

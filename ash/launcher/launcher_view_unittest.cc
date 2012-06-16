@@ -36,24 +36,29 @@ namespace test {
 
 class TestLauncherIconObserver : public LauncherIconObserver {
  public:
-  TestLauncherIconObserver() : count_(0) {
-    Shell::GetInstance()->launcher()->AddIconObserver(this);
+  explicit TestLauncherIconObserver(Launcher* launcher)
+      : launcher_(launcher),
+        change_notified_(false) {
+    if (launcher_)
+      launcher_->AddIconObserver(this);
   }
 
   virtual ~TestLauncherIconObserver() {
-    Shell::GetInstance()->launcher()->RemoveIconObserver(this);
+    if (launcher_)
+      launcher_->RemoveIconObserver(this);
   }
 
   // LauncherIconObserver implementation.
-  void OnLauncherIconPositionsChanged() OVERRIDE {
-    ++count_;
+  virtual void OnLauncherIconPositionsChanged() OVERRIDE {
+    change_notified_ = true;
   }
 
-  int count() const { return count_; }
-  void Reset() { count_ = 0; }
+  int change_notified() const { return change_notified_; }
+  void Reset() { change_notified_ = false; }
 
  private:
-  int count_;
+  Launcher* launcher_;
+  bool change_notified_;
 
   DISALLOW_COPY_AND_ASSIGN(TestLauncherIconObserver);
 };
@@ -65,7 +70,13 @@ class LauncherViewIconObserverTest : public ash::test::AshTestBase {
 
   virtual void SetUp() OVERRIDE {
     AshTestBase::SetUp();
-    observer_.reset(new TestLauncherIconObserver);
+
+    Launcher* launcher = Shell::GetInstance()->launcher();
+    observer_.reset(new TestLauncherIconObserver(launcher));
+
+    launcher_view_test_.reset(new LauncherViewTestAPI(
+        launcher->GetLauncherViewForTest()));
+    launcher_view_test_->SetAnimationDuration(1);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -75,8 +86,13 @@ class LauncherViewIconObserverTest : public ash::test::AshTestBase {
 
   TestLauncherIconObserver* observer() { return observer_.get(); }
 
+  LauncherViewTestAPI* launcher_vew_test() {
+    return launcher_view_test_.get();
+  }
+
  private:
   scoped_ptr<TestLauncherIconObserver> observer_;
+  scoped_ptr<LauncherViewTestAPI> launcher_view_test_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherViewIconObserverTest);
 };
@@ -93,12 +109,14 @@ TEST_F(LauncherViewIconObserverTest, AddRemove) {
   scoped_ptr<views::Widget> widget(new views::Widget());
   widget->Init(params);
   launcher_delegate->AddLauncherItem(widget->GetNativeWindow());
-  EXPECT_EQ(1, observer()->count());
+  launcher_vew_test()->RunMessageLoopUntilAnimationsDone();
+  EXPECT_TRUE(observer()->change_notified());
   observer()->Reset();
 
   widget->Show();
   widget->GetNativeWindow()->parent()->RemoveChild(widget->GetNativeWindow());
-  EXPECT_EQ(1, observer()->count());
+  launcher_vew_test()->RunMessageLoopUntilAnimationsDone();
+  EXPECT_TRUE(observer()->change_notified());
   observer()->Reset();
 }
 
@@ -108,7 +126,8 @@ TEST_F(LauncherViewIconObserverTest, BoundsChanged) {
   int total_width = launcher_size.width() / 2;
   ASSERT_GT(total_width, 0);
   launcher->SetStatusSize(gfx::Size(total_width, launcher_size.height()));
-  EXPECT_EQ(1, observer()->count());
+  // No animation happens for LauncherView bounds change.
+  EXPECT_TRUE(observer()->change_notified());
   observer()->Reset();
 }
 

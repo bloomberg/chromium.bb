@@ -6,21 +6,18 @@
 #define ASH_LAUNCHER_LAUNCHER_ICON_OBSERVER_H_
 #pragma once
 
+#include "ash/ash_export.h"
 #include "base/basictypes.h"
 
 namespace ash {
 
 class ASH_EXPORT LauncherIconObserver {
  public:
-  LauncherIconObserver() {}
-
   // Invoked when any icon on launcher changes position.
   virtual void OnLauncherIconPositionsChanged() = 0;
 
  protected:
   virtual ~LauncherIconObserver() {}
-
-  DISALLOW_COPY_AND_ASSIGN(LauncherIconObserver);
 };
 
 }  // namespace ash

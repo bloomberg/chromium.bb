@@ -5,6 +5,7 @@
 #include "ash/wm/app_list_controller.h"
 
 #include "ash/ash_switches.h"
+#include "ash/launcher/launcher.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -115,6 +116,7 @@ void AppListController::SetView(app_list::AppListView* view) {
     views::Widget* widget = view_->GetWidget();
     widget->AddObserver(this);
     Shell::GetInstance()->AddEnvEventFilter(this);
+    Shell::GetInstance()->launcher()->AddIconObserver(this);
     widget->GetNativeView()->GetRootWindow()->AddRootWindowObserver(this);
     widget->GetNativeView()->GetFocusManager()->AddObserver(this);
     widget->SetOpacity(0);
@@ -134,6 +136,7 @@ void AppListController::ResetView() {
   widget->RemoveObserver(this);
   GetLayer(widget)->GetAnimator()->RemoveObserver(this);
   Shell::GetInstance()->RemoveEnvEventFilter(this);
+  Shell::GetInstance()->launcher()->RemoveIconObserver(this);
   widget->GetNativeView()->GetRootWindow()->RemoveRootWindowObserver(this);
   widget->GetNativeView()->GetFocusManager()->RemoveObserver(this);
   view_ = NULL;
@@ -166,6 +169,11 @@ void AppListController::ProcessLocatedEvent(const aura::LocatedEvent& event) {
       SetVisible(false);
     }
   }
+}
+
+void AppListController::UpdateBounds() {
+  if (view_ && is_visible_)
+    view_->UpdateBounds();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -218,8 +226,7 @@ void AppListController::OnWindowFocused(aura::Window* window) {
 // AppListController,  aura::RootWindowObserver implementation:
 void AppListController::OnRootWindowResized(const aura::RootWindow* root,
                                             const gfx::Size& old_size) {
-  if (view_ && is_visible_)
-    view_->UpdateBounds();
+  UpdateBounds();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -247,6 +254,13 @@ void AppListController::OnWidgetClosing(views::Widget* widget) {
 void AppListController::OnShelfAlignmentChanged() {
   if (view_)
     view_->SetBubbleArrowLocation(GetBubbleArrowLocation());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// AppListController, LauncherIconObserver implementation:
+
+void AppListController::OnLauncherIconPositionsChanged() {
+  UpdateBounds();
 }
 
 }  // namespace internal

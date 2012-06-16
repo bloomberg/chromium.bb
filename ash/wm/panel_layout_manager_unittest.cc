@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/launcher_view_test_api.h"
 #include "ash/test/test_launcher_delegate.h"
 #include "ash/wm/window_util.h"
 #include "base/basictypes.h"
@@ -19,7 +20,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-
 namespace internal {
 
 using aura::test::WindowIsAbove;
@@ -33,6 +33,11 @@ class PanelLayoutManagerTest : public ash::test::AshTestBase {
     CommandLine::ForCurrentProcess()->AppendSwitch(switches::kAuraPanelManager);
     ash::test::AshTestBase::SetUp();
     ASSERT_TRUE(ash::test::TestLauncherDelegate::instance());
+
+    Launcher* launcher = Shell::GetInstance()->launcher();
+    launcher_view_test_.reset(new test::LauncherViewTestAPI(
+        launcher->GetLauncherViewForTest()));
+    launcher_view_test_->SetAnimationDuration(1);
   }
 
   aura::Window* CreateNormalWindow() {
@@ -69,6 +74,9 @@ class PanelLayoutManagerTest : public ash::test::AshTestBase {
   // TODO(dcheng): This should be const, but GetScreenBoundsOfItemIconForWindow
   // takes a non-const Window. We can probably fix that.
   void IsPanelAboveLauncherIcon(aura::Window* panel) {
+    // Waits until all launcher view animations are done.
+    launcher_view_test()->RunMessageLoopUntilAnimationsDone();
+
     Launcher* launcher = Shell::GetInstance()->launcher();
     gfx::Rect icon_bounds = launcher->GetScreenBoundsOfItemIconForWindow(panel);
     ASSERT_FALSE(icon_bounds.IsEmpty());
@@ -104,7 +112,13 @@ class PanelLayoutManagerTest : public ash::test::AshTestBase {
     return widget->IsVisible();
   }
 
+  test::LauncherViewTestAPI* launcher_view_test() {
+    return launcher_view_test_.get();
+  }
+
  private:
+  scoped_ptr<test::LauncherViewTestAPI> launcher_view_test_;
+
   DISALLOW_COPY_AND_ASSIGN(PanelLayoutManagerTest);
 };
 
@@ -147,10 +161,12 @@ TEST_F(PanelLayoutManagerTest, MultiplePanelStacking) {
 
   // Changing the active window should update the stacking order.
   wm::ActivateWindow(w1.get());
+  launcher_view_test()->RunMessageLoopUntilAnimationsDone();
   EXPECT_TRUE(WindowIsAbove(w1.get(), w2.get()));
   EXPECT_TRUE(WindowIsAbove(w2.get(), w3.get()));
 
   wm::ActivateWindow(w2.get());
+  launcher_view_test()->RunMessageLoopUntilAnimationsDone();
   EXPECT_TRUE(WindowIsAbove(w1.get(), w3.get()));
   EXPECT_TRUE(WindowIsAbove(w2.get(), w3.get()));
   EXPECT_TRUE(WindowIsAbove(w2.get(), w1.get()));
@@ -179,7 +195,6 @@ TEST_F(PanelLayoutManagerTest, MultiplePanelCallout) {
   EXPECT_NO_FATAL_FAILURE(IsCalloutAbovePanel(w3.get()));
   w3.reset();
   EXPECT_FALSE(IsCalloutVisible());
-
 }
 
 // Tests removing panels.
@@ -191,6 +206,7 @@ TEST_F(PanelLayoutManagerTest, RemoveLeftPanel) {
 
   // At this point, windows should be stacked with 1 < 2 < 3
   wm::ActivateWindow(w1.get());
+  launcher_view_test()->RunMessageLoopUntilAnimationsDone();
   // Now, windows should be stacked 1 > 2 > 3
   w1.reset();
   EXPECT_NO_FATAL_FAILURE(IsPanelAboveLauncherIcon(w2.get()));
@@ -244,5 +260,4 @@ TEST_F(PanelLayoutManagerTest, RemoveNonActivePanel) {
 }
 
 }  // namespace internal
-
 }  // namespace ash

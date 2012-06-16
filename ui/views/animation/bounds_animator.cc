@@ -7,6 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/animation/animation_container.h"
 #include "ui/base/animation/slide_animation.h"
+#include "ui/views/animation/bounds_animator_observer.h"
 #include "ui/views/view.h"
 
 // Duration in milliseconds for animations.
@@ -260,6 +261,10 @@ void BoundsAnimator::AnimationContainerProgressed(
     parent_->SchedulePaintInRect(repaint_bounds_);
     repaint_bounds_.SetRect(0, 0, 0, 0);
   }
+
+  FOR_EACH_OBSERVER(BoundsAnimatorObserver,
+                    observers_,
+                    OnBoundsAnimatorProgressed(this));
 
   if (!IsAnimating()) {
     // Notify here rather than from AnimationXXX to avoid deleting the animation

@@ -6,6 +6,7 @@
 #define ASH_WM_APP_LIST_CONTROLLER_H_
 #pragma once
 
+#include "ash/launcher/launcher_icon_observer.h"
 #include "ash/shell_observer.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -36,7 +37,8 @@ class AppListController : public aura::EventFilter,
                           public aura::RootWindowObserver,
                           public ui::ImplicitAnimationObserver,
                           public views::Widget::Observer,
-                          public ShellObserver {
+                          public ShellObserver,
+                          public LauncherIconObserver {
  public:
   AppListController();
   virtual ~AppListController();
@@ -67,6 +69,9 @@ class AppListController : public aura::EventFilter,
 
   void ProcessLocatedEvent(const aura::LocatedEvent& event);
 
+  // Makes app list bubble update its bounds.
+  void UpdateBounds();
+
   // aura::EventFilter overrides:
   virtual bool PreHandleKeyEvent(aura::Window* target,
                                  aura::KeyEvent* event) OVERRIDE;
@@ -93,6 +98,9 @@ class AppListController : public aura::EventFilter,
 
   // ShellObserver overrides:
   virtual void OnShelfAlignmentChanged() OVERRIDE;
+
+  // LauncherIconObserver overrides:
+  virtual void OnLauncherIconPositionsChanged() OVERRIDE;
 
   // Whether we should show or hide app list widget.
   bool is_visible_;
