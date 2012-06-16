@@ -4,15 +4,12 @@
 
 #import "chrome/browser/ui/cocoa/one_click_signin_bubble_controller.h"
 
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
-#include "ui/base/l10n/l10n_util.h"
-#import "ui/base/l10n/l10n_util_mac.h"
 
 namespace {
 
@@ -49,19 +46,27 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
   return self;
 }
 
+- (void)windowWillClose:(NSNotification*)notification {
+  if (!start_sync_callback_.is_null()) {
+    base::ResetAndReturn(&start_sync_callback_).Run(
+        OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS);
+  }
+  [super windowWillClose:notification];
+}
+
 - (IBAction)ok:(id)sender {
-  start_sync_callback_.Run(
+  base::ResetAndReturn(&start_sync_callback_).Run(
       OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS);
   [self close];
 }
 
-- (IBAction)onClickLearnMoreLink:(id)sender {
-  // TODO(akalin): this method should be removed once the UI elements are
-  // removed.
+- (IBAction)onClickUndo:(id)sender {
+  start_sync_callback_.Reset();
+  [self close];
 }
 
 - (IBAction)onClickAdvancedLink:(id)sender {
-  start_sync_callback_.Run(
+  base::ResetAndReturn(&start_sync_callback_).Run(
       OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST);
   [self close];
 }
@@ -72,23 +77,11 @@ void ShiftOriginY(NSView* view, CGFloat amount) {
 - (void)awakeFromNib {
   [super awakeFromNib];
 
-  // Set the message text manually, since we have to interpolate the
-  // product name.
-  NSString* message =
-      l10n_util::GetNSStringF(
-          IDS_SYNC_PROMO_NTP_BUBBLE_MESSAGE,
-          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
-  [messageField_ setStringValue:message];
-
   // Lay out the text controls from the bottom up.
   CGFloat totalYOffset = 0.0;
 
   totalYOffset +=
       [GTMUILocalizerAndLayoutTweaker sizeToFitView:advancedLink_].height;
-
-  ShiftOriginY(learnMoreLink_, totalYOffset);
-  totalYOffset +=
-      [GTMUILocalizerAndLayoutTweaker sizeToFitView:learnMoreLink_].height;
 
   ShiftOriginY(messageField_, totalYOffset);
   totalYOffset +=

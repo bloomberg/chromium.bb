@@ -19,9 +19,6 @@
 @interface OneClickSigninBubbleController : BaseBubbleController {
  @private
   IBOutlet NSTextField* messageField_;
-  // TODO(akalin): learnMoreLink_ needs to be removed, but it can't be until
-  // the nib is changed too.
-  IBOutlet NSButton* learnMoreLink_;
   IBOutlet NSButton* advancedLink_;
 
   // TODO(akalin): Make sure this callback is called only once, like on
@@ -42,6 +39,8 @@
 
 // Starts sync and closes the bubble.
 - (IBAction)ok:(id)sender;
+
+- (IBAction)onClickUndo:(id)sender;
 
 // Calls |advancedCallback_|.
 - (IBAction)onClickAdvancedLink:(id)sender;

@@ -38,9 +38,7 @@ OneClickSigninBubbleGtk::OneClickSigninBubbleGtk(
 
   // Message.
   GtkWidget* message_label = gtk_label_new(
-      l10n_util::GetStringFUTF8(
-          IDS_SYNC_PROMO_NTP_BUBBLE_MESSAGE,
-          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)).c_str());
+      l10n_util::GetStringUTF8(IDS_ONE_CLICK_SIGNIN_BUBBLE_MESSAGE).c_str());
   gtk_label_set_line_wrap(GTK_LABEL(message_label), TRUE);
   gtk_misc_set_alignment(GTK_MISC(message_label), 0.0, 0.5);
   gtk_box_pack_start(GTK_BOX(bubble_content), message_label, FALSE, FALSE, 0);
@@ -100,10 +98,10 @@ OneClickSigninBubbleGtk::OneClickSigninBubbleGtk(
 
 void OneClickSigninBubbleGtk::BubbleClosing(
     BubbleGtk* bubble, bool closed_by_escape) {
-  if (!start_sync_callback_.is_null())
+  if (!start_sync_callback_.is_null()) {
     base::ResetAndReturn(&start_sync_callback_).Run(
         OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS);
-
+  }
   delete this;
 }
 
