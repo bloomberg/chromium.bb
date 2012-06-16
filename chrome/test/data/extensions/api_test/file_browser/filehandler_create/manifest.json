@@ -5,7 +5,7 @@
   "manifest_version": 2,
   "description": "Tests of chrome.fileBrowserHandler.selectFile method",
   "background": {
-    "scripts": ["background.js"]
+    "scripts": ["test.js"]
   },
   "permissions": [
     "fileBrowserHandler",

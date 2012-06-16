@@ -35,10 +35,6 @@ function errorCallback(error) {
   chrome.test.fail(msg);
 }
 
-function getFileSystemUrlForPath(path) {
-  return 'filesystem:chrome-extension://' + EXTENSION_ID + '/external/' + path;
-}
-
 function writeToFile(entry) {
   entry.createWriter(function(writer) {
     writer.onerror = function(e) {
@@ -49,14 +45,31 @@ function writeToFile(entry) {
     var bb = new WebKitBlobBuilder();
     bb.append(FILE_CONTENTS);
     writer.write(bb.getBlob('text/plain'));
-  });
+  }, errorCallback);
 }
 
-chrome.test.runTests([function getFile() {
-  // The test will try to open and write to a file for which
-  // fileBrowserHandler.selectFile has previously been called (on C++ side of
-  // the test). It verifies that the permissions given by the method allow the
-  // extension to read/write to selected file.
-  var entryUrl = getFileSystemUrlForPath('tmp/test_file.txt');
-  window.webkitResolveLocalFileSystemURL(entryUrl, writeToFile, errorCallback);
-}]);
+chrome.test.runTests([
+  function selectionSuccessful() {
+    // The test will call selectFile function and expect it to succeed.
+    // When it gets the file entry, it verifies that the permissions given in
+    // the method allow the extension to read/write to selected file.
+    chrome.fileBrowserHandler.selectFile({ suggestedName: 'some_file_name.txt'},
+        function(result) {
+          chrome.test.assertTrue(!!result);
+          chrome.test.assertTrue(result.success);
+          chrome.test.assertTrue(!!result.entry);
+
+         writeToFile(result.entry);
+      });
+  },
+  function selectionFails() {
+    // The test expects that selectFile returns failure with an empty entry.
+    chrome.fileBrowserHandler.selectFile({ suggestedName: 'fail' },
+        function(result) {
+          chrome.test.assertTrue(!!result);
+          // Entry should be set iff operation succeeded.
+          chrome.test.assertEq(false, result.success);
+          chrome.test.assertTrue(result.entry == null);
+          chrome.test.succeed();
+        });
+  }]);

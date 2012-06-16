@@ -13,7 +13,8 @@
         "description": "Event details payload for fileBrowserHandler.onExecute event.",
         "properties": {
           "entries": {
-            "type": "any",
+            "type": "array",
+            "items": { "type": "object", "constructor": "Entry" },
             "description": "Array of Entry instances representing files that are targets of this action (selected in ChromeOS file browser)."
           },
           "tab_id" : {
@@ -49,12 +50,12 @@
       {
         "name": "selectFile",
         "type": "function",
-        "description": "Prompts user to select file path under which a new file will be created. If the user selects file, the file gets created or, if it already exists, truncated. The function has to be called with user gesture.",
+        "description": "Prompts user to select file path under which a new file will be created. When the user selects file, the file gets created or, if it already existed, truncated. The function has to be called with a user gesture.",
         "parameters": [
           {
             "name": "selectionParams",
             "type": "object",
-            "description": "Parameters that will be used to create new file.",
+            "description": "Parameters that will be used to create a new file.",
             "properties": {
               "suggestedName": {
                   "type": "string",
@@ -76,9 +77,11 @@
                     "type": "boolean",
                     "description": "Has the file been selected."
                   },
-                  "fileURL": {
-                    "type": "string",
-                    "description": "Filesystem URL of the selected file."
+                  "entry": {
+                    "type": "object",
+                    "constructor": "Entry",
+                    "optional": true,
+                    "description": "Selected file entry. It will be null if a file hasn't been selected."
                   }
                 }
               }
