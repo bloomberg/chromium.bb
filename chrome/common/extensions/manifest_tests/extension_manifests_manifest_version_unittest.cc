@@ -44,7 +44,7 @@ TEST_F(ExtensionManifestTest, ManifestVersionWarning) {
               testing::Field(
                   &Extension::InstallWarning::message,
                   testing::HasSubstr(
-                      "Manifest version 1 will be unsupported soon."))))
+                      "Support for manifest version 1 is being phased out."))))
           << test_data[i].test_name;
     } else {
       EXPECT_THAT(
@@ -54,7 +54,8 @@ TEST_F(ExtensionManifestTest, ManifestVersionWarning) {
                   testing::Field(
                       &Extension::InstallWarning::message,
                       testing::HasSubstr(
-                          "Manifest version 1 will be unsupported soon.")))))
+                          "Support for manifest version 1 is being phased "
+                          "out.")))))
           << test_data[i].test_name;
     }
   }
