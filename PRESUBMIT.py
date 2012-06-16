@@ -31,6 +31,78 @@ _TEST_ONLY_WARNING = (
     'Email joi@chromium.org if you have questions.')
 
 
+_BANNED_OBJC_FUNCTIONS = (
+    (
+      'addTrackingRect:',
+      ('The use of -[NSView addTrackingRect:owner:userData:assumeInside:] is'
+       'prohibited. Please use CrTrackingArea instead.',
+       'http://dev.chromium.org/developers/coding-style/cocoa-dos-and-donts',
+      ),
+      False,
+    ),
+    (
+      'NSTrackingArea',
+      ('The use of NSTrackingAreas is prohibited. Please use CrTrackingArea',
+       'instead.',
+       'http://dev.chromium.org/developers/coding-style/cocoa-dos-and-donts',
+      ),
+      False,
+    ),
+    (
+      'convertPointFromBase:',
+      ('The use of -[NSView convertPointFromBase:] is almost certainly wrong.',
+       'Please use |convertPoint:(point) fromView:nil| instead.',
+       'http://dev.chromium.org/developers/coding-style/cocoa-dos-and-donts',
+      ),
+      True,
+    ),
+    (
+      'convertPointToBase:',
+      ('The use of -[NSView convertPointToBase:] is almost certainly wrong.',
+       'Please use |convertPoint:(point) toView:nil| instead.',
+       'http://dev.chromium.org/developers/coding-style/cocoa-dos-and-donts',
+      ),
+      True,
+    ),
+    (
+      'convertRectFromBase:',
+      ('The use of -[NSView convertRectFromBase:] is almost certainly wrong.',
+       'Please use |convertRect:(point) fromView:nil| instead.',
+       'http://dev.chromium.org/developers/coding-style/cocoa-dos-and-donts',
+      ),
+      True,
+    ),
+    (
+      'convertRectToBase:',
+      ('The use of -[NSView convertRectToBase:] is almost certainly wrong.',
+       'Please use |convertRect:(point) toView:nil| instead.',
+       'http://dev.chromium.org/developers/coding-style/cocoa-dos-and-donts',
+      ),
+      True,
+    ),
+    (
+      'convertSizeFromBase:',
+      ('The use of -[NSView convertSizeFromBase:] is almost certainly wrong.',
+       'Please use |convertSize:(point) fromView:nil| instead.',
+       'http://dev.chromium.org/developers/coding-style/cocoa-dos-and-donts',
+      ),
+      True,
+    ),
+    (
+      'convertSizeToBase:',
+      ('The use of -[NSView convertSizeToBase:] is almost certainly wrong.',
+       'Please use |convertSize:(point) toView:nil| instead.',
+       'http://dev.chromium.org/developers/coding-style/cocoa-dos-and-donts',
+      ),
+      True,
+    ),
+)
+
+
+_BANNED_CPP_FUNCTIONS = (
+)
+
+
 
 def _CheckNoInterfacesInBase(input_api, output_api):
   """Checks to make sure no files in libbase.a have |@interface|."""
@@ -219,6 +291,46 @@ def _CheckNoFilePathWatcherDelegate(input_api, output_api):
       '\n'.join(problems))]
 
 
+def _CheckNoBannedFunctions(input_api, output_api):
+  """Make sure that banned functions are not used."""
+  warnings = []
+  errors = []
+
+  file_filter = lambda f: f.LocalPath().endswith(('.mm', '.m', '.h'))
+  for f in input_api.AffectedFiles(file_filter=file_filter):
+    for line_num, line in f.ChangedContents():
+      for func_name, message, error in _BANNED_OBJC_FUNCTIONS:
+        if func_name in line:
+          problems = warnings;
+          if error:
+            problems = errors;
+          problems.append('    %s:%d:' % (f.LocalPath(), line_num))
+          for message_line in message:
+            problems.append('      %s' % message_line)
+
+  file_filter = lambda f: f.LocalPath().endswith(('.cc', '.mm', '.h'))
+  for f in input_api.AffectedFiles(file_filter=file_filter):
+    for line_num, line in f.ChangedContents():
+      for func_name, message, error in _BANNED_CPP_FUNCTIONS:
+        if func_name in line:
+          problems = warnings;
+          if error:
+            problems = errors;
+          problems.append('    %s:%d:' % (f.LocalPath(), line_num))
+          for message_line in message:
+            problems.append('      %s' % message_line)
+
+  result = []
+  if (warnings):
+    result.append(output_api.PresubmitPromptWarning(
+        'Banned functions were used.\n' + '\n'.join(warnings)))
+  if (errors):
+    result.append(output_api.PresubmitError(
+        'Banned functions were used.\n' + '\n'.join(errors)))
+  return result
+
+
+
 def _CommonChecks(input_api, output_api):
   """Checks common to both upload and commit."""
   results = []
@@ -234,6 +346,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckNoFRIEND_TEST(input_api, output_api))
   results.extend(_CheckNoScopedAllowIO(input_api, output_api))
   results.extend(_CheckNoFilePathWatcherDelegate(input_api, output_api))
+  results.extend(_CheckNoBannedFunctions(input_api, output_api))
   return results
 
 
