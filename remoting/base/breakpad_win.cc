@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // This module contains the necessary code to register the Breakpad exception
-// handler. This implementation is based on Chrome/Crome Frame crash reporitng
+// handler. This implementation is based on Chrome/Chrome Frame crash reporting
 // code. See:
 //   - src/chrome/app/breakpad_win.cc
 //   - src/chrome_frame/crash_server_init.cc
@@ -13,6 +13,7 @@
 #include "remoting/base/breakpad.h"
 
 #include <windows.h>
+#include <string>
 
 #include "base/atomicops.h"
 #include "base/logging.h"
@@ -20,12 +21,12 @@
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process_util.h"
-#include "base/string16.h"
+#include "base/utf_string_conversions.h"
 #include "base/win/wrapped_window_proc.h"
 #include "breakpad/src/client/windows/handler/exception_handler.h"
 
 namespace remoting {
-void InitializeCrashReportingForTest(const wchar_t*);
+void InitializeCrashReportingForTest(const wchar_t* pipe_name);
 }  // namespace remoting
 
 namespace {
@@ -58,7 +59,7 @@ class BreakpadWin {
   BreakpadWin();
   ~BreakpadWin();
 
-  static BreakpadWin& GetInstance();
+  static BreakpadWin* GetInstance();
 
  private:
   // Returns the Custom information to be used for crash reporting.
@@ -71,13 +72,14 @@ class BreakpadWin {
   // the crash dump is created. To prevent duplicate crash reports we
   // make every thread calling this method, except the very first one,
   // go to sleep.
-  static bool OnExceptionCallback(void*, EXCEPTION_POINTERS*,
-                                  MDRawAssertionInfo*);
+  static bool OnExceptionCallback(void* context,
+                                  EXCEPTION_POINTERS* exinfo,
+                                  MDRawAssertionInfo* assertion);
 
   // Crashes the process after generating a dump for the provided exception.
   // Note that the crash reporter should be initialized before calling this
   // function for it to do anything.
-  static int OnWindowProcedureException(EXCEPTION_POINTERS* info);
+  static int OnWindowProcedureException(EXCEPTION_POINTERS* exinfo);
 
   // Breakpad's exception handler.
   scoped_ptr<google_breakpad::ExceptionHandler> breakpad_;
@@ -106,8 +108,10 @@ BreakpadWin::BreakpadWin() : handling_exception_(0) {
   _CrtSetReportMode(_CRT_ASSERT, 0);
 
   // Get the alternate dump directory. We use the temp path.
+  // N.B. We don't use base::GetTempDir() here to avoid running more code then
+  //      necessary before crashes can be properly reported.
   wchar_t temp_directory[MAX_PATH + 1] = { 0 };
-  DWORD length = ::GetTempPath(MAX_PATH, temp_directory);
+  DWORD length = GetTempPath(MAX_PATH, temp_directory);
   if (length == 0)
     return;
 
@@ -141,8 +145,8 @@ BreakpadWin::~BreakpadWin() {
 }
 
 // static
-BreakpadWin& BreakpadWin::GetInstance() {
-  return g_instance.Get();
+BreakpadWin* BreakpadWin::GetInstance() {
+  return &g_instance.Get();
 }
 
 // Returns the Custom information to be used for crash reporting.
@@ -152,9 +156,9 @@ google_breakpad::CustomClientInfo* BreakpadWin::GetCustomInfo() {
   scoped_ptr<FileVersionInfo> version_info(
       FileVersionInfo::CreateFileVersionInfoForModule(binary));
 
-  string16 version;
+  std::wstring version;
   if (version_info.get())
-    version = version_info->product_version();
+    version = UTF16ToWide(version_info->product_version());
   if (version.empty())
     version = kBreakpadVersionDefault;
 
@@ -172,10 +176,11 @@ google_breakpad::CustomClientInfo* BreakpadWin::GetCustomInfo() {
 }
 
 // static
-bool BreakpadWin::OnExceptionCallback(
-    void*, EXCEPTION_POINTERS*, MDRawAssertionInfo*) {
-  BreakpadWin& self = BreakpadWin::GetInstance();
-  if (NoBarrier_CompareAndSwap(&self.handling_exception_, 0, 1) != 0) {
+bool BreakpadWin::OnExceptionCallback(void* /* context */,
+                                      EXCEPTION_POINTERS* /* exinfo */,
+                                      MDRawAssertionInfo* /* assertion */) {
+  BreakpadWin* self = BreakpadWin::GetInstance();
+  if (NoBarrier_CompareAndSwap(&self->handling_exception_, 0, 1) != 0) {
     // Capture every thread except the first one in the sleep. We don't
     // want multiple threads to concurrently report exceptions.
     ::Sleep(INFINITE);
@@ -184,12 +189,12 @@ bool BreakpadWin::OnExceptionCallback(
 }
 
 // static
-int BreakpadWin::OnWindowProcedureException(EXCEPTION_POINTERS* info) {
-  BreakpadWin& self = BreakpadWin::GetInstance();
-  if (self.breakpad_.get() != NULL) {
-    self.breakpad_->WriteMinidumpForException(info);
-    ::TerminateProcess(::GetCurrentProcess(),
-                       info->ExceptionRecord->ExceptionCode);
+int BreakpadWin::OnWindowProcedureException(EXCEPTION_POINTERS* exinfo) {
+  BreakpadWin* self = BreakpadWin::GetInstance();
+  if (self->breakpad_.get() != NULL) {
+    self->breakpad_->WriteMinidumpForException(exinfo);
+    TerminateProcess(GetCurrentProcess(),
+                     exinfo->ExceptionRecord->ExceptionCode);
   }
   return EXCEPTION_CONTINUE_SEARCH;
 }
@@ -205,9 +210,7 @@ void InitializeCrashReporting() {
 
 void InitializeCrashReportingForTest(const wchar_t* pipe_name) {
   BreakpadWin::pipe_name_ = pipe_name;
-
-  // Touch the object to make sure it is initialized.
-  BreakpadWin::GetInstance();
+  InitializeCrashReporting();
 }
 
 }  // namespace remoting

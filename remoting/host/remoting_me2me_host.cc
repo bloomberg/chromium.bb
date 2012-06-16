@@ -25,7 +25,6 @@
 #include "remoting/base/breakpad.h"
 #include "remoting/base/constants.h"
 #include "remoting/host/branding.h"
-#include "remoting/host/breakpad.h"
 #include "remoting/host/constants.h"
 #include "remoting/host/capturer.h"
 #include "remoting/host/chromoting_host.h"
@@ -42,6 +41,7 @@
 #include "remoting/host/policy_hack/nat_policy.h"
 #include "remoting/host/session_manager_factory.h"
 #include "remoting/host/signaling_connector.h"
+#include "remoting/host/usage_stats_consent.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/protocol/me2me_host_authenticator_factory.h"
 
@@ -567,7 +567,6 @@ int CALLBACK WinMain(HINSTANCE instance,
                      HINSTANCE previous_instance,
                      LPSTR command_line,
                      int show_command) {
-  // Initializes the crash dump reports.
   if (remoting::IsCrashReportingEnabled()) {
     remoting::InitializeCrashReporting();
   }

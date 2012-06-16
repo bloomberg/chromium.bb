@@ -11,9 +11,9 @@ namespace remoting {
 // that the user has agreed to crash dump reporting.
 //
 // Crash reporting has to be initialized as early as possible (e.g. the first
-// thing in main()) to catch crashes occured during the process startup.
-// The crashes occurred while invoking the static objects' constructors will not
-// be caught and reported. This should not be a problem as the static non POD
+// thing in main()) to catch crashes occuring during process startup.
+// Crashes which occur during the global static construction phase will not
+// be caught and reported. This should not be a problem as static non-POD
 // objects are not allowed by the style guide and exceptions to this rule are
 // rare.
 void InitializeCrashReporting();

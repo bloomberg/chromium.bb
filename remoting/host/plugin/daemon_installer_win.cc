@@ -20,12 +20,8 @@
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/scoped_variant.h"
-#include "remoting/base/dispatch_win.h"
-
-namespace omaha {
 #include "google_update/google_update_idl.h"
-}  // namespace omaha
-
+#include "remoting/base/dispatch_win.h"
 #include "remoting/host/constants.h"
 
 using base::win::ScopedBstr;
@@ -195,10 +191,6 @@ void DaemonComInstallerWin::PollInstallationStatus() {
   ScopedVariant state;
   hr = dispatch::Invoke(V_DISPATCH(&current_state), L"stateValue",
                         DISPATCH_PROPERTYGET, state.Receive());
-  if (FAILED(hr)) {
-    Done(hr);
-    return;
-  }
   if (state.type() != VT_I4) {
     Done(DISP_E_TYPEMISMATCH);
     return;
@@ -206,18 +198,18 @@ void DaemonComInstallerWin::PollInstallationStatus() {
 
   // Perform state-specific actions.
   switch (V_I4(&state)) {
-    case omaha::STATE_INIT:
-    case omaha::STATE_WAITING_TO_CHECK_FOR_UPDATE:
-    case omaha::STATE_CHECKING_FOR_UPDATE:
-    case omaha::STATE_WAITING_TO_DOWNLOAD:
-    case omaha::STATE_RETRYING_DOWNLOAD:
-    case omaha::STATE_DOWNLOADING:
-    case omaha::STATE_WAITING_TO_INSTALL:
-    case omaha::STATE_INSTALLING:
-    case omaha::STATE_PAUSED:
+    case STATE_INIT:
+    case STATE_WAITING_TO_CHECK_FOR_UPDATE:
+    case STATE_CHECKING_FOR_UPDATE:
+    case STATE_WAITING_TO_DOWNLOAD:
+    case STATE_RETRYING_DOWNLOAD:
+    case STATE_DOWNLOADING:
+    case STATE_WAITING_TO_INSTALL:
+    case STATE_INSTALLING:
+    case STATE_PAUSED:
       break;
 
-    case omaha::STATE_UPDATE_AVAILABLE:
+    case STATE_UPDATE_AVAILABLE:
       hr = dispatch::Invoke(V_DISPATCH(&bundle_), L"download",
                             DISPATCH_METHOD, NULL);
       if (FAILED(hr)) {
@@ -226,10 +218,10 @@ void DaemonComInstallerWin::PollInstallationStatus() {
       }
       break;
 
-    case omaha::STATE_DOWNLOAD_COMPLETE:
-    case omaha::STATE_EXTRACTING:
-    case omaha::STATE_APPLYING_DIFFERENTIAL_PATCH:
-    case omaha::STATE_READY_TO_INSTALL:
+    case STATE_DOWNLOAD_COMPLETE:
+    case STATE_EXTRACTING:
+    case STATE_APPLYING_DIFFERENTIAL_PATCH:
+    case STATE_READY_TO_INSTALL:
       hr = dispatch::Invoke(V_DISPATCH(&bundle_), L"install",
                             DISPATCH_METHOD, NULL);
       if (FAILED(hr)) {
@@ -238,13 +230,13 @@ void DaemonComInstallerWin::PollInstallationStatus() {
       }
       break;
 
-    case omaha::STATE_INSTALL_COMPLETE:
-    case omaha::STATE_NO_UPDATE:
+    case STATE_INSTALL_COMPLETE:
+    case STATE_NO_UPDATE:
       // Installation complete or not required. Report success.
       Done(S_OK);
       return;
 
-    case omaha::STATE_ERROR: {
+    case STATE_ERROR: {
       ScopedVariant error_code;
       hr = dispatch::Invoke(V_DISPATCH(&current_state), L"errorCode",
                             DISPATCH_PROPERTYGET, error_code.Receive());

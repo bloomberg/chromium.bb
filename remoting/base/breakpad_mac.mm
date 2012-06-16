@@ -7,8 +7,8 @@
 namespace remoting {
 
 void InitializeCrashReporting() {
-  // Do nothing because crash dump reporting on Mac is initialized from
-  // awakeFromNib method.
+  // TODO(alexeypa) Implement crash dump collection on Mac; see
+  // http://crbug.com/130678.
 }
 
 }  // namespace remoting

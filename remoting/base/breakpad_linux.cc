@@ -7,7 +7,7 @@
 namespace remoting {
 
 void InitializeCrashReporting() {
-  // Crash dump collection is not implemented on Linux yet.
+  // TODO(alexeypa) Implement crash dump collection on Linux; see
   // http://crbug.com/130678.
 }
 

@@ -5,7 +5,7 @@
 #ifndef REMOTING_HOST_CONSTANTS_H_
 #define REMOTING_HOST_CONSTANTS_H_
 
-#include "base/string16.h"
+#include "base/compiler_specific.h"
 
 namespace remoting {
 
@@ -27,10 +27,8 @@ enum HostExitCodes {
 };
 
 #if defined(OS_WIN)
-
 // The Omaha Appid of the host.
-extern const char16 kHostOmahaAppid[];
-
+extern const wchar_t kHostOmahaAppid[];
 #endif  // defined(OS_WIN)
 
 }  // namespace remoting

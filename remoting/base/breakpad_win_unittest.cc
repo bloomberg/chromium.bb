@@ -3,20 +3,18 @@
 // found in the LICENSE file.
 
 #include <stdio.h>
+#include <string>
 
 #include "base/compiler_specific.h"
 #include "base/environment.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string16.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "breakpad/src/client/windows/crash_generation/client_info.h"
 #include "breakpad/src/client/windows/crash_generation/crash_generation_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-namespace remoting {
 
 namespace {
 
@@ -31,8 +29,8 @@ const wchar_t kPipeNamePrefix[] = L"\\\\.\\pipe\\";
 
 class MockCrashServerCallbacks {
  public:
-  MockCrashServerCallbacks() {}
-  virtual ~MockCrashServerCallbacks() {}
+  MockCrashServerCallbacks();
+  virtual ~MockCrashServerCallbacks();
 
   // |google_breakpad::CrashGenerationServer| invokes callbacks from artitrary
   // thread pool threads. |OnClientDumpRequested| is the only one that happened
@@ -45,67 +43,100 @@ class MockCrashServerCallbacks {
   static void OnClientDumpRequestCallback(
       void* context,
       const google_breakpad::ClientInfo* client_info,
-      const string16* file_path) {
-    reinterpret_cast<MockCrashServerCallbacks*>(context)->
-        OnClientDumpRequested();
-  }
+      const std::wstring* file_path);
 };
+
+MockCrashServerCallbacks::MockCrashServerCallbacks() {
+}
+
+MockCrashServerCallbacks::~MockCrashServerCallbacks() {
+}
+
+// static
+void MockCrashServerCallbacks::OnClientDumpRequestCallback(
+    void* context,
+    const google_breakpad::ClientInfo* /* client_info */,
+    const std::wstring* /* file_path */) {
+  reinterpret_cast<MockCrashServerCallbacks*>(context)->OnClientDumpRequested();
+}
 
 }  // namespace
 
-void InitializeCrashReportingForTest(const wchar_t*);
+namespace remoting {
+
+void InitializeCrashReportingForTest(const wchar_t* pipe_name);
 
 class BreakpadWinDeathTest : public testing::Test {
  public:
-  BreakpadWinDeathTest() {}
-  virtual void SetUp() OVERRIDE {
-    scoped_ptr<base::Environment> environment(base::Environment::Create());
-    std::string pipe_name;
-    if (environment->GetVar(kPipeVariableName, &pipe_name)) {
-      // This is a child process. Initialize crash dump reporting to the crash
-      // dump server.
-      pipe_name_ = UTF8ToUTF16(pipe_name);
-      ::remoting::InitializeCrashReportingForTest(pipe_name_.c_str());
-    } else {
-      // This is the parent process. Generate a unique pipe name and setup
-      // a dummy crash dump server.
-      UUID guid = {0};
-      RPC_STATUS status = ::UuidCreate(&guid);
-      EXPECT_TRUE(status == RPC_S_OK || status == RPC_S_UUID_LOCAL_ONLY);
+  BreakpadWinDeathTest();
+  virtual ~BreakpadWinDeathTest();
 
-      pipe_name_ = kPipeNamePrefix +
-          base::StringPrintf(
-              L"%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
-              guid.Data1, guid.Data2, guid.Data3,
-              guid.Data4[0], guid.Data4[1], guid.Data4[2],
-              guid.Data4[3], guid.Data4[4], guid.Data4[5],
-              guid.Data4[6], guid.Data4[7]);
-      bool result = environment->SetVar(kPipeVariableName,
-                                        UTF16ToUTF8(pipe_name_));
-      EXPECT_TRUE(result);
-
-      // Setup a dummy crash dump server.
-      callbacks_.reset(new MockCrashServerCallbacks());
-      crash_server_.reset(
-          new google_breakpad::CrashGenerationServer(
-              pipe_name_, NULL,
-              NULL, NULL,
-              MockCrashServerCallbacks::OnClientDumpRequestCallback,
-              callbacks_.get(),
-              NULL, NULL,
-              NULL, NULL,
-              false, NULL));
-
-      result = crash_server_->Start();
-      ASSERT_TRUE(result);
-    }
-  }
+  virtual void SetUp() OVERRIDE;
 
  protected:
   scoped_ptr<google_breakpad::CrashGenerationServer> crash_server_;
   scoped_ptr<MockCrashServerCallbacks> callbacks_;
-  string16 pipe_name_;
+  std::wstring pipe_name_;
 };
+
+BreakpadWinDeathTest::BreakpadWinDeathTest() {
+}
+
+BreakpadWinDeathTest::~BreakpadWinDeathTest() {
+}
+
+void BreakpadWinDeathTest::SetUp() {
+  scoped_ptr<base::Environment> environment(base::Environment::Create());
+  std::string pipe_name;
+  if (environment->GetVar(kPipeVariableName, &pipe_name)) {
+    // This is a child process. Initialize crash dump reporting to the crash
+    // dump server.
+    pipe_name_ = UTF8ToWide(pipe_name);
+    InitializeCrashReportingForTest(pipe_name_.c_str());
+  } else {
+    // This is the parent process. Generate a unique pipe name and setup
+    // a dummy crash dump server.
+    UUID guid = {0};
+    RPC_STATUS status = UuidCreate(&guid);
+    EXPECT_TRUE(status == RPC_S_OK || status == RPC_S_UUID_LOCAL_ONLY);
+
+    pipe_name_ =
+        base::StringPrintf(
+            L"%ls%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+            kPipeNamePrefix,
+            guid.Data1,
+            guid.Data2,
+            guid.Data3,
+            guid.Data4[0],
+            guid.Data4[1],
+            guid.Data4[2],
+            guid.Data4[3],
+            guid.Data4[4],
+            guid.Data4[5],
+            guid.Data4[6],
+            guid.Data4[7]);
+    EXPECT_TRUE(environment->SetVar(kPipeVariableName,
+                                    WideToUTF8(pipe_name_)));
+
+    // Setup a dummy crash dump server.
+    callbacks_.reset(new MockCrashServerCallbacks());
+    crash_server_.reset(
+        new google_breakpad::CrashGenerationServer(
+            pipe_name_,
+            NULL,
+            NULL,
+            NULL,
+            MockCrashServerCallbacks::OnClientDumpRequestCallback,
+            callbacks_.get(),
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            false,
+            NULL));
+    ASSERT_TRUE(crash_server_->Start());
+  }
+}
 
 TEST_F(BreakpadWinDeathTest, TestAccessViolation) {
   if (callbacks_.get()) {
@@ -113,7 +144,7 @@ TEST_F(BreakpadWinDeathTest, TestAccessViolation) {
   }
 
   // Generate access violation exception.
-  ASSERT_DEATH(*reinterpret_cast<int*>(0) = 1, "");
+  ASSERT_DEATH(*reinterpret_cast<int*>(NULL) = 1, "");
 }
 
 TEST_F(BreakpadWinDeathTest, TestInvalidParameter) {
@@ -122,7 +153,7 @@ TEST_F(BreakpadWinDeathTest, TestInvalidParameter) {
   }
 
   // Cause the invalid parameter callback to be called.
-  ASSERT_EXIT(printf(NULL), ::testing::ExitedWithCode(0), "");
+  ASSERT_EXIT(printf(NULL), testing::ExitedWithCode(0), "");
 }
 
 TEST_F(BreakpadWinDeathTest, TestDebugbreak) {

@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "remoting/base/breakpad.h"
 #include "remoting/host/branding.h"
-#include "remoting/host/breakpad.h"
+#include "remoting/host/usage_stats_consent.h"
 
 // MIDL-generated declarations.
 #include "remoting/host/elevated_controller.h"
@@ -31,7 +31,6 @@ class ElevatedControllerModuleWin
 remoting::ElevatedControllerModuleWin _AtlModule;
 
 int WINAPI WinMain(HINSTANCE instance, HINSTANCE, LPSTR, int command) {
-  // Initializes the crash dump reports.
   if (remoting::IsCrashReportingEnabled()) {
     remoting::InitializeCrashReporting();
   }
