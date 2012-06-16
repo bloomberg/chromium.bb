@@ -188,7 +188,8 @@ Widget::Widget()
       native_widget_destroyed_(false),
       is_mouse_button_pressed_(false),
       is_touch_down_(false),
-      last_mouse_event_was_move_(false) {
+      last_mouse_event_was_move_(false),
+      root_layers_dirty_(false) {
 }
 
 Widget::~Widget() {
