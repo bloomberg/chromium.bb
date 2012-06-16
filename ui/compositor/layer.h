@@ -227,7 +227,12 @@ class COMPOSITOR_EXPORT Layer :
   bool layer_updated_externally() const { return layer_updated_externally_; }
 
   // WebContentLayerClient
-  virtual void paintContents(WebKit::WebCanvas*, const WebKit::WebRect& clip);
+  virtual void paintContents(WebKit::WebCanvas*,
+                             const WebKit::WebRect& clip
+#if WEBCONTENTLAYERCLIENT_HAS_OPAQUE
+                             , WebKit::WebRect& opaque
+#endif
+                             );
 
   WebKit::WebLayer web_layer() { return web_layer_; }
 
