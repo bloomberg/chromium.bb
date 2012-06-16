@@ -761,18 +761,37 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
 
   // Check constraints that may be violated by suggested relevances.
   if (!matches_.empty() &&
-      (has_suggested_relevance_ || verbatim_relevance_ >= 0) &&
-      (matches_.front().type == AutocompleteMatch::SEARCH_SUGGEST ||
-       matches_.front().type == AutocompleteMatch::NAVSUGGEST)) {
+      (has_suggested_relevance_ || verbatim_relevance_ >= 0)) {
     bool reconstruct_matches = false;
-    if (matches_.front().inline_autocomplete_offset == string16::npos &&
-        matches_.front().fill_into_edit != input_.text()) {
-      // Disregard all suggested relevances if the top result is not inlinable.
-      ApplyCalculatedRelevance();
-      reconstruct_matches = true;
-    } else if (matches_.front().relevance < CalculateRelevanceForVerbatim()) {
-      // Disregard the suggested verbatim relevance if the top score is
-      // potentially lower than other providers' non-inlinable suggestions.
+    if (matches_.front().type == AutocompleteMatch::SEARCH_SUGGEST ||
+        matches_.front().type == AutocompleteMatch::NAVSUGGEST) {
+      if (matches_.front().inline_autocomplete_offset == string16::npos &&
+          matches_.front().fill_into_edit != input_.text()) {
+        // Disregard suggested relevances if the top result is not inlinable.
+        // For example, input "foo" should not invoke a search for "bar", which
+        // would happen if the "bar" search match outranked all other matches.
+        ApplyCalculatedRelevance();
+        reconstruct_matches = true;
+      } else if (matches_.front().relevance < CalculateRelevanceForVerbatim()) {
+        // Disregard the suggested verbatim relevance if the top score is below
+        // the usual verbatim value. For example, a BarProvider may rely on
+        // SearchProvider's verbatim or inlineable matches for input "foo" to
+        // always outrank its own lowly-ranked non-inlineable "bar" match.
+        verbatim_relevance_ = -1;
+        reconstruct_matches = true;
+      }
+    }
+    if (input_.type() == AutocompleteInput::URL &&
+        matches_.front().relevance > CalculateRelevanceForVerbatim() &&
+        (matches_.front().type == AutocompleteMatch::SEARCH_SUGGEST ||
+         matches_.front().type == AutocompleteMatch::SEARCH_WHAT_YOU_TYPED)) {
+      // Disregard the suggested search and verbatim relevances if the input
+      // type is URL and the top match is a highly-ranked search suggestion.
+      // For example, prevent a search for "foo.com" from outranking another
+      // provider's navigation for "foo.com" or "foo.com/url_from_history".
+      // Reconstruction will also ensure that the new top match is inlineable.
+      ApplyCalculatedSuggestRelevance(&keyword_suggest_results_, true);
+      ApplyCalculatedSuggestRelevance(&default_suggest_results_, false);
       verbatim_relevance_ = -1;
       reconstruct_matches = true;
     }
