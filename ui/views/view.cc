@@ -1604,10 +1604,18 @@ void View::ViewHierarchyChangedImpl(bool register_accelerators,
 
   if (is_add && layer() && !layer()->parent()) {
     UpdateParentLayer();
+    Widget* widget = GetWidget();
+    if (widget)
+      widget->UpdateRootLayers();
   } else if (!is_add && child == this) {
     // Make sure the layers beloning to the subtree rooted at |child| get
     // removed from layers that do not belong in the same subtree.
     OrphanLayers();
+    if (use_acceleration_when_possible) {
+      Widget* widget = GetWidget();
+      if (widget)
+        widget->UpdateRootLayers();
+    }
   }
 
   ViewHierarchyChanged(is_add, parent, child);
@@ -1799,6 +1807,10 @@ void View::CreateLayer() {
   // in UpdateParentLayers().
   if (parent())
     parent()->ReorderLayers();
+
+  Widget* widget = GetWidget();
+  if (widget)
+    widget->UpdateRootLayers();
 }
 
 void View::UpdateParentLayers() {
@@ -1871,6 +1883,10 @@ void View::DestroyLayer() {
   UpdateChildLayerBounds(offset);
 
   SchedulePaint();
+
+  Widget* widget = GetWidget();
+  if (widget)
+    widget->UpdateRootLayers();
 }
 
 // Input -----------------------------------------------------------------------

@@ -49,6 +49,12 @@ int TestWindowDelegate::GetNonClientComponent(const gfx::Point& point) const {
   return window_component_;
 }
 
+bool TestWindowDelegate::ShouldDescendIntoChildForEventHandling(
+      Window* child,
+      const gfx::Point& location) {
+  return true;
+}
+
 bool TestWindowDelegate::OnMouseEvent(MouseEvent* event) {
   return false;
 }

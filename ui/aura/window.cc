@@ -700,6 +700,12 @@ Window* Window::GetWindowForPoint(const gfx::Point& local_point,
 
     gfx::Point point_in_child_coords(local_point);
     Window::ConvertPointToWindow(this, child, &point_in_child_coords);
+    if (for_event_handling && delegate_ &&
+        !delegate_->ShouldDescendIntoChildForEventHandling(
+            child, local_point)) {
+      continue;
+    }
+
     Window* match = child->GetWindowForPoint(point_in_child_coords,
                                              return_tightest,
                                              for_event_handling);

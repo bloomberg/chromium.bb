@@ -50,6 +50,12 @@ class AURA_EXPORT WindowDelegate {
   // window coordinates.
   virtual int GetNonClientComponent(const gfx::Point& point) const = 0;
 
+  // Returns true if event handling should descend into |child|. |location| is
+  // in terms of the Window.
+  virtual bool ShouldDescendIntoChildForEventHandling(
+      Window* child,
+      const gfx::Point& location) = 0;
+
   virtual bool OnMouseEvent(MouseEvent* event) = 0;
 
   virtual ui::TouchStatus OnTouchEvent(TouchEvent* event) = 0;

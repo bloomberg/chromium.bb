@@ -8,6 +8,7 @@
 
 #include <set>
 #include <stack>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -44,6 +45,7 @@ class Rect;
 namespace ui {
 class Accelerator;
 class Compositor;
+class Layer;
 class OSExchangeData;
 class ThemeProvider;
 enum TouchStatus;
@@ -547,6 +549,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Invokes method of same name on the NativeWidget.
   void ReorderLayers();
 
+  // Schedules an update to the root layers. The actual processing occurs when
+  // GetRootLayers() is invoked.
+  void UpdateRootLayers();
+
   // Notifies assistive technology that an accessibility event has
   // occurred on |view|, such as when the view is focused or when its
   // value changes. Pass true for |send_native_event| except for rare
@@ -648,6 +654,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   virtual ui::GestureStatus OnGestureEvent(const GestureEvent& event) OVERRIDE;
   virtual bool ExecuteCommand(int command_id) OVERRIDE;
   virtual InputMethod* GetInputMethodDirect() OVERRIDE;
+  virtual const std::vector<ui::Layer*>& GetRootLayers() OVERRIDE;
   virtual bool HasHitTestMask() const OVERRIDE;
   virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE;
   virtual Widget* AsWidget() OVERRIDE;
@@ -790,6 +797,12 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // duplicate move events even though the mouse hasn't moved.
   bool last_mouse_event_was_move_;
   gfx::Point last_mouse_event_position_;
+
+  // See description in GetRootLayers().
+  std::vector<ui::Layer*> root_layers_;
+
+  // Is |root_layers_| out of date?
+  bool root_layers_dirty_;
 
   DISALLOW_COPY_AND_ASSIGN(Widget);
 };

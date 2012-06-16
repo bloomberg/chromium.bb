@@ -33,6 +33,9 @@ class TestWindowDelegate : public WindowDelegate {
   virtual bool OnKeyEvent(KeyEvent* event) OVERRIDE;
   virtual gfx::NativeCursor GetCursor(const gfx::Point& point) OVERRIDE;
   virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE;
+  virtual bool ShouldDescendIntoChildForEventHandling(
+      Window* child,
+      const gfx::Point& location) OVERRIDE;
   virtual bool OnMouseEvent(MouseEvent* event) OVERRIDE;
   virtual ui::TouchStatus OnTouchEvent(TouchEvent* event) OVERRIDE;
   virtual ui::GestureStatus OnGestureEvent(GestureEvent* event) OVERRIDE;

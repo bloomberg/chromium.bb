@@ -741,6 +741,36 @@ int NativeWidgetAura::GetNonClientComponent(const gfx::Point& point) const {
   return delegate_->GetNonClientComponent(point);
 }
 
+bool NativeWidgetAura::ShouldDescendIntoChildForEventHandling(
+      aura::Window* child,
+      const gfx::Point& location) {
+  // Don't descend into |child| if there is a view with a Layer that contains
+  // the point and is stacked above |child|s layer.
+  typedef std::vector<ui::Layer*> Layers;
+  const Layers& root_layers(delegate_->GetRootLayers());
+  if (root_layers.empty())
+    return true;
+
+  Layers::const_iterator child_layer_iter(
+      std::find(window_->layer()->children().begin(),
+                window_->layer()->children().end(), child->layer()));
+  if (child_layer_iter == window_->layer()->children().end())
+    return true;
+
+  for (std::vector<ui::Layer*>::const_reverse_iterator i = root_layers.rbegin();
+       i != root_layers.rend(); ++i) {
+    ui::Layer* layer = *i;
+    if (layer->visible() && layer->bounds().Contains(location)) {
+      Layers::const_iterator root_layer_iter(
+          std::find(window_->layer()->children().begin(),
+                    window_->layer()->children().end(), layer));
+      if (root_layer_iter > child_layer_iter)
+        return false;
+    }
+  }
+  return true;
+}
+
 bool NativeWidgetAura::OnMouseEvent(aura::MouseEvent* event) {
   DCHECK(window_->IsVisible());
   if (event->type() == ui::ET_MOUSEWHEEL) {

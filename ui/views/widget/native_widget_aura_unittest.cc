@@ -299,5 +299,67 @@ TEST_F(NativeWidgetAuraTest, ReleaseCaptureOnTouchRelease) {
   widget->Close();
 }
 
+// Verifies views with layers are targeted for events properly.
+TEST_F(NativeWidgetAuraTest, PreferViewLayersToChildWindows) {
+  // Create two widget, |parent_root| and |child|. |child| is a child of
+  // |parent_root|.
+  views::View* parent_root = new views::View;
+  scoped_ptr<Widget> parent(new Widget());
+  Widget::InitParams parent_params(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  parent_params.ownership =
+      views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  parent->Init(parent_params);
+  parent->SetContentsView(parent_root);
+  parent->SetBounds(gfx::Rect(0, 0, 400, 400));
+  parent->Show();
+
+  scoped_ptr<Widget> child(new Widget());
+  Widget::InitParams child_params(Widget::InitParams::TYPE_CONTROL);
+  child_params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  child_params.parent = parent->GetNativeWindow();
+  child->Init(child_params);
+  child->SetBounds(gfx::Rect(0, 0, 200, 200));
+  child->Show();
+
+  // Point is over |child|.
+  EXPECT_EQ(child->GetNativeWindow(),
+            parent->GetNativeWindow()->GetEventHandlerForPoint(
+                gfx::Point(50, 50)));
+
+  // Create a view with a layer and stack it at the top (above |child|).
+  views::View* view_with_layer = new views::View;
+  parent_root->AddChildView(view_with_layer);
+  view_with_layer->SetBounds(0, 0, 50, 50);
+  view_with_layer->SetPaintToLayer(true);
+
+  // Point is over |view_with_layer|, it should get the event.
+  EXPECT_EQ(parent->GetNativeWindow(),
+            parent->GetNativeWindow()->GetEventHandlerForPoint(
+                gfx::Point(20, 20)));
+
+  // Point is over |child|, it should get the event.
+  EXPECT_EQ(child->GetNativeWindow(),
+            parent->GetNativeWindow()->GetEventHandlerForPoint(
+                gfx::Point(70, 70)));
+
+  // Move |child| to the top and make sure it gets the event.
+  child->GetNativeWindow()->layer()->parent()->StackAtTop(
+      child->GetNativeWindow()->layer());
+  EXPECT_EQ(child->GetNativeWindow(),
+            parent->GetNativeWindow()->GetEventHandlerForPoint(
+                gfx::Point(20, 20)));
+
+  delete view_with_layer;
+  view_with_layer = NULL;
+
+  EXPECT_EQ(child->GetNativeWindow(),
+            parent->GetNativeWindow()->GetEventHandlerForPoint(
+                gfx::Point(20, 20)));
+
+  // Work around for bug in NativeWidgetAura.
+  // TODO: fix bug and remove this.
+  parent->Close();
+}
+
 }  // namespace
 }  // namespace views

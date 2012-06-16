@@ -50,6 +50,11 @@ class DemoWindowDelegate : public aura::WindowDelegate {
   virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE {
     return HTCAPTION;
   }
+  virtual bool ShouldDescendIntoChildForEventHandling(
+      aura::Window* child,
+      const gfx::Point& location) OVERRIDE {
+    return true;
+  }
   virtual bool OnMouseEvent(aura::MouseEvent* event) OVERRIDE {
     return true;
   }

@@ -508,6 +508,12 @@ int WebContentsViewAura::GetNonClientComponent(const gfx::Point& point) const {
   return HTCLIENT;
 }
 
+bool WebContentsViewAura::ShouldDescendIntoChildForEventHandling(
+    aura::Window* child,
+    const gfx::Point& location) {
+  return true;
+}
+
 bool WebContentsViewAura::OnMouseEvent(aura::MouseEvent* event) {
   if (!web_contents_->GetDelegate())
     return false;

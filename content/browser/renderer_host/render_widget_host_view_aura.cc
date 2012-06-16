@@ -1133,6 +1133,12 @@ int RenderWidgetHostViewAura::GetNonClientComponent(
   return HTCLIENT;
 }
 
+bool RenderWidgetHostViewAura::ShouldDescendIntoChildForEventHandling(
+    aura::Window* child,
+    const gfx::Point& location) {
+  return true;
+}
+
 bool RenderWidgetHostViewAura::OnMouseEvent(aura::MouseEvent* event) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewAura::OnMouseEvent");
   if (mouse_locked_) {

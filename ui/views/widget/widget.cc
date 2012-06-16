@@ -32,6 +32,24 @@
 
 namespace views {
 
+namespace {
+
+// If |view| has a layer the layer is added to |layers|. Else this recurses
+// through the children. This is used to build a list of the layers created by
+// views that are direct children of the Widgets layer.
+void BuildRootLayers(View* view, std::vector<ui::Layer*>* layers) {
+  if (view->layer()) {
+    layers->push_back(view->layer());
+  } else {
+    for (View::Views::const_iterator i = view->children_begin();
+         i != view->children_end(); ++i) {
+      BuildRootLayers(*i, layers);
+    }
+  }
+}
+
+}  // namespace
+
 // This class is used to keep track of the event a Widget is processing, and
 // restore any previously active event afterwards.
 class ScopedEvent {
@@ -805,6 +823,13 @@ void Widget::ReorderLayers() {
     root_view_->ReorderChildLayers(layer);
 }
 
+void Widget::UpdateRootLayers() {
+  // Calculate the layers requires traversing the tree, and since nearly any
+  // mutation of the tree can trigger this call we delay until absolutely
+  // necessary.
+  root_layers_dirty_ = true;
+}
+
 void Widget::NotifyAccessibilityEvent(
     View* view,
     ui::AccessibilityTypes::Event event_type,
@@ -1138,6 +1163,15 @@ bool Widget::ExecuteCommand(int command_id) {
 
 InputMethod* Widget::GetInputMethodDirect() {
   return input_method_.get();
+}
+
+const std::vector<ui::Layer*>& Widget::GetRootLayers() {
+  if (root_layers_dirty_) {
+    root_layers_dirty_ = false;
+    root_layers_.clear();
+    BuildRootLayers(GetRootView(), &root_layers_);
+  }
+  return root_layers_;
 }
 
 bool Widget::HasHitTestMask() const {
