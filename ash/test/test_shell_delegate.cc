@@ -17,7 +17,9 @@
 namespace ash {
 namespace test {
 
-TestShellDelegate::TestShellDelegate() : locked_(false) {
+TestShellDelegate::TestShellDelegate()
+    : locked_(false),
+      spoken_feedback_enabled_(false) {
 }
 
 TestShellDelegate::~TestShellDelegate() {
@@ -78,6 +80,11 @@ content::BrowserContext* TestShellDelegate::GetCurrentBrowserContext() {
 }
 
 void TestShellDelegate::ToggleSpokenFeedback() {
+  spoken_feedback_enabled_ = !spoken_feedback_enabled_;
+}
+
+bool TestShellDelegate::IsSpokenFeedbackEnabled() const {
+  return spoken_feedback_enabled_;
 }
 
 app_list::AppListViewDelegate* TestShellDelegate::CreateAppListViewDelegate() {

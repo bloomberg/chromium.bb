@@ -18,7 +18,8 @@ namespace shell {
 ShellDelegateImpl::ShellDelegateImpl()
     : watcher_(NULL),
       launcher_delegate_(NULL),
-      locked_(false) {
+      locked_(false),
+      spoken_feedback_enabled_(false) {
 }
 
 ShellDelegateImpl::~ShellDelegateImpl() {
@@ -93,6 +94,11 @@ content::BrowserContext* ShellDelegateImpl::GetCurrentBrowserContext() {
 }
 
 void ShellDelegateImpl::ToggleSpokenFeedback() {
+  spoken_feedback_enabled_ = !spoken_feedback_enabled_;
+}
+
+bool ShellDelegateImpl::IsSpokenFeedbackEnabled() const {
+  return spoken_feedback_enabled_;
 }
 
 app_list::AppListViewDelegate* ShellDelegateImpl::CreateAppListViewDelegate() {

@@ -38,8 +38,8 @@
 #include "chrome/browser/chromeos/background/ash_user_wallpaper_delegate.h"
 #include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
-#include "chrome/browser/chromeos/login/webui_login_display_host.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/webui_login_display_host.h"
 #include "chrome/browser/chromeos/system/ash_system_tray_delegate.h"
 #include "chrome/browser/ui/views/keyboard_overlay_dialog_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -267,6 +267,14 @@ void ChromeShellDelegate::ToggleSpokenFeedback() {
   if (host && host->GetOobeUI())
     login_screen_web_ui = host->GetOobeUI()->web_ui();
   chromeos::accessibility::ToggleSpokenFeedback(login_screen_web_ui);
+#endif
+}
+
+bool ChromeShellDelegate::IsSpokenFeedbackEnabled() const {
+#if defined(OS_CHROMEOS)
+  return chromeos::accessibility::IsSpokenFeedbackEnabled();
+#else
+  return false;
 #endif
 }
 

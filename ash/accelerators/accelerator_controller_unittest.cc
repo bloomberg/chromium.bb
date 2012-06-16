@@ -11,6 +11,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/system/brightness/brightness_control_delegate.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/test_shell_delegate.h"
 #include "ash/volume_control_delegate.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/event.h"
@@ -533,6 +534,16 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
     EXPECT_TRUE(GetController()->Process(
         ui::Accelerator(ui::VKEY_LWIN, ui::EF_NONE)));
     EXPECT_FALSE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
+  }
+  // ToggleAppList (with spoken feedback enabled)
+  {
+    ShellDelegate* delegate = ash::Shell::GetInstance()->delegate();
+    delegate->ToggleSpokenFeedback();
+    EXPECT_FALSE(GetController()->Process(
+        ui::Accelerator(ui::VKEY_LWIN, ui::EF_NONE)));
+    delegate->ToggleSpokenFeedback();
+    EXPECT_TRUE(GetController()->Process(
+        ui::Accelerator(ui::VKEY_LWIN, ui::EF_NONE)));
   }
   // ToggleCapsLock
   {

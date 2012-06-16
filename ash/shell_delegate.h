@@ -97,6 +97,9 @@ class ASH_EXPORT ShellDelegate {
   // for accessibility.
   virtual void ToggleSpokenFeedback() = 0;
 
+  // Returns true if spoken feedback is enabled.
+  virtual bool IsSpokenFeedbackEnabled() const = 0;
+
   // Invoked to create an AppListViewDelegate. Shell takes the ownership of
   // the created delegate.
   virtual app_list::AppListViewDelegate* CreateAppListViewDelegate() = 0;

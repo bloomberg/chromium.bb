@@ -32,6 +32,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_manager.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/compositor/debug_utils.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_sequence.h"
@@ -357,6 +358,12 @@ bool AcceleratorController::PerformAction(int action,
       // this key combination is reserved for partial screenshot.
       return true;
     case TOGGLE_APP_LIST:
+      // When spoken feedback is enabled, we should neither toggle the list nor
+      // consume the key since Search+Shift is one of the shortcuts the a11y
+      // feature uses. crbug.com/132296
+      DCHECK_EQ(ui::VKEY_LWIN, accelerator.key_code());
+      if (Shell::GetInstance()->delegate()->IsSpokenFeedbackEnabled())
+        return false;
       ash::Shell::GetInstance()->ToggleAppList();
       return true;
     case TOGGLE_CAPS_LOCK:

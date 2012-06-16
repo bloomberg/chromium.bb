@@ -115,12 +115,6 @@ class DummySystemTrayDelegate : public SystemTrayDelegate {
     caps_lock_enabled_ = enabled;
   }
 
-  virtual bool IsInAccessibilityMode() const OVERRIDE {
-    return false;
-  }
-
-  virtual void SetEnableSpokenFeedback(bool enable) OVERRIDE {}
-
   virtual void ShutDown() OVERRIDE {}
 
   virtual void SignOut() OVERRIDE {

@@ -363,14 +363,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     return ime_manager->GetXKeyboard()->SetCapsLockEnabled(enabled);
   }
 
-  virtual bool IsInAccessibilityMode() const OVERRIDE {
-    return accessibility_enabled_.GetValue();
-  }
-
-  virtual void SetEnableSpokenFeedback(bool enable) OVERRIDE {
-    chromeos::accessibility::EnableSpokenFeedback(enable, NULL);
-  }
-
   virtual void ShutDown() OVERRIDE {
     DBusThreadManager::Get()->GetPowerManagerClient()->RequestShutdown();
   }

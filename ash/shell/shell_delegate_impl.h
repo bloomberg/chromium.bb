@@ -39,6 +39,7 @@ class ShellDelegateImpl : public ash::ShellDelegate {
   virtual void ShowTaskManager() OVERRIDE;
   virtual content::BrowserContext* GetCurrentBrowserContext() OVERRIDE;
   virtual void ToggleSpokenFeedback() OVERRIDE;
+  virtual bool IsSpokenFeedbackEnabled() const OVERRIDE;
   virtual app_list::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
   virtual void StartPartialScreenshot(
       ash::ScreenshotDelegate* screenshot_delegate) OVERRIDE;
@@ -56,6 +57,7 @@ class ShellDelegateImpl : public ash::ShellDelegate {
   LauncherDelegateImpl* launcher_delegate_;
 
   bool locked_;
+  bool spoken_feedback_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellDelegateImpl);
 };

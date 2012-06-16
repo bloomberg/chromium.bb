@@ -48,6 +48,7 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   virtual void ShowTaskManager() OVERRIDE;
   virtual content::BrowserContext* GetCurrentBrowserContext() OVERRIDE;
   virtual void ToggleSpokenFeedback() OVERRIDE;
+  virtual bool IsSpokenFeedbackEnabled() const OVERRIDE;
   virtual app_list::AppListViewDelegate* CreateAppListViewDelegate() OVERRIDE;
   virtual void StartPartialScreenshot(
       ash::ScreenshotDelegate* screenshot_delegate) OVERRIDE;

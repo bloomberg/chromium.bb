@@ -5,7 +5,7 @@
 #include "ash/system/tray_accessibility.h"
 
 #include "ash/shell.h"
-#include "ash/system/tray/system_tray_delegate.h"
+#include "ash/shell_delegate.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_views.h"
 #include "grit/ash_strings.h"
@@ -46,7 +46,8 @@ class DefaultAccessibilityView : public ActionableView {
  protected:
   // Overridden from ActionableView.
   virtual bool PerformAction(const views::Event& event) OVERRIDE {
-    ash::Shell::GetInstance()->tray_delegate()->SetEnableSpokenFeedback(false);
+    if (Shell::GetInstance()->delegate()->IsSpokenFeedbackEnabled())
+      Shell::GetInstance()->delegate()->ToggleSpokenFeedback();
     GetWidget()->Close();
     return true;
   }
@@ -66,11 +67,12 @@ TrayAccessibility::TrayAccessibility()
 TrayAccessibility::~TrayAccessibility() {}
 
 bool TrayAccessibility::GetInitialVisibility() {
-  return ash::Shell::GetInstance()->tray_delegate()->IsInAccessibilityMode();
+  return Shell::GetInstance()->delegate() &&
+      Shell::GetInstance()->delegate()->IsSpokenFeedbackEnabled();
 }
 
 views::View* TrayAccessibility::CreateDefaultView(user::LoginStatus status) {
-  if (!ash::Shell::GetInstance()->tray_delegate()->IsInAccessibilityMode())
+  if (!Shell::GetInstance()->delegate()->IsSpokenFeedbackEnabled())
     return NULL;
 
   DCHECK(string_id_);
