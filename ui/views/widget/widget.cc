@@ -898,8 +898,18 @@ void Widget::EnableInactiveRendering() {
 }
 
 void Widget::OnNativeWidgetActivationChanged(bool active) {
-  if (!active)
+  if (!active) {
     SaveWindowPlacement();
+
+#if defined(OS_CHROMEOS)
+    // Close any open menus.
+    // TODO(flackr|oshima): We should be doing this on !OS_MACOSX as before but
+    // we will have to fix crbug.com/130799.
+    MenuController* menu_controller = MenuController::GetActiveInstance();
+    if (menu_controller)
+      menu_controller->OnWidgetActivationChanged();
+#endif  // defined(OS_CHROMEOS)
+  }
 
   FOR_EACH_OBSERVER(Observer, observers_,
                     OnWidgetActivationChanged(this, active));
