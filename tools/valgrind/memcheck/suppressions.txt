@@ -5589,6 +5589,32 @@
    fun:_ZN14TestingProfile20CreateHistoryServiceEbb
    fun:_ZN21ShortcutsProviderTest5SetUpEv
 }
+{
+   bug_133167_a
+   Memcheck:Uninitialized
+   fun:vp8_encode_bool
+   fun:pack_inter_mode_mvs
+   fun:vp8_pack_bitstream
+   fun:encode_frame_to_data_rate
+   fun:vp8_get_compressed_data
+   fun:vp8e_encode
+   fun:vpx_codec_encode
+   fun:_ZN8remoting10EncoderVp86EncodeE13scoped_refptrINS_11CaptureDataEEbRKN4base8CallbackIFv10scoped_ptrINS_11VideoPacketEEEEE
+   fun:_ZN8remoting14ScreenRecorder8DoEncodeE13scoped_refptrINS_11CaptureDataEE
+}
+{
+   bug_133167_b
+   Memcheck:Uninitialized
+   ...
+   fun:vp8_tokenize_mb
+   fun:vp8cx_encode_inter_macroblock
+}
+{
+   bug_133167_c
+   Memcheck:Uninitialized
+   fun:vp8_dequant_idct_add_uv_block_sse2
+   fun:vp8cx_encode_inter_macroblock
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
