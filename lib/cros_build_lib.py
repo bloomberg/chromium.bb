@@ -1090,11 +1090,17 @@ def GetTrackingBranchViaGitConfig(git_repo, branch, for_checkout=True,
            r'branch\.%s\.(remote|merge)' % re.escape(branch)]
     data = RunGitCommand(git_repo, cmd).output.splitlines()
 
-    if len(data) != 2:
-      return None
-
-    # Remember, m comes before r; we want remote, then branch.
-    remote, rev = [x.split(' ', 1)[1] for x in sorted(data, reverse=True)]
+    prefix = 'branch.%s.' % (branch,)
+    data = [x.split() for x in data]
+    vals = dict((x[0][len(prefix):], x[1]) for x in data)
+    if len(vals) != 2:
+      if not allow_broken_merge_settings:
+        return None
+      elif 'remote' not in vals:
+        # Repo v1.9.4 and up occasionally invalidly leave the remote out.
+        # Only occurs for the manifest repo fortunately.
+        vals['remote'] = 'origin'
+    remote, rev = vals['remote'], vals['merge']
     # Suppress non branches; repo likes to write revisions and tags here,
     # which is wrong (git hates it, nor will it honor it).
     if rev.startswith('refs/remotes/'):
