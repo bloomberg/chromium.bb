@@ -933,16 +933,22 @@ bool MenuController::Dispatch(const base::NativeEvent& event) {
     aura::Env::GetInstance()->GetDispatcher()->Dispatch(event);
     return false;
   }
-  switch (ui::EventTypeFromNative(event)) {
-    case ui::ET_KEY_PRESSED:
-      if (!OnKeyDown(ui::KeyboardCodeFromNative(event)))
-        return false;
+  // Activates mnemonics only when it it pressed without modifiers except for
+  // caps and shift.
+  int flags = ui::EventFlagsFromNative(event) &
+      ~ui::EF_CAPS_LOCK_DOWN & ~ui::EF_SHIFT_DOWN;
+  if (flags == ui::EF_NONE) {
+    switch (ui::EventTypeFromNative(event)) {
+      case ui::ET_KEY_PRESSED:
+        if (!OnKeyDown(ui::KeyboardCodeFromNative(event)))
+          return false;
 
-      return !SelectByChar(ui::KeyboardCodeFromNative(event));
-    case ui::ET_KEY_RELEASED:
-      return true;
-    default:
-      break;
+        return !SelectByChar(ui::KeyboardCodeFromNative(event));
+      case ui::ET_KEY_RELEASED:
+        return true;
+      default:
+        break;
+    }
   }
 
   aura::Env::GetInstance()->GetDispatcher()->Dispatch(event);
