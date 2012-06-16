@@ -25,28 +25,16 @@
 namespace {
 
 int PathToIDR(const std::string& path) {
-  int idr = -1;
-  if (path == "ui/resources/folder_closed.png") {
-    idr = IDR_FOLDER_CLOSED;
-  } else if (path == "ui/resources/folder_closed_rtl.png") {
-    idr = IDR_FOLDER_CLOSED_RTL;
-  } else if (path == "ui/resources/folder_open.png") {
-    idr = IDR_FOLDER_OPEN;
-  } else if (path == "ui/resources/folder_open_rtl.png") {
-    idr = IDR_FOLDER_OPEN_RTL;
-  } else if (path == "ui/resources/throbber.png") {
-    idr = IDR_THROBBER;
-  } else {
-    // The name of the files in the grd list are prefixed with the following
-    // directory:
-    std::string key("shared/");
-    key += path;
+  // The name of the files in the grd list are prefixed with the following
+  // directory:
+  std::string key("shared/");
+  key += path;
 
-    for (size_t i = 0; i < kSharedResourcesSize; ++i) {
-      if (kSharedResources[i].name == key) {
-        idr = kSharedResources[i].value;
-        break;
-      }
+  int idr = -1;
+  for (size_t i = 0; i < kSharedResourcesSize; ++i) {
+    if (kSharedResources[i].name == key) {
+      idr = kSharedResources[i].value;
+      break;
     }
   }
 

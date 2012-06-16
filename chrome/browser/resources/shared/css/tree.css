@@ -120,11 +120,13 @@ html[dir=rtl] .tree-label {
 
 html[dir=rtl] .tree-label,
 html[dir=rtl] .tree-row[may-have-children] > .tree-label {
-  background-image: url('../../../../../ui/resources/folder_closed_rtl.png');
+  background-image:
+   url('../../../../../ui/resources/default_100_percent/folder_closed_rtl.png');
 }
 
 html[dir=rtl] .tree-item[expanded] > .tree-row > .tree-label {
-  background-image: url('../../../../../ui/resources/folder_open_rtl.png');
+  background-image:
+     url('../../../../../ui/resources/default_100_percent/folder_open_rtl.png');
 }
 
 tree[icon-visibility=hidden] .tree-label {
@@ -139,11 +141,13 @@ tree[icon-visibility=parent] .tree-row[has-children=false] > .tree-label {
 
 .tree-label,
 .tree-row[may-have-children] > .tree-label {
-  background-image: url('../../../../../ui/resources/folder_closed.png');
+  background-image:
+      url('../../../../../ui/resources/default_100_percent/folder_closed.png');
 }
 
 .tree-item[expanded] > .tree-row > .tree-label {
-  background-image: url('../../../../../ui/resources/folder_open.png');
+  background-image:
+      url('../../../../../ui/resources/default_100_percent/folder_open.png');
 }
 
 /* We need to ensure that even empty labels take up space */

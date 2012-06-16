@@ -179,7 +179,10 @@ html[dir=rtl] .pod .capslock-hint {
 
 .remove-user-button {
   -webkit-transition: width 100ms ease-in-out, background 200ms ease-in-out;
-  background: url('../../../../../ui/resources/close_bar.png') center center no-repeat;
+  background: -webkit-image-set(
+      url('../../../../../ui/resources/default_100_percent/close_bar.png') 1x,
+      url('../../../../../ui/resources/default_200_percent/close_bar.png') 2x)
+      center center no-repeat;
   background-color: rgba(255, 255, 255, 0.3);
   border-radius: 2px;
   box-shadow: none;
@@ -208,7 +211,11 @@ html[dir=rtl] .pod .capslock-hint {
 }
 
 .remove-user-button:hover {
-  background-image: url('../../../../../ui/resources/close_bar_h.png');
+  background-image: -webkit-image-set(
+      url('../../../../../ui/resources/default_100_percent/close_bar_hover.png')
+          1x,
+      url('../../../../../ui/resources/default_200_percent/close_bar_hover.png')
+          2x);
   box-shadow: none;
 }
 

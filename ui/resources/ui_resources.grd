@@ -31,10 +31,10 @@
       <include name="IDR_CONTENT_RIGHT_SIDE" file="default_100_percent/content_right_side.png" type="BINDATA" />
       <include name="IDR_DEFAULT_FAVICON" file="default_100_percent/default_favicon.png" type="BINDATA" />
       <include name="IDR_DEFAULT_LARGE_FAVICON" file="default_100_percent/default_large_favicon.png" type="BINDATA" />
-      <include name="IDR_FOLDER_CLOSED" file="folder_closed.png" type="BINDATA" />
-      <include name="IDR_FOLDER_CLOSED_RTL" file="folder_closed_rtl.png" type="BINDATA" />
-      <include name="IDR_FOLDER_OPEN" file="folder_open.png" type="BINDATA" />
-      <include name="IDR_FOLDER_OPEN_RTL" file="folder_open_rtl.png" type="BINDATA" />
+      <include name="IDR_FOLDER_CLOSED" file="default_100_percent/folder_closed.png" type="BINDATA" />
+      <include name="IDR_FOLDER_CLOSED_RTL" file="default_100_percent/folder_closed_rtl.png" type="BINDATA" />
+      <include name="IDR_FOLDER_OPEN" file="default_100_percent/folder_open.png" type="BINDATA" />
+      <include name="IDR_FOLDER_OPEN_RTL" file="default_100_percent/folder_open_rtl.png" type="BINDATA" />
       <include name="IDR_FRAME" file="default_100_percent/frame_default.png" type="BINDATA" />
       <include name="IDR_FRAME_APP_PANEL" file="default_100_percent/frame_app_panel_default.png" type="BINDATA" />
       <include name="IDR_FRAME_INACTIVE" file="default_100_percent/frame_default_inactive.png" type="BINDATA" />
@@ -284,7 +284,7 @@
         <include name="IDR_AURA_WINDOW_ZOOM_ICON" file="default_100_percent/aura/slab_zoom.png" type="BINDATA" />
 
         <include name="IDR_AURA_SWITCH_MONITOR" file="default_100_percent/ash/switch_monitor.png" type="BINDATA" />
-        <include name="IDR_OAK" file="oak.png" type="BINDATA"/>
+        <include name="IDR_OAK" file="default_100_percent/oak.png" type="BINDATA"/>
       </if>
     </includes>
   </release>

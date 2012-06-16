@@ -37,10 +37,10 @@
       <include name="IDR_BUBBLE_SHADOW_TL" file="default_100_percent/bubble_shadow_tl.png" type="BINDATA" />
       <include name="IDR_BUBBLE_SHADOW_TR" file="default_100_percent/bubble_shadow_tr.png" type="BINDATA" />
 
-      <include name="IDR_CLOSE_BAR" file="close_bar.png" type="BINDATA" />
-      <include name="IDR_CLOSE_BAR_H" file="close_bar_h.png" type="BINDATA" />
-      <include name="IDR_CLOSE_BAR_MASK" file="close_bar_mask.png" type="BINDATA" />
-      <include name="IDR_CLOSE_BAR_P" file="close_bar_p.png" type="BINDATA" />
+      <include name="IDR_CLOSE_BAR" file="default_200_percent/close_bar.png" type="BINDATA" />
+      <include name="IDR_CLOSE_BAR_H" file="default_200_percent/close_bar_hover.png" type="BINDATA" />
+      <include name="IDR_CLOSE_BAR_MASK" file="default_200_percent/close_bar_mask.png" type="BINDATA" />
+      <include name="IDR_CLOSE_BAR_P" file="default_200_percent/close_bar_pressed.png" type="BINDATA" />
       <include name="IDR_THROBBER" file="default_200_percent/throbber.png" type="BINDATA" />
 
       <!-- Remaining images only used by Aura. -->

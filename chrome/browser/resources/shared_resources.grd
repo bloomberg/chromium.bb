@@ -68,7 +68,8 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_SHARED_CSS_TRASH"
                  file="shared/css/trash.css" type="chrome_html" />
       <structure name="IDR_SHARED_CSS_TREE"
-                 file="shared/css/tree.css" type="chrome_html" />
+                 file="shared/css/tree.css" type="chrome_html"
+                 flattenhtml="true" />
       <structure name="IDR_SHARED_CSS_TREE_JS"
                  file="shared/css/tree.css.js" type="chrome_html" />
       <structure name="IDR_SHARED_CSS_WIDGETS"
