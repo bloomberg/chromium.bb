@@ -1196,6 +1196,7 @@ wl_display_add_socket(struct wl_display *display, const char *name)
 
 	size = offsetof (struct sockaddr_un, sun_path) + name_size;
 	if (bind(s->fd, (struct sockaddr *) &s->addr, size) < 0) {
+		wl_log("bind() failed with error: %m\n");
 		close(s->fd);
 		unlink(s->lock_addr);
 		close(s->fd_lock);
@@ -1204,6 +1205,7 @@ wl_display_add_socket(struct wl_display *display, const char *name)
 	}
 
 	if (listen(s->fd, 1) < 0) {
+		wl_log("listen() failed with error: %m\n");
 		unlink(s->addr.sun_path);
 		close(s->fd);
 		unlink(s->lock_addr);
