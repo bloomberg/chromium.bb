@@ -157,13 +157,6 @@ class GDataFileSystemInterface {
   // Checks for updates on the server.
   virtual void CheckForUpdates() = 0;
 
-  // Authenticates the user by fetching the auth token as
-  // needed. |callback| will be run with the error code and the auth
-  // token, on the thread this function is run.
-  //
-  // Must be called on UI thread.
-  virtual void Authenticate(const AuthStatusCallback& callback) = 0;
-
   // Finds file info by using |resource_id|. This call does not initiate
   // content refreshing.
   //
@@ -396,7 +389,6 @@ class GDataFileSystem : public GDataFileSystemInterface,
   virtual void StartUpdates() OVERRIDE;
   virtual void StopUpdates() OVERRIDE;
   virtual void CheckForUpdates() OVERRIDE;
-  virtual void Authenticate(const AuthStatusCallback& callback) OVERRIDE;
   virtual void FindEntryByResourceId(
       const std::string& resource_id,
       const FindEntryCallback& callback) OVERRIDE;

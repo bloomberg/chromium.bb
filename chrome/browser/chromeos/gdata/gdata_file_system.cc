@@ -798,13 +798,6 @@ void GDataFileSystem::StopUpdates() {
   update_timer_.Stop();
 }
 
-void GDataFileSystem::Authenticate(const AuthStatusCallback& callback) {
-  // TokenFetcher, used in DocumentsService, must be run on UI thread.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  documents_service_->Authenticate(callback);
-}
-
 void GDataFileSystem::FindEntryByResourceId(const std::string& resource_id,
                                             const FindEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
@@ -1749,7 +1742,7 @@ void GDataFileSystem::OnGetFileInfoCompleteForGetFileByPath(
     scoped_ptr<GDataFileProto> file_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DCHECK(!file_info->gdata_entry().resource_id().empty());
+  DCHECK(file_info.get() && !file_info->gdata_entry().resource_id().empty());
   GetResolvedFileByPath(file_path,
                         get_file_callback,
                         get_download_data_callback,

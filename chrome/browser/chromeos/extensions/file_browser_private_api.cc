@@ -938,7 +938,7 @@ bool AddMountFunction::RunImpl() {
       gdata::GDataSystemService* system_service =
           gdata::GDataSystemServiceFactory::GetForProfile(profile_);
       if (system_service) {
-        system_service->file_system()->Authenticate(
+        system_service->docs_service()->Authenticate(
             base::Bind(&AddMountFunction::OnGDataAuthentication,
                        this));
       }
