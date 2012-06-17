@@ -20,12 +20,12 @@ class UI_EXPORT ScreenImpl {
   virtual gfx::Point GetCursorScreenPoint() = 0;
   virtual gfx::NativeWindow GetWindowAtCursorScreenPoint() = 0;
 
-  virtual int GetNumMonitors() = 0;
-  virtual gfx::Display GetMonitorNearestWindow(
+  virtual int GetNumDisplays() = 0;
+  virtual gfx::Display GetDisplayNearestWindow(
       gfx::NativeView window) const = 0;
-  virtual gfx::Display GetMonitorNearestPoint(
+  virtual gfx::Display GetDisplayNearestPoint(
       const gfx::Point& point) const = 0;
-  virtual gfx::Display GetPrimaryMonitor() const = 0;
+  virtual gfx::Display GetPrimaryDisplay() const = 0;
 };
 
 }  // namespace gfx

@@ -47,9 +47,9 @@ class TestMonitorInfoProvider : public MonitorInfoProvider {
   void AddMonitor(const gfx::Rect& bounds, const gfx::Rect& work_area);
 
   // Overridden from WindowSizer::MonitorInfoProvider:
-  virtual gfx::Rect GetPrimaryMonitorWorkArea() const OVERRIDE;
+  virtual gfx::Rect GetPrimaryDisplayWorkArea() const OVERRIDE;
 
-  virtual gfx::Rect GetPrimaryMonitorBounds() const OVERRIDE;
+  virtual gfx::Rect GetPrimaryDisplayBounds() const OVERRIDE;
 
   virtual gfx::Rect GetMonitorWorkAreaMatching(
       const gfx::Rect& match_rect) const OVERRIDE;
@@ -74,11 +74,11 @@ void TestMonitorInfoProvider::AddMonitor(const gfx::Rect& bounds,
 }
 
 // Overridden from WindowSizer::MonitorInfoProvider:
-gfx::Rect TestMonitorInfoProvider::GetPrimaryMonitorWorkArea() const {
+gfx::Rect TestMonitorInfoProvider::GetPrimaryDisplayWorkArea() const {
   return work_areas_[0];
 }
 
-gfx::Rect TestMonitorInfoProvider::GetPrimaryMonitorBounds() const {
+gfx::Rect TestMonitorInfoProvider::GetPrimaryDisplayBounds() const {
   return monitor_bounds_[0];
 }
 

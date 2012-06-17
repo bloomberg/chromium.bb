@@ -32,7 +32,7 @@ gfx::Rect ScreenAsh::GetMaximizedWindowBounds(aura::Window* window) {
   if (window->GetRootWindow() == Shell::GetPrimaryRootWindow())
     return Shell::GetInstance()->shelf()->GetMaximizedWindowBounds(window);
   else
-    return gfx::Screen::GetMonitorNearestWindow(window).bounds();
+    return gfx::Screen::GetDisplayNearestWindow(window).bounds();
 }
 
 // static
@@ -40,7 +40,7 @@ gfx::Rect ScreenAsh::GetUnmaximizedWorkAreaBounds(aura::Window* window) {
   if (window->GetRootWindow() == Shell::GetPrimaryRootWindow())
     return Shell::GetInstance()->shelf()->GetUnmaximizedWorkAreaBounds(window);
   else
-    return gfx::Screen::GetMonitorNearestWindow(window).work_area();
+    return gfx::Screen::GetDisplayNearestWindow(window).work_area();
 }
 
 gfx::Point ScreenAsh::GetCursorScreenPoint() {
@@ -54,20 +54,20 @@ gfx::NativeWindow ScreenAsh::GetWindowAtCursorScreenPoint() {
   return Shell::GetRootWindowAt(point)->GetTopWindowContainingPoint(point);
 }
 
-int ScreenAsh::GetNumMonitors() {
-  return GetMonitorManager()->GetNumMonitors();
+int ScreenAsh::GetNumDisplays() {
+  return GetMonitorManager()->GetNumDisplays();
 }
 
-gfx::Display ScreenAsh::GetMonitorNearestWindow(gfx::NativeView window) const {
-  return GetMonitorManager()->GetMonitorNearestWindow(window);
+gfx::Display ScreenAsh::GetDisplayNearestWindow(gfx::NativeView window) const {
+  return GetMonitorManager()->GetDisplayNearestWindow(window);
 }
 
-gfx::Display ScreenAsh::GetMonitorNearestPoint(const gfx::Point& point) const {
-  return GetMonitorManager()->GetMonitorNearestPoint(point);
+gfx::Display ScreenAsh::GetDisplayNearestPoint(const gfx::Point& point) const {
+  return GetMonitorManager()->GetDisplayNearestPoint(point);
 }
 
-gfx::Display ScreenAsh::GetPrimaryMonitor() const {
-  return GetMonitorManager()->GetMonitorAt(0);
+gfx::Display ScreenAsh::GetPrimaryDisplay() const {
+  return GetMonitorManager()->GetDisplayAt(0);
 }
 
 }  // namespace ash

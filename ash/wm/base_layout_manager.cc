@@ -105,7 +105,7 @@ void BaseLayoutManager::SetChildBounds(aura::Window* child,
   if (wm::IsWindowMaximized(child))
     child_bounds = ScreenAsh::GetMaximizedWindowBounds(child);
   else if (wm::IsWindowFullscreen(child))
-    child_bounds = gfx::Screen::GetMonitorNearestWindow(child).bounds();
+    child_bounds = gfx::Screen::GetDisplayNearestWindow(child).bounds();
   SetChildBoundsDirect(child, child_bounds);
 }
 
@@ -198,7 +198,7 @@ void BaseLayoutManager::UpdateBoundsFromShowState(aura::Window* window,
       // Don't animate the full-screen window transition.
       // TODO(jamescook): Use animation here.  Be sure the lock screen works.
       SetChildBoundsDirect(
-          window, gfx::Screen::GetMonitorNearestWindow(window).bounds());
+          window, gfx::Screen::GetDisplayNearestWindow(window).bounds());
       break;
 
     default:
@@ -235,11 +235,11 @@ void BaseLayoutManager::AdjustWindowSizesForScreenChange() {
       SetChildBoundsDirect(window, ScreenAsh::GetMaximizedWindowBounds(window));
     } else if (wm::IsWindowFullscreen(window)) {
       SetChildBoundsDirect(
-          window, gfx::Screen::GetMonitorNearestWindow(window).bounds());
+          window, gfx::Screen::GetDisplayNearestWindow(window).bounds());
     } else {
       // The work area may be smaller than the full screen.
       gfx::Rect monitor_rect =
-          gfx::Screen::GetMonitorNearestWindow(window).work_area();
+          gfx::Screen::GetDisplayNearestWindow(window).work_area();
       // Put as much of the window as possible within the monitor area.
       window->SetBounds(window->bounds().AdjustToFit(monitor_rect));
     }

@@ -88,7 +88,7 @@ class PanelAndDesktopNotificationTest : public BasePanelBrowserTest {
     // The position returned by the notification balloon is based on Mac's
     // vertically inverted orientation. We need to flip it so that it can
     // be compared against the position returned by the panel.
-    gfx::Size screen_size = gfx::Screen::GetPrimaryMonitor().size();
+    gfx::Size screen_size = gfx::Screen::GetPrimaryDisplay().size();
     return screen_size.height() - balloon->GetPosition().y();
 #else
     return balloon->GetPosition().y() + balloon->GetViewSize().height();

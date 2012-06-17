@@ -160,7 +160,7 @@ gfx::Rect AppListView::GetBubbleBounds() {
       GetPreferredSize(),
       false /* try_mirroring_arrow */);
 
-  gfx::Rect monitor_rect = gfx::Screen::GetMonitorNearestPoint(
+  gfx::Rect monitor_rect = gfx::Screen::GetDisplayNearestPoint(
       anchor_rect.CenterPoint()).work_area();
   if (monitor_rect.IsEmpty() || monitor_rect.Contains(bubble_rect))
     return bubble_rect;

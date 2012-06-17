@@ -635,7 +635,7 @@ void RenderWidgetHostViewWin::InitAsPopup(
 
 void RenderWidgetHostViewWin::InitAsFullscreen(
     RenderWidgetHostView* reference_host_view) {
-  gfx::Rect pos = gfx::Screen::GetMonitorNearestWindow(
+  gfx::Rect pos = gfx::Screen::GetDisplayNearestWindow(
       reference_host_view->GetNativeView()).bounds();
   is_fullscreen_ = true;
   DoPopupOrFullscreenInit(ui::GetWindowToParentTo(true), pos, 0);

@@ -464,7 +464,7 @@ bool BalloonCollectionImpl::Layout::RefreshSystemMetrics() {
 #if defined(OS_MACOSX)
   gfx::Rect new_work_area = GetMacWorkArea();
 #else
-  gfx::Rect new_work_area = gfx::Screen::GetPrimaryMonitor().work_area();
+  gfx::Rect new_work_area = gfx::Screen::GetPrimaryDisplay().work_area();
 #endif
   if (!work_area_.Equals(new_work_area)) {
     work_area_.SetRect(new_work_area.x(), new_work_area.y(),

@@ -22,15 +22,15 @@ const int kMinVisibleWidth = 30;
 class DefaultMonitorInfoProvider : public MonitorInfoProvider {
  public:
   // Overridden from MonitorInfoProvider:
-  virtual gfx::Rect GetPrimaryMonitorWorkArea() const OVERRIDE {
-    return gfx::Screen::GetPrimaryMonitor().work_area();
+  virtual gfx::Rect GetPrimaryDisplayWorkArea() const OVERRIDE {
+    return gfx::Screen::GetPrimaryDisplay().work_area();
   }
-  virtual gfx::Rect GetPrimaryMonitorBounds() const OVERRIDE {
-    return gfx::Screen::GetPrimaryMonitor().bounds();
+  virtual gfx::Rect GetPrimaryDisplayBounds() const OVERRIDE {
+    return gfx::Screen::GetPrimaryDisplay().bounds();
   }
   virtual gfx::Rect GetMonitorWorkAreaMatching(
       const gfx::Rect& match_rect) const OVERRIDE {
-    return gfx::Screen::GetMonitorMatching(match_rect).work_area();
+    return gfx::Screen::GetDisplayMatching(match_rect).work_area();
   }
 };
 
@@ -213,7 +213,7 @@ void WindowSizer::GetDefaultWindowBounds(gfx::Rect* default_bounds) const {
   DCHECK(default_bounds);
   DCHECK(monitor_info_provider_.get());
 
-  gfx::Rect work_area = monitor_info_provider_->GetPrimaryMonitorWorkArea();
+  gfx::Rect work_area = monitor_info_provider_->GetPrimaryDisplayWorkArea();
 
   // The default size is either some reasonably wide width, or if the work
   // area is narrower, then the work area width less some aesthetic padding.
@@ -222,7 +222,7 @@ void WindowSizer::GetDefaultWindowBounds(gfx::Rect* default_bounds) const {
 
   // For wider aspect ratio displays at higher resolutions, we might size the
   // window narrower to allow two windows to easily be placed side-by-side.
-  gfx::Rect screen_size = monitor_info_provider_->GetPrimaryMonitorBounds();
+  gfx::Rect screen_size = monitor_info_provider_->GetPrimaryDisplayBounds();
   double width_to_height =
     static_cast<double>(screen_size.width()) / screen_size.height();
 

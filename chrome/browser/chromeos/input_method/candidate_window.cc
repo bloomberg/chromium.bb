@@ -1215,7 +1215,7 @@ void CandidateWindowView::ResizeAndMoveParentFrame() {
   const int horizontal_offset = GetHorizontalOffset();
 
   gfx::Rect old_bounds = parent_frame_->GetClientAreaScreenBounds();
-  gfx::Rect screen_bounds = gfx::Screen::GetMonitorNearestWindow(
+  gfx::Rect screen_bounds = gfx::Screen::GetDisplayNearestWindow(
       parent_frame_->GetNativeView()).work_area();
   // The size.
   gfx::Rect frame_bounds = old_bounds;
@@ -1510,7 +1510,7 @@ void InfolistWindowView::UpdateCandidates(
 void InfolistWindowView::ResizeAndMoveParentFrame() {
   int x, y;
   gfx::Rect old_bounds = parent_frame_->GetClientAreaScreenBounds();
-  gfx::Rect screen_bounds = gfx::Screen::GetMonitorNearestWindow(
+  gfx::Rect screen_bounds = gfx::Screen::GetDisplayNearestWindow(
       parent_frame_->GetNativeView()).work_area();
   // The size.
   gfx::Rect frame_bounds = old_bounds;

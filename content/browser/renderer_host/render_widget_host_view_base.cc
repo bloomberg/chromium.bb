@@ -98,13 +98,13 @@ void RenderWidgetHostViewBase::SetBrowserAccessibilityManager(
 }
 
 void RenderWidgetHostViewBase::UpdateScreenInfo() {
-  gfx::Display monitor = gfx::Screen::GetMonitorNearestPoint(
+  gfx::Display display = gfx::Screen::GetDisplayNearestPoint(
       GetViewBounds().origin());
-  if (current_display_area_ == monitor.bounds() &&
-      current_device_scale_factor_ == monitor.device_scale_factor())
+  if (current_display_area_ == display.bounds() &&
+      current_device_scale_factor_ == display.device_scale_factor())
     return;
-  current_display_area_ = monitor.bounds();
-  current_device_scale_factor_ = monitor.device_scale_factor();
+  current_display_area_ = display.bounds();
+  current_device_scale_factor_ = display.device_scale_factor();
   if (GetRenderWidgetHost()) {
     RenderWidgetHostImpl* impl =
         RenderWidgetHostImpl::From(GetRenderWidgetHost());

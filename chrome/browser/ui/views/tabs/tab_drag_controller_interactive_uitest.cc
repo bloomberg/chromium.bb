@@ -137,7 +137,7 @@ Browser* TabDragControllerTest::CreateAnotherWindowBrowserAndRelayout() {
   ResetIDs(browser2->tab_strip_model(), 100);
 
   // Resize the two windows so they're right next to each other.
-  gfx::Rect work_area = gfx::Screen::GetMonitorNearestWindow(
+  gfx::Rect work_area = gfx::Screen::GetDisplayNearestWindow(
       browser()->window()->GetNativeWindow()).work_area();
   gfx::Size half_size =
       gfx::Size(work_area.width() / 3 - 10, work_area.height() / 2 - 10);

@@ -68,16 +68,16 @@ class AURA_EXPORT MonitorManager {
       const gfx::Display& display) = 0;
 
   // Returns the display at |index|. The display at 0 is considered "primary".
-  virtual const gfx::Display& GetMonitorAt(size_t index) = 0;
+  virtual const gfx::Display& GetDisplayAt(size_t index) = 0;
 
-  virtual size_t GetNumMonitors() const = 0;
+  virtual size_t GetNumDisplays() const = 0;
 
   // Returns the display object nearest given |window|.
-  virtual const gfx::Display& GetMonitorNearestWindow(
+  virtual const gfx::Display& GetDisplayNearestWindow(
       const Window* window) const = 0;
 
   // Returns the monitor object nearest given |pint|.
-  virtual const gfx::Display& GetMonitorNearestPoint(
+  virtual const gfx::Display& GetDisplayNearestPoint(
       const gfx::Point& point) const = 0;
 
  protected:

@@ -19,10 +19,10 @@ class MonitorInfoProvider {
   virtual ~MonitorInfoProvider() {}
 
   // Returns the bounds of the work area of the primary monitor.
-  virtual gfx::Rect GetPrimaryMonitorWorkArea() const = 0;
+  virtual gfx::Rect GetPrimaryDisplayWorkArea() const = 0;
 
   // Returns the bounds of the primary monitor.
-  virtual gfx::Rect GetPrimaryMonitorBounds() const = 0;
+  virtual gfx::Rect GetPrimaryDisplayBounds() const = 0;
 
   // Returns the bounds of the work area of the monitor that most closely
   // intersects the provided bounds.

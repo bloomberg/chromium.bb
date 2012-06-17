@@ -103,7 +103,7 @@ gfx::NativeWindow Screen::GetWindowAtCursorScreenPoint() {
 }
 
 // static
-gfx::Display Screen::GetMonitorNearestWindow(gfx::NativeView view) {
+gfx::Display Screen::GetDisplayNearestWindow(gfx::NativeView view) {
   gfx::Rect bounds = GetMonitorAreaNearestWindow(view);
   // Do not use the _NET_WORKAREA here, this is supposed to be an area on a
   // specific monitor, and _NET_WORKAREA is a hint from the WM that generally
@@ -119,7 +119,7 @@ gfx::Display Screen::GetMonitorNearestWindow(gfx::NativeView view) {
 }
 
 // static
-gfx::Display Screen::GetMonitorNearestPoint(const gfx::Point& point) {
+gfx::Display Screen::GetDisplayNearestPoint(const gfx::Point& point) {
   GdkScreen* screen = gdk_screen_get_default();
   gint monitor = gdk_screen_get_monitor_at_point(screen, point.x(), point.y());
   GdkRectangle bounds;
@@ -129,7 +129,7 @@ gfx::Display Screen::GetMonitorNearestPoint(const gfx::Point& point) {
 }
 
 // static
-gfx::Display Screen::GetPrimaryMonitor() {
+gfx::Display Screen::GetPrimaryDisplay() {
   gfx::Rect bounds = NativePrimaryMonitorBounds();
   // TODO(oshima): Implement ID and Observer.
   gfx::Display display(0, bounds);
@@ -144,13 +144,13 @@ gfx::Display Screen::GetPrimaryMonitor() {
 }
 
 // static
-gfx::Display Screen::GetMonitorMatching(const gfx::Rect& match_rect) {
+gfx::Display Screen::GetDisplayMatching(const gfx::Rect& match_rect) {
   // TODO(thestig) Implement multi-monitor support.
-  return GetPrimaryMonitor();
+  return GetPrimaryDisplay();
 }
 
 // static
-int Screen::GetNumMonitors() {
+int Screen::GetNumDisplays() {
   // This query is kinda bogus for Linux -- do we want number of X screens?
   // The number of monitors Xinerama has?  We'll just use whatever GDK uses.
   GdkScreen* screen = gdk_screen_get_default();

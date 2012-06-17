@@ -132,7 +132,7 @@ ExtensionHost* ExtensionDialog::CreateExtensionHost(const GURL& url,
 void ExtensionDialog::InitWindowFullscreen() {
   aura::RootWindow* root_window = ash::Shell::GetPrimaryRootWindow();
   gfx::Rect screen_rect =
-      gfx::Screen::GetMonitorNearestWindow(root_window).bounds();
+      gfx::Screen::GetDisplayNearestWindow(root_window).bounds();
 
   // We want to be the fullscreen topmost child of the root window.
   window_ = new views::Widget;

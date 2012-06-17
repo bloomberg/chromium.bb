@@ -156,7 +156,7 @@ bool ShelfLayoutManager::IsVisible() const {
 gfx::Rect ShelfLayoutManager::GetMaximizedWindowBounds(
     aura::Window* window) {
   // TODO: needs to be multi-mon aware.
-  gfx::Rect bounds(gfx::Screen::GetMonitorNearestWindow(window).bounds());
+  gfx::Rect bounds(gfx::Screen::GetDisplayNearestWindow(window).bounds());
   if (auto_hide_behavior_ == SHELF_AUTO_HIDE_BEHAVIOR_DEFAULT ||
       auto_hide_behavior_ == SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS) {
     AdjustBoundsBasedOnAlignment(kAutoHideSize, &bounds);
@@ -169,7 +169,7 @@ gfx::Rect ShelfLayoutManager::GetMaximizedWindowBounds(
 gfx::Rect ShelfLayoutManager::GetUnmaximizedWorkAreaBounds(
     aura::Window* window) {
   // TODO: needs to be multi-mon aware.
-  gfx::Rect bounds(gfx::Screen::GetMonitorNearestWindow(window).bounds());
+  gfx::Rect bounds(gfx::Screen::GetDisplayNearestWindow(window).bounds());
   int size;
   if (auto_hide_behavior_ == SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS) {
     size = kAutoHideSize;
@@ -209,7 +209,7 @@ gfx::Rect ShelfLayoutManager::GetIdealBounds() {
   // TODO: this is wrong. Figure out what monitor shelf is on and everything
   // should be based on it.
   gfx::Rect bounds(
-      gfx::Screen::GetMonitorNearestWindow(status_->GetNativeView()).bounds());
+      gfx::Screen::GetDisplayNearestWindow(status_->GetNativeView()).bounds());
   int width = 0, height = 0;
   GetShelfSize(&width, &height);
   switch (alignment_) {

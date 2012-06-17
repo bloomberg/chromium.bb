@@ -335,11 +335,11 @@ PrefService* MetricsLog::GetPrefService() {
 }
 
 gfx::Size MetricsLog::GetScreenSize() const {
-  return gfx::Screen::GetPrimaryMonitor().GetSizeInPixel();
+  return gfx::Screen::GetPrimaryDisplay().GetSizeInPixel();
 }
 
 int MetricsLog::GetScreenCount() const {
-  return gfx::Screen::GetNumMonitors();
+  return gfx::Screen::GetNumDisplays();
 }
 
 void MetricsLog::GetFieldTrialIds(

@@ -449,7 +449,7 @@ TEST_F(WindowManagerTest, MAYBE_TransformActivate) {
   gfx::Size size = root_window->bounds().size();
   EXPECT_EQ(
       gfx::Rect(size).ToString(),
-      gfx::Screen::GetMonitorNearestPoint(gfx::Point()).bounds().ToString());
+      gfx::Screen::GetDisplayNearestPoint(gfx::Point()).bounds().ToString());
 
   // Rotate it clock-wise 90 degrees.
   ui::Transform transform;

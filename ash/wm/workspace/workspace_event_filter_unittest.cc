@@ -7,8 +7,8 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
-#include "ash/wm/workspace_controller.h"
 #include "ash/wm/workspace/workspace_manager.h"
+#include "ash/wm/workspace_controller.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
@@ -52,7 +52,7 @@ TEST_F(WorkspaceEventFilterTest, DoubleClickSingleAxisResizeEdge) {
   scoped_ptr<aura::Window> window(CreateTestWindow(&wd, restored_bounds));
 
   gfx::Rect work_area =
-      gfx::Screen::GetMonitorNearestWindow(window.get()).work_area();
+      gfx::Screen::GetDisplayNearestWindow(window.get()).work_area();
 
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                        window.get());

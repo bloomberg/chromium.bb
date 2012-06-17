@@ -21,7 +21,7 @@ namespace {
 
 // TODO(erg): This method is a temporary hack, until we can reliably extract
 // location data out of XRandR.
-gfx::Size GetPrimaryMonitorSize() {
+gfx::Size GetPrimaryDisplaySize() {
   ::Display* display = ui::GetXDisplay();
   ::Screen* screen = DefaultScreenOfDisplay(display);
   int width = WidthOfScreen(screen);
@@ -38,12 +38,12 @@ class DesktopScreenX11 : public gfx::ScreenImpl {
   // Overridden from gfx::ScreenImpl:
   virtual gfx::Point GetCursorScreenPoint() OVERRIDE;
   virtual gfx::NativeWindow GetWindowAtCursorScreenPoint() OVERRIDE;
-  virtual int GetNumMonitors() OVERRIDE;
-  virtual gfx::Display GetMonitorNearestWindow(
+  virtual int GetNumDisplays() OVERRIDE;
+  virtual gfx::Display GetDisplayNearestWindow(
       gfx::NativeView window) const OVERRIDE;
-  virtual gfx::Display GetMonitorNearestPoint(
+  virtual gfx::Display GetDisplayNearestPoint(
       const gfx::Point& point) const OVERRIDE;
-  virtual gfx::Display GetPrimaryMonitor() const OVERRIDE;
+  virtual gfx::Display GetPrimaryDisplay() const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DesktopScreenX11);
@@ -86,27 +86,27 @@ gfx::NativeWindow DesktopScreenX11::GetWindowAtCursorScreenPoint() {
   return NULL;
 }
 
-int DesktopScreenX11::GetNumMonitors() {
+int DesktopScreenX11::GetNumDisplays() {
   // TODO(erg): Figure this out with oshima or piman because I have no clue
   // about the XRandR implications here.
   return 1;
 }
 
-gfx::Display DesktopScreenX11::GetMonitorNearestWindow(
+gfx::Display DesktopScreenX11::GetDisplayNearestWindow(
     gfx::NativeView window) const {
   // TODO(erg): Do the right thing once we know what that is.
-  return gfx::Display(0, gfx::Rect(GetPrimaryMonitorSize()));
+  return gfx::Display(0, gfx::Rect(GetPrimaryDisplaySize()));
 }
 
-gfx::Display DesktopScreenX11::GetMonitorNearestPoint(
+gfx::Display DesktopScreenX11::GetDisplayNearestPoint(
     const gfx::Point& point) const {
   // TODO(erg): Do the right thing once we know what that is.
-  return gfx::Display(0, gfx::Rect(GetPrimaryMonitorSize()));
+  return gfx::Display(0, gfx::Rect(GetPrimaryDisplaySize()));
 }
 
-gfx::Display DesktopScreenX11::GetPrimaryMonitor() const {
+gfx::Display DesktopScreenX11::GetPrimaryDisplay() const {
   // TODO(erg): Do the right thing once we know what that is.
-  return gfx::Display(0, gfx::Rect(GetPrimaryMonitorSize()));
+  return gfx::Display(0, gfx::Rect(GetPrimaryDisplaySize()));
 }
 
 }  // namespace

@@ -89,16 +89,16 @@ gfx::Point Screen::GetCursorScreenPoint() {
 }
 
 // static
-gfx::Display Screen::GetMonitorNearestWindow(gfx::NativeView view) {
+gfx::Display Screen::GetDisplayNearestWindow(gfx::NativeView view) {
   NSWindow* window = [view window];
   if (!window)
-    return GetPrimaryMonitor();
+    return GetPrimaryDisplay();
   NSScreen* match_screen = [window screen];
   return GetDisplayForScreen(match_screen, false /* may not be primary */);
 }
 
 // static
-gfx::Display Screen::GetPrimaryMonitor() {
+gfx::Display Screen::GetPrimaryDisplay() {
   // Primary display is defined as the display with the menubar,
   // which is always at index 0.
   NSScreen* primary = [[NSScreen screens] objectAtIndex:0];
@@ -107,13 +107,13 @@ gfx::Display Screen::GetPrimaryMonitor() {
 }
 
 // static
-gfx::Display Screen::GetMonitorMatching(const gfx::Rect& match_rect) {
+gfx::Display Screen::GetDisplayMatching(const gfx::Rect& match_rect) {
   NSScreen* match_screen = GetMatchingScreen(match_rect);
   return GetDisplayForScreen(match_screen, false /* may not be primary */);
 }
 
 // static
-int Screen::GetNumMonitors() {
+int Screen::GetNumDisplays() {
   // Don't just return the number of online displays.  It includes displays
   // that mirror other displays, which are not desired in the count.  It's
   // tempting to use the count returned by CGGetActiveDisplayList, but active
@@ -148,7 +148,7 @@ int Screen::GetNumMonitors() {
 }
 
 // static
-gfx::Display Screen::GetMonitorNearestPoint(const gfx::Point& point) {
+gfx::Display Screen::GetDisplayNearestPoint(const gfx::Point& point) {
   NSPoint ns_point = NSPointFromCGPoint(point.ToCGPoint());
 
   NSArray* screens = [NSScreen screens];

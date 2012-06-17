@@ -581,7 +581,7 @@ gfx::Point CalibrateTouchCoordinates(
   // testing with. I have the feeling that the DPI resolution of the bezel is
   // less then the dpi resolution over the visible part - which would explain
   // why the small value (50) is so wide compared to the entire area.
-  gfx::Rect bounds = gfx::Screen::GetPrimaryMonitor().bounds_in_pixel();
+  gfx::Rect bounds = gfx::Screen::GetPrimaryDisplay().bounds_in_pixel();
   const int kLeftBorder = 50;
   const int kRightBorder = 50;
   const int kBottomBorder = 50;

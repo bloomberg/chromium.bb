@@ -42,28 +42,28 @@ NativeWindow Screen::GetWindowAtCursorScreenPoint() {
 }
 
 // static
-int Screen::GetNumMonitors() {
-  return g_instance_->GetNumMonitors();
+int Screen::GetNumDisplays() {
+  return g_instance_->GetNumDisplays();
 }
 
 // static
-Display Screen::GetMonitorNearestWindow(NativeView window) {
-  return g_instance_->GetMonitorNearestWindow(window);
+Display Screen::GetDisplayNearestWindow(NativeView window) {
+  return g_instance_->GetDisplayNearestWindow(window);
 }
 
 // static
-Display Screen::GetMonitorNearestPoint(const Point& point) {
-  return g_instance_->GetMonitorNearestPoint(point);
+Display Screen::GetDisplayNearestPoint(const Point& point) {
+  return g_instance_->GetDisplayNearestPoint(point);
 }
 
 // static
-Display Screen::GetPrimaryMonitor() {
-  return g_instance_->GetPrimaryMonitor();
+Display Screen::GetPrimaryDisplay() {
+  return g_instance_->GetPrimaryDisplay();
 }
 
 // static
-Display Screen::GetMonitorMatching(const gfx::Rect& match_rect) {
-  return g_instance_->GetMonitorNearestPoint(match_rect.CenterPoint());
+Display Screen::GetDisplayMatching(const gfx::Rect& match_rect) {
+  return g_instance_->GetDisplayNearestPoint(match_rect.CenterPoint());
 }
 
 }  // namespace gfx

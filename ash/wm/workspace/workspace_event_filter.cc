@@ -128,7 +128,7 @@ void WorkspaceEventFilter::HandleVerticalResizeDoubleClick(
     int component =
         target->delegate()->GetNonClientComponent(event->location());
     gfx::Rect work_area =
-        gfx::Screen::GetMonitorNearestWindow(target).work_area();
+        gfx::Screen::GetDisplayNearestWindow(target).work_area();
     const gfx::Rect* restore_bounds =
         target->GetProperty(aura::client::kRestoreBoundsKey);
     if (component == HTBOTTOM || component == HTTOP) {

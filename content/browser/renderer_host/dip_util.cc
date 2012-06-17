@@ -15,7 +15,7 @@ namespace content {
 
 float GetDIPScaleFactor(const RenderWidgetHostView* view) {
   if (gfx::Screen::IsDIPEnabled()) {
-    gfx::Display display = gfx::Screen::GetMonitorNearestWindow(
+    gfx::Display display = gfx::Screen::GetDisplayNearestWindow(
         view ? view->GetNativeView() : NULL);
     return display.device_scale_factor();
   }

@@ -61,7 +61,7 @@ gfx::Font TooltipManager::GetDefaultFont() {
 // static
 int TooltipManager::GetMaxWidth(int x, int y) {
   gfx::Rect monitor_bounds =
-      gfx::Screen::GetMonitorNearestPoint(gfx::Point(x, y)).bounds();
+      gfx::Screen::GetDisplayNearestPoint(gfx::Point(x, y)).bounds();
   // Allow the tooltip to be almost as wide as the screen.
   // Otherwise, we would truncate important text, since we're not word-wrapping
   // the text onto multiple lines.

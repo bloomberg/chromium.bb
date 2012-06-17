@@ -32,12 +32,12 @@ class ASH_EXPORT ScreenAsh : public gfx::ScreenImpl {
   virtual gfx::Point GetCursorScreenPoint() OVERRIDE;
   virtual gfx::NativeWindow GetWindowAtCursorScreenPoint() OVERRIDE;
 
-  virtual int GetNumMonitors() OVERRIDE;
-  virtual gfx::Display GetMonitorNearestWindow(
+  virtual int GetNumDisplays() OVERRIDE;
+  virtual gfx::Display GetDisplayNearestWindow(
       gfx::NativeView view) const OVERRIDE;
-  virtual gfx::Display GetMonitorNearestPoint(
+  virtual gfx::Display GetDisplayNearestPoint(
       const gfx::Point& point) const OVERRIDE;
-  virtual gfx::Display GetPrimaryMonitor() const OVERRIDE;
+  virtual gfx::Display GetPrimaryDisplay() const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScreenAsh);

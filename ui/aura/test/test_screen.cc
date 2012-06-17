@@ -28,20 +28,20 @@ gfx::NativeWindow TestScreen::GetWindowAtCursorScreenPoint() {
   return root_window_->GetTopWindowContainingPoint(point);
 }
 
-int TestScreen::GetNumMonitors() {
+int TestScreen::GetNumDisplays() {
   return 1;
 }
 
-gfx::Display TestScreen::GetMonitorNearestWindow(
+gfx::Display TestScreen::GetDisplayNearestWindow(
     gfx::NativeWindow window) const {
   return GetMonitor();
 }
 
-gfx::Display TestScreen::GetMonitorNearestPoint(const gfx::Point& point) const {
+gfx::Display TestScreen::GetDisplayNearestPoint(const gfx::Point& point) const {
   return GetMonitor();
 }
 
-gfx::Display TestScreen::GetPrimaryMonitor() const {
+gfx::Display TestScreen::GetPrimaryDisplay() const {
   return GetMonitor();
 }
 

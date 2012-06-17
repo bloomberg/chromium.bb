@@ -100,7 +100,7 @@ void WindowSizer::GetDefaultWindowBounds(gfx::Rect* default_bounds) const {
   DCHECK(default_bounds);
   DCHECK(monitor_info_provider_.get());
 
-  gfx::Rect work_area = monitor_info_provider_->GetPrimaryMonitorWorkArea();
+  gfx::Rect work_area = monitor_info_provider_->GetPrimaryDisplayWorkArea();
 
   DCHECK_EQ(kDesktopBorderSize, ash::Shell::GetInstance()->GetGridSize());
 

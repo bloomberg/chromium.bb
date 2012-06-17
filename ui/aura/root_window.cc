@@ -79,7 +79,7 @@ void GetEventFiltersToNotify(Window* target, EventFilters* filters) {
 
 float GetDeviceScaleFactorFromMonitor(const aura::Window* window) {
   MonitorManager* monitor_manager = Env::GetInstance()->monitor_manager();
-  return monitor_manager->GetMonitorNearestWindow(window).device_scale_factor();
+  return monitor_manager->GetDisplayNearestWindow(window).device_scale_factor();
 }
 
 Window* ConsumerToWindow(ui::GestureConsumer* consumer) {

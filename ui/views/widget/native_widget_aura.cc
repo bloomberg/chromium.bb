@@ -356,7 +356,7 @@ void NativeWidgetAura::CenterWindow(const gfx::Size& size) {
   // the parent. We assume the root window represents the visible
   // rect of a single screen.
   gfx::Rect work_area =
-      gfx::Screen::GetMonitorNearestWindow(window_).work_area();
+      gfx::Screen::GetDisplayNearestWindow(window_).work_area();
   parent_bounds = parent_bounds.Intersect(work_area);
 
   // If |window_|'s transient parent's bounds are big enough to fit it, then we
@@ -642,7 +642,7 @@ void NativeWidgetAura::FocusNativeView(gfx::NativeView native_view) {
 }
 
 gfx::Rect NativeWidgetAura::GetWorkAreaBoundsInScreen() const {
-  return gfx::Screen::GetMonitorNearestWindow(GetNativeView()).work_area();
+  return gfx::Screen::GetDisplayNearestWindow(GetNativeView()).work_area();
 }
 
 void NativeWidgetAura::SetInactiveRenderingDisabled(bool value) {

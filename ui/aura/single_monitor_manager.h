@@ -30,13 +30,13 @@ class AURA_EXPORT SingleMonitorManager : public MonitorManager,
       const std::vector<gfx::Display>& display) OVERRIDE;
   virtual RootWindow* CreateRootWindowForMonitor(
       const gfx::Display& display) OVERRIDE;
-  virtual const gfx::Display& GetMonitorAt(size_t index) OVERRIDE;
+  virtual const gfx::Display& GetDisplayAt(size_t index) OVERRIDE;
 
-  virtual size_t GetNumMonitors() const OVERRIDE;
+  virtual size_t GetNumDisplays() const OVERRIDE;
 
-  virtual const gfx::Display& GetMonitorNearestWindow(
+  virtual const gfx::Display& GetDisplayNearestWindow(
       const Window* window) const OVERRIDE;
-  virtual const gfx::Display& GetMonitorNearestPoint(
+  virtual const gfx::Display& GetDisplayNearestPoint(
       const gfx::Point& point) const OVERRIDE;
 
   // WindowObserver overrides:

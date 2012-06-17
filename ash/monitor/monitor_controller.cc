@@ -46,7 +46,7 @@ MonitorController::~MonitorController() {
 void MonitorController::InitPrimaryDisplay() {
   aura::MonitorManager* monitor_manager =
       aura::Env::GetInstance()->monitor_manager();
-  const gfx::Display& display = monitor_manager->GetMonitorAt(0);
+  const gfx::Display& display = monitor_manager->GetDisplayAt(0);
   DCHECK_EQ(0, display.id());
   aura::RootWindow* root =
       monitor_manager->CreateRootWindowForMonitor(display);
@@ -61,8 +61,8 @@ void MonitorController::InitPrimaryDisplay() {
 void MonitorController::InitSecondaryDisplays() {
   aura::MonitorManager* monitor_manager =
       aura::Env::GetInstance()->monitor_manager();
-  for (size_t i = 1; i < monitor_manager->GetNumMonitors(); ++i) {
-    const gfx::Display& display = monitor_manager->GetMonitorAt(i);
+  for (size_t i = 1; i < monitor_manager->GetNumDisplays(); ++i) {
+    const gfx::Display& display = monitor_manager->GetDisplayAt(i);
     aura::RootWindow* root =
         monitor_manager->CreateRootWindowForMonitor(display);
     root_windows_[display.id()] = root;

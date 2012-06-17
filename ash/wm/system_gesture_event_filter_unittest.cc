@@ -14,10 +14,10 @@
 #include "ash/volume_control_delegate.h"
 #include "ash/wm/window_util.h"
 #include "base/time.h"
-#include "ui/gfx/screen.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_windows.h"
+#include "ui/gfx/screen.h"
 
 namespace ash {
 namespace test {
@@ -134,7 +134,7 @@ TEST_F(SystemGestureEventFilterTest, TapOutsideRootWindow) {
 TEST_F(SystemGestureEventFilterTest, DeviceControl) {
   aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
 
-  gfx::Rect screen = gfx::Screen::GetPrimaryMonitor().bounds();
+  gfx::Rect screen = gfx::Screen::GetPrimaryDisplay().bounds();
   int ypos_half = screen.height() / 2;
 
   ash::AcceleratorController* accelerator =
@@ -244,7 +244,7 @@ TEST_F(SystemGestureEventFilterTest, DeviceControl) {
 TEST_F(SystemGestureEventFilterTest, ApplicationControl) {
   aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
 
-  gfx::Rect screen = gfx::Screen::GetPrimaryMonitor().bounds();
+  gfx::Rect screen = gfx::Screen::GetPrimaryDisplay().bounds();
   int ypos_half = screen.height() / 2;
 
   aura::test::TestWindowDelegate delegate;

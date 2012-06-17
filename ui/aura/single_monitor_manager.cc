@@ -54,20 +54,20 @@ RootWindow* SingleMonitorManager::CreateRootWindowForMonitor(
   return root_window_;
 }
 
-const gfx::Display& SingleMonitorManager::GetMonitorAt(size_t index) {
+const gfx::Display& SingleMonitorManager::GetDisplayAt(size_t index) {
   return display_;
 }
 
-size_t SingleMonitorManager::GetNumMonitors() const {
+size_t SingleMonitorManager::GetNumDisplays() const {
   return 1;
 }
 
-const gfx::Display& SingleMonitorManager::GetMonitorNearestWindow(
+const gfx::Display& SingleMonitorManager::GetDisplayNearestWindow(
     const Window* window) const {
   return display_;
 }
 
-const gfx::Display& SingleMonitorManager::GetMonitorNearestPoint(
+const gfx::Display& SingleMonitorManager::GetDisplayNearestPoint(
     const gfx::Point& point) const {
   return display_;
 }

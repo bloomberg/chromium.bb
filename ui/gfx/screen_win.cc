@@ -48,12 +48,12 @@ gfx::NativeWindow Screen::GetWindowAtCursorScreenPoint() {
 }
 
 // static
-int Screen::GetNumMonitors() {
+int Screen::GetNumDisplays() {
   return GetSystemMetrics(SM_CMONITORS);
 }
 
 // static
-gfx::Display Screen::GetMonitorNearestWindow(gfx::NativeView window) {
+gfx::Display Screen::GetDisplayNearestWindow(gfx::NativeView window) {
   MONITORINFO monitor_info;
   monitor_info.cbSize = sizeof(monitor_info);
   GetMonitorInfo(MonitorFromWindow(window, MONITOR_DEFAULTTONEAREST),
@@ -62,7 +62,7 @@ gfx::Display Screen::GetMonitorNearestWindow(gfx::NativeView window) {
 }
 
 // static
-gfx::Display Screen::GetMonitorNearestPoint(const gfx::Point& point) {
+gfx::Display Screen::GetDisplayNearestPoint(const gfx::Point& point) {
   POINT initial_loc = { point.x(), point.y() };
   HMONITOR monitor = MonitorFromPoint(initial_loc, MONITOR_DEFAULTTONEAREST);
   MONITORINFO mi = {0};
@@ -73,7 +73,7 @@ gfx::Display Screen::GetMonitorNearestPoint(const gfx::Point& point) {
 }
 
 // static
-gfx::Display Screen::GetPrimaryMonitor() {
+gfx::Display Screen::GetPrimaryDisplay() {
   MONITORINFO mi = GetMonitorInfoForMonitor(
       MonitorFromWindow(NULL, MONITOR_DEFAULTTOPRIMARY));
   gfx::Display display = GetDisplay(mi);
@@ -83,7 +83,7 @@ gfx::Display Screen::GetPrimaryMonitor() {
 }
 
 // static
-gfx::Display Screen::GetMonitorMatching(const gfx::Rect& match_rect) {
+gfx::Display Screen::GetDisplayMatching(const gfx::Rect& match_rect) {
   RECT other_bounds_rect = match_rect.ToRECT();
   MONITORINFO monitor_info = GetMonitorInfoForMonitor(MonitorFromRect(
       &other_bounds_rect, MONITOR_DEFAULTTONEAREST));

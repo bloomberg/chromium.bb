@@ -48,12 +48,12 @@ class ASH_EXPORT MultiMonitorManager : public aura::MonitorManager,
       const std::vector<gfx::Display>& displays) OVERRIDE;
   virtual aura::RootWindow* CreateRootWindowForMonitor(
       const gfx::Display& display) OVERRIDE;
-  virtual const gfx::Display& GetMonitorAt(size_t index) OVERRIDE;
+  virtual const gfx::Display& GetDisplayAt(size_t index) OVERRIDE;
 
-  virtual size_t GetNumMonitors() const OVERRIDE;
-  virtual const gfx::Display& GetMonitorNearestPoint(
+  virtual size_t GetNumDisplays() const OVERRIDE;
+  virtual const gfx::Display& GetDisplayNearestPoint(
       const gfx::Point& point) const OVERRIDE;
-  virtual const gfx::Display& GetMonitorNearestWindow(
+  virtual const gfx::Display& GetDisplayNearestWindow(
       const aura::Window* window) const OVERRIDE;
 
   // RootWindowObserver overrides:

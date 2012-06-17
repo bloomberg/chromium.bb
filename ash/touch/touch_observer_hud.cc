@@ -42,7 +42,7 @@ class TouchHudCanvas : public views::View {
       : owner_(owner),
         path_index_(0),
         color_index_(0) {
-    gfx::Display display = gfx::Screen::GetPrimaryMonitor();
+    gfx::Display display = gfx::Screen::GetPrimaryDisplay();
     gfx::Rect bounds = display.bounds();
     size_.set_width(bounds.width() / kScale);
     size_.set_height(bounds.height() / kScale);

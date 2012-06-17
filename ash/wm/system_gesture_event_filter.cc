@@ -25,11 +25,11 @@
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/aura/event.h"
 #include "ui/aura/root_window.h"
-#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/base/animation/animation.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/linear_animation.h"
 #include "ui/base/gestures/gesture_configuration.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
@@ -477,7 +477,7 @@ ui::GestureStatus SystemGestureEventFilter::PreHandleGestureEvent(
     switch (event->type()) {
       case ui::ET_GESTURE_SCROLL_BEGIN: {
           gfx::Rect screen =
-              gfx::Screen::GetMonitorNearestWindow(target).bounds();
+              gfx::Screen::GetDisplayNearestWindow(target).bounds();
           int overlap_area = screen.width() * overlap_percent_ / 100;
           orientation_ = SCROLL_ORIENTATION_UNSET;
 
@@ -578,7 +578,7 @@ void SystemGestureEventFilter::ClearGestureHandlerForWindow(
 
 bool SystemGestureEventFilter::HandleDeviceControl(aura::Window* target,
                                                    aura::GestureEvent* event) {
-  gfx::Rect screen = gfx::Screen::GetMonitorNearestWindow(target).bounds();
+  gfx::Rect screen = gfx::Screen::GetDisplayNearestWindow(target).bounds();
   double percent = 100.0 * (event->y() - screen.y()) / screen.height();
   if (percent > 100.0)
     percent = 100.0;

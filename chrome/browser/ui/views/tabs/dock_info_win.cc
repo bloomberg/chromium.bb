@@ -242,7 +242,7 @@ class DockToWindowFinder : public BaseWindowFinder {
                      const std::set<HWND>& ignore)
       : BaseWindowFinder(ignore),
         screen_loc_(screen_loc) {
-    gfx::Rect work_area = gfx::Screen::GetMonitorNearestPoint(
+    gfx::Rect work_area = gfx::Screen::GetDisplayNearestPoint(
         screen_loc).bounds();
     if (!work_area.IsEmpty()) {
       result_.set_monitor_bounds(work_area);

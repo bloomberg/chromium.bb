@@ -124,7 +124,7 @@ void MediaPlayer::PopupMediaPlayer() {
     return;
   }
 
-  const gfx::Size screen = gfx::Screen::GetPrimaryMonitor().size();
+  const gfx::Size screen = gfx::Screen::GetPrimaryDisplay().size();
   const gfx::Rect bounds(screen.width() - kPopupRight - kPopupWidth,
                          screen.height() - kPopupBottom - kPopupHeight,
                          kPopupWidth,

@@ -766,7 +766,7 @@ void StatusBubbleViews::AvoidMouse(const gfx::Point& location) {
     // download shelf.
     gfx::NativeView widget = base_view_->GetWidget()->GetNativeView();
     gfx::Rect monitor_rect =
-        gfx::Screen::GetMonitorNearestWindow(widget).work_area();
+        gfx::Screen::GetDisplayNearestWindow(widget).work_area();
     const int bubble_bottom_y = top_left.y() + position_.y() + size_.height();
 
     if (bubble_bottom_y + offset > monitor_rect.height() ||

@@ -113,8 +113,8 @@ bool CanRendererHandleEvent(const aura::MouseEvent* event) {
 void GetScreenInfoForWindow(WebKit::WebScreenInfo* results,
                             aura::Window* window) {
   const gfx::Display display = window ?
-      gfx::Screen::GetMonitorNearestWindow(window) :
-      gfx::Screen::GetPrimaryMonitor();
+      gfx::Screen::GetDisplayNearestWindow(window) :
+      gfx::Screen::GetPrimaryDisplay();
   const gfx::Size size = display.size();
   results->rect = WebKit::WebRect(0, 0, size.width(), size.height());
   results->availableRect = results->rect;

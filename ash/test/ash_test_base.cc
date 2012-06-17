@@ -74,7 +74,7 @@ void AshTestBase::TearDown() {
 
 void AshTestBase::ChangeMonitorConfig(float scale,
                                       const gfx::Rect& bounds_in_pixel) {
-  gfx::Display display = gfx::Display(gfx::Screen::GetPrimaryMonitor().id());
+  gfx::Display display = gfx::Display(gfx::Screen::GetPrimaryDisplay().id());
   display.SetScaleAndBounds(scale, bounds_in_pixel);
   std::vector<gfx::Display> displays;
   displays.push_back(display);

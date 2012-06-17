@@ -58,11 +58,11 @@ gfx::NativeWindow DesktopScreenWin::GetWindowAtCursorScreenPoint() {
   return host ? host->GetRootWindow() : NULL;
 }
 
-int DesktopScreenWin::GetNumMonitors() {
+int DesktopScreenWin::GetNumDisplays() {
   return GetSystemMetrics(SM_CMONITORS);
 }
 
-gfx::Display DesktopScreenWin::GetMonitorNearestWindow(
+gfx::Display DesktopScreenWin::GetDisplayNearestWindow(
     gfx::NativeView window) const {
   gfx::AcceleratedWidget accelerated_window =
       window->GetRootWindow()->GetAcceleratedWidget();
@@ -74,7 +74,7 @@ gfx::Display DesktopScreenWin::GetMonitorNearestWindow(
   return GetDisplay(monitor_info);
 }
 
-gfx::Display DesktopScreenWin::GetMonitorNearestPoint(
+gfx::Display DesktopScreenWin::GetDisplayNearestPoint(
     const gfx::Point& point) const {
   POINT initial_loc = { point.x(), point.y() };
   HMONITOR monitor = MonitorFromPoint(initial_loc, MONITOR_DEFAULTTONEAREST);
@@ -85,7 +85,7 @@ gfx::Display DesktopScreenWin::GetMonitorNearestPoint(
   return gfx::Display();
 }
 
-gfx::Display DesktopScreenWin::GetPrimaryMonitor() const {
+gfx::Display DesktopScreenWin::GetPrimaryDisplay() const {
   MONITORINFO mi = GetMonitorInfoForMonitor(
       MonitorFromWindow(NULL, MONITOR_DEFAULTTOPRIMARY));
   gfx::Display display = GetDisplay(mi);

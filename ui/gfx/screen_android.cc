@@ -15,23 +15,22 @@ bool Screen::IsDIPEnabled() {
 }
 
 // static
-gfx::Display Screen::GetPrimaryMonitor() {
+gfx::Display Screen::GetPrimaryDisplay() {
   NOTIMPLEMENTED() << "crbug.com/117839 tracks implementation";
   return gfx::Display(0, gfx::Rect(0, 0, 1, 1));
 }
 
 // static
-gfx::Display Screen::GetMonitorNearestWindow(gfx::NativeView view) {
-  return GetPrimaryMonitor();
+gfx::Display Screen::GetDisplayNearestWindow(gfx::NativeView view) {
+  return GetPrimaryDisplay();
 }
 
 // static
-gfx::Display Screen::GetMonitorNearestPoint(const gfx::Point& point) {
-  return GetPrimaryMonitor();
+gfx::Display Screen::GetDisplayNearestPoint(const gfx::Point& point) {
+  return GetPrimaryDisplay();
 }
 
-// static
-int Screen::GetNumMonitors() {
+int Screen::GetNumDisplays() {
   return 1;
 }
 

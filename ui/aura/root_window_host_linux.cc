@@ -816,7 +816,7 @@ void RootWindowHostLinux::SetBounds(const gfx::Rect& bounds) {
   // size, which is in DIP, changes when the scale changes.
   float current_scale = root_window_->compositor()->device_scale_factor();
   float new_scale =
-      gfx::Screen::GetMonitorNearestWindow(root_window_).device_scale_factor();
+      gfx::Screen::GetDisplayNearestWindow(root_window_).device_scale_factor();
   bool size_changed = bounds_.size() != bounds.size() ||
       current_scale != new_scale;
 

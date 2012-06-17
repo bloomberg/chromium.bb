@@ -350,7 +350,7 @@ TEST_F(ToplevelWindowEventFilterTest, DoubleClickCaptionTogglesMaximize) {
 TEST_F(ToplevelWindowEventFilterTest, BottomRightWorkArea) {
   scoped_ptr<aura::Window> target(CreateWindow(HTBOTTOMRIGHT));
   gfx::Rect work_area =
-      gfx::Screen::GetMonitorNearestWindow(target.get()).work_area();
+      gfx::Screen::GetDisplayNearestWindow(target.get()).work_area();
   gfx::Point position = target->bounds().origin();
   // Drag further than work_area bottom.
   DragFromCenterBy(target.get(), 100, work_area.height());
@@ -364,7 +364,7 @@ TEST_F(ToplevelWindowEventFilterTest, BottomRightWorkArea) {
 TEST_F(ToplevelWindowEventFilterTest, BottomLeftWorkArea) {
   scoped_ptr<aura::Window> target(CreateWindow(HTBOTTOMLEFT));
   gfx::Rect work_area =
-      gfx::Screen::GetMonitorNearestWindow(target.get()).work_area();
+      gfx::Screen::GetDisplayNearestWindow(target.get()).work_area();
   gfx::Point position = target->bounds().origin();
   // Drag further than work_area bottom.
   DragFromCenterBy(target.get(), -30, work_area.height());
@@ -379,7 +379,7 @@ TEST_F(ToplevelWindowEventFilterTest, BottomLeftWorkArea) {
 TEST_F(ToplevelWindowEventFilterTest, BottomWorkArea) {
   scoped_ptr<aura::Window> target(CreateWindow(HTBOTTOM));
   gfx::Rect work_area =
-      gfx::Screen::GetMonitorNearestWindow(target.get()).work_area();
+      gfx::Screen::GetDisplayNearestWindow(target.get()).work_area();
   gfx::Point position = target->bounds().origin();
   // Drag further than work_area bottom.
   DragFromCenterBy(target.get(), 0, work_area.height());
@@ -406,7 +406,7 @@ TEST_F(ToplevelWindowEventFilterTest, DontDragToNegativeY) {
 TEST_F(ToplevelWindowEventFilterTest, DontGotWiderThanScreen) {
   scoped_ptr<aura::Window> target(CreateWindow(HTRIGHT));
   gfx::Rect work_area =
-      gfx::Screen::GetMonitorNearestWindow(target.get()).bounds();
+      gfx::Screen::GetDisplayNearestWindow(target.get()).bounds();
   DragFromCenterBy(target.get(), work_area.width() * 2, 0);
   // The y location and height should not have changed.
   EXPECT_EQ(work_area.width(), target->bounds().width());

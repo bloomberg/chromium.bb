@@ -124,19 +124,19 @@ RootWindow* MultiMonitorManager::CreateRootWindowForMonitor(
   return root_window;
 }
 
-const gfx::Display& MultiMonitorManager::GetMonitorAt(size_t index) {
+const gfx::Display& MultiMonitorManager::GetDisplayAt(size_t index) {
   return index < displays_.size() ? displays_[index] : GetInvalidDisplay();
 }
 
-size_t MultiMonitorManager::GetNumMonitors() const {
+size_t MultiMonitorManager::GetNumDisplays() const {
   return displays_.size();
 }
 
-const gfx::Display& MultiMonitorManager::GetMonitorNearestWindow(
+const gfx::Display& MultiMonitorManager::GetDisplayNearestWindow(
     const Window* window) const {
   if (!window) {
     MultiMonitorManager* manager = const_cast<MultiMonitorManager*>(this);
-    return manager->GetMonitorAt(0);
+    return manager->GetDisplayAt(0);
   }
   const RootWindow* root = window->GetRootWindow();
   MultiMonitorManager* that = const_cast<MultiMonitorManager*>(this);
@@ -145,12 +145,12 @@ const gfx::Display& MultiMonitorManager::GetMonitorNearestWindow(
       GetInvalidDisplay();
 }
 
-const gfx::Display& MultiMonitorManager::GetMonitorNearestPoint(
+const gfx::Display& MultiMonitorManager::GetDisplayNearestPoint(
     const gfx::Point& point) const {
   // TODO(oshima): For m19, mouse is constrained within
   // the primary window.
   MultiMonitorManager* manager = const_cast<MultiMonitorManager*>(this);
-  return manager->GetMonitorAt(0);
+  return manager->GetDisplayAt(0);
 }
 
 void MultiMonitorManager::OnRootWindowResized(const aura::RootWindow* root,
