@@ -37,9 +37,11 @@
 
 using gpu::gles2::TextureManager;
 
-static void MakeDecoderContextCurrent(gpu::gles2::GLES2Decoder* decoder) {
+static bool MakeDecoderContextCurrent(gpu::gles2::GLES2Decoder* decoder) {
   bool success = decoder->MakeCurrent();
-  DCHECK(success);
+  if (!success)
+    DLOG(ERROR) << "Failed to MakeCurrent()";
+  return success;
 }
 
 GpuVideoDecodeAccelerator::GpuVideoDecodeAccelerator(
@@ -136,8 +138,7 @@ void GpuVideoDecodeAccelerator::Initialize(
 #if !defined(OS_WIN)
   // Ensure we will be able to get a GL context at all before initializing
   // non-Windows VDAs.
-  if (!stub_->decoder()->MakeCurrent()) {
-    DLOG(ERROR) << "Failed to MakeCurrent()";
+  if (!make_context_current_.Run()) {
     NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
     return;
   }

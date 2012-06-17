@@ -32,8 +32,9 @@
 // Decoding tasks are performed in a separate decoding thread.
 class VaapiVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
  public:
-  VaapiVideoDecodeAccelerator(Client* client,
-                              const base::Closure& make_context_current);
+  VaapiVideoDecodeAccelerator(
+      Client* client,
+      const base::Callback<bool(void)>& make_context_current);
 
   // media::VideoDecodeAccelerator implementation.
   virtual bool Initialize(media::VideoCodecProfile profile) OVERRIDE;
@@ -137,7 +138,7 @@ class VaapiVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   // Client-provided X/GLX state.
   Display* x_display_;
   GLXContext glx_context_;
-  base::Closure make_context_current_;
+  base::Callback<bool(void)> make_context_current_;
 
   // VAVDA state.
   enum State {

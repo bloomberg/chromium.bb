@@ -50,7 +50,8 @@ void VaapiVideoDecodeAccelerator::NotifyError(Error error) {
 }
 
 VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
-    Client* client, const base::Closure& make_context_current)
+    Client* client,
+    const base::Callback<bool(void)>& make_context_current)
     : make_context_current_(make_context_current),
       state_(kUninitialized),
       input_ready_(&lock_),
