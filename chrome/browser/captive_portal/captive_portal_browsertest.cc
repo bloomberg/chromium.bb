@@ -1249,9 +1249,16 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, RedirectSSLCertError) {
   SlowLoadNoCaptivePortal(browser(), RESULT_NO_RESPONSE);
 }
 
+// This test is disabled on MAC. See bug http://crbug.com/133227
+#if defined(OS_MACOSX)
+#define MAYBE_Login DISABLED_Login
+#else
+#define MAYBE_Login Login
+#endif
+
 // A slow SSL load triggers a captive portal check.  The user logs on before
 // the SSL page times out.  We wait for the timeout and subsequent reload.
-IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, Login) {
+IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, MAYBE_Login) {
   // Load starts, detect captive portal and open up a login tab.
   SlowLoadBehindCaptivePortal(browser(), true);
 
