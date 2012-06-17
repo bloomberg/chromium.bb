@@ -20,8 +20,13 @@ SUIDSandboxUITest.prototype = {
 
 // This test is for Linux only.
 GEN('#if defined(OS_LINUX)');
-GEN('#define MAYBE_testSUIDSandboxEnabled \\');
-GEN('    testSUIDSandboxEnabled');
+GEN('# if defined(ADDRESS_SANITIZER)');
+GEN('# define MAYBE_testSUIDSandboxEnabled \\');
+GEN('     DISABLED_testSUIDSandboxEnabled');
+GEN('# else');
+GEN('# define MAYBE_testSUIDSandboxEnabled \\');
+GEN('     testSUIDSandboxEnabled');
+GEN('# endif');
 GEN('#else');
 GEN('#define MAYBE_testSUIDSandboxEnabled \\');
 GEN('    DISABLED_testSUIDSandboxEnabled');
