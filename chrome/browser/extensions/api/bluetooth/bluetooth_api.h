@@ -60,25 +60,39 @@ class BluetoothGetAddressFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-class BluetoothGetDevicesFunction : public AsyncExtensionFunction {
+class BluetoothGetDevicesWithServiceUUIDFunction
+    : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.getDevices")
+  DECLARE_EXTENSION_FUNCTION_NAME(
+      "experimental.bluetooth.getDevicesWithServiceUUID")
+
+ protected:
+  virtual ~BluetoothGetDevicesWithServiceUUIDFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+};
+
+class BluetoothGetDevicesWithServiceNameFunction
+    : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME(
+      "experimental.bluetooth.getDevicesWithServiceName")
 
 #if defined(OS_CHROMEOS)
-  BluetoothGetDevicesFunction();
+  BluetoothGetDevicesWithServiceNameFunction();
 #endif
 
  protected:
-  virtual ~BluetoothGetDevicesFunction() {}
+  virtual ~BluetoothGetDevicesWithServiceNameFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 
  private:
 #if defined(OS_CHROMEOS)
-  void AddDeviceIfTrueCallback(ListValue* list,
-                               const chromeos::BluetoothDevice* device,
-                               bool shouldAdd);
+  void AddDeviceIfTrue(
+      ListValue* list, const chromeos::BluetoothDevice* device, bool result);
 
   int callbacks_pending_;
 #endif
@@ -184,6 +198,24 @@ class BluetoothGetLocalOutOfBandPairingDataFunction
 #if defined(OS_CHROMEOS)
   void ReadCallback(const chromeos::BluetoothOutOfBandPairingData& data);
   void ErrorCallback();
+#endif
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+};
+
+class BluetoothClearOutOfBandPairingDataFunction
+    : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME(
+      "experimental.bluetooth.clearOutOfBandPairingData")
+
+ protected:
+  virtual ~BluetoothClearOutOfBandPairingDataFunction() {}
+
+#if defined(OS_CHROMEOS)
+  void OnSuccessCallback();
+  void OnErrorCallback();
 #endif
 
   // ExtensionFunction:

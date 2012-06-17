@@ -27,84 +27,30 @@
 
   dictionary Socket {
     Device device;
-    DOMString serviceUuid;
+    DOMString serviceUUID;
     long id;
   };
 
   dictionary OutOfBandPairingData {
-    // Simple Pairing Hash C.
+    // Simple Pairing Hash C
     // Always 16 octets long.
     ArrayBuffer hash;
 
-    // Simple Pairing Randomizer R.
+    // Simple Pairing Randomizer R
     // Always 16 octets long.
     ArrayBuffer randomizer;
   };
 
-  callback AddressCallback = void (DOMString result);
-  callback BooleanCallback = void (boolean result);
-  callback DataCallback = void (ArrayBuffer result);
-  callback DevicesCallback = void (Device[] result);
-  callback OutOfBandPairingDataCallback = void (OutOfBandPairingData data);
+  // Reports failures via chrome.extension.lastError.
   callback ResultCallback = void ();
-  callback SizeCallback = void (long result);
+  callback BooleanCallback = void (boolean result);
+  callback AddressCallback = void (DOMString result);
+  callback DevicesCallback = void (Device[] result);
   callback SocketCallback = void (Socket result);
+  callback DataCallback = void (ArrayBuffer result);
+  callback SizeCallback = void (long result);
+  callback OutOfBandPairingDataCallback = void (OutOfBandPairingData data);
 
-  // Options for the getDevices function.  If neither |uuid| or |name| are
-  // provided, all devices known to the system are returned.
-  dictionary GetDevicesOptions {
-    // Only devices providing a service with a UUID that matches |uuid| will be
-    // returned.
-    DOMString? uuid;
-
-    // Only devices providing a service with a name that matches |name| will be
-    // returned.
-    DOMString? name;
-  };
-
-  // Options for the connect function.
-  dictionary ConnectOptions {
-    // The connection is made to the device at |deviceAddress|.
-    // |deviceAddress| should be in the format 'XX:XX:XX:XX:XX:XX'.
-    DOMString deviceAddress;
-
-    // The connection is made to the service with UUID |serviceUuid|.
-    DOMString serviceUuid;
-  };
-
-  // Options for the disconnect function.
-  dictionary DisconnectOptions {
-    // The socket to disconnect.
-    long socketId;
-  };
-
-  // Options for the read function.
-  dictionary ReadOptions {
-    // The socket to read from.
-    long socketId;
-  };
-
-  // Options for the write function.
-  dictionary WriteOptions {
-    // The socket to write to.
-    long socketId;
-
-    // The data to write.
-    ArrayBuffer data;
-  };
-
-  // Options for the setOutOfBandPairingData function.
-  dictionary SetOutOfBandPairingDataOptions {
-    // The address of the remote device that the data should be associated
-    // with.  |deviceAddress| should be in the format 'XX:XX:XX:XX:XX:XX'.
-    DOMString address;
-
-    // The Out Of Band Pairing Data.  If this is omitted, the data for the
-    // device is cleared instead.
-    OutOfBandPairingData? data;
-  };
-
-  // These functions all report failures via chrome.extension.lastError.
   interface Functions {
     // Checks if the system has bluetooth support.
     // |callback| : Called with the boolean result.
@@ -118,48 +64,66 @@
     // |callback| : Called with the address, or null if there was an error.
     static void getAddress(AddressCallback callback);
 
-    // Get a list of bluetooth devices.
-    // |options|  : Controls which devices are returned.
-    // |callback| : Called with an array of Device objects.
-    static void getDevices(GetDevicesOptions options,
-                           DevicesCallback callback);
+    // Get a list of bluetooth devices that support a service.
+    // |service|  : The UUID of the desired service.
+    // |callback| : Called with an array of Device objects, all of which
+    //              provide a service with UUID equal to |uuid|.
+    static void getDevicesWithServiceUUID(
+        DOMString uuid, DevicesCallback callback);
+
+    // Get a list of bluetooth devices that support a service.
+    // |service|  : The name of the desired service.
+    // |callback| : Called with an array of Device objects, all of which
+    //              provide a service with name equal to |name|.
+    static void getDevicesWithServiceName(
+        DOMString name, DevicesCallback callback);
 
     // Connect to a service on a device.
-    // |options|  : The options for the connection.
+    // |device|   : The target device.
+    // |service|  : The target service UUID.
     // |callback| : Called when the connection is established with a Socket
     //              that can be used to communicate with |device|.
-    static void connect(ConnectOptions options,
-                        SocketCallback callback);
+    static void connect(
+        Device device, DOMString service, SocketCallback callback);
 
     // Close a bluetooth connection.
-    // |options|  : The options for this function.
+    // |socket|   : The socket to disconnect.
     // |callback| : Called to indicate success or failure.
-    static void disconnect(DisconnectOptions options,
-                           optional ResultCallback callback);
+    static void disconnect(Socket socket, optional ResultCallback callback);
 
     // Read data from a bluetooth connection.
-    // |options|  : The options for this function.
+    // |socket|   : The socket to read from.
     // |callback| : Called with the data when it is available.
-    static void read(ReadOptions options,
-                     DataCallback callback);
+    static void read(Socket socket, DataCallback callback);
 
     // Write data to a bluetooth connection.
-    // |options|  : The options for this function.
+    // |socket|   : The socket to write to.
+    // |data|     : The data to write.
     // |callback| : Called with the number of bytes written.
-    static void write(WriteOptions options,
-                      optional SizeCallback callback);
+    static void write(
+        Socket socket, ArrayBuffer data, optional SizeCallback callback);
 
     // Get the local Out of Band Pairing data.
     // |callback| : Called with the data.
     static void getLocalOutOfBandPairingData(
         OutOfBandPairingDataCallback callback);
 
-    // Set the Out of Band Pairing data for a remote device.
+    // Set the Out Of Band Pairing Data for the bluetooth device at |address|.
     // Any previous Out Of Band Pairing Data for this device is overwritten.
-    // |options|  : The options for this function.
+    // |address|  : The bluetooth address of the device sending the data.
+    // |data|     : The data.
     // |callback| : Called to indicate success or failure.
-    static void setOutOfBandPairingData(SetOutOfBandPairingDataOptions options,
-                                        optional ResultCallback callback);
+    static void setOutOfBandPairingData(
+        DOMString address,
+        OutOfBandPairingData data,
+        optional ResultCallback callback);
+
+    // Clear any Out Of Band Pairing Data for the bluetooth device at |address|.
+    // |address|  : The bluetooth address for which data should be cleared.
+    // |callback| : Called to indicate success or failure.
+    static void clearOutOfBandPairingData(
+        DOMString address,
+        optional ResultCallback callback);
   };
 
   interface Events {
