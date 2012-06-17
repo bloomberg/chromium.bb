@@ -112,8 +112,7 @@ ShellIntegration::DefaultWebClientState ProbeAppIsDefaultHandlers(
     NOTREACHED();
     return ShellIntegration::UNKNOWN_DEFAULT_WEB_CLIENT;
   }
-  string16 app_name(dist->GetApplicationName());
-  app_name += ShellUtil::GetCurrentInstallationSuffix(dist, chrome_exe.value());
+  string16 app_name(ShellUtil::GetApplicationName(dist, chrome_exe.value()));
 
   BOOL result;
   for (size_t i = 0; i < num_protocols; ++i) {

@@ -149,12 +149,12 @@ string16 BrowserDistribution::GetAppGuid() {
   return L"";
 }
 
-string16 BrowserDistribution::GetApplicationName() {
+string16 BrowserDistribution::GetBaseAppName() {
   return L"Chromium";
 }
 
 string16 BrowserDistribution::GetAppShortCutName() {
-  return GetApplicationName();
+  return GetBaseAppName();
 }
 
 string16 BrowserDistribution::GetAlternateApplicationName() {

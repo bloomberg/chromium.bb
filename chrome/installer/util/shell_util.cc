@@ -109,7 +109,7 @@ class RegistryEntry {
     DCHECK(suffix.empty() || suffix[0] == L'.');
     return string16(ShellUtil::kRegStartMenuInternet)
         .append(1, L'\\')
-        .append(dist->GetApplicationName())
+        .append(dist->GetBaseAppName())
         .append(suffix);
   }
 
@@ -213,7 +213,7 @@ class RegistryEntry {
       // resource for name, description, and company.
       entries->push_front(new RegistryEntry(
           chrome_application, ShellUtil::kRegApplicationName,
-          dist->GetApplicationName().append(suffix)));
+          dist->GetAppShortCutName().append(suffix)));
       entries->push_front(new RegistryEntry(
           chrome_application, ShellUtil::kRegApplicationDescription,
           dist->GetAppDescription()));
@@ -252,7 +252,7 @@ class RegistryEntry {
     // TODO(grt): http://crbug.com/75152 Also set LocalizedString; see
     // http://msdn.microsoft.com/en-us/library/windows/desktop/cc144109(v=VS.85).aspx#registering_the_display_name
     entries->push_front(new RegistryEntry(
-        start_menu_entry, dist->GetApplicationName()));
+        start_menu_entry, dist->GetAppShortCutName()));
     // Register the "open" verb for launching Chrome via the "Internet" link.
     entries->push_front(new RegistryEntry(
         start_menu_entry + ShellUtil::kRegShellOpen, quoted_exe_path));
@@ -273,7 +273,7 @@ class RegistryEntry {
     entries->push_front(new RegistryEntry(install_info, L"IconsVisible", 1));
 
     // Register with Default Programs.
-    string16 reg_app_name(dist->GetApplicationName().append(suffix));
+    string16 reg_app_name(dist->GetBaseAppName().append(suffix));
     // Tell Windows where to find Chrome's Default Programs info.
     string16 capabilities(GetCapabilitiesKey(dist, suffix));
     entries->push_front(new RegistryEntry(ShellUtil::kRegRegisteredApplications,
@@ -382,7 +382,7 @@ class RegistryEntry {
 
     // start->Internet shortcut.
     string16 start_menu(ShellUtil::kRegStartMenuInternet);
-    string16 app_name = dist->GetApplicationName() + suffix;
+    string16 app_name = dist->GetBaseAppName() + suffix;
     entries->push_front(new RegistryEntry(start_menu, app_name));
     return true;
   }
@@ -1026,7 +1026,7 @@ void ShellUtil::GetRegisteredBrowsers(
                    KEY_QUERY_VALUE) != ERROR_SUCCESS ||
           key.ReadValue(NULL, &name) != ERROR_SUCCESS ||
           name.empty() ||
-          name.find(dist->GetApplicationName()) != string16::npos) {
+          name.find(dist->GetBaseAppName()) != string16::npos) {
         continue;
       }
       // Read the browser's reinstall command.
@@ -1052,6 +1052,13 @@ string16 ShellUtil::GetCurrentInstallationSuffix(BrowserDistribution* dist,
   return tested_suffix;
 }
 
+string16 ShellUtil::GetApplicationName(BrowserDistribution* dist,
+                                       const string16& chrome_exe) {
+  string16 app_name = dist->GetBaseAppName();
+  app_name += GetCurrentInstallationSuffix(dist, chrome_exe);
+  return app_name;
+}
+
 bool ShellUtil::MakeChromeDefault(BrowserDistribution* dist,
                                   int shell_change,
                                   const string16& chrome_exe,
@@ -1075,10 +1082,7 @@ bool ShellUtil::MakeChromeDefault(BrowserDistribution* dist,
   bool ret = true;
   // First use the new "recommended" way on Vista to make Chrome default
   // browser.
-  string16 app_name = dist->GetApplicationName();
-  const string16 app_suffix(
-      ShellUtil::GetCurrentInstallationSuffix(dist, chrome_exe));
-  app_name += app_suffix;
+  string16 app_name = GetApplicationName(dist, chrome_exe);
 
   if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
     // On Windows Vista and Win7 we still can set ourselves via the
@@ -1118,7 +1122,9 @@ bool ShellUtil::MakeChromeDefault(BrowserDistribution* dist,
 
   std::list<RegistryEntry*> entries;
   STLElementDeleter<std::list<RegistryEntry*> > entries_deleter(&entries);
-  RegistryEntry::GetUserEntries(dist, chrome_exe, app_suffix, &entries);
+  RegistryEntry::GetUserEntries(
+      dist, chrome_exe, GetCurrentInstallationSuffix(dist, chrome_exe),
+      &entries);
   // Change the default browser for current user.
   if ((shell_change & ShellUtil::CURRENT_USER) &&
       !AddRegistryEntries(HKEY_CURRENT_USER, entries)) {
@@ -1175,9 +1181,7 @@ bool ShellUtil::MakeChromeDefaultProtocolClient(BrowserDistribution* dist,
     HRESULT hr = pAAR.CreateInstance(CLSID_ApplicationAssociationRegistration,
       NULL, CLSCTX_INPROC);
     if (SUCCEEDED(hr)) {
-      string16 app_name = dist->GetApplicationName();
-      app_name += ShellUtil::GetCurrentInstallationSuffix(dist, chrome_exe);
-
+      string16 app_name = GetApplicationName(dist, chrome_exe);
       hr = pAAR->SetAppAsDefault(app_name.c_str(), protocol.c_str(),
                                  AT_URLPROTOCOL);
     }

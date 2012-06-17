@@ -31,7 +31,7 @@ string16 GoogleChromeDistribution::GetAppGuid() {
   return string16();
 }
 
-string16 GoogleChromeDistribution::GetApplicationName() {
+string16 GoogleChromeDistribution::GetBaseAppName() {
   NOTREACHED();
   return string16();
 }

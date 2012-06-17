@@ -572,7 +572,7 @@ bool DeleteChromeRegistrationKeys(BrowserDistribution* dist, HKEY root,
 
   // Delete Software\RegisteredApplications\Chromium
   InstallUtil::DeleteRegistryValue(root, ShellUtil::kRegRegisteredApplications,
-      dist->GetApplicationName() + browser_entry_suffix);
+      dist->GetBaseAppName() + browser_entry_suffix);
 
   // Delete Software\Classes\Applications\chrome.exe
   string16 app_key(ShellUtil::kRegClasses);
@@ -609,8 +609,7 @@ bool DeleteChromeRegistrationKeys(BrowserDistribution* dist, HKEY root,
   // lives in HKLM.
   InstallUtil::DeleteRegistryValueIf(
       root, ShellUtil::kRegStartMenuInternet, L"",
-      InstallUtil::ValueEquals(dist->GetApplicationName() +
-                               browser_entry_suffix));
+      InstallUtil::ValueEquals(dist->GetBaseAppName() + browser_entry_suffix));
 
   // Delete each protocol association if it references this Chrome.
   InstallUtil::ProgramCompare open_command_pred(chrome_exe);
@@ -712,7 +711,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
 
   bool is_chrome = product.is_chrome();
 
-  VLOG(1) << "UninstallProduct: " << browser_dist->GetApplicationName();
+  VLOG(1) << "UninstallProduct: " << browser_dist->GetAppShortCutName();
 
   if (force_uninstall) {
     // Since --force-uninstall command line option is used, we are going to

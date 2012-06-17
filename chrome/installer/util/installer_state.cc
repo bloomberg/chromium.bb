@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -117,14 +117,14 @@ void InstallerState::Initialize(const CommandLine& command_line,
         AddProductFromPreferences(BrowserDistribution::CHROME_BROWSER, prefs,
                                   machine_state);
     VLOG(1) << (is_uninstall ? "Uninstall" : "Install")
-            << " distribution: " << p->distribution()->GetApplicationName();
+            << " distribution: " << p->distribution()->GetAppShortCutName();
   }
   if (prefs.install_chrome_frame()) {
     Product* p =
         AddProductFromPreferences(BrowserDistribution::CHROME_FRAME, prefs,
                                   machine_state);
     VLOG(1) << (is_uninstall ? "Uninstall" : "Install")
-            << " distribution: " << p->distribution()->GetApplicationName();
+            << " distribution: " << p->distribution()->GetAppShortCutName();
   }
 
   BrowserDistribution* operand = NULL;

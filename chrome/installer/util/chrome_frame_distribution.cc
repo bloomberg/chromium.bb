@@ -32,7 +32,7 @@ string16 ChromeFrameDistribution::GetAppGuid() {
   return kChromeFrameGuid;
 }
 
-string16 ChromeFrameDistribution::GetApplicationName() {
+string16 ChromeFrameDistribution::GetBaseAppName() {
   return L"Google Chrome Frame";
 }
 

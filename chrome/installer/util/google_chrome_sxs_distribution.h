@@ -20,7 +20,7 @@
 // system level install and setting as default browser.
 class GoogleChromeSxSDistribution : public GoogleChromeDistribution {
  public:
-  virtual string16 GetApplicationName() OVERRIDE;
+  virtual string16 GetBaseAppName() OVERRIDE;
   virtual string16 GetAppShortCutName() OVERRIDE;
   virtual string16 GetBrowserAppId() OVERRIDE;
   virtual string16 GetInstallSubDir() OVERRIDE;

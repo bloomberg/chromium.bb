@@ -158,7 +158,7 @@ void AddExistingMultiInstalls(const InstallationState& original_state,
           installer_state->AddProductFromState(type, *state);
           VLOG(1) << "Product already installed and must be included: "
                   << BrowserDistribution::GetSpecificDistribution(
-                         type)->GetApplicationName();
+                         type)->GetAppShortCutName();
         }
       }
     }
@@ -398,7 +398,7 @@ bool CheckMultiInstallConditions(const InstallationState& original_state,
         multi_chrome->SetOption(installer::kOptionMultiInstall, true);
         chrome = installer_state->AddProduct(&multi_chrome);
         VLOG(1) << "Upgrading existing multi-install Chrome browser along with "
-                << chrome_frame->distribution()->GetApplicationName();
+                << chrome_frame->distribution()->GetAppShortCutName();
       } else if (chrome_frame->HasOption(installer::kOptionReadyMode)) {
         // Chrome Frame with ready-mode is to be installed, yet Chrome is
         // neither installed nor being installed.  Fail.
@@ -479,7 +479,7 @@ bool CheckPreInstallConditions(const InstallationState& original_state,
       // Block downgrades from multi-install to single-install.
       if (!installer_state->is_multi_install() &&
           product_state->is_multi_install()) {
-        LOG(ERROR) << "Multi-install " << browser_dist->GetApplicationName()
+        LOG(ERROR) << "Multi-install " << browser_dist->GetAppShortCutName()
                    << " exists; aborting single install.";
         *status = installer::MULTI_INSTALLATION_EXISTS;
         installer_state->WriteInstallerResult(*status,

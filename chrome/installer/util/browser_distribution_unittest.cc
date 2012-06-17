@@ -16,11 +16,11 @@ TEST(BrowserDistributionTest, StringsTest) {
         BrowserDistribution::GetSpecificDistribution(
             BrowserDistribution::kProductTypes[i]);
     ASSERT_TRUE(dist != NULL);
-    std::wstring name = dist->GetApplicationName();
+    string16 name = dist->GetBaseAppName();
     EXPECT_FALSE(name.empty());
-    std::wstring desc = dist->GetAppDescription();
+    string16 desc = dist->GetAppDescription();
     EXPECT_FALSE(desc.empty());
-    std::wstring alt_name = dist->GetAlternateApplicationName();
+    string16 alt_name = dist->GetAlternateApplicationName();
     EXPECT_FALSE(alt_name.empty());
   }
 }
@@ -28,10 +28,10 @@ TEST(BrowserDistributionTest, StringsTest) {
 // The shortcut strings obtained by the shell utility functions should not
 // be empty or be the same.
 TEST(BrowserDistributionTest, AlternateAndNormalShortcutName) {
-  std::wstring normal_name;
-  std::wstring alternate_name;
-  std::wstring appended_name_one;
-  std::wstring appended_name_two;
+  string16 normal_name;
+  string16 alternate_name;
+  string16 appended_name_one;
+  string16 appended_name_two;
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   EXPECT_TRUE(ShellUtil::GetChromeShortcutName(dist, false, L"",
                                                &normal_name));

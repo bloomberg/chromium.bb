@@ -415,7 +415,7 @@ string16 GoogleChromeDistribution::GetAppGuid() {
   return product_guid();
 }
 
-string16 GoogleChromeDistribution::GetApplicationName() {
+string16 GoogleChromeDistribution::GetBaseAppName() {
   // I'd really like to return L ## PRODUCT_FULLNAME_STRING; but that's no good
   // since it'd be "Chromium" in a non-Chrome build, which isn't at all what I
   // want.  Sigh.

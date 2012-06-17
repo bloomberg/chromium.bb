@@ -67,9 +67,12 @@ class BrowserDistribution {
 
   virtual string16 GetAppGuid();
 
-  // Returns the name by which the program is registered with Default Programs.
-  // This is not a localized string suitable for presenting to a user.
-  virtual string16 GetApplicationName();
+  // Returns the unsuffixed application name of this program.
+  // This is the base of the name registered with Default Programs on Windows.
+  // IMPORTANT: This should only be called by the installer which needs to make
+  // decisions on the suffixing of the upcoming install, not by external callers
+  // at run-time.
+  virtual string16 GetBaseAppName();
 
   // Returns the localized name of the program.
   virtual string16 GetAppShortCutName();

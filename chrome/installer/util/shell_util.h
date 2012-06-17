@@ -234,6 +234,14 @@ class ShellUtil {
   static string16 GetCurrentInstallationSuffix(BrowserDistribution* dist,
                                                const string16& chrome_exe);
 
+  // Returns the application name of the program under |dist|.
+  // This application name will be suffixed as is appropriate for the current
+  // install.
+  // This is the name that is registered with Default Programs on Windows and
+  // that should thus be used to "make chrome default" and such.
+  static string16 GetApplicationName(BrowserDistribution* dist,
+                                     const string16& chrome_exe);
+
   // Make Chrome the default browser. This function works by going through
   // the url protocols and file associations that are related to general
   // browsing, e.g. http, https, .html etc., and requesting to become the
