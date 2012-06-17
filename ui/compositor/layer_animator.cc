@@ -491,8 +491,7 @@ void LayerAnimator::ReplaceQueuedAnimations(LayerAnimationSequence* sequence) {
       }
     }
     if (!is_running)
-      scoped_ptr<LayerAnimationSequence>(
-          RemoveAnimation(animation_queue_[i].get()));
+      delete RemoveAnimation(animation_queue_[i].get());
     else
       ++i;
   }
