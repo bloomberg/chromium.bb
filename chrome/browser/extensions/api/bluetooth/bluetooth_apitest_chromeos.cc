@@ -241,13 +241,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetLocalOutOfBandPairingData) {
   EXPECT_FALSE(error.empty());
 }
 
-// Fails under ASan, see http://crbug.com/133199.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_SetOutOfBandPairingData DISABLED_SetOutOfBandPairingData
-#else
-#define MAYBE_SetOutOfBandPairingData SetOutOfBandPairingData
-#endif
-IN_PROC_BROWSER_TEST_F(BluetoothApiTest, MAYBE_SetOutOfBandPairingData) {
+IN_PROC_BROWSER_TEST_F(BluetoothApiTest, SetOutOfBandPairingData) {
   std::string device_address("11:12:13:14:15:16");
   testing::NiceMock<chromeos::MockBluetoothDevice> device(
       mock_adapter_, "d1", device_address,
