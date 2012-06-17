@@ -7,14 +7,16 @@
 #pragma once
 
 #include <vector>
+#include <set>
 #include <string>
 
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/linked_ptr.h"
 #include "base/time.h"
+#include "chrome/browser/performance_monitor/event.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 
 namespace performance_monitor {
@@ -81,6 +83,9 @@ struct TimeRange {
 // Value: Statistic
 class Database : public base::RefCountedThreadSafe<Database> {
  public:
+  typedef std::vector<linked_ptr<Event> > EventList;
+  typedef std::set<EventType> EventTypeSet;
+
   // The class that the database will use to infer time. Abstracting out the
   // time mechanism allows for easy testing and mock data insetion.
   class Clock {
@@ -98,12 +103,35 @@ class Database : public base::RefCountedThreadSafe<Database> {
 
   std::string GetStateValue(const std::string& key);
 
-  // Erase everything in the database. Warning - No undo!
-  void Clear();
+  // Add an event to the database.
+  bool AddEvent(const Event& event);
+
+  // Retrieve the events from the database. These methods populate the provided
+  // vector, and will search on the given criteria.
+  EventList GetEvents(EventType type, const base::Time& start,
+                      const base::Time& end);
+
+  EventList GetEvents(const base::Time& start, const base::Time& end) {
+    return GetEvents(EVENT_UNDEFINED, start, end);
+  }
+
+  EventList GetEvents(EventType type) {
+    return GetEvents(type, base::Time(), clock_->GetTime());
+  }
+
+  EventList GetEvents() {
+    return GetEvents(EVENT_UNDEFINED, base::Time(), clock_->GetTime());
+  }
+
+  EventTypeSet GetEventTypes(const base::Time& start, const base::Time& end);
+
+  EventTypeSet GetEventTypes() {
+    return GetEventTypes(base::Time(), clock_->GetTime());
+  }
 
   // Returns the times for which there is data in the database.
   std::vector<TimeRange> GetActiveIntervals(const base::Time& start,
-                                           const base::Time& end);
+                                            const base::Time& end);
 
   FilePath path() const { return path_; }
 
@@ -128,6 +156,8 @@ class Database : public base::RefCountedThreadSafe<Database> {
   explicit Database(const FilePath& path);
   virtual ~Database();
 
+  void InitDBs();
+
   bool Close();
 
   // Mark the database as being active for the current time.
@@ -151,6 +181,8 @@ class Database : public base::RefCountedThreadSafe<Database> {
   scoped_ptr<leveldb::DB> active_interval_db_;
 
   scoped_ptr<leveldb::DB> metric_db_;
+
+  scoped_ptr<leveldb::DB> event_db_;
 
   leveldb::ReadOptions read_options_;
   leveldb::WriteOptions write_options_;
