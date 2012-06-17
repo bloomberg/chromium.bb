@@ -190,40 +190,6 @@ class BluetoothGetLocalOutOfBandPairingDataFunction
   virtual bool RunImpl() OVERRIDE;
 };
 
-class BluetoothStartDiscoveryFunction : public AsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.startDiscovery")
-
- protected:
-  virtual ~BluetoothStartDiscoveryFunction() {}
-
-  // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
-
-#if defined(OS_CHROMEOS)
- private:
-  void OnSuccessCallback();
-  void OnErrorCallback();
-#endif
-};
-
-class BluetoothStopDiscoveryFunction : public AsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.stopDiscovery")
-
- protected:
-  virtual ~BluetoothStopDiscoveryFunction() {}
-
-  // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
-
-#if defined(OS_CHROMEOS)
- private:
-  void OnSuccessCallback();
-  void OnErrorCallback();
-#endif
-};
-
 }  // namespace api
 }  // namespace extensions
 

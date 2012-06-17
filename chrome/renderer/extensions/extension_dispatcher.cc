@@ -568,8 +568,6 @@ void ExtensionDispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("devtools", IDR_DEVTOOLS_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("experimental.app",
                              IDR_EXPERIMENTAL_APP_CUSTOM_BINDINGS_JS);
-  source_map_.RegisterSource("experimental.bluetooth",
-                             IDR_EXPERIMENTAL_BLUETOOTH_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("experimental.mediaGalleries",
                              IDR_MEDIA_GALLERY_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("experimental.offscreen",

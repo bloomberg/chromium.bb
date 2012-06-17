@@ -37,25 +37,18 @@ class ExtensionBluetoothEventRouter
   // Get the BluetoothSocket corresponding to |id|.
   scoped_refptr<BluetoothSocket> GetSocket(int id);
 
-  // Sets whether or not DeviceAdded events will be dispatched to extensions.
-  void SetSendDiscoveryEvents(bool should_send);
-
   // Override from chromeos::BluetoothAdapter::Observer
-  virtual void AdapterPresentChanged(chromeos::BluetoothAdapter* adapter,
-                                     bool present) OVERRIDE;
-  virtual void AdapterPoweredChanged(chromeos::BluetoothAdapter* adapter,
-                                     bool has_power) OVERRIDE;
-  virtual void DeviceAdded(chromeos::BluetoothAdapter* adapter,
-                           chromeos::BluetoothDevice* device) OVERRIDE;
+  virtual void AdapterPresentChanged(
+      chromeos::BluetoothAdapter* adapter, bool present) OVERRIDE;
+  virtual void AdapterPoweredChanged(
+      chromeos::BluetoothAdapter* adapter, bool has_power) OVERRIDE;
 
   // Exposed for testing.
   void SetAdapterForTest(chromeos::BluetoothAdapter* adapter) {
     adapter_.reset(adapter);
   }
  private:
-  void DispatchBooleanValueEvent(const char* event_name, bool value);
-
-  bool send_discovery_events_;
+  void DispatchEvent(const char* event_name, bool value);
 
   Profile* profile_;
   scoped_ptr<chromeos::BluetoothAdapter> adapter_;

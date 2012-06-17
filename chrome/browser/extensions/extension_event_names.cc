@@ -58,8 +58,6 @@ const char kOnOffscreenTabUpdated[] = "experimental.offscreenTabs.onUpdated";
 #if defined(OS_CHROMEOS)
 const char kBluetoothOnAvailabilityChanged[] =
     "experimental.bluetooth.onAvailabilityChanged";
-const char kBluetoothOnDeviceDiscovered[] =
-    "experimental.bluetooth.onDeviceDiscovered";
 const char kBluetoothOnPowerChanged[] =
     "experimental.bluetooth.onPowerChanged";
 #endif
