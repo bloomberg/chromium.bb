@@ -43,6 +43,12 @@ class IDLLinter(IDLVisitor):
         node.Warning('Expecting a comment.')
         warnings += 1
 
+    if node.IsA('File'):
+      labels = node.GetListOf('Label')
+      interfaces = node.GetListOf('Interface')
+      if interfaces and not labels:
+        node.Warning('Expecting a label in a file containing interfaces.')
+
     if node.IsA('Struct', 'Typedef') and not node.GetProperty('wpass'):
       if node.GetProperty('passByValue'):
         pbv = 'is'
