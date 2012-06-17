@@ -8,10 +8,14 @@
 
 #include "base/json/json_writer.h"
 #include "base/memory/ref_counted.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
+#include "chrome/browser/chromeos/bluetooth/bluetooth_device.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_socket.h"
+#include "chrome/browser/extensions/api/bluetooth/bluetooth_api_utils.h"
 #include "chrome/browser/extensions/extension_event_names.h"
 #include "chrome/browser/extensions/extension_event_router.h"
+#include "chrome/common/extensions/api/experimental_bluetooth.h"
 
 namespace chromeos {
 
@@ -59,26 +63,58 @@ scoped_refptr<BluetoothSocket> ExtensionBluetoothEventRouter::GetSocket(
   return socket_entry->second;
 }
 
+void ExtensionBluetoothEventRouter::SetSendDiscoveryEvents(bool should_send) {
+  send_discovery_events_ = should_send;
+}
+
 void ExtensionBluetoothEventRouter::AdapterPresentChanged(
     chromeos::BluetoothAdapter* adapter, bool present) {
   DCHECK(adapter == adapter_.get());
-  DispatchEvent(extension_event_names::kBluetoothOnAvailabilityChanged,
+  DispatchBooleanValueEvent(
+      extension_event_names::kBluetoothOnAvailabilityChanged,
       present);
 }
 
 void ExtensionBluetoothEventRouter::AdapterPoweredChanged(
     chromeos::BluetoothAdapter* adapter, bool has_power) {
   DCHECK(adapter == adapter_.get());
-  DispatchEvent(extension_event_names::kBluetoothOnPowerChanged, has_power);
+  DispatchBooleanValueEvent(
+      extension_event_names::kBluetoothOnPowerChanged,
+      has_power);
 }
 
-void ExtensionBluetoothEventRouter::DispatchEvent(
+void ExtensionBluetoothEventRouter::DeviceAdded(
+    chromeos::BluetoothAdapter* adapter, chromeos::BluetoothDevice* device) {
+  if (!send_discovery_events_)
+    return;
+
+  DCHECK(adapter == adapter_.get());
+
+  extensions::api::experimental_bluetooth::Device extension_device;
+  extensions::api::experimental_bluetooth::BluetoothDeviceToApiDevice(
+      *device, &extension_device);
+
+  ListValue args;
+  args.Append(extension_device.ToValue().release());
+  std::string json_args;
+  base::JSONWriter::Write(&args, &json_args);
+
+  profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
+      extension_event_names::kBluetoothOnDeviceDiscovered,
+      json_args,
+      NULL,
+      GURL());
+}
+
+void ExtensionBluetoothEventRouter::DispatchBooleanValueEvent(
     const char* event_name, bool value) {
   ListValue args;
   args.Append(Value::CreateBooleanValue(value));
   std::string json_args;
   base::JSONWriter::Write(&args, &json_args);
 
+  // TODO(bryeung): only dispatch the event to interested renderers
+  // crbug.com/133179
   profile_->GetExtensionEventRouter()->DispatchEventToRenderers(
       event_name, json_args, NULL, GURL());
 }

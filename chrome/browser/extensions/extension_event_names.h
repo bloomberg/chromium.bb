@@ -67,6 +67,7 @@ extern const char kOnOffscreenTabUpdated[];
 #if defined(OS_CHROMEOS)
 // Bluetooth.
 extern const char kBluetoothOnAvailabilityChanged[];
+extern const char kBluetoothOnDeviceDiscovered[];
 extern const char kBluetoothOnPowerChanged[];
 #endif
 

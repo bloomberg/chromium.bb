@@ -10,7 +10,7 @@
 
 #include <string>
 
-#include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/api/bluetooth/bluetooth_api_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/experimental_bluetooth.h"
@@ -19,7 +19,6 @@
 #if defined(OS_CHROMEOS)
 #include "base/memory/ref_counted.h"
 #include "base/safe_strerror_posix.h"
-#include "base/synchronization/lock.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_device.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_socket.h"
@@ -40,23 +39,6 @@ chromeos::BluetoothAdapter* GetMutableAdapter(Profile* profile) {
   return GetEventRouter(profile)->GetMutableAdapter();
 }
 
-// Fill in a Device object from a chromeos::BluetoothDevice.
-void PopulateApiDevice(const chromeos::BluetoothDevice& device,
-                       extensions::api::experimental_bluetooth::Device* out) {
-  out->name = UTF16ToUTF8(device.GetName());
-  out->address = device.address();
-  out->paired = device.IsPaired();
-  out->bonded = device.IsBonded();
-  out->connected = device.IsConnected();
-}
-
-// The caller takes ownership of the returned pointer.
-base::Value* BluetoothDeviceToValue(const chromeos::BluetoothDevice& device) {
-  extensions::api::experimental_bluetooth::Device api_device;
-  PopulateApiDevice(device, &api_device);
-  return api_device.ToValue().release();
-}
-
 }  // namespace
 #endif
 
@@ -69,6 +51,9 @@ const char kCouldNotSetOutOfBandPairingData[] =
 const char kFailedToConnect[] = "Connection failed";
 const char kInvalidDevice[] = "Invalid device";
 const char kSocketNotFoundError[] = "Socket not found: invalid socket id";
+const char kStartDiscoveryFailed[] =
+    "Starting discovery failed, or already discovering";
+const char kStopDiscoveryFailed[] = "Failed to stop discovery";
 
 }  // namespace
 
@@ -110,7 +95,7 @@ void BluetoothGetDevicesFunction::AddDeviceIfTrueCallback(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   if (shouldAdd)
-    list->Append(BluetoothDeviceToValue(*device));
+    list->Append(experimental_bluetooth::BluetoothDeviceToValue(*device));
 
   callbacks_pending_--;
   if (callbacks_pending_ == -1) {
@@ -147,7 +132,7 @@ bool BluetoothGetDevicesFunction::RunImpl() {
       continue;
 
     if (options.name.get() == NULL) {
-      matches->Append(BluetoothDeviceToValue(*device));
+      matches->Append(experimental_bluetooth::BluetoothDeviceToValue(*device));
       continue;
     }
 
@@ -177,7 +162,8 @@ void BluetoothConnectFunction::ConnectToServiceCallback(
     int socket_id = GetEventRouter(profile())->RegisterSocket(socket);
 
     experimental_bluetooth::Socket result_socket;
-    PopulateApiDevice(*device, &result_socket.device);
+    experimental_bluetooth::BluetoothDeviceToApiDevice(
+        *device, &result_socket.device);
     result_socket.service_uuid = service_uuid;
     result_socket.id = socket_id;
     result_.reset(result_socket.ToValue().release());
@@ -424,6 +410,54 @@ bool BluetoothGetLocalOutOfBandPairingDataFunction::RunImpl() {
   return true;
 }
 
+void BluetoothStartDiscoveryFunction::OnSuccessCallback() {
+  SendResponse(true);
+  Release();  // Added in RunImpl
+}
+
+void BluetoothStartDiscoveryFunction::OnErrorCallback() {
+  SetError(kStartDiscoveryFailed);
+  SendResponse(false);
+  Release();  // Added in RunImpl
+}
+
+bool BluetoothStartDiscoveryFunction::RunImpl() {
+  GetEventRouter(profile())->SetSendDiscoveryEvents(true);
+
+  // BluetoothAdapter will throw an error if we SetDiscovering(true) when
+  // discovery is already in progress
+  if (GetMutableAdapter(profile())->IsDiscovering()) {
+    SendResponse(true);
+    return true;
+  }
+
+  AddRef();  // Removed in whichever callback is called.
+  GetMutableAdapter(profile())->SetDiscovering(true,
+      base::Bind(&BluetoothStartDiscoveryFunction::OnSuccessCallback, this),
+      base::Bind(&BluetoothStartDiscoveryFunction::OnErrorCallback, this));
+  return true;
+}
+
+void BluetoothStopDiscoveryFunction::OnSuccessCallback() {
+  SendResponse(true);
+  Release();  // Added in RunImpl
+}
+
+void BluetoothStopDiscoveryFunction::OnErrorCallback() {
+  SetError(kStopDiscoveryFailed);
+  SendResponse(false);
+  Release();  // Added in RunImpl
+}
+
+bool BluetoothStopDiscoveryFunction::RunImpl() {
+  GetEventRouter(profile())->SetSendDiscoveryEvents(false);
+  AddRef();  // Removed in whichever callback is called.
+  GetMutableAdapter(profile())->SetDiscovering(false,
+      base::Bind(&BluetoothStopDiscoveryFunction::OnSuccessCallback, this),
+      base::Bind(&BluetoothStopDiscoveryFunction::OnErrorCallback, this));
+  return true;
+}
+
 #else
 
 // -----------------------------------------------------------------------------
@@ -479,6 +513,16 @@ void BluetoothWriteFunction::Work() {
 }
 
 bool BluetoothWriteFunction::Respond() {
+  NOTREACHED() << "Not implemented yet";
+  return false;
+}
+
+bool BluetoothStartDiscoveryFunction::RunImpl() {
+  NOTREACHED() << "Not implemented yet";
+  return false;
+}
+
+bool BluetoothStopDiscoveryFunction::RunImpl() {
   NOTREACHED() << "Not implemented yet";
   return false;
 }

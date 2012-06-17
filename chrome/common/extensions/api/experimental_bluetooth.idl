@@ -44,6 +44,7 @@
   callback AddressCallback = void (DOMString result);
   callback BooleanCallback = void (boolean result);
   callback DataCallback = void (ArrayBuffer result);
+  callback DeviceCallback = void (Device device);
   callback DevicesCallback = void (Device[] result);
   callback OutOfBandPairingDataCallback = void (OutOfBandPairingData data);
   callback ResultCallback = void ();
@@ -104,6 +105,12 @@
     OutOfBandPairingData? data;
   };
 
+  // Options for the startDiscovery function.
+  dictionary StartDiscoveryOptions {
+    // Called for each device that is discovered.
+    DeviceCallback deviceCallback;
+  };
+
   // These functions all report failures via chrome.extension.lastError.
   interface Functions {
     // Checks if the system has bluetooth support.
@@ -160,6 +167,20 @@
     // |callback| : Called to indicate success or failure.
     static void setOutOfBandPairingData(SetOutOfBandPairingDataOptions options,
                                         optional ResultCallback callback);
+
+    // Start discovery.  Discovered devices will be returned via the
+    // |onDeviceDiscovered| callback.  Note that discovery can be resource
+    // intensive.  stopDiscovery should be called as soon as is convenient.
+    // |options|  : The options for this function.
+    // |callback| : Called to indicate success or failure.
+    static void startDiscovery(
+        StartDiscoveryOptions options,
+        optional ResultCallback callback);
+
+    // Stop discovery.
+    // |callback| : Called to indicate success or failure.
+    static void stopDiscovery(
+        optional ResultCallback callback);
   };
 
   interface Events {
@@ -170,5 +191,9 @@
     // Fired when the power state of bluetooth on the system changes.
     // |powered| : True if bluetooth is powered, false otherwise.
     static void onPowerChanged(boolean has_power);
+
+    // Used to return discovered devices to the extension.  Users should not
+    // add listeners to this event directly.
+    static void onDeviceDiscovered_(Device device);
   };
 };
