@@ -17,10 +17,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "jingle/notifier/base/notifier_options.h"
+#include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/sync_notifier.h"
 #include "sync/notifier/sync_notifier_observer.h"
-#include "sync/util/weak_handle.h"
 
 namespace base {
 class SingleThreadTaskRunner;

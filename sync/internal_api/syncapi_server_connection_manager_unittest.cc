@@ -12,8 +12,8 @@
 #include "base/threading/thread.h"
 #include "base/time.h"
 #include "net/base/net_errors.h"
-#include "sync/internal_api/http_post_provider_factory.h"
-#include "sync/internal_api/http_post_provider_interface.h"
+#include "sync/internal_api/public/http_post_provider_factory.h"
+#include "sync/internal_api/public/http_post_provider_interface.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeDelta;

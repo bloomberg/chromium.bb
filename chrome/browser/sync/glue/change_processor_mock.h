@@ -8,8 +8,8 @@
 
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "sync/internal_api/public/syncable/model_type.h"
+#include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 #include "sync/syncable/syncable.h"
-#include "sync/util/unrecoverable_error_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace browser_sync {

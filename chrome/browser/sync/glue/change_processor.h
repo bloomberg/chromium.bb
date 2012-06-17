@@ -8,7 +8,7 @@
 
 #include "chrome/browser/sync/glue/data_type_error_handler.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
-#include "sync/internal_api/change_record.h"
+#include "sync/internal_api/public/change_record.h"
 
 class Profile;
 

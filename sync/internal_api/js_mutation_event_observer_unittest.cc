@@ -8,9 +8,9 @@
 #include "base/message_loop.h"
 #include "base/values.h"
 #include "sync/internal_api/public/syncable/model_type.h"
+#include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/js/js_event_details.h"
 #include "sync/js/js_test_util.h"
-#include "sync/util/weak_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser_sync {

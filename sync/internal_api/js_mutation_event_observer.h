@@ -12,9 +12,9 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "sync/internal_api/sync_manager.h"
+#include "sync/internal_api/public/sync_manager.h"
+#include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/syncable/transaction_observer.h"
-#include "sync/util/weak_handle.h"
 
 namespace tracked_objects {
 class Location;

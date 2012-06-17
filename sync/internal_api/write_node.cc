@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/internal_api/write_node.h"
+#include "sync/internal_api/public/write_node.h"
 
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "sync/engine/nigori_util.h"
-#include "sync/internal_api/base_transaction.h"
+#include "sync/internal_api/public/base_transaction.h"
+#include "sync/internal_api/public/write_transaction.h"
 #include "sync/internal_api/syncapi_internal.h"
-#include "sync/internal_api/write_transaction.h"
 #include "sync/protocol/app_specifics.pb.h"
 #include "sync/protocol/autofill_specifics.pb.h"
 #include "sync/protocol/bookmark_specifics.pb.h"

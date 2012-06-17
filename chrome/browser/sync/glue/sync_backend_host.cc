@@ -41,13 +41,13 @@
 #include "jingle/notifier/base/notifier_options.h"
 #include "net/base/host_port_pair.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "sync/internal_api/base_transaction.h"
+#include "sync/internal_api/public/base_transaction.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
-#include "sync/internal_api/read_transaction.h"
+#include "sync/internal_api/public/read_transaction.h"
+#include "sync/internal_api/public/util/experiments.h"
 #include "sync/notifier/sync_notifier.h"
 #include "sync/protocol/encryption.pb.h"
 #include "sync/protocol/sync.pb.h"
-#include "sync/util/experiments.h"
 #include "sync/util/nigori.h"
 
 static const int kSaveChangesIntervalSeconds = 10;

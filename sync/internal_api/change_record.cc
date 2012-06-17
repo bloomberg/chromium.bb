@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/internal_api/change_record.h"
+#include "sync/internal_api/public/change_record.h"
 
 #include "base/string_number_conversions.h"
 #include "base/values.h"
-#include "sync/internal_api/base_node.h"
-#include "sync/internal_api/read_node.h"
+#include "sync/internal_api/public/base_node.h"
+#include "sync/internal_api/public/read_node.h"
 #include "sync/protocol/proto_value_conversions.h"
 
 namespace sync_api {

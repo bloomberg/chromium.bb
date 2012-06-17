@@ -35,9 +35,9 @@
 #include "googleurl/src/gurl.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/syncable/model_type.h"
+#include "sync/internal_api/public/util/experiments.h"
+#include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 #include "sync/js/sync_js_controller.h"
-#include "sync/util/experiments.h"
-#include "sync/util/unrecoverable_error_handler.h"
 
 class Profile;
 class ProfileSyncComponentsFactory;

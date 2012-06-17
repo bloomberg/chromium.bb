@@ -11,8 +11,8 @@
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
 
-#include "sync/util/unrecoverable_error_handler.h"
-#include "sync/util/weak_handle.h"
+#include "sync/internal_api/public/util/unrecoverable_error_handler.h"
+#include "sync/internal_api/public/util/weak_handle.h"
 
 class ProfileSyncService;
 namespace browser_sync {

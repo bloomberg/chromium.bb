@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/internal_api/change_record.h"
+#include "sync/internal_api/public/change_record.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"

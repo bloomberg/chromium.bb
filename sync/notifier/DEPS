@@ -6,6 +6,7 @@ include_rules = [
   "+net/url_request/url_request_test_util.h",
 
   "+sync/internal_api/public/syncable",
+  "+sync/internal_api/public/util",
   "+sync/protocol/service_constants.h",
   "+sync/util",
 

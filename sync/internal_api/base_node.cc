@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/internal_api/base_node.h"
+#include "sync/internal_api/public/base_node.h"
 
 #include "base/base64.h"
 #include "base/sha1.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "sync/internal_api/base_transaction.h"
+#include "sync/internal_api/public/base_transaction.h"
 #include "sync/internal_api/syncapi_internal.h"
 #include "sync/protocol/app_specifics.pb.h"
 #include "sync/protocol/autofill_specifics.pb.h"

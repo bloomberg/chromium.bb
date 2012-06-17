@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_INTERNAL_API_CHANGE_RECORD_H_
-#define SYNC_INTERNAL_API_CHANGE_RECORD_H_
+#ifndef SYNC_INTERNAL_PUBLIC_API_CHANGE_RECORD_H_
+#define SYNC_INTERNAL_PUBLIC_API_CHANGE_RECORD_H_
 
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/linked_ptr.h"
+#include "sync/internal_api/public/util/immutable.h"
 #include "sync/protocol/password_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
-#include "sync/util/immutable.h"
 
 namespace base {
 class DictionaryValue;
@@ -64,4 +64,4 @@ typedef browser_sync::Immutable<ChangeRecordList> ImmutableChangeRecordList;
 
 }  // namespace sync_api
 
-#endif  // SYNC_INTERNAL_API_CHANGE_RECORD_H_
+#endif  // SYNC_INTERNAL_API_PUBLIC_CHANGE_RECORD_H_

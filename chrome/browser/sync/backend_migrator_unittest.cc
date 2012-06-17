@@ -10,9 +10,10 @@
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "sync/internal_api/public/syncable/model_type_test_util.h"
-#include "sync/internal_api/test_user_share.h"
-#include "sync/internal_api/write_transaction.h"
+#include "sync/internal_api/public/test/test_user_share.h"
+#include "sync/internal_api/public/write_transaction.h"
 #include "sync/protocol/sync.pb.h"
+#include "sync/syncable/syncable.h"  // TODO(tim): Remove. Bug 131130.
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

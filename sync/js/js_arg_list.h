@@ -11,7 +11,7 @@
 #include <string>
 
 #include "base/values.h"
-#include "sync/util/immutable.h"
+#include "sync/internal_api/public/util/immutable.h"
 
 namespace browser_sync {
 

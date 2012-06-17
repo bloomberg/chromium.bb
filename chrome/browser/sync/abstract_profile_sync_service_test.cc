@@ -8,7 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
-#include "sync/internal_api/write_transaction.h"
+#include "sync/internal_api/public/write_transaction.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/syncable/syncable.h"
 #include "sync/test/engine/test_id_factory.h"

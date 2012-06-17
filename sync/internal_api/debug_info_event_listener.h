@@ -10,12 +10,12 @@
 
 #include "base/compiler_specific.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
-#include "sync/internal_api/sync_manager.h"
+#include "sync/internal_api/public/sync_manager.h"
+#include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/js/js_backend.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/sessions/debug_info_getter.h"
 #include "sync/sessions/session_state.h"
-#include "sync/util/weak_handle.h"
 
 namespace sync_api {
 

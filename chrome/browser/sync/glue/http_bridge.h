@@ -18,8 +18,8 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "sync/internal_api/http_post_provider_factory.h"
-#include "sync/internal_api/http_post_provider_interface.h"
+#include "sync/internal_api/public/http_post_provider_factory.h"
+#include "sync/internal_api/public/http_post_provider_interface.h"
 
 class MessageLoop;
 class HttpBridgeTest;

@@ -36,11 +36,14 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
-#include "sync/util/test_unrecoverable_error_handler.h"
-#include "sync/syncable/syncable.h"
 #include "sync/test/fake_encryptor.h"
 #include "sync/test/null_directory_change_delegate.h"
+#include "sync/util/test_unrecoverable_error_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
+
+namespace syncable {
+  class Directory;
+}
 
 namespace browser_sync {
 
@@ -59,11 +62,10 @@ class TestDirectorySetterUpper {
 
   syncable::Directory* directory() { return directory_.get(); }
 
- protected:
+ private:
   syncable::NullDirectoryChangeDelegate delegate_;
   TestUnrecoverableErrorHandler handler_;
 
- private:
   void RunInvariantCheck();
 
   ScopedTempDir temp_dir_;

@@ -10,11 +10,11 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
+#include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/js/js_backend.h"
 #include "sync/js/js_controller.h"
 #include "sync/js/js_event_handler.h"
 #include "sync/js/js_reply_handler.h"
-#include "sync/util/weak_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace base {

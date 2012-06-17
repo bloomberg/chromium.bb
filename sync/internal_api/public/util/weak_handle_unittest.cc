@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/util/weak_handle.h"
+#include "sync/internal_api/public/util/weak_handle.h"
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"

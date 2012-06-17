@@ -13,10 +13,10 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/js/js_arg_list.h"
 #include "sync/js/js_controller.h"
 #include "sync/js/js_event_handler.h"
-#include "sync/util/weak_handle.h"
 
 namespace browser_sync {
 

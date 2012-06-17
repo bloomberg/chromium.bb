@@ -9,8 +9,8 @@
 
 #include "base/memory/weak_ptr.h"
 #include "jingle/notifier/base/notifier_options.h"
+#include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/notifier/invalidation_state_tracker.h"
-#include "sync/util/weak_handle.h"
 
 namespace sync_notifier {
 

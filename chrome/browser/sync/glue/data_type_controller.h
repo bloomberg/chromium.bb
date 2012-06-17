@@ -16,7 +16,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/syncable/model_type.h"
-#include "sync/util/unrecoverable_error_handler.h"
+#include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 
 class SyncError;
 

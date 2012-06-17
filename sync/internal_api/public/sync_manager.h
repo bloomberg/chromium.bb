@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_INTERNAL_API_SYNC_MANAGER_H_
-#define SYNC_INTERNAL_API_SYNC_MANAGER_H_
+#ifndef SYNC_INTERNAL_API_PUBLIC_SYNC_MANAGER_H_
+#define SYNC_INTERNAL_API_PUBLIC_SYNC_MANAGER_H_
 
 #include <string>
 #include <vector>
@@ -15,15 +15,15 @@
 #include "base/task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "base/time.h"
-#include "sync/internal_api/change_record.h"
-#include "sync/internal_api/configure_reason.h"
+#include "sync/internal_api/public/change_record.h"
+#include "sync/internal_api/public/configure_reason.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/engine/sync_status.h"
 #include "sync/internal_api/public/syncable/model_type.h"
+#include "sync/internal_api/public/util/report_unrecoverable_error_function.h"
+#include "sync/internal_api/public/util/unrecoverable_error_handler.h"
+#include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/protocol/sync_protocol_error.h"
-#include "sync/util/report_unrecoverable_error_function.h"
-#include "sync/util/unrecoverable_error_handler.h"
-#include "sync/util/weak_handle.h"
 
 namespace browser_sync {
 struct ConfigurationParams;
@@ -577,4 +577,4 @@ const char* PassphraseRequiredReasonToString(PassphraseRequiredReason reason);
 
 }  // namespace sync_api
 
-#endif  // SYNC_INTERNAL_API_SYNC_MANAGER_H_
+#endif  // SYNC_INTERNAL_API_PUBLIC_SYNC_MANAGER_H_

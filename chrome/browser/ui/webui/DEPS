@@ -3,7 +3,7 @@ include_rules = [
   "+js2webui/chrome/test/data",
 
   "+sync/js",
-  "+sync/util/weak_handle.h",
+  "+sync/internal_api/public/util/weak_handle.h",
 
   # Other libraries.
   "+third_party/angle",  # For ANGLE version.

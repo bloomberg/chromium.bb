@@ -6,7 +6,7 @@
 #define SYNC_TEST_NULL_TRANSACTION_OBSERVER_H_
 #pragma once
 
-#include "sync/util/weak_handle.h"
+#include "sync/internal_api/public/util/weak_handle.h"
 
 namespace syncable {
 

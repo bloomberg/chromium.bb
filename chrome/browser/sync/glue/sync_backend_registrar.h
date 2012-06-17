@@ -14,8 +14,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
+#include "sync/internal_api/public/sync_manager.h"
 #include "sync/internal_api/public/syncable/model_type.h"
-#include "sync/internal_api/sync_manager.h"
 
 class MessageLoop;
 class Profile;

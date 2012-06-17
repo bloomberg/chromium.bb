@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "sync/util/unrecoverable_error_handler.h"
+#include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 
 namespace browser_sync {
 

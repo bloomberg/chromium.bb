@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_INTERNAL_API_READ_TRANSACTION_H_
-#define SYNC_INTERNAL_API_READ_TRANSACTION_H_
+#ifndef SYNC_INTERNAL_API_PUBLIC_READ_TRANSACTION_H_
+#define SYNC_INTERNAL_API_PUBLIC_READ_TRANSACTION_H_
 
 #include "base/compiler_specific.h"
-#include "sync/internal_api/base_transaction.h"
+#include "sync/internal_api/public/base_transaction.h"
 
 namespace tracked_objects {
 class Location;
@@ -43,4 +43,4 @@ class ReadTransaction : public BaseTransaction {
 
 } // namespace sync_api
 
-#endif  // SYNC_INTERNAL_API_READ_TRANSACTION_H_
+#endif  // SYNC_INTERNAL_API_PUBLIC_READ_TRANSACTION_H_

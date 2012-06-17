@@ -17,10 +17,10 @@
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/api/sync_error.h"
-#include "sync/internal_api/read_node.h"
-#include "sync/internal_api/read_transaction.h"
-#include "sync/internal_api/write_node.h"
-#include "sync/internal_api/write_transaction.h"
+#include "sync/internal_api/public/read_node.h"
+#include "sync/internal_api/public/read_transaction.h"
+#include "sync/internal_api/public/write_node.h"
+#include "sync/internal_api/public/write_transaction.h"
 #include "sync/util/cryptographer.h"
 
 using content::BrowserThread;

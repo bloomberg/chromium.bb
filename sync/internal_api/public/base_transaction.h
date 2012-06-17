@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_INTERNAL_API_BASE_TRANSACTION_H_
-#define SYNC_INTERNAL_API_BASE_TRANSACTION_H_
+#ifndef SYNC_INTERNAL_API_PUBLIC_BASE_TRANSACTION_H_
+#define SYNC_INTERNAL_API_PUBLIC_BASE_TRANSACTION_H_
 #pragma once
 
-#include "sync/internal_api/user_share.h"
+#include "sync/internal_api/public/user_share.h"
 
 #include "sync/util/cryptographer.h"
 
@@ -51,4 +51,4 @@ syncable::ModelTypeSet GetEncryptedTypes(
 
 }  // namespace sync_api
 
-#endif  // SYNC_INTERNAL_API_BASE_TRANSACTION_H_
+#endif  // SYNC_INTERNAL_API_PUBLIC_BASE_TRANSACTION_H_

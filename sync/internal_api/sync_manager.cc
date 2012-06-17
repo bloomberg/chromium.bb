@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/internal_api/sync_manager.h"
+#include "sync/internal_api/public/sync_manager.h"
 
 #include <string>
 
@@ -25,22 +25,23 @@
 #include "sync/engine/sync_scheduler.h"
 #include "sync/engine/syncer_types.h"
 #include "sync/engine/throttled_data_type_tracker.h"
-#include "sync/internal_api/base_node.h"
 #include "sync/internal_api/change_reorder_buffer.h"
-#include "sync/internal_api/configure_reason.h"
 #include "sync/internal_api/debug_info_event_listener.h"
 #include "sync/internal_api/js_mutation_event_observer.h"
 #include "sync/internal_api/js_sync_manager_observer.h"
+#include "sync/internal_api/public/base_node.h"
+#include "sync/internal_api/public/configure_reason.h"
 #include "sync/internal_api/public/engine/polling_constants.h"
+#include "sync/internal_api/public/read_node.h"
+#include "sync/internal_api/public/read_transaction.h"
 #include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/internal_api/public/syncable/model_type_payload_map.h"
-#include "sync/internal_api/read_node.h"
-#include "sync/internal_api/read_transaction.h"
+#include "sync/internal_api/public/user_share.h"
+#include "sync/internal_api/public/util/experiments.h"
+#include "sync/internal_api/public/write_node.h"
+#include "sync/internal_api/public/write_transaction.h"
 #include "sync/internal_api/syncapi_internal.h"
 #include "sync/internal_api/syncapi_server_connection_manager.h"
-#include "sync/internal_api/user_share.h"
-#include "sync/internal_api/write_node.h"
-#include "sync/internal_api/write_transaction.h"
 #include "sync/js/js_arg_list.h"
 #include "sync/js/js_backend.h"
 #include "sync/js/js_event_details.h"
@@ -54,7 +55,6 @@
 #include "sync/syncable/directory_change_delegate.h"
 #include "sync/syncable/syncable.h"
 #include "sync/util/cryptographer.h"
-#include "sync/util/experiments.h"
 #include "sync/util/get_session_name.h"
 #include "sync/util/time.h"
 

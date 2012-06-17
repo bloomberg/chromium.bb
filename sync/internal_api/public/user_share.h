@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_INTERNAL_API_USER_SHARE_H_
-#define SYNC_INTERNAL_API_USER_SHARE_H_
+#ifndef SYNC_INTERNAL_API_PUBLIC_USER_SHARE_H_
+#define SYNC_INTERNAL_API_PUBLIC_USER_SHARE_H_
 #pragma once
 
 #include <string>
@@ -33,4 +33,4 @@ struct UserShare {
 
 }
 
-#endif  // SYNC_INTERNAL_API_USER_SHARE_H_
+#endif  // SYNC_INTERNAL_API_PUBLIC_USER_SHARE_H_

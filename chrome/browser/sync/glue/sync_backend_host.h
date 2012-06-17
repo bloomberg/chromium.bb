@@ -20,17 +20,17 @@
 #include "chrome/browser/sync/glue/chrome_sync_notification_bridge.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "googleurl/src/gurl.h"
-#include "sync/internal_api/configure_reason.h"
+#include "sync/internal_api/public/configure_reason.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
+#include "sync/internal_api/public/sync_manager.h"
 #include "sync/internal_api/public/syncable/model_type.h"
-#include "sync/internal_api/sync_manager.h"
+#include "sync/internal_api/public/util/report_unrecoverable_error_function.h"
+#include "sync/internal_api/public/util/unrecoverable_error_handler.h"
+#include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/notifier/sync_notifier_factory.h"
 #include "sync/protocol/encryption.pb.h"
 #include "sync/protocol/sync_protocol_error.h"
-#include "sync/util/report_unrecoverable_error_function.h"
-#include "sync/util/unrecoverable_error_handler.h"
-#include "sync/util/weak_handle.h"
 
 class MessageLoop;
 class Profile;

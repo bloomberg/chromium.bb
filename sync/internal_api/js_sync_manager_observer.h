@@ -10,9 +10,9 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "sync/internal_api/sync_manager.h"
+#include "sync/internal_api/public/sync_manager.h"
+#include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/protocol/sync_protocol_error.h"
-#include "sync/util/weak_handle.h"
 
 namespace tracked_objects {
 class Location;

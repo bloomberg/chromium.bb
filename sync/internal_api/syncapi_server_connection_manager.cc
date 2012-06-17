@@ -6,8 +6,8 @@
 
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
-#include "sync/internal_api/http_post_provider_factory.h"
-#include "sync/internal_api/http_post_provider_interface.h"
+#include "sync/internal_api/public/http_post_provider_factory.h"
+#include "sync/internal_api/public/http_post_provider_interface.h"
 
 using browser_sync::HttpResponse;
 

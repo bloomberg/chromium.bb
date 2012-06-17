@@ -11,9 +11,9 @@
 #include "jingle/notifier/listener/fake_push_client.h"
 #include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/internal_api/public/syncable/model_type_payload_map.h"
+#include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/notifier/chrome_invalidation_client.h"
 #include "sync/notifier/mock_invalidation_state_tracker.h"
-#include "sync/util/weak_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

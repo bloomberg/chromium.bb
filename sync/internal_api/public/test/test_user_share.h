@@ -27,15 +27,16 @@
 //   }
 //
 
-#ifndef SYNC_INTERNAL_API_TEST_USER_SHARE_H_
-#define SYNC_INTERNAL_API_TEST_USER_SHARE_H_
+#ifndef SYNC_INTERNAL_API_PUBLIC_TEST_TEST_USER_SHARE_H_
+#define SYNC_INTERNAL_API_PUBLIC_TEST_TEST_USER_SHARE_H_
 #pragma once
 
 #include "base/basictypes.h"
-#include "sync/internal_api/user_share.h"
-#include "sync/test/engine/test_directory_setter_upper.h"
+#include "sync/internal_api/public/user_share.h"
 
 namespace browser_sync {
+
+class TestDirectorySetterUpper;
 
 class TestUserShare {
  public:
@@ -56,7 +57,7 @@ class TestUserShare {
   sync_api::UserShare* user_share();
 
  private:
-  TestDirectorySetterUpper dir_maker_;
+  scoped_ptr<TestDirectorySetterUpper> dir_maker_;
   scoped_ptr<sync_api::UserShare> user_share_;
 
   DISALLOW_COPY_AND_ASSIGN(TestUserShare);
@@ -64,4 +65,4 @@ class TestUserShare {
 
 }  // namespace browser_sync
 
-#endif  // SYNC_INTERNAL_API_TEST_USER_SHARE_H_
+#endif  // SYNC_INTERNAL_API_PUBLIC_TEST_TEST_USER_SHARE_H_

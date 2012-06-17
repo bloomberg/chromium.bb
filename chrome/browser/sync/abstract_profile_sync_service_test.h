@@ -15,7 +15,7 @@
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "content/public/test/test_browser_thread.h"
-#include "sync/internal_api/change_record.h"
+#include "sync/internal_api/public/change_record.h"
 #include "sync/internal_api/public/syncable/model_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

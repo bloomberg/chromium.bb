@@ -15,8 +15,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
-#include "sync/internal_api/base_transaction.h"
-#include "sync/internal_api/change_record.h"
+#include "sync/internal_api/public/base_transaction.h"
+#include "sync/internal_api/public/change_record.h"
 #include "sync/protocol/sync.pb.h"
 
 namespace sync_api {

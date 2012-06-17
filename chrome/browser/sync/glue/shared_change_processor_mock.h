@@ -8,7 +8,7 @@
 
 #include "chrome/browser/sync/glue/shared_change_processor.h"
 #include "sync/api/sync_change.h"
-#include "sync/util/unrecoverable_error_handler.h"
+#include "sync/internal_api/public/util/unrecoverable_error_handler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace browser_sync {

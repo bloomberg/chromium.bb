@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_INTERNAL_API_BASE_NODE_H_
-#define SYNC_INTERNAL_API_BASE_NODE_H_
+#ifndef SYNC_INTERNAL_API_PUBLIC_BASE_NODE_H_
+#define SYNC_INTERNAL_API_PUBLIC_BASE_NODE_H_
 #pragma once
 
 #include <string>
@@ -252,4 +252,4 @@ class BaseNode {
 
 }  // namespace sync_api
 
-#endif  // SYNC_INTERNAL_API_BASE_NODE_H_
+#endif  // SYNC_INTERNAL_API_PUBLIC_BASE_NODE_H_

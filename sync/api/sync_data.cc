@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
-#include "sync/internal_api/base_node.h"
+#include "sync/internal_api/public/base_node.h"
 #include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/protocol/proto_value_conversions.h"
 #include "sync/protocol/sync.pb.h"

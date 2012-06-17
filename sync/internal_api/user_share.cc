@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/internal_api/user_share.h"
+#include "sync/internal_api/public/user_share.h"
 
 #include "sync/syncable/syncable.h"
 

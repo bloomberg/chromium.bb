@@ -57,11 +57,11 @@
 #include "grit/generated_resources.h"
 #include "net/cookies/cookie_monster.h"
 #include "sync/api/sync_error.h"
-#include "sync/internal_api/configure_reason.h"
+#include "sync/internal_api/public/configure_reason.h"
+#include "sync/internal_api/public/util/experiments.h"
 #include "sync/js/js_arg_list.h"
 #include "sync/js/js_event_details.h"
 #include "sync/util/cryptographer.h"
-#include "sync/util/experiments.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using browser_sync::ChangeProcessor;

@@ -11,14 +11,14 @@
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_error.h"
 #include "sync/api/syncable_service.h"
-#include "sync/internal_api/base_node.h"
-#include "sync/internal_api/change_record.h"
-#include "sync/internal_api/read_node.h"
-#include "sync/internal_api/read_transaction.h"
-#include "sync/internal_api/write_node.h"
-#include "sync/internal_api/write_transaction.h"
+#include "sync/internal_api/public/base_node.h"
+#include "sync/internal_api/public/change_record.h"
+#include "sync/internal_api/public/read_node.h"
+#include "sync/internal_api/public/read_transaction.h"
+#include "sync/internal_api/public/util/unrecoverable_error_handler.h"
+#include "sync/internal_api/public/write_node.h"
+#include "sync/internal_api/public/write_transaction.h"
 #include "sync/syncable/syncable.h"  // TODO(tim): Bug 123674.
-#include "sync/util/unrecoverable_error_handler.h"
 
 using content::BrowserThread;
 
