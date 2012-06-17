@@ -217,6 +217,10 @@ bool DoesBookmarkContainWords(const BookmarkNode* node,
           net::UnescapeRule::NORMAL, NULL, NULL, NULL), words);
 }
 
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+bool g_bookmark_bar_view_animations_disabled = false;
+#endif
+
 }  // namespace
 
 namespace bookmark_utils {
@@ -780,5 +784,15 @@ void RecordBookmarkLaunch(BookmarkLaunchLocation location) {
   UMA_HISTOGRAM_ENUMERATION("Bookmarks.LaunchLocation", location, LAUNCH_LIMIT);
 #endif
 }
+
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+void DisableBookmarkBarViewAnimationsForTesting(bool disabled) {
+  g_bookmark_bar_view_animations_disabled = disabled;
+}
+
+bool IsBookmarkBarViewAnimationsDisabled() {
+  return g_bookmark_bar_view_animations_disabled;
+}
+#endif
 
 }  // namespace bookmark_utils

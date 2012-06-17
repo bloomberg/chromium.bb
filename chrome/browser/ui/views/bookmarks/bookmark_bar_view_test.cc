@@ -167,7 +167,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
   }
 
   virtual void SetUp() {
-    BookmarkBarView::testing_ = true;
+    bookmark_utils::DisableBookmarkBarViewAnimationsForTesting(true);
 
     profile_.reset(new TestingProfile());
     profile_->CreateBookmarkModel(true);
@@ -226,7 +226,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     MessageLoop::current()->Run();
 
     ViewEventTestBase::TearDown();
-    BookmarkBarView::testing_ = false;
+    bookmark_utils::DisableBookmarkBarViewAnimationsForTesting(false);
     views::ViewsDelegate::views_delegate = NULL;
   }
 

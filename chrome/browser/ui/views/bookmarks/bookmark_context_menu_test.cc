@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,7 +53,7 @@ class BookmarkContextMenuTest : public testing::Test {
 
   virtual void SetUp() {
 #if defined(OS_WIN)
-    BookmarkBarView::testing_ = true;
+    bookmark_utils::DisableBookmarkBarViewAnimationsForTesting(true);
 #endif
 
     profile_.reset(new TestingProfile());
@@ -67,7 +67,7 @@ class BookmarkContextMenuTest : public testing::Test {
 
   virtual void TearDown() {
 #if defined(OS_WIN)
-    BookmarkBarView::testing_ = false;
+    bookmark_utils::DisableBookmarkBarViewAnimationsForTesting(false);
 #endif
 
     // Flush the message loop to make application verifiers happy.

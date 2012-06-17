@@ -241,9 +241,6 @@ class BookmarkBarView : public DetachableToolbarView,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // If true we're running tests. This short circuits a couple of animations.
-  static bool testing_;
-
  private:
   class ButtonSeparatorView;
   struct DropInfo;
