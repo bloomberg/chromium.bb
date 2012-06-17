@@ -157,7 +157,8 @@ void URLToRequest(const GURL& url, std::string* source_name,
 // chrome-internal resource requests asynchronously.
 // It hands off URL requests to ChromeURLDataManager, which asynchronously
 // calls back once the data is available.
-class URLRequestChromeJob : public net::URLRequestJob {
+class URLRequestChromeJob : public net::URLRequestJob,
+                            public base::SupportsWeakPtr<URLRequestChromeJob> {
  public:
   URLRequestChromeJob(net::URLRequest* request,
                       ChromeURLDataManagerBackend* backend);
@@ -340,7 +341,7 @@ namespace {
 // the IO thread.
 void GetMimeTypeOnUI(ChromeURLDataManager::DataSource* source,
                      const std::string& path,
-                     URLRequestChromeJob* job) {
+                     const base::WeakPtr<URLRequestChromeJob>& job) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   std::string mime_type = source->GetMimeType(path);
   BrowserThread::PostTask(
@@ -469,8 +470,7 @@ bool ChromeURLDataManagerBackend::StartRequest(const GURL& url,
         FROM_HERE,
         base::Bind(&GetMimeTypeOnUI,
                    scoped_refptr<ChromeURLDataManager::DataSource>(source),
-                   path,
-                   scoped_refptr<URLRequestChromeJob>(job)));
+                   path, job->AsWeakPtr()));
 
     // The DataSource wants StartDataRequest to be called on a specific thread,
     // usually the UI thread, for this path.
