@@ -378,7 +378,8 @@ void Sandbox::installFilter() {
   // system memory allocator that is in effect, these operators can result
   // in system calls to things like munmap() or brk().
   struct sock_filter bpf[program->size()];
-  const struct sock_fprog prog = { program->size(), bpf };
+  const struct sock_fprog prog = {
+    static_cast<unsigned short>(program->size()), bpf };
   memcpy(bpf, &(*program)[0], sizeof(bpf));
   delete program;
 
