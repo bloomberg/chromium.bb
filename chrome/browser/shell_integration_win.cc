@@ -75,15 +75,14 @@ ShellIntegration::DefaultWebClientState ProbeCurrentDefaultHandlers(
   if (FAILED(hr))
     return ShellIntegration::UNKNOWN_DEFAULT_WEB_CLIENT;
 
-  string16 prog_id(ShellUtil::kChromeHTMLProgId);
-
-  // If a user specific default browser entry exists, we check for that ProgID
-  // being default. If not, then the ProgID is ChromeHTML or ChromiumHTML so we
-  // do not append a suffix to the ProgID.
-  string16 suffix;
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  if (ShellUtil::GetUserSpecificDefaultBrowserSuffix(dist, &suffix))
-    prog_id += suffix;
+  FilePath chrome_exe;
+  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
+    NOTREACHED();
+    return ShellIntegration::UNKNOWN_DEFAULT_WEB_CLIENT;
+  }
+  string16 prog_id(ShellUtil::kChromeHTMLProgId);
+  prog_id += ShellUtil::GetCurrentInstallationSuffix(dist, chrome_exe.value());
 
   for (size_t i = 0; i < num_protocols; ++i) {
     base::win::ScopedCoMem<wchar_t> current_app;
@@ -108,14 +107,13 @@ ShellIntegration::DefaultWebClientState ProbeAppIsDefaultHandlers(
     return ShellIntegration::UNKNOWN_DEFAULT_WEB_CLIENT;
 
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  FilePath chrome_exe;
+  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
+    NOTREACHED();
+    return ShellIntegration::UNKNOWN_DEFAULT_WEB_CLIENT;
+  }
   string16 app_name(dist->GetApplicationName());
-
-  // If a user specific default browser entry exists, we check for that
-  // app name being default. If not, then default browser is just called
-  // Google Chrome or Chromium so we do not append a suffix to the app name.
-  string16 suffix;
-  if (ShellUtil::GetUserSpecificDefaultBrowserSuffix(dist, &suffix))
-    app_name += suffix;
+  app_name += ShellUtil::GetCurrentInstallationSuffix(dist, chrome_exe.value());
 
   BOOL result;
   for (size_t i = 0; i < num_protocols; ++i) {

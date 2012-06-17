@@ -7,8 +7,6 @@
 #include <shellapi.h>
 #include <shlobj.h>
 
-#include <string>
-
 #include "base/at_exit.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
@@ -17,6 +15,7 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/scoped_temp_dir.h"
+#include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -99,7 +98,7 @@ DWORD UnPackArchive(const FilePath& archive,
   // First uncompress the payload. This could be a differential
   // update (patch.7z) or full archive (chrome.7z). If this uncompress fails
   // return with error.
-  std::wstring unpacked_file;
+  string16 unpacked_file;
   int32 ret = LzmaUtil::UnPackArchive(archive.value(), temp_path.value(),
                                       &unpacked_file);
   if (ret != NO_ERROR)
@@ -234,7 +233,7 @@ installer::InstallStatus RenameChromeExecutables(
   // Add work items to delete the "opv", "cpv", and "cmd" values from all
   // distributions.
   HKEY reg_root = installer_state->root_key();
-  std::wstring version_key;
+  string16 version_key;
   for (int i = 0; i < num_dists; ++i) {
     version_key = dists[i]->GetVersionKey();
     install_list->AddDeleteRegValueWorkItem(
@@ -663,7 +662,8 @@ installer::InstallStatus InstallProductsHelper(
             temp_path.path(), prefs_source_path, prefs, *installer_version);
 
         int install_msg_base = IDS_INSTALL_FAILED_BASE;
-        std::wstring chrome_exe;
+        string16 chrome_exe;
+        string16 quoted_chrome_exe;
         if (install_status == installer::SAME_VERSION_REPAIR_FAILED) {
           if (installer_state.FindProduct(BrowserDistribution::CHROME_FRAME)) {
             install_msg_base = IDS_SAME_VERSION_REPAIR_FAILED_CF_BASE;
@@ -679,7 +679,7 @@ installer::InstallStatus InstallProductsHelper(
           } else {
             chrome_exe = installer_state.target_path()
                 .Append(installer::kChromeExe).value();
-            chrome_exe = L"\"" + chrome_exe + L"\"";
+            quoted_chrome_exe = L"\"" + chrome_exe + L"\"";
             install_msg_base = 0;
           }
         }
@@ -707,7 +707,7 @@ installer::InstallStatus InstallProductsHelper(
              install_status != installer::IN_USE_UPDATED);
 
         installer_state.WriteInstallerResult(install_status, install_msg_base,
-            write_chrome_launch_string ? &chrome_exe : NULL);
+            write_chrome_launch_string ? &quoted_chrome_exe : NULL);
 
         if (install_status == installer::FIRST_INSTALL_SUCCESS) {
           VLOG(1) << "First install successful.";
@@ -724,8 +724,11 @@ installer::InstallStatus InstallProductsHelper(
                    (install_status == installer::IN_USE_UPDATED)) {
           const Product* chrome = installer_state.FindProduct(
               BrowserDistribution::CHROME_BROWSER);
-          if (chrome != NULL)
-            installer::RemoveChromeLegacyRegistryKeys(chrome->distribution());
+          if (chrome != NULL) {
+            DCHECK_NE(chrome_exe, string16());
+            installer::RemoveChromeLegacyRegistryKeys(chrome->distribution(),
+                                                      chrome_exe);
+          }
         }
       }
     }
@@ -901,9 +904,9 @@ installer::InstallStatus UninstallProducts(
   return install_status;
 }
 
-installer::InstallStatus ShowEULADialog(const std::wstring& inner_frame) {
+installer::InstallStatus ShowEULADialog(const string16& inner_frame) {
   VLOG(1) << "About to show EULA";
-  std::wstring eula_path = installer::GetLocalizedEulaResource();
+  string16 eula_path = installer::GetLocalizedEulaResource();
   if (eula_path.empty()) {
     LOG(ERROR) << "No EULA path available";
     return installer::EULA_REJECTED;
@@ -945,10 +948,10 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
     if (!temp_path.CreateUniqueTempDir()) {
       PLOG(ERROR) << "Could not create temporary path.";
     } else {
-      std::wstring setup_patch = cmd_line.GetSwitchValueNative(
+      string16 setup_patch = cmd_line.GetSwitchValueNative(
           installer::switches::kUpdateSetupExe);
       VLOG(1) << "Opening archive " << setup_patch;
-      std::wstring uncompressed_patch;
+      string16 uncompressed_patch;
       if (LzmaUtil::UnPackArchive(setup_patch, temp_path.path().value(),
                                   &uncompressed_patch) == NO_ERROR) {
         FilePath old_setup_exe = cmd_line.GetProgram();
@@ -980,7 +983,7 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
   } else if (cmd_line.HasSwitch(installer::switches::kShowEula)) {
     // Check if we need to show the EULA. If it is passed as a command line
     // then the dialog is shown and regardless of the outcome setup exits here.
-    std::wstring inner_frame =
+    string16 inner_frame =
         cmd_line.GetSwitchValueNative(installer::switches::kShowEula);
     *exit_code = ShowEULADialog(inner_frame);
     if (installer::EULA_REJECTED != *exit_code) {
@@ -1009,9 +1012,9 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
       // These options should only be used when setup.exe is launched with admin
       // rights. We do not make any user specific changes with this option.
       DCHECK(IsUserAnAdmin());
-      std::wstring chrome_exe(cmd_line.GetSwitchValueNative(
+      string16 chrome_exe(cmd_line.GetSwitchValueNative(
           installer::switches::kRegisterChromeBrowser));
-      std::wstring suffix;
+      string16 suffix;
       if (cmd_line.HasSwitch(
           installer::switches::kRegisterChromeBrowserSuffix)) {
         suffix = cmd_line.GetSwitchValueNative(
@@ -1019,7 +1022,7 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
       }
       if (cmd_line.HasSwitch(
           installer::switches::kRegisterURLProtocol)) {
-        std::wstring protocol = cmd_line.GetSwitchValueNative(
+        string16 protocol = cmd_line.GetSwitchValueNative(
             installer::switches::kRegisterURLProtocol);
         // ShellUtil::RegisterChromeForProtocol performs all registration
         // done by ShellUtil::RegisterChromeBrowser, as well as registering
@@ -1046,7 +1049,7 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
     // Here we delete Chrome browser registration. This option should only
     // be used when setup.exe is launched with admin rights. We do not
     // make any user specific changes in this option.
-    std::wstring suffix;
+    string16 suffix;
     if (cmd_line.HasSwitch(
         installer::switches::kRegisterChromeBrowserSuffix)) {
       suffix = cmd_line.GetSwitchValueNative(
@@ -1181,8 +1184,8 @@ class AutoCom {
 // Returns the Custom information for the client identified by the exe path
 // passed in. This information is used for crash reporting.
 google_breakpad::CustomClientInfo* GetCustomInfo(const wchar_t* exe_path) {
-  std::wstring product;
-  std::wstring version;
+  string16 product;
+  string16 version;
   scoped_ptr<FileVersionInfo>
       version_info(FileVersionInfo::CreateFileVersionInfo(FilePath(exe_path)));
   if (version_info.get()) {
@@ -1227,7 +1230,7 @@ google_breakpad::ExceptionHandler* InitializeCrashReporting(
   // Build the pipe name. It can be either:
   // System-wide install: "NamedPipe\GoogleCrashServices\S-1-5-18"
   // Per-user install: "NamedPipe\GoogleCrashServices\<user SID>"
-  std::wstring user_sid = kSystemPrincipalSid;
+  string16 user_sid = kSystemPrincipalSid;
 
   if (!system_install) {
     if (!base::win::GetUserSidString(&user_sid)) {
@@ -1235,7 +1238,7 @@ google_breakpad::ExceptionHandler* InitializeCrashReporting(
     }
   }
 
-  std::wstring pipe_name = kGoogleUpdatePipeName;
+  string16 pipe_name = kGoogleUpdatePipeName;
   pipe_name += user_sid;
 
   google_breakpad::ExceptionHandler* breakpad =

@@ -360,8 +360,8 @@ bool InstallUtil::HasDelegateExecuteHandler(BrowserDistribution* dist,
 }
 
 // This method tries to delete a registry key and logs an error message
-// in case of failure. It returns true if deletion is successful,
-// otherwise false.
+// in case of failure. It returns true if deletion is successful (or the key did
+// not exist), otherwise false.
 bool InstallUtil::DeleteRegistryKey(HKEY root_key,
                                     const string16& key_path) {
   VLOG(1) << "Deleting registry key " << key_path;
@@ -375,20 +375,19 @@ bool InstallUtil::DeleteRegistryKey(HKEY root_key,
 }
 
 // This method tries to delete a registry value and logs an error message
-// in case of failure. It returns true if deletion is successful,
-// otherwise false.
+// in case of failure. It returns true if deletion is successful (or the key did
+// not exist), otherwise false.
 bool InstallUtil::DeleteRegistryValue(HKEY reg_root,
                                       const string16& key_path,
                                       const string16& value_name) {
-  RegKey key(reg_root, key_path.c_str(), KEY_ALL_ACCESS);
-  VLOG(1) << "Deleting registry value " << value_name;
-  if (key.HasValue(value_name.c_str())) {
-    LONG result = key.DeleteValue(value_name.c_str());
-    if (result != ERROR_SUCCESS) {
-      LOG(ERROR) << "Failed to delete registry value: " << value_name
-                 << " error: " << result;
-      return false;
-    }
+  RegKey key;
+  LONG result = key.Open(reg_root, key_path.c_str(), KEY_SET_VALUE);
+  if (result == ERROR_SUCCESS)
+    result = key.DeleteValue(value_name.c_str());
+  if (result != ERROR_SUCCESS && result != ERROR_FILE_NOT_FOUND) {
+    LOG(ERROR) << "Failed to delete registry value: " << value_name
+               << " error: " << result;
+    return false;
   }
   return true;
 }

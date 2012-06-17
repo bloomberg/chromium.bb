@@ -122,6 +122,13 @@ class ShellUtil {
   // Registry value name for the DelegateExecute verb handler.
   static const wchar_t* kRegDelegateExecute;
 
+  // Returns true if |chrome_exe| is registered in HKLM with |suffix|.
+  // Note: This only checks one deterministic key in HKLM for |chrome_exe| and
+  // doesn't otherwise validate a full Chrome install in HKLM.
+  static bool QuickIsChromeRegisteredInHKLM(BrowserDistribution* dist,
+                                            const string16& chrome_exe,
+                                            const string16& suffix);
+
   // Creates Chrome shortcut on the Desktop.
   // |dist| gives the type of browser distribution currently in use.
   // |chrome_exe| provides the target path information.
@@ -208,15 +215,24 @@ class ShellUtil {
   static void GetRegisteredBrowsers(BrowserDistribution* dist,
                                     std::map<string16, string16>* browsers);
 
-  // This function gets a suffix (user's login name) that can be added
-  // to Chromium default browser entry in the registry to create a unique name
-  // if there are multiple users on the machine, each with their own copy of
-  // Chromium that they want to set as default browser.
-  // This suffix value is assigned to |entry|. The function also checks for
-  // existence of Default Browser registry key with this suffix and
-  // returns true if it exists. In all other cases it returns false.
-  static bool GetUserSpecificDefaultBrowserSuffix(BrowserDistribution* dist,
-                                                  string16* entry);
+  // Returns the suffix this user's Chrome install is registered with.
+  // Always returns the empty string on system-level installs.
+  //
+  // This method is meant for external methods which need to know the suffix of
+  // the current install at run-time, not for install-time decisions.
+  // There are no guarantees that this suffix will not change later:
+  // (e.g. if two user-level installs were previously installed in parallel on
+  // the same machine, both without admin rights and with no user-level install
+  // having claimed the non-suffixed HKLM registrations, they both have no
+  // suffix in their progId entries (as per the old suffix rules). If they were
+  // to both fully register (i.e. click "Make Chrome Default" and go through
+  // UAC; or upgrade to Win8 and get the automatic no UAC full registration)
+  // they would then both get a suffixed registration as per the new suffix
+  // rules).
+  //
+  // |chrome_exe| The path to the currently installed (or running) chrome.exe.
+  static string16 GetCurrentInstallationSuffix(BrowserDistribution* dist,
+                                               const string16& chrome_exe);
 
   // Make Chrome the default browser. This function works by going through
   // the url protocols and file associations that are related to general
