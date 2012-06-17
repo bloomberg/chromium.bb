@@ -353,7 +353,7 @@ EXAMPLE_LIST = [
 ]
 
 LIBRARY_LIST = [
-  'gles2',
+#  'gles2',
 ]
 
 

@@ -31,10 +31,9 @@ NACL_LDFLAGS:=-g -pthread -lppapi_cpp -lppapi
 __PROJECT_SETTINGS__
 
 #
-# Project Targets
+# Default target
 #
 __PROJECT_TARGETS__
-
 
 #
 # Alias for standard commands
@@ -81,27 +80,11 @@ export CYGWIN
 
 
 #
-# NaCl Tools
+# Defaults for TOOLS
 #
-NEWLIB_CC?=$(TC_PATH)/$(OSNAME)_x86_newlib/bin/i686-nacl-gcc -c
-NEWLIB_CXX?=$(TC_PATH)/$(OSNAME)_x86_newlib/bin/i686-nacl-g++ -c
-NEWLIB_LINK?=$(TC_PATH)/$(OSNAME)_x86_newlib/bin/i686-nacl-g++ -Wl,-as-needed
-NEWLIB_DUMP?=$(TC_PATH)/$(OSNAME)_x86_newlib/x86_64-nacl/bin/objdump
-NEWLIB_PATHS:=
+__PROJECT_TOOLS__
 
-GLIBC_CC?=$(TC_PATH)/$(OSNAME)_x86_glibc/bin/i686-nacl-gcc -c
-GLIBC_CXX?=$(TC_PATH)/$(OSNAME)_x86_glibc/bin/i686-nacl-g++ -c
-GLIBC_LINK?=$(TC_PATH)/$(OSNAME)_x86_glibc/bin/i686-nacl-g++ -Wl,-as-needed
-GLIBC_DUMP?=$(TC_PATH)/$(OSNAME)_x86_glibc/x86_64-nacl/bin/objdump
-GLIBC_PATHS:=-L $(TC_PATH)/$(OSNAME)_x86_glibc/x86_64-nacl/lib32
-GLIBC_PATHS+=-L $(TC_PATH)/$(OSNAME)_x86_glibc/x86_64-nacl/lib
 
-PNACL_CC?=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-clang -c
-PNACL_CXX?=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-clang -c
-PNACL_LINK?=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-clang
-PNACL_DUMP?=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/objdump
-PNACL_PATHS:=
-TRANSLATE:=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-translate
 #
 # NMF Manifiest generation
 #
@@ -110,7 +93,6 @@ TRANSLATE:=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-translate
 # can find those libraries and have it automatically copy the files (-s) to
 # the target directory for us.
 NMF:=python $(NACL_SDK_ROOT)/tools/create_nmf.py
-NMF_PATHS:=-L $(TC_PATH)/x86_64-nacl/lib32 -L $(TC_PATH)/x86_64-nacl/lib
 
 
 #
@@ -125,8 +107,8 @@ else
 	$(warning Using chrome at: $(CHROME_PATH))
 endif
 
-
 __PROJECT_RULES__
+
 __PROJECT_PRERUN__
 
 RUN: all

@@ -4,10 +4,12 @@
 # found in the LICENSE file.
 
 import buildbot_common
+import make_rules
 import optparse
 import os
 import sys
 
+from make_rules import BuildToolDict, BUILD_RULES
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 SDK_SRC_DIR = os.path.dirname(SCRIPT_DIR)
@@ -16,16 +18,6 @@ SDK_DIR = os.path.dirname(SDK_SRC_DIR)
 SRC_DIR = os.path.dirname(SDK_DIR)
 OUT_DIR = os.path.join(SRC_DIR, 'out')
 PPAPI_DIR = os.path.join(SRC_DIR, 'ppapi')
-
-ARCHITECTURES = ['32', '64']
-
-SRC_EXT = {
-  'c': 'CC',
-  'cc' : 'CXX',
-  '.so' : '.so',
-  '.nexe': '.nexe',
-  '.a' : '.a'
-}
 
 
 def ErrorExit(text):
@@ -43,20 +35,6 @@ def WriteMakefile(srcpath, dstpath, replacements):
   text = open(srcpath, 'rb').read()
   text = Replace(text, replacements)
   open(dstpath, 'wb').write(text)
-
-
-def GetExtType(desc):
-  if desc['TYPE'] in ['main', 'nexe']:
-    ext = '.nexe'
-  elif desc['TYPE'] == 'lib':
-    ext = '.a'
-  else:
-    ext = '.so'
-  return ext
-
-
-def GenPatsubst(arch, tool, macro, ext, EXT):
-  return '$(patsubst %%.%s,%s/%%_%s.o,$(%s_%s))' % (ext, tool, arch, macro, EXT)
 
 
 def SetVar(varname, values):
@@ -91,182 +69,146 @@ def GenerateCopyList(desc):
   return sources
 
 
-def BuildToolDict(tc, proj, arch='', ext='.nexe', OBJS='', TARG='', REMAP=''):
-  TC = tc.upper()
-  PROJ = proj.upper()
-  EXT= SRC_EXT[ext]
+def GetSourcesDict(sources):
+  source_map = {}
+  for key in ['.c', '.cc']:
+    source_list = [fname for fname in sources if fname.endswith(key)]
+    if source_list:
+      source_map[key] = source_list
+    else:
+      source_map[key] = []
+  return source_map
+    
 
-  if not OBJS:
-    OBJS = '%s_%s_%s_%s_O' % (TC, PROJ, arch, EXT)
-  
-  if tc in ['newlib', 'glibc']:
-    machine = '-m' + arch
-    if not TARG:
-      TARG = '%s_x86_%s%s' % (proj,arch,ext)
-  else:
-    machine = ''
-    if not TARG:
-      TARG = proj + '.pexe'
-
-  replace = {
-    '<arch>': arch,
-    '<ARCH>': machine,
-    '<CC>': '%s_%s' % (TC, SRC_EXT[ext]),
-    '<DUMP>': '%s_DUMP' % TC,
-    '<ext>' : ext,
-    '<EXT>' : EXT,
-    '<LINK>': '%s_LINK' % TC,
-    '<OBJS>' : OBJS,
-    '<proj>': proj,
-    '<PROJ>': PROJ,
-    '<REMAP>': REMAP,
-    '<TARG>': TARG,
-    '<TAB>': '\t',
-    '<tc>' : tc,
-    '<TC>' : TC
-  }
-  return replace
+def GetPlatforms(plat_list, plat_filter):
+  platforms = []
+  for plat in plat_list:
+    if plat in plat_filter:
+      platforms.append(plat)
+  return platforms
 
 
-def GenerateNEXE(toolchain, name, ext, cc_sources, cxx_sources):
-  COMPILE_RULE = """
-<OBJS>:=$(patsubst %.<ext>, <tc>/%_<arch>.o,$(<PROJ>_<EXT>))
-$(<OBJS>) : <tc>/%_<arch>.o : %.<ext> $(THIS_MAKE) | <tc>
-<TAB>$(<CC>) -o $@ $< <ARCH> $(<PROJ>_<EXT>FLAGS) -DTCNAME=<tc>
-"""
-  LINK_RULE = """
-<tc>/<TARG> : $(<OBJS>)
-<TAB>$(<LINK>) -o $@ $^ <ARCH> $(<PROJ>_LDFLAGS)
-"""
-  rules = ''
-  targs = []
-  if toolchain in ['newlib', 'glibc']:
-    archs = ['32', '64']
-  else:
-    archs = [ toolchain.upper() ]
-
-  for arch in archs:
-    object_sets = []
-    remap = ''
-    if cc_sources:
-      replace = BuildToolDict(toolchain, name, arch, 'c')
-      rules += Replace(COMPILE_RULE, replace)
-      object_sets.append(replace['<OBJS>'])
-
-    if cxx_sources:
-      replace = BuildToolDict(toolchain, name, arch, 'cc')
-      rules += Replace(COMPILE_RULE, replace)
-      object_sets.append(replace['<OBJS>'])
-
-    objs = ' '.join(object_sets)
-    replace = BuildToolDict(toolchain, name, arch, ext, OBJS=objs)
-    rules += Replace(LINK_RULE, replace) 
-    if ext == '.a':
-      rules += '\n'
-      continue
-    if ext == '.so':
-      remap = ' -n %s,%s.so' % (replace['<TARG>'], name)
-    if toolchain in ['newlib', 'glibc']:
-      rules += '%s_NMF+=%s/%s\n' % (replace['<TC>'], toolchain, replace['<TARG>'])
-    if remap:
-      rules += '%s_REMAP+=%s\n' % (replace['<TC>'], remap)
-  return rules
+def GenerateToolDefaults(desc, platforms):
+  defaults = ''
+  for platform in platforms:
+    defaults += BUILD_RULES[platform]['DEFS']
+  return defaults  
 
 
-def GenerateReplacements(desc, toolchains):
-  TRANSLATE_RULE = """
-<tc>/<proj>_x86_32.nexe : <tc>/<proj>.pexe
-<TAB>$(TRANSLATE) -arch x86-32 $< -o $@ 
-
-<tc>/<proj>_x86_64.nexe : <tc>/<proj>.pexe
-<TAB>$(TRANSLATE) -arch x86-64 $< -o $@ 
-
-<tc>/<proj>_arm.nexe : <tc>/<proj>.pexe
-<TAB>$(TRANSLATE) -arch arm $< -o $@ 
-PNACL_NMF:=<tc>/<proj>_x86_32.nexe <tc>/<proj>_x86_64.nexe <tc>/<proj>_arm.nexe
-"""
-  NMF_RULE = """
-<tc>/<proj>.nmf : $(<TC>_NMF)
-<TAB>$(NMF) -D $(<DUMP>) -o $@ $(<TC>_PATHS) $^ -t <tc> -s <tc> $(<TC>_REMAP)
-
-"""
-  # Generate target settings
-  tools = []
-  for tool in desc['TOOLS']:
-    if tool in toolchains:
-      tools.append(tool)
-  
-  prerun = desc.get('PRE', '')
-  postlaunch = desc.get('POST', '')
-  prelaunch = desc.get('LAUNCH', '')
-
+def GenerateSettings(desc, tools):
   settings = SetVar('VALID_TOOLCHAINS', tools)
   settings+= 'TOOLCHAIN?=%s\n\n' % tools[0]
-
-  rules = ''
-  targets = []
-  remaps = ''
   for target in desc['TARGETS']:
     name = target['NAME']
     macro = name.upper()
-    ext = GetExtType(target)
+    srcs = GetSourcesDict(target['SOURCES'])
 
-    sources = target['SOURCES']
-    cc_sources = [fname for fname in sources if fname.endswith('.c')]
-    cxx_sources = [fname for fname in sources if fname.endswith('.cc')]
-
-    if cc_sources:
+    if srcs['.c']:
       flags = target.get('CCFLAGS', ['$(NACL_CCFLAGS)'])
-      settings += SetVar(macro + '_CC', cc_sources)
+      settings += SetVar(macro + '_CC', srcs['.c'])
       settings += SetVar(macro + '_CCFLAGS', flags)
 
-    if cxx_sources:
+    if srcs['.cc']:
       flags = target.get('CXXFLAGS', ['$(NACL_CXXFLAGS)'])
-      settings += SetVar(macro + '_CXX', cxx_sources)
+      settings += SetVar(macro + '_CXX', srcs['.cc'])
       settings += SetVar(macro + '_CXXFLAGS', flags)
 
     flags = target.get('LDFLAGS', ['$(NACL_LDFLAGS)'])
     settings += SetVar(macro + '_LDFLAGS', flags)
+  return settings
 
-  for tc in tools:
-    nexe = None
-    rules += '#\n# Rules for %s toolchain\n#\n%s:\n\t$(MKDIR) %s\n' % (
-        tc, tc, tc)
-    for target in desc['TARGETS']:
-      name = target['NAME']
-      ext = GetExtType(target)
-      sources = target['SOURCES']
-      cc_sources = [fname for fname in sources if fname.endswith('.c')]
-      cxx_sources = [fname for fname in sources if fname.endswith('.cc')]
-      rules += GenerateNEXE(tc, name, ext, cc_sources, cxx_sources)
-      if target['TYPE'] == 'main':
-        nexe = name
-        targets.append('%s/%s.nmf' % (tc, name))
-    if nexe: 
-      if tc == 'pnacl':
-        replace = BuildToolDict(tc, nexe)
-        rules += Replace(TRANSLATE_RULE, replace)
-      replace = BuildToolDict(tc, nexe)
-      rules += Replace(NMF_RULE, replace)
 
+def GenerateTargets(desc, tools):
   prereqs = desc.get('PREREQ', [])
   target_def = ''
+ 
   if prereqs:
     target_def = '.PHONY : PREREQS\nPREREQS:\n'
     for prereq in prereqs:
       target_def += '\t+$(MAKE) -C %s all\n' % prereq
     target_def+= '\nall : PREREQS ' + (' '.join(targets))
   else:
-    target_def += 'all : ' + ' '.join(targets) 
+    target_def += 'all : ALL_TARGETS' 
+
+
+def GenerateNEXE(target, tool):
+  rules = ''
+  name = target['NAME']
+  srcs = GetSourcesDict(target['SOURCES'])
+  for arch in BUILD_RULES[tool]['ARCHES']:
+    object_sets = []
+    if srcs['.c']:
+      replace = BuildToolDict(tool, name, arch, 'c')
+      compile_rule = BUILD_RULES[tool]['CC']
+      rules += Replace(compile_rule, replace)
+      object_sets.append('$(%s)' % replace['<OBJS>'])
+
+    if srcs['.cc']:
+      replace = BuildToolDict(tool, name, arch, 'cc')
+      compile_rule = BUILD_RULES[tool]['CXX']
+      rules += Replace(compile_rule, replace)
+      object_sets.append('$(%s)' % replace['<OBJS>'])
+
+    objs = ' '.join(object_sets)
+    link_rule = BUILD_RULES[tool]['nexe']
+    replace = BuildToolDict(tool, name, arch, 'nexe', OBJS=objs)
+    rules += Replace(link_rule, replace) 
+  return rules
+
+
+def GenerateRules(desc, tools):
+  rules = ''
+  for tc in tools:
+    rules += '\n#\n# Rules for %s toolchain\n#\n%s:\n\t$(MKDIR) %s\n' % (
+        tc, tc, tc)
+    nexe = None
+    for target in desc['TARGETS']:
+      name = target['NAME']
+      srcs = target['SOURCES']
+      rules += GenerateNEXE(target, tc)
+      if target['TYPE'] == 'main':
+    	main = target
+
+    if main:
+      rules += GenerateNMF(main, tc)
+  return rules
+
+
+def GenerateNMF(target, tool):
+  nmf_rule = BUILD_RULES[tool]['nmf']
+  replace = BuildToolDict(tool, target['NAME'])
+  return Replace(nmf_rule, replace)
+
+
+def GenerateReplacements(desc, tools):
+  # Generate target settings
+  plats = GetPlatforms(desc['TOOLS'], tools)
+  
+  settings = GenerateSettings(desc, tools)
+  tool_def = GenerateToolDefaults(desc, tools)
+  rules = GenerateRules(desc, tools)
+  prelaunch = desc.get('LAUNCH', '')
+  prerun = desc.get('PRE', '')
+  postlaunch = desc.get('POST', '')
+
+  targets = []
+  target_def = ''
+  for tool in tools:
+    for target in desc['TARGETS']:
+      if target['TYPE'] == 'main':
+	targets.append('%s/%s.nmf' % (tool, target['NAME']))  
+  target_def = 'all: ' + ' '.join(targets)        
 
   return {
       '__PROJECT_SETTINGS__' : settings,
       '__PROJECT_TARGETS__' : target_def,
+      '__PROJECT_TOOLS__' : tool_def,
       '__PROJECT_RULES__' : rules,
       '__PROJECT_PRELAUNCH__' : prelaunch,
       '__PROJECT_PRERUN__' : prerun,
       '__PROJECT_POSTLAUNCH__' : postlaunch
   }
+
 
 
 # 'KEY' : ( <TYPE>, [Accepted Values], <Required?>)
@@ -279,7 +221,8 @@ DSC_FORMAT = {
         'SOURCES': (list, '', True),
         'CCFLAGS': (list, '', False),
         'CXXFLAGS': (list, '', False),
-        'LDFLAGS': (list, '', False)
+        'LDFLAGS': (list, '', False),
+        'LIBS' : (list, '', False)
     }, True),
     'SEARCH': (list, '', False),
     'POST': (str, '', False),
