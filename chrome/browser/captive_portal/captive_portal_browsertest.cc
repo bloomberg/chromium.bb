@@ -1277,11 +1277,18 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, MAYBE_Login) {
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 
+// This test is disabled on MAC. See bug http://crbug.com/133227
+#if defined(OS_MACOSX)
+#define MAYBE_LoginIncognito DISABLED_LoginIncognito
+#else
+#define MAYBE_LoginIncognito LoginIncognito
+#endif
+
 // Same as above, except we make sure everything works with an incognito
 // profile.  Main issues it tests for are that the incognito has its own
 // non-NULL captive portal service, and we open the tab in the correct
 // window.
-IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, LoginIncognito) {
+IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, MAYBE_LoginIncognito) {
   // This will watch tabs for both profiles, but only used to make sure no
   // navigations occur for the non-incognito profile.
   MultiNavigationObserver navigation_observer;
