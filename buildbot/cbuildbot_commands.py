@@ -16,6 +16,7 @@ import tempfile
 
 from chromite.buildbot import cbuildbot_background as background
 from chromite.buildbot import cbuildbot_config
+from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import locking
 
@@ -100,7 +101,7 @@ def BuildRootGitCleanup(buildroot, debug_run):
       except cros_build_lib.RunCommandError, e:
         result = e.result
         logging.info(result.output)
-        print '@@@STEP_WARNINGS@@@'
+        print constants.STEP_WARNINGS
         logging.warn('Deleting %s because %s failed', cwd,  e.result.cmd)
         lock.write_lock()
         if os.path.isdir(cwd):
@@ -115,7 +116,7 @@ def BuildRootGitCleanup(buildroot, debug_run):
           logging.warn('Deleting %s as well', repo_store)
           if os.path.isdir(repo_store):
             shutil.rmtree(repo_store)
-        print '@@@STEP_WARNINGS@@@'
+        print constants.STEP_WARNINGS
         return
 
       cros_build_lib.RunGitCommand(
@@ -811,7 +812,7 @@ def UploadSymbols(buildroot, board, official):
                                            combine_stdout_stderr=True)
   except cros_build_lib.RunCommandError, e:
     # TODO(davidjames): Convert this to a fatal error after July 1, 2012.
-    print '@@@STEP_WARNINGS@@@'
+    print constants.STEP_WARNINGS
     print e.result.output
 
 

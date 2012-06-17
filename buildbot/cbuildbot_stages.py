@@ -638,13 +638,13 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
         LKGMCandidateSyncStage.sub_manager.PromoteCandidate()
 
   def HandleValidationFailure(self, failing_builders):
-    print '\n@@@STEP_WARNINGS@@@'
+    print '\n%s' % constants.STEP_WARNINGS
     print 'The following builders failed with this manifest:'
     print ', '.join(sorted(failing_builders))
     print 'Please check the logs of the failing builders for details.'
 
   def HandleValidationTimeout(self, inflight_builders):
-    print '\n@@@STEP_WARNINGS@@@'
+    print '\n%s' % constants.STEP_WARNINGS
     print 'The following builders took too long to finish:'
     print ', '.join(sorted(inflight_builders))
     print 'Please check the logs of these builders for details.'

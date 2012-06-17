@@ -12,6 +12,7 @@ import traceback
 
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import cbuildbot_results as results_lib
+from chromite.buildbot import constants
 from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib
 
@@ -196,7 +197,7 @@ class BuilderStage(object):
     pass
 
   def _HandleExceptionAsWarning(self, exception):
-    print '\n@@@STEP_WARNINGS@@@'
+    print '\n%s' % constants.STEP_WARNINGS
     description = traceback.format_exc()
     print >> sys.stderr, description
     return results_lib.Results.FORGIVEN, None
@@ -208,7 +209,7 @@ class BuilderStage(object):
     is not an exception.
     """
     # Tell the user about the exception, and record it
-    print '\n@@@STEP_FAILURE@@@'
+    print '\n%s' % constants.STEP_FAILURE
     description = None
     if isinstance(exception, NonBacktraceBuildException):
       description = str(exception)

@@ -138,3 +138,7 @@ LOGGER_DATE_FMT = '%H:%M:%S'
 # Used by remote patch serialization/deserialzation.
 INTERNAL_PATCH_TAG = 'i'
 EXTERNAL_PATCH_TAG = 'e'
+
+# Output tags.
+STEP_WARNINGS = '@@@STEP_WARNINGS@@@'
+STEP_FAILURE = '@@@STEP_FAILURE@@@'

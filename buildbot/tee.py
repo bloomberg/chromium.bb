@@ -13,6 +13,7 @@ import signal
 import subprocess
 import sys
 import traceback
+from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
 
 
@@ -137,9 +138,8 @@ class _TeeProcess(multiprocessing.Process):
     except Exception, e:
       tb = traceback.format_exc()
       self._error_handle.write(
-          "\n@@@STEP_FAILURE@@@\n"
-          "Unhandled exception occured in tee:\n%s\n"
-          % (tb,))
+          "\n%s\nUnhandled exception occured in tee:\n%s\n"
+          % (constants.STEP_FAILURE, tb,))
       # Try to signal the parent telling them of our
       # imminent demise.
 

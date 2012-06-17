@@ -373,8 +373,7 @@ class Builder(object):
         success = results_lib.Results.BuildSucceededSoFar()
         if exception_thrown and success:
           success = False
-          print >> sys.stderr, """
-@@@STEP_FAILURE@@@
+          print >> sys.stderr, "\n" + constants.STEP_WARNINGS + """
 Exception thrown, but all stages marked successful. This is an internal error,
 because the stage that threw the exception should be marked as failing."""
 
