@@ -191,6 +191,7 @@ static int r6_init_hw_info(struct radeon_surface_manager *surf_man)
     if (version && version->version_minor >= 14) {
         surf_man->hw_info.allow_2d = 1;
     }
+    drmFreeVersion(version);
 
     switch ((tiling_config & 0xe) >> 1) {
     case 0:
@@ -470,6 +471,7 @@ static int eg_init_hw_info(struct radeon_surface_manager *surf_man)
     if (version && version->version_minor >= 16) {
         surf_man->hw_info.allow_2d = 1;
     }
+    drmFreeVersion(version);
 
     switch (tiling_config & 0xf) {
     case 0:
