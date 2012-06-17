@@ -103,8 +103,7 @@ TEST_F(SystemTrayTest, SystemTrayDefaultView) {
   ASSERT_FALSE(tray->CloseBubbleForTest());
 }
 
-// Disabled due to a use-after-free, see http://crbug.com/127539.
-TEST_F(SystemTrayTest, DISABLED_SystemTrayTestItems) {
+TEST_F(SystemTrayTest, SystemTrayTestItems) {
   SystemTray* tray = GetSystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
@@ -160,8 +159,7 @@ TEST_F(SystemTrayTest, TrayWidgetAutoResizes) {
             tray->GetWidget()->GetWindowScreenBounds().size().ToString());
 }
 
-// Disabled due to a use-after-free, see http://crbug.com/127539.
-TEST_F(SystemTrayTest, DISABLED_SystemTrayNotifications) {
+TEST_F(SystemTrayTest, SystemTrayNotifications) {
   SystemTray* tray = GetSystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
@@ -196,8 +194,7 @@ TEST_F(SystemTrayTest, DISABLED_SystemTrayNotifications) {
   ASSERT_TRUE(test_item->notification_view() != NULL);
 }
 
-// Disabled due to a use-after-free, see http://crbug.com/127539.
-TEST_F(SystemTrayTest, DISABLED_BubbleCreationTypesTest) {
+TEST_F(SystemTrayTest, BubbleCreationTypesTest) {
   SystemTray* tray = GetSystemTray();
   ASSERT_TRUE(tray->GetWidget());
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,52 @@ TEST_F(BubbleDelegateTest, CreateDelegate) {
   EXPECT_EQ(bubble_delegate->color(), border->background_color());
 
   bubble_widget->CloseNow();
+  RunPendingMessages();
+}
+
+TEST_F(BubbleDelegateTest, ResetAnchorWidget) {
+  // Create the anchor widget first.
+  Widget* widget = new Widget;
+  View* contents = new View;
+
+  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
+  widget->Init(params);
+  widget->SetContentsView(contents);
+  widget->Show();
+
+  Widget* parent = new Widget;
+  parent->Init(params);
+  parent->SetContentsView(new View);
+  parent->Show();
+
+  // Make sure the bubble widget is parented to a widget other than the anchor
+  // widget so that closing the anchor widget does not close the bubble widget.
+  BubbleDelegateView* bubble_delegate =
+      new BubbleDelegateView(contents, BubbleBorder::NONE);
+  bubble_delegate->set_parent_window(parent->GetNativeView());
+  bubble_delegate->set_color(SK_ColorGREEN);
+  Widget* bubble_widget(
+      BubbleDelegateView::CreateBubble(bubble_delegate));
+  EXPECT_EQ(bubble_delegate, bubble_widget->widget_delegate());
+  EXPECT_EQ(bubble_widget, bubble_delegate->GetWidget());
+  EXPECT_EQ(widget, bubble_delegate->anchor_widget());
+
+  bubble_widget->Show();
+  RunPendingMessages();
+  EXPECT_EQ(widget, bubble_delegate->anchor_widget());
+
+  bubble_widget->Hide();
+  RunPendingMessages();
+  EXPECT_EQ(widget, bubble_delegate->anchor_widget());
+
+  // Closing the anchor widget should unset the reference to the anchor widget
+  // for the bubble.
+  widget->CloseNow();
+  RunPendingMessages();
+  EXPECT_FALSE(bubble_delegate->anchor_widget());
+
+  bubble_widget->CloseNow();
+  parent->CloseNow();
   RunPendingMessages();
 }
 

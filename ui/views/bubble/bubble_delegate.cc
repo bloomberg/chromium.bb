@@ -138,7 +138,10 @@ BubbleDelegateView::BubbleDelegateView(
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
 }
 
-BubbleDelegateView::~BubbleDelegateView() {}
+BubbleDelegateView::~BubbleDelegateView() {
+  if (anchor_widget_)
+    anchor_widget_->RemoveObserver(this);
+}
 
 // static
 Widget* BubbleDelegateView::CreateBubble(BubbleDelegateView* bubble_delegate) {
@@ -146,6 +149,9 @@ Widget* BubbleDelegateView::CreateBubble(BubbleDelegateView* bubble_delegate) {
   // Determine the anchor widget from the anchor view at bubble creation time.
   bubble_delegate->anchor_widget_ = bubble_delegate->anchor_view() ?
       bubble_delegate->anchor_view()->GetWidget() : NULL;
+  if (bubble_delegate->anchor_widget_)
+    bubble_delegate->anchor_widget_->AddObserver(bubble_delegate);
+
   Widget* bubble_widget = CreateBubbleWidget(bubble_delegate);
 
 #if defined(OS_WIN) && !defined(USE_AURA)
@@ -199,16 +205,12 @@ void BubbleDelegateView::OnWidgetVisibilityChanged(Widget* widget,
   if (visible) {
     if (border_widget_)
       border_widget_->Show();
-    if (anchor_widget())
-      anchor_widget()->AddObserver(this);
     GetFocusManager()->SetFocusedView(GetInitiallyFocusedView());
     if (anchor_widget() && anchor_widget()->GetTopLevelWidget())
       anchor_widget()->GetTopLevelWidget()->DisableInactiveRendering();
   } else {
     if (border_widget_)
       border_widget_->Hide();
-    if (anchor_widget())
-      anchor_widget()->RemoveObserver(this);
   }
 }
 
