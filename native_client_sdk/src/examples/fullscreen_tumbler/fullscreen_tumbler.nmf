@@ -1,6 +1,0 @@
-{
-  "program": {
-    "x86-64": {"url": "fullscreen_tumbler_x86_64.nexe"},
-    "x86-32": {"url": "fullscreen_tumbler_x86_32.nexe"}
-  }
-}

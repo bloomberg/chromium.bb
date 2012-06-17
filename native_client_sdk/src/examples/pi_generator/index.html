@@ -1,42 +1,51 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 <html>
   <!--
-  Copyright (c) 2011 The Chromium Authors. All rights reserved.
+  Copyright (c) 2012 The Chromium Authors. All rights reserved.
   Use of this source code is governed by a BSD-style license that can be
   found in the LICENSE file.
   -->
   <head>
-    <title>Pong</title>
+    <title>Monte Carlo Estimate for Pi</title>
     <script type="text/javascript">
-      var pong = null;
+      var piGenerator = null;
       var paintInterval = null;
 
+      // Start up the paint timer when the NaCl module has loaded.
+      function moduleDidLoad() {
+        piGenerator = document.getElementById('piGenerator');
+        paintInterval = setInterval('piGenerator.postMessage("paint")', 5);
+      }
+
       // Handle a message coming from the NaCl module.  The message payload is
-      // assumed to contain the current game score.  Update the score text
-      // display with this value.
-      // Note that errors are also sent to this handler.  A message starting
-      // with 'ERROR' is considered an error, all other strings are assumed
-      // to be scores.
+      // assumed to contain the current estimated value of Pi.  Update the Pi
+      // text display with this value.
       function handleMessage(message_event) {
-        if (message_event.data.indexOf('ERROR') == 0) {
-          document.getElementById('error_log').innerHTML = message_event.data;
-        } else {
-          document.getElementById('score').innerHTML = message_event.data;
-        }
+        document.form.pi.value = message_event.data;
       }
 
       function pageDidUnload() {
         clearInterval(paintInterval);
       }
-      function resetScore() {
-        pong = document.getElementById('pong');
-        pong.postMessage("resetScore");
-      }
     </script>
   </head>
   <body id="bodyId" onunload="pageDidUnload()">
-    <h1>Pong</h1>
+    <h1>Monte Carlo Estimate for Pi</h1>
+    <p>
+      The Native Client module executed in this page creates a thread
+      that estimates pi (&pi;) using the Monte Carlo method.
+      The thread randomly puts 1,000,000,000 points
+      inside a square that shares two sides with a quarter circle (a quadrant).
+      Because the area of
+      the quadrant is r&#178;&pi;/4
+      and the area of
+      the square is r&#178;,
+      dividing the number of points inside the quadrant
+      by the number of points inside the square gives us
+      an estimate of &pi;/4.
+      The textbox under the square
+      shows the current estimate of &pi;.
+    </p>
     <!-- Load the published .nexe.  This includes the 'src' attribute which
     shows how to load multi-architecture modules.  Each entry in the "nexes"
     object in the .nmf manifest file is a key-value pair: the key is the
@@ -54,21 +63,20 @@
     -->
     <div id="listener">
       <script type="text/javascript">
-        window.webkitStorageInfo.requestQuota(PERSISTENT, 1024);
         var listener = document.getElementById('listener')
+        listener.addEventListener('load', moduleDidLoad, true);
         listener.addEventListener('message', handleMessage, true);
       </script>
 
       <embed name="nacl_module"
-             id="pong"
-             width=800 height=600
-             src="pong.nmf"
+             id="piGenerator"
+             width=200 height=200
+             src="<tc>/pi_generator.nmf"
              type="application/x-nacl" />
     </div>
     <br />
-    <p id="score">
-    </p>
-    <button onclick="resetScore()">Reset score</button>
-    <p id="error_log"></p>
+    <form name="form">
+      <input type="text" size="15" name="pi" />
+    </form>
   </body>
 </html>

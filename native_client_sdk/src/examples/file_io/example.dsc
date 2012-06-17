@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['newlib'],
+  'TOOLS': ['newlib', 'glibc', 'pnacl'],
   'TARGETS': [
     {
       'NAME' : 'file_io',
@@ -8,6 +8,11 @@
     }
   ],
   'DEST': 'examples',
-  'NAME': 'file_io'
+  'NAME': 'file_io',
+  'TITLE': 'File I/O',
+  'DESC': """
+The File IO example demonstrates saving, loading, and deleting files
+from the persistent file store.""",
+  'INFO': 'Teaching focus: File input and output.'
 }
 

@@ -38,7 +38,7 @@ ARCH_LOCATION = {
 
 NAME_ARCH_MAP = {
     '32.nexe': 'x86-32',
-    '64.nexe': 'x64-64',
+    '64.nexe': 'x86-64',
     'arm.nexe': 'arm'
 }
 

@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['newlib', 'glibc'],
+  'TOOLS': ['newlib', 'glibc', 'pnacl'],
   'TARGETS': [
     {
       'NAME' : 'tumbler',
@@ -34,5 +34,13 @@
   ],
   'DEST': 'examples',
   'NAME': 'fullscreen_tumbler',
+  'TITLE': 'Interactive Cube Example',
+  'DESC': """
+This is a modified version of the Tumbler example above that supports
+full-screen display. It is in every way identical to Tumbler in
+functionality, except that it adds the ability to switch to/from
+full-screen display by pressing the Enter key.
+""",
+  'INFO': 'Teaching focus: Full-screen.'
 }
 

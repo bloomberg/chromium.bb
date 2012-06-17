@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['newlib', 'glibc'],
+  'TOOLS': ['newlib'],
   'TARGETS': [
     {
       'NAME' : 'tumbler',
@@ -33,5 +33,13 @@
   ],
   'DEST': 'examples',
   'NAME': 'tumbler',
+  'TITLE': 'Tumbler',
+  'DESC': """
+The Tumbler example demonstrates how to create a 3D cube that you can
+rotate with your mouse while pressing the left mouse button. This example
+creates a 3D context and draws to it using OpenGL ES. The JavaScript
+implements a virtual trackball interface to map mouse movements into 3D
+rotations using simple 3D vector math and quaternions.""",
+  'INFO': '3D graphics'
 }
 

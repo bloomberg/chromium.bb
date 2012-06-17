@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['newlib', 'glibc'],
+  'TOOLS': ['newlib', 'glibc', 'pnacl'],
   'TARGETS': [
     {
       'NAME' : 'gamepad',
@@ -9,5 +9,11 @@
   ],
   'DEST': 'examples',
   'NAME': 'gamepad',
+  'TITLE': 'Gamepad Example.',
+  'DESC': """
+Attached gamepad values should appear, left to right, once they've been
+interacted with. Buttons, esp triggers are analog.
+""",
+  'INFO':  'Gamepad interface.'
 }
 

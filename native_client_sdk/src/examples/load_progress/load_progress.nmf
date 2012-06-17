@@ -1,6 +1,0 @@
-{
-  "program": {
-    "x86-64": {"url": "load_progress_x86_64.nexe"},
-    "x86-32": {"url": "load_progress_x86_32.nexe"}
-  }
-}

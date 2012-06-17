@@ -34,3 +34,4 @@ void rotate_matrix(GLfloat x_deg, GLfloat y_deg, GLfloat z_deg, Matrix_t mat);
 void translate_matrix(GLfloat x, GLfloat y, GLfloat z, Matrix_t mat);
 
 #endif  // EXAMPLES_HELLO_WORLD_GLES_MATRIX_H
+

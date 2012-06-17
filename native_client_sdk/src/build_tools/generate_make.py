@@ -31,7 +31,7 @@ def Replace(text, replacements):
   return text
 
 
-def WriteMakefile(srcpath, dstpath, replacements):
+def WriteReplaced(srcpath, dstpath, replacements):
   text = open(srcpath, 'rb').read()
   text = Replace(text, replacements)
   open(dstpath, 'wb').write(text)
@@ -61,11 +61,13 @@ def GenerateCopyList(desc):
   # Add sources for each target
   for target in desc['TARGETS']:
     sources.extend(target['SOURCES'])
-    if target['TYPE'] == 'main':
-      sources.append(desc['NAME'] + '.html')
 
   # And HTML and data files
   sources.extend(desc.get('DATA', []))
+
+  if desc['DEST'] == 'examples':
+    sources.append('common.js')
+
   return sources
 
 
@@ -150,7 +152,7 @@ def GenerateNEXE(target, tool):
       object_sets.append('$(%s)' % replace['<OBJS>'])
 
     objs = ' '.join(object_sets)
-    link_rule = BUILD_RULES[tool]['nexe']
+    link_rule = BUILD_RULES[tool][ target['TYPE'] ]
     replace = BuildToolDict(tool, name, arch, 'nexe', OBJS=objs)
     rules += Replace(link_rule, replace) 
   return rules
@@ -355,6 +357,28 @@ def IsNexe(desc):
   return False
 
 
+def ProcessHTML(srcroot, dstroot, desc, toolchains):
+  name = desc['NAME']
+  outdir = os.path.join(dstroot, desc['DEST'], name)
+  
+  srcfile = os.path.join(srcroot, 'index.html')
+  tools = GetPlatforms(toolchains, desc['TOOLS'])
+  for tool in tools:
+    dstfile = os.path.join(outdir, 'index_%s.html' % tool);
+    print 'Writting from %s to %s' % (srcfile, dstfile)
+    replace = {
+      '<NAME>': name,
+      '<TITLE>': desc['TITLE'],
+      '<tc>': tool
+    }
+    WriteReplaced(srcfile, dstfile, replace)
+
+  replace['<tc>'] = tools[0]
+  srcfile = os.path.join(SDK_SRC_DIR, 'build_tools', 'redirect.html')
+  dstfile = os.path.join(outdir, 'index.html')
+  WriteReplaced(srcfile, dstfile, replace)
+    
+
 def LoadProject(filename, toolchains):
   """Generate a Master Makefile that builds all examples. 
 
@@ -386,13 +410,14 @@ def ProcessProject(srcroot, dstroot, desc, toolchains):
   name = desc['NAME']
   out_dir = os.path.join(dstroot, desc['DEST'], name)
   buildbot_common.MakeDir(out_dir)
-  srcdirs = desc.get('SEARCH', ['.'])
+  srcdirs = desc.get('SEARCH', ['.', '..'])
 
   # Copy sources to example directory
   sources = GenerateCopyList(desc)
   for src_name in sources:
     src_file = FindFile(src_name, srcroot, srcdirs)
     if not src_file:
+      ErrorMsgFunc('Failed to find: ' + src_name)
       return (None, None)
     dst_file = os.path.join(out_dir, src_name)
     buildbot_common.CopyFile(src_file, dst_file)
@@ -402,11 +427,15 @@ def ProcessProject(srcroot, dstroot, desc, toolchains):
   else:
     template=os.path.join(SCRIPT_DIR, 'library.mk')
 
-  # Add Makefile
-  repdict = GenerateReplacements(desc, toolchains)
-  make_path = os.path.join(out_dir, 'Makefile')
-  WriteMakefile(template, make_path, repdict)
+  tools = []
+  for tool in desc['TOOLS']:
+    if tool in toolchains:
+      tools.append(tool)
 
+  # Add Makefile and make.bat
+  repdict = GenerateReplacements(desc, tools)
+  make_path = os.path.join(out_dir, 'Makefile')
+  WriteReplaced(template, make_path, repdict)
   outdir = os.path.dirname(os.path.abspath(make_path))
   pepperdir = os.path.dirname(os.path.dirname(outdir))
   AddMakeBat(pepperdir, outdir)
@@ -416,7 +445,7 @@ def ProcessProject(srcroot, dstroot, desc, toolchains):
 def GenerateExamplesMakefile(in_path, out_path, examples):
   """Generate a Master Makefile that builds all examples. """
   replace = {  '__PROJECT_LIST__' : SetVar('PROJECTS', examples) }
-  WriteMakefile(in_path, out_path, replace)
+  WriteReplaced(in_path, out_path, replace)
 
   outdir = os.path.dirname(os.path.abspath(out_path))
   pepperdir = os.path.dirname(outdir)
@@ -465,8 +494,11 @@ def main(argv):
     if not ProcessProject(srcroot, options.dstroot, desc, toolchains):
       ErrorExit('\n*** Failed to process project: %s ***' % filename)
 
+    # if this is an example, do the HTML files as well
     if desc['DEST'] == 'examples':
       examples.append(desc['NAME'])
+      ProcessHTML(srcroot, options.dstroot, desc, toolchains)
+
 
   if options.master:
     master_in = os.path.join(SDK_EXAMPLE_DIR, 'Makefile')

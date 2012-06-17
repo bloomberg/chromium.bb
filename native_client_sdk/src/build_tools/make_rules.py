@@ -25,8 +25,8 @@ GLIBC_PATHS+=-L $(TC_PATH)/$(OSNAME)_x86_glibc/x86_64-nacl/lib
 
 PNACL_DEFAULTS = """
 PNACL_CC?=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-clang -c
-PNACL_CXX?=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-clang -c
-PNACL_LINK?=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-clang
+PNACL_CXX?=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-clang++ -c
+PNACL_LINK?=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-clang++
 PNACL_DUMP?=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/objdump
 TRANSLATE:=$(TC_PATH)/$(OSNAME)_x86_pnacl/newlib/bin/pnacl-translate
 """
@@ -72,8 +72,10 @@ PNACL_NMF:=<tc>/<proj>_x86_32.nexe <tc>/<proj>_x86_64.nexe <tc>/<proj>_arm.nexe
 """
 
 SO_LINK_RULE = """
-<tc>/<proj>_<ARCH>.<ext> : <OBJS>
+<tc>/<proj>_<ARCH>.so : <OBJS>
 <TAB>$(<LINK>) -o $@ $^ <MACH> -shared $(<PROJ>_LDFLAGS)
+GLIBC_REMAP+= -n <proj>_<ARCH>.so,<proj>.so
+<TC>_NMF+=<tc>/<proj>_<ARCH>.so
 """
 
 
@@ -120,8 +122,8 @@ BUILD_RULES = {
     'DEFS': NEWLIB_DEFAULTS,
     'CC' : NEXE_CC_RULE,
     'CXX' : NEXE_CC_RULE,
-    'nexe' : NEXE_LINK_RULE,
     'nmf' : NMF_RULE,
+    'main': NEXE_LINK_RULE,
     'so' : None,
   },
   'glibc' : {
@@ -129,8 +131,8 @@ BUILD_RULES = {
     'DEFS': GLIBC_DEFAULTS,
     'CC': NEXE_CC_RULE,
     'CXX': NEXE_CC_RULE,
-    'nexe': NEXE_LINK_RULE,
     'nmf' : GLIBC_NMF_RULE,
+    'main': NEXE_LINK_RULE,
     'so': SO_LINK_RULE,
   },
   'pnacl' : {
@@ -138,8 +140,8 @@ BUILD_RULES = {
     'DEFS': PNACL_DEFAULTS,
     'CC': NEXE_CC_RULE,
     'CXX': NEXE_CC_RULE,
-    'nexe': PEXE_LINK_RULE,
     'nmf' : NMF_RULE,
+    'main': PEXE_LINK_RULE,
     'so': None,
   },
 }

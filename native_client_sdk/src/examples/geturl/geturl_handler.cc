@@ -11,12 +11,6 @@
 
 #include "geturl_handler.h"
 
-namespace {
-bool IsError(int32_t result) {
-  return ((PP_OK != result) && (PP_OK_COMPLETIONPENDING != result));
-}
-}  // namespace
-
 GetURLHandler* GetURLHandler::Create(pp::Instance* instance,
                                      const std::string& url) {
   return new GetURLHandler(instance, url);

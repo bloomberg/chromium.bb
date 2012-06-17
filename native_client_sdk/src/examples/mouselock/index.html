@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+  <!--
+  Copyright (c) 2012 The Chromium Authors. All rights reserved.
+  Use of this source code is governed by a BSD-style license that can be
+  found in the LICENSE file.
+  -->
+<head>
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="-1" />
+  <title><TITLE></title>
+  <script type="text/javascript" src="common.js"></script>
+</head>
+<body onload="pageDidLoad('<NAME>', '<tc>', 300, 300)">
+
+<h1><TITLE></h1>
+<h2>Status: <code id="statusField">NO-STATUS</code></h2>
+  <h1>Full-screen and Mouse-lock Example</h1>
+  <ul>
+    <li>There are two different kinds of fullscreen mode: "tab fullscreen" and
+        "browser fullscreen".
+      <ul>
+        <li>Tab fullscreen refers to when a tab enters fullscreen mode via the
+            JS or Pepper fullscreen API.</li>
+        <li>Browser fullscreen refers to the user putting the browser itself
+            into fullscreen mode from the UI (e.g., pressing F11).</li>
+      </ul>
+      <span style="font-weight:bold">
+        NOTE: Mouse lock is only allowed in "tab fullscreen" mode.
+      </span>
+    </li>
+    <li>Lock mouse:
+      <ul>
+        <li>left click in the grey box; or</li>
+        <li>right click in the box to ensure that it is focused and
+            then press Enter key. (You could verify that the tooltip window is
+            dismissed properly by this second approach.)</li>
+      </ul>
+    </li>
+    <li>Unlock mouse voluntarily (i.e., NaCl module unlocks mouse):
+      <ul>
+        <li>press Enter.</li>
+      </ul>
+    </li>
+    <li>Unlock mouse involuntarily (i.e. Chrome unlocks mouse):
+      <ul>
+        <li>lose focus; or</li>
+        <li>press Esc key; or</li>
+        <li>exit from the "tab fullscreen" mode.</li>
+      </ul>
+    </li>
+  </ul>
+  <p>Clicking the mouse inside the grey square takes the NaCl module to/from
+  combined fullscreen and mouselock mode.</p>
+  <p>While in fullscreen, pressing Enter will exit/enter mouse lock mode.</p>
+
+  <!-- The <EMBED> element is wrapped inside a <DIV>, which has both a 'load'
+  and a 'message' event listener attached.  This wrapping method is used
+  instead of attaching the event listeners directly to the <EMBED> element to
+  ensure that the listeners are active before the NaCl module 'load' event
+  fires.  This also allows you to use PPB_Messaging.PostMessage() (in C) or
+  pp::Instance.PostMessage() (in C++) from within the initialization code in
+  your NaCl module. 
+  
+  The src points to a manifest file, which provides the Native Client plug-in
+  a mapping between architecture and NaCl Executable (NEXE). 
+  
+  We use a non-zero sized embed to give Chrome space to place the bad plug-in
+  graphic, if there is a problem.
+  -->
+  <div id="listener">
+    <script type="text/javascript">
+      var listener = document.getElementById('listener')
+      listener.addEventListener('load', moduleDidLoad, true);
+      listener.addEventListener('message', handleMessage, true);
+    </script>
+  </div>
+</body>
+</html>

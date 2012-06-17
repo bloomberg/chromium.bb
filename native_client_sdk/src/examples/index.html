@@ -43,27 +43,15 @@ simple way to build a NaCl application using
 See the link for further information.
 </p></dd>
 <dl>
-  <dt><a href="hello_world_newlib/hello_world.html">
-  Hello World (NEWLIB)</a></dt>
+  <dt><a href="hello_world/index.html">Hello World</a></dt>
   <dd>The Hello World In C example demonstrates the basic structure of all
   Native Client applications. This example loads a Native Client module.  The
   page tracks the status of the module as it load.  On a successful load, the
   module will post a message containing the string "Hello World" back to
   JavaScript which will display it as an alert.
-    <p>Teaching focus: Basic HTML, JavaScript, and module architecture.</p>
+  <p>Teaching focus: Basic HTML, JavaScript, and module architecture.</p>
   </dd>
-  <dt><a href="hello_world_glibc/hello_world.html">
-  Hello World (GLIBC)</a></dt>
-  <dd>The Hello World (GLIBC) example is identical to the one above, with the
-  exception that it used the GLIBC toolchain which uses Shared Objects. The use
-  of Shared Objects means a more complicated manifest file (NMF) which is needed
-  to allow the application to find the libraries.  The NMF is automatically
-  generated as part of the build process, by scanning the application for 
-  dependencies.
-    <p>Teaching focus: Basic HTML, JavaScript, Shared Objects, and module
-    architecture.</p>
-  </dd>
-  <dt><a href="hello_world_interactive/hello_world.html">
+  <dt><a href="hello_world_interactive/index.html">
   Interactive Hello World in C++</a></dt>
   <dd>The Interactive Hello World C++ example demonstrates the basic structure 
   of all Native Client applications. This example loads a Native Client module
@@ -77,44 +65,51 @@ See the link for further information.
 <h3>Common APIs</h3>
 <dd><p>The following set of examples illustrate various Pepper APIs including
 audio, 2D, 3D, file I/O, input and urls.</p></dd>
-<dt><a href="sine_synth/sine_synth.html">Sine Wave Synthesizer</a></dt>
+  <dt><a href="sine_synth/index.html">Sine Wave Synthesizer</a></dt>
   <dd>  The Sine Wave Synthesizer example demonstrates playing sound (a sine
   wave).  Enter the desired frequency and hit play to start, stop to end. The
   frequency box will display "Loading, please wait." while the module loads.
     <p>Teaching focus: Audio.</p>
   </dd>
-<dt><a href="input_events/input_events.html">Input Events</a></dt>
+
+  <dt><a href="input_events/index.html">Input Events</a></dt>
   <dd>  The Input Events example demonstrates how to handle events triggered by
   the user. This example allows a user to interact with a square representing a
   module instance. Events are displayed on the screen as the user clicks,
   scrolls, types, inside or outside of the square.
-
-    <p>Teaching focus: Keyboard and mouse input, view change, and focus events.</p>
+  <p>Teaching focus: Keyboard and mouse input, view change, and focus events.</p>
   </dd>
- <dt><a href="pi_generator/pi_generator.html">Pi Generator</a></dt>
+
+  <dt><a href="pi_generator/index.html">Pi Generator</a></dt>
   <dd>	The Pi Generator example demonstrates creating a helper thread that
   estimate pi using the Monte Carlo method while randomly putting 1,000,000,000
   points inside a 2D square that shares two sides with a quarter circle.
-
-		<p>Teaching focus: Thread creation, 2D graphics, view change events.</p>
+  <p>Teaching focus: Thread creation, 2D graphics, view change events.</p>
   </dd>
-  <dt><a href="tumbler/tumbler.html">Tumbler</a></dt>
+
+  <dt><a href="tumbler/index.html">Tumbler</a></dt>
   <dd>  The Tumbler example demonstrates how to create a 3D cube that you can
   rotate with your mouse while pressing the left mouse button. This example
   creates a 3D context and draws to it using OpenGL ES. The JavaScript
   implements a virtual trackball interface to map mouse movements into 3D
   rotations using simple 3D vector math and quaternions.
-
-    <p>Teaching focus: 3D graphics</p>
+  <p>Teaching focus: 3D graphics</p>
   </dd>
-  <dt><a href="geturl/geturl.html">Get URL</a></dt>
+ 
+  <dt><a href="hello_world_gles/index.html">Hello World GLES 2.0</a></dt>
+  <dd>  The Hello World GLES 2.0 example demonstrates how to create a 3D cube
+  that rotates.  This is a simpler example than the tumbler example, and 
+  written in C.  It loads the assets using URLLoader.
+  <p>Teaching focus: 3D graphics, URL Loader</p>
+  </dd>
+
+  <dt><a href="geturl/index.html">Get URL</a></dt>
   <dd>  The Get URL example demonstrates fetching an URL and then displaying
   its contents.
-
-    <p>Teaching focus: URL loading.</p>
+  <p>Teaching focus: URL loading.</p>
   </dd>
   
-  <dt><a href="file_io/file_io.html">File I/O</a></dt>
+  <dt><a href="file_io/index.html">File I/O</a></dt>
   <dd>  The File IO example demonstrates saving, loading, and deleting files
   from the persistent file store.
 
@@ -125,7 +120,7 @@ audio, 2D, 3D, file I/O, input and urls.</p></dd>
 <dd><p>The following set of examples illustrate various common concepts such as
 showing load progress, using Shared Objects (dynamic libraries), 
 mulithreading...</p></dd>
-<dt><a href="dlopen/dlopen.html">Dynamic Library Open (GLIBC)</a></dt>
+<dt><a href="dlopen/index.html">Dynamic Library Open (GLIBC)</a></dt>
   <dd>  The dlopen example demonstrates how build dynamic libraries and then
   open and use them at runtime.  When the page loads, type in a question and
   hit enter or click the ASK! button.  The question and answer will be
@@ -141,14 +136,14 @@ mulithreading...</p></dd>
 
     <p>Teaching focus: Progress event handling.</p>
   </dd>
-<dt><a href="pong/pong.html">Pong</a></dt>
+<dt><a href="pong/index.html">Pong</a></dt>
   <dd>	The Pong example demonstrates how to create a basic 2D video game and
   how to store application information in a local persistent file. This game 
   uses up and down arrow keyboard input events to move the paddle.
 
     <p>Teaching focus: File I/O, 2D graphics, input events.</p>
   </dd>
-  <dt><a href="multithreaded_input_events/mt_input_events.html">Multi-threaded
+  <dt><a href="multithreaded_input_events/index.html">Multi-threaded
   Input Events</a></dt>
   <dd>The Multithreaded Input Events example combines HTML, Javascript,
     and C++ (the C++ is compiled to create a .nexe file).
@@ -159,7 +154,7 @@ mulithreading...</p></dd>
     result of the worker thread to the browser.
     <p>Teaching focus: Multithreaded event handling.</p>
   </dd>
-  <dt><a href="fullscreen_tumbler/fullscreen_tumbler.html">Full-screen
+  <dt><a href="fullscreen_tumbler/index.html">Full-screen
   Tumbler</a></dt>
   <dd>This is a modified version of the Tumbler example above that supports
       full-screen display. It is in every way identical to Tumbler in
@@ -167,21 +162,21 @@ mulithreading...</p></dd>
       full-screen display by pressing the Enter key.
    <p>Teaching focus: Full-screen</p>
   </dd>
-  <dt><a href="mouselock/mouselock.html">Mouse Lock</a></dt>
+  <dt><a href="mouselock/index.html">Mouse Lock</a></dt>
   <dd>	The Mouselock example demonstrates how to use the MouseLock API to hide
   the mouse cursor.  Mouse lock is only available in full-screen mode.  You can
   lock and unlock the mouse while in full-screen mode by pressing the Enter key.
 
     <p>Teaching focus: Mouse lock, Full-screen</p>
   </dd>
-  <dt><a href="websocket/websocket.html">Websocket</a></dt>
+  <dt><a href="websocket/index.html">Websocket</a></dt>
   <dd>  The Websocket example demonstrates how to use the Websocket API.  The
   user first connects to the test server: ws://html5rocks.websocket.org/echo by
   clicking on the 'Connect'' button.  Then hitting Send' will cause the app to
   send the message to the server and retrieve the reply.
     <p>Teaching focus: Websockets</p>
   </dd>
-  <dt><a href="file_histogram/file_histogram.html">Get URL</a></dt>
+  <dt><a href="file_histogram/index.html">File Histogram</a></dt>
   <dd>  The File Histogram example demonstrates prompting the user for a file,
   passing the file contents to NativeClient as a VarArrayBuffer, then drawing a
   histogram representing the contents of the file to a 2D square.

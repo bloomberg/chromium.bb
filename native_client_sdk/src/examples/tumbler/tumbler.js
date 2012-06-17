@@ -127,7 +127,7 @@ tumbler.Application.prototype.run = function(opt_contentDivName) {
   //  attribute to the _dbg.nmf version of the manifest file.
   contentDiv.innerHTML = '<embed id="'
                          + tumbler.Application.DomIds_.MODULE + '" '
-                         + 'src=tumbler.nmf '
+                         + 'src=newlib/tumbler.nmf '
                          + 'type="application/x-nacl" '
                          + 'width="480" height="480" />'
 }

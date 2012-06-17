@@ -17,6 +17,12 @@
   'POST': 'include Makefile.inc\n',
   'DATA': ['Makefile.inc'],
   'DEST': 'examples',
-  'NAME': 'debugging'
+  'NAME': 'debugging',
+  'TITLE': 'Debugging',
+  'DESC': """
+Debugging example shows how to use developer only features to enable
+catching an exception, and then using that to create a stacktrace.""",
+  'INFO': 'Debugging, Stacktraces.'
+
 }
 
