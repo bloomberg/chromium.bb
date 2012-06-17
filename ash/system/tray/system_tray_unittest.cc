@@ -103,14 +103,8 @@ TEST_F(SystemTrayTest, SystemTrayDefaultView) {
   ASSERT_FALSE(tray->CloseBubbleForTest());
 }
 
-#if defined(OS_WIN)
-// This test is crashing on windows. See http://crbug.com/127539.
-#define MAYBE_SystemTrayTestItems DISABLED_SystemTrayTestItems
-#else
-#define MAYBE_SystemTrayTestItems SystemTrayTestItems
-#endif
-
-TEST_F(SystemTrayTest, MAYBE_SystemTrayTestItems) {
+// Disabled due to a use-after-free, see http://crbug.com/127539.
+TEST_F(SystemTrayTest, DISABLED_SystemTrayTestItems) {
   SystemTray* tray = GetSystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
@@ -202,14 +196,8 @@ TEST_F(SystemTrayTest, DISABLED_SystemTrayNotifications) {
   ASSERT_TRUE(test_item->notification_view() != NULL);
 }
 
-#if defined(OS_WIN)
-// This test is crashing on windows. See http://crbug.com/127539.
-#define MAYBE_BubbleCreationTypesTest DISABLED_BubbleCreationTypesTest
-#else
-#define MAYBE_BubbleCreationTypesTest BubbleCreationTypesTest
-#endif
-
-TEST_F(SystemTrayTest, MAYBE_BubbleCreationTypesTest) {
+// Disabled due to a use-after-free, see http://crbug.com/127539.
+TEST_F(SystemTrayTest, DISABLED_BubbleCreationTypesTest) {
   SystemTray* tray = GetSystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
