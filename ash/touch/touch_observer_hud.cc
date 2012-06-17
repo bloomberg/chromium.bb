@@ -130,7 +130,7 @@ TouchObserverHUD::TouchObserverHUD() {
     content->AddChildView(touch_labels_[i]);
   }
 
-  widget_.reset(new views::Widget());
+  widget_ = new views::Widget();
   views::Widget::InitParams
       params(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.transparent = true;
@@ -144,9 +144,16 @@ TouchObserverHUD::TouchObserverHUD() {
   widget_->SetContentsView(content);
   widget_->StackAtTop();
   widget_->Show();
+
+  // The TouchObserverHUD's lifetime is always more than |widget_|. The
+  // |widget_| is unset from the OnWidgetClosing callback.
+  widget_->AddObserver(this);
 }
 
-TouchObserverHUD::~TouchObserverHUD() {}
+TouchObserverHUD::~TouchObserverHUD() {
+  // The widget should have already been destroyed.
+  DCHECK(!widget_);
+}
 
 void TouchObserverHUD::UpdateTouchPointLabel(int index) {
   const char* status = NULL;
@@ -210,6 +217,11 @@ ui::GestureStatus TouchObserverHUD::PreHandleGestureEvent(
     aura::Window* target,
     aura::GestureEvent* event) {
   return ui::GESTURE_STATUS_UNKNOWN;
+}
+
+void TouchObserverHUD::OnWidgetClosing(views::Widget* widget) {
+  DCHECK_EQ(widget, widget_);
+  widget_ = NULL;
 }
 
 }  // namespace internal

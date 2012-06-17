@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ui/aura/event_filter.h"
 #include "ui/gfx/point.h"
+#include "ui/views/widget/widget.h"
 
 namespace aura {
 class MouseEvent;
@@ -27,7 +28,8 @@ namespace internal {
 class TouchHudCanvas;
 
 // An event filter which handles system level gesture events.
-class TouchObserverHUD : public aura::EventFilter {
+class TouchObserverHUD : public aura::EventFilter,
+                         public views::Widget::Observer {
  public:
   TouchObserverHUD();
   virtual ~TouchObserverHUD();
@@ -46,9 +48,12 @@ class TouchObserverHUD : public aura::EventFilter {
       aura::Window* target,
       aura::GestureEvent* event) OVERRIDE;
 
+  // Overridden from views::Widget::Observer.
+  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+
   static const int kMaxTouchPoints = 32;
 
-  scoped_ptr<views::Widget> widget_;
+  views::Widget* widget_;
   TouchHudCanvas* canvas_;
   views::Label* touch_labels_[kMaxTouchPoints];
   gfx::Point touch_positions_[kMaxTouchPoints];

@@ -393,15 +393,16 @@ void Shell::Init() {
 
   capture_controller_.reset(new internal::CaptureController);
 
+  internal::RootWindowController* root_window_controller =
+      new internal::RootWindowController(root_window);
+  root_window_controller->CreateContainers();
+
   CommandLine* command_line = CommandLine::ForCurrentProcess();
 
   if (command_line->HasSwitch(switches::kAshTouchHud)) {
     touch_observer_hud_.reset(new internal::TouchObserverHUD);
     AddEnvEventFilter(touch_observer_hud_.get());
   }
-  internal::RootWindowController* root_window_controller =
-      new internal::RootWindowController(root_window);
-  root_window_controller->CreateContainers();
 
   // Create Controllers that may need root window.
   // TODO(oshima): Move as many controllers before creating
