@@ -422,14 +422,6 @@ bool SandboxMountPointProvider::IsRestrictedFileName(const FilePath& filename)
   return false;
 }
 
-std::vector<FilePath> SandboxMountPointProvider::GetRootDirectories() const {
-  NOTREACHED();
-  // TODO(ericu): Implement this method and check for access permissions as
-  // fileBrowserPrivate extension API does. We currently have another mechanism,
-  // but we should switch over.  This may also need to call MigrateIfNeeded().
-  return  std::vector<FilePath>();
-}
-
 FileSystemFileUtil* SandboxMountPointProvider::GetFileUtil() {
   return sandbox_file_util_.get();
 }

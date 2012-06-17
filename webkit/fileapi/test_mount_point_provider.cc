@@ -124,10 +124,6 @@ bool TestMountPointProvider::IsRestrictedFileName(
   return false;
 }
 
-std::vector<FilePath> TestMountPointProvider::GetRootDirectories() const {
-  return std::vector<FilePath>();
-}
-
 FileSystemFileUtil* TestMountPointProvider::GetFileUtil() {
   return local_file_util_.get();
 }

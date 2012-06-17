@@ -97,12 +97,6 @@ bool IsolatedMountPointProvider::IsRestrictedFileName(
   return false;
 }
 
-std::vector<FilePath> IsolatedMountPointProvider::GetRootDirectories() const {
-  // We have no pre-defined root directories that need to be given
-  // access permission.
-  return  std::vector<FilePath>();
-}
-
 FileSystemFileUtil* IsolatedMountPointProvider::GetFileUtil() {
   return isolated_file_util_.get();
 }

@@ -68,11 +68,6 @@ class FILEAPI_EXPORT FileSystemMountPointProvider {
   // Callable on any thread.
   virtual bool IsRestrictedFileName(const FilePath& filename) const = 0;
 
-  // Returns the list of top level directories that are exposed by this
-  // provider. This list is used to set appropriate child process file access
-  // permissions.
-  virtual std::vector<FilePath> GetRootDirectories() const = 0;
-
   // Returns the specialized FileSystemFileUtil for this mount point.
   virtual FileSystemFileUtil* GetFileUtil() = 0;
 
@@ -121,6 +116,10 @@ class FILEAPI_EXPORT FileSystemMountPointProvider {
 class ExternalFileSystemMountPointProvider
     : public FileSystemMountPointProvider {
  public:
+  // Returns the list of top level directories that are exposed by this
+  // provider. This list is used to set appropriate child process file access
+  // permissions.
+  virtual std::vector<FilePath> GetRootDirectories() const = 0;
   // Grant access to all external file system from extension identified with
   // |extension_id|.
   virtual void GrantFullAccessToExtension(const std::string& extension_id) = 0;
