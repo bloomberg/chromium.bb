@@ -284,8 +284,9 @@ class ShellUtil {
   // Registers Chrome as a potential default browser and handler for filetypes
   // and protocols.
   // If Chrome is already registered, this method is a no-op.
-  // This method requires write access to HKLM so is just a best effort deal.
-  // If write to HKLM fails and:
+  // This method requires write access to HKLM (prior to Win8) so is just a
+  // best effort deal.
+  // If write to HKLM is required, but fails, and:
   // - |elevate_if_not_admin| is true (and OS is Vista or above):
   //   tries to launch setup.exe with admin priviledges (by prompting the user
   //   with a UAC) to do these tasks.

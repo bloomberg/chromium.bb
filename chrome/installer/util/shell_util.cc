@@ -45,15 +45,17 @@ namespace {
 enum RegistrationConfirmationLevel {
   // Only look for Chrome's ProgIds.
   // This is sufficient when we are trying to determine the suffix of the
-  // currently running Chrome as system registrations might not be present.
+  // currently running Chrome as shell integration registrations might not be
+  // present.
   CONFIRM_PROGID_REGISTRATION = 0,
-  // Confirm that Chrome is registered on the system (i.e. registered with
+  // Confirm that Chrome is fully integrated with Windows (i.e. registered with
   // Defaut Programs). These registrations can be in HKCU as of Windows 8.
-  CONFIRM_SYSTEM_REGISTRATION,
-  // Same as CONFIRM_SYSTEM_REGISTRATION, but only look in HKLM (used when
+  // Note: Shell registration implies ProgId registration.
+  CONFIRM_SHELL_REGISTRATION,
+  // Same as CONFIRM_SHELL_REGISTRATION, but only look in HKLM (used when
   // uninstalling to know whether elevation is required to clean up the
   // registry).
-  CONFIRM_SYSTEM_REGISTRATION_IN_HKLM,
+  CONFIRM_SHELL_REGISTRATION_IN_HKLM,
 };
 
 const wchar_t kReinstallCommand[] = L"ReinstallCommand";
@@ -125,7 +127,6 @@ class RegistryEntry {
   // are needed to register Chromium ProgIds.
   // These entries should be registered in HKCU for user-level installs and in
   // HKLM for system-level installs.
-  // TODO (gab): Extract the Windows 8 only registrations out of this function.
   static bool GetProgIdEntries(BrowserDistribution* dist,
                                const string16& chrome_exe,
                                const string16& suffix,
@@ -197,7 +198,7 @@ class RegistryEntry {
     }
 
     // The following entries are required as of Windows 8, but do not
-    // depend on the DelegateExecute.
+    // depend on the DelegateExecute verb handler being set.
     if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
       entries->push_front(new RegistryEntry(
           chrome_html_prog_id, ShellUtil::kRegAppUserModelId, app_id));
@@ -225,8 +226,8 @@ class RegistryEntry {
     return true;
   }
 
-  // This method returns a list of the system level registry entries
-  // needed to declare a capability of handling a protocol.
+  // This method returns a list of the registry entries needed to declare a
+  // capability of handling a protocol on Windows.
   static bool GetProtocolCapabilityEntries(BrowserDistribution* dist,
                                            const string16& suffix,
                                            const string16& protocol,
@@ -237,12 +238,13 @@ class RegistryEntry {
     return true;
   }
 
-  // This method returns a list of all the system level registry entries that
-  // are needed to register Chromium on the machine.
-  static bool GetSystemEntries(BrowserDistribution* dist,
-                               const string16& chrome_exe,
-                               const string16& suffix,
-                               std::list<RegistryEntry*>* entries) {
+  // This method returns a list of all the registry entries required to fully
+  // integrate Chrome with Windows (i.e. StartMenuInternet, Default Programs,
+  // AppPaths, etc.). This entries need to be registered in HKLM prior to Win8.
+  static bool GetShellIntegrationEntries(BrowserDistribution* dist,
+                                         const string16& chrome_exe,
+                                         const string16& suffix,
+                                         std::list<RegistryEntry*>* entries) {
     string16 icon_path = ShellUtil::GetChromeIcon(dist, chrome_exe);
     string16 quoted_exe_path = L"\"" + chrome_exe + L"\"";
 
@@ -524,7 +526,8 @@ bool IsChromeRegistered(BrowserDistribution* dist,
   std::list<RegistryEntry*> entries;
   STLElementDeleter<std::list<RegistryEntry*> > entries_deleter(&entries);
   RegistryEntry::GetProgIdEntries(dist, chrome_exe, suffix, &entries);
-  RegistryEntry::GetSystemEntries(dist, chrome_exe, suffix, &entries);
+  RegistryEntry::GetShellIntegrationEntries(
+      dist, chrome_exe, suffix, &entries);
   return AreEntriesRegistered(entries, RegistryEntry::LOOK_IN_HKCU_THEN_HKLM);
 }
 
@@ -549,6 +552,10 @@ bool ElevateAndRegisterChrome(BrowserDistribution* dist,
                               const string16& chrome_exe,
                               const string16& suffix,
                               const string16& protocol) {
+  // Only user-level installs prior to Windows 8 should need to elevate to
+  // register.
+  DCHECK(InstallUtil::IsPerUserInstall(chrome_exe.c_str()));
+  DCHECK_LT(base::win::GetVersion(), base::win::VERSION_WIN8);
   FilePath exe_path =
       FilePath::FromWStringHack(chrome_exe).DirName()
           .Append(installer::kSetupExe);
@@ -700,8 +707,8 @@ bool QuickIsChromeRegistered(BrowserDistribution* dist,
       reg_key.append(ShellUtil::kChromeHTMLProgId);
       reg_key.append(suffix);
       break;
-    case CONFIRM_SYSTEM_REGISTRATION:
-    case CONFIRM_SYSTEM_REGISTRATION_IN_HKLM:
+    case CONFIRM_SHELL_REGISTRATION:
+    case CONFIRM_SHELL_REGISTRATION_IN_HKLM:
       // Software\Clients\StartMenuInternet\Google Chrome|suffix|
       reg_key = RegistryEntry::GetBrowserClientKey(dist, suffix);
       break;
@@ -713,9 +720,9 @@ bool QuickIsChromeRegistered(BrowserDistribution* dist,
 
   // ProgId registrations are allowed to reside in HKCU for user-level installs
   // (and values there have priority over values in HKLM). The same is true for
-  // system entries as of Windows 8.
+  // shell integration entries as of Windows 8.
   if (confirmation_level == CONFIRM_PROGID_REGISTRATION ||
-      (confirmation_level == CONFIRM_SYSTEM_REGISTRATION &&
+      (confirmation_level == CONFIRM_SHELL_REGISTRATION &&
        base::win::GetVersion() >= base::win::VERSION_WIN8)) {
     const RegKey key_hkcu(HKEY_CURRENT_USER, reg_key.c_str(), KEY_QUERY_VALUE);
     string16 hkcu_value;
@@ -767,7 +774,7 @@ bool GetInstallationSpecificSuffix(BrowserDistribution* dist,
                                    string16* suffix) {
   if (!InstallUtil::IsPerUserInstall(chrome_exe.c_str()) ||
       QuickIsChromeRegistered(dist, chrome_exe, string16(),
-                              CONFIRM_SYSTEM_REGISTRATION)) {
+                              CONFIRM_SHELL_REGISTRATION)) {
     // No suffix on system-level installs and user-level installs already
     // registered with no suffix.
     suffix->clear();
@@ -775,6 +782,14 @@ bool GetInstallationSpecificSuffix(BrowserDistribution* dist,
   } else {
     return GetUserSpecificRegistrySuffix(suffix);
   }
+}
+
+// Returns the root registry key (HKLM or HKCU) into which shell integration
+// registration for default protocols must be placed. As of Windows 8 everything
+// can go in HKCU for per-user installs.
+HKEY DetermineShellIntegrationRoot(bool is_per_user) {
+  return is_per_user && base::win::GetVersion() >= base::win::VERSION_WIN8 ?
+      HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
 }
 
 }  // namespace
@@ -827,7 +842,7 @@ bool ShellUtil::QuickIsChromeRegisteredInHKLM(BrowserDistribution* dist,
                                               const string16& chrome_exe,
                                               const string16& suffix) {
   return QuickIsChromeRegistered(dist, chrome_exe, suffix,
-                                 CONFIRM_SYSTEM_REGISTRATION_IN_HKLM);
+                                 CONFIRM_SHELL_REGISTRATION_IN_HKLM);
 }
 
 bool ShellUtil::CreateChromeDesktopShortcut(BrowserDistribution* dist,
@@ -1063,6 +1078,8 @@ bool ShellUtil::MakeChromeDefault(BrowserDistribution* dist,
                                   int shell_change,
                                   const string16& chrome_exe,
                                   bool elevate_if_not_admin) {
+  DCHECK(!(shell_change & ShellUtil::SYSTEM_LEVEL) || IsUserAnAdmin());
+
   if (!dist->CanSetAsDefault())
     return false;
 
@@ -1233,22 +1250,29 @@ bool ShellUtil::RegisterChromeBrowser(BrowserDistribution* dist,
   if (IsChromeRegistered(dist, chrome_exe, suffix))
     return true;
 
-  // If user is an admin try to register and return the status.
-  if (IsUserAnAdmin()) {
+  bool user_level = InstallUtil::IsPerUserInstall(chrome_exe.c_str());
+  HKEY root = DetermineShellIntegrationRoot(user_level);
+
+  // Do the full registration if we can do it at user-level or if the user is an
+  // admin.
+  if (root == HKEY_CURRENT_USER || IsUserAnAdmin()) {
     std::list<RegistryEntry*> progids;
     STLElementDeleter<std::list<RegistryEntry*> > progids_deleter(&progids);
-    std::list<RegistryEntry*> sys_entries;
-    STLElementDeleter<std::list<RegistryEntry*> > sys_deleter(&sys_entries);
+    std::list<RegistryEntry*> shell_entries;
+    STLElementDeleter<std::list<RegistryEntry*> > shell_deleter(&shell_entries);
     RegistryEntry::GetProgIdEntries(dist, chrome_exe, suffix, &progids);
-    RegistryEntry::GetSystemEntries(dist, chrome_exe, suffix, &sys_entries);
-    return AddRegistryEntries(
-               InstallUtil::IsPerUserInstall(chrome_exe.c_str()) ?
-                   HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE,
-               progids) &&
-           AddRegistryEntries(HKEY_LOCAL_MACHINE, sys_entries);
+    RegistryEntry::GetShellIntegrationEntries(
+        dist, chrome_exe, suffix, &shell_entries);
+    return AddRegistryEntries(user_level ? HKEY_CURRENT_USER :
+                                           HKEY_LOCAL_MACHINE,
+                              progids) &&
+           AddRegistryEntries(root, shell_entries);
   }
 
-  // If user is not an admin and OS is Vista, try to elevate and register.
+  // If the user is not an admin and OS is between Vista and Windows 7
+  // inclusively, try to elevate and register. This is only intended for
+  // user-level installs as system-level installs should always be run with
+  // admin rights.
   if (elevate_if_not_admin &&
       base::win::GetVersion() >= base::win::VERSION_VISTA &&
       ElevateAndRegisterChrome(dist, chrome_exe, suffix, L""))
@@ -1291,7 +1315,10 @@ bool ShellUtil::RegisterChromeForProtocol(BrowserDistribution* dist,
   if (IsChromeRegisteredForProtocol(dist, suffix, protocol))
     return true;
 
-  if (IsUserAnAdmin()) {
+  HKEY root = DetermineShellIntegrationRoot(
+      InstallUtil::IsPerUserInstall(chrome_exe.c_str()));
+
+  if (root == HKEY_CURRENT_USER || IsUserAnAdmin()) {
     // We can do this operation directly.
     // First, make sure Chrome is fully registered on this machine.
     if (!RegisterChromeBrowser(dist, chrome_exe, suffix, false))
@@ -1302,14 +1329,13 @@ bool ShellUtil::RegisterChromeForProtocol(BrowserDistribution* dist,
     STLElementDeleter<std::list<RegistryEntry*> > entries_deleter(&entries);
     RegistryEntry::GetProtocolCapabilityEntries(dist, suffix, protocol,
         &entries);
-    return AddRegistryEntries(HKEY_LOCAL_MACHINE, entries);
+    return AddRegistryEntries(root, entries);
   } else if (elevate_if_not_admin &&
              base::win::GetVersion() >= base::win::VERSION_VISTA) {
     // Elevate to do the whole job
     return ElevateAndRegisterChrome(dist, chrome_exe, suffix, protocol);
   } else {
-    // we need admin rights to register our capability. If we don't
-    // have them and can't elevate, give up.
+    // Admin rights are required to register capabilities before Windows 8.
     return false;
   }
 }

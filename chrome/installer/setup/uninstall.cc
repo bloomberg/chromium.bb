@@ -809,13 +809,14 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   // user-level installs, only remove it if both: 1) this uninstall isn't a self
   // destruct following the installation of a system-level Chrome (because the
   // system-level Chrome owns the HKLM registration now), and 2) this user has
-  // made Chrome their default browser (i.e. has system entries registered with
-  // |suffix| (note: |suffix| will be the empty string if required as it is
-  // obtained by GetCurrentInstallationSuffix() above)).
+  // made Chrome their default browser (i.e. has shell integration entries
+  // registered with |suffix| (note: |suffix| will be the empty string if
+  // required as it is obtained by GetCurrentInstallationSuffix() above)).
   // TODO(gab): This can still leave parts of a suffixed install behind. To be
   // able to remove them we would need to be able to remove only suffixed
-  // entries (as it is now some of the system entries are unsuffixed; thus
-  // removing suffixed installs is prohibited in HKLM if !|remove_all| for now).
+  // entries (as it is now some of the shell integration entries are unsuffixed;
+  // thus removing suffixed installs is prohibited in HKLM if !|remove_all| for
+  // now).
   if (installer_state.system_install() ||
       (remove_all &&
        ShellUtil::QuickIsChromeRegisteredInHKLM(
