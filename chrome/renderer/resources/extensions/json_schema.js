@@ -124,6 +124,9 @@ chromeHidden.JSONSchemaValidator.getType = function(value) {
       return "null";
     } else if (Object.prototype.toString.call(value) == "[object Array]") {
       return "array";
+    } else if (typeof(ArrayBuffer) != "undefined" &&
+               value.constructor == ArrayBuffer) {
+      return "binary";
     }
   } else if (s == "number") {
     if (value % 1 == 0) {

@@ -345,6 +345,8 @@ class CCGenerator(object):
       return '%s.DeepCopy()' % var
     elif prop.type_ == PropertyType.ENUM:
       return 'CreateEnumValue(%s).release()' % var
+    elif prop.type_ == PropertyType.BINARY:
+      return '%s->DeepCopy()' % var
     elif self._IsArrayOrArrayRef(prop):
       return '%s.release()' % self._util_cc_helper.CreateValueFromArray(
           self._cpp_type_generator.GetReferencedProperty(prop), var,
