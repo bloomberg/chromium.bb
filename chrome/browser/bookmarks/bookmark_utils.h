@@ -267,7 +267,7 @@ enum BookmarkLaunchLocation {
 // Records the launch of a bookmark for UMA purposes.
 void RecordBookmarkLaunch(BookmarkLaunchLocation location);
 
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(USE_AURA)
 void DisableBookmarkBarViewAnimationsForTesting(bool disabled);
 bool IsBookmarkBarViewAnimationsDisabled();
 #endif

@@ -217,7 +217,7 @@ bool DoesBookmarkContainWords(const BookmarkNode* node,
           net::UnescapeRule::NORMAL, NULL, NULL, NULL), words);
 }
 
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(USE_AURA)
 bool g_bookmark_bar_view_animations_disabled = false;
 #endif
 
@@ -785,7 +785,7 @@ void RecordBookmarkLaunch(BookmarkLaunchLocation location) {
 #endif
 }
 
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(USE_AURA)
 void DisableBookmarkBarViewAnimationsForTesting(bool disabled) {
   g_bookmark_bar_view_animations_disabled = disabled;
 }
