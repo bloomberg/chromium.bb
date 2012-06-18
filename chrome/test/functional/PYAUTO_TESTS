@@ -526,6 +526,8 @@
       '-extensions.ExtensionsTest.testAllowAccessFileURLs',
       # crbug.com/113090
       '-extensions.ExtensionsTest.testAllowIncognitoExtension',
+      # crbug.com/94682
+      '-gpu.GpuTest.test2dCanvas',
       # crbug.com/125424
       '-media.media_basic_playback.MediaConstrainedNetworkPerfTest.testBasicPlaybackMatrix',
       # crbug.com/115646
