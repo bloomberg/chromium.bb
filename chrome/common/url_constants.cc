@@ -390,6 +390,9 @@ const char kPrivacyLearnMoreURL[] =
     "https://support.google.com/chrome/?p=settings_privacy";
 #endif
 
+const char kSessionRestoreLearnMoreURL[] =
+    "http://support.google.com/chrome/bin/answer.py?answer=95421";
+
 const char kChromiumProjectURL[] = "http://code.google.com/chromium/";
 
 const char kLearnMoreReportingURL[] =

@@ -367,6 +367,8 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
   values->Set("syncData", GetSyncStateDictionary().release());
 
   values->SetString("privacyLearnMoreURL", chrome::kPrivacyLearnMoreURL);
+  values->SetString("sessionRestoreLearnMoreURL",
+                    chrome::kSessionRestoreLearnMoreURL);
 
   values->SetString(
       "languageSectionLabel",
