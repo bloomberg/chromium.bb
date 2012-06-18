@@ -2807,6 +2807,7 @@ FileManager.prototype = {
       var network = self.networkState_;
 
       self.directoryModel_.setGDataEnabled(self.isGDataEnabled());
+      self.directoryModel_.setOffline(!network.online);
 
       if (self.isGDataEnabled())
         self.setupGDataWelcome_();
