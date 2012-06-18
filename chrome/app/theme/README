@@ -1,17 +1,3 @@
-When adding a new icon please follow these two steps:
-
-Step 1. Run pngcrush on all new icons. For example:
+Please run pngcrush on all new icons. For example:
   mkdir crushed
   pngcrush -d crushed -brute -reduce new/*.png
-
-Step 2. While adding an icon to one of the following files:
-  theme_resources_standard.grd
-  theme_resources_2x.grd
-  theme_resources_touch_1x.grd
-  theme_resources_touch_2x.grd
-make sure to add the same icon to all the other .grd files.
-Verify that you did this correctly by doing a diff of the generated header
-files. For example:
-  diff Debug/gen/chrome/grit/theme_resources_standard.h \
-  Debug/gen/chrome/grit/theme_resources_2x.h
-should be empty.

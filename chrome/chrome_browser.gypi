@@ -61,7 +61,6 @@
         '../ui/surface/surface.gyp:surface',
         '../ui/ui.gyp:ui',
         '../ui/ui.gyp:ui_resources',
-        '../ui/ui.gyp:ui_resources_2x',
         '../ui/ui.gyp:ui_resources_standard',
         '../ui/web_dialogs/web_dialogs.gyp:web_dialogs',
         '../v8/tools/gyp/v8.gyp:v8',

@@ -545,7 +545,7 @@
                 ['enable_hidpi==1', {
                   'mac_bundle_resources': [
                     '<(grit_out_dir)/theme_resources_2x.pak',
-                    '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_2x/ui_resources_2x.pak',
+                    '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_2x.pak',
                   ],
                 }],
               ],  # conditions

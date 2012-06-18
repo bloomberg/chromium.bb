@@ -145,18 +145,8 @@
   "devtools_resources.grd": {
     "includes": [20500],
   },
-  # All standard and large theme resources should have the same IDs.
   "chrome/app/theme/theme_resources_standard.grd": {
-    "includes": [21000],
-  },
-  "chrome/app/theme/theme_resources_2x.grd": {
-    "includes": [21000],
-  },
-  "chrome/app/theme/theme_resources_touch_1x.grd": {
-    "includes": [21000],
-  },
-  "chrome/app/theme/theme_resources_touch_2x.grd": {
-    "includes": [21000],
+    "structures": [21000],
   },
   # This file is generated during the build.
   "chrome/browser/debugger/frontend/devtools_discovery_page_resources.grd": {
@@ -174,18 +164,8 @@
   "chrome/browser/resources/quota_internals_resources.grd": {
     "includes": [23000],
   },
-  # All standard and large theme resources should have the same IDs.
   "ui/resources/ui_resources_standard.grd": {
-    "includes": [24000],
-  },
-  "ui/resources/ui_resources_touch.grd": {
-    "includes": [24000],
-  },
-  "ui/resources/ui_resources_touch_2x.grd": {
-    "includes": [24000],
-  },
-  "ui/resources/ui_resources_2x.grd": {
-    "includes": [24000],
+    "structures": [24000],
   },
   "content/content_resources.grd": {
     "includes": [24500],

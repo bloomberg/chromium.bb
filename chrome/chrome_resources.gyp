@@ -212,30 +212,9 @@
           'includes': [ '../build/grit_action.gypi' ],
         },
         {
-          'action_name': 'theme_resources_2x',
-          'variables': {
-            'grit_grd_file': 'app/theme/theme_resources_2x.grd',
-          },
-          'includes': [ '../build/grit_action.gypi' ],
-        },
-        {
           'action_name': 'theme_resources_standard',
           'variables': {
             'grit_grd_file': 'app/theme/theme_resources_standard.grd',
-          },
-          'includes': [ '../build/grit_action.gypi' ],
-        },
-        {
-          'action_name': 'theme_resources_touch_1x',
-          'variables': {
-            'grit_grd_file': 'app/theme/theme_resources_touch_1x.grd',
-          },
-          'includes': [ '../build/grit_action.gypi' ],
-        },
-        {
-          'action_name': 'theme_resources_touch_2x',
-          'variables': {
-            'grit_grd_file': 'app/theme/theme_resources_touch_2x.grd',
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
@@ -247,10 +226,7 @@
       'type': 'none',
       'dependencies': [
         'theme_resources_gen',
-        '<(DEPTH)/ui/ui.gyp:ui_resources_2x',
         '<(DEPTH)/ui/ui.gyp:ui_resources_standard',
-        '<(DEPTH)/ui/ui.gyp:ui_resources_touch',
-        '<(DEPTH)/ui/ui.gyp:ui_resources_touch_2x',
       ],
       'conditions': [
         ['OS != "mac"', {
@@ -279,7 +255,7 @@
               'destination': '<(PRODUCT_DIR)',
               'files': [
                 '<(grit_out_dir)/theme_resources_2x.pak',
-                '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_2x/ui_resources_2x.pak',
+                '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_2x.pak',
               ],
             },
           ],
@@ -291,8 +267,8 @@
               'files': [
                 '<(grit_out_dir)/theme_resources_touch_1x.pak',
                 '<(grit_out_dir)/theme_resources_touch_2x.pak',
-                '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_touch/ui_resources_touch.pak',
-                '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_touch_2x/ui_resources_touch_2x.pak',
+                '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_touch.pak',
+                '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_touch_2x.pak',
               ],
             },
           ],

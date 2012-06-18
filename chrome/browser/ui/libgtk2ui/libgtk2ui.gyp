@@ -17,7 +17,6 @@
         '../../../../skia/skia.gyp:skia',
         '../../../../ui/ui.gyp:ui',
         '../../../../ui/ui.gyp:ui_resources',
-        '../../../../ui/ui.gyp:ui_resources_2x',
         '../../../../ui/ui.gyp:ui_resources_standard',
         '../../../chrome_resources.gyp:chrome_extra_resources',
         '../../../chrome_resources.gyp:chrome_resources',

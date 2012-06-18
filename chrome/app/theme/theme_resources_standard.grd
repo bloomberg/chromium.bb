@@ -1,296 +1,335 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <grit latest_public_release="0" current_release="1">
   <outputs>
-    <output filename="grit/theme_resources_standard.h" type="rc_header">
+    <output filename="grit/theme_resources_standard.h" type="rc_header" context="default_100_percent">
       <emit emit_type='prepend'></emit>
     </output>
-    <output filename="grit/theme_resources_standard_map.cc" type="resource_map_source" />
-    <output filename="grit/theme_resources_standard_map.h" type="resource_map_header" />
-    <output filename="theme_resources_standard.pak" type="data_package" />
-    <output filename="theme_resources_standard.rc" type="rc_all" />
+    <output filename="grit/theme_resources_standard_map.cc" type="resource_map_source" context="default_100_percent" />
+    <output filename="grit/theme_resources_standard_map.h" type="resource_map_header" context="default_100_percent" />
+    <output filename="theme_resources_standard.pak" type="data_package" context="default_100_percent" />
+    <output filename="theme_resources_2x.pak" type="data_package" context="default_200_percent" />
+    <output filename="theme_resources_touch_1x.pak" type="data_package" context="touch_100_percent" />
+    <output filename="theme_resources_touch_2x.pak" type="data_package" context="touch_200_percent" />
+    <output filename="theme_resources_standard.rc" type="rc_all" context="default_100_percent" />
   </outputs>
   <release seq="1">
-    <includes>
-      <!-- KEEP THESE IN ALPHABETICAL ORDER AND SYNCHRONIZED WITH
-           theme_resources_2x.grd. THIS MEANS THAT EACH ICON IN THIS FILE
-           MUST HAVE AN EQUIVALENT ICON IN THE OTHER FILE.
-           YOU MUST ALSO REPLICATE ALL IFDEFS. -->
-      <include name="IDR_APP_NOTIFICATION_NUB" file="default_100_percent/nub.png" type="BINDATA" />
-      <include name="IDR_APP_NOTIFICATION_NUB_MASK" file="default_100_percent/nub_mask.png" type="BINDATA" />
-      <include name="IDR_APP_NOTIFICATION_SMALL_BUBBLE" file="default_100_percent/small_bubble.png" type="BINDATA" />
+    <structures fallback_to_low_resolution="true">
+      <!-- KEEP THESE IN ALPHABETICAL ORDER! -->
+      <structure type="chrome_scaled_image" name="IDR_APP_NOTIFICATION_NUB" file="nub.png" />
+      <structure type="chrome_scaled_image" name="IDR_APP_NOTIFICATION_NUB_MASK" file="nub_mask.png" />
+      <structure type="chrome_scaled_image" name="IDR_APP_NOTIFICATION_SMALL_BUBBLE" file="small_bubble.png" />
       <!-- TODO(jamescook): Update all Chrome platforms to use the new art and metrics
            from Ash, crbug.com/118228 -->
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_BACK" file="default_100_percent/ash/browser_back_normal.png" type="BINDATA" />
-        <include name="IDR_BACK_D" file="default_100_percent/ash/browser_back_disabled.png" type="BINDATA" />
-        <include name="IDR_BACK_H" file="default_100_percent/ash/browser_back_hover.png" type="BINDATA" />
-        <include name="IDR_BACK_P" file="default_100_percent/ash/browser_back_pressed.png" type="BINDATA" />
+        <structure type="chrome_scaled_image" name="IDR_BACK" file="ash/browser_back_normal.png" />
+        <structure type="chrome_scaled_image" name="IDR_BACK_D" file="ash/browser_back_disabled.png" />
+        <structure type="chrome_scaled_image" name="IDR_BACK_H" file="ash/browser_back_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_BACK_P" file="ash/browser_back_pressed.png" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
-        <include name="IDR_BACK" file="default_100_percent/back.png" type="BINDATA" />
-        <include name="IDR_BACK_D" file="default_100_percent/back_disabled.png" type="BINDATA" />
-        <include name="IDR_BACK_H" file="default_100_percent/back_hover.png" type="BINDATA" />
-        <include name="IDR_BACK_P" file="default_100_percent/back_pressed.png" type="BINDATA" />
+        <structure type="chrome_scaled_image" name="IDR_BACK" file="back.png" />
+        <structure type="chrome_scaled_image" name="IDR_BACK_D" file="back_disabled.png" />
+        <structure type="chrome_scaled_image" name="IDR_BACK_H" file="back_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_BACK_P" file="back_pressed.png" />
       </if>
-      <include name="IDR_BALLOON_WRENCH" file="default_100_percent/notification_wrench.png" type="BINDATA" />
-      <include name="IDR_BALLOON_WRENCH_H" file="default_100_percent/notification_wrench_hover.png" type="BINDATA" />
-      <include name="IDR_BALLOON_WRENCH_P" file="default_100_percent/notification_wrench_pressed.png" type="BINDATA" />
-      <include name="IDR_BLOCKED_COOKIES" file="default_100_percent/blocked_cookies.png" type="BINDATA" />
-      <include name="IDR_BLOCKED_IMAGES" file="default_100_percent/blocked_images.png" type="BINDATA" />
-      <include name="IDR_BLOCKED_JAVASCRIPT" file="default_100_percent/blocked_script.png" type="BINDATA" />
-      <include name="IDR_BLOCKED_PLUGINS" file="default_100_percent/blocked_plugins.png" type="BINDATA" />
-      <include name="IDR_BLOCKED_POPUPS" file="default_100_percent/blocked_popups.png" type="BINDATA" />
-      <include name="IDR_BOOKMARKS_FAVICON" file="default_100_percent/bookmarks_favicon.png" type="BINDATA" />
+      <structure type="chrome_scaled_image" name="IDR_BALLOON_WRENCH" file="notification_wrench.png" />
+      <structure type="chrome_scaled_image" name="IDR_BALLOON_WRENCH_H" file="notification_wrench_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_BALLOON_WRENCH_P" file="notification_wrench_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_BLOCKED_COOKIES" file="blocked_cookies.png" />
+      <structure type="chrome_scaled_image" name="IDR_BLOCKED_IMAGES" file="blocked_images.png" />
+      <structure type="chrome_scaled_image" name="IDR_BLOCKED_JAVASCRIPT" file="blocked_script.png" />
+      <structure type="chrome_scaled_image" name="IDR_BLOCKED_PLUGINS" file="blocked_plugins.png" />
+      <structure type="chrome_scaled_image" name="IDR_BLOCKED_POPUPS" file="blocked_popups.png" />
+      <structure type="chrome_scaled_image" name="IDR_BOOKMARKS_FAVICON" file="bookmarks_favicon.png" />
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_BROWSER_ACTION" file="default_100_percent/ash/browser_action_normal.png" type="BINDATA" />
-        <include name="IDR_BROWSER_ACTION_H" file="default_100_percent/ash/browser_action_hover.png" type="BINDATA" />
-        <include name="IDR_BROWSER_ACTION_P" file="default_100_percent/ash/browser_action_pressed.png" type="BINDATA" />
+        <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION" file="ash/browser_action_normal.png" />
+        <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION_H" file="ash/browser_action_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION_P" file="ash/browser_action_pressed.png" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
-        <include name="IDR_BROWSER_ACTION" file="default_100_percent/browser_action.png" type="BINDATA" />
-        <include name="IDR_BROWSER_ACTION_H" file="default_100_percent/browser_action_hover.png" type="BINDATA" />
-        <include name="IDR_BROWSER_ACTION_P" file="default_100_percent/browser_action_pressed.png" type="BINDATA" />
+        <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION" file="browser_action.png" />
+        <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION_H" file="browser_action_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION_P" file="browser_action_pressed.png" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_BROWSER_ACTIONS_OVERFLOW" file="default_100_percent/ash/browser_actions_overflow_normal.png" type="BINDATA" />
-        <include name="IDR_BROWSER_ACTIONS_OVERFLOW_H" file="default_100_percent/ash/browser_actions_overflow_hover.png" type="BINDATA" />
-        <include name="IDR_BROWSER_ACTIONS_OVERFLOW_P" file="default_100_percent/ash/browser_actions_overflow_pressed.png" type="BINDATA" />
+        <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTIONS_OVERFLOW" file="ash/browser_actions_overflow_normal.png" />
+        <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTIONS_OVERFLOW_H" file="ash/browser_actions_overflow_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTIONS_OVERFLOW_P" file="ash/browser_actions_overflow_pressed.png" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
-        <include name="IDR_BROWSER_ACTIONS_OVERFLOW" file="default_100_percent/browser_actions_overflow.png" type="BINDATA" />
-        <include name="IDR_BROWSER_ACTIONS_OVERFLOW_H" file="default_100_percent/browser_actions_overflow_hover.png" type="BINDATA" />
-        <include name="IDR_BROWSER_ACTIONS_OVERFLOW_P" file="default_100_percent/browser_actions_overflow_pressed.png" type="BINDATA" />
+        <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTIONS_OVERFLOW" file="browser_actions_overflow.png" />
+        <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTIONS_OVERFLOW_H" file="browser_actions_overflow_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTIONS_OVERFLOW_P" file="browser_actions_overflow_pressed.png" />
       </if>
       <if expr="is_win">
-        <include name="IDR_CONFLICT_FAVICON" file="default_100_percent/about_conflicts_favicon.png" type="BINDATA" />
+        <structure type="chrome_scaled_image" name="IDR_CONFLICT_FAVICON" file="about_conflicts_favicon.png" />
       </if>
       <!-- Ash doesn't draw rounded content area, so needs a special top image. -->
+      <if expr="context.startswith('default_')">
+        <if expr="pp_ifdef('use_ash')">
+          <structure type="chrome_scaled_image" name="IDR_CONTENT_TOP_CENTER" file="ash/content_top_center.png" />
+        </if>
+        <if expr="not pp_ifdef('use_ash')">
+          <structure type="chrome_scaled_image" name="IDR_CONTENT_TOP_CENTER" file="content_top_center.png" />
+        </if>
+      </if>
+      <if expr="not context.startswith('default_')">
+        <!-- TODO(benrg): This is obviously wrong; fix it. -->
+        <if expr="pp_ifdef('use_ash')">
+          <structure type="chrome_scaled_image" name="IDR_CONTENT_TOP_CENTER" file="content_top_center_ash.png" />
+        </if>
+        <if expr="not pp_ifdef('use_ash')">
+          <structure type="chrome_scaled_image" name="IDR_CONTENT_TOP_CENTER" file="ash/content_top_center.png" />
+        </if>
+      </if>
+      <structure type="chrome_scaled_image" name="IDR_CONTENT_TOP_LEFT_CORNER" file="content_top_left_corner.png" />
+      <structure type="chrome_scaled_image" name="IDR_CONTENT_TOP_LEFT_CORNER_MASK" file="content_top_left_corner_mask.png" />
+      <structure type="chrome_scaled_image" name="IDR_CONTENT_TOP_RIGHT_CORNER" file="content_top_right_corner.png" />
+      <structure type="chrome_scaled_image" name="IDR_CONTENT_TOP_RIGHT_CORNER_MASK" file="content_top_right_corner_mask.png" />
+      <structure type="chrome_scaled_image" name="IDR_DOWNLOADS_FAVICON" file="downloads_favicon.png" />
+      <structure type="chrome_scaled_image" name="IDR_FEEDBACK" file="feedback.png" />
+      <structure type="chrome_scaled_image" name="IDR_FEEDBACK_H" file="feedback_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_FEEDBACK_P" file="feedback_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_FLAGS" file="flags.png" />
+      <if expr="pp_ifdef('toolkit_views')">
+        <structure type="chrome_scaled_image" name="IDR_FORWARD" file="ash/browser_forward_normal.png" />
+        <structure type="chrome_scaled_image" name="IDR_FORWARD_D" file="ash/browser_forward_disabled.png" />
+        <structure type="chrome_scaled_image" name="IDR_FORWARD_H" file="ash/browser_forward_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_FORWARD_P" file="ash/browser_forward_pressed.png" />
+      </if>
+      <if expr="not pp_ifdef('toolkit_views')">
+        <structure type="chrome_scaled_image" name="IDR_FORWARD" file="forward.png" />
+        <structure type="chrome_scaled_image" name="IDR_FORWARD_D" file="forward_disabled.png" />
+        <structure type="chrome_scaled_image" name="IDR_FORWARD_H" file="forward_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_FORWARD_P" file="forward_pressed.png" />
+      </if>
+      <structure type="chrome_scaled_image" name="IDR_GEOLOCATION_INFOBAR_ICON" file="infobar_geolocation.png" />
+      <structure type="chrome_scaled_image" name="IDR_HISTORY_FAVICON" file="history_favicon.png" />
+      <if expr="pp_ifdef('toolkit_views')">
+        <structure type="chrome_scaled_image" name="IDR_HOME" file="ash/browser_home_normal.png" />
+        <structure type="chrome_scaled_image" name="IDR_HOME_H" file="ash/browser_home_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_HOME_P" file="ash/browser_home_pressed.png" />
+      </if>
+      <if expr="not pp_ifdef('toolkit_views')">
+        <structure type="chrome_scaled_image" name="IDR_HOME" file="home.png" />
+        <structure type="chrome_scaled_image" name="IDR_HOME_H" file="home_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_HOME_P" file="home_pressed.png" />
+      </if>
+      <structure type="chrome_scaled_image" name="IDR_INFOBAR_ALT_NAV_URL" file="infobar_didyoumean.png" />
+      <structure type="chrome_scaled_image" name="IDR_INFOBAR_AUTOFILL" file="infobar_autofill.png" />
+      <structure type="chrome_scaled_image" name="IDR_INFOBAR_AUTOLOGIN" file="infobar_autologin.png" />
+      <structure type="chrome_scaled_image" name="IDR_INFOBAR_COOKIE" file="infobar_cookie.png" />
+      <structure type="chrome_scaled_image" name="IDR_INFOBAR_DESKTOP_NOTIFICATIONS" file="infobar_desktop_notifications.png" />
+      <structure type="chrome_scaled_image" name="IDR_INFOBAR_INCOMPLETE" file="infobar_incomplete.png" />
+      <structure type="chrome_scaled_image" name="IDR_INFOBAR_MEDIA_STREAM_CAMERA" file="infobar_camera.png" />
+      <structure type="chrome_scaled_image" name="IDR_INFOBAR_MEDIA_STREAM_MIC" file="infobar_microphone.png" />
+      <structure type="chrome_scaled_image" name="IDR_INFOBAR_MULTIPLE_DOWNLOADS" file="infobar_multiple_downloads.png" />
+      <structure type="chrome_scaled_image" name="IDR_INFOBAR_PLUGIN_CRASHED" file="infobar_plugin_crashed.png" />
+      <structure type="chrome_scaled_image" name="IDR_INFOBAR_PLUGIN_INSTALL" file="infobar_plugin.png" />
+      <structure type="chrome_scaled_image" name="IDR_INFOBAR_QUESTION_MARK" file="infobar_questionmark.png" />
+      <structure type="chrome_scaled_image" name="IDR_INFOBAR_RESTORE_SESSION" file="infobar_restore.png" />
+      <structure type="chrome_scaled_image" name="IDR_INFOBAR_SAVE_PASSWORD" file="infobar_savepassword.png" />
+      <structure type="chrome_scaled_image" name="IDR_INFOBAR_SSL_WARNING" file="infobar_insecure.png" />
+      <structure type="chrome_scaled_image" name="IDR_INFOBAR_SYNC" file="infobar_sync.png" />
+      <structure type="chrome_scaled_image" name="IDR_INFOBAR_THEME" file="infobar_theme.png" />
+      <structure type="chrome_scaled_image" name="IDR_INFOBAR_TRANSLATE" file="infobar_translate.png" />
+      <structure type="chrome_scaled_image" name="IDR_KEYWORD_SEARCH_MAGNIFIER" file="keyword_search_magnifier.png" />
+      <if expr="pp_ifdef('toolkit_views')">
+        <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_C" file="ash/browser_omnibox_middle.png" />
+        <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_L" file="ash/browser_omnibox_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_R" file="ash/browser_omnibox_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_LOCATION_BAR_BORDER" file="ash/browser_omnibox_border.png" />
+      </if>
+      <if expr="not pp_ifdef('toolkit_views')">
+        <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_C" file="omnibox_c.png" />
+        <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_L" file="omnibox_l.png" />
+        <structure type="chrome_scaled_image" name="IDR_LOCATIONBG_R" file="omnibox_r.png" />
+        <structure type="chrome_scaled_image" name="IDR_LOCATION_BAR_BORDER" file="omnibox_border.png" />
+      </if>
+      <structure type="chrome_scaled_image" name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_C" file="keyword_search_bubble_c.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_L" file="keyword_search_bubble_l.png" />
+      <structure type="chrome_scaled_image" name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_R" file="keyword_search_bubble_r.png" />
+      <structure type="chrome_scaled_image" name="IDR_MOBILE" file="mobile.png" />
+      <structure type="chrome_scaled_image" name="IDR_MOBILE_LIT" file="mobile_lit.png" />
       <if expr="pp_ifdef('use_ash')">
-        <include name="IDR_CONTENT_TOP_CENTER" file="default_100_percent/ash/content_top_center.png" type="BINDATA" />
-      </if>
-      <if expr="not pp_ifdef('use_ash')">
-        <include name="IDR_CONTENT_TOP_CENTER" file="default_100_percent/content_top_center.png" type="BINDATA" />
-      </if>
-      <include name="IDR_CONTENT_TOP_LEFT_CORNER" file="default_100_percent/content_top_left_corner.png" type="BINDATA" />
-      <include name="IDR_CONTENT_TOP_LEFT_CORNER_MASK" file="default_100_percent/content_top_left_corner_mask.png" type="BINDATA" />
-      <include name="IDR_CONTENT_TOP_RIGHT_CORNER" file="default_100_percent/content_top_right_corner.png" type="BINDATA" />
-      <include name="IDR_CONTENT_TOP_RIGHT_CORNER_MASK" file="default_100_percent/content_top_right_corner_mask.png" type="BINDATA" />
-      <include name="IDR_DOWNLOADS_FAVICON" file="default_100_percent/downloads_favicon.png" type="BINDATA" />
-      <include name="IDR_FEEDBACK" file="default_100_percent/feedback.png" type="BINDATA" />
-      <include name="IDR_FEEDBACK_H" file="default_100_percent/feedback_hover.png" type="BINDATA" />
-      <include name="IDR_FEEDBACK_P" file="default_100_percent/feedback_pressed.png" type="BINDATA" />
-      <include name="IDR_FLAGS" file="default_100_percent/flags.png" type="BINDATA" />
-      <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_FORWARD" file="default_100_percent/ash/browser_forward_normal.png" type="BINDATA" />
-        <include name="IDR_FORWARD_D" file="default_100_percent/ash/browser_forward_disabled.png" type="BINDATA" />
-        <include name="IDR_FORWARD_H" file="default_100_percent/ash/browser_forward_hover.png" type="BINDATA" />
-        <include name="IDR_FORWARD_P" file="default_100_percent/ash/browser_forward_pressed.png" type="BINDATA" />
-      </if>
-      <if expr="not pp_ifdef('toolkit_views')">
-        <include name="IDR_FORWARD" file="default_100_percent/forward.png" type="BINDATA" />
-        <include name="IDR_FORWARD_D" file="default_100_percent/forward_disabled.png" type="BINDATA" />
-        <include name="IDR_FORWARD_H" file="default_100_percent/forward_hover.png" type="BINDATA" />
-        <include name="IDR_FORWARD_P" file="default_100_percent/forward_pressed.png" type="BINDATA" />
-      </if>
-      <include name="IDR_GEOLOCATION_INFOBAR_ICON" file="default_100_percent/infobar_geolocation.png" type="BINDATA" />
-      <include name="IDR_HISTORY_FAVICON" file="default_100_percent/history_favicon.png" type="BINDATA" />
-      <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_HOME" file="default_100_percent/ash/browser_home_normal.png" type="BINDATA" />
-        <include name="IDR_HOME_H" file="default_100_percent/ash/browser_home_hover.png" type="BINDATA" />
-        <include name="IDR_HOME_P" file="default_100_percent/ash/browser_home_pressed.png" type="BINDATA" />
-      </if>
-      <if expr="not pp_ifdef('toolkit_views')">
-        <include name="IDR_HOME" file="default_100_percent/home.png" type="BINDATA" />
-        <include name="IDR_HOME_H" file="default_100_percent/home_hover.png" type="BINDATA" />
-        <include name="IDR_HOME_P" file="default_100_percent/home_pressed.png" type="BINDATA" />
-      </if>
-      <include name="IDR_INFOBAR_ALT_NAV_URL" file="default_100_percent/infobar_didyoumean.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_AUTOFILL" file="default_100_percent/infobar_autofill.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_AUTOLOGIN" file="default_100_percent/infobar_autologin.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_COOKIE" file="default_100_percent/infobar_cookie.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_DESKTOP_NOTIFICATIONS" file="default_100_percent/infobar_desktop_notifications.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_INCOMPLETE" file="default_100_percent/infobar_incomplete.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_MEDIA_STREAM_CAMERA" file="default_100_percent/infobar_camera.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_MEDIA_STREAM_MIC" file="default_100_percent/infobar_microphone.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_MULTIPLE_DOWNLOADS" file="default_100_percent/infobar_multiple_downloads.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_PLUGIN_CRASHED" file="default_100_percent/infobar_plugin_crashed.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_PLUGIN_INSTALL" file="default_100_percent/infobar_plugin.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_QUESTION_MARK" file="default_100_percent/infobar_questionmark.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_RESTORE_SESSION" file="default_100_percent/infobar_restore.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_SAVE_PASSWORD" file="default_100_percent/infobar_savepassword.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_SSL_WARNING" file="default_100_percent/infobar_insecure.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_SYNC" file="default_100_percent/infobar_sync.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_THEME" file="default_100_percent/infobar_theme.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_TRANSLATE" file="default_100_percent/infobar_translate.png" type="BINDATA" />
-      <include name="IDR_KEYWORD_SEARCH_MAGNIFIER" file="default_100_percent/keyword_search_magnifier.png" type="BINDATA" />
-      <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_LOCATIONBG_C" file="default_100_percent/ash/browser_omnibox_middle.png" type="BINDATA" />
-        <include name="IDR_LOCATIONBG_L" file="default_100_percent/ash/browser_omnibox_left.png" type="BINDATA" />
-        <include name="IDR_LOCATIONBG_R" file="default_100_percent/ash/browser_omnibox_right.png" type="BINDATA" />
-        <include name="IDR_LOCATION_BAR_BORDER" file="default_100_percent/ash/browser_omnibox_border.png" type="BINDATA" />
-      </if>
-      <if expr="not pp_ifdef('toolkit_views')">
-        <include name="IDR_LOCATIONBG_C" file="default_100_percent/omnibox_c.png" type="BINDATA" />
-        <include name="IDR_LOCATIONBG_L" file="default_100_percent/omnibox_l.png" type="BINDATA" />
-        <include name="IDR_LOCATIONBG_R" file="default_100_percent/omnibox_r.png" type="BINDATA" />
-        <include name="IDR_LOCATION_BAR_BORDER" file="default_100_percent/omnibox_border.png" type="BINDATA" />
-      </if>
-      <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_C" file="default_100_percent/keyword_search_bubble_c.png" type="BINDATA" />
-      <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_L" file="default_100_percent/keyword_search_bubble_l.png" type="BINDATA" />
-      <include name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_R" file="default_100_percent/keyword_search_bubble_r.png" type="BINDATA" />
-      <include name="IDR_MOBILE" file="default_100_percent/mobile.png" type="BINDATA" />
-      <include name="IDR_MOBILE_LIT" file="default_100_percent/mobile_lit.png" type="BINDATA" />
-      <if expr="pp_ifdef('use_ash')">
-        <include name="IDR_NEWTAB_BUTTON" file="default_100_percent/ash/newtab_normal.png" type="BINDATA" />
-        <include name="IDR_NEWTAB_BUTTON_H" file="default_100_percent/ash/newtab_hover.png" type="BINDATA" />
-        <include name="IDR_NEWTAB_BUTTON_P" file="default_100_percent/ash/newtab_pressed.png" type="BINDATA" />
-        <include name="IDR_NEWTAB_BUTTON_MASK" file="default_100_percent/ash/newtab_button_mask.png" type="BINDATA" />
-        <include name="IDR_NEWTAB_BUTTON_PLUS" file="default_100_percent/newtab_views_plus.png" type="BINDATA" />
-        <include name="IDR_NEWTAB_BUTTON_P_PLUS" file="default_100_percent/newtab_p_views_plus.png" type="BINDATA" />
+        <!-- TODO(benrg): Get rid of all conditionals that test the output
+             context. -->
+        <if expr="context.startswith('default_')">
+          <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON" file="ash/newtab_normal.png" />
+          <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_H" file="ash/newtab_hover.png" />
+          <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_P" file="ash/newtab_pressed.png" />
+          <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_MASK" file="ash/newtab_button_mask.png" />
+        </if>
+        <if expr="not context.startswith('default_')">
+          <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON" file="newtab_normal.png" />
+          <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_H" file="newtab_hover.png" />
+          <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_P" file="newtab_pressed.png" />
+          <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_MASK" file="newtab_button_mask.png" />
+        </if>
+        <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_PLUS" file="newtab_views_plus.png" />
+        <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_P_PLUS" file="newtab_p_views_plus.png" />
       </if>
       <if expr="pp_ifdef('toolkit_views') and not pp_ifdef('use_ash')">
-        <include name="IDR_NEWTAB_BUTTON" file="default_100_percent/newtab_views.png" type="BINDATA" />
-        <include name="IDR_NEWTAB_BUTTON_H" file="default_100_percent/newtab_hover.png" type="BINDATA" />
-        <include name="IDR_NEWTAB_BUTTON_P" file="default_100_percent/newtab_p_views.png" type="BINDATA" />
-        <include name="IDR_NEWTAB_BUTTON_MASK" file="default_100_percent/newtab_button_mask_views.png" type="BINDATA" />
-        <include name="IDR_NEWTAB_BUTTON_PLUS" file="default_100_percent/newtab_views_plus.png" type="BINDATA" />
-        <include name="IDR_NEWTAB_BUTTON_P_PLUS" file="default_100_percent/newtab_p_views_plus.png" type="BINDATA" />
+        <if expr="context.startswith('default_')">
+          <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON" file="newtab_views.png" />
+        </if>
+        <if expr="not context.startswith('default_')">
+          <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON" file="newtab_normal.png" />
+        </if>
+        <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_H" file="newtab_hover.png" />
+        <if expr="context.startswith('default_')">
+          <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_P" file="newtab_p_views.png" />
+          <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_MASK" file="newtab_button_mask_views.png" />
+        </if>
+        <if expr="not context.startswith('default_')">
+          <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_P" file="newtab_pressed.png" />
+          <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_MASK" file="newtab_button_mask.png" />
+        </if>
+        <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_PLUS" file="newtab_views_plus.png" />
+        <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_P_PLUS" file="newtab_p_views_plus.png" />
       </if>
       <if expr="not pp_ifdef('toolkit_views') and not pp_ifdef('use_ash')">
-        <include name="IDR_NEWTAB_BUTTON" file="default_100_percent/newtab.png" type="BINDATA" />
-        <include name="IDR_NEWTAB_BUTTON_H" file="default_100_percent/newtab_hover.png" type="BINDATA" />
-        <include name="IDR_NEWTAB_BUTTON_P" file="default_100_percent/newtab_pressed.png" type="BINDATA" />
-        <include name="IDR_NEWTAB_BUTTON_MASK" file="default_100_percent/newtab_button_mask.png" type="BINDATA" />
+        <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON" file="newtab.png" />
+        <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_H" file="newtab_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_P" file="newtab_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_MASK" file="newtab_button_mask.png" />
       </if>
-      <include name="IDR_SETTINGS_FAVICON" file="default_100_percent/settings_favicon.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_C" file="default_100_percent/ev_bubble_c.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_L" file="default_100_percent/ev_bubble_l.png" type="BINDATA" />
-      <include name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_R" file="default_100_percent/ev_bubble_r.png" type="BINDATA" />
-      <include name="IDR_OTR_ICON" file="default_100_percent/otr_icon.png" type="BINDATA" />
-      <include name="IDR_OTR_ICON_FULLSCREEN" file="default_100_percent/otr_icon.png" type="BINDATA" />
-      <include name="IDR_PLUGIN" file="default_100_percent/plugin.png" type="BINDATA" />
+      <structure type="chrome_scaled_image" name="IDR_SETTINGS_FAVICON" file="settings_favicon.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_C" file="ev_bubble_c.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_L" file="ev_bubble_l.png" />
+      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_BACKGROUND_R" file="ev_bubble_r.png" />
+      <structure type="chrome_scaled_image" name="IDR_OTR_ICON" file="otr_icon.png" />
+      <if expr="context.startswith('default_')">
+        <structure type="chrome_scaled_image" name="IDR_OTR_ICON_FULLSCREEN" file="otr_icon.png" />
+      </if>
+      <if expr="not context.startswith('default_')">
+        <structure type="chrome_scaled_image" name="IDR_OTR_ICON_FULLSCREEN" file="otr_icon_fullscreen.png" />
+      </if>
+      <structure type="chrome_scaled_image" name="IDR_PLUGIN" file="plugin.png" />
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_RELOAD" file="default_100_percent/ash/browser_reload_normal.png" type="BINDATA" />
-        <include name="IDR_RELOAD_H" file="default_100_percent/ash/browser_reload_hover.png" type="BINDATA" />
-        <include name="IDR_RELOAD_P" file="default_100_percent/ash/browser_reload_pressed.png" type="BINDATA" />
+        <structure type="chrome_scaled_image" name="IDR_RELOAD" file="ash/browser_reload_normal.png" />
+        <structure type="chrome_scaled_image" name="IDR_RELOAD_H" file="ash/browser_reload_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_RELOAD_P" file="ash/browser_reload_pressed.png" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
-        <include name="IDR_RELOAD" file="default_100_percent/reload.png" type="BINDATA" />
-        <include name="IDR_RELOAD_H" file="default_100_percent/reload_hover.png" type="BINDATA" />
-        <include name="IDR_RELOAD_P" file="default_100_percent/reload_pressed.png" type="BINDATA" />
+        <structure type="chrome_scaled_image" name="IDR_RELOAD" file="reload.png" />
+        <structure type="chrome_scaled_image" name="IDR_RELOAD_H" file="reload_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_RELOAD_P" file="reload_pressed.png" />
       </if>
-      <include name="IDR_SAD_FAVICON" file="default_100_percent/sadfavicon.png" type="BINDATA" />
-      <include name="IDR_STAR" file="default_100_percent/star.png" type="BINDATA" />
-      <include name="IDR_STAR_LIT" file="default_100_percent/star_lit.png" type="BINDATA" />
+      <structure type="chrome_scaled_image" name="IDR_SAD_FAVICON" file="sadfavicon.png" />
+      <structure type="chrome_scaled_image" name="IDR_STAR" file="star.png" />
+      <structure type="chrome_scaled_image" name="IDR_STAR_LIT" file="star_lit.png" />
       <if expr="pp_ifdef('chromeos')">
-        <include name="IDR_STATUSBAR_NETWORK_ARCS_DARK" file="default_100_percent/statusbar_network_arcs_dark.png" type="BINDATA" /> 
-        <include name="IDR_STATUSBAR_NETWORK_ARCS_LIGHT" file="default_100_percent/statusbar_network_arcs_light.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_BARS_DARK" file="default_100_percent/statusbar_network_bars_dark.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_BARS_LIGHT" file="default_100_percent/statusbar_network_bars_light.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_NETWORK_SECURE" file="default_100_percent/statusbar_network_secure.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_VPN" file="default_100_percent/statusbar_vpn_dark.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_WIRED" file="default_100_percent/statusbar_wired.png" type="BINDATA" />
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_ARCS_DARK" file="statusbar_network_arcs_dark.png" /> 
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_ARCS_LIGHT" file="statusbar_network_arcs_light.png" />
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_BARS_DARK" file="statusbar_network_bars_dark.png" />
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_BARS_LIGHT" file="statusbar_network_bars_light.png" />
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_NETWORK_SECURE" file="statusbar_network_secure.png" />
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_VPN" file="statusbar_vpn_dark.png" />
+        <structure type="chrome_scaled_image" name="IDR_STATUSBAR_WIRED" file="statusbar_wired.png" />
       </if>
-      <include name="IDR_ACTION_BOX_BUTTON" file="default_100_percent/action_box_button.png" type="BINDATA" />
+      <structure type="chrome_scaled_image" name="IDR_ACTION_BOX_BUTTON" file="action_box_button.png" />
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_STOP" file="default_100_percent/ash/browser_stop_normal.png" type="BINDATA" />
-        <include name="IDR_STOP_D" file="default_100_percent/ash/browser_stop_disabled.png" type="BINDATA" />
-        <include name="IDR_STOP_H" file="default_100_percent/ash/browser_stop_hover.png" type="BINDATA" />
-        <include name="IDR_STOP_P" file="default_100_percent/ash/browser_stop_pressed.png" type="BINDATA" />
+        <structure type="chrome_scaled_image" name="IDR_STOP" file="ash/browser_stop_normal.png" />
+        <structure type="chrome_scaled_image" name="IDR_STOP_D" file="ash/browser_stop_disabled.png" />
+        <structure type="chrome_scaled_image" name="IDR_STOP_H" file="ash/browser_stop_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_STOP_P" file="ash/browser_stop_pressed.png" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
-        <include name="IDR_STOP" file="default_100_percent/stop.png" type="BINDATA" />
-        <include name="IDR_STOP_D" file="default_100_percent/stop_disabled.png" type="BINDATA" />
-        <include name="IDR_STOP_H" file="default_100_percent/stop_hover.png" type="BINDATA" />
-        <include name="IDR_STOP_P" file="default_100_percent/stop_pressed.png" type="BINDATA" />
+        <structure type="chrome_scaled_image" name="IDR_STOP" file="stop.png" />
+        <structure type="chrome_scaled_image" name="IDR_STOP_D" file="stop_disabled.png" />
+        <structure type="chrome_scaled_image" name="IDR_STOP_H" file="stop_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_STOP_P" file="stop_pressed.png" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_TAB_ACTIVE_CENTER" file="default_100_percent/ash/tab_active_center.png" type="BINDATA" />
-        <include name="IDR_TAB_ACTIVE_LEFT" file="default_100_percent/ash/tab_active_left.png" type="BINDATA" />
-        <include name="IDR_TAB_ACTIVE_RIGHT" file="default_100_percent/ash/tab_active_right.png" type="BINDATA" />
-        <include name="IDR_TAB_ALPHA_LEFT" file="default_100_percent/ash/tab_alpha_left.png" type="BINDATA" />
-        <include name="IDR_TAB_ALPHA_RIGHT" file="default_100_percent/ash/tab_alpha_right.png" type="BINDATA" />
+        <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_CENTER" file="ash/tab_active_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_LEFT" file="ash/tab_active_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_RIGHT" file="ash/tab_active_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_TAB_ALPHA_LEFT" file="ash/tab_alpha_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_TAB_ALPHA_RIGHT" file="ash/tab_alpha_right.png" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
-        <include name="IDR_TAB_ACTIVE_CENTER" file="default_100_percent/tab_active_center.png" type="BINDATA" />
-        <include name="IDR_TAB_ACTIVE_LEFT" file="default_100_percent/tab_active_left.png" type="BINDATA" />
-        <include name="IDR_TAB_ACTIVE_RIGHT" file="default_100_percent/tab_active_right.png" type="BINDATA" />
-        <include name="IDR_TAB_ALPHA_LEFT" file="default_100_percent/tab_alpha_left.png" type="BINDATA" />
-        <include name="IDR_TAB_ALPHA_RIGHT" file="default_100_percent/tab_alpha_right.png" type="BINDATA" />
+        <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_CENTER" file="tab_active_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_LEFT" file="tab_active_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_RIGHT" file="tab_active_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_TAB_ALPHA_LEFT" file="tab_alpha_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_TAB_ALPHA_RIGHT" file="tab_alpha_right.png" />
       </if>
       <!-- Note: Tab close buttons are not traditional buttons.  Tab close buttons
            fill a background with a color from the theme, tile IDR_TAB_CLOSE over it,
            then apply IDR_TAB_CLOSE_MASK.  See chrome/browser/ui/views/tabs/tab.cc -->
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_TAB_CLOSE" file="default_100_percent/ash/tab_close_normal.png" type="BINDATA" />
-        <include name="IDR_TAB_CLOSE_H" file="default_100_percent/ash/tab_close_hover.png" type="BINDATA" />
-        <include name="IDR_TAB_CLOSE_MASK" file="default_100_percent/ash/tab_close_mask.png" type="BINDATA" />
-        <include name="IDR_TAB_CLOSE_P" file="default_100_percent/ash/tab_close_pressed.png" type="BINDATA" />
+        <structure type="chrome_scaled_image" name="IDR_TAB_CLOSE" file="ash/tab_close_normal.png" />
+        <structure type="chrome_scaled_image" name="IDR_TAB_CLOSE_H" file="ash/tab_close_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_TAB_CLOSE_MASK" file="ash/tab_close_mask.png" />
+        <structure type="chrome_scaled_image" name="IDR_TAB_CLOSE_P" file="ash/tab_close_pressed.png" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
-        <include name="IDR_TAB_CLOSE" file="default_100_percent/tab_close.png" type="BINDATA" />
-        <include name="IDR_TAB_CLOSE_H" file="default_100_percent/tab_close_hover.png" type="BINDATA" />
-        <include name="IDR_TAB_CLOSE_MASK" file="default_100_percent/tab_close_mask.png" type="BINDATA" />
-        <include name="IDR_TAB_CLOSE_P" file="default_100_percent/tab_close_pressed.png" type="BINDATA" />
+        <structure type="chrome_scaled_image" name="IDR_TAB_CLOSE" file="tab_close.png" />
+        <structure type="chrome_scaled_image" name="IDR_TAB_CLOSE_H" file="tab_close_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_TAB_CLOSE_MASK" file="tab_close_mask.png" />
+        <structure type="chrome_scaled_image" name="IDR_TAB_CLOSE_P" file="tab_close_pressed.png" />
       </if>
-      <include name="IDR_TAB_DROP_DOWN" file="default_100_percent/tab_drop_down.png" type="BINDATA" />
-      <include name="IDR_TAB_DROP_UP" file="default_100_percent/tab_drop_up.png" type="BINDATA" />
+      <structure type="chrome_scaled_image" name="IDR_TAB_DROP_DOWN" file="tab_drop_down.png" />
+      <structure type="chrome_scaled_image" name="IDR_TAB_DROP_UP" file="tab_drop_up.png" />
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_TAB_INACTIVE_CENTER" file="default_100_percent/ash/tab_inactive_center.png" type="BINDATA" />
-        <include name="IDR_TAB_INACTIVE_LEFT" file="default_100_percent/ash/tab_inactive_left.png" type="BINDATA" />
-        <include name="IDR_TAB_INACTIVE_RIGHT" file="default_100_percent/ash/tab_inactive_right.png" type="BINDATA" />
+        <structure type="chrome_scaled_image" name="IDR_TAB_INACTIVE_CENTER" file="ash/tab_inactive_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_TAB_INACTIVE_LEFT" file="ash/tab_inactive_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_TAB_INACTIVE_RIGHT" file="ash/tab_inactive_right.png" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
-        <include name="IDR_TAB_INACTIVE_CENTER" file="default_100_percent/tab_inactive_center.png" type="BINDATA" />
-        <include name="IDR_TAB_INACTIVE_LEFT" file="default_100_percent/tab_inactive_left.png" type="BINDATA" />
-        <include name="IDR_TAB_INACTIVE_RIGHT" file="default_100_percent/tab_inactive_right.png" type="BINDATA" />
+        <structure type="chrome_scaled_image" name="IDR_TAB_INACTIVE_CENTER" file="tab_inactive_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_TAB_INACTIVE_LEFT" file="tab_inactive_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_TAB_INACTIVE_RIGHT" file="tab_inactive_right.png" />
       </if>
       <!-- Ash has a gray frame, Windows uses blue. -->
       <if expr="pp_ifdef('use_ash')">
-        <include name="IDR_THEME_FRAME" file="default_100_percent/ash/theme_frame_default_active.png" type="BINDATA" />
-        <include name="IDR_THEME_FRAME_INACTIVE" file="default_100_percent/ash/theme_frame_default_inactive.png" type="BINDATA" />
-        <include name="IDR_THEME_FRAME_INCOGNITO" file="default_100_percent/ash/theme_frame_incognito_active.png" type="BINDATA" />
-        <include name="IDR_THEME_FRAME_INCOGNITO_INACTIVE" file="default_100_percent/ash/theme_frame_incognito_inactive.png" type="BINDATA" />
+        <structure type="chrome_scaled_image" name="IDR_THEME_FRAME" file="ash/theme_frame_default_active.png" />
+        <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_INACTIVE" file="ash/theme_frame_default_inactive.png" />
+        <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_INCOGNITO" file="ash/theme_frame_incognito_active.png" />
+        <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_INCOGNITO_INACTIVE" file="ash/theme_frame_incognito_inactive.png" />
       </if>
       <if expr="not pp_ifdef('use_ash')">
-        <include name="IDR_THEME_FRAME" file="default_100_percent/theme_frame.png" type="BINDATA" />
-        <include name="IDR_THEME_FRAME_INACTIVE" file="default_100_percent/theme_frame_inactive.png" type="BINDATA" />
-        <include name="IDR_THEME_FRAME_INCOGNITO" file="default_100_percent/theme_frame_incognito.png" type="BINDATA" />
-        <include name="IDR_THEME_FRAME_INCOGNITO_INACTIVE" file="default_100_percent/theme_frame_incognito_inactive.png" type="BINDATA" />
+        <structure type="chrome_scaled_image" name="IDR_THEME_FRAME" file="theme_frame.png" />
+        <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_INACTIVE" file="theme_frame_inactive.png" />
+        <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_INCOGNITO" file="theme_frame_incognito.png" />
+        <structure type="chrome_scaled_image" name="IDR_THEME_FRAME_INCOGNITO_INACTIVE" file="theme_frame_incognito_inactive.png" />
       </if>
       <!-- Ash has gray tab backgrounds, Windows uses blue. -->
       <if expr="pp_ifdef('use_ash')">
-        <include name="IDR_THEME_TAB_BACKGROUND" file="default_100_percent/ash/theme_tab_background.png" type="BINDATA" />
+        <structure type="chrome_scaled_image" name="IDR_THEME_TAB_BACKGROUND" file="ash/theme_tab_background.png" />
       </if>
       <if expr="not pp_ifdef('use_ash')">
-        <include name="IDR_THEME_TAB_BACKGROUND" file="default_100_percent/theme_tab_background.png" type="BINDATA" />
+        <structure type="chrome_scaled_image" name="IDR_THEME_TAB_BACKGROUND" file="theme_tab_background.png" />
       </if>
       <!-- Ash has a dark gray toolbar background, Windows has light gray. -->
       <if expr="pp_ifdef('use_ash')">
-        <include name="IDR_THEME_TOOLBAR" file="default_100_percent/ash/theme_toolbar_default.png" type="BINDATA" />
+        <structure type="chrome_scaled_image" name="IDR_THEME_TOOLBAR" file="ash/theme_toolbar_default.png" />
       </if>
       <if expr="not pp_ifdef('use_ash') and is_macosx">
-        <include name="IDR_THEME_TOOLBAR" file="default_100_percent/theme_toolbar_default2.png" type="BINDATA" />
+        <!-- TODO(jamescook): Is this right? -->
+        <structure type="chrome_scaled_image" name="IDR_THEME_TOOLBAR" file="theme_toolbar_default2.png" />
       </if>
       <if expr="not pp_ifdef('use_ash') and not is_macosx">
-        <include name="IDR_THEME_TOOLBAR" file="default_100_percent/theme_toolbar_default.png" type="BINDATA" />
+        <structure type="chrome_scaled_image" name="IDR_THEME_TOOLBAR" file="theme_toolbar_default.png" />
       </if>
       <if expr="is_macosx">
-        <include name="IDR_THEME_TOOLBAR_INACTIVE" file="default_100_percent/theme_toolbar_default_inactive2.png" type="BINDATA" />
+        <!-- TODO(jamescook): Is this right? -->
+        <structure type="chrome_scaled_image" name="IDR_THEME_TOOLBAR_INACTIVE" file="theme_toolbar_default_inactive2.png" />
       </if>
-      <include name="IDR_THROBBER_WAITING" file="default_100_percent/throbber_waiting.png" type="BINDATA" />
+      <structure type="chrome_scaled_image" name="IDR_THROBBER_WAITING" file="throbber_waiting.png" />
       <if expr="pp_ifdef('toolkit_views')">
-        <include name="IDR_TOOLS" file="default_100_percent/ash/browser_tools_normal.png" type="BINDATA" />
-        <include name="IDR_TOOLS_H" file="default_100_percent/ash/browser_tools_hover.png" type="BINDATA" />
-        <include name="IDR_TOOLS_P" file="default_100_percent/ash/browser_tools_pressed.png" type="BINDATA" />
+        <structure type="chrome_scaled_image" name="IDR_TOOLS" file="ash/browser_tools_normal.png" />
+        <structure type="chrome_scaled_image" name="IDR_TOOLS_H" file="ash/browser_tools_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_TOOLS_P" file="ash/browser_tools_pressed.png" />
       </if>
       <if expr="not pp_ifdef('toolkit_views')">
-        <include name="IDR_TOOLS" file="default_100_percent/tools.png" type="BINDATA" />
-        <include name="IDR_TOOLS_H" file="default_100_percent/tools_hover.png" type="BINDATA" />
-        <include name="IDR_TOOLS_P" file="default_100_percent/tools_pressed.png" type="BINDATA" />
+        <structure type="chrome_scaled_image" name="IDR_TOOLS" file="tools.png" />
+        <structure type="chrome_scaled_image" name="IDR_TOOLS_H" file="tools_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_TOOLS_P" file="tools_pressed.png" />
       </if>
-      <include name="IDR_ZOOM_MINUS" file="default_100_percent/zoom_minus.png" type="BINDATA" />
-      <include name="IDR_ZOOM_PLUS" file="default_100_percent/zoom_plus.png" type="BINDATA" />
-    </includes>
+      <structure type="chrome_scaled_image" name="IDR_ZOOM_MINUS" file="zoom_minus.png" />
+      <structure type="chrome_scaled_image" name="IDR_ZOOM_PLUS" file="zoom_plus.png" />
+    </structures>
   </release>
 </grit>

@@ -1,233 +1,267 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <grit latest_public_release="0" current_release="1">
   <outputs>
-    <output filename="grit/ui_resources_standard.h" type="rc_header">
+    <output filename="grit/ui_resources_standard.h" type="rc_header" context="default_100_percent">
       <emit emit_type='prepend'></emit>
     </output>
-    <output filename="grit/ui_resources_standard_map.cc" type="resource_map_source" />
-    <output filename="grit/ui_resources_standard_map.h" type="resource_map_header" />
+    <output filename="grit/ui_resources_standard_map.cc" type="resource_map_source" context="default_100_percent" />
+    <output filename="grit/ui_resources_standard_map.h" type="resource_map_header" context="default_100_percent" />
     <!-- TODO(oshima): Remove gfx_resources.pak once DumpRenderTree.gyp
          is updated. -->
-    <output filename="gfx_resources.pak" type="data_package" />
-    <output filename="ui_resources_standard.pak" type="data_package" />
-    <output filename="ui_resources_standard.rc" type="rc_all" />
+    <output filename="gfx_resources.pak" type="data_package" context="default_100_percent" />
+    <output filename="ui_resources_standard.pak" type="data_package" context="default_100_percent" />
+    <output filename="ui_resources_2x.pak" type="data_package" context="default_200_percent" />
+    <output filename="ui_resources_touch.pak" type="data_package" context="touch_100_percent" />
+    <output filename="ui_resources_touch_2x.pak" type="data_package" context="touch_200_percent" />
+    <output filename="ui_resources_standard.rc" type="rc_all" context="default_100_percent" />
   </outputs>
   <release seq="1">
-    <includes>
-      <!-- KEEP THESE IN ALPHABETICAL ORDER AND SYNCHRONIZED WITH
-           ui_resources_2x.grd and ui_resources_touch.grd. THIS MEANS THAT EACH
-           ICON IN THIS FILE MUST HAVE AN EQUIVALENT ICON IN THE OTHER
-           FILES. -->
-      <include name="IDR_BUBBLE_B" file="default_100_percent/bubble_b.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_BL" file="default_100_percent/bubble_bl.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_BR" file="default_100_percent/bubble_br.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_B_ARROW" file="default_100_percent/bubble_pointer_b.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_L" file="default_100_percent/bubble_l.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_L_ARROW" file="default_100_percent/bubble_pointer_l.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_R" file="default_100_percent/bubble_r.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_R_ARROW" file="default_100_percent/bubble_pointer_r.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_T" file="default_100_percent/bubble_t.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_TL" file="default_100_percent/bubble_tl.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_TR" file="default_100_percent/bubble_tr.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_T_ARROW" file="default_100_percent/bubble_pointer_t.png" type="BINDATA" />
+    <structures fallback_to_low_resolution="true">
+      <!-- KEEP THESE IN ALPHABETICAL ORDER! -->
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_B" file="bubble_b.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_BL" file="bubble_bl.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_BR" file="bubble_br.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_B_ARROW" file="bubble_pointer_b.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_L" file="bubble_l.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_L_ARROW" file="bubble_pointer_l.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_R" file="bubble_r.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_R_ARROW" file="bubble_pointer_r.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_T" file="bubble_t.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_TL" file="bubble_tl.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_TR" file="bubble_tr.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_T_ARROW" file="bubble_pointer_t.png" />
 
-      <include name="IDR_BUBBLE_SHADOW_B" file="default_100_percent/bubble_shadow_b.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_SHADOW_BL" file="default_100_percent/bubble_shadow_bl.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_SHADOW_BR" file="default_100_percent/bubble_shadow_br.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_SHADOW_L" file="default_100_percent/bubble_shadow_l.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_SHADOW_R" file="default_100_percent/bubble_shadow_r.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_SHADOW_T" file="default_100_percent/bubble_shadow_t.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_SHADOW_TL" file="default_100_percent/bubble_shadow_tl.png" type="BINDATA" />
-      <include name="IDR_BUBBLE_SHADOW_TR" file="default_100_percent/bubble_shadow_tr.png" type="BINDATA" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_SHADOW_B" file="bubble_shadow_b.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_SHADOW_BL" file="bubble_shadow_bl.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_SHADOW_BR" file="bubble_shadow_br.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_SHADOW_L" file="bubble_shadow_l.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_SHADOW_R" file="bubble_shadow_r.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_SHADOW_T" file="bubble_shadow_t.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_SHADOW_TL" file="bubble_shadow_tl.png" />
+      <structure type="chrome_scaled_image" name="IDR_BUBBLE_SHADOW_TR" file="bubble_shadow_tr.png" />
 
-      <include name="IDR_CLOSE_BAR" file="default_100_percent/close_bar.png" type="BINDATA" />
-      <include name="IDR_CLOSE_BAR_H" file="default_100_percent/close_bar_hover.png" type="BINDATA" />
-      <include name="IDR_CLOSE_BAR_MASK" file="default_100_percent/close_bar_mask.png" type="BINDATA" />
-      <include name="IDR_CLOSE_BAR_P" file="default_100_percent/close_bar_pressed.png" type="BINDATA" />
-      <include name="IDR_THROBBER" file="default_100_percent/throbber.png" type="BINDATA" />
+      <structure type="chrome_scaled_image" name="IDR_CLOSE_BAR" file="close_bar.png" />
+      <structure type="chrome_scaled_image" name="IDR_CLOSE_BAR_H" file="close_bar_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_CLOSE_BAR_MASK" file="close_bar_mask.png" />
+      <structure type="chrome_scaled_image" name="IDR_CLOSE_BAR_P" file="close_bar_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_THROBBER" file="throbber.png" />
 
       <!-- Remaining images only used by Aura. -->
+      <!-- TODO(flackr): These are 1x assets, we have to replace these before
+           attempting to use them at 2x where they will be rendered as half
+           the intended size. -->
       <if expr="pp_ifdef('use_aura')">
-        <include name="IDR_AURA_WINDOW_BUTTON_SEPARATOR" file="default_100_percent/aura/window_button_separator.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_CLOSE" file="default_100_percent/aura/window_close_normal.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_CLOSE_H" file="default_100_percent/aura/window_close_hover.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_CLOSE_P" file="default_100_percent/aura/window_close_pressed.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_FULLSCREEN_CLOSE" file="default_100_percent/aura/window_fullscreen_close_normal.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_FULLSCREEN_CLOSE_H" file="default_100_percent/aura/window_fullscreen_close_hover.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_FULLSCREEN_CLOSE_P" file="default_100_percent/aura/window_fullscreen_close_pressed.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_FULLSCREEN_RESTORE" file="default_100_percent/aura/window_fullscreen_restore_normal.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_FULLSCREEN_RESTORE_H" file="default_100_percent/aura/window_fullscreen_restore_hover.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_FULLSCREEN_RESTORE_P" file="default_100_percent/aura/window_fullscreen_restore_pressed.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_FULLSCREEN_SEPARATOR" file="default_100_percent/aura/window_fullscreen_separator.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_MAXIMIZE" file="default_100_percent/aura/window_maximize_normal.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_MAXIMIZE_H" file="default_100_percent/aura/window_maximize_hover.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_MAXIMIZE_P" file="default_100_percent/aura/window_maximize_pressed.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE" file="default_100_percent/aura/window_maximized_close_normal.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE_H" file="default_100_percent/aura/window_maximized_close_hover.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE_P" file="default_100_percent/aura/window_maximized_close_pressed.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_MAXIMIZED_MINIMIZE" file="default_100_percent/aura/window_maximized_minimize_normal.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_MAXIMIZED_MINIMIZE_H" file="default_100_percent/aura/window_maximized_minimize_hover.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_MAXIMIZED_MINIMIZE_P" file="default_100_percent/aura/window_maximized_minimize_pressed.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_MAXIMIZED_SNAP_LEFT_P" file="default_100_percent/aura/window_maximized_snap_left_pressed.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_MAXIMIZED_SNAP_MINIMIZE_P" file="default_100_percent/aura/window_maximized_snap_minimize_pressed.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_MAXIMIZED_SNAP_P" file="default_100_percent/aura/window_maximized_snap_pressed.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_MAXIMIZED_SNAP_RIGHT_P" file="default_100_percent/aura/window_maximized_snap_right_pressed.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE" file="default_100_percent/aura/window_maximized_restore_normal.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE_H" file="default_100_percent/aura/window_maximized_restore_hover.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE_P" file="default_100_percent/aura/window_maximized_restore_pressed.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_SNAP_LEFT_P" file="default_100_percent/aura/window_snap_left_pressed.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_SNAP_MINIMIZE_P" file="default_100_percent/aura/window_snap_minimize_pressed.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_SNAP_P" file="default_100_percent/aura/window_snap_pressed.png" type="BINDATA" />
-        <include name="IDR_AURA_WINDOW_SNAP_RIGHT_P" file="default_100_percent/aura/window_snap_right_pressed.png" type="BINDATA" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_BUTTON_SEPARATOR" file="aura/window_button_separator.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CLOSE" file="aura/window_close_normal.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CLOSE_H" file="aura/window_close_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_CLOSE_P" file="aura/window_close_pressed.png" />
+        <!-- TODO(benrg): Get rid of all conditionals that test the output
+             context. -->
+        <if expr="context.startswith('default_')">
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_CLOSE" file="aura/window_fullscreen_close_normal.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_CLOSE_H" file="aura/window_fullscreen_close_hover.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_CLOSE_P" file="aura/window_fullscreen_close_pressed.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_RESTORE" file="aura/window_fullscreen_restore_normal.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_RESTORE_H" file="aura/window_fullscreen_restore_hover.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_RESTORE_P" file="aura/window_fullscreen_restore_pressed.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_SEPARATOR" file="aura/window_fullscreen_separator.png" />
+        </if>
+        <if expr="not context.startswith('default_')">
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_CLOSE" file="aura/window_close_normal.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_CLOSE_H" file="aura/window_close_hover.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_CLOSE_P" file="aura/window_close_pressed.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_RESTORE" file="aura/window_restore_normal.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_RESTORE_H" file="aura/window_restore_hover.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_RESTORE_P" file="aura/window_restore_pressed.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_FULLSCREEN_SEPARATOR" file="aura/window_button_separator.png" />
+        </if>
+        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZE" file="aura/window_maximize_normal.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZE_H" file="aura/window_maximize_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZE_P" file="aura/window_maximize_pressed.png" />
+        <if expr="context.startswith('default_')">
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE" file="aura/window_maximized_close_normal.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE_H" file="aura/window_maximized_close_hover.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE_P" file="aura/window_maximized_close_pressed.png" />
+        </if>
+        <if expr="not context.startswith('default_')">
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE" file="aura/window_close_normal.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE_H" file="aura/window_close_hover.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_CLOSE_P" file="aura/window_close_pressed.png" />
+        </if>
+        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_MINIMIZE" file="aura/window_maximized_minimize_normal.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_MINIMIZE_H" file="aura/window_maximized_minimize_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_MINIMIZE_P" file="aura/window_maximized_minimize_pressed.png" />
+        <if expr="context.startswith('default_')">
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_SNAP_LEFT_P" file="aura/window_maximized_snap_left_pressed.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_SNAP_MINIMIZE_P" file="aura/window_maximized_snap_minimize_pressed.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_SNAP_P" file="aura/window_maximized_snap_pressed.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_SNAP_RIGHT_P" file="aura/window_maximized_snap_right_pressed.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE" file="aura/window_maximized_restore_normal.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE_H" file="aura/window_maximized_restore_hover.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE_P" file="aura/window_maximized_restore_pressed.png" />
+        </if>
+        <if expr="not context.startswith('default_')">
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_SNAP_LEFT_P" file="aura/window_snap_left_pressed.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_SNAP_MINIMIZE_P" file="aura/window_snap_minimize_pressed.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_SNAP_P" file="aura/window_snap_pressed.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_SNAP_RIGHT_P" file="aura/window_snap_right_pressed.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE" file="aura/window_restore_normal.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE_H" file="aura/window_restore_hover.png" />
+          <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_MAXIMIZED_RESTORE_P" file="aura/window_restore_pressed.png" />
+        </if>
+        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_SNAP_LEFT_P" file="aura/window_snap_left_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_SNAP_MINIMIZE_P" file="aura/window_snap_minimize_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_SNAP_P" file="aura/window_snap_pressed.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_SNAP_RIGHT_P" file="aura/window_snap_right_pressed.png" />
         <!-- cursors -->
-        <include name="IDR_AURA_CURSOR_PTR" file="default_100_percent/aura/left_ptr.png" type="BINDATA" />
-        <include name="IDR_AURA_CURSOR_NO_DROP" file="default_100_percent/aura/nodrop.png" type="BINDATA" />
-        <include name="IDR_AURA_CURSOR_COPY" file="default_100_percent/aura/copy.png" type="BINDATA" />
-        <include name="IDR_AURA_CURSOR_HAND" file="default_100_percent/aura/hand2.png" type="BINDATA" />
-        <include name="IDR_AURA_CURSOR_FLEUR" file="default_100_percent/aura/fleur.png" type="BINDATA" />
-        <include name="IDR_AURA_CURSOR_IBEAM" file="default_100_percent/aura/xterm.png" type="BINDATA" />
-        <include name="IDR_AURA_CURSOR_NORTH_WEST_RESIZE" file="default_100_percent/aura/top_left_corner.png" type="BINDATA" />
-        <include name="IDR_AURA_CURSOR_SOUTH_EAST_RESIZE" file="default_100_percent/aura/top_left_corner.png" type="BINDATA" />
-        <include name="IDR_AURA_CURSOR_NORTH_EAST_RESIZE" file="default_100_percent/aura/top_right_corner.png" type="BINDATA" />
-        <include name="IDR_AURA_CURSOR_SOUTH_WEST_RESIZE" file="default_100_percent/aura/top_right_corner.png" type="BINDATA" />
-        <include name="IDR_AURA_CURSOR_NORTH_RESIZE" file="default_100_percent/aura/sb_v_double_arrow.png" type="BINDATA" />
-        <include name="IDR_AURA_CURSOR_EAST_RESIZE" file="default_100_percent/aura/sb_h_double_arrow.png" type="BINDATA" />
-        <include name="IDR_AURA_CURSOR_SOUTH_RESIZE" file="default_100_percent/aura/sb_v_double_arrow.png" type="BINDATA" />
-        <include name="IDR_AURA_CURSOR_WEST_RESIZE" file="default_100_percent/aura/sb_h_double_arrow.png" type="BINDATA" />
-        <include name="IDR_AURA_CURSOR_ALIAS" file="default_100_percent/aura/alias.png" type="BINDATA" />
-        <include name="IDR_AURA_CURSOR_CELL" file="default_100_percent/aura/cell.png" type="BINDATA" />
-        <include name="IDR_AURA_CURSOR_CONTEXT_MENU" file="default_100_percent/aura/context_menu.png" type="BINDATA" />
-        <include name="IDR_AURA_CURSOR_CROSSHAIR" file="default_100_percent/aura/crosshair.png" type="BINDATA" />
-        <include name="IDR_AURA_CURSOR_HELP" file="default_100_percent/aura/help.png" type="BINDATA" />
-        <include name="IDR_AURA_CURSOR_MOVE" file="default_100_percent/aura/move.png" type="BINDATA" />
-        <include name="IDR_AURA_CURSOR_XTERM_HORIZ" file="default_100_percent/aura/xterm_horiz.png" type="BINDATA" />
-        <include name="IDR_AURA_CURSOR_ZOOM_IN" file="default_100_percent/aura/zoom_in.png" type="BINDATA" />
-        <include name="IDR_AURA_CURSOR_ZOOM_OUT" file="default_100_percent/aura/zoom_out.png" type="BINDATA" />
-        <include name="IDR_AURA_CURSOR_ROW_RESIZE" file="default_100_percent/aura/sb_v_double_arrow.png" type="BINDATA" />
-        <include name="IDR_AURA_CURSOR_COL_RESIZE" file="default_100_percent/aura/sb_h_double_arrow.png" type="BINDATA" />
-        <include name="IDR_AURA_CURSOR_NORTH_WEST_SOUTH_EAST_RESIZE" file="default_100_percent/aura/top_left_corner.png" type="BINDATA" />
-        <include name="IDR_AURA_CURSOR_NORTH_EAST_SOUTH_WEST_RESIZE" file="default_100_percent/aura/top_right_corner.png" type="BINDATA" />
-        <include name="IDR_AURA_CURSOR_NORTH_SOUTH_RESIZE" file="default_100_percent/aura/sb_v_double_arrow.png" type="BINDATA" />
-        <include name="IDR_AURA_CURSOR_EAST_WEST_RESIZE" file="default_100_percent/aura/sb_h_double_arrow.png" type="BINDATA" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_PTR" file="aura/left_ptr.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_NO_DROP" file="aura/nodrop.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_COPY" file="aura/copy.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_HAND" file="aura/hand2.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_FLEUR" file="aura/fleur.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_IBEAM" file="aura/xterm.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_NORTH_WEST_RESIZE" file="aura/top_left_corner.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_SOUTH_EAST_RESIZE" file="aura/top_left_corner.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_NORTH_EAST_RESIZE" file="aura/top_right_corner.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_SOUTH_WEST_RESIZE" file="aura/top_right_corner.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_NORTH_RESIZE" file="aura/sb_v_double_arrow.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_EAST_RESIZE" file="aura/sb_h_double_arrow.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_SOUTH_RESIZE" file="aura/sb_v_double_arrow.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_WEST_RESIZE" file="aura/sb_h_double_arrow.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_ALIAS" file="aura/alias.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_CELL" file="aura/cell.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_CONTEXT_MENU" file="aura/context_menu.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_CROSSHAIR" file="aura/crosshair.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_HELP" file="aura/help.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_MOVE" file="aura/move.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_XTERM_HORIZ" file="aura/xterm_horiz.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_ZOOM_IN" file="aura/zoom_in.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_ZOOM_OUT" file="aura/zoom_out.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_ROW_RESIZE" file="aura/sb_v_double_arrow.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_COL_RESIZE" file="aura/sb_h_double_arrow.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_NORTH_WEST_SOUTH_EAST_RESIZE" file="aura/top_left_corner.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_NORTH_EAST_SOUTH_WEST_RESIZE" file="aura/top_right_corner.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_NORTH_SOUTH_RESIZE" file="aura/sb_v_double_arrow.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_CURSOR_EAST_WEST_RESIZE" file="aura/sb_h_double_arrow.png" />
         <!-- uber-tray -->
-        <include name="IDR_AURA_UBER_TRAY_VOLUME_LEVELS" file="default_100_percent/ash/status_volume_all.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_VOLUME_MUTE" file="default_100_percent/ash/status_volume_mute.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_BRIGHTNESS" file="default_100_percent/ash/status_brightness.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_SETTINGS" file="default_100_percent/ash/status_settings.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_POWER_SMALL" file="default_100_percent/ash/status_power_small_all.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_POWER_SMALL_DARK" file="default_100_percent/ash/status_power_small_all_dark.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_NETWORK_AIRPLANE" file="default_100_percent/ash/status_network_airplane.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_NETWORK_INFO" file="default_100_percent/ash/status_network_info.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_NETWORK_INFO_HOVER" file="default_100_percent/ash/status_network_info_h.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_NETWORK_FAILED" file="default_100_percent/ash/status_network_failed.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_NETWORK_DATA_LOW" file="default_100_percent/ash/status_data_low.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_NETWORK_DATA_NONE" file="default_100_percent/ash/status_data_none.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_SMS" file="default_100_percent/ash/status_sms.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_MORE" file="default_100_percent/ash/status_more.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_LESS" file="default_100_percent/ash/status_less.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_ACCESSIBILITY" file="default_100_percent/ash/status_accessibility_mode.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_ACCESSIBILITY_DARK" file="default_100_percent/ash/status_accessibility_dark.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_CAPS_LOCK" file="default_100_percent/ash/status_capslock.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_CAPS_LOCK_DARK" file="default_100_percent/ash/status_capslock_dark.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_BLUETOOTH" file="default_100_percent/ash/status_bluetooth.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_DRIVE" file="default_100_percent/ash/status_drive.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_DRIVE_FAILED" file="default_100_percent/ash/status_drive_item_failed.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_DRIVE_DONE" file="default_100_percent/ash/status_drive_item_done.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_DRIVE_CANCEL" file="default_100_percent/ash/status_drive_item_cancel.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_DRIVE_CANCEL_HOVER" file="default_100_percent/ash/status_drive_item_cancel_hover.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_DRIVE_LIGHT" file="default_100_percent/ash/status_drive_light.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_IME" file="default_100_percent/ash/status_ime.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_UPDATE" file="default_100_percent/ash/status_update.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_UPDATE_DARK" file="default_100_percent/ash/status_update_dark.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_WIFI_ENABLED" file="default_100_percent/ash/status_wifi_enabled.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_WIFI_ENABLED_HOVER" file="default_100_percent/ash/status_wifi_enabled_h.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_WIFI_DISABLED" file="default_100_percent/ash/status_wifi_disabled.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_WIFI_DISABLED_HOVER" file="default_100_percent/ash/status_wifi_disabled_h.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_CELLULAR_ENABLED" file="default_100_percent/ash/status_cellular_enabled.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_CELLULAR_ENABLED_HOVER" file="default_100_percent/ash/status_cellular_enabled_h.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_CELLULAR_DISABLED" file="default_100_percent/ash/status_cellular_disabled.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_CELLULAR_DISABLED_HOVER" file="default_100_percent/ash/status_cellular_disabled_h.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_BLUETOOTH_ENABLED" file="default_100_percent/ash/status_bluetooth_enabled.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_BLUETOOTH_ENABLED_HOVER" file="default_100_percent/ash/status_bluetooth_enabled_h.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_BLUETOOTH_DISABLED" file="default_100_percent/ash/status_bluetooth_disabled.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_BLUETOOTH_DISABLED_HOVER" file="default_100_percent/ash/status_bluetooth_disabled_h.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_SHUTDOWN" file="default_100_percent/ash/status_shutdown.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_SHUTDOWN_HOVER" file="default_100_percent/ash/status_shutdown_h.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_LOCKSCREEN" file="default_100_percent/ash/status_lockscreen.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_LOCKSCREEN_HOVER" file="default_100_percent/ash/status_lockscreen_h.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_HELP" file="default_100_percent/ash/status_help.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_HELP_HOVER" file="default_100_percent/ash/status_help_h.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_LOCALE" file="default_100_percent/ash/status_locale.png" type="BINDATA" />
-        <include name="IDR_AURA_UBER_TRAY_WEB_NOTIFICATON" file="default_100_percent/ash/statusbar_notifications.png" type="BINDATA" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_VOLUME_LEVELS" file="ash/status_volume_all.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_VOLUME_MUTE" file="ash/status_volume_mute.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_BRIGHTNESS" file="ash/status_brightness.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SETTINGS" file="ash/status_settings.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_POWER_SMALL" file="ash/status_power_small_all.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_POWER_SMALL_DARK" file="ash/status_power_small_all_dark.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_AIRPLANE" file="ash/status_network_airplane.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_INFO" file="ash/status_network_info.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_INFO_HOVER" file="ash/status_network_info_h.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_FAILED" file="ash/status_network_failed.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_DATA_LOW" file="ash/status_data_low.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_DATA_NONE" file="ash/status_data_none.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SMS" file="ash/status_sms.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_MORE" file="ash/status_more.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LESS" file="ash/status_less.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_ACCESSIBILITY" file="ash/status_accessibility_mode.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_ACCESSIBILITY_DARK" file="ash/status_accessibility_dark.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CAPS_LOCK" file="ash/status_capslock.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CAPS_LOCK_DARK" file="ash/status_capslock_dark.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_BLUETOOTH" file="ash/status_bluetooth.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_DRIVE" file="ash/status_drive.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_DRIVE_FAILED" file="ash/status_drive_item_failed.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_DRIVE_DONE" file="ash/status_drive_item_done.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_DRIVE_CANCEL" file="ash/status_drive_item_cancel.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_DRIVE_CANCEL_HOVER" file="ash/status_drive_item_cancel_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_DRIVE_LIGHT" file="ash/status_drive_light.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_IME" file="ash/status_ime.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_UPDATE" file="ash/status_update.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_UPDATE_DARK" file="ash/status_update_dark.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WIFI_ENABLED" file="ash/status_wifi_enabled.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WIFI_ENABLED_HOVER" file="ash/status_wifi_enabled_h.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WIFI_DISABLED" file="ash/status_wifi_disabled.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WIFI_DISABLED_HOVER" file="ash/status_wifi_disabled_h.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CELLULAR_ENABLED" file="ash/status_cellular_enabled.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CELLULAR_ENABLED_HOVER" file="ash/status_cellular_enabled_h.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CELLULAR_DISABLED" file="ash/status_cellular_disabled.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CELLULAR_DISABLED_HOVER" file="ash/status_cellular_disabled_h.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_BLUETOOTH_ENABLED" file="ash/status_bluetooth_enabled.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_BLUETOOTH_ENABLED_HOVER" file="ash/status_bluetooth_enabled_h.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_BLUETOOTH_DISABLED" file="ash/status_bluetooth_disabled.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_BLUETOOTH_DISABLED_HOVER" file="ash/status_bluetooth_disabled_h.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SHUTDOWN" file="ash/status_shutdown.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SHUTDOWN_HOVER" file="ash/status_shutdown_h.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOCKSCREEN" file="ash/status_lockscreen.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOCKSCREEN_HOVER" file="ash/status_lockscreen_h.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_HELP" file="ash/status_help.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_HELP_HOVER" file="ash/status_help_h.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOCALE" file="ash/status_locale.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WEB_NOTIFICATON" file="ash/statusbar_notifications.png" />
       </if>
 
       <if expr="is_posix and not is_macosx and not pp_ifdef('use_aura')">
-        <include name="IDR_CHECKBOX_DISABLED_INDETERMINATE" file="default_100_percent/linux-checkbox-disabled-indeterminate.png" type="BINDATA" />
-        <include name="IDR_CHECKBOX_DISABLED_OFF" file="default_100_percent/linux-checkbox-disabled-off.png" type="BINDATA" />
-        <include name="IDR_CHECKBOX_DISABLED_ON" file="default_100_percent/linux-checkbox-disabled-on.png" type="BINDATA" />
-        <include name="IDR_CHECKBOX_INDETERMINATE" file="default_100_percent/linux-checkbox-indeterminate.png" type="BINDATA" />
-        <include name="IDR_CHECKBOX_OFF" file="default_100_percent/linux-checkbox-off.png" type="BINDATA" />
-        <include name="IDR_CHECKBOX_ON" file="default_100_percent/linux-checkbox-on.png" type="BINDATA" />
-        <include name="IDR_RADIO_DISABLED_OFF" file="default_100_percent/linux-radio-disabled-off.png" type="BINDATA" />
-        <include name="IDR_RADIO_DISABLED_ON" file="default_100_percent/linux-radio-disabled-on.png" type="BINDATA" />
-        <include name="IDR_RADIO_OFF" file="default_100_percent/linux-radio-off.png" type="BINDATA" />
-        <include name="IDR_RADIO_ON" file="default_100_percent/linux-radio-on.png" type="BINDATA" />
-        <include name="IDR_PROGRESS_BAR" file="default_100_percent/linux-progress-bar.png" type="BINDATA" />
-        <include name="IDR_PROGRESS_BORDER_LEFT" file="default_100_percent/linux-progress-border-left.png" type="BINDATA" />
-        <include name="IDR_PROGRESS_BORDER_RIGHT" file="default_100_percent/linux-progress-border-right.png" type="BINDATA" />
-        <include name="IDR_PROGRESS_VALUE" file="default_100_percent/linux-progress-value.png" type="BINDATA" />
+        <structure type="chrome_scaled_image" name="IDR_CHECKBOX_DISABLED_INDETERMINATE" file="linux-checkbox-disabled-indeterminate.png" />
+        <structure type="chrome_scaled_image" name="IDR_CHECKBOX_DISABLED_OFF" file="linux-checkbox-disabled-off.png" />
+        <structure type="chrome_scaled_image" name="IDR_CHECKBOX_DISABLED_ON" file="linux-checkbox-disabled-on.png" />
+        <structure type="chrome_scaled_image" name="IDR_CHECKBOX_INDETERMINATE" file="linux-checkbox-indeterminate.png" />
+        <structure type="chrome_scaled_image" name="IDR_CHECKBOX_OFF" file="linux-checkbox-off.png" />
+        <structure type="chrome_scaled_image" name="IDR_CHECKBOX_ON" file="linux-checkbox-on.png" />
+        <structure type="chrome_scaled_image" name="IDR_RADIO_DISABLED_OFF" file="linux-radio-disabled-off.png" />
+        <structure type="chrome_scaled_image" name="IDR_RADIO_DISABLED_ON" file="linux-radio-disabled-on.png" />
+        <structure type="chrome_scaled_image" name="IDR_RADIO_OFF" file="linux-radio-off.png" />
+        <structure type="chrome_scaled_image" name="IDR_RADIO_ON" file="linux-radio-on.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROGRESS_BAR" file="linux-progress-bar.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROGRESS_BORDER_LEFT" file="linux-progress-border-left.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROGRESS_BORDER_RIGHT" file="linux-progress-border-right.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROGRESS_VALUE" file="linux-progress-value.png" />
       </if>
 
       <!-- TODO(jamescook): Replace Linux images with Aura-specific ones. -->
       <if expr="pp_ifdef('use_aura')">
-        <include name="IDR_CHECKBOX_DISABLED_INDETERMINATE" file="default_100_percent/linux-checkbox-disabled-indeterminate.png" type="BINDATA" />
-        <include name="IDR_CHECKBOX_DISABLED_OFF" file="default_100_percent/linux-checkbox-disabled-off.png" type="BINDATA" />
-        <include name="IDR_CHECKBOX_DISABLED_ON" file="default_100_percent/linux-checkbox-disabled-on.png" type="BINDATA" />
-        <include name="IDR_CHECKBOX_INDETERMINATE" file="default_100_percent/linux-checkbox-indeterminate.png" type="BINDATA" />
-        <include name="IDR_CHECKBOX_OFF" file="default_100_percent/linux-checkbox-off.png" type="BINDATA" />
-        <include name="IDR_CHECKBOX_ON" file="default_100_percent/linux-checkbox-on.png" type="BINDATA" />
-        <include name="IDR_RADIO_DISABLED_OFF" file="default_100_percent/linux-radio-disabled-off.png" type="BINDATA" />
-        <include name="IDR_RADIO_DISABLED_ON" file="default_100_percent/linux-radio-disabled-on.png" type="BINDATA" />
-        <include name="IDR_RADIO_OFF" file="default_100_percent/linux-radio-off.png" type="BINDATA" />
-        <include name="IDR_RADIO_ON" file="default_100_percent/linux-radio-on.png" type="BINDATA" />
-        <include name="IDR_PROGRESS_BAR" file="default_100_percent/linux-progress-bar.png" type="BINDATA" />
-        <include name="IDR_PROGRESS_BORDER_LEFT" file="default_100_percent/linux-progress-border-left.png" type="BINDATA" />
-        <include name="IDR_PROGRESS_BORDER_RIGHT" file="default_100_percent/linux-progress-border-right.png" type="BINDATA" />
-        <include name="IDR_PROGRESS_VALUE" file="default_100_percent/linux-progress-value.png" type="BINDATA" />
+        <structure type="chrome_scaled_image" name="IDR_CHECKBOX_DISABLED_INDETERMINATE" file="linux-checkbox-disabled-indeterminate.png" />
+        <structure type="chrome_scaled_image" name="IDR_CHECKBOX_DISABLED_OFF" file="linux-checkbox-disabled-off.png" />
+        <structure type="chrome_scaled_image" name="IDR_CHECKBOX_DISABLED_ON" file="linux-checkbox-disabled-on.png" />
+        <structure type="chrome_scaled_image" name="IDR_CHECKBOX_INDETERMINATE" file="linux-checkbox-indeterminate.png" />
+        <structure type="chrome_scaled_image" name="IDR_CHECKBOX_OFF" file="linux-checkbox-off.png" />
+        <structure type="chrome_scaled_image" name="IDR_CHECKBOX_ON" file="linux-checkbox-on.png" />
+        <structure type="chrome_scaled_image" name="IDR_RADIO_DISABLED_OFF" file="linux-radio-disabled-off.png" />
+        <structure type="chrome_scaled_image" name="IDR_RADIO_DISABLED_ON" file="linux-radio-disabled-on.png" />
+        <structure type="chrome_scaled_image" name="IDR_RADIO_OFF" file="linux-radio-off.png" />
+        <structure type="chrome_scaled_image" name="IDR_RADIO_ON" file="linux-radio-on.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROGRESS_BAR" file="linux-progress-bar.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROGRESS_BORDER_LEFT" file="linux-progress-border-left.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROGRESS_BORDER_RIGHT" file="linux-progress-border-right.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROGRESS_VALUE" file="linux-progress-value.png" />
 
-        <include name="IDR_SCROLL_BASE_CORNER" file="default_100_percent/scrollbar_base_normal_edge.png" type="BINDATA" />
-        <include name="IDR_SCROLL_BASE_CORNER_H" file="default_100_percent/scrollbar_base_hover_edge.png" type="BINDATA" />
-        <include name="IDR_SCROLL_BASE_HORIZONTAL_CENTER" file="default_100_percent/scrollbar_base_horizontal_normal_center.png" type="BINDATA" />
-        <include name="IDR_SCROLL_BASE_HORIZONTAL_CENTER_H" file="default_100_percent/scrollbar_base_horizontal_hover_center.png" type="BINDATA" />
-        <include name="IDR_SCROLL_BASE_HORIZONTAL_LEFT" file="default_100_percent/scrollbar_base_horizontal_normal_left.png" type="BINDATA" />
-        <include name="IDR_SCROLL_BASE_HORIZONTAL_LEFT_H" file="default_100_percent/scrollbar_base_horizontal_hover_left.png" type="BINDATA" />
-        <include name="IDR_SCROLL_BASE_HORIZONTAL_RIGHT" file="default_100_percent/scrollbar_base_horizontal_normal_right.png" type="BINDATA" />
-        <include name="IDR_SCROLL_BASE_HORIZONTAL_RIGHT_H" file="default_100_percent/scrollbar_base_horizontal_hover_right.png" type="BINDATA" />
-        <include name="IDR_SCROLL_BASE_VERTICAL_BOTTOM" file="default_100_percent/scrollbar_base_vertical_normal_bottom.png" type="BINDATA" />
-        <include name="IDR_SCROLL_BASE_VERTICAL_BOTTOM_H" file="default_100_percent/scrollbar_base_vertical_hover_bottom.png" type="BINDATA" />
-        <include name="IDR_SCROLL_BASE_VERTICAL_CENTER" file="default_100_percent/scrollbar_base_vertical_normal_center.png" type="BINDATA" />
-        <include name="IDR_SCROLL_BASE_VERTICAL_CENTER_H" file="default_100_percent/scrollbar_base_vertical_hover_center.png" type="BINDATA" />
-        <include name="IDR_SCROLL_BASE_VERTICAL_TOP" file="default_100_percent/scrollbar_base_vertical_normal_top.png" type="BINDATA" />
-        <include name="IDR_SCROLL_BASE_VERTICAL_TOP_H" file="default_100_percent/scrollbar_base_vertical_hover_top.png" type="BINDATA" />
-        <include name="IDR_SCROLL_THUMB_HORIZONTAL_CENTER" file="default_100_percent/scrollbar_thumb_horizontal_normal_center.png" type="BINDATA" />
-        <include name="IDR_SCROLL_THUMB_HORIZONTAL_CENTER_H" file="default_100_percent/scrollbar_thumb_horizontal_hover_center.png" type="BINDATA" />
-        <include name="IDR_SCROLL_THUMB_HORIZONTAL_CENTER_P" file="default_100_percent/scrollbar_thumb_horizontal_pressed_center.png" type="BINDATA" />
-        <include name="IDR_SCROLL_THUMB_HORIZONTAL_LEFT" file="default_100_percent/scrollbar_thumb_horizontal_normal_left.png" type="BINDATA" />
-        <include name="IDR_SCROLL_THUMB_HORIZONTAL_LEFT_H" file="default_100_percent/scrollbar_thumb_horizontal_hover_left.png" type="BINDATA" />
-        <include name="IDR_SCROLL_THUMB_HORIZONTAL_LEFT_P" file="default_100_percent/scrollbar_thumb_horizontal_pressed_left.png" type="BINDATA" />
-        <include name="IDR_SCROLL_THUMB_HORIZONTAL_RIGHT" file="default_100_percent/scrollbar_thumb_horizontal_normal_right.png" type="BINDATA" />
-        <include name="IDR_SCROLL_THUMB_HORIZONTAL_RIGHT_H" file="default_100_percent/scrollbar_thumb_horizontal_hover_right.png" type="BINDATA" />
-        <include name="IDR_SCROLL_THUMB_HORIZONTAL_RIGHT_P" file="default_100_percent/scrollbar_thumb_horizontal_pressed_right.png" type="BINDATA" />
-        <include name="IDR_SCROLL_THUMB_VERTICAL_BOTTOM" file="default_100_percent/scrollbar_thumb_vertical_normal_bottom.png" type="BINDATA" />
-        <include name="IDR_SCROLL_THUMB_VERTICAL_BOTTOM_H" file="default_100_percent/scrollbar_thumb_vertical_hover_bottom.png" type="BINDATA" />
-        <include name="IDR_SCROLL_THUMB_VERTICAL_BOTTOM_P" file="default_100_percent/scrollbar_thumb_vertical_pressed_bottom.png" type="BINDATA" />
-        <include name="IDR_SCROLL_THUMB_VERTICAL_CENTER" file="default_100_percent/scrollbar_thumb_vertical_normal_center.png" type="BINDATA" />
-        <include name="IDR_SCROLL_THUMB_VERTICAL_CENTER_H" file="default_100_percent/scrollbar_thumb_vertical_hover_center.png" type="BINDATA" />
-        <include name="IDR_SCROLL_THUMB_VERTICAL_CENTER_P" file="default_100_percent/scrollbar_thumb_vertical_pressed_center.png" type="BINDATA" />
-        <include name="IDR_SCROLL_THUMB_VERTICAL_TOP" file="default_100_percent/scrollbar_thumb_vertical_normal_top.png" type="BINDATA" />
-        <include name="IDR_SCROLL_THUMB_VERTICAL_TOP_H" file="default_100_percent/scrollbar_thumb_vertical_hover_top.png" type="BINDATA" />
-        <include name="IDR_SCROLL_THUMB_VERTICAL_TOP_P" file="default_100_percent/scrollbar_thumb_vertical_pressed_top.png" type="BINDATA" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_CORNER" file="scrollbar_base_normal_edge.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_CORNER_H" file="scrollbar_base_hover_edge.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_HORIZONTAL_CENTER" file="scrollbar_base_horizontal_normal_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_HORIZONTAL_CENTER_H" file="scrollbar_base_horizontal_hover_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_HORIZONTAL_LEFT" file="scrollbar_base_horizontal_normal_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_HORIZONTAL_LEFT_H" file="scrollbar_base_horizontal_hover_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_HORIZONTAL_RIGHT" file="scrollbar_base_horizontal_normal_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_HORIZONTAL_RIGHT_H" file="scrollbar_base_horizontal_hover_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_VERTICAL_BOTTOM" file="scrollbar_base_vertical_normal_bottom.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_VERTICAL_BOTTOM_H" file="scrollbar_base_vertical_hover_bottom.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_VERTICAL_CENTER" file="scrollbar_base_vertical_normal_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_VERTICAL_CENTER_H" file="scrollbar_base_vertical_hover_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_VERTICAL_TOP" file="scrollbar_base_vertical_normal_top.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_BASE_VERTICAL_TOP_H" file="scrollbar_base_vertical_hover_top.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_HORIZONTAL_CENTER" file="scrollbar_thumb_horizontal_normal_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_HORIZONTAL_CENTER_H" file="scrollbar_thumb_horizontal_hover_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_HORIZONTAL_CENTER_P" file="scrollbar_thumb_horizontal_pressed_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_HORIZONTAL_LEFT" file="scrollbar_thumb_horizontal_normal_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_HORIZONTAL_LEFT_H" file="scrollbar_thumb_horizontal_hover_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_HORIZONTAL_LEFT_P" file="scrollbar_thumb_horizontal_pressed_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_HORIZONTAL_RIGHT" file="scrollbar_thumb_horizontal_normal_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_HORIZONTAL_RIGHT_H" file="scrollbar_thumb_horizontal_hover_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_HORIZONTAL_RIGHT_P" file="scrollbar_thumb_horizontal_pressed_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_VERTICAL_BOTTOM" file="scrollbar_thumb_vertical_normal_bottom.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_VERTICAL_BOTTOM_H" file="scrollbar_thumb_vertical_hover_bottom.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_VERTICAL_BOTTOM_P" file="scrollbar_thumb_vertical_pressed_bottom.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_VERTICAL_CENTER" file="scrollbar_thumb_vertical_normal_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_VERTICAL_CENTER_H" file="scrollbar_thumb_vertical_hover_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_VERTICAL_CENTER_P" file="scrollbar_thumb_vertical_pressed_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_VERTICAL_TOP" file="scrollbar_thumb_vertical_normal_top.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_VERTICAL_TOP_H" file="scrollbar_thumb_vertical_hover_top.png" />
+        <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_VERTICAL_TOP_P" file="scrollbar_thumb_vertical_pressed_top.png" />
       </if>
-    </includes>
+    </structures>
   </release>
 </grit>
