@@ -120,7 +120,7 @@
                   },
                   'inputs': [
                     'osx/run_mig.py',
-                    '${SDKROOT}/usr/include/mach/exc.defs',
+                    '/usr/include/mach/exc.defs',
                   ],
                   'outputs': [
                     '<(gen_dir)/nacl_exc.h',
