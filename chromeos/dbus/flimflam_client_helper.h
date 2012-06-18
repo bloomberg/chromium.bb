@@ -55,6 +55,11 @@ class FlimflamClientHelper {
       DBusMethodCallStatus call_status,
       const base::DictionaryValue& result)> DictionaryValueCallback;
 
+  // A callback to handle responses for methods with DictionaryValue reuslts.
+  // This is used by CallDictionaryValueMethodWithErrorCallback.
+  typedef base::Callback<void(const base::DictionaryValue& result
+                              )> DictionaryValueCallbackWithoutStatus;
+
   // A callback to handle erros for method call.
   typedef base::Callback<void(const std::string& error_name,
                               const std::string& error_message)> ErrorCallback;
@@ -88,6 +93,12 @@ class FlimflamClientHelper {
   void CallVoidMethodWithErrorCallback(dbus::MethodCall* method_call,
                                        const base::Closure& callback,
                                        const ErrorCallback& error_callback);
+
+  // Calls a method with a dictionary value result with error callback.
+  void CallDictionaryValueMethodWithErrorCallback(
+      dbus::MethodCall* method_call,
+      const DictionaryValueCallbackWithoutStatus& callback,
+      const ErrorCallback& error_callback);
 
   // DEPRECATED DO NOT USE: Calls a method without results.
   bool CallVoidMethodAndBlock(dbus::MethodCall* method_call);
@@ -130,6 +141,13 @@ class FlimflamClientHelper {
   // Used by CallVoidMethodWithErrorCallback().
   void OnVoidMethodWithErrorCallback(const base::Closure& callback,
                                      dbus::Response* response);
+
+  // Handles responses for methods with DictionaryValue results.
+  // Used by CallDictionaryValueMethodWithErrorCallback().
+  void OnDictionaryValueMethodWithErrorCallback(
+      const DictionaryValueCallbackWithoutStatus& callback,
+      const ErrorCallback& error_callback,
+      dbus::Response* response);
 
   // Handles errors for method calls.
   void OnError(const ErrorCallback& error_callback,

@@ -84,6 +84,22 @@ void FlimflamClientHelper::CallVoidMethodWithErrorCallback(
                  error_callback));
 }
 
+void FlimflamClientHelper::CallDictionaryValueMethodWithErrorCallback(
+    dbus::MethodCall* method_call,
+    const DictionaryValueCallbackWithoutStatus& callback,
+    const ErrorCallback& error_callback) {
+  proxy_->CallMethodWithErrorCallback(
+      method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+      base::Bind(
+          &FlimflamClientHelper::OnDictionaryValueMethodWithErrorCallback,
+          weak_ptr_factory_.GetWeakPtr(),
+          callback,
+          error_callback),
+      base::Bind(&FlimflamClientHelper::OnError,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 error_callback));
+}
+
 bool FlimflamClientHelper::CallVoidMethodAndBlock(
     dbus::MethodCall* method_call) {
   scoped_ptr<dbus::Response> response(
@@ -236,6 +252,22 @@ void FlimflamClientHelper::OnVoidMethodWithErrorCallback(
     const base::Closure& callback,
     dbus::Response* response) {
   callback.Run();
+}
+
+void FlimflamClientHelper::OnDictionaryValueMethodWithErrorCallback(
+    const DictionaryValueCallbackWithoutStatus& callback,
+    const ErrorCallback& error_callback,
+    dbus::Response* response) {
+  dbus::MessageReader reader(response);
+  scoped_ptr<base::Value> value(dbus::PopDataAsValue(&reader));
+  base::DictionaryValue* result = NULL;
+  if (!value.get() || !value->GetAsDictionary(&result)) {
+    const std::string error_name;  // No error name.
+    const std::string error_message = "Invalid response.";
+    error_callback.Run(error_name, error_message);
+    return;
+  }
+  callback.Run(*result);
 }
 
 void FlimflamClientHelper::OnError(const ErrorCallback& error_callback,

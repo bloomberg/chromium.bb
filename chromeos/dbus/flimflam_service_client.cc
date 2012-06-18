@@ -18,6 +18,27 @@ namespace chromeos {
 
 namespace {
 
+// Error callback for GetProperties.
+void OnGetPropertiesError(
+    const dbus::ObjectPath& service_path,
+    const FlimflamServiceClient::DictionaryValueCallback& callback,
+    const std::string& error_name,
+    const std::string& error_message) {
+  const std::string log_string =
+      "Failed to call org.chromium.flimflam.Service.GetProperties for: " +
+      service_path.value() + ": " + error_name + ": " + error_message;
+
+  // Suppress ERROR log if error name is
+  // "org.freedesktop.DBus.Error.UnknownMethod". crbug.com/130660
+  if (error_name == DBUS_ERROR_UNKNOWN_METHOD)
+    VLOG(1) << log_string;
+  else
+    LOG(ERROR) << log_string;
+
+  base::DictionaryValue empty_dictionary;
+  callback.Run(DBUS_METHOD_CALL_FAILURE, empty_dictionary);
+}
+
 // The FlimflamServiceClient implementation.
 class FlimflamServiceClientImpl : public FlimflamServiceClient {
  public:
@@ -44,7 +65,10 @@ class FlimflamServiceClientImpl : public FlimflamServiceClient {
                              const DictionaryValueCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(flimflam::kFlimflamServiceInterface,
                                  flimflam::kGetPropertiesFunction);
-    GetHelper(service_path)->CallDictionaryValueMethod(&method_call, callback);
+    GetHelper(service_path)->CallDictionaryValueMethodWithErrorCallback(
+        &method_call,
+        base::Bind(callback, DBUS_METHOD_CALL_SUCCESS),
+        base::Bind(&OnGetPropertiesError, service_path, callback));
   }
 
   // FlimflamServiceClient override.
