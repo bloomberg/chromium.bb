@@ -22,13 +22,6 @@ using extensions::Extension;
 namespace utils = extension_function_test_utils;
 namespace api = extensions::api;
 
-namespace chromeos {
-
-class BluetoothAdapater;
-
-}  // namespace chromeos
-
-
 namespace {
 
 class BluetoothApiTest : public PlatformAppApiTest {
@@ -281,4 +274,53 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, SetOutOfBandPairingData) {
   // TODO(bryeung): Also test setting the data when there is support for
   // ArrayBuffers in the arguments to the RunFunctionAnd* methods.
   // crbug.com/132796
+}
+
+IN_PROC_BROWSER_TEST_F(BluetoothApiTest, Discovery) {
+  // TODO(bryeung): test that no events are sent now (crbug.com/132616)
+
+  // Try with a failure to start
+  EXPECT_CALL(*mock_adapter_,
+              SetDiscovering(true,
+                             testing::_,
+                             testing::Truly(CallClosure)));
+  scoped_refptr<api::BluetoothStartDiscoveryFunction> start_function;
+  start_function = setupFunction(new api::BluetoothStartDiscoveryFunction);
+  std::string error(
+      utils::RunFunctionAndReturnError(start_function, "[]", browser()));
+  ASSERT_TRUE(!error.empty());
+
+  // Reset for a successful start
+  testing::Mock::VerifyAndClearExpectations(mock_adapter_);
+  EXPECT_CALL(*mock_adapter_,
+              SetDiscovering(true,
+                             testing::Truly(CallClosure),
+                             testing::_));
+
+  start_function = setupFunction(new api::BluetoothStartDiscoveryFunction);
+  (void)utils::RunFunctionAndReturnError(start_function, "[]", browser());
+
+  // TODO(bryeung): test that events are sent now (crbug.com/132616)
+
+  // Reset to try stopping
+  testing::Mock::VerifyAndClearExpectations(mock_adapter_);
+  EXPECT_CALL(*mock_adapter_,
+              SetDiscovering(false,
+                             testing::Truly(CallClosure),
+                             testing::_));
+  scoped_refptr<api::BluetoothStopDiscoveryFunction> stop_function;
+  stop_function = setupFunction(new api::BluetoothStopDiscoveryFunction);
+  (void)utils::RunFunctionAndReturnResult(stop_function, "[]", browser());
+
+  // TODO(bryeung): test that no events are sent now (crbug.com/132616)
+
+  // Reset to try stopping with an error
+  testing::Mock::VerifyAndClearExpectations(mock_adapter_);
+  EXPECT_CALL(*mock_adapter_,
+              SetDiscovering(false,
+                             testing::_,
+                             testing::Truly(CallClosure)));
+  stop_function = setupFunction(new api::BluetoothStopDiscoveryFunction);
+  error = utils::RunFunctionAndReturnError(stop_function, "[]", browser());
+  ASSERT_TRUE(!error.empty());
 }

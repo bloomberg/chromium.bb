@@ -75,6 +75,8 @@
         'browser/extensions/api/app_window/app_window_api.h',
         'browser/extensions/api/bluetooth/bluetooth_api.cc',
         'browser/extensions/api/bluetooth/bluetooth_api.h',
+        'browser/extensions/api/bluetooth/bluetooth_api_utils.cc',
+        'browser/extensions/api/bluetooth/bluetooth_api_utils.h',
         'browser/extensions/api/browsing_data/browsing_data_api.cc',
         'browser/extensions/api/browsing_data/browsing_data_api.h',
         'browser/extensions/api/content_settings/content_settings_api.cc',
