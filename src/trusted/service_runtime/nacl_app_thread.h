@@ -27,7 +27,7 @@ struct NaClApp;
  * between NACL_APP_THREAD_TRUSTED and NACL_APP_THREAD_UNTRUSTED using
  * NaClAppThreadSetSuspendState().
  *
- * A controlling thread may change this from:
+ * On Linux, a controlling thread may change this from:
  *   NACL_APP_THREAD_UNTRUSTED
  *   -> NACL_APP_THREAD_UNTRUSTED | NACL_APP_THREAD_SUSPENDING
  * or
@@ -35,8 +35,8 @@ struct NaClApp;
  *   -> NACL_APP_THREAD_TRUSTED | NACL_APP_THREAD_SUSPENDING
  * and back again.
  *
- * Additionally, on Linux, the signal handler in the thread being
- * suspended will change suspend_state from:
+ * Furthermore, the signal handler in the thread being suspended will
+ * change suspend_state from:
  *   NACL_APP_THREAD_UNTRUSTED | NACL_APP_THREAD_SUSPENDING
  *   -> (NACL_APP_THREAD_UNTRUSTED | NACL_APP_THREAD_SUSPENDING
  *       | NACL_APP_THREAD_SUSPENDED)
@@ -46,10 +46,10 @@ struct NaClApp;
  */
 enum NaClSuspendState {
   NACL_APP_THREAD_UNTRUSTED = 1,
-  NACL_APP_THREAD_TRUSTED = 2,
-  NACL_APP_THREAD_SUSPENDING = 4
+  NACL_APP_THREAD_TRUSTED = 2
 #if NACL_LINUX
-  , NACL_APP_THREAD_SUSPENDED = 8
+  , NACL_APP_THREAD_SUSPENDING = 4,
+  NACL_APP_THREAD_SUSPENDED = 8
 #endif
 };
 
@@ -61,7 +61,6 @@ enum NaClSuspendState {
  */
 struct NaClAppThread {
   struct NaClMutex          mu;
-  struct NaClCondVar        cv;
 
   uint32_t                  sysret;
 
@@ -85,6 +84,7 @@ struct NaClAppThread {
 
   struct NaClThread         thread;  /* low level thread representation */
 
+  struct NaClMutex          suspend_mu;
   Atomic32                  suspend_state; /* enum NaClSuspendState */
   /*
    * suspended_registers contains the register state of the thread if

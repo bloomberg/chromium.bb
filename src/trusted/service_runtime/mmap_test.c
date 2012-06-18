@@ -22,18 +22,15 @@
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
-/* Based on NaClAppThreadCtor() */
+/*
+ * Perform some minimal initialisation of the NaClAppThread based on
+ * what we need for the test.  Reusing NaClAppThreadCtor() here is
+ * difficult because it launches an untrusted thread.
+ */
 static void InitThread(struct NaClApp *nap, struct NaClAppThread *natp) {
   memset(natp, 0xff, sizeof(*natp));
 
   natp->nap = nap;
-
-  if (!NaClMutexCtor(&natp->mu)) {
-    ASSERT(0);
-  }
-  if (!NaClCondVarCtor(&natp->cv)) {
-    ASSERT(0);
-  }
 }
 
 void CheckLowerMappings(struct NaClVmmap *mem_map) {

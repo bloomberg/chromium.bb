@@ -190,16 +190,16 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
   if (!NaClMutexCtor(&natp->mu)) {
     return 0;
   }
-  if (!NaClCondVarCtor(&natp->cv)) {
-    goto cleanup_mutex;
-  }
 
   natp->sysret = 0;
 
   if (!NaClSignalStackAllocate(&natp->signal_stack)) {
-    goto cleanup_cv;
+    goto cleanup_mu;
   }
 
+  if (!NaClMutexCtor(&natp->suspend_mu)) {
+    goto cleanup_mu;
+  }
   natp->suspend_state = NACL_APP_THREAD_TRUSTED;
   natp->suspended_registers = NULL;
 
@@ -218,9 +218,8 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
     return rv; /* Success */
   }
 
- cleanup_cv:
-  NaClCondVarDtor(&natp->cv);
- cleanup_mutex:
+  NaClMutexDtor(&natp->suspend_mu);
+ cleanup_mu:
   NaClMutexDtor(&natp->mu);
   if (NULL != natp->signal_stack) {
     NaClSignalStackFree(&natp->signal_stack);
@@ -236,10 +235,10 @@ void NaClAppThreadDtor(struct NaClAppThread *natp) {
    */
 
   free(natp->suspended_registers);
+  NaClMutexDtor(&natp->suspend_mu);
   NaClThreadDtor(&natp->thread);
   NaClSignalStackFree(natp->signal_stack);
   natp->signal_stack = NULL;
   NaClTlsFree(natp);
-  NaClCondVarDtor(&natp->cv);
   NaClMutexDtor(&natp->mu);
 }

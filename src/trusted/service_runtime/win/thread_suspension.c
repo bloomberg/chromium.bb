@@ -16,22 +16,19 @@
 void NaClAppThreadSetSuspendState(struct NaClAppThread *natp,
                                   enum NaClSuspendState old_state,
                                   enum NaClSuspendState new_state) {
-  NaClXMutexLock(&natp->mu);
-  while ((natp->suspend_state & NACL_APP_THREAD_SUSPENDING) != 0) {
-    /*
-     * We are being suspended, but SuspendThread() has not taken effect yet.
-     */
-    NaClXCondVarWait(&natp->cv, &natp->mu);
-  }
+  /*
+   * Claiming suspend_mu here blocks a trusted/untrusted context
+   * switch while the thread is suspended or a suspension is in
+   * progress.
+   */
+  NaClXMutexLock(&natp->suspend_mu);
   DCHECK(natp->suspend_state == old_state);
   natp->suspend_state = new_state;
-  NaClXMutexUnlock(&natp->mu);
+  NaClXMutexUnlock(&natp->suspend_mu);
 }
 
 void NaClUntrustedThreadSuspend(struct NaClAppThread *natp,
                                 int save_registers) {
-  enum NaClSuspendState old_state;
-
   /*
    * Note that if we are being called from a NaCl syscall (which is
    * likely), natp could be the thread we are running in.  That is
@@ -45,10 +42,8 @@ void NaClUntrustedThreadSuspend(struct NaClAppThread *natp,
    * taking locks when SuspendThread() takes effect, so we ask the
    * thread to suspend even if it currently running untrusted code.
    */
-  NaClXMutexLock(&natp->mu);
-  old_state = natp->suspend_state;
-  natp->suspend_state = old_state | NACL_APP_THREAD_SUSPENDING;
-  if (old_state == NACL_APP_THREAD_UNTRUSTED) {
+  NaClXMutexLock(&natp->suspend_mu);
+  if (natp->suspend_state == NACL_APP_THREAD_UNTRUSTED) {
     CONTEXT context;
     if (SuspendThread(natp->thread.tid) == (DWORD) -1) {
       NaClLog(LOG_FATAL, "NaClUntrustedThreadsSuspend: "
@@ -86,22 +81,18 @@ void NaClUntrustedThreadSuspend(struct NaClAppThread *natp,
       NaClSignalContextFromHandler(natp->suspended_registers, &context);
     }
   }
-  NaClXMutexUnlock(&natp->mu);
+  /*
+   * We leave suspend_mu held so that NaClAppThreadSetSuspendState()
+   * will block.
+   */
 }
 
 void NaClUntrustedThreadResume(struct NaClAppThread *natp) {
-  enum NaClSuspendState old_state;
-
-  NaClXMutexLock(&natp->mu);
-  old_state = natp->suspend_state;
-  DCHECK((old_state & NACL_APP_THREAD_SUSPENDING) != 0);
-  if (old_state == (NACL_APP_THREAD_UNTRUSTED | NACL_APP_THREAD_SUSPENDING)) {
+  if (natp->suspend_state == NACL_APP_THREAD_UNTRUSTED) {
     if (ResumeThread(natp->thread.tid) == (DWORD) -1) {
       NaClLog(LOG_FATAL, "NaClUntrustedThreadsResume: "
               "ResumeThread() call failed\n");
     }
   }
-  natp->suspend_state = old_state & ~NACL_APP_THREAD_SUSPENDING;
-  NaClXCondVarSignal(&natp->cv);
-  NaClXMutexUnlock(&natp->mu);
+  NaClXMutexUnlock(&natp->suspend_mu);
 }
