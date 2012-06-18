@@ -70,7 +70,8 @@ destroy_data_offer(struct wl_resource *resource)
 {
 	struct wl_data_offer *offer = resource->data;
 
-	wl_list_remove(&offer->source_destroy_listener.link);
+	if (offer->source)
+		wl_list_remove(&offer->source_destroy_listener.link);
 	free(offer);
 }
 
