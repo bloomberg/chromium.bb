@@ -542,9 +542,6 @@ class BrowserView : public BrowserWindow,
   // Exposes resize corner size to BrowserViewLayout.
   gfx::Size GetResizeCornerSize() const;
 
-  // Shows the about chrome modal dialog and returns the Window object.
-  views::Widget* DoShowAboutChromeDialog();
-
   // Set the value of |toolbar_| and hook it into the views hierarchy
   void SetToolbar(ToolbarView* toolbar);
 

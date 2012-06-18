@@ -1048,12 +1048,8 @@ void BrowserView::ToggleBookmarkBar() {
 }
 
 void BrowserView::ShowAboutChromeDialog() {
-  DoShowAboutChromeDialog();
-}
-
-views::Widget* BrowserView::DoShowAboutChromeDialog() {
-  return browser::ShowAboutChromeView(GetWidget()->GetNativeWindow(),
-                                      browser_->profile());
+  browser::ShowAboutChromeView(GetWidget()->GetNativeWindow(),
+                               browser_->profile());
 }
 
 void BrowserView::ShowUpdateChromeDialog() {

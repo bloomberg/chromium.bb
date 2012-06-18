@@ -92,11 +92,10 @@ namespace browser {
 
 // Declared in browser_dialogs.h so that others don't
 // need to depend on our .h.
-views::Widget* ShowAboutChromeView(gfx::NativeWindow parent, Profile* profile) {
+void ShowAboutChromeView(gfx::NativeWindow parent, Profile* profile) {
   views::Widget* window = views::Widget::CreateWindowWithParent(
       new AboutChromeView(profile), parent);
   window->Show();
-  return window;
 }
 
 }  // namespace browser

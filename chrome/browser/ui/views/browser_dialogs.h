@@ -40,7 +40,6 @@ class Size;
 
 namespace views {
 class View;
-class Widget;
 }
 
 namespace browser {
@@ -67,8 +66,7 @@ void ShowPageInfoBubble(views::View* anchor_view,
                         content::PageNavigator* navigator);
 
 // Shows the about dialog. See AboutChromeView.
-views::Widget* ShowAboutChromeView(gfx::NativeWindow parent,
-                                   Profile* profile);
+void ShowAboutChromeView(gfx::NativeWindow parent, Profile* profile);
 
 // Creates and returns a find bar for the given browser window. See FindBarWin.
 FindBar* CreateFindBar(BrowserView* browser_view);

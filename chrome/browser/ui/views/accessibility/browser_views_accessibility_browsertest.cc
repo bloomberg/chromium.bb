@@ -256,33 +256,3 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_ACCNAME_BOOKMARKS)),
       ROLE_SYSTEM_TOOLBAR);
 }
-
-// http://crbug.com/114111
-IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
-                       DISABLED_TestAboutChromeViewAccObj) {
-  //  Firstly, test that the WindowDelegate got updated.
-  views::Widget* about_chrome_window =
-      GetBrowserView()->DoShowAboutChromeDialog();
-  EXPECT_STREQ(
-      about_chrome_window->widget_delegate()->GetWindowTitle().c_str(),
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ABOUT_CHROME_TITLE)).c_str());
-  EXPECT_EQ(about_chrome_window->widget_delegate()->GetAccessibleWindowRole(),
-            ui::AccessibilityTypes::ROLE_DIALOG);
-
-  // Also test the accessibility object directly.
-  IAccessible* acc_obj = NULL;
-  HRESULT hr =
-    ::AccessibleObjectFromWindow(about_chrome_window->GetNativeWindow(),
-                                 OBJID_CLIENT,
-                                 IID_IAccessible,
-                                 reinterpret_cast<void**>(&acc_obj));
-  ASSERT_EQ(S_OK, hr);
-  ASSERT_TRUE(NULL != acc_obj);
-
-  TestAccessibilityInfo(
-      acc_obj,
-      UTF16ToWide(l10n_util::GetStringUTF16(IDS_ABOUT_CHROME_TITLE)),
-      ROLE_SYSTEM_DIALOG);
-
-  acc_obj->Release();
-}
