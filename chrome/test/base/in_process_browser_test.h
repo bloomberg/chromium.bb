@@ -111,9 +111,6 @@ class InProcessBrowserTest : public BrowserTestBase {
   void AddTabAtIndex(int index, const GURL& url,
                      content::PageTransition transition);
 
-  // Adds a selected tab at |index| to |url| with the specified |transition|.
-  void AddTabAt(int index, const GURL& url, content::PageTransition transition);
-
   // Override this to add any custom setup code that needs to be done on the
   // main thread after the browser is created and just before calling
   // RunTestOnMainThread().

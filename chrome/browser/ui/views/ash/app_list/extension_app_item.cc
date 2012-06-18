@@ -264,7 +264,7 @@ void ExtensionAppItem::Activate(int event_flags) {
   if (!extension)
     return;
 
-  extension_utils::OpenExtension(profile_, extension, event_flags);
+  ChromeLauncherController::instance()->OpenAppID(extension->id(), event_flags);
 }
 
 ui::MenuModel* ExtensionAppItem::GetContextMenuModel() {

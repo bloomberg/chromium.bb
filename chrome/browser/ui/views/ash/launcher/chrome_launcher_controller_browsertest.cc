@@ -18,24 +18,86 @@
 #include "chrome/browser/extensions/platform_app_browsertest_util.h"
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/shell_window.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/context_menu_params.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/models/menu_model.h"
 
 using extensions::Extension;
+using content::WebContents;
 
 typedef PlatformAppBrowserTest LauncherPlatformAppBrowserTest;
+
+class LauncherAppBrowserTest : public ExtensionBrowserTest {
+ protected:
+  LauncherAppBrowserTest()
+      : launcher_(NULL),
+        model_(NULL) {
+  }
+
+  virtual ~LauncherAppBrowserTest() {}
+
+  virtual void RunTestOnMainThreadLoop() {
+    launcher_ = ash::Shell::GetInstance()->launcher();
+    model_ = launcher_->model();
+    return ExtensionBrowserTest::RunTestOnMainThreadLoop();
+  }
+
+  const Extension* LoadAndLaunchExtension(
+      const char* name,
+      extension_misc::LaunchContainer container) {
+    EXPECT_TRUE(LoadExtension(test_data_dir_.AppendASCII(name)));
+
+    ExtensionService* service = browser()->profile()->GetExtensionService();
+    const Extension* extension =
+        service->GetExtensionById(last_loaded_extension_id_, false);
+    EXPECT_TRUE(extension);
+
+    application_launch::OpenApplication(
+        browser()->profile(),
+        extension,
+        // Overriding manifest to open in a panel.
+        container,
+        GURL(),
+        NEW_FOREGROUND_TAB,
+        NULL);
+    return extension;
+  }
+
+  ash::LauncherID CreateShortcut(const char* name) {
+    ExtensionService* service = browser()->profile()->GetExtensionService();
+    LoadExtension(test_data_dir_.AppendASCII(name));
+
+    // First get app_id.
+    const Extension* extension =
+        service->GetExtensionById(last_loaded_extension_id_, false);
+    const std::string app_id = extension->id();
+
+    // Then create a shortcut.
+    ChromeLauncherController* controller =
+        static_cast<ChromeLauncherController*>(launcher_->delegate());
+    int item_count = model_->item_count();
+    ash::LauncherID shortcut_id =
+        controller->CreateAppLauncherItem(NULL, app_id, ash::STATUS_CLOSED);
+    controller->PersistPinnedState();
+    EXPECT_EQ(++item_count, model_->item_count());
+    ash::LauncherItem item = *model_->ItemByID(shortcut_id);
+    EXPECT_EQ(ash::TYPE_APP_SHORTCUT, item.type);
+    return item.id;
+  }
+
+  ash::Launcher* launcher_;
+  ash::LauncherModel* model_;
+};
 
 // Test that we can launch a platform app and get a running item.
 IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, LaunchUnpinned) {
@@ -362,4 +424,130 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, BrowserActivation) {
 
   ash::wm::ActivateWindow(browser()->window()->GetNativeWindow());
   EXPECT_EQ(ash::STATUS_RUNNING, launcher->model()->ItemByID(item_id1)->status);
+}
+
+// Test that we can launch an app with a shortcut.
+IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, LaunchPinned) {
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  int tab_count = tab_strip->count();
+  ash::LauncherID shortcut_id = CreateShortcut("app1");
+  EXPECT_EQ(ash::STATUS_CLOSED, (*model_->ItemByID(shortcut_id)).status);
+  launcher_->ActivateLauncherItem(model_->ItemIndexByID(shortcut_id));
+  EXPECT_EQ(++tab_count, tab_strip->count());
+  EXPECT_EQ(ash::STATUS_ACTIVE, (*model_->ItemByID(shortcut_id)).status);
+  TabContents* tab = tab_strip->GetActiveTabContents();
+  ui_test_utils::WindowedNotificationObserver close_observer(
+      chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
+      content::Source<TabContents>(tab));
+  browser()->tab_strip_model()->CloseSelectedTabs();
+  close_observer.Wait();
+  EXPECT_EQ(--tab_count, tab_strip->count());
+  EXPECT_EQ(ash::STATUS_CLOSED, (*model_->ItemByID(shortcut_id)).status);
+}
+
+// Launch the app first and then create the shortcut.
+IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, LaunchUnpinned) {
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  int tab_count = tab_strip->count();
+  LoadAndLaunchExtension("app1", extension_misc::LAUNCH_TAB);
+  EXPECT_EQ(++tab_count, tab_strip->count());
+  ash::LauncherID shortcut_id = CreateShortcut("app1");
+  EXPECT_EQ(ash::STATUS_ACTIVE, (*model_->ItemByID(shortcut_id)).status);
+  TabContents* tab = tab_strip->GetActiveTabContents();
+  ui_test_utils::WindowedNotificationObserver close_observer(
+      chrome::NOTIFICATION_TAB_CONTENTS_DESTROYED,
+      content::Source<TabContents>(tab));
+  browser()->tab_strip_model()->CloseSelectedTabs();
+  close_observer.Wait();
+  EXPECT_EQ(--tab_count, tab_strip->count());
+  EXPECT_EQ(ash::STATUS_CLOSED, (*model_->ItemByID(shortcut_id)).status);
+}
+
+// Launches app multiple times through the api that the applist uses.
+IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, OpenAppID) {
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  int tab_count = tab_strip->count();
+  const Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("app1"));
+
+  ChromeLauncherController::instance()->OpenAppID(extension->id(), 0);
+  EXPECT_EQ(++tab_count, tab_strip->count());
+  ChromeLauncherController::instance()->OpenAppID(extension->id(), 0);
+  EXPECT_EQ(tab_count, tab_strip->count());
+}
+
+// Launch 2 apps and toggle which is active.
+IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, MultipleApps) {
+  int item_count = model_->item_count();
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  int tab_count = tab_strip->count();
+  ash::LauncherID shortcut1 = CreateShortcut("app1");
+  EXPECT_EQ(++item_count, model_->item_count());
+  ash::LauncherID shortcut2 = CreateShortcut("app2");
+  EXPECT_EQ(++item_count, model_->item_count());
+
+  // Launch first app.
+  launcher_->ActivateLauncherItem(model_->ItemIndexByID(shortcut1));
+  EXPECT_EQ(++tab_count, tab_strip->count());
+  TabContents* tab1 = tab_strip->GetActiveTabContents();
+  EXPECT_EQ(ash::STATUS_ACTIVE, (*model_->ItemByID(shortcut1)).status);
+
+  // Launch second app.
+  launcher_->ActivateLauncherItem(model_->ItemIndexByID(shortcut2));
+  EXPECT_EQ(++tab_count, tab_strip->count());
+  TabContents* tab2 = tab_strip->GetActiveTabContents();
+  ASSERT_NE(tab1, tab2);
+  EXPECT_EQ(ash::STATUS_RUNNING, (*model_->ItemByID(shortcut1)).status);
+  EXPECT_EQ(ash::STATUS_ACTIVE, (*model_->ItemByID(shortcut2)).status);
+
+  // Reactivate first app.
+  launcher_->ActivateLauncherItem(model_->ItemIndexByID(shortcut1));
+  EXPECT_EQ(tab_count, tab_strip->count());
+  EXPECT_EQ(tab_strip->GetActiveTabContents(), tab1);
+  EXPECT_EQ(ash::STATUS_ACTIVE, (*model_->ItemByID(shortcut1)).status);
+  EXPECT_EQ(ash::STATUS_RUNNING, (*model_->ItemByID(shortcut2)).status);
+
+  // Open second tab for second app. This should activate it.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL("http://www.example.com/path3/foo.html"),
+      NEW_FOREGROUND_TAB,
+      0);
+  EXPECT_EQ(++tab_count, tab_strip->count());
+  TabContents* tab3 = tab_strip->GetActiveTabContents();
+  EXPECT_EQ(ash::STATUS_RUNNING, (*model_->ItemByID(shortcut1)).status);
+  EXPECT_EQ(ash::STATUS_ACTIVE, (*model_->ItemByID(shortcut2)).status);
+
+  // Reactivate first app.
+  launcher_->ActivateLauncherItem(model_->ItemIndexByID(shortcut1));
+  EXPECT_EQ(tab_count, tab_strip->count());
+  EXPECT_EQ(tab_strip->GetActiveTabContents(), tab1);
+  EXPECT_EQ(ash::STATUS_ACTIVE, (*model_->ItemByID(shortcut1)).status);
+  EXPECT_EQ(ash::STATUS_RUNNING, (*model_->ItemByID(shortcut2)).status);
+
+  // And second again. This time the second tab should become active.
+  launcher_->ActivateLauncherItem(model_->ItemIndexByID(shortcut2));
+  EXPECT_EQ(tab_count, tab_strip->count());
+  EXPECT_EQ(tab_strip->GetActiveTabContents(), tab3);
+  EXPECT_EQ(ash::STATUS_RUNNING, (*model_->ItemByID(shortcut1)).status);
+  EXPECT_EQ(ash::STATUS_ACTIVE, (*model_->ItemByID(shortcut2)).status);
+}
+
+// Confirm that a page can be navigated from and to while maintaining the
+// correct running state.
+IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, Navigation) {
+  ash::LauncherID shortcut_id = CreateShortcut("app1");
+  EXPECT_EQ(ash::STATUS_CLOSED, (*model_->ItemByID(shortcut_id)).status);
+  launcher_->ActivateLauncherItem(model_->ItemIndexByID(shortcut_id));
+  EXPECT_EQ(ash::STATUS_ACTIVE, (*model_->ItemByID(shortcut_id)).status);
+
+  // Navigate away.
+  ui_test_utils::NavigateToURL(
+      browser(), GURL("http://www.example.com/path0/bar.html"));
+  EXPECT_EQ(ash::STATUS_CLOSED, (*model_->ItemByID(shortcut_id)).status);
+
+  // Navigate back.
+  ui_test_utils::NavigateToURL(
+      browser(), GURL("http://www.example.com/path1/foo.html"));
+  EXPECT_EQ(ash::STATUS_ACTIVE, (*model_->ItemByID(shortcut_id)).status);
 }

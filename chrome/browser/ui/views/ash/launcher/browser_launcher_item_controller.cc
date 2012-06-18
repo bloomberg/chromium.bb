@@ -24,6 +24,8 @@
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using extensions::Extension;
+
 BrowserLauncherItemController::BrowserLauncherItemController(
     aura::Window* window,
     TabStripModel* tab_model,
@@ -107,13 +109,29 @@ void BrowserLauncherItemController::ActiveTabChanged(
     int index,
     bool user_gesture) {
   // Update immediately on a tab change.
+  if (old_contents)
+    UpdateAppState(old_contents);
+  UpdateAppState(new_contents);
   UpdateLauncher(new_contents);
+}
+
+void BrowserLauncherItemController::TabInsertedAt(TabContents* contents,
+                                                  int index,
+                                                  bool foreground) {
+  UpdateAppState(contents);
+}
+
+void BrowserLauncherItemController::TabDetachedAt(TabContents* contents,
+                                                  int index) {
+  launcher_controller_->UpdateAppState(
+      contents, ChromeLauncherController::APP_STATE_REMOVED);
 }
 
 void BrowserLauncherItemController::TabChangedAt(
     TabContents* tab,
     int index,
     TabStripModelObserver::TabChangeType change_type) {
+  UpdateAppState(tab);
   if (index != tab_model_->active_index() ||
       !(change_type != TabStripModelObserver::LOADING_ONLY &&
         change_type != TabStripModelObserver::TITLE_NOT_LOADING)) {
@@ -132,6 +150,16 @@ void BrowserLauncherItemController::TabChangedAt(
     item.image = SkBitmap();
     launcher_model()->Set(item_index, item);
   }
+}
+
+void BrowserLauncherItemController::TabReplacedAt(
+    TabStripModel* tab_strip_model,
+    TabContents* old_contents,
+    TabContents* new_contents,
+    int index) {
+  launcher_controller_->UpdateAppState(
+      old_contents, ChromeLauncherController::APP_STATE_REMOVED);
+  UpdateAppState(new_contents);
 }
 
 void BrowserLauncherItemController::FaviconUpdated() {
@@ -202,6 +230,22 @@ void BrowserLauncherItemController::UpdateLauncher(TabContents* tab) {
     }
   }
   launcher_model()->Set(item_index, item);
+}
+
+void BrowserLauncherItemController::UpdateAppState(TabContents* tab) {
+  ChromeLauncherController::AppState app_state;
+
+  if (tab_model_->GetIndexOfTabContents(tab) == TabStripModel::kNoTab) {
+    app_state = ChromeLauncherController::APP_STATE_REMOVED;
+  } else if (tab_model_->GetActiveTabContents() == tab) {
+    if (ash::wm::IsActiveWindow(window_))
+      app_state = ChromeLauncherController::APP_STATE_WINDOW_ACTIVE;
+    else
+      app_state = ChromeLauncherController::APP_STATE_ACTIVE;
+  } else {
+    app_state = ChromeLauncherController::APP_STATE_INACTIVE;
+  }
+  launcher_controller_->UpdateAppState(tab, app_state);
 }
 
 ash::LauncherModel* BrowserLauncherItemController::launcher_model() {

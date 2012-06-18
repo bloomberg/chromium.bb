@@ -59,6 +59,14 @@ class ChromeLauncherController : public ash::LauncherDelegate,
     STATE_NOT_INCOGNITO,
   };
 
+  // Used to update the state of non plaform apps, as tab contents change.
+  enum AppState {
+    APP_STATE_ACTIVE,
+    APP_STATE_WINDOW_ACTIVE,
+    APP_STATE_INACTIVE,
+    APP_STATE_REMOVED
+  };
+
   // Interface used to load app icons. This is in it's own class so that it can
   // be mocked.
   class AppIconLoader {
@@ -125,6 +133,10 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   // event which triggered this command.
   void Open(ash::LauncherID id, int event_flags);
 
+  // Opens the application identified by |app_id|. If already running
+  // reactivates the most recently used window or tab owned by the app.
+  void OpenAppID(const std::string& app_id, int event_flags);
+
   // Closes the specified item.
   void Close(ash::LauncherID id);
 
@@ -136,6 +148,8 @@ class ChromeLauncherController : public ash::LauncherDelegate,
 
   // Returns the id of the app for the specified tab.
   std::string GetAppID(TabContents* tab);
+
+  ash::LauncherID GetLauncherIDForAppID(const std::string& app_id);
 
   // Sets the image for an app tab. This is intended to be invoked from the
   // AppIconLoader.
@@ -167,11 +181,23 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   // by policy in case there is a pre-defined set of pinned apps.
   bool CanPin() const;
 
+  // Updates the pinned pref state. The pinned state consists of a list pref.
+  // Each item of the list is a dictionary. The key |kAppIDPath| gives the
+  // id of the app.
+  void PersistPinnedState();
+
   ash::LauncherModel* model() { return model_; }
 
   Profile* profile() { return profile_; }
 
   void SetAutoHideBehavior(ash::ShelfAutoHideBehavior behavior);
+
+  // The tab no longer represents its previously identified application.
+  void RemoveTabFromRunningApp(TabContents* tab, const std::string& app_id);
+
+  // Notify the controller that the state of an non platform app's tabs
+  // have changed,
+  void UpdateAppState(TabContents* tab, AppState app_state);
 
   // ash::LauncherDelegate overrides:
   virtual void CreateNewTab() OVERRIDE;
@@ -238,11 +264,9 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   typedef std::map<ash::LauncherID, Item> IDToItemMap;
   typedef std::map<aura::Window*, ash::LauncherID> WindowToIDMap;
   typedef std::list<aura::Window*> WindowList;
-
-  // Updates the pinned pref state. The pinned state consists of a list pref.
-  // Each item of the list is a dictionary. The key |kAppIDPath| gives the
-  // id of the app.
-  void PersistPinnedState();
+  typedef std::list<TabContents*> TabContentsList;
+  typedef std::map<std::string, TabContentsList> AppIDToTabContentsListMap;
+  typedef std::map<TabContents*, std::string> TabContentsToAppIDMap;
 
   // Sets the AppIconLoader, taking ownership of |loader|. This is intended for
   // testing.
@@ -266,6 +290,9 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   // Re-syncs launcher model with prefs::kPinnedLauncherApps.
   void UpdateAppLaunchersFromPref();
 
+  // Returns the most recently active tab contents for an app.
+  TabContents* GetLastActiveTabContents(const std::string& app_id);
+
   // Creates an app launcher to insert at |index|. Note that |index| may be
   // adjusted by the model to meet ordering constraints.
   ash::LauncherID InsertAppLauncherItem(
@@ -284,12 +311,19 @@ class ChromeLauncherController : public ash::LauncherDelegate,
 
   IDToItemMap id_to_item_map_;
 
+  // Maintains activation order of tab contents for each app.
+  AppIDToTabContentsListMap app_id_to_tab_contents_list_;
+
+  // Direct access to app_id for a tab contents.
+  TabContentsToAppIDMap tab_contents_to_app_id_;
+
   // Allows us to get from an aura::Window to the id of a launcher item.
   // Currently only used for platform app windows.
   WindowToIDMap window_to_id_map_;
+
   // Maintains the activation order. The first element is most recent.
   // Currently only used for platform app windows.
-  WindowList activation_order_;
+  WindowList platform_app_windows_;
 
   // Used to load the image for an app tab.
   scoped_ptr<AppIconLoader> app_icon_loader_;

@@ -263,18 +263,40 @@ void ChromeLauncherController::Open(ash::LauncherID id, int event_flags) {
     if (GetItemStatus(id) == ash::STATUS_IS_PENDING)
       return;
 
-    // Check if this item has any windows in the activation list.
-    for (WindowList::const_iterator i = activation_order_.begin();
-         i != activation_order_.end(); ++i) {
-      if (window_to_id_map_[*i] == id) {
-        ash::wm::ActivateWindow(*i);
-        return;
-      }
-    }
+    OpenAppID(id_to_item_map_[id].app_id, event_flags);
+  }
+}
 
+void ChromeLauncherController::OpenAppID(
+    const std::string& app_id,
+    int event_flags) {
+  ash::LauncherID launcher_id = GetLauncherIDForAppID(app_id);
+  // Check if this item has any windows in the activation list.
+  for (WindowList::const_iterator i = platform_app_windows_.begin();
+       i != platform_app_windows_.end(); ++i) {
+    if (window_to_id_map_[*i] == launcher_id) {
+      ash::wm::ActivateWindow(*i);
+      return;
+    }
+  }
+
+  // Check if there are any open tabs for this app.
+  AppIDToTabContentsListMap::iterator i =
+      app_id_to_tab_contents_list_.find(app_id);
+
+  if (i != app_id_to_tab_contents_list_.end()) {
+    DCHECK(i->second.size());
+    TabContents* tab = i->second.front();
+    Browser* browser = browser::FindBrowserWithWebContents(
+        tab->web_contents());
+    TabStripModel* tab_strip = browser->tab_strip_model();
+    int index = tab_strip->GetIndexOfTabContents(tab);
+    DCHECK(index != TabStripModel::kNoTab);
+    tab_strip->ActivateTabAt(index, false);
+    ash::wm::ActivateWindow(browser->window()->GetNativeWindow());
+  } else {
     const Extension* extension =
-        profile_->GetExtensionService()->GetInstalledExtension(
-            id_to_item_map_[id].app_id);
+        profile_->GetExtensionService()->GetInstalledExtension(app_id);
     extension_utils::OpenExtension(profile_, extension, event_flags);
   }
 }
@@ -307,6 +329,16 @@ ExtensionPrefs::LaunchType ChromeLauncherController::GetLaunchType(
 
 std::string ChromeLauncherController::GetAppID(TabContents* tab) {
   return app_icon_loader_->GetAppID(tab);
+}
+
+ash::LauncherID ChromeLauncherController::GetLauncherIDForAppID(
+    const std::string& app_id) {
+  for (IDToItemMap::const_iterator i = id_to_item_map_.begin();
+       i != id_to_item_map_.end(); ++i) {
+    if (i->second.app_id == app_id)
+      return i->first;
+  }
+  return 0;
 }
 
 void ChromeLauncherController::SetAppImage(const std::string& id,
@@ -399,6 +431,72 @@ void ChromeLauncherController::SetAutoHideBehavior(
       break;
   }
   profile_->GetPrefs()->SetString(prefs::kShelfAutoHideBehavior, value);
+}
+
+void ChromeLauncherController::RemoveTabFromRunningApp(
+    TabContents* tab,
+    const std::string& app_id) {
+  tab_contents_to_app_id_.erase(tab);
+  AppIDToTabContentsListMap::iterator i_app_id =
+      app_id_to_tab_contents_list_.find(app_id);
+  if (i_app_id != app_id_to_tab_contents_list_.end()) {
+    TabContentsList* tab_list = &i_app_id->second;
+    tab_list->remove(tab);
+    if (!tab_list->size()) {
+      app_id_to_tab_contents_list_.erase(i_app_id);
+      i_app_id = app_id_to_tab_contents_list_.end();
+      ash::LauncherID id = GetLauncherIDForAppID(app_id);
+      if (id > 0)
+        SetItemStatus(id, ash::STATUS_CLOSED);
+    }
+  }
+}
+
+void ChromeLauncherController::UpdateAppState(TabContents* tab,
+                                              AppState app_state) {
+  std::string app_id = GetAppID(tab);
+
+  // Check the old |app_id| for a tab. If the contents has changed we need to
+  // remove it from the previous app.
+  if (tab_contents_to_app_id_.find(tab) != tab_contents_to_app_id_.end()) {
+    std::string last_app_id = tab_contents_to_app_id_[tab];
+    if (last_app_id != app_id)
+      RemoveTabFromRunningApp(tab, last_app_id);
+  }
+
+  if (app_id.empty())
+    return;
+
+  tab_contents_to_app_id_[tab] = app_id;
+
+  if (app_state == APP_STATE_REMOVED) {
+    // The tab has gone away.
+    RemoveTabFromRunningApp(tab, app_id);
+  } else {
+    AppIDToTabContentsListMap::iterator i_app_id =
+        app_id_to_tab_contents_list_.find(app_id);
+
+    if (i_app_id == app_id_to_tab_contents_list_.end()) {
+      app_id_to_tab_contents_list_[app_id] = TabContentsList();
+      i_app_id = app_id_to_tab_contents_list_.find(app_id);
+    }
+    TabContentsList* tab_list = &i_app_id->second;
+    if (app_state == APP_STATE_INACTIVE) {
+      TabContentsList::const_iterator i_tab =
+          std::find(tab_list->begin(), tab_list->end(), tab);
+      if (i_tab != tab_list->end())
+        tab_list->push_back(tab);
+    } else {
+      tab_list->remove(tab);
+      tab_list->push_front(tab);
+    }
+    ash::LauncherID id = GetLauncherIDForAppID(app_id);
+    if (id > 0) {
+      // If the window is active, mark the app as active.
+      SetItemStatus(id, app_state == APP_STATE_WINDOW_ACTIVE ?
+          ash::STATUS_ACTIVE : ash::STATUS_RUNNING);
+    }
+  }
 }
 
 void ChromeLauncherController::CreateNewTab() {
@@ -568,9 +666,9 @@ void ChromeLauncherController::OnShellWindowAdded(ShellWindow* shell_window) {
     id = CreateAppLauncherItem(NULL, app_id, status);
   window_to_id_map_[window] = id;
   if (status == ash::STATUS_ACTIVE)
-    activation_order_.push_front(window);
+    platform_app_windows_.push_front(window);
   else
-    activation_order_.push_back(window);
+    platform_app_windows_.push_back(window);
 }
 
 void ChromeLauncherController::OnShellWindowRemoved(ShellWindow* shell_window) {
@@ -581,8 +679,8 @@ void ChromeLauncherController::OnWindowActivated(aura::Window* active,
                                                  aura::Window* old_active) {
   if (window_to_id_map_.find(active) != window_to_id_map_.end()) {
     ash::LauncherID active_id = window_to_id_map_[active];
-    activation_order_.remove(active);
-    activation_order_.push_front(active);
+    platform_app_windows_.remove(active);
+    platform_app_windows_.push_front(active);
     if (window_to_id_map_.find(old_active) != window_to_id_map_.end() &&
         window_to_id_map_[old_active] == active_id) {
       // Old and new windows are for the same item. Don't change the status.
@@ -602,7 +700,7 @@ void ChromeLauncherController::OnWindowRemovingFromRootWindow(
   window_to_id_map_.erase(window);
 
   DCHECK(id_to_item_map_.find(id) != id_to_item_map_.end());
-  activation_order_.remove(window);
+  platform_app_windows_.remove(window);
   ShellWindowRegistry::ShellWindowSet remaining_windows =
       ShellWindowRegistry::Get(profile_)->GetShellWindowsForApp(
       id_to_item_map_[id].app_id);
@@ -784,6 +882,16 @@ void ChromeLauncherController::UpdateAppLaunchersFromPref() {
     CreateAppLauncherItem(NULL, *pref_app_id, ash::STATUS_CLOSED);
 }
 
+TabContents* ChromeLauncherController::GetLastActiveTabContents(
+    const std::string& app_id) {
+  AppIDToTabContentsListMap::const_iterator i =
+      app_id_to_tab_contents_list_.find(app_id);
+  if (i == app_id_to_tab_contents_list_.end())
+    return NULL;
+  DCHECK(i->second.size() > 0);
+  return *i->second.begin();
+}
+
 ash::LauncherID ChromeLauncherController::InsertAppLauncherItem(
     BrowserLauncherItemController* controller,
     const std::string& app_id,
@@ -815,6 +923,16 @@ ash::LauncherID ChromeLauncherController::InsertAppLauncherItem(
       !app_icon_loader_->IsValidID(app_id)) {
     item.status = ash::STATUS_IS_PENDING;
   } else {
+    TabContents* active_tab = GetLastActiveTabContents(app_id);
+    if (active_tab) {
+      Browser* browser = browser::FindBrowserWithWebContents(
+          active_tab->web_contents());
+      DCHECK(browser);
+      if (browser->window()->IsActive())
+        status = ash::STATUS_ACTIVE;
+      else
+        status = ash::STATUS_RUNNING;
+    }
     item.status = status;
   }
   model_->AddAt(index, item);
