@@ -213,6 +213,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
                                    const Window* target,
                                    gfx::Point* point);
 
+  // Moves the cursor to the specified location relative to the window.
+  virtual void MoveCursorTo(const gfx::Point& point_in_window);
+
   // Returns the cursor for the specified point, in window coordinates.
   gfx::NativeCursor GetCursor(const gfx::Point& point) const;
 

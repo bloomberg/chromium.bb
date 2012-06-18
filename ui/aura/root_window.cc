@@ -224,7 +224,10 @@ void RootWindow::ShowCursor(bool show) {
 }
 
 void RootWindow::MoveCursorTo(const gfx::Point& location_in_dip) {
-  host_->MoveCursorTo(ui::ConvertPointToPixel(layer(), location_in_dip));
+  gfx::Point location = location_in_dip;
+  layer()->transform().TransformPoint(location);
+  host_->MoveCursorTo(ui::ConvertPointToPixel(layer(), location));
+  last_mouse_location_ = location_in_dip;
 }
 
 bool RootWindow::ConfineCursorToWindow() {
@@ -656,6 +659,10 @@ void RootWindow::SetNativeCapture() {
 
 void RootWindow::ReleaseNativeCapture() {
   host_->ReleaseCapture();
+}
+
+gfx::Point RootWindow::QueryMouseLocationForTest() const {
+  return host_->QueryMouseLocation();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
