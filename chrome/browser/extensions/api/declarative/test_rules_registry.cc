@@ -7,7 +7,8 @@
 namespace extensions {
 
 TestRulesRegistry::TestRulesRegistry()
-    : owner_thread_(content::BrowserThread::UI) {}
+    : RulesRegistryWithCache(NULL),
+      owner_thread_(content::BrowserThread::UI) {}
 
 void TestRulesRegistry::SetOwnerThread(
     content::BrowserThread::ID owner_thread) {

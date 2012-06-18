@@ -13,7 +13,9 @@
 
 namespace extensions {
 
-WebRequestRulesRegistry::WebRequestRulesRegistry(Profile* profile) {
+WebRequestRulesRegistry::WebRequestRulesRegistry(Profile* profile,
+                                                 Delegate* delegate)
+    : RulesRegistryWithCache(delegate) {
   if (profile)
     extension_info_map_ = ExtensionSystem::Get(profile)->info_map();
 }

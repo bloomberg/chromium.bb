@@ -489,7 +489,8 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
   bool initialize_blocked_requests = false;
 
   initialize_blocked_requests |=
-      ProcessDeclarativeRules(request, extensions::ON_BEFORE_REQUEST, NULL);
+      ProcessDeclarativeRules(profile, keys::kOnBeforeRequest, request,
+                              extensions::ON_BEFORE_REQUEST, NULL);
 
   int extra_info_spec = 0;
   std::vector<const EventListener*> listeners =
@@ -537,8 +538,8 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
   bool initialize_blocked_requests = false;
 
   initialize_blocked_requests |=
-      ProcessDeclarativeRules(request, extensions::ON_BEFORE_SEND_HEADERS,
-                              NULL);
+      ProcessDeclarativeRules(profile, keys::kOnBeforeSendHeaders, request,
+                              extensions::ON_BEFORE_SEND_HEADERS, NULL);
 
   int extra_info_spec = 0;
   std::vector<const EventListener*> listeners =
@@ -621,7 +622,8 @@ int ExtensionWebRequestEventRouter::OnHeadersReceived(
   bool initialize_blocked_requests = false;
 
   initialize_blocked_requests |=
-      ProcessDeclarativeRules(request, extensions::ON_HEADERS_RECEIVED,
+      ProcessDeclarativeRules(profile, keys::kOnHeadersReceived, request,
+                              extensions::ON_HEADERS_RECEIVED,
                               original_response_headers);
 
   int extra_info_spec = 0;
@@ -1269,8 +1271,14 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
 
   base::TimeDelta block_time =
       base::Time::Now() - blocked_request.blocking_time;
-  request_time_tracker_->IncrementExtensionBlockTime(
-      extension_id, request_id, block_time);
+  if (!extension_id.empty()) {
+    request_time_tracker_->IncrementExtensionBlockTime(
+        extension_id, request_id, block_time);
+  } else {
+    // |extension_id| is empty for requests blocked on startup waiting for the
+    // declarative rules to be read from disk.
+    UMA_HISTOGRAM_TIMES("Extensions.NetworkDelayStartup", block_time);
+  }
 
   if (num_handlers_blocking == 0) {
     ExecuteDeltas(profile, request_id, true);
@@ -1399,11 +1407,27 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(
 }
 
 bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
+    void* profile,
+    const std::string& event_name,
     net::URLRequest* request,
     extensions::RequestStages request_stage,
     net::HttpResponseHeaders* original_response_headers) {
   if (!rules_registry_.get())
     return false;
+
+  if (!rules_registry_->IsReady()) {
+    // The rules registry is still loading. Block this request until it
+    // finishes.
+    EventResponse* response = NULL;
+    rules_registry_->AddReadyCallback(
+        base::Bind(&ExtensionWebRequestEventRouter::DecrementBlockCount,
+                   AsWeakPtr(), profile, std::string(), event_name,
+                   request->identifier(), response));
+    blocked_requests_[request->identifier()].num_handlers_blocking++;
+    blocked_requests_[request->identifier()].request = request;
+    blocked_requests_[request->identifier()].blocking_time = base::Time::Now();
+    return true;
+  }
 
   base::Time start = base::Time::Now();
 

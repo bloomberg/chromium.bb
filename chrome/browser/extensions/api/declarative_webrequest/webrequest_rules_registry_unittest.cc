@@ -33,7 +33,7 @@ namespace keys2 = url_matcher_constants;
 
 class TestWebRequestRulesRegistry : public WebRequestRulesRegistry {
  public:
-  TestWebRequestRulesRegistry() : WebRequestRulesRegistry(NULL) {}
+  TestWebRequestRulesRegistry() : WebRequestRulesRegistry(NULL, NULL) {}
 
  protected:
   virtual ~TestWebRequestRulesRegistry() {}

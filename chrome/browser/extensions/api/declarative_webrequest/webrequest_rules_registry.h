@@ -64,7 +64,7 @@ class RulesRegistryService;
 // example 'scheme': 'http') are fulfilled.
 class WebRequestRulesRegistry : public RulesRegistryWithCache {
  public:
-  explicit WebRequestRulesRegistry(Profile* profile);
+  WebRequestRulesRegistry(Profile* profile, Delegate* delegate);
 
   // TODO(battre): This will become an implementation detail, because we need
   // a way to also execute the actions of the rules.

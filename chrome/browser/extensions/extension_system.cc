@@ -131,10 +131,16 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
       autoupdate_enabled,
       extensions_enabled));
 
-  // The ManagementPolicy providers msut be registered before the
-  // ExtensionService tries to load any extensions.
-  management_policy_.reset(new extensions::ManagementPolicy);
-  RegisterManagementPolicyProviders();
+  // These services must be registered before the ExtensionService tries to
+  // load any extensions.
+  {
+    rules_registry_service_.reset(
+        new extensions::RulesRegistryService(profile_));
+    rules_registry_service_->RegisterDefaultRulesRegistries();
+
+    management_policy_.reset(new extensions::ManagementPolicy);
+    RegisterManagementPolicyProviders();
+  }
 
   extension_service_->component_loader()->AddDefaultComponentExtensions();
   if (command_line->HasSwitch(switches::kLoadComponentExtension)) {
@@ -196,9 +202,6 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
       extension_service_->InitEventRouters();
     }
   }
-
-  rules_registry_service_.reset(new extensions::RulesRegistryService(profile_));
-  rules_registry_service_->RegisterDefaultRulesRegistries();
 }
 
 extensions::StateStore* ExtensionSystemImpl::Shared::state_store() {

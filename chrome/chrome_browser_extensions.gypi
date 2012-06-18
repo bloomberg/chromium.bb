@@ -106,6 +106,8 @@
         'browser/extensions/api/declarative/rules_registry.h',
         'browser/extensions/api/declarative/rules_registry_service.cc',
         'browser/extensions/api/declarative/rules_registry_service.h',
+        'browser/extensions/api/declarative/rules_registry_storage_delegate.cc',
+        'browser/extensions/api/declarative/rules_registry_storage_delegate.h',
         'browser/extensions/api/declarative/rules_registry_with_cache.cc',
         'browser/extensions/api/declarative/rules_registry_with_cache.h',
         'browser/extensions/api/declarative/test_rules_registry.cc',

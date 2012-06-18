@@ -16,7 +16,19 @@ const char kDuplicateRuleId[] = "Duplicate rule ID: %s";
 
 namespace extensions {
 
-RulesRegistryWithCache::RulesRegistryWithCache() {}
+RulesRegistryWithCache::RulesRegistryWithCache(Delegate* delegate)
+    : delegate_(delegate) {
+}
+
+void RulesRegistryWithCache::AddReadyCallback(const base::Closure& callback) {
+  ready_callbacks_.push_back(callback);
+}
+
+void RulesRegistryWithCache::OnReady() {
+  for (size_t i = 0; i < ready_callbacks_.size(); ++i)
+    ready_callbacks_[i].Run();
+  ready_callbacks_.clear();
+}
 
 std::string RulesRegistryWithCache::AddRules(
     const std::string& extension_id,
@@ -44,6 +56,8 @@ std::string RulesRegistryWithCache::AddRules(
     RulesDictionaryKey key(extension_id, rule_id);
     rules_[key] = *i;
   }
+
+  NotifyRulesChanged(extension_id);
   return kSuccess;
 }
 
@@ -63,6 +77,8 @@ std::string RulesRegistryWithCache::RemoveRules(
     RulesDictionaryKey lookup_key(extension_id, *i);
     rules_.erase(lookup_key);
   }
+
+  NotifyRulesChanged(extension_id);
   return kSuccess;
 }
 
@@ -83,6 +99,8 @@ std::string RulesRegistryWithCache::RemoveAllRules(
     if (key.first == extension_id)
       rules_.erase(key);
   }
+
+  NotifyRulesChanged(extension_id);
   return kSuccess;
 }
 
@@ -122,6 +140,14 @@ void RulesRegistryWithCache::OnExtensionUnloaded(
   std::string error = RemoveAllRules(extension_id);
   if (!error.empty())
     LOG(ERROR) << error;
+}
+
+void RulesRegistryWithCache::NotifyRulesChanged(
+    const std::string& extension_id) {
+  DCHECK(content::BrowserThread::CurrentlyOn(GetOwnerThread()));
+
+  if (delegate_.get())
+    delegate_->OnRulesChanged(this, extension_id);
 }
 
 RulesRegistryWithCache::~RulesRegistryWithCache() {}

@@ -6,19 +6,25 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "content/public/browser/browser_thread.h"
 #include "chrome/browser/extensions/api/declarative/initializing_rules_registry.h"
+#include "chrome/browser/extensions/api/declarative/rules_registry_storage_delegate.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rules_registry.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 
 namespace extensions {
 
 namespace {
+
+// Returns the key to use for storing declarative rules in the state store.
+std::string GetDeclarativeRuleStorageKey(const std::string& event_name) {
+  return "declarative_rules." + event_name;
+}
 
 // Registers |web_request_rules_registry| on the IO thread.
 void RegisterToExtensionWebRequestEventRouterOnIO(
@@ -40,8 +46,13 @@ RulesRegistryService::RulesRegistryService(Profile* profile)
 RulesRegistryService::~RulesRegistryService() {}
 
 void RulesRegistryService::RegisterDefaultRulesRegistries() {
+  RulesRegistryStorageDelegate* delegate = new RulesRegistryStorageDelegate();
   scoped_refptr<WebRequestRulesRegistry> web_request_rules_registry(
-      new WebRequestRulesRegistry(profile_));
+      new WebRequestRulesRegistry(profile_, delegate));
+  delegate->Init(profile_, web_request_rules_registry,
+      GetDeclarativeRuleStorageKey(
+          declarative_webrequest_constants::kOnRequest));
+
   RegisterRulesRegistry(declarative_webrequest_constants::kOnRequest,
                         web_request_rules_registry);
   content::BrowserThread::PostTask(
