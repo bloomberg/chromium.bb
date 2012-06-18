@@ -10,12 +10,7 @@
 
 self.indexedDB = self.indexedDB || self.webkitIndexedDB ||
   self.mozIndexedDB;
-self.IDBCursor = self.IDBCursor || self.webkitIDBCursor;
-self.IDBDatabaseException = self.IDBDatabaseException ||
-  self.webkitIDBDatabaseException;
 self.IDBKeyRange = self.IDBKeyRange || self.webkitIDBKeyRange;
-self.IDBTransaction = self.IDBTransaction ||
-  self.webkitIDBTransaction;
 
 var $ = function(s) {
   return document.querySelector(s);
@@ -174,8 +169,7 @@ function recordEvent() {
     return;
   }
 
-  var transaction = db.transaction(['user-events'],
-                                   IDBTransaction.READ_WRITE);
+  var transaction = db.transaction(['user-events'], 'readwrite');
   var store = transaction.objectStore('user-events');
   var record = {
     // 'sequence' key will be generated
@@ -213,8 +207,7 @@ var PLAYBACK_FAILURE = 2;
 function playbackEvent(callback) {
   log('playbackEvent');
   var result = false;
-  var transaction = db.transaction(['user-events'],
-                                   IDBTransaction.READ);
+  var transaction = db.transaction(['user-events'], 'readonly');
   transaction.onabort = unexpectedAbortCallback;
   var store = transaction.objectStore('user-events');
   var cursorRequest = store.openCursor();
@@ -230,8 +223,7 @@ function playbackEvent(callback) {
         function (success) {
           if (success) {
             // Use another transaction to delete event
-            var transaction = db.transaction(
-              ['user-events'], IDBTransaction.READ_WRITE);
+            var transaction = db.transaction(['user-events'], 'readwrite');
             transaction.onabort = unexpectedAbortCallback;
             var store = transaction.objectStore('user-events');
             var deleteRequest = store.delete(key);

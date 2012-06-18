@@ -51,8 +51,7 @@ function testPart2()
 }
 
 function test_store(db, msg) {
-  var transaction = db.transaction(['store1', 'store2', 'store3'],
-                                   IDBTransaction.READ_ONLY);
+  var transaction = db.transaction(['store1', 'store2', 'store3'], 'readonly');
   var store1 = transaction.objectStore('store1');
   var store2 = transaction.objectStore('store2');
   var store3 = transaction.objectStore('store3');

@@ -11,12 +11,7 @@
 
 self.indexedDB = self.indexedDB || self.webkitIndexedDB ||
   self.mozIndexedDB;
-self.IDBCursor = self.IDBCursor || self.webkitIDBCursor;
-self.IDBDatabaseException = self.IDBDatabaseException ||
-  self.webkitIDBDatabaseException;
 self.IDBKeyRange = self.IDBKeyRange || self.webkitIDBKeyRange;
-self.IDBTransaction = self.IDBTransaction ||
-  self.webkitIDBTransaction;
 
 function unexpectedErrorCallback(e) {
   self.postMessage({type: 'ERROR', errorCode: e.target.errorCode,
@@ -142,8 +137,7 @@ function sync() {
       return;
     }
 
-    var transaction = db.transaction('sync-chunks',
-                                     IDBTransaction.READ_WRITE);
+    var transaction = db.transaction('sync-chunks', 'readwrite');
     var store = transaction.objectStore('sync-chunks');
     request = store.put(chunk);
     transaction.onabort = unexpectedAbortCallback;
@@ -174,8 +168,7 @@ function combine() {
       return;
     }
 
-    var transaction = db.transaction(['sync-chunks', 'docs'],
-                                     IDBTransaction.READ_WRITE);
+    var transaction = db.transaction(['sync-chunks', 'docs'], 'readwrite');
     var syncStore = transaction.objectStore('sync-chunks');
     var docStore = transaction.objectStore('docs');
 

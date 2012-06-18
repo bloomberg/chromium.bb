@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 window.indexedDB = window.indexedDB || window.webkitIndexedDB;
-window.IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction;
 
 function result(message) {
   var div = document.createElement('div');
