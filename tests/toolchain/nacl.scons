@@ -237,6 +237,23 @@ env.AddNodeToTestSuite(node,
                        is_broken=env.Bit('nacl_glibc'))
 
 
+if not env.Bit('nacl_glibc'):
+  memalign_env = env.Clone()
+  memalign_env.Append(CPPDEFINES=['NEWLIB=1'])
+else:
+  memalign_env = env
+posix_memalign_nexe = memalign_env.ComponentProgram(
+    'posix_memalign',
+    'posix_memalign.c',
+    EXTRA_LIBS=['${NONIRT_LIBS}'])
+node = env.CommandSelLdrTestNacl('posix_memalign.out', posix_memalign_nexe)
+env.AddNodeToTestSuite(node,
+                       ['toolchain_tests', 'small_tests'],
+                       'run_posix_memalign_test',
+     # http://code.google.com/p/nativeclient/issues/detail?id=2505
+                       is_broken=not env.Bit('nacl_glibc'))
+
+
 # Test that local variable dwarf info is preserved with linking and LTO.
 # Force '-g' on in case it was not turned on for some reason, and lower
 # optimization settings to prevent some optimizations that would convert
