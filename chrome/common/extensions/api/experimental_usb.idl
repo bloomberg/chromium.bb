@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 // TODO(gdk): The string-style enumerations are temporary, and will be removed
-// once full enumeration support is added. Also, the array-of-longs are
-// temporary and will be removed once there is full ArrayBuffer support.
+// once full enumeration support is added.
 
 [nodoc] namespace experimental.usb {
 
@@ -42,7 +41,7 @@
 
     // The data payload carried by this transfer. If this is an output tranfer
     // then this field must be set.
-    long[]? data;
+    ArrayBuffer? data;
   };
 
   // GenericTransferInfo is used by both bulk and interrupt transfers to
@@ -59,7 +58,7 @@
 
     // If this is an output transfer then this field must be populated.
     // Otherwise, it will be ignored.
-    long[]? data;
+    ArrayBuffer? data;
   };
 
   // IsochronousTransferInfo describes a single multi-packet isochronous
@@ -92,7 +91,7 @@
 
     // If the transfer was an input transfer then this field will contain all
     // of the input data requested.
-    long[]? data;
+    ArrayBuffer? data;
 
     // The following fields are used for internal event routing and can be
     // ignored.
@@ -103,10 +102,6 @@
   callback OnEventCallback = void (UsbEvent event);
 
   dictionary DeviceOptions {
-    // The schema generator does not support dictionaries with only events.
-    // Ignore this field.
-    [nodoc] long? dummyValue;
-
     // Invoked by the extension API whenever an event occurs for the device(s)
     // that this DeviceOptions is associated with.
     OnEventCallback? onEvent;

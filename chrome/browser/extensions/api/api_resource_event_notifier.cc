@@ -82,7 +82,7 @@ void APIResourceEventNotifier::OnWriteComplete(int result_code) {
 }
 
 void APIResourceEventNotifier::OnTransferComplete(int result_code,
-                                                  base::ListValue* data) {
+                                                  base::BinaryValue* data) {
   if (src_id_ < 0) {
     delete data;
     return;

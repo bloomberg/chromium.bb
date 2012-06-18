@@ -94,7 +94,7 @@ static bool GetTransferSize(const T& input, size_t* output) {
     }
   } else if (input.direction == kDirectionOut) {
     if (input.data.get()) {
-      *output = input.data->size();
+      *output = input.data->GetSize();
       return true;
     }
   }
@@ -113,10 +113,7 @@ static scoped_refptr<net::IOBuffer> CreateBufferForTransfer(const T& input) {
     return buffer;
   }
 
-  const vector<int>& input_buffer = *input.data.get();
-  for (size_t i = 0; i < size; ++i) {
-    buffer->data()[i] = input_buffer[i];
-  }
+  memcpy(buffer->data(), input.data->GetBuffer(), size);
 
   return buffer;
 }
@@ -209,11 +206,8 @@ void UsbDeviceResource::TransferComplete(net::IOBuffer* buffer,
                                          const size_t length,
                                          int success) {
   if (buffer) {
-    base::ListValue *const response_buffer = new base::ListValue();
-    for (size_t i = 0; i < length; ++i) {
-      const uint8_t value = buffer->data()[i] & 0xFF;
-      response_buffer->Append(base::Value::CreateIntegerValue(value));
-    }
+    base::BinaryValue* const response_buffer =
+        base::BinaryValue::CreateWithCopiedBuffer(buffer->data(), length);
     event_notifier()->OnTransferComplete(success, response_buffer);
   }
 }

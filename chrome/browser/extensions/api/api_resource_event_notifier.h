@@ -60,7 +60,7 @@ class APIResourceEventNotifier
 
   virtual void OnWriteComplete(int result_code);
 
-  virtual void OnTransferComplete(int result_code, base::ListValue* data);
+  virtual void OnTransferComplete(int result_code, base::BinaryValue* data);
 
   static std::string APIResourceEventTypeToString(
       APIResourceEventType event_type);
