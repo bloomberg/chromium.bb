@@ -877,7 +877,7 @@ class BuildTargetStageTest(AbstractStageTest):
 
     commands.BuildImage(self.build_root, self._current_board,
                         ['test', 'base', 'dev'], version=self.version,
-                        extra_env=proper_env)
+                        root_boost=None, extra_env=proper_env)
     commands.BuildVMImageForTesting(self.build_root, self._current_board,
                                     extra_env=proper_env)
     tempfile.mkdtemp(prefix='autotest').AndReturn(fake_autotest_dir)
@@ -907,7 +907,7 @@ class BuildTargetStageTest(AbstractStageTest):
                    extra_env={})
     self.archive_stage_mock.AutotestTarballsReady(None)
     commands.BuildImage(self.build_root, self._current_board, ['test'],
-                        version=self.version, extra_env={})
+                        root_boost=None, version=self.version, extra_env={})
     os.path.isdir(self.latest_cbuildbot).AndReturn(True)
     self.archive_stage_mock.SetVersion(self.version)
 
@@ -939,7 +939,8 @@ class BuildTargetStageTest(AbstractStageTest):
                    extra_env=proper_env)
     self.archive_stage_mock.AutotestTarballsReady(None)
     commands.BuildImage(self.build_root, self._current_board, ['test'],
-                        version=self.version, extra_env=proper_env)
+                        root_boost=None, version=self.version,
+                        extra_env=proper_env)
     os.path.isdir(self.latest_cbuildbot).AndReturn(True)
     self.archive_stage_mock.SetVersion(self.version)
 
@@ -986,7 +987,7 @@ class BuildTargetStageTest(AbstractStageTest):
                    extra_env=proper_env)
 
     commands.BuildImage(self.build_root, self._current_board,
-                        ['test', 'base', 'dev'], version='',
+                        ['test', 'base', 'dev'], version='', root_boost=None,
                         extra_env=proper_env)
     commands.BuildVMImageForTesting(self.build_root, self._current_board,
                                     extra_env=proper_env)
