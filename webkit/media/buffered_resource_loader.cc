@@ -191,6 +191,7 @@ void BufferedResourceLoader::Start(
       options.crossOriginRequestPolicy =
           WebURLLoaderOptions::CrossOriginRequestPolicyAllow;
     } else {
+      options.exposeAllResponseHeaders = true;
       options.crossOriginRequestPolicy =
           WebURLLoaderOptions::CrossOriginRequestPolicyUseAccessControl;
       if (cors_mode_ == kUseCredentials)
