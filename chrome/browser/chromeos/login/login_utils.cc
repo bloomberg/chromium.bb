@@ -720,6 +720,7 @@ std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
       ::switches::kDisableSeccompFilterSandbox,
       ::switches::kDisableSeccompSandbox,
       ::switches::kDisableThreadedAnimation,
+      ::switches::kEnableAcceleratedVideoDecode,
       ::switches::kEnableDevicePolicy,
       ::switches::kEnableGView,
       ::switches::kEnableLogging,

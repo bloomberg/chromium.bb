@@ -38,6 +38,7 @@ class SkBitmap;
 class VideoCaptureImplManager;
 struct ViewMsg_New_Params;
 class WebDatabaseObserverImpl;
+class WebGraphicsContext3DCommandBufferImpl;
 
 namespace WebKit {
 class WebMediaStreamCenter;
@@ -216,6 +217,13 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   // not sent for at least one notification delay.
   void PostponeIdleNotification();
 
+  // Returns a graphics context shared among all
+  // RendererGpuVideoDecoderFactories, or NULL on error.  Context remains owned
+  // by this class and must be null-tested before each use to detect context
+  // loss.  The returned WeakPtr<> is only valid on the compositor thread when
+  // threaded compositing is enabled.
+  base::WeakPtr<WebGraphicsContext3DCommandBufferImpl> GetGpuVDAContext3D();
+
  private:
   virtual bool OnControlMessageReceived(const IPC::Message& msg) OVERRIDE;
 
@@ -293,6 +301,8 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   scoped_ptr<content::BrowserPluginRegistry> browser_plugin_registry_;
 
   ObserverList<content::RenderProcessObserver> observers_;
+
+  scoped_ptr<WebGraphicsContext3DCommandBufferImpl> gpu_vda_context3d_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderThreadImpl);
 };

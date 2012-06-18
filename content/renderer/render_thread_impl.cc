@@ -724,6 +724,27 @@ void RenderThreadImpl::PostponeIdleNotification() {
   idle_notifications_to_skip_ = 2;
 }
 
+base::WeakPtr<WebGraphicsContext3DCommandBufferImpl>
+RenderThreadImpl::GetGpuVDAContext3D() {
+  // If we already handed out a pointer to a context and it's been lost, create
+  // a new one.
+  if (gpu_vda_context3d_.get() &&
+      gpu_vda_context3d_->IsCommandBufferContextLost()) {
+    if (compositor_thread()) {
+      compositor_thread()->GetWebThread()->message_loop()->DeleteSoon(
+          FROM_HERE, gpu_vda_context3d_.release());
+    } else {
+      gpu_vda_context3d_.reset();
+    }
+  }
+  if (!gpu_vda_context3d_.get()) {
+    gpu_vda_context3d_.reset(
+        WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
+            this, WebKit::WebGraphicsContext3D::Attributes()));
+  }
+  return gpu_vda_context3d_->AsWeakPtr();
+}
+
 #if defined(OS_WIN)
 void RenderThreadImpl::PreCacheFont(const LOGFONT& log_font) {
   Send(new ChildProcessHostMsg_PreCacheFont(log_font));

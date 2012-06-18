@@ -74,14 +74,7 @@ bool VaapiVideoDecodeAccelerator::Initialize(
   DCHECK_EQ(state_, kUninitialized);
   DVLOG(2) << "Initializing VAVDA, profile: " << profile;
 
-  // TODO(posciak): try moving the flag check up to higher layers, possibly
-  // out of the GPU process.
-  bool res = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableVaapi);
-  RETURN_AND_NOTIFY_ON_FAILURE(res, "Vaapi HW acceleration disabled",
-                               PLATFORM_FAILURE, false);
-
-  res = decoder_.Initialize(
+  bool res = decoder_.Initialize(
       profile, x_display_, glx_context_, make_context_current_,
       base::Bind(&VaapiVideoDecodeAccelerator::OutputPicCallback, this));
   RETURN_AND_NOTIFY_ON_FAILURE(res, "Failed initializing decoder",
@@ -572,4 +565,3 @@ void VaapiVideoDecodeAccelerator::OutputPicCallback(int32 input_id,
       base::Bind(&VaapiVideoDecodeAccelerator::SyncAndNotifyPictureReady,
                  this, input_id, output_id));
 }
-

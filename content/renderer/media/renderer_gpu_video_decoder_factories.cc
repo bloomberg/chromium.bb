@@ -15,11 +15,14 @@
 RendererGpuVideoDecoderFactories::~RendererGpuVideoDecoderFactories() {}
 RendererGpuVideoDecoderFactories::RendererGpuVideoDecoderFactories(
     GpuChannelHost* gpu_channel_host, MessageLoop* message_loop,
-    WebGraphicsContext3DCommandBufferImpl* wgc3dcbi)
+    const base::WeakPtr<WebGraphicsContext3DCommandBufferImpl>& context)
     : message_loop_(message_loop),
-      gpu_channel_host_(gpu_channel_host) {
+      gpu_channel_host_(gpu_channel_host),
+      context_(context) {
+  DCHECK(context_);
+  context_->DetachFromThread();
   if (MessageLoop::current() == message_loop_) {
-    AsyncGetContext(wgc3dcbi, NULL);
+    AsyncGetContext(NULL);
     return;
   }
   // Threaded compositor requires us to wait for the context to be acquired.
@@ -29,15 +32,14 @@ RendererGpuVideoDecoderFactories::RendererGpuVideoDecoderFactories(
       // Unretained to avoid ref/deref'ing |*this|, which is not yet stored in a
       // scoped_refptr.  Safe because the Wait() below keeps us alive until this
       // task completes.
-      base::Unretained(this), wgc3dcbi, &waiter));
+      base::Unretained(this), &waiter));
   waiter.Wait();
 }
 
 void RendererGpuVideoDecoderFactories::AsyncGetContext(
-    WebGraphicsContext3DCommandBufferImpl* wgc3dcbi,
     base::WaitableEvent* waiter) {
-  wgc3dcbi->makeContextCurrent();
-  context_ = wgc3dcbi->AsWeakPtr();
+  if (context_)
+    context_->makeContextCurrent();
   if (waiter)
     waiter->Signal();
 }

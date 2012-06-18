@@ -21,6 +21,9 @@ class GpuVideoDecodeAccelerator
       public IPC::Message::Sender,
       public media::VideoDecodeAccelerator::Client {
  public:
+  // Each of the arguments to the constructor must outlive this object.
+  // |stub->decoder()| will be made current around any operation that touches
+  // the underlying VDA so that it can make GL calls safely.
   GpuVideoDecodeAccelerator(IPC::Message::Sender* sender,
                             int32 host_route_id,
                             GpuCommandBufferStub* stub);

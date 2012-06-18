@@ -38,7 +38,7 @@ class CONTENT_EXPORT RendererGpuVideoDecoderFactories
   RendererGpuVideoDecoderFactories(
       GpuChannelHost* gpu_channel_host,
       MessageLoop* message_loop,
-      WebGraphicsContext3DCommandBufferImpl* wgc3dcbi);
+      const base::WeakPtr<WebGraphicsContext3DCommandBufferImpl>& wgc3dcbi);
 
   virtual media::VideoDecodeAccelerator* CreateVideoDecodeAccelerator(
       media::VideoCodecProfile profile,
@@ -59,8 +59,7 @@ class CONTENT_EXPORT RendererGpuVideoDecoderFactories
  private:
   // Helper for the constructor to acquire the ContentGLContext on the
   // compositor thread (when it is enabled).
-  void AsyncGetContext(WebGraphicsContext3DCommandBufferImpl* wgc3dcbi,
-                       base::WaitableEvent* waiter);
+  void AsyncGetContext(base::WaitableEvent* waiter);
 
   // Async versions of the public methods.  They use output parameters instead
   // of return values and each takes a WaitableEvent* param to signal completion

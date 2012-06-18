@@ -2358,18 +2358,11 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
     collection->AddAudioRenderer(audio_renderer);
   }
 
-  // Currently only cros/arm has any HW video decode support in
-  // GpuVideoDecodeAccelerator so we don't even try to use it on other
-  // platforms.  This is a startup-time optimization.  When new VDA
-  // implementations are added, relax the #if above.
-  // TODO(posciak,fischman): Temporarily remove this path as it triggers
-  // webk.it/88815.
-//#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
-#if 0
-  WebGraphicsContext3DCommandBufferImpl* context3d =
-      WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
-          RenderThreadImpl::current(),
-          WebKit::WebGraphicsContext3D::Attributes());
+  base::WeakPtr<WebGraphicsContext3DCommandBufferImpl> context3d =
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableAcceleratedVideoDecode) ?
+      base::WeakPtr<WebGraphicsContext3DCommandBufferImpl>() :
+      RenderThreadImpl::current()->GetGpuVDAContext3D();
   if (context3d) {
     MessageLoop* factories_loop =
         RenderThreadImpl::current()->compositor_thread() ?
@@ -2385,7 +2378,6 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
         new RendererGpuVideoDecoderFactories(
             gpu_channel_host, factories_loop, context3d)));
   }
-#endif
 
   WebMediaPlayer* media_player =
       content::GetContentClient()->renderer()->OverrideCreateWebMediaPlayer(

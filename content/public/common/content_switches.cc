@@ -360,9 +360,8 @@ const char kDisableThreadedCompositing[]     = "disable-threaded-compositing";
 // SYN packet.
 const char kEnableTcpFastOpen[]             = "enable-tcp-fastopen";
 
-// Enables hardware acceleration for video decode on ChromeOS
-// on Intel CPUs (mostly Sandy Bridge+) using VAAPI.
-const char kEnableVaapi[]                   = "enable-vaapi";
+// Enables hardware acceleration of video decode, where available.
+const char kEnableAcceleratedVideoDecode[] = "enable-accelerated-video-decode";
 
 // Enables support for video tracks. Current implementation is
 // incomplete and this flag is used for development and testing.
