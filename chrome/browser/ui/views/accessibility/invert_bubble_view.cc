@@ -4,13 +4,11 @@
 
 #include "chrome/browser/ui/views/accessibility/invert_bubble_view.h"
 
-#include "base/utf_string_conversions.h"
 #include "chrome/browser/event_disposition.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/page_navigator.h"
 #include "grit/generated_resources.h"
@@ -37,7 +35,7 @@ class InvertBubbleView : public views::BubbleDelegateView,
   InvertBubbleView(Profile* profile, views::View* anchor_view);
   virtual ~InvertBubbleView();
 
- protected:
+ private:
   // Overridden from views::BubbleDelegateView:
   virtual void Init() OVERRIDE;
   virtual gfx::Rect GetAnchorRect() OVERRIDE;
