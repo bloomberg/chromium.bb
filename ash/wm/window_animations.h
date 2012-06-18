@@ -74,11 +74,11 @@ ASH_EXPORT void SetWindowVisibilityAnimationVerticalPosition(
 ASH_EXPORT ui::ImplicitAnimationObserver* CreateHidingWindowAnimationObserver(
     aura::Window* window);
 
+namespace internal {
+
 // Animate a cross-fade of |window| from its current bounds to |new_bounds|.
 ASH_EXPORT void CrossFadeToBounds(aura::Window* window,
                                   const gfx::Rect& new_bounds);
-
-namespace internal {
 
 // Returns the duration of the cross-fade animation based on the |old_bounds|
 // and |new_bounds| of the window.
