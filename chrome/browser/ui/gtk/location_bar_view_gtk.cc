@@ -461,7 +461,6 @@ void LocationBarViewGtk::SetPreviewEnabledPageAction(
     ExtensionAction *page_action,
     bool preview_enabled) {
   DCHECK(page_action);
-  UpdatePageActions();
   for (ScopedVector<PageActionViewGtk>::iterator iter =
        page_action_views_.begin(); iter != page_action_views_.end();
        ++iter) {
@@ -722,23 +721,24 @@ void LocationBarViewGtk::UpdateContentSettingsIcons() {
 }
 
 void LocationBarViewGtk::UpdatePageActions() {
-  std::vector<ExtensionAction*> page_actions;
+  std::vector<ExtensionAction*> new_page_actions;
 
   TabContents* tab_contents = GetTabContents();
   if (tab_contents) {
     LocationBarController* controller =
         tab_contents->extension_tab_helper()->location_bar_controller();
-    page_actions.swap(*controller->GetCurrentActions());
+    new_page_actions = controller->GetCurrentActions();
   }
 
-  // Initialize on the first call, or re-inialize if more extensions have been
+  // Initialize on the first call, or re-initialize if more extensions have been
   // loaded or added after startup.
-  if (page_actions.size() != page_action_views_.size()) {
-    page_action_views_.reset();  // Delete the old views (if any).
+  if (new_page_actions != page_actions_) {
+    page_actions_.swap(new_page_actions);
+    page_action_views_.reset();
 
-    for (size_t i = 0; i < page_actions.size(); ++i) {
+    for (size_t i = 0; i < page_actions_.size(); ++i) {
       page_action_views_.push_back(
-          new PageActionViewGtk(this, page_actions[i]));
+          new PageActionViewGtk(this, page_actions_[i]));
       gtk_box_pack_end(GTK_BOX(page_action_hbox_.get()),
                        page_action_views_[i]->widget(), FALSE, FALSE, 0);
     }

@@ -595,26 +595,22 @@ void LocationBarViewMac::RefreshPageActionDecorations() {
     return;
   }
 
-  std::vector<ExtensionAction*> page_actions;
-
   TabContents* tab_contents = GetTabContents();
   if (!tab_contents) {
     DeletePageActionDecorations();  // Necessary?
     return;
   }
 
-  extensions::LocationBarController* controller =
-      tab_contents->extension_tab_helper()->location_bar_controller();
-  page_actions.swap(*controller->GetCurrentActions());
+  std::vector<ExtensionAction*> new_page_actions =
+      tab_contents->extension_tab_helper()->location_bar_controller()->
+          GetCurrentActions();
 
-  // On startup we sometimes haven't loaded any extensions. This makes sure
-  // we catch up when the extensions (and any Page Actions) load.
-  if (page_actions.size() != page_action_decorations_.size()) {
-    DeletePageActionDecorations();  // Delete the old views (if any).
-
-    for (size_t i = 0; i < page_actions.size(); ++i) {
+  if (new_page_actions != page_actions_) {
+    page_actions_.swap(new_page_actions);
+    DeletePageActionDecorations();
+    for (size_t i = 0; i < page_actions_.size(); ++i) {
       page_action_decorations_.push_back(
-          new PageActionDecoration(this, profile_, page_actions[i]));
+          new PageActionDecoration(this, profile_, page_actions_[i]));
     }
   }
 

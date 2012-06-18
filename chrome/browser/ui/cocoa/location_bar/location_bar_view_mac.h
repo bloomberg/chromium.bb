@@ -218,7 +218,10 @@ class LocationBarViewMac : public AutocompleteEditController,
   // Chrome To Mobile page action icon.
   scoped_ptr<ChromeToMobileDecoration> chrome_to_mobile_decoration_;
 
-  // Any installed Page Actions.
+  // The installed page actions.
+  std::vector<ExtensionAction*> page_actions_;
+
+  // Decorations for the installed Page Actions.
   ScopedVector<PageActionDecoration> page_action_decorations_;
 
   // The content blocked decorations.

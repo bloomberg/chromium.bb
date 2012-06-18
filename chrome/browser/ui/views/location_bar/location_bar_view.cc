@@ -1028,21 +1028,22 @@ void LocationBarView::RefreshPageActionViews() {
     old_visibility[(*i)->image_view()->page_action()] = (*i)->visible();
   }
 
-  std::vector<ExtensionAction*> page_actions;
+  std::vector<ExtensionAction*> new_page_actions;
 
   TabContents* tab_contents = GetTabContents();
   if (tab_contents) {
     extensions::LocationBarController* controller =
         tab_contents->extension_tab_helper()->location_bar_controller();
-    page_actions.swap(*controller->GetCurrentActions());
+    new_page_actions = controller->GetCurrentActions();
   }
 
   // On startup we sometimes haven't loaded any extensions. This makes sure
   // we catch up when the extensions (and any page actions) load.
-  if (page_actions.size() != page_action_views_.size()) {
+  if (page_actions_ != new_page_actions) {
+    page_actions_.swap(new_page_actions);
     DeletePageActionViews();  // Delete the old views (if any).
 
-    page_action_views_.resize(page_actions.size());
+    page_action_views_.resize(page_actions_.size());
     View* right_anchor = chrome_to_mobile_view_;
     if (!right_anchor)
       right_anchor = star_view_;
@@ -1052,9 +1053,9 @@ void LocationBarView::RefreshPageActionViews() {
 
     // Add the page actions in reverse order, so that the child views are
     // inserted in left-to-right order for accessibility.
-    for (int i = page_actions.size() - 1; i >= 0; --i) {
+    for (int i = page_actions_.size() - 1; i >= 0; --i) {
       page_action_views_[i] = new PageActionWithBadgeView(
-          delegate_->CreatePageActionImageView(this, page_actions[i]));
+          delegate_->CreatePageActionImageView(this, page_actions_[i]));
       page_action_views_[i]->SetVisible(false);
       AddChildViewAt(page_action_views_[i], GetIndexOf(right_anchor));
     }

@@ -21,22 +21,20 @@ PageActionController::PageActionController(TabContents* tab_contents)
 
 PageActionController::~PageActionController() {}
 
-scoped_ptr<std::vector<ExtensionAction*> >
-PageActionController::GetCurrentActions() {
-  scoped_ptr<std::vector<ExtensionAction*> > current_actions(
-      new std::vector<ExtensionAction*>());
-
+std::vector<ExtensionAction*> PageActionController::GetCurrentActions() {
   ExtensionService* service = GetExtensionService();
   if (!service)
-    return current_actions.Pass();
+    return std::vector<ExtensionAction*>();
+
+  std::vector<ExtensionAction*> current_actions;
 
   for (ExtensionSet::const_iterator i = service->extensions()->begin();
        i != service->extensions()->end(); ++i) {
     ExtensionAction* action = (*i)->page_action();
     if (action)
-      current_actions->push_back(action);
+      current_actions.push_back(action);
   }
-  return current_actions.Pass();
+  return current_actions;
 }
 
 LocationBarController::Action PageActionController::OnClicked(

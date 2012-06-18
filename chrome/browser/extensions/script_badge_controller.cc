@@ -24,26 +24,16 @@ namespace extensions {
 ScriptBadgeController::ScriptBadgeController(TabContents* tab_contents)
     : content::WebContentsObserver(tab_contents->web_contents()),
       script_executor_(tab_contents->web_contents()),
-      tab_contents_(tab_contents) {}
+      tab_contents_(tab_contents) {
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                 content::Source<Profile>(tab_contents->profile()));
+}
 
 ScriptBadgeController::~ScriptBadgeController() {}
 
-scoped_ptr<std::vector<ExtensionAction*> >
-ScriptBadgeController::GetCurrentActions() {
-  scoped_ptr<std::vector<ExtensionAction*> > current_actions(
-      new std::vector<ExtensionAction*>());
-
-  ExtensionService* service = GetExtensionService();
-  if (!service)
-    return current_actions.Pass();
-
-  for (ExtensionSet::const_iterator it = service->extensions()->begin();
-       it != service->extensions()->end(); ++it) {
-    const Extension* extension = *it;
-    if (extensions_executing_scripts_.count(extension->id()))
-      current_actions->push_back(extension->GetScriptBadge());
-  }
-  return current_actions.Pass();
+std::vector<ExtensionAction*> ScriptBadgeController::GetCurrentActions() {
+  return current_actions_;
 }
 
 LocationBarController::Action ScriptBadgeController::OnClicked(
@@ -98,8 +88,8 @@ void ScriptBadgeController::OnExecuteScriptFinished(
     int32 page_id,
     const std::string& error) {
   if (success && page_id == GetPageID()) {
-    extensions_executing_scripts_.insert(extension_id);
-    Notify();
+    if (InsertExtension(extension_id))
+      Notify();
   }
 
   callback.Run(success, page_id, error);
@@ -125,6 +115,18 @@ void ScriptBadgeController::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
   extensions_executing_scripts_.clear();
+  current_actions_.clear();
+}
+
+void ScriptBadgeController::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK_EQ(type, chrome::NOTIFICATION_EXTENSION_UNLOADED);
+  const Extension* extension =
+      content::Details<UnloadedExtensionInfo>(details)->extension;
+  if (EraseExtension(extension))
+    Notify();
 }
 
 bool ScriptBadgeController::OnMessageReceived(const IPC::Message& message) {
@@ -139,13 +141,57 @@ bool ScriptBadgeController::OnMessageReceived(const IPC::Message& message) {
 
 void ScriptBadgeController::OnContentScriptsExecuting(
     const std::set<std::string>& extension_ids, int32 page_id) {
-  if (page_id == GetPageID()) {
-    size_t original_size = extensions_executing_scripts_.size();
-    extensions_executing_scripts_.insert(extension_ids.begin(),
-                                         extension_ids.end());
-    if (extensions_executing_scripts_.size() > original_size)
-      Notify();
+  if (page_id != GetPageID())
+    return;
+
+  bool changed = false;
+  for (std::set<std::string>::const_iterator it = extension_ids.begin();
+       it != extension_ids.end(); ++it) {
+    changed |= InsertExtension(*it);
   }
+  if (changed)
+    Notify();
+}
+
+bool ScriptBadgeController::InsertExtension(const std::string& extension_id) {
+  if (!extensions_executing_scripts_.insert(extension_id).second)
+    return false;
+
+  ExtensionService* service = GetExtensionService();
+  if (!service)
+    return  false;
+
+  const Extension* extension = service->extensions()->GetByID(extension_id);
+  if (!extension)
+    return false;
+
+  current_actions_.push_back(extension->GetScriptBadge());
+  return true;
+}
+
+
+bool ScriptBadgeController::EraseExtension(const Extension* extension) {
+  if (extensions_executing_scripts_.erase(extension->id()) == 0)
+    return false;
+
+  size_t size_before = current_actions_.size();
+
+  for (std::vector<ExtensionAction*>::iterator it = current_actions_.begin();
+       it != current_actions_.end(); ++it) {
+    // Safe to -> the extension action because we still have a handle to the
+    // owner Extension.
+    //
+    // Also note that this means that when extensions are uninstalled their
+    // script badges will disappear, even though they're still acting on the
+    // page (since they would have already acted).
+    if ((*it)->extension_id() == extension->id()) {
+      current_actions_.erase(it);
+      break;
+    }
+  }
+
+  CHECK_EQ(size_before, current_actions_.size() + 1);
+  return true;
 }
 
 }  // namespace extensions

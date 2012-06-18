@@ -10,8 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
-
 class ExtensionAction;
 
 namespace extensions {
@@ -36,7 +34,7 @@ class LocationBarController {
       std::vector<ExtensionAction*>* out);
 
   // Gets the action data for all extensions.
-  virtual scoped_ptr<std::vector<ExtensionAction*> > GetCurrentActions() = 0;
+  virtual std::vector<ExtensionAction*> GetCurrentActions() = 0;
 
   // Notifies this that the badge for an extension has been clicked with some
   // mouse button (1 for left, 2 for middle, and 3 for right click), and

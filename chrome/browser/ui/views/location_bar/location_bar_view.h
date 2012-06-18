@@ -438,6 +438,9 @@ class LocationBarView : public LocationBar,
   // The content setting views.
   ContentSettingViews content_setting_views_;
 
+  // The current page actions.
+  std::vector<ExtensionAction*> page_actions_;
+
   // The page action icon views.
   PageActionViews page_action_views_;
 

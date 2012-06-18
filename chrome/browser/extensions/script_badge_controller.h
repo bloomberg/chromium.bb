@@ -16,6 +16,8 @@
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/script_executor.h"
 #include "chrome/browser/extensions/script_executor_impl.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 
 class ExtensionAction;
@@ -48,13 +50,13 @@ class ScriptBadgeController
     : public base::RefCountedThreadSafe<ScriptBadgeController>,
       public LocationBarController,
       public ScriptExecutor,
-      public content::WebContentsObserver {
+      public content::WebContentsObserver,
+      public content::NotificationObserver {
  public:
   explicit ScriptBadgeController(TabContents* tab_contents);
 
   // LocationBarController implementation.
-  virtual scoped_ptr<std::vector<ExtensionAction*> > GetCurrentActions()
-      OVERRIDE;
+  virtual std::vector<ExtensionAction*> GetCurrentActions() OVERRIDE;
   virtual Action OnClicked(const std::string& extension_id,
                            int mouse_button) OVERRIDE;
 
@@ -94,9 +96,22 @@ class ScriptBadgeController
       const content::FrameNavigateParams& params) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
   // IPC::Message handlers.
   void OnContentScriptsExecuting(const std::set<std::string>& extension_ids,
                                  int32 page_id);
+
+  // Tries to insert an extension into the relevant collections, and returns
+  // whether any change was made.
+  bool InsertExtension(const std::string& extension_id);
+
+  // Tries to erase an extension from the relevant collections, and returns
+  // whether any change was made.
+  bool EraseExtension(const Extension* extension);
 
   // Delegate ScriptExecutorImpl for running ExecuteScript.
   ScriptExecutorImpl script_executor_;
@@ -104,8 +119,14 @@ class ScriptBadgeController
   // Our parent TabContents.
   TabContents* tab_contents_;
 
+  // The current extension actions in the order they appeared.
+  std::vector<ExtensionAction*> current_actions_;
+
   // The extensions that have called ExecuteScript on the current frame.
   std::set<std::string> extensions_executing_scripts_;
+
+  // Listen to extension unloaded notifications.
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ScriptBadgeController);
 };

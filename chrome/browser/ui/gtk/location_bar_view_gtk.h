@@ -449,6 +449,9 @@ class LocationBarViewGtk : public AutocompleteEditController,
   ui::OwnedWidgetGtk content_setting_hbox_;
   ScopedVector<ContentSettingImageViewGtk> content_setting_views_;
 
+  // Extension page actions.
+  std::vector<ExtensionAction*> page_actions_;
+
   // Extension page action icons.
   ui::OwnedWidgetGtk page_action_hbox_;
   ScopedVector<PageActionViewGtk> page_action_views_;

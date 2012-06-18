@@ -25,8 +25,7 @@ class PageActionController : public LocationBarController {
   virtual ~PageActionController();
 
   // LocationBarController implementation.
-  virtual scoped_ptr<std::vector<ExtensionAction*> > GetCurrentActions()
-      OVERRIDE;
+  virtual std::vector<ExtensionAction*> GetCurrentActions() OVERRIDE;
   virtual Action OnClicked(const std::string& extension_id,
                            int mouse_button) OVERRIDE;
 
