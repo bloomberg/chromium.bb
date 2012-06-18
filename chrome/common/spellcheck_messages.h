@@ -43,10 +43,6 @@ IPC_MESSAGE_CONTROL1(SpellCheckMsg_WordAdded,
 IPC_MESSAGE_CONTROL1(SpellCheckMsg_EnableAutoSpellCorrect,
                      bool /* enable */)
 
-// Replace the selected misspelled range with the specified suggestion.
-IPC_MESSAGE_ROUTED1(SpellCheckMsg_Replace,
-                    string16)
-
 #if !defined(OS_MACOSX)
 // Sends text-check results from the Spelling service when the service finishes
 // checking text reveived by a SpellCheckHostMsg_CallSpellingService message.

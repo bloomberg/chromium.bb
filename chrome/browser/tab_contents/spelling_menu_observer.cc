@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/confirm_bubble.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/spellcheck_result.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -186,10 +185,8 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
 
   if (command_id >= IDC_SPELLCHECK_SUGGESTION_0 &&
       command_id <= IDC_SPELLCHECK_SUGGESTION_4) {
-    content::RenderViewHost* host = proxy_->GetRenderViewHost();
-    host->Send(new SpellCheckMsg_Replace(
-        host->GetRoutingID(),
-        suggestions_[command_id - IDC_SPELLCHECK_SUGGESTION_0]));
+    proxy_->GetRenderViewHost()->Replace(
+        suggestions_[command_id - IDC_SPELLCHECK_SUGGESTION_0]);
     // GetSpellCheckHost() can return null when the suggested word is
     // provided by Web SpellCheck API.
     Profile* profile = proxy_->GetProfile();
@@ -206,8 +203,7 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
   // the misspelled word with the suggestion and add it to our custom-word
   // dictionary so this word is not marked as misspelled any longer.
   if (command_id == IDC_CONTENT_CONTEXT_SPELLING_SUGGESTION) {
-    content::RenderViewHost* host = proxy_->GetRenderViewHost();
-    host->Send(new SpellCheckMsg_Replace(host->GetRoutingID(), result_));
+    proxy_->GetRenderViewHost()->Replace(result_);
     misspelled_word_ = result_;
   }
 

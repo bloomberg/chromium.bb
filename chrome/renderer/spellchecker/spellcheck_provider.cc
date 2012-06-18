@@ -166,7 +166,6 @@ void SpellCheckProvider::RequestTextChecking(
 bool SpellCheckProvider::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SpellCheckProvider, message)
-  IPC_MESSAGE_HANDLER(SpellCheckMsg_Replace, OnReplace)
 #if !defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(SpellCheckMsg_RespondSpellingService,
                         OnRespondSpellingService)
@@ -285,12 +284,6 @@ void SpellCheckProvider::updateSpellingUIWithMisspelledWord(
   Send(new SpellCheckHostMsg_UpdateSpellingPanelWithMisspelledWord(routing_id(),
                                                                    word));
 #endif
-}
-
-void SpellCheckProvider::OnReplace(const string16& text) {
-  if (!render_view() || !render_view()->GetWebView())
-    return;
-  render_view()->GetWebView()->focusedFrame()->replaceMisspelledRange(text);
 }
 
 #if !defined(OS_MACOSX)
