@@ -615,8 +615,7 @@ void AboutChromeView::LinkClicked(views::Link* source, int event_flags) {
   if (source == terms_of_service_url_) {
     url = GURL(chrome::kChromeUITermsURL);
   } else if (source == chromium_url_) {
-    url = google_util::AppendGoogleLocaleParam(
-      GURL(chrome::kChromiumProjectURL));
+    url = GURL(chrome::kChromiumProjectURL);
   } else if (source == open_source_url_) {
     url = GURL(chrome::kChromeUICreditsURL);
   } else {

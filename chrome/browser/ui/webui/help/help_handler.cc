@@ -182,8 +182,7 @@ void HelpHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
 
   string16 license = l10n_util::GetStringFUTF16(
       IDS_ABOUT_VERSION_LICENSE,
-      UTF8ToUTF16(google_util::StringAppendGoogleLocaleParam(
-          chrome::kChromiumProjectURL)),
+      ASCIIToUTF16(chrome::kChromiumProjectURL),
       ASCIIToUTF16(chrome::kChromeUICreditsURL));
   localized_strings->SetString("productLicense", license);
 
