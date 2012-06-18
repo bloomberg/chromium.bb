@@ -14,6 +14,7 @@
 #include "content/browser/android/device_info.h"
 #include "content/browser/android/download_controller.h"
 #include "content/browser/android/sandboxed_process_launcher.h"
+#include "content/browser/android/touch_point.h"
 #include "content/common/android/command_line.h"
 #include "content/common/android/surface_callback.h"
 #include "content/common/android/trace_event_binding.h"
@@ -32,6 +33,7 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
   { "SandboxedProcessLauncher", content::RegisterSandboxedProcessLauncher },
   { "SandboxedProcessService", content::RegisterSandboxedProcessService },
   { "SurfaceCallback", content::RegisterSurfaceCallback },
+  { "TouchPoint", content::RegisterTouchPoint },
   { "TraceEvent", RegisterTraceEvent },
 };
 

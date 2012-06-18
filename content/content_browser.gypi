@@ -201,6 +201,8 @@
     'browser/android/download_controller.h',
     'browser/android/sandboxed_process_launcher.cc',
     'browser/android/sandboxed_process_launcher.h',
+    'browser/android/touch_point.cc',
+    'browser/android/touch_point.h',
     'browser/appcache/appcache_dispatcher_host.cc',
     'browser/appcache/appcache_dispatcher_host.h',
     'browser/appcache/appcache_frontend_proxy.cc',
