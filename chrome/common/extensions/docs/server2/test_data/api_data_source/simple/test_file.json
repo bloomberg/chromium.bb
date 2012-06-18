@@ -1,0 +1,11 @@
+[
+  {
+    "name": "Bob",
+    "occupation": "Dentist",
+    "hobbies": [
+      "Eating",
+      "Sleeping",
+      "Dentisting"
+    ]
+  }
+]

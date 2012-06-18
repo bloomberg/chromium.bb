@@ -46,7 +46,7 @@ class Namespace(object):
   """
   def __init__(self, json, source_file):
     self.name = json['namespace']
-    self.unix_name = _UnixName(self.name)
+    self.unix_name = UnixName(self.name)
     self.source_file = source_file
     self.source_file_dir, self.source_file_filename = os.path.split(source_file)
     self.parent = None
@@ -178,7 +178,7 @@ class Property(object):
       users of generated code, such as top-level types and function results
     """
     self.name = name
-    self._unix_name = _UnixName(self.name)
+    self._unix_name = UnixName(self.name)
     self._unix_name_used = False
     self.optional = json.get('optional', False)
     self.has_value = False
@@ -308,7 +308,7 @@ class PropertyType(object):
   ANY = _Info(False, "ANY")
   ADDITIONAL_PROPERTIES = _Info(False, "ADDITIONAL_PROPERTIES")
 
-def _UnixName(name):
+def UnixName(name):
   """Returns the unix_style name for a given lowerCamelCase string.
   """
   # First replace any lowerUpper patterns with lower_Upper.

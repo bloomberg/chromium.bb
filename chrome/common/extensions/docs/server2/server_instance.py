@@ -11,14 +11,17 @@ class ServerInstance(object):
   """This class is used to hold a data source and fetcher for an instance of a
   server. Each new branch will get its own ServerInstance.
   """
-  def __init__(self, data_source, fetcher):
-    self._data_source = data_source
+  def __init__(self, api_data_source, template_data_source, fetcher):
+    self._api_data_source = api_data_source
+    self._template_data_source = template_data_source
     self._fetcher = fetcher
+
 
   def Run(self, path, request_handler):
     parts = path.split('/')
     filename = parts[-1]
-    content = self._data_source.Render(filename, '{"test": "Hello"}')
+    content = self._template_data_source.Render(filename,
+                                                self._api_data_source[filename])
     if not content:
       logging.info('Template not found for: ' + filename)
       try:

@@ -101,7 +101,7 @@ class ModelTest(unittest.TestCase):
       'foo.barBAZ': 'foo_bar_baz'
       }
     for name in expectations:
-      self.assertEquals(expectations[name], model._UnixName(name));
+      self.assertEquals(expectations[name], model.UnixName(name));
 
 if __name__ == '__main__':
   unittest.main()
