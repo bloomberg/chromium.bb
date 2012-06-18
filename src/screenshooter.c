@@ -328,9 +328,9 @@ weston_recorder_frame_notify(struct wl_listener *listener, void *data)
 		fprintf(stderr,
 			"%dx%d at %d,%d rle from %d to %d bytes (%f) total %dM\n",
 			width, height, r[i].x1, r[i].y1,
-			width * height * 4, (int) (p - rect) * 4,
-			(float) (p - rect) / (width * height),
-			total / 1024 / 1024);
+			width * height * 4, (int) (p - recorder->rect) * 4,
+			(float) (p - recorder->rect) / (width * height),
+			recorder->total / 1024 / 1024);
 #endif
 	}
 
