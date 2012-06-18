@@ -642,6 +642,8 @@ void
 weston_text_cursor_position_notify(struct weston_surface *surface,
 						wl_fixed_t x, wl_fixed_t y);
 void
+weston_output_init_zoom(struct weston_output *output);
+void
 weston_output_update_zoom(struct weston_output *output, uint32_t type);
 void
 weston_output_update_matrix(struct weston_output *output);

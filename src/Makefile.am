@@ -25,6 +25,7 @@ weston_SOURCES =				\
 	text-cursor-position.c			\
 	text-cursor-position-protocol.c		\
 	text-cursor-position-server-protocol.h	\
+	zoom.c					\
 	util.c					\
 	matrix.c				\
 	matrix.h				\
