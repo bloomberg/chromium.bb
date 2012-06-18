@@ -365,8 +365,7 @@ div.root-eject:hover {
 }
 
 .dialog-footer[progress] .ok,
-.dialog-footer[progress] .filename-label,
-.dialog-footer[progress] #filename-input {
+.dialog-footer[progress] #filename-input-box {
   display: none;
 }
 
@@ -458,7 +457,7 @@ div.root-eject:hover {
 }
 
 #search-box,
-#filename-input {
+#filename-input-box input {
   border: 1px solid #BBB;
   border-radius: 2px;
 }
@@ -1087,14 +1086,6 @@ input.rename {
   white-space: nowrap;
 }
 
-.dialog-footer .filename-label {
-  -webkit-box-orient: horizontal;
-  background-color: white;
-  color: #333;
-  display: -webkit-box;
-  padding-right: 4px;
-}
-
 .detail-name > * {
   -webkit-box-align: center;
   display: -webkit-box;
@@ -1118,11 +1109,28 @@ list .detail-name > .file-checkbox::before,
   top: -14px;
 }
 
-#filename-input {
+#filename-input-box {
+  -webkit-box-align: center;
   -webkit-box-flex: 1;
-  -webkit-box-orient: horizontal;
+  display: -webkit-box;
+}
+
+#filename-input-box input {
+  -webkit-box-flex: 1;
   display: -webkit-box;
   padding: 1px 2px;
+}
+
+#filename-input-box .filename-label {
+  -webkit-box-orient: horizontal;
+  background-color: white;
+  color: #333;
+  display: -webkit-box;
+  padding-right: 4px;
+}
+
+body:not([type='saveas-file']) #filename-input-box {
+  display: none;
 }
 
 /* A horizontal spring. */

@@ -610,7 +610,8 @@ FileManager.prototype = {
         this.dialogDom_.querySelector('.preview-thumbnails');
     this.previewPanel_ = this.dialogDom_.querySelector('.preview-panel');
     this.previewSummary_ = this.dialogDom_.querySelector('.preview-summary');
-    this.filenameInput_ = this.dialogDom_.querySelector('#filename-input');
+    this.filenameInput_ = this.dialogDom_.querySelector(
+        '#filename-input-box input');
     this.taskItems_ = this.dialogDom_.querySelector('#tasks');
     this.okButton_ = this.dialogDom_.querySelector('.ok');
     this.cancelButton_ = this.dialogDom_.querySelector('.cancel');
