@@ -67,7 +67,7 @@ class ExtensionInputImeEventRouter {
 
 class SetCompositionFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.input.ime.setComposition");
+  DECLARE_EXTENSION_FUNCTION_NAME("input.ime.setComposition");
 
  protected:
   virtual ~SetCompositionFunction() {}
@@ -78,7 +78,7 @@ class SetCompositionFunction : public SyncExtensionFunction {
 
 class ClearCompositionFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.input.ime.clearComposition");
+  DECLARE_EXTENSION_FUNCTION_NAME("input.ime.clearComposition");
 
  protected:
   virtual ~ClearCompositionFunction() {}
@@ -89,7 +89,7 @@ class ClearCompositionFunction : public SyncExtensionFunction {
 
 class CommitTextFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.input.ime.commitText");
+  DECLARE_EXTENSION_FUNCTION_NAME("input.ime.commitText");
 
  protected:
   virtual ~CommitTextFunction() {}
@@ -100,8 +100,7 @@ class CommitTextFunction : public SyncExtensionFunction {
 
 class SetCandidateWindowPropertiesFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.input.ime.setCandidateWindowProperties");
+  DECLARE_EXTENSION_FUNCTION_NAME("input.ime.setCandidateWindowProperties");
 
  protected:
   virtual ~SetCandidateWindowPropertiesFunction() {}
@@ -112,7 +111,7 @@ class SetCandidateWindowPropertiesFunction : public SyncExtensionFunction {
 
 class SetCandidatesFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.input.ime.setCandidates");
+  DECLARE_EXTENSION_FUNCTION_NAME("input.ime.setCandidates");
 
  protected:
   virtual ~SetCandidatesFunction() {}
@@ -128,7 +127,7 @@ class SetCandidatesFunction : public SyncExtensionFunction {
 
 class SetCursorPositionFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.input.ime.setCursorPosition");
+  DECLARE_EXTENSION_FUNCTION_NAME("input.ime.setCursorPosition");
 
  protected:
   virtual ~SetCursorPositionFunction() {}
@@ -139,7 +138,7 @@ class SetCursorPositionFunction : public SyncExtensionFunction {
 
 class SetMenuItemsFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.input.ime.setMenuItems");
+  DECLARE_EXTENSION_FUNCTION_NAME("input.ime.setMenuItems");
 
  protected:
   virtual ~SetMenuItemsFunction() {}
@@ -150,7 +149,7 @@ class SetMenuItemsFunction : public SyncExtensionFunction {
 
 class UpdateMenuItemsFunction : public SyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.input.ime.updateMenuItems");
+  DECLARE_EXTENSION_FUNCTION_NAME("input.ime.updateMenuItems");
 
  protected:
   virtual ~UpdateMenuItemsFunction() {}
@@ -161,7 +160,7 @@ class UpdateMenuItemsFunction : public SyncExtensionFunction {
 
 class InputEventHandled : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.input.ime.eventHandled");
+  DECLARE_EXTENSION_FUNCTION_NAME("input.ime.eventHandled");
 
  protected:
   virtual ~InputEventHandled() {}

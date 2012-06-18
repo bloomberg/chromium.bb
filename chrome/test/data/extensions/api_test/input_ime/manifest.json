@@ -7,7 +7,7 @@
   "background": {
     "scripts": ["background.js"]
   },
-  "permissions": [ "input", "experimental" ],
+  "permissions": [ "input" ],
   "input_components": [{
     "name": "Test IME",
     "type": "ime",

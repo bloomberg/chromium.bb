@@ -582,8 +582,7 @@ void ExtensionDispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("fileSystem",
                              IDR_FILE_SYSTEM_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("i18n", IDR_I18N_CUSTOM_BINDINGS_JS);
-  source_map_.RegisterSource("experimental.input.ime",
-                             IDR_INPUT_IME_CUSTOM_BINDINGS_JS);
+  source_map_.RegisterSource("input.ime", IDR_INPUT_IME_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("omnibox", IDR_OMNIBOX_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("pageActions",
                              IDR_PAGE_ACTIONS_CUSTOM_BINDINGS_JS);

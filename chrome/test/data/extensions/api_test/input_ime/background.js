@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 function setCompositionTest() {
-  chrome.experimental.input.ime.setComposition({
+  chrome.input.ime.setComposition({
     "contextID": 1,
     "text": "Pie",
     "selectionStart": 1,
@@ -19,14 +19,14 @@ function setCompositionTest() {
 
 
 function clearCompositionTest() {
-  chrome.experimental.input.ime.clearComposition({
+  chrome.input.ime.clearComposition({
     "contextID": 1
   }, chrome.test.callbackPass());
 }
 
 
 function commitTextTest() {
-  chrome.experimental.input.ime.commitText({
+  chrome.input.ime.commitText({
     "contextID": 2,
     "text": "Seaguls"
   }, chrome.test.callbackPass());
@@ -34,7 +34,7 @@ function commitTextTest() {
 
 
 function setCandidateWindowPropertiesTest() {
-  chrome.experimental.input.ime.setCandidateWindowProperties({
+  chrome.input.ime.setCandidateWindowProperties({
     "engineID": "test",
     "properties": {
       "visible": true,
@@ -49,7 +49,7 @@ function setCandidateWindowPropertiesTest() {
 
 
 function setCandidatesTest() {
-  chrome.experimental.input.ime.setCandidates({
+  chrome.input.ime.setCandidates({
     "contextID": 8,
     "candidates": [{
       "candidate": "one",
@@ -72,7 +72,7 @@ function setCandidatesTest() {
 
 
 function setCursorPositionTest() {
-  chrome.experimental.input.ime.setCursorPosition({
+  chrome.input.ime.setCursorPosition({
     "contextID": 9,
     "candidateID": 1
   }, chrome.test.callbackPass());
@@ -81,7 +81,7 @@ function setCursorPositionTest() {
 
 
 function setMenuItemsTest() {
-  chrome.experimental.input.ime.setMenuItems({
+  chrome.input.ime.setMenuItems({
     "engineID": "test",
     "items": [{
       "id": "Menu 1",
@@ -100,7 +100,7 @@ function setMenuItemsTest() {
 }
 
 function updateMenuItemsTest() {
-  chrome.experimental.input.ime.updateMenuItems({
+  chrome.input.ime.updateMenuItems({
     "engineID": "test",
     "items": [{
       "id": "Menu 1",

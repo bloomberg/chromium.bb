@@ -9,9 +9,6 @@
 
 #if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, InputImeApiBasic) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-  switches::kEnableExperimentalExtensionApis);
-
   ASSERT_TRUE(RunExtensionTest("input_ime")) << message_;
 }
 #endif

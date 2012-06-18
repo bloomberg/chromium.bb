@@ -398,7 +398,7 @@ void ExtensionAPI::InitDefaultConfiguration() {
       IDR_EXTENSION_API_JSON_I18N));
   RegisterSchema("idle", ReadFromResource(
       IDR_EXTENSION_API_JSON_IDLE));
-  RegisterSchema("experimental.input.ime", ReadFromResource(
+  RegisterSchema("input.ime", ReadFromResource(
       IDR_EXTENSION_API_JSON_INPUT_IME));
   RegisterSchema("inputMethodPrivate", ReadFromResource(
       IDR_EXTENSION_API_JSON_INPUTMETHODPRIVATE));
