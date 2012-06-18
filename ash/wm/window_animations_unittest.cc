@@ -173,25 +173,27 @@ TEST_F(WindowAnimationsTest, GetCrossFadeDuration) {
   EXPECT_EQ(0, GetCrossFadeDuration(screen, screen).InMilliseconds());
 
   // Small changes are fast.
-  gfx::Rect almost_screen(10, 10, 900, 400);
-  EXPECT_EQ(220, GetCrossFadeDuration(almost_screen, screen).InMilliseconds());
-  EXPECT_EQ(220, GetCrossFadeDuration(screen, almost_screen).InMilliseconds());
+  const int kMinimum = 100;
+  const int kRange = 300;
+  gfx::Rect almost_screen(10, 10, 1000, 450);  // 90% of screen area
+  EXPECT_EQ(kMinimum + kRange / 10,
+           GetCrossFadeDuration(almost_screen, screen).InMilliseconds());
+  EXPECT_EQ(kMinimum + kRange / 10,
+            GetCrossFadeDuration(screen, almost_screen).InMilliseconds());
 
   // Large changes are slow.
-  gfx::Rect small(10, 10, 100, 100);
-  EXPECT_EQ(380, GetCrossFadeDuration(small, screen).InMilliseconds());
-  EXPECT_EQ(380, GetCrossFadeDuration(screen, small).InMilliseconds());
+  gfx::Rect small(10, 10, 100, 500);  // 10% of screen area
+  EXPECT_EQ(kMinimum + kRange * 9 / 10,
+            GetCrossFadeDuration(small, screen).InMilliseconds());
+  EXPECT_EQ(kMinimum + kRange * 9 / 10,
+            GetCrossFadeDuration(screen, small).InMilliseconds());
 
   // Medium changes take medium time.
   gfx::Rect half_screen(10, 10, 500, 250);
-  EXPECT_EQ(300, GetCrossFadeDuration(half_screen, screen).InMilliseconds());
-  EXPECT_EQ(300, GetCrossFadeDuration(screen, half_screen).InMilliseconds());
-
-  // Change is based on width.
-  gfx::Rect narrow(10, 10, 100, 500);
-  gfx::Rect wide(10, 10, 900, 500);
-  EXPECT_EQ(380, GetCrossFadeDuration(narrow, screen).InMilliseconds());
-  EXPECT_EQ(220, GetCrossFadeDuration(wide, screen).InMilliseconds());
+  EXPECT_EQ(kMinimum + kRange * 3 / 4,
+            GetCrossFadeDuration(half_screen, screen).InMilliseconds());
+  EXPECT_EQ(kMinimum + kRange * 3 / 4,
+            GetCrossFadeDuration(screen, half_screen).InMilliseconds());
 }
 
 }  // namespace internal
