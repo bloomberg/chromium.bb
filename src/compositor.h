@@ -115,16 +115,25 @@ enum {
 	ZOOM_FOCUS_TEXT
 };
 
+struct weston_fixed_point {
+	wl_fixed_t x, y;
+};
+
 struct weston_output_zoom {
 	int active;
 	uint32_t type;
 	float increment;
 	float level;
 	float max_level;
-	wl_fixed_t fx, fy;
 	float trans_x, trans_y;
 	struct weston_animation animation_z;
 	struct weston_spring spring_z;
+	struct weston_animation animation_xy;
+	struct weston_spring spring_xy;
+	struct weston_fixed_point from;
+	struct weston_fixed_point to;
+	struct weston_fixed_point current;
+	struct weston_fixed_point text_cursor;
 };
 
 /* bit compatible with drm definitions. */
@@ -633,9 +642,7 @@ void
 weston_text_cursor_position_notify(struct weston_surface *surface,
 						wl_fixed_t x, wl_fixed_t y);
 void
-weston_output_update_zoom(struct weston_output *output,
-						wl_fixed_t x, wl_fixed_t y,
-						uint32_t type);
+weston_output_update_zoom(struct weston_output *output, uint32_t type);
 void
 weston_output_update_matrix(struct weston_output *output);
 void

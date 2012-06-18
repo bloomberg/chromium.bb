@@ -2185,10 +2185,7 @@ do_zoom(struct wl_seat *seat, uint32_t time, uint32_t key, uint32_t axis,
 
 			output->zoom.spring_z.target = output->zoom.level;
 
-			weston_output_update_zoom(output,
-			                          seat->pointer->x,
-						  seat->pointer->y,
-						  ZOOM_FOCUS_POINTER);
+			weston_output_update_zoom(output, output->zoom.type);
 		}
 	}
 }
