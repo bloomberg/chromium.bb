@@ -48,10 +48,16 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager_factory.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
 #include "chrome/browser/user_style_sheet_watcher_factory.h"
+#include "chrome/browser/webdata/web_data_service_factory.h"
+
+#if defined(ENABLE_CONFIGURATION_POLICY)
+#include "chrome/browser/policy/managed_mode_policy_provider_factory.h"
+#endif
+
 #if defined(USE_AURA)
 #include "chrome/browser/ui/gesture_prefs_observer_factory_aura.h"
 #endif
-#include "chrome/browser/webdata/web_data_service_factory.h"
+
 #ifndef NDEBUG
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -206,6 +212,9 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   GlobalErrorServiceFactory::GetInstance();
   GoogleURLTrackerFactory::GetInstance();
   HistoryServiceFactory::GetInstance();
+#if defined(ENABLE_CONFIGURATION_POLICY)
+  ManagedModePolicyProviderFactory::GetInstance();
+#endif
   NTPResourceCacheFactory::GetInstance();
   PasswordStoreFactory::GetInstance();
   PersonalDataManagerFactory::GetInstance();

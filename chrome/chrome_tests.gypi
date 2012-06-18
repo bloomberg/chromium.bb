@@ -1386,6 +1386,7 @@
         'browser/policy/logging_work_scheduler.cc',
         'browser/policy/logging_work_scheduler.h',
         'browser/policy/logging_work_scheduler_unittest.cc',
+        'browser/policy/managed_mode_policy_provider_unittest.cc',
         'browser/policy/mock_cloud_policy_client.cc',
         'browser/policy/mock_cloud_policy_client.h',
         'browser/policy/mock_cloud_policy_store.cc',

@@ -20,6 +20,11 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_details.h"
 
+#if defined(ENABLE_CONFIGURATION_POLICY)
+#include "chrome/browser/policy/managed_mode_policy_provider.h"
+#include "chrome/browser/policy/managed_mode_policy_provider_factory.h"
+#endif
+
 namespace {
 
 // Event that is fired when we enter or leave managed mode.
@@ -90,4 +95,34 @@ void EnterManagedModeFunction::SendResult(bool success) {
   result->SetBoolean(kEnterSuccessKey, success);
   result_.reset(result.release());
   SendResponse(true);
+}
+
+GetPolicyFunction::~GetPolicyFunction() { }
+
+bool GetPolicyFunction::RunImpl() {
+  std::string key;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &key));
+#if defined(ENABLE_CONFIGURATION_POLICY)
+  policy::ManagedModePolicyProvider* policy_provider =
+      ManagedModePolicyProviderFactory::GetForProfile(profile_);
+  const base::Value* policy = policy_provider->GetPolicy(key);
+  if (policy)
+    result_.reset(policy->DeepCopy());
+#endif
+  return true;
+}
+
+SetPolicyFunction::~SetPolicyFunction() { }
+
+bool SetPolicyFunction::RunImpl() {
+  std::string key;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &key));
+  base::Value* value = NULL;
+  EXTENSION_FUNCTION_VALIDATE(args_->Get(1, &value));
+#if defined(ENABLE_CONFIGURATION_POLICY)
+  policy::ManagedModePolicyProvider* policy_provider =
+      ManagedModePolicyProviderFactory::GetForProfile(profile_);
+  policy_provider->SetPolicy(key, value);
+#endif
+  return true;
 }

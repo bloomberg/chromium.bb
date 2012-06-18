@@ -60,4 +60,27 @@ class EnterManagedModeFunction : public AsyncExtensionFunction {
   void SendResult(bool success);
 };
 
+
+class GetPolicyFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("managedModePrivate.getPolicy")
+
+ protected:
+  virtual ~GetPolicyFunction();
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+};
+
+class SetPolicyFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("managedModePrivate.setPolicy")
+
+ protected:
+  virtual ~SetPolicyFunction();
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+};
+
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_MANAGED_MODE_API_H_

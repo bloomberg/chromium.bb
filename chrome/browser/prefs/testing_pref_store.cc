@@ -9,7 +9,6 @@
 
 TestingPrefStore::TestingPrefStore()
     : read_only_(true),
-      prefs_written_(false),
       init_complete_(false) {
 }
 
@@ -65,14 +64,12 @@ PersistentPrefStore::PrefReadError TestingPrefStore::GetReadError() const {
 }
 
 PersistentPrefStore::PrefReadError TestingPrefStore::ReadPrefs() {
-  prefs_.Clear();
   NotifyInitializationCompleted();
   return PersistentPrefStore::PREF_READ_ERROR_NONE;
 }
 
 void TestingPrefStore::ReadPrefsAsync(ReadErrorDelegate* error_delegate_raw) {
   scoped_ptr<ReadErrorDelegate> error_delegate(error_delegate_raw);
-  prefs_.Clear();
   NotifyInitializationCompleted();
 }
 

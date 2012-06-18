@@ -74,9 +74,6 @@ class TestingPrefStore : public PersistentPrefStore {
   // Flag that indicates if the PrefStore is read-only
   bool read_only_;
 
-  // Flag that indicates if the method WritePrefs was called.
-  bool prefs_written_;
-
   // Whether initialization has been completed.
   bool init_complete_;
 

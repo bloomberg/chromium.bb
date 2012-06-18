@@ -18,7 +18,7 @@
             "optional": true,
             "parameters": [
               {
-                "name": "result", 
+                "name": "result",
                 "type": "object",
                 "description": "The result of the attempt to enter managed mode.",
                 "properties": {
@@ -51,6 +51,54 @@
                     "type": "boolean"
                   }
                 }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "setPolicy",
+        "type": "function",
+        "description": "Sets a policy.",
+        "parameters": [
+          {
+            "name": "key",
+            "type": "string",
+            "description": "Policy key."
+          },
+          {
+            "name": "value",
+            "type": "any",
+            "description": "Policy value."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "getPolicy",
+        "type": "function",
+        "description": "Gets a policy value.",
+        "parameters": [
+          {
+            "name": "key",
+            "type": "string",
+            "description": "Policy key."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [
+              {
+                "name": "value",
+                "type": "any",
+                "description": "Policy value or null if no policy is set.",
+                "optional": true
               }
             ]
           }

@@ -161,6 +161,8 @@ const FilePath::CharType kJumpListIconDirname[] = FPL("JumpListIcons");
 const FilePath::CharType kWebAppDirname[] = FPL("Web Applications");
 const FilePath::CharType kServiceStateFileName[] = FPL("Service State");
 const FilePath::CharType kReadmeFilename[] = FPL("README");
+const FilePath::CharType kManagedModePolicyFilename[] =
+    FPL("Managed Mode Settings");
 
 #if defined(OS_CHROMEOS)
 const FilePath::CharType kGDataCacheDirname[] = FPL("GCache");

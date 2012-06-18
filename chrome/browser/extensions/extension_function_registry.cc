@@ -295,6 +295,8 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   // Managed mode.
   RegisterFunction<GetManagedModeFunction>();
   RegisterFunction<EnterManagedModeFunction>();
+  RegisterFunction<GetPolicyFunction>();
+  RegisterFunction<SetPolicyFunction>();
 
   // Management.
   RegisterFunction<GetAllExtensionsFunction>();

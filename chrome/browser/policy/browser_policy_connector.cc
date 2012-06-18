@@ -17,6 +17,8 @@
 #include "chrome/browser/policy/cloud_policy_subsystem.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/device_management_service.h"
+#include "chrome/browser/policy/managed_mode_policy_provider.h"
+#include "chrome/browser/policy/managed_mode_policy_provider_factory.h"
 #include "chrome/browser/policy/policy_service_impl.h"
 #include "chrome/browser/policy/user_cloud_policy_manager.h"
 #include "chrome/browser/policy/user_policy_cache.h"
@@ -171,6 +173,9 @@ PolicyService* BrowserPolicyConnector::CreatePolicyService(
   if (profile) {
     if (user_cloud_policy_manager_.get())
       providers.push_back(user_cloud_policy_manager_.get());
+
+    providers.push_back(
+        ManagedModePolicyProviderFactory::GetForProfile(profile));
   } else {
     providers.push_back(&user_cloud_policy_provider_);
   }
