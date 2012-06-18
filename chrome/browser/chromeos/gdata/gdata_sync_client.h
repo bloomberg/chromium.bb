@@ -76,6 +76,7 @@ class GDataSyncClient
                              const std::string& md5) OVERRIDE;
   virtual void OnCacheUnpinned(const std::string& resource_id,
                                const std::string& md5) OVERRIDE;
+  virtual void OnCacheCommitted(const std::string& resource_id) OVERRIDE;
 
   // Starts scanning the pinned directory in the cache to collect
   // pinned-but-not-fetched files. |closure| is run on the calling thread

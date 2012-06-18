@@ -103,6 +103,9 @@ class GDataCache {
     virtual void OnCacheUnpinned(const std::string& resource_id,
                                  const std::string& md5) {}
 
+    // Triggered when a dirty file has been committed (saved) successfully.
+    virtual void OnCacheCommitted(const std::string& resource_id) {}
+
    protected:
     virtual ~Observer() {}
   };
@@ -395,6 +398,12 @@ class GDataCache {
                   const std::string& resource_id,
                   const std::string& md5,
                   const CacheOperationCallback& callback);
+
+  // Runs callback and notifies the observers when file is committed.
+  void OnCommitDirty(base::PlatformFileError* error,
+                     const std::string& resource_id,
+                     const std::string& md5,
+                     const CacheOperationCallback& callback);
 
   // The root directory of the cache (i.e. <user_profile_dir>/GCache/v1).
   const FilePath cache_root_path_;

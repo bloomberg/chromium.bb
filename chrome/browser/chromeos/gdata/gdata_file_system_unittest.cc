@@ -2666,6 +2666,7 @@ TEST_F(GDataFileSystemTest, RemoveFromCachePinned) {
 TEST_F(GDataFileSystemTest, DirtyCacheSimple) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
+  EXPECT_CALL(*mock_sync_client_, OnCacheCommitted(resource_id)).Times(1);
 
   // First store a file to cache.
   TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
@@ -2699,6 +2700,7 @@ TEST_F(GDataFileSystemTest, DirtyCachePinned) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   EXPECT_CALL(*mock_sync_client_, OnCachePinned(resource_id, md5)).Times(1);
+  EXPECT_CALL(*mock_sync_client_, OnCacheCommitted(resource_id)).Times(1);
 
   // First store a file to cache and pin it.
   TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
@@ -2781,6 +2783,7 @@ TEST_F(GDataFileSystemTest, PinAndUnpinDirtyCache) {
 TEST_F(GDataFileSystemTest, DirtyCacheRepetitive) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
+  EXPECT_CALL(*mock_sync_client_, OnCacheCommitted(resource_id)).Times(3);
 
   // First store a file to cache.
   TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
@@ -2912,6 +2915,7 @@ TEST_F(GDataFileSystemTest, RemoveFromDirtyCache) {
   std::string resource_id("pdf:1a2b");
   std::string md5("abcdef0123456789");
   EXPECT_CALL(*mock_sync_client_, OnCachePinned(resource_id, md5)).Times(1);
+  EXPECT_CALL(*mock_sync_client_, OnCacheCommitted(resource_id)).Times(1);
 
   // Store a file to cache, pin it, mark it dirty and commit it.
   TestStoreToCache(resource_id, md5, GetTestFilePath("root_feed.json"),
@@ -3851,6 +3855,9 @@ TEST_F(GDataFileSystemTest, OpenAndCloseFile) {
   const int64 file_size = entry->file_info().size;
   const std::string file_resource_id = entry->resource_id();
   const std::string file_md5 = file->file_md5();
+
+  // A dirty file is created on close.
+  EXPECT_CALL(*mock_sync_client_, OnCacheCommitted(file_resource_id)).Times(1);
 
   // Pretend we have enough space.
   EXPECT_CALL(*mock_free_disk_space_checker_, AmountOfFreeDiskSpace())

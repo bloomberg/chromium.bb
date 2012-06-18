@@ -220,6 +220,13 @@ void GDataSyncClient::OnCacheUnpinned(const std::string& resource_id,
     queue_.erase(iter);
 }
 
+void GDataSyncClient::OnCacheCommitted(const std::string& resource_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // TODO(satorux): Initiate uploading of the committed file.
+  // crbug.com/127080
+}
+
 void GDataSyncClient::OnInitialScanComplete(
     const base::Closure& closure,
     std::vector<std::string>* resource_ids) {

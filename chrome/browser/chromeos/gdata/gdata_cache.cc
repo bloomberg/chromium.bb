@@ -593,11 +593,12 @@ void GDataCache::CommitDirtyOnUIThread(const std::string& resource_id,
                  md5,
                  GDataCache::FILE_OPERATION_MOVE,
                  error),
-      base::Bind(&RunCacheOperationCallback,
-                 callback,
+      base::Bind(&GDataCache::OnCommitDirty,
+                 ui_weak_ptr_,
                  base::Owned(error),
                  resource_id,
-                 md5));
+                 md5,
+                 callback));
 }
 
 void GDataCache::ClearDirtyOnUIThread(const std::string& resource_id,
@@ -1395,6 +1396,20 @@ void GDataCache::OnUnpinned(base::PlatformFileError* error,
                  base::Unretained(this),
                  0,
                  base::Owned(has_enough_space)));
+}
+
+void GDataCache::OnCommitDirty(base::PlatformFileError* error,
+                               const std::string& resource_id,
+                               const std::string& md5,
+                               const CacheOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(error);
+
+  if (!callback.is_null())
+    callback.Run(*error, resource_id, md5);
+
+  if (*error == base::PLATFORM_FILE_OK)
+    FOR_EACH_OBSERVER(Observer, observers_, OnCacheCommitted(resource_id));
 }
 
 // static
