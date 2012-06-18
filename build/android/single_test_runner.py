@@ -193,9 +193,6 @@ class SingleTestRunner(BaseTestRunner):
     elif self.test_package.test_suite_basename == 'webkit_unit_tests':
       return [
           'third_party/WebKit/Source/WebKit/chromium/tests/data',
-          # We need the chrome/ directory to convice webkit_support::
-          # GetWebKitRootDirFilePath() we're in a chrome working dir.
-          'chrome/VERSION',
           ]
     elif self.test_package.test_suite_basename == 'content_unittests':
       return [

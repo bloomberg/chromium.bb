@@ -221,15 +221,16 @@ class WebPluginImplWithPageDelegate
 FilePath GetWebKitRootDirFilePath() {
   FilePath basePath;
   PathService::Get(base::DIR_SOURCE_ROOT, &basePath);
-  if (file_util::PathExists(basePath.Append(FILE_PATH_LITERAL("chrome")))) {
+  if (file_util::PathExists(
+          basePath.Append(FILE_PATH_LITERAL("third_party/WebKit")))) {
     // We're in a WebKit-in-chrome checkout.
     return basePath.Append(FILE_PATH_LITERAL("third_party/WebKit"));
   } else if (file_util::PathExists(
-                 basePath.Append(FILE_PATH_LITERAL("chromium")))) {
+          basePath.Append(FILE_PATH_LITERAL("chromium")))) {
     // We're in a WebKit-only checkout on Windows.
     return basePath.Append(FILE_PATH_LITERAL("../.."));
   } else if (file_util::PathExists(
-                 basePath.Append(FILE_PATH_LITERAL("webkit/support")))) {
+          basePath.Append(FILE_PATH_LITERAL("webkit/support")))) {
     // We're in a WebKit-only/xcodebuild checkout on Mac
     return basePath.Append(FILE_PATH_LITERAL("../../.."));
   }
