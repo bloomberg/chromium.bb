@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "content/public/browser/geolocation_permission_context.h"
 
 class GeolocationInfoBarQueueController;
+class PrefService;
 class Profile;
 
 // Chrome specific implementation of GeolocationPermissionContext; manages
@@ -29,6 +30,8 @@ class ChromeGeolocationPermissionContext
                            const GURL& requesting_frame,
                            base::Callback<void(bool)> callback,
                            bool allowed);
+
+  static void RegisterUserPrefs(PrefService *user_prefs);
 
   // GeolocationPermissionContext implementation:
   virtual void RequestGeolocationPermission(

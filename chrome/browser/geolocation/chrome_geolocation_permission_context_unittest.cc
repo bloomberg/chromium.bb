@@ -30,6 +30,11 @@
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/prefs/pref_service.h"
+#include "chrome/common/pref_names.h"
+#endif
+
 using content::BrowserThread;
 using content::MockRenderProcessHost;
 using content::RenderViewHostTester;
@@ -267,6 +272,32 @@ TEST_F(GeolocationPermissionContextTests, SinglePermission) {
   EXPECT_TRUE(closed_delegate_tracker_.Contains(infobar_0));
   infobar_0->InfoBarClosed();
 }
+
+#if defined(OS_ANDROID)
+TEST_F(GeolocationPermissionContextTests, GeolocationEnabledDisabled) {
+  profile()->GetHostContentSettingsMap()->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_GEOLOCATION,
+      CONTENT_SETTING_ALLOW);
+
+  // Check that the request is denied with preference disabled,
+  // even though the default policy allows it.
+  GURL requesting_frame("http://www.example.com/geolocation");
+  NavigateAndCommit(requesting_frame);
+  EXPECT_EQ(0U, infobar_tab_helper()->infobar_count());
+  profile()->GetPrefs()->SetBoolean(prefs::kGeolocationEnabled, false);
+  RequestGeolocationPermission(
+      process_id(), render_id(), bridge_id(), requesting_frame);
+  ASSERT_EQ(0U, infobar_tab_helper()->infobar_count());
+  CheckPermissionMessageSent(bridge_id(), false);
+
+  // Reenable the preference and check that the request now goes though.
+  profile()->GetPrefs()->SetBoolean(prefs::kGeolocationEnabled, true);
+  RequestGeolocationPermission(
+      process_id(), render_id(), bridge_id() + 1, requesting_frame);
+  ASSERT_EQ(0U, infobar_tab_helper()->infobar_count());
+  CheckPermissionMessageSent(bridge_id() + 1, true);
+}
+#endif
 
 TEST_F(GeolocationPermissionContextTests, QueuedPermission) {
   GURL requesting_frame_0("http://www.example.com/geolocation");

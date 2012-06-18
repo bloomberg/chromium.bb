@@ -941,6 +941,11 @@ const char kPinnedTabs[] = "pinned_tabs";
 const char kGeolocationDefaultContentSetting[] =
     "geolocation.default_content_setting";
 
+#if defined(OS_ANDROID)
+// Boolean that controls the enabled-state of Geolocation.
+const char kGeolocationEnabled[] = "geolocation.enabled";
+#endif
+
 // Dictionary that maps [frame, toplevel] to their Geolocation content setting.
 const char kGeolocationContentSettings[] = "geolocation.content_settings";
 

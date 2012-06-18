@@ -601,6 +601,9 @@ extern const char kWebAppCreateInQuickLaunchBar[];
 extern const char kGeolocationAccessToken[];
 extern const char kGeolocationDefaultContentSetting[];
 extern const char kGeolocationContentSettings[];
+#if defined(OS_ANDROID)
+extern const char kGeolocationEnabled[];
+#endif
 
 extern const char kRemoteAccessHostFirewallTraversal[];
 

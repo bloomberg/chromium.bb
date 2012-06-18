@@ -584,6 +584,14 @@ ChromeGeolocationPermissionContext::ChromeGeolocationPermissionContext(
          new GeolocationInfoBarQueueController(this, profile))) {
 }
 
+void ChromeGeolocationPermissionContext::RegisterUserPrefs(
+    PrefService *user_prefs) {
+#if defined(OS_ANDROID)
+  user_prefs->RegisterBooleanPref(prefs::kGeolocationEnabled, true,
+                                  PrefService::UNSYNCABLE_PREF);
+#endif
+}
+
 ChromeGeolocationPermissionContext::~ChromeGeolocationPermissionContext() {
 }
 
@@ -600,6 +608,17 @@ void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
     return;
   }
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+#if defined(OS_ANDROID)
+  // Check to see if the feature in its entirety has been disabled.
+  // This must happen before other services (e.g. tabs, extensions)
+  // get an opportunity to allow the geolocation request.
+  if (!profile_->GetPrefs()->GetBoolean(prefs::kGeolocationEnabled)) {
+    NotifyPermissionSet(render_process_id, render_view_id, bridge_id,
+                        requesting_frame, callback, false);
+    return;
+  }
+#endif
 
   ExtensionService* extension_service = profile_->GetExtensionService();
   if (extension_service) {

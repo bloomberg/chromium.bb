@@ -215,6 +215,10 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   BrowserWindowGtk::RegisterUserPrefs(user_prefs);
 #endif
 
+#if defined(OS_ANDROID)
+  geolocation::RegisterUserPrefs(user_prefs);
+#endif
+
 #if defined(USE_ASH)
   ash::RegisterChromeLauncherUserPrefs(user_prefs);
 #endif
