@@ -4,7 +4,11 @@
 
 #include "chrome/browser/chromeos/gdata/gdata_download_observer.h"
 
+#include "base/callback.h"
 #include "base/file_util.h"
+#include "chrome/browser/chromeos/gdata/gdata.pb.h"
+#include "chrome/browser/chromeos/gdata/gdata_documents_service.h"
+#include "chrome/browser/chromeos/gdata/gdata_file_system.h"
 #include "chrome/browser/chromeos/gdata/gdata_system_service.h"
 #include "chrome/browser/chromeos/gdata/gdata_upload_file_info.h"
 #include "chrome/browser/chromeos/gdata/gdata_uploader.h"
@@ -70,10 +74,97 @@ GDataExternalData* GetGDataExternalData(DownloadItem* download) {
       download->GetExternalData(&kGDataPathKey));
 }
 
-void SubstituteGDataDownloadPathHelper(
+void RunSubstituteGDataDownloadCallback(
     const GDataDownloadObserver::SubstituteGDataDownloadPathCallback& callback,
     const FilePath* file_path) {
   callback.Run(*file_path);
+}
+
+gdata::GDataSystemService* GetSystemService(Profile* profile) {
+  gdata::GDataSystemService* system_service =
+      gdata::GDataSystemServiceFactory::GetForProfile(
+        profile ? profile : ProfileManager::GetDefaultProfile());
+  DCHECK(system_service);
+  return system_service;
+}
+
+// Substitutes virtual gdata path for local temporary path.
+void SubstituteGDataDownloadPathInternal(Profile* profile,
+    const GDataDownloadObserver::SubstituteGDataDownloadPathCallback&
+        callback) {
+  DVLOG(1) << "SubstituteGDataDownloadPathInternal";
+
+  const FilePath gdata_tmp_download_dir = GetSystemService(profile)->cache()->
+      GetCacheDirectoryPath(gdata::GDataCache::CACHE_TYPE_TMP_DOWNLOADS);
+
+  // Swap the gdata path with a local path. Local path must be created
+  // on a blocking thread.
+  FilePath* gdata_tmp_download_path(new FilePath());
+  BrowserThread::GetBlockingPool()->PostTaskAndReply(FROM_HERE,
+      base::Bind(&gdata::GDataDownloadObserver::GetGDataTempDownloadPath,
+                 gdata_tmp_download_dir,
+                 gdata_tmp_download_path),
+      base::Bind(&RunSubstituteGDataDownloadCallback,
+                 callback,
+                 base::Owned(gdata_tmp_download_path)));
+}
+
+// Callback for GDataFileSystem::CreateDirectory.
+void OnCreateDirectory(const base::Closure& substitute_callback,
+                       base::PlatformFileError error) {
+  DVLOG(1) << "OnCreateDirectory " << error;
+  if (error == base::PLATFORM_FILE_OK) {
+    substitute_callback.Run();
+  } else {
+    // TODO(achuith): Handle this.
+    NOTREACHED();
+  }
+}
+
+// Callback for GDataFileSystem::GetEntryInfoByPath.
+void OnEntryFound(Profile* profile,
+    const FilePath& gdata_dir_path,
+    const base::Closure& substitute_callback,
+    base::PlatformFileError error,
+    const FilePath& entry_path,
+    scoped_ptr<gdata::GDataEntryProto> entry_proto) {
+  DVLOG(1) << "GDataDownloadObserver OnEntryFound " << entry_path.value();
+
+  if (error == base::PLATFORM_FILE_ERROR_NOT_FOUND) {
+    // Destination gdata directory doesn't exist, so create it.
+    const bool is_exclusive = false, is_recursive = true;
+    GetSystemService(profile)->file_system()->CreateDirectory(
+        gdata_dir_path, is_exclusive, is_recursive,
+        base::Bind(&OnCreateDirectory, substitute_callback));
+  } else if (error == base::PLATFORM_FILE_OK) {
+    substitute_callback.Run();
+  } else {
+    // TODO(achuith): Handle this.
+    NOTREACHED();
+  }
+}
+
+// Callback for DocumentsService::Authenticate.
+void OnAuthenticate(Profile* profile,
+                    const FilePath& gdata_path,
+                    const base::Closure& substitute_callback,
+                    GDataErrorCode error,
+                    const std::string& token) {
+  DVLOG(1) << "OnAuthenticate";
+
+  if (error == HTTP_SUCCESS) {
+    const FilePath gdata_dir_path =
+        util::ExtractGDataPath(gdata_path.DirName());
+    // Ensure the directory exists. This also forces GDataFileSystem to
+    // initialize GDataRootDirectory.
+    GetSystemService(profile)->file_system()->GetEntryInfoByPath(
+        gdata_dir_path,
+        base::Bind(&OnEntryFound, profile, gdata_dir_path,
+                   substitute_callback));
+  } else {
+    // TODO(achuith): Handle this.
+    NOTREACHED();
+  }
 }
 
 }  // namespace
@@ -111,30 +202,21 @@ void GDataDownloadObserver::Initialize(
 void GDataDownloadObserver::SubstituteGDataDownloadPath(Profile* profile,
     const FilePath& gdata_path, content::DownloadItem* download,
     const SubstituteGDataDownloadPathCallback& callback) {
+  DVLOG(1) << "SubstituteGDataDownloadPath " << gdata_path.value();
+
+  SetDownloadParams(gdata_path, download);
+
   if (gdata::util::IsUnderGDataMountPoint(gdata_path)) {
-    gdata::GDataSystemService* system_service =
-        gdata::GDataSystemServiceFactory::GetForProfile(
-            profile ? profile : ProfileManager::GetDefaultProfile());
-    DCHECK(system_service);
-
-    // If we're trying to download a file into gdata, save path in external
-    // data.
-    SetDownloadParams(gdata_path, download);
-
-    const FilePath gdata_tmp_download_dir =
-        system_service->cache()->GetCacheDirectoryPath(
-            gdata::GDataCache::CACHE_TYPE_TMP_DOWNLOADS);
-
-    // Swap the gdata path with a local path. Local path must be created
-    // on the FILE thread.
-    FilePath* gdata_tmp_download_path(new FilePath());
-    BrowserThread::GetBlockingPool()->PostTaskAndReply(FROM_HERE,
-        base::Bind(&gdata::GDataDownloadObserver::GetGDataTempDownloadPath,
-                   gdata_tmp_download_dir,
-                   gdata_tmp_download_path),
-        base::Bind(&SubstituteGDataDownloadPathHelper,
-                   callback,
-                   base::Owned(gdata_tmp_download_path)));
+    // Can't access drive if we're not authenticated.
+    // We set off a chain of callbacks as follows:
+    // DocumentsService::Authenticate
+    //   OnAuthenticate calls GDataFileSystem::GetEntryInfoByPath
+    //     OnEntryFound calls GDataFileSystem::CreateDirectory (if necessary)
+    //       OnCreateDirectory calls SubstituteGDataDownloadPathInternal
+    GetSystemService(profile)->docs_service()->Authenticate(
+        base::Bind(&OnAuthenticate, profile, gdata_path,
+                   base::Bind(&SubstituteGDataDownloadPathInternal,
+                              profile, callback)));
   } else {
     callback.Run(gdata_path);
   }
@@ -146,10 +228,20 @@ void GDataDownloadObserver::SetDownloadParams(const FilePath& gdata_path,
   if (!download)
     return;
 
-  download->SetExternalData(&kGDataPathKey,
-                            new GDataExternalData(gdata_path));
-  download->SetDisplayName(gdata_path.BaseName());
-  download->SetIsTemporary(true);
+  if (gdata::util::IsUnderGDataMountPoint(gdata_path)) {
+    download->SetExternalData(&kGDataPathKey,
+                              new GDataExternalData(gdata_path));
+    download->SetDisplayName(gdata_path.BaseName());
+    download->SetIsTemporary(true);
+  } else if (IsGDataDownload(download)) {
+    // This may have been previously set if the default download folder is
+    // /drive, and the user has now changed the download target to a local
+    // folder.
+    download->SetExternalData(&kGDataPathKey, NULL);
+    download->SetDisplayName(gdata_path);
+    // TODO(achuith): This is not quite right.
+    download->SetIsTemporary(false);
+  }
 }
 
 // static
