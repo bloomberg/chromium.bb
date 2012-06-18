@@ -183,10 +183,10 @@ void MultiMonitorManager::Init() {
        iter != parts.end(); ++iter) {
     displays_.push_back(CreateMonitorFromSpec(*iter));
   }
-  if (displays_.empty()) {
+  if (displays_.empty())
     displays_.push_back(CreateMonitorFromSpec("" /* default */));
-    displays_.back().set_id(0);
-  }
+  // Force the 1st display to be the primary display (id == 0).
+  displays_[0].set_id(0);
 }
 
 void MultiMonitorManager::AddRemoveMonitorImpl() {
