@@ -1836,9 +1836,9 @@ LRESULT RenderWidgetHostViewWin::OnMouseEvent(UINT message, WPARAM wparam,
 
   // Windows sends (fake) mouse messages for touch events.  Ignore these since
   // we're processing WM_TOUCH elsewhere.
-  if (touch_events_enabled_ &&
-      (message == WM_LBUTTONDOWN || message == WM_LBUTTONUP ||
-       message == WM_RBUTTONDOWN || message == WM_RBUTTONUP) &&
+  if (touch_events_enabled_ && (message == WM_MOUSEMOVE ||
+      message == WM_LBUTTONDOWN || message == WM_LBUTTONUP ||
+      message == WM_RBUTTONDOWN || message == WM_RBUTTONUP) &&
       (GetMessageExtraInfo() & MOUSEEVENTF_FROMTOUCH) ==
       MOUSEEVENTF_FROMTOUCH)
     return 0;
