@@ -80,15 +80,10 @@ static void StartOnUIThread(
 }  // namespace
 
 DownloadResourceHandler::DownloadResourceHandler(
-    int render_process_host_id,
-    int render_view_id,
-    int request_id,
-    const GURL& url,
     net::URLRequest* request,
     const DownloadResourceHandler::OnStartedCallback& started_cb,
     const content::DownloadSaveInfo& save_info)
-    : global_id_(render_process_host_id, request_id),
-      render_view_id_(render_view_id),
+    : render_view_id_(0),               // Actually initialized below.
       content_length_(0),
       request_(request),
       started_cb_(started_cb),
@@ -98,6 +93,10 @@ DownloadResourceHandler::DownloadResourceHandler(
       pause_count_(0),
       was_deferred_(false),
       on_response_started_called_(false) {
+  ResourceRequestInfoImpl* info(ResourceRequestInfoImpl::ForRequest(request));
+  global_id_ = info->GetGlobalRequestID();
+  render_view_id_ = info->GetRouteID();
+
   download_stats::RecordDownloadCount(download_stats::UNTHROTTLED_COUNT);
 }
 

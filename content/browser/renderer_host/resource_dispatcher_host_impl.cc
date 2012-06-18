@@ -544,23 +544,21 @@ net::Error ResourceDispatcherHostImpl::BeginDownload(
 
   request_id_--;
 
-  // From this point forward, the |DownloadResourceHandler| is responsible for
-  // |started_callback|.
-  scoped_ptr<ResourceHandler> handler(
-      CreateResourceHandlerForDownload(request.get(), context, child_id,
-                                       route_id, request_id_,
-                                       is_content_initiated, save_info,
-                                       started_callback));
-
   if (!request_context->job_factory()->IsHandledURL(url)) {
     VLOG(1) << "Download request for unsupported protocol: "
             << url.possibly_invalid_spec();
-    return net::ERR_ACCESS_DENIED;
+    return CallbackAndReturn(started_callback, net::ERR_ACCESS_DENIED);
   }
 
   ResourceRequestInfoImpl* extra_info =
       CreateRequestInfo(child_id, route_id, true, context);
   extra_info->AssociateWithRequest(request.get());  // Request takes ownership.
+
+  // From this point forward, the |DownloadResourceHandler| is responsible for
+  // |started_callback|.
+  scoped_ptr<ResourceHandler> handler(
+      CreateResourceHandlerForDownload(request.get(), is_content_initiated,
+                                       save_info, started_callback));
 
   BeginRequestInternal(request.Pass(), handler.Pass());
 
@@ -588,25 +586,25 @@ void ResourceDispatcherHostImpl::Shutdown() {
 scoped_ptr<ResourceHandler>
 ResourceDispatcherHostImpl::CreateResourceHandlerForDownload(
     net::URLRequest* request,
-    ResourceContext* context,
-    int child_id,
-    int route_id,
-    int request_id,
     bool is_content_initiated,
     const DownloadSaveInfo& save_info,
     const DownloadResourceHandler::OnStartedCallback& started_cb) {
   scoped_ptr<ResourceHandler> handler(
-      new DownloadResourceHandler(child_id, route_id, request_id,
-                                  request->url(), request, started_cb,
-                                  save_info));
+      new DownloadResourceHandler(request, started_cb, save_info));
   if (delegate_) {
+    const ResourceRequestInfo* request_info(
+        ResourceRequestInfo::ForRequest(request));
+
     ScopedVector<ResourceThrottle> throttles;
-    delegate_->DownloadStarting(request, context, child_id, route_id,
-                                request_id, is_content_initiated, &throttles);
+    delegate_->DownloadStarting(
+        request, request_info->GetContext(), request_info->GetChildID(),
+        request_info->GetRouteID(), request_info->GetRequestID(),
+        is_content_initiated, &throttles);
     if (!throttles.empty()) {
       handler.reset(
-          new ThrottlingResourceHandler(handler.Pass(), child_id, request_id,
-                                        throttles.Pass()));
+          new ThrottlingResourceHandler(
+              handler.Pass(), request_info->GetChildID(),
+              request_info->GetRequestID(), throttles.Pass()));
     }
   }
   return handler.Pass();

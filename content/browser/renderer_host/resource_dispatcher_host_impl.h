@@ -218,12 +218,10 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
     return delegate_;
   }
 
+  // Must be called after the ResourceRequestInfo has been created
+  // and associated with the request.
   scoped_ptr<ResourceHandler> CreateResourceHandlerForDownload(
       net::URLRequest* request,
-      ResourceContext* context,
-      int child_id,
-      int route_id,
-      int request_id,
       bool is_content_initiated,
       const DownloadSaveInfo& save_info,
       const DownloadResourceHandler::OnStartedCallback& started_cb);

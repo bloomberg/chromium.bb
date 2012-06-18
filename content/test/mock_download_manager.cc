@@ -22,4 +22,4 @@ content::DownloadId MockDownloadManager::StartDownload(
   return MockStartDownload(info.get(), stream.get());
 }
 
-}
+}  // namespace content

@@ -299,10 +299,6 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id,
     scoped_ptr<ResourceHandler> handler(
         host_->CreateResourceHandlerForDownload(
             request_,
-            info->GetContext(),
-            info->GetChildID(),
-            info->GetRouteID(),
-            info->GetRequestID(),
             true,  // is_content_initiated
             DownloadSaveInfo(),
             DownloadResourceHandler::OnStartedCallback()));

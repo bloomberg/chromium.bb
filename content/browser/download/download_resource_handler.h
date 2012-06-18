@@ -40,10 +40,6 @@ class DownloadResourceHandler
 
   // started_cb will be called exactly once on the UI thread.
   DownloadResourceHandler(
-      int render_process_host_id,
-      int render_view_id,
-      int request_id,
-      const GURL& url,
       net::URLRequest* request,
       const OnStartedCallback& started_cb,
       const content::DownloadSaveInfo& save_info);
