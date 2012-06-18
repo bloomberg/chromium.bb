@@ -490,7 +490,7 @@ TEST_F(AcceleratorControllerTest, ProcessOnce) {
 TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   // CycleBackward
   EXPECT_TRUE(GetController()->Process(
-      ui::Accelerator(ui::VKEY_F5, ui::EF_CONTROL_DOWN)));
+      ui::Accelerator(ui::VKEY_F5, ui::EF_SHIFT_DOWN)));
   EXPECT_TRUE(GetController()->Process(
       ui::Accelerator(ui::VKEY_TAB, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN)));
   // CycleForward
