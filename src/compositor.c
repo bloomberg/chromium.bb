@@ -39,6 +39,7 @@
 #include <sys/wait.h>
 #include <sys/socket.h>
 #include <sys/utsname.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <math.h>
 #include <linux/input.h>
@@ -3160,10 +3161,47 @@ load_module(const char *name, const char *entrypoint, void **handle)
 }
 
 static const char xdg_error_message[] =
-	"fatal: environment variable XDG_RUNTIME_DIR is not set.\n"
+	"fatal: environment variable XDG_RUNTIME_DIR is not set.\n";
+
+static const char xdg_wrong_message[] =
+	"fatal: environment variable XDG_RUNTIME_DIR\n"
+	"is set to \"%s\", which is not a directory.\n";
+
+static const char xdg_wrong_mode_message[] =
+	"warning: XDG_RUNTIME_DIR \"%s\" is not configured\n"
+	"correctly.  Unix access mode must be 0700 but is %o,\n"
+	"and XDG_RUNTIME_DIR must be owned by the user, but is\n"
+	"owned by UID %d.\n"
+
+static const char xdg_detail_message[] =
 	"Refer to your distribution on how to get it, or\n"
 	"http://www.freedesktop.org/wiki/Specifications/basedir-spec\n"
 	"on how to implement it.\n";
+
+static void
+verify_xdg_runtime_dir(void)
+{
+	char *dir = getenv("XDG_RUNTIME_DIR");
+	struct stat s;
+
+	if (!dir) {
+		weston_log(xdg_error_message);
+		weston_log_continue(xdg_detail_message);
+		exit(EXIT_FAILURE);
+	}
+
+	if (stat(dir, &s) || !S_ISDIR(s.st_mode)) {
+		weston_log(xdg_wrong_message, dir);
+		weston_log_continue(xdg_detail_message);
+		exit(EXIT_FAILURE);
+	}
+
+	if ((s.st_mode & 0777) != 0700 || s.st_uid != getuid()) {
+		weston_log(xdg_wrong_mode_message,
+			   dir, s.st_mode & 0777, s.st_uid);
+		weston_log_continue(xdg_detail_message);
+	}
+}
 
 int main(int argc, char *argv[])
 {
@@ -3211,11 +3249,6 @@ int main(int argc, char *argv[])
 
 	weston_log_file_open(log);
 	
-	if (!getenv("XDG_RUNTIME_DIR")) {
-		weston_log(xdg_error_message);
-		exit(EXIT_FAILURE);
-	}
-
 	weston_log("%s\n"
 		   STAMP_SPACE "%s\n"
 		   STAMP_SPACE "Bug reports to: %s\n"
@@ -3223,6 +3256,8 @@ int main(int argc, char *argv[])
 		   PACKAGE_STRING, PACKAGE_URL, PACKAGE_BUGREPORT,
 		   BUILD_ID);
 	log_uname();
+
+	verify_xdg_runtime_dir();
 
 	display = wl_display_create();
 
