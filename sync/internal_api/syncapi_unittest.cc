@@ -24,7 +24,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "sync/engine/nigori_util.h"
-#include "sync/engine/sync_scheduler.h"
 #include "sync/internal_api/public/change_record.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/engine/polling_constants.h"
@@ -55,7 +54,6 @@
 #include "sync/sessions/sync_session.h"
 #include "sync/syncable/syncable.h"
 #include "sync/syncable/syncable_id.h"
-#include "sync/test/callback_counter.h"
 #include "sync/test/fake_encryptor.h"
 #include "sync/test/fake_extensions_activity_monitor.h"
 #include "sync/util/cryptographer.h"
@@ -66,8 +64,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ExpectDictStringValue;
-using browser_sync::CallbackCounter;
-using browser_sync::ConfigurationParams;
 using browser_sync::Cryptographer;
 using browser_sync::FakeEncryptor;
 using browser_sync::FakeExtensionsActivityMonitor;
@@ -84,7 +80,6 @@ using browser_sync::MockJsReplyHandler;
 using browser_sync::ModelSafeRoutingInfo;
 using browser_sync::ModelSafeWorker;
 using browser_sync::sessions::SyncSessionSnapshot;
-using browser_sync::SyncScheduler;
 using browser_sync::TestUnrecoverableErrorHandler;
 using browser_sync::WeakHandle;
 using syncable::IS_DEL;
@@ -97,10 +92,8 @@ using syncable::SPECIFICS;
 using testing::_;
 using testing::AnyNumber;
 using testing::AtLeast;
-using testing::DoAll;
 using testing::InSequence;
 using testing::Invoke;
-using testing::Return;
 using testing::SaveArg;
 using testing::StrictMock;
 
@@ -931,10 +924,6 @@ class SyncManagerTest : public testing::Test,
       return false;
     entry.Put(IS_UNSYNCED, false);
     return true;
-  }
-
-  void SetScheduler(scoped_ptr<SyncScheduler> scheduler) {
-    sync_manager_.SetSyncSchedulerForTest(scheduler.Pass());
   }
 
  private:
@@ -2519,84 +2508,6 @@ TEST_F(SyncManagerTest, SetPreviouslyEncryptedSpecifics) {
     const sync_pb::EntitySpecifics& specifics = node_entry->Get(SPECIFICS);
     EXPECT_TRUE(specifics.has_encrypted());
   }
-}
-
-namespace {
-
-class MockSyncScheduler : public SyncScheduler {
- public:
-  MockSyncScheduler() : SyncScheduler("name", NULL, NULL) {}
-  virtual ~MockSyncScheduler() {}
-
-  MOCK_METHOD1(Start, void(SyncScheduler::Mode));
-  MOCK_METHOD1(ScheduleConfiguration, bool(const ConfigurationParams&));
-};
-
-}  // namespace
-
-// Test that the configuration params are properly created and sent to
-// ScheduleConfigure. No callback should be invoked.
-TEST_F(SyncManagerTest, BasicConfiguration) {
-  ConfigureReason reason = CONFIGURE_REASON_RECONFIGURATION;
-  syncable::ModelTypeSet types_to_download(syncable::BOOKMARKS,
-                                           syncable::PREFERENCES);
-  browser_sync::ModelSafeRoutingInfo new_routing_info;
-  GetModelSafeRoutingInfo(&new_routing_info);
-
-  scoped_ptr<MockSyncScheduler> scheduler(new MockSyncScheduler());
-  ConfigurationParams params;
-  EXPECT_CALL(*scheduler, Start(SyncScheduler::CONFIGURATION_MODE));
-  EXPECT_CALL(*scheduler, ScheduleConfiguration(_)).
-      WillOnce(DoAll(SaveArg<0>(&params), Return(true)));
-  SetScheduler(scheduler.PassAs<SyncScheduler>());
-
-  CallbackCounter ready_task_counter, retry_task_counter;
-  sync_manager_.ConfigureSyncer(
-      reason,
-      types_to_download,
-      new_routing_info,
-      base::Bind(&CallbackCounter::Callback,
-                 base::Unretained(&ready_task_counter)),
-      base::Bind(&CallbackCounter::Callback,
-                 base::Unretained(&retry_task_counter)));
-  EXPECT_EQ(0, ready_task_counter.times_called());
-  EXPECT_EQ(0, retry_task_counter.times_called());
-  EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::RECONFIGURATION,
-            params.source);
-  EXPECT_TRUE(types_to_download.Equals(params.types_to_download));
-  EXPECT_EQ(new_routing_info, params.routing_info);
-}
-
-// Test that the retry callback is invoked on configuration failure.
-TEST_F(SyncManagerTest, ConfigurationRetry) {
-  ConfigureReason reason = CONFIGURE_REASON_RECONFIGURATION;
-  syncable::ModelTypeSet types_to_download(syncable::BOOKMARKS,
-                                           syncable::PREFERENCES);
-  browser_sync::ModelSafeRoutingInfo new_routing_info;
-  GetModelSafeRoutingInfo(&new_routing_info);
-
-  scoped_ptr<MockSyncScheduler> scheduler(new MockSyncScheduler());
-  ConfigurationParams params;
-  EXPECT_CALL(*scheduler, Start(SyncScheduler::CONFIGURATION_MODE));
-  EXPECT_CALL(*scheduler, ScheduleConfiguration(_)).
-      WillOnce(DoAll(SaveArg<0>(&params), Return(false)));
-  SetScheduler(scheduler.PassAs<SyncScheduler>());
-
-  CallbackCounter ready_task_counter, retry_task_counter;
-  sync_manager_.ConfigureSyncer(
-      reason,
-      types_to_download,
-      new_routing_info,
-      base::Bind(&CallbackCounter::Callback,
-                 base::Unretained(&ready_task_counter)),
-      base::Bind(&CallbackCounter::Callback,
-                 base::Unretained(&retry_task_counter)));
-  EXPECT_EQ(0, ready_task_counter.times_called());
-  EXPECT_EQ(1, retry_task_counter.times_called());
-  EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::RECONFIGURATION,
-            params.source);
-  EXPECT_TRUE(types_to_download.Equals(params.types_to_download));
-  EXPECT_EQ(new_routing_info, params.routing_info);
 }
 
 }  // namespace browser_sync

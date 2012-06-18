@@ -37,32 +37,6 @@ namespace browser_sync {
 
 struct ServerConnectionEvent;
 
-struct ConfigurationParams {
-  enum KeystoreKeyStatus {
-    KEYSTORE_KEY_UNNECESSARY,
-    KEYSTORE_KEY_NEEDED
-  };
-  ConfigurationParams();
-  ConfigurationParams(
-      const sync_pb::GetUpdatesCallerInfo::GetUpdatesSource& source,
-      const syncable::ModelTypeSet& types_to_download,
-      const browser_sync::ModelSafeRoutingInfo& routing_info,
-      KeystoreKeyStatus keystore_key_status,
-      const base::Closure& ready_task);
-  ~ConfigurationParams();
-
-  // Source for the configuration.
-  sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source;
-  // The types that should be downloaded.
-  syncable::ModelTypeSet types_to_download;
-  // The new routing info (superset of types to be downloaded).
-  ModelSafeRoutingInfo routing_info;
-  // Whether we need to perform a GetKey command.
-  KeystoreKeyStatus keystore_key_status;
-  // Callback to invoke on configuration completion.
-  base::Closure ready_task;
-};
-
 class SyncScheduler : public sessions::SyncSession::Delegate {
  public:
   enum Mode {
@@ -89,15 +63,10 @@ class SyncScheduler : public sessions::SyncSession::Delegate {
 
   // Start the scheduler with the given mode.  If the scheduler is
   // already started, switch to the given mode, although some
-  // scheduled tasks from the old mode may still run.
-  virtual void Start(Mode mode);
-
-  // Schedules the configuration task specified by |params|. Returns true if
-  // the configuration task executed immediately, false if it had to be
-  // scheduled for a later attempt. |params.ready_task| is invoked whenever the
-  // configuration task executes.
-  // Note: must already be in CONFIGURATION mode.
-  virtual bool ScheduleConfiguration(const ConfigurationParams& params);
+  // scheduled tasks from the old mode may still run.  If non-NULL,
+  // |callback| will be invoked when the mode has been changed to
+  // |mode|.  Takes ownership of |callback|.
+  void Start(Mode mode, const base::Closure& callback);
 
   // Request that any running syncer task stop as soon as possible and
   // cancel all scheduled tasks. This function can be called from any thread,
@@ -116,6 +85,14 @@ class SyncScheduler : public sessions::SyncSession::Delegate {
       const base::TimeDelta& delay, NudgeSource source,
       const syncable::ModelTypePayloadMap& types_with_payloads,
       const tracked_objects::Location& nudge_location);
+
+  // Schedule a configuration cycle. May execute immediately or at a later time
+  // (depending on backoff/throttle state).
+  // Note: The source argument of this function must come from the subset of
+  // GetUpdatesCallerInfo values related to configurations.
+  void ScheduleConfiguration(
+      syncable::ModelTypeSet types,
+      sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source);
 
   // TODO(tim): remove this. crbug.com/131336
   void ClearUserData();
@@ -187,7 +164,6 @@ class SyncScheduler : public sessions::SyncSession::Delegate {
     SyncSessionJob();
     SyncSessionJob(SyncSessionJobPurpose purpose, base::TimeTicks start,
         linked_ptr<sessions::SyncSession> session, bool is_canary_job,
-        ConfigurationParams config_params,
         const tracked_objects::Location& nudge_location);
     ~SyncSessionJob();
     static const char* GetPurposeString(SyncSessionJobPurpose purpose);
@@ -196,7 +172,6 @@ class SyncScheduler : public sessions::SyncSession::Delegate {
     base::TimeTicks scheduled_start;
     linked_ptr<sessions::SyncSession> session;
     bool is_canary_job;
-    ConfigurationParams config_params;
 
     // This is the location the job came from.  Used for debugging.
     // In case of multiple nudges getting coalesced this stores the
