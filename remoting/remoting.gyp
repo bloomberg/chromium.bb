@@ -1105,7 +1105,7 @@
         'host/capturer_fake.cc',
         'host/capturer_fake.h',
         'host/capturer_linux.cc',
-        'host/capturer_mac.cc',
+        'host/capturer_mac.mm',
         'host/capturer_win.cc',
         'host/capture_scheduler.cc',
         'host/capture_scheduler.h',

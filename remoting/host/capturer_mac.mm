@@ -5,6 +5,7 @@
 #include "remoting/host/capturer.h"
 
 #include <ApplicationServices/ApplicationServices.h>
+#include <Cocoa/Cocoa.h>
 #include <dlfcn.h>
 #include <IOKit/pwr_mgt/IOPMLib.h>
 #include <OpenGL/CGLMacro.h>
@@ -21,6 +22,21 @@
 #include "remoting/base/util.h"
 #include "remoting/host/capturer_helper.h"
 #include "remoting/proto/control.pb.h"
+
+#if !defined(MAC_OS_X_VERSION_10_6) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6
+
+@interface NSCursor (SnowLeopardSDKDeclarations)
++ (NSCursor*)currentSystemCursor;
+@end
+
+@interface NSImage (SnowLeopardSDKDeclarations)
+- (CGImageRef)CGImageForProposedRect:(NSRect*)proposedDestRect
+                             context:(NSGraphicsContext*)referenceContext
+                               hints:(NSDictionary*)hints;
+@end
+
+#endif  // MAC_OS_X_VERSION_10_6
 
 namespace remoting {
 
@@ -172,6 +188,8 @@ class CapturerMac : public Capturer {
   virtual const SkISize& size_most_recent() const OVERRIDE;
 
  private:
+  void CaptureCursor();
+
   void GlBlitFast(const VideoFrameBuffer& buffer, const SkRegion& region);
   void GlBlitSlow(const VideoFrameBuffer& buffer);
   void CgBlitPreLion(const VideoFrameBuffer& buffer, const SkRegion& region);
@@ -209,6 +227,9 @@ class CapturerMac : public Capturer {
 
   // Callback notified whenever the cursor shape is changed.
   CursorShapeChangedCallback cursor_shape_changed_callback_;
+
+  // Image of the last cursor that we sent to the client.
+  base::mac::ScopedCFTypeRef<CGImageRef> current_cursor_;
 
   // The current buffer with valid data for reading.
   int current_buffer_;
@@ -443,7 +464,95 @@ void CapturerMac::CaptureInvalidRegion(
   helper_.set_size_most_recent(data->size());
   display_configuration_capture_event_.Signal();
 
+  CaptureCursor();
+
   callback.Run(data);
+}
+
+void CapturerMac::CaptureCursor() {
+  if (cursor_shape_changed_callback_.is_null()) {
+    return;
+    }
+
+  NSCursor* cursor = [NSCursor currentSystemCursor];
+  if (cursor == nil) {
+    return;
+  }
+
+  NSImage* nsimage = [cursor image];
+  NSPoint hotspot = [cursor hotSpot];
+  NSSize size = [nsimage size];
+  CGImageRef image = [nsimage CGImageForProposedRect:NULL
+                                             context:nil
+                                               hints:nil];
+  if (image == nil) {
+    return;
+  }
+
+  if (CGImageGetBitsPerPixel(image) != 32 ||
+      CGImageGetBytesPerRow(image) != (size.width * 4) ||
+      CGImageGetBitsPerComponent(image) != 8) {
+    return;
+  }
+
+  // Compare the current cursor with the last one we sent to the client
+  // and exit if the cursor is the same.
+  if (current_cursor_.get() != NULL) {
+    CGImageRef current = current_cursor_.get();
+    if (CGImageGetWidth(image) == CGImageGetWidth(current) &&
+        CGImageGetHeight(image) == CGImageGetHeight(current) &&
+        CGImageGetBitsPerPixel(image) == CGImageGetBitsPerPixel(current) &&
+        CGImageGetBytesPerRow(image) == CGImageGetBytesPerRow(current) &&
+        CGImageGetBitsPerComponent(image) ==
+            CGImageGetBitsPerComponent(current)) {
+      CGDataProviderRef provider_new = CGImageGetDataProvider(image);
+      base::mac::ScopedCFTypeRef<CFDataRef> data_ref_new(
+          CGDataProviderCopyData(provider_new));
+      CGDataProviderRef provider_current = CGImageGetDataProvider(current);
+      base::mac::ScopedCFTypeRef<CFDataRef> data_ref_current(
+          CGDataProviderCopyData(provider_current));
+
+      if (data_ref_new.get() != NULL && data_ref_current.get() != NULL) {
+        int data_size = CFDataGetLength(data_ref_new);
+        CHECK(data_size == CFDataGetLength(data_ref_current));
+        const uint8* data_new = CFDataGetBytePtr(data_ref_new);
+        const uint8* data_current = CFDataGetBytePtr(data_ref_current);
+        if (memcmp(data_new, data_current, data_size) == 0) {
+          return;
+        }
+      }
+    }
+  }
+
+  VLOG(3) << "Sending cursor: " << size.width << "x" << size.height;
+
+  CGDataProviderRef provider = CGImageGetDataProvider(image);
+  base::mac::ScopedCFTypeRef<CFDataRef> image_data_ref(
+      CGDataProviderCopyData(provider));
+  if (image_data_ref.get() == NULL) {
+    return;
+  }
+  const uint8* cursor_src_data = CFDataGetBytePtr(image_data_ref);
+  int data_size = CFDataGetLength(image_data_ref);
+
+  // Create a CursorShapeInfo proto that describes the cursor and pass it to
+  // the client.
+  scoped_ptr<protocol::CursorShapeInfo> cursor_proto(
+      new protocol::CursorShapeInfo());
+  cursor_proto->mutable_data()->resize(data_size);
+  uint8* cursor_tgt_data = const_cast<uint8*>(reinterpret_cast<const uint8*>(
+      cursor_proto->mutable_data()->data()));
+
+  memcpy(cursor_tgt_data, cursor_src_data, data_size);
+
+  cursor_proto->set_width(size.width);
+  cursor_proto->set_height(size.height);
+  cursor_proto->set_hotspot_x(hotspot.x);
+  cursor_proto->set_hotspot_y(hotspot.y);
+  cursor_shape_changed_callback_.Run(cursor_proto.Pass());
+
+  // Record the last cursor image that we sent.
+  current_cursor_.reset(CGImageCreateCopy(image));
 }
 
 void CapturerMac::GlBlitFast(const VideoFrameBuffer& buffer,
