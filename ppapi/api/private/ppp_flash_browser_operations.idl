@@ -9,7 +9,7 @@
 
 label Chrome {
   M20 = 1.0,
-  M21 = 1.1
+  M21 = 1.2
 };
 
 [assert_size(4)]
@@ -27,12 +27,9 @@ enum PP_Flash_BrowserOperations_Permission {
   PP_FLASH_BROWSEROPERATIONS_PERMISSION_ASK = 3
 };
 
-[assert_size(24)]
 struct PP_Flash_BrowserOperations_SiteSetting {
-  PP_Var site;
+  cstr_t site;
   PP_Flash_BrowserOperations_Permission permission;
-  // Makes the size consistent across compilers.
-  int32_t padding;
 };
 
 typedef void PPB_Flash_BrowserOperations_GetSettingsCallback(
@@ -83,7 +80,7 @@ interface PPP_Flash_BrowserOperations {
    *
    * @return <code>PP_TRUE</code> on success, <code>PP_FALSE</code> on failure.
    */
-  [version=1.1]
+  [version=1.2]
   PP_Bool DeauthorizeContentLicenses([in] str_t plugin_data_path);
 
   /**
@@ -97,7 +94,7 @@ interface PPP_Flash_BrowserOperations {
    * @param[inout] user_data An opaque pointer that will be passed to
    * <code>callback</code>.
    */
-  [version=1.1]
+  [version=1.2]
   void GetPermissionSettings(
       [in] str_t plugin_data_path,
       [in] PP_Flash_BrowserOperations_SettingType setting_type,
@@ -117,7 +114,7 @@ interface PPP_Flash_BrowserOperations {
    *
    * @return <code>PP_TRUE</code> on success, <code>PP_FALSE</code> on failure.
    */
-  [version=1.1]
+  [version=1.2]
   PP_Bool SetDefaultPermission(
       [in] str_t plugin_data_path,
       [in] PP_Flash_BrowserOperations_SettingType setting_type,
@@ -138,7 +135,7 @@ interface PPP_Flash_BrowserOperations {
    *
    * @return <code>PP_TRUE</code> on success, <code>PP_FALSE</code> on failure.
    */
-  [version=1.1]
+  [version=1.2]
   PP_Bool SetSitePermission(
       [in] str_t plugin_data_path,
       [in] PP_Flash_BrowserOperations_SettingType setting_type,

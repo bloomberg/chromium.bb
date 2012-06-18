@@ -43,6 +43,9 @@ describe {
   /** Pointer to null terminated string (char *). */
   str_t;
 
+  /** Pointer to constant null terminated string (const char *). */
+  cstr_t;
+
   /** No return value. */
   void;
 };

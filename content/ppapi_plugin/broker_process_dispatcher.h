@@ -70,7 +70,7 @@ class BrokerProcessDispatcher
 
   PP_GetInterface_Func get_plugin_interface_;
 
-  const PPP_Flash_BrowserOperations_1_1* flash_browser_operations_1_1_;
+  const PPP_Flash_BrowserOperations_1_2* flash_browser_operations_1_2_;
   const PPP_Flash_BrowserOperations_1_0* flash_browser_operations_1_0_;
 
   DISALLOW_COPY_AND_ASSIGN(BrokerProcessDispatcher);

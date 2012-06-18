@@ -12,9 +12,6 @@
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/private/ppp_flash_browser_operations.h"
 #include "ppapi/proxy/ppapi_messages.h"
-#include "ppapi/shared_impl/ppapi_globals.h"
-#include "ppapi/shared_impl/var.h"
-#include "ppapi/shared_impl/var_tracker.h"
 
 namespace {
 
@@ -58,13 +55,12 @@ void GetPermissionSettingsCallback(
   if (success) {
     site_vector.reserve(site_count);
     for (uint32_t i = 0; i < site_count; ++i) {
-      ppapi::StringVar* string_var = ppapi::StringVar::FromPPVar(sites[i].site);
-      if (!string_var) {
+      if (!sites[i].site) {
         success = PP_FALSE;
         break;
       }
       site_vector.push_back(
-          ppapi::FlashSiteSetting(string_var->value(), sites[i].permission));
+          ppapi::FlashSiteSetting(sites[i].site, sites[i].permission));
     }
 
     if (!success)
@@ -81,7 +77,7 @@ BrokerProcessDispatcher::BrokerProcessDispatcher(
     PP_ConnectInstance_Func connect_instance)
     : ppapi::proxy::BrokerSideDispatcher(connect_instance),
       get_plugin_interface_(get_plugin_interface),
-      flash_browser_operations_1_1_(NULL),
+      flash_browser_operations_1_2_(NULL),
       flash_browser_operations_1_0_(NULL) {
   ChildProcess::current()->AddRefProcess();
 
@@ -90,9 +86,9 @@ BrokerProcessDispatcher::BrokerProcessDispatcher(
         static_cast<const PPP_Flash_BrowserOperations_1_0*>(
             get_plugin_interface_(PPP_FLASH_BROWSEROPERATIONS_INTERFACE_1_0));
 
-    flash_browser_operations_1_1_ =
-        static_cast<const PPP_Flash_BrowserOperations_1_1*>(
-            get_plugin_interface_(PPP_FLASH_BROWSEROPERATIONS_INTERFACE_1_1));
+    flash_browser_operations_1_2_ =
+        static_cast<const PPP_Flash_BrowserOperations_1_2*>(
+            get_plugin_interface_(PPP_FLASH_BROWSEROPERATIONS_INTERFACE_1_2));
   }
 }
 
@@ -154,7 +150,7 @@ void BrokerProcessDispatcher::OnMsgGetPermissionSettings(
     uint32 request_id,
     const FilePath& plugin_data_path,
     PP_Flash_BrowserOperations_SettingType setting_type) {
-  if (!flash_browser_operations_1_1_) {
+  if (!flash_browser_operations_1_2_) {
     OnGetPermissionSettingsCompleted(
         request_id, false, PP_FLASH_BROWSEROPERATIONS_PERMISSION_DEFAULT,
         ppapi::FlashSiteSettings());
@@ -164,7 +160,7 @@ void BrokerProcessDispatcher::OnMsgGetPermissionSettings(
   std::string data_str = ConvertPluginDataPath(plugin_data_path);
   // The GetPermissionSettingsContext object will be deleted in
   // GetPermissionSettingsCallback().
-  flash_browser_operations_1_1_->GetPermissionSettings(
+  flash_browser_operations_1_2_->GetPermissionSettings(
       data_str.c_str(), setting_type, &GetPermissionSettingsCallback,
       new GetPermissionSettingsContext(AsWeakPtr(), request_id));
 }
@@ -195,8 +191,8 @@ bool BrokerProcessDispatcher::ClearSiteData(const FilePath& plugin_data_path,
                                             uint64 flags,
                                             uint64 max_age) {
   std::string data_str = ConvertPluginDataPath(plugin_data_path);
-  if (flash_browser_operations_1_1_) {
-    flash_browser_operations_1_1_->ClearSiteData(
+  if (flash_browser_operations_1_2_) {
+    flash_browser_operations_1_2_->ClearSiteData(
         data_str.c_str(), site.empty() ? NULL : site.c_str(), flags, max_age);
     return true;
   }
@@ -214,11 +210,11 @@ bool BrokerProcessDispatcher::ClearSiteData(const FilePath& plugin_data_path,
 
 bool BrokerProcessDispatcher::DeauthorizeContentLicenses(
     const FilePath& plugin_data_path) {
-  if (!flash_browser_operations_1_1_)
+  if (!flash_browser_operations_1_2_)
     return false;
 
   std::string data_str = ConvertPluginDataPath(plugin_data_path);
-  return PP_ToBool(flash_browser_operations_1_1_->DeauthorizeContentLicenses(
+  return PP_ToBool(flash_browser_operations_1_2_->DeauthorizeContentLicenses(
       data_str.c_str()));
 }
 
@@ -227,11 +223,11 @@ bool BrokerProcessDispatcher::SetDefaultPermission(
     PP_Flash_BrowserOperations_SettingType setting_type,
     PP_Flash_BrowserOperations_Permission permission,
     bool clear_site_specific) {
-  if (!flash_browser_operations_1_1_)
+  if (!flash_browser_operations_1_2_)
     return false;
 
   std::string data_str = ConvertPluginDataPath(plugin_data_path);
-  return PP_ToBool(flash_browser_operations_1_1_->SetDefaultPermission(
+  return PP_ToBool(flash_browser_operations_1_2_->SetDefaultPermission(
       data_str.c_str(), setting_type, permission,
       PP_FromBool(clear_site_specific)));
 }
@@ -240,7 +236,7 @@ bool BrokerProcessDispatcher::SetSitePermission(
     const FilePath& plugin_data_path,
     PP_Flash_BrowserOperations_SettingType setting_type,
     const ppapi::FlashSiteSettings& sites) {
-  if (!flash_browser_operations_1_1_)
+  if (!flash_browser_operations_1_2_)
     return false;
 
   if (sites.empty())
@@ -251,15 +247,12 @@ bool BrokerProcessDispatcher::SetSitePermission(
       new PP_Flash_BrowserOperations_SiteSetting[sites.size()]);
 
   for (size_t i = 0; i < sites.size(); ++i) {
-    site_array[i].site = ppapi::StringVar::StringToPPVar(sites[i].site);
+    site_array[i].site = sites[i].site.c_str();
     site_array[i].permission = sites[i].permission;
   }
 
-  PP_Bool result = flash_browser_operations_1_1_->SetSitePermission(
+  PP_Bool result = flash_browser_operations_1_2_->SetSitePermission(
       data_str.c_str(), setting_type, sites.size(), site_array.get());
-
-  for (size_t i = 0; i < sites.size(); ++i)
-    ppapi::PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(site_array[i].site);
 
   return PP_ToBool(result);
 }

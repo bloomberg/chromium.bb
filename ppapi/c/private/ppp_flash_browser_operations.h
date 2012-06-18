@@ -4,7 +4,7 @@
  */
 
 /* From private/ppp_flash_browser_operations.idl,
- *   modified Thu Jun  7 10:43:20 2012.
+ *   modified Fri Jun 15 17:00:18 2012.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPP_FLASH_BROWSER_OPERATIONS_H_
@@ -13,14 +13,13 @@
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_stdint.h"
-#include "ppapi/c/pp_var.h"
 
 #define PPP_FLASH_BROWSEROPERATIONS_INTERFACE_1_0 \
     "PPP_Flash_BrowserOperations;1.0"
-#define PPP_FLASH_BROWSEROPERATIONS_INTERFACE_1_1 \
-    "PPP_Flash_BrowserOperations;1.1"
+#define PPP_FLASH_BROWSEROPERATIONS_INTERFACE_1_2 \
+    "PPP_Flash_BrowserOperations;1.2"
 #define PPP_FLASH_BROWSEROPERATIONS_INTERFACE \
-    PPP_FLASH_BROWSEROPERATIONS_INTERFACE_1_1
+    PPP_FLASH_BROWSEROPERATIONS_INTERFACE_1_2
 
 /**
  * @file
@@ -55,12 +54,9 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Flash_BrowserOperations_Permission, 4);
  * @{
  */
 struct PP_Flash_BrowserOperations_SiteSetting {
-  struct PP_Var site;
+  const char* site;
   PP_Flash_BrowserOperations_Permission permission;
-  /* Makes the size consistent across compilers. */
-  int32_t padding;
 };
-PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(PP_Flash_BrowserOperations_SiteSetting, 24);
 /**
  * @}
  */
@@ -86,7 +82,7 @@ typedef void (*PPB_Flash_BrowserOperations_GetSettingsCallback)(
 /**
  * This interface allows the browser to request the plugin do things.
  */
-struct PPP_Flash_BrowserOperations_1_1 {
+struct PPP_Flash_BrowserOperations_1_2 {
   /**
    * This function allows the plugin to implement the "Clear site data" feature.
    *
@@ -179,7 +175,7 @@ struct PPP_Flash_BrowserOperations_1_1 {
       const struct PP_Flash_BrowserOperations_SiteSetting sites[]);
 };
 
-typedef struct PPP_Flash_BrowserOperations_1_1 PPP_Flash_BrowserOperations;
+typedef struct PPP_Flash_BrowserOperations_1_2 PPP_Flash_BrowserOperations;
 
 struct PPP_Flash_BrowserOperations_1_0 {
   PP_Bool (*ClearSiteData)(const char* plugin_data_path,
