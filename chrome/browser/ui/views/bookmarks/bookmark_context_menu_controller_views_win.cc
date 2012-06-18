@@ -43,7 +43,7 @@ BookmarkContextMenuControllerViewsWin
 }
 
 void BookmarkContextMenuControllerViewsWin::ExecuteCommand(int id) {
-  if (base::win::GetMetroModule()) {
+  if (base::win::IsMetroProcess()) {
     switch (id) {
       // We need to handle the open in new window and open in incognito window
       // commands to ensure that they first look for an existing browser object
@@ -86,7 +86,7 @@ void BookmarkContextMenuControllerViewsWin::ExecuteCommand(int id) {
 bool BookmarkContextMenuControllerViewsWin::IsCommandEnabled(int id) const {
   // In Windows 8 metro mode no new window option on a regular chrome window
   // and no new incognito window option on an incognito chrome window.
-  if (base::win::GetMetroModule()) {
+  if (base::win::IsMetroProcess()) {
     if (id == IDC_BOOKMARK_BAR_OPEN_ALL_NEW_WINDOW &&
         !profile()->IsOffTheRecord()) {
       return false;

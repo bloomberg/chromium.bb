@@ -96,7 +96,7 @@ BrowserFrameWin::BrowserFrameWin(BrowserFrame* browser_frame,
       browser_frame_(browser_frame),
       system_menu_delegate_(new SystemMenuModelDelegate(browser_view,
           browser_view->browser())) {
-  if (base::win::GetMetroModule()) {
+  if (base::win::IsMetroProcess()) {
     browser_view->SetWindowSwitcherButton(
         MakeWindowSwitcherButton(this, browser_view->IsOffTheRecord()));
   }
@@ -316,7 +316,7 @@ LRESULT BrowserFrameWin::OnWndProc(UINT message,
     HandleMetroNavSearchRequest(w_param, l_param);
   } else if (message == metro_get_current_tab_info_message) {
     GetMetroCurrentTabInfo(w_param);
-  } else if (message == WM_PRINT && base::win::GetMetroModule()) {
+  } else if (message == WM_PRINT && base::win::IsMetroProcess()) {
     // This message is sent by the AnimateWindow API which is used in metro
     // mode to flip between active chrome windows.
     RECT client_rect = {0};
@@ -438,7 +438,7 @@ void BrowserFrameWin::AddFrameToggleItems() {
 
 void BrowserFrameWin::HandleMetroNavSearchRequest(WPARAM w_param,
                                                   LPARAM l_param) {
-  if (!base::win::GetMetroModule()) {
+  if (!base::win::IsMetroProcess()) {
     NOTREACHED() << "Received unexpected metro navigation request";
     return;
   }
@@ -477,7 +477,7 @@ void BrowserFrameWin::HandleMetroNavSearchRequest(WPARAM w_param,
 }
 
 void BrowserFrameWin::GetMetroCurrentTabInfo(WPARAM w_param) {
-  if (!base::win::GetMetroModule()) {
+  if (!base::win::IsMetroProcess()) {
     NOTREACHED() << "Received unexpected metro request";
     return;
   }

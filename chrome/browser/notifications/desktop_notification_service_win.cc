@@ -23,7 +23,7 @@ bool DesktopNotificationService::CancelDesktopNotification(
   scoped_refptr<NotificationObjectProxy> proxy(
       new NotificationObjectProxy(process_id, route_id, notification_id,
                                   false));
-  if (base::win::GetMetroModule()) {
+  if (base::win::IsMetroProcess()) {
     MetroCancelNotification cancel_metro_notification =
         reinterpret_cast<MetroCancelNotification>(GetProcAddress(
             base::win::GetMetroModule(), "CancelNotification"));
@@ -36,7 +36,7 @@ bool DesktopNotificationService::CancelDesktopNotification(
 
 void DesktopNotificationService::ShowNotification(
     const Notification& notification) {
-  if (base::win::GetMetroModule()) {
+  if (base::win::IsMetroProcess()) {
     MetroDisplayNotification display_metro_notification =
         reinterpret_cast<MetroDisplayNotification>(GetProcAddress(
             base::win::GetMetroModule(), "DisplayNotification"));

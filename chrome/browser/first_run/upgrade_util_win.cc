@@ -146,7 +146,7 @@ bool DoUpgradeTasks(const CommandLine& command_line) {
   // The DelegateExecute verb handler finalizes pending in-use updates for
   // metro mode launches, as Chrome cannot be gracefully relaunched when
   // running in this mode.
-  if (base::win::GetMetroModule())
+  if (base::win::IsMetroProcess())
     return false;
   if (!SwapNewChromeExeIfPresent())
     return false;

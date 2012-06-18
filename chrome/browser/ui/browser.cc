@@ -4189,7 +4189,7 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_7, normal_window);
   command_updater_.UpdateCommandEnabled(IDC_SELECT_LAST_TAB, normal_window);
 #if defined(OS_WIN)
-  const bool metro_mode = (base::win::GetMetroModule() != NULL);
+  const bool metro_mode = base::win::IsMetroProcess();
   command_updater_.UpdateCommandEnabled(IDC_METRO_SNAP_ENABLE, metro_mode);
   command_updater_.UpdateCommandEnabled(IDC_METRO_SNAP_DISABLE, metro_mode);
 #endif

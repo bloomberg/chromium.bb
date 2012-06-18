@@ -1001,7 +1001,7 @@ void TabStrip::MaybeStartDrag(
   }
 #if defined(OS_WIN)
   // It doesn't make sense to drag tabs out on metro.
-  if (base::win::GetMetroModule())
+  if (base::win::IsMetroProcess())
     detach_behavior = TabDragController::NOT_DETACHABLE;
 #endif
   drag_controller_.reset(new TabDragController);

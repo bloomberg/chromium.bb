@@ -509,7 +509,7 @@ bool CanOpenNewWindowsBookmarkFunction::RunImpl() {
   bool can_open_new_windows = true;
 
 #if defined(OS_WIN)
-  if (base::win::GetMetroModule())
+  if (base::win::IsMetroProcess())
     can_open_new_windows = false;
 #endif  // OS_WIN
 

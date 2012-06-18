@@ -391,7 +391,7 @@ bool ActivateApplication(const string16& app_id) {
   // Not supported when running in metro mode.
   // TODO(grt) This should perhaps check that this Chrome isn't in metro mode
   // or, if it is, that |app_id| doesn't identify this Chrome.
-  if (base::win::GetMetroModule())
+  if (base::win::IsMetroProcess())
     return false;
 
   // Delegate to metro_driver, which has the brains to invoke the activation

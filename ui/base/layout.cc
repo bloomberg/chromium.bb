@@ -45,7 +45,7 @@ bool UseTouchOptimizedUI() {
 #if defined(OS_WIN)
   // On Windows, we use the touch layout only when we are running in
   // Metro mode.
-  return base::win::GetMetroModule() != NULL;
+  return base::win::IsMetroProcess();
 #elif defined(USE_AURA) && defined(USE_X11)
   // Determine whether touch-screen hardware is currently available.
   // For now we must ensure this won't change over the life of the process,

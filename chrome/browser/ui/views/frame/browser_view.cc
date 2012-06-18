@@ -1309,7 +1309,7 @@ WindowOpenDisposition BrowserView::GetDispositionForPopupBounds(
   return NEW_POPUP;
 #else
   // If we are in windows metro-mode, we can't allow popup windows.
-  return (base::win::GetMetroModule() == NULL) ? NEW_POPUP : NEW_BACKGROUND_TAB;
+  return base::win::IsMetroProcess() ? NEW_BACKGROUND_TAB : NEW_POPUP;
 #endif
 #else
   return NEW_POPUP;
@@ -1485,7 +1485,7 @@ bool BrowserView::ExecuteWindowsCommand(int command_id) {
     GetWidget()->DebugToggleFrameType();
 
   // In Windows 8 metro mode prevent sizing and moving.
-  if (base::win::GetMetroModule()) {
+  if (base::win::IsMetroProcess()) {
     // Windows uses the 4 lower order bits of |notification_code| for type-
     // specific information so we must exclude this when comparing.
     static const int sc_mask = 0xFFF0;
@@ -1801,7 +1801,7 @@ int BrowserView::GetOTRIconResourceID() const {
     if (IsFullscreen())
       otr_resource_id = IDR_OTR_ICON_FULLSCREEN;
 #if defined(OS_WIN) && !defined(USE_AURA)
-    if (base::win::GetMetroModule() != NULL)
+    if (base::win::IsMetroProcess())
       otr_resource_id = IDR_OTR_ICON_FULLSCREEN;
 #endif
   }

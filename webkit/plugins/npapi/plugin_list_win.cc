@@ -395,7 +395,7 @@ bool PluginList::ShouldLoadPlugin(const webkit::WebPluginInfo& info,
     }
   }
 
-  if (base::win::GetMetroModule()) {
+  if (base::win::IsMetroProcess()) {
     // In metro mode we only allow pepper plugins.
     if (info.type == WebPluginInfo::PLUGIN_TYPE_NPAPI)
       return false;

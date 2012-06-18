@@ -39,7 +39,7 @@ void NewMetroWindow(Browser* source_browser, Profile* profile) {
 }  // namespace
 
 void Browser::NewWindow() {
-  if (base::win::GetMetroModule()) {
+  if (base::win::IsMetroProcess()) {
     NewMetroWindow(this, profile_->GetOriginalProfile());
     return;
   }
@@ -47,7 +47,7 @@ void Browser::NewWindow() {
 }
 
 void Browser::NewIncognitoWindow() {
-  if (base::win::GetMetroModule()) {
+  if (base::win::IsMetroProcess()) {
     NewMetroWindow(this, profile_->GetOffTheRecordProfile());
     return;
   }

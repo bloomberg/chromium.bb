@@ -93,7 +93,7 @@ bool IsPepperFlashEnabledByDefault() {
   return true;
 #elif defined(OS_WIN)
   // Pepper Flash is required for Windows 8 Metro mode.
-  if (base::win::GetMetroModule())
+  if (base::win::IsMetroProcess())
     return true;
 
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();

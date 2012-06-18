@@ -32,7 +32,7 @@ RenderViewContextMenuViews* RenderViewContextMenuViews::Create(
 
 bool RenderViewContextMenuWin::IsCommandIdVisible(int command_id) const {
   // In windows 8 metro mode no new window option on normal browser windows.
-  if (base::win::GetMetroModule() && !profile_->IsOffTheRecord() &&
+  if (base::win::IsMetroProcess() && !profile_->IsOffTheRecord() &&
       command_id == IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW) {
     return false;
   }
@@ -45,7 +45,7 @@ void RenderViewContextMenuWin::ExecuteCommand(int command_id) {
 
 void RenderViewContextMenuWin::ExecuteCommand(int command_id,
                                               int event_flags) {
-  if (base::win::GetMetroModule() &&
+  if (base::win::IsMetroProcess() &&
       command_id == IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW) {
     // The open link in new window command should only be enabled for
     // incognito windows in metro mode.

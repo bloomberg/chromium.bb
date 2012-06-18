@@ -124,7 +124,7 @@ NativeTextfieldWin::NativeTextfieldWin(Textfield* textfield)
     text_object_model_.QueryFrom(ole_interface);
 
   if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
-      !base::win::GetMetroModule()) {
+      !base::win::IsMetroProcess()) {
     keyboard_.CreateInstance(__uuidof(TextInputPanel), NULL, CLSCTX_INPROC);
     if (keyboard_ != NULL)
       keyboard_->put_AttachedEditWindow(m_hWnd);

@@ -606,7 +606,7 @@ void RenderWidgetHostViewWin::CreateWnd(HWND parent) {
   // ATL function to create the window.
   Create(parent);
   if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
-      !base::win::GetMetroModule()) {
+      !base::win::IsMetroProcess()) {
     virtual_keyboard_.CreateInstance(CLSID_TextInputPanel, NULL, CLSCTX_INPROC);
     if (virtual_keyboard_) {
       virtual_keyboard_->put_AttachedEditWindow(m_hWnd);
@@ -2724,7 +2724,7 @@ LRESULT RenderWidgetHostViewWin::OnPointerMessage(
   lparam = MAKELPARAM(point.x, point.y);
 
   if (message == WM_POINTERDOWN) {
-    if (!base::win::GetMetroModule()) {
+    if (!base::win::IsMetroProcess()) {
       SetFocus();
       pointer_down_context_ = true;
       received_focus_change_after_pointer_down_ = false;

@@ -1524,7 +1524,7 @@ bool Extension::LoadPlugins(string16* error) {
 #if defined(OS_WIN)
   // Like Chrome OS, we don't support NPAPI plugins in Windows 8 metro mode
   // but in this case we want to fail with an error.
-  if (base::win::GetMetroModule()) {
+  if (base::win::IsMetroProcess()) {
     *error = l10n_util::GetStringUTF16(
         IDS_EXTENSION_INSTALL_PLUGIN_NOT_SUPPORTED);
     return false;

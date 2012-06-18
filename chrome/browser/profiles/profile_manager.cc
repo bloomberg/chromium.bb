@@ -949,7 +949,7 @@ bool ProfileManager::IsMultipleProfilesEnabled() {
     return false;
 #endif
 #if defined(OS_WIN)
-  if (base::win::GetMetroModule())
+  if (base::win::IsMetroProcess())
     return false;
 #endif
   return !ManagedMode::IsInManagedMode();

@@ -29,7 +29,7 @@ bool GetUserDataDirectoryForEnvironment(bool current, FilePath* result) {
     return false;
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   *result = result->Append(dist->GetInstallSubDir());
-  if (base::win::GetMetroModule() ? current : !current)
+  if (base::win::IsMetroProcess() ? current : !current)
     *result = result->Append(kMetroChromeUserDataSubDir);
   *result = result->Append(chrome::kUserDataDirname);
   return true;

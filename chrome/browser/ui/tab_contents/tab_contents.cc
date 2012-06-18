@@ -142,7 +142,7 @@ TabContents::TabContents(WebContents* contents)
 #if defined(OS_WIN)
   // Metro mode Chrome on Windows does not support plugins. Avoid registering
   // the PluginObserver so we don't popup plugin-related infobars.
-  if (!base::win::GetMetroModule())
+  if (!base::win::IsMetroProcess())
     plugin_observer_.reset(new PluginObserver(this));
 #else
   plugin_observer_.reset(new PluginObserver(this));
