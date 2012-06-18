@@ -199,7 +199,14 @@ ProcessSingleton::ProcessSingleton(const FilePath& user_data_dir)
 }
 
 ProcessSingleton::~ProcessSingleton() {
-  Cleanup();
+  // We need to unregister the window as late as possible so that we can detect
+  // another instance of chrome running. Otherwise we may end up writing out
+  // data while a new chrome is starting up.
+  if (window_) {
+    ::DestroyWindow(window_);
+    ::UnregisterClass(chrome::kMessageWindowClass,
+                      base::GetModuleFromAddress(&ThunkWndProc));
+  }
 }
 
 ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
@@ -302,18 +309,6 @@ bool ProcessSingleton::Create(
 }
 
 void ProcessSingleton::Cleanup() {
-  // Window classes registered by DLLs are not cleaned up automatically on
-  // process exit, so we must unregister at the earliest chance possible.
-  // During the fast shutdown sequence, ProcessSingleton::Cleanup() is
-  // called if our process was the first to start.  Therefore we try cleaning
-  // up here, and again in the destructor if needed to catch as many cases
-  // as possible.
-  if (window_) {
-    ::DestroyWindow(window_);
-    ::UnregisterClass(chrome::kMessageWindowClass,
-                      base::GetModuleFromAddress(&ThunkWndProc));
-    window_ = NULL;
-  }
 }
 
 LRESULT ProcessSingleton::OnCopyData(HWND hwnd, const COPYDATASTRUCT* cds) {
