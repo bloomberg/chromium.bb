@@ -101,37 +101,6 @@ def _GetConfig(config_name):
   return result
 
 
-def _GetChromiteTrackingBranch():
-  """Returns the remote branch associated with chromite."""
-  cwd = os.path.dirname(os.path.realpath(__file__))
-  result = cros_build_lib.GetTrackingBranch(cwd, for_checkout=False,
-                                            fallback=False)
-  if result is not None:
-    remote, branch = result
-    if branch.startswith("refs/heads/"):
-      # Normal scenario.
-      return cros_build_lib.StripLeadingRefsHeads(branch)
-    # Reaching here means it was refs/remotes/m/blah, or just plain invalid,
-    # or that we're on a detached head in a repo not managed by chromite.
-
-  # Manually try the manifest next.
-  try:
-    manifest = cros_build_lib.ManifestCheckout.Cached(cwd)
-    # Ensure the manifest knows of this checkout.
-    if manifest.FindProjectFromPath(cwd) is not None:
-      return manifest.manifest_branch
-  except EnvironmentError, e:
-    if e.errno != errno.ENOENT:
-      raise
-  # Not a manifest checkout.
-  cros_build_lib.Warning(
-      "Chromite checkout at %s isn't controlled by repo, nor is it on a "
-      "branch (or if it is, the tracking configuration is missing or broken).  "
-      "Falling back to assuming the chromite checkout is derived from "
-      "'master'; this *may* result in breakage." % cwd)
-  return 'master'
-
-
 def AcquirePoolFromOptions(options):
   """Generate patch objects from passed in options.
 
@@ -322,7 +291,7 @@ class Builder(object):
     """
     stage = None
     chromite_pool = self.patch_pool.Filter(project=constants.CHROMITE_PROJECT)
-    chromite_branch = _GetChromiteTrackingBranch()
+    chromite_branch = cros_build_lib.GetChromiteTrackingBranch()
     if (chromite_pool or self.options.test_bootstrap
         or chromite_branch != self.options.branch):
       stage = stages.BootstrapStage(self.options, self.build_config,
@@ -1006,7 +975,7 @@ def _PostParseCheck(options, args):
     options/args: The options/args object returned by optparse
   """
   if not options.branch:
-    options.branch = _GetChromiteTrackingBranch()
+    options.branch = cros_build_lib.GetChromiteTrackingBranch()
 
   if options.local_patches and not repository.IsARepoRoot(options.sourceroot):
     raise Exception('Could not find repo checkout at %s!'

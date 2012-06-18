@@ -744,5 +744,7 @@ class TestContextManagerStack(unittest.TestCase):
       stack.Add(_mk_kls())
     self.assertEqual(invoked, list(reversed(range(6))))
 
+
 if __name__ == '__main__':
+  cros_build_lib.SetupBasicLogging()
   unittest.main()

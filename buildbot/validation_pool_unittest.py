@@ -508,7 +508,7 @@ class TestValidationPool(mox.MoxTestBase):
     # rectified soon enough
     for patch in pool.changes:
       patch.apply_error_message = None
-    self.assertRaises(MyException, pool.ApplyPoolIntoRepo,build_root)
+    self.assertRaises(MyException, pool.ApplyPoolIntoRepo, build_root)
     self.mox.VerifyAll()
 
 
@@ -566,6 +566,13 @@ class TestTreeStatus(mox.MoxTestBase):
     """Tests that we return True is the tree is open."""
     self._TreeStatusTestHelper('Tree is open (flaky bug on flaky builder)',
                                'open', True)
+
+  def testTreeIsOpenAlwaysOnBranches(self):
+    """Tests that we return True is the tree is open."""
+    self.mox.StubOutWithMock(cros_build_lib, 'GetChromiteTrackingBranch')
+    cros_build_lib.GetChromiteTrackingBranch().AndReturn('release-ooga-booga')
+    self.mox.ReplayAll()
+    self.assertTrue(validation_pool.ValidationPool._IsTreeOpen(max_timeout=10))
 
   def testTreeIsClosed(self):
     """Tests that we return false is the tree is closed."""
@@ -656,9 +663,5 @@ sys.stdout.write(validation_pool_unittest.TestPickling.%s)
 
 
 if __name__ == '__main__':
-  logging_format = '%(asctime)s - %(filename)s - %(levelname)-8s: %(message)s'
-  date_format = constants.LOGGER_DATE_FMT
-  logging.basicConfig(level=logging.DEBUG, format=logging_format,
-
-                      datefmt=date_format)
+  cros_build_lib.SetupBasicLogging()
   unittest.main()

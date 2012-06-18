@@ -1156,6 +1156,7 @@ def GetTrackingBranchViaManifest(git_repo, for_checkout=True, for_push=False,
   try:
     if manifest is None:
       manifest = ManifestCheckout.Cached(git_repo)
+
     project = manifest.FindProjectFromPath(git_repo)
     if project is None:
       return None
@@ -1724,6 +1725,45 @@ class ContextManagerStack(object):
     self._stack = []
 
     raise exc_type, exc, traceback
+
+
+def GetChromiteTrackingBranch():
+  """Returns the remote branch associated with chromite."""
+  cwd = os.path.dirname(os.path.realpath(__file__))
+  result = GetTrackingBranch(cwd, for_checkout=False, fallback=False)
+  if result:
+    remote, branch = result
+    if branch.startswith('refs/heads/'):
+      # Normal scenario.
+      return StripLeadingRefsHeads(branch)
+    # Reaching here means it was refs/remotes/m/blah, or just plain invalid,
+    # or that we're on a detached head in a repo not managed by chromite.
+
+  # Manually try the manifest next.
+  try:
+    manifest = ManifestCheckout.Cached(cwd)
+    # Ensure the manifest knows of this checkout.
+    if manifest.FindProjectFromPath(cwd):
+      return manifest.manifest_branch
+  except EnvironmentError, e:
+    if e.errno != errno.ENOENT:
+      raise
+
+  # Not a manifest checkout.
+  Warning(
+      "Chromite checkout at %s isn't controlled by repo, nor is it on a "
+      "branch (or if it is, the tracking configuration is missing or broken).  "
+      "Falling back to assuming the chromite checkout is derived from "
+      "'master'; this *may* result in breakage." % cwd)
+  return 'master'
+
+
+def SetupBasicLogging():
+  """Sets up basic logging to use format from constants."""
+  logging_format = '%(asctime)s - %(filename)s - %(levelname)-8s: %(message)s'
+  date_format = constants.LOGGER_DATE_FMT
+  logging.basicConfig(level=logging.DEBUG, format=logging_format,
+                      datefmt=date_format)
 
 
 # Support having this module test itself if run as __main__, by leveraging

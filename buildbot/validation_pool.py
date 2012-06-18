@@ -335,6 +335,7 @@ class ValidationPool(object):
 
     if helper_pool is None:
       helper_pool = self.GetGerritHelpersForOverlays(overlays)
+
     self._helper_pool = helper_pool
 
     # These instances can be instantiated via both older, or newer pickle
@@ -422,6 +423,9 @@ class ValidationPool(object):
     If a caller is not interested in this feature they should set |max_timeout|
     to 0.
     """
+    if cros_build_lib.GetChromiteTrackingBranch() != 'master':
+      cros_build_lib.Info('Not checking tree status as not tracking master.')
+      return True
 
     # Limit sleep interval to the set of 1-30
     sleep_timeout = min(max(max_timeout / 5, 1), 30)
