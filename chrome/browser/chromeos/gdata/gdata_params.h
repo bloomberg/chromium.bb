@@ -40,8 +40,7 @@ struct ResumeUploadResponse {
 
 // Struct for passing params needed for DocumentsService::ResumeUpload() calls.
 struct ResumeUploadParams {
-  ResumeUploadParams(const std::string& title,
-                     int64 start_range,
+  ResumeUploadParams(int64 start_range,
                      int64 end_range,
                      int64 content_length,
                      const std::string& content_type,
@@ -50,14 +49,16 @@ struct ResumeUploadParams {
                      const FilePath& virtual_path);
   ~ResumeUploadParams();
 
-  std::string title;  // Title to be used for file to be uploaded.
   int64 start_range;  // Start of range of contents currently stored in |buf|.
   int64 end_range;  // End of range of contents currently stored in |buf|.
   int64 content_length;  // File content-Length.
   std::string content_type;   // Content-Type of file.
   scoped_refptr<net::IOBuffer> buf;  // Holds current content to be uploaded.
   GURL upload_location;   // Url of where to upload the file to.
-  FilePath virtual_path;   // Virtual GData path of the file seen in the UI.
+  // Virtual GData path of the file seen in the UI. Not necessary for
+  // resuming an upload, but used for adding an entry to
+  // GDataOperationRegistry.
+  FilePath virtual_path;
 };
 
 // Struct for passing params needed for DocumentsService::InitiateUpload()

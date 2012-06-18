@@ -1021,7 +1021,7 @@ bool ResumeUploadOperation::ProcessURLFetchResults(
         end_range_received = ranges[0].last_byte_position();
       }
     }
-    DVLOG(1) << "Got response for [" << params_.title
+    DVLOG(1) << "Got response for [" << params_.virtual_path.value()
             << "]: code=" << code
             << ", range_hdr=[" << range_received
             << "], range_parsed=" << start_range_received
@@ -1030,7 +1030,7 @@ bool ResumeUploadOperation::ProcessURLFetchResults(
     // There might be explanation of unexpected error code in response.
     std::string response_content;
     source->GetResponseAsString(&response_content);
-    DVLOG(1) << "Got response for [" << params_.title
+    DVLOG(1) << "Got response for [" << params_.virtual_path.value()
             << "]: code=" << code
             << ", content=[\n" << response_content << "\n]";
 

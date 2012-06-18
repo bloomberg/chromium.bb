@@ -291,8 +291,7 @@ void GDataUploader::ReadCompletionCallback(
                                 bytes_read - 1;
 
   documents_service_->ResumeUpload(
-      ResumeUploadParams(upload_file_info->title,
-                         upload_file_info->start_range,
+      ResumeUploadParams(upload_file_info->start_range,
                          upload_file_info->end_range,
                          upload_file_info->content_length,
                          upload_file_info->content_type,
