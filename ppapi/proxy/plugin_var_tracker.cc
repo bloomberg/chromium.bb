@@ -6,6 +6,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
+#include "ppapi/c/dev/ppp_class_deprecated.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/proxy/plugin_array_buffer_var.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
@@ -151,8 +152,77 @@ void PluginVarTracker::ReleaseHostObject(PluginDispatcher* dispatcher,
   ReleaseVar(found->second);
 }
 
+void PluginVarTracker::DidDeleteInstance(PP_Instance instance) {
+  // See the comment above user_data_to_plugin_ in the header file. We assume
+  // there aren't that many objects so a brute-force search is reasonable.
+  UserDataToPluginImplementedVarMap::iterator i =
+      user_data_to_plugin_.begin();
+  while (i != user_data_to_plugin_.end()) {
+    if (i->second.instance == instance) {
+      if (!i->second.plugin_object_id) {
+        // This object is for the freed instance and the plugin is not holding
+        // any references to it. Deallocate immediately.
+        UserDataToPluginImplementedVarMap::iterator to_remove = i;
+        ++i;
+        to_remove->second.ppp_class->Deallocate(to_remove->first);
+        user_data_to_plugin_.erase(to_remove);
+      } else {
+        // The plugin is holding refs to this object. We don't want to call
+        // Deallocate since the plugin may be depending on those refs to keep
+        // its data alive. To avoid crashes in this case, just clear out the
+        // instance to mark it and continue. When the plugin refs go to 0,
+        // we'll notice there is no instance and call Deallocate.
+        i->second.instance = 0;
+        ++i;
+      }
+    } else {
+      ++i;
+    }
+  }
+}
+
 ArrayBufferVar* PluginVarTracker::CreateArrayBuffer(uint32 size_in_bytes) {
   return new PluginArrayBufferVar(size_in_bytes);
+}
+
+void PluginVarTracker::PluginImplementedObjectCreated(
+    PP_Instance instance,
+    const PP_Var& created_var,
+    const PPP_Class_Deprecated* ppp_class,
+    void* ppp_class_data) {
+  PluginImplementedVar p;
+  p.ppp_class = ppp_class;
+  p.instance = instance;
+  p.plugin_object_id = created_var.value.as_id;
+  user_data_to_plugin_[ppp_class_data] = p;
+
+  // Link the user data to the object.
+  ProxyObjectVar* object = GetVar(created_var)->AsProxyObjectVar();
+  object->set_user_data(ppp_class_data);
+}
+
+void PluginVarTracker::PluginImplementedObjectDestroyed(void* user_data) {
+  UserDataToPluginImplementedVarMap::iterator found =
+      user_data_to_plugin_.find(user_data);
+  if (found == user_data_to_plugin_.end()) {
+    NOTREACHED();
+    return;
+  }
+  user_data_to_plugin_.erase(found);
+}
+
+bool PluginVarTracker::IsPluginImplementedObjectAlive(void* user_data) {
+  return user_data_to_plugin_.find(user_data) != user_data_to_plugin_.end();
+}
+
+bool PluginVarTracker::ValidatePluginObjectCall(
+    const PPP_Class_Deprecated* ppp_class,
+    void* user_data) {
+  UserDataToPluginImplementedVarMap::iterator found =
+      user_data_to_plugin_.find(user_data);
+  if (found == user_data_to_plugin_.end())
+    return false;
+  return found->second.ppp_class == ppp_class;
 }
 
 int32 PluginVarTracker::AddVarInternal(Var* var, AddVarRefMode mode) {
@@ -199,6 +269,26 @@ void PluginVarTracker::ObjectGettingZeroRef(VarMap::iterator iter) {
   // Notify the host we're no longer holding our ref.
   DCHECK(iter->second.ref_count == 0);
   SendReleaseObjectMsg(*object);
+
+  UserDataToPluginImplementedVarMap::iterator found =
+      user_data_to_plugin_.find(object->user_data());
+  if (found != user_data_to_plugin_.end()) {
+    // This object is implemented in the plugin.
+    if (found->second.instance == 0) {
+      // Instance is destroyed. This means that we'll never get a Deallocate
+      // call from the renderer and we should do so now.
+      found->second.ppp_class->Deallocate(found->first);
+      user_data_to_plugin_.erase(found);
+    } else {
+      // The plugin is releasing its last reference to an object it implements.
+      // Clear the tracking data that links our "plugin implemented object" to
+      // the var. If the instance is destroyed and there is no ID, we know that
+      // we should just call Deallocate on the object data.
+      //
+      // See the plugin_object_id declaration for more info.
+      found->second.plugin_object_id = 0;
+    }
+  }
 
   // This will optionally delete the info from live_vars_.
   VarTracker::ObjectGettingZeroRef(iter);

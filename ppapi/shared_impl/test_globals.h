@@ -20,6 +20,8 @@ class TestVarTracker : public VarTracker {
   virtual ArrayBufferVar* CreateArrayBuffer(uint32 size_in_bytes) OVERRIDE {
     return NULL;
   }
+  virtual void DidDeleteInstance(PP_Instance instance) OVERRIDE {
+  }
 };
 
 // Implementation of PpapiGlobals for tests that don't need either the host- or

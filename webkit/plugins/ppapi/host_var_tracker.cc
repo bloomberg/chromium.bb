@@ -100,7 +100,7 @@ int HostVarTracker::GetLiveNPObjectVarsForInstance(PP_Instance instance) const {
   return static_cast<int>(found->second->size());
 }
 
-void HostVarTracker::ForceFreeNPObjectsForInstance(PP_Instance instance) {
+void HostVarTracker::DidDeleteInstance(PP_Instance instance) {
   DCHECK(CalledOnValidThread());
 
   InstanceMap::iterator found_instance = instance_map_.find(instance);
@@ -130,8 +130,8 @@ void HostVarTracker::ForceFreeNPObjectsForInstance(PP_Instance instance) {
 void HostVarTracker::ForceReleaseNPObject(
     const base::WeakPtr< ::ppapi::NPObjectVar>& object) {
   // There's a chance that the object was already deleted before we got here.
-  // See ForceFreeNPObjectsForInstance for further explanation. If the object
-  // was deleted, the WeakPtr will return NULL.
+  // See DidDeleteInstance for further explanation. If the object was deleted,
+  // the WeakPtr will return NULL.
   if (!object.get())
     return;
   object->InstanceDeleted();

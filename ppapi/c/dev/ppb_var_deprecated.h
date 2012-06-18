@@ -206,7 +206,8 @@ struct PPB_Var_Deprecated {
   /**
    * Creates an object that the plugin implements. The plugin supplies a
    * pointer to the class interface it implements for that object, and its
-   * associated internal data that represents that object.
+   * associated internal data that represents that object. This object data
+   * must be unique among all "live" objects.
    *
    * The returned object will have a reference count of 1. When the reference
    * count reached 0, the class' Destruct function wlil be called.

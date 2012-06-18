@@ -6,6 +6,7 @@
 #define PPAPI_PROXY_PROXY_OBJECT_VAR_H_
 
 #include "base/compiler_specific.h"
+#include "ppapi/proxy/ppapi_proxy_export.h"
 #include "ppapi/shared_impl/var.h"
 
 namespace ppapi {
@@ -17,7 +18,7 @@ class PluginDispatcher;
 // Tracks a reference to an object var in the plugin side of the proxy. This
 // just stores the dispatcher and host var ID, and provides the interface for
 // integrating this with PP_Var creation.
-class ProxyObjectVar : public Var {
+class PPAPI_PROXY_EXPORT ProxyObjectVar : public Var {
  public:
   ProxyObjectVar(proxy::PluginDispatcher* dispatcher,
                  int32 host_var_id);
@@ -31,6 +32,9 @@ class ProxyObjectVar : public Var {
   proxy::PluginDispatcher* dispatcher() const { return dispatcher_; }
   int32 host_var_id() const { return host_var_id_; }
 
+  void* user_data() const { return user_data_; }
+  void set_user_data(void* ud) { user_data_ = ud; }
+
   // Expose AssignVarID on Var so the PluginResourceTracker can call us when
   // it's creating IDs.
   void AssignVarID(int32 id);
@@ -38,6 +42,11 @@ class ProxyObjectVar : public Var {
  private:
   proxy::PluginDispatcher* dispatcher_;
   int32 host_var_id_;
+
+  // When this object is created as representing a var implemented by the
+  // plugin, this stores the user data so that we can look it up later. See
+  // PluginVarTracker.
+  void* user_data_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyObjectVar);
 };

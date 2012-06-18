@@ -11,6 +11,7 @@
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
+#include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
@@ -83,6 +84,9 @@ class PPAPI_SHARED_EXPORT VarTracker
   // given object ID isn't in our map.
   int GetRefCountForObject(const PP_Var& object);
   int GetTrackedWithNoReferenceCountForObject(const PP_Var& object);
+
+  // Called after an instance is deleted to do var cleanup.
+  virtual void DidDeleteInstance(PP_Instance instance) = 0;
 
  protected:
   struct VarInfo {

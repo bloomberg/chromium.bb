@@ -86,6 +86,11 @@ class PPP_Class_Proxy : public InterfaceProxy {
                       SerializedVarReturnValue result);
   void OnMsgDeallocate(int64 ppp_class, int64 object);
 
+  // Returns true if the given class/data points to a plugin-implemented
+  // object. On failure, the exception, if non-NULL, will also be set.
+  bool ValidateUserData(int64 ppp_class, int64 class_data,
+                        SerializedVarOutParam* exception);
+
   DISALLOW_COPY_AND_ASSIGN(PPP_Class_Proxy);
 };
 

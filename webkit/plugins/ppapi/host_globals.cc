@@ -240,13 +240,13 @@ PP_Instance HostGlobals::AddInstance(PluginInstance* instance) {
 
 void HostGlobals::InstanceDeleted(PP_Instance instance) {
   resource_tracker_.DidDeleteInstance(instance);
-  host_var_tracker_.ForceFreeNPObjectsForInstance(instance);
+  host_var_tracker_.DidDeleteInstance(instance);
   instance_map_.erase(instance);
 }
 
 void HostGlobals::InstanceCrashed(PP_Instance instance) {
   resource_tracker_.DidDeleteInstance(instance);
-  host_var_tracker_.ForceFreeNPObjectsForInstance(instance);
+  host_var_tracker_.DidDeleteInstance(instance);
 }
 
 PluginInstance* HostGlobals::GetInstance(PP_Instance instance) {

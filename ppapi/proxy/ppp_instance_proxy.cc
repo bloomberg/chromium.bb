@@ -219,7 +219,11 @@ void PPP_Instance_Proxy::OnPluginMsgDidCreate(
 
 void PPP_Instance_Proxy::OnPluginMsgDidDestroy(PP_Instance instance) {
   combined_interface_->DidDestroy(instance);
-  PpapiGlobals::Get()->GetResourceTracker()->DidDeleteInstance(instance);
+
+  PpapiGlobals* globals = PpapiGlobals::Get();
+  globals->GetResourceTracker()->DidDeleteInstance(instance);
+  globals->GetVarTracker()->DidDeleteInstance(instance);
+
   static_cast<PluginDispatcher*>(dispatcher())->DidDestroyInstance(instance);
 }
 

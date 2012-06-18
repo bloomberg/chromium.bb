@@ -18,6 +18,7 @@
 #include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/plugin_var_tracker.h"
+#include "ppapi/proxy/proxy_object_var.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppp_class_proxy.h"
 #include "ppapi/proxy/serialized_var.h"
@@ -254,6 +255,10 @@ PP_Var CreateObject(PP_Instance instance,
   if (!dispatcher)
     return PP_MakeUndefined();
 
+  PluginVarTracker* tracker = PluginGlobals::Get()->plugin_var_tracker();
+  if (tracker->IsPluginImplementedObjectAlive(ppp_class_data))
+    return PP_MakeUndefined();  // Object already exists with this user data.
+
   ReceiveSerializedVarReturnValue result;
   int64 class_int = static_cast<int64>(reinterpret_cast<intptr_t>(ppp_class));
   int64 data_int =
@@ -261,7 +266,12 @@ PP_Var CreateObject(PP_Instance instance,
   dispatcher->Send(new PpapiHostMsg_PPBVar_CreateObjectDeprecated(
       API_ID_PPB_VAR_DEPRECATED, instance, class_int, data_int,
       &result));
-  return result.Return(dispatcher);
+  PP_Var ret_var = result.Return(dispatcher);
+
+  // Register this object as being implemented by the plugin.
+  tracker->PluginImplementedObjectCreated(instance, ret_var,
+                                          ppp_class, ppp_class_data);
+  return ret_var;
 }
 
 InterfaceProxy* CreateVarDeprecatedProxy(Dispatcher* dispatcher) {

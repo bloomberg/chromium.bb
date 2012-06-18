@@ -56,12 +56,11 @@ class HostVarTracker : public ::ppapi::VarTracker {
   WEBKIT_PLUGINS_EXPORT int GetLiveNPObjectVarsForInstance(
       PP_Instance instance) const;
 
-  // Forcibly deletes all np object vars for the given instance. Used for
-  // instance cleanup.
-  void ForceFreeNPObjectsForInstance(PP_Instance instance);
+  // VarTracker public implementation.
+  virtual void DidDeleteInstance(PP_Instance instance) OVERRIDE;
 
  private:
-  // VarTracker implementation.
+  // VarTracker private implementation.
   virtual ::ppapi::ArrayBufferVar* CreateArrayBuffer(
       uint32 size_in_bytes) OVERRIDE;
 
