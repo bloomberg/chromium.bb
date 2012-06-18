@@ -58,12 +58,10 @@ void CallStartedCBOnUIThread(
 static void StartOnUIThread(
     scoped_ptr<DownloadCreateInfo> info,
     scoped_ptr<content::ByteStreamReader> stream,
-    scoped_refptr<DownloadFileManager> download_file_manager,
-    const DownloadRequestHandle& handle,
     const DownloadResourceHandler::OnStartedCallback& started_cb) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DownloadManager* download_manager = handle.GetDownloadManager();
+  DownloadManager* download_manager = info->request_handle.GetDownloadManager();
   if (!download_manager) {
     // NULL in unittests or if the page closed right after starting the
     // download.
@@ -73,7 +71,7 @@ static void StartOnUIThread(
   }
 
   DownloadId download_id =
-      download_file_manager->StartDownload(info.Pass(), stream.Pass(), handle);
+      download_manager->StartDownload(info.Pass(), stream.Pass());
 
   if (!started_cb.is_null())
     started_cb.Run(download_id, net::OK);
@@ -86,14 +84,12 @@ DownloadResourceHandler::DownloadResourceHandler(
     int render_view_id,
     int request_id,
     const GURL& url,
-    scoped_refptr<DownloadFileManager> download_file_manager,
     net::URLRequest* request,
     const DownloadResourceHandler::OnStartedCallback& started_cb,
     const content::DownloadSaveInfo& save_info)
     : global_id_(render_process_host_id, request_id),
       render_view_id_(render_view_id),
       content_length_(0),
-      download_file_manager_(download_file_manager),
       request_(request),
       started_cb_(started_cb),
       save_info_(save_info),
@@ -173,8 +169,9 @@ bool DownloadResourceHandler::OnResponseStarted(
   info->remote_address = request_->GetSocketAddress().host();
   download_stats::RecordDownloadMimeType(info->mime_type);
 
-  DownloadRequestHandle request_handle(AsWeakPtr(), global_id_.child_id,
-                                       render_view_id_, global_id_.request_id);
+  info->request_handle =
+      DownloadRequestHandle(AsWeakPtr(), global_id_.child_id,
+                            render_view_id_, global_id_.request_id);
 
   // Get the last modified time and etag.
   const net::HttpResponseHeaders* headers = request_->response_headers();
@@ -210,8 +207,6 @@ bool DownloadResourceHandler::OnResponseStarted(
       base::Bind(&StartOnUIThread,
                  base::Passed(info.Pass()),
                  base::Passed(stream_reader.Pass()),
-                 download_file_manager_,
-                 request_handle,
                  // Pass to StartOnUIThread so that variable
                  // access is always on IO thread but function
                  // is called on UI thread.

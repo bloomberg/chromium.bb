@@ -17,6 +17,7 @@
 #include "base/synchronization/lock.h"
 #include "base/sys_string_conversions.h"
 #include "build/build_config.h"
+#include "content/browser/download/byte_stream.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_item_impl.h"
@@ -367,8 +368,47 @@ bool DownloadManagerImpl::Init(content::BrowserContext* browser_context) {
 }
 
 // We have received a message from DownloadFileManager about a new download.
-void DownloadManagerImpl::StartDownload(int32 download_id) {
+content::DownloadId DownloadManagerImpl::StartDownload(
+    scoped_ptr<DownloadCreateInfo> info,
+    scoped_ptr<content::ByteStreamReader> stream) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // |bound_net_log| will be used for logging both the download item's and
+  // the download file's events.
+  net::BoundNetLog bound_net_log = CreateDownloadItem(info.get());
+
+  // If info->download_id was unknown on entry to this function, it was
+  // assigned in CreateDownloadItem.
+  DownloadId download_id = info->download_id;
+
+  DownloadFileManager::CreateDownloadFileCallback callback(
+      base::Bind(&DownloadManagerImpl::OnDownloadFileCreated,
+                 this, download_id.local()));
+
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&DownloadFileManager::CreateDownloadFile,
+                 file_manager_, base::Passed(info.Pass()),
+                 base::Passed(stream.Pass()),
+                 make_scoped_refptr(this),
+                 GenerateFileHash(), bound_net_log,
+                 callback));
+
+  return download_id;
+}
+
+void DownloadManagerImpl::OnDownloadFileCreated(
+    int32 download_id, content::DownloadInterruptReason reason) {
+  if (reason != content::DOWNLOAD_INTERRUPT_REASON_NONE) {
+    OnDownloadInterrupted(download_id, 0, "", reason);
+    // TODO(rdsmith): It makes no sense to continue along the
+    // regular download path after we've gotten an error.  But it's
+    // the way the code has historically worked, and this allows us
+    // to get the download persisted and observers of the download manager
+    // notified, so tests work.  When we execute all side effects of cancel
+    // (including queue removal) immedately rather than waiting for
+    // persistence we should replace this comment with a "return;".
+  }
 
   if (!delegate_ || delegate_->ShouldStartDownload(download_id))
     RestartDownload(download_id);
@@ -450,7 +490,7 @@ FilePath DownloadManagerImpl::LastDownloadPath() {
 }
 
 net::BoundNetLog DownloadManagerImpl::CreateDownloadItem(
-    DownloadCreateInfo* info, const DownloadRequestHandle& request_handle) {
+    DownloadCreateInfo* info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   net::BoundNetLog bound_net_log =
@@ -458,8 +498,9 @@ net::BoundNetLog DownloadManagerImpl::CreateDownloadItem(
   if (!info->download_id.IsValid())
     info->download_id = GetNextId();
   DownloadItem* download = factory_->CreateActiveItem(
-      this, *info, scoped_ptr<DownloadRequestHandleInterface>(
-          new DownloadRequestHandle(request_handle)).Pass(),
+      this, *info,
+      scoped_ptr<DownloadRequestHandleInterface>(
+          new DownloadRequestHandle(info->request_handle)).Pass(),
       browser_context_->IsOffTheRecord(), bound_net_log);
   int32 download_id = info->download_id.local();
 

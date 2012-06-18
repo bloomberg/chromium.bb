@@ -19,7 +19,6 @@
 #include "content/public/browser/global_request_id.h"
 #include "net/base/net_errors.h"
 
-class DownloadFileManager;
 class DownloadRequestHandle;
 struct DownloadCreateInfo;
 
@@ -45,7 +44,6 @@ class DownloadResourceHandler
       int render_view_id,
       int request_id,
       const GURL& url,
-      scoped_refptr<DownloadFileManager> download_file_manager,
       net::URLRequest* request,
       const OnStartedCallback& started_cb,
       const content::DownloadSaveInfo& save_info);
@@ -109,7 +107,6 @@ class DownloadResourceHandler
   int render_view_id_;
   std::string content_disposition_;
   int64 content_length_;
-  scoped_refptr<DownloadFileManager> download_file_manager_;
   net::URLRequest* request_;
   // This is read only on the IO thread, but may only
   // be called on the UI thread.

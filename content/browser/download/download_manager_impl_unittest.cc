@@ -89,19 +89,30 @@ class MockDownloadFileManager : public DownloadFileManager {
  public:
   MockDownloadFileManager();
 
-  MOCK_METHOD0(Shutdown, void());
-  MOCK_METHOD3(MockStartDownload,
-               content::DownloadId(DownloadCreateInfo*,
-                                   content::ByteStreamReader* stream,
-                                   const DownloadRequestHandle&));
-
-  virtual content::DownloadId StartDownload(
+  void CreateDownloadFile(
       scoped_ptr<DownloadCreateInfo> info,
       scoped_ptr<content::ByteStreamReader> stream,
-      const DownloadRequestHandle& request_handle) OVERRIDE {
-    return MockStartDownload(info.get(), stream.get(), request_handle);
+      scoped_refptr<content::DownloadManager> download_manager,
+      bool hash_needed,
+      const net::BoundNetLog& bound_net_log,
+      const CreateDownloadFileCallback& callback) OVERRIDE {
+    // Note that scoped_refptr<> on download manager is also stripped
+    // to make mock comparisons easier.  Comparing the scoped_refptr<>
+    // works, but holds a reference to the DownloadManager until
+    // MockDownloadFileManager destruction, which messes up destruction
+    // testing.
+    MockCreateDownloadFile(info.get(), stream.get(), download_manager.get(),
+                           hash_needed, bound_net_log, callback);
   }
 
+  MOCK_METHOD6(MockCreateDownloadFile, void(
+      DownloadCreateInfo* info,
+      content::ByteStreamReader* stream,
+      content::DownloadManager* download_manager,
+      bool hash_needed,
+      const net::BoundNetLog& bound_net_log,
+      const CreateDownloadFileCallback& callback));
+  MOCK_METHOD0(Shutdown, void());
   MOCK_METHOD1(CancelDownload, void(content::DownloadId));
   MOCK_METHOD1(CompleteDownload, void(content::DownloadId));
   MOCK_METHOD1(OnDownloadManagerShutdown, void(content::DownloadManager*));
@@ -340,7 +351,6 @@ class DownloadManagerTest : public testing::Test {
   // Returns download id.
   content::MockDownloadItem& AddItemToManager() {
     DownloadCreateInfo info;
-    DownloadRequestHandle handle;
 
     static const char* kDownloadIdDomain = "Test download id domain";
 
@@ -349,7 +359,8 @@ class DownloadManagerTest : public testing::Test {
     int id = next_download_id_;
     ++next_download_id_;
     info.download_id = content::DownloadId(kDownloadIdDomain, id);
-    download_manager_->CreateDownloadItem(&info, handle);
+    info.request_handle = DownloadRequestHandle();
+    download_manager_->CreateDownloadItem(&info);
 
     DCHECK(mock_download_item_factory_->GetItem(id));
     content::MockDownloadItem& item(*mock_download_item_factory_->GetItem(id));
@@ -429,6 +440,26 @@ class DownloadManagerTest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(DownloadManagerTest);
 };
+
+// Confirm the appropriate invocations occur when you start a download.
+TEST_F(DownloadManagerTest, StartDownload) {
+  scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
+  scoped_ptr<content::ByteStreamReader> stream;
+  int32 local_id(5);                    // Random value
+
+  EXPECT_FALSE(GetActiveDownloadItem(local_id));
+
+  EXPECT_CALL(GetMockDownloadManagerDelegate(), GetNextId())
+      .WillOnce(Return(content::DownloadId(this, local_id)));
+  EXPECT_CALL(GetMockDownloadManagerDelegate(), GenerateFileHash())
+      .WillOnce(Return(true));
+  EXPECT_CALL(GetMockDownloadFileManager(), MockCreateDownloadFile(
+      info.get(), static_cast<content::ByteStreamReader*>(NULL),
+      download_manager_.get(), true, _, _));
+
+  download_manager_->StartDownload(info.Pass(), stream.Pass());
+  EXPECT_TRUE(GetActiveDownloadItem(local_id));
+}
 
 // Does the DownloadManager prompt when requested?
 TEST_F(DownloadManagerTest, RestartDownload) {

@@ -33,7 +33,15 @@ class MockDownloadManager : public content::DownloadManager {
   MOCK_METHOD2(SearchDownloads, void(const string16& query,
                                      DownloadVector* result));
   MOCK_METHOD1(Init, bool(content::BrowserContext* browser_context));
-  MOCK_METHOD1(StartDownload, void(int32 id));
+
+  // Gasket for handling scoped_ptr arguments.
+  virtual content::DownloadId StartDownload(
+      scoped_ptr<DownloadCreateInfo> info,
+      scoped_ptr<content::ByteStreamReader> stream) OVERRIDE;
+
+  MOCK_METHOD2(MockStartDownload,
+               content::DownloadId(DownloadCreateInfo*,
+                                   content::ByteStreamReader*));
   MOCK_METHOD4(UpdateDownload, void(int32 download_id,
                                     int64 bytes_so_far,
                                     int64 bytes_per_sec,
@@ -64,9 +72,7 @@ class MockDownloadManager : public content::DownloadManager {
   MOCK_CONST_METHOD0(InProgressCount, int());
   MOCK_CONST_METHOD0(GetBrowserContext, content::BrowserContext*());
   MOCK_METHOD0(LastDownloadPath, FilePath());
-  MOCK_METHOD2(CreateDownloadItem, net::BoundNetLog(
-      DownloadCreateInfo* info,
-      const DownloadRequestHandle& request_handle));
+  MOCK_METHOD1(CreateDownloadItem, net::BoundNetLog(DownloadCreateInfo* info));
   MOCK_METHOD5(CreateSavePackageDownloadItem, content::DownloadItem*(
       const FilePath& main_file_path,
       const GURL& page_url,

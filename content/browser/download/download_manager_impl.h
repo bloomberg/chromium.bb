@@ -47,7 +47,9 @@ class CONTENT_EXPORT DownloadManagerImpl
   virtual void SearchDownloads(const string16& query,
                                DownloadVector* result) OVERRIDE;
   virtual bool Init(content::BrowserContext* browser_context) OVERRIDE;
-  virtual void StartDownload(int32 id) OVERRIDE;
+  virtual content::DownloadId StartDownload(
+      scoped_ptr<DownloadCreateInfo> info,
+      scoped_ptr<content::ByteStreamReader> stream) OVERRIDE;
   virtual void UpdateDownload(int32 download_id,
                               int64 bytes_so_far,
                               int64 bytes_per_sec,
@@ -76,8 +78,7 @@ class CONTENT_EXPORT DownloadManagerImpl
   virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;
   virtual FilePath LastDownloadPath() OVERRIDE;
   virtual net::BoundNetLog CreateDownloadItem(
-      DownloadCreateInfo* info,
-      const DownloadRequestHandle& request_handle) OVERRIDE;
+      DownloadCreateInfo* info) OVERRIDE;
   virtual content::DownloadItem* CreateSavePackageDownloadItem(
       const FilePath& main_file_path,
       const GURL& page_url,
@@ -178,6 +179,12 @@ class CONTENT_EXPORT DownloadManagerImpl
 
   // Remove from internal maps.
   int RemoveDownloadItems(const DownloadVector& pending_deletes);
+
+  // Called in response to our request to the DownloadFileManager to
+  // create a DownloadFile.  A |reason| of
+  // content::DOWNLOAD_INTERRUPT_REASON_NONE indicates success.
+  void OnDownloadFileCreated(
+      int32 download_id, content::DownloadInterruptReason reason);
 
   // Called when a download entry is committed to the persistent store.
   void OnDownloadItemAddedToPersistentStore(int32 download_id, int64 db_handle);

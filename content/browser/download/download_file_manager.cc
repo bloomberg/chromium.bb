@@ -41,7 +41,6 @@ class DownloadFileFactoryImpl
   virtual content::DownloadFile* CreateFile(
       DownloadCreateInfo* info,
       scoped_ptr<content::ByteStreamReader> stream,
-      const DownloadRequestHandle& request_handle,
       DownloadManager* download_manager,
       bool calculate_hash,
       const net::BoundNetLog& bound_net_log) OVERRIDE;
@@ -50,12 +49,11 @@ class DownloadFileFactoryImpl
 DownloadFile* DownloadFileFactoryImpl::CreateFile(
     DownloadCreateInfo* info,
     scoped_ptr<content::ByteStreamReader> stream,
-    const DownloadRequestHandle& request_handle,
     DownloadManager* download_manager,
     bool calculate_hash,
     const net::BoundNetLog& bound_net_log) {
   return new DownloadFileImpl(
-      info, stream.Pass(), new DownloadRequestHandle(request_handle),
+      info, stream.Pass(), new DownloadRequestHandle(info->request_handle),
       download_manager, calculate_hash,
       scoped_ptr<content::PowerSaveBlocker>(
           new content::PowerSaveBlocker(
@@ -91,41 +89,26 @@ void DownloadFileManager::OnShutdown() {
 void DownloadFileManager::CreateDownloadFile(
     scoped_ptr<DownloadCreateInfo> info,
     scoped_ptr<content::ByteStreamReader> stream,
-    const DownloadRequestHandle& request_handle,
-    DownloadManager* download_manager, bool get_hash,
-    const net::BoundNetLog& bound_net_log) {
+    scoped_refptr<DownloadManager> download_manager, bool get_hash,
+    const net::BoundNetLog& bound_net_log,
+    const CreateDownloadFileCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(info.get());
   VLOG(20) << __FUNCTION__ << "()" << " info = " << info->DebugString();
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  // Create the download file.
   scoped_ptr<DownloadFile> download_file(download_file_factory_->CreateFile(
-      info.get(), stream.Pass(), request_handle, download_manager,
-      get_hash, bound_net_log));
+      info.get(), stream.Pass(), download_manager, get_hash, bound_net_log));
 
-  net::Error init_result = download_file->Initialize();
-  if (net::OK != init_result) {
-    // Error:  Handle via download manager/item.
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(
-            &DownloadManager::OnDownloadInterrupted,
-            download_manager,
-            info->download_id.local(),
-            0,
-            "",
-            content::ConvertNetErrorToInterruptReason(
-                init_result, content::DOWNLOAD_INTERRUPT_FROM_DISK)));
-  } else {
+  content::DownloadInterruptReason interrupt_reason(
+      content::ConvertNetErrorToInterruptReason(
+          download_file->Initialize(), content::DOWNLOAD_INTERRUPT_FROM_DISK));
+  if (interrupt_reason == content::DOWNLOAD_INTERRUPT_REASON_NONE) {
     DCHECK(GetDownloadFile(info->download_id) == NULL);
     downloads_[info->download_id] = download_file.release();
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&DownloadManager::StartDownload, download_manager,
-                 info->download_id.local()));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(callback, interrupt_reason));
 }
 
 DownloadFile* DownloadFileManager::GetDownloadFile(
@@ -151,32 +134,6 @@ void DownloadFileManager::UpdateInProgressDownloads() {
                      download_file->GetHashState()));
     }
   }
-}
-
-DownloadId DownloadFileManager::StartDownload(
-    scoped_ptr<DownloadCreateInfo> info,
-    scoped_ptr<content::ByteStreamReader> stream,
-    const DownloadRequestHandle& request_handle) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(info.get());
-
-  DownloadManager* manager = request_handle.GetDownloadManager();
-  DCHECK(manager);  // Checked in |DownloadResourceHandler::StartOnUIThread()|.
-
-  // |bound_net_log| will be used for logging the both the download item's and
-  // the download file's events.
-  net::BoundNetLog bound_net_log =
-      manager->CreateDownloadItem(info.get(), request_handle);
-  DownloadId download_id = info->download_id;
-  bool hash_needed = manager->GenerateFileHash();
-
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DownloadFileManager::CreateDownloadFile, this,
-                 base::Passed(info.Pass()), base::Passed(stream.Pass()),
-                 request_handle,
-                 make_scoped_refptr(manager),
-                 hash_needed, bound_net_log));
-  return download_id;
 }
 
 // This method will be sent via a user action, or shutdown on the UI thread, and

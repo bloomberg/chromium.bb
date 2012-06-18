@@ -165,7 +165,6 @@ class DownloadFileWithErrorsFactory
   virtual content::DownloadFile* CreateFile(
       DownloadCreateInfo* info,
       scoped_ptr<content::ByteStreamReader> stream,
-      const DownloadRequestHandle& request_handle,
       content::DownloadManager* download_manager,
       bool calculate_hash,
       const net::BoundNetLog& bound_net_log);
@@ -197,7 +196,6 @@ DownloadFileWithErrorsFactory::~DownloadFileWithErrorsFactory() {
 content::DownloadFile* DownloadFileWithErrorsFactory::CreateFile(
     DownloadCreateInfo* info,
     scoped_ptr<content::ByteStreamReader> stream,
-    const DownloadRequestHandle& request_handle,
     content::DownloadManager* download_manager,
     bool calculate_hash,
     const net::BoundNetLog& bound_net_log) {
@@ -214,15 +212,16 @@ content::DownloadFile* DownloadFileWithErrorsFactory::CreateFile(
     injected_errors_[url] = err_info;
   }
 
-  return new DownloadFileWithErrors(info,
-                                    stream.Pass(),
-                                    new DownloadRequestHandle(request_handle),
-                                    download_manager,
-                                    calculate_hash,
-                                    bound_net_log,
-                                    injected_errors_[url],
-                                    construction_callback_,
-                                    destruction_callback_);
+  return new DownloadFileWithErrors(
+      info,
+      stream.Pass(),
+      new DownloadRequestHandle(info->request_handle),
+      download_manager,
+      calculate_hash,
+      bound_net_log,
+      injected_errors_[url],
+      construction_callback_,
+      destruction_callback_);
 }
 
 bool DownloadFileWithErrorsFactory::AddError(

@@ -77,6 +77,11 @@ class BoundNetLog;
 class CONTENT_EXPORT DownloadFileManager
     : public base::RefCountedThreadSafe<DownloadFileManager> {
  public:
+  // Callback used with CreateDownloadFile().  |reason| will be
+  // DOWNLOAD_INTERRUPT_REASON_NONE on a successful creation.
+  typedef base::Callback<void(content::DownloadInterruptReason reason)>
+      CreateDownloadFileCallback;
+
   // Callback used with RenameInProgressDownloadFile() and
   // RenameCompletingDownloadFile().
   typedef base::Callback<void(const FilePath&)> RenameCompletionCallback;
@@ -88,7 +93,6 @@ class CONTENT_EXPORT DownloadFileManager
     virtual content::DownloadFile* CreateFile(
         DownloadCreateInfo* info,
         scoped_ptr<content::ByteStreamReader> stream,
-        const DownloadRequestHandle& request_handle,
         content::DownloadManager* download_manager,
         bool calculate_hash,
         const net::BoundNetLog& bound_net_log) = 0;
@@ -99,15 +103,17 @@ class CONTENT_EXPORT DownloadFileManager
   // |DownloadFileFactory| to be used.
   explicit DownloadFileManager(DownloadFileFactory* factory);
 
-  // Called on shutdown on the UI thread.
-  virtual void Shutdown();
-
-  // Called on UI thread to make DownloadFileManager start the download. Creates
-  // and returns the DownloadId of the download.
-  virtual content::DownloadId StartDownload(
+  // Create a download file and record it in the download file manager.
+  virtual void CreateDownloadFile(
       scoped_ptr<DownloadCreateInfo> info,
       scoped_ptr<content::ByteStreamReader> stream,
-      const DownloadRequestHandle& request_handle);
+      scoped_refptr<content::DownloadManager> download_manager,
+      bool hash_needed,
+      const net::BoundNetLog& bound_net_log,
+      const CreateDownloadFileCallback& callback);
+
+  // Called on shutdown on the UI thread.
+  virtual void Shutdown();
 
   // Handlers for notifications sent from the UI thread and run on the
   // FILE thread.  These are both terminal actions with respect to the
@@ -174,15 +180,6 @@ class CONTENT_EXPORT DownloadFileManager
 
   // Clean up helper that runs on the download thread.
   void OnShutdown();
-
-  // Creates DownloadFile on FILE thread and continues starting the download
-  // process.
-  void CreateDownloadFile(scoped_ptr<DownloadCreateInfo> info,
-                          scoped_ptr<content::ByteStreamReader> stream,
-                          const DownloadRequestHandle& request_handle,
-                          content::DownloadManager* download_manager,
-                          bool hash_needed,
-                          const net::BoundNetLog& bound_net_log);
 
   // Called only on the download thread.
   content::DownloadFile* GetDownloadFile(content::DownloadId global_id);

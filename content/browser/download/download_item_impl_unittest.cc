@@ -62,12 +62,11 @@ class MockDownloadFileFactory
   content::DownloadFile* CreateFile(
       DownloadCreateInfo* info,
       scoped_ptr<content::ByteStreamReader> stream_reader,
-      const DownloadRequestHandle& request_handle,
       DownloadManager* mgr,
       bool calculate_hash,
       const net::BoundNetLog& bound_net_log) {
     return MockCreateFile(
-        info, stream_reader.get(), request_handle, mgr, calculate_hash,
+        info, stream_reader.get(), info->request_handle, mgr, calculate_hash,
         bound_net_log);
   }
 
@@ -84,16 +83,6 @@ class MockDownloadFileManager : public DownloadFileManager {
  public:
   MockDownloadFileManager();
   MOCK_METHOD0(Shutdown, void());
-  MOCK_METHOD3(MockStartDownload,
-               void(DownloadCreateInfo*, content::ByteStreamReader*,
-                    const DownloadRequestHandle&));
-  virtual DownloadId StartDownload(scoped_ptr<DownloadCreateInfo> info,
-                            scoped_ptr<content::ByteStreamReader> stream,
-                            const DownloadRequestHandle& request_handle) {
-    MockStartDownload(info.release(), stream.release(), request_handle);
-    return DownloadId();
-  }
-
   MOCK_METHOD1(CancelDownload, void(DownloadId));
   MOCK_METHOD1(CompleteDownload, void(DownloadId));
   MOCK_METHOD1(OnDownloadManagerShutdown, void(DownloadManager*));

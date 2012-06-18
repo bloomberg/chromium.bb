@@ -31,7 +31,7 @@ DownloadFileImpl::DownloadFileImpl(
     const DownloadCreateInfo* info,
     scoped_ptr<content::ByteStreamReader> stream,
     DownloadRequestHandleInterface* request_handle,
-    DownloadManager* download_manager,
+    scoped_refptr<DownloadManager> download_manager,
     bool calculate_hash,
     scoped_ptr<content::PowerSaveBlocker> power_save_blocker,
     const net::BoundNetLog& bound_net_log)

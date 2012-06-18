@@ -52,6 +52,7 @@ struct DownloadRetrieveInfo;
 namespace content {
 
 class BrowserContext;
+class ByteStreamReader;
 class DownloadManagerDelegate;
 class DownloadQuery;
 class DownloadUrlParameters;
@@ -119,8 +120,15 @@ class CONTENT_EXPORT DownloadManager
   // Returns true if initialized properly.
   virtual bool Init(BrowserContext* browser_context) = 0;
 
+  // Called by a download source (Currently DownloadResourceHandler)
+  // to initiate the non-source portions of a download.
+  // Returns the id assigned to the download.  If the DownloadCreateInfo
+  // specifies an id, that id will be used.
+  virtual content::DownloadId StartDownload(
+      scoped_ptr<DownloadCreateInfo> info,
+      scoped_ptr<content::ByteStreamReader> stream) = 0;
+
   // Notifications sent from the download thread to the UI thread
-  virtual void StartDownload(int32 id) = 0;
   virtual void UpdateDownload(int32 download_id,
                               int64 bytes_so_far,
                               int64 bytes_per_sec,
@@ -192,9 +200,7 @@ class CONTENT_EXPORT DownloadManager
 
   // Creates the download item.  Must be called on the UI thread.
   // Returns the |BoundNetLog| used by the |DownloadItem|.
-  virtual net::BoundNetLog CreateDownloadItem(
-      DownloadCreateInfo* info,
-      const DownloadRequestHandle& request_handle) = 0;
+  virtual net::BoundNetLog CreateDownloadItem(DownloadCreateInfo* info) = 0;
 
   // Creates a download item for the SavePackage system.
   // Must be called on the UI thread.  Note that the DownloadManager

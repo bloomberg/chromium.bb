@@ -54,7 +54,6 @@ class MockDownloadFileFactory :
   virtual content::DownloadFile* CreateFile(
       DownloadCreateInfo* info,
       scoped_ptr<content::ByteStreamReader> stream,
-      const DownloadRequestHandle& request_handle,
       content::DownloadManager* download_manager,
       bool calculate_hash,
       const net::BoundNetLog& bound_net_log) OVERRIDE;
@@ -68,7 +67,6 @@ class MockDownloadFileFactory :
 content::DownloadFile* MockDownloadFileFactory::CreateFile(
     DownloadCreateInfo* info,
     scoped_ptr<content::ByteStreamReader> stream,
-    const DownloadRequestHandle& request_handle,
     content::DownloadManager* download_manager,
     bool calculate_hash,
     const net::BoundNetLog& bound_net_log) {
@@ -138,8 +136,9 @@ class DownloadFileManagerTest : public testing::Test {
   // calling Release() on |download_manager_| won't ever result in its
   // destructor being called and we get a leak.
   DownloadFileManagerTest()
-    : ui_thread_(BrowserThread::UI, &loop_),
-      file_thread_(BrowserThread::FILE, &loop_) {
+      : last_reason_(content::DOWNLOAD_INTERRUPT_REASON_NONE),
+        ui_thread_(BrowserThread::UI, &loop_),
+        file_thread_(BrowserThread::FILE, &loop_) {
   }
 
   ~DownloadFileManagerTest() {
@@ -173,39 +172,27 @@ class DownloadFileManagerTest : public testing::Test {
     Mock::VerifyAndClearExpectations(download_manager_);
   }
 
-  // Start a download.
+  void OnDownloadFileCreated(content::DownloadInterruptReason reason) {
+    last_reason_ = reason;
+  }
+
+  // Create a download item on the DFM.
   // |info| is the information needed to create a new download file.
   // |id| is the download ID of the new download file.
-  void StartDownload(scoped_ptr<DownloadCreateInfo> info,
-                     const DownloadId& id) {
-    // Expected call sequence:
-    //  StartDownload
-    //    DownloadManager::CreateDownloadItem
-    //    DownloadManagerDelegate::GenerateFileHash
-    //    Process one message in the message loop
-    //      CreateDownloadFile
-    //        new MockDownloadFile, add to downloads_[id]
-    //        DownloadRequestHandle::ResumeRequest
-    //        StartUpdateTimer
-    //        DownloadCreateInfo is destroyed
-    //    Process one message in the message loop
-    //        DownloadManager::StartDownload
-    info->download_id = id;
+  void CreateDownloadFile(scoped_ptr<DownloadCreateInfo> info) {
+    // Mostly null out args; they'll be passed to MockDownloadFileFactory
+    // to be ignored anyway.
+    download_file_manager_->CreateDownloadFile(
+        info.Pass(), scoped_ptr<content::ByteStreamReader>(),
+        download_manager_, true, net::BoundNetLog(),
+        base::Bind(&DownloadFileManagerTest::OnDownloadFileCreated,
+                   // The test jig will outlive all download files.
+                   base::Unretained(this)));
 
-    // Set expectations and return values.
-    EXPECT_CALL(*download_manager_, CreateDownloadItem(info.get(), _))
-        .Times(1)
-        .WillOnce(Return(net::BoundNetLog()));
-    EXPECT_CALL(*download_manager_, GenerateFileHash())
-        .Times(AtLeast(1))
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(*download_manager_, StartDownload(id.local()));
-
-    download_file_manager_->StartDownload(
-        info.Pass(), scoped_ptr<content::ByteStreamReader>(), *request_handle_);
+    // Anything that isn't DOWNLOAD_INTERRUPT_REASON_NONE.
+    last_reason_ = content::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED;
     ProcessAllPendingMessages();
-
-    ClearExpectations(id);
+    EXPECT_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE, last_reason_);
   }
 
   // Renames the download file.
@@ -301,6 +288,9 @@ class DownloadFileManagerTest : public testing::Test {
   MockDownloadFileFactory* download_file_factory_;
   scoped_refptr<DownloadFileManager> download_file_manager_;
 
+  // Error from creating download file.
+  content::DownloadInterruptReason last_reason_;
+
   // Per-download statistics.
   std::map<DownloadId, int64> byte_count_;
   std::map<DownloadId, int> error_count_;
@@ -328,33 +318,24 @@ const int32 DownloadFileManagerTest::kDummyDownloadId2 = 77;
 const int DownloadFileManagerTest::kDummyChildId = 3;
 const int DownloadFileManagerTest::kDummyRequestId = 67;
 
-TEST_F(DownloadFileManagerTest, CancelAtStart) {
+TEST_F(DownloadFileManagerTest, Cancel) {
   scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
   DownloadId dummy_id(download_manager_.get(), kDummyDownloadId);
+  info->download_id = dummy_id;
 
-  StartDownload(info.Pass(), dummy_id);
-
-  CleanUp(dummy_id);
-}
-
-TEST_F(DownloadFileManagerTest, CancelBeforeFinished) {
-  // Same as StartDownload, at first.
-  scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
-  DownloadId dummy_id(download_manager_.get(), kDummyDownloadId);
-
-  StartDownload(info.Pass(), dummy_id);
+  CreateDownloadFile(info.Pass());
 
   CleanUp(dummy_id);
 }
 
 TEST_F(DownloadFileManagerTest, RenameInProgress) {
-  // Same as StartDownload, at first.
   scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
   DownloadId dummy_id(download_manager_.get(), kDummyDownloadId);
+  info->download_id = dummy_id;
   ScopedTempDir download_dir;
   ASSERT_TRUE(download_dir.CreateUniqueTempDir());
 
-  StartDownload(info.Pass(), dummy_id);
+  CreateDownloadFile(info.Pass());
 
   FilePath foo(download_dir.path().Append(FILE_PATH_LITERAL("foo.txt")));
   RenameFile(dummy_id, foo, foo, net::OK, IN_PROGRESS, OVERWRITE);
@@ -363,13 +344,13 @@ TEST_F(DownloadFileManagerTest, RenameInProgress) {
 }
 
 TEST_F(DownloadFileManagerTest, RenameInProgressWithUniquification) {
-  // Same as StartDownload, at first.
   scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
   DownloadId dummy_id(download_manager_.get(), kDummyDownloadId);
+  info->download_id = dummy_id;
   ScopedTempDir download_dir;
   ASSERT_TRUE(download_dir.CreateUniqueTempDir());
 
-  StartDownload(info.Pass(), dummy_id);
+  CreateDownloadFile(info.Pass());
 
   FilePath foo(download_dir.path().Append(FILE_PATH_LITERAL("foo.txt")));
   FilePath unique_foo(foo.InsertBeforeExtension(FILE_PATH_LITERAL(" (1)")));
@@ -380,13 +361,13 @@ TEST_F(DownloadFileManagerTest, RenameInProgressWithUniquification) {
 }
 
 TEST_F(DownloadFileManagerTest, RenameInProgressWithError) {
-  // Same as StartDownload, at first.
   scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
   DownloadId dummy_id(download_manager_.get(), kDummyDownloadId);
+  info->download_id = dummy_id;
   ScopedTempDir download_dir;
   ASSERT_TRUE(download_dir.CreateUniqueTempDir());
 
-  StartDownload(info.Pass(), dummy_id);
+  CreateDownloadFile(info.Pass());
 
   FilePath foo(download_dir.path().Append(FILE_PATH_LITERAL("foo.txt")));
   RenameFile(dummy_id, foo, foo, net::ERR_FILE_PATH_TOO_LONG,
@@ -396,13 +377,13 @@ TEST_F(DownloadFileManagerTest, RenameInProgressWithError) {
 }
 
 TEST_F(DownloadFileManagerTest, RenameWithUniquification) {
-  // Same as StartDownload, at first.
   scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
   DownloadId dummy_id(download_manager_.get(), kDummyDownloadId);
+  info->download_id = dummy_id;
   ScopedTempDir download_dir;
   ASSERT_TRUE(download_dir.CreateUniqueTempDir());
 
-  StartDownload(info.Pass(), dummy_id);
+  CreateDownloadFile(info.Pass());
 
   FilePath foo(download_dir.path().Append(FILE_PATH_LITERAL("foo.txt")));
   FilePath unique_foo(foo.InsertBeforeExtension(FILE_PATH_LITERAL(" (1)")));
@@ -416,13 +397,13 @@ TEST_F(DownloadFileManagerTest, RenameWithUniquification) {
 }
 
 TEST_F(DownloadFileManagerTest, RenameTwice) {
-  // Same as StartDownload, at first.
   scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
   DownloadId dummy_id(download_manager_.get(), kDummyDownloadId);
+  info->download_id = dummy_id;
   ScopedTempDir download_dir;
   ASSERT_TRUE(download_dir.CreateUniqueTempDir());
 
-  StartDownload(info.Pass(), dummy_id);
+  CreateDownloadFile(info.Pass());
 
   FilePath crfoo(download_dir.path().Append(
       FILE_PATH_LITERAL("foo.txt.crdownload")));
@@ -437,15 +418,16 @@ TEST_F(DownloadFileManagerTest, RenameTwice) {
 TEST_F(DownloadFileManagerTest, TwoDownloads) {
   // Same as StartDownload, at first.
   scoped_ptr<DownloadCreateInfo> info(new DownloadCreateInfo);
-  scoped_ptr<DownloadCreateInfo> info2(new DownloadCreateInfo);
   DownloadId dummy_id(download_manager_.get(), kDummyDownloadId);
+  info->download_id = dummy_id;
+  scoped_ptr<DownloadCreateInfo> info2(new DownloadCreateInfo);
   DownloadId dummy_id2(download_manager_.get(), kDummyDownloadId2);
+  info2->download_id = dummy_id2;
   ScopedTempDir download_dir;
   ASSERT_TRUE(download_dir.CreateUniqueTempDir());
 
-  StartDownload(info.Pass(), dummy_id);
-
-  StartDownload(info2.Pass(), dummy_id2);
+  CreateDownloadFile(info.Pass());
+  CreateDownloadFile(info2.Pass());
 
   FilePath crbar(download_dir.path().Append(
       FILE_PATH_LITERAL("bar.txt.crdownload")));
