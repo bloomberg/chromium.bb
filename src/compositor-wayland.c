@@ -367,6 +367,8 @@ wayland_output_destroy(struct weston_output *output_base)
 	return;
 }
 
+static const struct wl_shell_surface_listener shell_surface_listener;
+
 static int
 wayland_compositor_create_output(struct wayland_compositor *c,
 				 int width, int height)
@@ -428,7 +430,8 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 	output->parent.shell_surface =
 		wl_shell_get_shell_surface(c->parent.shell,
 					   output->parent.surface);
-	/* FIXME: add shell_surface listener for resizing */
+	wl_shell_surface_add_listener(output->parent.shell_surface,
+				      &shell_surface_listener, output);
 	wl_shell_surface_set_toplevel(output->parent.shell_surface);
 
 	output->base.origin = output->base.current;
@@ -453,6 +456,31 @@ cleanup_output:
 
 	return -1;
 }
+
+static void
+shell_surface_ping(void *data, struct wl_shell_surface *shell_surface,
+		   uint32_t serial)
+{
+	wl_shell_surface_pong(shell_surface, serial);
+}
+
+static void
+shell_surface_configure(void *data, struct wl_shell_surface *shell_surface,
+			uint32_t edges, int32_t width, int32_t height)
+{
+	/* FIXME: implement resizing */
+}
+
+static void
+shell_surface_popup_done(void *data, struct wl_shell_surface *shell_surface)
+{
+}
+
+static const struct wl_shell_surface_listener shell_surface_listener = {
+	shell_surface_ping,
+	shell_surface_configure,
+	shell_surface_popup_done
+};
 
 /* Events received from the wayland-server this compositor is client of: */
 
