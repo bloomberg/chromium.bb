@@ -756,7 +756,6 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
     switches::kTraceStartup,
     switches::kV,
     switches::kVModule,
-    switches::kEnableUIReleaseFrontSurface,
 #if defined(USE_AURA)
     switches::kUIPrioritizeInGpuProcess,
 #endif

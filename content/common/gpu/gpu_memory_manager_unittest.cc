@@ -41,6 +41,8 @@ class FakeCommandBufferStub : public GpuCommandBufferStubBase {
       const GpuCommandBufferStubBase& stub) const {
     return false;
   }
+  virtual void SendMemoryAllocationToProxy(const GpuMemoryAllocation& alloc) {
+  }
   virtual void SetMemoryAllocation(const GpuMemoryAllocation& alloc) {
     allocation_ = alloc;
   }
@@ -74,6 +76,8 @@ class FakeCommandBufferStubWithoutSurface : public GpuCommandBufferStubBase {
     return std::find(share_group_.begin(),
                      share_group_.end(),
                      &stub) != share_group_.end();
+  }
+  virtual void SendMemoryAllocationToProxy(const GpuMemoryAllocation& alloc) {
   }
   virtual void SetMemoryAllocation(const GpuMemoryAllocation& alloc) {
     allocation_ = alloc;

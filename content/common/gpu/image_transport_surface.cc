@@ -21,10 +21,6 @@ ImageTransportSurface::ImageTransportSurface() {}
 
 ImageTransportSurface::~ImageTransportSurface() {}
 
-void ImageTransportSurface::OnSetFrontSurfaceIsProtected(
-    bool is_protected, uint32 protection_state_id) {
-}
-
 void ImageTransportSurface::GetRegionsToCopy(
     const gfx::Rect& previous_damage_rect,
     const gfx::Rect& new_damage_rect,
@@ -100,8 +96,6 @@ bool ImageTransportHelper::OnMessageReceived(const IPC::Message& message) {
                         OnPostSubBufferACK)
     IPC_MESSAGE_HANDLER(AcceleratedSurfaceMsg_NewACK,
                         OnNewSurfaceACK)
-    IPC_MESSAGE_HANDLER(AcceleratedSurfaceMsg_SetFrontSurfaceIsProtected,
-                        OnSetFrontSurfaceIsProtected)
     IPC_MESSAGE_HANDLER(AcceleratedSurfaceMsg_ResizeViewACK, OnResizeViewACK);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -205,11 +199,6 @@ void ImageTransportHelper::OnNewSurfaceACK(
     uint64 surface_handle,
     TransportDIB::Handle shm_handle) {
   surface_->OnNewSurfaceACK(surface_handle, shm_handle);
-}
-
-void ImageTransportHelper::OnSetFrontSurfaceIsProtected(
-    bool is_protected, uint32 protection_state_id) {
-  surface_->OnSetFrontSurfaceIsProtected(is_protected, protection_state_id);
 }
 
 void ImageTransportHelper::OnBuffersSwappedACK() {

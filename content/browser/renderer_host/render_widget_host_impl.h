@@ -156,7 +156,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // having been hidden.
   void WasHidden();
   void WasRestored();
-  bool IsHidden() const { return is_hidden_; }
 
   // Called to notify the RenderWidget that its associated native window got
   // focused.
@@ -360,16 +359,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // Called by the view in response to AcceleratedSurfaceBuffersSwapped.
   static void AcknowledgeSwapBuffers(int32 route_id, int gpu_host_id);
   static void AcknowledgePostSubBuffer(int32 route_id, int gpu_host_id);
-
-#if defined(USE_AURA)
-  // Called by the view in response to visibility changes once the front surface
-  // is no longer in use by the ui (false), or when we expect to have a valid
-  // front surface for use by the ui (true).
-  static void SendFrontSurfaceIsProtected(bool is_protected,
-                                          uint32 protection_state_id,
-                                          int32 route_id,
-                                          int gpu_host_id);
-#endif
 
   // Signals that the compositing surface was updated, e.g. after a lost context
   // event.
