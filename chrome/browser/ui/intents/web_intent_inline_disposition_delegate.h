@@ -39,6 +39,11 @@ class WebIntentInlineDispositionDelegate
   virtual content::WebContents* OpenURLFromTab(
       content::WebContents* source,
       const content::OpenURLParams& params) OVERRIDE;
+  virtual void AddNewContents(content::WebContents* source,
+                              content::WebContents* new_contents,
+                              WindowOpenDisposition disposition,
+                              const gfx::Rect& initial_pos,
+                              bool user_gesture) OVERRIDE;
   virtual void LoadingStateChanged(content::WebContents* source) OVERRIDE;
   virtual void ResizeDueToAutoResize(content::WebContents* source,
                                      const gfx::Size& pref_size) OVERRIDE;
@@ -61,6 +66,8 @@ class WebIntentInlineDispositionDelegate
 
   // The WebContents container. Weak pointer.
   content::WebContents* web_contents_;
+
+  Profile* profile_;  // Weak pointer.
 
   // Dispatch handler for extension APIs.
   ExtensionFunctionDispatcher extension_function_dispatcher_;

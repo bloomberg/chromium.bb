@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/intents/web_intent_inline_disposition_delegate.h"
 
 #include "base/logging.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/navigation_controller.h"
@@ -19,6 +21,7 @@ WebIntentInlineDispositionDelegate::WebIntentInlineDispositionDelegate(
     Profile* profile)
     : picker_(picker),
       web_contents_(contents),
+      profile_(profile),
       ALLOW_THIS_IN_INITIALIZER_LIST(
         extension_function_dispatcher_(profile, this)) {
   content::WebContentsObserver::Observe(web_contents_);
@@ -57,6 +60,24 @@ content::WebContents* WebIntentInlineDispositionDelegate::OpenURLFromTab(
   source->GetController().PruneAllButActive();
 
   return source;
+}
+
+void WebIntentInlineDispositionDelegate::AddNewContents(
+    content::WebContents* source,
+    content::WebContents* new_contents,
+    WindowOpenDisposition disposition,
+    const gfx::Rect& initial_pos,
+    bool user_gesture) {
+  DCHECK_EQ(source, web_contents_);
+  DCHECK_EQ(Profile::FromBrowserContext(new_contents->GetBrowserContext()),
+      profile_);
+  Browser* browser = browser::FindOrCreateTabbedBrowser(profile_);
+  // Force all links to open in a new tab, even when different disposition is
+  // requested.
+  disposition =
+      disposition == NEW_BACKGROUND_TAB ? disposition : NEW_FOREGROUND_TAB;
+  browser->AddWebContents(
+      new_contents, disposition, initial_pos, user_gesture);
 }
 
 void WebIntentInlineDispositionDelegate::LoadingStateChanged(
