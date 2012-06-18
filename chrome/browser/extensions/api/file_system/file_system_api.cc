@@ -79,7 +79,8 @@ bool DoCheckWritableFile(const FilePath& path) {
                        base::PLATFORM_FILE_READ |
                        base::PLATFORM_FILE_WRITE;
   base::CreatePlatformFile(path, creation_flags, NULL, &error);
-  return error == base::PLATFORM_FILE_OK;
+  return error == base::PLATFORM_FILE_OK ||
+         error == base::PLATFORM_FILE_ERROR_EXISTS;
 }
 
 }  // namespace
