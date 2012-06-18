@@ -1305,11 +1305,11 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     # and generating PCH. In the case of PCH, the "output" is specified by /Fp
     # rather than /Fo (for object files), but we still need to specify an /Fo
     # when compiling PCH.
-    cc_template = ('cmd /s /c "$cc /nologo /showIncludes '
+    cc_template = ('cmd /s /c "$cc /nologo /showIncludes /FC '
                    '@$out.rsp '
                    '$cflags_pch_c /c $in %(outspec)s /Fd$pdbname '
                    '| ninja-deplist-helper -r . -q -f cl -o $out.dl"')
-    cxx_template = ('cmd /s /c "$cxx /nologo /showIncludes '
+    cxx_template = ('cmd /s /c "$cxx /nologo /showIncludes /FC '
                     '@$out.rsp '
                     '$cflags_pch_cc /c $in %(outspec)s $pchobj /Fd$pdbname '
                     '| ninja-deplist-helper -r . -q -f cl -o $out.dl"')
