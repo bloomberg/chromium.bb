@@ -5847,6 +5847,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_NON_FULLSCREEN_MOUSE_LOCK_DESCRIPTION" desc="Description for the flag to disable mouse lock when the browser is not full screen.">
         Disables mouse lock (pointer lock) when an application or page is not already full screen.
       </message>
+      <message name="IDS_FLAGS_ENABLE_ACCELERATED_VIDEO_DECODE_NAME" desc="Name of the flag to enable accelerated video decode where available.">
+        Enable hardware-accelerated video decode.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_ACCELERATED_VIDEO_DECODE_DESCRIPTION" desc="Description for the flag to enable accelerated video decode where available.">
+        Enables hardware-accelerated video decode where available.
+      </message>
+
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">
