@@ -131,6 +131,10 @@ class SyncBackendHost::Core
   // Called to clear server data.
   void DoRequestClearServerData();
 
+  // Called to cleanup disabled types.
+  void DoRequestCleanupDisabledTypes(
+      const browser_sync::ModelSafeRoutingInfo& routing_info);
+
   // Called to set the passphrase for encryption.
   void DoSetEncryptionPassphrase(const std::string& passphrase,
                                  bool is_explicit);
@@ -160,18 +164,14 @@ class SyncBackendHost::Core
   void DoStopSyncManagerForShutdown(const base::Closure& closure);
   void DoShutdown(bool stopping_sync);
 
-  // Configuration methods that must execute on sync loop.
-  void DoConfigureSyncer(
-      sync_api::ConfigureReason reason,
+  virtual void DoRequestConfig(
+      const browser_sync::ModelSafeRoutingInfo& routing_info,
       syncable::ModelTypeSet types_to_config,
-      const browser_sync::ModelSafeRoutingInfo routing_info,
-      const base::Callback<void(syncable::ModelTypeSet)>& ready_task,
-      const base::Closure& retry_callback);
-  void DoFinishConfigureDataTypes(
-      syncable::ModelTypeSet types_to_config,
-      const base::Callback<void(syncable::ModelTypeSet)>& ready_task);
-  void DoRetryConfiguration(
-      const base::Closure& retry_callback);
+      sync_api::ConfigureReason reason);
+
+  // Start the configuration mode.  |callback| is called on the sync
+  // thread.
+  virtual void DoStartConfiguration(const base::Closure& callback);
 
   // Set the base request context to use when making HTTP calls.
   // This method will add a reference to the context to persist it
@@ -183,6 +183,9 @@ class SyncBackendHost::Core
   // time sync is enabled for a user (to prevent accidentally reusing old
   // sync databases), as well as shutdown when you're no longer syncing.
   void DeleteSyncDataFolder();
+
+  // A callback from the SyncerThread when it is safe to continue config.
+  void FinishConfigureDataTypes();
 
  private:
   friend class base::RefCountedThreadSafe<SyncBackendHost::Core>;
@@ -553,79 +556,60 @@ void SyncBackendHost::Shutdown(bool sync_disabled) {
   core_ = NULL;  // Releases reference to core_.
 }
 
-// TODO(sync): remove |disabled_types| completely, as it's just the set of
-// registered types - the set of desired types.
 void SyncBackendHost::ConfigureDataTypes(
     sync_api::ConfigureReason reason,
-    const syncable::ModelTypeSet& desired_types,
-    const syncable::ModelTypeSet& disabled_types,
+    syncable::ModelTypeSet types_to_add,
+    syncable::ModelTypeSet types_to_remove,
     NigoriState nigori_state,
-    const base::Callback<void(syncable::ModelTypeSet)>& ready_task,
-    const base::Callback<void()>& retry_callback) {
-  syncable::ModelTypeSet desired_types_with_nigori = desired_types;
-  syncable::ModelTypeSet disabled_types_with_nigori = disabled_types;
+    base::Callback<void(syncable::ModelTypeSet)> ready_task,
+    base::Callback<void()> retry_callback) {
+  syncable::ModelTypeSet types_to_add_with_nigori = types_to_add;
+  syncable::ModelTypeSet types_to_remove_with_nigori = types_to_remove;
   if (nigori_state == WITH_NIGORI) {
-    desired_types_with_nigori.Put(syncable::NIGORI);
-    disabled_types_with_nigori.Remove(syncable::NIGORI);
+    types_to_add_with_nigori.Put(syncable::NIGORI);
+    types_to_remove_with_nigori.Remove(syncable::NIGORI);
   } else {
-    desired_types_with_nigori.Remove(syncable::NIGORI);
-    disabled_types_with_nigori.Put(syncable::NIGORI);
+    types_to_add_with_nigori.Remove(syncable::NIGORI);
+    types_to_remove_with_nigori.Put(syncable::NIGORI);
   }
-  // Only one configure is allowed at a time (DataTypeManager handles user
-  // changes that happen while the syncer is reconfiguraing, and will only
-  // trigger another call to ConfigureDataTypes once the current reconfiguration
-  // completes).
+  // Only one configure is allowed at a time.
+  DCHECK(!pending_config_mode_state_.get());
+  DCHECK(!pending_download_state_.get());
   DCHECK_GT(initialization_state_, NOT_INITIALIZED);
 
-  // enabled_types \setunion disabled_types gives the set of all registered
-  // types (i.e. types with datatype controllers registered).
-  ModelSafeRoutingInfo routing_info;
-  registrar_->ConfigureDataTypes(desired_types_with_nigori,
-                                 disabled_types_with_nigori);
-  registrar_->GetModelSafeRoutingInfo(&routing_info);
+  pending_config_mode_state_.reset(new PendingConfigureDataTypesState());
+  pending_config_mode_state_->ready_task = ready_task;
+  pending_config_mode_state_->types_to_add = types_to_add_with_nigori;
+  pending_config_mode_state_->added_types =
+      registrar_->ConfigureDataTypes(types_to_add_with_nigori,
+                                     types_to_remove_with_nigori);
+  pending_config_mode_state_->reason = reason;
+  pending_config_mode_state_->retry_callback = retry_callback;
 
-  // |enabled_types| is desired_types_with_nigori \setintersect types with
-  // model safe workers (e.g. the password store may fail to start up, in which
-  // case we have no model safe worker for it and should not enable it).
-  // TODO(sync): This shouldn't be necessary. We should do whatever filtering
-  // we need beforehand as part of ProfileSyncComponentsFactory's
-  // RegisterDataTypes.
-  const syncable::ModelTypeSet enabled_types =
-      GetRoutingInfoTypes(routing_info);
+  // Cleanup disabled types before starting configuration so that
+  // callers can assume that the data types are cleaned up once
+  // configuration is done.
+  if (!types_to_remove_with_nigori.Empty()) {
+    ModelSafeRoutingInfo routing_info;
+    registrar_->GetModelSafeRoutingInfo(&routing_info);
+    sync_thread_.message_loop()->PostTask(
+        FROM_HERE,
+        base::Bind(&SyncBackendHost::Core::DoRequestCleanupDisabledTypes,
+                   core_.get(),
+                   routing_info));
+  }
 
-  // Figure out which types need to actually be downloaded. We pass those on
-  // to the syncer while it's in configuration mode so that they can be
-  // downloaded before we perform association. Once we switch to normal mode
-  // downloads will get applied normally and hit the datatype's change
-  // processor.
-  // A datatype is in need of downloading if any of the following are true:
-  // 1. it's enabled and initial_sync_ended is false (initial_sync_ended is
-  //    set after applying updates, and hence is a more conservative measure
-  //    than having a non-empty progress marker, which is set during
-  //    StoreTimestamps).
-  // 2. the type is NIGORI, and any other datatype is being downloaded (nigori
-  //    is always included if we download a datatype).
-  // TODO(sync): consider moving this logic onto the sync thread (perhaps
-  // as part of SyncManager::ConfigureSyncer).
-  syncable::ModelTypeSet initial_sync_ended_types =
-      core_->sync_manager()->InitialSyncEndedTypes();
-  initial_sync_ended_types.RetainAll(enabled_types);
-  syncable::ModelTypeSet types_to_config =
-      Difference(enabled_types, initial_sync_ended_types);
-  if (!types_to_config.Empty() && enabled_types.Has(syncable::NIGORI))
-    types_to_config.Put(syncable::NIGORI);
+  StartConfiguration(
+      base::Bind(&SyncBackendHost::Core::FinishConfigureDataTypes,
+                 core_.get()));
+}
 
-  SDVLOG(1) << "Types "
-            << syncable::ModelTypeSetToString(types_to_config)
-            << " added; calling DoConfigureSyncer";
-  // TODO(zea): figure out how to bypass this call if no types are being
-  // configured and GetKey is not needed. For now we rely on determining the
-  // need for GetKey as part of the SyncManager::ConfigureSyncer logic.
-  RequestConfigureSyncer(reason,
-                         types_to_config,
-                         routing_info,
-                         ready_task,
-                         retry_callback);
+void SyncBackendHost::StartConfiguration(const base::Closure& callback) {
+  // Put syncer in the config mode. DTM will put us in normal mode once it is
+  // done. This is to ensure we dont do a normal sync when we are doing model
+  // association.
+  sync_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
+      &SyncBackendHost::Core::DoStartConfiguration, core_.get(), callback));
 }
 
 void SyncBackendHost::EnableEncryptEverything() {
@@ -703,47 +687,157 @@ void SyncBackendHost::InitCore(const DoInitializeOptions& options) {
       base::Bind(&SyncBackendHost::Core::DoInitialize, core_.get(), options));
 }
 
-void SyncBackendHost::RequestConfigureSyncer(
-    sync_api::ConfigureReason reason,
-    syncable::ModelTypeSet types_to_config,
-    const browser_sync::ModelSafeRoutingInfo& routing_info,
-    const base::Callback<void(syncable::ModelTypeSet)>& ready_task,
-    const base::Closure& retry_callback) {
-  sync_thread_.message_loop()->PostTask(FROM_HERE,
-       base::Bind(&SyncBackendHost::Core::DoConfigureSyncer,
-                  core_.get(),
-                  reason,
-                  types_to_config,
-                  routing_info,
-                  ready_task,
-                  retry_callback));
+void SyncBackendHost::HandleSyncCycleCompletedOnFrontendLoop(
+    const SyncSessionSnapshot& snapshot) {
+  if (!frontend_)
+    return;
+  DCHECK_EQ(MessageLoop::current(), frontend_loop_);
+
+  last_snapshot_ = snapshot;
+
+  SDVLOG(1) << "Got snapshot " << snapshot.ToString();
+
+  const syncable::ModelTypeSet to_migrate =
+      snapshot.syncer_status().types_needing_local_migration;
+  if (!to_migrate.Empty())
+    frontend_->OnMigrationNeededForTypes(to_migrate);
+
+  // Process any changes to the datatypes we're syncing.
+  // TODO(sync): add support for removing types.
+  if (initialized())
+    AddExperimentalTypes();
+
+  // If we are waiting for a configuration change, check here to see
+  // if this sync cycle has initialized all of the types we've been
+  // waiting for.
+  if (pending_download_state_.get()) {
+    const syncable::ModelTypeSet types_to_add =
+        pending_download_state_->types_to_add;
+    const syncable::ModelTypeSet added_types =
+        pending_download_state_->added_types;
+    DCHECK(types_to_add.HasAll(added_types));
+    const syncable::ModelTypeSet initial_sync_ended =
+        snapshot.initial_sync_ended();
+    const syncable::ModelTypeSet failed_configuration_types =
+        Difference(added_types, initial_sync_ended);
+    SDVLOG(1)
+        << "Added types: "
+        << syncable::ModelTypeSetToString(added_types)
+        << ", configured types: "
+        << syncable::ModelTypeSetToString(initial_sync_ended)
+        << ", failed configuration types: "
+        << syncable::ModelTypeSetToString(failed_configuration_types);
+
+    if (!failed_configuration_types.Empty() &&
+        snapshot.retry_scheduled()) {
+      // Inform the caller that download failed but we are retrying.
+      if (!pending_download_state_->retry_in_progress) {
+        pending_download_state_->retry_callback.Run();
+        pending_download_state_->retry_in_progress = true;
+      }
+      // Nothing more to do.
+      return;
+    }
+
+    scoped_ptr<PendingConfigureDataTypesState> state(
+        pending_download_state_.release());
+    state->ready_task.Run(failed_configuration_types);
+
+    // Syncer did not report an error but did not download everything
+    // we requested either. So abort. The caller of the config will cleanup.
+    if (!failed_configuration_types.Empty())
+      return;
+  }
+
+  if (initialized())
+    frontend_->OnSyncCycleCompleted();
 }
 
-void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop(
-    const syncable::ModelTypeSet& types_to_configure,
-    const syncable::ModelTypeSet& configured_types,
-    const base::Callback<void(syncable::ModelTypeSet)>& ready_task) {
-  const syncable::ModelTypeSet failed_configuration_types =
-      Difference(types_to_configure, configured_types);
-  SDVLOG(1)
-      << "Added types: "
-      << syncable::ModelTypeSetToString(types_to_configure)
-      << ", configured types: "
-      << syncable::ModelTypeSetToString(configured_types)
-      << ", failed configuration types: "
-      << syncable::ModelTypeSetToString(failed_configuration_types);
+void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
+  DCHECK_EQ(MessageLoop::current(), frontend_loop_);
+  // Nudge the syncer. This is necessary for both datatype addition/deletion.
+  //
+  // Deletions need a nudge in order to ensure the deletion occurs in a timely
+  // manner (see issue 56416).
+  //
+  // In the case of additions, on the next sync cycle, the syncer should
+  // notice that the routing info has changed and start the process of
+  // downloading updates for newly added data types.  Once this is
+  // complete, the configure_state_.ready_task_ is run via an
+  // OnInitializationComplete notification.
+
+  SDVLOG(1) << "Syncer in config mode. SBH executing "
+            << "FinishConfigureDataTypesOnFrontendLoop";
+
+
+  ModelSafeRoutingInfo routing_info;
+  registrar_->GetModelSafeRoutingInfo(&routing_info);
+  const syncable::ModelTypeSet enabled_types =
+      GetRoutingInfoTypes(routing_info);
 
   // Update |chrome_sync_notification_bridge_|'s enabled types here as it has
   // to happen on the UI thread.
-  chrome_sync_notification_bridge_.UpdateEnabledTypes(configured_types);
+  chrome_sync_notification_bridge_.UpdateEnabledTypes(enabled_types);
+
+  if (pending_config_mode_state_->added_types.Empty() &&
+      !core_->sync_manager()->InitialSyncEndedTypes().HasAll(enabled_types)) {
+
+    // TODO(tim): Log / UMA / count this somehow?
+    // Add only the types with empty progress markers. Note: it is possible
+    // that some types have their initial_sync_ended be false but with non
+    // empty progress marker. Which is ok as the rest of the changes would
+    // be downloaded on a regular nudge and initial_sync_ended should be set
+    // to true. However this is a very corner case. So it is not explicitly
+    // handled.
+    pending_config_mode_state_->added_types =
+        sync_api::GetTypesWithEmptyProgressMarkerToken(enabled_types,
+                                                       GetUserShare());
+  }
+
+  // If we've added types, we always want to request a nudge/config (even if
+  // the initial sync is ended), in case we could not decrypt the data.
+  if (pending_config_mode_state_->added_types.Empty()) {
+    SDVLOG(1) << "No new types added; calling ready_task directly";
+    // No new types - just notify the caller that the types are available.
+    const syncable::ModelTypeSet failed_configuration_types;
+    pending_config_mode_state_->ready_task.Run(failed_configuration_types);
+  } else {
+    pending_download_state_.reset(pending_config_mode_state_.release());
+
+    // Always configure nigori if it's enabled.
+    syncable::ModelTypeSet types_to_config =
+        pending_download_state_->added_types;
+    if (IsNigoriEnabled()) {
+      // Note: Nigori is the only type that gets added with a nonempty
+      // progress marker during config. If the server returns a migration
+      // error then we will go into unrecoverable error. We dont handle it
+      // explicitly because server might help us out here by not sending a
+      // migraiton error for nigori during config.
+      types_to_config.Put(syncable::NIGORI);
+    }
+    SDVLOG(1) << "Types "
+              << syncable::ModelTypeSetToString(types_to_config)
+              << " added; calling DoRequestConfig";
+    ModelSafeRoutingInfo routing_info;
+    registrar_->GetModelSafeRoutingInfo(&routing_info);
+    sync_thread_.message_loop()->PostTask(FROM_HERE,
+         base::Bind(&SyncBackendHost::Core::DoRequestConfig,
+                    core_.get(),
+                    routing_info,
+                    types_to_config,
+                    pending_download_state_->reason));
+  }
+
+  pending_config_mode_state_.reset();
 
   // Notify SyncManager (especially the notification listener) about new types.
   sync_thread_.message_loop()->PostTask(FROM_HERE,
       base::Bind(&SyncBackendHost::Core::DoUpdateEnabledTypes, core_.get(),
-                 configured_types));
+                 enabled_types));
+}
 
-  if (!ready_task.is_null())
-    ready_task.Run(failed_configuration_types);
+bool SyncBackendHost::IsDownloadingNigoriForTest() const {
+  return initialization_state_ == DOWNLOADING_NIGORI;
 }
 
 SyncBackendHost::DoInitializeOptions::DoInitializeOptions(
@@ -799,6 +893,14 @@ SyncBackendHost::Core::~Core() {
   DCHECK(!sync_manager_.get());
   DCHECK(!sync_loop_);
 }
+
+SyncBackendHost::PendingConfigureDataTypesState::
+PendingConfigureDataTypesState()
+    : reason(sync_api::CONFIGURE_REASON_UNKNOWN),
+      retry_in_progress(false) {}
+
+SyncBackendHost::PendingConfigureDataTypesState::
+~PendingConfigureDataTypesState() {}
 
 void SyncBackendHost::Core::OnSyncCycleCompleted(
     const SyncSessionSnapshot& snapshot) {
@@ -1051,6 +1153,12 @@ void SyncBackendHost::Core::DoRequestClearServerData() {
   sync_manager_->RequestClearServerData();
 }
 
+void SyncBackendHost::Core::DoRequestCleanupDisabledTypes(
+    const browser_sync::ModelSafeRoutingInfo& routing_info) {
+  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  sync_manager_->RequestCleanupDisabledTypes(routing_info);
+}
+
 void SyncBackendHost::Core::DoSetEncryptionPassphrase(
     const std::string& passphrase,
     bool is_explicit) {
@@ -1102,46 +1210,18 @@ void SyncBackendHost::Core::DoShutdown(bool sync_disabled) {
   host_.Reset();
 }
 
-void SyncBackendHost::Core::DoConfigureSyncer(
-    sync_api::ConfigureReason reason,
+void SyncBackendHost::Core::DoRequestConfig(
+    const browser_sync::ModelSafeRoutingInfo& routing_info,
     syncable::ModelTypeSet types_to_config,
-    const browser_sync::ModelSafeRoutingInfo routing_info,
-    const base::Callback<void(syncable::ModelTypeSet)>& ready_task,
-    const base::Closure& retry_callback) {
+    sync_api::ConfigureReason reason) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  sync_manager_->ConfigureSyncer(
-      reason,
-      types_to_config,
-      routing_info,
-      base::Bind(&SyncBackendHost::Core::DoFinishConfigureDataTypes,
-                 this,
-                 types_to_config,
-                 ready_task),
-      base::Bind(&SyncBackendHost::Core::DoRetryConfiguration,
-                 this,
-                 retry_callback));
+  sync_manager_->RequestConfig(routing_info, types_to_config, reason);
 }
 
-void SyncBackendHost::Core::DoFinishConfigureDataTypes(
-    syncable::ModelTypeSet types_to_config,
-    const base::Callback<void(syncable::ModelTypeSet)>& ready_task) {
+void SyncBackendHost::Core::DoStartConfiguration(
+    const base::Closure& callback) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  syncable::ModelTypeSet configured_types =
-      sync_manager_->InitialSyncEndedTypes();
-  configured_types.RetainAll(types_to_config);
-  host_.Call(FROM_HERE,
-             &SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop,
-             types_to_config,
-             configured_types,
-             ready_task);
-}
-
-void SyncBackendHost::Core::DoRetryConfiguration(
-    const base::Closure& retry_callback) {
-  DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  host_.Call(FROM_HERE,
-             &SyncBackendHost::RetryConfigurationOnFrontendLoop,
-             retry_callback);
+  sync_manager_->StartConfigurationMode(callback);
 }
 
 void SyncBackendHost::Core::DeleteSyncDataFolder() {
@@ -1150,6 +1230,13 @@ void SyncBackendHost::Core::DeleteSyncDataFolder() {
     if (!file_util::Delete(sync_data_folder_path_, true))
       SLOG(DFATAL) << "Could not delete the Sync Data folder.";
   }
+}
+
+void SyncBackendHost::Core::FinishConfigureDataTypes() {
+  DCHECK_EQ(MessageLoop::current(), sync_loop_);
+  host_.Call(
+      FROM_HERE,
+      &SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop);
 }
 
 void SyncBackendHost::Core::StartSavingChanges() {
@@ -1202,6 +1289,14 @@ void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
     return;
   }
 
+  // If setup has completed, start off in DOWNLOADING_NIGORI so that
+  // we start off by refreshing nigori.
+  CHECK(sync_prefs_.get());
+  if (sync_prefs_->HasSyncSetupCompleted() &&
+      initialization_state_ < DOWNLOADING_NIGORI) {
+    initialization_state_ = DOWNLOADING_NIGORI;
+  }
+
   // Run initialization state machine.
   switch (initialization_state_) {
     case NOT_INITIALIZED:
@@ -1240,36 +1335,6 @@ void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
     default:
       NOTREACHED();
   }
-}
-
-void SyncBackendHost::HandleSyncCycleCompletedOnFrontendLoop(
-    const SyncSessionSnapshot& snapshot) {
-  if (!frontend_)
-    return;
-  DCHECK_EQ(MessageLoop::current(), frontend_loop_);
-
-  last_snapshot_ = snapshot;
-
-  SDVLOG(1) << "Got snapshot " << snapshot.ToString();
-
-  const syncable::ModelTypeSet to_migrate =
-      snapshot.syncer_status().types_needing_local_migration;
-  if (!to_migrate.Empty())
-    frontend_->OnMigrationNeededForTypes(to_migrate);
-
-  // Process any changes to the datatypes we're syncing.
-  // TODO(sync): add support for removing types.
-  if (initialized())
-    AddExperimentalTypes();
-
-  if (initialized())
-    frontend_->OnSyncCycleCompleted();
-}
-
-void SyncBackendHost::RetryConfigurationOnFrontendLoop(
-    const base::Closure& retry_callback) {
-  SDVLOG(1) << "Failed to complete configuration, informing of retry.";
-  retry_callback.Run();
 }
 
 void SyncBackendHost::PersistEncryptionBootstrapToken(

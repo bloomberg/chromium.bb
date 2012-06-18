@@ -44,6 +44,19 @@ SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
 
 SyncBackendHostForProfileSyncTest::~SyncBackendHostForProfileSyncTest() {}
 
+void SyncBackendHostForProfileSyncTest::
+    SimulateSyncCycleCompletedInitialSyncEnded(
+    const tracked_objects::Location& location) {
+  syncable::ModelTypeSet sync_ended;
+  if (!fail_initial_download_)
+    sync_ended = syncable::ModelTypeSet::All();
+  syncable::ModelTypePayloadMap download_progress_markers;
+  HandleSyncCycleCompletedOnFrontendLoop(SyncSessionSnapshot(
+      SyncerStatus(), ErrorCounters(), 0, false,
+      sync_ended, download_progress_markers, false, false, 0, 0, 0, 0,
+      SyncSourceInfo(), false, 0, base::Time::Now(), false));
+}
+
 namespace {
 
 sync_api::HttpPostProviderFactory* MakeTestHttpBridgeFactory() {
@@ -72,19 +85,20 @@ void SyncBackendHostForProfileSyncTest::InitCore(
   }
 }
 
-void SyncBackendHostForProfileSyncTest::RequestConfigureSyncer(
-    sync_api::ConfigureReason reason,
-    syncable::ModelTypeSet types_to_config,
-    const browser_sync::ModelSafeRoutingInfo& routing_info,
-    const base::Callback<void(syncable::ModelTypeSet)>& ready_task,
-    const base::Closure& retry_callback) {
-  syncable::ModelTypeSet sync_ended;
-  if (!fail_initial_download_)
-    sync_ended.PutAll(types_to_config);
+void SyncBackendHostForProfileSyncTest::StartConfiguration(
+    const base::Closure& callback) {
+  SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop();
+  if (IsDownloadingNigoriForTest()) {
+    syncable::ModelTypeSet sync_ended;
 
-  FinishConfigureDataTypesOnFrontendLoop(types_to_config,
-                                         sync_ended,
-                                         ready_task);
+    if (!fail_initial_download_)
+      sync_ended.Put(syncable::NIGORI);
+    syncable::ModelTypePayloadMap download_progress_markers;
+    HandleSyncCycleCompletedOnFrontendLoop(SyncSessionSnapshot(
+        SyncerStatus(), ErrorCounters(), 0, false,
+        sync_ended, download_progress_markers, false, false, 0, 0, 0, 0,
+        SyncSourceInfo(), false, 0, base::Time::Now(), false));
+  }
 }
 
 void SyncBackendHostForProfileSyncTest::SetHistoryServiceExpectations(

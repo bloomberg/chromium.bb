@@ -42,11 +42,11 @@ class FakeBackendDataTypeConfigurer : public BackendDataTypeConfigurer {
 
   virtual void ConfigureDataTypes(
       sync_api::ConfigureReason reason,
-      const ModelTypeSet& types_to_add,
-      const ModelTypeSet& types_to_remove,
+      ModelTypeSet types_to_add,
+      ModelTypeSet types_to_remove,
       NigoriState nigori_state,
-      const base::Callback<void(ModelTypeSet)>& ready_task,
-      const base::Callback<void()>& retry_callback) OVERRIDE {
+      base::Callback<void(ModelTypeSet)> ready_task,
+      base::Callback<void()> retry_callback) OVERRIDE {
     last_nigori_state_ = nigori_state;
     last_ready_task_ = ready_task;
   }
