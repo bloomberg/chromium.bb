@@ -37,7 +37,7 @@ class AURA_EXPORT WindowDelegate {
                                const gfx::Rect& new_bounds) = 0;
 
   // Sent to the Window's delegate when the Window gains or loses focus.
-  virtual void OnFocus() = 0;
+  virtual void OnFocus(aura::Window* old_focused_window) = 0;
   virtual void OnBlur() = 0;
 
   virtual bool OnKeyEvent(KeyEvent* event) = 0;

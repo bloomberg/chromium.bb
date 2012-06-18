@@ -31,7 +31,7 @@ void TestWindowDelegate::OnBoundsChanged(const gfx::Rect& old_bounds,
                                          const gfx::Rect& new_bounds) {
 }
 
-void TestWindowDelegate::OnFocus() {
+void TestWindowDelegate::OnFocus(Window* old_focused_window) {
 }
 
 void TestWindowDelegate::OnBlur() {

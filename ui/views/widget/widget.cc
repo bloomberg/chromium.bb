@@ -941,14 +941,14 @@ void Widget::OnNativeWidgetActivationChanged(bool active) {
                     OnWidgetActivationChanged(this, active));
 }
 
-void Widget::OnNativeFocus(gfx::NativeView focused_view) {
-  WidgetFocusManager::GetInstance()->OnWidgetFocusEvent(focused_view,
+void Widget::OnNativeFocus(gfx::NativeView old_focused_view) {
+  WidgetFocusManager::GetInstance()->OnWidgetFocusEvent(old_focused_view,
                                                         GetNativeView());
 }
 
-void Widget::OnNativeBlur(gfx::NativeView focused_view) {
+void Widget::OnNativeBlur(gfx::NativeView new_focused_view) {
   WidgetFocusManager::GetInstance()->OnWidgetFocusEvent(GetNativeView(),
-                                                        focused_view);
+                                                        new_focused_view);
 }
 
 void Widget::OnNativeWidgetVisibilityChanged(bool visible) {

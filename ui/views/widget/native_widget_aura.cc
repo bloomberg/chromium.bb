@@ -149,6 +149,7 @@ NativeWidgetAura::NativeWidgetAura(internal::NativeWidgetDelegate* delegate)
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
       ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)),
       can_activate_(true),
+      destroying_(false),
       cursor_(gfx::kNullCursor),
       saved_window_state_(ui::SHOW_STATE_DEFAULT) {
 }
@@ -700,17 +701,26 @@ void NativeWidgetAura::OnBoundsChanged(const gfx::Rect& old_bounds,
     delegate_->OnNativeWidgetSizeChanged(new_bounds.size());
 }
 
-void NativeWidgetAura::OnFocus() {
+void NativeWidgetAura::OnFocus(aura::Window* old_focused_window) {
   // In aura, it is possible for child native widgets to take input and focus,
   // this differs from the behavior on windows.
   GetWidget()->GetInputMethod()->OnFocus();
-  delegate_->OnNativeFocus(window_);
+  delegate_->OnNativeFocus(old_focused_window);
 }
 
 void NativeWidgetAura::OnBlur() {
-  // Not only top level native widget can take input and focus, child
-  // widgets are allowed also.
-  GetWidget()->GetInputMethod()->OnBlur();
+  // GetInputMethod() recreates the input method if it's previously been
+  // destroyed.  If we get called during destruction, the input method will be
+  // gone, and creating a new one and telling it that we lost the focus will
+  // trigger a DCHECK (the new input method doesn't think that we have the focus
+  // and doesn't expect a blur).  OnBlur() shouldn't be called during
+  // destruction unless WIDGET_OWNS_NATIVE_WIDGET is set (which is just the case
+  // in tests).
+  if (!destroying_)
+    GetWidget()->GetInputMethod()->OnBlur();
+  else
+    DCHECK_EQ(ownership_, Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET);
+
   delegate_->OnNativeBlur(window_->GetFocusManager()->GetFocusedWindow());
 }
 
@@ -902,6 +912,7 @@ int NativeWidgetAura::OnPerformDrop(const aura::DropTargetEvent& event) {
 // NativeWidgetAura, protected:
 
 NativeWidgetAura::~NativeWidgetAura() {
+  destroying_ = true;
   if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
     delete delegate_;
   else

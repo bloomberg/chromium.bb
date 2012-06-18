@@ -192,6 +192,25 @@ class CaptureWindowDelegateImpl : public TestWindowDelegate {
   DISALLOW_COPY_AND_ASSIGN(CaptureWindowDelegateImpl);
 };
 
+// aura::WindowDelegate that tracks the window that was reported as having the
+// focus before us.
+class FocusDelegate : public TestWindowDelegate {
+ public:
+  FocusDelegate() : previous_focused_window_(NULL) {
+  }
+
+  aura::Window* previous_focused_window() const {
+    return previous_focused_window_;
+  }
+
+  virtual void OnFocus(aura::Window* old_focused_window) {
+    previous_focused_window_ = old_focused_window;
+  }
+
+ private:
+  aura::Window* previous_focused_window_;
+};
+
 // Keeps track of the location of the gesture.
 class GestureTrackPositionDelegate : public TestWindowDelegate {
  public:
@@ -1353,6 +1372,27 @@ TEST_F(WindowTest, FocusedWindowTest) {
 
   child.reset();
   EXPECT_TRUE(parent->HasFocus());
+}
+
+// Tests that the previously-focused window is passed to
+// WindowDelegate::OnFocus().
+TEST_F(WindowTest, OldFocusedWindowTest) {
+  const gfx::Rect kBounds(0, 0, 100, 100);
+
+  FocusDelegate delegate1;
+  scoped_ptr<Window> window1(
+      CreateTestWindowWithDelegate(&delegate1, 0, kBounds, NULL));
+  window1->Focus();
+  ASSERT_TRUE(window1->HasFocus());
+  EXPECT_TRUE(delegate1.previous_focused_window() == NULL);
+
+  FocusDelegate delegate2;
+  scoped_ptr<Window> window2(
+      CreateTestWindowWithDelegate(&delegate2, 1, kBounds, NULL));
+  window2->Focus();
+  ASSERT_TRUE(window2->HasFocus());
+  EXPECT_FALSE(window1->HasFocus());
+  EXPECT_EQ(window1.get(), delegate2.previous_focused_window());
 }
 
 namespace {

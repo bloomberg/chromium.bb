@@ -2022,8 +2022,8 @@ LRESULT NativeWidgetWin::OnSetCursor(UINT message,
   return 0;
 }
 
-void NativeWidgetWin::OnSetFocus(HWND focused_window) {
-  delegate_->OnNativeFocus(focused_window);
+void NativeWidgetWin::OnSetFocus(HWND old_focused_window) {
+  delegate_->OnNativeFocus(old_focused_window);
   InputMethod* input_method = GetWidget()->GetInputMethodDirect();
   if (input_method)
     input_method->OnFocus();

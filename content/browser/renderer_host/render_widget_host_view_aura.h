@@ -158,7 +158,7 @@ class RenderWidgetHostViewAura
   virtual gfx::Size GetMinimumSize() const OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
                                const gfx::Rect& new_bounds) OVERRIDE;
-  virtual void OnFocus() OVERRIDE;
+  virtual void OnFocus(aura::Window* old_focused_window) OVERRIDE;
   virtual void OnBlur() OVERRIDE;
   virtual bool OnKeyEvent(aura::KeyEvent* event) OVERRIDE;
   virtual gfx::NativeCursor GetCursor(const gfx::Point& point) OVERRIDE;

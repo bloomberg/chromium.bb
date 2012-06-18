@@ -427,7 +427,7 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   virtual LRESULT OnPowerBroadcast(DWORD power_event, DWORD data);
   virtual LRESULT OnReflectedMessage(UINT msg, WPARAM w_param, LPARAM l_param);
   virtual LRESULT OnSetCursor(UINT message, WPARAM w_param, LPARAM l_param);
-  virtual void OnSetFocus(HWND focused_window);
+  virtual void OnSetFocus(HWND old_focused_window);
   virtual LRESULT OnSetText(const wchar_t* text);
   virtual void OnSettingChange(UINT flags, const wchar_t* section);
   virtual void OnSize(UINT param, const CSize& size);

@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+#include <vector>
+
 #include "base/utf_string_conversions.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/keycodes/keyboard_codes.h"
@@ -10,6 +13,7 @@
 #include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/focus/focus_manager_factory.h"
 #include "ui/views/focus/focus_manager_test.h"
+#include "ui/views/focus/widget_focus_manager.h"
 #include "ui/views/widget/widget.h"
 
 #if !defined(USE_AURA)
@@ -113,6 +117,41 @@ TEST_F(FocusManagerTest, FocusChangeListener) {
   GetFocusManager()->ClearFocus();
   ASSERT_EQ(1, static_cast<int>(listener.focus_changes().size()));
   EXPECT_TRUE(listener.focus_changes()[0] == ViewPair(view2, null_view));
+}
+
+TEST_F(FocusManagerTest, WidgetFocusChangeListener) {
+  TestWidgetFocusChangeListener widget_listener;
+  AddWidgetFocusChangeListener(&widget_listener);
+
+  Widget::InitParams params;
+  params.type = views::Widget::InitParams::TYPE_WINDOW;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect(10, 10, 100, 100);
+  params.parent_widget = GetWidget();
+
+  scoped_ptr<Widget> widget1(new Widget);
+  widget1->Init(params);
+  widget1->Show();
+
+  scoped_ptr<Widget> widget2(new Widget);
+  widget2->Init(params);
+  widget2->Show();
+
+  widget_listener.ClearFocusChanges();
+  gfx::NativeView native_view1 = widget1->GetNativeView();
+  GetWidget()->FocusNativeView(native_view1);
+  ASSERT_EQ(2, static_cast<int>(widget_listener.focus_changes().size()));
+  EXPECT_EQ(native_view1, widget_listener.focus_changes()[0].second);
+  EXPECT_EQ(native_view1, widget_listener.focus_changes()[1].second);
+
+  widget_listener.ClearFocusChanges();
+  gfx::NativeView native_view2 = widget2->GetNativeView();
+  GetWidget()->FocusNativeView(native_view2);
+  ASSERT_EQ(2, static_cast<int>(widget_listener.focus_changes().size()));
+  EXPECT_EQ(NativeViewPair(native_view1, native_view2),
+            widget_listener.focus_changes()[0]);
+  EXPECT_EQ(NativeViewPair(native_view1, native_view2),
+            widget_listener.focus_changes()[1]);
 }
 
 #if !defined(USE_AURA)

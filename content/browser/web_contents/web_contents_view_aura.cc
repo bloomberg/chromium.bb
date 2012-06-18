@@ -490,7 +490,7 @@ void WebContentsViewAura::OnBoundsChanged(const gfx::Rect& old_bounds,
     delegate_->SizeChanged(new_bounds.size());
 }
 
-void WebContentsViewAura::OnFocus() {
+void WebContentsViewAura::OnFocus(aura::Window* old_focused_window) {
 }
 
 void WebContentsViewAura::OnBlur() {

@@ -48,7 +48,7 @@ void FocusManager::SetFocusedWindow(Window* focused_window,
   if (old_focused_window && old_focused_window->delegate())
     old_focused_window->delegate()->OnBlur();
   if (focused_window_ && focused_window_->delegate())
-    focused_window_->delegate()->OnFocus();
+    focused_window_->delegate()->OnFocus(old_focused_window);
   if (focused_window_) {
     FOR_EACH_OBSERVER(FocusChangeObserver, observers_,
                       OnWindowFocused(focused_window));
