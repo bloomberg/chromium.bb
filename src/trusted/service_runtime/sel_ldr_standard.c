@@ -73,7 +73,8 @@ void NaClFillEndOfTextRegion(struct NaClApp *nap) {
    * gap exists.
    */
   if (0 != nap->data_start &&
-      nap->static_text_end + NACL_HALT_SLED_SIZE > nap->data_start) {
+      nap->static_text_end + NACL_HALT_SLED_SIZE >
+      NaClTruncAllocPage(nap->data_start)) {
     NaClLog(LOG_FATAL, "Missing gap between text and data for halt_sled\n");
   }
   if (0 != nap->rodata_start &&
@@ -144,7 +145,7 @@ NaClErrorCode NaClCheckAddressSpaceLayoutSanity(struct NaClApp *nap,
     }
   }
   if (0 != nap->rodata_start && 0 != nap->data_start) {
-    if (rodata_end > nap->data_start) {
+    if (rodata_end > NaClTruncAllocPage(nap->data_start)) {
       NaClLog(LOG_INFO, "rodata_overlaps data.\n");
       return LOAD_RODATA_OVERLAPS_DATA;
     }
@@ -154,7 +155,8 @@ NaClErrorCode NaClCheckAddressSpaceLayoutSanity(struct NaClApp *nap,
       return LOAD_TEXT_OVERLAPS_RODATA;
     }
   } else if (0 != nap->data_start) {
-    if (NaClRoundAllocPage(NaClEndOfStaticText(nap)) > nap->data_start) {
+    if (NaClRoundAllocPage(NaClEndOfStaticText(nap)) >
+        NaClTruncAllocPage(nap->data_start)) {
       return LOAD_TEXT_OVERLAPS_DATA;
     }
   }

@@ -197,7 +197,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
      * nap->rodata_start == nap->data_start == nap->break_addr.
      */
     if (0 != nap->data_start) {
-      rodata_end = nap->data_start;
+      rodata_end = NaClTruncAllocPage(nap->data_start);
     }
     else {
       rodata_end = nap->break_addr;
@@ -240,7 +240,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
    */
 
   if (0 != nap->data_start) {
-    start_addr = NaClUserToSys(nap, nap->data_start & ~(NACL_MAP_PAGESIZE - 1));
+    start_addr = NaClUserToSys(nap, NaClTruncAllocPage(nap->data_start));
     region_size = NaClRoundPage(NaClRoundAllocPage(nap->data_end)
                                 - NaClSysToUser(nap, start_addr));
     NaClLog(3,

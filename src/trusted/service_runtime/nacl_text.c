@@ -88,7 +88,7 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
    */
   shm_upper_bound = nap->rodata_start;
   if (0 == shm_upper_bound) {
-    shm_upper_bound = nap->data_start;
+    shm_upper_bound = NaClTruncAllocPage(nap->data_start);
   }
   if (0 == shm_upper_bound) {
     shm_upper_bound = shm_vaddr_base;

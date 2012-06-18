@@ -598,7 +598,7 @@ NaClErrorCode NaClElfImageLoad(struct NaClElfImage *image,
 
   for (segnum = 0; segnum < image->ehdr.e_phnum; ++segnum) {
     const Elf_Phdr *php = &image->phdrs[segnum];
-    Elf_Off offset = php->p_offset & ~(NACL_MAP_PAGESIZE - 1);
+    Elf_Off offset = (Elf_Off) NaClTruncAllocPage(php->p_offset);
     Elf_Off filesz = php->p_offset + php->p_filesz - offset;
 
     /* did we decide that we will load this segment earlier? */
@@ -627,7 +627,7 @@ NaClErrorCode NaClElfImageLoad(struct NaClElfImage *image,
       NaClLog(LOG_FATAL, "parameter error should have been detected already\n");
     }
 
-    paddr = mem_start + (php->p_vaddr & ~(NACL_MAP_PAGESIZE - 1));
+    paddr = mem_start + NaClTruncAllocPage(php->p_vaddr);
 
     NaClLog(4,
             "Seek to position %"NACL_PRIdElf_Off" (0x%"NACL_PRIxElf_Off").\n",
