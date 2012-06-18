@@ -9,6 +9,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/string16.h"
 #include "chrome/browser/status_icons/desktop_notification_balloon.h"
@@ -33,13 +34,18 @@ class StatusIconMac : public StatusIcon {
                               const string16& contents) OVERRIDE;
 
   bool HasStatusIconMenu();
-  void ShowStatusIconMenu();
 
  protected:
   // Overridden from StatusIcon.
   virtual void UpdatePlatformContextMenu(ui::MenuModel* model) OVERRIDE;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(StatusIconMacTest, CreateMenu);
+  FRIEND_TEST_ALL_PREFIXES(StatusIconMacTest, MenuToolTip);
+
+  void SetToolTip(NSString* toolTip);
+  void CreateMenu(ui::MenuModel* model, NSString* toolTip);
+
   // Getter for item_ that allows lazy initialization.
   NSStatusItem* item();
   scoped_nsobject<NSStatusItem> item_;
@@ -48,6 +54,8 @@ class StatusIconMac : public StatusIcon {
 
   // Notification balloon.
   DesktopNotificationBalloon notification_;
+
+  scoped_nsobject<NSString> toolTip_;
 
   // Status menu shown when right-clicking the system icon, if it has been
   // created by |UpdatePlatformContextMenu|.

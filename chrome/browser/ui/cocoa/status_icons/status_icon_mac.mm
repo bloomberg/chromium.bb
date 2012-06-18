@@ -32,9 +32,7 @@
   DCHECK(statusIcon_);
   // Bring up the status icon menu if there is one, relay the click event
   // otherwise.
-  if (statusIcon_->HasStatusIconMenu())
-    statusIcon_->ShowStatusIconMenu();
-  else
+  if (!statusIcon_->HasStatusIconMenu())
     statusIcon_->DispatchClickEvent();
 }
 
@@ -81,7 +79,15 @@ void StatusIconMac::SetPressedImage(const SkBitmap& bitmap) {
 }
 
 void StatusIconMac::SetToolTip(const string16& tool_tip) {
-  [item() setToolTip:base::SysUTF16ToNSString(tool_tip)];
+  // If we have a status icon menu, make the tool tip part of the menu instead
+  // of a pop-up tool tip when hovering the mouse over the image.
+  toolTip_.reset([base::SysUTF16ToNSString(tool_tip) retain]);
+  if (menu_.get()) {
+    SetToolTip(nil);
+    CreateMenu([menu_ model], toolTip_.get());
+  } else {
+    SetToolTip(toolTip_.get());
+  }
 }
 
 void StatusIconMac::DisplayBalloon(const SkBitmap& icon,
@@ -94,20 +100,32 @@ bool StatusIconMac::HasStatusIconMenu() {
   return menu_.get() != nil;
 }
 
-void StatusIconMac::ShowStatusIconMenu() {
-  if (!menu_.get())
-    return;
-
-  [NSMenu popUpContextMenu:[menu_ menu]
-                 withEvent:[NSApp currentEvent]
-                   forView:[item() view]];
-}
-
 void StatusIconMac::UpdatePlatformContextMenu(ui::MenuModel* model) {
   if (!model) {
     menu_.reset();
   } else {
+    SetToolTip(nil);
+    CreateMenu(model, toolTip_.get());
+  }
+}
+
+void StatusIconMac::CreateMenu(ui::MenuModel* model, NSString* toolTip) {
+  DCHECK(model);
+
+  if (!toolTip) {
     menu_.reset([[MenuController alloc] initWithModel:model
                                useWithPopUpButtonCell:NO]);
+  } else {
+    // When using a popup button cell menu controller, an extra blank item is
+    // added at index 0. Use this item for the tooltip.
+    menu_.reset([[MenuController alloc] initWithModel:model
+                               useWithPopUpButtonCell:YES]);
+    NSMenuItem* toolTipItem = [[menu_ menu] itemAtIndex:0];
+    [toolTipItem setTitle:toolTip];
   }
+  [item() setMenu:[menu_ menu]];
+}
+
+void StatusIconMac::SetToolTip(NSString* toolTip) {
+  [item() setToolTip:toolTip];
 }
