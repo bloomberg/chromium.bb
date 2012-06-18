@@ -17,6 +17,15 @@
 
 namespace remoting {
 
+// Verify that the OS is at least Snow Leopard (10.6).
+// Chromoting doesn't support 10.5 or earlier.
+bool CheckSnowLeopard() {
+  long minorVersion, majorVersion;
+  Gestalt(gestaltSystemVersionMajor, &majorVersion);
+  Gestalt(gestaltSystemVersionMinor, &minorVersion);
+  return majorVersion == 10 && minorVersion > 5;
+}
+
 class CapturerMacTest : public testing::Test {
  protected:
   virtual void SetUp() {
@@ -102,6 +111,10 @@ void CursorCallback::CursorShapeChangedCallback(
 }
 
 TEST_F(CapturerMacTest, Capture) {
+  if (!CheckSnowLeopard()) {
+    return;
+  }
+
   SCOPED_TRACE("");
   CursorCallback cursor_callback;
   capturer_->Start(base::Bind(&CursorCallback::CursorShapeChangedCallback,
