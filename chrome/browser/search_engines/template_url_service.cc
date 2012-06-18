@@ -89,8 +89,10 @@ TemplateURL* FirstPotentialDefaultEngine(
     const TemplateURLService::TemplateURLVector& template_urls) {
   for (TemplateURLService::TemplateURLVector::const_iterator i(
        template_urls.begin()); i != template_urls.end(); ++i) {
-    if (!(*i)->IsExtensionKeyword() && (*i)->SupportsReplacement())
+    if ((*i)->ShowInDefaultList()) {
+      DCHECK(!(*i)->IsExtensionKeyword());
       return *i;
+    }
   }
   return NULL;
 }

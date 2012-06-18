@@ -1167,6 +1167,39 @@ TEST_F(TemplateURLServiceTest, LoadSavesPrepopulatedDefaultSearchProvider) {
   AssertEquals(*cloned_url, *default_search);
 }
 
+TEST_F(TemplateURLServiceTest, FindNewDefaultSearchProvider) {
+  // Ensure that if our service is initially empty, we don't initial have a
+  // valid new DSP.
+  EXPECT_FALSE(model()->FindNewDefaultSearchProvider());
+
+  // Add a few entries with searchTerms, but ensure only the last one is in the
+  // default list.
+  AddKeywordWithDate("name1", "key1", "http://foo1/{searchTerms}",
+      "http://sugg1", "http://icon1", true, "UTF-8;UTF-16", Time(), Time());
+  AddKeywordWithDate("name2", "key2", "http://foo2/{searchTerms}",
+      "http://sugg2", "http://icon1", true, "UTF-8;UTF-16", Time(), Time());
+  AddKeywordWithDate("name3", "key3", "http://foo1/{searchTerms}",
+      "http://sugg3", "http://icon3", true, "UTF-8;UTF-16", Time(), Time());
+  TemplateURLData data;
+  data.short_name = ASCIIToUTF16("valid");
+  data.SetKeyword(ASCIIToUTF16("validkeyword"));
+  data.SetURL("http://valid/{searchTerms}");
+  data.favicon_url = GURL("http://validicon");
+  data.show_in_default_list = true;
+  TemplateURL* valid_turl(new TemplateURL(test_util_.profile(), data));
+  model()->Add(valid_turl);
+  EXPECT_EQ(4U, model()->GetTemplateURLs().size());
+
+  // Request a new DSP from the service and only expect the valid one.
+  TemplateURL* new_default = model()->FindNewDefaultSearchProvider();
+  ASSERT_TRUE(new_default);
+  EXPECT_EQ(valid_turl, new_default);
+
+  // Remove the default we received and ensure that the service returns NULL.
+  model()->Remove(new_default);
+  EXPECT_FALSE(model()->FindNewDefaultSearchProvider());
+}
+
 // Make sure that the load routine doesn't delete
 // prepopulated engines that no longer exist in the prepopulate data if
 // it is the default search provider.

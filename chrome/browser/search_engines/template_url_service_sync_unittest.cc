@@ -1558,8 +1558,19 @@ TEST_F(TemplateURLServiceSyncTest, DefaultGuidDeletedAndReplaced) {
       "http://key1.com/{searchTerms}", "key1", 90));
   // Create a second default search provider for the
   // FindNewDefaultSearchProvider method to find.
-  scoped_ptr<TemplateURL> turl2(CreateTestTemplateURL(ASCIIToUTF16("key2"),
-      "http://key2.com/{searchTerms}", "key2", 100));
+  TemplateURLData data;
+  data.short_name = ASCIIToUTF16("unittest");
+  data.SetKeyword(ASCIIToUTF16("key2"));
+  data.SetURL("http://key2.com/{searchTerms}");
+  data.favicon_url = GURL("http://favicon.url");
+  data.safe_for_autoreplace = false;
+  data.date_created = Time::FromTimeT(100);
+  data.last_modified = Time::FromTimeT(100);
+  data.created_by_policy = false;
+  data.prepopulate_id = 999999;
+  data.sync_guid = "key2";
+  data.show_in_default_list = true;
+  scoped_ptr<TemplateURL> turl2(new TemplateURL(NULL, data));
   initial_data.push_back(TemplateURLService::CreateSyncDataFromTemplateURL(
       *turl1));
   initial_data.push_back(TemplateURLService::CreateSyncDataFromTemplateURL(
