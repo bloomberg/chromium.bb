@@ -6,6 +6,7 @@ package org.chromium.content.browser;
 
 import android.content.Context;
 import android.util.Log;
+import android.webkit.DownloadListener;
 import android.widget.FrameLayout;
 
 import org.chromium.content.browser.AndroidBrowserProcess;
@@ -27,6 +28,13 @@ public class ContentView extends FrameLayout {
 
     // Native pointer to C++ ContentView object which will be set by nativeInit()
     private int mNativeContentView = 0;
+
+    // The legacy webview DownloadListener.
+    private DownloadListener mDownloadListener;
+    // ContentViewDownloadDelegate adds support for authenticated downloads
+    // and POST downloads. Embedders should prefer ContentViewDownloadDelegate
+    // over DownloadListener.
+    private ContentViewDownloadDelegate mDownloadDelegate;
 
     public void setContentViewClient(ContentViewClient client) {
         if (client == null) {
@@ -171,6 +179,41 @@ public class ContentView extends FrameLayout {
      */
     public void reload() {
         // TODO(tedchoc): Implement.
+    }
+
+    /**
+     * Register the listener to be used when content can not be handled by the
+     * rendering engine, and should be downloaded instead. This will replace the
+     * current listener.
+     * @param listener An implementation of DownloadListener.
+     */
+    // TODO(nileshagrawal): decide if setDownloadDelegate will be public API. If so,
+    // this method should be deprecated and the javadoc should make reference to the
+    // fact that a ContentViewDownloadDelegate will be used in preference to a
+    // DownloadListener.
+    public void setDownloadListener(DownloadListener listener) {
+        mDownloadListener = listener;
+    }
+
+    // Called by DownloadController.
+    DownloadListener downloadListener() {
+        return mDownloadListener;
+    }
+
+    /**
+     * Register the delegate to be used when content can not be handled by
+     * the rendering engine, and should be downloaded instead. This will replace
+     * the current delegate or existing DownloadListner.
+     * Embedders should prefer this over the legacy DownloadListener.
+     * @param listener An implementation of ContentViewDownloadDelegate.
+     */
+    public void setDownloadDelegate(ContentViewDownloadDelegate delegate) {
+        mDownloadDelegate = delegate;
+    }
+
+    // Called by DownloadController.
+    ContentViewDownloadDelegate getDownloadDelegate() {
+        return mDownloadDelegate;
     }
 
     /**

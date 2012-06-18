@@ -4,10 +4,7 @@
 
 package org.chromium.content.browser;
 
-import java.io.File;
-
 import android.content.Context;
-import android.util.Log;
 import android.webkit.DownloadListener;
 
 import org.chromium.base.CalledByNative;
@@ -35,8 +32,11 @@ class DownloadController {
     }
 
     private static DownloadListener listenerFromView(ContentView view) {
-        // TODO(nileshagrawal): Implement.
-        return null;
+        return view.downloadListener();
+    }
+
+    private static ContentViewDownloadDelegate downloadDelegateFromView(ContentView view) {
+        return view.getDownloadDelegate();
     }
 
     public void setContext(Context context) {
@@ -53,7 +53,19 @@ class DownloadController {
     public void newHttpGetDownload(ContentView view, String url,
             String userAgent, String contentDisposition, String mimetype,
             String cookie, long contentLength) {
-        // TODO(nileshagrawal): Implement.
+        ContentViewDownloadDelegate downloadDelagate = downloadDelegateFromView(view);
+
+        if (downloadDelagate != null) {
+            downloadDelagate.requestHttpGetDownload(url, userAgent,
+                    contentDisposition, mimetype, cookie, contentLength);
+            return;
+        }
+
+        DownloadListener listener = listenerFromView(view);
+        if (listener != null) {
+            listener.onDownloadStart(url, userAgent, contentDisposition,
+                    mimetype, contentLength);
+        }
     }
 
     /**
@@ -61,7 +73,11 @@ class DownloadController {
      */
     @CalledByNative
     public void onHttpPostDownloadStarted(ContentView view) {
-        // TODO(nileshagrawal): Implement.
+        ContentViewDownloadDelegate downloadDelagate = downloadDelegateFromView(view);
+
+        if (downloadDelagate != null) {
+            downloadDelagate.onHttpPostDownloadStarted();
+        }
     }
 
     /**
@@ -72,7 +88,12 @@ class DownloadController {
     public void onHttpPostDownloadCompleted(ContentView view, String url,
             String contentDisposition, String mimetype, String path,
             long contentLength, boolean successful) {
-        // TODO(nileshagrawal): Implement.
+        ContentViewDownloadDelegate downloadDelagate = downloadDelegateFromView(view);
+
+        if (downloadDelagate != null) {
+            downloadDelagate.onHttpPostDownloadCompleted(
+                    url, mimetype, path, contentLength, successful);
+        }
     }
 
     // native methods
