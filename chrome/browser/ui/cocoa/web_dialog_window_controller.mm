@@ -111,11 +111,7 @@ gfx::NativeWindow ShowWebDialog(gfx::NativeWindow parent,
                                           browser:browser];
 }
 
-void CloseWDialog(gfx::NativeWindow window) {
-  [window performClose:nil];
-}
-
-}  // namespace web_dialog_window_controller
+}  // namespace browser
 
 WebDialogWindowDelegateBridge::WebDialogWindowDelegateBridge(
     WebDialogWindowController* controller,
