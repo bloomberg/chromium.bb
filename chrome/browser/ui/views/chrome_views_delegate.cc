@@ -12,6 +12,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/ash_init.h"
 #include "chrome/browser/ui/views/accessibility/accessibility_event_router_views.h"
 #include "chrome/common/pref_names.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -24,10 +25,12 @@
 #include "chrome/browser/app_icon_win.h"
 #endif
 
+#if defined(USE_AURA)
+#include "ui/views/widget/desktop_native_widget_helper_aura.h"
+#endif
+
 #if defined(USE_ASH)
 #include "ash/shell.h"
-#elif defined(USE_AURA)
-#include "ui/views/widget/desktop_native_widget_helper_aura.h"
 #endif
 
 namespace {
@@ -163,11 +166,10 @@ int ChromeViewsDelegate::GetDispositionForEvent(int event_flags) {
 #if defined(USE_AURA)
 views::NativeWidgetHelperAura* ChromeViewsDelegate::CreateNativeWidgetHelper(
     views::NativeWidgetAura* native_widget) {
-#if !defined(USE_ASH)
-  return new views::DesktopNativeWidgetHelperAura(native_widget);
-#else
+  // TODO(beng): insufficient but currently necessary. http://crbug.com/133312
+  if (!browser::ShouldOpenAshOnStartup())
+    return new views::DesktopNativeWidgetHelperAura(native_widget);
   return NULL;
-#endif
 }
 #endif
 

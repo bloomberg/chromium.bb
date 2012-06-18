@@ -2337,6 +2337,8 @@
         'browser/ui/app_modal_dialogs/native_app_modal_dialog.h',
         'browser/ui/ash/ash_init.cc',
         'browser/ui/ash/ash_init.h',
+        'browser/ui/ash/ash_util.cc',
+        'browser/ui/ash/ash_util.h',
         'browser/ui/ash/chrome_launcher_prefs.cc',
         'browser/ui/ash/chrome_launcher_prefs.h',
         'browser/ui/ash/tabs/dock_info_ash.cc',
