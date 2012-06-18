@@ -176,7 +176,7 @@ TEST_F(SyncThemeDataTypeControllerTest, OnSingleDatatypeUnrecoverableError) {
   SetActivateExpectations();
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
       WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
-  EXPECT_CALL(service_, OnDisableDatatype(_,_,_)).
+  EXPECT_CALL(service_, DisableBrokenDatatype(_,_,_)).
       WillOnce(InvokeWithoutArgs(theme_dtc_.get(),
       &ThemeDataTypeController::Stop));
   SetStopExpectations();

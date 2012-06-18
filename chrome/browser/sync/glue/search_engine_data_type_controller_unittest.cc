@@ -207,7 +207,7 @@ TEST_F(SyncSearchEngineDataTypeControllerTest,
   SetStartExpectations();
   PreloadTemplateURLService();
   SetActivateExpectations();
-  EXPECT_CALL(service_, OnDisableDatatype(_, _, _)).
+  EXPECT_CALL(service_, DisableBrokenDatatype(_, _, _)).
       WillOnce(InvokeWithoutArgs(search_engine_dtc_.get(),
                                  &SearchEngineDataTypeController::Stop));
   SetStopExpectations();

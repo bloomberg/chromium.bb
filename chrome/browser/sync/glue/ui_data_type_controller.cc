@@ -281,7 +281,7 @@ DataTypeController::State UIDataTypeController::state() const {
 void UIDataTypeController::OnSingleDatatypeUnrecoverableError(
     const tracked_objects::Location& from_here, const std::string& message) {
   RecordUnrecoverableError(from_here, message);
-  sync_service_->OnDisableDatatype(type(), from_here, message);
+  sync_service_->DisableBrokenDatatype(type(), from_here, message);
 }
 
 void UIDataTypeController::RecordAssociationTime(base::TimeDelta time) {

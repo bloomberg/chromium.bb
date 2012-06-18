@@ -261,7 +261,7 @@ TEST_F(SyncAppNotificationDataTypeControllerTest,
   SetStartExpectations();
   InitAndLoadManager();
   SetActivateExpectations();
-  EXPECT_CALL(service_, OnDisableDatatype(_, _, _)).
+  EXPECT_CALL(service_, DisableBrokenDatatype(_, _, _)).
       WillOnce(InvokeWithoutArgs(app_notif_dtc_.get(),
                                  &AppNotificationDataTypeController::Stop));
   SetStopExpectations();

@@ -197,7 +197,7 @@ TEST_F(SyncUIDataTypeControllerTest,
 // gets stopped and the DTC is in NOT_RUNNING state.
 TEST_F(SyncUIDataTypeControllerTest, OnSingleDatatypeUnrecoverableError) {
   SetActivateExpectations();
-  EXPECT_CALL(profile_sync_service_, OnDisableDatatype(_,_,_)).
+  EXPECT_CALL(profile_sync_service_, DisableBrokenDatatype(_,_,_)).
       WillOnce(InvokeWithoutArgs(preference_dtc_.get(),
                                  &UIDataTypeController::Stop));
   SetStopExpectations();

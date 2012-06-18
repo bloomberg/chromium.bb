@@ -631,7 +631,7 @@ void ProfileSyncService::OnUnrecoverableErrorImpl(
                  delete_sync_database));
 }
 
-void ProfileSyncService::OnDisableDatatype(
+void ProfileSyncService::DisableBrokenDatatype(
     syncable::ModelType type,
     const tracked_objects::Location& from_here,
     std::string message) {

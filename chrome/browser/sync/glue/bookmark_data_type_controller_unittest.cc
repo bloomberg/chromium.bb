@@ -284,7 +284,7 @@ TEST_F(SyncBookmarkDataTypeControllerTest, OnSingleDatatypeUnrecoverableError) {
   SetAssociateExpectations();
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
       WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
-  EXPECT_CALL(service_, OnDisableDatatype(_,_,_)).
+  EXPECT_CALL(service_, DisableBrokenDatatype(_,_,_)).
       WillOnce(InvokeWithoutArgs(bookmark_dtc_.get(),
                                  &BookmarkDataTypeController::Stop));
   SetStopExpectations();

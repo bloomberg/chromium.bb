@@ -261,7 +261,7 @@ TEST_F(SyncFrontendDataTypeControllerTest, OnSingleDatatypeUnrecoverableError) {
   SetAssociateExpectations();
   SetActivateExpectations(DataTypeController::OK);
   EXPECT_CALL(*dtc_mock_, RecordUnrecoverableError(_, "Test"));
-  EXPECT_CALL(service_, OnDisableDatatype(_,_,_)).
+  EXPECT_CALL(service_, DisableBrokenDatatype(_,_,_)).
       WillOnce(InvokeWithoutArgs(frontend_dtc_.get(),
                                  &FrontendDataTypeController::Stop));
   SetStopExpectations();

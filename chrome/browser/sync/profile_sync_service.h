@@ -349,7 +349,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
       const tracked_objects::Location& from_here,
       const std::string& message) OVERRIDE;
 
-  virtual void OnDisableDatatype(syncable::ModelType type,
+  // Called when a datatype wishes to disable itself due to having hit an
+  // unrecoverable error.
+  virtual void DisableBrokenDatatype(
+      syncable::ModelType type,
       const tracked_objects::Location& from_here,
       std::string message);
 
