@@ -211,6 +211,8 @@
         '../base/base.gyp:base',
         '../jingle/jingle.gyp:notifier',
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
+        # TODO(akalin): Remove this (http://crbug.com/133352).
+        '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_proto_cpp',
         '../third_party/libjingle/libjingle.gyp:libjingle',
         'sync',
       ],
@@ -272,7 +274,6 @@
         # Propagate sync_proto since our headers include its generated
         # files.
         'protocol/sync_proto.gyp:sync_proto',
-        'sync_notifier',
         'sync',
       ],
       'sources': [
@@ -325,10 +326,8 @@
         'protocol/sync_proto.gyp:sync_proto',
         'sync',
       ],
-      # Even though this target depends on sync_proto, it doesn't
-      # need to export a hard dependency since we explicitly avoid
-      # including the generated proto header files from this target's
-      # header files.
+      # We avoid including header files from sync_proto in our public
+      # header files so we don't need to export its settings.
       'sources': [
         'api/syncable_service.cc',
         'api/syncable_service.h',
