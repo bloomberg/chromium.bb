@@ -16,9 +16,15 @@ bool ShouldEnableInBrowserThumbnailing() {
           switches::kDisableInBrowserThumbnailing))
     return false;
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_WIN)
+  // Disables in-browser thumbnailing on Windows XP where not supported yet.
+  if (base::win::GetVersion() < base::win::VERSION_VISTA)
+    return false;
   return true;
-#else
+#elif defined(OS_LINUX) && !defined(USE_AURA)
+  // Disables in-browser thumbnailing on non-Aura Linux where not supported yet.
   return false;
+#else
+  return true;
 #endif
 }
