@@ -12,6 +12,7 @@
 #include "base/native_library.h"
 #include "base/string16.h"
 #include "base/stringize_macros.h"
+#include "base/win/scoped_gdi_object.h"
 #include "remoting/base/capture_data.h"
 #include "remoting/host/capturer_helper.h"
 #include "remoting/host/desktop_win.h"
@@ -30,6 +31,11 @@ const UINT DWM_EC_ENABLECOMPOSITION = 1;
 typedef HRESULT (WINAPI * DwmEnableCompositionFunc)(UINT);
 
 const char16 kDwmapiLibraryName[] = TO_L_STRING("dwmapi");
+
+// Pixel colors used when generating cursor outlines.
+const uint32 kPixelBgraBlack = 0xff000000;
+const uint32 kPixelBgraWhite = 0xffffffff;
+const uint32 kPixelBgraTransparent = 0x00000000;
 
 // CapturerGdi captures 32bit RGB using GDI.
 //
@@ -87,9 +93,12 @@ class CapturerGdi : public Capturer {
   // Generates an image in the current buffer.
   void CaptureImage();
 
-  // Gets the current screen size and calls ScreenConfigurationChanged
-  // if the screen size has changed.
-  void MaybeChangeScreenConfiguration();
+  // Expand the cursor shape to add a white outline for visibility against
+  // dark backgrounds.
+  void AddCursorOutline(int width, int height, uint32* dst);
+
+  // Capture the current cursor shape.
+  void CaptureCursor();
 
   // Gets the screen size.
   SkISize GetScreenSize();
@@ -100,6 +109,12 @@ class CapturerGdi : public Capturer {
 
   // Callback notified whenever the cursor shape is changed.
   CursorShapeChangedCallback cursor_shape_changed_callback_;
+
+  // Snapshot of the last cursor bitmap we sent to the client. This is used
+  // to diff against the current cursor so we only send a cursor-change
+  // message when the shape has changed.
+  scoped_array<uint8> last_cursor_;
+  SkISize last_cursor_size_;
 
   // There are two buffers for the screen images, as required by Capturer.
   static const int kNumBuffers = 2;
@@ -138,7 +153,8 @@ static const int kPixelsPerMeter = 3780;
 static const int kBytesPerPixel = 4;
 
 CapturerGdi::CapturerGdi()
-    : desktop_window_(NULL),
+    : last_cursor_size_(SkISize::Make(0, 0)),
+      desktop_window_(NULL),
       desktop_dc_(NULL),
       memory_dc_(NULL),
       dc_size_(SkISize::Make(0, 0)),
@@ -189,6 +205,9 @@ void CapturerGdi::CaptureInvalidRegion(
   SkRegion invalid_region;
   helper_.SwapInvalidRegion(&invalid_region);
   CaptureRegion(invalid_region, callback);
+
+  // Check for cursor shape update.
+  CaptureCursor();
 }
 
 const SkISize& CapturerGdi::size_most_recent() const {
@@ -422,6 +441,178 @@ void CapturerGdi::CaptureImage() {
   BitBlt(memory_dc_, 0, 0, buffers_[current_buffer_].size.width(),
       buffers_[current_buffer_].size.height(), desktop_dc_, 0, 0,
       SRCCOPY | CAPTUREBLT);
+}
+
+void CapturerGdi::AddCursorOutline(int width, int height, uint32* dst) {
+  for (int y = 0; y < height; y++) {
+    for (int x = 0; x < width; x++) {
+      // If this is a transparent pixel (bgr == 0 and alpha = 0), check the
+      // neighbor pixels to see if this should be changed to an outline pixel.
+      if (*dst == kPixelBgraTransparent) {
+        // Change to white pixel if any neighbors (top, bottom, left, right)
+        // are black.
+        if ((y > 0 && dst[-width] == kPixelBgraBlack) ||
+            (y < height - 1 && dst[width] == kPixelBgraBlack) ||
+            (x > 0 && dst[-1] == kPixelBgraBlack) ||
+            (x < width - 1 && dst[1] == kPixelBgraBlack)) {
+          *dst = kPixelBgraWhite;
+        }
+      }
+      dst++;
+    }
+  }
+}
+
+void CapturerGdi::CaptureCursor() {
+  CURSORINFO cursor_info;
+  cursor_info.cbSize = sizeof(CURSORINFO);
+  if (!GetCursorInfo(&cursor_info)) {
+    VLOG(3) << "Unable to get cursor info. Error = " << GetLastError();
+    return;
+  }
+
+  // Note that this does not need to be freed.
+  HCURSOR hcursor = cursor_info.hCursor;
+  ICONINFO iinfo;
+  if (!GetIconInfo(hcursor, &iinfo)) {
+    VLOG(3) << "Unable to get cursor icon info. Error = " << GetLastError();
+    return;
+  }
+  int hotspot_x = iinfo.xHotspot;
+  int hotspot_y = iinfo.yHotspot;
+
+  // Get the cursor bitmap.
+  base::win::ScopedBitmap hbitmap;
+  BITMAP bitmap;
+  bool color_bitmap;
+  if (iinfo.hbmColor) {
+    // Color cursor bitmap.
+    color_bitmap = true;
+    hbitmap.Set((HBITMAP)CopyImage(iinfo.hbmColor, IMAGE_BITMAP, 0, 0,
+                                   LR_CREATEDIBSECTION));
+    if (!hbitmap.Get()) {
+      VLOG(3) << "Unable to copy color cursor image. Error = "
+              << GetLastError();
+      return;
+    }
+
+    // Free the color and mask bitmaps since we only need our copy.
+    DeleteObject(iinfo.hbmColor);
+    DeleteObject(iinfo.hbmMask);
+  } else {
+    // Black and white (xor) cursor.
+    color_bitmap = false;
+    hbitmap.Set(iinfo.hbmMask);
+  }
+
+  if (!GetObject(hbitmap.Get(), sizeof(BITMAP), &bitmap)) {
+    VLOG(3) << "Unable to get cursor bitmap. Error = " << GetLastError();
+    return;
+  }
+
+  int width = bitmap.bmWidth;
+  int height = bitmap.bmHeight;
+  // For non-color cursors, the mask contains both an AND and an XOR mask and
+  // the height includes both. Thus, the width is correct, but we need to
+  // divide by 2 to get the correct mask height.
+  if (!color_bitmap) {
+    height /= 2;
+  }
+  int data_size = height * width * kBytesPerPixel;
+
+  scoped_ptr<protocol::CursorShapeInfo> cursor_proto(
+      new protocol::CursorShapeInfo());
+  cursor_proto->mutable_data()->resize(data_size);
+  uint8* cursor_dst_data = const_cast<uint8*>(reinterpret_cast<const uint8*>(
+      cursor_proto->mutable_data()->data()));
+
+  // Copy/convert cursor bitmap into format needed by chromotocol.
+  int row_bytes = bitmap.bmWidthBytes;
+  if (color_bitmap) {
+    if (bitmap.bmPlanes != 1 || bitmap.bmBitsPixel != 32) {
+      VLOG(3) << "Unsupported color cursor format. Error = " << GetLastError();
+      return;
+    }
+
+    // Cursor bitmap is stored upside-down on Windows. Flip the rows and store
+    // it in the proto.
+    uint8* cursor_src_data = reinterpret_cast<uint8*>(bitmap.bmBits);
+    uint8* src = cursor_src_data + ((height - 1) * row_bytes);
+    uint8* dst = cursor_dst_data;
+    for (int row = 0; row < height; row++) {
+      memcpy(dst, src, row_bytes);
+      dst += width * kBytesPerPixel;
+      src -= row_bytes;
+    }
+  } else {
+    if (bitmap.bmPlanes != 1 || bitmap.bmBitsPixel != 1) {
+      VLOG(3) << "Unsupported cursor mask format. Error = " << GetLastError();
+      return;
+    }
+
+    // x2 because there are 2 masks in the bitmap: AND and XOR.
+    int mask_bytes = height * row_bytes * 2;
+    scoped_array<uint8> mask(new uint8[mask_bytes]);
+    if (!GetBitmapBits(hbitmap.Get(), mask_bytes, mask.get())) {
+      VLOG(3) << "Unable to get cursor mask bits. Error = " << GetLastError();
+      return;
+    }
+    uint8* and_mask = mask.get();
+    uint8* xor_mask = mask.get() + height * row_bytes;
+    uint8* dst = cursor_dst_data;
+    bool add_outline = false;
+    for (int y = 0; y < height; y++) {
+      for (int x = 0; x < width; x++) {
+        int byte = y * row_bytes + x / 8;
+        int bit = 7 - x % 8;
+        int and = and_mask[byte] & (1 << bit);
+        int xor = xor_mask[byte] & (1 << bit);
+
+        // The two cursor masks combine as follows:
+        //  AND  XOR   Windows Result  Our result   RGB  Alpha
+        //   0    0    Black           Black         00    ff
+        //   0    1    White           White         ff    ff
+        //   1    0    Screen          Transparent   00    00
+        //   1    1    Reverse-screen  Black         00    ff
+        // Since we don't support XOR cursors, we replace the "Reverse Screen"
+        // with black. In this case, we also add an outline around the cursor
+        // so that it is visible against a dark background.
+        int rgb = (!and && xor) ? 0xff : 0x00;
+        int alpha = (and && !xor) ? 0x00 : 0xff;
+        *dst++ = rgb;
+        *dst++ = rgb;
+        *dst++ = rgb;
+        *dst++ = alpha;
+        if (and && xor) {
+          add_outline = true;
+        }
+      }
+    }
+    if (add_outline) {
+      AddCursorOutline(width, height,
+                       reinterpret_cast<uint32*>(cursor_dst_data));
+    }
+  }
+
+  // Compare the current cursor with the last one we sent to the client. If
+  // they're the same, then don't bother sending the cursor again.
+  if (last_cursor_size_.equals(width, height) &&
+      memcmp(last_cursor_.get(), cursor_dst_data, data_size) == 0) {
+    return;
+  }
+
+  VLOG(3) << "Sending updated cursor: " << width << "x" << height;
+
+  cursor_proto->set_width(width);
+  cursor_proto->set_height(height);
+  cursor_proto->set_hotspot_x(hotspot_x);
+  cursor_proto->set_hotspot_y(hotspot_y);
+  cursor_shape_changed_callback_.Run(cursor_proto.Pass());
+
+  // Record the last cursor image that we sent to the client.
+  last_cursor_.reset(new uint8[data_size]);
+  memcpy(last_cursor_.get(), cursor_dst_data, data_size);
+  last_cursor_size_ = SkISize::Make(width, height);
 }
 
 SkISize CapturerGdi::GetScreenSize() {
