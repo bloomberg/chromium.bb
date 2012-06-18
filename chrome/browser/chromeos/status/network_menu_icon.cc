@@ -634,6 +634,9 @@ void NetworkMenuIcon::SetIconAndText() {
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
   DCHECK(cros);
 
+  if (cros->wifi_scanning())
+    return;  // Don't update icon while scanning
+
   icon_->ClearIconAndBadges();
 
   // If we are connecting to a network, display that.

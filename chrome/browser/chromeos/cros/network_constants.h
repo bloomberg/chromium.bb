@@ -226,7 +226,8 @@ enum ConnectionState {
   STATE_FAILURE            = 7,
   STATE_ACTIVATION_FAILURE = 8,
   STATE_PORTAL             = 9,
-  STATE_ONLINE             = 10
+  STATE_ONLINE             = 10,
+  STATE_CONNECT_REQUESTED  = 11,  // Chrome only state
 };
 
 // Network enums (see flimflam/include/network.h)
