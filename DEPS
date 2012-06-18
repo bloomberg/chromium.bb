@@ -11,7 +11,7 @@ vars = {
   "webkit_revision": "120591",
   "chromium_git": "http://git.chromium.org/git",
   "swig_revision": "69281",
-  "nacl_revision": "8937",
+  "nacl_revision": "8950",
   # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
   # to update other nacl_*_revision's.
   "nacl_tools_revision": "8673",  # native_client/DEPS: tools_rev
@@ -47,7 +47,7 @@ vars = {
   "libjingle_revision": "153",
   "libphonenumber_revision": "456",
   "libvpx_revision": "134182",
-  "lss_revision": "9",
+  "lss_revision": "11",
 
   # These two FFmpeg variables must be updated together.  One is used for SVN
   # checkouts and the other for Git checkouts.
