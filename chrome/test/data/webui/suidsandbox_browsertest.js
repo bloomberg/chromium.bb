@@ -19,18 +19,20 @@ SUIDSandboxUITest.prototype = {
 };
 
 // This test is for Linux only.
+// PLEASE READ:
+// - If failures of this test are a problem on a bot under your care,
+//   the proper way to address such failures is to install the SUID
+//   sandbox. See:
+//     http://code.google.com/p/chromium/wiki/LinuxSUIDSandboxDevelopment
+// - PLEASE DO NOT DISABLE THIS TEST. If you can't figure out how to
+//   get the SUID sandbox installed, please mark the test FLAKY_ so we
+//   can get clear information on where the sandbox is and isn't installed.
 GEN('#if defined(OS_LINUX)');
-GEN('# if defined(ADDRESS_SANITIZER)');
+GEN('# define MAYBE_testSUIDSandboxEnabled \\');
+GEN('     FLAKY_testSUIDSandboxEnabled');
+GEN('#else');
 GEN('# define MAYBE_testSUIDSandboxEnabled \\');
 GEN('     DISABLED_testSUIDSandboxEnabled');
-GEN('# else');
-// Linux test is temporarily marked as FAILS: http://crbug.com/133244
-GEN('# define MAYBE_testSUIDSandboxEnabled \\');
-GEN('     FAILS_testSUIDSandboxEnabled');
-GEN('# endif');
-GEN('#else');
-GEN('#define MAYBE_testSUIDSandboxEnabled \\');
-GEN('    DISABLED_testSUIDSandboxEnabled');
 GEN('#endif');
 
 /**
