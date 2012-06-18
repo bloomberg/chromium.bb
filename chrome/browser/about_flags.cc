@@ -692,13 +692,6 @@ const Experiment kExperiments[] = {
   },
 #endif
   {
-    "enable-platform-apps",
-    IDS_FLAGS_ENABLE_PLATFORM_APPS_NAME,
-    IDS_FLAGS_ENABLE_PLATFORM_APPS_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnablePlatformApps)
-  },
-  {
     "allow-nacl-socket-api",
     IDS_FLAGS_ALLOW_NACL_SOCKET_API_NAME,
     IDS_FLAGS_ALLOW_NACL_SOCKET_API_DESCRIPTION,
