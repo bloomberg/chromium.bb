@@ -2379,12 +2379,23 @@ rotate_binding(struct wl_seat *seat, uint32_t time, uint32_t button,
 }
 
 static void
+lower_fullscreen_layer(struct desktop_shell *shell)
+{
+	struct workspace *ws;
+	struct weston_surface *surface, *prev;
+
+	ws = get_current_workspace(shell);
+	wl_list_for_each_reverse_safe(surface, prev,
+				      &shell->fullscreen_layer.surface_list,
+				      layer_link)
+		weston_surface_restack(surface, &ws->layer.surface_list);
+}
+
+static void
 activate(struct desktop_shell *shell, struct weston_surface *es,
 	 struct weston_seat *seat)
 {
-	struct weston_surface *surf, *prev;
 	struct workspace *ws;
-	struct weston_layer *ws_layer;
 
 	weston_surface_activate(es, seat);
 
@@ -2407,20 +2418,8 @@ activate(struct desktop_shell *shell, struct weston_surface *es,
 		break;
 	default:
 		ws = get_current_workspace(shell);
-		ws_layer = &ws->layer;
-
-		/* move the fullscreen surfaces down into the toplevel layer */
-		if (!wl_list_empty(&shell->fullscreen_layer.surface_list)) {
-			wl_list_for_each_reverse_safe(surf,
-						      prev, 
-					              &shell->fullscreen_layer.surface_list, 
-						      layer_link) {
-				weston_surface_restack(surf,
-						       &ws_layer->surface_list);
-			}
-		}
-
-		weston_surface_restack(es, &ws_layer->surface_list);
+		lower_fullscreen_layer(shell);
+		weston_surface_restack(es, &ws->layer.surface_list);
 		break;
 	}
 }
@@ -2901,12 +2900,12 @@ struct switcher {
 static void
 switcher_next(struct switcher *switcher)
 {
-	struct weston_compositor *compositor = switcher->shell->compositor;
 	struct weston_surface *surface;
 	struct weston_surface *first = NULL, *prev = NULL, *next = NULL;
 	struct shell_surface *shsurf;
+	struct workspace *ws = get_current_workspace(switcher->shell);
 
-	wl_list_for_each(surface, &compositor->surface_list, link) {
+	wl_list_for_each(surface, &ws->layer.surface_list, layer_link) {
 		switch (get_shell_surface_type(surface)) {
 		case SHELL_SURFACE_TOPLEVEL:
 		case SHELL_SURFACE_FULLSCREEN:
@@ -2961,11 +2960,11 @@ switcher_handle_surface_destroy(struct wl_listener *listener, void *data)
 static void
 switcher_destroy(struct switcher *switcher)
 {
-	struct weston_compositor *compositor = switcher->shell->compositor;
 	struct weston_surface *surface;
 	struct wl_keyboard *keyboard = switcher->grab.keyboard;
+	struct workspace *ws = get_current_workspace(switcher->shell);
 
-	wl_list_for_each(surface, &compositor->surface_list, link) {
+	wl_list_for_each(surface, &ws->layer.surface_list, layer_link) {
 		surface->alpha = 1.0;
 		weston_surface_damage(surface);
 	}
@@ -3019,6 +3018,7 @@ switcher_binding(struct wl_seat *seat, uint32_t time, uint32_t key,
 	switcher->listener.notify = switcher_handle_surface_destroy;
 	wl_list_init(&switcher->listener.link);
 
+	lower_fullscreen_layer(switcher->shell);
 	switcher->grab.interface = &switcher_grab;
 	wl_keyboard_start_grab(seat->keyboard, &switcher->grab);
 	wl_keyboard_set_focus(seat->keyboard, NULL);
