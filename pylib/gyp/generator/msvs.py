@@ -589,7 +589,8 @@ def _GenerateExternalRules(rules, output_dir, spec,
   _AddActionStep(actions_to_add,
                  inputs=_FixPaths(all_inputs),
                  outputs=_FixPaths(all_outputs),
-                 description='Running %s' % cmd,
+                 description='Running external rules for %s' %
+                     spec['target_name'],
                  command=cmd)
 
 
