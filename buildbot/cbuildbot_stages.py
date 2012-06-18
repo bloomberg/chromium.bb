@@ -835,7 +835,7 @@ class BuildTargetStage(BoardSpecificBuilderStage):
     root_boost = None
     if (self._build_config['useflags'] and
         'pgo_generate' in self._build_config['useflags']):
-        root_boost = 400
+      root_boost = 400
 
     commands.BuildImage(self._build_root,
                         self._current_board,
@@ -1025,13 +1025,24 @@ class HWTestStage(BoardSpecificBuilderStage, NonHaltingBuilderStage):
     build = '%s/%s' % (self._bot_id, self._archive_stage.GetVersion())
 
     try:
-      with cros_build_lib.SubCommandTimeout(HWTestStage.INFRASTRUCTURE_TIMEOUT):
+      with cros_build_lib.SubCommandTimeout(self.INFRASTRUCTURE_TIMEOUT):
         commands.RunHWTestSuite(build, self._suite, self._current_board,
                                 self._build_config['hw_tests_pool'],
                                 self._options.debug)
 
     except cros_build_lib.TimeoutError as exception:
       return self._HandleExceptionAsWarning(exception)
+
+
+class PaladinHWTestStage(HWTestStage, BoardSpecificBuilderStage,
+                         ForgivingBuilderStage):
+  """Stage that runs tests in the Autotest lab for paladin builders.
+
+  This step differs from the HW Test stage as it has a lower threshold for
+  timeouts and does not block changes from being committed.
+  """
+  # If the tests take longer than an hour and a half, abort.
+  INFRASTRUCTURE_TIMEOUT = 1800
 
 
 class SDKTestStage(bs.BuilderStage):

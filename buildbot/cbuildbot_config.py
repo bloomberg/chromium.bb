@@ -766,6 +766,9 @@ internal_paladin.add_config('stumpy-paladin',
 internal_paladin.add_config('lumpy-paladin',
   boards=['lumpy'],
   paladin_builder_name='lumpy paladin',
+  hw_tests_pool='cq-bvt',
+  hw_tests=['bvt'],
+  upload_hw_test_artifacts=True,
 )
 
 internal_paladin.add_config('link-paladin',

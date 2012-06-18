@@ -409,7 +409,11 @@ class SimpleBuilder(Builder):
     # We can not run hw tests without archiving the payloads.
     if self.options.archive:
       for suite in config['hw_tests']:
-        stage_list.append([stages.HWTestStage, board, archive_stage, suite])
+        if cbuildbot_config.IsCQType(config['build_type']):
+          stage_list.append([stages.PaladinHWTestStage, board, archive_stage,
+                             suite])
+        else:
+          stage_list.append([stages.HWTestStage, board, archive_stage, suite])
 
     steps = [self._GetStageInstance(*x, config=config).Run for x in stage_list]
     background.RunParallelSteps(steps + [archive_stage.Run])
