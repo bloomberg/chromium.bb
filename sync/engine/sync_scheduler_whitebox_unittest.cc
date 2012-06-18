@@ -107,6 +107,7 @@ class SyncSchedulerWhiteboxTest : public testing::Test {
     SyncScheduler::SyncSessionJob job(purpose, TimeTicks::Now(),
          make_linked_ptr(s),
          false,
+         ConfigurationParams(),
          FROM_HERE);
     return DecideOnJob(job);
   }
@@ -160,6 +161,7 @@ TEST_F(SyncSchedulerWhiteboxTest, SaveNudgeWhileTypeThrottled) {
                                     TimeTicks::Now(),
                                     make_linked_ptr(s),
                                     false,
+                                    ConfigurationParams(),
                                     FROM_HERE);
 
   SyncScheduler::JobProcessDecision decision = DecideOnJob(job);

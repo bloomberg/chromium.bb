@@ -59,6 +59,7 @@
 
 using base::TimeDelta;
 using browser_sync::AllStatus;
+using browser_sync::ConfigurationParams;
 using browser_sync::Cryptographer;
 using browser_sync::Encryptor;
 using browser_sync::JsArgList;
@@ -396,6 +397,8 @@ class SyncManager::SyncInternal
   virtual void ProcessJsMessage(
       const std::string& name, const JsArgList& args,
       const WeakHandle<JsReplyHandler>& reply_handler) OVERRIDE;
+
+  void SetSyncSchedulerForTest(scoped_ptr<SyncScheduler> scheduler);
 
  private:
   struct NotificationInfo {
@@ -816,46 +819,44 @@ bool SyncManager::IsUsingExplicitPassphrase() {
   return data_ && data_->IsUsingExplicitPassphrase();
 }
 
-void SyncManager::RequestCleanupDisabledTypes(
-    const browser_sync::ModelSafeRoutingInfo& routing_info) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (data_->scheduler()) {
-    data_->session_context()->set_routing_info(routing_info);
-    data_->scheduler()->CleanupDisabledTypes();
-  }
-}
-
 void SyncManager::RequestClearServerData() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (data_->scheduler())
     data_->scheduler()->ClearUserData();
 }
 
-void SyncManager::RequestConfig(
-    const browser_sync::ModelSafeRoutingInfo& routing_info,
-    const ModelTypeSet& types, ConfigureReason reason) {
+void SyncManager::ConfigureSyncer(
+    ConfigureReason reason,
+    const syncable::ModelTypeSet& types_to_config,
+    const browser_sync::ModelSafeRoutingInfo& new_routing_info,
+    const base::Closure& ready_task,
+    const base::Closure& retry_task) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!data_->scheduler()) {
-    LOG(INFO)
-        << "SyncManager::RequestConfig: bailing out because scheduler is "
-        << "null";
-    return;
-  }
-  StartConfigurationMode(base::Closure());
-  data_->session_context()->set_routing_info(routing_info);
-  data_->scheduler()->ScheduleConfiguration(types, GetSourceFromReason(reason));
-}
+  DCHECK(!ready_task.is_null());
+  DCHECK(!retry_task.is_null());
 
-void SyncManager::StartConfigurationMode(const base::Closure& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  // TODO(zea): set this based on whether cryptographer has keystore
+  // encryption key or not (requires opening a transaction). crbug.com/129665.
+  ConfigurationParams::KeystoreKeyStatus keystore_key_status =
+      ConfigurationParams::KEYSTORE_KEY_UNNECESSARY;
+
+  ConfigurationParams params(GetSourceFromReason(reason),
+                             types_to_config,
+                             new_routing_info,
+                             keystore_key_status,
+                             ready_task);
+
   if (!data_->scheduler()) {
     LOG(INFO)
-        << "SyncManager::StartConfigurationMode: could not start "
-        << "configuration mode because because scheduler is null";
+        << "SyncManager::ConfigureSyncer: could not configure because "
+        << "scheduler is null";
+    params.ready_task.Run();
     return;
   }
-  data_->scheduler()->Start(
-      browser_sync::SyncScheduler::CONFIGURATION_MODE, callback);
+
+  data_->scheduler()->Start(SyncScheduler::CONFIGURATION_MODE);
+  if (!data_->scheduler()->ScheduleConfiguration(params))
+    retry_task.Run();
 }
 
 bool SyncManager::SyncInternal::Init(
@@ -941,8 +942,7 @@ bool SyncManager::SyncInternal::Init(
 
   if (signed_in) {
     if (scheduler()) {
-      scheduler()->Start(
-          browser_sync::SyncScheduler::CONFIGURATION_MODE, base::Closure());
+      scheduler()->Start(SyncScheduler::CONFIGURATION_MODE);
     }
 
     initialized_ = true;
@@ -1116,9 +1116,13 @@ void SyncManager::SyncInternal::NotifyCryptographerState(
 void SyncManager::SyncInternal::StartSyncingNormally(
     const browser_sync::ModelSafeRoutingInfo& routing_info) {
   // Start the sync scheduler.
-  if (scheduler()) { // NULL during certain unittests.
+  if (scheduler()) {  // NULL during certain unittests.
+    // TODO(sync): We always want the newest set of routes when we switch back
+    // to normal mode. Figure out how to enforce set_routing_info is always
+    // appropriately set and that it's only modified when switching to normal
+    // mode.
     session_context()->set_routing_info(routing_info);
-    scheduler()->Start(SyncScheduler::NORMAL_MODE, base::Closure());
+    scheduler()->Start(SyncScheduler::NORMAL_MODE);
   }
 }
 
@@ -2353,6 +2357,11 @@ void SyncManager::SyncInternal::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
+void SyncManager::SyncInternal::SetSyncSchedulerForTest(
+    scoped_ptr<SyncScheduler> sync_scheduler) {
+  scheduler_ = sync_scheduler.Pass();
+}
+
 SyncStatus SyncManager::GetDetailedStatus() const {
   return data_->GetStatus();
 }
@@ -2381,6 +2390,10 @@ void SyncManager::RefreshNigori(const std::string& chrome_version,
 TimeDelta SyncManager::GetNudgeDelayTimeDelta(
     const ModelType& model_type) {
   return data_->GetNudgeDelayTimeDelta(model_type);
+}
+
+void SyncManager::SetSyncSchedulerForTest(scoped_ptr<SyncScheduler> scheduler) {
+  data_->SetSyncSchedulerForTest(scheduler.Pass());
 }
 
 syncable::ModelTypeSet SyncManager::GetEncryptedDataTypesForTest() const {
