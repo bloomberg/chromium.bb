@@ -772,6 +772,12 @@ resize_handler(struct widget *widget,
 	struct terminal *terminal = data;
 	int32_t columns, rows, m;
 
+    if (width < 200)
+        width = 200;
+
+    if (height < 50)
+        height = 50;
+
 	m = 2 * terminal->margin;
 	columns = (width - m) / (int32_t) terminal->extents.max_x_advance;
 	rows = (height - m) / (int32_t) terminal->extents.height;
