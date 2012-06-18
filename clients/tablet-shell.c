@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <sys/wait.h>
 
 #include "window.h"
@@ -134,8 +135,6 @@ homescreen_draw(struct widget *widget, void *data)
 	struct homescreen *homescreen = data;
 	cairo_surface_t *surface;
 	struct rectangle allocation;
-	cairo_pattern_t *pattern;
-	cairo_matrix_t matrix;
 	cairo_t *cr;
 	struct launcher *launcher;
 	const int rows = 4, columns = 5, icon_width = 128, icon_height = 128;
