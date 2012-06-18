@@ -222,6 +222,9 @@ class FlimflamDeviceClientStubImpl : public FlimflamDeviceClient {
         flimflam::kDBusConnectionProperty,
         base::Value::CreateStringValue("/stub"));
     cellular_properties->SetWithoutPathExpansion(
+        flimflam::kDBusServiceProperty,
+        base::Value::CreateStringValue("org.freedesktop.ModemManager"));
+    cellular_properties->SetWithoutPathExpansion(
         flimflam::kDBusObjectProperty,
         base::Value::CreateStringValue("/device/cellular1"));
     stub_devices_.Set(kStubCellular1, cellular_properties);
@@ -237,6 +240,9 @@ class FlimflamDeviceClientStubImpl : public FlimflamDeviceClient {
     cellular_properties->SetWithoutPathExpansion(
         flimflam::kDBusConnectionProperty,
         base::Value::CreateStringValue(":stub.0"));
+    cellular_properties->SetWithoutPathExpansion(
+        flimflam::kDBusServiceProperty,
+        base::Value::CreateStringValue("org.freedesktop.ModemManager1"));
     cellular_properties->SetWithoutPathExpansion(
         flimflam::kDBusObjectProperty,
         base::Value::CreateStringValue(
