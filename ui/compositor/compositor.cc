@@ -104,6 +104,9 @@ WebKit::WebGraphicsContext3D* DefaultContextFactory::CreateContextCommon(
           attrs, false) :
       webkit::gpu::WebGraphicsContext3DInProcessImpl::CreateForWindow(
           attrs, compositor->widget(), share_group_.get());
+  if (!context)
+    return NULL;
+
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (!offscreen) {
     context->makeContextCurrent();
