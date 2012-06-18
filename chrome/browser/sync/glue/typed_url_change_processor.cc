@@ -112,7 +112,7 @@ bool TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
   sync_api::ReadNode typed_url_root(trans);
   if (typed_url_root.InitByTagLookup(kTypedUrlTag) !=
           sync_api::BaseNode::INIT_OK) {
-    error_handler()->OnUnrecoverableError(FROM_HERE,
+    error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
         "Server did not create the top-level typed_url node. We "
          "might be running against an out-of-date server.");
     return false;
@@ -252,7 +252,7 @@ void TypedUrlChangeProcessor::ApplyChangesFromSyncModel(
   sync_api::ReadNode typed_url_root(trans);
   if (typed_url_root.InitByTagLookup(kTypedUrlTag) !=
           sync_api::BaseNode::INIT_OK) {
-    error_handler()->OnUnrecoverableError(FROM_HERE,
+    error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
         "TypedUrl root node lookup failed.");
     return;
   }

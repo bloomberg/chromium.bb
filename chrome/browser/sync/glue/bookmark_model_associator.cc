@@ -553,7 +553,8 @@ void BookmarkModelAssociator::PersistAssociations() {
     int64 sync_id = *iter;
     sync_api::WriteNode sync_node(&trans);
     if (sync_node.InitByIdLookup(sync_id) != sync_api::BaseNode::INIT_OK) {
-      unrecoverable_error_handler_->OnUnrecoverableError(FROM_HERE,
+      unrecoverable_error_handler_->OnSingleDatatypeUnrecoverableError(
+          FROM_HERE,
           "Could not lookup bookmark node for ID persistence.");
       return;
     }

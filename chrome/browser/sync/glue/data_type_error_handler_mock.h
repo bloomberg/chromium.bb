@@ -16,8 +16,6 @@ class DataTypeErrorHandlerMock : public DataTypeErrorHandler {
  public:
   DataTypeErrorHandlerMock();
   virtual ~DataTypeErrorHandlerMock();
-  MOCK_METHOD2(OnUnrecoverableError,
-               void(const tracked_objects::Location&, const std::string&));
   MOCK_METHOD2(OnSingleDatatypeUnrecoverableError,
                void(const tracked_objects::Location&, const std::string&));
   MOCK_METHOD3(CreateAndUploadError,
@@ -30,4 +28,3 @@ class DataTypeErrorHandlerMock : public DataTypeErrorHandler {
 }  // namesspace browser_sync
 
 #endif  // CHROME_BROWSER_SYNC_GLUE_DATA_TYPE_ERROR_HANDLER_MOCK_H__
-

@@ -57,7 +57,7 @@ void GenericChangeProcessor::ApplyChangesFromSyncModel(
       // Need to load specifics from node.
       sync_api::ReadNode read_node(trans);
       if (read_node.InitByIdLookup(it->id) != sync_api::BaseNode::INIT_OK) {
-        error_handler()->OnUnrecoverableError(
+        error_handler()->OnSingleDatatypeUnrecoverableError(
             FROM_HERE,
             "Failed to look up data for received change with id " +
                 base::Int64ToString(it->id));
@@ -80,7 +80,8 @@ void GenericChangeProcessor::CommitChangesFromSyncModel() {
   if (!local_service_) {
     syncable::ModelType type = syncer_changes_[0].sync_data().GetDataType();
     SyncError error(FROM_HERE, "Local service destroyed.", type);
-    error_handler()->OnUnrecoverableError(error.location(), error.message());
+    error_handler()->OnSingleDatatypeUnrecoverableError(error.location(),
+                                                        error.message());
     return;
   }
   SyncError error = local_service_->ProcessSyncChanges(FROM_HERE,

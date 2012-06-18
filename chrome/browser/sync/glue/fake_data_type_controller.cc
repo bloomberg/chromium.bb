@@ -99,12 +99,6 @@ DataTypeController::State FakeDataTypeController::state() const {
   return state_;
 }
 
-void FakeDataTypeController::OnUnrecoverableError(
-    const tracked_objects::Location& from_here,
-    const std::string& message) {
-  ADD_FAILURE() << message;
-}
-
 void FakeDataTypeController::OnSingleDatatypeUnrecoverableError(
     const tracked_objects::Location& from_here,
     const std::string& message) {
@@ -127,4 +121,3 @@ void FakeDataTypeController::SimulateModelLoadFinishing() {
 }
 
 }  // namespace browser_sync
-

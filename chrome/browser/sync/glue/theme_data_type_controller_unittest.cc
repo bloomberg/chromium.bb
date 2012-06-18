@@ -170,13 +170,13 @@ TEST_F(SyncThemeDataTypeControllerTest, Stop) {
 }
 
 // TODO(akalin): Add this test to all the other DTCs.
-TEST_F(SyncThemeDataTypeControllerTest, OnUnrecoverableError) {
+TEST_F(SyncThemeDataTypeControllerTest, OnSingleDatatypeUnrecoverableError) {
   SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations();
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes(_)).
       WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
-  EXPECT_CALL(service_, OnUnrecoverableError(_,_)).
+  EXPECT_CALL(service_, OnDisableDatatype(_,_,_)).
       WillOnce(InvokeWithoutArgs(theme_dtc_.get(),
       &ThemeDataTypeController::Stop));
   SetStopExpectations();
@@ -184,6 +184,6 @@ TEST_F(SyncThemeDataTypeControllerTest, OnUnrecoverableError) {
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
   Start();
   // This should cause theme_dtc_->Stop() to be called.
-  theme_dtc_->OnUnrecoverableError(FROM_HERE, "Test");
+  theme_dtc_->OnSingleDatatypeUnrecoverableError(FROM_HERE, "Test");
   PumpLoop();
 }

@@ -202,11 +202,12 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, Stop) {
   EXPECT_FALSE(syncable_service_.syncing());
 }
 
-TEST_F(SyncSearchEngineDataTypeControllerTest, OnUnrecoverableError) {
+TEST_F(SyncSearchEngineDataTypeControllerTest,
+       OnSingleDatatypeUnrecoverableError) {
   SetStartExpectations();
   PreloadTemplateURLService();
   SetActivateExpectations();
-  EXPECT_CALL(service_, OnUnrecoverableError(_, _)).
+  EXPECT_CALL(service_, OnDisableDatatype(_, _, _)).
       WillOnce(InvokeWithoutArgs(search_engine_dtc_.get(),
                                  &SearchEngineDataTypeController::Stop));
   SetStopExpectations();
@@ -214,7 +215,7 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, OnUnrecoverableError) {
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _));
   Start();
   // This should cause search_engine_dtc_->Stop() to be called.
-  search_engine_dtc_->OnUnrecoverableError(FROM_HERE, "Test");
+  search_engine_dtc_->OnSingleDatatypeUnrecoverableError(FROM_HERE, "Test");
   test_util_.PumpLoop();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, search_engine_dtc_->state());
   EXPECT_FALSE(syncable_service_.syncing());

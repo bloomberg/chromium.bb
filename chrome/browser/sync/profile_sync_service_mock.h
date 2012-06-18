@@ -54,6 +54,9 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_METHOD2(OnUnrecoverableError,
                void(const tracked_objects::Location& location,
                const std::string& message));
+  MOCK_METHOD3(OnDisableDatatype, void(syncable::ModelType,
+               const tracked_objects::Location&,
+               std::string message));
   MOCK_CONST_METHOD0(GetUserShare, sync_api::UserShare*());
   MOCK_METHOD3(ActivateDataType,
                void(syncable::ModelType, browser_sync::ModelSafeGroup,

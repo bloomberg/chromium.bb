@@ -68,7 +68,7 @@ void PasswordChangeProcessor::Observe(
   sync_api::ReadNode password_root(&trans);
   if (password_root.InitByTagLookup(kPasswordTag) !=
           sync_api::BaseNode::INIT_OK) {
-    error_handler()->OnUnrecoverableError(FROM_HERE,
+    error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
         "Server did not create the top-level password node. "
         "We might be running against an out-of-date server.");
     return;
@@ -174,7 +174,7 @@ void PasswordChangeProcessor::ApplyChangesFromSyncModel(
   sync_api::ReadNode password_root(trans);
   if (password_root.InitByTagLookup(kPasswordTag) !=
           sync_api::BaseNode::INIT_OK) {
-    error_handler()->OnUnrecoverableError(FROM_HERE,
+    error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
         "Password root node lookup failed.");
     return;
   }

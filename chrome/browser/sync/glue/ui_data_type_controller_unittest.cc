@@ -195,9 +195,9 @@ TEST_F(SyncUIDataTypeControllerTest,
 
 // Start the DTC, but then trigger an unrecoverable error. Verify the syncer
 // gets stopped and the DTC is in NOT_RUNNING state.
-TEST_F(SyncUIDataTypeControllerTest, OnUnrecoverableError) {
+TEST_F(SyncUIDataTypeControllerTest, OnSingleDatatypeUnrecoverableError) {
   SetActivateExpectations();
-  EXPECT_CALL(profile_sync_service_, OnUnrecoverableError(_,_)).
+  EXPECT_CALL(profile_sync_service_, OnDisableDatatype(_,_,_)).
       WillOnce(InvokeWithoutArgs(preference_dtc_.get(),
                                  &UIDataTypeController::Stop));
   SetStopExpectations();
@@ -207,7 +207,7 @@ TEST_F(SyncUIDataTypeControllerTest, OnUnrecoverableError) {
   EXPECT_FALSE(syncable_service_.syncing());
   Start();
   EXPECT_TRUE(syncable_service_.syncing());
-  preference_dtc_->OnUnrecoverableError(FROM_HERE, "Test");
+  preference_dtc_->OnSingleDatatypeUnrecoverableError(FROM_HERE, "Test");
   PumpLoop();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
   EXPECT_FALSE(syncable_service_.syncing());

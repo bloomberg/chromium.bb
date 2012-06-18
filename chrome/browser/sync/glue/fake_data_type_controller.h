@@ -42,10 +42,6 @@ class FakeDataTypeController : public DataTypeController {
 
   virtual State state() const OVERRIDE;
 
-  virtual void OnUnrecoverableError(
-      const tracked_objects::Location& from_here,
-      const std::string& message) OVERRIDE;
-
   virtual void OnSingleDatatypeUnrecoverableError(
       const tracked_objects::Location& from_here,
       const std::string& message) OVERRIDE;
@@ -71,4 +67,3 @@ class FakeDataTypeController : public DataTypeController {
 
 }  // namespace browser_sync
 #endif  // CHROME_BROWSER_SYNC_GLUE_FAKE_DATA_TYPE_CONTROLLER_H__
-

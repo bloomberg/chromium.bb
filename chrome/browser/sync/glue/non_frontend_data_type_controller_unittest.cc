@@ -362,12 +362,13 @@ TEST_F(SyncNonFrontendDataTypeControllerTest, Stop) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_frontend_dtc_->state());
 }
 
-TEST_F(SyncNonFrontendDataTypeControllerTest, OnUnrecoverableError) {
+TEST_F(SyncNonFrontendDataTypeControllerTest,
+       OnSingleDatatypeUnrecoverableError) {
   SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations(DataTypeController::OK);
   EXPECT_CALL(*dtc_mock_, RecordUnrecoverableError(_, "Test"));
-  EXPECT_CALL(service_, OnUnrecoverableError(_,_)).WillOnce(
+  EXPECT_CALL(service_, OnDisableDatatype(_,_,_)).WillOnce(
       InvokeWithoutArgs(non_frontend_dtc_.get(),
           &NonFrontendDataTypeController::Stop));
   SetStopExpectations();
@@ -376,12 +377,11 @@ TEST_F(SyncNonFrontendDataTypeControllerTest, OnUnrecoverableError) {
   WaitForDTC();
   EXPECT_EQ(DataTypeController::RUNNING, non_frontend_dtc_->state());
   // This should cause non_frontend_dtc_->Stop() to be called.
-  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      base::Bind(
-          &NonFrontendDataTypeControllerFake::OnUnrecoverableError,
-          non_frontend_dtc_.get(),
-          FROM_HERE,
-          std::string("Test")));
+  BrowserThread::PostTask(BrowserThread::DB, FROM_HERE, base::Bind(
+      &NonFrontendDataTypeControllerFake::OnSingleDatatypeUnrecoverableError,
+      non_frontend_dtc_.get(),
+      FROM_HERE,
+      std::string("Test")));
   WaitForDTC();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_frontend_dtc_->state());
 }

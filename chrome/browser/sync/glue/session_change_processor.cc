@@ -263,7 +263,7 @@ void SessionChangeProcessor::ApplyChangesFromSyncModel(
 
   sync_api::ReadNode root(trans);
   if (root.InitByTagLookup(kSessionsTag) != sync_api::BaseNode::INIT_OK) {
-    error_handler()->OnUnrecoverableError(FROM_HERE,
+    error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
         "Sessions root node lookup failed.");
     return;
   }

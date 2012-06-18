@@ -47,7 +47,7 @@ void ThemeChangeProcessor::Observe(
                                  kCurrentThemeClientTag) !=
           sync_api::BaseNode::INIT_OK) {
     std::string err = "Could not create node with client tag: ";
-    error_handler()->OnUnrecoverableError(FROM_HERE,
+    error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
                                           err + kCurrentThemeClientTag);
     return;
   }
@@ -92,7 +92,7 @@ void ThemeChangeProcessor::ApplyChangesFromSyncModel(
       change.action != sync_api::ChangeRecord::ACTION_DELETE) {
     std::string err = "strange theme change.action " +
         base::IntToString(change.action);
-    error_handler()->OnUnrecoverableError(FROM_HERE, err);
+    error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE, err);
     return;
   }
   sync_pb::ThemeSpecifics theme_specifics;

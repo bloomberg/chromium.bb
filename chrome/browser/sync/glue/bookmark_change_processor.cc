@@ -177,7 +177,7 @@ int64 BookmarkChangeProcessor::CreateSyncNode(const BookmarkNode* parent,
 
   // Actually create the node with the appropriate initial position.
   if (!PlaceSyncNode(CREATE, parent, index, trans, &sync_child, associator)) {
-    error_handler->OnUnrecoverableError(FROM_HERE,
+    error_handler->OnSingleDatatypeUnrecoverableError(FROM_HERE,
         "Sync node creation failed; recovery unlikely");
     return sync_api::kInvalidId;
   }
@@ -303,7 +303,8 @@ void BookmarkChangeProcessor::BookmarkNodeMoved(BookmarkModel* model,
 
   if (!PlaceSyncNode(MOVE, new_parent, new_index, &trans, &sync_node,
                      model_associator_)) {
-    error_handler()->OnUnrecoverableError(FROM_HERE, std::string());
+    error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+                                                        std::string());
     return;
   }
 }
@@ -336,7 +337,8 @@ void BookmarkChangeProcessor::BookmarkNodeChildrenReordered(
 
     if (!PlaceSyncNode(MOVE, node, i, &trans, &sync_child,
                        model_associator_)) {
-      error_handler()->OnUnrecoverableError(FROM_HERE, std::string());
+      error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
+                                                          std::string());
       return;
     }
   }
@@ -468,7 +470,7 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
                                            model->other_node()->child_count(),
                                            string16());
           if (!foster_parent) {
-            error_handler()->OnUnrecoverableError(FROM_HERE,
+            error_handler()->OnSingleDatatypeUnrecoverableError(FROM_HERE,
                 "Failed to create foster parent.");
             return;
           }

@@ -53,8 +53,6 @@ class FrontendDataTypeController : public DataTypeController {
   virtual State state() const OVERRIDE;
 
   // DataTypeErrorHandler interface.
-  virtual void OnUnrecoverableError(const tracked_objects::Location& from_here,
-                                    const std::string& message) OVERRIDE;
   virtual void OnSingleDatatypeUnrecoverableError(
       const tracked_objects::Location& from_here,
       const std::string& message) OVERRIDE;

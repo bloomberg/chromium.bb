@@ -47,8 +47,6 @@ class UIDataTypeController : public DataTypeController {
   virtual State state() const OVERRIDE;
 
   // UnrecoverableErrorHandler interface.
-  virtual void OnUnrecoverableError(const tracked_objects::Location& from_here,
-                                    const std::string& message) OVERRIDE;
   virtual void OnSingleDatatypeUnrecoverableError(
       const tracked_objects::Location& from_here,
       const std::string& message) OVERRIDE;

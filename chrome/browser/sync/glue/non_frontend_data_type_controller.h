@@ -56,8 +56,6 @@ class NonFrontendDataTypeController : public DataTypeController {
 
   // DataTypeErrorHandler interface.
   // Note: this is performed on the datatype's thread.
-  virtual void OnUnrecoverableError(const tracked_objects::Location& from_here,
-                                    const std::string& message) OVERRIDE;
   virtual void OnSingleDatatypeUnrecoverableError(
       const tracked_objects::Location& from_here,
       const std::string& message) OVERRIDE;
@@ -114,11 +112,6 @@ class NonFrontendDataTypeController : public DataTypeController {
   // the datatype controller. The default implementation is a no-op.
   // Note: this is performed on the frontend (UI) thread.
   virtual void StopModels();
-
-  // Implementation of OnUnrecoverableError that lives on UI thread.
-  virtual void OnUnrecoverableErrorImpl(
-      const tracked_objects::Location& from_here,
-      const std::string& message);
 
   // The actual implementation of Disabling the datatype. This happens
   // on the UI thread.

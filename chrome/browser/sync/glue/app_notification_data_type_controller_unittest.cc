@@ -256,11 +256,12 @@ TEST_F(SyncAppNotificationDataTypeControllerTest, Stop) {
   EXPECT_FALSE(syncable_service_.syncing());
 }
 
-TEST_F(SyncAppNotificationDataTypeControllerTest, OnUnrecoverableError) {
+TEST_F(SyncAppNotificationDataTypeControllerTest,
+       OnSingleDatatypeUnrecoverableError) {
   SetStartExpectations();
   InitAndLoadManager();
   SetActivateExpectations();
-  EXPECT_CALL(service_, OnUnrecoverableError(_, _)).
+  EXPECT_CALL(service_, OnDisableDatatype(_, _, _)).
       WillOnce(InvokeWithoutArgs(app_notif_dtc_.get(),
                                  &AppNotificationDataTypeController::Stop));
   SetStopExpectations();
@@ -270,7 +271,7 @@ TEST_F(SyncAppNotificationDataTypeControllerTest, OnUnrecoverableError) {
   EXPECT_EQ(DataTypeController::RUNNING, app_notif_dtc_->state());
   EXPECT_TRUE(syncable_service_.syncing());
   // This should cause app_notif_dtc_->Stop() to be called.
-  app_notif_dtc_->OnUnrecoverableError(FROM_HERE, "Test");
+  app_notif_dtc_->OnSingleDatatypeUnrecoverableError(FROM_HERE, "Test");
   PumpLoop();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, app_notif_dtc_->state());
   EXPECT_FALSE(syncable_service_.syncing());

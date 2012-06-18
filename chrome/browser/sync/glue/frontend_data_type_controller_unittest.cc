@@ -256,12 +256,12 @@ TEST_F(SyncFrontendDataTypeControllerTest, Stop) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, frontend_dtc_->state());
 }
 
-TEST_F(SyncFrontendDataTypeControllerTest, OnUnrecoverableError) {
+TEST_F(SyncFrontendDataTypeControllerTest, OnSingleDatatypeUnrecoverableError) {
   SetStartExpectations();
   SetAssociateExpectations();
   SetActivateExpectations(DataTypeController::OK);
   EXPECT_CALL(*dtc_mock_, RecordUnrecoverableError(_, "Test"));
-  EXPECT_CALL(service_, OnUnrecoverableError(_,_)).
+  EXPECT_CALL(service_, OnDisableDatatype(_,_,_)).
       WillOnce(InvokeWithoutArgs(frontend_dtc_.get(),
                                  &FrontendDataTypeController::Stop));
   SetStopExpectations();
@@ -269,7 +269,7 @@ TEST_F(SyncFrontendDataTypeControllerTest, OnUnrecoverableError) {
   Start();
   EXPECT_EQ(DataTypeController::RUNNING, frontend_dtc_->state());
   // This should cause frontend_dtc_->Stop() to be called.
-  frontend_dtc_->OnUnrecoverableError(FROM_HERE, "Test");
+  frontend_dtc_->OnSingleDatatypeUnrecoverableError(FROM_HERE, "Test");
   PumpLoop();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, frontend_dtc_->state());
 }
