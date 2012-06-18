@@ -16,13 +16,21 @@
     // Indicates whether or not the device is paired with the system.
     boolean paired;
 
-    // Indicates whether or not the device is bonded with the system.  A device
+    // Indicates whether or not the device is bonded with the system. A device
     // is bonded if it is paired and high-security link keys have been
     // exchanged so that connections may be encrypted.
     boolean bonded;
 
     // Indicates whether the device is currently connected to the system.
     boolean connected;
+  };
+
+  dictionary ServiceRecord {
+    // The name of the service.
+    DOMString name;
+
+    // The UUID of the service.
+    DOMString? uuid;
   };
 
   dictionary Socket {
@@ -48,10 +56,11 @@
   callback DevicesCallback = void (Device[] result);
   callback OutOfBandPairingDataCallback = void (OutOfBandPairingData data);
   callback ResultCallback = void ();
+  callback ServicesCallback = void(ServiceRecord[] result);
   callback SizeCallback = void (long result);
   callback SocketCallback = void (Socket result);
 
-  // Options for the getDevices function.  If neither |uuid| or |name| are
+  // Options for the getDevices function. If neither |uuid| or |name| are
   // provided, all devices known to the system are returned.
   dictionary GetDevicesOptions {
     // Only devices providing a service with a UUID that matches |uuid| will be
@@ -61,6 +70,13 @@
     // Only devices providing a service with a name that matches |name| will be
     // returned.
     DOMString? name;
+  };
+
+  // Options for the getServices function.
+  dictionary GetServicesOptions {
+    // The address of the device to inquire about. |deviceAddress| should be
+    // in the format 'XX:XX:XX:XX:XX:XX'.
+    DOMString deviceAddress;
   };
 
   // Options for the connect function.
@@ -97,10 +113,10 @@
   // Options for the setOutOfBandPairingData function.
   dictionary SetOutOfBandPairingDataOptions {
     // The address of the remote device that the data should be associated
-    // with.  |deviceAddress| should be in the format 'XX:XX:XX:XX:XX:XX'.
+    // with. |deviceAddress| should be in the format 'XX:XX:XX:XX:XX:XX'.
     DOMString address;
 
-    // The Out Of Band Pairing Data.  If this is omitted, the data for the
+    // The Out Of Band Pairing Data. If this is omitted, the data for the
     // device is cleared instead.
     OutOfBandPairingData? data;
   };
@@ -130,6 +146,10 @@
     // |callback| : Called with an array of Device objects.
     static void getDevices(GetDevicesOptions options,
                            DevicesCallback callback);
+
+    // Get a list of services provided by a device.
+    static void getServices(GetServicesOptions options,
+                            ServicesCallback callback);
 
     // Connect to a service on a device.
     // |options|  : The options for the connection.
@@ -168,9 +188,9 @@
     static void setOutOfBandPairingData(SetOutOfBandPairingDataOptions options,
                                         optional ResultCallback callback);
 
-    // Start discovery.  Discovered devices will be returned via the
-    // |onDeviceDiscovered| callback.  Note that discovery can be resource
-    // intensive.  stopDiscovery should be called as soon as is convenient.
+    // Start discovery. Discovered devices will be returned via the
+    // |onDeviceDiscovered| callback. Note that discovery can be resource
+    // intensive. stopDiscovery should be called as soon as is convenient.
     // |options|  : The options for this function.
     // |callback| : Called to indicate success or failure.
     static void startDiscovery(
@@ -192,7 +212,7 @@
     // |powered| : True if bluetooth is powered, false otherwise.
     static void onPowerChanged(boolean has_power);
 
-    // Used to return discovered devices to the extension.  Users should not
+    // Used to return discovered devices to the extension. Users should not
     // add listeners to this event directly.
     static void onDeviceDiscovered_(Device device);
   };

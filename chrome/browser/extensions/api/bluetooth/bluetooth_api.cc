@@ -50,6 +50,7 @@ const char kCouldNotSetOutOfBandPairingData[] =
     "Could not set Out Of Band Pairing Data";
 const char kFailedToConnect[] = "Connection failed";
 const char kInvalidDevice[] = "Invalid device";
+const char kServiceDiscoveryFailed[] = "Service discovery failed";
 const char kSocketNotFoundError[] = "Socket not found: invalid socket id";
 const char kStartDiscoveryFailed[] =
     "Starting discovery failed, or already discovering";
@@ -60,6 +61,7 @@ const char kStopDiscoveryFailed[] = "Failed to stop discovery";
 namespace Connect = extensions::api::experimental_bluetooth::Connect;
 namespace Disconnect = extensions::api::experimental_bluetooth::Disconnect;
 namespace GetDevices = extensions::api::experimental_bluetooth::GetDevices;
+namespace GetServices = extensions::api::experimental_bluetooth::GetServices;
 namespace Read = extensions::api::experimental_bluetooth::Read;
 namespace SetOutOfBandPairingData =
     extensions::api::experimental_bluetooth::SetOutOfBandPairingData;
@@ -150,6 +152,56 @@ bool BluetoothGetDevicesFunction::RunImpl() {
     SendResponse(true);
     Release();
   }
+
+  return true;
+}
+
+void BluetoothGetServicesFunction::GetServiceRecordsCallback(
+    base::ListValue* services,
+    const chromeos::BluetoothDevice::ServiceRecordList& records) {
+  for (chromeos::BluetoothDevice::ServiceRecordList::const_iterator i =
+      records.begin(); i != records.end(); ++i) {
+    const chromeos::BluetoothServiceRecord& record = **i;
+    experimental_bluetooth::ServiceRecord api_record;
+    api_record.name = record.name();
+    if (!record.uuid().empty())
+      api_record.uuid.reset(new std::string(record.uuid()));
+    services->Append(api_record.ToValue().release());
+  }
+
+  SendResponse(true);
+  Release();  // Added in RunImpl
+}
+
+void BluetoothGetServicesFunction::OnErrorCallback() {
+  SetError(kServiceDiscoveryFailed);
+  SendResponse(false);
+  Release();  // Added in RunImpl
+}
+
+bool BluetoothGetServicesFunction::RunImpl() {
+  scoped_ptr<GetServices::Params> params(GetServices::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
+  const experimental_bluetooth::GetServicesOptions& options = params->options;
+
+  chromeos::BluetoothDevice* device =
+      GetMutableAdapter(profile())->GetDevice(options.device_address);
+  if (!device) {
+    SendResponse(false);
+    SetError(kInvalidDevice);
+    return false;
+  }
+
+  ListValue* services = new ListValue;
+  result_.reset(services);
+
+  AddRef();  // Released in GetServiceRecordsCallback or OnErrorCallback
+  device->GetServiceRecords(
+      base::Bind(&BluetoothGetServicesFunction::GetServiceRecordsCallback,
+                 this,
+                 services),
+      base::Bind(&BluetoothGetServicesFunction::OnErrorCallback,
+                 this));
 
   return true;
 }
@@ -479,6 +531,11 @@ bool BluetoothGetAddressFunction::RunImpl() {
 }
 
 bool BluetoothGetDevicesFunction::RunImpl() {
+  NOTREACHED() << "Not implemented yet";
+  return false;
+}
+
+bool BluetoothGetServicesFunction::RunImpl() {
   NOTREACHED() << "Not implemented yet";
   return false;
 }

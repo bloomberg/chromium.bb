@@ -13,11 +13,11 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/chromeos/bluetooth/bluetooth_device.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_socket.h"
 
 namespace chromeos {
 
-class BluetoothDevice;
 class BluetoothSocket;
 struct BluetoothOutOfBandPairingData;
 
@@ -81,6 +81,26 @@ class BluetoothGetDevicesFunction : public AsyncExtensionFunction {
                                bool shouldAdd);
 
   int callbacks_pending_;
+#endif
+};
+
+class BluetoothGetServicesFunction : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.bluetooth.getServices")
+
+ protected:
+  virtual ~BluetoothGetServicesFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+
+
+#if defined(OS_CHROMEOS)
+ private:
+  void GetServiceRecordsCallback(
+      base::ListValue* services,
+      const chromeos::BluetoothDevice::ServiceRecordList& records);
+  void OnErrorCallback();
 #endif
 };
 
