@@ -209,8 +209,8 @@
 #  define NACL_HALT         mov pc, #0
 # endif  /* defined(NACL_TARGET_ARM_THUMB2_MODE) */
 
-/* 16-byte bundles, 256MB code segment*/
-# define NACL_CONTROL_FLOW_MASK      0xF000000F
+/* 16-byte bundles, 1G address space */
+# define NACL_CONTROL_FLOW_MASK      0xC000000F
 
 # define NACL_DATA_FLOW_MASK      0xC0000000
 

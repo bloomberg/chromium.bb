@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -13,6 +13,6 @@
 
 #define NACL_BLOCK_SHIFT        4
 #define NACL_DATA_FLOW_MASK     0xC0000000
-#define NACL_CONTROL_FLOW_MASK  0xF000000F
+#define NACL_CONTROL_FLOW_MASK  0xC000000F
 
 #endif
