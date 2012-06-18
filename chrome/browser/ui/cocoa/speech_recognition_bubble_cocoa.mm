@@ -26,8 +26,8 @@ namespace {
 class SpeechRecognitionBubbleImpl : public SpeechRecognitionBubbleBase {
  public:
   SpeechRecognitionBubbleImpl(WebContents* web_contents,
-                        Delegate* delegate,
-                        const gfx::Rect& element_rect);
+                              Delegate* delegate,
+                              const gfx::Rect& element_rect);
   virtual ~SpeechRecognitionBubbleImpl();
   virtual void Show();
   virtual void Hide();
@@ -70,36 +70,35 @@ void SpeechRecognitionBubbleImpl::Show() {
   // input element rect if the position is valid, otherwise point it towards
   // the page icon in the omnibox.
   gfx::NativeView view = GetWebContents()->GetView()->GetNativeView();
-  NSWindow* parentWindow =
-      GetWebContents()->GetView()->GetTopLevelNativeWindow();
+  NSWindow* parent_window = [view window];
   NSRect tab_bounds = [view bounds];
   int anchor_x = tab_bounds.origin.x + element_rect_.x() +
                  element_rect_.width() - kBubbleTargetOffsetX;
   int anchor_y = tab_bounds.origin.y + tab_bounds.size.height -
                  element_rect_.y() - element_rect_.height();
-  NSPoint anchor = NSZeroPoint;
-  if (anchor_x < 0 || anchor_y < 0 ||
-      anchor_x > NSWidth([parentWindow frame]) ||
-      anchor_y > NSHeight([parentWindow frame])) {
+
+  NSPoint anchor = NSMakePoint(anchor_x, anchor_y);
+  if (NSPointInRect(anchor, tab_bounds)) {
+    // Good, convert to window coordinates.
+    anchor = [view convertPoint:anchor toView:nil];
+  } else {
     LocationBarViewMac* locationBar =
-        [[parentWindow windowController] locationBarBridge];
+        [[parent_window windowController] locationBarBridge];
 
     if (locationBar) {
       anchor = locationBar->GetPageInfoBubblePoint();
     } else {
       // This is very rare, but possible. Just use the top-left corner.
-      // See crbug.com/119237
-      anchor = NSMakePoint(tab_bounds.origin.x,
-                           tab_bounds.origin.y + tab_bounds.size.height);
+      // See http://crbug.com/119237
+      anchor = NSMakePoint(NSMinX(tab_bounds), NSMaxY(tab_bounds));
+      anchor = [view convertPoint:anchor toView:nil];
     }
-  } else {
-    anchor = NSMakePoint(anchor_x, anchor_y);
   }
-  anchor = [view convertPoint:anchor toView:nil];
-  anchor = [[view window] convertBaseToScreen:anchor];
+
+  anchor = [parent_window convertBaseToScreen:anchor];
 
   window_.reset([[SpeechRecognitionWindowController alloc]
-      initWithParentWindow:parentWindow
+      initWithParentWindow:parent_window
                   delegate:delegate_
                 anchoredAt:anchor]);
 

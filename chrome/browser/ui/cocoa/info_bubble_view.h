@@ -10,6 +10,7 @@
 
 namespace info_bubble {
 
+// These values are in view coordinates.
 const CGFloat kBubbleArrowHeight = 8.0;
 const CGFloat kBubbleArrowWidth = 15.0;
 const CGFloat kBubbleCornerRadius = 2.0;
