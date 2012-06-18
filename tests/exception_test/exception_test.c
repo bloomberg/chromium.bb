@@ -37,6 +37,8 @@ uint32_t exception_handler_esp = -1;
 #elif defined(__x86_64__)
 uint64_t exception_handler_rsp = -1;
 uint64_t exception_handler_rbp = -1;
+#elif defined(__arm__)
+uint32_t exception_handler_sp = -1;
 #endif
 void exception_handler_wrapper(struct NaClExceptionContext *context);
 
