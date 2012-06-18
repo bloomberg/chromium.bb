@@ -292,7 +292,13 @@ bool CrackIsolatedFileSystemName(const std::string& filesystem_name,
   // |filesystem_name| is of the form {origin}:isolated_{filesystem_id}.
   std::string start_token(":");
   start_token = start_token.append(kIsolatedName).append("_");
-  size_t pos = filesystem_name.find(start_token);
+  // WebKit uses different case in its constant for isolated file system
+  // names, so we do a case insensitive compare by converting both strings
+  // to uppercase.
+  // TODO(benwells): Remove this when WebKit uses the same constant.
+  start_token = StringToUpperASCII(start_token);
+  std::string filesystem_name_upper = StringToUpperASCII(filesystem_name);
+  size_t pos = filesystem_name_upper.find(start_token);
   if (pos == std::string::npos)
     return false;
   if (pos == 0)

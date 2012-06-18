@@ -167,6 +167,8 @@ TEST_F(FileSystemUtilTest, CrackIsolatedFileSystemName) {
   std::string fsid;
   EXPECT_TRUE(CrackIsolatedFileSystemName("foo:Isolated_bar", &fsid));
   EXPECT_EQ("bar", fsid);
+  EXPECT_TRUE(CrackIsolatedFileSystemName("foo:isolated_bar", &fsid));
+  EXPECT_EQ("bar", fsid);
   EXPECT_TRUE(CrackIsolatedFileSystemName("foo:Isolated__bar", &fsid));
   EXPECT_EQ("_bar", fsid);
   EXPECT_TRUE(CrackIsolatedFileSystemName("foo::Isolated_bar", &fsid));
