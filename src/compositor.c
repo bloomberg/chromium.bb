@@ -274,9 +274,9 @@ weston_surface_set_color(struct weston_surface *surface,
 	surface->shader = &surface->compositor->solid_shader;
 }
 
-static void
-surface_to_global_float(struct weston_surface *surface,
-			GLfloat sx, GLfloat sy, GLfloat *x, GLfloat *y)
+WL_EXPORT void
+weston_surface_to_global_float(struct weston_surface *surface,
+			       GLfloat sx, GLfloat sy, GLfloat *x, GLfloat *y)
 {
 	if (surface->transform.enabled) {
 		struct weston_vector v = { { sx, sy, 0.0f, 1.0f } };
@@ -332,7 +332,8 @@ surface_compute_bbox(struct weston_surface *surface, int32_t sx, int32_t sy,
 
 	for (i = 0; i < 4; ++i) {
 		GLfloat x, y;
-		surface_to_global_float(surface, s[i][0], s[i][1], &x, &y);
+		weston_surface_to_global_float(surface,
+					       s[i][0], s[i][1], &x, &y);
 		if (x < min_x)
 			min_x = x;
 		if (x > max_x)
@@ -442,13 +443,6 @@ weston_surface_update_transform(struct weston_surface *surface)
 		weston_surface_assign_output(surface);
 
 	weston_compositor_schedule_repaint(surface->compositor);
-}
-
-WL_EXPORT void
-weston_surface_to_global_float(struct weston_surface *surface,
-			       GLfloat sx, GLfloat sy, GLfloat *x, GLfloat *y)
-{
-	surface_to_global_float(surface, sx, sy, x, y);
 }
 
 WL_EXPORT void
