@@ -125,10 +125,13 @@ gChildPIDs = []
    Details:
      ProcessUtilTest.SpawnChild: chokes in __gcov_fork on 10.6
      IPCFuzzingTest.MsgBadPayloadArgs: ditto
+     FullscreenControllerTest.*: Fails on coverage bots thereby
+     aborting the test.
 """
 gTestExclusions = {
   'darwin2': { 'base_unittests': ('ProcessUtilTest.SpawnChild',),
-               'ipc_tests': ('IPCFuzzingTest.MsgBadPayloadArgs',), }
+               'ipc_tests': ('IPCFuzzingTest.MsgBadPayloadArgs',), },
+  'linux2': { 'browser_tests': ('*FullscreenControllerTest.*',), },
 }
 
 
