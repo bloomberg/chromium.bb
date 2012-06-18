@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.content.app;
 
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
+
+import org.chromium.content.common.CommandLine;
+import org.chromium.content.common.TraceEvent;
 
 // This class provides functionality to:
 // - synchronously load and register the native library. This is used by callers

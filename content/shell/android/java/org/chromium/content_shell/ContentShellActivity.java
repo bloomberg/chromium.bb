@@ -11,9 +11,9 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 
-import org.chromium.content.browser.CommandLine;
+import org.chromium.content.app.LibraryLoader;
 import org.chromium.content.browser.ContentView;
-import org.chromium.content.browser.LibraryLoader;
+import org.chromium.content.common.CommandLine;
 
 /**
  * Activity for managing the Content Shell.

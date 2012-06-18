@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/android/command_line.h"
+#include "content/common/android/command_line.h"
 
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "jni/command_line_jni.h"
-#include "content/browser/android/jni_helper.h"
 
+using base::android::AppendJavaStringArrayToStringVector;
 using base::android::ConvertJavaStringToUTF8;
 
 namespace {
@@ -17,9 +18,9 @@ namespace {
 void AppendJavaStringArrayToCommandLine(JNIEnv* env,
                                         jobjectArray array,
                                         bool includes_program) {
-  CommandLine::StringVector vec;
+  std::vector<std::string> vec;
   if (array)
-    ConvertJavaArrayOfStringsToVectorOfStrings(env, array, &vec);
+    AppendJavaStringArrayToStringVector(env, array, &vec);
   if (!includes_program)
     vec.insert(vec.begin(), "");
   CommandLine extra_command_line(vec);

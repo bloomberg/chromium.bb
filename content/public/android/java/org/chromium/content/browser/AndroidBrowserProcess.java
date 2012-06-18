@@ -10,8 +10,8 @@ import android.content.res.Resources;
 import android.util.Log;
 
 import org.chromium.content.app.ContentMain;
+import org.chromium.content.app.LibraryLoader;
 import org.chromium.content.browser.ContentView;
-import org.chromium.content.browser.LibraryLoader;
 
 // NOTE: This file hasn't been fully upstreamed, please don't merge to downstream.
 public class AndroidBrowserProcess {

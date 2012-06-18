@@ -18,7 +18,7 @@
 #include "base/string_util.h"
 #include "base/tracked_objects.h"
 #include "content/app/android/content_jni_registrar.h"
-#include "content/browser/android/command_line.h"
+#include "content/common/android/command_line.h"
 #include "content/public/common/content_switches.h"
 #include "media/base/android/media_jni_registrar.h"
 #include "net/android/net_jni_registrar.h"

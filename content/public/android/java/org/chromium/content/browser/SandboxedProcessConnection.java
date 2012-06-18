@@ -20,11 +20,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.content.app.SandboxedProcessService;
-import org.chromium.content.browser.CommandLine;
+import org.chromium.content.common.CommandLine;
 import org.chromium.content.common.ISandboxedProcessCallback;
 import org.chromium.content.common.ISandboxedProcessService;
-// TODO(michaelbai): Move to org.chromium.content.commnon.
-import org.chromium.content.browser.TraceEvent;
+import org.chromium.content.common.TraceEvent;
 
 public class SandboxedProcessConnection {
     interface DeathCallback {

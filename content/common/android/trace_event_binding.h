@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_ANDROID_TRACE_EVENT_H_
-#define CONTENT_BROWSER_ANDROID_TRACE_EVENT_H_
+#ifndef CONTENT_COMMON_ANDROID_TRACE_EVENT_H_
+#define CONTENT_COMMON_ANDROID_TRACE_EVENT_H_
 #pragma once
 
 #include <jni.h>
 
 extern bool RegisterTraceEvent(JNIEnv* env);
 
-#endif  // CONTENT_BROWSER_ANDROID_TRACE_EVENT_H_
+#endif  // CONTENT_COMMON_ANDROID_TRACE_EVENT_H_

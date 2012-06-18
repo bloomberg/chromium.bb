@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.content.common;
 
 import android.os.Looper;
 import android.util.Printer;
@@ -44,9 +44,6 @@ public class TraceEvent {
      * The native library must be loaded before the first call with enabled == true.
      */
     public static synchronized void setEnabled(boolean enabled) {
-        if (enabled) {
-            LibraryLoader.checkIsReady();
-        }
         if (sEnabled == enabled) {
             return;
         }

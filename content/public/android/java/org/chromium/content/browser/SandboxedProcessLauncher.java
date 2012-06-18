@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.chromium.base.CalledByNative;
-import org.chromium.content.browser.CommandLine;
+import org.chromium.content.common.CommandLine;
 import org.chromium.content.common.ISandboxedProcessCallback;
 import org.chromium.content.common.ISandboxedProcessService;
 

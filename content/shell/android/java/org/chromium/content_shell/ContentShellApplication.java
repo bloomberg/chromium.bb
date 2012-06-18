@@ -5,7 +5,7 @@
 package org.chromium.content_shell;
 
 import android.app.Application;
-import org.chromium.content.browser.LibraryLoader;
+import org.chromium.content.app.LibraryLoader;
 
 /**
  * Entry point for the content shell application.  Handles initialization of information that needs

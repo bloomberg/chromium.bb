@@ -93,14 +93,13 @@ public class SandboxedProcessService extends Service {
             @Override
             public void run()  {
                 try {
-                    // TODO(michaelbai): Upstream LibraryLoader.java
-                    // if (!LibraryLoader.loadNow()) return;
+                    if (!LibraryLoader.loadNow()) return;
                     synchronized (mSandboxMainThread) {
                         while (mCommandLineParams == null) {
                             mSandboxMainThread.wait();
                         }
                     }
-                    // LibraryLoader.initializeOnMainThread(mCommandLineParams);
+                    LibraryLoader.initializeOnMainThread(mCommandLineParams);
                     synchronized (mSandboxMainThread) {
                         mLibraryInitialized = true;
                         mSandboxMainThread.notifyAll();

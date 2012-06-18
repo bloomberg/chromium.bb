@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.content.common;
 
 import android.util.Log;
 
@@ -191,14 +191,14 @@ public abstract class CommandLine {
     private static final String SWITCH_TERMINATOR = SWITCH_PREFIX;
     private static final String SWITCH_VALUE_SEPARATOR = "=";
 
-    static void enableNativeProxy() {
+    public static void enableNativeProxy() {
         // Make a best-effort to ensure we make a clean (atomic) switch over from the old to
         // the new command line implementation. If another thread is modifying the command line
         // when this happens, all bets are off. (As per the native CommandLine).
         sCommandLine.set(new NativeCommandLine());
     }
 
-    static String[] getJavaSwitchesOrNull() {
+    public static String[] getJavaSwitchesOrNull() {
         CommandLine commandLine = sCommandLine.get();
         if (commandLine != null) {
             assert !commandLine.isNativeImplementation();
