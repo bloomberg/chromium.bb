@@ -97,7 +97,7 @@ class UI_EXPORT SkBitmapOperations {
   static SkBitmap UnPreMultiply(const SkBitmap& bitmap);
 
   // Transpose the pixels in |bitmap| by swapping x and y.
-  static SkBitmap CreateTransposedBtmap(const SkBitmap& bitmap);
+  static SkBitmap CreateTransposedBitmap(const SkBitmap& bitmap);
 
   // Create a bitmap by combining alpha channel of |bitmap| and color |c|.
   // The image must use the kARGB_8888_Config config.

@@ -721,7 +721,7 @@ SkBitmap SkBitmapOperations::UnPreMultiply(const SkBitmap& bitmap) {
 }
 
 // static
-SkBitmap SkBitmapOperations::CreateTransposedBtmap(const SkBitmap& image) {
+SkBitmap SkBitmapOperations::CreateTransposedBitmap(const SkBitmap& image) {
   DCHECK(image.config() == SkBitmap::kARGB_8888_Config);
 
   SkBitmap transposed;
@@ -806,4 +806,3 @@ SkBitmap SkBitmapOperations::CreateDropShadow(
   canvas.drawBitmap(bitmap, SkIntToScalar(0), SkIntToScalar(0));
   return image_with_shadow;
 }
-

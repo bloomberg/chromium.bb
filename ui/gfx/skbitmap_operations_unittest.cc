@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -493,7 +493,7 @@ TEST(SkBitmapOperationsTest, UnPreMultiply) {
   EXPECT_EQ(0x00000000u, *result.getAddr32(1, 1));  // "Division by zero".
 }
 
-TEST(SkBitmapOperationsTest, CreateTransposedBtmap) {
+TEST(SkBitmapOperationsTest, CreateTransposedBitmap) {
   SkBitmap input;
   input.setConfig(SkBitmap::kARGB_8888_Config, 2, 3);
   input.allocPixels();
@@ -504,7 +504,7 @@ TEST(SkBitmapOperationsTest, CreateTransposedBtmap) {
     }
   }
 
-  SkBitmap result = SkBitmapOperations::CreateTransposedBtmap(input);
+  SkBitmap result = SkBitmapOperations::CreateTransposedBitmap(input);
   EXPECT_EQ(3, result.width());
   EXPECT_EQ(2, result.height());
 
