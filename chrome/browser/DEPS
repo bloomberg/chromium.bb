@@ -6,7 +6,6 @@ include_rules = [
   "+chrome/personalization",
   "+chrome/profile_import",
   "+chrome/tools/profiles",  # For history unit tests.
-  "+chrome/views",
   "+chromeos",
   "+content/public/browser",
   "+google_update",
