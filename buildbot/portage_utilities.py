@@ -262,6 +262,12 @@ class EBuild(object):
         self.is_stable = True
     fileinput.close()
 
+  def GetGitProjectName(self, path):
+    """Read the project variable from a git repository at given path."""
+    cmd = ('git config --get remote.cros.projectname || '
+           'git config --get remote.cros-internal.projectname')
+    return self._RunCommand(cmd, cwd=path, shell=True).rstrip()
+
   def GetSourcePath(self, srcroot):
     """Get the project and path for this ebuild.
 
@@ -269,11 +275,13 @@ class EBuild(object):
     """
     # Grab and evaluate CROS_WORKON variables from this ebuild.
     cmd = ('export CROS_WORKON_LOCALNAME="%s" CROS_WORKON_PROJECT="%s"; '
-           'eval $(grep -E "^CROS_WORKON" %s) && '
+           'eval $(grep -E "^CROS_WORKON") && '
            'echo $CROS_WORKON_PROJECT '
            '$CROS_WORKON_LOCALNAME/$CROS_WORKON_SUBDIR'
-           % (self._pkgname, self._pkgname, self._unstable_ebuild_path))
-    project, subdir = self._RunCommand(cmd, shell=True).split()
+           % (self._pkgname, self._pkgname))
+    with open(self._unstable_ebuild_path, 'r') as f:
+      project, subdir = self._RunCommand(cmd, shell=True,
+                                         input=f.read()).split()
 
     # Calculate srcdir.
     if self._category == 'chromeos-base':
@@ -288,10 +296,7 @@ class EBuild(object):
                          'for project %s does not exist.' % (
                             subdir_path, self._pkgname))
 
-    # Verify that we're grabbing the commit id from the right project name.
-    cmd = ('git config --get remote.cros.projectname || '
-           'git config --get remote.cros-internal.projectname')
-    real_project = self._RunCommand(cmd, cwd=subdir_path, shell=True).rstrip()
+    real_project = self.GetGitProjectName(subdir_path)
     if project != real_project:
       cros_build_lib.Die('Project name mismatch for %s '
                          '(found %s, expected %s)' % (

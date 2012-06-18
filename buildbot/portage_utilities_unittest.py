@@ -6,11 +6,14 @@
 
 """Unit tests for portage_utilities.py."""
 
+import __builtin__
+import contextlib
 import fileinput
 import mox
 import os
 import re
 import shutil
+import StringIO
 import sys
 import tempfile
 import unittest
@@ -111,6 +114,53 @@ class EBuildTest(mox.MoxTestBase):
     test_hash = fake_ebuild.GetCommitId(fake_sources)
     self.mox.VerifyAll()
     self.assertEquals(test_hash, fake_hash)
+
+
+class ProjectAndPathTest(mox.MoxTestBase):
+  # Some globals.
+  FAKE_SRCROOT = '/there/is/no/srcroot'
+  FAKE_EBUILD_PATH = '/path/to/test_package/test_package-9999.ebuild'
+
+  def _MockParseWorkonVariables(self, fake_project, _fake_localname,
+                                _fake_subdir, fake_ebuild_contents):
+    """Mock the necessary calls, start Replay mode, call GetSourcePath()."""
+    self.mox.StubOutWithMock(fileinput, 'input')
+    self.mox.StubOutWithMock(__builtin__, 'open')
+    self.mox.StubOutWithMock(os.path, 'isdir')
+    self.mox.StubOutWithMock(portage_utilities.EBuild, 'GetGitProjectName')
+
+    fileinput.input(self.FAKE_EBUILD_PATH).AndReturn('')
+    open(self.FAKE_EBUILD_PATH, 'r').AndReturn(
+        contextlib.closing(StringIO.StringIO(fake_ebuild_contents)))
+    os.path.isdir(mox.IgnoreArg()).AndReturn(True)
+    portage_utilities.EBuild.GetGitProjectName(
+        mox.IgnoreArg()).AndReturn(fake_project)
+
+    self.mox.ReplayAll()
+
+    fake_ebuild = portage_utilities.EBuild(self.FAKE_EBUILD_PATH)
+    # This modifies how _SUBDIR is treated.
+    fake_ebuild._category = 'chromeos-base'
+
+    result = fake_ebuild.GetSourcePath(self.FAKE_SRCROOT)
+    self.mox.VerifyAll()
+    return result
+
+  def testParseWorkonVariables(self):
+    """Test shell parsing of the variables provided by ebuild."""
+    fake_project = 'my_project'
+    fake_localname = 'foo'
+    fake_subdir = 'bar'
+    fake_ebuild_contents = """
+CROS_WORKON_PROJECT=%s
+CROS_WORKON_LOCALNAME=%s
+CROS_WORKON_SUBDIR=%s
+    """ % (fake_project, fake_localname, fake_subdir)
+    project, subdir = self._MockParseWorkonVariables(
+        fake_project, fake_localname, fake_subdir, fake_ebuild_contents)
+    self.assertEquals(project, fake_project)
+    self.assertEquals(subdir, os.path.join(
+        self.FAKE_SRCROOT, 'platform', '%s/%s' % (fake_localname, fake_subdir)))
 
 
 class StubEBuild(portage_utilities.EBuild):
