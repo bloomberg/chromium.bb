@@ -446,6 +446,10 @@ void ThumbnailGenerator::UpdateThumbnailIfNecessary(
   // Skip if we can't update the thumbnail.
   if (!surface_available)
     return;
+  // Skip if a pending entry exists. WidgetHidden can be called while navigaing
+  // pages and this is not a timing when thumbnails should be generated.
+  if (web_contents->GetController().GetPendingEntry())
+    return;
   const GURL& url = web_contents->GetURL();
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
