@@ -129,9 +129,15 @@ if ((env.Bit('build_arm') or env.Bit('build_x86_32'))
     # mean that a toolchain is not even present. E.g., the arm buildbots
     # do not have the pnacl toolchain, since that is built for x86 hosts.
     and not env.Bit('built_elsewhere')):
+  check_tls_arch = '${TARGET_FULLARCH}'
+  if env.Bit('build_arm'):
+    if env.Bit('bitcode'):
+      check_tls_arch = 'arm-pnacl'
+    else:
+      check_tls_arch = 'arm-gcc'
   node = env.CommandTest('irt_tls_test.out',
                          ['${PYTHON}', env.File('check_tls.py'),
-                          '${TARGET_FULLARCH}', '${OBJDUMP}', irt_library],
+                          check_tls_arch, '${OBJDUMP}', irt_library],
                          # don't run ${PYTHON} under the emulator.
                          direct_emulation=False,
                          # Holy cow it takes over 30 seconds to disassemble
@@ -140,7 +146,7 @@ if ((env.Bit('build_arm') or env.Bit('build_x86_32'))
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_irt_tls_test')
   node = env.CommandTest('irt_core_tls_test.out',
                          ['${PYTHON}', env.File('check_tls.py'),
-                          '${TARGET_FULLARCH}', '${OBJDUMP}', irt_core_library],
+                          check_tls_arch, '${OBJDUMP}', irt_core_library],
                          # don't run ${PYTHON} under the emulator.
                          direct_emulation=False)
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_irt_core_tls_test')

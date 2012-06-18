@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -19,12 +19,14 @@ def Main(args):
     objdump_args = [objdump, '-d', obj_file]
     register = '%gs'
     regex = re.compile(register)
-  elif arch == 'arm':
-    # We need to use -D to disassemble on ARM. See this mail thread:
-    # http://lists.gnu.org/archive/html/bug-binutils/2009-06/msg00069.html
-    # and bug:
-    # http://code.google.com/p/nativeclient/issues/detail?id=1916
-    objdump_args = [objdump, '-D', '--section=.text', obj_file]
+  elif arch.startswith('arm'):
+    if arch == 'arm-gcc':
+      objdump_flags = ['-d']
+    elif arch == 'arm-pnacl':
+      # TODO(mcgrathr): Just use -d when PNaCl compiler is fixed so it works.
+      # See http://code.google.com/p/nativeclient/issues/detail?id=2818
+      objdump_flags = ['-D', '--section=.text']
+    objdump_args = [objdump] + objdump_flags + [obj_file]
     # A real reference to r9 should probably be preceded by some character
     # that is not legal for an identifier (e.g., spaces, commas, brackets).
     register = 'r9'
