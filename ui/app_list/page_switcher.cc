@@ -4,6 +4,8 @@
 
 #include "ui/app_list/page_switcher.h"
 
+#include <algorithm>
+
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/base/animation/throb_animation.h"
@@ -17,7 +19,8 @@ namespace {
 const int kPreferredHeight = 57;
 
 const int kButtonSpacing = 18;
-const int kButtonWidth = 68;
+const int kMaxButtonWidth = 68;
+const int kMinButtonWidth = 44;
 const int kButtonHeight = 6;
 const int kButtonCornerRadius = 2;
 
@@ -31,6 +34,7 @@ class PageSwitcherButton : public views::CustomButton {
  public:
   explicit PageSwitcherButton(views::ButtonListener* listener)
       : views::CustomButton(listener),
+        button_width_(kMaxButtonWidth),
         selected_range_(0) {
   }
   virtual ~PageSwitcherButton() {}
@@ -43,9 +47,11 @@ class PageSwitcherButton : public views::CustomButton {
     SchedulePaint();
   }
 
+  void set_button_width(int button_width) { button_width_ = button_width; }
+
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE {
-    return gfx::Size(kButtonWidth, kButtonHeight);
+    return gfx::Size(button_width_, kButtonHeight);
   }
 
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
@@ -60,7 +66,7 @@ class PageSwitcherButton : public views::CustomButton {
   // Paints a button that has two rounded corner at bottom.
   void PaintButton(gfx::Canvas* canvas, SkColor base_color) {
     gfx::Rect rect(GetContentsBounds().Center(
-            gfx::Size(kButtonWidth, kButtonHeight)));
+            gfx::Size(button_width_, kButtonHeight)));
 
     SkPath path;
     path.addRoundRect(gfx::RectToSkRect(rect),
@@ -95,6 +101,8 @@ class PageSwitcherButton : public views::CustomButton {
       canvas->DrawPath(selected_path, paint);
     }
   }
+
+  int button_width_;
 
   // [-1, 1] range that represents the portion of the button that should be
   // painted with kSelectedColor. Positive range starts from left side and
@@ -139,6 +147,9 @@ gfx::Size PageSwitcher::GetPreferredSize() {
 
 void PageSwitcher::Layout() {
   gfx::Rect rect(GetContentsBounds());
+
+  CalculateButtonWidth(rect.width());
+
   // Makes |buttons_| horizontally center and vertically fill.
   gfx::Size buttons_size(buttons_->GetPreferredSize());
   gfx::Rect buttons_bounds(rect.CenterPoint().x() - buttons_size.width() / 2,
@@ -146,6 +157,22 @@ void PageSwitcher::Layout() {
                            buttons_size.width(),
                            rect.height());
   buttons_->SetBoundsRect(rect.Intersect(buttons_bounds));
+}
+
+void PageSwitcher::CalculateButtonWidth(int contents_width) {
+  int button_count = buttons_->child_count();
+  if (!button_count)
+    return;
+
+  int button_width = contents_width / button_count - kButtonSpacing;
+  button_width = std::min(kMaxButtonWidth,
+                          std::max(kMinButtonWidth, button_width));
+
+  for (int i = 0; i < button_count; ++i) {
+    PageSwitcherButton* button =
+        static_cast<PageSwitcherButton*>(buttons_->child_at(i));
+    button->set_button_width(button_width);
+  }
 }
 
 void PageSwitcher::ButtonPressed(views::Button* sender,
