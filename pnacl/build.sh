@@ -120,8 +120,6 @@ readonly TC_BUILD_BINUTILS_LIBERTY="${TC_BUILD}/binutils-liberty"
 readonly TC_BUILD_NEWLIB="${TC_BUILD}/newlib"
 readonly TC_BUILD_COMPILER_RT="${TC_BUILD}/compiler_rt"
 readonly TC_BUILD_GCC="${TC_BUILD}/gcc"
-readonly TC_BUILD_LIBELF="${TC_BUILD}/libelf"
-readonly TC_BUILD_LIBELF_SB="${TC_BUILD}/libelf-sb"
 
 readonly TIMESTAMP_FILENAME="make-timestamp"
 
@@ -247,7 +245,7 @@ SBTC_PRODUCTION=${SBTC_PRODUCTION:-false}
 SBTC_BUILD_WITH_PNACL="armv7 i686 x86_64"
 
 # Current milestones in each repo
-readonly UPSTREAM_REV=${UPSTREAM_REV:-952f768aec31}
+readonly UPSTREAM_REV=${UPSTREAM_REV:-bf371ed38ef1}
 
 readonly NEWLIB_REV=346ea38d142f
 readonly BINUTILS_REV=5ccab9d0bb73
@@ -1280,7 +1278,6 @@ llvm() {
 
   assert-dir "${srcdir}" "You need to checkout LLVM."
 
-  libelf-host
   if llvm-needs-configure; then
     llvm-clean
     llvm-configure
@@ -1333,11 +1330,6 @@ llvm-configure() {
   mkdir -p "${objdir}"
   spushd "${objdir}"
 
-  # Provide libelf (host version)
-  local cppflags
-  cppflags+=" -I${TC_BUILD_LIBELF}/install/include"
-  cppflags+=" -L${TC_BUILD_LIBELF}/install/lib"
-
   # Some components like ARMDisassembler may time out when built with -O3.
   # If we ever start using MSVC, we may also need to tone down the opt level
   # (see the settings in the CMake file for those components).
@@ -1352,8 +1344,8 @@ llvm-configure() {
   RunWithLog "llvm.configure" \
       env -i PATH=/usr/bin/:/bin \
              MAKE_OPTS=${MAKE_OPTS} \
-             CC="${CC} ${cppflags}" \
-             CXX="${CXX} ${cppflags}" \
+             CC="${CC}" \
+             CXX="${CXX}" \
              ${srcdir}/configure \
              --disable-jit \
              --with-binutils-include=${binutils_include} \
@@ -1400,18 +1392,14 @@ llvm-make() {
   spushd "${objdir}"
 
   ts-touch-open "${objdir}"
-  # Provide libelf (host version)
-  local cppflags
-  cppflags+=" -I${TC_BUILD_LIBELF}/install/include"
-  cppflags+=" -L${TC_BUILD_LIBELF}/install/lib"
 
   RunWithLog llvm.make \
     env -i PATH=/usr/bin/:/bin \
            MAKE_OPTS="${MAKE_OPTS}" \
            NACL_SANDBOX=0 \
            NACL_SB_JIT=0 \
-           CC="${CC} ${cppflags}" \
-           CXX="${CXX} ${cppflags}" \
+           CC="${CC}" \
+           CXX="${CXX}" \
            make ${MAKE_OPTS} all
 
   ts-touch-commit  "${objdir}"
@@ -1856,54 +1844,6 @@ misc-tools() {
 }
 
 #########################################################################
-#     < LIBELF >
-#########################################################################
-#+ libelf-host           - Build and install libelf (using the host CC)
-libelf-host() {
-  StepBanner "LIBELF-HOST" "Building and installing libelf"
-
-  local extra_headers=false
-  local ranlib="${RANLIB}"
-  if ${BUILD_PLATFORM_MAC}; then
-    extra_headers=true
-    # There is a common symbol that must be treated as a definition.
-    # In particular "__libelf_fill_byte".
-    ranlib="${RANLIB} -c"
-  elif ${BUILD_PLATFORM_WIN}; then
-    # This might be overkill. We really only need to stub-out libintl.h
-    # to avoid a dependency on libintl when linking LLVM with libelf.
-    # Note: this is (a) disable language translation of error messages, and
-    # (b) was only due to --disable-nls not working.
-    # Anyway, including consistent headers hopefully does not harm.
-    extra_headers=true
-  fi
-
-  RunWithLog "libelf-host" \
-    env -i \
-      PATH="/usr/bin:/bin" \
-      DEST_DIR="${TC_BUILD_LIBELF}" \
-      CC="${CC}" \
-      AR="${AR}" \
-      RANLIB="${ranlib}" \
-      EXTRA_HEADERS=${extra_headers} \
-      "${PNACL_ROOT}"/libelf/build-libelf.sh
-}
-
-#+ libelf-sb            - Build and install libelf (using pnacl-clang)
-libelf-sb() {
-  StepBanner "LIBELF-SB" "Building and installing sandboxed libelf"
-  RunWithLog "libelf-sb" \
-    env -i \
-      PATH="/usr/bin:/bin" \
-      DEST_DIR="${TC_BUILD_LIBELF_SB}" \
-      CC="${PNACL_CC_NEWLIB}" \
-      AR="${PNACL_AR}" \
-      RANLIB="${PNACL_RANLIB}" \
-      EXTRA_HEADERS=true \
-      "${PNACL_ROOT}"/libelf/build-libelf.sh
-}
-
-#########################################################################
 #     < BINUTILS >
 #########################################################################
 
@@ -2187,19 +2127,14 @@ llvm-sb-setup() {
     nonsrpc) ;;
   esac
 
-  # Provide libelf (sandboxed version)
-  local cppflags
-  cppflags+=" -I${TC_BUILD_LIBELF_SB}/install/include"
-  cppflags+=" -L${TC_BUILD_LIBELF_SB}/install/lib"
-
   LLVM_SB_EXTRA_CONFIG_FLAGS="--disable-jit --enable-optimized \
   --target=${CROSS_TARGET_ARM}"
 
   LLVM_SB_CONFIGURE_ENV=(
     AR="${PNACL_AR}" \
     AS="${PNACL_AS}" \
-    CC="$(GetTool cc ${SB_LIBMODE}) ${flags} ${cppflags}" \
-    CXX="$(GetTool cxx ${SB_LIBMODE}) ${flags} ${cppflags}" \
+    CC="$(GetTool cc ${SB_LIBMODE}) ${flags}" \
+    CXX="$(GetTool cxx ${SB_LIBMODE}) ${flags}" \
     LD="$(GetTool ld ${SB_LIBMODE}) ${flags}" \
     NM="${PNACL_NM}" \
     RANLIB="${PNACL_RANLIB}" \
@@ -2256,7 +2191,6 @@ llvm-sb() {
   local srcdir="${TC_SRC_LLVM}"
   assert-dir "${srcdir}" "You need to checkout llvm."
 
-  libelf-sb
   if llvm-sb-needs-configure ; then
     llvm-sb-clean
     llvm-sb-configure
@@ -3429,7 +3363,6 @@ verify-object-llvm() {
     exit -1
   fi
 }
-
 
 
 check-elf-abi() {
