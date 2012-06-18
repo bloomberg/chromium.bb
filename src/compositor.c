@@ -436,8 +436,9 @@ weston_surface_update_transform(struct weston_surface *surface)
 	}
 
 	/* weston_surface_damage() without update */
-	pixman_region32_union(&surface->damage, &surface->damage,
-			      &surface->transform.boundingbox);
+	pixman_region32_union_rect(&surface->damage, &surface->damage,
+				   0, 0, surface->geometry.width,
+				   surface->geometry.height);
 
 	if (weston_surface_is_mapped(surface))
 		weston_surface_assign_output(surface);
@@ -512,32 +513,12 @@ weston_surface_from_global(struct weston_surface *surface,
 	*sy = floorf(syf);
 }
 
-static void
-weston_surface_damage_rectangle(struct weston_surface *surface,
-				int32_t sx, int32_t sy,
-				int32_t width, int32_t height)
-{
-	if (surface->transform.enabled) {
-		pixman_region32_t box;
-		surface_compute_bbox(surface, sx, sy, width, height, &box);
-		pixman_region32_union(&surface->damage, &surface->damage,
-				      &box);
-		pixman_region32_fini(&box);
-	} else {
-		pixman_region32_union_rect(&surface->damage, &surface->damage,
-					   surface->geometry.x + sx,
-					   surface->geometry.y + sy,
-					   width, height);
-	}
-
-	weston_compositor_schedule_repaint(surface->compositor);
-}
-
 WL_EXPORT void
 weston_surface_damage(struct weston_surface *surface)
 {
-	pixman_region32_union(&surface->damage, &surface->damage,
-			      &surface->transform.boundingbox);
+	pixman_region32_union_rect(&surface->damage, &surface->damage,
+				   0, 0, surface->geometry.width,
+				   surface->geometry.height);
 
 	weston_compositor_schedule_repaint(surface->compositor);
 }
@@ -974,6 +955,72 @@ fade_frame(struct weston_animation *animation,
 	}
 }
 
+static void
+update_shm_texture(struct weston_surface *surface)
+{
+#ifdef GL_UNPACK_ROW_LENGTH
+	pixman_box32_t *rectangles;
+	void *data;
+	int i, n;
+#endif
+
+	glBindTexture(GL_TEXTURE_2D, surface->texture);
+
+	if (!surface->compositor->has_unpack_subimage) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
+			     surface->pitch, surface->buffer->height, 0,
+			     GL_BGRA_EXT, GL_UNSIGNED_BYTE,
+			     wl_shm_buffer_get_data(surface->buffer));
+
+		return;
+	}
+
+#ifdef GL_UNPACK_ROW_LENGTH
+	/* Mesa does not define GL_EXT_unpack_subimage */
+	glPixelStorei(GL_UNPACK_ROW_LENGTH, surface->pitch);
+	data = wl_shm_buffer_get_data(surface->buffer);
+	rectangles = pixman_region32_rectangles(&surface->damage, &n);
+	for (i = 0; i < n; i++) {
+		glPixelStorei(GL_UNPACK_SKIP_PIXELS, rectangles[i].x1);
+		glPixelStorei(GL_UNPACK_SKIP_ROWS, rectangles[i].y1);
+		glTexSubImage2D(GL_TEXTURE_2D, 0,
+				rectangles[i].x1, rectangles[i].y1,
+				rectangles[i].x2 - rectangles[i].y1,
+				rectangles[i].y2 - rectangles[i].y1,
+				GL_BGRA_EXT, GL_UNSIGNED_BYTE, data);
+	}
+#endif
+}
+
+static void
+surface_accumulate_damage(struct weston_surface *surface,
+			  pixman_region32_t *new_damage,
+			  pixman_region32_t *opaque)
+{
+	if (surface->buffer && wl_buffer_is_shm(surface->buffer))
+		update_shm_texture(surface);
+
+	if (surface->transform.enabled) {
+		pixman_box32_t *extents;
+
+		extents = pixman_region32_extents(&surface->damage);
+		surface_compute_bbox(surface, extents->x1, extents->y1,
+				     extents->x2 - extents->x1,
+				     extents->y2 - extents->y1,
+				     &surface->damage);
+	} else {
+		pixman_region32_translate(&surface->damage,
+					  surface->geometry.x,
+					  surface->geometry.y);
+	}
+
+	pixman_region32_subtract(&surface->damage, &surface->damage, opaque);
+	pixman_region32_union(new_damage, new_damage, &surface->damage);
+	empty_region(&surface->damage);
+	pixman_region32_copy(&surface->clip, opaque);
+	pixman_region32_union(opaque, opaque, &surface->transform.opaque);
+}
+
 struct weston_frame_callback {
 	struct wl_resource resource;
 	struct wl_list link;
@@ -1026,13 +1073,8 @@ weston_output_repaint(struct weston_output *output, int msecs)
 	pixman_region32_init(&new_damage);
 	pixman_region32_init(&opaque);
 
-	wl_list_for_each(es, &ec->surface_list, link) {
-		pixman_region32_subtract(&es->damage, &es->damage, &opaque);
-		pixman_region32_union(&new_damage, &new_damage, &es->damage);
-		empty_region(&es->damage);
-		pixman_region32_copy(&es->clip, &opaque);
-		pixman_region32_union(&opaque, &opaque, &es->transform.opaque);
-	}
+	wl_list_for_each(es, &ec->surface_list, link)
+		surface_accumulate_damage(es, &new_damage, &opaque);
 
 	pixman_region32_union(&ec->damage, &ec->damage, &new_damage);
 
@@ -1278,43 +1320,16 @@ surface_attach(struct wl_client *client,
 }
 
 static void
-texture_set_subimage(struct weston_surface *surface,
-		     int32_t x, int32_t y, int32_t width, int32_t height)
-{
-	glBindTexture(GL_TEXTURE_2D, surface->texture);
-
-#ifdef GL_UNPACK_ROW_LENGTH
-	/* Mesa does not define GL_EXT_unpack_subimage */
-
-	if (surface->compositor->has_unpack_subimage) {
-		glPixelStorei(GL_UNPACK_ROW_LENGTH, surface->pitch);
-		glPixelStorei(GL_UNPACK_SKIP_PIXELS, x);
-		glPixelStorei(GL_UNPACK_SKIP_ROWS, y);
-
-		glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height,
-				GL_BGRA_EXT, GL_UNSIGNED_BYTE,
-				wl_shm_buffer_get_data(surface->buffer));
-		return;
-	}
-#endif
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_BGRA_EXT,
-		     surface->pitch, surface->buffer->height, 0,
-		     GL_BGRA_EXT, GL_UNSIGNED_BYTE,
-		     wl_shm_buffer_get_data(surface->buffer));
-}
-
-static void
 surface_damage(struct wl_client *client,
 	       struct wl_resource *resource,
 	       int32_t x, int32_t y, int32_t width, int32_t height)
 {
 	struct weston_surface *es = resource->data;
 
-	weston_surface_damage_rectangle(es, x, y, width, height);
+	pixman_region32_union_rect(&es->damage, &es->damage,
+				   x, y, width, height);
 
-	if (es->buffer && wl_buffer_is_shm(es->buffer))
-		texture_set_subimage(es, x, y, width, height);
+	weston_compositor_schedule_repaint(es->compositor);
 }
 
 static void
