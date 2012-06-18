@@ -34,6 +34,8 @@
 #include "ui/views/window/non_client_view.h"
 
 #if defined(USE_ASH)
+#include "ash/shell.h"
+#include "ash/shell_window_ids.h"
 #include "ash/wm/window_animations.h"
 #endif  // USE_ASH
 
@@ -875,6 +877,7 @@ void CandidateWindowView::ShowAuxiliaryText() {
     }
   }
   UpdateParentArea();
+  GetWidget()->StackAtTop();
 }
 
 void CandidateWindowView::UpdateAuxiliaryText(const std::string& utf8_text) {
@@ -891,6 +894,7 @@ void CandidateWindowView::HidePreeditText() {
 void CandidateWindowView::ShowPreeditText() {
   preedit_area_->Show();
   UpdateParentArea();
+  GetWidget()->StackAtTop();
 }
 
 void CandidateWindowView::UpdatePreeditText(const std::string& utf8_text) {
@@ -902,6 +906,7 @@ void CandidateWindowView::ShowLookupTable() {
     should_show_upper_side_ = false;
   candidate_area_->Show();
   UpdateParentArea();
+  GetWidget()->StackAtTop();
 }
 
 void CandidateWindowView::NotifyIfCandidateWindowOpenedOrClosed() {
@@ -1426,6 +1431,7 @@ void InfolistWindowView::Show() {
   show_hide_timer_.Stop();
   ResizeAndMoveParentFrame();
   parent_frame_->Show();
+  GetWidget()->StackAtTop();
 }
 
 void InfolistWindowView::DelayShow(unsigned int milliseconds) {
@@ -1590,8 +1596,17 @@ void CandidateWindowControllerImpl::CreateView() {
   // |frame_| and |infolist_frame_| are owned by controller impl so
   // they should use WIDGET_OWNS_NATIVE_WIDGET ownership.
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+#if defined(USE_ASH)
+  // We use SystemModalContainer for candidate window and calls StackAtTop() to
+  // show the candidate window on the top among any windows in the desktop.
+  // TODO(mukai): Create another container and stop using SystemModalContainer.
+  params.parent = ash::Shell::GetContainer(
+      ash::Shell::GetInstance()->GetActiveRootWindow(),
+      ash::internal::kShellWindowId_SystemModalContainer);
+#else
   // Show the candidate window always on top
   params.keep_on_top = true;
+#endif
   frame_->Init(params);
 #if defined(USE_ASH)
   ash::SetWindowVisibilityAnimationType(
