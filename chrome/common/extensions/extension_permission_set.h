@@ -122,6 +122,7 @@ class ExtensionAPIPermission {
     kEchoPrivate,
     kExperimental,
     kFileBrowserHandler,
+    kFileBrowserHandlerInternal,
     kFileBrowserPrivate,
     kFileSystem,
     kGeolocation,

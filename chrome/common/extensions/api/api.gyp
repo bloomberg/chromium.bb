@@ -21,7 +21,7 @@
           'events.json',
           'experimental_font_settings.json',
           'experimental_record.json',
-          'file_browser_handler.json',
+          'file_browser_handler_internal.json',
           'permissions.json',
           'storage.json',
           'tabs.json',
@@ -51,7 +51,7 @@
         }],
         ['OS!="chromeos"', {
           'json_schema_files!': [
-            'file_browser_handler.json',
+            'file_browser_handler_internal.json',
           ],
         }],
       ],
