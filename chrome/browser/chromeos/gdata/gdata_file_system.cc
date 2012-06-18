@@ -1738,7 +1738,9 @@ void GDataFileSystem::OnGetFileInfoCompleteForGetFileByPath(
     scoped_ptr<GDataFileProto> file_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DCHECK(file_info.get() && !file_info->gdata_entry().resource_id().empty());
+  // If |error| == PLATFORM_FILE_OK then |file_info| must be valid.
+  DCHECK(error != base::PLATFORM_FILE_OK ||
+         (file_info.get() && !file_info->gdata_entry().resource_id().empty()));
   GetResolvedFileByPath(file_path,
                         get_file_callback,
                         get_download_data_callback,
