@@ -151,25 +151,9 @@
       <structure type="chrome_scaled_image" name="IDR_LOCATION_BAR_SELECTED_KEYWORD_BACKGROUND_R" file="keyword_search_bubble_r.png" />
       <structure type="chrome_scaled_image" name="IDR_MOBILE" file="mobile.png" />
       <structure type="chrome_scaled_image" name="IDR_MOBILE_LIT" file="mobile_lit.png" />
-      <if expr="pp_ifdef('use_ash')">
+      <if expr="pp_ifdef('toolkit_views')">
         <!-- TODO(benrg): Get rid of all conditionals that test the output
              context. -->
-        <if expr="context.startswith('default_')">
-          <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON" file="ash/newtab_normal.png" />
-          <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_H" file="ash/newtab_hover.png" />
-          <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_P" file="ash/newtab_pressed.png" />
-          <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_MASK" file="ash/newtab_button_mask.png" />
-        </if>
-        <if expr="not context.startswith('default_')">
-          <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON" file="newtab_normal.png" />
-          <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_H" file="newtab_hover.png" />
-          <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_P" file="newtab_pressed.png" />
-          <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_MASK" file="newtab_button_mask.png" />
-        </if>
-        <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_PLUS" file="newtab_views_plus.png" />
-        <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_P_PLUS" file="newtab_p_views_plus.png" />
-      </if>
-      <if expr="pp_ifdef('toolkit_views') and not pp_ifdef('use_ash')">
         <if expr="context.startswith('default_')">
           <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON" file="newtab_views.png" />
         </if>
@@ -188,7 +172,7 @@
         <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_PLUS" file="newtab_views_plus.png" />
         <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_P_PLUS" file="newtab_p_views_plus.png" />
       </if>
-      <if expr="not pp_ifdef('toolkit_views') and not pp_ifdef('use_ash')">
+      <if expr="not pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON" file="newtab.png" />
         <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_H" file="newtab_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_NEWTAB_BUTTON_P" file="newtab_pressed.png" />
