@@ -263,8 +263,11 @@ void FixedSizedScrollView::SetFixedSize(gfx::Size size) {
 }
 
 gfx::Size FixedSizedScrollView::GetPreferredSize() {
-  return fixed_size_.IsEmpty() ? GetContents()->GetPreferredSize() :
-                                 fixed_size_;
+  gfx::Size size = fixed_size_.IsEmpty() ?
+      GetContents()->GetPreferredSize() : fixed_size_;
+  gfx::Insets insets = GetInsets();
+  size.Enlarge(insets.width(), insets.height());
+  return size;
 }
 
 void FixedSizedScrollView::Layout() {
