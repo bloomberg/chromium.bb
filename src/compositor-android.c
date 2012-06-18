@@ -108,8 +108,8 @@ android_output_make_current(struct android_output *output)
 	EGLBoolean ret;
 	static int errored;
 
-	ret = eglMakeCurrent(compositor->base.display, output->egl_surface,
-			     output->egl_surface, compositor->base.context);
+	ret = eglMakeCurrent(compositor->base.egl_display, output->egl_surface,
+			     output->egl_surface, compositor->base.egl_context);
 	if (ret == EGL_FALSE) {
 		if (errored)
 			return -1;
@@ -149,7 +149,7 @@ android_output_repaint(struct weston_output *base, pixman_region32_t *damage)
 
 	weston_output_do_read_pixels(&output->base);
 
-	ret = eglSwapBuffers(compositor->base.display, output->egl_surface);
+	ret = eglSwapBuffers(compositor->base.egl_display, output->egl_surface);
 	if (ret == EGL_FALSE && !errored) {
 		errored = 1;
 		weston_log("Failed in eglSwapBuffers.\n");
@@ -267,9 +267,9 @@ android_egl_choose_config(struct android_compositor *compositor,
 	 * surfaceflinger/DisplayHardware/DisplayHardware.cpp
 	 */
 
-	compositor->base.config = NULL;
+	compositor->base.egl_config = NULL;
 
-	ret = eglGetConfigs(compositor->base.display, NULL, 0, &count);
+	ret = eglGetConfigs(compositor->base.egl_display, NULL, 0, &count);
 	if (ret == EGL_FALSE || count < 1)
 		return -1;
 
@@ -277,26 +277,27 @@ android_egl_choose_config(struct android_compositor *compositor,
 	if (!configs)
 		return -1;
 
-	ret = eglChooseConfig(compositor->base.display, attribs, configs,
+	ret = eglChooseConfig(compositor->base.egl_display, attribs, configs,
 			      count, &matched);
 	if (ret == EGL_FALSE || matched < 1)
 		goto out;
 
 	for (i = 0; i < matched; ++i) {
 		EGLint id;
-		ret = eglGetConfigAttrib(compositor->base.display, configs[i],
-					 EGL_NATIVE_VISUAL_ID, &id);
+		ret = eglGetConfigAttrib(compositor->base.egl_display,
+					 configs[i], EGL_NATIVE_VISUAL_ID,
+					 &id);
 		if (ret == EGL_FALSE)
 			continue;
 		if (id > 0 && fb->format == id) {
-			compositor->base.config = configs[i];
+			compositor->base.egl_config = configs[i];
 			break;
 		}
 	}
 
 out:
 	free(configs);
-	if (!compositor->base.config)
+	if (!compositor->base.egl_config)
 		return -1;
 
 	return 0;
@@ -324,14 +325,14 @@ android_init_egl(struct android_compositor *compositor,
 		EGL_NONE
 	};
 
-	compositor->base.display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-	if (compositor->base.display == EGL_NO_DISPLAY) {
+	compositor->base.egl_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+	if (compositor->base.egl_display == EGL_NO_DISPLAY) {
 		weston_log("Failed to create EGL display.\n");
 		print_egl_error_state();
 		return -1;
 	}
 
-	ret = eglInitialize(compositor->base.display, &eglmajor, &eglminor);
+	ret = eglInitialize(compositor->base.egl_display, &eglmajor, &eglminor);
 	if (!ret) {
 		weston_log("Failed to initialise EGL.\n");
 		print_egl_error_state();
@@ -351,20 +352,22 @@ android_init_egl(struct android_compositor *compositor,
 		return -1;
 	}
 
-	compositor->base.context = eglCreateContext(compositor->base.display,
-						    compositor->base.config,
-						    EGL_NO_CONTEXT,
-						    context_attrs);
-	if (compositor->base.context == EGL_NO_CONTEXT) {
+	compositor->base.egl_context =
+		eglCreateContext(compositor->base.egl_display,
+				 compositor->base.egl_config,
+				 EGL_NO_CONTEXT,
+				 context_attrs);
+	if (compositor->base.egl_context == EGL_NO_CONTEXT) {
 		weston_log("Failed to create a GL ES 2 context.\n");
 		print_egl_error_state();
 		return -1;
 	}
 
-	output->egl_surface = eglCreateWindowSurface(compositor->base.display,
-						     compositor->base.config,
-						     output->fb->native_window,
-						     NULL);
+	output->egl_surface =
+		eglCreateWindowSurface(compositor->base.egl_display,
+				       compositor->base.egl_config,
+				       output->fb->native_window,
+				       NULL);
 	if (output->egl_surface == EGL_NO_SURFACE) {
 		weston_log("Failed to create FB EGLSurface.\n");
 		print_egl_error_state();
@@ -380,11 +383,11 @@ android_init_egl(struct android_compositor *compositor,
 static void
 android_fini_egl(struct android_compositor *compositor)
 {
-	eglMakeCurrent(compositor->base.display,
+	eglMakeCurrent(compositor->base.egl_display,
 		       EGL_NO_SURFACE, EGL_NO_SURFACE,
 		       EGL_NO_CONTEXT);
 
-	eglTerminate(compositor->base.display);
+	eglTerminate(compositor->base.egl_display);
 	eglReleaseThread();
 }
 

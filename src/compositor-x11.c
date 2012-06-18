@@ -194,13 +194,13 @@ x11_compositor_init_egl(struct x11_compositor *c)
 		EGL_NONE
 	};
 
-	c->base.display = eglGetDisplay(c->dpy);
-	if (c->base.display == NULL) {
+	c->base.egl_display = eglGetDisplay(c->dpy);
+	if (c->base.egl_display == NULL) {
 		weston_log("failed to create display\n");
 		return -1;
 	}
 
-	if (!eglInitialize(c->base.display, &major, &minor)) {
+	if (!eglInitialize(c->base.egl_display, &major, &minor)) {
 		weston_log("failed to initialize display\n");
 		return -1;
 	}
@@ -209,29 +209,30 @@ x11_compositor_init_egl(struct x11_compositor *c)
 		weston_log("failed to bind EGL_OPENGL_ES_API\n");
 		return -1;
 	}
-   	if (!eglChooseConfig(c->base.display, config_attribs,
-			     &c->base.config, 1, &n) || n == 0) {
+	if (!eglChooseConfig(c->base.egl_display, config_attribs,
+			     &c->base.egl_config, 1, &n) || n == 0) {
 		weston_log("failed to choose config: %d\n", n);
 		return -1;
 	}
 
-	c->base.context = eglCreateContext(c->base.display, c->base.config,
-					   EGL_NO_CONTEXT, context_attribs);
-	if (c->base.context == NULL) {
+	c->base.egl_context =
+		eglCreateContext(c->base.egl_display, c->base.egl_config,
+				 EGL_NO_CONTEXT, context_attribs);
+	if (c->base.egl_context == NULL) {
 		weston_log("failed to create context\n");
 		return -1;
 	}
 
-	c->dummy_pbuffer = eglCreatePbufferSurface(c->base.display,
-						   c->base.config,
+	c->dummy_pbuffer = eglCreatePbufferSurface(c->base.egl_display,
+						   c->base.egl_config,
 						   pbuffer_attribs);
 	if (c->dummy_pbuffer == NULL) {
 		weston_log("failed to create dummy pbuffer\n");
 		return -1;
 	}
 
-	if (!eglMakeCurrent(c->base.display, c->dummy_pbuffer,
-			    c->dummy_pbuffer, c->base.context)) {
+	if (!eglMakeCurrent(c->base.egl_display, c->dummy_pbuffer,
+			    c->dummy_pbuffer, c->base.egl_context)) {
 		weston_log("failed to make context current\n");
 		return -1;
 	}
@@ -242,11 +243,11 @@ x11_compositor_init_egl(struct x11_compositor *c)
 static void
 x11_compositor_fini_egl(struct x11_compositor *compositor)
 {
-	eglMakeCurrent(compositor->base.display,
+	eglMakeCurrent(compositor->base.egl_display,
 		       EGL_NO_SURFACE, EGL_NO_SURFACE,
 		       EGL_NO_CONTEXT);
 
-	eglTerminate(compositor->base.display);
+	eglTerminate(compositor->base.egl_display);
 	eglReleaseThread();
 }
 
@@ -259,8 +260,9 @@ x11_output_repaint(struct weston_output *output_base,
 		(struct x11_compositor *)output->base.compositor;
 	struct weston_surface *surface;
 
-	if (!eglMakeCurrent(compositor->base.display, output->egl_surface,
-			    output->egl_surface, compositor->base.context)) {
+	if (!eglMakeCurrent(compositor->base.egl_display, output->egl_surface,
+			    output->egl_surface,
+			    compositor->base.egl_context)) {
 		weston_log("failed to make current\n");
 		return;
 	}
@@ -270,7 +272,7 @@ x11_output_repaint(struct weston_output *output_base,
 
 	weston_output_do_read_pixels(&output->base);
 
-	eglSwapBuffers(compositor->base.display, output->egl_surface);
+	eglSwapBuffers(compositor->base.egl_display, output->egl_surface);
 
 	wl_event_source_timer_update(output->finish_frame_timer, 10);
 }
@@ -299,7 +301,7 @@ x11_output_destroy(struct weston_output *output_base)
 	wl_list_remove(&output->base.link);
 	wl_event_source_remove(output->finish_frame_timer);
 
-	eglDestroySurface(compositor->base.display, output->egl_surface);
+	eglDestroySurface(compositor->base.egl_display, output->egl_surface);
 
 	xcb_destroy_window(compositor->conn, output->window);
 
@@ -497,14 +499,14 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 					c->atom.net_wm_state_fullscreen);
 
 	output->egl_surface = 
-		eglCreateWindowSurface(c->base.display, c->base.config,
+		eglCreateWindowSurface(c->base.egl_display, c->base.egl_config,
 				       output->window, NULL);
 	if (!output->egl_surface) {
 		weston_log("failed to create window surface\n");
 		return -1;
 	}
-	if (!eglMakeCurrent(c->base.display, output->egl_surface,
-			    output->egl_surface, c->base.context)) {
+	if (!eglMakeCurrent(c->base.egl_display, output->egl_surface,
+			    output->egl_surface, c->base.egl_context)) {
 		weston_log("failed to make surface current\n");
 		return -1;
 	}

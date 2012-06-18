@@ -51,7 +51,7 @@ struct wayland_compositor {
 	EGLSurface			 dummy_egl_surface;
 
 	struct {
-		struct wl_display *display;
+		struct wl_display *wl_display;
 		struct wl_compositor *compositor;
 		struct wl_shell *shell;
 		struct wl_output *output;
@@ -265,13 +265,13 @@ wayland_compositor_init_egl(struct wayland_compositor *c)
 		EGL_NONE
 	};
 
-	c->base.display = eglGetDisplay(c->parent.display);
-	if (c->base.display == NULL) {
+	c->base.egl_display = eglGetDisplay(c->parent.wl_display);
+	if (c->base.egl_display == NULL) {
 		weston_log("failed to create display\n");
 		return -1;
 	}
 
-	if (!eglInitialize(c->base.display, &major, &minor)) {
+	if (!eglInitialize(c->base.egl_display, &major, &minor)) {
 		weston_log("failed to initialize display\n");
 		return -1;
 	}
@@ -280,15 +280,16 @@ wayland_compositor_init_egl(struct wayland_compositor *c)
 		weston_log("failed to bind EGL_OPENGL_ES_API\n");
 		return -1;
 	}
-   	if (!eglChooseConfig(c->base.display, config_attribs,
-			     &c->base.config, 1, &n) || n == 0) {
+   	if (!eglChooseConfig(c->base.egl_display, config_attribs,
+			     &c->base.egl_config, 1, &n) || n == 0) {
 		weston_log("failed to choose config: %d\n", n);
 		return -1;
 	}
 
-	c->base.context = eglCreateContext(c->base.display, c->base.config,
-					   EGL_NO_CONTEXT, context_attribs);
-	if (c->base.context == NULL) {
+	c->base.egl_context =
+		eglCreateContext(c->base.egl_display, c->base.egl_config,
+				 EGL_NO_CONTEXT, context_attribs);
+	if (c->base.egl_context == NULL) {
 		weston_log("failed to create context\n");
 		return -1;
 	}
@@ -300,10 +301,10 @@ wayland_compositor_init_egl(struct wayland_compositor *c)
 	}
 
 	c->dummy_egl_surface =
-		eglCreatePixmapSurface(c->base.display, c->base.config,
+		eglCreatePixmapSurface(c->base.egl_display, c->base.egl_config,
 				       c->dummy_pixmap, NULL);
-	if (!eglMakeCurrent(c->base.display, c->dummy_egl_surface,
-			    c->dummy_egl_surface, c->base.context)) {
+	if (!eglMakeCurrent(c->base.egl_display, c->dummy_egl_surface,
+			    c->dummy_egl_surface, c->base.egl_context)) {
 		weston_log("failed to make context current\n");
 		return -1;
 	}
@@ -334,8 +335,9 @@ wayland_output_repaint(struct weston_output *output_base,
 	struct wl_callback *callback;
 	struct weston_surface *surface;
 
-	if (!eglMakeCurrent(compositor->base.display, output->egl_surface,
-			    output->egl_surface, compositor->base.context)) {
+	if (!eglMakeCurrent(compositor->base.egl_display, output->egl_surface,
+			    output->egl_surface,
+			    compositor->base.egl_context)) {
 		weston_log("failed to make current\n");
 		return;
 	}
@@ -347,7 +349,7 @@ wayland_output_repaint(struct weston_output *output_base,
 
 	weston_output_do_read_pixels(&output->base);
 
-	eglSwapBuffers(compositor->base.display, output->egl_surface);
+	eglSwapBuffers(compositor->base.egl_display, output->egl_surface);
 	callback = wl_surface_frame(output->parent.surface);
 	wl_callback_add_listener(callback, &frame_listener, output);
 
@@ -360,7 +362,7 @@ wayland_output_destroy(struct weston_output *output_base)
 	struct wayland_output *output = (struct wayland_output *) output_base;
 	struct weston_compositor *ec = output->base.compositor;
 
-	eglDestroySurface(ec->display, output->egl_surface);
+	eglDestroySurface(ec->egl_display, output->egl_surface);
 	wl_egl_window_destroy(output->parent.egl_window);
 	free(output);
 
@@ -413,15 +415,15 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 	}
 
 	output->egl_surface =
-		eglCreateWindowSurface(c->base.display, c->base.config,
+		eglCreateWindowSurface(c->base.egl_display, c->base.egl_config,
 				       output->parent.egl_window, NULL);
 	if (!output->egl_surface) {
 		weston_log("failed to create window surface\n");
 		goto cleanup_window;
 	}
 
-	if (!eglMakeCurrent(c->base.display, output->egl_surface,
-			    output->egl_surface, c->base.context)) {
+	if (!eglMakeCurrent(c->base.egl_display, output->egl_surface,
+			    output->egl_surface, c->base.egl_context)) {
 		weston_log("failed to make surface current\n");
 		goto cleanup_surface;
 		return -1;
@@ -447,7 +449,7 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 	return 0;
 
 cleanup_surface:
-	eglDestroySurface(c->base.display, output->egl_surface);
+	eglDestroySurface(c->base.egl_display, output->egl_surface);
 cleanup_window:
 	wl_egl_window_destroy(output->parent.egl_window);
 cleanup_output:
@@ -726,7 +728,7 @@ display_add_seat(struct wayland_compositor *c, uint32_t id)
 	memset(input, 0, sizeof *input);
 
 	input->compositor = c;
-	input->seat = wl_display_bind(c->parent.display, id,
+	input->seat = wl_display_bind(c->parent.wl_display, id,
 				      &wl_seat_interface);
 	wl_list_insert(c->input_list.prev, &input->link);
 
@@ -787,9 +789,9 @@ wayland_compositor_handle_event(int fd, uint32_t mask, void *data)
 	struct wayland_compositor *c = data;
 
 	if (mask & WL_EVENT_READABLE)
-		wl_display_iterate(c->parent.display, WL_DISPLAY_READABLE);
+		wl_display_iterate(c->parent.wl_display, WL_DISPLAY_READABLE);
 	if (mask & WL_EVENT_WRITABLE)
-		wl_display_iterate(c->parent.display, WL_DISPLAY_WRITABLE);
+		wl_display_iterate(c->parent.wl_display, WL_DISPLAY_WRITABLE);
 
 	return 1;
 }
@@ -808,7 +810,7 @@ wayland_input_create(struct wayland_compositor *c)
 
 	c->base.seat = seat;
 
-	wl_display_add_global_listener(c->parent.display,
+	wl_display_add_global_listener(c->parent.wl_display,
 				       display_handle_global_input,
 				       c);
 
@@ -838,18 +840,18 @@ wayland_compositor_create(struct wl_display *display,
 
 	memset(c, 0, sizeof *c);
 
-	c->parent.display = wl_display_connect(display_name);
+	c->parent.wl_display = wl_display_connect(display_name);
 
-	if (c->parent.display == NULL) {
+	if (c->parent.wl_display == NULL) {
 		weston_log("failed to create display: %m\n");
 		return NULL;
 	}
 
 	wl_list_init(&c->input_list);
-	wl_display_add_global_listener(c->parent.display,
+	wl_display_add_global_listener(c->parent.wl_display,
 				display_handle_global, c);
 
-	wl_display_iterate(c->parent.display, WL_DISPLAY_READABLE);
+	wl_display_iterate(c->parent.wl_display, WL_DISPLAY_READABLE);
 
 	c->base.wl_display = display;
 	if (wayland_compositor_init_egl(c) < 0)
@@ -871,7 +873,7 @@ wayland_compositor_create(struct wl_display *display,
 
 	loop = wl_display_get_event_loop(c->base.wl_display);
 
-	fd = wl_display_get_fd(c->parent.display, update_event_mask, c);
+	fd = wl_display_get_fd(c->parent.wl_display, update_event_mask, c);
 	c->parent.wl_source =
 		wl_event_loop_add_fd(loop, fd, c->parent.event_mask,
 				     wayland_compositor_handle_event, c);

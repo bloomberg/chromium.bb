@@ -273,9 +273,9 @@ struct weston_compositor {
 	struct wl_shm *shm;
 	struct wl_signal destroy_signal;
 
-	EGLDisplay display;
-	EGLContext context;
-	EGLConfig config;
+	EGLDisplay egl_display;
+	EGLContext egl_context;
+	EGLConfig egl_config;
 	GLuint fbo;
 	struct weston_shader texture_shader;
 	struct weston_shader solid_shader;

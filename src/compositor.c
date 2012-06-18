@@ -668,7 +668,7 @@ destroy_surface(struct wl_resource *resource)
 		wl_list_remove(&surface->buffer_destroy_listener.link);
 
 	if (surface->image != EGL_NO_IMAGE_KHR)
-		compositor->destroy_image(compositor->display,
+		compositor->destroy_image(compositor->egl_display,
 					  surface->image);
 
 	pixman_region32_fini(&surface->transform.boundingbox);
@@ -745,8 +745,8 @@ weston_surface_attach(struct wl_surface *surface, struct wl_buffer *buffer)
 			es->blend = 1;
 	} else {
 		if (es->image != EGL_NO_IMAGE_KHR)
-			ec->destroy_image(ec->display, es->image);
-		es->image = ec->create_image(ec->display, NULL,
+			ec->destroy_image(ec->egl_display, es->image);
+		es->image = ec->create_image(ec->egl_display, NULL,
 					     EGL_WAYLAND_BUFFER_WL,
 					     buffer, NULL);
 
@@ -2984,7 +2984,7 @@ weston_compositor_init(struct weston_compositor *ec,
 
 	wl_display_init_shm(display);
 
-	log_egl_gl_info(ec->display);
+	log_egl_gl_info(ec->egl_display);
 
 	ec->image_target_texture_2d =
 		(void *) eglGetProcAddress("glEGLImageTargetTexture2DOES");
@@ -3017,7 +3017,7 @@ weston_compositor_init(struct weston_compositor *ec,
 		ec->has_unpack_subimage = 1;
 
 	extensions =
-		(const char *) eglQueryString(ec->display, EGL_EXTENSIONS);
+		(const char *) eglQueryString(ec->egl_display, EGL_EXTENSIONS);
 	if (!extensions) {
 		weston_log("Retrieving EGL extension string failed.\n");
 		return -1;
@@ -3026,7 +3026,7 @@ weston_compositor_init(struct weston_compositor *ec,
 	if (strstr(extensions, "EGL_WL_bind_wayland_display"))
 		ec->has_bind_display = 1;
 	if (ec->has_bind_display)
-		ec->bind_display(ec->display, ec->wl_display);
+		ec->bind_display(ec->egl_display, ec->wl_display);
 
 	wl_list_init(&ec->surface_list);
 	wl_list_init(&ec->layer_list);
@@ -3310,7 +3310,7 @@ int main(int argc, char *argv[])
 	wl_signal_emit(&ec->destroy_signal, ec);
 
 	if (ec->has_bind_display)
-		ec->unbind_display(ec->display, display);
+		ec->unbind_display(ec->egl_display, display);
 
 	for (i = ARRAY_LENGTH(signals); i;)
 		wl_event_source_remove(signals[--i]);

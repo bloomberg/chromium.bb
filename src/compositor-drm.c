@@ -249,7 +249,8 @@ drm_output_prepare_scanout_surface(struct drm_output *output)
 		return -1;
 
 	bo = gbm_bo_create_from_egl_image(c->gbm,
-					  c->base.display, es->image,
+					  c->base.egl_display,
+					  es->image,
 					  es->geometry.width,
 					  es->geometry.height,
 					  GBM_BO_USE_SCANOUT);
@@ -290,8 +291,9 @@ drm_output_render(struct drm_output *output, pixman_region32_t *damage)
 	struct weston_surface *surface;
 	struct gbm_bo *bo;
 
-	if (!eglMakeCurrent(compositor->base.display, output->egl_surface,
-			    output->egl_surface, compositor->base.context)) {
+	if (!eglMakeCurrent(compositor->base.egl_display, output->egl_surface,
+			    output->egl_surface,
+			    compositor->base.egl_context)) {
 		weston_log("failed to make current\n");
 		return;
 	}
@@ -301,7 +303,7 @@ drm_output_render(struct drm_output *output, pixman_region32_t *damage)
 
 	weston_output_do_read_pixels(&output->base);
 
-	eglSwapBuffers(compositor->base.display, output->egl_surface);
+	eglSwapBuffers(compositor->base.egl_display, output->egl_surface);
 	bo = gbm_surface_lock_front_buffer(output->surface);
 	if (!bo) {
 		weston_log("failed to lock front buffer: %m\n");
@@ -550,8 +552,9 @@ drm_output_prepare_overlay_surface(struct weston_output *output_base,
 	if (!found)
 		return -1;
 
-	bo = gbm_bo_create_from_egl_image(c->gbm, c->base.display, es->image,
-					  es->geometry.width, es->geometry.height,
+	bo = gbm_bo_create_from_egl_image(c->gbm, c->base.egl_display,
+					  es->image, es->geometry.width,
+					  es->geometry.height,
 					  GBM_BO_USE_SCANOUT);
 	format = gbm_bo_get_format(bo);
 	handle = gbm_bo_get_handle(bo).s32;
@@ -809,7 +812,7 @@ drm_output_destroy(struct weston_output *output_base)
 	c->crtc_allocator &= ~(1 << output->crtc_id);
 	c->connector_allocator &= ~(1 << output->connector_id);
 
-	eglDestroySurface(c->base.display, output->egl_surface);
+	eglDestroySurface(c->base.egl_display, output->egl_surface);
 	gbm_surface_destroy(output->surface);
 
 	weston_output_destroy(&output->base);
@@ -912,8 +915,8 @@ drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mo
 	}
 
 	egl_surface =
-		eglCreateWindowSurface(ec->base.display,
-				       ec->base.config,
+		eglCreateWindowSurface(ec->base.egl_display,
+				       ec->base.egl_config,
 				       surface, NULL);
 
 	if (egl_surface == EGL_NO_SURFACE) {
@@ -949,7 +952,7 @@ drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mo
 	}
 	output->next = NULL;
 
-	eglDestroySurface(ec->base.display, output->egl_surface);
+	eglDestroySurface(ec->base.egl_display, output->egl_surface);
 	gbm_surface_destroy(output->surface);
 	output->egl_surface = egl_surface;
 	output->surface = surface;
@@ -961,7 +964,7 @@ drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mo
 	return 0;
 
 err:
-	eglDestroySurface(ec->base.display, egl_surface);
+	eglDestroySurface(ec->base.egl_display, egl_surface);
 	gbm_surface_destroy(surface);
 	return -1;
 }
@@ -1022,13 +1025,13 @@ init_egl(struct drm_compositor *ec, struct udev_device *device)
 
 	ec->drm.fd = fd;
 	ec->gbm = gbm_create_device(ec->drm.fd);
-	ec->base.display = eglGetDisplay(ec->gbm);
-	if (ec->base.display == NULL) {
+	ec->base.egl_display = eglGetDisplay(ec->gbm);
+	if (ec->base.egl_display == NULL) {
 		weston_log("failed to create display\n");
 		return -1;
 	}
 
-	if (!eglInitialize(ec->base.display, &major, &minor)) {
+	if (!eglInitialize(ec->base.egl_display, &major, &minor)) {
 		weston_log("failed to initialize display\n");
 		return -1;
 	}
@@ -1038,15 +1041,16 @@ init_egl(struct drm_compositor *ec, struct udev_device *device)
 		return -1;
 	}
 
-	if (!eglChooseConfig(ec->base.display, config_attribs,
-			     &ec->base.config, 1, &n) || n != 1) {
+	if (!eglChooseConfig(ec->base.egl_display, config_attribs,
+			     &ec->base.egl_config, 1, &n) || n != 1) {
 		weston_log("failed to choose config: %d\n", n);
 		return -1;
 	}
 
-	ec->base.context = eglCreateContext(ec->base.display, ec->base.config,
-					    EGL_NO_CONTEXT, context_attribs);
-	if (ec->base.context == NULL) {
+	ec->base.egl_context =
+		eglCreateContext(ec->base.egl_display, ec->base.egl_config,
+				 EGL_NO_CONTEXT, context_attribs);
+	if (ec->base.egl_context == NULL) {
 		weston_log("failed to create context\n");
 		return -1;
 	}
@@ -1060,15 +1064,17 @@ init_egl(struct drm_compositor *ec, struct udev_device *device)
 	}
 
 	ec->dummy_egl_surface =
-		eglCreateWindowSurface(ec->base.display, ec->base.config,
-				       ec->dummy_surface, NULL);
+		eglCreateWindowSurface(ec->base.egl_display,
+				       ec->base.egl_config,
+				       ec->dummy_surface,
+				       NULL);
 	if (ec->dummy_egl_surface == EGL_NO_SURFACE) {
 		weston_log("failed to create egl surface\n");
 		return -1;
 	}
 
-	if (!eglMakeCurrent(ec->base.display, ec->dummy_egl_surface,
-			    ec->dummy_egl_surface, ec->base.context)) {
+	if (!eglMakeCurrent(ec->base.egl_display, ec->dummy_egl_surface,
+			    ec->dummy_egl_surface, ec->base.egl_context)) {
 		weston_log("failed to make context current\n");
 		return -1;
 	}
@@ -1318,8 +1324,10 @@ create_output_for_connector(struct drm_compositor *ec,
 	}
 
 	output->egl_surface =
-		eglCreateWindowSurface(ec->base.display, ec->base.config,
-				       output->surface, NULL);
+		eglCreateWindowSurface(ec->base.egl_display,
+				       ec->base.egl_config,
+				       output->surface,
+				       NULL);
 	if (output->egl_surface == EGL_NO_SURFACE) {
 		weston_log("failed to create egl surface\n");
 		goto err_surface;
@@ -1634,9 +1642,9 @@ drm_destroy(struct weston_compositor *ec)
 	weston_compositor_shutdown(ec);
 
 	/* Work around crash in egl_dri2.c's dri2_make_current() */
-	eglMakeCurrent(ec->display, EGL_NO_SURFACE, EGL_NO_SURFACE,
+	eglMakeCurrent(ec->egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE,
 		       EGL_NO_CONTEXT);
-	eglTerminate(ec->display);
+	eglTerminate(ec->egl_display);
 	eglReleaseThread();
 
 	gbm_device_destroy(d->gbm);

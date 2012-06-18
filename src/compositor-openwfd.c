@@ -135,18 +135,18 @@ init_egl(struct wfd_compositor *ec)
 
 	ec->wfd_fd = fd;
 	ec->gbm = gbm_create_device(ec->wfd_fd);
-	ec->base.display = eglGetDisplay(ec->gbm);
-	if (ec->base.display == NULL) {
+	ec->base.egl_display = eglGetDisplay(ec->gbm);
+	if (ec->base.egl_display == NULL) {
 		weston_log("failed to create display\n");
 		return -1;
 	}
 
-	if (!eglInitialize(ec->base.display, &major, &minor)) {
+	if (!eglInitialize(ec->base.egl_display, &major, &minor)) {
 		weston_log("failed to initialize display\n");
 		return -1;
 	}
 
-	extensions = eglQueryString(ec->base.display, EGL_EXTENSIONS);
+	extensions = eglQueryString(ec->base.egl_display, EGL_EXTENSIONS);
 	if (!strstr(extensions, "EGL_KHR_surfaceless_gles2")) {
 		weston_log("EGL_KHR_surfaceless_gles2 not available\n");
 		return -1;
@@ -157,15 +157,16 @@ init_egl(struct wfd_compositor *ec)
 		return -1;
 	}
 
-	ec->base.context = eglCreateContext(ec->base.display, NULL,
-					    EGL_NO_CONTEXT, context_attribs);
-	if (ec->base.context == NULL) {
+	ec->base.egl_context =
+		eglCreateContext(ec->base.egl_display, NULL,
+				 EGL_NO_CONTEXT, context_attribs);
+	if (ec->base.egl_context == NULL) {
 		weston_log("failed to create context\n");
 		return -1;
 	}
 
-	if (!eglMakeCurrent(ec->base.display, EGL_NO_SURFACE,
-			    EGL_NO_SURFACE, ec->base.context)) {
+	if (!eglMakeCurrent(ec->base.egl_display, EGL_NO_SURFACE,
+			    EGL_NO_SURFACE, ec->base.egl_context)) {
 		weston_log("failed to make context current\n");
 		return -1;
 	}
@@ -204,7 +205,7 @@ wfd_output_destroy(struct weston_output *output_base)
 	glDeleteRenderbuffers(2, output->rbo);
 
 	for (i = 0; i < 2; i++) {
-		ec->base.destroy_image(ec->base.display, output->image[i]);
+		ec->base.destroy_image(ec->base.egl_display, output->image[i]);
 		gbm_bo_destroy(output->bo[i]);
 		wfdDestroySource(ec->dev, output->source[i]);
 	}
@@ -362,7 +363,7 @@ create_output_for_port(struct wfd_compositor *ec,
 				      output->base.current->height,
 				      GBM_BO_FORMAT_XRGB8888,
 				      GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING);
-		output->image[i] = ec->base.create_image(ec->base.display,
+		output->image[i] = ec->base.create_image(ec->base.egl_display,
 							 NULL,
 							 EGL_NATIVE_PIXMAP_KHR,
 							 output->bo[i], NULL);
