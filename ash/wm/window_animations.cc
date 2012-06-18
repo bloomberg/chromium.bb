@@ -61,7 +61,7 @@ namespace {
 const int kDefaultAnimationDurationForMenuMS = 150;
 
 // Durations for the cross-fade animation, in milliseconds.
-const float kCrossFadeDurationMinMs = 200.f;
+const float kCrossFadeDurationMinMs = 100.f;
 const float kCrossFadeDurationMaxMs = 400.f;
 
 const float kWindowAnimation_HideOpacity = 0.f;
@@ -649,8 +649,6 @@ ui::ImplicitAnimationObserver* CreateHidingWindowAnimationObserver(
   return new internal::HidingWindowAnimationObserver(window);
 }
 
-namespace internal {
-
 void CrossFadeToBounds(aura::Window* window, const gfx::Rect& new_bounds) {
   DCHECK(window->TargetVisibility());
   gfx::Rect old_bounds = window->bounds();
@@ -658,7 +656,7 @@ void CrossFadeToBounds(aura::Window* window, const gfx::Rect& new_bounds) {
   // Create fresh layers for the window and all its children to paint into.
   // Takes ownership of the old layer and all its children, which will be
   // cleaned up after the animation completes.
-  ui::Layer* old_layer = RecreateWindowLayers(window);
+  ui::Layer* old_layer = internal::RecreateWindowLayers(window);
   ui::Layer* new_layer = window->layer();
 
   // Ensure the higher-resolution layer is on top.
@@ -672,12 +670,12 @@ void CrossFadeToBounds(aura::Window* window, const gfx::Rect& new_bounds) {
   // aligned during the animation.
   const ui::Tween::Type kTransformTween = ui::Tween::EASE_OUT;
   // Shorten the animation if there's not much visual movement.
-  TimeDelta duration = GetCrossFadeDuration(old_bounds, new_bounds);
+  TimeDelta duration = internal::GetCrossFadeDuration(old_bounds, new_bounds);
   {
     // Scale up the old layer while translating to new position.
     ui::ScopedLayerAnimationSettings settings(old_layer->GetAnimator());
     // Animation observer owns the old layer and deletes itself.
-    settings.AddObserver(new CrossFadeObserver(window, old_layer));
+    settings.AddObserver(new internal::CrossFadeObserver(window, old_layer));
     settings.SetTransitionDuration(duration);
     settings.SetTweenType(kTransformTween);
     ui::Transform out_transform;
@@ -730,20 +728,24 @@ void CrossFadeToBounds(aura::Window* window, const gfx::Rect& new_bounds) {
   }
 }
 
+namespace internal {
+
 TimeDelta GetCrossFadeDuration(const gfx::Rect& old_bounds,
                                const gfx::Rect& new_bounds) {
-  int max_width = std::max(old_bounds.width(), new_bounds.width());
+  int old_area = old_bounds.width() * old_bounds.height();
+  int new_area = new_bounds.width() * new_bounds.height();
+  int max_area = std::max(old_area, new_area);
   // Avoid divide by zero.
-  if (max_width == 0)
+  if (max_area == 0)
     return TimeDelta();
 
-  int delta_width = std::abs(old_bounds.width() - new_bounds.width());
-  // If the width didn't change, the animation is instantaneous.
-  if (delta_width == 0)
+  int delta_area = std::abs(old_area - new_area);
+  // If the area didn't change, the animation is instantaneous.
+  if (delta_area == 0)
     return TimeDelta();
 
   float factor =
-      static_cast<float>(delta_width) / static_cast<float>(max_width);
+      static_cast<float>(delta_area) / static_cast<float>(max_area);
   const float kRange = kCrossFadeDurationMaxMs - kCrossFadeDurationMinMs;
   return TimeDelta::FromMilliseconds(
       Round64(kCrossFadeDurationMinMs + (factor * kRange)));
