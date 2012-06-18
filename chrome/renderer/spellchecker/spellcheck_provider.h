@@ -77,6 +77,11 @@ class SpellCheckProvider : public content::RenderViewObserver,
   virtual void updateSpellingUIWithMisspelledWord(
       const WebKit::WebString& word) OVERRIDE;
 
+  // Replaces the misspelling range that covers the cursor with the specified
+  // text. This function does not do anything if there are not any misspelling
+  // ranges that covers the cursor.
+  void OnReplace(const string16& text);
+
 #if !defined(OS_MACOSX)
   void OnRespondSpellingService(
       int identifier,
