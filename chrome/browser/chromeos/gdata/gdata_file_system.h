@@ -87,10 +87,6 @@ typedef base::Callback<void(base::PlatformFileError error,
                             const FilePath& file_path)>
     OpenFileCallback;
 
-// Used to close files from the file system.
-typedef base::Callback<void(base::PlatformFileError error)>
-    CloseFileCallback;
-
 // Used for file operations like removing files.
 typedef base::Callback<void(base::PlatformFileError error,
                             base::ListValue* feed_list)>
@@ -197,7 +193,7 @@ class GDataFileSystemInterface {
   //
   // Can be called from UI/IO thread. |callback| is run on the calling thread.
   virtual void CloseFile(const FilePath& file_path,
-                         const CloseFileCallback& callback) = 0;
+                         const FileOperationCallback& callback) = 0;
 
   // Copies |src_file_path| to |dest_file_path| on the file system.
   // |src_file_path| can be a hosted document (see limitations below).
@@ -399,7 +395,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   virtual void OpenFile(const FilePath& file_path,
                         const OpenFileCallback& callback) OVERRIDE;
   virtual void CloseFile(const FilePath& file_path,
-                         const CloseFileCallback& callback) OVERRIDE;
+                         const FileOperationCallback& callback) OVERRIDE;
   virtual void Copy(const FilePath& src_file_path,
                     const FilePath& dest_file_path,
                     const FileOperationCallback& callback) OVERRIDE;
@@ -634,7 +630,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // OnCommitDirtyInCacheCompleteForCloseFile and calls user-supplied callback.
   void OnGetFileCompleteForCloseFile(
       const FilePath& file_path,
-      const CloseFileCallback& callback,
+      const FileOperationCallback& callback,
       base::PlatformFileError error,
       const FilePath& local_cache_path,
       const std::string& mime_type,
@@ -643,15 +639,15 @@ class GDataFileSystem : public GDataFileSystemInterface,
       const FilePath& file_path,
       base::PlatformFileInfo* file_info,
       bool* get_file_info_result,
-      const CloseFileCallback& callback);
+      const FileOperationCallback& callback);
   void OnGetFileInfoCompleteForCloseFile(
       const FilePath& file_path,
       const base::PlatformFileInfo& file_info,
-      const CloseFileCallback& callback,
+      const FileOperationCallback& callback,
       base::PlatformFileError error,
       GDataEntry* entry);
   void OnCommitDirtyInCacheCompleteForCloseFile(
-      const CloseFileCallback& callback,
+      const FileOperationCallback& callback,
       base::PlatformFileError error,
       const std::string& resource_id,
       const std::string& md5);
@@ -1072,7 +1068,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   void OpenFileOnUIThread(const FilePath& file_path,
                           const OpenFileCallback& callback);
   void CloseFileOnUIThread(const FilePath& file_path,
-                           const CloseFileCallback& callback);
+                           const FileOperationCallback& callback);
   void CopyOnUIThread(const FilePath& src_file_path,
                       const FilePath& dest_file_path,
                       const FileOperationCallback& callback);

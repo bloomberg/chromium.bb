@@ -3636,7 +3636,7 @@ void GDataFileSystem::OnMarkDirtyInCacheCompleteForOpenFile(
 }
 
 void GDataFileSystem::CloseFile(const FilePath& file_path,
-                                const CloseFileCallback& callback) {
+                                const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
   RunTaskOnUIThread(base::Bind(&GDataFileSystem::CloseFileOnUIThread,
@@ -3645,8 +3645,9 @@ void GDataFileSystem::CloseFile(const FilePath& file_path,
                                CreateRelayCallback(callback)));
 }
 
-void GDataFileSystem::CloseFileOnUIThread(const FilePath& file_path,
-                                          const CloseFileCallback& callback) {
+void GDataFileSystem::CloseFileOnUIThread(
+    const FilePath& file_path,
+    const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // CloseFile should only be applied for a previously OpenFile'd file, so the
@@ -3663,7 +3664,7 @@ void GDataFileSystem::CloseFileOnUIThread(const FilePath& file_path,
 
 void GDataFileSystem::OnGetFileCompleteForCloseFile(
     const FilePath& file_path,
-    const CloseFileCallback& callback,
+    const FileOperationCallback& callback,
     base::PlatformFileError error,
     const FilePath& local_cache_path,
     const std::string& /* mime_type */,
@@ -3697,7 +3698,7 @@ void GDataFileSystem::OnGetModifiedFileInfoCompleteForCloseFile(
     const FilePath& file_path,
     base::PlatformFileInfo* file_info,
     bool* get_file_info_result,
-    const CloseFileCallback& callback) {
+    const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (!*get_file_info_result) {
@@ -3718,7 +3719,7 @@ void GDataFileSystem::OnGetModifiedFileInfoCompleteForCloseFile(
 void GDataFileSystem::OnGetFileInfoCompleteForCloseFile(
     const FilePath& file_path,
     const base::PlatformFileInfo& file_info,
-    const CloseFileCallback& callback,
+    const FileOperationCallback& callback,
     base::PlatformFileError error,
     GDataEntry* entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -3758,7 +3759,7 @@ void GDataFileSystem::OnGetFileInfoCompleteForCloseFile(
 }
 
 void GDataFileSystem::OnCommitDirtyInCacheCompleteForCloseFile(
-    const CloseFileCallback& callback,
+    const FileOperationCallback& callback,
     base::PlatformFileError error,
     const std::string& resource_id,
     const std::string& md5) {

@@ -3840,7 +3840,7 @@ TEST_F(GDataFileSystemTest, OpenAndCloseFile) {
   OpenFileCallback callback =
       base::Bind(&CallbackHelper::OpenFileCallback,
                  callback_helper_.get());
-  CloseFileCallback close_file_callback =
+  FileOperationCallback close_file_callback =
       base::Bind(&CallbackHelper::CloseFileCallback,
                  callback_helper_.get());
 
