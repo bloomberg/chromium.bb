@@ -10,6 +10,8 @@
 
 //<include src="../metrics.js"/>
 //<include src="../../../shared/js/load_time_data.js"/>
+//<include src="../file_type.js"/>
 //<include src="media_controls.js"/>
 //<include src="util.js"/>
 //<include src="video_player.js"/>
+//<include src="../metadata/metadata_cache.js"/>

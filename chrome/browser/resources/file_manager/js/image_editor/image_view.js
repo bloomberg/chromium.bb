@@ -89,9 +89,14 @@ ImageView.LOAD_TYPE_VIDEO_FILE = 3;
 ImageView.LOAD_TYPE_ERROR = 4;
 
 /**
+ * Image load type: the file contents is not available offline.
+ */
+ImageView.LOAD_TYPE_OFFLINE = 5;
+
+/**
  * The total number of load types.
  */
-ImageView.LOAD_TYPE_TOTAL = 5;
+ImageView.LOAD_TYPE_TOTAL = 6;
 
 ImageView.prototype = {__proto__: ImageBuffer.Overlay.prototype};
 
@@ -438,6 +443,12 @@ ImageView.prototype.load = function(
     }
     ImageUtil.metrics.recordEnum(ImageUtil.getMetricName('LoadMode'),
         loadType, ImageView.LOAD_TYPE_TOTAL);
+
+    if (loadType == ImageView.LOAD_TYPE_ERROR &&
+        !navigator.onLine && metadata.streaming) {
+      // |streaming| is set only when the file is not locally cached.
+      loadType = ImageView.LOAD_TYPE_OFFLINE;
+    }
     if (opt_callback) opt_callback(loadType);
   }
 };

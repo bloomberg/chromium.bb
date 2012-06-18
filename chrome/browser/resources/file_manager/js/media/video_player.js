@@ -4,10 +4,12 @@
 
 /**
  * Display error message.
+ * @param {string} opt_message Message id.
  */
-function onError() {
+function onError(opt_message) {
   var errorBanner = document.querySelector('#error');
-  errorBanner.textContent = loadTimeData.getString('GALLERY_VIDEO_ERROR');
+  errorBanner.textContent =
+      loadTimeData.getString(opt_message || 'GALLERY_VIDEO_ERROR');
   errorBanner.setAttribute('visible', 'true');
 }
 
@@ -102,13 +104,28 @@ function loadVideoPlayer() {
        document.querySelector('#video-container'),
        document.querySelector('#controls'));
 
-    // If the video player is starting before the first instance of the File
-    // Manager then it does not have access to filesystem URLs. Request it now.
-    chrome.fileBrowserPrivate.requestLocalFileSystem(function() {
-      var video = document.querySelector('video');
-      video.src = src;
-      video.load();
-      controls.attachMedia(video);
+    var metadataCache = MetadataCache.createFull();
+    metadataCache.get(src, 'streaming', function(streaming) {
+      if (streaming && streaming.url) {
+        if (!navigator.onLine) {
+          onError('GALLERY_VIDEO_OFFLINE');
+          return;
+        }
+        src = streaming.url;
+        console.log('Streaming: ' + src);
+      } else {
+        console.log('Playing local file: ' + src);
+      }
+
+      // If the video player is starting before the first instance of the File
+      // Manager then it does not have access to filesystem URLs.
+      // Request it now.
+      chrome.fileBrowserPrivate.requestLocalFileSystem(function() {
+        var video = document.querySelector('video');
+        video.src = src;
+        video.load();
+        controls.attachMedia(video);
+      });
     });
   });
 }
