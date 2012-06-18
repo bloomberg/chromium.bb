@@ -128,10 +128,6 @@ SPECIAL_CASES = {
         "Name": "ppapi",
         "URL": "http://code.google.com/p/ppapi/",
     },
-    os.path.join('third_party', 'pywebsocket'): {
-        "Name": "pywebsocket",
-        "URL": "http://code.google.com/p/pywebsocket/",
-    },
     os.path.join('third_party', 'WebKit'): {
         "Name": "WebKit",
         "URL": "http://webkit.org/",
