@@ -14,6 +14,8 @@ bool IsEasyOffStoreInstallEnabled();
 
 bool IsActionBoxEnabled();
 
+bool AreScriptBadgesEnabled();
+
 }  // switch_utils
 
 }  // extensions

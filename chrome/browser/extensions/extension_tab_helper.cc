@@ -51,7 +51,7 @@ ExtensionTabHelper::ExtensionTabHelper(TabContents* tab_contents)
           extension_function_dispatcher_(tab_contents->profile(), this)),
       tab_contents_(tab_contents),
       active_tab_permission_manager_(tab_contents) {
-  if (extensions::switch_utils::IsActionBoxEnabled()) {
+  if (extensions::switch_utils::AreScriptBadgesEnabled()) {
     script_badge_controller_ = new ScriptBadgeController(tab_contents);
   } else {
     script_executor_.reset(

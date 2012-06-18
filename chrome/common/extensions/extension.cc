@@ -2253,7 +2253,7 @@ bool Extension::LoadPageAction(string16* error) {
 
     // The action box changes the meaning of the page action area, so we need
     // to convert page actions into browser actions.
-    if (switch_utils::IsActionBoxEnabled()) {
+    if (switch_utils::AreScriptBadgesEnabled()) {
       browser_action_ = page_action_.Pass();
       // declared_action_type_ stays the same; that's the point.
     }

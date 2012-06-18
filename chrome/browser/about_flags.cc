@@ -340,6 +340,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableActionBox),
   },
   {
+    "script-badges",
+    IDS_FLAGS_SCRIPT_BADGES_NAME,
+    IDS_FLAGS_SCRIPT_BADGES_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableScriptBadges),
+  },
+  {
     "apps-new-install-bubble",
     IDS_FLAGS_APPS_NEW_INSTALL_BUBBLE_NAME,
     IDS_FLAGS_APPS_NEW_INSTALL_BUBBLE_DESCRIPTION,
