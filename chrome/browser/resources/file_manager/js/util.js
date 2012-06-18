@@ -431,7 +431,11 @@ util.UNITS = ['KB', 'MB', 'GB', 'TB', 'PB'];
 /**
  * Scale table for bytesToSi.
  */
-util.SCALE = [1e3, 1e6, 1e9, 1e12, 1e15];
+util.SCALE = [Math.pow(2, 10),
+              Math.pow(2, 20),
+              Math.pow(2, 30),
+              Math.pow(2, 40),
+              Math.pow(2, 50)];
 
 /**
  * Convert a number of bytes into an appropriate International System of
