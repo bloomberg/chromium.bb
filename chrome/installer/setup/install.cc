@@ -6,6 +6,7 @@
 
 #include <shlobj.h>
 #include <time.h>
+#include <winuser.h>
 
 #include "base/command_line.h"
 #include "base/file_path.h"
@@ -226,6 +227,27 @@ void CreateOrUpdateChromeShortcuts(const InstallerState& installer_state,
   }
 }
 
+// Returns true if the current process is running on the interactive window
+// station.  This cares not whether the input desktop is the default or not
+// (i.e., the screen saver is running, or what have you).
+bool IsInteractiveProcess() {
+  static const wchar_t kWinSta0[] = L"WinSta0";
+  HWINSTA window_station = ::GetProcessWindowStation();
+  if (window_station == NULL) {
+    PLOG(ERROR) << "Failed to get window station";
+    return false;
+  }
+
+  // Make the buffer one char longer and zero it to be certain it's terminated.
+  wchar_t name[arraysize(kWinSta0) + 1] = {};
+  DWORD buffer_length = sizeof(kWinSta0);
+  DWORD name_length = 0;
+  return (GetUserObjectInformation(window_station, UOI_NAME, &name[0],
+                                   buffer_length, &name_length) &&
+          name_length == buffer_length &&
+          lstrcmpi(kWinSta0, name) == 0);
+}
+
 void RegisterChromeOnMachine(const InstallerState& installer_state,
                              const Product& product,
                              bool make_chrome_default) {
@@ -236,20 +258,25 @@ void RegisterChromeOnMachine(const InstallerState& installer_state,
   // have admin rights and we want to ignore the error.
   AddChromeToMediaPlayerList();
 
-  // Is --make-chrome-default option is given we make Chrome default browser
-  // otherwise we only register it on the machine as a valid browser.
-  FilePath chrome_exe(
-      installer_state.target_path().Append(installer::kChromeExe));
-  VLOG(1) << "Registering Chrome as browser: " << chrome_exe.value();
+  // Make Chrome the default browser if desired when possible. Otherwise, only
+  // register it for shell integration.
+  BrowserDistribution* dist = product.distribution();
+  const string16 chrome_exe(
+      installer_state.target_path().Append(installer::kChromeExe).value());
+  VLOG(1) << "Registering Chrome as browser: " << chrome_exe;
   if (make_chrome_default) {
-    int level = ShellUtil::CURRENT_USER;
-    if (installer_state.system_install())
-      level = level | ShellUtil::SYSTEM_LEVEL;
-    ShellUtil::MakeChromeDefault(product.distribution(), level,
-                                 chrome_exe.value(), true);
+    if (ShellUtil::CanMakeChromeDefaultUnattended()) {
+      int level = ShellUtil::CURRENT_USER;
+      if (installer_state.system_install())
+        level = level | ShellUtil::SYSTEM_LEVEL;
+      ShellUtil::MakeChromeDefault(dist, level, chrome_exe, true);
+    } else if (IsInteractiveProcess()) {
+      ShellUtil::ShowMakeChromeDefaultSystemUI(dist, chrome_exe);
+    } else {
+      ShellUtil::RegisterChromeBrowser(dist, chrome_exe, string16(), false);
+    }
   } else {
-    ShellUtil::RegisterChromeBrowser(product.distribution(), chrome_exe.value(),
-                                     L"", false);
+    ShellUtil::RegisterChromeBrowser(dist, chrome_exe, string16(), false);
   }
 }
 

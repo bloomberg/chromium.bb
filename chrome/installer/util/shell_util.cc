@@ -1074,6 +1074,11 @@ string16 ShellUtil::GetApplicationName(BrowserDistribution* dist,
   return app_name;
 }
 
+// static
+bool ShellUtil::CanMakeChromeDefaultUnattended() {
+  return base::win::GetVersion() < base::win::VERSION_WIN8;
+}
+
 bool ShellUtil::MakeChromeDefault(BrowserDistribution* dist,
                                   int shell_change,
                                   const string16& chrome_exe,
@@ -1086,7 +1091,7 @@ bool ShellUtil::MakeChromeDefault(BrowserDistribution* dist,
   // Windows 8 does not permit making a browser default just like that.
   // This process needs to be routed through the system's UI. Use
   // ShowMakeChromeDefaultSystemUI instead (below).
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+  if (!CanMakeChromeDefaultUnattended()) {
     NOTREACHED();
     return false;
   }

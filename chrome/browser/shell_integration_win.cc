@@ -427,10 +427,10 @@ ShellIntegration::DefaultWebClientSetPermission
   if (!BrowserDistribution::GetDistribution()->CanSetAsDefault())
     return SET_DEFAULT_NOT_ALLOWED;
 
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
-    return SET_DEFAULT_INTERACTIVE;
-  else
+  if (ShellUtil::CanMakeChromeDefaultUnattended())
     return SET_DEFAULT_UNATTENDED;
+  else
+    return SET_DEFAULT_INTERACTIVE;
 }
 
 bool ShellIntegration::SetAsDefaultBrowser() {

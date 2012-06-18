@@ -242,6 +242,11 @@ class ShellUtil {
   static string16 GetApplicationName(BrowserDistribution* dist,
                                      const string16& chrome_exe);
 
+  // Returns true if Chrome can make itself the default browser without relying
+  // on the Windows shell to prompt the user. This is the case for versions of
+  // Windows prior to Windows 8.
+  static bool CanMakeChromeDefaultUnattended();
+
   // Make Chrome the default browser. This function works by going through
   // the url protocols and file associations that are related to general
   // browsing, e.g. http, https, .html etc., and requesting to become the
