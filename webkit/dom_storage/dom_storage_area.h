@@ -31,9 +31,15 @@ class DomStorageArea
   static FilePath DatabaseFileNameFromOrigin(const GURL& origin);
   static GURL OriginFromDatabaseFileName(const FilePath& file_name);
 
-  DomStorageArea(int64 namespace_id,
-                 const GURL& origin,
+  // Local storage. Backed on disk if directory is nonempty.
+  DomStorageArea(const GURL& origin,
                  const FilePath& directory,
+                 DomStorageTaskRunner* task_runner);
+
+  // Session storage.
+  DomStorageArea(int64 namespace_id,
+                 const std::string& persistent_namespace_id,
+                 const GURL& origin,
                  DomStorageTaskRunner* task_runner);
 
   const GURL& origin() const { return origin_; }
@@ -50,7 +56,9 @@ class DomStorageArea
   bool RemoveItem(const string16& key, string16* old_value);
   bool Clear();
 
-  DomStorageArea* ShallowCopy(int64 destination_namespace_id);
+  DomStorageArea* ShallowCopy(
+      int64 destination_namespace_id,
+      const std::string& destination_persistent_namespace_id);
 
   bool HasUncommittedChanges() const;
 
@@ -77,6 +85,7 @@ class DomStorageArea
   FRIEND_TEST_ALL_PREFIXES(DomStorageAreaTest, CommitChangesAtShutdown);
   FRIEND_TEST_ALL_PREFIXES(DomStorageAreaTest, DeleteOrigin);
   FRIEND_TEST_ALL_PREFIXES(DomStorageAreaTest, PurgeMemory);
+  FRIEND_TEST_ALL_PREFIXES(DomStorageContextTest, PersistentIds);
   friend class base::RefCountedThreadSafe<DomStorageArea>;
 
   struct CommitBatch {
@@ -104,6 +113,7 @@ class DomStorageArea
   void ShutdownInCommitSequence();
 
   int64 namespace_id_;
+  std::string persistent_namespace_id_;
   GURL origin_;
   FilePath directory_;
   scoped_refptr<DomStorageTaskRunner> task_runner_;

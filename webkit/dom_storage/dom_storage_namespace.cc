@@ -22,8 +22,10 @@ DomStorageNamespace::DomStorageNamespace(
 
 DomStorageNamespace::DomStorageNamespace(
     int64 namespace_id,
+    const std::string& persistent_namespace_id,
     DomStorageTaskRunner* task_runner)
     : namespace_id_(namespace_id),
+      persistent_namespace_id_(persistent_namespace_id),
       task_runner_(task_runner) {
   DCHECK_NE(kLocalStorageNamespaceId, namespace_id);
 }
@@ -36,8 +38,13 @@ DomStorageArea* DomStorageNamespace::OpenStorageArea(const GURL& origin) {
     ++(holder->open_count_);
     return holder->area_;
   }
-  DomStorageArea* area = new DomStorageArea(namespace_id_, origin,
-                                            directory_, task_runner_);
+  DomStorageArea* area;
+  if (namespace_id_ == kLocalStorageNamespaceId) {
+    area = new DomStorageArea(origin, directory_, task_runner_);
+  } else {
+    area = new DomStorageArea(namespace_id_, persistent_namespace_id_, origin,
+                              task_runner_);
+  }
   areas_[origin] = AreaHolder(area, 1);
   return area;
 }
@@ -51,14 +58,17 @@ void DomStorageNamespace::CloseStorageArea(DomStorageArea* area) {
   // The in-process-webkit based impl didn't do this either, but would be nice.
 }
 
-DomStorageNamespace* DomStorageNamespace::Clone(int64 clone_namespace_id) {
+DomStorageNamespace* DomStorageNamespace::Clone(
+    int64 clone_namespace_id,
+    const std::string& clone_persistent_namespace_id) {
   DCHECK_NE(kLocalStorageNamespaceId, namespace_id_);
   DCHECK_NE(kLocalStorageNamespaceId, clone_namespace_id);
-  DomStorageNamespace* clone =
-      new DomStorageNamespace(clone_namespace_id, task_runner_);
+  DomStorageNamespace* clone = new DomStorageNamespace(
+      clone_namespace_id, clone_persistent_namespace_id, task_runner_);
   AreaMap::const_iterator it = areas_.begin();
   for (; it != areas_.end(); ++it) {
-    DomStorageArea* area = it->second.area_->ShallowCopy(clone_namespace_id);
+    DomStorageArea* area = it->second.area_->ShallowCopy(
+        clone_namespace_id, clone_persistent_namespace_id);
     clone->areas_[it->first] = AreaHolder(area, 0);
   }
   return clone;
@@ -72,7 +82,7 @@ void DomStorageNamespace::DeleteOrigin(const GURL& origin) {
   }
   if (!directory_.empty()) {
     scoped_refptr<DomStorageArea> area =
-        new DomStorageArea(namespace_id_, origin, directory_, task_runner_);
+        new DomStorageArea(origin, directory_, task_runner_);
     area->DeleteOrigin();
   }
 }

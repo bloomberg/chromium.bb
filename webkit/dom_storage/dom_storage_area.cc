@@ -52,21 +52,36 @@ GURL DomStorageArea::OriginFromDatabaseFileName(const FilePath& name) {
   return DatabaseUtil::GetOriginFromIdentifier(origin_id);
 }
 
-DomStorageArea::DomStorageArea(
-    int64 namespace_id, const GURL& origin,
-    const FilePath& directory, DomStorageTaskRunner* task_runner)
-    : namespace_id_(namespace_id), origin_(origin),
+DomStorageArea::DomStorageArea(const GURL& origin, const FilePath& directory,
+                               DomStorageTaskRunner* task_runner)
+    : namespace_id_(kLocalStorageNamespaceId), origin_(origin),
       directory_(directory),
       task_runner_(task_runner),
       map_(new DomStorageMap(kPerAreaQuota + kPerAreaOverQuotaAllowance)),
       is_initial_import_done_(true),
       is_shutdown_(false),
       commit_batches_in_flight_(0) {
-  if (namespace_id == kLocalStorageNamespaceId && !directory.empty()) {
+  if (!directory.empty()) {
     FilePath path = directory.Append(DatabaseFileNameFromOrigin(origin_));
     backing_.reset(new DomStorageDatabase(path));
     is_initial_import_done_ = false;
   }
+}
+
+DomStorageArea::DomStorageArea(
+    int64 namespace_id,
+    const std::string& persistent_namespace_id,
+    const GURL& origin,
+    DomStorageTaskRunner* task_runner)
+    : namespace_id_(namespace_id),
+      persistent_namespace_id_(persistent_namespace_id),
+      origin_(origin),
+      task_runner_(task_runner),
+      map_(new DomStorageMap(kPerAreaQuota + kPerAreaOverQuotaAllowance)),
+      is_initial_import_done_(true),
+      is_shutdown_(false),
+      commit_batches_in_flight_(0) {
+  DCHECK(namespace_id != kLocalStorageNamespaceId);
 }
 
 DomStorageArea::~DomStorageArea() {
@@ -148,13 +163,16 @@ bool DomStorageArea::Clear() {
   return true;
 }
 
-DomStorageArea* DomStorageArea::ShallowCopy(int64 destination_namespace_id) {
+DomStorageArea* DomStorageArea::ShallowCopy(
+    int64 destination_namespace_id,
+    const std::string& destination_persistent_namespace_id) {
   DCHECK_NE(kLocalStorageNamespaceId, namespace_id_);
   DCHECK_NE(kLocalStorageNamespaceId, destination_namespace_id);
   DCHECK(!backing_.get());  // SessionNamespaces aren't stored on disk.
 
-  DomStorageArea* copy = new DomStorageArea(destination_namespace_id, origin_,
-                                            FilePath(), task_runner_);
+  DomStorageArea* copy = new DomStorageArea(
+      destination_namespace_id, destination_persistent_namespace_id, origin_,
+      task_runner_);
   copy->map_ = map_;
   copy->is_shutdown_ = is_shutdown_;
   return copy;

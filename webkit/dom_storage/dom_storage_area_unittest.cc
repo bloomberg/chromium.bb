@@ -70,7 +70,7 @@ class DomStorageAreaTest : public testing::Test {
 
 TEST_F(DomStorageAreaTest, DomStorageAreaBasics) {
   scoped_refptr<DomStorageArea> area(
-      new DomStorageArea(1, kOrigin, FilePath(), NULL));
+      new DomStorageArea(1, std::string(), kOrigin, NULL));
   string16 old_value;
   NullableString16 old_nullable_value;
   scoped_refptr<DomStorageArea> copy;
@@ -85,7 +85,7 @@ TEST_F(DomStorageAreaTest, DomStorageAreaBasics) {
   EXPECT_FALSE(area->HasUncommittedChanges());
 
   // Verify that a copy shares the same map.
-  copy = area->ShallowCopy(2);
+  copy = area->ShallowCopy(2, std::string());
   EXPECT_EQ(kOrigin, copy->origin());
   EXPECT_EQ(2, copy->namespace_id());
   EXPECT_EQ(area->Length(), copy->Length());
@@ -96,11 +96,11 @@ TEST_F(DomStorageAreaTest, DomStorageAreaBasics) {
   // But will deep copy-on-write as needed.
   EXPECT_TRUE(area->RemoveItem(kKey, &old_value));
   EXPECT_NE(copy->map_.get(), area->map_.get());
-  copy = area->ShallowCopy(2);
+  copy = area->ShallowCopy(2, std::string());
   EXPECT_EQ(copy->map_.get(), area->map_.get());
   EXPECT_TRUE(area->SetItem(kKey, kValue, &old_nullable_value));
   EXPECT_NE(copy->map_.get(), area->map_.get());
-  copy = area->ShallowCopy(2);
+  copy = area->ShallowCopy(2, std::string());
   EXPECT_EQ(copy->map_.get(), area->map_.get());
   EXPECT_NE(0u, area->Length());
   EXPECT_TRUE(area->Clear());
@@ -129,8 +129,7 @@ TEST_F(DomStorageAreaTest, BackingDatabaseOpened) {
   // No directory, backing should be null.
   {
     scoped_refptr<DomStorageArea> area(
-        new DomStorageArea(kLocalStorageNamespaceId, kOrigin, FilePath(),
-                           NULL));
+        new DomStorageArea(kOrigin, FilePath(), NULL));
     EXPECT_EQ(NULL, area->backing_.get());
     EXPECT_TRUE(area->is_initial_import_done_);
     EXPECT_FALSE(file_util::PathExists(kExpectedOriginFilePath));
@@ -140,8 +139,8 @@ TEST_F(DomStorageAreaTest, BackingDatabaseOpened) {
   // be null.
   {
     scoped_refptr<DomStorageArea> area(
-        new DomStorageArea(kSessionStorageNamespaceId, kOrigin,
-                           temp_dir.path(), NULL));
+        new DomStorageArea(kSessionStorageNamespaceId, std::string(), kOrigin,
+                           NULL));
     EXPECT_EQ(NULL, area->backing_.get());
     EXPECT_TRUE(area->is_initial_import_done_);
 
@@ -157,7 +156,7 @@ TEST_F(DomStorageAreaTest, BackingDatabaseOpened) {
   // This should set up a DomStorageArea that is correctly backed to disk.
   {
     scoped_refptr<DomStorageArea> area(
-        new DomStorageArea(kLocalStorageNamespaceId, kOrigin,
+        new DomStorageArea(kOrigin,
             temp_dir.path(),
             new MockDomStorageTaskRunner(base::MessageLoopProxy::current())));
 
@@ -200,7 +199,7 @@ TEST_F(DomStorageAreaTest, CommitTasks) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   scoped_refptr<DomStorageArea> area(
-      new DomStorageArea(kLocalStorageNamespaceId, kOrigin,
+      new DomStorageArea(kOrigin,
           temp_dir.path(),
           new MockDomStorageTaskRunner(base::MessageLoopProxy::current())));
   // Inject an in-memory db to speed up the test.
@@ -277,7 +276,7 @@ TEST_F(DomStorageAreaTest, CommitChangesAtShutdown) {
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   scoped_refptr<DomStorageArea> area(
-      new DomStorageArea(kLocalStorageNamespaceId, kOrigin,
+      new DomStorageArea(kOrigin,
           temp_dir.path(),
           new MockDomStorageTaskRunner(base::MessageLoopProxy::current())));
 
@@ -303,7 +302,7 @@ TEST_F(DomStorageAreaTest, DeleteOrigin) {
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   scoped_refptr<DomStorageArea> area(
-      new DomStorageArea(kLocalStorageNamespaceId, kOrigin,
+      new DomStorageArea(kOrigin,
           temp_dir.path(),
           new MockDomStorageTaskRunner(base::MessageLoopProxy::current())));
 
@@ -363,7 +362,7 @@ TEST_F(DomStorageAreaTest, PurgeMemory) {
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   scoped_refptr<DomStorageArea> area(
-      new DomStorageArea(kLocalStorageNamespaceId, kOrigin,
+      new DomStorageArea(kOrigin,
           temp_dir.path(),
           new MockDomStorageTaskRunner(base::MessageLoopProxy::current())));
 

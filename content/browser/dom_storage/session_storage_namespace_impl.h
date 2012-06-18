@@ -20,10 +20,23 @@ class DomStorageSession;
 class SessionStorageNamespaceImpl
     : NON_EXPORTED_BASE(public content::SessionStorageNamespace) {
  public:
+  // Constructs a |SessionStorageNamespaceImpl| and allocates new IDs for it.
   explicit SessionStorageNamespaceImpl(DOMStorageContextImpl* context);
+
+  // Constructs a |SessionStorageNamespaceImpl| by cloning
+  // |namespace_to_clone|. Allocates new IDs for it.
   SessionStorageNamespaceImpl(DOMStorageContextImpl* context,
                               int64 namepace_id_to_clone);
-  int64 id() const;
+
+  // Constructs a |SessionStorageNamespaceImpl| and assigns |persistent_id|
+  // to it. Allocates a new non-persistent ID.
+  SessionStorageNamespaceImpl(DOMStorageContextImpl* context,
+                              const std::string& persistent_id);
+
+  // content::SessionStorageNamespace implementation.
+  virtual int64 id() const OVERRIDE;
+  virtual const std::string& persistent_id() const OVERRIDE;
+
   SessionStorageNamespaceImpl* Clone();
 
  private:

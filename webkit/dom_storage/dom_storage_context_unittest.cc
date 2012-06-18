@@ -159,4 +159,33 @@ TEST_F(DomStorageContextTest, SetForceKeepSessionState) {
   VerifySingleOriginRemains(kSessionOnlyOrigin);
 }
 
+TEST_F(DomStorageContextTest, PersistentIds) {
+  const int kFirstSessionStorageNamespaceId = 1;
+  const std::string kPersistentId = "persistent";
+  context_->CreateSessionNamespace(kFirstSessionStorageNamespaceId,
+                                   kPersistentId);
+  DomStorageNamespace* dom_namespace =
+      context_->GetStorageNamespace(kFirstSessionStorageNamespaceId);
+  ASSERT_TRUE(dom_namespace);
+  EXPECT_EQ(kPersistentId, dom_namespace->persistent_namespace_id());
+  // Verify that the areas inherit the persistent ID.
+  DomStorageArea* area = dom_namespace->OpenStorageArea(kOrigin);
+  EXPECT_EQ(kPersistentId, area->persistent_namespace_id_);
+
+  // Verify that the persistent IDs are handled correctly when cloning.
+  const int kClonedSessionStorageNamespaceId = 2;
+  const std::string kClonedPersistentId = "cloned";
+  context_->CloneSessionNamespace(kFirstSessionStorageNamespaceId,
+                                  kClonedSessionStorageNamespaceId,
+                                  kClonedPersistentId);
+  DomStorageNamespace* cloned_dom_namespace =
+      context_->GetStorageNamespace(kClonedSessionStorageNamespaceId);
+  ASSERT_TRUE(dom_namespace);
+  EXPECT_EQ(kClonedPersistentId,
+            cloned_dom_namespace->persistent_namespace_id());
+  // Verify that the areas inherit the persistent ID.
+  DomStorageArea* cloned_area = cloned_dom_namespace->OpenStorageArea(kOrigin);
+  EXPECT_EQ(kClonedPersistentId, cloned_area->persistent_namespace_id_);
+}
+
 }  // namespace dom_storage

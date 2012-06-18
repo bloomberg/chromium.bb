@@ -151,10 +151,14 @@ class DomStorageContext
     return session_id_sequence_.GetNext();
   }
 
+  std::string AllocatePersistentSessionId();
+
   // Must be called on the background thread.
-  void CreateSessionNamespace(int64 namespace_id);
+  void CreateSessionNamespace(int64 namespace_id,
+                              const std::string& persistent_namespace_id);
   void DeleteSessionNamespace(int64 namespace_id);
-  void CloneSessionNamespace(int64 existing_id, int64 new_id);
+  void CloneSessionNamespace(int64 existing_id, int64 new_id,
+                             const std::string& new_persistent_id);
 
  private:
   friend class DomStorageContextTest;

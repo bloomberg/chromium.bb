@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/file_util.h"
+#include "base/guid.h"
 #include "base/location.h"
 #include "base/time.h"
 #include "webkit/dom_storage/dom_storage_area.h"
@@ -170,14 +171,21 @@ void DomStorageContext::NotifyAreaCleared(
       OnDomStorageAreaCleared(area, page_url));
 }
 
+std::string DomStorageContext::AllocatePersistentSessionId() {
+  std::string guid = base::GenerateGUID();
+  std::replace(guid.begin(), guid.end(), '-', '_');
+  return guid;
+}
+
 void DomStorageContext::CreateSessionNamespace(
-    int64 namespace_id) {
+    int64 namespace_id,
+    const std::string& persistent_namespace_id) {
   if (is_shutdown_)
     return;
   DCHECK(namespace_id != kLocalStorageNamespaceId);
   DCHECK(namespaces_.find(namespace_id) == namespaces_.end());
   namespaces_[namespace_id] = new DomStorageNamespace(
-      namespace_id, task_runner_);
+      namespace_id, persistent_namespace_id, task_runner_);
 }
 
 void DomStorageContext::DeleteSessionNamespace(
@@ -187,16 +195,17 @@ void DomStorageContext::DeleteSessionNamespace(
 }
 
 void DomStorageContext::CloneSessionNamespace(
-    int64 existing_id, int64 new_id) {
+    int64 existing_id, int64 new_id,
+    const std::string& new_persistent_id) {
   if (is_shutdown_)
     return;
   DCHECK_NE(kLocalStorageNamespaceId, existing_id);
   DCHECK_NE(kLocalStorageNamespaceId, new_id);
   StorageNamespaceMap::iterator found = namespaces_.find(existing_id);
   if (found != namespaces_.end())
-    namespaces_[new_id] = found->second->Clone(new_id);
+    namespaces_[new_id] = found->second->Clone(new_id, new_persistent_id);
   else
-    CreateSessionNamespace(new_id);
+    CreateSessionNamespace(new_id, new_persistent_id);
 }
 
 void DomStorageContext::ClearSessionOnlyOrigins() {

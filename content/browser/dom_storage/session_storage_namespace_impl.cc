@@ -21,8 +21,17 @@ SessionStorageNamespaceImpl::SessionStorageNamespaceImpl(
                                             namepace_id_to_clone)) {
 }
 
+SessionStorageNamespaceImpl::SessionStorageNamespaceImpl(
+    DOMStorageContextImpl* context, const std::string& persistent_id)
+    : session_(new DomStorageSession(context->context(), persistent_id)) {
+}
+
 int64 SessionStorageNamespaceImpl::id() const {
   return session_->namespace_id();
+}
+
+const std::string& SessionStorageNamespaceImpl::persistent_id() const {
+  return session_->persistent_namespace_id();
 }
 
 SessionStorageNamespaceImpl* SessionStorageNamespaceImpl::Clone() {

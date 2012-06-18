@@ -32,9 +32,13 @@ class DomStorageNamespace
   // Constructor for a SessionStorage namespace with a non-zero id
   // and no backing directory on disk.
   DomStorageNamespace(int64 namespace_id,
+                      const std::string& persistent_namespace_id,
                       DomStorageTaskRunner* task_runner);
 
   int64 namespace_id() const { return namespace_id_; }
+  const std::string& persistent_namespace_id() const {
+    return persistent_namespace_id_;
+  }
 
   // Returns the storage area for the given origin,
   // creating instance if needed. Each call to open
@@ -45,7 +49,8 @@ class DomStorageNamespace
   // Creates a clone of |this| namespace including
   // shallow copies of all contained areas.
   // Should only be called for session storage namespaces.
-  DomStorageNamespace* Clone(int64 clone_namespace_id);
+  DomStorageNamespace* Clone(int64 clone_namespace_id,
+                             const std::string& clone_persistent_namespace_id);
 
   void DeleteOrigin(const GURL& origin);
   void PurgeMemory();
@@ -71,6 +76,7 @@ class DomStorageNamespace
   AreaHolder* GetAreaHolder(const GURL& origin);
 
   int64 namespace_id_;
+  std::string persistent_namespace_id_;
   FilePath directory_;
   AreaMap areas_;
   scoped_refptr<DomStorageTaskRunner> task_runner_;
