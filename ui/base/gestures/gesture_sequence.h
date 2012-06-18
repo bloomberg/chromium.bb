@@ -51,6 +51,8 @@ class UI_EXPORT GestureSequence {
   const GesturePoint* points() const { return points_; }
   int point_count() const { return point_count_; }
 
+  const gfx::Point& last_touch_location() const { return last_touch_location_; }
+
  protected:
   virtual base::OneShotTimer<GestureSequence>* CreateTimer();
   base::OneShotTimer<GestureSequence>* long_press_timer() {
@@ -193,6 +195,9 @@ class UI_EXPORT GestureSequence {
 
   GesturePoint points_[kMaxGesturePoints];
   int point_count_;
+
+  // Location of the last touch event.
+  gfx::Point last_touch_location_;
 
   GestureEventHelper* helper_;
 

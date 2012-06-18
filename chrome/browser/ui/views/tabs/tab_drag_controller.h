@@ -421,6 +421,10 @@ class TabDragController : public content::WebContentsDelegate,
   // Returns the TabStripModel for the specified tabstrip.
   TabStripModel* GetModel(TabStrip* tabstrip) const;
 
+  // Returns the location of the cursor. This is either the location of the
+  // mouse or the location of the current touch point.
+  gfx::Point GetCursorScreenPoint();
+
   // Returns true if moving the mouse only changes the visible tabs.
   bool move_only() const {
     return (move_behavior_ == MOVE_VISIBILE_TABS) != 0;

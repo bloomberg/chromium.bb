@@ -245,6 +245,16 @@ void GestureRecognizerImpl::TransferEventsTo(GestureConsumer* current_consumer,
   }
 }
 
+bool GestureRecognizerImpl::GetLastTouchPointForTarget(
+    GestureConsumer* consumer,
+    gfx::Point* point) {
+  if (consumer_sequence_.count(consumer) == 0)
+    return false;
+
+  *point = consumer_sequence_[consumer]->last_touch_location();
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // GestureRecognizerImpl, protected:
 

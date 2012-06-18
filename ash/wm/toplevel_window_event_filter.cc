@@ -19,6 +19,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/gestures/gesture_recognizer.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer.h"
@@ -152,6 +153,10 @@ ui::GestureStatus ToplevelWindowEventFilter::PreHandleGestureEvent(
       if (!in_gesture_resize_)
         return ui::GESTURE_STATUS_UNKNOWN;
       CompleteDrag(DRAG_COMPLETE, event->flags());
+      if (in_move_loop_) {
+        MessageLoop::current()->Quit();
+        in_move_loop_ = false;
+      }
       in_gesture_resize_ = false;
       break;
 
@@ -196,20 +201,28 @@ ui::GestureStatus ToplevelWindowEventFilter::PreHandleGestureEvent(
 void ToplevelWindowEventFilter::RunMoveLoop(aura::Window* source) {
   DCHECK(!in_move_loop_);  // Can only handle one nested loop at a time.
   in_move_loop_ = true;
-  gfx::Point parent_mouse_location(gfx::Screen::GetCursorScreenPoint());
   aura::RootWindow* root_window = source->GetRootWindow();
   DCHECK(root_window);
-  aura::Window::ConvertPointToWindow(
-      root_window, source->parent(), &parent_mouse_location);
+  gfx::Point drag_location;
+  if (aura::Env::GetInstance()->is_touch_down()) {
+    in_gesture_resize_ = true;
+    bool has_point = root_window->gesture_recognizer()->
+        GetLastTouchPointForTarget(source, &drag_location);
+    DCHECK(has_point);
+  } else {
+    drag_location = gfx::Screen::GetCursorScreenPoint();
+    aura::Window::ConvertPointToWindow(
+        root_window, source->parent(), &drag_location);
+  }
   window_resizer_.reset(
-      CreateWindowResizer(source, parent_mouse_location, HTCAPTION));
+      CreateWindowResizer(source, drag_location, HTCAPTION));
   source->GetRootWindow()->SetCursor(ui::kCursorPointer);
 #if !defined(OS_MACOSX)
   MessageLoopForUI* loop = MessageLoopForUI::current();
   MessageLoop::ScopedNestableTaskAllower allow_nested(loop);
   loop->RunWithDispatcher(aura::Env::GetInstance()->GetDispatcher());
 #endif  // !defined(OS_MACOSX)
-  in_move_loop_ = false;
+  in_gesture_resize_ = in_move_loop_ = false;
 }
 
 void ToplevelWindowEventFilter::EndMoveLoop() {

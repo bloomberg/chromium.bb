@@ -46,6 +46,9 @@
 #if defined(USE_ASH)
 #include "ash/shell.h"
 #include "ash/wm/property_util.h"
+#include "ui/aura/env.h"
+#include "ui/aura/root_window.h"
+#include "ui/base/gestures/gesture_recognizer.h"
 #endif
 
 using content::OpenURLParams;
@@ -593,8 +596,7 @@ void TabDragController::DidProcessEvent(const base::NativeEvent& event) {
 }
 
 void TabDragController::OnWidgetMoved(views::Widget* widget) {
-  // TODO: this needs to query event.
-  Drag(gfx::Screen::GetCursorScreenPoint());
+  Drag(GetCursorScreenPoint());
 }
 
 void TabDragController::TabStripEmpty() {
@@ -1273,9 +1275,8 @@ void TabDragController::RunMoveLoop() {
   if (end_run_loop_behavior_ == END_RUN_LOOP_CONTINUE_DRAGGING) {
     end_run_loop_behavior_ = END_RUN_LOOP_STOP_DRAGGING;
     if (tab_strip_to_attach_to_after_exit_) {
+      gfx::Point screen_point(GetCursorScreenPoint());
       Detach();
-      // TODO: this needs to query the event.
-      gfx::Point screen_point(gfx::Screen::GetCursorScreenPoint());
       Attach(tab_strip_to_attach_to_after_exit_, screen_point);
       // Move the tabs into position.
       MoveAttached(screen_point);
@@ -1882,4 +1883,22 @@ Browser* TabDragController::CreateBrowserForDrag(
   SetTrackedByWorkspace(browser->window()->GetNativeWindow(), false);
   browser->window()->SetBounds(new_bounds);
   return browser;
+}
+
+gfx::Point TabDragController::GetCursorScreenPoint() {
+#if defined(USE_ASH)
+  views::Widget* widget = GetAttachedBrowserWidget();
+  DCHECK(widget);
+  if (aura::Env::GetInstance()->is_touch_down()) {
+    aura::Window* widget_window = widget->GetNativeWindow();
+    DCHECK(widget_window->GetRootWindow());
+    gfx::Point touch_point;
+    bool got_touch_point = widget_window->GetRootWindow()->
+        gesture_recognizer()->GetLastTouchPointForTarget(widget_window,
+                                                         &touch_point);
+    DCHECK(got_touch_point);
+    return touch_point;
+  }
+#endif
+  return gfx::Screen::GetCursorScreenPoint();
 }

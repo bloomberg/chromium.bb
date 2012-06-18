@@ -39,6 +39,8 @@ class UI_EXPORT GestureRecognizerImpl : public GestureRecognizer {
       const gfx::Point& location) OVERRIDE;
   virtual void TransferEventsTo(GestureConsumer* current_consumer,
                                 GestureConsumer* new_consumer) OVERRIDE;
+  virtual bool GetLastTouchPointForTarget(GestureConsumer* consumer,
+                                          gfx::Point* point) OVERRIDE;
 
  protected:
   virtual GestureSequence* CreateSequence(GestureEventHelper* helper);

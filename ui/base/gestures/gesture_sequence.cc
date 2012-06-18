@@ -219,6 +219,7 @@ GestureSequence::~GestureSequence() {
 GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
     const TouchEvent& event,
     ui::TouchStatus status) {
+  last_touch_location_ = event.GetLocation();
   if (status != ui::TOUCH_STATUS_UNKNOWN)
     return NULL;  // The event was consumed by a touch sequence.
 

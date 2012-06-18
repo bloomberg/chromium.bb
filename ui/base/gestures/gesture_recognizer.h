@@ -65,6 +65,12 @@ class UI_EXPORT GestureRecognizer {
   // NULL, all targets are cancelled.
   virtual void TransferEventsTo(GestureConsumer* current_consumer,
                                 GestureConsumer* new_consumer) = 0;
+
+  // If a gesture is underway for |consumer| |point| is set to the last touch
+  // point and true is returned. If no touch events have been processed for
+  // |consumer| false is returned and |point| is untouched.
+  virtual bool GetLastTouchPointForTarget(GestureConsumer* consumer,
+                                          gfx::Point* point) = 0;
 };
 
 }  // namespace ui
