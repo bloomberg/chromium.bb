@@ -99,6 +99,8 @@
       '-fullscreen_mouselock.FullscreenMouselockTest.testPatternsForFSAndML',
       # crbug.com/131874
       '-infobars.OneClickInfobarTest.testNoOneClickInfobarAfterCancel',
+      # crbug.com/133315
+      '-infobars.OneClickInfobarTest.testDisplayOneClickInfobarAfterDismiss',
       # crbug.com/105560
       '-notifications',
       # crbug.com/99506
