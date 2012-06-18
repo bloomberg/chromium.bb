@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
@@ -905,6 +904,10 @@ bool SyncManager::SyncInternal::Init(
   encryptor_ = encryptor;
   unrecoverable_error_handler_ = unrecoverable_error_handler;
   report_unrecoverable_error_function_ = report_unrecoverable_error_function;
+  share_.directory.reset(
+      new syncable::Directory(encryptor_,
+                              unrecoverable_error_handler_,
+                              report_unrecoverable_error_function_));
 
   connection_manager_.reset(new SyncAPIServerConnectionManager(
       sync_server_and_path, port, use_ssl, user_agent, post_factory));
@@ -913,8 +916,6 @@ bool SyncManager::SyncInternal::Init(
   observing_ip_address_changes_ = true;
 
   connection_manager()->AddListener(this);
-
-  bool signed_in = SignIn(credentials);
 
   // Test mode does not use a syncer context or syncer thread.
   if (testing_mode_ == NON_TEST) {
@@ -936,6 +937,8 @@ bool SyncManager::SyncInternal::Init(
     session_context()->set_account_name(credentials.email);
     scheduler_.reset(new SyncScheduler(name_, session_context(), new Syncer()));
   }
+
+  bool signed_in = SignIn(credentials);
 
   if (signed_in) {
     if (scheduler()) {
@@ -1125,10 +1128,6 @@ void SyncManager::SyncInternal::StartSyncingNormally(
 
 bool SyncManager::SyncInternal::OpenDirectory() {
   DCHECK(!initialized_) << "Should only happen once";
-  share_.directory.reset(
-      new syncable::Directory(encryptor_,
-                              unrecoverable_error_handler_,
-                              report_unrecoverable_error_function_));
 
   // Set before Open().
   change_observer_ =
@@ -1143,16 +1142,6 @@ bool SyncManager::SyncInternal::OpenDirectory() {
   } else {
     open_result = directory()->Open(
         database_path_, username_for_share(), this, transaction_observer);
-    // If at first we don't succeed, delete the DB and try again.
-    if (open_result != syncable::OPENED) {
-      file_util::Delete(database_path_, false);
-      share_.directory.reset(
-          new syncable::Directory(encryptor_,
-                                  unrecoverable_error_handler_,
-                                  report_unrecoverable_error_function_));
-      open_result = directory()->Open(
-          database_path_, username_for_share(), this, transaction_observer);
-    }
   }
   if (open_result != syncable::OPENED) {
     LOG(ERROR) << "Could not open share for:" << username_for_share();
