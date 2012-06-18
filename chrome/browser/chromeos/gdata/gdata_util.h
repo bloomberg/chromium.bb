@@ -36,6 +36,10 @@ enum GDataSearchPathType {
   GDATA_SEARCH_PATH_RESULT_CHILD
 };
 
+// Path constants
+extern const char kMountedArchiveFileExtension[];
+extern const char kWildCard[];
+
 // Returns the GData mount point path, which looks like "/special/gdata".
 const FilePath& GetGDataMountPointPath();
 

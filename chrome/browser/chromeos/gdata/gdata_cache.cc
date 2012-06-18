@@ -12,6 +12,7 @@
 #include "base/stringprintf.h"
 #include "base/string_util.h"
 #include "base/sys_info.h"
+#include "chrome/browser/chromeos/gdata/gdata_cache_metadata.h"
 #include "chrome/browser/chromeos/gdata/gdata_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
@@ -23,12 +24,9 @@ using content::BrowserThread;
 namespace gdata {
 namespace {
 
-const char kWildCard[] = "*";
-
 const FilePath::CharType kSymLinkToDevNull[] = FILE_PATH_LITERAL("/dev/null");
 
 const char kLocallyModifiedFileExtension[] = "local";
-const char kMountedArchiveFileExtension[] = "mounted";
 
 const FilePath::CharType kGDataCacheVersionDir[] = FILE_PATH_LITERAL("v1");
 const FilePath::CharType kGDataCacheMetaDir[] = FILE_PATH_LITERAL("meta");
@@ -165,46 +163,6 @@ base::PlatformFileError SystemToPlatformError(int error) {
     default:
       return base::PLATFORM_FILE_ERROR_FAILED;
   }
-}
-
-// Creates cache directory and its sub-directories if they don't exist.
-// TODO(glotov): take care of this when the setup and cleanup part is landed,
-// noting that these directories need to be created for development in linux box
-// and unittest. (http://crosbug.com/27577)
-base::PlatformFileError CreateCacheDirectories(
-    const std::vector<FilePath>& paths_to_create) {
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
-
-  for (size_t i = 0; i < paths_to_create.size(); ++i) {
-    if (file_util::DirectoryExists(paths_to_create[i]))
-      continue;
-
-    if (!file_util::CreateDirectory(paths_to_create[i])) {
-      // Error creating this directory, record error and proceed with next one.
-      error = SystemToPlatformError(errno);
-      PLOG(ERROR) << "Error creating directory " << paths_to_create[i].value();
-    } else {
-      DVLOG(1) << "Created directory " << paths_to_create[i].value();
-    }
-  }
-
-  return error;
-}
-
-// Changes the permissions of |file_path| to |permissions|.
-// Returns the platform error code of the operation.
-base::PlatformFileError ChangeFilePermissions(const FilePath& file_path,
-                                              mode_t permissions) {
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
-
-  if (HANDLE_EINTR(chmod(file_path.value().c_str(), permissions)) != 0) {
-    error = SystemToPlatformError(errno);
-    PLOG(ERROR) << "Error changing permissions of " << file_path.value();
-  } else {
-    DVLOG(1) << "Changed permissions of " << file_path.value();
-  }
-
-  return error;
 }
 
 // Modifies cache state of file on blocking pool, which involves:
@@ -435,7 +393,7 @@ FilePath GDataCache::GetCacheFilePath(const std::string& resource_id,
   if (file_origin == CACHED_FILE_MOUNTED) {
     DCHECK(sub_dir_type == CACHE_TYPE_PERSISTENT);
     base_name += FilePath::kExtensionSeparator;
-    base_name += kMountedArchiveFileExtension;
+    base_name += util::kMountedArchiveFileExtension;
   }
   return GetCacheDirectoryPath(sub_dir_type).Append(base_name);
 }
@@ -470,7 +428,7 @@ void GDataCache::FreeDiskSpaceIfNeededFor(int64 num_bytes,
   // Otherwise, try to free up the disk space.
   DVLOG(1) << "Freeing up disk space for " << num_bytes;
   // First remove temporary files from the cache map.
-  RemoveTemporaryFiles();
+  metadata_->RemoveTemporaryFiles();
   // Then remove all files under "tmp" directory.
   RemoveAllFiles(GetCacheDirectoryPath(GDataCache::CACHE_TYPE_TMP));
 
@@ -693,236 +651,11 @@ void GDataCache::RequestInitializeOnUIThread() {
       base::Bind(&GDataCache::OnInitialized, ui_weak_ptr_));
 }
 
-class GDataCacheMap : public GDataCache {
- public:
-  GDataCacheMap(
-      const FilePath& cache_root_path,
-      base::SequencedWorkerPool* pool,
-      const base::SequencedWorkerPool::SequenceToken& sequence_token);
-
- protected:
-  virtual ~GDataCacheMap();
-
- private:
-  // GDataCache implementation.
-  virtual void Initialize() OVERRIDE;
-  virtual void SetCacheMap(const CacheMap& new_cache_map) OVERRIDE;
-  virtual void UpdateCache(const std::string& resource_id,
-                           const std::string& md5,
-                           CacheSubDirectoryType subdir,
-                           int cache_state) OVERRIDE;
-  virtual void RemoveFromCache(const std::string& resource_id) OVERRIDE;
-  virtual scoped_ptr<CacheEntry> GetCacheEntry(const std::string& resource_id,
-                                               const std::string& md5) OVERRIDE;
-  virtual void RemoveTemporaryFiles() OVERRIDE;
-
-  // Scans cache subdirectory |sub_dir_type| and build or update |cache_map|
-  // with found file blobs or symlinks.
-  void ScanCacheDirectory(CacheSubDirectoryType sub_dir_type,
-                          CacheMap* cache_map);
-
-  CacheMap cache_map_;
-};
-
-GDataCacheMap::GDataCacheMap(
-    const FilePath& cache_root_path,
-    base::SequencedWorkerPool* pool,
-    const base::SequencedWorkerPool::SequenceToken& sequence_token)
-    : GDataCache(cache_root_path, pool, sequence_token) {
-}
-
-GDataCacheMap::~GDataCacheMap() {
-  AssertOnSequencedWorkerPool();
-  cache_map_.clear();
-}
-
-void GDataCacheMap::Initialize() {
-  AssertOnSequencedWorkerPool();
-
-  base::PlatformFileError error = CreateCacheDirectories(cache_paths());
-  if (error != base::PLATFORM_FILE_OK)
-    return;
-
-  // Change permissions of cache persistent directory to u+rwx,og+x in order to
-  // allow archive files in that directory to be mounted by cros-disks.
-  error = ChangeFilePermissions(
-      GetCacheDirectoryPath(CACHE_TYPE_PERSISTENT),
-      S_IRWXU | S_IXGRP | S_IXOTH);
-  if (error != base::PLATFORM_FILE_OK)
-    return;
-
-  DVLOG(1) << "Scanning directories";
-
-  // Scan cache persistent and tmp directories to enumerate all files and create
-  // corresponding entries for cache map.
-  CacheMap cache_map;
-  ScanCacheDirectory(CACHE_TYPE_PERSISTENT, &cache_map);
-  ScanCacheDirectory(CACHE_TYPE_TMP, &cache_map);
-
-  // Then scan pinned and outgoing directories to update existing entries in
-  // cache map, or create new ones for pinned symlinks to /dev/null which target
-  // nothing.
-  // Pinned and outgoing directories should be scanned after the persistent
-  // directory as we'll add PINNED and DIRTY states respectively to the existing
-  // files in the persistent directory per the contents of the pinned and
-  // outgoing directories.
-  ScanCacheDirectory(CACHE_TYPE_PINNED, &cache_map);
-  ScanCacheDirectory(CACHE_TYPE_OUTGOING, &cache_map);
-
-  SetCacheMap(cache_map);
-
-  DVLOG(1) << "Directory scan finished";
-}
-
-void GDataCacheMap::SetCacheMap(const CacheMap& new_cache_map)  {
-  AssertOnSequencedWorkerPool();
-  cache_map_ = new_cache_map;
-}
-
-void GDataCacheMap::UpdateCache(const std::string& resource_id,
-                                const std::string& md5,
-                                CacheSubDirectoryType subdir,
-                                int cache_state) {
-  AssertOnSequencedWorkerPool();
-
-  CacheMap::iterator iter = cache_map_.find(resource_id);
-  if (iter == cache_map_.end()) {  // New resource, create new entry.
-    // Makes no sense to create new entry if cache state is NONE.
-    DCHECK(cache_state != CACHE_STATE_NONE);
-    if (cache_state != CACHE_STATE_NONE) {
-      CacheEntry cache_entry(md5, subdir, cache_state);
-      cache_map_.insert(std::make_pair(resource_id, cache_entry));
-      DVLOG(1) << "Added res_id=" << resource_id
-               << ", " << cache_entry.ToString();
-    }
-  } else {  // Resource exists.
-    // If cache state is NONE, delete entry from cache map.
-    if (cache_state == CACHE_STATE_NONE) {
-      DVLOG(1) << "Deleting res_id=" << resource_id
-               << ", " << iter->second.ToString();
-      cache_map_.erase(iter);
-    } else {  // Otherwise, update entry in cache map.
-      iter->second.md5 = md5;
-      iter->second.sub_dir_type = subdir;
-      iter->second.cache_state = cache_state;
-      DVLOG(1) << "Updated res_id=" << resource_id
-               << ", " << iter->second.ToString();
-    }
-  }
-}
-
-void GDataCacheMap::RemoveFromCache(const std::string& resource_id) {
-  AssertOnSequencedWorkerPool();
-
-  CacheMap::iterator iter = cache_map_.find(resource_id);
-  if (iter != cache_map_.end()) {
-    // Delete the CacheEntry and remove it from the map.
-    cache_map_.erase(iter);
-  }
-}
-
-scoped_ptr<GDataCache::CacheEntry> GDataCacheMap::GetCacheEntry(
+scoped_ptr<GDataCache::CacheEntry> GDataCache::GetCacheEntry(
     const std::string& resource_id,
     const std::string& md5) {
   AssertOnSequencedWorkerPool();
-
-  CacheMap::iterator iter = cache_map_.find(resource_id);
-  if (iter == cache_map_.end()) {
-    DVLOG(1) << "Can't find " << resource_id << " in cache map";
-    return scoped_ptr<CacheEntry>();
-  }
-
-  scoped_ptr<CacheEntry> cache_entry(new CacheEntry(iter->second));
-
-  // If entry is not dirty, it's only valid if matches with non-empty |md5|.
-  // If entry is dirty, its md5 may have been replaced by "local" during cache
-  // initialization, so we don't compare md5.
-  if (!cache_entry->IsDirty() && !md5.empty() && cache_entry->md5 != md5) {
-    DVLOG(1) << "Non-matching md5: want=" << md5
-             << ", found=[res_id=" << resource_id
-             << ", " << cache_entry->ToString()
-             << "]";
-    return scoped_ptr<CacheEntry>();
-  }
-
-  DVLOG(1) << "Found entry for res_id=" << resource_id
-           << ", " << cache_entry->ToString();
-
-  return cache_entry.Pass();
-}
-
-void GDataCacheMap::RemoveTemporaryFiles() {
-  AssertOnSequencedWorkerPool();
-
-  CacheMap::iterator iter = cache_map_.begin();
-  while (iter != cache_map_.end()) {
-    if (iter->second.sub_dir_type == CACHE_TYPE_TMP) {
-      // Post-increment the iterator to avoid iterator invalidation.
-      cache_map_.erase(iter++);
-    } else {
-      ++iter;
-    }
-  }
-}
-
-void GDataCacheMap::ScanCacheDirectory(CacheSubDirectoryType sub_dir_type,
-                                       CacheMap* cache_map) {
-  file_util::FileEnumerator enumerator(
-      GetCacheDirectoryPath(sub_dir_type),
-      false,  // not recursive
-      static_cast<file_util::FileEnumerator::FileType>(
-          file_util::FileEnumerator::FILES |
-          file_util::FileEnumerator::SHOW_SYM_LINKS),
-      kWildCard);
-  for (FilePath current = enumerator.Next(); !current.empty();
-       current = enumerator.Next()) {
-    // Extract resource_id and md5 from filename.
-    std::string resource_id;
-    std::string md5;
-    std::string extra_extension;
-    util::ParseCacheFilePath(current, &resource_id, &md5, &extra_extension);
-
-    // Determine cache state.
-    int cache_state = CACHE_STATE_NONE;
-    // If we're scanning pinned directory and if entry already exists, just
-    // update its pinned state.
-    if (sub_dir_type == CACHE_TYPE_PINNED) {
-      CacheMap::iterator iter = cache_map->find(resource_id);
-      if (iter != cache_map->end()) {  // Entry exists, update pinned state.
-        iter->second.cache_state = SetCachePinned(iter->second.cache_state);
-        continue;
-      }
-      // Entry doesn't exist, this is a special symlink that refers to
-      // /dev/null; follow through to create an entry with the PINNED but not
-      // PRESENT state.
-      cache_state = SetCachePinned(cache_state);
-    } else if (sub_dir_type == CACHE_TYPE_OUTGOING) {
-      // If we're scanning outgoing directory, entry must exist, update its
-      // dirty state.
-      // If entry doesn't exist, it's a logic error from previous execution,
-      // ignore this outgoing symlink and move on.
-      CacheMap::iterator iter = cache_map->find(resource_id);
-      if (iter != cache_map->end()) {  // Entry exists, update dirty state.
-        iter->second.cache_state = SetCacheDirty(iter->second.cache_state);
-      } else {
-        NOTREACHED() << "Dirty cache file MUST have actual file blob";
-      }
-      continue;
-    } else if (extra_extension == kMountedArchiveFileExtension) {
-      // Mounted archives in cache should be unmounted upon logout/shutdown.
-      // But if we encounter a mounted file at start, delete it and create an
-      // entry with not PRESENT state.
-      DCHECK(sub_dir_type == CACHE_TYPE_PERSISTENT);
-      file_util::Delete(current, false);
-    } else {
-      // Scanning other directories means that cache file is actually present.
-      cache_state = SetCachePresent(cache_state);
-    }
-
-    // Create and insert new entry into cache map.
-    cache_map->insert(std::make_pair(
-        resource_id, CacheEntry(md5, sub_dir_type, cache_state)));
-  }
+  return metadata_->GetCacheEntry(resource_id, md5);
 }
 
 // static
@@ -931,7 +664,7 @@ GDataCache* GDataCache::CreateGDataCacheOnUIThread(
     base::SequencedWorkerPool* pool,
     const base::SequencedWorkerPool::SequenceToken& sequence_token) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return new GDataCacheMap(cache_root_path, pool, sequence_token);
+  return new GDataCache(cache_root_path, pool, sequence_token);
 }
 
 void GDataCache::DestroyOnUIThread() {
@@ -945,6 +678,15 @@ void GDataCache::DestroyOnUIThread() {
       FROM_HERE,
       base::Bind(&GDataCache::Destroy,
                  base::Unretained(this)));
+}
+
+void GDataCache::Initialize() {
+  AssertOnSequencedWorkerPool();
+
+  GDataCacheMetadataMap* cache_data =
+      new GDataCacheMetadataMap(pool_, sequence_token_);
+  cache_data->Initialize(cache_paths_);
+  metadata_.reset(cache_data);
 }
 
 void GDataCache::Destroy() {
@@ -1047,12 +789,12 @@ void GDataCache::Store(const std::string& resource_id,
     // if base name of |dest_path| (i.e. escaped resource_id) contains the
     // extension separator '.', ReplaceExtension will remove it and everything
     // after it.  The result will be nothing like the escaped resource_id.
-    stale_filenames_pattern = FilePath(dest_path.value() + kWildCard);
+    stale_filenames_pattern = FilePath(dest_path.value() + util::kWildCard);
   } else {
     // Replace md5 extension with '*' i.e. "<resource_id>.*".
     // Note that ReplaceExtension automatically prefixes the extension with the
     // extension separator '.'.
-    stale_filenames_pattern = dest_path.ReplaceExtension(kWildCard);
+    stale_filenames_pattern = dest_path.ReplaceExtension(util::kWildCard);
   }
 
   // Delete files that match |stale_filenames_pattern| except for |dest_path|.
@@ -1060,7 +802,7 @@ void GDataCache::Store(const std::string& resource_id,
 
   if (*error == base::PLATFORM_FILE_OK) {
     // Now that file operations have completed, update cache map.
-    UpdateCache(resource_id, md5, sub_dir_type, cache_state);
+    metadata_->UpdateCache(resource_id, md5, sub_dir_type, cache_state);
   }
 }
 
@@ -1148,7 +890,7 @@ void GDataCache::Pin(const std::string& resource_id,
 
   if (*error == base::PLATFORM_FILE_OK) {
     // Now that file operations have completed, update cache map.
-    UpdateCache(resource_id, md5, sub_dir_type, cache_state);
+    metadata_->UpdateCache(resource_id, md5, sub_dir_type, cache_state);
   }
 }
 
@@ -1227,7 +969,7 @@ void GDataCache::Unpin(const std::string& resource_id,
   if (*error == base::PLATFORM_FILE_OK) {
     // Now that file operations have completed, update cache map.
     int cache_state = ClearCachePinned(cache_entry->cache_state);
-    UpdateCache(resource_id, md5, sub_dir_type, cache_state);
+    metadata_->UpdateCache(resource_id, md5, sub_dir_type, cache_state);
   }
 }
 
@@ -1245,7 +987,7 @@ void GDataCache::SetMountedState(const FilePath& file_path,
   std::string extra_extension;
   util::ParseCacheFilePath(file_path, &resource_id, &md5, &extra_extension);
   // The extra_extension shall be ".mounted" iff we're unmounting.
-  DCHECK(!to_mount == (extra_extension == kMountedArchiveFileExtension));
+  DCHECK(!to_mount == (extra_extension == util::kMountedArchiveFileExtension));
 
   // Get cache entry associated with the resource_id and md5
   scoped_ptr<CacheEntry> cache_entry = GetCacheEntry(
@@ -1291,7 +1033,7 @@ void GDataCache::SetMountedState(const FilePath& file_path,
                             FILE_OPERATION_MOVE, FilePath(), false);
   if (*error == base::PLATFORM_FILE_OK) {
     // Now that cache operation is complete, update cache map
-    UpdateCache(resource_id, md5, dest_subdir, cache_state);
+    metadata_->UpdateCache(resource_id, md5, dest_subdir, cache_state);
   }
 }
 
@@ -1395,7 +1137,7 @@ void GDataCache::MarkDirty(const std::string& resource_id,
   if (*error == base::PLATFORM_FILE_OK) {
     // Now that file operations have completed, update cache map.
     int cache_state = SetCacheDirty(cache_entry->cache_state);
-    UpdateCache(resource_id, md5, sub_dir_type, cache_state);
+    metadata_->UpdateCache(resource_id, md5, sub_dir_type, cache_state);
   }
 }
 
@@ -1543,7 +1285,7 @@ void GDataCache::ClearDirty(const std::string& resource_id,
   if (*error == base::PLATFORM_FILE_OK) {
     // Now that file operations have completed, update cache map.
     int cache_state = ClearCacheDirty(cache_entry->cache_state);
-    UpdateCache(resource_id, md5, sub_dir_type, cache_state);
+    metadata_->UpdateCache(resource_id, md5, sub_dir_type, cache_state);
   }
 }
 
@@ -1579,11 +1321,11 @@ void GDataCache::Remove(const std::string& resource_id,
   // For files in persistent and tmp dirs, delete files that match
   // "<resource_id>.*".
   paths_to_delete.push_back(GetCacheFilePath(resource_id,
-                                             kWildCard,
+                                             util::kWildCard,
                                              CACHE_TYPE_PERSISTENT,
                                              CACHED_FILE_FROM_SERVER));
   paths_to_delete.push_back(GetCacheFilePath(resource_id,
-                                             kWildCard,
+                                             util::kWildCard,
                                              CACHE_TYPE_TMP,
                                              CACHED_FILE_FROM_SERVER));
 
@@ -1607,7 +1349,7 @@ void GDataCache::Remove(const std::string& resource_id,
   }
 
   // Now that all file operations have completed, remove from cache map.
-  RemoveFromCache(resource_id);
+  metadata_->RemoveFromCache(resource_id);
 
   *error = base::PLATFORM_FILE_OK;
 }

@@ -20,6 +20,8 @@ class Profile;
 
 namespace gdata {
 
+class GDataCacheMetadata;
+
 // Callback for SetMountedStateOnUIThread.
 typedef base::Callback<void(base::PlatformFileError error,
                             const FilePath& file_path)> SetMountedStateCallback;
@@ -168,9 +170,6 @@ class GDataCache {
     return cache_state &= ~CACHE_STATE_MOUNTED;
   }
 
-  // A map table of cache file's resource id to its CacheEntry* entry.
-  typedef std::map<std::string, CacheEntry> CacheMap;
-
   // Returns the sub-directory under gdata cache directory for the given sub
   // directory type. Example:  <user_profile_dir>/GCache/v1/tmp
   //
@@ -281,38 +280,16 @@ class GDataCache {
   void RemoveOnUIThread(const std::string& resource_id,
                         const CacheOperationCallback& callback);
 
-  // TODO(hashimoto): Remove this method when crbug.com/131756 is fixed.
-  const std::vector<FilePath>& cache_paths() const { return cache_paths_; }
-
   // Utility method to call Initialize on UI thread.
   void RequestInitializeOnUIThread();
-
-  // Initializes cache.
-  virtual void Initialize() = 0;
-
-  // Sets |cache_map_| data member to formal parameter |new_cache_map|.
-  virtual void SetCacheMap(const CacheMap& new_cache_map) = 0;
-
-  // Updates cache map with entry corresponding to |resource_id|.
-  // Creates new entry if it doesn't exist, otherwise update the entry.
-  virtual void UpdateCache(const std::string& resource_id,
-                           const std::string& md5,
-                           CacheSubDirectoryType subdir,
-                           int cache_state) = 0;
-
-  // Removes entry corresponding to |resource_id| from cache map.
-  virtual void RemoveFromCache(const std::string& resource_id) = 0;
 
   // Returns the cache entry for file corresponding to |resource_id| and |md5|
   // if entry exists in cache map.  Otherwise, returns NULL.
   // |md5| can be empty if only matching |resource_id| is desired, which may
   // happen when looking for pinned entries where symlinks' filenames have no
   // extension and hence no md5.
-  virtual scoped_ptr<CacheEntry> GetCacheEntry(const std::string& resource_id,
-                                               const std::string& md5) = 0;
-
-  // Removes temporary files (files in CACHE_TYPE_TMP) from the cache map.
-  virtual void RemoveTemporaryFiles() = 0;
+  scoped_ptr<CacheEntry> GetCacheEntry(const std::string& resource_id,
+                                       const std::string& md5);
 
   // Factory methods for GDataCache.
   // |pool| and |sequence_token| are used to assert that the functions are
@@ -333,7 +310,7 @@ class GDataCache {
   // TODO(satorux): Write a unit test for this.
   static FilePath GetCacheRootPath(Profile* profile);
 
- protected:
+ private:
   GDataCache(
       const FilePath& cache_root_path,
       base::SequencedWorkerPool* pool_,
@@ -344,8 +321,8 @@ class GDataCache {
   // with the right sequence ID. If not, DCHECK will fail.
   void AssertOnSequencedWorkerPool();
 
- private:
-  friend class GDataCacheTest;
+  // Initializes the cache.
+  void Initialize();
 
   // Deletes the cache.
   void Destroy();
@@ -426,6 +403,9 @@ class GDataCache {
   const std::vector<FilePath> cache_paths_;
   base::SequencedWorkerPool* pool_;
   const base::SequencedWorkerPool::SequenceToken sequence_token_;
+
+  // The cache state data. This member must be access only on the blocking pool.
+  scoped_ptr<GDataCacheMetadata> metadata_;
 
   // WeakPtrFactory and WeakPtr bound to the UI thread.
   base::WeakPtrFactory<GDataCache> ui_weak_ptr_factory_;

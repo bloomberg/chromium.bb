@@ -513,7 +513,7 @@ class GDataFileSystemTest : public testing::Test {
         GDataCache::CACHE_TYPE_TMP,
         GDataCache::CACHED_FILE_FROM_SERVER);
     FilePath expected_path =
-        file_system_->cache_->cache_paths()[GDataCache::CACHE_TYPE_TMP];
+        file_system_->cache_->GetCacheDirectoryPath(GDataCache::CACHE_TYPE_TMP);
     expected_path = expected_path.Append(expected_filename);
     EXPECT_EQ(expected_path, actual_path);
 
@@ -897,14 +897,17 @@ class GDataFileSystemTest : public testing::Test {
     DVLOG(1) << "PrepareForInitCacheTest start";
     // Create gdata cache sub directories.
     ASSERT_TRUE(file_util::CreateDirectory(
-        file_system_->cache_->cache_paths()[
-            GDataCache::CACHE_TYPE_PERSISTENT]));
+        file_system_->cache_->GetCacheDirectoryPath(
+            GDataCache::CACHE_TYPE_PERSISTENT)));
     ASSERT_TRUE(file_util::CreateDirectory(
-        file_system_->cache_->cache_paths()[GDataCache::CACHE_TYPE_TMP]));
+        file_system_->cache_->GetCacheDirectoryPath(
+            GDataCache::CACHE_TYPE_TMP)));
     ASSERT_TRUE(file_util::CreateDirectory(
-        file_system_->cache_->cache_paths()[GDataCache::CACHE_TYPE_PINNED]));
+        file_system_->cache_->GetCacheDirectoryPath(
+            GDataCache::CACHE_TYPE_PINNED)));
     ASSERT_TRUE(file_util::CreateDirectory(
-        file_system_->cache_->cache_paths()[GDataCache::CACHE_TYPE_OUTGOING]));
+        file_system_->cache_->GetCacheDirectoryPath(
+            GDataCache::CACHE_TYPE_OUTGOING)));
 
     // Dump some files into cache dirs so that
     // GDataFileSystem::InitializeCacheOnBlockingPool would scan through them
