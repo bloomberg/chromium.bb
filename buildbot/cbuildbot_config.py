@@ -653,30 +653,30 @@ _toolchain = \
     full.derive(latest_toolchain=True, prebuilts=False,
                 gcc_githash='gcc.gnu.org/branches/google/main',
                 trybot_list=False,
-                use_sdk=False,
+                use_sdk=True,
                 description='Toolchain',)
 
 _toolchain.add_config('x86-generic-toolchain',
-  boards=['x86-generic'],
+  boards=['x86-generic', 'amd64-host'],
 )
 
 _toolchain.add_config('arm-tegra2-seaboard-toolchain', arm,
-  boards=['tegra2_seaboard'],
+  boards=['tegra2_seaboard', 'amd64-host'],
 )
 
 _toolchain_minor = \
     full.derive(latest_toolchain=True, prebuilts=False,
                 gcc_githash='gcc.gnu.org/branches/google/gcc-4_7',
                 trybot_list=False,
-                use_sdk=False,
+                use_sdk=True,
                 description='Toolchain',)
 
 _toolchain_minor.add_config('x86-generic-toolchain_minor',
-  boards=['x86-generic'],
+  boards=['x86-generic', 'amd64-host'],
 )
 
 _toolchain_minor.add_config('arm-tegra2-seaboard-toolchain_minor', arm,
-  boards=['tegra2_seaboard'],
+  boards=['tegra2_seaboard', 'amd64-host'],
 )
 
 
@@ -824,12 +824,12 @@ _internal_toolchain = _toolchain.derive(internal, official,
 )
 
 _internal_toolchain.add_config('x86-alex-toolchain',
-  boards=['x86-alex'],
+  boards=['x86-alex', 'amd64-host'],
 )
 
 _internal_toolchain.add_config('arm-tegra2_kaen-toolchain',
   arm,
-  boards=['tegra2_kaen'],
+  boards=['tegra2_kaen', 'amd64-host'],
 )
 
 _internal_toolchain_minor = _toolchain_minor.derive(internal, official,
@@ -839,12 +839,12 @@ _internal_toolchain_minor = _toolchain_minor.derive(internal, official,
 )
 
 _internal_toolchain_minor.add_config('x86-alex-toolchain_minor',
-  boards=['x86-alex'],
+  boards=['x86-alex', 'amd64-host'],
 )
 
 _internal_toolchain_minor.add_config('arm-tegra2_kaen-toolchain_minor',
   arm,
-  boards=['tegra2_kaen'],
+  boards=['tegra2_kaen', 'amd64-host'],
 )
 
 _release = full.derive(official, internal,
