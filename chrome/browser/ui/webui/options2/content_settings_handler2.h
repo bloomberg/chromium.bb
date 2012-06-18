@@ -67,6 +67,7 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
     SiteMap sites;
 
     bool initialized;
+    uint32_t last_refresh_request_id;
   };
 
   // Functions that call into the page -----------------------------------------
@@ -141,6 +142,10 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
 
   // Gets the ProtocolHandlerRegistry for the normal profile.
   ProtocolHandlerRegistry* GetProtocolHandlerRegistry();
+
+  // The method does nothing if |force| is false and the cache has been
+  // initialized.
+  void RefreshFlashSettingsCache(bool force);
 
   static ExContentSettingsType ExContentSettingsTypeFromGroupName(
       const std::string& name);

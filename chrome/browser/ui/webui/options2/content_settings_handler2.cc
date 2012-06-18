@@ -312,7 +312,8 @@ class ContentSettingsHandler::ExContentSettingsType {
 
 ContentSettingsHandler::CachedPepperFlashSettings::CachedPepperFlashSettings()
     : default_permission(PP_FLASH_BROWSEROPERATIONS_PERMISSION_BLOCK),
-      initialized(false) {
+      initialized(false),
+      last_refresh_request_id(0) {
 }
 
 ContentSettingsHandler::CachedPepperFlashSettings::~CachedPepperFlashSettings() {
@@ -502,8 +503,7 @@ void ContentSettingsHandler::InitializePage() {
   UpdateAllExceptionsViewsFromModel();
 
   flash_cameramic_settings_ = CachedPepperFlashSettings();
-  flash_settings_manager_->GetPermissionSettings(
-      PP_FLASH_BROWSEROPERATIONS_SETTINGTYPE_CAMERAMIC);
+  RefreshFlashSettingsCache(true);
 }
 
 void ContentSettingsHandler::Observe(
@@ -549,14 +549,10 @@ void ContentSettingsHandler::Observe(
     case chrome::NOTIFICATION_PREF_CHANGED: {
       const std::string& pref_name =
           *content::Details<std::string>(details).ptr();
-      if (pref_name == prefs::kGeolocationContentSettings) {
+      if (pref_name == prefs::kGeolocationContentSettings)
         UpdateGeolocationExceptionsView();
-      } else if (pref_name == prefs::kPepperFlashSettingsEnabled) {
-        if (!flash_cameramic_settings_.initialized) {
-          flash_settings_manager_->GetPermissionSettings(
-              PP_FLASH_BROWSEROPERATIONS_SETTINGTYPE_CAMERAMIC);
-        }
-      }
+      else if (pref_name == prefs::kPepperFlashSettingsEnabled)
+        RefreshFlashSettingsCache(false);
 
       break;
     }
@@ -577,13 +573,14 @@ void ContentSettingsHandler::Observe(
 }
 
 void ContentSettingsHandler::OnGetPermissionSettingsCompleted(
-    uint32 /* request_id */,
+    uint32 request_id,
     bool success,
     PP_Flash_BrowserOperations_Permission default_permission,
     const ppapi::FlashSiteSettings& sites) {
-  if (success && !flash_cameramic_settings_.initialized) {
-    flash_cameramic_settings_.initialized = true;
+  if (success &&
+      request_id == flash_cameramic_settings_.last_refresh_request_id) {
     flash_cameramic_settings_.default_permission = default_permission;
+    flash_cameramic_settings_.sites.clear();
     for (ppapi::FlashSiteSettings::const_iterator iter = sites.begin();
          iter != sites.end(); ++iter) {
       if (IsValidHost(iter->site))
@@ -592,8 +589,11 @@ void ContentSettingsHandler::OnGetPermissionSettingsCompleted(
     UpdateExceptionsViewFromModel(
         ExContentSettingsType(EX_CONTENT_SETTINGS_TYPE_PEPPER_FLASH_CAMERAMIC));
 
-    web_ui()->CallJavascriptFunction(
-        "ContentSettings.enablePepperFlashCameraMicSettings");
+    if (!flash_cameramic_settings_.initialized) {
+      web_ui()->CallJavascriptFunction(
+          "ContentSettings.enablePepperFlashCameraMicSettings");
+      flash_cameramic_settings_.initialized = true;
+    }
   }
 }
 
@@ -1000,6 +1000,7 @@ void ContentSettingsHandler::SetContentFilter(const ListValue* args) {
     flash_settings_manager_->SetDefaultPermission(
         PP_FLASH_BROWSEROPERATIONS_SETTINGTYPE_CAMERAMIC,
         flash_cameramic_settings_.default_permission, false);
+    RefreshFlashSettingsCache(true);
   } else {
     HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
     ContentSettingsType converted_type = content_type.ToContentSettingsType();
@@ -1232,6 +1233,14 @@ HostContentSettingsMap*
   if (profile->HasOffTheRecordProfile())
     return profile->GetOffTheRecordProfile()->GetHostContentSettingsMap();
   return NULL;
+}
+
+void ContentSettingsHandler::RefreshFlashSettingsCache(bool force) {
+  if (force || !flash_cameramic_settings_.initialized) {
+    flash_cameramic_settings_.last_refresh_request_id =
+        flash_settings_manager_->GetPermissionSettings(
+            PP_FLASH_BROWSEROPERATIONS_SETTINGTYPE_CAMERAMIC);
+  }
 }
 
 // static
