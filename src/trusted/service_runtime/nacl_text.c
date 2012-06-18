@@ -442,28 +442,29 @@ static INLINE void CopyCodeSafelyInitial(uint8_t  *dest,
   CopyBundleHeads(dest, src, size, bundle_size);
 }
 
-static void MakeDynamicCodePageVisible(struct NaClApp *nap,
-                                       uint32_t page_index,
-                                       uint8_t *writable_addr) {
+static void MakeDynamicCodePagesVisible(struct NaClApp *nap,
+                                        uint32_t page_index_min,
+                                        uint32_t page_index_max,
+                                        uint8_t *writable_addr) {
   void *user_addr;
+  uint32_t index;
+  size_t size = (page_index_max - page_index_min) * NACL_MAP_PAGESIZE;
 
-  if (BitmapIsBitSet(nap->dynamic_page_bitmap, page_index)) {
-    /* The page is already visible: nothing to do. */
-    return;
+  for (index = page_index_min; index < page_index_max; index++) {
+    CHECK(!BitmapIsBitSet(nap->dynamic_page_bitmap, index));
+    BitmapSetBit(nap->dynamic_page_bitmap, index);
   }
   user_addr = (void *) NaClUserToSys(nap, nap->dynamic_text_start
-                                     + page_index * NACL_MAP_PAGESIZE);
+                                     + page_index_min * NACL_MAP_PAGESIZE);
 
   /* Sanity check:  Ensure the page is not already in use. */
   CHECK(*writable_addr == 0);
 
-  NaClFillMemoryRegionWithHalt(writable_addr, NACL_MAP_PAGESIZE);
+  NaClFillMemoryRegionWithHalt(writable_addr, size);
 
-  if (NaCl_mprotect(user_addr, NACL_MAP_PAGESIZE, PROT_READ | PROT_EXEC) != 0) {
+  if (NaCl_mprotect(user_addr, size, PROT_READ | PROT_EXEC) != 0) {
     NaClLog(LOG_FATAL, "MakeDynamicCodePageVisible: NaCl_mprotect() failed\n");
   }
-
-  BitmapSetBit(nap->dynamic_page_bitmap, page_index);
 }
 
 /*
@@ -509,9 +510,8 @@ static uintptr_t CachedMapWritableText(struct NaClApp *nap,
      * update that cached version
      */
     if (size > 0) {
-      uint32_t page_index;
+      uint32_t current_page_index;
       uint32_t end_page_index;
-      uint8_t *writable_addr;
 
       uintptr_t mapping = (*((struct NaClDescVtbl const *)
             shm->base.vtbl)->
@@ -526,13 +526,27 @@ static uintptr_t CachedMapWritableText(struct NaClApp *nap,
         return 0;
       }
 
-      writable_addr = (uint8_t *) mapping;
+      /*
+       * To reduce the number of mprotect() system calls, we coalesce
+       * MakeDynamicCodePagesVisible() calls for adjacent pages that
+       * have yet not been allocated.
+       */
+      current_page_index = offset / NACL_MAP_PAGESIZE;
       end_page_index = (offset + size) / NACL_MAP_PAGESIZE;
-      for (page_index = offset / NACL_MAP_PAGESIZE;
-           page_index < end_page_index;
-           page_index++) {
-        MakeDynamicCodePageVisible(nap, page_index, writable_addr);
-        writable_addr += NACL_MAP_PAGESIZE;
+      while (current_page_index < end_page_index) {
+        uint32_t start_page_index = current_page_index;
+        /* Find the end of this block of unallocated pages. */
+        while (current_page_index < end_page_index &&
+               !BitmapIsBitSet(nap->dynamic_page_bitmap, current_page_index)) {
+          current_page_index++;
+        }
+        if (current_page_index > start_page_index) {
+          uintptr_t writable_addr =
+              mapping + (start_page_index * NACL_MAP_PAGESIZE - offset);
+          MakeDynamicCodePagesVisible(nap, start_page_index, current_page_index,
+                                      (uint8_t *) writable_addr);
+        }
+        current_page_index++;
       }
 
       nap->dynamic_mapcache_offset = offset;

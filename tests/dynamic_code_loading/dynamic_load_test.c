@@ -455,6 +455,67 @@ void test_deleting_code_from_invalid_ranges() {
   assert(rc == 0);
 }
 
+void check_region_is_filled_with_hlts(const char *data, size_t size) {
+  uint8_t halts[] =
+#if defined(__i386__) || defined(__x86_64__)
+    { 0xf4 }; /* HLT */
+#elif defined(__arm__)
+    { 0x76, 0x66, 0x26, 0xe1 }; /* 0xe1266676 - BKPT 0x6666 */
+#else
+# error "Unknown arch"
+#endif
+  const char *ptr;
+  for (ptr = data; ptr < data + size; ptr += sizeof(halts)) {
+    assert(memcmp(ptr, halts, sizeof(halts)) == 0);
+  }
+}
+
+/* Check that regions surrounding the region we load code into are
+   correctly filled with halt instructions.  Loading code causes the
+   pages to become allocated, and unused parts of these pages should
+   be filled with halts. */
+void test_demand_alloc_surrounding_hlt_filling() {
+  int pad_size = 0x4000; /* This must be less than one 64k page. */
+  int code_size = 0x28000;
+  int total_size = pad_size * 2 + code_size;
+  assert(total_size % DYNAMIC_CODE_PAGE_SIZE == 0);
+  char *load_area = allocate_code_space(total_size / DYNAMIC_CODE_PAGE_SIZE);
+  uint8_t *data = alloca(code_size);
+  int rc;
+
+  fill_nops(data, code_size);
+  rc = nacl_load_code(load_area + pad_size, data, code_size);
+  assert(rc == 0);
+  check_region_is_filled_with_hlts(load_area, pad_size);
+  assert(memcmp(load_area + pad_size, data, code_size) == 0);
+  check_region_is_filled_with_hlts(load_area + pad_size + code_size, pad_size);
+}
+
+/* Check that dyncode_create() works on a set of pages when a strict
+   subset of those pages were allocated by a previous dyncode_create()
+   call.  This provides some coverage of the coalescing of mprotect()
+   calls that dyncode_create() does. */
+void test_demand_alloc_of_fragmented_pages() {
+  int smaller_size = 2 * DYNAMIC_CODE_PAGE_SIZE;
+  int smaller_size_load_offset = 2 * DYNAMIC_CODE_PAGE_SIZE;
+  int larger_size = 6 * DYNAMIC_CODE_PAGE_SIZE;
+  char *load_area = allocate_code_space(6);
+  uint8_t *data = alloca(larger_size);
+  int rc;
+
+  fill_nops(data, larger_size);
+
+  /* Cause pages 2 and 3 to be allocated. */
+  rc = nacl_load_code(load_area + smaller_size_load_offset, data, smaller_size);
+  assert(rc == 0);
+  rc = nacl_dyncode_delete(load_area + smaller_size_load_offset, smaller_size);
+  assert(rc == 0);
+
+  /* Cause pages 0, 1, 4 and 5 to be allocated as well. */
+  rc = nacl_load_code(load_area, data, larger_size);
+  assert(rc == 0);
+}
+
 void run_test(const char *test_name, void (*test_func)(void)) {
   printf("Running %s...\n", test_name);
   test_func();
@@ -486,6 +547,8 @@ int TestMain() {
   RUN_TEST(test_deleting_zero_size);
   RUN_TEST(test_deleting_code_from_invalid_ranges);
   RUN_TEST(test_threaded_delete);
+  RUN_TEST(test_demand_alloc_surrounding_hlt_filling);
+  RUN_TEST(test_demand_alloc_of_fragmented_pages);
   RUN_TEST(test_stress);
   /*
    * TODO(ncbray) reenable when kernel bug is fixed.
