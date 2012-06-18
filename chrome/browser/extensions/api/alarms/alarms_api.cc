@@ -119,8 +119,7 @@ bool AlarmsCreateFunction::RunImpl() {
 }
 
 bool AlarmsGetFunction::RunImpl() {
-  scoped_ptr<alarms::Get::Params> params(
-      alarms::Get::Params::Create(*args_));
+  scoped_ptr<alarms::Get::Params> params(alarms::Get::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   std::string name = params->name.get() ? *params->name : kDefaultAlarmName;

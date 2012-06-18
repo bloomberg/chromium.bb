@@ -14,11 +14,9 @@ const char kDescriptionKey[] = "description";
 const char kIdKey[] = "id";
 const char kPatternKey[] = "pattern";
 const char kPrimaryPatternKey[] = "primaryPattern";
-const char kPrimaryUrlKey[] = "primaryUrl";
 const char kResourceIdentifierKey[] = "resourceIdentifier";
 const char kRuleKey[] = "rule";
 const char kSecondaryPatternKey[] = "secondaryPattern";
-const char kSecondaryUrlKey[] = "secondaryUrl";
 
 // Errors.
 const char kIncognitoContextError[] =

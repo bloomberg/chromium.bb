@@ -20,6 +20,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/api/content_settings.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "content/public/browser/plugin_service.h"
 #include "webkit/plugins/npapi/plugin_group.h"
@@ -27,12 +28,28 @@
 using content::BrowserThread;
 using content::PluginService;
 
+namespace Clear = extensions::api::content_settings::ContentSetting::Clear;
+namespace Get = extensions::api::content_settings::ContentSetting::Get;
+namespace Set = extensions::api::content_settings::ContentSetting::Set;
 namespace pref_helpers = extension_preference_helpers;
 namespace pref_keys = extension_preference_api_constants;
 
 namespace {
 
 const std::vector<webkit::npapi::PluginGroup>* g_testing_plugin_groups_;
+
+bool RemoveContentType(ListValue* args, ContentSettingsType* content_type) {
+  std::string content_type_str;
+  if (!args->GetString(0, &content_type_str))
+    return false;
+  // We remove the ContentSettingsType parameter since this is added by the
+  // renderer, and is not part of the JSON schema.
+  args->Remove(0, NULL);
+  *content_type =
+      extensions::content_settings_helpers::StringToContentSettingsType(
+          content_type_str);
+  return *content_type != CONTENT_SETTINGS_TYPE_DEFAULT;
+}
 
 }  // namespace
 
@@ -42,28 +59,20 @@ namespace helpers = content_settings_helpers;
 namespace keys = content_settings_api_constants;
 
 bool ClearContentSettingsFunction::RunImpl() {
-  std::string content_type_str;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &content_type_str));
-  ContentSettingsType content_type =
-      helpers::StringToContentSettingsType(content_type_str);
-  EXTENSION_FUNCTION_VALIDATE(content_type != CONTENT_SETTINGS_TYPE_DEFAULT);
+  ContentSettingsType content_type;
+  EXTENSION_FUNCTION_VALIDATE(RemoveContentType(args_.get(), &content_type));
 
-  DictionaryValue* details = NULL;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &details));
+  scoped_ptr<Clear::Params> params(Clear::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
 
   ExtensionPrefsScope scope = kExtensionPrefsScopeRegular;
-  if (details->HasKey(pref_keys::kScopeKey)) {
-    std::string scope_str;
-    EXTENSION_FUNCTION_VALIDATE(details->GetString(pref_keys::kScopeKey,
-                                                   &scope_str));
-
-    EXTENSION_FUNCTION_VALIDATE(pref_helpers::StringToScope(scope_str, &scope));
-    EXTENSION_FUNCTION_VALIDATE(
-        scope != kExtensionPrefsScopeIncognitoPersistent);
+  bool incognito = false;
+  if (params->details.scope ==
+          Clear::Params::Details::SCOPE_INCOGNITO_SESSION_ONLY) {
+    scope = kExtensionPrefsScopeIncognitoSessionOnly;
+    incognito = true;
   }
 
-  bool incognito = (scope == kExtensionPrefsScopeIncognitoPersistent ||
-                    scope == kExtensionPrefsScopeIncognitoSessionOnly);
   if (incognito) {
     // We don't check incognito permissions here, as an extension should be
     // always allowed to clear its own settings.
@@ -84,52 +93,39 @@ bool ClearContentSettingsFunction::RunImpl() {
 }
 
 bool GetContentSettingFunction::RunImpl() {
-  std::string content_type_str;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &content_type_str));
-  ContentSettingsType content_type =
-      helpers::StringToContentSettingsType(content_type_str);
-  EXTENSION_FUNCTION_VALIDATE(content_type != CONTENT_SETTINGS_TYPE_DEFAULT);
+  ContentSettingsType content_type;
+  EXTENSION_FUNCTION_VALIDATE(RemoveContentType(args_.get(), &content_type));
 
-  DictionaryValue* details = NULL;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &details));
+  scoped_ptr<Get::Params> params(Get::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  std::string primary_url_spec;
-  EXTENSION_FUNCTION_VALIDATE(
-      details->GetString(keys::kPrimaryUrlKey, &primary_url_spec));
-  GURL primary_url(primary_url_spec);
+  GURL primary_url(params->details.primary_url);
   if (!primary_url.is_valid()) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(keys::kInvalidUrlError,
-                                                     primary_url_spec);
+        params->details.primary_url);
     return false;
   }
 
   GURL secondary_url(primary_url);
-  std::string secondary_url_spec;
-  if (details->GetString(keys::kSecondaryUrlKey, &secondary_url_spec)) {
-    secondary_url = GURL(secondary_url_spec);
+  if (params->details.secondary_url.get()) {
+    secondary_url = GURL(*params->details.secondary_url);
     if (!secondary_url.is_valid()) {
       error_ = ExtensionErrorUtils::FormatErrorMessage(keys::kInvalidUrlError,
-                                                       secondary_url_spec);
+        *params->details.secondary_url);
       return false;
     }
   }
 
   std::string resource_identifier;
-  if (details->HasKey(keys::kResourceIdentifierKey)) {
-    DictionaryValue* resource_identifier_dict = NULL;
+  if (params->details.resource_identifier.get()) {
     EXTENSION_FUNCTION_VALIDATE(
-        details->GetDictionary(keys::kResourceIdentifierKey,
-                               &resource_identifier_dict));
-    EXTENSION_FUNCTION_VALIDATE(
-        resource_identifier_dict->GetString(keys::kIdKey,
-                                            &resource_identifier));
+        params->details.resource_identifier->ToValue()->GetString(keys::kIdKey,
+            &resource_identifier));
   }
 
   bool incognito = false;
-  if (details->HasKey(pref_keys::kIncognitoKey)) {
-    EXTENSION_FUNCTION_VALIDATE(
-        details->GetBoolean(pref_keys::kIncognitoKey, &incognito));
-  }
+  if (params->details.incognito.get())
+    incognito = *params->details.incognito;
   if (incognito && !include_incognito()) {
     error_ = pref_keys::kIncognitoErrorMessage;
     return false;
@@ -173,21 +169,16 @@ bool GetContentSettingFunction::RunImpl() {
 }
 
 bool SetContentSettingFunction::RunImpl() {
-  std::string content_type_str;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &content_type_str));
-  ContentSettingsType content_type =
-      helpers::StringToContentSettingsType(content_type_str);
-  EXTENSION_FUNCTION_VALIDATE(content_type != CONTENT_SETTINGS_TYPE_DEFAULT);
+  ContentSettingsType content_type;
+  EXTENSION_FUNCTION_VALIDATE(RemoveContentType(args_.get(), &content_type));
 
-  DictionaryValue* details = NULL;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &details));
+  scoped_ptr<Set::Params> params(Set::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  std::string primary_pattern_str;
-  EXTENSION_FUNCTION_VALIDATE(
-      details->GetString(keys::kPrimaryPatternKey, &primary_pattern_str));
   std::string primary_error;
   ContentSettingsPattern primary_pattern =
-      helpers::ParseExtensionPattern(primary_pattern_str, &primary_error);
+      helpers::ParseExtensionPattern(params->details.primary_pattern,
+                                     &primary_error);
   if (!primary_pattern.IsValid()) {
     error_ = primary_error;
     return false;
@@ -195,10 +186,11 @@ bool SetContentSettingFunction::RunImpl() {
 
   ContentSettingsPattern secondary_pattern = ContentSettingsPattern::Wildcard();
   std::string secondary_pattern_str;
-  if (details->GetString(keys::kSecondaryPatternKey, &secondary_pattern_str)) {
+  if (params->details.secondary_pattern.get()) {
     std::string secondary_error;
     secondary_pattern =
-        helpers::ParseExtensionPattern(secondary_pattern_str, &secondary_error);
+        helpers::ParseExtensionPattern(*params->details.secondary_pattern,
+                                       &secondary_error);
     if (!secondary_pattern.IsValid()) {
       error_ = secondary_error;
       return false;
@@ -206,11 +198,9 @@ bool SetContentSettingFunction::RunImpl() {
   }
 
   std::string resource_identifier;
-  if (details->HasKey(keys::kResourceIdentifierKey)) {
-    DictionaryValue* resource_identifier_dict = NULL;
-    EXTENSION_FUNCTION_VALIDATE(
-        details->GetDictionary(keys::kResourceIdentifierKey,
-                               &resource_identifier_dict));
+  if (params->details.resource_identifier.get()) {
+    DictionaryValue* resource_identifier_dict =
+        params->details.resource_identifier->ToValue().get();
     EXTENSION_FUNCTION_VALIDATE(
         resource_identifier_dict->GetString(keys::kIdKey,
                                             &resource_identifier));
@@ -218,8 +208,8 @@ bool SetContentSettingFunction::RunImpl() {
 
   std::string setting_str;
   EXTENSION_FUNCTION_VALIDATE(
-      details->GetString(keys::kContentSettingKey, &setting_str));
-  ContentSetting setting = CONTENT_SETTING_DEFAULT;
+      params->details.setting.value().GetAsString(&setting_str));
+  ContentSetting setting;
   EXTENSION_FUNCTION_VALIDATE(
       helpers::StringToContentSetting(setting_str, &setting));
   EXTENSION_FUNCTION_VALIDATE(
@@ -228,18 +218,13 @@ bool SetContentSettingFunction::RunImpl() {
                                                       content_type));
 
   ExtensionPrefsScope scope = kExtensionPrefsScopeRegular;
-  if (details->HasKey(pref_keys::kScopeKey)) {
-    std::string scope_str;
-    EXTENSION_FUNCTION_VALIDATE(details->GetString(pref_keys::kScopeKey,
-                                                   &scope_str));
-
-    EXTENSION_FUNCTION_VALIDATE(pref_helpers::StringToScope(scope_str, &scope));
-    EXTENSION_FUNCTION_VALIDATE(
-        scope != kExtensionPrefsScopeIncognitoPersistent);
+  bool incognito = false;
+  if (params->details.scope ==
+          Set::Params::Details::SCOPE_INCOGNITO_SESSION_ONLY) {
+    scope = kExtensionPrefsScopeIncognitoSessionOnly;
+    incognito = true;
   }
 
-  bool incognito = (scope == kExtensionPrefsScopeIncognitoPersistent ||
-                    scope == kExtensionPrefsScopeIncognitoSessionOnly);
   if (incognito) {
     // Regular profiles can't access incognito unless include_incognito is true.
     if (!profile()->IsOffTheRecord() && !include_incognito()) {
@@ -270,11 +255,8 @@ bool SetContentSettingFunction::RunImpl() {
 }
 
 bool GetResourceIdentifiersFunction::RunImpl() {
-  std::string content_type_str;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &content_type_str));
-  ContentSettingsType content_type =
-      helpers::StringToContentSettingsType(content_type_str);
-  EXTENSION_FUNCTION_VALIDATE(content_type != CONTENT_SETTINGS_TYPE_DEFAULT);
+  ContentSettingsType content_type;
+  EXTENSION_FUNCTION_VALIDATE(RemoveContentType(args_.get(), &content_type));
 
   if (content_type == CONTENT_SETTINGS_TYPE_PLUGINS) {
     if (g_testing_plugin_groups_) {

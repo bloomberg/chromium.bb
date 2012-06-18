@@ -18,11 +18,9 @@ extern const char kDescriptionKey[];
 extern const char kIdKey[];
 extern const char kPatternKey[];
 extern const char kPrimaryPatternKey[];
-extern const char kPrimaryUrlKey[];
 extern const char kResourceIdentifierKey[];
 extern const char kRuleKey[];
 extern const char kSecondaryPatternKey[];
-extern const char kSecondaryUrlKey[];
 
 // Errors.
 extern const char kIncognitoContextError[];
