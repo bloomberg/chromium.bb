@@ -54,7 +54,10 @@ struct lockscreen {
 };
 
 struct launcher {
+	struct widget *widget;
+	struct homescreen *homescreen;
 	cairo_surface_t *icon;
+	int focused, pressed;
 	char *path;
 	struct wl_list link;
 };
@@ -159,13 +162,8 @@ homescreen_draw(struct widget *widget, void *data)
 	i = 0;
 
 	wl_list_for_each(launcher, &homescreen->launcher_list, link) {
-		pattern = cairo_pattern_create_for_surface(launcher->icon);
-		cairo_matrix_init_translate(&matrix, -x, -y);
-		cairo_pattern_set_matrix(pattern, &matrix);
-		cairo_pattern_set_extend(pattern, CAIRO_EXTEND_NONE);
-		cairo_set_source(cr, pattern);
-		cairo_pattern_destroy(pattern);
-		cairo_paint(cr);
+		widget_set_allocation(launcher->widget,
+				      x, y, icon_width, icon_height);
 		x += icon_width + hpadding;
 		i++;
 		if (i == columns) {
@@ -305,6 +303,95 @@ static const struct tablet_shell_listener tablet_shell_listener = {
 	hide_switcher
 };
 
+static int
+launcher_enter_handler(struct widget *widget, struct input *input,
+			     float x, float y, void *data)
+{
+	struct launcher *launcher = data;
+
+	launcher->focused = 1;
+	widget_schedule_redraw(widget);
+
+	return CURSOR_LEFT_PTR;
+}
+
+static void
+launcher_leave_handler(struct widget *widget,
+			     struct input *input, void *data)
+{
+	struct launcher *launcher = data;
+
+	launcher->focused = 0;
+	widget_schedule_redraw(widget);
+}
+
+static void
+launcher_activate(struct launcher *widget)
+{
+	pid_t pid;
+
+	pid = fork();
+	if (pid < 0) {
+		fprintf(stderr, "fork failed: %m\n");
+		return;
+	}
+
+	if (pid)
+		return;
+
+	if (execl(widget->path, widget->path, NULL) < 0) {
+		fprintf(stderr, "execl '%s' failed: %m\n", widget->path);
+		exit(1);
+	}
+}
+
+static void
+launcher_button_handler(struct widget *widget,
+			      struct input *input, uint32_t time,
+			      uint32_t button,
+			      enum wl_pointer_button_state state, void *data)
+{
+	struct launcher *launcher;
+
+	launcher = widget_get_user_data(widget);
+	widget_schedule_redraw(widget);
+	if (state == WL_POINTER_BUTTON_STATE_RELEASED) {
+		launcher_activate(launcher);
+		launcher->pressed = 0;
+	} else if (state == WL_POINTER_BUTTON_STATE_PRESSED) 
+		launcher->pressed = 1;
+}
+
+static void
+launcher_redraw_handler(struct widget *widget, void *data)
+{
+	struct launcher *launcher = data;
+	cairo_surface_t *surface;
+	struct rectangle allocation;
+	cairo_t *cr;
+
+	surface = window_get_surface(launcher->homescreen->window);
+	cr = cairo_create(surface);
+
+	widget_get_allocation(widget, &allocation);
+	if (launcher->pressed) {
+		allocation.x++;
+		allocation.y++;
+	}
+
+	cairo_set_source_surface(cr, launcher->icon,
+				 allocation.x, allocation.y);
+	cairo_paint(cr);
+
+	if (launcher->focused) {
+		cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.4);
+		cairo_mask_surface(cr, launcher->icon,
+				   allocation.x, allocation.y);
+	}
+
+	cairo_destroy(cr);
+}
+
 static void
 tablet_shell_add_launcher(struct tablet *tablet,
 			  const char *icon, const char *path)
@@ -320,6 +407,17 @@ tablet_shell_add_launcher(struct tablet *tablet,
 		free(launcher);
 		return;
 	}
+
+	launcher->homescreen = homescreen;
+	launcher->widget = widget_add_widget(homescreen->widget, launcher);
+	widget_set_enter_handler(launcher->widget,
+				 launcher_enter_handler);
+	widget_set_leave_handler(launcher->widget,
+				 launcher_leave_handler);
+	widget_set_button_handler(launcher->widget,
+				  launcher_button_handler);
+	widget_set_redraw_handler(launcher->widget,
+				  launcher_redraw_handler);
 
 	wl_list_insert(&homescreen->launcher_list, &launcher->link);
 }
