@@ -2312,8 +2312,7 @@ pointer_surface_frame_callback(void *data, struct wl_callback *callback,
 			       uint32_t time)
 {
 	struct input *input = data;
-	struct wl_cursor *cursor =
-		input->display->cursors[input->current_cursor];
+	struct wl_cursor *cursor;
 	int i;
 
 	if (callback) {
@@ -2323,6 +2322,9 @@ pointer_surface_frame_callback(void *data, struct wl_callback *callback,
 	}
 
 	if (input->current_cursor == CURSOR_UNSET)
+		return;
+	cursor = input->display->cursors[input->current_cursor];
+	if (!cursor)
 		return;
 
 	/* FIXME We don't have the current time on the first call so we set
