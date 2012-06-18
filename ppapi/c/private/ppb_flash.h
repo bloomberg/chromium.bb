@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_flash.idl modified Fri Jun  8 15:55:46 2012. */
+/* From private/ppb_flash.idl modified Thu Jun 14 16:38:53 2012. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_FLASH_H_
 #define PPAPI_C_PRIVATE_PPB_FLASH_H_
@@ -75,7 +75,11 @@ typedef enum {
    *
    * Returns an undefined PP_Var on invalid instance.
    */
-  PP_FLASHSETTING_LANGUAGE = 4
+  PP_FLASHSETTING_LANGUAGE = 4,
+  /**
+   * Specifies the number of CPU cores that are present on the system.
+   */
+  PP_FLASHSETTING_NUMCORES = 5
 } PP_FlashSetting;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_FlashSetting, 4);
 /**

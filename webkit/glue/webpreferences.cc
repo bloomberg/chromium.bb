@@ -115,7 +115,8 @@ WebPreferences::WebPreferences()
       max_untiled_layer_width(512),
       max_untiled_layer_height(512),
       fixed_position_creates_stacking_context(false),
-      sync_xhr_in_documents_enabled(true) {
+      sync_xhr_in_documents_enabled(true),
+      number_of_cpu_cores(1) {
   standard_font_family_map[kCommonScript] =
       ASCIIToUTF16("Times New Roman");
   fixed_font_family_map[kCommonScript] =

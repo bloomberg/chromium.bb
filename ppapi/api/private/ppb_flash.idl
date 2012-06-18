@@ -56,7 +56,12 @@ enum PP_FlashSetting {
    *
    * Returns an undefined PP_Var on invalid instance.
    */
-  PP_FLASHSETTING_LANGUAGE = 4
+  PP_FLASHSETTING_LANGUAGE = 4,
+
+  /**
+   * Specifies the number of CPU cores that are present on the system.
+   */
+  PP_FLASHSETTING_NUMCORES = 5
 };
 
 /**

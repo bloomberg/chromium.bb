@@ -134,6 +134,7 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   int max_untiled_layer_height;
   bool fixed_position_creates_stacking_context;
   bool sync_xhr_in_documents_enabled;
+  int number_of_cpu_cores;
 
   // We try to keep the default values the same as the default values in
   // chrome, except for the cases where it would require lots of extra work for

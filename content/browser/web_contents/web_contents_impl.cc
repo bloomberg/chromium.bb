@@ -12,6 +12,7 @@
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/sys_info.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/browser_plugin/old/browser_plugin_host.h"
@@ -581,6 +582,8 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
 
   prefs.fixed_position_creates_stacking_context =
       command_line.HasSwitch(switches::kFixedPositionCreatesStackingContext);
+
+  prefs.number_of_cpu_cores = base::SysInfo::NumberOfProcessors();
 
   content::GetContentClient()->browser()->OverrideWebkitPrefs(rvh, url, &prefs);
 

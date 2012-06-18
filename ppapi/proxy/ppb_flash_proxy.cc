@@ -301,6 +301,8 @@ PP_Var PPB_Flash_Proxy::GetSetting(PP_Instance instance,
     case PP_FLASHSETTING_LANGUAGE:
       return StringVar::StringToPPVar(
           PluginGlobals::Get()->plugin_proxy_delegate()->GetUILanguage());
+    case PP_FLASHSETTING_NUMCORES:
+      return PP_MakeInt32(plugin_dispatcher->preferences().number_of_cpu_cores);
   }
   return PP_MakeUndefined();
 }

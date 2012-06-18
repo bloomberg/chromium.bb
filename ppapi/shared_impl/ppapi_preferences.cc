@@ -9,6 +9,7 @@ namespace ppapi {
 Preferences::Preferences()
     : default_font_size(0),
       default_fixed_font_size(0),
+      number_of_cpu_cores(0),
       is_3d_supported(true),
       is_stage3d_supported(false) {
 }
@@ -20,6 +21,7 @@ Preferences::Preferences(const webkit_glue::WebPreferences& prefs)
       sans_serif_font_family_map(prefs.sans_serif_font_family_map),
       default_font_size(prefs.default_font_size),
       default_fixed_font_size(prefs.default_fixed_font_size),
+      number_of_cpu_cores(prefs.number_of_cpu_cores),
       is_3d_supported(prefs.flash_3d_enabled),
       is_stage3d_supported(prefs.flash_stage3d_enabled) {
 }

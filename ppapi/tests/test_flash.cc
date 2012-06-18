@@ -156,6 +156,10 @@ std::string TestFlash::TestGetSetting() {
     // This may "fail" if 3d isn't enabled.
     ASSERT_TRUE(is_stage3denabled.is_bool() ||
                 (is_stage3denabled.is_undefined() && !is_3denabled.AsBool()));
+
+    Var num_cores(pp::PASS_REF, flash_interface_->GetSetting(
+        instance_->pp_instance(), PP_FLASHSETTING_NUMCORES));
+    ASSERT_TRUE(num_cores.is_int() && num_cores.AsInt() > 0);
   }
 
   // Invalid instance cases.
