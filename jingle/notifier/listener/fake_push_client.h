@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
 #include "jingle/notifier/listener/push_client.h"
+#include "jingle/notifier/listener/push_client_observer.h"
 
 namespace notifier {
 
@@ -29,8 +30,11 @@ class FakePushClient : public PushClient {
       const std::string& email, const std::string& token) OVERRIDE;
   virtual void SendNotification(const Notification& notification) OVERRIDE;
 
-  // Triggers OnNotificationStateChange on all observers.
-  void SimulateNotificationStateChange(bool notifications_enabled);
+  // Triggers OnNotificationsEnabled on all observers.
+  void EnableNotifications();
+
+  // Triggers OnNotificationsDisabled on all observers.
+  void DisableNotifications(NotificationsDisabledReason reason);
 
   // Triggers OnIncomingNotification on all observers.
   void SimulateIncomingNotification(const Notification& notification);

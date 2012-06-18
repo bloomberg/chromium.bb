@@ -151,13 +151,19 @@ TEST_F(PushClientChannelTest, SendMessage) {
           expected_notification));
 }
 
-// Simulate notification state changes on the push client.  It should
+// Simulate push client state changes on the push client.  It should
 // propagate to the channel.
-TEST_F(PushClientChannelTest, OnNotificationStateChange) {
+TEST_F(PushClientChannelTest, OnPushClientStateChange) {
   EXPECT_FALSE(connected_);
-  fake_push_client_->SimulateNotificationStateChange(true);
+  fake_push_client_->EnableNotifications();
   EXPECT_TRUE(connected_);
-  fake_push_client_->SimulateNotificationStateChange(false);
+  fake_push_client_->DisableNotifications(
+      notifier::TRANSIENT_NOTIFICATION_ERROR);
+  EXPECT_FALSE(connected_);
+  fake_push_client_->EnableNotifications();
+  EXPECT_TRUE(connected_);
+  fake_push_client_->DisableNotifications(
+      notifier::NOTIFICATION_CREDENTIALS_REJECTED);
   EXPECT_FALSE(connected_);
 }
 

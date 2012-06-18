@@ -31,15 +31,19 @@ ChromeInvalidationClient::Listener::~Listener() {}
 
 ChromeInvalidationClient::ChromeInvalidationClient(
     scoped_ptr<notifier::PushClient> push_client)
-    : chrome_system_resources_(push_client.Pass(),
+    : push_client_(push_client.get()),
+      chrome_system_resources_(push_client.Pass(),
                                ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       listener_(NULL),
-      ticl_ready_(false) {
+      ticl_state_(DEFAULT_NOTIFICATION_ERROR),
+      push_client_state_(DEFAULT_NOTIFICATION_ERROR) {
   DCHECK(CalledOnValidThread());
+  push_client_->AddObserver(this);
 }
 
 ChromeInvalidationClient::~ChromeInvalidationClient() {
   DCHECK(CalledOnValidThread());
+  push_client_->RemoveObserver(this);
   Stop();
   DCHECK(!listener_);
 }
@@ -98,27 +102,10 @@ void ChromeInvalidationClient::UpdateCredentials(
   chrome_system_resources_.network()->UpdateCredentials(email, token);
 }
 
-void ChromeInvalidationClient::Stop() {
-  DCHECK(CalledOnValidThread());
-  if (!invalidation_client_.get()) {
-    return;
-  }
-
-  registration_manager_.reset();
-  chrome_system_resources_.Stop();
-  invalidation_client_->Stop();
-
-  invalidation_client_.reset();
-  listener_ = NULL;
-
-  invalidation_state_tracker_.Reset();
-  max_invalidation_versions_.clear();
-}
-
 void ChromeInvalidationClient::RegisterTypes(syncable::ModelTypeSet types) {
   DCHECK(CalledOnValidThread());
   registered_types_ = types;
-  if (ticl_ready_ && registration_manager_.get()) {
+  if (GetState() == NO_NOTIFICATION_ERROR && registration_manager_.get()) {
     registration_manager_->SetRegisteredTypes(registered_types_);
   }
   // TODO(akalin): Clear invalidation versions for unregistered types.
@@ -126,8 +113,8 @@ void ChromeInvalidationClient::RegisterTypes(syncable::ModelTypeSet types) {
 
 void ChromeInvalidationClient::Ready(
     invalidation::InvalidationClient* client) {
-  ticl_ready_ = true;
-  listener_->OnSessionStatusChanged(true);
+  ticl_state_ = NO_NOTIFICATION_ERROR;
+  EmitStateChange();
   registration_manager_->SetRegisteredTypes(registered_types_);
 }
 
@@ -286,9 +273,15 @@ void ChromeInvalidationClient::ReissueRegistrations(
 void ChromeInvalidationClient::InformError(
     invalidation::InvalidationClient* client,
     const invalidation::ErrorInfo& error_info) {
-  listener_->OnSessionStatusChanged(false);
-  LOG(ERROR) << "Invalidation client encountered an error";
-  // TODO(ghc): handle the error.
+  LOG(ERROR) << "Ticl error " << error_info.error_reason() << ": "
+             << error_info.error_message()
+             << " (transient = " << error_info.is_transient() << ")";
+  if (error_info.error_reason() == invalidation::ErrorReason::AUTH_FAILURE) {
+    ticl_state_ = NOTIFICATION_CREDENTIALS_REJECTED;
+  } else {
+    ticl_state_ = TRANSIENT_NOTIFICATION_ERROR;
+  }
+  EmitStateChange();
 }
 
 void ChromeInvalidationClient::WriteState(const std::string& state) {
@@ -296,6 +289,71 @@ void ChromeInvalidationClient::WriteState(const std::string& state) {
   DVLOG(1) << "WriteState";
   invalidation_state_tracker_.Call(
       FROM_HERE, &InvalidationStateTracker::SetInvalidationState, state);
+}
+
+void ChromeInvalidationClient::Stop() {
+  DCHECK(CalledOnValidThread());
+  if (!invalidation_client_.get()) {
+    return;
+  }
+
+  registration_manager_.reset();
+  chrome_system_resources_.Stop();
+  invalidation_client_->Stop();
+
+  invalidation_client_.reset();
+  listener_ = NULL;
+
+  invalidation_state_tracker_.Reset();
+  max_invalidation_versions_.clear();
+  ticl_state_ = DEFAULT_NOTIFICATION_ERROR;
+  push_client_state_ = DEFAULT_NOTIFICATION_ERROR;
+}
+
+NotificationsDisabledReason ChromeInvalidationClient::GetState() const {
+  DCHECK(CalledOnValidThread());
+  if (ticl_state_ == NOTIFICATION_CREDENTIALS_REJECTED ||
+      push_client_state_ == NOTIFICATION_CREDENTIALS_REJECTED) {
+    // If either the ticl or the push client rejected our credentials,
+    // return NOTIFICATION_CREDENTIALS_REJECTED.
+    return NOTIFICATION_CREDENTIALS_REJECTED;
+  }
+  if (ticl_state_ == NO_NOTIFICATION_ERROR &&
+      push_client_state_ == NO_NOTIFICATION_ERROR) {
+    // If the ticl is ready and the push client notifications are
+    // enabled, return NO_NOTIFICATION_ERROR.
+    return NO_NOTIFICATION_ERROR;
+  }
+  // Otherwise, we have a transient error.
+  return TRANSIENT_NOTIFICATION_ERROR;
+}
+
+void ChromeInvalidationClient::EmitStateChange() {
+  DCHECK(CalledOnValidThread());
+  if (GetState() == NO_NOTIFICATION_ERROR) {
+    listener_->OnNotificationsEnabled();
+  } else {
+    listener_->OnNotificationsDisabled(GetState());
+  }
+}
+
+void ChromeInvalidationClient::OnNotificationsEnabled() {
+  DCHECK(CalledOnValidThread());
+  push_client_state_ = NO_NOTIFICATION_ERROR;
+  EmitStateChange();
+}
+
+void ChromeInvalidationClient::OnNotificationsDisabled(
+    notifier::NotificationsDisabledReason reason) {
+  DCHECK(CalledOnValidThread());
+  push_client_state_ = FromNotifierReason(reason);
+  EmitStateChange();
+}
+
+void ChromeInvalidationClient::OnIncomingNotification(
+    const notifier::Notification& notification) {
+  DCHECK(CalledOnValidThread());
+  // Do nothing, since this is already handled by |invalidation_client_|.
 }
 
 }  // namespace sync_notifier

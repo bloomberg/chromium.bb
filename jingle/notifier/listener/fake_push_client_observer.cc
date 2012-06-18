@@ -7,13 +7,17 @@
 namespace notifier {
 
 FakePushClientObserver::FakePushClientObserver()
-    : notifications_enabled_(false) {}
+    :last_notifications_disabled_reason_(DEFAULT_NOTIFICATION_ERROR) {}
 
 FakePushClientObserver::~FakePushClientObserver() {}
 
-void FakePushClientObserver::OnNotificationStateChange(
-    bool notifications_enabled) {
-  notifications_enabled_ = notifications_enabled;
+void FakePushClientObserver::OnNotificationsEnabled() {
+  last_notifications_disabled_reason_ = NO_NOTIFICATION_ERROR;
+}
+
+void FakePushClientObserver::OnNotificationsDisabled(
+    NotificationsDisabledReason reason) {
+  last_notifications_disabled_reason_ = reason;
 }
 
 void FakePushClientObserver::OnIncomingNotification(
@@ -21,8 +25,9 @@ void FakePushClientObserver::OnIncomingNotification(
   last_incoming_notification_ = notification;
 }
 
-bool FakePushClientObserver::notifications_enabled() const {
-  return notifications_enabled_;
+NotificationsDisabledReason
+FakePushClientObserver::last_notifications_disabled_reason() const {
+  return last_notifications_disabled_reason_;
 }
 
 const Notification&

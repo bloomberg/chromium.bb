@@ -42,10 +42,12 @@ class NonBlockingInvalidationNotifier::Core
 
   // SyncNotifierObserver implementation (all called on I/O thread by
   // InvalidationNotifier).
+  virtual void OnNotificationsEnabled() OVERRIDE;
+  virtual void OnNotificationsDisabled(
+      NotificationsDisabledReason reason) OVERRIDE;
   virtual void OnIncomingNotification(
       const syncable::ModelTypePayloadMap& type_payloads,
-      IncomingNotificationSource source);
-  virtual void OnNotificationStateChange(bool notifications_enabled);
+      IncomingNotificationSource source) OVERRIDE;
 
  private:
   friend class
@@ -126,22 +128,27 @@ void NonBlockingInvalidationNotifier::Core::UpdateEnabledTypes(
   invalidation_notifier_->UpdateEnabledTypes(enabled_types);
 }
 
+void NonBlockingInvalidationNotifier::Core::OnNotificationsEnabled() {
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
+  delegate_observer_.Call(FROM_HERE,
+                          &SyncNotifierObserver::OnNotificationsEnabled);
+}
+
+void NonBlockingInvalidationNotifier::Core::OnNotificationsDisabled(
+    NotificationsDisabledReason reason) {
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
+  delegate_observer_.Call(
+      FROM_HERE, &SyncNotifierObserver::OnNotificationsDisabled, reason);
+}
+
 void NonBlockingInvalidationNotifier::Core::OnIncomingNotification(
-        const syncable::ModelTypePayloadMap& type_payloads,
-        IncomingNotificationSource source) {
+    const syncable::ModelTypePayloadMap& type_payloads,
+    IncomingNotificationSource source) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   delegate_observer_.Call(FROM_HERE,
                           &SyncNotifierObserver::OnIncomingNotification,
                           type_payloads,
                           source);
-}
-
-void NonBlockingInvalidationNotifier::Core::OnNotificationStateChange(
-        bool notifications_enabled) {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
-  delegate_observer_.Call(FROM_HERE,
-                          &SyncNotifierObserver::OnNotificationStateChange,
-                          notifications_enabled);
 }
 
 NonBlockingInvalidationNotifier::NonBlockingInvalidationNotifier(
@@ -247,19 +254,25 @@ void NonBlockingInvalidationNotifier::SendNotification(
   // need to forward on the call.
 }
 
+void NonBlockingInvalidationNotifier::OnNotificationsEnabled() {
+  DCHECK(parent_task_runner_->BelongsToCurrentThread());
+  FOR_EACH_OBSERVER(SyncNotifierObserver, observers_,
+                    OnNotificationsEnabled());
+}
+
+void NonBlockingInvalidationNotifier::OnNotificationsDisabled(
+    NotificationsDisabledReason reason) {
+  DCHECK(parent_task_runner_->BelongsToCurrentThread());
+  FOR_EACH_OBSERVER(SyncNotifierObserver, observers_,
+                    OnNotificationsDisabled(reason));
+}
+
 void NonBlockingInvalidationNotifier::OnIncomingNotification(
         const syncable::ModelTypePayloadMap& type_payloads,
         IncomingNotificationSource source) {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
   FOR_EACH_OBSERVER(SyncNotifierObserver, observers_,
                     OnIncomingNotification(type_payloads, source));
-}
-
-void NonBlockingInvalidationNotifier::OnNotificationStateChange(
-        bool notifications_enabled) {
-  DCHECK(parent_task_runner_->BelongsToCurrentThread());
-  FOR_EACH_OBSERVER(SyncNotifierObserver, observers_,
-                    OnNotificationStateChange(notifications_enabled));
 }
 
 }  // namespace sync_notifier

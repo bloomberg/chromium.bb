@@ -88,8 +88,9 @@ class CloudPrintProxyBackend::Core
   virtual void OnAuthFailed() OVERRIDE;
 
   // notifier::PushClientObserver implementation.
-  virtual void OnNotificationStateChange(
-      bool notifications_enabled) OVERRIDE;
+  virtual void OnNotificationsEnabled() OVERRIDE;
+  virtual void OnNotificationsDisabled(
+      notifier::NotificationsDisabledReason reason) OVERRIDE;
   virtual void OnIncomingNotification(
       const notifier::Notification& notification) OVERRIDE;
 
@@ -500,27 +501,29 @@ void CloudPrintProxyBackend::Core::NotifyUnregisterPrinters(
   backend_->frontend_->OnUnregisterPrinters(auth_token, printer_ids);
 }
 
-void CloudPrintProxyBackend::Core::OnNotificationStateChange(
-    bool notification_enabled) {
+void CloudPrintProxyBackend::Core::OnNotificationsEnabled() {
   DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
-  notifications_enabled_ = notification_enabled;
-  if (notifications_enabled_) {
-    notifications_enabled_since_ = base::TimeTicks::Now();
-    VLOG(1) << "Notifications for connector " << proxy_id_
-            << " were enabled at "
-            << notifications_enabled_since_.ToInternalValue();
-  } else {
-    LOG(ERROR) << "Notifications for connector " << proxy_id_ << " disabled.";
-    notifications_enabled_since_ = base::TimeTicks();
-  }
-  // A state change means one of two cases.
-  // Case 1: We just lost notifications. This this case we want to schedule a
-  // job poll if enable_job_poll_ is true.
-  // Case 2: Notifications just got re-enabled. In this case we want to schedule
+  notifications_enabled_ = true;
+  notifications_enabled_since_ = base::TimeTicks::Now();
+  VLOG(1) << "Notifications for connector " << proxy_id_
+          << " were enabled at "
+          << notifications_enabled_since_.ToInternalValue();
+  // Notifications just got re-enabled. In this case we want to schedule
   // a poll once for jobs we might have missed when we were dark.
   // Note that ScheduleJobPoll will not schedule again if a job poll task is
   // already scheduled.
-  if (enable_job_poll_ || notifications_enabled_)
+  ScheduleJobPoll();
+}
+
+void CloudPrintProxyBackend::Core::OnNotificationsDisabled(
+    notifier::NotificationsDisabledReason reason) {
+  DCHECK(MessageLoop::current() == backend_->core_thread_.message_loop());
+  notifications_enabled_ = false;
+  LOG(ERROR) << "Notifications for connector " << proxy_id_ << " disabled.";
+  notifications_enabled_since_ = base::TimeTicks();
+  // We just lost notifications. This this case we want to schedule a
+  // job poll if enable_job_poll_ is true.
+  if (enable_job_poll_)
     ScheduleJobPoll();
 }
 

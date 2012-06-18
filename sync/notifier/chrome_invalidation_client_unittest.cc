@@ -20,6 +20,7 @@
 namespace sync_notifier {
 
 using ::testing::_;
+using ::testing::InSequence;
 using ::testing::Return;
 using ::testing::StrictMock;
 
@@ -44,7 +45,8 @@ class MockInvalidationClient : public invalidation::InvalidationClient {
 class MockListener : public ChromeInvalidationClient::Listener {
  public:
   MOCK_METHOD1(OnInvalidate, void(const syncable::ModelTypePayloadMap&));
-  MOCK_METHOD1(OnSessionStatusChanged, void(bool));
+  MOCK_METHOD0(OnNotificationsEnabled, void());
+  MOCK_METHOD1(OnNotificationsDisabled, void(NotificationsDisabledReason));
 };
 
 }  // namespace
@@ -52,9 +54,8 @@ class MockListener : public ChromeInvalidationClient::Listener {
 class ChromeInvalidationClientTest : public testing::Test {
  protected:
   ChromeInvalidationClientTest()
-      : client_(
-          scoped_ptr<notifier::PushClient>(
-              new notifier::FakePushClient())) {}
+      : fake_push_client_(new notifier::FakePushClient()),
+        client_(scoped_ptr<notifier::PushClient>(fake_push_client_)) {}
 
   virtual void SetUp() {
     client_.Start(kClientId, kClientInfo, kState,
@@ -116,6 +117,7 @@ class ChromeInvalidationClientTest : public testing::Test {
   StrictMock<MockInvalidationStateTracker>
       mock_invalidation_state_tracker_;
   StrictMock<MockInvalidationClient> mock_invalidation_client_;
+  notifier::FakePushClient* const fake_push_client_;
   ChromeInvalidationClient client_;
 };
 
@@ -157,12 +159,6 @@ TEST_F(ChromeInvalidationClientTest, InvalidateWithPayload) {
   EXPECT_CALL(mock_invalidation_state_tracker_,
               SetMaxVersion(syncable::PREFERENCES, 1));
   FireInvalidate("PREFERENCE", 1, "payload");
-}
-
-TEST_F(ChromeInvalidationClientTest, WriteState) {
-  EXPECT_CALL(mock_invalidation_state_tracker_,
-              SetInvalidationState(kNewState));
-  client_.WriteState(kNewState);
 }
 
 TEST_F(ChromeInvalidationClientTest, InvalidateVersion) {
@@ -266,6 +262,74 @@ TEST_F(ChromeInvalidationClientTest, RegisterTypes) {
   FireInvalidateAll();
 }
 
-// TODO(akalin): Flesh out unit tests.
+TEST_F(ChromeInvalidationClientTest, WriteState) {
+  EXPECT_CALL(mock_invalidation_state_tracker_,
+              SetInvalidationState(kNewState));
+  client_.WriteState(kNewState);
+}
+
+TEST_F(ChromeInvalidationClientTest, StateChangesNotReady) {
+  InSequence dummy;
+  EXPECT_CALL(mock_listener_,
+              OnNotificationsDisabled(TRANSIENT_NOTIFICATION_ERROR));
+  EXPECT_CALL(mock_listener_,
+              OnNotificationsDisabled(NOTIFICATION_CREDENTIALS_REJECTED));
+  EXPECT_CALL(mock_listener_,
+              OnNotificationsDisabled(TRANSIENT_NOTIFICATION_ERROR));
+
+  fake_push_client_->DisableNotifications(
+      notifier::TRANSIENT_NOTIFICATION_ERROR);
+  fake_push_client_->DisableNotifications(
+      notifier::NOTIFICATION_CREDENTIALS_REJECTED);
+  fake_push_client_->EnableNotifications();
+}
+
+TEST_F(ChromeInvalidationClientTest, StateChangesReady) {
+  InSequence dummy;
+  EXPECT_CALL(mock_listener_,
+              OnNotificationsDisabled(TRANSIENT_NOTIFICATION_ERROR));
+  EXPECT_CALL(mock_listener_, OnNotificationsEnabled());
+  EXPECT_CALL(mock_listener_,
+              OnNotificationsDisabled(TRANSIENT_NOTIFICATION_ERROR));
+  EXPECT_CALL(mock_listener_,
+              OnNotificationsDisabled(NOTIFICATION_CREDENTIALS_REJECTED));
+  EXPECT_CALL(mock_listener_, OnNotificationsEnabled());
+
+  fake_push_client_->EnableNotifications();
+  client_.Ready(NULL);
+  fake_push_client_->DisableNotifications(
+      notifier::TRANSIENT_NOTIFICATION_ERROR);
+  fake_push_client_->DisableNotifications(
+      notifier::NOTIFICATION_CREDENTIALS_REJECTED);
+  fake_push_client_->EnableNotifications();
+}
+
+TEST_F(ChromeInvalidationClientTest, StateChangesAuthError) {
+  InSequence dummy;
+  EXPECT_CALL(mock_listener_,
+              OnNotificationsDisabled(TRANSIENT_NOTIFICATION_ERROR));
+  EXPECT_CALL(mock_listener_, OnNotificationsEnabled());
+  EXPECT_CALL(mock_listener_,
+              OnNotificationsDisabled(NOTIFICATION_CREDENTIALS_REJECTED))
+      .Times(4);
+  EXPECT_CALL(mock_listener_, OnNotificationsEnabled());
+
+  fake_push_client_->EnableNotifications();
+  client_.Ready(NULL);
+
+  client_.InformError(
+      NULL,
+      invalidation::ErrorInfo(
+          invalidation::ErrorReason::AUTH_FAILURE,
+          false /* is_transient */,
+          "auth error",
+          invalidation::ErrorContext()));
+  fake_push_client_->DisableNotifications(
+      notifier::TRANSIENT_NOTIFICATION_ERROR);
+  fake_push_client_->DisableNotifications(
+      notifier::NOTIFICATION_CREDENTIALS_REJECTED);
+  fake_push_client_->EnableNotifications();
+  client_.Ready(NULL);
+}
 
 }  // namespace sync_notifier

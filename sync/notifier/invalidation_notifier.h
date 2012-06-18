@@ -64,7 +64,9 @@ class InvalidationNotifier
   // ChromeInvalidationClient::Listener implementation.
   virtual void OnInvalidate(
       const syncable::ModelTypePayloadMap& type_payloads) OVERRIDE;
-  virtual void OnSessionStatusChanged(bool has_session) OVERRIDE;
+  virtual void OnNotificationsEnabled() OVERRIDE;
+  virtual void OnNotificationsDisabled(
+      NotificationsDisabledReason reason) OVERRIDE;
 
  private:
   // We start off in the STOPPED state.  When we get our initial

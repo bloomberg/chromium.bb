@@ -27,6 +27,8 @@ class PushClientChannel
     : public invalidation::NetworkChannel,
       public notifier::PushClientObserver {
  public:
+  // |push_client| is guaranteed to be destroyed only when this object
+  // is destroyed.
   explicit PushClientChannel(scoped_ptr<notifier::PushClient> push_client);
 
   virtual ~PushClientChannel();
@@ -46,7 +48,9 @@ class PushClientChannel
       invalidation::SystemResources* resources) OVERRIDE;
 
   // notifier::PushClient::Observer implementation.
-  virtual void OnNotificationStateChange(bool notifications_enabled) OVERRIDE;
+  virtual void OnNotificationsEnabled() OVERRIDE;
+  virtual void OnNotificationsDisabled(
+      notifier::NotificationsDisabledReason reason) OVERRIDE;
   virtual void OnIncomingNotification(
       const notifier::Notification& notification) OVERRIDE;
 

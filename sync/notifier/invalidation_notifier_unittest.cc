@@ -80,11 +80,14 @@ TEST_F(InvalidationNotifierTest, Basic) {
   type_payloads[syncable::BOOKMARKS] = "";
   type_payloads[syncable::AUTOFILL] = "";
 
-  EXPECT_CALL(mock_observer_, OnNotificationStateChange(true));
+  EXPECT_CALL(mock_observer_, OnNotificationsEnabled());
   EXPECT_CALL(mock_observer_,
               OnIncomingNotification(type_payloads,
                                      REMOTE_NOTIFICATION));
-  EXPECT_CALL(mock_observer_, OnNotificationStateChange(false));
+  EXPECT_CALL(mock_observer_,
+              OnNotificationsDisabled(TRANSIENT_NOTIFICATION_ERROR));
+  EXPECT_CALL(mock_observer_,
+              OnNotificationsDisabled(NOTIFICATION_CREDENTIALS_REJECTED));
   // Note no expectation on mock_tracker_, as we initialized with
   // non-empty initial_invalidation_state above.
 
@@ -94,11 +97,14 @@ TEST_F(InvalidationNotifierTest, Basic) {
   invalidation_notifier_->SetUniqueId("fake_id");
   invalidation_notifier_->UpdateCredentials("foo@bar.com", "fake_token");
 
-  invalidation_notifier_->OnSessionStatusChanged(true);
+  invalidation_notifier_->OnNotificationsEnabled();
 
   invalidation_notifier_->OnInvalidate(type_payloads);
 
-  invalidation_notifier_->OnSessionStatusChanged(false);
+  invalidation_notifier_->OnNotificationsDisabled(
+      TRANSIENT_NOTIFICATION_ERROR);
+  invalidation_notifier_->OnNotificationsDisabled(
+      NOTIFICATION_CREDENTIALS_REJECTED);
 }
 
 TEST_F(InvalidationNotifierTest, MigrateState) {

@@ -5,9 +5,9 @@
 #include "jingle/notifier/listener/non_blocking_push_client.h"
 
 #include "base/bind.h"
-#include "base/message_loop_proxy.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/message_loop_proxy.h"
 #include "jingle/notifier/listener/push_client_observer.h"
 
 namespace notifier {
@@ -39,8 +39,9 @@ class NonBlockingPushClient::Core
   void UpdateCredentials(const std::string& email, const std::string& token);
   void SendNotification(const Notification& data);
 
-  virtual void OnNotificationStateChange(
-      bool notifications_enabled) OVERRIDE;
+  virtual void OnNotificationsEnabled() OVERRIDE;
+  virtual void OnNotificationsDisabled(
+      NotificationsDisabledReason reason) OVERRIDE;
   virtual void OnIncomingNotification(
       const Notification& notification) OVERRIDE;
 
@@ -109,13 +110,21 @@ void NonBlockingPushClient::Core::SendNotification(
   delegate_push_client_->SendNotification(notification);
 }
 
-void NonBlockingPushClient::Core::OnNotificationStateChange(
-    bool notifications_enabled) {
+void NonBlockingPushClient::Core::OnNotificationsEnabled() {
   DCHECK(delegate_task_runner_->BelongsToCurrentThread());
   parent_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&NonBlockingPushClient::OnNotificationStateChange,
-                 parent_push_client_, notifications_enabled));
+      base::Bind(&NonBlockingPushClient::OnNotificationsEnabled,
+                 parent_push_client_));
+}
+
+void NonBlockingPushClient::Core::OnNotificationsDisabled(
+    NotificationsDisabledReason reason) {
+  DCHECK(delegate_task_runner_->BelongsToCurrentThread());
+  parent_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&NonBlockingPushClient::OnNotificationsDisabled,
+                 parent_push_client_, reason));
 }
 
 void NonBlockingPushClient::Core::OnIncomingNotification(
@@ -186,11 +195,17 @@ void NonBlockingPushClient::SendNotification(
                  notification));
 }
 
-void NonBlockingPushClient::OnNotificationStateChange(
-    bool notifications_enabled) {
+void NonBlockingPushClient::OnNotificationsEnabled() {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   FOR_EACH_OBSERVER(PushClientObserver, observers_,
-                    OnNotificationStateChange(notifications_enabled));
+                    OnNotificationsEnabled());
+}
+
+void NonBlockingPushClient::OnNotificationsDisabled(
+    NotificationsDisabledReason reason) {
+  DCHECK(non_thread_safe_.CalledOnValidThread());
+  FOR_EACH_OBSERVER(PushClientObserver, observers_,
+                    OnNotificationsDisabled(reason));
 }
 
 void NonBlockingPushClient::OnIncomingNotification(

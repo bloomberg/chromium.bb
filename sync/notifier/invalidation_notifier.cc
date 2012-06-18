@@ -102,14 +102,23 @@ void InvalidationNotifier::SendNotification(
 void InvalidationNotifier::OnInvalidate(
     const syncable::ModelTypePayloadMap& type_payloads) {
   DCHECK(CalledOnValidThread());
-  FOR_EACH_OBSERVER(SyncNotifierObserver, observers_,
-                    OnIncomingNotification(type_payloads,
-                                           sync_notifier::REMOTE_NOTIFICATION));
+  FOR_EACH_OBSERVER(
+      SyncNotifierObserver, observers_,
+      OnIncomingNotification(type_payloads,
+                             sync_notifier::REMOTE_NOTIFICATION));
 }
 
-void InvalidationNotifier::OnSessionStatusChanged(bool has_session) {
+void InvalidationNotifier::OnNotificationsEnabled() {
+  DCHECK(CalledOnValidThread());
   FOR_EACH_OBSERVER(SyncNotifierObserver, observers_,
-                    OnNotificationStateChange(has_session));
+                    OnNotificationsEnabled());
+}
+
+void InvalidationNotifier::OnNotificationsDisabled(
+    NotificationsDisabledReason reason) {
+  DCHECK(CalledOnValidThread());
+  FOR_EACH_OBSERVER(SyncNotifierObserver, observers_,
+                    OnNotificationsDisabled(reason));
 }
 
 }  // namespace sync_notifier

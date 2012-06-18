@@ -10,8 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
@@ -34,7 +34,7 @@ namespace notifier {
 // This class must be used on a single thread.
 class XmppPushClient :
       public PushClient,
-      public LoginDelegate,
+      public Login::Delegate,
       public PushNotificationsListenTaskDelegate,
       public PushNotificationsSubscribeTaskDelegate {
  public:
@@ -53,7 +53,8 @@ class XmppPushClient :
   // Login::Delegate implementation.
   virtual void OnConnect(
       base::WeakPtr<buzz::XmppTaskParentInterface> base_task) OVERRIDE;
-  virtual void OnDisconnect() OVERRIDE;
+  virtual void OnTransientDisconnection() OVERRIDE;
+  virtual void OnCredentialsRejected() OVERRIDE;
 
   // PushNotificationsListenTaskDelegate implementation.
   virtual void OnNotificationReceived(

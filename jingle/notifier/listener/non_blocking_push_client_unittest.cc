@@ -115,13 +115,17 @@ TEST_F(NonBlockingPushClientTest, SendNotification) {
 // Make sure notification state changes get propagated back to the
 // parent.
 TEST_F(NonBlockingPushClientTest, NotificationStateChange) {
-  EXPECT_FALSE(fake_observer_.notifications_enabled());
-  fake_push_client_->SimulateNotificationStateChange(true);
+  EXPECT_EQ(DEFAULT_NOTIFICATION_ERROR,
+            fake_observer_.last_notifications_disabled_reason());
+  fake_push_client_->EnableNotifications();
   message_loop_.RunAllPending();
-  EXPECT_TRUE(fake_observer_.notifications_enabled());
-  fake_push_client_->SimulateNotificationStateChange(false);
+  EXPECT_EQ(NO_NOTIFICATION_ERROR,
+            fake_observer_.last_notifications_disabled_reason());
+  fake_push_client_->DisableNotifications(
+      NOTIFICATION_CREDENTIALS_REJECTED);
   message_loop_.RunAllPending();
-  EXPECT_FALSE(fake_observer_.notifications_enabled());
+  EXPECT_EQ(NOTIFICATION_CREDENTIALS_REJECTED,
+            fake_observer_.last_notifications_disabled_reason());
 }
 
 // Make sure incoming notifications get propagated back to the parent.

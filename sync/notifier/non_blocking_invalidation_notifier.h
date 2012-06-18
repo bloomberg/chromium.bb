@@ -57,10 +57,12 @@ class NonBlockingInvalidationNotifier
       syncable::ModelTypeSet changed_types) OVERRIDE;
 
   // SyncNotifierObserver implementation.
+  virtual void OnNotificationsEnabled() OVERRIDE;
+  virtual void OnNotificationsDisabled(
+      NotificationsDisabledReason reason) OVERRIDE;
   virtual void OnIncomingNotification(
       const syncable::ModelTypePayloadMap& type_payloads,
       IncomingNotificationSource source) OVERRIDE;
-  virtual void OnNotificationStateChange(bool notifications_enabled) OVERRIDE;
 
  private:
   class Core;

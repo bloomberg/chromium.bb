@@ -145,7 +145,7 @@ TEST_F(P2PNotifierTest, NotificationsBasic) {
   syncable::ModelTypeSet enabled_types(
       syncable::BOOKMARKS, syncable::PREFERENCES);
 
-  EXPECT_CALL(mock_observer_, OnNotificationStateChange(true));
+  EXPECT_CALL(mock_observer_, OnNotificationsEnabled());
   EXPECT_CALL(mock_observer_,
               OnIncomingNotification(MakePayloadMap(enabled_types),
                                      REMOTE_NOTIFICATION));
@@ -169,7 +169,7 @@ TEST_F(P2PNotifierTest, NotificationsBasic) {
   p2p_notifier_.UpdateEnabledTypes(enabled_types);
 
   ReflectSentNotifications();
-  fake_push_client_->SimulateNotificationStateChange(true);
+  fake_push_client_->EnableNotifications();
 
   // Sent with target NOTIFY_OTHERS so should not be propagated to
   // |mock_observer_|.
@@ -195,7 +195,7 @@ TEST_F(P2PNotifierTest, SendNotificationData) {
   const syncable::ModelTypePayloadMap& changed_payload_map =
       MakePayloadMap(changed_types);
 
-  EXPECT_CALL(mock_observer_, OnNotificationStateChange(true));
+  EXPECT_CALL(mock_observer_, OnNotificationsEnabled());
   EXPECT_CALL(mock_observer_,
               OnIncomingNotification(MakePayloadMap(enabled_types),
                                      REMOTE_NOTIFICATION));
@@ -205,7 +205,7 @@ TEST_F(P2PNotifierTest, SendNotificationData) {
   p2p_notifier_.UpdateEnabledTypes(enabled_types);
 
   ReflectSentNotifications();
-  fake_push_client_->SimulateNotificationStateChange(true);
+  fake_push_client_->EnableNotifications();
 
   ReflectSentNotifications();
 

@@ -35,10 +35,15 @@ void FakePushClient::SendNotification(const Notification& notification) {
   sent_notifications_.push_back(notification);
 }
 
-void FakePushClient::SimulateNotificationStateChange(
-    bool notifications_enabled) {
+void FakePushClient::EnableNotifications() {
   FOR_EACH_OBSERVER(PushClientObserver, observers_,
-                    OnNotificationStateChange(notifications_enabled));
+                    OnNotificationsEnabled());
+}
+
+void FakePushClient::DisableNotifications(
+    NotificationsDisabledReason reason) {
+  FOR_EACH_OBSERVER(PushClientObserver, observers_,
+                    OnNotificationsDisabled(reason));
 }
 
 void FakePushClient::SimulateIncomingNotification(

@@ -212,17 +212,26 @@ void P2PNotifier::SendNotification(
   SendNotificationData(notification_data);
 }
 
-void P2PNotifier::OnNotificationStateChange(bool notifications_enabled) {
+void P2PNotifier::OnNotificationsEnabled() {
   DCHECK(non_thread_safe_.CalledOnValidThread());
-  bool disabled_to_enabled = notifications_enabled && !notifications_enabled_;
-  notifications_enabled_ = notifications_enabled;
-  FOR_EACH_OBSERVER(SyncNotifierObserver, observer_list_,
-      OnNotificationStateChange(notifications_enabled_));
-  if (disabled_to_enabled) {
+  bool just_turned_on = (notifications_enabled_ == false);
+  notifications_enabled_ = true;
+  FOR_EACH_OBSERVER(
+      SyncNotifierObserver, observer_list_,
+      OnNotificationsEnabled());
+  if (just_turned_on) {
     const P2PNotificationData notification_data(
         unique_id_, NOTIFY_SELF, enabled_types_);
     SendNotificationData(notification_data);
   }
+}
+
+void P2PNotifier::OnNotificationsDisabled(
+    notifier::NotificationsDisabledReason reason) {
+  DCHECK(non_thread_safe_.CalledOnValidThread());
+  FOR_EACH_OBSERVER(
+      SyncNotifierObserver, observer_list_,
+      OnNotificationsDisabled(FromNotifierReason(reason)));
 }
 
 void P2PNotifier::OnIncomingNotification(
@@ -234,7 +243,7 @@ void P2PNotifier::OnIncomingNotification(
     return;
   }
   if (!notifications_enabled_) {
-    DVLOG(1) << "Notifications not enabled -- not emitting notification";
+    DVLOG(1) << "Notifications not on -- not emitting notification";
     return;
   }
   if (notification.channel != kSyncP2PNotificationChannel) {

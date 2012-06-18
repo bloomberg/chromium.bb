@@ -9,18 +9,32 @@
 
 namespace notifier {
 
-// A PushClientObserver is notified whenever an incoming notification
-// is received or when the state of the push client changes.
+enum NotificationsDisabledReason {
+  // There is an underlying transient problem (e.g., network- or
+  // XMPP-related).
+  TRANSIENT_NOTIFICATION_ERROR,
+  DEFAULT_NOTIFICATION_ERROR = TRANSIENT_NOTIFICATION_ERROR,
+  // Our credentials have been rejected.
+  NOTIFICATION_CREDENTIALS_REJECTED,
+  // No error (useful for avoiding keeping a separate bool for
+  // notifications enabled/disabled).
+  NO_NOTIFICATION_ERROR
+};
+
+// A PushClientObserver is notified when notifications are enabled or
+// disabled, and when a notification is received.
 class PushClientObserver {
  protected:
   virtual ~PushClientObserver();
 
  public:
-  // Called when the state of the push client changes.  If
-  // |notifications_enabled| is true, that means notifications can be
-  // sent and received freely.  If it is false, that means no
-  // notifications can be sent or received.
-  virtual void OnNotificationStateChange(bool notifications_enabled) = 0;
+  // Called when notifications are enabled.
+  virtual void OnNotificationsEnabled() = 0;
+
+  // Called when notifications are disabled, with the reason (not
+  // equal to NO_ERROR) in |reason|.
+  virtual void OnNotificationsDisabled(
+      NotificationsDisabledReason reason) = 0;
 
   // Called when a notification is received.  The details of the
   // notification are in |notification|.

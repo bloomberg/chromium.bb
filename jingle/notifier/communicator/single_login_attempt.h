@@ -26,12 +26,29 @@ struct ServerInformation;
 // login attempt.
 class SingleLoginAttempt : public XmppConnection::Delegate {
  public:
+  // At most one delegate method will be called, depending on the
+  // result of the login attempt.  After the delegate method is
+  // called, this class won't do anything anymore until it is
+  // destroyed, at which point it will disconnect if necessary.
   class Delegate {
    public:
+    // Called when the login attempt is successful.
     virtual void OnConnect(
         base::WeakPtr<buzz::XmppTaskParentInterface> base_task) = 0;
-    virtual void OnNeedReconnect() = 0;
+
+    // Called when the server responds with a redirect.  A new login
+    // attempt should be made to the given redirect server.
     virtual void OnRedirect(const ServerInformation& redirect_server) = 0;
+
+    // Called when a server rejects the client's login credentials.  A
+    // new login attempt should be made once the client provides new
+    // credentials.
+    virtual void OnCredentialsRejected() = 0;
+
+    // Called when no server could be logged into for reasons other
+    // than redirection or rejected credentials.  A new login attempt
+    // may be created, but it should be done with exponential backoff.
+    virtual void OnSettingsExhausted() = 0;
 
    protected:
     virtual ~Delegate();

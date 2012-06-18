@@ -27,6 +27,8 @@ namespace notifier {
 // Redirect valid for 5 minutes.
 static const int kRedirectTimeoutMinutes = 5;
 
+Login::Delegate::~Delegate() {}
+
 Login::Login(Delegate* delegate,
              const buzz::XmppClientSettings& user_settings,
              const scoped_refptr<net::URLRequestContextGetter>&
@@ -57,19 +59,31 @@ void Login::UpdateXmppSettings(const buzz::XmppClientSettings& user_settings) {
   login_settings_.set_user_settings(user_settings);
 }
 
+// In the code below, we assume that calling a delegate method may end
+// up in ourselves being deleted, so we always call it last.
+//
+// TODO(akalin): Add unit tests to enforce the behavior above.
+
 void Login::OnConnect(base::WeakPtr<buzz::XmppTaskParentInterface> base_task) {
   ResetReconnectState();
   delegate_->OnConnect(base_task);
-}
-
-void Login::OnNeedReconnect() {
-  TryReconnect();
 }
 
 void Login::OnRedirect(const ServerInformation& redirect_server) {
   login_settings_.SetRedirectServer(redirect_server);
   // Drop the current connection, and start the login process again.
   StartConnection();
+  delegate_->OnTransientDisconnection();
+}
+
+void Login::OnCredentialsRejected() {
+  TryReconnect();
+  delegate_->OnCredentialsRejected();
+}
+
+void Login::OnSettingsExhausted() {
+  TryReconnect();
+  delegate_->OnTransientDisconnection();
 }
 
 void Login::OnIPAddressChanged() {
@@ -78,6 +92,7 @@ void Login::OnIPAddressChanged() {
   // avoid spikey behavior on network hiccups).
   reconnect_interval_ = base::TimeDelta::FromSeconds(base::RandInt(1, 9));
   TryReconnect();
+  delegate_->OnTransientDisconnection();
 }
 
 void Login::ResetReconnectState() {
@@ -94,7 +109,6 @@ void Login::TryReconnect() {
           << reconnect_interval_.InSeconds() << " seconds";
   reconnect_timer_.Start(
       FROM_HERE, reconnect_interval_, this, &Login::DoReconnect);
-  delegate_->OnDisconnect();
 }
 
 void Login::DoReconnect() {

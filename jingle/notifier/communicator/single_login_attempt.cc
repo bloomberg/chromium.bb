@@ -39,6 +39,11 @@ SingleLoginAttempt::SingleLoginAttempt(const LoginSettings& login_settings,
 
 SingleLoginAttempt::~SingleLoginAttempt() {}
 
+// In the code below, we assume that calling a delegate method may end
+// up in ourselves being deleted, so we always call it last.
+//
+// TODO(akalin): Add unit tests to enforce the behavior above.
+
 void SingleLoginAttempt::OnConnect(
     base::WeakPtr<buzz::XmppTaskParentInterface> base_task) {
   DVLOG(1) << "Connected to " << current_settings_->ToString();
@@ -131,6 +136,11 @@ void SingleLoginAttempt::OnError(buzz::XmppEngine::Error error, int subcode,
     }
   }
 
+  if (error == buzz::XmppEngine::ERROR_UNAUTHORIZED) {
+    delegate_->OnCredentialsRejected();
+    return;
+  }
+
   if (current_settings_ == settings_list_.end()) {
     NOTREACHED();
     return;
@@ -139,7 +149,7 @@ void SingleLoginAttempt::OnError(buzz::XmppEngine::Error error, int subcode,
   ++current_settings_;
   if (current_settings_ == settings_list_.end()) {
     VLOG(1) << "Could not connect to any XMPP server";
-    delegate_->OnNeedReconnect();
+    delegate_->OnSettingsExhausted();
     return;
   }
 

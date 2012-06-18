@@ -46,6 +46,7 @@
 #include "sync/js/js_event_details.h"
 #include "sync/js/js_event_handler.h"
 #include "sync/js/js_reply_handler.h"
+#include "sync/notifier/notifications_disabled_reason.h"
 #include "sync/notifier/sync_notifier.h"
 #include "sync/notifier/sync_notifier_observer.h"
 #include "sync/protocol/encryption.pb.h"
@@ -321,9 +322,9 @@ class SyncManager::SyncInternal
       bool encrypt_everything) OVERRIDE;
 
   // SyncNotifierObserver implementation.
-  virtual void OnNotificationStateChange(
-      bool notifications_enabled) OVERRIDE;
-
+  virtual void OnNotificationsEnabled() OVERRIDE;
+  virtual void OnNotificationsDisabled(
+      sync_notifier::NotificationsDisabledReason reason) OVERRIDE;
   virtual void OnIncomingNotification(
       const syncable::ModelTypePayloadMap& type_payloads,
       sync_notifier::IncomingNotificationSource source) OVERRIDE;
@@ -2274,24 +2275,6 @@ void SyncManager::SyncInternal::OnEncryptedTypesChanged(
       OnEncryptedTypesChanged(encrypted_types, encrypt_everything));
 }
 
-void SyncManager::SyncInternal::OnNotificationStateChange(
-    bool notifications_enabled) {
-  DVLOG(1) << "P2P: Notifications enabled = "
-           << (notifications_enabled ? "true" : "false");
-  allstatus_.SetNotificationsEnabled(notifications_enabled);
-  if (scheduler()) {
-    scheduler()->set_notifications_enabled(notifications_enabled);
-  }
-  if (js_event_handler_.IsInitialized()) {
-    DictionaryValue details;
-    details.Set("enabled", Value::CreateBooleanValue(notifications_enabled));
-    js_event_handler_.Call(FROM_HERE,
-                           &JsEventHandler::HandleJsEvent,
-                           "onNotificationStateChange",
-                           JsEventDetails(&details));
-  }
-}
-
 void SyncManager::SyncInternal::UpdateNotificationInfo(
     const syncable::ModelTypePayloadMap& type_payloads) {
   for (syncable::ModelTypePayloadMap::const_iterator it = type_payloads.begin();
@@ -2300,6 +2283,44 @@ void SyncManager::SyncInternal::UpdateNotificationInfo(
     info->total_count++;
     info->payload = it->second;
   }
+}
+
+void SyncManager::SyncInternal::OnNotificationsEnabled() {
+  DVLOG(1) << "Notifications enabled";
+  allstatus_.SetNotificationsEnabled(true);
+  if (scheduler()) {
+    scheduler()->set_notifications_enabled(true);
+  }
+  // TODO(akalin): Separate onNotificationStateChange into
+  // enabled/disabled events.
+  if (js_event_handler_.IsInitialized()) {
+    DictionaryValue details;
+    details.Set("enabled", Value::CreateBooleanValue(true));
+    js_event_handler_.Call(FROM_HERE,
+                           &JsEventHandler::HandleJsEvent,
+                           "onNotificationStateChange",
+                           JsEventDetails(&details));
+  }
+}
+
+void SyncManager::SyncInternal::OnNotificationsDisabled(
+    sync_notifier::NotificationsDisabledReason reason) {
+  DVLOG(1) << "Notifications disabled with reason "
+           << sync_notifier::NotificationsDisabledReasonToString(reason);
+  allstatus_.SetNotificationsEnabled(false);
+  if (scheduler()) {
+    scheduler()->set_notifications_enabled(false);
+  }
+  if (js_event_handler_.IsInitialized()) {
+    DictionaryValue details;
+    details.Set("enabled", Value::CreateBooleanValue(false));
+    js_event_handler_.Call(FROM_HERE,
+                           &JsEventHandler::HandleJsEvent,
+                           "onNotificationStateChange",
+                           JsEventDetails(&details));
+  }
+  // TODO(akalin): Treat a CREDENTIALS_REJECTED state as an auth
+  // error.
 }
 
 void SyncManager::SyncInternal::OnIncomingNotification(
@@ -2422,10 +2443,15 @@ bool SyncManager::HasUnsyncedItems() const {
   return (trans.GetWrappedTrans()->directory()->unsynced_entity_count() != 0);
 }
 
-void SyncManager::TriggerOnNotificationStateChangeForTest(
-    bool notifications_enabled) {
+void SyncManager::SimulateEnableNotificationsForTest() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  data_->OnNotificationStateChange(notifications_enabled);
+  data_->OnNotificationsEnabled();
+}
+
+void SyncManager::SimulateDisableNotificationsForTest(int reason) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  data_->OnNotificationsDisabled(
+      static_cast<sync_notifier::NotificationsDisabledReason>(reason));
 }
 
 void SyncManager::TriggerOnIncomingNotificationForTest(

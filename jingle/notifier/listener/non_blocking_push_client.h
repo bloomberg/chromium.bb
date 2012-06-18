@@ -14,6 +14,7 @@
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "jingle/notifier/listener/push_client.h"
+#include "jingle/notifier/listener/push_client_observer.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -52,7 +53,8 @@ class NonBlockingPushClient : public PushClient {
  private:
   class Core;
 
-  void OnNotificationStateChange(bool notifications_enabled);
+  void OnNotificationsEnabled();
+  void OnNotificationsDisabled(NotificationsDisabledReason reason);
   void OnIncomingNotification(const Notification& notification);
 
   base::NonThreadSafe non_thread_safe_;

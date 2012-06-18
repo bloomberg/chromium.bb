@@ -22,6 +22,8 @@ struct SyncStatus {
   SyncStatus();
   ~SyncStatus();
 
+  // TODO(akalin): Replace this with a NotificationsDisabledReason
+  // variable.
   bool notifications_enabled;  // True only if subscribed for notifications.
 
   // Notifications counters updated by the actions in synapi.

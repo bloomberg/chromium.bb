@@ -18,6 +18,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "jingle/notifier/listener/push_client_observer.h"
 #include "sync/internal_api/public/syncable/model_type.h"
+#include "sync/notifier/notifications_disabled_reason.h"
 #include "sync/notifier/sync_notifier.h"
 
 namespace notifier {
@@ -107,7 +108,9 @@ class P2PNotifier
       syncable::ModelTypeSet changed_types) OVERRIDE;
 
   // PushClientObserver implementation.
-  virtual void OnNotificationStateChange(bool notifications_enabled) OVERRIDE;
+  virtual void OnNotificationsEnabled() OVERRIDE;
+  virtual void OnNotificationsDisabled(
+      notifier::NotificationsDisabledReason reason) OVERRIDE;
   virtual void OnIncomingNotification(
       const notifier::Notification& notification) OVERRIDE;
 
@@ -127,8 +130,6 @@ class P2PNotifier
   std::string unique_id_;
   // Whether we have called UpdateCredentials() yet.
   bool logged_in_;
-  // Whether |push_client_| has notified us that notifications are
-  // enabled.
   bool notifications_enabled_;
   // Which set of clients should be sent notifications.
   P2PNotificationTarget send_notification_target_;

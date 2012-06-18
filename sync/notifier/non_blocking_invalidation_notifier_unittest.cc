@@ -73,20 +73,26 @@ TEST_F(NonBlockingInvalidationNotifierTest, Basic) {
   type_payloads[syncable::BOOKMARKS] = "";
   type_payloads[syncable::AUTOFILL] = "";
 
-  EXPECT_CALL(mock_observer_, OnNotificationStateChange(true));
+  EXPECT_CALL(mock_observer_, OnNotificationsEnabled());
   EXPECT_CALL(mock_observer_,
               OnIncomingNotification(type_payloads,
                                      REMOTE_NOTIFICATION));
-  EXPECT_CALL(mock_observer_, OnNotificationStateChange(false));
+  EXPECT_CALL(mock_observer_,
+              OnNotificationsDisabled(TRANSIENT_NOTIFICATION_ERROR));
+  EXPECT_CALL(mock_observer_,
+              OnNotificationsDisabled(NOTIFICATION_CREDENTIALS_REJECTED));
 
   invalidation_notifier_->SetStateDeprecated("fake_state");
   invalidation_notifier_->SetUniqueId("fake_id");
   invalidation_notifier_->UpdateCredentials("foo@bar.com", "fake_token");
 
-  invalidation_notifier_->OnNotificationStateChange(true);
+  invalidation_notifier_->OnNotificationsEnabled();
   invalidation_notifier_->OnIncomingNotification(type_payloads,
                                                  REMOTE_NOTIFICATION);
-  invalidation_notifier_->OnNotificationStateChange(false);
+  invalidation_notifier_->OnNotificationsDisabled(
+      TRANSIENT_NOTIFICATION_ERROR);
+  invalidation_notifier_->OnNotificationsDisabled(
+      NOTIFICATION_CREDENTIALS_REJECTED);
 
   ui_loop_.RunAllPending();
 }

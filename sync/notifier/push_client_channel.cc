@@ -62,12 +62,20 @@ void PushClientChannel::SetSystemResources(
   // Do nothing.
 }
 
-void PushClientChannel::OnNotificationStateChange(
-    bool notifications_enabled) {
+void PushClientChannel::OnNotificationsEnabled() {
   for (NetworkStatusReceiverList::const_iterator it =
            network_status_receivers_.begin();
        it != network_status_receivers_.end(); ++it) {
-    (*it)->Run(notifications_enabled);
+    (*it)->Run(true);
+  }
+}
+
+void PushClientChannel::OnNotificationsDisabled(
+    notifier::NotificationsDisabledReason reason) {
+  for (NetworkStatusReceiverList::const_iterator it =
+           network_status_receivers_.begin();
+       it != network_status_receivers_.end(); ++it) {
+    (*it)->Run(false);
   }
 }
 

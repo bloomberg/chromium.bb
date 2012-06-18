@@ -1275,16 +1275,19 @@ TEST_F(SyncManagerTest, OnNotificationStateChange) {
               HandleJsEvent("onNotificationStateChange",
                             HasDetailsAsDictionary(false_details)));
 
-  sync_manager_.TriggerOnNotificationStateChangeForTest(true);
-  sync_manager_.TriggerOnNotificationStateChangeForTest(false);
+  sync_manager_.SimulateEnableNotificationsForTest();
+  sync_manager_.SimulateDisableNotificationsForTest(
+      sync_notifier::TRANSIENT_NOTIFICATION_ERROR);
 
   SetJsEventHandler(event_handler.AsWeakHandle());
-  sync_manager_.TriggerOnNotificationStateChangeForTest(true);
-  sync_manager_.TriggerOnNotificationStateChangeForTest(false);
+  sync_manager_.SimulateEnableNotificationsForTest();
+  sync_manager_.SimulateDisableNotificationsForTest(
+      sync_notifier::TRANSIENT_NOTIFICATION_ERROR);
   SetJsEventHandler(WeakHandle<JsEventHandler>());
 
-  sync_manager_.TriggerOnNotificationStateChangeForTest(true);
-  sync_manager_.TriggerOnNotificationStateChangeForTest(false);
+  sync_manager_.SimulateEnableNotificationsForTest();
+  sync_manager_.SimulateDisableNotificationsForTest(
+      sync_notifier::TRANSIENT_NOTIFICATION_ERROR);
 
   // Should trigger the replies.
   PumpLoop();

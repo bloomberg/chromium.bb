@@ -38,6 +38,16 @@ class NotificationPrinter : public sync_notifier::SyncNotifierObserver {
   NotificationPrinter() {}
   virtual ~NotificationPrinter() {}
 
+  virtual void OnNotificationsEnabled() OVERRIDE {
+    LOG(INFO) << "Notifications enabled";
+  }
+
+  virtual void OnNotificationsDisabled(
+      sync_notifier::NotificationsDisabledReason reason) OVERRIDE {
+    LOG(INFO) << "Notifications disabled with reason "
+              << sync_notifier::NotificationsDisabledReasonToString(reason);
+  }
+
   virtual void OnIncomingNotification(
       const syncable::ModelTypePayloadMap& type_payloads,
       sync_notifier::IncomingNotificationSource source) OVERRIDE {
@@ -49,11 +59,6 @@ class NotificationPrinter : public sync_notifier::SyncNotifierObserver {
                 << syncable::ModelTypeToString(it->first)
                 << ", payload = " << it->second;
     }
-  }
-
-  virtual void OnNotificationStateChange(
-      bool notifications_enabled) OVERRIDE {
-    LOG(INFO) << "Notifications enabled: " << notifications_enabled;
   }
 
  private:

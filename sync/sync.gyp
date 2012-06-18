@@ -219,6 +219,8 @@
         '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation',
       ],
       'sources': [
+        'notifier/notifications_disabled_reason.h',
+        'notifier/notifications_disabled_reason.cc',
         'notifier/sync_notifier.h',
         'notifier/sync_notifier_factory.h',
         'notifier/sync_notifier_factory.cc',

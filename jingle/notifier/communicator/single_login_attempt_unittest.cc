@@ -14,10 +14,10 @@
 #include "jingle/notifier/communicator/login_settings.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/url_request/url_request_test_util.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "talk/xmllite/xmlelement.h"
 #include "talk/xmpp/constants.h"
 #include "talk/xmpp/xmppengine.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace buzz {
 class XmppTaskParentInterface;
@@ -27,24 +27,31 @@ namespace notifier {
 
 namespace {
 
-enum DelegateState { IDLE, CONNECTED, NEED_RECONNECT, REDIRECTED };
+enum DelegateState {
+  IDLE, CONNECTED, REDIRECTED, CREDENTIALS_REJECTED, SETTINGS_EXHAUSTED
+};
 
 class FakeDelegate : public SingleLoginAttempt::Delegate {
  public:
   FakeDelegate() : state_(IDLE) {}
 
-  void OnConnect(base::WeakPtr<buzz::XmppTaskParentInterface> base_task) {
+  void OnConnect(
+      base::WeakPtr<buzz::XmppTaskParentInterface> base_task) OVERRIDE {
     state_ = CONNECTED;
     base_task_ = base_task;
-  }
-
-  virtual void OnNeedReconnect() {
-    state_ = NEED_RECONNECT;
   }
 
   virtual void OnRedirect(const ServerInformation& redirect_server) OVERRIDE {
     state_ = REDIRECTED;
     redirect_server_ = redirect_server;
+  }
+
+  virtual void OnCredentialsRejected() OVERRIDE {
+    state_ = CREDENTIALS_REJECTED;
+  }
+
+  virtual void OnSettingsExhausted() OVERRIDE {
+    state_ = SETTINGS_EXHAUSTED;
   }
 
   DelegateState state() const { return state_; }
@@ -115,14 +122,14 @@ TEST_F(SingleLoginAttemptTest, Basic) {
             fake_delegate_.base_task().get());
 }
 
-// Fire OnErrors and make sure the delegate gets the OnNeedReconnect()
-// event.
+// Fire OnErrors and make sure the delegate gets the
+// OnSettingsExhausted() event.
 TEST_F(SingleLoginAttemptTest, Error) {
   for (int i = 0; i < 2; ++i) {
     EXPECT_EQ(IDLE, fake_delegate_.state());
     attempt_.OnError(buzz::XmppEngine::ERROR_NONE, 0, NULL);
   }
-  EXPECT_EQ(NEED_RECONNECT, fake_delegate_.state());
+  EXPECT_EQ(SETTINGS_EXHAUSTED, fake_delegate_.state());
 }
 
 // Fire OnErrors but replace the last one with OnConnect, and make
@@ -231,6 +238,13 @@ TEST_F(SingleLoginAttemptTest, RedirectMissingSeeOtherHost) {
   redirect_error->RemoveChildAfter(NULL);
   FireRedirect(redirect_error.get());
   EXPECT_EQ(IDLE, fake_delegate_.state());
+}
+
+// Fire 'Unauthorized' errors and make sure the delegate gets the
+// OnCredentialsRejected() event.
+TEST_F(SingleLoginAttemptTest, CredentialsRejected) {
+  attempt_.OnError(buzz::XmppEngine::ERROR_UNAUTHORIZED, 0, NULL);
+  EXPECT_EQ(CREDENTIALS_REJECTED, fake_delegate_.state());
 }
 
 }  // namespace

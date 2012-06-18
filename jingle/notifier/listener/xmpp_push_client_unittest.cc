@@ -24,7 +24,8 @@ using ::testing::StrictMock;
 
 class MockObserver : public PushClientObserver {
  public:
-  MOCK_METHOD1(OnNotificationStateChange, void(bool));
+  MOCK_METHOD0(OnNotificationsEnabled, void());
+  MOCK_METHOD1(OnNotificationsDisabled, void(NotificationsDisabledReason));
   MOCK_METHOD1(OnIncomingNotification, void(const Notification&));
 };
 
@@ -67,7 +68,7 @@ TEST_F(XmppPushClientTest, OnIncomingNotification) {
 // Make sure the XMPP push client notifies its observers of a
 // successful connection properly.
 TEST_F(XmppPushClientTest, ConnectAndSubscribe) {
-  EXPECT_CALL(mock_observer_, OnNotificationStateChange(true));
+  EXPECT_CALL(mock_observer_, OnNotificationsEnabled());
   xmpp_push_client_->OnConnect(fake_base_task_.AsWeakPtr());
   xmpp_push_client_->OnSubscribed();
 }
@@ -75,14 +76,24 @@ TEST_F(XmppPushClientTest, ConnectAndSubscribe) {
 // Make sure the XMPP push client notifies its observers of a
 // terminated connection properly.
 TEST_F(XmppPushClientTest, Disconnect) {
-  EXPECT_CALL(mock_observer_, OnNotificationStateChange(false));
-  xmpp_push_client_->OnDisconnect();
+  EXPECT_CALL(mock_observer_,
+              OnNotificationsDisabled(TRANSIENT_NOTIFICATION_ERROR));
+  xmpp_push_client_->OnTransientDisconnection();
+}
+
+// Make sure the XMPP push client notifies its observers of
+// rejected credentials properly.
+TEST_F(XmppPushClientTest, RejectCredentials) {
+  EXPECT_CALL(mock_observer_,
+              OnNotificationsDisabled(NOTIFICATION_CREDENTIALS_REJECTED));
+  xmpp_push_client_->OnCredentialsRejected();
 }
 
 // Make sure the XMPP push client notifies its observers of a
 // subscription error properly.
 TEST_F(XmppPushClientTest, SubscriptionError) {
-  EXPECT_CALL(mock_observer_, OnNotificationStateChange(false));
+  EXPECT_CALL(mock_observer_,
+              OnNotificationsDisabled(TRANSIENT_NOTIFICATION_ERROR));
   xmpp_push_client_->OnSubscriptionError();
 }
 
@@ -92,7 +103,7 @@ TEST_F(XmppPushClientTest, SubscriptionError) {
 // TODO(akalin): Figure out how to test that the notification was
 // actually sent.
 TEST_F(XmppPushClientTest, SendNotification) {
-  EXPECT_CALL(mock_observer_, OnNotificationStateChange(true));
+  EXPECT_CALL(mock_observer_, OnNotificationsEnabled());
 
   xmpp_push_client_->OnConnect(fake_base_task_.AsWeakPtr());
   xmpp_push_client_->OnSubscribed();
@@ -109,7 +120,7 @@ TEST_F(XmppPushClientTest, SendNotificationPending) {
 
   Mock::VerifyAndClearExpectations(&mock_observer_);
 
-  EXPECT_CALL(mock_observer_, OnNotificationStateChange(true));
+  EXPECT_CALL(mock_observer_, OnNotificationsEnabled());
 
   xmpp_push_client_->OnConnect(fake_base_task_.AsWeakPtr());
   xmpp_push_client_->OnSubscribed();

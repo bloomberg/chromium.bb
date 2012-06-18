@@ -6,9 +6,8 @@
 #define SYNC_NOTIFIER_SYNC_NOTIFIER_OBSERVER_H_
 #pragma once
 
-#include <string>
-
 #include "sync/internal_api/public/syncable/model_type_payload_map.h"
+#include "sync/notifier/notifications_disabled_reason.h"
 
 namespace sync_notifier {
 
@@ -21,10 +20,19 @@ enum IncomingNotificationSource {
 
 class SyncNotifierObserver {
  public:
+  // Called when notifications are enabled.
+  virtual void OnNotificationsEnabled() = 0;
+
+  // Called when notifications are disabled, with the reason in
+  // |reason|.
+  virtual void OnNotificationsDisabled(
+      NotificationsDisabledReason reason) = 0;
+
+  // Called when a notification is received.  The per-type payloads
+  // are in |type_payloads| and the source is in |source|.
   virtual void OnIncomingNotification(
       const syncable::ModelTypePayloadMap& type_payloads,
       IncomingNotificationSource source) = 0;
-  virtual void OnNotificationStateChange(bool notifications_enabled) = 0;
 
  protected:
   virtual ~SyncNotifierObserver() {}

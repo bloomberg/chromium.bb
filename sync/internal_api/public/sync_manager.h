@@ -532,8 +532,9 @@ class SyncManager {
 
   // Functions used for testing.
 
-  void TriggerOnNotificationStateChangeForTest(
-      bool notifications_enabled);
+  void SimulateEnableNotificationsForTest();
+
+  void SimulateDisableNotificationsForTest(int reason);
 
   void TriggerOnIncomingNotificationForTest(
       syncable::ModelTypeSet model_types);

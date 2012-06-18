@@ -17,11 +17,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "google/cacheinvalidation/include/invalidation-listener.h"
+#include "jingle/notifier/listener/push_client_observer.h"
 #include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/internal_api/public/syncable/model_type_payload_map.h"
 #include "sync/internal_api/public/util/weak_handle.h"
 #include "sync/notifier/chrome_system_resources.h"
 #include "sync/notifier/invalidation_state_tracker.h"
+#include "sync/notifier/notifications_disabled_reason.h"
 #include "sync/notifier/state_writer.h"
 
 namespace buzz {
@@ -43,6 +45,7 @@ class RegistrationManager;
 class ChromeInvalidationClient
     : public InvalidationListener,
       public StateWriter,
+      public notifier::PushClientObserver,
       public base::NonThreadSafe {
  public:
   class Listener {
@@ -52,7 +55,10 @@ class ChromeInvalidationClient
     virtual void OnInvalidate(
         const syncable::ModelTypePayloadMap& type_payloads) = 0;
 
-    virtual void OnSessionStatusChanged(bool has_session) = 0;
+    virtual void OnNotificationsEnabled() = 0;
+
+    virtual void OnNotificationsDisabled(
+        NotificationsDisabledReason reason) = 0;
   };
 
   explicit ChromeInvalidationClient(
@@ -76,8 +82,6 @@ class ChromeInvalidationClient
   // Register the sync types that we're interested in getting
   // notifications for.  May be called at any time.
   void RegisterTypes(syncable::ModelTypeSet types);
-
-  virtual void WriteState(const std::string& state) OVERRIDE;
 
   // invalidation::InvalidationListener implementation.
   virtual void Ready(
@@ -110,14 +114,30 @@ class ChromeInvalidationClient
       invalidation::InvalidationClient* client,
       const invalidation::ErrorInfo& error_info) OVERRIDE;
 
+  // StateWriter implementation.
+  virtual void WriteState(const std::string& state) OVERRIDE;
+
+  // notifier::PushClientObserver implementation.
+  virtual void OnNotificationsEnabled() OVERRIDE;
+  virtual void OnNotificationsDisabled(
+      notifier::NotificationsDisabledReason reason) OVERRIDE;
+  virtual void OnIncomingNotification(
+      const notifier::Notification& notification) OVERRIDE;
+
  private:
   friend class ChromeInvalidationClientTest;
 
   void Stop();
 
+  NotificationsDisabledReason GetState() const;
+
+  void EmitStateChange();
+
   void EmitInvalidation(
       syncable::ModelTypeSet types, const std::string& payload);
 
+  // Owned by |chrome_system_resources_|.
+  notifier::PushClient* const push_client_;
   ChromeSystemResources chrome_system_resources_;
   InvalidationVersionMap max_invalidation_versions_;
   browser_sync::WeakHandle<InvalidationStateTracker>
@@ -127,7 +147,11 @@ class ChromeInvalidationClient
   scoped_ptr<RegistrationManager> registration_manager_;
   // Stored to pass to |registration_manager_| on start.
   syncable::ModelTypeSet registered_types_;
-  bool ticl_ready_;
+
+  // The states of the ticl and the push client (with
+  // NO_NOTIFICATION_ERROR meaning notifications are enabled).
+  NotificationsDisabledReason ticl_state_;
+  NotificationsDisabledReason push_client_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeInvalidationClient);
 };

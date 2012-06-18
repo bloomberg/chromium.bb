@@ -70,7 +70,11 @@ class FakeSyncNotifierObserverIO
       received_improper_notification_ = true;
     }
   }
-  virtual void OnNotificationStateChange(bool notifications_enabled) {
+  virtual void OnNotificationsEnabled() OVERRIDE {
+    NOTREACHED();
+  }
+  virtual void OnNotificationsDisabled(
+      sync_notifier::NotificationsDisabledReason reason) OVERRIDE {
     NOTREACHED();
   }
 
