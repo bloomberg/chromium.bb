@@ -1,5 +1,5 @@
 # -*- python -*-
-# Copyright 2010 The Native Client Authors.  All rights reserved.
+# Copyright 2012 The Native Client Authors.  All rights reserved.
 # Use of this source code is governed by a BSD-style license that can
 # be found in the LICENSE file.
 
@@ -72,19 +72,3 @@ for basename in barebones_tests:
                          ['small_tests', 'sel_ldr_tests', 'barebones_tests'],
                          test,
                          is_broken=is_broken)
-
-
-# a test that the validator can handle an empty segment after the last
-# real segment. The gold linker produces files this
-if env.Bit('build_arm') and not env.Bit('bitcode'):
-  nexe = env.File(
-  '${SCONSTRUCT_DIR}/tests/prebuilt/arm/gold-barebones_hello_world${PROGSUFFIX}'
-  )
-  node = env.CommandSelLdrTestNacl(
-      'gold-barebones_hello_world.out',
-      nexe,
-      exit_status='55',)
-  env.AddNodeToTestSuite(node,
-                         ['small_tests', 'sel_ldr_tests'],
-                         'run_gold-barebones_hello_world_test',
-                         is_broken=is_glibc)
