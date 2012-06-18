@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,9 +33,10 @@ bool Image::LoadMetafile(const Metafile& metafile) {
                             kCGImageAlphaPremultipliedLast));
   DCHECK(bitmap_context.get());
 
+  struct Metafile::MacRenderPageParams params;
+  params.shrink_to_fit = true;
   metafile.RenderPage(page_number, bitmap_context,
-                      CGRectMake(0, 0, size_.width(), size_.height()),
-                      true, false, false, false);
+                      CGRectMake(0, 0, size_.width(), size_.height()), params);
 
   return true;
 }

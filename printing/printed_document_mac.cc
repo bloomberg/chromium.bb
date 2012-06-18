@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,8 +32,9 @@ void PrintedDocument::RenderPrintedPage(
   const Metafile* metafile = page.metafile();
   // Each Metafile is a one-page PDF, and pages use 1-based indexing.
   const int page_number = 1;
-  metafile->RenderPage(page_number, context, content_area.ToCGRect(),
-                       false, false, false, false);
+  struct Metafile::MacRenderPageParams params;
+  params.autorotate = true;
+  metafile->RenderPage(page_number, context, content_area.ToCGRect(), params);
 }
 
 }  // namespace printing

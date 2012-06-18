@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,12 +58,9 @@ class PRINTING_EXPORT PdfMetafileCg : public Metafile {
   virtual CGContextRef context() const OVERRIDE;
 
   virtual bool RenderPage(unsigned int page_number,
-                          CGContextRef context,
+                          gfx::NativeDrawingContext context,
                           const CGRect rect,
-                          bool shrink_to_fit,
-                          bool stretch_to_fit,
-                          bool center_horizontally,
-                          bool center_vertically) const OVERRIDE;
+                          const MacRenderPageParams& params) const OVERRIDE;
 
  private:
   // Returns a CGPDFDocumentRef version of pdf_data_.

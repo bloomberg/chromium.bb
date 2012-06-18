@@ -180,18 +180,13 @@ http://codereview.chromium.org/7200040/diff/1/webkit/plugins/ppapi/ppapi_plugin_
 bool PdfMetafileSkia::RenderPage(unsigned int page_number,
                                  CGContextRef context,
                                  const CGRect rect,
-                                 bool shrink_to_fit,
-                                 bool stretch_to_fit,
-                                 bool center_horizontally,
-                                 bool center_vertically) const {
+                                 const MacRenderPageParams& params) const {
   DCHECK_GT(data_->pdf_stream_.getOffset(), 0U);
   if (data_->pdf_cg_.GetDataSize() == 0) {
     SkAutoDataUnref data(data_->pdf_stream_.copyToData());
     data_->pdf_cg_.InitFromData(data.bytes(), data.size());
   }
-  return data_->pdf_cg_.RenderPage(page_number, context, rect, shrink_to_fit,
-                                   stretch_to_fit, center_horizontally,
-                                   center_vertically);
+  return data_->pdf_cg_.RenderPage(page_number, context, rect, params);
 }
 #endif
 
