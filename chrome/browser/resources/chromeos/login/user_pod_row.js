@@ -250,13 +250,11 @@ cr.define('login', function() {
       this.signedInIndicatorElement.hidden = !this.user_.signedIn;
 
       if (this.isGuest) {
-        this.imageElement.title = '';
         this.enterButtonElement.hidden = false;
         this.passwordElement.hidden = true;
         this.signinButtonElement.hidden = true;
       } else {
         var needSignin = this.needGaiaSignin;
-        this.imageElement.title = this.user_.nameTooltip || '';
         this.enterButtonElement.hidden = true;
         this.passwordElement.hidden = needSignin;
         this.removeUserButtonElement.setAttribute(
@@ -498,6 +496,20 @@ cr.define('login', function() {
       return this.children;
     },
 
+    hideTitles: function() {
+      for (var i = 0, pod; pod = this.pods[i]; ++i)
+        pod.imageElement.title = '';
+    },
+
+    updateTitles: function() {
+      for (var i = 0, pod; pod = this.pods[i]; ++i) {
+        if (pod.isGuest)
+          pod.imageElement.title = '';
+        else
+          pod.imageElement.title = pod.user.nameTooltip || '';
+      }
+    },
+
     /**
      * Returns pod with the given username (null if there is no such pod).
      * @param {string} username Username to be matched.
@@ -637,6 +649,9 @@ cr.define('login', function() {
       for (var i = 0, pod; pod = this.pods[i]; ++i) {
         this.podsWithPendingImages_.push(pod);
       }
+
+      // Set titles for the pods. The title will show up as a tooltip.
+      updateTitles();
     },
 
     /**
@@ -846,7 +861,7 @@ cr.define('login', function() {
     },
 
     /**
-     * Called when the element is shown.
+     * Called when the pod row is shown.
      */
     handleShow: function() {
       for (var event in this.listeners_) {
@@ -854,6 +869,7 @@ cr.define('login', function() {
             event, this.listeners_[event][0], this.listeners_[event][1]);
       }
       $('login-header-bar').buttonsTabIndex = UserPodTabOrder.HEADER_BAR;
+      $('pod-row').updateTitles();
     },
 
     /**
@@ -865,6 +881,7 @@ cr.define('login', function() {
             event, this.listeners_[event][0], this.listeners_[event][1]);
       }
       $('login-header-bar').buttonsTabIndex = 0;
+      $('pod-row').hideTitles();
     },
 
     /**
