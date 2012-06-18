@@ -3555,12 +3555,28 @@ void GDataFileSystem::OpenFileOnUIThread(const FilePath& file_path,
                                          const OpenFileCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  // If the file is already opened, it cannot be opened again before closed.
+  // This is for avoiding simultaneous modification to the file, and moreover
+  // to avoid an inconsistent cache state (suppose an operation sequence like
+  // Open->Open->modify->Close->modify->Close; the second modify may not be
+  // synchronized to the server since it is already Closed on the cache).
+  if (open_files_.find(file_path) != open_files_.end()) {
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, base::PLATFORM_FILE_ERROR_IN_USE, FilePath()));
+    return;
+  }
+  open_files_.insert(file_path);
+
   GetFileInfoByPath(
       file_path,
       base::Bind(&GDataFileSystem::OnGetFileInfoCompleteForOpenFile,
                  ui_weak_ptr_,
                  file_path,
-                 callback));
+                 base::Bind(&GDataFileSystem::OnOpenFileFinished,
+                            ui_weak_ptr_,
+                            file_path,
+                            callback)));
 }
 
 void GDataFileSystem::OnGetFileInfoCompleteForOpenFile(
@@ -3635,6 +3651,22 @@ void GDataFileSystem::OnMarkDirtyInCacheCompleteForOpenFile(
     callback.Run(error, cache_file_path);
 }
 
+void GDataFileSystem::OnOpenFileFinished(const FilePath& file_path,
+                                         const OpenFileCallback& callback,
+                                         base::PlatformFileError result,
+                                         const FilePath& cache_file_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // All the invocation of |callback| from operations initiated from OpenFile
+  // must go through here. Removes the |file_path| from the remembered set when
+  // the file was not successfully opened.
+  if (result != base::PLATFORM_FILE_OK)
+    open_files_.erase(file_path);
+
+  if (!callback.is_null())
+    callback.Run(result, cache_file_path);
+}
+
 void GDataFileSystem::CloseFile(const FilePath& file_path,
                                 const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
@@ -3650,6 +3682,14 @@ void GDataFileSystem::CloseFileOnUIThread(
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  if (open_files_.find(file_path) == open_files_.end()) {
+    // The file is not being opened.
+    MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
+    return;
+  }
+
   // CloseFile should only be applied for a previously OpenFile'd file, so the
   // file should already be cached. The sole purpose of the following call to
   // GetFileByPathOnUIThread is to get the path to the local cache file.
@@ -3658,7 +3698,10 @@ void GDataFileSystem::CloseFileOnUIThread(
       base::Bind(&GDataFileSystem::OnGetFileCompleteForCloseFile,
                  ui_weak_ptr_,
                  file_path,
-                 callback),
+                 base::Bind(&GDataFileSystem::OnCloseFileFinished,
+                            ui_weak_ptr_,
+                            file_path,
+                            callback)),
       GetDownloadDataCallback());
 }
 
@@ -3767,6 +3810,22 @@ void GDataFileSystem::OnCommitDirtyInCacheCompleteForCloseFile(
 
   if (!callback.is_null())
     callback.Run(error);
+}
+
+void GDataFileSystem::OnCloseFileFinished(
+    const FilePath& file_path,
+    const FileOperationCallback& callback,
+    base::PlatformFileError result) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // All the invocation of |callback| from operations initiated from CloseFile
+  // must go through here. Removes the |file_path| from the remembered set so
+  // that subsequent operations can open the file again.
+  open_files_.erase(file_path);
+
+  // Then invokes the user-supplied callback function.
+  if (!callback.is_null())
+    callback.Run(result);
 }
 
 }  // namespace gdata

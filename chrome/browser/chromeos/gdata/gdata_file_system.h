@@ -620,6 +620,14 @@ class GDataFileSystem : public GDataFileSystemInterface,
                                         base::PlatformFileError error,
                                         scoped_ptr<GDataFileProto> file_info);
 
+  // Invoked at the last step of OpenFile. It removes |file_path| from the
+  // current set of opened files if |result| is an error, and then invokes the
+  // |callback| function.
+  void OnOpenFileFinished(const FilePath& file_path,
+                          const OpenFileCallback& callback,
+                          base::PlatformFileError result,
+                          const FilePath& cache_file_path);
+
   // Invoked during the process of CloseFile. It first gets the path of local
   // cache and receives it with OnGetFileCompleteForCloseFile. Then it reads the
   // metadata of the modified cache and send the information to
@@ -627,7 +635,9 @@ class GDataFileSystem : public GDataFileSystemInterface,
   // update the GData entry by FindEntryByPathAsyncOnUIThread
   // and invokes OnGetFileInfoCompleteForCloseFile. It then continues to
   // invoke CommitDirtyInCache to commit the change, and finally proceeds to
-  // OnCommitDirtyInCacheCompleteForCloseFile and calls user-supplied callback.
+  // OnCommitDirtyInCacheCompleteForCloseFile and calls OnCloseFileFinished,
+  // which removes the file from the "opened" list and invokes user-supplied
+  // callback.
   void OnGetFileCompleteForCloseFile(
       const FilePath& file_path,
       const FileOperationCallback& callback,
@@ -651,6 +661,9 @@ class GDataFileSystem : public GDataFileSystemInterface,
       base::PlatformFileError error,
       const std::string& resource_id,
       const std::string& md5);
+  void OnCloseFileFinished(const FilePath& file_path,
+                           const FileOperationCallback& callback,
+                           base::PlatformFileError result);
 
   // Invoked upon completion of GetFileByPath initiated by Copy. If
   // GetFileByPath reports no error, calls TransferRegularFile to transfer
@@ -1134,6 +1147,9 @@ class GDataFileSystem : public GDataFileSystemInterface,
 
   // True if hosted documents should be hidden.
   bool hide_hosted_docs_;
+
+  // The set of paths opened by OpenFile but not yet closed by CloseFile.
+  std::set<FilePath> open_files_;
 
   scoped_ptr<PrefChangeRegistrar> pref_registrar_;
 

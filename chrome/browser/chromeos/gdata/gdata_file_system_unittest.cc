@@ -3882,21 +3882,28 @@ TEST_F(GDataFileSystemTest, OpenAndCloseFile) {
   // Open kFileInRoot ("drive/File 1.txt").
   file_system_->OpenFile(kFileInRoot, callback);
   message_loop_.Run();
+  const FilePath opened_file_path = callback_helper_->opened_file_path_;
 
   // Verify that the file was properly opened.
   EXPECT_EQ(base::PLATFORM_FILE_OK, callback_helper_->last_error_);
 
+  // Try to open the already opened file.
+  file_system_->OpenFile(kFileInRoot, callback);
+  message_loop_.Run();
+
+  // It must fail.
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_IN_USE, callback_helper_->last_error_);
+
   // Verify that the file contents match the expected contents.
   std::string cache_file_data;
-  EXPECT_TRUE(file_util::ReadFileToString(callback_helper_->opened_file_path_,
-                                          &cache_file_data));
+  EXPECT_TRUE(file_util::ReadFileToString(opened_file_path, &cache_file_data));
   EXPECT_EQ(kExpectedFileData, cache_file_data);
 
   // Verify that the cache state was changed as expected.
-  VerifyCacheStateAfterOpenFile(callback_helper_->last_error_,
+  VerifyCacheStateAfterOpenFile(base::PLATFORM_FILE_OK,
                                 file_resource_id,
                                 file_md5,
-                                callback_helper_->opened_file_path_);
+                                opened_file_path);
 
   // Close kFileInRoot ("drive/File 1.txt").
   file_system_->CloseFile(kFileInRoot, close_file_callback);
@@ -3906,9 +3913,16 @@ TEST_F(GDataFileSystemTest, OpenAndCloseFile) {
   EXPECT_EQ(base::PLATFORM_FILE_OK, callback_helper_->last_error_);
 
   // Verify that the cache state was changed as expected.
-  VerifyCacheStateAfterCloseFile(callback_helper_->last_error_,
+  VerifyCacheStateAfterCloseFile(base::PLATFORM_FILE_OK,
                                  file_resource_id,
                                  file_md5);
+
+  // Try to close the same file twice.
+  file_system_->CloseFile(kFileInRoot, close_file_callback);
+  message_loop_.Run();
+
+  // It must fail.
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, callback_helper_->last_error_);
 }
 
 }   // namespace gdata
