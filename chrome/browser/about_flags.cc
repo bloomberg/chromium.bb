@@ -653,11 +653,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableSuggestionsTabPage)
   },
   {
-    "disable-chrome-to-mobile",  // FLAGS:RECORD_UMA
-    IDS_FLAGS_DISABLE_CHROME_TO_MOBILE_NAME,
-    IDS_FLAGS_DISABLE_CHROME_TO_MOBILE_DESCRIPTION,
+    "enable-chrome-to-mobile",  // FLAGS:RECORD_UMA
+    IDS_FLAGS_ENABLE_CHROME_TO_MOBILE_NAME,
+    IDS_FLAGS_ENABLE_CHROME_TO_MOBILE_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kDisableChromeToMobile)
+    SINGLE_VALUE_TYPE(switches::kEnableChromeToMobile)
   },
   {
     "enable-captive-portal-detection",
