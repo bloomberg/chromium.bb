@@ -249,7 +249,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   // Overridden from ash::SystemTrayDelegate:
   virtual bool GetTrayVisibilityOnStartup() OVERRIDE {
-    return !chromeos::KioskModeSettings::Get()->IsKioskModeEnabled();
+    // If we're either logged in (doesn't matter in KioskMode or not),
+    // or not in KioskMode at all, return true.
+    return UserManager::Get()->IsUserLoggedIn() ||
+        !chromeos::KioskModeSettings::Get()->IsKioskModeEnabled();
   }
 
   virtual const string16 GetUserDisplayName() const OVERRIDE {
