@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/browser_plugin/browser_plugin_channel_manager.h"
+#include "content/renderer/browser_plugin/old/browser_plugin_channel_manager.h"
 
 #include "base/process_util.h"
 #include "content/common/browser_plugin_messages.h"
 #include "content/common/view_messages.h"
-#include "content/renderer/browser_plugin/browser_plugin.h"
-#include "content/renderer/browser_plugin/guest_to_embedder_channel.h"
+#include "content/renderer/browser_plugin/old/browser_plugin.h"
+#include "content/renderer/browser_plugin/old/guest_to_embedder_channel.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "ppapi/c/pp_instance.h"

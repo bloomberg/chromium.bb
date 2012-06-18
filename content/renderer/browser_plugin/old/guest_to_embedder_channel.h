@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_BROWSER_PLUGIN_GUEST_TO_EMBEDDER_CHANNEL_H_
-#define CONTENT_RENDERER_BROWSER_PLUGIN_GUEST_TO_EMBEDDER_CHANNEL_H_
+#ifndef CONTENT_RENDERER_BROWSER_PLUGIN_OLD_GUEST_TO_EMBEDDER_CHANNEL_H_
+#define CONTENT_RENDERER_BROWSER_PLUGIN_OLD_GUEST_TO_EMBEDDER_CHANNEL_H_
 #pragma once
 
 #include "base/memory/ref_counted.h"
@@ -135,4 +135,4 @@ class GuestToEmbedderChannel
 
 }  // namespace content
 
-#endif // CONTENT_RENDERER_BROWSER_PLUGIN_GUEST_TO_EMBEDDER_CHANNEL_H_
+#endif // CONTENT_RENDERER_BROWSER_PLUGIN_OLD_GUEST_TO_EMBEDDER_CHANNEL_H_

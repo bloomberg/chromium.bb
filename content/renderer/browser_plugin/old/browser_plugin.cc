@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/browser_plugin/browser_plugin.h"
+#include "content/renderer/browser_plugin/old/browser_plugin.h"
 
 #include "base/atomic_sequence_num.h"
 #include "base/id_map.h"

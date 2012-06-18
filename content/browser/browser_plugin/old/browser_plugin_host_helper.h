@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_BROWSER_PLUGIN_BROWSER_PLUGIN_HOST_HELPER_H__
-#define CONTENT_BROWSER_BROWSER_PLUGIN_BROWSER_PLUGIN_HOST_HELPER_H__
+#ifndef CONTENT_BROWSER_BROWSER_PLUGIN_OLD_BROWSER_PLUGIN_HOST_HELPER_H__
+#define CONTENT_BROWSER_BROWSER_PLUGIN_OLD_BROWSER_PLUGIN_HOST_HELPER_H__
 #pragma once
 
 #include <string>
@@ -46,5 +46,5 @@ class BrowserPluginHostHelper : public RenderViewHostObserver {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_BROWSER_PLUGIN_BROWSER_PLUGIN_HOST_HELPER_H__
+#endif  // CONTENT_BROWSER_BROWSER_PLUGIN_OLD_BROWSER_PLUGIN_HOST_HELPER_H__
 

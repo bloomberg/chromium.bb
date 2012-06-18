@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/browser_plugin/browser_plugin_host_helper.h"
+#include "content/browser/browser_plugin/old/browser_plugin_host_helper.h"
 
-#include "content/browser/browser_plugin/browser_plugin_host.h"
+#include "content/browser/browser_plugin/old/browser_plugin_host.h"
 #include "content/common/browser_plugin_messages.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"

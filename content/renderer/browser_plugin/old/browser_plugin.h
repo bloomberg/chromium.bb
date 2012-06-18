@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_BROWSER_PLUGIN_BROWSER_PLUGIN_H_
-#define CONTENT_RENDERER_BROWSER_PLUGIN_BROWSER_PLUGIN_H_
+#ifndef CONTENT_RENDERER_BROWSER_PLUGIN_OLD_BROWSER_PLUGIN_H_
+#define CONTENT_RENDERER_BROWSER_PLUGIN_OLD_BROWSER_PLUGIN_H_
 #pragma once
 
 #include "base/process.h"
@@ -87,4 +87,4 @@ class BrowserPlugin {
   DISALLOW_COPY_AND_ASSIGN(BrowserPlugin);
 };
 
-#endif  // CONTENT_RENDERER_BROWSER_PLUGIN_BROWSER_PLUGIN_H_
+#endif  // CONTENT_RENDERER_BROWSER_PLUGIN_OLD_BROWSER_PLUGIN_H_

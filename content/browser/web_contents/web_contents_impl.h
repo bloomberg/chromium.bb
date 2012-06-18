@@ -14,7 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/property_bag.h"
-#include "content/browser/browser_plugin/browser_plugin_host.h"
+#include "content/browser/browser_plugin/old/browser_plugin_host.h"
 #include "content/browser/renderer_host/java/java_bridge_dispatcher_host_manager.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"

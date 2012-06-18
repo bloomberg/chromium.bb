@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_BROWSER_PLUGIN_BROWSER_PLUGIN_REGISTRY_H_
-#define CONTENT_RENDERER_BROWSER_PLUGIN_BROWSER_PLUGIN_REGISTRY_H_
+#ifndef CONTENT_RENDERER_BROWSER_PLUGIN_OLD_BROWSER_PLUGIN_REGISTRY_H_
+#define CONTENT_RENDERER_BROWSER_PLUGIN_OLD_BROWSER_PLUGIN_REGISTRY_H_
 #pragma once
 
 #include "base/id_map.h"
@@ -34,4 +34,4 @@ class BrowserPluginRegistry
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_BROWSER_PLUGIN_BROWSER_PLUGIN_REGISTRY_H_
+#endif  // CONTENT_RENDERER_BROWSER_PLUGIN_OLD_BROWSER_PLUGIN_REGISTRY_H_

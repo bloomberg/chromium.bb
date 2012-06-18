@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_BROWSER_PLUGIN_BROWSER_PLUGIN_CHANNEL_MANAGER_H_
-#define CONTENT_RENDERER_BROWSER_PLUGIN_BROWSER_PLUGIN_CHANNEL_MANAGER_H_
+#ifndef CONTENT_RENDERER_BROWSER_PLUGIN_OLD_BROWSER_PLUGIN_CHANNEL_MANAGER_H_
+#define CONTENT_RENDERER_BROWSER_PLUGIN_OLD_BROWSER_PLUGIN_CHANNEL_MANAGER_H_
 #pragma once
 
 #include <set>
 
 #include "base/id_map.h"
 #include "content/public/renderer/render_process_observer.h"
-#include "content/renderer/browser_plugin/guest_to_embedder_channel.h"
+#include "content/renderer/browser_plugin/old/guest_to_embedder_channel.h"
 #include "content/renderer/render_view_impl.h"
 
 class GuestToEmbedderChannel;
