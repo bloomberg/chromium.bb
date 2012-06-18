@@ -28,6 +28,7 @@
 #include "base/message_pump_aurax11.h"
 #endif
 #include "base/nix/xdg_util.h"
+#include "base/synchronization/lock.h"
 #include "content/public/browser/browser_thread.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -72,28 +73,51 @@ class PowerSaveBlocker::Delegate
   // Picks an appropriate D-Bus API to use based on the desktop environment.
   Delegate(PowerSaveBlockerType type, const std::string& reason);
 
-  // Apply or remove the power save block, respectively. These methods should be
-  // called once each, on the same thread, per instance. They block waiting for
-  // the action to complete (with a timeout); the thread must thus allow IO.
-  void ApplyBlock();
-  void RemoveBlock();
+  // Post a task to initialize the delegate on the UI thread, which will itself
+  // then post a task to apply the power save block on the FILE thread.
+  void Init();
+
+  // Post a task to remove the power save block on the FILE thread, unless it
+  // hasn't yet been applied, in which case we just prevent it from applying.
+  void CleanUp();
 
  private:
   friend class base::RefCountedThreadSafe<Delegate>;
   ~Delegate() {}
 
+  // Selects an appropriate D-Bus API to use for this object. Must be called on
+  // the UI thread. Checks enqueue_apply_ once an API has been selected, and
+  // enqueues a call back to ApplyBlock() if it is true. See the comments for
+  // enqueue_apply_ below.
+  void InitOnUIThread();
+
+  // Apply or remove the power save block, respectively. These methods should be
+  // called once each, on the same thread, per instance. They block waiting for
+  // the action to complete (with a timeout); the thread must thus allow I/O.
+  void ApplyBlock(DBusAPI api);
+  void RemoveBlock(DBusAPI api);
+
   // If DPMS (the power saving system in X11) is not enabled, then we don't want
   // to try to disable power saving, since on some desktop environments that may
   // enable DPMS with very poor default settings (e.g. turning off the display
-  // after only 1 second).
+  // after only 1 second). Must be called on the UI thread.
   static bool DPMSEnabled();
 
   // Returns an appropriate D-Bus API to use based on the desktop environment.
+  // Must be called on the UI thread, as it may call DPMSEnabled() above.
   static DBusAPI SelectAPI();
 
   const PowerSaveBlockerType type_;
   const std::string reason_;
-  const DBusAPI api_;
+
+  // Initially, we post a message to the UI thread to select an API. When it
+  // finishes, it will post a message to the FILE thread to perform the actual
+  // application of the block, unless enqueue_apply_ is false. We set it to
+  // false when we post that message, or when RemoveBlock() is called before
+  // ApplyBlock() has run. Both api_ and enqueue_apply_ are guarded by lock_.
+  DBusAPI api_;
+  bool enqueue_apply_;
+  base::Lock lock_;
 
   scoped_refptr<dbus::Bus> bus_;
 
@@ -108,17 +132,51 @@ PowerSaveBlocker::Delegate::Delegate(PowerSaveBlockerType type,
                                      const std::string& reason)
     : type_(type),
       reason_(reason),
-      api_(SelectAPI()),
+      api_(NO_API),
+      enqueue_apply_(false),
       inhibit_cookie_(0) {
   // We're on the client's thread here, so we don't allocate the dbus::Bus
-  // object yet. We'll do it below in ApplyBlock(), on the FILE thread.
+  // object yet. We'll do it later in ApplyBlock(), on the FILE thread.
 }
 
-void PowerSaveBlocker::Delegate::ApplyBlock() {
+void PowerSaveBlocker::Delegate::Init() {
+  base::AutoLock lock(lock_);
+  DCHECK(!enqueue_apply_);
+  enqueue_apply_ = true;
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(&Delegate::InitOnUIThread, this));
+}
+
+void PowerSaveBlocker::Delegate::CleanUp() {
+  base::AutoLock lock(lock_);
+  if (enqueue_apply_) {
+    // If a call to ApplyBlock() has not yet been enqueued because we are still
+    // initializing on the UI thread, then just cancel it. We don't need to
+    // remove the block because we haven't even applied it yet.
+    enqueue_apply_ = false;
+  } else if (api_ != NO_API) {
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                            base::Bind(&Delegate::RemoveBlock, this, api_));
+  }
+}
+
+void PowerSaveBlocker::Delegate::InitOnUIThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  base::AutoLock lock(lock_);
+  api_ = SelectAPI();
+  if (enqueue_apply_ && api_ != NO_API) {
+    // The thread we use here becomes the origin and D-Bus thread for the D-Bus
+    // library, so we need to use the same thread above for RemoveBlock(). It
+    // must be a thread that allows I/O operations, so we use the FILE thread.
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                            base::Bind(&Delegate::ApplyBlock, this, api_));
+  }
+  enqueue_apply_ = false;
+}
+
+void PowerSaveBlocker::Delegate::ApplyBlock(DBusAPI api) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!bus_.get());  // ApplyBlock() should only be called once.
-  if (api_ == NO_API)
-    return;
 
   dbus::Bus::Options options;
   options.bus_type = dbus::Bus::SESSION;
@@ -129,9 +187,9 @@ void PowerSaveBlocker::Delegate::ApplyBlock() {
   scoped_ptr<dbus::MethodCall> method_call;
   scoped_ptr<dbus::MessageWriter> message_writer;
 
-  switch (api_) {
+  switch (api) {
     case NO_API:
-      NOTREACHED();  // We return early above.
+      NOTREACHED();  // We should never call this method with this value.
       return;
     case GNOME_API:
       object_proxy = bus_->GetObjectProxy(
@@ -196,18 +254,16 @@ void PowerSaveBlocker::Delegate::ApplyBlock() {
   }
 }
 
-void PowerSaveBlocker::Delegate::RemoveBlock() {
+void PowerSaveBlocker::Delegate::RemoveBlock(DBusAPI api) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  if (api_ == NO_API)
-    return;
   DCHECK(bus_.get());  // RemoveBlock() should only be called once.
 
   scoped_refptr<dbus::ObjectProxy> object_proxy;
   scoped_ptr<dbus::MethodCall> method_call;
 
-  switch (api_) {
+  switch (api) {
     case NO_API:
-      NOTREACHED();  // We return early above.
+      NOTREACHED();  // We should never call this method with this value.
       return;
     case GNOME_API:
       object_proxy = bus_->GetObjectProxy(
@@ -275,16 +331,11 @@ DBusAPI PowerSaveBlocker::Delegate::SelectAPI() {
 PowerSaveBlocker::PowerSaveBlocker(
     PowerSaveBlockerType type, const std::string& reason)
     : delegate_(new Delegate(type, reason)) {
-  // The thread we use here becomes the origin and D-Bus thread for the D-Bus
-  // library, so we need to use the same thread below in the destructor. It must
-  // be a thread that allows I/O operations.
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::Bind(&Delegate::ApplyBlock, delegate_));
+  delegate_->Init();
 }
 
 PowerSaveBlocker::~PowerSaveBlocker() {
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::Bind(&Delegate::RemoveBlock, delegate_));
+  delegate_->CleanUp();
 }
 
 }  // namespace content
