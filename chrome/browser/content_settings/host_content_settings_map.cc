@@ -83,31 +83,13 @@ bool SupportsResourceIdentifier(ContentSettingsType content_type) {
 
 HostContentSettingsMap::HostContentSettingsMap(
     PrefService* prefs,
-    ExtensionService* extension_service,
     bool incognito)
     : prefs_(prefs),
       is_off_the_record_(incognito) {
-  if (extension_service) {
-    content_settings::PlatformAppProvider* platform_app_provider =
-        new content_settings::PlatformAppProvider(extension_service);
-    platform_app_provider->AddObserver(this);
-    content_settings_providers_[PLATFORM_APP_PROVIDER] = platform_app_provider;
-  }
-
   content_settings::ObservableProvider* policy_provider =
       new content_settings::PolicyProvider(prefs_);
   policy_provider->AddObserver(this);
   content_settings_providers_[POLICY_PROVIDER] = policy_provider;
-
-  if (extension_service) {
-    // |extension_service| can be NULL in unit tests.
-    content_settings::ObservableProvider* extension_provider =
-        new content_settings::ExtensionProvider(
-            extension_service->GetContentSettingsStore(),
-            is_off_the_record_);
-    extension_provider->AddObserver(this);
-    content_settings_providers_[EXTENSION_PROVIDER] = extension_provider;
-  }
 
   content_settings::ObservableProvider* pref_provider =
       new content_settings::PrefProvider(prefs_, is_off_the_record_);

@@ -49,7 +49,6 @@ class HostContentSettingsMap
   };
 
   HostContentSettingsMap(PrefService* prefs,
-                         ExtensionService* extension_service,
                          bool incognito);
 
   // In some cases, the ExtensionService is not available at the time the

@@ -306,8 +306,8 @@ HostContentSettingsMap* OffTheRecordProfileImpl::GetHostContentSettingsMap() {
   // ensure the preferences have been migrated.
   profile_->GetHostContentSettingsMap();
   if (!host_content_settings_map_.get()) {
-    host_content_settings_map_ = new HostContentSettingsMap(
-        GetPrefs(), GetExtensionService(), true);
+    host_content_settings_map_ = new HostContentSettingsMap(GetPrefs(), true);
+    host_content_settings_map_->RegisterExtensionService(GetExtensionService());
   }
   return host_content_settings_map_.get();
 }

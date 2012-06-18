@@ -624,7 +624,6 @@ TEST_F(HostContentSettingsMapTest, OffTheRecord) {
       profile.GetHostContentSettingsMap();
   scoped_refptr<HostContentSettingsMap> otr_map(
       new HostContentSettingsMap(profile.GetPrefs(),
-                                 profile.GetExtensionService(),
                                  true));
 
   GURL host("http://example.com/");

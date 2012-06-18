@@ -11,6 +11,7 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
@@ -22,6 +23,13 @@ namespace content_settings {
 
 PlatformAppProvider::PlatformAppProvider(ExtensionService* extension_service)
     : registrar_(new content::NotificationRegistrar) {
+  // Whitelist all extensions loaded so far.
+  const ExtensionSet* extensions = extension_service->extensions();
+  for (ExtensionSet::const_iterator it = extensions->begin();
+       it != extensions->end(); ++it) {
+    if ((*it)->plugins().size() > 0)
+      SetContentSettingForExtension(*it, CONTENT_SETTING_ALLOW);
+  }
   Profile* profile = extension_service->profile();
   registrar_->Add(this, chrome::NOTIFICATION_EXTENSION_HOST_CREATED,
                   content::Source<Profile>(profile));
