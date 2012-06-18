@@ -30,17 +30,16 @@ std::string GetTimestampString() {
                       tex.hour, tex.minute, tex.second);
 }
 
-// Helper methods to calculate plane offset given the coordinates.
-static int CalculateRGBOffset(int x, int y, int stride) {
+int CalculateRGBOffset(int x, int y, int stride) {
   return stride * y + kBytesPerPixelRGB32 * x;
 }
 
-static int CalculateYOffset(int x, int y, int stride) {
+int CalculateYOffset(int x, int y, int stride) {
   DCHECK(((x & 1) == 0) && ((y & 1) == 0));
   return stride * y + x;
 }
 
-static int CalculateUVOffset(int x, int y, int stride) {
+int CalculateUVOffset(int x, int y, int stride) {
   DCHECK(((x & 1) == 0) && ((y & 1) == 0));
   return stride * y / 2 + x / 2;
 }

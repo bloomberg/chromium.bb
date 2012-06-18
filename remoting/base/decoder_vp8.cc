@@ -133,12 +133,43 @@ void DecoderVp8::RenderFrame(const SkISize& view_size,
 
   SkIRect source_clip = SkIRect::MakeWH(last_image_->d_w, last_image_->d_h);
 
-  // ScaleYUVToRGB32WithRect doesn't support up-scaling, and our web-app never
-  // intentionally up-scales, so if we see up-scaling (e.g. during host resize
-  // or if the user applies page zoom) just don't render anything.
-  // TODO(wez): Remove this hack when ScaleYUVToRGB32WithRect can up-scale.
-  if (source_clip.width() < view_size.width() ||
-      source_clip.height() < view_size.height()) {
+  // ScaleYUVToRGB32WithRect does not currently support up-scaling.  We won't
+  // be asked to up-scale except during resizes or if page zoom is >100%, so
+  // we work-around the limitation by using the slower ScaleYUVToRGB32.
+  // TODO(wez): Remove this hack if/when ScaleYUVToRGB32WithRect can up-scale.
+  if (!updated_region_.isEmpty() &&
+      (source_clip.width() < view_size.width() ||
+       source_clip.height() < view_size.height())) {
+    // We're scaling only |clip_area| into the |image_buffer|, so we need to
+    // work out which source rectangle that corresponds to.
+    SkIRect source_rect = ScaleRect(clip_area, view_size, screen_size_);
+    source_rect = SkIRect::MakeLTRB(RoundToTwosMultiple(source_rect.left()),
+                                    RoundToTwosMultiple(source_rect.top()),
+                                    source_rect.right(),
+                                    source_rect.bottom());
+    int y_offset = CalculateYOffset(source_rect.x(),
+                                    source_rect.y(),
+                                    last_image_->stride[0]);
+    int uv_offset = CalculateUVOffset(source_rect.x(),
+                                      source_rect.y(),
+                                      last_image_->stride[1]);
+    ScaleYUVToRGB32(last_image_->planes[0] + y_offset,
+                    last_image_->planes[1] + uv_offset,
+                    last_image_->planes[2] + uv_offset,
+                    image_buffer,
+                    source_rect.width(),
+                    source_rect.height(),
+                    clip_area.width(),
+                    clip_area.height(),
+                    last_image_->stride[0],
+                    last_image_->stride[1],
+                    image_stride,
+                    media::YV12,
+                    media::ROTATE_0,
+                    media::FILTER_BILINEAR);
+
+    output_region->op(clip_area, SkRegion::kUnion_Op);
+    updated_region_.op(source_rect, SkRegion::kDifference_Op);
     return;
   }
 

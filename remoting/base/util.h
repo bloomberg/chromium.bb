@@ -15,6 +15,14 @@ namespace remoting {
 // Return a string that contains the current date formatted as 'MMDD/HHMMSS:'.
 std::string GetTimestampString();
 
+// Calculate the offset of a specific pixel in an RGB32 buffer.
+int CalculateRGBOffset(int x, int y, int stride);
+
+// Calculate the offset of a specific pixel in a YV12/YUV420 buffer. Note that
+// the X and Y coordinates must both be even owing to the YV12 buffer layout.
+int CalculateYOffset(int x, int y, int stride);
+int CalculateUVOffset(int x, int y, int stride);
+
 // Convert and scale YUV to RGB32 on a specific rectangle. The source and
 // destination buffers are assumed to contain only |source_buffer_rect| and
 // |dest_buffer_rect| areas correspondingly. The scaling factor is determined
