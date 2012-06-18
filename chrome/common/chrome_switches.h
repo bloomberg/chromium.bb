@@ -359,6 +359,7 @@ extern const char kEnableKioskMode[];
 extern const char kEnableMobileSetupDialog[];
 extern const char kEnableONCPolicy[];
 extern const char kEnableStaticIPConfig[];
+extern const char kEnableUnsupportedBluetoothDevices[];
 extern const char kExperimentalWallpaperUI[];
 extern const char kKioskModeScreensaverPath[];
 extern const char kLoginManager[];

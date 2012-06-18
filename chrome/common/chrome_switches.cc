@@ -1321,6 +1321,11 @@ const char kEnableONCPolicy[]               = "enable-onc-policy";
 // default.
 const char kEnableStaticIPConfig[]          = "enable-static-ip-config";
 
+// Enables discovery and interaction with Bluetooth devices that may not be
+// supported by ChromeOS.
+const char kEnableUnsupportedBluetoothDevices[] =
+    "enable-unsupported-bluetooth-devices";
+
 // Enables the experimental wallpaper picker UI.
 const char kExperimentalWallpaperUI[] = "experimental-wallpaper-ui";
 

@@ -5413,6 +5413,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_STATIC_IP_CONFIG_DESCRIPTION" desc="Description of the static ip config lab.">
         Enables static ip configuration. May not work.
       </message>
+      <message name="IDS_FLAGS_UNSUPPORTED_BLUETOOTH_DEVICES_NAME" desc="Name of the flag to enable support for unsupported bluetooth devices.">
+        Enable unsupported bluetooth devices
+      </message>
+      <message name="IDS_FLAGS_UNSUPPORTED_BLUETOOTH_DEVICES_DESCRIPTION" desc="Description of the flag to enable support for unsupported bluetooth devices.">
+        Enables discovery and interaction with Bluetooth devices that may not be supported by ChromeOS.
+      </message>
       <message name="IDS_FLAGS_TAB_GROUPS_CONTEXT_MENU_NAME" desc="Name of the context menu for enabling tab grouping in the context menu">
         Add grouping to tab context menu
       </message>
