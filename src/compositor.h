@@ -527,8 +527,6 @@ weston_output_damage(struct weston_output *output);
 void
 weston_output_do_read_pixels(struct weston_output *output);
 void
-weston_compositor_repick(struct weston_compositor *compositor);
-void
 weston_compositor_schedule_repaint(struct weston_compositor *compositor);
 void
 weston_compositor_fade(struct weston_compositor *compositor, float tint);

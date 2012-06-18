@@ -614,7 +614,7 @@ weston_device_repick(struct wl_seat *seat)
 					         &seat->pointer->grab->y);
 }
 
-WL_EXPORT void
+static void
 weston_compositor_repick(struct weston_compositor *compositor)
 {
 	struct weston_seat *seat;
