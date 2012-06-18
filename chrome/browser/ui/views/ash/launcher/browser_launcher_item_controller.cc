@@ -73,6 +73,10 @@ void BrowserLauncherItemController::Init() {
 // static
 BrowserLauncherItemController* BrowserLauncherItemController::Create(
     Browser* browser) {
+  // Under testing this can be called before the controller is created.
+  if (!ChromeLauncherController::instance())
+    return NULL;
+
   Type type;
   std::string app_id;
   if (browser->type() == Browser::TYPE_TABBED ||
