@@ -8,6 +8,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
+#include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
+#include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/size.h"
 #include "ui/views/controls/webview/webview.h"
@@ -29,8 +31,10 @@ class ConstrainedWebDialogDelegateViews
   ConstrainedWebDialogDelegateViews(
       Profile* profile,
       WebDialogDelegate* delegate,
-      WebDialogWebContentsDelegate* tab_delegate)
-      : ConstrainedWebDialogDelegateBase(profile, delegate, tab_delegate) {
+      WebDialogWebContentsDelegate* tab_delegate,
+      views::WebView* view)
+      : ConstrainedWebDialogDelegateBase(profile, delegate, tab_delegate),
+        view_(view) {
     WebContents* web_contents = tab()->web_contents();
     if (tab_delegate) {
       set_override_tab_delegate(tab_delegate);
@@ -47,7 +51,19 @@ class ConstrainedWebDialogDelegateViews
     window()->CloseConstrainedWindow();
   }
 
+  // contents::WebContentsDelegate
+  virtual void HandleKeyboardEvent(
+      const content::NativeWebKeyboardEvent& event) OVERRIDE {
+    unhandled_keyboard_event_handler_.HandleKeyboardEvent(
+        event, view_->GetFocusManager());
+  }
+
  private:
+  // Converts keyboard events on the WebContents to accelerators.
+  UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
+
+  views::WebView* view_;
+
   DISALLOW_COPY_AND_ASSIGN(ConstrainedWebDialogDelegateViews);
 };
 
@@ -113,6 +129,13 @@ class ConstrainedWebDialogDelegateViewViews
   }
 
   // views::WebView overrides.
+  virtual bool AcceleratorPressed(
+      const ui::Accelerator& accelerator) OVERRIDE {
+    // Pressing ESC closes the dialog.
+    DCHECK_EQ(ui::VKEY_ESCAPE, accelerator.key_code());
+    window()->CloseConstrainedWindow();
+    return true;
+  }
   virtual gfx::Size GetPreferredSize() OVERRIDE {
     gfx::Size size;
     if (!impl_->closed_via_webui())
@@ -133,8 +156,13 @@ ConstrainedWebDialogDelegateViewViews::ConstrainedWebDialogDelegateViewViews(
     : views::WebView(profile),
       impl_(new ConstrainedWebDialogDelegateViews(profile,
                                                   delegate,
-                                                  tab_delegate)) {
+                                                  tab_delegate,
+                                                  this)) {
   SetWebContents(tab()->web_contents());
+
+  // Pressing ESC closes the dialog.
+  set_allow_accelerators(true);
+  AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
 }
 
 ConstrainedWebDialogDelegateViewViews::~ConstrainedWebDialogDelegateViewViews() {
