@@ -3025,7 +3025,7 @@ FileManager.prototype = {
     galleryFrame.scrolling = 'no';
     galleryFrame.setAttribute('webkitallowfullscreen', true);
 
-    var dirPath = this.directoryModel_.getCurrentDirEntry().fullPath;
+    var dirPath = this.directoryModel_.getCurrentDirPath();
     // Push a temporary state which will be replaced every time an individual
     // item is selected in the Gallery.
     this.updateLocation_(false /*push*/, dirPath);
@@ -3496,8 +3496,9 @@ FileManager.prototype = {
       return;
     }
 
-    if (this.selection.totalCount != 1) {
-      console.log('Invalid selection');
+    var listItem = this.findListItemForEvent_(event);
+    if (!listItem || !listItem.selected ||
+        this.selection.totalCount != 1) {
       return;
     }
     var entry = this.selection.entries[0];

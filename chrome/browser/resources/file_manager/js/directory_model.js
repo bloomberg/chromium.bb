@@ -1146,7 +1146,7 @@ DirectoryModel.prototype.resolveRoots_ = function(callback) {
   }
 
   function onSingleError(index, error, defaultValue) {
-    groups[index] = defailtValue || [];
+    groups[index] = defaultValue || [];
     done();
   }
 
