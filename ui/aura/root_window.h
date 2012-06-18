@@ -129,7 +129,7 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   void ShowCursor(bool show);
 
   // Moves the cursor to the specified location relative to the root window.
-  virtual void MoveCursorTo(const gfx::Point& location) OVERRIDE;
+  void MoveCursorTo(const gfx::Point& location);
 
   // Clips the cursor movement to the root_window.
   bool ConfineCursorToWindow();
@@ -266,9 +266,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   virtual void UpdateCapture(Window* old_capture, Window* new_capture) OVERRIDE;
   virtual void SetNativeCapture() OVERRIDE;
   virtual void ReleaseNativeCapture() OVERRIDE;
-
-  // Exposes RootWindowHost::QueryMouseLocation() for test purposes.
-  gfx::Point QueryMouseLocationForTest() const;
 
  private:
   friend class Window;

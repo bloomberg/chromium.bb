@@ -715,7 +715,7 @@ bool RenderWidgetHostViewAura::LockMouse() {
   window_->SetCapture();
   aura::Env::GetInstance()->cursor_manager()->ShowCursor(false);
   synthetic_move_sent_ = true;
-  window_->MoveCursorTo(gfx::Rect(window_->bounds().size()).CenterPoint());
+  root_window->MoveCursorTo(window_->bounds().CenterPoint());
   if (aura::client::GetTooltipClient(root_window))
     aura::client::GetTooltipClient(root_window)->SetTooltipsEnabled(false);
   return true;
@@ -729,7 +729,7 @@ void RenderWidgetHostViewAura::UnlockMouse() {
   mouse_locked_ = false;
 
   window_->ReleaseCapture();
-  window_->MoveCursorTo(unlocked_mouse_position_);
+  root_window->MoveCursorTo(unlocked_global_mouse_position_);
   aura::Env::GetInstance()->cursor_manager()->ShowCursor(true);
   if (aura::client::GetTooltipClient(root_window))
     aura::client::GetTooltipClient(root_window)->SetTooltipsEnabled(true);
@@ -1013,11 +1013,11 @@ bool RenderWidgetHostViewAura::OnMouseEvent(aura::MouseEvent* event) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewAura::OnMouseEvent");
   if (mouse_locked_) {
     WebKit::WebMouseEvent mouse_event = content::MakeWebMouseEvent(event);
-    gfx::Point center(gfx::Rect(window_->bounds().size()).CenterPoint());
+    gfx::Point center = window_->bounds().CenterPoint();
 
     bool is_move_to_center_event = (event->type() == ui::ET_MOUSE_MOVED ||
         event->type() == ui::ET_MOUSE_DRAGGED) &&
-        mouse_event.x == center.x() && mouse_event.y == center.y();
+        mouse_event.globalX == center.x() && mouse_event.globalY == center.y();
 
     ModifyEventMovementAndCoords(&mouse_event);
 
@@ -1028,7 +1028,7 @@ bool RenderWidgetHostViewAura::OnMouseEvent(aura::MouseEvent* event) {
       // Check if the mouse has reached the border and needs to be centered.
       if (ShouldMoveToCenter()) {
         synthetic_move_sent_ = true;
-        window_->MoveCursorTo(center);
+        window_->GetRootWindow()->MoveCursorTo(center);
       }
 
       // Forward event to renderer.
