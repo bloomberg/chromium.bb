@@ -7,11 +7,6 @@
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/toolkit_extra_parts.h"
 #include "chrome/browser/ui/ash/ash_init.h"
-#include "ui/aura/desktop/desktop_stacking_client.h"
-#include "ui/aura/desktop/desktop_screen.h"
-#include "ui/aura/env.h"
-#include "ui/aura/single_monitor_manager.h"
-#include "ui/gfx/screen.h"
 
 ChromeBrowserMainExtraPartsAsh::ChromeBrowserMainExtraPartsAsh() {
 }
@@ -20,13 +15,8 @@ ChromeBrowserMainExtraPartsAsh::~ChromeBrowserMainExtraPartsAsh() {
 }
 
 void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
-  if (browser::ShouldOpenAshOnStartup()) {
+  if (browser::ShouldOpenAshOnStartup())
     browser::OpenAsh();
-  } else {
-    aura::Env::GetInstance()->SetMonitorManager(new aura::SingleMonitorManager);
-    stacking_client_.reset(new aura::DesktopStackingClient);
-    gfx::Screen::SetInstance(aura::CreateDesktopScreen());
-  }
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {

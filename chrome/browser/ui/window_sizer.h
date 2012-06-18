@@ -123,9 +123,6 @@ class WindowSizer {
   // no saved window placement in prefs. This function determines the default
   // size based on monitor size, etc.
   void GetDefaultWindowBounds(gfx::Rect* default_bounds) const;
-#if defined(USE_ASH)
-  void GetDefaultWindowBoundsAsh(gfx::Rect* default_bounds) const;
-#endif
 
   // Adjusts |bounds| to be visible on-screen, biased toward the work area of
   // the monitor containing |other_bounds|.  Despite the name, this doesn't
@@ -146,10 +143,6 @@ class WindowSizer {
   // another algorithm should get used to determine the correct bounds.
   bool GetBoundsIgnoringPreviousState(const gfx::Rect& specified_bounds,
                                       gfx::Rect* bounds) const;
-#if defined(USE_ASH)
-  bool GetBoundsIgnoringPreviousStateAsh(const gfx::Rect& specified_bounds,
-                                         gfx::Rect* bounds) const;
-#endif
 
   // Providers for persistent storage and monitor metrics.
   scoped_ptr<StateProvider> state_provider_;

@@ -71,7 +71,7 @@ aura::Window* GetTopWindow() {
 
 }  // namespace
 
-bool WindowSizer::GetBoundsIgnoringPreviousStateAsh(
+bool WindowSizer::GetBoundsIgnoringPreviousState(
     const gfx::Rect& specified_bounds,
     gfx::Rect* bounds) const {
   *bounds = specified_bounds;
@@ -96,7 +96,7 @@ bool WindowSizer::GetBoundsIgnoringPreviousStateAsh(
   return false;
 }
 
-void WindowSizer::GetDefaultWindowBoundsAsh(gfx::Rect* default_bounds) const {
+void WindowSizer::GetDefaultWindowBounds(gfx::Rect* default_bounds) const {
   DCHECK(default_bounds);
   DCHECK(monitor_info_provider_.get());
 

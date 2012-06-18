@@ -8,7 +8,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/ash_init.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -209,14 +208,8 @@ bool WindowSizer::GetSavedWindowBounds(gfx::Rect* bounds) const {
   return true;
 }
 
+#if !defined(USE_ASH)
 void WindowSizer::GetDefaultWindowBounds(gfx::Rect* default_bounds) const {
-#if defined(USE_ASH)
-  // TODO(beng): insufficient but currently necessary. http://crbug.com/133312
-  if (browser::ShouldOpenAshOnStartup()) {
-    GetDefaultWindowBoundsAsh(default_bounds);
-    return;
-  }
-#endif
   DCHECK(default_bounds);
   DCHECK(monitor_info_provider_.get());
 
@@ -249,6 +242,7 @@ void WindowSizer::GetDefaultWindowBounds(gfx::Rect* default_bounds) const {
                           kWindowTilePixels + work_area.y(),
                           default_width, default_height);
 }
+#endif // defined(USE_ASH)
 
 void WindowSizer::AdjustBoundsToBeVisibleOnMonitorContaining(
     const gfx::Rect& other_bounds,
@@ -324,13 +318,10 @@ void WindowSizer::AdjustBoundsToBeVisibleOnMonitorContaining(
 #endif  // defined(OS_MACOSX)
 }
 
+#if !defined(USE_ASH)
 bool WindowSizer::GetBoundsIgnoringPreviousState(
     const gfx::Rect& specified_bounds,
     gfx::Rect* bounds) const {
-#if defined(USE_ASH)
-  // TODO(beng): insufficient but currently necessary. http://crbug.com/133312
-  if (browser::ShouldOpenAshOnStartup())
-    return GetBoundsIgnoringPreviousStateAsh(specified_bounds, bounds);
-#endif
   return false;
 }
+#endif

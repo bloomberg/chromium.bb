@@ -108,7 +108,6 @@
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_model.h"
 #include "ash/shell.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/views/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/views/ash/launcher/browser_launcher_item_controller.h"
 #include "chrome/browser/ui/views/ash/window_positioner.h"
@@ -2412,8 +2411,7 @@ void BrowserView::SetToolbar(ToolbarView* toolbar) {
 
 void BrowserView::CreateLauncherIcon() {
 #if defined(USE_ASH)
-  if (browser::IsNativeWindowInAsh(GetNativeWindow()) &&
-      !launcher_item_controller_.get()) {
+  if (!launcher_item_controller_.get()) {
     launcher_item_controller_.reset(
         BrowserLauncherItemController::Create(browser_.get()));
   }
