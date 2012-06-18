@@ -4624,7 +4624,13 @@ FileManager.prototype = {
       if (self.directoryModel_.getFileList().length == 0 && counter == 0) {
         // Only show the full page banner if the header banner was never shown.
         // Do not increment the counter.
-        showBanner('page', 'GDATA_WELCOME_TEXT_LONG');
+        // The timeout below is required because sometimes another
+        // 'rescan-completed' event arrives shortly with non-empty file list.
+        setTimeout(function() {
+          if (self.isOnGData() &&
+              self.dialogContainer_.getAttribute('gdrive-welcome') != 'header')
+            showBanner('page', 'GDATA_WELCOME_TEXT_LONG');
+        }, 2000);
       } else if (counter < WELCOME_HEADER_COUNTER_LIMIT) {
         // We do not want to increment the counter when the user navigates
         // between different directories on GDrive, but we increment the counter
