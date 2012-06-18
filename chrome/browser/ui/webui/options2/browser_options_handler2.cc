@@ -150,6 +150,7 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
 
   static OptionsStringResource resources[] = {
     { "advancedSectionTitleCloudPrint", IDS_GOOGLE_CLOUD_PRINT },
+    { "currentUserOnly", IDS_OPTIONS_CURRENT_USER_ONLY },
     { "advancedSectionTitleContent",
       IDS_OPTIONS_ADVANCED_SECTION_TITLE_CONTENT },
     { "advancedSectionTitleLanguages",

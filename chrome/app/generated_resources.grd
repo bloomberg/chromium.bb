@@ -9387,6 +9387,9 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_GOOGLE_CLOUD_PRINT" desc="The name of the Google Cloud Print product.">
         Google Cloud Print
       </message>
+      <message name="IDS_OPTIONS_CURRENT_USER_ONLY" desc="In the multi profiles user list, the tooltip text noticing that only the current user can modify these settings.">
+        You can only edit settings for the current user. Switch to this user to edit settings for it.
+      </message>
       <if expr="pp_ifdef('android')">
         <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_DISABLED_LABEL" desc="Mobile: The label of the cloud print setup button when it hasn't been set up yet.">
           <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> lets you access this mobile device's printers from anywhere. Click to enable.

@@ -963,6 +963,10 @@ cr.define('options', function() {
       var hasSingleProfile = profilesList.dataModel.length == 1;
       $('profiles-manage').disabled = !hasSelection ||
           !selectedProfile.isCurrentProfile;
+      if (hasSelection && !selectedProfile.isCurrentProfile)
+        $('profiles-manage').title = loadTimeData.getString('currentUserOnly');
+      else
+        $('profiles-manage').title = '';
       $('profiles-delete').disabled = !hasSelection && !hasSingleProfile;
       var importData = $('import-data');
       if (importData) {
