@@ -4,6 +4,9 @@
 
 #include "chrome/browser/memory_details.h"
 
+#include <sys/types.h>
+#include <unistd.h>
+
 #include <map>
 #include <set>
 
