@@ -320,18 +320,36 @@ html[oobe=new] #footer {
   display: none;
 }
 
-#progress {
+html[oobe=old] #progress {
   -webkit-box-align: center;
+  display: -webkit-box;
+}
+
+html[oobe=old] #progress-dots {
+  display: none;
+}
+
+html[oobe=new] #progress-dots {
+  -webkit-box-pack: center;
+  -webkit-margin-before: 15px;
   display: -webkit-box;
 }
 
 .progdot {
   -webkit-margin-end: 12px;
   background: black;
+  opacity: 0.1;
+}
+
+html[oobe=old] .progdot {
   border-radius: 2px;
   height: 8px;
-  opacity: 0.1;
   width: 8px;
+}
+
+html[oobe=new] .progdot {
+  height: 10px;
+  width: 10px;
 }
 
 .progdot-active {
@@ -1125,7 +1143,11 @@ body.login-display #footer {
   width: 640px;  /* Same width as .step screens */
 }
 
-body.login-display #progress {
+html[oobe=old] body.login-display #progress {
+  visibility: hidden;
+}
+
+html[oobe=new] body.login-display #progress-dots {
   visibility: hidden;
 }
 

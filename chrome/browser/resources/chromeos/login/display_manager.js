@@ -257,7 +257,11 @@ cr.define('cr.ui.login', function() {
       var dot = document.createElement('div');
       dot.id = screenId + '-dot';
       dot.className = 'progdot';
-      $('progress').appendChild(dot);
+
+      if (this.isNewOobe())
+        $('progress-dots').appendChild(dot);
+      else
+        $('progress').appendChild(dot);
 
       this.appendButtons_(el.buttons, screenId);
     },
