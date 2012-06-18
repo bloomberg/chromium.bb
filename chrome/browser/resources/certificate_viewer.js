@@ -46,6 +46,12 @@ cr.define('cert_viewer', function() {
     stripGtkAccessorKeys();
 
     $('export').onclick = exportCertificate;
+
+    // TODO(kochi): ESC key should be handled in the views window side.
+    document.addEventListener('keydown', function(e) {
+      if (e.keyCode == 27)  // ESC
+        chrome.send('DialogClose');
+    });
   }
 
   /**

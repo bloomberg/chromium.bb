@@ -625,7 +625,6 @@ cr.define('print_preview', function() {
      */
     onKeyDown_: function(e) {
       // Escape key closes the dialog.
-      // <if expr="not pp_ifdef('toolkit_views')">
       if (e.keyCode == 27 && !e.shiftKey && !e.ctrlKey && !e.altKey &&
           !e.metaKey) {
         if (this.destinationSearch_.getIsVisible()) {
@@ -638,7 +637,6 @@ cr.define('print_preview', function() {
         e.preventDefault();
         return;
       }
-      // </if>
 
       // Ctrl + Shift + p / Mac equivalent.
       if (e.keyCode == 80) {
