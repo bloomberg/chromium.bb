@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/eintr_wrapper.h"
 #include "base/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_reader.h"
@@ -18,8 +17,6 @@
 #include "base/metrics/histogram.h"
 #include "base/platform_file.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "base/threading/thread_restrictions.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/gdata/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/gdata/gdata.pb.h"
@@ -712,9 +709,8 @@ GDataFileSystem::GDataFileSystem(
       documents_service_(documents_service),
       update_timer_(true /* retain_user_task */, true /* is_repeating */),
       hide_hosted_docs_(false),
-      ui_weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(
-          new base::WeakPtrFactory<GDataFileSystem>(this))),
-      ui_weak_ptr_(ui_weak_ptr_factory_->GetWeakPtr()),
+      ui_weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      ui_weak_ptr_(ui_weak_ptr_factory_.GetWeakPtr()),
       sequence_token_(sequence_token) {
   // Should be created from the file browser extension API on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

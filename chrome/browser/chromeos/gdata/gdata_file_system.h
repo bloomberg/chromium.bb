@@ -15,16 +15,11 @@
 #include "base/observer_list.h"
 #include "base/platform_file.h"
 #include "base/timer.h"
-#include "base/synchronization/lock.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/gdata/gdata_cache.h"
 #include "chrome/browser/chromeos/gdata/gdata_files.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "content/public/browser/notification_observer.h"
-
-namespace base {
-class WaitableEvent;
-}
 
 namespace gdata {
 
@@ -34,7 +29,7 @@ struct UploadFileInfo;
 
 namespace {
 struct LoadRootFeedParams;
-}
+}  // namespace
 
 // Information about search result returned by Search Async callback.
 // This is data needed to create a file system entry that will be used by file
@@ -1147,7 +1142,7 @@ class GDataFileSystem : public GDataFileSystemInterface,
   scoped_ptr<PrefChangeRegistrar> pref_registrar_;
 
   // WeakPtrFactory and WeakPtr bound to the UI thread.
-  scoped_ptr<base::WeakPtrFactory<GDataFileSystem> > ui_weak_ptr_factory_;
+  base::WeakPtrFactory<GDataFileSystem> ui_weak_ptr_factory_;
   base::WeakPtr<GDataFileSystem> ui_weak_ptr_;
 
   ObserverList<Observer> observers_;
