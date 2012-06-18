@@ -19,6 +19,7 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_notifications.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/in_memory_database.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
 #include "chrome/browser/predictors/predictor_database.h"
@@ -432,7 +433,7 @@ void AutocompleteActionPredictor::CreateCaches(
 
   // If the history service is ready, delete any old or invalid entries.
   HistoryService* history_service =
-      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (!TryDeleteOldEntries(history_service)) {
     // Wait for the notification that the history service is ready and the URL
     // DB is loaded.

@@ -14,6 +14,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/in_memory_database.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
@@ -119,7 +120,8 @@ class AutocompleteActionPredictorTest : public testing::Test {
 
   history::URLID AddRowToHistory(const TestUrlInfo& test_row) {
     HistoryService* history =
-        profile_.GetHistoryService(Profile::EXPLICIT_ACCESS);
+        HistoryServiceFactory::GetForProfile(&profile_,
+                                             Profile::EXPLICIT_ACCESS);
     CHECK(history);
     history::URLDatabase* url_db = history->InMemoryDatabase();
     CHECK(url_db);
@@ -182,7 +184,8 @@ class AutocompleteActionPredictorTest : public testing::Test {
   void DeleteOldIdsFromCaches(
       std::vector<AutocompleteActionPredictorTable::Row::Id>* id_list) {
     HistoryService* history_service =
-        profile_.GetHistoryService(Profile::EXPLICIT_ACCESS);
+        HistoryServiceFactory::GetForProfile(&profile_,
+                                             Profile::EXPLICIT_ACCESS);
     ASSERT_TRUE(history_service);
 
     history::URLDatabase* url_db = history_service->InMemoryDatabase();

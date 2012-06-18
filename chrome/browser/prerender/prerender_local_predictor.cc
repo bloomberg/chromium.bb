@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_database.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/page_transition_types.h"
 
@@ -308,7 +309,7 @@ HistoryService* PrerenderLocalPredictor::GetHistoryIfExists() const {
   Profile* profile = prerender_manager_->profile();
   if (!profile)
     return NULL;
-  return profile->GetHistoryServiceWithoutCreating();
+  return HistoryServiceFactory::GetForProfileIfExists(profile);
 }
 
 void PrerenderLocalPredictor::Init() {
