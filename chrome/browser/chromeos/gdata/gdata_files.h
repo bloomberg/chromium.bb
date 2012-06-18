@@ -101,7 +101,7 @@ class GDataEntry {
       PlatformFileInfoProto* proto);
 
   // Converts to/from proto.
-  void FromProto(const GDataEntryProto& proto);
+  bool FromProto(const GDataEntryProto& proto) WARN_UNUSED_RESULT;
   void ToProto(GDataEntryProto* proto) const;
 
   // Escapes forward slashes from file names with magic unicode character
@@ -217,7 +217,7 @@ class GDataFile : public GDataEntry {
                                        GDataRootDirectory* root);
 
   // Converts to/from proto.
-  void FromProto(const GDataFileProto& proto);
+  bool FromProto(const GDataFileProto& proto) WARN_UNUSED_RESULT;
   void ToProto(GDataFileProto* proto) const;
 
   DocumentEntry::EntryKind kind() const { return kind_; }
@@ -266,7 +266,7 @@ class GDataDirectory : public GDataEntry {
                                        GDataRootDirectory* root);
 
   // Converts to/from proto.
-  void FromProto(const GDataDirectoryProto& proto);
+  bool FromProto(const GDataDirectoryProto& proto) WARN_UNUSED_RESULT;
   void ToProto(GDataDirectoryProto* proto) const;
 
   // Adds child file to the directory and takes over the ownership of |file|
@@ -384,7 +384,7 @@ class GDataRootDirectory : public GDataDirectory {
   bool ParseFromString(const std::string& serialized_proto);
 
   // Converts to/from proto.
-  void FromProto(const GDataRootDirectoryProto& proto);
+  bool FromProto(const GDataRootDirectoryProto& proto) WARN_UNUSED_RESULT;
   void ToProto(GDataRootDirectoryProto* proto) const;
 
  private:

@@ -596,7 +596,7 @@ void GDataEntry::ConvertPlatformFileInfoToProto(
   proto->set_creation_time(file_info.creation_time.ToInternalValue());
 }
 
-void GDataEntry::FromProto(const GDataEntryProto& proto) {
+bool GDataEntry::FromProto(const GDataEntryProto& proto) {
   ConvertProtoToPlatformFileInfo(proto.file_info(), &file_info_);
 
   // Don't copy from proto.file_name() as file_name_ is computed in
@@ -607,6 +607,8 @@ void GDataEntry::FromProto(const GDataEntryProto& proto) {
   edit_url_ = GURL(proto.edit_url());
   content_url_ = GURL(proto.content_url());
   SetFileNameFromTitle();
+
+  return true;
 }
 
 void GDataEntry::ToProto(GDataEntryProto* proto) const {
@@ -622,9 +624,12 @@ void GDataEntry::ToProto(GDataEntryProto* proto) const {
   proto->set_content_url(content_url_.spec());
 }
 
-void GDataFile::FromProto(const GDataFileProto& proto) {
+bool GDataFile::FromProto(const GDataFileProto& proto) {
   DCHECK(!proto.gdata_entry().file_info().is_directory());
-  GDataEntry::FromProto(proto.gdata_entry());
+
+  if (!GDataEntry::FromProto(proto.gdata_entry()))
+    return false;
+
   kind_ = DocumentEntry::EntryKind(proto.kind());
   thumbnail_url_ = GURL(proto.thumbnail_url());
   alternate_url_ = GURL(proto.alternate_url());
@@ -634,6 +639,8 @@ void GDataFile::FromProto(const GDataFileProto& proto) {
   file_md5_ = proto.file_md5();
   document_extension_ = proto.document_extension();
   is_hosted_document_ = proto.is_hosted_document();
+
+  return true;
 }
 
 void GDataFile::ToProto(GDataFileProto* proto) const {
@@ -650,23 +657,34 @@ void GDataFile::ToProto(GDataFileProto* proto) const {
   proto->set_is_hosted_document(is_hosted_document_);
 }
 
-void GDataDirectory::FromProto(const GDataDirectoryProto& proto) {
+bool GDataDirectory::FromProto(const GDataDirectoryProto& proto) {
   DCHECK(proto.gdata_entry().file_info().is_directory());
-  GDataEntry::FromProto(proto.gdata_entry());
+
+  if (!GDataEntry::FromProto(proto.gdata_entry()))
+    return false;
+
   start_feed_url_ = GURL(proto.start_feed_url());
   next_feed_url_ = GURL(proto.next_feed_url());
   upload_url_ = GURL(proto.upload_url());
   origin_ = ContentOrigin(proto.origin());
   for (int i = 0; i < proto.child_files_size(); ++i) {
     scoped_ptr<GDataFile> file(new GDataFile(this, root_));
-    file->FromProto(proto.child_files(i));
+    if (!file->FromProto(proto.child_files(i))) {
+      RemoveChildren();
+      return false;
+    }
     AddEntry(file.release());
   }
   for (int i = 0; i < proto.child_directories_size(); ++i) {
     scoped_ptr<GDataDirectory> dir(new GDataDirectory(this, root_));
-    dir->FromProto(proto.child_directories(i));
+    if (!dir->FromProto(proto.child_directories(i))) {
+      RemoveChildren();
+      return false;
+    }
     AddEntry(dir.release());
   }
+
+  return true;
 }
 
 void GDataDirectory::ToProto(GDataDirectoryProto* proto) const {
@@ -689,10 +707,32 @@ void GDataDirectory::ToProto(GDataDirectoryProto* proto) const {
   }
 }
 
-void GDataRootDirectory::FromProto(const GDataRootDirectoryProto& proto) {
+bool GDataRootDirectory::FromProto(const GDataRootDirectoryProto& proto) {
+  const GDataEntryProto& entry_proto =
+      proto.gdata_directory().gdata_entry();
+  // The title field for the root directory was originally empty, then
+  // changed to "gdata", then changed to "drive". Discard the proto data if
+  // the older formats are detected. See crbug.com/128133 for details.
+  if (entry_proto.title() != "drive") {
+    LOG(ERROR) << "Incompatible proto detected (bad title): "
+               << entry_proto.title();
+    return false;
+  }
+  // The title field for the root directory was originally empty. Discard
+  // the proto data if the older format is detected.
+  if (entry_proto.resource_id() != kGDataRootDirectoryResourceId) {
+    LOG(ERROR) << "Incompatible proto detected (bad resource ID): "
+               << entry_proto.resource_id();
+    return false;
+  }
+
+  if (!GDataDirectory::FromProto(proto.gdata_directory()))
+    return false;
+
   root_ = this;
-  GDataDirectory::FromProto(proto.gdata_directory());
   largest_changestamp_ = proto.largest_changestamp();
+
+  return true;
 }
 
 void GDataRootDirectory::ToProto(GDataRootDirectoryProto* proto) const {
@@ -727,7 +767,8 @@ scoped_ptr<GDataEntry> GDataEntry::FromProtoString(
   bool ok = dir_proto.ParseFromString(serialized_proto);
   if (ok && dir_proto.gdata_entry().file_info().is_directory()) {
     GDataDirectory* dir = new GDataDirectory(NULL, NULL);
-    dir->FromProto(dir_proto);
+    if (!dir->FromProto(dir_proto))
+      return scoped_ptr<GDataEntry>(NULL);
     return scoped_ptr<GDataEntry>(dir);
   }
 
@@ -736,7 +777,8 @@ scoped_ptr<GDataEntry> GDataEntry::FromProtoString(
   if (ok) {
     DCHECK(!file_proto.gdata_entry().file_info().is_directory());
     GDataFile* file = new GDataFile(NULL, NULL);
-    file->FromProto(file_proto);
+    if (!file->FromProto(file_proto))
+      return scoped_ptr<GDataEntry>(NULL);
     return scoped_ptr<GDataEntry>(file);
   }
   return scoped_ptr<GDataEntry>(NULL);
@@ -752,30 +794,14 @@ void GDataRootDirectory::SerializeToString(
 
 bool GDataRootDirectory::ParseFromString(const std::string& serialized_proto) {
   GDataRootDirectoryProto proto;
-  const bool ok = proto.ParseFromString(serialized_proto);
-  if (ok) {
-    const GDataEntryProto& entry_proto =
-        proto.gdata_directory().gdata_entry();
-    // The title field for the root directory was originally empty, then
-    // changed to "gdata", then changed to "drive". Discard the proto data if
-    // the older formats are detected. See crbug.com/128133 for details.
-    if (entry_proto.title() != "drive") {
-      LOG(ERROR) << "Incompatible proto detected (bad title): "
-                 << entry_proto.title();
-      return false;
-    }
-    // The title field for the root directory was originally empty. Discard
-    // the proto data if the older format is detected.
-    if (entry_proto.resource_id() != kGDataRootDirectoryResourceId) {
-      LOG(ERROR) << "Incompatible proto detected (bad resource ID): "
-                 << entry_proto.resource_id();
-      return false;
-    }
+  if (!proto.ParseFromString(serialized_proto))
+    return false;
 
-    FromProto(proto);
-    set_origin(FROM_CACHE);
-  }
-  return ok;
+  if (!FromProto(proto))
+    return false;
+
+  set_origin(FROM_CACHE);
+  return true;
 }
 
 }  // namespace gdata
