@@ -22,7 +22,8 @@
 namespace {
 
 bool IsAshNotifyEnabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(ash::switches::kAshNotify);
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      ash::switches::kAshNotifyDisabled);
 }
 
 }  // namespace

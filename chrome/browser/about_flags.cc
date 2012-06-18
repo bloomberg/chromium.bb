@@ -744,11 +744,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(ash::switches::kAshTouchHud)
   },
   {
-    "ash-notify",
-    IDS_FLAGS_ENABLE_ASH_NOTIFY_NAME,
-    IDS_FLAGS_ENABLE_ASH_NOTIFY_DESCRIPTION,
+    "ash-notify-disabled",
+    IDS_FLAGS_DISABLE_ASH_NOTIFY_NAME,
+    IDS_FLAGS_DISABLE_ASH_NOTIFY_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(ash::switches::kAshNotify),
+    SINGLE_VALUE_TYPE(ash::switches::kAshNotifyDisabled),
   },
   {
     "enable-pinch",

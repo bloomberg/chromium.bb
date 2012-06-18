@@ -19,6 +19,10 @@
 #include "content/public/common/content_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if !defined(USE_ASH)
+// These tests do not apply on Ash where notifications do not instantiate
+// a new renderer.
+
 class TaskManagerNotificationBrowserTest : public ExtensionBrowserTest {
  public:
   TaskManagerModel* model() const {
@@ -68,3 +72,5 @@ IN_PROC_BROWSER_TEST_F(TaskManagerNotificationBrowserTest,
   notifications->CancelById(n2.notification_id());
   TaskManagerBrowserTestUtil::WaitForResourceChange(2);
 }
+
+#endif  // !USE_ASH

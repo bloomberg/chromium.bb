@@ -33,8 +33,8 @@ void ProfileStartup(Profile* profile, bool process_startup) {
   if (process_startup) {
     // These observers are singletons. They are never deleted but the pointers
     // are kept in a statics so that they are not reported as leaks.
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-            ash::switches::kAshNotify)) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            ash::switches::kAshNotifyDisabled)) {
       static chromeos::LowBatteryObserver* low_battery_observer =
           new chromeos::LowBatteryObserver(profile);
       chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
@@ -50,8 +50,8 @@ void ProfileStartup(Profile* profile, bool process_startup) {
     chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
         AddUserActionObserver(network_message_observer);
 
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-            ash::switches::kAshNotify)) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            ash::switches::kAshNotifyDisabled)) {
       static chromeos::SmsObserver* sms_observer =
           new chromeos::SmsObserver(profile);
       chromeos::CrosLibrary::Get()->GetNetworkLibrary()->

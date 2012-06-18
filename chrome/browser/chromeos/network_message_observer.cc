@@ -68,9 +68,9 @@ class NetworkMessageNotification : public ash::NetworkTrayDelegate {
         title_ = l10n_util::GetStringUTF16(IDS_NETWORK_OUT_OF_DATA_TITLE);
         break;
     }
-    LOG_IF(ERROR, id.empty()) << "Unexpected error type: " << error_type;
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-            ash::switches::kAshNotify) && !id.empty()) {
+    DCHECK(!id.empty());
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            ash::switches::kAshNotifyDisabled)) {
       system_notification_.reset(
           new SystemNotification(profile, id, icon_id, title_));
     }

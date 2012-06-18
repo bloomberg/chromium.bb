@@ -79,7 +79,8 @@ class TraySms::SmsObserver : public SmsObserverBase,
                              public chromeos::NetworkSmsHandler::Observer {
  public:
   explicit SmsObserver(TraySms* tray) : SmsObserverBase(tray) {
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshNotify))
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kAshNotifyDisabled))
       return;
     sms_handler_.reset(new chromeos::NetworkSmsHandler());
     sms_handler_->AddObserver(this);

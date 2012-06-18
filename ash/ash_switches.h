@@ -19,7 +19,7 @@ namespace switches {
 ASH_EXPORT extern const char kAppListShowAppsOnly[];
 ASH_EXPORT extern const char kAshEnableOak[];
 ASH_EXPORT extern const char kAshExtendedDesktop[];
-ASH_EXPORT extern const char kAshNotify[];
+ASH_EXPORT extern const char kAshNotifyDisabled[];
 ASH_EXPORT extern const char kAshTouchHud[];
 ASH_EXPORT extern const char kAshWindowAnimationsDisabled[];
 ASH_EXPORT extern const char kAuraGoogleDialogFrames[];

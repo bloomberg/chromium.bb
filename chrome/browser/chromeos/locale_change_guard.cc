@@ -173,7 +173,8 @@ void LocaleChangeGuard::Check() {
     PrepareChangingLocale(from_locale, to_locale);
   }
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(ash::switches::kAshNotify)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kAshNotifyDisabled)) {
     ash::Shell::GetInstance()->system_tray()->locale_observer()->
         OnLocaleChanged(this, cur_locale, from_locale_, to_locale_);
     return;
