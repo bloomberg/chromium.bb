@@ -152,7 +152,7 @@
 
         <fire:FirewallException xmlns:fire="http://schemas.microsoft.com/wix/FirewallExtension"
                                 Id="me2me_firewall_exception"
-                                IgnoreFailure="no"
+                                IgnoreFailure="yes"
                                 Name="$(var.FirewallName)"
                                 Profile="all"
                                 Program="[#remoting_me2me_host.exe]"
