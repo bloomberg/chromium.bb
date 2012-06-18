@@ -72,12 +72,12 @@ class SMSWatcher::WatcherBase {
   WatcherBase(const std::string& device_path,
               MonitorSMSCallback callback,
               void* object,
-              const std::string& dbus_service_name,
+              const std::string& dbus_connection,
               const dbus::ObjectPath& object_path) :
       device_path_(device_path),
       callback_(callback),
       object_(object),
-      dbus_service_name_(dbus_service_name),
+      dbus_connection_(dbus_connection),
       object_path_(object_path) {}
 
   virtual ~WatcherBase() {}
@@ -86,7 +86,7 @@ class SMSWatcher::WatcherBase {
   const std::string device_path_;
   MonitorSMSCallback callback_;
   void* object_;
-  const std::string dbus_service_name_;
+  const std::string dbus_connection_;
   const dbus::ObjectPath object_path_;
 
   DISALLOW_COPY_AND_ASSIGN(WatcherBase);
@@ -99,25 +99,25 @@ class GsmWatcher : public SMSWatcher::WatcherBase {
   GsmWatcher(const std::string& device_path,
              MonitorSMSCallback callback,
              void* object,
-             const std::string& dbus_service_name,
+             const std::string& dbus_connection,
              const dbus::ObjectPath& object_path)
-      : WatcherBase(device_path, callback, object, dbus_service_name,
+      : WatcherBase(device_path, callback, object, dbus_connection,
                     object_path),
         weak_ptr_factory_(this) {
     DBusThreadManager::Get()->GetGsmSMSClient()->SetSmsReceivedHandler(
-        dbus_service_name_,
+        dbus_connection_,
         object_path_,
         base::Bind(&GsmWatcher::OnSmsReceived, weak_ptr_factory_.GetWeakPtr()));
 
     DBusThreadManager::Get()->GetGsmSMSClient()->List(
-        dbus_service_name_, object_path_,
+        dbus_connection_, object_path_,
         base::Bind(&GsmWatcher::ListSMSCallback,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
   virtual ~GsmWatcher() {
     DBusThreadManager::Get()->GetGsmSMSClient()->ResetSmsReceivedHandler(
-        dbus_service_name_, object_path_);
+        dbus_connection_, object_path_);
   }
 
  private:
@@ -127,7 +127,7 @@ class GsmWatcher : public SMSWatcher::WatcherBase {
     if (!complete)
       return;
     DBusThreadManager::Get()->GetGsmSMSClient()->Get(
-        dbus_service_name_, object_path_, index,
+        dbus_connection_, object_path_, index,
         base::Bind(&GsmWatcher::GetSMSCallback,
                    weak_ptr_factory_.GetWeakPtr(),
                    index));
@@ -191,8 +191,7 @@ class GsmWatcher : public SMSWatcher::WatcherBase {
     RunCallbackWithSMS(sms_dictionary);
 
     DBusThreadManager::Get()->GetGsmSMSClient()->Delete(
-        dbus_service_name_, object_path_, index,
-        base::Bind(&DeleteSMSCallback));
+        dbus_connection_, object_path_, index, base::Bind(&DeleteSMSCallback));
   }
 
   // Callback for List() method.
@@ -219,7 +218,7 @@ class GsmWatcher : public SMSWatcher::WatcherBase {
   void DeleteSMSInChain() {
     if (!delete_queue_.empty()) {
       DBusThreadManager::Get()->GetGsmSMSClient()->Delete(
-          dbus_service_name_, object_path_, delete_queue_.back(),
+          dbus_connection_, object_path_, delete_queue_.back(),
           base::Bind(&GsmWatcher::DeleteSMSInChain,
                      weak_ptr_factory_.GetWeakPtr()));
       delete_queue_.pop_back();
@@ -237,28 +236,28 @@ class ModemManager1Watcher : public SMSWatcher::WatcherBase {
   ModemManager1Watcher(const std::string& device_path,
                        MonitorSMSCallback callback,
                        void *object,
-                       const std::string& dbus_service_name,
+                       const std::string& dbus_connection,
                        const dbus::ObjectPath& object_path)
-      : WatcherBase(device_path, callback, object, dbus_service_name,
+      : WatcherBase(device_path, callback, object, dbus_connection,
                     object_path),
         weak_ptr_factory_(this),
         deleting_messages_(false),
         retrieving_messages_(false) {
     DBusThreadManager::Get()->GetModemMessagingClient()->SetSmsReceivedHandler(
-        dbus_service_name_,
+        dbus_connection_,
         object_path_,
         base::Bind(&ModemManager1Watcher::OnSmsReceived,
                    weak_ptr_factory_.GetWeakPtr()));
 
     DBusThreadManager::Get()->GetModemMessagingClient()->List(
-        dbus_service_name_, object_path_,
+        dbus_connection_, object_path_,
         base::Bind(&ModemManager1Watcher::ListSMSCallback,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
   virtual ~ModemManager1Watcher() {
     DBusThreadManager::Get()->GetModemMessagingClient()
-        ->ResetSmsReceivedHandler(dbus_service_name_, object_path_);
+        ->ResetSmsReceivedHandler(dbus_connection_, object_path_);
   }
 
  private:
@@ -287,7 +286,7 @@ class ModemManager1Watcher : public SMSWatcher::WatcherBase {
     dbus::ObjectPath sms_path = delete_queue_.back();
     delete_queue_.pop_back();
     DBusThreadManager::Get()->GetModemMessagingClient()->Delete(
-        dbus_service_name_, object_path_, sms_path,
+        dbus_connection_, object_path_, sms_path,
         base::Bind(&ModemManager1Watcher::DeleteMessages,
                    weak_ptr_factory_.GetWeakPtr()));
   }
@@ -305,7 +304,7 @@ class ModemManager1Watcher : public SMSWatcher::WatcherBase {
     dbus::ObjectPath sms_path = retrieval_queue_.front();
     retrieval_queue_.pop_front();
     DBusThreadManager::Get()->GetSMSClient()->GetAll(
-        dbus_service_name_, sms_path,
+        dbus_connection_, sms_path,
         base::Bind(&ModemManager1Watcher::GetCallback,
                    weak_ptr_factory_.GetWeakPtr()));
     delete_queue_.push_back(sms_path);
@@ -411,10 +410,10 @@ void SMSWatcher::DevicePropertiesCallback(
   if (call_status != DBUS_METHOD_CALL_SUCCESS)
     return;
 
-  std::string dbus_service_name;
+  std::string dbus_connection;
   if (!properties.GetStringWithoutPathExpansion(
-          flimflam::kDBusServiceProperty, &dbus_service_name)) {
-    LOG(WARNING) << "Modem device properties do not include DBus service.";
+          flimflam::kDBusConnectionProperty, &dbus_connection)) {
+    LOG(WARNING) << "Modem device properties do not include DBus connection.";
     return;
   }
 
@@ -430,12 +429,12 @@ void SMSWatcher::DevicePropertiesCallback(
           modemmanager::kModemManager1ServicePath) == 0) {
     watcher_.reset(
         new ModemManager1Watcher(device_path_,
-                                 callback_, object_, dbus_service_name,
+                                 callback_, object_, dbus_connection,
                                  dbus::ObjectPath(object_path_string)));
   } else {
     watcher_.reset(
         new GsmWatcher(device_path_,
-                       callback_, object_, dbus_service_name,
+                       callback_, object_, dbus_connection,
                        dbus::ObjectPath(object_path_string)));
   }
 }

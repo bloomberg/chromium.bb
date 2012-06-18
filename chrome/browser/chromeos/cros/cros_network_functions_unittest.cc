@@ -1260,15 +1260,11 @@ TEST_F(CrosNetworkFunctionsTest, CrosMonitorCellularDataPlan) {
 
 TEST_F(CrosNetworkFunctionsTest, CrosMonitorSMS) {
   const std::string dbus_connection = ":1.1";
-  const std::string dbus_service_name = "org.freedesktop.ModemManager";
   const dbus::ObjectPath object_path("/object/path");
   base::DictionaryValue device_properties;
   device_properties.SetWithoutPathExpansion(
       flimflam::kDBusConnectionProperty,
       base::Value::CreateStringValue(dbus_connection));
-  device_properties.SetWithoutPathExpansion(
-      flimflam::kDBusServiceProperty,
-      base::Value::CreateStringValue(dbus_service_name));
   device_properties.SetWithoutPathExpansion(
       flimflam::kDBusObjectProperty,
       base::Value::CreateStringValue(object_path.value()));
