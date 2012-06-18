@@ -36,7 +36,8 @@ if (chromeHidden.JSONSchemaValidator) {
         message += ".";
         throw new Error(message);
       } else if (!parameterSchemas[i].optional) {
-        throw new Error("Parameter " + (i + 1) + " is required.");
+        throw new Error("Parameter " + (i + 1) + " (" +
+            parameterSchemas[i].name + ") is required.");
       }
     }
   };

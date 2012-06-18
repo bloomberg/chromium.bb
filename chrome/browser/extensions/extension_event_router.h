@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/values.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ipc/ipc_sender.h"
@@ -42,6 +43,15 @@ class ExtensionEventRouter : public content::NotificationObserver {
 
   // Sends an event via ipc_sender to the given extension. Can be called on
   // any thread.
+  static void DispatchEvent(IPC::Sender* ipc_sender,
+                            const std::string& extension_id,
+                            const std::string& event_name,
+                            const base::Value& event_args,
+                            const GURL& event_url,
+                            UserGestureState user_gesture);
+
+  // This invocation is deprecated. All future consumers of this API should be
+  // sending Values as event arguments, using the above version.
   static void DispatchEvent(IPC::Sender* ipc_sender,
                             const std::string& extension_id,
                             const std::string& event_name,
@@ -92,6 +102,15 @@ class ExtensionEventRouter : public content::NotificationObserver {
       const GURL& event_url);
 
   // Same as above, except only send the event to the given extension.
+  virtual void DispatchEventToExtension(
+      const std::string& extension_id,
+      const std::string& event_name,
+      const base::Value& event_args,
+      Profile* restrict_to_profile,
+      const GURL& event_url);
+
+  // This invocation is deprecated. The above variant which uses a Value for
+  // event_args is to be used instead.
   virtual void DispatchEventToExtension(
       const std::string& extension_id,
       const std::string& event_name,
@@ -168,7 +187,7 @@ class ExtensionEventRouter : public content::NotificationObserver {
       Profile* profile,
       const extensions::Extension* extension,
       const linked_ptr<ExtensionEvent>& event,
-      const std::string** event_args);
+      const base::Value** event_args);
 
   // Ensures that all lazy background pages that are interested in the given
   // event are loaded, and queues the event if the page is not ready yet.

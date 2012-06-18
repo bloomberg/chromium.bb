@@ -139,7 +139,12 @@
   chromeHidden.Event.dispatchJSON = function(name, args) {
     if (attachedNamedEvents[name]) {
       if (args) {
-        args = chromeHidden.JSON.parse(args);
+        // TODO(asargent): This is an antiquity. Until all callers of
+        // dispatchJSON use actual values, this must remain here to catch the
+        // cases where a caller has hard-coded a JSON string to pass in.
+        if (typeof(args) == "string") {
+          args = chromeHidden.JSON.parse(args);
+        }
         if (eventArgumentMassagers[name])
           eventArgumentMassagers[name](args);
       }
