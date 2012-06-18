@@ -16,6 +16,7 @@
 #include "base/stl_util.h"
 #include "base/string_piece.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/platform_thread.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "skia/ext/image_operations.h"
@@ -85,6 +86,7 @@ void Create2xResourceIfMissing(gfx::ImageSkia image, int idr) {
 ResourceBundle* ResourceBundle::g_shared_instance_ = NULL;
 static bool g_locale_initialized_ = false;
 static bool g_locale_reloading_ = false;
+static base::PlatformThreadId g_locale_reload_thread_id_ = 0;
 
 // static
 std::string ResourceBundle::InitSharedInstanceWithLocale(
@@ -255,6 +257,8 @@ std::string ResourceBundle::ReloadLocaleResources(
     const std::string& pref_locale) {
   base::AutoLock lock_scope(*locale_resources_data_lock_);
   AutoReset<bool> reset_reloading(&g_locale_reloading_, true);
+  AutoReset<base::PlatformThreadId> reset_reloading_thread(
+      &g_locale_reload_thread_id_, base::PlatformThread::CurrentId());
   UnloadLocaleResources();
   return LoadLocaleResources(pref_locale);
 }
@@ -354,7 +358,9 @@ base::StringPiece ResourceBundle::GetRawDataResource(
   if (!locale_resources_data_.get()) {
     LOG(ERROR)
         << "!locale_resources_data_.get()), init=" << g_locale_initialized_
-        << ", reloading=" << g_locale_reloading_;
+        << ", reloading=" << g_locale_reloading_
+        << ", reload_thread=" << g_locale_reload_thread_id_
+        << ", current thread=" << base::PlatformThread::CurrentId();
     NOTREACHED();
   }
 

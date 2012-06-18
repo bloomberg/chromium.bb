@@ -9,6 +9,7 @@
 #include "base/path_service.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/utf_string_conversions.h"
+#include "base/threading/platform_thread.h"
 #include "base/values.h"
 #include "chrome/browser/autofill/autofill_common_test.h"
 #include "chrome/browser/autofill/autofill_profile.h"
@@ -74,6 +75,13 @@ void WebUIBidiCheckerBrowserTestRTL::RunBidiCheckerOnPage(
 // static
 void WebUIBidiCheckerBrowserTestRTL::SetUpOnIOThread(
     base::WaitableEvent* event) {
+  if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {
+    LOG(ERROR)
+        << content::BrowserThread::IO
+        << " != " << base::PlatformThread::CurrentId();
+    NOTREACHED();
+  }
+
   std::string locale;
   {
     base::ThreadRestrictions::ScopedAllowIO allow_io_scope;
