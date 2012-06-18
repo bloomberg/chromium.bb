@@ -1331,7 +1331,14 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_PopupAccelerators) {
   PopupAcceleratorsTest();
 }
 
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, BackspaceInKeywordMode) {
+// http://crbug.com/133341
+#if defined(OS_LINUX)
+#define MAYBE_BackspaceInKeywordMode DISABLED_BackspaceInKeywordMode
+#else
+#define MAYBE_BackspaceInKeywordMode BackspaceInKeywordMode
+#endif
+
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_BackspaceInKeywordMode) {
   BackspaceInKeywordModeTest();
 }
 
@@ -1347,7 +1354,13 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, AltEnter) {
   AltEnterTest();
 }
 
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, EnterToSearch) {
+// http://crbug.com/133354
+#if defined(OS_LINUX)
+#define MAYBE_EnterToSearch DISABLED_EnterToSearch
+#else
+#define MAYBE_EnterToSearch EnterToSearch
+#endif
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_EnterToSearch) {
   EnterToSearchTest();
 }
 
@@ -1355,7 +1368,13 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, EscapeToDefaultMatch) {
   EscapeToDefaultMatchTest();
 }
 
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, BasicTextOperations) {
+// http://crbug.com/133370
+#if defined(OS_LINUX)
+#define MAYBE_BasicTextOperations DISABLED_BasicTextOperations
+#else
+#define MAYBE_BasicTextOperations BasicTextOperations
+#endif
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_BasicTextOperations) {
   BasicTextOperationsTest();
 }
 
@@ -1371,24 +1390,54 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DeleteItem) {
   DeleteItemTest();
 }
 
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, TabAcceptKeyword) {
+// http://crbug.com/133344
+#if defined(OS_LINUX)
+#define MAYBE_TabAcceptKeyword DISABLED_TabAcceptKeyword
+#else
+#define MAYBE_TabAcceptKeyword TabAcceptKeyword
+#endif
+
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_TabAcceptKeyword) {
   TabAcceptKeyword();
 }
 
 #if !defined(OS_MACOSX)
 // Mac intentionally does not support this behavior.
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, TabTraverseResultsTest) {
+
+// http://crbug.com/133360
+#if defined(OS_LINUX)
+#define MAYBE_TabTraverseResultsTest DISABLED_TabTraverseResultsTest
+#else
+#define MAYBE_TabTraverseResultsTest TabTraverseResultsTest
+#endif
+
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_TabTraverseResultsTest) {
   TabTraverseResultsTest();
 }
 #endif
 
+
+// http://crbug.com/133347
+#if defined(OS_LINUX)
+#define MAYBE_PersistKeywordModeOnTabSwitch DISABLED_PersistKeywordModeOnTabSwitch
+#else
+#define MAYBE_PersistKeywordModeOnTabSwitch PersistKeywordModeOnTabSwitch
+#endif
+
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
-                       PersistKeywordModeOnTabSwitch) {
+                       MAYBE_PersistKeywordModeOnTabSwitch) {
   PersistKeywordModeOnTabSwitch();
 }
 
+// http://crbug.com/133355
+#if defined(OS_LINUX)
+#define MAYBE_CtrlKeyPressedWithInlineAutocompleteTest DISABLED_CtrlKeyPressedWithInlineAutocompleteTest
+#else
+#define MAYBE_CtrlKeyPressedWithInlineAutocompleteTest CtrlKeyPressedWithInlineAutocompleteTest
+#endif
+
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
-                       CtrlKeyPressedWithInlineAutocompleteTest) {
+                       MAYBE_CtrlKeyPressedWithInlineAutocompleteTest) {
   CtrlKeyPressedWithInlineAutocompleteTest();
 }
 

@@ -1211,7 +1211,13 @@ IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, FocusLostOnMinimize) {
   panel->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, CreateInactiveSwitchToActive) {
+// http://crbug.com/133364
+#if defined(OS_LINUX)
+#define MAYBE_CreateInactiveSwitchToActive DISABLED_CreateInactiveSwitchToActive
+#else
+#define MAYBE_CreateInactiveSwitchToActive CreateInactiveSwitchToActive
+#endif
+IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, MAYBE_CreateInactiveSwitchToActive) {
   // Compiz will not activate initially inactive window.
   if (SkipTestIfCompizWM())
     return;
@@ -1277,8 +1283,15 @@ IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest,
   panel2->Close();
 }
 
+// http://crbug.com/133367
+#if defined(OS_LINUX) || defined(OS_WIN)
+#define MAYBE_NonExtensionDomainPanelsCloseOnUninstall DISABLED_NonExtensionDomainPanelsCloseOnUninstall
+#else
+#define MAYBE_NonExtensionDomainPanelsCloseOnUninstall NonExtensionDomainPanelsCloseOnUninstall
+#endif
+
 IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest,
-                       NonExtensionDomainPanelsCloseOnUninstall) {
+                       MAYBE_NonExtensionDomainPanelsCloseOnUninstall) {
   // Create a test extension.
   DictionaryValue empty_value;
   scoped_refptr<Extension> extension =

@@ -332,8 +332,15 @@ IN_PROC_BROWSER_TEST_F(OldPanelAndDesktopNotificationTest, ResizePanelByMouse) {
   PanelManager::GetInstance()->CloseAll();
 }
 
+// http://crbug.com/133368
+#if defined(OS_MACOSX)
+#define MAYBE_InteractWithTwoPanels DISABLED_InteractWithTwoPanels
+#else
+#define MAYBE_InteractWithTwoPanels InteractWithTwoPanels
+#endif
+
 IN_PROC_BROWSER_TEST_F(OldPanelAndDesktopNotificationTest,
-                       InteractWithTwoPanels) {
+                       MAYBE_InteractWithTwoPanels) {
   Balloon* balloon = CreateBalloon();
   int original_balloon_bottom = GetBalloonBottomPosition(balloon);
 

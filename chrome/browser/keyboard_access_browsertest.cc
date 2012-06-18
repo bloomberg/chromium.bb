@@ -199,13 +199,25 @@ void KeyboardAccessTest::TestMenuKeyboardAccess(bool alternate_key_sequence,
   ASSERT_EQ(1, browser()->active_index());
 }
 
-// If this flakes, use http://crbug.com/62310.
-IN_PROC_BROWSER_TEST_F(KeyboardAccessTest, TestMenuKeyboardAccess) {
+// http://crbug.com/62310.
+#if defined(OS_CHROMEOS)
+#define MAYBE_TestMenuKeyboardAccess DISABLED_TestMenuKeyboardAccess
+#else
+#define MAYBE_TestMenuKeyboardAccess TestMenuKeyboardAccess
+#endif
+
+IN_PROC_BROWSER_TEST_F(KeyboardAccessTest, MAYBE_TestMenuKeyboardAccess) {
   TestMenuKeyboardAccess(false, false);
 }
 
-// If this flakes, use http://crbug.com/62310.
-IN_PROC_BROWSER_TEST_F(KeyboardAccessTest, TestAltMenuKeyboardAccess) {
+// http://crbug.com/62310.
+#if defined(OS_CHROMEOS)
+#define MAYBE_TestAltMenuKeyboardAccess DISABLED_TestAltMenuKeyboardAccess
+#else
+#define MAYBE_TestAltMenuKeyboardAccess TestAltMenuKeyboardAccess
+#endif
+
+IN_PROC_BROWSER_TEST_F(KeyboardAccessTest, MAYBE_TestAltMenuKeyboardAccess) {
   TestMenuKeyboardAccess(true, false);
 }
 
