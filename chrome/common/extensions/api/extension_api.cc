@@ -244,7 +244,8 @@ void ExtensionAPI::LoadSchema(const std::string& name,
     // For "partially", only need to look at functions/events; even though
     // there are unprivileged properties (e.g. in extensions), access to those
     // never reaches C++ land.
-    if (schema->HasKey("unprivileged")) {
+    bool unprivileged = false;
+    if (schema->GetBoolean("unprivileged", &unprivileged) && unprivileged) {
       completely_unprivileged_apis_.insert(schema_namespace);
     } else if (HasUnprivilegedChild(schema, "functions") ||
                HasUnprivilegedChild(schema, "events")) {
