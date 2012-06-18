@@ -28,7 +28,7 @@ deps = {
     'src/googleurl':
         Var('git_url') + '/external/google-url.git@05ba5f84d93b9ac5355d7d49281a93acd6089d68',
     'src/native_client':
-        Var('git_url') + '/native_client/src/native_client.git@3e011f277e67a09ee074f5775dd190aa1a1d3ae2',
+        Var('git_url') + '/native_client/src/native_client.git@d89eb838d179ec31272c8caf8c2255c62b35b41b',
     'src/native_client_sdk/src/site_scons':
         Var('git_url') + '/native_client/src/native_client/site_scons.git@eec6bb2bfe484512d0360d2ca8fd7e8cb3d63f83',
     'src/sdch/open-vcdiff':
@@ -63,6 +63,8 @@ deps = {
         Var('git_url') + '/external/jsoncpp/jsoncpp/src/lib_json.git@a8caa51ba2f80971a45880425bf2ae864a786784',
     'src/third_party/leveldatabase/src':
         Var('git_url') + '/external/leveldb.git@bf10812927b9a05a7b671eb32504eaa5972725d7',
+    'src/third_party/libexif/sources':
+        Var('git_url') + '/chromium/deps/libexif/sources.git@8d0c7aa0dfba6ca7ca4589a6e029f72c66a4ff57',
     'src/third_party/libjingle/source':
         Var('git_url') + '/external/libjingle.git@e979669e9b74387aa8d0adcfa39f92489a64bea2',
     'src/third_party/libjpeg_turbo':
@@ -171,7 +173,7 @@ deps_os = {
         'src/third_party/gold':
             Var('git_url') + '/chromium/deps/gold.git@44ab2e796b8126864b4860eb108dbf5068887063',
         'src/third_party/lss':
-            Var('git_url') + '/external/linux-syscall-support/lss.git@a799993a9a4c60ab8ecdff72096edcc84e764d83',
+            Var('git_url') + '/external/linux-syscall-support/lss.git@88a55e021b5cf8114901c5354894bfec13d13157',
         'src/third_party/openssl':
             Var('git_url') + '/chromium/deps/openssl.git@b8cf892dfc08f9bda95857993a5b60c7ccc272d4',
         'src/third_party/swig/linux':
