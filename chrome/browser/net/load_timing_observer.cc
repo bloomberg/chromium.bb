@@ -296,7 +296,6 @@ void LoadTimingObserver::OnAddHTTPStreamJobEntry(
         NOTREACHED();
         return;
       }
-      DCHECK_EQ(net::NetLog::SOURCE_SOCKET, socket_source.type);
 
       it->second.socket_log_id = socket_source.id;
       if (!it->second.socket_reused) {
