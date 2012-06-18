@@ -38,41 +38,25 @@ namespace {
 const int64 kHandleMoreWorkPeriodMs = 2;
 const int64 kHandleMoreWorkPeriodBusyMs = 1;
 
-// A filter used to detect messages before they are processed on
-// the main thread.
-class MessageCounter : public IPC::ChannelProxy::MessageFilter {
- public:
-  MessageCounter(
-      scoped_refptr<gpu::RefCountedCounter> unprocessed_messages)
-    : unprocessed_messages_(unprocessed_messages) {
-  }
-
-  // IPC::ChannelProxy::MessageFilter implementation:
-  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE {
-    unprocessed_messages_->IncCount();
-    return false;
-  }
-
- private:
-  virtual ~MessageCounter() {}
-
-  scoped_refptr<gpu::RefCountedCounter> unprocessed_messages_;
-};
-
-// This filter handles the GpuCommandBufferMsg_InsertSyncPoint message on the IO
-// thread, generating the sync point ID and responding immediately, and then
-// posting a task to insert the GpuCommandBufferMsg_RetireSyncPoint message into
-// the channel's queue.
+// This filter does two things:
+// - it counts the number of messages coming in on the channel
+// - it handles the GpuCommandBufferMsg_InsertSyncPoint message on the IO
+//   thread, generating the sync point ID and responding immediately, and then
+//   posting a task to insert the GpuCommandBufferMsg_RetireSyncPoint message
+//   into the channel's queue.
 class SyncPointMessageFilter : public IPC::ChannelProxy::MessageFilter {
  public:
   // Takes ownership of gpu_channel (see below).
   SyncPointMessageFilter(base::WeakPtr<GpuChannel>* gpu_channel,
                          scoped_refptr<SyncPointManager> sync_point_manager,
-                         scoped_refptr<base::MessageLoopProxy> message_loop)
+                         scoped_refptr<base::MessageLoopProxy> message_loop,
+                         scoped_refptr<gpu::RefCountedCounter>
+                             unprocessed_messages)
       : gpu_channel_(gpu_channel),
         channel_(NULL),
         sync_point_manager_(sync_point_manager),
-        message_loop_(message_loop) {
+        message_loop_(message_loop),
+        unprocessed_messages_(unprocessed_messages) {
   }
 
   virtual void OnFilterAdded(IPC::Channel* channel) {
@@ -87,6 +71,7 @@ class SyncPointMessageFilter : public IPC::ChannelProxy::MessageFilter {
 
   virtual bool OnMessageReceived(const IPC::Message& message) {
     DCHECK(channel_);
+    unprocessed_messages_->IncCount();
     if (message.type() == GpuCommandBufferMsg_InsertSyncPoint::ID) {
       uint32 sync_point = sync_point_manager_->GenerateSyncPoint();
       IPC::Message* reply = IPC::SyncMessage::GenerateReply(&message);
@@ -97,11 +82,13 @@ class SyncPointMessageFilter : public IPC::ChannelProxy::MessageFilter {
           gpu_channel_,
           sync_point_manager_,
           message.routing_id(),
-          sync_point));
+          sync_point,
+          unprocessed_messages_));
       return true;
     } else if (message.type() == GpuCommandBufferMsg_RetireSyncPoint::ID) {
       // This message should not be sent explicitly by the renderer.
       NOTREACHED();
+      unprocessed_messages_->DecCount();
       return true;
     } else {
       return false;
@@ -119,7 +106,8 @@ class SyncPointMessageFilter : public IPC::ChannelProxy::MessageFilter {
       base::WeakPtr<GpuChannel>* gpu_channel,
       scoped_refptr<SyncPointManager> manager,
       int32 routing_id,
-      uint32 sync_point) {
+      uint32 sync_point,
+      scoped_refptr<gpu::RefCountedCounter> unprocessed_messages_) {
     // This function must ensure that the sync point will be retired. Normally
     // we'll find the stub based on the routing ID, and associate the sync point
     // with it, but if that fails for any reason (channel or stub already
@@ -133,6 +121,8 @@ class SyncPointMessageFilter : public IPC::ChannelProxy::MessageFilter {
         GpuCommandBufferMsg_RetireSyncPoint message(routing_id, sync_point);
         gpu_channel->get()->OnMessageReceived(message);
         return;
+      } else {
+        unprocessed_messages_->DecCount();
       }
     }
     manager->RetireSyncPoint(sync_point);
@@ -150,6 +140,7 @@ class SyncPointMessageFilter : public IPC::ChannelProxy::MessageFilter {
   IPC::Channel* channel_;
   scoped_refptr<SyncPointManager> sync_point_manager_;
   scoped_refptr<base::MessageLoopProxy> message_loop_;
+  scoped_refptr<gpu::RefCountedCounter> unprocessed_messages_;
 };
 
 }  // anonymous namespace
@@ -199,10 +190,9 @@ bool GpuChannel::Init(base::MessageLoopProxy* io_message_loop,
   scoped_refptr<SyncPointMessageFilter> filter(new SyncPointMessageFilter(
       weak_ptr,
       gpu_channel_manager_->sync_point_manager(),
-      base::MessageLoopProxy::current()));
+      base::MessageLoopProxy::current(),
+      unprocessed_messages_));
   channel_->AddFilter(filter);
-
-  channel_->AddFilter(new MessageCounter(unprocessed_messages_));
 
   return true;
 }
