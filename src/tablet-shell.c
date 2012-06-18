@@ -61,6 +61,8 @@ struct tablet_shell {
 	struct wl_listener lockscreen_listener;
 	struct weston_layer lockscreen_layer;
 
+	struct weston_layer application_layer;
+
 	struct weston_surface *home_surface;
 	struct weston_layer homescreen_layer;
 
@@ -157,9 +159,10 @@ tablet_shell_surface_configure(struct weston_surface *surface,
 		tablet_shell_set_state(shell, STATE_TASK);
 		shell->current_client->surface = surface;
 		weston_zoom_run(surface, 0.3, 1.0, NULL, NULL);
+		wl_list_insert(&shell->application_layer.surface_list,
+			       &surface->layer_link);
 	}
 
-	wl_list_insert(&shell->compositor->surface_list, &surface->link);
 	weston_surface_assign_output(surface);
 }
 
@@ -573,6 +576,8 @@ shell_init(struct weston_compositor *compositor)
 					  menu_key_binding, shell);
 
 	weston_layer_init(&shell->homescreen_layer,
+			  &compositor->cursor_layer.link);
+	weston_layer_init(&shell->application_layer,
 			  &compositor->cursor_layer.link);
 	weston_layer_init(&shell->lockscreen_layer,
 			  &compositor->cursor_layer.link);
