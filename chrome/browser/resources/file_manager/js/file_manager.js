@@ -1950,8 +1950,7 @@ FileManager.prototype = {
     var fileName = this.document_.createElement('div');
     fileName.className = 'filename-label';
 
-    fileName.textContent =
-        this.directoryModel_.getDisplayName(entry.fullPath, entry.name);
+    fileName.textContent = this.getDisplayName_(entry);
 
     return fileName;
   };
@@ -3250,8 +3249,7 @@ FileManager.prototype = {
       var self = this;
       var msg;
       if (entries.length == 1) {
-        var entryName = this.directoryModel_.getDisplayName(entries[0].fullPath,
-                                                            entries[0].name);
+        var entryName = this.getDisplayName_(entries[0]);
         msg = strf('CONFIRM_DELETE_ONE', entryName);
       } else {
         msg = strf('CONFIRM_DELETE_SOME', entries.length);
@@ -3312,10 +3310,10 @@ FileManager.prototype = {
       // We dont want to change the string during preview panel animating away.
       return;
     } else if (selection.fileCount == 1 && selection.directoryCount == 0) {
-      text = selection.entries[0].name;
+      text = this.getDisplayName_(selection.entries[0]);
       if (selection.showBytes) text += ', ' + bytes;
     } else if (selection.fileCount == 0 && selection.directoryCount == 1) {
-      text = selection.entries[0].name;
+      text = this.getDisplayName_(selection.entries[0]);
     } else if (selection.directoryCount == 0) {
       text = strf('MANY_FILES_SELECTED', selection.fileCount, bytes);
       // TODO(dgozman): change the string to not contain ", $2".
@@ -3383,6 +3381,10 @@ FileManager.prototype = {
     }
     // Clear, so we never do this again.
     this.params_.defaultPath = '';
+  };
+
+  FileManager.prototype.getDisplayName_ = function(entry) {
+    return this.directoryModel_.getDisplayName(entry.fullPath, entry.name);
   };
 
   /**
@@ -3733,8 +3735,7 @@ FileManager.prototype = {
       return;
 
     function onError(err) {
-      var entryName =
-          this.directoryModel_.getDisplayName(entry.fullPath, entry.name);
+      var entryName = this.getDisplayName_(entry);
       nameNode.textContent = entryName;
       this.alert.show(strf('ERROR_RENAMING', entryName,
                            getFileErrorString(err.code)));
@@ -3749,8 +3750,7 @@ FileManager.prototype = {
       if (!exists) {
         this.directoryModel_.renameEntry(entry, newName, onError.bind(this));
       } else {
-        nameNode.textContent =
-            this.directoryModel_.getDisplayName(entry.fullPath, entry.name);
+        nameNode.textContent = this.getDisplayName_(entry);
         var message = isFile ? 'FILE_ALREADY_EXISTS' :
                                'DIRECTORY_ALREADY_EXISTS';
         this.alert.show(strf(message, newName));
