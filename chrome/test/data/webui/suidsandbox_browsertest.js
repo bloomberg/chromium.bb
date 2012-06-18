@@ -24,8 +24,9 @@ GEN('# if defined(ADDRESS_SANITIZER)');
 GEN('# define MAYBE_testSUIDSandboxEnabled \\');
 GEN('     DISABLED_testSUIDSandboxEnabled');
 GEN('# else');
+// Linux test is temporarily marked as FAILS: http://crbug.com/133244
 GEN('# define MAYBE_testSUIDSandboxEnabled \\');
-GEN('     testSUIDSandboxEnabled');
+GEN('     FAILS_testSUIDSandboxEnabled');
 GEN('# endif');
 GEN('#else');
 GEN('#define MAYBE_testSUIDSandboxEnabled \\');
