@@ -35,17 +35,17 @@ cr.define('help', function() {
       if (productTOS)
         productTOS.innerHTML = loadTimeData.getString('productTOS');
 
-      $('get-help').onclick = chrome.send.bind(chrome, 'openHelpPage');
+      $('get-help').onclick = chrome.send.bind(chrome, 'openHelpPage', []);
       $('report-issue').onclick =
-          chrome.send.bind(chrome, 'openFeedbackDialog');
+          chrome.send.bind(chrome, 'openFeedbackDialog', []);
 
       this.maybeSetOnClick_($('more-info-expander'),
           this.toggleMoreInfo_.bind(this));
 
       this.maybeSetOnClick_($('promote'),
-          chrome.send.bind(chrome, 'promoteUpdater'));
+          chrome.send.bind(chrome, 'promoteUpdater', []));
       this.maybeSetOnClick_($('relaunch'),
-          chrome.send.bind(chrome, 'relaunchNow'));
+          chrome.send.bind(chrome, 'relaunchNow', []));
 
       var channelChanger = $('channel-changer');
       if (channelChanger) {

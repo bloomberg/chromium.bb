@@ -644,7 +644,7 @@ function load() {
   // TODO(jhawkins): Use a link-button here.
   var openDownloadsFolderLink = $('open-downloads-folder');
   openDownloadsFolderLink.onclick =
-      chrome.send.bind(chrome, 'openDownloadsFolder');
+      chrome.send.bind(chrome, 'openDownloadsFolder', []);
   openDownloadsFolderLink.oncontextmenu = function() { return false; };
 
   $('search-link').onclick = function(e) {
