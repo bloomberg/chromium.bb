@@ -10,7 +10,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "content/public/test/test_url_fetcher_factory.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -34,7 +34,7 @@ struct TestURLResponse {
 // Creates mock URLFetchers whose behavior can be controlled in tests. To do so
 // set mock expectations on the method |Intercept|.
 class TestingPolicyURLFetcherFactory : public net::URLFetcherFactory,
-                                       public ScopedURLFetcherFactory {
+                                       public net::ScopedURLFetcherFactory {
  public:
   explicit TestingPolicyURLFetcherFactory(EventLogger* logger);
   virtual ~TestingPolicyURLFetcherFactory();

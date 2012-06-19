@@ -8,12 +8,12 @@
 #include "content/browser/speech/google_one_shot_remote_engine.h"
 #include "content/browser/speech/speech_recognizer_impl.h"
 #include "content/public/browser/speech_recognition_event_listener.h"
-#include "content/public/test/test_url_fetcher_factory.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/fake_audio_input_stream.h"
 #include "media/audio/fake_audio_output_stream.h"
 #include "media/audio/test_audio_input_controller_factory.h"
 #include "net/base/net_errors.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -235,7 +235,7 @@ class SpeechRecognizerImplTest : public content::SpeechRecognitionEventListener,
   bool sound_started_;
   bool sound_ended_;
   content::SpeechRecognitionErrorCode error_;
-  TestURLFetcherFactory url_fetcher_factory_;
+  net::TestURLFetcherFactory url_fetcher_factory_;
   TestAudioInputControllerFactory audio_input_controller_factory_;
   std::vector<uint8> audio_packet_;
   float volume_;
@@ -285,7 +285,7 @@ TEST_F(SpeechRecognizerImplTest, StopWithData) {
     controller->event_handler()->OnData(controller, &audio_packet_[0],
                                         audio_packet_.size());
     MessageLoop::current()->RunAllPending();
-    TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
+    net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
     ASSERT_TRUE(fetcher);
     EXPECT_EQ(i + 1, fetcher->upload_chunks().size());
   }
@@ -299,7 +299,7 @@ TEST_F(SpeechRecognizerImplTest, StopWithData) {
   EXPECT_EQ(content::SPEECH_RECOGNITION_ERROR_NONE, error_);
 
   // Issue the network callback to complete the process.
-  TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
+  net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
 
   fetcher->set_url(fetcher->GetOriginalURL());
@@ -348,7 +348,7 @@ TEST_F(SpeechRecognizerImplTest, ConnectionError) {
   controller->event_handler()->OnData(controller, &audio_packet_[0],
                                       audio_packet_.size());
   MessageLoop::current()->RunAllPending();
-  TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
+  net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
 
   recognizer_->StopAudioCapture();
@@ -386,7 +386,7 @@ TEST_F(SpeechRecognizerImplTest, ServerError) {
   controller->event_handler()->OnData(controller, &audio_packet_[0],
                                       audio_packet_.size());
   MessageLoop::current()->RunAllPending();
-  TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
+  net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
 
   recognizer_->StopAudioCapture();

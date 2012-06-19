@@ -8,7 +8,7 @@
 #include "chrome/browser/signin/token_service_unittest.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
-#include "content/public/test/test_url_fetcher_factory.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
@@ -52,7 +52,7 @@ class UbertokenFetcherTest : public TokenServiceTestHarness {
   }
 
  protected:
-  TestURLFetcherFactory factory_;
+  net::TestURLFetcherFactory factory_;
   MockUbertokenConsumer consumer_;
   scoped_ptr<UbertokenFetcher> fetcher_;
 };

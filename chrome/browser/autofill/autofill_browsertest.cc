@@ -30,7 +30,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_renderer_host.h"
-#include "content/public/test/test_url_fetcher_factory.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
@@ -143,7 +143,7 @@ class AutofillTest : public InProcessBrowserTest {
   }
 
   void SimulateURLFetch(bool success) {
-    TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
+    net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
     ASSERT_TRUE(fetcher);
     net::URLRequestStatus status;
     status.set_status(success ? net::URLRequestStatus::SUCCESS :
@@ -256,7 +256,7 @@ class AutofillTest : public InProcessBrowserTest {
   }
 
  private:
-  TestURLFetcherFactory url_fetcher_factory_;
+  net::TestURLFetcherFactory url_fetcher_factory_;
 };
 
 // Test that basic form fill is working.

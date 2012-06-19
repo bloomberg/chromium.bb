@@ -44,7 +44,6 @@
         'public/test/test_navigation_observer.h',
         'public/test/test_notification_tracker.h',
         'public/test/test_renderer_host.h',
-        'public/test/test_url_fetcher_factory.h',
         'public/test/unittest_test_suite.h',
         'public/test/web_contents_tester.h',
         # TODO(phajdan.jr): All of those files should live in content/test (if
@@ -117,7 +116,6 @@
         'test/test_renderer_host.cc',
         'test/test_render_view_host_factory.cc',
         'test/test_render_view_host_factory.h',
-        'test/test_url_fetcher_factory.cc',
         'test/test_web_contents_view.cc',
         'test/test_web_contents_view.h',
         'test/unittest_test_suite.cc',

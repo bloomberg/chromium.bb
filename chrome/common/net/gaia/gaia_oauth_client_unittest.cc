@@ -11,10 +11,10 @@
 #include "base/string_util.h"
 #include "chrome/common/net/gaia/gaia_oauth_client.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_url_fetcher_factory.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -24,7 +24,7 @@ using ::testing::_;
 
 namespace {
 // Responds as though OAuth returned from the server.
-class MockOAuthFetcher : public TestURLFetcher {
+class MockOAuthFetcher : public net::TestURLFetcher {
  public:
   MockOAuthFetcher(int response_code,
                    int max_failure_count,
@@ -32,9 +32,9 @@ class MockOAuthFetcher : public TestURLFetcher {
                    const std::string& results,
                    net::URLFetcher::RequestType request_type,
                    net::URLFetcherDelegate* d)
-    : TestURLFetcher(0, url, d),
-      max_failure_count_(max_failure_count),
-      current_failure_count_(0) {
+      : net::TestURLFetcher(0, url, d),
+        max_failure_count_(max_failure_count),
+        current_failure_count_(0) {
     set_url(url);
     set_response_code(response_code);
     SetResponseString(results);
@@ -65,10 +65,10 @@ class MockOAuthFetcher : public TestURLFetcher {
 };
 
 class MockOAuthFetcherFactory : public net::URLFetcherFactory,
-                                public ScopedURLFetcherFactory {
+                                public net::ScopedURLFetcherFactory {
  public:
   MockOAuthFetcherFactory()
-      : ScopedURLFetcherFactory(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      : net::ScopedURLFetcherFactory(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
         response_code_(net::HTTP_OK) {
   }
   ~MockOAuthFetcherFactory() {}

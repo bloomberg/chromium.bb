@@ -11,7 +11,7 @@
 #include "base/values.h"
 #include "content/browser/geolocation/fake_access_token_store.h"
 #include "content/browser/geolocation/network_location_provider.h"
-#include "content/public/test/test_url_fetcher_factory.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -158,8 +158,8 @@ class GeolocationNetworkProviderTest : public testing::Test {
 
   // Returns the current url fetcher (if any) and advances the id ready for the
   // next test step.
-  TestURLFetcher* get_url_fetcher_and_advance_id() {
-    TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(
+  net::TestURLFetcher* get_url_fetcher_and_advance_id() {
+    net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(
             NetworkLocationRequest::url_fetcher_id_for_tests);
     if (fetcher)
       ++NetworkLocationRequest::url_fetcher_id_for_tests;
@@ -267,7 +267,7 @@ class GeolocationNetworkProviderTest : public testing::Test {
   const GURL test_server_url_;
   MessageLoop main_message_loop_;
   scoped_refptr<FakeAccessTokenStore> access_token_store_;
-  TestURLFetcherFactory url_fetcher_factory_;
+  net::TestURLFetcherFactory url_fetcher_factory_;
   scoped_refptr<MockDeviceDataProviderImpl<WifiData> > wifi_data_provider_;
 };
 
@@ -284,7 +284,7 @@ TEST_F(GeolocationNetworkProviderTest, CreateDestroy) {
 TEST_F(GeolocationNetworkProviderTest, StartProvider) {
   scoped_ptr<LocationProviderBase> provider(CreateProvider(true));
   EXPECT_TRUE(provider->StartProvider(false));
-  TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
+  net::TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
   ASSERT_TRUE(fetcher != NULL);
 
   EXPECT_EQ(test_server_url_.spec() + kTestJson,
@@ -299,7 +299,7 @@ TEST_F(GeolocationNetworkProviderTest, StartProviderLongRequest) {
   const int kFirstScanAps = 20;
   wifi_data_provider_->SetData(CreateReferenceWifiScanData(kFirstScanAps));
   main_message_loop_.RunAllPending();
-  TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
+  net::TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
   ASSERT_TRUE(fetcher != NULL);
   // The request url should have been shortened to less than 2048 characters
   // in length by not including access points with the lowest signal strength
@@ -328,7 +328,7 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   scoped_ptr<LocationProviderBase> provider(CreateProvider(true));
   EXPECT_TRUE(provider->StartProvider(false));
 
-  TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
+  net::TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
   ASSERT_TRUE(fetcher != NULL);
   EXPECT_EQ(test_server_url_.spec() + kTestJson,
             fetcher->GetOriginalURL().spec());
@@ -452,7 +452,7 @@ TEST_F(GeolocationNetworkProviderTest, NewDataReplacesExistingNetworkRequest) {
   // Send initial request with empty device data
   scoped_ptr<LocationProviderBase> provider(CreateProvider(true));
   EXPECT_TRUE(provider->StartProvider(false));
-  TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
+  net::TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
   EXPECT_TRUE(fetcher);
 
   // Now wifi data arrives; new request should be sent.
@@ -465,7 +465,7 @@ TEST_F(GeolocationNetworkProviderTest, NewDataReplacesExistingNetworkRequest) {
 TEST_F(GeolocationNetworkProviderTest, NetworkRequestDeferredForPermission) {
   scoped_ptr<LocationProviderBase> provider(CreateProvider(false));
   EXPECT_TRUE(provider->StartProvider(false));
-  TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
+  net::TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
   EXPECT_FALSE(fetcher);
   provider->OnPermissionGranted();
 
@@ -482,7 +482,7 @@ TEST_F(GeolocationNetworkProviderTest,
       UTF8ToUTF16(REFERENCE_ACCESS_TOKEN);
   scoped_ptr<LocationProviderBase> provider(CreateProvider(false));
   EXPECT_TRUE(provider->StartProvider(false));
-  TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
+  net::TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
   EXPECT_FALSE(fetcher);
 
   static const int kScanCount = 4;

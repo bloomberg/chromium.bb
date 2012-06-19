@@ -35,7 +35,7 @@ std::string GetRequestType(const GURL& url) {
 namespace policy {
 
 // An URLFetcher that calls back to its factory to figure out what to respond.
-class TestingPolicyURLFetcher : public TestURLFetcher {
+class TestingPolicyURLFetcher : public net::TestURLFetcher {
  public:
   TestingPolicyURLFetcher(
       const base::WeakPtr<TestingPolicyURLFetcherFactory>& parent,

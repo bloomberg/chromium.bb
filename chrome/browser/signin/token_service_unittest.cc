@@ -16,9 +16,9 @@
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/net/gaia/mock_url_fetcher_factory.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
-#include "content/public/test/test_url_fetcher_factory.h"
+#include "chrome/common/net/gaia/mock_url_fetcher_factory.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 
 using content::BrowserThread;
 
@@ -260,7 +260,7 @@ TEST_F(TokenServiceTest, OnTokenSuccess) {
 }
 
 TEST_F(TokenServiceTest, Reset) {
-  TestURLFetcherFactory factory;
+  net::TestURLFetcherFactory factory;
   service_->StartFetchingTokens();
   // You have to call delegates by hand with the test fetcher,
   // Let's pretend only one returned.

@@ -39,13 +39,13 @@
 #include "content/public/test/render_view_test.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_renderer_host.h"
-#include "content/public/test/test_url_fetcher_factory.h"
 #include "grit/generated_resources.h"
 #include "ipc/ipc_test_sink.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/cld/languages/public/languages.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebContextMenuData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
-#include "third_party/cld/languages/public/languages.h"
 
 using content::BrowserThread;
 using content::NavigationController;
@@ -200,7 +200,7 @@ class TranslateManagerTest : public TabContentsTestHarness,
   }
 
   void SimulateTranslateScriptURLFetch(bool success) {
-    TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
+    net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
     ASSERT_TRUE(fetcher);
     net::URLRequestStatus status;
     status.set_status(success ? net::URLRequestStatus::SUCCESS :
@@ -213,7 +213,7 @@ class TranslateManagerTest : public TabContentsTestHarness,
 
   void SimulateSupportedLanguagesURLFetch(
       bool success, const std::vector<std::string>& languages) {
-    TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(1);
+    net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(1);
     ASSERT_TRUE(fetcher);
     net::URLRequestStatus status;
     status.set_status(success ? net::URLRequestStatus::SUCCESS :
@@ -252,7 +252,7 @@ class TranslateManagerTest : public TabContentsTestHarness,
 
  private:
   content::NotificationRegistrar notification_registrar_;
-  TestURLFetcherFactory url_fetcher_factory_;
+  net::TestURLFetcherFactory url_fetcher_factory_;
   content::TestBrowserThread ui_thread_;
   content::RenderViewTest::RendererWebKitPlatformSupportImplNoSandbox
       webkit_platform_support_;

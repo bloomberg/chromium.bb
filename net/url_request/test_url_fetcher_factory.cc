@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/test/test_url_fetcher_factory.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 
 #include <string>
 
@@ -16,20 +16,22 @@
 #include "net/url_request/url_fetcher_impl.h"
 #include "net/url_request/url_request_status.h"
 
+namespace net {
+
 ScopedURLFetcherFactory::ScopedURLFetcherFactory(
-    net::URLFetcherFactory* factory) {
-  DCHECK(!net::URLFetcherImpl::factory());
-  net::URLFetcherImpl::set_factory(factory);
+    URLFetcherFactory* factory) {
+  DCHECK(!URLFetcherImpl::factory());
+  URLFetcherImpl::set_factory(factory);
 }
 
 ScopedURLFetcherFactory::~ScopedURLFetcherFactory() {
-  DCHECK(net::URLFetcherImpl::factory());
-  net::URLFetcherImpl::set_factory(NULL);
+  DCHECK(URLFetcherImpl::factory());
+  URLFetcherImpl::set_factory(NULL);
 }
 
 TestURLFetcher::TestURLFetcher(int id,
                                const GURL& url,
-                               net::URLFetcherDelegate* d)
+                               URLFetcherDelegate* d)
     : id_(id),
       original_url_(url),
       delegate_(d),
@@ -81,12 +83,12 @@ void TestURLFetcher::AddExtraRequestHeader(const std::string& header_line) {
 }
 
 void TestURLFetcher::GetExtraRequestHeaders(
-    net::HttpRequestHeaders* headers) const {
+    HttpRequestHeaders* headers) const {
   *headers = fake_extra_request_headers_;
 }
 
 void TestURLFetcher::SetRequestContext(
-    net::URLRequestContextGetter* request_context_getter) {
+    URLRequestContextGetter* request_context_getter) {
 }
 
 void TestURLFetcher::SetFirstPartyForCookies(
@@ -125,13 +127,13 @@ void TestURLFetcher::SaveResponseToTemporaryFile(
     scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy) {
 }
 
-net::HttpResponseHeaders* TestURLFetcher::GetResponseHeaders() const {
+HttpResponseHeaders* TestURLFetcher::GetResponseHeaders() const {
   return fake_response_headers_;
 }
 
-net::HostPortPair TestURLFetcher::GetSocketAddress() const {
+HostPortPair TestURLFetcher::GetSocketAddress() const {
   NOTIMPLEMENTED();
-  return net::HostPortPair();
+  return HostPortPair();
 }
 
 bool TestURLFetcher::WasFetchedViaProxy() const {
@@ -150,7 +152,7 @@ const GURL& TestURLFetcher::GetURL() const {
   return fake_url_;
 }
 
-const net::URLRequestStatus& TestURLFetcher::GetStatus() const {
+const URLRequestStatus& TestURLFetcher::GetStatus() const {
   return fake_status_;
 }
 
@@ -158,7 +160,7 @@ int TestURLFetcher::GetResponseCode() const {
   return fake_response_code_;
 }
 
-const net::ResponseCookies& TestURLFetcher::GetCookies() const {
+const ResponseCookies& TestURLFetcher::GetCookies() const {
   return fake_cookies_;
 }
 
@@ -189,7 +191,7 @@ bool TestURLFetcher::GetResponseAsFilePath(
   return true;
 }
 
-void TestURLFetcher::set_status(const net::URLRequestStatus& status) {
+void TestURLFetcher::set_status(const URLRequestStatus& status) {
   fake_status_ = status;
 }
 
@@ -198,7 +200,7 @@ void TestURLFetcher::set_was_fetched_via_proxy(bool flag) {
 }
 
 void TestURLFetcher::set_response_headers(
-    scoped_refptr<net::HttpResponseHeaders> headers) {
+    scoped_refptr<HttpResponseHeaders> headers) {
   fake_response_headers_ = headers;
 }
 
@@ -222,11 +224,11 @@ TestURLFetcherFactory::TestURLFetcherFactory()
 
 TestURLFetcherFactory::~TestURLFetcherFactory() {}
 
-net::URLFetcher* TestURLFetcherFactory::CreateURLFetcher(
+URLFetcher* TestURLFetcherFactory::CreateURLFetcher(
     int id,
     const GURL& url,
-    net::URLFetcher::RequestType request_type,
-    net::URLFetcherDelegate* d) {
+    URLFetcher::RequestType request_type,
+    URLFetcherDelegate* d) {
   TestURLFetcher* fetcher = new TestURLFetcher(id, url, d);
   fetchers_[id] = fetcher;
   return fetcher;
@@ -248,13 +250,13 @@ class FakeURLFetcher : public TestURLFetcher {
  public:
   // Normal URL fetcher constructor but also takes in a pre-baked response.
   FakeURLFetcher(const GURL& url,
-                 net::URLFetcherDelegate* d,
+                 URLFetcherDelegate* d,
                  const std::string& response_data, bool success)
     : TestURLFetcher(0, url, d),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
-    set_status(net::URLRequestStatus(
-        success ? net::URLRequestStatus::SUCCESS :
-            net::URLRequestStatus::FAILED,
+    set_status(URLRequestStatus(
+        success ? URLRequestStatus::SUCCESS :
+            URLRequestStatus::FAILED,
         0));
     set_response_code(success ? 200 : 500);
     SetResponseString(response_data);
@@ -293,18 +295,18 @@ FakeURLFetcherFactory::FakeURLFetcherFactory()
 }
 
 FakeURLFetcherFactory::FakeURLFetcherFactory(
-    net::URLFetcherFactory* default_factory)
+    URLFetcherFactory* default_factory)
     : ScopedURLFetcherFactory(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       default_factory_(default_factory) {
 }
 
 FakeURLFetcherFactory::~FakeURLFetcherFactory() {}
 
-net::URLFetcher* FakeURLFetcherFactory::CreateURLFetcher(
+URLFetcher* FakeURLFetcherFactory::CreateURLFetcher(
     int id,
     const GURL& url,
-    net::URLFetcher::RequestType request_type,
-    net::URLFetcherDelegate* d) {
+    URLFetcher::RequestType request_type,
+    URLFetcherDelegate* d) {
   FakeResponseMap::const_iterator it = fake_responses_.find(url);
   if (it == fake_responses_.end()) {
     if (default_factory_ == NULL) {
@@ -333,10 +335,12 @@ URLFetcherImplFactory::URLFetcherImplFactory() {}
 
 URLFetcherImplFactory::~URLFetcherImplFactory() {}
 
-net::URLFetcher* URLFetcherImplFactory::CreateURLFetcher(
+URLFetcher* URLFetcherImplFactory::CreateURLFetcher(
     int id,
     const GURL& url,
-    net::URLFetcher::RequestType request_type,
-    net::URLFetcherDelegate* d) {
-  return new net::URLFetcherImpl(url, request_type, d);
+    URLFetcher::RequestType request_type,
+    URLFetcherDelegate* d) {
+  return new URLFetcherImpl(url, request_type, d);
 }
+
+}  // namespace net

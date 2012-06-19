@@ -22,7 +22,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_url_fetcher_factory.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_status.h"
 
@@ -71,7 +71,7 @@ class SigninManagerTest : public TokenServiceTestHarness {
                                int response_code,
                                const net::ResponseCookies& cookies,
                                const std::string& response_string) {
-    TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
+    net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
     DCHECK(fetcher);
     DCHECK(fetcher->delegate());
 
@@ -181,7 +181,7 @@ class SigninManagerTest : public TokenServiceTestHarness {
                             net::ResponseCookies(), response_string);
   }
 
-  TestURLFetcherFactory factory_;
+  net::TestURLFetcherFactory factory_;
   scoped_ptr<SigninManager> manager_;
   content::TestNotificationTracker google_login_success_;
   content::TestNotificationTracker google_login_failure_;

@@ -2,28 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_TEST_TEST_URL_FETCHER_FACTORY_H_
-#define CONTENT_PUBLIC_TEST_TEST_URL_FETCHER_FACTORY_H_
+#ifndef NET_URL_REQUEST_TEST_URL_FETCHER_FACTORY_H_
+#define NET_URL_REQUEST_TEST_URL_FETCHER_FACTORY_H_
 #pragma once
-
-// TODO(akalin): Move this to net/.
 
 #include <list>
 #include <map>
 #include <string>
 #include <utility>
 
+#include "base/compiler_specific.h"
 #include "base/threading/non_thread_safe.h"
 #include "googleurl/src/gurl.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 
+namespace net {
+
 // Changes URLFetcher's Factory for the lifetime of the object.
 // Note that this scoper cannot be nested (to make it even harder to misuse).
 class ScopedURLFetcherFactory : public base::NonThreadSafe {
  public:
-  explicit ScopedURLFetcherFactory(net::URLFetcherFactory* factory);
+  explicit ScopedURLFetcherFactory(URLFetcherFactory* factory);
   virtual ~ScopedURLFetcherFactory();
 
  private:
@@ -56,14 +57,14 @@ class ScopedURLFetcherFactory : public base::NonThreadSafe {
 // might want to use the FakeURLFetcher and FakeURLFetcherFactory classes
 // below.
 
-class TestURLFetcher : public net::URLFetcher {
+class TestURLFetcher : public URLFetcher {
  public:
   TestURLFetcher(int id,
                  const GURL& url,
-                 net::URLFetcherDelegate* d);
+                 URLFetcherDelegate* d);
   virtual ~TestURLFetcher();
 
-  // net::URLFetcher implementation
+  // URLFetcher implementation
   virtual void SetUploadData(const std::string& upload_content_type,
                              const std::string& upload_content) OVERRIDE;
   virtual void SetChunkedUpload(
@@ -79,9 +80,9 @@ class TestURLFetcher : public net::URLFetcher {
       const std::string& extra_request_headers) OVERRIDE;
   virtual void AddExtraRequestHeader(const std::string& header_line) OVERRIDE;
   virtual void GetExtraRequestHeaders(
-      net::HttpRequestHeaders* headers) const OVERRIDE;
+      HttpRequestHeaders* headers) const OVERRIDE;
   virtual void SetRequestContext(
-      net::URLRequestContextGetter* request_context_getter) OVERRIDE;
+      URLRequestContextGetter* request_context_getter) OVERRIDE;
   virtual void SetFirstPartyForCookies(
       const GURL& first_party_for_cookies) OVERRIDE;
   virtual void SetURLRequestUserData(
@@ -97,8 +98,8 @@ class TestURLFetcher : public net::URLFetcher {
       scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy) OVERRIDE;
   virtual void SaveResponseToTemporaryFile(
       scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy) OVERRIDE;
-  virtual net::HttpResponseHeaders* GetResponseHeaders() const OVERRIDE;
-  virtual net::HostPortPair GetSocketAddress() const OVERRIDE;
+  virtual HttpResponseHeaders* GetResponseHeaders() const OVERRIDE;
+  virtual HostPortPair GetSocketAddress() const OVERRIDE;
   virtual bool WasFetchedViaProxy() const OVERRIDE;
   virtual void Start() OVERRIDE;
 
@@ -107,9 +108,9 @@ class TestURLFetcher : public net::URLFetcher {
   // GetOriginalURL() in your tests.
   virtual const GURL& GetOriginalURL() const OVERRIDE;
   virtual const GURL& GetURL() const OVERRIDE;
-  virtual const net::URLRequestStatus& GetStatus() const OVERRIDE;
+  virtual const URLRequestStatus& GetStatus() const OVERRIDE;
   virtual int GetResponseCode() const OVERRIDE;
-  virtual const net::ResponseCookies& GetCookies() const OVERRIDE;
+  virtual const ResponseCookies& GetCookies() const OVERRIDE;
   virtual bool FileErrorOccurred(
       base::PlatformFileError* out_error_code) const OVERRIDE;
   virtual void ReceivedContentWasMalformed() OVERRIDE;
@@ -129,16 +130,16 @@ class TestURLFetcher : public net::URLFetcher {
   const std::list<std::string>& upload_chunks() const { return chunks_; }
 
   // Returns the delegate installed on the URLFetcher.
-  net::URLFetcherDelegate* delegate() const { return delegate_; }
+  URLFetcherDelegate* delegate() const { return delegate_; }
 
   void set_url(const GURL& url) { fake_url_ = url; }
-  void set_status(const net::URLRequestStatus& status);
+  void set_status(const URLRequestStatus& status);
   void set_response_code(int response_code) {
     fake_response_code_ = response_code;
   }
-  void set_cookies(const net::ResponseCookies& c) { fake_cookies_ = c; }
+  void set_cookies(const ResponseCookies& c) { fake_cookies_ = c; }
   void set_was_fetched_via_proxy(bool flag);
-  void set_response_headers(scoped_refptr<net::HttpResponseHeaders> headers);
+  void set_response_headers(scoped_refptr<HttpResponseHeaders> headers);
   void set_backoff_delay(base::TimeDelta backoff_delay);
 
   // Set string data.
@@ -155,7 +156,7 @@ class TestURLFetcher : public net::URLFetcher {
 
   const int id_;
   const GURL original_url_;
-  net::URLFetcherDelegate* delegate_;
+  URLFetcherDelegate* delegate_;
   std::string upload_data_;
   std::list<std::string> chunks_;
   bool did_receive_last_chunk_;
@@ -166,15 +167,15 @@ class TestURLFetcher : public net::URLFetcher {
   // in a .cc file, so we can't get at it with friendship.
   int fake_load_flags_;
   GURL fake_url_;
-  net::URLRequestStatus fake_status_;
+  URLRequestStatus fake_status_;
   int fake_response_code_;
-  net::ResponseCookies fake_cookies_;
+  ResponseCookies fake_cookies_;
   ResponseDestinationType fake_response_destination_;
   std::string fake_response_string_;
   FilePath fake_response_file_path_;
   bool fake_was_fetched_via_proxy_;
-  scoped_refptr<net::HttpResponseHeaders> fake_response_headers_;
-  net::HttpRequestHeaders fake_extra_request_headers_;
+  scoped_refptr<HttpResponseHeaders> fake_response_headers_;
+  HttpRequestHeaders fake_extra_request_headers_;
   int fake_max_retries_;
   base::TimeDelta fake_backoff_delay_;
 
@@ -183,17 +184,17 @@ class TestURLFetcher : public net::URLFetcher {
 
 // Simple URLFetcherFactory method that creates TestURLFetchers. All fetchers
 // are registered in a map by the id passed to the create method.
-class TestURLFetcherFactory : public net::URLFetcherFactory,
+class TestURLFetcherFactory : public URLFetcherFactory,
                               public ScopedURLFetcherFactory {
  public:
   TestURLFetcherFactory();
   virtual ~TestURLFetcherFactory();
 
-  virtual net::URLFetcher* CreateURLFetcher(
+  virtual URLFetcher* CreateURLFetcher(
       int id,
       const GURL& url,
-      net::URLFetcher::RequestType request_type,
-      net::URLFetcherDelegate* d) OVERRIDE;
+      URLFetcher::RequestType request_type,
+      URLFetcherDelegate* d) OVERRIDE;
   TestURLFetcher* GetFetcherByID(int id) const;
   void RemoveFetcherFromMap(int id);
 
@@ -237,13 +238,13 @@ class TestURLFetcherFactory : public net::URLFetcherFactory,
 //  SomeService service;
 //  service.Run();  // Will eventually request these two URLs.
 
-class FakeURLFetcherFactory : public net::URLFetcherFactory,
+class FakeURLFetcherFactory : public URLFetcherFactory,
                               public ScopedURLFetcherFactory {
  public:
   FakeURLFetcherFactory();
   // FakeURLFetcherFactory that will delegate creating URLFetcher for unknown
   // url to the given factory.
-  explicit FakeURLFetcherFactory(net::URLFetcherFactory* default_factory);
+  explicit FakeURLFetcherFactory(URLFetcherFactory* default_factory);
   virtual ~FakeURLFetcherFactory();
 
   // If no fake response is set for the given URL this method will delegate the
@@ -251,11 +252,11 @@ class FakeURLFetcherFactory : public net::URLFetcherFactory,
   // NULL.
   // Otherwise, it will return a URLFetcher object which will respond with the
   // pre-baked response that the client has set by calling SetFakeResponse().
-  virtual net::URLFetcher* CreateURLFetcher(
+  virtual URLFetcher* CreateURLFetcher(
       int id,
       const GURL& url,
-      net::URLFetcher::RequestType request_type,
-      net::URLFetcherDelegate* d) OVERRIDE;
+      URLFetcher::RequestType request_type,
+      URLFetcherDelegate* d) OVERRIDE;
 
   // Sets the fake response for a given URL.  If success is true we will serve
   // an HTTP/200 and an HTTP/500 otherwise.  The |response_data| may be empty.
@@ -270,7 +271,7 @@ class FakeURLFetcherFactory : public net::URLFetcherFactory,
  private:
   typedef std::map<GURL, std::pair<std::string, bool> > FakeResponseMap;
   FakeResponseMap fake_responses_;
-  net::URLFetcherFactory* default_factory_;
+  URLFetcherFactory* default_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeURLFetcherFactory);
 };
@@ -279,18 +280,20 @@ class FakeURLFetcherFactory : public net::URLFetcherFactory,
 // URLFetcherImpl. It can be use in conjunction with a FakeURLFetcherFactory in
 // integration tests to control the behavior of some requests but execute
 // all the other ones.
-class URLFetcherImplFactory : public net::URLFetcherFactory {
+class URLFetcherImplFactory : public URLFetcherFactory {
  public:
   URLFetcherImplFactory();
   virtual ~URLFetcherImplFactory();
 
   // This method will create a real URLFetcher.
-  virtual net::URLFetcher* CreateURLFetcher(
+  virtual URLFetcher* CreateURLFetcher(
       int id,
       const GURL& url,
-      net::URLFetcher::RequestType request_type,
-      net::URLFetcherDelegate* d) OVERRIDE;
+      URLFetcher::RequestType request_type,
+      URLFetcherDelegate* d) OVERRIDE;
 
 };
 
-#endif  // CONTENT_PUBLIC_TEST_TEST_URL_FETCHER_FACTORY_H_
+}  // namespace net
+
+#endif  // NET_URL_REQUEST_TEST_URL_FETCHER_FACTORY_H_

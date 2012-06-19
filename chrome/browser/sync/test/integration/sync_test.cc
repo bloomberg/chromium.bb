@@ -37,7 +37,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread.h"
-#include "content/public/test/test_url_fetcher_factory.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -46,6 +45,7 @@
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_service.h"
 #include "net/test/test_server.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context.h"
@@ -395,8 +395,8 @@ void SyncTest::ReadPasswordFile() {
 void SyncTest::SetupMockGaiaResponses() {
   username_ = "user@gmail.com";
   password_ = "password";
-  factory_.reset(new URLFetcherImplFactory());
-  fake_factory_.reset(new FakeURLFetcherFactory(factory_.get()));
+  factory_.reset(new net::URLFetcherImplFactory());
+  fake_factory_.reset(new net::FakeURLFetcherFactory(factory_.get()));
   fake_factory_->SetFakeResponse(
       GaiaUrls::GetInstance()->client_login_url(),
       "SID=sid\nLSID=lsid",

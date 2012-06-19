@@ -16,7 +16,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread.h"
-#include "content/public/test/test_url_fetcher_factory.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -121,7 +121,7 @@ class GoogleURLTrackerTest : public testing::Test {
   virtual void SetUp();
   virtual void TearDown();
 
-  TestURLFetcher* GetFetcher();
+  net::TestURLFetcher* GetFetcher();
   void MockSearchDomainCheckResponse(const std::string& domain);
   void RequestServerCheck();
   void FinishSleep();
@@ -151,7 +151,7 @@ class GoogleURLTrackerTest : public testing::Test {
   // Creating this allows us to call
   // net::NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests().
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
-  TestURLFetcherFactory fetcher_factory_;
+  net::TestURLFetcherFactory fetcher_factory_;
   content::NotificationRegistrar registrar_;
   TestingProfile profile_;
   scoped_ptr<GoogleURLTracker> google_url_tracker_;
@@ -185,7 +185,7 @@ void GoogleURLTrackerTest::TearDown() {
   network_change_notifier_.reset();
 }
 
-TestURLFetcher* GoogleURLTrackerTest::GetFetcher() {
+net::TestURLFetcher* GoogleURLTrackerTest::GetFetcher() {
   // This will return the last fetcher created.  If no fetchers have been
   // created, we'll pass GetFetcherByID() "-1", and it will return NULL.
   return fetcher_factory_.GetFetcherByID(google_url_tracker_->fetcher_id_ - 1);
@@ -193,7 +193,7 @@ TestURLFetcher* GoogleURLTrackerTest::GetFetcher() {
 
 void GoogleURLTrackerTest::MockSearchDomainCheckResponse(
     const std::string& domain) {
-  TestURLFetcher* fetcher = GetFetcher();
+  net::TestURLFetcher* fetcher = GetFetcher();
   if (!fetcher)
     return;
   fetcher_factory_.RemoveFetcherFromMap(fetcher->id());

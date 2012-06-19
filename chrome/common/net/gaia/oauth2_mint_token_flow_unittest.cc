@@ -12,11 +12,12 @@
 #include "base/values.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/net/gaia/oauth2_mint_token_flow.h"
-#include "content/public/test/test_url_fetcher_factory.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using net::TestURLFetcher;
 using net::URLFetcher;
 using net::URLRequestStatus;
 using testing::_;

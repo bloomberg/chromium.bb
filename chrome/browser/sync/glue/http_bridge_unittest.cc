@@ -7,8 +7,8 @@
 #include "base/threading/thread.h"
 #include "chrome/browser/sync/glue/http_bridge.h"
 #include "content/public/test/test_browser_thread.h"
-#include "content/public/test/test_url_fetcher_factory.h"
 #include "net/test/test_server.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -141,7 +141,7 @@ class ShuntedHttpBridge : public HttpBridge {
     net::ResponseCookies cookies;
 
     std::string response_content = "success!";
-    TestURLFetcher fetcher(0, GURL(), NULL);
+    net::TestURLFetcher fetcher(0, GURL(), NULL);
     fetcher.set_url(GURL("www.google.com"));
     fetcher.set_response_code(200);
     fetcher.set_cookies(cookies);
@@ -382,7 +382,7 @@ TEST_F(SyncHttpBridgeTest, AbortAndReleaseBeforeFetchComplete) {
       static_cast<net::URLFetcherDelegate*>(bridge_for_race_test());
   net::ResponseCookies cookies;
   std::string response_content = "success!";
-  TestURLFetcher fetcher(0, GURL(), NULL);
+  net::TestURLFetcher fetcher(0, GURL(), NULL);
   fetcher.set_url(GURL("www.google.com"));
   fetcher.set_response_code(200);
   fetcher.set_cookies(cookies);

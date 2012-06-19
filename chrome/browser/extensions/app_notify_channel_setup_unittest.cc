@@ -18,8 +18,8 @@
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
-#include "content/public/test/test_url_fetcher_factory.h"
 #include "googleurl/src/gurl.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -256,7 +256,7 @@ class AppNotifyChannelSetupTest : public testing::Test {
   TestProfile profile_;
   TestDelegate delegate_;
   scoped_ptr<TestUI> ui_;
-  FakeURLFetcherFactory factory_;
+  net::FakeURLFetcherFactory factory_;
 };
 
 TEST_F(AppNotifyChannelSetupTest, LoginFailure) {

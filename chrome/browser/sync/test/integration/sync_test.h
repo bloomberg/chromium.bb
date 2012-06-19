@@ -25,12 +25,12 @@
 class CommandLine;
 class Profile;
 class ProfileSyncServiceHarness;
-class FakeURLFetcherFactory;
-class URLFetcherImplFactory;
 
 namespace net {
+class FakeURLFetcherFactory;
 class ProxyConfig;
 class ScopedDefaultHostResolverProc;
+class URLFetcherImplFactory;
 class URLRequestContextGetter;
 }
 
@@ -348,10 +348,10 @@ class SyncTest : public InProcessBrowserTest {
   base::ProcessHandle test_server_handle_;
 
   // Fake URLFetcher factory used to mock out GAIA signin.
-  scoped_ptr<FakeURLFetcherFactory> fake_factory_;
+  scoped_ptr<net::FakeURLFetcherFactory> fake_factory_;
 
   // The URLFetcherImplFactory instance used to instantiate |fake_factory_|.
-  scoped_ptr<URLFetcherImplFactory> factory_;
+  scoped_ptr<net::URLFetcherImplFactory> factory_;
 
   // Number of default entries (as determined by the existing entries at setup
   // time on client 0).

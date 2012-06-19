@@ -16,9 +16,9 @@
 #include "chrome/common/safe_browsing/client_model.pb.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "content/public/test/test_browser_thread.h"
-#include "content/public/test/test_url_fetcher_factory.h"
 #include "crypto/sha2.h"
 #include "googleurl/src/gurl.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -65,7 +65,7 @@ class ClientSideDetectionServiceTest : public testing::Test {
     file_thread_.reset(new content::TestBrowserThread(BrowserThread::FILE,
                                                       &msg_loop_));
 
-    factory_.reset(new FakeURLFetcherFactory());
+    factory_.reset(new net::FakeURLFetcherFactory());
 
     browser_thread_.reset(new content::TestBrowserThread(BrowserThread::UI,
                                                          &msg_loop_));
@@ -190,7 +190,7 @@ class ClientSideDetectionServiceTest : public testing::Test {
 
  protected:
   scoped_ptr<ClientSideDetectionService> csd_service_;
-  scoped_ptr<FakeURLFetcherFactory> factory_;
+  scoped_ptr<net::FakeURLFetcherFactory> factory_;
   MessageLoop msg_loop_;
 
  private:

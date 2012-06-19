@@ -21,7 +21,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
-#include "content/public/test/test_url_fetcher_factory.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -103,7 +103,7 @@ class SearchProviderTest : public testing::Test,
   content::TestBrowserThread io_thread_;
 
   // URLFetcherFactory implementation registered.
-  TestURLFetcherFactory test_factory_;
+  net::TestURLFetcherFactory test_factory_;
 
   // Profile we use.
   TestingProfile profile_;
@@ -264,7 +264,7 @@ bool SearchProviderTest::FindMatchWithDestination(const GURL& url,
 }
 
 void SearchProviderTest::FinishDefaultSuggestQuery() {
-  TestURLFetcher* default_fetcher = test_factory_.GetFetcherByID(
+  net::TestURLFetcher* default_fetcher = test_factory_.GetFetcherByID(
       SearchProvider::kDefaultProviderURLFetcherID);
   ASSERT_TRUE(default_fetcher);
 
@@ -282,7 +282,7 @@ TEST_F(SearchProviderTest, QueryDefaultProvider) {
   QueryForInput(term, string16(), false);
 
   // Make sure the default providers suggest service was queried.
-  TestURLFetcher* fetcher = test_factory_.GetFetcherByID(
+  net::TestURLFetcher* fetcher = test_factory_.GetFetcherByID(
       SearchProvider::kDefaultProviderURLFetcherID);
   ASSERT_TRUE(fetcher);
 
@@ -333,7 +333,7 @@ TEST_F(SearchProviderTest, QueryKeywordProvider) {
                 string16(), false);
 
   // Make sure the default providers suggest service was queried.
-  TestURLFetcher* default_fetcher = test_factory_.GetFetcherByID(
+  net::TestURLFetcher* default_fetcher = test_factory_.GetFetcherByID(
       SearchProvider::kDefaultProviderURLFetcherID);
   ASSERT_TRUE(default_fetcher);
 
@@ -343,7 +343,7 @@ TEST_F(SearchProviderTest, QueryKeywordProvider) {
   default_fetcher = NULL;
 
   // Make sure the keyword providers suggest service was queried.
-  TestURLFetcher* keyword_fetcher = test_factory_.GetFetcherByID(
+  net::TestURLFetcher* keyword_fetcher = test_factory_.GetFetcherByID(
       SearchProvider::kKeywordProviderURLFetcherID);
   ASSERT_TRUE(keyword_fetcher);
 
@@ -673,7 +673,7 @@ TEST_F(SearchProviderTest, NavSuggest) {
   QueryForInput(ASCIIToUTF16("a.c"), string16(), false);
 
   // Make sure the default providers suggest service was queried.
-  TestURLFetcher* fetcher = test_factory_.GetFetcherByID(
+  net::TestURLFetcher* fetcher = test_factory_.GetFetcherByID(
       SearchProvider::kDefaultProviderURLFetcherID);
   ASSERT_TRUE(fetcher);
 
@@ -700,7 +700,7 @@ TEST_F(SearchProviderTest, SuggestRelevance) {
   QueryForInput(ASCIIToUTF16("a"), string16(), false);
 
   // Make sure the default provider's suggest service was queried.
-  TestURLFetcher* fetcher = test_factory_.GetFetcherByID(
+  net::TestURLFetcher* fetcher = test_factory_.GetFetcherByID(
       SearchProvider::kDefaultProviderURLFetcherID);
   ASSERT_TRUE(fetcher);
 
@@ -870,7 +870,7 @@ TEST_F(SearchProviderTest, SuggestRelevanceExperiment) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
     QueryForInput(ASCIIToUTF16("a"), string16(), false);
-    TestURLFetcher* fetcher = test_factory_.GetFetcherByID(
+    net::TestURLFetcher* fetcher = test_factory_.GetFetcherByID(
         SearchProvider::kDefaultProviderURLFetcherID);
     fetcher->set_response_code(200);
     fetcher->SetResponseString(cases[i].json);
@@ -965,7 +965,7 @@ TEST_F(SearchProviderTest, SuggestRelevanceExperimentUrlInput) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
     QueryForInput(ASCIIToUTF16(cases[i].input), string16(), false);
-    TestURLFetcher* fetcher = test_factory_.GetFetcherByID(
+    net::TestURLFetcher* fetcher = test_factory_.GetFetcherByID(
         SearchProvider::kDefaultProviderURLFetcherID);
     fetcher->set_response_code(200);
     fetcher->SetResponseString(cases[i].json);
@@ -1028,7 +1028,7 @@ TEST_F(SearchProviderTest, SuggestRelevanceExperimentRequestedUrlInput) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
     QueryForInput(ASCIIToUTF16(cases[i].input), ASCIIToUTF16("com"), false);
-    TestURLFetcher* fetcher = test_factory_.GetFetcherByID(
+    net::TestURLFetcher* fetcher = test_factory_.GetFetcherByID(
         SearchProvider::kDefaultProviderURLFetcherID);
     fetcher->set_response_code(200);
     fetcher->SetResponseString(cases[i].json);

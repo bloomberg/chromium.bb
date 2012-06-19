@@ -16,7 +16,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
-#include "content/public/test/test_url_fetcher_factory.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,7 +41,7 @@ class MockAutofillMetrics : public AutofillMetrics {
 
 // Call |fetcher->OnURLFetchComplete()| as the URLFetcher would when
 // a response is received.  Params allow caller to set fake status.
-void FakeOnURLFetchComplete(TestURLFetcher* fetcher,
+void FakeOnURLFetchComplete(net::TestURLFetcher* fetcher,
                             int response_code,
                             const std::string& response_body) {
   fetcher->set_url(GURL());
@@ -140,7 +140,7 @@ class AutofillDownloadTest : public AutofillDownloadManager::Observer,
 TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   MessageLoopForUI message_loop;
   // Create and register factory.
-  TestURLFetcherFactory factory;
+  net::TestURLFetcherFactory factory;
 
   FormData form;
   form.method = ASCIIToUTF16("post");
@@ -243,7 +243,7 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
   };
 
   // Return them out of sequence.
-  TestURLFetcher* fetcher = factory.GetFetcherByID(1);
+  net::TestURLFetcher* fetcher = factory.GetFetcherByID(1);
   ASSERT_TRUE(fetcher);
   FakeOnURLFetchComplete(fetcher, 200, std::string(responses[1]));
 
@@ -354,7 +354,7 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
 TEST_F(AutofillDownloadTest, CacheQueryTest) {
   MessageLoopForUI message_loop;
   // Create and register factory.
-  TestURLFetcherFactory factory;
+  net::TestURLFetcherFactory factory;
 
   FormData form;
   form.method = ASCIIToUTF16("post");
@@ -428,7 +428,7 @@ TEST_F(AutofillDownloadTest, CacheQueryTest) {
   // No responses yet
   EXPECT_EQ(static_cast<size_t>(0), responses_.size());
 
-  TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   FakeOnURLFetchComplete(fetcher, 200, std::string(responses[0]));
   ASSERT_EQ(static_cast<size_t>(1), responses_.size());

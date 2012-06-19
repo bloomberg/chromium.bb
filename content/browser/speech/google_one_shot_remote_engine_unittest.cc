@@ -8,7 +8,7 @@
 #include "content/browser/speech/google_one_shot_remote_engine.h"
 #include "content/public/common/speech_recognition_error.h"
 #include "content/public/common/speech_recognition_result.h"
-#include "content/public/test/test_url_fetcher_factory.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -39,7 +39,7 @@ class GoogleOneShotRemoteEngineTest
 
  protected:
   MessageLoop message_loop_;
-  TestURLFetcherFactory url_fetcher_factory_;
+  net::TestURLFetcherFactory url_fetcher_factory_;
   content::SpeechRecognitionErrorCode error_;
   content::SpeechRecognitionResult result_;
 };
@@ -56,7 +56,7 @@ void GoogleOneShotRemoteEngineTest::CreateAndTestRequest(
   client.StartRecognition();
   client.TakeAudioChunk(*dummy_audio_chunk);
   client.AudioChunksEnded();
-  TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
+  net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
 
   fetcher->set_url(fetcher->GetOriginalURL());

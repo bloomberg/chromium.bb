@@ -15,8 +15,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/spellcheck_result.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_url_fetcher_factory.h"
 #include "net/base/load_flags.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -26,7 +26,7 @@ namespace {
 // the Spelling service. This class also verifies the SpellingServiceClient
 // class does not either send cookies to the Spelling service or accept cookies
 // from it.
-class TestSpellingURLFetcher : public TestURLFetcher {
+class TestSpellingURLFetcher : public net::TestURLFetcher {
  public:
   TestSpellingURLFetcher(int id,
                          const GURL& url,
@@ -35,7 +35,7 @@ class TestSpellingURLFetcher : public TestURLFetcher {
                          const std::string& text,
                          int status,
                          const std::string& response)
-      : TestURLFetcher(0, url, d),
+      : net::TestURLFetcher(0, url, d),
         version_(base::StringPrintf("v%d", version)),
         text_(text) {
     set_response_code(status);
@@ -71,7 +71,7 @@ class TestSpellingURLFetcher : public TestURLFetcher {
     EXPECT_TRUE(value->GetString("params.origin_country", &country));
     EXPECT_EQ("USA", country);
 
-    TestURLFetcher::SetUploadData(upload_content_type, upload_content);
+    net::TestURLFetcher::SetUploadData(upload_content_type, upload_content);
   }
 
   virtual void Start() OVERRIDE {

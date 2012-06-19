@@ -36,7 +36,7 @@
 #include "chromeos/dbus/mock_session_manager_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
-#include "content/public/test/test_url_fetcher_factory.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_status.h"
@@ -314,8 +314,8 @@ class LoginUtilsTest : public testing::Test,
     RunAllPending();
   }
 
-  TestURLFetcher* PrepareOAuthFetcher(const std::string& expected_url) {
-    TestURLFetcher* fetcher = test_url_fetcher_factory_.GetFetcherByID(0);
+  net::TestURLFetcher* PrepareOAuthFetcher(const std::string& expected_url) {
+    net::TestURLFetcher* fetcher = test_url_fetcher_factory_.GetFetcherByID(0);
     EXPECT_TRUE(fetcher);
     EXPECT_TRUE(fetcher->delegate());
     EXPECT_TRUE(StartsWithASCII(fetcher->GetOriginalURL().spec(),
@@ -327,10 +327,10 @@ class LoginUtilsTest : public testing::Test,
     return fetcher;
   }
 
-  TestURLFetcher* PrepareDMServiceFetcher(
+  net::TestURLFetcher* PrepareDMServiceFetcher(
       const std::string& expected_url,
       const em::DeviceManagementResponse& response) {
-    TestURLFetcher* fetcher = test_url_fetcher_factory_.GetFetcherByID(0);
+    net::TestURLFetcher* fetcher = test_url_fetcher_factory_.GetFetcherByID(0);
     EXPECT_TRUE(fetcher);
     EXPECT_TRUE(fetcher->delegate());
     EXPECT_TRUE(StartsWithASCII(fetcher->GetOriginalURL().spec(),
@@ -345,7 +345,7 @@ class LoginUtilsTest : public testing::Test,
     return fetcher;
   }
 
-  TestURLFetcher* PrepareDMRegisterFetcher() {
+  net::TestURLFetcher* PrepareDMRegisterFetcher() {
     em::DeviceManagementResponse response;
     em::DeviceRegisterResponse* register_response =
         response.mutable_register_response();
@@ -355,7 +355,7 @@ class LoginUtilsTest : public testing::Test,
     return PrepareDMServiceFetcher(kDMRegisterRequest, response);
   }
 
-  TestURLFetcher* PrepareDMPolicyFetcher() {
+  net::TestURLFetcher* PrepareDMPolicyFetcher() {
     em::DeviceManagementResponse response;
     response.mutable_policy_response()->add_response();
     return PrepareDMServiceFetcher(kDMPolicyRequest, response);
@@ -376,7 +376,7 @@ class LoginUtilsTest : public testing::Test,
 
   MockDBusThreadManager mock_dbus_thread_manager_;
   input_method::MockInputMethodManager mock_input_method_manager_;
-  TestURLFetcherFactory test_url_fetcher_factory_;
+  net::TestURLFetcherFactory test_url_fetcher_factory_;
 
   cryptohome::MockAsyncMethodCaller* mock_async_method_caller_;
 
@@ -462,7 +462,7 @@ TEST_P(LoginUtilsBlockingLoginTest, EnterpriseLoginBlocksForEnterpriseUser) {
               !user_manager->IsLoggedInAsStub());
 
   GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
-  TestURLFetcher* fetcher;
+  net::TestURLFetcher* fetcher;
 
   // |steps| is the test parameter, and is the number of successful fetches.
   // The first incomplete fetch will fail. In any case, the profile creation
@@ -514,7 +514,7 @@ TEST_P(LoginUtilsBlockingLoginTest, EnterpriseLoginBlocksForEnterpriseUser) {
     EXPECT_FALSE(prepared_profile_);
 
     // Make the current fetcher fail.
-    TestURLFetcher* fetcher = test_url_fetcher_factory_.GetFetcherByID(0);
+    net::TestURLFetcher* fetcher = test_url_fetcher_factory_.GetFetcherByID(0);
     EXPECT_TRUE(fetcher);
     EXPECT_TRUE(fetcher->delegate());
     fetcher->set_url(fetcher->GetOriginalURL());

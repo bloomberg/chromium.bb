@@ -12,8 +12,8 @@
 #include "chrome/browser/sync/sync_prefs.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
-#include "content/public/test/test_url_fetcher_factory.h"
 #include "googleurl/src/gurl.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 #include "sync/internal_api/public/syncable/model_type.h"
 #include "sync/internal_api/public/util/experiments.h"
@@ -86,7 +86,7 @@ class SyncBackendHostTest : public testing::Test {
 
 TEST_F(SyncBackendHostTest, InitShutdown) {
   std::string k_mock_url = "http://www.example.com";
-  FakeURLFetcherFactory test_factory_;
+  net::FakeURLFetcherFactory test_factory_;
   test_factory_.SetFakeResponse(k_mock_url + "/time?command=get_time", "",
       false);
 

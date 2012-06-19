@@ -14,9 +14,9 @@
 #include "chrome/common/net/gaia/oauth2_access_token_fetcher.h"
 #include "chrome/common/net/gaia/oauth2_api_call_flow.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_url_fetcher_factory.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_fetcher_factory.h"
@@ -26,6 +26,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using net::HttpRequestHeaders;
+using net::ScopedURLFetcherFactory;
+using net::TestURLFetcher;
 using net::URLFetcher;
 using net::URLFetcherDelegate;
 using net::URLFetcherFactory;

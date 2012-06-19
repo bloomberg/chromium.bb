@@ -25,7 +25,7 @@ ExpectCanceledFetcher::ExpectCanceledFetcher(
     const std::string& results,
     net::URLFetcher::RequestType request_type,
     net::URLFetcherDelegate* d)
-    : TestURLFetcher(0, url, d),
+    : net::TestURLFetcher(0, url, d),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
 
@@ -51,7 +51,7 @@ GotCanceledFetcher::GotCanceledFetcher(
     const std::string& results,
     net::URLFetcher::RequestType request_type,
     net::URLFetcherDelegate* d)
-    : TestURLFetcher(0, url, d) {
+    : net::TestURLFetcher(0, url, d) {
   set_url(url);
   set_status(net::URLRequestStatus(net::URLRequestStatus::CANCELED, 0));
   set_response_code(net::HTTP_FORBIDDEN);
@@ -68,7 +68,7 @@ SuccessFetcher::SuccessFetcher(bool success,
                                const std::string& results,
                                net::URLFetcher::RequestType request_type,
                                net::URLFetcherDelegate* d)
-    : TestURLFetcher(0, url, d) {
+    : net::TestURLFetcher(0, url, d) {
   set_url(url);
   set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS, 0));
   set_response_code(net::HTTP_OK);
@@ -85,7 +85,7 @@ FailFetcher::FailFetcher(bool success,
                          const std::string& results,
                          net::URLFetcher::RequestType request_type,
                          net::URLFetcherDelegate* d)
-    : TestURLFetcher(0, url, d) {
+    : net::TestURLFetcher(0, url, d) {
   set_url(url);
   set_status(net::URLRequestStatus(net::URLRequestStatus::FAILED, ECONNRESET));
   set_response_code(net::HTTP_OK);
@@ -112,7 +112,7 @@ CaptchaFetcher::CaptchaFetcher(bool success,
                                const std::string& results,
                                net::URLFetcher::RequestType request_type,
                                net::URLFetcherDelegate* d)
-    : TestURLFetcher(0, url, d) {
+    : net::TestURLFetcher(0, url, d) {
   set_url(url);
   set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS, 0));
   set_response_code(net::HTTP_FORBIDDEN);
@@ -152,7 +152,7 @@ HostedFetcher::HostedFetcher(bool success,
                              const std::string& results,
                              net::URLFetcher::RequestType request_type,
                              net::URLFetcherDelegate* d)
-    : TestURLFetcher(0, url, d) {
+    : net::TestURLFetcher(0, url, d) {
   set_url(url);
   set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS, 0));
   set_response_code(net::HTTP_OK);

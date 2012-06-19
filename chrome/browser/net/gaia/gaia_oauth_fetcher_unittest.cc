@@ -19,10 +19,10 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/test/test_url_fetcher_factory.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -165,7 +165,7 @@ TEST_F(GaiaOAuthFetcherTest, OAuthGetAccessToken) {
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   GURL url(GaiaUrls::GetInstance()->oauth_get_access_token_url());
 
-  TestURLFetcher test_fetcher(0, GURL(), &oauth_fetcher);
+  net::TestURLFetcher test_fetcher(0, GURL(), &oauth_fetcher);
   test_fetcher.set_url(url);
   test_fetcher.set_status(status);
   test_fetcher.set_response_code(net::HTTP_OK);
@@ -201,7 +201,7 @@ TEST_F(GaiaOAuthFetcherTest, OAuthWrapBridge) {
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   GURL url(GaiaUrls::GetInstance()->oauth_wrap_bridge_url());
 
-  TestURLFetcher test_fetcher(0, GURL(), &oauth_fetcher);
+  net::TestURLFetcher test_fetcher(0, GURL(), &oauth_fetcher);
   test_fetcher.set_url(url);
   test_fetcher.set_status(status);
   test_fetcher.set_response_code(net::HTTP_OK);
@@ -232,7 +232,7 @@ TEST_F(GaiaOAuthFetcherTest, UserInfo) {
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   GURL url(GaiaUrls::GetInstance()->oauth_user_info_url());
 
-  TestURLFetcher test_fetcher(0, GURL(), &oauth_fetcher);
+  net::TestURLFetcher test_fetcher(0, GURL(), &oauth_fetcher);
   test_fetcher.set_url(url);
   test_fetcher.set_status(status);
   test_fetcher.set_response_code(net::HTTP_OK);
@@ -258,7 +258,7 @@ TEST_F(GaiaOAuthFetcherTest, OAuthRevokeToken) {
   net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
   GURL url(GaiaUrls::GetInstance()->oauth_revoke_token_url());
 
-  TestURLFetcher test_fetcher(0, GURL(), &oauth_fetcher);
+  net::TestURLFetcher test_fetcher(0, GURL(), &oauth_fetcher);
   test_fetcher.set_url(url);
   test_fetcher.set_status(status);
   test_fetcher.set_response_code(net::HTTP_OK);

@@ -12,11 +12,11 @@
 #include <string>
 
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
-#include "content/public/test/test_url_fetcher_factory.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 
 // Responds as though ClientLogin returned from the server.
-class MockFetcher : public TestURLFetcher {
+class MockFetcher : public net::TestURLFetcher {
  public:
   MockFetcher(bool success,
               const GURL& url,
@@ -42,10 +42,10 @@ class MockFetcher : public TestURLFetcher {
 
 template<typename T>
 class MockURLFetcherFactory : public net::URLFetcherFactory,
-                              public ScopedURLFetcherFactory {
+                              public net::ScopedURLFetcherFactory {
  public:
   MockURLFetcherFactory()
-      : ScopedURLFetcherFactory(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      : net::ScopedURLFetcherFactory(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
         success_(true) {
   }
   ~MockURLFetcherFactory() {}

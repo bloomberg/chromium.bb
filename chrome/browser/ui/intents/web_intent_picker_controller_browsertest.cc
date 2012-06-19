@@ -28,9 +28,9 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_intents_dispatcher.h"
-#include "content/public/test/test_url_fetcher_factory.h"
 #include "net/base/escape.h"
 #include "net/base/mock_host_resolver.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #include "ui/gfx/image/image_util.h"
@@ -86,7 +86,7 @@ class DummyURLFetcherFactory : public net::URLFetcherFactory {
        const GURL& url,
        net::URLFetcher::RequestType request_type,
        net::URLFetcherDelegate* d) OVERRIDE {
-     return new TestURLFetcher(id, url, d);
+     return new net::TestURLFetcher(id, url, d);
    }
 };
 
@@ -229,7 +229,7 @@ class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
     // Instead, use this dummy factory to infinitely delay the request.
     default_url_fetcher_factory_.reset(new DummyURLFetcherFactory);
     fake_url_fetcher_factory_.reset(
-        new FakeURLFetcherFactory(default_url_fetcher_factory_.get()));
+        new net::FakeURLFetcherFactory(default_url_fetcher_factory_.get()));
 
     web_data_service_ = WebDataServiceFactory::GetForProfile(
         GetBrowser()->profile(), Profile::EXPLICIT_ACCESS);
@@ -328,7 +328,7 @@ class WebIntentPickerControllerBrowserTest : public InProcessBrowserTest {
   FaviconService* favicon_service_;
   WebIntentPickerController* controller_;
   scoped_ptr<DummyURLFetcherFactory> default_url_fetcher_factory_;
-  scoped_ptr<FakeURLFetcherFactory> fake_url_fetcher_factory_;
+  scoped_ptr<net::FakeURLFetcherFactory> fake_url_fetcher_factory_;
   std::string icon_response_;
 };
 

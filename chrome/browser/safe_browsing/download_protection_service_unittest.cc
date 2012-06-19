@@ -25,9 +25,9 @@
 #include "chrome/common/zip.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/test/test_browser_thread.h"
-#include "content/public/test/test_url_fetcher_factory.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/x509_certificate.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -250,7 +250,7 @@ class DownloadProtectionServiceTest : public testing::Test {
     msg_loop_.Quit();
   }
 
-  void SendURLFetchComplete(TestURLFetcher* fetcher) {
+  void SendURLFetchComplete(net::TestURLFetcher* fetcher) {
     fetcher->delegate()->OnURLFetchComplete(fetcher);
   }
 
@@ -324,7 +324,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadWhitelistedUrl) {
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadFetchFailed) {
-  FakeURLFetcherFactory factory;
+  net::FakeURLFetcherFactory factory;
   // HTTP request will fail.
   factory.SetFakeResponse(
       DownloadProtectionService::kDownloadRequestUrl, "", false);
@@ -350,7 +350,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadFetchFailed) {
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   ClientDownloadResponse response;
   response.set_verdict(ClientDownloadResponse::SAFE);
-  FakeURLFetcherFactory factory;
+  net::FakeURLFetcherFactory factory;
   // Empty response means SAFE.
   factory.SetFakeResponse(
       DownloadProtectionService::kDownloadRequestUrl,
@@ -428,7 +428,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadHTTPS) {
   ClientDownloadResponse response;
   response.set_verdict(ClientDownloadResponse::DANGEROUS);
-  FakeURLFetcherFactory factory;
+  net::FakeURLFetcherFactory factory;
   factory.SetFakeResponse(
       DownloadProtectionService::kDownloadRequestUrl,
       response.SerializeAsString(),
@@ -459,7 +459,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadHTTPS) {
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
   ClientDownloadResponse response;
   response.set_verdict(ClientDownloadResponse::SAFE);
-  FakeURLFetcherFactory factory;
+  net::FakeURLFetcherFactory factory;
   // Empty response means SAFE.
   factory.SetFakeResponse(
       DownloadProtectionService::kDownloadRequestUrl,
@@ -563,7 +563,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientCrxDownloadSuccess) {
   // DownloadProtectionService::IsSupportedDownload() will return false
   // for crx downloads.
   response.set_verdict(ClientDownloadResponse::DANGEROUS);
-  FakeURLFetcherFactory factory;
+  net::FakeURLFetcherFactory factory;
   // Empty response means SAFE.
   factory.SetFakeResponse(
       DownloadProtectionService::kDownloadRequestUrl,
@@ -590,7 +590,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientCrxDownloadSuccess) {
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
-  TestURLFetcherFactory factory;
+  net::TestURLFetcherFactory factory;
 
   DownloadProtectionService::DownloadInfo info;
   info.local_file = FilePath(FILE_PATH_LITERAL("bla.tmp"));
@@ -615,12 +615,12 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
 #if !defined(OS_WIN)
   // SendRequest is not called.  Wait for FinishRequest to call our callback.
   msg_loop_.Run();
-  TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   EXPECT_EQ(NULL, fetcher);
 #else
   // Run the message loop(s) until SendRequest is called.
   FlushThreadMessageLoops();
-  TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   ClientDownloadRequest request;
   EXPECT_TRUE(request.ParseFromString(fetcher->upload_data()));
@@ -656,7 +656,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
 // Similar to above, but with an unsigned binary.
 TEST_F(DownloadProtectionServiceTest,
        CheckClientDownloadValidateRequestNoSignature) {
-  TestURLFetcherFactory factory;
+  net::TestURLFetcherFactory factory;
 
   DownloadProtectionService::DownloadInfo info;
   info.local_file = FilePath(FILE_PATH_LITERAL("bla.tmp"));
@@ -679,12 +679,12 @@ TEST_F(DownloadProtectionServiceTest,
 #if !defined(OS_WIN)
   // SendRequest is not called.  Wait for FinishRequest to call our callback.
   msg_loop_.Run();
-  TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   EXPECT_EQ(NULL, fetcher);
 #else
   // Run the message loop(s) until SendRequest is called.
   FlushThreadMessageLoops();
-  TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   ClientDownloadRequest request;
   EXPECT_TRUE(request.ParseFromString(fetcher->upload_data()));
@@ -775,7 +775,7 @@ TEST_F(DownloadProtectionServiceTest, TestCheckDownloadUrl) {
 }
 
 TEST_F(DownloadProtectionServiceTest, TestDownloadRequestTimeout) {
-  TestURLFetcherFactory factory;
+  net::TestURLFetcherFactory factory;
 
   DownloadProtectionService::DownloadInfo info;
   info.download_url_chain.push_back(GURL("http://www.evil.com/bla.exe"));

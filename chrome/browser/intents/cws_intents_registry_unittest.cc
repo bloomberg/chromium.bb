@@ -8,7 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
-#include "content/public/test/test_url_fetcher_factory.h"
+#include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -101,7 +101,7 @@ class CWSIntentsRegistryTest : public testing::Test {
   }
 
   CWSIntentsRegistry::IntentExtensionList extensions_;
-  FakeURLFetcherFactory test_factory_;
+  net::FakeURLFetcherFactory test_factory_;
 
  protected:
   MessageLoop ui_loop_;
