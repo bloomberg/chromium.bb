@@ -809,6 +809,9 @@ TEST_F(SearchProviderTest, SuggestRelevanceExperiment) {
     { "[\"a\",[\"a1\", \"a2\"],[],[],{\"google:suggestrelevance\":[1, 2],"
                                      "\"google:verbatimrelevance\":0}]",
       { "a", "a2", "a1", kNotApplicable } },
+    { "[\"a\",[\"a1\", \"a2\"],[],[],{\"google:suggestrelevance\":[1, 3],"
+      "\"google:verbatimrelevance\":2}]",
+      { "a", "a2", "a1", kNotApplicable } },
     { "[\"a\",[\"http://a.com\"],[],[],"
        "{\"google:suggesttype\":[\"NAVIGATION\"],"
         "\"google:suggestrelevance\":[1],"
@@ -858,6 +861,7 @@ TEST_F(SearchProviderTest, SuggestRelevanceExperiment) {
       { "a2", "a", "a1", kNotApplicable } },
 
     // Ensure that verbatim is always generated without other suggestions.
+    // TODO(msw): Ensure verbatimrelevance is respected (except suppression).
     { "[\"a\",[],[],[],{\"google:verbatimrelevance\":1}]",
       { "a", kNotApplicable, kNotApplicable, kNotApplicable } },
     { "[\"a\",[],[],[],{\"google:verbatimrelevance\":0}]",

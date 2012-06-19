@@ -764,23 +764,23 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
   if (!matches_.empty() &&
       (has_suggested_relevance_ || verbatim_relevance_ >= 0)) {
     bool reconstruct_matches = false;
-    if (matches_.front().type == AutocompleteMatch::SEARCH_SUGGEST ||
-        matches_.front().type == AutocompleteMatch::NAVSUGGEST) {
-      if (matches_.front().inline_autocomplete_offset == string16::npos &&
-          matches_.front().fill_into_edit != input_.text()) {
-        // Disregard suggested relevances if the top result is not inlinable.
-        // For example, input "foo" should not invoke a search for "bar", which
-        // would happen if the "bar" search match outranked all other matches.
-        ApplyCalculatedRelevance();
-        reconstruct_matches = true;
-      } else if (matches_.front().relevance < CalculateRelevanceForVerbatim()) {
-        // Disregard the suggested verbatim relevance if the top score is below
-        // the usual verbatim value. For example, a BarProvider may rely on
-        // SearchProvider's verbatim or inlineable matches for input "foo" to
-        // always outrank its own lowly-ranked non-inlineable "bar" match.
-        verbatim_relevance_ = -1;
-        reconstruct_matches = true;
-      }
+    if (matches_.front().type != AutocompleteMatch::SEARCH_WHAT_YOU_TYPED &&
+        matches_.front().type != AutocompleteMatch::URL_WHAT_YOU_TYPED &&
+        matches_.front().inline_autocomplete_offset == string16::npos &&
+        matches_.front().fill_into_edit != input_.text()) {
+      // Disregard suggested relevances if the top match is not SWYT, inlinable,
+      // or URL_WHAT_YOU_TYPED (which may be top match regardless of inlining).
+      // For example, input "foo" should not invoke a search for "bar", which
+      // would happen if the "bar" search match outranked all other matches.
+      ApplyCalculatedRelevance();
+      reconstruct_matches = true;
+    } else if (matches_.front().relevance < CalculateRelevanceForVerbatim()) {
+      // Disregard the suggested verbatim relevance if the top score is below
+      // the usual verbatim value. For example, a BarProvider may rely on
+      // SearchProvider's verbatim or inlineable matches for input "foo" to
+      // always outrank its own lowly-ranked non-inlineable "bar" match.
+      verbatim_relevance_ = -1;
+      reconstruct_matches = true;
     }
     if (input_.type() == AutocompleteInput::URL &&
         matches_.front().relevance > CalculateRelevanceForVerbatim() &&
@@ -933,14 +933,15 @@ void SearchProvider::AddSuggestResultsToMap(const SuggestResults& results,
 int SearchProvider::GetVerbatimRelevance() const {
   // Use the suggested verbatim relevance score if it is non-negative (valid),
   // if inline autocomplete isn't prevented (always show verbatim on backspace),
-  // and if there is at least one other suggestion from the default provider
-  // (otherwise, if the default provider returned no matches and was still able
+  // and if it won't suppress verbatim, leaving no default provider matches.
+  // Otherwise, if the default provider returned no matches and was still able
   // to suppress verbatim, the user would have no search/nav matches and may be
-  // left unable to search from the omnibox).
+  // left unable to search using their default provider from the omnibox.
   // Check for results on each verbatim calculation, as results from older
   // queries (on previous input) may be trimmed for failing to inline new input.
   if (verbatim_relevance_ >= 0 && !input_.prevent_inline_autocomplete() &&
-      (!default_suggest_results_.empty() ||
+      (verbatim_relevance_ > 0 ||
+       !default_suggest_results_.empty() ||
        !default_navigation_results_.empty())) {
     return verbatim_relevance_;
   }
