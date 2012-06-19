@@ -21,6 +21,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/history/history_notifications.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
@@ -1061,9 +1062,10 @@ TEST_F(BookmarkModelTestWithProfile2, RemoveNotification) {
   GURL url("http://www.google.com");
   bookmark_utils::AddIfNotBookmarked(bb_model_, url, string16());
 
-  profile_->GetHistoryService(Profile::EXPLICIT_ACCESS)->AddPage(
-      url, NULL, 1, GURL(), content::PAGE_TRANSITION_TYPED,
-      history::RedirectList(), history::SOURCE_BROWSED, false);
+  HistoryServiceFactory::GetForProfile(
+      profile_.get(), Profile::EXPLICIT_ACCESS)->AddPage(
+          url, NULL, 1, GURL(), content::PAGE_TRANSITION_TYPED,
+          history::RedirectList(), history::SOURCE_BROWSED, false);
 
   // This won't actually delete the URL, rather it'll empty out the visits.
   // This triggers blocking on the BookmarkModel.

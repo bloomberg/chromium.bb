@@ -31,6 +31,7 @@
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -104,9 +105,9 @@ class DownloadsHistoryDataCollector {
                                 DownloadManager* manager)
       : result_valid_(false),
         download_db_handle_(download_db_handle) {
-    HistoryService* hs =
-        Profile::FromBrowserContext(manager->GetBrowserContext())->
-            GetHistoryService(Profile::EXPLICIT_ACCESS);
+    HistoryService* hs = HistoryServiceFactory::GetForProfile(
+        Profile::FromBrowserContext(manager->GetBrowserContext()),
+        Profile::EXPLICIT_ACCESS);
     DCHECK(hs);
     hs->QueryDownloads(
         &callback_consumer_,

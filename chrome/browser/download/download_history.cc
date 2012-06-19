@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/history/history_marshaling.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_persistent_store_info.h"
@@ -24,7 +25,8 @@ DownloadHistory::~DownloadHistory() {}
 
 void DownloadHistory::GetNextId(
     const HistoryService::DownloadNextIdCallback& callback) {
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* hs =
+      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (!hs)
     return;
 
@@ -33,7 +35,8 @@ void DownloadHistory::GetNextId(
 
 void DownloadHistory::Load(
     const HistoryService::DownloadQueryCallback& callback) {
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* hs =
+      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (!hs)
     return;
 
@@ -48,7 +51,9 @@ void DownloadHistory::CheckVisitedReferrerBefore(
     const GURL& referrer_url,
     const VisitedBeforeDoneCallback& callback) {
   if (referrer_url.is_valid()) {
-    HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+    HistoryService* hs =
+        HistoryServiceFactory::GetForProfile(profile_,
+                                             Profile::EXPLICIT_ACCESS);
     if (hs) {
       HistoryService::Handle handle =
           hs->GetVisibleVisitCountToHost(referrer_url, &history_consumer_,
@@ -74,7 +79,8 @@ void DownloadHistory::AddEntry(
   // handles, so we use a negative value. Eventually, they could overlap, but
   // you'd have to do enough downloading that your ISP would likely stab you in
   // the neck first. YMMV.
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* hs =
+      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (download_item->IsOtr() ||
       download_crx_util::IsExtensionDownload(*download_item) ||
       download_item->IsTemporary() || !hs) {
@@ -94,7 +100,8 @@ void DownloadHistory::UpdateEntry(DownloadItem* download_item) {
   if (download_item->GetDbHandle() <= DownloadItem::kUninitializedHandle)
     return;
 
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* hs =
+      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (!hs)
     return;
   hs->UpdateDownload(download_item->GetPersistentStoreInfo());
@@ -106,7 +113,8 @@ void DownloadHistory::UpdateDownloadPath(DownloadItem* download_item,
   if (download_item->GetDbHandle() <= DownloadItem::kUninitializedHandle)
     return;
 
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* hs =
+      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (hs)
     hs->UpdateDownloadPath(new_path, download_item->GetDbHandle());
 }
@@ -116,14 +124,16 @@ void DownloadHistory::RemoveEntry(DownloadItem* download_item) {
   if (download_item->GetDbHandle() <= DownloadItem::kUninitializedHandle)
     return;
 
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* hs =
+      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (hs)
     hs->RemoveDownload(download_item->GetDbHandle());
 }
 
 void DownloadHistory::RemoveEntriesBetween(const base::Time remove_begin,
                                            const base::Time remove_end) {
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* hs =
+      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (hs)
     hs->RemoveDownloadsBetween(remove_begin, remove_end);
 }

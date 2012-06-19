@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/history/history_database.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/query_parser.h"
 #include "chrome/browser/profiles/profile.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -111,7 +112,8 @@ void BookmarkIndex::GetBookmarksWithTitlesMatching(
 void BookmarkIndex::SortMatches(const Matches& matches,
                                 NodeTypedCountPairs* node_typed_counts) const {
   HistoryService* const history_service = profile_ ?
-      profile_->GetHistoryService(Profile::EXPLICIT_ACCESS) : NULL;
+      HistoryServiceFactory::GetForProfile(profile_,
+                                           Profile::EXPLICIT_ACCESS) : NULL;
 
   history::URLDatabase* url_db = history_service ?
       history_service->InMemoryDatabase() : NULL;
