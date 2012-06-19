@@ -26,6 +26,12 @@ var gesture_config = (function() {
       default: 1.0
     },
     {
+      key: 'semi_long_press_time_in_seconds',
+      label: 'Semi Long Press Time',
+      units: 'seconds',
+      default: 0.5
+    },
+    {
       key: 'max_seconds_between_double_click',
       label: 'Maximum Double Click Interval',
       units: 'seconds',

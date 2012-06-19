@@ -725,6 +725,7 @@ extern const char kMinTouchDownDurationInSecondsForClick[];
 extern const char kPointsBufferedForVelocity[];
 extern const char kRailBreakProportion[];
 extern const char kRailStartProportion[];
+extern const char kSemiLongPressTimeInSeconds[];
 #endif
 
 extern const char kInManagedMode[];

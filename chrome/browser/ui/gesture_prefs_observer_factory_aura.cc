@@ -47,6 +47,7 @@ class GesturePrefsObserver : public content::NotificationObserver,
 // in ui/base/gestures/gesture_configuration.h
 const char* kPrefsToObserve[] = {
   prefs::kLongPressTimeInSeconds,
+  prefs::kMaxDistanceForTwoFingerTapInPixels,
   prefs::kMaxSecondsBetweenDoubleClick,
   prefs::kMaxSeparationForGestureTouchesInPixels,
   prefs::kMaxSwipeDeviationRatio,
@@ -62,6 +63,7 @@ const char* kPrefsToObserve[] = {
   prefs::kPointsBufferedForVelocity,
   prefs::kRailBreakProportion,
   prefs::kRailStartProportion,
+  prefs::kSemiLongPressTimeInSeconds,
 };
 
 GesturePrefsObserver::GesturePrefsObserver(PrefService* prefs)
@@ -89,6 +91,9 @@ void GesturePrefsObserver::Update() {
   GestureConfiguration::set_long_press_time_in_seconds(
       prefs_->GetDouble(
           prefs::kLongPressTimeInSeconds));
+  GestureConfiguration::set_semi_long_press_time_in_seconds(
+      prefs_->GetDouble(
+          prefs::kSemiLongPressTimeInSeconds));
   GestureConfiguration::set_max_distance_for_two_finger_tap_in_pixels(
       prefs_->GetDouble(
           prefs::kMaxDistanceForTwoFingerTapInPixels));
@@ -162,6 +167,10 @@ void GesturePrefsObserverFactoryAura::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDoublePref(
       prefs::kLongPressTimeInSeconds,
       GestureConfiguration::long_press_time_in_seconds(),
+      PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterDoublePref(
+      prefs::kSemiLongPressTimeInSeconds,
+      GestureConfiguration::semi_long_press_time_in_seconds(),
       PrefService::UNSYNCABLE_PREF);
   prefs->RegisterDoublePref(
       prefs::kMaxDistanceForTwoFingerTapInPixels,

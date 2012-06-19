@@ -25,6 +25,9 @@ class UI_EXPORT GestureConfiguration {
   static double long_press_time_in_seconds() {
     return long_press_time_in_seconds_;
   }
+  static double semi_long_press_time_in_seconds() {
+    return semi_long_press_time_in_seconds_;
+  }
   static double max_distance_for_two_finger_tap_in_pixels() {
     return max_distance_for_two_finger_tap_in_pixels_;
   }
@@ -36,6 +39,9 @@ class UI_EXPORT GestureConfiguration {
   }
   static void set_long_press_time_in_seconds(double val) {
     long_press_time_in_seconds_ = val;
+  }
+  static void set_semi_long_press_time_in_seconds(double val) {
+    semi_long_press_time_in_seconds_ = val;
   }
   static double max_seconds_between_double_click() {
     return max_seconds_between_double_click_;
@@ -147,6 +153,7 @@ class UI_EXPORT GestureConfiguration {
   static int max_radius_;
 
   static double long_press_time_in_seconds_;
+  static double semi_long_press_time_in_seconds_;
   static double max_seconds_between_double_click_;
   static double max_separation_for_gesture_touches_in_pixels_;
   static double max_swipe_deviation_ratio_;

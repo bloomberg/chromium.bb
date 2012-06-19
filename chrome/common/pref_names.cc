@@ -1937,6 +1937,8 @@ const char kRailBreakProportion[] =
     "gesture.rail_break_proportion";
 const char kRailStartProportion[] =
     "gesture.rail_start_proportion";
+const char kSemiLongPressTimeInSeconds[] =
+    "gesture.semi_long_press_time_in_seconds";
 #endif
 
 // Indicates whether the browser is in managed mode.

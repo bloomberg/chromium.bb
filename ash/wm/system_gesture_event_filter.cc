@@ -49,7 +49,6 @@ const int kAffordanceWidth = 3;
 const SkColor kAffordanceFullColor = SkColorSetARGB(125, 0, 0, 255);
 const SkColor kAffordanceEmptyColor = SkColorSetARGB(50, 0, 0, 255);
 const int kAffordanceFrameRateHz = 60;
-const int kAffordanceStartDelay = 300;
 
 const double kPinchThresholdForMaximize = 1.5;
 const double kPinchThresholdForMinimize = 0.7;
@@ -172,18 +171,20 @@ class SystemGestureEventFilter::LongPressAffordanceAnimation
         view_(NULL) {
     int duration =
         ui::GestureConfiguration::long_press_time_in_seconds() * 1000 -
-        kAffordanceStartDelay;
+        ui::GestureConfiguration::semi_long_press_time_in_seconds() * 1000;
     SetDuration(duration);
   }
 
   void ProcessEvent(aura::Window* target, aura::LocatedEvent* event) {
     gfx::Point event_location;
+    int64 timer_start_time_ms =
+        ui::GestureConfiguration::semi_long_press_time_in_seconds() * 1000;
     switch (event->type()) {
       case ui::ET_GESTURE_TAP_DOWN:
         // Start animation.
         tap_down_location_ = event->root_location();
         timer_.Start(FROM_HERE,
-                     base::TimeDelta::FromMilliseconds(kAffordanceStartDelay),
+                     base::TimeDelta::FromMilliseconds(timer_start_time_ms),
                      this,
                      &LongPressAffordanceAnimation::StartAnimation);
         break;
