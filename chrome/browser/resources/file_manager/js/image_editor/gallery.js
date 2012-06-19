@@ -605,7 +605,7 @@ Gallery.prototype.openImage = function(id, url, metadata, slide, callback) {
     self.showSpinner_(false);
     if (loadType == ImageView.LOAD_TYPE_ERROR) {
       self.showErrorBanner_(video? 'VIDEO_ERROR' : 'IMAGE_ERROR');
-    } else if (loadType = ImageView.LOAD_TYPE_OFFLINE) {
+    } else if (loadType == ImageView.LOAD_TYPE_OFFLINE) {
       self.showErrorBanner_(video? 'VIDEO_OFFLINE' : 'IMAGE_OFFLINE');
     }
 
