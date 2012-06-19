@@ -293,13 +293,6 @@ base::PlatformFileError FileUtilHelper::ReadDirectory(
 
   FilePath current;
   while (!(current = file_enum->Next()).empty()) {
-    // TODO(rkc): Fix this also once we've refactored file_util
-    // http://code.google.com/p/chromium-os/issues/detail?id=15948
-    // This currently just prevents a file from showing up at all
-    // if it's a link, hence preventing arbitary 'read' exploits.
-    if (file_enum->IsLink())
-      continue;
-
     base::FileUtilProxy::Entry entry;
     entry.is_directory = file_enum->IsDirectory();
     entry.name = current.BaseName().value();

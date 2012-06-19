@@ -39,7 +39,6 @@ class FILEAPI_EXPORT FileSystemFileUtil {
     virtual int64 Size() = 0;
     virtual base::Time LastModifiedTime() = 0;
     virtual bool IsDirectory() = 0;
-    virtual bool IsLink() = 0;
   };
 
   class EmptyFileEnumerator : public AbstractFileEnumerator {
@@ -47,7 +46,6 @@ class FILEAPI_EXPORT FileSystemFileUtil {
     virtual int64 Size() OVERRIDE { return 0; }
     virtual base::Time LastModifiedTime() OVERRIDE { return base::Time(); }
     virtual bool IsDirectory() OVERRIDE { return false; }
-    virtual bool IsLink() OVERRIDE { return false; }
   };
 
   virtual ~FileSystemFileUtil() {}

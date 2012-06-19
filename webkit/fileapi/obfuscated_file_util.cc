@@ -177,10 +177,6 @@ class ObfuscatedFileEnumerator
     return current_platform_file_info_.is_directory;
   }
 
-  virtual bool IsLink() OVERRIDE {
-    return false;
-  }
-
  private:
   typedef FileSystemDirectoryDatabase::FileId FileId;
   typedef FileSystemDirectoryDatabase::FileInfo FileInfo;
@@ -1114,6 +1110,11 @@ PlatformFileError ObfuscatedFileUtil::GetFileInfoInternal(
       origin, type, local_info->data_path);
   base::PlatformFileError error = NativeFileUtil::GetFileInfo(
       local_path, file_info);
+  // We should not follow symbolic links in sandboxed file system.
+  if (file_util::IsLink(local_path)) {
+    LOG(WARNING) << "Found a symbolic file.";
+    error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+  }
   if (error == base::PLATFORM_FILE_OK) {
     *platform_file_path = local_path;
   } else if (error == base::PLATFORM_FILE_ERROR_NOT_FOUND) {

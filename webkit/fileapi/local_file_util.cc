@@ -36,7 +36,6 @@ class LocalFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
   virtual int64 Size() OVERRIDE;
   virtual base::Time LastModifiedTime() OVERRIDE;
   virtual bool IsDirectory() OVERRIDE;
-  virtual bool IsLink() OVERRIDE;
 
  private:
   file_util::FileEnumerator file_enum_;
@@ -47,6 +46,9 @@ class LocalFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
 
 FilePath LocalFileEnumerator::Next() {
   FilePath next = file_enum_.Next();
+  // Don't return symlinks.
+  while (!next.empty() && file_util::IsLink(next))
+    next = file_enum_.Next();
   if (next.empty())
     return next;
   file_enum_.GetFindInfo(&file_util_info_);
@@ -66,10 +68,6 @@ base::Time LocalFileEnumerator::LastModifiedTime() {
 
 bool LocalFileEnumerator::IsDirectory() {
   return file_util::FileEnumerator::IsDirectory(file_util_info_);
-}
-
-bool LocalFileEnumerator::IsLink() {
-  return file_util::FileEnumerator::IsLink(file_util_info_);
 }
 
 LocalFileUtil::LocalFileUtil() {
@@ -127,6 +125,9 @@ PlatformFileError LocalFileUtil::GetFileInfo(
   PlatformFileError error = GetLocalFilePath(context, path, &file_path);
   if (error != base::PLATFORM_FILE_OK)
     return error;
+  // We should not follow symbolic links in sandboxed file system.
+  if (file_util::IsLink(file_path))
+    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
   error = NativeFileUtil::GetFileInfo(file_path, file_info);
   if (error == base::PLATFORM_FILE_OK)
     *platform_file_path = file_path;

@@ -52,7 +52,6 @@ class NativeFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
   virtual int64 Size() OVERRIDE;
   virtual base::Time LastModifiedTime() OVERRIDE;
   virtual bool IsDirectory() OVERRIDE;
-  virtual bool IsLink() OVERRIDE;
 
  private:
   file_util::FileEnumerator file_enum_;
@@ -76,10 +75,6 @@ base::Time NativeFileEnumerator::LastModifiedTime() {
 
 bool NativeFileEnumerator::IsDirectory() {
   return file_util::FileEnumerator::IsDirectory(file_util_info_);
-}
-
-bool NativeFileEnumerator::IsLink() {
-  return file_util::FileEnumerator::IsLink(file_util_info_);
 }
 
 PlatformFileError NativeFileUtil::CreateOrOpen(
@@ -154,11 +149,6 @@ PlatformFileError NativeFileUtil::GetFileInfo(
     const FilePath& path,
     base::PlatformFileInfo* file_info) {
   if (!file_util::PathExists(path))
-    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
-  // TODO(rkc): Fix this hack once we have refactored file_util to handle
-  // symlinks correctly.
-  // http://code.google.com/p/chromium-os/issues/detail?id=15948
-  if (file_util::IsLink(path))
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
   if (!file_util::GetFileInfo(path, file_info))
     return base::PLATFORM_FILE_ERROR_FAILED;

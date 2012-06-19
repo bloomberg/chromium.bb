@@ -46,7 +46,6 @@ class SetFileEnumerator : public FileSystemFileUtil::AbstractFileEnumerator {
   virtual base::Time LastModifiedTime() OVERRIDE {
     return file_info_.last_modified;
   }
-  virtual bool IsLink() OVERRIDE { return file_info_.is_symbolic_link; }
 
  private:
   std::vector<FilePath> paths_;
@@ -86,6 +85,9 @@ class PathConverterEnumerator
   virtual FilePath Next() OVERRIDE {
     DCHECK(wrapped_.get());
     FilePath path = wrapped_->Next();
+    // Don't return symlinks in subdirectories.
+    while (!path.empty() && file_util::IsLink(path))
+      path = wrapped_->Next();
     if (path.empty())
       return path;
     FilePath virtual_path = virtual_base_path_;
@@ -97,7 +99,6 @@ class PathConverterEnumerator
   virtual base::Time LastModifiedTime() OVERRIDE {
     return wrapped_->LastModifiedTime();
   }
-  virtual bool IsLink() OVERRIDE { return wrapped_->IsLink(); }
 
  private:
   scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> wrapped_;
@@ -134,10 +135,6 @@ class RecursiveSetFileEnumerator
   virtual base::Time LastModifiedTime() OVERRIDE {
     DCHECK(current_enumerator_.get());
     return current_enumerator_->LastModifiedTime();
-  }
-  virtual bool IsLink() OVERRIDE {
-    DCHECK(current_enumerator_.get());
-    return current_enumerator_->IsLink();
   }
 
  private:
@@ -229,6 +226,10 @@ PlatformFileError IsolatedFileUtil::GetFileInfo(
   }
   base::PlatformFileError error =
       NativeFileUtil::GetFileInfo(cracked_path, file_info);
+  if (file_util::IsLink(cracked_path) && !FilePath().IsParent(cracked_path)) {
+    // Don't follow symlinks unless it's the one that are selected by the user.
+    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
+  }
   if (error == base::PLATFORM_FILE_OK)
     *platform_path = cracked_path;
   return error;
