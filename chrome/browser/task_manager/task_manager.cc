@@ -1102,7 +1102,8 @@ void TaskManager::ActivateProcess(int index) {
   TabContents* chosen_tab_contents = model_->GetResourceTabContents(index);
   if (chosen_tab_contents) {
     WebContents* web_contents = chosen_tab_contents->web_contents();
-    web_contents->GetDelegate()->ActivateContents(web_contents);
+    if (web_contents->GetDelegate())
+      web_contents->GetDelegate()->ActivateContents(web_contents);
   }
 }
 
