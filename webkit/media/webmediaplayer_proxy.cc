@@ -245,7 +245,7 @@ void WebMediaPlayerProxy::KeyAdded(const std::string& key_system,
 
 void WebMediaPlayerProxy::KeyError(const std::string& key_system,
                                    const std::string& session_id,
-                                   media::AesDecryptor::KeyError error_code,
+                                   media::Decryptor::KeyError error_code,
                                    int system_code) {
   render_loop_->PostTask(FROM_HERE, base::Bind(
       &WebMediaPlayerProxy::KeyErrorTask, this, key_system, session_id,
@@ -280,7 +280,7 @@ void WebMediaPlayerProxy::KeyAddedTask(const std::string& key_system,
 
 void WebMediaPlayerProxy::KeyErrorTask(const std::string& key_system,
                                        const std::string& session_id,
-                                       media::AesDecryptor::KeyError error_code,
+                                       media::Decryptor::KeyError error_code,
                                        int system_code) {
   DCHECK(render_loop_->BelongsToCurrentThread());
   if (webmediaplayer_)

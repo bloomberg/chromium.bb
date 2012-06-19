@@ -11,8 +11,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
+#include "media/base/decryptor_client.h"
 #include "media/base/pipeline.h"
-#include "media/crypto/decryptor_client.h"
 #include "media/filters/chunk_demuxer.h"
 #include "media/filters/chunk_demuxer_client.h"
 #include "media/filters/ffmpeg_video_decoder.h"
@@ -112,7 +112,7 @@ class WebMediaPlayerProxy
                         const std::string& session_id) OVERRIDE;
   virtual void KeyError(const std::string& key_system,
                         const std::string& session_id,
-                        media::AesDecryptor::KeyError error_code,
+                        media::Decryptor::KeyError error_code,
                         int system_code) OVERRIDE;
   virtual void KeyMessage(const std::string& key_system,
                           const std::string& session_id,
@@ -157,7 +157,7 @@ class WebMediaPlayerProxy
   // Notify |webmediaplayer_| that a key error occurred.
   void KeyErrorTask(const std::string& key_system,
                     const std::string& session_id,
-                    media::AesDecryptor::KeyError error_code,
+                    media::Decryptor::KeyError error_code,
                     int system_code);
 
   // Notify |webmediaplayer_| that a key message has been generated.

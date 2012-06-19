@@ -56,10 +56,10 @@
 #include "base/message_loop.h"
 #include "googleurl/src/gurl.h"
 #include "media/base/audio_renderer_sink.h"
+#include "media/base/decryptor.h"
 #include "media/base/filters.h"
 #include "media/base/message_loop_factory.h"
 #include "media/base/pipeline.h"
-#include "media/crypto/aes_decryptor.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAudioSourceProvider.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayer.h"
@@ -73,7 +73,6 @@ class WebFrame;
 }
 
 namespace media {
-class AesDecryptor;
 class MediaLog;
 }
 
@@ -232,7 +231,7 @@ class WebMediaPlayerImpl
   void OnKeyAdded(const std::string& key_system, const std::string& session_id);
   void OnKeyError(const std::string& key_system,
                   const std::string& session_id,
-                  media::AesDecryptor::KeyError error_code,
+                  media::Decryptor::KeyError error_code,
                   int system_code);
   void OnKeyMessage(const std::string& key_system,
                     const std::string& session_id,
@@ -294,7 +293,7 @@ class WebMediaPlayerImpl
   bool started_;
 
   // The decryptor that manages decryption keys and decrypts encrypted frames.
-  scoped_ptr<media::AesDecryptor> decryptor_;
+  scoped_ptr<media::Decryptor> decryptor_;
 
   scoped_ptr<media::MessageLoopFactory> message_loop_factory_;
 

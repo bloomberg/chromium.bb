@@ -21,7 +21,7 @@ namespace webkit_media {
 static void AddDefaultDecodersToCollection(
     media::MessageLoopFactory* message_loop_factory,
     media::FilterCollection* filter_collection,
-    media::AesDecryptor* decryptor,
+    media::Decryptor* decryptor,
     scoped_refptr<media::FFmpegVideoDecoder>* ffmpeg_video_decoder) {
   filter_collection->AddAudioDecoder(new media::FFmpegAudioDecoder(
       base::Bind(&media::MessageLoopFactory::GetMessageLoop,
@@ -69,7 +69,7 @@ bool BuildMediaSourceCollection(
     media::ChunkDemuxerClient* client,
     media::MessageLoopFactory* message_loop_factory,
     media::FilterCollection* filter_collection,
-    media::AesDecryptor* decryptor,
+    media::Decryptor* decryptor,
     scoped_refptr<media::FFmpegVideoDecoder>* video_decoder) {
   if (media_source_url.isEmpty() || url != media_source_url)
     return false;
@@ -85,7 +85,7 @@ void BuildDefaultCollection(
     const scoped_refptr<media::DataSource>& data_source,
     media::MessageLoopFactory* message_loop_factory,
     media::FilterCollection* filter_collection,
-    media::AesDecryptor* decryptor,
+    media::Decryptor* decryptor,
     scoped_refptr<media::FFmpegVideoDecoder>* video_decoder) {
   filter_collection->SetDemuxer(new media::FFmpegDemuxer(
       message_loop_factory->GetMessageLoop("PipelineThread"),

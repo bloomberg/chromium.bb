@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CRYPTO_DECRYPTOR_CLIENT_H_
-#define MEDIA_CRYPTO_DECRYPTOR_CLIENT_H_
+#ifndef MEDIA_BASE_DECRYPTOR_CLIENT_H_
+#define MEDIA_BASE_DECRYPTOR_CLIENT_H_
 
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "media/crypto/aes_decryptor.h"
+#include "media/base/decryptor.h"
 
 namespace media {
 
@@ -24,7 +24,7 @@ class DecryptorClient {
   // system-dependent. For clear key system, the |system_code| is always zero.
   virtual void KeyError(const std::string& key_system,
                         const std::string& session_id,
-                        AesDecryptor::KeyError error_code,
+                        Decryptor::KeyError error_code,
                         int system_code) = 0;
 
   // Signals that a key message has been generated.
@@ -47,4 +47,4 @@ class DecryptorClient {
 
 }  // namespace media
 
-#endif  // MEDIA_CRYPTO_DECRYPTOR_CLIENT_H_
+#endif  // MEDIA_BASE_DECRYPTOR_CLIENT_H_

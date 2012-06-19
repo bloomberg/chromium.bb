@@ -893,7 +893,7 @@ void WebMediaPlayerImpl::OnNeedKey(const std::string& key_system,
 
 void WebMediaPlayerImpl::OnKeyError(const std::string& key_system,
                                     const std::string& session_id,
-                                    media::AesDecryptor::KeyError error_code,
+                                    media::Decryptor::KeyError error_code,
                                     int system_code) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
 

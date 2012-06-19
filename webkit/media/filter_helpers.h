@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 
 namespace media {
-class AesDecryptor;
+class Decryptor;
 class ChunkDemuxerClient;
 class DataSource;
 class FFmpegVideoDecoder;
@@ -44,7 +44,7 @@ bool BuildMediaSourceCollection(
     media::ChunkDemuxerClient* client,
     media::MessageLoopFactory* message_loop_factory,
     media::FilterCollection* filter_collection,
-    media::AesDecryptor* decryptor,
+    media::Decryptor* decryptor,
     scoped_refptr<media::FFmpegVideoDecoder>* video_decoder);
 
 // Builds the required filters for handling regular URLs and adds them to
@@ -53,7 +53,7 @@ void BuildDefaultCollection(
     const scoped_refptr<media::DataSource>& data_source,
     media::MessageLoopFactory* message_loop_factory,
     media::FilterCollection* filter_collection,
-    media::AesDecryptor* decryptor,
+    media::Decryptor* decryptor,
     scoped_refptr<media::FFmpegVideoDecoder>* video_decoder);
 
 }  // webkit_media
