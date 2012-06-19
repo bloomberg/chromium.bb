@@ -6,6 +6,7 @@
 
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "net/tools/gdig/file_net_log.h"
 

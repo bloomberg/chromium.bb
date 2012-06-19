@@ -83,7 +83,7 @@ void OpenFile(const FilePath& path,
   *result = OK;
   *file = base::CreatePlatformFile(path, open_flags, NULL, NULL);
   if (*file == base::kInvalidPlatformFileValue) {
-    bound_net_log.EndEvent(net::NetLog::TYPE_FILE_STREAM_OPEN, NULL);
+    bound_net_log.EndEvent(net::NetLog::TYPE_FILE_STREAM_OPEN);
     *result = RecordAndMapError(errno, FILE_ERROR_SOURCE_OPEN, record_uma,
                                 bound_net_log);
   }
@@ -104,13 +104,13 @@ void OpenFileAndSignal(const FilePath& path,
 // Closes a file with some network logging.
 void CloseFile(base::PlatformFile file,
                const net::BoundNetLog& bound_net_log) {
-  bound_net_log.AddEvent(net::NetLog::TYPE_FILE_STREAM_CLOSE, NULL);
+  bound_net_log.AddEvent(net::NetLog::TYPE_FILE_STREAM_CLOSE);
   if (file == base::kInvalidPlatformFileValue)
     return;
 
   if (!base::ClosePlatformFile(file))
     NOTREACHED();
-  bound_net_log.EndEvent(net::NetLog::TYPE_FILE_STREAM_OPEN, NULL);
+  bound_net_log.EndEvent(net::NetLog::TYPE_FILE_STREAM_OPEN);
 }
 
 // Closes a file with CloseFile() and signals the completion.
@@ -257,7 +257,7 @@ FileStreamPosix::FileStreamPosix(net::NetLog* net_log)
       bound_net_log_(net::BoundNetLog::Make(net_log,
                                             net::NetLog::SOURCE_FILESTREAM)),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
-  bound_net_log_.BeginEvent(net::NetLog::TYPE_FILE_STREAM_ALIVE, NULL);
+  bound_net_log_.BeginEvent(net::NetLog::TYPE_FILE_STREAM_ALIVE);
 }
 
 FileStreamPosix::FileStreamPosix(
@@ -269,7 +269,7 @@ FileStreamPosix::FileStreamPosix(
       bound_net_log_(net::BoundNetLog::Make(net_log,
                                             net::NetLog::SOURCE_FILESTREAM)),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
-  bound_net_log_.BeginEvent(net::NetLog::TYPE_FILE_STREAM_ALIVE, NULL);
+  bound_net_log_.BeginEvent(net::NetLog::TYPE_FILE_STREAM_ALIVE);
 }
 
 FileStreamPosix::~FileStreamPosix() {
@@ -294,7 +294,7 @@ FileStreamPosix::~FileStreamPosix() {
     }
   }
 
-  bound_net_log_.EndEvent(net::NetLog::TYPE_FILE_STREAM_ALIVE, NULL);
+  bound_net_log_.EndEvent(net::NetLog::TYPE_FILE_STREAM_ALIVE);
 }
 
 void FileStreamPosix::Close(const CompletionCallback& callback) {
