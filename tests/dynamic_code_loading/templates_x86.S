@@ -44,8 +44,10 @@ template_func_replacement:
                                                 * and target address outside
                                                 * modified section */
 #elif defined(__x86_64__)
-        /* tests all modifications that are
-         * currently allowed by service runtime */
+        /*
+         * Tests all modifications that are currently allowed by
+         * service_runtime.
+         */
         new_disp = template_func_replacement_end - 4
         xorl %r11d, %r11d
         movq new_disp(%r15,%r11,1), %rax       /* replaces displacement */
@@ -172,20 +174,26 @@ hlts_end:
         .p2align 5
 branch_forwards:
         jmp branch_backwards
-        /* The assembler generates a bad jmp if I use ".p2align 5"
-           instead of padding manually.  TODO(mseaborn): Investigate. */
+        /*
+         * The assembler generates a bad jmp if I use ".p2align 5"
+         * instead of padding manually.  TODO(mseaborn): Investigate.
+         */
         .fill 32 - 5, 1, 0x90
 branch_forwards_end:
 branch_backwards:
         jmp branch_forwards
-        /* The assembler generates a bad jmp if I use ".p2align 5"
-           instead of padding manually. */
+        /*
+         * The assembler generates a bad jmp if I use ".p2align 5"
+         * instead of padding manually.
+         */
         .fill 32 - 5, 1, 0x90
 branch_backwards_end:
 
 
-        /* We include disallowed code below, so this must go into the
-           data segment. */
+        /*
+         * We include disallowed code below, so this must go into the
+         * data segment.
+         */
         .data
 
 

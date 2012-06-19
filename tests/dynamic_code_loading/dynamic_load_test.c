@@ -35,8 +35,10 @@
 
 int nacl_load_code(void *dest, void *src, int size) {
   int rc = nacl_dyncode_create(dest, src, size);
-  /* Undo the syscall wrapper's errno handling, because it's more
-     convenient to test a single return value. */
+  /*
+   * Undo the syscall wrapper's errno handling, because it's more
+   * convenient to test a single return value.
+   */
   return rc == 0 ? 0 : -errno;
 }
 
@@ -56,8 +58,10 @@ char *allocate_code_space(int pages) {
 void fill_int32(uint8_t *data, size_t size, int32_t value) {
   int i;
   assert(size % 4 == 0);
-  /* All the archs we target supported unaligned word read/write, but
-     check that the pointer is aligned anyway. */
+  /*
+   * All the archs we target supported unaligned word read/write, but
+   * check that the pointer is aligned anyway.
+   */
   assert(((uintptr_t) data) % 4 == 0);
   for (i = 0; i < size / 4; i++)
     ((uint32_t *) data)[i] = value;
@@ -83,9 +87,11 @@ void fill_hlts(uint8_t *data, size_t size) {
 #endif
 }
 
-/* Getting the assembler to pad our code fragments in templates.S is
-   awkward because we have to output them in data mode, in which the
-   assembler wants to output zeroes instead of NOPs for padding. */
+/*
+ * Getting the assembler to pad our code fragments in templates.S is
+ * awkward because we have to output them in data mode, in which the
+ * assembler wants to output zeroes instead of NOPs for padding.
+ */
 void copy_and_pad_fragment(void *dest,
                            int dest_size,
                            const char *fragment_start,
@@ -109,19 +115,23 @@ void test_loading_code() {
   rc = nacl_load_code(load_area, buf, sizeof(buf));
   assert(rc == 0);
   assert(memcmp(load_area, buf, sizeof(buf)) == 0);
-  /* Need double cast otherwise gcc complains with "ISO C forbids
-     conversion of object pointer to function pointer type
-     [-pedantic]". */
+  /*
+   * Need double cast otherwise gcc complains with "ISO C forbids
+   * conversion of object pointer to function pointer type
+   * [-pedantic]".
+   */
   func = (int (*)()) (uintptr_t) load_area;
   rc = func();
   assert(rc == 1234);
 }
 
-/* This is mostly the same as test_loading_code() except that we
-   repeat the test many times within the same page.  Unlike the other
-   tests, this will consistently fail on ARM if we do not flush the
-   instruction cache, so it reproduces the bug
-   http://code.google.com/p/nativeclient/issues/detail?id=699 */
+/*
+ * This is mostly the same as test_loading_code() except that we
+ * repeat the test many times within the same page.  Unlike the other
+ * tests, this will consistently fail on ARM if we do not flush the
+ * instruction cache, so it reproduces the bug
+ * http://code.google.com/p/nativeclient/issues/detail?id=699
+ */
 void test_stress() {
   void *load_area = allocate_code_space(1);
   uint8_t *dest;
@@ -143,9 +153,11 @@ void test_stress() {
   }
 }
 
-/* The syscall may have to mmap() shared memory temporarily,
-   so there is some interaction with page size.
-   Check that we can load to non-page-aligned addresses. */
+/*
+ * The syscall may have to mmap() shared memory temporarily,
+ * so there is some interaction with page size.
+ * Check that we can load to non-page-aligned addresses.
+ */
 void test_loading_code_non_page_aligned() {
   char *load_area = allocate_code_space(1);
   uint8_t buf[BUF_SIZE];
@@ -163,8 +175,10 @@ void test_loading_code_non_page_aligned() {
   assert(memcmp(load_area, buf, sizeof(buf)) == 0);
 }
 
-/* Since there is an interaction with page size, we also test loading
-   a multi-page chunk of code. */
+/*
+ * Since there is an interaction with page size, we also test loading
+ * a multi-page chunk of code.
+ */
 void test_loading_large_chunk() {
   char *load_area = allocate_code_space(2);
   int size = 0x20000;
@@ -183,9 +197,11 @@ void test_loading_zero_size() {
   assert(rc == 0);
 }
 
-/* In general, the failure tests don't check that loading fails for
-   the reason we expect.  TODO(mseaborn): We could do this by
-   comparing with expected log output. */
+/*
+ * In general, the failure tests don't check that loading fails for
+ * the reason we expect.  TODO(mseaborn): We could do this by
+ * comparing with expected log output.
+ */
 
 void test_fail_on_validation_error() {
   void *load_area = allocate_code_space(1);
@@ -207,8 +223,10 @@ void test_validation_error_does_not_leak() {
   rc = nacl_load_code(load_area, buf, sizeof(buf));
   assert(rc == -EINVAL);
 
-  /* Make sure that the failed validation didn't claim the memory. */
-  /* See: http://code.google.com/p/nativeclient/issues/detail?id=2566 */
+  /*
+   * Make sure that the failed validation didn't claim the memory.
+   * See: http://code.google.com/p/nativeclient/issues/detail?id=2566
+   */
   copy_and_pad_fragment(buf, sizeof(buf), &template_func, &template_func_end);
   rc = nacl_load_code(load_area, buf, sizeof(buf));
   assert(rc == 0);
@@ -238,8 +256,10 @@ void test_fail_on_non_bundle_aligned_dest_addresses() {
   assert(rc == 0);
 }
 
-/* In principle we could load into the initially-loaded executable's
-   code area, but at the moment we don't allow it. */
+/*
+ * In principle we could load into the initially-loaded executable's
+ * code area, but at the moment we don't allow it.
+ */
 void test_fail_on_load_to_static_code_area() {
   int size = &hlts_end - &hlts;
   int rc = nacl_load_code(&hlts, &hlts, size);
@@ -254,8 +274,10 @@ void test_fail_on_load_to_data_area() {
 
   fill_hlts(block_in_data_segment, sizeof(block_in_data_segment));
 
-  /* Align to bundle size so that we don't fail for a reason
-     we're not testing for. */
+  /*
+   * Align to bundle size so that we don't fail for a reason we're not
+   * testing for.
+   */
   data = block_in_data_segment;
   while (((int) data) % NACL_BUNDLE_SIZE != 0)
     data++;
@@ -320,17 +342,21 @@ void test_end_of_code_region() {
   uint8_t data[BUF_SIZE];
   fill_nops(data, sizeof(data));
 
-  /* This tries to load into the data segment, which is definitely not
-     allowed. */
+  /*
+   * This tries to load into the data segment, which is definitely not
+   * allowed.
+   */
   dest = (uint8_t *) DYNAMIC_CODE_SEGMENT_END;
   rc = nacl_load_code(dest, data, sizeof(data));
   assert(rc == -EFAULT);
 
-  /* This tries to load into the last bundle of the code region, which
-     sel_ldr disallows just in case there is some CPU bug in which the
-     CPU fails to check for running off the end of an x86 code
-     segment.  This is applied to other architectures for
-     consistency. */
+  /*
+   * This tries to load into the last bundle of the code region, which
+   * sel_ldr disallows just in case there is some CPU bug in which the
+   * CPU fails to check for running off the end of an x86 code
+   * segment.  This is applied to other architectures for
+   * consistency.
+   */
   dest = (uint8_t *) DYNAMIC_CODE_SEGMENT_END - sizeof(data);
   rc = nacl_load_code(dest, data, sizeof(data));
   assert(rc == -EFAULT);
@@ -380,15 +406,17 @@ void test_deleting_code() {
   assert(rc == -1);
   assert(errno == EFAULT);
 
-  /* We should be able to load new code at the same address.  This
-     assumes that no other threads are running, otherwise this request
-     can be rejected.
-
-     This fails under ARM QEMU.  QEMU will flush its instruction
-     translation cache based on writes to the same virtual address,
-     but it ignores our explicit cache flush system calls.  Valgrind
-     has a similar problem, except that there is no cache flush system
-     call on x86. */
+  /*
+   * We should be able to load new code at the same address.  This
+   * assumes that no other threads are running, otherwise this request
+   * can be rejected.
+   *
+   * This fails under ARM QEMU.  QEMU will flush its instruction
+   * translation cache based on writes to the same virtual address,
+   * but it ignores our explicit cache flush system calls.  Valgrind
+   * has a similar problem, except that there is no cache flush system
+   * call on x86.
+   */
   if (getenv("UNDER_QEMU_ARM") != NULL ||
       getenv("RUNNING_ON_VALGRIND") != NULL) {
     printf("Skipping loading new code under emulator\n");
@@ -470,10 +498,12 @@ void check_region_is_filled_with_hlts(const char *data, size_t size) {
   }
 }
 
-/* Check that regions surrounding the region we load code into are
-   correctly filled with halt instructions.  Loading code causes the
-   pages to become allocated, and unused parts of these pages should
-   be filled with halts. */
+/*
+ * Check that regions surrounding the region we load code into are
+ * correctly filled with halt instructions.  Loading code causes the
+ * pages to become allocated, and unused parts of these pages should
+ * be filled with halts.
+ */
 void test_demand_alloc_surrounding_hlt_filling() {
   int pad_size = 0x4000; /* This must be less than one 64k page. */
   int code_size = 0x28000;
@@ -491,10 +521,12 @@ void test_demand_alloc_surrounding_hlt_filling() {
   check_region_is_filled_with_hlts(load_area + pad_size + code_size, pad_size);
 }
 
-/* Check that dyncode_create() works on a set of pages when a strict
-   subset of those pages were allocated by a previous dyncode_create()
-   call.  This provides some coverage of the coalescing of mprotect()
-   calls that dyncode_create() does. */
+/*
+ * Check that dyncode_create() works on a set of pages when a strict
+ * subset of those pages were allocated by a previous dyncode_create()
+ * call.  This provides some coverage of the coalescing of mprotect()
+ * calls that dyncode_create() does.
+ */
 void test_demand_alloc_of_fragmented_pages() {
   int smaller_size = 2 * DYNAMIC_CODE_PAGE_SIZE;
   int smaller_size_load_offset = 2 * DYNAMIC_CODE_PAGE_SIZE;

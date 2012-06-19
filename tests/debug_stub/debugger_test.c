@@ -28,8 +28,10 @@ void set_registers_and_stop() {
           "mov $0x77000088, %ebp\n"
           "hlt\n");
 #elif defined(__x86_64__)
-  /* Note that we cannot assign arbitrary test values to %r15, %rsp
-     and %rbp in the x86-64 sandbox. */
+  /*
+   * Note that we cannot assign arbitrary test values to %r15, %rsp
+   * and %rbp in the x86-64 sandbox.
+   */
   __asm__("push $0x4bb00ccc\n"
           "mov $0x1100000000000022, %rax\n"
           "mov $0x2200000000000033, %rbx\n"
@@ -46,8 +48,10 @@ void set_registers_and_stop() {
           "mov $0xdd000000000000ee, %r14\n"
           "hlt\n");
 #elif defined(__arm__)
-  /* Note that we cannot assign arbitrary test values to r9 ($tp),
-     r13 (sp), and r15 (pc) in the ARM sandbox. */
+  /*
+   * Note that we cannot assign arbitrary test values to r9 ($tp),
+   * r13 (sp), and r15 (pc) in the ARM sandbox.
+   */
   __asm__("movw r0, #0x0ccc\n"
           "movt r0, #0x4bb0\n"
           "push {r0}\n"

@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 
@@ -94,8 +94,10 @@ branch_backwards:
 branch_backwards_end:
 
 
-       /* We include disallowed code below, so this must go into the
-          data segment. */
+       /*
+        * We include disallowed code below, so this must go into the
+        * data segment.
+        */
         .data
 
 

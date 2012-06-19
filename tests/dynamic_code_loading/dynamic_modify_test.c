@@ -71,8 +71,10 @@ uint8_t *allocate_code_space(int pages) {
 void fill_int32(uint8_t *data, size_t size, int32_t value) {
   int i;
   assert(size % 4 == 0);
-  /* All the archs we target supported unaligned word read/write, but
-     check that the pointer is aligned anyway. */
+  /*
+   * All the archs we target supported unaligned word read/write, but
+   * check that the pointer is aligned anyway.
+   */
   assert(((uintptr_t) data) % 4 == 0);
   for (i = 0; i < size / 4; i++)
     ((uint32_t *) data)[i] = value;
@@ -88,9 +90,11 @@ void fill_nops(uint8_t *data, size_t size) {
 #endif
 }
 
-/* Getting the assembler to pad our code fragments in templates.S is
-   awkward because we have to output them in data mode, in which the
-   assembler wants to output zeroes instead of NOPs for padding. */
+/*
+ * Getting the assembler to pad our code fragments in templates.S is
+ * awkward because we have to output them in data mode, in which the
+ * assembler wants to output zeroes instead of NOPs for padding.
+ */
 void copy_and_pad_fragment(void *dest,
                            int dest_size,
                            const char *fragment_start,
@@ -281,7 +285,8 @@ void test_start_with_super_inst_replace() {
   rc = nacl_dyncode_create(load_area, buf, sizeof(buf));
   assert(rc == 0);
 
-  /* Replace the code with itself.  This makes sure that replacement code can
+  /*
+   * Replace the code with itself.  This makes sure that replacement code can
    * start with a super instruction.
    */
   copy_and_pad_fragment(buf, sizeof(buf), &jump_into_super_inst_original,
@@ -301,7 +306,8 @@ void test_jump_into_super_inst_replace() {
   rc = nacl_dyncode_create(load_area, buf, sizeof(buf));
   assert(rc == 0);
 
-  /* The modified version cannot be used as a replacement.
+  /*
+   * The modified version cannot be used as a replacement.
    * See: http://code.google.com/p/nativeclient/issues/detail?id=2563
    */
   copy_and_pad_fragment(buf, sizeof(buf), &jump_into_super_inst_modified,

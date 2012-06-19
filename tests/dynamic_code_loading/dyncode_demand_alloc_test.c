@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -48,8 +48,10 @@ int main() {
   uint8_t *dyncode = (uint8_t *) DYNAMIC_CODE_SEGMENT_START;
   int value;
 
-  /* Sanity check: First check that two code pages can be written and
-     read, before we check that the page inbetween is unreadable. */
+  /*
+   * Sanity check: First check that two code pages can be written and
+   * read, before we check that the page inbetween is unreadable.
+   */
   load_into_page(dyncode);
   load_into_page(dyncode + DYNAMIC_CODE_PAGE_SIZE * 2);
 
