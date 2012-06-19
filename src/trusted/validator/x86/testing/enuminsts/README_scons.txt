@@ -10,28 +10,30 @@ found in the LICENSE file.
 Exhaustive instruction enumeration test for x86 Native Client decoder.
 Limited testing of validator.
 
-Currently SCONS builds only the 64-bit version of enuminst. The scons
+SCONS now builds the 32- and 64-bit versions of enuminst. The scons
 build incorporates NaCl and Ragel-Deterministic Finite Automata (R-DFA)
 validators. It does not include Xed.
 
-The binary is available in (for example)
+The binaries are available in (for example)
     scons-out/opt-linux-x86-64/staging/enuminst
-The 32-bit version will be completed while 64-bit debugging continues.
+    scons-out/opt-linux-x86-32/staging/enuminst
 
 Some suggestions on running enuminst:
   enuminst --legal=nacl --legal=ragel
     Compare lengths of instructions that decode for both nacl and R-DFA.
-    As of June 2012 there were about 4953178 of these. Note that, as enuminst
-    is not careful about how it enumerates instructions, there are a
-    huge number of duplicates in this count.
+    As of June 2012 there were about 4953178 instructions for which the
+    decoders disagreed on length in the 64-bit case, and none for 32-bit.
+    Note that, as enuminst is not careful about how it
+    enumerates instructions, there are a huge number of duplicates in
+    this count.
 
   enuminst --illegal=nacl --legal=ragel --print=ragel
     Identifies instructions decoded by R-DFA but not by nacl
-    As of June 2012 there were about 1300 of these.
+    As of June 2012 there were about 1300 of these for 64-bit.
 
   enuminst --legal=nacl --illegal=ragel --print=nacl
     Identifies instructions decoded by nacl but not by R-DFA
-    As of June 2012 there were about 6000000 of these.
+    As of June 2012 there were about 6000000 of these for 64-bit.
 
 The NaCl validator supports a partial-validation mode, which for a
 a single instruction determines if it could or could not appear in

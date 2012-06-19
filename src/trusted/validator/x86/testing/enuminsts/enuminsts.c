@@ -783,7 +783,7 @@ static void TryOneInstruction(ComparedInstruction *cinst,
 /* Returns true if for all decoders recognize legal instructions, they use
  * less than len bytes.
  */
-static int IsLegalInstShorterThan(ComparedInstruction *cinst, size_t len) {
+static Bool IsLegalInstShorterThan(ComparedInstruction *cinst, size_t len) {
   size_t i;
   Bool found_legal = FALSE;
   for (i = 0; i < cinst->_enumerator._num_decoders; ++i) {
@@ -802,11 +802,11 @@ static int IsLegalInstShorterThan(ComparedInstruction *cinst, size_t len) {
  */
 static void TestAllWithPrefix(ComparedInstruction *cinst,
                               int prefix, size_t prefix_length) {
-  const int kFillerByteCount = NACL_ENUM_MAX_INSTRUCTION_BYTES;
   const int kInstByteCount = NACL_ENUM_MAX_INSTRUCTION_BYTES;
   const int kIterByteCount = 3;
   InstByteArray itext;
-  int i, op, modrm, sib;
+  size_t i;
+  int op, modrm, sib;
   int min_op;
   int max_op;
 
@@ -816,8 +816,9 @@ static void TestAllWithPrefix(ComparedInstruction *cinst,
   /* set up prefix */
   memcpy(itext, &prefix, prefix_length);
   /* set up filler bytes */
-  for (i = 0; i < kFillerByteCount; i++) {
-    itext[i + prefix_length + kIterByteCount] = (uint8_t)i;
+  for (i = prefix_length + kIterByteCount;
+       i < NACL_ENUM_MAX_INSTRUCTION_BYTES; i++) {
+    itext[i] = (uint8_t)i;
   }
   if (gOpcode < 0) {
     min_op = 0;

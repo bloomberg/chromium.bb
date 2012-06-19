@@ -88,8 +88,16 @@ static void RParseInst(const NaClEnumerator* enumerator, const int pc_address) {
   RState.inst_num_bytes = 0;
   RState.inst_is_legal = 0;
 
-  res = DecodeChunkAMD64(enumerator->_itext, enumerator->_num_bytes,
-                         RagelInstruction, RagelDecodeError, &RState);
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_TARGET_SUBARCH == 64
+#define DecodeChunkArch DecodeChunkAMD64
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_TARGET_SUBARCH == 32
+#define DecodeChunkArch DecodeChunkIA32
+#else
+#error("Unsupported architecture")
+#endif
+  res = DecodeChunkArch(enumerator->_itext, enumerator->_num_bytes,
+                        RagelInstruction, RagelDecodeError, &RState);
+#undef DecodeChunkArch
   if (res != 0) return;
 
   /*
