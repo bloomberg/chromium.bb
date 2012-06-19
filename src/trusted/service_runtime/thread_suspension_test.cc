@@ -20,6 +20,13 @@
 // operate on real untrusted threads.
 
 
+// These tests work with the Windows and Mac implementations of thread
+// suspension, but the Linux implementation (based on asynchronous
+// signals) requires more of NaClAppThread to be present than we mock
+// out here.  See tests/thread_suspension for a more integrationy test
+// that works on Linux.
+#if !NACL_LINUX
+
 class ThreadSuspensionTest : public testing::Test {
  protected:
   virtual void SetUp();
@@ -171,3 +178,5 @@ TEST_F(ThreadSuspensionTest, TestNoDeadlockInSyscallCrossing) {
   thread_args.should_exit = true;
   NaClThreadJoin(&app_thread.thread);
 }
+
+#endif

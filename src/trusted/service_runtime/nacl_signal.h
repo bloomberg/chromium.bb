@@ -183,6 +183,15 @@ enum NaClSignalResult NaClSignalHandlerFind(int signal_number, void *ctx);
 void NaClSignalHandlerInitPlatform(void);
 void NaClSignalHandlerFiniPlatform(void);
 
+#if NACL_OSX
+
+# include <mach/thread_status.h>
+
+void NaClSignalContextFromMacThreadState(struct NaClSignalContext *dest,
+                                         const x86_thread_state_t *src);
+
+#endif
+
 
 EXTERN_C_END
 

@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <signal.h>
@@ -14,11 +14,52 @@
  * /usr/include/mach/i386/_structs.h
  */
 
-#if __DARWIN_UNIX03
-  #define REG(R) uc_mcontext->__ss.__##R
-#else
-  #define REG(R) uc_mcontext->ss.R
-#endif
+static void SignalContextFromRegs(struct NaClSignalContext *dest,
+                                  const x86_thread_state32_t *src) {
+  dest->prog_ctr = src->__eip;
+  dest->stack_ptr = src->__esp;
+
+  dest->eax = src->__eax;
+  dest->ebx = src->__ebx;
+  dest->ecx = src->__ecx;
+  dest->edx = src->__edx;
+  dest->esi = src->__esi;
+  dest->edi = src->__edi;
+  dest->ebp = src->__ebp;
+  dest->flags = src->__eflags;
+  dest->cs = src->__cs;
+  dest->ss = src->__ss;
+  dest->ds = src->__ds;
+  dest->es = src->__es;
+  dest->fs = src->__fs;
+  dest->gs = src->__gs;
+}
+
+static void SignalContextToRegs(x86_thread_state32_t *dest,
+                                const struct NaClSignalContext *src) {
+  dest->__eip = src->prog_ctr;
+  dest->__esp = src->stack_ptr;
+
+  dest->__eax = src->eax;
+  dest->__ebx = src->ebx;
+  dest->__ecx = src->ecx;
+  dest->__edx = src->edx;
+  dest->__esi = src->esi;
+  dest->__edi = src->edi;
+  dest->__ebp = src->ebp;
+  dest->__eflags = src->flags;
+  dest->__cs = src->cs;
+  dest->__ss = src->ss;
+  dest->__ds = src->ds;
+  dest->__es = src->es;
+  dest->__fs = src->fs;
+  dest->__gs = src->gs;
+}
+
+void NaClSignalContextFromMacThreadState(struct NaClSignalContext *dest,
+                                         const x86_thread_state_t *src) {
+  SignalContextFromRegs(dest, &src->uts.ts32);
+}
 
 /*
  * Fill a signal context structure from the raw platform dependent
@@ -27,26 +68,8 @@
 void NaClSignalContextFromHandler(struct NaClSignalContext *sigCtx,
                                   const void *rawCtx) {
   ucontext_t *uctx = (ucontext_t *) rawCtx;
-
-  sigCtx->prog_ctr = uctx->REG(eip);
-  sigCtx->stack_ptr = uctx->REG(esp);
-
-  sigCtx->eax = uctx->REG(eax);
-  sigCtx->ebx = uctx->REG(ebx);
-  sigCtx->ecx = uctx->REG(ecx);
-  sigCtx->edx = uctx->REG(edx);
-  sigCtx->esi = uctx->REG(esi);
-  sigCtx->edi = uctx->REG(edi);
-  sigCtx->ebp = uctx->REG(ebp);
-  sigCtx->flags = uctx->REG(eflags);
-  sigCtx->cs = uctx->REG(cs);
-  sigCtx->ss = uctx->REG(ss);
-  sigCtx->ds = uctx->REG(ds);
-  sigCtx->es = uctx->REG(es);
-  sigCtx->fs = uctx->REG(fs);
-  sigCtx->gs = uctx->REG(gs);
+  SignalContextFromRegs(sigCtx, &uctx->uc_mcontext->__ss);
 }
-
 
 /*
  * Update the raw platform dependent signal information from the
@@ -55,22 +78,5 @@ void NaClSignalContextFromHandler(struct NaClSignalContext *sigCtx,
 void NaClSignalContextToHandler(void *rawCtx,
                                 const struct NaClSignalContext *sigCtx) {
   ucontext_t *uctx = (ucontext_t *) rawCtx;
-
-  uctx->REG(eip) = sigCtx->prog_ctr;
-  uctx->REG(esp) = sigCtx->stack_ptr;
-
-  uctx->REG(eax) = sigCtx->eax;
-  uctx->REG(ebx) = sigCtx->ebx;
-  uctx->REG(ecx) = sigCtx->ecx;
-  uctx->REG(edx) = sigCtx->edx;
-  uctx->REG(esi) = sigCtx->esi;
-  uctx->REG(edi) = sigCtx->edi;
-  uctx->REG(ebp) = sigCtx->ebp;
-  uctx->REG(eflags) = sigCtx->flags;
-  uctx->REG(cs) = sigCtx->cs;
-  uctx->REG(ss) = sigCtx->ss;
-  uctx->REG(ds) = sigCtx->ds;
-  uctx->REG(es) = sigCtx->es;
-  uctx->REG(fs) = sigCtx->fs;
-  uctx->REG(gs) = sigCtx->gs;
+  SignalContextToRegs(&uctx->uc_mcontext->__ss, sigCtx);
 }

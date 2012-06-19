@@ -241,7 +241,7 @@ if env.Bit('linux'):
 
 if env.Bit('mac'):
   ldr_inputs += [
-      'generic/thread_suspension.c',
+      'osx/thread_suspension.c',
       'posix/nacl_signal.c',
       'posix/sel_addrspace_posix.c'
       ]
@@ -437,10 +437,8 @@ unittest_inputs = [
     #'nacl_sync_unittest.cc',
     'sel_mem_test.cc',
     'sel_ldr_test.cc',
+    'thread_suspension_test.cc',
 ]
-if env.Bit('windows'):
-  # This tests win/thread_suspension.c, which is only used on Windows.
-  unittest_inputs += ['win/thread_suspension_test.cc']
 
 if (not env.CrossToolsBuild() and
     (not env.Bit('coverage_enabled') or not env.Bit('windows'))):

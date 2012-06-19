@@ -101,12 +101,12 @@
         'conditions': [
             ['OS=="mac"', {
               'sources': [
-                'generic/thread_suspension.c',
                 'osx/crash_filter.c',
                 'osx/mach_exception_handler.c',
                 'osx/nacl_ldt.c',
                 'osx/nacl_oop_debugger_hooks.c',
                 'osx/nacl_thread_nice.c',
+                'osx/thread_suspension.c',
                 'linux/sel_memory.c',
                 'linux/x86/sel_segments.c',
                 'osx/outer_sandbox.c',

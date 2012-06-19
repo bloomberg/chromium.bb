@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <signal.h>
@@ -14,11 +14,62 @@
  * /usr/include/mach/i386/_structs.h
  */
 
-#if __DARWIN_UNIX03
-  #define REG(R) uc_mcontext->__ss.__##R
-#else
-  #define REG(R) uc_mcontext->ss.R
-#endif
+static void SignalContextFromRegs(struct NaClSignalContext *dest,
+                                  const x86_thread_state64_t *src) {
+  dest->prog_ctr = src->__rip;
+  dest->stack_ptr = src->__rsp;
+
+  dest->rax = src->__rax;
+  dest->rbx = src->__rbx;
+  dest->rcx = src->__rcx;
+  dest->rdx = src->__rdx;
+  dest->rsi = src->__rsi;
+  dest->rdi = src->__rdi;
+  dest->rbp = src->__rbp;
+  dest->r8  = src->__r8;
+  dest->r9  = src->__r9;
+  dest->r10 = src->__r10;
+  dest->r11 = src->__r11;
+  dest->r12 = src->__r12;
+  dest->r13 = src->__r13;
+  dest->r14 = src->__r14;
+  dest->r15 = src->__r15;
+  dest->flags = (uint32_t) src->__rflags;
+  dest->cs = (uint32_t) src->__cs;
+  dest->fs = (uint32_t) src->__fs;
+  dest->gs = (uint32_t) src->__gs;
+}
+
+static void SignalContextToRegs(x86_thread_state64_t *dest,
+                                const struct NaClSignalContext *src) {
+  dest->__rip = src->prog_ctr;
+  dest->__rsp = src->stack_ptr;
+
+  dest->__rax = src->rax;
+  dest->__rbx = src->rbx;
+  dest->__rcx = src->rcx;
+  dest->__rdx = src->rdx;
+  dest->__rsi = src->rsi;
+  dest->__rdi = src->rdi;
+  dest->__rbp = src->rbp;
+  dest->__r8  = src->r8;
+  dest->__r9  = src->r9;
+  dest->__r10 = src->r10;
+  dest->__r11 = src->r11;
+  dest->__r12 = src->r12;
+  dest->__r13 = src->r13;
+  dest->__r14 = src->r14;
+  dest->__r15 = src->r15;
+  dest->__rflags = src->flags;
+  dest->__cs = src->cs;
+  dest->__fs = src->fs;
+  dest->__gs = src->gs;
+}
+
+void NaClSignalContextFromMacThreadState(struct NaClSignalContext *dest,
+                                         const x86_thread_state_t *src) {
+  SignalContextFromRegs(dest, &src->uts.ts64);
+}
 
 /*
  * Fill a signal context structure from the raw platform dependent
@@ -27,31 +78,8 @@
 void NaClSignalContextFromHandler(struct NaClSignalContext *sigCtx,
                                   const void *rawCtx) {
   ucontext_t *uctx = (ucontext_t *) rawCtx;
-
-  sigCtx->prog_ctr = uctx->REG(rip);
-  sigCtx->stack_ptr = uctx->REG(rsp);
-
-  sigCtx->rax = uctx->REG(rax);
-  sigCtx->rbx = uctx->REG(rbx);
-  sigCtx->rcx = uctx->REG(rcx);
-  sigCtx->rdx = uctx->REG(rdx);
-  sigCtx->rsi = uctx->REG(rsi);
-  sigCtx->rdi = uctx->REG(rdi);
-  sigCtx->rbp = uctx->REG(rbp);
-  sigCtx->r8  = uctx->REG(r8);
-  sigCtx->r9  = uctx->REG(r9);
-  sigCtx->r10 = uctx->REG(r10);
-  sigCtx->r11 = uctx->REG(r11);
-  sigCtx->r12 = uctx->REG(r12);
-  sigCtx->r13 = uctx->REG(r13);
-  sigCtx->r14 = uctx->REG(r14);
-  sigCtx->r15 = uctx->REG(r15);
-  sigCtx->flags = (uint32_t) uctx->REG(rflags);
-  sigCtx->cs = (uint32_t) uctx->REG(cs);
-  sigCtx->fs = (uint32_t) uctx->REG(fs);
-  sigCtx->gs = (uint32_t) uctx->REG(gs);
+  SignalContextFromRegs(sigCtx, &uctx->uc_mcontext->__ss);
 }
-
 
 /*
  * Update the raw platform dependent signal information from the
@@ -60,30 +88,5 @@ void NaClSignalContextFromHandler(struct NaClSignalContext *sigCtx,
 void NaClSignalContextToHandler(void *rawCtx,
                                 const struct NaClSignalContext *sigCtx) {
   ucontext_t *uctx = (ucontext_t *) rawCtx;
-
-  uctx->REG(rip) = sigCtx->prog_ctr;
-  uctx->REG(rsp) = sigCtx->stack_ptr;
-
-  uctx->REG(rax) = sigCtx->rax;
-  uctx->REG(rbx) = sigCtx->rbx;
-  uctx->REG(rcx) = sigCtx->rcx;
-  uctx->REG(rdx) = sigCtx->rdx;
-  uctx->REG(rsi) = sigCtx->rsi;
-  uctx->REG(rdi) = sigCtx->rdi;
-  uctx->REG(rbp) = sigCtx->rbp;
-  uctx->REG(r8)  = sigCtx->r8;
-  uctx->REG(r9)  = sigCtx->r9;
-  uctx->REG(r10) = sigCtx->r10;
-  uctx->REG(r11) = sigCtx->r11;
-  uctx->REG(r12) = sigCtx->r12;
-  uctx->REG(r13) = sigCtx->r13;
-  uctx->REG(r14) = sigCtx->r14;
-  uctx->REG(r15) = sigCtx->r15;
-  uctx->REG(rflags) = sigCtx->flags;
-  uctx->REG(cs) = (uint64_t) sigCtx->cs;
-  uctx->REG(fs) = (uint64_t) sigCtx->fs;
-  uctx->REG(gs) = (uint64_t) sigCtx->gs;
+  SignalContextToRegs(&uctx->uc_mcontext->__ss, sigCtx);
 }
-
-
-

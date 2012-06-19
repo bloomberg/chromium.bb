@@ -37,10 +37,7 @@ bootstrap, _ = env.GetBootstrap()
 if bootstrap is not None:
   test_command = [bootstrap] + test_command
 
-# TODO(mseaborn): Implement thread suspension for Mac OS X too.
-is_broken = (not env.Bit('nacl_static_link') or
-             env.Bit('host_mac'))
-
 node = env.CommandTest('thread_suspension_test.out', test_command)
 env.AddNodeToTestSuite(node, ['small_tests', 'nonpexe_tests'],
-                       'run_thread_suspension_test', is_broken=is_broken)
+                       'run_thread_suspension_test',
+                       is_broken=not env.Bit('nacl_static_link'))
