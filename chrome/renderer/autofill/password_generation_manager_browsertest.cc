@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/utf_string_conversions.h"
@@ -60,7 +62,7 @@ class PasswordGenerationManagerTest : public ChromeRenderViewTest {
   virtual void SetUp() {
     // We don't actually create a PasswordGenerationManager during
     // ChromeRenderViewTest::SetUp because it's behind a flag. Since we want
-    // to use a test manager anyway, we just create out own.
+    // to use a test manager anyway, we just create our own.
     ChromeRenderViewTest::SetUp();
     generation_manager_.reset(new TestPasswordGenerationManager(view_));
   }
@@ -75,6 +77,14 @@ class PasswordGenerationManagerTest : public ChromeRenderViewTest {
     WebKit::WebElement decoration =
         input_element->decorationElementFor(generation_manager_.get());
     return decoration.hasNonEmptyBoundingBox();
+  }
+
+  void SetNotBlacklistedMessage(const char* form_str) {
+    webkit::forms::PasswordForm form;
+    form.origin =
+        GURL(StringPrintf("data:text/html;charset=utf-8,%s",form_str));
+    AutofillMsg_FormNotBlacklisted msg(0, form);
+    generation_manager_->OnMessageReceived(msg);
   }
 
  protected:
@@ -138,9 +148,11 @@ TEST_F(PasswordGenerationManagerTest, DetectionTest) {
   AutofillMsg_PasswordGenerationEnabled msg(0, true);
   generation_manager_->OnMessageReceived(msg);
 
-  // Now check that the decoration is visible on the first password field and
-  // that we send a message after the decoration is clicked.
   LoadHTML(kAccountCreationFormHTML);
+
+  // Pretend like we have received message indicating site is not blacklisted.
+  SetNotBlacklistedMessage(kAccountCreationFormHTML);
+
   document = GetMainFrame()->document();
   element = document.getElementById(WebString::fromUTF8("first_password"));
   ASSERT_FALSE(element.isNull());
@@ -153,6 +165,7 @@ TEST_F(PasswordGenerationManagerTest, DetectionTest) {
 
   // This doesn't trigger because hidden password fields are ignored.
   LoadHTML(kHiddenPasswordAccountCreationFormHTML);
+  SetNotBlacklistedMessage(kAccountCreationFormHTML);
   document = GetMainFrame()->document();
   element = document.getElementById(WebString::fromUTF8("first_password"));
   ASSERT_FALSE(element.isNull());
@@ -161,6 +174,7 @@ TEST_F(PasswordGenerationManagerTest, DetectionTest) {
 
   // This doesn't trigger because the form action is invalid.
   LoadHTML(kInvalidActionAccountCreationFormHTML);
+  SetNotBlacklistedMessage(kAccountCreationFormHTML);
   document = GetMainFrame()->document();
   element = document.getElementById(WebString::fromUTF8("first_password"));
   ASSERT_FALSE(element.isNull());
@@ -196,6 +210,61 @@ TEST_F(PasswordGenerationManagerTest, FillTest) {
   EXPECT_EQ(password, second_password_element.value());
   EXPECT_TRUE(first_password_element.isAutofilled());
   EXPECT_TRUE(second_password_element.isAutofilled());
+}
+
+TEST_F(PasswordGenerationManagerTest, BlacklistedTest) {
+  // Make sure password generation is enabled.
+  AutofillMsg_PasswordGenerationEnabled enabled_msg(0, true);
+  generation_manager_->OnMessageReceived(enabled_msg);
+
+  // Did not receive not blacklisted message. Don't show password generation
+  // icon.
+  LoadHTML(kAccountCreationFormHTML);
+  WebDocument document = GetMainFrame()->document();
+  WebElement element =
+      document.getElementById(WebString::fromUTF8("first_password"));
+  ASSERT_FALSE(element.isNull());
+  WebInputElement first_password_element = element.to<WebInputElement>();
+  EXPECT_FALSE(DecorationIsVisible(&first_password_element));
+
+  // Receive one not blacklisted message for non account creation form. Don't
+  // show password generation icon.
+  LoadHTML(kAccountCreationFormHTML);
+  SetNotBlacklistedMessage(kSigninFormHTML);
+  document = GetMainFrame()->document();
+  element = document.getElementById(WebString::fromUTF8("first_password"));
+  ASSERT_FALSE(element.isNull());
+  first_password_element = element.to<WebInputElement>();
+  EXPECT_FALSE(DecorationIsVisible(&first_password_element));
+
+  // Receive one not blackliste message for account creation form. Show password
+  // generation icon.
+  LoadHTML(kAccountCreationFormHTML);
+  SetNotBlacklistedMessage(kAccountCreationFormHTML);
+  document = GetMainFrame()->document();
+  element = document.getElementById(WebString::fromUTF8("first_password"));
+  ASSERT_FALSE(element.isNull());
+  first_password_element = element.to<WebInputElement>();
+  EXPECT_TRUE(DecorationIsVisible(&first_password_element));
+  SimulateClickOnDecoration(&first_password_element);
+  EXPECT_EQ(1u, generation_manager_->messages().size());
+  EXPECT_EQ(AutofillHostMsg_ShowPasswordGenerationPopup::ID,
+            generation_manager_->messages()[0]->type());
+
+  // Receive two not blacklisted messages, one is for account creation form and
+  // the other is not. Show password generation icon.
+  LoadHTML(kAccountCreationFormHTML);
+  SetNotBlacklistedMessage(kAccountCreationFormHTML);
+  SetNotBlacklistedMessage(kSigninFormHTML);
+  document = GetMainFrame()->document();
+  element = document.getElementById(WebString::fromUTF8("first_password"));
+  ASSERT_FALSE(element.isNull());
+  first_password_element = element.to<WebInputElement>();
+  EXPECT_TRUE(DecorationIsVisible(&first_password_element));
+  SimulateClickOnDecoration(&first_password_element);
+  EXPECT_EQ(2u, generation_manager_->messages().size());
+  EXPECT_EQ(AutofillHostMsg_ShowPasswordGenerationPopup::ID,
+            generation_manager_->messages()[1]->type());
 }
 
 }  // namespace autofill

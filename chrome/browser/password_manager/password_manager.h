@@ -45,10 +45,10 @@ class PasswordManager : public LoginModel,
 
   // Called by a PasswordFormManager when it decides a form can be autofilled
   // on the page.
-  void Autofill(const webkit::forms::PasswordForm& form_for_autofill,
-                const webkit::forms::PasswordFormMap& best_matches,
-                const webkit::forms::PasswordForm& preferred_match,
-                bool wait_for_username) const;
+  virtual void Autofill(const webkit::forms::PasswordForm& form_for_autofill,
+                        const webkit::forms::PasswordFormMap& best_matches,
+                        const webkit::forms::PasswordForm& preferred_match,
+                        bool wait_for_username) const;
 
   // LoginModel implementation.
   virtual void SetObserver(LoginModelObserver* observer) OVERRIDE;

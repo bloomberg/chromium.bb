@@ -130,6 +130,11 @@ IPC_MESSAGE_ROUTED1(AutofillMsg_PasswordGenerationEnabled,
 IPC_MESSAGE_ROUTED1(AutofillMsg_AcceptPasswordAutofillSuggestion,
                     string16 /* username value*/)
 
+// Tells the renderer that this password form is not blacklisted.  A form can
+// be blacklisted if a user chooses "never save passwords for this site".
+IPC_MESSAGE_ROUTED1(AutofillMsg_FormNotBlacklisted,
+                    webkit::forms::PasswordForm /* form checked */)
+
 // Autofill messages sent from the renderer to the browser.
 
 // Notification that forms have been seen that are candidates for

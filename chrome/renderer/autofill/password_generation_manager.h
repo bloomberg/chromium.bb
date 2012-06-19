@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "content/public/renderer/render_view_observer.h"
+#include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextFieldDecoratorClient.h"
 
@@ -18,6 +19,12 @@ namespace WebKit {
 class WebCString;
 class WebDocument;
 }
+
+namespace webkit {
+namespace forms {
+struct PasswordForm;
+}  // namespace forms
+}  // namespace webkit
 
 namespace autofill {
 
@@ -40,6 +47,7 @@ class PasswordGenerationManager : public content::RenderViewObserver,
 
  private:
   // RenderViewObserver:
+  virtual void DidFinishDocumentLoad(WebKit::WebFrame* frame) OVERRIDE;
   virtual void DidFinishLoad(WebKit::WebFrame* frame) OVERRIDE;
 
   // WebTextFieldDecoratorClient:
@@ -52,16 +60,25 @@ class PasswordGenerationManager : public content::RenderViewObserver,
   virtual void handleClick(WebKit::WebInputElement& element) OVERRIDE;
   virtual void willDetach(const WebKit::WebInputElement& element) OVERRIDE;
 
-  bool IsAccountCreationForm(const WebKit::WebFormElement& form,
-                             std::vector<WebKit::WebInputElement>* passwords);
-
   // Message handlers.
+  void OnFormNotBlacklisted(const webkit::forms::PasswordForm& form);
   void OnPasswordAccepted(const string16& password);
   void OnPasswordGenerationEnabled(bool enabled);
+
+  // Helper function to decide whether we should show password generation icon.
+  void MaybeShowIcon();
 
   // True if password generation is enabled for the profile associated
   // with this renderer.
   bool enabled_;
+
+  // Stores the origin of the account creation form we detected.
+  GURL account_creation_form_origin_;
+
+  // Stores the origins of the password forms confirmed not to be blacklisted
+  // by the browser. A form can be blacklisted if a user chooses "never save
+  // passwords for this site".
+  std::vector<GURL> not_blacklisted_password_form_origins_;
 
   std::vector<WebKit::WebInputElement> passwords_;
 

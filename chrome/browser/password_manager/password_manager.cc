@@ -13,6 +13,7 @@
 #include "chrome/common/autofill_messages.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "grit/generated_resources.h"
 
@@ -89,7 +90,11 @@ void PasswordManager::SetFormHasGeneratedPassword(const PasswordForm& form) {
   bool ssl_valid = (form.origin.SchemeIsSecure() &&
                     !delegate_->DidLastPageLoadEncounterSSLErrors());
   PasswordFormManager* manager =
-      new PasswordFormManager(delegate_->GetProfile(), this, form, ssl_valid);
+      new PasswordFormManager(delegate_->GetProfile(),
+                              this,
+                              web_contents()->GetRenderViewHost(),
+                              form,
+                              ssl_valid);
   pending_login_managers_.push_back(manager);
   manager->SetHasGeneratedPassword();
   // TODO(gcasto): Add UMA stats to track this.
@@ -193,7 +198,10 @@ void PasswordManager::OnPasswordFormsParsed(
        iter != forms.end(); ++iter) {
     bool ssl_valid = iter->origin.SchemeIsSecure() && !had_ssl_error;
     PasswordFormManager* manager =
-        new PasswordFormManager(delegate_->GetProfile(), this, *iter,
+        new PasswordFormManager(delegate_->GetProfile(),
+                                this,
+                                web_contents()->GetRenderViewHost(),
+                                *iter,
                                 ssl_valid);
     pending_login_managers_.push_back(manager);
     manager->FetchMatchingLoginsFromPasswordStore();

@@ -15,6 +15,10 @@
 #include "chrome/browser/password_manager/password_store_consumer.h"
 #include "webkit/forms/password_form.h"
 
+namespace content {
+class RenderViewHost;
+}  // namespace content
+
 class PasswordManager;
 class PasswordStore;
 class Profile;
@@ -31,6 +35,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
   //           used to filter login results from database.
   PasswordFormManager(Profile* profile,
                       PasswordManager* password_manager,
+                      content::RenderViewHost* host,
                       const webkit::forms::PasswordForm& observed_form,
                       bool ssl_valid);
   virtual ~PasswordFormManager();
@@ -178,6 +183,11 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // UMA.
   int GetActionsTaken();
 
+  // Informs the renderer that the user has not blacklisted observed_form_ by
+  // choosing "never save passwords for this site". This is used by the password
+  // generation manager to deside whether to show the password generation icon.
+  virtual void SendNotBlacklistedToRenderer();
+
   // Set of PasswordForms from the DB that best match the form
   // being managed by this. Use a map instead of vector, because we most
   // frequently require lookups by username value in IsNewLogin.
@@ -232,6 +242,9 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // The profile from which we get the PasswordStore.
   Profile* profile_;
+
+  // Render view host for sending messages to the corresponding renderer.
+  content::RenderViewHost* host_;
 
   // These three fields record the "ActionsTaken" by the browser and
   // the user with this form, and the result. They are combined and
