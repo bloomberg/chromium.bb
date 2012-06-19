@@ -43,11 +43,42 @@ def gtest_list_tests(executable):
   return out
 
 
+def filter_shards(tests, index, shards):
+  """Filters the shards.
+
+  Watch out about integer based arithmetics.
+  """
+  # The following code could be made more terse but I liked the extra clarity.
+  assert 0 <= index < shards
+  total = len(tests)
+  quotient, remainder = divmod(total, shards)
+  # 1 item of each remainder is distributed over the first 0:remainder shards.
+  # For example, with total == 5, index == 1, shards == 3
+  # min_bound == 2, max_bound == 4.
+  min_bound = quotient * index + min(index, remainder)
+  max_bound = quotient * (index + 1) + min(index + 1, remainder)
+  return tests[min_bound:max_bound]
+
+
 def _starts_with(a, b, prefix):
   return a.startswith(prefix) or b.startswith(prefix)
 
 
-def parse_gtest_cases(out, disabled=False, fails=False, flaky=False):
+def filter_bad_tests(tests, disabled=False, fails=False, flaky=False):
+  out = []
+  for test in tests:
+    fixture, case = test.split('.', 1)
+    if not disabled and _starts_with(fixture, case, 'DISABLED_'):
+      continue
+    if not fails and _starts_with(fixture, case, 'FAILS_'):
+      continue
+    if not flaky and _starts_with(fixture, case, 'FLAKY_'):
+      continue
+    out.append(test)
+  return out
+
+
+def parse_gtest_cases(out):
   """Expected format is a concatenation of this:
   TestFixture1
      TestCase1
@@ -68,16 +99,16 @@ def parse_gtest_cases(out, disabled=False, fails=False, flaky=False):
         # It's a 'YOU HAVE foo bar' line. We're done.
         break
       assert ' ' not in case
-
-      if not disabled and _starts_with(fixture, case, 'DISABLED_'):
-        continue
-      if not fails and _starts_with(fixture, case, 'FAILS_'):
-        continue
-      if not flaky and _starts_with(fixture, case, 'FLAKY_'):
-        continue
-
       tests.append(fixture + case)
   return tests
+
+
+def list_test_cases(executable, index, shards, disabled, fails, flaky):
+  """Retuns the list of test cases according to the specified criterias."""
+  tests = parse_gtest_cases(gtest_list_tests(executable))
+  if shards:
+    tests = filter_shards(tests, index, shards)
+  return filter_bad_tests(tests, disabled, fails, flaky)
 
 
 def main():
@@ -96,14 +127,29 @@ def main():
       '-F', '--flaky',
       action='store_true',
       help='Include FLAKY_ tests')
+  parser.add_option(
+      '-i', '--index',
+      type='int',
+      help='Shard index to run')
+  parser.add_option(
+      '-s', '--shards',
+      type='int',
+      help='Total number of shards to calculate from the --index to run')
   options, args = parser.parse_args()
   if len(args) != 1:
     parser.error('Please provide the executable to run')
 
+  if bool(options.shards) != bool(options.index is not None):
+    parser.error('Use both --index X --shards Y or none of them')
+
   try:
-    out = gtest_list_tests(args[0])
-    tests = parse_gtest_cases(
-        out, options.disabled, options.fails, options.flaky)
+    tests = list_test_cases(
+        args[0],
+        options.index,
+        options.shards,
+        options.disabled,
+        options.fails,
+        options.flaky)
     for test in tests:
       print test
   except Failure, e:

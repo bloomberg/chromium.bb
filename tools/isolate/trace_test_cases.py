@@ -67,18 +67,17 @@ class Tracer(object):
     return out
 
 
-def get_test_cases(executable, whitelist, blacklist):
+def get_test_cases(executable, whitelist, blacklist, index, shards):
   """Returns the filtered list of test cases.
 
   This is done synchronously.
   """
   try:
-    out = list_test_cases.gtest_list_tests(executable)
+    tests = list_test_cases.list_test_cases(
+        executable, index, shards, False, False, False)
   except list_test_cases.Failure, e:
     print e.args[0]
     return None
-
-  tests = list_test_cases.parse_gtest_cases(out)
 
   # Filters the test cases with the two lists.
   if blacklist:
@@ -96,9 +95,9 @@ def get_test_cases(executable, whitelist, blacklist):
 
 def trace_test_cases(
     executable, root_dir, cwd_dir, variables, whitelist, blacklist, jobs,
-    output_file):
+    index, shards, output_file):
   """Traces test cases one by one."""
-  test_cases = get_test_cases(executable, whitelist, blacklist)
+  test_cases = get_test_cases(executable, whitelist, blacklist, index, shards)
   if not test_cases:
     return
 
@@ -238,6 +237,14 @@ def main():
       type='int',
       help='number of parallel jobs')
   parser.add_option(
+      '-i', '--index',
+      type='int',
+      help='Shard index to run')
+  parser.add_option(
+      '-s', '--shards',
+      type='int',
+      help='Total number of shards to calculate from the --index to run')
+  parser.add_option(
       '-t', '--timeout',
       default=120,
       type='int',
@@ -259,6 +266,10 @@ def main():
         'Please provide the executable line to run, if you need fancy things '
         'like xvfb, start this script from *inside* xvfb, it\'ll be much faster'
         '.')
+
+  if bool(options.shards) != bool(options.index is not None):
+    parser.error('Use both --index X --shards Y or none of them')
+
   executable = args[0]
   if not os.path.isabs(executable):
     executable = os.path.abspath(os.path.join(options.root_dir, executable))
@@ -273,6 +284,8 @@ def main():
       options.blacklist,
       options.jobs,
       # TODO(maruel): options.timeout,
+      options.index,
+      options.shards,
       options.out)
 
 
