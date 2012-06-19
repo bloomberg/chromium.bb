@@ -92,6 +92,19 @@ void WebUIBidiCheckerBrowserTestRTL::SetUpOnIOThread(
   ASSERT_FALSE(locale.empty());
 }
 
+// static
+void WebUIBidiCheckerBrowserTestRTL::CleanUpOnIOThread(
+    base::WaitableEvent* event, const std::string& app_locale) {
+  std::string locale;
+  {
+    base::ThreadRestrictions::ScopedAllowIO allow_io_scope;
+    locale.assign(
+        ResourceBundle::GetSharedInstance().ReloadLocaleResources(app_locale));
+  }
+  event->Signal();
+  ASSERT_EQ(app_locale, locale);
+}
+
 void WebUIBidiCheckerBrowserTestRTL::SetUpOnMainThread() {
   WebUIBidiCheckerBrowserTest::SetUpOnMainThread();
   FilePath pak_path;
@@ -105,6 +118,9 @@ void WebUIBidiCheckerBrowserTestRTL::SetUpOnMainThread() {
 
   // Since synchronization isn't complete for the ResourceBundle class, reload
   // locale resources on the IO thread.
+  // crbug.com/95425, crbug.com/132752
+  // TODO(scr): make this generic to share with CleanUpOnMainThread and use
+  // PostTaskAndReply rather than WaitableEvent.
   base::WaitableEvent event(true, false);
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
@@ -123,11 +139,22 @@ void WebUIBidiCheckerBrowserTestRTL::CleanUpOnMainThread() {
 #if defined(OS_POSIX) && defined(TOOLKIT_GTK)
   gtk_widget_set_default_direction(GTK_TEXT_DIR_LTR);
 #endif
+
   base::i18n::SetICUDefaultLocale(app_locale_);
   ResourceBundle::GetSharedInstance().OverrideLocalePakForTest(FilePath());
-  ASSERT_EQ(
-      app_locale_,
-      ResourceBundle::GetSharedInstance().ReloadLocaleResources(app_locale_));
+
+  // Since synchronization isn't complete for the ResourceBundle class, reload
+  // locale resources on the IO thread.
+  // crbug.com/95425, crbug.com/132752
+  // TODO(scr): make this generic to share with SetUpOnMainThread and use
+  // PostTaskAndReply rather than WaitableEvent.
+  base::WaitableEvent event(true, false);
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&WebUIBidiCheckerBrowserTestRTL::CleanUpOnIOThread,
+                 base::Unretained(&event),
+                 base::ConstRef(app_locale_)));
+  ui_test_utils::WaitEventSignaled(&event);
 }
 
 // Tests
