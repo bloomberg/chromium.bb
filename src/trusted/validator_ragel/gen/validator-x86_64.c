@@ -13652,9 +13652,9 @@ st163:
 	if ( ++p == pe )
 		goto _test_eof163;
 case 163:
-	if ( 128u <= (*p) )
-		goto tr367;
-	goto tr42;
+	if ( (*p) <= 127u )
+		goto tr42;
+	goto tr367;
 st164:
 	if ( ++p == pe )
 		goto _test_eof164;
@@ -13668,16 +13668,16 @@ st165:
 	if ( ++p == pe )
 		goto _test_eof165;
 case 165:
-	if ( 128u <= (*p) )
-		goto tr370;
-	goto tr42;
+	if ( (*p) <= 127u )
+		goto tr42;
+	goto tr370;
 st166:
 	if ( ++p == pe )
 		goto _test_eof166;
 case 166:
-	if ( 128u <= (*p) )
-		goto tr371;
-	goto tr42;
+	if ( (*p) <= 127u )
+		goto tr42;
+	goto tr371;
 tr332:
 	{
     SET_OPERAND_TYPE(0, OperandSize64bit);
