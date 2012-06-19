@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_action_button.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_container_view.h"
-#import "chrome/browser/ui/cocoa/extensions/chevron_menu_button.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/menu_button.h"
@@ -43,7 +42,7 @@ NSString* const kBrowserActionVisibilityChangedNotification =
 namespace {
 const CGFloat kAnimationDuration = 0.2;
 
-const CGFloat kChevronWidth = 14.0;
+const CGFloat kChevronWidth = 18;
 
 // Since the container is the maximum height of the toolbar, we have
 // to move the buttons up by this amount in order to have them look
@@ -767,7 +766,8 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
     return;
 
   if (!chevronMenuButton_.get()) {
-    chevronMenuButton_.reset([[ChevronMenuButton alloc] init]);
+    chevronMenuButton_.reset([[MenuButton alloc] init]);
+    [chevronMenuButton_ setOpenMenuOnClick:YES];
     [chevronMenuButton_ setBordered:NO];
     [chevronMenuButton_ setShowsBorderOnlyWhileMouseInside:YES];
 
