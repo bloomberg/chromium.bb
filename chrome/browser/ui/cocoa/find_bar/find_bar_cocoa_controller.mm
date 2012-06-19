@@ -424,7 +424,7 @@ const float kRightEdgeOffset = 25;
       [[NSViewAnimation alloc]
         initWithViewAnimations:[NSArray arrayWithObjects:dict, nil]];
   [animation gtm_setDuration:duration
-                           eventMask:NSLeftMouseUpMask];
+                   eventMask:NSLeftMouseUpMask];
   [animation setDelegate:self];
   [animation startAnimation];
   return animation;
@@ -507,6 +507,8 @@ const float kRightEdgeOffset = 25;
   NSView* view = [self view];
   NSRect frame = [view frame];
   float x = [self findBarHorizontalPosition];
+  if (frame.origin.x == x)
+    return;
 
   if (animate) {
     [moveAnimation_ stopAnimation];
