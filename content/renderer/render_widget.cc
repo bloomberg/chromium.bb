@@ -33,6 +33,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebString.h"
 #include "third_party/skia/include/core/SkShader.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skia_util.h"
@@ -70,7 +71,7 @@ using WebKit::WebVector;
 using WebKit::WebWidget;
 using content::RenderThread;
 
-static const int kStandardDPI = 160;
+static const float kStandardDPI = 160;
 
 RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
                            const WebKit::WebScreenInfo& screen_info,
@@ -113,7 +114,13 @@ RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
   has_disable_gpu_vsync_switch_ = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableGpuVsync);
 #if defined(OS_CHROMEOS) || defined(OS_MACOSX)
-  device_scale_factor_ = std::max(1, screen_info.verticalDPI / kStandardDPI);
+  device_scale_factor_ = screen_info.verticalDPI / kStandardDPI;
+  // Unless an explicit scale factor was provided for testing, ensure the scale
+  // is integral.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kForceDeviceScaleFactor))
+    device_scale_factor_ = static_cast<int>(device_scale_factor_);
+  device_scale_factor_ = std::max(1.0f, device_scale_factor_);
 #endif
 }
 

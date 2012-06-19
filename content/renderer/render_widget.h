@@ -556,7 +556,7 @@ class CONTENT_EXPORT RenderWidget
 
   // The device scale factor. This value is computed from the DPI entries in
   // |screen_info_| on some platforms, and defaults to 1 on other platforms.
-  int device_scale_factor_;
+  float device_scale_factor_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);
 };
