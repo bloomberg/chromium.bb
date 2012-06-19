@@ -59,7 +59,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "base/win/windows_version.h"
+#include "base/win/metro.h"
 #include "chrome/browser/enumerate_modules_model_win.h"
 #endif
 
@@ -359,19 +359,23 @@ bool WrenchMenuModel::IsCommandIdEnabled(int command_id) const {
 }
 
 bool WrenchMenuModel::IsCommandIdVisible(int command_id) const {
-  if (command_id == IDC_UPGRADE_DIALOG) {
-    return UpgradeDetector::GetInstance()->notify_upgrade();
-  } else if (command_id == IDC_VIEW_INCOMPATIBILITIES) {
 #if defined(OS_WIN)
+  if (command_id == IDC_VIEW_INCOMPATIBILITIES) {
     EnumerateModulesModel* loaded_modules =
         EnumerateModulesModel::GetInstance();
     if (loaded_modules->confirmed_bad_modules_detected() <= 0)
       return false;
     loaded_modules->AcknowledgeConflictNotification();
     return true;
+  } else if (command_id == IDC_PIN_TO_START_SCREEN) {
+    return base::win::IsMetroProcess();
 #else
+  if (command_id == IDC_VIEW_INCOMPATIBILITIES ||
+      command_id == IDC_PIN_TO_START_SCREEN) {
     return false;
 #endif
+  } else if (command_id == IDC_UPGRADE_DIALOG) {
+    return UpgradeDetector::GetInstance()->notify_upgrade();
   } else if (command_id == IDC_VIEW_BACKGROUND_PAGES) {
     return TaskManager::GetBackgroundPageCount() > 0;
   }
@@ -440,11 +444,7 @@ void WrenchMenuModel::Build() {
   AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW, IDS_NEW_INCOGNITO_WINDOW);
 #endif
 
-#if defined(OS_WIN)
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
-    AddItemWithStringId(IDC_PIN_TO_START_SCREEN, IDS_PIN_TO_START_SCREEN);
-#endif
-
+  AddItemWithStringId(IDC_PIN_TO_START_SCREEN, IDS_PIN_TO_START_SCREEN);
   bookmark_sub_menu_model_.reset(new BookmarkSubMenuModel(this, browser_));
   AddSubMenuWithStringId(IDC_BOOKMARKS_MENU, IDS_BOOKMARKS_MENU,
                          bookmark_sub_menu_model_.get());
