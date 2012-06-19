@@ -104,7 +104,6 @@ import threading
 import time
 import traceback
 
-
 """Global list of child PIDs to kill when we die."""
 gChildPIDs = []
 
@@ -127,11 +126,32 @@ gChildPIDs = []
      IPCFuzzingTest.MsgBadPayloadArgs: ditto
      FullscreenControllerTest.*: Fails on coverage bots thereby
      aborting the test.
+     PageCyclerCachedBrowserTest.*: Fails with timeout exceeded error. Timeout
+     can either mean hang, or can mean test takes 10x longer because we're in
+     coverage. Consider if we should increase a test timeout somewhere.
+     FullscreenControllerBrowserTest.*': ditto.
+     PPAPITest.Fullscreen: ditto.
+     OutOfProcessPPAPITest.Fullscreen: ditto.
+     IndexedDBLayoutTest.RegressionTests: ditto.
+     PanelBrowserNavigatorTest.NavigateFromCrashedPanel: Fails on coverage bot.
+     StartupBrowserCreatorTest.OpenAppShortcutPanel: Fails on coverage bot.
+     FilePathWatcherTest.Callback: Fails with error 'Unable to terminate
+     process group' in process_util_posix.cc.
+
 """
 gTestExclusions = {
   'darwin2': { 'base_unittests': ('ProcessUtilTest.SpawnChild',),
                'ipc_tests': ('IPCFuzzingTest.MsgBadPayloadArgs',), },
-  'linux2': { 'browser_tests': ('*FullscreenControllerTest.*',), },
+  'linux2': { 'browser_tests':
+                  ('*FullscreenControllerTest.*',
+                   '*PageCyclerCachedBrowserTest.*',
+                   '*FullscreenControllerBrowserTest.*',
+                   'PPAPITest.Fullscreen',
+                   'OutOfProcessPPAPITest.Fullscreen',
+                   'IndexedDBLayoutTest.RegressionTests',
+                   'PanelBrowserNavigatorTest.NavigateFromCrashedPanel',
+                   'StartupBrowserCreatorTest.OpenAppShortcutPanel',
+                   'FilePathWatcherTest.Callback',), },
 }
 
 
