@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/cancelable_callback.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 
@@ -24,7 +25,8 @@ public:
       std::vector<GpuCommandBufferStubBase*>& stubs) = 0;
 };
 
-class CONTENT_EXPORT GpuMemoryManager {
+class CONTENT_EXPORT GpuMemoryManager :
+    public base::SupportsWeakPtr<GpuMemoryManager> {
  public:
   enum { kDefaultMaxSurfacesWithFrontbufferSoftLimit = 8 };
 
@@ -49,7 +51,12 @@ class CONTENT_EXPORT GpuMemoryManager {
                    size_t max_surfaces_with_frontbuffer_soft_limit);
   ~GpuMemoryManager();
 
-  void ScheduleManage();
+  // Schedule a Manage() call. If immediate is true, we PostTask without delay.
+  // Otherwise PostDelayedTask using a CancelableClosure and allow multiple
+  // delayed calls to "queue" up. This way, we do not spam clients in certain
+  // lower priority situations. An immediate schedule manage will cancel any
+  // queued delayed manage.
+  void ScheduleManage(bool immediate);
 
  private:
   friend class GpuMemoryManagerTest;
@@ -62,9 +69,11 @@ class CONTENT_EXPORT GpuMemoryManager {
   };
 
   GpuMemoryManagerClient* client_;
-  bool manage_scheduled_;
+
+  base::CancelableClosure delayed_manage_callback_;
+  bool manage_immediate_scheduled_;
+
   size_t max_surfaces_with_frontbuffer_soft_limit_;
-  base::WeakPtrFactory<GpuMemoryManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryManager);
 };

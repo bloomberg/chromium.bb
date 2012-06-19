@@ -243,7 +243,7 @@ void GpuCommandBufferStub::Destroy() {
   context_ = NULL;
   surface_ = NULL;
 
-  channel_->gpu_channel_manager()->gpu_memory_manager()->ScheduleManage();
+  channel_->gpu_channel_manager()->gpu_memory_manager()->ScheduleManage(false);
 }
 
 void GpuCommandBufferStub::OnInitializeFailed(IPC::Message* reply_message) {
@@ -373,7 +373,7 @@ void GpuCommandBufferStub::OnInitialize(
   GpuCommandBufferMsg_Initialize::WriteReplyParams(reply_message, true);
   Send(reply_message);
 
-  channel_->gpu_channel_manager()->gpu_memory_manager()->ScheduleManage();
+  channel_->gpu_channel_manager()->gpu_memory_manager()->ScheduleManage(true);
 }
 
 void GpuCommandBufferStub::OnSetGetBuffer(
@@ -609,7 +609,8 @@ void GpuCommandBufferStub::OnSetSurfaceVisible(bool visible) {
   DCHECK(surface_state_.get());
   surface_state_->visible = visible;
   surface_state_->last_used_time = base::TimeTicks::Now();
-  channel_->gpu_channel_manager()->gpu_memory_manager()->ScheduleManage();
+    channel_->gpu_channel_manager()->gpu_memory_manager()->
+        ScheduleManage(visible);
 }
 
 void GpuCommandBufferStub::OnDiscardBackbuffer() {
@@ -678,7 +679,8 @@ void GpuCommandBufferStub::OnSetClientHasMemoryAllocationChangedCallback(
       "gpu",
       "GpuCommandBufferStub::OnSetClientHasMemoryAllocationChangedCallback");
   client_has_memory_allocation_changed_callback_ = has_callback;
-  channel_->gpu_channel_manager()->gpu_memory_manager()->ScheduleManage();
+  channel_->gpu_channel_manager()->gpu_memory_manager()->
+      ScheduleManage(false);
 }
 
 void GpuCommandBufferStub::SendConsoleMessage(

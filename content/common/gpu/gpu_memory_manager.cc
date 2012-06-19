@@ -15,6 +15,8 @@
 
 namespace {
 
+const int kDelayedScheduleManageTimeoutMs = 67;
+
 bool IsInSameContextShareGroupAsAnyOf(
     const GpuCommandBufferStubBase* stub,
     const std::vector<GpuCommandBufferStubBase*>& stubs) {
@@ -59,10 +61,9 @@ void AssignMemoryAllocations(
 GpuMemoryManager::GpuMemoryManager(GpuMemoryManagerClient* client,
         size_t max_surfaces_with_frontbuffer_soft_limit)
     : client_(client),
-      manage_scheduled_(false),
+      manage_immediate_scheduled_(false),
       max_surfaces_with_frontbuffer_soft_limit_(
-          max_surfaces_with_frontbuffer_soft_limit),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+          max_surfaces_with_frontbuffer_soft_limit) {
 }
 
 GpuMemoryManager::~GpuMemoryManager() {
@@ -80,13 +81,26 @@ bool GpuMemoryManager::StubWithSurfaceComparator::operator()(
     return !rhs_ss.visible && (lhs_ss.last_used_time > rhs_ss.last_used_time);
 };
 
-void GpuMemoryManager::ScheduleManage() {
-  if (manage_scheduled_)
+void GpuMemoryManager::ScheduleManage(bool immediate) {
+  if (manage_immediate_scheduled_)
     return;
-  MessageLoop::current()->PostTask(
-    FROM_HERE,
-    base::Bind(&GpuMemoryManager::Manage, weak_factory_.GetWeakPtr()));
-  manage_scheduled_ = true;
+  if (immediate) {
+    MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&GpuMemoryManager::Manage, AsWeakPtr()));
+    manage_immediate_scheduled_ = true;
+    if (!delayed_manage_callback_.IsCancelled())
+      delayed_manage_callback_.Cancel();
+  } else {
+    if (!delayed_manage_callback_.IsCancelled())
+      return;
+    delayed_manage_callback_.Reset(base::Bind(&GpuMemoryManager::Manage,
+                                              AsWeakPtr()));
+    MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      delayed_manage_callback_.callback(),
+      base::TimeDelta::FromMilliseconds(kDelayedScheduleManageTimeoutMs));
+  }
 }
 
 // The current Manage algorithm simply classifies contexts (stubs) into
@@ -119,7 +133,8 @@ void GpuMemoryManager::ScheduleManage() {
 //  1. Find the most visible context-with-a-surface within each
 //     context-without-a-surface's share group, and inherit its visibilty.
 void GpuMemoryManager::Manage() {
-  manage_scheduled_ = false;
+  manage_immediate_scheduled_ = false;
+  delayed_manage_callback_.Cancel();
 
   // Create stub lists by separating out the two types received from client
   std::vector<GpuCommandBufferStubBase*> stubs_with_surface;
