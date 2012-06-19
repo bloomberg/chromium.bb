@@ -1442,6 +1442,9 @@ class SDKPackageStage(bs.BuilderStage):
 
 class SDKTestStage(bs.BuilderStage):
   """Stage that performs testing an SDK created in a previous stage"""
+
+  option_name = 'tests'
+
   def _PerformStage(self):
     tarball_location = os.path.join(self._build_root, 'built-sdk.tar.xz')
     new_chroot_cmd = ['cros_sdk', '--chroot', 'new-sdk-chroot']
