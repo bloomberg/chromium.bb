@@ -47,6 +47,15 @@
 namespace ash {
 namespace {
 
+bool DebugShortcutsEnabled() {
+#if defined(NDEBUG)
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshDebugShortcuts);
+#else
+  return true;
+#endif
+}
+
 bool HandleCycleWindowMRU(WindowCycleController::Direction direction,
                           bool is_alt_down) {
   Shell::GetInstance()->
@@ -130,6 +139,9 @@ bool HandleRotatePaneFocus(Shell::Direction direction) {
 
 // Rotates the default window container.
 bool HandleRotateWindows() {
+  if (!DebugShortcutsEnabled())
+    return true;
+
   aura::Window* target =
       Shell::GetPrimaryRootWindowController()->GetContainer(
           internal::kShellWindowId_DefaultContainer);
@@ -140,9 +152,11 @@ bool HandleRotateWindows() {
   return true;
 }
 
-#if !defined(NDEBUG)
 // Rotates the screen.
 bool HandleRotateScreen() {
+  if (!DebugShortcutsEnabled())
+    return true;
+
   static int i = 0;
   int delta = 0;
   switch (i) {
@@ -173,6 +187,9 @@ bool HandleRotateScreen() {
 }
 
 bool HandleToggleDesktopBackgroundMode() {
+  if (!DebugShortcutsEnabled())
+    return true;
+
   DesktopBackgroundController* desktop_background_controller =
       Shell::GetInstance()->desktop_background_controller();
   if (desktop_background_controller->desktop_background_mode() ==
@@ -187,10 +204,14 @@ bool HandleToggleDesktopBackgroundMode() {
 }
 
 bool HandleToggleRootWindowFullScreen() {
+  if (!DebugShortcutsEnabled())
+    return true;
+
   Shell::GetPrimaryRootWindow()->ToggleFullScreen();
   return true;
 }
 
+#if !defined(NDEBUG)
 bool HandlePrintLayerHierarchy() {
   aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
   ui::PrintLayerHierarchy(root_window->layer(),
@@ -505,26 +526,29 @@ bool AcceleratorController::PerformAction(int action,
     }
     case ROTATE_WINDOWS:
       return HandleRotateWindows();
-#if !defined(NDEBUG)
     case ROTATE_SCREEN:
       return HandleRotateScreen();
     case TOGGLE_DESKTOP_BACKGROUND_MODE:
       return HandleToggleDesktopBackgroundMode();
     case TOGGLE_ROOT_WINDOW_FULL_SCREEN:
       return HandleToggleRootWindowFullScreen();
+    case MONITOR_ADD_REMOVE:
+      if (DebugShortcutsEnabled())
+        internal::MultiMonitorManager::AddRemoveMonitor();
+      return true;
+    case MONITOR_CYCLE:
+      if (DebugShortcutsEnabled())
+        internal::MultiMonitorManager::CycleMonitor();
+      return true;
+    case MONITOR_TOGGLE_SCALE:
+      if (DebugShortcutsEnabled())
+        internal::MultiMonitorManager::ToggleMonitorScale();
+      return true;
+#if !defined(NDEBUG)
     case PRINT_LAYER_HIERARCHY:
       return HandlePrintLayerHierarchy();
     case PRINT_WINDOW_HIERARCHY:
       return HandlePrintWindowHierarchy();
-    case MONITOR_ADD_REMOVE:
-      internal::MultiMonitorManager::AddRemoveMonitor();
-      return true;
-    case MONITOR_CYCLE:
-      internal::MultiMonitorManager::CycleMonitor();
-      return true;
-    case MONITOR_TOGGLE_SCALE:
-      internal::MultiMonitorManager::ToggleMonitorScale();
-      return true;
 #endif
     default:
       NOTREACHED() << "Unhandled action " << action;

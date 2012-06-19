@@ -216,10 +216,8 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Returns the accelerated widget from the RootWindowHost.
   gfx::AcceleratedWidget GetAcceleratedWidget();
 
-#if !defined(NDEBUG)
   // Toggles the host's full screen state.
   void ToggleFullScreen();
-#endif
 
   // These methods are used to defer the processing of mouse events related
   // to resize. A client (typically a RenderWidgetHostViewAura) can call

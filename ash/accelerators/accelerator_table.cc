@@ -98,15 +98,10 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_F3,
     ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
     ROTATE_WINDOWS },
-#if !defined(NDEBUG)
   { true, ui::VKEY_HOME, ui::EF_CONTROL_DOWN, ROTATE_SCREEN },
   { true, ui::VKEY_B, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
     TOGGLE_DESKTOP_BACKGROUND_MODE },
   { true, ui::VKEY_F11, ui::EF_CONTROL_DOWN, TOGGLE_ROOT_WINDOW_FULL_SCREEN },
-  { true, ui::VKEY_L, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
-    PRINT_LAYER_HIERARCHY },
-  { true, ui::VKEY_W, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
-    PRINT_WINDOW_HIERARCHY },
   // For testing on systems where Alt-Tab is already mapped.
   { true, ui::VKEY_W, ui::EF_ALT_DOWN, CYCLE_FORWARD_MRU },
   { true, ui::VKEY_W, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, CYCLE_BACKWARD_MRU },
@@ -114,6 +109,11 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_F4, ui::EF_SHIFT_DOWN, MONITOR_ADD_REMOVE },
   { true, ui::VKEY_HOME, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
     MONITOR_TOGGLE_SCALE },
+#if !defined(NDEBUG)
+  { true, ui::VKEY_L, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
+    PRINT_LAYER_HIERARCHY },
+  { true, ui::VKEY_W, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
+    PRINT_WINDOW_HIERARCHY },
 #endif
 
   // TODO(yusukes): Handle VKEY_MEDIA_STOP, VKEY_MEDIA_PLAY_PAUSE,

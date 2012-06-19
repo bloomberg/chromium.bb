@@ -493,11 +493,9 @@ gfx::AcceleratedWidget RootWindow::GetAcceleratedWidget() {
   return host_->GetAcceleratedWidget();
 }
 
-#if !defined(NDEBUG)
 void RootWindow::ToggleFullScreen() {
   host_->ToggleFullScreen();
 }
-#endif
 
 void RootWindow::HoldMouseMoves() {
   if (!mouse_move_hold_count_)

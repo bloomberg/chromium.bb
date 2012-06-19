@@ -5285,6 +5285,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_COMPOSITE_TO_TEXTURE_DESCRIPTION" desc="Description of the 'Offscreen Compositing' lab.">
         Enables compositing to offscreen texture instead of directly to display.
       </message>
+      <message name="IDS_FLAGS_DEBUG_SHORTCUTS_NAME" desc="Name of the 'Debugging keyboard shortcuts' lab.">
+        Debugging keyboard shortcuts
+      </message>
+      <message name="IDS_FLAGS_DEBUG_SHORTCUTS_DESCRIPTION" desc="Description of the 'Debugging keyboard shortcuts' lab.">
+        Enables additional keyboard shortcuts that are useful for debugging Chromium.
+      </message>
       <message name="IDS_FLAGS_FORCE_COMPOSITING_MODE_NAME" desc="Name of the 'Force compositing mode' lab.">
         GPU compositing on all pages
       </message>
