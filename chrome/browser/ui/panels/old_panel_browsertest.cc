@@ -1122,8 +1122,15 @@ IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest, DrawAttentionResetOnActivate) {
   panel2->Close();
 }
 
+// http://crbug.com/133461
+#if defined(OS_LINUX)
+#define MAYBE_DrawAttentionMinimizedNotResetOnActivate DISABLED_DrawAttentionMinimizedNotResetOnActivate
+#else
+#define MAYBE_DrawAttentionMinimizedNotResetOnActivate DrawAttentionMinimizedNotResetOnActivate
+#endif
+
 IN_PROC_BROWSER_TEST_F(OldPanelBrowserTest,
-                       DrawAttentionMinimizedNotResetOnActivate) {
+                       MAYBE_DrawAttentionMinimizedNotResetOnActivate) {
   // Create 2 panels so we end up with an inactive panel that can
   // be made to draw attention.
   Panel* panel1 = CreatePanel("test panel1");

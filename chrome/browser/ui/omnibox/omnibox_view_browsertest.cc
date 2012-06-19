@@ -1389,7 +1389,14 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_AcceptKeywordBySpace) {
   AcceptKeywordBySpaceTest();
 }
 
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, NonSubstitutingKeywordTest) {
+// http://crbug.com/131179
+#if defined(OS_LINUX)
+#define MAYBE_NonSubstitutingKeywordTest DISABLED_NonSubstitutingKeywordTest
+#else
+#define MAYBE_NonSubstitutingKeywordTest NonSubstitutingKeywordTest
+#endif
+
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_NonSubstitutingKeywordTest) {
   NonSubstitutingKeywordTest();
 }
 
@@ -1564,8 +1571,15 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, PrimarySelection) {
   EXPECT_EQ("Hello world", GetPrimarySelectionText());
 }
 
+// http://crbug.com/131179
+#if defined(OS_LINUX)
+#define MAYBE_PasteReplacingAll DISABLED_PasteReplacingAll
+#else
+#define MAYBE_PasteReplacingAll PasteReplacingAll
+#endif
+
 // http://crbug.com/12316
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, PasteReplacingAll) {
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_PasteReplacingAll) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
   AutocompletePopupModel* popup_model = omnibox_view->model()->popup_model();

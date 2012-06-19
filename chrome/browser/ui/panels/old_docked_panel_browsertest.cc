@@ -137,7 +137,14 @@ IN_PROC_BROWSER_TEST_F(OldDockedPanelBrowserTest, SqueezeAndThenSomeMore) {
   panel_manager->CloseAll();
 }
 
-IN_PROC_BROWSER_TEST_F(OldDockedPanelBrowserTest, MinimizeSqueezedActive) {
+// http://crbug.com/133463
+#if defined(OS_LINUX)
+#define MAYBE_MinimizeSqueezedActive DISABLED_MinimizeSqueezedActive
+#else
+#define MAYBE_MinimizeSqueezedActive MinimizeSqueezedActive
+#endif
+
+IN_PROC_BROWSER_TEST_F(OldDockedPanelBrowserTest, MAYBE_MinimizeSqueezedActive) {
   PanelManager* panel_manager = PanelManager::GetInstance();
 
   // Create enough docked panels to get into squeezing.

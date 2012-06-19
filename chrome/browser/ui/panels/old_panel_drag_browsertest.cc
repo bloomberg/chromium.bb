@@ -841,7 +841,12 @@ IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, CloseDetachedPanelOnDrag) {
   panel_manager->CloseAll();
 }
 
+// http://crbug.com/133462
+#if defined(OS_LINUX)
+IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, DISABLED_Detach) {
+#else
 IN_PROC_BROWSER_TEST_F(OldPanelDragBrowserTest, Detach) {
+#endif
   PanelManager* panel_manager = PanelManager::GetInstance();
   DockedPanelStrip* docked_strip = panel_manager->docked_strip();
   DetachedPanelStrip* detached_strip = panel_manager->detached_strip();
