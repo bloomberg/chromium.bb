@@ -49,8 +49,6 @@ class ResourceLoader : public net::URLRequest::Delegate,
 
   // IPC message handlers:
   void OnUploadProgressACK();
-  void OnFollowRedirect(bool has_new_first_party_for_cookies,
-                        const GURL& new_first_party_for_cookies);
 
  private:
   // net::URLRequest::Delegate implementation:

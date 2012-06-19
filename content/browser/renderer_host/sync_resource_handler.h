@@ -17,6 +17,7 @@ class Message;
 
 namespace net {
 class IOBuffer;
+class URLRequest;
 }
 
 namespace content {
@@ -28,7 +29,7 @@ class ResourceMessageFilter;
 class SyncResourceHandler : public ResourceHandler {
  public:
   SyncResourceHandler(ResourceMessageFilter* filter,
-                      const GURL& url,
+                      net::URLRequest* request,
                       IPC::Message* result_message,
                       ResourceDispatcherHostImpl* resource_dispatcher_host);
   virtual ~SyncResourceHandler();
@@ -64,6 +65,7 @@ class SyncResourceHandler : public ResourceHandler {
 
   SyncLoadResult result_;
   scoped_refptr<ResourceMessageFilter> filter_;
+  net::URLRequest* request_;
   IPC::Message* result_message_;
   ResourceDispatcherHostImpl* rdh_;
 };

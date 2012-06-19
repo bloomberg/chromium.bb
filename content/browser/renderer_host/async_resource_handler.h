@@ -11,6 +11,10 @@
 #include "content/browser/renderer_host/resource_handler.h"
 #include "googleurl/src/gurl.h"
 
+namespace net {
+class URLRequest;
+}
+
 namespace content {
 class ResourceDispatcherHostImpl;
 class ResourceMessageFilter;
@@ -22,9 +26,14 @@ class AsyncResourceHandler : public ResourceHandler {
  public:
   AsyncResourceHandler(ResourceMessageFilter* filter,
                        int routing_id,
-                       const GURL& url,
+                       net::URLRequest* request,
                        ResourceDispatcherHostImpl* rdh);
   virtual ~AsyncResourceHandler();
+
+  // IPC message handlers:
+  void OnFollowRedirect(bool has_new_first_party_for_cookies,
+                        const GURL& new_first_party_for_cookies);
+  void OnDataReceivedACK();
 
   // ResourceHandler implementation:
   virtual bool OnUploadProgress(int request_id,
@@ -56,9 +65,18 @@ class AsyncResourceHandler : public ResourceHandler {
   static void GlobalCleanup();
 
  private:
+  // Returns true if it's ok to send the data. If there are already too many
+  // data messages pending, it defers the request and returns false. In this
+  // case the caller should not send the data.
+  bool WillSendData(bool* defer);
+
+  void MarkAsDeferred(bool deferred);
+  void ResumeIfDeferred();
+
   scoped_refptr<SharedIOBuffer> read_buffer_;
   scoped_refptr<ResourceMessageFilter> filter_;
   int routing_id_;
+  net::URLRequest* request_;
   ResourceDispatcherHostImpl* rdh_;
 
   // |next_buffer_size_| is the size of the buffer to be allocated on the next
@@ -68,9 +86,11 @@ class AsyncResourceHandler : public ResourceHandler {
   // was filled, up to a maximum size of 512k.
   int next_buffer_size_;
 
-  // TODO(battre): Remove url. This is only for debugging
-  // http://crbug.com/107692.
-  GURL url_;
+  // Number of messages we've sent to the renderer that we haven't gotten an
+  // ACK for. This allows us to avoid having too many messages in flight.
+  int pending_data_count_;
+
+  bool did_defer_;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncResourceHandler);
 };
