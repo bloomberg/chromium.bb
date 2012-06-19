@@ -190,6 +190,62 @@
         <structure type="chrome_scaled_image" name="IDR_OTR_ICON_FULLSCREEN" file="otr_icon_fullscreen.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_PLUGIN" file="plugin.png" />
+      <if expr="not is_macosx">
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_0" file="profile_avatar_generic.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_1" file="profile_avatar_generic_aqua.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_2" file="profile_avatar_generic_blue.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_3" file="profile_avatar_generic_green.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_4" file="profile_avatar_generic_orange.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_5" file="profile_avatar_generic_purple.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_6" file="profile_avatar_generic_red.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_7" file="profile_avatar_generic_yellow.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_8" file="profile_avatar_secret_agent.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_9" file="profile_avatar_superhero.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_10" file="profile_avatar_volley_ball.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_11" file="profile_avatar_businessman.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_12" file="profile_avatar_ninja.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_13" file="profile_avatar_alien.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_14" file="profile_avatar_awesome.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_15" file="profile_avatar_flower.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_16" file="profile_avatar_pizza.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_17" file="profile_avatar_soccer.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_18" file="profile_avatar_burger.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_19" file="profile_avatar_cat.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_20" file="profile_avatar_cupcake.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_21" file="profile_avatar_dog.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_22" file="profile_avatar_horse.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_23" file="profile_avatar_margarita.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_24" file="profile_avatar_note.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_25" file="profile_avatar_sun_cloud.png" />
+      </if>
+      <if expr="is_macosx">
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_0" file="profile_avatar_generic_mac.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_1" file="profile_avatar_generic_aqua_mac.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_2" file="profile_avatar_generic_blue_mac.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_3" file="profile_avatar_generic_green_mac.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_4" file="profile_avatar_generic_orange_mac.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_5" file="profile_avatar_generic_purple_mac.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_6" file="profile_avatar_generic_red_mac.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_7" file="profile_avatar_generic_yellow_mac.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_8" file="profile_avatar_secret_agent_mac.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_9" file="profile_avatar_superhero_mac.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_10" file="profile_avatar_volley_ball_mac.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_11" file="profile_avatar_businessman_mac.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_12" file="profile_avatar_ninja_mac.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_13" file="profile_avatar_alien_mac.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_14" file="profile_avatar_awesome_mac.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_15" file="profile_avatar_flower_mac.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_16" file="profile_avatar_pizza_mac.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_17" file="profile_avatar_soccer_mac.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_18" file="profile_avatar_burger_mac.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_19" file="profile_avatar_cat_mac.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_20" file="profile_avatar_cupcake_mac.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_21" file="profile_avatar_dog_mac.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_22" file="profile_avatar_horse_mac.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_23" file="profile_avatar_margarita_mac.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_24" file="profile_avatar_note_mac.png" />
+        <structure type="chrome_scaled_image" name="IDR_PROFILE_AVATAR_25" file="profile_avatar_sun_cloud_mac.png" />
+      </if>
       <if expr="pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_RELOAD" file="ash/browser_reload_normal.png" />
         <structure type="chrome_scaled_image" name="IDR_RELOAD_H" file="ash/browser_reload_hover.png" />

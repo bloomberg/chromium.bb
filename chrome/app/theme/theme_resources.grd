@@ -215,62 +215,6 @@
       <!-- NOTE: product_logo_*.* files beyond what's listed above are
            referenced by installer code; don't remove them unless you know what
            you're doing! -->
-      <if expr="not is_macosx">
-        <include name="IDR_PROFILE_AVATAR_0" file="default_100_percent/profile_avatar_generic.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_1" file="default_100_percent/profile_avatar_generic_aqua.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_2" file="default_100_percent/profile_avatar_generic_blue.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_3" file="default_100_percent/profile_avatar_generic_green.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_4" file="default_100_percent/profile_avatar_generic_orange.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_5" file="default_100_percent/profile_avatar_generic_purple.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_6" file="default_100_percent/profile_avatar_generic_red.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_7" file="default_100_percent/profile_avatar_generic_yellow.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_8" file="default_100_percent/profile_avatar_secret_agent.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_9" file="default_100_percent/profile_avatar_superhero.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_10" file="default_100_percent/profile_avatar_volley_ball.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_11" file="default_100_percent/profile_avatar_businessman.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_12" file="default_100_percent/profile_avatar_ninja.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_13" file="default_100_percent/profile_avatar_alien.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_14" file="default_100_percent/profile_avatar_awesome.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_15" file="default_100_percent/profile_avatar_flower.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_16" file="default_100_percent/profile_avatar_pizza.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_17" file="default_100_percent/profile_avatar_soccer.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_18" file="default_100_percent/profile_avatar_burger.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_19" file="default_100_percent/profile_avatar_cat.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_20" file="default_100_percent/profile_avatar_cupcake.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_21" file="default_100_percent/profile_avatar_dog.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_22" file="default_100_percent/profile_avatar_horse.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_23" file="default_100_percent/profile_avatar_margarita.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_24" file="default_100_percent/profile_avatar_note.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_25" file="default_100_percent/profile_avatar_sun_cloud.png" type="BINDATA" />
-      </if>
-      <if expr="is_macosx">
-        <include name="IDR_PROFILE_AVATAR_0" file="default_100_percent/profile_avatar_generic_mac.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_1" file="default_100_percent/profile_avatar_generic_aqua_mac.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_2" file="default_100_percent/profile_avatar_generic_blue_mac.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_3" file="default_100_percent/profile_avatar_generic_green_mac.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_4" file="default_100_percent/profile_avatar_generic_orange_mac.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_5" file="default_100_percent/profile_avatar_generic_purple_mac.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_6" file="default_100_percent/profile_avatar_generic_red_mac.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_7" file="default_100_percent/profile_avatar_generic_yellow_mac.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_8" file="default_100_percent/profile_avatar_secret_agent_mac.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_9" file="default_100_percent/profile_avatar_superhero_mac.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_10" file="default_100_percent/profile_avatar_volley_ball_mac.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_11" file="default_100_percent/profile_avatar_businessman_mac.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_12" file="default_100_percent/profile_avatar_ninja_mac.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_13" file="default_100_percent/profile_avatar_alien_mac.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_14" file="default_100_percent/profile_avatar_awesome_mac.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_15" file="default_100_percent/profile_avatar_flower_mac.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_16" file="default_100_percent/profile_avatar_pizza_mac.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_17" file="default_100_percent/profile_avatar_soccer_mac.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_18" file="default_100_percent/profile_avatar_burger_mac.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_19" file="default_100_percent/profile_avatar_cat_mac.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_20" file="default_100_percent/profile_avatar_cupcake_mac.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_21" file="default_100_percent/profile_avatar_dog_mac.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_22" file="default_100_percent/profile_avatar_horse_mac.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_23" file="default_100_percent/profile_avatar_margarita_mac.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_24" file="default_100_percent/profile_avatar_note_mac.png" type="BINDATA" />
-        <include name="IDR_PROFILE_AVATAR_25" file="default_100_percent/profile_avatar_sun_cloud_mac.png" type="BINDATA" />
-      </if>
       <include name="IDR_PROFILE_EDIT" file="default_100_percent/profile_edit.png" type="BINDATA" />
       <include name="IDR_PROFILE_EDIT_HOVER" file="default_100_percent/profile_edit_hover.png" type="BINDATA" />
       <include name="IDR_PROFILE_EDIT_PRESSED" file="default_100_percent/profile_edit_pressed.png" type="BINDATA" />
