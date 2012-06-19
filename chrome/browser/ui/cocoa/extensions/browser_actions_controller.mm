@@ -323,10 +323,6 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
   return [self buttonCount] - [hiddenButtons_ count];
 }
 
-- (MenuButton*)chevronMenuButton {
-  return chevronMenuButton_.get();
-}
-
 - (void)resizeContainerAndAnimate:(BOOL)animate {
   int iconCount = toolbarModel_->GetVisibleIconCount();
   if (iconCount < 0)  // If no buttons are hidden.

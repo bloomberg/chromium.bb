@@ -83,9 +83,6 @@ extern NSString* const kBrowserActionVisibilityChangedNotification;
 // container.
 - (NSUInteger)visibleButtonCount;
 
-// Returns a pointer to the chevron menu button.
-- (MenuButton*)chevronMenuButton;
-
 // Resizes the container given the number of visible buttons, taking into
 // account the size of the grippy. Also updates the persistent width preference.
 - (void)resizeContainerAndAnimate:(BOOL)animate;
