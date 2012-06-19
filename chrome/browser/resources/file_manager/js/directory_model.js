@@ -261,14 +261,14 @@ DirectoryModel.prototype.getCurrentDirPath = function() {
 
 /**
  * @private
- * @return {Array.<string>} Names of selected files.
+ * @return {Array.<string>} File paths of selected files.
  */
-DirectoryModel.prototype.getSelectedNames_ = function() {
+DirectoryModel.prototype.getSelectedPaths_ = function() {
   var indexes = this.fileListSelection_.selectedIndexes;
   var dataModel = this.fileList_;
   if (dataModel) {
     return indexes.map(function(i) {
-      return dataModel.item(i).name;
+      return dataModel.item(i).fullPath;
     });
   }
   return [];
@@ -276,9 +276,9 @@ DirectoryModel.prototype.getSelectedNames_ = function() {
 
 /**
  * @private
- * @param {Array.<string>} value List of names of selected files.
+ * @param {Array.<string>} value List of file paths of selected files.
  */
-DirectoryModel.prototype.setSelectedNames_ = function(value) {
+DirectoryModel.prototype.setSelectedPaths_ = function(value) {
   var indexes = [];
   var dataModel = this.fileList_;
 
@@ -295,7 +295,7 @@ DirectoryModel.prototype.setSelectedNames_ = function(value) {
     hash[safeKey(value[i])] = 1;
 
   for (var i = 0; i < dataModel.length; i++) {
-    if (hash.hasOwnProperty(safeKey(dataModel.item(i).name)))
+    if (hash.hasOwnProperty(safeKey(dataModel.item(i).fullPath)))
       indexes.push(i);
   }
   this.fileListSelection_.selectedIndexes = indexes;
@@ -303,20 +303,20 @@ DirectoryModel.prototype.setSelectedNames_ = function(value) {
 
 /**
  * @private
- * @return {string} Lead item file name.
+ * @return {string} Lead item file path.
  */
-DirectoryModel.prototype.getLeadName_ = function() {
+DirectoryModel.prototype.getLeadPath_ = function() {
   var index = this.fileListSelection_.leadIndex;
-  return index >= 0 && this.fileList_.item(index).name;
+  return index >= 0 && this.fileList_.item(index).fullPath;
 };
 
 /**
  * @private
  * @param {string} value The name of new lead index.
  */
-DirectoryModel.prototype.setLeadName_ = function(value) {
+DirectoryModel.prototype.setLeadPath_ = function(value) {
   for (var i = 0; i < this.fileList_.length; i++) {
-    if (this.fileList_.item(i).name == value) {
+    if (this.fileList_.item(i).fullPath == value) {
       this.fileListSelection_.leadIndex = i;
       return;
     }
@@ -506,18 +506,18 @@ DirectoryModel.prototype.replaceFileList_ = function(entries) {
   cr.dispatchSimpleEvent(this, 'begin-update-files');
   this.fileListSelection_.beginChange();
 
-  var selectedNames = this.getSelectedNames_();
+  var selectedPaths = this.getSelectedPaths_();
   // Restore leadIndex in case leadName no longer exists.
   var leadIndex = this.fileListSelection_.leadIndex;
-  var leadName = this.getLeadName_();
+  var leadPath = this.getLeadPath_();
 
   var spliceArgs = [].slice.call(entries);
   spliceArgs.unshift(0, this.fileList_.length);
   this.fileList_.splice.apply(this.fileList_, spliceArgs);
 
-  this.setSelectedNames_(selectedNames);
+  this.setSelectedPaths_(selectedPaths);
   this.fileListSelection_.leadIndex = leadIndex;
-  this.setLeadName_(leadName);
+  this.setLeadPath_(leadPath);
   this.fileListSelection_.endChange();
   cr.dispatchSimpleEvent(this, 'end-update-files');
 };

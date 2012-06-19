@@ -518,7 +518,7 @@ FileTransferController.prototype = {
   get currentDirectory() {
     if (this.directoryModel_.isSearching() && this.isOnGData)
       return null;
-    return this.directoryModel_.getSearchOrCurrentDirEntry();
+    return this.directoryModel_.getCurrentDirEntry();
   },
 
   get readonly() {
