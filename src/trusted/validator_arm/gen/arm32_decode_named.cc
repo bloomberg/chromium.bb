@@ -1210,29 +1210,77 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_add_sub_signed(
 const NamedClassDecoder& NamedArm32DecoderState::decode_parallel_add_sub_unsigned(
      const nacl_arm_dec::Instruction insn) const {
   UNREFERENCED_PARAMETER(insn);
+  if ((insn.Bits() & 0x00300000) == 0x00100000 /* op1(21:20) == 01 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000000 /* op2(7:5) == 000 */)
+    return Binary3RegisterOpAltB_Uadd16_Rule_233_A1_P460_instance_;
+
+  if ((insn.Bits() & 0x00300000) == 0x00100000 /* op1(21:20) == 01 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000020 /* op2(7:5) == 001 */)
+    return Binary3RegisterOpAltB_Uasx_Rule_235_A1_P464_instance_;
+
+  if ((insn.Bits() & 0x00300000) == 0x00100000 /* op1(21:20) == 01 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000040 /* op2(7:5) == 010 */)
+    return Binary3RegisterOpAltB_Usax_Rule_257_A1_P508_instance_;
+
+  if ((insn.Bits() & 0x00300000) == 0x00100000 /* op1(21:20) == 01 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000060 /* op2(7:5) == 011 */)
+    return Binary3RegisterOpAltB_Usub16_Rule_258_A1_P510_instance_;
+
+  if ((insn.Bits() & 0x00300000) == 0x00100000 /* op1(21:20) == 01 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000080 /* op2(7:5) == 100 */)
+    return Binary3RegisterOpAltB_Uadd8_Rule_234_A1_P462_instance_;
+
+  if ((insn.Bits() & 0x00300000) == 0x00100000 /* op1(21:20) == 01 */ &&
+      (insn.Bits() & 0x000000E0) == 0x000000E0 /* op2(7:5) == 111 */)
+    return Binary3RegisterOpAltB_Usub8_Rule_259_A1_P512_instance_;
+
+  if ((insn.Bits() & 0x00300000) == 0x00200000 /* op1(21:20) == 10 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000000 /* op2(7:5) == 000 */)
+    return Binary3RegisterOpAltB_Uqadd16_Rule_247_A1_P488_instance_;
+
+  if ((insn.Bits() & 0x00300000) == 0x00200000 /* op1(21:20) == 10 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000020 /* op2(7:5) == 001 */)
+    return Binary3RegisterOpAltB_Uqasx_Rule_249_A1_P492_instance_;
+
+  if ((insn.Bits() & 0x00300000) == 0x00200000 /* op1(21:20) == 10 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000040 /* op2(7:5) == 010 */)
+    return Binary3RegisterOpAltB_Uqsax_Rule_250_A1_P494_instance_;
+
+  if ((insn.Bits() & 0x00300000) == 0x00200000 /* op1(21:20) == 10 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000060 /* op2(7:5) == 011 */)
+    return Binary3RegisterOpAltB_Uqsub16_Rule_251_A1_P496_instance_;
+
   if ((insn.Bits() & 0x00300000) == 0x00200000 /* op1(21:20) == 10 */ &&
       (insn.Bits() & 0x000000E0) == 0x00000080 /* op2(7:5) == 100 */)
-    return DataProc_None_instance_;
+    return Binary3RegisterOpAltB_Uqadd8_Rule_248_A1_P490_instance_;
 
   if ((insn.Bits() & 0x00300000) == 0x00200000 /* op1(21:20) == 10 */ &&
       (insn.Bits() & 0x000000E0) == 0x000000E0 /* op2(7:5) == 111 */)
-    return DataProc_None_instance_;
+    return Binary3RegisterOpAltB_Uqsub8_Rule_252_A1_P498_instance_;
 
-  if ((insn.Bits() & 0x00300000) == 0x00200000 /* op1(21:20) == 10 */ &&
-      (insn.Bits() & 0x00000080) == 0x00000000 /* op2(7:5) == 0xx */)
-    return DataProc_None_instance_;
+  if ((insn.Bits() & 0x00300000) == 0x00300000 /* op1(21:20) == 11 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000000 /* op2(7:5) == 000 */)
+    return Binary3RegisterOpAltBNoCondUpdates_Uhadd16_Rule_238_A1_P470_instance_;
 
-  if ((insn.Bits() & 0x00100000) == 0x00100000 /* op1(21:20) == x1 */ &&
+  if ((insn.Bits() & 0x00300000) == 0x00300000 /* op1(21:20) == 11 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000020 /* op2(7:5) == 001 */)
+    return Binary3RegisterOpAltBNoCondUpdates_Uhasx_Rule_240_A1_P474_instance_;
+
+  if ((insn.Bits() & 0x00300000) == 0x00300000 /* op1(21:20) == 11 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000040 /* op2(7:5) == 010 */)
+    return Binary3RegisterOpAltBNoCondUpdates_Uhsax_Rule_241_A1_P476_instance_;
+
+  if ((insn.Bits() & 0x00300000) == 0x00300000 /* op1(21:20) == 11 */ &&
+      (insn.Bits() & 0x000000E0) == 0x00000060 /* op2(7:5) == 011 */)
+    return Binary3RegisterOpAltBNoCondUpdates_Uhsub16_Rule_242_A1_P478_instance_;
+
+  if ((insn.Bits() & 0x00300000) == 0x00300000 /* op1(21:20) == 11 */ &&
       (insn.Bits() & 0x000000E0) == 0x00000080 /* op2(7:5) == 100 */)
-    return DataProc_None_instance_;
+    return Binary3RegisterOpAltBNoCondUpdates_Uhadd8_Rule_239_A1_P472_instance_;
 
-  if ((insn.Bits() & 0x00100000) == 0x00100000 /* op1(21:20) == x1 */ &&
+  if ((insn.Bits() & 0x00300000) == 0x00300000 /* op1(21:20) == 11 */ &&
       (insn.Bits() & 0x000000E0) == 0x000000E0 /* op2(7:5) == 111 */)
-    return DataProc_None_instance_;
-
-  if ((insn.Bits() & 0x00100000) == 0x00100000 /* op1(21:20) == x1 */ &&
-      (insn.Bits() & 0x00000080) == 0x00000000 /* op2(7:5) == 0xx */)
-    return DataProc_None_instance_;
+    return Binary3RegisterOpAltBNoCondUpdates_Uhsub8_Rule_243_A1_P480_instance_;
 
   if (true)
     return Undefined_None_instance_;

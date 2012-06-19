@@ -965,27 +965,27 @@ const ClassDecoder& Arm32DecoderState::decode_parallel_add_sub_unsigned(
   UNREFERENCED_PARAMETER(insn);
   if ((insn.Bits() & 0x00300000) == 0x00200000 /* op1(21:20) == 10 */ &&
       (insn.Bits() & 0x000000E0) == 0x00000080 /* op2(7:5) == 100 */)
-    return DataProc_instance_;
+    return Defs12To15CondsDontCareRnRdRmNotPc_instance_;
 
   if ((insn.Bits() & 0x00300000) == 0x00200000 /* op1(21:20) == 10 */ &&
       (insn.Bits() & 0x000000E0) == 0x000000E0 /* op2(7:5) == 111 */)
-    return DataProc_instance_;
+    return Defs12To15CondsDontCareRnRdRmNotPc_instance_;
 
   if ((insn.Bits() & 0x00300000) == 0x00200000 /* op1(21:20) == 10 */ &&
       (insn.Bits() & 0x00000080) == 0x00000000 /* op2(7:5) == 0xx */)
-    return DataProc_instance_;
+    return Defs12To15CondsDontCareRnRdRmNotPc_instance_;
 
   if ((insn.Bits() & 0x00100000) == 0x00100000 /* op1(21:20) == x1 */ &&
       (insn.Bits() & 0x000000E0) == 0x00000080 /* op2(7:5) == 100 */)
-    return DataProc_instance_;
+    return Defs12To15CondsDontCareRnRdRmNotPc_instance_;
 
   if ((insn.Bits() & 0x00100000) == 0x00100000 /* op1(21:20) == x1 */ &&
       (insn.Bits() & 0x000000E0) == 0x000000E0 /* op2(7:5) == 111 */)
-    return DataProc_instance_;
+    return Defs12To15CondsDontCareRnRdRmNotPc_instance_;
 
   if ((insn.Bits() & 0x00100000) == 0x00100000 /* op1(21:20) == x1 */ &&
       (insn.Bits() & 0x00000080) == 0x00000000 /* op2(7:5) == 0xx */)
-    return DataProc_instance_;
+    return Defs12To15CondsDontCareRnRdRmNotPc_instance_;
 
   if (true)
     return Undefined_instance_;

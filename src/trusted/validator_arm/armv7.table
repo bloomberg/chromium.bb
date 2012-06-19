@@ -908,25 +908,79 @@ class Store3RegisterOp : LoadStore3RegisterOp
 
 +-- parallel_add_sub_unsigned (See Section A5.4.2)
 | op1(21:20) op2(7:5)
-| 01         000      =DataProc(v6)  # UADD16 A8-460
-| 01         001      =DataProc(v6)  # UASX A8-464
-| 01         010      =DataProc(v6)  # USAX A8-508
-| 01         011      =DataProc(v6)  # USUB16 A8-510
-| 01         100      =DataProc(v6)  # UADD8 A8-462
-| 01         111      =DataProc(v6)  # USUB8 A8-512
-| 10         000      =DataProc(v6)  # UQADD16 A8-488
-| 10         001      =DataProc(v6)  # UQASX A8-492
-| 10         010      =DataProc(v6)  # UQSAX A8-494
-| 10         011      =DataProc(v6)  # UQSUB16 A8-496
-| 10         100      =DataProc(v6)  # UQADD8 A8-490
-| 10         111      =DataProc(v6)  # UQSUB8 A8-498
-| 11         000      =DataProc(v6)  # UHADD16 A8-470
-| 11         001      =DataProc(v6)  # UHASX A8-474
-| 11         010      =DataProc(v6)  # UHSAX A8-476
-| 11         011      =DataProc(v6)  # UHSUB16 A8-478
-| 11         100      =DataProc(v6)  # UHADD8 A8-472
-| 11         111      =DataProc(v6)  # UHSUB8 A8-480
-| else:               =Undefined  # Note on page A5-23
+| 01         000      = Binary3RegisterOpAltB
+                        => Defs12To15CondsDontCareRnRdRmNotPc
+                        Uadd16_Rule_233_A1_P460
+                        cccc01100101nnnndddd11110001mmmm RegsNotPc (v6)
+| 01         001      = Binary3RegisterOpAltB
+                        => Defs12To15CondsDontCareRnRdRmNotPc
+                        Uasx_Rule_235_A1_P464
+                        cccc01100101nnnndddd11110011mmmm RegsNotPc (v6)
+| 01         010      = Binary3RegisterOpAltB
+                        => Defs12To15CondsDontCareRnRdRmNotPc
+                        Usax_Rule_257_A1_P508
+                        cccc01100101nnnndddd11110101mmmm RegsNotPc (v6)
+| 01         011      = Binary3RegisterOpAltB
+                        => Defs12To15CondsDontCareRnRdRmNotPc
+                        Usub16_Rule_258_A1_P510
+                        cccc01100101nnnndddd11110111mmmm RegsNotPc (v6)
+| 01         100      = Binary3RegisterOpAltB
+                        => Defs12To15CondsDontCareRnRdRmNotPc
+                        Uadd8_Rule_234_A1_P462
+                        cccc01100101nnnndddd11111001mmmm RegsNotPc (v6)
+| 01         111      = Binary3RegisterOpAltB
+                        => Defs12To15CondsDontCareRnRdRmNotPc
+                        Usub8_Rule_259_A1_P512
+                        cccc01100101nnnndddd11111111mmmm RegsNotPc (v6)
+| 10         000      = Binary3RegisterOpAltB
+                        => Defs12To15CondsDontCareRnRdRmNotPc
+                        Uqadd16_Rule_247_A1_P488
+                        cccc01100110nnnndddd11110001mmmm RegsNotPc (v6)
+| 10         001      = Binary3RegisterOpAltB
+                        => Defs12To15CondsDontCareRnRdRmNotPc
+                        Uqasx_Rule_249_A1_P492
+                        cccc01100110nnnndddd11110011mmmm RegsNotPc (v6)
+| 10         010      = Binary3RegisterOpAltB
+                        => Defs12To15CondsDontCareRnRdRmNotPc
+                        Uqsax_Rule_250_A1_P494
+                        cccc01100110nnnndddd11110101mmmm RegsNotPc (v6)
+| 10         011      = Binary3RegisterOpAltB
+                        => Defs12To15CondsDontCareRnRdRmNotPc
+                        Uqsub16_Rule_251_A1_P496
+                        cccc01100110nnnndddd11110111mmmm RegsNotPc (v6)
+| 10         100      = Binary3RegisterOpAltB
+                        => Defs12To15CondsDontCareRnRdRmNotPc
+                        Uqadd8_Rule_248_A1_P490
+                        cccc01100110nnnndddd11111001mmmm RegsNotPc (v6)
+| 10         111      = Binary3RegisterOpAltB
+                        => Defs12To15CondsDontCareRnRdRmNotPc
+                        Uqsub8_Rule_252_A1_P498
+                        cccc01100110nnnndddd11111111mmmm RegsNotPc (v6)
+| 11         000      = Binary3RegisterOpAltBNoCondUpdates
+                        => Defs12To15CondsDontCareRnRdRmNotPc
+                        Uhadd16_Rule_238_A1_P470
+                        cccc01100111nnnndddd11110001mmmm RegsNotPc (v6)
+| 11         001      = Binary3RegisterOpAltBNoCondUpdates
+                        => Defs12To15CondsDontCareRnRdRmNotPc
+                        Uhasx_Rule_240_A1_P474
+                        cccc01100111nnnndddd11110011mmmm RegsNotPc (v6)
+| 11         010      = Binary3RegisterOpAltBNoCondUpdates
+                        => Defs12To15CondsDontCareRnRdRmNotPc
+                        Uhsax_Rule_241_A1_P476
+                        cccc01100111nnnndddd11110101mmmm RegsNotPc (v6)
+| 11         011      = Binary3RegisterOpAltBNoCondUpdates
+                        => Defs12To15CondsDontCareRnRdRmNotPc
+                        Uhsub16_Rule_242_A1_P478
+                        cccc01100111nnnndddd11110111mmmm RegsNotPc (v6)
+| 11         100      = Binary3RegisterOpAltBNoCondUpdates
+                        => Defs12To15CondsDontCareRnRdRmNotPc
+                        Uhadd8_Rule_239_A1_P472
+                        cccc01100111nnnndddd11111001mmmm RegsNotPc (v6)
+| 11         111      = Binary3RegisterOpAltBNoCondUpdates
+                        => Defs12To15CondsDontCareRnRdRmNotPc
+                        Uhsub8_Rule_243_A1_P480
+                        cccc01100111nnnndddd11111111mmmm RegsNotPc (v6)
+| else:               = Undefined  # Note on page A5-23
 +--
 
 +-- pack_sat_rev (See Section A5.4.3)
