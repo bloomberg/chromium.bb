@@ -13,7 +13,6 @@ namespace chromeos {
 
 // static
 const char UserManager::kLoggedInUsers[] = "LoggedInUsers";
-const char UserManager::kStubUser[] = "stub-user@example.com";
 const char UserManager::kUserWallpapers[] = "UserWallpapers";
 const char UserManager::kUserWallpapersProperties[] =
     "UserWallpapersProperties";
