@@ -30,23 +30,18 @@ void NaClAppThreadSetSuspendState(struct NaClAppThread *natp,
 void NaClUntrustedThreadSuspend(struct NaClAppThread *natp,
                                 int save_registers) {
   /*
-   * Note that if we are being called from a NaCl syscall (which is
-   * likely), natp could be the thread we are running in.  That is
-   * fine, because this thread will be in the
-   * NACL_APP_THREAD_TRUSTED state, and so we will not call
-   * SuspendThread() on it.
-   */
-
-  /*
-   * We do not want the thread to enter a NaCl syscall and start
-   * taking locks when SuspendThread() takes effect, so we ask the
-   * thread to suspend even if it currently running untrusted code.
+   * We claim suspend_mu here to block trusted/untrusted context
+   * switches by blocking NaClAppThreadSetSuspendState().  This blocks
+   * any untrusted->trusted context switch that might happen before
+   * SuspendThread() takes effect.  It blocks any trusted->untrusted
+   * context switch that might happen if the syscall running in the
+   * target thread returns.
    */
   NaClXMutexLock(&natp->suspend_mu);
   if (natp->suspend_state == NACL_APP_THREAD_UNTRUSTED) {
     CONTEXT context;
     if (SuspendThread(natp->thread.tid) == (DWORD) -1) {
-      NaClLog(LOG_FATAL, "NaClUntrustedThreadsSuspend: "
+      NaClLog(LOG_FATAL, "NaClUntrustedThreadSuspend: "
               "SuspendThread() call failed\n");
     }
     /*
@@ -68,7 +63,7 @@ void NaClUntrustedThreadSuspend(struct NaClAppThread *natp,
       context.ContextFlags |= CONTEXT_INTEGER;
     }
     if (!GetThreadContext(natp->thread.tid, &context)) {
-      NaClLog(LOG_FATAL, "NaClUntrustedThreadsSuspend: "
+      NaClLog(LOG_FATAL, "NaClUntrustedThreadSuspend: "
               "GetThreadContext() failed\n");
     }
     if (save_registers) {
@@ -90,7 +85,7 @@ void NaClUntrustedThreadSuspend(struct NaClAppThread *natp,
 void NaClUntrustedThreadResume(struct NaClAppThread *natp) {
   if (natp->suspend_state == NACL_APP_THREAD_UNTRUSTED) {
     if (ResumeThread(natp->thread.tid) == (DWORD) -1) {
-      NaClLog(LOG_FATAL, "NaClUntrustedThreadsResume: "
+      NaClLog(LOG_FATAL, "NaClUntrustedThreadResume: "
               "ResumeThread() call failed\n");
     }
   }

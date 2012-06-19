@@ -769,9 +769,6 @@ void NaClVmIoPendingCheck_mu(struct NaClApp *nap,
 
 void NaClGdbHook(struct NaClApp const *nap);
 
-void NaClUntrustedThreadsSuspendAll(struct NaClApp *nap, int save_registers);
-void NaClUntrustedThreadsResumeAll(struct NaClApp *nap);
-
 #if NACL_LINUX
 void handle_r_debug(const char *switch_value, char *argv0);
 #endif

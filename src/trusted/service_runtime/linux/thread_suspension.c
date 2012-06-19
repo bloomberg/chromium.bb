@@ -128,7 +128,8 @@ static void WaitForUntrustedThreadToSuspend(struct NaClAppThread *natp) {
       continue;  /* Retry */
     }
     if (state != (kBaseState | NACL_APP_THREAD_SUSPENDED)) {
-      NaClLog(LOG_FATAL, "Unexpected state: %d\n", state);
+      NaClLog(LOG_FATAL, "WaitForUntrustedThreadToSuspend: "
+              "Unexpected state: %d\n", state);
     }
     break;
   }
@@ -138,13 +139,6 @@ void NaClUntrustedThreadSuspend(struct NaClAppThread *natp,
                                 int save_registers) {
   Atomic32 old_state;
   Atomic32 suspending_state;
-
-  /*
-   * Note that if we are being called from a NaCl syscall (which is
-   * likely), natp could be the thread we are running in.  That is
-   * fine, because this thread will be in the NACL_APP_THREAD_TRUSTED
-   * state, and so we will not try to interrupt it.
-   */
 
   /*
    * We do not want the thread to enter a NaCl syscall and start
@@ -181,7 +175,7 @@ void NaClUntrustedThreadSuspend(struct NaClAppThread *natp,
       }
     }
     if (pthread_kill(natp->thread.tid, NACL_THREAD_SUSPEND_SIGNAL) != 0) {
-      NaClLog(LOG_FATAL, "NaClUntrustedThreadsSuspend: "
+      NaClLog(LOG_FATAL, "NaClUntrustedThreadSuspend: "
               "pthread_kill() call failed\n");
     }
     WaitForUntrustedThreadToSuspend(natp);

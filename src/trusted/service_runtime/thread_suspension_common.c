@@ -8,18 +8,6 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/thread_suspension.h"
 
-/*
- * NaClUntrustedThreadsSuspend() ensures that any untrusted code is
- * temporarily suspended.
- *
- * If a thread is currently executing a NaCl syscall, we tell the
- * thread not to return to untrusted code yet.  If a thread is
- * currently executing untrusted code, we suspend it.
- *
- * This returns with the lock threads_mu held, because we need to pin
- * the list of threads.  NaClUntrustedThreadsResume() must be called
- * to undo this.
- */
 void NaClUntrustedThreadsSuspendAll(struct NaClApp *nap, int save_registers) {
   size_t index;
 

@@ -6,6 +6,7 @@
 
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
+#include "native_client/src/trusted/service_runtime/thread_suspension.h"
 
 
 void NaClVmHoleWaitToStartThread(struct NaClApp *nap) {
