@@ -228,12 +228,19 @@ void EnterpriseEnrollmentScreen::RegisterForDevicePolicy(
       g_browser_process->browser_policy_connector();
   if (!connector->device_cloud_policy_subsystem()) {
     LOG(ERROR) << "Cloud policy subsystem not initialized.";
-  } else if (connector->IsEnterpriseManaged()) {
-    LOG(ERROR) << "Device is already enterprise managed!";
   } else if (connector->device_cloud_policy_subsystem()->state() ==
       policy::CloudPolicySubsystem::SUCCESS) {
     LOG(ERROR) << "A previous enrollment already succeeded!";
   } else {
+    if (connector->IsEnterpriseManaged() &&
+        connector->GetEnterpriseDomain() !=
+            chromeos::Authenticator::ExtractDomainName(user_)) {
+      LOG(ERROR) << "Trying to re-enroll to a different domain than "
+                 << connector->GetEnterpriseDomain();
+      if (is_showing_)
+        actor_->ShowDomainMismatchError();
+      return;
+    }
     // Make sure the device policy subsystem is in a clean slate.
     connector->ResetDevicePolicy();
     connector->ScheduleServiceInitialization(0);

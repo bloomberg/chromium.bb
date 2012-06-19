@@ -97,9 +97,15 @@ class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
   // http://mail.google.com/support/bin/answer.py?hl=en&ctx=mail&answer=10313#
   static std::string Canonicalize(const std::string& email_address);
 
+  // Returns the canonical form of the given domain.
+  static std::string CanonicalizeDomain(const std::string& domain);
+
   // Sanitize emails. Currently, it only ensures all emails have a domain by
   // adding gmail.com if no domain is present.
   static std::string Sanitize(const std::string& email_address);
+
+  // Extract the domain part from the canonical form of the given email.
+  static std::string ExtractDomainName(const std::string& email);
 
  protected:
   LoginStatusConsumer* consumer_;

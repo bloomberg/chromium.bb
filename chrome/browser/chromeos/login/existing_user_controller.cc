@@ -472,8 +472,23 @@ void ExistingUserController::OnStartEnterpriseEnrollment() {
 void ExistingUserController::OnEnrollmentOwnershipCheckCompleted(
     OwnershipService::Status status,
     bool current_user_is_owner) {
-  if (status == OwnershipService::OWNERSHIP_NONE)
+  if (status == OwnershipService::OWNERSHIP_NONE) {
     ShowEnrollmentScreen(false, std::string());
+  } else if (status == OwnershipService::OWNERSHIP_TAKEN) {
+    // On a device that is already owned we might want to allow users to
+    // re-enroll if the policy information is invalid.
+    CrosSettingsProvider::TrustedStatus trusted_status =
+        CrosSettings::Get()->PrepareTrustedValues(
+            base::Bind(
+                &ExistingUserController::OnEnrollmentOwnershipCheckCompleted,
+                weak_factory_.GetWeakPtr(), status, current_user_is_owner));
+    if (trusted_status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED)
+      ShowEnrollmentScreen(false, std::string());
+  } else {
+    // OwnershipService::GetStatusAsync is supposed to return either
+    // OWNERSHIP_NONE or OWNERSHIP_TAKEN.
+    NOTREACHED();
+  }
 }
 
 void ExistingUserController::ShowEnrollmentScreen(bool is_auto_enrollment,

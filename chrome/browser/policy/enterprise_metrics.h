@@ -144,6 +144,9 @@ enum MetricEnrollment {
   // The lockbox initialization has taken too long to complete and the
   // enrollment has been canceled because of that.
   kMetricLockboxTimeoutError,
+  // The username used to re-enroll the device does not belong to the domain
+  // that the device was initially enrolled to.
+  kMetricEnrollmentWrongUserError,
 
   kMetricEnrollmentSize  // Must be the last.
 };

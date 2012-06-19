@@ -39,9 +39,16 @@ TEST_F(EnterpriseInstallAttributesTest, Lock) {
                 kTestUser,
                 DEVICE_MODE_ENTERPRISE,
                 kTestDeviceId));
-  EXPECT_EQ(EnterpriseInstallAttributes::LOCK_WRONG_USER,
+  // Another user from the4 same domain should also succeed.
+  EXPECT_EQ(EnterpriseInstallAttributes::LOCK_SUCCESS,
             install_attributes_.LockDevice(
                 "test1@example.com",
+                DEVICE_MODE_ENTERPRISE,
+                kTestDeviceId));
+  // But another domain should fail.
+  EXPECT_EQ(EnterpriseInstallAttributes::LOCK_WRONG_USER,
+            install_attributes_.LockDevice(
+                "test@bluebears.com",
                 DEVICE_MODE_ENTERPRISE,
                 kTestDeviceId));
 }

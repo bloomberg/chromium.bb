@@ -16072,6 +16072,9 @@ Battery full
       <message name="IDS_ENTERPRISE_LOCKBOX_TIMEOUT_ERROR" desc="Error message to show when the initialization of the lockbox is taking too long.">
         Oops!  The initialization of the installation-time attributes has timed out.  Please contact your support representative.
       </message>
+      <message name="IDS_ENTERPRISE_ENROLLMENT_DOMAIN_MISMATCH_ERROR" desc="Error message to show when the user used to re-enroll the device does not belong to the domain that the device was originally enrolled into.">
+        This user account does not belong to the domain that the device is enrolled to.  If you want to enroll to a different domain you need to go through device recovery first.
+      </message>
       <message name="IDS_ENTERPRISE_ENROLLMENT_SCREEN_TITLE" desc="The title on the enterprise enrollment dialog.">
         Enterprise enrollment
       </message>

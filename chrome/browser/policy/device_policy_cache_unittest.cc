@@ -192,7 +192,7 @@ TEST_F(DevicePolicyCacheTest, SetPolicy) {
   cache_->RemoveObserver(&observer_);
 }
 
-TEST_F(DevicePolicyCacheTest, SetPolicyWrongUser) {
+TEST_F(DevicePolicyCacheTest, SetPolicyOtherUserSameDomain) {
   InSequence s;
 
   MakeEnterpriseDevice(kTestUser);
@@ -207,9 +207,33 @@ TEST_F(DevicePolicyCacheTest, SetPolicyWrongUser) {
   cache_->Load();
   Mock::VerifyAndClearExpectations(&signed_settings_helper_);
 
-  // Set new policy information. This should fail due to invalid user.
+  // Set new policy information. This should succeed as the domain is the same.
   em::PolicyFetchResponse new_policy;
-  CreateRefreshRatePolicy(&new_policy, "foreign_user@example.com", 300);
+  CreateRefreshRatePolicy(&new_policy, "another_user@example.com", 300);
+  EXPECT_CALL(signed_settings_helper_, StartStorePolicyOp(_, _)).Times(1);
+  EXPECT_TRUE(cache_->SetPolicy(new_policy));
+  Mock::VerifyAndClearExpectations(&signed_settings_helper_);
+}
+
+TEST_F(DevicePolicyCacheTest, SetPolicyOtherUserOtherDomain) {
+  InSequence s;
+
+  MakeEnterpriseDevice(kTestUser);
+
+  // Startup.
+  em::PolicyFetchResponse policy;
+  CreateRefreshRatePolicy(&policy, kTestUser, 120);
+  EXPECT_CALL(signed_settings_helper_, StartRetrievePolicyOp(_)).WillOnce(
+      MockSignedSettingsHelperRetrievePolicy(SignedSettings::SUCCESS,
+                                             policy));
+  EXPECT_CALL(observer_, OnCacheUpdate(cache_.get()));
+  cache_->Load();
+  Mock::VerifyAndClearExpectations(&signed_settings_helper_);
+
+  // Set new policy information. This should fail because the user is from
+  // different domain.
+  em::PolicyFetchResponse new_policy;
+  CreateRefreshRatePolicy(&new_policy, "foreign_user@hackers.com", 300);
   EXPECT_CALL(signed_settings_helper_, StartStorePolicyOp(_, _)).Times(0);
   EXPECT_FALSE(cache_->SetPolicy(new_policy));
   Mock::VerifyAndClearExpectations(&signed_settings_helper_);

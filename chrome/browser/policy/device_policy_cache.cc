@@ -167,8 +167,8 @@ bool DevicePolicyCache::SetPolicy(const em::PolicyFetchResponse& policy) {
   DCHECK(IsReady());
 
   // Make sure we have an enterprise device.
-  std::string registration_user(install_attributes_->GetRegistrationUser());
-  if (registration_user.empty()) {
+  std::string registration_domain(install_attributes_->GetDomain());
+  if (registration_domain.empty()) {
     LOG(WARNING) << "Refusing to accept policy on non-enterprise device.";
     UMA_HISTOGRAM_ENUMERATION(kMetricPolicy,
                               kMetricPolicyFetchNonEnterpriseDevice,
@@ -190,11 +190,11 @@ bool DevicePolicyCache::SetPolicy(const em::PolicyFetchResponse& policy) {
   }
 
   // Existing installations may not have a canonicalized version of the
-  // registration user name in install attributes, so re-canonicalize here.
-  if (chromeos::Authenticator::Canonicalize(registration_user) !=
-      chromeos::Authenticator::Canonicalize(policy_data.username())) {
+  // registration domain in install attributes, so lower-case the data here.
+  if (registration_domain !=
+      chromeos::Authenticator::ExtractDomainName(policy_data.username())) {
     LOG(WARNING) << "Refusing policy blob for " << policy_data.username()
-                 << " which doesn't match " << registration_user;
+                 << " which doesn't match domain " << registration_domain;
     UMA_HISTOGRAM_ENUMERATION(kMetricPolicy, kMetricPolicyFetchUserMismatch,
                               kMetricPolicySize);
     InformNotifier(CloudPolicySubsystem::LOCAL_ERROR,

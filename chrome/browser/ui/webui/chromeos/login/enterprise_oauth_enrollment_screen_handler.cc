@@ -245,6 +245,12 @@ void EnterpriseOAuthEnrollmentScreenHandler::ShowLockboxTimeoutError() {
   NotifyObservers(false);
 }
 
+void EnterpriseOAuthEnrollmentScreenHandler::ShowDomainMismatchError() {
+  UMAFailure(policy::kMetricEnrollmentWrongUserError);
+  ShowError(IDS_ENTERPRISE_ENROLLMENT_DOMAIN_MISMATCH_ERROR, true);
+  NotifyObservers(false);
+}
+
 void EnterpriseOAuthEnrollmentScreenHandler::SubmitTestCredentials(
     const std::string& email,
     const std::string& password) {

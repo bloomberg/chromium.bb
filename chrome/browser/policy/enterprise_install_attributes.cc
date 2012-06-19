@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
+#include "chrome/browser/chromeos/login/authenticator.h"
 
 namespace policy {
 
@@ -22,16 +23,6 @@ const char kAttrEnterpriseDomain[] = "enterprise.domain";
 const char kAttrEnterpriseMode[] = "enterprise.mode";
 const char kAttrEnterpriseOwned[] = "enterprise.owned";
 const char kAttrEnterpriseUser[] = "enterprise.user";
-
-// Extract the domain from a given email.
-std::string ExtractDomainName(const std::string& email) {
-  size_t separator_pos = email.find('@');
-  if (separator_pos != email.npos && separator_pos < email.length() - 1)
-    return email.substr(separator_pos + 1);
-  else
-    NOTREACHED() << "Not a proper email address: " << email;
-  return std::string();
-}
 
 // Translates DeviceMode constants to strings used in the lockbox.
 std::string GetDeviceModeString(DeviceMode mode) {
@@ -78,9 +69,11 @@ EnterpriseInstallAttributes::LockResult EnterpriseInstallAttributes::LockDevice(
   CHECK_NE(device_mode, DEVICE_MODE_PENDING);
   CHECK_NE(device_mode, DEVICE_MODE_NOT_SET);
 
+  std::string domain = chromeos::Authenticator::ExtractDomainName(user);
+
   // Check for existing lock first.
   if (device_locked_) {
-    return !registration_user_.empty() && user == registration_user_ ?
+    return !registration_domain_.empty() && domain == registration_domain_ ?
         LOCK_SUCCESS : LOCK_WRONG_USER;
   }
 
@@ -103,7 +96,6 @@ EnterpriseInstallAttributes::LockResult EnterpriseInstallAttributes::LockDevice(
   if (!cryptohome_->InstallAttributesIsFirstInstall())
     return LOCK_WRONG_USER;
 
-  std::string domain = ExtractDomainName(user);
   std::string mode = GetDeviceModeString(device_mode);
 
   // Set values in the InstallAttrs and lock it.
@@ -176,7 +168,8 @@ void EnterpriseInstallAttributes::ReadImmutableAttributes() {
                                             &enterprise_user) &&
           enterprise_owned == "true" &&
           !enterprise_user.empty()) {
-        registration_user_ = enterprise_user;
+        registration_user_ =
+            chromeos::Authenticator::Canonicalize(enterprise_user);
 
         // Initialize the mode to the legacy enterprise mode here and update
         // below if more information is present.
@@ -186,9 +179,13 @@ void EnterpriseInstallAttributes::ReadImmutableAttributes() {
         // extended ones too. We try to set these to defaults as good as
         // as possible if present, which could happen for device enrolled in
         // pre 19 revisions of the code, before these new attributes were added.
-        if (!cryptohome_->InstallAttributesGet(kAttrEnterpriseDomain,
-                                               &registration_domain_)) {
-          registration_domain_ = ExtractDomainName(registration_user_);
+        if (cryptohome_->InstallAttributesGet(kAttrEnterpriseDomain,
+                                              &registration_domain_)) {
+          registration_domain_ =
+              chromeos::Authenticator::CanonicalizeDomain(registration_domain_);
+        } else {
+          registration_domain_ =
+              chromeos::Authenticator::ExtractDomainName(registration_user_);
         }
         if (!cryptohome_->InstallAttributesGet(kAttrEnterpriseDeviceId,
                                                &registration_device_id_)) {

@@ -63,6 +63,18 @@ TEST(AuthenticatorTest, EmailAddressIgnoreMultiPlusSuffix) {
   EXPECT_EQ(multi_plus, Authenticator::Canonicalize(multi_plus));
 }
 
+TEST(AuthenticatorTest, CanonicalizeDomain) {
+  const char domain[] = "example.com";
+  EXPECT_EQ(domain, Authenticator::CanonicalizeDomain("example.com"));
+  EXPECT_EQ(domain, Authenticator::CanonicalizeDomain("EXAMPLE.cOm"));
+}
+
+TEST(AuthenticatorTest, ExtractDomainName) {
+  const char domain[] = "example.com";
+  EXPECT_EQ(domain, Authenticator::ExtractDomainName("who@example.com"));
+  EXPECT_EQ(domain, Authenticator::ExtractDomainName("who@EXAMPLE.cOm"));
+}
+
 TEST(AuthenticatorTest, SanitizeMissingDomain) {
   EXPECT_EQ("nodomain@gmail.com", Authenticator::Sanitize("nodomain"));
 }

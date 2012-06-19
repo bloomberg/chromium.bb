@@ -40,6 +40,13 @@ std::string Authenticator::Canonicalize(const std::string& email_address) {
 }
 
 // static
+std::string Authenticator::CanonicalizeDomain(const std::string& domain) {
+  // Canonicalization of domain names means lower-casing them. Make sure to
+  // update this function in sync with Canonicalize if this ever changes.
+  return StringToLowerASCII(domain);
+}
+
+// static
 std::string Authenticator::Sanitize(const std::string& email_address) {
   std::string sanitized(email_address);
 
@@ -50,6 +57,18 @@ std::string Authenticator::Sanitize(const std::string& email_address) {
   }
 
   return sanitized;
+}
+
+// static
+std::string Authenticator::ExtractDomainName(const std::string& email_address) {
+  // First canonicalize which will also verify we have proper domain part.
+  std::string email = Canonicalize(email_address);
+  size_t separator_pos = email.find('@');
+  if (separator_pos != email.npos && separator_pos < email.length() - 1)
+    return email.substr(separator_pos + 1);
+  else
+    NOTREACHED() << "Not a proper email address: " << email;
+  return std::string();
 }
 
 }  // namespace chromeos
