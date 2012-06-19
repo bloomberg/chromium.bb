@@ -24,6 +24,10 @@
 class SSLClientAuthHandler;
 class TabContents;
 
+namespace content {
+class WebContents;
+}
+
 namespace net {
 class HttpNetworkSession;
 class SSLCertRequestInfo;
