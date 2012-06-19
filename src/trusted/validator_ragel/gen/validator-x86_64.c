@@ -314,48 +314,48 @@ _again:
 		case 1152: goto tr336;
 		case 1153: goto tr337;
 		case 1168: goto tr352;
-		case 1170: goto tr354;
-		case 1183: goto tr367;
-		case 1186: goto tr370;
+		case 1169: goto tr353;
+		case 1171: goto tr355;
+		case 1184: goto tr368;
 		case 1187: goto tr371;
-		case 1195: goto tr379;
-		case 1210: goto tr394;
+		case 1188: goto tr372;
+		case 1196: goto tr380;
 		case 1211: goto tr395;
 		case 1212: goto tr396;
-		case 1216: goto tr400;
-		case 1222: goto tr406;
-		case 1239: goto tr423;
-		case 1250: goto tr434;
-		case 1310: goto tr494;
+		case 1213: goto tr397;
+		case 1217: goto tr401;
+		case 1223: goto tr407;
+		case 1232: goto tr416;
+		case 1241: goto tr425;
+		case 1252: goto tr436;
 		case 1312: goto tr496;
-		case 1356: goto tr540;
-		case 1362: goto tr546;
+		case 1314: goto tr498;
+		case 1510: goto tr694;
 		case 1516: goto tr700;
-		case 1522: goto tr706;
-		case 1560: goto tr744;
-		case 1564: goto tr748;
-		case 1567: goto tr751;
-		case 1571: goto tr755;
-		case 1688: goto tr872;
-		case 1784: goto tr968;
-		case 1787: goto tr971;
-		case 1903: goto tr1087;
-		case 1908: goto tr1092;
-		case 1926: goto tr1110;
-		case 1930: goto tr1114;
-		case 1967: goto tr1151;
-		case 1968: goto tr1152;
-		case 1969: goto tr1153;
-		case 2011: goto tr1195;
-		case 2028: goto tr1212;
-		case 2093: goto tr1277;
-		case 2094: goto tr1278;
-		case 2106: goto tr1290;
-		case 2107: goto tr1291;
-		case 2108: goto tr1292;
-		case 2109: goto tr1293;
-		case 2110: goto tr1294;
-		case 2111: goto tr1295;
+		case 1554: goto tr738;
+		case 1558: goto tr742;
+		case 1561: goto tr745;
+		case 1565: goto tr749;
+		case 1682: goto tr866;
+		case 1778: goto tr962;
+		case 1781: goto tr965;
+		case 1897: goto tr1081;
+		case 1902: goto tr1086;
+		case 1920: goto tr1104;
+		case 1924: goto tr1108;
+		case 1961: goto tr1145;
+		case 1962: goto tr1146;
+		case 1963: goto tr1147;
+		case 2005: goto tr1189;
+		case 2022: goto tr1206;
+		case 2087: goto tr1271;
+		case 2088: goto tr1272;
+		case 2100: goto tr1284;
+		case 2101: goto tr1285;
+		case 2102: goto tr1286;
+		case 2103: goto tr1287;
+		case 2104: goto tr1288;
+		case 2105: goto tr1289;
 		case 785: goto st785;
 		case 881: goto tr65;
 		case 877: goto tr61;
@@ -363,22 +363,21 @@ _again:
 		case 883: goto tr67;
 		case 1139: goto tr323;
 		case 1163: goto tr347;
-		case 1223: goto tr407;
-		case 1264: goto tr448;
-		case 1365: goto tr549;
-		case 1861: goto tr1045;
-		case 1863: goto tr1047;
-		case 2074: goto tr1258;
-		case 2075: goto tr1259;
+		case 1224: goto tr408;
+		case 1266: goto tr450;
+		case 1360: goto tr544;
+		case 1855: goto tr1039;
+		case 1857: goto tr1041;
+		case 2068: goto tr1252;
+		case 2069: goto tr1253;
 		case 1: goto st1;
 		case 934: goto tr118;
 		case 973: goto tr157;
 		case 976: goto tr160;
 		case 991: goto tr175;
 		case 1124: goto tr308;
-		case 1171: goto tr355;
-		case 1357: goto tr541;
-		case 1722: goto tr906;
+		case 1172: goto tr356;
+		case 1716: goto tr900;
 		case 2: goto st2;
 		case 818: goto tr2;
 		case 821: goto tr5;
@@ -393,13 +392,11 @@ _again:
 		case 992: goto tr176;
 		case 995: goto tr179;
 		case 1127: goto tr311;
-		case 1172: goto tr356;
-		case 1175: goto tr359;
-		case 1360: goto tr544;
-		case 1375: goto tr559;
-		case 1786: goto tr970;
-		case 1857: goto tr1041;
-		case 1966: goto tr1150;
+		case 1173: goto tr357;
+		case 1176: goto tr360;
+		case 1780: goto tr964;
+		case 1851: goto tr1035;
+		case 1960: goto tr1144;
 		case 3: goto st3;
 		case 4: goto st4;
 		case 5: goto st5;
@@ -411,63 +408,60 @@ _again:
 		case 980: goto tr164;
 		case 993: goto tr177;
 		case 1125: goto tr309;
-		case 1173: goto tr357;
-		case 1358: goto tr542;
-		case 1785: goto tr969;
+		case 1174: goto tr358;
+		case 1779: goto tr963;
 		case 7: goto st7;
 		case 937: goto tr121;
 		case 979: goto tr163;
 		case 981: goto tr165;
 		case 994: goto tr178;
 		case 1126: goto tr310;
-		case 1174: goto tr358;
-		case 1359: goto tr543;
-		case 1646: goto tr830;
+		case 1175: goto tr359;
+		case 1640: goto tr824;
 		case 8: goto st8;
 		case 939: goto tr123;
 		case 983: goto tr167;
 		case 985: goto tr169;
 		case 996: goto tr180;
 		case 1128: goto tr312;
-		case 1176: goto tr360;
-		case 1361: goto tr545;
-		case 1647: goto tr831;
+		case 1177: goto tr361;
+		case 1641: goto tr825;
 		case 9: goto st9;
 		case 857: goto tr41;
 		case 870: goto tr54;
 		case 1004: goto tr188;
 		case 1140: goto tr324;
 		case 1162: goto tr346;
-		case 1224: goto tr408;
-		case 1257: goto tr441;
-		case 1394: goto tr578;
-		case 1397: goto tr581;
-		case 1398: goto tr582;
-		case 1399: goto tr583;
-		case 1872: goto tr1056;
-		case 1876: goto tr1060;
-		case 1860: goto tr1044;
-		case 1862: goto tr1046;
-		case 1992: goto tr1176;
-		case 2003: goto tr1187;
-		case 2005: goto tr1189;
-		case 2015: goto tr1199;
+		case 1225: goto tr409;
+		case 1259: goto tr443;
+		case 1388: goto tr572;
+		case 1391: goto tr575;
+		case 1392: goto tr576;
+		case 1393: goto tr577;
+		case 1866: goto tr1050;
+		case 1870: goto tr1054;
+		case 1854: goto tr1038;
+		case 1856: goto tr1040;
+		case 1986: goto tr1170;
+		case 1997: goto tr1181;
+		case 1999: goto tr1183;
+		case 2009: goto tr1193;
+		case 2012: goto tr1196;
+		case 2013: goto tr1197;
+		case 2014: goto tr1198;
 		case 2018: goto tr1202;
 		case 2019: goto tr1203;
 		case 2020: goto tr1204;
-		case 2024: goto tr1208;
-		case 2025: goto tr1209;
-		case 2026: goto tr1210;
-		case 2027: goto tr1211;
-		case 2076: goto tr1260;
-		case 2077: goto tr1261;
+		case 2021: goto tr1205;
+		case 2070: goto tr1254;
+		case 2071: goto tr1255;
 		case 10: goto st10;
 		case 834: goto tr18;
 		case 1097: goto tr281;
-		case 1542: goto tr726;
-		case 1545: goto tr729;
-		case 1914: goto tr1098;
-		case 1916: goto tr1100;
+		case 1536: goto tr720;
+		case 1539: goto tr723;
+		case 1908: goto tr1092;
+		case 1910: goto tr1094;
 		case 11: goto st11;
 		case 842: goto tr26;
 		case 849: goto tr33;
@@ -475,14 +469,14 @@ _again:
 		case 838: goto tr22;
 		case 1098: goto tr282;
 		case 1101: goto tr285;
-		case 1562: goto tr746;
-		case 1569: goto tr753;
-		case 1590: goto tr774;
-		case 1593: goto tr777;
-		case 1928: goto tr1112;
-		case 1932: goto tr1116;
-		case 1941: goto tr1125;
-		case 1943: goto tr1127;
+		case 1556: goto tr740;
+		case 1563: goto tr747;
+		case 1584: goto tr768;
+		case 1587: goto tr771;
+		case 1922: goto tr1106;
+		case 1926: goto tr1110;
+		case 1935: goto tr1119;
+		case 1937: goto tr1121;
 		case 12: goto st12;
 		case 13: goto st13;
 		case 14: goto st14;
@@ -490,24 +484,24 @@ _again:
 		case 848: goto tr32;
 		case 836: goto tr20;
 		case 1099: goto tr283;
-		case 1561: goto tr745;
-		case 1568: goto tr752;
-		case 1927: goto tr1111;
-		case 1931: goto tr1115;
+		case 1555: goto tr739;
+		case 1562: goto tr746;
+		case 1921: goto tr1105;
+		case 1925: goto tr1109;
 		case 16: goto st16;
 		case 837: goto tr21;
 		case 1100: goto tr284;
+		case 1508: goto tr692;
 		case 1514: goto tr698;
-		case 1520: goto tr704;
-		case 1901: goto tr1085;
-		case 1906: goto tr1090;
+		case 1895: goto tr1079;
+		case 1900: goto tr1084;
 		case 17: goto st17;
 		case 839: goto tr23;
 		case 1102: goto tr286;
+		case 1509: goto tr693;
 		case 1515: goto tr699;
-		case 1521: goto tr705;
-		case 1902: goto tr1086;
-		case 1907: goto tr1091;
+		case 1896: goto tr1080;
+		case 1901: goto tr1085;
 		case 18: goto st18;
 		case 989: goto tr173;
 		case 1069: goto tr253;
@@ -518,13 +512,13 @@ _again:
 		case 1020: goto tr204;
 		case 1062: goto tr246;
 		case 1078: goto tr262;
-		case 1169: goto tr353;
-		case 1291: goto tr475;
-		case 1294: goto tr478;
-		case 1369: goto tr553;
-		case 1832: goto tr1016;
-		case 2078: goto tr1262;
-		case 2112: goto tr1296;
+		case 1170: goto tr354;
+		case 1293: goto tr477;
+		case 1296: goto tr480;
+		case 1364: goto tr548;
+		case 1826: goto tr1010;
+		case 2072: goto tr1256;
+		case 2106: goto tr1290;
 		case 19: goto st19;
 		case 1052: goto tr236;
 		case 1053: goto tr237;
@@ -534,20 +528,20 @@ _again:
 		case 1021: goto tr205;
 		case 1045: goto tr229;
 		case 1141: goto tr325;
-		case 1178: goto tr362;
-		case 1531: goto tr715;
-		case 1536: goto tr720;
-		case 1577: goto tr761;
-		case 1581: goto tr765;
-		case 2079: goto tr1263;
-		case 2113: goto tr1297;
+		case 1179: goto tr363;
+		case 1525: goto tr709;
+		case 1530: goto tr714;
+		case 1571: goto tr755;
+		case 1575: goto tr759;
+		case 2073: goto tr1257;
+		case 2107: goto tr1291;
 		case 20: goto st20;
 		case 21: goto st21;
 		case 22: goto st22;
 		case 23: goto st23;
 		case 858: goto tr42;
 		case 0: goto st0;
-		case 2080: goto tr1264;
+		case 2074: goto tr1258;
 		case 24: goto st24;
 		case 25: goto st25;
 		case 26: goto st26;
@@ -596,158 +590,158 @@ _again:
 		case 868: goto tr52;
 		case 872: goto tr56;
 		case 892: goto tr76;
-		case 1253: goto tr437;
-		case 1263: goto tr447;
-		case 1271: goto tr455;
-		case 1272: goto tr456;
+		case 1255: goto tr439;
+		case 1265: goto tr449;
+		case 1273: goto tr457;
 		case 1274: goto tr458;
-		case 1275: goto tr459;
-		case 1503: goto tr687;
-		case 1854: goto tr1038;
-		case 1873: goto tr1057;
-		case 1874: goto tr1058;
-		case 1875: goto tr1059;
-		case 1989: goto tr1173;
-		case 1990: goto tr1174;
-		case 1997: goto tr1181;
-		case 2012: goto tr1196;
-		case 2013: goto tr1197;
-		case 2016: goto tr1200;
-		case 2082: goto tr1266;
+		case 1276: goto tr460;
+		case 1277: goto tr461;
+		case 1497: goto tr681;
+		case 1848: goto tr1032;
+		case 1867: goto tr1051;
+		case 1868: goto tr1052;
+		case 1869: goto tr1053;
+		case 1983: goto tr1167;
+		case 1984: goto tr1168;
+		case 1991: goto tr1175;
+		case 2006: goto tr1190;
+		case 2007: goto tr1191;
+		case 2010: goto tr1194;
+		case 2076: goto tr1260;
 		case 46: goto st46;
 		case 47: goto st47;
 		case 865: goto tr49;
 		case 887: goto tr71;
-		case 1254: goto tr438;
-		case 1273: goto tr457;
-		case 1855: goto tr1039;
-		case 1999: goto tr1183;
-		case 1991: goto tr1175;
-		case 2014: goto tr1198;
+		case 1256: goto tr440;
+		case 1275: goto tr459;
+		case 1849: goto tr1033;
+		case 1993: goto tr1177;
+		case 1985: goto tr1169;
+		case 2008: goto tr1192;
 		case 48: goto st48;
 		case 49: goto st49;
 		case 50: goto st50;
 		case 871: goto tr55;
 		case 891: goto tr75;
-		case 1258: goto tr442;
-		case 1789: goto tr973;
+		case 1260: goto tr444;
+		case 1783: goto tr967;
 		case 51: goto st51;
 		case 886: goto tr70;
 		case 873: goto tr57;
-		case 1259: goto tr443;
-		case 1277: goto tr461;
-		case 1276: goto tr460;
-		case 1282: goto tr466;
+		case 1261: goto tr445;
+		case 1279: goto tr463;
+		case 1278: goto tr462;
+		case 1284: goto tr468;
+		case 1285: goto tr469;
 		case 1283: goto tr467;
-		case 1281: goto tr465;
-		case 1498: goto tr682;
-		case 1856: goto tr1040;
-		case 1888: goto tr1072;
-		case 1893: goto tr1077;
-		case 1884: goto tr1068;
-		case 1994: goto tr1178;
-		case 2021: goto tr1205;
-		case 2017: goto tr1201;
+		case 1492: goto tr676;
+		case 1850: goto tr1034;
+		case 1882: goto tr1066;
+		case 1887: goto tr1071;
+		case 1878: goto tr1062;
+		case 1988: goto tr1172;
+		case 2015: goto tr1199;
+		case 2011: goto tr1195;
 		case 52: goto st52;
 		case 966: goto tr150;
 		case 948: goto tr132;
 		case 957: goto tr141;
 		case 962: goto tr146;
 		case 963: goto tr147;
-		case 1293: goto tr477;
-		case 1292: goto tr476;
-		case 1284: goto tr468;
 		case 1295: goto tr479;
-		case 1302: goto tr486;
-		case 1795: goto tr979;
-		case 1792: goto tr976;
-		case 1965: goto tr1149;
-		case 2001: goto tr1185;
-		case 2083: goto tr1267;
+		case 1294: goto tr478;
+		case 1286: goto tr470;
+		case 1297: goto tr481;
+		case 1304: goto tr488;
+		case 1789: goto tr973;
+		case 1786: goto tr970;
+		case 1959: goto tr1143;
+		case 1995: goto tr1179;
+		case 2077: goto tr1261;
 		case 53: goto st53;
-		case 1285: goto tr469;
-		case 1296: goto tr480;
-		case 1724: goto tr908;
+		case 1287: goto tr471;
+		case 1298: goto tr482;
+		case 1718: goto tr902;
 		case 54: goto st54;
 		case 950: goto tr134;
 		case 953: goto tr137;
 		case 958: goto tr142;
 		case 965: goto tr149;
-		case 1286: goto tr470;
-		case 1289: goto tr473;
-		case 1297: goto tr481;
-		case 1300: goto tr484;
-		case 1794: goto tr978;
-		case 1859: goto tr1043;
+		case 1288: goto tr472;
+		case 1291: goto tr475;
+		case 1299: goto tr483;
+		case 1302: goto tr486;
+		case 1788: goto tr972;
+		case 1853: goto tr1037;
 		case 55: goto st55;
 		case 56: goto st56;
 		case 57: goto st57;
 		case 58: goto st58;
 		case 951: goto tr135;
 		case 964: goto tr148;
-		case 1287: goto tr471;
-		case 1298: goto tr482;
-		case 1793: goto tr977;
+		case 1289: goto tr473;
+		case 1300: goto tr484;
+		case 1787: goto tr971;
 		case 59: goto st59;
-		case 1288: goto tr472;
-		case 1299: goto tr483;
-		case 1650: goto tr834;
-		case 60: goto st60;
 		case 1290: goto tr474;
 		case 1301: goto tr485;
-		case 1651: goto tr835;
+		case 1644: goto tr828;
+		case 60: goto st60;
+		case 1292: goto tr476;
+		case 1303: goto tr487;
+		case 1645: goto tr829;
 		case 61: goto st61;
 		case 62: goto st62;
 		case 63: goto st63;
-		case 2132: goto tr1316;
+		case 2126: goto tr1310;
 		case 64: goto st64;
 		case 65: goto st65;
 		case 66: goto st66;
 		case 67: goto st67;
 		case 880: goto tr64;
 		case 1164: goto tr348;
-		case 1265: goto tr449;
-		case 1279: goto tr463;
-		case 1367: goto tr551;
-		case 1891: goto tr1075;
-		case 1894: goto tr1078;
+		case 1267: goto tr451;
+		case 1281: goto tr465;
+		case 1362: goto tr546;
+		case 1885: goto tr1069;
+		case 1888: goto tr1072;
 		case 68: goto st68;
 		case 69: goto st69;
 		case 884: goto tr68;
-		case 1970: goto tr1154;
+		case 1964: goto tr1148;
 		case 1165: goto tr349;
-		case 1266: goto tr450;
+		case 1268: goto tr452;
 		case 70: goto st70;
 		case 71: goto st71;
 		case 888: goto tr72;
-		case 1269: goto tr453;
-		case 1791: goto tr975;
+		case 1271: goto tr455;
+		case 1785: goto tr969;
 		case 72: goto st72;
 		case 73: goto st73;
 		case 893: goto tr77;
-		case 1270: goto tr454;
-		case 1262: goto tr446;
-		case 1788: goto tr972;
-		case 1998: goto tr1182;
-		case 1996: goto tr1180;
-		case 2022: goto tr1206;
+		case 1272: goto tr456;
+		case 1264: goto tr448;
+		case 1782: goto tr966;
+		case 1992: goto tr1176;
+		case 1990: goto tr1174;
+		case 2016: goto tr1200;
 		case 74: goto st74;
-		case 2081: goto tr1265;
-		case 2085: goto tr1269;
+		case 2075: goto tr1259;
+		case 2079: goto tr1263;
 		case 75: goto st75;
 		case 76: goto st76;
-		case 2098: goto tr1282;
+		case 2092: goto tr1276;
 		case 77: goto st77;
 		case 1079: goto tr263;
 		case 1087: goto tr271;
 		case 1092: goto tr276;
 		case 1093: goto tr277;
-		case 2084: goto tr1268;
+		case 2078: goto tr1262;
 		case 78: goto st78;
 		case 79: goto st79;
 		case 80: goto st80;
 		case 81: goto st81;
-		case 2086: goto tr1270;
+		case 2080: goto tr1264;
 		case 82: goto st82;
 		case 83: goto st83;
 		case 84: goto st84;
@@ -762,43 +756,43 @@ _again:
 		case 92: goto st92;
 		case 1009: goto tr193;
 		case 1143: goto tr327;
-		case 1506: goto tr690;
-		case 1507: goto tr691;
-		case 2096: goto tr1280;
+		case 1500: goto tr684;
+		case 1501: goto tr685;
+		case 2090: goto tr1274;
 		case 93: goto st93;
 		case 1046: goto tr230;
-		case 1551: goto tr735;
-		case 1553: goto tr737;
+		case 1545: goto tr729;
+		case 1547: goto tr731;
 		case 94: goto st94;
 		case 1054: goto tr238;
 		case 1061: goto tr245;
 		case 1047: goto tr231;
 		case 1050: goto tr234;
-		case 1579: goto tr763;
-		case 1583: goto tr767;
-		case 1599: goto tr783;
-		case 1601: goto tr785;
+		case 1573: goto tr757;
+		case 1577: goto tr761;
+		case 1593: goto tr777;
+		case 1595: goto tr779;
 		case 95: goto st95;
 		case 96: goto st96;
 		case 97: goto st97;
 		case 98: goto st98;
 		case 1060: goto tr244;
 		case 1048: goto tr232;
-		case 1578: goto tr762;
-		case 1582: goto tr766;
+		case 1572: goto tr756;
+		case 1576: goto tr760;
 		case 99: goto st99;
 		case 1049: goto tr233;
-		case 1529: goto tr713;
-		case 1534: goto tr718;
+		case 1523: goto tr707;
+		case 1528: goto tr712;
 		case 100: goto st100;
 		case 1051: goto tr235;
-		case 1530: goto tr714;
-		case 1535: goto tr719;
+		case 1524: goto tr708;
+		case 1529: goto tr713;
 		case 101: goto st101;
 		case 1010: goto tr194;
 		case 1144: goto tr328;
-		case 1233: goto tr417;
-		case 2097: goto tr1281;
+		case 1235: goto tr419;
+		case 2091: goto tr1275;
 		case 102: goto st102;
 		case 1063: goto tr247;
 		case 103: goto st103;
@@ -820,7 +814,7 @@ _again:
 		case 111: goto st111;
 		case 112: goto st112;
 		case 113: goto st113;
-		case 1177: goto tr361;
+		case 1178: goto tr362;
 		case 1083: goto tr267;
 		case 1088: goto tr272;
 		case 1095: goto tr279;
@@ -837,14 +831,14 @@ _again:
 		case 1014: goto tr198;
 		case 1015: goto tr199;
 		case 1147: goto tr331;
-		case 1236: goto tr420;
-		case 2102: goto tr1286;
-		case 2103: goto tr1287;
+		case 1238: goto tr422;
+		case 2096: goto tr1280;
+		case 2097: goto tr1281;
 		case 122: goto st122;
 		case 1016: goto tr200;
 		case 1149: goto tr333;
-		case 1237: goto tr421;
-		case 2104: goto tr1288;
+		case 1239: goto tr423;
+		case 2098: goto tr1282;
 		case 123: goto st123;
 		case 1105: goto tr289;
 		case 124: goto st124;
@@ -881,14 +875,14 @@ _again:
 		case 147: goto st147;
 		case 148: goto st148;
 		case 149: goto st149;
-		case 2087: goto tr1271;
+		case 2081: goto tr1265;
 		case 150: goto st150;
 		case 151: goto st151;
 		case 1131: goto tr315;
 		case 152: goto st152;
 		case 1138: goto tr322;
 		case 786: goto st786;
-		case 2088: goto tr1272;
+		case 2082: goto tr1266;
 		case 153: goto st153;
 		case 154: goto st154;
 		case 155: goto st155;
@@ -919,60 +913,60 @@ _again:
 		case 178: goto st178;
 		case 179: goto st179;
 		case 180: goto st180;
-		case 2089: goto tr1273;
+		case 2083: goto tr1267;
 		case 181: goto st181;
 		case 182: goto st182;
 		case 183: goto st183;
 		case 184: goto st184;
 		case 185: goto st185;
 		case 186: goto st186;
-		case 1199: goto tr383;
+		case 1200: goto tr384;
 		case 187: goto st187;
-		case 1207: goto tr391;
-		case 188: goto st188;
 		case 1208: goto tr392;
-		case 189: goto st189;
+		case 188: goto st188;
 		case 1209: goto tr393;
+		case 189: goto st189;
+		case 1210: goto tr394;
 		case 190: goto st190;
 		case 191: goto st191;
 		case 192: goto st192;
 		case 193: goto st193;
 		case 194: goto st194;
 		case 195: goto st195;
-		case 2090: goto tr1274;
+		case 2084: goto tr1268;
 		case 196: goto st196;
-		case 1213: goto tr397;
-		case 197: goto st197;
 		case 1214: goto tr398;
-		case 198: goto st198;
+		case 197: goto st197;
 		case 1215: goto tr399;
+		case 198: goto st198;
+		case 1216: goto tr400;
 		case 199: goto st199;
 		case 200: goto st200;
-		case 2091: goto tr1275;
+		case 2085: goto tr1269;
 		case 201: goto st201;
-		case 2092: goto tr1276;
+		case 2086: goto tr1270;
 		case 202: goto st202;
-		case 1218: goto tr402;
-		case 203: goto st203;
-		case 2140: goto tr1324;
-		case 204: goto st204;
 		case 1219: goto tr403;
-		case 205: goto st205;
+		case 203: goto st203;
+		case 2134: goto tr1318;
+		case 204: goto st204;
 		case 1220: goto tr404;
+		case 205: goto st205;
+		case 1221: goto tr405;
 		case 787: goto st787;
-		case 2141: goto tr1325;
+		case 2135: goto tr1319;
 		case 206: goto st206;
 		case 207: goto st207;
-		case 2095: goto tr1279;
+		case 2089: goto tr1273;
 		case 208: goto st208;
-		case 1330: goto tr514;
-		case 1331: goto tr515;
-		case 1336: goto tr520;
-		case 1337: goto tr521;
-		case 1323: goto tr507;
-		case 1225: goto tr409;
-		case 1240: goto tr424;
-		case 1346: goto tr530;
+		case 1332: goto tr516;
+		case 1333: goto tr517;
+		case 1338: goto tr522;
+		case 1339: goto tr523;
+		case 1325: goto tr509;
+		case 1226: goto tr410;
+		case 1242: goto tr426;
+		case 1348: goto tr532;
 		case 209: goto st209;
 		case 210: goto st210;
 		case 211: goto st211;
@@ -994,48 +988,48 @@ _again:
 		case 227: goto st227;
 		case 228: goto st228;
 		case 229: goto st229;
-		case 1340: goto tr524;
-		case 1347: goto tr531;
-		case 1352: goto tr536;
-		case 1353: goto tr537;
-		case 2121: goto tr1305;
+		case 1342: goto tr526;
+		case 1349: goto tr533;
+		case 1354: goto tr538;
+		case 1355: goto tr539;
+		case 2115: goto tr1299;
 		case 230: goto st230;
 		case 231: goto st231;
-		case 1229: goto tr413;
+		case 1230: goto tr414;
 		case 232: goto st232;
 		case 233: goto st233;
 		case 234: goto st234;
-		case 1232: goto tr416;
+		case 1234: goto tr418;
 		case 235: goto st235;
-		case 1324: goto tr508;
+		case 1326: goto tr510;
 		case 236: goto st236;
-		case 1332: goto tr516;
-		case 1339: goto tr523;
-		case 1325: goto tr509;
-		case 1328: goto tr512;
+		case 1334: goto tr518;
+		case 1341: goto tr525;
+		case 1327: goto tr511;
+		case 1330: goto tr514;
 		case 237: goto st237;
 		case 238: goto st238;
 		case 239: goto st239;
 		case 240: goto st240;
-		case 1338: goto tr522;
-		case 1326: goto tr510;
+		case 1340: goto tr524;
+		case 1328: goto tr512;
 		case 241: goto st241;
-		case 1327: goto tr511;
-		case 242: goto st242;
 		case 1329: goto tr513;
+		case 242: goto st242;
+		case 1331: goto tr515;
 		case 243: goto st243;
 		case 244: goto st244;
 		case 245: goto st245;
-		case 1374: goto tr558;
-		case 1344: goto tr528;
-		case 1348: goto tr532;
-		case 1355: goto tr539;
+		case 1369: goto tr553;
+		case 1346: goto tr530;
+		case 1350: goto tr534;
+		case 1357: goto tr541;
 		case 246: goto st246;
 		case 247: goto st247;
 		case 248: goto st248;
 		case 249: goto st249;
-		case 1342: goto tr526;
-		case 1354: goto tr538;
+		case 1344: goto tr528;
+		case 1356: goto tr540;
 		case 250: goto st250;
 		case 251: goto st251;
 		case 252: goto st252;
@@ -1046,12 +1040,12 @@ _again:
 		case 257: goto st257;
 		case 258: goto st258;
 		case 259: goto st259;
-		case 1230: goto tr414;
+		case 1231: goto tr415;
 		case 260: goto st260;
 		case 261: goto st261;
 		case 262: goto st262;
 		case 263: goto st263;
-		case 1368: goto tr552;
+		case 1363: goto tr547;
 		case 264: goto st264;
 		case 265: goto st265;
 		case 266: goto st266;
@@ -1064,21 +1058,21 @@ _again:
 		case 273: goto st273;
 		case 274: goto st274;
 		case 275: goto st275;
-		case 1244: goto tr428;
-		case 1975: goto tr1159;
+		case 1246: goto tr430;
+		case 1969: goto tr1153;
 		case 276: goto st276;
 		case 277: goto st277;
 		case 278: goto st278;
-		case 1378: goto tr562;
+		case 1372: goto tr556;
 		case 279: goto st279;
 		case 280: goto st280;
 		case 281: goto st281;
 		case 282: goto st282;
 		case 283: goto st283;
-		case 1381: goto tr565;
-		case 1977: goto tr1161;
-		case 1978: goto tr1162;
-		case 1982: goto tr1166;
+		case 1375: goto tr559;
+		case 1971: goto tr1155;
+		case 1972: goto tr1156;
+		case 1976: goto tr1160;
 		case 284: goto st284;
 		case 285: goto st285;
 		case 286: goto st286;
@@ -1086,1047 +1080,1047 @@ _again:
 		case 288: goto st288;
 		case 289: goto st289;
 		case 290: goto st290;
-		case 1245: goto tr429;
-		case 1988: goto tr1172;
+		case 1247: goto tr431;
+		case 1982: goto tr1166;
 		case 291: goto st291;
 		case 292: goto st292;
 		case 293: goto st293;
-		case 1392: goto tr576;
+		case 1386: goto tr570;
 		case 294: goto st294;
-		case 1246: goto tr430;
-		case 2010: goto tr1194;
+		case 1248: goto tr432;
+		case 2004: goto tr1188;
 		case 295: goto st295;
 		case 296: goto st296;
-		case 1396: goto tr580;
+		case 1390: goto tr574;
 		case 297: goto st297;
 		case 298: goto st298;
 		case 299: goto st299;
-		case 2099: goto tr1283;
+		case 2093: goto tr1277;
 		case 300: goto st300;
-		case 2100: goto tr1284;
+		case 2094: goto tr1278;
 		case 301: goto st301;
-		case 2101: goto tr1285;
+		case 2095: goto tr1279;
 		case 302: goto st302;
-		case 1400: goto tr584;
+		case 1394: goto tr578;
 		case 303: goto st303;
-		case 1408: goto tr592;
+		case 1402: goto tr586;
 		case 788: goto st788;
-		case 2142: goto tr1326;
+		case 2136: goto tr1320;
 		case 304: goto st304;
-		case 1409: goto tr593;
+		case 1403: goto tr587;
 		case 305: goto st305;
-		case 1410: goto tr594;
+		case 1404: goto tr588;
 		case 789: goto st789;
-		case 2105: goto tr1289;
+		case 2099: goto tr1283;
 		case 306: goto st306;
-		case 1411: goto tr595;
+		case 1405: goto tr589;
 		case 307: goto st307;
-		case 1431: goto tr615;
+		case 1425: goto tr609;
 		case 308: goto st308;
-		case 1435: goto tr619;
-		case 1680: goto tr864;
-		case 1681: goto tr865;
+		case 1429: goto tr613;
+		case 1674: goto tr858;
+		case 1675: goto tr859;
 		case 309: goto st309;
 		case 310: goto st310;
-		case 1482: goto tr666;
-		case 1441: goto tr625;
-		case 1448: goto tr632;
-		case 1443: goto tr627;
+		case 1476: goto tr660;
+		case 1435: goto tr619;
+		case 1442: goto tr626;
+		case 1437: goto tr621;
 		case 311: goto st311;
 		case 312: goto st312;
-		case 1483: goto tr667;
-		case 1442: goto tr626;
+		case 1477: goto tr661;
+		case 1436: goto tr620;
 		case 313: goto st313;
 		case 314: goto st314;
-		case 1499: goto tr683;
-		case 1484: goto tr668;
-		case 1467: goto tr651;
-		case 1444: goto tr628;
+		case 1493: goto tr677;
+		case 1478: goto tr662;
+		case 1461: goto tr645;
+		case 1438: goto tr622;
 		case 315: goto st315;
 		case 316: goto st316;
 		case 317: goto st317;
 		case 318: goto st318;
-		case 1436: goto tr620;
-		case 1644: goto tr828;
-		case 1682: goto tr866;
-		case 1697: goto tr881;
-		case 1678: goto tr862;
+		case 1430: goto tr614;
+		case 1638: goto tr822;
+		case 1676: goto tr860;
+		case 1691: goto tr875;
+		case 1672: goto tr856;
 		case 319: goto st319;
-		case 1649: goto tr833;
+		case 1643: goto tr827;
 		case 320: goto st320;
-		case 1432: goto tr616;
+		case 1426: goto tr610;
 		case 321: goto st321;
-		case 1433: goto tr617;
+		case 1427: goto tr611;
 		case 322: goto st322;
-		case 1434: goto tr618;
+		case 1428: goto tr612;
 		case 323: goto st323;
-		case 1412: goto tr596;
+		case 1406: goto tr590;
 		case 324: goto st324;
-		case 1450: goto tr634;
+		case 1444: goto tr628;
 		case 325: goto st325;
-		case 1453: goto tr637;
-		case 1642: goto tr826;
-		case 1666: goto tr850;
-		case 1667: goto tr851;
-		case 1668: goto tr852;
+		case 1447: goto tr631;
+		case 1636: goto tr820;
+		case 1660: goto tr844;
+		case 1661: goto tr845;
+		case 1662: goto tr846;
 		case 326: goto st326;
-		case 1645: goto tr829;
+		case 1639: goto tr823;
 		case 327: goto st327;
-		case 1451: goto tr635;
+		case 1445: goto tr629;
 		case 328: goto st328;
-		case 1452: goto tr636;
+		case 1446: goto tr630;
 		case 329: goto st329;
-		case 1413: goto tr597;
+		case 1407: goto tr591;
 		case 330: goto st330;
-		case 1455: goto tr639;
+		case 1449: goto tr633;
 		case 331: goto st331;
-		case 1457: goto tr641;
-		case 1459: goto tr643;
+		case 1451: goto tr635;
+		case 1453: goto tr637;
 		case 332: goto st332;
-		case 1458: goto tr642;
-		case 1528: goto tr712;
-		case 1533: goto tr717;
+		case 1452: goto tr636;
+		case 1522: goto tr706;
+		case 1527: goto tr711;
 		case 333: goto st333;
-		case 1456: goto tr640;
+		case 1450: goto tr634;
 		case 334: goto st334;
-		case 1414: goto tr598;
+		case 1408: goto tr592;
 		case 335: goto st335;
-		case 1460: goto tr644;
+		case 1454: goto tr638;
 		case 336: goto st336;
-		case 1464: goto tr648;
-		case 1752: goto tr936;
-		case 1753: goto tr937;
+		case 1458: goto tr642;
+		case 1746: goto tr930;
+		case 1747: goto tr931;
 		case 337: goto st337;
 		case 338: goto st338;
-		case 1465: goto tr649;
-		case 1721: goto tr905;
-		case 1754: goto tr938;
-		case 1758: goto tr942;
-		case 1750: goto tr934;
+		case 1459: goto tr643;
+		case 1715: goto tr899;
+		case 1748: goto tr932;
+		case 1752: goto tr936;
+		case 1744: goto tr928;
 		case 339: goto st339;
-		case 1461: goto tr645;
+		case 1455: goto tr639;
 		case 340: goto st340;
-		case 1462: goto tr646;
+		case 1456: goto tr640;
 		case 341: goto st341;
-		case 1463: goto tr647;
+		case 1457: goto tr641;
 		case 342: goto st342;
-		case 1415: goto tr599;
+		case 1409: goto tr593;
 		case 343: goto st343;
-		case 1468: goto tr652;
+		case 1462: goto tr646;
 		case 344: goto st344;
-		case 1471: goto tr655;
-		case 1719: goto tr903;
-		case 1738: goto tr922;
-		case 1739: goto tr923;
-		case 1740: goto tr924;
+		case 1465: goto tr649;
+		case 1713: goto tr897;
+		case 1732: goto tr916;
+		case 1733: goto tr917;
+		case 1734: goto tr918;
 		case 345: goto st345;
-		case 1469: goto tr653;
+		case 1463: goto tr647;
 		case 346: goto st346;
-		case 1470: goto tr654;
+		case 1464: goto tr648;
 		case 347: goto st347;
-		case 1416: goto tr600;
+		case 1410: goto tr594;
 		case 348: goto st348;
-		case 1472: goto tr656;
+		case 1466: goto tr650;
 		case 349: goto st349;
-		case 1474: goto tr658;
-		case 1475: goto tr659;
+		case 1468: goto tr652;
+		case 1469: goto tr653;
 		case 350: goto st350;
-		case 1473: goto tr657;
+		case 1467: goto tr651;
 		case 351: goto st351;
-		case 1417: goto tr601;
+		case 1411: goto tr595;
 		case 352: goto st352;
-		case 1476: goto tr660;
+		case 1470: goto tr654;
 		case 353: goto st353;
-		case 1480: goto tr664;
-		case 1822: goto tr1006;
-		case 1823: goto tr1007;
+		case 1474: goto tr658;
+		case 1816: goto tr1000;
+		case 1817: goto tr1001;
 		case 354: goto st354;
-		case 1481: goto tr665;
-		case 1783: goto tr967;
-		case 1824: goto tr1008;
-		case 1831: goto tr1015;
-		case 1820: goto tr1004;
+		case 1475: goto tr659;
+		case 1777: goto tr961;
+		case 1818: goto tr1002;
+		case 1825: goto tr1009;
+		case 1814: goto tr998;
 		case 355: goto st355;
-		case 1477: goto tr661;
+		case 1471: goto tr655;
 		case 356: goto st356;
-		case 1478: goto tr662;
+		case 1472: goto tr656;
 		case 357: goto st357;
-		case 1479: goto tr663;
+		case 1473: goto tr657;
 		case 358: goto st358;
-		case 1418: goto tr602;
+		case 1412: goto tr596;
 		case 359: goto st359;
-		case 1485: goto tr669;
+		case 1479: goto tr663;
 		case 360: goto st360;
-		case 1488: goto tr672;
-		case 1781: goto tr965;
-		case 1809: goto tr993;
-		case 1810: goto tr994;
-		case 1811: goto tr995;
+		case 1482: goto tr666;
+		case 1775: goto tr959;
+		case 1803: goto tr987;
+		case 1804: goto tr988;
+		case 1805: goto tr989;
 		case 361: goto st361;
-		case 1486: goto tr670;
+		case 1480: goto tr664;
 		case 362: goto st362;
-		case 1487: goto tr671;
+		case 1481: goto tr665;
 		case 363: goto st363;
-		case 1419: goto tr603;
+		case 1413: goto tr597;
 		case 364: goto st364;
-		case 1489: goto tr673;
+		case 1483: goto tr667;
 		case 365: goto st365;
-		case 1491: goto tr675;
-		case 1492: goto tr676;
+		case 1485: goto tr669;
+		case 1486: goto tr670;
 		case 366: goto st366;
-		case 1490: goto tr674;
+		case 1484: goto tr668;
 		case 367: goto st367;
-		case 1420: goto tr604;
+		case 1414: goto tr598;
 		case 368: goto st368;
-		case 1493: goto tr677;
+		case 1487: goto tr671;
 		case 369: goto st369;
-		case 1497: goto tr681;
-		case 1886: goto tr1070;
-		case 1887: goto tr1071;
+		case 1491: goto tr675;
+		case 1880: goto tr1064;
+		case 1881: goto tr1065;
 		case 370: goto st370;
-		case 1494: goto tr678;
+		case 1488: goto tr672;
 		case 371: goto st371;
-		case 1495: goto tr679;
+		case 1489: goto tr673;
 		case 372: goto st372;
-		case 1496: goto tr680;
+		case 1490: goto tr674;
 		case 373: goto st373;
-		case 1421: goto tr605;
+		case 1415: goto tr599;
 		case 374: goto st374;
-		case 1500: goto tr684;
+		case 1494: goto tr678;
 		case 375: goto st375;
-		case 1501: goto tr685;
+		case 1495: goto tr679;
 		case 376: goto st376;
-		case 1502: goto tr686;
+		case 1496: goto tr680;
 		case 377: goto st377;
-		case 1422: goto tr606;
+		case 1416: goto tr600;
 		case 378: goto st378;
-		case 1504: goto tr688;
+		case 1498: goto tr682;
 		case 379: goto st379;
-		case 1505: goto tr689;
+		case 1499: goto tr683;
 		case 380: goto st380;
-		case 1423: goto tr607;
+		case 1417: goto tr601;
 		case 381: goto st381;
-		case 1508: goto tr692;
+		case 1502: goto tr686;
 		case 382: goto st382;
 		case 383: goto st383;
-		case 1653: goto tr837;
+		case 1647: goto tr831;
+		case 1507: goto tr691;
 		case 1513: goto tr697;
-		case 1519: goto tr703;
-		case 1900: goto tr1084;
-		case 1905: goto tr1089;
+		case 1894: goto tr1078;
+		case 1899: goto tr1083;
 		case 384: goto st384;
 		case 385: goto st385;
-		case 1509: goto tr693;
+		case 1503: goto tr687;
 		case 386: goto st386;
-		case 1510: goto tr694;
+		case 1504: goto tr688;
 		case 387: goto st387;
 		case 388: goto st388;
 		case 389: goto st389;
-		case 1424: goto tr608;
+		case 1418: goto tr602;
 		case 390: goto st390;
-		case 1523: goto tr707;
+		case 1517: goto tr701;
 		case 391: goto st391;
 		case 392: goto st392;
-		case 1524: goto tr708;
+		case 1518: goto tr702;
 		case 393: goto st393;
-		case 1525: goto tr709;
+		case 1519: goto tr703;
 		case 394: goto st394;
 		case 395: goto st395;
-		case 1526: goto tr710;
+		case 1520: goto tr704;
 		case 396: goto st396;
-		case 1425: goto tr609;
+		case 1419: goto tr603;
 		case 397: goto st397;
-		case 1537: goto tr721;
+		case 1531: goto tr715;
 		case 398: goto st398;
 		case 399: goto st399;
 		case 400: goto st400;
-		case 1538: goto tr722;
+		case 1532: goto tr716;
 		case 401: goto st401;
-		case 1539: goto tr723;
+		case 1533: goto tr717;
 		case 402: goto st402;
 		case 403: goto st403;
 		case 404: goto st404;
-		case 1426: goto tr610;
+		case 1420: goto tr604;
 		case 405: goto st405;
-		case 1546: goto tr730;
+		case 1540: goto tr724;
 		case 406: goto st406;
 		case 407: goto st407;
-		case 1547: goto tr731;
+		case 1541: goto tr725;
 		case 408: goto st408;
-		case 1548: goto tr732;
+		case 1542: goto tr726;
 		case 409: goto st409;
 		case 410: goto st410;
-		case 1549: goto tr733;
+		case 1543: goto tr727;
 		case 411: goto st411;
-		case 1427: goto tr611;
+		case 1421: goto tr605;
 		case 412: goto st412;
-		case 1554: goto tr738;
+		case 1548: goto tr732;
 		case 413: goto st413;
 		case 414: goto st414;
 		case 415: goto st415;
-		case 1555: goto tr739;
+		case 1549: goto tr733;
 		case 416: goto st416;
 		case 417: goto st417;
-		case 1556: goto tr740;
+		case 1550: goto tr734;
 		case 418: goto st418;
 		case 419: goto st419;
 		case 420: goto st420;
-		case 1557: goto tr741;
+		case 1551: goto tr735;
 		case 421: goto st421;
 		case 422: goto st422;
-		case 1428: goto tr612;
+		case 1422: goto tr606;
 		case 423: goto st423;
-		case 1572: goto tr756;
+		case 1566: goto tr750;
 		case 424: goto st424;
 		case 425: goto st425;
-		case 1573: goto tr757;
+		case 1567: goto tr751;
 		case 426: goto st426;
-		case 1574: goto tr758;
+		case 1568: goto tr752;
 		case 427: goto st427;
 		case 428: goto st428;
-		case 1575: goto tr759;
+		case 1569: goto tr753;
 		case 429: goto st429;
-		case 1429: goto tr613;
+		case 1423: goto tr607;
 		case 430: goto st430;
-		case 1584: goto tr768;
+		case 1578: goto tr762;
 		case 431: goto st431;
 		case 432: goto st432;
 		case 433: goto st433;
-		case 1585: goto tr769;
+		case 1579: goto tr763;
 		case 434: goto st434;
-		case 1586: goto tr770;
+		case 1580: goto tr764;
 		case 435: goto st435;
 		case 436: goto st436;
 		case 437: goto st437;
-		case 1587: goto tr771;
+		case 1581: goto tr765;
 		case 438: goto st438;
-		case 1430: goto tr614;
+		case 1424: goto tr608;
 		case 439: goto st439;
-		case 1594: goto tr778;
+		case 1588: goto tr772;
 		case 440: goto st440;
 		case 441: goto st441;
-		case 1595: goto tr779;
+		case 1589: goto tr773;
 		case 442: goto st442;
-		case 1596: goto tr780;
+		case 1590: goto tr774;
 		case 443: goto st443;
 		case 444: goto st444;
-		case 1597: goto tr781;
+		case 1591: goto tr775;
 		case 445: goto st445;
-		case 2114: goto tr1298;
+		case 2108: goto tr1292;
 		case 446: goto st446;
-		case 2115: goto tr1299;
+		case 2109: goto tr1293;
 		case 447: goto st447;
-		case 2116: goto tr1300;
+		case 2110: goto tr1294;
 		case 448: goto st448;
-		case 1602: goto tr786;
+		case 1596: goto tr780;
 		case 449: goto st449;
-		case 1622: goto tr806;
+		case 1616: goto tr800;
 		case 450: goto st450;
 		case 451: goto st451;
-		case 1643: goto tr827;
+		case 1637: goto tr821;
 		case 452: goto st452;
-		case 1623: goto tr807;
+		case 1617: goto tr801;
 		case 453: goto st453;
-		case 1624: goto tr808;
+		case 1618: goto tr802;
 		case 454: goto st454;
-		case 1625: goto tr809;
+		case 1619: goto tr803;
 		case 455: goto st455;
-		case 1626: goto tr810;
+		case 1620: goto tr804;
 		case 456: goto st456;
-		case 1627: goto tr811;
+		case 1621: goto tr805;
 		case 457: goto st457;
-		case 1628: goto tr812;
+		case 1622: goto tr806;
 		case 458: goto st458;
-		case 1629: goto tr813;
+		case 1623: goto tr807;
 		case 459: goto st459;
-		case 1630: goto tr814;
+		case 1624: goto tr808;
 		case 460: goto st460;
 		case 461: goto st461;
-		case 1631: goto tr815;
+		case 1625: goto tr809;
 		case 462: goto st462;
-		case 1665: goto tr849;
-		case 1669: goto tr853;
-		case 1652: goto tr836;
-		case 1655: goto tr839;
-		case 463: goto st463;
-		case 1632: goto tr816;
-		case 464: goto st464;
-		case 1633: goto tr817;
-		case 465: goto st465;
-		case 1634: goto tr818;
-		case 466: goto st466;
-		case 1654: goto tr838;
-		case 1656: goto tr840;
-		case 467: goto st467;
-		case 1635: goto tr819;
-		case 468: goto st468;
-		case 1636: goto tr820;
-		case 469: goto st469;
-		case 1637: goto tr821;
-		case 470: goto st470;
-		case 1638: goto tr822;
-		case 471: goto st471;
-		case 1639: goto tr823;
-		case 472: goto st472;
-		case 1640: goto tr824;
-		case 473: goto st473;
-		case 1603: goto tr787;
-		case 474: goto st474;
-		case 1657: goto tr841;
-		case 475: goto st475;
-		case 1658: goto tr842;
-		case 476: goto st476;
 		case 1659: goto tr843;
-		case 477: goto st477;
-		case 1660: goto tr844;
-		case 478: goto st478;
-		case 1661: goto tr845;
-		case 479: goto st479;
-		case 1662: goto tr846;
-		case 480: goto st480;
 		case 1663: goto tr847;
+		case 1646: goto tr830;
+		case 1649: goto tr833;
+		case 463: goto st463;
+		case 1626: goto tr810;
+		case 464: goto st464;
+		case 1627: goto tr811;
+		case 465: goto st465;
+		case 1628: goto tr812;
+		case 466: goto st466;
+		case 1648: goto tr832;
+		case 1650: goto tr834;
+		case 467: goto st467;
+		case 1629: goto tr813;
+		case 468: goto st468;
+		case 1630: goto tr814;
+		case 469: goto st469;
+		case 1631: goto tr815;
+		case 470: goto st470;
+		case 1632: goto tr816;
+		case 471: goto st471;
+		case 1633: goto tr817;
+		case 472: goto st472;
+		case 1634: goto tr818;
+		case 473: goto st473;
+		case 1597: goto tr781;
+		case 474: goto st474;
+		case 1651: goto tr835;
+		case 475: goto st475;
+		case 1652: goto tr836;
+		case 476: goto st476;
+		case 1653: goto tr837;
+		case 477: goto st477;
+		case 1654: goto tr838;
+		case 478: goto st478;
+		case 1655: goto tr839;
+		case 479: goto st479;
+		case 1656: goto tr840;
+		case 480: goto st480;
+		case 1657: goto tr841;
 		case 481: goto st481;
-		case 1664: goto tr848;
+		case 1658: goto tr842;
 		case 482: goto st482;
-		case 1604: goto tr788;
+		case 1598: goto tr782;
 		case 483: goto st483;
-		case 1670: goto tr854;
+		case 1664: goto tr848;
 		case 484: goto st484;
-		case 1677: goto tr861;
+		case 1671: goto tr855;
 		case 485: goto st485;
-		case 1679: goto tr863;
+		case 1673: goto tr857;
 		case 486: goto st486;
 		case 487: goto st487;
-		case 1825: goto tr1009;
-		case 1687: goto tr871;
-		case 1695: goto tr879;
-		case 1690: goto tr874;
+		case 1819: goto tr1003;
+		case 1681: goto tr865;
+		case 1689: goto tr873;
+		case 1684: goto tr868;
 		case 488: goto st488;
 		case 489: goto st489;
-		case 1826: goto tr1010;
-		case 1689: goto tr873;
+		case 1820: goto tr1004;
+		case 1683: goto tr867;
 		case 490: goto st490;
 		case 491: goto st491;
-		case 1889: goto tr1073;
-		case 1827: goto tr1011;
-		case 1756: goto tr940;
-		case 1691: goto tr875;
+		case 1883: goto tr1067;
+		case 1821: goto tr1005;
+		case 1750: goto tr934;
+		case 1685: goto tr869;
 		case 492: goto st492;
 		case 493: goto st493;
 		case 494: goto st494;
 		case 495: goto st495;
-		case 1671: goto tr855;
+		case 1665: goto tr849;
 		case 496: goto st496;
-		case 1672: goto tr856;
+		case 1666: goto tr850;
 		case 497: goto st497;
-		case 1696: goto tr880;
-		case 1698: goto tr882;
+		case 1690: goto tr874;
+		case 1692: goto tr876;
 		case 498: goto st498;
-		case 1673: goto tr857;
+		case 1667: goto tr851;
 		case 499: goto st499;
-		case 1674: goto tr858;
+		case 1668: goto tr852;
 		case 500: goto st500;
-		case 1675: goto tr859;
+		case 1669: goto tr853;
 		case 501: goto st501;
-		case 1676: goto tr860;
+		case 1670: goto tr854;
 		case 502: goto st502;
-		case 1605: goto tr789;
+		case 1599: goto tr783;
 		case 503: goto st503;
-		case 1699: goto tr883;
+		case 1693: goto tr877;
 		case 504: goto st504;
 		case 505: goto st505;
-		case 1720: goto tr904;
+		case 1714: goto tr898;
 		case 506: goto st506;
-		case 1700: goto tr884;
+		case 1694: goto tr878;
 		case 507: goto st507;
-		case 1701: goto tr885;
+		case 1695: goto tr879;
 		case 508: goto st508;
-		case 1702: goto tr886;
+		case 1696: goto tr880;
 		case 509: goto st509;
-		case 1703: goto tr887;
+		case 1697: goto tr881;
 		case 510: goto st510;
-		case 1704: goto tr888;
+		case 1698: goto tr882;
 		case 511: goto st511;
-		case 1705: goto tr889;
+		case 1699: goto tr883;
 		case 512: goto st512;
-		case 1706: goto tr890;
+		case 1700: goto tr884;
 		case 513: goto st513;
-		case 1707: goto tr891;
+		case 1701: goto tr885;
 		case 514: goto st514;
 		case 515: goto st515;
-		case 1708: goto tr892;
+		case 1702: goto tr886;
 		case 516: goto st516;
-		case 1737: goto tr921;
-		case 1741: goto tr925;
-		case 1725: goto tr909;
-		case 1727: goto tr911;
-		case 517: goto st517;
-		case 1709: goto tr893;
-		case 518: goto st518;
-		case 1710: goto tr894;
-		case 519: goto st519;
-		case 1711: goto tr895;
-		case 520: goto st520;
-		case 1726: goto tr910;
-		case 1728: goto tr912;
-		case 521: goto st521;
-		case 1712: goto tr896;
-		case 522: goto st522;
-		case 1713: goto tr897;
-		case 523: goto st523;
-		case 1714: goto tr898;
-		case 524: goto st524;
-		case 1715: goto tr899;
-		case 525: goto st525;
-		case 1716: goto tr900;
-		case 526: goto st526;
-		case 1717: goto tr901;
-		case 527: goto st527;
-		case 1606: goto tr790;
-		case 528: goto st528;
-		case 1729: goto tr913;
-		case 529: goto st529;
-		case 1730: goto tr914;
-		case 530: goto st530;
 		case 1731: goto tr915;
-		case 531: goto st531;
-		case 1732: goto tr916;
-		case 532: goto st532;
-		case 1733: goto tr917;
-		case 533: goto st533;
-		case 1734: goto tr918;
-		case 534: goto st534;
 		case 1735: goto tr919;
+		case 1719: goto tr903;
+		case 1721: goto tr905;
+		case 517: goto st517;
+		case 1703: goto tr887;
+		case 518: goto st518;
+		case 1704: goto tr888;
+		case 519: goto st519;
+		case 1705: goto tr889;
+		case 520: goto st520;
+		case 1720: goto tr904;
+		case 1722: goto tr906;
+		case 521: goto st521;
+		case 1706: goto tr890;
+		case 522: goto st522;
+		case 1707: goto tr891;
+		case 523: goto st523;
+		case 1708: goto tr892;
+		case 524: goto st524;
+		case 1709: goto tr893;
+		case 525: goto st525;
+		case 1710: goto tr894;
+		case 526: goto st526;
+		case 1711: goto tr895;
+		case 527: goto st527;
+		case 1600: goto tr784;
+		case 528: goto st528;
+		case 1723: goto tr907;
+		case 529: goto st529;
+		case 1724: goto tr908;
+		case 530: goto st530;
+		case 1725: goto tr909;
+		case 531: goto st531;
+		case 1726: goto tr910;
+		case 532: goto st532;
+		case 1727: goto tr911;
+		case 533: goto st533;
+		case 1728: goto tr912;
+		case 534: goto st534;
+		case 1729: goto tr913;
 		case 535: goto st535;
-		case 1736: goto tr920;
+		case 1730: goto tr914;
 		case 536: goto st536;
-		case 1607: goto tr791;
+		case 1601: goto tr785;
 		case 537: goto st537;
-		case 1742: goto tr926;
+		case 1736: goto tr920;
 		case 538: goto st538;
-		case 1749: goto tr933;
+		case 1743: goto tr927;
 		case 539: goto st539;
-		case 1751: goto tr935;
+		case 1745: goto tr929;
 		case 540: goto st540;
 		case 541: goto st541;
-		case 1743: goto tr927;
+		case 1737: goto tr921;
 		case 542: goto st542;
-		case 1744: goto tr928;
+		case 1738: goto tr922;
 		case 543: goto st543;
-		case 1757: goto tr941;
-		case 1759: goto tr943;
+		case 1751: goto tr935;
+		case 1753: goto tr937;
 		case 544: goto st544;
-		case 1745: goto tr929;
+		case 1739: goto tr923;
 		case 545: goto st545;
-		case 1746: goto tr930;
+		case 1740: goto tr924;
 		case 546: goto st546;
-		case 1747: goto tr931;
+		case 1741: goto tr925;
 		case 547: goto st547;
-		case 1748: goto tr932;
+		case 1742: goto tr926;
 		case 548: goto st548;
-		case 1608: goto tr792;
+		case 1602: goto tr786;
 		case 549: goto st549;
-		case 1760: goto tr944;
+		case 1754: goto tr938;
 		case 550: goto st550;
 		case 551: goto st551;
-		case 1782: goto tr966;
+		case 1776: goto tr960;
 		case 552: goto st552;
-		case 1761: goto tr945;
+		case 1755: goto tr939;
 		case 553: goto st553;
-		case 1762: goto tr946;
+		case 1756: goto tr940;
 		case 554: goto st554;
-		case 1763: goto tr947;
+		case 1757: goto tr941;
 		case 555: goto st555;
-		case 1764: goto tr948;
+		case 1758: goto tr942;
 		case 556: goto st556;
-		case 1765: goto tr949;
+		case 1759: goto tr943;
 		case 557: goto st557;
-		case 1766: goto tr950;
-		case 1950: goto tr1134;
+		case 1760: goto tr944;
+		case 1944: goto tr1128;
 		case 558: goto st558;
-		case 1767: goto tr951;
+		case 1761: goto tr945;
 		case 559: goto st559;
-		case 1768: goto tr952;
+		case 1762: goto tr946;
 		case 560: goto st560;
-		case 1769: goto tr953;
+		case 1763: goto tr947;
 		case 561: goto st561;
 		case 562: goto st562;
-		case 1770: goto tr954;
+		case 1764: goto tr948;
 		case 563: goto st563;
-		case 1808: goto tr992;
-		case 1812: goto tr996;
-		case 1796: goto tr980;
-		case 1798: goto tr982;
-		case 564: goto st564;
-		case 1771: goto tr955;
-		case 565: goto st565;
-		case 1772: goto tr956;
-		case 566: goto st566;
-		case 1773: goto tr957;
-		case 567: goto st567;
-		case 1797: goto tr981;
-		case 1799: goto tr983;
-		case 568: goto st568;
-		case 1774: goto tr958;
-		case 569: goto st569;
-		case 1775: goto tr959;
-		case 570: goto st570;
-		case 1776: goto tr960;
-		case 571: goto st571;
-		case 1777: goto tr961;
-		case 572: goto st572;
-		case 1778: goto tr962;
-		case 573: goto st573;
-		case 1779: goto tr963;
-		case 574: goto st574;
-		case 1609: goto tr793;
-		case 575: goto st575;
-		case 1800: goto tr984;
-		case 576: goto st576;
-		case 1801: goto tr985;
-		case 577: goto st577;
 		case 1802: goto tr986;
-		case 578: goto st578;
-		case 1803: goto tr987;
-		case 579: goto st579;
-		case 1804: goto tr988;
-		case 580: goto st580;
-		case 1805: goto tr989;
-		case 581: goto st581;
 		case 1806: goto tr990;
+		case 1790: goto tr974;
+		case 1792: goto tr976;
+		case 564: goto st564;
+		case 1765: goto tr949;
+		case 565: goto st565;
+		case 1766: goto tr950;
+		case 566: goto st566;
+		case 1767: goto tr951;
+		case 567: goto st567;
+		case 1791: goto tr975;
+		case 1793: goto tr977;
+		case 568: goto st568;
+		case 1768: goto tr952;
+		case 569: goto st569;
+		case 1769: goto tr953;
+		case 570: goto st570;
+		case 1770: goto tr954;
+		case 571: goto st571;
+		case 1771: goto tr955;
+		case 572: goto st572;
+		case 1772: goto tr956;
+		case 573: goto st573;
+		case 1773: goto tr957;
+		case 574: goto st574;
+		case 1603: goto tr787;
+		case 575: goto st575;
+		case 1794: goto tr978;
+		case 576: goto st576;
+		case 1795: goto tr979;
+		case 577: goto st577;
+		case 1796: goto tr980;
+		case 578: goto st578;
+		case 1797: goto tr981;
+		case 579: goto st579;
+		case 1798: goto tr982;
+		case 580: goto st580;
+		case 1799: goto tr983;
+		case 581: goto st581;
+		case 1800: goto tr984;
 		case 582: goto st582;
-		case 1807: goto tr991;
+		case 1801: goto tr985;
 		case 583: goto st583;
-		case 1610: goto tr794;
+		case 1604: goto tr788;
 		case 584: goto st584;
-		case 1813: goto tr997;
+		case 1807: goto tr991;
 		case 585: goto st585;
-		case 1821: goto tr1005;
-		case 586: goto st586;
-		case 1814: goto tr998;
-		case 587: goto st587;
 		case 1815: goto tr999;
+		case 586: goto st586;
+		case 1808: goto tr992;
+		case 587: goto st587;
+		case 1809: goto tr993;
 		case 588: goto st588;
 		case 589: goto st589;
-		case 1829: goto tr1013;
-		case 1833: goto tr1017;
+		case 1823: goto tr1007;
+		case 1827: goto tr1011;
 		case 590: goto st590;
-		case 1830: goto tr1014;
+		case 1824: goto tr1008;
 		case 591: goto st591;
-		case 1816: goto tr1000;
+		case 1810: goto tr994;
 		case 592: goto st592;
-		case 1817: goto tr1001;
+		case 1811: goto tr995;
 		case 593: goto st593;
-		case 1818: goto tr1002;
+		case 1812: goto tr996;
 		case 594: goto st594;
-		case 1819: goto tr1003;
+		case 1813: goto tr997;
 		case 595: goto st595;
-		case 1611: goto tr795;
+		case 1605: goto tr789;
 		case 596: goto st596;
-		case 1834: goto tr1018;
-		case 1944: goto tr1128;
+		case 1828: goto tr1012;
+		case 1938: goto tr1122;
 		case 597: goto st597;
 		case 598: goto st598;
-		case 1835: goto tr1019;
-		case 1945: goto tr1129;
+		case 1829: goto tr1013;
+		case 1939: goto tr1123;
 		case 599: goto st599;
-		case 1836: goto tr1020;
+		case 1830: goto tr1014;
 		case 600: goto st600;
-		case 1837: goto tr1021;
+		case 1831: goto tr1015;
 		case 601: goto st601;
-		case 1838: goto tr1022;
-		case 1948: goto tr1132;
+		case 1832: goto tr1016;
+		case 1942: goto tr1126;
 		case 602: goto st602;
-		case 1839: goto tr1023;
-		case 1949: goto tr1133;
+		case 1833: goto tr1017;
+		case 1943: goto tr1127;
 		case 603: goto st603;
-		case 1840: goto tr1024;
-		case 1951: goto tr1135;
+		case 1834: goto tr1018;
+		case 1945: goto tr1129;
 		case 604: goto st604;
-		case 1841: goto tr1025;
-		case 1952: goto tr1136;
+		case 1835: goto tr1019;
+		case 1946: goto tr1130;
 		case 605: goto st605;
-		case 1842: goto tr1026;
-		case 1953: goto tr1137;
+		case 1836: goto tr1020;
+		case 1947: goto tr1131;
 		case 606: goto st606;
 		case 607: goto st607;
-		case 1843: goto tr1027;
+		case 1837: goto tr1021;
 		case 608: goto st608;
-		case 1844: goto tr1028;
+		case 1838: goto tr1022;
 		case 609: goto st609;
-		case 1845: goto tr1029;
-		case 1956: goto tr1140;
+		case 1839: goto tr1023;
+		case 1950: goto tr1134;
 		case 610: goto st610;
-		case 1846: goto tr1030;
-		case 1957: goto tr1141;
+		case 1840: goto tr1024;
+		case 1951: goto tr1135;
 		case 611: goto st611;
-		case 1847: goto tr1031;
-		case 1958: goto tr1142;
+		case 1841: goto tr1025;
+		case 1952: goto tr1136;
 		case 612: goto st612;
-		case 1848: goto tr1032;
-		case 1959: goto tr1143;
+		case 1842: goto tr1026;
+		case 1953: goto tr1137;
 		case 613: goto st613;
-		case 1849: goto tr1033;
+		case 1843: goto tr1027;
 		case 614: goto st614;
-		case 1850: goto tr1034;
+		case 1844: goto tr1028;
 		case 615: goto st615;
-		case 1851: goto tr1035;
+		case 1845: goto tr1029;
 		case 616: goto st616;
-		case 1852: goto tr1036;
+		case 1846: goto tr1030;
 		case 617: goto st617;
-		case 1612: goto tr796;
+		case 1606: goto tr790;
 		case 618: goto st618;
-		case 1864: goto tr1048;
+		case 1858: goto tr1042;
 		case 619: goto st619;
-		case 1865: goto tr1049;
+		case 1859: goto tr1043;
 		case 620: goto st620;
-		case 1866: goto tr1050;
+		case 1860: goto tr1044;
 		case 621: goto st621;
-		case 1867: goto tr1051;
+		case 1861: goto tr1045;
 		case 622: goto st622;
-		case 1868: goto tr1052;
+		case 1862: goto tr1046;
 		case 623: goto st623;
-		case 1869: goto tr1053;
+		case 1863: goto tr1047;
 		case 624: goto st624;
-		case 1870: goto tr1054;
+		case 1864: goto tr1048;
 		case 625: goto st625;
-		case 1871: goto tr1055;
+		case 1865: goto tr1049;
 		case 626: goto st626;
-		case 1613: goto tr797;
+		case 1607: goto tr791;
 		case 627: goto st627;
-		case 1877: goto tr1061;
+		case 1871: goto tr1055;
 		case 628: goto st628;
-		case 1885: goto tr1069;
-		case 629: goto st629;
-		case 1878: goto tr1062;
-		case 630: goto st630;
 		case 1879: goto tr1063;
+		case 629: goto st629;
+		case 1872: goto tr1056;
+		case 630: goto st630;
+		case 1873: goto tr1057;
 		case 631: goto st631;
 		case 632: goto st632;
-		case 1892: goto tr1076;
+		case 1886: goto tr1070;
 		case 633: goto st633;
-		case 1880: goto tr1064;
+		case 1874: goto tr1058;
 		case 634: goto st634;
-		case 1881: goto tr1065;
+		case 1875: goto tr1059;
 		case 635: goto st635;
-		case 1882: goto tr1066;
+		case 1876: goto tr1060;
 		case 636: goto st636;
-		case 1883: goto tr1067;
+		case 1877: goto tr1061;
 		case 637: goto st637;
-		case 1614: goto tr798;
+		case 1608: goto tr792;
 		case 638: goto st638;
-		case 1895: goto tr1079;
+		case 1889: goto tr1073;
 		case 639: goto st639;
 		case 640: goto st640;
-		case 1615: goto tr799;
+		case 1609: goto tr793;
 		case 641: goto st641;
-		case 1897: goto tr1081;
+		case 1891: goto tr1075;
 		case 642: goto st642;
 		case 643: goto st643;
-		case 1898: goto tr1082;
+		case 1892: goto tr1076;
 		case 644: goto st644;
 		case 645: goto st645;
-		case 1616: goto tr800;
+		case 1610: goto tr794;
 		case 646: goto st646;
-		case 1909: goto tr1093;
+		case 1903: goto tr1087;
 		case 647: goto st647;
 		case 648: goto st648;
-		case 1617: goto tr801;
+		case 1611: goto tr795;
 		case 649: goto st649;
-		case 1911: goto tr1095;
+		case 1905: goto tr1089;
 		case 650: goto st650;
 		case 651: goto st651;
-		case 1912: goto tr1096;
+		case 1906: goto tr1090;
 		case 652: goto st652;
 		case 653: goto st653;
-		case 1618: goto tr802;
+		case 1612: goto tr796;
 		case 654: goto st654;
-		case 1917: goto tr1101;
+		case 1911: goto tr1095;
 		case 655: goto st655;
 		case 656: goto st656;
 		case 657: goto st657;
-		case 1918: goto tr1102;
+		case 1912: goto tr1096;
 		case 658: goto st658;
 		case 659: goto st659;
-		case 1919: goto tr1103;
+		case 1913: goto tr1097;
 		case 660: goto st660;
-		case 1619: goto tr803;
+		case 1613: goto tr797;
 		case 661: goto st661;
-		case 1923: goto tr1107;
+		case 1917: goto tr1101;
 		case 662: goto st662;
 		case 663: goto st663;
-		case 1924: goto tr1108;
+		case 1918: goto tr1102;
 		case 664: goto st664;
 		case 665: goto st665;
-		case 1620: goto tr804;
+		case 1614: goto tr798;
 		case 666: goto st666;
-		case 1933: goto tr1117;
-		case 1960: goto tr1144;
+		case 1927: goto tr1111;
+		case 1954: goto tr1138;
 		case 667: goto st667;
-		case 1934: goto tr1118;
-		case 1961: goto tr1145;
+		case 1928: goto tr1112;
+		case 1955: goto tr1139;
 		case 668: goto st668;
 		case 669: goto st669;
-		case 1935: goto tr1119;
-		case 1962: goto tr1146;
+		case 1929: goto tr1113;
+		case 1956: goto tr1140;
 		case 670: goto st670;
-		case 1936: goto tr1120;
-		case 1963: goto tr1147;
+		case 1930: goto tr1114;
+		case 1957: goto tr1141;
 		case 671: goto st671;
-		case 1621: goto tr805;
+		case 1615: goto tr799;
 		case 672: goto st672;
-		case 1938: goto tr1122;
+		case 1932: goto tr1116;
 		case 673: goto st673;
 		case 674: goto st674;
-		case 1939: goto tr1123;
+		case 1933: goto tr1117;
 		case 675: goto st675;
 		case 676: goto st676;
-		case 2117: goto tr1301;
+		case 2111: goto tr1295;
 		case 677: goto st677;
-		case 1946: goto tr1130;
+		case 1940: goto tr1124;
 		case 678: goto st678;
-		case 1947: goto tr1131;
+		case 1941: goto tr1125;
 		case 679: goto st679;
-		case 1954: goto tr1138;
+		case 1948: goto tr1132;
 		case 680: goto st680;
-		case 1955: goto tr1139;
+		case 1949: goto tr1133;
 		case 681: goto st681;
-		case 2118: goto tr1302;
+		case 2112: goto tr1296;
 		case 682: goto st682;
-		case 2119: goto tr1303;
+		case 2113: goto tr1297;
 		case 683: goto st683;
-		case 2120: goto tr1304;
+		case 2114: goto tr1298;
 		case 684: goto st684;
 		case 685: goto st685;
-		case 2122: goto tr1306;
+		case 2116: goto tr1300;
 		case 686: goto st686;
-		case 2123: goto tr1307;
+		case 2117: goto tr1301;
 		case 687: goto st687;
-		case 2124: goto tr1308;
+		case 2118: goto tr1302;
 		case 688: goto st688;
-		case 2125: goto tr1309;
+		case 2119: goto tr1303;
 		case 689: goto st689;
-		case 2126: goto tr1310;
+		case 2120: goto tr1304;
 		case 690: goto st690;
-		case 2127: goto tr1311;
+		case 2121: goto tr1305;
 		case 691: goto st691;
-		case 2128: goto tr1312;
+		case 2122: goto tr1306;
 		case 692: goto st692;
-		case 2129: goto tr1313;
+		case 2123: goto tr1307;
 		case 693: goto st693;
-		case 2130: goto tr1314;
+		case 2124: goto tr1308;
 		case 694: goto st694;
-		case 2131: goto tr1315;
+		case 2125: goto tr1309;
 		case 695: goto st695;
-		case 2133: goto tr1317;
+		case 2127: goto tr1311;
 		case 696: goto st696;
 		case 697: goto st697;
-		case 1972: goto tr1156;
+		case 1966: goto tr1150;
 		case 698: goto st698;
 		case 699: goto st699;
 		case 700: goto st700;
-		case 1973: goto tr1157;
+		case 1967: goto tr1151;
 		case 701: goto st701;
 		case 702: goto st702;
 		case 703: goto st703;
-		case 1974: goto tr1158;
+		case 1968: goto tr1152;
 		case 704: goto st704;
 		case 705: goto st705;
-		case 2134: goto tr1318;
+		case 2128: goto tr1312;
 		case 706: goto st706;
 		case 707: goto st707;
 		case 708: goto st708;
-		case 1995: goto tr1179;
+		case 1989: goto tr1173;
 		case 709: goto st709;
 		case 710: goto st710;
-		case 1985: goto tr1169;
+		case 1979: goto tr1163;
 		case 711: goto st711;
-		case 1986: goto tr1170;
+		case 1980: goto tr1164;
 		case 712: goto st712;
 		case 713: goto st713;
 		case 714: goto st714;
-		case 1987: goto tr1171;
+		case 1981: goto tr1165;
 		case 715: goto st715;
-		case 2135: goto tr1319;
+		case 2129: goto tr1313;
 		case 716: goto st716;
 		case 717: goto st717;
-		case 2007: goto tr1191;
+		case 2001: goto tr1185;
 		case 718: goto st718;
-		case 2008: goto tr1192;
+		case 2002: goto tr1186;
 		case 719: goto st719;
 		case 720: goto st720;
-		case 2009: goto tr1193;
+		case 2003: goto tr1187;
 		case 721: goto st721;
-		case 2136: goto tr1320;
+		case 2130: goto tr1314;
 		case 722: goto st722;
-		case 2137: goto tr1321;
+		case 2131: goto tr1315;
 		case 723: goto st723;
-		case 2138: goto tr1322;
+		case 2132: goto tr1316;
 		case 724: goto st724;
-		case 2143: goto tr1327;
+		case 2137: goto tr1321;
 		case 725: goto st725;
-		case 2139: goto tr1323;
+		case 2133: goto tr1317;
 		case 726: goto st726;
-		case 1401: goto tr585;
+		case 1395: goto tr579;
 		case 727: goto st727;
-		case 2029: goto tr1213;
+		case 2023: goto tr1207;
 		case 790: goto st790;
-		case 2144: goto tr1328;
+		case 2138: goto tr1322;
 		case 728: goto st728;
-		case 2030: goto tr1214;
+		case 2024: goto tr1208;
 		case 729: goto st729;
-		case 2031: goto tr1215;
+		case 2025: goto tr1209;
 		case 791: goto st791;
-		case 2145: goto tr1329;
+		case 2139: goto tr1323;
 		case 730: goto st730;
-		case 1402: goto tr586;
+		case 1396: goto tr580;
 		case 731: goto st731;
-		case 2032: goto tr1216;
+		case 2026: goto tr1210;
 		case 792: goto st792;
-		case 2146: goto tr1330;
+		case 2140: goto tr1324;
 		case 732: goto st732;
-		case 2033: goto tr1217;
+		case 2027: goto tr1211;
 		case 733: goto st733;
-		case 2034: goto tr1218;
+		case 2028: goto tr1212;
 		case 793: goto st793;
-		case 2147: goto tr1331;
+		case 2141: goto tr1325;
 		case 734: goto st734;
-		case 1403: goto tr587;
+		case 1397: goto tr581;
 		case 735: goto st735;
-		case 2035: goto tr1219;
+		case 2029: goto tr1213;
 		case 794: goto st794;
-		case 2148: goto tr1332;
+		case 2142: goto tr1326;
 		case 736: goto st736;
-		case 2036: goto tr1220;
+		case 2030: goto tr1214;
 		case 737: goto st737;
-		case 2037: goto tr1221;
+		case 2031: goto tr1215;
 		case 795: goto st795;
-		case 2149: goto tr1333;
+		case 2143: goto tr1327;
 		case 738: goto st738;
-		case 1404: goto tr588;
+		case 1398: goto tr582;
 		case 739: goto st739;
-		case 2038: goto tr1222;
+		case 2032: goto tr1216;
 		case 796: goto st796;
-		case 2150: goto tr1334;
+		case 2144: goto tr1328;
 		case 740: goto st740;
-		case 2039: goto tr1223;
+		case 2033: goto tr1217;
 		case 741: goto st741;
-		case 2040: goto tr1224;
+		case 2034: goto tr1218;
 		case 797: goto st797;
-		case 2151: goto tr1335;
+		case 2145: goto tr1329;
 		case 742: goto st742;
-		case 1405: goto tr589;
+		case 1399: goto tr583;
 		case 743: goto st743;
-		case 2041: goto tr1225;
+		case 2035: goto tr1219;
 		case 798: goto st798;
-		case 2152: goto tr1336;
+		case 2146: goto tr1330;
 		case 744: goto st744;
-		case 2042: goto tr1226;
+		case 2036: goto tr1220;
 		case 745: goto st745;
-		case 2043: goto tr1227;
+		case 2037: goto tr1221;
 		case 799: goto st799;
-		case 2153: goto tr1337;
+		case 2147: goto tr1331;
 		case 746: goto st746;
-		case 1406: goto tr590;
+		case 1400: goto tr584;
 		case 747: goto st747;
-		case 2044: goto tr1228;
+		case 2038: goto tr1222;
 		case 800: goto st800;
-		case 2154: goto tr1338;
+		case 2148: goto tr1332;
 		case 748: goto st748;
-		case 2045: goto tr1229;
+		case 2039: goto tr1223;
 		case 749: goto st749;
-		case 2046: goto tr1230;
+		case 2040: goto tr1224;
 		case 801: goto st801;
-		case 2155: goto tr1339;
+		case 2149: goto tr1333;
 		case 750: goto st750;
-		case 1407: goto tr591;
+		case 1401: goto tr585;
 		case 751: goto st751;
-		case 2047: goto tr1231;
+		case 2041: goto tr1225;
 		case 802: goto st802;
-		case 2156: goto tr1340;
+		case 2150: goto tr1334;
 		case 752: goto st752;
-		case 2048: goto tr1232;
+		case 2042: goto tr1226;
 		case 753: goto st753;
-		case 2049: goto tr1233;
+		case 2043: goto tr1227;
 		case 803: goto st803;
-		case 2157: goto tr1341;
+		case 2151: goto tr1335;
 		case 754: goto st754;
 		case 1132: goto tr316;
 		case 755: goto st755;
-		case 2050: goto tr1234;
+		case 2044: goto tr1228;
 		case 804: goto st804;
-		case 2158: goto tr1342;
+		case 2152: goto tr1336;
 		case 756: goto st756;
-		case 2051: goto tr1235;
+		case 2045: goto tr1229;
 		case 757: goto st757;
-		case 2052: goto tr1236;
+		case 2046: goto tr1230;
 		case 805: goto st805;
-		case 2159: goto tr1343;
+		case 2153: goto tr1337;
 		case 758: goto st758;
 		case 759: goto st759;
 		case 1133: goto tr317;
 		case 760: goto st760;
-		case 2054: goto tr1238;
+		case 2048: goto tr1232;
 		case 806: goto st806;
-		case 2160: goto tr1344;
+		case 2154: goto tr1338;
 		case 761: goto st761;
-		case 2055: goto tr1239;
+		case 2049: goto tr1233;
 		case 762: goto st762;
-		case 2056: goto tr1240;
+		case 2050: goto tr1234;
 		case 807: goto st807;
-		case 2161: goto tr1345;
+		case 2155: goto tr1339;
 		case 763: goto st763;
 		case 764: goto st764;
 		case 1134: goto tr318;
 		case 765: goto st765;
-		case 2058: goto tr1242;
+		case 2052: goto tr1236;
 		case 808: goto st808;
-		case 2162: goto tr1346;
+		case 2156: goto tr1340;
 		case 766: goto st766;
-		case 2059: goto tr1243;
+		case 2053: goto tr1237;
 		case 767: goto st767;
-		case 2060: goto tr1244;
+		case 2054: goto tr1238;
 		case 809: goto st809;
-		case 2163: goto tr1347;
+		case 2157: goto tr1341;
 		case 768: goto st768;
 		case 769: goto st769;
 		case 1135: goto tr319;
 		case 770: goto st770;
-		case 2062: goto tr1246;
+		case 2056: goto tr1240;
 		case 810: goto st810;
-		case 2164: goto tr1348;
+		case 2158: goto tr1342;
 		case 771: goto st771;
-		case 2063: goto tr1247;
+		case 2057: goto tr1241;
 		case 772: goto st772;
-		case 2064: goto tr1248;
+		case 2058: goto tr1242;
 		case 811: goto st811;
-		case 2165: goto tr1349;
+		case 2159: goto tr1343;
 		case 773: goto st773;
 		case 774: goto st774;
 		case 1136: goto tr320;
 		case 775: goto st775;
-		case 2066: goto tr1250;
+		case 2060: goto tr1244;
 		case 812: goto st812;
-		case 2166: goto tr1350;
+		case 2160: goto tr1344;
 		case 776: goto st776;
-		case 2067: goto tr1251;
+		case 2061: goto tr1245;
 		case 777: goto st777;
-		case 2068: goto tr1252;
+		case 2062: goto tr1246;
 		case 813: goto st813;
-		case 2167: goto tr1351;
+		case 2161: goto tr1345;
 		case 778: goto st778;
 		case 779: goto st779;
 		case 1137: goto tr321;
 		case 780: goto st780;
-		case 2070: goto tr1254;
+		case 2064: goto tr1248;
 		case 814: goto st814;
-		case 2168: goto tr1352;
+		case 2162: goto tr1346;
 		case 781: goto st781;
-		case 2071: goto tr1255;
+		case 2065: goto tr1249;
 		case 782: goto st782;
-		case 2072: goto tr1256;
+		case 2066: goto tr1250;
 		case 815: goto st815;
-		case 2169: goto tr1353;
+		case 2163: goto tr1347;
 		case 783: goto st783;
 		case 784: goto st784;
 	default: break;
@@ -5177,7 +5171,75 @@ tr352:
        begin = p + 1;
      }
 	goto st785;
-tr354:
+tr353:
+	{
+    SET_OPERAND_TYPE(0, OperandSize64bit);
+  }
+	{
+    SET_OPERAND_NAME(0, ((*p) & 0x07) |
+                           ((GET_REX_PREFIX() & 0x01) << 3) |
+                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+  }
+	{
+    /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
+     * instruction, not with regular instruction.  */
+    if (restricted_register == REG_RSP) {
+      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      result = 1;
+      goto error_detected;
+    } else if (restricted_register == REG_RBP) {
+      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      result = 1;
+      goto error_detected;
+    }
+    /* If Sandboxed Rsi is destroyed then we must detect that.  */
+    if (restricted_register == kSandboxedRsi) {
+      if (CHECK_OPERAND(0, REG_RSI, OperandSandboxRestricted) ||
+          CHECK_OPERAND(0, REG_RSI, OperandSandboxUnrestricted)) {
+        restricted_register = kNoRestrictedReg;
+      }
+    }
+    if (restricted_register == kSandboxedRsi) {
+      if (CHECK_OPERAND(0, REG_RDI, OperandSandboxRestricted)) {
+        sandboxed_rsi_restricted_rdi = begin;
+        restricted_register = kSandboxedRsiRestrictedRdi;
+      }
+    }
+    if (restricted_register != kSandboxedRsiRestrictedRdi) {
+      restricted_register = kNoRestrictedReg;
+      if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
+          CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
+          CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
+        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        result = 1;
+        goto error_detected;
+      } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
+                  GET_REX_PREFIX()) ||
+                 CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
+        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        result = 1;
+        goto error_detected;
+      } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
+                  GET_REX_PREFIX()) ||
+                 CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
+        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        result = 1;
+        goto error_detected;
+      /* Take 2 bits of operand type from operand_states as restricted_register,
+       * make sure operand_states denotes a register (4th bit == 0). */
+      } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
+        restricted_register = operand_states & 0x0f;
+      }
+    }
+  }
+	{
+       /* On successful match the instruction start must point to the next byte
+        * to be able to report the new offset as the start of instruction
+        * causing error.  */
+       begin = p + 1;
+     }
+	goto st785;
+tr355:
 	{
     SET_CPU_FEATURE(CPUFeature_CX16);
   }
@@ -5241,7 +5303,7 @@ tr354:
        begin = p + 1;
      }
 	goto st785;
-tr367:
+tr368:
 	{
        /* On successful match the instruction start must point to the next byte
         * to be able to report the new offset as the start of instruction
@@ -5249,7 +5311,7 @@ tr367:
        begin = p + 1;
      }
 	goto st785;
-tr370:
+tr371:
 	{ if (restricted_register == REG_RSP) {
          PrintError("Incorrectly modified register %%rsp\n", begin - data);
          result = 1;
@@ -5264,7 +5326,7 @@ tr370:
        begin = p + 1;
      }
 	goto st785;
-tr371:
+tr372:
 	{ if (restricted_register == REG_RBP) {
          PrintError("Incorrectly modified register %%rbp\n", begin - data);
          result = 1;
@@ -5279,7 +5341,7 @@ tr371:
        begin = p + 1;
      }
 	goto st785;
-tr379:
+tr380:
 	{
     SET_IMM_TYPE(IMM64);
     SET_IMM_PTR(p - 7);
@@ -5343,7 +5405,7 @@ tr379:
        begin = p + 1;
      }
 	goto st785;
-tr394:
+tr395:
 	{ if (restricted_register != REG_RBP) {
          PrintError("Incorrectly sandboxed %%rbp\n", begin - data);
          result = 1;
@@ -5359,7 +5421,7 @@ tr394:
        begin = p + 1;
      }
 	goto st785;
-tr395:
+tr396:
 	{ if (restricted_register == REG_RSI) {
          sandboxed_rsi = begin;
          restricted_register = kSandboxedRsi;
@@ -5374,7 +5436,7 @@ tr395:
        begin = p + 1;
      }
 	goto st785;
-tr396:
+tr397:
 	{ if (restricted_register == REG_RDI) {
          sandboxed_rdi = begin;
          restricted_register = kSandboxedRdi;
@@ -5392,7 +5454,7 @@ tr396:
        begin = p + 1;
      }
 	goto st785;
-tr400:
+tr401:
 	{ if (restricted_register != REG_RSP) {
          PrintError("Incorrectly sandboxed %%rsp\n", begin - data);
          result = 1;
@@ -5408,7 +5470,7 @@ tr400:
        begin = p + 1;
      }
 	goto st785;
-tr406:
+tr407:
 	{ if (restricted_register == REG_RSP) {
          PrintError("Incorrectly modified register %%rsp\n", begin - data);
          result = 1;
@@ -5429,7 +5491,75 @@ tr406:
        begin = p + 1;
      }
 	goto st785;
-tr423:
+tr416:
+	{
+    SET_OPERAND_NAME(0, ((*p) & 0x7) |
+                            ((GET_REX_PREFIX() & 0x01) << 3) |
+                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+  }
+	{
+    SET_OPERAND_TYPE(0, OperandSize16bit);
+  }
+	{
+    /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
+     * instruction, not with regular instruction.  */
+    if (restricted_register == REG_RSP) {
+      PrintError("Incorrectly modified register %%rsp\n", begin - data);
+      result = 1;
+      goto error_detected;
+    } else if (restricted_register == REG_RBP) {
+      PrintError("Incorrectly modified register %%rbp\n", begin - data);
+      result = 1;
+      goto error_detected;
+    }
+    /* If Sandboxed Rsi is destroyed then we must detect that.  */
+    if (restricted_register == kSandboxedRsi) {
+      if (CHECK_OPERAND(0, REG_RSI, OperandSandboxRestricted) ||
+          CHECK_OPERAND(0, REG_RSI, OperandSandboxUnrestricted)) {
+        restricted_register = kNoRestrictedReg;
+      }
+    }
+    if (restricted_register == kSandboxedRsi) {
+      if (CHECK_OPERAND(0, REG_RDI, OperandSandboxRestricted)) {
+        sandboxed_rsi_restricted_rdi = begin;
+        restricted_register = kSandboxedRsiRestrictedRdi;
+      }
+    }
+    if (restricted_register != kSandboxedRsiRestrictedRdi) {
+      restricted_register = kNoRestrictedReg;
+      if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
+          CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
+          CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
+        PrintError("Incorrectly modified register %%r15\n", begin - data);
+        result = 1;
+        goto error_detected;
+      } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
+                  GET_REX_PREFIX()) ||
+                 CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
+        PrintError("Incorrectly modified register %%rbp\n", begin - data);
+        result = 1;
+        goto error_detected;
+      } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
+                  GET_REX_PREFIX()) ||
+                 CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
+        PrintError("Incorrectly modified register %%rsp\n", begin - data);
+        result = 1;
+        goto error_detected;
+      /* Take 2 bits of operand type from operand_states as restricted_register,
+       * make sure operand_states denotes a register (4th bit == 0). */
+      } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
+        restricted_register = operand_states & 0x0f;
+      }
+    }
+  }
+	{
+       /* On successful match the instruction start must point to the next byte
+        * to be able to report the new offset as the start of instruction
+        * causing error.  */
+       begin = p + 1;
+     }
+	goto st785;
+tr425:
 	{
     SET_OPERAND_NAME(0, ((*p) & 0x7) |
                             ((GET_REX_PREFIX() & 0x01) << 3) |
@@ -5520,7 +5650,7 @@ tr423:
        begin = p + 1;
      }
 	goto st785;
-tr434:
+tr436:
 	{
     SET_IMM_TYPE(IMM16);
     SET_IMM_PTR(p - 1);
@@ -5584,7 +5714,7 @@ tr434:
        begin = p + 1;
      }
 	goto st785;
-tr494:
+tr496:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -5609,7 +5739,7 @@ tr494:
        begin = p + 1;
      }
 	goto st785;
-tr496:
+tr498:
 	{
     SET_IMM_TYPE(IMM16);
     SET_IMM_PTR(p - 1);
@@ -5635,81 +5765,15 @@ tr496:
        begin = p + 1;
      }
 	goto st785;
-tr540:
+tr694:
 	{
-    SET_DATA16_PREFIX(FALSE);
+    SET_CPU_FEATURE(CPUFeature_TBM);
   }
 	{
-    SET_DISP_TYPE(DISPNONE);
-    SET_MODRM_BASE(((*p) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
+    SET_OPERAND_TYPE(0, OperandSize32bit);
   }
 	{
-    if ((base == REG_RIP) || (base == REG_R15) ||
-        ((base == REG_RSP) && (restricted_register != REG_RSP)) ||
-        ((base == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((index == restricted_register) ||
-          ((index == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((index != NO_REG) && (index != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
-    } else if ((index == REG_RIP) || (index == REG_R15) ||
-               ((index == REG_RSP) && (restricted_register != REG_RSP)) ||
-               ((index == REG_RBP) && (restricted_register != REG_RBP))) {
-      if ((base == restricted_register) ||
-          ((base == REG_RDI) &&
-           (restricted_register == kSandboxedRsiRestrictedRdi))) {
-        BitmapClearBit(valid_targets, begin - data);
-      } else if ((base != NO_REG) && (base != REG_RIZ)) {
-        PrintError("Improper sandboxing in instruction\n", begin - data);
-        result = 1;
-        goto error_detected;
-      }
-    } else {
-      PrintError("Improper sandboxing in instruction\n", begin - data);
-      result = 1;
-      goto error_detected;
-    }
-  }
-	{
-    /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
-     * instruction, not with regular instruction.  */
-    if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
-      result = 1;
-      goto error_detected;
-    } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
-      result = 1;
-      goto error_detected;
-    }
-    restricted_register = kNoRestrictedReg;
-  }
-	{
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       begin = p + 1;
-     }
-	goto st785;
-tr546:
-	{
-    SET_DATA16_PREFIX(FALSE);
-  }
-	{
-    SET_OPERAND_TYPE(0, OperandSize16bit);
-  }
-	{
-    SET_OPERAND_NAME(0, ((*p) & 0x07) |
-                           ((GET_REX_PREFIX() & 0x01) << 3) |
-                           (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
+    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
   }
 	{
     /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
@@ -5775,75 +5839,6 @@ tr700:
     SET_CPU_FEATURE(CPUFeature_TBM);
   }
 	{
-    SET_OPERAND_TYPE(0, OperandSize32bit);
-  }
-	{
-    SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
-  }
-	{
-    /* Restricted %rsp or %rbp must be processed by appropriate nacl-special
-     * instruction, not with regular instruction.  */
-    if (restricted_register == REG_RSP) {
-      PrintError("Incorrectly modified register %%rsp\n", begin - data);
-      result = 1;
-      goto error_detected;
-    } else if (restricted_register == REG_RBP) {
-      PrintError("Incorrectly modified register %%rbp\n", begin - data);
-      result = 1;
-      goto error_detected;
-    }
-    /* If Sandboxed Rsi is destroyed then we must detect that.  */
-    if (restricted_register == kSandboxedRsi) {
-      if (CHECK_OPERAND(0, REG_RSI, OperandSandboxRestricted) ||
-          CHECK_OPERAND(0, REG_RSI, OperandSandboxUnrestricted)) {
-        restricted_register = kNoRestrictedReg;
-      }
-    }
-    if (restricted_register == kSandboxedRsi) {
-      if (CHECK_OPERAND(0, REG_RDI, OperandSandboxRestricted)) {
-        sandboxed_rsi_restricted_rdi = begin;
-        restricted_register = kSandboxedRsiRestrictedRdi;
-      }
-    }
-    if (restricted_register != kSandboxedRsiRestrictedRdi) {
-      restricted_register = kNoRestrictedReg;
-      if (CHECK_OPERAND(0, REG_R15, OperandSandbox8bit) ||
-          CHECK_OPERAND(0, REG_R15, OperandSandboxRestricted) ||
-          CHECK_OPERAND(0, REG_R15, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%r15\n", begin - data);
-        result = 1;
-        goto error_detected;
-      } else if ((CHECK_OPERAND(0, REG_RBP, OperandSandbox8bit) &&
-                  GET_REX_PREFIX()) ||
-                 CHECK_OPERAND(0, REG_RBP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rbp\n", begin - data);
-        result = 1;
-        goto error_detected;
-      } else if ((CHECK_OPERAND(0, REG_RSP, OperandSandbox8bit) &&
-                  GET_REX_PREFIX()) ||
-                 CHECK_OPERAND(0, REG_RSP, OperandSandboxUnrestricted)) {
-        PrintError("Incorrectly modified register %%rsp\n", begin - data);
-        result = 1;
-        goto error_detected;
-      /* Take 2 bits of operand type from operand_states as restricted_register,
-       * make sure operand_states denotes a register (4th bit == 0). */
-      } else if ((operand_states & 0x70) == (OperandSandboxRestricted << 5)) {
-        restricted_register = operand_states & 0x0f;
-      }
-    }
-  }
-	{
-       /* On successful match the instruction start must point to the next byte
-        * to be able to report the new offset as the start of instruction
-        * causing error.  */
-       begin = p + 1;
-     }
-	goto st785;
-tr706:
-	{
-    SET_CPU_FEATURE(CPUFeature_TBM);
-  }
-	{
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
 	{
@@ -5908,7 +5903,7 @@ tr706:
        begin = p + 1;
      }
 	goto st785;
-tr744:
+tr738:
 	{
     SET_CPU_FEATURE(CPUFeature_TBM);
   }
@@ -6016,7 +6011,7 @@ tr744:
        begin = p + 1;
      }
 	goto st785;
-tr748:
+tr742:
 	{
     SET_CPU_FEATURE(CPUFeature_LWP);
   }
@@ -6087,7 +6082,7 @@ tr748:
        begin = p + 1;
      }
 	goto st785;
-tr751:
+tr745:
 	{
     SET_CPU_FEATURE(CPUFeature_TBM);
   }
@@ -6195,7 +6190,7 @@ tr751:
        begin = p + 1;
      }
 	goto st785;
-tr755:
+tr749:
 	{
     SET_CPU_FEATURE(CPUFeature_LWP);
   }
@@ -6266,7 +6261,7 @@ tr755:
        begin = p + 1;
      }
 	goto st785;
-tr872:
+tr866:
 	{
     SET_IMM_TYPE(IMM2);
     SET_IMM_PTR(p);
@@ -6292,7 +6287,7 @@ tr872:
        begin = p + 1;
      }
 	goto st785;
-tr968:
+tr962:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -6356,7 +6351,7 @@ tr968:
        begin = p + 1;
      }
 	goto st785;
-tr971:
+tr965:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -6381,7 +6376,7 @@ tr971:
        begin = p + 1;
      }
 	goto st785;
-tr1087:
+tr1081:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
@@ -6450,7 +6445,7 @@ tr1087:
        begin = p + 1;
      }
 	goto st785;
-tr1092:
+tr1086:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
@@ -6519,7 +6514,7 @@ tr1092:
        begin = p + 1;
      }
 	goto st785;
-tr1110:
+tr1104:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
@@ -6627,7 +6622,7 @@ tr1110:
        begin = p + 1;
      }
 	goto st785;
-tr1114:
+tr1108:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
@@ -6735,7 +6730,7 @@ tr1114:
        begin = p + 1;
      }
 	goto st785;
-tr1151:
+tr1145:
 	{
     SET_CPU_FEATURE(CPUFeature_x87);
   }
@@ -6760,7 +6755,7 @@ tr1151:
        begin = p + 1;
      }
 	goto st785;
-tr1152:
+tr1146:
 	{
     SET_CPU_FEATURE(CPUFeature_CMOVx87);
   }
@@ -6785,7 +6780,7 @@ tr1152:
        begin = p + 1;
      }
 	goto st785;
-tr1153:
+tr1147:
 	{
     SET_CPU_FEATURE(CPUFeature_x87);
   }
@@ -6854,7 +6849,7 @@ tr1153:
        begin = p + 1;
      }
 	goto st785;
-tr1195:
+tr1189:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
@@ -6879,7 +6874,7 @@ tr1195:
        begin = p + 1;
      }
 	goto st785;
-tr1212:
+tr1206:
 	{ if (restricted_register == REG_RSP) {
          PrintError("Incorrectly modified register %%rsp\n", begin - data);
          result = 1;
@@ -6900,7 +6895,7 @@ tr1212:
        begin = p + 1;
      }
 	goto st785;
-tr1277:
+tr1271:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -6935,7 +6930,7 @@ tr1277:
        begin = p + 1;
      }
 	goto st785;
-tr1278:
+tr1272:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -7011,7 +7006,7 @@ tr1278:
        begin = p + 1;
      }
 	goto st785;
-tr1290:
+tr1284:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -7041,7 +7036,7 @@ tr1290:
        begin = p + 1;
      }
 	goto st785;
-tr1291:
+tr1285:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -7140,7 +7135,7 @@ tr1291:
        begin = p + 1;
      }
 	goto st785;
-tr1292:
+tr1286:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -7173,7 +7168,7 @@ tr1292:
        begin = p + 1;
      }
 	goto st785;
-tr1293:
+tr1287:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -7200,7 +7195,7 @@ tr1293:
        begin = p + 1;
      }
 	goto st785;
-tr1294:
+tr1288:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -7226,7 +7221,7 @@ tr1294:
        begin = p + 1;
      }
 	goto st785;
-tr1295:
+tr1289:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -7256,7 +7251,7 @@ st785:
 		goto _test_eof785;
 case 785:
 	{
-		static const unsigned short jump_table[] = { 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 2080, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 2081, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2082, 2082, 2082, 2082, 2083, 2084, 2085, 858, 2086, 2087, 2086, 2086, 2086, 2086, 2086, 2086, 2088, 2089, 2090, 2091, 2092, 2091, 2091, 2091, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 858, 858, 858, 2077, 858, 858, 2095, 858, 2084, 2096, 2083, 2097, 858, 858, 858, 858, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2099, 2100, 858, 2101, 2074, 2075, 2102, 2103, 2074, 2075, 2076, 2077, 858, 2104, 858, 2105, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2106, 2106, 858, 2108, 858, 858, 858, 858, 858, 858, 858, 858, 2109, 2109, 2109, 2109, 2078, 2079, 2110, 2110, 2111, 2111, 2110, 2110, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2114, 2115, 858, 858, 2116, 2117, 2118, 2119, 2120, 858, 2121, 2106, 858, 858, 858, 858, 2122, 2123, 2122, 2123, 858, 858, 858, 858, 2124, 2125, 2126, 2127, 2128, 2129, 2130, 2131, 858, 858, 858, 858, 858, 858, 858, 858, 2132, 2132, 858, 2098, 858, 858, 858, 858, 2133, 858, 2134, 2135, 2106, 2106, 2136, 2137, 2106, 2106, 858, 858, 2106, 2106, 2138, 2139 };
+		static const unsigned short jump_table[] = { 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 2074, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 2075, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2076, 2076, 2076, 2076, 2077, 2078, 2079, 858, 2080, 2081, 2080, 2080, 2080, 2080, 2080, 2080, 2082, 2083, 2084, 2085, 2086, 2085, 2085, 2085, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 858, 858, 858, 2071, 858, 858, 2089, 858, 2078, 2090, 2077, 2091, 858, 858, 858, 858, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2093, 2094, 858, 2095, 2068, 2069, 2096, 2097, 2068, 2069, 2070, 2071, 858, 2098, 858, 2099, 2100, 2101, 2101, 2101, 2101, 2101, 2101, 2101, 2100, 2100, 858, 2102, 858, 858, 858, 858, 858, 858, 858, 858, 2103, 2103, 2103, 2103, 2072, 2073, 2104, 2104, 2105, 2105, 2104, 2104, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2108, 2109, 858, 858, 2110, 2111, 2112, 2113, 2114, 858, 2115, 2100, 858, 858, 858, 858, 2116, 2117, 2116, 2117, 858, 858, 858, 858, 2118, 2119, 2120, 2121, 2122, 2123, 2124, 2125, 858, 858, 858, 858, 858, 858, 858, 858, 2126, 2126, 858, 2092, 858, 858, 858, 858, 2127, 858, 2128, 2129, 2100, 2100, 2130, 2131, 2100, 2100, 858, 858, 2100, 2100, 2132, 2133 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -7299,12 +7294,12 @@ tr347:
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
 	goto st1;
-tr407:
+tr408:
 	{
     SET_OPERAND_TYPE(0, OperandSize16bit);
   }
 	goto st1;
-tr448:
+tr450:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -7315,7 +7310,7 @@ tr448:
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
 	goto st1;
-tr549:
+tr544:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -7326,7 +7321,7 @@ tr549:
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
 	goto st1;
-tr1045:
+tr1039:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -7334,7 +7329,7 @@ tr1045:
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
 	goto st1;
-tr1047:
+tr1041:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -7342,7 +7337,7 @@ tr1047:
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
 	goto st1;
-tr1258:
+tr1252:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -7355,7 +7350,7 @@ tr1258:
     SET_OPERAND_TYPE(0, OperandSize8bit);
   }
 	goto st1;
-tr1259:
+tr1253:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -7402,17 +7397,12 @@ tr308:
     SET_CPU_FEATURE(CPUFeature_x87);
   }
 	goto st2;
-tr355:
+tr356:
 	{
     SET_CPU_FEATURE(CPUFeature_CX16);
   }
 	goto st2;
-tr541:
-	{
-    SET_DATA16_PREFIX(FALSE);
-  }
-	goto st2;
-tr906:
+tr900:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -7594,7 +7584,7 @@ tr311:
     SET_MODRM_SCALE(0);
   }
 	goto st3;
-tr356:
+tr357:
 	{
     SET_CPU_FEATURE(CPUFeature_CX16);
   }
@@ -7604,7 +7594,7 @@ tr356:
     SET_MODRM_SCALE(0);
   }
 	goto st3;
-tr359:
+tr360:
 	{
     SET_CPU_FEATURE(CPUFeature_CX16);
   }
@@ -7616,29 +7606,7 @@ tr359:
     SET_MODRM_SCALE(0);
   }
 	goto st3;
-tr544:
-	{
-    SET_DATA16_PREFIX(FALSE);
-  }
-	{
-    SET_MODRM_BASE(((*p) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-  }
-	goto st3;
-tr559:
-	{
-    SET_DATA16_PREFIX(FALSE);
-  }
-	{
-    SET_MODRM_BASE(REG_RIP);
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-  }
-	goto st3;
-tr970:
+tr964:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -7650,7 +7618,7 @@ tr970:
     SET_MODRM_SCALE(0);
   }
 	goto st3;
-tr1041:
+tr1035:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -7660,7 +7628,7 @@ tr1041:
     SET_MODRM_SCALE(0);
   }
 	goto st3;
-tr1150:
+tr1144:
 	{
     SET_CPU_FEATURE(CPUFeature_x87);
   }
@@ -7771,7 +7739,7 @@ tr309:
     SET_MODRM_SCALE(0);
   }
 	goto st7;
-tr357:
+tr358:
 	{
     SET_CPU_FEATURE(CPUFeature_CX16);
   }
@@ -7783,19 +7751,7 @@ tr357:
     SET_MODRM_SCALE(0);
   }
 	goto st7;
-tr542:
-	{
-    SET_DATA16_PREFIX(FALSE);
-  }
-	{
-    SET_MODRM_BASE(((*p) & 0x07) |
-                   ((GET_REX_PREFIX() & 0x01) << 3) |
-                   (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
-    SET_MODRM_INDEX(NO_REG);
-    SET_MODRM_SCALE(0);
-  }
-	goto st7;
-tr969:
+tr963:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -7837,17 +7793,12 @@ tr310:
     SET_CPU_FEATURE(CPUFeature_x87);
   }
 	goto st8;
-tr358:
+tr359:
 	{
     SET_CPU_FEATURE(CPUFeature_CX16);
   }
 	goto st8;
-tr543:
-	{
-    SET_DATA16_PREFIX(FALSE);
-  }
-	goto st8;
-tr830:
+tr824:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -7882,17 +7833,12 @@ tr312:
     SET_CPU_FEATURE(CPUFeature_x87);
   }
 	goto st9;
-tr360:
+tr361:
 	{
     SET_CPU_FEATURE(CPUFeature_CX16);
   }
 	goto st9;
-tr545:
-	{
-    SET_DATA16_PREFIX(FALSE);
-  }
-	goto st9;
-tr831:
+tr825:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -7933,12 +7879,12 @@ tr346:
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
 	goto st10;
-tr408:
+tr409:
 	{
     SET_OPERAND_TYPE(0, OperandSize16bit);
   }
 	goto st10;
-tr441:
+tr443:
 	{
     SET_CPU_FEATURE(CPUFeature_CMOV);
   }
@@ -7946,7 +7892,7 @@ tr441:
     SET_OPERAND_TYPE(0, OperandSize16bit);
   }
 	goto st10;
-tr578:
+tr572:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
@@ -7957,7 +7903,7 @@ tr578:
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
 	goto st10;
-tr581:
+tr575:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
@@ -7968,7 +7914,7 @@ tr581:
     SET_OPERAND_TYPE(0, OperandSize16bit);
   }
 	goto st10;
-tr582:
+tr576:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
@@ -7979,7 +7925,7 @@ tr582:
     SET_OPERAND_TYPE(0, OperandSize16bit);
   }
 	goto st10;
-tr583:
+tr577:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
@@ -7990,7 +7936,7 @@ tr583:
     SET_OPERAND_TYPE(0, OperandSize16bit);
   }
 	goto st10;
-tr1056:
+tr1050:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
@@ -7998,7 +7944,7 @@ tr1056:
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
 	goto st10;
-tr1060:
+tr1054:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
@@ -8006,7 +7952,7 @@ tr1060:
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
 	goto st10;
-tr1044:
+tr1038:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -8014,7 +7960,7 @@ tr1044:
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
 	goto st10;
-tr1046:
+tr1040:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -8022,7 +7968,7 @@ tr1046:
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
 	goto st10;
-tr1176:
+tr1170:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
@@ -8033,7 +7979,7 @@ tr1176:
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
 	goto st10;
-tr1187:
+tr1181:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
@@ -8044,7 +7990,7 @@ tr1187:
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
 	goto st10;
-tr1189:
+tr1183:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
@@ -8055,12 +8001,45 @@ tr1189:
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
 	goto st10;
-tr1199:
+tr1193:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
 	{
     SET_CPU_FEATURE(CPUFeature_SSE);
+  }
+	{
+    SET_OPERAND_TYPE(0, OperandSize32bit);
+  }
+	goto st10;
+tr1196:
+	{
+    SET_REPZ_PREFIX(FALSE);
+  }
+	{
+    SET_CPU_FEATURE(CPUFeature_POPCNT);
+  }
+	{
+    SET_OPERAND_TYPE(0, OperandSize32bit);
+  }
+	goto st10;
+tr1197:
+	{
+    SET_REPZ_PREFIX(FALSE);
+  }
+	{
+    SET_CPU_FEATURE(CPUFeature_BMI1);
+  }
+	{
+    SET_OPERAND_TYPE(0, OperandSize32bit);
+  }
+	goto st10;
+tr1198:
+	{
+    SET_REPZ_PREFIX(FALSE);
+  }
+	{
+    SET_CPU_FEATURE(CPUFeature_LZCNT);
   }
 	{
     SET_OPERAND_TYPE(0, OperandSize32bit);
@@ -8071,10 +8050,10 @@ tr1202:
     SET_REPZ_PREFIX(FALSE);
   }
 	{
-    SET_CPU_FEATURE(CPUFeature_POPCNT);
+    SET_CPU_FEATURE(CPUFeature_SSE);
   }
 	{
-    SET_OPERAND_TYPE(0, OperandSize32bit);
+    SET_OPERAND_TYPE(0, OperandSize64bit);
   }
 	goto st10;
 tr1203:
@@ -8082,10 +8061,10 @@ tr1203:
     SET_REPZ_PREFIX(FALSE);
   }
 	{
-    SET_CPU_FEATURE(CPUFeature_BMI1);
+    SET_CPU_FEATURE(CPUFeature_POPCNT);
   }
 	{
-    SET_OPERAND_TYPE(0, OperandSize32bit);
+    SET_OPERAND_TYPE(0, OperandSize64bit);
   }
 	goto st10;
 tr1204:
@@ -8093,46 +8072,13 @@ tr1204:
     SET_REPZ_PREFIX(FALSE);
   }
 	{
-    SET_CPU_FEATURE(CPUFeature_LZCNT);
-  }
-	{
-    SET_OPERAND_TYPE(0, OperandSize32bit);
-  }
-	goto st10;
-tr1208:
-	{
-    SET_REPZ_PREFIX(FALSE);
-  }
-	{
-    SET_CPU_FEATURE(CPUFeature_SSE);
-  }
-	{
-    SET_OPERAND_TYPE(0, OperandSize64bit);
-  }
-	goto st10;
-tr1209:
-	{
-    SET_REPZ_PREFIX(FALSE);
-  }
-	{
-    SET_CPU_FEATURE(CPUFeature_POPCNT);
-  }
-	{
-    SET_OPERAND_TYPE(0, OperandSize64bit);
-  }
-	goto st10;
-tr1210:
-	{
-    SET_REPZ_PREFIX(FALSE);
-  }
-	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
 	{
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
 	goto st10;
-tr1211:
+tr1205:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
@@ -8143,7 +8089,7 @@ tr1211:
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
 	goto st10;
-tr1260:
+tr1254:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -8156,7 +8102,7 @@ tr1260:
     SET_OPERAND_TYPE(0, OperandSize8bit);
   }
 	goto st10;
-tr1261:
+tr1255:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -8192,7 +8138,7 @@ tr281:
                            (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
   }
 	goto st11;
-tr726:
+tr720:
 	{
     SET_CPU_FEATURE(CPUFeature_TBM);
   }
@@ -8203,7 +8149,7 @@ tr726:
     SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
   }
 	goto st11;
-tr729:
+tr723:
 	{
     SET_CPU_FEATURE(CPUFeature_TBM);
   }
@@ -8214,7 +8160,7 @@ tr729:
     SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
   }
 	goto st11;
-tr1098:
+tr1092:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
@@ -8225,7 +8171,7 @@ tr1098:
     SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
   }
 	goto st11;
-tr1100:
+tr1094:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
@@ -8349,7 +8295,7 @@ tr285:
     SET_MODRM_SCALE(0);
   }
 	goto st12;
-tr746:
+tr740:
 	{
     SET_CPU_FEATURE(CPUFeature_TBM);
   }
@@ -8367,7 +8313,7 @@ tr746:
     SET_MODRM_SCALE(0);
   }
 	goto st12;
-tr753:
+tr747:
 	{
     SET_CPU_FEATURE(CPUFeature_TBM);
   }
@@ -8385,7 +8331,7 @@ tr753:
     SET_MODRM_SCALE(0);
   }
 	goto st12;
-tr774:
+tr768:
 	{
     SET_CPU_FEATURE(CPUFeature_TBM);
   }
@@ -8401,7 +8347,7 @@ tr774:
     SET_MODRM_SCALE(0);
   }
 	goto st12;
-tr777:
+tr771:
 	{
     SET_CPU_FEATURE(CPUFeature_TBM);
   }
@@ -8417,7 +8363,7 @@ tr777:
     SET_MODRM_SCALE(0);
   }
 	goto st12;
-tr1112:
+tr1106:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
@@ -8435,7 +8381,7 @@ tr1112:
     SET_MODRM_SCALE(0);
   }
 	goto st12;
-tr1116:
+tr1110:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
@@ -8453,7 +8399,7 @@ tr1116:
     SET_MODRM_SCALE(0);
   }
 	goto st12;
-tr1125:
+tr1119:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
@@ -8469,7 +8415,7 @@ tr1125:
     SET_MODRM_SCALE(0);
   }
 	goto st12;
-tr1127:
+tr1121:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
@@ -8545,7 +8491,7 @@ tr283:
     SET_MODRM_SCALE(0);
   }
 	goto st16;
-tr745:
+tr739:
 	{
     SET_CPU_FEATURE(CPUFeature_TBM);
   }
@@ -8563,7 +8509,7 @@ tr745:
     SET_MODRM_SCALE(0);
   }
 	goto st16;
-tr752:
+tr746:
 	{
     SET_CPU_FEATURE(CPUFeature_TBM);
   }
@@ -8581,7 +8527,7 @@ tr752:
     SET_MODRM_SCALE(0);
   }
 	goto st16;
-tr1111:
+tr1105:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
@@ -8599,7 +8545,7 @@ tr1111:
     SET_MODRM_SCALE(0);
   }
 	goto st16;
-tr1115:
+tr1109:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
@@ -8636,7 +8582,7 @@ tr284:
                            (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
   }
 	goto st17;
-tr698:
+tr692:
 	{
     SET_CPU_FEATURE(CPUFeature_TBM);
   }
@@ -8647,7 +8593,7 @@ tr698:
     SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
   }
 	goto st17;
-tr704:
+tr698:
 	{
     SET_CPU_FEATURE(CPUFeature_TBM);
   }
@@ -8658,7 +8604,7 @@ tr704:
     SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
   }
 	goto st17;
-tr1085:
+tr1079:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
@@ -8669,7 +8615,7 @@ tr1085:
     SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
   }
 	goto st17;
-tr1090:
+tr1084:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
@@ -8699,7 +8645,7 @@ tr286:
                            (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
   }
 	goto st18;
-tr699:
+tr693:
 	{
     SET_CPU_FEATURE(CPUFeature_TBM);
   }
@@ -8710,7 +8656,7 @@ tr699:
     SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
   }
 	goto st18;
-tr705:
+tr699:
 	{
     SET_CPU_FEATURE(CPUFeature_TBM);
   }
@@ -8721,7 +8667,7 @@ tr705:
     SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
   }
 	goto st18;
-tr1086:
+tr1080:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
@@ -8732,7 +8678,7 @@ tr1086:
     SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
   }
 	goto st18;
-tr1091:
+tr1085:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
@@ -8955,7 +8901,7 @@ tr262:
                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
   }
 	goto st19;
-tr353:
+tr354:
 	{
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
@@ -8965,7 +8911,7 @@ tr353:
                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
   }
 	goto st19;
-tr475:
+tr477:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -8981,7 +8927,7 @@ tr475:
                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
   }
 	goto st19;
-tr478:
+tr480:
 	{
     SET_OPERAND_TYPE(0, OperandSize16bit);
   }
@@ -8991,7 +8937,7 @@ tr478:
                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
   }
 	goto st19;
-tr553:
+tr548:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -9007,7 +8953,7 @@ tr553:
                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
   }
 	goto st19;
-tr1016:
+tr1010:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -9020,7 +8966,7 @@ tr1016:
                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
   }
 	goto st19;
-tr1262:
+tr1256:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -9036,7 +8982,7 @@ tr1262:
     SET_OPERAND_NAME(0, REG_RAX);
   }
 	goto st19;
-tr1296:
+tr1290:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -9257,7 +9203,7 @@ tr325:
     SET_OPERAND_NAME(0, REG_RAX);
   }
 	goto st20;
-tr362:
+tr363:
 	{
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
@@ -9267,7 +9213,7 @@ tr362:
                            (((~GET_VEX_PREFIX2()) & 0x20) >> 2));
   }
 	goto st20;
-tr715:
+tr709:
 	{
     SET_CPU_FEATURE(CPUFeature_LWP);
   }
@@ -9278,7 +9224,7 @@ tr715:
     SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
   }
 	goto st20;
-tr720:
+tr714:
 	{
     SET_CPU_FEATURE(CPUFeature_LWP);
   }
@@ -9289,7 +9235,7 @@ tr720:
     SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
   }
 	goto st20;
-tr761:
+tr755:
 	{
     SET_CPU_FEATURE(CPUFeature_LWP);
   }
@@ -9339,7 +9285,7 @@ tr761:
     }
   }
 	goto st20;
-tr765:
+tr759:
 	{
     SET_CPU_FEATURE(CPUFeature_LWP);
   }
@@ -9389,7 +9335,7 @@ tr765:
     }
   }
 	goto st20;
-tr1263:
+tr1257:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -9405,7 +9351,7 @@ tr1263:
     SET_OPERAND_NAME(0, REG_RAX);
   }
 	goto st20;
-tr1297:
+tr1291:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -9453,7 +9399,7 @@ tr42:
 st0:
 cs = 0;
 	goto _out;
-tr1264:
+tr1258:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -10133,7 +10079,7 @@ tr76:
     SET_CPU_FEATURE(CPUFeature_EMMXSSE);
   }
 	goto st46;
-tr437:
+tr439:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -10141,7 +10087,7 @@ tr437:
     SET_CPU_FEATURE(CPUFeature_SSE2);
   }
 	goto st46;
-tr447:
+tr449:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -10149,7 +10095,7 @@ tr447:
     SET_CPU_FEATURE(CPUFeature_SSE3);
   }
 	goto st46;
-tr455:
+tr457:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -10157,7 +10103,7 @@ tr455:
     SET_CPU_FEATURE(CPUFeature_SSSE3);
   }
 	goto st46;
-tr456:
+tr458:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -10165,7 +10111,7 @@ tr456:
     SET_CPU_FEATURE(CPUFeature_SSE41);
   }
 	goto st46;
-tr458:
+tr460:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -10173,7 +10119,7 @@ tr458:
     SET_CPU_FEATURE(CPUFeature_SSE42);
   }
 	goto st46;
-tr459:
+tr461:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -10181,32 +10127,32 @@ tr459:
     SET_CPU_FEATURE(CPUFeature_AES);
   }
 	goto st46;
-tr687:
+tr681:
 	{
     SET_CPU_FEATURE(CPUFeature_XOP);
   }
 	goto st46;
-tr1038:
+tr1032:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
 	goto st46;
-tr1057:
+tr1051:
 	{
     SET_CPU_FEATURE(CPUFeature_FMA);
   }
 	goto st46;
-tr1058:
+tr1052:
 	{
     SET_CPU_FEATURE(CPUFeature_AESAVX);
   }
 	goto st46;
-tr1059:
+tr1053:
 	{
     SET_CPU_FEATURE(CPUFeature_F16C);
   }
 	goto st46;
-tr1173:
+tr1167:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
@@ -10214,7 +10160,7 @@ tr1173:
     SET_CPU_FEATURE(CPUFeature_SSE2);
   }
 	goto st46;
-tr1174:
+tr1168:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
@@ -10222,7 +10168,7 @@ tr1174:
     SET_CPU_FEATURE(CPUFeature_SSE3);
   }
 	goto st46;
-tr1181:
+tr1175:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
@@ -10230,7 +10176,7 @@ tr1181:
     SET_CPU_FEATURE(CPUFeature_SSE);
   }
 	goto st46;
-tr1196:
+tr1190:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
@@ -10238,7 +10184,7 @@ tr1196:
     SET_CPU_FEATURE(CPUFeature_SSE);
   }
 	goto st46;
-tr1197:
+tr1191:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
@@ -10246,7 +10192,7 @@ tr1197:
     SET_CPU_FEATURE(CPUFeature_SSE3);
   }
 	goto st46;
-tr1200:
+tr1194:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
@@ -10254,7 +10200,7 @@ tr1200:
     SET_CPU_FEATURE(CPUFeature_SSE2);
   }
 	goto st46;
-tr1266:
+tr1260:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -10292,7 +10238,7 @@ tr71:
     SET_CPU_FEATURE(CPUFeature_SSE2);
   }
 	goto st48;
-tr438:
+tr440:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -10300,7 +10246,7 @@ tr438:
     SET_CPU_FEATURE(CPUFeature_SSE2);
   }
 	goto st48;
-tr457:
+tr459:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -10308,12 +10254,12 @@ tr457:
     SET_CPU_FEATURE(CPUFeature_SSE41);
   }
 	goto st48;
-tr1039:
+tr1033:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
 	goto st48;
-tr1183:
+tr1177:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
@@ -10321,7 +10267,7 @@ tr1183:
     SET_CPU_FEATURE(CPUFeature_SSE3);
   }
 	goto st48;
-tr1175:
+tr1169:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
@@ -10329,7 +10275,7 @@ tr1175:
     SET_CPU_FEATURE(CPUFeature_SSE4A);
   }
 	goto st48;
-tr1198:
+tr1192:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
@@ -10415,7 +10361,7 @@ tr75:
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
 	goto st51;
-tr442:
+tr444:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -10426,7 +10372,7 @@ tr442:
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
 	goto st51;
-tr973:
+tr967:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -10451,7 +10397,7 @@ tr57:
     SET_CPU_FEATURE(CPUFeature_EMMXSSE);
   }
 	goto st52;
-tr443:
+tr445:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -10459,7 +10405,7 @@ tr443:
     SET_CPU_FEATURE(CPUFeature_SSE2);
   }
 	goto st52;
-tr461:
+tr463:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -10467,7 +10413,7 @@ tr461:
     SET_CPU_FEATURE(CPUFeature_SSSE3);
   }
 	goto st52;
-tr460:
+tr462:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -10475,7 +10421,7 @@ tr460:
     SET_CPU_FEATURE(CPUFeature_SSE41);
   }
 	goto st52;
-tr466:
+tr468:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -10483,7 +10429,7 @@ tr466:
     SET_CPU_FEATURE(CPUFeature_SSE42);
   }
 	goto st52;
-tr467:
+tr469:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -10491,7 +10437,7 @@ tr467:
     SET_CPU_FEATURE(CPUFeature_AES);
   }
 	goto st52;
-tr465:
+tr467:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -10499,32 +10445,32 @@ tr465:
     SET_CPU_FEATURE(CPUFeature_CLMUL);
   }
 	goto st52;
-tr682:
+tr676:
 	{
     SET_CPU_FEATURE(CPUFeature_XOP);
   }
 	goto st52;
-tr1040:
+tr1034:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
 	goto st52;
-tr1072:
+tr1066:
 	{
     SET_CPU_FEATURE(CPUFeature_AESAVX);
   }
 	goto st52;
-tr1077:
+tr1071:
 	{
     SET_CPU_FEATURE(CPUFeature_F16C);
   }
 	goto st52;
-tr1068:
+tr1062:
 	{
     SET_CPU_FEATURE(CPUFeature_CLMULAVX);
   }
 	goto st52;
-tr1178:
+tr1172:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
@@ -10532,7 +10478,7 @@ tr1178:
     SET_CPU_FEATURE(CPUFeature_SSE2);
   }
 	goto st52;
-tr1205:
+tr1199:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
@@ -10540,7 +10486,7 @@ tr1205:
     SET_CPU_FEATURE(CPUFeature_SSE);
   }
 	goto st52;
-tr1201:
+tr1195:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
@@ -10720,7 +10666,7 @@ tr147:
     }
   }
 	goto st53;
-tr477:
+tr479:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -10728,7 +10674,7 @@ tr477:
     SET_CPU_FEATURE(CPUFeature_SSE2);
   }
 	goto st53;
-tr476:
+tr478:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -10736,7 +10682,7 @@ tr476:
     SET_CPU_FEATURE(CPUFeature_SSE41);
   }
 	goto st53;
-tr468:
+tr470:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -10783,7 +10729,7 @@ tr468:
     }
   }
 	goto st53;
-tr479:
+tr481:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -10830,7 +10776,7 @@ tr479:
     }
   }
 	goto st53;
-tr486:
+tr488:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -10838,12 +10784,12 @@ tr486:
     SET_CPU_FEATURE(CPUFeature_SSE);
   }
 	goto st53;
-tr979:
+tr973:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
 	goto st53;
-tr976:
+tr970:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -10887,19 +10833,19 @@ tr976:
     }
   }
 	goto st53;
-tr1149:
+tr1143:
 	{
     SET_IMM2_TYPE(IMM16);
     SET_IMM2_PTR(p - 1);
   }
 	goto st53;
-tr1185:
+tr1179:
 	{
     SET_IMM2_TYPE(IMM8);
     SET_IMM2_PTR(p);
   }
 	goto st53;
-tr1267:
+tr1261:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -10914,7 +10860,7 @@ st53:
 		goto _test_eof53;
 case 53:
 	goto tr140;
-tr469:
+tr471:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -10922,7 +10868,7 @@ tr469:
     SET_CPU_FEATURE(CPUFeature_SSE41);
   }
 	goto st54;
-tr480:
+tr482:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -10930,7 +10876,7 @@ tr480:
     SET_CPU_FEATURE(CPUFeature_SSE);
   }
 	goto st54;
-tr908:
+tr902:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -11012,7 +10958,7 @@ tr149:
     SET_MODRM_SCALE(((*p) & 0xc0) >> 6);
   }
 	goto st55;
-tr470:
+tr472:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -11025,7 +10971,7 @@ tr470:
     SET_MODRM_SCALE(0);
   }
 	goto st55;
-tr473:
+tr475:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -11040,7 +10986,7 @@ tr473:
     SET_MODRM_SCALE(0);
   }
 	goto st55;
-tr481:
+tr483:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -11053,7 +10999,7 @@ tr481:
     SET_MODRM_SCALE(0);
   }
 	goto st55;
-tr484:
+tr486:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -11068,7 +11014,7 @@ tr484:
     SET_MODRM_SCALE(0);
   }
 	goto st55;
-tr978:
+tr972:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -11080,7 +11026,7 @@ tr978:
     SET_MODRM_SCALE(0);
   }
 	goto st55;
-tr1043:
+tr1037:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -11131,7 +11077,7 @@ tr148:
     SET_MODRM_SCALE(((*p) & 0xc0) >> 6);
   }
 	goto st59;
-tr471:
+tr473:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -11146,7 +11092,7 @@ tr471:
     SET_MODRM_SCALE(0);
   }
 	goto st59;
-tr482:
+tr484:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -11161,7 +11107,7 @@ tr482:
     SET_MODRM_SCALE(0);
   }
 	goto st59;
-tr977:
+tr971:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -11178,7 +11124,7 @@ st59:
 		goto _test_eof59;
 case 59:
 	goto tr147;
-tr472:
+tr474:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -11186,7 +11132,7 @@ tr472:
     SET_CPU_FEATURE(CPUFeature_SSE41);
   }
 	goto st60;
-tr483:
+tr485:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -11194,7 +11140,7 @@ tr483:
     SET_CPU_FEATURE(CPUFeature_SSE);
   }
 	goto st60;
-tr834:
+tr828:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -11204,7 +11150,7 @@ st60:
 		goto _test_eof60;
 case 60:
 	goto tr148;
-tr474:
+tr476:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -11212,7 +11158,7 @@ tr474:
     SET_CPU_FEATURE(CPUFeature_SSE41);
   }
 	goto st61;
-tr485:
+tr487:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -11220,7 +11166,7 @@ tr485:
     SET_CPU_FEATURE(CPUFeature_SSE);
   }
 	goto st61;
-tr835:
+tr829:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -11253,7 +11199,7 @@ case 63:
 	} else if ( (*p) >= 208u )
 		goto tr150;
 	goto tr42;
-tr1316:
+tr1310:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -11293,12 +11239,12 @@ tr348:
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
 	goto st68;
-tr449:
+tr451:
 	{
     SET_OPERAND_TYPE(0, OperandSize16bit);
   }
 	goto st68;
-tr463:
+tr465:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -11309,7 +11255,7 @@ tr463:
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
 	goto st68;
-tr551:
+tr546:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -11320,7 +11266,7 @@ tr551:
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
 	goto st68;
-tr1075:
+tr1069:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -11328,7 +11274,7 @@ tr1075:
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
 	goto st68;
-tr1078:
+tr1072:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -11359,7 +11305,7 @@ tr68:
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
 	goto st70;
-tr1154:
+tr1148:
 	{
     SET_OPERAND_TYPE(0, OperandSize8bit);
   }
@@ -11369,7 +11315,7 @@ tr349:
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
 	goto st70;
-tr450:
+tr452:
 	{
     SET_OPERAND_TYPE(0, OperandSize16bit);
   }
@@ -11425,7 +11371,7 @@ tr72:
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
 	goto st72;
-tr453:
+tr455:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -11436,7 +11382,7 @@ tr453:
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
 	goto st72;
-tr975:
+tr969:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -11475,7 +11421,7 @@ tr77:
     SET_CPU_FEATURE(CPUFeature_EMMX);
   }
 	goto st74;
-tr454:
+tr456:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -11483,7 +11429,7 @@ tr454:
     SET_CPU_FEATURE(CPUFeature_SSE2);
   }
 	goto st74;
-tr446:
+tr448:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -11491,12 +11437,12 @@ tr446:
     SET_CPU_FEATURE(CPUFeature_SSE4A);
   }
 	goto st74;
-tr972:
+tr966:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
 	goto st74;
-tr1182:
+tr1176:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
@@ -11504,7 +11450,7 @@ tr1182:
     SET_CPU_FEATURE(CPUFeature_SSE2);
   }
 	goto st74;
-tr1180:
+tr1174:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
@@ -11512,7 +11458,7 @@ tr1180:
     SET_CPU_FEATURE(CPUFeature_SSE4A);
   }
 	goto st74;
-tr1206:
+tr1200:
 	{
     SET_REPZ_PREFIX(FALSE);
   }
@@ -11527,7 +11473,7 @@ case 74:
 	if ( 192u <= (*p) )
 		goto tr43;
 	goto tr42;
-tr1265:
+tr1259:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -11540,7 +11486,7 @@ tr1265:
     SET_BRANCH_NOT_TAKEN(TRUE);
   }
 	goto st75;
-tr1269:
+tr1263:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -11569,7 +11515,7 @@ case 76:
 	if ( 128u <= (*p) && (*p) <= 143u )
 		goto st64;
 	goto tr42;
-tr1282:
+tr1276:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -11742,7 +11688,7 @@ tr277:
     }
   }
 	goto st78;
-tr1268:
+tr1262:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -11772,7 +11718,7 @@ st81:
 		goto _test_eof81;
 case 81:
 	goto tr187;
-tr1270:
+tr1264:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -12049,7 +11995,7 @@ tr327:
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
 	goto st93;
-tr690:
+tr684:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
@@ -12057,7 +12003,7 @@ tr690:
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
 	goto st93;
-tr691:
+tr685:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
@@ -12065,7 +12011,7 @@ tr691:
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
 	goto st93;
-tr1280:
+tr1274:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -12094,7 +12040,7 @@ tr230:
                            (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
   }
 	goto st94;
-tr735:
+tr729:
 	{
     SET_CPU_FEATURE(CPUFeature_LWP);
   }
@@ -12105,7 +12051,7 @@ tr735:
     SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
   }
 	goto st94;
-tr737:
+tr731:
 	{
     SET_CPU_FEATURE(CPUFeature_LWP);
   }
@@ -12203,7 +12149,7 @@ tr234:
     SET_MODRM_SCALE(0);
   }
 	goto st95;
-tr763:
+tr757:
 	{
     SET_CPU_FEATURE(CPUFeature_LWP);
   }
@@ -12221,7 +12167,7 @@ tr763:
     SET_MODRM_SCALE(0);
   }
 	goto st95;
-tr767:
+tr761:
 	{
     SET_CPU_FEATURE(CPUFeature_LWP);
   }
@@ -12239,7 +12185,7 @@ tr767:
     SET_MODRM_SCALE(0);
   }
 	goto st95;
-tr783:
+tr777:
 	{
     SET_CPU_FEATURE(CPUFeature_LWP);
   }
@@ -12255,7 +12201,7 @@ tr783:
     SET_MODRM_SCALE(0);
   }
 	goto st95;
-tr785:
+tr779:
 	{
     SET_CPU_FEATURE(CPUFeature_LWP);
   }
@@ -12317,7 +12263,7 @@ tr232:
     SET_MODRM_SCALE(0);
   }
 	goto st99;
-tr762:
+tr756:
 	{
     SET_CPU_FEATURE(CPUFeature_LWP);
   }
@@ -12335,7 +12281,7 @@ tr762:
     SET_MODRM_SCALE(0);
   }
 	goto st99;
-tr766:
+tr760:
 	{
     SET_CPU_FEATURE(CPUFeature_LWP);
   }
@@ -12365,7 +12311,7 @@ tr233:
                            (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
   }
 	goto st100;
-tr713:
+tr707:
 	{
     SET_CPU_FEATURE(CPUFeature_LWP);
   }
@@ -12376,7 +12322,7 @@ tr713:
     SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
   }
 	goto st100;
-tr718:
+tr712:
 	{
     SET_CPU_FEATURE(CPUFeature_LWP);
   }
@@ -12399,7 +12345,7 @@ tr235:
                            (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
   }
 	goto st101;
-tr714:
+tr708:
 	{
     SET_CPU_FEATURE(CPUFeature_LWP);
   }
@@ -12410,7 +12356,7 @@ tr714:
     SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
   }
 	goto st101;
-tr719:
+tr713:
 	{
     SET_CPU_FEATURE(CPUFeature_LWP);
   }
@@ -12436,12 +12382,12 @@ tr328:
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
 	goto st102;
-tr417:
+tr419:
 	{
     SET_OPERAND_TYPE(0, OperandSize16bit);
   }
 	goto st102;
-tr1281:
+tr1275:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -12689,7 +12635,7 @@ case 113:
 		case 253u: goto tr272;
 	}
 	goto tr271;
-tr361:
+tr362:
 	{
     SET_MODRM_BASE(REG_RIP);
     SET_MODRM_INDEX(NO_REG);
@@ -12816,7 +12762,7 @@ tr331:
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
 	goto st122;
-tr420:
+tr422:
 	{
     SET_OPERAND_TYPE(1, OperandSize16bit);
   }
@@ -12824,7 +12770,7 @@ tr420:
     SET_OPERAND_TYPE(0, OperandSize16bit);
   }
 	goto st122;
-tr1286:
+tr1280:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -12840,7 +12786,7 @@ tr1286:
     SET_OPERAND_TYPE(0, OperandSize8bit);
   }
 	goto st122;
-tr1287:
+tr1281:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -12875,12 +12821,12 @@ tr333:
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
 	goto st123;
-tr421:
+tr423:
 	{
     SET_OPERAND_TYPE(0, OperandSize16bit);
   }
 	goto st123;
-tr1288:
+tr1282:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -13374,7 +13320,7 @@ case 149:
 	} else
 		goto tr3;
 	goto tr42;
-tr1271:
+tr1265:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -13491,11 +13437,11 @@ st786:
 		goto _test_eof786;
 case 786:
 	{
-		static const unsigned short jump_table[] = { 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 2080, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 2081, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2082, 2082, 2082, 2082, 2083, 2084, 2085, 858, 2086, 2087, 2086, 2086, 2086, 2086, 2086, 2086, 2088, 2089, 2090, 2091, 2092, 2140, 2091, 2091, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 858, 858, 858, 2077, 858, 858, 2095, 858, 2084, 2096, 2083, 2097, 858, 858, 858, 858, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2099, 2100, 858, 2101, 2074, 2075, 2102, 2103, 2074, 2075, 2076, 2077, 858, 2104, 858, 2105, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2106, 2106, 858, 2108, 858, 858, 858, 858, 858, 858, 858, 858, 2109, 2109, 2109, 2109, 2078, 2079, 2110, 2110, 2111, 2111, 2110, 2110, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2114, 2115, 858, 858, 2116, 2117, 2118, 2119, 2120, 858, 2121, 2106, 858, 858, 858, 858, 2122, 2123, 2122, 2123, 858, 858, 858, 858, 2124, 2125, 2126, 2127, 2128, 2129, 2130, 2131, 858, 858, 858, 858, 858, 858, 858, 858, 2132, 2132, 858, 2098, 858, 858, 858, 858, 2133, 858, 2134, 2135, 2106, 2106, 2136, 2137, 2106, 2106, 858, 858, 2106, 2106, 2138, 2139 };
+		static const unsigned short jump_table[] = { 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 2074, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 2075, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2076, 2076, 2076, 2076, 2077, 2078, 2079, 858, 2080, 2081, 2080, 2080, 2080, 2080, 2080, 2080, 2082, 2083, 2084, 2085, 2086, 2134, 2085, 2085, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 858, 858, 858, 2071, 858, 858, 2089, 858, 2078, 2090, 2077, 2091, 858, 858, 858, 858, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2093, 2094, 858, 2095, 2068, 2069, 2096, 2097, 2068, 2069, 2070, 2071, 858, 2098, 858, 2099, 2100, 2101, 2101, 2101, 2101, 2101, 2101, 2101, 2100, 2100, 858, 2102, 858, 858, 858, 858, 858, 858, 858, 858, 2103, 2103, 2103, 2103, 2072, 2073, 2104, 2104, 2105, 2105, 2104, 2104, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2108, 2109, 858, 858, 2110, 2111, 2112, 2113, 2114, 858, 2115, 2100, 858, 858, 858, 858, 2116, 2117, 2116, 2117, 858, 858, 858, 858, 2118, 2119, 2120, 2121, 2122, 2123, 2124, 2125, 858, 858, 858, 858, 858, 858, 858, 858, 2126, 2126, 858, 2092, 858, 858, 858, 858, 2127, 858, 2128, 2129, 2100, 2100, 2130, 2131, 2100, 2100, 858, 858, 2100, 2100, 2132, 2133 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1272:
+tr1266:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -13562,14 +13508,14 @@ st155:
 		goto _test_eof155;
 case 155:
 	if ( 200u <= (*p) && (*p) <= 207u )
-		goto tr304;
+		goto tr353;
 	goto tr42;
 st156:
 	if ( ++p == pe )
 		goto _test_eof156;
 case 156:
 	if ( 224u <= (*p) && (*p) <= 231u )
-		goto tr304;
+		goto tr353;
 	goto tr42;
 st157:
 	if ( ++p == pe )
@@ -13599,7 +13545,7 @@ case 157:
 	} else if ( (*p) > 127u ) {
 		if ( (*p) > 191u ) {
 			if ( 224u <= (*p) )
-				goto tr353;
+				goto tr354;
 		} else if ( (*p) >= 160u )
 			goto tr137;
 	} else
@@ -13610,26 +13556,26 @@ st158:
 		goto _test_eof158;
 case 158:
 	switch( (*p) ) {
-		case 12u: goto tr355;
-		case 13u: goto tr356;
-		case 76u: goto tr358;
-		case 140u: goto tr360;
+		case 12u: goto tr356;
+		case 13u: goto tr357;
+		case 76u: goto tr359;
+		case 140u: goto tr361;
 	}
 	if ( (*p) < 72u ) {
 		if ( 8u <= (*p) && (*p) <= 15u )
-			goto tr354;
+			goto tr355;
 	} else if ( (*p) > 79u ) {
 		if ( 136u <= (*p) && (*p) <= 143u )
-			goto tr359;
+			goto tr360;
 	} else
-		goto tr357;
+		goto tr358;
 	goto tr42;
 st159:
 	if ( ++p == pe )
 		goto _test_eof159;
 case 159:
 	{
-		static const unsigned short jump_table[] = { 1079, 1079, 1079, 1079, 113, 1177, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1177, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1177, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1177, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1177, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1177, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1177, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1177, 1079, 1079, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 160, 160, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 78, 78, 78, 78, 78, 78, 78, 78 };
+		static const unsigned short jump_table[] = { 1079, 1079, 1079, 1079, 113, 1178, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1178, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1178, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1178, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1178, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1178, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1178, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1178, 1079, 1079, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 160, 160, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 78, 78, 78, 78, 78, 78, 78, 78 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -13654,13 +13600,13 @@ st163:
 case 163:
 	if ( (*p) <= 127u )
 		goto tr42;
-	goto tr367;
+	goto tr368;
 st164:
 	if ( ++p == pe )
 		goto _test_eof164;
 case 164:
 	{
-		static const unsigned short jump_table[] = { 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 165, 166, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 53, 53, 53, 53, 53, 53, 53, 53 };
+		static const unsigned short jump_table[] = { 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 165, 166, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 53, 53, 53, 53, 53, 53, 53, 53 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -13670,14 +13616,14 @@ st165:
 case 165:
 	if ( (*p) <= 127u )
 		goto tr42;
-	goto tr370;
+	goto tr371;
 st166:
 	if ( ++p == pe )
 		goto _test_eof166;
 case 166:
 	if ( (*p) <= 127u )
 		goto tr42;
-	goto tr371;
+	goto tr372;
 tr332:
 	{
     SET_OPERAND_TYPE(0, OperandSize64bit);
@@ -13688,7 +13634,7 @@ st167:
 		goto _test_eof167;
 case 167:
 	{
-		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 1183, 823, 823, 823, 823, 823, 823, 1183, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823 };
+		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 1184, 823, 823, 823, 823, 823, 823, 1184, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -13741,13 +13687,13 @@ st175:
 	if ( ++p == pe )
 		goto _test_eof175;
 case 175:
-	goto tr379;
+	goto tr380;
 st176:
 	if ( ++p == pe )
 		goto _test_eof176;
 case 176:
 	{
-		static const unsigned short jump_table[] = { 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 858, 858, 858, 858, 858, 858, 858, 858, 948, 948, 948, 948, 54, 950, 948, 948, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 858, 858, 858, 858, 858, 858, 858, 858, 951, 951, 951, 951, 60, 951, 951, 951, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 858, 858, 858, 858, 858, 858, 858, 858, 953, 953, 953, 953, 61, 953, 953, 953, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 858, 858, 858, 858, 858, 858, 858, 858, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169 };
+		static const unsigned short jump_table[] = { 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 858, 858, 858, 858, 858, 858, 858, 858, 948, 948, 948, 948, 54, 950, 948, 948, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 858, 858, 858, 858, 858, 858, 858, 858, 951, 951, 951, 951, 60, 951, 951, 951, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 858, 858, 858, 858, 858, 858, 858, 858, 953, 953, 953, 953, 61, 953, 953, 953, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 858, 858, 858, 858, 858, 858, 858, 858, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -13757,7 +13703,7 @@ st177:
 case 177:
 	switch( (*p) ) {
 		case 4u: goto st113;
-		case 5u: goto tr361;
+		case 5u: goto tr362;
 		case 68u: goto st119;
 		case 132u: goto st120;
 	}
@@ -13767,7 +13713,7 @@ case 177:
 	} else if ( (*p) > 71u ) {
 		if ( (*p) > 135u ) {
 			if ( 192u <= (*p) && (*p) <= 199u )
-				goto tr362;
+				goto tr363;
 		} else if ( (*p) >= 128u )
 			goto tr267;
 	} else
@@ -13778,7 +13724,7 @@ st178:
 		goto _test_eof178;
 case 178:
 	{
-		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 858, 858, 858, 858, 858, 858, 858, 858, 816, 816, 816, 816, 2, 818, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 858, 858, 858, 858, 858, 858, 858, 858, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120 };
+		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 858, 858, 858, 858, 858, 858, 858, 858, 816, 816, 816, 816, 2, 818, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 858, 858, 858, 858, 858, 858, 858, 858, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -13787,7 +13733,7 @@ st179:
 		goto _test_eof179;
 case 179:
 	{
-		static const unsigned short jump_table[] = { 1079, 1079, 1079, 1079, 113, 1177, 1079, 1079, 858, 858, 858, 858, 858, 858, 858, 858, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 858, 858, 858, 858, 858, 858, 858, 858, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120 };
+		static const unsigned short jump_table[] = { 1079, 1079, 1079, 1079, 113, 1178, 1079, 1079, 858, 858, 858, 858, 858, 858, 858, 858, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 858, 858, 858, 858, 858, 858, 858, 858, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -13811,13 +13757,13 @@ case 180:
 	} else if ( (*p) > 79u ) {
 		if ( (*p) > 143u ) {
 			if ( 192u <= (*p) && (*p) <= 207u )
-				goto tr304;
+				goto tr353;
 		} else if ( (*p) >= 128u )
 			goto tr5;
 	} else
 		goto tr3;
 	goto tr42;
-tr1273:
+tr1267:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -13835,7 +13781,7 @@ st181:
 		goto _test_eof181;
 case 181:
 	{
-		static const unsigned short jump_table[] = { 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 182, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1140, 858, 858, 858, 858, 858, 1143, 858, 1144, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 185, 858, 186, 858, 1139, 858, 1147, 858, 1139, 858, 1140, 858, 1199, 858, 858, 858, 1150, 1150, 1150, 1150, 1150, 1150, 1150, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 858, 191, 858, 858, 858, 858, 858, 192, 858, 858, 858, 858, 858, 858, 858, 858, 858, 193, 858, 193, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 194, 858, 858, 858, 858, 858, 858, 858, 195 };
+		static const unsigned short jump_table[] = { 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 182, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1140, 858, 858, 858, 858, 858, 1143, 858, 1144, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 185, 858, 186, 858, 1139, 858, 1147, 858, 1139, 858, 1140, 858, 1200, 858, 858, 858, 1150, 1150, 1150, 1150, 1150, 1150, 1150, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 858, 191, 858, 858, 858, 858, 858, 192, 858, 858, 858, 858, 858, 858, 858, 858, 858, 193, 858, 193, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 194, 858, 858, 858, 858, 858, 858, 858, 195 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -13913,7 +13859,7 @@ case 183:
 		} else if ( (*p) > 127u ) {
 			if ( (*p) > 191u ) {
 				if ( 224u <= (*p) )
-					goto tr353;
+					goto tr354;
 			} else if ( (*p) >= 160u )
 				goto tr137;
 		} else
@@ -13926,28 +13872,28 @@ st184:
 		goto _test_eof184;
 case 184:
 	switch( (*p) ) {
-		case 12u: goto tr355;
-		case 76u: goto tr358;
-		case 140u: goto tr360;
+		case 12u: goto tr356;
+		case 76u: goto tr359;
+		case 140u: goto tr361;
 	}
 	if ( (*p) < 14u ) {
 		if ( 8u <= (*p) && (*p) <= 11u )
-			goto tr354;
+			goto tr355;
 	} else if ( (*p) > 15u ) {
 		if ( (*p) > 79u ) {
 			if ( 136u <= (*p) && (*p) <= 143u )
-				goto tr359;
+				goto tr360;
 		} else if ( (*p) >= 72u )
-			goto tr357;
+			goto tr358;
 	} else
-		goto tr354;
+		goto tr355;
 	goto tr42;
 st185:
 	if ( ++p == pe )
 		goto _test_eof185;
 case 185:
 	{
-		static const unsigned short jump_table[] = { 1079, 1079, 1079, 1079, 113, 858, 1079, 1079, 1079, 1079, 1079, 1079, 113, 858, 1079, 1079, 1079, 1079, 1079, 1079, 113, 858, 1079, 1079, 1079, 1079, 1079, 1079, 113, 858, 1079, 1079, 1079, 1079, 1079, 1079, 113, 858, 1079, 1079, 1079, 1079, 1079, 1079, 113, 858, 1079, 1079, 1079, 1079, 1079, 1079, 113, 858, 1079, 1079, 1079, 1079, 1079, 1079, 113, 858, 1079, 1079, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 78, 78, 78, 78, 78, 78, 78, 78 };
+		static const unsigned short jump_table[] = { 1079, 1079, 1079, 1079, 113, 858, 1079, 1079, 1079, 1079, 1079, 1079, 113, 858, 1079, 1079, 1079, 1079, 1079, 1079, 113, 858, 1079, 1079, 1079, 1079, 1079, 1079, 113, 858, 1079, 1079, 1079, 1079, 1079, 1079, 113, 858, 1079, 1079, 1079, 1079, 1079, 1079, 113, 858, 1079, 1079, 1079, 1079, 1079, 1079, 113, 858, 1079, 1079, 1079, 1079, 1079, 1079, 113, 858, 1079, 1079, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 78, 78, 78, 78, 78, 78, 78, 78 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -13956,11 +13902,11 @@ st186:
 		goto _test_eof186;
 case 186:
 	{
-		static const unsigned short jump_table[] = { 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 53, 53, 53, 53, 53, 53, 53, 53 };
+		static const unsigned short jump_table[] = { 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 53, 53, 53, 53, 53, 53, 53, 53 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr383:
+tr384:
 	{
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
@@ -13970,11 +13916,11 @@ st187:
 		goto _test_eof187;
 case 187:
 	{
-		static const unsigned short jump_table[] = { 1104, 1104, 1104, 1104, 1105, 1106, 1104, 1104, 1104, 1104, 1104, 1104, 1105, 1106, 1104, 1104, 1104, 1104, 1104, 1104, 1105, 1106, 1104, 1104, 1104, 1104, 1104, 1104, 1105, 1106, 1104, 1104, 1104, 1104, 1104, 1104, 1105, 1106, 1104, 1104, 1104, 1104, 1104, 1104, 1207, 1106, 1104, 1104, 1104, 1104, 1104, 1104, 1208, 1106, 1104, 1104, 1104, 1104, 1104, 1104, 1209, 1106, 1104, 1104, 1107, 1107, 1107, 1107, 1108, 1107, 1107, 1107, 1107, 1107, 1107, 1107, 1108, 1107, 1107, 1107, 1107, 1107, 1107, 1107, 1108, 1107, 1107, 1107, 1107, 1107, 1107, 1107, 1108, 1107, 1107, 1107, 1107, 1107, 1107, 1107, 1108, 1107, 1107, 1107, 1107, 1107, 1107, 1107, 1108, 1107, 1107, 1107, 1107, 1107, 1107, 1107, 1108, 1107, 1107, 1107, 1107, 1107, 1107, 1107, 1108, 1107, 1107, 1107, 1109, 1109, 1109, 1109, 1110, 1109, 1109, 1109, 1109, 1109, 1109, 1109, 1110, 1109, 1109, 1109, 1109, 1109, 1109, 1109, 1110, 1109, 1109, 1109, 1109, 1109, 1109, 1109, 1110, 1109, 1109, 1109, 1109, 1109, 1109, 1109, 1110, 1109, 1109, 1109, 1109, 1109, 1109, 1109, 1110, 1109, 1109, 1109, 1109, 1109, 1109, 1109, 1110, 1109, 1109, 1109, 1109, 1109, 1109, 1109, 1110, 1109, 1109, 1109, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858 };
+		static const unsigned short jump_table[] = { 1104, 1104, 1104, 1104, 1105, 1106, 1104, 1104, 1104, 1104, 1104, 1104, 1105, 1106, 1104, 1104, 1104, 1104, 1104, 1104, 1105, 1106, 1104, 1104, 1104, 1104, 1104, 1104, 1105, 1106, 1104, 1104, 1104, 1104, 1104, 1104, 1105, 1106, 1104, 1104, 1104, 1104, 1104, 1104, 1208, 1106, 1104, 1104, 1104, 1104, 1104, 1104, 1209, 1106, 1104, 1104, 1104, 1104, 1104, 1104, 1210, 1106, 1104, 1104, 1107, 1107, 1107, 1107, 1108, 1107, 1107, 1107, 1107, 1107, 1107, 1107, 1108, 1107, 1107, 1107, 1107, 1107, 1107, 1107, 1108, 1107, 1107, 1107, 1107, 1107, 1107, 1107, 1108, 1107, 1107, 1107, 1107, 1107, 1107, 1107, 1108, 1107, 1107, 1107, 1107, 1107, 1107, 1107, 1108, 1107, 1107, 1107, 1107, 1107, 1107, 1107, 1108, 1107, 1107, 1107, 1107, 1107, 1107, 1107, 1108, 1107, 1107, 1107, 1109, 1109, 1109, 1109, 1110, 1109, 1109, 1109, 1109, 1109, 1109, 1109, 1110, 1109, 1109, 1109, 1109, 1109, 1109, 1109, 1110, 1109, 1109, 1109, 1109, 1109, 1109, 1109, 1110, 1109, 1109, 1109, 1109, 1109, 1109, 1109, 1110, 1109, 1109, 1109, 1109, 1109, 1109, 1109, 1110, 1109, 1109, 1109, 1109, 1109, 1109, 1109, 1110, 1109, 1109, 1109, 1109, 1109, 1109, 1109, 1110, 1109, 1109, 1109, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr391:
+tr392:
 	{
     SET_OPERAND_NAME(0, (((*p) & 0x38) >> 3) |
                            ((GET_REX_PREFIX() & 0x04) << 1) |
@@ -13986,11 +13932,11 @@ st188:
 		goto _test_eof188;
 case 188:
 	{
-		static const unsigned char jump_table[] = { 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 99, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0 };
+		static const unsigned char jump_table[] = { 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 100, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0 };
 		cs = jump_table[(*p)] + 1111;
 		goto _again;
 	}
-tr392:
+tr393:
 	{
     SET_OPERAND_NAME(0, (((*p) & 0x38) >> 3) |
                            ((GET_REX_PREFIX() & 0x04) << 1) |
@@ -14002,11 +13948,11 @@ st189:
 		goto _test_eof189;
 case 189:
 	{
-		static const unsigned char jump_table[] = { 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 100, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0 };
+		static const unsigned char jump_table[] = { 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 101, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0 };
 		cs = jump_table[(*p)] + 1111;
 		goto _again;
 	}
-tr393:
+tr394:
 	{
     SET_OPERAND_NAME(0, (((*p) & 0x38) >> 3) |
                            ((GET_REX_PREFIX() & 0x04) << 1) |
@@ -14018,7 +13964,7 @@ st190:
 		goto _test_eof190;
 case 190:
 	{
-		static const unsigned char jump_table[] = { 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 101, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0 };
+		static const unsigned char jump_table[] = { 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 102, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0 };
 		cs = jump_table[(*p)] + 1111;
 		goto _again;
 	}
@@ -14027,7 +13973,7 @@ st191:
 		goto _test_eof191;
 case 191:
 	{
-		static const unsigned short jump_table[] = { 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 858, 858, 858, 858, 858, 858, 858, 858, 948, 948, 948, 948, 54, 858, 948, 948, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 858, 858, 858, 858, 858, 858, 858, 858, 951, 951, 951, 951, 60, 951, 951, 951, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 858, 858, 858, 858, 858, 858, 858, 858, 953, 953, 953, 953, 61, 953, 953, 953, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 858, 858, 858, 858, 858, 858, 858, 858, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169 };
+		static const unsigned short jump_table[] = { 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 858, 858, 858, 858, 858, 858, 858, 858, 948, 948, 948, 948, 54, 858, 948, 948, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 858, 858, 858, 858, 858, 858, 858, 858, 951, 951, 951, 951, 60, 951, 951, 951, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 858, 858, 858, 858, 858, 858, 858, 858, 953, 953, 953, 953, 61, 953, 953, 953, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 858, 858, 858, 858, 858, 858, 858, 858, 1170, 1170, 1170, 1170, 1170, 1170, 1170, 1170 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -14049,7 +13995,7 @@ case 192:
 	} else if ( (*p) > 71u ) {
 		if ( (*p) > 135u ) {
 			if ( 192u <= (*p) && (*p) <= 199u )
-				goto tr362;
+				goto tr363;
 		} else if ( (*p) >= 128u )
 			goto tr267;
 	} else
@@ -14060,7 +14006,7 @@ st193:
 		goto _test_eof193;
 case 193:
 	{
-		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 858, 858, 858, 858, 858, 858, 858, 858, 816, 816, 816, 816, 2, 858, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 858, 858, 858, 858, 858, 858, 858, 858, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120 };
+		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 858, 858, 858, 858, 858, 858, 858, 858, 816, 816, 816, 816, 2, 858, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 858, 858, 858, 858, 858, 858, 858, 858, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -14069,7 +14015,7 @@ st194:
 		goto _test_eof194;
 case 194:
 	{
-		static const unsigned short jump_table[] = { 1079, 1079, 1079, 1079, 113, 858, 1079, 1079, 858, 858, 858, 858, 858, 858, 858, 858, 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 1178, 858, 858, 858, 858, 858, 858, 858, 858, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120 };
+		static const unsigned short jump_table[] = { 1079, 1079, 1079, 1079, 113, 858, 1079, 1079, 858, 858, 858, 858, 858, 858, 858, 858, 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 1179, 858, 858, 858, 858, 858, 858, 858, 858, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169, 1169 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -14097,13 +14043,13 @@ case 195:
 				goto tr3;
 		} else if ( (*p) > 143u ) {
 			if ( 192u <= (*p) && (*p) <= 207u )
-				goto tr304;
+				goto tr353;
 		} else
 			goto tr5;
 	} else
 		goto tr0;
 	goto tr42;
-tr1274:
+tr1268:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -14121,11 +14067,11 @@ st196:
 		goto _test_eof196;
 case 196:
 	{
-		static const unsigned short jump_table[] = { 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 182, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1140, 858, 858, 858, 858, 858, 1143, 858, 1144, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 185, 858, 186, 858, 1139, 858, 1147, 858, 1139, 858, 1140, 858, 1213, 858, 858, 858, 1150, 1150, 1150, 1150, 1150, 1150, 1150, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 858, 191, 858, 858, 858, 858, 858, 192, 858, 858, 858, 858, 858, 858, 858, 858, 858, 193, 858, 193, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 194, 858, 858, 858, 858, 858, 858, 858, 195 };
+		static const unsigned short jump_table[] = { 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 182, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1140, 858, 858, 858, 858, 858, 1143, 858, 1144, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 185, 858, 186, 858, 1139, 858, 1147, 858, 1139, 858, 1140, 858, 1214, 858, 858, 858, 1150, 1150, 1150, 1150, 1150, 1150, 1150, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 858, 191, 858, 858, 858, 858, 858, 192, 858, 858, 858, 858, 858, 858, 858, 858, 858, 193, 858, 193, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 194, 858, 858, 858, 858, 858, 858, 858, 195 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr397:
+tr398:
 	{
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
@@ -14135,11 +14081,11 @@ st197:
 		goto _test_eof197;
 case 197:
 	{
-		static const unsigned short jump_table[] = { 1104, 1104, 1104, 1104, 1105, 1106, 1104, 1104, 1104, 1104, 1104, 1104, 1105, 1106, 1104, 1104, 1104, 1104, 1104, 1104, 1105, 1106, 1104, 1104, 1104, 1104, 1104, 1104, 1105, 1106, 1104, 1104, 1104, 1104, 1104, 1104, 1214, 1106, 1104, 1104, 1104, 1104, 1104, 1104, 1105, 1106, 1104, 1104, 1104, 1104, 1104, 1104, 1105, 1106, 1104, 1104, 1104, 1104, 1104, 1104, 1105, 1106, 1104, 1104, 1107, 1107, 1107, 1107, 1108, 1107, 1107, 1107, 1107, 1107, 1107, 1107, 1108, 1107, 1107, 1107, 1107, 1107, 1107, 1107, 1108, 1107, 1107, 1107, 1107, 1107, 1107, 1107, 1108, 1107, 1107, 1107, 1107, 1107, 1107, 1107, 1108, 1107, 1107, 1107, 1107, 1107, 1107, 1107, 1215, 1107, 1107, 1107, 1107, 1107, 1107, 1107, 1108, 1107, 1107, 1107, 1107, 1107, 1107, 1107, 1108, 1107, 1107, 1107, 1109, 1109, 1109, 1109, 1110, 1109, 1109, 1109, 1109, 1109, 1109, 1109, 1110, 1109, 1109, 1109, 1109, 1109, 1109, 1109, 1110, 1109, 1109, 1109, 1109, 1109, 1109, 1109, 1110, 1109, 1109, 1109, 1109, 1109, 1109, 1109, 1110, 1109, 1109, 1109, 1109, 1109, 1109, 1109, 1110, 1109, 1109, 1109, 1109, 1109, 1109, 1109, 1110, 1109, 1109, 1109, 1109, 1109, 1109, 1109, 1110, 1109, 1109, 1109, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858 };
+		static const unsigned short jump_table[] = { 1104, 1104, 1104, 1104, 1105, 1106, 1104, 1104, 1104, 1104, 1104, 1104, 1105, 1106, 1104, 1104, 1104, 1104, 1104, 1104, 1105, 1106, 1104, 1104, 1104, 1104, 1104, 1104, 1105, 1106, 1104, 1104, 1104, 1104, 1104, 1104, 1215, 1106, 1104, 1104, 1104, 1104, 1104, 1104, 1105, 1106, 1104, 1104, 1104, 1104, 1104, 1104, 1105, 1106, 1104, 1104, 1104, 1104, 1104, 1104, 1105, 1106, 1104, 1104, 1107, 1107, 1107, 1107, 1108, 1107, 1107, 1107, 1107, 1107, 1107, 1107, 1108, 1107, 1107, 1107, 1107, 1107, 1107, 1107, 1108, 1107, 1107, 1107, 1107, 1107, 1107, 1107, 1108, 1107, 1107, 1107, 1107, 1107, 1107, 1107, 1108, 1107, 1107, 1107, 1107, 1107, 1107, 1107, 1216, 1107, 1107, 1107, 1107, 1107, 1107, 1107, 1108, 1107, 1107, 1107, 1107, 1107, 1107, 1107, 1108, 1107, 1107, 1107, 1109, 1109, 1109, 1109, 1110, 1109, 1109, 1109, 1109, 1109, 1109, 1109, 1110, 1109, 1109, 1109, 1109, 1109, 1109, 1109, 1110, 1109, 1109, 1109, 1109, 1109, 1109, 1109, 1110, 1109, 1109, 1109, 1109, 1109, 1109, 1109, 1110, 1109, 1109, 1109, 1109, 1109, 1109, 1109, 1110, 1109, 1109, 1109, 1109, 1109, 1109, 1109, 1110, 1109, 1109, 1109, 1109, 1109, 1109, 1109, 1110, 1109, 1109, 1109, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr398:
+tr399:
 	{
     SET_OPERAND_NAME(0, (((*p) & 0x38) >> 3) |
                            ((GET_REX_PREFIX() & 0x04) << 1) |
@@ -14151,11 +14097,11 @@ st198:
 		goto _test_eof198;
 case 198:
 	{
-		static const unsigned char jump_table[] = { 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 105, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0 };
+		static const unsigned char jump_table[] = { 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 106, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0 };
 		cs = jump_table[(*p)] + 1111;
 		goto _again;
 	}
-tr399:
+tr400:
 	{
     SET_OPERAND_NAME(0, (((*p) & 0x38) >> 3) |
                            ((GET_REX_PREFIX() & 0x04) << 1) |
@@ -14174,9 +14120,9 @@ st200:
 		goto _test_eof200;
 case 200:
 	if ( (*p) == 0u )
-		goto tr394;
+		goto tr395;
 	goto tr42;
-tr1275:
+tr1269:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -14198,7 +14144,7 @@ case 201:
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1276:
+tr1270:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -14216,11 +14162,11 @@ st202:
 		goto _test_eof202;
 case 202:
 	{
-		static const unsigned short jump_table[] = { 858, 1218, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 182, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1140, 858, 858, 858, 858, 858, 1143, 858, 1144, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 185, 858, 186, 858, 1139, 858, 1147, 858, 1139, 858, 1140, 858, 1149, 858, 858, 858, 1150, 1150, 1150, 1150, 1150, 1150, 1150, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 858, 191, 858, 858, 858, 858, 858, 192, 858, 858, 858, 858, 858, 858, 858, 858, 858, 193, 858, 193, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 194, 858, 858, 858, 858, 858, 858, 858, 195 };
+		static const unsigned short jump_table[] = { 858, 1219, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 182, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1140, 858, 858, 858, 858, 858, 1143, 858, 1144, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 185, 858, 186, 858, 1139, 858, 1147, 858, 1139, 858, 1140, 858, 1149, 858, 858, 858, 1150, 1150, 1150, 1150, 1150, 1150, 1150, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 858, 191, 858, 858, 858, 858, 858, 192, 858, 858, 858, 858, 858, 858, 858, 858, 858, 193, 858, 193, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 194, 858, 858, 858, 858, 858, 858, 858, 195 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr402:
+tr403:
 	{
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
@@ -14230,11 +14176,11 @@ st203:
 		goto _test_eof203;
 case 203:
 	{
-		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 1216, 1210, 823, 823 };
+		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 1217, 1211, 823, 823 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1324:
+tr1318:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -14252,11 +14198,11 @@ st204:
 		goto _test_eof204;
 case 204:
 	{
-		static const unsigned short jump_table[] = { 858, 1219, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 182, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1140, 858, 858, 858, 858, 858, 1143, 858, 1144, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 185, 858, 186, 858, 1139, 858, 1147, 858, 1139, 858, 1140, 858, 1149, 858, 858, 858, 1150, 1150, 1150, 1150, 1150, 1150, 1150, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 858, 191, 858, 858, 858, 858, 858, 192, 858, 858, 858, 858, 858, 858, 858, 858, 858, 193, 858, 193, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 194, 858, 858, 858, 858, 858, 858, 858, 195 };
+		static const unsigned short jump_table[] = { 858, 1220, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 182, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1140, 858, 858, 858, 858, 858, 1143, 858, 1144, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 185, 858, 186, 858, 1139, 858, 1147, 858, 1139, 858, 1140, 858, 1149, 858, 858, 858, 1150, 1150, 1150, 1150, 1150, 1150, 1150, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 858, 191, 858, 858, 858, 858, 858, 192, 858, 858, 858, 858, 858, 858, 858, 858, 858, 193, 858, 193, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 194, 858, 858, 858, 858, 858, 858, 858, 195 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr403:
+tr404:
 	{
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
@@ -14266,11 +14212,11 @@ st205:
 		goto _test_eof205;
 case 205:
 	{
-		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 1220, 823, 823, 823, 823, 823, 823, 823 };
+		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 1221, 823, 823, 823, 823, 823, 823, 823 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr404:
+tr405:
 	{
     SET_OPERAND_NAME(0, ((*p) & 0x07) |
                            ((GET_REX_PREFIX() & 0x01) << 3) |
@@ -14340,11 +14286,11 @@ st787:
 		goto _test_eof787;
 case 787:
 	{
-		static const unsigned short jump_table[] = { 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 2080, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 2081, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2082, 2082, 2082, 2082, 2083, 2084, 2085, 858, 2086, 2141, 2086, 2086, 2086, 2086, 2086, 2086, 2088, 2089, 2090, 2091, 2092, 2091, 2091, 2091, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 858, 858, 858, 2077, 858, 858, 2095, 858, 2084, 2096, 2083, 2097, 858, 858, 858, 858, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2099, 2100, 858, 2101, 2074, 2075, 2102, 2103, 2074, 2075, 2076, 2077, 858, 2104, 858, 2105, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2106, 2106, 858, 2108, 858, 858, 858, 858, 858, 858, 858, 858, 2109, 2109, 2109, 2109, 2078, 2079, 2110, 2110, 2111, 2111, 2110, 2110, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2114, 2115, 858, 858, 2116, 2117, 2118, 2119, 2120, 858, 2121, 2106, 858, 858, 858, 858, 2122, 2123, 2122, 2123, 858, 858, 858, 858, 2124, 2125, 2126, 2127, 2128, 2129, 2130, 2131, 858, 858, 858, 858, 858, 858, 858, 858, 2132, 2132, 858, 2098, 858, 858, 858, 858, 2133, 858, 2134, 2135, 2106, 2106, 2136, 2137, 2106, 2106, 858, 858, 2106, 2106, 2138, 2139 };
+		static const unsigned short jump_table[] = { 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 2074, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 2075, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2076, 2076, 2076, 2076, 2077, 2078, 2079, 858, 2080, 2135, 2080, 2080, 2080, 2080, 2080, 2080, 2082, 2083, 2084, 2085, 2086, 2085, 2085, 2085, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 858, 858, 858, 2071, 858, 858, 2089, 858, 2078, 2090, 2077, 2091, 858, 858, 858, 858, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2093, 2094, 858, 2095, 2068, 2069, 2096, 2097, 2068, 2069, 2070, 2071, 858, 2098, 858, 2099, 2100, 2101, 2101, 2101, 2101, 2101, 2101, 2101, 2100, 2100, 858, 2102, 858, 858, 858, 858, 858, 858, 858, 858, 2103, 2103, 2103, 2103, 2072, 2073, 2104, 2104, 2105, 2105, 2104, 2104, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2108, 2109, 858, 858, 2110, 2111, 2112, 2113, 2114, 858, 2115, 2100, 858, 858, 858, 858, 2116, 2117, 2116, 2117, 858, 858, 858, 858, 2118, 2119, 2120, 2121, 2122, 2123, 2124, 2125, 858, 858, 858, 858, 858, 858, 858, 858, 2126, 2126, 858, 2092, 858, 858, 858, 858, 2127, 858, 2128, 2129, 2100, 2100, 2130, 2131, 2100, 2100, 858, 858, 2100, 2100, 2132, 2133 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1325:
+tr1319:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -14371,11 +14317,11 @@ st207:
 		goto _test_eof207;
 case 207:
 	{
-		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 816, 816, 816, 816, 2, 858, 816, 816, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 858, 858, 858, 858, 858, 858, 858, 858, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 1222, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1222, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 859, 859, 859, 859, 859, 859, 859, 859, 858, 858, 858, 858, 858, 858, 858, 858 };
+		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 816, 816, 816, 816, 2, 858, 816, 816, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 858, 858, 858, 858, 858, 858, 858, 858, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 1223, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1223, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 859, 859, 859, 859, 859, 859, 859, 859, 858, 858, 858, 858, 858, 858, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1279:
+tr1273:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -14393,18 +14339,18 @@ st208:
 		goto _test_eof208;
 case 208:
 	{
-		static const unsigned short jump_table[] = { 858, 1223, 858, 1224, 858, 1225, 858, 858, 858, 1223, 858, 1224, 858, 1225, 858, 211, 858, 1223, 858, 1224, 858, 1225, 858, 858, 858, 1223, 858, 1224, 858, 1225, 858, 858, 858, 1223, 858, 1224, 858, 1225, 858, 858, 858, 1223, 858, 1224, 858, 1225, 222, 858, 858, 1223, 858, 1224, 858, 1225, 858, 858, 858, 46, 858, 46, 858, 230, 858, 858, 1229, 1229, 1229, 1229, 1229, 1229, 1229, 1229, 1230, 1230, 1230, 1230, 1230, 1230, 1230, 1230, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1224, 858, 858, 265, 858, 230, 1232, 858, 1233, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 270, 858, 271, 858, 1223, 858, 1236, 858, 1223, 858, 1224, 858, 1237, 858, 272, 1239, 1239, 1239, 1239, 1239, 1239, 1239, 1239, 859, 859, 858, 858, 859, 859, 858, 858, 858, 858, 858, 858, 858, 1151, 858, 1151, 858, 1225, 858, 1152, 858, 1153, 858, 1152, 858, 858, 858, 858, 858, 858, 858, 858, 1240, 1240, 1240, 1240, 1240, 1240, 1240, 1240, 858, 273, 858, 858, 858, 858, 858, 274, 858, 858, 858, 858, 858, 858, 858, 858, 858, 275, 858, 275, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1244, 858, 1245, 1246, 858, 858, 858, 298, 858, 858, 858, 858, 858, 858, 858, 299 };
+		static const unsigned short jump_table[] = { 858, 1224, 858, 1225, 858, 1226, 858, 858, 858, 1224, 858, 1225, 858, 1226, 858, 211, 858, 1224, 858, 1225, 858, 1226, 858, 858, 858, 1224, 858, 1225, 858, 1226, 858, 858, 858, 1224, 858, 1225, 858, 1226, 858, 858, 858, 1224, 858, 1225, 858, 1226, 222, 858, 858, 1224, 858, 1225, 858, 1226, 858, 858, 858, 46, 858, 46, 858, 230, 858, 858, 1230, 1230, 1230, 1230, 1230, 1230, 1230, 1230, 1231, 1231, 1231, 1231, 1231, 1231, 1231, 1231, 1007, 1007, 1007, 1007, 1007, 1007, 1007, 1007, 1232, 1232, 1232, 1232, 1232, 1232, 1232, 1232, 858, 858, 858, 1225, 858, 858, 265, 858, 230, 1234, 858, 1235, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 270, 858, 271, 858, 1224, 858, 1238, 858, 1224, 858, 1225, 858, 1239, 858, 272, 1241, 1241, 1241, 1241, 1241, 1241, 1241, 1241, 859, 859, 858, 858, 859, 859, 858, 858, 858, 858, 858, 858, 858, 1151, 858, 1151, 858, 1226, 858, 1152, 858, 1153, 858, 1152, 858, 858, 858, 858, 858, 858, 858, 858, 1242, 1242, 1242, 1242, 1242, 1242, 1242, 1242, 858, 273, 858, 858, 858, 858, 858, 274, 858, 858, 858, 858, 858, 858, 858, 858, 858, 275, 858, 275, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1246, 858, 1247, 1248, 858, 858, 858, 298, 858, 858, 858, 858, 858, 858, 858, 299 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr514:
+tr516:
 	{
     SET_OPERAND_NAME(0, (((*p) & 0x38) >> 3) |
                            ((GET_REX_PREFIX() & 0x04) << 1) |
                            (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
   }
 	goto st209;
-tr515:
+tr517:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(((*p) & 0x7) |
@@ -14447,7 +14393,7 @@ tr515:
     }
   }
 	goto st209;
-tr520:
+tr522:
 	{
     SET_DISP_TYPE(DISP32);
     SET_DISP_PTR(p - 3);
@@ -14484,7 +14430,7 @@ tr520:
     }
   }
 	goto st209;
-tr521:
+tr523:
 	{
     SET_DISP_TYPE(DISP8);
     SET_DISP_PTR(p);
@@ -14521,7 +14467,7 @@ tr521:
     }
   }
 	goto st209;
-tr507:
+tr509:
 	{
     SET_OPERAND_NAME(0, (((*p) & 0x38) >> 3) |
                            ((GET_REX_PREFIX() & 0x04) << 1) |
@@ -14567,7 +14513,7 @@ tr507:
     }
   }
 	goto st209;
-tr409:
+tr410:
 	{
     SET_OPERAND_TYPE(0, OperandSize16bit);
   }
@@ -14575,7 +14521,7 @@ tr409:
     SET_OPERAND_NAME(0, REG_RAX);
   }
 	goto st209;
-tr424:
+tr426:
 	{
     SET_OPERAND_NAME(0, ((*p) & 0x7) |
                             ((GET_REX_PREFIX() & 0x01) << 3) |
@@ -14585,7 +14531,7 @@ tr424:
     SET_OPERAND_TYPE(0, OperandSize16bit);
   }
 	goto st209;
-tr530:
+tr532:
 	{
     SET_OPERAND_TYPE(0, OperandSize16bit);
   }
@@ -14604,13 +14550,13 @@ st210:
 	if ( ++p == pe )
 		goto _test_eof210;
 case 210:
-	goto tr434;
+	goto tr436;
 st211:
 	if ( ++p == pe )
 		goto _test_eof211;
 case 211:
 	{
-		static const unsigned short jump_table[] = { 212, 213, 1224, 1224, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1253, 1253, 1254, 1254, 1253, 1253, 1254, 1254, 858, 858, 858, 858, 858, 858, 858, 50, 858, 858, 858, 858, 858, 858, 858, 858, 1253, 1253, 1253, 1254, 1253, 1253, 1253, 1253, 858, 858, 858, 858, 858, 858, 858, 858, 214, 858, 215, 858, 858, 858, 858, 858, 1257, 1257, 1257, 1257, 1257, 1257, 1257, 1257, 1257, 1257, 1257, 1257, 1257, 1257, 1257, 1257, 1258, 1253, 858, 858, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1259, 218, 218, 219, 1253, 1253, 1253, 858, 858, 1262, 858, 858, 1263, 1263, 1264, 1253, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1265, 1223, 858, 858, 858, 858, 858, 858, 1265, 1223, 858, 1224, 858, 1223, 1266, 858, 1266, 1266, 1224, 858, 858, 858, 220, 858, 1224, 1224, 1224, 858, 858, 1223, 1259, 858, 221, 1269, 1259, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1258, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1254, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 858, 1253, 1253, 1253, 1253, 1253, 1253, 1270, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 858 };
+		static const unsigned short jump_table[] = { 212, 213, 1225, 1225, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1255, 1255, 1256, 1256, 1255, 1255, 1256, 1256, 858, 858, 858, 858, 858, 858, 858, 50, 858, 858, 858, 858, 858, 858, 858, 858, 1255, 1255, 1255, 1256, 1255, 1255, 1255, 1255, 858, 858, 858, 858, 858, 858, 858, 858, 214, 858, 215, 858, 858, 858, 858, 858, 1259, 1259, 1259, 1259, 1259, 1259, 1259, 1259, 1259, 1259, 1259, 1259, 1259, 1259, 1259, 1259, 1260, 1255, 858, 858, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1261, 218, 218, 219, 1255, 1255, 1255, 858, 858, 1264, 858, 858, 1265, 1265, 1266, 1255, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1267, 1224, 858, 858, 858, 858, 858, 858, 1267, 1224, 858, 1225, 858, 1224, 1268, 858, 1268, 1268, 1225, 858, 858, 858, 220, 858, 1225, 1225, 1225, 858, 858, 1224, 1261, 858, 221, 1271, 1261, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1260, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1256, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 858, 1255, 1255, 1255, 1255, 1255, 1255, 1272, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -14633,60 +14579,60 @@ st214:
 		goto _test_eof214;
 case 214:
 	switch( (*p) ) {
-		case 16u: goto tr456;
-		case 23u: goto tr456;
-		case 42u: goto tr457;
-		case 55u: goto tr458;
+		case 16u: goto tr458;
+		case 23u: goto tr458;
+		case 42u: goto tr459;
+		case 55u: goto tr460;
 	}
 	if ( (*p) < 32u ) {
 		if ( (*p) < 20u ) {
 			if ( (*p) <= 11u )
-				goto tr455;
+				goto tr457;
 		} else if ( (*p) > 21u ) {
 			if ( 28u <= (*p) && (*p) <= 30u )
-				goto tr455;
+				goto tr457;
 		} else
-			goto tr456;
+			goto tr458;
 	} else if ( (*p) > 37u ) {
 		if ( (*p) < 48u ) {
 			if ( 40u <= (*p) && (*p) <= 43u )
-				goto tr456;
+				goto tr458;
 		} else if ( (*p) > 53u ) {
 			if ( (*p) > 65u ) {
 				if ( 219u <= (*p) && (*p) <= 223u )
-					goto tr459;
+					goto tr461;
 			} else if ( (*p) >= 56u )
-				goto tr456;
+				goto tr458;
 		} else
-			goto tr456;
+			goto tr458;
 	} else
-		goto tr456;
+		goto tr458;
 	goto tr42;
 st215:
 	if ( ++p == pe )
 		goto _test_eof215;
 case 215:
 	switch( (*p) ) {
-		case 15u: goto tr461;
-		case 23u: goto tr463;
+		case 15u: goto tr463;
+		case 23u: goto tr465;
 		case 32u: goto st217;
-		case 68u: goto tr465;
-		case 223u: goto tr467;
+		case 68u: goto tr467;
+		case 223u: goto tr469;
 	}
 	if ( (*p) < 33u ) {
 		if ( (*p) > 14u ) {
 			if ( 20u <= (*p) && (*p) <= 22u )
 				goto st216;
 		} else if ( (*p) >= 8u )
-			goto tr460;
+			goto tr462;
 	} else if ( (*p) > 34u ) {
 		if ( (*p) > 66u ) {
 			if ( 96u <= (*p) && (*p) <= 99u )
-				goto tr466;
+				goto tr468;
 		} else if ( (*p) >= 64u )
-			goto tr460;
+			goto tr462;
 	} else
-		goto tr460;
+		goto tr462;
 	goto tr42;
 st216:
 	if ( ++p == pe )
@@ -14694,7 +14640,7 @@ st216:
 case 216:
 	{
 		static const unsigned char jump_table[] = { 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7 };
-		cs = jump_table[(*p)] + 1284;
+		cs = jump_table[(*p)] + 1286;
 		goto _again;
 	}
 st217:
@@ -14703,7 +14649,7 @@ st217:
 case 217:
 	{
 		static const unsigned char jump_table[] = { 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8 };
-		cs = jump_table[(*p)] + 1284;
+		cs = jump_table[(*p)] + 1286;
 		goto _again;
 	}
 st218:
@@ -14712,12 +14658,12 @@ st218:
 case 218:
 	if ( (*p) < 224u ) {
 		if ( 208u <= (*p) && (*p) <= 215u )
-			goto tr477;
+			goto tr479;
 	} else if ( (*p) > 231u ) {
 		if ( 240u <= (*p) && (*p) <= 247u )
-			goto tr477;
+			goto tr479;
 	} else
-		goto tr477;
+		goto tr479;
 	goto tr42;
 st219:
 	if ( ++p == pe )
@@ -14725,9 +14671,9 @@ st219:
 case 219:
 	if ( (*p) > 223u ) {
 		if ( 240u <= (*p) )
-			goto tr477;
+			goto tr479;
 	} else if ( (*p) >= 208u )
-		goto tr477;
+		goto tr479;
 	goto tr42;
 st220:
 	if ( ++p == pe )
@@ -14757,7 +14703,7 @@ case 220:
 	} else if ( (*p) > 127u ) {
 		if ( (*p) > 191u ) {
 			if ( 224u <= (*p) )
-				goto tr478;
+				goto tr480;
 		} else if ( (*p) >= 160u )
 			goto tr137;
 	} else
@@ -14769,7 +14715,7 @@ st221:
 case 221:
 	{
 		static const unsigned char jump_table[] = { 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7 };
-		cs = jump_table[(*p)] + 1295;
+		cs = jump_table[(*p)] + 1297;
 		goto _again;
 	}
 st222:
@@ -14826,9 +14772,9 @@ st229:
 		goto _test_eof229;
 case 229:
 	if ( (*p) == 0u )
-		goto tr494;
+		goto tr496;
 	goto tr42;
-tr524:
+tr526:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(((*p) & 0x07) |
@@ -14869,7 +14815,7 @@ tr524:
     }
   }
 	goto st230;
-tr531:
+tr533:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(((*p) & 0x7) |
@@ -14912,7 +14858,7 @@ tr531:
     }
   }
 	goto st230;
-tr536:
+tr538:
 	{
     SET_DISP_TYPE(DISP32);
     SET_DISP_PTR(p - 3);
@@ -14949,7 +14895,7 @@ tr536:
     }
   }
 	goto st230;
-tr537:
+tr539:
 	{
     SET_DISP_TYPE(DISP8);
     SET_DISP_PTR(p);
@@ -14986,7 +14932,7 @@ tr537:
     }
   }
 	goto st230;
-tr1305:
+tr1299:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -15005,8 +14951,8 @@ st231:
 	if ( ++p == pe )
 		goto _test_eof231;
 case 231:
-	goto tr496;
-tr413:
+	goto tr498;
+tr414:
 	{
     SET_REX_PREFIX(*p);
   }
@@ -15016,7 +14962,7 @@ st232:
 		goto _test_eof232;
 case 232:
 	{
-		static const unsigned short jump_table[] = { 858, 1223, 858, 1224, 858, 858, 858, 858, 858, 1223, 858, 1224, 858, 858, 858, 233, 858, 1223, 858, 1224, 858, 858, 858, 858, 858, 1223, 858, 1224, 858, 858, 858, 858, 858, 1223, 858, 1224, 858, 858, 858, 858, 858, 1223, 858, 1224, 858, 858, 858, 858, 858, 1223, 858, 1224, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1224, 858, 858, 858, 858, 858, 1232, 858, 1233, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 244, 858, 253, 858, 1223, 858, 1236, 858, 1223, 858, 1224, 858, 1237, 858, 254, 1239, 1239, 1239, 1239, 1239, 1239, 1239, 1239, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1240, 1240, 1240, 1240, 1240, 1240, 1240, 1240, 858, 255, 858, 858, 858, 858, 858, 256, 858, 858, 858, 858, 858, 858, 858, 858, 858, 257, 858, 257, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 258, 858, 858, 858, 858, 858, 858, 858, 259 };
+		static const unsigned short jump_table[] = { 858, 1224, 858, 1225, 858, 858, 858, 858, 858, 1224, 858, 1225, 858, 858, 858, 233, 858, 1224, 858, 1225, 858, 858, 858, 858, 858, 1224, 858, 1225, 858, 858, 858, 858, 858, 1224, 858, 1225, 858, 858, 858, 858, 858, 1224, 858, 1225, 858, 858, 858, 858, 858, 1224, 858, 1225, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1007, 1007, 1007, 1007, 1007, 1007, 1007, 1007, 1232, 1232, 1232, 1232, 1232, 1232, 1232, 1232, 858, 858, 858, 1225, 858, 858, 858, 858, 858, 1234, 858, 1235, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 244, 858, 253, 858, 1224, 858, 1238, 858, 1224, 858, 1225, 858, 1239, 858, 254, 1241, 1241, 1241, 1241, 1241, 1241, 1241, 1241, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1242, 1242, 1242, 1242, 1242, 1242, 1242, 1242, 858, 255, 858, 858, 858, 858, 858, 256, 858, 858, 858, 858, 858, 858, 858, 858, 858, 257, 858, 257, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 258, 858, 858, 858, 858, 858, 858, 858, 259 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -15025,7 +14971,7 @@ st233:
 		goto _test_eof233;
 case 233:
 	{
-		static const unsigned short jump_table[] = { 212, 213, 1224, 1224, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1253, 1253, 1254, 1254, 1253, 1253, 1254, 1254, 858, 858, 858, 858, 858, 858, 858, 88, 858, 858, 858, 858, 858, 858, 858, 858, 1253, 1253, 1253, 1254, 1253, 1253, 1253, 1253, 858, 858, 858, 858, 858, 858, 858, 858, 214, 858, 215, 858, 858, 858, 858, 858, 1257, 1257, 1257, 1257, 1257, 1257, 1257, 1257, 1257, 1257, 1257, 1257, 1257, 1257, 1257, 1257, 1258, 1253, 858, 858, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1259, 218, 218, 219, 1253, 1253, 1253, 858, 858, 1262, 858, 858, 1263, 1263, 1264, 1253, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1265, 1223, 858, 858, 858, 858, 858, 858, 1265, 1223, 858, 1224, 858, 1223, 1266, 858, 1266, 1266, 1224, 858, 858, 858, 234, 858, 1224, 1224, 1224, 858, 858, 1223, 1259, 858, 221, 1269, 1259, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1258, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1254, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 858, 1253, 1253, 1253, 1253, 1253, 1253, 1270, 1253, 1253, 1253, 1253, 1253, 1253, 1253, 858 };
+		static const unsigned short jump_table[] = { 212, 213, 1225, 1225, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1255, 1255, 1256, 1256, 1255, 1255, 1256, 1256, 858, 858, 858, 858, 858, 858, 858, 88, 858, 858, 858, 858, 858, 858, 858, 858, 1255, 1255, 1255, 1256, 1255, 1255, 1255, 1255, 858, 858, 858, 858, 858, 858, 858, 858, 214, 858, 215, 858, 858, 858, 858, 858, 1259, 1259, 1259, 1259, 1259, 1259, 1259, 1259, 1259, 1259, 1259, 1259, 1259, 1259, 1259, 1259, 1260, 1255, 858, 858, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1261, 218, 218, 219, 1255, 1255, 1255, 858, 858, 1264, 858, 858, 1265, 1265, 1266, 1255, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1267, 1224, 858, 858, 858, 858, 858, 858, 1267, 1224, 858, 1225, 858, 1224, 1268, 858, 1268, 1268, 1225, 858, 858, 858, 234, 858, 1225, 1225, 1225, 858, 858, 1224, 1261, 858, 221, 1271, 1261, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1260, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1256, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 858, 1255, 1255, 1255, 1255, 1255, 1255, 1272, 1255, 1255, 1255, 1255, 1255, 1255, 1255, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -15063,7 +15009,7 @@ case 234:
 		} else if ( (*p) > 127u ) {
 			if ( (*p) > 191u ) {
 				if ( 224u <= (*p) )
-					goto tr478;
+					goto tr480;
 			} else if ( (*p) >= 160u )
 				goto tr137;
 		} else
@@ -15071,7 +15017,7 @@ case 234:
 	} else
 		goto tr132;
 	goto tr42;
-tr416:
+tr418:
 	{
     SET_OPERAND_TYPE(0, OperandSize16bit);
   }
@@ -15082,10 +15028,10 @@ st235:
 case 235:
 	{
 		static const unsigned char jump_table[] = { 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 3, 3, 3, 3, 4, 3, 3, 3, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 6, 5, 5, 5, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7 };
-		cs = jump_table[(*p)] + 1323;
+		cs = jump_table[(*p)] + 1325;
 		goto _again;
 	}
-tr508:
+tr510:
 	{
     SET_OPERAND_NAME(0, (((*p) & 0x38) >> 3) |
                            ((GET_REX_PREFIX() & 0x04) << 1) |
@@ -15097,41 +15043,41 @@ st236:
 		goto _test_eof236;
 case 236:
 	switch( (*p) ) {
-		case 5u: goto tr516;
-		case 13u: goto tr516;
-		case 21u: goto tr516;
-		case 29u: goto tr516;
-		case 37u: goto tr516;
-		case 45u: goto tr516;
-		case 53u: goto tr516;
-		case 61u: goto tr516;
-		case 69u: goto tr516;
-		case 77u: goto tr516;
-		case 85u: goto tr516;
-		case 93u: goto tr516;
-		case 101u: goto tr516;
-		case 109u: goto tr516;
-		case 117u: goto tr516;
-		case 125u: goto tr516;
-		case 133u: goto tr516;
-		case 141u: goto tr516;
-		case 149u: goto tr516;
-		case 157u: goto tr516;
-		case 165u: goto tr516;
-		case 173u: goto tr516;
-		case 181u: goto tr516;
-		case 189u: goto tr516;
-		case 197u: goto tr516;
-		case 205u: goto tr516;
-		case 213u: goto tr516;
-		case 221u: goto tr516;
-		case 229u: goto tr516;
-		case 237u: goto tr516;
-		case 245u: goto tr516;
-		case 253u: goto tr516;
+		case 5u: goto tr518;
+		case 13u: goto tr518;
+		case 21u: goto tr518;
+		case 29u: goto tr518;
+		case 37u: goto tr518;
+		case 45u: goto tr518;
+		case 53u: goto tr518;
+		case 61u: goto tr518;
+		case 69u: goto tr518;
+		case 77u: goto tr518;
+		case 85u: goto tr518;
+		case 93u: goto tr518;
+		case 101u: goto tr518;
+		case 109u: goto tr518;
+		case 117u: goto tr518;
+		case 125u: goto tr518;
+		case 133u: goto tr518;
+		case 141u: goto tr518;
+		case 149u: goto tr518;
+		case 157u: goto tr518;
+		case 165u: goto tr518;
+		case 173u: goto tr518;
+		case 181u: goto tr518;
+		case 189u: goto tr518;
+		case 197u: goto tr518;
+		case 205u: goto tr518;
+		case 213u: goto tr518;
+		case 221u: goto tr518;
+		case 229u: goto tr518;
+		case 237u: goto tr518;
+		case 245u: goto tr518;
+		case 253u: goto tr518;
 	}
-	goto tr515;
-tr516:
+	goto tr517;
+tr518:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(NO_REG);
@@ -15141,7 +15087,7 @@ tr516:
     SET_MODRM_SCALE(((*p) & 0xc0) >> 6);
   }
 	goto st237;
-tr523:
+tr525:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(((*p) & 0x7) |
@@ -15153,7 +15099,7 @@ tr523:
     SET_MODRM_SCALE(((*p) & 0xc0) >> 6);
   }
 	goto st237;
-tr509:
+tr511:
 	{
     SET_OPERAND_NAME(0, (((*p) & 0x38) >> 3) |
                            ((GET_REX_PREFIX() & 0x04) << 1) |
@@ -15165,7 +15111,7 @@ tr509:
     SET_MODRM_SCALE(0);
   }
 	goto st237;
-tr512:
+tr514:
 	{
     SET_OPERAND_NAME(0, (((*p) & 0x38) >> 3) |
                            ((GET_REX_PREFIX() & 0x04) << 1) |
@@ -15198,8 +15144,8 @@ st240:
 	if ( ++p == pe )
 		goto _test_eof240;
 case 240:
-	goto tr520;
-tr522:
+	goto tr522;
+tr524:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(((*p) & 0x7) |
@@ -15211,7 +15157,7 @@ tr522:
     SET_MODRM_SCALE(((*p) & 0xc0) >> 6);
   }
 	goto st241;
-tr510:
+tr512:
 	{
     SET_OPERAND_NAME(0, (((*p) & 0x38) >> 3) |
                            ((GET_REX_PREFIX() & 0x04) << 1) |
@@ -15229,8 +15175,8 @@ st241:
 	if ( ++p == pe )
 		goto _test_eof241;
 case 241:
-	goto tr521;
-tr511:
+	goto tr523;
+tr513:
 	{
     SET_OPERAND_NAME(0, (((*p) & 0x38) >> 3) |
                            ((GET_REX_PREFIX() & 0x04) << 1) |
@@ -15241,8 +15187,8 @@ st242:
 	if ( ++p == pe )
 		goto _test_eof242;
 case 242:
-	goto tr522;
-tr513:
+	goto tr524;
+tr515:
 	{
     SET_OPERAND_NAME(0, (((*p) & 0x38) >> 3) |
                            ((GET_REX_PREFIX() & 0x04) << 1) |
@@ -15253,13 +15199,13 @@ st243:
 	if ( ++p == pe )
 		goto _test_eof243;
 case 243:
-	goto tr523;
+	goto tr525;
 st244:
 	if ( ++p == pe )
 		goto _test_eof244;
 case 244:
 	{
-		static const unsigned short jump_table[] = { 1340, 1340, 1340, 1340, 245, 858, 1340, 1340, 1340, 1340, 1340, 1340, 245, 858, 1340, 1340, 1340, 1340, 1340, 1340, 245, 858, 1340, 1340, 1340, 1340, 1340, 1340, 245, 858, 1340, 1340, 1340, 1340, 1340, 1340, 245, 858, 1340, 1340, 1340, 1340, 1340, 1340, 245, 858, 1340, 1340, 1340, 1340, 1340, 1340, 245, 858, 1340, 1340, 1340, 1340, 1340, 1340, 245, 858, 1340, 1340, 1342, 1342, 1342, 1342, 251, 1342, 1342, 1342, 1342, 1342, 1342, 1342, 251, 1342, 1342, 1342, 1342, 1342, 1342, 1342, 251, 1342, 1342, 1342, 1342, 1342, 1342, 1342, 251, 1342, 1342, 1342, 1342, 1342, 1342, 1342, 251, 1342, 1342, 1342, 1342, 1342, 1342, 1342, 251, 1342, 1342, 1342, 1342, 1342, 1342, 1342, 251, 1342, 1342, 1342, 1342, 1342, 1342, 1342, 251, 1342, 1342, 1342, 1344, 1344, 1344, 1344, 252, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 252, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 252, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 252, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 252, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 252, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 252, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 252, 1344, 1344, 1344, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 230, 230, 230, 230, 230, 230, 230, 230 };
+		static const unsigned short jump_table[] = { 1342, 1342, 1342, 1342, 245, 858, 1342, 1342, 1342, 1342, 1342, 1342, 245, 858, 1342, 1342, 1342, 1342, 1342, 1342, 245, 858, 1342, 1342, 1342, 1342, 1342, 1342, 245, 858, 1342, 1342, 1342, 1342, 1342, 1342, 245, 858, 1342, 1342, 1342, 1342, 1342, 1342, 245, 858, 1342, 1342, 1342, 1342, 1342, 1342, 245, 858, 1342, 1342, 1342, 1342, 1342, 1342, 245, 858, 1342, 1342, 1344, 1344, 1344, 1344, 251, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 251, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 251, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 251, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 251, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 251, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 251, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 251, 1344, 1344, 1344, 1346, 1346, 1346, 1346, 252, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 252, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 252, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 252, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 252, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 252, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 252, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 252, 1346, 1346, 1346, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 230, 230, 230, 230, 230, 230, 230, 230 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -15268,48 +15214,48 @@ st245:
 		goto _test_eof245;
 case 245:
 	switch( (*p) ) {
-		case 5u: goto tr532;
-		case 13u: goto tr532;
-		case 21u: goto tr532;
-		case 29u: goto tr532;
-		case 37u: goto tr532;
-		case 45u: goto tr532;
-		case 53u: goto tr532;
-		case 61u: goto tr532;
-		case 69u: goto tr532;
-		case 77u: goto tr532;
-		case 85u: goto tr532;
-		case 93u: goto tr532;
-		case 101u: goto tr532;
-		case 109u: goto tr532;
-		case 117u: goto tr532;
-		case 125u: goto tr532;
-		case 133u: goto tr532;
-		case 141u: goto tr532;
-		case 149u: goto tr532;
-		case 157u: goto tr532;
-		case 165u: goto tr532;
-		case 173u: goto tr532;
-		case 181u: goto tr532;
-		case 189u: goto tr532;
-		case 197u: goto tr532;
-		case 205u: goto tr532;
-		case 213u: goto tr532;
-		case 221u: goto tr532;
-		case 229u: goto tr532;
-		case 237u: goto tr532;
-		case 245u: goto tr532;
-		case 253u: goto tr532;
+		case 5u: goto tr534;
+		case 13u: goto tr534;
+		case 21u: goto tr534;
+		case 29u: goto tr534;
+		case 37u: goto tr534;
+		case 45u: goto tr534;
+		case 53u: goto tr534;
+		case 61u: goto tr534;
+		case 69u: goto tr534;
+		case 77u: goto tr534;
+		case 85u: goto tr534;
+		case 93u: goto tr534;
+		case 101u: goto tr534;
+		case 109u: goto tr534;
+		case 117u: goto tr534;
+		case 125u: goto tr534;
+		case 133u: goto tr534;
+		case 141u: goto tr534;
+		case 149u: goto tr534;
+		case 157u: goto tr534;
+		case 165u: goto tr534;
+		case 173u: goto tr534;
+		case 181u: goto tr534;
+		case 189u: goto tr534;
+		case 197u: goto tr534;
+		case 205u: goto tr534;
+		case 213u: goto tr534;
+		case 221u: goto tr534;
+		case 229u: goto tr534;
+		case 237u: goto tr534;
+		case 245u: goto tr534;
+		case 253u: goto tr534;
 	}
-	goto tr531;
-tr558:
+	goto tr533;
+tr553:
 	{
     SET_MODRM_BASE(REG_RIP);
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
 	goto st246;
-tr528:
+tr530:
 	{
     SET_MODRM_BASE(((*p) & 0x07) |
                    ((GET_REX_PREFIX() & 0x01) << 3) |
@@ -15318,7 +15264,7 @@ tr528:
     SET_MODRM_SCALE(0);
   }
 	goto st246;
-tr532:
+tr534:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(NO_REG);
@@ -15328,7 +15274,7 @@ tr532:
     SET_MODRM_SCALE(((*p) & 0xc0) >> 6);
   }
 	goto st246;
-tr539:
+tr541:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(((*p) & 0x7) |
@@ -15359,8 +15305,8 @@ st249:
 	if ( ++p == pe )
 		goto _test_eof249;
 case 249:
-	goto tr536;
-tr526:
+	goto tr538;
+tr528:
 	{
     SET_MODRM_BASE(((*p) & 0x07) |
                    ((GET_REX_PREFIX() & 0x01) << 3) |
@@ -15369,7 +15315,7 @@ tr526:
     SET_MODRM_SCALE(0);
   }
 	goto st250;
-tr538:
+tr540:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(((*p) & 0x7) |
@@ -15385,23 +15331,23 @@ st250:
 	if ( ++p == pe )
 		goto _test_eof250;
 case 250:
-	goto tr537;
+	goto tr539;
 st251:
 	if ( ++p == pe )
 		goto _test_eof251;
 case 251:
-	goto tr538;
+	goto tr540;
 st252:
 	if ( ++p == pe )
 		goto _test_eof252;
 case 252:
-	goto tr539;
+	goto tr541;
 st253:
 	if ( ++p == pe )
 		goto _test_eof253;
 case 253:
 	{
-		static const unsigned short jump_table[] = { 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 53, 53, 53, 53, 53, 53, 53, 53 };
+		static const unsigned short jump_table[] = { 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 53, 53, 53, 53, 53, 53, 53, 53 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -15410,31 +15356,31 @@ st254:
 		goto _test_eof254;
 case 254:
 	switch( (*p) ) {
-		case 4u: goto tr541;
-		case 68u: goto tr543;
-		case 132u: goto tr545;
+		case 4u: goto st2;
+		case 68u: goto st8;
+		case 132u: goto st9;
 	}
 	if ( (*p) < 64u ) {
 		if ( (*p) > 3u ) {
 			if ( 6u <= (*p) && (*p) <= 7u )
-				goto tr540;
+				goto tr0;
 		} else
-			goto tr540;
+			goto tr0;
 	} else if ( (*p) > 71u ) {
 		if ( (*p) > 135u ) {
 			if ( 192u <= (*p) && (*p) <= 199u )
-				goto tr546;
+				goto tr79;
 		} else if ( (*p) >= 128u )
-			goto tr544;
+			goto tr5;
 	} else
-		goto tr542;
+		goto tr3;
 	goto tr42;
 st255:
 	if ( ++p == pe )
 		goto _test_eof255;
 case 255:
 	{
-		static const unsigned short jump_table[] = { 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 858, 858, 858, 858, 858, 858, 858, 858, 948, 948, 948, 948, 54, 858, 948, 948, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 858, 858, 858, 858, 858, 858, 858, 858, 951, 951, 951, 951, 60, 951, 951, 951, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 858, 858, 858, 858, 858, 858, 858, 858, 953, 953, 953, 953, 61, 953, 953, 953, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 858, 858, 858, 858, 858, 858, 858, 858, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294 };
+		static const unsigned short jump_table[] = { 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 948, 948, 948, 948, 54, 858, 948, 948, 858, 858, 858, 858, 858, 858, 858, 858, 948, 948, 948, 948, 54, 858, 948, 948, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 858, 858, 858, 858, 858, 858, 858, 858, 951, 951, 951, 951, 60, 951, 951, 951, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 858, 858, 858, 858, 858, 858, 858, 858, 953, 953, 953, 953, 61, 953, 953, 953, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 858, 858, 858, 858, 858, 858, 858, 858, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -15450,17 +15396,17 @@ case 256:
 	if ( (*p) < 64u ) {
 		if ( (*p) > 3u ) {
 			if ( 6u <= (*p) && (*p) <= 7u )
-				goto tr524;
+				goto tr526;
 		} else
-			goto tr524;
+			goto tr526;
 	} else if ( (*p) > 71u ) {
 		if ( (*p) > 135u ) {
 			if ( 192u <= (*p) && (*p) <= 199u )
-				goto tr530;
+				goto tr532;
 		} else if ( (*p) >= 128u )
-			goto tr528;
+			goto tr530;
 	} else
-		goto tr526;
+		goto tr528;
 	goto tr42;
 st257:
 	if ( ++p == pe )
@@ -15476,7 +15422,7 @@ st258:
 		goto _test_eof258;
 case 258:
 	{
-		static const unsigned short jump_table[] = { 1340, 1340, 1340, 1340, 245, 858, 1340, 1340, 858, 858, 858, 858, 858, 858, 858, 858, 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 1342, 1342, 1342, 1342, 251, 1342, 1342, 1342, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 1344, 1344, 1344, 1344, 252, 1344, 1344, 1344, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 858, 858, 858, 858, 858, 858, 858, 858, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895 };
+		static const unsigned short jump_table[] = { 1342, 1342, 1342, 1342, 245, 858, 1342, 1342, 858, 858, 858, 858, 858, 858, 858, 858, 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 1344, 1344, 1344, 1344, 251, 1344, 1344, 1344, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 1346, 1346, 1346, 1346, 252, 1346, 1346, 1346, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 858, 858, 858, 858, 858, 858, 858, 858, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -15487,30 +15433,48 @@ case 259:
 	switch( (*p) ) {
 		case 4u: goto st2;
 		case 12u: goto st2;
+		case 52u: goto st2;
 		case 68u: goto st8;
 		case 76u: goto st8;
+		case 116u: goto st8;
 		case 132u: goto st9;
 		case 140u: goto st9;
+		case 180u: goto st9;
 	}
-	if ( (*p) < 14u ) {
-		if ( (*p) > 3u ) {
-			if ( 6u <= (*p) && (*p) <= 11u )
+	if ( (*p) < 64u ) {
+		if ( (*p) < 14u ) {
+			if ( (*p) > 3u ) {
+				if ( 6u <= (*p) && (*p) <= 11u )
+					goto tr0;
+			} else
+				goto tr0;
+		} else if ( (*p) > 15u ) {
+			if ( (*p) > 51u ) {
+				if ( 54u <= (*p) && (*p) <= 55u )
+					goto tr0;
+			} else if ( (*p) >= 48u )
 				goto tr0;
 		} else
 			goto tr0;
-	} else if ( (*p) > 15u ) {
-		if ( (*p) < 128u ) {
-			if ( 64u <= (*p) && (*p) <= 79u )
+	} else if ( (*p) > 79u ) {
+		if ( (*p) < 176u ) {
+			if ( (*p) > 119u ) {
+				if ( 128u <= (*p) && (*p) <= 143u )
+					goto tr5;
+			} else if ( (*p) >= 112u )
 				goto tr3;
-		} else if ( (*p) > 143u ) {
-			if ( 192u <= (*p) && (*p) <= 207u )
+		} else if ( (*p) > 183u ) {
+			if ( (*p) > 207u ) {
+				if ( 240u <= (*p) && (*p) <= 247u )
+					goto tr43;
+			} else if ( (*p) >= 192u )
 				goto tr79;
 		} else
 			goto tr5;
 	} else
-		goto tr0;
+		goto tr3;
 	goto tr42;
-tr414:
+tr415:
 	{
     SET_REX_PREFIX(*p);
   }
@@ -15528,8 +15492,8 @@ st261:
 case 261:
 	switch( (*p) ) {
 		case 58u: goto st262;
-		case 110u: goto tr437;
-		case 126u: goto tr549;
+		case 110u: goto tr439;
+		case 126u: goto tr544;
 	}
 	goto tr42;
 st262:
@@ -15538,9 +15502,9 @@ st262:
 case 262:
 	switch( (*p) ) {
 		case 21u: goto st263;
-		case 22u: goto tr551;
-		case 23u: goto tr552;
-		case 34u: goto tr460;
+		case 22u: goto tr546;
+		case 23u: goto tr547;
+		case 34u: goto tr462;
 	}
 	goto tr42;
 st263:
@@ -15548,9 +15512,9 @@ st263:
 		goto _test_eof263;
 case 263:
 	if ( 192u <= (*p) )
-		goto tr553;
+		goto tr548;
 	goto tr42;
-tr552:
+tr547:
 	{
     SET_DATA16_PREFIX(FALSE);
   }
@@ -15616,7 +15580,7 @@ st270:
 		goto _test_eof270;
 case 270:
 	{
-		static const unsigned short jump_table[] = { 1340, 1340, 1340, 1340, 245, 1374, 1340, 1340, 1340, 1340, 1340, 1340, 245, 1374, 1340, 1340, 1340, 1340, 1340, 1340, 245, 1374, 1340, 1340, 1340, 1340, 1340, 1340, 245, 1374, 1340, 1340, 1340, 1340, 1340, 1340, 245, 1374, 1340, 1340, 1340, 1340, 1340, 1340, 245, 1374, 1340, 1340, 1340, 1340, 1340, 1340, 245, 1374, 1340, 1340, 1340, 1340, 1340, 1340, 245, 1374, 1340, 1340, 1342, 1342, 1342, 1342, 251, 1342, 1342, 1342, 1342, 1342, 1342, 1342, 251, 1342, 1342, 1342, 1342, 1342, 1342, 1342, 251, 1342, 1342, 1342, 1342, 1342, 1342, 1342, 251, 1342, 1342, 1342, 1342, 1342, 1342, 1342, 251, 1342, 1342, 1342, 1342, 1342, 1342, 1342, 251, 1342, 1342, 1342, 1342, 1342, 1342, 1342, 251, 1342, 1342, 1342, 1342, 1342, 1342, 1342, 251, 1342, 1342, 1342, 1344, 1344, 1344, 1344, 252, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 252, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 252, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 252, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 252, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 252, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 252, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 252, 1344, 1344, 1344, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 230, 230, 230, 230, 230, 230, 230, 230 };
+		static const unsigned short jump_table[] = { 1342, 1342, 1342, 1342, 245, 1369, 1342, 1342, 1342, 1342, 1342, 1342, 245, 1369, 1342, 1342, 1342, 1342, 1342, 1342, 245, 1369, 1342, 1342, 1342, 1342, 1342, 1342, 245, 1369, 1342, 1342, 1342, 1342, 1342, 1342, 245, 1369, 1342, 1342, 1342, 1342, 1342, 1342, 245, 1369, 1342, 1342, 1342, 1342, 1342, 1342, 245, 1369, 1342, 1342, 1342, 1342, 1342, 1342, 245, 1369, 1342, 1342, 1344, 1344, 1344, 1344, 251, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 251, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 251, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 251, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 251, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 251, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 251, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 251, 1344, 1344, 1344, 1346, 1346, 1346, 1346, 252, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 252, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 252, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 252, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 252, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 252, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 252, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 252, 1346, 1346, 1346, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 230, 230, 230, 230, 230, 230, 230, 230 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -15625,7 +15589,7 @@ st271:
 		goto _test_eof271;
 case 271:
 	{
-		static const unsigned short jump_table[] = { 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 53, 53, 53, 53, 53, 53, 53, 53 };
+		static const unsigned short jump_table[] = { 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 53, 53, 53, 53, 53, 53, 53, 53 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -15634,29 +15598,29 @@ st272:
 		goto _test_eof272;
 case 272:
 	switch( (*p) ) {
-		case 4u: goto tr541;
-		case 5u: goto tr559;
-		case 68u: goto tr543;
-		case 132u: goto tr545;
+		case 4u: goto st2;
+		case 5u: goto tr2;
+		case 68u: goto st8;
+		case 132u: goto st9;
 	}
 	if ( (*p) < 64u ) {
 		if ( (*p) <= 7u )
-			goto tr540;
+			goto tr0;
 	} else if ( (*p) > 71u ) {
 		if ( (*p) > 135u ) {
 			if ( 192u <= (*p) && (*p) <= 199u )
-				goto tr546;
+				goto tr79;
 		} else if ( (*p) >= 128u )
-			goto tr544;
+			goto tr5;
 	} else
-		goto tr542;
+		goto tr3;
 	goto tr42;
 st273:
 	if ( ++p == pe )
 		goto _test_eof273;
 case 273:
 	{
-		static const unsigned short jump_table[] = { 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 858, 858, 858, 858, 858, 858, 858, 858, 948, 948, 948, 948, 54, 950, 948, 948, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 858, 858, 858, 858, 858, 858, 858, 858, 951, 951, 951, 951, 60, 951, 951, 951, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 858, 858, 858, 858, 858, 858, 858, 858, 953, 953, 953, 953, 61, 953, 953, 953, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 858, 858, 858, 858, 858, 858, 858, 858, 1294, 1294, 1294, 1294, 1294, 1294, 1294, 1294 };
+		static const unsigned short jump_table[] = { 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 858, 858, 858, 858, 858, 858, 858, 858, 948, 948, 948, 948, 54, 950, 948, 948, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 858, 858, 858, 858, 858, 858, 858, 858, 951, 951, 951, 951, 60, 951, 951, 951, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 858, 858, 858, 858, 858, 858, 858, 858, 953, 953, 953, 953, 61, 953, 953, 953, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 858, 858, 858, 858, 858, 858, 858, 858, 1296, 1296, 1296, 1296, 1296, 1296, 1296, 1296 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -15666,21 +15630,21 @@ st274:
 case 274:
 	switch( (*p) ) {
 		case 4u: goto st245;
-		case 5u: goto tr558;
+		case 5u: goto tr553;
 		case 68u: goto st251;
 		case 132u: goto st252;
 	}
 	if ( (*p) < 64u ) {
 		if ( (*p) <= 7u )
-			goto tr524;
+			goto tr526;
 	} else if ( (*p) > 71u ) {
 		if ( (*p) > 135u ) {
 			if ( 192u <= (*p) && (*p) <= 199u )
-				goto tr530;
+				goto tr532;
 		} else if ( (*p) >= 128u )
-			goto tr528;
+			goto tr530;
 	} else
-		goto tr526;
+		goto tr528;
 	goto tr42;
 st275:
 	if ( ++p == pe )
@@ -15691,12 +15655,12 @@ case 275:
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr428:
+tr430:
 	{
     SET_LOCK_PREFIX(TRUE);
   }
 	goto st276;
-tr1159:
+tr1153:
 	{
     SET_DATA16_PREFIX(TRUE);
   }
@@ -15707,28 +15671,28 @@ st276:
 case 276:
 	switch( (*p) ) {
 		case 1u: goto st48;
-		case 3u: goto tr450;
+		case 3u: goto tr452;
 		case 9u: goto st48;
-		case 11u: goto tr450;
+		case 11u: goto tr452;
 		case 15u: goto st277;
 		case 17u: goto st48;
-		case 19u: goto tr450;
+		case 19u: goto tr452;
 		case 25u: goto st48;
-		case 27u: goto tr450;
+		case 27u: goto tr452;
 		case 33u: goto st48;
-		case 35u: goto tr450;
+		case 35u: goto tr452;
 		case 41u: goto st48;
-		case 43u: goto tr450;
+		case 43u: goto tr452;
 		case 49u: goto st48;
-		case 51u: goto tr450;
+		case 51u: goto tr452;
 		case 129u: goto st287;
 		case 131u: goto st288;
-		case 135u: goto tr565;
+		case 135u: goto tr559;
 		case 247u: goto st289;
 		case 255u: goto st290;
 	}
 	if ( 64u <= (*p) && (*p) <= 71u )
-		goto tr562;
+		goto tr556;
 	goto tr42;
 st277:
 	if ( ++p == pe )
@@ -15767,7 +15731,7 @@ case 278:
 	} else
 		goto tr135;
 	goto tr42;
-tr562:
+tr556:
 	{
     SET_REX_PREFIX(*p);
   }
@@ -15778,23 +15742,23 @@ st279:
 case 279:
 	switch( (*p) ) {
 		case 1u: goto st48;
-		case 3u: goto tr450;
+		case 3u: goto tr452;
 		case 9u: goto st48;
-		case 11u: goto tr450;
+		case 11u: goto tr452;
 		case 15u: goto st280;
 		case 17u: goto st48;
-		case 19u: goto tr450;
+		case 19u: goto tr452;
 		case 25u: goto st48;
-		case 27u: goto tr450;
+		case 27u: goto tr452;
 		case 33u: goto st48;
-		case 35u: goto tr450;
+		case 35u: goto tr452;
 		case 41u: goto st48;
-		case 43u: goto tr450;
+		case 43u: goto tr452;
 		case 49u: goto st48;
-		case 51u: goto tr450;
+		case 51u: goto tr452;
 		case 129u: goto st282;
 		case 131u: goto st283;
-		case 135u: goto tr565;
+		case 135u: goto tr559;
 		case 247u: goto st285;
 		case 255u: goto st286;
 	}
@@ -15847,7 +15811,7 @@ st282:
 		goto _test_eof282;
 case 282:
 	{
-		static const unsigned short jump_table[] = { 1340, 1340, 1340, 1340, 245, 858, 1340, 1340, 1340, 1340, 1340, 1340, 245, 858, 1340, 1340, 1340, 1340, 1340, 1340, 245, 858, 1340, 1340, 1340, 1340, 1340, 1340, 245, 858, 1340, 1340, 1340, 1340, 1340, 1340, 245, 858, 1340, 1340, 1340, 1340, 1340, 1340, 245, 858, 1340, 1340, 1340, 1340, 1340, 1340, 245, 858, 1340, 1340, 858, 858, 858, 858, 858, 858, 858, 858, 1342, 1342, 1342, 1342, 251, 1342, 1342, 1342, 1342, 1342, 1342, 1342, 251, 1342, 1342, 1342, 1342, 1342, 1342, 1342, 251, 1342, 1342, 1342, 1342, 1342, 1342, 1342, 251, 1342, 1342, 1342, 1342, 1342, 1342, 1342, 251, 1342, 1342, 1342, 1342, 1342, 1342, 1342, 251, 1342, 1342, 1342, 1342, 1342, 1342, 1342, 251, 1342, 1342, 1342, 858, 858, 858, 858, 858, 858, 858, 858, 1344, 1344, 1344, 1344, 252, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 252, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 252, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 252, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 252, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 252, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 252, 1344, 1344, 1344, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858 };
+		static const unsigned short jump_table[] = { 1342, 1342, 1342, 1342, 245, 858, 1342, 1342, 1342, 1342, 1342, 1342, 245, 858, 1342, 1342, 1342, 1342, 1342, 1342, 245, 858, 1342, 1342, 1342, 1342, 1342, 1342, 245, 858, 1342, 1342, 1342, 1342, 1342, 1342, 245, 858, 1342, 1342, 1342, 1342, 1342, 1342, 245, 858, 1342, 1342, 1342, 1342, 1342, 1342, 245, 858, 1342, 1342, 858, 858, 858, 858, 858, 858, 858, 858, 1344, 1344, 1344, 1344, 251, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 251, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 251, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 251, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 251, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 251, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 251, 1344, 1344, 1344, 858, 858, 858, 858, 858, 858, 858, 858, 1346, 1346, 1346, 1346, 252, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 252, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 252, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 252, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 252, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 252, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 252, 1346, 1346, 1346, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -15860,22 +15824,22 @@ case 283:
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr565:
+tr559:
 	{
     SET_OPERAND_TYPE(1, OperandSize16bit);
   }
 	goto st284;
-tr1161:
+tr1155:
 	{
     SET_OPERAND_TYPE(1, OperandSize8bit);
   }
 	goto st284;
-tr1162:
+tr1156:
 	{
     SET_OPERAND_TYPE(1, OperandSize32bit);
   }
 	goto st284;
-tr1166:
+tr1160:
 	{
     SET_OPERAND_TYPE(1, OperandSize64bit);
   }
@@ -15948,7 +15912,7 @@ st287:
 		goto _test_eof287;
 case 287:
 	{
-		static const unsigned short jump_table[] = { 1340, 1340, 1340, 1340, 245, 1374, 1340, 1340, 1340, 1340, 1340, 1340, 245, 1374, 1340, 1340, 1340, 1340, 1340, 1340, 245, 1374, 1340, 1340, 1340, 1340, 1340, 1340, 245, 1374, 1340, 1340, 1340, 1340, 1340, 1340, 245, 1374, 1340, 1340, 1340, 1340, 1340, 1340, 245, 1374, 1340, 1340, 1340, 1340, 1340, 1340, 245, 1374, 1340, 1340, 858, 858, 858, 858, 858, 858, 858, 858, 1342, 1342, 1342, 1342, 251, 1342, 1342, 1342, 1342, 1342, 1342, 1342, 251, 1342, 1342, 1342, 1342, 1342, 1342, 1342, 251, 1342, 1342, 1342, 1342, 1342, 1342, 1342, 251, 1342, 1342, 1342, 1342, 1342, 1342, 1342, 251, 1342, 1342, 1342, 1342, 1342, 1342, 1342, 251, 1342, 1342, 1342, 1342, 1342, 1342, 1342, 251, 1342, 1342, 1342, 858, 858, 858, 858, 858, 858, 858, 858, 1344, 1344, 1344, 1344, 252, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 252, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 252, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 252, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 252, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 252, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 252, 1344, 1344, 1344, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858 };
+		static const unsigned short jump_table[] = { 1342, 1342, 1342, 1342, 245, 1369, 1342, 1342, 1342, 1342, 1342, 1342, 245, 1369, 1342, 1342, 1342, 1342, 1342, 1342, 245, 1369, 1342, 1342, 1342, 1342, 1342, 1342, 245, 1369, 1342, 1342, 1342, 1342, 1342, 1342, 245, 1369, 1342, 1342, 1342, 1342, 1342, 1342, 245, 1369, 1342, 1342, 1342, 1342, 1342, 1342, 245, 1369, 1342, 1342, 858, 858, 858, 858, 858, 858, 858, 858, 1344, 1344, 1344, 1344, 251, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 251, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 251, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 251, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 251, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 251, 1344, 1344, 1344, 1344, 1344, 1344, 1344, 251, 1344, 1344, 1344, 858, 858, 858, 858, 858, 858, 858, 858, 1346, 1346, 1346, 1346, 252, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 252, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 252, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 252, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 252, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 252, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 252, 1346, 1346, 1346, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -16007,12 +15971,12 @@ case 290:
 	} else
 		goto tr3;
 	goto tr42;
-tr429:
+tr431:
 	{
     SET_REPNZ_PREFIX(TRUE);
   }
 	goto st291;
-tr1172:
+tr1166:
 	{
     SET_DATA16_PREFIX(TRUE);
   }
@@ -16027,7 +15991,7 @@ case 291:
 		case 175u: goto tr336;
 	}
 	if ( 64u <= (*p) && (*p) <= 71u )
-		goto tr576;
+		goto tr570;
 	goto tr42;
 st292:
 	if ( ++p == pe )
@@ -16041,9 +16005,9 @@ st293:
 		goto _test_eof293;
 case 293:
 	if ( (*p) == 241u )
-		goto tr578;
+		goto tr572;
 	goto tr42;
-tr576:
+tr570:
 	{
     SET_REX_PREFIX(*p);
   }
@@ -16055,7 +16019,7 @@ case 294:
 	if ( (*p) == 15u )
 		goto st292;
 	goto tr42;
-tr430:
+tr432:
 	{
     SET_REPZ_PREFIX(TRUE);
   }
@@ -16063,7 +16027,7 @@ tr430:
     SET_REPZ_PREFIX(TRUE);
   }
 	goto st295;
-tr1194:
+tr1188:
 	{
     SET_DATA16_PREFIX(TRUE);
   }
@@ -16081,19 +16045,19 @@ case 295:
 		case 175u: goto tr336;
 	}
 	if ( 64u <= (*p) && (*p) <= 71u )
-		goto tr580;
+		goto tr574;
 	goto tr42;
 st296:
 	if ( ++p == pe )
 		goto _test_eof296;
 case 296:
 	switch( (*p) ) {
-		case 184u: goto tr581;
-		case 188u: goto tr582;
-		case 189u: goto tr583;
+		case 184u: goto tr575;
+		case 188u: goto tr576;
+		case 189u: goto tr577;
 	}
 	goto tr42;
-tr580:
+tr574:
 	{
     SET_REX_PREFIX(*p);
   }
@@ -16110,7 +16074,7 @@ st298:
 		goto _test_eof298;
 case 298:
 	{
-		static const unsigned short jump_table[] = { 1340, 1340, 1340, 1340, 245, 1374, 1340, 1340, 858, 858, 858, 858, 858, 858, 858, 858, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 1342, 1342, 1342, 1342, 251, 1342, 1342, 1342, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 1344, 1344, 1344, 1344, 252, 1344, 1344, 1344, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 1346, 858, 858, 858, 858, 858, 858, 858, 858, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895 };
+		static const unsigned short jump_table[] = { 1342, 1342, 1342, 1342, 245, 1369, 1342, 1342, 858, 858, 858, 858, 858, 858, 858, 858, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 1344, 1344, 1344, 1344, 251, 1344, 1344, 1344, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 1346, 1346, 1346, 1346, 252, 1346, 1346, 1346, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 1348, 858, 858, 858, 858, 858, 858, 858, 858, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895, 895 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -16123,24 +16087,40 @@ case 299:
 		case 5u: goto tr2;
 		case 12u: goto st2;
 		case 13u: goto tr2;
+		case 52u: goto st2;
+		case 53u: goto tr2;
 		case 68u: goto st8;
 		case 76u: goto st8;
+		case 116u: goto st8;
 		case 132u: goto st9;
 		case 140u: goto st9;
+		case 180u: goto st9;
 	}
-	if ( (*p) < 64u ) {
-		if ( (*p) <= 15u )
+	if ( (*p) < 112u ) {
+		if ( (*p) < 48u ) {
+			if ( (*p) <= 15u )
+				goto tr0;
+		} else if ( (*p) > 55u ) {
+			if ( 64u <= (*p) && (*p) <= 79u )
+				goto tr3;
+		} else
 			goto tr0;
-	} else if ( (*p) > 79u ) {
-		if ( (*p) > 143u ) {
-			if ( 192u <= (*p) && (*p) <= 207u )
+	} else if ( (*p) > 119u ) {
+		if ( (*p) < 176u ) {
+			if ( 128u <= (*p) && (*p) <= 143u )
+				goto tr5;
+		} else if ( (*p) > 183u ) {
+			if ( (*p) > 207u ) {
+				if ( 240u <= (*p) && (*p) <= 247u )
+					goto tr43;
+			} else if ( (*p) >= 192u )
 				goto tr79;
-		} else if ( (*p) >= 128u )
+		} else
 			goto tr5;
 	} else
 		goto tr3;
 	goto tr42;
-tr1283:
+tr1277:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -16159,7 +16139,7 @@ case 300:
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1284:
+tr1278:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -16174,11 +16154,11 @@ st301:
 		goto _test_eof301;
 case 301:
 	{
-		static const unsigned short jump_table[] = { 1079, 1079, 1079, 1079, 113, 1177, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1177, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1177, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1177, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1177, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1177, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1177, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1177, 1079, 1079, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 78, 78, 78, 78, 78, 78, 78, 78 };
+		static const unsigned short jump_table[] = { 1079, 1079, 1079, 1079, 113, 1178, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1178, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1178, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1178, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1178, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1178, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1178, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1178, 1079, 1079, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 78, 78, 78, 78, 78, 78, 78, 78 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1285:
+tr1279:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -16193,11 +16173,11 @@ st302:
 		goto _test_eof302;
 case 302:
 	{
-		static const unsigned short jump_table[] = { 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 1400, 1401, 1402, 1403, 1404, 1405, 1406, 1407, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 53, 53, 53, 53, 53, 53, 53, 53 };
+		static const unsigned short jump_table[] = { 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 948, 948, 948, 948, 54, 950, 948, 948, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 951, 951, 951, 951, 60, 951, 951, 951, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 953, 953, 953, 953, 61, 953, 953, 953, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 1394, 1395, 1396, 1397, 1398, 1399, 1400, 1401, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 988, 53, 53, 53, 53, 53, 53, 53, 53 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr584:
+tr578:
 	{
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
@@ -16212,9 +16192,9 @@ st303:
 		goto _test_eof303;
 case 303:
 	if ( (*p) == 224u )
-		goto tr592;
+		goto tr586;
 	goto tr34;
-tr592:
+tr586:
 	{
     SET_IMM_TYPE(IMM8);
     SET_IMM_PTR(p);
@@ -16283,11 +16263,11 @@ st788:
 		goto _test_eof788;
 case 788:
 	{
-		static const unsigned short jump_table[] = { 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 2080, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 2081, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2082, 2082, 2082, 2082, 2083, 2084, 2085, 858, 2086, 2087, 2086, 2086, 2086, 2086, 2086, 2086, 2088, 2089, 2090, 2091, 2142, 2091, 2091, 2091, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 858, 858, 858, 2077, 858, 858, 2095, 858, 2084, 2096, 2083, 2097, 858, 858, 858, 858, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2099, 2100, 858, 2101, 2074, 2075, 2102, 2103, 2074, 2075, 2076, 2077, 858, 2104, 858, 2105, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2106, 2106, 858, 2108, 858, 858, 858, 858, 858, 858, 858, 858, 2109, 2109, 2109, 2109, 2078, 2079, 2110, 2110, 2111, 2111, 2110, 2110, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2114, 2115, 858, 858, 2116, 2117, 2118, 2119, 2120, 858, 2121, 2106, 858, 858, 858, 858, 2122, 2123, 2122, 2123, 858, 858, 858, 858, 2124, 2125, 2126, 2127, 2128, 2129, 2130, 2131, 858, 858, 858, 858, 858, 858, 858, 858, 2132, 2132, 858, 2098, 858, 858, 858, 858, 2133, 858, 2134, 2135, 2106, 2106, 2136, 2137, 2106, 2106, 858, 858, 2106, 2106, 2138, 2139 };
+		static const unsigned short jump_table[] = { 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 2074, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 2075, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2076, 2076, 2076, 2076, 2077, 2078, 2079, 858, 2080, 2081, 2080, 2080, 2080, 2080, 2080, 2080, 2082, 2083, 2084, 2085, 2136, 2085, 2085, 2085, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 858, 858, 858, 2071, 858, 858, 2089, 858, 2078, 2090, 2077, 2091, 858, 858, 858, 858, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2093, 2094, 858, 2095, 2068, 2069, 2096, 2097, 2068, 2069, 2070, 2071, 858, 2098, 858, 2099, 2100, 2101, 2101, 2101, 2101, 2101, 2101, 2101, 2100, 2100, 858, 2102, 858, 858, 858, 858, 858, 858, 858, 858, 2103, 2103, 2103, 2103, 2072, 2073, 2104, 2104, 2105, 2105, 2104, 2104, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2108, 2109, 858, 858, 2110, 2111, 2112, 2113, 2114, 858, 2115, 2100, 858, 858, 858, 858, 2116, 2117, 2116, 2117, 858, 858, 858, 858, 2118, 2119, 2120, 2121, 2122, 2123, 2124, 2125, 858, 858, 858, 858, 858, 858, 858, 858, 2126, 2126, 858, 2092, 858, 858, 858, 858, 2127, 858, 2128, 2129, 2100, 2100, 2130, 2131, 2100, 2100, 858, 858, 2100, 2100, 2132, 2133 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1326:
+tr1320:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -16305,11 +16285,11 @@ st304:
 		goto _test_eof304;
 case 304:
 	{
-		static const unsigned short jump_table[] = { 858, 1409, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 182, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1140, 858, 858, 858, 858, 858, 1143, 858, 1144, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 185, 858, 186, 858, 1139, 858, 1147, 858, 1139, 858, 1140, 858, 1149, 858, 858, 858, 1150, 1150, 1150, 1150, 1150, 1150, 1150, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 858, 191, 858, 858, 858, 858, 858, 192, 858, 858, 858, 858, 858, 858, 858, 858, 858, 193, 858, 193, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 194, 858, 858, 858, 858, 858, 858, 858, 195 };
+		static const unsigned short jump_table[] = { 858, 1403, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 182, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1140, 858, 858, 858, 858, 858, 1143, 858, 1144, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 185, 858, 186, 858, 1139, 858, 1147, 858, 1139, 858, 1140, 858, 1149, 858, 858, 858, 1150, 1150, 1150, 1150, 1150, 1150, 1150, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 858, 191, 858, 858, 858, 858, 858, 192, 858, 858, 858, 858, 858, 858, 858, 858, 858, 193, 858, 193, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 194, 858, 858, 858, 858, 858, 858, 858, 195 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr593:
+tr587:
 	{
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
@@ -16319,11 +16299,11 @@ st305:
 		goto _test_eof305;
 case 305:
 	{
-		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 1410, 823, 823, 823, 1216, 1210, 823, 823 };
+		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 1404, 823, 823, 823, 1217, 1211, 823, 823 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr594:
+tr588:
 	{
     SET_OPERAND_NAME(0, ((*p) & 0x07) |
                            ((GET_REX_PREFIX() & 0x01) << 3) |
@@ -16393,11 +16373,11 @@ st789:
 		goto _test_eof789;
 case 789:
 	{
-		static const unsigned short jump_table[] = { 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 2080, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 2081, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2082, 2082, 2082, 2082, 2083, 2084, 2085, 858, 2086, 2087, 2086, 2086, 2086, 2086, 2086, 2086, 2088, 2089, 2090, 2091, 2092, 2091, 2091, 2091, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 858, 858, 858, 2077, 858, 858, 2095, 858, 2084, 2096, 2083, 2097, 858, 858, 858, 858, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2099, 2100, 858, 2101, 2074, 2075, 2102, 2103, 2074, 2075, 2076, 2077, 858, 2104, 858, 2105, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2106, 2106, 858, 2108, 858, 858, 858, 858, 858, 858, 858, 858, 2109, 2109, 2109, 2109, 2078, 2079, 2110, 2110, 2111, 2111, 2110, 2110, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2114, 2115, 858, 858, 2116, 2117, 2118, 2119, 2120, 858, 2121, 2106, 858, 858, 858, 858, 2122, 2123, 2122, 2123, 858, 858, 858, 858, 2124, 2125, 2126, 2127, 2128, 2129, 2130, 2131, 858, 858, 858, 858, 858, 858, 858, 858, 2132, 2132, 858, 2098, 858, 858, 858, 858, 2133, 858, 2134, 2135, 2106, 2106, 2136, 2137, 2106, 2106, 858, 858, 2106, 2106, 2138, 2143 };
+		static const unsigned short jump_table[] = { 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 2074, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 2075, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2076, 2076, 2076, 2076, 2077, 2078, 2079, 858, 2080, 2081, 2080, 2080, 2080, 2080, 2080, 2080, 2082, 2083, 2084, 2085, 2086, 2085, 2085, 2085, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 858, 858, 858, 2071, 858, 858, 2089, 858, 2078, 2090, 2077, 2091, 858, 858, 858, 858, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2093, 2094, 858, 2095, 2068, 2069, 2096, 2097, 2068, 2069, 2070, 2071, 858, 2098, 858, 2099, 2100, 2101, 2101, 2101, 2101, 2101, 2101, 2101, 2100, 2100, 858, 2102, 858, 858, 858, 858, 858, 858, 858, 858, 2103, 2103, 2103, 2103, 2072, 2073, 2104, 2104, 2105, 2105, 2104, 2104, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2108, 2109, 858, 858, 2110, 2111, 2112, 2113, 2114, 858, 2115, 2100, 858, 858, 858, 858, 2116, 2117, 2116, 2117, 858, 858, 858, 858, 2118, 2119, 2120, 2121, 2122, 2123, 2124, 2125, 858, 858, 858, 858, 858, 858, 858, 858, 2126, 2126, 858, 2092, 858, 858, 858, 858, 2127, 858, 2128, 2129, 2100, 2100, 2130, 2131, 2100, 2100, 858, 858, 2100, 2100, 2132, 2137 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1289:
+tr1283:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -16412,11 +16392,11 @@ st306:
 		goto _test_eof306;
 case 306:
 	{
-		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 1411, 1412, 1413, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1414, 1415, 1416, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 1417, 1418, 1419, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1420, 1421, 1422, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 1411, 1423, 1424, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1414, 1425, 1426, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1417, 1427, 1428, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1420, 1429, 1430, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858 };
+		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 1405, 1406, 1407, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1408, 1409, 1410, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 1411, 1412, 1413, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1414, 1415, 1416, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 1405, 1417, 1418, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1408, 1419, 1420, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1120, 1411, 1421, 1422, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1414, 1423, 1424, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr595:
+tr589:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -16426,11 +16406,11 @@ st307:
 		goto _test_eof307;
 case 307:
 	{
-		static const unsigned short jump_table[] = { 1431, 858, 858, 858, 1432, 858, 858, 858, 1431, 858, 858, 858, 1432, 858, 858, 858, 1431, 858, 858, 858, 1432, 858, 858, 858, 1431, 858, 858, 858, 1432, 858, 858, 858, 1431, 858, 858, 858, 1432, 858, 858, 858, 1431, 858, 858, 858, 1432, 858, 858, 858, 1431, 858, 858, 858, 1432, 858, 858, 858, 1431, 858, 858, 858, 1432, 858, 858, 858, 1431, 858, 858, 858, 1432, 858, 858, 858, 1431, 858, 858, 858, 1432, 858, 858, 858, 1431, 858, 858, 858, 1432, 858, 858, 858, 1431, 858, 858, 858, 1432, 858, 858, 858, 1431, 858, 858, 858, 1432, 858, 858, 858, 1431, 858, 858, 858, 1432, 858, 858, 858, 1431, 858, 858, 858, 1432, 858, 858, 858, 1433, 858, 858, 858, 1432, 858, 858, 858, 1434, 858, 858, 858, 1432, 858, 858, 858, 1434, 858, 858, 858, 1432, 858, 858, 858, 1434, 858, 858, 858, 1432, 858, 858, 858, 1434, 858, 858, 858, 1432, 858, 858, 858, 1434, 858, 858, 858, 1432, 858, 858, 858, 1434, 858, 858, 858, 1432, 858, 858, 858, 1434, 858, 858, 858, 1432, 858, 858, 858, 1434, 858, 858, 858, 1432, 858, 858, 858, 1434, 858, 858, 858, 1432, 858, 858, 858, 1434, 858, 858, 858, 1432, 858, 858, 858, 1434, 858, 858, 858, 1432, 858, 858, 858, 1434, 858, 858, 858, 1432, 858, 858, 858, 1434, 858, 858, 858, 1432, 858, 858, 858, 1434, 858, 858, 858, 1432, 858, 858, 858, 1434, 858, 858, 858, 1432, 858, 858, 858, 1434, 858, 858, 858, 1432, 858, 858, 858 };
+		static const unsigned short jump_table[] = { 1425, 858, 858, 858, 1426, 858, 858, 858, 1425, 858, 858, 858, 1426, 858, 858, 858, 1425, 858, 858, 858, 1426, 858, 858, 858, 1425, 858, 858, 858, 1426, 858, 858, 858, 1425, 858, 858, 858, 1426, 858, 858, 858, 1425, 858, 858, 858, 1426, 858, 858, 858, 1425, 858, 858, 858, 1426, 858, 858, 858, 1425, 858, 858, 858, 1426, 858, 858, 858, 1425, 858, 858, 858, 1426, 858, 858, 858, 1425, 858, 858, 858, 1426, 858, 858, 858, 1425, 858, 858, 858, 1426, 858, 858, 858, 1425, 858, 858, 858, 1426, 858, 858, 858, 1425, 858, 858, 858, 1426, 858, 858, 858, 1425, 858, 858, 858, 1426, 858, 858, 858, 1425, 858, 858, 858, 1426, 858, 858, 858, 1427, 858, 858, 858, 1426, 858, 858, 858, 1428, 858, 858, 858, 1426, 858, 858, 858, 1428, 858, 858, 858, 1426, 858, 858, 858, 1428, 858, 858, 858, 1426, 858, 858, 858, 1428, 858, 858, 858, 1426, 858, 858, 858, 1428, 858, 858, 858, 1426, 858, 858, 858, 1428, 858, 858, 858, 1426, 858, 858, 858, 1428, 858, 858, 858, 1426, 858, 858, 858, 1428, 858, 858, 858, 1426, 858, 858, 858, 1428, 858, 858, 858, 1426, 858, 858, 858, 1428, 858, 858, 858, 1426, 858, 858, 858, 1428, 858, 858, 858, 1426, 858, 858, 858, 1428, 858, 858, 858, 1426, 858, 858, 858, 1428, 858, 858, 858, 1426, 858, 858, 858, 1428, 858, 858, 858, 1426, 858, 858, 858, 1428, 858, 858, 858, 1426, 858, 858, 858, 1428, 858, 858, 858, 1426, 858, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr615:
+tr609:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -16440,41 +16420,41 @@ st308:
 		goto _test_eof308;
 case 308:
 	switch( (*p) ) {
-		case 166u: goto tr619;
-		case 182u: goto tr619;
+		case 166u: goto tr613;
+		case 182u: goto tr613;
 	}
 	if ( (*p) < 158u ) {
 		if ( (*p) < 142u ) {
 			if ( 133u <= (*p) && (*p) <= 135u )
-				goto tr619;
+				goto tr613;
 		} else if ( (*p) > 143u ) {
 			if ( 149u <= (*p) && (*p) <= 151u )
-				goto tr619;
+				goto tr613;
 		} else
-			goto tr619;
+			goto tr613;
 	} else if ( (*p) > 159u ) {
 		if ( (*p) < 204u ) {
 			if ( 162u <= (*p) && (*p) <= 163u )
-				goto tr619;
+				goto tr613;
 		} else if ( (*p) > 207u ) {
 			if ( 236u <= (*p) && (*p) <= 239u )
-				goto tr620;
+				goto tr614;
 		} else
-			goto tr620;
+			goto tr614;
 	} else
-		goto tr619;
+		goto tr613;
 	goto tr42;
-tr619:
+tr613:
 	{
     SET_CPU_FEATURE(CPUFeature_XOP);
   }
 	goto st309;
-tr864:
+tr858:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
 	goto st309;
-tr865:
+tr859:
 	{
     SET_CPU_FEATURE(CPUFeature_FMA4);
   }
@@ -16550,8 +16530,8 @@ case 310:
 		case 245u: goto tr42;
 		case 253u: goto tr42;
 	}
-	goto tr625;
-tr666:
+	goto tr619;
+tr660:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(((*p) & 0x07) |
@@ -16592,7 +16572,7 @@ tr666:
     }
   }
 	goto st311;
-tr625:
+tr619:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(((*p) & 0x7) |
@@ -16635,7 +16615,7 @@ tr625:
     }
   }
 	goto st311;
-tr632:
+tr626:
 	{
     SET_DISP_TYPE(DISP32);
     SET_DISP_PTR(p - 3);
@@ -16672,7 +16652,7 @@ tr632:
     }
   }
 	goto st311;
-tr627:
+tr621:
 	{
     SET_DISP_TYPE(DISP8);
     SET_DISP_PTR(p);
@@ -16736,8 +16716,8 @@ st312:
 	if ( ++p == pe )
 		goto _test_eof312;
 case 312:
-	goto tr626;
-tr667:
+	goto tr620;
+tr661:
 	{
     SET_MODRM_BASE(((*p) & 0x07) |
                    ((GET_REX_PREFIX() & 0x01) << 3) |
@@ -16746,7 +16726,7 @@ tr667:
     SET_MODRM_SCALE(0);
   }
 	goto st313;
-tr626:
+tr620:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(((*p) & 0x7) |
@@ -16762,20 +16742,20 @@ st313:
 	if ( ++p == pe )
 		goto _test_eof313;
 case 313:
-	goto tr627;
+	goto tr621;
 st314:
 	if ( ++p == pe )
 		goto _test_eof314;
 case 314:
-	goto tr628;
-tr683:
+	goto tr622;
+tr677:
 	{
     SET_MODRM_BASE(REG_RIP);
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
 	goto st315;
-tr668:
+tr662:
 	{
     SET_MODRM_BASE(((*p) & 0x07) |
                    ((GET_REX_PREFIX() & 0x01) << 3) |
@@ -16784,7 +16764,7 @@ tr668:
     SET_MODRM_SCALE(0);
   }
 	goto st315;
-tr651:
+tr645:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(NO_REG);
@@ -16794,7 +16774,7 @@ tr651:
     SET_MODRM_SCALE(((*p) & 0xc0) >> 6);
   }
 	goto st315;
-tr628:
+tr622:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(((*p) & 0x7) |
@@ -16825,28 +16805,28 @@ st318:
 	if ( ++p == pe )
 		goto _test_eof318;
 case 318:
-	goto tr632;
-tr620:
+	goto tr626;
+tr614:
 	{
     SET_CPU_FEATURE(CPUFeature_XOP);
   }
 	goto st319;
-tr828:
+tr822:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
 	goto st319;
-tr866:
+tr860:
 	{
     SET_CPU_FEATURE(CPUFeature_AESAVX);
   }
 	goto st319;
-tr881:
+tr875:
 	{
     SET_CPU_FEATURE(CPUFeature_F16C);
   }
 	goto st319;
-tr862:
+tr856:
 	{
     SET_CPU_FEATURE(CPUFeature_CLMULAVX);
   }
@@ -16884,7 +16864,7 @@ case 319:
 	if ( 192u <= (*p) )
 		goto st53;
 	goto tr42;
-tr833:
+tr827:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -16928,7 +16908,7 @@ case 320:
 		case 253u: goto tr42;
 	}
 	goto tr141;
-tr616:
+tr610:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -16938,9 +16918,9 @@ st321:
 		goto _test_eof321;
 case 321:
 	if ( (*p) == 162u )
-		goto tr619;
+		goto tr613;
 	goto tr42;
-tr617:
+tr611:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -16950,34 +16930,34 @@ st322:
 		goto _test_eof322;
 case 322:
 	switch( (*p) ) {
-		case 166u: goto tr619;
-		case 182u: goto tr619;
+		case 166u: goto tr613;
+		case 182u: goto tr613;
 	}
 	if ( (*p) < 158u ) {
 		if ( (*p) < 142u ) {
 			if ( 133u <= (*p) && (*p) <= 135u )
-				goto tr619;
+				goto tr613;
 		} else if ( (*p) > 143u ) {
 			if ( 149u <= (*p) && (*p) <= 151u )
-				goto tr619;
+				goto tr613;
 		} else
-			goto tr619;
+			goto tr613;
 	} else if ( (*p) > 159u ) {
 		if ( (*p) < 192u ) {
 			if ( 162u <= (*p) && (*p) <= 163u )
-				goto tr619;
+				goto tr613;
 		} else if ( (*p) > 195u ) {
 			if ( (*p) > 207u ) {
 				if ( 236u <= (*p) && (*p) <= 239u )
-					goto tr620;
+					goto tr614;
 			} else if ( (*p) >= 204u )
-				goto tr620;
+				goto tr614;
 		} else
-			goto tr620;
+			goto tr614;
 	} else
-		goto tr619;
+		goto tr613;
 	goto tr42;
-tr618:
+tr612:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -16987,9 +16967,9 @@ st323:
 		goto _test_eof323;
 case 323:
 	if ( 162u <= (*p) && (*p) <= 163u )
-		goto tr619;
+		goto tr613;
 	goto tr42;
-tr596:
+tr590:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -16999,11 +16979,11 @@ st324:
 		goto _test_eof324;
 case 324:
 	{
-		static const unsigned short jump_table[] = { 1450, 858, 858, 858, 858, 858, 858, 858, 1450, 858, 858, 858, 858, 858, 858, 858, 1450, 858, 858, 858, 858, 858, 858, 858, 1450, 858, 858, 858, 858, 858, 858, 858, 1450, 858, 858, 858, 858, 858, 858, 858, 1450, 858, 858, 858, 858, 858, 858, 858, 1450, 858, 858, 858, 858, 858, 858, 858, 1450, 858, 858, 858, 858, 858, 858, 858, 1450, 858, 858, 858, 858, 858, 858, 858, 1450, 858, 858, 858, 858, 858, 858, 858, 1450, 858, 858, 858, 858, 858, 858, 858, 1450, 858, 858, 858, 858, 858, 858, 858, 1450, 858, 858, 858, 858, 858, 858, 858, 1450, 858, 858, 858, 858, 858, 858, 858, 1450, 858, 858, 858, 858, 858, 858, 858, 1451, 858, 858, 858, 1452, 858, 858, 858, 1450, 858, 858, 858, 858, 858, 858, 858, 1450, 858, 858, 858, 858, 858, 858, 858, 1450, 858, 858, 858, 858, 858, 858, 858, 1450, 858, 858, 858, 858, 858, 858, 858, 1450, 858, 858, 858, 858, 858, 858, 858, 1450, 858, 858, 858, 858, 858, 858, 858, 1450, 858, 858, 858, 858, 858, 858, 858, 1450, 858, 858, 858, 858, 858, 858, 858, 1450, 858, 858, 858, 858, 858, 858, 858, 1450, 858, 858, 858, 858, 858, 858, 858, 1450, 858, 858, 858, 858, 858, 858, 858, 1450, 858, 858, 858, 858, 858, 858, 858, 1450, 858, 858, 858, 858, 858, 858, 858, 1450, 858, 858, 858, 858, 858, 858, 858, 1450, 858, 858, 858, 858, 858, 858, 858, 1450, 858, 858, 858, 858, 858, 858, 858 };
+		static const unsigned short jump_table[] = { 1444, 858, 858, 858, 858, 858, 858, 858, 1444, 858, 858, 858, 858, 858, 858, 858, 1444, 858, 858, 858, 858, 858, 858, 858, 1444, 858, 858, 858, 858, 858, 858, 858, 1444, 858, 858, 858, 858, 858, 858, 858, 1444, 858, 858, 858, 858, 858, 858, 858, 1444, 858, 858, 858, 858, 858, 858, 858, 1444, 858, 858, 858, 858, 858, 858, 858, 1444, 858, 858, 858, 858, 858, 858, 858, 1444, 858, 858, 858, 858, 858, 858, 858, 1444, 858, 858, 858, 858, 858, 858, 858, 1444, 858, 858, 858, 858, 858, 858, 858, 1444, 858, 858, 858, 858, 858, 858, 858, 1444, 858, 858, 858, 858, 858, 858, 858, 1444, 858, 858, 858, 858, 858, 858, 858, 1445, 858, 858, 858, 1446, 858, 858, 858, 1444, 858, 858, 858, 858, 858, 858, 858, 1444, 858, 858, 858, 858, 858, 858, 858, 1444, 858, 858, 858, 858, 858, 858, 858, 1444, 858, 858, 858, 858, 858, 858, 858, 1444, 858, 858, 858, 858, 858, 858, 858, 1444, 858, 858, 858, 858, 858, 858, 858, 1444, 858, 858, 858, 858, 858, 858, 858, 1444, 858, 858, 858, 858, 858, 858, 858, 1444, 858, 858, 858, 858, 858, 858, 858, 1444, 858, 858, 858, 858, 858, 858, 858, 1444, 858, 858, 858, 858, 858, 858, 858, 1444, 858, 858, 858, 858, 858, 858, 858, 1444, 858, 858, 858, 858, 858, 858, 858, 1444, 858, 858, 858, 858, 858, 858, 858, 1444, 858, 858, 858, 858, 858, 858, 858, 1444, 858, 858, 858, 858, 858, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr634:
+tr628:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -17013,29 +16993,29 @@ st325:
 		goto _test_eof325;
 case 325:
 	if ( 144u <= (*p) && (*p) <= 155u )
-		goto tr637;
+		goto tr631;
 	goto tr42;
-tr637:
+tr631:
 	{
     SET_CPU_FEATURE(CPUFeature_XOP);
   }
 	goto st326;
-tr826:
+tr820:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
 	goto st326;
-tr850:
+tr844:
 	{
     SET_CPU_FEATURE(CPUFeature_FMA);
   }
 	goto st326;
-tr851:
+tr845:
 	{
     SET_CPU_FEATURE(CPUFeature_AESAVX);
   }
 	goto st326;
-tr852:
+tr846:
 	{
     SET_CPU_FEATURE(CPUFeature_F16C);
   }
@@ -17073,7 +17053,7 @@ case 326:
 	if ( 192u <= (*p) )
 		goto tr43;
 	goto tr42;
-tr829:
+tr823:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -17117,7 +17097,7 @@ case 327:
 		case 253u: goto tr42;
 	}
 	goto tr8;
-tr635:
+tr629:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -17127,31 +17107,31 @@ st328:
 		goto _test_eof328;
 case 328:
 	switch( (*p) ) {
-		case 203u: goto tr637;
-		case 219u: goto tr637;
+		case 203u: goto tr631;
+		case 219u: goto tr631;
 	}
 	if ( (*p) < 198u ) {
 		if ( (*p) < 144u ) {
 			if ( 128u <= (*p) && (*p) <= 131u )
-				goto tr637;
+				goto tr631;
 		} else if ( (*p) > 155u ) {
 			if ( 193u <= (*p) && (*p) <= 195u )
-				goto tr637;
+				goto tr631;
 		} else
-			goto tr637;
+			goto tr631;
 	} else if ( (*p) > 199u ) {
 		if ( (*p) < 214u ) {
 			if ( 209u <= (*p) && (*p) <= 211u )
-				goto tr637;
+				goto tr631;
 		} else if ( (*p) > 215u ) {
 			if ( 225u <= (*p) && (*p) <= 227u )
-				goto tr637;
+				goto tr631;
 		} else
-			goto tr637;
+			goto tr631;
 	} else
-		goto tr637;
+		goto tr631;
 	goto tr42;
-tr636:
+tr630:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -17161,9 +17141,9 @@ st329:
 		goto _test_eof329;
 case 329:
 	if ( 128u <= (*p) && (*p) <= 129u )
-		goto tr637;
+		goto tr631;
 	goto tr42;
-tr597:
+tr591:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -17173,11 +17153,11 @@ st330:
 		goto _test_eof330;
 case 330:
 	switch( (*p) ) {
-		case 120u: goto tr639;
-		case 248u: goto tr640;
+		case 120u: goto tr633;
+		case 248u: goto tr634;
 	}
 	goto tr42;
-tr639:
+tr633:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -17187,9 +17167,9 @@ st331:
 		goto _test_eof331;
 case 331:
 	if ( (*p) == 16u )
-		goto tr641;
+		goto tr635;
 	goto tr42;
-tr641:
+tr635:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
@@ -17197,7 +17177,7 @@ tr641:
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
 	goto st332;
-tr643:
+tr637:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
@@ -17210,14 +17190,14 @@ st332:
 		goto _test_eof332;
 case 332:
 	switch( (*p) ) {
-		case 4u: goto tr642;
-		case 12u: goto tr642;
-		case 20u: goto tr642;
-		case 28u: goto tr642;
-		case 36u: goto tr642;
-		case 44u: goto tr642;
-		case 52u: goto tr642;
-		case 60u: goto tr642;
+		case 4u: goto tr636;
+		case 12u: goto tr636;
+		case 20u: goto tr636;
+		case 28u: goto tr636;
+		case 36u: goto tr636;
+		case 44u: goto tr636;
+		case 52u: goto tr636;
+		case 60u: goto tr636;
 		case 68u: goto tr233;
 		case 76u: goto tr233;
 		case 84u: goto tr233;
@@ -17238,14 +17218,14 @@ case 332:
 	if ( 192u <= (*p) )
 		goto tr236;
 	goto tr42;
-tr642:
+tr636:
 	{
     SET_OPERAND_NAME(0, (((*p) & 0x38) >> 3) |
                            ((GET_REX_PREFIX() & 0x04) << 1) |
                            (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
   }
 	goto st333;
-tr712:
+tr706:
 	{
     SET_CPU_FEATURE(CPUFeature_LWP);
   }
@@ -17256,7 +17236,7 @@ tr712:
     SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
   }
 	goto st333;
-tr717:
+tr711:
 	{
     SET_CPU_FEATURE(CPUFeature_LWP);
   }
@@ -17306,7 +17286,7 @@ case 333:
 		case 253u: goto tr42;
 	}
 	goto tr237;
-tr640:
+tr634:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -17316,9 +17296,9 @@ st334:
 		goto _test_eof334;
 case 334:
 	if ( (*p) == 16u )
-		goto tr643;
+		goto tr637;
 	goto tr42;
-tr598:
+tr592:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -17328,11 +17308,11 @@ st335:
 		goto _test_eof335;
 case 335:
 	{
-		static const unsigned short jump_table[] = { 1460, 858, 858, 858, 1461, 858, 858, 858, 1460, 858, 858, 858, 1461, 858, 858, 858, 1460, 858, 858, 858, 1461, 858, 858, 858, 1460, 858, 858, 858, 1461, 858, 858, 858, 1460, 858, 858, 858, 1461, 858, 858, 858, 1460, 858, 858, 858, 1461, 858, 858, 858, 1460, 858, 858, 858, 1461, 858, 858, 858, 1460, 858, 858, 858, 1461, 858, 858, 858, 1460, 858, 858, 858, 1461, 858, 858, 858, 1460, 858, 858, 858, 1461, 858, 858, 858, 1460, 858, 858, 858, 1461, 858, 858, 858, 1460, 858, 858, 858, 1461, 858, 858, 858, 1460, 858, 858, 858, 1461, 858, 858, 858, 1460, 858, 858, 858, 1461, 858, 858, 858, 1460, 858, 858, 858, 1461, 858, 858, 858, 1462, 858, 858, 858, 1461, 858, 858, 858, 1463, 858, 858, 858, 1461, 858, 858, 858, 1463, 858, 858, 858, 1461, 858, 858, 858, 1463, 858, 858, 858, 1461, 858, 858, 858, 1463, 858, 858, 858, 1461, 858, 858, 858, 1463, 858, 858, 858, 1461, 858, 858, 858, 1463, 858, 858, 858, 1461, 858, 858, 858, 1463, 858, 858, 858, 1461, 858, 858, 858, 1463, 858, 858, 858, 1461, 858, 858, 858, 1463, 858, 858, 858, 1461, 858, 858, 858, 1463, 858, 858, 858, 1461, 858, 858, 858, 1463, 858, 858, 858, 1461, 858, 858, 858, 1463, 858, 858, 858, 1461, 858, 858, 858, 1463, 858, 858, 858, 1461, 858, 858, 858, 1463, 858, 858, 858, 1461, 858, 858, 858, 1463, 858, 858, 858, 1461, 858, 858, 858, 1463, 858, 858, 858, 1461, 858, 858, 858 };
+		static const unsigned short jump_table[] = { 1454, 858, 858, 858, 1455, 858, 858, 858, 1454, 858, 858, 858, 1455, 858, 858, 858, 1454, 858, 858, 858, 1455, 858, 858, 858, 1454, 858, 858, 858, 1455, 858, 858, 858, 1454, 858, 858, 858, 1455, 858, 858, 858, 1454, 858, 858, 858, 1455, 858, 858, 858, 1454, 858, 858, 858, 1455, 858, 858, 858, 1454, 858, 858, 858, 1455, 858, 858, 858, 1454, 858, 858, 858, 1455, 858, 858, 858, 1454, 858, 858, 858, 1455, 858, 858, 858, 1454, 858, 858, 858, 1455, 858, 858, 858, 1454, 858, 858, 858, 1455, 858, 858, 858, 1454, 858, 858, 858, 1455, 858, 858, 858, 1454, 858, 858, 858, 1455, 858, 858, 858, 1454, 858, 858, 858, 1455, 858, 858, 858, 1456, 858, 858, 858, 1455, 858, 858, 858, 1457, 858, 858, 858, 1455, 858, 858, 858, 1457, 858, 858, 858, 1455, 858, 858, 858, 1457, 858, 858, 858, 1455, 858, 858, 858, 1457, 858, 858, 858, 1455, 858, 858, 858, 1457, 858, 858, 858, 1455, 858, 858, 858, 1457, 858, 858, 858, 1455, 858, 858, 858, 1457, 858, 858, 858, 1455, 858, 858, 858, 1457, 858, 858, 858, 1455, 858, 858, 858, 1457, 858, 858, 858, 1455, 858, 858, 858, 1457, 858, 858, 858, 1455, 858, 858, 858, 1457, 858, 858, 858, 1455, 858, 858, 858, 1457, 858, 858, 858, 1455, 858, 858, 858, 1457, 858, 858, 858, 1455, 858, 858, 858, 1457, 858, 858, 858, 1455, 858, 858, 858, 1457, 858, 858, 858, 1455, 858, 858, 858, 1457, 858, 858, 858, 1455, 858, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr644:
+tr638:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -17342,41 +17322,41 @@ st336:
 		goto _test_eof336;
 case 336:
 	switch( (*p) ) {
-		case 166u: goto tr648;
-		case 182u: goto tr648;
+		case 166u: goto tr642;
+		case 182u: goto tr642;
 	}
 	if ( (*p) < 158u ) {
 		if ( (*p) < 142u ) {
 			if ( 133u <= (*p) && (*p) <= 135u )
-				goto tr648;
+				goto tr642;
 		} else if ( (*p) > 143u ) {
 			if ( 149u <= (*p) && (*p) <= 151u )
-				goto tr648;
+				goto tr642;
 		} else
-			goto tr648;
+			goto tr642;
 	} else if ( (*p) > 159u ) {
 		if ( (*p) < 204u ) {
 			if ( 162u <= (*p) && (*p) <= 163u )
-				goto tr648;
+				goto tr642;
 		} else if ( (*p) > 207u ) {
 			if ( 236u <= (*p) && (*p) <= 239u )
-				goto tr649;
+				goto tr643;
 		} else
-			goto tr649;
+			goto tr643;
 	} else
-		goto tr648;
+		goto tr642;
 	goto tr42;
-tr648:
+tr642:
 	{
     SET_CPU_FEATURE(CPUFeature_XOP);
   }
 	goto st337;
-tr936:
+tr930:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
 	goto st337;
-tr937:
+tr931:
 	{
     SET_CPU_FEATURE(CPUFeature_FMA4);
   }
@@ -17419,61 +17399,61 @@ st338:
 		goto _test_eof338;
 case 338:
 	switch( (*p) ) {
-		case 5u: goto tr651;
-		case 13u: goto tr651;
-		case 21u: goto tr651;
-		case 29u: goto tr651;
-		case 37u: goto tr651;
-		case 45u: goto tr651;
-		case 53u: goto tr651;
-		case 61u: goto tr651;
-		case 69u: goto tr651;
-		case 77u: goto tr651;
-		case 85u: goto tr651;
-		case 93u: goto tr651;
-		case 101u: goto tr651;
-		case 109u: goto tr651;
-		case 117u: goto tr651;
-		case 125u: goto tr651;
-		case 133u: goto tr651;
-		case 141u: goto tr651;
-		case 149u: goto tr651;
-		case 157u: goto tr651;
-		case 165u: goto tr651;
-		case 173u: goto tr651;
-		case 181u: goto tr651;
-		case 189u: goto tr651;
-		case 197u: goto tr651;
-		case 205u: goto tr651;
-		case 213u: goto tr651;
-		case 221u: goto tr651;
-		case 229u: goto tr651;
-		case 237u: goto tr651;
-		case 245u: goto tr651;
-		case 253u: goto tr651;
+		case 5u: goto tr645;
+		case 13u: goto tr645;
+		case 21u: goto tr645;
+		case 29u: goto tr645;
+		case 37u: goto tr645;
+		case 45u: goto tr645;
+		case 53u: goto tr645;
+		case 61u: goto tr645;
+		case 69u: goto tr645;
+		case 77u: goto tr645;
+		case 85u: goto tr645;
+		case 93u: goto tr645;
+		case 101u: goto tr645;
+		case 109u: goto tr645;
+		case 117u: goto tr645;
+		case 125u: goto tr645;
+		case 133u: goto tr645;
+		case 141u: goto tr645;
+		case 149u: goto tr645;
+		case 157u: goto tr645;
+		case 165u: goto tr645;
+		case 173u: goto tr645;
+		case 181u: goto tr645;
+		case 189u: goto tr645;
+		case 197u: goto tr645;
+		case 205u: goto tr645;
+		case 213u: goto tr645;
+		case 221u: goto tr645;
+		case 229u: goto tr645;
+		case 237u: goto tr645;
+		case 245u: goto tr645;
+		case 253u: goto tr645;
 	}
-	goto tr625;
-tr649:
+	goto tr619;
+tr643:
 	{
     SET_CPU_FEATURE(CPUFeature_XOP);
   }
 	goto st339;
-tr905:
+tr899:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
 	goto st339;
-tr938:
+tr932:
 	{
     SET_CPU_FEATURE(CPUFeature_AESAVX);
   }
 	goto st339;
-tr942:
+tr936:
 	{
     SET_CPU_FEATURE(CPUFeature_F16C);
   }
 	goto st339;
-tr934:
+tr928:
 	{
     SET_CPU_FEATURE(CPUFeature_CLMULAVX);
   }
@@ -17511,7 +17491,7 @@ case 339:
 	if ( 192u <= (*p) )
 		goto st53;
 	goto tr42;
-tr645:
+tr639:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -17521,9 +17501,9 @@ st340:
 		goto _test_eof340;
 case 340:
 	if ( (*p) == 162u )
-		goto tr648;
+		goto tr642;
 	goto tr42;
-tr646:
+tr640:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -17533,34 +17513,34 @@ st341:
 		goto _test_eof341;
 case 341:
 	switch( (*p) ) {
-		case 166u: goto tr648;
-		case 182u: goto tr648;
+		case 166u: goto tr642;
+		case 182u: goto tr642;
 	}
 	if ( (*p) < 158u ) {
 		if ( (*p) < 142u ) {
 			if ( 133u <= (*p) && (*p) <= 135u )
-				goto tr648;
+				goto tr642;
 		} else if ( (*p) > 143u ) {
 			if ( 149u <= (*p) && (*p) <= 151u )
-				goto tr648;
+				goto tr642;
 		} else
-			goto tr648;
+			goto tr642;
 	} else if ( (*p) > 159u ) {
 		if ( (*p) < 192u ) {
 			if ( 162u <= (*p) && (*p) <= 163u )
-				goto tr648;
+				goto tr642;
 		} else if ( (*p) > 195u ) {
 			if ( (*p) > 207u ) {
 				if ( 236u <= (*p) && (*p) <= 239u )
-					goto tr649;
+					goto tr643;
 			} else if ( (*p) >= 204u )
-				goto tr649;
+				goto tr643;
 		} else
-			goto tr649;
+			goto tr643;
 	} else
-		goto tr648;
+		goto tr642;
 	goto tr42;
-tr647:
+tr641:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -17570,9 +17550,9 @@ st342:
 		goto _test_eof342;
 case 342:
 	if ( 162u <= (*p) && (*p) <= 163u )
-		goto tr648;
+		goto tr642;
 	goto tr42;
-tr599:
+tr593:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -17582,11 +17562,11 @@ st343:
 		goto _test_eof343;
 case 343:
 	{
-		static const unsigned short jump_table[] = { 1468, 858, 858, 858, 858, 858, 858, 858, 1468, 858, 858, 858, 858, 858, 858, 858, 1468, 858, 858, 858, 858, 858, 858, 858, 1468, 858, 858, 858, 858, 858, 858, 858, 1468, 858, 858, 858, 858, 858, 858, 858, 1468, 858, 858, 858, 858, 858, 858, 858, 1468, 858, 858, 858, 858, 858, 858, 858, 1468, 858, 858, 858, 858, 858, 858, 858, 1468, 858, 858, 858, 858, 858, 858, 858, 1468, 858, 858, 858, 858, 858, 858, 858, 1468, 858, 858, 858, 858, 858, 858, 858, 1468, 858, 858, 858, 858, 858, 858, 858, 1468, 858, 858, 858, 858, 858, 858, 858, 1468, 858, 858, 858, 858, 858, 858, 858, 1468, 858, 858, 858, 858, 858, 858, 858, 1469, 858, 858, 858, 1470, 858, 858, 858, 1468, 858, 858, 858, 858, 858, 858, 858, 1468, 858, 858, 858, 858, 858, 858, 858, 1468, 858, 858, 858, 858, 858, 858, 858, 1468, 858, 858, 858, 858, 858, 858, 858, 1468, 858, 858, 858, 858, 858, 858, 858, 1468, 858, 858, 858, 858, 858, 858, 858, 1468, 858, 858, 858, 858, 858, 858, 858, 1468, 858, 858, 858, 858, 858, 858, 858, 1468, 858, 858, 858, 858, 858, 858, 858, 1468, 858, 858, 858, 858, 858, 858, 858, 1468, 858, 858, 858, 858, 858, 858, 858, 1468, 858, 858, 858, 858, 858, 858, 858, 1468, 858, 858, 858, 858, 858, 858, 858, 1468, 858, 858, 858, 858, 858, 858, 858, 1468, 858, 858, 858, 858, 858, 858, 858, 1468, 858, 858, 858, 858, 858, 858, 858 };
+		static const unsigned short jump_table[] = { 1462, 858, 858, 858, 858, 858, 858, 858, 1462, 858, 858, 858, 858, 858, 858, 858, 1462, 858, 858, 858, 858, 858, 858, 858, 1462, 858, 858, 858, 858, 858, 858, 858, 1462, 858, 858, 858, 858, 858, 858, 858, 1462, 858, 858, 858, 858, 858, 858, 858, 1462, 858, 858, 858, 858, 858, 858, 858, 1462, 858, 858, 858, 858, 858, 858, 858, 1462, 858, 858, 858, 858, 858, 858, 858, 1462, 858, 858, 858, 858, 858, 858, 858, 1462, 858, 858, 858, 858, 858, 858, 858, 1462, 858, 858, 858, 858, 858, 858, 858, 1462, 858, 858, 858, 858, 858, 858, 858, 1462, 858, 858, 858, 858, 858, 858, 858, 1462, 858, 858, 858, 858, 858, 858, 858, 1463, 858, 858, 858, 1464, 858, 858, 858, 1462, 858, 858, 858, 858, 858, 858, 858, 1462, 858, 858, 858, 858, 858, 858, 858, 1462, 858, 858, 858, 858, 858, 858, 858, 1462, 858, 858, 858, 858, 858, 858, 858, 1462, 858, 858, 858, 858, 858, 858, 858, 1462, 858, 858, 858, 858, 858, 858, 858, 1462, 858, 858, 858, 858, 858, 858, 858, 1462, 858, 858, 858, 858, 858, 858, 858, 1462, 858, 858, 858, 858, 858, 858, 858, 1462, 858, 858, 858, 858, 858, 858, 858, 1462, 858, 858, 858, 858, 858, 858, 858, 1462, 858, 858, 858, 858, 858, 858, 858, 1462, 858, 858, 858, 858, 858, 858, 858, 1462, 858, 858, 858, 858, 858, 858, 858, 1462, 858, 858, 858, 858, 858, 858, 858, 1462, 858, 858, 858, 858, 858, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr652:
+tr646:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -17596,29 +17576,29 @@ st344:
 		goto _test_eof344;
 case 344:
 	if ( 144u <= (*p) && (*p) <= 155u )
-		goto tr655;
+		goto tr649;
 	goto tr42;
-tr655:
+tr649:
 	{
     SET_CPU_FEATURE(CPUFeature_XOP);
   }
 	goto st345;
-tr903:
+tr897:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
 	goto st345;
-tr922:
+tr916:
 	{
     SET_CPU_FEATURE(CPUFeature_FMA);
   }
 	goto st345;
-tr923:
+tr917:
 	{
     SET_CPU_FEATURE(CPUFeature_AESAVX);
   }
 	goto st345;
-tr924:
+tr918:
 	{
     SET_CPU_FEATURE(CPUFeature_F16C);
   }
@@ -17656,7 +17636,7 @@ case 345:
 	if ( 192u <= (*p) )
 		goto tr43;
 	goto tr42;
-tr653:
+tr647:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -17666,31 +17646,31 @@ st346:
 		goto _test_eof346;
 case 346:
 	switch( (*p) ) {
-		case 203u: goto tr655;
-		case 219u: goto tr655;
+		case 203u: goto tr649;
+		case 219u: goto tr649;
 	}
 	if ( (*p) < 198u ) {
 		if ( (*p) < 144u ) {
 			if ( 128u <= (*p) && (*p) <= 131u )
-				goto tr655;
+				goto tr649;
 		} else if ( (*p) > 155u ) {
 			if ( 193u <= (*p) && (*p) <= 195u )
-				goto tr655;
+				goto tr649;
 		} else
-			goto tr655;
+			goto tr649;
 	} else if ( (*p) > 199u ) {
 		if ( (*p) < 214u ) {
 			if ( 209u <= (*p) && (*p) <= 211u )
-				goto tr655;
+				goto tr649;
 		} else if ( (*p) > 215u ) {
 			if ( 225u <= (*p) && (*p) <= 227u )
-				goto tr655;
+				goto tr649;
 		} else
-			goto tr655;
+			goto tr649;
 	} else
-		goto tr655;
+		goto tr649;
 	goto tr42;
-tr654:
+tr648:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -17700,9 +17680,9 @@ st347:
 		goto _test_eof347;
 case 347:
 	if ( 128u <= (*p) && (*p) <= 129u )
-		goto tr655;
+		goto tr649;
 	goto tr42;
-tr600:
+tr594:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -17712,11 +17692,11 @@ st348:
 		goto _test_eof348;
 case 348:
 	switch( (*p) ) {
-		case 120u: goto tr656;
-		case 248u: goto tr657;
+		case 120u: goto tr650;
+		case 248u: goto tr651;
 	}
 	goto tr42;
-tr656:
+tr650:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -17726,9 +17706,9 @@ st349:
 		goto _test_eof349;
 case 349:
 	if ( (*p) == 16u )
-		goto tr658;
+		goto tr652;
 	goto tr42;
-tr658:
+tr652:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
@@ -17736,7 +17716,7 @@ tr658:
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
 	goto st350;
-tr659:
+tr653:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
@@ -17777,7 +17757,7 @@ case 350:
 	if ( 192u <= (*p) )
 		goto tr236;
 	goto tr42;
-tr657:
+tr651:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -17787,9 +17767,9 @@ st351:
 		goto _test_eof351;
 case 351:
 	if ( (*p) == 16u )
-		goto tr659;
+		goto tr653;
 	goto tr42;
-tr601:
+tr595:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -17799,11 +17779,11 @@ st352:
 		goto _test_eof352;
 case 352:
 	{
-		static const unsigned short jump_table[] = { 1476, 858, 858, 858, 1477, 858, 858, 858, 1476, 858, 858, 858, 1477, 858, 858, 858, 1476, 858, 858, 858, 1477, 858, 858, 858, 1476, 858, 858, 858, 1477, 858, 858, 858, 1476, 858, 858, 858, 1477, 858, 858, 858, 1476, 858, 858, 858, 1477, 858, 858, 858, 1476, 858, 858, 858, 1477, 858, 858, 858, 1476, 858, 858, 858, 1477, 858, 858, 858, 1476, 858, 858, 858, 1477, 858, 858, 858, 1476, 858, 858, 858, 1477, 858, 858, 858, 1476, 858, 858, 858, 1477, 858, 858, 858, 1476, 858, 858, 858, 1477, 858, 858, 858, 1476, 858, 858, 858, 1477, 858, 858, 858, 1476, 858, 858, 858, 1477, 858, 858, 858, 1476, 858, 858, 858, 1477, 858, 858, 858, 1478, 858, 858, 858, 1477, 858, 858, 858, 1479, 858, 858, 858, 1477, 858, 858, 858, 1479, 858, 858, 858, 1477, 858, 858, 858, 1479, 858, 858, 858, 1477, 858, 858, 858, 1479, 858, 858, 858, 1477, 858, 858, 858, 1479, 858, 858, 858, 1477, 858, 858, 858, 1479, 858, 858, 858, 1477, 858, 858, 858, 1479, 858, 858, 858, 1477, 858, 858, 858, 1479, 858, 858, 858, 1477, 858, 858, 858, 1479, 858, 858, 858, 1477, 858, 858, 858, 1479, 858, 858, 858, 1477, 858, 858, 858, 1479, 858, 858, 858, 1477, 858, 858, 858, 1479, 858, 858, 858, 1477, 858, 858, 858, 1479, 858, 858, 858, 1477, 858, 858, 858, 1479, 858, 858, 858, 1477, 858, 858, 858, 1479, 858, 858, 858, 1477, 858, 858, 858, 1479, 858, 858, 858, 1477, 858, 858, 858 };
+		static const unsigned short jump_table[] = { 1470, 858, 858, 858, 1471, 858, 858, 858, 1470, 858, 858, 858, 1471, 858, 858, 858, 1470, 858, 858, 858, 1471, 858, 858, 858, 1470, 858, 858, 858, 1471, 858, 858, 858, 1470, 858, 858, 858, 1471, 858, 858, 858, 1470, 858, 858, 858, 1471, 858, 858, 858, 1470, 858, 858, 858, 1471, 858, 858, 858, 1470, 858, 858, 858, 1471, 858, 858, 858, 1470, 858, 858, 858, 1471, 858, 858, 858, 1470, 858, 858, 858, 1471, 858, 858, 858, 1470, 858, 858, 858, 1471, 858, 858, 858, 1470, 858, 858, 858, 1471, 858, 858, 858, 1470, 858, 858, 858, 1471, 858, 858, 858, 1470, 858, 858, 858, 1471, 858, 858, 858, 1470, 858, 858, 858, 1471, 858, 858, 858, 1472, 858, 858, 858, 1471, 858, 858, 858, 1473, 858, 858, 858, 1471, 858, 858, 858, 1473, 858, 858, 858, 1471, 858, 858, 858, 1473, 858, 858, 858, 1471, 858, 858, 858, 1473, 858, 858, 858, 1471, 858, 858, 858, 1473, 858, 858, 858, 1471, 858, 858, 858, 1473, 858, 858, 858, 1471, 858, 858, 858, 1473, 858, 858, 858, 1471, 858, 858, 858, 1473, 858, 858, 858, 1471, 858, 858, 858, 1473, 858, 858, 858, 1471, 858, 858, 858, 1473, 858, 858, 858, 1471, 858, 858, 858, 1473, 858, 858, 858, 1471, 858, 858, 858, 1473, 858, 858, 858, 1471, 858, 858, 858, 1473, 858, 858, 858, 1471, 858, 858, 858, 1473, 858, 858, 858, 1471, 858, 858, 858, 1473, 858, 858, 858, 1471, 858, 858, 858, 1473, 858, 858, 858, 1471, 858, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr660:
+tr654:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -17813,41 +17793,41 @@ st353:
 		goto _test_eof353;
 case 353:
 	switch( (*p) ) {
-		case 166u: goto tr664;
-		case 182u: goto tr664;
+		case 166u: goto tr658;
+		case 182u: goto tr658;
 	}
 	if ( (*p) < 158u ) {
 		if ( (*p) < 142u ) {
 			if ( 133u <= (*p) && (*p) <= 135u )
-				goto tr664;
+				goto tr658;
 		} else if ( (*p) > 143u ) {
 			if ( 149u <= (*p) && (*p) <= 151u )
-				goto tr664;
+				goto tr658;
 		} else
-			goto tr664;
+			goto tr658;
 	} else if ( (*p) > 159u ) {
 		if ( (*p) < 204u ) {
 			if ( 162u <= (*p) && (*p) <= 163u )
-				goto tr664;
+				goto tr658;
 		} else if ( (*p) > 207u ) {
 			if ( 236u <= (*p) && (*p) <= 239u )
-				goto tr665;
+				goto tr659;
 		} else
-			goto tr665;
+			goto tr659;
 	} else
-		goto tr664;
+		goto tr658;
 	goto tr42;
-tr664:
+tr658:
 	{
     SET_CPU_FEATURE(CPUFeature_XOP);
   }
 	goto st354;
-tr1006:
+tr1000:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
 	goto st354;
-tr1007:
+tr1001:
 	{
     SET_CPU_FEATURE(CPUFeature_FMA4);
   }
@@ -17857,31 +17837,31 @@ st354:
 		goto _test_eof354;
 case 354:
 	{
-		static const unsigned short jump_table[] = { 1482, 1482, 1482, 1482, 310, 858, 1482, 1482, 1482, 1482, 1482, 1482, 310, 858, 1482, 1482, 1482, 1482, 1482, 1482, 310, 858, 1482, 1482, 1482, 1482, 1482, 1482, 310, 858, 1482, 1482, 1482, 1482, 1482, 1482, 310, 858, 1482, 1482, 1482, 1482, 1482, 1482, 310, 858, 1482, 1482, 1482, 1482, 1482, 1482, 310, 858, 1482, 1482, 1482, 1482, 1482, 1482, 310, 858, 1482, 1482, 1483, 1483, 1483, 1483, 312, 1483, 1483, 1483, 1483, 1483, 1483, 1483, 312, 1483, 1483, 1483, 1483, 1483, 1483, 1483, 312, 1483, 1483, 1483, 1483, 1483, 1483, 1483, 312, 1483, 1483, 1483, 1483, 1483, 1483, 1483, 312, 1483, 1483, 1483, 1483, 1483, 1483, 1483, 312, 1483, 1483, 1483, 1483, 1483, 1483, 1483, 312, 1483, 1483, 1483, 1483, 1483, 1483, 1483, 312, 1483, 1483, 1483, 1484, 1484, 1484, 1484, 314, 1484, 1484, 1484, 1484, 1484, 1484, 1484, 314, 1484, 1484, 1484, 1484, 1484, 1484, 1484, 314, 1484, 1484, 1484, 1484, 1484, 1484, 1484, 314, 1484, 1484, 1484, 1484, 1484, 1484, 1484, 314, 1484, 1484, 1484, 1484, 1484, 1484, 1484, 314, 1484, 1484, 1484, 1484, 1484, 1484, 1484, 314, 1484, 1484, 1484, 1484, 1484, 1484, 1484, 314, 1484, 1484, 1484, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311 };
+		static const unsigned short jump_table[] = { 1476, 1476, 1476, 1476, 310, 858, 1476, 1476, 1476, 1476, 1476, 1476, 310, 858, 1476, 1476, 1476, 1476, 1476, 1476, 310, 858, 1476, 1476, 1476, 1476, 1476, 1476, 310, 858, 1476, 1476, 1476, 1476, 1476, 1476, 310, 858, 1476, 1476, 1476, 1476, 1476, 1476, 310, 858, 1476, 1476, 1476, 1476, 1476, 1476, 310, 858, 1476, 1476, 1476, 1476, 1476, 1476, 310, 858, 1476, 1476, 1477, 1477, 1477, 1477, 312, 1477, 1477, 1477, 1477, 1477, 1477, 1477, 312, 1477, 1477, 1477, 1477, 1477, 1477, 1477, 312, 1477, 1477, 1477, 1477, 1477, 1477, 1477, 312, 1477, 1477, 1477, 1477, 1477, 1477, 1477, 312, 1477, 1477, 1477, 1477, 1477, 1477, 1477, 312, 1477, 1477, 1477, 1477, 1477, 1477, 1477, 312, 1477, 1477, 1477, 1477, 1477, 1477, 1477, 312, 1477, 1477, 1477, 1478, 1478, 1478, 1478, 314, 1478, 1478, 1478, 1478, 1478, 1478, 1478, 314, 1478, 1478, 1478, 1478, 1478, 1478, 1478, 314, 1478, 1478, 1478, 1478, 1478, 1478, 1478, 314, 1478, 1478, 1478, 1478, 1478, 1478, 1478, 314, 1478, 1478, 1478, 1478, 1478, 1478, 1478, 314, 1478, 1478, 1478, 1478, 1478, 1478, 1478, 314, 1478, 1478, 1478, 1478, 1478, 1478, 1478, 314, 1478, 1478, 1478, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr665:
+tr659:
 	{
     SET_CPU_FEATURE(CPUFeature_XOP);
   }
 	goto st355;
-tr967:
+tr961:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
 	goto st355;
-tr1008:
+tr1002:
 	{
     SET_CPU_FEATURE(CPUFeature_AESAVX);
   }
 	goto st355;
-tr1015:
+tr1009:
 	{
     SET_CPU_FEATURE(CPUFeature_F16C);
   }
 	goto st355;
-tr1004:
+tr998:
 	{
     SET_CPU_FEATURE(CPUFeature_CLMULAVX);
   }
@@ -17895,7 +17875,7 @@ case 355:
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr661:
+tr655:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -17905,9 +17885,9 @@ st356:
 		goto _test_eof356;
 case 356:
 	if ( (*p) == 162u )
-		goto tr664;
+		goto tr658;
 	goto tr42;
-tr662:
+tr656:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -17917,34 +17897,34 @@ st357:
 		goto _test_eof357;
 case 357:
 	switch( (*p) ) {
-		case 166u: goto tr664;
-		case 182u: goto tr664;
+		case 166u: goto tr658;
+		case 182u: goto tr658;
 	}
 	if ( (*p) < 158u ) {
 		if ( (*p) < 142u ) {
 			if ( 133u <= (*p) && (*p) <= 135u )
-				goto tr664;
+				goto tr658;
 		} else if ( (*p) > 143u ) {
 			if ( 149u <= (*p) && (*p) <= 151u )
-				goto tr664;
+				goto tr658;
 		} else
-			goto tr664;
+			goto tr658;
 	} else if ( (*p) > 159u ) {
 		if ( (*p) < 192u ) {
 			if ( 162u <= (*p) && (*p) <= 163u )
-				goto tr664;
+				goto tr658;
 		} else if ( (*p) > 195u ) {
 			if ( (*p) > 207u ) {
 				if ( 236u <= (*p) && (*p) <= 239u )
-					goto tr665;
+					goto tr659;
 			} else if ( (*p) >= 204u )
-				goto tr665;
+				goto tr659;
 		} else
-			goto tr665;
+			goto tr659;
 	} else
-		goto tr664;
+		goto tr658;
 	goto tr42;
-tr663:
+tr657:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -17954,9 +17934,9 @@ st358:
 		goto _test_eof358;
 case 358:
 	if ( 162u <= (*p) && (*p) <= 163u )
-		goto tr664;
+		goto tr658;
 	goto tr42;
-tr602:
+tr596:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -17966,11 +17946,11 @@ st359:
 		goto _test_eof359;
 case 359:
 	{
-		static const unsigned short jump_table[] = { 1485, 858, 858, 858, 858, 858, 858, 858, 1485, 858, 858, 858, 858, 858, 858, 858, 1485, 858, 858, 858, 858, 858, 858, 858, 1485, 858, 858, 858, 858, 858, 858, 858, 1485, 858, 858, 858, 858, 858, 858, 858, 1485, 858, 858, 858, 858, 858, 858, 858, 1485, 858, 858, 858, 858, 858, 858, 858, 1485, 858, 858, 858, 858, 858, 858, 858, 1485, 858, 858, 858, 858, 858, 858, 858, 1485, 858, 858, 858, 858, 858, 858, 858, 1485, 858, 858, 858, 858, 858, 858, 858, 1485, 858, 858, 858, 858, 858, 858, 858, 1485, 858, 858, 858, 858, 858, 858, 858, 1485, 858, 858, 858, 858, 858, 858, 858, 1485, 858, 858, 858, 858, 858, 858, 858, 1486, 858, 858, 858, 1487, 858, 858, 858, 1485, 858, 858, 858, 858, 858, 858, 858, 1485, 858, 858, 858, 858, 858, 858, 858, 1485, 858, 858, 858, 858, 858, 858, 858, 1485, 858, 858, 858, 858, 858, 858, 858, 1485, 858, 858, 858, 858, 858, 858, 858, 1485, 858, 858, 858, 858, 858, 858, 858, 1485, 858, 858, 858, 858, 858, 858, 858, 1485, 858, 858, 858, 858, 858, 858, 858, 1485, 858, 858, 858, 858, 858, 858, 858, 1485, 858, 858, 858, 858, 858, 858, 858, 1485, 858, 858, 858, 858, 858, 858, 858, 1485, 858, 858, 858, 858, 858, 858, 858, 1485, 858, 858, 858, 858, 858, 858, 858, 1485, 858, 858, 858, 858, 858, 858, 858, 1485, 858, 858, 858, 858, 858, 858, 858, 1485, 858, 858, 858, 858, 858, 858, 858 };
+		static const unsigned short jump_table[] = { 1479, 858, 858, 858, 858, 858, 858, 858, 1479, 858, 858, 858, 858, 858, 858, 858, 1479, 858, 858, 858, 858, 858, 858, 858, 1479, 858, 858, 858, 858, 858, 858, 858, 1479, 858, 858, 858, 858, 858, 858, 858, 1479, 858, 858, 858, 858, 858, 858, 858, 1479, 858, 858, 858, 858, 858, 858, 858, 1479, 858, 858, 858, 858, 858, 858, 858, 1479, 858, 858, 858, 858, 858, 858, 858, 1479, 858, 858, 858, 858, 858, 858, 858, 1479, 858, 858, 858, 858, 858, 858, 858, 1479, 858, 858, 858, 858, 858, 858, 858, 1479, 858, 858, 858, 858, 858, 858, 858, 1479, 858, 858, 858, 858, 858, 858, 858, 1479, 858, 858, 858, 858, 858, 858, 858, 1480, 858, 858, 858, 1481, 858, 858, 858, 1479, 858, 858, 858, 858, 858, 858, 858, 1479, 858, 858, 858, 858, 858, 858, 858, 1479, 858, 858, 858, 858, 858, 858, 858, 1479, 858, 858, 858, 858, 858, 858, 858, 1479, 858, 858, 858, 858, 858, 858, 858, 1479, 858, 858, 858, 858, 858, 858, 858, 1479, 858, 858, 858, 858, 858, 858, 858, 1479, 858, 858, 858, 858, 858, 858, 858, 1479, 858, 858, 858, 858, 858, 858, 858, 1479, 858, 858, 858, 858, 858, 858, 858, 1479, 858, 858, 858, 858, 858, 858, 858, 1479, 858, 858, 858, 858, 858, 858, 858, 1479, 858, 858, 858, 858, 858, 858, 858, 1479, 858, 858, 858, 858, 858, 858, 858, 1479, 858, 858, 858, 858, 858, 858, 858, 1479, 858, 858, 858, 858, 858, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr669:
+tr663:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -17980,29 +17960,29 @@ st360:
 		goto _test_eof360;
 case 360:
 	if ( 144u <= (*p) && (*p) <= 155u )
-		goto tr672;
+		goto tr666;
 	goto tr42;
-tr672:
+tr666:
 	{
     SET_CPU_FEATURE(CPUFeature_XOP);
   }
 	goto st361;
-tr965:
+tr959:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
 	goto st361;
-tr993:
+tr987:
 	{
     SET_CPU_FEATURE(CPUFeature_FMA);
   }
 	goto st361;
-tr994:
+tr988:
 	{
     SET_CPU_FEATURE(CPUFeature_AESAVX);
   }
 	goto st361;
-tr995:
+tr989:
 	{
     SET_CPU_FEATURE(CPUFeature_F16C);
   }
@@ -18016,7 +17996,7 @@ case 361:
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr670:
+tr664:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -18026,31 +18006,31 @@ st362:
 		goto _test_eof362;
 case 362:
 	switch( (*p) ) {
-		case 203u: goto tr672;
-		case 219u: goto tr672;
+		case 203u: goto tr666;
+		case 219u: goto tr666;
 	}
 	if ( (*p) < 198u ) {
 		if ( (*p) < 144u ) {
 			if ( 128u <= (*p) && (*p) <= 131u )
-				goto tr672;
+				goto tr666;
 		} else if ( (*p) > 155u ) {
 			if ( 193u <= (*p) && (*p) <= 195u )
-				goto tr672;
+				goto tr666;
 		} else
-			goto tr672;
+			goto tr666;
 	} else if ( (*p) > 199u ) {
 		if ( (*p) < 214u ) {
 			if ( 209u <= (*p) && (*p) <= 211u )
-				goto tr672;
+				goto tr666;
 		} else if ( (*p) > 215u ) {
 			if ( 225u <= (*p) && (*p) <= 227u )
-				goto tr672;
+				goto tr666;
 		} else
-			goto tr672;
+			goto tr666;
 	} else
-		goto tr672;
+		goto tr666;
 	goto tr42;
-tr671:
+tr665:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -18060,9 +18040,9 @@ st363:
 		goto _test_eof363;
 case 363:
 	if ( 128u <= (*p) && (*p) <= 129u )
-		goto tr672;
+		goto tr666;
 	goto tr42;
-tr603:
+tr597:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -18072,11 +18052,11 @@ st364:
 		goto _test_eof364;
 case 364:
 	switch( (*p) ) {
-		case 120u: goto tr673;
-		case 248u: goto tr674;
+		case 120u: goto tr667;
+		case 248u: goto tr668;
 	}
 	goto tr42;
-tr673:
+tr667:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -18086,9 +18066,9 @@ st365:
 		goto _test_eof365;
 case 365:
 	if ( (*p) == 16u )
-		goto tr675;
+		goto tr669;
 	goto tr42;
-tr675:
+tr669:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
@@ -18096,7 +18076,7 @@ tr675:
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
 	goto st366;
-tr676:
+tr670:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
@@ -18109,11 +18089,11 @@ st366:
 		goto _test_eof366;
 case 366:
 	{
-		static const unsigned short jump_table[] = { 1045, 1045, 1045, 1045, 1458, 858, 1045, 1045, 1045, 1045, 1045, 1045, 1458, 858, 1045, 1045, 1045, 1045, 1045, 1045, 1458, 858, 1045, 1045, 1045, 1045, 1045, 1045, 1458, 858, 1045, 1045, 1045, 1045, 1045, 1045, 1458, 858, 1045, 1045, 1045, 1045, 1045, 1045, 1458, 858, 1045, 1045, 1045, 1045, 1045, 1045, 1458, 858, 1045, 1045, 1045, 1045, 1045, 1045, 1458, 858, 1045, 1045, 1048, 1048, 1048, 1048, 1049, 1048, 1048, 1048, 1048, 1048, 1048, 1048, 1049, 1048, 1048, 1048, 1048, 1048, 1048, 1048, 1049, 1048, 1048, 1048, 1048, 1048, 1048, 1048, 1049, 1048, 1048, 1048, 1048, 1048, 1048, 1048, 1049, 1048, 1048, 1048, 1048, 1048, 1048, 1048, 1049, 1048, 1048, 1048, 1048, 1048, 1048, 1048, 1049, 1048, 1048, 1048, 1048, 1048, 1048, 1048, 1049, 1048, 1048, 1048, 1050, 1050, 1050, 1050, 1051, 1050, 1050, 1050, 1050, 1050, 1050, 1050, 1051, 1050, 1050, 1050, 1050, 1050, 1050, 1050, 1051, 1050, 1050, 1050, 1050, 1050, 1050, 1050, 1051, 1050, 1050, 1050, 1050, 1050, 1050, 1050, 1051, 1050, 1050, 1050, 1050, 1050, 1050, 1050, 1051, 1050, 1050, 1050, 1050, 1050, 1050, 1050, 1051, 1050, 1050, 1050, 1050, 1050, 1050, 1050, 1051, 1050, 1050, 1050, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052 };
+		static const unsigned short jump_table[] = { 1045, 1045, 1045, 1045, 1452, 858, 1045, 1045, 1045, 1045, 1045, 1045, 1452, 858, 1045, 1045, 1045, 1045, 1045, 1045, 1452, 858, 1045, 1045, 1045, 1045, 1045, 1045, 1452, 858, 1045, 1045, 1045, 1045, 1045, 1045, 1452, 858, 1045, 1045, 1045, 1045, 1045, 1045, 1452, 858, 1045, 1045, 1045, 1045, 1045, 1045, 1452, 858, 1045, 1045, 1045, 1045, 1045, 1045, 1452, 858, 1045, 1045, 1048, 1048, 1048, 1048, 1049, 1048, 1048, 1048, 1048, 1048, 1048, 1048, 1049, 1048, 1048, 1048, 1048, 1048, 1048, 1048, 1049, 1048, 1048, 1048, 1048, 1048, 1048, 1048, 1049, 1048, 1048, 1048, 1048, 1048, 1048, 1048, 1049, 1048, 1048, 1048, 1048, 1048, 1048, 1048, 1049, 1048, 1048, 1048, 1048, 1048, 1048, 1048, 1049, 1048, 1048, 1048, 1048, 1048, 1048, 1048, 1049, 1048, 1048, 1048, 1050, 1050, 1050, 1050, 1051, 1050, 1050, 1050, 1050, 1050, 1050, 1050, 1051, 1050, 1050, 1050, 1050, 1050, 1050, 1050, 1051, 1050, 1050, 1050, 1050, 1050, 1050, 1050, 1051, 1050, 1050, 1050, 1050, 1050, 1050, 1050, 1051, 1050, 1050, 1050, 1050, 1050, 1050, 1050, 1051, 1050, 1050, 1050, 1050, 1050, 1050, 1050, 1051, 1050, 1050, 1050, 1050, 1050, 1050, 1050, 1051, 1050, 1050, 1050, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052, 1052 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr674:
+tr668:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -18123,9 +18103,9 @@ st367:
 		goto _test_eof367;
 case 367:
 	if ( (*p) == 16u )
-		goto tr676;
+		goto tr670;
 	goto tr42;
-tr604:
+tr598:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -18135,11 +18115,11 @@ st368:
 		goto _test_eof368;
 case 368:
 	{
-		static const unsigned short jump_table[] = { 1493, 858, 858, 858, 1494, 858, 858, 858, 1493, 858, 858, 858, 1494, 858, 858, 858, 1493, 858, 858, 858, 1494, 858, 858, 858, 1493, 858, 858, 858, 1494, 858, 858, 858, 1493, 858, 858, 858, 1494, 858, 858, 858, 1493, 858, 858, 858, 1494, 858, 858, 858, 1493, 858, 858, 858, 1494, 858, 858, 858, 1493, 858, 858, 858, 1494, 858, 858, 858, 1493, 858, 858, 858, 1494, 858, 858, 858, 1493, 858, 858, 858, 1494, 858, 858, 858, 1493, 858, 858, 858, 1494, 858, 858, 858, 1493, 858, 858, 858, 1494, 858, 858, 858, 1493, 858, 858, 858, 1494, 858, 858, 858, 1493, 858, 858, 858, 1494, 858, 858, 858, 1493, 858, 858, 858, 1494, 858, 858, 858, 1495, 858, 858, 858, 1494, 858, 858, 858, 1496, 858, 858, 858, 1494, 858, 858, 858, 1496, 858, 858, 858, 1494, 858, 858, 858, 1496, 858, 858, 858, 1494, 858, 858, 858, 1496, 858, 858, 858, 1494, 858, 858, 858, 1496, 858, 858, 858, 1494, 858, 858, 858, 1496, 858, 858, 858, 1494, 858, 858, 858, 1496, 858, 858, 858, 1494, 858, 858, 858, 1496, 858, 858, 858, 1494, 858, 858, 858, 1496, 858, 858, 858, 1494, 858, 858, 858, 1496, 858, 858, 858, 1494, 858, 858, 858, 1496, 858, 858, 858, 1494, 858, 858, 858, 1496, 858, 858, 858, 1494, 858, 858, 858, 1496, 858, 858, 858, 1494, 858, 858, 858, 1496, 858, 858, 858, 1494, 858, 858, 858, 1496, 858, 858, 858, 1494, 858, 858, 858, 1496, 858, 858, 858, 1494, 858, 858, 858 };
+		static const unsigned short jump_table[] = { 1487, 858, 858, 858, 1488, 858, 858, 858, 1487, 858, 858, 858, 1488, 858, 858, 858, 1487, 858, 858, 858, 1488, 858, 858, 858, 1487, 858, 858, 858, 1488, 858, 858, 858, 1487, 858, 858, 858, 1488, 858, 858, 858, 1487, 858, 858, 858, 1488, 858, 858, 858, 1487, 858, 858, 858, 1488, 858, 858, 858, 1487, 858, 858, 858, 1488, 858, 858, 858, 1487, 858, 858, 858, 1488, 858, 858, 858, 1487, 858, 858, 858, 1488, 858, 858, 858, 1487, 858, 858, 858, 1488, 858, 858, 858, 1487, 858, 858, 858, 1488, 858, 858, 858, 1487, 858, 858, 858, 1488, 858, 858, 858, 1487, 858, 858, 858, 1488, 858, 858, 858, 1487, 858, 858, 858, 1488, 858, 858, 858, 1489, 858, 858, 858, 1488, 858, 858, 858, 1490, 858, 858, 858, 1488, 858, 858, 858, 1490, 858, 858, 858, 1488, 858, 858, 858, 1490, 858, 858, 858, 1488, 858, 858, 858, 1490, 858, 858, 858, 1488, 858, 858, 858, 1490, 858, 858, 858, 1488, 858, 858, 858, 1490, 858, 858, 858, 1488, 858, 858, 858, 1490, 858, 858, 858, 1488, 858, 858, 858, 1490, 858, 858, 858, 1488, 858, 858, 858, 1490, 858, 858, 858, 1488, 858, 858, 858, 1490, 858, 858, 858, 1488, 858, 858, 858, 1490, 858, 858, 858, 1488, 858, 858, 858, 1490, 858, 858, 858, 1488, 858, 858, 858, 1490, 858, 858, 858, 1488, 858, 858, 858, 1490, 858, 858, 858, 1488, 858, 858, 858, 1490, 858, 858, 858, 1488, 858, 858, 858, 1490, 858, 858, 858, 1488, 858, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr677:
+tr671:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -18149,41 +18129,41 @@ st369:
 		goto _test_eof369;
 case 369:
 	switch( (*p) ) {
-		case 166u: goto tr681;
-		case 182u: goto tr681;
+		case 166u: goto tr675;
+		case 182u: goto tr675;
 	}
 	if ( (*p) < 158u ) {
 		if ( (*p) < 142u ) {
 			if ( 133u <= (*p) && (*p) <= 135u )
-				goto tr681;
+				goto tr675;
 		} else if ( (*p) > 143u ) {
 			if ( 149u <= (*p) && (*p) <= 151u )
-				goto tr681;
+				goto tr675;
 		} else
-			goto tr681;
+			goto tr675;
 	} else if ( (*p) > 159u ) {
 		if ( (*p) < 204u ) {
 			if ( 162u <= (*p) && (*p) <= 163u )
-				goto tr681;
+				goto tr675;
 		} else if ( (*p) > 207u ) {
 			if ( 236u <= (*p) && (*p) <= 239u )
-				goto tr682;
+				goto tr676;
 		} else
-			goto tr682;
+			goto tr676;
 	} else
-		goto tr681;
+		goto tr675;
 	goto tr42;
-tr681:
+tr675:
 	{
     SET_CPU_FEATURE(CPUFeature_XOP);
   }
 	goto st370;
-tr1070:
+tr1064:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
 	goto st370;
-tr1071:
+tr1065:
 	{
     SET_CPU_FEATURE(CPUFeature_FMA4);
   }
@@ -18193,11 +18173,11 @@ st370:
 		goto _test_eof370;
 case 370:
 	{
-		static const unsigned short jump_table[] = { 1482, 1482, 1482, 1482, 338, 1499, 1482, 1482, 1482, 1482, 1482, 1482, 338, 1499, 1482, 1482, 1482, 1482, 1482, 1482, 338, 1499, 1482, 1482, 1482, 1482, 1482, 1482, 338, 1499, 1482, 1482, 1482, 1482, 1482, 1482, 338, 1499, 1482, 1482, 1482, 1482, 1482, 1482, 338, 1499, 1482, 1482, 1482, 1482, 1482, 1482, 338, 1499, 1482, 1482, 1482, 1482, 1482, 1482, 338, 1499, 1482, 1482, 1483, 1483, 1483, 1483, 312, 1483, 1483, 1483, 1483, 1483, 1483, 1483, 312, 1483, 1483, 1483, 1483, 1483, 1483, 1483, 312, 1483, 1483, 1483, 1483, 1483, 1483, 1483, 312, 1483, 1483, 1483, 1483, 1483, 1483, 1483, 312, 1483, 1483, 1483, 1483, 1483, 1483, 1483, 312, 1483, 1483, 1483, 1483, 1483, 1483, 1483, 312, 1483, 1483, 1483, 1483, 1483, 1483, 1483, 312, 1483, 1483, 1483, 1484, 1484, 1484, 1484, 314, 1484, 1484, 1484, 1484, 1484, 1484, 1484, 314, 1484, 1484, 1484, 1484, 1484, 1484, 1484, 314, 1484, 1484, 1484, 1484, 1484, 1484, 1484, 314, 1484, 1484, 1484, 1484, 1484, 1484, 1484, 314, 1484, 1484, 1484, 1484, 1484, 1484, 1484, 314, 1484, 1484, 1484, 1484, 1484, 1484, 1484, 314, 1484, 1484, 1484, 1484, 1484, 1484, 1484, 314, 1484, 1484, 1484, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311 };
+		static const unsigned short jump_table[] = { 1476, 1476, 1476, 1476, 338, 1493, 1476, 1476, 1476, 1476, 1476, 1476, 338, 1493, 1476, 1476, 1476, 1476, 1476, 1476, 338, 1493, 1476, 1476, 1476, 1476, 1476, 1476, 338, 1493, 1476, 1476, 1476, 1476, 1476, 1476, 338, 1493, 1476, 1476, 1476, 1476, 1476, 1476, 338, 1493, 1476, 1476, 1476, 1476, 1476, 1476, 338, 1493, 1476, 1476, 1476, 1476, 1476, 1476, 338, 1493, 1476, 1476, 1477, 1477, 1477, 1477, 312, 1477, 1477, 1477, 1477, 1477, 1477, 1477, 312, 1477, 1477, 1477, 1477, 1477, 1477, 1477, 312, 1477, 1477, 1477, 1477, 1477, 1477, 1477, 312, 1477, 1477, 1477, 1477, 1477, 1477, 1477, 312, 1477, 1477, 1477, 1477, 1477, 1477, 1477, 312, 1477, 1477, 1477, 1477, 1477, 1477, 1477, 312, 1477, 1477, 1477, 1477, 1477, 1477, 1477, 312, 1477, 1477, 1477, 1478, 1478, 1478, 1478, 314, 1478, 1478, 1478, 1478, 1478, 1478, 1478, 314, 1478, 1478, 1478, 1478, 1478, 1478, 1478, 314, 1478, 1478, 1478, 1478, 1478, 1478, 1478, 314, 1478, 1478, 1478, 1478, 1478, 1478, 1478, 314, 1478, 1478, 1478, 1478, 1478, 1478, 1478, 314, 1478, 1478, 1478, 1478, 1478, 1478, 1478, 314, 1478, 1478, 1478, 1478, 1478, 1478, 1478, 314, 1478, 1478, 1478, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311, 311 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr678:
+tr672:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -18207,9 +18187,9 @@ st371:
 		goto _test_eof371;
 case 371:
 	if ( (*p) == 162u )
-		goto tr681;
+		goto tr675;
 	goto tr42;
-tr679:
+tr673:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -18219,34 +18199,34 @@ st372:
 		goto _test_eof372;
 case 372:
 	switch( (*p) ) {
-		case 166u: goto tr681;
-		case 182u: goto tr681;
+		case 166u: goto tr675;
+		case 182u: goto tr675;
 	}
 	if ( (*p) < 158u ) {
 		if ( (*p) < 142u ) {
 			if ( 133u <= (*p) && (*p) <= 135u )
-				goto tr681;
+				goto tr675;
 		} else if ( (*p) > 143u ) {
 			if ( 149u <= (*p) && (*p) <= 151u )
-				goto tr681;
+				goto tr675;
 		} else
-			goto tr681;
+			goto tr675;
 	} else if ( (*p) > 159u ) {
 		if ( (*p) < 192u ) {
 			if ( 162u <= (*p) && (*p) <= 163u )
-				goto tr681;
+				goto tr675;
 		} else if ( (*p) > 195u ) {
 			if ( (*p) > 207u ) {
 				if ( 236u <= (*p) && (*p) <= 239u )
-					goto tr682;
+					goto tr676;
 			} else if ( (*p) >= 204u )
-				goto tr682;
+				goto tr676;
 		} else
-			goto tr682;
+			goto tr676;
 	} else
-		goto tr681;
+		goto tr675;
 	goto tr42;
-tr680:
+tr674:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -18256,9 +18236,9 @@ st373:
 		goto _test_eof373;
 case 373:
 	if ( 162u <= (*p) && (*p) <= 163u )
-		goto tr681;
+		goto tr675;
 	goto tr42;
-tr605:
+tr599:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -18268,11 +18248,11 @@ st374:
 		goto _test_eof374;
 case 374:
 	{
-		static const unsigned short jump_table[] = { 1500, 858, 858, 858, 858, 858, 858, 858, 1500, 858, 858, 858, 858, 858, 858, 858, 1500, 858, 858, 858, 858, 858, 858, 858, 1500, 858, 858, 858, 858, 858, 858, 858, 1500, 858, 858, 858, 858, 858, 858, 858, 1500, 858, 858, 858, 858, 858, 858, 858, 1500, 858, 858, 858, 858, 858, 858, 858, 1500, 858, 858, 858, 858, 858, 858, 858, 1500, 858, 858, 858, 858, 858, 858, 858, 1500, 858, 858, 858, 858, 858, 858, 858, 1500, 858, 858, 858, 858, 858, 858, 858, 1500, 858, 858, 858, 858, 858, 858, 858, 1500, 858, 858, 858, 858, 858, 858, 858, 1500, 858, 858, 858, 858, 858, 858, 858, 1500, 858, 858, 858, 858, 858, 858, 858, 1501, 858, 858, 858, 1502, 858, 858, 858, 1500, 858, 858, 858, 858, 858, 858, 858, 1500, 858, 858, 858, 858, 858, 858, 858, 1500, 858, 858, 858, 858, 858, 858, 858, 1500, 858, 858, 858, 858, 858, 858, 858, 1500, 858, 858, 858, 858, 858, 858, 858, 1500, 858, 858, 858, 858, 858, 858, 858, 1500, 858, 858, 858, 858, 858, 858, 858, 1500, 858, 858, 858, 858, 858, 858, 858, 1500, 858, 858, 858, 858, 858, 858, 858, 1500, 858, 858, 858, 858, 858, 858, 858, 1500, 858, 858, 858, 858, 858, 858, 858, 1500, 858, 858, 858, 858, 858, 858, 858, 1500, 858, 858, 858, 858, 858, 858, 858, 1500, 858, 858, 858, 858, 858, 858, 858, 1500, 858, 858, 858, 858, 858, 858, 858, 1500, 858, 858, 858, 858, 858, 858, 858 };
+		static const unsigned short jump_table[] = { 1494, 858, 858, 858, 858, 858, 858, 858, 1494, 858, 858, 858, 858, 858, 858, 858, 1494, 858, 858, 858, 858, 858, 858, 858, 1494, 858, 858, 858, 858, 858, 858, 858, 1494, 858, 858, 858, 858, 858, 858, 858, 1494, 858, 858, 858, 858, 858, 858, 858, 1494, 858, 858, 858, 858, 858, 858, 858, 1494, 858, 858, 858, 858, 858, 858, 858, 1494, 858, 858, 858, 858, 858, 858, 858, 1494, 858, 858, 858, 858, 858, 858, 858, 1494, 858, 858, 858, 858, 858, 858, 858, 1494, 858, 858, 858, 858, 858, 858, 858, 1494, 858, 858, 858, 858, 858, 858, 858, 1494, 858, 858, 858, 858, 858, 858, 858, 1494, 858, 858, 858, 858, 858, 858, 858, 1495, 858, 858, 858, 1496, 858, 858, 858, 1494, 858, 858, 858, 858, 858, 858, 858, 1494, 858, 858, 858, 858, 858, 858, 858, 1494, 858, 858, 858, 858, 858, 858, 858, 1494, 858, 858, 858, 858, 858, 858, 858, 1494, 858, 858, 858, 858, 858, 858, 858, 1494, 858, 858, 858, 858, 858, 858, 858, 1494, 858, 858, 858, 858, 858, 858, 858, 1494, 858, 858, 858, 858, 858, 858, 858, 1494, 858, 858, 858, 858, 858, 858, 858, 1494, 858, 858, 858, 858, 858, 858, 858, 1494, 858, 858, 858, 858, 858, 858, 858, 1494, 858, 858, 858, 858, 858, 858, 858, 1494, 858, 858, 858, 858, 858, 858, 858, 1494, 858, 858, 858, 858, 858, 858, 858, 1494, 858, 858, 858, 858, 858, 858, 858, 1494, 858, 858, 858, 858, 858, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr684:
+tr678:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -18282,9 +18262,9 @@ st375:
 		goto _test_eof375;
 case 375:
 	if ( 144u <= (*p) && (*p) <= 155u )
-		goto tr687;
+		goto tr681;
 	goto tr42;
-tr685:
+tr679:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -18294,31 +18274,31 @@ st376:
 		goto _test_eof376;
 case 376:
 	switch( (*p) ) {
-		case 203u: goto tr687;
-		case 219u: goto tr687;
+		case 203u: goto tr681;
+		case 219u: goto tr681;
 	}
 	if ( (*p) < 198u ) {
 		if ( (*p) < 144u ) {
 			if ( 128u <= (*p) && (*p) <= 131u )
-				goto tr687;
+				goto tr681;
 		} else if ( (*p) > 155u ) {
 			if ( 193u <= (*p) && (*p) <= 195u )
-				goto tr687;
+				goto tr681;
 		} else
-			goto tr687;
+			goto tr681;
 	} else if ( (*p) > 199u ) {
 		if ( (*p) < 214u ) {
 			if ( 209u <= (*p) && (*p) <= 211u )
-				goto tr687;
+				goto tr681;
 		} else if ( (*p) > 215u ) {
 			if ( 225u <= (*p) && (*p) <= 227u )
-				goto tr687;
+				goto tr681;
 		} else
-			goto tr687;
+			goto tr681;
 	} else
-		goto tr687;
+		goto tr681;
 	goto tr42;
-tr686:
+tr680:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -18328,9 +18308,9 @@ st377:
 		goto _test_eof377;
 case 377:
 	if ( 128u <= (*p) && (*p) <= 129u )
-		goto tr687;
+		goto tr681;
 	goto tr42;
-tr606:
+tr600:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -18340,11 +18320,11 @@ st378:
 		goto _test_eof378;
 case 378:
 	switch( (*p) ) {
-		case 120u: goto tr688;
-		case 248u: goto tr689;
+		case 120u: goto tr682;
+		case 248u: goto tr683;
 	}
 	goto tr42;
-tr688:
+tr682:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -18354,9 +18334,9 @@ st379:
 		goto _test_eof379;
 case 379:
 	if ( (*p) == 16u )
-		goto tr690;
+		goto tr684;
 	goto tr42;
-tr689:
+tr683:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -18366,9 +18346,9 @@ st380:
 		goto _test_eof380;
 case 380:
 	if ( (*p) == 16u )
-		goto tr691;
+		goto tr685;
 	goto tr42;
-tr607:
+tr601:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -18378,11 +18358,11 @@ st381:
 		goto _test_eof381;
 case 381:
 	{
-		static const unsigned short jump_table[] = { 1508, 858, 858, 858, 858, 858, 858, 858, 1508, 858, 858, 858, 858, 858, 858, 858, 1508, 858, 858, 858, 858, 858, 858, 858, 1508, 858, 858, 858, 858, 858, 858, 858, 1508, 858, 858, 858, 858, 858, 858, 858, 1508, 858, 858, 858, 858, 858, 858, 858, 1508, 858, 858, 858, 858, 858, 858, 858, 1508, 858, 858, 858, 858, 858, 858, 858, 1508, 858, 858, 858, 858, 858, 858, 858, 1508, 858, 858, 858, 858, 858, 858, 858, 1508, 858, 858, 858, 858, 858, 858, 858, 1508, 858, 858, 858, 858, 858, 858, 858, 1508, 858, 858, 858, 858, 858, 858, 858, 1508, 858, 858, 858, 858, 858, 858, 858, 1508, 858, 858, 858, 858, 858, 858, 858, 1509, 858, 858, 858, 1452, 858, 858, 858, 1510, 858, 858, 858, 858, 858, 858, 858, 1510, 858, 858, 858, 858, 858, 858, 858, 1510, 858, 858, 858, 858, 858, 858, 858, 1510, 858, 858, 858, 858, 858, 858, 858, 1510, 858, 858, 858, 858, 858, 858, 858, 1510, 858, 858, 858, 858, 858, 858, 858, 1510, 858, 858, 858, 858, 858, 858, 858, 1510, 858, 858, 858, 858, 858, 858, 858, 1510, 858, 858, 858, 858, 858, 858, 858, 1510, 858, 858, 858, 858, 858, 858, 858, 1510, 858, 858, 858, 858, 858, 858, 858, 1510, 858, 858, 858, 858, 858, 858, 858, 1510, 858, 858, 858, 858, 858, 858, 858, 1510, 858, 858, 858, 858, 858, 858, 858, 1510, 858, 858, 858, 858, 858, 858, 858, 1510, 858, 858, 858, 858, 858, 858, 858 };
+		static const unsigned short jump_table[] = { 1502, 858, 858, 858, 858, 858, 858, 858, 1502, 858, 858, 858, 858, 858, 858, 858, 1502, 858, 858, 858, 858, 858, 858, 858, 1502, 858, 858, 858, 858, 858, 858, 858, 1502, 858, 858, 858, 858, 858, 858, 858, 1502, 858, 858, 858, 858, 858, 858, 858, 1502, 858, 858, 858, 858, 858, 858, 858, 1502, 858, 858, 858, 858, 858, 858, 858, 1502, 858, 858, 858, 858, 858, 858, 858, 1502, 858, 858, 858, 858, 858, 858, 858, 1502, 858, 858, 858, 858, 858, 858, 858, 1502, 858, 858, 858, 858, 858, 858, 858, 1502, 858, 858, 858, 858, 858, 858, 858, 1502, 858, 858, 858, 858, 858, 858, 858, 1502, 858, 858, 858, 858, 858, 858, 858, 1503, 858, 858, 858, 1446, 858, 858, 858, 1504, 858, 858, 858, 858, 858, 858, 858, 1504, 858, 858, 858, 858, 858, 858, 858, 1504, 858, 858, 858, 858, 858, 858, 858, 1504, 858, 858, 858, 858, 858, 858, 858, 1504, 858, 858, 858, 858, 858, 858, 858, 1504, 858, 858, 858, 858, 858, 858, 858, 1504, 858, 858, 858, 858, 858, 858, 858, 1504, 858, 858, 858, 858, 858, 858, 858, 1504, 858, 858, 858, 858, 858, 858, 858, 1504, 858, 858, 858, 858, 858, 858, 858, 1504, 858, 858, 858, 858, 858, 858, 858, 1504, 858, 858, 858, 858, 858, 858, 858, 1504, 858, 858, 858, 858, 858, 858, 858, 1504, 858, 858, 858, 858, 858, 858, 858, 1504, 858, 858, 858, 858, 858, 858, 858, 1504, 858, 858, 858, 858, 858, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr692:
+tr686:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -18396,46 +18376,46 @@ case 382:
 		case 2u: goto st385;
 	}
 	if ( 144u <= (*p) && (*p) <= 155u )
-		goto tr637;
+		goto tr631;
 	goto tr42;
 st383:
 	if ( ++p == pe )
 		goto _test_eof383;
 case 383:
 	switch( (*p) ) {
-		case 12u: goto tr697;
-		case 20u: goto tr697;
-		case 28u: goto tr697;
-		case 36u: goto tr697;
-		case 44u: goto tr697;
-		case 52u: goto tr697;
-		case 60u: goto tr697;
-		case 76u: goto tr698;
-		case 84u: goto tr698;
-		case 92u: goto tr698;
-		case 100u: goto tr698;
-		case 108u: goto tr698;
-		case 116u: goto tr698;
-		case 124u: goto tr698;
-		case 140u: goto tr699;
-		case 148u: goto tr699;
-		case 156u: goto tr699;
-		case 164u: goto tr699;
-		case 172u: goto tr699;
-		case 180u: goto tr699;
-		case 188u: goto tr699;
+		case 12u: goto tr691;
+		case 20u: goto tr691;
+		case 28u: goto tr691;
+		case 36u: goto tr691;
+		case 44u: goto tr691;
+		case 52u: goto tr691;
+		case 60u: goto tr691;
+		case 76u: goto tr692;
+		case 84u: goto tr692;
+		case 92u: goto tr692;
+		case 100u: goto tr692;
+		case 108u: goto tr692;
+		case 116u: goto tr692;
+		case 124u: goto tr692;
+		case 140u: goto tr693;
+		case 148u: goto tr693;
+		case 156u: goto tr693;
+		case 164u: goto tr693;
+		case 172u: goto tr693;
+		case 180u: goto tr693;
+		case 188u: goto tr693;
 	}
 	if ( 200u <= (*p) )
-		goto tr700;
+		goto tr694;
 	goto tr42;
-tr837:
+tr831:
 	{
     SET_OPERAND_NAME(0, (((*p) & 0x38) >> 3) |
                            ((GET_REX_PREFIX() & 0x04) << 1) |
                            (((~GET_VEX_PREFIX2()) & 0x80) >> 4));
   }
 	goto st384;
-tr697:
+tr691:
 	{
     SET_CPU_FEATURE(CPUFeature_TBM);
   }
@@ -18446,7 +18426,7 @@ tr697:
     SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
   }
 	goto st384;
-tr703:
+tr697:
 	{
     SET_CPU_FEATURE(CPUFeature_TBM);
   }
@@ -18457,7 +18437,7 @@ tr703:
     SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
   }
 	goto st384;
-tr1084:
+tr1078:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
@@ -18468,7 +18448,7 @@ tr1084:
     SET_OPERAND_NAME(0, ((~GET_VEX_PREFIX3()) & 0x78) >> 3);
   }
 	goto st384;
-tr1089:
+tr1083:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
@@ -18523,20 +18503,20 @@ st385:
 		goto _test_eof385;
 case 385:
 	switch( (*p) ) {
-		case 12u: goto tr697;
-		case 52u: goto tr697;
-		case 76u: goto tr698;
-		case 116u: goto tr698;
-		case 140u: goto tr699;
-		case 180u: goto tr699;
+		case 12u: goto tr691;
+		case 52u: goto tr691;
+		case 76u: goto tr692;
+		case 116u: goto tr692;
+		case 140u: goto tr693;
+		case 180u: goto tr693;
 	}
 	if ( (*p) > 207u ) {
 		if ( 240u <= (*p) && (*p) <= 247u )
-			goto tr700;
+			goto tr694;
 	} else if ( (*p) >= 200u )
-		goto tr700;
+		goto tr694;
 	goto tr42;
-tr693:
+tr687:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -18548,31 +18528,31 @@ case 386:
 	switch( (*p) ) {
 		case 1u: goto st383;
 		case 2u: goto st385;
-		case 203u: goto tr637;
-		case 219u: goto tr637;
+		case 203u: goto tr631;
+		case 219u: goto tr631;
 	}
 	if ( (*p) < 198u ) {
 		if ( (*p) < 144u ) {
 			if ( 128u <= (*p) && (*p) <= 131u )
-				goto tr637;
+				goto tr631;
 		} else if ( (*p) > 155u ) {
 			if ( 193u <= (*p) && (*p) <= 195u )
-				goto tr637;
+				goto tr631;
 		} else
-			goto tr637;
+			goto tr631;
 	} else if ( (*p) > 199u ) {
 		if ( (*p) < 214u ) {
 			if ( 209u <= (*p) && (*p) <= 211u )
-				goto tr637;
+				goto tr631;
 		} else if ( (*p) > 215u ) {
 			if ( 225u <= (*p) && (*p) <= 227u )
-				goto tr637;
+				goto tr631;
 		} else
-			goto tr637;
+			goto tr631;
 	} else
-		goto tr637;
+		goto tr631;
 	goto tr42;
-tr694:
+tr688:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -18586,224 +18566,20 @@ case 387:
 		case 2u: goto st389;
 	}
 	if ( 144u <= (*p) && (*p) <= 155u )
-		goto tr637;
+		goto tr631;
 	goto tr42;
 st388:
 	if ( ++p == pe )
 		goto _test_eof388;
 case 388:
 	switch( (*p) ) {
-		case 12u: goto tr703;
-		case 20u: goto tr703;
-		case 28u: goto tr703;
-		case 36u: goto tr703;
-		case 44u: goto tr703;
-		case 52u: goto tr703;
-		case 60u: goto tr703;
-		case 76u: goto tr704;
-		case 84u: goto tr704;
-		case 92u: goto tr704;
-		case 100u: goto tr704;
-		case 108u: goto tr704;
-		case 116u: goto tr704;
-		case 124u: goto tr704;
-		case 140u: goto tr705;
-		case 148u: goto tr705;
-		case 156u: goto tr705;
-		case 164u: goto tr705;
-		case 172u: goto tr705;
-		case 180u: goto tr705;
-		case 188u: goto tr705;
-	}
-	if ( 200u <= (*p) )
-		goto tr706;
-	goto tr42;
-st389:
-	if ( ++p == pe )
-		goto _test_eof389;
-case 389:
-	switch( (*p) ) {
-		case 12u: goto tr703;
-		case 52u: goto tr703;
-		case 76u: goto tr704;
-		case 116u: goto tr704;
-		case 140u: goto tr705;
-		case 180u: goto tr705;
-	}
-	if ( (*p) > 207u ) {
-		if ( 240u <= (*p) && (*p) <= 247u )
-			goto tr706;
-	} else if ( (*p) >= 200u )
-		goto tr706;
-	goto tr42;
-tr608:
-	{
-    SET_VEX_PREFIX2(*p);
-  }
-	goto st390;
-st390:
-	if ( ++p == pe )
-		goto _test_eof390;
-case 390:
-	switch( (*p) ) {
-		case 0u: goto tr707;
-		case 8u: goto tr707;
-		case 16u: goto tr707;
-		case 24u: goto tr707;
-		case 32u: goto tr707;
-		case 40u: goto tr707;
-		case 48u: goto tr707;
-		case 56u: goto tr707;
-		case 64u: goto tr707;
-		case 72u: goto tr707;
-		case 80u: goto tr707;
-		case 88u: goto tr707;
-		case 96u: goto tr707;
-		case 104u: goto tr707;
-		case 112u: goto tr707;
-		case 120u: goto tr708;
-		case 128u: goto tr709;
-		case 136u: goto tr709;
-		case 144u: goto tr709;
-		case 152u: goto tr709;
-		case 160u: goto tr709;
-		case 168u: goto tr709;
-		case 176u: goto tr709;
-		case 184u: goto tr709;
-		case 192u: goto tr709;
-		case 200u: goto tr709;
-		case 208u: goto tr709;
-		case 216u: goto tr709;
-		case 224u: goto tr709;
-		case 232u: goto tr709;
-		case 240u: goto tr709;
-		case 248u: goto tr710;
-	}
-	goto tr42;
-tr707:
-	{
-    SET_VEX_PREFIX3(*p);
-  }
-	goto st391;
-st391:
-	if ( ++p == pe )
-		goto _test_eof391;
-case 391:
-	if ( (*p) == 18u )
-		goto st392;
-	goto tr42;
-st392:
-	if ( ++p == pe )
-		goto _test_eof392;
-case 392:
-	switch( (*p) ) {
-		case 4u: goto tr712;
-		case 12u: goto tr712;
-		case 68u: goto tr713;
-		case 76u: goto tr713;
-		case 132u: goto tr714;
-		case 140u: goto tr714;
-	}
-	if ( 192u <= (*p) && (*p) <= 207u )
-		goto tr715;
-	goto tr42;
-tr708:
-	{
-    SET_VEX_PREFIX3(*p);
-  }
-	goto st393;
-st393:
-	if ( ++p == pe )
-		goto _test_eof393;
-case 393:
-	switch( (*p) ) {
-		case 16u: goto tr641;
-		case 18u: goto st392;
-	}
-	goto tr42;
-tr709:
-	{
-    SET_VEX_PREFIX3(*p);
-  }
-	goto st394;
-st394:
-	if ( ++p == pe )
-		goto _test_eof394;
-case 394:
-	if ( (*p) == 18u )
-		goto st395;
-	goto tr42;
-st395:
-	if ( ++p == pe )
-		goto _test_eof395;
-case 395:
-	switch( (*p) ) {
-		case 4u: goto tr717;
-		case 12u: goto tr717;
-		case 68u: goto tr718;
-		case 76u: goto tr718;
-		case 132u: goto tr719;
-		case 140u: goto tr719;
-	}
-	if ( 192u <= (*p) && (*p) <= 207u )
-		goto tr720;
-	goto tr42;
-tr710:
-	{
-    SET_VEX_PREFIX3(*p);
-  }
-	goto st396;
-st396:
-	if ( ++p == pe )
-		goto _test_eof396;
-case 396:
-	switch( (*p) ) {
-		case 16u: goto tr643;
-		case 18u: goto st395;
-	}
-	goto tr42;
-tr609:
-	{
-    SET_VEX_PREFIX2(*p);
-  }
-	goto st397;
-st397:
-	if ( ++p == pe )
-		goto _test_eof397;
-case 397:
-	{
-		static const unsigned short jump_table[] = { 1537, 858, 858, 858, 858, 858, 858, 858, 1537, 858, 858, 858, 858, 858, 858, 858, 1537, 858, 858, 858, 858, 858, 858, 858, 1537, 858, 858, 858, 858, 858, 858, 858, 1537, 858, 858, 858, 858, 858, 858, 858, 1537, 858, 858, 858, 858, 858, 858, 858, 1537, 858, 858, 858, 858, 858, 858, 858, 1537, 858, 858, 858, 858, 858, 858, 858, 1537, 858, 858, 858, 858, 858, 858, 858, 1537, 858, 858, 858, 858, 858, 858, 858, 1537, 858, 858, 858, 858, 858, 858, 858, 1537, 858, 858, 858, 858, 858, 858, 858, 1537, 858, 858, 858, 858, 858, 858, 858, 1537, 858, 858, 858, 858, 858, 858, 858, 1537, 858, 858, 858, 858, 858, 858, 858, 1538, 858, 858, 858, 1470, 858, 858, 858, 1539, 858, 858, 858, 858, 858, 858, 858, 1539, 858, 858, 858, 858, 858, 858, 858, 1539, 858, 858, 858, 858, 858, 858, 858, 1539, 858, 858, 858, 858, 858, 858, 858, 1539, 858, 858, 858, 858, 858, 858, 858, 1539, 858, 858, 858, 858, 858, 858, 858, 1539, 858, 858, 858, 858, 858, 858, 858, 1539, 858, 858, 858, 858, 858, 858, 858, 1539, 858, 858, 858, 858, 858, 858, 858, 1539, 858, 858, 858, 858, 858, 858, 858, 1539, 858, 858, 858, 858, 858, 858, 858, 1539, 858, 858, 858, 858, 858, 858, 858, 1539, 858, 858, 858, 858, 858, 858, 858, 1539, 858, 858, 858, 858, 858, 858, 858, 1539, 858, 858, 858, 858, 858, 858, 858, 1539, 858, 858, 858, 858, 858, 858, 858 };
-		cs = jump_table[(*p)];
-		goto _again;
-	}
-tr721:
-	{
-    SET_VEX_PREFIX3(*p);
-  }
-	goto st398;
-st398:
-	if ( ++p == pe )
-		goto _test_eof398;
-case 398:
-	switch( (*p) ) {
-		case 1u: goto st399;
-		case 2u: goto st400;
-	}
-	if ( 144u <= (*p) && (*p) <= 155u )
-		goto tr655;
-	goto tr42;
-st399:
-	if ( ++p == pe )
-		goto _test_eof399;
-case 399:
-	switch( (*p) ) {
-		case 12u: goto tr726;
-		case 20u: goto tr726;
-		case 28u: goto tr726;
-		case 36u: goto tr726;
-		case 44u: goto tr726;
-		case 52u: goto tr726;
-		case 60u: goto tr726;
+		case 12u: goto tr697;
+		case 20u: goto tr697;
+		case 28u: goto tr697;
+		case 36u: goto tr697;
+		case 44u: goto tr697;
+		case 52u: goto tr697;
+		case 60u: goto tr697;
 		case 76u: goto tr698;
 		case 84u: goto tr698;
 		case 92u: goto tr698;
@@ -18822,13 +18598,13 @@ case 399:
 	if ( 200u <= (*p) )
 		goto tr700;
 	goto tr42;
-st400:
+st389:
 	if ( ++p == pe )
-		goto _test_eof400;
-case 400:
+		goto _test_eof389;
+case 389:
 	switch( (*p) ) {
-		case 12u: goto tr726;
-		case 52u: goto tr726;
+		case 12u: goto tr697;
+		case 52u: goto tr697;
 		case 76u: goto tr698;
 		case 116u: goto tr698;
 		case 140u: goto tr699;
@@ -18840,7 +18616,211 @@ case 400:
 	} else if ( (*p) >= 200u )
 		goto tr700;
 	goto tr42;
-tr722:
+tr602:
+	{
+    SET_VEX_PREFIX2(*p);
+  }
+	goto st390;
+st390:
+	if ( ++p == pe )
+		goto _test_eof390;
+case 390:
+	switch( (*p) ) {
+		case 0u: goto tr701;
+		case 8u: goto tr701;
+		case 16u: goto tr701;
+		case 24u: goto tr701;
+		case 32u: goto tr701;
+		case 40u: goto tr701;
+		case 48u: goto tr701;
+		case 56u: goto tr701;
+		case 64u: goto tr701;
+		case 72u: goto tr701;
+		case 80u: goto tr701;
+		case 88u: goto tr701;
+		case 96u: goto tr701;
+		case 104u: goto tr701;
+		case 112u: goto tr701;
+		case 120u: goto tr702;
+		case 128u: goto tr703;
+		case 136u: goto tr703;
+		case 144u: goto tr703;
+		case 152u: goto tr703;
+		case 160u: goto tr703;
+		case 168u: goto tr703;
+		case 176u: goto tr703;
+		case 184u: goto tr703;
+		case 192u: goto tr703;
+		case 200u: goto tr703;
+		case 208u: goto tr703;
+		case 216u: goto tr703;
+		case 224u: goto tr703;
+		case 232u: goto tr703;
+		case 240u: goto tr703;
+		case 248u: goto tr704;
+	}
+	goto tr42;
+tr701:
+	{
+    SET_VEX_PREFIX3(*p);
+  }
+	goto st391;
+st391:
+	if ( ++p == pe )
+		goto _test_eof391;
+case 391:
+	if ( (*p) == 18u )
+		goto st392;
+	goto tr42;
+st392:
+	if ( ++p == pe )
+		goto _test_eof392;
+case 392:
+	switch( (*p) ) {
+		case 4u: goto tr706;
+		case 12u: goto tr706;
+		case 68u: goto tr707;
+		case 76u: goto tr707;
+		case 132u: goto tr708;
+		case 140u: goto tr708;
+	}
+	if ( 192u <= (*p) && (*p) <= 207u )
+		goto tr709;
+	goto tr42;
+tr702:
+	{
+    SET_VEX_PREFIX3(*p);
+  }
+	goto st393;
+st393:
+	if ( ++p == pe )
+		goto _test_eof393;
+case 393:
+	switch( (*p) ) {
+		case 16u: goto tr635;
+		case 18u: goto st392;
+	}
+	goto tr42;
+tr703:
+	{
+    SET_VEX_PREFIX3(*p);
+  }
+	goto st394;
+st394:
+	if ( ++p == pe )
+		goto _test_eof394;
+case 394:
+	if ( (*p) == 18u )
+		goto st395;
+	goto tr42;
+st395:
+	if ( ++p == pe )
+		goto _test_eof395;
+case 395:
+	switch( (*p) ) {
+		case 4u: goto tr711;
+		case 12u: goto tr711;
+		case 68u: goto tr712;
+		case 76u: goto tr712;
+		case 132u: goto tr713;
+		case 140u: goto tr713;
+	}
+	if ( 192u <= (*p) && (*p) <= 207u )
+		goto tr714;
+	goto tr42;
+tr704:
+	{
+    SET_VEX_PREFIX3(*p);
+  }
+	goto st396;
+st396:
+	if ( ++p == pe )
+		goto _test_eof396;
+case 396:
+	switch( (*p) ) {
+		case 16u: goto tr637;
+		case 18u: goto st395;
+	}
+	goto tr42;
+tr603:
+	{
+    SET_VEX_PREFIX2(*p);
+  }
+	goto st397;
+st397:
+	if ( ++p == pe )
+		goto _test_eof397;
+case 397:
+	{
+		static const unsigned short jump_table[] = { 1531, 858, 858, 858, 858, 858, 858, 858, 1531, 858, 858, 858, 858, 858, 858, 858, 1531, 858, 858, 858, 858, 858, 858, 858, 1531, 858, 858, 858, 858, 858, 858, 858, 1531, 858, 858, 858, 858, 858, 858, 858, 1531, 858, 858, 858, 858, 858, 858, 858, 1531, 858, 858, 858, 858, 858, 858, 858, 1531, 858, 858, 858, 858, 858, 858, 858, 1531, 858, 858, 858, 858, 858, 858, 858, 1531, 858, 858, 858, 858, 858, 858, 858, 1531, 858, 858, 858, 858, 858, 858, 858, 1531, 858, 858, 858, 858, 858, 858, 858, 1531, 858, 858, 858, 858, 858, 858, 858, 1531, 858, 858, 858, 858, 858, 858, 858, 1531, 858, 858, 858, 858, 858, 858, 858, 1532, 858, 858, 858, 1464, 858, 858, 858, 1533, 858, 858, 858, 858, 858, 858, 858, 1533, 858, 858, 858, 858, 858, 858, 858, 1533, 858, 858, 858, 858, 858, 858, 858, 1533, 858, 858, 858, 858, 858, 858, 858, 1533, 858, 858, 858, 858, 858, 858, 858, 1533, 858, 858, 858, 858, 858, 858, 858, 1533, 858, 858, 858, 858, 858, 858, 858, 1533, 858, 858, 858, 858, 858, 858, 858, 1533, 858, 858, 858, 858, 858, 858, 858, 1533, 858, 858, 858, 858, 858, 858, 858, 1533, 858, 858, 858, 858, 858, 858, 858, 1533, 858, 858, 858, 858, 858, 858, 858, 1533, 858, 858, 858, 858, 858, 858, 858, 1533, 858, 858, 858, 858, 858, 858, 858, 1533, 858, 858, 858, 858, 858, 858, 858, 1533, 858, 858, 858, 858, 858, 858, 858 };
+		cs = jump_table[(*p)];
+		goto _again;
+	}
+tr715:
+	{
+    SET_VEX_PREFIX3(*p);
+  }
+	goto st398;
+st398:
+	if ( ++p == pe )
+		goto _test_eof398;
+case 398:
+	switch( (*p) ) {
+		case 1u: goto st399;
+		case 2u: goto st400;
+	}
+	if ( 144u <= (*p) && (*p) <= 155u )
+		goto tr649;
+	goto tr42;
+st399:
+	if ( ++p == pe )
+		goto _test_eof399;
+case 399:
+	switch( (*p) ) {
+		case 12u: goto tr720;
+		case 20u: goto tr720;
+		case 28u: goto tr720;
+		case 36u: goto tr720;
+		case 44u: goto tr720;
+		case 52u: goto tr720;
+		case 60u: goto tr720;
+		case 76u: goto tr692;
+		case 84u: goto tr692;
+		case 92u: goto tr692;
+		case 100u: goto tr692;
+		case 108u: goto tr692;
+		case 116u: goto tr692;
+		case 124u: goto tr692;
+		case 140u: goto tr693;
+		case 148u: goto tr693;
+		case 156u: goto tr693;
+		case 164u: goto tr693;
+		case 172u: goto tr693;
+		case 180u: goto tr693;
+		case 188u: goto tr693;
+	}
+	if ( 200u <= (*p) )
+		goto tr694;
+	goto tr42;
+st400:
+	if ( ++p == pe )
+		goto _test_eof400;
+case 400:
+	switch( (*p) ) {
+		case 12u: goto tr720;
+		case 52u: goto tr720;
+		case 76u: goto tr692;
+		case 116u: goto tr692;
+		case 140u: goto tr693;
+		case 180u: goto tr693;
+	}
+	if ( (*p) > 207u ) {
+		if ( 240u <= (*p) && (*p) <= 247u )
+			goto tr694;
+	} else if ( (*p) >= 200u )
+		goto tr694;
+	goto tr42;
+tr716:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -18852,31 +18832,31 @@ case 401:
 	switch( (*p) ) {
 		case 1u: goto st399;
 		case 2u: goto st400;
-		case 203u: goto tr655;
-		case 219u: goto tr655;
+		case 203u: goto tr649;
+		case 219u: goto tr649;
 	}
 	if ( (*p) < 198u ) {
 		if ( (*p) < 144u ) {
 			if ( 128u <= (*p) && (*p) <= 131u )
-				goto tr655;
+				goto tr649;
 		} else if ( (*p) > 155u ) {
 			if ( 193u <= (*p) && (*p) <= 195u )
-				goto tr655;
+				goto tr649;
 		} else
-			goto tr655;
+			goto tr649;
 	} else if ( (*p) > 199u ) {
 		if ( (*p) < 214u ) {
 			if ( 209u <= (*p) && (*p) <= 211u )
-				goto tr655;
+				goto tr649;
 		} else if ( (*p) > 215u ) {
 			if ( 225u <= (*p) && (*p) <= 227u )
-				goto tr655;
+				goto tr649;
 		} else
-			goto tr655;
+			goto tr649;
 	} else
-		goto tr655;
+		goto tr649;
 	goto tr42;
-tr723:
+tr717:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -18890,57 +18870,57 @@ case 402:
 		case 2u: goto st404;
 	}
 	if ( 144u <= (*p) && (*p) <= 155u )
-		goto tr655;
+		goto tr649;
 	goto tr42;
 st403:
 	if ( ++p == pe )
 		goto _test_eof403;
 case 403:
 	switch( (*p) ) {
-		case 12u: goto tr729;
-		case 20u: goto tr729;
-		case 28u: goto tr729;
-		case 36u: goto tr729;
-		case 44u: goto tr729;
-		case 52u: goto tr729;
-		case 60u: goto tr729;
-		case 76u: goto tr704;
-		case 84u: goto tr704;
-		case 92u: goto tr704;
-		case 100u: goto tr704;
-		case 108u: goto tr704;
-		case 116u: goto tr704;
-		case 124u: goto tr704;
-		case 140u: goto tr705;
-		case 148u: goto tr705;
-		case 156u: goto tr705;
-		case 164u: goto tr705;
-		case 172u: goto tr705;
-		case 180u: goto tr705;
-		case 188u: goto tr705;
+		case 12u: goto tr723;
+		case 20u: goto tr723;
+		case 28u: goto tr723;
+		case 36u: goto tr723;
+		case 44u: goto tr723;
+		case 52u: goto tr723;
+		case 60u: goto tr723;
+		case 76u: goto tr698;
+		case 84u: goto tr698;
+		case 92u: goto tr698;
+		case 100u: goto tr698;
+		case 108u: goto tr698;
+		case 116u: goto tr698;
+		case 124u: goto tr698;
+		case 140u: goto tr699;
+		case 148u: goto tr699;
+		case 156u: goto tr699;
+		case 164u: goto tr699;
+		case 172u: goto tr699;
+		case 180u: goto tr699;
+		case 188u: goto tr699;
 	}
 	if ( 200u <= (*p) )
-		goto tr706;
+		goto tr700;
 	goto tr42;
 st404:
 	if ( ++p == pe )
 		goto _test_eof404;
 case 404:
 	switch( (*p) ) {
-		case 12u: goto tr729;
-		case 52u: goto tr729;
-		case 76u: goto tr704;
-		case 116u: goto tr704;
-		case 140u: goto tr705;
-		case 180u: goto tr705;
+		case 12u: goto tr723;
+		case 52u: goto tr723;
+		case 76u: goto tr698;
+		case 116u: goto tr698;
+		case 140u: goto tr699;
+		case 180u: goto tr699;
 	}
 	if ( (*p) > 207u ) {
 		if ( 240u <= (*p) && (*p) <= 247u )
-			goto tr706;
+			goto tr700;
 	} else if ( (*p) >= 200u )
-		goto tr706;
+		goto tr700;
 	goto tr42;
-tr610:
+tr604:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -18950,41 +18930,41 @@ st405:
 		goto _test_eof405;
 case 405:
 	switch( (*p) ) {
-		case 0u: goto tr730;
-		case 8u: goto tr730;
-		case 16u: goto tr730;
-		case 24u: goto tr730;
-		case 32u: goto tr730;
-		case 40u: goto tr730;
-		case 48u: goto tr730;
-		case 56u: goto tr730;
-		case 64u: goto tr730;
-		case 72u: goto tr730;
-		case 80u: goto tr730;
-		case 88u: goto tr730;
-		case 96u: goto tr730;
-		case 104u: goto tr730;
-		case 112u: goto tr730;
-		case 120u: goto tr731;
-		case 128u: goto tr732;
-		case 136u: goto tr732;
-		case 144u: goto tr732;
-		case 152u: goto tr732;
-		case 160u: goto tr732;
-		case 168u: goto tr732;
-		case 176u: goto tr732;
-		case 184u: goto tr732;
-		case 192u: goto tr732;
-		case 200u: goto tr732;
-		case 208u: goto tr732;
-		case 216u: goto tr732;
-		case 224u: goto tr732;
-		case 232u: goto tr732;
-		case 240u: goto tr732;
-		case 248u: goto tr733;
+		case 0u: goto tr724;
+		case 8u: goto tr724;
+		case 16u: goto tr724;
+		case 24u: goto tr724;
+		case 32u: goto tr724;
+		case 40u: goto tr724;
+		case 48u: goto tr724;
+		case 56u: goto tr724;
+		case 64u: goto tr724;
+		case 72u: goto tr724;
+		case 80u: goto tr724;
+		case 88u: goto tr724;
+		case 96u: goto tr724;
+		case 104u: goto tr724;
+		case 112u: goto tr724;
+		case 120u: goto tr725;
+		case 128u: goto tr726;
+		case 136u: goto tr726;
+		case 144u: goto tr726;
+		case 152u: goto tr726;
+		case 160u: goto tr726;
+		case 168u: goto tr726;
+		case 176u: goto tr726;
+		case 184u: goto tr726;
+		case 192u: goto tr726;
+		case 200u: goto tr726;
+		case 208u: goto tr726;
+		case 216u: goto tr726;
+		case 224u: goto tr726;
+		case 232u: goto tr726;
+		case 240u: goto tr726;
+		case 248u: goto tr727;
 	}
 	goto tr42;
-tr730:
+tr724:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -19001,17 +18981,17 @@ st407:
 		goto _test_eof407;
 case 407:
 	switch( (*p) ) {
-		case 4u: goto tr735;
-		case 12u: goto tr735;
-		case 68u: goto tr713;
-		case 76u: goto tr713;
-		case 132u: goto tr714;
-		case 140u: goto tr714;
+		case 4u: goto tr729;
+		case 12u: goto tr729;
+		case 68u: goto tr707;
+		case 76u: goto tr707;
+		case 132u: goto tr708;
+		case 140u: goto tr708;
 	}
 	if ( 192u <= (*p) && (*p) <= 207u )
-		goto tr715;
+		goto tr709;
 	goto tr42;
-tr731:
+tr725:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -19021,11 +19001,11 @@ st408:
 		goto _test_eof408;
 case 408:
 	switch( (*p) ) {
-		case 16u: goto tr658;
+		case 16u: goto tr652;
 		case 18u: goto st407;
 	}
 	goto tr42;
-tr732:
+tr726:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -19042,17 +19022,17 @@ st410:
 		goto _test_eof410;
 case 410:
 	switch( (*p) ) {
-		case 4u: goto tr737;
-		case 12u: goto tr737;
-		case 68u: goto tr718;
-		case 76u: goto tr718;
-		case 132u: goto tr719;
-		case 140u: goto tr719;
+		case 4u: goto tr731;
+		case 12u: goto tr731;
+		case 68u: goto tr712;
+		case 76u: goto tr712;
+		case 132u: goto tr713;
+		case 140u: goto tr713;
 	}
 	if ( 192u <= (*p) && (*p) <= 207u )
-		goto tr720;
+		goto tr714;
 	goto tr42;
-tr733:
+tr727:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -19062,11 +19042,11 @@ st411:
 		goto _test_eof411;
 case 411:
 	switch( (*p) ) {
-		case 16u: goto tr659;
+		case 16u: goto tr653;
 		case 18u: goto st410;
 	}
 	goto tr42;
-tr611:
+tr605:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -19076,11 +19056,11 @@ st412:
 		goto _test_eof412;
 case 412:
 	{
-		static const unsigned short jump_table[] = { 1554, 858, 858, 858, 858, 858, 858, 858, 1554, 858, 858, 858, 858, 858, 858, 858, 1554, 858, 858, 858, 858, 858, 858, 858, 1554, 858, 858, 858, 858, 858, 858, 858, 1554, 858, 858, 858, 858, 858, 858, 858, 1554, 858, 858, 858, 858, 858, 858, 858, 1554, 858, 858, 858, 858, 858, 858, 858, 1554, 858, 858, 858, 858, 858, 858, 858, 1554, 858, 858, 858, 858, 858, 858, 858, 1554, 858, 858, 858, 858, 858, 858, 858, 1554, 858, 858, 858, 858, 858, 858, 858, 1554, 858, 858, 858, 858, 858, 858, 858, 1554, 858, 858, 858, 858, 858, 858, 858, 1554, 858, 858, 858, 858, 858, 858, 858, 1554, 858, 858, 858, 858, 858, 858, 858, 1555, 858, 858, 858, 1487, 858, 858, 858, 1556, 858, 858, 858, 858, 858, 858, 858, 1556, 858, 858, 858, 858, 858, 858, 858, 1556, 858, 858, 858, 858, 858, 858, 858, 1556, 858, 858, 858, 858, 858, 858, 858, 1556, 858, 858, 858, 858, 858, 858, 858, 1556, 858, 858, 858, 858, 858, 858, 858, 1556, 858, 858, 858, 858, 858, 858, 858, 1556, 858, 858, 858, 858, 858, 858, 858, 1556, 858, 858, 858, 858, 858, 858, 858, 1556, 858, 858, 858, 858, 858, 858, 858, 1556, 858, 858, 858, 858, 858, 858, 858, 1556, 858, 858, 858, 858, 858, 858, 858, 1556, 858, 858, 858, 858, 858, 858, 858, 1556, 858, 858, 858, 858, 858, 858, 858, 1556, 858, 858, 858, 858, 858, 858, 858, 1557, 858, 858, 858, 858, 858, 858, 858 };
+		static const unsigned short jump_table[] = { 1548, 858, 858, 858, 858, 858, 858, 858, 1548, 858, 858, 858, 858, 858, 858, 858, 1548, 858, 858, 858, 858, 858, 858, 858, 1548, 858, 858, 858, 858, 858, 858, 858, 1548, 858, 858, 858, 858, 858, 858, 858, 1548, 858, 858, 858, 858, 858, 858, 858, 1548, 858, 858, 858, 858, 858, 858, 858, 1548, 858, 858, 858, 858, 858, 858, 858, 1548, 858, 858, 858, 858, 858, 858, 858, 1548, 858, 858, 858, 858, 858, 858, 858, 1548, 858, 858, 858, 858, 858, 858, 858, 1548, 858, 858, 858, 858, 858, 858, 858, 1548, 858, 858, 858, 858, 858, 858, 858, 1548, 858, 858, 858, 858, 858, 858, 858, 1548, 858, 858, 858, 858, 858, 858, 858, 1549, 858, 858, 858, 1481, 858, 858, 858, 1550, 858, 858, 858, 858, 858, 858, 858, 1550, 858, 858, 858, 858, 858, 858, 858, 1550, 858, 858, 858, 858, 858, 858, 858, 1550, 858, 858, 858, 858, 858, 858, 858, 1550, 858, 858, 858, 858, 858, 858, 858, 1550, 858, 858, 858, 858, 858, 858, 858, 1550, 858, 858, 858, 858, 858, 858, 858, 1550, 858, 858, 858, 858, 858, 858, 858, 1550, 858, 858, 858, 858, 858, 858, 858, 1550, 858, 858, 858, 858, 858, 858, 858, 1550, 858, 858, 858, 858, 858, 858, 858, 1550, 858, 858, 858, 858, 858, 858, 858, 1550, 858, 858, 858, 858, 858, 858, 858, 1550, 858, 858, 858, 858, 858, 858, 858, 1550, 858, 858, 858, 858, 858, 858, 858, 1551, 858, 858, 858, 858, 858, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr738:
+tr732:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -19094,14 +19074,14 @@ case 413:
 		case 2u: goto st415;
 	}
 	if ( 144u <= (*p) && (*p) <= 155u )
-		goto tr672;
+		goto tr666;
 	goto tr42;
 st414:
 	if ( ++p == pe )
 		goto _test_eof414;
 case 414:
 	{
-		static const unsigned short jump_table[] = { 858, 858, 858, 858, 858, 858, 858, 858, 1560, 1560, 1560, 1560, 1513, 858, 1560, 1560, 1560, 1560, 1560, 1560, 1513, 858, 1560, 1560, 1560, 1560, 1560, 1560, 1513, 858, 1560, 1560, 1560, 1560, 1560, 1560, 1513, 858, 1560, 1560, 1560, 1560, 1560, 1560, 1513, 858, 1560, 1560, 1560, 1560, 1560, 1560, 1513, 858, 1560, 1560, 1560, 1560, 1560, 1560, 1513, 858, 1560, 1560, 858, 858, 858, 858, 858, 858, 858, 858, 1561, 1561, 1561, 1561, 1514, 1561, 1561, 1561, 1561, 1561, 1561, 1561, 1514, 1561, 1561, 1561, 1561, 1561, 1561, 1561, 1514, 1561, 1561, 1561, 1561, 1561, 1561, 1561, 1514, 1561, 1561, 1561, 1561, 1561, 1561, 1561, 1514, 1561, 1561, 1561, 1561, 1561, 1561, 1561, 1514, 1561, 1561, 1561, 1561, 1561, 1561, 1561, 1514, 1561, 1561, 1561, 858, 858, 858, 858, 858, 858, 858, 858, 1562, 1562, 1562, 1562, 1515, 1562, 1562, 1562, 1562, 1562, 1562, 1562, 1515, 1562, 1562, 1562, 1562, 1562, 1562, 1562, 1515, 1562, 1562, 1562, 1562, 1562, 1562, 1562, 1515, 1562, 1562, 1562, 1562, 1562, 1562, 1562, 1515, 1562, 1562, 1562, 1562, 1562, 1562, 1562, 1515, 1562, 1562, 1562, 1562, 1562, 1562, 1562, 1515, 1562, 1562, 1562, 858, 858, 858, 858, 858, 858, 858, 858, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516 };
+		static const unsigned short jump_table[] = { 858, 858, 858, 858, 858, 858, 858, 858, 1554, 1554, 1554, 1554, 1507, 858, 1554, 1554, 1554, 1554, 1554, 1554, 1507, 858, 1554, 1554, 1554, 1554, 1554, 1554, 1507, 858, 1554, 1554, 1554, 1554, 1554, 1554, 1507, 858, 1554, 1554, 1554, 1554, 1554, 1554, 1507, 858, 1554, 1554, 1554, 1554, 1554, 1554, 1507, 858, 1554, 1554, 1554, 1554, 1554, 1554, 1507, 858, 1554, 1554, 858, 858, 858, 858, 858, 858, 858, 858, 1555, 1555, 1555, 1555, 1508, 1555, 1555, 1555, 1555, 1555, 1555, 1555, 1508, 1555, 1555, 1555, 1555, 1555, 1555, 1555, 1508, 1555, 1555, 1555, 1555, 1555, 1555, 1555, 1508, 1555, 1555, 1555, 1555, 1555, 1555, 1555, 1508, 1555, 1555, 1555, 1555, 1555, 1555, 1555, 1508, 1555, 1555, 1555, 1555, 1555, 1555, 1555, 1508, 1555, 1555, 1555, 858, 858, 858, 858, 858, 858, 858, 858, 1556, 1556, 1556, 1556, 1509, 1556, 1556, 1556, 1556, 1556, 1556, 1556, 1509, 1556, 1556, 1556, 1556, 1556, 1556, 1556, 1509, 1556, 1556, 1556, 1556, 1556, 1556, 1556, 1509, 1556, 1556, 1556, 1556, 1556, 1556, 1556, 1509, 1556, 1556, 1556, 1556, 1556, 1556, 1556, 1509, 1556, 1556, 1556, 1556, 1556, 1556, 1556, 1509, 1556, 1556, 1556, 858, 858, 858, 858, 858, 858, 858, 858, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -19110,44 +19090,44 @@ st415:
 		goto _test_eof415;
 case 415:
 	switch( (*p) ) {
-		case 12u: goto tr697;
-		case 52u: goto tr697;
-		case 76u: goto tr698;
-		case 116u: goto tr698;
-		case 140u: goto tr699;
-		case 180u: goto tr699;
+		case 12u: goto tr691;
+		case 52u: goto tr691;
+		case 76u: goto tr692;
+		case 116u: goto tr692;
+		case 140u: goto tr693;
+		case 180u: goto tr693;
 	}
 	if ( (*p) < 72u ) {
 		if ( (*p) < 14u ) {
 			if ( 8u <= (*p) && (*p) <= 11u )
-				goto tr744;
+				goto tr738;
 		} else if ( (*p) > 15u ) {
 			if ( (*p) > 51u ) {
 				if ( 54u <= (*p) && (*p) <= 55u )
-					goto tr744;
+					goto tr738;
 			} else if ( (*p) >= 48u )
-				goto tr744;
+				goto tr738;
 		} else
-			goto tr744;
+			goto tr738;
 	} else if ( (*p) > 79u ) {
 		if ( (*p) < 176u ) {
 			if ( (*p) > 119u ) {
 				if ( 136u <= (*p) && (*p) <= 143u )
-					goto tr746;
+					goto tr740;
 			} else if ( (*p) >= 112u )
-				goto tr745;
+				goto tr739;
 		} else if ( (*p) > 183u ) {
 			if ( (*p) > 207u ) {
 				if ( 240u <= (*p) && (*p) <= 247u )
-					goto tr700;
+					goto tr694;
 			} else if ( (*p) >= 200u )
-				goto tr700;
+				goto tr694;
 		} else
-			goto tr746;
+			goto tr740;
 	} else
-		goto tr745;
+		goto tr739;
 	goto tr42;
-tr739:
+tr733:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -19160,38 +19140,38 @@ case 416:
 		case 1u: goto st414;
 		case 2u: goto st415;
 		case 18u: goto st417;
-		case 203u: goto tr672;
-		case 219u: goto tr672;
+		case 203u: goto tr666;
+		case 219u: goto tr666;
 	}
 	if ( (*p) < 198u ) {
 		if ( (*p) < 144u ) {
 			if ( 128u <= (*p) && (*p) <= 131u )
-				goto tr672;
+				goto tr666;
 		} else if ( (*p) > 155u ) {
 			if ( 193u <= (*p) && (*p) <= 195u )
-				goto tr672;
+				goto tr666;
 		} else
-			goto tr672;
+			goto tr666;
 	} else if ( (*p) > 199u ) {
 		if ( (*p) < 214u ) {
 			if ( 209u <= (*p) && (*p) <= 211u )
-				goto tr672;
+				goto tr666;
 		} else if ( (*p) > 215u ) {
 			if ( 225u <= (*p) && (*p) <= 227u )
-				goto tr672;
+				goto tr666;
 		} else
-			goto tr672;
+			goto tr666;
 	} else
-		goto tr672;
+		goto tr666;
 	goto tr42;
 st417:
 	if ( ++p == pe )
 		goto _test_eof417;
 case 417:
 	if ( 192u <= (*p) && (*p) <= 207u )
-		goto tr748;
+		goto tr742;
 	goto tr42;
-tr740:
+tr734:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -19205,14 +19185,14 @@ case 418:
 		case 2u: goto st420;
 	}
 	if ( 144u <= (*p) && (*p) <= 155u )
-		goto tr672;
+		goto tr666;
 	goto tr42;
 st419:
 	if ( ++p == pe )
 		goto _test_eof419;
 case 419:
 	{
-		static const unsigned short jump_table[] = { 858, 858, 858, 858, 858, 858, 858, 858, 1567, 1567, 1567, 1567, 1519, 858, 1567, 1567, 1567, 1567, 1567, 1567, 1519, 858, 1567, 1567, 1567, 1567, 1567, 1567, 1519, 858, 1567, 1567, 1567, 1567, 1567, 1567, 1519, 858, 1567, 1567, 1567, 1567, 1567, 1567, 1519, 858, 1567, 1567, 1567, 1567, 1567, 1567, 1519, 858, 1567, 1567, 1567, 1567, 1567, 1567, 1519, 858, 1567, 1567, 858, 858, 858, 858, 858, 858, 858, 858, 1568, 1568, 1568, 1568, 1520, 1568, 1568, 1568, 1568, 1568, 1568, 1568, 1520, 1568, 1568, 1568, 1568, 1568, 1568, 1568, 1520, 1568, 1568, 1568, 1568, 1568, 1568, 1568, 1520, 1568, 1568, 1568, 1568, 1568, 1568, 1568, 1520, 1568, 1568, 1568, 1568, 1568, 1568, 1568, 1520, 1568, 1568, 1568, 1568, 1568, 1568, 1568, 1520, 1568, 1568, 1568, 858, 858, 858, 858, 858, 858, 858, 858, 1569, 1569, 1569, 1569, 1521, 1569, 1569, 1569, 1569, 1569, 1569, 1569, 1521, 1569, 1569, 1569, 1569, 1569, 1569, 1569, 1521, 1569, 1569, 1569, 1569, 1569, 1569, 1569, 1521, 1569, 1569, 1569, 1569, 1569, 1569, 1569, 1521, 1569, 1569, 1569, 1569, 1569, 1569, 1569, 1521, 1569, 1569, 1569, 1569, 1569, 1569, 1569, 1521, 1569, 1569, 1569, 858, 858, 858, 858, 858, 858, 858, 858, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522 };
+		static const unsigned short jump_table[] = { 858, 858, 858, 858, 858, 858, 858, 858, 1561, 1561, 1561, 1561, 1513, 858, 1561, 1561, 1561, 1561, 1561, 1561, 1513, 858, 1561, 1561, 1561, 1561, 1561, 1561, 1513, 858, 1561, 1561, 1561, 1561, 1561, 1561, 1513, 858, 1561, 1561, 1561, 1561, 1561, 1561, 1513, 858, 1561, 1561, 1561, 1561, 1561, 1561, 1513, 858, 1561, 1561, 1561, 1561, 1561, 1561, 1513, 858, 1561, 1561, 858, 858, 858, 858, 858, 858, 858, 858, 1562, 1562, 1562, 1562, 1514, 1562, 1562, 1562, 1562, 1562, 1562, 1562, 1514, 1562, 1562, 1562, 1562, 1562, 1562, 1562, 1514, 1562, 1562, 1562, 1562, 1562, 1562, 1562, 1514, 1562, 1562, 1562, 1562, 1562, 1562, 1562, 1514, 1562, 1562, 1562, 1562, 1562, 1562, 1562, 1514, 1562, 1562, 1562, 1562, 1562, 1562, 1562, 1514, 1562, 1562, 1562, 858, 858, 858, 858, 858, 858, 858, 858, 1563, 1563, 1563, 1563, 1515, 1563, 1563, 1563, 1563, 1563, 1563, 1563, 1515, 1563, 1563, 1563, 1563, 1563, 1563, 1563, 1515, 1563, 1563, 1563, 1563, 1563, 1563, 1563, 1515, 1563, 1563, 1563, 1563, 1563, 1563, 1563, 1515, 1563, 1563, 1563, 1563, 1563, 1563, 1563, 1515, 1563, 1563, 1563, 1563, 1563, 1563, 1563, 1515, 1563, 1563, 1563, 858, 858, 858, 858, 858, 858, 858, 858, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -19221,44 +19201,44 @@ st420:
 		goto _test_eof420;
 case 420:
 	switch( (*p) ) {
-		case 12u: goto tr703;
-		case 52u: goto tr703;
-		case 76u: goto tr704;
-		case 116u: goto tr704;
-		case 140u: goto tr705;
-		case 180u: goto tr705;
+		case 12u: goto tr697;
+		case 52u: goto tr697;
+		case 76u: goto tr698;
+		case 116u: goto tr698;
+		case 140u: goto tr699;
+		case 180u: goto tr699;
 	}
 	if ( (*p) < 72u ) {
 		if ( (*p) < 14u ) {
 			if ( 8u <= (*p) && (*p) <= 11u )
-				goto tr751;
+				goto tr745;
 		} else if ( (*p) > 15u ) {
 			if ( (*p) > 51u ) {
 				if ( 54u <= (*p) && (*p) <= 55u )
-					goto tr751;
+					goto tr745;
 			} else if ( (*p) >= 48u )
-				goto tr751;
+				goto tr745;
 		} else
-			goto tr751;
+			goto tr745;
 	} else if ( (*p) > 79u ) {
 		if ( (*p) < 176u ) {
 			if ( (*p) > 119u ) {
 				if ( 136u <= (*p) && (*p) <= 143u )
-					goto tr753;
+					goto tr747;
 			} else if ( (*p) >= 112u )
-				goto tr752;
+				goto tr746;
 		} else if ( (*p) > 183u ) {
 			if ( (*p) > 207u ) {
 				if ( 240u <= (*p) && (*p) <= 247u )
-					goto tr706;
+					goto tr700;
 			} else if ( (*p) >= 200u )
-				goto tr706;
+				goto tr700;
 		} else
-			goto tr753;
+			goto tr747;
 	} else
-		goto tr752;
+		goto tr746;
 	goto tr42;
-tr741:
+tr735:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -19273,16 +19253,16 @@ case 421:
 		case 18u: goto st422;
 	}
 	if ( 144u <= (*p) && (*p) <= 155u )
-		goto tr672;
+		goto tr666;
 	goto tr42;
 st422:
 	if ( ++p == pe )
 		goto _test_eof422;
 case 422:
 	if ( 192u <= (*p) && (*p) <= 207u )
-		goto tr755;
+		goto tr749;
 	goto tr42;
-tr612:
+tr606:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -19292,41 +19272,41 @@ st423:
 		goto _test_eof423;
 case 423:
 	switch( (*p) ) {
-		case 0u: goto tr756;
-		case 8u: goto tr756;
-		case 16u: goto tr756;
-		case 24u: goto tr756;
-		case 32u: goto tr756;
-		case 40u: goto tr756;
-		case 48u: goto tr756;
-		case 56u: goto tr756;
-		case 64u: goto tr756;
-		case 72u: goto tr756;
-		case 80u: goto tr756;
-		case 88u: goto tr756;
-		case 96u: goto tr756;
-		case 104u: goto tr756;
-		case 112u: goto tr756;
-		case 120u: goto tr757;
-		case 128u: goto tr758;
-		case 136u: goto tr758;
-		case 144u: goto tr758;
-		case 152u: goto tr758;
-		case 160u: goto tr758;
-		case 168u: goto tr758;
-		case 176u: goto tr758;
-		case 184u: goto tr758;
-		case 192u: goto tr758;
-		case 200u: goto tr758;
-		case 208u: goto tr758;
-		case 216u: goto tr758;
-		case 224u: goto tr758;
-		case 232u: goto tr758;
-		case 240u: goto tr758;
-		case 248u: goto tr759;
+		case 0u: goto tr750;
+		case 8u: goto tr750;
+		case 16u: goto tr750;
+		case 24u: goto tr750;
+		case 32u: goto tr750;
+		case 40u: goto tr750;
+		case 48u: goto tr750;
+		case 56u: goto tr750;
+		case 64u: goto tr750;
+		case 72u: goto tr750;
+		case 80u: goto tr750;
+		case 88u: goto tr750;
+		case 96u: goto tr750;
+		case 104u: goto tr750;
+		case 112u: goto tr750;
+		case 120u: goto tr751;
+		case 128u: goto tr752;
+		case 136u: goto tr752;
+		case 144u: goto tr752;
+		case 152u: goto tr752;
+		case 160u: goto tr752;
+		case 168u: goto tr752;
+		case 176u: goto tr752;
+		case 184u: goto tr752;
+		case 192u: goto tr752;
+		case 200u: goto tr752;
+		case 208u: goto tr752;
+		case 216u: goto tr752;
+		case 224u: goto tr752;
+		case 232u: goto tr752;
+		case 240u: goto tr752;
+		case 248u: goto tr753;
 	}
 	goto tr42;
-tr756:
+tr750:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -19343,32 +19323,32 @@ st425:
 		goto _test_eof425;
 case 425:
 	switch( (*p) ) {
-		case 4u: goto tr712;
-		case 12u: goto tr712;
-		case 68u: goto tr713;
-		case 76u: goto tr713;
-		case 132u: goto tr714;
-		case 140u: goto tr714;
+		case 4u: goto tr706;
+		case 12u: goto tr706;
+		case 68u: goto tr707;
+		case 76u: goto tr707;
+		case 132u: goto tr708;
+		case 140u: goto tr708;
 	}
 	if ( (*p) < 14u ) {
 		if ( (*p) > 3u ) {
 			if ( 6u <= (*p) && (*p) <= 11u )
-				goto tr761;
+				goto tr755;
 		} else
-			goto tr761;
+			goto tr755;
 	} else if ( (*p) > 15u ) {
 		if ( (*p) < 128u ) {
 			if ( 64u <= (*p) && (*p) <= 79u )
-				goto tr762;
+				goto tr756;
 		} else if ( (*p) > 143u ) {
 			if ( 192u <= (*p) && (*p) <= 207u )
-				goto tr715;
+				goto tr709;
 		} else
-			goto tr763;
+			goto tr757;
 	} else
-		goto tr761;
+		goto tr755;
 	goto tr42;
-tr757:
+tr751:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -19378,11 +19358,11 @@ st426:
 		goto _test_eof426;
 case 426:
 	switch( (*p) ) {
-		case 16u: goto tr675;
+		case 16u: goto tr669;
 		case 18u: goto st425;
 	}
 	goto tr42;
-tr758:
+tr752:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -19399,32 +19379,32 @@ st428:
 		goto _test_eof428;
 case 428:
 	switch( (*p) ) {
-		case 4u: goto tr717;
-		case 12u: goto tr717;
-		case 68u: goto tr718;
-		case 76u: goto tr718;
-		case 132u: goto tr719;
-		case 140u: goto tr719;
+		case 4u: goto tr711;
+		case 12u: goto tr711;
+		case 68u: goto tr712;
+		case 76u: goto tr712;
+		case 132u: goto tr713;
+		case 140u: goto tr713;
 	}
 	if ( (*p) < 14u ) {
 		if ( (*p) > 3u ) {
 			if ( 6u <= (*p) && (*p) <= 11u )
-				goto tr765;
+				goto tr759;
 		} else
-			goto tr765;
+			goto tr759;
 	} else if ( (*p) > 15u ) {
 		if ( (*p) < 128u ) {
 			if ( 64u <= (*p) && (*p) <= 79u )
-				goto tr766;
+				goto tr760;
 		} else if ( (*p) > 143u ) {
 			if ( 192u <= (*p) && (*p) <= 207u )
-				goto tr720;
+				goto tr714;
 		} else
-			goto tr767;
+			goto tr761;
 	} else
-		goto tr765;
+		goto tr759;
 	goto tr42;
-tr759:
+tr753:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -19434,11 +19414,11 @@ st429:
 		goto _test_eof429;
 case 429:
 	switch( (*p) ) {
-		case 16u: goto tr676;
+		case 16u: goto tr670;
 		case 18u: goto st428;
 	}
 	goto tr42;
-tr613:
+tr607:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -19448,11 +19428,11 @@ st430:
 		goto _test_eof430;
 case 430:
 	{
-		static const unsigned short jump_table[] = { 1584, 858, 858, 858, 858, 858, 858, 858, 1584, 858, 858, 858, 858, 858, 858, 858, 1584, 858, 858, 858, 858, 858, 858, 858, 1584, 858, 858, 858, 858, 858, 858, 858, 1584, 858, 858, 858, 858, 858, 858, 858, 1584, 858, 858, 858, 858, 858, 858, 858, 1584, 858, 858, 858, 858, 858, 858, 858, 1584, 858, 858, 858, 858, 858, 858, 858, 1584, 858, 858, 858, 858, 858, 858, 858, 1584, 858, 858, 858, 858, 858, 858, 858, 1584, 858, 858, 858, 858, 858, 858, 858, 1584, 858, 858, 858, 858, 858, 858, 858, 1584, 858, 858, 858, 858, 858, 858, 858, 1584, 858, 858, 858, 858, 858, 858, 858, 1584, 858, 858, 858, 858, 858, 858, 858, 1585, 858, 858, 858, 1502, 858, 858, 858, 1586, 858, 858, 858, 858, 858, 858, 858, 1586, 858, 858, 858, 858, 858, 858, 858, 1586, 858, 858, 858, 858, 858, 858, 858, 1586, 858, 858, 858, 858, 858, 858, 858, 1586, 858, 858, 858, 858, 858, 858, 858, 1586, 858, 858, 858, 858, 858, 858, 858, 1586, 858, 858, 858, 858, 858, 858, 858, 1586, 858, 858, 858, 858, 858, 858, 858, 1586, 858, 858, 858, 858, 858, 858, 858, 1586, 858, 858, 858, 858, 858, 858, 858, 1586, 858, 858, 858, 858, 858, 858, 858, 1586, 858, 858, 858, 858, 858, 858, 858, 1586, 858, 858, 858, 858, 858, 858, 858, 1586, 858, 858, 858, 858, 858, 858, 858, 1586, 858, 858, 858, 858, 858, 858, 858, 1587, 858, 858, 858, 858, 858, 858, 858 };
+		static const unsigned short jump_table[] = { 1578, 858, 858, 858, 858, 858, 858, 858, 1578, 858, 858, 858, 858, 858, 858, 858, 1578, 858, 858, 858, 858, 858, 858, 858, 1578, 858, 858, 858, 858, 858, 858, 858, 1578, 858, 858, 858, 858, 858, 858, 858, 1578, 858, 858, 858, 858, 858, 858, 858, 1578, 858, 858, 858, 858, 858, 858, 858, 1578, 858, 858, 858, 858, 858, 858, 858, 1578, 858, 858, 858, 858, 858, 858, 858, 1578, 858, 858, 858, 858, 858, 858, 858, 1578, 858, 858, 858, 858, 858, 858, 858, 1578, 858, 858, 858, 858, 858, 858, 858, 1578, 858, 858, 858, 858, 858, 858, 858, 1578, 858, 858, 858, 858, 858, 858, 858, 1578, 858, 858, 858, 858, 858, 858, 858, 1579, 858, 858, 858, 1496, 858, 858, 858, 1580, 858, 858, 858, 858, 858, 858, 858, 1580, 858, 858, 858, 858, 858, 858, 858, 1580, 858, 858, 858, 858, 858, 858, 858, 1580, 858, 858, 858, 858, 858, 858, 858, 1580, 858, 858, 858, 858, 858, 858, 858, 1580, 858, 858, 858, 858, 858, 858, 858, 1580, 858, 858, 858, 858, 858, 858, 858, 1580, 858, 858, 858, 858, 858, 858, 858, 1580, 858, 858, 858, 858, 858, 858, 858, 1580, 858, 858, 858, 858, 858, 858, 858, 1580, 858, 858, 858, 858, 858, 858, 858, 1580, 858, 858, 858, 858, 858, 858, 858, 1580, 858, 858, 858, 858, 858, 858, 858, 1580, 858, 858, 858, 858, 858, 858, 858, 1580, 858, 858, 858, 858, 858, 858, 858, 1581, 858, 858, 858, 858, 858, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr768:
+tr762:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -19466,14 +19446,14 @@ case 431:
 		case 2u: goto st433;
 	}
 	if ( 144u <= (*p) && (*p) <= 155u )
-		goto tr687;
+		goto tr681;
 	goto tr42;
 st432:
 	if ( ++p == pe )
 		goto _test_eof432;
 case 432:
 	{
-		static const unsigned short jump_table[] = { 858, 858, 858, 858, 858, 858, 858, 858, 1560, 1560, 1560, 1560, 1542, 1590, 1560, 1560, 1560, 1560, 1560, 1560, 1542, 1590, 1560, 1560, 1560, 1560, 1560, 1560, 1542, 1590, 1560, 1560, 1560, 1560, 1560, 1560, 1542, 1590, 1560, 1560, 1560, 1560, 1560, 1560, 1542, 1590, 1560, 1560, 1560, 1560, 1560, 1560, 1542, 1590, 1560, 1560, 1560, 1560, 1560, 1560, 1542, 1590, 1560, 1560, 858, 858, 858, 858, 858, 858, 858, 858, 1561, 1561, 1561, 1561, 1514, 1561, 1561, 1561, 1561, 1561, 1561, 1561, 1514, 1561, 1561, 1561, 1561, 1561, 1561, 1561, 1514, 1561, 1561, 1561, 1561, 1561, 1561, 1561, 1514, 1561, 1561, 1561, 1561, 1561, 1561, 1561, 1514, 1561, 1561, 1561, 1561, 1561, 1561, 1561, 1514, 1561, 1561, 1561, 1561, 1561, 1561, 1561, 1514, 1561, 1561, 1561, 858, 858, 858, 858, 858, 858, 858, 858, 1562, 1562, 1562, 1562, 1515, 1562, 1562, 1562, 1562, 1562, 1562, 1562, 1515, 1562, 1562, 1562, 1562, 1562, 1562, 1562, 1515, 1562, 1562, 1562, 1562, 1562, 1562, 1562, 1515, 1562, 1562, 1562, 1562, 1562, 1562, 1562, 1515, 1562, 1562, 1562, 1562, 1562, 1562, 1562, 1515, 1562, 1562, 1562, 1562, 1562, 1562, 1562, 1515, 1562, 1562, 1562, 858, 858, 858, 858, 858, 858, 858, 858, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516 };
+		static const unsigned short jump_table[] = { 858, 858, 858, 858, 858, 858, 858, 858, 1554, 1554, 1554, 1554, 1536, 1584, 1554, 1554, 1554, 1554, 1554, 1554, 1536, 1584, 1554, 1554, 1554, 1554, 1554, 1554, 1536, 1584, 1554, 1554, 1554, 1554, 1554, 1554, 1536, 1584, 1554, 1554, 1554, 1554, 1554, 1554, 1536, 1584, 1554, 1554, 1554, 1554, 1554, 1554, 1536, 1584, 1554, 1554, 1554, 1554, 1554, 1554, 1536, 1584, 1554, 1554, 858, 858, 858, 858, 858, 858, 858, 858, 1555, 1555, 1555, 1555, 1508, 1555, 1555, 1555, 1555, 1555, 1555, 1555, 1508, 1555, 1555, 1555, 1555, 1555, 1555, 1555, 1508, 1555, 1555, 1555, 1555, 1555, 1555, 1555, 1508, 1555, 1555, 1555, 1555, 1555, 1555, 1555, 1508, 1555, 1555, 1555, 1555, 1555, 1555, 1555, 1508, 1555, 1555, 1555, 1555, 1555, 1555, 1555, 1508, 1555, 1555, 1555, 858, 858, 858, 858, 858, 858, 858, 858, 1556, 1556, 1556, 1556, 1509, 1556, 1556, 1556, 1556, 1556, 1556, 1556, 1509, 1556, 1556, 1556, 1556, 1556, 1556, 1556, 1509, 1556, 1556, 1556, 1556, 1556, 1556, 1556, 1509, 1556, 1556, 1556, 1556, 1556, 1556, 1556, 1509, 1556, 1556, 1556, 1556, 1556, 1556, 1556, 1509, 1556, 1556, 1556, 1556, 1556, 1556, 1556, 1509, 1556, 1556, 1556, 858, 858, 858, 858, 858, 858, 858, 858, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510, 1510 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -19482,40 +19462,40 @@ st433:
 		goto _test_eof433;
 case 433:
 	switch( (*p) ) {
-		case 12u: goto tr726;
-		case 13u: goto tr774;
-		case 52u: goto tr726;
-		case 53u: goto tr774;
-		case 76u: goto tr698;
-		case 116u: goto tr698;
-		case 140u: goto tr699;
-		case 180u: goto tr699;
+		case 12u: goto tr720;
+		case 13u: goto tr768;
+		case 52u: goto tr720;
+		case 53u: goto tr768;
+		case 76u: goto tr692;
+		case 116u: goto tr692;
+		case 140u: goto tr693;
+		case 180u: goto tr693;
 	}
 	if ( (*p) < 112u ) {
 		if ( (*p) < 48u ) {
 			if ( 8u <= (*p) && (*p) <= 15u )
-				goto tr744;
+				goto tr738;
 		} else if ( (*p) > 55u ) {
 			if ( 72u <= (*p) && (*p) <= 79u )
-				goto tr745;
+				goto tr739;
 		} else
-			goto tr744;
+			goto tr738;
 	} else if ( (*p) > 119u ) {
 		if ( (*p) < 176u ) {
 			if ( 136u <= (*p) && (*p) <= 143u )
-				goto tr746;
+				goto tr740;
 		} else if ( (*p) > 183u ) {
 			if ( (*p) > 207u ) {
 				if ( 240u <= (*p) && (*p) <= 247u )
-					goto tr700;
+					goto tr694;
 			} else if ( (*p) >= 200u )
-				goto tr700;
+				goto tr694;
 		} else
-			goto tr746;
+			goto tr740;
 	} else
-		goto tr745;
+		goto tr739;
 	goto tr42;
-tr769:
+tr763:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -19528,31 +19508,31 @@ case 434:
 		case 1u: goto st432;
 		case 2u: goto st433;
 		case 18u: goto st417;
-		case 203u: goto tr687;
-		case 219u: goto tr687;
+		case 203u: goto tr681;
+		case 219u: goto tr681;
 	}
 	if ( (*p) < 198u ) {
 		if ( (*p) < 144u ) {
 			if ( 128u <= (*p) && (*p) <= 131u )
-				goto tr687;
+				goto tr681;
 		} else if ( (*p) > 155u ) {
 			if ( 193u <= (*p) && (*p) <= 195u )
-				goto tr687;
+				goto tr681;
 		} else
-			goto tr687;
+			goto tr681;
 	} else if ( (*p) > 199u ) {
 		if ( (*p) < 214u ) {
 			if ( 209u <= (*p) && (*p) <= 211u )
-				goto tr687;
+				goto tr681;
 		} else if ( (*p) > 215u ) {
 			if ( 225u <= (*p) && (*p) <= 227u )
-				goto tr687;
+				goto tr681;
 		} else
-			goto tr687;
+			goto tr681;
 	} else
-		goto tr687;
+		goto tr681;
 	goto tr42;
-tr770:
+tr764:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -19566,14 +19546,14 @@ case 435:
 		case 2u: goto st437;
 	}
 	if ( 144u <= (*p) && (*p) <= 155u )
-		goto tr687;
+		goto tr681;
 	goto tr42;
 st436:
 	if ( ++p == pe )
 		goto _test_eof436;
 case 436:
 	{
-		static const unsigned short jump_table[] = { 858, 858, 858, 858, 858, 858, 858, 858, 1567, 1567, 1567, 1567, 1545, 1593, 1567, 1567, 1567, 1567, 1567, 1567, 1545, 1593, 1567, 1567, 1567, 1567, 1567, 1567, 1545, 1593, 1567, 1567, 1567, 1567, 1567, 1567, 1545, 1593, 1567, 1567, 1567, 1567, 1567, 1567, 1545, 1593, 1567, 1567, 1567, 1567, 1567, 1567, 1545, 1593, 1567, 1567, 1567, 1567, 1567, 1567, 1545, 1593, 1567, 1567, 858, 858, 858, 858, 858, 858, 858, 858, 1568, 1568, 1568, 1568, 1520, 1568, 1568, 1568, 1568, 1568, 1568, 1568, 1520, 1568, 1568, 1568, 1568, 1568, 1568, 1568, 1520, 1568, 1568, 1568, 1568, 1568, 1568, 1568, 1520, 1568, 1568, 1568, 1568, 1568, 1568, 1568, 1520, 1568, 1568, 1568, 1568, 1568, 1568, 1568, 1520, 1568, 1568, 1568, 1568, 1568, 1568, 1568, 1520, 1568, 1568, 1568, 858, 858, 858, 858, 858, 858, 858, 858, 1569, 1569, 1569, 1569, 1521, 1569, 1569, 1569, 1569, 1569, 1569, 1569, 1521, 1569, 1569, 1569, 1569, 1569, 1569, 1569, 1521, 1569, 1569, 1569, 1569, 1569, 1569, 1569, 1521, 1569, 1569, 1569, 1569, 1569, 1569, 1569, 1521, 1569, 1569, 1569, 1569, 1569, 1569, 1569, 1521, 1569, 1569, 1569, 1569, 1569, 1569, 1569, 1521, 1569, 1569, 1569, 858, 858, 858, 858, 858, 858, 858, 858, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522, 1522 };
+		static const unsigned short jump_table[] = { 858, 858, 858, 858, 858, 858, 858, 858, 1561, 1561, 1561, 1561, 1539, 1587, 1561, 1561, 1561, 1561, 1561, 1561, 1539, 1587, 1561, 1561, 1561, 1561, 1561, 1561, 1539, 1587, 1561, 1561, 1561, 1561, 1561, 1561, 1539, 1587, 1561, 1561, 1561, 1561, 1561, 1561, 1539, 1587, 1561, 1561, 1561, 1561, 1561, 1561, 1539, 1587, 1561, 1561, 1561, 1561, 1561, 1561, 1539, 1587, 1561, 1561, 858, 858, 858, 858, 858, 858, 858, 858, 1562, 1562, 1562, 1562, 1514, 1562, 1562, 1562, 1562, 1562, 1562, 1562, 1514, 1562, 1562, 1562, 1562, 1562, 1562, 1562, 1514, 1562, 1562, 1562, 1562, 1562, 1562, 1562, 1514, 1562, 1562, 1562, 1562, 1562, 1562, 1562, 1514, 1562, 1562, 1562, 1562, 1562, 1562, 1562, 1514, 1562, 1562, 1562, 1562, 1562, 1562, 1562, 1514, 1562, 1562, 1562, 858, 858, 858, 858, 858, 858, 858, 858, 1563, 1563, 1563, 1563, 1515, 1563, 1563, 1563, 1563, 1563, 1563, 1563, 1515, 1563, 1563, 1563, 1563, 1563, 1563, 1563, 1515, 1563, 1563, 1563, 1563, 1563, 1563, 1563, 1515, 1563, 1563, 1563, 1563, 1563, 1563, 1563, 1515, 1563, 1563, 1563, 1563, 1563, 1563, 1563, 1515, 1563, 1563, 1563, 1563, 1563, 1563, 1563, 1515, 1563, 1563, 1563, 858, 858, 858, 858, 858, 858, 858, 858, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516, 1516 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -19582,40 +19562,40 @@ st437:
 		goto _test_eof437;
 case 437:
 	switch( (*p) ) {
-		case 12u: goto tr729;
-		case 13u: goto tr777;
-		case 52u: goto tr729;
-		case 53u: goto tr777;
-		case 76u: goto tr704;
-		case 116u: goto tr704;
-		case 140u: goto tr705;
-		case 180u: goto tr705;
+		case 12u: goto tr723;
+		case 13u: goto tr771;
+		case 52u: goto tr723;
+		case 53u: goto tr771;
+		case 76u: goto tr698;
+		case 116u: goto tr698;
+		case 140u: goto tr699;
+		case 180u: goto tr699;
 	}
 	if ( (*p) < 112u ) {
 		if ( (*p) < 48u ) {
 			if ( 8u <= (*p) && (*p) <= 15u )
-				goto tr751;
+				goto tr745;
 		} else if ( (*p) > 55u ) {
 			if ( 72u <= (*p) && (*p) <= 79u )
-				goto tr752;
+				goto tr746;
 		} else
-			goto tr751;
+			goto tr745;
 	} else if ( (*p) > 119u ) {
 		if ( (*p) < 176u ) {
 			if ( 136u <= (*p) && (*p) <= 143u )
-				goto tr753;
+				goto tr747;
 		} else if ( (*p) > 183u ) {
 			if ( (*p) > 207u ) {
 				if ( 240u <= (*p) && (*p) <= 247u )
-					goto tr706;
+					goto tr700;
 			} else if ( (*p) >= 200u )
-				goto tr706;
+				goto tr700;
 		} else
-			goto tr753;
+			goto tr747;
 	} else
-		goto tr752;
+		goto tr746;
 	goto tr42;
-tr771:
+tr765:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -19630,9 +19610,9 @@ case 438:
 		case 18u: goto st422;
 	}
 	if ( 144u <= (*p) && (*p) <= 155u )
-		goto tr687;
+		goto tr681;
 	goto tr42;
-tr614:
+tr608:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -19642,41 +19622,41 @@ st439:
 		goto _test_eof439;
 case 439:
 	switch( (*p) ) {
-		case 0u: goto tr778;
-		case 8u: goto tr778;
-		case 16u: goto tr778;
-		case 24u: goto tr778;
-		case 32u: goto tr778;
-		case 40u: goto tr778;
-		case 48u: goto tr778;
-		case 56u: goto tr778;
-		case 64u: goto tr778;
-		case 72u: goto tr778;
-		case 80u: goto tr778;
-		case 88u: goto tr778;
-		case 96u: goto tr778;
-		case 104u: goto tr778;
-		case 112u: goto tr778;
-		case 120u: goto tr779;
-		case 128u: goto tr780;
-		case 136u: goto tr780;
-		case 144u: goto tr780;
-		case 152u: goto tr780;
-		case 160u: goto tr780;
-		case 168u: goto tr780;
-		case 176u: goto tr780;
-		case 184u: goto tr780;
-		case 192u: goto tr780;
-		case 200u: goto tr780;
-		case 208u: goto tr780;
-		case 216u: goto tr780;
-		case 224u: goto tr780;
-		case 232u: goto tr780;
-		case 240u: goto tr780;
-		case 248u: goto tr781;
+		case 0u: goto tr772;
+		case 8u: goto tr772;
+		case 16u: goto tr772;
+		case 24u: goto tr772;
+		case 32u: goto tr772;
+		case 40u: goto tr772;
+		case 48u: goto tr772;
+		case 56u: goto tr772;
+		case 64u: goto tr772;
+		case 72u: goto tr772;
+		case 80u: goto tr772;
+		case 88u: goto tr772;
+		case 96u: goto tr772;
+		case 104u: goto tr772;
+		case 112u: goto tr772;
+		case 120u: goto tr773;
+		case 128u: goto tr774;
+		case 136u: goto tr774;
+		case 144u: goto tr774;
+		case 152u: goto tr774;
+		case 160u: goto tr774;
+		case 168u: goto tr774;
+		case 176u: goto tr774;
+		case 184u: goto tr774;
+		case 192u: goto tr774;
+		case 200u: goto tr774;
+		case 208u: goto tr774;
+		case 216u: goto tr774;
+		case 224u: goto tr774;
+		case 232u: goto tr774;
+		case 240u: goto tr774;
+		case 248u: goto tr775;
 	}
 	goto tr42;
-tr778:
+tr772:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -19693,28 +19673,28 @@ st441:
 		goto _test_eof441;
 case 441:
 	switch( (*p) ) {
-		case 4u: goto tr735;
-		case 5u: goto tr783;
-		case 12u: goto tr735;
-		case 13u: goto tr783;
-		case 68u: goto tr713;
-		case 76u: goto tr713;
-		case 132u: goto tr714;
-		case 140u: goto tr714;
+		case 4u: goto tr729;
+		case 5u: goto tr777;
+		case 12u: goto tr729;
+		case 13u: goto tr777;
+		case 68u: goto tr707;
+		case 76u: goto tr707;
+		case 132u: goto tr708;
+		case 140u: goto tr708;
 	}
 	if ( (*p) < 64u ) {
 		if ( (*p) <= 15u )
-			goto tr761;
+			goto tr755;
 	} else if ( (*p) > 79u ) {
 		if ( (*p) > 143u ) {
 			if ( 192u <= (*p) && (*p) <= 207u )
-				goto tr715;
+				goto tr709;
 		} else if ( (*p) >= 128u )
-			goto tr763;
+			goto tr757;
 	} else
-		goto tr762;
+		goto tr756;
 	goto tr42;
-tr779:
+tr773:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -19724,11 +19704,11 @@ st442:
 		goto _test_eof442;
 case 442:
 	switch( (*p) ) {
-		case 16u: goto tr690;
+		case 16u: goto tr684;
 		case 18u: goto st441;
 	}
 	goto tr42;
-tr780:
+tr774:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -19745,28 +19725,28 @@ st444:
 		goto _test_eof444;
 case 444:
 	switch( (*p) ) {
-		case 4u: goto tr737;
-		case 5u: goto tr785;
-		case 12u: goto tr737;
-		case 13u: goto tr785;
-		case 68u: goto tr718;
-		case 76u: goto tr718;
-		case 132u: goto tr719;
-		case 140u: goto tr719;
+		case 4u: goto tr731;
+		case 5u: goto tr779;
+		case 12u: goto tr731;
+		case 13u: goto tr779;
+		case 68u: goto tr712;
+		case 76u: goto tr712;
+		case 132u: goto tr713;
+		case 140u: goto tr713;
 	}
 	if ( (*p) < 64u ) {
 		if ( (*p) <= 15u )
-			goto tr765;
+			goto tr759;
 	} else if ( (*p) > 79u ) {
 		if ( (*p) > 143u ) {
 			if ( 192u <= (*p) && (*p) <= 207u )
-				goto tr720;
+				goto tr714;
 		} else if ( (*p) >= 128u )
-			goto tr767;
+			goto tr761;
 	} else
-		goto tr766;
+		goto tr760;
 	goto tr42;
-tr781:
+tr775:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -19776,11 +19756,11 @@ st445:
 		goto _test_eof445;
 case 445:
 	switch( (*p) ) {
-		case 16u: goto tr691;
+		case 16u: goto tr685;
 		case 18u: goto st444;
 	}
 	goto tr42;
-tr1298:
+tr1292:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -19799,7 +19779,7 @@ case 446:
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1299:
+tr1293:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -19818,7 +19798,7 @@ case 447:
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1300:
+tr1294:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -19833,33 +19813,33 @@ st448:
 		goto _test_eof448;
 case 448:
 	switch( (*p) ) {
-		case 1u: goto tr786;
-		case 2u: goto tr787;
-		case 3u: goto tr788;
-		case 33u: goto tr789;
-		case 34u: goto tr790;
-		case 35u: goto tr791;
-		case 65u: goto tr792;
-		case 66u: goto tr793;
-		case 67u: goto tr794;
-		case 97u: goto tr795;
-		case 98u: goto tr796;
-		case 99u: goto tr797;
-		case 129u: goto tr798;
-		case 130u: goto tr799;
-		case 131u: goto tr788;
-		case 161u: goto tr800;
-		case 162u: goto tr801;
-		case 163u: goto tr791;
-		case 193u: goto tr802;
-		case 194u: goto tr803;
-		case 195u: goto tr794;
-		case 225u: goto tr804;
-		case 226u: goto tr805;
-		case 227u: goto tr797;
+		case 1u: goto tr780;
+		case 2u: goto tr781;
+		case 3u: goto tr782;
+		case 33u: goto tr783;
+		case 34u: goto tr784;
+		case 35u: goto tr785;
+		case 65u: goto tr786;
+		case 66u: goto tr787;
+		case 67u: goto tr788;
+		case 97u: goto tr789;
+		case 98u: goto tr790;
+		case 99u: goto tr791;
+		case 129u: goto tr792;
+		case 130u: goto tr793;
+		case 131u: goto tr782;
+		case 161u: goto tr794;
+		case 162u: goto tr795;
+		case 163u: goto tr785;
+		case 193u: goto tr796;
+		case 194u: goto tr797;
+		case 195u: goto tr788;
+		case 225u: goto tr798;
+		case 226u: goto tr799;
+		case 227u: goto tr791;
 	}
 	goto tr42;
-tr786:
+tr780:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -19869,11 +19849,11 @@ st449:
 		goto _test_eof449;
 case 449:
 	{
-		static const unsigned short jump_table[] = { 1622, 1623, 1624, 1625, 1626, 1627, 858, 1628, 1622, 1623, 1624, 1625, 1626, 1627, 858, 1628, 1622, 1623, 1624, 1625, 1626, 1627, 858, 1628, 1622, 1623, 1624, 1625, 1626, 1627, 858, 1628, 1622, 1623, 1624, 1625, 1626, 1627, 858, 1628, 1622, 1623, 1624, 1625, 1626, 1627, 858, 1628, 1622, 1623, 1624, 1625, 1626, 1627, 858, 1628, 1622, 1623, 1624, 1625, 1626, 1627, 858, 1628, 1622, 1623, 1624, 1625, 1626, 1627, 858, 1628, 1622, 1623, 1624, 1625, 1626, 1627, 858, 1628, 1622, 1623, 1624, 1625, 1626, 1627, 858, 1628, 1622, 1623, 1624, 1625, 1626, 1627, 858, 1628, 1622, 1623, 1624, 1625, 1626, 1627, 858, 1628, 1622, 1623, 1624, 1625, 1626, 1627, 858, 1628, 1622, 1623, 1624, 1625, 1626, 1627, 858, 1628, 1629, 1630, 1631, 1632, 1633, 1634, 1635, 1636, 858, 858, 1637, 1637, 858, 858, 858, 858, 858, 858, 1637, 1637, 858, 858, 858, 858, 858, 858, 1637, 1637, 858, 858, 858, 858, 858, 858, 1637, 1637, 858, 858, 858, 858, 858, 858, 1637, 1637, 858, 858, 858, 858, 858, 858, 1637, 1637, 858, 858, 858, 858, 858, 858, 1637, 1637, 858, 858, 858, 858, 858, 858, 1637, 1637, 858, 858, 858, 858, 858, 858, 1637, 1637, 858, 858, 858, 858, 858, 858, 1637, 1637, 858, 858, 858, 858, 858, 858, 1637, 1637, 858, 858, 858, 858, 858, 858, 1637, 1637, 858, 858, 858, 858, 858, 858, 1637, 1637, 858, 858, 858, 858, 858, 858, 1637, 1637, 858, 858, 858, 858, 858, 858, 1637, 1637, 858, 858, 858, 858, 858, 1638, 1639, 1639, 858, 1640, 858, 858 };
+		static const unsigned short jump_table[] = { 1616, 1617, 1618, 1619, 1620, 1621, 858, 1622, 1616, 1617, 1618, 1619, 1620, 1621, 858, 1622, 1616, 1617, 1618, 1619, 1620, 1621, 858, 1622, 1616, 1617, 1618, 1619, 1620, 1621, 858, 1622, 1616, 1617, 1618, 1619, 1620, 1621, 858, 1622, 1616, 1617, 1618, 1619, 1620, 1621, 858, 1622, 1616, 1617, 1618, 1619, 1620, 1621, 858, 1622, 1616, 1617, 1618, 1619, 1620, 1621, 858, 1622, 1616, 1617, 1618, 1619, 1620, 1621, 858, 1622, 1616, 1617, 1618, 1619, 1620, 1621, 858, 1622, 1616, 1617, 1618, 1619, 1620, 1621, 858, 1622, 1616, 1617, 1618, 1619, 1620, 1621, 858, 1622, 1616, 1617, 1618, 1619, 1620, 1621, 858, 1622, 1616, 1617, 1618, 1619, 1620, 1621, 858, 1622, 1616, 1617, 1618, 1619, 1620, 1621, 858, 1622, 1623, 1624, 1625, 1626, 1627, 1628, 1629, 1630, 858, 858, 1631, 1631, 858, 858, 858, 858, 858, 858, 1631, 1631, 858, 858, 858, 858, 858, 858, 1631, 1631, 858, 858, 858, 858, 858, 858, 1631, 1631, 858, 858, 858, 858, 858, 858, 1631, 1631, 858, 858, 858, 858, 858, 858, 1631, 1631, 858, 858, 858, 858, 858, 858, 1631, 1631, 858, 858, 858, 858, 858, 858, 1631, 1631, 858, 858, 858, 858, 858, 858, 1631, 1631, 858, 858, 858, 858, 858, 858, 1631, 1631, 858, 858, 858, 858, 858, 858, 1631, 1631, 858, 858, 858, 858, 858, 858, 1631, 1631, 858, 858, 858, 858, 858, 858, 1631, 1631, 858, 858, 858, 858, 858, 858, 1631, 1631, 858, 858, 858, 858, 858, 858, 1631, 1631, 858, 858, 858, 858, 858, 1632, 1633, 1633, 858, 1634, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr806:
+tr800:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -19885,55 +19865,55 @@ case 450:
 	switch( (*p) ) {
 		case 18u: goto st451;
 		case 22u: goto st451;
-		case 23u: goto tr827;
-		case 81u: goto tr826;
-		case 194u: goto tr828;
-		case 198u: goto tr828;
+		case 23u: goto tr821;
+		case 81u: goto tr820;
+		case 194u: goto tr822;
+		case 198u: goto tr822;
 	}
 	if ( (*p) < 46u ) {
 		if ( 20u <= (*p) && (*p) <= 21u )
-			goto tr826;
+			goto tr820;
 	} else if ( (*p) > 47u ) {
 		if ( (*p) > 89u ) {
 			if ( 92u <= (*p) && (*p) <= 95u )
-				goto tr826;
+				goto tr820;
 		} else if ( (*p) >= 84u )
-			goto tr826;
+			goto tr820;
 	} else
-		goto tr826;
+		goto tr820;
 	goto tr42;
 st451:
 	if ( ++p == pe )
 		goto _test_eof451;
 case 451:
 	switch( (*p) ) {
-		case 4u: goto tr829;
-		case 12u: goto tr829;
-		case 20u: goto tr829;
-		case 28u: goto tr829;
-		case 36u: goto tr829;
-		case 44u: goto tr829;
-		case 52u: goto tr829;
-		case 60u: goto tr829;
-		case 68u: goto tr830;
-		case 76u: goto tr830;
-		case 84u: goto tr830;
-		case 92u: goto tr830;
-		case 100u: goto tr830;
-		case 108u: goto tr830;
-		case 116u: goto tr830;
-		case 124u: goto tr830;
-		case 132u: goto tr831;
-		case 140u: goto tr831;
-		case 148u: goto tr831;
-		case 156u: goto tr831;
-		case 164u: goto tr831;
-		case 172u: goto tr831;
-		case 180u: goto tr831;
-		case 188u: goto tr831;
+		case 4u: goto tr823;
+		case 12u: goto tr823;
+		case 20u: goto tr823;
+		case 28u: goto tr823;
+		case 36u: goto tr823;
+		case 44u: goto tr823;
+		case 52u: goto tr823;
+		case 60u: goto tr823;
+		case 68u: goto tr824;
+		case 76u: goto tr824;
+		case 84u: goto tr824;
+		case 92u: goto tr824;
+		case 100u: goto tr824;
+		case 108u: goto tr824;
+		case 116u: goto tr824;
+		case 124u: goto tr824;
+		case 132u: goto tr825;
+		case 140u: goto tr825;
+		case 148u: goto tr825;
+		case 156u: goto tr825;
+		case 164u: goto tr825;
+		case 172u: goto tr825;
+		case 180u: goto tr825;
+		case 188u: goto tr825;
 	}
 	goto tr42;
-tr827:
+tr821:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -19969,7 +19949,7 @@ case 452:
 		case 188u: goto st9;
 	}
 	goto tr42;
-tr807:
+tr801:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -19979,48 +19959,48 @@ st453:
 		goto _test_eof453;
 case 453:
 	switch( (*p) ) {
-		case 18u: goto tr827;
-		case 81u: goto tr826;
-		case 194u: goto tr828;
-		case 198u: goto tr828;
+		case 18u: goto tr821;
+		case 81u: goto tr820;
+		case 194u: goto tr822;
+		case 198u: goto tr822;
 	}
 	if ( (*p) < 116u ) {
 		if ( (*p) < 46u ) {
 			if ( (*p) > 21u ) {
 				if ( 22u <= (*p) && (*p) <= 23u )
-					goto tr827;
+					goto tr821;
 			} else if ( (*p) >= 20u )
-				goto tr826;
+				goto tr820;
 		} else if ( (*p) > 47u ) {
 			if ( (*p) > 89u ) {
 				if ( 92u <= (*p) && (*p) <= 109u )
-					goto tr826;
+					goto tr820;
 			} else if ( (*p) >= 84u )
-				goto tr826;
+				goto tr820;
 		} else
-			goto tr826;
+			goto tr820;
 	} else if ( (*p) > 118u ) {
 		if ( (*p) < 216u ) {
 			if ( (*p) > 125u ) {
 				if ( 208u <= (*p) && (*p) <= 213u )
-					goto tr826;
+					goto tr820;
 			} else if ( (*p) >= 124u )
-				goto tr826;
+				goto tr820;
 		} else if ( (*p) > 229u ) {
 			if ( (*p) < 241u ) {
 				if ( 232u <= (*p) && (*p) <= 239u )
-					goto tr826;
+					goto tr820;
 			} else if ( (*p) > 246u ) {
 				if ( 248u <= (*p) && (*p) <= 254u )
-					goto tr826;
+					goto tr820;
 			} else
-				goto tr826;
+				goto tr820;
 		} else
-			goto tr826;
+			goto tr820;
 	} else
-		goto tr826;
+		goto tr820;
 	goto tr42;
-tr808:
+tr802:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -20030,18 +20010,18 @@ st454:
 		goto _test_eof454;
 case 454:
 	switch( (*p) ) {
-		case 42u: goto tr826;
-		case 81u: goto tr826;
-		case 83u: goto tr826;
-		case 194u: goto tr828;
+		case 42u: goto tr820;
+		case 81u: goto tr820;
+		case 83u: goto tr820;
+		case 194u: goto tr822;
 	}
 	if ( (*p) > 90u ) {
 		if ( 92u <= (*p) && (*p) <= 95u )
-			goto tr826;
+			goto tr820;
 	} else if ( (*p) >= 88u )
-		goto tr826;
+		goto tr820;
 	goto tr42;
-tr809:
+tr803:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -20051,21 +20031,21 @@ st455:
 		goto _test_eof455;
 case 455:
 	switch( (*p) ) {
-		case 42u: goto tr826;
-		case 81u: goto tr826;
-		case 194u: goto tr828;
-		case 208u: goto tr826;
+		case 42u: goto tr820;
+		case 81u: goto tr820;
+		case 194u: goto tr822;
+		case 208u: goto tr820;
 	}
 	if ( (*p) < 92u ) {
 		if ( 88u <= (*p) && (*p) <= 90u )
-			goto tr826;
+			goto tr820;
 	} else if ( (*p) > 95u ) {
 		if ( 124u <= (*p) && (*p) <= 125u )
-			goto tr826;
+			goto tr820;
 	} else
-		goto tr826;
+		goto tr820;
 	goto tr42;
-tr810:
+tr804:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -20075,20 +20055,20 @@ st456:
 		goto _test_eof456;
 case 456:
 	switch( (*p) ) {
-		case 81u: goto tr826;
-		case 194u: goto tr828;
-		case 198u: goto tr828;
+		case 81u: goto tr820;
+		case 194u: goto tr822;
+		case 198u: goto tr822;
 	}
 	if ( (*p) < 84u ) {
 		if ( 20u <= (*p) && (*p) <= 21u )
-			goto tr826;
+			goto tr820;
 	} else if ( (*p) > 89u ) {
 		if ( 92u <= (*p) && (*p) <= 95u )
-			goto tr826;
+			goto tr820;
 	} else
-		goto tr826;
+		goto tr820;
 	goto tr42;
-tr811:
+tr805:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -20098,24 +20078,24 @@ st457:
 		goto _test_eof457;
 case 457:
 	switch( (*p) ) {
-		case 81u: goto tr826;
-		case 194u: goto tr828;
-		case 198u: goto tr828;
-		case 208u: goto tr826;
+		case 81u: goto tr820;
+		case 194u: goto tr822;
+		case 198u: goto tr822;
+		case 208u: goto tr820;
 	}
 	if ( (*p) < 84u ) {
 		if ( 20u <= (*p) && (*p) <= 21u )
-			goto tr826;
+			goto tr820;
 	} else if ( (*p) > 89u ) {
 		if ( (*p) > 95u ) {
 			if ( 124u <= (*p) && (*p) <= 125u )
-				goto tr826;
+				goto tr820;
 		} else if ( (*p) >= 92u )
-			goto tr826;
+			goto tr820;
 	} else
-		goto tr826;
+		goto tr820;
 	goto tr42;
-tr812:
+tr806:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -20125,11 +20105,11 @@ st458:
 		goto _test_eof458;
 case 458:
 	if ( (*p) == 208u )
-		goto tr826;
+		goto tr820;
 	if ( 124u <= (*p) && (*p) <= 125u )
-		goto tr826;
+		goto tr820;
 	goto tr42;
-tr813:
+tr807:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -20140,26 +20120,26 @@ st459:
 case 459:
 	switch( (*p) ) {
 		case 18u: goto st451;
-		case 19u: goto tr827;
+		case 19u: goto tr821;
 		case 22u: goto st451;
-		case 23u: goto tr827;
-		case 43u: goto tr827;
-		case 194u: goto tr828;
-		case 198u: goto tr828;
+		case 23u: goto tr821;
+		case 43u: goto tr821;
+		case 194u: goto tr822;
+		case 198u: goto tr822;
 	}
 	if ( (*p) < 40u ) {
 		if ( 16u <= (*p) && (*p) <= 21u )
-			goto tr826;
+			goto tr820;
 	} else if ( (*p) > 41u ) {
 		if ( (*p) > 47u ) {
 			if ( 81u <= (*p) && (*p) <= 95u )
-				goto tr826;
+				goto tr820;
 		} else if ( (*p) >= 46u )
-			goto tr826;
+			goto tr820;
 	} else
-		goto tr826;
+		goto tr820;
 	goto tr42;
-tr814:
+tr808:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -20169,7 +20149,7 @@ st460:
 		goto _test_eof460;
 case 460:
 	{
-		static const unsigned short jump_table[] = { 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1642, 1642, 1643, 1643, 1642, 1642, 1643, 1643, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1642, 1642, 858, 1643, 858, 858, 1642, 1642, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1642, 858, 858, 1642, 1642, 1642, 1642, 1642, 1642, 1642, 1642, 1642, 1642, 1642, 1642, 1642, 1642, 1642, 1642, 1642, 1642, 1642, 1642, 1642, 1642, 1642, 1642, 1642, 1642, 1642, 1642, 1644, 858, 858, 858, 1642, 1642, 1642, 858, 858, 858, 858, 858, 1642, 1642, 858, 1642, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1644, 858, 461, 858, 1644, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1642, 1642, 1642, 1642, 1642, 1642, 858, 858, 1642, 1642, 1642, 1642, 1642, 1642, 1642, 1642, 1642, 1642, 1642, 1642, 1642, 1642, 1642, 1643, 1642, 1642, 1642, 1642, 1642, 1642, 1642, 1642, 858, 1642, 1642, 1642, 1642, 1642, 1642, 858, 1642, 1642, 1642, 1642, 1642, 1642, 1642, 858 };
+		static const unsigned short jump_table[] = { 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1636, 1636, 1637, 1637, 1636, 1636, 1637, 1637, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1636, 1636, 858, 1637, 858, 858, 1636, 1636, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1636, 858, 858, 1636, 1636, 1636, 1636, 1636, 1636, 1636, 1636, 1636, 1636, 1636, 1636, 1636, 1636, 1636, 1636, 1636, 1636, 1636, 1636, 1636, 1636, 1636, 1636, 1636, 1636, 1636, 1636, 1638, 858, 858, 858, 1636, 1636, 1636, 858, 858, 858, 858, 858, 1636, 1636, 858, 1636, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1638, 858, 461, 858, 1638, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1636, 1636, 1636, 1636, 1636, 1636, 858, 858, 1636, 1636, 1636, 1636, 1636, 1636, 1636, 1636, 1636, 1636, 1636, 1636, 1636, 1636, 1636, 1637, 1636, 1636, 1636, 1636, 1636, 1636, 1636, 1636, 858, 1636, 1636, 1636, 1636, 1636, 1636, 858, 1636, 1636, 1636, 1636, 1636, 1636, 1636, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -20178,33 +20158,33 @@ st461:
 		goto _test_eof461;
 case 461:
 	switch( (*p) ) {
-		case 4u: goto tr833;
-		case 12u: goto tr833;
-		case 20u: goto tr833;
-		case 28u: goto tr833;
-		case 36u: goto tr833;
-		case 44u: goto tr833;
-		case 52u: goto tr833;
-		case 60u: goto tr833;
-		case 68u: goto tr834;
-		case 76u: goto tr834;
-		case 84u: goto tr834;
-		case 92u: goto tr834;
-		case 100u: goto tr834;
-		case 108u: goto tr834;
-		case 116u: goto tr834;
-		case 124u: goto tr834;
-		case 132u: goto tr835;
-		case 140u: goto tr835;
-		case 148u: goto tr835;
-		case 156u: goto tr835;
-		case 164u: goto tr835;
-		case 172u: goto tr835;
-		case 180u: goto tr835;
-		case 188u: goto tr835;
+		case 4u: goto tr827;
+		case 12u: goto tr827;
+		case 20u: goto tr827;
+		case 28u: goto tr827;
+		case 36u: goto tr827;
+		case 44u: goto tr827;
+		case 52u: goto tr827;
+		case 60u: goto tr827;
+		case 68u: goto tr828;
+		case 76u: goto tr828;
+		case 84u: goto tr828;
+		case 92u: goto tr828;
+		case 100u: goto tr828;
+		case 108u: goto tr828;
+		case 116u: goto tr828;
+		case 124u: goto tr828;
+		case 132u: goto tr829;
+		case 140u: goto tr829;
+		case 148u: goto tr829;
+		case 156u: goto tr829;
+		case 164u: goto tr829;
+		case 172u: goto tr829;
+		case 180u: goto tr829;
+		case 188u: goto tr829;
 	}
 	goto tr42;
-tr815:
+tr809:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -20214,29 +20194,29 @@ st462:
 		goto _test_eof462;
 case 462:
 	switch( (*p) ) {
-		case 18u: goto tr826;
-		case 22u: goto tr826;
-		case 42u: goto tr826;
-		case 111u: goto tr826;
-		case 112u: goto tr828;
-		case 126u: goto tr827;
-		case 127u: goto tr826;
-		case 194u: goto tr828;
-		case 230u: goto tr826;
+		case 18u: goto tr820;
+		case 22u: goto tr820;
+		case 42u: goto tr820;
+		case 111u: goto tr820;
+		case 112u: goto tr822;
+		case 126u: goto tr821;
+		case 127u: goto tr820;
+		case 194u: goto tr822;
+		case 230u: goto tr820;
 	}
 	if ( (*p) < 44u ) {
 		if ( 16u <= (*p) && (*p) <= 17u )
-			goto tr827;
+			goto tr821;
 	} else if ( (*p) > 45u ) {
 		if ( (*p) > 83u ) {
 			if ( 88u <= (*p) && (*p) <= 95u )
-				goto tr826;
+				goto tr820;
 		} else if ( (*p) >= 81u )
-			goto tr826;
+			goto tr820;
 	} else
-		goto tr836;
+		goto tr830;
 	goto tr42;
-tr849:
+tr843:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
@@ -20244,7 +20224,7 @@ tr849:
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
 	goto st463;
-tr853:
+tr847:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
@@ -20252,7 +20232,7 @@ tr853:
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
 	goto st463;
-tr836:
+tr830:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -20260,7 +20240,7 @@ tr836:
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
 	goto st463;
-tr839:
+tr833:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -20273,14 +20253,14 @@ st463:
 		goto _test_eof463;
 case 463:
 	switch( (*p) ) {
-		case 4u: goto tr837;
-		case 12u: goto tr837;
-		case 20u: goto tr837;
-		case 28u: goto tr837;
-		case 36u: goto tr837;
-		case 44u: goto tr837;
-		case 52u: goto tr837;
-		case 60u: goto tr837;
+		case 4u: goto tr831;
+		case 12u: goto tr831;
+		case 20u: goto tr831;
+		case 28u: goto tr831;
+		case 36u: goto tr831;
+		case 44u: goto tr831;
+		case 52u: goto tr831;
+		case 60u: goto tr831;
 		case 68u: goto tr21;
 		case 76u: goto tr21;
 		case 84u: goto tr21;
@@ -20301,7 +20281,7 @@ case 463:
 	if ( 192u <= (*p) )
 		goto tr24;
 	goto tr42;
-tr816:
+tr810:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -20311,31 +20291,31 @@ st464:
 		goto _test_eof464;
 case 464:
 	switch( (*p) ) {
-		case 18u: goto tr826;
-		case 42u: goto tr826;
-		case 81u: goto tr826;
-		case 112u: goto tr828;
-		case 194u: goto tr828;
-		case 208u: goto tr826;
-		case 230u: goto tr826;
-		case 240u: goto tr827;
+		case 18u: goto tr820;
+		case 42u: goto tr820;
+		case 81u: goto tr820;
+		case 112u: goto tr822;
+		case 194u: goto tr822;
+		case 208u: goto tr820;
+		case 230u: goto tr820;
+		case 240u: goto tr821;
 	}
 	if ( (*p) < 88u ) {
 		if ( (*p) > 17u ) {
 			if ( 44u <= (*p) && (*p) <= 45u )
-				goto tr836;
+				goto tr830;
 		} else if ( (*p) >= 16u )
-			goto tr827;
+			goto tr821;
 	} else if ( (*p) > 90u ) {
 		if ( (*p) > 95u ) {
 			if ( 124u <= (*p) && (*p) <= 125u )
-				goto tr826;
+				goto tr820;
 		} else if ( (*p) >= 92u )
-			goto tr826;
+			goto tr820;
 	} else
-		goto tr826;
+		goto tr820;
 	goto tr42;
-tr817:
+tr811:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -20345,23 +20325,23 @@ st465:
 		goto _test_eof465;
 case 465:
 	switch( (*p) ) {
-		case 43u: goto tr827;
-		case 194u: goto tr828;
-		case 198u: goto tr828;
+		case 43u: goto tr821;
+		case 194u: goto tr822;
+		case 198u: goto tr822;
 	}
 	if ( (*p) < 20u ) {
 		if ( 16u <= (*p) && (*p) <= 17u )
-			goto tr826;
+			goto tr820;
 	} else if ( (*p) > 21u ) {
 		if ( (*p) > 41u ) {
 			if ( 81u <= (*p) && (*p) <= 95u )
-				goto tr826;
+				goto tr820;
 		} else if ( (*p) >= 40u )
-			goto tr826;
+			goto tr820;
 	} else
-		goto tr826;
+		goto tr820;
 	goto tr42;
-tr818:
+tr812:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -20371,32 +20351,32 @@ st466:
 		goto _test_eof466;
 case 466:
 	switch( (*p) ) {
-		case 43u: goto tr827;
-		case 81u: goto tr826;
-		case 126u: goto tr838;
-		case 194u: goto tr828;
-		case 198u: goto tr828;
-		case 208u: goto tr826;
-		case 214u: goto tr826;
-		case 230u: goto tr826;
-		case 231u: goto tr827;
+		case 43u: goto tr821;
+		case 81u: goto tr820;
+		case 126u: goto tr832;
+		case 194u: goto tr822;
+		case 198u: goto tr822;
+		case 208u: goto tr820;
+		case 214u: goto tr820;
+		case 230u: goto tr820;
+		case 231u: goto tr821;
 	}
 	if ( (*p) < 40u ) {
 		if ( (*p) > 17u ) {
 			if ( 20u <= (*p) && (*p) <= 21u )
-				goto tr826;
+				goto tr820;
 		} else if ( (*p) >= 16u )
-			goto tr826;
+			goto tr820;
 	} else if ( (*p) > 41u ) {
 		if ( (*p) > 95u ) {
 			if ( 124u <= (*p) && (*p) <= 127u )
-				goto tr826;
+				goto tr820;
 		} else if ( (*p) >= 84u )
-			goto tr826;
+			goto tr820;
 	} else
-		goto tr826;
+		goto tr820;
 	goto tr42;
-tr838:
+tr832:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -20404,7 +20384,7 @@ tr838:
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
 	goto st467;
-tr840:
+tr834:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -20445,7 +20425,7 @@ case 467:
 	if ( 192u <= (*p) )
 		goto tr7;
 	goto tr42;
-tr819:
+tr813:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -20455,14 +20435,14 @@ st468:
 		goto _test_eof468;
 case 468:
 	switch( (*p) ) {
-		case 18u: goto tr826;
-		case 22u: goto tr826;
-		case 91u: goto tr826;
-		case 127u: goto tr826;
-		case 230u: goto tr826;
+		case 18u: goto tr820;
+		case 22u: goto tr820;
+		case 91u: goto tr820;
+		case 127u: goto tr820;
+		case 230u: goto tr820;
 	}
 	goto tr42;
-tr820:
+tr814:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -20472,15 +20452,15 @@ st469:
 		goto _test_eof469;
 case 469:
 	switch( (*p) ) {
-		case 18u: goto tr826;
-		case 208u: goto tr826;
-		case 230u: goto tr826;
-		case 240u: goto tr827;
+		case 18u: goto tr820;
+		case 208u: goto tr820;
+		case 230u: goto tr820;
+		case 240u: goto tr821;
 	}
 	if ( 124u <= (*p) && (*p) <= 125u )
-		goto tr826;
+		goto tr820;
 	goto tr42;
-tr821:
+tr815:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -20490,9 +20470,9 @@ st470:
 		goto _test_eof470;
 case 470:
 	if ( (*p) == 42u )
-		goto tr826;
+		goto tr820;
 	goto tr42;
-tr822:
+tr816:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -20502,9 +20482,9 @@ st471:
 		goto _test_eof471;
 case 471:
 	if ( (*p) == 110u )
-		goto tr826;
+		goto tr820;
 	goto tr42;
-tr823:
+tr817:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -20514,11 +20494,11 @@ st472:
 		goto _test_eof472;
 case 472:
 	if ( (*p) == 42u )
-		goto tr826;
+		goto tr820;
 	if ( 44u <= (*p) && (*p) <= 45u )
-		goto tr839;
+		goto tr833;
 	goto tr42;
-tr824:
+tr818:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -20528,9 +20508,9 @@ st473:
 		goto _test_eof473;
 case 473:
 	if ( (*p) == 126u )
-		goto tr840;
+		goto tr834;
 	goto tr42;
-tr787:
+tr781:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -20540,11 +20520,11 @@ st474:
 		goto _test_eof474;
 case 474:
 	{
-		static const unsigned short jump_table[] = { 1657, 1658, 858, 858, 858, 1659, 858, 858, 1657, 1658, 858, 858, 858, 1659, 858, 858, 1657, 1658, 858, 858, 858, 1659, 858, 858, 1657, 1658, 858, 858, 858, 1659, 858, 858, 1657, 1658, 858, 858, 858, 1659, 858, 858, 1657, 1658, 858, 858, 858, 1659, 858, 858, 1657, 1658, 858, 858, 858, 1659, 858, 858, 1657, 1658, 858, 858, 858, 1659, 858, 858, 1657, 1658, 858, 858, 858, 1659, 858, 858, 1657, 1658, 858, 858, 858, 1659, 858, 858, 1657, 1658, 858, 858, 858, 1659, 858, 858, 1657, 1658, 858, 858, 858, 1659, 858, 858, 1657, 1658, 858, 858, 858, 1659, 858, 858, 1657, 1658, 858, 858, 858, 1659, 858, 858, 1657, 1658, 858, 858, 858, 1659, 858, 858, 1657, 1660, 858, 858, 858, 1661, 858, 858, 1662, 1663, 858, 858, 858, 1664, 858, 858, 1662, 1663, 858, 858, 858, 1664, 858, 858, 1662, 1663, 858, 858, 858, 1664, 858, 858, 1662, 1663, 858, 858, 858, 1664, 858, 858, 1662, 1663, 858, 858, 858, 1664, 858, 858, 1662, 1663, 858, 858, 858, 1664, 858, 858, 1662, 1663, 858, 858, 858, 1664, 858, 858, 1662, 1663, 858, 858, 858, 1664, 858, 858, 1662, 1663, 858, 858, 858, 1664, 858, 858, 1662, 1663, 858, 858, 858, 1664, 858, 858, 1662, 1663, 858, 858, 858, 1664, 858, 858, 1662, 1663, 858, 858, 858, 1664, 858, 858, 1662, 1663, 858, 858, 858, 1664, 858, 858, 1662, 1663, 858, 858, 858, 1664, 858, 858, 1662, 1663, 858, 858, 858, 1664, 858, 858, 1662, 1663, 858, 858, 858, 1664, 858, 858 };
+		static const unsigned short jump_table[] = { 1651, 1652, 858, 858, 858, 1653, 858, 858, 1651, 1652, 858, 858, 858, 1653, 858, 858, 1651, 1652, 858, 858, 858, 1653, 858, 858, 1651, 1652, 858, 858, 858, 1653, 858, 858, 1651, 1652, 858, 858, 858, 1653, 858, 858, 1651, 1652, 858, 858, 858, 1653, 858, 858, 1651, 1652, 858, 858, 858, 1653, 858, 858, 1651, 1652, 858, 858, 858, 1653, 858, 858, 1651, 1652, 858, 858, 858, 1653, 858, 858, 1651, 1652, 858, 858, 858, 1653, 858, 858, 1651, 1652, 858, 858, 858, 1653, 858, 858, 1651, 1652, 858, 858, 858, 1653, 858, 858, 1651, 1652, 858, 858, 858, 1653, 858, 858, 1651, 1652, 858, 858, 858, 1653, 858, 858, 1651, 1652, 858, 858, 858, 1653, 858, 858, 1651, 1654, 858, 858, 858, 1655, 858, 858, 1656, 1657, 858, 858, 858, 1658, 858, 858, 1656, 1657, 858, 858, 858, 1658, 858, 858, 1656, 1657, 858, 858, 858, 1658, 858, 858, 1656, 1657, 858, 858, 858, 1658, 858, 858, 1656, 1657, 858, 858, 858, 1658, 858, 858, 1656, 1657, 858, 858, 858, 1658, 858, 858, 1656, 1657, 858, 858, 858, 1658, 858, 858, 1656, 1657, 858, 858, 858, 1658, 858, 858, 1656, 1657, 858, 858, 858, 1658, 858, 858, 1656, 1657, 858, 858, 858, 1658, 858, 858, 1656, 1657, 858, 858, 858, 1658, 858, 858, 1656, 1657, 858, 858, 858, 1658, 858, 858, 1656, 1657, 858, 858, 858, 1658, 858, 858, 1656, 1657, 858, 858, 858, 1658, 858, 858, 1656, 1657, 858, 858, 858, 1658, 858, 858, 1656, 1657, 858, 858, 858, 1658, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr841:
+tr835:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -20554,11 +20534,11 @@ st475:
 		goto _test_eof475;
 case 475:
 	switch( (*p) ) {
-		case 242u: goto tr849;
-		case 247u: goto tr849;
+		case 242u: goto tr843;
+		case 247u: goto tr843;
 	}
 	goto tr42;
-tr842:
+tr836:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -20568,32 +20548,32 @@ st476:
 		goto _test_eof476;
 case 476:
 	if ( (*p) == 43u )
-		goto tr826;
+		goto tr820;
 	if ( (*p) < 55u ) {
 		if ( (*p) < 40u ) {
 			if ( (*p) <= 13u )
-				goto tr826;
+				goto tr820;
 		} else if ( (*p) > 41u ) {
 			if ( 44u <= (*p) && (*p) <= 47u )
-				goto tr827;
+				goto tr821;
 		} else
-			goto tr826;
+			goto tr820;
 	} else if ( (*p) > 64u ) {
 		if ( (*p) < 166u ) {
 			if ( 150u <= (*p) && (*p) <= 159u )
-				goto tr850;
+				goto tr844;
 		} else if ( (*p) > 175u ) {
 			if ( (*p) > 191u ) {
 				if ( 219u <= (*p) && (*p) <= 223u )
-					goto tr851;
+					goto tr845;
 			} else if ( (*p) >= 182u )
-				goto tr850;
+				goto tr844;
 		} else
-			goto tr850;
+			goto tr844;
 	} else
-		goto tr826;
+		goto tr820;
 	goto tr42;
-tr843:
+tr837:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -20603,32 +20583,32 @@ st477:
 		goto _test_eof477;
 case 477:
 	switch( (*p) ) {
-		case 154u: goto tr850;
-		case 156u: goto tr850;
-		case 158u: goto tr850;
-		case 170u: goto tr850;
-		case 172u: goto tr850;
-		case 174u: goto tr850;
-		case 186u: goto tr850;
-		case 188u: goto tr850;
-		case 190u: goto tr850;
+		case 154u: goto tr844;
+		case 156u: goto tr844;
+		case 158u: goto tr844;
+		case 170u: goto tr844;
+		case 172u: goto tr844;
+		case 174u: goto tr844;
+		case 186u: goto tr844;
+		case 188u: goto tr844;
+		case 190u: goto tr844;
 	}
 	if ( (*p) < 150u ) {
 		if ( (*p) > 13u ) {
 			if ( 44u <= (*p) && (*p) <= 47u )
-				goto tr827;
+				goto tr821;
 		} else if ( (*p) >= 12u )
-			goto tr826;
+			goto tr820;
 	} else if ( (*p) > 152u ) {
 		if ( (*p) > 168u ) {
 			if ( 182u <= (*p) && (*p) <= 184u )
-				goto tr850;
+				goto tr844;
 		} else if ( (*p) >= 166u )
-			goto tr850;
+			goto tr844;
 	} else
-		goto tr850;
+		goto tr844;
 	goto tr42;
-tr844:
+tr838:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -20638,45 +20618,45 @@ st478:
 		goto _test_eof478;
 case 478:
 	switch( (*p) ) {
-		case 19u: goto tr852;
-		case 23u: goto tr826;
-		case 24u: goto tr827;
-		case 42u: goto tr827;
+		case 19u: goto tr846;
+		case 23u: goto tr820;
+		case 24u: goto tr821;
+		case 42u: goto tr821;
 	}
 	if ( (*p) < 48u ) {
 		if ( (*p) < 32u ) {
 			if ( (*p) > 15u ) {
 				if ( 28u <= (*p) && (*p) <= 30u )
-					goto tr826;
+					goto tr820;
 			} else
-				goto tr826;
+				goto tr820;
 		} else if ( (*p) > 37u ) {
 			if ( (*p) > 43u ) {
 				if ( 44u <= (*p) && (*p) <= 47u )
-					goto tr827;
+					goto tr821;
 			} else if ( (*p) >= 40u )
-				goto tr826;
+				goto tr820;
 		} else
-			goto tr826;
+			goto tr820;
 	} else if ( (*p) > 53u ) {
 		if ( (*p) < 166u ) {
 			if ( (*p) > 65u ) {
 				if ( 150u <= (*p) && (*p) <= 159u )
-					goto tr850;
+					goto tr844;
 			} else if ( (*p) >= 55u )
-				goto tr826;
+				goto tr820;
 		} else if ( (*p) > 175u ) {
 			if ( (*p) > 191u ) {
 				if ( 219u <= (*p) && (*p) <= 223u )
-					goto tr851;
+					goto tr845;
 			} else if ( (*p) >= 182u )
-				goto tr850;
+				goto tr844;
 		} else
-			goto tr850;
+			goto tr844;
 	} else
-		goto tr826;
+		goto tr820;
 	goto tr42;
-tr845:
+tr839:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -20686,37 +20666,37 @@ st479:
 		goto _test_eof479;
 case 479:
 	switch( (*p) ) {
-		case 19u: goto tr852;
-		case 23u: goto tr826;
-		case 154u: goto tr850;
-		case 156u: goto tr850;
-		case 158u: goto tr850;
-		case 170u: goto tr850;
-		case 172u: goto tr850;
-		case 174u: goto tr850;
-		case 186u: goto tr850;
-		case 188u: goto tr850;
-		case 190u: goto tr850;
+		case 19u: goto tr846;
+		case 23u: goto tr820;
+		case 154u: goto tr844;
+		case 156u: goto tr844;
+		case 158u: goto tr844;
+		case 170u: goto tr844;
+		case 172u: goto tr844;
+		case 174u: goto tr844;
+		case 186u: goto tr844;
+		case 188u: goto tr844;
+		case 190u: goto tr844;
 	}
 	if ( (*p) < 44u ) {
 		if ( (*p) > 15u ) {
 			if ( 24u <= (*p) && (*p) <= 26u )
-				goto tr827;
+				goto tr821;
 		} else if ( (*p) >= 12u )
-			goto tr826;
+			goto tr820;
 	} else if ( (*p) > 47u ) {
 		if ( (*p) < 166u ) {
 			if ( 150u <= (*p) && (*p) <= 152u )
-				goto tr850;
+				goto tr844;
 		} else if ( (*p) > 168u ) {
 			if ( 182u <= (*p) && (*p) <= 184u )
-				goto tr850;
+				goto tr844;
 		} else
-			goto tr850;
+			goto tr844;
 	} else
-		goto tr827;
+		goto tr821;
 	goto tr42;
-tr846:
+tr840:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -20726,11 +20706,11 @@ st480:
 		goto _test_eof480;
 case 480:
 	switch( (*p) ) {
-		case 242u: goto tr853;
-		case 247u: goto tr853;
+		case 242u: goto tr847;
+		case 247u: goto tr847;
 	}
 	goto tr42;
-tr847:
+tr841:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -20741,14 +20721,14 @@ st481:
 case 481:
 	if ( (*p) < 166u ) {
 		if ( 150u <= (*p) && (*p) <= 159u )
-			goto tr850;
+			goto tr844;
 	} else if ( (*p) > 175u ) {
 		if ( 182u <= (*p) && (*p) <= 191u )
-			goto tr850;
+			goto tr844;
 	} else
-		goto tr850;
+		goto tr844;
 	goto tr42;
-tr848:
+tr842:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -20758,26 +20738,26 @@ st482:
 		goto _test_eof482;
 case 482:
 	switch( (*p) ) {
-		case 154u: goto tr850;
-		case 156u: goto tr850;
-		case 158u: goto tr850;
-		case 170u: goto tr850;
-		case 172u: goto tr850;
-		case 174u: goto tr850;
-		case 186u: goto tr850;
-		case 188u: goto tr850;
-		case 190u: goto tr850;
+		case 154u: goto tr844;
+		case 156u: goto tr844;
+		case 158u: goto tr844;
+		case 170u: goto tr844;
+		case 172u: goto tr844;
+		case 174u: goto tr844;
+		case 186u: goto tr844;
+		case 188u: goto tr844;
+		case 190u: goto tr844;
 	}
 	if ( (*p) < 166u ) {
 		if ( 150u <= (*p) && (*p) <= 152u )
-			goto tr850;
+			goto tr844;
 	} else if ( (*p) > 168u ) {
 		if ( 182u <= (*p) && (*p) <= 184u )
-			goto tr850;
+			goto tr844;
 	} else
-		goto tr850;
+		goto tr844;
 	goto tr42;
-tr788:
+tr782:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -20787,11 +20767,11 @@ st483:
 		goto _test_eof483;
 case 483:
 	{
-		static const unsigned short jump_table[] = { 858, 1670, 858, 858, 858, 1671, 858, 858, 858, 1670, 858, 858, 858, 1671, 858, 858, 858, 1670, 858, 858, 858, 1671, 858, 858, 858, 1670, 858, 858, 858, 1671, 858, 858, 858, 1670, 858, 858, 858, 1671, 858, 858, 858, 1670, 858, 858, 858, 1671, 858, 858, 858, 1670, 858, 858, 858, 1671, 858, 858, 858, 1670, 858, 858, 858, 1671, 858, 858, 858, 1670, 858, 858, 858, 1671, 858, 858, 858, 1670, 858, 858, 858, 1671, 858, 858, 858, 1670, 858, 858, 858, 1671, 858, 858, 858, 1670, 858, 858, 858, 1671, 858, 858, 858, 1670, 858, 858, 858, 1671, 858, 858, 858, 1670, 858, 858, 858, 1671, 858, 858, 858, 1670, 858, 858, 858, 1671, 858, 858, 858, 1672, 858, 858, 858, 1673, 858, 858, 858, 1674, 858, 858, 858, 1675, 858, 858, 858, 1674, 858, 858, 858, 1675, 858, 858, 858, 1674, 858, 858, 858, 1675, 858, 858, 858, 1674, 858, 858, 858, 1675, 858, 858, 858, 1674, 858, 858, 858, 1675, 858, 858, 858, 1674, 858, 858, 858, 1675, 858, 858, 858, 1674, 858, 858, 858, 1675, 858, 858, 858, 1674, 858, 858, 858, 1675, 858, 858, 858, 1674, 858, 858, 858, 1675, 858, 858, 858, 1674, 858, 858, 858, 1675, 858, 858, 858, 1674, 858, 858, 858, 1675, 858, 858, 858, 1674, 858, 858, 858, 1675, 858, 858, 858, 1674, 858, 858, 858, 1675, 858, 858, 858, 1674, 858, 858, 858, 1675, 858, 858, 858, 1674, 858, 858, 858, 1675, 858, 858, 858, 1676, 858, 858, 858, 1675, 858, 858 };
+		static const unsigned short jump_table[] = { 858, 1664, 858, 858, 858, 1665, 858, 858, 858, 1664, 858, 858, 858, 1665, 858, 858, 858, 1664, 858, 858, 858, 1665, 858, 858, 858, 1664, 858, 858, 858, 1665, 858, 858, 858, 1664, 858, 858, 858, 1665, 858, 858, 858, 1664, 858, 858, 858, 1665, 858, 858, 858, 1664, 858, 858, 858, 1665, 858, 858, 858, 1664, 858, 858, 858, 1665, 858, 858, 858, 1664, 858, 858, 858, 1665, 858, 858, 858, 1664, 858, 858, 858, 1665, 858, 858, 858, 1664, 858, 858, 858, 1665, 858, 858, 858, 1664, 858, 858, 858, 1665, 858, 858, 858, 1664, 858, 858, 858, 1665, 858, 858, 858, 1664, 858, 858, 858, 1665, 858, 858, 858, 1664, 858, 858, 858, 1665, 858, 858, 858, 1666, 858, 858, 858, 1667, 858, 858, 858, 1668, 858, 858, 858, 1669, 858, 858, 858, 1668, 858, 858, 858, 1669, 858, 858, 858, 1668, 858, 858, 858, 1669, 858, 858, 858, 1668, 858, 858, 858, 1669, 858, 858, 858, 1668, 858, 858, 858, 1669, 858, 858, 858, 1668, 858, 858, 858, 1669, 858, 858, 858, 1668, 858, 858, 858, 1669, 858, 858, 858, 1668, 858, 858, 858, 1669, 858, 858, 858, 1668, 858, 858, 858, 1669, 858, 858, 858, 1668, 858, 858, 858, 1669, 858, 858, 858, 1668, 858, 858, 858, 1669, 858, 858, 858, 1668, 858, 858, 858, 1669, 858, 858, 858, 1668, 858, 858, 858, 1669, 858, 858, 858, 1668, 858, 858, 858, 1669, 858, 858, 858, 1668, 858, 858, 858, 1669, 858, 858, 858, 1670, 858, 858, 858, 1669, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr854:
+tr848:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -20801,32 +20781,32 @@ st484:
 		goto _test_eof484;
 case 484:
 	switch( (*p) ) {
-		case 33u: goto tr861;
-		case 68u: goto tr862;
-		case 223u: goto tr866;
+		case 33u: goto tr855;
+		case 68u: goto tr856;
+		case 223u: goto tr860;
 	}
 	if ( (*p) < 74u ) {
 		if ( (*p) < 64u ) {
 			if ( 8u <= (*p) && (*p) <= 15u )
-				goto tr828;
+				goto tr822;
 		} else if ( (*p) > 66u ) {
 			if ( 72u <= (*p) && (*p) <= 73u )
-				goto tr863;
+				goto tr857;
 		} else
-			goto tr828;
+			goto tr822;
 	} else if ( (*p) > 76u ) {
 		if ( (*p) < 104u ) {
 			if ( 92u <= (*p) && (*p) <= 95u )
-				goto tr865;
+				goto tr859;
 		} else if ( (*p) > 111u ) {
 			if ( 120u <= (*p) && (*p) <= 127u )
-				goto tr865;
+				goto tr859;
 		} else
-			goto tr865;
+			goto tr859;
 	} else
-		goto tr864;
+		goto tr858;
 	goto tr42;
-tr861:
+tr855:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -20862,7 +20842,7 @@ case 485:
 		case 188u: goto st61;
 	}
 	goto tr42;
-tr863:
+tr857:
 	{
     SET_CPU_FEATURE(CPUFeature_XOP);
   }
@@ -20938,8 +20918,8 @@ case 487:
 		case 245u: goto tr42;
 		case 253u: goto tr42;
 	}
-	goto tr871;
-tr1009:
+	goto tr865;
+tr1003:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(((*p) & 0x07) |
@@ -20980,7 +20960,7 @@ tr1009:
     }
   }
 	goto st488;
-tr871:
+tr865:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(((*p) & 0x7) |
@@ -21023,7 +21003,7 @@ tr871:
     }
   }
 	goto st488;
-tr879:
+tr873:
 	{
     SET_DISP_TYPE(DISP32);
     SET_DISP_PTR(p - 3);
@@ -21060,7 +21040,7 @@ tr879:
     }
   }
 	goto st488;
-tr874:
+tr868:
 	{
     SET_DISP_TYPE(DISP8);
     SET_DISP_PTR(p);
@@ -21105,56 +21085,56 @@ case 488:
 		if ( (*p) < 48u ) {
 			if ( (*p) < 16u ) {
 				if ( (*p) <= 3u )
-					goto tr872;
+					goto tr866;
 			} else if ( (*p) > 19u ) {
 				if ( 32u <= (*p) && (*p) <= 35u )
-					goto tr872;
+					goto tr866;
 			} else
-				goto tr872;
+				goto tr866;
 		} else if ( (*p) > 51u ) {
 			if ( (*p) < 80u ) {
 				if ( 64u <= (*p) && (*p) <= 67u )
-					goto tr872;
+					goto tr866;
 			} else if ( (*p) > 83u ) {
 				if ( 96u <= (*p) && (*p) <= 99u )
-					goto tr872;
+					goto tr866;
 			} else
-				goto tr872;
+				goto tr866;
 		} else
-			goto tr872;
+			goto tr866;
 	} else if ( (*p) > 115u ) {
 		if ( (*p) < 176u ) {
 			if ( (*p) < 144u ) {
 				if ( 128u <= (*p) && (*p) <= 131u )
-					goto tr872;
+					goto tr866;
 			} else if ( (*p) > 147u ) {
 				if ( 160u <= (*p) && (*p) <= 163u )
-					goto tr872;
+					goto tr866;
 			} else
-				goto tr872;
+				goto tr866;
 		} else if ( (*p) > 179u ) {
 			if ( (*p) < 208u ) {
 				if ( 192u <= (*p) && (*p) <= 195u )
-					goto tr872;
+					goto tr866;
 			} else if ( (*p) > 211u ) {
 				if ( (*p) > 227u ) {
 					if ( 240u <= (*p) && (*p) <= 243u )
-						goto tr872;
+						goto tr866;
 				} else if ( (*p) >= 224u )
-					goto tr872;
+					goto tr866;
 			} else
-				goto tr872;
+				goto tr866;
 		} else
-			goto tr872;
+			goto tr866;
 	} else
-		goto tr872;
+		goto tr866;
 	goto tr42;
 st489:
 	if ( ++p == pe )
 		goto _test_eof489;
 case 489:
-	goto tr873;
-tr1010:
+	goto tr867;
+tr1004:
 	{
     SET_MODRM_BASE(((*p) & 0x07) |
                    ((GET_REX_PREFIX() & 0x01) << 3) |
@@ -21163,7 +21143,7 @@ tr1010:
     SET_MODRM_SCALE(0);
   }
 	goto st490;
-tr873:
+tr867:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(((*p) & 0x7) |
@@ -21179,20 +21159,20 @@ st490:
 	if ( ++p == pe )
 		goto _test_eof490;
 case 490:
-	goto tr874;
+	goto tr868;
 st491:
 	if ( ++p == pe )
 		goto _test_eof491;
 case 491:
-	goto tr875;
-tr1073:
+	goto tr869;
+tr1067:
 	{
     SET_MODRM_BASE(REG_RIP);
     SET_MODRM_INDEX(NO_REG);
     SET_MODRM_SCALE(0);
   }
 	goto st492;
-tr1011:
+tr1005:
 	{
     SET_MODRM_BASE(((*p) & 0x07) |
                    ((GET_REX_PREFIX() & 0x01) << 3) |
@@ -21201,7 +21181,7 @@ tr1011:
     SET_MODRM_SCALE(0);
   }
 	goto st492;
-tr940:
+tr934:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(NO_REG);
@@ -21211,7 +21191,7 @@ tr940:
     SET_MODRM_SCALE(((*p) & 0xc0) >> 6);
   }
 	goto st492;
-tr875:
+tr869:
 	{
     SET_DISP_TYPE(DISPNONE);
     SET_MODRM_BASE(((*p) & 0x7) |
@@ -21242,8 +21222,8 @@ st495:
 	if ( ++p == pe )
 		goto _test_eof495;
 case 495:
-	goto tr879;
-tr855:
+	goto tr873;
+tr849:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -21253,37 +21233,37 @@ st496:
 		goto _test_eof496;
 case 496:
 	switch( (*p) ) {
-		case 6u: goto tr828;
-		case 64u: goto tr828;
+		case 6u: goto tr822;
+		case 64u: goto tr822;
 	}
 	if ( (*p) < 92u ) {
 		if ( (*p) < 12u ) {
 			if ( 8u <= (*p) && (*p) <= 9u )
-				goto tr828;
+				goto tr822;
 		} else if ( (*p) > 13u ) {
 			if ( (*p) > 73u ) {
 				if ( 74u <= (*p) && (*p) <= 75u )
-					goto tr864;
+					goto tr858;
 			} else if ( (*p) >= 72u )
-				goto tr863;
+				goto tr857;
 		} else
-			goto tr828;
+			goto tr822;
 	} else if ( (*p) > 95u ) {
 		if ( (*p) < 108u ) {
 			if ( 104u <= (*p) && (*p) <= 105u )
-				goto tr865;
+				goto tr859;
 		} else if ( (*p) > 109u ) {
 			if ( (*p) > 121u ) {
 				if ( 124u <= (*p) && (*p) <= 125u )
-					goto tr865;
+					goto tr859;
 			} else if ( (*p) >= 120u )
-				goto tr865;
+				goto tr859;
 		} else
-			goto tr865;
+			goto tr859;
 	} else
-		goto tr865;
+		goto tr859;
 	goto tr42;
-tr856:
+tr850:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -21293,46 +21273,46 @@ st497:
 		goto _test_eof497;
 case 497:
 	switch( (*p) ) {
-		case 22u: goto tr880;
-		case 23u: goto tr861;
-		case 29u: goto tr881;
+		case 22u: goto tr874;
+		case 23u: goto tr855;
+		case 29u: goto tr875;
 		case 32u: goto st461;
-		case 33u: goto tr861;
-		case 34u: goto tr828;
-		case 68u: goto tr862;
-		case 223u: goto tr866;
+		case 33u: goto tr855;
+		case 34u: goto tr822;
+		case 68u: goto tr856;
+		case 223u: goto tr860;
 	}
 	if ( (*p) < 72u ) {
 		if ( (*p) < 8u ) {
 			if ( 4u <= (*p) && (*p) <= 5u )
-				goto tr828;
+				goto tr822;
 		} else if ( (*p) > 15u ) {
 			if ( (*p) > 21u ) {
 				if ( 64u <= (*p) && (*p) <= 66u )
-					goto tr828;
+					goto tr822;
 			} else if ( (*p) >= 20u )
 				goto st461;
 		} else
-			goto tr828;
+			goto tr822;
 	} else if ( (*p) > 73u ) {
 		if ( (*p) < 96u ) {
 			if ( (*p) > 76u ) {
 				if ( 92u <= (*p) && (*p) <= 95u )
-					goto tr865;
+					goto tr859;
 			} else if ( (*p) >= 74u )
-				goto tr864;
+				goto tr858;
 		} else if ( (*p) > 99u ) {
 			if ( (*p) > 111u ) {
 				if ( 120u <= (*p) && (*p) <= 127u )
-					goto tr865;
+					goto tr859;
 			} else if ( (*p) >= 104u )
-				goto tr865;
+				goto tr859;
 		} else
-			goto tr828;
+			goto tr822;
 	} else
-		goto tr863;
+		goto tr857;
 	goto tr42;
-tr880:
+tr874:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -21340,7 +21320,7 @@ tr880:
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
 	goto st498;
-tr882:
+tr876:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -21381,7 +21361,7 @@ case 498:
 	if ( 192u <= (*p) )
 		goto tr155;
 	goto tr42;
-tr857:
+tr851:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -21391,43 +21371,43 @@ st499:
 		goto _test_eof499;
 case 499:
 	switch( (*p) ) {
-		case 29u: goto tr881;
-		case 64u: goto tr828;
+		case 29u: goto tr875;
+		case 64u: goto tr822;
 	}
 	if ( (*p) < 74u ) {
 		if ( (*p) < 12u ) {
 			if ( (*p) > 6u ) {
 				if ( 8u <= (*p) && (*p) <= 9u )
-					goto tr828;
+					goto tr822;
 			} else if ( (*p) >= 4u )
-				goto tr828;
+				goto tr822;
 		} else if ( (*p) > 13u ) {
 			if ( (*p) > 25u ) {
 				if ( 72u <= (*p) && (*p) <= 73u )
-					goto tr863;
+					goto tr857;
 			} else if ( (*p) >= 24u )
-				goto tr828;
+				goto tr822;
 		} else
-			goto tr828;
+			goto tr822;
 	} else if ( (*p) > 75u ) {
 		if ( (*p) < 108u ) {
 			if ( (*p) > 95u ) {
 				if ( 104u <= (*p) && (*p) <= 105u )
-					goto tr865;
+					goto tr859;
 			} else if ( (*p) >= 92u )
-				goto tr865;
+				goto tr859;
 		} else if ( (*p) > 109u ) {
 			if ( (*p) > 121u ) {
 				if ( 124u <= (*p) && (*p) <= 125u )
-					goto tr865;
+					goto tr859;
 			} else if ( (*p) >= 120u )
-				goto tr865;
+				goto tr859;
 		} else
-			goto tr865;
+			goto tr859;
 	} else
-		goto tr864;
+		goto tr858;
 	goto tr42;
-tr858:
+tr852:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -21438,17 +21418,17 @@ st500:
 case 500:
 	if ( (*p) < 92u ) {
 		if ( 72u <= (*p) && (*p) <= 73u )
-			goto tr863;
+			goto tr857;
 	} else if ( (*p) > 95u ) {
 		if ( (*p) > 111u ) {
 			if ( 120u <= (*p) && (*p) <= 127u )
-				goto tr865;
+				goto tr859;
 		} else if ( (*p) >= 104u )
-			goto tr865;
+			goto tr859;
 	} else
-		goto tr865;
+		goto tr859;
 	goto tr42;
-tr859:
+tr853:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -21460,22 +21440,22 @@ case 501:
 	if ( (*p) < 104u ) {
 		if ( (*p) > 73u ) {
 			if ( 92u <= (*p) && (*p) <= 95u )
-				goto tr865;
+				goto tr859;
 		} else if ( (*p) >= 72u )
-			goto tr863;
+			goto tr857;
 	} else if ( (*p) > 105u ) {
 		if ( (*p) < 120u ) {
 			if ( 108u <= (*p) && (*p) <= 109u )
-				goto tr865;
+				goto tr859;
 		} else if ( (*p) > 121u ) {
 			if ( 124u <= (*p) && (*p) <= 125u )
-				goto tr865;
+				goto tr859;
 		} else
-			goto tr865;
+			goto tr859;
 	} else
-		goto tr865;
+		goto tr859;
 	goto tr42;
-tr860:
+tr854:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -21485,22 +21465,22 @@ st502:
 		goto _test_eof502;
 case 502:
 	switch( (*p) ) {
-		case 22u: goto tr882;
-		case 34u: goto tr828;
+		case 22u: goto tr876;
+		case 34u: goto tr822;
 	}
 	if ( (*p) < 92u ) {
 		if ( 72u <= (*p) && (*p) <= 73u )
-			goto tr863;
+			goto tr857;
 	} else if ( (*p) > 95u ) {
 		if ( (*p) > 111u ) {
 			if ( 120u <= (*p) && (*p) <= 127u )
-				goto tr865;
+				goto tr859;
 		} else if ( (*p) >= 104u )
-			goto tr865;
+			goto tr859;
 	} else
-		goto tr865;
+		goto tr859;
 	goto tr42;
-tr789:
+tr783:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -21510,11 +21490,11 @@ st503:
 		goto _test_eof503;
 case 503:
 	{
-		static const unsigned short jump_table[] = { 1699, 1700, 1701, 1702, 1703, 1704, 858, 1705, 1699, 1700, 1701, 1702, 1703, 1704, 858, 1705, 1699, 1700, 1701, 1702, 1703, 1704, 858, 1705, 1699, 1700, 1701, 1702, 1703, 1704, 858, 1705, 1699, 1700, 1701, 1702, 1703, 1704, 858, 1705, 1699, 1700, 1701, 1702, 1703, 1704, 858, 1705, 1699, 1700, 1701, 1702, 1703, 1704, 858, 1705, 1699, 1700, 1701, 1702, 1703, 1704, 858, 1705, 1699, 1700, 1701, 1702, 1703, 1704, 858, 1705, 1699, 1700, 1701, 1702, 1703, 1704, 858, 1705, 1699, 1700, 1701, 1702, 1703, 1704, 858, 1705, 1699, 1700, 1701, 1702, 1703, 1704, 858, 1705, 1699, 1700, 1701, 1702, 1703, 1704, 858, 1705, 1699, 1700, 1701, 1702, 1703, 1704, 858, 1705, 1699, 1700, 1701, 1702, 1703, 1704, 858, 1705, 1706, 1707, 1708, 1709, 1710, 1711, 1712, 1713, 858, 858, 1714, 1714, 858, 858, 858, 858, 858, 858, 1714, 1714, 858, 858, 858, 858, 858, 858, 1714, 1714, 858, 858, 858, 858, 858, 858, 1714, 1714, 858, 858, 858, 858, 858, 858, 1714, 1714, 858, 858, 858, 858, 858, 858, 1714, 1714, 858, 858, 858, 858, 858, 858, 1714, 1714, 858, 858, 858, 858, 858, 858, 1714, 1714, 858, 858, 858, 858, 858, 858, 1714, 1714, 858, 858, 858, 858, 858, 858, 1714, 1714, 858, 858, 858, 858, 858, 858, 1714, 1714, 858, 858, 858, 858, 858, 858, 1714, 1714, 858, 858, 858, 858, 858, 858, 1714, 1714, 858, 858, 858, 858, 858, 858, 1714, 1714, 858, 858, 858, 858, 858, 858, 1714, 1714, 858, 858, 858, 858, 858, 1715, 1716, 1716, 858, 1717, 858, 858 };
+		static const unsigned short jump_table[] = { 1693, 1694, 1695, 1696, 1697, 1698, 858, 1699, 1693, 1694, 1695, 1696, 1697, 1698, 858, 1699, 1693, 1694, 1695, 1696, 1697, 1698, 858, 1699, 1693, 1694, 1695, 1696, 1697, 1698, 858, 1699, 1693, 1694, 1695, 1696, 1697, 1698, 858, 1699, 1693, 1694, 1695, 1696, 1697, 1698, 858, 1699, 1693, 1694, 1695, 1696, 1697, 1698, 858, 1699, 1693, 1694, 1695, 1696, 1697, 1698, 858, 1699, 1693, 1694, 1695, 1696, 1697, 1698, 858, 1699, 1693, 1694, 1695, 1696, 1697, 1698, 858, 1699, 1693, 1694, 1695, 1696, 1697, 1698, 858, 1699, 1693, 1694, 1695, 1696, 1697, 1698, 858, 1699, 1693, 1694, 1695, 1696, 1697, 1698, 858, 1699, 1693, 1694, 1695, 1696, 1697, 1698, 858, 1699, 1693, 1694, 1695, 1696, 1697, 1698, 858, 1699, 1700, 1701, 1702, 1703, 1704, 1705, 1706, 1707, 858, 858, 1708, 1708, 858, 858, 858, 858, 858, 858, 1708, 1708, 858, 858, 858, 858, 858, 858, 1708, 1708, 858, 858, 858, 858, 858, 858, 1708, 1708, 858, 858, 858, 858, 858, 858, 1708, 1708, 858, 858, 858, 858, 858, 858, 1708, 1708, 858, 858, 858, 858, 858, 858, 1708, 1708, 858, 858, 858, 858, 858, 858, 1708, 1708, 858, 858, 858, 858, 858, 858, 1708, 1708, 858, 858, 858, 858, 858, 858, 1708, 1708, 858, 858, 858, 858, 858, 858, 1708, 1708, 858, 858, 858, 858, 858, 858, 1708, 1708, 858, 858, 858, 858, 858, 858, 1708, 1708, 858, 858, 858, 858, 858, 858, 1708, 1708, 858, 858, 858, 858, 858, 858, 1708, 1708, 858, 858, 858, 858, 858, 1709, 1710, 1710, 858, 1711, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr883:
+tr877:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -21526,55 +21506,55 @@ case 504:
 	switch( (*p) ) {
 		case 18u: goto st505;
 		case 22u: goto st505;
-		case 23u: goto tr904;
-		case 81u: goto tr903;
-		case 194u: goto tr905;
-		case 198u: goto tr905;
+		case 23u: goto tr898;
+		case 81u: goto tr897;
+		case 194u: goto tr899;
+		case 198u: goto tr899;
 	}
 	if ( (*p) < 46u ) {
 		if ( 20u <= (*p) && (*p) <= 21u )
-			goto tr903;
+			goto tr897;
 	} else if ( (*p) > 47u ) {
 		if ( (*p) > 89u ) {
 			if ( 92u <= (*p) && (*p) <= 95u )
-				goto tr903;
+				goto tr897;
 		} else if ( (*p) >= 84u )
-			goto tr903;
+			goto tr897;
 	} else
-		goto tr903;
+		goto tr897;
 	goto tr42;
 st505:
 	if ( ++p == pe )
 		goto _test_eof505;
 case 505:
 	switch( (*p) ) {
-		case 4u: goto tr906;
-		case 12u: goto tr906;
-		case 20u: goto tr906;
-		case 28u: goto tr906;
-		case 36u: goto tr906;
-		case 44u: goto tr906;
-		case 52u: goto tr906;
-		case 60u: goto tr906;
-		case 68u: goto tr830;
-		case 76u: goto tr830;
-		case 84u: goto tr830;
-		case 92u: goto tr830;
-		case 100u: goto tr830;
-		case 108u: goto tr830;
-		case 116u: goto tr830;
-		case 124u: goto tr830;
-		case 132u: goto tr831;
-		case 140u: goto tr831;
-		case 148u: goto tr831;
-		case 156u: goto tr831;
-		case 164u: goto tr831;
-		case 172u: goto tr831;
-		case 180u: goto tr831;
-		case 188u: goto tr831;
+		case 4u: goto tr900;
+		case 12u: goto tr900;
+		case 20u: goto tr900;
+		case 28u: goto tr900;
+		case 36u: goto tr900;
+		case 44u: goto tr900;
+		case 52u: goto tr900;
+		case 60u: goto tr900;
+		case 68u: goto tr824;
+		case 76u: goto tr824;
+		case 84u: goto tr824;
+		case 92u: goto tr824;
+		case 100u: goto tr824;
+		case 108u: goto tr824;
+		case 116u: goto tr824;
+		case 124u: goto tr824;
+		case 132u: goto tr825;
+		case 140u: goto tr825;
+		case 148u: goto tr825;
+		case 156u: goto tr825;
+		case 164u: goto tr825;
+		case 172u: goto tr825;
+		case 180u: goto tr825;
+		case 188u: goto tr825;
 	}
 	goto tr42;
-tr904:
+tr898:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -21610,7 +21590,7 @@ case 506:
 		case 188u: goto st9;
 	}
 	goto tr42;
-tr884:
+tr878:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -21620,48 +21600,48 @@ st507:
 		goto _test_eof507;
 case 507:
 	switch( (*p) ) {
-		case 18u: goto tr904;
-		case 81u: goto tr903;
-		case 194u: goto tr905;
-		case 198u: goto tr905;
+		case 18u: goto tr898;
+		case 81u: goto tr897;
+		case 194u: goto tr899;
+		case 198u: goto tr899;
 	}
 	if ( (*p) < 116u ) {
 		if ( (*p) < 46u ) {
 			if ( (*p) > 21u ) {
 				if ( 22u <= (*p) && (*p) <= 23u )
-					goto tr904;
+					goto tr898;
 			} else if ( (*p) >= 20u )
-				goto tr903;
+				goto tr897;
 		} else if ( (*p) > 47u ) {
 			if ( (*p) > 89u ) {
 				if ( 92u <= (*p) && (*p) <= 109u )
-					goto tr903;
+					goto tr897;
 			} else if ( (*p) >= 84u )
-				goto tr903;
+				goto tr897;
 		} else
-			goto tr903;
+			goto tr897;
 	} else if ( (*p) > 118u ) {
 		if ( (*p) < 216u ) {
 			if ( (*p) > 125u ) {
 				if ( 208u <= (*p) && (*p) <= 213u )
-					goto tr903;
+					goto tr897;
 			} else if ( (*p) >= 124u )
-				goto tr903;
+				goto tr897;
 		} else if ( (*p) > 229u ) {
 			if ( (*p) < 241u ) {
 				if ( 232u <= (*p) && (*p) <= 239u )
-					goto tr903;
+					goto tr897;
 			} else if ( (*p) > 246u ) {
 				if ( 248u <= (*p) && (*p) <= 254u )
-					goto tr903;
+					goto tr897;
 			} else
-				goto tr903;
+				goto tr897;
 		} else
-			goto tr903;
+			goto tr897;
 	} else
-		goto tr903;
+		goto tr897;
 	goto tr42;
-tr885:
+tr879:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -21671,18 +21651,18 @@ st508:
 		goto _test_eof508;
 case 508:
 	switch( (*p) ) {
-		case 42u: goto tr903;
-		case 81u: goto tr903;
-		case 83u: goto tr903;
-		case 194u: goto tr905;
+		case 42u: goto tr897;
+		case 81u: goto tr897;
+		case 83u: goto tr897;
+		case 194u: goto tr899;
 	}
 	if ( (*p) > 90u ) {
 		if ( 92u <= (*p) && (*p) <= 95u )
-			goto tr903;
+			goto tr897;
 	} else if ( (*p) >= 88u )
-		goto tr903;
+		goto tr897;
 	goto tr42;
-tr886:
+tr880:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -21692,21 +21672,21 @@ st509:
 		goto _test_eof509;
 case 509:
 	switch( (*p) ) {
-		case 42u: goto tr903;
-		case 81u: goto tr903;
-		case 194u: goto tr905;
-		case 208u: goto tr903;
+		case 42u: goto tr897;
+		case 81u: goto tr897;
+		case 194u: goto tr899;
+		case 208u: goto tr897;
 	}
 	if ( (*p) < 92u ) {
 		if ( 88u <= (*p) && (*p) <= 90u )
-			goto tr903;
+			goto tr897;
 	} else if ( (*p) > 95u ) {
 		if ( 124u <= (*p) && (*p) <= 125u )
-			goto tr903;
+			goto tr897;
 	} else
-		goto tr903;
+		goto tr897;
 	goto tr42;
-tr887:
+tr881:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -21716,20 +21696,20 @@ st510:
 		goto _test_eof510;
 case 510:
 	switch( (*p) ) {
-		case 81u: goto tr903;
-		case 194u: goto tr905;
-		case 198u: goto tr905;
+		case 81u: goto tr897;
+		case 194u: goto tr899;
+		case 198u: goto tr899;
 	}
 	if ( (*p) < 84u ) {
 		if ( 20u <= (*p) && (*p) <= 21u )
-			goto tr903;
+			goto tr897;
 	} else if ( (*p) > 89u ) {
 		if ( 92u <= (*p) && (*p) <= 95u )
-			goto tr903;
+			goto tr897;
 	} else
-		goto tr903;
+		goto tr897;
 	goto tr42;
-tr888:
+tr882:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -21739,24 +21719,24 @@ st511:
 		goto _test_eof511;
 case 511:
 	switch( (*p) ) {
-		case 81u: goto tr903;
-		case 194u: goto tr905;
-		case 198u: goto tr905;
-		case 208u: goto tr903;
+		case 81u: goto tr897;
+		case 194u: goto tr899;
+		case 198u: goto tr899;
+		case 208u: goto tr897;
 	}
 	if ( (*p) < 84u ) {
 		if ( 20u <= (*p) && (*p) <= 21u )
-			goto tr903;
+			goto tr897;
 	} else if ( (*p) > 89u ) {
 		if ( (*p) > 95u ) {
 			if ( 124u <= (*p) && (*p) <= 125u )
-				goto tr903;
+				goto tr897;
 		} else if ( (*p) >= 92u )
-			goto tr903;
+			goto tr897;
 	} else
-		goto tr903;
+		goto tr897;
 	goto tr42;
-tr889:
+tr883:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -21766,11 +21746,11 @@ st512:
 		goto _test_eof512;
 case 512:
 	if ( (*p) == 208u )
-		goto tr903;
+		goto tr897;
 	if ( 124u <= (*p) && (*p) <= 125u )
-		goto tr903;
+		goto tr897;
 	goto tr42;
-tr890:
+tr884:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -21781,26 +21761,26 @@ st513:
 case 513:
 	switch( (*p) ) {
 		case 18u: goto st505;
-		case 19u: goto tr904;
+		case 19u: goto tr898;
 		case 22u: goto st505;
-		case 23u: goto tr904;
-		case 43u: goto tr904;
-		case 194u: goto tr905;
-		case 198u: goto tr905;
+		case 23u: goto tr898;
+		case 43u: goto tr898;
+		case 194u: goto tr899;
+		case 198u: goto tr899;
 	}
 	if ( (*p) < 40u ) {
 		if ( 16u <= (*p) && (*p) <= 21u )
-			goto tr903;
+			goto tr897;
 	} else if ( (*p) > 41u ) {
 		if ( (*p) > 47u ) {
 			if ( 81u <= (*p) && (*p) <= 95u )
-				goto tr903;
+				goto tr897;
 		} else if ( (*p) >= 46u )
-			goto tr903;
+			goto tr897;
 	} else
-		goto tr903;
+		goto tr897;
 	goto tr42;
-tr891:
+tr885:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -21810,7 +21790,7 @@ st514:
 		goto _test_eof514;
 case 514:
 	{
-		static const unsigned short jump_table[] = { 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1719, 1719, 1720, 1720, 1719, 1719, 1720, 1720, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1719, 1719, 858, 1720, 858, 858, 1719, 1719, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1719, 858, 858, 1719, 1719, 1719, 1719, 1719, 1719, 1719, 1719, 1719, 1719, 1719, 1719, 1719, 1719, 1719, 1719, 1719, 1719, 1719, 1719, 1719, 1719, 1719, 1719, 1719, 1719, 1719, 1719, 1721, 858, 858, 858, 1719, 1719, 1719, 858, 858, 858, 858, 858, 1719, 1719, 858, 1719, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1721, 858, 515, 858, 1721, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1719, 1719, 1719, 1719, 1719, 1719, 858, 858, 1719, 1719, 1719, 1719, 1719, 1719, 1719, 1719, 1719, 1719, 1719, 1719, 1719, 1719, 1719, 1720, 1719, 1719, 1719, 1719, 1719, 1719, 1719, 1719, 858, 1719, 1719, 1719, 1719, 1719, 1719, 858, 1719, 1719, 1719, 1719, 1719, 1719, 1719, 858 };
+		static const unsigned short jump_table[] = { 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1713, 1713, 1714, 1714, 1713, 1713, 1714, 1714, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1713, 1713, 858, 1714, 858, 858, 1713, 1713, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1713, 858, 858, 1713, 1713, 1713, 1713, 1713, 1713, 1713, 1713, 1713, 1713, 1713, 1713, 1713, 1713, 1713, 1713, 1713, 1713, 1713, 1713, 1713, 1713, 1713, 1713, 1713, 1713, 1713, 1713, 1715, 858, 858, 858, 1713, 1713, 1713, 858, 858, 858, 858, 858, 1713, 1713, 858, 1713, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1715, 858, 515, 858, 1715, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1713, 1713, 1713, 1713, 1713, 1713, 858, 858, 1713, 1713, 1713, 1713, 1713, 1713, 1713, 1713, 1713, 1713, 1713, 1713, 1713, 1713, 1713, 1714, 1713, 1713, 1713, 1713, 1713, 1713, 1713, 1713, 858, 1713, 1713, 1713, 1713, 1713, 1713, 858, 1713, 1713, 1713, 1713, 1713, 1713, 1713, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -21819,33 +21799,33 @@ st515:
 		goto _test_eof515;
 case 515:
 	switch( (*p) ) {
-		case 4u: goto tr908;
-		case 12u: goto tr908;
-		case 20u: goto tr908;
-		case 28u: goto tr908;
-		case 36u: goto tr908;
-		case 44u: goto tr908;
-		case 52u: goto tr908;
-		case 60u: goto tr908;
-		case 68u: goto tr834;
-		case 76u: goto tr834;
-		case 84u: goto tr834;
-		case 92u: goto tr834;
-		case 100u: goto tr834;
-		case 108u: goto tr834;
-		case 116u: goto tr834;
-		case 124u: goto tr834;
-		case 132u: goto tr835;
-		case 140u: goto tr835;
-		case 148u: goto tr835;
-		case 156u: goto tr835;
-		case 164u: goto tr835;
-		case 172u: goto tr835;
-		case 180u: goto tr835;
-		case 188u: goto tr835;
+		case 4u: goto tr902;
+		case 12u: goto tr902;
+		case 20u: goto tr902;
+		case 28u: goto tr902;
+		case 36u: goto tr902;
+		case 44u: goto tr902;
+		case 52u: goto tr902;
+		case 60u: goto tr902;
+		case 68u: goto tr828;
+		case 76u: goto tr828;
+		case 84u: goto tr828;
+		case 92u: goto tr828;
+		case 100u: goto tr828;
+		case 108u: goto tr828;
+		case 116u: goto tr828;
+		case 124u: goto tr828;
+		case 132u: goto tr829;
+		case 140u: goto tr829;
+		case 148u: goto tr829;
+		case 156u: goto tr829;
+		case 164u: goto tr829;
+		case 172u: goto tr829;
+		case 180u: goto tr829;
+		case 188u: goto tr829;
 	}
 	goto tr42;
-tr892:
+tr886:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -21855,29 +21835,29 @@ st516:
 		goto _test_eof516;
 case 516:
 	switch( (*p) ) {
-		case 18u: goto tr903;
-		case 22u: goto tr903;
-		case 42u: goto tr903;
-		case 111u: goto tr903;
-		case 112u: goto tr905;
-		case 126u: goto tr904;
-		case 127u: goto tr903;
-		case 194u: goto tr905;
-		case 230u: goto tr903;
+		case 18u: goto tr897;
+		case 22u: goto tr897;
+		case 42u: goto tr897;
+		case 111u: goto tr897;
+		case 112u: goto tr899;
+		case 126u: goto tr898;
+		case 127u: goto tr897;
+		case 194u: goto tr899;
+		case 230u: goto tr897;
 	}
 	if ( (*p) < 44u ) {
 		if ( 16u <= (*p) && (*p) <= 17u )
-			goto tr904;
+			goto tr898;
 	} else if ( (*p) > 45u ) {
 		if ( (*p) > 83u ) {
 			if ( 88u <= (*p) && (*p) <= 95u )
-				goto tr903;
+				goto tr897;
 		} else if ( (*p) >= 81u )
-			goto tr903;
+			goto tr897;
 	} else
-		goto tr909;
+		goto tr903;
 	goto tr42;
-tr921:
+tr915:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
@@ -21885,7 +21865,7 @@ tr921:
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
 	goto st517;
-tr925:
+tr919:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
@@ -21893,7 +21873,7 @@ tr925:
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
 	goto st517;
-tr909:
+tr903:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -21901,7 +21881,7 @@ tr909:
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
 	goto st517;
-tr911:
+tr905:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -21942,7 +21922,7 @@ case 517:
 	if ( 192u <= (*p) )
 		goto tr24;
 	goto tr42;
-tr893:
+tr887:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -21952,31 +21932,31 @@ st518:
 		goto _test_eof518;
 case 518:
 	switch( (*p) ) {
-		case 18u: goto tr903;
-		case 42u: goto tr903;
-		case 81u: goto tr903;
-		case 112u: goto tr905;
-		case 194u: goto tr905;
-		case 208u: goto tr903;
-		case 230u: goto tr903;
-		case 240u: goto tr904;
+		case 18u: goto tr897;
+		case 42u: goto tr897;
+		case 81u: goto tr897;
+		case 112u: goto tr899;
+		case 194u: goto tr899;
+		case 208u: goto tr897;
+		case 230u: goto tr897;
+		case 240u: goto tr898;
 	}
 	if ( (*p) < 88u ) {
 		if ( (*p) > 17u ) {
 			if ( 44u <= (*p) && (*p) <= 45u )
-				goto tr909;
+				goto tr903;
 		} else if ( (*p) >= 16u )
-			goto tr904;
+			goto tr898;
 	} else if ( (*p) > 90u ) {
 		if ( (*p) > 95u ) {
 			if ( 124u <= (*p) && (*p) <= 125u )
-				goto tr903;
+				goto tr897;
 		} else if ( (*p) >= 92u )
-			goto tr903;
+			goto tr897;
 	} else
-		goto tr903;
+		goto tr897;
 	goto tr42;
-tr894:
+tr888:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -21986,23 +21966,23 @@ st519:
 		goto _test_eof519;
 case 519:
 	switch( (*p) ) {
-		case 43u: goto tr904;
-		case 194u: goto tr905;
-		case 198u: goto tr905;
+		case 43u: goto tr898;
+		case 194u: goto tr899;
+		case 198u: goto tr899;
 	}
 	if ( (*p) < 20u ) {
 		if ( 16u <= (*p) && (*p) <= 17u )
-			goto tr903;
+			goto tr897;
 	} else if ( (*p) > 21u ) {
 		if ( (*p) > 41u ) {
 			if ( 81u <= (*p) && (*p) <= 95u )
-				goto tr903;
+				goto tr897;
 		} else if ( (*p) >= 40u )
-			goto tr903;
+			goto tr897;
 	} else
-		goto tr903;
+		goto tr897;
 	goto tr42;
-tr895:
+tr889:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -22012,32 +21992,32 @@ st520:
 		goto _test_eof520;
 case 520:
 	switch( (*p) ) {
-		case 43u: goto tr904;
-		case 81u: goto tr903;
-		case 126u: goto tr910;
-		case 194u: goto tr905;
-		case 198u: goto tr905;
-		case 208u: goto tr903;
-		case 214u: goto tr903;
-		case 230u: goto tr903;
-		case 231u: goto tr904;
+		case 43u: goto tr898;
+		case 81u: goto tr897;
+		case 126u: goto tr904;
+		case 194u: goto tr899;
+		case 198u: goto tr899;
+		case 208u: goto tr897;
+		case 214u: goto tr897;
+		case 230u: goto tr897;
+		case 231u: goto tr898;
 	}
 	if ( (*p) < 40u ) {
 		if ( (*p) > 17u ) {
 			if ( 20u <= (*p) && (*p) <= 21u )
-				goto tr903;
+				goto tr897;
 		} else if ( (*p) >= 16u )
-			goto tr903;
+			goto tr897;
 	} else if ( (*p) > 41u ) {
 		if ( (*p) > 95u ) {
 			if ( 124u <= (*p) && (*p) <= 127u )
-				goto tr903;
+				goto tr897;
 		} else if ( (*p) >= 84u )
-			goto tr903;
+			goto tr897;
 	} else
-		goto tr903;
+		goto tr897;
 	goto tr42;
-tr910:
+tr904:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -22045,7 +22025,7 @@ tr910:
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
 	goto st521;
-tr912:
+tr906:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -22086,7 +22066,7 @@ case 521:
 	if ( 192u <= (*p) )
 		goto tr7;
 	goto tr42;
-tr896:
+tr890:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -22096,14 +22076,14 @@ st522:
 		goto _test_eof522;
 case 522:
 	switch( (*p) ) {
-		case 18u: goto tr903;
-		case 22u: goto tr903;
-		case 91u: goto tr903;
-		case 127u: goto tr903;
-		case 230u: goto tr903;
+		case 18u: goto tr897;
+		case 22u: goto tr897;
+		case 91u: goto tr897;
+		case 127u: goto tr897;
+		case 230u: goto tr897;
 	}
 	goto tr42;
-tr897:
+tr891:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -22113,15 +22093,15 @@ st523:
 		goto _test_eof523;
 case 523:
 	switch( (*p) ) {
-		case 18u: goto tr903;
-		case 208u: goto tr903;
-		case 230u: goto tr903;
-		case 240u: goto tr904;
+		case 18u: goto tr897;
+		case 208u: goto tr897;
+		case 230u: goto tr897;
+		case 240u: goto tr898;
 	}
 	if ( 124u <= (*p) && (*p) <= 125u )
-		goto tr903;
+		goto tr897;
 	goto tr42;
-tr898:
+tr892:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -22131,9 +22111,9 @@ st524:
 		goto _test_eof524;
 case 524:
 	if ( (*p) == 42u )
-		goto tr903;
+		goto tr897;
 	goto tr42;
-tr899:
+tr893:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -22143,9 +22123,9 @@ st525:
 		goto _test_eof525;
 case 525:
 	if ( (*p) == 110u )
-		goto tr903;
+		goto tr897;
 	goto tr42;
-tr900:
+tr894:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -22155,11 +22135,11 @@ st526:
 		goto _test_eof526;
 case 526:
 	if ( (*p) == 42u )
-		goto tr903;
+		goto tr897;
 	if ( 44u <= (*p) && (*p) <= 45u )
-		goto tr911;
+		goto tr905;
 	goto tr42;
-tr901:
+tr895:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -22169,9 +22149,9 @@ st527:
 		goto _test_eof527;
 case 527:
 	if ( (*p) == 126u )
-		goto tr912;
+		goto tr906;
 	goto tr42;
-tr790:
+tr784:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -22181,11 +22161,11 @@ st528:
 		goto _test_eof528;
 case 528:
 	{
-		static const unsigned short jump_table[] = { 1729, 1730, 858, 858, 858, 1731, 858, 858, 1729, 1730, 858, 858, 858, 1731, 858, 858, 1729, 1730, 858, 858, 858, 1731, 858, 858, 1729, 1730, 858, 858, 858, 1731, 858, 858, 1729, 1730, 858, 858, 858, 1731, 858, 858, 1729, 1730, 858, 858, 858, 1731, 858, 858, 1729, 1730, 858, 858, 858, 1731, 858, 858, 1729, 1730, 858, 858, 858, 1731, 858, 858, 1729, 1730, 858, 858, 858, 1731, 858, 858, 1729, 1730, 858, 858, 858, 1731, 858, 858, 1729, 1730, 858, 858, 858, 1731, 858, 858, 1729, 1730, 858, 858, 858, 1731, 858, 858, 1729, 1730, 858, 858, 858, 1731, 858, 858, 1729, 1730, 858, 858, 858, 1731, 858, 858, 1729, 1730, 858, 858, 858, 1731, 858, 858, 1729, 1732, 858, 858, 858, 1733, 858, 858, 1734, 1735, 858, 858, 858, 1736, 858, 858, 1734, 1735, 858, 858, 858, 1736, 858, 858, 1734, 1735, 858, 858, 858, 1736, 858, 858, 1734, 1735, 858, 858, 858, 1736, 858, 858, 1734, 1735, 858, 858, 858, 1736, 858, 858, 1734, 1735, 858, 858, 858, 1736, 858, 858, 1734, 1735, 858, 858, 858, 1736, 858, 858, 1734, 1735, 858, 858, 858, 1736, 858, 858, 1734, 1735, 858, 858, 858, 1736, 858, 858, 1734, 1735, 858, 858, 858, 1736, 858, 858, 1734, 1735, 858, 858, 858, 1736, 858, 858, 1734, 1735, 858, 858, 858, 1736, 858, 858, 1734, 1735, 858, 858, 858, 1736, 858, 858, 1734, 1735, 858, 858, 858, 1736, 858, 858, 1734, 1735, 858, 858, 858, 1736, 858, 858, 1734, 1735, 858, 858, 858, 1736, 858, 858 };
+		static const unsigned short jump_table[] = { 1723, 1724, 858, 858, 858, 1725, 858, 858, 1723, 1724, 858, 858, 858, 1725, 858, 858, 1723, 1724, 858, 858, 858, 1725, 858, 858, 1723, 1724, 858, 858, 858, 1725, 858, 858, 1723, 1724, 858, 858, 858, 1725, 858, 858, 1723, 1724, 858, 858, 858, 1725, 858, 858, 1723, 1724, 858, 858, 858, 1725, 858, 858, 1723, 1724, 858, 858, 858, 1725, 858, 858, 1723, 1724, 858, 858, 858, 1725, 858, 858, 1723, 1724, 858, 858, 858, 1725, 858, 858, 1723, 1724, 858, 858, 858, 1725, 858, 858, 1723, 1724, 858, 858, 858, 1725, 858, 858, 1723, 1724, 858, 858, 858, 1725, 858, 858, 1723, 1724, 858, 858, 858, 1725, 858, 858, 1723, 1724, 858, 858, 858, 1725, 858, 858, 1723, 1726, 858, 858, 858, 1727, 858, 858, 1728, 1729, 858, 858, 858, 1730, 858, 858, 1728, 1729, 858, 858, 858, 1730, 858, 858, 1728, 1729, 858, 858, 858, 1730, 858, 858, 1728, 1729, 858, 858, 858, 1730, 858, 858, 1728, 1729, 858, 858, 858, 1730, 858, 858, 1728, 1729, 858, 858, 858, 1730, 858, 858, 1728, 1729, 858, 858, 858, 1730, 858, 858, 1728, 1729, 858, 858, 858, 1730, 858, 858, 1728, 1729, 858, 858, 858, 1730, 858, 858, 1728, 1729, 858, 858, 858, 1730, 858, 858, 1728, 1729, 858, 858, 858, 1730, 858, 858, 1728, 1729, 858, 858, 858, 1730, 858, 858, 1728, 1729, 858, 858, 858, 1730, 858, 858, 1728, 1729, 858, 858, 858, 1730, 858, 858, 1728, 1729, 858, 858, 858, 1730, 858, 858, 1728, 1729, 858, 858, 858, 1730, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr913:
+tr907:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -22195,11 +22175,11 @@ st529:
 		goto _test_eof529;
 case 529:
 	switch( (*p) ) {
-		case 242u: goto tr921;
-		case 247u: goto tr921;
+		case 242u: goto tr915;
+		case 247u: goto tr915;
 	}
 	goto tr42;
-tr914:
+tr908:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -22209,32 +22189,32 @@ st530:
 		goto _test_eof530;
 case 530:
 	if ( (*p) == 43u )
-		goto tr903;
+		goto tr897;
 	if ( (*p) < 55u ) {
 		if ( (*p) < 40u ) {
 			if ( (*p) <= 13u )
-				goto tr903;
+				goto tr897;
 		} else if ( (*p) > 41u ) {
 			if ( 44u <= (*p) && (*p) <= 47u )
-				goto tr904;
+				goto tr898;
 		} else
-			goto tr903;
+			goto tr897;
 	} else if ( (*p) > 64u ) {
 		if ( (*p) < 166u ) {
 			if ( 150u <= (*p) && (*p) <= 159u )
-				goto tr922;
+				goto tr916;
 		} else if ( (*p) > 175u ) {
 			if ( (*p) > 191u ) {
 				if ( 219u <= (*p) && (*p) <= 223u )
-					goto tr923;
+					goto tr917;
 			} else if ( (*p) >= 182u )
-				goto tr922;
+				goto tr916;
 		} else
-			goto tr922;
+			goto tr916;
 	} else
-		goto tr903;
+		goto tr897;
 	goto tr42;
-tr915:
+tr909:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -22244,32 +22224,32 @@ st531:
 		goto _test_eof531;
 case 531:
 	switch( (*p) ) {
-		case 154u: goto tr922;
-		case 156u: goto tr922;
-		case 158u: goto tr922;
-		case 170u: goto tr922;
-		case 172u: goto tr922;
-		case 174u: goto tr922;
-		case 186u: goto tr922;
-		case 188u: goto tr922;
-		case 190u: goto tr922;
+		case 154u: goto tr916;
+		case 156u: goto tr916;
+		case 158u: goto tr916;
+		case 170u: goto tr916;
+		case 172u: goto tr916;
+		case 174u: goto tr916;
+		case 186u: goto tr916;
+		case 188u: goto tr916;
+		case 190u: goto tr916;
 	}
 	if ( (*p) < 150u ) {
 		if ( (*p) > 13u ) {
 			if ( 44u <= (*p) && (*p) <= 47u )
-				goto tr904;
+				goto tr898;
 		} else if ( (*p) >= 12u )
-			goto tr903;
+			goto tr897;
 	} else if ( (*p) > 152u ) {
 		if ( (*p) > 168u ) {
 			if ( 182u <= (*p) && (*p) <= 184u )
-				goto tr922;
+				goto tr916;
 		} else if ( (*p) >= 166u )
-			goto tr922;
+			goto tr916;
 	} else
-		goto tr922;
+		goto tr916;
 	goto tr42;
-tr916:
+tr910:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -22279,45 +22259,45 @@ st532:
 		goto _test_eof532;
 case 532:
 	switch( (*p) ) {
-		case 19u: goto tr924;
-		case 23u: goto tr903;
-		case 24u: goto tr904;
-		case 42u: goto tr904;
+		case 19u: goto tr918;
+		case 23u: goto tr897;
+		case 24u: goto tr898;
+		case 42u: goto tr898;
 	}
 	if ( (*p) < 48u ) {
 		if ( (*p) < 32u ) {
 			if ( (*p) > 15u ) {
 				if ( 28u <= (*p) && (*p) <= 30u )
-					goto tr903;
+					goto tr897;
 			} else
-				goto tr903;
+				goto tr897;
 		} else if ( (*p) > 37u ) {
 			if ( (*p) > 43u ) {
 				if ( 44u <= (*p) && (*p) <= 47u )
-					goto tr904;
+					goto tr898;
 			} else if ( (*p) >= 40u )
-				goto tr903;
+				goto tr897;
 		} else
-			goto tr903;
+			goto tr897;
 	} else if ( (*p) > 53u ) {
 		if ( (*p) < 166u ) {
 			if ( (*p) > 65u ) {
 				if ( 150u <= (*p) && (*p) <= 159u )
-					goto tr922;
+					goto tr916;
 			} else if ( (*p) >= 55u )
-				goto tr903;
+				goto tr897;
 		} else if ( (*p) > 175u ) {
 			if ( (*p) > 191u ) {
 				if ( 219u <= (*p) && (*p) <= 223u )
-					goto tr923;
+					goto tr917;
 			} else if ( (*p) >= 182u )
-				goto tr922;
+				goto tr916;
 		} else
-			goto tr922;
+			goto tr916;
 	} else
-		goto tr903;
+		goto tr897;
 	goto tr42;
-tr917:
+tr911:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -22327,37 +22307,37 @@ st533:
 		goto _test_eof533;
 case 533:
 	switch( (*p) ) {
-		case 19u: goto tr924;
-		case 23u: goto tr903;
-		case 154u: goto tr922;
-		case 156u: goto tr922;
-		case 158u: goto tr922;
-		case 170u: goto tr922;
-		case 172u: goto tr922;
-		case 174u: goto tr922;
-		case 186u: goto tr922;
-		case 188u: goto tr922;
-		case 190u: goto tr922;
+		case 19u: goto tr918;
+		case 23u: goto tr897;
+		case 154u: goto tr916;
+		case 156u: goto tr916;
+		case 158u: goto tr916;
+		case 170u: goto tr916;
+		case 172u: goto tr916;
+		case 174u: goto tr916;
+		case 186u: goto tr916;
+		case 188u: goto tr916;
+		case 190u: goto tr916;
 	}
 	if ( (*p) < 44u ) {
 		if ( (*p) > 15u ) {
 			if ( 24u <= (*p) && (*p) <= 26u )
-				goto tr904;
+				goto tr898;
 		} else if ( (*p) >= 12u )
-			goto tr903;
+			goto tr897;
 	} else if ( (*p) > 47u ) {
 		if ( (*p) < 166u ) {
 			if ( 150u <= (*p) && (*p) <= 152u )
-				goto tr922;
+				goto tr916;
 		} else if ( (*p) > 168u ) {
 			if ( 182u <= (*p) && (*p) <= 184u )
-				goto tr922;
+				goto tr916;
 		} else
-			goto tr922;
+			goto tr916;
 	} else
-		goto tr904;
+		goto tr898;
 	goto tr42;
-tr918:
+tr912:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -22367,11 +22347,11 @@ st534:
 		goto _test_eof534;
 case 534:
 	switch( (*p) ) {
-		case 242u: goto tr925;
-		case 247u: goto tr925;
+		case 242u: goto tr919;
+		case 247u: goto tr919;
 	}
 	goto tr42;
-tr919:
+tr913:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -22382,14 +22362,14 @@ st535:
 case 535:
 	if ( (*p) < 166u ) {
 		if ( 150u <= (*p) && (*p) <= 159u )
-			goto tr922;
+			goto tr916;
 	} else if ( (*p) > 175u ) {
 		if ( 182u <= (*p) && (*p) <= 191u )
-			goto tr922;
+			goto tr916;
 	} else
-		goto tr922;
+		goto tr916;
 	goto tr42;
-tr920:
+tr914:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -22399,26 +22379,26 @@ st536:
 		goto _test_eof536;
 case 536:
 	switch( (*p) ) {
-		case 154u: goto tr922;
-		case 156u: goto tr922;
-		case 158u: goto tr922;
-		case 170u: goto tr922;
-		case 172u: goto tr922;
-		case 174u: goto tr922;
-		case 186u: goto tr922;
-		case 188u: goto tr922;
-		case 190u: goto tr922;
+		case 154u: goto tr916;
+		case 156u: goto tr916;
+		case 158u: goto tr916;
+		case 170u: goto tr916;
+		case 172u: goto tr916;
+		case 174u: goto tr916;
+		case 186u: goto tr916;
+		case 188u: goto tr916;
+		case 190u: goto tr916;
 	}
 	if ( (*p) < 166u ) {
 		if ( 150u <= (*p) && (*p) <= 152u )
-			goto tr922;
+			goto tr916;
 	} else if ( (*p) > 168u ) {
 		if ( 182u <= (*p) && (*p) <= 184u )
-			goto tr922;
+			goto tr916;
 	} else
-		goto tr922;
+		goto tr916;
 	goto tr42;
-tr791:
+tr785:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -22428,11 +22408,11 @@ st537:
 		goto _test_eof537;
 case 537:
 	{
-		static const unsigned short jump_table[] = { 858, 1742, 858, 858, 858, 1743, 858, 858, 858, 1742, 858, 858, 858, 1743, 858, 858, 858, 1742, 858, 858, 858, 1743, 858, 858, 858, 1742, 858, 858, 858, 1743, 858, 858, 858, 1742, 858, 858, 858, 1743, 858, 858, 858, 1742, 858, 858, 858, 1743, 858, 858, 858, 1742, 858, 858, 858, 1743, 858, 858, 858, 1742, 858, 858, 858, 1743, 858, 858, 858, 1742, 858, 858, 858, 1743, 858, 858, 858, 1742, 858, 858, 858, 1743, 858, 858, 858, 1742, 858, 858, 858, 1743, 858, 858, 858, 1742, 858, 858, 858, 1743, 858, 858, 858, 1742, 858, 858, 858, 1743, 858, 858, 858, 1742, 858, 858, 858, 1743, 858, 858, 858, 1742, 858, 858, 858, 1743, 858, 858, 858, 1744, 858, 858, 858, 1745, 858, 858, 858, 1746, 858, 858, 858, 1747, 858, 858, 858, 1746, 858, 858, 858, 1747, 858, 858, 858, 1746, 858, 858, 858, 1747, 858, 858, 858, 1746, 858, 858, 858, 1747, 858, 858, 858, 1746, 858, 858, 858, 1747, 858, 858, 858, 1746, 858, 858, 858, 1747, 858, 858, 858, 1746, 858, 858, 858, 1747, 858, 858, 858, 1746, 858, 858, 858, 1747, 858, 858, 858, 1746, 858, 858, 858, 1747, 858, 858, 858, 1746, 858, 858, 858, 1747, 858, 858, 858, 1746, 858, 858, 858, 1747, 858, 858, 858, 1746, 858, 858, 858, 1747, 858, 858, 858, 1746, 858, 858, 858, 1747, 858, 858, 858, 1746, 858, 858, 858, 1747, 858, 858, 858, 1746, 858, 858, 858, 1747, 858, 858, 858, 1748, 858, 858, 858, 1747, 858, 858 };
+		static const unsigned short jump_table[] = { 858, 1736, 858, 858, 858, 1737, 858, 858, 858, 1736, 858, 858, 858, 1737, 858, 858, 858, 1736, 858, 858, 858, 1737, 858, 858, 858, 1736, 858, 858, 858, 1737, 858, 858, 858, 1736, 858, 858, 858, 1737, 858, 858, 858, 1736, 858, 858, 858, 1737, 858, 858, 858, 1736, 858, 858, 858, 1737, 858, 858, 858, 1736, 858, 858, 858, 1737, 858, 858, 858, 1736, 858, 858, 858, 1737, 858, 858, 858, 1736, 858, 858, 858, 1737, 858, 858, 858, 1736, 858, 858, 858, 1737, 858, 858, 858, 1736, 858, 858, 858, 1737, 858, 858, 858, 1736, 858, 858, 858, 1737, 858, 858, 858, 1736, 858, 858, 858, 1737, 858, 858, 858, 1736, 858, 858, 858, 1737, 858, 858, 858, 1738, 858, 858, 858, 1739, 858, 858, 858, 1740, 858, 858, 858, 1741, 858, 858, 858, 1740, 858, 858, 858, 1741, 858, 858, 858, 1740, 858, 858, 858, 1741, 858, 858, 858, 1740, 858, 858, 858, 1741, 858, 858, 858, 1740, 858, 858, 858, 1741, 858, 858, 858, 1740, 858, 858, 858, 1741, 858, 858, 858, 1740, 858, 858, 858, 1741, 858, 858, 858, 1740, 858, 858, 858, 1741, 858, 858, 858, 1740, 858, 858, 858, 1741, 858, 858, 858, 1740, 858, 858, 858, 1741, 858, 858, 858, 1740, 858, 858, 858, 1741, 858, 858, 858, 1740, 858, 858, 858, 1741, 858, 858, 858, 1740, 858, 858, 858, 1741, 858, 858, 858, 1740, 858, 858, 858, 1741, 858, 858, 858, 1740, 858, 858, 858, 1741, 858, 858, 858, 1742, 858, 858, 858, 1741, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr926:
+tr920:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -22442,32 +22422,32 @@ st538:
 		goto _test_eof538;
 case 538:
 	switch( (*p) ) {
-		case 33u: goto tr933;
-		case 68u: goto tr934;
-		case 223u: goto tr938;
+		case 33u: goto tr927;
+		case 68u: goto tr928;
+		case 223u: goto tr932;
 	}
 	if ( (*p) < 74u ) {
 		if ( (*p) < 64u ) {
 			if ( 8u <= (*p) && (*p) <= 15u )
-				goto tr905;
+				goto tr899;
 		} else if ( (*p) > 66u ) {
 			if ( 72u <= (*p) && (*p) <= 73u )
-				goto tr935;
+				goto tr929;
 		} else
-			goto tr905;
+			goto tr899;
 	} else if ( (*p) > 76u ) {
 		if ( (*p) < 104u ) {
 			if ( 92u <= (*p) && (*p) <= 95u )
-				goto tr937;
+				goto tr931;
 		} else if ( (*p) > 111u ) {
 			if ( 120u <= (*p) && (*p) <= 127u )
-				goto tr937;
+				goto tr931;
 		} else
-			goto tr937;
+			goto tr931;
 	} else
-		goto tr936;
+		goto tr930;
 	goto tr42;
-tr933:
+tr927:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -22503,7 +22483,7 @@ case 539:
 		case 188u: goto st61;
 	}
 	goto tr42;
-tr935:
+tr929:
 	{
     SET_CPU_FEATURE(CPUFeature_XOP);
   }
@@ -22546,41 +22526,41 @@ st541:
 		goto _test_eof541;
 case 541:
 	switch( (*p) ) {
-		case 5u: goto tr940;
-		case 13u: goto tr940;
-		case 21u: goto tr940;
-		case 29u: goto tr940;
-		case 37u: goto tr940;
-		case 45u: goto tr940;
-		case 53u: goto tr940;
-		case 61u: goto tr940;
-		case 69u: goto tr940;
-		case 77u: goto tr940;
-		case 85u: goto tr940;
-		case 93u: goto tr940;
-		case 101u: goto tr940;
-		case 109u: goto tr940;
-		case 117u: goto tr940;
-		case 125u: goto tr940;
-		case 133u: goto tr940;
-		case 141u: goto tr940;
-		case 149u: goto tr940;
-		case 157u: goto tr940;
-		case 165u: goto tr940;
-		case 173u: goto tr940;
-		case 181u: goto tr940;
-		case 189u: goto tr940;
-		case 197u: goto tr940;
-		case 205u: goto tr940;
-		case 213u: goto tr940;
-		case 221u: goto tr940;
-		case 229u: goto tr940;
-		case 237u: goto tr940;
-		case 245u: goto tr940;
-		case 253u: goto tr940;
+		case 5u: goto tr934;
+		case 13u: goto tr934;
+		case 21u: goto tr934;
+		case 29u: goto tr934;
+		case 37u: goto tr934;
+		case 45u: goto tr934;
+		case 53u: goto tr934;
+		case 61u: goto tr934;
+		case 69u: goto tr934;
+		case 77u: goto tr934;
+		case 85u: goto tr934;
+		case 93u: goto tr934;
+		case 101u: goto tr934;
+		case 109u: goto tr934;
+		case 117u: goto tr934;
+		case 125u: goto tr934;
+		case 133u: goto tr934;
+		case 141u: goto tr934;
+		case 149u: goto tr934;
+		case 157u: goto tr934;
+		case 165u: goto tr934;
+		case 173u: goto tr934;
+		case 181u: goto tr934;
+		case 189u: goto tr934;
+		case 197u: goto tr934;
+		case 205u: goto tr934;
+		case 213u: goto tr934;
+		case 221u: goto tr934;
+		case 229u: goto tr934;
+		case 237u: goto tr934;
+		case 245u: goto tr934;
+		case 253u: goto tr934;
 	}
-	goto tr871;
-tr927:
+	goto tr865;
+tr921:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -22590,37 +22570,37 @@ st542:
 		goto _test_eof542;
 case 542:
 	switch( (*p) ) {
-		case 6u: goto tr905;
-		case 64u: goto tr905;
+		case 6u: goto tr899;
+		case 64u: goto tr899;
 	}
 	if ( (*p) < 92u ) {
 		if ( (*p) < 12u ) {
 			if ( 8u <= (*p) && (*p) <= 9u )
-				goto tr905;
+				goto tr899;
 		} else if ( (*p) > 13u ) {
 			if ( (*p) > 73u ) {
 				if ( 74u <= (*p) && (*p) <= 75u )
-					goto tr936;
+					goto tr930;
 			} else if ( (*p) >= 72u )
-				goto tr935;
+				goto tr929;
 		} else
-			goto tr905;
+			goto tr899;
 	} else if ( (*p) > 95u ) {
 		if ( (*p) < 108u ) {
 			if ( 104u <= (*p) && (*p) <= 105u )
-				goto tr937;
+				goto tr931;
 		} else if ( (*p) > 109u ) {
 			if ( (*p) > 121u ) {
 				if ( 124u <= (*p) && (*p) <= 125u )
-					goto tr937;
+					goto tr931;
 			} else if ( (*p) >= 120u )
-				goto tr937;
+				goto tr931;
 		} else
-			goto tr937;
+			goto tr931;
 	} else
-		goto tr937;
+		goto tr931;
 	goto tr42;
-tr928:
+tr922:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -22630,46 +22610,46 @@ st543:
 		goto _test_eof543;
 case 543:
 	switch( (*p) ) {
-		case 22u: goto tr941;
-		case 23u: goto tr933;
-		case 29u: goto tr942;
+		case 22u: goto tr935;
+		case 23u: goto tr927;
+		case 29u: goto tr936;
 		case 32u: goto st515;
-		case 33u: goto tr933;
-		case 34u: goto tr905;
-		case 68u: goto tr934;
-		case 223u: goto tr938;
+		case 33u: goto tr927;
+		case 34u: goto tr899;
+		case 68u: goto tr928;
+		case 223u: goto tr932;
 	}
 	if ( (*p) < 72u ) {
 		if ( (*p) < 8u ) {
 			if ( 4u <= (*p) && (*p) <= 5u )
-				goto tr905;
+				goto tr899;
 		} else if ( (*p) > 15u ) {
 			if ( (*p) > 21u ) {
 				if ( 64u <= (*p) && (*p) <= 66u )
-					goto tr905;
+					goto tr899;
 			} else if ( (*p) >= 20u )
 				goto st515;
 		} else
-			goto tr905;
+			goto tr899;
 	} else if ( (*p) > 73u ) {
 		if ( (*p) < 96u ) {
 			if ( (*p) > 76u ) {
 				if ( 92u <= (*p) && (*p) <= 95u )
-					goto tr937;
+					goto tr931;
 			} else if ( (*p) >= 74u )
-				goto tr936;
+				goto tr930;
 		} else if ( (*p) > 99u ) {
 			if ( (*p) > 111u ) {
 				if ( 120u <= (*p) && (*p) <= 127u )
-					goto tr937;
+					goto tr931;
 			} else if ( (*p) >= 104u )
-				goto tr937;
+				goto tr931;
 		} else
-			goto tr905;
+			goto tr899;
 	} else
-		goto tr935;
+		goto tr929;
 	goto tr42;
-tr941:
+tr935:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -22677,7 +22657,7 @@ tr941:
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
 	goto st544;
-tr943:
+tr937:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -22718,7 +22698,7 @@ case 544:
 	if ( 192u <= (*p) )
 		goto tr155;
 	goto tr42;
-tr929:
+tr923:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -22728,43 +22708,43 @@ st545:
 		goto _test_eof545;
 case 545:
 	switch( (*p) ) {
-		case 29u: goto tr942;
-		case 64u: goto tr905;
+		case 29u: goto tr936;
+		case 64u: goto tr899;
 	}
 	if ( (*p) < 74u ) {
 		if ( (*p) < 12u ) {
 			if ( (*p) > 6u ) {
 				if ( 8u <= (*p) && (*p) <= 9u )
-					goto tr905;
+					goto tr899;
 			} else if ( (*p) >= 4u )
-				goto tr905;
+				goto tr899;
 		} else if ( (*p) > 13u ) {
 			if ( (*p) > 25u ) {
 				if ( 72u <= (*p) && (*p) <= 73u )
-					goto tr935;
+					goto tr929;
 			} else if ( (*p) >= 24u )
-				goto tr905;
+				goto tr899;
 		} else
-			goto tr905;
+			goto tr899;
 	} else if ( (*p) > 75u ) {
 		if ( (*p) < 108u ) {
 			if ( (*p) > 95u ) {
 				if ( 104u <= (*p) && (*p) <= 105u )
-					goto tr937;
+					goto tr931;
 			} else if ( (*p) >= 92u )
-				goto tr937;
+				goto tr931;
 		} else if ( (*p) > 109u ) {
 			if ( (*p) > 121u ) {
 				if ( 124u <= (*p) && (*p) <= 125u )
-					goto tr937;
+					goto tr931;
 			} else if ( (*p) >= 120u )
-				goto tr937;
+				goto tr931;
 		} else
-			goto tr937;
+			goto tr931;
 	} else
-		goto tr936;
+		goto tr930;
 	goto tr42;
-tr930:
+tr924:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -22775,17 +22755,17 @@ st546:
 case 546:
 	if ( (*p) < 92u ) {
 		if ( 72u <= (*p) && (*p) <= 73u )
-			goto tr935;
+			goto tr929;
 	} else if ( (*p) > 95u ) {
 		if ( (*p) > 111u ) {
 			if ( 120u <= (*p) && (*p) <= 127u )
-				goto tr937;
+				goto tr931;
 		} else if ( (*p) >= 104u )
-			goto tr937;
+			goto tr931;
 	} else
-		goto tr937;
+		goto tr931;
 	goto tr42;
-tr931:
+tr925:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -22797,22 +22777,22 @@ case 547:
 	if ( (*p) < 104u ) {
 		if ( (*p) > 73u ) {
 			if ( 92u <= (*p) && (*p) <= 95u )
-				goto tr937;
+				goto tr931;
 		} else if ( (*p) >= 72u )
-			goto tr935;
+			goto tr929;
 	} else if ( (*p) > 105u ) {
 		if ( (*p) < 120u ) {
 			if ( 108u <= (*p) && (*p) <= 109u )
-				goto tr937;
+				goto tr931;
 		} else if ( (*p) > 121u ) {
 			if ( 124u <= (*p) && (*p) <= 125u )
-				goto tr937;
+				goto tr931;
 		} else
-			goto tr937;
+			goto tr931;
 	} else
-		goto tr937;
+		goto tr931;
 	goto tr42;
-tr932:
+tr926:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -22822,22 +22802,22 @@ st548:
 		goto _test_eof548;
 case 548:
 	switch( (*p) ) {
-		case 22u: goto tr943;
-		case 34u: goto tr905;
+		case 22u: goto tr937;
+		case 34u: goto tr899;
 	}
 	if ( (*p) < 92u ) {
 		if ( 72u <= (*p) && (*p) <= 73u )
-			goto tr935;
+			goto tr929;
 	} else if ( (*p) > 95u ) {
 		if ( (*p) > 111u ) {
 			if ( 120u <= (*p) && (*p) <= 127u )
-				goto tr937;
+				goto tr931;
 		} else if ( (*p) >= 104u )
-			goto tr937;
+			goto tr931;
 	} else
-		goto tr937;
+		goto tr931;
 	goto tr42;
-tr792:
+tr786:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -22847,11 +22827,11 @@ st549:
 		goto _test_eof549;
 case 549:
 	{
-		static const unsigned short jump_table[] = { 1760, 1761, 1762, 1763, 1764, 1765, 1766, 1767, 1760, 1761, 1762, 1763, 1764, 1765, 1766, 1767, 1760, 1761, 1762, 1763, 1764, 1765, 1766, 1767, 1760, 1761, 1762, 1763, 1764, 1765, 1766, 1767, 1760, 1761, 1762, 1763, 1764, 1765, 1766, 1767, 1760, 1761, 1762, 1763, 1764, 1765, 1766, 1767, 1760, 1761, 1762, 1763, 1764, 1765, 1766, 1767, 1760, 1761, 1762, 1763, 1764, 1765, 1766, 1767, 1760, 1761, 1762, 1763, 1764, 1765, 1766, 1767, 1760, 1761, 1762, 1763, 1764, 1765, 1766, 1767, 1760, 1761, 1762, 1763, 1764, 1765, 1766, 1767, 1760, 1761, 1762, 1763, 1764, 1765, 1766, 1767, 1760, 1761, 1762, 1763, 1764, 1765, 1766, 1767, 1760, 1761, 1762, 1763, 1764, 1765, 1766, 1767, 1760, 1761, 1762, 1763, 1764, 1765, 1766, 1767, 1768, 1769, 1770, 1771, 1772, 1773, 1774, 1775, 858, 858, 1776, 1776, 858, 858, 858, 858, 858, 858, 1776, 1776, 858, 858, 858, 858, 858, 858, 1776, 1776, 858, 858, 858, 858, 858, 858, 1776, 1776, 858, 858, 858, 858, 858, 858, 1776, 1776, 858, 858, 858, 858, 858, 858, 1776, 1776, 858, 858, 858, 858, 858, 858, 1776, 1776, 858, 858, 858, 858, 858, 858, 1776, 1776, 858, 858, 858, 858, 858, 858, 1776, 1776, 858, 858, 858, 858, 858, 858, 1776, 1776, 858, 858, 858, 858, 858, 858, 1776, 1776, 858, 858, 858, 858, 858, 858, 1776, 1776, 858, 858, 858, 858, 858, 858, 1776, 1776, 858, 858, 858, 858, 858, 858, 1776, 1776, 858, 858, 858, 858, 858, 858, 1776, 1776, 858, 858, 858, 858, 858, 1777, 1778, 1778, 858, 1779, 858, 858 };
+		static const unsigned short jump_table[] = { 1754, 1755, 1756, 1757, 1758, 1759, 1760, 1761, 1754, 1755, 1756, 1757, 1758, 1759, 1760, 1761, 1754, 1755, 1756, 1757, 1758, 1759, 1760, 1761, 1754, 1755, 1756, 1757, 1758, 1759, 1760, 1761, 1754, 1755, 1756, 1757, 1758, 1759, 1760, 1761, 1754, 1755, 1756, 1757, 1758, 1759, 1760, 1761, 1754, 1755, 1756, 1757, 1758, 1759, 1760, 1761, 1754, 1755, 1756, 1757, 1758, 1759, 1760, 1761, 1754, 1755, 1756, 1757, 1758, 1759, 1760, 1761, 1754, 1755, 1756, 1757, 1758, 1759, 1760, 1761, 1754, 1755, 1756, 1757, 1758, 1759, 1760, 1761, 1754, 1755, 1756, 1757, 1758, 1759, 1760, 1761, 1754, 1755, 1756, 1757, 1758, 1759, 1760, 1761, 1754, 1755, 1756, 1757, 1758, 1759, 1760, 1761, 1754, 1755, 1756, 1757, 1758, 1759, 1760, 1761, 1762, 1763, 1764, 1765, 1766, 1767, 1768, 1769, 858, 858, 1770, 1770, 858, 858, 858, 858, 858, 858, 1770, 1770, 858, 858, 858, 858, 858, 858, 1770, 1770, 858, 858, 858, 858, 858, 858, 1770, 1770, 858, 858, 858, 858, 858, 858, 1770, 1770, 858, 858, 858, 858, 858, 858, 1770, 1770, 858, 858, 858, 858, 858, 858, 1770, 1770, 858, 858, 858, 858, 858, 858, 1770, 1770, 858, 858, 858, 858, 858, 858, 1770, 1770, 858, 858, 858, 858, 858, 858, 1770, 1770, 858, 858, 858, 858, 858, 858, 1770, 1770, 858, 858, 858, 858, 858, 858, 1770, 1770, 858, 858, 858, 858, 858, 858, 1770, 1770, 858, 858, 858, 858, 858, 858, 1770, 1770, 858, 858, 858, 858, 858, 858, 1770, 1770, 858, 858, 858, 858, 858, 1771, 1772, 1772, 858, 1773, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr944:
+tr938:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -22863,33 +22843,33 @@ case 550:
 	switch( (*p) ) {
 		case 18u: goto st551;
 		case 22u: goto st551;
-		case 23u: goto tr966;
-		case 81u: goto tr965;
-		case 194u: goto tr967;
-		case 198u: goto tr967;
+		case 23u: goto tr960;
+		case 81u: goto tr959;
+		case 194u: goto tr961;
+		case 198u: goto tr961;
 	}
 	if ( (*p) < 46u ) {
 		if ( 20u <= (*p) && (*p) <= 21u )
-			goto tr965;
+			goto tr959;
 	} else if ( (*p) > 47u ) {
 		if ( (*p) > 89u ) {
 			if ( 92u <= (*p) && (*p) <= 95u )
-				goto tr965;
+				goto tr959;
 		} else if ( (*p) >= 84u )
-			goto tr965;
+			goto tr959;
 	} else
-		goto tr965;
+		goto tr959;
 	goto tr42;
 st551:
 	if ( ++p == pe )
 		goto _test_eof551;
 case 551:
 	{
-		static const unsigned short jump_table[] = { 1784, 1784, 1784, 1784, 1645, 858, 1784, 1784, 1784, 1784, 1784, 1784, 1645, 858, 1784, 1784, 1784, 1784, 1784, 1784, 1645, 858, 1784, 1784, 1784, 1784, 1784, 1784, 1645, 858, 1784, 1784, 1784, 1784, 1784, 1784, 1645, 858, 1784, 1784, 1784, 1784, 1784, 1784, 1645, 858, 1784, 1784, 1784, 1784, 1784, 1784, 1645, 858, 1784, 1784, 1784, 1784, 1784, 1784, 1645, 858, 1784, 1784, 1785, 1785, 1785, 1785, 1646, 1785, 1785, 1785, 1785, 1785, 1785, 1785, 1646, 1785, 1785, 1785, 1785, 1785, 1785, 1785, 1646, 1785, 1785, 1785, 1785, 1785, 1785, 1785, 1646, 1785, 1785, 1785, 1785, 1785, 1785, 1785, 1646, 1785, 1785, 1785, 1785, 1785, 1785, 1785, 1646, 1785, 1785, 1785, 1785, 1785, 1785, 1785, 1646, 1785, 1785, 1785, 1785, 1785, 1785, 1785, 1646, 1785, 1785, 1785, 1786, 1786, 1786, 1786, 1647, 1786, 1786, 1786, 1786, 1786, 1786, 1786, 1647, 1786, 1786, 1786, 1786, 1786, 1786, 1786, 1647, 1786, 1786, 1786, 1786, 1786, 1786, 1786, 1647, 1786, 1786, 1786, 1786, 1786, 1786, 1786, 1647, 1786, 1786, 1786, 1786, 1786, 1786, 1786, 1647, 1786, 1786, 1786, 1786, 1786, 1786, 1786, 1647, 1786, 1786, 1786, 1786, 1786, 1786, 1786, 1647, 1786, 1786, 1786, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1787 };
+		static const unsigned short jump_table[] = { 1778, 1778, 1778, 1778, 1639, 858, 1778, 1778, 1778, 1778, 1778, 1778, 1639, 858, 1778, 1778, 1778, 1778, 1778, 1778, 1639, 858, 1778, 1778, 1778, 1778, 1778, 1778, 1639, 858, 1778, 1778, 1778, 1778, 1778, 1778, 1639, 858, 1778, 1778, 1778, 1778, 1778, 1778, 1639, 858, 1778, 1778, 1778, 1778, 1778, 1778, 1639, 858, 1778, 1778, 1778, 1778, 1778, 1778, 1639, 858, 1778, 1778, 1779, 1779, 1779, 1779, 1640, 1779, 1779, 1779, 1779, 1779, 1779, 1779, 1640, 1779, 1779, 1779, 1779, 1779, 1779, 1779, 1640, 1779, 1779, 1779, 1779, 1779, 1779, 1779, 1640, 1779, 1779, 1779, 1779, 1779, 1779, 1779, 1640, 1779, 1779, 1779, 1779, 1779, 1779, 1779, 1640, 1779, 1779, 1779, 1779, 1779, 1779, 1779, 1640, 1779, 1779, 1779, 1779, 1779, 1779, 1779, 1640, 1779, 1779, 1779, 1780, 1780, 1780, 1780, 1641, 1780, 1780, 1780, 1780, 1780, 1780, 1780, 1641, 1780, 1780, 1780, 1780, 1780, 1780, 1780, 1641, 1780, 1780, 1780, 1780, 1780, 1780, 1780, 1641, 1780, 1780, 1780, 1780, 1780, 1780, 1780, 1641, 1780, 1780, 1780, 1780, 1780, 1780, 1780, 1641, 1780, 1780, 1780, 1780, 1780, 1780, 1780, 1641, 1780, 1780, 1780, 1780, 1780, 1780, 1780, 1641, 1780, 1780, 1780, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr966:
+tr960:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -22903,7 +22883,7 @@ case 552:
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr945:
+tr939:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -22913,48 +22893,48 @@ st553:
 		goto _test_eof553;
 case 553:
 	switch( (*p) ) {
-		case 18u: goto tr966;
-		case 81u: goto tr965;
-		case 194u: goto tr967;
-		case 198u: goto tr967;
+		case 18u: goto tr960;
+		case 81u: goto tr959;
+		case 194u: goto tr961;
+		case 198u: goto tr961;
 	}
 	if ( (*p) < 116u ) {
 		if ( (*p) < 46u ) {
 			if ( (*p) > 21u ) {
 				if ( 22u <= (*p) && (*p) <= 23u )
-					goto tr966;
+					goto tr960;
 			} else if ( (*p) >= 20u )
-				goto tr965;
+				goto tr959;
 		} else if ( (*p) > 47u ) {
 			if ( (*p) > 89u ) {
 				if ( 92u <= (*p) && (*p) <= 109u )
-					goto tr965;
+					goto tr959;
 			} else if ( (*p) >= 84u )
-				goto tr965;
+				goto tr959;
 		} else
-			goto tr965;
+			goto tr959;
 	} else if ( (*p) > 118u ) {
 		if ( (*p) < 216u ) {
 			if ( (*p) > 125u ) {
 				if ( 208u <= (*p) && (*p) <= 213u )
-					goto tr965;
+					goto tr959;
 			} else if ( (*p) >= 124u )
-				goto tr965;
+				goto tr959;
 		} else if ( (*p) > 229u ) {
 			if ( (*p) < 241u ) {
 				if ( 232u <= (*p) && (*p) <= 239u )
-					goto tr965;
+					goto tr959;
 			} else if ( (*p) > 246u ) {
 				if ( 248u <= (*p) && (*p) <= 254u )
-					goto tr965;
+					goto tr959;
 			} else
-				goto tr965;
+				goto tr959;
 		} else
-			goto tr965;
+			goto tr959;
 	} else
-		goto tr965;
+		goto tr959;
 	goto tr42;
-tr946:
+tr940:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -22964,18 +22944,18 @@ st554:
 		goto _test_eof554;
 case 554:
 	switch( (*p) ) {
-		case 42u: goto tr965;
-		case 81u: goto tr965;
-		case 83u: goto tr965;
-		case 194u: goto tr967;
+		case 42u: goto tr959;
+		case 81u: goto tr959;
+		case 83u: goto tr959;
+		case 194u: goto tr961;
 	}
 	if ( (*p) > 90u ) {
 		if ( 92u <= (*p) && (*p) <= 95u )
-			goto tr965;
+			goto tr959;
 	} else if ( (*p) >= 88u )
-		goto tr965;
+		goto tr959;
 	goto tr42;
-tr947:
+tr941:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -22985,21 +22965,21 @@ st555:
 		goto _test_eof555;
 case 555:
 	switch( (*p) ) {
-		case 42u: goto tr965;
-		case 81u: goto tr965;
-		case 194u: goto tr967;
-		case 208u: goto tr965;
+		case 42u: goto tr959;
+		case 81u: goto tr959;
+		case 194u: goto tr961;
+		case 208u: goto tr959;
 	}
 	if ( (*p) < 92u ) {
 		if ( 88u <= (*p) && (*p) <= 90u )
-			goto tr965;
+			goto tr959;
 	} else if ( (*p) > 95u ) {
 		if ( 124u <= (*p) && (*p) <= 125u )
-			goto tr965;
+			goto tr959;
 	} else
-		goto tr965;
+		goto tr959;
 	goto tr42;
-tr948:
+tr942:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -23009,20 +22989,20 @@ st556:
 		goto _test_eof556;
 case 556:
 	switch( (*p) ) {
-		case 81u: goto tr965;
-		case 194u: goto tr967;
-		case 198u: goto tr967;
+		case 81u: goto tr959;
+		case 194u: goto tr961;
+		case 198u: goto tr961;
 	}
 	if ( (*p) < 84u ) {
 		if ( 20u <= (*p) && (*p) <= 21u )
-			goto tr965;
+			goto tr959;
 	} else if ( (*p) > 89u ) {
 		if ( 92u <= (*p) && (*p) <= 95u )
-			goto tr965;
+			goto tr959;
 	} else
-		goto tr965;
+		goto tr959;
 	goto tr42;
-tr949:
+tr943:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -23032,29 +23012,29 @@ st557:
 		goto _test_eof557;
 case 557:
 	switch( (*p) ) {
-		case 81u: goto tr965;
-		case 194u: goto tr967;
-		case 198u: goto tr967;
-		case 208u: goto tr965;
+		case 81u: goto tr959;
+		case 194u: goto tr961;
+		case 198u: goto tr961;
+		case 208u: goto tr959;
 	}
 	if ( (*p) < 84u ) {
 		if ( 20u <= (*p) && (*p) <= 21u )
-			goto tr965;
+			goto tr959;
 	} else if ( (*p) > 89u ) {
 		if ( (*p) > 95u ) {
 			if ( 124u <= (*p) && (*p) <= 125u )
-				goto tr965;
+				goto tr959;
 		} else if ( (*p) >= 92u )
-			goto tr965;
+			goto tr959;
 	} else
-		goto tr965;
+		goto tr959;
 	goto tr42;
-tr950:
+tr944:
 	{
     SET_VEX_PREFIX3(*p);
   }
 	goto st558;
-tr1134:
+tr1128:
 	{
     /* This emulates two prefixes case. */
     SET_VEX_PREFIX2((p[0] & 0x80) | 0x61);
@@ -23066,9 +23046,9 @@ st558:
 		goto _test_eof558;
 case 558:
 	if ( 16u <= (*p) && (*p) <= 17u )
-		goto tr972;
+		goto tr966;
 	goto tr42;
-tr951:
+tr945:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -23078,14 +23058,14 @@ st559:
 		goto _test_eof559;
 case 559:
 	if ( (*p) == 208u )
-		goto tr965;
+		goto tr959;
 	if ( (*p) > 17u ) {
 		if ( 124u <= (*p) && (*p) <= 125u )
-			goto tr965;
+			goto tr959;
 	} else if ( (*p) >= 16u )
-		goto tr972;
+		goto tr966;
 	goto tr42;
-tr952:
+tr946:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -23096,27 +23076,27 @@ st560:
 case 560:
 	switch( (*p) ) {
 		case 18u: goto st551;
-		case 19u: goto tr966;
+		case 19u: goto tr960;
 		case 22u: goto st551;
-		case 23u: goto tr966;
-		case 43u: goto tr966;
-		case 80u: goto tr973;
-		case 194u: goto tr967;
-		case 198u: goto tr967;
+		case 23u: goto tr960;
+		case 43u: goto tr960;
+		case 80u: goto tr967;
+		case 194u: goto tr961;
+		case 198u: goto tr961;
 	}
 	if ( (*p) < 40u ) {
 		if ( 16u <= (*p) && (*p) <= 21u )
-			goto tr965;
+			goto tr959;
 	} else if ( (*p) > 41u ) {
 		if ( (*p) > 47u ) {
 			if ( 81u <= (*p) && (*p) <= 95u )
-				goto tr965;
+				goto tr959;
 		} else if ( (*p) >= 46u )
-			goto tr965;
+			goto tr959;
 	} else
-		goto tr965;
+		goto tr959;
 	goto tr42;
-tr953:
+tr947:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -23126,7 +23106,7 @@ st561:
 		goto _test_eof561;
 case 561:
 	{
-		static const unsigned short jump_table[] = { 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1781, 1781, 1782, 1782, 1781, 1781, 1782, 1782, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1781, 1781, 858, 1782, 858, 858, 1781, 1781, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1789, 1781, 858, 858, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1783, 858, 858, 858, 1781, 1781, 1781, 858, 858, 858, 858, 858, 1781, 1781, 858, 1781, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1783, 858, 562, 1791, 1783, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1781, 1781, 1781, 1781, 1781, 1781, 858, 1789, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1782, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 858, 1781, 1781, 1781, 1781, 1781, 1781, 1788, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 858 };
+		static const unsigned short jump_table[] = { 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1775, 1775, 1776, 1776, 1775, 1775, 1776, 1776, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1775, 1775, 858, 1776, 858, 858, 1775, 1775, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1783, 1775, 858, 858, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1777, 858, 858, 858, 1775, 1775, 1775, 858, 858, 858, 858, 858, 1775, 1775, 858, 1775, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1777, 858, 562, 1785, 1777, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1775, 1775, 1775, 1775, 1775, 1775, 858, 1783, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1776, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 858, 1775, 1775, 1775, 1775, 1775, 1775, 1782, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -23135,11 +23115,11 @@ st562:
 		goto _test_eof562;
 case 562:
 	{
-		static const unsigned short jump_table[] = { 1792, 1792, 1792, 1792, 1649, 858, 1792, 1792, 1792, 1792, 1792, 1792, 1649, 858, 1792, 1792, 1792, 1792, 1792, 1792, 1649, 858, 1792, 1792, 1792, 1792, 1792, 1792, 1649, 858, 1792, 1792, 1792, 1792, 1792, 1792, 1649, 858, 1792, 1792, 1792, 1792, 1792, 1792, 1649, 858, 1792, 1792, 1792, 1792, 1792, 1792, 1649, 858, 1792, 1792, 1792, 1792, 1792, 1792, 1649, 858, 1792, 1792, 1793, 1793, 1793, 1793, 1650, 1793, 1793, 1793, 1793, 1793, 1793, 1793, 1650, 1793, 1793, 1793, 1793, 1793, 1793, 1793, 1650, 1793, 1793, 1793, 1793, 1793, 1793, 1793, 1650, 1793, 1793, 1793, 1793, 1793, 1793, 1793, 1650, 1793, 1793, 1793, 1793, 1793, 1793, 1793, 1650, 1793, 1793, 1793, 1793, 1793, 1793, 1793, 1650, 1793, 1793, 1793, 1793, 1793, 1793, 1793, 1650, 1793, 1793, 1793, 1794, 1794, 1794, 1794, 1651, 1794, 1794, 1794, 1794, 1794, 1794, 1794, 1651, 1794, 1794, 1794, 1794, 1794, 1794, 1794, 1651, 1794, 1794, 1794, 1794, 1794, 1794, 1794, 1651, 1794, 1794, 1794, 1794, 1794, 1794, 1794, 1651, 1794, 1794, 1794, 1794, 1794, 1794, 1794, 1651, 1794, 1794, 1794, 1794, 1794, 1794, 1794, 1651, 1794, 1794, 1794, 1794, 1794, 1794, 1794, 1651, 1794, 1794, 1794, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795, 1795 };
+		static const unsigned short jump_table[] = { 1786, 1786, 1786, 1786, 1643, 858, 1786, 1786, 1786, 1786, 1786, 1786, 1643, 858, 1786, 1786, 1786, 1786, 1786, 1786, 1643, 858, 1786, 1786, 1786, 1786, 1786, 1786, 1643, 858, 1786, 1786, 1786, 1786, 1786, 1786, 1643, 858, 1786, 1786, 1786, 1786, 1786, 1786, 1643, 858, 1786, 1786, 1786, 1786, 1786, 1786, 1643, 858, 1786, 1786, 1786, 1786, 1786, 1786, 1643, 858, 1786, 1786, 1787, 1787, 1787, 1787, 1644, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1644, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1644, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1644, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1644, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1644, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1644, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1644, 1787, 1787, 1787, 1788, 1788, 1788, 1788, 1645, 1788, 1788, 1788, 1788, 1788, 1788, 1788, 1645, 1788, 1788, 1788, 1788, 1788, 1788, 1788, 1645, 1788, 1788, 1788, 1788, 1788, 1788, 1788, 1645, 1788, 1788, 1788, 1788, 1788, 1788, 1788, 1645, 1788, 1788, 1788, 1788, 1788, 1788, 1788, 1645, 1788, 1788, 1788, 1788, 1788, 1788, 1788, 1645, 1788, 1788, 1788, 1788, 1788, 1788, 1788, 1645, 1788, 1788, 1788, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789, 1789 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr954:
+tr948:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -23149,30 +23129,30 @@ st563:
 		goto _test_eof563;
 case 563:
 	switch( (*p) ) {
-		case 18u: goto tr965;
-		case 22u: goto tr965;
-		case 42u: goto tr965;
-		case 111u: goto tr965;
-		case 112u: goto tr967;
-		case 194u: goto tr967;
-		case 230u: goto tr965;
+		case 18u: goto tr959;
+		case 22u: goto tr959;
+		case 42u: goto tr959;
+		case 111u: goto tr959;
+		case 112u: goto tr961;
+		case 194u: goto tr961;
+		case 230u: goto tr959;
 	}
 	if ( (*p) < 81u ) {
 		if ( (*p) > 17u ) {
 			if ( 44u <= (*p) && (*p) <= 45u )
-				goto tr980;
+				goto tr974;
 		} else if ( (*p) >= 16u )
-			goto tr966;
+			goto tr960;
 	} else if ( (*p) > 83u ) {
 		if ( (*p) > 95u ) {
 			if ( 126u <= (*p) && (*p) <= 127u )
-				goto tr965;
+				goto tr959;
 		} else if ( (*p) >= 88u )
-			goto tr965;
+			goto tr959;
 	} else
-		goto tr965;
+		goto tr959;
 	goto tr42;
-tr992:
+tr986:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
@@ -23180,7 +23160,7 @@ tr992:
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
 	goto st564;
-tr996:
+tr990:
 	{
     SET_CPU_FEATURE(CPUFeature_BMI1);
   }
@@ -23188,7 +23168,7 @@ tr996:
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
 	goto st564;
-tr980:
+tr974:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -23196,7 +23176,7 @@ tr980:
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
 	goto st564;
-tr982:
+tr976:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -23209,11 +23189,11 @@ st564:
 		goto _test_eof564;
 case 564:
 	{
-		static const unsigned short jump_table[] = { 833, 833, 833, 833, 1653, 858, 833, 833, 833, 833, 833, 833, 1653, 858, 833, 833, 833, 833, 833, 833, 1653, 858, 833, 833, 833, 833, 833, 833, 1653, 858, 833, 833, 833, 833, 833, 833, 1653, 858, 833, 833, 833, 833, 833, 833, 1653, 858, 833, 833, 833, 833, 833, 833, 1653, 858, 833, 833, 833, 833, 833, 833, 1653, 858, 833, 833, 836, 836, 836, 836, 837, 836, 836, 836, 836, 836, 836, 836, 837, 836, 836, 836, 836, 836, 836, 836, 837, 836, 836, 836, 836, 836, 836, 836, 837, 836, 836, 836, 836, 836, 836, 836, 837, 836, 836, 836, 836, 836, 836, 836, 837, 836, 836, 836, 836, 836, 836, 836, 837, 836, 836, 836, 836, 836, 836, 836, 837, 836, 836, 836, 838, 838, 838, 838, 839, 838, 838, 838, 838, 838, 838, 838, 839, 838, 838, 838, 838, 838, 838, 838, 839, 838, 838, 838, 838, 838, 838, 838, 839, 838, 838, 838, 838, 838, 838, 838, 839, 838, 838, 838, 838, 838, 838, 838, 839, 838, 838, 838, 838, 838, 838, 838, 839, 838, 838, 838, 838, 838, 838, 838, 839, 838, 838, 838, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840 };
+		static const unsigned short jump_table[] = { 833, 833, 833, 833, 1647, 858, 833, 833, 833, 833, 833, 833, 1647, 858, 833, 833, 833, 833, 833, 833, 1647, 858, 833, 833, 833, 833, 833, 833, 1647, 858, 833, 833, 833, 833, 833, 833, 1647, 858, 833, 833, 833, 833, 833, 833, 1647, 858, 833, 833, 833, 833, 833, 833, 1647, 858, 833, 833, 833, 833, 833, 833, 1647, 858, 833, 833, 836, 836, 836, 836, 837, 836, 836, 836, 836, 836, 836, 836, 837, 836, 836, 836, 836, 836, 836, 836, 837, 836, 836, 836, 836, 836, 836, 836, 837, 836, 836, 836, 836, 836, 836, 836, 837, 836, 836, 836, 836, 836, 836, 836, 837, 836, 836, 836, 836, 836, 836, 836, 837, 836, 836, 836, 836, 836, 836, 836, 837, 836, 836, 836, 838, 838, 838, 838, 839, 838, 838, 838, 838, 838, 838, 838, 839, 838, 838, 838, 838, 838, 838, 838, 839, 838, 838, 838, 838, 838, 838, 838, 839, 838, 838, 838, 838, 838, 838, 838, 839, 838, 838, 838, 838, 838, 838, 838, 839, 838, 838, 838, 838, 838, 838, 838, 839, 838, 838, 838, 838, 838, 838, 838, 839, 838, 838, 838, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840, 840 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr955:
+tr949:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -23223,31 +23203,31 @@ st565:
 		goto _test_eof565;
 case 565:
 	switch( (*p) ) {
-		case 18u: goto tr965;
-		case 42u: goto tr965;
-		case 81u: goto tr965;
-		case 112u: goto tr967;
-		case 194u: goto tr967;
-		case 208u: goto tr965;
-		case 230u: goto tr965;
-		case 240u: goto tr966;
+		case 18u: goto tr959;
+		case 42u: goto tr959;
+		case 81u: goto tr959;
+		case 112u: goto tr961;
+		case 194u: goto tr961;
+		case 208u: goto tr959;
+		case 230u: goto tr959;
+		case 240u: goto tr960;
 	}
 	if ( (*p) < 88u ) {
 		if ( (*p) > 17u ) {
 			if ( 44u <= (*p) && (*p) <= 45u )
-				goto tr980;
+				goto tr974;
 		} else if ( (*p) >= 16u )
-			goto tr966;
+			goto tr960;
 	} else if ( (*p) > 90u ) {
 		if ( (*p) > 95u ) {
 			if ( 124u <= (*p) && (*p) <= 125u )
-				goto tr965;
+				goto tr959;
 		} else if ( (*p) >= 92u )
-			goto tr965;
+			goto tr959;
 	} else
-		goto tr965;
+		goto tr959;
 	goto tr42;
-tr956:
+tr950:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -23257,24 +23237,24 @@ st566:
 		goto _test_eof566;
 case 566:
 	switch( (*p) ) {
-		case 43u: goto tr966;
-		case 80u: goto tr973;
-		case 194u: goto tr967;
-		case 198u: goto tr967;
+		case 43u: goto tr960;
+		case 80u: goto tr967;
+		case 194u: goto tr961;
+		case 198u: goto tr961;
 	}
 	if ( (*p) < 20u ) {
 		if ( 16u <= (*p) && (*p) <= 17u )
-			goto tr965;
+			goto tr959;
 	} else if ( (*p) > 21u ) {
 		if ( (*p) > 41u ) {
 			if ( 81u <= (*p) && (*p) <= 95u )
-				goto tr965;
+				goto tr959;
 		} else if ( (*p) >= 40u )
-			goto tr965;
+			goto tr959;
 	} else
-		goto tr965;
+		goto tr959;
 	goto tr42;
-tr957:
+tr951:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -23284,33 +23264,33 @@ st567:
 		goto _test_eof567;
 case 567:
 	switch( (*p) ) {
-		case 43u: goto tr966;
-		case 80u: goto tr973;
-		case 81u: goto tr965;
-		case 126u: goto tr981;
-		case 194u: goto tr967;
-		case 198u: goto tr967;
-		case 208u: goto tr965;
-		case 214u: goto tr965;
-		case 230u: goto tr965;
-		case 231u: goto tr966;
+		case 43u: goto tr960;
+		case 80u: goto tr967;
+		case 81u: goto tr959;
+		case 126u: goto tr975;
+		case 194u: goto tr961;
+		case 198u: goto tr961;
+		case 208u: goto tr959;
+		case 214u: goto tr959;
+		case 230u: goto tr959;
+		case 231u: goto tr960;
 	}
 	if ( (*p) < 40u ) {
 		if ( (*p) > 17u ) {
 			if ( 20u <= (*p) && (*p) <= 21u )
-				goto tr965;
+				goto tr959;
 		} else if ( (*p) >= 16u )
-			goto tr965;
+			goto tr959;
 	} else if ( (*p) > 41u ) {
 		if ( (*p) > 95u ) {
 			if ( 124u <= (*p) && (*p) <= 127u )
-				goto tr965;
+				goto tr959;
 		} else if ( (*p) >= 84u )
-			goto tr965;
+			goto tr959;
 	} else
-		goto tr965;
+		goto tr959;
 	goto tr42;
-tr981:
+tr975:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -23318,7 +23298,7 @@ tr981:
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
 	goto st568;
-tr983:
+tr977:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -23335,7 +23315,7 @@ case 568:
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr958:
+tr952:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -23345,16 +23325,16 @@ st569:
 		goto _test_eof569;
 case 569:
 	switch( (*p) ) {
-		case 18u: goto tr965;
-		case 22u: goto tr965;
-		case 91u: goto tr965;
-		case 127u: goto tr965;
-		case 230u: goto tr965;
+		case 18u: goto tr959;
+		case 22u: goto tr959;
+		case 91u: goto tr959;
+		case 127u: goto tr959;
+		case 230u: goto tr959;
 	}
 	if ( 16u <= (*p) && (*p) <= 17u )
-		goto tr972;
+		goto tr966;
 	goto tr42;
-tr959:
+tr953:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -23364,18 +23344,18 @@ st570:
 		goto _test_eof570;
 case 570:
 	switch( (*p) ) {
-		case 18u: goto tr965;
-		case 208u: goto tr965;
-		case 230u: goto tr965;
-		case 240u: goto tr966;
+		case 18u: goto tr959;
+		case 208u: goto tr959;
+		case 230u: goto tr959;
+		case 240u: goto tr960;
 	}
 	if ( (*p) > 17u ) {
 		if ( 124u <= (*p) && (*p) <= 125u )
-			goto tr965;
+			goto tr959;
 	} else if ( (*p) >= 16u )
-		goto tr972;
+		goto tr966;
 	goto tr42;
-tr960:
+tr954:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -23385,9 +23365,9 @@ st571:
 		goto _test_eof571;
 case 571:
 	if ( (*p) == 42u )
-		goto tr965;
+		goto tr959;
 	goto tr42;
-tr961:
+tr955:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -23397,9 +23377,9 @@ st572:
 		goto _test_eof572;
 case 572:
 	if ( (*p) == 110u )
-		goto tr965;
+		goto tr959;
 	goto tr42;
-tr962:
+tr956:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -23409,11 +23389,11 @@ st573:
 		goto _test_eof573;
 case 573:
 	if ( (*p) == 42u )
-		goto tr965;
+		goto tr959;
 	if ( 44u <= (*p) && (*p) <= 45u )
-		goto tr982;
+		goto tr976;
 	goto tr42;
-tr963:
+tr957:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -23423,9 +23403,9 @@ st574:
 		goto _test_eof574;
 case 574:
 	if ( (*p) == 126u )
-		goto tr983;
+		goto tr977;
 	goto tr42;
-tr793:
+tr787:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -23435,11 +23415,11 @@ st575:
 		goto _test_eof575;
 case 575:
 	{
-		static const unsigned short jump_table[] = { 1800, 1801, 858, 858, 858, 1802, 858, 858, 1800, 1801, 858, 858, 858, 1802, 858, 858, 1800, 1801, 858, 858, 858, 1802, 858, 858, 1800, 1801, 858, 858, 858, 1802, 858, 858, 1800, 1801, 858, 858, 858, 1802, 858, 858, 1800, 1801, 858, 858, 858, 1802, 858, 858, 1800, 1801, 858, 858, 858, 1802, 858, 858, 1800, 1801, 858, 858, 858, 1802, 858, 858, 1800, 1801, 858, 858, 858, 1802, 858, 858, 1800, 1801, 858, 858, 858, 1802, 858, 858, 1800, 1801, 858, 858, 858, 1802, 858, 858, 1800, 1801, 858, 858, 858, 1802, 858, 858, 1800, 1801, 858, 858, 858, 1802, 858, 858, 1800, 1801, 858, 858, 858, 1802, 858, 858, 1800, 1801, 858, 858, 858, 1802, 858, 858, 1800, 1803, 858, 858, 858, 1804, 858, 858, 1805, 1806, 858, 858, 858, 1807, 858, 858, 1805, 1806, 858, 858, 858, 1807, 858, 858, 1805, 1806, 858, 858, 858, 1807, 858, 858, 1805, 1806, 858, 858, 858, 1807, 858, 858, 1805, 1806, 858, 858, 858, 1807, 858, 858, 1805, 1806, 858, 858, 858, 1807, 858, 858, 1805, 1806, 858, 858, 858, 1807, 858, 858, 1805, 1806, 858, 858, 858, 1807, 858, 858, 1805, 1806, 858, 858, 858, 1807, 858, 858, 1805, 1806, 858, 858, 858, 1807, 858, 858, 1805, 1806, 858, 858, 858, 1807, 858, 858, 1805, 1806, 858, 858, 858, 1807, 858, 858, 1805, 1806, 858, 858, 858, 1807, 858, 858, 1805, 1806, 858, 858, 858, 1807, 858, 858, 1805, 1806, 858, 858, 858, 1807, 858, 858, 1805, 1806, 858, 858, 858, 1807, 858, 858 };
+		static const unsigned short jump_table[] = { 1794, 1795, 858, 858, 858, 1796, 858, 858, 1794, 1795, 858, 858, 858, 1796, 858, 858, 1794, 1795, 858, 858, 858, 1796, 858, 858, 1794, 1795, 858, 858, 858, 1796, 858, 858, 1794, 1795, 858, 858, 858, 1796, 858, 858, 1794, 1795, 858, 858, 858, 1796, 858, 858, 1794, 1795, 858, 858, 858, 1796, 858, 858, 1794, 1795, 858, 858, 858, 1796, 858, 858, 1794, 1795, 858, 858, 858, 1796, 858, 858, 1794, 1795, 858, 858, 858, 1796, 858, 858, 1794, 1795, 858, 858, 858, 1796, 858, 858, 1794, 1795, 858, 858, 858, 1796, 858, 858, 1794, 1795, 858, 858, 858, 1796, 858, 858, 1794, 1795, 858, 858, 858, 1796, 858, 858, 1794, 1795, 858, 858, 858, 1796, 858, 858, 1794, 1797, 858, 858, 858, 1798, 858, 858, 1799, 1800, 858, 858, 858, 1801, 858, 858, 1799, 1800, 858, 858, 858, 1801, 858, 858, 1799, 1800, 858, 858, 858, 1801, 858, 858, 1799, 1800, 858, 858, 858, 1801, 858, 858, 1799, 1800, 858, 858, 858, 1801, 858, 858, 1799, 1800, 858, 858, 858, 1801, 858, 858, 1799, 1800, 858, 858, 858, 1801, 858, 858, 1799, 1800, 858, 858, 858, 1801, 858, 858, 1799, 1800, 858, 858, 858, 1801, 858, 858, 1799, 1800, 858, 858, 858, 1801, 858, 858, 1799, 1800, 858, 858, 858, 1801, 858, 858, 1799, 1800, 858, 858, 858, 1801, 858, 858, 1799, 1800, 858, 858, 858, 1801, 858, 858, 1799, 1800, 858, 858, 858, 1801, 858, 858, 1799, 1800, 858, 858, 858, 1801, 858, 858, 1799, 1800, 858, 858, 858, 1801, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr984:
+tr978:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -23449,11 +23429,11 @@ st576:
 		goto _test_eof576;
 case 576:
 	switch( (*p) ) {
-		case 242u: goto tr992;
-		case 247u: goto tr992;
+		case 242u: goto tr986;
+		case 247u: goto tr986;
 	}
 	goto tr42;
-tr985:
+tr979:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -23463,32 +23443,32 @@ st577:
 		goto _test_eof577;
 case 577:
 	if ( (*p) == 43u )
-		goto tr965;
+		goto tr959;
 	if ( (*p) < 55u ) {
 		if ( (*p) < 40u ) {
 			if ( (*p) <= 13u )
-				goto tr965;
+				goto tr959;
 		} else if ( (*p) > 41u ) {
 			if ( 44u <= (*p) && (*p) <= 47u )
-				goto tr966;
+				goto tr960;
 		} else
-			goto tr965;
+			goto tr959;
 	} else if ( (*p) > 64u ) {
 		if ( (*p) < 166u ) {
 			if ( 150u <= (*p) && (*p) <= 159u )
-				goto tr993;
+				goto tr987;
 		} else if ( (*p) > 175u ) {
 			if ( (*p) > 191u ) {
 				if ( 219u <= (*p) && (*p) <= 223u )
-					goto tr994;
+					goto tr988;
 			} else if ( (*p) >= 182u )
-				goto tr993;
+				goto tr987;
 		} else
-			goto tr993;
+			goto tr987;
 	} else
-		goto tr965;
+		goto tr959;
 	goto tr42;
-tr986:
+tr980:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -23498,32 +23478,32 @@ st578:
 		goto _test_eof578;
 case 578:
 	switch( (*p) ) {
-		case 154u: goto tr993;
-		case 156u: goto tr993;
-		case 158u: goto tr993;
-		case 170u: goto tr993;
-		case 172u: goto tr993;
-		case 174u: goto tr993;
-		case 186u: goto tr993;
-		case 188u: goto tr993;
-		case 190u: goto tr993;
+		case 154u: goto tr987;
+		case 156u: goto tr987;
+		case 158u: goto tr987;
+		case 170u: goto tr987;
+		case 172u: goto tr987;
+		case 174u: goto tr987;
+		case 186u: goto tr987;
+		case 188u: goto tr987;
+		case 190u: goto tr987;
 	}
 	if ( (*p) < 150u ) {
 		if ( (*p) > 13u ) {
 			if ( 44u <= (*p) && (*p) <= 47u )
-				goto tr966;
+				goto tr960;
 		} else if ( (*p) >= 12u )
-			goto tr965;
+			goto tr959;
 	} else if ( (*p) > 152u ) {
 		if ( (*p) > 168u ) {
 			if ( 182u <= (*p) && (*p) <= 184u )
-				goto tr993;
+				goto tr987;
 		} else if ( (*p) >= 166u )
-			goto tr993;
+			goto tr987;
 	} else
-		goto tr993;
+		goto tr987;
 	goto tr42;
-tr987:
+tr981:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -23533,45 +23513,45 @@ st579:
 		goto _test_eof579;
 case 579:
 	switch( (*p) ) {
-		case 19u: goto tr995;
-		case 23u: goto tr965;
-		case 24u: goto tr966;
-		case 42u: goto tr966;
+		case 19u: goto tr989;
+		case 23u: goto tr959;
+		case 24u: goto tr960;
+		case 42u: goto tr960;
 	}
 	if ( (*p) < 48u ) {
 		if ( (*p) < 32u ) {
 			if ( (*p) > 15u ) {
 				if ( 28u <= (*p) && (*p) <= 30u )
-					goto tr965;
+					goto tr959;
 			} else
-				goto tr965;
+				goto tr959;
 		} else if ( (*p) > 37u ) {
 			if ( (*p) > 43u ) {
 				if ( 44u <= (*p) && (*p) <= 47u )
-					goto tr966;
+					goto tr960;
 			} else if ( (*p) >= 40u )
-				goto tr965;
+				goto tr959;
 		} else
-			goto tr965;
+			goto tr959;
 	} else if ( (*p) > 53u ) {
 		if ( (*p) < 166u ) {
 			if ( (*p) > 65u ) {
 				if ( 150u <= (*p) && (*p) <= 159u )
-					goto tr993;
+					goto tr987;
 			} else if ( (*p) >= 55u )
-				goto tr965;
+				goto tr959;
 		} else if ( (*p) > 175u ) {
 			if ( (*p) > 191u ) {
 				if ( 219u <= (*p) && (*p) <= 223u )
-					goto tr994;
+					goto tr988;
 			} else if ( (*p) >= 182u )
-				goto tr993;
+				goto tr987;
 		} else
-			goto tr993;
+			goto tr987;
 	} else
-		goto tr965;
+		goto tr959;
 	goto tr42;
-tr988:
+tr982:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -23581,37 +23561,37 @@ st580:
 		goto _test_eof580;
 case 580:
 	switch( (*p) ) {
-		case 19u: goto tr995;
-		case 23u: goto tr965;
-		case 154u: goto tr993;
-		case 156u: goto tr993;
-		case 158u: goto tr993;
-		case 170u: goto tr993;
-		case 172u: goto tr993;
-		case 174u: goto tr993;
-		case 186u: goto tr993;
-		case 188u: goto tr993;
-		case 190u: goto tr993;
+		case 19u: goto tr989;
+		case 23u: goto tr959;
+		case 154u: goto tr987;
+		case 156u: goto tr987;
+		case 158u: goto tr987;
+		case 170u: goto tr987;
+		case 172u: goto tr987;
+		case 174u: goto tr987;
+		case 186u: goto tr987;
+		case 188u: goto tr987;
+		case 190u: goto tr987;
 	}
 	if ( (*p) < 44u ) {
 		if ( (*p) > 15u ) {
 			if ( 24u <= (*p) && (*p) <= 26u )
-				goto tr966;
+				goto tr960;
 		} else if ( (*p) >= 12u )
-			goto tr965;
+			goto tr959;
 	} else if ( (*p) > 47u ) {
 		if ( (*p) < 166u ) {
 			if ( 150u <= (*p) && (*p) <= 152u )
-				goto tr993;
+				goto tr987;
 		} else if ( (*p) > 168u ) {
 			if ( 182u <= (*p) && (*p) <= 184u )
-				goto tr993;
+				goto tr987;
 		} else
-			goto tr993;
+			goto tr987;
 	} else
-		goto tr966;
+		goto tr960;
 	goto tr42;
-tr989:
+tr983:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -23621,11 +23601,11 @@ st581:
 		goto _test_eof581;
 case 581:
 	switch( (*p) ) {
-		case 242u: goto tr996;
-		case 247u: goto tr996;
+		case 242u: goto tr990;
+		case 247u: goto tr990;
 	}
 	goto tr42;
-tr990:
+tr984:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -23636,14 +23616,14 @@ st582:
 case 582:
 	if ( (*p) < 166u ) {
 		if ( 150u <= (*p) && (*p) <= 159u )
-			goto tr993;
+			goto tr987;
 	} else if ( (*p) > 175u ) {
 		if ( 182u <= (*p) && (*p) <= 191u )
-			goto tr993;
+			goto tr987;
 	} else
-		goto tr993;
+		goto tr987;
 	goto tr42;
-tr991:
+tr985:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -23653,26 +23633,26 @@ st583:
 		goto _test_eof583;
 case 583:
 	switch( (*p) ) {
-		case 154u: goto tr993;
-		case 156u: goto tr993;
-		case 158u: goto tr993;
-		case 170u: goto tr993;
-		case 172u: goto tr993;
-		case 174u: goto tr993;
-		case 186u: goto tr993;
-		case 188u: goto tr993;
-		case 190u: goto tr993;
+		case 154u: goto tr987;
+		case 156u: goto tr987;
+		case 158u: goto tr987;
+		case 170u: goto tr987;
+		case 172u: goto tr987;
+		case 174u: goto tr987;
+		case 186u: goto tr987;
+		case 188u: goto tr987;
+		case 190u: goto tr987;
 	}
 	if ( (*p) < 166u ) {
 		if ( 150u <= (*p) && (*p) <= 152u )
-			goto tr993;
+			goto tr987;
 	} else if ( (*p) > 168u ) {
 		if ( 182u <= (*p) && (*p) <= 184u )
-			goto tr993;
+			goto tr987;
 	} else
-		goto tr993;
+		goto tr987;
 	goto tr42;
-tr794:
+tr788:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -23682,11 +23662,11 @@ st584:
 		goto _test_eof584;
 case 584:
 	{
-		static const unsigned short jump_table[] = { 858, 1813, 858, 858, 858, 1814, 858, 858, 858, 1813, 858, 858, 858, 1814, 858, 858, 858, 1813, 858, 858, 858, 1814, 858, 858, 858, 1813, 858, 858, 858, 1814, 858, 858, 858, 1813, 858, 858, 858, 1814, 858, 858, 858, 1813, 858, 858, 858, 1814, 858, 858, 858, 1813, 858, 858, 858, 1814, 858, 858, 858, 1813, 858, 858, 858, 1814, 858, 858, 858, 1813, 858, 858, 858, 1814, 858, 858, 858, 1813, 858, 858, 858, 1814, 858, 858, 858, 1813, 858, 858, 858, 1814, 858, 858, 858, 1813, 858, 858, 858, 1814, 858, 858, 858, 1813, 858, 858, 858, 1814, 858, 858, 858, 1813, 858, 858, 858, 1814, 858, 858, 858, 1813, 858, 858, 858, 1814, 858, 858, 858, 1815, 858, 858, 858, 1816, 858, 858, 858, 1817, 858, 858, 858, 1818, 858, 858, 858, 1817, 858, 858, 858, 1818, 858, 858, 858, 1817, 858, 858, 858, 1818, 858, 858, 858, 1817, 858, 858, 858, 1818, 858, 858, 858, 1817, 858, 858, 858, 1818, 858, 858, 858, 1817, 858, 858, 858, 1818, 858, 858, 858, 1817, 858, 858, 858, 1818, 858, 858, 858, 1817, 858, 858, 858, 1818, 858, 858, 858, 1817, 858, 858, 858, 1818, 858, 858, 858, 1817, 858, 858, 858, 1818, 858, 858, 858, 1817, 858, 858, 858, 1818, 858, 858, 858, 1817, 858, 858, 858, 1818, 858, 858, 858, 1817, 858, 858, 858, 1818, 858, 858, 858, 1817, 858, 858, 858, 1818, 858, 858, 858, 1817, 858, 858, 858, 1818, 858, 858, 858, 1819, 858, 858, 858, 1818, 858, 858 };
+		static const unsigned short jump_table[] = { 858, 1807, 858, 858, 858, 1808, 858, 858, 858, 1807, 858, 858, 858, 1808, 858, 858, 858, 1807, 858, 858, 858, 1808, 858, 858, 858, 1807, 858, 858, 858, 1808, 858, 858, 858, 1807, 858, 858, 858, 1808, 858, 858, 858, 1807, 858, 858, 858, 1808, 858, 858, 858, 1807, 858, 858, 858, 1808, 858, 858, 858, 1807, 858, 858, 858, 1808, 858, 858, 858, 1807, 858, 858, 858, 1808, 858, 858, 858, 1807, 858, 858, 858, 1808, 858, 858, 858, 1807, 858, 858, 858, 1808, 858, 858, 858, 1807, 858, 858, 858, 1808, 858, 858, 858, 1807, 858, 858, 858, 1808, 858, 858, 858, 1807, 858, 858, 858, 1808, 858, 858, 858, 1807, 858, 858, 858, 1808, 858, 858, 858, 1809, 858, 858, 858, 1810, 858, 858, 858, 1811, 858, 858, 858, 1812, 858, 858, 858, 1811, 858, 858, 858, 1812, 858, 858, 858, 1811, 858, 858, 858, 1812, 858, 858, 858, 1811, 858, 858, 858, 1812, 858, 858, 858, 1811, 858, 858, 858, 1812, 858, 858, 858, 1811, 858, 858, 858, 1812, 858, 858, 858, 1811, 858, 858, 858, 1812, 858, 858, 858, 1811, 858, 858, 858, 1812, 858, 858, 858, 1811, 858, 858, 858, 1812, 858, 858, 858, 1811, 858, 858, 858, 1812, 858, 858, 858, 1811, 858, 858, 858, 1812, 858, 858, 858, 1811, 858, 858, 858, 1812, 858, 858, 858, 1811, 858, 858, 858, 1812, 858, 858, 858, 1811, 858, 858, 858, 1812, 858, 858, 858, 1811, 858, 858, 858, 1812, 858, 858, 858, 1813, 858, 858, 858, 1812, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr997:
+tr991:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -23696,32 +23676,32 @@ st585:
 		goto _test_eof585;
 case 585:
 	switch( (*p) ) {
-		case 33u: goto tr967;
-		case 68u: goto tr1004;
-		case 223u: goto tr1008;
+		case 33u: goto tr961;
+		case 68u: goto tr998;
+		case 223u: goto tr1002;
 	}
 	if ( (*p) < 74u ) {
 		if ( (*p) < 64u ) {
 			if ( 8u <= (*p) && (*p) <= 15u )
-				goto tr967;
+				goto tr961;
 		} else if ( (*p) > 66u ) {
 			if ( 72u <= (*p) && (*p) <= 73u )
-				goto tr1005;
+				goto tr999;
 		} else
-			goto tr967;
+			goto tr961;
 	} else if ( (*p) > 76u ) {
 		if ( (*p) < 104u ) {
 			if ( 92u <= (*p) && (*p) <= 95u )
-				goto tr1007;
+				goto tr1001;
 		} else if ( (*p) > 111u ) {
 			if ( 120u <= (*p) && (*p) <= 127u )
-				goto tr1007;
+				goto tr1001;
 		} else
-			goto tr1007;
+			goto tr1001;
 	} else
-		goto tr1006;
+		goto tr1000;
 	goto tr42;
-tr1005:
+tr999:
 	{
     SET_CPU_FEATURE(CPUFeature_XOP);
   }
@@ -23731,11 +23711,11 @@ st586:
 		goto _test_eof586;
 case 586:
 	{
-		static const unsigned short jump_table[] = { 1825, 1825, 1825, 1825, 487, 858, 1825, 1825, 1825, 1825, 1825, 1825, 487, 858, 1825, 1825, 1825, 1825, 1825, 1825, 487, 858, 1825, 1825, 1825, 1825, 1825, 1825, 487, 858, 1825, 1825, 1825, 1825, 1825, 1825, 487, 858, 1825, 1825, 1825, 1825, 1825, 1825, 487, 858, 1825, 1825, 1825, 1825, 1825, 1825, 487, 858, 1825, 1825, 1825, 1825, 1825, 1825, 487, 858, 1825, 1825, 1826, 1826, 1826, 1826, 489, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 489, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 489, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 489, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 489, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 489, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 489, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 489, 1826, 1826, 1826, 1827, 1827, 1827, 1827, 491, 1827, 1827, 1827, 1827, 1827, 1827, 1827, 491, 1827, 1827, 1827, 1827, 1827, 1827, 1827, 491, 1827, 1827, 1827, 1827, 1827, 1827, 1827, 491, 1827, 1827, 1827, 1827, 1827, 1827, 1827, 491, 1827, 1827, 1827, 1827, 1827, 1827, 1827, 491, 1827, 1827, 1827, 1827, 1827, 1827, 1827, 491, 1827, 1827, 1827, 1827, 1827, 1827, 1827, 491, 1827, 1827, 1827, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488 };
+		static const unsigned short jump_table[] = { 1819, 1819, 1819, 1819, 487, 858, 1819, 1819, 1819, 1819, 1819, 1819, 487, 858, 1819, 1819, 1819, 1819, 1819, 1819, 487, 858, 1819, 1819, 1819, 1819, 1819, 1819, 487, 858, 1819, 1819, 1819, 1819, 1819, 1819, 487, 858, 1819, 1819, 1819, 1819, 1819, 1819, 487, 858, 1819, 1819, 1819, 1819, 1819, 1819, 487, 858, 1819, 1819, 1819, 1819, 1819, 1819, 487, 858, 1819, 1819, 1820, 1820, 1820, 1820, 489, 1820, 1820, 1820, 1820, 1820, 1820, 1820, 489, 1820, 1820, 1820, 1820, 1820, 1820, 1820, 489, 1820, 1820, 1820, 1820, 1820, 1820, 1820, 489, 1820, 1820, 1820, 1820, 1820, 1820, 1820, 489, 1820, 1820, 1820, 1820, 1820, 1820, 1820, 489, 1820, 1820, 1820, 1820, 1820, 1820, 1820, 489, 1820, 1820, 1820, 1820, 1820, 1820, 1820, 489, 1820, 1820, 1820, 1821, 1821, 1821, 1821, 491, 1821, 1821, 1821, 1821, 1821, 1821, 1821, 491, 1821, 1821, 1821, 1821, 1821, 1821, 1821, 491, 1821, 1821, 1821, 1821, 1821, 1821, 1821, 491, 1821, 1821, 1821, 1821, 1821, 1821, 1821, 491, 1821, 1821, 1821, 1821, 1821, 1821, 1821, 491, 1821, 1821, 1821, 1821, 1821, 1821, 1821, 491, 1821, 1821, 1821, 1821, 1821, 1821, 1821, 491, 1821, 1821, 1821, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr998:
+tr992:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -23745,37 +23725,37 @@ st587:
 		goto _test_eof587;
 case 587:
 	switch( (*p) ) {
-		case 6u: goto tr967;
-		case 64u: goto tr967;
+		case 6u: goto tr961;
+		case 64u: goto tr961;
 	}
 	if ( (*p) < 92u ) {
 		if ( (*p) < 12u ) {
 			if ( 8u <= (*p) && (*p) <= 9u )
-				goto tr967;
+				goto tr961;
 		} else if ( (*p) > 13u ) {
 			if ( (*p) > 73u ) {
 				if ( 74u <= (*p) && (*p) <= 75u )
-					goto tr1006;
+					goto tr1000;
 			} else if ( (*p) >= 72u )
-				goto tr1005;
+				goto tr999;
 		} else
-			goto tr967;
+			goto tr961;
 	} else if ( (*p) > 95u ) {
 		if ( (*p) < 108u ) {
 			if ( 104u <= (*p) && (*p) <= 105u )
-				goto tr1007;
+				goto tr1001;
 		} else if ( (*p) > 109u ) {
 			if ( (*p) > 121u ) {
 				if ( 124u <= (*p) && (*p) <= 125u )
-					goto tr1007;
+					goto tr1001;
 			} else if ( (*p) >= 120u )
-				goto tr1007;
+				goto tr1001;
 		} else
-			goto tr1007;
+			goto tr1001;
 	} else
-		goto tr1007;
+		goto tr1001;
 	goto tr42;
-tr999:
+tr993:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -23785,56 +23765,56 @@ st588:
 		goto _test_eof588;
 case 588:
 	switch( (*p) ) {
-		case 22u: goto tr1013;
-		case 23u: goto tr1014;
-		case 29u: goto tr1015;
+		case 22u: goto tr1007;
+		case 23u: goto tr1008;
+		case 29u: goto tr1009;
 		case 32u: goto st562;
-		case 68u: goto tr1004;
-		case 223u: goto tr1008;
+		case 68u: goto tr998;
+		case 223u: goto tr1002;
 	}
 	if ( (*p) < 72u ) {
 		if ( (*p) < 20u ) {
 			if ( (*p) > 5u ) {
 				if ( 8u <= (*p) && (*p) <= 15u )
-					goto tr967;
+					goto tr961;
 			} else if ( (*p) >= 4u )
-				goto tr967;
+				goto tr961;
 		} else if ( (*p) > 21u ) {
 			if ( (*p) > 34u ) {
 				if ( 64u <= (*p) && (*p) <= 66u )
-					goto tr967;
+					goto tr961;
 			} else if ( (*p) >= 33u )
-				goto tr967;
+				goto tr961;
 		} else
 			goto st589;
 	} else if ( (*p) > 73u ) {
 		if ( (*p) < 96u ) {
 			if ( (*p) > 76u ) {
 				if ( 92u <= (*p) && (*p) <= 95u )
-					goto tr1007;
+					goto tr1001;
 			} else if ( (*p) >= 74u )
-				goto tr1006;
+				goto tr1000;
 		} else if ( (*p) > 99u ) {
 			if ( (*p) > 111u ) {
 				if ( 120u <= (*p) && (*p) <= 127u )
-					goto tr1007;
+					goto tr1001;
 			} else if ( (*p) >= 104u )
-				goto tr1007;
+				goto tr1001;
 		} else
-			goto tr967;
+			goto tr961;
 	} else
-		goto tr1005;
+		goto tr999;
 	goto tr42;
 st589:
 	if ( ++p == pe )
 		goto _test_eof589;
 case 589:
 	{
-		static const unsigned short jump_table[] = { 1792, 1792, 1792, 1792, 1649, 858, 1792, 1792, 1792, 1792, 1792, 1792, 1649, 858, 1792, 1792, 1792, 1792, 1792, 1792, 1649, 858, 1792, 1792, 1792, 1792, 1792, 1792, 1649, 858, 1792, 1792, 1792, 1792, 1792, 1792, 1649, 858, 1792, 1792, 1792, 1792, 1792, 1792, 1649, 858, 1792, 1792, 1792, 1792, 1792, 1792, 1649, 858, 1792, 1792, 1792, 1792, 1792, 1792, 1649, 858, 1792, 1792, 1793, 1793, 1793, 1793, 1650, 1793, 1793, 1793, 1793, 1793, 1793, 1793, 1650, 1793, 1793, 1793, 1793, 1793, 1793, 1793, 1650, 1793, 1793, 1793, 1793, 1793, 1793, 1793, 1650, 1793, 1793, 1793, 1793, 1793, 1793, 1793, 1650, 1793, 1793, 1793, 1793, 1793, 1793, 1793, 1650, 1793, 1793, 1793, 1793, 1793, 1793, 1793, 1650, 1793, 1793, 1793, 1793, 1793, 1793, 1793, 1650, 1793, 1793, 1793, 1794, 1794, 1794, 1794, 1651, 1794, 1794, 1794, 1794, 1794, 1794, 1794, 1651, 1794, 1794, 1794, 1794, 1794, 1794, 1794, 1651, 1794, 1794, 1794, 1794, 1794, 1794, 1794, 1651, 1794, 1794, 1794, 1794, 1794, 1794, 1794, 1651, 1794, 1794, 1794, 1794, 1794, 1794, 1794, 1651, 1794, 1794, 1794, 1794, 1794, 1794, 1794, 1651, 1794, 1794, 1794, 1794, 1794, 1794, 1794, 1651, 1794, 1794, 1794, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832, 1832 };
+		static const unsigned short jump_table[] = { 1786, 1786, 1786, 1786, 1643, 858, 1786, 1786, 1786, 1786, 1786, 1786, 1643, 858, 1786, 1786, 1786, 1786, 1786, 1786, 1643, 858, 1786, 1786, 1786, 1786, 1786, 1786, 1643, 858, 1786, 1786, 1786, 1786, 1786, 1786, 1643, 858, 1786, 1786, 1786, 1786, 1786, 1786, 1643, 858, 1786, 1786, 1786, 1786, 1786, 1786, 1643, 858, 1786, 1786, 1786, 1786, 1786, 1786, 1643, 858, 1786, 1786, 1787, 1787, 1787, 1787, 1644, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1644, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1644, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1644, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1644, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1644, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1644, 1787, 1787, 1787, 1787, 1787, 1787, 1787, 1644, 1787, 1787, 1787, 1788, 1788, 1788, 1788, 1645, 1788, 1788, 1788, 1788, 1788, 1788, 1788, 1645, 1788, 1788, 1788, 1788, 1788, 1788, 1788, 1645, 1788, 1788, 1788, 1788, 1788, 1788, 1788, 1645, 1788, 1788, 1788, 1788, 1788, 1788, 1788, 1645, 1788, 1788, 1788, 1788, 1788, 1788, 1788, 1645, 1788, 1788, 1788, 1788, 1788, 1788, 1788, 1645, 1788, 1788, 1788, 1788, 1788, 1788, 1788, 1645, 1788, 1788, 1788, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 1826 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1013:
+tr1007:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -23842,7 +23822,7 @@ tr1013:
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
 	goto st590;
-tr1017:
+tr1011:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -23859,7 +23839,7 @@ case 590:
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1014:
+tr1008:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -23873,7 +23853,7 @@ case 591:
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1000:
+tr994:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -23883,43 +23863,43 @@ st592:
 		goto _test_eof592;
 case 592:
 	switch( (*p) ) {
-		case 29u: goto tr1015;
-		case 64u: goto tr967;
+		case 29u: goto tr1009;
+		case 64u: goto tr961;
 	}
 	if ( (*p) < 74u ) {
 		if ( (*p) < 12u ) {
 			if ( (*p) > 6u ) {
 				if ( 8u <= (*p) && (*p) <= 9u )
-					goto tr967;
+					goto tr961;
 			} else if ( (*p) >= 4u )
-				goto tr967;
+				goto tr961;
 		} else if ( (*p) > 13u ) {
 			if ( (*p) > 25u ) {
 				if ( 72u <= (*p) && (*p) <= 73u )
-					goto tr1005;
+					goto tr999;
 			} else if ( (*p) >= 24u )
-				goto tr967;
+				goto tr961;
 		} else
-			goto tr967;
+			goto tr961;
 	} else if ( (*p) > 75u ) {
 		if ( (*p) < 108u ) {
 			if ( (*p) > 95u ) {
 				if ( 104u <= (*p) && (*p) <= 105u )
-					goto tr1007;
+					goto tr1001;
 			} else if ( (*p) >= 92u )
-				goto tr1007;
+				goto tr1001;
 		} else if ( (*p) > 109u ) {
 			if ( (*p) > 121u ) {
 				if ( 124u <= (*p) && (*p) <= 125u )
-					goto tr1007;
+					goto tr1001;
 			} else if ( (*p) >= 120u )
-				goto tr1007;
+				goto tr1001;
 		} else
-			goto tr1007;
+			goto tr1001;
 	} else
-		goto tr1006;
+		goto tr1000;
 	goto tr42;
-tr1001:
+tr995:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -23930,17 +23910,17 @@ st593:
 case 593:
 	if ( (*p) < 92u ) {
 		if ( 72u <= (*p) && (*p) <= 73u )
-			goto tr1005;
+			goto tr999;
 	} else if ( (*p) > 95u ) {
 		if ( (*p) > 111u ) {
 			if ( 120u <= (*p) && (*p) <= 127u )
-				goto tr1007;
+				goto tr1001;
 		} else if ( (*p) >= 104u )
-			goto tr1007;
+			goto tr1001;
 	} else
-		goto tr1007;
+		goto tr1001;
 	goto tr42;
-tr1002:
+tr996:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -23952,22 +23932,22 @@ case 594:
 	if ( (*p) < 104u ) {
 		if ( (*p) > 73u ) {
 			if ( 92u <= (*p) && (*p) <= 95u )
-				goto tr1007;
+				goto tr1001;
 		} else if ( (*p) >= 72u )
-			goto tr1005;
+			goto tr999;
 	} else if ( (*p) > 105u ) {
 		if ( (*p) < 120u ) {
 			if ( 108u <= (*p) && (*p) <= 109u )
-				goto tr1007;
+				goto tr1001;
 		} else if ( (*p) > 121u ) {
 			if ( 124u <= (*p) && (*p) <= 125u )
-				goto tr1007;
+				goto tr1001;
 		} else
-			goto tr1007;
+			goto tr1001;
 	} else
-		goto tr1007;
+		goto tr1001;
 	goto tr42;
-tr1003:
+tr997:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -23977,22 +23957,22 @@ st595:
 		goto _test_eof595;
 case 595:
 	switch( (*p) ) {
-		case 22u: goto tr1017;
-		case 34u: goto tr967;
+		case 22u: goto tr1011;
+		case 34u: goto tr961;
 	}
 	if ( (*p) < 92u ) {
 		if ( 72u <= (*p) && (*p) <= 73u )
-			goto tr1005;
+			goto tr999;
 	} else if ( (*p) > 95u ) {
 		if ( (*p) > 111u ) {
 			if ( 120u <= (*p) && (*p) <= 127u )
-				goto tr1007;
+				goto tr1001;
 		} else if ( (*p) >= 104u )
-			goto tr1007;
+			goto tr1001;
 	} else
-		goto tr1007;
+		goto tr1001;
 	goto tr42;
-tr795:
+tr789:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -24002,16 +23982,16 @@ st596:
 		goto _test_eof596;
 case 596:
 	{
-		static const unsigned short jump_table[] = { 1834, 1835, 1836, 1837, 1838, 1839, 1766, 1840, 1834, 1835, 1836, 1837, 1838, 1839, 1766, 1840, 1834, 1835, 1836, 1837, 1838, 1839, 1766, 1840, 1834, 1835, 1836, 1837, 1838, 1839, 1766, 1840, 1834, 1835, 1836, 1837, 1838, 1839, 1766, 1840, 1834, 1835, 1836, 1837, 1838, 1839, 1766, 1840, 1834, 1835, 1836, 1837, 1838, 1839, 1766, 1840, 1834, 1835, 1836, 1837, 1838, 1839, 1766, 1840, 1834, 1835, 1836, 1837, 1838, 1839, 1766, 1840, 1834, 1835, 1836, 1837, 1838, 1839, 1766, 1840, 1834, 1835, 1836, 1837, 1838, 1839, 1766, 1840, 1834, 1835, 1836, 1837, 1838, 1839, 1766, 1840, 1834, 1835, 1836, 1837, 1838, 1839, 1766, 1840, 1834, 1835, 1836, 1837, 1838, 1839, 1766, 1840, 1834, 1835, 1836, 1837, 1838, 1839, 1766, 1840, 1841, 1842, 1843, 1844, 1845, 1846, 1847, 1848, 858, 858, 1849, 1849, 858, 858, 858, 858, 858, 858, 1849, 1849, 858, 858, 858, 858, 858, 858, 1849, 1849, 858, 858, 858, 858, 858, 858, 1849, 1849, 858, 858, 858, 858, 858, 858, 1849, 1849, 858, 858, 858, 858, 858, 858, 1849, 1849, 858, 858, 858, 858, 858, 858, 1849, 1849, 858, 858, 858, 858, 858, 858, 1849, 1849, 858, 858, 858, 858, 858, 858, 1849, 1849, 858, 858, 858, 858, 858, 858, 1849, 1849, 858, 858, 858, 858, 858, 858, 1849, 1849, 858, 858, 858, 858, 858, 858, 1849, 1849, 858, 858, 858, 858, 858, 858, 1849, 1849, 858, 858, 858, 858, 858, 858, 1849, 1849, 858, 858, 858, 858, 858, 858, 1849, 1849, 858, 858, 858, 858, 858, 1850, 1851, 1851, 858, 1852, 858, 858 };
+		static const unsigned short jump_table[] = { 1828, 1829, 1830, 1831, 1832, 1833, 1760, 1834, 1828, 1829, 1830, 1831, 1832, 1833, 1760, 1834, 1828, 1829, 1830, 1831, 1832, 1833, 1760, 1834, 1828, 1829, 1830, 1831, 1832, 1833, 1760, 1834, 1828, 1829, 1830, 1831, 1832, 1833, 1760, 1834, 1828, 1829, 1830, 1831, 1832, 1833, 1760, 1834, 1828, 1829, 1830, 1831, 1832, 1833, 1760, 1834, 1828, 1829, 1830, 1831, 1832, 1833, 1760, 1834, 1828, 1829, 1830, 1831, 1832, 1833, 1760, 1834, 1828, 1829, 1830, 1831, 1832, 1833, 1760, 1834, 1828, 1829, 1830, 1831, 1832, 1833, 1760, 1834, 1828, 1829, 1830, 1831, 1832, 1833, 1760, 1834, 1828, 1829, 1830, 1831, 1832, 1833, 1760, 1834, 1828, 1829, 1830, 1831, 1832, 1833, 1760, 1834, 1828, 1829, 1830, 1831, 1832, 1833, 1760, 1834, 1835, 1836, 1837, 1838, 1839, 1840, 1841, 1842, 858, 858, 1843, 1843, 858, 858, 858, 858, 858, 858, 1843, 1843, 858, 858, 858, 858, 858, 858, 1843, 1843, 858, 858, 858, 858, 858, 858, 1843, 1843, 858, 858, 858, 858, 858, 858, 1843, 1843, 858, 858, 858, 858, 858, 858, 1843, 1843, 858, 858, 858, 858, 858, 858, 1843, 1843, 858, 858, 858, 858, 858, 858, 1843, 1843, 858, 858, 858, 858, 858, 858, 1843, 1843, 858, 858, 858, 858, 858, 858, 1843, 1843, 858, 858, 858, 858, 858, 858, 1843, 1843, 858, 858, 858, 858, 858, 858, 1843, 1843, 858, 858, 858, 858, 858, 858, 1843, 1843, 858, 858, 858, 858, 858, 858, 1843, 1843, 858, 858, 858, 858, 858, 858, 1843, 1843, 858, 858, 858, 858, 858, 1844, 1845, 1845, 858, 1846, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1018:
+tr1012:
 	{
     SET_VEX_PREFIX3(*p);
   }
 	goto st597;
-tr1128:
+tr1122:
 	{
     /* This emulates two prefixes case. */
     SET_VEX_PREFIX2((p[0] & 0x80) | 0x61);
@@ -24025,22 +24005,22 @@ case 597:
 	switch( (*p) ) {
 		case 18u: goto st598;
 		case 22u: goto st598;
-		case 23u: goto tr1039;
-		case 81u: goto tr1038;
-		case 194u: goto tr1040;
-		case 198u: goto tr1040;
+		case 23u: goto tr1033;
+		case 81u: goto tr1032;
+		case 194u: goto tr1034;
+		case 198u: goto tr1034;
 	}
 	if ( (*p) < 46u ) {
 		if ( 20u <= (*p) && (*p) <= 21u )
-			goto tr1038;
+			goto tr1032;
 	} else if ( (*p) > 47u ) {
 		if ( (*p) > 89u ) {
 			if ( 92u <= (*p) && (*p) <= 95u )
-				goto tr1038;
+				goto tr1032;
 		} else if ( (*p) >= 84u )
-			goto tr1038;
+			goto tr1032;
 	} else
-		goto tr1038;
+		goto tr1032;
 	goto tr42;
 st598:
 	if ( ++p == pe )
@@ -24048,15 +24028,15 @@ st598:
 case 598:
 	{
 		static const unsigned char jump_table[] = { 138, 138, 138, 138, 76, 211, 138, 138, 138, 138, 138, 138, 76, 211, 138, 138, 138, 138, 138, 138, 76, 211, 138, 138, 138, 138, 138, 138, 76, 211, 138, 138, 138, 138, 138, 138, 76, 211, 138, 138, 138, 138, 138, 138, 76, 211, 138, 138, 138, 138, 138, 138, 76, 211, 138, 138, 138, 138, 138, 138, 76, 211, 138, 138, 139, 139, 139, 139, 0, 139, 139, 139, 139, 139, 139, 139, 0, 139, 139, 139, 139, 139, 139, 139, 0, 139, 139, 139, 139, 139, 139, 139, 0, 139, 139, 139, 139, 139, 139, 139, 0, 139, 139, 139, 139, 139, 139, 139, 0, 139, 139, 139, 139, 139, 139, 139, 0, 139, 139, 139, 139, 139, 139, 139, 0, 139, 139, 139, 140, 140, 140, 140, 1, 140, 140, 140, 140, 140, 140, 140, 1, 140, 140, 140, 140, 140, 140, 140, 1, 140, 140, 140, 140, 140, 140, 140, 1, 140, 140, 140, 140, 140, 140, 140, 1, 140, 140, 140, 140, 140, 140, 140, 1, 140, 140, 140, 140, 140, 140, 140, 1, 140, 140, 140, 140, 140, 140, 140, 1, 140, 140, 140, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141, 141 };
-		cs = jump_table[(*p)] + 1646;
+		cs = jump_table[(*p)] + 1640;
 		goto _again;
 	}
-tr1019:
+tr1013:
 	{
     SET_VEX_PREFIX3(*p);
   }
 	goto st599;
-tr1129:
+tr1123:
 	{
     /* This emulates two prefixes case. */
     SET_VEX_PREFIX2((p[0] & 0x80) | 0x61);
@@ -24068,48 +24048,48 @@ st599:
 		goto _test_eof599;
 case 599:
 	switch( (*p) ) {
-		case 18u: goto tr1039;
-		case 81u: goto tr1038;
-		case 194u: goto tr1040;
-		case 198u: goto tr1040;
+		case 18u: goto tr1033;
+		case 81u: goto tr1032;
+		case 194u: goto tr1034;
+		case 198u: goto tr1034;
 	}
 	if ( (*p) < 116u ) {
 		if ( (*p) < 46u ) {
 			if ( (*p) > 21u ) {
 				if ( 22u <= (*p) && (*p) <= 23u )
-					goto tr1039;
+					goto tr1033;
 			} else if ( (*p) >= 20u )
-				goto tr1038;
+				goto tr1032;
 		} else if ( (*p) > 47u ) {
 			if ( (*p) > 89u ) {
 				if ( 92u <= (*p) && (*p) <= 109u )
-					goto tr1038;
+					goto tr1032;
 			} else if ( (*p) >= 84u )
-				goto tr1038;
+				goto tr1032;
 		} else
-			goto tr1038;
+			goto tr1032;
 	} else if ( (*p) > 118u ) {
 		if ( (*p) < 216u ) {
 			if ( (*p) > 125u ) {
 				if ( 208u <= (*p) && (*p) <= 213u )
-					goto tr1038;
+					goto tr1032;
 			} else if ( (*p) >= 124u )
-				goto tr1038;
+				goto tr1032;
 		} else if ( (*p) > 229u ) {
 			if ( (*p) < 241u ) {
 				if ( 232u <= (*p) && (*p) <= 239u )
-					goto tr1038;
+					goto tr1032;
 			} else if ( (*p) > 246u ) {
 				if ( 248u <= (*p) && (*p) <= 254u )
-					goto tr1038;
+					goto tr1032;
 			} else
-				goto tr1038;
+				goto tr1032;
 		} else
-			goto tr1038;
+			goto tr1032;
 	} else
-		goto tr1038;
+		goto tr1032;
 	goto tr42;
-tr1020:
+tr1014:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -24119,18 +24099,18 @@ st600:
 		goto _test_eof600;
 case 600:
 	switch( (*p) ) {
-		case 42u: goto tr1038;
-		case 81u: goto tr1038;
-		case 83u: goto tr1038;
-		case 194u: goto tr1040;
+		case 42u: goto tr1032;
+		case 81u: goto tr1032;
+		case 83u: goto tr1032;
+		case 194u: goto tr1034;
 	}
 	if ( (*p) > 90u ) {
 		if ( 92u <= (*p) && (*p) <= 95u )
-			goto tr1038;
+			goto tr1032;
 	} else if ( (*p) >= 88u )
-		goto tr1038;
+		goto tr1032;
 	goto tr42;
-tr1021:
+tr1015:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -24140,26 +24120,26 @@ st601:
 		goto _test_eof601;
 case 601:
 	switch( (*p) ) {
-		case 42u: goto tr1038;
-		case 81u: goto tr1038;
-		case 194u: goto tr1040;
-		case 208u: goto tr1038;
+		case 42u: goto tr1032;
+		case 81u: goto tr1032;
+		case 194u: goto tr1034;
+		case 208u: goto tr1032;
 	}
 	if ( (*p) < 92u ) {
 		if ( 88u <= (*p) && (*p) <= 90u )
-			goto tr1038;
+			goto tr1032;
 	} else if ( (*p) > 95u ) {
 		if ( 124u <= (*p) && (*p) <= 125u )
-			goto tr1038;
+			goto tr1032;
 	} else
-		goto tr1038;
+		goto tr1032;
 	goto tr42;
-tr1022:
+tr1016:
 	{
     SET_VEX_PREFIX3(*p);
   }
 	goto st602;
-tr1132:
+tr1126:
 	{
     /* This emulates two prefixes case. */
     SET_VEX_PREFIX2((p[0] & 0x80) | 0x61);
@@ -24171,25 +24151,25 @@ st602:
 		goto _test_eof602;
 case 602:
 	switch( (*p) ) {
-		case 81u: goto tr1038;
-		case 194u: goto tr1040;
-		case 198u: goto tr1040;
+		case 81u: goto tr1032;
+		case 194u: goto tr1034;
+		case 198u: goto tr1034;
 	}
 	if ( (*p) < 84u ) {
 		if ( 20u <= (*p) && (*p) <= 21u )
-			goto tr1038;
+			goto tr1032;
 	} else if ( (*p) > 89u ) {
 		if ( 92u <= (*p) && (*p) <= 95u )
-			goto tr1038;
+			goto tr1032;
 	} else
-		goto tr1038;
+		goto tr1032;
 	goto tr42;
-tr1023:
+tr1017:
 	{
     SET_VEX_PREFIX3(*p);
   }
 	goto st603;
-tr1133:
+tr1127:
 	{
     /* This emulates two prefixes case. */
     SET_VEX_PREFIX2((p[0] & 0x80) | 0x61);
@@ -24201,29 +24181,29 @@ st603:
 		goto _test_eof603;
 case 603:
 	switch( (*p) ) {
-		case 81u: goto tr1038;
-		case 194u: goto tr1040;
-		case 198u: goto tr1040;
-		case 208u: goto tr1038;
+		case 81u: goto tr1032;
+		case 194u: goto tr1034;
+		case 198u: goto tr1034;
+		case 208u: goto tr1032;
 	}
 	if ( (*p) < 84u ) {
 		if ( 20u <= (*p) && (*p) <= 21u )
-			goto tr1038;
+			goto tr1032;
 	} else if ( (*p) > 89u ) {
 		if ( (*p) > 95u ) {
 			if ( 124u <= (*p) && (*p) <= 125u )
-				goto tr1038;
+				goto tr1032;
 		} else if ( (*p) >= 92u )
-			goto tr1038;
+			goto tr1032;
 	} else
-		goto tr1038;
+		goto tr1032;
 	goto tr42;
-tr1024:
+tr1018:
 	{
     SET_VEX_PREFIX3(*p);
   }
 	goto st604;
-tr1135:
+tr1129:
 	{
     /* This emulates two prefixes case. */
     SET_VEX_PREFIX2((p[0] & 0x80) | 0x61);
@@ -24235,19 +24215,19 @@ st604:
 		goto _test_eof604;
 case 604:
 	if ( (*p) == 208u )
-		goto tr1038;
+		goto tr1032;
 	if ( (*p) > 17u ) {
 		if ( 124u <= (*p) && (*p) <= 125u )
-			goto tr1038;
+			goto tr1032;
 	} else if ( (*p) >= 16u )
-		goto tr972;
+		goto tr966;
 	goto tr42;
-tr1025:
+tr1019:
 	{
     SET_VEX_PREFIX3(*p);
   }
 	goto st605;
-tr1136:
+tr1130:
 	{
     /* This emulates two prefixes case. */
     SET_VEX_PREFIX2((p[0] & 0x80) | 0x61);
@@ -24260,32 +24240,32 @@ st605:
 case 605:
 	switch( (*p) ) {
 		case 18u: goto st598;
-		case 19u: goto tr1039;
+		case 19u: goto tr1033;
 		case 22u: goto st598;
-		case 23u: goto tr1039;
-		case 43u: goto tr1039;
-		case 80u: goto tr973;
-		case 194u: goto tr1040;
-		case 198u: goto tr1040;
+		case 23u: goto tr1033;
+		case 43u: goto tr1033;
+		case 80u: goto tr967;
+		case 194u: goto tr1034;
+		case 198u: goto tr1034;
 	}
 	if ( (*p) < 40u ) {
 		if ( 16u <= (*p) && (*p) <= 21u )
-			goto tr1038;
+			goto tr1032;
 	} else if ( (*p) > 41u ) {
 		if ( (*p) > 47u ) {
 			if ( 81u <= (*p) && (*p) <= 95u )
-				goto tr1038;
+				goto tr1032;
 		} else if ( (*p) >= 46u )
-			goto tr1038;
+			goto tr1032;
 	} else
-		goto tr1038;
+		goto tr1032;
 	goto tr42;
-tr1026:
+tr1020:
 	{
     SET_VEX_PREFIX3(*p);
   }
 	goto st606;
-tr1137:
+tr1131:
 	{
     /* This emulates two prefixes case. */
     SET_VEX_PREFIX2((p[0] & 0x80) | 0x61);
@@ -24297,7 +24277,7 @@ st606:
 		goto _test_eof606;
 case 606:
 	{
-		static const unsigned short jump_table[] = { 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1854, 1854, 1855, 1855, 1854, 1854, 1855, 1855, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1854, 1854, 858, 1855, 858, 858, 1854, 1854, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1789, 1854, 858, 858, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1856, 858, 858, 858, 1854, 1854, 1854, 858, 858, 858, 858, 858, 1854, 1854, 858, 1854, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1856, 858, 607, 1791, 1856, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1854, 1854, 1854, 1854, 1854, 1854, 858, 1789, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1855, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 858, 1854, 1854, 1854, 1854, 1854, 1854, 1788, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 858 };
+		static const unsigned short jump_table[] = { 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1848, 1848, 1849, 1849, 1848, 1848, 1849, 1849, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1848, 1848, 858, 1849, 858, 858, 1848, 1848, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1783, 1848, 858, 858, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1850, 858, 858, 858, 1848, 1848, 1848, 858, 858, 858, 858, 858, 1848, 1848, 858, 1848, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1850, 858, 607, 1785, 1850, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1848, 1848, 1848, 1848, 1848, 1848, 858, 1783, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1849, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 858, 1848, 1848, 1848, 1848, 1848, 1848, 1782, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -24307,10 +24287,10 @@ st607:
 case 607:
 	{
 		static const unsigned char jump_table[] = { 142, 142, 142, 142, 74, 209, 142, 142, 142, 142, 142, 142, 74, 209, 142, 142, 142, 142, 142, 142, 74, 209, 142, 142, 142, 142, 142, 142, 74, 209, 142, 142, 142, 142, 142, 142, 74, 209, 142, 142, 142, 142, 142, 142, 74, 209, 142, 142, 142, 142, 142, 142, 74, 209, 142, 142, 142, 142, 142, 142, 74, 209, 142, 142, 143, 143, 143, 143, 0, 143, 143, 143, 143, 143, 143, 143, 0, 143, 143, 143, 143, 143, 143, 143, 0, 143, 143, 143, 143, 143, 143, 143, 0, 143, 143, 143, 143, 143, 143, 143, 0, 143, 143, 143, 143, 143, 143, 143, 0, 143, 143, 143, 143, 143, 143, 143, 0, 143, 143, 143, 143, 143, 143, 143, 0, 143, 143, 143, 144, 144, 144, 144, 1, 144, 144, 144, 144, 144, 144, 144, 1, 144, 144, 144, 144, 144, 144, 144, 1, 144, 144, 144, 144, 144, 144, 144, 1, 144, 144, 144, 144, 144, 144, 144, 1, 144, 144, 144, 144, 144, 144, 144, 1, 144, 144, 144, 144, 144, 144, 144, 1, 144, 144, 144, 144, 144, 144, 144, 1, 144, 144, 144, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145, 145 };
-		cs = jump_table[(*p)] + 1650;
+		cs = jump_table[(*p)] + 1644;
 		goto _again;
 	}
-tr1027:
+tr1021:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -24320,30 +24300,30 @@ st608:
 		goto _test_eof608;
 case 608:
 	switch( (*p) ) {
-		case 18u: goto tr1038;
-		case 22u: goto tr1038;
-		case 42u: goto tr1038;
-		case 111u: goto tr1038;
-		case 112u: goto tr1040;
-		case 194u: goto tr1040;
-		case 230u: goto tr1038;
+		case 18u: goto tr1032;
+		case 22u: goto tr1032;
+		case 42u: goto tr1032;
+		case 111u: goto tr1032;
+		case 112u: goto tr1034;
+		case 194u: goto tr1034;
+		case 230u: goto tr1032;
 	}
 	if ( (*p) < 81u ) {
 		if ( (*p) > 17u ) {
 			if ( 44u <= (*p) && (*p) <= 45u )
-				goto tr1044;
+				goto tr1038;
 		} else if ( (*p) >= 16u )
-			goto tr1039;
+			goto tr1033;
 	} else if ( (*p) > 83u ) {
 		if ( (*p) > 95u ) {
 			if ( 126u <= (*p) && (*p) <= 127u )
-				goto tr1038;
+				goto tr1032;
 		} else if ( (*p) >= 88u )
-			goto tr1038;
+			goto tr1032;
 	} else
-		goto tr1038;
+		goto tr1032;
 	goto tr42;
-tr1028:
+tr1022:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -24353,36 +24333,36 @@ st609:
 		goto _test_eof609;
 case 609:
 	switch( (*p) ) {
-		case 18u: goto tr1038;
-		case 42u: goto tr1038;
-		case 81u: goto tr1038;
-		case 112u: goto tr1040;
-		case 194u: goto tr1040;
-		case 208u: goto tr1038;
-		case 230u: goto tr1038;
-		case 240u: goto tr1039;
+		case 18u: goto tr1032;
+		case 42u: goto tr1032;
+		case 81u: goto tr1032;
+		case 112u: goto tr1034;
+		case 194u: goto tr1034;
+		case 208u: goto tr1032;
+		case 230u: goto tr1032;
+		case 240u: goto tr1033;
 	}
 	if ( (*p) < 88u ) {
 		if ( (*p) > 17u ) {
 			if ( 44u <= (*p) && (*p) <= 45u )
-				goto tr1044;
+				goto tr1038;
 		} else if ( (*p) >= 16u )
-			goto tr1039;
+			goto tr1033;
 	} else if ( (*p) > 90u ) {
 		if ( (*p) > 95u ) {
 			if ( 124u <= (*p) && (*p) <= 125u )
-				goto tr1038;
+				goto tr1032;
 		} else if ( (*p) >= 92u )
-			goto tr1038;
+			goto tr1032;
 	} else
-		goto tr1038;
+		goto tr1032;
 	goto tr42;
-tr1029:
+tr1023:
 	{
     SET_VEX_PREFIX3(*p);
   }
 	goto st610;
-tr1140:
+tr1134:
 	{
     /* This emulates two prefixes case. */
     SET_VEX_PREFIX2((p[0] & 0x80) | 0x61);
@@ -24394,29 +24374,29 @@ st610:
 		goto _test_eof610;
 case 610:
 	switch( (*p) ) {
-		case 43u: goto tr1039;
-		case 80u: goto tr973;
-		case 194u: goto tr1040;
-		case 198u: goto tr1040;
+		case 43u: goto tr1033;
+		case 80u: goto tr967;
+		case 194u: goto tr1034;
+		case 198u: goto tr1034;
 	}
 	if ( (*p) < 20u ) {
 		if ( 16u <= (*p) && (*p) <= 17u )
-			goto tr1038;
+			goto tr1032;
 	} else if ( (*p) > 21u ) {
 		if ( (*p) > 41u ) {
 			if ( 81u <= (*p) && (*p) <= 95u )
-				goto tr1038;
+				goto tr1032;
 		} else if ( (*p) >= 40u )
-			goto tr1038;
+			goto tr1032;
 	} else
-		goto tr1038;
+		goto tr1032;
 	goto tr42;
-tr1030:
+tr1024:
 	{
     SET_VEX_PREFIX3(*p);
   }
 	goto st611;
-tr1141:
+tr1135:
 	{
     /* This emulates two prefixes case. */
     SET_VEX_PREFIX2((p[0] & 0x80) | 0x61);
@@ -24428,38 +24408,38 @@ st611:
 		goto _test_eof611;
 case 611:
 	switch( (*p) ) {
-		case 43u: goto tr1039;
-		case 80u: goto tr973;
-		case 81u: goto tr1038;
-		case 126u: goto tr1045;
-		case 194u: goto tr1040;
-		case 198u: goto tr1040;
-		case 208u: goto tr1038;
-		case 214u: goto tr1038;
-		case 230u: goto tr1038;
-		case 231u: goto tr1039;
+		case 43u: goto tr1033;
+		case 80u: goto tr967;
+		case 81u: goto tr1032;
+		case 126u: goto tr1039;
+		case 194u: goto tr1034;
+		case 198u: goto tr1034;
+		case 208u: goto tr1032;
+		case 214u: goto tr1032;
+		case 230u: goto tr1032;
+		case 231u: goto tr1033;
 	}
 	if ( (*p) < 40u ) {
 		if ( (*p) > 17u ) {
 			if ( 20u <= (*p) && (*p) <= 21u )
-				goto tr1038;
+				goto tr1032;
 		} else if ( (*p) >= 16u )
-			goto tr1038;
+			goto tr1032;
 	} else if ( (*p) > 41u ) {
 		if ( (*p) > 95u ) {
 			if ( 124u <= (*p) && (*p) <= 127u )
-				goto tr1038;
+				goto tr1032;
 		} else if ( (*p) >= 84u )
-			goto tr1038;
+			goto tr1032;
 	} else
-		goto tr1038;
+		goto tr1032;
 	goto tr42;
-tr1031:
+tr1025:
 	{
     SET_VEX_PREFIX3(*p);
   }
 	goto st612;
-tr1142:
+tr1136:
 	{
     /* This emulates two prefixes case. */
     SET_VEX_PREFIX2((p[0] & 0x80) | 0x61);
@@ -24471,21 +24451,21 @@ st612:
 		goto _test_eof612;
 case 612:
 	switch( (*p) ) {
-		case 18u: goto tr1038;
-		case 22u: goto tr1038;
-		case 91u: goto tr1038;
-		case 127u: goto tr1038;
-		case 230u: goto tr1038;
+		case 18u: goto tr1032;
+		case 22u: goto tr1032;
+		case 91u: goto tr1032;
+		case 127u: goto tr1032;
+		case 230u: goto tr1032;
 	}
 	if ( 16u <= (*p) && (*p) <= 17u )
-		goto tr972;
+		goto tr966;
 	goto tr42;
-tr1032:
+tr1026:
 	{
     SET_VEX_PREFIX3(*p);
   }
 	goto st613;
-tr1143:
+tr1137:
 	{
     /* This emulates two prefixes case. */
     SET_VEX_PREFIX2((p[0] & 0x80) | 0x61);
@@ -24497,18 +24477,18 @@ st613:
 		goto _test_eof613;
 case 613:
 	switch( (*p) ) {
-		case 18u: goto tr1038;
-		case 208u: goto tr1038;
-		case 230u: goto tr1038;
-		case 240u: goto tr1039;
+		case 18u: goto tr1032;
+		case 208u: goto tr1032;
+		case 230u: goto tr1032;
+		case 240u: goto tr1033;
 	}
 	if ( (*p) > 17u ) {
 		if ( 124u <= (*p) && (*p) <= 125u )
-			goto tr1038;
+			goto tr1032;
 	} else if ( (*p) >= 16u )
-		goto tr972;
+		goto tr966;
 	goto tr42;
-tr1033:
+tr1027:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -24518,9 +24498,9 @@ st614:
 		goto _test_eof614;
 case 614:
 	if ( (*p) == 42u )
-		goto tr1038;
+		goto tr1032;
 	goto tr42;
-tr1034:
+tr1028:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -24530,9 +24510,9 @@ st615:
 		goto _test_eof615;
 case 615:
 	if ( (*p) == 110u )
-		goto tr1038;
+		goto tr1032;
 	goto tr42;
-tr1035:
+tr1029:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -24542,11 +24522,11 @@ st616:
 		goto _test_eof616;
 case 616:
 	if ( (*p) == 42u )
-		goto tr1038;
+		goto tr1032;
 	if ( 44u <= (*p) && (*p) <= 45u )
-		goto tr1046;
+		goto tr1040;
 	goto tr42;
-tr1036:
+tr1030:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -24556,9 +24536,9 @@ st617:
 		goto _test_eof617;
 case 617:
 	if ( (*p) == 126u )
-		goto tr1047;
+		goto tr1041;
 	goto tr42;
-tr796:
+tr790:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -24568,11 +24548,11 @@ st618:
 		goto _test_eof618;
 case 618:
 	{
-		static const unsigned short jump_table[] = { 1864, 1865, 858, 858, 858, 1866, 858, 858, 1864, 1865, 858, 858, 858, 1866, 858, 858, 1864, 1865, 858, 858, 858, 1866, 858, 858, 1864, 1865, 858, 858, 858, 1866, 858, 858, 1864, 1865, 858, 858, 858, 1866, 858, 858, 1864, 1865, 858, 858, 858, 1866, 858, 858, 1864, 1865, 858, 858, 858, 1866, 858, 858, 1864, 1865, 858, 858, 858, 1866, 858, 858, 1864, 1865, 858, 858, 858, 1866, 858, 858, 1864, 1865, 858, 858, 858, 1866, 858, 858, 1864, 1865, 858, 858, 858, 1866, 858, 858, 1864, 1865, 858, 858, 858, 1866, 858, 858, 1864, 1865, 858, 858, 858, 1866, 858, 858, 1864, 1865, 858, 858, 858, 1866, 858, 858, 1864, 1865, 858, 858, 858, 1866, 858, 858, 1864, 1867, 858, 858, 858, 1868, 858, 858, 1869, 1870, 858, 858, 858, 1871, 858, 858, 1869, 1870, 858, 858, 858, 1871, 858, 858, 1869, 1870, 858, 858, 858, 1871, 858, 858, 1869, 1870, 858, 858, 858, 1871, 858, 858, 1869, 1870, 858, 858, 858, 1871, 858, 858, 1869, 1870, 858, 858, 858, 1871, 858, 858, 1869, 1870, 858, 858, 858, 1871, 858, 858, 1869, 1870, 858, 858, 858, 1871, 858, 858, 1869, 1870, 858, 858, 858, 1871, 858, 858, 1869, 1870, 858, 858, 858, 1871, 858, 858, 1869, 1870, 858, 858, 858, 1871, 858, 858, 1869, 1870, 858, 858, 858, 1871, 858, 858, 1869, 1870, 858, 858, 858, 1871, 858, 858, 1869, 1870, 858, 858, 858, 1871, 858, 858, 1869, 1870, 858, 858, 858, 1871, 858, 858, 1869, 1870, 858, 858, 858, 1871, 858, 858 };
+		static const unsigned short jump_table[] = { 1858, 1859, 858, 858, 858, 1860, 858, 858, 1858, 1859, 858, 858, 858, 1860, 858, 858, 1858, 1859, 858, 858, 858, 1860, 858, 858, 1858, 1859, 858, 858, 858, 1860, 858, 858, 1858, 1859, 858, 858, 858, 1860, 858, 858, 1858, 1859, 858, 858, 858, 1860, 858, 858, 1858, 1859, 858, 858, 858, 1860, 858, 858, 1858, 1859, 858, 858, 858, 1860, 858, 858, 1858, 1859, 858, 858, 858, 1860, 858, 858, 1858, 1859, 858, 858, 858, 1860, 858, 858, 1858, 1859, 858, 858, 858, 1860, 858, 858, 1858, 1859, 858, 858, 858, 1860, 858, 858, 1858, 1859, 858, 858, 858, 1860, 858, 858, 1858, 1859, 858, 858, 858, 1860, 858, 858, 1858, 1859, 858, 858, 858, 1860, 858, 858, 1858, 1861, 858, 858, 858, 1862, 858, 858, 1863, 1864, 858, 858, 858, 1865, 858, 858, 1863, 1864, 858, 858, 858, 1865, 858, 858, 1863, 1864, 858, 858, 858, 1865, 858, 858, 1863, 1864, 858, 858, 858, 1865, 858, 858, 1863, 1864, 858, 858, 858, 1865, 858, 858, 1863, 1864, 858, 858, 858, 1865, 858, 858, 1863, 1864, 858, 858, 858, 1865, 858, 858, 1863, 1864, 858, 858, 858, 1865, 858, 858, 1863, 1864, 858, 858, 858, 1865, 858, 858, 1863, 1864, 858, 858, 858, 1865, 858, 858, 1863, 1864, 858, 858, 858, 1865, 858, 858, 1863, 1864, 858, 858, 858, 1865, 858, 858, 1863, 1864, 858, 858, 858, 1865, 858, 858, 1863, 1864, 858, 858, 858, 1865, 858, 858, 1863, 1864, 858, 858, 858, 1865, 858, 858, 1863, 1864, 858, 858, 858, 1865, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1048:
+tr1042:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -24582,11 +24562,11 @@ st619:
 		goto _test_eof619;
 case 619:
 	switch( (*p) ) {
-		case 242u: goto tr1056;
-		case 247u: goto tr1056;
+		case 242u: goto tr1050;
+		case 247u: goto tr1050;
 	}
 	goto tr42;
-tr1049:
+tr1043:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -24596,32 +24576,32 @@ st620:
 		goto _test_eof620;
 case 620:
 	if ( (*p) == 43u )
-		goto tr1038;
+		goto tr1032;
 	if ( (*p) < 55u ) {
 		if ( (*p) < 40u ) {
 			if ( (*p) <= 13u )
-				goto tr1038;
+				goto tr1032;
 		} else if ( (*p) > 41u ) {
 			if ( 44u <= (*p) && (*p) <= 47u )
-				goto tr1039;
+				goto tr1033;
 		} else
-			goto tr1038;
+			goto tr1032;
 	} else if ( (*p) > 64u ) {
 		if ( (*p) < 166u ) {
 			if ( 150u <= (*p) && (*p) <= 159u )
-				goto tr1057;
+				goto tr1051;
 		} else if ( (*p) > 175u ) {
 			if ( (*p) > 191u ) {
 				if ( 219u <= (*p) && (*p) <= 223u )
-					goto tr1058;
+					goto tr1052;
 			} else if ( (*p) >= 182u )
-				goto tr1057;
+				goto tr1051;
 		} else
-			goto tr1057;
+			goto tr1051;
 	} else
-		goto tr1038;
+		goto tr1032;
 	goto tr42;
-tr1050:
+tr1044:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -24631,32 +24611,32 @@ st621:
 		goto _test_eof621;
 case 621:
 	switch( (*p) ) {
-		case 154u: goto tr1057;
-		case 156u: goto tr1057;
-		case 158u: goto tr1057;
-		case 170u: goto tr1057;
-		case 172u: goto tr1057;
-		case 174u: goto tr1057;
-		case 186u: goto tr1057;
-		case 188u: goto tr1057;
-		case 190u: goto tr1057;
+		case 154u: goto tr1051;
+		case 156u: goto tr1051;
+		case 158u: goto tr1051;
+		case 170u: goto tr1051;
+		case 172u: goto tr1051;
+		case 174u: goto tr1051;
+		case 186u: goto tr1051;
+		case 188u: goto tr1051;
+		case 190u: goto tr1051;
 	}
 	if ( (*p) < 150u ) {
 		if ( (*p) > 13u ) {
 			if ( 44u <= (*p) && (*p) <= 47u )
-				goto tr1039;
+				goto tr1033;
 		} else if ( (*p) >= 12u )
-			goto tr1038;
+			goto tr1032;
 	} else if ( (*p) > 152u ) {
 		if ( (*p) > 168u ) {
 			if ( 182u <= (*p) && (*p) <= 184u )
-				goto tr1057;
+				goto tr1051;
 		} else if ( (*p) >= 166u )
-			goto tr1057;
+			goto tr1051;
 	} else
-		goto tr1057;
+		goto tr1051;
 	goto tr42;
-tr1051:
+tr1045:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -24666,45 +24646,45 @@ st622:
 		goto _test_eof622;
 case 622:
 	switch( (*p) ) {
-		case 19u: goto tr1059;
-		case 23u: goto tr1038;
-		case 24u: goto tr1039;
-		case 42u: goto tr1039;
+		case 19u: goto tr1053;
+		case 23u: goto tr1032;
+		case 24u: goto tr1033;
+		case 42u: goto tr1033;
 	}
 	if ( (*p) < 48u ) {
 		if ( (*p) < 32u ) {
 			if ( (*p) > 15u ) {
 				if ( 28u <= (*p) && (*p) <= 30u )
-					goto tr1038;
+					goto tr1032;
 			} else
-				goto tr1038;
+				goto tr1032;
 		} else if ( (*p) > 37u ) {
 			if ( (*p) > 43u ) {
 				if ( 44u <= (*p) && (*p) <= 47u )
-					goto tr1039;
+					goto tr1033;
 			} else if ( (*p) >= 40u )
-				goto tr1038;
+				goto tr1032;
 		} else
-			goto tr1038;
+			goto tr1032;
 	} else if ( (*p) > 53u ) {
 		if ( (*p) < 166u ) {
 			if ( (*p) > 65u ) {
 				if ( 150u <= (*p) && (*p) <= 159u )
-					goto tr1057;
+					goto tr1051;
 			} else if ( (*p) >= 55u )
-				goto tr1038;
+				goto tr1032;
 		} else if ( (*p) > 175u ) {
 			if ( (*p) > 191u ) {
 				if ( 219u <= (*p) && (*p) <= 223u )
-					goto tr1058;
+					goto tr1052;
 			} else if ( (*p) >= 182u )
-				goto tr1057;
+				goto tr1051;
 		} else
-			goto tr1057;
+			goto tr1051;
 	} else
-		goto tr1038;
+		goto tr1032;
 	goto tr42;
-tr1052:
+tr1046:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -24714,37 +24694,37 @@ st623:
 		goto _test_eof623;
 case 623:
 	switch( (*p) ) {
-		case 19u: goto tr1059;
-		case 23u: goto tr1038;
-		case 154u: goto tr1057;
-		case 156u: goto tr1057;
-		case 158u: goto tr1057;
-		case 170u: goto tr1057;
-		case 172u: goto tr1057;
-		case 174u: goto tr1057;
-		case 186u: goto tr1057;
-		case 188u: goto tr1057;
-		case 190u: goto tr1057;
+		case 19u: goto tr1053;
+		case 23u: goto tr1032;
+		case 154u: goto tr1051;
+		case 156u: goto tr1051;
+		case 158u: goto tr1051;
+		case 170u: goto tr1051;
+		case 172u: goto tr1051;
+		case 174u: goto tr1051;
+		case 186u: goto tr1051;
+		case 188u: goto tr1051;
+		case 190u: goto tr1051;
 	}
 	if ( (*p) < 44u ) {
 		if ( (*p) > 15u ) {
 			if ( 24u <= (*p) && (*p) <= 26u )
-				goto tr1039;
+				goto tr1033;
 		} else if ( (*p) >= 12u )
-			goto tr1038;
+			goto tr1032;
 	} else if ( (*p) > 47u ) {
 		if ( (*p) < 166u ) {
 			if ( 150u <= (*p) && (*p) <= 152u )
-				goto tr1057;
+				goto tr1051;
 		} else if ( (*p) > 168u ) {
 			if ( 182u <= (*p) && (*p) <= 184u )
-				goto tr1057;
+				goto tr1051;
 		} else
-			goto tr1057;
+			goto tr1051;
 	} else
-		goto tr1039;
+		goto tr1033;
 	goto tr42;
-tr1053:
+tr1047:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -24754,11 +24734,11 @@ st624:
 		goto _test_eof624;
 case 624:
 	switch( (*p) ) {
-		case 242u: goto tr1060;
-		case 247u: goto tr1060;
+		case 242u: goto tr1054;
+		case 247u: goto tr1054;
 	}
 	goto tr42;
-tr1054:
+tr1048:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -24769,14 +24749,14 @@ st625:
 case 625:
 	if ( (*p) < 166u ) {
 		if ( 150u <= (*p) && (*p) <= 159u )
-			goto tr1057;
+			goto tr1051;
 	} else if ( (*p) > 175u ) {
 		if ( 182u <= (*p) && (*p) <= 191u )
-			goto tr1057;
+			goto tr1051;
 	} else
-		goto tr1057;
+		goto tr1051;
 	goto tr42;
-tr1055:
+tr1049:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -24786,26 +24766,26 @@ st626:
 		goto _test_eof626;
 case 626:
 	switch( (*p) ) {
-		case 154u: goto tr1057;
-		case 156u: goto tr1057;
-		case 158u: goto tr1057;
-		case 170u: goto tr1057;
-		case 172u: goto tr1057;
-		case 174u: goto tr1057;
-		case 186u: goto tr1057;
-		case 188u: goto tr1057;
-		case 190u: goto tr1057;
+		case 154u: goto tr1051;
+		case 156u: goto tr1051;
+		case 158u: goto tr1051;
+		case 170u: goto tr1051;
+		case 172u: goto tr1051;
+		case 174u: goto tr1051;
+		case 186u: goto tr1051;
+		case 188u: goto tr1051;
+		case 190u: goto tr1051;
 	}
 	if ( (*p) < 166u ) {
 		if ( 150u <= (*p) && (*p) <= 152u )
-			goto tr1057;
+			goto tr1051;
 	} else if ( (*p) > 168u ) {
 		if ( 182u <= (*p) && (*p) <= 184u )
-			goto tr1057;
+			goto tr1051;
 	} else
-		goto tr1057;
+		goto tr1051;
 	goto tr42;
-tr797:
+tr791:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -24815,11 +24795,11 @@ st627:
 		goto _test_eof627;
 case 627:
 	{
-		static const unsigned short jump_table[] = { 858, 1877, 858, 858, 858, 1878, 858, 858, 858, 1877, 858, 858, 858, 1878, 858, 858, 858, 1877, 858, 858, 858, 1878, 858, 858, 858, 1877, 858, 858, 858, 1878, 858, 858, 858, 1877, 858, 858, 858, 1878, 858, 858, 858, 1877, 858, 858, 858, 1878, 858, 858, 858, 1877, 858, 858, 858, 1878, 858, 858, 858, 1877, 858, 858, 858, 1878, 858, 858, 858, 1877, 858, 858, 858, 1878, 858, 858, 858, 1877, 858, 858, 858, 1878, 858, 858, 858, 1877, 858, 858, 858, 1878, 858, 858, 858, 1877, 858, 858, 858, 1878, 858, 858, 858, 1877, 858, 858, 858, 1878, 858, 858, 858, 1877, 858, 858, 858, 1878, 858, 858, 858, 1877, 858, 858, 858, 1878, 858, 858, 858, 1879, 858, 858, 858, 1880, 858, 858, 858, 1881, 858, 858, 858, 1882, 858, 858, 858, 1881, 858, 858, 858, 1882, 858, 858, 858, 1881, 858, 858, 858, 1882, 858, 858, 858, 1881, 858, 858, 858, 1882, 858, 858, 858, 1881, 858, 858, 858, 1882, 858, 858, 858, 1881, 858, 858, 858, 1882, 858, 858, 858, 1881, 858, 858, 858, 1882, 858, 858, 858, 1881, 858, 858, 858, 1882, 858, 858, 858, 1881, 858, 858, 858, 1882, 858, 858, 858, 1881, 858, 858, 858, 1882, 858, 858, 858, 1881, 858, 858, 858, 1882, 858, 858, 858, 1881, 858, 858, 858, 1882, 858, 858, 858, 1881, 858, 858, 858, 1882, 858, 858, 858, 1881, 858, 858, 858, 1882, 858, 858, 858, 1881, 858, 858, 858, 1882, 858, 858, 858, 1883, 858, 858, 858, 1882, 858, 858 };
+		static const unsigned short jump_table[] = { 858, 1871, 858, 858, 858, 1872, 858, 858, 858, 1871, 858, 858, 858, 1872, 858, 858, 858, 1871, 858, 858, 858, 1872, 858, 858, 858, 1871, 858, 858, 858, 1872, 858, 858, 858, 1871, 858, 858, 858, 1872, 858, 858, 858, 1871, 858, 858, 858, 1872, 858, 858, 858, 1871, 858, 858, 858, 1872, 858, 858, 858, 1871, 858, 858, 858, 1872, 858, 858, 858, 1871, 858, 858, 858, 1872, 858, 858, 858, 1871, 858, 858, 858, 1872, 858, 858, 858, 1871, 858, 858, 858, 1872, 858, 858, 858, 1871, 858, 858, 858, 1872, 858, 858, 858, 1871, 858, 858, 858, 1872, 858, 858, 858, 1871, 858, 858, 858, 1872, 858, 858, 858, 1871, 858, 858, 858, 1872, 858, 858, 858, 1873, 858, 858, 858, 1874, 858, 858, 858, 1875, 858, 858, 858, 1876, 858, 858, 858, 1875, 858, 858, 858, 1876, 858, 858, 858, 1875, 858, 858, 858, 1876, 858, 858, 858, 1875, 858, 858, 858, 1876, 858, 858, 858, 1875, 858, 858, 858, 1876, 858, 858, 858, 1875, 858, 858, 858, 1876, 858, 858, 858, 1875, 858, 858, 858, 1876, 858, 858, 858, 1875, 858, 858, 858, 1876, 858, 858, 858, 1875, 858, 858, 858, 1876, 858, 858, 858, 1875, 858, 858, 858, 1876, 858, 858, 858, 1875, 858, 858, 858, 1876, 858, 858, 858, 1875, 858, 858, 858, 1876, 858, 858, 858, 1875, 858, 858, 858, 1876, 858, 858, 858, 1875, 858, 858, 858, 1876, 858, 858, 858, 1875, 858, 858, 858, 1876, 858, 858, 858, 1877, 858, 858, 858, 1876, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1061:
+tr1055:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -24829,32 +24809,32 @@ st628:
 		goto _test_eof628;
 case 628:
 	switch( (*p) ) {
-		case 33u: goto tr1040;
-		case 68u: goto tr1068;
-		case 223u: goto tr1072;
+		case 33u: goto tr1034;
+		case 68u: goto tr1062;
+		case 223u: goto tr1066;
 	}
 	if ( (*p) < 74u ) {
 		if ( (*p) < 64u ) {
 			if ( 8u <= (*p) && (*p) <= 15u )
-				goto tr1040;
+				goto tr1034;
 		} else if ( (*p) > 66u ) {
 			if ( 72u <= (*p) && (*p) <= 73u )
-				goto tr1069;
+				goto tr1063;
 		} else
-			goto tr1040;
+			goto tr1034;
 	} else if ( (*p) > 76u ) {
 		if ( (*p) < 104u ) {
 			if ( 92u <= (*p) && (*p) <= 95u )
-				goto tr1071;
+				goto tr1065;
 		} else if ( (*p) > 111u ) {
 			if ( 120u <= (*p) && (*p) <= 127u )
-				goto tr1071;
+				goto tr1065;
 		} else
-			goto tr1071;
+			goto tr1065;
 	} else
-		goto tr1070;
+		goto tr1064;
 	goto tr42;
-tr1069:
+tr1063:
 	{
     SET_CPU_FEATURE(CPUFeature_XOP);
   }
@@ -24864,11 +24844,11 @@ st629:
 		goto _test_eof629;
 case 629:
 	{
-		static const unsigned short jump_table[] = { 1825, 1825, 1825, 1825, 541, 1889, 1825, 1825, 1825, 1825, 1825, 1825, 541, 1889, 1825, 1825, 1825, 1825, 1825, 1825, 541, 1889, 1825, 1825, 1825, 1825, 1825, 1825, 541, 1889, 1825, 1825, 1825, 1825, 1825, 1825, 541, 1889, 1825, 1825, 1825, 1825, 1825, 1825, 541, 1889, 1825, 1825, 1825, 1825, 1825, 1825, 541, 1889, 1825, 1825, 1825, 1825, 1825, 1825, 541, 1889, 1825, 1825, 1826, 1826, 1826, 1826, 489, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 489, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 489, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 489, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 489, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 489, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 489, 1826, 1826, 1826, 1826, 1826, 1826, 1826, 489, 1826, 1826, 1826, 1827, 1827, 1827, 1827, 491, 1827, 1827, 1827, 1827, 1827, 1827, 1827, 491, 1827, 1827, 1827, 1827, 1827, 1827, 1827, 491, 1827, 1827, 1827, 1827, 1827, 1827, 1827, 491, 1827, 1827, 1827, 1827, 1827, 1827, 1827, 491, 1827, 1827, 1827, 1827, 1827, 1827, 1827, 491, 1827, 1827, 1827, 1827, 1827, 1827, 1827, 491, 1827, 1827, 1827, 1827, 1827, 1827, 1827, 491, 1827, 1827, 1827, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488 };
+		static const unsigned short jump_table[] = { 1819, 1819, 1819, 1819, 541, 1883, 1819, 1819, 1819, 1819, 1819, 1819, 541, 1883, 1819, 1819, 1819, 1819, 1819, 1819, 541, 1883, 1819, 1819, 1819, 1819, 1819, 1819, 541, 1883, 1819, 1819, 1819, 1819, 1819, 1819, 541, 1883, 1819, 1819, 1819, 1819, 1819, 1819, 541, 1883, 1819, 1819, 1819, 1819, 1819, 1819, 541, 1883, 1819, 1819, 1819, 1819, 1819, 1819, 541, 1883, 1819, 1819, 1820, 1820, 1820, 1820, 489, 1820, 1820, 1820, 1820, 1820, 1820, 1820, 489, 1820, 1820, 1820, 1820, 1820, 1820, 1820, 489, 1820, 1820, 1820, 1820, 1820, 1820, 1820, 489, 1820, 1820, 1820, 1820, 1820, 1820, 1820, 489, 1820, 1820, 1820, 1820, 1820, 1820, 1820, 489, 1820, 1820, 1820, 1820, 1820, 1820, 1820, 489, 1820, 1820, 1820, 1820, 1820, 1820, 1820, 489, 1820, 1820, 1820, 1821, 1821, 1821, 1821, 491, 1821, 1821, 1821, 1821, 1821, 1821, 1821, 491, 1821, 1821, 1821, 1821, 1821, 1821, 1821, 491, 1821, 1821, 1821, 1821, 1821, 1821, 1821, 491, 1821, 1821, 1821, 1821, 1821, 1821, 1821, 491, 1821, 1821, 1821, 1821, 1821, 1821, 1821, 491, 1821, 1821, 1821, 1821, 1821, 1821, 1821, 491, 1821, 1821, 1821, 1821, 1821, 1821, 1821, 491, 1821, 1821, 1821, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488, 488 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1062:
+tr1056:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -24878,37 +24858,37 @@ st630:
 		goto _test_eof630;
 case 630:
 	switch( (*p) ) {
-		case 6u: goto tr1040;
-		case 64u: goto tr1040;
+		case 6u: goto tr1034;
+		case 64u: goto tr1034;
 	}
 	if ( (*p) < 92u ) {
 		if ( (*p) < 12u ) {
 			if ( 8u <= (*p) && (*p) <= 9u )
-				goto tr1040;
+				goto tr1034;
 		} else if ( (*p) > 13u ) {
 			if ( (*p) > 73u ) {
 				if ( 74u <= (*p) && (*p) <= 75u )
-					goto tr1070;
+					goto tr1064;
 			} else if ( (*p) >= 72u )
-				goto tr1069;
+				goto tr1063;
 		} else
-			goto tr1040;
+			goto tr1034;
 	} else if ( (*p) > 95u ) {
 		if ( (*p) < 108u ) {
 			if ( 104u <= (*p) && (*p) <= 105u )
-				goto tr1071;
+				goto tr1065;
 		} else if ( (*p) > 109u ) {
 			if ( (*p) > 121u ) {
 				if ( 124u <= (*p) && (*p) <= 125u )
-					goto tr1071;
+					goto tr1065;
 			} else if ( (*p) >= 120u )
-				goto tr1071;
+				goto tr1065;
 		} else
-			goto tr1071;
+			goto tr1065;
 	} else
-		goto tr1071;
+		goto tr1065;
 	goto tr42;
-tr1063:
+tr1057:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -24918,45 +24898,45 @@ st631:
 		goto _test_eof631;
 case 631:
 	switch( (*p) ) {
-		case 22u: goto tr1075;
-		case 23u: goto tr1076;
-		case 29u: goto tr1077;
+		case 22u: goto tr1069;
+		case 23u: goto tr1070;
+		case 29u: goto tr1071;
 		case 32u: goto st607;
-		case 68u: goto tr1068;
-		case 223u: goto tr1072;
+		case 68u: goto tr1062;
+		case 223u: goto tr1066;
 	}
 	if ( (*p) < 72u ) {
 		if ( (*p) < 20u ) {
 			if ( (*p) > 5u ) {
 				if ( 8u <= (*p) && (*p) <= 15u )
-					goto tr1040;
+					goto tr1034;
 			} else if ( (*p) >= 4u )
-				goto tr1040;
+				goto tr1034;
 		} else if ( (*p) > 21u ) {
 			if ( (*p) > 34u ) {
 				if ( 64u <= (*p) && (*p) <= 66u )
-					goto tr1040;
+					goto tr1034;
 			} else if ( (*p) >= 33u )
-				goto tr1040;
+				goto tr1034;
 		} else
 			goto st632;
 	} else if ( (*p) > 73u ) {
 		if ( (*p) < 96u ) {
 			if ( (*p) > 76u ) {
 				if ( 92u <= (*p) && (*p) <= 95u )
-					goto tr1071;
+					goto tr1065;
 			} else if ( (*p) >= 74u )
-				goto tr1070;
+				goto tr1064;
 		} else if ( (*p) > 99u ) {
 			if ( (*p) > 111u ) {
 				if ( 120u <= (*p) && (*p) <= 127u )
-					goto tr1071;
+					goto tr1065;
 			} else if ( (*p) >= 104u )
-				goto tr1071;
+				goto tr1065;
 		} else
-			goto tr1040;
+			goto tr1034;
 	} else
-		goto tr1069;
+		goto tr1063;
 	goto tr42;
 st632:
 	if ( ++p == pe )
@@ -24964,10 +24944,10 @@ st632:
 case 632:
 	{
 		static const unsigned char jump_table[] = { 142, 142, 142, 142, 74, 209, 142, 142, 142, 142, 142, 142, 74, 209, 142, 142, 142, 142, 142, 142, 74, 209, 142, 142, 142, 142, 142, 142, 74, 209, 142, 142, 142, 142, 142, 142, 74, 209, 142, 142, 142, 142, 142, 142, 74, 209, 142, 142, 142, 142, 142, 142, 74, 209, 142, 142, 142, 142, 142, 142, 74, 209, 142, 142, 143, 143, 143, 143, 0, 143, 143, 143, 143, 143, 143, 143, 0, 143, 143, 143, 143, 143, 143, 143, 0, 143, 143, 143, 143, 143, 143, 143, 0, 143, 143, 143, 143, 143, 143, 143, 0, 143, 143, 143, 143, 143, 143, 143, 0, 143, 143, 143, 143, 143, 143, 143, 0, 143, 143, 143, 143, 143, 143, 143, 0, 143, 143, 143, 144, 144, 144, 144, 1, 144, 144, 144, 144, 144, 144, 144, 1, 144, 144, 144, 144, 144, 144, 144, 1, 144, 144, 144, 144, 144, 144, 144, 1, 144, 144, 144, 144, 144, 144, 144, 1, 144, 144, 144, 144, 144, 144, 144, 1, 144, 144, 144, 144, 144, 144, 144, 1, 144, 144, 144, 144, 144, 144, 144, 1, 144, 144, 144, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182, 182 };
-		cs = jump_table[(*p)] + 1650;
+		cs = jump_table[(*p)] + 1644;
 		goto _again;
 	}
-tr1076:
+tr1070:
 	{
     SET_CPU_FEATURE(CPUFeature_AVX);
   }
@@ -24981,7 +24961,7 @@ case 633:
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1064:
+tr1058:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -24991,43 +24971,43 @@ st634:
 		goto _test_eof634;
 case 634:
 	switch( (*p) ) {
-		case 29u: goto tr1077;
-		case 64u: goto tr1040;
+		case 29u: goto tr1071;
+		case 64u: goto tr1034;
 	}
 	if ( (*p) < 74u ) {
 		if ( (*p) < 12u ) {
 			if ( (*p) > 6u ) {
 				if ( 8u <= (*p) && (*p) <= 9u )
-					goto tr1040;
+					goto tr1034;
 			} else if ( (*p) >= 4u )
-				goto tr1040;
+				goto tr1034;
 		} else if ( (*p) > 13u ) {
 			if ( (*p) > 25u ) {
 				if ( 72u <= (*p) && (*p) <= 73u )
-					goto tr1069;
+					goto tr1063;
 			} else if ( (*p) >= 24u )
-				goto tr1040;
+				goto tr1034;
 		} else
-			goto tr1040;
+			goto tr1034;
 	} else if ( (*p) > 75u ) {
 		if ( (*p) < 108u ) {
 			if ( (*p) > 95u ) {
 				if ( 104u <= (*p) && (*p) <= 105u )
-					goto tr1071;
+					goto tr1065;
 			} else if ( (*p) >= 92u )
-				goto tr1071;
+				goto tr1065;
 		} else if ( (*p) > 109u ) {
 			if ( (*p) > 121u ) {
 				if ( 124u <= (*p) && (*p) <= 125u )
-					goto tr1071;
+					goto tr1065;
 			} else if ( (*p) >= 120u )
-				goto tr1071;
+				goto tr1065;
 		} else
-			goto tr1071;
+			goto tr1065;
 	} else
-		goto tr1070;
+		goto tr1064;
 	goto tr42;
-tr1065:
+tr1059:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -25038,17 +25018,17 @@ st635:
 case 635:
 	if ( (*p) < 92u ) {
 		if ( 72u <= (*p) && (*p) <= 73u )
-			goto tr1069;
+			goto tr1063;
 	} else if ( (*p) > 95u ) {
 		if ( (*p) > 111u ) {
 			if ( 120u <= (*p) && (*p) <= 127u )
-				goto tr1071;
+				goto tr1065;
 		} else if ( (*p) >= 104u )
-			goto tr1071;
+			goto tr1065;
 	} else
-		goto tr1071;
+		goto tr1065;
 	goto tr42;
-tr1066:
+tr1060:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -25060,22 +25040,22 @@ case 636:
 	if ( (*p) < 104u ) {
 		if ( (*p) > 73u ) {
 			if ( 92u <= (*p) && (*p) <= 95u )
-				goto tr1071;
+				goto tr1065;
 		} else if ( (*p) >= 72u )
-			goto tr1069;
+			goto tr1063;
 	} else if ( (*p) > 105u ) {
 		if ( (*p) < 120u ) {
 			if ( 108u <= (*p) && (*p) <= 109u )
-				goto tr1071;
+				goto tr1065;
 		} else if ( (*p) > 121u ) {
 			if ( 124u <= (*p) && (*p) <= 125u )
-				goto tr1071;
+				goto tr1065;
 		} else
-			goto tr1071;
+			goto tr1065;
 	} else
-		goto tr1071;
+		goto tr1065;
 	goto tr42;
-tr1067:
+tr1061:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -25085,22 +25065,22 @@ st637:
 		goto _test_eof637;
 case 637:
 	switch( (*p) ) {
-		case 22u: goto tr1078;
-		case 34u: goto tr1040;
+		case 22u: goto tr1072;
+		case 34u: goto tr1034;
 	}
 	if ( (*p) < 92u ) {
 		if ( 72u <= (*p) && (*p) <= 73u )
-			goto tr1069;
+			goto tr1063;
 	} else if ( (*p) > 95u ) {
 		if ( (*p) > 111u ) {
 			if ( 120u <= (*p) && (*p) <= 127u )
-				goto tr1071;
+				goto tr1065;
 		} else if ( (*p) >= 104u )
-			goto tr1071;
+			goto tr1065;
 	} else
-		goto tr1071;
+		goto tr1065;
 	goto tr42;
-tr798:
+tr792:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -25110,11 +25090,11 @@ st638:
 		goto _test_eof638;
 case 638:
 	{
-		static const unsigned short jump_table[] = { 1622, 1623, 1624, 1625, 1626, 1627, 858, 1628, 1622, 1623, 1624, 1625, 1626, 1627, 858, 1628, 1622, 1623, 1624, 1625, 1626, 1627, 858, 1628, 1622, 1623, 1624, 1625, 1626, 1627, 858, 1628, 1622, 1623, 1624, 1625, 1626, 1627, 858, 1628, 1622, 1623, 1624, 1625, 1626, 1627, 858, 1628, 1622, 1623, 1624, 1625, 1626, 1627, 858, 1628, 1622, 1623, 1624, 1625, 1626, 1627, 858, 1628, 1622, 1623, 1624, 1625, 1626, 1627, 858, 1628, 1622, 1623, 1624, 1625, 1626, 1627, 858, 1628, 1622, 1623, 1624, 1625, 1626, 1627, 858, 1628, 1622, 1623, 1624, 1625, 1626, 1627, 858, 1628, 1622, 1623, 1624, 1625, 1626, 1627, 858, 1628, 1622, 1623, 1624, 1625, 1626, 1627, 858, 1628, 1622, 1623, 1624, 1625, 1626, 1627, 858, 1628, 1895, 1630, 1631, 1632, 1633, 1634, 1635, 1636, 858, 858, 1637, 1637, 858, 858, 858, 858, 858, 858, 1637, 1637, 858, 858, 858, 858, 858, 858, 1637, 1637, 858, 858, 858, 858, 858, 858, 1637, 1637, 858, 858, 858, 858, 858, 858, 1637, 1637, 858, 858, 858, 858, 858, 858, 1637, 1637, 858, 858, 858, 858, 858, 858, 1637, 1637, 858, 858, 858, 858, 858, 858, 1637, 1637, 858, 858, 858, 858, 858, 858, 1637, 1637, 858, 858, 858, 858, 858, 858, 1637, 1637, 858, 858, 858, 858, 858, 858, 1637, 1637, 858, 858, 858, 858, 858, 858, 1637, 1637, 858, 858, 858, 858, 858, 858, 1637, 1637, 858, 858, 858, 858, 858, 858, 1637, 1637, 858, 858, 858, 858, 858, 858, 1637, 1637, 858, 858, 858, 858, 858, 1638, 1639, 1639, 858, 1640, 858, 858 };
+		static const unsigned short jump_table[] = { 1616, 1617, 1618, 1619, 1620, 1621, 858, 1622, 1616, 1617, 1618, 1619, 1620, 1621, 858, 1622, 1616, 1617, 1618, 1619, 1620, 1621, 858, 1622, 1616, 1617, 1618, 1619, 1620, 1621, 858, 1622, 1616, 1617, 1618, 1619, 1620, 1621, 858, 1622, 1616, 1617, 1618, 1619, 1620, 1621, 858, 1622, 1616, 1617, 1618, 1619, 1620, 1621, 858, 1622, 1616, 1617, 1618, 1619, 1620, 1621, 858, 1622, 1616, 1617, 1618, 1619, 1620, 1621, 858, 1622, 1616, 1617, 1618, 1619, 1620, 1621, 858, 1622, 1616, 1617, 1618, 1619, 1620, 1621, 858, 1622, 1616, 1617, 1618, 1619, 1620, 1621, 858, 1622, 1616, 1617, 1618, 1619, 1620, 1621, 858, 1622, 1616, 1617, 1618, 1619, 1620, 1621, 858, 1622, 1616, 1617, 1618, 1619, 1620, 1621, 858, 1622, 1889, 1624, 1625, 1626, 1627, 1628, 1629, 1630, 858, 858, 1631, 1631, 858, 858, 858, 858, 858, 858, 1631, 1631, 858, 858, 858, 858, 858, 858, 1631, 1631, 858, 858, 858, 858, 858, 858, 1631, 1631, 858, 858, 858, 858, 858, 858, 1631, 1631, 858, 858, 858, 858, 858, 858, 1631, 1631, 858, 858, 858, 858, 858, 858, 1631, 1631, 858, 858, 858, 858, 858, 858, 1631, 1631, 858, 858, 858, 858, 858, 858, 1631, 1631, 858, 858, 858, 858, 858, 858, 1631, 1631, 858, 858, 858, 858, 858, 858, 1631, 1631, 858, 858, 858, 858, 858, 858, 1631, 1631, 858, 858, 858, 858, 858, 858, 1631, 1631, 858, 858, 858, 858, 858, 858, 1631, 1631, 858, 858, 858, 858, 858, 858, 1631, 1631, 858, 858, 858, 858, 858, 1632, 1633, 1633, 858, 1634, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1079:
+tr1073:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -25125,40 +25105,40 @@ st639:
 case 639:
 	switch( (*p) ) {
 		case 18u: goto st451;
-		case 19u: goto tr827;
+		case 19u: goto tr821;
 		case 22u: goto st451;
-		case 23u: goto tr827;
-		case 43u: goto tr827;
+		case 23u: goto tr821;
+		case 43u: goto tr821;
 		case 174u: goto st640;
-		case 194u: goto tr828;
-		case 198u: goto tr828;
+		case 194u: goto tr822;
+		case 198u: goto tr822;
 	}
 	if ( (*p) < 40u ) {
 		if ( 16u <= (*p) && (*p) <= 21u )
-			goto tr826;
+			goto tr820;
 	} else if ( (*p) > 41u ) {
 		if ( (*p) > 47u ) {
 			if ( 81u <= (*p) && (*p) <= 95u )
-				goto tr826;
+				goto tr820;
 		} else if ( (*p) >= 46u )
-			goto tr826;
+			goto tr820;
 	} else
-		goto tr826;
+		goto tr820;
 	goto tr42;
 st640:
 	if ( ++p == pe )
 		goto _test_eof640;
 case 640:
 	switch( (*p) ) {
-		case 20u: goto tr829;
-		case 28u: goto tr829;
-		case 84u: goto tr830;
-		case 92u: goto tr830;
-		case 148u: goto tr831;
-		case 156u: goto tr831;
+		case 20u: goto tr823;
+		case 28u: goto tr823;
+		case 84u: goto tr824;
+		case 92u: goto tr824;
+		case 148u: goto tr825;
+		case 156u: goto tr825;
 	}
 	goto tr42;
-tr799:
+tr793:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -25168,11 +25148,11 @@ st641:
 		goto _test_eof641;
 case 641:
 	{
-		static const unsigned short jump_table[] = { 1897, 1658, 858, 858, 858, 1659, 858, 858, 1897, 1658, 858, 858, 858, 1659, 858, 858, 1897, 1658, 858, 858, 858, 1659, 858, 858, 1897, 1658, 858, 858, 858, 1659, 858, 858, 1897, 1658, 858, 858, 858, 1659, 858, 858, 1897, 1658, 858, 858, 858, 1659, 858, 858, 1897, 1658, 858, 858, 858, 1659, 858, 858, 1897, 1658, 858, 858, 858, 1659, 858, 858, 1897, 1658, 858, 858, 858, 1659, 858, 858, 1897, 1658, 858, 858, 858, 1659, 858, 858, 1897, 1658, 858, 858, 858, 1659, 858, 858, 1897, 1658, 858, 858, 858, 1659, 858, 858, 1897, 1658, 858, 858, 858, 1659, 858, 858, 1897, 1658, 858, 858, 858, 1659, 858, 858, 1897, 1658, 858, 858, 858, 1659, 858, 858, 1897, 1660, 858, 858, 858, 1661, 858, 858, 1898, 1663, 858, 858, 858, 1664, 858, 858, 1898, 1663, 858, 858, 858, 1664, 858, 858, 1898, 1663, 858, 858, 858, 1664, 858, 858, 1898, 1663, 858, 858, 858, 1664, 858, 858, 1898, 1663, 858, 858, 858, 1664, 858, 858, 1898, 1663, 858, 858, 858, 1664, 858, 858, 1898, 1663, 858, 858, 858, 1664, 858, 858, 1898, 1663, 858, 858, 858, 1664, 858, 858, 1898, 1663, 858, 858, 858, 1664, 858, 858, 1898, 1663, 858, 858, 858, 1664, 858, 858, 1898, 1663, 858, 858, 858, 1664, 858, 858, 1898, 1663, 858, 858, 858, 1664, 858, 858, 1898, 1663, 858, 858, 858, 1664, 858, 858, 1898, 1663, 858, 858, 858, 1664, 858, 858, 1898, 1663, 858, 858, 858, 1664, 858, 858, 1898, 1663, 858, 858, 858, 1664, 858, 858 };
+		static const unsigned short jump_table[] = { 1891, 1652, 858, 858, 858, 1653, 858, 858, 1891, 1652, 858, 858, 858, 1653, 858, 858, 1891, 1652, 858, 858, 858, 1653, 858, 858, 1891, 1652, 858, 858, 858, 1653, 858, 858, 1891, 1652, 858, 858, 858, 1653, 858, 858, 1891, 1652, 858, 858, 858, 1653, 858, 858, 1891, 1652, 858, 858, 858, 1653, 858, 858, 1891, 1652, 858, 858, 858, 1653, 858, 858, 1891, 1652, 858, 858, 858, 1653, 858, 858, 1891, 1652, 858, 858, 858, 1653, 858, 858, 1891, 1652, 858, 858, 858, 1653, 858, 858, 1891, 1652, 858, 858, 858, 1653, 858, 858, 1891, 1652, 858, 858, 858, 1653, 858, 858, 1891, 1652, 858, 858, 858, 1653, 858, 858, 1891, 1652, 858, 858, 858, 1653, 858, 858, 1891, 1654, 858, 858, 858, 1655, 858, 858, 1892, 1657, 858, 858, 858, 1658, 858, 858, 1892, 1657, 858, 858, 858, 1658, 858, 858, 1892, 1657, 858, 858, 858, 1658, 858, 858, 1892, 1657, 858, 858, 858, 1658, 858, 858, 1892, 1657, 858, 858, 858, 1658, 858, 858, 1892, 1657, 858, 858, 858, 1658, 858, 858, 1892, 1657, 858, 858, 858, 1658, 858, 858, 1892, 1657, 858, 858, 858, 1658, 858, 858, 1892, 1657, 858, 858, 858, 1658, 858, 858, 1892, 1657, 858, 858, 858, 1658, 858, 858, 1892, 1657, 858, 858, 858, 1658, 858, 858, 1892, 1657, 858, 858, 858, 1658, 858, 858, 1892, 1657, 858, 858, 858, 1658, 858, 858, 1892, 1657, 858, 858, 858, 1658, 858, 858, 1892, 1657, 858, 858, 858, 1658, 858, 858, 1892, 1657, 858, 858, 858, 1658, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1081:
+tr1075:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -25182,9 +25162,9 @@ st642:
 		goto _test_eof642;
 case 642:
 	switch( (*p) ) {
-		case 242u: goto tr849;
+		case 242u: goto tr843;
 		case 243u: goto st643;
-		case 247u: goto tr849;
+		case 247u: goto tr843;
 	}
 	goto tr42;
 st643:
@@ -25192,20 +25172,20 @@ st643:
 		goto _test_eof643;
 case 643:
 	switch( (*p) ) {
-		case 12u: goto tr1084;
-		case 20u: goto tr1084;
-		case 28u: goto tr1084;
-		case 76u: goto tr1085;
-		case 84u: goto tr1085;
-		case 92u: goto tr1085;
-		case 140u: goto tr1086;
-		case 148u: goto tr1086;
-		case 156u: goto tr1086;
+		case 12u: goto tr1078;
+		case 20u: goto tr1078;
+		case 28u: goto tr1078;
+		case 76u: goto tr1079;
+		case 84u: goto tr1079;
+		case 92u: goto tr1079;
+		case 140u: goto tr1080;
+		case 148u: goto tr1080;
+		case 156u: goto tr1080;
 	}
 	if ( 200u <= (*p) && (*p) <= 223u )
-		goto tr1087;
+		goto tr1081;
 	goto tr42;
-tr1082:
+tr1076:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -25215,9 +25195,9 @@ st644:
 		goto _test_eof644;
 case 644:
 	switch( (*p) ) {
-		case 242u: goto tr853;
+		case 242u: goto tr847;
 		case 243u: goto st645;
-		case 247u: goto tr853;
+		case 247u: goto tr847;
 	}
 	goto tr42;
 st645:
@@ -25225,20 +25205,20 @@ st645:
 		goto _test_eof645;
 case 645:
 	switch( (*p) ) {
-		case 12u: goto tr1089;
-		case 20u: goto tr1089;
-		case 28u: goto tr1089;
-		case 76u: goto tr1090;
-		case 84u: goto tr1090;
-		case 92u: goto tr1090;
-		case 140u: goto tr1091;
-		case 148u: goto tr1091;
-		case 156u: goto tr1091;
+		case 12u: goto tr1083;
+		case 20u: goto tr1083;
+		case 28u: goto tr1083;
+		case 76u: goto tr1084;
+		case 84u: goto tr1084;
+		case 92u: goto tr1084;
+		case 140u: goto tr1085;
+		case 148u: goto tr1085;
+		case 156u: goto tr1085;
 	}
 	if ( 200u <= (*p) && (*p) <= 223u )
-		goto tr1092;
+		goto tr1086;
 	goto tr42;
-tr800:
+tr794:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -25248,11 +25228,11 @@ st646:
 		goto _test_eof646;
 case 646:
 	{
-		static const unsigned short jump_table[] = { 1699, 1700, 1701, 1702, 1703, 1704, 858, 1705, 1699, 1700, 1701, 1702, 1703, 1704, 858, 1705, 1699, 1700, 1701, 1702, 1703, 1704, 858, 1705, 1699, 1700, 1701, 1702, 1703, 1704, 858, 1705, 1699, 1700, 1701, 1702, 1703, 1704, 858, 1705, 1699, 1700, 1701, 1702, 1703, 1704, 858, 1705, 1699, 1700, 1701, 1702, 1703, 1704, 858, 1705, 1699, 1700, 1701, 1702, 1703, 1704, 858, 1705, 1699, 1700, 1701, 1702, 1703, 1704, 858, 1705, 1699, 1700, 1701, 1702, 1703, 1704, 858, 1705, 1699, 1700, 1701, 1702, 1703, 1704, 858, 1705, 1699, 1700, 1701, 1702, 1703, 1704, 858, 1705, 1699, 1700, 1701, 1702, 1703, 1704, 858, 1705, 1699, 1700, 1701, 1702, 1703, 1704, 858, 1705, 1699, 1700, 1701, 1702, 1703, 1704, 858, 1705, 1909, 1707, 1708, 1709, 1710, 1711, 1712, 1713, 858, 858, 1714, 1714, 858, 858, 858, 858, 858, 858, 1714, 1714, 858, 858, 858, 858, 858, 858, 1714, 1714, 858, 858, 858, 858, 858, 858, 1714, 1714, 858, 858, 858, 858, 858, 858, 1714, 1714, 858, 858, 858, 858, 858, 858, 1714, 1714, 858, 858, 858, 858, 858, 858, 1714, 1714, 858, 858, 858, 858, 858, 858, 1714, 1714, 858, 858, 858, 858, 858, 858, 1714, 1714, 858, 858, 858, 858, 858, 858, 1714, 1714, 858, 858, 858, 858, 858, 858, 1714, 1714, 858, 858, 858, 858, 858, 858, 1714, 1714, 858, 858, 858, 858, 858, 858, 1714, 1714, 858, 858, 858, 858, 858, 858, 1714, 1714, 858, 858, 858, 858, 858, 858, 1714, 1714, 858, 858, 858, 858, 858, 1715, 1716, 1716, 858, 1717, 858, 858 };
+		static const unsigned short jump_table[] = { 1693, 1694, 1695, 1696, 1697, 1698, 858, 1699, 1693, 1694, 1695, 1696, 1697, 1698, 858, 1699, 1693, 1694, 1695, 1696, 1697, 1698, 858, 1699, 1693, 1694, 1695, 1696, 1697, 1698, 858, 1699, 1693, 1694, 1695, 1696, 1697, 1698, 858, 1699, 1693, 1694, 1695, 1696, 1697, 1698, 858, 1699, 1693, 1694, 1695, 1696, 1697, 1698, 858, 1699, 1693, 1694, 1695, 1696, 1697, 1698, 858, 1699, 1693, 1694, 1695, 1696, 1697, 1698, 858, 1699, 1693, 1694, 1695, 1696, 1697, 1698, 858, 1699, 1693, 1694, 1695, 1696, 1697, 1698, 858, 1699, 1693, 1694, 1695, 1696, 1697, 1698, 858, 1699, 1693, 1694, 1695, 1696, 1697, 1698, 858, 1699, 1693, 1694, 1695, 1696, 1697, 1698, 858, 1699, 1693, 1694, 1695, 1696, 1697, 1698, 858, 1699, 1903, 1701, 1702, 1703, 1704, 1705, 1706, 1707, 858, 858, 1708, 1708, 858, 858, 858, 858, 858, 858, 1708, 1708, 858, 858, 858, 858, 858, 858, 1708, 1708, 858, 858, 858, 858, 858, 858, 1708, 1708, 858, 858, 858, 858, 858, 858, 1708, 1708, 858, 858, 858, 858, 858, 858, 1708, 1708, 858, 858, 858, 858, 858, 858, 1708, 1708, 858, 858, 858, 858, 858, 858, 1708, 1708, 858, 858, 858, 858, 858, 858, 1708, 1708, 858, 858, 858, 858, 858, 858, 1708, 1708, 858, 858, 858, 858, 858, 858, 1708, 1708, 858, 858, 858, 858, 858, 858, 1708, 1708, 858, 858, 858, 858, 858, 858, 1708, 1708, 858, 858, 858, 858, 858, 858, 1708, 1708, 858, 858, 858, 858, 858, 858, 1708, 1708, 858, 858, 858, 858, 858, 1709, 1710, 1710, 858, 1711, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1093:
+tr1087:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -25263,40 +25243,40 @@ st647:
 case 647:
 	switch( (*p) ) {
 		case 18u: goto st505;
-		case 19u: goto tr904;
+		case 19u: goto tr898;
 		case 22u: goto st505;
-		case 23u: goto tr904;
-		case 43u: goto tr904;
+		case 23u: goto tr898;
+		case 43u: goto tr898;
 		case 174u: goto st648;
-		case 194u: goto tr905;
-		case 198u: goto tr905;
+		case 194u: goto tr899;
+		case 198u: goto tr899;
 	}
 	if ( (*p) < 40u ) {
 		if ( 16u <= (*p) && (*p) <= 21u )
-			goto tr903;
+			goto tr897;
 	} else if ( (*p) > 41u ) {
 		if ( (*p) > 47u ) {
 			if ( 81u <= (*p) && (*p) <= 95u )
-				goto tr903;
+				goto tr897;
 		} else if ( (*p) >= 46u )
-			goto tr903;
+			goto tr897;
 	} else
-		goto tr903;
+		goto tr897;
 	goto tr42;
 st648:
 	if ( ++p == pe )
 		goto _test_eof648;
 case 648:
 	switch( (*p) ) {
-		case 20u: goto tr906;
-		case 28u: goto tr906;
-		case 84u: goto tr830;
-		case 92u: goto tr830;
-		case 148u: goto tr831;
-		case 156u: goto tr831;
+		case 20u: goto tr900;
+		case 28u: goto tr900;
+		case 84u: goto tr824;
+		case 92u: goto tr824;
+		case 148u: goto tr825;
+		case 156u: goto tr825;
 	}
 	goto tr42;
-tr801:
+tr795:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -25306,11 +25286,11 @@ st649:
 		goto _test_eof649;
 case 649:
 	{
-		static const unsigned short jump_table[] = { 1911, 1730, 858, 858, 858, 1731, 858, 858, 1911, 1730, 858, 858, 858, 1731, 858, 858, 1911, 1730, 858, 858, 858, 1731, 858, 858, 1911, 1730, 858, 858, 858, 1731, 858, 858, 1911, 1730, 858, 858, 858, 1731, 858, 858, 1911, 1730, 858, 858, 858, 1731, 858, 858, 1911, 1730, 858, 858, 858, 1731, 858, 858, 1911, 1730, 858, 858, 858, 1731, 858, 858, 1911, 1730, 858, 858, 858, 1731, 858, 858, 1911, 1730, 858, 858, 858, 1731, 858, 858, 1911, 1730, 858, 858, 858, 1731, 858, 858, 1911, 1730, 858, 858, 858, 1731, 858, 858, 1911, 1730, 858, 858, 858, 1731, 858, 858, 1911, 1730, 858, 858, 858, 1731, 858, 858, 1911, 1730, 858, 858, 858, 1731, 858, 858, 1911, 1732, 858, 858, 858, 1733, 858, 858, 1912, 1735, 858, 858, 858, 1736, 858, 858, 1912, 1735, 858, 858, 858, 1736, 858, 858, 1912, 1735, 858, 858, 858, 1736, 858, 858, 1912, 1735, 858, 858, 858, 1736, 858, 858, 1912, 1735, 858, 858, 858, 1736, 858, 858, 1912, 1735, 858, 858, 858, 1736, 858, 858, 1912, 1735, 858, 858, 858, 1736, 858, 858, 1912, 1735, 858, 858, 858, 1736, 858, 858, 1912, 1735, 858, 858, 858, 1736, 858, 858, 1912, 1735, 858, 858, 858, 1736, 858, 858, 1912, 1735, 858, 858, 858, 1736, 858, 858, 1912, 1735, 858, 858, 858, 1736, 858, 858, 1912, 1735, 858, 858, 858, 1736, 858, 858, 1912, 1735, 858, 858, 858, 1736, 858, 858, 1912, 1735, 858, 858, 858, 1736, 858, 858, 1912, 1735, 858, 858, 858, 1736, 858, 858 };
+		static const unsigned short jump_table[] = { 1905, 1724, 858, 858, 858, 1725, 858, 858, 1905, 1724, 858, 858, 858, 1725, 858, 858, 1905, 1724, 858, 858, 858, 1725, 858, 858, 1905, 1724, 858, 858, 858, 1725, 858, 858, 1905, 1724, 858, 858, 858, 1725, 858, 858, 1905, 1724, 858, 858, 858, 1725, 858, 858, 1905, 1724, 858, 858, 858, 1725, 858, 858, 1905, 1724, 858, 858, 858, 1725, 858, 858, 1905, 1724, 858, 858, 858, 1725, 858, 858, 1905, 1724, 858, 858, 858, 1725, 858, 858, 1905, 1724, 858, 858, 858, 1725, 858, 858, 1905, 1724, 858, 858, 858, 1725, 858, 858, 1905, 1724, 858, 858, 858, 1725, 858, 858, 1905, 1724, 858, 858, 858, 1725, 858, 858, 1905, 1724, 858, 858, 858, 1725, 858, 858, 1905, 1726, 858, 858, 858, 1727, 858, 858, 1906, 1729, 858, 858, 858, 1730, 858, 858, 1906, 1729, 858, 858, 858, 1730, 858, 858, 1906, 1729, 858, 858, 858, 1730, 858, 858, 1906, 1729, 858, 858, 858, 1730, 858, 858, 1906, 1729, 858, 858, 858, 1730, 858, 858, 1906, 1729, 858, 858, 858, 1730, 858, 858, 1906, 1729, 858, 858, 858, 1730, 858, 858, 1906, 1729, 858, 858, 858, 1730, 858, 858, 1906, 1729, 858, 858, 858, 1730, 858, 858, 1906, 1729, 858, 858, 858, 1730, 858, 858, 1906, 1729, 858, 858, 858, 1730, 858, 858, 1906, 1729, 858, 858, 858, 1730, 858, 858, 1906, 1729, 858, 858, 858, 1730, 858, 858, 1906, 1729, 858, 858, 858, 1730, 858, 858, 1906, 1729, 858, 858, 858, 1730, 858, 858, 1906, 1729, 858, 858, 858, 1730, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1095:
+tr1089:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -25320,9 +25300,9 @@ st650:
 		goto _test_eof650;
 case 650:
 	switch( (*p) ) {
-		case 242u: goto tr921;
+		case 242u: goto tr915;
 		case 243u: goto st651;
-		case 247u: goto tr921;
+		case 247u: goto tr915;
 	}
 	goto tr42;
 st651:
@@ -25330,20 +25310,20 @@ st651:
 		goto _test_eof651;
 case 651:
 	switch( (*p) ) {
-		case 12u: goto tr1098;
-		case 20u: goto tr1098;
-		case 28u: goto tr1098;
-		case 76u: goto tr1085;
-		case 84u: goto tr1085;
-		case 92u: goto tr1085;
-		case 140u: goto tr1086;
-		case 148u: goto tr1086;
-		case 156u: goto tr1086;
+		case 12u: goto tr1092;
+		case 20u: goto tr1092;
+		case 28u: goto tr1092;
+		case 76u: goto tr1079;
+		case 84u: goto tr1079;
+		case 92u: goto tr1079;
+		case 140u: goto tr1080;
+		case 148u: goto tr1080;
+		case 156u: goto tr1080;
 	}
 	if ( 200u <= (*p) && (*p) <= 223u )
-		goto tr1087;
+		goto tr1081;
 	goto tr42;
-tr1096:
+tr1090:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -25353,9 +25333,9 @@ st652:
 		goto _test_eof652;
 case 652:
 	switch( (*p) ) {
-		case 242u: goto tr925;
+		case 242u: goto tr919;
 		case 243u: goto st653;
-		case 247u: goto tr925;
+		case 247u: goto tr919;
 	}
 	goto tr42;
 st653:
@@ -25363,20 +25343,20 @@ st653:
 		goto _test_eof653;
 case 653:
 	switch( (*p) ) {
-		case 12u: goto tr1100;
-		case 20u: goto tr1100;
-		case 28u: goto tr1100;
-		case 76u: goto tr1090;
-		case 84u: goto tr1090;
-		case 92u: goto tr1090;
-		case 140u: goto tr1091;
-		case 148u: goto tr1091;
-		case 156u: goto tr1091;
+		case 12u: goto tr1094;
+		case 20u: goto tr1094;
+		case 28u: goto tr1094;
+		case 76u: goto tr1084;
+		case 84u: goto tr1084;
+		case 92u: goto tr1084;
+		case 140u: goto tr1085;
+		case 148u: goto tr1085;
+		case 156u: goto tr1085;
 	}
 	if ( 200u <= (*p) && (*p) <= 223u )
-		goto tr1092;
+		goto tr1086;
 	goto tr42;
-tr802:
+tr796:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -25386,11 +25366,11 @@ st654:
 		goto _test_eof654;
 case 654:
 	{
-		static const unsigned short jump_table[] = { 1760, 1917, 1762, 1763, 1764, 1765, 1766, 1767, 1760, 1917, 1762, 1763, 1764, 1765, 1766, 1767, 1760, 1917, 1762, 1763, 1764, 1765, 1766, 1767, 1760, 1917, 1762, 1763, 1764, 1765, 1766, 1767, 1760, 1917, 1762, 1763, 1764, 1765, 1766, 1767, 1760, 1917, 1762, 1763, 1764, 1765, 1766, 1767, 1760, 1917, 1762, 1763, 1764, 1765, 1766, 1767, 1760, 1917, 1762, 1763, 1764, 1765, 1766, 1767, 1760, 1917, 1762, 1763, 1764, 1765, 1766, 1767, 1760, 1917, 1762, 1763, 1764, 1765, 1766, 1767, 1760, 1917, 1762, 1763, 1764, 1765, 1766, 1767, 1760, 1917, 1762, 1763, 1764, 1765, 1766, 1767, 1760, 1917, 1762, 1763, 1764, 1765, 1766, 1767, 1760, 1917, 1762, 1763, 1764, 1765, 1766, 1767, 1760, 1917, 1762, 1763, 1764, 1765, 1766, 1767, 1918, 1919, 1770, 1771, 1772, 1773, 1774, 1775, 858, 858, 1776, 1776, 858, 858, 858, 858, 858, 858, 1776, 1776, 858, 858, 858, 858, 858, 858, 1776, 1776, 858, 858, 858, 858, 858, 858, 1776, 1776, 858, 858, 858, 858, 858, 858, 1776, 1776, 858, 858, 858, 858, 858, 858, 1776, 1776, 858, 858, 858, 858, 858, 858, 1776, 1776, 858, 858, 858, 858, 858, 858, 1776, 1776, 858, 858, 858, 858, 858, 858, 1776, 1776, 858, 858, 858, 858, 858, 858, 1776, 1776, 858, 858, 858, 858, 858, 858, 1776, 1776, 858, 858, 858, 858, 858, 858, 1776, 1776, 858, 858, 858, 858, 858, 858, 1776, 1776, 858, 858, 858, 858, 858, 858, 1776, 1776, 858, 858, 858, 858, 858, 858, 1776, 1776, 858, 858, 858, 858, 858, 1777, 1778, 1778, 858, 1779, 858, 858 };
+		static const unsigned short jump_table[] = { 1754, 1911, 1756, 1757, 1758, 1759, 1760, 1761, 1754, 1911, 1756, 1757, 1758, 1759, 1760, 1761, 1754, 1911, 1756, 1757, 1758, 1759, 1760, 1761, 1754, 1911, 1756, 1757, 1758, 1759, 1760, 1761, 1754, 1911, 1756, 1757, 1758, 1759, 1760, 1761, 1754, 1911, 1756, 1757, 1758, 1759, 1760, 1761, 1754, 1911, 1756, 1757, 1758, 1759, 1760, 1761, 1754, 1911, 1756, 1757, 1758, 1759, 1760, 1761, 1754, 1911, 1756, 1757, 1758, 1759, 1760, 1761, 1754, 1911, 1756, 1757, 1758, 1759, 1760, 1761, 1754, 1911, 1756, 1757, 1758, 1759, 1760, 1761, 1754, 1911, 1756, 1757, 1758, 1759, 1760, 1761, 1754, 1911, 1756, 1757, 1758, 1759, 1760, 1761, 1754, 1911, 1756, 1757, 1758, 1759, 1760, 1761, 1754, 1911, 1756, 1757, 1758, 1759, 1760, 1761, 1912, 1913, 1764, 1765, 1766, 1767, 1768, 1769, 858, 858, 1770, 1770, 858, 858, 858, 858, 858, 858, 1770, 1770, 858, 858, 858, 858, 858, 858, 1770, 1770, 858, 858, 858, 858, 858, 858, 1770, 1770, 858, 858, 858, 858, 858, 858, 1770, 1770, 858, 858, 858, 858, 858, 858, 1770, 1770, 858, 858, 858, 858, 858, 858, 1770, 1770, 858, 858, 858, 858, 858, 858, 1770, 1770, 858, 858, 858, 858, 858, 858, 1770, 1770, 858, 858, 858, 858, 858, 858, 1770, 1770, 858, 858, 858, 858, 858, 858, 1770, 1770, 858, 858, 858, 858, 858, 858, 1770, 1770, 858, 858, 858, 858, 858, 858, 1770, 1770, 858, 858, 858, 858, 858, 858, 1770, 1770, 858, 858, 858, 858, 858, 858, 1770, 1770, 858, 858, 858, 858, 858, 1771, 1772, 1772, 858, 1773, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1101:
+tr1095:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -25400,50 +25380,50 @@ st655:
 		goto _test_eof655;
 case 655:
 	switch( (*p) ) {
-		case 18u: goto tr966;
-		case 81u: goto tr965;
+		case 18u: goto tr960;
+		case 81u: goto tr959;
 		case 115u: goto st657;
-		case 194u: goto tr967;
-		case 198u: goto tr967;
+		case 194u: goto tr961;
+		case 198u: goto tr961;
 	}
 	if ( (*p) < 116u ) {
 		if ( (*p) < 46u ) {
 			if ( (*p) > 21u ) {
 				if ( 22u <= (*p) && (*p) <= 23u )
-					goto tr966;
+					goto tr960;
 			} else if ( (*p) >= 20u )
-				goto tr965;
+				goto tr959;
 		} else if ( (*p) > 47u ) {
 			if ( (*p) < 92u ) {
 				if ( 84u <= (*p) && (*p) <= 89u )
-					goto tr965;
+					goto tr959;
 			} else if ( (*p) > 109u ) {
 				if ( 113u <= (*p) && (*p) <= 114u )
 					goto st656;
 			} else
-				goto tr965;
+				goto tr959;
 		} else
-			goto tr965;
+			goto tr959;
 	} else if ( (*p) > 118u ) {
 		if ( (*p) < 216u ) {
 			if ( (*p) > 125u ) {
 				if ( 208u <= (*p) && (*p) <= 213u )
-					goto tr965;
+					goto tr959;
 			} else if ( (*p) >= 124u )
-				goto tr965;
+				goto tr959;
 		} else if ( (*p) > 229u ) {
 			if ( (*p) < 241u ) {
 				if ( 232u <= (*p) && (*p) <= 239u )
-					goto tr965;
+					goto tr959;
 			} else if ( (*p) > 246u ) {
 				if ( 248u <= (*p) && (*p) <= 254u )
-					goto tr965;
+					goto tr959;
 			} else
-				goto tr965;
+				goto tr959;
 		} else
-			goto tr965;
+			goto tr959;
 	} else
-		goto tr965;
+		goto tr959;
 	goto tr42;
 st656:
 	if ( ++p == pe )
@@ -25451,12 +25431,12 @@ st656:
 case 656:
 	if ( (*p) < 224u ) {
 		if ( 208u <= (*p) && (*p) <= 215u )
-			goto tr979;
+			goto tr973;
 	} else if ( (*p) > 231u ) {
 		if ( 240u <= (*p) && (*p) <= 247u )
-			goto tr979;
+			goto tr973;
 	} else
-		goto tr979;
+		goto tr973;
 	goto tr42;
 st657:
 	if ( ++p == pe )
@@ -25464,11 +25444,11 @@ st657:
 case 657:
 	if ( (*p) > 223u ) {
 		if ( 240u <= (*p) )
-			goto tr979;
+			goto tr973;
 	} else if ( (*p) >= 208u )
-		goto tr979;
+		goto tr973;
 	goto tr42;
-tr1102:
+tr1096:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -25479,55 +25459,55 @@ st658:
 case 658:
 	switch( (*p) ) {
 		case 18u: goto st551;
-		case 19u: goto tr966;
+		case 19u: goto tr960;
 		case 22u: goto st551;
-		case 23u: goto tr966;
-		case 43u: goto tr966;
-		case 80u: goto tr973;
+		case 23u: goto tr960;
+		case 43u: goto tr960;
+		case 80u: goto tr967;
 		case 174u: goto st659;
-		case 194u: goto tr967;
-		case 198u: goto tr967;
+		case 194u: goto tr961;
+		case 198u: goto tr961;
 	}
 	if ( (*p) < 40u ) {
 		if ( 16u <= (*p) && (*p) <= 21u )
-			goto tr965;
+			goto tr959;
 	} else if ( (*p) > 41u ) {
 		if ( (*p) > 47u ) {
 			if ( 81u <= (*p) && (*p) <= 95u )
-				goto tr965;
+				goto tr959;
 		} else if ( (*p) >= 46u )
-			goto tr965;
+			goto tr959;
 	} else
-		goto tr965;
+		goto tr959;
 	goto tr42;
 st659:
 	if ( ++p == pe )
 		goto _test_eof659;
 case 659:
 	switch( (*p) ) {
-		case 20u: goto tr829;
-		case 28u: goto tr829;
-		case 84u: goto tr830;
-		case 92u: goto tr830;
-		case 148u: goto tr831;
-		case 156u: goto tr831;
+		case 20u: goto tr823;
+		case 28u: goto tr823;
+		case 84u: goto tr824;
+		case 92u: goto tr824;
+		case 148u: goto tr825;
+		case 156u: goto tr825;
 	}
 	if ( (*p) < 30u ) {
 		if ( (*p) > 19u ) {
 			if ( 22u <= (*p) && (*p) <= 27u )
-				goto tr968;
+				goto tr962;
 		} else if ( (*p) >= 16u )
-			goto tr968;
+			goto tr962;
 	} else if ( (*p) > 31u ) {
 		if ( (*p) > 95u ) {
 			if ( 144u <= (*p) && (*p) <= 159u )
-				goto tr970;
+				goto tr964;
 		} else if ( (*p) >= 80u )
-			goto tr969;
+			goto tr963;
 	} else
-		goto tr968;
+		goto tr962;
 	goto tr42;
-tr1103:
+tr1097:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -25537,11 +25517,11 @@ st660:
 		goto _test_eof660;
 case 660:
 	{
-		static const unsigned short jump_table[] = { 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1781, 1781, 1782, 1782, 1781, 1781, 1782, 1782, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1781, 1781, 858, 1782, 858, 858, 1781, 1781, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1789, 1781, 858, 858, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1783, 656, 656, 657, 1781, 1781, 1781, 858, 858, 858, 858, 858, 1781, 1781, 858, 1781, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1783, 858, 562, 1791, 1783, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1781, 1781, 1781, 1781, 1781, 1781, 858, 1789, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1782, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 858, 1781, 1781, 1781, 1781, 1781, 1781, 1788, 1781, 1781, 1781, 1781, 1781, 1781, 1781, 858 };
+		static const unsigned short jump_table[] = { 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1775, 1775, 1776, 1776, 1775, 1775, 1776, 1776, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1775, 1775, 858, 1776, 858, 858, 1775, 1775, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1783, 1775, 858, 858, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1777, 656, 656, 657, 1775, 1775, 1775, 858, 858, 858, 858, 858, 1775, 1775, 858, 1775, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1777, 858, 562, 1785, 1777, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1775, 1775, 1775, 1775, 1775, 1775, 858, 1783, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1776, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 858, 1775, 1775, 1775, 1775, 1775, 1775, 1782, 1775, 1775, 1775, 1775, 1775, 1775, 1775, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr803:
+tr797:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -25551,11 +25531,11 @@ st661:
 		goto _test_eof661;
 case 661:
 	{
-		static const unsigned short jump_table[] = { 1923, 1801, 858, 858, 858, 1802, 858, 858, 1923, 1801, 858, 858, 858, 1802, 858, 858, 1923, 1801, 858, 858, 858, 1802, 858, 858, 1923, 1801, 858, 858, 858, 1802, 858, 858, 1923, 1801, 858, 858, 858, 1802, 858, 858, 1923, 1801, 858, 858, 858, 1802, 858, 858, 1923, 1801, 858, 858, 858, 1802, 858, 858, 1923, 1801, 858, 858, 858, 1802, 858, 858, 1923, 1801, 858, 858, 858, 1802, 858, 858, 1923, 1801, 858, 858, 858, 1802, 858, 858, 1923, 1801, 858, 858, 858, 1802, 858, 858, 1923, 1801, 858, 858, 858, 1802, 858, 858, 1923, 1801, 858, 858, 858, 1802, 858, 858, 1923, 1801, 858, 858, 858, 1802, 858, 858, 1923, 1801, 858, 858, 858, 1802, 858, 858, 1923, 1803, 858, 858, 858, 1804, 858, 858, 1924, 1806, 858, 858, 858, 1807, 858, 858, 1924, 1806, 858, 858, 858, 1807, 858, 858, 1924, 1806, 858, 858, 858, 1807, 858, 858, 1924, 1806, 858, 858, 858, 1807, 858, 858, 1924, 1806, 858, 858, 858, 1807, 858, 858, 1924, 1806, 858, 858, 858, 1807, 858, 858, 1924, 1806, 858, 858, 858, 1807, 858, 858, 1924, 1806, 858, 858, 858, 1807, 858, 858, 1924, 1806, 858, 858, 858, 1807, 858, 858, 1924, 1806, 858, 858, 858, 1807, 858, 858, 1924, 1806, 858, 858, 858, 1807, 858, 858, 1924, 1806, 858, 858, 858, 1807, 858, 858, 1924, 1806, 858, 858, 858, 1807, 858, 858, 1924, 1806, 858, 858, 858, 1807, 858, 858, 1924, 1806, 858, 858, 858, 1807, 858, 858, 1924, 1806, 858, 858, 858, 1807, 858, 858 };
+		static const unsigned short jump_table[] = { 1917, 1795, 858, 858, 858, 1796, 858, 858, 1917, 1795, 858, 858, 858, 1796, 858, 858, 1917, 1795, 858, 858, 858, 1796, 858, 858, 1917, 1795, 858, 858, 858, 1796, 858, 858, 1917, 1795, 858, 858, 858, 1796, 858, 858, 1917, 1795, 858, 858, 858, 1796, 858, 858, 1917, 1795, 858, 858, 858, 1796, 858, 858, 1917, 1795, 858, 858, 858, 1796, 858, 858, 1917, 1795, 858, 858, 858, 1796, 858, 858, 1917, 1795, 858, 858, 858, 1796, 858, 858, 1917, 1795, 858, 858, 858, 1796, 858, 858, 1917, 1795, 858, 858, 858, 1796, 858, 858, 1917, 1795, 858, 858, 858, 1796, 858, 858, 1917, 1795, 858, 858, 858, 1796, 858, 858, 1917, 1795, 858, 858, 858, 1796, 858, 858, 1917, 1797, 858, 858, 858, 1798, 858, 858, 1918, 1800, 858, 858, 858, 1801, 858, 858, 1918, 1800, 858, 858, 858, 1801, 858, 858, 1918, 1800, 858, 858, 858, 1801, 858, 858, 1918, 1800, 858, 858, 858, 1801, 858, 858, 1918, 1800, 858, 858, 858, 1801, 858, 858, 1918, 1800, 858, 858, 858, 1801, 858, 858, 1918, 1800, 858, 858, 858, 1801, 858, 858, 1918, 1800, 858, 858, 858, 1801, 858, 858, 1918, 1800, 858, 858, 858, 1801, 858, 858, 1918, 1800, 858, 858, 858, 1801, 858, 858, 1918, 1800, 858, 858, 858, 1801, 858, 858, 1918, 1800, 858, 858, 858, 1801, 858, 858, 1918, 1800, 858, 858, 858, 1801, 858, 858, 1918, 1800, 858, 858, 858, 1801, 858, 858, 1918, 1800, 858, 858, 858, 1801, 858, 858, 1918, 1800, 858, 858, 858, 1801, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1107:
+tr1101:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -25565,9 +25545,9 @@ st662:
 		goto _test_eof662;
 case 662:
 	switch( (*p) ) {
-		case 242u: goto tr992;
+		case 242u: goto tr986;
 		case 243u: goto st663;
-		case 247u: goto tr992;
+		case 247u: goto tr986;
 	}
 	goto tr42;
 st663:
@@ -25575,38 +25555,38 @@ st663:
 		goto _test_eof663;
 case 663:
 	switch( (*p) ) {
-		case 12u: goto tr1084;
-		case 20u: goto tr1084;
-		case 28u: goto tr1084;
-		case 76u: goto tr1085;
-		case 84u: goto tr1085;
-		case 92u: goto tr1085;
-		case 140u: goto tr1086;
-		case 148u: goto tr1086;
-		case 156u: goto tr1086;
+		case 12u: goto tr1078;
+		case 20u: goto tr1078;
+		case 28u: goto tr1078;
+		case 76u: goto tr1079;
+		case 84u: goto tr1079;
+		case 92u: goto tr1079;
+		case 140u: goto tr1080;
+		case 148u: goto tr1080;
+		case 156u: goto tr1080;
 	}
 	if ( (*p) < 30u ) {
 		if ( (*p) < 14u ) {
 			if ( 8u <= (*p) && (*p) <= 11u )
-				goto tr1110;
+				goto tr1104;
 		} else if ( (*p) > 19u ) {
 			if ( 22u <= (*p) && (*p) <= 27u )
-				goto tr1110;
+				goto tr1104;
 		} else
-			goto tr1110;
+			goto tr1104;
 	} else if ( (*p) > 31u ) {
 		if ( (*p) < 136u ) {
 			if ( 72u <= (*p) && (*p) <= 95u )
-				goto tr1111;
+				goto tr1105;
 		} else if ( (*p) > 159u ) {
 			if ( 200u <= (*p) && (*p) <= 223u )
-				goto tr1087;
+				goto tr1081;
 		} else
-			goto tr1112;
+			goto tr1106;
 	} else
-		goto tr1110;
+		goto tr1104;
 	goto tr42;
-tr1108:
+tr1102:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -25616,9 +25596,9 @@ st664:
 		goto _test_eof664;
 case 664:
 	switch( (*p) ) {
-		case 242u: goto tr996;
+		case 242u: goto tr990;
 		case 243u: goto st665;
-		case 247u: goto tr996;
+		case 247u: goto tr990;
 	}
 	goto tr42;
 st665:
@@ -25626,38 +25606,38 @@ st665:
 		goto _test_eof665;
 case 665:
 	switch( (*p) ) {
-		case 12u: goto tr1089;
-		case 20u: goto tr1089;
-		case 28u: goto tr1089;
-		case 76u: goto tr1090;
-		case 84u: goto tr1090;
-		case 92u: goto tr1090;
-		case 140u: goto tr1091;
-		case 148u: goto tr1091;
-		case 156u: goto tr1091;
+		case 12u: goto tr1083;
+		case 20u: goto tr1083;
+		case 28u: goto tr1083;
+		case 76u: goto tr1084;
+		case 84u: goto tr1084;
+		case 92u: goto tr1084;
+		case 140u: goto tr1085;
+		case 148u: goto tr1085;
+		case 156u: goto tr1085;
 	}
 	if ( (*p) < 30u ) {
 		if ( (*p) < 14u ) {
 			if ( 8u <= (*p) && (*p) <= 11u )
-				goto tr1114;
+				goto tr1108;
 		} else if ( (*p) > 19u ) {
 			if ( 22u <= (*p) && (*p) <= 27u )
-				goto tr1114;
+				goto tr1108;
 		} else
-			goto tr1114;
+			goto tr1108;
 	} else if ( (*p) > 31u ) {
 		if ( (*p) < 136u ) {
 			if ( 72u <= (*p) && (*p) <= 95u )
-				goto tr1115;
+				goto tr1109;
 		} else if ( (*p) > 159u ) {
 			if ( 200u <= (*p) && (*p) <= 223u )
-				goto tr1092;
+				goto tr1086;
 		} else
-			goto tr1116;
+			goto tr1110;
 	} else
-		goto tr1114;
+		goto tr1108;
 	goto tr42;
-tr804:
+tr798:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -25667,16 +25647,16 @@ st666:
 		goto _test_eof666;
 case 666:
 	{
-		static const unsigned short jump_table[] = { 1834, 1933, 1836, 1837, 1838, 1839, 1766, 1840, 1834, 1933, 1836, 1837, 1838, 1839, 1766, 1840, 1834, 1933, 1836, 1837, 1838, 1839, 1766, 1840, 1834, 1933, 1836, 1837, 1838, 1839, 1766, 1840, 1834, 1933, 1836, 1837, 1838, 1839, 1766, 1840, 1834, 1933, 1836, 1837, 1838, 1839, 1766, 1840, 1834, 1933, 1836, 1837, 1838, 1839, 1766, 1840, 1834, 1933, 1836, 1837, 1838, 1839, 1766, 1840, 1834, 1933, 1836, 1837, 1838, 1839, 1766, 1840, 1834, 1933, 1836, 1837, 1838, 1839, 1766, 1840, 1834, 1933, 1836, 1837, 1838, 1839, 1766, 1840, 1834, 1933, 1836, 1837, 1838, 1839, 1766, 1840, 1834, 1933, 1836, 1837, 1838, 1839, 1766, 1840, 1834, 1933, 1836, 1837, 1838, 1839, 1766, 1840, 1834, 1933, 1836, 1837, 1838, 1839, 1766, 1840, 1934, 1935, 1843, 1844, 1936, 1846, 1847, 1848, 858, 858, 1849, 1849, 858, 858, 858, 858, 858, 858, 1849, 1849, 858, 858, 858, 858, 858, 858, 1849, 1849, 858, 858, 858, 858, 858, 858, 1849, 1849, 858, 858, 858, 858, 858, 858, 1849, 1849, 858, 858, 858, 858, 858, 858, 1849, 1849, 858, 858, 858, 858, 858, 858, 1849, 1849, 858, 858, 858, 858, 858, 858, 1849, 1849, 858, 858, 858, 858, 858, 858, 1849, 1849, 858, 858, 858, 858, 858, 858, 1849, 1849, 858, 858, 858, 858, 858, 858, 1849, 1849, 858, 858, 858, 858, 858, 858, 1849, 1849, 858, 858, 858, 858, 858, 858, 1849, 1849, 858, 858, 858, 858, 858, 858, 1849, 1849, 858, 858, 858, 858, 858, 858, 1849, 1849, 858, 858, 858, 858, 858, 1850, 1851, 1851, 858, 1852, 858, 858 };
+		static const unsigned short jump_table[] = { 1828, 1927, 1830, 1831, 1832, 1833, 1760, 1834, 1828, 1927, 1830, 1831, 1832, 1833, 1760, 1834, 1828, 1927, 1830, 1831, 1832, 1833, 1760, 1834, 1828, 1927, 1830, 1831, 1832, 1833, 1760, 1834, 1828, 1927, 1830, 1831, 1832, 1833, 1760, 1834, 1828, 1927, 1830, 1831, 1832, 1833, 1760, 1834, 1828, 1927, 1830, 1831, 1832, 1833, 1760, 1834, 1828, 1927, 1830, 1831, 1832, 1833, 1760, 1834, 1828, 1927, 1830, 1831, 1832, 1833, 1760, 1834, 1828, 1927, 1830, 1831, 1832, 1833, 1760, 1834, 1828, 1927, 1830, 1831, 1832, 1833, 1760, 1834, 1828, 1927, 1830, 1831, 1832, 1833, 1760, 1834, 1828, 1927, 1830, 1831, 1832, 1833, 1760, 1834, 1828, 1927, 1830, 1831, 1832, 1833, 1760, 1834, 1828, 1927, 1830, 1831, 1832, 1833, 1760, 1834, 1928, 1929, 1837, 1838, 1930, 1840, 1841, 1842, 858, 858, 1843, 1843, 858, 858, 858, 858, 858, 858, 1843, 1843, 858, 858, 858, 858, 858, 858, 1843, 1843, 858, 858, 858, 858, 858, 858, 1843, 1843, 858, 858, 858, 858, 858, 858, 1843, 1843, 858, 858, 858, 858, 858, 858, 1843, 1843, 858, 858, 858, 858, 858, 858, 1843, 1843, 858, 858, 858, 858, 858, 858, 1843, 1843, 858, 858, 858, 858, 858, 858, 1843, 1843, 858, 858, 858, 858, 858, 858, 1843, 1843, 858, 858, 858, 858, 858, 858, 1843, 1843, 858, 858, 858, 858, 858, 858, 1843, 1843, 858, 858, 858, 858, 858, 858, 1843, 1843, 858, 858, 858, 858, 858, 858, 1843, 1843, 858, 858, 858, 858, 858, 858, 1843, 1843, 858, 858, 858, 858, 858, 1844, 1845, 1845, 858, 1846, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1117:
+tr1111:
 	{
     SET_VEX_PREFIX3(*p);
   }
 	goto st667;
-tr1144:
+tr1138:
 	{
     /* This emulates two prefixes case. */
     SET_VEX_PREFIX2((p[0] & 0x80) | 0x61);
@@ -25688,57 +25668,57 @@ st667:
 		goto _test_eof667;
 case 667:
 	switch( (*p) ) {
-		case 18u: goto tr1039;
-		case 81u: goto tr1038;
+		case 18u: goto tr1033;
+		case 81u: goto tr1032;
 		case 115u: goto st657;
-		case 194u: goto tr1040;
-		case 198u: goto tr1040;
+		case 194u: goto tr1034;
+		case 198u: goto tr1034;
 	}
 	if ( (*p) < 116u ) {
 		if ( (*p) < 46u ) {
 			if ( (*p) > 21u ) {
 				if ( 22u <= (*p) && (*p) <= 23u )
-					goto tr1039;
+					goto tr1033;
 			} else if ( (*p) >= 20u )
-				goto tr1038;
+				goto tr1032;
 		} else if ( (*p) > 47u ) {
 			if ( (*p) < 92u ) {
 				if ( 84u <= (*p) && (*p) <= 89u )
-					goto tr1038;
+					goto tr1032;
 			} else if ( (*p) > 109u ) {
 				if ( 113u <= (*p) && (*p) <= 114u )
 					goto st656;
 			} else
-				goto tr1038;
+				goto tr1032;
 		} else
-			goto tr1038;
+			goto tr1032;
 	} else if ( (*p) > 118u ) {
 		if ( (*p) < 216u ) {
 			if ( (*p) > 125u ) {
 				if ( 208u <= (*p) && (*p) <= 213u )
-					goto tr1038;
+					goto tr1032;
 			} else if ( (*p) >= 124u )
-				goto tr1038;
+				goto tr1032;
 		} else if ( (*p) > 229u ) {
 			if ( (*p) < 241u ) {
 				if ( 232u <= (*p) && (*p) <= 239u )
-					goto tr1038;
+					goto tr1032;
 			} else if ( (*p) > 246u ) {
 				if ( 248u <= (*p) && (*p) <= 254u )
-					goto tr1038;
+					goto tr1032;
 			} else
-				goto tr1038;
+				goto tr1032;
 		} else
-			goto tr1038;
+			goto tr1032;
 	} else
-		goto tr1038;
+		goto tr1032;
 	goto tr42;
-tr1118:
+tr1112:
 	{
     SET_VEX_PREFIX3(*p);
   }
 	goto st668;
-tr1145:
+tr1139:
 	{
     /* This emulates two prefixes case. */
     SET_VEX_PREFIX2((p[0] & 0x80) | 0x61);
@@ -25751,57 +25731,57 @@ st668:
 case 668:
 	switch( (*p) ) {
 		case 18u: goto st598;
-		case 19u: goto tr1039;
+		case 19u: goto tr1033;
 		case 22u: goto st598;
-		case 23u: goto tr1039;
-		case 43u: goto tr1039;
-		case 80u: goto tr973;
-		case 119u: goto tr971;
+		case 23u: goto tr1033;
+		case 43u: goto tr1033;
+		case 80u: goto tr967;
+		case 119u: goto tr965;
 		case 174u: goto st669;
-		case 194u: goto tr1040;
-		case 198u: goto tr1040;
+		case 194u: goto tr1034;
+		case 198u: goto tr1034;
 	}
 	if ( (*p) < 40u ) {
 		if ( 16u <= (*p) && (*p) <= 21u )
-			goto tr1038;
+			goto tr1032;
 	} else if ( (*p) > 41u ) {
 		if ( (*p) > 47u ) {
 			if ( 81u <= (*p) && (*p) <= 95u )
-				goto tr1038;
+				goto tr1032;
 		} else if ( (*p) >= 46u )
-			goto tr1038;
+			goto tr1032;
 	} else
-		goto tr1038;
+		goto tr1032;
 	goto tr42;
 st669:
 	if ( ++p == pe )
 		goto _test_eof669;
 case 669:
 	switch( (*p) ) {
-		case 20u: goto tr906;
-		case 21u: goto tr1041;
-		case 28u: goto tr906;
-		case 29u: goto tr1041;
-		case 84u: goto tr830;
-		case 92u: goto tr830;
-		case 148u: goto tr831;
-		case 156u: goto tr831;
+		case 20u: goto tr900;
+		case 21u: goto tr1035;
+		case 28u: goto tr900;
+		case 29u: goto tr1035;
+		case 84u: goto tr824;
+		case 92u: goto tr824;
+		case 148u: goto tr825;
+		case 156u: goto tr825;
 	}
 	if ( (*p) < 80u ) {
 		if ( 16u <= (*p) && (*p) <= 31u )
-			goto tr968;
+			goto tr962;
 	} else if ( (*p) > 95u ) {
 		if ( 144u <= (*p) && (*p) <= 159u )
-			goto tr970;
+			goto tr964;
 	} else
-		goto tr969;
+		goto tr963;
 	goto tr42;
-tr1119:
+tr1113:
 	{
     SET_VEX_PREFIX3(*p);
   }
 	goto st670;
-tr1146:
+tr1140:
 	{
     /* This emulates two prefixes case. */
     SET_VEX_PREFIX2((p[0] & 0x80) | 0x61);
@@ -25813,16 +25793,16 @@ st670:
 		goto _test_eof670;
 case 670:
 	{
-		static const unsigned short jump_table[] = { 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1854, 1854, 1855, 1855, 1854, 1854, 1855, 1855, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1854, 1854, 858, 1855, 858, 858, 1854, 1854, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1789, 1854, 858, 858, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1856, 656, 656, 657, 1854, 1854, 1854, 858, 858, 858, 858, 858, 1854, 1854, 858, 1854, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1856, 858, 607, 1791, 1856, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1854, 1854, 1854, 1854, 1854, 1854, 858, 1789, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1855, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 858, 1854, 1854, 1854, 1854, 1854, 1854, 1788, 1854, 1854, 1854, 1854, 1854, 1854, 1854, 858 };
+		static const unsigned short jump_table[] = { 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1848, 1848, 1849, 1849, 1848, 1848, 1849, 1849, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1848, 1848, 858, 1849, 858, 858, 1848, 1848, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1783, 1848, 858, 858, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1850, 656, 656, 657, 1848, 1848, 1848, 858, 858, 858, 858, 858, 1848, 1848, 858, 1848, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1850, 858, 607, 1785, 1850, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1848, 1848, 1848, 1848, 1848, 1848, 858, 1783, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1849, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 858, 1848, 1848, 1848, 1848, 1848, 1848, 1782, 1848, 1848, 1848, 1848, 1848, 1848, 1848, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1120:
+tr1114:
 	{
     SET_VEX_PREFIX3(*p);
   }
 	goto st671;
-tr1147:
+tr1141:
 	{
     /* This emulates two prefixes case. */
     SET_VEX_PREFIX2((p[0] & 0x80) | 0x61);
@@ -25834,25 +25814,25 @@ st671:
 		goto _test_eof671;
 case 671:
 	switch( (*p) ) {
-		case 43u: goto tr1039;
-		case 80u: goto tr973;
-		case 119u: goto tr971;
-		case 194u: goto tr1040;
-		case 198u: goto tr1040;
+		case 43u: goto tr1033;
+		case 80u: goto tr967;
+		case 119u: goto tr965;
+		case 194u: goto tr1034;
+		case 198u: goto tr1034;
 	}
 	if ( (*p) < 20u ) {
 		if ( 16u <= (*p) && (*p) <= 17u )
-			goto tr1038;
+			goto tr1032;
 	} else if ( (*p) > 21u ) {
 		if ( (*p) > 41u ) {
 			if ( 81u <= (*p) && (*p) <= 95u )
-				goto tr1038;
+				goto tr1032;
 		} else if ( (*p) >= 40u )
-			goto tr1038;
+			goto tr1032;
 	} else
-		goto tr1038;
+		goto tr1032;
 	goto tr42;
-tr805:
+tr799:
 	{
     SET_VEX_PREFIX2(*p);
   }
@@ -25862,11 +25842,11 @@ st672:
 		goto _test_eof672;
 case 672:
 	{
-		static const unsigned short jump_table[] = { 1938, 1865, 858, 858, 858, 1866, 858, 858, 1938, 1865, 858, 858, 858, 1866, 858, 858, 1938, 1865, 858, 858, 858, 1866, 858, 858, 1938, 1865, 858, 858, 858, 1866, 858, 858, 1938, 1865, 858, 858, 858, 1866, 858, 858, 1938, 1865, 858, 858, 858, 1866, 858, 858, 1938, 1865, 858, 858, 858, 1866, 858, 858, 1938, 1865, 858, 858, 858, 1866, 858, 858, 1938, 1865, 858, 858, 858, 1866, 858, 858, 1938, 1865, 858, 858, 858, 1866, 858, 858, 1938, 1865, 858, 858, 858, 1866, 858, 858, 1938, 1865, 858, 858, 858, 1866, 858, 858, 1938, 1865, 858, 858, 858, 1866, 858, 858, 1938, 1865, 858, 858, 858, 1866, 858, 858, 1938, 1865, 858, 858, 858, 1866, 858, 858, 1938, 1867, 858, 858, 858, 1868, 858, 858, 1939, 1870, 858, 858, 858, 1871, 858, 858, 1939, 1870, 858, 858, 858, 1871, 858, 858, 1939, 1870, 858, 858, 858, 1871, 858, 858, 1939, 1870, 858, 858, 858, 1871, 858, 858, 1939, 1870, 858, 858, 858, 1871, 858, 858, 1939, 1870, 858, 858, 858, 1871, 858, 858, 1939, 1870, 858, 858, 858, 1871, 858, 858, 1939, 1870, 858, 858, 858, 1871, 858, 858, 1939, 1870, 858, 858, 858, 1871, 858, 858, 1939, 1870, 858, 858, 858, 1871, 858, 858, 1939, 1870, 858, 858, 858, 1871, 858, 858, 1939, 1870, 858, 858, 858, 1871, 858, 858, 1939, 1870, 858, 858, 858, 1871, 858, 858, 1939, 1870, 858, 858, 858, 1871, 858, 858, 1939, 1870, 858, 858, 858, 1871, 858, 858, 1939, 1870, 858, 858, 858, 1871, 858, 858 };
+		static const unsigned short jump_table[] = { 1932, 1859, 858, 858, 858, 1860, 858, 858, 1932, 1859, 858, 858, 858, 1860, 858, 858, 1932, 1859, 858, 858, 858, 1860, 858, 858, 1932, 1859, 858, 858, 858, 1860, 858, 858, 1932, 1859, 858, 858, 858, 1860, 858, 858, 1932, 1859, 858, 858, 858, 1860, 858, 858, 1932, 1859, 858, 858, 858, 1860, 858, 858, 1932, 1859, 858, 858, 858, 1860, 858, 858, 1932, 1859, 858, 858, 858, 1860, 858, 858, 1932, 1859, 858, 858, 858, 1860, 858, 858, 1932, 1859, 858, 858, 858, 1860, 858, 858, 1932, 1859, 858, 858, 858, 1860, 858, 858, 1932, 1859, 858, 858, 858, 1860, 858, 858, 1932, 1859, 858, 858, 858, 1860, 858, 858, 1932, 1859, 858, 858, 858, 1860, 858, 858, 1932, 1861, 858, 858, 858, 1862, 858, 858, 1933, 1864, 858, 858, 858, 1865, 858, 858, 1933, 1864, 858, 858, 858, 1865, 858, 858, 1933, 1864, 858, 858, 858, 1865, 858, 858, 1933, 1864, 858, 858, 858, 1865, 858, 858, 1933, 1864, 858, 858, 858, 1865, 858, 858, 1933, 1864, 858, 858, 858, 1865, 858, 858, 1933, 1864, 858, 858, 858, 1865, 858, 858, 1933, 1864, 858, 858, 858, 1865, 858, 858, 1933, 1864, 858, 858, 858, 1865, 858, 858, 1933, 1864, 858, 858, 858, 1865, 858, 858, 1933, 1864, 858, 858, 858, 1865, 858, 858, 1933, 1864, 858, 858, 858, 1865, 858, 858, 1933, 1864, 858, 858, 858, 1865, 858, 858, 1933, 1864, 858, 858, 858, 1865, 858, 858, 1933, 1864, 858, 858, 858, 1865, 858, 858, 1933, 1864, 858, 858, 858, 1865, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1122:
+tr1116:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -25876,9 +25856,9 @@ st673:
 		goto _test_eof673;
 case 673:
 	switch( (*p) ) {
-		case 242u: goto tr1056;
+		case 242u: goto tr1050;
 		case 243u: goto st674;
-		case 247u: goto tr1056;
+		case 247u: goto tr1050;
 	}
 	goto tr42;
 st674:
@@ -25886,32 +25866,32 @@ st674:
 		goto _test_eof674;
 case 674:
 	switch( (*p) ) {
-		case 12u: goto tr1098;
-		case 13u: goto tr1125;
-		case 20u: goto tr1098;
-		case 21u: goto tr1125;
-		case 28u: goto tr1098;
-		case 29u: goto tr1125;
-		case 76u: goto tr1085;
-		case 84u: goto tr1085;
-		case 92u: goto tr1085;
-		case 140u: goto tr1086;
-		case 148u: goto tr1086;
-		case 156u: goto tr1086;
+		case 12u: goto tr1092;
+		case 13u: goto tr1119;
+		case 20u: goto tr1092;
+		case 21u: goto tr1119;
+		case 28u: goto tr1092;
+		case 29u: goto tr1119;
+		case 76u: goto tr1079;
+		case 84u: goto tr1079;
+		case 92u: goto tr1079;
+		case 140u: goto tr1080;
+		case 148u: goto tr1080;
+		case 156u: goto tr1080;
 	}
 	if ( (*p) < 72u ) {
 		if ( 8u <= (*p) && (*p) <= 31u )
-			goto tr1110;
+			goto tr1104;
 	} else if ( (*p) > 95u ) {
 		if ( (*p) > 159u ) {
 			if ( 200u <= (*p) && (*p) <= 223u )
-				goto tr1087;
+				goto tr1081;
 		} else if ( (*p) >= 136u )
-			goto tr1112;
+			goto tr1106;
 	} else
-		goto tr1111;
+		goto tr1105;
 	goto tr42;
-tr1123:
+tr1117:
 	{
     SET_VEX_PREFIX3(*p);
   }
@@ -25921,9 +25901,9 @@ st675:
 		goto _test_eof675;
 case 675:
 	switch( (*p) ) {
-		case 242u: goto tr1060;
+		case 242u: goto tr1054;
 		case 243u: goto st676;
-		case 247u: goto tr1060;
+		case 247u: goto tr1054;
 	}
 	goto tr42;
 st676:
@@ -25931,32 +25911,32 @@ st676:
 		goto _test_eof676;
 case 676:
 	switch( (*p) ) {
-		case 12u: goto tr1100;
-		case 13u: goto tr1127;
-		case 20u: goto tr1100;
-		case 21u: goto tr1127;
-		case 28u: goto tr1100;
-		case 29u: goto tr1127;
-		case 76u: goto tr1090;
-		case 84u: goto tr1090;
-		case 92u: goto tr1090;
-		case 140u: goto tr1091;
-		case 148u: goto tr1091;
-		case 156u: goto tr1091;
+		case 12u: goto tr1094;
+		case 13u: goto tr1121;
+		case 20u: goto tr1094;
+		case 21u: goto tr1121;
+		case 28u: goto tr1094;
+		case 29u: goto tr1121;
+		case 76u: goto tr1084;
+		case 84u: goto tr1084;
+		case 92u: goto tr1084;
+		case 140u: goto tr1085;
+		case 148u: goto tr1085;
+		case 156u: goto tr1085;
 	}
 	if ( (*p) < 72u ) {
 		if ( 8u <= (*p) && (*p) <= 31u )
-			goto tr1114;
+			goto tr1108;
 	} else if ( (*p) > 95u ) {
 		if ( (*p) > 159u ) {
 			if ( 200u <= (*p) && (*p) <= 223u )
-				goto tr1092;
+				goto tr1086;
 		} else if ( (*p) >= 136u )
-			goto tr1116;
+			goto tr1110;
 	} else
-		goto tr1115;
+		goto tr1109;
 	goto tr42;
-tr1301:
+tr1295:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -25972,10 +25952,10 @@ st677:
 case 677:
 	{
 		static const unsigned char jump_table[] = { 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 0, 16, 2, 3, 4, 5, 6, 7, 17, 18, 10, 11, 19, 13, 14, 15 };
-		cs = jump_table[(*p)] + 1944;
+		cs = jump_table[(*p)] + 1938;
 		goto _again;
 	}
-tr1130:
+tr1124:
 	{
     /* This emulates two prefixes case. */
     SET_VEX_PREFIX2((p[0] & 0x80) | 0x61);
@@ -25987,17 +25967,17 @@ st678:
 		goto _test_eof678;
 case 678:
 	switch( (*p) ) {
-		case 81u: goto tr1038;
-		case 83u: goto tr1038;
-		case 194u: goto tr1040;
+		case 81u: goto tr1032;
+		case 83u: goto tr1032;
+		case 194u: goto tr1034;
 	}
 	if ( (*p) > 90u ) {
 		if ( 92u <= (*p) && (*p) <= 95u )
-			goto tr1038;
+			goto tr1032;
 	} else if ( (*p) >= 88u )
-		goto tr1038;
+		goto tr1032;
 	goto tr42;
-tr1131:
+tr1125:
 	{
     /* This emulates two prefixes case. */
     SET_VEX_PREFIX2((p[0] & 0x80) | 0x61);
@@ -26009,20 +25989,20 @@ st679:
 		goto _test_eof679;
 case 679:
 	switch( (*p) ) {
-		case 81u: goto tr1038;
-		case 194u: goto tr1040;
-		case 208u: goto tr1038;
+		case 81u: goto tr1032;
+		case 194u: goto tr1034;
+		case 208u: goto tr1032;
 	}
 	if ( (*p) < 92u ) {
 		if ( 88u <= (*p) && (*p) <= 90u )
-			goto tr1038;
+			goto tr1032;
 	} else if ( (*p) > 95u ) {
 		if ( 124u <= (*p) && (*p) <= 125u )
-			goto tr1038;
+			goto tr1032;
 	} else
-		goto tr1038;
+		goto tr1032;
 	goto tr42;
-tr1138:
+tr1132:
 	{
     /* This emulates two prefixes case. */
     SET_VEX_PREFIX2((p[0] & 0x80) | 0x61);
@@ -26034,26 +26014,26 @@ st680:
 		goto _test_eof680;
 case 680:
 	switch( (*p) ) {
-		case 18u: goto tr1038;
-		case 22u: goto tr1038;
-		case 111u: goto tr1038;
-		case 112u: goto tr1040;
-		case 194u: goto tr1040;
-		case 230u: goto tr1038;
+		case 18u: goto tr1032;
+		case 22u: goto tr1032;
+		case 111u: goto tr1032;
+		case 112u: goto tr1034;
+		case 194u: goto tr1034;
+		case 230u: goto tr1032;
 	}
 	if ( (*p) < 81u ) {
 		if ( 16u <= (*p) && (*p) <= 17u )
-			goto tr1039;
+			goto tr1033;
 	} else if ( (*p) > 83u ) {
 		if ( (*p) > 95u ) {
 			if ( 126u <= (*p) && (*p) <= 127u )
-				goto tr1038;
+				goto tr1032;
 		} else if ( (*p) >= 88u )
-			goto tr1038;
+			goto tr1032;
 	} else
-		goto tr1038;
+		goto tr1032;
 	goto tr42;
-tr1139:
+tr1133:
 	{
     /* This emulates two prefixes case. */
     SET_VEX_PREFIX2((p[0] & 0x80) | 0x61);
@@ -26065,27 +26045,27 @@ st681:
 		goto _test_eof681;
 case 681:
 	switch( (*p) ) {
-		case 18u: goto tr1038;
-		case 81u: goto tr1038;
-		case 112u: goto tr1040;
-		case 194u: goto tr1040;
-		case 208u: goto tr1038;
-		case 230u: goto tr1038;
-		case 240u: goto tr1039;
+		case 18u: goto tr1032;
+		case 81u: goto tr1032;
+		case 112u: goto tr1034;
+		case 194u: goto tr1034;
+		case 208u: goto tr1032;
+		case 230u: goto tr1032;
+		case 240u: goto tr1033;
 	}
 	if ( (*p) < 88u ) {
 		if ( 16u <= (*p) && (*p) <= 17u )
-			goto tr1039;
+			goto tr1033;
 	} else if ( (*p) > 90u ) {
 		if ( (*p) > 95u ) {
 			if ( 124u <= (*p) && (*p) <= 125u )
-				goto tr1038;
+				goto tr1032;
 		} else if ( (*p) >= 92u )
-			goto tr1038;
+			goto tr1032;
 	} else
-		goto tr1038;
+		goto tr1032;
 	goto tr42;
-tr1302:
+tr1296:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -26117,7 +26097,7 @@ case 682:
 	} else
 		goto tr135;
 	goto tr42;
-tr1303:
+tr1297:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -26133,7 +26113,7 @@ st683:
 case 683:
 	switch( (*p) ) {
 		case 4u: goto st113;
-		case 5u: goto tr361;
+		case 5u: goto tr362;
 		case 68u: goto st119;
 		case 132u: goto st120;
 	}
@@ -26149,7 +26129,7 @@ case 683:
 	} else
 		goto tr265;
 	goto tr42;
-tr1304:
+tr1298:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -26168,8 +26148,8 @@ st685:
 	if ( ++p == pe )
 		goto _test_eof685;
 case 685:
-	goto tr1149;
-tr1306:
+	goto tr1143;
+tr1300:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -26188,7 +26168,7 @@ case 686:
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1307:
+tr1301:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -26207,7 +26187,7 @@ case 687:
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1308:
+tr1302:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -26222,11 +26202,11 @@ st688:
 		goto _test_eof688;
 case 688:
 	{
-		static const unsigned short jump_table[] = { 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967 };
+		static const unsigned short jump_table[] = { 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1309:
+tr1303:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -26241,11 +26221,11 @@ st689:
 		goto _test_eof689;
 case 689:
 	{
-		static const unsigned short jump_table[] = { 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 858, 858, 858, 858, 858, 858, 858, 858, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 858, 858, 858, 858, 858, 858, 858, 858, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 858, 858, 858, 858, 858, 858, 858, 858, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1967, 1967, 858, 858, 1967, 1967, 858, 858, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 858, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967 };
+		static const unsigned short jump_table[] = { 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 858, 858, 858, 858, 858, 858, 858, 858, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 858, 858, 858, 858, 858, 858, 858, 858, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 858, 858, 858, 858, 858, 858, 858, 858, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1961, 1961, 858, 858, 1961, 1961, 858, 858, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 858, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1310:
+tr1304:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -26260,11 +26240,11 @@ st690:
 		goto _test_eof690;
 case 690:
 	{
-		static const unsigned short jump_table[] = { 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1967, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858 };
+		static const unsigned short jump_table[] = { 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1961, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1311:
+tr1305:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -26279,11 +26259,11 @@ st691:
 		goto _test_eof691;
 case 691:
 	{
-		static const unsigned short jump_table[] = { 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 858, 858, 858, 858, 858, 858, 858, 858, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 858, 858, 858, 858, 858, 858, 858, 858, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 858, 858, 858, 858, 858, 858, 858, 858, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 858, 858, 858, 858, 858, 858, 858, 858, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 858, 858, 858, 858, 858, 858, 858, 858, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 858, 858, 858, 858, 858, 858, 858, 858, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 858, 858, 1967, 1967, 858, 858, 858, 858, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 858, 858, 858, 858, 858, 858, 858, 858 };
+		static const unsigned short jump_table[] = { 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 858, 858, 858, 858, 858, 858, 858, 858, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 858, 858, 858, 858, 858, 858, 858, 858, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 858, 858, 858, 858, 858, 858, 858, 858, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 858, 858, 858, 858, 858, 858, 858, 858, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 858, 858, 858, 858, 858, 858, 858, 858, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 858, 858, 858, 858, 858, 858, 858, 858, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 1962, 858, 858, 1961, 1961, 858, 858, 858, 858, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 858, 858, 858, 858, 858, 858, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1312:
+tr1306:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -26298,11 +26278,11 @@ st692:
 		goto _test_eof692;
 case 692:
 	{
-		static const unsigned short jump_table[] = { 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967 };
+		static const unsigned short jump_table[] = { 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1313:
+tr1307:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -26317,11 +26297,11 @@ st693:
 		goto _test_eof693;
 case 693:
 	{
-		static const unsigned short jump_table[] = { 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 858, 858, 858, 858, 858, 858, 858, 858, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 858, 858, 858, 858, 858, 858, 858, 858, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 858, 858, 858, 858, 858, 858, 858, 858, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 858, 858, 858, 858, 858, 858, 858, 858, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858 };
+		static const unsigned short jump_table[] = { 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 858, 858, 858, 858, 858, 858, 858, 858, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 858, 858, 858, 858, 858, 858, 858, 858, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 858, 858, 858, 858, 858, 858, 858, 858, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 858, 858, 858, 858, 858, 858, 858, 858, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1314:
+tr1308:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -26336,11 +26316,11 @@ st694:
 		goto _test_eof694;
 case 694:
 	{
-		static const unsigned short jump_table[] = { 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1967, 858, 858, 858, 858, 858, 858, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967 };
+		static const unsigned short jump_table[] = { 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1961, 858, 858, 858, 858, 858, 858, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1315:
+tr1309:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -26355,11 +26335,11 @@ st695:
 		goto _test_eof695;
 case 695:
 	{
-		static const unsigned short jump_table[] = { 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1966, 1123, 1123, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1969, 858, 858, 858, 858, 858, 858, 858, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 1967, 858, 858, 858, 858, 858, 858, 858, 858 };
+		static const unsigned short jump_table[] = { 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1123, 1123, 1123, 1123, 1124, 1960, 1123, 1123, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1125, 1125, 1125, 1125, 1126, 1125, 1125, 1125, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 1127, 1127, 1127, 1127, 1128, 1127, 1127, 1127, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1963, 858, 858, 858, 858, 858, 858, 858, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 1961, 858, 858, 858, 858, 858, 858, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1317:
+tr1311:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -26377,7 +26357,7 @@ st696:
 		goto _test_eof696;
 case 696:
 	{
-		static const unsigned short jump_table[] = { 48, 48, 1970, 884, 858, 858, 858, 858, 48, 48, 1970, 884, 858, 858, 858, 697, 48, 48, 1970, 884, 858, 858, 858, 858, 48, 48, 1970, 884, 858, 858, 858, 858, 48, 48, 1970, 884, 858, 858, 858, 858, 48, 48, 1970, 884, 858, 858, 858, 858, 48, 48, 1970, 884, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1972, 1972, 1972, 1972, 1972, 1972, 1972, 1972, 1973, 1974, 1974, 1974, 1974, 1974, 1974, 1974, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1975, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 288, 703, 858, 288, 858, 858, 1977, 1978, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 289, 289, 858, 858, 858, 858, 858, 858, 290, 290 };
+		static const unsigned short jump_table[] = { 48, 48, 1964, 884, 858, 858, 858, 858, 48, 48, 1964, 884, 858, 858, 858, 697, 48, 48, 1964, 884, 858, 858, 858, 858, 48, 48, 1964, 884, 858, 858, 858, 858, 48, 48, 1964, 884, 858, 858, 858, 858, 48, 48, 1964, 884, 858, 858, 858, 858, 48, 48, 1964, 884, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1966, 1966, 1966, 1966, 1966, 1966, 1966, 1966, 1967, 1968, 1968, 1968, 1968, 1968, 1968, 1968, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1969, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 288, 703, 858, 288, 858, 858, 1971, 1972, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 289, 289, 858, 858, 858, 858, 858, 858, 290, 290 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -26395,7 +26375,7 @@ case 697:
 	} else if ( (*p) >= 176u )
 		goto st48;
 	goto tr42;
-tr1156:
+tr1150:
 	{
     SET_REX_PREFIX(*p);
   }
@@ -26405,7 +26385,7 @@ st698:
 		goto _test_eof698;
 case 698:
 	{
-		static const unsigned short jump_table[] = { 48, 48, 1970, 884, 858, 858, 858, 858, 48, 48, 1970, 884, 858, 858, 858, 699, 48, 48, 1970, 884, 858, 858, 858, 858, 48, 48, 1970, 884, 858, 858, 858, 858, 48, 48, 1970, 884, 858, 858, 858, 858, 48, 48, 1970, 884, 858, 858, 858, 858, 48, 48, 1970, 884, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 283, 700, 858, 283, 858, 858, 1977, 1978, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 285, 285, 858, 858, 858, 858, 858, 858, 286, 286 };
+		static const unsigned short jump_table[] = { 48, 48, 1964, 884, 858, 858, 858, 858, 48, 48, 1964, 884, 858, 858, 858, 699, 48, 48, 1964, 884, 858, 858, 858, 858, 48, 48, 1964, 884, 858, 858, 858, 858, 48, 48, 1964, 884, 858, 858, 858, 858, 48, 48, 1964, 884, 858, 858, 858, 858, 48, 48, 1964, 884, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 283, 700, 858, 283, 858, 858, 1971, 1972, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 285, 285, 858, 858, 858, 858, 858, 858, 286, 286 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -26432,7 +26412,7 @@ case 700:
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1157:
+tr1151:
 	{
     SET_REX_PREFIX(*p);
   }
@@ -26459,7 +26439,7 @@ case 701:
 		case 51u: goto tr349;
 		case 129u: goto st703;
 		case 131u: goto st288;
-		case 135u: goto tr1166;
+		case 135u: goto tr1160;
 		case 247u: goto st289;
 		case 255u: goto st290;
 	}
@@ -26480,11 +26460,11 @@ st703:
 		goto _test_eof703;
 case 703:
 	{
-		static const unsigned short jump_table[] = { 1079, 1079, 1079, 1079, 113, 1177, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1177, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1177, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1177, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1177, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1177, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1177, 1079, 1079, 858, 858, 858, 858, 858, 858, 858, 858, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 858, 858, 858, 858, 858, 858, 858, 858, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858 };
+		static const unsigned short jump_table[] = { 1079, 1079, 1079, 1079, 113, 1178, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1178, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1178, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1178, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1178, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1178, 1079, 1079, 1079, 1079, 1079, 1079, 113, 1178, 1079, 1079, 858, 858, 858, 858, 858, 858, 858, 858, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 858, 858, 858, 858, 858, 858, 858, 858, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1158:
+tr1152:
 	{
     SET_REX_PREFIX(*p);
   }
@@ -26511,7 +26491,7 @@ case 704:
 		case 51u: goto tr349;
 		case 129u: goto st700;
 		case 131u: goto st283;
-		case 135u: goto tr1166;
+		case 135u: goto tr1160;
 		case 247u: goto st285;
 		case 255u: goto st286;
 	}
@@ -26527,7 +26507,7 @@ case 705:
 		case 199u: goto st184;
 	}
 	goto tr42;
-tr1318:
+tr1312:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -26546,12 +26526,12 @@ st706:
 case 706:
 	switch( (*p) ) {
 		case 15u: goto st707;
-		case 72u: goto tr1170;
-		case 102u: goto tr1172;
+		case 72u: goto tr1164;
+		case 102u: goto tr1166;
 	}
 	if ( (*p) < 73u ) {
 		if ( 64u <= (*p) && (*p) <= 71u )
-			goto tr1169;
+			goto tr1163;
 	} else if ( (*p) > 79u ) {
 		if ( (*p) > 167u ) {
 			if ( 174u <= (*p) && (*p) <= 175u )
@@ -26559,50 +26539,50 @@ case 706:
 		} else if ( (*p) >= 166u )
 			goto tr335;
 	} else
-		goto tr1171;
+		goto tr1165;
 	goto tr42;
 st707:
 	if ( ++p == pe )
 		goto _test_eof707;
 case 707:
 	switch( (*p) ) {
-		case 18u: goto tr1174;
-		case 42u: goto tr1173;
-		case 43u: goto tr1175;
+		case 18u: goto tr1168;
+		case 42u: goto tr1167;
+		case 43u: goto tr1169;
 		case 56u: goto st708;
-		case 81u: goto tr1173;
-		case 112u: goto tr1178;
-		case 120u: goto tr1179;
-		case 121u: goto tr1180;
-		case 194u: goto tr1178;
-		case 208u: goto tr1181;
-		case 214u: goto tr1182;
-		case 230u: goto tr1173;
-		case 240u: goto tr1183;
+		case 81u: goto tr1167;
+		case 112u: goto tr1172;
+		case 120u: goto tr1173;
+		case 121u: goto tr1174;
+		case 194u: goto tr1172;
+		case 208u: goto tr1175;
+		case 214u: goto tr1176;
+		case 230u: goto tr1167;
+		case 240u: goto tr1177;
 	}
 	if ( (*p) < 88u ) {
 		if ( (*p) > 17u ) {
 			if ( 44u <= (*p) && (*p) <= 45u )
-				goto tr1176;
+				goto tr1170;
 		} else if ( (*p) >= 16u )
-			goto tr1173;
+			goto tr1167;
 	} else if ( (*p) > 90u ) {
 		if ( (*p) > 95u ) {
 			if ( 124u <= (*p) && (*p) <= 125u )
-				goto tr1174;
+				goto tr1168;
 		} else if ( (*p) >= 92u )
-			goto tr1173;
+			goto tr1167;
 	} else
-		goto tr1173;
+		goto tr1167;
 	goto tr42;
 st708:
 	if ( ++p == pe )
 		goto _test_eof708;
 case 708:
 	if ( 240u <= (*p) && (*p) <= 241u )
-		goto tr578;
+		goto tr572;
 	goto tr42;
-tr1179:
+tr1173:
 	{
     SET_REPNZ_PREFIX(FALSE);
   }
@@ -26621,8 +26601,8 @@ st710:
 	if ( ++p == pe )
 		goto _test_eof710;
 case 710:
-	goto tr1185;
-tr1169:
+	goto tr1179;
+tr1163:
 	{
     SET_REX_PREFIX(*p);
   }
@@ -26634,7 +26614,7 @@ case 711:
 	if ( (*p) == 15u )
 		goto st707;
 	goto tr42;
-tr1170:
+tr1164:
 	{
     SET_REX_PREFIX(*p);
   }
@@ -26654,20 +26634,20 @@ st713:
 		goto _test_eof713;
 case 713:
 	switch( (*p) ) {
-		case 42u: goto tr1173;
+		case 42u: goto tr1167;
 		case 56u: goto st714;
 	}
 	if ( 44u <= (*p) && (*p) <= 45u )
-		goto tr1187;
+		goto tr1181;
 	goto tr42;
 st714:
 	if ( ++p == pe )
 		goto _test_eof714;
 case 714:
 	if ( 240u <= (*p) && (*p) <= 241u )
-		goto tr1189;
+		goto tr1183;
 	goto tr42;
-tr1171:
+tr1165:
 	{
     SET_REX_PREFIX(*p);
   }
@@ -26679,7 +26659,7 @@ case 715:
 	if ( (*p) == 15u )
 		goto st713;
 	goto tr42;
-tr1319:
+tr1313:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -26701,16 +26681,16 @@ st716:
 case 716:
 	switch( (*p) ) {
 		case 15u: goto st717;
-		case 72u: goto tr1192;
-		case 102u: goto tr1194;
-		case 144u: goto tr1195;
+		case 72u: goto tr1186;
+		case 102u: goto tr1188;
+		case 144u: goto tr1189;
 	}
 	if ( (*p) < 164u ) {
 		if ( (*p) > 71u ) {
 			if ( 73u <= (*p) && (*p) <= 79u )
-				goto tr1193;
+				goto tr1187;
 		} else if ( (*p) >= 64u )
-			goto tr1191;
+			goto tr1185;
 	} else if ( (*p) > 167u ) {
 		if ( (*p) < 172u ) {
 			if ( 170u <= (*p) && (*p) <= 171u )
@@ -26728,41 +26708,41 @@ st717:
 		goto _test_eof717;
 case 717:
 	switch( (*p) ) {
-		case 18u: goto tr1197;
-		case 22u: goto tr1197;
-		case 42u: goto tr1196;
-		case 43u: goto tr1198;
-		case 111u: goto tr1200;
-		case 112u: goto tr1201;
-		case 184u: goto tr1202;
-		case 188u: goto tr1203;
-		case 189u: goto tr1204;
-		case 194u: goto tr1205;
-		case 214u: goto tr1206;
-		case 230u: goto tr1200;
+		case 18u: goto tr1191;
+		case 22u: goto tr1191;
+		case 42u: goto tr1190;
+		case 43u: goto tr1192;
+		case 111u: goto tr1194;
+		case 112u: goto tr1195;
+		case 184u: goto tr1196;
+		case 188u: goto tr1197;
+		case 189u: goto tr1198;
+		case 194u: goto tr1199;
+		case 214u: goto tr1200;
+		case 230u: goto tr1194;
 	}
 	if ( (*p) < 88u ) {
 		if ( (*p) < 44u ) {
 			if ( 16u <= (*p) && (*p) <= 17u )
-				goto tr1196;
+				goto tr1190;
 		} else if ( (*p) > 45u ) {
 			if ( 81u <= (*p) && (*p) <= 83u )
-				goto tr1196;
+				goto tr1190;
 		} else
-			goto tr1199;
+			goto tr1193;
 	} else if ( (*p) > 89u ) {
 		if ( (*p) < 92u ) {
 			if ( 90u <= (*p) && (*p) <= 91u )
-				goto tr1200;
+				goto tr1194;
 		} else if ( (*p) > 95u ) {
 			if ( 126u <= (*p) && (*p) <= 127u )
-				goto tr1200;
+				goto tr1194;
 		} else
-			goto tr1196;
+			goto tr1190;
 	} else
-		goto tr1196;
+		goto tr1190;
 	goto tr42;
-tr1191:
+tr1185:
 	{
     SET_REX_PREFIX(*p);
   }
@@ -26774,7 +26754,7 @@ case 718:
 	if ( (*p) == 15u )
 		goto st717;
 	goto tr42;
-tr1192:
+tr1186:
 	{
     SET_REX_PREFIX(*p);
   }
@@ -26797,15 +26777,15 @@ st720:
 		goto _test_eof720;
 case 720:
 	switch( (*p) ) {
-		case 42u: goto tr1196;
-		case 184u: goto tr1209;
-		case 188u: goto tr1210;
-		case 189u: goto tr1211;
+		case 42u: goto tr1190;
+		case 184u: goto tr1203;
+		case 188u: goto tr1204;
+		case 189u: goto tr1205;
 	}
 	if ( 44u <= (*p) && (*p) <= 45u )
-		goto tr1208;
+		goto tr1202;
 	goto tr42;
-tr1193:
+tr1187:
 	{
     SET_REX_PREFIX(*p);
   }
@@ -26817,7 +26797,7 @@ case 721:
 	if ( (*p) == 15u )
 		goto st720;
 	goto tr42;
-tr1320:
+tr1314:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -26836,7 +26816,7 @@ case 722:
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1321:
+tr1315:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -26851,11 +26831,11 @@ st723:
 		goto _test_eof723;
 case 723:
 	{
-		static const unsigned short jump_table[] = { 1079, 1079, 1079, 1079, 113, 1177, 1079, 1079, 858, 858, 858, 858, 858, 858, 858, 858, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 858, 858, 858, 858, 858, 858, 858, 858, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894 };
+		static const unsigned short jump_table[] = { 1079, 1079, 1079, 1079, 113, 1178, 1079, 1079, 858, 858, 858, 858, 858, 858, 858, 858, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 1081, 1081, 1081, 1081, 119, 1081, 1081, 1081, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 1083, 1083, 1083, 1083, 120, 1083, 1083, 1083, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 1085, 858, 858, 858, 858, 858, 858, 858, 858, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1322:
+tr1316:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -26891,7 +26871,7 @@ case 724:
 	} else
 		goto tr3;
 	goto tr42;
-tr1327:
+tr1321:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -26918,8 +26898,8 @@ case 725:
 		case 132u: goto st9;
 		case 140u: goto st9;
 		case 180u: goto st9;
-		case 208u: goto tr1212;
-		case 224u: goto tr1212;
+		case 208u: goto tr1206;
+		case 224u: goto tr1206;
 	}
 	if ( (*p) < 112u ) {
 		if ( (*p) < 48u ) {
@@ -26945,7 +26925,7 @@ case 725:
 	} else
 		goto tr3;
 	goto tr42;
-tr1323:
+tr1317:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -26997,7 +26977,7 @@ case 726:
 	} else
 		goto tr3;
 	goto tr42;
-tr585:
+tr579:
 	{
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
@@ -27012,9 +26992,9 @@ st727:
 		goto _test_eof727;
 case 727:
 	if ( (*p) == 224u )
-		goto tr1213;
+		goto tr1207;
 	goto tr34;
-tr1213:
+tr1207:
 	{
     SET_IMM_TYPE(IMM8);
     SET_IMM_PTR(p);
@@ -27083,11 +27063,11 @@ st790:
 		goto _test_eof790;
 case 790:
 	{
-		static const unsigned short jump_table[] = { 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 2080, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 2081, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2082, 2082, 2082, 2082, 2083, 2084, 2085, 858, 2086, 2087, 2086, 2086, 2086, 2086, 2086, 2086, 2088, 2089, 2090, 2091, 2144, 2091, 2091, 2091, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 858, 858, 858, 2077, 858, 858, 2095, 858, 2084, 2096, 2083, 2097, 858, 858, 858, 858, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2099, 2100, 858, 2101, 2074, 2075, 2102, 2103, 2074, 2075, 2076, 2077, 858, 2104, 858, 2105, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2106, 2106, 858, 2108, 858, 858, 858, 858, 858, 858, 858, 858, 2109, 2109, 2109, 2109, 2078, 2079, 2110, 2110, 2111, 2111, 2110, 2110, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2114, 2115, 858, 858, 2116, 2117, 2118, 2119, 2120, 858, 2121, 2106, 858, 858, 858, 858, 2122, 2123, 2122, 2123, 858, 858, 858, 858, 2124, 2125, 2126, 2127, 2128, 2129, 2130, 2131, 858, 858, 858, 858, 858, 858, 858, 858, 2132, 2132, 858, 2098, 858, 858, 858, 858, 2133, 858, 2134, 2135, 2106, 2106, 2136, 2137, 2106, 2106, 858, 858, 2106, 2106, 2138, 2139 };
+		static const unsigned short jump_table[] = { 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 2074, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 2075, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2076, 2076, 2076, 2076, 2077, 2078, 2079, 858, 2080, 2081, 2080, 2080, 2080, 2080, 2080, 2080, 2082, 2083, 2084, 2085, 2138, 2085, 2085, 2085, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 858, 858, 858, 2071, 858, 858, 2089, 858, 2078, 2090, 2077, 2091, 858, 858, 858, 858, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2093, 2094, 858, 2095, 2068, 2069, 2096, 2097, 2068, 2069, 2070, 2071, 858, 2098, 858, 2099, 2100, 2101, 2101, 2101, 2101, 2101, 2101, 2101, 2100, 2100, 858, 2102, 858, 858, 858, 858, 858, 858, 858, 858, 2103, 2103, 2103, 2103, 2072, 2073, 2104, 2104, 2105, 2105, 2104, 2104, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2108, 2109, 858, 858, 2110, 2111, 2112, 2113, 2114, 858, 2115, 2100, 858, 858, 858, 858, 2116, 2117, 2116, 2117, 858, 858, 858, 858, 2118, 2119, 2120, 2121, 2122, 2123, 2124, 2125, 858, 858, 858, 858, 858, 858, 858, 858, 2126, 2126, 858, 2092, 858, 858, 858, 858, 2127, 858, 2128, 2129, 2100, 2100, 2130, 2131, 2100, 2100, 858, 858, 2100, 2100, 2132, 2133 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1328:
+tr1322:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -27105,11 +27085,11 @@ st728:
 		goto _test_eof728;
 case 728:
 	{
-		static const unsigned short jump_table[] = { 858, 2030, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 182, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1140, 858, 858, 858, 858, 858, 1143, 858, 1144, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 185, 858, 186, 858, 1139, 858, 1147, 858, 1139, 858, 1140, 858, 1149, 858, 858, 858, 1150, 1150, 1150, 1150, 1150, 1150, 1150, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 858, 191, 858, 858, 858, 858, 858, 192, 858, 858, 858, 858, 858, 858, 858, 858, 858, 193, 858, 193, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 194, 858, 858, 858, 858, 858, 858, 858, 195 };
+		static const unsigned short jump_table[] = { 858, 2024, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 182, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1140, 858, 858, 858, 858, 858, 1143, 858, 1144, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 185, 858, 186, 858, 1139, 858, 1147, 858, 1139, 858, 1140, 858, 1149, 858, 858, 858, 1150, 1150, 1150, 1150, 1150, 1150, 1150, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 858, 191, 858, 858, 858, 858, 858, 192, 858, 858, 858, 858, 858, 858, 858, 858, 858, 193, 858, 193, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 194, 858, 858, 858, 858, 858, 858, 858, 195 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1214:
+tr1208:
 	{
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
@@ -27119,11 +27099,11 @@ st729:
 		goto _test_eof729;
 case 729:
 	{
-		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 2031, 823, 823, 1216, 1210, 823, 823 };
+		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 2025, 823, 823, 1217, 1211, 823, 823 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1215:
+tr1209:
 	{
     SET_OPERAND_NAME(0, ((*p) & 0x07) |
                            ((GET_REX_PREFIX() & 0x01) << 3) |
@@ -27193,11 +27173,11 @@ st791:
 		goto _test_eof791;
 case 791:
 	{
-		static const unsigned short jump_table[] = { 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 2080, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 2081, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2082, 2082, 2082, 2082, 2083, 2084, 2085, 858, 2086, 2087, 2086, 2086, 2086, 2086, 2086, 2086, 2088, 2089, 2090, 2091, 2092, 2091, 2091, 2091, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 858, 858, 858, 2077, 858, 858, 2095, 858, 2084, 2096, 2083, 2097, 858, 858, 858, 858, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2099, 2100, 858, 2101, 2074, 2075, 2102, 2103, 2074, 2075, 2076, 2077, 858, 2104, 858, 2105, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2106, 2106, 858, 2108, 858, 858, 858, 858, 858, 858, 858, 858, 2109, 2109, 2109, 2109, 2078, 2079, 2110, 2110, 2111, 2111, 2110, 2110, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2114, 2115, 858, 858, 2116, 2117, 2118, 2119, 2120, 858, 2121, 2106, 858, 858, 858, 858, 2122, 2123, 2122, 2123, 858, 858, 858, 858, 2124, 2125, 2126, 2127, 2128, 2129, 2130, 2131, 858, 858, 858, 858, 858, 858, 858, 858, 2132, 2132, 858, 2098, 858, 858, 858, 858, 2133, 858, 2134, 2135, 2106, 2106, 2136, 2137, 2106, 2106, 858, 858, 2106, 2106, 2138, 2145 };
+		static const unsigned short jump_table[] = { 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 2074, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 2075, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2076, 2076, 2076, 2076, 2077, 2078, 2079, 858, 2080, 2081, 2080, 2080, 2080, 2080, 2080, 2080, 2082, 2083, 2084, 2085, 2086, 2085, 2085, 2085, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 858, 858, 858, 2071, 858, 858, 2089, 858, 2078, 2090, 2077, 2091, 858, 858, 858, 858, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2093, 2094, 858, 2095, 2068, 2069, 2096, 2097, 2068, 2069, 2070, 2071, 858, 2098, 858, 2099, 2100, 2101, 2101, 2101, 2101, 2101, 2101, 2101, 2100, 2100, 858, 2102, 858, 858, 858, 858, 858, 858, 858, 858, 2103, 2103, 2103, 2103, 2072, 2073, 2104, 2104, 2105, 2105, 2104, 2104, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2108, 2109, 858, 858, 2110, 2111, 2112, 2113, 2114, 858, 2115, 2100, 858, 858, 858, 858, 2116, 2117, 2116, 2117, 858, 858, 858, 858, 2118, 2119, 2120, 2121, 2122, 2123, 2124, 2125, 858, 858, 858, 858, 858, 858, 858, 858, 2126, 2126, 858, 2092, 858, 858, 858, 858, 2127, 858, 2128, 2129, 2100, 2100, 2130, 2131, 2100, 2100, 858, 858, 2100, 2100, 2132, 2139 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1329:
+tr1323:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -27224,8 +27204,8 @@ case 730:
 		case 132u: goto st9;
 		case 140u: goto st9;
 		case 180u: goto st9;
-		case 209u: goto tr1212;
-		case 225u: goto tr1212;
+		case 209u: goto tr1206;
+		case 225u: goto tr1206;
 	}
 	if ( (*p) < 112u ) {
 		if ( (*p) < 48u ) {
@@ -27251,7 +27231,7 @@ case 730:
 	} else
 		goto tr3;
 	goto tr42;
-tr586:
+tr580:
 	{
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
@@ -27266,9 +27246,9 @@ st731:
 		goto _test_eof731;
 case 731:
 	if ( (*p) == 224u )
-		goto tr1216;
+		goto tr1210;
 	goto tr34;
-tr1216:
+tr1210:
 	{
     SET_IMM_TYPE(IMM8);
     SET_IMM_PTR(p);
@@ -27337,11 +27317,11 @@ st792:
 		goto _test_eof792;
 case 792:
 	{
-		static const unsigned short jump_table[] = { 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 2080, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 2081, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2082, 2082, 2082, 2082, 2083, 2084, 2085, 858, 2086, 2087, 2086, 2086, 2086, 2086, 2086, 2086, 2088, 2089, 2090, 2091, 2146, 2091, 2091, 2091, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 858, 858, 858, 2077, 858, 858, 2095, 858, 2084, 2096, 2083, 2097, 858, 858, 858, 858, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2099, 2100, 858, 2101, 2074, 2075, 2102, 2103, 2074, 2075, 2076, 2077, 858, 2104, 858, 2105, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2106, 2106, 858, 2108, 858, 858, 858, 858, 858, 858, 858, 858, 2109, 2109, 2109, 2109, 2078, 2079, 2110, 2110, 2111, 2111, 2110, 2110, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2114, 2115, 858, 858, 2116, 2117, 2118, 2119, 2120, 858, 2121, 2106, 858, 858, 858, 858, 2122, 2123, 2122, 2123, 858, 858, 858, 858, 2124, 2125, 2126, 2127, 2128, 2129, 2130, 2131, 858, 858, 858, 858, 858, 858, 858, 858, 2132, 2132, 858, 2098, 858, 858, 858, 858, 2133, 858, 2134, 2135, 2106, 2106, 2136, 2137, 2106, 2106, 858, 858, 2106, 2106, 2138, 2139 };
+		static const unsigned short jump_table[] = { 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 2074, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 2075, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2076, 2076, 2076, 2076, 2077, 2078, 2079, 858, 2080, 2081, 2080, 2080, 2080, 2080, 2080, 2080, 2082, 2083, 2084, 2085, 2140, 2085, 2085, 2085, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 858, 858, 858, 2071, 858, 858, 2089, 858, 2078, 2090, 2077, 2091, 858, 858, 858, 858, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2093, 2094, 858, 2095, 2068, 2069, 2096, 2097, 2068, 2069, 2070, 2071, 858, 2098, 858, 2099, 2100, 2101, 2101, 2101, 2101, 2101, 2101, 2101, 2100, 2100, 858, 2102, 858, 858, 858, 858, 858, 858, 858, 858, 2103, 2103, 2103, 2103, 2072, 2073, 2104, 2104, 2105, 2105, 2104, 2104, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2108, 2109, 858, 858, 2110, 2111, 2112, 2113, 2114, 858, 2115, 2100, 858, 858, 858, 858, 2116, 2117, 2116, 2117, 858, 858, 858, 858, 2118, 2119, 2120, 2121, 2122, 2123, 2124, 2125, 858, 858, 858, 858, 858, 858, 858, 858, 2126, 2126, 858, 2092, 858, 858, 858, 858, 2127, 858, 2128, 2129, 2100, 2100, 2130, 2131, 2100, 2100, 858, 858, 2100, 2100, 2132, 2133 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1330:
+tr1324:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -27359,11 +27339,11 @@ st732:
 		goto _test_eof732;
 case 732:
 	{
-		static const unsigned short jump_table[] = { 858, 2033, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 182, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1140, 858, 858, 858, 858, 858, 1143, 858, 1144, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 185, 858, 186, 858, 1139, 858, 1147, 858, 1139, 858, 1140, 858, 1149, 858, 858, 858, 1150, 1150, 1150, 1150, 1150, 1150, 1150, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 858, 191, 858, 858, 858, 858, 858, 192, 858, 858, 858, 858, 858, 858, 858, 858, 858, 193, 858, 193, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 194, 858, 858, 858, 858, 858, 858, 858, 195 };
+		static const unsigned short jump_table[] = { 858, 2027, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 182, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1140, 858, 858, 858, 858, 858, 1143, 858, 1144, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 185, 858, 186, 858, 1139, 858, 1147, 858, 1139, 858, 1140, 858, 1149, 858, 858, 858, 1150, 1150, 1150, 1150, 1150, 1150, 1150, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 858, 191, 858, 858, 858, 858, 858, 192, 858, 858, 858, 858, 858, 858, 858, 858, 858, 193, 858, 193, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 194, 858, 858, 858, 858, 858, 858, 858, 195 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1217:
+tr1211:
 	{
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
@@ -27373,11 +27353,11 @@ st733:
 		goto _test_eof733;
 case 733:
 	{
-		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 2034, 823, 1216, 1210, 823, 823 };
+		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 2028, 823, 1217, 1211, 823, 823 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1218:
+tr1212:
 	{
     SET_OPERAND_NAME(0, ((*p) & 0x07) |
                            ((GET_REX_PREFIX() & 0x01) << 3) |
@@ -27447,11 +27427,11 @@ st793:
 		goto _test_eof793;
 case 793:
 	{
-		static const unsigned short jump_table[] = { 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 2080, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 2081, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2082, 2082, 2082, 2082, 2083, 2084, 2085, 858, 2086, 2087, 2086, 2086, 2086, 2086, 2086, 2086, 2088, 2089, 2090, 2091, 2092, 2091, 2091, 2091, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 858, 858, 858, 2077, 858, 858, 2095, 858, 2084, 2096, 2083, 2097, 858, 858, 858, 858, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2099, 2100, 858, 2101, 2074, 2075, 2102, 2103, 2074, 2075, 2076, 2077, 858, 2104, 858, 2105, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2106, 2106, 858, 2108, 858, 858, 858, 858, 858, 858, 858, 858, 2109, 2109, 2109, 2109, 2078, 2079, 2110, 2110, 2111, 2111, 2110, 2110, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2114, 2115, 858, 858, 2116, 2117, 2118, 2119, 2120, 858, 2121, 2106, 858, 858, 858, 858, 2122, 2123, 2122, 2123, 858, 858, 858, 858, 2124, 2125, 2126, 2127, 2128, 2129, 2130, 2131, 858, 858, 858, 858, 858, 858, 858, 858, 2132, 2132, 858, 2098, 858, 858, 858, 858, 2133, 858, 2134, 2135, 2106, 2106, 2136, 2137, 2106, 2106, 858, 858, 2106, 2106, 2138, 2147 };
+		static const unsigned short jump_table[] = { 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 2074, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 2075, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2076, 2076, 2076, 2076, 2077, 2078, 2079, 858, 2080, 2081, 2080, 2080, 2080, 2080, 2080, 2080, 2082, 2083, 2084, 2085, 2086, 2085, 2085, 2085, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 858, 858, 858, 2071, 858, 858, 2089, 858, 2078, 2090, 2077, 2091, 858, 858, 858, 858, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2093, 2094, 858, 2095, 2068, 2069, 2096, 2097, 2068, 2069, 2070, 2071, 858, 2098, 858, 2099, 2100, 2101, 2101, 2101, 2101, 2101, 2101, 2101, 2100, 2100, 858, 2102, 858, 858, 858, 858, 858, 858, 858, 858, 2103, 2103, 2103, 2103, 2072, 2073, 2104, 2104, 2105, 2105, 2104, 2104, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2108, 2109, 858, 858, 2110, 2111, 2112, 2113, 2114, 858, 2115, 2100, 858, 858, 858, 858, 2116, 2117, 2116, 2117, 858, 858, 858, 858, 2118, 2119, 2120, 2121, 2122, 2123, 2124, 2125, 858, 858, 858, 858, 858, 858, 858, 858, 2126, 2126, 858, 2092, 858, 858, 858, 858, 2127, 858, 2128, 2129, 2100, 2100, 2130, 2131, 2100, 2100, 858, 858, 2100, 2100, 2132, 2141 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1331:
+tr1325:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -27478,8 +27458,8 @@ case 734:
 		case 132u: goto st9;
 		case 140u: goto st9;
 		case 180u: goto st9;
-		case 210u: goto tr1212;
-		case 226u: goto tr1212;
+		case 210u: goto tr1206;
+		case 226u: goto tr1206;
 	}
 	if ( (*p) < 112u ) {
 		if ( (*p) < 48u ) {
@@ -27505,7 +27485,7 @@ case 734:
 	} else
 		goto tr3;
 	goto tr42;
-tr587:
+tr581:
 	{
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
@@ -27520,9 +27500,9 @@ st735:
 		goto _test_eof735;
 case 735:
 	if ( (*p) == 224u )
-		goto tr1219;
+		goto tr1213;
 	goto tr34;
-tr1219:
+tr1213:
 	{
     SET_IMM_TYPE(IMM8);
     SET_IMM_PTR(p);
@@ -27591,11 +27571,11 @@ st794:
 		goto _test_eof794;
 case 794:
 	{
-		static const unsigned short jump_table[] = { 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 2080, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 2081, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2082, 2082, 2082, 2082, 2083, 2084, 2085, 858, 2086, 2087, 2086, 2086, 2086, 2086, 2086, 2086, 2088, 2089, 2090, 2091, 2148, 2091, 2091, 2091, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 858, 858, 858, 2077, 858, 858, 2095, 858, 2084, 2096, 2083, 2097, 858, 858, 858, 858, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2099, 2100, 858, 2101, 2074, 2075, 2102, 2103, 2074, 2075, 2076, 2077, 858, 2104, 858, 2105, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2106, 2106, 858, 2108, 858, 858, 858, 858, 858, 858, 858, 858, 2109, 2109, 2109, 2109, 2078, 2079, 2110, 2110, 2111, 2111, 2110, 2110, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2114, 2115, 858, 858, 2116, 2117, 2118, 2119, 2120, 858, 2121, 2106, 858, 858, 858, 858, 2122, 2123, 2122, 2123, 858, 858, 858, 858, 2124, 2125, 2126, 2127, 2128, 2129, 2130, 2131, 858, 858, 858, 858, 858, 858, 858, 858, 2132, 2132, 858, 2098, 858, 858, 858, 858, 2133, 858, 2134, 2135, 2106, 2106, 2136, 2137, 2106, 2106, 858, 858, 2106, 2106, 2138, 2139 };
+		static const unsigned short jump_table[] = { 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 2074, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 2075, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2076, 2076, 2076, 2076, 2077, 2078, 2079, 858, 2080, 2081, 2080, 2080, 2080, 2080, 2080, 2080, 2082, 2083, 2084, 2085, 2142, 2085, 2085, 2085, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 858, 858, 858, 2071, 858, 858, 2089, 858, 2078, 2090, 2077, 2091, 858, 858, 858, 858, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2093, 2094, 858, 2095, 2068, 2069, 2096, 2097, 2068, 2069, 2070, 2071, 858, 2098, 858, 2099, 2100, 2101, 2101, 2101, 2101, 2101, 2101, 2101, 2100, 2100, 858, 2102, 858, 858, 858, 858, 858, 858, 858, 858, 2103, 2103, 2103, 2103, 2072, 2073, 2104, 2104, 2105, 2105, 2104, 2104, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2108, 2109, 858, 858, 2110, 2111, 2112, 2113, 2114, 858, 2115, 2100, 858, 858, 858, 858, 2116, 2117, 2116, 2117, 858, 858, 858, 858, 2118, 2119, 2120, 2121, 2122, 2123, 2124, 2125, 858, 858, 858, 858, 858, 858, 858, 858, 2126, 2126, 858, 2092, 858, 858, 858, 858, 2127, 858, 2128, 2129, 2100, 2100, 2130, 2131, 2100, 2100, 858, 858, 2100, 2100, 2132, 2133 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1332:
+tr1326:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -27613,11 +27593,11 @@ st736:
 		goto _test_eof736;
 case 736:
 	{
-		static const unsigned short jump_table[] = { 858, 2036, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 182, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1140, 858, 858, 858, 858, 858, 1143, 858, 1144, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 185, 858, 186, 858, 1139, 858, 1147, 858, 1139, 858, 1140, 858, 1149, 858, 858, 858, 1150, 1150, 1150, 1150, 1150, 1150, 1150, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 858, 191, 858, 858, 858, 858, 858, 192, 858, 858, 858, 858, 858, 858, 858, 858, 858, 193, 858, 193, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 194, 858, 858, 858, 858, 858, 858, 858, 195 };
+		static const unsigned short jump_table[] = { 858, 2030, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 182, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1140, 858, 858, 858, 858, 858, 1143, 858, 1144, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 185, 858, 186, 858, 1139, 858, 1147, 858, 1139, 858, 1140, 858, 1149, 858, 858, 858, 1150, 1150, 1150, 1150, 1150, 1150, 1150, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 858, 191, 858, 858, 858, 858, 858, 192, 858, 858, 858, 858, 858, 858, 858, 858, 858, 193, 858, 193, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 194, 858, 858, 858, 858, 858, 858, 858, 195 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1220:
+tr1214:
 	{
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
@@ -27627,11 +27607,11 @@ st737:
 		goto _test_eof737;
 case 737:
 	{
-		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 2037, 1216, 1210, 823, 823 };
+		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 2031, 1217, 1211, 823, 823 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1221:
+tr1215:
 	{
     SET_OPERAND_NAME(0, ((*p) & 0x07) |
                            ((GET_REX_PREFIX() & 0x01) << 3) |
@@ -27701,11 +27681,11 @@ st795:
 		goto _test_eof795;
 case 795:
 	{
-		static const unsigned short jump_table[] = { 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 2080, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 2081, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2082, 2082, 2082, 2082, 2083, 2084, 2085, 858, 2086, 2087, 2086, 2086, 2086, 2086, 2086, 2086, 2088, 2089, 2090, 2091, 2092, 2091, 2091, 2091, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 858, 858, 858, 2077, 858, 858, 2095, 858, 2084, 2096, 2083, 2097, 858, 858, 858, 858, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2099, 2100, 858, 2101, 2074, 2075, 2102, 2103, 2074, 2075, 2076, 2077, 858, 2104, 858, 2105, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2106, 2106, 858, 2108, 858, 858, 858, 858, 858, 858, 858, 858, 2109, 2109, 2109, 2109, 2078, 2079, 2110, 2110, 2111, 2111, 2110, 2110, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2114, 2115, 858, 858, 2116, 2117, 2118, 2119, 2120, 858, 2121, 2106, 858, 858, 858, 858, 2122, 2123, 2122, 2123, 858, 858, 858, 858, 2124, 2125, 2126, 2127, 2128, 2129, 2130, 2131, 858, 858, 858, 858, 858, 858, 858, 858, 2132, 2132, 858, 2098, 858, 858, 858, 858, 2133, 858, 2134, 2135, 2106, 2106, 2136, 2137, 2106, 2106, 858, 858, 2106, 2106, 2138, 2149 };
+		static const unsigned short jump_table[] = { 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 2074, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 2075, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2076, 2076, 2076, 2076, 2077, 2078, 2079, 858, 2080, 2081, 2080, 2080, 2080, 2080, 2080, 2080, 2082, 2083, 2084, 2085, 2086, 2085, 2085, 2085, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 858, 858, 858, 2071, 858, 858, 2089, 858, 2078, 2090, 2077, 2091, 858, 858, 858, 858, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2093, 2094, 858, 2095, 2068, 2069, 2096, 2097, 2068, 2069, 2070, 2071, 858, 2098, 858, 2099, 2100, 2101, 2101, 2101, 2101, 2101, 2101, 2101, 2100, 2100, 858, 2102, 858, 858, 858, 858, 858, 858, 858, 858, 2103, 2103, 2103, 2103, 2072, 2073, 2104, 2104, 2105, 2105, 2104, 2104, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2108, 2109, 858, 858, 2110, 2111, 2112, 2113, 2114, 858, 2115, 2100, 858, 858, 858, 858, 2116, 2117, 2116, 2117, 858, 858, 858, 858, 2118, 2119, 2120, 2121, 2122, 2123, 2124, 2125, 858, 858, 858, 858, 858, 858, 858, 858, 2126, 2126, 858, 2092, 858, 858, 858, 858, 2127, 858, 2128, 2129, 2100, 2100, 2130, 2131, 2100, 2100, 858, 858, 2100, 2100, 2132, 2143 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1333:
+tr1327:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -27732,8 +27712,8 @@ case 738:
 		case 132u: goto st9;
 		case 140u: goto st9;
 		case 180u: goto st9;
-		case 211u: goto tr1212;
-		case 227u: goto tr1212;
+		case 211u: goto tr1206;
+		case 227u: goto tr1206;
 	}
 	if ( (*p) < 112u ) {
 		if ( (*p) < 48u ) {
@@ -27759,7 +27739,7 @@ case 738:
 	} else
 		goto tr3;
 	goto tr42;
-tr588:
+tr582:
 	{
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
@@ -27774,9 +27754,9 @@ st739:
 		goto _test_eof739;
 case 739:
 	if ( (*p) == 224u )
-		goto tr1222;
+		goto tr1216;
 	goto tr34;
-tr1222:
+tr1216:
 	{
     SET_IMM_TYPE(IMM8);
     SET_IMM_PTR(p);
@@ -27845,11 +27825,11 @@ st796:
 		goto _test_eof796;
 case 796:
 	{
-		static const unsigned short jump_table[] = { 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 2080, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 2081, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2082, 2082, 2082, 2082, 2083, 2084, 2085, 858, 2086, 2087, 2086, 2086, 2086, 2086, 2086, 2086, 2088, 2089, 2090, 2091, 2150, 2091, 2091, 2091, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 858, 858, 858, 2077, 858, 858, 2095, 858, 2084, 2096, 2083, 2097, 858, 858, 858, 858, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2099, 2100, 858, 2101, 2074, 2075, 2102, 2103, 2074, 2075, 2076, 2077, 858, 2104, 858, 2105, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2106, 2106, 858, 2108, 858, 858, 858, 858, 858, 858, 858, 858, 2109, 2109, 2109, 2109, 2078, 2079, 2110, 2110, 2111, 2111, 2110, 2110, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2114, 2115, 858, 858, 2116, 2117, 2118, 2119, 2120, 858, 2121, 2106, 858, 858, 858, 858, 2122, 2123, 2122, 2123, 858, 858, 858, 858, 2124, 2125, 2126, 2127, 2128, 2129, 2130, 2131, 858, 858, 858, 858, 858, 858, 858, 858, 2132, 2132, 858, 2098, 858, 858, 858, 858, 2133, 858, 2134, 2135, 2106, 2106, 2136, 2137, 2106, 2106, 858, 858, 2106, 2106, 2138, 2139 };
+		static const unsigned short jump_table[] = { 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 2074, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 2075, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2076, 2076, 2076, 2076, 2077, 2078, 2079, 858, 2080, 2081, 2080, 2080, 2080, 2080, 2080, 2080, 2082, 2083, 2084, 2085, 2144, 2085, 2085, 2085, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 858, 858, 858, 2071, 858, 858, 2089, 858, 2078, 2090, 2077, 2091, 858, 858, 858, 858, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2093, 2094, 858, 2095, 2068, 2069, 2096, 2097, 2068, 2069, 2070, 2071, 858, 2098, 858, 2099, 2100, 2101, 2101, 2101, 2101, 2101, 2101, 2101, 2100, 2100, 858, 2102, 858, 858, 858, 858, 858, 858, 858, 858, 2103, 2103, 2103, 2103, 2072, 2073, 2104, 2104, 2105, 2105, 2104, 2104, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2108, 2109, 858, 858, 2110, 2111, 2112, 2113, 2114, 858, 2115, 2100, 858, 858, 858, 858, 2116, 2117, 2116, 2117, 858, 858, 858, 858, 2118, 2119, 2120, 2121, 2122, 2123, 2124, 2125, 858, 858, 858, 858, 858, 858, 858, 858, 2126, 2126, 858, 2092, 858, 858, 858, 858, 2127, 858, 2128, 2129, 2100, 2100, 2130, 2131, 2100, 2100, 858, 858, 2100, 2100, 2132, 2133 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1334:
+tr1328:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -27867,11 +27847,11 @@ st740:
 		goto _test_eof740;
 case 740:
 	{
-		static const unsigned short jump_table[] = { 858, 2039, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 182, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1140, 858, 858, 858, 858, 858, 1143, 858, 1144, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 185, 858, 186, 858, 1139, 858, 1147, 858, 1139, 858, 1140, 858, 1149, 858, 858, 858, 1150, 1150, 1150, 1150, 1150, 1150, 1150, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 858, 191, 858, 858, 858, 858, 858, 192, 858, 858, 858, 858, 858, 858, 858, 858, 858, 193, 858, 193, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 194, 858, 858, 858, 858, 858, 858, 858, 195 };
+		static const unsigned short jump_table[] = { 858, 2033, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 182, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1140, 858, 858, 858, 858, 858, 1143, 858, 1144, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 185, 858, 186, 858, 1139, 858, 1147, 858, 1139, 858, 1140, 858, 1149, 858, 858, 858, 1150, 1150, 1150, 1150, 1150, 1150, 1150, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 858, 191, 858, 858, 858, 858, 858, 192, 858, 858, 858, 858, 858, 858, 858, 858, 858, 193, 858, 193, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 194, 858, 858, 858, 858, 858, 858, 858, 195 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1223:
+tr1217:
 	{
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
@@ -27881,11 +27861,11 @@ st741:
 		goto _test_eof741;
 case 741:
 	{
-		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 2040, 1210, 823, 823 };
+		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 2034, 1211, 823, 823 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1224:
+tr1218:
 	{ if (restricted_register != REG_RSP) {
          PrintError("Incorrectly sandboxed %%rsp\n", begin - data);
          result = 1;
@@ -27906,11 +27886,11 @@ st797:
 		goto _test_eof797;
 case 797:
 	{
-		static const unsigned short jump_table[] = { 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 2080, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 2081, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2082, 2082, 2082, 2082, 2083, 2084, 2085, 858, 2086, 2087, 2086, 2086, 2086, 2086, 2086, 2086, 2088, 2089, 2090, 2091, 2092, 2091, 2091, 2091, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 858, 858, 858, 2077, 858, 858, 2095, 858, 2084, 2096, 2083, 2097, 858, 858, 858, 858, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2099, 2100, 858, 2101, 2074, 2075, 2102, 2103, 2074, 2075, 2076, 2077, 858, 2104, 858, 2105, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2106, 2106, 858, 2108, 858, 858, 858, 858, 858, 858, 858, 858, 2109, 2109, 2109, 2109, 2078, 2079, 2110, 2110, 2111, 2111, 2110, 2110, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2114, 2115, 858, 858, 2116, 2117, 2118, 2119, 2120, 858, 2121, 2106, 858, 858, 858, 858, 2122, 2123, 2122, 2123, 858, 858, 858, 858, 2124, 2125, 2126, 2127, 2128, 2129, 2130, 2131, 858, 858, 858, 858, 858, 858, 858, 858, 2132, 2132, 858, 2098, 858, 858, 858, 858, 2133, 858, 2134, 2135, 2106, 2106, 2136, 2137, 2106, 2106, 858, 858, 2106, 2106, 2138, 2151 };
+		static const unsigned short jump_table[] = { 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 2074, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 2075, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2076, 2076, 2076, 2076, 2077, 2078, 2079, 858, 2080, 2081, 2080, 2080, 2080, 2080, 2080, 2080, 2082, 2083, 2084, 2085, 2086, 2085, 2085, 2085, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 858, 858, 858, 2071, 858, 858, 2089, 858, 2078, 2090, 2077, 2091, 858, 858, 858, 858, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2093, 2094, 858, 2095, 2068, 2069, 2096, 2097, 2068, 2069, 2070, 2071, 858, 2098, 858, 2099, 2100, 2101, 2101, 2101, 2101, 2101, 2101, 2101, 2100, 2100, 858, 2102, 858, 858, 858, 858, 858, 858, 858, 858, 2103, 2103, 2103, 2103, 2072, 2073, 2104, 2104, 2105, 2105, 2104, 2104, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2108, 2109, 858, 858, 2110, 2111, 2112, 2113, 2114, 858, 2115, 2100, 858, 858, 858, 858, 2116, 2117, 2116, 2117, 858, 858, 858, 858, 2118, 2119, 2120, 2121, 2122, 2123, 2124, 2125, 858, 858, 858, 858, 858, 858, 858, 858, 2126, 2126, 858, 2092, 858, 858, 858, 858, 2127, 858, 2128, 2129, 2100, 2100, 2130, 2131, 2100, 2100, 858, 858, 2100, 2100, 2132, 2145 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1335:
+tr1329:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -27937,8 +27917,8 @@ case 742:
 		case 132u: goto st9;
 		case 140u: goto st9;
 		case 180u: goto st9;
-		case 212u: goto tr1212;
-		case 228u: goto tr1212;
+		case 212u: goto tr1206;
+		case 228u: goto tr1206;
 	}
 	if ( (*p) < 112u ) {
 		if ( (*p) < 48u ) {
@@ -27964,7 +27944,7 @@ case 742:
 	} else
 		goto tr3;
 	goto tr42;
-tr589:
+tr583:
 	{
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
@@ -27979,9 +27959,9 @@ st743:
 		goto _test_eof743;
 case 743:
 	if ( (*p) == 224u )
-		goto tr1225;
+		goto tr1219;
 	goto tr34;
-tr1225:
+tr1219:
 	{
     SET_IMM_TYPE(IMM8);
     SET_IMM_PTR(p);
@@ -28050,11 +28030,11 @@ st798:
 		goto _test_eof798;
 case 798:
 	{
-		static const unsigned short jump_table[] = { 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 2080, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 2081, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2082, 2082, 2082, 2082, 2083, 2084, 2085, 858, 2086, 2087, 2086, 2086, 2086, 2086, 2086, 2086, 2088, 2089, 2090, 2091, 2152, 2091, 2091, 2091, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 858, 858, 858, 2077, 858, 858, 2095, 858, 2084, 2096, 2083, 2097, 858, 858, 858, 858, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2099, 2100, 858, 2101, 2074, 2075, 2102, 2103, 2074, 2075, 2076, 2077, 858, 2104, 858, 2105, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2106, 2106, 858, 2108, 858, 858, 858, 858, 858, 858, 858, 858, 2109, 2109, 2109, 2109, 2078, 2079, 2110, 2110, 2111, 2111, 2110, 2110, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2114, 2115, 858, 858, 2116, 2117, 2118, 2119, 2120, 858, 2121, 2106, 858, 858, 858, 858, 2122, 2123, 2122, 2123, 858, 858, 858, 858, 2124, 2125, 2126, 2127, 2128, 2129, 2130, 2131, 858, 858, 858, 858, 858, 858, 858, 858, 2132, 2132, 858, 2098, 858, 858, 858, 858, 2133, 858, 2134, 2135, 2106, 2106, 2136, 2137, 2106, 2106, 858, 858, 2106, 2106, 2138, 2139 };
+		static const unsigned short jump_table[] = { 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 2074, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 2075, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2076, 2076, 2076, 2076, 2077, 2078, 2079, 858, 2080, 2081, 2080, 2080, 2080, 2080, 2080, 2080, 2082, 2083, 2084, 2085, 2146, 2085, 2085, 2085, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 858, 858, 858, 2071, 858, 858, 2089, 858, 2078, 2090, 2077, 2091, 858, 858, 858, 858, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2093, 2094, 858, 2095, 2068, 2069, 2096, 2097, 2068, 2069, 2070, 2071, 858, 2098, 858, 2099, 2100, 2101, 2101, 2101, 2101, 2101, 2101, 2101, 2100, 2100, 858, 2102, 858, 858, 858, 858, 858, 858, 858, 858, 2103, 2103, 2103, 2103, 2072, 2073, 2104, 2104, 2105, 2105, 2104, 2104, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2108, 2109, 858, 858, 2110, 2111, 2112, 2113, 2114, 858, 2115, 2100, 858, 858, 858, 858, 2116, 2117, 2116, 2117, 858, 858, 858, 858, 2118, 2119, 2120, 2121, 2122, 2123, 2124, 2125, 858, 858, 858, 858, 858, 858, 858, 858, 2126, 2126, 858, 2092, 858, 858, 858, 858, 2127, 858, 2128, 2129, 2100, 2100, 2130, 2131, 2100, 2100, 858, 858, 2100, 2100, 2132, 2133 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1336:
+tr1330:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -28072,11 +28052,11 @@ st744:
 		goto _test_eof744;
 case 744:
 	{
-		static const unsigned short jump_table[] = { 858, 2042, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 182, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1140, 858, 858, 858, 858, 858, 1143, 858, 1144, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 185, 858, 186, 858, 1139, 858, 1147, 858, 1139, 858, 1140, 858, 1149, 858, 858, 858, 1150, 1150, 1150, 1150, 1150, 1150, 1150, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 858, 191, 858, 858, 858, 858, 858, 192, 858, 858, 858, 858, 858, 858, 858, 858, 858, 193, 858, 193, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 194, 858, 858, 858, 858, 858, 858, 858, 195 };
+		static const unsigned short jump_table[] = { 858, 2036, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 182, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1140, 858, 858, 858, 858, 858, 1143, 858, 1144, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 185, 858, 186, 858, 1139, 858, 1147, 858, 1139, 858, 1140, 858, 1149, 858, 858, 858, 1150, 1150, 1150, 1150, 1150, 1150, 1150, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 858, 191, 858, 858, 858, 858, 858, 192, 858, 858, 858, 858, 858, 858, 858, 858, 858, 193, 858, 193, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 194, 858, 858, 858, 858, 858, 858, 858, 195 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1226:
+tr1220:
 	{
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
@@ -28086,11 +28066,11 @@ st745:
 		goto _test_eof745;
 case 745:
 	{
-		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 1216, 2043, 823, 823 };
+		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 1217, 2037, 823, 823 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1227:
+tr1221:
 	{ if (restricted_register != REG_RBP) {
          PrintError("Incorrectly sandboxed %%rbp\n", begin - data);
          result = 1;
@@ -28111,11 +28091,11 @@ st799:
 		goto _test_eof799;
 case 799:
 	{
-		static const unsigned short jump_table[] = { 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 2080, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 2081, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2082, 2082, 2082, 2082, 2083, 2084, 2085, 858, 2086, 2087, 2086, 2086, 2086, 2086, 2086, 2086, 2088, 2089, 2090, 2091, 2092, 2091, 2091, 2091, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 858, 858, 858, 2077, 858, 858, 2095, 858, 2084, 2096, 2083, 2097, 858, 858, 858, 858, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2099, 2100, 858, 2101, 2074, 2075, 2102, 2103, 2074, 2075, 2076, 2077, 858, 2104, 858, 2105, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2106, 2106, 858, 2108, 858, 858, 858, 858, 858, 858, 858, 858, 2109, 2109, 2109, 2109, 2078, 2079, 2110, 2110, 2111, 2111, 2110, 2110, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2114, 2115, 858, 858, 2116, 2117, 2118, 2119, 2120, 858, 2121, 2106, 858, 858, 858, 858, 2122, 2123, 2122, 2123, 858, 858, 858, 858, 2124, 2125, 2126, 2127, 2128, 2129, 2130, 2131, 858, 858, 858, 858, 858, 858, 858, 858, 2132, 2132, 858, 2098, 858, 858, 858, 858, 2133, 858, 2134, 2135, 2106, 2106, 2136, 2137, 2106, 2106, 858, 858, 2106, 2106, 2138, 2153 };
+		static const unsigned short jump_table[] = { 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 2074, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 2075, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2076, 2076, 2076, 2076, 2077, 2078, 2079, 858, 2080, 2081, 2080, 2080, 2080, 2080, 2080, 2080, 2082, 2083, 2084, 2085, 2086, 2085, 2085, 2085, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 858, 858, 858, 2071, 858, 858, 2089, 858, 2078, 2090, 2077, 2091, 858, 858, 858, 858, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2093, 2094, 858, 2095, 2068, 2069, 2096, 2097, 2068, 2069, 2070, 2071, 858, 2098, 858, 2099, 2100, 2101, 2101, 2101, 2101, 2101, 2101, 2101, 2100, 2100, 858, 2102, 858, 858, 858, 858, 858, 858, 858, 858, 2103, 2103, 2103, 2103, 2072, 2073, 2104, 2104, 2105, 2105, 2104, 2104, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2108, 2109, 858, 858, 2110, 2111, 2112, 2113, 2114, 858, 2115, 2100, 858, 858, 858, 858, 2116, 2117, 2116, 2117, 858, 858, 858, 858, 2118, 2119, 2120, 2121, 2122, 2123, 2124, 2125, 858, 858, 858, 858, 858, 858, 858, 858, 2126, 2126, 858, 2092, 858, 858, 858, 858, 2127, 858, 2128, 2129, 2100, 2100, 2130, 2131, 2100, 2100, 858, 858, 2100, 2100, 2132, 2147 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1337:
+tr1331:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -28142,8 +28122,8 @@ case 746:
 		case 132u: goto st9;
 		case 140u: goto st9;
 		case 180u: goto st9;
-		case 213u: goto tr1212;
-		case 229u: goto tr1212;
+		case 213u: goto tr1206;
+		case 229u: goto tr1206;
 	}
 	if ( (*p) < 112u ) {
 		if ( (*p) < 48u ) {
@@ -28169,7 +28149,7 @@ case 746:
 	} else
 		goto tr3;
 	goto tr42;
-tr590:
+tr584:
 	{
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
@@ -28184,9 +28164,9 @@ st747:
 		goto _test_eof747;
 case 747:
 	if ( (*p) == 224u )
-		goto tr1228;
+		goto tr1222;
 	goto tr34;
-tr1228:
+tr1222:
 	{
     SET_IMM_TYPE(IMM8);
     SET_IMM_PTR(p);
@@ -28255,11 +28235,11 @@ st800:
 		goto _test_eof800;
 case 800:
 	{
-		static const unsigned short jump_table[] = { 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 2080, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 2081, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2082, 2082, 2082, 2082, 2083, 2084, 2085, 858, 2086, 2087, 2086, 2086, 2086, 2086, 2086, 2086, 2088, 2089, 2090, 2091, 2154, 2091, 2091, 2091, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 858, 858, 858, 2077, 858, 858, 2095, 858, 2084, 2096, 2083, 2097, 858, 858, 858, 858, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2099, 2100, 858, 2101, 2074, 2075, 2102, 2103, 2074, 2075, 2076, 2077, 858, 2104, 858, 2105, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2106, 2106, 858, 2108, 858, 858, 858, 858, 858, 858, 858, 858, 2109, 2109, 2109, 2109, 2078, 2079, 2110, 2110, 2111, 2111, 2110, 2110, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2114, 2115, 858, 858, 2116, 2117, 2118, 2119, 2120, 858, 2121, 2106, 858, 858, 858, 858, 2122, 2123, 2122, 2123, 858, 858, 858, 858, 2124, 2125, 2126, 2127, 2128, 2129, 2130, 2131, 858, 858, 858, 858, 858, 858, 858, 858, 2132, 2132, 858, 2098, 858, 858, 858, 858, 2133, 858, 2134, 2135, 2106, 2106, 2136, 2137, 2106, 2106, 858, 858, 2106, 2106, 2138, 2139 };
+		static const unsigned short jump_table[] = { 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 2074, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 2075, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2076, 2076, 2076, 2076, 2077, 2078, 2079, 858, 2080, 2081, 2080, 2080, 2080, 2080, 2080, 2080, 2082, 2083, 2084, 2085, 2148, 2085, 2085, 2085, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 858, 858, 858, 2071, 858, 858, 2089, 858, 2078, 2090, 2077, 2091, 858, 858, 858, 858, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2093, 2094, 858, 2095, 2068, 2069, 2096, 2097, 2068, 2069, 2070, 2071, 858, 2098, 858, 2099, 2100, 2101, 2101, 2101, 2101, 2101, 2101, 2101, 2100, 2100, 858, 2102, 858, 858, 858, 858, 858, 858, 858, 858, 2103, 2103, 2103, 2103, 2072, 2073, 2104, 2104, 2105, 2105, 2104, 2104, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2108, 2109, 858, 858, 2110, 2111, 2112, 2113, 2114, 858, 2115, 2100, 858, 858, 858, 858, 2116, 2117, 2116, 2117, 858, 858, 858, 858, 2118, 2119, 2120, 2121, 2122, 2123, 2124, 2125, 858, 858, 858, 858, 858, 858, 858, 858, 2126, 2126, 858, 2092, 858, 858, 858, 858, 2127, 858, 2128, 2129, 2100, 2100, 2130, 2131, 2100, 2100, 858, 858, 2100, 2100, 2132, 2133 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1338:
+tr1332:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -28277,11 +28257,11 @@ st748:
 		goto _test_eof748;
 case 748:
 	{
-		static const unsigned short jump_table[] = { 858, 2045, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 182, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1140, 858, 858, 858, 858, 858, 1143, 858, 1144, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 185, 858, 186, 858, 1139, 858, 1147, 858, 1139, 858, 1140, 858, 1149, 858, 858, 858, 1150, 1150, 1150, 1150, 1150, 1150, 1150, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 858, 191, 858, 858, 858, 858, 858, 192, 858, 858, 858, 858, 858, 858, 858, 858, 858, 193, 858, 193, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 194, 858, 858, 858, 858, 858, 858, 858, 195 };
+		static const unsigned short jump_table[] = { 858, 2039, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 182, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1140, 858, 858, 858, 858, 858, 1143, 858, 1144, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 185, 858, 186, 858, 1139, 858, 1147, 858, 1139, 858, 1140, 858, 1149, 858, 858, 858, 1150, 1150, 1150, 1150, 1150, 1150, 1150, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 858, 191, 858, 858, 858, 858, 858, 192, 858, 858, 858, 858, 858, 858, 858, 858, 858, 193, 858, 193, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 194, 858, 858, 858, 858, 858, 858, 858, 195 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1229:
+tr1223:
 	{
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
@@ -28291,11 +28271,11 @@ st749:
 		goto _test_eof749;
 case 749:
 	{
-		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 1216, 1210, 2046, 823 };
+		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 1217, 1211, 2040, 823 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1230:
+tr1224:
 	{
     SET_OPERAND_NAME(0, ((*p) & 0x07) |
                            ((GET_REX_PREFIX() & 0x01) << 3) |
@@ -28365,11 +28345,11 @@ st801:
 		goto _test_eof801;
 case 801:
 	{
-		static const unsigned short jump_table[] = { 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 2080, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 2081, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2082, 2082, 2082, 2082, 2083, 2084, 2085, 858, 2086, 2087, 2086, 2086, 2086, 2086, 2086, 2086, 2088, 2089, 2090, 2091, 2092, 2091, 2091, 2091, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 858, 858, 858, 2077, 858, 858, 2095, 858, 2084, 2096, 2083, 2097, 858, 858, 858, 858, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2099, 2100, 858, 2101, 2074, 2075, 2102, 2103, 2074, 2075, 2076, 2077, 858, 2104, 858, 2105, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2106, 2106, 858, 2108, 858, 858, 858, 858, 858, 858, 858, 858, 2109, 2109, 2109, 2109, 2078, 2079, 2110, 2110, 2111, 2111, 2110, 2110, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2114, 2115, 858, 858, 2116, 2117, 2118, 2119, 2120, 858, 2121, 2106, 858, 858, 858, 858, 2122, 2123, 2122, 2123, 858, 858, 858, 858, 2124, 2125, 2126, 2127, 2128, 2129, 2130, 2131, 858, 858, 858, 858, 858, 858, 858, 858, 2132, 2132, 858, 2098, 858, 858, 858, 858, 2133, 858, 2134, 2135, 2106, 2106, 2136, 2137, 2106, 2106, 858, 858, 2106, 2106, 2138, 2155 };
+		static const unsigned short jump_table[] = { 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 2074, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 2075, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2076, 2076, 2076, 2076, 2077, 2078, 2079, 858, 2080, 2081, 2080, 2080, 2080, 2080, 2080, 2080, 2082, 2083, 2084, 2085, 2086, 2085, 2085, 2085, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 858, 858, 858, 2071, 858, 858, 2089, 858, 2078, 2090, 2077, 2091, 858, 858, 858, 858, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2093, 2094, 858, 2095, 2068, 2069, 2096, 2097, 2068, 2069, 2070, 2071, 858, 2098, 858, 2099, 2100, 2101, 2101, 2101, 2101, 2101, 2101, 2101, 2100, 2100, 858, 2102, 858, 858, 858, 858, 858, 858, 858, 858, 2103, 2103, 2103, 2103, 2072, 2073, 2104, 2104, 2105, 2105, 2104, 2104, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2108, 2109, 858, 858, 2110, 2111, 2112, 2113, 2114, 858, 2115, 2100, 858, 858, 858, 858, 2116, 2117, 2116, 2117, 858, 858, 858, 858, 2118, 2119, 2120, 2121, 2122, 2123, 2124, 2125, 858, 858, 858, 858, 858, 858, 858, 858, 2126, 2126, 858, 2092, 858, 858, 858, 858, 2127, 858, 2128, 2129, 2100, 2100, 2130, 2131, 2100, 2100, 858, 858, 2100, 2100, 2132, 2149 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1339:
+tr1333:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -28396,8 +28376,8 @@ case 750:
 		case 132u: goto st9;
 		case 140u: goto st9;
 		case 180u: goto st9;
-		case 214u: goto tr1212;
-		case 230u: goto tr1212;
+		case 214u: goto tr1206;
+		case 230u: goto tr1206;
 	}
 	if ( (*p) < 112u ) {
 		if ( (*p) < 48u ) {
@@ -28423,7 +28403,7 @@ case 750:
 	} else
 		goto tr3;
 	goto tr42;
-tr591:
+tr585:
 	{
     SET_OPERAND_TYPE(0, OperandSize32bit);
   }
@@ -28438,9 +28418,9 @@ st751:
 		goto _test_eof751;
 case 751:
 	if ( (*p) == 224u )
-		goto tr1231;
+		goto tr1225;
 	goto tr34;
-tr1231:
+tr1225:
 	{
     SET_IMM_TYPE(IMM8);
     SET_IMM_PTR(p);
@@ -28509,11 +28489,11 @@ st802:
 		goto _test_eof802;
 case 802:
 	{
-		static const unsigned short jump_table[] = { 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 2080, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 2081, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2082, 2082, 2082, 2082, 2083, 2084, 2085, 858, 2086, 2087, 2086, 2086, 2086, 2086, 2086, 2086, 2088, 2089, 2090, 2091, 2156, 2091, 2091, 2091, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 858, 858, 858, 2077, 858, 858, 2095, 858, 2084, 2096, 2083, 2097, 858, 858, 858, 858, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2099, 2100, 858, 2101, 2074, 2075, 2102, 2103, 2074, 2075, 2076, 2077, 858, 2104, 858, 2105, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2106, 2106, 858, 2108, 858, 858, 858, 858, 858, 858, 858, 858, 2109, 2109, 2109, 2109, 2078, 2079, 2110, 2110, 2111, 2111, 2110, 2110, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2114, 2115, 858, 858, 2116, 2117, 2118, 2119, 2120, 858, 2121, 2106, 858, 858, 858, 858, 2122, 2123, 2122, 2123, 858, 858, 858, 858, 2124, 2125, 2126, 2127, 2128, 2129, 2130, 2131, 858, 858, 858, 858, 858, 858, 858, 858, 2132, 2132, 858, 2098, 858, 858, 858, 858, 2133, 858, 2134, 2135, 2106, 2106, 2136, 2137, 2106, 2106, 858, 858, 2106, 2106, 2138, 2139 };
+		static const unsigned short jump_table[] = { 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 2074, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 2075, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2076, 2076, 2076, 2076, 2077, 2078, 2079, 858, 2080, 2081, 2080, 2080, 2080, 2080, 2080, 2080, 2082, 2083, 2084, 2085, 2150, 2085, 2085, 2085, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 858, 858, 858, 2071, 858, 858, 2089, 858, 2078, 2090, 2077, 2091, 858, 858, 858, 858, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2093, 2094, 858, 2095, 2068, 2069, 2096, 2097, 2068, 2069, 2070, 2071, 858, 2098, 858, 2099, 2100, 2101, 2101, 2101, 2101, 2101, 2101, 2101, 2100, 2100, 858, 2102, 858, 858, 858, 858, 858, 858, 858, 858, 2103, 2103, 2103, 2103, 2072, 2073, 2104, 2104, 2105, 2105, 2104, 2104, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2108, 2109, 858, 858, 2110, 2111, 2112, 2113, 2114, 858, 2115, 2100, 858, 858, 858, 858, 2116, 2117, 2116, 2117, 858, 858, 858, 858, 2118, 2119, 2120, 2121, 2122, 2123, 2124, 2125, 858, 858, 858, 858, 858, 858, 858, 858, 2126, 2126, 858, 2092, 858, 858, 858, 858, 2127, 858, 2128, 2129, 2100, 2100, 2130, 2131, 2100, 2100, 858, 858, 2100, 2100, 2132, 2133 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1340:
+tr1334:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -28531,11 +28511,11 @@ st752:
 		goto _test_eof752;
 case 752:
 	{
-		static const unsigned short jump_table[] = { 858, 2048, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 182, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1140, 858, 858, 858, 858, 858, 1143, 858, 1144, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 185, 858, 186, 858, 1139, 858, 1147, 858, 1139, 858, 1140, 858, 1149, 858, 858, 858, 1150, 1150, 1150, 1150, 1150, 1150, 1150, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 858, 191, 858, 858, 858, 858, 858, 192, 858, 858, 858, 858, 858, 858, 858, 858, 858, 193, 858, 193, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 194, 858, 858, 858, 858, 858, 858, 858, 195 };
+		static const unsigned short jump_table[] = { 858, 2042, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 182, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1140, 858, 858, 858, 858, 858, 1143, 858, 1144, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 185, 858, 186, 858, 1139, 858, 1147, 858, 1139, 858, 1140, 858, 1149, 858, 858, 858, 1150, 1150, 1150, 1150, 1150, 1150, 1150, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 858, 191, 858, 858, 858, 858, 858, 192, 858, 858, 858, 858, 858, 858, 858, 858, 858, 193, 858, 193, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 194, 858, 858, 858, 858, 858, 858, 858, 195 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1232:
+tr1226:
 	{
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
@@ -28545,11 +28525,11 @@ st753:
 		goto _test_eof753;
 case 753:
 	{
-		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 1216, 1210, 823, 2049 };
+		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 1217, 1211, 823, 2043 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1233:
+tr1227:
 	{
     SET_OPERAND_NAME(0, ((*p) & 0x07) |
                            ((GET_REX_PREFIX() & 0x01) << 3) |
@@ -28619,11 +28599,11 @@ st803:
 		goto _test_eof803;
 case 803:
 	{
-		static const unsigned short jump_table[] = { 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 2080, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 2081, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2082, 2082, 2082, 2082, 2083, 2084, 2085, 858, 2086, 2087, 2086, 2086, 2086, 2086, 2086, 2086, 2088, 2089, 2090, 2091, 2092, 2091, 2091, 2091, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 858, 858, 858, 2077, 858, 858, 2095, 858, 2084, 2096, 2083, 2097, 858, 858, 858, 858, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2099, 2100, 858, 2101, 2074, 2075, 2102, 2103, 2074, 2075, 2076, 2077, 858, 2104, 858, 2105, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2106, 2106, 858, 2108, 858, 858, 858, 858, 858, 858, 858, 858, 2109, 2109, 2109, 2109, 2078, 2079, 2110, 2110, 2111, 2111, 2110, 2110, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2114, 2115, 858, 858, 2116, 2117, 2118, 2119, 2120, 858, 2121, 2106, 858, 858, 858, 858, 2122, 2123, 2122, 2123, 858, 858, 858, 858, 2124, 2125, 2126, 2127, 2128, 2129, 2130, 2131, 858, 858, 858, 858, 858, 858, 858, 858, 2132, 2132, 858, 2098, 858, 858, 858, 858, 2133, 858, 2134, 2135, 2106, 2106, 2136, 2137, 2106, 2106, 858, 858, 2106, 2106, 2138, 2157 };
+		static const unsigned short jump_table[] = { 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 2074, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 2075, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2076, 2076, 2076, 2076, 2077, 2078, 2079, 858, 2080, 2081, 2080, 2080, 2080, 2080, 2080, 2080, 2082, 2083, 2084, 2085, 2086, 2085, 2085, 2085, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 858, 858, 858, 2071, 858, 858, 2089, 858, 2078, 2090, 2077, 2091, 858, 858, 858, 858, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2093, 2094, 858, 2095, 2068, 2069, 2096, 2097, 2068, 2069, 2070, 2071, 858, 2098, 858, 2099, 2100, 2101, 2101, 2101, 2101, 2101, 2101, 2101, 2100, 2100, 858, 2102, 858, 858, 858, 858, 858, 858, 858, 858, 2103, 2103, 2103, 2103, 2072, 2073, 2104, 2104, 2105, 2105, 2104, 2104, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2108, 2109, 858, 858, 2110, 2111, 2112, 2113, 2114, 858, 2115, 2100, 858, 858, 858, 858, 2116, 2117, 2116, 2117, 858, 858, 858, 858, 2118, 2119, 2120, 2121, 2122, 2123, 2124, 2125, 858, 858, 858, 858, 858, 858, 858, 858, 2126, 2126, 858, 2092, 858, 858, 858, 858, 2127, 858, 2128, 2129, 2100, 2100, 2130, 2131, 2100, 2100, 858, 858, 2100, 2100, 2132, 2151 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1341:
+tr1335:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -28650,8 +28630,8 @@ case 754:
 		case 132u: goto st9;
 		case 140u: goto st9;
 		case 180u: goto st9;
-		case 215u: goto tr1212;
-		case 231u: goto tr1212;
+		case 215u: goto tr1206;
+		case 231u: goto tr1206;
 	}
 	if ( (*p) < 112u ) {
 		if ( (*p) < 48u ) {
@@ -28692,9 +28672,9 @@ st755:
 		goto _test_eof755;
 case 755:
 	if ( (*p) == 224u )
-		goto tr1234;
+		goto tr1228;
 	goto tr34;
-tr1234:
+tr1228:
 	{
     SET_IMM_TYPE(IMM8);
     SET_IMM_PTR(p);
@@ -28763,11 +28743,11 @@ st804:
 		goto _test_eof804;
 case 804:
 	{
-		static const unsigned short jump_table[] = { 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 2080, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 2081, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2082, 2082, 2082, 2082, 2083, 2084, 2085, 858, 2086, 2087, 2086, 2086, 2086, 2086, 2086, 2086, 2088, 2089, 2090, 2091, 2092, 2158, 2091, 2091, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 858, 858, 858, 2077, 858, 858, 2095, 858, 2084, 2096, 2083, 2097, 858, 858, 858, 858, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2099, 2100, 858, 2101, 2074, 2075, 2102, 2103, 2074, 2075, 2076, 2077, 858, 2104, 858, 2105, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2106, 2106, 858, 2108, 858, 858, 858, 858, 858, 858, 858, 858, 2109, 2109, 2109, 2109, 2078, 2079, 2110, 2110, 2111, 2111, 2110, 2110, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2114, 2115, 858, 858, 2116, 2117, 2118, 2119, 2120, 858, 2121, 2106, 858, 858, 858, 858, 2122, 2123, 2122, 2123, 858, 858, 858, 858, 2124, 2125, 2126, 2127, 2128, 2129, 2130, 2131, 858, 858, 858, 858, 858, 858, 858, 858, 2132, 2132, 858, 2098, 858, 858, 858, 858, 2133, 858, 2134, 2135, 2106, 2106, 2136, 2137, 2106, 2106, 858, 858, 2106, 2106, 2138, 2139 };
+		static const unsigned short jump_table[] = { 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 2074, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 2075, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2076, 2076, 2076, 2076, 2077, 2078, 2079, 858, 2080, 2081, 2080, 2080, 2080, 2080, 2080, 2080, 2082, 2083, 2084, 2085, 2086, 2152, 2085, 2085, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 858, 858, 858, 2071, 858, 858, 2089, 858, 2078, 2090, 2077, 2091, 858, 858, 858, 858, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2093, 2094, 858, 2095, 2068, 2069, 2096, 2097, 2068, 2069, 2070, 2071, 858, 2098, 858, 2099, 2100, 2101, 2101, 2101, 2101, 2101, 2101, 2101, 2100, 2100, 858, 2102, 858, 858, 858, 858, 858, 858, 858, 858, 2103, 2103, 2103, 2103, 2072, 2073, 2104, 2104, 2105, 2105, 2104, 2104, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2108, 2109, 858, 858, 2110, 2111, 2112, 2113, 2114, 858, 2115, 2100, 858, 858, 858, 858, 2116, 2117, 2116, 2117, 858, 858, 858, 858, 2118, 2119, 2120, 2121, 2122, 2123, 2124, 2125, 858, 858, 858, 858, 858, 858, 858, 858, 2126, 2126, 858, 2092, 858, 858, 858, 858, 2127, 858, 2128, 2129, 2100, 2100, 2130, 2131, 2100, 2100, 858, 858, 2100, 2100, 2132, 2133 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1342:
+tr1336:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -28785,11 +28765,11 @@ st756:
 		goto _test_eof756;
 case 756:
 	{
-		static const unsigned short jump_table[] = { 858, 2051, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 182, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1140, 858, 858, 858, 858, 858, 1143, 858, 1144, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 185, 858, 186, 858, 1139, 858, 1147, 858, 1139, 858, 1140, 858, 1149, 858, 858, 858, 1150, 1150, 1150, 1150, 1150, 1150, 1150, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 858, 191, 858, 858, 858, 858, 858, 192, 858, 858, 858, 858, 858, 858, 858, 858, 858, 193, 858, 193, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 194, 858, 858, 858, 858, 858, 858, 858, 195 };
+		static const unsigned short jump_table[] = { 858, 2045, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 182, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1140, 858, 858, 858, 858, 858, 1143, 858, 1144, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 185, 858, 186, 858, 1139, 858, 1147, 858, 1139, 858, 1140, 858, 1149, 858, 858, 858, 1150, 1150, 1150, 1150, 1150, 1150, 1150, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 858, 191, 858, 858, 858, 858, 858, 192, 858, 858, 858, 858, 858, 858, 858, 858, 858, 193, 858, 193, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 194, 858, 858, 858, 858, 858, 858, 858, 195 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1235:
+tr1229:
 	{
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
@@ -28799,11 +28779,11 @@ st757:
 		goto _test_eof757;
 case 757:
 	{
-		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 2052, 823, 823, 823, 823, 823, 823 };
+		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 2046, 823, 823, 823, 823, 823, 823 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1236:
+tr1230:
 	{
     SET_OPERAND_NAME(0, ((*p) & 0x07) |
                            ((GET_REX_PREFIX() & 0x01) << 3) |
@@ -28873,11 +28853,11 @@ st805:
 		goto _test_eof805;
 case 805:
 	{
-		static const unsigned short jump_table[] = { 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 2080, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 2081, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2082, 2082, 2082, 2082, 2083, 2084, 2085, 858, 2086, 2159, 2086, 2086, 2086, 2086, 2086, 2086, 2088, 2089, 2090, 2091, 2092, 2091, 2091, 2091, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 858, 858, 858, 2077, 858, 858, 2095, 858, 2084, 2096, 2083, 2097, 858, 858, 858, 858, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2099, 2100, 858, 2101, 2074, 2075, 2102, 2103, 2074, 2075, 2076, 2077, 858, 2104, 858, 2105, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2106, 2106, 858, 2108, 858, 858, 858, 858, 858, 858, 858, 858, 2109, 2109, 2109, 2109, 2078, 2079, 2110, 2110, 2111, 2111, 2110, 2110, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2114, 2115, 858, 858, 2116, 2117, 2118, 2119, 2120, 858, 2121, 2106, 858, 858, 858, 858, 2122, 2123, 2122, 2123, 858, 858, 858, 858, 2124, 2125, 2126, 2127, 2128, 2129, 2130, 2131, 858, 858, 858, 858, 858, 858, 858, 858, 2132, 2132, 858, 2098, 858, 858, 858, 858, 2133, 858, 2134, 2135, 2106, 2106, 2136, 2137, 2106, 2106, 858, 858, 2106, 2106, 2138, 2139 };
+		static const unsigned short jump_table[] = { 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 2074, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 2075, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2076, 2076, 2076, 2076, 2077, 2078, 2079, 858, 2080, 2153, 2080, 2080, 2080, 2080, 2080, 2080, 2082, 2083, 2084, 2085, 2086, 2085, 2085, 2085, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 858, 858, 858, 2071, 858, 858, 2089, 858, 2078, 2090, 2077, 2091, 858, 858, 858, 858, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2093, 2094, 858, 2095, 2068, 2069, 2096, 2097, 2068, 2069, 2070, 2071, 858, 2098, 858, 2099, 2100, 2101, 2101, 2101, 2101, 2101, 2101, 2101, 2100, 2100, 858, 2102, 858, 858, 858, 858, 858, 858, 858, 858, 2103, 2103, 2103, 2103, 2072, 2073, 2104, 2104, 2105, 2105, 2104, 2104, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2108, 2109, 858, 858, 2110, 2111, 2112, 2113, 2114, 858, 2115, 2100, 858, 858, 858, 858, 2116, 2117, 2116, 2117, 858, 858, 858, 858, 2118, 2119, 2120, 2121, 2122, 2123, 2124, 2125, 858, 858, 858, 858, 858, 858, 858, 858, 2126, 2126, 858, 2092, 858, 858, 858, 858, 2127, 858, 2128, 2129, 2100, 2100, 2130, 2131, 2100, 2100, 858, 858, 2100, 2100, 2132, 2133 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1343:
+tr1337:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -28904,7 +28884,7 @@ st759:
 		goto _test_eof759;
 case 759:
 	{
-		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 816, 816, 816, 816, 2, 858, 816, 816, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 858, 858, 858, 858, 858, 858, 858, 858, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 858, 1222, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1222, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 859, 859, 859, 859, 859, 859, 859, 859, 858, 858, 858, 858, 858, 858, 858, 858 };
+		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 816, 816, 816, 816, 2, 858, 816, 816, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 858, 858, 858, 858, 858, 858, 858, 858, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 858, 1223, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1223, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 859, 859, 859, 859, 859, 859, 859, 859, 858, 858, 858, 858, 858, 858, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -28923,9 +28903,9 @@ st760:
 		goto _test_eof760;
 case 760:
 	if ( (*p) == 224u )
-		goto tr1238;
+		goto tr1232;
 	goto tr34;
-tr1238:
+tr1232:
 	{
     SET_IMM_TYPE(IMM8);
     SET_IMM_PTR(p);
@@ -28994,11 +28974,11 @@ st806:
 		goto _test_eof806;
 case 806:
 	{
-		static const unsigned short jump_table[] = { 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 2080, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 2081, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2082, 2082, 2082, 2082, 2083, 2084, 2085, 858, 2086, 2087, 2086, 2086, 2086, 2086, 2086, 2086, 2088, 2089, 2090, 2091, 2092, 2160, 2091, 2091, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 858, 858, 858, 2077, 858, 858, 2095, 858, 2084, 2096, 2083, 2097, 858, 858, 858, 858, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2099, 2100, 858, 2101, 2074, 2075, 2102, 2103, 2074, 2075, 2076, 2077, 858, 2104, 858, 2105, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2106, 2106, 858, 2108, 858, 858, 858, 858, 858, 858, 858, 858, 2109, 2109, 2109, 2109, 2078, 2079, 2110, 2110, 2111, 2111, 2110, 2110, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2114, 2115, 858, 858, 2116, 2117, 2118, 2119, 2120, 858, 2121, 2106, 858, 858, 858, 858, 2122, 2123, 2122, 2123, 858, 858, 858, 858, 2124, 2125, 2126, 2127, 2128, 2129, 2130, 2131, 858, 858, 858, 858, 858, 858, 858, 858, 2132, 2132, 858, 2098, 858, 858, 858, 858, 2133, 858, 2134, 2135, 2106, 2106, 2136, 2137, 2106, 2106, 858, 858, 2106, 2106, 2138, 2139 };
+		static const unsigned short jump_table[] = { 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 2074, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 2075, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2076, 2076, 2076, 2076, 2077, 2078, 2079, 858, 2080, 2081, 2080, 2080, 2080, 2080, 2080, 2080, 2082, 2083, 2084, 2085, 2086, 2154, 2085, 2085, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 858, 858, 858, 2071, 858, 858, 2089, 858, 2078, 2090, 2077, 2091, 858, 858, 858, 858, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2093, 2094, 858, 2095, 2068, 2069, 2096, 2097, 2068, 2069, 2070, 2071, 858, 2098, 858, 2099, 2100, 2101, 2101, 2101, 2101, 2101, 2101, 2101, 2100, 2100, 858, 2102, 858, 858, 858, 858, 858, 858, 858, 858, 2103, 2103, 2103, 2103, 2072, 2073, 2104, 2104, 2105, 2105, 2104, 2104, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2108, 2109, 858, 858, 2110, 2111, 2112, 2113, 2114, 858, 2115, 2100, 858, 858, 858, 858, 2116, 2117, 2116, 2117, 858, 858, 858, 858, 2118, 2119, 2120, 2121, 2122, 2123, 2124, 2125, 858, 858, 858, 858, 858, 858, 858, 858, 2126, 2126, 858, 2092, 858, 858, 858, 858, 2127, 858, 2128, 2129, 2100, 2100, 2130, 2131, 2100, 2100, 858, 858, 2100, 2100, 2132, 2133 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1344:
+tr1338:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -29016,11 +28996,11 @@ st761:
 		goto _test_eof761;
 case 761:
 	{
-		static const unsigned short jump_table[] = { 858, 2055, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 182, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1140, 858, 858, 858, 858, 858, 1143, 858, 1144, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 185, 858, 186, 858, 1139, 858, 1147, 858, 1139, 858, 1140, 858, 1149, 858, 858, 858, 1150, 1150, 1150, 1150, 1150, 1150, 1150, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 858, 191, 858, 858, 858, 858, 858, 192, 858, 858, 858, 858, 858, 858, 858, 858, 858, 193, 858, 193, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 194, 858, 858, 858, 858, 858, 858, 858, 195 };
+		static const unsigned short jump_table[] = { 858, 2049, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 182, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1140, 858, 858, 858, 858, 858, 1143, 858, 1144, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 185, 858, 186, 858, 1139, 858, 1147, 858, 1139, 858, 1140, 858, 1149, 858, 858, 858, 1150, 1150, 1150, 1150, 1150, 1150, 1150, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 858, 191, 858, 858, 858, 858, 858, 192, 858, 858, 858, 858, 858, 858, 858, 858, 858, 193, 858, 193, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 194, 858, 858, 858, 858, 858, 858, 858, 195 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1239:
+tr1233:
 	{
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
@@ -29030,11 +29010,11 @@ st762:
 		goto _test_eof762;
 case 762:
 	{
-		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 2056, 823, 823, 823, 823, 823 };
+		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 2050, 823, 823, 823, 823, 823 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1240:
+tr1234:
 	{
     SET_OPERAND_NAME(0, ((*p) & 0x07) |
                            ((GET_REX_PREFIX() & 0x01) << 3) |
@@ -29104,11 +29084,11 @@ st807:
 		goto _test_eof807;
 case 807:
 	{
-		static const unsigned short jump_table[] = { 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 2080, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 2081, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2082, 2082, 2082, 2082, 2083, 2084, 2085, 858, 2086, 2161, 2086, 2086, 2086, 2086, 2086, 2086, 2088, 2089, 2090, 2091, 2092, 2091, 2091, 2091, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 858, 858, 858, 2077, 858, 858, 2095, 858, 2084, 2096, 2083, 2097, 858, 858, 858, 858, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2099, 2100, 858, 2101, 2074, 2075, 2102, 2103, 2074, 2075, 2076, 2077, 858, 2104, 858, 2105, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2106, 2106, 858, 2108, 858, 858, 858, 858, 858, 858, 858, 858, 2109, 2109, 2109, 2109, 2078, 2079, 2110, 2110, 2111, 2111, 2110, 2110, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2114, 2115, 858, 858, 2116, 2117, 2118, 2119, 2120, 858, 2121, 2106, 858, 858, 858, 858, 2122, 2123, 2122, 2123, 858, 858, 858, 858, 2124, 2125, 2126, 2127, 2128, 2129, 2130, 2131, 858, 858, 858, 858, 858, 858, 858, 858, 2132, 2132, 858, 2098, 858, 858, 858, 858, 2133, 858, 2134, 2135, 2106, 2106, 2136, 2137, 2106, 2106, 858, 858, 2106, 2106, 2138, 2139 };
+		static const unsigned short jump_table[] = { 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 2074, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 2075, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2076, 2076, 2076, 2076, 2077, 2078, 2079, 858, 2080, 2155, 2080, 2080, 2080, 2080, 2080, 2080, 2082, 2083, 2084, 2085, 2086, 2085, 2085, 2085, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 858, 858, 858, 2071, 858, 858, 2089, 858, 2078, 2090, 2077, 2091, 858, 858, 858, 858, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2093, 2094, 858, 2095, 2068, 2069, 2096, 2097, 2068, 2069, 2070, 2071, 858, 2098, 858, 2099, 2100, 2101, 2101, 2101, 2101, 2101, 2101, 2101, 2100, 2100, 858, 2102, 858, 858, 858, 858, 858, 858, 858, 858, 2103, 2103, 2103, 2103, 2072, 2073, 2104, 2104, 2105, 2105, 2104, 2104, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2108, 2109, 858, 858, 2110, 2111, 2112, 2113, 2114, 858, 2115, 2100, 858, 858, 858, 858, 2116, 2117, 2116, 2117, 858, 858, 858, 858, 2118, 2119, 2120, 2121, 2122, 2123, 2124, 2125, 858, 858, 858, 858, 858, 858, 858, 858, 2126, 2126, 858, 2092, 858, 858, 858, 858, 2127, 858, 2128, 2129, 2100, 2100, 2130, 2131, 2100, 2100, 858, 858, 2100, 2100, 2132, 2133 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1345:
+tr1339:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -29135,7 +29115,7 @@ st764:
 		goto _test_eof764;
 case 764:
 	{
-		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 816, 816, 816, 816, 2, 858, 816, 816, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 858, 858, 858, 858, 858, 858, 858, 858, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 858, 858, 1222, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1222, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 859, 859, 859, 859, 859, 859, 859, 859, 858, 858, 858, 858, 858, 858, 858, 858 };
+		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 816, 816, 816, 816, 2, 858, 816, 816, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 858, 858, 858, 858, 858, 858, 858, 858, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 858, 858, 1223, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1223, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 859, 859, 859, 859, 859, 859, 859, 859, 858, 858, 858, 858, 858, 858, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -29154,9 +29134,9 @@ st765:
 		goto _test_eof765;
 case 765:
 	if ( (*p) == 224u )
-		goto tr1242;
+		goto tr1236;
 	goto tr34;
-tr1242:
+tr1236:
 	{
     SET_IMM_TYPE(IMM8);
     SET_IMM_PTR(p);
@@ -29225,11 +29205,11 @@ st808:
 		goto _test_eof808;
 case 808:
 	{
-		static const unsigned short jump_table[] = { 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 2080, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 2081, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2082, 2082, 2082, 2082, 2083, 2084, 2085, 858, 2086, 2087, 2086, 2086, 2086, 2086, 2086, 2086, 2088, 2089, 2090, 2091, 2092, 2162, 2091, 2091, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 858, 858, 858, 2077, 858, 858, 2095, 858, 2084, 2096, 2083, 2097, 858, 858, 858, 858, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2099, 2100, 858, 2101, 2074, 2075, 2102, 2103, 2074, 2075, 2076, 2077, 858, 2104, 858, 2105, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2106, 2106, 858, 2108, 858, 858, 858, 858, 858, 858, 858, 858, 2109, 2109, 2109, 2109, 2078, 2079, 2110, 2110, 2111, 2111, 2110, 2110, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2114, 2115, 858, 858, 2116, 2117, 2118, 2119, 2120, 858, 2121, 2106, 858, 858, 858, 858, 2122, 2123, 2122, 2123, 858, 858, 858, 858, 2124, 2125, 2126, 2127, 2128, 2129, 2130, 2131, 858, 858, 858, 858, 858, 858, 858, 858, 2132, 2132, 858, 2098, 858, 858, 858, 858, 2133, 858, 2134, 2135, 2106, 2106, 2136, 2137, 2106, 2106, 858, 858, 2106, 2106, 2138, 2139 };
+		static const unsigned short jump_table[] = { 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 2074, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 2075, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2076, 2076, 2076, 2076, 2077, 2078, 2079, 858, 2080, 2081, 2080, 2080, 2080, 2080, 2080, 2080, 2082, 2083, 2084, 2085, 2086, 2156, 2085, 2085, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 858, 858, 858, 2071, 858, 858, 2089, 858, 2078, 2090, 2077, 2091, 858, 858, 858, 858, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2093, 2094, 858, 2095, 2068, 2069, 2096, 2097, 2068, 2069, 2070, 2071, 858, 2098, 858, 2099, 2100, 2101, 2101, 2101, 2101, 2101, 2101, 2101, 2100, 2100, 858, 2102, 858, 858, 858, 858, 858, 858, 858, 858, 2103, 2103, 2103, 2103, 2072, 2073, 2104, 2104, 2105, 2105, 2104, 2104, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2108, 2109, 858, 858, 2110, 2111, 2112, 2113, 2114, 858, 2115, 2100, 858, 858, 858, 858, 2116, 2117, 2116, 2117, 858, 858, 858, 858, 2118, 2119, 2120, 2121, 2122, 2123, 2124, 2125, 858, 858, 858, 858, 858, 858, 858, 858, 2126, 2126, 858, 2092, 858, 858, 858, 858, 2127, 858, 2128, 2129, 2100, 2100, 2130, 2131, 2100, 2100, 858, 858, 2100, 2100, 2132, 2133 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1346:
+tr1340:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -29247,11 +29227,11 @@ st766:
 		goto _test_eof766;
 case 766:
 	{
-		static const unsigned short jump_table[] = { 858, 2059, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 182, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1140, 858, 858, 858, 858, 858, 1143, 858, 1144, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 185, 858, 186, 858, 1139, 858, 1147, 858, 1139, 858, 1140, 858, 1149, 858, 858, 858, 1150, 1150, 1150, 1150, 1150, 1150, 1150, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 858, 191, 858, 858, 858, 858, 858, 192, 858, 858, 858, 858, 858, 858, 858, 858, 858, 193, 858, 193, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 194, 858, 858, 858, 858, 858, 858, 858, 195 };
+		static const unsigned short jump_table[] = { 858, 2053, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 182, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1140, 858, 858, 858, 858, 858, 1143, 858, 1144, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 185, 858, 186, 858, 1139, 858, 1147, 858, 1139, 858, 1140, 858, 1149, 858, 858, 858, 1150, 1150, 1150, 1150, 1150, 1150, 1150, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 858, 191, 858, 858, 858, 858, 858, 192, 858, 858, 858, 858, 858, 858, 858, 858, 858, 193, 858, 193, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 194, 858, 858, 858, 858, 858, 858, 858, 195 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1243:
+tr1237:
 	{
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
@@ -29261,11 +29241,11 @@ st767:
 		goto _test_eof767;
 case 767:
 	{
-		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 2060, 823, 823, 823, 823 };
+		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 2054, 823, 823, 823, 823 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1244:
+tr1238:
 	{
     SET_OPERAND_NAME(0, ((*p) & 0x07) |
                            ((GET_REX_PREFIX() & 0x01) << 3) |
@@ -29335,11 +29315,11 @@ st809:
 		goto _test_eof809;
 case 809:
 	{
-		static const unsigned short jump_table[] = { 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 2080, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 2081, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2082, 2082, 2082, 2082, 2083, 2084, 2085, 858, 2086, 2163, 2086, 2086, 2086, 2086, 2086, 2086, 2088, 2089, 2090, 2091, 2092, 2091, 2091, 2091, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 858, 858, 858, 2077, 858, 858, 2095, 858, 2084, 2096, 2083, 2097, 858, 858, 858, 858, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2099, 2100, 858, 2101, 2074, 2075, 2102, 2103, 2074, 2075, 2076, 2077, 858, 2104, 858, 2105, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2106, 2106, 858, 2108, 858, 858, 858, 858, 858, 858, 858, 858, 2109, 2109, 2109, 2109, 2078, 2079, 2110, 2110, 2111, 2111, 2110, 2110, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2114, 2115, 858, 858, 2116, 2117, 2118, 2119, 2120, 858, 2121, 2106, 858, 858, 858, 858, 2122, 2123, 2122, 2123, 858, 858, 858, 858, 2124, 2125, 2126, 2127, 2128, 2129, 2130, 2131, 858, 858, 858, 858, 858, 858, 858, 858, 2132, 2132, 858, 2098, 858, 858, 858, 858, 2133, 858, 2134, 2135, 2106, 2106, 2136, 2137, 2106, 2106, 858, 858, 2106, 2106, 2138, 2139 };
+		static const unsigned short jump_table[] = { 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 2074, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 2075, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2076, 2076, 2076, 2076, 2077, 2078, 2079, 858, 2080, 2157, 2080, 2080, 2080, 2080, 2080, 2080, 2082, 2083, 2084, 2085, 2086, 2085, 2085, 2085, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 858, 858, 858, 2071, 858, 858, 2089, 858, 2078, 2090, 2077, 2091, 858, 858, 858, 858, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2093, 2094, 858, 2095, 2068, 2069, 2096, 2097, 2068, 2069, 2070, 2071, 858, 2098, 858, 2099, 2100, 2101, 2101, 2101, 2101, 2101, 2101, 2101, 2100, 2100, 858, 2102, 858, 858, 858, 858, 858, 858, 858, 858, 2103, 2103, 2103, 2103, 2072, 2073, 2104, 2104, 2105, 2105, 2104, 2104, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2108, 2109, 858, 858, 2110, 2111, 2112, 2113, 2114, 858, 2115, 2100, 858, 858, 858, 858, 2116, 2117, 2116, 2117, 858, 858, 858, 858, 2118, 2119, 2120, 2121, 2122, 2123, 2124, 2125, 858, 858, 858, 858, 858, 858, 858, 858, 2126, 2126, 858, 2092, 858, 858, 858, 858, 2127, 858, 2128, 2129, 2100, 2100, 2130, 2131, 2100, 2100, 858, 858, 2100, 2100, 2132, 2133 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1347:
+tr1341:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -29366,7 +29346,7 @@ st769:
 		goto _test_eof769;
 case 769:
 	{
-		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 816, 816, 816, 816, 2, 858, 816, 816, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 858, 858, 858, 858, 858, 858, 858, 858, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 858, 858, 858, 1222, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1222, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 859, 859, 859, 859, 859, 859, 859, 859, 858, 858, 858, 858, 858, 858, 858, 858 };
+		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 816, 816, 816, 816, 2, 858, 816, 816, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 858, 858, 858, 858, 858, 858, 858, 858, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 858, 858, 858, 1223, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1223, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 859, 859, 859, 859, 859, 859, 859, 859, 858, 858, 858, 858, 858, 858, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -29385,9 +29365,9 @@ st770:
 		goto _test_eof770;
 case 770:
 	if ( (*p) == 224u )
-		goto tr1246;
+		goto tr1240;
 	goto tr34;
-tr1246:
+tr1240:
 	{
     SET_IMM_TYPE(IMM8);
     SET_IMM_PTR(p);
@@ -29456,11 +29436,11 @@ st810:
 		goto _test_eof810;
 case 810:
 	{
-		static const unsigned short jump_table[] = { 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 2080, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 2081, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2082, 2082, 2082, 2082, 2083, 2084, 2085, 858, 2086, 2087, 2086, 2086, 2086, 2086, 2086, 2086, 2088, 2089, 2090, 2091, 2092, 2164, 2091, 2091, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 858, 858, 858, 2077, 858, 858, 2095, 858, 2084, 2096, 2083, 2097, 858, 858, 858, 858, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2099, 2100, 858, 2101, 2074, 2075, 2102, 2103, 2074, 2075, 2076, 2077, 858, 2104, 858, 2105, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2106, 2106, 858, 2108, 858, 858, 858, 858, 858, 858, 858, 858, 2109, 2109, 2109, 2109, 2078, 2079, 2110, 2110, 2111, 2111, 2110, 2110, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2114, 2115, 858, 858, 2116, 2117, 2118, 2119, 2120, 858, 2121, 2106, 858, 858, 858, 858, 2122, 2123, 2122, 2123, 858, 858, 858, 858, 2124, 2125, 2126, 2127, 2128, 2129, 2130, 2131, 858, 858, 858, 858, 858, 858, 858, 858, 2132, 2132, 858, 2098, 858, 858, 858, 858, 2133, 858, 2134, 2135, 2106, 2106, 2136, 2137, 2106, 2106, 858, 858, 2106, 2106, 2138, 2139 };
+		static const unsigned short jump_table[] = { 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 2074, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 2075, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2076, 2076, 2076, 2076, 2077, 2078, 2079, 858, 2080, 2081, 2080, 2080, 2080, 2080, 2080, 2080, 2082, 2083, 2084, 2085, 2086, 2158, 2085, 2085, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 858, 858, 858, 2071, 858, 858, 2089, 858, 2078, 2090, 2077, 2091, 858, 858, 858, 858, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2093, 2094, 858, 2095, 2068, 2069, 2096, 2097, 2068, 2069, 2070, 2071, 858, 2098, 858, 2099, 2100, 2101, 2101, 2101, 2101, 2101, 2101, 2101, 2100, 2100, 858, 2102, 858, 858, 858, 858, 858, 858, 858, 858, 2103, 2103, 2103, 2103, 2072, 2073, 2104, 2104, 2105, 2105, 2104, 2104, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2108, 2109, 858, 858, 2110, 2111, 2112, 2113, 2114, 858, 2115, 2100, 858, 858, 858, 858, 2116, 2117, 2116, 2117, 858, 858, 858, 858, 2118, 2119, 2120, 2121, 2122, 2123, 2124, 2125, 858, 858, 858, 858, 858, 858, 858, 858, 2126, 2126, 858, 2092, 858, 858, 858, 858, 2127, 858, 2128, 2129, 2100, 2100, 2130, 2131, 2100, 2100, 858, 858, 2100, 2100, 2132, 2133 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1348:
+tr1342:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -29478,11 +29458,11 @@ st771:
 		goto _test_eof771;
 case 771:
 	{
-		static const unsigned short jump_table[] = { 858, 2063, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 182, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1140, 858, 858, 858, 858, 858, 1143, 858, 1144, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 185, 858, 186, 858, 1139, 858, 1147, 858, 1139, 858, 1140, 858, 1149, 858, 858, 858, 1150, 1150, 1150, 1150, 1150, 1150, 1150, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 858, 191, 858, 858, 858, 858, 858, 192, 858, 858, 858, 858, 858, 858, 858, 858, 858, 193, 858, 193, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 194, 858, 858, 858, 858, 858, 858, 858, 195 };
+		static const unsigned short jump_table[] = { 858, 2057, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 182, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1140, 858, 858, 858, 858, 858, 1143, 858, 1144, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 185, 858, 186, 858, 1139, 858, 1147, 858, 1139, 858, 1140, 858, 1149, 858, 858, 858, 1150, 1150, 1150, 1150, 1150, 1150, 1150, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 858, 191, 858, 858, 858, 858, 858, 192, 858, 858, 858, 858, 858, 858, 858, 858, 858, 193, 858, 193, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 194, 858, 858, 858, 858, 858, 858, 858, 195 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1247:
+tr1241:
 	{
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
@@ -29492,11 +29472,11 @@ st772:
 		goto _test_eof772;
 case 772:
 	{
-		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 2064, 823, 823, 823 };
+		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 2058, 823, 823, 823 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1248:
+tr1242:
 	{
     SET_OPERAND_NAME(0, ((*p) & 0x07) |
                            ((GET_REX_PREFIX() & 0x01) << 3) |
@@ -29566,11 +29546,11 @@ st811:
 		goto _test_eof811;
 case 811:
 	{
-		static const unsigned short jump_table[] = { 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 2080, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 2081, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2082, 2082, 2082, 2082, 2083, 2084, 2085, 858, 2086, 2165, 2086, 2086, 2086, 2086, 2086, 2086, 2088, 2089, 2090, 2091, 2092, 2091, 2091, 2091, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 858, 858, 858, 2077, 858, 858, 2095, 858, 2084, 2096, 2083, 2097, 858, 858, 858, 858, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2099, 2100, 858, 2101, 2074, 2075, 2102, 2103, 2074, 2075, 2076, 2077, 858, 2104, 858, 2105, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2106, 2106, 858, 2108, 858, 858, 858, 858, 858, 858, 858, 858, 2109, 2109, 2109, 2109, 2078, 2079, 2110, 2110, 2111, 2111, 2110, 2110, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2114, 2115, 858, 858, 2116, 2117, 2118, 2119, 2120, 858, 2121, 2106, 858, 858, 858, 858, 2122, 2123, 2122, 2123, 858, 858, 858, 858, 2124, 2125, 2126, 2127, 2128, 2129, 2130, 2131, 858, 858, 858, 858, 858, 858, 858, 858, 2132, 2132, 858, 2098, 858, 858, 858, 858, 2133, 858, 2134, 2135, 2106, 2106, 2136, 2137, 2106, 2106, 858, 858, 2106, 2106, 2138, 2139 };
+		static const unsigned short jump_table[] = { 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 2074, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 2075, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2076, 2076, 2076, 2076, 2077, 2078, 2079, 858, 2080, 2159, 2080, 2080, 2080, 2080, 2080, 2080, 2082, 2083, 2084, 2085, 2086, 2085, 2085, 2085, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 858, 858, 858, 2071, 858, 858, 2089, 858, 2078, 2090, 2077, 2091, 858, 858, 858, 858, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2093, 2094, 858, 2095, 2068, 2069, 2096, 2097, 2068, 2069, 2070, 2071, 858, 2098, 858, 2099, 2100, 2101, 2101, 2101, 2101, 2101, 2101, 2101, 2100, 2100, 858, 2102, 858, 858, 858, 858, 858, 858, 858, 858, 2103, 2103, 2103, 2103, 2072, 2073, 2104, 2104, 2105, 2105, 2104, 2104, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2108, 2109, 858, 858, 2110, 2111, 2112, 2113, 2114, 858, 2115, 2100, 858, 858, 858, 858, 2116, 2117, 2116, 2117, 858, 858, 858, 858, 2118, 2119, 2120, 2121, 2122, 2123, 2124, 2125, 858, 858, 858, 858, 858, 858, 858, 858, 2126, 2126, 858, 2092, 858, 858, 858, 858, 2127, 858, 2128, 2129, 2100, 2100, 2130, 2131, 2100, 2100, 858, 858, 2100, 2100, 2132, 2133 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1349:
+tr1343:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -29597,7 +29577,7 @@ st774:
 		goto _test_eof774;
 case 774:
 	{
-		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 816, 816, 816, 816, 2, 858, 816, 816, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 858, 858, 858, 858, 858, 858, 858, 858, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 858, 858, 858, 858, 1222, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1222, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 859, 859, 859, 859, 859, 859, 859, 859, 858, 858, 858, 858, 858, 858, 858, 858 };
+		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 816, 816, 816, 816, 2, 858, 816, 816, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 858, 858, 858, 858, 858, 858, 858, 858, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 858, 858, 858, 858, 1223, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1223, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 859, 859, 859, 859, 859, 859, 859, 859, 858, 858, 858, 858, 858, 858, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -29616,9 +29596,9 @@ st775:
 		goto _test_eof775;
 case 775:
 	if ( (*p) == 224u )
-		goto tr1250;
+		goto tr1244;
 	goto tr34;
-tr1250:
+tr1244:
 	{
     SET_IMM_TYPE(IMM8);
     SET_IMM_PTR(p);
@@ -29687,11 +29667,11 @@ st812:
 		goto _test_eof812;
 case 812:
 	{
-		static const unsigned short jump_table[] = { 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 2080, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 2081, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2082, 2082, 2082, 2082, 2083, 2084, 2085, 858, 2086, 2087, 2086, 2086, 2086, 2086, 2086, 2086, 2088, 2089, 2090, 2091, 2092, 2166, 2091, 2091, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 858, 858, 858, 2077, 858, 858, 2095, 858, 2084, 2096, 2083, 2097, 858, 858, 858, 858, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2099, 2100, 858, 2101, 2074, 2075, 2102, 2103, 2074, 2075, 2076, 2077, 858, 2104, 858, 2105, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2106, 2106, 858, 2108, 858, 858, 858, 858, 858, 858, 858, 858, 2109, 2109, 2109, 2109, 2078, 2079, 2110, 2110, 2111, 2111, 2110, 2110, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2114, 2115, 858, 858, 2116, 2117, 2118, 2119, 2120, 858, 2121, 2106, 858, 858, 858, 858, 2122, 2123, 2122, 2123, 858, 858, 858, 858, 2124, 2125, 2126, 2127, 2128, 2129, 2130, 2131, 858, 858, 858, 858, 858, 858, 858, 858, 2132, 2132, 858, 2098, 858, 858, 858, 858, 2133, 858, 2134, 2135, 2106, 2106, 2136, 2137, 2106, 2106, 858, 858, 2106, 2106, 2138, 2139 };
+		static const unsigned short jump_table[] = { 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 2074, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 2075, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2076, 2076, 2076, 2076, 2077, 2078, 2079, 858, 2080, 2081, 2080, 2080, 2080, 2080, 2080, 2080, 2082, 2083, 2084, 2085, 2086, 2160, 2085, 2085, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 858, 858, 858, 2071, 858, 858, 2089, 858, 2078, 2090, 2077, 2091, 858, 858, 858, 858, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2093, 2094, 858, 2095, 2068, 2069, 2096, 2097, 2068, 2069, 2070, 2071, 858, 2098, 858, 2099, 2100, 2101, 2101, 2101, 2101, 2101, 2101, 2101, 2100, 2100, 858, 2102, 858, 858, 858, 858, 858, 858, 858, 858, 2103, 2103, 2103, 2103, 2072, 2073, 2104, 2104, 2105, 2105, 2104, 2104, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2108, 2109, 858, 858, 2110, 2111, 2112, 2113, 2114, 858, 2115, 2100, 858, 858, 858, 858, 2116, 2117, 2116, 2117, 858, 858, 858, 858, 2118, 2119, 2120, 2121, 2122, 2123, 2124, 2125, 858, 858, 858, 858, 858, 858, 858, 858, 2126, 2126, 858, 2092, 858, 858, 858, 858, 2127, 858, 2128, 2129, 2100, 2100, 2130, 2131, 2100, 2100, 858, 858, 2100, 2100, 2132, 2133 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1350:
+tr1344:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -29709,11 +29689,11 @@ st776:
 		goto _test_eof776;
 case 776:
 	{
-		static const unsigned short jump_table[] = { 858, 2067, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 182, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1140, 858, 858, 858, 858, 858, 1143, 858, 1144, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 185, 858, 186, 858, 1139, 858, 1147, 858, 1139, 858, 1140, 858, 1149, 858, 858, 858, 1150, 1150, 1150, 1150, 1150, 1150, 1150, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 858, 191, 858, 858, 858, 858, 858, 192, 858, 858, 858, 858, 858, 858, 858, 858, 858, 193, 858, 193, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 194, 858, 858, 858, 858, 858, 858, 858, 195 };
+		static const unsigned short jump_table[] = { 858, 2061, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 182, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1140, 858, 858, 858, 858, 858, 1143, 858, 1144, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 185, 858, 186, 858, 1139, 858, 1147, 858, 1139, 858, 1140, 858, 1149, 858, 858, 858, 1150, 1150, 1150, 1150, 1150, 1150, 1150, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 858, 191, 858, 858, 858, 858, 858, 192, 858, 858, 858, 858, 858, 858, 858, 858, 858, 193, 858, 193, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 194, 858, 858, 858, 858, 858, 858, 858, 195 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1251:
+tr1245:
 	{
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
@@ -29723,11 +29703,11 @@ st777:
 		goto _test_eof777;
 case 777:
 	{
-		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 2068, 823, 823 };
+		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 2062, 823, 823 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1252:
+tr1246:
 	{
     SET_OPERAND_NAME(0, ((*p) & 0x07) |
                            ((GET_REX_PREFIX() & 0x01) << 3) |
@@ -29797,11 +29777,11 @@ st813:
 		goto _test_eof813;
 case 813:
 	{
-		static const unsigned short jump_table[] = { 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 2080, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 2081, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2082, 2082, 2082, 2082, 2083, 2084, 2085, 858, 2086, 2167, 2086, 2086, 2086, 2086, 2086, 2086, 2088, 2089, 2090, 2091, 2092, 2091, 2091, 2091, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 858, 858, 858, 2077, 858, 858, 2095, 858, 2084, 2096, 2083, 2097, 858, 858, 858, 858, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2099, 2100, 858, 2101, 2074, 2075, 2102, 2103, 2074, 2075, 2076, 2077, 858, 2104, 858, 2105, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2106, 2106, 858, 2108, 858, 858, 858, 858, 858, 858, 858, 858, 2109, 2109, 2109, 2109, 2078, 2079, 2110, 2110, 2111, 2111, 2110, 2110, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2114, 2115, 858, 858, 2116, 2117, 2118, 2119, 2120, 858, 2121, 2106, 858, 858, 858, 858, 2122, 2123, 2122, 2123, 858, 858, 858, 858, 2124, 2125, 2126, 2127, 2128, 2129, 2130, 2131, 858, 858, 858, 858, 858, 858, 858, 858, 2132, 2132, 858, 2098, 858, 858, 858, 858, 2133, 858, 2134, 2135, 2106, 2106, 2136, 2137, 2106, 2106, 858, 858, 2106, 2106, 2138, 2139 };
+		static const unsigned short jump_table[] = { 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 2074, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 2075, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2076, 2076, 2076, 2076, 2077, 2078, 2079, 858, 2080, 2161, 2080, 2080, 2080, 2080, 2080, 2080, 2082, 2083, 2084, 2085, 2086, 2085, 2085, 2085, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 858, 858, 858, 2071, 858, 858, 2089, 858, 2078, 2090, 2077, 2091, 858, 858, 858, 858, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2093, 2094, 858, 2095, 2068, 2069, 2096, 2097, 2068, 2069, 2070, 2071, 858, 2098, 858, 2099, 2100, 2101, 2101, 2101, 2101, 2101, 2101, 2101, 2100, 2100, 858, 2102, 858, 858, 858, 858, 858, 858, 858, 858, 2103, 2103, 2103, 2103, 2072, 2073, 2104, 2104, 2105, 2105, 2104, 2104, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2108, 2109, 858, 858, 2110, 2111, 2112, 2113, 2114, 858, 2115, 2100, 858, 858, 858, 858, 2116, 2117, 2116, 2117, 858, 858, 858, 858, 2118, 2119, 2120, 2121, 2122, 2123, 2124, 2125, 858, 858, 858, 858, 858, 858, 858, 858, 2126, 2126, 858, 2092, 858, 858, 858, 858, 2127, 858, 2128, 2129, 2100, 2100, 2130, 2131, 2100, 2100, 858, 858, 2100, 2100, 2132, 2133 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1351:
+tr1345:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -29828,7 +29808,7 @@ st779:
 		goto _test_eof779;
 case 779:
 	{
-		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 816, 816, 816, 816, 2, 858, 816, 816, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 858, 858, 858, 858, 858, 858, 858, 858, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 858, 858, 858, 858, 858, 1222, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1222, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 859, 859, 859, 859, 859, 859, 859, 859, 858, 858, 858, 858, 858, 858, 858, 858 };
+		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 816, 816, 816, 816, 2, 858, 816, 816, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 858, 858, 858, 858, 858, 858, 858, 858, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 858, 858, 858, 858, 858, 1223, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1223, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 859, 859, 859, 859, 859, 859, 859, 859, 858, 858, 858, 858, 858, 858, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
@@ -29847,9 +29827,9 @@ st780:
 		goto _test_eof780;
 case 780:
 	if ( (*p) == 224u )
-		goto tr1254;
+		goto tr1248;
 	goto tr34;
-tr1254:
+tr1248:
 	{
     SET_IMM_TYPE(IMM8);
     SET_IMM_PTR(p);
@@ -29918,11 +29898,11 @@ st814:
 		goto _test_eof814;
 case 814:
 	{
-		static const unsigned short jump_table[] = { 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 2080, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 2081, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2082, 2082, 2082, 2082, 2083, 2084, 2085, 858, 2086, 2087, 2086, 2086, 2086, 2086, 2086, 2086, 2088, 2089, 2090, 2091, 2092, 2168, 2091, 2091, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 858, 858, 858, 2077, 858, 858, 2095, 858, 2084, 2096, 2083, 2097, 858, 858, 858, 858, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2099, 2100, 858, 2101, 2074, 2075, 2102, 2103, 2074, 2075, 2076, 2077, 858, 2104, 858, 2105, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2106, 2106, 858, 2108, 858, 858, 858, 858, 858, 858, 858, 858, 2109, 2109, 2109, 2109, 2078, 2079, 2110, 2110, 2111, 2111, 2110, 2110, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2114, 2115, 858, 858, 2116, 2117, 2118, 2119, 2120, 858, 2121, 2106, 858, 858, 858, 858, 2122, 2123, 2122, 2123, 858, 858, 858, 858, 2124, 2125, 2126, 2127, 2128, 2129, 2130, 2131, 858, 858, 858, 858, 858, 858, 858, 858, 2132, 2132, 858, 2098, 858, 858, 858, 858, 2133, 858, 2134, 2135, 2106, 2106, 2136, 2137, 2106, 2106, 858, 858, 2106, 2106, 2138, 2139 };
+		static const unsigned short jump_table[] = { 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 2074, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 2075, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2076, 2076, 2076, 2076, 2077, 2078, 2079, 858, 2080, 2081, 2080, 2080, 2080, 2080, 2080, 2080, 2082, 2083, 2084, 2085, 2086, 2162, 2085, 2085, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 858, 858, 858, 2071, 858, 858, 2089, 858, 2078, 2090, 2077, 2091, 858, 858, 858, 858, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2093, 2094, 858, 2095, 2068, 2069, 2096, 2097, 2068, 2069, 2070, 2071, 858, 2098, 858, 2099, 2100, 2101, 2101, 2101, 2101, 2101, 2101, 2101, 2100, 2100, 858, 2102, 858, 858, 858, 858, 858, 858, 858, 858, 2103, 2103, 2103, 2103, 2072, 2073, 2104, 2104, 2105, 2105, 2104, 2104, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2108, 2109, 858, 858, 2110, 2111, 2112, 2113, 2114, 858, 2115, 2100, 858, 858, 858, 858, 2116, 2117, 2116, 2117, 858, 858, 858, 858, 2118, 2119, 2120, 2121, 2122, 2123, 2124, 2125, 858, 858, 858, 858, 858, 858, 858, 858, 2126, 2126, 858, 2092, 858, 858, 858, 858, 2127, 858, 2128, 2129, 2100, 2100, 2130, 2131, 2100, 2100, 858, 858, 2100, 2100, 2132, 2133 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1352:
+tr1346:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -29940,11 +29920,11 @@ st781:
 		goto _test_eof781;
 case 781:
 	{
-		static const unsigned short jump_table[] = { 858, 2071, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 182, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1140, 858, 858, 858, 858, 858, 1143, 858, 1144, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 185, 858, 186, 858, 1139, 858, 1147, 858, 1139, 858, 1140, 858, 1149, 858, 858, 858, 1150, 1150, 1150, 1150, 1150, 1150, 1150, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 858, 191, 858, 858, 858, 858, 858, 192, 858, 858, 858, 858, 858, 858, 858, 858, 858, 193, 858, 193, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 194, 858, 858, 858, 858, 858, 858, 858, 195 };
+		static const unsigned short jump_table[] = { 858, 2065, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 182, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 1139, 858, 1140, 858, 858, 858, 858, 858, 46, 858, 46, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1140, 858, 858, 858, 858, 858, 1143, 858, 1144, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 185, 858, 186, 858, 1139, 858, 1147, 858, 1139, 858, 1140, 858, 1149, 858, 858, 858, 1150, 1150, 1150, 1150, 1150, 1150, 1150, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 1154, 858, 191, 858, 858, 858, 858, 858, 192, 858, 858, 858, 858, 858, 858, 858, 858, 858, 193, 858, 193, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 194, 858, 858, 858, 858, 858, 858, 858, 195 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1255:
+tr1249:
 	{
     SET_OPERAND_TYPE(0, OperandSize64bit);
   }
@@ -29954,11 +29934,11 @@ st782:
 		goto _test_eof782;
 case 782:
 	{
-		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 2072, 823 };
+		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 816, 816, 816, 816, 2, 818, 816, 816, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 823, 2066, 823 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1256:
+tr1250:
 	{
     SET_OPERAND_NAME(0, ((*p) & 0x07) |
                            ((GET_REX_PREFIX() & 0x01) << 3) |
@@ -30028,11 +30008,11 @@ st815:
 		goto _test_eof815;
 case 815:
 	{
-		static const unsigned short jump_table[] = { 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 2080, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2074, 2075, 2076, 2077, 2078, 2079, 2081, 858, 2074, 2075, 2076, 2077, 2078, 2079, 858, 858, 2082, 2082, 2082, 2082, 2083, 2084, 2085, 858, 2086, 2169, 2086, 2086, 2086, 2086, 2086, 2086, 2088, 2089, 2090, 2091, 2092, 2091, 2091, 2091, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2093, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 2094, 858, 858, 858, 2077, 858, 858, 2095, 858, 2084, 2096, 2083, 2097, 858, 858, 858, 858, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2098, 2099, 2100, 858, 2101, 2074, 2075, 2102, 2103, 2074, 2075, 2076, 2077, 858, 2104, 858, 2105, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2106, 2106, 858, 2108, 858, 858, 858, 858, 858, 858, 858, 858, 2109, 2109, 2109, 2109, 2078, 2079, 2110, 2110, 2111, 2111, 2110, 2110, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2112, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2113, 2114, 2115, 858, 858, 2116, 2117, 2118, 2119, 2120, 858, 2121, 2106, 858, 858, 858, 858, 2122, 2123, 2122, 2123, 858, 858, 858, 858, 2124, 2125, 2126, 2127, 2128, 2129, 2130, 2131, 858, 858, 858, 858, 858, 858, 858, 858, 2132, 2132, 858, 2098, 858, 858, 858, 858, 2133, 858, 2134, 2135, 2106, 2106, 2136, 2137, 2106, 2106, 858, 858, 2106, 2106, 2138, 2139 };
+		static const unsigned short jump_table[] = { 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 2074, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2068, 2069, 2070, 2071, 2072, 2073, 2075, 858, 2068, 2069, 2070, 2071, 2072, 2073, 858, 858, 2076, 2076, 2076, 2076, 2077, 2078, 2079, 858, 2080, 2163, 2080, 2080, 2080, 2080, 2080, 2080, 2082, 2083, 2084, 2085, 2086, 2085, 2085, 2085, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2087, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 2088, 858, 858, 858, 2071, 858, 858, 2089, 858, 2078, 2090, 2077, 2091, 858, 858, 858, 858, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2092, 2093, 2094, 858, 2095, 2068, 2069, 2096, 2097, 2068, 2069, 2070, 2071, 858, 2098, 858, 2099, 2100, 2101, 2101, 2101, 2101, 2101, 2101, 2101, 2100, 2100, 858, 2102, 858, 858, 858, 858, 858, 858, 858, 858, 2103, 2103, 2103, 2103, 2072, 2073, 2104, 2104, 2105, 2105, 2104, 2104, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2106, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2107, 2108, 2109, 858, 858, 2110, 2111, 2112, 2113, 2114, 858, 2115, 2100, 858, 858, 858, 858, 2116, 2117, 2116, 2117, 858, 858, 858, 858, 2118, 2119, 2120, 2121, 2122, 2123, 2124, 2125, 858, 858, 858, 858, 858, 858, 858, 858, 2126, 2126, 858, 2092, 858, 858, 858, 858, 2127, 858, 2128, 2129, 2100, 2100, 2130, 2131, 2100, 2100, 858, 858, 2100, 2100, 2132, 2133 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}
-tr1353:
+tr1347:
 	{
         begin = p;
         BitmapSetBit(valid_targets, p - data);
@@ -30059,7 +30039,7 @@ st784:
 		goto _test_eof784;
 case 784:
 	{
-		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 816, 816, 816, 816, 2, 858, 816, 816, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 858, 858, 858, 858, 858, 858, 858, 858, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 858, 858, 858, 858, 858, 858, 1222, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1222, 858, 858, 858, 858, 858, 858, 858, 858, 858, 859, 859, 859, 859, 859, 859, 859, 859, 858, 858, 858, 858, 858, 858, 858, 858 };
+		static const unsigned short jump_table[] = { 816, 816, 816, 816, 2, 858, 816, 816, 816, 816, 816, 816, 2, 858, 816, 816, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 816, 816, 816, 816, 2, 858, 816, 816, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 819, 819, 819, 819, 8, 819, 819, 819, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 819, 819, 819, 819, 8, 819, 819, 819, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 821, 821, 821, 821, 9, 821, 821, 821, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 821, 821, 821, 821, 9, 821, 821, 821, 858, 858, 858, 858, 858, 858, 858, 858, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 894, 858, 858, 858, 858, 858, 858, 1223, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 858, 1223, 858, 858, 858, 858, 858, 858, 858, 858, 858, 859, 859, 859, 859, 859, 859, 859, 859, 858, 858, 858, 858, 858, 858, 858, 858 };
 		cs = jump_table[(*p)];
 		goto _again;
 	}

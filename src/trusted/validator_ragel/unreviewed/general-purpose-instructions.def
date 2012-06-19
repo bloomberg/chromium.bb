@@ -290,7 +290,7 @@ call Jd, 0xe8
 # mode unless data16 prefix is used.  We use simple solution: 16bit call is
 # declared as common for 32bit/64bit mode and 32bit/64bit versions are described
 # separately.
-callw Ew, 0x66 0xff /2, nacl-forbidden
+callw Ew, data16 0xff /2, nacl-forbidden
 call Ed, 0xff /2, ia32 nacl-forbidden
 callq Eq, 0xff /2, amd64 nacl-forbidden
 ######## CALL (Far) ############################################################
@@ -298,7 +298,7 @@ callq Eq, 0xff /2, amd64 nacl-forbidden
 # mode unless data16 prefix is used.  We use simple solution: 16bit call is
 # declared as common for 32bit/64bit mode and 32bit/64bit versions are described
 # separately.
-lcallw Mp, 0x66 0xff /3, nacl-forbidden
+lcallw Mp, data16 0xff /3, nacl-forbidden
 lcall Mp, 0xff /3, ia32 nacl-forbidden
 lcallq Mp, 0xff /3, amd64 nacl-forbidden
 ######## CBW/CWDE/CDQE #########################################################
@@ -438,7 +438,7 @@ jmp Jb, 0xeb
 # mode unless data16 prefix is used.  We use simple solution: 16bit call is
 # declared as common for 32bit/64bit mode and 32bit/64bit versions are described
 # separately.
-jmpw Ew, 0x66 0xff /4, nacl-forbidden
+jmpw Ew, data16 0xff /4, nacl-forbidden
 jmp Ed, 0xff /4, ia32 nacl-forbidden
 jmpq Eq, 0xff /4, amd64 nacl-forbidden
 ######## JMP (Far) #############################################################
@@ -446,7 +446,7 @@ jmpq Eq, 0xff /4, amd64 nacl-forbidden
 # mode unless data16 prefix is used.  We use simple solution: 16bit call is
 # declared as common for 32bit/64bit mode and 32bit/64bit versions are described
 # separately.
-ljmpw Mp, 0x66 0xff /5, nacl-forbidden
+ljmpw Mp, data16 0xff /5, nacl-forbidden
 ljmp Mp, 0xff /5, ia32 nacl-forbidden
 ljmpq Mp, 0xff /5, amd64 nacl-forbidden
 ######## LAHF ##################################################################
@@ -586,9 +586,9 @@ pause, 0xf3 0x90
 # mode unless data16 prefix is used.  We use simple solution: 16bit call is
 # declared as common for 32bit/64bit mode and 32bit/64bit versions are described
 # separately.
-pop Ew, 0x66 0x8f /0
-pop Ed, 0x8f /0, ia32
-pop Eq, 0x8f /0, amd64
+pop Ew, data16 0x8f /0
+pop Er, 0x8f /0
+pop rw, data16 0x58
 pop rr, 0x58
 "pop    %fs", 0x0f 0xa1, ia32 nacl-forbidden
 "pop    %gs", 0x0f 0xa9, ia32 nacl-forbidden
@@ -613,11 +613,9 @@ prefetcht2 Mb, 0x0f 0x18 /3, no_memory_access
 # mode unless data16 prefix is used.  We use simple solution: 16bit call is
 # declared as common for 32bit/64bit mode and 32bit/64bit versions are described
 # separately.
-# 16bit push is forbidden in x86-64 NaCl, but surprisingly is not forbidden in
-# 32bit NaCl.
-push =Ew, 0x66 0xff /6, nacl-amd64-forbidden
-push =Ed, 0xff /6, ia32
-push =Eq, 0xff /6, amd64
+push =Ew, data16 0xff /6
+push =Er, 0xff /6
+push =rw, data16 0x50
 push =rr, 0x50
 push =Iz, 0x68
 push =Ib, 0x6a
