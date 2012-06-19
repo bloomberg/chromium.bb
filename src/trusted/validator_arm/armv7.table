@@ -1036,16 +1036,78 @@ class Store3RegisterOp : LoadStore3RegisterOp
 
 +-- signed_mult (See Section A5.4.4)
 | op1(22:20) op2(7:5) A(15:12)
-| 000        00x      ~1111    =Multiply(v6T2)          # SMLAD
-| "          "        1111     =Multiply(v6T2)          # SMUAD
-| "          01x      ~1111    =Multiply(v6T2)          # SMLSD
-| "          "        -        =Multiply(v6T2)          # SMUSD
-| 100        00x      -        =LongMultiply(v6T2)      # SMLALD
-| "          01x      -        =LongMultiply(v6T2)      # SMLSLD
-| 101        00x      ~1111    =Multiply(v6T2)          # SMMLA
-| "          "        1111     =Multiply(v6T2)          # SMMUL
-| "          11x      -        =Multiply(v6T2)          # SMMLS
-| else:                        =Undefined  # Note on page A5-26
+                                 # Implements Smlad and Smladx, where
+                                 # the x form is chosen if bit 5 is 1.
+| 000        00x      ~1111    = Binary4RegisterDualOp
+                                 => Defs16To19CondsDontCareRdRaRmRnNotPc
+                                 Smlad_Rule_167_P332
+                                 cccc01110000ddddaaaammmm00x1nnnn
+                                 NotRaIsPcAndRegsNotPc (v6T2)
+                                 # Implements Smuad and Smuadx, where
+                                 # the x form is chosen if bit 5 is 1.
+| "          "        1111     = Binary3RegisterOpAltA
+                                 => Defs16To19CondsDontCareRdRmRnNotPc
+                                 Smuad_Rule_177_P352
+                                 cccc01110000dddd1111mmmm00x1nnnn
+                                 RegsNotPc (v6T2)
+                                 # Implements Smlsd and Smlsdx, where
+                                 # the x form is chosen if bit 5 is 1.
+                                 # Note: This rule has the constraint that
+                                 # Ra!=1111, but we did not test it since
+                                 # its checked by the pattern (column A)
+                                 # for this instruction.
+| "          01x      ~1111    = Binary4RegisterDualOp
+                                 => Defs16To19CondsDontCareRdRaRmRnNotPc
+                                 Smlsd_Rule_172_P342
+                                 cccc01110000ddddaaaammmm01x1nnnn
+                                 NotRaIsPcAndRegsNotPc (v6T2)
+                                 # Implements Smusd and Smusdx, where
+                                 # the x form is chosen if bit 5 is 1.
+| "          "        1111     = Binary3RegisterOpAltA
+                                 => Defs16To19CondsDontCareRdRmRnNotPc
+                                 Smusd_Rule_181_P360
+                                 cccc01110000dddd1111mmmm01x1nnnn
+                                 RegsNotPc (v6T2)
+                                 # Implements Smalad and Smaladx, where
+                                 # the x form is chosen if bit 5 is 1.
+| 100        00x      -        = Binary4RegisterDualResult
+                                 => Defs12To19CondsDontCareRdRmRnNotPc
+                                 Smlald_Rule_170_P336
+                                 cccc01110100hhhhllllmmmm00x1nnnn
+                                 RegsNotPc (v6T2)
+                                 # Implements Smlsld and Smlsldx, where
+                                 # the x form is chosen if bit 5 is 1.
+| "          01x      -        = Binary4RegisterDualResult
+                                 => Defs12To19CondsDontCareRdRmRnNotPc
+                                 Smlsld_Rule_173_P344
+                                 cccc01110100hhhhllllmmmm01x1nnnn
+                                 RegsNotPc (v6T2)
+                                 # Implements Smmla and Smmlar, where
+                                 # the r form is chosen if bit 5 is 1.
+                                 # Note: This rule has the constraint that
+                                 # Ra!=1111, but we did not test it since
+                                 # its checked by the pattern (column A)
+                                 # for this instruction.
+| 101        00x      ~1111    = Binary4RegisterDualOp
+                                 => Defs16To19CondsDontCareRdRaRmRnNotPc
+                                 Smmla_Rule_174_P346
+                                 cccc01110101ddddaaaammmm00x1nnnn
+                                 NotRaIsPcAndRegsNotPc (v6T2)
+                                 # Implements Smmul and Smmulr, where
+                                 # the r form is chosen if bit 5 is 1.
+| "          "        1111     = Binary3RegisterOpAltA
+                                 => Defs16To19CondsDontCareRdRmRnNotPc
+                                 Smmul_Rule_176_P350
+                                 cccc01110101dddd1111mmmm00x1nnnn
+                                 RegsNotPc (v6T2)
+                                 # Implements Smmls and Smmlsr, where
+                                 # the r form is chosen if bit 5 is 1.
+| "          11x      -        = Binary4RegisterDualOp
+                                 => Defs16To19CondsDontCareRdRaRmRnNotPc
+                                 Smmls_Rule_175_P348
+                                 cccc01110101ddddaaaammmm11x1nnnn
+                                 RegsNotPc (v6T2)
+| else:                        = Undefined  # Note on page A5-26
 +--
 
 +-- branch_block_xfer (See Section A5.5)

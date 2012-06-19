@@ -180,12 +180,10 @@ class Arm32DecoderState : DecoderState {
   const LoadBasedMemoryDouble LoadBasedMemoryDouble_instance_;
   const LoadCoprocessor LoadCoprocessor_instance_;
   const LoadMultiple LoadMultiple_instance_;
-  const LongMultiply LongMultiply_instance_;
   const MaskAddress MaskAddress_instance_;
   const MoveDoubleFromCoprocessor MoveDoubleFromCoprocessor_instance_;
   const MoveFromCoprocessor MoveFromCoprocessor_instance_;
   const MoveToStatusRegister MoveToStatusRegister_instance_;
-  const Multiply Multiply_instance_;
   const PackSatRev PackSatRev_instance_;
   const Roadblock Roadblock_instance_;
   const StoreBasedMemoryDoubleRtBits0To3 StoreBasedMemoryDoubleRtBits0To3_instance_;

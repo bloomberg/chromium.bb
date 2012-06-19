@@ -41,12 +41,10 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , LoadBasedMemoryDouble_instance_()
   , LoadCoprocessor_instance_()
   , LoadMultiple_instance_()
-  , LongMultiply_instance_()
   , MaskAddress_instance_()
   , MoveDoubleFromCoprocessor_instance_()
   , MoveFromCoprocessor_instance_()
   , MoveToStatusRegister_instance_()
-  , Multiply_instance_()
   , PackSatRev_instance_()
   , Roadblock_instance_()
   , StoreBasedMemoryDoubleRtBits0To3_instance_()
@@ -1014,29 +1012,32 @@ const ClassDecoder& Arm32DecoderState::decode_signed_mult(
 {
   UNREFERENCED_PARAMETER(insn);
   if ((insn.Bits() & 0x00700000) == 0x00000000 /* op1(22:20) == 000 */ &&
-      (insn.Bits() & 0x000000C0) == 0x00000000 /* op2(7:5) == 00x */)
-    return Multiply_instance_;
-
-  if ((insn.Bits() & 0x00700000) == 0x00000000 /* op1(22:20) == 000 */ &&
-      (insn.Bits() & 0x000000C0) == 0x00000040 /* op2(7:5) == 01x */)
-    return Multiply_instance_;
-
-  if ((insn.Bits() & 0x00700000) == 0x00000000 /* op1(22:20) == 000 */ &&
-      (insn.Bits() & 0x000000C0) == 0x00000040 /* op2(7:5) == 01x */ &&
+      (insn.Bits() & 0x00000080) == 0x00000000 /* op2(7:5) == 0xx */ &&
       (insn.Bits() & 0x0000F000) != 0x0000F000 /* A(15:12) == ~1111 */)
-    return Multiply_instance_;
+    return Defs16To19CondsDontCareRdRaRmRnNotPc_instance_;
+
+  if ((insn.Bits() & 0x00700000) == 0x00000000 /* op1(22:20) == 000 */ &&
+      (insn.Bits() & 0x00000080) == 0x00000000 /* op2(7:5) == 0xx */ &&
+      (insn.Bits() & 0x0000F000) == 0x0000F000 /* A(15:12) == 1111 */)
+    return Defs16To19CondsDontCareRdRmRnNotPc_instance_;
 
   if ((insn.Bits() & 0x00700000) == 0x00400000 /* op1(22:20) == 100 */ &&
       (insn.Bits() & 0x00000080) == 0x00000000 /* op2(7:5) == 0xx */)
-    return LongMultiply_instance_;
+    return Defs12To19CondsDontCareRdRmRnNotPc_instance_;
 
   if ((insn.Bits() & 0x00700000) == 0x00500000 /* op1(22:20) == 101 */ &&
-      (insn.Bits() & 0x000000C0) == 0x00000000 /* op2(7:5) == 00x */)
-    return Multiply_instance_;
+      (insn.Bits() & 0x000000C0) == 0x00000000 /* op2(7:5) == 00x */ &&
+      (insn.Bits() & 0x0000F000) != 0x0000F000 /* A(15:12) == ~1111 */)
+    return Defs16To19CondsDontCareRdRaRmRnNotPc_instance_;
+
+  if ((insn.Bits() & 0x00700000) == 0x00500000 /* op1(22:20) == 101 */ &&
+      (insn.Bits() & 0x000000C0) == 0x00000000 /* op2(7:5) == 00x */ &&
+      (insn.Bits() & 0x0000F000) == 0x0000F000 /* A(15:12) == 1111 */)
+    return Defs16To19CondsDontCareRdRmRnNotPc_instance_;
 
   if ((insn.Bits() & 0x00700000) == 0x00500000 /* op1(22:20) == 101 */ &&
       (insn.Bits() & 0x000000C0) == 0x000000C0 /* op2(7:5) == 11x */)
-    return Multiply_instance_;
+    return Defs16To19CondsDontCareRdRaRmRnNotPc_instance_;
 
   if (true)
     return Undefined_instance_;

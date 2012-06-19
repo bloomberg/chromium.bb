@@ -1322,29 +1322,46 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_signed_mult(
      const nacl_arm_dec::Instruction insn) const {
   UNREFERENCED_PARAMETER(insn);
   if ((insn.Bits() & 0x00700000) == 0x00000000 /* op1(22:20) == 000 */ &&
-      (insn.Bits() & 0x000000C0) == 0x00000000 /* op2(7:5) == 00x */)
-    return Multiply_None_instance_;
+      (insn.Bits() & 0x000000C0) == 0x00000000 /* op2(7:5) == 00x */ &&
+      (insn.Bits() & 0x0000F000) != 0x0000F000 /* A(15:12) == ~1111 */)
+    return Binary4RegisterDualOp_Smlad_Rule_167_P332_instance_;
 
   if ((insn.Bits() & 0x00700000) == 0x00000000 /* op1(22:20) == 000 */ &&
-      (insn.Bits() & 0x000000C0) == 0x00000040 /* op2(7:5) == 01x */)
-    return Multiply_None_instance_;
+      (insn.Bits() & 0x000000C0) == 0x00000000 /* op2(7:5) == 00x */ &&
+      (insn.Bits() & 0x0000F000) == 0x0000F000 /* A(15:12) == 1111 */)
+    return Binary3RegisterOpAltA_Smuad_Rule_177_P352_instance_;
 
   if ((insn.Bits() & 0x00700000) == 0x00000000 /* op1(22:20) == 000 */ &&
       (insn.Bits() & 0x000000C0) == 0x00000040 /* op2(7:5) == 01x */ &&
       (insn.Bits() & 0x0000F000) != 0x0000F000 /* A(15:12) == ~1111 */)
-    return Multiply_None_instance_;
+    return Binary4RegisterDualOp_Smlsd_Rule_172_P342_instance_;
+
+  if ((insn.Bits() & 0x00700000) == 0x00000000 /* op1(22:20) == 000 */ &&
+      (insn.Bits() & 0x000000C0) == 0x00000040 /* op2(7:5) == 01x */ &&
+      (insn.Bits() & 0x0000F000) == 0x0000F000 /* A(15:12) == 1111 */)
+    return Binary3RegisterOpAltA_Smusd_Rule_181_P360_instance_;
 
   if ((insn.Bits() & 0x00700000) == 0x00400000 /* op1(22:20) == 100 */ &&
-      (insn.Bits() & 0x00000080) == 0x00000000 /* op2(7:5) == 0xx */)
-    return LongMultiply_None_instance_;
+      (insn.Bits() & 0x000000C0) == 0x00000000 /* op2(7:5) == 00x */)
+    return Binary4RegisterDualResult_Smlald_Rule_170_P336_instance_;
+
+  if ((insn.Bits() & 0x00700000) == 0x00400000 /* op1(22:20) == 100 */ &&
+      (insn.Bits() & 0x000000C0) == 0x00000040 /* op2(7:5) == 01x */)
+    return Binary4RegisterDualResult_Smlsld_Rule_173_P344_instance_;
 
   if ((insn.Bits() & 0x00700000) == 0x00500000 /* op1(22:20) == 101 */ &&
-      (insn.Bits() & 0x000000C0) == 0x00000000 /* op2(7:5) == 00x */)
-    return Multiply_None_instance_;
+      (insn.Bits() & 0x000000C0) == 0x00000000 /* op2(7:5) == 00x */ &&
+      (insn.Bits() & 0x0000F000) != 0x0000F000 /* A(15:12) == ~1111 */)
+    return Binary4RegisterDualOp_Smmla_Rule_174_P346_instance_;
+
+  if ((insn.Bits() & 0x00700000) == 0x00500000 /* op1(22:20) == 101 */ &&
+      (insn.Bits() & 0x000000C0) == 0x00000000 /* op2(7:5) == 00x */ &&
+      (insn.Bits() & 0x0000F000) == 0x0000F000 /* A(15:12) == 1111 */)
+    return Binary3RegisterOpAltA_Smmul_Rule_176_P350_instance_;
 
   if ((insn.Bits() & 0x00700000) == 0x00500000 /* op1(22:20) == 101 */ &&
       (insn.Bits() & 0x000000C0) == 0x000000C0 /* op2(7:5) == 11x */)
-    return Multiply_None_instance_;
+    return Binary4RegisterDualOp_Smmls_Rule_175_P348_instance_;
 
   if (true)
     return Undefined_None_instance_;
