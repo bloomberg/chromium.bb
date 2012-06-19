@@ -19,6 +19,8 @@ function FileManager(dialogDom) {
   this.params_ = location.search ?
                  JSON.parse(decodeURIComponent(location.search.substr(1))) :
                  {};
+  if (this.params_.defaultPath && this.params_.defaultPath.indexOf('/') != 0)
+    this.params_.defaultPath = '/' + this.params_.defaultPath;
 
   this.listType_ = null;
   this.showDelayTimeout_ = null;
@@ -4152,7 +4154,7 @@ FileManager.prototype = {
 
     var onProperties = function(properties) {
       for (var i = 0; i < properties.length; i++) {
-        if (properties[i].present) {
+        if (!properties[i] || properties[i].present) {
           // For files already in GCache, we don't get any transfer updates.
           filesTotal--;
         }
