@@ -135,6 +135,8 @@ def trace_test_cases(
     else:
       print >> sys.stderr, 'Got exception while tracing %s: %s' % (
           item['trace'], item['exception'])
+  print '%.1fs Done stripping root.' % (
+      time.time() - progress.start)
 
   # Flatten.
   flattened = {}
@@ -152,12 +154,16 @@ def trace_test_cases(
             'returncode': item['returncode'],
             'valid': item['valid'],
             'variables':
-              isolate_common.generate_dict(
-                sorted(f.path for f in item_results.files),
-                cwd_dir,
-                variables['<(PRODUCT_DIR)']),
+              isolate_common.generate_simplified(
+                  item_results.existent,
+                  root_dir,
+                  variables,
+                  cwd_dir),
           })
         del flattened[test_case]['trace']
+  print '%.1fs Done flattening.' % (
+      time.time() - progress.start)
+
   # Make it dense if there is more than 20 results.
   trace_inputs.write_json(
       output_file,
@@ -172,9 +178,11 @@ def trace_test_cases(
   # Convert back to a list, discard the keys.
   files = files.values()
 
-  # TODO(maruel): Have isolate_common process a dict of variables.
-  value = isolate_common.generate_dict(
-      sorted(f.path for f in files), cwd_dir, variables['<(PRODUCT_DIR)'])
+  value = isolate_common.generate_isolate(
+      files,
+      root_dir,
+      variables,
+      cwd_dir)
   with open('%s.isolate' % output_file, 'wb') as f:
     isolate_common.pretty_print(value, f)
   return 0
@@ -182,6 +190,11 @@ def trace_test_cases(
 
 def main():
   """CLI frontend to validate arguments."""
+  default_variables = [('OS', isolate_common.get_flavor())]
+  if sys.platform in ('win32', 'cygwin'):
+    default_variables.append(('EXECUTABLE_SUFFIX', '.exe'))
+  else:
+    default_variables.append(('EXECUTABLE_SUFFIX', ''))
   parser = optparse.OptionParser(
       usage='%prog <options> [gtest]',
       description=sys.modules['__main__'].__doc__)
@@ -194,9 +207,13 @@ def main():
            'gyp processing. Should be set to the relative path containing the '
            'gyp file, e.g. \'chrome\' or \'net\'')
   parser.add_option(
-      '-p', '--product-dir',
-      default='out/Release',
-      help='Directory for PRODUCT_DIR. Default: %default')
+      '-V', '--variable',
+      nargs=2,
+      action='append',
+      default=default_variables,
+      dest='variables',
+      metavar='FOO BAR',
+      help='Variables to process in the .isolate file, default: %default')
   parser.add_option(
       '--root-dir',
       default=ROOT_DIR,
@@ -225,7 +242,17 @@ def main():
       default=120,
       type='int',
       help='number of parallel jobs')
+  parser.add_option(
+      '-v', '--verbose',
+      action='count',
+      default=0,
+      help='Use multiple times to increase verbosity')
   options, args = parser.parse_args()
+
+  levels = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
+  logging.basicConfig(
+      level=levels[min(len(levels)-1, options.verbose)],
+      format='%(levelname)5s %(module)15s(%(lineno)3d): %(message)s')
 
   if len(args) != 1:
     parser.error(
@@ -234,15 +261,14 @@ def main():
         '.')
   executable = args[0]
   if not os.path.isabs(executable):
-    executable = os.path.join(options.root_dir, options.product_dir, args[0])
+    executable = os.path.abspath(os.path.join(options.root_dir, executable))
   if not options.out:
     options.out = '%s.test_cases' % executable
-  variables = {'<(PRODUCT_DIR)': options.product_dir}
   return trace_test_cases(
       executable,
       options.root_dir,
       options.cwd,
-      variables,
+      dict(options.variables),
       options.whitelist,
       options.blacklist,
       options.jobs,

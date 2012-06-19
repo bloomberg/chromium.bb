@@ -109,9 +109,11 @@ class TraceTestCases(unittest.TestCase):
         '--out', self.temp_file,
         '--root-dir', ROOT_DIR,
         '--cwd', ROOT_DIR,
-        '--product-dir', 'data',
+        '--variable', 'PRODUCT_DIR', 'data',
         TARGET_PATH,
     ]
+    if VERBOSE:
+      cmd.extend(['-v'] * 3)
     logging.debug(' '.join(cmd))
     proc = subprocess.Popen(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -124,6 +126,8 @@ class TraceTestCases(unittest.TestCase):
         r'',
         r'\d+\.\ds Done post-processing logs\. Parsing logs\.',
         r'\d+\.\ds Done parsing logs\.',
+        r'\d+.\ds Done stripping root\.',
+        r'\d+.\ds Done flattening\.',
         r'',
       ])
     self.assertTrue(re.match('^%s$' % expected_out_re, out), repr(out))

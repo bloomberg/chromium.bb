@@ -9,8 +9,13 @@
 import logging
 import os
 import posixpath
+import re
 import sys
 
+import trace_inputs
+
+
+PATH_VARIABLES = ('DEPTH', 'PRODUCT_DIR')
 
 KEY_TRACKED = 'isolate_dependency_tracked'
 KEY_UNTRACKED = 'isolate_dependency_untracked'
@@ -54,43 +59,86 @@ def get_flavor():
 def default_blacklist(f):
   """Filters unimportant files normally ignored."""
   return (
-      f.endswith('.pyc') or
+      f.endswith(('.pyc', 'testserver.log')) or
       _GIT_PATH in f or
       _SVN_PATH in f)
 
 
-def generate_dict(files, cwd_dir, product_dir):
-  """Converts the list of files into a .isolate dictionary.
+def classify_files(files):
+  """Converts the list of files into a .isolate 'variables' dictionary.
 
   Arguments:
-  - files: list of files to generate a dictionary out of.
-  - cwd_dir: directory to base all the files from, relative to root_dir.
-  - product_dir: directory to replace with <(PRODUCT_DIR), relative to root_dir.
+  - files: list of files names to generate a dictionary out of.
   """
-  cwd_dir = cleanup_path(cwd_dir)
-  product_dir = cleanup_path(product_dir)
-
-  def fix(f):
-    """Bases the file on the most restrictive variable."""
-    logging.debug('fix(%s)' % f)
-    # Important, GYP stores the files with / and not \.
-    f = f.replace(os.path.sep, '/')
-    if product_dir and f.startswith(product_dir):
-      return '<(PRODUCT_DIR)/%s' % f[len(product_dir):]
-    else:
-      # cwd_dir is usually the directory containing the gyp file. It may be
-      # empty if the whole directory containing the gyp file is needed.
-      return posix_relpath(f, cwd_dir) or './'
-
-  corrected = [fix(f) for f in files]
-  tracked = [f for f in corrected if not f.endswith('/') and ' ' not in f]
-  untracked = [f for f in corrected if f.endswith('/') or ' ' in f]
+  files = list(files)
+  tracked = sorted(f for f in files if not f.endswith('/') and ' ' not in f)
+  untracked = sorted(f for f in files if f.endswith('/') or ' ' in f)
   variables = {}
   if tracked:
     variables[KEY_TRACKED] = tracked
   if untracked:
     variables[KEY_UNTRACKED] = untracked
   return variables
+
+
+def generate_simplified(files, root_dir, variables, relative_cwd):
+  """Generates a clean and complete .isolate 'variables' dictionary.
+
+  Cleans up and extracts only files from within root_dir then processes
+  variables and relative_cwd.
+  """
+  # Constants.
+  # Skip log in PRODUCT_DIR.
+  LOG_FILE = re.compile(r'^\<\(PRODUCT_DIR\)\/[^/]+\.log$')
+  EXECUTABLE = re.compile(
+      r'^(\<\(PRODUCT_DIR\)\/[^/\.]+)' +
+      re.escape(variables.get('EXECUTABLE_SUFFIX', '')) +
+      r'$')
+
+  # Preparation work.
+  relative_cwd = cleanup_path(relative_cwd)
+  # Creates the right set of variables here. We only care about
+  # PATH_VARIABLES.
+  variables = dict(
+      ('<(%s)' % k, variables[k]) for k in PATH_VARIABLES if k in variables)
+
+  # Actual work: Process the files.
+  files = trace_inputs.extract_directories(root_dir, files)
+  files = (f.replace_variables(variables) for f in files)
+
+  def fix(f):
+    """Bases the file on the most restrictive variable."""
+    logging.debug('fix(%s)' % f)
+    # Important, GYP stores the files with / and not \.
+    f = f.replace(os.path.sep, '/')
+    # If it's not already a variable.
+    if not f.startswith('<'):
+      # relative_cwd is usually the directory containing the gyp file. It may be
+      # empty if the whole directory containing the gyp file is needed.
+      f = posix_relpath(f, relative_cwd) or './'
+
+    # Now strips off known files we want to ignore and to any specific mangling
+    # as necessary. It's easier to do it here than generate a blacklist.
+    match = EXECUTABLE.match(f)
+    if match:
+      return match.group(1) + '<(EXECUTABLE_SUFFIX)'
+    if LOG_FILE.match(f):
+      return None
+    return f
+
+  return classify_files(filter(None, (fix(f.path) for f in files)))
+
+
+def generate_isolate(files, root_dir, variables, relative_cwd):
+  """Generates a clean and complete .isolate file."""
+  result = generate_simplified(files, root_dir, variables, relative_cwd)
+  return {
+    'conditions': [
+      ['OS=="%s"' % get_flavor(), {
+        'variables': result,
+      }],
+    ],
+  }
 
 
 def pretty_print(variables, stdout):

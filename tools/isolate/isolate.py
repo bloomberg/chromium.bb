@@ -249,7 +249,7 @@ def process_variables(variables, relative_base_dir, error):
   to an absolute path, then sets it as relative to relative_base_dir.
   """
   variables = variables.copy()
-  for i in ('DEPTH', 'PRODUCT_DIR'):
+  for i in isolate_common.PATH_VARIABLES:
     if i not in variables:
       continue
     variable = os.path.normpath(variables[i])
@@ -566,31 +566,14 @@ def MODEread(_outdir, state):
   logfile = state.result_file + '.log'
   if not os.path.isfile(logfile):
     return 1
-  product_dir = None
-  if state.resultdir and state.root_dir:
-    # Defaults to none if both are the same directory.
-    try:
-      product_dir = os.path.relpath(state.resultdir, state.root_dir) or None
-    except ValueError:
-      # This happens on Windows if state.resultdir is one drive, let's say
-      # 'C:\' and state.root_dir on another one like 'D:\'.
-      product_dir = None
   try:
     results = trace_inputs.load_trace(
         logfile, state.root_dir, api, isolate_common.default_blacklist)
-    simplified = trace_inputs.extract_directories(state.root_dir, results.files)
-    variables = isolate_common.generate_dict(
-            (f.path for f in simplified),
-            state.result.relative_cwd,
-            product_dir)
-    # Outputs in a way that is easy to merge with merge_isolate.py.
-    value = {
-      'conditions': [
-        ['OS=="%s"' % isolate_common.get_flavor(), {
-          'variables': variables,
-        }],
-      ],
-    }
+    value = isolate_common.generate_isolate(
+        results.existent,
+        state.root_dir,
+        state.saved_state.variables,
+        state.result.relative_cwd)
     isolate_common.pretty_print(value, sys.stdout)
     return 0
   except trace_inputs.TracingFailure, e:

@@ -556,8 +556,8 @@ class Isolate_read_trace(IsolateModeBase):
     expected = self._wrap_in_condition(
         {
           isolate.isolate_common.KEY_TRACKED: [
-            'touch_root.py',
             '../../isolate.py',
+            'touch_root.py',
           ],
         })
     out = self._execute('read', 'touch_root.isolate', [], True)
@@ -703,8 +703,8 @@ class IsolateNoOutdir(IsolateBase):
     output = self._execute('read', [], True)
     expected = {
       isolate.isolate_common.KEY_TRACKED: [
-        'touch_root.py',
         '../../isolate.py',
+        'touch_root.py',
       ],
     }
     self.assertEquals(self._wrap_in_condition(expected), output)
