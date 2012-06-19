@@ -97,6 +97,8 @@
       '-fullscreen_mouselock.FullscreenMouselockTest.testMouseLockLostOnReload',
       # crbug.com/123396
       '-fullscreen_mouselock.FullscreenMouselockTest.testPatternsForFSAndML',
+      # crbug.com/128563
+      '-gtalk.test_basic.BasicTest.testBasicFunctionality',
       # crbug.com/131874
       '-infobars.OneClickInfobarTest.testNoOneClickInfobarAfterCancel',
       # crbug.com/133315
@@ -343,8 +345,6 @@
       '-extensions.ExtensionsTest.testDisableEnableExtension',
       # Need internal data dirs in autotest package. crosbug.com/6855
       '-find_in_page.FindMatchTests.testSearchInPDF',
-      # crbug.com/132340
-      '-gtalk.test_basic.BasicTest.testBasicFunctionality',
       # crbug.com/129498
       '-https.SSLTest.testSSLCertAuthorityOK',
       '-https.SSLTest.testSSLCertOK',
@@ -540,8 +540,6 @@
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
-      # crbug.com/128563
-      '-gtalk.test_basic.BasicTest.testBasicFunctionality',
       # crbug.com/109035
       '-youtube.YoutubeTest.testPlayerBytes',
       '-youtube.YoutubeTest.testPlayerResolution',
