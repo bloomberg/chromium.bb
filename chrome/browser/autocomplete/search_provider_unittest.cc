@@ -856,6 +856,12 @@ TEST_F(SearchProviderTest, SuggestRelevanceExperiment) {
        "{\"google:suggestrelevance\":[9998, 9997, 9999],"
         "\"google:verbatimrelevance\":0}]",
       { "a2", "a", "a1", kNotApplicable } },
+
+    // Ensure that verbatim is always generated without other suggestions.
+    { "[\"a\",[],[],[],{\"google:verbatimrelevance\":1}]",
+      { "a", kNotApplicable, kNotApplicable, kNotApplicable } },
+    { "[\"a\",[],[],[],{\"google:verbatimrelevance\":0}]",
+      { "a", kNotApplicable, kNotApplicable, kNotApplicable } },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {

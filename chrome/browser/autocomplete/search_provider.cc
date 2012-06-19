@@ -931,8 +931,19 @@ void SearchProvider::AddSuggestResultsToMap(const SuggestResults& results,
 }
 
 int SearchProvider::GetVerbatimRelevance() const {
-  if (verbatim_relevance_ >= 0 && !input_.prevent_inline_autocomplete())
+  // Use the suggested verbatim relevance score if it is non-negative (valid),
+  // if inline autocomplete isn't prevented (always show verbatim on backspace),
+  // and if there is at least one other suggestion from the default provider
+  // (otherwise, if the default provider returned no matches and was still able
+  // to suppress verbatim, the user would have no search/nav matches and may be
+  // left unable to search from the omnibox).
+  // Check for results on each verbatim calculation, as results from older
+  // queries (on previous input) may be trimmed for failing to inline new input.
+  if (verbatim_relevance_ >= 0 && !input_.prevent_inline_autocomplete() &&
+      (!default_suggest_results_.empty() ||
+       !default_navigation_results_.empty())) {
     return verbatim_relevance_;
+  }
   return CalculateRelevanceForVerbatim();
 }
 
