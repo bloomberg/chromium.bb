@@ -9,6 +9,7 @@
 #include "base/android/jni_registrar.h"
 #include "content/public/app/android_library_loader_hooks.h"
 #include "content/public/app/content_main.h"
+#include "content/shell/shell_main_delegate.h"
 #include "content/shell/android/shell_manager.h"
 #include "content/shell/android/shell_view.h"
 #include "content/shell/shell_main_delegate.h"

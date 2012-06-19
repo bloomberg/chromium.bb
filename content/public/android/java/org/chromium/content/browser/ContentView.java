@@ -5,20 +5,33 @@
 package org.chromium.content.browser;
 
 import android.content.Context;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.webkit.DownloadListener;
 import android.widget.FrameLayout;
 
+import org.chromium.base.WeakContext;
 import org.chromium.content.browser.AndroidBrowserProcess;
 
 public class ContentView extends FrameLayout {
     private static final String TAG = "ContentView";
 
+    // Personality of the ContentView.
+    private int mPersonality;
+    // Used when ContentView implements a standalone View.
+    public static final int PERSONALITY_VIEW = 0;
+    // Used for Chrome.
+    public static final int PERSONALITY_CHROME = 1;
+
     /**
      * Automatically decide the number of renderer processes to use based on device memory class.
      * */
-    public static final int MAX_RENDERERS_AUTOMATIC = -1;
-
+    public static final int MAX_RENDERERS_AUTOMATIC = AndroidBrowserProcess.MAX_RENDERERS_AUTOMATIC;
+    /**
+     * Use single-process mode that runs the renderer on a separate thread in the main application.
+     */
+    public static final int MAX_RENDERERS_SINGLE_PROCESS =
+            AndroidBrowserProcess.MAX_RENDERERS_SINGLE_PROCESS;
 
     // content_view_client.cc depends on ContentView.java holding a ref to the current client
     // instance since the native side only holds a weak pointer to the client. We chose this
@@ -100,14 +113,26 @@ public class ContentView extends FrameLayout {
         // TODO(tedchoc): Implement.
     }
 
-    public ContentView(Context context) {
-        super(context, null);
-        initialize(context);
+    public ContentView(Context context, int nativeWebContents, int personality) {
+        this(context, nativeWebContents, null, android.R.attr.webViewStyle, personality);
+    }
+
+    private ContentView(Context context, int nativeWebContents, AttributeSet attrs, int defStyle,
+            int personality) {
+        super(context, attrs, defStyle);
+
+        WeakContext.initializeWeakContext(context);
+        // By default, ContentView will initialize single process mode. The call to
+        // initContentViewProcess below is ignored if either the ContentView host called
+        // enableMultiProcess() or the platform browser called initChromiumBrowserProcess().
+        AndroidBrowserProcess.initContentViewProcess(context, MAX_RENDERERS_SINGLE_PROCESS);
+
+        initialize(context, nativeWebContents, personality);
     }
 
     // TODO(jrg): incomplete; upstream the rest of this method.
-    private void initialize(Context context) {
-        mNativeContentView = nativeInit();
+    private void initialize(Context context, int nativeWebContents, int personality) {
+        mNativeContentView = nativeInit(nativeWebContents);
         Log.i(TAG, "mNativeContentView=0x"+ Integer.toHexString(mNativeContentView));
     }
 
@@ -221,12 +246,11 @@ public class ContentView extends FrameLayout {
      * Should be called with a valid native WebContents.
      * If nativeInitProcess is never called, the first time this method is called, nativeInitProcess
      * will be called implicitly with the default settings.
-     * @param hardwareAccelerated if true, the View uses hardware accelerated rendering.
-     * @param nativeWebContents the ContentView does not create a new native WebContents and uses
-     *         the provided one.
+     * @param webContentsPtr the ContentView does not create a new native WebContents and uses
+     *                       the provided one.
      * @return a native pointer to the native ContentView object.
      */
-    private native int nativeInit();
+    private native int nativeInit(int webContentsPtr);
 
     private native void nativeDestroy(int nativeContentView);
 

@@ -20,7 +20,8 @@ class ContentViewImpl : public ContentView,
                         public NotificationObserver {
  public:
   ContentViewImpl(JNIEnv* env,
-                  jobject obj);
+                  jobject obj,
+                  WebContents* web_contents);
   virtual void Destroy(JNIEnv* env, jobject obj);
 
  private:
@@ -37,6 +38,11 @@ class ContentViewImpl : public ContentView,
   // --------------------------------------------------------------------------
   // Other private methods and data
   // --------------------------------------------------------------------------
+
+  // Reference to the current WebContents used to determine how and what to
+  // display in the ContentView.
+  WebContents* web_contents_;
+
   DISALLOW_COPY_AND_ASSIGN(ContentViewImpl);
 };
 

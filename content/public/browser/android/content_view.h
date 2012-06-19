@@ -9,6 +9,9 @@
 #include <jni.h>
 
 namespace content {
+
+class WebContents;
+
 // Native side of the ContentView.java, the primary FrameLayout of
 // Chromium on Android.  This is a public interface used by native
 // code outside of the content module.
@@ -27,7 +30,8 @@ class ContentView {
  public:
   virtual void Destroy(JNIEnv* env, jobject obj) = 0;
 
-  static ContentView* Create(JNIEnv* env, jobject obj);
+  static ContentView* Create(JNIEnv* env, jobject obj,
+                             WebContents* web_contents);
   static ContentView* GetNativeContentView(JNIEnv* env, jobject obj);
 
  protected:

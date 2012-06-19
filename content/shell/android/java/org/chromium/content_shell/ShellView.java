@@ -140,13 +140,13 @@ public class ShellView extends LinearLayout {
     @SuppressWarnings("unused")
     @CalledByNative
     private void initFromNativeTabContents(int nativeTabContents) {
-        // TODO(tedchoc): Pass along native tab contents.
-        mContentView = new ContentView(getContext());
+        mContentView = new ContentView(
+                getContext(), nativeTabContents, ContentView.PERSONALITY_CHROME);
+        mContentView.setContentViewClient(new ShellContentViewClient());
         ((FrameLayout) findViewById(R.id.contentview_holder)).addView(mContentView,
                 new FrameLayout.LayoutParams(
                         FrameLayout.LayoutParams.MATCH_PARENT,
                         FrameLayout.LayoutParams.MATCH_PARENT));
-        mContentView.setContentViewClient(new ShellContentViewClient());
     }
 
     /**
