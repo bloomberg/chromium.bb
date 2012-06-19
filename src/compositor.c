@@ -711,6 +711,14 @@ weston_surface_attach(struct wl_surface *surface, struct wl_buffer *buffer)
 	if (!buffer) {
 		if (weston_surface_is_mapped(es))
 			weston_surface_unmap(es);
+		if (es->image != EGL_NO_IMAGE_KHR) {
+			ec->destroy_image(ec->egl_display, es->image);
+			es->image = NULL;
+		}
+		if (es->texture) {
+			glDeleteTextures(1, &es->texture);
+			es->texture = 0;
+		}
 		return;
 	}
 
