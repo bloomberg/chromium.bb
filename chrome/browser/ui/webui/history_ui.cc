@@ -21,6 +21,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/history/history_notifications.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -204,7 +205,8 @@ void BrowsingHistoryHandler::HandleGetHistory(const ListValue* args) {
   search_text_ = string16();
 
   HistoryService* hs =
-      Profile::FromWebUI(web_ui())->GetHistoryService(Profile::EXPLICIT_ACCESS);
+      HistoryServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()),
+                                           Profile::EXPLICIT_ACCESS);
   hs->QueryHistory(search_text_,
       options,
       &cancelable_search_consumer_,
@@ -230,7 +232,8 @@ void BrowsingHistoryHandler::HandleSearchHistory(const ListValue* args) {
   // Need to remember the query string for our results.
   search_text_ = query;
   HistoryService* hs =
-      Profile::FromWebUI(web_ui())->GetHistoryService(Profile::EXPLICIT_ACCESS);
+      HistoryServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()),
+                                           Profile::EXPLICIT_ACCESS);
   hs->QueryHistory(search_text_,
       options,
       &cancelable_search_consumer_,
@@ -273,7 +276,8 @@ void BrowsingHistoryHandler::HandleRemoveURLsOnOneDay(const ListValue* args) {
   }
 
   HistoryService* hs =
-      Profile::FromWebUI(web_ui())->GetHistoryService(Profile::EXPLICIT_ACCESS);
+      HistoryServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()),
+                                           Profile::EXPLICIT_ACCESS);
   hs->ExpireHistoryBetween(
       urls_to_be_deleted_, begin_time, end_time, &cancelable_delete_consumer_,
       base::Bind(&BrowsingHistoryHandler::RemoveComplete,

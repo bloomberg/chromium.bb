@@ -14,6 +14,7 @@
 #include "base/time.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_backend.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/browser_features.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
@@ -69,7 +70,8 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
   }
 
   HistoryService* history_service() {
-    return profile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
+    return HistoryServiceFactory::GetForProfile(profile(),
+                                                Profile::EXPLICIT_ACCESS);
   }
 
   void SetRedirectChain(const std::vector<GURL>& redirect_chain,

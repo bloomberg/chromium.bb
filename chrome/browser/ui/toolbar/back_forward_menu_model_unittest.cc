@@ -9,6 +9,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/url_constants.h"
@@ -522,8 +523,8 @@ TEST_F(BackFwdMenuModelTest, FaviconLoadTest) {
   NavigateAndCommit(url2);
 
   // Set the desired favicon for url1.
-  profile()->GetHistoryService(Profile::EXPLICIT_ACCESS)->AddPage(url1,
-      history::SOURCE_BROWSED);
+  HistoryServiceFactory::GetForProfile(profile(), Profile::EXPLICIT_ACCESS)->
+      AddPage(url1, history::SOURCE_BROWSED);
   profile()->GetFaviconService(Profile::EXPLICIT_ACCESS)->SetFavicon(url1,
       url1_favicon, icon_data, history::FAVICON);
 

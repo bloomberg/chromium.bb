@@ -60,6 +60,7 @@
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/history/top_sites.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
@@ -2554,8 +2555,9 @@ void TestingAutomationProvider::GetHistoryInfo(Browser* browser,
   args->GetString("search_text", &search_text);
 
   // Fetch history.
-  HistoryService* hs = browser->profile()->GetHistoryService(
-      Profile::EXPLICIT_ACCESS);
+  HistoryService* hs =
+      HistoryServiceFactory::GetForProfile(browser->profile(),
+                                           Profile::EXPLICIT_ACCESS);
   history::QueryOptions options;
   // The observer owns itself.  It deletes itself after it fetches history.
   AutomationProviderHistoryObserver* history_observer =
@@ -2599,8 +2601,9 @@ void TestingAutomationProvider::AddHistoryItem(Browser* browser,
 
   // Ideas for "dummy" values (e.g. id_scope) came from
   // chrome/browser/autocomplete/history_contents_provider_unittest.cc
-  HistoryService* hs = browser->profile()->GetHistoryService(
-      Profile::EXPLICIT_ACCESS);
+  HistoryService* hs =
+      HistoryServiceFactory::GetForProfile(browser->profile(),
+                                           Profile::EXPLICIT_ACCESS);
   const void* id_scope = reinterpret_cast<void*>(1);
   hs->AddPage(gurl, time,
               id_scope,

@@ -6,6 +6,7 @@
 
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_backend.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/common/url_constants.h"
@@ -20,7 +21,8 @@ FaviconService::Handle FaviconService::GetFavicon(
     const FaviconDataCallback& callback) {
   GetFaviconRequest* request = new GetFaviconRequest(callback);
   AddRequest(request, consumer);
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* hs =
+      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (hs)
     hs->GetFavicon(request, icon_url, icon_type);
   else
@@ -36,7 +38,8 @@ FaviconService::Handle FaviconService::UpdateFaviconMappingAndFetch(
     const FaviconDataCallback& callback) {
   GetFaviconRequest* request = new GetFaviconRequest(callback);
   AddRequest(request, consumer);
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* hs =
+      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (hs)
     hs->UpdateFaviconMappingAndFetch(request, page_url, icon_url, icon_type);
   else
@@ -57,7 +60,9 @@ FaviconService::Handle FaviconService::GetFaviconForURL(
     ChromeWebUIControllerFactory::GetInstance()->GetFaviconForURL(
         profile_, request, page_url);
   } else {
-    HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+    HistoryService* hs =
+        HistoryServiceFactory::GetForProfile(profile_,
+                                             Profile::EXPLICIT_ACCESS);
     if (hs)
       hs->GetFaviconForURL(request, page_url, icon_types);
     else
@@ -75,7 +80,8 @@ FaviconService::Handle FaviconService::GetFaviconForID(
   GetFaviconRequest* request = new GetFaviconRequest(callback);
   AddRequest(request, consumer);
   FaviconService::Handle handle = request->handle();
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* hs =
+      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (hs)
     hs->GetFaviconForID(request, favicon_id);
   else
@@ -86,21 +92,24 @@ FaviconService::Handle FaviconService::GetFaviconForID(
 
 
 void FaviconService::SetFaviconOutOfDateForPage(const GURL& page_url) {
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* hs =
+      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (hs)
     hs->SetFaviconOutOfDateForPage(page_url);
 }
 
 void FaviconService::CloneFavicon(const GURL& old_page_url,
                                   const GURL& new_page_url) {
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* hs =
+      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (hs)
     hs->CloneFavicon(old_page_url, new_page_url);
 }
 
 void FaviconService::SetImportedFavicons(
     const std::vector<history::ImportedFaviconUsage>& favicon_usage) {
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* hs =
+      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (hs)
     hs->SetImportedFavicons(favicon_usage);
 }
@@ -109,7 +118,8 @@ void FaviconService::SetFavicon(const GURL& page_url,
                                 const GURL& icon_url,
                                 const std::vector<unsigned char>& image_data,
                                 history::IconType icon_type) {
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  HistoryService* hs =
+      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
   if (hs)
     hs->SetFavicon(page_url, icon_url, image_data, icon_type);
 }

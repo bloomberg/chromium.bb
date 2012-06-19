@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -196,8 +197,9 @@ void TabFinder::CancelRequestsFor(WebContents* web_contents) {
 
   web_contents_to_url_.erase(web_contents);
 
-  HistoryService* history = profile->GetHistoryService(
-      Profile::EXPLICIT_ACCESS);
+  HistoryService* history =
+      HistoryServiceFactory::GetForProfile(profile,
+                                           Profile::EXPLICIT_ACCESS);
   if (history) {
     CancelableRequestProvider::Handle request_handle;
     if (callback_consumer_.GetFirstHandleForClientData(web_contents,
@@ -217,8 +219,9 @@ void TabFinder::FetchRedirectStart(WebContents* tab) {
   if (!committed_entry || committed_entry->GetURL().is_empty())
     return;
 
-  HistoryService* history = profile->GetHistoryService(
-      Profile::EXPLICIT_ACCESS);
+  HistoryService* history =
+      HistoryServiceFactory::GetForProfile(profile,
+                                           Profile::EXPLICIT_ACCESS);
   if (history) {
     CancelableRequestProvider::Handle request_handle =
         history->QueryRedirectsTo(

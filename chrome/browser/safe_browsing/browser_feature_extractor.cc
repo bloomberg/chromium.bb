@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 #include "base/time.h"
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/browser_features.h"
@@ -440,7 +441,8 @@ bool BrowserFeatureExtractor::GetHistoryService(HistoryService** history) {
   *history = NULL;
   if (tab_ && tab_->GetBrowserContext()) {
     Profile* profile = Profile::FromBrowserContext(tab_->GetBrowserContext());
-    *history = profile->GetHistoryService(Profile::EXPLICIT_ACCESS);
+    *history = HistoryServiceFactory::GetForProfile(profile,
+                                                    Profile::EXPLICIT_ACCESS);
     if (*history) {
       return true;
     }

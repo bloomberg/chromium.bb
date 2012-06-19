@@ -18,6 +18,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -299,7 +300,8 @@ class OmniboxViewTest : public InProcessBrowserTest,
   void AddHistoryEntry(const TestHistoryEntry& entry, const Time& time) {
     Profile* profile = browser()->profile();
     HistoryService* history_service =
-        profile->GetHistoryService(Profile::EXPLICIT_ACCESS);
+        HistoryServiceFactory::GetForProfile(profile,
+                                             Profile::EXPLICIT_ACCESS);
     ASSERT_TRUE(history_service);
 
     if (!history_service->BackendLoaded()) {

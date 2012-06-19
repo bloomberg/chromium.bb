@@ -17,6 +17,7 @@
 #include "chrome/browser/browsing_data_helper.h"
 #include "chrome/browser/extensions/mock_extension_special_storage_policy.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -267,7 +268,9 @@ class RemoveHistoryTester : public BrowsingDataRemoverTester {
   explicit RemoveHistoryTester(TestingProfile* profile)
       : query_url_success_(false) {
     profile->CreateHistoryService(true, false);
-    history_service_ = profile->GetHistoryService(Profile::EXPLICIT_ACCESS);
+    history_service_ =
+        HistoryServiceFactory::GetForProfile(profile,
+                                             Profile::EXPLICIT_ACCESS);
   }
 
   // Returns true, if the given URL exists in the history service.

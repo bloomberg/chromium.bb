@@ -16,6 +16,7 @@
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
@@ -167,7 +168,8 @@ static void SetupHistoryPageTest(Browser* browser,
                                  const std::string page_url,
                                  const std::string page_title) {
   HistoryService* history_service =
-      browser->profile()->GetHistoryService(Profile::IMPLICIT_ACCESS);
+      HistoryServiceFactory::GetForProfile(browser->profile(),
+                                           Profile::IMPLICIT_ACCESS);
   const GURL history_url = GURL(page_url);
   history_service->AddPage(history_url, history::SOURCE_BROWSED);
   history_service->SetPageTitle(history_url, UTF8ToUTF16(page_title));
