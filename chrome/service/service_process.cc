@@ -26,17 +26,17 @@
 #include "chrome/service/net/service_url_request_context.h"
 #include "chrome/service/service_ipc_server.h"
 #include "chrome/service/service_process_prefs.h"
-#include "content/public/common/url_fetcher.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/network_change_notifier.h"
+#include "net/url_request/url_fetcher.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 
 #if defined(TOOLKIT_GTK)
-#include "ui/gfx/gtk_util.h"
 #include <gtk/gtk.h>
+#include "ui/gfx/gtk_util.h"
 #endif
 
 ServiceProcess* g_service_process = NULL;
@@ -71,7 +71,7 @@ ServiceIOThread::~ServiceIOThread() {
 }
 
 void ServiceIOThread::CleanUp() {
-  content::URLFetcher::CancelAll();
+  net::URLFetcher::CancelAll();
 }
 
 // Prepares the localized strings that are going to be displayed to

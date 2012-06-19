@@ -22,7 +22,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/common/url_fetcher.h"
+#include "net/url_request/url_fetcher.h"
 
 using extensions::Extension;
 
@@ -238,7 +238,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_AutoUpdate) {
   FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
   // Note: This interceptor gets requests on the IO thread.
   scoped_refptr<AutoUpdateInterceptor> interceptor(new AutoUpdateInterceptor());
-  content::URLFetcher::SetEnableInterceptionForTests(true);
+  net::URLFetcher::SetEnableInterceptionForTests(true);
 
   interceptor->SetResponseOnIOThread("http://localhost/autoupdate/manifest",
                                      basedir.AppendASCII("manifest_v2.xml"));
@@ -317,7 +317,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
   // Note: This interceptor gets requests on the IO thread.
   scoped_refptr<AutoUpdateInterceptor> interceptor(new AutoUpdateInterceptor());
-  content::URLFetcher::SetEnableInterceptionForTests(true);
+  net::URLFetcher::SetEnableInterceptionForTests(true);
 
   interceptor->SetResponseOnIOThread("http://localhost/autoupdate/manifest",
                                      basedir.AppendASCII("manifest_v2.xml"));
@@ -378,7 +378,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
 
   // Note: This interceptor gets requests on the IO thread.
   scoped_refptr<AutoUpdateInterceptor> interceptor(new AutoUpdateInterceptor());
-  content::URLFetcher::SetEnableInterceptionForTests(true);
+  net::URLFetcher::SetEnableInterceptionForTests(true);
 
   interceptor->SetResponseOnIOThread("http://localhost/autoupdate/manifest",
                                      basedir.AppendASCII("manifest_v2.xml"));
@@ -461,7 +461,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
 
   // Note: This interceptor gets requests on the IO thread.
   scoped_refptr<AutoUpdateInterceptor> interceptor(new AutoUpdateInterceptor());
-  content::URLFetcher::SetEnableInterceptionForTests(true);
+  net::URLFetcher::SetEnableInterceptionForTests(true);
 
   interceptor->SetResponseOnIOThread("http://localhost/autoupdate/manifest",
                                      basedir.AppendASCII("manifest_v2.xml"));
@@ -536,7 +536,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
 
   // Note: This interceptor gets requests on the IO thread.
   scoped_refptr<AutoUpdateInterceptor> interceptor(new AutoUpdateInterceptor());
-  content::URLFetcher::SetEnableInterceptionForTests(true);
+  net::URLFetcher::SetEnableInterceptionForTests(true);
 
   interceptor->SetResponseOnIOThread("http://localhost/autoupdate/manifest",
                                      basedir.AppendASCII("manifest_v2.xml"));

@@ -16,11 +16,11 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/url_fetcher.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "net/base/load_flags.h"
 #include "net/base/registry_controlled_domain.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -191,7 +191,7 @@ void AlternateNavURLFetcher::StartFetch(NavigationController* controller) {
 
   DCHECK_EQ(NOT_STARTED, state_);
   state_ = IN_PROGRESS;
-  fetcher_.reset(content::URLFetcher::Create(
+  fetcher_.reset(net::URLFetcher::Create(
       GURL(alternate_nav_url_), net::URLFetcher::HEAD, this));
   fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
   fetcher_->SetRequestContext(

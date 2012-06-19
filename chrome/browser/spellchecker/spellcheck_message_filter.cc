@@ -14,7 +14,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/common/url_fetcher.h"
+#include "net/url_request/url_fetcher.h"
 
 using content::BrowserThread;
 

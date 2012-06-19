@@ -18,10 +18,10 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "content/public/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
+#include "net/url_request/url_fetcher.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlparser.h"
 
 namespace {
@@ -171,7 +171,7 @@ bool AutofillDownloadManager::StartRequest(
 
   // Id is ignored for regular chrome, in unit test id's for fake fetcher
   // factory will be 0, 1, 2, ...
-  net::URLFetcher* fetcher = content::URLFetcher::Create(
+  net::URLFetcher* fetcher = net::URLFetcher::Create(
       fetcher_id_for_unittest_++, GURL(request_url), net::URLFetcher::POST,
       this);
   url_fetchers_[fetcher] = request_data;

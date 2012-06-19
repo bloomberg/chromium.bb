@@ -28,8 +28,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/common/url_fetcher.h"
 #include "net/base/load_flags.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
 using base::Time;
@@ -343,7 +343,7 @@ void ExtensionDownloader::StartUpdateCheck(ManifestFetchData* fetch_data) {
     }
 
     current_manifest_fetch_.swap(scoped_fetch_data);
-    manifest_fetcher_.reset(content::URLFetcher::Create(
+    manifest_fetcher_.reset(net::URLFetcher::Create(
         kManifestFetcherId, fetch_data->full_url(), net::URLFetcher::GET,
         this));
     manifest_fetcher_->SetRequestContext(request_context_);
@@ -562,7 +562,7 @@ void ExtensionDownloader::FetchUpdatedExtension(const std::string& id,
       extensions_pending_.push_back(ExtensionFetch(id, url, hash, version));
     }
   } else {
-    extension_fetcher_.reset(content::URLFetcher::Create(
+    extension_fetcher_.reset(net::URLFetcher::Create(
         kExtensionFetcherId, url, net::URLFetcher::GET, this));
     extension_fetcher_->SetRequestContext(request_context_);
     extension_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |

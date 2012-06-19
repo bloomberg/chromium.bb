@@ -24,12 +24,12 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/common/url_fetcher.h"
 #include "crypto/sha2.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
@@ -249,7 +249,7 @@ void ClientSideDetectionService::StartFetchModel() {
   if (enabled_) {
     // Start fetching the model either from the cache or possibly from the
     // network if the model isn't in the cache.
-    model_fetcher_.reset(content::URLFetcher::Create(
+    model_fetcher_.reset(net::URLFetcher::Create(
         0 /* ID used for testing */, GURL(kClientModelUrl),
         net::URLFetcher::GET, this));
     model_fetcher_->SetRequestContext(request_context_getter_.get());
@@ -302,7 +302,7 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
     return;
   }
 
-  net::URLFetcher* fetcher = content::URLFetcher::Create(
+  net::URLFetcher* fetcher = net::URLFetcher::Create(
       0 /* ID used for testing */, GURL(kClientReportPhishingUrl),
       net::URLFetcher::POST, this);
 

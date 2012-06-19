@@ -33,9 +33,9 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_intents_dispatcher.h"
-#include "content/public/common/url_fetcher.h"
 #include "grit/generated_resources.h"
 #include "net/base/load_flags.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "skia/ext/image_operations.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -560,7 +560,7 @@ void WebIntentPickerController::OnCWSIntentServicesAvailable(
         info.average_rating);
 
     pending_async_count_++;
-    net::URLFetcher* icon_url_fetcher = content::URLFetcher::Create(
+    net::URLFetcher* icon_url_fetcher = net::URLFetcher::Create(
         0,
         info.icon_url,
         net::URLFetcher::GET,

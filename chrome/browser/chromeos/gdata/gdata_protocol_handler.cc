@@ -243,7 +243,7 @@ void GDataURLRequestJob::Start() {
   //    GetDownloadDataCallback - this would either get it from cache or
   //    download it from gdata.
   // 7) If file is downloaded from gdata:
-  //    7.1) Whenever content::URLFetcherCore::OnReadCompleted() receives a part
+  //    7.1) Whenever net::URLFetcherCore::OnReadCompleted() receives a part
   //         of the response, it invokes
   //         constent::URLFetcherDelegate::OnURLFetchDownloadData() if
   //         net::URLFetcherDelegate::ShouldSendDownloadData() is true.
@@ -259,7 +259,7 @@ void GDataURLRequestJob::Start() {
   //    7.4) Copies the formal download data into a growable-drainable dowload
   //         IOBuffer
   //         - IOBuffer has initial size 4096, same as buffer used in
-  //           content::URLFetcherCore::OnReadCompleted.
+  //           net::URLFetcherCore::OnReadCompleted.
   //         - We may end up with multiple chunks, so we use GrowableIOBuffer.
   //         - We then wrap the growable buffer within a DrainableIOBuffer for
   //           ease of progressively writing into the buffer.

@@ -147,9 +147,9 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/guid.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/guid.h"
 #include "base/md5.h"
 #include "base/metrics/histogram.h"
 #include "base/rand_util.h"
@@ -191,8 +191,8 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/common/url_fetcher.h"
 #include "net/base/load_flags.h"
+#include "net/url_request/url_fetcher.h"
 #include "webkit/plugins/webplugininfo.h"
 
 // TODO(port): port browser_distribution.h.
@@ -1291,7 +1291,7 @@ void MetricsService::PrepareFetchWithStagedLog() {
   // Prepare the XML version.
   DCHECK(!current_fetch_xml_.get());
   if (log_manager_.has_staged_log_xml()) {
-    current_fetch_xml_.reset(content::URLFetcher::Create(
+    current_fetch_xml_.reset(net::URLFetcher::Create(
         GURL(server_url_xml_), net::URLFetcher::POST, this));
     current_fetch_xml_->SetRequestContext(
         g_browser_process->system_request_context());
@@ -1306,7 +1306,7 @@ void MetricsService::PrepareFetchWithStagedLog() {
   // Prepare the protobuf version.
   DCHECK(!current_fetch_proto_.get());
   if (log_manager_.has_staged_log_proto()) {
-    current_fetch_proto_.reset(content::URLFetcher::Create(
+    current_fetch_proto_.reset(net::URLFetcher::Create(
         GURL(server_url_proto_), net::URLFetcher::POST, this));
     current_fetch_proto_->SetRequestContext(
         g_browser_process->system_request_context());

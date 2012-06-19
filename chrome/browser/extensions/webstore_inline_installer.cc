@@ -23,9 +23,9 @@
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/url_fetcher.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
 using content::BrowserThread;
@@ -171,7 +171,7 @@ void WebstoreInlineInstaller::BeginInstall() {
 
   GURL webstore_data_url(extension_urls::GetWebstoreItemJsonDataURL(id_));
 
-  webstore_data_url_fetcher_.reset(content::URLFetcher::Create(
+  webstore_data_url_fetcher_.reset(net::URLFetcher::Create(
       webstore_data_url, net::URLFetcher::GET, this));
   Profile* profile = Profile::FromBrowserContext(
       web_contents()->GetBrowserContext());

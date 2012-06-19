@@ -8,10 +8,10 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "content/public/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/http/http_status_code.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -100,7 +100,7 @@ void GaiaOAuthClient::Core::MakeGaiaRequest(
   DCHECK(!request_.get()) << "Tried to fetch two things at once!";
   delegate_ = delegate;
   num_retries_ = 0;
-  request_.reset(content::URLFetcher::Create(
+  request_.reset(net::URLFetcher::Create(
       0, gaia_url_, net::URLFetcher::POST, this));
   request_->SetRequestContext(request_context_getter_);
   request_->SetUploadData("application/x-www-form-urlencoded", post_body);

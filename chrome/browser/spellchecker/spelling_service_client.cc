@@ -16,8 +16,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/spellcheck_result.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/url_fetcher.h"
 #include "net/base/load_flags.h"
+#include "net/url_request/url_fetcher.h"
 #include "unicode/uloc.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -142,7 +142,7 @@ void SpellingServiceClient::OnURLFetchComplete(
 }
 
 net::URLFetcher* SpellingServiceClient::CreateURLFetcher(const GURL& url) {
-  return content::URLFetcher::Create(url, net::URLFetcher::POST, this);
+  return net::URLFetcher::Create(url, net::URLFetcher::POST, this);
 }
 
 bool SpellingServiceClient::ParseResponse(

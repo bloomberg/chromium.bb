@@ -26,12 +26,12 @@
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "net/base/load_flags.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -198,7 +198,7 @@ void FeedbackUtil::SendFeedback(Profile* profile,
   else
     post_url = GURL(kFeedbackPostUrl);
 
-  net::URLFetcher* fetcher = content::URLFetcher::Create(
+  net::URLFetcher* fetcher = net::URLFetcher::Create(
       post_url, net::URLFetcher::POST,
       new FeedbackUtil::PostCleanup(profile, post_body, previous_delay));
   fetcher->SetRequestContext(profile->GetRequestContext());

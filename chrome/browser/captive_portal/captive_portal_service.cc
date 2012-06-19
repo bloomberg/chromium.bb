@@ -16,9 +16,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/common/url_fetcher.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
 namespace captive_portal {
@@ -198,10 +198,10 @@ void CaptivePortalService::DetectCaptivePortalInternal() {
   }
 
   // The first 0 means this can use a TestURLFetcherFactory in unit tests.
-  url_fetcher_.reset(content::URLFetcher::Create(0,
-                                                 test_url_,
-                                                 net::URLFetcher::GET,
-                                                 this));
+  url_fetcher_.reset(net::URLFetcher::Create(0,
+                                             test_url_,
+                                             net::URLFetcher::GET,
+                                             this));
   url_fetcher_->SetAutomaticallyRetryOn5xx(false);
   url_fetcher_->SetRequestContext(profile_->GetRequestContext());
   // Can't safely use net::LOAD_DISABLE_CERT_REVOCATION_CHECKING here,

@@ -13,10 +13,10 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "content/public/common/url_fetcher.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domain.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
@@ -81,7 +81,7 @@ void IntranetRedirectDetector::FinishSleep() {
     for (size_t j = 0; j < kNumCharsInHostnames; ++j)
       url_string += ('a' + base::RandInt(0, 'z' - 'a'));
     GURL random_url(url_string + '/');
-    net::URLFetcher* fetcher = content::URLFetcher::Create(
+    net::URLFetcher* fetcher = net::URLFetcher::Create(
         random_url, net::URLFetcher::HEAD, this);
     // We don't want these fetches to affect existing state in the profile.
     fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE |

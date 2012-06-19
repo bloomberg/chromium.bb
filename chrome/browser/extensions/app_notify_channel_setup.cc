@@ -25,11 +25,11 @@
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/url_fetcher.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
 using base::StringPrintf;
@@ -147,7 +147,7 @@ URLFetcher* AppNotifyChannelSetup::CreateURLFetcher(
   CHECK(url.is_valid());
   URLFetcher::RequestType type =
       body.empty() ? URLFetcher::GET : URLFetcher::POST;
-  URLFetcher* fetcher = content::URLFetcher::Create(0, url, type, this);
+  URLFetcher* fetcher = net::URLFetcher::Create(0, url, type, this);
   fetcher->SetRequestContext(profile_->GetRequestContext());
   // Always set flags to neither send nor save cookies.
   fetcher->SetLoadFlags(

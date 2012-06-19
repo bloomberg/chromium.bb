@@ -10,10 +10,10 @@
 #include "base/basictypes.h"
 #include "base/stringprintf.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
-#include "content/public/common/url_fetcher.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
@@ -148,7 +148,7 @@ void OAuth2ApiCallFlow::OnGetTokenFailure(
 URLFetcher* OAuth2ApiCallFlow::CreateURLFetcher() {
   std::string body = CreateApiCallBody();
   bool empty_body = body.empty();
-  URLFetcher* result = content::URLFetcher::Create(
+  URLFetcher* result = net::URLFetcher::Create(
       0,
       CreateApiCallUrl(),
       empty_body ? URLFetcher::GET : URLFetcher::POST,

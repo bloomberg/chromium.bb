@@ -28,10 +28,10 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
-#include "content/public/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 using content::BrowserThread;
@@ -506,7 +506,7 @@ void CrxUpdateService::ProcessPendingItems() {
     context->pk_hash = item->component.pk_hash;
     context->id = item->id;
     context->installer = item->component.installer;
-    url_fetcher_.reset(content::URLFetcher::Create(
+    url_fetcher_.reset(net::URLFetcher::Create(
         0, item->crx_url, net::URLFetcher::GET,
         MakeContextDelegate(this, context)));
     StartFetch(url_fetcher_.get(), config_->RequestContext(), true);
@@ -567,7 +567,7 @@ void CrxUpdateService::ProcessPendingItems() {
   const std::string full_query = MakeFinalQuery(config_->UpdateUrl().spec(),
                                                 query,
                                                 config_->ExtraRequestParams());
-  url_fetcher_.reset(content::URLFetcher::Create(
+  url_fetcher_.reset(net::URLFetcher::Create(
       0, GURL(full_query), net::URLFetcher::GET,
       MakeContextDelegate(this, new UpdateContext())));
   StartFetch(url_fetcher_.get(), config_->RequestContext(), false);

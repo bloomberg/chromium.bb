@@ -34,6 +34,7 @@
         'variations_seed_proto',
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../content/content.gyp:content_browser',
+        '../content/content.gyp:content_common',
         '../crypto/crypto.gyp:crypto',
         '../media/media.gyp:media',
         '../net/net.gyp:net',

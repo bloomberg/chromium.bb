@@ -12,10 +12,10 @@
 #include "chrome/service/cloud_print/cloud_print_token_store.h"
 #include "chrome/service/net/service_url_request_context.h"
 #include "chrome/service/service_process.h"
-#include "content/public/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
 CloudPrintURLFetcher::CloudPrintURLFetcher()
@@ -144,7 +144,7 @@ void CloudPrintURLFetcher::StartRequestHelper(
   DCHECK(delegate);
   // Persist the additional headers in case we need to retry the request.
   additional_headers_ = additional_headers;
-  request_.reset(content::URLFetcher::Create(url, request_type, this));
+  request_.reset(net::URLFetcher::Create(url, request_type, this));
   request_->SetRequestContext(GetRequestContextGetter());
   // Since we implement our own retry logic, disable the retry in URLFetcher.
   request_->SetAutomaticallyRetryOn5xx(false);

@@ -22,7 +22,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/url_fetcher.h"
+#include "net/url_request/url_fetcher.h"
 
 using content::BrowserThread;
 
@@ -295,7 +295,7 @@ void ServicesCustomizationDocument::ReadFileInBackground(const FilePath& file) {
 
 void ServicesCustomizationDocument::StartFileFetch() {
   DCHECK(url_.is_valid());
-  url_fetcher_.reset(content::URLFetcher::Create(
+  url_fetcher_.reset(net::URLFetcher::Create(
       url_, net::URLFetcher::GET, this));
   url_fetcher_->SetRequestContext(
       ProfileManager::GetDefaultProfile()->GetRequestContext());

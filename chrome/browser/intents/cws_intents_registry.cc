@@ -14,9 +14,9 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/net/url_util.h"
-#include "content/public/common/url_fetcher.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_util.h"
+#include "net/url_request/url_fetcher.h"
 
 namespace {
 
@@ -160,7 +160,7 @@ void CWSIntentsRegistry::GetIntentServices(const string16& action,
                                            const ResultsCallback& cb) {
   scoped_ptr<IntentsQuery> query(new IntentsQuery);
   query->callback = cb;
-  query->url_fetcher.reset(content::URLFetcher::Create(
+  query->url_fetcher.reset(net::URLFetcher::Create(
       0, BuildQueryURL(action,mimetype), net::URLFetcher::GET, this));
 
   if (query->url_fetcher.get() == NULL)

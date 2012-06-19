@@ -15,9 +15,9 @@
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/net/url_util.h"
-#include "content/public/common/url_fetcher.h"
 #include "net/base/escape.h"
 #include "net/http/http_util.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 #include "third_party/libxml/chromium/libxml_utils.h"
 
@@ -267,7 +267,7 @@ void UrlFetchOperationBase::Start(const std::string& auth_token) {
   DVLOG(1) << "URL: " << url.spec();
 
   url_fetcher_.reset(
-      content::URLFetcher::Create(url, GetRequestType(), this));
+      net::URLFetcher::Create(url, GetRequestType(), this));
   url_fetcher_->SetRequestContext(g_browser_process->system_request_context());
   // Always set flags to neither send nor save cookies.
   url_fetcher_->SetLoadFlags(

@@ -9,7 +9,6 @@
 #include "base/string_number_conversions.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/url_fetcher.h"
 #include "net/base/host_resolver.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -18,6 +17,7 @@
 #include "net/http/http_network_layer.h"
 #include "net/http/http_response_headers.h"
 #include "net/proxy/proxy_service.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
 
@@ -221,7 +221,7 @@ void HttpBridge::MakeAsynchronousPost() {
   if (fetch_state_.aborted)
     return;
 
-  fetch_state_.url_poster = content::URLFetcher::Create(
+  fetch_state_.url_poster = net::URLFetcher::Create(
       url_for_request_, net::URLFetcher::POST, this);
   fetch_state_.url_poster->SetRequestContext(context_getter_for_request_);
   fetch_state_.url_poster->SetUploadData(content_type_, request_content_);

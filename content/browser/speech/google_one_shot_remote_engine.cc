@@ -13,9 +13,9 @@
 #include "content/browser/speech/audio_buffer.h"
 #include "content/public/common/speech_recognition_error.h"
 #include "content/public/common/speech_recognition_result.h"
-#include "content/public/common/url_fetcher.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
@@ -207,10 +207,10 @@ void GoogleOneShotRemoteEngine::StartRecognition() {
                                       config_.audio_sample_rate,
                                       config_.audio_num_bits_per_sample));
   DCHECK(encoder_.get());
-  url_fetcher_.reset(content::URLFetcher::Create(url_fetcher_id_for_tests,
-                                                 url,
-                                                 net::URLFetcher::POST,
-                                                 this));
+  url_fetcher_.reset(net::URLFetcher::Create(url_fetcher_id_for_tests,
+                                             url,
+                                             net::URLFetcher::POST,
+                                             this));
   url_fetcher_->SetChunkedUpload(encoder_->mime_type());
   url_fetcher_->SetRequestContext(url_context_);
   url_fetcher_->SetReferrer(config_.origin_url);

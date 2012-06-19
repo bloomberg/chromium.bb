@@ -6,37 +6,23 @@
 
 #include "base/bind.h"
 #include "content/common/net/url_request_user_data.h"
-#include "net/url_request/url_fetcher_factory.h"
-#include "net/url_request/url_fetcher_impl.h"
+#include "net/url_request/url_fetcher.h"
 
-// static
-net::URLFetcher* content::URLFetcher::Create(
+namespace content {
+
+namespace URLFetcher {
+
+// We have to mark the definition as CONTENT_EXPORT, too, as the
+// declaration isn't visible from here (since it's protected by an
+// #ifdef).
+CONTENT_EXPORT net::URLFetcher* Create(
     const GURL& url,
     net::URLFetcher::RequestType request_type,
     net::URLFetcherDelegate* d) {
-  return new net::URLFetcherImpl(url, request_type, d);
+  return net::URLFetcher::Create(url, request_type, d);
 }
 
-// static
-net::URLFetcher* content::URLFetcher::Create(
-    int id,
-    const GURL& url,
-    net::URLFetcher::RequestType request_type,
-    net::URLFetcherDelegate* d) {
-  net::URLFetcherFactory* factory = net::URLFetcherImpl::factory();
-  return factory ? factory->CreateURLFetcher(id, url, request_type, d) :
-                   new net::URLFetcherImpl(url, request_type, d);
-}
-
-// static
-void content::URLFetcher::CancelAll() {
-  net::URLFetcherImpl::CancelAll();
-}
-
-// static
-void content::URLFetcher::SetEnableInterceptionForTests(bool enabled) {
-  net::URLFetcherImpl::SetEnableInterceptionForTests(enabled);
-}
+}  // namespace URLFetcher
 
 namespace {
 
@@ -47,8 +33,6 @@ base::SupportsUserData::Data* CreateURLRequestUserData(
 }
 
 }  // namespace
-
-namespace content {
 
 void AssociateURLFetcherWithRenderView(net::URLFetcher* url_fetcher,
                                        const GURL& first_party_for_cookies,

@@ -27,11 +27,11 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/page_navigator.h"
-#include "content/public/common/url_fetcher.h"
 #include "net/base/load_flags.h"
 #include "net/base/x509_cert_types.h"
 #include "net/base/x509_certificate.h"
 #include "net/http/http_status_code.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
@@ -688,10 +688,10 @@ class DownloadProtectionService::CheckClientDownloadRequest
 
     VLOG(2) << "Sending a request for URL: "
             << info_.download_url_chain.back();
-    fetcher_.reset(content::URLFetcher::Create(0 /* ID used for testing */,
-                                               GURL(kDownloadRequestUrl),
-                                               net::URLFetcher::POST,
-                                               this));
+    fetcher_.reset(net::URLFetcher::Create(0 /* ID used for testing */,
+                                           GURL(kDownloadRequestUrl),
+                                           net::URLFetcher::POST,
+                                           this));
     fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
     fetcher_->SetAutomaticallyRetryOn5xx(false);  // Don't retry on error.
     fetcher_->SetRequestContext(service_->request_context_getter_.get());

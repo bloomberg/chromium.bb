@@ -28,9 +28,9 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
+#include "net/url_request/url_fetcher.h"
 #include "skia/ext/image_operations.h"
 
 using content::BrowserThread;
@@ -244,7 +244,7 @@ std::string ProfileDownloader::GetProfilePictureURL() const {
 
 void ProfileDownloader::StartFetchingImage() {
   VLOG(1) << "Fetching user entry with token: " << auth_token_;
-  user_entry_fetcher_.reset(content::URLFetcher::Create(
+  user_entry_fetcher_.reset(net::URLFetcher::Create(
       GURL(kUserEntryURL), net::URLFetcher::GET, this));
   user_entry_fetcher_->SetRequestContext(
       delegate_->GetBrowserProfile()->GetRequestContext());
@@ -308,7 +308,7 @@ void ProfileDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
     }
     VLOG(1) << "Fetching profile image from " << image_url;
     picture_url_ = image_url;
-    profile_image_fetcher_.reset(content::URLFetcher::Create(
+    profile_image_fetcher_.reset(net::URLFetcher::Create(
         GURL(image_url), net::URLFetcher::GET, this));
     profile_image_fetcher_->SetRequestContext(
         delegate_->GetBrowserProfile()->GetRequestContext());

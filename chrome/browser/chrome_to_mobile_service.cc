@@ -32,9 +32,9 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/url_fetcher.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace {
@@ -346,7 +346,7 @@ net::URLFetcher* ChromeToMobileService::CreateRequest(
   const RequestData& data) {
   bool get = data.type != SNAPSHOT;
   GURL service_url(cloud_print_url_->GetCloudPrintServiceURL());
-  net::URLFetcher* request = content::URLFetcher::Create(
+  net::URLFetcher* request = net::URLFetcher::Create(
       data.type == SEARCH ? GetSearchURL(service_url) :
                             GetSubmitURL(service_url, data),
       get ? net::URLFetcher::GET : net::URLFetcher::POST, this);
@@ -397,7 +397,7 @@ void ChromeToMobileService::RequestAccountInfo() {
   }
 
   account_info_request_.reset(
-      content::URLFetcher::Create(url, net::URLFetcher::GET, this));
+      net::URLFetcher::Create(url, net::URLFetcher::GET, this));
   account_info_request_->SetRequestContext(profile_->GetRequestContext());
   account_info_request_->SetMaxRetries(kMaxRetries);
   // This request sends the user's cookie to check the cloud print service flag.

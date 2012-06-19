@@ -26,10 +26,10 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/url_fetcher.h"
 #include "grit/generated_resources.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_util.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -283,8 +283,8 @@ void GoogleURLTracker::StartFetchIfDesirable() {
     fetch_url = kSearchDomainCheckURL;
 
   already_fetched_ = true;
-  fetcher_.reset(content::URLFetcher::Create(fetcher_id_, GURL(fetch_url),
-                                             net::URLFetcher::GET, this));
+  fetcher_.reset(net::URLFetcher::Create(fetcher_id_, GURL(fetch_url),
+                                         net::URLFetcher::GET, this));
   ++fetcher_id_;
   // We don't want this fetch to set new entries in the cache or cookies, lest
   // we alarm the user.

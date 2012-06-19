@@ -7,46 +7,37 @@
 #pragma once
 
 #include "content/common/content_export.h"
+
+// TODO(akalin): Remove this block once rlz is updated to use
+// url_fetcher.h from net/.
+#ifdef RLZ_LIB_FINANCIAL_PING_H_
+
 #include "net/url_request/url_fetcher.h"
 
+#endif
+
+class GURL;
+
 namespace net {
-class URLFetcherDelegate;
-}  // namespace net
+class URLFetcher;
+}  // namespace
 
 namespace content {
 
-// TODO(akalin): Move the static functions to net::URLFetcher and
-// remove content::URLFetcher.
-class CONTENT_EXPORT URLFetcher {
- public:
-  // |url| is the URL to send the request to.
-  // |request_type| is the type of request to make.
-  // |d| the object that will receive the callback on fetch completion.
-  static net::URLFetcher* Create(const GURL& url,
-                                 net::URLFetcher::RequestType request_type,
-                                 net::URLFetcherDelegate* d);
+// TODO(akalin): Remove this block once rlz is updated to use
+// url_fetcher.h from net/.
+#ifdef RLZ_LIB_FINANCIAL_PING_H_
 
-  // Like above, but if there's a URLFetcherFactory registered with the
-  // implementation it will be used. |id| may be used during testing to identify
-  // who is creating the URLFetcher.
-  static net::URLFetcher* Create(int id,
-                                 const GURL& url,
-                                 net::URLFetcher::RequestType request_type,
-                                 net::URLFetcherDelegate* d);
+namespace URLFetcher {
 
-  // Cancels all existing URLFetchers.  Will notify the URLFetcherDelegates.
-  // Note that any new URLFetchers created while this is running will not be
-  // cancelled.  Typically, one would call this in the CleanUp() method of an IO
-  // thread, so that no new URLRequests would be able to start on the IO thread
-  // anyway.  This doesn't prevent new URLFetchers from trying to post to the IO
-  // thread though, even though the task won't ever run.
-  static void CancelAll();
+CONTENT_EXPORT net::URLFetcher* Create(
+    const GURL& url,
+    net::URLFetcher::RequestType request_type,
+    net::URLFetcherDelegate* d);
 
-  // Normally interception is disabled for URLFetcher, but you can use this
-  // to enable it for tests. Also see ScopedURLFetcherFactory for another way
-  // of testing code that uses an URLFetcher.
-  static void SetEnableInterceptionForTests(bool enabled);
-};
+}  // namespace URLFetcher
+
+#endif  // RLZ_LIB_FINANCIAL_PING_H_
 
 // Mark URLRequests started by the URLFetcher to stem from the given render
 // view.

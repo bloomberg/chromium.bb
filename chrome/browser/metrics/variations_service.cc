@@ -16,11 +16,11 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/metrics/experiments_helper.h"
 #include "chrome/common/pref_names.h"
-#include "content/public/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
 #include "net/base/network_change_notifier.h"
 #include "net/http/http_response_headers.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
 namespace {
@@ -107,7 +107,7 @@ void VariationsService::StartFetchingVariationsSeed() {
   if (net::NetworkChangeNotifier::IsOffline())
     return;
 
-  pending_seed_request_.reset(content::URLFetcher::Create(
+  pending_seed_request_.reset(net::URLFetcher::Create(
       GURL(kDefaultVariationsServer), net::URLFetcher::GET, this));
   pending_seed_request_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                                       net::LOAD_DO_NOT_SAVE_COOKIES);

@@ -8,9 +8,9 @@
 #include "chrome/browser/policy/cloud_policy_constants.h"
 #include "chrome/browser/policy/device_management_service.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "content/public/common/url_fetcher.h"
 #include "net/base/upload_data.h"
 #include "net/test/test_server.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_job.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -94,7 +94,7 @@ class DeviceManagementServiceIntegrationTest
                                const em::DeviceManagementResponse&));
 
   std::string InitCannedResponse() {
-    content::URLFetcher::SetEnableInterceptionForTests(true);
+    net::URLFetcher::SetEnableInterceptionForTests(true);
     interceptor_.reset(new CannedResponseInterceptor(GURL(kServiceUrl)));
     return kServiceUrl;
   }

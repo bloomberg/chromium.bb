@@ -11,8 +11,8 @@
 #include "chrome/common/chrome_utility_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
-#include "content/public/common/url_fetcher.h"
 #include "net/base/load_flags.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
@@ -58,7 +58,7 @@ void WebstoreInstallHelper::Start() {
 
   if (!icon_url_.is_empty()) {
     CHECK(context_getter_);
-    url_fetcher_.reset(content::URLFetcher::Create(
+    url_fetcher_.reset(net::URLFetcher::Create(
         icon_url_, net::URLFetcher::GET, this));
     url_fetcher_->SetRequestContext(context_getter_);
     url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |

@@ -13,9 +13,9 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "content/public/common/geoposition.h"
-#include "content/public/common/url_fetcher.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
@@ -85,7 +85,7 @@ bool NetworkLocationRequest::MakeRequest(const string16& access_token,
 
   GURL request_url = FormRequestURL(url_.spec(), access_token,
                                     wifi_data, timestamp_);
-  url_fetcher_.reset(content::URLFetcher::Create(
+  url_fetcher_.reset(net::URLFetcher::Create(
       url_fetcher_id_for_tests, request_url, net::URLFetcher::GET, this));
   url_fetcher_->SetRequestContext(url_context_);
   url_fetcher_->SetLoadFlags(

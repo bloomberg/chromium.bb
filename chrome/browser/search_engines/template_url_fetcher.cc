@@ -23,6 +23,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_fetcher.h"
 #include "net/base/load_flags.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
 
@@ -85,7 +86,7 @@ TemplateURLFetcher::RequestDelegate::RequestDelegate(
     content::WebContents* web_contents,
     TemplateURLFetcherCallbacks* callbacks,
     ProviderType provider_type)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(url_fetcher_(content::URLFetcher::Create(
+    : ALLOW_THIS_IN_INITIALIZER_LIST(url_fetcher_(net::URLFetcher::Create(
           osdd_url, net::URLFetcher::GET, this))),
       fetcher_(fetcher),
       keyword_(keyword),

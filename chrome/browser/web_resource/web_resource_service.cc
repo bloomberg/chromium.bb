@@ -22,9 +22,9 @@
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
-#include "content/public/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
 using content::BrowserThread;
@@ -207,7 +207,7 @@ void WebResourceService::StartFetch() {
       web_resource_server_;
 
   DVLOG(1) << "WebResourceService StartFetch " << web_resource_server;
-  url_fetcher_.reset(content::URLFetcher::Create(
+  url_fetcher_.reset(net::URLFetcher::Create(
       web_resource_server, net::URLFetcher::GET, this));
   // Do not let url fetcher affect existing state in system context
   // (by setting cookies, for example).

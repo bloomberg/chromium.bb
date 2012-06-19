@@ -20,9 +20,9 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/env_vars.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/url_fetcher.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
@@ -153,7 +153,7 @@ void SafeBrowsingProtocolManager::GetFullHash(
     return;
   }
   GURL gethash_url = GetHashUrl();
-  net::URLFetcher* fetcher = content::URLFetcher::Create(
+  net::URLFetcher* fetcher = net::URLFetcher::Create(
       gethash_url, net::URLFetcher::POST, this);
   hash_requests_[fetcher] = check;
 
@@ -497,7 +497,7 @@ void SafeBrowsingProtocolManager::IssueChunkRequest() {
   DCHECK(!next_chunk.url.empty());
   GURL chunk_url = NextChunkUrl(next_chunk.url);
   request_type_ = CHUNK_REQUEST;
-  request_.reset(content::URLFetcher::Create(
+  request_.reset(net::URLFetcher::Create(
       chunk_url, net::URLFetcher::GET, this));
   request_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   request_->SetRequestContext(request_context_getter_);
@@ -538,7 +538,7 @@ void SafeBrowsingProtocolManager::OnGetChunksComplete(
         SBListChunkRanges(safe_browsing_util::kMalwareList)));
 
   GURL update_url = UpdateUrl();
-  request_.reset(content::URLFetcher::Create(
+  request_.reset(net::URLFetcher::Create(
       update_url, net::URLFetcher::POST, this));
   request_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   request_->SetRequestContext(request_context_getter_);
@@ -582,7 +582,7 @@ void SafeBrowsingProtocolManager::ReportSafeBrowsingHit(
   GURL report_url = SafeBrowsingHitUrl(malicious_url, page_url,
                                        referrer_url, is_subresource,
                                        threat_type);
-  net::URLFetcher* report = content::URLFetcher::Create(
+  net::URLFetcher* report = net::URLFetcher::Create(
       report_url,
       post_data.empty() ? net::URLFetcher::GET : net::URLFetcher::POST,
       this);
@@ -598,7 +598,7 @@ void SafeBrowsingProtocolManager::ReportSafeBrowsingHit(
 void SafeBrowsingProtocolManager::ReportMalwareDetails(
     const std::string& report) {
   GURL report_url = MalwareDetailsUrl();
-  net::URLFetcher* fetcher = content::URLFetcher::Create(
+  net::URLFetcher* fetcher = net::URLFetcher::Create(
       report_url, net::URLFetcher::POST, this);
   fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   fetcher->SetRequestContext(request_context_getter_);

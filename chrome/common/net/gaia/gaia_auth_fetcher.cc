@@ -19,10 +19,10 @@
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
-#include "content/public/common/url_fetcher.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
@@ -205,7 +205,7 @@ net::URLFetcher* GaiaAuthFetcher::CreateGaiaFetcher(
     const GURL& gaia_gurl,
     int load_flags,
     net::URLFetcherDelegate* delegate) {
-  net::URLFetcher* to_return = content::URLFetcher::Create(
+  net::URLFetcher* to_return = net::URLFetcher::Create(
       0, gaia_gurl,
       body == "" ? net::URLFetcher::GET : net::URLFetcher::POST,
       delegate);

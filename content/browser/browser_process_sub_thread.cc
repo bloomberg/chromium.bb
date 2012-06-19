@@ -14,7 +14,7 @@
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/in_process_webkit/indexed_db_key_utility_client.h"
 #include "content/browser/notification_service_impl.h"
-#include "content/public/common/url_fetcher.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request.h"
 
 namespace content {
@@ -68,7 +68,7 @@ void BrowserProcessSubThread::IOThreadPreCleanUp() {
   // net::URLRequest/net::URLRequestContexts.
 
   // Destroy all URLRequests started by URLFetchers.
-  content::URLFetcher::CancelAll();
+  net::URLFetcher::CancelAll();
 
   IndexedDBKeyUtilityClient::Shutdown();
 

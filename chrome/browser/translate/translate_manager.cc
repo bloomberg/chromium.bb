@@ -45,10 +45,10 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/url_fetcher.h"
 #include "grit/browser_resources.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -812,7 +812,7 @@ void TranslateManager::FetchLanguageListFromTranslateServer(
   std::string language_list_fetch_url = base::StringPrintf(
       kLanguageListFetchURL,
       GetLanguageCode(g_browser_process->GetApplicationLocale()).c_str());
-  language_list_request_pending_.reset(content::URLFetcher::Create(
+  language_list_request_pending_.reset(net::URLFetcher::Create(
       1, GURL(language_list_fetch_url), net::URLFetcher::GET, this));
   language_list_request_pending_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                                                net::LOAD_DO_NOT_SAVE_COOKIES);
@@ -834,7 +834,7 @@ void TranslateManager::RequestTranslateScript() {
   std::string translate_script_url = base::StringPrintf(
       kTranslateScriptURL,
       GetLanguageCode(g_browser_process->GetApplicationLocale()).c_str());
-  translate_script_request_pending_.reset(content::URLFetcher::Create(
+  translate_script_request_pending_.reset(net::URLFetcher::Create(
       0, GURL(translate_script_url), net::URLFetcher::GET, this));
   translate_script_request_pending_->SetLoadFlags(
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES);

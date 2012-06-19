@@ -36,13 +36,13 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/common/url_fetcher.h"
 #include "googleurl/src/url_util.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_util.h"
 #include "net/http/http_response_headers.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -592,7 +592,7 @@ net::URLFetcher* SearchProvider::CreateSuggestFetcher(
     const TemplateURLRef& suggestions_url,
     const string16& text) {
   DCHECK(suggestions_url.SupportsReplacement());
-  net::URLFetcher* fetcher = content::URLFetcher::Create(id,
+  net::URLFetcher* fetcher = net::URLFetcher::Create(id,
       GURL(suggestions_url.ReplaceSearchTerms(text,
           TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, string16())),
       net::URLFetcher::GET, this);

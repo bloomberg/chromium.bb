@@ -26,10 +26,10 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/common/referrer.h"
-#include "content/public/common/url_fetcher.h"
 #include "grit/chromium_strings.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -68,7 +68,7 @@ net::URLFetcher* GaiaOAuthFetcher::CreateGaiaFetcher(
     bool send_cookies,
     net::URLFetcherDelegate* delegate) {
   bool empty_body = body.empty();
-  net::URLFetcher* result = content::URLFetcher::Create(
+  net::URLFetcher* result = net::URLFetcher::Create(
       0, gaia_gurl,
       empty_body ? net::URLFetcher::GET : net::URLFetcher::POST,
       delegate);

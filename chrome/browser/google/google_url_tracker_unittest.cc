@@ -8,16 +8,16 @@
 #include <string>
 
 #include "base/message_loop.h"
-#include "chrome/browser/infobars/infobar_delegate.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
+#include "chrome/browser/infobars/infobar_delegate.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/common/url_fetcher.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_url_fetcher_factory.h"
+#include "net/url_request/url_fetcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class TabContents;

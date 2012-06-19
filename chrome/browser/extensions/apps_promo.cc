@@ -16,8 +16,8 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/common/url_fetcher.h"
 #include "net/base/load_flags.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
 const int AppsPromo::kDefaultAppsCounterMax = 10;
@@ -357,7 +357,7 @@ void AppsPromoLogoFetcher::OnURLFetchComplete(
 void AppsPromoLogoFetcher::FetchLogo() {
   CHECK(promo_data_.logo.scheme() == chrome::kHttpsScheme);
 
-  url_fetcher_.reset(content::URLFetcher::Create(
+  url_fetcher_.reset(net::URLFetcher::Create(
       0, promo_data_.logo, net::URLFetcher::GET, this));
   url_fetcher_->SetRequestContext(
       g_browser_process->system_request_context());
