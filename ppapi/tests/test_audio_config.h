@@ -20,6 +20,7 @@ class TestAudioConfig : public TestCase {
   virtual void RunTests(const std::string& filter);
 
  private:
+  std::string TestRecommendSampleRate();
   std::string TestValidConfigs();
   std::string TestInvalidConfigs();
 

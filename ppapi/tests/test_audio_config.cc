@@ -19,8 +19,20 @@ bool TestAudioConfig::Init() {
 }
 
 void TestAudioConfig::RunTests(const std::string& filter) {
+  RUN_TEST(RecommendSampleRate, filter);
   RUN_TEST(ValidConfigs, filter);
   RUN_TEST(InvalidConfigs, filter);
+}
+
+std::string TestAudioConfig::TestRecommendSampleRate() {
+  // Ask PPB_AudioConfig about the recommended sample rate.
+  PP_AudioSampleRate sample_rate = audio_config_interface_->RecommendSampleRate(
+      instance_->pp_instance());
+  ASSERT_TRUE(sample_rate == PP_AUDIOSAMPLERATE_NONE ||
+              sample_rate == PP_AUDIOSAMPLERATE_44100 ||
+              sample_rate == PP_AUDIOSAMPLERATE_48000);
+
+  PASS();
 }
 
 std::string TestAudioConfig::TestValidConfigs() {
