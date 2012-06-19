@@ -129,10 +129,9 @@ cr.define('cr.ui', function() {
         // On Mac we always clear the selection if the user clicks a blank area.
         // On Windows, we only clear the selection if neither Shift nor Ctrl are
         // pressed.
-        if (cr.isMac) {
+        if (cr.isMac || cr.isChromeOS) {
           sm.leadIndex = sm.anchorIndex = -1;
-          if (sm.multiple)
-            sm.unselectAll();
+          sm.unselectAll();
         } else if (!isDown && !e.shiftKey && !e.ctrlKey)
           // Keep anchor and lead indexes. Note that this is intentionally
           // different than on the Mac.
@@ -264,7 +263,7 @@ cr.define('cr.ui', function() {
           } else {
             sm.selectRange(anchorIndex, newIndex);
           }
-        } else if (e.ctrlKey && !cr.isMac) {
+        } else if (e.ctrlKey && !cr.isMac && !cr.isChromeOS) {
           // Setting the lead index is done above.
           // Mac does not allow you to change the lead.
         } else {
