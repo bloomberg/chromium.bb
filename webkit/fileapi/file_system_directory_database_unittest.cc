@@ -61,15 +61,10 @@ class FileSystemDirectoryDatabaseTest : public testing::Test {
   void CreateDirectory(FileId parent_id,
                        const FilePath::StringType& name,
                        FileId* file_id_out) {
-    FileId file_id;
-
     FileInfo info;
     info.parent_id = parent_id;
     info.name = name;
-    ASSERT_TRUE(db_->AddFileInfo(info, &file_id));
-
-    if (file_id_out)
-      *file_id_out = file_id;
+    ASSERT_TRUE(db_->AddFileInfo(info, file_id_out));
   }
 
   void CreateFile(FileId parent_id,

@@ -576,9 +576,9 @@ TEST_F(DownloadItemTest, Canceled) {
 TEST_F(DownloadItemTest, FileRemoved) {
   DownloadItem* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
 
-  EXPECT_EQ(false, item->GetFileExternallyRemoved());
+  EXPECT_FALSE(item->GetFileExternallyRemoved());
   item->OnDownloadedFileRemoved();
-  EXPECT_EQ(true, item->GetFileExternallyRemoved());
+  EXPECT_TRUE(item->GetFileExternallyRemoved());
 }
 
 TEST(MockDownloadItem, Compiles) {
