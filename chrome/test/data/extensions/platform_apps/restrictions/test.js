@@ -3,73 +3,50 @@
 // found in the LICENSE file.
 
 var assertEq = chrome.test.assertEq;
+var assertTrue = chrome.test.assertTrue;
 var fail = chrome.test.fail;
 var succeed = chrome.test.succeed;
-
-var DEFAULT_EXPECTED_ERROR = "Not available for platform apps.";
 
 function assertThrowsError(method, opt_expectedError) {
   try {
     method();
-    fail("error not thrown");
+    fail('error not thrown');
   } catch (e) {
-    assertEq(opt_expectedError || DEFAULT_EXPECTED_ERROR, e.message || e);
+    var message = e.message || e;
+    if (opt_expectedError) {
+      assertEq(opt_expectedError, message);
+    } else {
+      assertTrue(
+          message.indexOf('is not available in packaged apps') != -1,
+          'Unexpected message ' + message);
+    }
   }
 }
 
 chrome.test.runTests([
-  function testDocumentOpen() {
+  function testDocument() {
     assertThrowsError(document.open);
-    succeed();
-  },
-
-  function testDocumentClose() {
+    assertThrowsError(document.clear);
     assertThrowsError(document.close);
-    succeed();
-  },
-
-  function testDocumentWrite() {
     assertThrowsError(document.write);
+    assertThrowsError(document.writeln);
+
+    assertThrowsError(function() {document.all;});
+    assertThrowsError(function() {document.bgColor;});
+    assertThrowsError(function() {document.fgColor;});
+    assertThrowsError(function() {document.alinkColor;});
+    assertThrowsError(function() {document.linkColor;});
+    assertThrowsError(function() {document.vlinkColor;});
     succeed();
   },
 
-  function testWindowHistoryBack() {
-    assertThrowsError(window.history.back);
+  function testHistory() {
     assertThrowsError(history.back);
-    succeed();
-  },
-
-  function testWindowHistoryForward() {
-    assertThrowsError(window.history.forward);
     assertThrowsError(history.forward);
-    succeed();
-  },
-
-  function testWindowHistoryPushState() {
-    assertThrowsError(window.history.pushState);
     assertThrowsError(history.pushState);
-    succeed();
-  },
-
-  function testWindowHistoryReplaceState() {
-    assertThrowsError(window.history.replaceState);
     assertThrowsError(history.replaceState);
-    succeed();
-  },
-
-  function testWindowHistoryLength() {
-    assertThrowsError(function() {
-      var length = window.history.length;
-      length = history.length;
-    });
-    succeed();
-  },
-
-  function testWindowHistoryState() {
-    assertThrowsError(function() {
-      var state = window.history.state;
-      state = history.state;
-    });
+    assertThrowsError(function() {history.length;});
+    assertThrowsError(function() {history.state;});
     succeed();
   },
 

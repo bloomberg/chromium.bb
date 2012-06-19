@@ -2,50 +2,87 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var errorMsg = 'Not available for platform apps.';
-var stub = function() { throw errorMsg; };
+/**
+ * Returns a function that throws a 'not available' exception when called.
+ *
+ * @param {string} messagePrefix text to prepend to the exception message.
+ */
+function generateStub(messagePrefix) {
+  return function() {
+    throw messagePrefix + ' is not available in packaged apps.';
+  };
+}
 
-// Disable document.open|close|write.
-HTMLDocument.prototype.open = stub;
-HTMLDocument.prototype.close = stub;
-HTMLDocument.prototype.write = stub;
+/**
+ * Replaces the given methods of the passed in object with stubs that throw
+ * 'not available' exceptions when called.
+ *
+ * @param {Object} object The object whose methods to stub out. The prototype
+ *     is preferred.
+ * @param {string} objectName The display name to use in the error message
+ *     thrown by the stub (this is the name that the object is commonly referred
+ *     to by web developers, e.g. "document" instead of "HTMLDocument").
+ * @param {Array.<string>} methodNames method names
+ */
+function stubOutMethods(object, objectName, methodNames) {
+  methodNames.forEach(function(methodName) {
+    object[methodName] = generateStub(objectName + '.' + methodName + '()');
+  });
+}
+
+/**
+ * Replaces the given properties of the passed in object with stubs that throw
+ * 'not available' exceptions when gotten.
+ *
+ * @param {Object} object The object whose properties to stub out. The prototype
+ *     is preferred.
+ * @param {string} objectName The display name to use in the error message
+ *     thrown by the stub (this is the name that the object is commonly referred
+ *     to by web developers, e.g. "document" instead of "HTMLDocument").
+ * @param {Array.<string>} propertyNames property names
+ */
+function stubOutGetters(object, objectName, propertyNames) {
+  propertyNames.forEach(function(propertyName) {
+    object.__defineGetter__(
+        propertyName, generateStub(objectName + '.' + propertyName));
+  });
+}
+
+// Disable document.open|close|write|etc.
+stubOutMethods(HTMLDocument.prototype, 'document',
+    ['open', 'clear', 'close', 'write', 'writeln']);
+
+// Deprecated document properties from
+// https://developer.mozilla.org/en/DOM/document.
+stubOutGetters(document, 'document',
+    ['alinkColor', 'all', 'bgColor', 'fgColor', 'linkColor', 'vlinkColor']);
 
 // Disable history.
-window.history = {
-  back: stub,
-  forward: stub,
-  go: stub,
-  pushState: stub,
-  replaceState: stub,
-  get length() { throw errorMsg; },
-  get state() { throw errorMsg; }
-};
+window.history = {};
+stubOutMethods(window.history, 'history',
+    ['back', 'forward', 'go', 'pushState', 'replaceState']);
+stubOutGetters(window.history, 'history', ['length', 'state']);
 
 // Disable find.
-Window.prototype.find = stub;
+stubOutMethods(Window.prototype, 'window', ['find']);
 
 // Disable modal dialogs. Shell windows disable these anyway, but it's nice to
 // warn.
-Window.prototype.alert = stub;
-Window.prototype.confirm = stub;
-Window.prototype.prompt = stub;
+stubOutMethods(Window.prototype, 'window', ['alert', 'confirm', 'prompt']);
 
 // Disable window.*bar.
-var stubBar = { get visible() { throw errorMsg; } };
-window.locationbar = stubBar;
-window.menubar = stubBar;
-window.personalbar = stubBar;
-window.scrollbars = stubBar;
-window.statusbar = stubBar;
-window.toolbar = stubBar;
+stubOutGetters(window, 'window',
+    ['locationbar', 'menubar', 'personalbar', 'scrollbars', 'statusbar',
+    'toolbar']);
 
 // Disable onunload, onbeforeunload.
-Window.prototype.__defineSetter__('onbeforeunload', stub);
-Window.prototype.__defineSetter__('onunload', stub);
+Window.prototype.__defineSetter__(
+    'onbeforeunload', generateStub('onbeforeunload'));
+Window.prototype.__defineSetter__('onunload', generateStub('onunload'));
 var windowAddEventListener = Window.prototype.addEventListener;
 Window.prototype.addEventListener = function(type) {
   if (type === 'unload' || type === 'beforeunload')
-    stub();
+    generateStub(type)();
   else
     return windowAddEventListener.apply(window, arguments);
 };
