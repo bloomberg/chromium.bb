@@ -42,6 +42,10 @@
 #include "launcher-util.h"
 #include "log.h"
 
+enum {
+	WESTON_PLANE_DRM_CURSOR = 0x100
+};
+
 struct drm_compositor {
 	struct weston_compositor base;
 
@@ -635,7 +639,6 @@ weston_output_set_cursor(struct weston_output *output,
 			 pixman_region32_t *overlap)
 {
 	pixman_region32_t cursor_region;
-	int prior_was_hardware;
 
 	if (seat->sprite == NULL)
 		return;
@@ -650,19 +653,18 @@ weston_output_set_cursor(struct weston_output *output,
 		goto out;
 	}
 
-	prior_was_hardware = seat->hw_cursor;
 	if (pixman_region32_not_empty(overlap) ||
 	    drm_output_set_cursor(output, seat) < 0) {
-		if (prior_was_hardware) {
+		if (seat->sprite->plane == WESTON_PLANE_DRM_CURSOR) {
 			weston_surface_damage(seat->sprite);
 			drm_output_set_cursor(output, NULL);
 		}
-		seat->hw_cursor = 0;
+		seat->sprite->plane = WESTON_PLANE_PRIMARY;
 	} else {
-		if (!prior_was_hardware)
+		if (seat->sprite->plane == WESTON_PLANE_PRIMARY)
 			weston_surface_damage_below(seat->sprite);
 		wl_list_remove(&seat->sprite->link);
-		seat->hw_cursor = 1;
+		seat->sprite->plane = WESTON_PLANE_DRM_CURSOR;
 	}
 
 out:
@@ -705,7 +707,7 @@ drm_assign_planes(struct weston_output *output)
 			weston_output_set_cursor(output, seat,
 						 &surface_overlap);
 
-			if (!seat->hw_cursor)
+			if (seat->sprite->plane == WESTON_PLANE_PRIMARY)
 				pixman_region32_union(&overlap, &overlap,
 						      &es->transform.boundingbox);
 		} else if (!drm_output_prepare_overlay_surface(output, es,

@@ -222,7 +222,6 @@ struct weston_seat {
 	int32_t hotspot_x, hotspot_y;
 	struct wl_list link;
 	enum weston_keyboard_modifier modifier_state;
-	int hw_cursor;
 	struct wl_surface *saved_kbd_focus;
 	struct wl_listener saved_kbd_focus_listener;
 
@@ -382,6 +381,10 @@ struct weston_region {
  * transformation in global coordinates, add it to the tail of the list.
  */
 
+enum {
+	WESTON_PLANE_PRIMARY
+};
+
 struct weston_surface {
 	struct wl_surface surface;
 	struct weston_compositor *compositor;
@@ -398,6 +401,7 @@ struct weston_surface {
 	GLfloat opaque_rect[4];
 	GLfloat alpha;
 	int blend;
+	int plane;
 
 	/* Surface geometry state, mutable.
 	 * If you change anything, set dirty = 1.

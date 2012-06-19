@@ -306,6 +306,9 @@ weston_surface_damage_below(struct weston_surface *surface)
 	struct weston_compositor *compositor = surface->compositor;
 	pixman_region32_t damage;
 
+	if (surface->plane != WESTON_PLANE_PRIMARY)
+		return;
+
 	pixman_region32_init(&damage);
 	pixman_region32_subtract(&damage, &surface->transform.boundingbox,
 				 &surface->clip);
