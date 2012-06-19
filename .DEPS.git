@@ -18,7 +18,7 @@ deps = {
     'src/breakpad/src':
         Var('git_url') + '/external/google-breakpad/src.git@ae15c8e2d8ac41b62b24cf62f04076473df3950c',
     'src/chrome/browser/resources/software_rendering_list':
-        Var('git_url') + '/chromium/deps/gpu/software_rendering_list.git@d5695c2e38a22f326a68919e0fe3df69057e21f1',
+        Var('git_url') + '/chromium/deps/gpu/software_rendering_list.git@522a3c660e35972b07350e05d50b5de9439b05df',
     'src/chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin':
         Var('git_url') + '/native_client/src/native_client/tests/prebuilt.git@3e17365176c94624f46cace174f61834b7f3c35d',
     'src/chrome/test/data/perf/canvas_bench':
