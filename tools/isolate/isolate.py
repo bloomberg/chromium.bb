@@ -123,7 +123,7 @@ def load_isolate(content, error):
   """
   # Load the .isolate file, process its conditions, retrieve the command and
   # dependencies.
-  configs = merge_isolate.load_gyp(merge_isolate.eval_content(content))
+  configs = merge_isolate.load_gyp(merge_isolate.eval_content(content), None)
   flavor = isolate_common.get_flavor()
   config = configs.per_os.get(flavor) or configs.per_os.get(None)
   if not config:

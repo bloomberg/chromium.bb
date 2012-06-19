@@ -53,7 +53,7 @@ class MergeGyp(unittest.TestCase):
       pass
 
   def test_load_gyp_empty(self):
-    self.assertEquals({}, merge_isolate.load_gyp({}).flatten())
+    self.assertEquals({}, merge_isolate.load_gyp({}, None).flatten())
 
   def test_load_gyp(self):
     value = {
@@ -117,7 +117,7 @@ class MergeGyp(unittest.TestCase):
         KEY_UNTRACKED: ['b', 'f', 'h'],
       },
     }
-    self.assertEquals(expected, merge_isolate.load_gyp(value).flatten())
+    self.assertEquals(expected, merge_isolate.load_gyp(value, None).flatten())
 
   def test_load_gyp_duplicate_command(self):
     value = {
@@ -133,7 +133,7 @@ class MergeGyp(unittest.TestCase):
       ],
     }
     try:
-      merge_isolate.load_gyp(value)
+      merge_isolate.load_gyp(value, None)
       self.fail()
     except AssertionError:
       pass
@@ -149,7 +149,7 @@ class MergeGyp(unittest.TestCase):
       KEY_TRACKED: ['a'],
       KEY_UNTRACKED: ['b'],
     }
-    actual = merge_isolate.load_gyp(value)
+    actual = merge_isolate.load_gyp(value, None)
     # Flattening the whole config will discard 'None'.
     self.assertEquals({}, actual.flatten())
     self.assertEquals([None], actual.per_os.keys())
@@ -331,9 +331,9 @@ class MergeGyp(unittest.TestCase):
     # pylint: disable=E1103
     actual = merge_isolate.union(
         merge_isolate.union(
-          merge_isolate.Configs([]),
-          merge_isolate.load_gyp({})),
-        merge_isolate.load_gyp({})).flatten()
+          merge_isolate.Configs([], None),
+          merge_isolate.load_gyp({}, None)),
+        merge_isolate.load_gyp({}, None)).flatten()
     self.assertEquals({}, actual)
 
   def test_merge_empty(self):
@@ -378,9 +378,9 @@ class MergeGyp(unittest.TestCase):
     # pylint: disable=E1103
     configs = merge_isolate.union(
         merge_isolate.union(
-          merge_isolate.Configs([]),
-          merge_isolate.load_gyp(linux)),
-        merge_isolate.load_gyp(mac)).flatten()
+          merge_isolate.Configs([], None),
+          merge_isolate.load_gyp(linux, None)),
+        merge_isolate.load_gyp(mac, None)).flatten()
     self.assertEquals(expected, configs)
 
   def test_load_three_conditions(self):
@@ -436,10 +436,10 @@ class MergeGyp(unittest.TestCase):
     configs = merge_isolate.union(
         merge_isolate.union(
           merge_isolate.union(
-            merge_isolate.Configs([]),
-            merge_isolate.load_gyp(linux)),
-          merge_isolate.load_gyp(mac)),
-        merge_isolate.load_gyp(win)).flatten()
+            merge_isolate.Configs([], None),
+            merge_isolate.load_gyp(linux, None)),
+          merge_isolate.load_gyp(mac, None)),
+        merge_isolate.load_gyp(win, None)).flatten()
     self.assertEquals(expected, configs)
 
   def test_merge_three_conditions(self):
@@ -487,6 +487,33 @@ class MergeGyp(unittest.TestCase):
     actual = merge_isolate.convert_map_to_gyp(*merge_isolate.reduce_inputs(
       *merge_isolate.invert_map(values)))
     self.assertEquals(expected, actual)
+
+  def test_configs_comment(self):
+    # Pylint is confused with merge_isolate.union() return type.
+    # pylint: disable=E1103
+    configs = merge_isolate.union(
+        merge_isolate.load_gyp({}, '# Yo dawg!\n# Chill out.\n'),
+        merge_isolate.load_gyp({}, None))
+    self.assertEquals('# Yo dawg!\n# Chill out.\n', configs.file_comment)
+
+    configs = merge_isolate.union(
+        merge_isolate.load_gyp({}, None),
+        merge_isolate.load_gyp({}, '# Yo dawg!\n# Chill out.\n'))
+    self.assertEquals('# Yo dawg!\n# Chill out.\n', configs.file_comment)
+
+    # Only keep the first one.
+    configs = merge_isolate.union(
+        merge_isolate.load_gyp({}, '# Yo dawg!\n'),
+        merge_isolate.load_gyp({}, '# Chill out.\n'))
+    self.assertEquals('# Yo dawg!\n', configs.file_comment)
+
+  def test_extract_comment(self):
+    self.assertEquals(
+        '# Foo\n# Bar\n',
+        merge_isolate.extract_comment('# Foo\n# Bar\n{}'))
+    self.assertEquals(
+        '',
+        merge_isolate.extract_comment('{}'))
 
 
 if __name__ == '__main__':
