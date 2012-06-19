@@ -485,7 +485,7 @@ OmniboxViewWin::OmniboxViewWin(AutocompleteEditController* controller,
 
   // Get the metrics for the font.
   base::win::ScopedGetDC screen_dc(NULL);
-  base::win::ScopedSelectObject(screen_dc, font_.GetNativeFont());
+  base::win::ScopedSelectObject font_in_dc(screen_dc, font_.GetNativeFont());
   TEXTMETRIC tm = {0};
   GetTextMetrics(screen_dc, &tm);
   int cap_height = font_.GetBaseline() - tm.tmInternalLeading;
