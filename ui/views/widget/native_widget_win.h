@@ -542,13 +542,9 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   // changing from windowed mode to a display mode (dubbed fullscreen mode)
   // where the window occupies a fixed portion (possibly 100%) of the screen.
   // |fullscreen| specifies whether we are entering or leaving fullscreen mode.
-  // |window_rect| contains sizing information that describes the portion of the
-  //               screen to be occupied. |window_rect| may be a rect of width
-  //               0, which indicates that sizing should be skipped when
-  //               entering fullscreen mode and previously-stored size should
-  //               be used when exiting fullscreen mode.
-  void SetFullscreenInternal(bool fullscreen,
-                             const gfx::Rect& window_rect);
+  // |for_metro| specifies whether we are doing this at the behest of a metro
+  //             snap transition.
+  void SetFullscreenInternal(bool fullscreen, bool for_metro);
 
   // A delegate implementation that handles events received here.
   // See class documentation for Widget in widget.h for a note about ownership.

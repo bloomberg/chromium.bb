@@ -2112,11 +2112,13 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
       static_cast<OmniboxViewWin*>(location_bar->GetLocationEntry());
 #endif
 
-  if (!fullscreen && type != FOR_METRO) {
+  if (type == FOR_METRO || !fullscreen) {
     // Hide the fullscreen bubble as soon as possible, since the mode toggle can
     // take enough time for the user to notice.
     fullscreen_bubble_.reset();
-  } else {
+  }
+
+  if (fullscreen) {
     // Move focus out of the location bar if necessary.
     views::FocusManager* focus_manager = GetFocusManager();
     DCHECK(focus_manager);

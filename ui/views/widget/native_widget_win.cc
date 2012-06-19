@@ -993,44 +993,26 @@ void NativeWidgetWin::SetFullscreen(bool fullscreen) {
   if (fullscreen_ == fullscreen)
     return;
 
-  gfx::Rect window_rect;
-  if (fullscreen) {
-    MONITORINFO monitor_info;
-    monitor_info.cbSize = sizeof(monitor_info);
-    GetMonitorInfo(MonitorFromWindow(GetNativeView(), MONITOR_DEFAULTTONEAREST),
-      &monitor_info);
-    window_rect = monitor_info.rcMonitor;
-  }
-
-  SetFullscreenInternal(fullscreen, window_rect);
+  SetFullscreenInternal(fullscreen, false);
 }
 
 void NativeWidgetWin::SetMetroSnapFullscreen(bool metro_snap) {
   if (metro_snap_ == metro_snap)
     return;
 
+  SetFullscreenInternal(metro_snap, true);
+
   metro_snap_ = metro_snap;
-
-  gfx::Rect window_rect;
-  if (!metro_snap) {
-    MONITORINFO monitor_info;
-    monitor_info.cbSize = sizeof(monitor_info);
-    GetMonitorInfo(MonitorFromWindow(GetNativeView(), MONITOR_DEFAULTTONEAREST),
-                &monitor_info);
-    window_rect = monitor_info.rcMonitor;
-  }
-
-  SetFullscreenInternal(metro_snap, window_rect);
 }
 
 void NativeWidgetWin::SetFullscreenInternal(bool fullscreen,
-                                            const gfx::Rect& window_rect) {
+                                            bool for_metro) {
 
   // Reduce jankiness during the following position changes by hiding the window
   // until it's in the final position.
   PushForceHidden();
 
-  // Size/position/style window appropriately.
+  // Save current window state if not already fullscreen.
   if (!fullscreen_) {
     // Save current window information.  We force the window into restored mode
     // before going fullscreen because Windows doesn't seem to hide the
@@ -1055,7 +1037,13 @@ void NativeWidgetWin::SetFullscreenInternal(bool fullscreen,
 
     // On expand, if we're given a window_rect, grow to it, otherwise do
     // not resize.
-    if (window_rect.width() > 0) {
+    if (!for_metro) {
+      MONITORINFO monitor_info;
+      monitor_info.cbSize = sizeof(monitor_info);
+      GetMonitorInfo(MonitorFromWindow(GetNativeView(),
+                                       MONITOR_DEFAULTTONEAREST),
+                     &monitor_info);
+      gfx::Rect window_rect(monitor_info.rcMonitor);
       SetWindowPos(NULL, window_rect.x(), window_rect.y(),
                    window_rect.width(), window_rect.height(),
                    SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
@@ -1067,18 +1055,13 @@ void NativeWidgetWin::SetFullscreenInternal(bool fullscreen,
     SetWindowLong(GWL_STYLE, saved_window_info_.style);
     SetWindowLong(GWL_EXSTYLE, saved_window_info_.ex_style);
 
-    // On restore, if we're given a window_rect resize to that, otherwise
-    // resize to the previous saved rect size.
-    gfx::Rect new_rect;
-    if (window_rect.width() > 0) {
-      new_rect = window_rect;
-    } else {
-      new_rect = saved_window_info_.window_rect;
+    if (!for_metro) {
+      // On restore, resize to the previous saved rect size.
+      gfx::Rect new_rect(saved_window_info_.window_rect);
+      SetWindowPos(NULL, new_rect.x(), new_rect.y(), new_rect.width(),
+                   new_rect.height(),
+                   SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
     }
-
-    SetWindowPos(NULL, new_rect.x(), new_rect.y(), new_rect.width(),
-                 new_rect.height(),
-                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
     if (saved_window_info_.maximized)
       Maximize();
   }

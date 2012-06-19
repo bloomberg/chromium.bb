@@ -158,6 +158,15 @@ void FullscreenController::ToggleFullscreenModeForTab(WebContents* web_contents,
   if (web_contents != browser_->GetActiveWebContents())
     return;
 
+#if defined(OS_WIN)
+  // For now, avoid breaking when initiating full screen tab mode while in
+  // a metro snap.
+  // TODO(robertshield): Find a way to reconcile tab-initiated fullscreen
+  //                     modes with metro snap.
+  if (IsInMetroSnapMode())
+    return;
+#endif
+
   bool in_browser_or_tab_fullscreen_mode;
 #if defined(OS_MACOSX)
   in_browser_or_tab_fullscreen_mode = window_->InPresentationMode();
@@ -208,6 +217,7 @@ void FullscreenController::ToggleFullscreenModeForTab(WebContents* web_contents,
 
 #if defined(OS_WIN)
 void FullscreenController::SetMetroSnapMode(bool enable) {
+  toggled_into_fullscreen_ = false;
   window_->SetMetroSnapMode(enable);
 }
 #endif
@@ -539,6 +549,12 @@ void FullscreenController::TogglePresentationModeInternal(bool for_tab) {
 
 // TODO(koz): Change |for_tab| to an enum.
 void FullscreenController::ToggleFullscreenModeInternal(bool for_tab) {
+#if defined(OS_WIN)
+  // When in Metro snap mode, toggling in and out of fullscreen is prevented.
+  if (IsInMetroSnapMode())
+    return;
+#endif
+
   toggled_into_fullscreen_ = !window_->IsFullscreen();
 
  // In kiosk mode, we always want to be fullscreen. When the browser first
