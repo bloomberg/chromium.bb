@@ -12,15 +12,24 @@
 #include "base/bind_helpers.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebData.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebURLRequest.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebSize.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebSettings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebViewClient.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebData.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebKitPlatformSupport.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/platform/WebURL.h"
 #include "webkit/glue/cpp_binding_example.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/tools/test_shell/test_shell_test.h"
 
 using WebKit::WebFrame;
+using WebKit::WebView;
 using webkit_glue::CppArgumentList;
 using webkit_glue::CppBindingExample;
 using webkit_glue::CppVariant;
@@ -60,107 +69,104 @@ class CppBindingExampleWithOptionalFallback : public CppBindingExample {
   CppBindingExampleSubObject sub_object_;
 };
 
-class ExampleTestShell : public TestShell {
+class TestWebFrameClient : public WebKit::WebFrameClient {
  public:
-
-  ExampleTestShell(bool use_fallback_method) {
-    example_bound_class_.set_fallback_method_enabled(use_fallback_method);
-  }
-
-  // When called by WebViewDelegate::WindowObjectCleared method, this binds a
-  // CppExampleObject to window.example.
-  virtual void BindJSObjectsToWindow(WebFrame* frame) {
+  virtual void didClearWindowObject(WebKit::WebFrame* frame) OVERRIDE {
     example_bound_class_.BindToJavascript(frame, "example");
-    // We use the layoutTestController binding for notifyDone.
-    TestShell::BindJSObjectsToWindow(frame);
   }
-
-  // This is a public interface to TestShell's protected method, so it
-  // can be called by our CreateEmptyWindow.
-  bool PublicInitialize(const std::string& starting_url) {
-    return Initialize(GURL(starting_url));
+  void set_fallback_method_enabled(bool use_fallback) {
+    example_bound_class_.set_fallback_method_enabled(use_fallback);
   }
-
+ private:
   CppBindingExampleWithOptionalFallback example_bound_class_;
 };
 
-class CppBoundClassTest : public TestShellTest {
+class TestWebViewClient : public WebKit::WebViewClient {
+};
+
+class CppBoundClassTest : public testing::Test, public WebKit::WebFrameClient {
+ public:
+  CppBoundClassTest() : webview_(NULL) { }
+
+  virtual void SetUp() OVERRIDE {
+    webview_ = WebView::create(&webview_client_);
+    webview_->settings()->setJavaScriptEnabled(true);
+    webview_->initializeMainFrame(&webframe_client_);
+    webframe_client_.set_fallback_method_enabled(useFallback());
+
+    WebKit::WebURLRequest urlRequest;
+    urlRequest.initialize();
+    urlRequest.setURL(GURL("about:blank"));
+    webframe()->loadRequest(urlRequest);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    if (webview_)
+      webview_->close();
+  }
+
+  WebFrame* webframe() {
+    return webview_->mainFrame();
+  }
+
+  // Wraps the given JavaScript snippet in <html><body><script> tags, then
+  // loads it into a webframe so it is executed.
+  void ExecuteJavaScript(const std::string& javascript) {
+    std::string html = "<html><body>";
+    html.append("<script>");
+    html.append(javascript);
+    html.append("</script></body></html>");
+    webframe()->loadHTMLString(html, GURL("about:blank"));
+    MessageLoop::current()->RunAllPending();
+  }
+
+  // Executes the specified JavaScript and checks to be sure that the resulting
+  // document text is exactly "SUCCESS".
+  void CheckJavaScriptSuccess(const std::string& javascript) {
+    ExecuteJavaScript(javascript);
+    EXPECT_EQ("SUCCESS",
+              UTF16ToASCII(webkit_glue::DumpDocumentText(webframe())));
+  }
+
+  // Executes the specified JavaScript and checks that the resulting document
+  // text is empty.
+  void CheckJavaScriptFailure(const std::string& javascript) {
+    ExecuteJavaScript(javascript);
+    EXPECT_EQ("", UTF16ToASCII(webkit_glue::DumpDocumentText(webframe())));
+  }
+
+  // Constructs a JavaScript snippet that evaluates and compares the left and
+  // right expressions, printing "SUCCESS" to the page if they are equal and
+  // printing their actual values if they are not.  Any strings in the
+  // expressions should be enclosed in single quotes, and no double quotes
+  // should appear in either expression (even if escaped). (If a test case
+  // is added that needs fancier quoting, Json::valueToQuotedString could be
+  // used here.  For now, it's not worth adding the dependency.)
+  std::string BuildJSCondition(std::string left, std::string right) {
+    return "var leftval = " + left + ";" +
+           "var rightval = " + right + ";" +
+           "if (leftval == rightval) {" +
+           "  document.writeln('SUCCESS');" +
+           "} else {" +
+           "  document.writeln(\"" +
+                left + " [\" + leftval + \"] != " +
+                right + " [\" + rightval + \"]\");" +
+           "}";
+  }
+
  protected:
-   // Adapted from TestShell::CreateNewWindow, this creates an
-   // ExampleTestShellWindow rather than a regular TestShell.
-   virtual void CreateEmptyWindow() {
-     ExampleTestShell* host = new ExampleTestShell(useFallback());
-     ASSERT_TRUE(host != NULL);
-     bool rv = host->PublicInitialize("about:blank");
-     if (rv) {
-       test_shell_ = host;
-       TestShell::windowList()->push_back(host->mainWnd());
-       webframe_ = test_shell_->webView()->mainFrame();
-       ASSERT_TRUE(webframe_ != NULL);
-     } else {
-       delete host;
-     }
-   }
-
-   // Wraps the given JavaScript snippet in <html><body><script> tags, then
-   // loads it into a webframe so it is executed.
-   void ExecuteJavaScript(const std::string& javascript) {
-     std::string html = "<html><body>";
-     html.append(TestShellTest::kJavascriptDelayExitScript);
-     html.append("<script>");
-     html.append(javascript);
-     html.append("</script></body></html>");
-     // The base URL doesn't matter.
-     webframe_->loadHTMLString(html, GURL("about:blank"));
-
-     test_shell_->WaitTestFinished();
-    }
-
-   // Executes the specified JavaScript and checks to be sure that the resulting
-   // document text is exactly "SUCCESS".
-   void CheckJavaScriptSuccess(const std::string& javascript) {
-     ExecuteJavaScript(javascript);
-     EXPECT_EQ("SUCCESS",
-               UTF16ToASCII(webkit_glue::DumpDocumentText(webframe_)));
-   }
-
-   // Executes the specified JavaScript and checks that the resulting document
-   // text is empty.
-   void CheckJavaScriptFailure(const std::string& javascript) {
-     ExecuteJavaScript(javascript);
-     EXPECT_EQ("", UTF16ToASCII(webkit_glue::DumpDocumentText(webframe_)));
-   }
-
-   // Constructs a JavaScript snippet that evaluates and compares the left and
-   // right expressions, printing "SUCCESS" to the page if they are equal and
-   // printing their actual values if they are not.  Any strings in the
-   // expressions should be enclosed in single quotes, and no double quotes
-   // should appear in either expression (even if escaped). (If a test case
-   // is added that needs fancier quoting, Json::valueToQuotedString could be
-   // used here.  For now, it's not worth adding the dependency.)
-   std::string BuildJSCondition(std::string left, std::string right) {
-     return "var leftval = " + left + ";" +
-            "var rightval = " + right + ";" +
-            "if (leftval == rightval) {" +
-            "  document.writeln('SUCCESS');" +
-            "} else {" +
-            "  document.writeln(\"" +
-                 left + " [\" + leftval + \"] != " +
-                 right + " [\" + rightval + \"]\");" +
-            "}";
-   }
-
-protected:
   virtual bool useFallback() {
     return false;
   }
 
-private:
-  WebFrame* webframe_;
+ private:
+  WebView* webview_;
+  TestWebFrameClient webframe_client_;
+  TestWebViewClient webview_client_;
 };
 
 class CppBoundClassWithFallbackMethodTest : public CppBoundClassTest {
-protected:
+ protected:
   virtual bool useFallback() {
     return true;
   }
