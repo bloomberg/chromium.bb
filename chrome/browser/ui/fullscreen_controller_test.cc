@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/fullscreen_controller.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/test_navigation_observer.h"
 
 using content::WebContents;
 
@@ -113,4 +114,23 @@ void FullscreenControllerTest::DenyCurrentFullscreenOrMouseLockRequest() {
   FullscreenExitBubbleType type =
       browser()->fullscreen_controller_->GetFullscreenExitBubbleType();
   browser()->OnDenyFullscreenPermission(type);
+}
+
+void FullscreenControllerTest::AddTabAtIndexAndWait(int index, const GURL& url,
+    content::PageTransition transition) {
+  content::TestNavigationObserver observer(
+      content::NotificationService::AllSources(), NULL, 1);
+
+  AddTabAtIndex(index, url, transition);
+
+  observer.Wait();
+}
+
+void FullscreenControllerTest::GoBack() {
+  content::TestNavigationObserver observer(
+      content::NotificationService::AllSources(), NULL, 1);
+
+  browser()->GoBack(CURRENT_TAB);
+
+  observer.Wait();
 }

@@ -16,6 +16,8 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -37,7 +39,24 @@ FullscreenController::FullscreenController(BrowserWindow* window,
     tab_fullscreen_accepted_(false),
     toggled_into_fullscreen_(false),
     mouse_lock_tab_(NULL),
-    mouse_lock_state_(MOUSELOCK_NOT_REQUESTED) {
+    mouse_lock_state_(MOUSELOCK_NOT_REQUESTED),
+    cancel_fullscreen_on_navigate_mode_(false) {
+}
+
+void FullscreenController::Observe(int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  switch (type) {
+    case content::NOTIFICATION_NAV_ENTRY_COMMITTED:
+      if (content::Details<content::LoadCommittedDetails>(details)->
+          is_navigation_to_different_page()) {
+        ExitTabFullscreenOrMouseLockIfNecessary();
+      }
+      break;
+
+    default:
+      NOTREACHED() << "Got a notification we didn't register for.";
+  }
 }
 
 bool FullscreenController::IsFullscreenForBrowser() const {
@@ -148,6 +167,7 @@ void FullscreenController::ToggleFullscreenModeForTab(WebContents* web_contents,
 
   if (enter_fullscreen) {
     fullscreened_tab_ = TabContents::FromWebContents(web_contents);
+    EnterCancelFullscreenOnNavigateMode();
     if (!in_browser_or_tab_fullscreen_mode) {
       tab_caused_fullscreen_ = true;
 #if defined(OS_MACOSX)
@@ -166,6 +186,7 @@ void FullscreenController::ToggleFullscreenModeForTab(WebContents* web_contents,
       UpdateFullscreenExitBubbleContent();
     }
   } else {
+    ExitCancelFullscreenOnNavigateMode();
     if (in_browser_or_tab_fullscreen_mode) {
       if (tab_caused_fullscreen_) {
 #if defined(OS_MACOSX)
@@ -342,6 +363,7 @@ FullscreenController::~FullscreenController() {}
 
 void FullscreenController::NotifyTabOfExitIfNecessary() {
   if (fullscreened_tab_) {
+    ExitCancelFullscreenOnNavigateMode();
     RenderViewHost* rvh =
         fullscreened_tab_->web_contents()->GetRenderViewHost();
     fullscreened_tab_ = NULL;
@@ -365,6 +387,23 @@ void FullscreenController::NotifyTabOfExitIfNecessary() {
 
   UpdateFullscreenExitBubbleContent();
 }
+
+void FullscreenController::EnterCancelFullscreenOnNavigateMode() {
+  if (cancel_fullscreen_on_navigate_mode_)
+    return;
+  cancel_fullscreen_on_navigate_mode_ = true;
+  registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+      content::Source<content::NavigationController>(
+          &fullscreened_tab_->web_contents()->GetController()));
+}
+
+void FullscreenController::ExitCancelFullscreenOnNavigateMode() {
+  if (!cancel_fullscreen_on_navigate_mode_)
+    return;
+  cancel_fullscreen_on_navigate_mode_ = false;
+  registrar_.RemoveAll();
+}
+
 
 void FullscreenController::ExitTabFullscreenOrMouseLockIfNecessary() {
   if (tab_caused_fullscreen_)

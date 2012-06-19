@@ -55,6 +55,9 @@ class FullscreenControllerTest : public InProcessBrowserTest {
   bool IsFullscreenBubbleDisplayingButtons();
   void AcceptCurrentFullscreenOrMouseLockRequest();
   void DenyCurrentFullscreenOrMouseLockRequest();
+  void AddTabAtIndexAndWait(int index, const GURL& url,
+                            content::PageTransition transition);
+  void GoBack();
   static const char kFullscreenMouseLockHTML[];
  private:
   DISALLOW_COPY_AND_ASSIGN(FullscreenControllerTest);

@@ -3,11 +3,15 @@
 // found in the LICENSE file.
 
 #include "base/compiler_specific.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/fullscreen_controller_test.h"
+#include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -38,7 +42,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
                        MAYBE_TestNewTabExitsFullscreen) {
   ASSERT_TRUE(test_server()->Start());
 
-  AddTabAtIndex(
+  AddTabAtIndexAndWait(
       0, GURL(chrome::kAboutBlankURL), content::PAGE_TRANSITION_TYPED);
 
   WebContents* fullscreen_tab = browser()->GetActiveWebContents();
@@ -47,7 +51,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
 
   {
     FullscreenNotificationObserver fullscreen_observer;
-    AddTabAtIndex(
+    AddTabAtIndexAndWait(
         1, GURL(chrome::kAboutBlankURL), content::PAGE_TRANSITION_TYPED);
     fullscreen_observer.Wait();
     ASSERT_FALSE(browser()->window()->IsFullscreen());
@@ -67,7 +71,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
                        MAYBE_TestTabExitsItselfFromFullscreen) {
   ASSERT_TRUE(test_server()->Start());
 
-  AddTabAtIndex(
+  AddTabAtIndexAndWait(
       0, GURL(chrome::kAboutBlankURL), content::PAGE_TRANSITION_TYPED);
 
   WebContents* fullscreen_tab = browser()->GetActiveWebContents();
@@ -81,9 +85,9 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
                        TestFullscreenBubbleMouseLockState) {
   ASSERT_TRUE(test_server()->Start());
 
-  AddTabAtIndex(0, GURL(chrome::kAboutBlankURL),
+  AddTabAtIndexAndWait(0, GURL(chrome::kAboutBlankURL),
                 content::PAGE_TRANSITION_TYPED);
-  AddTabAtIndex(1, GURL(chrome::kAboutBlankURL),
+  AddTabAtIndexAndWait(1, GURL(chrome::kAboutBlankURL),
                 content::PAGE_TRANSITION_TYPED);
 
   WebContents* fullscreen_tab = browser()->GetActiveWebContents();
@@ -103,7 +107,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
 // Tests Fullscreen and Mouse Lock with varying content settings ALLOW & BLOCK.
 void FullscreenControllerBrowserTest::TestFullscreenMouseLockContentSettings() {
   GURL url = test_server()->GetURL("simple.html");
-  AddTabAtIndex(0, url, content::PAGE_TRANSITION_TYPED);
+  AddTabAtIndexAndWait(0, url, content::PAGE_TRANSITION_TYPED);
   WebContents* tab = browser()->GetActiveWebContents();
 
   // Validate that going fullscreen for a URL defaults to asking permision.
@@ -183,7 +187,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, BrowserFullscreenExit) {
   ASSERT_NO_FATAL_FAILURE(ToggleBrowserFullscreen(true));
 
   // Enter tab fullscreen.
-  AddTabAtIndex(0, GURL(chrome::kAboutBlankURL),
+  AddTabAtIndexAndWait(0, GURL(chrome::kAboutBlankURL),
                 content::PAGE_TRANSITION_TYPED);
   WebContents* fullscreen_tab = browser()->GetActiveWebContents();
   ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(fullscreen_tab, true));
@@ -200,7 +204,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
   ASSERT_NO_FATAL_FAILURE(ToggleBrowserFullscreen(true));
 
   // Enter and then exit tab fullscreen.
-  AddTabAtIndex(0, GURL(chrome::kAboutBlankURL),
+  AddTabAtIndexAndWait(0, GURL(chrome::kAboutBlankURL),
                 content::PAGE_TRANSITION_TYPED);
   WebContents* fullscreen_tab = browser()->GetActiveWebContents();
   ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(fullscreen_tab, true));
@@ -224,13 +228,75 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, FullscreenFileURL) {
   ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(tab, false));
 }
 
+IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
+                       TestTabExitsFullscreenOnNavigation) {
+  ASSERT_TRUE(test_server()->Start());
+
+  WebContents* fullscreen_tab = browser()->GetActiveWebContents();
+
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(fullscreen_tab, true));
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome://newtab"));
+
+  ASSERT_FALSE(browser()->window()->IsFullscreen());
+}
+
+IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
+                       TestTabExitsFullscreenOnGoBack) {
+  ASSERT_TRUE(test_server()->Start());
+
+  WebContents* fullscreen_tab = browser()->GetActiveWebContents();
+
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome://newtab"));
+
+  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(fullscreen_tab, true));
+
+  GoBack();
+
+  ASSERT_FALSE(browser()->window()->IsFullscreen());
+}
+
+IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
+                       TestTabDoesntExitFullscreenOnSubFrameNavigation) {
+  ASSERT_TRUE(test_server()->Start());
+
+  GURL url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
+                                     FilePath(kSimpleFile)));
+  GURL url_with_fragment(url.spec() + "#fragment");
+  WebContents* fullscreen_tab = browser()->GetActiveWebContents();
+
+  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(fullscreen_tab, true));
+  ui_test_utils::NavigateToURL(browser(), url_with_fragment);
+  ASSERT_TRUE(IsFullscreenForTabOrPending());
+}
+
+IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
+                       TestFullscreenFromTabWhenAlreadyInBrowserFullscreenWorks) {
+  ASSERT_TRUE(test_server()->Start());
+
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome://newtab"));
+
+  WebContents* fullscreen_tab = browser()->GetActiveWebContents();
+
+  ASSERT_NO_FATAL_FAILURE(ToggleBrowserFullscreen(true));
+  ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(fullscreen_tab, true));
+
+  GoBack();
+
+  ASSERT_TRUE(IsFullscreenForBrowser());
+  ASSERT_FALSE(IsFullscreenForTabOrPending());
+}
+
 #if defined(OS_MACOSX)
 // http://crbug.com/100467
 IN_PROC_BROWSER_TEST_F(
     FullscreenControllerTest, FAILS_TabEntersPresentationModeFromWindowed) {
   ASSERT_TRUE(test_server()->Start());
 
-  AddTabAtIndex(
+  AddTabAtIndexAndWait(
       0, GURL(chrome::kAboutBlankURL), content::PAGE_TRANSITION_TYPED);
 
   WebContents* fullscreen_tab = browser()->GetActiveWebContents();

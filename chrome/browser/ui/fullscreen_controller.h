@@ -10,6 +10,8 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/ui/fullscreen_exit_bubble_type.h"
 #include "chrome/common/content_settings.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class Browser;
 class BrowserWindow;
@@ -32,7 +34,8 @@ class WebContents;
 // its fullscreen mode.
 
 // This class implements fullscreen and mouselock behaviour.
-class FullscreenController : public base::RefCounted<FullscreenController> {
+class FullscreenController : public base::RefCounted<FullscreenController>,
+                             public content::NotificationObserver {
  public:
   FullscreenController(BrowserWindow* window,
                        Profile* profile,
@@ -91,6 +94,11 @@ class FullscreenController : public base::RefCounted<FullscreenController> {
 
   FullscreenExitBubbleType GetFullscreenExitBubbleType() const;
 
+  // content::NotificationObserver
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
  private:
   friend class base::RefCounted<FullscreenController>;
 
@@ -110,6 +118,12 @@ class FullscreenController : public base::RefCounted<FullscreenController> {
   // Notifies the tab that it has been forced out of fullscreen and mouse lock
   // mode if necessary.
   void NotifyTabOfExitIfNecessary();
+
+  // Makes the browser exit fullscreen mode when a navigation occurs.
+  void EnterCancelFullscreenOnNavigateMode();
+
+  // Makes the browser no longer exit fullscreen mode when a navigation occurs.
+  void ExitCancelFullscreenOnNavigateMode();
 
   // Make the current tab exit fullscreen mode or mouse lock if it is in it.
   void ExitTabFullscreenOrMouseLockIfNecessary();
@@ -149,6 +163,12 @@ class FullscreenController : public base::RefCounted<FullscreenController> {
   TabContents* mouse_lock_tab_;
 
   MouseLockState mouse_lock_state_;
+
+  content::NotificationRegistrar registrar_;
+
+  // If this is true then we are listening for navigation events and will
+  // cancel fullscreen when one occurs.
+  bool cancel_fullscreen_on_navigate_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(FullscreenController);
 };
