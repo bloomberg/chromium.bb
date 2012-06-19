@@ -90,6 +90,8 @@
           'shared_impl/resource_tracker.h',
           'shared_impl/scoped_pp_resource.cc',
           'shared_impl/scoped_pp_resource.h',
+          'shared_impl/scoped_pp_var.cc',
+          'shared_impl/scoped_pp_var.h',
           'shared_impl/time_conversion.cc',
           'shared_impl/time_conversion.h',
           'shared_impl/tracked_callback.cc',
