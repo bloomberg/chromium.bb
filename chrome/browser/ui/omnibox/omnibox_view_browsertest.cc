@@ -1364,7 +1364,13 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_EnterToSearch) {
   EnterToSearchTest();
 }
 
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, EscapeToDefaultMatch) {
+// http://crbug.com/131179
+#if defined(OS_LINUX)
+#define MAYBE_EscapeToDefaultMatch DISABLED_EscapeToDefaultMatch
+#else
+#define MAYBE_EscapeToDefaultMatch EscapeToDefaultMatch
+#endif
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_EscapeToDefaultMatch) {
   EscapeToDefaultMatchTest();
 }
 
