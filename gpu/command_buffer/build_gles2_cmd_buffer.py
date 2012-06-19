@@ -1697,6 +1697,12 @@ _FUNCTION_INFO = {
     'gl_test_func': 'glGetQueryObjectuiv',
     'pepper_interface': 'Query',
   },
+  'GetUniformLocationsCHROMIUM': {
+    'gen_cmd': False,
+    'extension': True,
+    'chromium': True,
+    'client_test': False,
+  },
 }
 
 
@@ -3828,8 +3834,8 @@ TEST_F(%(test_name)s, %(name)sValidArgsCountTooLarge) {
         # defined in GLES2DecoderBase::SetupShaderForUniform
         gl_arg_strings.append("3")
         arg_strings.append(
-            "program_manager()->SwizzleLocation(ProgramManager::"
-            "ProgramInfo::GetFakeLocation(1, 1))")
+            "GLES2Util::SwizzleLocation("
+            "GLES2Util::MakeFakeLocation(1, 1))")
       elif count == 1:
         # the number of elements that gl will be called with.
         gl_arg_strings.append("3")
@@ -4685,14 +4691,14 @@ class UniformLocationArgument(Argument):
 
   def WriteGetCode(self, file):
     """Writes the code to get an argument from a command structure."""
-    code = """  %s %s = program_manager()->UnswizzleLocation(
+    code = """  %s %s = GLES2Util::UnswizzleLocation(
       static_cast<%s>(c.%s));
 """
     file.Write(code % (self.type, self.name, self.type, self.name))
 
   def GetValidArg(self, func, offset, index):
     """Gets a valid value for this argument."""
-    return "program_manager()->SwizzleLocation(%d)" % (offset + 1)
+    return "GLES2Util::SwizzleLocation(%d)" % (offset + 1)
 
 
 class DataSizeArgument(Argument):

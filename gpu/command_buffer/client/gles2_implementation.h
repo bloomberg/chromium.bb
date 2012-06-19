@@ -75,6 +75,8 @@
     GPU_CLIENT_VALIDATE_DESTINATION_INITALIZATION_ASSERT(ptr && \
         (ptr[0] == static_cast<type>(0) || ptr[0] == static_cast<type>(-1)));
 
+struct GLUniformDefinitionCHROMIUM;
+
 namespace gpu {
 
 class MappedMemoryManager;

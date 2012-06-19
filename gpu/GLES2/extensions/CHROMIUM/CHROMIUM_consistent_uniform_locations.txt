@@ -1,0 +1,86 @@
+Name
+
+    CHROMIUM_consistent_uniform_locations
+
+Name Strings
+
+    GL_CHROMIUM_consistent_uniform_locations
+
+Version
+
+    Last Modifed Date: June 17, 2012
+
+Dependencies
+
+    OpenGL ES 2.0 is required.
+
+Overview
+
+    This extension guarantees uniforms always have the same locations.
+
+    This allows the client program to know the locations of uniforms
+    without having to compile the shaders, link the program and query
+    the locations and therefore have no blocking calls when initializing
+    programs.
+
+    To be forward compatible the locations are provided through the
+    function GetUniformLocationsCHROMIUM but they can be provided
+    even before linking a program and therefore do not have to wait
+    for compile or link completion to return results.
+
+Issues
+
+    If a uniform is unused in the actual program it may be optimized out
+    by the GL driver. In this case the locations will be wrong. You
+    must provide a list of only the used uniforms.
+
+New Tokens
+
+    None
+
+New Procedures and Functions
+
+    void GetUniformLocationsCHROMIUM (const GLUniformDefinitionCHROMIUM* uniforms,
+                                      GLsizei count, GLsizei max_locations,
+                                      GLint* locations);
+
+    Provides the locations of uniforms assuming the list of uniforms provided
+    matches the uniforms actually used in the corresponding program.
+
+    <uniforms> is an array of uniforms.  <count> is the number of uniforms in the
+    array.  <max_locations> is the maximum number of locations to write to
+    <locations>.  <locations> is an array to receive the uniform locations.
+
+    INVALID_VALUE is generated if <count> is less then or equal to 0.
+
+    INVALID_VALUE is generated if any GLUniformDefinitionHCHROMIUM's size
+    field is <= 0.
+
+    For each uniform <size> locations are provided. For example:
+
+    static const GLUniformDefinitionCHROMIUM defs[] = {
+      { GL_FLOAT_VEC2, 3, "someUniform", },  // An array of 3 vec2s
+      { GL_FLOAT_VEC4, 1, "someOtherUniform", },  // A single vec4
+      { GL_SAMPLER_2D, 2, "yetAnotherUniform", },  // An array of 2 sampler2Ds
+    };
+
+    Would return an array of locations as follows
+
+    location[0] = location for "someUniform[0]"
+    location[1] = location for "someUniform[1]"
+    location[2] = location for "someUniform[2]"
+    location[3] = location for "someOtherUniform"
+    location[4] = location for "yetAnotherUniform[0]"
+    location[5] = location for "yetAnotherUniform[1]"
+
+Errors
+
+    None.
+
+New State
+
+    None.
+
+Revision History
+
+    7/17/2012    Documented the extension

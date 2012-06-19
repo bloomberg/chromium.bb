@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <set>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
@@ -163,6 +164,24 @@ void ProgramManager::ProgramInfo::ClearUniforms(
   }
 }
 
+namespace {
+
+struct UniformData {
+  std::string queried_name;
+  std::string corrected_name;
+  std::string original_name;
+  GLsizei size;
+  GLenum type;
+};
+
+struct UniformDataComparer {
+  bool operator()(const UniformData& lhs, const UniformData& rhs) const {
+    return lhs.queried_name < rhs.queried_name;
+  }
+};
+
+}  // anonymous namespace
+
 void ProgramManager::ProgramInfo::Update() {
   Reset();
   UpdateLogInfo();
@@ -215,30 +234,41 @@ void ProgramManager::ProgramInfo::Update() {
   glGetProgramiv(service_id_, GL_ACTIVE_UNIFORMS, &num_uniforms);
   glGetProgramiv(service_id_, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_len);
   name_buffer.reset(new char[max_len]);
+
+  // Read all the names first and sort them so we get a consistent list
+  std::vector<UniformData> uniform_data_;
   for (GLint ii = 0; ii < num_uniforms; ++ii) {
     GLsizei length = 0;
-    GLsizei size = 0;
-    GLenum type = 0;
+    UniformData data;
     glGetActiveUniform(
-        service_id_, ii, max_len, &length, &size, &type, name_buffer.get());
+        service_id_, ii, max_len, &length,
+        &data.size, &data.type, name_buffer.get());
     DCHECK(max_len == 0 || length < max_len);
     DCHECK(length == 0 || name_buffer[length] == '\0');
-    // TODO(gman): Should we check for error?
     if (!IsInvalidPrefix(name_buffer.get(), length)) {
-      GLint location = glGetUniformLocation(service_id_, name_buffer.get());
-      std::string name;
-      std::string original_name;
+      data.queried_name = std::string(name_buffer.get());
       GetCorrectedVariableInfo(
-          true, name_buffer.get(), &name, &original_name, &size, &type);
-      const UniformInfo* info = AddUniformInfo(
-          size, type, location, name, original_name);
-      if (info->IsSampler()) {
-        sampler_indices_.push_back(info->fake_location_base);
-      }
-      max_uniform_name_length_ =
-          std::max(max_uniform_name_length_,
-                   static_cast<GLsizei>(info->name.size()));
+          true, name_buffer.get(), &data.corrected_name, &data.original_name,
+          &data.size, &data.type);
+      uniform_data_.push_back(data);
     }
+  }
+
+  std::sort(uniform_data_.begin(), uniform_data_.end(), UniformDataComparer());
+
+  for (size_t ii = 0; ii < uniform_data_.size(); ++ii) {
+    const UniformData& data = uniform_data_[ii];
+    GLint location = glGetUniformLocation(
+        service_id_, data.queried_name.c_str());
+    const UniformInfo* info = AddUniformInfo(
+        data.size, data.type, location, data.corrected_name,
+        data.original_name);
+    if (info->IsSampler()) {
+      sampler_indices_.push_back(info->fake_location_base);
+    }
+    max_uniform_name_length_ =
+        std::max(max_uniform_name_length_,
+                 static_cast<GLsizei>(info->name.size()));
   }
   valid_ = true;
 }
@@ -312,7 +342,7 @@ GLint ProgramManager::ProgramInfo::GetUniformFakeLocation(
           index = index * 10 + digit;
         }
         if (!bad && index >= 0 && index < info.size) {
-          return GetFakeLocation(info.fake_location_base, index);
+          return GLES2Util::MakeFakeLocation(info.fake_location_base, index);
         }
       }
     }
@@ -658,7 +688,8 @@ void ProgramManager::ProgramInfo::GetProgramInfo(
     inputs->name_length = info.name.size();
     DCHECK(static_cast<size_t>(info.size) == info.element_locations.size());
     for (size_t jj = 0; jj < info.element_locations.size(); ++jj) {
-      *locations++ = manager->SwizzleLocation(ii + jj * 0x10000);
+      *locations++ = GLES2Util::SwizzleLocation(
+          GLES2Util::MakeFakeLocation(ii, jj));
     }
     memcpy(strings, info.name.c_str(), info.name.size());
     strings += info.name.size();
@@ -678,14 +709,8 @@ ProgramManager::ProgramInfo::~ProgramInfo() {
   }
 }
 
-// TODO(gman): make this some kind of random number. Base::RandInt is not
-// callable because of the sandbox. What matters is that it's possibly different
-// by at least 1 bit each time chrome is run.
-static int uniform_random_offset_ = 3;
-
 ProgramManager::ProgramManager()
-    : uniform_swizzle_(uniform_random_offset_++ % 15),
-      program_info_count_(0),
+    : program_info_count_(0),
       have_context_(true),
       disable_workarounds_(
           CommandLine::ForCurrentProcess()->HasSwitch(
@@ -796,25 +821,6 @@ void ProgramManager::ClearUniforms(ProgramManager::ProgramInfo* info) {
   if (!disable_workarounds_) {
     info->ClearUniforms(&zero_);
   }
-}
-
-// Swizzles the locations to prevent developers from assuming they
-// can do math on uniforms. According to the OpenGL ES 2.0 spec
-// the location of "someuniform[1]" is not 'n' more than "someuniform[0]".
-static GLint Swizzle(GLint location) {
-  return (location & 0xF0000000U) |
-         ((location & 0x0AAAAAAAU) >> 1) |
-         ((location & 0x05555555U) << 1);
-}
-
-// Adds uniform_swizzle_ to prevent developers from assuming that locations are
-// always the same across GPUs and drivers.
-GLint ProgramManager::SwizzleLocation(GLint v) const {
-  return v < 0 ? v : (Swizzle(v) + uniform_swizzle_);
-}
-
-GLint ProgramManager::UnswizzleLocation(GLint v) const {
-  return v < 0 ? v : Swizzle(v - uniform_swizzle_);
 }
 
 }  // namespace gles2

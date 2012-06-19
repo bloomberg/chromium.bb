@@ -12,6 +12,7 @@
 #include "gpu/command_buffer/service/program_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include <algorithm>
 #include <string.h>
 
 using ::testing::_;
@@ -368,6 +369,17 @@ void TestHelper::SetupExpectationsForClearingUniforms(
   }
 }
 
+namespace {
+
+struct UniformInfoComparer {
+  bool operator()(const TestHelper::UniformInfo& lhs,
+                  const TestHelper::UniformInfo& rhs) const {
+    return strcmp(lhs.name, rhs.name) < 0;
+  }
+};
+
+}  // anonymous namespace.
+
 void TestHelper::SetupShader(
     ::gfx::MockGLInterface* gl,
     AttribInfo* attribs, size_t num_attribs,
@@ -400,6 +412,7 @@ void TestHelper::SetupShader(
       GetProgramiv(service_id, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, _))
       .WillOnce(SetArgumentPointee<2>(max_attrib_len))
       .RetiresOnSaturation();
+
   for (size_t ii = 0; ii < num_attribs; ++ii) {
     const AttribInfo& info = attribs[ii];
     EXPECT_CALL(*gl,
@@ -422,6 +435,10 @@ void TestHelper::SetupShader(
       GetProgramiv(service_id, GL_ACTIVE_UNIFORMS, _))
       .WillOnce(SetArgumentPointee<2>(num_uniforms))
       .RetiresOnSaturation();
+
+  scoped_array<UniformInfo> sorted_uniforms(new UniformInfo[num_uniforms]);
+  size_t num_valid_uniforms = 0;
+
   size_t max_uniform_len = 0;
   for (size_t ii = 0; ii < num_uniforms; ++ii) {
     size_t len = strlen(uniforms[ii].name) + 1;
@@ -444,27 +461,35 @@ void TestHelper::SetupShader(
                                 info.name + strlen(info.name) + 1)))
         .RetiresOnSaturation();
     if (!ProgramManager::IsInvalidPrefix(info.name, strlen(info.name))) {
-      EXPECT_CALL(*gl, GetUniformLocation(service_id, StrEq(info.name)))
-          .WillOnce(Return(info.real_location))
-          .RetiresOnSaturation();
-      if (info.size > 1) {
-        std::string base_name = info.name;
-        size_t array_pos = base_name.rfind("[0]");
-        if (base_name.size() > 3 && array_pos == base_name.size() - 3) {
-          base_name = base_name.substr(0, base_name.size() - 3);
-        }
-        for (GLsizei jj = 1; jj < info.size; ++jj) {
-          std::string element_name(
-              std::string(base_name) + "[" + base::IntToString(jj) + "]");
-          EXPECT_CALL(*gl, GetUniformLocation(service_id, StrEq(element_name)))
-              .WillOnce(Return(info.real_location + jj * 2))
-              .RetiresOnSaturation();
-        }
+      sorted_uniforms[num_valid_uniforms++] = uniforms[ii];
+    }
+  }
+
+  std::sort(
+      &sorted_uniforms[0], &sorted_uniforms[num_valid_uniforms],
+      UniformInfoComparer());
+
+  for (size_t ii = 0; ii < num_valid_uniforms; ++ii) {
+    const UniformInfo& info = sorted_uniforms[ii];
+    EXPECT_CALL(*gl, GetUniformLocation(service_id, StrEq(info.name)))
+        .WillOnce(Return(info.real_location))
+        .RetiresOnSaturation();
+    if (info.size > 1) {
+      std::string base_name = info.name;
+      size_t array_pos = base_name.rfind("[0]");
+      if (base_name.size() > 3 && array_pos == base_name.size() - 3) {
+        base_name = base_name.substr(0, base_name.size() - 3);
+      }
+      for (GLsizei jj = 1; jj < info.size; ++jj) {
+        std::string element_name(
+            std::string(base_name) + "[" + base::IntToString(jj) + "]");
+        EXPECT_CALL(*gl, GetUniformLocation(service_id, StrEq(element_name)))
+            .WillOnce(Return(info.real_location + jj * 2))
+            .RetiresOnSaturation();
       }
     }
   }
 }
-
 
 }  // namespace gles2
 }  // namespace gpu

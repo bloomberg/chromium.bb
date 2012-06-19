@@ -173,11 +173,6 @@ class GPU_EXPORT ProgramManager {
     // We only consider the declared attributes in the program.
     bool DetectAttribLocationBindingConflicts() const;
 
-    static inline GLint GetFakeLocation(
-        GLint fake_base_location, GLint element_index) {
-      return fake_base_location | element_index << 16;
-    }
-
    private:
     friend class base::RefCounted<ProgramInfo>;
     friend class ProgramManager;
@@ -322,9 +317,6 @@ class GPU_EXPORT ProgramManager {
   // Check if a ProgramInfo is owned by this ProgramManager.
   bool IsOwned(ProgramInfo* info);
 
-  GLint SwizzleLocation(GLint unswizzled_location) const;
-  GLint UnswizzleLocation(GLint swizzled_location) const;
-
  private:
   void StartTracking(ProgramInfo* info);
   void StopTracking(ProgramInfo* info);
@@ -333,8 +325,6 @@ class GPU_EXPORT ProgramManager {
   // TODO(gman): Choose a faster container.
   typedef std::map<GLuint, ProgramInfo::Ref> ProgramInfoMap;
   ProgramInfoMap program_infos_;
-
-  int uniform_swizzle_;
 
   // Counts the number of ProgramInfo allocated with 'this' as its manager.
   // Allows to check no ProgramInfo will outlive this.

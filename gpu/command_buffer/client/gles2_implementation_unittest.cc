@@ -2293,7 +2293,11 @@ TEST_F(GLES2ImplementationTest, GetString) {
   // GL_CHROMIUM_map_sub GL_CHROMIUM_flipy are hard coded into
   // GLES2Implementation.
   const char* expected_str =
-      "foobar GL_CHROMIUM_map_sub GL_CHROMIUM_flipy GL_EXT_unpack_subimage";
+      "foobar "
+      "GL_CHROMIUM_map_sub "
+      "GL_CHROMIUM_flipy "
+      "GL_CHROMIUM_consistent_uniform_locations "
+      "GL_EXT_unpack_subimage";
   const char kBad = 0x12;
   struct Cmds {
     cmd::SetBucketSize set_bucket_size1;
@@ -2552,6 +2556,64 @@ TEST_F(GLES2ImplementationTest, BeginEndQueryEXT) {
   gl_->GetQueryObjectuivEXT(id1, GL_QUERY_RESULT_AVAILABLE_EXT, &available);
   EXPECT_TRUE(NoCommandsWritten());
   EXPECT_EQ(0u, available);
+}
+
+TEST_F(GLES2ImplementationTest, GetUniformLocationsCHROMIUM) {
+  static const GLUniformDefinitionCHROMIUM good_defs[] = {
+    { GL_FLOAT_VEC4, 1, "moo", },
+    { GL_FLOAT_VEC4, 4, "bar", },
+    { GL_FLOAT_VEC4, 3, "foo", },
+  };
+
+  static const GLUniformDefinitionCHROMIUM bad_defs[] = {
+    { GL_FLOAT_VEC4, 1, "moo", },
+    { GL_FLOAT_VEC4, 0, "bar", },
+    { GL_FLOAT_VEC4, 3, "foo", },
+  };
+
+  // Test bad count
+  GLint locations[50] = { -1, };
+  gl_->GetUniformLocationsCHROMIUM(bad_defs, 0, 1, locations);
+  EXPECT_EQ(GL_INVALID_VALUE, CheckError());
+  EXPECT_EQ(-1, locations[0]);
+
+  // Test bad size.
+  gl_->GetUniformLocationsCHROMIUM(
+      bad_defs, arraysize(bad_defs), 1, locations);
+  EXPECT_EQ(GL_INVALID_VALUE, CheckError());
+  EXPECT_EQ(-1, locations[0]);
+
+  // Test max_locations
+  gl_->GetUniformLocationsCHROMIUM(
+      good_defs, arraysize(good_defs), 3, locations);
+  EXPECT_EQ(GLES2Util::SwizzleLocation(GLES2Util::MakeFakeLocation(2, 0)),
+            locations[0]);
+  EXPECT_EQ(GLES2Util::SwizzleLocation(GLES2Util::MakeFakeLocation(0, 0)),
+            locations[1]);
+  EXPECT_EQ(GLES2Util::SwizzleLocation(GLES2Util::MakeFakeLocation(0, 1)),
+            locations[2]);
+  EXPECT_EQ(0, locations[3]);
+
+  // Test all.
+  gl_->GetUniformLocationsCHROMIUM(
+      good_defs, arraysize(good_defs), arraysize(locations), locations);
+  EXPECT_EQ(GLES2Util::SwizzleLocation(GLES2Util::MakeFakeLocation(2, 0)),
+            locations[0]);
+  EXPECT_EQ(GLES2Util::SwizzleLocation(GLES2Util::MakeFakeLocation(0, 0)),
+            locations[1]);
+  EXPECT_EQ(GLES2Util::SwizzleLocation(GLES2Util::MakeFakeLocation(0, 1)),
+            locations[2]);
+  EXPECT_EQ(GLES2Util::SwizzleLocation(GLES2Util::MakeFakeLocation(0, 2)),
+            locations[3]);
+  EXPECT_EQ(GLES2Util::SwizzleLocation(GLES2Util::MakeFakeLocation(0, 3)),
+            locations[4]);
+  EXPECT_EQ(GLES2Util::SwizzleLocation(GLES2Util::MakeFakeLocation(1, 0)),
+            locations[5]);
+  EXPECT_EQ(GLES2Util::SwizzleLocation(GLES2Util::MakeFakeLocation(1, 1)),
+            locations[6]);
+  EXPECT_EQ(GLES2Util::SwizzleLocation(GLES2Util::MakeFakeLocation(1, 2)),
+            locations[7]);
+  EXPECT_EQ(0, locations[8]);
 }
 
 #include "gpu/command_buffer/client/gles2_implementation_unittest_autogen.h"

@@ -6,9 +6,10 @@
 
 #include "../client/gles2_implementation.h"
 
+#include <algorithm>
 #include <map>
-#include <set>
 #include <queue>
+#include <set>
 #include <GLES2/gl2ext.h>
 #include "../client/mapped_memory.h"
 #include "../client/program_info_manager.h"
@@ -2090,6 +2091,7 @@ const GLubyte* GLES2Implementation::GetStringHelper(GLenum name) {
         str += std::string(str.empty() ? "" : " ") +
             "GL_CHROMIUM_map_sub "
             "GL_CHROMIUM_flipy "
+            "GL_CHROMIUM_consistent_uniform_locations "
             "GL_EXT_unpack_subimage";
         break;
       default:
@@ -3274,6 +3276,77 @@ void GLES2Implementation::GenMailboxCHROMIUM(
   GetBucketContents(kResultBucketId, &result);
 
   std::copy(result.begin(), result.end(), mailbox);
+}
+
+namespace {
+
+class GLUniformDefinitionComparer {
+ public:
+  explicit GLUniformDefinitionComparer(
+      const GLUniformDefinitionCHROMIUM* uniforms)
+      : uniforms_(uniforms) {
+  }
+
+  bool operator()(const GLint lhs, const GLint rhs) const {
+    return strcmp(uniforms_[lhs].name, uniforms_[rhs].name) < 0;
+  }
+
+ private:
+  const GLUniformDefinitionCHROMIUM* uniforms_;
+};
+
+}  // anonymous namespace.
+
+void GLES2Implementation::GetUniformLocationsCHROMIUM(
+    const GLUniformDefinitionCHROMIUM* uniforms,
+    GLsizei count,
+    GLsizei max_locations,
+    GLint* locations) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << this << "] glGenUniformLocationsCHROMIUM("
+      << static_cast<const void*>(uniforms) << ", "  << count << ", "
+      << max_locations << ", " << static_cast<const void*>(locations) << ")");
+
+  if (count <= 0) {
+    SetGLError(GL_INVALID_VALUE, "glGetUniformLocationsCHROMIUM", "count <= 0");
+    return;
+  }
+
+  for (GLsizei ii = 0; ii < count; ++ii) {
+    const GLUniformDefinitionCHROMIUM& def = uniforms[ii];
+    if (def.size <= 0) {
+      SetGLError(
+          GL_INVALID_VALUE, "glGetUniformLocationsCHROMIUM", "size <= 0");
+      return;
+    }
+  }
+
+  scoped_array<GLint> indices(new GLint[count]);
+  for (GLint ii = 0; ii < count; ++ii) {
+    indices[ii] = ii;
+  }
+
+  std::sort(&indices[0], &indices[count],
+            GLUniformDefinitionComparer(uniforms));
+
+  scoped_array<GLint> reverse_map(new GLint[count]);
+
+  for (GLint ii = 0; ii < count; ++ii) {
+    reverse_map[indices[ii]] = ii;
+  }
+
+  for (GLsizei ii = 0; ii < count; ++ii) {
+    const GLUniformDefinitionCHROMIUM& def = uniforms[ii];
+    GLint base_location = reverse_map[ii];
+    for (GLsizei jj = 0; jj < def.size; ++jj) {
+      if (max_locations <= 0) {
+        return;
+      }
+      *locations++ = GLES2Util::SwizzleLocation(
+          GLES2Util::MakeFakeLocation(base_location, jj));
+      --max_locations;
+    }
+  }
 }
 
 }  // namespace gles2

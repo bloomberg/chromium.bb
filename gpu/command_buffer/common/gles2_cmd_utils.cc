@@ -758,6 +758,29 @@ bool ContextCreationAttribParser::Parse(const std::vector<int32>& attribs) {
   return true;
 }
 
+// Swizzles the locations to prevent developers from assuming they
+// can do math on uniforms. According to the OpenGL ES 2.0 spec
+// the location of "someuniform[1]" is not '1' more than "someuniform[0]".
+static int32 Swizzle(int32 location) {
+  return (location & 0xF0000000U) |
+         ((location & 0x0AAAAAAAU) >> 1) |
+         ((location & 0x05555555U) << 1);
+}
+
+// Adds uniform_swizzle_ to prevent developers from assuming that locations are
+// always the same across GPUs and drivers.
+int32 GLES2Util::SwizzleLocation(int32 v) {
+  return v < 0 ? v : Swizzle(v);
+}
+
+int32 GLES2Util::UnswizzleLocation(int32 v) {
+  return v < 0 ? v : Swizzle(v);
+}
+
+int32 GLES2Util::MakeFakeLocation(int32 index, int32 element) {
+  return index + element * 0x10000;
+}
+
 #include "../common/gles2_cmd_utils_implementation_autogen.h"
 
 }  // namespace gles2

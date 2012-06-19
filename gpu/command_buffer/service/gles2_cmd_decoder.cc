@@ -4929,7 +4929,7 @@ void GLES2DecoderImpl::LogMessage(const std::string& msg) {
     // LOG this unless logging is turned off as any chromium code that
     // generates these errors probably has a bug.
     if (log_synthesized_gl_errors()) {
-      LOG(ERROR) << last_error_;
+      LOG(ERROR) << msg;
     }
     if (!msg_callback_.is_null()) {
       msg_callback_.Run(0, msg);
@@ -6504,7 +6504,7 @@ error::Error GLES2DecoderImpl::GetUniformLocationHelper(
   if (*location != -1) {
     return error::kGenericError;
   }
-  *location = program_manager()->SwizzleLocation(
+  *location = GLES2Util::SwizzleLocation(
       info->GetUniformFakeLocation(name_str));
   return error::kNoError;
 }
@@ -7813,7 +7813,7 @@ bool GLES2DecoderImpl::GetUniformSetup(
 error::Error GLES2DecoderImpl::HandleGetUniformiv(
     uint32 immediate_data_size, const gles2::GetUniformiv& c) {
   GLuint program = c.program;
-  GLint fake_location = program_manager()->UnswizzleLocation(c.location);
+  GLint fake_location = GLES2Util::UnswizzleLocation(c.location);
   GLuint service_id;
   GLenum result_type;
   GLint real_location = -1;
@@ -7832,7 +7832,7 @@ error::Error GLES2DecoderImpl::HandleGetUniformiv(
 error::Error GLES2DecoderImpl::HandleGetUniformfv(
     uint32 immediate_data_size, const gles2::GetUniformfv& c) {
   GLuint program = c.program;
-  GLint fake_location = program_manager()->UnswizzleLocation(c.location);
+  GLint fake_location = GLES2Util::UnswizzleLocation(c.location);
   GLuint service_id;
   GLint real_location = -1;
   Error error;

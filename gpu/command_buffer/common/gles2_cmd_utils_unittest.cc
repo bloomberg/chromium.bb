@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -179,6 +179,17 @@ TEST_F(GLES2UtilTest, RenderbufferBytesPerPixel) {
    EXPECT_EQ(
        4u, GLES2Util::RenderbufferBytesPerPixel(GL_DEPTH_COMPONENT24_OES));
    EXPECT_EQ(0u, GLES2Util::RenderbufferBytesPerPixel(-1));
+}
+
+TEST_F(GLES2UtilTest, SwizzleLocation) {
+  GLint power = 1;
+  for (GLint p = 0; p < 5; ++p, power *= 10) {
+    GLint limit = power * 20 + 1;
+    for (GLint ii = -limit; ii < limit; ii += power) {
+      GLint s = GLES2Util::SwizzleLocation(ii);
+      EXPECT_EQ(ii, GLES2Util::UnswizzleLocation(s));
+    }
+  }
 }
 
 }  // namespace gles2
