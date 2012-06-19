@@ -70,7 +70,7 @@ const char* MountErrorToString(chromeos::MountError error) {
       return "error_internal";
     case chromeos::MOUNT_ERROR_UNKNOWN_FILESYSTEM:
       return "error_unknown_filesystem";
-    case chromeos::MOUNT_ERROR_UNSUPORTED_FILESYSTEM:
+    case chromeos::MOUNT_ERROR_UNSUPPORTED_FILESYSTEM:
       return "error_unsuported_filesystem";
     case chromeos::MOUNT_ERROR_INVALID_ARCHIVE:
       return "error_invalid_archive";
@@ -310,7 +310,7 @@ void FileBrowserEventRouter::MountCompleted(
      notifications_->ManageNotificationsOnMountCompleted(
         disk->system_path_prefix(), disk->drive_label(), disk->is_parent(),
         error_code == chromeos::MOUNT_ERROR_NONE,
-        error_code == chromeos::MOUNT_ERROR_UNSUPORTED_FILESYSTEM);
+        error_code == chromeos::MOUNT_ERROR_UNSUPPORTED_FILESYSTEM);
   } else if (mount_info.mount_type == chromeos::MOUNT_TYPE_ARCHIVE) {
     // Clear the "mounted" state for archive files in gdata cache
     // when mounting failed or unmounting succeeded.
@@ -395,7 +395,6 @@ void FileBrowserEventRouter::OnDocumentFeedFetched(
       std::string(kFileBrowserDomain),
       extension_event_names::kOnDocumentFeedFetched, args_json,
       NULL, GURL());
-
 }
 
 void FileBrowserEventRouter::OnAuthenticationFailed() {
