@@ -2527,16 +2527,10 @@ FileManager.prototype = {
               chrome.extension.getURL('images/filetype_archive.png');
           task.title = str('MOUNT_ARCHIVE');
         } else if (task_parts[1] == 'gallery') {
-          // If a single video is selected the Gallery is redundant.
-          if (selection.urls.length == 1 && FileType.isVideo(selection.urls[0]))
-            continue;
           task.title = str('ACTION_OPEN');
           task.iconUrl =
               chrome.extension.getURL('images/filetype_image.png');
         } else if (task_parts[1] == 'watch') {
-          // Hide "Watch" action for multiple selection.
-          if (selection.urls.length > 1)
-            continue;
           task.iconUrl =
               chrome.extension.getURL('images/filetype_video.png');
           task.title = str('ACTION_WATCH');

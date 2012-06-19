@@ -230,6 +230,20 @@ bool CrackTaskID(const std::string& task_id,
   return true;
 }
 
+// Find a specific handler in the handler list.
+LastUsedHandlerList::iterator FindHandler(
+    LastUsedHandlerList* list,
+    const std::string& extension_id,
+    const std::string& id) {
+  LastUsedHandlerList::iterator iter = list->begin();
+  while (iter != list->end() &&
+         !(iter->handler->extension_id() == extension_id &&
+           iter->handler->id() == id)) {
+    iter++;
+  }
+  return iter;
+}
+
 // Given the list of selected files, returns array of context menu tasks
 // that are shared
 bool FindCommonTasks(Profile* profile,
@@ -272,7 +286,7 @@ bool FindCommonTasks(Profile* profile,
     int last_used_timestamp = 0;
 
     if ((*iter)->extension_id() == kFileBrowserDomain) {
-      // Give a little bump to the action from File Browser extenion
+      // Give a little bump to the action from File Browser extension
       // to make sure it is the default on a fresh profile.
       last_used_timestamp = 1;
     }
@@ -281,6 +295,23 @@ bool FindCommonTasks(Profile* profile,
     URLPatternSet matching_patterns = GetAllMatchingPatterns(*iter, files_list);
     named_action_list->push_back(LastUsedHandler(last_used_timestamp, *iter,
                                                  matching_patterns));
+  }
+
+  LastUsedHandlerList::iterator watch_iter = FindHandler(
+      named_action_list, kFileBrowserDomain, kFileBrowserWatchTaskId);
+  LastUsedHandlerList::iterator gallery_iter = FindHandler(
+      named_action_list, kFileBrowserDomain, kFileBrowserGalleryTaskId);
+  if (watch_iter != named_action_list->end() &&
+      gallery_iter != named_action_list->end()) {
+    // Both "watch" and "gallery" actions are applicable which means that
+    // the selection is all videos. Showing them both is confusing. We only keep
+    // the one that makes more sense ("watch" for single selection, "gallery"
+    // for multiple selection).
+
+    if (files_list.size() == 1)
+      named_action_list->erase(gallery_iter);
+    else
+      named_action_list->erase(watch_iter);
   }
 
   SortLastUsedHandlerList(named_action_list);
