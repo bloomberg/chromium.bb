@@ -162,6 +162,12 @@ bool TapRecord::Moving(const HardwareState& hwstate,
     // Compute distance moved
     float dist_x = fs->position_x - (*it).second.position_x;
     float dist_y = fs->position_y - (*it).second.position_y;
+    // Respect WARP flags
+    if (fs->flags & GESTURES_FINGER_WARP_X)
+      dist_x = 0.0;
+    if (fs->flags & GESTURES_FINGER_WARP_Y)
+      dist_y = 0.0;
+
     bool moving =
         dist_x * dist_x + dist_y * dist_y > dist_max * dist_max;
     Log("Moving? x %f y %f (%s)", dist_x, dist_y, moving ? "Yes" : "No");

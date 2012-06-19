@@ -3259,4 +3259,54 @@ TEST(ImmediateInterpreterTest, SemiMtNoPinchTest) {
     gesture = ii.SyncInterpret(&hardware_states[idx], NULL);
   EXPECT_NE(gesture->type, kGestureTypePinch);
 }
+
+TEST(ImmediateInterpreterTest, WarpedFingersTappingTest) {
+  ImmediateInterpreter ii(NULL, NULL);
+
+  HardwareProperties hwprops = {
+    0,  // left edge
+    0,  // top edge
+    90.404251,  // right edge
+    48.953846,  // bottom edge
+    1,  // pixels/TP width
+    1,  // pixels/TP height
+    133,  // screen DPI x
+    133,  // screen DPI y
+    2,  // max fingers
+    3,  // max touch
+    0,  // t5r2
+    1,  // semi-mt
+    true  // is button pad
+  };
+
+  FingerState finger_state[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID, flags
+    { 0, 0, 0, 0, 42.139996, 0, 46.106384, 39.800003, 0, 3 },  // index 0
+    { 0, 0, 0, 0, 42.139996, 0, 69.106384, 28.461538, 1, 3 },
+
+    // The finger 0 moves more than default threshold 2.0 in Y, but it should
+    // still generate final right-click gesture as the WARP flag is set.
+    { 0, 0, 0, 0, 43.350002, 0, 45.425529, 36.353844, 0, 3 },  // index 2
+    { 0, 0, 0, 0, 43.350002, 0, 69.063828, 28.507692, 1, 3 },
+
+    { 0, 0, 0, 0, 43.350002, 0, 69.085106, 28.307692, 1, 3 },  // index 4
+  };
+
+  HardwareState hardware_states[] = {
+    // time, buttons down, finger count, touch count, finger states pointer
+    { 3897.124791, 0, 2, 2, &finger_state[0] },
+    { 3897.136733, 0, 2, 2, &finger_state[2] },
+    { 3897.148675, 0, 1, 1, &finger_state[4] },
+    { 3897.160675, 0, 0, 0, NULL },
+  };
+
+  ii.tap_enable_.val_ = 1;
+  ii.SetHardwareProperties(hwprops);
+
+  Gesture *gesture;
+  for (size_t idx = 0; idx < arraysize(hardware_states); ++idx)
+    gesture = ii.SyncInterpret(&hardware_states[idx], NULL);
+
+  EXPECT_EQ(gesture->type, kGestureTypeButtonsChange);
+}
 }  // namespace gestures
