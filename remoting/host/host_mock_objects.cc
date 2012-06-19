@@ -28,7 +28,9 @@ MockEventExecutor::MockEventExecutor() {}
 MockEventExecutor::~MockEventExecutor() {}
 
 void MockEventExecutor::OnSessionStarted(
-    scoped_ptr<protocol::ClipboardStub> client_clipboard) {}
+    scoped_ptr<protocol::ClipboardStub> client_clipboard) {
+  OnSessionStartedPtr(client_clipboard.get());
+}
 
 MockDisconnectWindow::MockDisconnectWindow() {}
 

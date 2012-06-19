@@ -302,8 +302,14 @@ TEST_F(ChromotingHostTest, Connect) {
         .WillOnce(
             InvokeWithoutArgs(this, &ChromotingHostTest::ClientSessionClosed))
         .RetiresOnSaturation();
+  }
+
+  {
+    InSequence s;
+    EXPECT_CALL(*event_executor_, OnSessionStartedPtr(_));
     EXPECT_CALL(*event_executor_, OnSessionFinished());
   }
+
   SimulateClientConnection(0, true);
   message_loop_.Run();
 }
@@ -330,6 +336,11 @@ TEST_F(ChromotingHostTest, Reconnect) {
     EXPECT_CALL(video_stub_, ProcessVideoPacketPtr(_, _))
         .Times(AnyNumber())
         .WillRepeatedly(RunDoneTask());
+  }
+
+  {
+    InSequence s;
+    EXPECT_CALL(*event_executor_, OnSessionStartedPtr(_));
     EXPECT_CALL(*event_executor_, OnSessionFinished());
   }
 
@@ -353,6 +364,11 @@ TEST_F(ChromotingHostTest, Reconnect) {
         .WillOnce(
             InvokeWithoutArgs(this, &ChromotingHostTest::ClientSession2Closed))
         .RetiresOnSaturation();
+  }
+
+  {
+    InSequence s;
+    EXPECT_CALL(*event_executor_, OnSessionStartedPtr(_));
     EXPECT_CALL(*event_executor_, OnSessionFinished());
   }
 
@@ -396,6 +412,14 @@ TEST_F(ChromotingHostTest, ConnectWhenAnotherClientIsConnected) {
         .WillRepeatedly(RunDoneTask());
   }
 
+  {
+    InSequence s;
+    EXPECT_CALL(*event_executor_, OnSessionStartedPtr(_));
+    EXPECT_CALL(*event_executor_, OnSessionFinished());
+    EXPECT_CALL(*event_executor_, OnSessionStartedPtr(_));
+    EXPECT_CALL(*event_executor_, OnSessionFinished());
+  }
+
   EXPECT_CALL(*connection_, Disconnect())
       .WillOnce(
           InvokeWithoutArgs(this, &ChromotingHostTest::ClientSessionClosed))
@@ -404,7 +428,6 @@ TEST_F(ChromotingHostTest, ConnectWhenAnotherClientIsConnected) {
       .WillOnce(
           InvokeWithoutArgs(this, &ChromotingHostTest::ClientSession2Closed))
       .RetiresOnSaturation();
-  EXPECT_CALL(*event_executor_, OnSessionFinished()).Times(2);
 
   SimulateClientConnection(0, true);
   message_loop_.Run();
