@@ -100,10 +100,16 @@ void ContentViewClient::OnReceivedHttpAuthRequest(
     jobject auth_handler,
     const string16& host,
     const string16& realm) {
-  /* TODO(jrg): upstream this once ContentHttpAuthHandler.java is
-     upstreamed, and onReceivedHttpAuthRequest() is upstreamed in
-     ContentViewClient.java */
-  NOTREACHED();
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> jstring_host =
+      ConvertUTF16ToJavaString(env, host);
+  ScopedJavaLocalRef<jstring> jstring_realm =
+      ConvertUTF16ToJavaString(env, realm);
+  Java_ContentViewClient_onReceivedHttpAuthRequest(
+      env, weak_java_client_.get(env).obj(),
+      auth_handler,
+      jstring_host.obj(),
+      jstring_realm.obj());
 }
 
 void ContentViewClient::OnDidCommitMainFrame(const GURL& url,

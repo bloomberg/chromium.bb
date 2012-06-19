@@ -15,6 +15,7 @@ import java.net.URISyntaxException;
 
 import org.chromium.base.AccessedByNative;
 import org.chromium.base.CalledByNative;
+import org.chromium.content.browser.ContentHttpAuthHandler;
 
 /**
  *  Main callback class used by ContentView.
@@ -107,7 +108,13 @@ public class ContentViewClient {
     public void onReceivedError(int errorCode, String description, String failingUrl) {
     }
 
-    // TODO(jrg): add onReceivedHttpAuthRequest() once ContentHttpAuthHandler is upstreamed
+    @CalledByNative
+    public void onReceivedHttpAuthRequest(ContentHttpAuthHandler authHandler, String host,
+                                          String realm) {
+        // Default behavior: cancel the authorization attempt.  Override this method to
+        // provide credentials, or to allow a user to provide credentials.
+        authHandler.cancel();
+    }
 
     @CalledByNative
     public void onMainFrameCommitted(String url, String baseUrl) {
