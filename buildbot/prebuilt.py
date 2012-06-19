@@ -5,25 +5,18 @@
 
 """This script is used to upload host prebuilts as well as board BINHOSTS.
 
-If the URL starts with 'gs://', we upload using gsutil to Google Storage.
-Otherwise, rsync is used.
-
-After a build is successfully uploaded a file is updated with the proper
-BINHOST version as well as the target board. This file is defined in GIT_FILE
-
+Prebuilts are uploaded using gsutil to Google Storage. After these prebuilts
+are successfully uploaded, a file is updated with the proper BINHOST version.
 
 To read more about prebuilts/binhost binary packages please refer to:
-http://sites/chromeos/for-team-members/engineering/releng/prebuilt-binaries-for-streamlining-the-build-process
-
+http://goto/chromeos-prebuilts
 
 Example of uploading prebuilt amd64 host files to Google Storage:
 ./prebuilt.py -p /b/cbuild/build -s -u gs://chromeos-prebuilt
 
 Example of uploading x86-dogfood binhosts to Google Storage:
-./prebuilt.py -b x86-dogfood -p /b/cbuild/build/ -u gs://chromeos-prebuilt  -g
+./prebuilt.py -b x86-dogfood -p /b/cbuild/build/ -u gs://chromeos-prebuilt -g
 
-Example of uploading prebuilt amd64 host files using rsync:
-./prebuilt.py -p /b/cbuild/build -s -u codf30.jail:/tmp
 """
 
 import datetime
@@ -37,11 +30,18 @@ if __name__ == '__main__':
   import constants
   sys.path.insert(0, constants.SOURCE_ROOT)
 
+from chromite.buildbot import cbuildbot_background as bg
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 from chromite.lib import binpkg
 
-_RETRIES = 3
+# How many times to retry uploads.
+_RETRIES = 10
+
+# Multiplier for how long to sleep (in seconds) between retries; will delay
+# (1*sleep) the first time, then (2*sleep), continuing via attempt * sleep.
+_SLEEP_TIME = 60
+
 _HOST_PACKAGES_PATH = 'chroot/var/lib/portage/pkgs'
 _CATEGORIES_PATH = 'chroot/etc/portage/categories'
 _PYM_PATH = 'chroot/usr/lib/portage/pym'
@@ -59,15 +59,6 @@ _PREBUILT_BASE_DIR = 'src/third_party/chromiumos-overlay/chromeos/config/'
 _PREBUILT_MAKE_CONF = {'amd64': os.path.join(_PREBUILT_BASE_DIR,
                                              'make.conf.amd64-host')}
 _BINHOST_CONF_DIR = 'src/third_party/chromiumos-overlay/chromeos/binhost'
-
-
-class UploadFailed(Exception):
-  """Raised when one of the files uploaded failed."""
-  pass
-
-class UnknownBoardFormat(Exception):
-  """Raised when a function finds an unknown board format."""
-  pass
 
 
 class BuildTarget(object):
@@ -170,7 +161,7 @@ def GetVersion():
   return datetime.datetime.now().strftime('%d.%m.%y.%H%M%S')
 
 
-def _GsUpload(args):
+def _GsUpload(local_file, remote_file, acl):
   """Upload to GS bucket.
 
   Args:
@@ -180,34 +171,25 @@ def _GsUpload(args):
   Returns:
     Return the arg tuple of two if the upload failed
   """
-  (local_file, remote_file, acl) = args
   CANNED_ACLS = ['public-read', 'private', 'bucket-owner-read',
                  'authenticated-read', 'bucket-owner-full-control',
                  'public-read-write']
-  acl_cmd = None
   if acl in CANNED_ACLS:
     cmd = [binpkg.GSUTIL_BIN, 'cp', '-a', acl, local_file, remote_file]
+    acl_cmd = None
   else:
     # For private uploads we assume that the overlay board is set up properly
-    # and a googlestore_acl.xml is present, if not this script errors
+    # and a googlestore_acl.xml is present. Otherwise, this script errors.
     cmd = [binpkg.GSUTIL_BIN, 'cp', '-a', 'private', local_file, remote_file]
-    if not os.path.exists(acl):
-      print >> sys.stderr, ('You are specifying either a file that does not '
-                            'exist or an unknown canned acl: %s. Aborting '
-                            'upload') % acl
-      # emulate the failing of an upload since we are not uploading the file
-      return (local_file, remote_file)
-
     acl_cmd = [binpkg.GSUTIL_BIN, 'setacl', acl, remote_file]
 
-  if not cros_build_lib.RunCommandWithRetries(
-      _RETRIES, cmd, print_cmd=False, error_code_ok=True).returncode == 0:
-    return (local_file, remote_file)
+  cros_build_lib.RunCommandWithRetries(_RETRIES, cmd, print_cmd=False,
+                                       sleep=_SLEEP_TIME)
 
   if acl_cmd:
     # Apply the passed in ACL xml file to the uploaded object.
     cros_build_lib.RunCommandWithRetries(_RETRIES, acl_cmd, print_cmd=False,
-                                         error_code_ok=True)
+                                         sleep=_SLEEP_TIME)
 
 
 def RemoteUpload(acl, files, pool=10):
@@ -225,19 +207,8 @@ def RemoteUpload(acl, files, pool=10):
   Returns:
     Return a set of tuple arguments of the failed uploads
   """
-  # TODO(scottz) port this to use _RunManyParallel when it is available in
-  # cros_build_lib
-  pool = multiprocessing.Pool(processes=pool)
-  workers = []
-  for local_file, remote_path in files.iteritems():
-    workers.append((local_file, remote_path, acl))
-
-  result = pool.map_async(_GsUpload, workers, chunksize=1)
-  while True:
-    try:
-      return set(result.get(60 * 60))
-    except multiprocessing.TimeoutError:
-      pass
+  tasks = [[key, value, acl] for key, value in files.iteritems()]
+  bg.RunTasksInProcessPool(_GsUpload, tasks, pool)
 
 
 def GenerateUploadDict(base_local_path, base_remote_path, pkgs):
@@ -411,32 +382,14 @@ class PrebuiltUploader(object):
     tmp_packages_file = pkg_index.WriteToNamedTemporaryFile()
 
     remote_location = '%s/%s' % (self._upload_location.rstrip('/'), url_suffix)
-    if remote_location.startswith('gs://'):
-      # Build list of files to upload.
-      upload_files = GenerateUploadDict(package_path, remote_location, uploads)
-      remote_file = '%s/Packages' % remote_location.rstrip('/')
-      upload_files[tmp_packages_file.name] = remote_file
+    assert remote_location.startswith('gs://')
 
-      failed_uploads = RemoteUpload(self._acl, upload_files)
-      if len(failed_uploads) > 1 or (None not in failed_uploads):
-        error_msg = ['%s -> %s\n' % args for args in failed_uploads if args]
-        raise UploadFailed('Error uploading:\n%s' % error_msg)
-    else:
-      pkgs = [p['CPV'] + '.tbz2' for p in uploads]
-      ssh_server, remote_path = remote_location.split(':', 1)
-      remote_path = remote_path.rstrip('/')
-      pkg_index = tmp_packages_file.name
-      remote_location = remote_location.rstrip('/')
-      remote_packages = '%s/Packages' % remote_location
-      cmds = [['ssh', ssh_server, 'mkdir', '-p', remote_path],
-              ['rsync', '-av', '--chmod=a+r', pkg_index, remote_packages]]
-      if pkgs:
-        cmds.append(['rsync', '-Rav'] + pkgs + [remote_location + '/'])
-      for cmd in cmds:
-        try:
-          cros_build_lib.RunCommandWithRetries(_RETRIES, cmd, cwd=package_path)
-        except cros_build_lib.RunCommandError:
-          raise UploadFailed('Could not run %s' % cmd)
+    # Build list of files to upload.
+    upload_files = GenerateUploadDict(package_path, remote_location, uploads)
+    remote_file = '%s/Packages' % remote_location.rstrip('/')
+    upload_files[tmp_packages_file.name] = remote_file
+
+    RemoteUpload(self._acl, upload_files)
 
   def _UploadBoardTarball(self, board_path, url_suffix, version):
     """Upload a tarball of the board at the specified path to Google Storage.
@@ -467,8 +420,7 @@ class PrebuiltUploader(object):
         # FIXME(zbehan): Why does version contain the prefix "chroot-"?
         remote_tarfile = \
             'gs://chromiumos-sdk/cros-sdk-%s.tbz2' % version.strip('chroot-')
-      if _GsUpload((tarfile, remote_tarfile, self._acl)):
-        sys.exit(1)
+      _GsUpload(tarfile, remote_tarfile, self._acl)
     finally:
       cros_build_lib.SudoRunCommand(['rm', '-rf', tmpdir], cwd=cwd)
 

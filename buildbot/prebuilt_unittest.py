@@ -127,21 +127,6 @@ class TestPrebuilt(unittest.TestCase):
     expected = { local_path: gs_bucket_path + '/public1.tbz2' }
     self.assertEqual(result, expected)
 
-  def testFailonUploadFail(self):
-    """Make sure we fail if one of the upload processes fail."""
-    return_obj = self.mox.CreateMock(cros_build_lib.CommandResult)
-    return_obj.returncode = 1
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommandWithRetries')
-    cros_build_lib.RunCommandWithRetries(
-        prebuilt._RETRIES, mox.IgnoreArg(), print_cmd=False,
-        error_code_ok=True).AndReturn(return_obj)
-    self.mox.ReplayAll()
-    files = {'test': '/uasd'}
-    result = prebuilt.RemoteUpload('public-read', files)
-    self.assertEqual(result, set([('test', '/uasd')]))
-    cros_build_lib.RunCommandWithRetries(prebuilt._RETRIES, 'example',
-                                         print_cmd=False, error_code_ok=True)
-
   def testDeterminePrebuiltConfHost(self):
     """Test that the host prebuilt path comes back properly."""
     expected_path = os.path.join(prebuilt._PREBUILT_MAKE_CONF['amd64'])
@@ -352,26 +337,6 @@ class TestUploadPrebuilt(unittest.TestCase):
     self.mox.UnsetStubs()
     self.mox.VerifyAll()
 
-  def doRsyncUpload(self, suffix):
-    mock_return = self.mox.CreateMock(cros_build_lib.CommandResult)
-    mock_return.returncode = 0
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommandWithRetries')
-    remote_path = '/dir/%s' % suffix.rstrip('/')
-    full_remote_path = 'chromeos-prebuilt:%s' % remote_path
-    cmds = [['ssh', 'chromeos-prebuilt', 'mkdir', '-p', remote_path],
-            ['rsync', '-av', '--chmod=a+r', 'fake',
-             full_remote_path + '/Packages'],
-            ['rsync', '-Rav', 'private.tbz2', full_remote_path + '/']]
-    for cmd in cmds:
-      cros_build_lib.RunCommandWithRetries(
-          prebuilt._RETRIES, cmd, cwd='/packages').AndReturn(mock_return)
-    self.mox.ReplayAll()
-    uri = self.pkgindex.header['URI']
-    uploader = prebuilt.PrebuiltUploader('chromeos-prebuilt:/dir',
-        'public-read', uri, [], '/', [], False, 'foo', False,
-        ('x86-foo', 'aura'), [])
-    uploader._UploadPrebuilt('/packages', suffix)
-
   def testSuccessfulGsUpload(self):
     uploads = {'/packages/private.tbz2': 'gs://foo/private.tbz2'}
     self.mox.StubOutWithMock(prebuilt, 'GenerateUploadDict')
@@ -380,18 +345,12 @@ class TestUploadPrebuilt(unittest.TestCase):
     uploads = uploads.copy()
     uploads['fake'] = 'gs://foo/suffix/Packages'
     acl = 'public-read'
-    prebuilt.RemoteUpload(acl, uploads).AndReturn([None])
+    prebuilt.RemoteUpload(acl, uploads)
     self.mox.ReplayAll()
     uri = self.pkgindex.header['URI']
     uploader = prebuilt.PrebuiltUploader('gs://foo', acl, uri, [], '/', [],
                                          False, 'foo', False, 'x86-foo', [])
     uploader._UploadPrebuilt('/packages', 'suffix')
-
-  def testSuccessfulRsyncUploadWithNoTrailingSlash(self):
-    self.doRsyncUpload('suffix')
-
-  def testSuccessfulRsyncUploadWithTrailingSlash(self):
-    self.doRsyncUpload('suffix/')
 
 
 class TestSyncPrebuilts(unittest.TestCase):
