@@ -290,5 +290,9 @@ void WebPluginImpl::rotateView(RotationType type) {
   instance_->RotateView(type);
 }
 
+bool WebPluginImpl::isPlaceholder() {
+  return false;
+}
+
 }  // namespace ppapi
 }  // namespace webkit

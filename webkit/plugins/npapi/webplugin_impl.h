@@ -89,6 +89,7 @@ class WEBKIT_PLUGINS_EXPORT WebPluginImpl :
   virtual void didFailLoadingFrameRequest(
       const WebKit::WebURL& url, void* notify_data,
       const WebKit::WebURLError& error);
+  virtual bool isPlaceholder() OVERRIDE;
 
   // WebPlugin implementation:
   virtual void SetWindow(gfx::PluginWindowHandle window) OVERRIDE;

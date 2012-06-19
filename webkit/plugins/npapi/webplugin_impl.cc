@@ -468,6 +468,10 @@ void WebPluginImpl::didFailLoadingFrameRequest(
       url, reason, reinterpret_cast<intptr_t>(notify_data));
 }
 
+bool WebPluginImpl::isPlaceholder() {
+  return false;
+}
+
 // -----------------------------------------------------------------------------
 
 WebPluginImpl::WebPluginImpl(

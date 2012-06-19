@@ -83,6 +83,7 @@ class WebPluginImpl : public WebKit::WebPlugin {
 
   virtual bool canRotateView() OVERRIDE;
   virtual void rotateView(RotationType type) OVERRIDE;
+  virtual bool isPlaceholder() OVERRIDE;
 
  private:
   friend class base::DeleteHelper<WebPluginImpl>;
