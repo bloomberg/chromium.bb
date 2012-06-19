@@ -15,6 +15,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
+#include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -216,13 +218,15 @@ TEST_F(ProfileManagerTest, CreateAndUseTwoProfiles) {
 
   // Force lazy-init of some profile services to simulate use.
   profile1->CreateHistoryService(true, false);
-  EXPECT_TRUE(profile1->GetHistoryService(Profile::EXPLICIT_ACCESS));
+  EXPECT_TRUE(HistoryServiceFactory::GetForProfile(profile1,
+                                                   Profile::EXPLICIT_ACCESS));
   profile1->CreateBookmarkModel(true);
   EXPECT_TRUE(profile1->GetBookmarkModel());
   profile2->CreateBookmarkModel(true);
   EXPECT_TRUE(profile2->GetBookmarkModel());
   profile2->CreateHistoryService(true, false);
-  EXPECT_TRUE(profile2->GetHistoryService(Profile::EXPLICIT_ACCESS));
+  EXPECT_TRUE(HistoryServiceFactory::GetForProfile(profile2,
+                                                   Profile::EXPLICIT_ACCESS));
 
   // Make sure any pending tasks run before we destroy the profiles.
   message_loop_.RunAllPending();

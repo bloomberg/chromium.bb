@@ -13,6 +13,7 @@
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -102,7 +103,7 @@ void ProfileWriter::AddIE7PasswordInfo(const IE7PasswordInfo& info) {
 
 void ProfileWriter::AddHistoryPage(const history::URLRows& page,
                                    history::VisitSource visit_source) {
-  profile_->GetHistoryService(Profile::EXPLICIT_ACCESS)->
+  HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS)->
       AddPagesWithDetails(page, visit_source);
 }
 
