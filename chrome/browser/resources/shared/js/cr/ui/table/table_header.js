@@ -31,6 +31,8 @@ cr.define('cr.ui.table', function() {
       this.headerInner_ = this.ownerDocument.createElement('div');
       this.headerInner_.className = 'table-header-inner';
       this.appendChild(this.headerInner_);
+      this.addEventListener('touchstart',
+          this.handleTouchStart_.bind(this), false);
     },
 
     /**
@@ -54,12 +56,11 @@ cr.define('cr.ui.table', function() {
         this.redraw();
         return;
       }
-      this.headerInner_.textContent = '';
+
       for (var i = 0; i < cm.size; i++) {
         headerCells[i].style.width = cm.getWidth(i) + '%';
-        this.headerInner_.appendChild(headerCells[i]);
       }
-      this.appendSplitters_();
+      this.placeSplitters_(this.querySelectorAll('.table-header-splitter'));
     },
 
     batchCount_: 0,
@@ -110,20 +111,31 @@ cr.define('cr.ui.table', function() {
      */
     appendSplitters_: function() {
       var cm = this.table_.columnModel;
-
-      var leftPercent = 0;
+      var splitters = [];
       for (var i = 0; i < cm.size - 1; i++) {
-        leftPercent += cm.getWidth(i);
-
         // splitter should use CSS for background image.
         var splitter = new TableSplitter({table: this.table_});
         splitter.columnIndex = i;
 
-        var rtl = this.ownerDocument.defaultView.getComputedStyle(this).
-            direction == 'rtl';
-        splitter.style.left = rtl ? 100 - leftPercent + '%' : leftPercent + '%';
-
         this.headerInner_.appendChild(splitter);
+        splitters.push(splitter);
+      }
+      this.placeSplitters_(splitters);
+    },
+
+    /**
+     * Place splitters to right positions.
+     * @param {Array.<HTMLElement>|NodeList} splitters Array of splitters.
+     */
+    placeSplitters_: function(splitters) {
+      var rtl = this.ownerDocument.defaultView.getComputedStyle(this).
+          direction == 'rtl';
+      var cm = this.table_.columnModel;
+      var leftPercent = 0;
+      for (var i = 0; i < cm.size - 1; i++) {
+        leftPercent += cm.getWidth(i);
+        splitters[i].style.left = rtl ? 100 - leftPercent + '%' :
+                                        leftPercent + '%';
       }
     },
 
@@ -165,6 +177,37 @@ cr.define('cr.ui.table', function() {
         this.table_.sort(index);
       }.bind(this);
     },
+
+    /**
+     * Handles the touchstart event. If the touch happened close enough
+     * to a splitter starts dragging.
+     * @param {TouchEvent} e The touch event.
+     */
+    handleTouchStart_: function(e) {
+      if (e.touches.length != 1)
+        return;
+      var clientX = e.touches[0].clientX;
+
+      var minDistance = TableHeader.TOUCH_DRAG_AREA_WIDTH;
+      var candidate;
+
+      var splitters = this.querySelectorAll('.table-header-splitter');
+      for (var i = 0; i < splitters.length; i++) {
+        var r = splitters[i].getBoundingClientRect();
+        if (clientX <= r.left && r.left - clientX <= minDistance) {
+          minDistance = r.left - clientX;
+          candidate = splitters[i];
+        }
+        if (clientX >= r.right && clientX - r.right <= minDistance) {
+          minDistance = clientX - r.right;
+          candidate = splitters[i];
+        }
+      }
+      if (candidate)
+        candidate.startDrag(clientX, true);
+      // Splitter itself shouldn't handle this event.
+      e.stopPropagation();
+    }
   };
 
   /**
@@ -172,6 +215,12 @@ cr.define('cr.ui.table', function() {
    * @type {cr.ui.Table}
    */
   cr.defineProperty(TableHeader, 'table');
+
+  /**
+   * Rectangular area around the splitters sensitive to touch events
+   * (in pixels).
+   */
+  TableHeader.TOUCH_DRAG_AREA_WIDTH = 30;
 
   return {
     TableHeader: TableHeader
