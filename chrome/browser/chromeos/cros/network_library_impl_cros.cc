@@ -708,7 +708,7 @@ bool NetworkLibraryImplCros::NetworkManagerStatusChanged(
       // Currently we ignore PortalURL and ArpGateway.
       break;
     default:
-      LOG(WARNING) << "Manager: Unhandled key: " << key;
+      VLOG(2) << "Manager: Unhandled key: " << key;
       break;
   }
   base::TimeDelta delta = base::TimeTicks::Now() - start;
@@ -827,6 +827,7 @@ void NetworkLibraryImplCros::UpdateNetworkServiceList(
       // Use update_request map to store network priority.
       network_update_requests_[service_path] = network_priority_order++;
       wifi_scanning_ = true;
+      VLOG(2) << "UpdateNetworkServiceList, Service: " << service_path;
       CrosRequestNetworkServiceProperties(
           service_path,
           base::Bind(&NetworkLibraryImplCros::NetworkServiceUpdate,
@@ -886,6 +887,7 @@ void NetworkLibraryImplCros::NetworkServiceUpdate(
     const base::DictionaryValue* properties) {
   if (!properties)
     return;  // Network no longer in visible list, ignore.
+  VLOG(2) << "NetworkServiceUpdate: " << service_path;
   ParseNetwork(service_path, *properties);
 }
 
@@ -1027,7 +1029,7 @@ void NetworkLibraryImplCros::UpdateProfile(
       LOG(WARNING) << "Empty service path in profile.";
       continue;
     }
-    VLOG(1) << " Remembered service: " << service_path;
+    VLOG(2) << " Remembered service: " << service_path;
     // Add service to profile list.
     profile.services.insert(service_path);
     // Request update for remembered network.
@@ -1082,7 +1084,7 @@ Network* NetworkLibraryImplCros::ParseRememberedNetwork(
 
   SetProfileTypeFromPath(remembered);
 
-  VLOG(1) << "ParseRememberedNetwork: " << remembered->name()
+  VLOG(2) << "ParseRememberedNetwork: " << remembered->name()
           << " path: " << remembered->service_path()
           << " profile: " << remembered->profile_path_;
   NotifyNetworkManagerChanged(false);  // Not forced.
@@ -1093,7 +1095,7 @@ Network* NetworkLibraryImplCros::ParseRememberedNetwork(
     if (!FindNetworkByUniqueId(remembered->unique_id())) {
       VirtualNetwork* vpn = static_cast<VirtualNetwork*>(remembered);
       std::string provider_type = ProviderTypeToString(vpn->provider_type());
-      VLOG(1) << "Requesting VPN: " << vpn->name()
+      VLOG(2) << "Requesting VPN: " << vpn->name()
               << " Server: " << vpn->server_hostname()
               << " Type: " << provider_type;
       CrosRequestVirtualNetworkProperties(
@@ -1171,7 +1173,7 @@ void NetworkLibraryImplCros::ParseNetworkDevice(const std::string& device_path,
     }
     CHECK(device) << "Attempted to add NULL device for path: " << device_path;
   }
-  VLOG(1) << "ParseNetworkDevice:" << device->name();
+  VLOG(2) << "ParseNetworkDevice:" << device->name();
   if (device && device->type() == TYPE_CELLULAR) {
     if (!device->data_roaming_allowed() && IsCellularAlwaysInRoaming()) {
       SetCellularDataRoamingAllowed(true);

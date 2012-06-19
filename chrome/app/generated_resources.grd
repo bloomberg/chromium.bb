@@ -15156,6 +15156,9 @@ Battery full
       <message name="IDS_CHROMEOS_NETWORK_STATE_ONLINE" desc="Network state in about:network: Online">
         Online state
       </message>
+      <message name="IDS_CHROMEOS_NETWORK_STATE_CONNECT_REQUESTED" desc="Network state in about:network: Connect Requested">
+        Connect Requested
+      </message>
 
       <!-- Network error strings for ChromeOS -->
       <message name="IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN" desc="Network error in about:network: UNKNOWN">

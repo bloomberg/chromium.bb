@@ -63,15 +63,15 @@ bool NetworkDeviceParser::UpdateStatus(const std::string& key,
   if (index)
     *index = found_index;
   if (!ParseValue(found_index, value, device)) {
-    VLOG(1) << "NetworkDeviceParser: Unhandled key: " << key;
+    VLOG(3) << "NetworkDeviceParser: Unhandled key: " << key;
     return false;
   }
-  if (VLOG_IS_ON(2)) {
+  if (VLOG_IS_ON(3)) {
     std::string value_json;
     base::JSONWriter::WriteWithOptions(&value,
                                        base::JSONWriter::OPTIONS_PRETTY_PRINT,
                                        &value_json);
-    VLOG(2) << "Updated value on device: "
+    VLOG(3) << "Updated value on device: "
             << device->device_path() << "[" << key << "] = " << value_json;
   }
   return true;
@@ -135,17 +135,17 @@ bool NetworkParser::UpdateStatus(const std::string& key,
     *index = found_index;
   network->UpdatePropertyMap(found_index, &value);
   if (!ParseValue(found_index, value, network)) {
-    VLOG(1) << "Unhandled key '" << key << "' in Network: " << network->name()
+    VLOG(3) << "Unhandled key '" << key << "' in Network: " << network->name()
             << " ID: " << network->unique_id()
             << " Type: " << ConnectionTypeToString(network->type());
     return false;
   }
-  if (VLOG_IS_ON(2)) {
+  if (VLOG_IS_ON(3)) {
     std::string value_json;
     base::JSONWriter::WriteWithOptions(&value,
                                        base::JSONWriter::OPTIONS_PRETTY_PRINT,
                                        &value_json);
-    VLOG(2) << "Updated value on network: "
+    VLOG(3) << "Updated value on network: "
             << network->unique_id() << "[" << key << "] = " << value_json;
   }
   return true;

@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -173,6 +173,9 @@ void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
       .Times(AnyNumber())
       .WillRepeatedly((Return((const Network*)(NULL))));
   EXPECT_CALL(*mock_network_library_, virtual_network_connected())
+      .Times(AnyNumber())
+      .WillRepeatedly((Return(false)));
+  EXPECT_CALL(*mock_network_library_, wifi_scanning())
       .Times(AnyNumber())
       .WillRepeatedly((Return(false)));
 

@@ -144,14 +144,19 @@ class NetworkMenuIconTest : public testing::Test {
   }
 
  protected:
-  void SetConnected(Network* network, bool connected) {
+  void SetConnected(Network* network) {
     Network::TestApi test_network(network);
-    test_network.SetConnected(connected);
+    test_network.SetConnected();
   }
 
-  void SetConnecting(Network* network, bool connecting) {
+  void SetConnecting(Network* network) {
     Network::TestApi test_network(network);
-    test_network.SetConnecting(connecting);
+    test_network.SetConnecting();
+  }
+
+  void SetDisconnected(Network* network) {
+    Network::TestApi test_network(network);
+    test_network.SetDisconnected();
   }
 
   void SetActive(Network* network, bool active) {
@@ -214,12 +219,12 @@ class NetworkMenuIconTest : public testing::Test {
 TEST_F(NetworkMenuIconTest, EthernetIcon) {
   Network* network = cros_->FindNetworkByPath("eth1");
   ASSERT_NE(static_cast<const Network*>(NULL), network);
-  SetConnected(network, true);
+  SetConnected(network);
   gfx::ImageSkia icon = NetworkMenuIcon::GetImage(network,
                                                   NetworkMenuIcon::COLOR_DARK);
   EXPECT_TRUE(CompareImages(icon, ethernet_connected_image_));
 
-  SetConnected(network, false);
+  SetDisconnected(network);
   icon = NetworkMenuIcon::GetImage(network,
                                    NetworkMenuIcon::COLOR_DARK);
   EXPECT_TRUE(CompareImages(icon, ethernet_disconnected_image_));
@@ -238,7 +243,7 @@ TEST_F(NetworkMenuIconTest, WifiIcon) {
                                    NetworkMenuIcon::COLOR_DARK);
   EXPECT_TRUE(CompareImages(icon, wifi_encrypted_50_image_));
 
-  SetConnected(network, false);
+  SetDisconnected(network);
   SetStrength(network, 0);
   SetEncryption(network, SECURITY_NONE);
   icon = NetworkMenuIcon::GetImage(network,
@@ -249,7 +254,7 @@ TEST_F(NetworkMenuIconTest, WifiIcon) {
 TEST_F(NetworkMenuIconTest, CellularIcon) {
   CellularNetwork* network = cros_->FindCellularNetworkByPath("cellular1");
   ASSERT_NE(static_cast<const Network*>(NULL), network);
-  SetConnected(network, true);
+  SetConnected(network);
   SetStrength(network, 100);
   SetRoamingState(network, ROAMING_STATE_HOME);
   gfx::ImageSkia icon = NetworkMenuIcon::GetImage(network,
@@ -262,7 +267,7 @@ TEST_F(NetworkMenuIconTest, CellularIcon) {
                                    NetworkMenuIcon::COLOR_DARK);
   EXPECT_TRUE(CompareImages(icon, cellular_roaming_50_image_));
 
-  SetConnected(network, false);
+  SetDisconnected(network);
   SetStrength(network, 0);
   SetRoamingState(network, ROAMING_STATE_HOME);
   icon = NetworkMenuIcon::GetImage(network,
@@ -318,14 +323,14 @@ TEST_F(NetworkMenuIconTest, StatusIconMenuMode) {
   CellularNetwork* cellular1 = cros_->FindCellularNetworkByPath("cellular1");
   ASSERT_NE(static_cast<const Network*>(NULL), cellular1);
   SetRoamingState(cellular1, ROAMING_STATE_HOME);  // Clear romaing state
-  SetConnecting(cellular1, true);
+  SetConnecting(cellular1);
 
   // For MENU_MODE, we always display the connecting icon (cellular1).
   icon = menu_icon.GetIconAndText(NULL);
   EXPECT_TRUE(CompareImages(icon, cellular_connecting_image_));
 
   // Set cellular1 to connected; ethernet icon should be shown.
-  SetConnected(cellular1, true);
+  SetConnected(cellular1);
   icon = menu_icon.GetIconAndText(NULL);
   EXPECT_TRUE(CompareImages(icon, ethernet_connected_image_));
 
@@ -333,7 +338,7 @@ TEST_F(NetworkMenuIconTest, StatusIconMenuMode) {
   Network* eth1 = cros_->FindNetworkByPath("eth1");
   ASSERT_NE(static_cast<const Network*>(NULL), eth1);
   SetActive(eth1, false);
-  SetConnected(eth1, false);
+  SetDisconnected(eth1);
   icon = menu_icon.GetIconAndText(NULL);
   EXPECT_TRUE(CompareImages(icon, wifi_connected_100_image_));
 }
@@ -345,7 +350,7 @@ TEST_F(NetworkMenuIconTest, StatusIconDropdownMode) {
   // Set wifi1 to connecting.
   WifiNetwork* wifi1 = cros_->FindWifiNetworkByPath("wifi1");
   ASSERT_NE(static_cast<const Network*>(NULL), wifi1);
-  SetConnecting(wifi1, true);
+  SetConnecting(wifi1);
 
   // For DROPDOWN_MODE, we prioritize the connected network (ethernet).
   icon = menu_icon.GetIconAndText(NULL);
@@ -355,7 +360,7 @@ TEST_F(NetworkMenuIconTest, StatusIconDropdownMode) {
   Network* ethernet = cros_->FindNetworkByPath("eth1");
   ASSERT_NE(static_cast<const Network*>(NULL), ethernet);
   SetActive(ethernet, false);
-  SetConnected(ethernet, false);
+  SetDisconnected(ethernet);
 
   // Icon should now be cellular connected icon.
   icon = menu_icon.GetIconAndText(NULL);
@@ -364,12 +369,12 @@ TEST_F(NetworkMenuIconTest, StatusIconDropdownMode) {
   // Set cellular1 to disconnected; Icon should now be wimax icon.
   CellularNetwork* cellular1 = cros_->FindCellularNetworkByPath("cellular1");
   ASSERT_NE(static_cast<const Network*>(NULL), cellular1);
-  SetConnected(cellular1, false);
+  SetDisconnected(cellular1);
   icon = menu_icon.GetIconAndText(NULL);
   EXPECT_TRUE(CompareImages(icon, wimax_connected_50_image_));
 
   // Set wifi1 to connected. Icon should now be wifi connected icon.
-  SetConnected(wifi1, true);
+  SetConnected(wifi1);
   icon = menu_icon.GetIconAndText(NULL);
   EXPECT_TRUE(CompareImages(icon, wifi_connected_100_image_));
 }
