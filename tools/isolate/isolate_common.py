@@ -103,10 +103,11 @@ def generate_simplified(files, root_dir, variables, relative_cwd):
   variables and relative_cwd.
   """
   # Constants.
-  # Skip log in PRODUCT_DIR.
-  LOG_FILE = re.compile(r'^\<\(PRODUCT_DIR\)\/[^/]+\.log$')
+  # Skip log in PRODUCT_DIR. Note that these are applied on '/' style path
+  # separator.
+  LOG_FILE = re.compile(r'^\<\(PRODUCT_DIR\)\/[^\/]+\.log$')
   EXECUTABLE = re.compile(
-      r'^(\<\(PRODUCT_DIR\)\/[^/\.]+)' +
+      r'^(\<\(PRODUCT_DIR\)\/[^\/\.]+)' +
       re.escape(variables.get('EXECUTABLE_SUFFIX', '')) +
       r'$')
 

@@ -2064,14 +2064,19 @@ class LogmanTrace(ApiBase):
       # Ignore directories and bare drive right away.
       if raw_path.endswith(os.path.sep):
         return
-      filename = self._drive_map.to_win32(raw_path)
+      filepath = self._drive_map.to_win32(raw_path)
       # Ignore bare drive right away. Some may still fall through with format
       # like '\\?\X:'
-      if len(filename) == 2:
+      if len(filepath) == 2:
         return
       file_object = line[FILE_OBJECT]
+      if os.path.isdir(filepath):
+        # There is no O_DIRECTORY equivalent on Windows. The closed is
+        # FILE_FLAG_BACKUP_SEMANTICS but it's not exactly right either. So
+        # simply discard directories are they are found.
+        return
       # Override any stale file object
-      proc.file_objects[file_object] = filename
+      proc.file_objects[file_object] = filepath
 
     def handle_FileIo_Rename(self, line):
       # TODO(maruel): Handle?
