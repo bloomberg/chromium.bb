@@ -379,12 +379,18 @@ void ChromeDownloadManagerDelegate::OpenWithWebIntent(
       item->GetFullPath(),
       item->GetReceivedBytes());
 
-  // TODO(gbillock): Should we pass this? RCH specifies that the receiver gets
-  // the url, but with web intents we don't need to pass it.
+  // RCH specifies that the receiver gets the url, but with Web Intents
+  // it isn't really needed.
   intent_data.extra_data.insert(make_pair(
       ASCIIToUTF16("url"), ASCIIToUTF16(item->GetURL().spec())));
-  intent_data.extra_data.insert(make_pair(
-      ASCIIToUTF16("filename"), UTF8ToUTF16(item->GetSuggestedFilename())));
+
+  // The SuggestedFilename is not always filled in in the DownloadItem.
+  // When it is, it comes from the purpose-built HTML algorithm, but
+  // in practice it is frequently just inferred.
+  string16 filename = UTF8ToUTF16(item->GetSuggestedFilename());
+  if (filename.empty())
+    filename = item->GetFileNameToReportUser().LossyDisplayName();
+  intent_data.extra_data.insert(make_pair(ASCIIToUTF16("filename"), filename));
 
   content::WebIntentsDispatcher* dispatcher =
       content::WebIntentsDispatcher::Create(intent_data);
