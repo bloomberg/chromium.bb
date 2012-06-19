@@ -330,13 +330,20 @@ std::string TextureImageTransportSurface::GetExtensions() {
 }
 
 gfx::Size TextureImageTransportSurface::GetSize() {
-  return textures_[back()].size;
+  gfx::Size size = textures_[back()].size;
+
+  // OSMesa expects a non-zero size.
+  return gfx::Size(size.width() == 0 ? 1 : size.width(),
+                   size.height() == 0 ? 1 : size.height());
 }
 
 void* TextureImageTransportSurface::GetHandle() {
   return parent_stub_ ? parent_stub_->surface()->GetHandle() : NULL;
 }
 
+unsigned TextureImageTransportSurface::GetFormat() {
+  return parent_stub_ ? parent_stub_->surface()->GetFormat() : 0;
+}
 
 void TextureImageTransportSurface::OnNewSurfaceACK(
     uint64 surface_handle, TransportDIB::Handle /*shm_handle*/) {

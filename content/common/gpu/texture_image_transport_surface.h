@@ -31,6 +31,7 @@ class TextureImageTransportSurface :
   virtual bool SwapBuffers() OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
   virtual void* GetHandle() OVERRIDE;
+  virtual unsigned GetFormat() OVERRIDE;
   virtual std::string GetExtensions() OVERRIDE;
   virtual unsigned int GetBackingFrameBufferObject() OVERRIDE;
   virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
