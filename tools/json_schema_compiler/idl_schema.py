@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import itertools
 import json
 import os.path
 import re
@@ -27,8 +28,21 @@ import idl_parser
 
 def ProcessComment(comment):
   '''
-  Given the string from a Comment node, parse it into a tuple that looks
-  like:
+  Convert a comment into a parent comment and a list of parameter comments.
+
+  Function comments are of the form:
+    Function documentation. May contain HTML and multiple lines.
+
+    |arg1_name|: Description of arg1. Use <var>argument</var> to refer
+    to other arguments.
+    |arg2_name|: Description of arg2...
+
+  Newlines are removed, and leading and trailing whitespace is stripped.
+
+  Args:
+    comment: The string from a Comment node.
+
+  Returns: A tuple that looks like:
     (
       "The processed comment, minus all |parameter| mentions.",
       {
@@ -38,15 +52,26 @@ def ProcessComment(comment):
     )
   '''
   # Find all the parameter comments of the form "|name|: comment".
-  parameter_comments = re.findall(r'\n *\|([^|]*)\| *: *(.*)', comment)
+  parameter_starts = list(re.finditer(r'\n *\|([^|]*)\| *: *', comment))
+
   # Get the parent comment (everything before the first parameter comment.
-  parent_comment = re.sub(r'\n *\|.*', '', comment)
+  first_parameter_location = (parameter_starts[0].start()
+                              if parameter_starts else len(comment))
+  parent_comment = comment[:first_parameter_location]
   parent_comment = parent_comment.replace('\n', '').strip()
 
-  parsed = {}
-  for (name, comment) in parameter_comments:
-    parsed[name] = comment.replace('\n', '').strip()
-  return (parent_comment, parsed)
+  params = {}
+  for (cur_param, next_param) in itertools.izip_longest(parameter_starts,
+                                                        parameter_starts[1:]):
+    param_name = cur_param.group(1)
+
+    # A parameter's comment goes from the end of its introduction to the
+    # beginning of the next parameter's introduction.
+    param_comment_start = cur_param.end()
+    param_comment_end = next_param.start() if next_param else len(comment)
+    params[param_name] = comment[param_comment_start:param_comment_end
+                                 ].replace('\n', '').strip()
+  return (parent_comment, params)
 
 class Callspec(object):
   '''

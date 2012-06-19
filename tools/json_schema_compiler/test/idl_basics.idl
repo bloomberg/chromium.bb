@@ -28,6 +28,12 @@ namespace idl_basics {
   interface Functions {
     static void function1();
     static void function2(long x);
+    // This comment should appear in the documentation,
+    // despite occupying multiple lines.
+    //
+    // |arg|: So should this comment
+    // about the argument.
+    // <em>HTML</em> is fine too.
     static void function3(MyType1 arg);
 
     static void function4(Callback1 cb);

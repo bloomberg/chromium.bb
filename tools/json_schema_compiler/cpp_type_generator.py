@@ -180,9 +180,12 @@ class CppTypeGenerator(object):
     self._root_namespace.
     """
     c = Code()
-    for namespace, types in sorted(self._NamespaceTypeDependencies().items()):
+    namespace_type_dependencies = self._NamespaceTypeDependencies()
+    for namespace in sorted(namespace_type_dependencies.keys(),
+                            key=lambda ns: ns.name):
       c.Append('namespace %s {' % namespace.name)
-      for type_ in types:
+      for type_ in sorted(namespace_type_dependencies[namespace],
+                          key=schema_util.StripSchemaNamespace):
         type_name = schema_util.StripSchemaNamespace(type_)
         if namespace.types[type_].type_ == PropertyType.STRING:
           c.Append('typedef std::string %s;' % type_name)

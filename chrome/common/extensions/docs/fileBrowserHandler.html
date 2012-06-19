@@ -390,7 +390,7 @@ For other examples and for help in viewing the source code, see
                       <var><span>selectionParams</span></var></span><span class="null"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
               <div class="description">
-                <p>Prompts user to select file path under which a new file will be created. If the user selects file, the file gets created or, if it already exists, truncated. The function has to be called with user gesture.</p>
+                <p>Prompts user to select file path under which a new file will be created. When the user selects file, the file gets created or, if it already existed, truncated. The function has to be called with a user gesture.</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
@@ -411,7 +411,7 @@ For other examples and for help in viewing the source code, see
                 </div>
               </em>
           </dt>
-          <dd>Parameters that will be used to create new file.</dd>
+          <dd>Parameters that will be used to create a new file.</dd>
           <!-- OBJECT PROPERTIES -->
           <dd>
             <dl>
@@ -531,21 +531,22 @@ For other examples and for help in viewing the source code, see
               </div><div>
                 <div>
           <dt>
-            <var>fileURL</var>
+            <var>entry</var>
               <em>
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
+                    <span class="optional">optional</span>
                     <span id="typeTemplate">
                       <span>
-                        <span>string</span>
+                        <span>object</span>
                       </span>
                     </span>
                   )
                 </div>
               </em>
           </dt>
-          <dd>Filesystem URL of the selected file.</dd>
+          <dd>Selected file entry. It will be null if a file hasn't been selected.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -678,7 +679,13 @@ For other examples and for help in viewing the source code, see
                   (
                     <span id="typeTemplate">
                       <span>
+                        <span>
+                          array of <span><span>
+                      <span>
                         <span>any</span>
+                      </span>
+                    </span></span>
+                        </span>
                       </span>
                     </span>
                   )

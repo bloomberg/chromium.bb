@@ -77,5 +77,18 @@ class IdlSchemaTest(unittest.TestCase):
     self.assertTrue(func is not None)
     self.assertTrue(func['nocompile'])
 
+  def testFunctionComment(self):
+    schema = self.idl_basics
+    func = getFunction(schema, 'function3')
+    self.assertEquals(('This comment should appear in the documentation, '
+                       'despite occupying multiple lines.'),
+                      func['description'])
+    self.assertEquals(
+        [{'description': ('So should this comment about the argument. '
+                          '<em>HTML</em> is fine too.'),
+          'name': 'arg',
+          '$ref': 'idl_basics.MyType1'}],
+        func['parameters'])
+
 if __name__ == '__main__':
   unittest.main()

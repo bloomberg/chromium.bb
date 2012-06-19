@@ -71,8 +71,8 @@ class CppTypeGeneratorTest(unittest.TestCase):
         manager.GenerateIncludes().Render())
     self.assertEquals(
         'namespace tabs {\n'
-        'struct Tab;\n'
         'struct Permissions;\n'
+        'struct Tab;\n'
         '}\n'
         'namespace windows {\n'
         'struct Window;\n'

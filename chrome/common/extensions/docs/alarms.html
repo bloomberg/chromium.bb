@@ -332,7 +332,7 @@
                       <var><span>name</span></var></span><span class="null"><span>, </span><span>alarms.AlarmCreateInfo</span>
                       <var><span>alarmInfo</span></var></span>)</div>
               <div class="description">
-                <p>Creates an alarm.  Near the time(s) specified by 'alarmInfo', the onAlarm event is fired. If there is another alarm with the same name (or no name if none is specified), it will be cancelled and replaced by this alarm. Note that granularity is not guaranteed: times are more of a hint to the browser. For performance reasons, alarms may be delayed an arbitrary amount of time before firing. string. be specified by either |when| or |delayInMinutes| (but not both).  If minutes after the initial event.  If neither |when| or |delayInMinutes| is set for a repeating alarm, |periodInMinutes| is used as the default for |delayInMinutes|.</p>
+                <p>Creates an alarm.  Near the time(s) specified by <var>alarmInfo</var>, the <code>onAlarm</code> event is fired. If there is another alarm with the same name (or no name if none is specified), it will be cancelled and replaced by this alarm. Note that granularity is not guaranteed: times are more of a hint to the browser. For performance reasons, alarms may be delayed an arbitrary amount of time before firing.</p>
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
@@ -354,7 +354,7 @@
                 </div>
               </em>
           </dt>
-          <dd>Optional name to identify this alarm. Defaults to the empty</dd>
+          <dd>Optional name to identify this alarm. Defaults to the empty string.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -377,7 +377,7 @@
                 </div>
               </em>
           </dt>
-          <dd>Describes when the alarm should fire.  The initial time must</dd>
+          <dd>Describes when the alarm should fire.  The initial time must be specified by either <var>when</var> or <var>delayInMinutes</var> (but not both).  If <var>periodInMinutes</var> is set, the alarm will repeat every <var>periodInMinutes</var> minutes after the initial event.  If neither <var>when</var> or <var>delayInMinutes</var> is set for a repeating alarm, <var>periodInMinutes</var> is used as the default for <var>delayInMinutes</var>.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -786,7 +786,7 @@
                 </div>
               </em>
           </dt>
-          <dd>If not null, the alarm is a repeating alarm and will fire again in 'periodInMinutes' minutes.</dd>
+          <dd>If not null, the alarm is a repeating alarm and will fire again in <var>periodInMinutes</var> minutes.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -809,7 +809,7 @@
                 </div>
               </em>
           </dt>
-          <dd>Time at which this alarm was scheduled to fire, in milliseconds past the epoch (e.g. Date.now() + n).  For performance reasons, the alarm may have been delayed an arbitrary amount beyond this.</dd>
+          <dd>Time at which this alarm was scheduled to fire, in milliseconds past the epoch (e.g. <code>Date.now() + n</code>).  For performance reasons, the alarm may have been delayed an arbitrary amount beyond this.</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -864,7 +864,7 @@
                 </div>
               </em>
           </dt>
-          <dd>Length of time in minutes after which the onAlarm event should fire. TODO: need minimum=0</dd>
+          <dd>Length of time in minutes after which the <code>onAlarm</code> event should fire. <!-- TODO: need minimum=0 --></dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -888,7 +888,7 @@
                 </div>
               </em>
           </dt>
-          <dd>If set, the onAlarm event should fire every |periodInMinutes| minutes after the initial event specified by |when| or |delayInMinutes|.  If not set, the alarm will only fire once. TODO: need minimum=0</dd>
+          <dd>If set, the onAlarm event should fire every <var>periodInMinutes</var> minutes after the initial event specified by <var>when</var> or <var>delayInMinutes</var>.  If not set, the alarm will only fire once. <!-- TODO: need minimum=0 --></dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->
@@ -912,7 +912,7 @@
                 </div>
               </em>
           </dt>
-          <dd>Time at which the alarm should fire, in milliseconds past the epoch (e.g. Date.now() + n).</dd>
+          <dd>Time at which the alarm should fire, in milliseconds past the epoch (e.g. <code>Date.now() + n</code>).</dd>
           <!-- OBJECT PROPERTIES -->
           <!-- OBJECT METHODS -->
           <!-- OBJECT EVENT FIELDS -->

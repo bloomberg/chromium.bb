@@ -11,12 +11,12 @@ namespace alarms {
     DOMString name;
 
     // Time at which this alarm was scheduled to fire, in milliseconds past the
-    // epoch (e.g. Date.now() + n).  For performance reasons, the alarm may have
-    // been delayed an arbitrary amount beyond this.
+    // epoch (e.g. <code>Date.now() + n</code>).  For performance reasons, the
+    // alarm may have been delayed an arbitrary amount beyond this.
     double scheduledTime;
 
     // If not null, the alarm is a repeating alarm and will fire again in
-    // 'periodInMinutes' minutes.
+    // <var>periodInMinutes</var> minutes.
     double? periodInMinutes;
   };
 
@@ -24,19 +24,20 @@ namespace alarms {
   // fixed.
   dictionary AlarmCreateInfo {
     // Time at which the alarm should fire, in milliseconds past the epoch
-    // (e.g. Date.now() + n).
+    // (e.g. <code>Date.now() + n</code>).
     double? when;
 
-    // Length of time in minutes after which the onAlarm event should fire.
+    // Length of time in minutes after which the <code>onAlarm</code> event
+    // should fire.
     //
-    // TODO: need minimum=0
+    // <!-- TODO: need minimum=0 -->
     double? delayInMinutes;
 
-    // If set, the onAlarm event should fire every |periodInMinutes| minutes
-    // after the initial event specified by |when| or |delayInMinutes|.  If not
-    // set, the alarm will only fire once.
+    // If set, the onAlarm event should fire every <var>periodInMinutes</var>
+    // minutes after the initial event specified by <var>when</var> or
+    // <var>delayInMinutes</var>.  If not set, the alarm will only fire once.
     //
-    // TODO: need minimum=0
+    // <!-- TODO: need minimum=0 -->
     double? periodInMinutes;
   };
 
@@ -44,9 +45,10 @@ namespace alarms {
   callback AlarmListCallback = void (Alarm[] alarms);
 
   interface Functions {
-    // Creates an alarm.  Near the time(s) specified by 'alarmInfo', the onAlarm
-    // event is fired. If there is another alarm with the same name (or no name
-    // if none is specified), it will be cancelled and replaced by this alarm.
+    // Creates an alarm.  Near the time(s) specified by <var>alarmInfo</var>,
+    // the <code>onAlarm</code> event is fired. If there is another alarm with
+    // the same name (or no name if none is specified), it will be cancelled and
+    // replaced by this alarm.
     //
     // Note that granularity is not guaranteed: times are more of a hint to the
     // browser. For performance reasons, alarms may be delayed an arbitrary
@@ -56,11 +58,12 @@ namespace alarms {
     // string.
     //
     // |alarmInfo|: Describes when the alarm should fire.  The initial time must
-    // be specified by either |when| or |delayInMinutes| (but not both).  If
-    // |periodInMinutes| is set, the alarm will repeat every |periodInMinutes|
-    // minutes after the initial event.  If neither |when| or |delayInMinutes|
-    // is set for a repeating alarm, |periodInMinutes| is used as the default
-    // for |delayInMinutes|.
+    // be specified by either <var>when</var> or <var>delayInMinutes</var> (but
+    // not both).  If <var>periodInMinutes</var> is set, the alarm will repeat
+    // every <var>periodInMinutes</var> minutes after the initial event.  If
+    // neither <var>when</var> or <var>delayInMinutes</var> is set for a
+    // repeating alarm, <var>periodInMinutes</var> is used as the default for
+    // <var>delayInMinutes</var>.
     static void create(optional DOMString name, AlarmCreateInfo alarmInfo);
 
     // Retrieves details about the specified alarm.
