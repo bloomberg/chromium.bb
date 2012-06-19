@@ -1991,15 +1991,34 @@ const NamedClassDecoder& NamedArm32DecoderState::decode_unconditional(
 const NamedClassDecoder& NamedArm32DecoderState::decode_vfp_data_proc(
      const nacl_arm_dec::Instruction insn) const {
 
+  if ((insn.Bits() & 0x00B00000) == 0x00000000 /* opc1(23:20) == 0x00 */)
+    return CondVfpOp_Vm_la_ls_Rule_423_A2_P636_instance_;
+
+  if ((insn.Bits() & 0x00B00000) == 0x00100000 /* opc1(23:20) == 0x01 */)
+    return CondVfpOp_Vnm_la_ls_ul_Rule_343_A1_P674_instance_;
+
+  if ((insn.Bits() & 0x00B00000) == 0x00200000 /* opc1(23:20) == 0x10 */ &&
+      (insn.Bits() & 0x00000040) == 0x00000000 /* opc3(7:6) == x0 */)
+    return CondVfpOp_Vmul_Rule_338_A2_P664_instance_;
+
+  if ((insn.Bits() & 0x00B00000) == 0x00200000 /* opc1(23:20) == 0x10 */ &&
+      (insn.Bits() & 0x00000040) == 0x00000040 /* opc3(7:6) == x1 */)
+    return CondVfpOp_Vnm_la_ls_ul_Rule_343_A2_P674_instance_;
+
+  if ((insn.Bits() & 0x00B00000) == 0x00300000 /* opc1(23:20) == 0x11 */ &&
+      (insn.Bits() & 0x00000040) == 0x00000000 /* opc3(7:6) == x0 */)
+    return CondVfpOp_Vadd_Rule_271_A2_P536_instance_;
+
+  if ((insn.Bits() & 0x00B00000) == 0x00300000 /* opc1(23:20) == 0x11 */ &&
+      (insn.Bits() & 0x00000040) == 0x00000040 /* opc3(7:6) == x1 */)
+    return CondVfpOp_Vsub_Rule_402_A2_P790_instance_;
+
   if ((insn.Bits() & 0x00B00000) == 0x00800000 /* opc1(23:20) == 1x00 */ &&
       (insn.Bits() & 0x00000040) == 0x00000000 /* opc3(7:6) == x0 */)
-    return CoprocessorOp_None_instance_;
+    return CondVfpOp_Vdiv_Rule_301_A1_P590_instance_;
 
   if ((insn.Bits() & 0x00B00000) == 0x00B00000 /* opc1(23:20) == 1x11 */)
     return decode_other_vfp_data_proc(insn);
-
-  if ((insn.Bits() & 0x00800000) == 0x00000000 /* opc1(23:20) == 0xxx */)
-    return CoprocessorOp_None_instance_;
 
   // Catch any attempt to fall through...
   return not_implemented_;

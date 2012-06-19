@@ -70,6 +70,35 @@ ApplySanityChecks(Instruction inst,
   return true;
 }
 
+// CondVfpOpTester
+CondVfpOpTester::CondVfpOpTester(const NamedClassDecoder& decoder)
+    : Arm32DecoderTester(decoder) {}
+
+bool CondVfpOpTester::ApplySanityChecks(Instruction inst,
+                                        const NamedClassDecoder& decoder) {
+  nacl_arm_dec::CondVfpOp expected_decoder;
+  // Check that condition is defined correctly.
+  EXPECT_EQ(expected_decoder.cond.value(inst), inst.Bits(31, 28));
+
+  // Didn't parse undefined conditional.
+  if (expected_decoder.cond.undefined(inst)) {
+    NC_EXPECT_NE_PRECOND(&ExpectedDecoder(), &decoder);
+  }
+
+  // Check if expected class name found.
+  NC_PRECOND(Arm32DecoderTester::ApplySanityChecks(inst, decoder));
+
+  // Apply ARM restrictions.
+  EXPECT_EQ(expected_decoder.coproc.value(inst), inst.Bits(11, 8));
+
+  // Apply NaCl restrictions, i.e. that this is a VFP operation.
+  EXPECT_TRUE(
+      (expected_decoder.coproc.value(inst) == static_cast<uint32_t>(10)) ||
+      (expected_decoder.coproc.value(inst) == static_cast<uint32_t>(11)));
+
+  return true;
+}
+
 // MoveImmediate12ToApsrTester
 MoveImmediate12ToApsrTester::MoveImmediate12ToApsrTester(
     const NamedClassDecoder& decoder)

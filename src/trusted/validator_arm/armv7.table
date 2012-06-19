@@ -1087,19 +1087,28 @@ class Store3RegisterOp : LoadStore3RegisterOp
 +-- vfp_data_proc (A7.5 Table A7-16, page A7-24)
 # Three register VPD data-processing, CDP instructions for
 # coprocessors 10/11.
-#
-# Note: Currently, all instructions use class CoprocessorOp
-# to follow what the previous version of the ARM validator did.
-#
-# TODO(karl): Fix the class decoders to do the right thing.
 | opc1(23:20) opc3(7:6)
-| 0x00        -         = CoprocessorOp  # VMLA, MVLS A8-636
-| 0x01        -         = CoprocessorOp  # VNMLA, VNMLS, VNMUL A8-674
-| 0x10        x1        "
-| "           x0        = CoprocessorOp  # VMUL A8-664
-| 0x11        x0        = CoprocessorOp  # VADD A8-536
-| "           x1        = CoprocessorOp  # VSUB A8-788
-| 1x00        x0        = CoprocessorOp  # VDIV A8-590
+| 0x00        -         = CondVfpOp => VfpOp
+                          Vm_la_ls_Rule_423_A2_P636
+                          cccc11100d00nnnndddd101snpm0mmmm
+| 0x01        -         = CondVfpOp => VfpOp
+                          Vnm_la_ls_ul_Rule_343_A1_P674
+                          cccc11100d01nnnndddd101snpm0mmmm
+| 0x10        x1        = CondVfpOp => VfpOp
+                          Vnm_la_ls_ul_Rule_343_A2_P674
+                          cccc11100d10nnnndddd101sn1m0mmmm
+| "           x0        = CondVfpOp => VfpOp
+                          Vmul_Rule_338_A2_P664
+                          cccc11100d10nnnndddd101sn0m0mmmm
+| 0x11        x0        = CondVfpOp => VfpOp
+                          Vadd_Rule_271_A2_P536
+                          cccc11100d11nnnndddd101sn0m0mmmm
+| "           x1        = CondVfpOp => VfpOp
+                          Vsub_Rule_402_A2_P790
+                          cccc11100d11nnnndddd101sn1m0mmmm
+| 1x00        x0        = CondVfpOp => VfpOp
+                          Vdiv_Rule_301_A1_P590
+                          cccc11101d00nnnndddd101sn0m0mmmm
 | 1x11        -         -> other_vfp_data_proc
 +--
 

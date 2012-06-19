@@ -372,6 +372,29 @@ class MaskAddress : public Defs12To15 {
   NACL_DISALLOW_COPY_AND_ASSIGN(MaskAddress);
 };
 
+// A generic VFP instruction that (by default) only effects vector
+// register banks. Hence, they do not change general purpose registers.
+// These instructions are:
+// - Permitted only for whitelisted coprocessors (101x) that define VFP
+//   operations.
+// - Not permitted to update r15.
+//
+// Coprocessor ops with visible side-effects on the APSR conditions flags, or
+// general purpose register should extend and override this.
+class VfpOp : public DontCareInst {
+ public:
+  // Accessor to non-vector register fields.
+  static const Imm4Bits8To11Interface coproc;
+
+  inline VfpOp() {}
+  virtual ~VfpOp() {}
+
+  virtual SafetyLevel safety(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(VfpOp);
+};
+
 // Defines a register based memory class decoder.
 class BasedAddressUsingRn : public ClassDecoder {
  public:
@@ -1083,15 +1106,15 @@ class VectorStore : public OldClassDecoder {
   NACL_DISALLOW_COPY_AND_ASSIGN(VectorStore);
 };
 
-// A generic coprocessor instruction that (by default) has no side effects.
+// A generic coprocessor instruction that (by default) only effect vector
+// register banks. Hence, they do not change general purpose registers.
 // These instructions are:
-// - Permitted only for whitelisted coprocessors that we've analyzed;
+// - Permitted only for whitelisted coprocessors (101x) that define VFP
+//   operations.
 // - Not permitted to update r15.
 //
-// Coprocessor ops with visible side-effects should extend and override this.
-//
-// Includes:
-// MCRR, MCRR2, CDP, CDP2, MCR, MCR2, MCRR, MCRR2, CDP, CDP2, MCR, MCR2
+// Coprocessor ops with visible side-effects on the APSR conditions flags, or
+// general purpose register should extend and override this.
 class CoprocessorOp : public OldClassDecoder {
  public:
   inline CoprocessorOp() {}

@@ -46,6 +46,25 @@ class CondNopTester : public Arm32DecoderTester {
   NACL_DISALLOW_COPY_AND_ASSIGN(CondNopTester);
 };
 
+// Implements a decoder tester for vfp operations with possible condition
+// flags.
+// +--------+--------------------------------+--------+----------------+
+// |31302928|27262524232221201918171615141312|1110 9 8| 7 6 5 4 3 2 1 0|
+// +--------+--------------------------------+--------+----------------+
+// |  cond  |                                | coproc |                |
+// +--------+--------------------------------+--------+----------------+
+// A generic VFP instruction that (by default) only effects vector
+// register banks. Hence, they do not change general purpose registers.
+class CondVfpOpTester : public Arm32DecoderTester {
+ public:
+  explicit CondVfpOpTester(const NamedClassDecoder& decoder);
+  virtual bool ApplySanityChecks(nacl_arm_dec::Instruction inst,
+                                 const NamedClassDecoder& decoder);
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(CondVfpOpTester);
+};
+
 // Implements a decoder tester for decoder MoveImmediate12ToApsr.
 // MSR<c> <spec_reg>, #<const>
 // +--------+----------------+----+------------+------------------------+

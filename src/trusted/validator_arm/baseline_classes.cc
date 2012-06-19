@@ -24,6 +24,23 @@ RegisterList CondNop::defs(const Instruction i) const {
   return RegisterList();
 }
 
+// CondVfpOp
+SafetyLevel CondVfpOp::safety(const Instruction i) const {
+  if (defs(i).Contains(kRegisterPc)) return FORBIDDEN_OPERANDS;
+  switch (coproc.value(i)) {
+    default: return FORBIDDEN;
+
+    case 10:
+    case 11:  // NEON/VFP
+      return MAY_BE_SAFE;
+  }
+}
+
+RegisterList CondVfpOp::defs(Instruction i) const {
+  UNREFERENCED_PARAMETER(i);
+  return RegisterList();
+}
+
 // MoveImmediate12ToApsr
 SafetyLevel MoveImmediate12ToApsr::safety(const Instruction i) const {
   UNREFERENCED_PARAMETER(i);

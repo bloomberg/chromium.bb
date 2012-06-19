@@ -181,6 +181,17 @@ bool MaskAddress::clears_bits(const Instruction i, uint32_t mask) const {
   return (imm12.get_modified_immediate(i) & mask) == mask;
 }
 
+SafetyLevel VfpOp::safety(const Instruction i) const {
+  if (defs(i).Contains(kRegisterPc)) return FORBIDDEN_OPERANDS;
+  switch (coproc.value(i)) {
+    default: return FORBIDDEN;
+
+    case 10:
+    case 11:  // NEON/VFP
+      return MAY_BE_SAFE;
+  }
+}
+
 Register BasedAddressUsingRn::base_address_register(Instruction i) const {
   return n.reg(i);
 }

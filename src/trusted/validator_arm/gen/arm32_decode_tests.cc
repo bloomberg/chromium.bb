@@ -933,6 +933,69 @@ class CondNopTester_Yield_Rule_413_A1_P812_
   {}
 };
 
+class CondVfpOpTester_Vadd_Rule_271_A2_P536_
+    : public CondVfpOpTester {
+ public:
+  CondVfpOpTester_Vadd_Rule_271_A2_P536_()
+    : CondVfpOpTester(
+      state_.CondVfpOp_Vadd_Rule_271_A2_P536_instance_)
+  {}
+};
+
+class CondVfpOpTester_Vdiv_Rule_301_A1_P590_
+    : public CondVfpOpTester {
+ public:
+  CondVfpOpTester_Vdiv_Rule_301_A1_P590_()
+    : CondVfpOpTester(
+      state_.CondVfpOp_Vdiv_Rule_301_A1_P590_instance_)
+  {}
+};
+
+class CondVfpOpTester_Vm_la_ls_Rule_423_A2_P636_
+    : public CondVfpOpTester {
+ public:
+  CondVfpOpTester_Vm_la_ls_Rule_423_A2_P636_()
+    : CondVfpOpTester(
+      state_.CondVfpOp_Vm_la_ls_Rule_423_A2_P636_instance_)
+  {}
+};
+
+class CondVfpOpTester_Vmul_Rule_338_A2_P664_
+    : public CondVfpOpTester {
+ public:
+  CondVfpOpTester_Vmul_Rule_338_A2_P664_()
+    : CondVfpOpTester(
+      state_.CondVfpOp_Vmul_Rule_338_A2_P664_instance_)
+  {}
+};
+
+class CondVfpOpTester_Vnm_la_ls_ul_Rule_343_A1_P674_
+    : public CondVfpOpTester {
+ public:
+  CondVfpOpTester_Vnm_la_ls_ul_Rule_343_A1_P674_()
+    : CondVfpOpTester(
+      state_.CondVfpOp_Vnm_la_ls_ul_Rule_343_A1_P674_instance_)
+  {}
+};
+
+class CondVfpOpTester_Vnm_la_ls_ul_Rule_343_A2_P674_
+    : public CondVfpOpTester {
+ public:
+  CondVfpOpTester_Vnm_la_ls_ul_Rule_343_A2_P674_()
+    : CondVfpOpTester(
+      state_.CondVfpOp_Vnm_la_ls_ul_Rule_343_A2_P674_instance_)
+  {}
+};
+
+class CondVfpOpTester_Vsub_Rule_402_A2_P790_
+    : public CondVfpOpTester {
+ public:
+  CondVfpOpTester_Vsub_Rule_402_A2_P790_()
+    : CondVfpOpTester(
+      state_.CondVfpOp_Vsub_Rule_402_A2_P790_instance_)
+  {}
+};
+
 class ForbiddenCondNopTester_Msr_Rule_B6_1_6_A1_PB6_12_
     : public UnsafeCondNopTester {
  public:
@@ -2258,6 +2321,62 @@ TEST_F(Arm32DecoderStateTests,
   NamedDontCareInst_Yield_Rule_413_A1_P812 actual;
   ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
   a_vs_b_tester.Test("cccc0011001000001111000000000001");
+}
+
+TEST_F(Arm32DecoderStateTests,
+       CondVfpOpTester_Vadd_Rule_271_A2_P536__cccc11100d11nnnndddd101sn0m0mmmm_Test) {
+  CondVfpOpTester_Vadd_Rule_271_A2_P536_ baseline_tester;
+  NamedVfpOp_Vadd_Rule_271_A2_P536 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc11100d11nnnndddd101sn0m0mmmm");
+}
+
+TEST_F(Arm32DecoderStateTests,
+       CondVfpOpTester_Vdiv_Rule_301_A1_P590__cccc11101d00nnnndddd101sn0m0mmmm_Test) {
+  CondVfpOpTester_Vdiv_Rule_301_A1_P590_ baseline_tester;
+  NamedVfpOp_Vdiv_Rule_301_A1_P590 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc11101d00nnnndddd101sn0m0mmmm");
+}
+
+TEST_F(Arm32DecoderStateTests,
+       CondVfpOpTester_Vm_la_ls_Rule_423_A2_P636__cccc11100d00nnnndddd101snpm0mmmm_Test) {
+  CondVfpOpTester_Vm_la_ls_Rule_423_A2_P636_ baseline_tester;
+  NamedVfpOp_Vm_la_ls_Rule_423_A2_P636 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc11100d00nnnndddd101snpm0mmmm");
+}
+
+TEST_F(Arm32DecoderStateTests,
+       CondVfpOpTester_Vmul_Rule_338_A2_P664__cccc11100d10nnnndddd101sn0m0mmmm_Test) {
+  CondVfpOpTester_Vmul_Rule_338_A2_P664_ baseline_tester;
+  NamedVfpOp_Vmul_Rule_338_A2_P664 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc11100d10nnnndddd101sn0m0mmmm");
+}
+
+TEST_F(Arm32DecoderStateTests,
+       CondVfpOpTester_Vnm_la_ls_ul_Rule_343_A1_P674__cccc11100d01nnnndddd101snpm0mmmm_Test) {
+  CondVfpOpTester_Vnm_la_ls_ul_Rule_343_A1_P674_ baseline_tester;
+  NamedVfpOp_Vnm_la_ls_ul_Rule_343_A1_P674 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc11100d01nnnndddd101snpm0mmmm");
+}
+
+TEST_F(Arm32DecoderStateTests,
+       CondVfpOpTester_Vnm_la_ls_ul_Rule_343_A2_P674__cccc11100d10nnnndddd101sn1m0mmmm_Test) {
+  CondVfpOpTester_Vnm_la_ls_ul_Rule_343_A2_P674_ baseline_tester;
+  NamedVfpOp_Vnm_la_ls_ul_Rule_343_A2_P674 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc11100d10nnnndddd101sn1m0mmmm");
+}
+
+TEST_F(Arm32DecoderStateTests,
+       CondVfpOpTester_Vsub_Rule_402_A2_P790__cccc11100d11nnnndddd101sn1m0mmmm_Test) {
+  CondVfpOpTester_Vsub_Rule_402_A2_P790_ baseline_tester;
+  NamedVfpOp_Vsub_Rule_402_A2_P790 actual;
+  ActualVsBaselineTester a_vs_b_tester(actual, baseline_tester);
+  a_vs_b_tester.Test("cccc11100d11nnnndddd101sn1m0mmmm");
 }
 
 TEST_F(Arm32DecoderStateTests,

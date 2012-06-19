@@ -64,6 +64,7 @@ Arm32DecoderState::Arm32DecoderState() : DecoderState()
   , Unpredictable_instance_()
   , VectorLoad_instance_()
   , VectorStore_instance_()
+  , VfpOp_instance_()
   , not_implemented_()
 {}
 
@@ -1660,13 +1661,13 @@ const ClassDecoder& Arm32DecoderState::decode_vfp_data_proc(
 
   if ((insn.Bits() & 0x00B00000) == 0x00800000 /* opc1(23:20) == 1x00 */ &&
       (insn.Bits() & 0x00000040) == 0x00000000 /* opc3(7:6) == x0 */)
-    return CoprocessorOp_instance_;
+    return VfpOp_instance_;
 
   if ((insn.Bits() & 0x00B00000) == 0x00B00000 /* opc1(23:20) == 1x11 */)
     return decode_other_vfp_data_proc(insn);
 
   if ((insn.Bits() & 0x00800000) == 0x00000000 /* opc1(23:20) == 0xxx */)
-    return CoprocessorOp_instance_;
+    return VfpOp_instance_;
 
   // Catch any attempt to fall though ...
   return not_implemented_;

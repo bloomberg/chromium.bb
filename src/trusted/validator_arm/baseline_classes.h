@@ -78,6 +78,37 @@ class ForbiddenCondNop : public UnsafeCondNop {
   NACL_DISALLOW_COPY_AND_ASSIGN(ForbiddenCondNop);
 };
 
+// Implements a VFP operation on instructions of the form;
+// +--------+--------------------------------+--------+----------------+
+// |31302928|27262524232221201918171615141312|1110 9 8| 7 6 5 4 3 2 1 0|
+// +--------+--------------------------------+--------+----------------+
+// |  cond  |                                | coproc |                |
+// +--------+--------------------------------+--------+----------------+
+// A generic VFP instruction that (by default) only effects vector
+// register banks. Hence, they do not change general purpose registers.
+// These instructions are:
+// - Permitted only for whitelisted coprocessors (101x) that define VFP
+//   operations.
+// - Not permitted to update r15.
+//
+// Coprocessor ops with visible side-effects on the APSR conditions flags, or
+// general purpose register should extend and override this.
+class CondVfpOp : public ClassDecoder {
+ public:
+  // Accessor to non-vector register fields.
+  static const Imm4Bits8To11Interface coproc;
+  static const ConditionBits28To31Interface cond;
+
+  inline CondVfpOp() {}
+  virtual ~CondVfpOp() {}
+
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+
+ private:
+  NACL_DISALLOW_COPY_AND_ASSIGN(CondVfpOp);
+};
+
 // Models a move of an immediate 12 value to the corresponding
 // bits in the APSR.
 // MSR<c> <spec_reg>, #<const>

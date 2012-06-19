@@ -146,6 +146,13 @@ class NamedArm32DecoderState : nacl_arm_dec::DecoderState {
   const NamedCondNop_Dbg_Rule_40_A1_P88 CondNop_Dbg_Rule_40_A1_P88_instance_;
   const NamedCondNop_Nop_Rule_110_A1_P222 CondNop_Nop_Rule_110_A1_P222_instance_;
   const NamedCondNop_Yield_Rule_413_A1_P812 CondNop_Yield_Rule_413_A1_P812_instance_;
+  const NamedCondVfpOp_Vadd_Rule_271_A2_P536 CondVfpOp_Vadd_Rule_271_A2_P536_instance_;
+  const NamedCondVfpOp_Vdiv_Rule_301_A1_P590 CondVfpOp_Vdiv_Rule_301_A1_P590_instance_;
+  const NamedCondVfpOp_Vm_la_ls_Rule_423_A2_P636 CondVfpOp_Vm_la_ls_Rule_423_A2_P636_instance_;
+  const NamedCondVfpOp_Vmul_Rule_338_A2_P664 CondVfpOp_Vmul_Rule_338_A2_P664_instance_;
+  const NamedCondVfpOp_Vnm_la_ls_ul_Rule_343_A1_P674 CondVfpOp_Vnm_la_ls_ul_Rule_343_A1_P674_instance_;
+  const NamedCondVfpOp_Vnm_la_ls_ul_Rule_343_A2_P674 CondVfpOp_Vnm_la_ls_ul_Rule_343_A2_P674_instance_;
+  const NamedCondVfpOp_Vsub_Rule_402_A2_P790 CondVfpOp_Vsub_Rule_402_A2_P790_instance_;
   const NamedCoprocessorOp_None CoprocessorOp_None_instance_;
   const NamedDataProc_None DataProc_None_instance_;
   const NamedDeprecated_None Deprecated_None_instance_;
@@ -377,6 +384,13 @@ class NamedArm32DecoderState : nacl_arm_dec::DecoderState {
   const NamedStrRegister_Strh_Rule_208_A1_P412 StrRegister_Strh_Rule_208_A1_P412_instance_;
   const NamedStrRegisterDouble_Strd_Rule_201_A1_P398 StrRegisterDouble_Strd_Rule_201_A1_P398_instance_;
   const NamedTestIfAddressMasked_Tst_Rule_230_A1_P454 TestIfAddressMasked_Tst_Rule_230_A1_P454_instance_;
+  const NamedVfpOp_Vadd_Rule_271_A2_P536 VfpOp_Vadd_Rule_271_A2_P536_instance_;
+  const NamedVfpOp_Vdiv_Rule_301_A1_P590 VfpOp_Vdiv_Rule_301_A1_P590_instance_;
+  const NamedVfpOp_Vm_la_ls_Rule_423_A2_P636 VfpOp_Vm_la_ls_Rule_423_A2_P636_instance_;
+  const NamedVfpOp_Vmul_Rule_338_A2_P664 VfpOp_Vmul_Rule_338_A2_P664_instance_;
+  const NamedVfpOp_Vnm_la_ls_ul_Rule_343_A1_P674 VfpOp_Vnm_la_ls_ul_Rule_343_A1_P674_instance_;
+  const NamedVfpOp_Vnm_la_ls_ul_Rule_343_A2_P674 VfpOp_Vnm_la_ls_ul_Rule_343_A2_P674_instance_;
+  const NamedVfpOp_Vsub_Rule_402_A2_P790 VfpOp_Vsub_Rule_402_A2_P790_instance_;
  private:
 
   // The following list of methods correspond to each decoder table,

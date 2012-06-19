@@ -203,6 +203,7 @@ class Arm32DecoderState : DecoderState {
   const Unpredictable Unpredictable_instance_;
   const VectorLoad VectorLoad_instance_;
   const VectorStore VectorStore_instance_;
+  const VfpOp VfpOp_instance_;
   const NotImplemented not_implemented_;
 };
 
