@@ -422,6 +422,8 @@ shm_surface_data_destroy(void *p)
 	wl_buffer_destroy(data->data.buffer);
 	if (data->pool)
 		shm_pool_destroy(data->pool);
+
+	free(data);
 }
 
 static struct wl_shm_pool *
