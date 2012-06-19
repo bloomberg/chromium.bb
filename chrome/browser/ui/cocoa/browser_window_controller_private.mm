@@ -22,6 +22,7 @@
 #import "chrome/browser/ui/cocoa/framed_browser_window.h"
 #import "chrome/browser/ui/cocoa/fullscreen_window.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
+#import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/presentation_mode_controller.h"
 #import "chrome/browser/ui/cocoa/status_bubble_mac.h"
 #import "chrome/browser/ui/cocoa/tab_contents/previewable_contents_controller.h"
@@ -371,10 +372,11 @@ willPositionSheet:(NSWindow*)sheet
     // Actually place the badge *above* |maxY|, by +2 to miss the divider.  On
     // Lion or later, shift the badge left to move it away from the fullscreen
     // button.
-    CGFloat badgeOffset = kAvatarRightOffset + possibleExtraShiftForLion;
+    CGFloat badgeXOffset = -(kAvatarRightOffset + possibleExtraShiftForLion);
+    CGFloat badgeYOffset = 2 * [[avatarButton superview] cr_lineWidth];
     NSPoint origin =
-        NSMakePoint(width - NSWidth([avatarButton frame]) - badgeOffset,
-                    maxY + 2);
+        NSMakePoint(width - NSWidth([avatarButton frame]) + badgeXOffset,
+                    maxY + badgeYOffset);
     [avatarButton setFrameOrigin:origin];
     [avatarButton setHidden:NO];  // Make sure it's shown.
   }
