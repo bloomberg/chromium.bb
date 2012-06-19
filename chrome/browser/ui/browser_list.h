@@ -108,9 +108,7 @@ class BrowserList {
   // time by wiring context through to the relevant code rather than using
   // GetLastActive().
   friend class BrowserView;
-  friend class CertificateViewerDialog;
   friend class ChromeShellDelegate;
-  friend class FeedbackHandler;
   friend class NetworkProfileBubble;
   friend class PrintPreviewHandler;
   friend class SelectFileDialogExtension;

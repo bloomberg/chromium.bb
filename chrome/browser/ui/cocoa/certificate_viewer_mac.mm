@@ -14,7 +14,8 @@
 #include "net/base/x509_certificate.h"
 #include "net/base/x509_util_mac.h"
 
-void ShowCertificateViewer(gfx::NativeWindow parent,
+void ShowCertificateViewer(content::WebContents* web_contents,
+                           gfx::NativeWindow parent,
                            net::X509Certificate* cert) {
   base::mac::ScopedCFTypeRef<CFArrayRef> cert_chain(
       cert->CreateOSCertChainForCert());

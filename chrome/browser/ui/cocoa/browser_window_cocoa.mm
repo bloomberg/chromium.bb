@@ -487,11 +487,11 @@ void BrowserWindowCocoa::WebContentsFocused(WebContents* contents) {
   NOTIMPLEMENTED();
 }
 
-void BrowserWindowCocoa::ShowPageInfo(Profile* profile,
+void BrowserWindowCocoa::ShowPageInfo(WebContents* web_contents,
                                       const GURL& url,
                                       const SSLStatus& ssl,
                                       bool show_history) {
-  browser::ShowPageInfoBubble(window(), profile, url, ssl, show_history,
+  browser::ShowPageInfoBubble(window(), web_contents, url, ssl, show_history,
                               browser_);
 }
 

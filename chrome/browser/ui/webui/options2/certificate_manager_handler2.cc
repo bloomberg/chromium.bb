@@ -493,7 +493,7 @@ void CertificateManagerHandler::View(const ListValue* args) {
   net::X509Certificate* cert = CallbackArgsToCert(args);
   if (!cert)
     return;
-  ShowCertificateViewer(GetParentWindow(), cert);
+  ShowCertificateViewer(web_ui()->GetWebContents(), GetParentWindow(), cert);
 }
 
 void CertificateManagerHandler::GetCATrust(const ListValue* args) {

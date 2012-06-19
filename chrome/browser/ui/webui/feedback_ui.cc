@@ -21,7 +21,7 @@
 #include "chrome/browser/feedback/feedback_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
@@ -358,9 +358,8 @@ bool FeedbackHandler::Init() {
   }
 #endif
 
-  // TODO(beng): Replace GetLastActive with a more specific method of locating
-  //             the target contents.
-  Browser* browser = BrowserList::GetLastActive();
+  Browser* browser =
+      browser::FindBrowserWithWebContents(web_ui()->GetWebContents());
   // Sanity checks.
   if (((index == 0) && (index_str != "0")) || !browser ||
       index >= browser->tab_count()) {

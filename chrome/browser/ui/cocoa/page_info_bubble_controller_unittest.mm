@@ -55,6 +55,7 @@ class PageInfoBubbleControllerTest : public CocoaTest {
             initWithPageInfoModel:model_
                     modelObserver:NULL
                      parentWindow:test_window()
+                      webContents:NULL
                         navigator:NULL];
     window_ = [controller_ window];
     [controller_ showWindow:nil];

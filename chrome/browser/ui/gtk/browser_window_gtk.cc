@@ -1119,11 +1119,11 @@ void BrowserWindowGtk::WebContentsFocused(WebContents* contents) {
   NOTIMPLEMENTED();
 }
 
-void BrowserWindowGtk::ShowPageInfo(Profile* profile,
+void BrowserWindowGtk::ShowPageInfo(content::WebContents* web_contents,
                                     const GURL& url,
                                     const SSLStatus& ssl,
                                     bool show_history) {
-  browser::ShowPageInfoBubble(window_, profile, url, ssl, show_history,
+  browser::ShowPageInfoBubble(window_, web_contents, url, ssl, show_history,
                               browser_.get());
 }
 

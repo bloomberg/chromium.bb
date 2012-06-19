@@ -1148,12 +1148,13 @@ void BrowserView::WebContentsFocused(WebContents* contents) {
   contents_container_->OnWebContentsFocused(contents);
 }
 
-void BrowserView::ShowPageInfo(Profile* profile,
+void BrowserView::ShowPageInfo(content::WebContents* web_contents,
                                const GURL& url,
                                const SSLStatus& ssl,
                                bool show_history) {
   browser::ShowPageInfoBubble(GetLocationBarView()->location_icon_view(),
-                              profile, url, ssl, show_history, browser_.get());
+                              web_contents, url, ssl, show_history,
+                              browser_.get());
 }
 
 void BrowserView::ShowWebsiteSettings(Profile* profile,

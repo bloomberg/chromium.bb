@@ -367,7 +367,7 @@ void PanelBrowserWindow::WebContentsFocused(WebContents* contents) {
   native_panel_->PanelWebContentsFocused(contents);
 }
 
-void PanelBrowserWindow::ShowPageInfo(Profile* profile,
+void PanelBrowserWindow::ShowPageInfo(WebContents* web_contents,
                                       const GURL& url,
                                       const SSLStatus& ssl,
                                       bool show_history) {

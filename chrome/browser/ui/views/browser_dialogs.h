@@ -27,6 +27,7 @@ class TemplateURL;
 
 namespace content {
 class PageNavigator;
+class WebContents;
 struct SSLStatus;
 }
 
@@ -59,7 +60,7 @@ bool IsChromeToMobileBubbleViewShowing();
 
 // Shows the page info bubble anchored to the supplied view.
 void ShowPageInfoBubble(views::View* anchor_view,
-                        Profile* profile,
+                        content::WebContents* web_contents,
                         const GURL& url,
                         const content::SSLStatus& ssl,
                         bool show_history,

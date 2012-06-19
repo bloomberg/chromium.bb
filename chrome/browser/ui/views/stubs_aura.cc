@@ -43,7 +43,8 @@ void ShowAboutIPCDialog() {
 }  // namespace browser
 
 #if defined(OS_WIN)
-void ShowCertificateViewer(gfx::NativeWindow parent,
+void ShowCertificateViewer(content::WebContents* web_contents,
+                           gfx::NativeWindow parent,
                            net::X509Certificate* cert) {
   // No certificate viewer on Windows.
 }

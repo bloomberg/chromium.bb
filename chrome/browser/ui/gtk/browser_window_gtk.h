@@ -139,7 +139,7 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual void UserChangedTheme() OVERRIDE;
   virtual int GetExtraRenderViewHeight() const OVERRIDE;
   virtual void WebContentsFocused(content::WebContents* contents) OVERRIDE;
-  virtual void ShowPageInfo(Profile* profile,
+  virtual void ShowPageInfo(content::WebContents* web_contents,
                             const GURL& url,
                             const content::SSLStatus& ssl,
                             bool show_history) OVERRIDE;

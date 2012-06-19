@@ -229,6 +229,7 @@ void SSLClientCertificateSelector::ButtonPressed(
     net::X509Certificate* cert = GetSelectedCert();
     if (cert)
       ShowCertificateViewer(
+          tab_contents_->web_contents(),
           tab_contents_->web_contents()->GetView()->GetTopLevelNativeWindow(),
           cert);
   }

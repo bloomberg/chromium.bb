@@ -7,7 +7,8 @@
 #include "base/logging.h"
 #include "net/base/x509_certificate.h"
 
-void ShowCertificateViewer(gfx::NativeWindow parent,
+void ShowCertificateViewer(content::WebContents* web_contents,
+                           gfx::NativeWindow parent,
                            net::X509Certificate* cert) {
   // TODO(yfriedman, bulach): Hook this up to Java ui code: crbug.com/114822
   NOTIMPLEMENTED();

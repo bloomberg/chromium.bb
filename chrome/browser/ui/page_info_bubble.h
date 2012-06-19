@@ -8,18 +8,18 @@
 
 #include "ui/gfx/native_widget_types.h"
 
-class Profile;
 class GURL;
 
 namespace content {
 class PageNavigator;
+class WebContents;
 struct SSLStatus;
 }
 
 namespace browser {
 
 void ShowPageInfoBubble(gfx::NativeWindow parent,
-                        Profile* profile,
+                        content::WebContents* web_contents,
                         const GURL& url,
                         const content::SSLStatus& ssl,
                         bool show_history,

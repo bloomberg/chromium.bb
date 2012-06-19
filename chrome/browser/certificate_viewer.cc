@@ -7,7 +7,9 @@
 #include "content/public/browser/cert_store.h"
 #include "net/base/x509_certificate.h"
 
-void ShowCertificateViewerByID(gfx::NativeWindow parent, int cert_id) {
+void ShowCertificateViewerByID(content::WebContents* web_contents,
+                               gfx::NativeWindow parent,
+                               int cert_id) {
   scoped_refptr<net::X509Certificate> cert;
   content::CertStore::GetInstance()->RetrieveCert(cert_id, &cert);
   if (!cert.get()) {
@@ -15,5 +17,5 @@ void ShowCertificateViewerByID(gfx::NativeWindow parent, int cert_id) {
     // we displayed the page info.
     return;
   }
-  ShowCertificateViewer(parent, cert);
+  ShowCertificateViewer(web_contents, parent, cert);
 }

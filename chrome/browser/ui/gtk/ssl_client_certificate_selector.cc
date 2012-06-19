@@ -345,7 +345,8 @@ void SSLClientCertificateSelector::OnViewClicked(GtkWidget* button) {
   net::X509Certificate* cert = GetSelectedCert();
   if (cert) {
     GtkWidget* toplevel = gtk_widget_get_toplevel(root_widget_.get());
-    ShowCertificateViewer(GTK_WINDOW(toplevel), cert);
+    ShowCertificateViewer(
+        tab_contents_->web_contents(), GTK_WINDOW(toplevel), cert);
   }
 }
 

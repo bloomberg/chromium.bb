@@ -8,6 +8,10 @@
 
 #include "ui/gfx/native_widget_types.h"
 
+namespace content {
+class WebContents;
+}
+
 namespace net {
 
 class X509Certificate;
@@ -16,10 +20,13 @@ class X509Certificate;
 
 // Opens a certificate viewer under |parent| to display the certificate from
 // the |CertStore| with id |cert_id|.
-void ShowCertificateViewerByID(gfx::NativeWindow parent, int cert_id);
+void ShowCertificateViewerByID(content::WebContents* web_contents,
+                               gfx::NativeWindow parent,
+                               int cert_id);
 
 // Opens a certificate viewer under |parent| to display |cert|.
-void ShowCertificateViewer(gfx::NativeWindow parent,
+void ShowCertificateViewer(content::WebContents* web_contents,
+                           gfx::NativeWindow parent,
                            net::X509Certificate* cert);
 
 #endif  // CHROME_BROWSER_CERTIFICATE_VIEWER_H_

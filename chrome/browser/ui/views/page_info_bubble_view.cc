@@ -8,11 +8,13 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/certificate_viewer.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/cert_store.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/ssl_status.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -30,6 +32,7 @@
 using content::OpenURLParams;
 using content::Referrer;
 using content::SSLStatus;
+using content::WebContents;
 
 namespace {
 
@@ -102,20 +105,21 @@ class Section : public views::View,
 // PageInfoBubbleView
 
 PageInfoBubbleView::PageInfoBubbleView(views::View* anchor_view,
-                                       Profile* profile,
+                                       WebContents* web_contents,
                                        const GURL& url,
                                        const SSLStatus& ssl,
                                        bool show_history,
                                        content::PageNavigator* navigator)
     : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT),
-      ALLOW_THIS_IN_INITIALIZER_LIST(model_(profile, url, ssl,
-                                            show_history, this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(model_(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()), url,
+          ssl, show_history, this)),
       cert_id_(ssl.cert_id),
       help_center_link_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(resize_animation_(this)),
       animation_start_height_(0),
-      navigator_(navigator) {
-
+      navigator_(navigator),
+      web_contents_(web_contents) {
   if (cert_id_ > 0) {
     scoped_refptr<net::X509Certificate> cert;
     content::CertStore::GetInstance()->RetrieveCert(cert_id_, &cert);
@@ -135,7 +139,7 @@ PageInfoBubbleView::~PageInfoBubbleView() {
 void PageInfoBubbleView::ShowCertDialog() {
   gfx::NativeWindow parent =
       anchor_view() ? anchor_view()->GetWidget()->GetNativeWindow() : NULL;
-  ShowCertificateViewerByID(parent, cert_id_);
+  ShowCertificateViewerByID(web_contents_, parent, cert_id_);
 }
 
 gfx::Size PageInfoBubbleView::GetSeparatorSize() {
@@ -453,14 +457,14 @@ gfx::Size Section::LayoutItems(bool compute_bounds_only, int width) {
 namespace browser {
 
 void ShowPageInfoBubble(views::View* anchor_view,
-                        Profile* profile,
+                        WebContents* web_contents,
                         const GURL& url,
                         const SSLStatus& ssl,
                         bool show_history,
                         content::PageNavigator* navigator) {
   PageInfoBubbleView* page_info_bubble =
       new PageInfoBubbleView(anchor_view,
-                             profile,
+                             web_contents,
                              url,
                              ssl,
                              show_history,

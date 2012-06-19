@@ -11,6 +11,7 @@
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/page_info_model.h"
 #include "chrome/browser/page_info_model_observer.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/gtk/browser_toolbar_gtk.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/ssl_status.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
@@ -28,8 +30,8 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using content::OpenURLParams;
-
 using content::SSLStatus;
+using content::WebContents;
 
 namespace {
 
@@ -37,7 +39,7 @@ class PageInfoBubbleGtk : public PageInfoModelObserver,
                           public BubbleDelegateGtk {
  public:
   PageInfoBubbleGtk(gfx::NativeWindow parent,
-                    Profile* profile,
+                    WebContents* web_contents,
                     const GURL& url,
                     const SSLStatus& ssl,
                     bool show_history,
@@ -84,7 +86,7 @@ class PageInfoBubbleGtk : public PageInfoModelObserver,
 
   BubbleGtk* bubble_;
 
-  Profile* profile_;
+  WebContents* web_contents_;
 
   // Used for loading pages.
   content::PageNavigator* navigator_;
@@ -93,19 +95,21 @@ class PageInfoBubbleGtk : public PageInfoModelObserver,
 };
 
 PageInfoBubbleGtk::PageInfoBubbleGtk(gfx::NativeWindow parent,
-                                     Profile* profile,
+                                     WebContents* web_contents,
                                      const GURL& url,
                                      const SSLStatus& ssl,
                                      bool show_history,
                                      content::PageNavigator* navigator)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(model_(profile, url, ssl,
-                                            show_history, this)),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(model_(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()), url,
+          ssl, show_history, this)),
       url_(url),
       cert_id_(ssl.cert_id),
       parent_(parent),
       contents_(NULL),
-      theme_service_(GtkThemeService::GetFrom(profile)),
-      profile_(profile),
+      theme_service_(GtkThemeService::GetFrom(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()))),
+      web_contents_(web_contents),
       navigator_(navigator) {
   BrowserWindowGtk* browser_window =
       BrowserWindowGtk::GetBrowserWindowForNativeWindow(parent);
@@ -229,7 +233,7 @@ GtkWidget* PageInfoBubbleGtk::CreateSection(
 }
 
 void PageInfoBubbleGtk::OnViewCertLinkClicked(GtkWidget* widget) {
-  ShowCertificateViewerByID(GTK_WINDOW(parent_), cert_id_);
+  ShowCertificateViewerByID(web_contents_, GTK_WINDOW(parent_), cert_id_);
   bubble_->Close();
 }
 
@@ -247,12 +251,13 @@ void PageInfoBubbleGtk::OnHelpLinkClicked(GtkWidget* widget) {
 namespace browser {
 
 void ShowPageInfoBubble(gfx::NativeWindow parent,
-                        Profile* profile,
+                        WebContents* web_contents,
                         const GURL& url,
                         const SSLStatus& ssl,
                         bool show_history,
                         content::PageNavigator* navigator) {
-  new PageInfoBubbleGtk(parent, profile, url, ssl, show_history, navigator);
+  new PageInfoBubbleGtk(
+      parent, web_contents, url, ssl, show_history, navigator);
 }
 
 }  // namespace browser

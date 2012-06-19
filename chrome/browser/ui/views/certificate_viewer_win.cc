@@ -11,7 +11,8 @@
 #include "base/logging.h"
 #include "net/base/x509_certificate.h"
 
-void ShowCertificateViewer(gfx::NativeWindow parent,
+void ShowCertificateViewer(content::WebContents* web_contents,
+                           gfx::NativeWindow parent,
                            net::X509Certificate* cert) {
   // Create a new cert context and store containing just the certificate
   // and its intermediate certificates.

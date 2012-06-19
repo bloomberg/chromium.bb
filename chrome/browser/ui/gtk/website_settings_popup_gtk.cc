@@ -513,6 +513,7 @@ void WebsiteSettingsPopupGtk::OnPermissionChanged(GtkWidget* widget) {
 
 void WebsiteSettingsPopupGtk::OnViewCertLinkClicked(GtkWidget* widget) {
   DCHECK_NE(cert_id_, 0);
-  ShowCertificateViewerByID(GTK_WINDOW(parent_), cert_id_);
+  ShowCertificateViewerByID(
+      tab_contents_->web_contents(), GTK_WINDOW(parent_), cert_id_);
   bubble_->Close();
 }

@@ -720,7 +720,8 @@ void CertificateViewer::Show() {
 
 } // namespace
 
-void ShowCertificateViewer(gfx::NativeWindow parent,
+void ShowCertificateViewer(content::WebContents* web_contents,
+                           gfx::NativeWindow parent,
                            net::X509Certificate* cert) {
   (new CertificateViewer(parent, cert))->Show();
 }

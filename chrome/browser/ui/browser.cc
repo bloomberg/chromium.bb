@@ -1580,7 +1580,7 @@ void Browser::ShowPageInfo(content::WebContents* web_contents,
     window()->ShowWebsiteSettings(
         profile, tab_contents, url, ssl, show_history);
   } else {
-    window()->ShowPageInfo(profile, url, ssl, show_history);
+    window()->ShowPageInfo(web_contents, url, ssl, show_history);
   }
 }
 

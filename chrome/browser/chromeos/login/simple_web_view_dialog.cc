@@ -292,7 +292,7 @@ void SimpleWebViewDialog::ShowPageInfo(content::WebContents* web_contents,
   PageInfoBubbleView* page_info_bubble =
       new PageInfoBubbleView(
           location_bar_->location_icon_view(),
-          location_bar_->profile(),
+          web_contents,
           url, ssl,
           true,
           this);

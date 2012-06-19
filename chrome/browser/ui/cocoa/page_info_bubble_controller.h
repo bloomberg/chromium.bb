@@ -13,6 +13,7 @@ class PageInfoModelObserver;
 
 namespace content {
 class PageNavigator;
+class WebContents;
 }
 
 // This NSWindowController subclass manages the InfoBubbleWindow and view that
@@ -28,6 +29,9 @@ class PageNavigator;
   // The certificate ID for the page, 0 if the page is not over HTTPS.
   int certID_;
 
+  // The WebContents that created the bubble.
+  content::WebContents* webContents_;
+
   // Used for loading pages.
   content::PageNavigator* navigator_;
 }
@@ -41,6 +45,7 @@ class PageNavigator;
 - (id)initWithPageInfoModel:(PageInfoModel*)model
               modelObserver:(PageInfoModelObserver*)bridge
                parentWindow:(NSWindow*)parentWindow
+                webContents:(content::WebContents*)webContents
                   navigator:(content::PageNavigator*)navigator;
 
 
