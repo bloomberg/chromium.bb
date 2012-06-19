@@ -162,6 +162,10 @@ int DoUninstallTasks(bool chrome_still_running) {
 ChromeBrowserMainPartsWin::ChromeBrowserMainPartsWin(
     const content::MainFunctionParams& parameters)
     : ChromeBrowserMainParts(parameters) {
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableTouchEvents);
+  }
 }
 
 ChromeBrowserMainPartsWin::~ChromeBrowserMainPartsWin() {
