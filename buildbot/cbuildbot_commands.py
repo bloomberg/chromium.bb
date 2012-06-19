@@ -985,7 +985,7 @@ def BuildFirmwareArchive(buildroot, board, archive_dir):
   Returns the basename of the archived file, or None if the target board does
   not have firmware from source.
   """
-  patterns = ['image*.bin', 'ec.bin', 'legacy_image.bin']
+  patterns = ['*image*.bin', 'ec.bin']
   firmware_root = os.path.join(buildroot, 'chroot', 'build', board, 'firmware')
   source_list = []
   for pattern in patterns:
