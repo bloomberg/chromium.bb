@@ -8,6 +8,7 @@
 
 #include "base/mac/scoped_authorizationref.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "remoting/host/constants_mac.h"
 
 @implementation RemotingUninstallerAppDelegate
 
@@ -16,8 +17,7 @@ NSString* const kPrefPaneDir = @"/Library/PreferencePanes";
 NSString* const kHelperToolsDir = @"/Library/PrivilegedHelperTools";
 NSString* const kApplicationDir = @"/Applications";
 
-NSString* const kServiceName = @"org.chromium.chromoting";
-NSString* const kPrefPaneName = @"org.chromium.chromoting.prefPane";
+NSString* const kPrefPaneName = @kServiceName ".prefPane";
 NSString* const kUninstallerName =
     @"Chrome Remote Desktop Host Uninstaller.app";
 
@@ -134,11 +134,11 @@ const char kKeystonePID[] = "com.google.chrome_remote_desktop";
 -(void)shutdownService {
   NSString* launchCtl = @"/bin/launchctl";
   NSArray* argsStop = [NSArray arrayWithObjects:@"stop",
-                      kServiceName, nil];
+                      @kServiceName, nil];
   [self runCommand:launchCtl withArguments:argsStop];
 
   NSString* plist = [NSString stringWithFormat:@"%@/%@.plist",
-                     kLaunchAgentsDir, kServiceName];
+                     kLaunchAgentsDir, @kServiceName];
   if ([[NSFileManager defaultManager] fileExistsAtPath:plist]) {
     NSArray* argsUnload = [NSArray arrayWithObjects:@"unload",
                            @"-w", @"-S", @"Aqua", plist, nil];
@@ -153,25 +153,25 @@ const char kKeystonePID[] = "com.google.chrome_remote_desktop";
 
 -(void)remotingUninstallUsingAuth:(AuthorizationRef)authRef {
   NSString* host_enabled = [NSString stringWithFormat:@"%@/%@.me2me_enabled",
-                            kHelperToolsDir, kServiceName];
+                            kHelperToolsDir, @kServiceName];
   [self sudoDelete:[host_enabled UTF8String] usingAuth:authRef];
 
   [self shutdownService];
 
   NSString* plist = [NSString stringWithFormat:@"%@/%@.plist",
-                     kLaunchAgentsDir, kServiceName];
+                     kLaunchAgentsDir, @kServiceName];
   [self sudoDelete:[plist UTF8String] usingAuth:authRef];
 
   NSString* host_binary = [NSString stringWithFormat:@"%@/%@.me2me_host.app",
-                           kHelperToolsDir, kServiceName];
+                           kHelperToolsDir, @kServiceName];
   [self sudoDelete:[host_binary UTF8String] usingAuth:authRef];
 
   NSString* host_script = [NSString stringWithFormat:@"%@/%@.me2me.sh",
-                           kHelperToolsDir, kServiceName];
+                           kHelperToolsDir, @kServiceName];
   [self sudoDelete:[host_script UTF8String] usingAuth:authRef];
 
   NSString* auth = [NSString stringWithFormat:@"%@/%@.json",
-                    kHelperToolsDir, kServiceName];
+                    kHelperToolsDir, @kServiceName];
   [self sudoDelete:[auth UTF8String] usingAuth:authRef];
 
   NSString* prefpane = [NSString stringWithFormat:@"%@/%@",

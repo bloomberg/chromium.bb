@@ -23,6 +23,7 @@
 #include "base/threading/thread.h"
 #include "base/time.h"
 #include "base/values.h"
+#include "remoting/host/constants_mac.h"
 #include "remoting/host/json_host_config.h"
 
 namespace remoting {
@@ -35,25 +36,11 @@ namespace {
 // Therefore, we define the needed constants here.
 const int NSLibraryDirectory = 5;
 
-// The name of the Remoting Host service that is registered with launchd.
-#define kServiceName "org.chromium.chromoting"
-
-// Use separate named notifications for success and failure because sandboxed
-// components can't include a dictionary when sending distributed notifications.
-// The preferences panel is not yet sandboxed, but err on the side of caution.
-#define kUpdateSucceededNotificationName kServiceName ".update_succeeded"
-#define kUpdateFailedNotificationName kServiceName ".update_failed"
-
-#define kConfigDir "/Library/PrivilegedHelperTools/"
-
-// This helper script is used to get the installed host version.
-const char kHostHelperScript[] = kConfigDir kServiceName ".me2me.sh";
-
 // Use a single configuration file, instead of separate "auth" and "host" files.
 // This is because the SetConfigAndStart() API only provides a single
 // dictionary, and splitting this into two dictionaries would require
 // knowledge of which keys belong in which files.
-const char kHostConfigFile[] = kConfigDir kServiceName ".json";
+const char kHostConfigFile[] = kHostConfigDir kServiceName ".json";
 
 class DaemonControllerMac : public remoting::DaemonController {
  public:
@@ -199,7 +186,7 @@ void DaemonControllerMac::DoGetConfig(const GetConfigCallback& callback) {
 
 void DaemonControllerMac::DoGetVersion(const GetVersionCallback& callback) {
   std::string version = "";
-  std::string command_line = kHostHelperScript;
+  std::string command_line = remoting::kHostHelperTool;
   command_line += " --host-version";
   FILE* script_output = popen(command_line.c_str(), "r");
   if (script_output) {

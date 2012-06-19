@@ -18,6 +18,7 @@
 #include "base/eintr_wrapper.h"
 #include "base/mac/scoped_launch_data.h"
 #include "base/memory/scoped_ptr.h"
+#include "remoting/host/constants_mac.h"
 #include "remoting/host/host_config.h"
 #import "remoting/host/me2me_preference_pane_confirm_pin.h"
 #import "remoting/host/me2me_preference_pane_disable.h"
@@ -26,21 +27,6 @@
 #include "third_party/modp_b64/modp_b64.h"
 
 namespace {
-// The name of the Remoting Host service that is registered with launchd.
-#define kServiceName "org.chromium.chromoting"
-
-// Use separate named notifications for success and failure because sandboxed
-// components can't include a dictionary when sending distributed notifications.
-// The preferences panel is not yet sandboxed, but err on the side of caution.
-#define kUpdateSucceededNotificationName kServiceName ".update_succeeded"
-#define kUpdateFailedNotificationName kServiceName ".update_failed"
-
-#define kConfigDir "/Library/PrivilegedHelperTools/"
-
-// This helper script is executed as root.  It is passed a command-line option
-// (--enable or --disable), which causes it to create or remove a file that
-// informs the host's launch script of whether the host is enabled or disabled.
-const char kHelperTool[] = kConfigDir kServiceName ".me2me.sh";
 
 bool GetTemporaryConfigFilePath(std::string* path) {
   NSString* filename = NSTemporaryDirectory();
@@ -572,7 +558,7 @@ std::string JsonHostConfig::GetSerializedData() const {
   pid_t pid;
   OSStatus status = base::mac::ExecuteWithPrivilegesAndGetPID(
       authorization,
-      kHelperTool,
+      remoting::kHostHelperTool,
       kAuthorizationFlagDefaults,
       arguments,
       &pipe,
@@ -632,7 +618,8 @@ std::string JsonHostConfig::GetSerializedData() const {
   if (WIFEXITED(exit_status) && WEXITSTATUS(exit_status) == 0) {
     return YES;
   } else {
-    NSLog(@"%s failed with exit status %d", kHelperTool, exit_status);
+    NSLog(@"%s failed with exit status %d", remoting::kHostHelperTool,
+          exit_status);
     return NO;
   }
 }
@@ -761,8 +748,10 @@ std::string JsonHostConfig::GetSerializedData() const {
 
 - (void)restartSystemPreferences {
   NSTask* task = [[NSTask alloc] init];
+  NSString* command =
+      [NSString stringWithUTF8String:remoting::kHostHelperTool];
   NSArray* arguments = [NSArray arrayWithObjects:@"--relaunch-prefpane", nil];
-  [task setLaunchPath:[NSString stringWithUTF8String:kHelperTool]];
+  [task setLaunchPath:command];
   [task setArguments:arguments];
   [task setStandardInput:[NSPipe pipe]];
   [task launch];
