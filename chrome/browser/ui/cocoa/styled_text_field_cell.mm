@@ -175,7 +175,8 @@ void FrameRectWithInset(StyledTextFieldCellRoundedFlags roundedFlags,
     [RectPathWithInset(roundedFlags, frame, lineWidth, radius) addClip];
     const NSRect shadowFrame =
         NSOffsetRect(frame, halfLineWidth, halfLineWidth);
-    NSColor* shadowShade = [NSColor colorWithCalibratedWhite:0.0 alpha:0.05];
+    NSColor* shadowShade = [NSColor colorWithCalibratedWhite:0.0
+                                                       alpha:0.05 / lineWidth];
     FrameRectWithInset(roundedFlags, shadowFrame, halfLineWidth,
                        radius - halfLineWidth, lineWidth, shadowShade);
   }
@@ -186,7 +187,7 @@ void FrameRectWithInset(StyledTextFieldCellRoundedFlags roundedFlags,
 
     NSColor* bezelColor = themeProvider->GetNSColor(
         ThemeService::COLOR_TOOLBAR_BEZEL, true);
-    [[bezelColor colorWithAlphaComponent:0.5] set];
+    [[bezelColor colorWithAlphaComponent:0.5 / lineWidth] set];
     NSRect bezelRect = NSMakeRect(cellFrame.origin.x,
                                   NSMaxY(cellFrame) - lineWidth,
                                   NSWidth(cellFrame),
@@ -197,8 +198,8 @@ void FrameRectWithInset(StyledTextFieldCellRoundedFlags roundedFlags,
 
   // Draw the focus ring if needed.
   if ([self showsFirstResponder]) {
-    NSColor* color =
-        [[NSColor keyboardFocusIndicatorColor] colorWithAlphaComponent:0.5];
+    NSColor* color = [[NSColor keyboardFocusIndicatorColor]
+        colorWithAlphaComponent:0.5 / lineWidth];
     FrameRectWithInset(roundedFlags, frame, 0.0, radius, lineWidth * 2, color);
   }
 

@@ -294,6 +294,8 @@ const CGFloat kRapidCloseDist = 2.5;
 
   BOOL active = [[self window] isKeyWindow] || [[self window] isMainWindow];
   CGFloat borderAlpha = selected ? (active ? 0.3 : 0.2) : 0.2;
+  borderAlpha /= lineWidth;
+
   NSColor* borderColor = [NSColor colorWithDeviceWhite:0.0 alpha:borderAlpha];
   NSColor* highlightColor = themeProvider ? themeProvider->GetNSColor(
       themeProvider->UsingDefaultTheme() ?
