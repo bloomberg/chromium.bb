@@ -19,7 +19,7 @@
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
-#include "chrome/browser/ui/views/autocomplete/autocomplete_popup_contents_view.h"
+#include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/win/extra_sdk_defines.h"
 #include "ui/gfx/font.h"

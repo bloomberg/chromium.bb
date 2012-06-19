@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_CONTENTS_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_CONTENTS_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_POPUP_CONTENTS_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_POPUP_CONTENTS_VIEW_H_
 #pragma once
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_view.h"
-#include "chrome/browser/ui/views/autocomplete/autocomplete_result_view_model.h"
+#include "chrome/browser/ui/views/omnibox/omnibox_result_view_model.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/gfx/font.h"
@@ -19,7 +19,7 @@
 
 class AutocompleteEditModel;
 struct AutocompleteMatch;
-class AutocompleteResultView;
+class OmniboxResultView;
 class Profile;
 
 namespace views {
@@ -27,14 +27,14 @@ class BubbleBorder;
 }
 
 // A view representing the contents of the autocomplete popup.
-class AutocompletePopupContentsView : public views::View,
-                                      public AutocompleteResultViewModel,
-                                      public AutocompletePopupView,
-                                      public ui::AnimationDelegate {
+class OmniboxPopupContentsView : public views::View,
+                                 public OmniboxResultViewModel,
+                                 public AutocompletePopupView,
+                                 public ui::AnimationDelegate {
  public:
   // Creates the appropriate type of omnibox dropdown for the
   // current environment, e.g. desktop vs. touch optimized layout.
-  static AutocompletePopupContentsView* CreateForEnvironment(
+  static OmniboxPopupContentsView* CreateForEnvironment(
       const gfx::Font& font,
       OmniboxView* omnibox_view,
       AutocompleteEditModel* edit_model,
@@ -54,7 +54,7 @@ class AutocompletePopupContentsView : public views::View,
   virtual void PaintUpdatesNow() OVERRIDE;
   virtual void OnDragCanceled() OVERRIDE;
 
-  // Overridden from AutocompleteResultViewModel:
+  // Overridden from OmniboxResultViewModel:
   virtual bool IsSelectedIndex(size_t index) const OVERRIDE;
   virtual bool IsHoveredIndex(size_t index) const OVERRIDE;
   virtual const SkBitmap* GetIconIfExtensionMatch(size_t index) const OVERRIDE;
@@ -77,18 +77,18 @@ class AutocompletePopupContentsView : public views::View,
       const views::GestureEvent& event) OVERRIDE;
 
  protected:
-  AutocompletePopupContentsView(const gfx::Font& font,
-                                OmniboxView* omnibox_view,
-                                AutocompleteEditModel* edit_model,
-                                views::View* location_bar);
-  virtual ~AutocompletePopupContentsView();
+  OmniboxPopupContentsView(const gfx::Font& font,
+                           OmniboxView* omnibox_view,
+                           AutocompleteEditModel* edit_model,
+                           views::View* location_bar);
+  virtual ~OmniboxPopupContentsView();
 
   virtual void PaintResultViews(gfx::Canvas* canvas);
 
   // Calculates the height needed to show all the results in the model.
   virtual int CalculatePopupHeight();
-  virtual AutocompleteResultView* CreateResultView(
-      AutocompleteResultViewModel* model,
+  virtual OmniboxResultView* CreateResultView(
+      OmniboxResultViewModel* model,
       int model_index,
       const gfx::Font& font,
       const gfx::Font& bold_font);
@@ -185,7 +185,7 @@ class AutocompletePopupContentsView : public views::View,
   gfx::Rect start_bounds_;
   gfx::Rect target_bounds_;
 
-  DISALLOW_COPY_AND_ASSIGN(AutocompletePopupContentsView);
+  DISALLOW_COPY_AND_ASSIGN(OmniboxPopupContentsView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_CONTENTS_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_POPUP_CONTENTS_VIEW_H_

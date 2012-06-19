@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_AUTOCOMPLETE_AUTOCOMPLETE_RESULT_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_AUTOCOMPLETE_AUTOCOMPLETE_RESULT_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_RESULT_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_RESULT_VIEW_H_
 #pragma once
 
 #include "chrome/browser/autocomplete/autocomplete_match.h"
@@ -15,14 +15,14 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/view.h"
 
-class AutocompleteResultViewModel;
+class OmniboxResultViewModel;
 
 namespace gfx {
 class Canvas;
 }
 
-class AutocompleteResultView : public views::View,
-                               private ui::AnimationDelegate {
+class OmniboxResultView : public views::View,
+                          private ui::AnimationDelegate {
  public:
   // Keep these ordered from least dominant (normal) to most dominant
   // (selected).
@@ -42,11 +42,11 @@ class AutocompleteResultView : public views::View,
     NUM_KINDS
   };
 
-  AutocompleteResultView(AutocompleteResultViewModel* model,
-                         int model_index,
-                         const gfx::Font& font,
-                         const gfx::Font& bold_font);
-  virtual ~AutocompleteResultView();
+  OmniboxResultView(OmniboxResultViewModel* model,
+                    int model_index,
+                    const gfx::Font& font,
+                    const gfx::Font& bold_font);
+  virtual ~OmniboxResultView();
 
   static SkColor GetColor(ResultViewState state, ColorKind kind);
 
@@ -138,7 +138,7 @@ class AutocompleteResultView : public views::View,
   int minimum_text_vertical_padding_;
 
   // This row's model and model index.
-  AutocompleteResultViewModel* model_;
+  OmniboxResultViewModel* model_;
   size_t model_index_;
 
   const gfx::Font normal_font_;
@@ -161,7 +161,7 @@ class AutocompleteResultView : public views::View,
 
   scoped_ptr<ui::SlideAnimation> animation_;
 
-  DISALLOW_COPY_AND_ASSIGN(AutocompleteResultView);
+  DISALLOW_COPY_AND_ASSIGN(OmniboxResultView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_AUTOCOMPLETE_AUTOCOMPLETE_RESULT_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_OMNIBOX_OMNIBOX_RESULT_VIEW_H_

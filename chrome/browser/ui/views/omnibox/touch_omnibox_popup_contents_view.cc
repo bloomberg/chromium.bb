@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/autocomplete/touch_autocomplete_popup_contents_view.h"
+#include "chrome/browser/ui/views/omnibox/touch_omnibox_popup_contents_view.h"
 
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -13,66 +13,65 @@
 #include "ui/gfx/size.h"
 #include "ui/views/view.h"
 
-// TouchAutocompleteResultView ------------------------------------------------
+// TouchOmniboxResultView ------------------------------------------------
 
-TouchAutocompleteResultView::TouchAutocompleteResultView(
-    AutocompleteResultViewModel* model,
+TouchOmniboxResultView::TouchOmniboxResultView(
+    OmniboxResultViewModel* model,
     int model_index,
     const gfx::Font& font,
     const gfx::Font& bold_font)
-    : AutocompleteResultView(model, model_index, font, bold_font) {
+    : OmniboxResultView(model, model_index, font, bold_font) {
   set_edge_item_padding(8);
   set_item_padding(8);
   set_minimum_text_vertical_padding(10);
 }
 
-TouchAutocompleteResultView::~TouchAutocompleteResultView() {
+TouchOmniboxResultView::~TouchOmniboxResultView() {
 }
 
-void TouchAutocompleteResultView::PaintMatch(gfx::Canvas* canvas,
-                                             const AutocompleteMatch& match,
-                                             int x) {
+void TouchOmniboxResultView::PaintMatch(gfx::Canvas* canvas,
+                                        const AutocompleteMatch& match,
+                                        int x) {
   int y = text_bounds().y();
 
   if (!match.description.empty()) {
     // We use our base class's GetTextHeight below because we need the height
     // of a single line of text.
     DrawString(canvas, match.description, match.description_class, true, x, y);
-    y += AutocompleteResultView::GetTextHeight();
+    y += OmniboxResultView::GetTextHeight();
   } else {
     // When we have only one line of content (no description), we center the
     // single line vertically on our two-lines-tall results box.
-    y += AutocompleteResultView::GetTextHeight() / 2;
+    y += OmniboxResultView::GetTextHeight() / 2;
   }
 
   DrawString(canvas, match.contents, match.contents_class, false, x, y);
 }
 
-int TouchAutocompleteResultView::GetTextHeight() const {
-  return AutocompleteResultView::GetTextHeight() * 2;
+int TouchOmniboxResultView::GetTextHeight() const {
+  return OmniboxResultView::GetTextHeight() * 2;
 }
 
-// TouchAutocompletePopupContentsView -----------------------------------------
+// TouchOmniboxPopupContentsView -----------------------------------------
 
-TouchAutocompletePopupContentsView::TouchAutocompletePopupContentsView(
+TouchOmniboxPopupContentsView::TouchOmniboxPopupContentsView(
     const gfx::Font& font,
     OmniboxView* omnibox_view,
     AutocompleteEditModel* edit_model,
     views::View* location_bar)
-    : AutocompletePopupContentsView(font, omnibox_view, edit_model,
-                                    location_bar) {
+    : OmniboxPopupContentsView(font, omnibox_view, edit_model, location_bar) {
 }
 
-TouchAutocompletePopupContentsView::~TouchAutocompletePopupContentsView() {
+TouchOmniboxPopupContentsView::~TouchOmniboxPopupContentsView() {
 }
 
-void TouchAutocompletePopupContentsView::UpdatePopupAppearance() {
-  AutocompletePopupContentsView::UpdatePopupAppearance();
+void TouchOmniboxPopupContentsView::UpdatePopupAppearance() {
+  OmniboxPopupContentsView::UpdatePopupAppearance();
   Layout();
 }
 
-void TouchAutocompletePopupContentsView::PaintResultViews(gfx::Canvas* canvas) {
-  AutocompletePopupContentsView::PaintResultViews(canvas);
+void TouchOmniboxPopupContentsView::PaintResultViews(gfx::Canvas* canvas) {
+  OmniboxPopupContentsView::PaintResultViews(canvas);
 
   // Draw divider lines.
   std::vector<View*> visible_children(GetVisibleChildren());
@@ -86,29 +85,27 @@ void TouchAutocompletePopupContentsView::PaintResultViews(gfx::Canvas* canvas) {
   // i.e. selected > hovered > normal.
   for (std::vector<View*>::const_iterator i(visible_children.begin());
        i + 1 != visible_children.end(); ++i) {
-    TouchAutocompleteResultView* child =
-        static_cast<TouchAutocompleteResultView*>(*i);
-    TouchAutocompleteResultView* next_child =
-        static_cast<TouchAutocompleteResultView*>(*(i + 1));
-    SkColor divider_color = AutocompleteResultView::GetColor(
+    TouchOmniboxResultView* child = static_cast<TouchOmniboxResultView*>(*i);
+    TouchOmniboxResultView* next_child =
+        static_cast<TouchOmniboxResultView*>(*(i + 1));
+    SkColor divider_color = OmniboxResultView::GetColor(
         std::max(child->GetState(), next_child->GetState()),
-        AutocompleteResultView::DIVIDER);
+        OmniboxResultView::DIVIDER);
     int line_y = child->y() + child->height() - 1;
     canvas->DrawLine(gfx::Point(bounds.x(), line_y),
                      gfx::Point(bounds.right(), line_y), divider_color);
   }
 }
 
-AutocompleteResultView* TouchAutocompletePopupContentsView::CreateResultView(
-    AutocompleteResultViewModel* model,
+OmniboxResultView* TouchOmniboxPopupContentsView::CreateResultView(
+    OmniboxResultViewModel* model,
     int model_index,
     const gfx::Font& font,
     const gfx::Font& bold_font) {
-  return new TouchAutocompleteResultView(model, model_index, font, bold_font);
+  return new TouchOmniboxResultView(model, model_index, font, bold_font);
 }
 
-std::vector<views::View*>
-    TouchAutocompletePopupContentsView::GetVisibleChildren() {
+std::vector<views::View*> TouchOmniboxPopupContentsView::GetVisibleChildren() {
   std::vector<View*> visible_children;
   for (int i = 0; i < child_count(); ++i) {
     View* v = child_at(i);

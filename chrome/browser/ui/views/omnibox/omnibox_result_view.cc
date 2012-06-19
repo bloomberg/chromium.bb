@@ -9,14 +9,14 @@
 #include <atlwin.h>  // NOLINT
 #endif
 
-#include "chrome/browser/ui/views/autocomplete/autocomplete_result_view.h"
+#include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
 
 #include <algorithm>  // NOLINT
 
 #include "base/i18n/bidi_line_iterator.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
-#include "chrome/browser/ui/views/autocomplete/autocomplete_result_view_model.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/views/omnibox/omnibox_result_view_model.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -38,11 +38,11 @@ const int kMinimumTextVerticalPadding = 3;
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// AutocompleteResultView, public:
+// OmniboxResultView, public:
 
 // Precalculated data used to draw the portion of a match classification that
 // fits entirely within one run.
-struct AutocompleteResultView::ClassificationData {
+struct OmniboxResultView::ClassificationData {
   string16 text;
   const gfx::Font* font;
   SkColor color;
@@ -52,7 +52,7 @@ struct AutocompleteResultView::ClassificationData {
 // Precalculated data used to draw a complete visual run within the match.
 // This will include all or part of at leasdt one, and possibly several,
 // classifications.
-struct AutocompleteResultView::RunData {
+struct OmniboxResultView::RunData {
   size_t run_start;  // Offset within the match text where this run begins.
   int visual_order;  // Where this run occurs in visual order.  The earliest
   // run drawn is run 0.
@@ -66,7 +66,7 @@ struct AutocompleteResultView::RunData {
 // view is horizontally mirrored.  The drawing functions can be written as if
 // all drawing occurs left-to-right, and then use this class to get the actual
 // coordinates to begin drawing onscreen.
-class AutocompleteResultView::MirroringContext {
+class OmniboxResultView::MirroringContext {
  public:
   MirroringContext() : center_(0), right_(0) {}
 
@@ -98,8 +98,8 @@ class AutocompleteResultView::MirroringContext {
   DISALLOW_COPY_AND_ASSIGN(MirroringContext);
 };
 
-AutocompleteResultView::AutocompleteResultView(
-    AutocompleteResultViewModel* model,
+OmniboxResultView::OmniboxResultView(
+    OmniboxResultViewModel* model,
     int model_index,
     const gfx::Font& font,
     const gfx::Font& bold_font)
@@ -128,12 +128,11 @@ AutocompleteResultView::AutocompleteResultView(
   keyword_icon_->SizeToPreferredSize();
 }
 
-AutocompleteResultView::~AutocompleteResultView() {
+OmniboxResultView::~OmniboxResultView() {
 }
 
 // static
-SkColor AutocompleteResultView::GetColor(ResultViewState state,
-                                         ColorKind kind) {
+SkColor OmniboxResultView::GetColor(ResultViewState state, ColorKind kind) {
   static bool initialized = false;
   static SkColor colors[NUM_STATES][NUM_KINDS];
   if (!initialized) {
@@ -187,7 +186,7 @@ SkColor AutocompleteResultView::GetColor(ResultViewState state,
   return colors[state][kind];
 }
 
-void AutocompleteResultView::SetMatch(const AutocompleteMatch& match) {
+void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
   match_ = match;
   animation_->Reset();
 
@@ -203,37 +202,36 @@ void AutocompleteResultView::SetMatch(const AutocompleteMatch& match) {
   Layout();
 }
 
-void AutocompleteResultView::ShowKeyword(bool show_keyword) {
+void OmniboxResultView::ShowKeyword(bool show_keyword) {
   if (show_keyword)
     animation_->Show();
   else
     animation_->Hide();
 }
 
-void AutocompleteResultView::Invalidate() {
+void OmniboxResultView::Invalidate() {
   keyword_icon_->SetImage(GetKeywordIcon());
   SchedulePaint();
 }
 
-gfx::Size AutocompleteResultView::GetPreferredSize() {
+gfx::Size OmniboxResultView::GetPreferredSize() {
   return gfx::Size(0, std::max(
       default_icon_size_ + (kMinimumIconVerticalPadding * 2),
       GetTextHeight() + (minimum_text_vertical_padding_ * 2)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AutocompleteResultView, protected:
+// OmniboxResultView, protected:
 
-AutocompleteResultView::ResultViewState
-    AutocompleteResultView::GetState() const {
+OmniboxResultView::ResultViewState OmniboxResultView::GetState() const {
   if (model_->IsSelectedIndex(model_index_))
     return SELECTED;
   return model_->IsHoveredIndex(model_index_) ? HOVERED : NORMAL;
 }
 
-void AutocompleteResultView::PaintMatch(gfx::Canvas* canvas,
-                                        const AutocompleteMatch& match,
-                                        int x) {
+void OmniboxResultView::PaintMatch(gfx::Canvas* canvas,
+                                   const AutocompleteMatch& match,
+                                   int x) {
   x = DrawString(canvas, match.contents, match.contents_class, false, x,
                  text_bounds_.y());
 
@@ -257,26 +255,26 @@ void AutocompleteResultView::PaintMatch(gfx::Canvas* canvas,
   }
 }
 
-int AutocompleteResultView::GetTextHeight() const {
+int OmniboxResultView::GetTextHeight() const {
   return std::max(normal_font_.GetHeight(), bold_font_.GetHeight());
 }
 
 // static
-bool AutocompleteResultView::SortRunsLogically(const RunData& lhs,
-                                               const RunData& rhs) {
+bool OmniboxResultView::SortRunsLogically(const RunData& lhs,
+                                          const RunData& rhs) {
   return lhs.run_start < rhs.run_start;
 }
 
 // static
-bool AutocompleteResultView::SortRunsVisually(const RunData& lhs,
-                                              const RunData& rhs) {
+bool OmniboxResultView::SortRunsVisually(const RunData& lhs,
+                                         const RunData& rhs) {
   return lhs.visual_order < rhs.visual_order;
 }
 
 // static
-int AutocompleteResultView::default_icon_size_ = 0;
+int OmniboxResultView::default_icon_size_ = 0;
 
-const SkBitmap* AutocompleteResultView::GetIcon() const {
+const SkBitmap* OmniboxResultView::GetIcon() const {
   const SkBitmap* bitmap = model_->GetIconIfExtensionMatch(model_index_);
   if (bitmap)
     return bitmap;
@@ -305,14 +303,14 @@ const SkBitmap* AutocompleteResultView::GetIcon() const {
   return ui::ResourceBundle::GetSharedInstance().GetBitmapNamed(icon);
 }
 
-const gfx::ImageSkia* AutocompleteResultView::GetKeywordIcon() const {
+const gfx::ImageSkia* OmniboxResultView::GetKeywordIcon() const {
   // NOTE: If we ever begin returning icons of varying size, then callers need
   // to ensure that |keyword_icon_| is resized each time its image is reset.
   return ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       (GetState() == SELECTED) ? IDR_OMNIBOX_TTS_SELECTED : IDR_OMNIBOX_TTS);
 }
 
-int AutocompleteResultView::DrawString(
+int OmniboxResultView::DrawString(
     gfx::Canvas* canvas,
     const string16& text,
     const ACMatchClassifications& classifications,
@@ -480,7 +478,7 @@ int AutocompleteResultView::DrawString(
   return x;
 }
 
-void AutocompleteResultView::Elide(Runs* runs, int remaining_width) const {
+void OmniboxResultView::Elide(Runs* runs, int remaining_width) const {
   // The complexity of this function is due to edge cases like the following:
   // We have 100 px of available space, an initial classification that takes 86
   // px, and a font that has a 15 px wide ellipsis character.  Now if the first
@@ -568,7 +566,7 @@ void AutocompleteResultView::Elide(Runs* runs, int remaining_width) const {
   runs->clear();
 }
 
-void AutocompleteResultView::Layout() {
+void OmniboxResultView::Layout() {
   const SkBitmap* icon = GetIcon();
 
   icon_bounds_.SetRect(edge_item_padding_ +
@@ -601,12 +599,11 @@ void AutocompleteResultView::Layout() {
       std::max(text_width, 0), text_height);
 }
 
-void AutocompleteResultView::OnBoundsChanged(
-    const gfx::Rect& previous_bounds) {
+void OmniboxResultView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   animation_->SetSlideDuration(width() / 4);
 }
 
-void AutocompleteResultView::OnPaint(gfx::Canvas* canvas) {
+void OmniboxResultView::OnPaint(gfx::Canvas* canvas) {
   const ResultViewState state = GetState();
   if (state != NORMAL)
     canvas->DrawColor(GetColor(state, BACKGROUND));
@@ -631,8 +628,7 @@ void AutocompleteResultView::OnPaint(gfx::Canvas* canvas) {
   }
 }
 
-void AutocompleteResultView::AnimationProgressed(
-    const ui::Animation* animation) {
+void OmniboxResultView::AnimationProgressed(const ui::Animation* animation) {
   Layout();
   SchedulePaint();
 }

@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 
-#include "base/property_bag.h"
 #include "base/logging.h"
+#include "base/property_bag.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -15,8 +15,8 @@
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/ui/view_ids.h"
-#include "chrome/browser/ui/views/autocomplete/autocomplete_popup_contents_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 #include "content/public/browser/web_contents.h"
 #include "googleurl/src/gurl.h"
 #include "grit/app_locale_settings.h"
@@ -229,7 +229,7 @@ void OmniboxViewViews::Init() {
 
   // Create popup view using the same font as |textfield_|'s.
   popup_view_.reset(
-      AutocompletePopupContentsView::CreateForEnvironment(
+      OmniboxPopupContentsView::CreateForEnvironment(
           textfield_->font(), this, model_.get(), location_bar_view_));
 
   const int vertical_margin = !popup_window_mode_ ?

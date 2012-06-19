@@ -43,8 +43,8 @@
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/location_bar/suggested_text_view.h"
-#include "chrome/browser/ui/views/omnibox/omnibox_views.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
+#include "chrome/browser/ui/views/omnibox/omnibox_views.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_switch_utils.h"
@@ -806,7 +806,7 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
   // TODO(pkasting): We need images that are transparent in the middle, so we
   // can draw the border images over the background color instead of the
   // reverse; this antialiases better (see comments in
-  // AutocompletePopupContentsView::OnPaint()).
+  // OmniboxPopupContentsView::OnPaint()).
   gfx::Rect bounds(GetContentsBounds());
   bounds.Inset(0, kVerticalEdgeThickness);
   SkColor color(GetColor(ToolbarModel::NONE, BACKGROUND));

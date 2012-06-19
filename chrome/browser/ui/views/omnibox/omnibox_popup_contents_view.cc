@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/autocomplete/autocomplete_popup_contents_view.h"
+#include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 
 #if defined(OS_WIN)
 #include <commctrl.h>
@@ -16,9 +16,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
-#include "chrome/browser/ui/views/autocomplete/autocomplete_result_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "chrome/browser/ui/views/autocomplete/touch_autocomplete_popup_contents_view.h"
+#include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
+#include "chrome/browser/ui/views/omnibox/touch_omnibox_popup_contents_view.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -65,7 +65,7 @@ const int kEditFontAdjust = -1;
 
 }  // namespace
 
-class AutocompletePopupContentsView::AutocompletePopupWidget
+class OmniboxPopupContentsView::AutocompletePopupWidget
     : public views::Widget,
       public base::SupportsWeakPtr<AutocompletePopupWidget> {
  public:
@@ -77,20 +77,19 @@ class AutocompletePopupContentsView::AutocompletePopupWidget
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// AutocompletePopupContentsView, public:
+// OmniboxPopupContentsView, public:
 
-AutocompletePopupContentsView*
-    AutocompletePopupContentsView::CreateForEnvironment(
-        const gfx::Font& font,
-        OmniboxView* omnibox_view,
-        AutocompleteEditModel* edit_model,
-        views::View* location_bar) {
-  AutocompletePopupContentsView* view = NULL;
+OmniboxPopupContentsView* OmniboxPopupContentsView::CreateForEnvironment(
+    const gfx::Font& font,
+    OmniboxView* omnibox_view,
+    AutocompleteEditModel* edit_model,
+    views::View* location_bar) {
+  OmniboxPopupContentsView* view = NULL;
   if (ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) {
-    view = new TouchAutocompletePopupContentsView(
+    view = new TouchOmniboxPopupContentsView(
         font, omnibox_view, edit_model, location_bar);
   } else {
-    view = new AutocompletePopupContentsView(
+    view = new OmniboxPopupContentsView(
         font, omnibox_view, edit_model, location_bar);
   }
 
@@ -98,7 +97,7 @@ AutocompletePopupContentsView*
   return view;
 }
 
-AutocompletePopupContentsView::AutocompletePopupContentsView(
+OmniboxPopupContentsView::OmniboxPopupContentsView(
     const gfx::Font& font,
     OmniboxView* omnibox_view,
     AutocompleteEditModel* edit_model,
@@ -122,25 +121,25 @@ AutocompletePopupContentsView::AutocompletePopupContentsView(
   set_owned_by_client();
 }
 
-void AutocompletePopupContentsView::Init() {
+void OmniboxPopupContentsView::Init() {
   // This can't be done in the constructor as at that point we aren't
   // necessarily our final class yet, and we may have subclasses
   // overriding CreateResultView.
   for (size_t i = 0; i < AutocompleteResult::kMaxMatches; ++i) {
-    AutocompleteResultView* result_view =
+    OmniboxResultView* result_view =
         CreateResultView(this, i, result_font_, result_bold_font_);
     result_view->SetVisible(false);
     AddChildViewAt(result_view, static_cast<int>(i));
   }
 }
 
-AutocompletePopupContentsView::~AutocompletePopupContentsView() {
+OmniboxPopupContentsView::~OmniboxPopupContentsView() {
   // We don't need to do anything with |popup_| here.  The OS either has already
   // closed the window, in which case it's been deleted, or it will soon, in
   // which case there's nothing we need to do.
 }
 
-gfx::Rect AutocompletePopupContentsView::GetPopupBounds() const {
+gfx::Rect OmniboxPopupContentsView::GetPopupBounds() const {
   if (!size_animation_.is_animating())
     return target_bounds_;
 
@@ -156,7 +155,7 @@ gfx::Rect AutocompletePopupContentsView::GetPopupBounds() const {
   return current_frame_bounds;
 }
 
-void AutocompletePopupContentsView::LayoutChildren() {
+void OmniboxPopupContentsView::LayoutChildren() {
   gfx::Rect contents_rect = GetContentsBounds();
   int top = contents_rect.y();
   for (int i = 0; i < child_count(); ++i) {
@@ -170,14 +169,14 @@ void AutocompletePopupContentsView::LayoutChildren() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AutocompletePopupContentsView, AutocompletePopupView overrides:
+// OmniboxPopupContentsView, AutocompletePopupView overrides:
 
-bool AutocompletePopupContentsView::IsOpen() const {
-  return (popup_ != NULL);
+bool OmniboxPopupContentsView::IsOpen() const {
+  return popup_ != NULL;
 }
 
-void AutocompletePopupContentsView::InvalidateLine(size_t line) {
-  AutocompleteResultView* result = static_cast<AutocompleteResultView*>(
+void OmniboxPopupContentsView::InvalidateLine(size_t line) {
+  OmniboxResultView* result = static_cast<OmniboxResultView*>(
       child_at(static_cast<int>(line)));
   result->Invalidate();
 
@@ -187,7 +186,7 @@ void AutocompletePopupContentsView::InvalidateLine(size_t line) {
   }
 }
 
-void AutocompletePopupContentsView::UpdatePopupAppearance() {
+void OmniboxPopupContentsView::UpdatePopupAppearance() {
   if (model_->result().empty()) {
     // No matches, close any existing popup.
     if (popup_ != NULL) {
@@ -208,8 +207,7 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
   size_t child_rv_count = child_count();
   const size_t result_size = model_->result().size();
   for (size_t i = 0; i < result_size; ++i) {
-    AutocompleteResultView* view = static_cast<AutocompleteResultView*>(
-        child_at(i));
+    OmniboxResultView* view = static_cast<OmniboxResultView*>(child_at(i));
     view->SetMatch(GetMatchAtIndex(i));
     view->SetVisible(true);
   }
@@ -267,30 +265,30 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
   SchedulePaint();
 }
 
-gfx::Rect AutocompletePopupContentsView::GetTargetBounds() {
+gfx::Rect OmniboxPopupContentsView::GetTargetBounds() {
   return target_bounds_;
 }
 
-void AutocompletePopupContentsView::PaintUpdatesNow() {
+void OmniboxPopupContentsView::PaintUpdatesNow() {
   // TODO(beng): remove this from the interface.
 }
 
-void AutocompletePopupContentsView::OnDragCanceled() {
+void OmniboxPopupContentsView::OnDragCanceled() {
   ignore_mouse_drag_ = true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AutocompletePopupContentsView, AutocompleteResultViewModel implementation:
+// OmniboxPopupContentsView, OmniboxResultViewModel implementation:
 
-bool AutocompletePopupContentsView::IsSelectedIndex(size_t index) const {
+bool OmniboxPopupContentsView::IsSelectedIndex(size_t index) const {
   return index == model_->selected_line();
 }
 
-bool AutocompletePopupContentsView::IsHoveredIndex(size_t index) const {
+bool OmniboxPopupContentsView::IsHoveredIndex(size_t index) const {
   return index == model_->hovered_line();
 }
 
-const SkBitmap* AutocompletePopupContentsView::GetIconIfExtensionMatch(
+const SkBitmap* OmniboxPopupContentsView::GetIconIfExtensionMatch(
     size_t index) const {
   if (!HasMatchAt(index))
     return NULL;
@@ -298,9 +296,9 @@ const SkBitmap* AutocompletePopupContentsView::GetIconIfExtensionMatch(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AutocompletePopupContentsView, AnimationDelegate implementation:
+// OmniboxPopupContentsView, AnimationDelegate implementation:
 
-void AutocompletePopupContentsView::AnimationProgressed(
+void OmniboxPopupContentsView::AnimationProgressed(
     const ui::Animation* animation) {
   // We should only be running the animation when the popup is already visible.
   DCHECK(popup_ != NULL);
@@ -308,9 +306,9 @@ void AutocompletePopupContentsView::AnimationProgressed(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AutocompletePopupContentsView, views::View overrides:
+// OmniboxPopupContentsView, views::View overrides:
 
-void AutocompletePopupContentsView::Layout() {
+void OmniboxPopupContentsView::Layout() {
   UpdateBlurRegion();
 
   // Size our children to the available content area.
@@ -321,12 +319,12 @@ void AutocompletePopupContentsView::Layout() {
   SchedulePaint();
 }
 
-views::View* AutocompletePopupContentsView::GetEventHandlerForPoint(
+views::View* OmniboxPopupContentsView::GetEventHandlerForPoint(
     const gfx::Point& point) {
   return this;
 }
 
-bool AutocompletePopupContentsView::OnMousePressed(
+bool OmniboxPopupContentsView::OnMousePressed(
     const views::MouseEvent& event) {
   ignore_mouse_drag_ = false;  // See comment on |ignore_mouse_drag_| in header.
   if (event.IsLeftMouseButton() || event.IsMiddleMouseButton())
@@ -334,14 +332,14 @@ bool AutocompletePopupContentsView::OnMousePressed(
   return true;
 }
 
-bool AutocompletePopupContentsView::OnMouseDragged(
+bool OmniboxPopupContentsView::OnMouseDragged(
     const views::MouseEvent& event) {
   if (event.IsLeftMouseButton() || event.IsMiddleMouseButton())
     UpdateLineEvent(event, !ignore_mouse_drag_ && event.IsLeftMouseButton());
   return true;
 }
 
-void AutocompletePopupContentsView::OnMouseReleased(
+void OmniboxPopupContentsView::OnMouseReleased(
     const views::MouseEvent& event) {
   if (ignore_mouse_drag_) {
     OnMouseCaptureLost();
@@ -354,26 +352,26 @@ void AutocompletePopupContentsView::OnMouseReleased(
   }
 }
 
-void AutocompletePopupContentsView::OnMouseCaptureLost() {
+void OmniboxPopupContentsView::OnMouseCaptureLost() {
   ignore_mouse_drag_ = false;
 }
 
-void AutocompletePopupContentsView::OnMouseMoved(
+void OmniboxPopupContentsView::OnMouseMoved(
     const views::MouseEvent& event) {
   model_->SetHoveredLine(GetIndexForPoint(event.location()));
 }
 
-void AutocompletePopupContentsView::OnMouseEntered(
+void OmniboxPopupContentsView::OnMouseEntered(
     const views::MouseEvent& event) {
   model_->SetHoveredLine(GetIndexForPoint(event.location()));
 }
 
-void AutocompletePopupContentsView::OnMouseExited(
+void OmniboxPopupContentsView::OnMouseExited(
     const views::MouseEvent& event) {
   model_->SetHoveredLine(AutocompletePopupModel::kNoMatch);
 }
 
-ui::GestureStatus AutocompletePopupContentsView::OnGestureEvent(
+ui::GestureStatus OmniboxPopupContentsView::OnGestureEvent(
     const views::GestureEvent& event) {
   switch (event.type()) {
     case ui::ET_GESTURE_TAP_DOWN:
@@ -392,15 +390,15 @@ ui::GestureStatus AutocompletePopupContentsView::OnGestureEvent(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AutocompletePopupContentsView, protected:
+// OmniboxPopupContentsView, protected:
 
-void AutocompletePopupContentsView::PaintResultViews(gfx::Canvas* canvas) {
-  canvas->DrawColor(AutocompleteResultView::GetColor(
-      AutocompleteResultView::NORMAL, AutocompleteResultView::BACKGROUND));
+void OmniboxPopupContentsView::PaintResultViews(gfx::Canvas* canvas) {
+  canvas->DrawColor(OmniboxResultView::GetColor(
+      OmniboxResultView::NORMAL, OmniboxResultView::BACKGROUND));
   View::PaintChildren(canvas);
 }
 
-int AutocompletePopupContentsView::CalculatePopupHeight() {
+int OmniboxPopupContentsView::CalculatePopupHeight() {
   DCHECK_GE(static_cast<size_t>(child_count()), model_->result().size());
   int popup_height = 0;
   for (size_t i = 0; i < model_->result().size(); ++i)
@@ -408,18 +406,18 @@ int AutocompletePopupContentsView::CalculatePopupHeight() {
   return popup_height;
 }
 
-AutocompleteResultView* AutocompletePopupContentsView::CreateResultView(
-    AutocompleteResultViewModel* model,
+OmniboxResultView* OmniboxPopupContentsView::CreateResultView(
+    OmniboxResultViewModel* model,
     int model_index,
     const gfx::Font& font,
     const gfx::Font& bold_font) {
-  return new AutocompleteResultView(model, model_index, font, bold_font);
+  return new OmniboxResultView(model, model_index, font, bold_font);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AutocompletePopupContentsView, views::View overrides, protected:
+// OmniboxPopupContentsView, views::View overrides, protected:
 
-void AutocompletePopupContentsView::OnPaint(gfx::Canvas* canvas) {
+void OmniboxPopupContentsView::OnPaint(gfx::Canvas* canvas) {
   gfx::Path path;
   MakeContentsPath(&path, GetContentsBounds());
   canvas->Save();
@@ -441,23 +439,23 @@ void AutocompletePopupContentsView::OnPaint(gfx::Canvas* canvas) {
   OnPaintBorder(canvas);
 }
 
-void AutocompletePopupContentsView::PaintChildren(gfx::Canvas* canvas) {
+void OmniboxPopupContentsView::PaintChildren(gfx::Canvas* canvas) {
   // We paint our children inside OnPaint().
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AutocompletePopupContentsView, private:
+// OmniboxPopupContentsView, private:
 
-bool AutocompletePopupContentsView::HasMatchAt(size_t index) const {
+bool OmniboxPopupContentsView::HasMatchAt(size_t index) const {
   return index < model_->result().size();
 }
 
-const AutocompleteMatch& AutocompletePopupContentsView::GetMatchAtIndex(
+const AutocompleteMatch& OmniboxPopupContentsView::GetMatchAtIndex(
     size_t index) const {
   return model_->result().match_at(index);
 }
 
-void AutocompletePopupContentsView::MakeContentsPath(
+void OmniboxPopupContentsView::MakeContentsPath(
     gfx::Path* path,
     const gfx::Rect& bounding_rect) {
   SkRect rect;
@@ -470,7 +468,7 @@ void AutocompletePopupContentsView::MakeContentsPath(
   path->addRoundRect(rect, radius, radius);
 }
 
-void AutocompletePopupContentsView::UpdateBlurRegion() {
+void OmniboxPopupContentsView::UpdateBlurRegion() {
 #if defined(OS_WIN) && !defined(USE_AURA)
   // We only support background blurring on Vista with Aero-Glass enabled.
   if (!views::NativeWidgetWin::IsAeroGlassEnabled() || !GetWidget())
@@ -494,19 +492,17 @@ void AutocompletePopupContentsView::UpdateBlurRegion() {
 #endif
 }
 
-void AutocompletePopupContentsView::MakeCanvasTransparent(
-    gfx::Canvas* canvas) {
+void OmniboxPopupContentsView::MakeCanvasTransparent(gfx::Canvas* canvas) {
   // Allow the window blur effect to show through the popup background.
   SkAlpha alpha = GetThemeProvider()->ShouldUseNativeFrame() ?
       kGlassPopupAlpha : kOpaquePopupAlpha;
   canvas->DrawColor(SkColorSetA(
-      AutocompleteResultView::GetColor(AutocompleteResultView::NORMAL,
-      AutocompleteResultView::BACKGROUND), alpha), SkXfermode::kDstIn_Mode);
+      OmniboxResultView::GetColor(OmniboxResultView::NORMAL,
+          OmniboxResultView::BACKGROUND), alpha), SkXfermode::kDstIn_Mode);
 }
 
-void AutocompletePopupContentsView::OpenIndex(
-    size_t index,
-    WindowOpenDisposition disposition) {
+void OmniboxPopupContentsView::OpenIndex(size_t index,
+                                         WindowOpenDisposition disposition) {
   if (!HasMatchAt(index))
     return;
 
@@ -517,7 +513,7 @@ void AutocompletePopupContentsView::OpenIndex(
   omnibox_view_->OpenMatch(match, disposition, GURL(), index);
 }
 
-size_t AutocompletePopupContentsView::GetIndexForPoint(
+size_t OmniboxPopupContentsView::GetIndexForPoint(
     const gfx::Point& point) {
   if (!HitTest(point))
     return AutocompletePopupModel::kNoMatch;
@@ -534,7 +530,7 @@ size_t AutocompletePopupContentsView::GetIndexForPoint(
   return AutocompletePopupModel::kNoMatch;
 }
 
-gfx::Rect AutocompletePopupContentsView::CalculateTargetBounds(int h) {
+gfx::Rect OmniboxPopupContentsView::CalculateTargetBounds(int h) {
   gfx::Rect location_bar_bounds(location_bar_->GetContentsBounds());
   const views::Border* border = location_bar_->border();
   if (border) {
@@ -557,7 +553,7 @@ gfx::Rect AutocompletePopupContentsView::CalculateTargetBounds(int h) {
       location_bar_bounds, gfx::Size(location_bar_bounds.width(), h));
 }
 
-void AutocompletePopupContentsView::UpdateLineEvent(
+void OmniboxPopupContentsView::UpdateLineEvent(
     const views::LocatedEvent& event,
     bool should_set_selected_line) {
   size_t index = GetIndexForPoint(event.location());
@@ -566,7 +562,7 @@ void AutocompletePopupContentsView::UpdateLineEvent(
     model_->SetSelectedLine(index, false, false);
 }
 
-void AutocompletePopupContentsView::OpenSelectedLine(
+void OmniboxPopupContentsView::OpenSelectedLine(
     const views::LocatedEvent& event,
     WindowOpenDisposition disposition) {
   size_t index = GetIndexForPoint(event.location());
