@@ -337,7 +337,7 @@ void InputMethodIBus::OnCaretBoundsChanged(const TextInputClient* client) {
   gfx::Rect composition_head;
   if (!GetTextInputClient()->GetCompositionCharacterBounds(0,
                                                            &composition_head)) {
-    composition_head = gfx::Rect();
+    composition_head = rect;
   }
 
   // This function runs asynchronously.
