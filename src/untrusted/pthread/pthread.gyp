@@ -32,7 +32,7 @@
       ],
     },
     {
-      'target_name': 'pthreadb_private_lib',
+      'target_name': 'pthread_private_lib',
       'type': 'none',
       'variables': {
         'nlib_target': 'libpthread_private.a',
