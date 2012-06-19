@@ -235,6 +235,7 @@ class MockExtensionProvider : public ExternalExtensionProviderInterface {
 class MockProviderVisitor
     : public ExternalExtensionProviderInterface::VisitorInterface {
  public:
+
   // The provider will return |fake_base_path| from
   // GetBaseCrxFilePath().  User can test the behavior with
   // and without an empty path using this parameter.
@@ -1006,6 +1007,7 @@ void PackExtensionTestClient::OnPackFailure(const std::string& error_message,
      FAIL() << "Packing should not fail.";
   else
      FAIL() << "Existing CRX should have been overwritten.";
+
 }
 
 // Test loading good extensions from the profile directory.
@@ -1149,46 +1151,9 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectoryFail) {
       UTF16ToUTF8(GetErrors()[3]);
 };
 
-// Test that old versions of extensions are deleted during garbage collection.
-TEST_F(ExtensionServiceTest, GarbageCollectOldVersions) {
-  PluginService::GetInstance()->Init();
-
-  FilePath source_install_dir = data_dir_
-      .AppendASCII("garbage_collection")
-      .AppendASCII("Extensions");
-
-  FilePath pref_path = source_install_dir
-      .DirName()
-      .AppendASCII("Preferences");
-
-  InitializeInstalledExtensionService(pref_path, source_install_dir);
-
-  // Verify that there are two versions present initially.
-  ASSERT_TRUE(file_util::PathExists(
-      extensions_install_dir_.AppendASCII("fdoajpacpdeapbmhbblepcnilfkpmkff")
-                             .AppendASCII("1.0_0")));
-  ASSERT_TRUE(file_util::PathExists(
-      extensions_install_dir_.AppendASCII("fdoajpacpdeapbmhbblepcnilfkpmkff")
-                             .AppendASCII("1.1_0")));
-
-  ValidatePrefKeyCount(1u);
-
-  service_->Init();
-  loop_.RunAllPending();
-
-  // Garbage collection should have deleted the old version.
-  ASSERT_FALSE(file_util::PathExists(
-      extensions_install_dir_.AppendASCII("fdoajpacpdeapbmhbblepcnilfkpmkff")
-                             .AppendASCII("1.0_0")));
-  ASSERT_TRUE(file_util::PathExists(
-      extensions_install_dir_.AppendASCII("fdoajpacpdeapbmhbblepcnilfkpmkff")
-                             .AppendASCII("1.1_0")));
-}
-
-// Test that extensions which were deleted from the preferences are cleaned up
-// during startup.
+// Test that partially deleted extensions are cleaned up during startup
 // Test loading bad extensions from the profile directory.
-TEST_F(ExtensionServiceTest, GarbageCollectOnStartup) {
+TEST_F(ExtensionServiceTest, CleanupOnStartup) {
   PluginService::GetInstance()->Init();
 
   FilePath source_install_dir = data_dir_
@@ -1200,13 +1165,11 @@ TEST_F(ExtensionServiceTest, GarbageCollectOnStartup) {
 
   InitializeInstalledExtensionService(pref_path, source_install_dir);
 
-  ValidatePrefKeyCount(3u);
-
   // Simulate that one of them got partially deleted by clearing its pref.
   {
     DictionaryPrefUpdate update(profile_->GetPrefs(), "extensions.settings");
     DictionaryValue* dict = update.Get();
-    ASSERT_TRUE(dict);
+    ASSERT_TRUE(dict != NULL);
     dict->Remove("behllobkkfkfnphdnhnkndlbkcpglgmj", NULL);
   }
 
@@ -1227,93 +1190,6 @@ TEST_F(ExtensionServiceTest, GarbageCollectOnStartup) {
   FilePath extension_dir = extensions_install_dir_
       .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj");
   ASSERT_FALSE(file_util::PathExists(extension_dir));
-}
-
-// Test that internal extensions which are referenced in the preferences but
-// had their content deleted are cleaned up during startup.
-TEST_F(ExtensionServiceTest, GarbageCollectInternalExtensionsMissingContent) {
-  PluginService::GetInstance()->Init();
-
-  FilePath source_dir = data_dir_.AppendASCII("good").AppendASCII("Extensions");
-  FilePath pref_path = source_dir.DirName().AppendASCII("Preferences");
-
-  InitializeInstalledExtensionService(pref_path, source_dir);
-
-  ValidatePrefKeyCount(3u);
-
-  // Delete the extension's directory.
-  FilePath extension_dir = extensions_install_dir_
-      .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj");
-  ASSERT_TRUE(file_util::Delete(extension_dir, true));
-
-  // Run GarbageCollectExtensions.
-  service_->Init();
-  loop_.RunAllPending();
-
-  file_util::FileEnumerator dirs(extensions_install_dir_, false,
-                                 file_util::FileEnumerator::DIRECTORIES);
-  size_t count = 0;
-  while (!dirs.Next().empty())
-    count++;
-
-  // We should have only gotten two extensions now.
-  EXPECT_EQ(2u, count);
-
-  const DictionaryValue* dictionary =
-      profile_->GetPrefs()->GetDictionary("extensions.settings");
-  ASSERT_TRUE(dictionary);
-  ASSERT_FALSE(dictionary->HasKey("behllobkkfkfnphdnhnkndlbkcpglgmj"));
-}
-
-// Test that unpacked extensions which are referenced in the preferences but
-// had their content deleted are cleaned up during startup.
-TEST_F(ExtensionServiceTest, GarbageCollectUnpackedExtensionsMissingContent) {
-  InitializeEmptyExtensionService();
-
-  ScopedTempDir temp;
-  ASSERT_TRUE(temp.CreateUniqueTempDir());
-
-  // Write the manifest dynamically, since we have to delete the file anyway.
-  FilePath extension_path = temp.path();
-  FilePath manifest_path = extension_path.Append(Extension::kManifestFilename);
-  ASSERT_FALSE(file_util::PathExists(manifest_path));
-
-  // Construct a simple manifest and install it.
-  DictionaryValue manifest;
-  manifest.SetString("version", "1.0");
-  manifest.SetString("name", "Cleanup Unpacked Extensions Missing Content");
-  manifest.SetInteger("manifest_version", 2);
-
-  JSONFileValueSerializer serializer(manifest_path);
-  ASSERT_TRUE(serializer.Serialize(manifest));
-
-  extensions::UnpackedInstaller::Create(service_)->Load(extension_path);
-  loop_.RunAllPending();
-
-  // Make sure it installed correctly.
-  EXPECT_EQ(0u, GetErrors().size());
-  ASSERT_EQ(1u, loaded_.size());
-  EXPECT_EQ(Extension::LOAD, loaded_[0]->location());
-  EXPECT_EQ(1u, service_->extensions()->size());
-
-  std::string extension_id = loaded_[0]->id();
-
-  // Make sure it is in the preferences at this point.
-  const DictionaryValue* initial_dictionary =
-      profile_->GetPrefs()->GetDictionary("extensions.settings");
-  ASSERT_TRUE(initial_dictionary);
-  ASSERT_TRUE(initial_dictionary->HasKey(extension_id));
-
-  // Delete local content, GarbageCollectExtensions, and test whether the key
-  // is still in the preferences.
-  ASSERT_TRUE(file_util::Delete(extension_path, true));
-  service_->GarbageCollectExtensions();
-  loop_.RunAllPending();
-
-  const DictionaryValue* final_dictionary =
-      profile_->GetPrefs()->GetDictionary("extensions.settings");
-  ASSERT_TRUE(final_dictionary);
-  ASSERT_FALSE(final_dictionary->HasKey(extension_id));
 }
 
 // Test installing extensions. This test tries to install few extensions using

@@ -419,6 +419,69 @@ bool ValidateExtension(const Extension* extension,
   return true;
 }
 
+void GarbageCollectExtensions(
+    const FilePath& install_directory,
+    const std::map<std::string, FilePath>& extension_paths) {
+  // Nothing to clean up if it doesn't exist.
+  if (!file_util::DirectoryExists(install_directory))
+    return;
+
+  DVLOG(1) << "Garbage collecting extensions...";
+  file_util::FileEnumerator enumerator(install_directory,
+                                       false,  // Not recursive.
+                                       file_util::FileEnumerator::DIRECTORIES);
+  FilePath extension_path;
+  for (extension_path = enumerator.Next(); !extension_path.value().empty();
+       extension_path = enumerator.Next()) {
+    std::string extension_id;
+
+    FilePath basename = extension_path.BaseName();
+    if (IsStringASCII(basename.value())) {
+      extension_id = UTF16ToASCII(basename.LossyDisplayName());
+      if (!Extension::IdIsValid(extension_id))
+        extension_id.clear();
+    }
+
+    // Delete directories that aren't valid IDs.
+    if (extension_id.empty()) {
+      DLOG(WARNING) << "Invalid extension ID encountered in extensions "
+                       "directory: " << basename.value();
+      DVLOG(1) << "Deleting invalid extension directory "
+               << extension_path.value() << ".";
+      file_util::Delete(extension_path, true);  // Recursive.
+      continue;
+    }
+
+    std::map<std::string, FilePath>::const_iterator iter =
+        extension_paths.find(extension_id);
+
+    // If there is no entry in the prefs file, just delete the directory and
+    // move on. This can legitimately happen when an uninstall does not
+    // complete, for example, when a plugin is in use at uninstall time.
+    if (iter == extension_paths.end()) {
+      DVLOG(1) << "Deleting unreferenced install for directory "
+               << extension_path.LossyDisplayName() << ".";
+      file_util::Delete(extension_path, true);  // Recursive.
+      continue;
+    }
+
+    // Clean up old version directories.
+    file_util::FileEnumerator versions_enumerator(
+        extension_path,
+        false,  // Not recursive.
+        file_util::FileEnumerator::DIRECTORIES);
+    for (FilePath version_dir = versions_enumerator.Next();
+         !version_dir.value().empty();
+         version_dir = versions_enumerator.Next()) {
+      if (version_dir.BaseName() != iter->second.BaseName()) {
+        DVLOG(1) << "Deleting old version for directory "
+                 << version_dir.LossyDisplayName() << ".";
+        file_util::Delete(version_dir, true);  // Recursive.
+      }
+    }
+  }
+}
+
 ExtensionMessageBundle* LoadExtensionMessageBundle(
     const FilePath& extension_path,
     const std::string& default_locale,

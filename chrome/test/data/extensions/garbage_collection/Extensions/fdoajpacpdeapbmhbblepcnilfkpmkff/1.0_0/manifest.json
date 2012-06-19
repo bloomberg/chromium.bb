@@ -1,6 +1,0 @@
-{
-   "description": "An extension to test garbage collection of old versions.",
-   "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC3Yox7PDjjZl7upms+MLnOuswzlX63YH5jVvzug1WoAHVnq/djfHsViG0WgTrxxPiMhuTNqOh2OzdqHRko+xbkBBgpSjV+X1lIvUgZGOx9ImH2pz4kntyRv1z9abuN+rQh+gjglPvLJQuWU6VvjH0zypTaXZiQ4GCojRqD/dWacQIDAQAB",
-   "name": "GarbageCollectOldVersions Extension",
-   "version": "1.0"
-}

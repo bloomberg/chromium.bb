@@ -22,6 +22,63 @@ using extensions::Extension;
 
 namespace keys = extension_manifest_keys;
 
+#if defined(OS_WIN)
+// http://crbug.com/106381
+#define InstallUninstallGarbageCollect DISABLED_InstallUninstallGarbageCollect
+#endif
+TEST(ExtensionFileUtil, InstallUninstallGarbageCollect) {
+  ScopedTempDir temp;
+  ASSERT_TRUE(temp.CreateUniqueTempDir());
+
+  // Create a source extension.
+  std::string extension_id("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+  std::string version("1.0");
+  FilePath src = temp.path().AppendASCII(extension_id);
+  ASSERT_TRUE(file_util::CreateDirectory(src));
+
+  // Create a extensions tree.
+  FilePath all_extensions = temp.path().AppendASCII("extensions");
+  ASSERT_TRUE(file_util::CreateDirectory(all_extensions));
+
+  // Install in empty directory. Should create parent directories as needed.
+  FilePath version_1 = extension_file_util::InstallExtension(src,
+                                                             extension_id,
+                                                             version,
+                                                             all_extensions);
+  ASSERT_EQ(version_1.value(),
+            all_extensions.AppendASCII(extension_id).AppendASCII("1.0_0")
+                .value());
+  ASSERT_TRUE(file_util::DirectoryExists(version_1));
+
+  // Should have moved the source.
+  ASSERT_FALSE(file_util::DirectoryExists(src));
+
+  // Install again. Should create a new one with different name.
+  ASSERT_TRUE(file_util::CreateDirectory(src));
+  FilePath version_2 = extension_file_util::InstallExtension(src,
+                                                             extension_id,
+                                                             version,
+                                                             all_extensions);
+  ASSERT_EQ(version_2.value(),
+            all_extensions.AppendASCII(extension_id).AppendASCII("1.0_1")
+                .value());
+  ASSERT_TRUE(file_util::DirectoryExists(version_2));
+
+  // Collect garbage. Should remove first one.
+  std::map<std::string, FilePath> extension_paths;
+  extension_paths[extension_id] =
+      FilePath().AppendASCII(extension_id).Append(version_2.BaseName());
+  extension_file_util::GarbageCollectExtensions(all_extensions,
+                                                extension_paths);
+  ASSERT_FALSE(file_util::DirectoryExists(version_1));
+  ASSERT_TRUE(file_util::DirectoryExists(version_2));
+
+  // Uninstall. Should remove entire extension subtree.
+  extension_file_util::UninstallExtension(all_extensions, extension_id);
+  ASSERT_FALSE(file_util::DirectoryExists(version_2.DirName()));
+  ASSERT_TRUE(file_util::DirectoryExists(all_extensions));
+}
+
 TEST(ExtensionFileUtil, LoadExtensionWithValidLocales) {
   FilePath install_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));

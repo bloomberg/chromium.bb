@@ -119,6 +119,7 @@
 #include "chrome/browser/chromeos/extensions/input_method_event_router.h"
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
+#include "chrome/browser/extensions/extension_input_ime_api.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 #endif
@@ -324,8 +325,6 @@ ExtensionService::ExtensionService(Profile* profile,
     : profile_(profile),
       system_(ExtensionSystem::Get(profile)),
       extension_prefs_(extension_prefs),
-      extension_garbage_collector_(
-          new extensions::ExtensionGarbageCollector(this)),
       settings_frontend_(extensions::SettingsFrontend::Create(profile)),
       pending_extension_manager_(*ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       install_directory_(install_directory),
@@ -1847,7 +1846,23 @@ void ExtensionService::ReloadExtensions() {
 }
 
 void ExtensionService::GarbageCollectExtensions() {
-  extension_garbage_collector_->GarbageCollectExtensions();
+  if (extension_prefs_->pref_service()->ReadOnly())
+    return;
+
+  scoped_ptr<ExtensionPrefs::ExtensionsInfo> info(
+      extension_prefs_->GetInstalledExtensionsInfo());
+
+  std::map<std::string, FilePath> extension_paths;
+  for (size_t i = 0; i < info->size(); ++i)
+    extension_paths[info->at(i)->extension_id] = info->at(i)->extension_path;
+
+  if (!BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE,
+          base::Bind(
+              &extension_file_util::GarbageCollectExtensions,
+              install_directory_,
+              extension_paths)))
+    NOTREACHED();
 
   // Also garbage-collect themes.  We check |profile_| to be
   // defensive; in the future, we may call GarbageCollectExtensions()
@@ -2013,7 +2028,7 @@ void ExtensionService::InitializePermissions(const Extension* extension) {
     // Other than for unpacked extensions, CrxInstaller should have guaranteed
     // that we aren't downgrading.
     if (extension->location() != Extension::LOAD)
-      CHECK_GE(extension->version()->CompareTo(*(old->version())), 0);
+      CHECK(extension->version()->CompareTo(*(old->version())) >= 0);
 
     // Extensions get upgraded if the privileges are allowed to increase or
     // the privileges haven't increased.
