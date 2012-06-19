@@ -46,7 +46,7 @@ class PerformanceMonitorDatabaseEventTest : public ::testing::Test {
   }
 
   void SetUp() {
-    ASSERT_TRUE(db_);
+    ASSERT_TRUE(db_.get());
     PopulateDB();
   }
 
@@ -58,7 +58,7 @@ class PerformanceMonitorDatabaseEventTest : public ::testing::Test {
     db_->AddEvent(*uninstall_event_2_.get());
   }
 
-  scoped_refptr<Database> db_;
+  scoped_ptr<Database> db_;
   Database::Clock* clock_;
   FilePath temp_path_;
   scoped_ptr<Event> install_event_1_;
@@ -87,8 +87,8 @@ class PerformanceMonitorDatabaseEventTest : public ::testing::Test {
 TEST(PerformanceMonitorDatabaseSetupTest, OpenCloseTest) {
   FilePath alternate_path;
   file_util::CreateNewTempDirectory(FilePath::StringType(), &alternate_path);
-  scoped_refptr<Database> db = Database::Create(alternate_path);
-  ASSERT_TRUE(db);
+  scoped_ptr<Database> db = Database::Create(alternate_path);
+  ASSERT_TRUE(db.get());
   ASSERT_TRUE(db->Close());
 }
 
@@ -99,26 +99,26 @@ TEST(PerformanceMonitorDatabaseSetupTest, ActiveIntervalTest) {
   TestingClock* clock_1 = new TestingClock();
   base::Time start_time = clock_1->GetTime();
 
-  scoped_refptr<Database> db_1 = Database::Create(alternate_path);
+  scoped_ptr<Database> db_1 = Database::Create(alternate_path);
   db_1->set_clock(scoped_ptr<Database::Clock>(clock_1));
   db_1->AddStateValue("test", "test");
-  ASSERT_TRUE(db_1);
+  ASSERT_TRUE(db_1.get());
   ASSERT_TRUE(db_1->Close());
 
   TestingClock* clock_2 = new TestingClock(*clock_1);
   base::Time mid_time = clock_2->GetTime();
-  scoped_refptr<Database> db_2 = Database::Create(alternate_path);
+  scoped_ptr<Database> db_2 = Database::Create(alternate_path);
   db_2->set_clock(scoped_ptr<Database::Clock>(clock_2));
   db_2->AddStateValue("test", "test");
-  ASSERT_TRUE(db_2);
+  ASSERT_TRUE(db_2.get());
   ASSERT_TRUE(db_2->Close());
 
   TestingClock* clock_3 = new TestingClock(*clock_2);
   base::Time end_time = clock_3->GetTime();
-  scoped_refptr<Database> db_3 = Database::Create(alternate_path);
+  scoped_ptr<Database> db_3 = Database::Create(alternate_path);
   db_3->set_clock(scoped_ptr<Database::Clock>(clock_3));
   db_3->AddStateValue("test", "test");
-  ASSERT_TRUE(db_3);
+  ASSERT_TRUE(db_3.get());
 
   std::vector<TimeRange> active_interval = db_3->GetActiveIntervals(start_time,
                                                                     end_time);

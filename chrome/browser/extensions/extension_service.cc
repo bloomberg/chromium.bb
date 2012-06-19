@@ -834,6 +834,12 @@ void ExtensionService::EnableExtension(const std::string& extension_id) {
 
   NotifyExtensionLoaded(extension);
 
+  // Notify listeners that the extension was enabled.
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_EXTENSION_ENABLED,
+      content::Source<Profile>(profile_),
+      content::Details<const Extension>(extension));
+
   SyncExtensionChangeIfNeeded(*extension);
 }
 

@@ -12,9 +12,8 @@
 
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/performance_monitor/event.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
@@ -81,10 +80,12 @@ struct TimeRange {
 // spatially local.
 // Key: Metric - Activity - Time
 // Value: Statistic
-class Database : public base::RefCountedThreadSafe<Database> {
+class Database {
  public:
   typedef std::vector<linked_ptr<Event> > EventList;
   typedef std::set<EventType> EventTypeSet;
+
+  static const char kDatabaseSequenceToken[];
 
   // The class that the database will use to infer time. Abstracting out the
   // time mechanism allows for easy testing and mock data insetion.
@@ -95,7 +96,9 @@ class Database : public base::RefCountedThreadSafe<Database> {
     virtual base::Time GetTime() = 0;
   };
 
-  static scoped_refptr<Database> Create(FilePath path);
+  virtual ~Database();
+
+  static scoped_ptr<Database> Create(FilePath path);
 
   // A "state" value is anything that can only have one value at a time, and
   // usually describes the state of the browser eg. version.
@@ -140,7 +143,6 @@ class Database : public base::RefCountedThreadSafe<Database> {
   }
 
  private:
-  friend class base::RefCountedThreadSafe<Database>;
   FRIEND_TEST_ALL_PREFIXES(PerformanceMonitorDatabaseSetupTest, OpenCloseTest);
   FRIEND_TEST_ALL_PREFIXES(PerformanceMonitorDatabaseSetupTest,
                            ActiveIntervalTest);
@@ -154,7 +156,6 @@ class Database : public base::RefCountedThreadSafe<Database> {
   };
 
   explicit Database(const FilePath& path);
-  virtual ~Database();
 
   void InitDBs();
 

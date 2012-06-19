@@ -62,6 +62,9 @@ int EventKeyToType(const std::string& event_key) {
 
 namespace performance_monitor {
 
+const char Database::kDatabaseSequenceToken[] =
+    "_performance_monitor_db_sequence_token_";
+
 TimeRange::TimeRange() {
 }
 
@@ -78,15 +81,15 @@ base::Time Database::SystemClock::GetTime() {
 }
 
 // Static
-scoped_refptr<Database> Database::Create(FilePath path) {
+scoped_ptr<Database> Database::Create(FilePath path) {
   CHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (path.empty()) {
     CHECK(PathService::Get(chrome::DIR_USER_DATA, &path));
     path = path.AppendASCII(kDbDir);
   }
   if (!file_util::DirectoryExists(path) && !file_util::CreateDirectory(path))
-    return scoped_refptr<Database>();
-  return scoped_refptr<Database>(new Database(path));
+    return scoped_ptr<Database>();
+  return scoped_ptr<Database>(new Database(path));
 }
 
 bool Database::AddStateValue(const std::string& key, const std::string& value) {
@@ -201,7 +204,6 @@ Database::Database(const FilePath& path)
 }
 
 Database::~Database() {
-  Close();
 }
 
 void Database::InitDBs() {

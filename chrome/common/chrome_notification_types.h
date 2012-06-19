@@ -437,7 +437,7 @@ enum NotificationType {
   // Extensions --------------------------------------------------------------
 
   // Sent when a CrxInstaller finishes. Source is the CrxInstaller that
-  // finished.  No details.
+  // finished. The details are the extension which was installed.
   NOTIFICATION_CRX_INSTALLER_DONE,
 
   // Sent when the known installed extensions have all been loaded.  In
@@ -457,6 +457,12 @@ enum NotificationType {
   // An error occured while attempting to load an extension. The details are a
   // string with details about why the load failed.
   NOTIFICATION_EXTENSION_LOAD_ERROR,
+
+  // Sent when an extension is enabled. Under most circumstances, listeners
+  // will want to use NOTIFICATION_EXTENSION_LOADED. This notification is only
+  // fired when the "Enable" button is hit in the extensions tab.  The details
+  // are an Extension, and the source is a Profile.
+  NOTIFICATION_EXTENSION_ENABLED,
 
   // Sent when attempting to load a new extension, but they are disabled. The
   // details are an Extension*, and the source is a Profile*.
