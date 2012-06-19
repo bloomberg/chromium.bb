@@ -41,7 +41,7 @@ def _CommonChecks(input_api, output_api):
   old_path = sys.path
 
   try:
-    sys.path.insert(0, resources)
+    sys.path = [resources] + old_path
     from web_dev_style import css_checker, js_checker
 
     def is_resource(f):
