@@ -18,9 +18,23 @@
     function resetScore() {
       naclModule.postMessage("resetScore");
     }
+
+    // Handle a message coming from the NaCl module.  The message payload is
+    // assumed to contain the current game score.  Update the score text
+    // display with this value.
+    // Note that errors are also sent to this handler.  A message starting
+    // with 'ERROR' is considered an error, all other strings are assumed
+    // to be scores.
+    function handleMessage(message_event) {
+      if (message_event.data.indexOf('ERROR') == 0) {
+        document.getElementById('error_log').innerHTML = message_event.data;
+      } else {
+        document.getElementById('score').innerHTML = message_event.data;
+      }
+    }
   </script>
 </head>
-<body onunload="pageDidUnload()" onload="pageDidLoad('<NAME>', '<tc>', 800, 600)">
+<body onunload="pageDidUnload()">
 <h1><TITLE></h1>
 <h2>Status: <code id="statusField">NO-STATUS</code></h2>
   <!-- The <EMBED> element is wrapped inside a <DIV>, which has both a 'load'
@@ -39,7 +53,12 @@
   -->
   <div id="listener">
     <script type="text/javascript">
-      window.webkitStorageInfo.requestQuota(PERSISTENT, 1024);
+      window.webkitStorageInfo.requestQuota(window.PERSISTENT, 1024,
+          function(bytes) {
+            updateStatus('Allocated '+bytes+' bytes of persistent storage.');
+            createNaClModule('<NAME>', '<tc>', 800, 600);
+          },
+          function(e) { alert('Failed to allocate space'); });
       var listener = document.getElementById('listener')
       listener.addEventListener('load', moduleDidLoad, true);
       listener.addEventListener('message', handleMessage, true);

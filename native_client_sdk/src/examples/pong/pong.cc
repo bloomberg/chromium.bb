@@ -93,7 +93,7 @@ void QueryCallback(void* data, int32_t result) {
   pong->bytes_buffer_.resize(pong->bytes_to_read_);
 
   // Check if there is anything to read.
-  if (pong->bytes_to_read_ == 0) {
+  if (pong->bytes_to_read_ != 0) {
     pong->file_io_->Read(pong->offset_,
                          &pong->bytes_buffer_[0],
                          pong->bytes_to_read_,
@@ -340,11 +340,9 @@ void Pong::WriteScoreToFile() {
   if (file_io_ == NULL)
     return;
   // Write the score in <player score>:<computer score> format.
-  size_t score_string_length = 1 + (player_score_ ? log(player_score_) : 1) + 1
-      + (computer_score_ ? log(computer_score_) : 1) + 1;
-  bytes_buffer_.resize(score_string_length);
-  snprintf(&bytes_buffer_[0], bytes_buffer_.length(), "%i:%i", player_score_,
-           computer_score_);
+  char buffer[100];
+  snprintf(&buffer[0], sizeof(buffer), "%d:%d", player_score_, computer_score_);
+  bytes_buffer_ = std::string(&buffer[0]);
   offset_ = 0;  // overwrite score in file.
   file_io_->Write(offset_,
                   bytes_buffer_.c_str(),
@@ -404,15 +402,10 @@ Pong::BallDirection Pong::RightPaddleNextMove() const {
 }
 
 void Pong::UpdateScoreDisplay() {
-  if (file_io_ == NULL)
-    PostMessage(pp::Var("Could not save score (incognito?)."));
-    return;  //  Since we cant't save the score to file, do nothing and return.
-  size_t message_length = 18 + (player_score_ ? log(player_score_) : 1) + 1
-      + (computer_score_ ? log(computer_score_) : 1) + 1;
-  std::string score_message(message_length, '\0');
-  snprintf(&score_message[0], score_message.length(),
-           "You: %i   Computer: %i", player_score_, computer_score_);
-  PostMessage(pp::Var(score_message));
+  char buffer[100];
+  snprintf(&buffer[0], sizeof(buffer), "You %d:  Computer %d", player_score_,
+      computer_score_);
+  PostMessage(pp::Var(buffer));
 }
 
 }  // namespace pong
