@@ -231,7 +231,14 @@ def GetToolchainsForBoard(board):
   if board == 'all':
     cmd.append('--all_boards')
   else:
-    cmd.append('--board=' + board)
+    # TODO(vapier):
+    # Some tools will give us the base board name ('tegra2') while others will
+    # give us the board+variant ('tegra2_kaen').  The cros_overlay_list does
+    # not like getting variant names, so strip that off.  Not entirely clear
+    # if this is what we want to do, or if the cros_overlay_list should give
+    # us back the overlays (including variants).  I'm inclined to go with the
+    # latter, but that requires more testing to prevent fallout.
+    cmd.append('--board=' + board.split('_')[0])
   overlays = cros_build_lib.RunCommand(
       cmd, print_cmd=False, redirect_stdout=True).output.splitlines()
 
