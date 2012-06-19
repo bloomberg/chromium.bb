@@ -786,13 +786,19 @@ def UploadArchivedFile(archive_path, upload_url, filename, debug):
     debug: Whether we are in debug mode.
   """
 
-  if upload_url and not debug:
+  if upload_url:
     full_filename = os.path.join(archive_path, filename)
     full_url = '%s/%s' % (upload_url, filename)
-    cros_build_lib.RunCommandCaptureOutput(
-        [_GSUTIL_PATH, 'cp', full_filename, full_url])
-    cros_build_lib.RunCommandCaptureOutput(
-        [_GSUTIL_PATH, 'setacl', _GS_ACL, full_url])
+    cmds = (
+        [_GSUTIL_PATH, 'cp', full_filename, full_url],
+        [_GSUTIL_PATH, 'setacl', _GS_ACL, full_url]
+    )
+
+    for cmd in cmds:
+      if debug:
+        cros_build_lib.Info('UploadArchivedFile would run: %s' % ' '.join(cmd))
+      else:
+        cros_build_lib.RunCommandCaptureOutput(cmd)
 
 
 def UploadSymbols(buildroot, board, official):

@@ -7,6 +7,7 @@
 import cPickle
 import datetime
 import functools
+import glob
 import multiprocessing
 import os
 import Queue
@@ -1324,6 +1325,7 @@ class ArchiveStage(BoardSpecificBuilderStage):
     #       (builds recovery image first, then launches functions below)
     #       \- BuildAndArchiveFactoryImages
     #       \- ArchiveRegularImages
+    #    \- ArchiveStrippedChrome
 
     def ArchiveAutotestTarballs():
       """Archives the autotest tarballs produced in BuildTarget."""
@@ -1468,13 +1470,37 @@ class ArchiveStage(BoardSpecificBuilderStage):
       finally:
         self._hw_test_uploads_status_queue.put(success)
 
+    def ArchiveStrippedChrome():
+      """Generate and upload stripped Chrome package."""
+      cmd = ['../platform/dev/strip_package', '--board', board,
+             'chromeos-chrome']
+      cros_build_lib.RunCommand(cmd, cwd=buildroot, enter_chroot=True)
+      chrome_match = os.path.join(buildroot, 'chroot', 'build', board,
+                                  'stripped-packages', 'chromeos-base',
+                                  'chromeos-chrome-*')
+
+      files = glob.glob(chrome_match)
+      files.sort()
+      if not files:
+        raise Exception('No stripped Chrome found!')
+      elif len(files) > 1:
+        print '\n@@@STEP_WARNING@@@'
+        cros_build_lib.Warning('Expecting one stripped Chrome package, but '
+                               'found multiple in %s.'
+                               % os.path.dirname(chrome_match))
+
+      chrome_tarball = files[-1]
+      filename = os.path.basename(chrome_tarball)
+      cros_build_lib.RunCommand(['ln', '-f', chrome_tarball, filename],
+                                 cwd=archive_path)
+      upload_queue.put([filename])
+
     def BuildAndArchiveArtifacts(num_upload_processes=10):
       with bg_task_runner(upload_queue, UploadArtifact, num_upload_processes):
         # Run archiving steps in parallel.
         steps = [ArchiveDebugSymbols, BuildAndArchiveAllImages,
                  ArchiveArtifactsForHWTesting, ArchiveTestResults,
-                 ArchiveFirmwareImages]
-
+                 ArchiveFirmwareImages, ArchiveStrippedChrome]
         background.RunParallelSteps(steps)
 
     def PushImage():
