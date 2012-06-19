@@ -398,10 +398,8 @@ void TabDragController::Init(
   detach_behavior_ = detach_behavior;
   move_behavior_ = move_behavior;
   last_screen_point_ = start_screen_point_;
-  if (move_only()) {
-    last_move_screen_loc_ = start_screen_point_.x();
-    initial_tab_positions_ = source_tabstrip->GetTabXCoordinates();
-  }
+  last_move_screen_loc_ = start_screen_point_.x();
+  initial_tab_positions_ = source_tabstrip->GetTabXCoordinates();
   if (detach_into_browser_)
     GetModel(source_tabstrip_)->AddObserver(this);
 
@@ -431,6 +429,13 @@ bool TabDragController::IsAttachedTo(TabStrip* tab_strip) {
 // static
 bool TabDragController::IsActive() {
   return instance_ && instance_->active();
+}
+
+void TabDragController::SetMoveBehavior(MoveBehavior behavior) {
+  if (started_drag())
+    return;
+
+  move_behavior_ = behavior;
 }
 
 void TabDragController::Drag(const gfx::Point& screen_point) {
@@ -725,7 +730,7 @@ void TabDragController::ContinueDragging(const gfx::Point& screen_point) {
       return;
     } else if (!detach_into_browser_) {
       if (attached_tabstrip_)
-        Detach();
+        Detach(RELEASE_CAPTURE);
       if (target_tabstrip)
         Attach(target_tabstrip, screen_point);
     }
@@ -767,8 +772,8 @@ TabDragController::DragBrowserToNewTabStrip(
   }
   if (is_dragging_window_) {
 #if defined(USE_ASH)
-    // ReleaseMouseCapture() is going to result in calling back to us (because
-    // it results in a move). That'll cause all sorts of problems.  Reset the
+    // ReleaseCapture() is going to result in calling back to us (because it
+    // results in a move). That'll cause all sorts of problems.  Reset the
     // observer so we don't get notified and process the event.
     move_loop_widget_->RemoveObserver(this);
     move_loop_widget_ = NULL;
@@ -780,7 +785,14 @@ TabDragController::DragBrowserToNewTabStrip(
     target_tabstrip->OwnDragController(this);
     // Disable animations so that we don't see a close animation on aero.
     browser_widget->SetVisibilityChangedAnimationsEnabled(false);
+    // For aura we can't release capture, otherwise it'll cancel a gesture.
+    // Insteat we have to directly change capture.
+#if !defined(USE_ASH)
     browser_widget->ReleaseCapture();
+#else
+    attached_tabstrip_->ReleaseDragController();
+    target_tabstrip->GetWidget()->SetCapture(attached_tabstrip_);
+#endif
     // EndMoveLoop is going to snap the window back to its original location.
     // Hide it so users don't see this.
     browser_widget->Hide();
@@ -793,7 +805,7 @@ TabDragController::DragBrowserToNewTabStrip(
     // avoid the tab flashing issue(crbug.com/116329).
 #if defined(USE_ASH)
     is_dragging_window_ = false;
-    Detach();
+    Detach(DONT_RELEASE_CAPTURE);
     Attach(target_tabstrip, screen_point);
     // Move the tabs into position.
     MoveAttached(screen_point);
@@ -806,7 +818,7 @@ TabDragController::DragBrowserToNewTabStrip(
     end_run_loop_behavior_ = END_RUN_LOOP_CONTINUE_DRAGGING;
     return DRAG_BROWSER_RESULT_STOP;
   }
-  Detach();
+  Detach(DONT_RELEASE_CAPTURE);
   Attach(target_tabstrip, screen_point);
   return DRAG_BROWSER_RESULT_CONTINUE;
 }
@@ -1116,8 +1128,8 @@ void TabDragController::Attach(TabStrip* attached_tabstrip,
   mouse_offset_.set_x(new_x);
 
   // Transfer ownership of us to the new tabstrip as well as making sure the
-  // window has mouse capture. This is important so that if activation changes
-  // the drag isn't prematurely canceled.
+  // window has capture. This is important so that if activation changes the
+  // drag isn't prematurely canceled.
   if (detach_into_browser_) {
     attached_tabstrip_->GetWidget()->SetCapture(attached_tabstrip_);
     attached_tabstrip_->OwnDragController(this);
@@ -1132,12 +1144,13 @@ void TabDragController::Attach(TabStrip* attached_tabstrip,
   }
 }
 
-void TabDragController::Detach() {
+void TabDragController::Detach(ReleaseCapture release_capture) {
   // Release ownership of the drag controller and mouse capture. When we
   // reattach ownership is transfered.
   if (detach_into_browser_) {
     attached_tabstrip_->ReleaseDragController();
-    attached_tabstrip_->GetWidget()->ReleaseCapture();
+    if (release_capture == RELEASE_CAPTURE)
+      attached_tabstrip_->GetWidget()->ReleaseCapture();
   }
 
   mouse_move_direction_ = kMovedMouseLeft | kMovedMouseRight;
@@ -1227,7 +1240,7 @@ void TabDragController::DetachIntoNewBrowserAndRunMoveLoop(
 
   Browser* browser = CreateBrowserForDrag(
       attached_tabstrip_, screen_point, &drag_bounds);
-  Detach();
+  Detach(DONT_RELEASE_CAPTURE);
   BrowserView* dragged_browser_view =
       BrowserView::GetBrowserViewForBrowser(browser);
   dragged_browser_view->GetWidget()->SetVisibilityChangedAnimationsEnabled(
@@ -1276,7 +1289,7 @@ void TabDragController::RunMoveLoop() {
     end_run_loop_behavior_ = END_RUN_LOOP_STOP_DRAGGING;
     if (tab_strip_to_attach_to_after_exit_) {
       gfx::Point screen_point(GetCursorScreenPoint());
-      Detach();
+      Detach(DONT_RELEASE_CAPTURE);
       Attach(tab_strip_to_attach_to_after_exit_, screen_point);
       // Move the tabs into position.
       MoveAttached(screen_point);

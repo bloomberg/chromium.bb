@@ -946,7 +946,7 @@ bool TabStrip::IsTabCloseable(const BaseTab* tab) const {
 
 void TabStrip::MaybeStartDrag(
     BaseTab* tab,
-    const views::MouseEvent& event,
+    const views::LocatedEvent& event,
     const TabStripSelectionModel& original_selection) {
   // Don't accidentally start any drag operations during animations if the
   // mouse is down... during an animation tabs are being resized automatically,
@@ -994,9 +994,15 @@ void TabStrip::MaybeStartDrag(
   // . Mouse event generated from touch and the left button is down (the right
   //   button corresponds to a long press, which we want to reorder).
   // . Real mouse event and control is down. This is mostly for testing.
+  DCHECK(event.type() == ui::ET_MOUSE_PRESSED ||
+         event.type() == ui::ET_GESTURE_BEGIN);
   if (touch_layout_.get() &&
-      (((event.flags() & ui::EF_FROM_TOUCH) && event.IsLeftMouseButton()) ||
-       (!(event.flags() & ui::EF_FROM_TOUCH) && event.IsControlDown()))) {
+      ((event.type() == ui::ET_MOUSE_PRESSED &&
+        (((event.flags() & ui::EF_FROM_TOUCH) &&
+          static_cast<const views::MouseEvent&>(event).IsLeftMouseButton()) ||
+         (!(event.flags() & ui::EF_FROM_TOUCH) &&
+          static_cast<const views::MouseEvent&>(event).IsControlDown()))) ||
+       (event.type() == ui::ET_GESTURE_BEGIN))) {
     move_behavior = TabDragController::MOVE_VISIBILE_TABS;
   }
 #if defined(OS_WIN)
@@ -1004,6 +1010,10 @@ void TabStrip::MaybeStartDrag(
   if (base::win::IsMetroProcess())
     detach_behavior = TabDragController::NOT_DETACHABLE;
 #endif
+  // Gestures don't automatically do a capture. We don't allow multiple drags at
+  // the same time, so we explicitly capture.
+  if (event.type() == ui::ET_GESTURE_TAP_DOWN)
+    GetWidget()->SetCapture(this);
   drag_controller_.reset(new TabDragController);
   drag_controller_->Init(
       this, tab, tabs, gfx::Point(x, y), tab->GetMirroredXInView(event.x()),
@@ -1361,6 +1371,36 @@ void TabStrip::OnMouseCaptureLost() {
 
 void TabStrip::OnMouseMoved(const views::MouseEvent& event) {
   UpdateLayoutTypeFromMouseEvent(this, event);
+}
+
+ui::GestureStatus TabStrip::OnGestureEvent(
+    const views::GestureEvent& event) {
+  switch (event.type()) {
+    case ui::ET_GESTURE_END:
+      EndDrag(false);
+      if (adjust_layout_ && ui::GetDisplayLayout() == ui::LAYOUT_TOUCH) {
+        SetLayoutType(TAB_STRIP_LAYOUT_STACKED, true);
+        controller_->LayoutTypeMaybeChanged();
+      }
+      break;
+
+    case ui::ET_GESTURE_LONG_PRESS:
+      if (drag_controller_.get())
+        drag_controller_->SetMoveBehavior(TabDragController::REORDER);
+      break;
+
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+      ContinueDrag(this, event.location());
+      break;
+
+    case ui::ET_GESTURE_BEGIN:
+      EndDrag(true);
+      break;
+
+    default:
+      break;
+  }
+  return ui::GESTURE_STATUS_CONSUMED;
 }
 
 void TabStrip::GetCurrentTabWidths(double* unselected_width,
@@ -1748,6 +1788,10 @@ void TabStrip::UpdateLayoutTypeFromMouseEvent(views::View* source,
       break;
 
     case ui::ET_MOUSE_MOVED: {
+#if !defined(OS_WIN)
+      SetLayoutType(TAB_STRIP_LAYOUT_SHRINK, true);
+      break;
+#endif
       // Switch to shrink if the mouse enters and it's not a synthesized event.
       // We ignore synthesized events as EF_FROM_TOUCH is not necessarily set
       // correctly (highlighting the close button doesn't set the flags

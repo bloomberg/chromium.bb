@@ -56,10 +56,6 @@ TabStripLayoutType DetermineTabStripLayout(PrefService* prefs,
   }
   if (ui::GetDisplayLayout() != ui::LAYOUT_TOUCH)
     return TAB_STRIP_LAYOUT_SHRINK;
-#if defined(USE_ASH)
-  // TODO(sky): remove ifdef when event generation on aura is fixed.
-  return TAB_STRIP_LAYOUT_STACKED;
-#else
   *adjust_layout = true;
   switch (prefs->GetInteger(prefs::kTabStripLayoutType)) {
     case TAB_STRIP_LAYOUT_STACKED:
@@ -67,7 +63,6 @@ TabStripLayoutType DetermineTabStripLayout(PrefService* prefs,
     default:
       return TAB_STRIP_LAYOUT_SHRINK;
   }
-#endif
 }
 
 }  // namespace

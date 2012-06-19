@@ -396,6 +396,39 @@ void BaseTab::OnMouseExited(const views::MouseEvent& event) {
   hover_controller_.Hide();
 }
 
+ui::GestureStatus BaseTab::OnGestureEvent(const views::GestureEvent& event) {
+  if (!controller())
+    return ui::GESTURE_STATUS_CONSUMED;
+
+  switch (event.type()) {
+    case ui::ET_GESTURE_BEGIN: {
+      if (event.details().touch_points() != 1)
+        return ui::GESTURE_STATUS_UNKNOWN;
+
+      TabStripSelectionModel original_selection;
+      original_selection.Copy(controller()->GetSelectionModel());
+      if (!IsSelected())
+        controller()->SelectTab(this);
+      gfx::Point loc(event.location());
+      views::View::ConvertPointToScreen(this, &loc);
+      controller()->MaybeStartDrag(this, event, original_selection);
+      break;
+    }
+
+    case ui::ET_GESTURE_END:
+      controller()->EndDrag(false);
+      break;
+
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+      controller()->ContinueDrag(this, event.location());
+      break;
+
+    default:
+      break;
+  }
+  return ui::GESTURE_STATUS_CONSUMED;
+}
+
 bool BaseTab::GetTooltipText(const gfx::Point& p, string16* tooltip) const {
   if (data_.title.empty())
     return false;

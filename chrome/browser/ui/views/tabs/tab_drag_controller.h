@@ -98,6 +98,9 @@ class TabDragController : public content::WebContentsDelegate,
   // Returns true if there is a drag underway.
   static bool IsActive();
 
+  // Sets the move behavior. Has no effect if started_drag() is true.
+  void SetMoveBehavior(MoveBehavior behavior);
+
   // See description above fields for details on these.
   bool active() const { return active_; }
   const TabStrip* attached_tabstrip() const { return attached_tabstrip_; }
@@ -133,6 +136,12 @@ class TabDragController : public content::WebContentsDelegate,
 
     // The tab (NavigationController) was destroyed during the drag.
     TAB_DESTROYED
+  };
+
+  // Whether Detach() should release capture or not.
+  enum ReleaseCapture {
+    RELEASE_CAPTURE,
+    DONT_RELEASE_CAPTURE,
   };
 
   // Specifies what should happen when RunMoveLoop completes.
@@ -302,7 +311,7 @@ class TabDragController : public content::WebContentsDelegate,
   void Attach(TabStrip* attached_tabstrip, const gfx::Point& screen_point);
 
   // Detach the dragged Tab from the current TabStrip.
-  void Detach();
+  void Detach(ReleaseCapture release_capture);
 
   // Detaches the tabs being dragged, creates a new Browser to contain them and
   // runs a nested move loop.

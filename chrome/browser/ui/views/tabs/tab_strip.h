@@ -176,7 +176,7 @@ class TabStrip : public views::View,
   virtual bool IsTabCloseable(const BaseTab* tab) const OVERRIDE;
   virtual void MaybeStartDrag(
       BaseTab* tab,
-      const views::MouseEvent& event,
+      const views::LocatedEvent& event,
       const TabStripSelectionModel& original_selection) OVERRIDE;
   virtual void ContinueDrag(views::View* view,
                             const gfx::Point& location) OVERRIDE;
@@ -228,6 +228,8 @@ class TabStrip : public views::View,
   virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
   virtual void OnMouseMoved(const views::MouseEvent& event) OVERRIDE;
+  virtual ui::GestureStatus OnGestureEvent(
+      const views::GestureEvent& event) OVERRIDE;
 
  private:
   typedef std::map<int, std::vector<BaseTab*> > TabsClosingMap;
