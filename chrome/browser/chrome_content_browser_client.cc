@@ -1110,20 +1110,35 @@ void ChromeContentBrowserClient::RequestDesktopNotificationPermission(
     int render_process_id,
     int render_view_id) {
 #if defined(ENABLE_NOTIFICATIONS)
-  RenderViewHost* rvh = RenderViewHost::FromID(
-      render_process_id, render_view_id);
-  if (!rvh) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  WebContents* contents =
+      tab_util::GetWebContentsByID(render_process_id, render_view_id);
+  if (!contents) {
     NOTREACHED();
     return;
   }
 
-  content::RenderProcessHost* process = rvh->GetProcess();
-  Profile* profile = Profile::FromBrowserContext(process->GetBrowserContext());
-  DesktopNotificationService* service =
+  // Skip showing the infobar if the request comes from an extension, and that
+  // extension has the 'notify' permission. (If the extension does not have the
+  // permission, the user will still be prompted.)
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  ExtensionService* service = profile->GetExtensionService();
+  const Extension* extension = !service ? NULL :
+      service->extensions()->GetExtensionOrAppByURL(ExtensionURLInfo(
+          source_origin));
+  if (extension &&
+      extension->HasAPIPermission(ExtensionAPIPermission::kNotification)) {
+    RenderViewHost* rvh =
+        RenderViewHost::FromID(render_process_id, render_view_id);
+    if (rvh)
+      rvh->DesktopNotificationPermissionRequestDone(callback_context);
+    return;
+  }
+
+  DesktopNotificationService* notifications =
       DesktopNotificationServiceFactory::GetForProfile(profile);
-  service->RequestPermission(
-      source_origin, render_process_id, render_view_id, callback_context,
-      tab_util::GetWebContentsByID(render_process_id, render_view_id));
+  notifications->RequestPermission(source_origin, render_process_id,
+      render_view_id, callback_context, contents);
 #else
   NOTIMPLEMENTED();
 #endif

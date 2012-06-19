@@ -398,15 +398,15 @@ ContentSetting DesktopNotificationService::GetContentSetting(
 
 void DesktopNotificationService::RequestPermission(
     const GURL& origin, int process_id, int route_id, int callback_context,
-    WebContents* tab) {
+    WebContents* contents) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!tab) {
+  if (!contents) {
     Browser* browser = browser::FindLastActiveWithProfile(profile_);
     if (browser)
-      tab = browser->GetActiveWebContents();
+      contents = browser->GetActiveWebContents();
   }
 
-  if (!tab)
+  if (!contents)
     return;
 
   // If |origin| hasn't been seen before and the default content setting for
@@ -416,7 +416,7 @@ void DesktopNotificationService::RequestPermission(
   ContentSetting setting = GetContentSetting(origin);
   if (setting == CONTENT_SETTING_ASK) {
     // Show an info bar requesting permission.
-    TabContents* tab_contents = TabContents::FromWebContents(tab);
+    TabContents* tab_contents = TabContents::FromWebContents(contents);
     InfoBarTabHelper* infobar_helper = tab_contents->infobar_tab_helper();
     infobar_helper->AddInfoBar(new NotificationPermissionInfoBarDelegate(
         infobar_helper,
