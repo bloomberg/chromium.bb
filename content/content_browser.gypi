@@ -852,7 +852,6 @@
       'dependencies': [
         '../media/media.gyp:media',
         'content.gyp:content_jni_headers',
-        'content.gyp:content_java',
       ],
       'include_dirs': [
         '<(SHARED_INTERMEDIATE_DIR)/content',
