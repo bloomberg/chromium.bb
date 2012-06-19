@@ -96,8 +96,6 @@ struct NaClDebugState {
   Target* target_;
   struct NaClApp *app_;
   NaClDebugStatus status_;
-  std::vector<const char *> arg_;
-  std::vector<const char *> env_;
 };
 
 static const struct NaClDebugCallbacks debug_callbacks = {
@@ -154,24 +152,6 @@ void NaClExceptionCatcher(uint32_t id, int8_t sig, void *cookie) {
 void NaClDebugSetAppInfo(struct NaClApp *app) throw() {
   if (NaClDebugIsEnabled()) {
     g_nacl_debug_state->app_ = app;
-  }
-}
-
-
-void NaClDebugSetAppEnvironment(int argc, char const * const argv[],
-                                int envc, char const * const envv[]) throw() {
-  if (NaClDebugIsEnabled()) {
-    int a;
-    try {
-      /*
-       * Copy the pointer arrays.  We use ptrs instead of strings
-       * since the data persits and it prevents an extra copy.
-       */
-      g_nacl_debug_state->arg_.resize(argc);
-      for (a = 0; a < argc; a++) g_nacl_debug_state->arg_[a] = argv[a];
-      g_nacl_debug_state->env_.resize(envc);
-      for (a = 0; a < envc; a++) g_nacl_debug_state->env_[a] = envv[a];
-    } DBG_CATCH_ALL
   }
 }
 
@@ -241,9 +221,7 @@ void NaClDebugStop(int ErrCode) throw() {
  * This function is implemented for the service runtime.  The service runtime
  * declares the function so it does not need to be declared in our header.
  */
-int NaClDebugInit(struct NaClApp *nap,
-                  int argc, char const *const argv[],
-                  int envc, char const *const envv[]) {
+int NaClDebugInit(struct NaClApp *nap) {
   static bool initialised = 0;
   CHECK(!initialised && NULL == g_nacl_debug_state);
   initialised = 1;
@@ -252,7 +230,6 @@ int NaClDebugInit(struct NaClApp *nap,
   g_nacl_debug_state = new NaClDebugState();
   CHECK(g_nacl_debug_state->Init());
   NaClDebugSetAppInfo(nap);
-  NaClDebugSetAppEnvironment(argc, argv, envc, envv);
   NaClDebugStart();
   return 1;
 }

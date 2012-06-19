@@ -749,9 +749,7 @@ int NaClCreateMainThread(struct NaClApp     *nap,
     /*
      * Enable the debug stub.
      */
-    if (!NaClDebugInit(nap,
-                       argc, (char const * const *) argv,
-                       envc, (char const * const *) envv)) {
+    if (!NaClDebugInit(nap)) {
       goto cleanup;
     }
   }

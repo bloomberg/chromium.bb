@@ -12,13 +12,7 @@
  * without pulling in the debug stub implementation from
  * src/trusted/gdb_rsp and src/trusted/debug_stub.
  */
-int NaClDebugInit(struct NaClApp *nap,
-                  int argc, char const *const argv[],
-                  int envc, char const *const envv[]) {
+int NaClDebugInit(struct NaClApp *nap) {
   UNREFERENCED_PARAMETER(nap);
-  UNREFERENCED_PARAMETER(argc);
-  UNREFERENCED_PARAMETER(argv);
-  UNREFERENCED_PARAMETER(envc);
-  UNREFERENCED_PARAMETER(envv);
   return 1; /* Success */
 }

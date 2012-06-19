@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -34,14 +34,12 @@ struct NaClApp;
 struct NaClAppThread;
 
 /*
- * These functions should be called before the debug server has started
+ * This function should be called before the debug server has started
  * to prevent a debugger from attaching and failing to retrieve
- * information about the App (NEXE) that is running.  These functions are
+ * information about the App (NEXE) that is running.  This function is
  * safe to call even if debugging has not been enabled.
  */
 void NaClDebugSetAppInfo(struct NaClApp *app) NO_THROW;
-void NaClDebugSetAppEnvironment(int argc, char const * const argv[],
-                                int envc, char const * const envv[]) NO_THROW;
 
 /*
  * This function must be called each time we start a new App thread by the

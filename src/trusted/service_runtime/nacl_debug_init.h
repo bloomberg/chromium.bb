@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Copyright (c) 2012 The Native Client Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -15,9 +15,7 @@ EXTERN_C_BEGIN
  * Enables the debug stub.  If this is called, we do not guarantee
  * security to the same extent that we normally would.
  */
-int NaClDebugInit(struct NaClApp *nap,
-                  int argc, char const *const argv[],
-                  int envc, char const *const envv[]);
+int NaClDebugInit(struct NaClApp *nap);
 
 EXTERN_C_END
 
