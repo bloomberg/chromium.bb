@@ -4,6 +4,8 @@
 
 #include "chrome/common/extensions/extension.h"
 
+#include <ostream>
+
 #include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
@@ -801,7 +803,9 @@ bool Extension::LoadGlobsHelper(
 }
 
 scoped_ptr<ExtensionAction> Extension::LoadExtensionActionHelper(
-    const DictionaryValue* extension_action, string16* error) {
+    const DictionaryValue* extension_action,
+    ExtensionAction::Type action_type,
+    string16* error) {
   scoped_ptr<ExtensionAction> result(new ExtensionAction(id()));
 
   // Page actions are hidden by default, and browser actions ignore
@@ -837,13 +841,19 @@ scoped_ptr<ExtensionAction> Extension::LoadExtensionActionHelper(
   std::string default_icon;
   // Read the page action |default_icon| (optional).
   if (extension_action->HasKey(keys::kPageActionDefaultIcon)) {
-    if (!extension_action->GetString(keys::kPageActionDefaultIcon,
-                                     &default_icon) ||
-        default_icon.empty()) {
-      *error = ASCIIToUTF16(errors::kInvalidPageActionIconPath);
-      return scoped_ptr<ExtensionAction>();
+    if (action_type == ExtensionAction::TYPE_SCRIPT_BADGE) {
+      install_warnings_.push_back(
+          InstallWarning(InstallWarning::FORMAT_TEXT,
+                         errors::kScriptBadgeIconIgnored));
+    } else {
+      if (!extension_action->GetString(keys::kPageActionDefaultIcon,
+                                       &default_icon) ||
+          default_icon.empty()) {
+        *error = ASCIIToUTF16(errors::kInvalidPageActionIconPath);
+        return scoped_ptr<ExtensionAction>();
+      }
+      result->set_default_icon_path(default_icon);
     }
-    result->set_default_icon_path(default_icon);
   }
 
   // Read the page action title from |default_title| if present, |name| if not
@@ -2026,6 +2036,7 @@ bool Extension::LoadExtensionFeatures(
       !LoadContentScripts(error) ||
       !LoadPageAction(error) ||
       !LoadBrowserAction(error) ||
+      !LoadScriptBadge(error) ||
       !LoadFileBrowserHandlers(error) ||
       !LoadChromeURLOverrides(error) ||
       !LoadOmnibox(error) ||
@@ -2246,7 +2257,8 @@ bool Extension::LoadPageAction(string16* error) {
 
   // If page_action_value is not NULL, then there was a valid page action.
   if (page_action_value) {
-    page_action_ = LoadExtensionActionHelper(page_action_value, error);
+    page_action_ = LoadExtensionActionHelper(
+        page_action_value, ExtensionAction::TYPE_PAGE, error);
     if (!page_action_.get())
       return false;  // Failed to parse page action definition.
     declared_action_type_ = ExtensionAction::TYPE_PAGE;
@@ -2271,10 +2283,63 @@ bool Extension::LoadBrowserAction(string16* error) {
     return false;
   }
 
-  browser_action_ = LoadExtensionActionHelper(browser_action_value, error);
+  browser_action_ = LoadExtensionActionHelper(
+      browser_action_value, ExtensionAction::TYPE_BROWSER, error);
   if (!browser_action_.get())
     return false;  // Failed to parse browser action definition.
   declared_action_type_ = ExtensionAction::TYPE_BROWSER;
+  return true;
+}
+
+bool Extension::LoadScriptBadge(string16* error) {
+  if (manifest_->HasKey(keys::kScriptBadge)) {
+    if (!switch_utils::AreScriptBadgesEnabled()) {
+      // So as to not confuse developers if they specify a script badge section
+      // in the manifest, show a warning if the script badge declaration isn't
+      // going to have any effect.
+      install_warnings_.push_back(
+          InstallWarning(InstallWarning::FORMAT_TEXT,
+                         errors::kScriptBadgeRequiresFlag));
+    }
+
+    DictionaryValue* script_badge_value = NULL;
+    if (!manifest_->GetDictionary(keys::kScriptBadge, &script_badge_value)) {
+      *error = ASCIIToUTF16(errors::kInvalidScriptBadge);
+      return false;
+    }
+
+    script_badge_ = LoadExtensionActionHelper(
+        script_badge_value, ExtensionAction::TYPE_SCRIPT_BADGE, error);
+    if (!script_badge_.get())
+      return false;  // Failed to parse script badge definition.
+
+    declared_action_type_ = ExtensionAction::TYPE_SCRIPT_BADGE;
+  } else {
+    script_badge_.reset(new ExtensionAction(id()));
+
+    // Make sure there is always a title.
+    script_badge_->SetTitle(ExtensionAction::kDefaultTabId, name());
+  }
+
+  // Script badges always use their extension's icon so users can rely on the
+  // visual appearance to know which extension is running.  This isn't
+  // bulletproof since an malicious extension could use a different 16x16 icon
+  // that matches the icon of a trusted extension, and users wouldn't be warned
+  // during installation.
+
+  std::string icon16_path = icons().Get(ExtensionIconSet::EXTENSION_ICON_BITTY,
+                                        ExtensionIconSet::MATCH_EXACTLY);
+  if (!icon16_path.empty()) {
+    script_badge_->set_default_icon_path(icon16_path);
+  } else {
+    script_badge_->SetIcon(
+        ExtensionAction::kDefaultTabId,
+        *ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+            IDR_EXTENSIONS_FAVICON).ToSkBitmap());
+  }
+
+  script_badge_->SetIsVisible(ExtensionAction::kDefaultTabId, true);
+
   return true;
 }
 
@@ -3617,6 +3682,25 @@ bool Extension::ShouldDisplayInLauncher() const {
   return is_app() && id() != extension_misc::kCloudPrintAppId;
 }
 
+bool Extension::InstallWarning::operator==(const InstallWarning& other) const {
+  return format == other.format && message == other.message;
+}
+
+void PrintTo(const Extension::InstallWarning& warning, ::std::ostream* os){
+  *os << "InstallWarning(";
+  switch (warning.format) {
+    case Extension::InstallWarning::FORMAT_TEXT:
+      *os << "FORMAT_TEXT, \"";
+      break;
+    case Extension::InstallWarning::FORMAT_HTML:
+      *os << "FORMAT_HTML, \"";
+      break;
+  }
+  // This is just for test error messages, so no need to escape '"'
+  // characters inside the message.
+  *os << warning.message << "\")";
+}
+
 ExtensionInfo::ExtensionInfo(const DictionaryValue* manifest,
                              const std::string& id,
                              const FilePath& path,
@@ -3662,46 +3746,6 @@ bool Extension::HasContentScriptAtURL(const GURL& url) const {
       return true;
   }
   return false;
-}
-
-ExtensionAction* Extension::GetScriptBadge() const {
-  if (!script_badge_.get()) {
-    script_badge_.reset(new ExtensionAction(id()));
-
-    // On initialization, copy the default icon path from the browser action,
-    // or generate a puzzle piece if there isn't one. Extensions may later
-    // overwrite this icon using the browserAction API.
-    if (browser_action() && !browser_action()->default_icon_path().empty()) {
-      script_badge_->set_default_icon_path(
-          browser_action()->default_icon_path());
-    } else {
-      script_badge_->SetIcon(
-          ExtensionAction::kDefaultTabId,
-          *ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-              IDR_EXTENSIONS_FAVICON).ToSkBitmap());
-    }
-
-    // Likewise, make sure there is always a title.
-    script_badge_->SetTitle(ExtensionAction::kDefaultTabId, name());
-  }
-
-  // Every time, re-initialize the script badge based on the current state of
-  // the browser action.
-  int kDefaultTabId = ExtensionAction::kDefaultTabId;
-
-  script_badge_->SetIsVisible(kDefaultTabId, true);
-
-  if (browser_action()) {
-    SkBitmap icon = browser_action()->GetIcon(kDefaultTabId);
-    if (!icon.isNull())
-      script_badge_->SetIcon(kDefaultTabId, icon);
-
-    std::string title = browser_action()->GetTitle(kDefaultTabId);
-    if (!title.empty())
-      script_badge_->SetTitle(kDefaultTabId, title);
-  }
-
-  return script_badge_.get();
 }
 
 const URLPatternSet* Extension::GetTabSpecificHostPermissions(

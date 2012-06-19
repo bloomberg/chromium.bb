@@ -7,6 +7,7 @@
 #pragma once
 
 #include <algorithm>
+#include <iosfwd>
 #include <map>
 #include <set>
 #include <string>
@@ -195,6 +196,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     InstallWarning(Format format, const std::string& message)
         : format(format), message(message) {
     }
+    bool operator==(const InstallWarning& other) const;
     Format format;
     std::string message;
   };
@@ -550,10 +552,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Returns true if the extension has a content script declared at |url|.
   bool HasContentScriptAtURL(const GURL& url) const;
 
-  // Returns an ExtensionAction representing the script badge that should be
-  // shown for this extension in the location bar.
-  ExtensionAction* GetScriptBadge() const;
-
   // Gets the tab-specific host permissions of |tab_id|, or NULL if there
   // aren't any.
   //
@@ -588,6 +586,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     return converted_from_user_script_;
   }
   const UserScriptList& content_scripts() const { return content_scripts_; }
+  ExtensionAction* script_badge() const { return script_badge_.get(); }
   ExtensionAction* page_action() const { return page_action_.get(); }
   ExtensionAction* browser_action() const { return browser_action_.get(); }
   ExtensionAction::Type declared_action_type() const {
@@ -822,6 +821,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool LoadContentScripts(string16* error);
   bool LoadPageAction(string16* error);
   bool LoadBrowserAction(string16* error);
+  bool LoadScriptBadge(string16* error);
   bool LoadFileBrowserHandlers(string16* error);
   // Helper method to load a FileBrowserHandlerList from the manifest.
   FileBrowserHandlerList* LoadFileBrowserHandlersHelper(
@@ -870,7 +870,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // Helper method to load an ExtensionAction from the page_action or
   // browser_action entries in the manifest.
   scoped_ptr<ExtensionAction> LoadExtensionActionHelper(
-      const base::DictionaryValue* extension_action, string16* error);
+      const base::DictionaryValue* extension_action,
+      ExtensionAction::Type action_type,
+      string16* error);
 
   // Helper method that loads the OAuth2 info from the 'oauth2' manifest key.
   bool LoadOAuth2Info(string16* error);
@@ -980,9 +982,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // browser actions may be generated without any action declared.
   ExtensionAction::Type declared_action_type_;
 
-  // The extension's script badge. Lazily populated (and subsequently updated)
-  // as required by GetScriptBadge.
-  mutable scoped_ptr<ExtensionAction> script_badge_;
+  // The extension's script badge.  Never NULL.
+  scoped_ptr<ExtensionAction> script_badge_;
 
   // The extension's file browser actions, if any.
   scoped_ptr<FileBrowserHandlerList> file_browser_handlers_;
@@ -1129,6 +1130,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
 typedef std::vector< scoped_refptr<const Extension> > ExtensionList;
 typedef std::set<std::string> ExtensionIdSet;
+
+// Let gtest print InstallWarnings.
+void PrintTo(const Extension::InstallWarning&, ::std::ostream* os);
 
 // Handy struct to pass core extension info around.
 struct ExtensionInfo {

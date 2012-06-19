@@ -689,6 +689,9 @@ void ExtensionBrowserEventRouter::ExtensionActionExecuted(
     case ExtensionAction::TYPE_PAGE:
       event_name = "pageAction.onClicked";
       break;
+    case ExtensionAction::TYPE_SCRIPT_BADGE:
+      event_name = "scriptBadge.onClicked";
+      break;
   }
 
   if (event_name) {

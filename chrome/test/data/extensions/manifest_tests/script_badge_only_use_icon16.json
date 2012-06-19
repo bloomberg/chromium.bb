@@ -1,0 +1,9 @@
+{
+  "manifest_version": 2,
+  "name": "my extension",
+  "version": "1.0.0.0",
+  "description": "Check that a simple script_badge section parses",
+  "icons": {
+    "64": "icon64.png"
+  }
+}

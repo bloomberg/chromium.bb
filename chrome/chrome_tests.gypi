@@ -1894,6 +1894,7 @@
         'common/extensions/manifest_tests/extension_manifests_platformapp_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_portsinpermissions_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_sandboxed_unittest.cc',
+        'common/extensions/manifest_tests/extension_manifests_scriptbadge_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_storage_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_tts_unittest.cc',
         'common/extensions/manifest_tests/extension_manifests_ui_unittest.cc',

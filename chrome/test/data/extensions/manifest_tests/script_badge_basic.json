@@ -1,0 +1,15 @@
+{
+  "manifest_version": 2,
+  "name": "my extension",
+  "version": "1.0.0.0",
+  "description": "Check that a simple script_badge section parses",
+  "icons": {
+    "16": "icon16.png",
+    "19": "icon19.png",
+    "48": "icon48.png"
+  },
+  "script_badge": {
+    "default_title": "Hello World",
+    "default_popup": "popup.html"
+  }
+}

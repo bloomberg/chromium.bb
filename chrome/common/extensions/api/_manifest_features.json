@@ -199,6 +199,10 @@
     ],
     "min_manifest_version": 2
   },
+  "script_badge": {
+    "channel": "dev",
+    "extension_types": ["extension"]
+  },
   "signature": {
     "channel": "stable",
     "extension_types": "all"

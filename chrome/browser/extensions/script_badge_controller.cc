@@ -11,6 +11,7 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "chrome/common/extensions/extension_switch_utils.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -165,7 +166,7 @@ bool ScriptBadgeController::InsertExtension(const std::string& extension_id) {
   if (!extension)
     return false;
 
-  current_actions_.push_back(extension->GetScriptBadge());
+  current_actions_.push_back(extension->script_badge());
   return true;
 }
 

@@ -96,6 +96,7 @@ const char kRequirements[] = "requirements";
 const char kRunAt[] = "run_at";
 const char kSandboxedPages[] = "sandbox.pages";
 const char kSandboxedPagesCSP[] = "sandbox.content_security_policy";
+const char kScriptBadge[] = "script_badge";
 const char kShiftKey[] = "shiftKey";
 const char kShortcutKey[] = "shortcutKey";
 const char kSignature[] = "signature";
@@ -401,6 +402,8 @@ const char kInvalidSandboxedPage[] =
     "Invalid value for 'sandbox.pages[*]'.";
 const char kInvalidSandboxedPagesCSP[] =
     "Invalid value for 'sandbox.content_security_policy'.";
+const char kInvalidScriptBadge[] =
+    "Invalid value for 'script_badge'.";
 const char kInvalidSignature[] =
     "Value 'signature' is missing or invalid.";
 const char kInvalidTheme[] =
@@ -477,6 +480,11 @@ const char kPlatformAppNeedsManifestVersion2[] =
     "Platform apps need manifest_version set to >= 2";
 const char kReservedMessageFound[] =
     "Reserved key * found in message catalog.";
+const char kScriptBadgeRequiresFlag[] =
+    "The script_badge manifest key is turned off by default. "
+    "You can enable it with the --enable-script-badges command-line flag.";
+const char kScriptBadgeIconIgnored[] =
+    "default_icon specified in script_badge manifest section will not be used.";
 const char kWebRequestConflictsWithLazyBackground[] =
     "The 'webRequest' API cannot be used with event pages.";
 #if defined(OS_CHROMEOS)

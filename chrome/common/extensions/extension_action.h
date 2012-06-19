@@ -21,7 +21,8 @@ class Rect;
 class GURL;
 class SkBitmap;
 
-// ExtensionAction encapsulates the state of a browser or page action.
+// ExtensionAction encapsulates the state of a browser action, page action, or
+// script badge.
 // Instances can have both global and per-tab state. If a property does not have
 // a per-tab value, the global value is used instead.
 class ExtensionAction {
@@ -35,6 +36,7 @@ class ExtensionAction {
     TYPE_NONE,
     TYPE_BROWSER,
     TYPE_PAGE,
+    TYPE_SCRIPT_BADGE,
   };
 
   explicit ExtensionAction(const std::string& extension_id);

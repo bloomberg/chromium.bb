@@ -104,6 +104,7 @@ namespace extension_manifest_keys {
   extern const char kRunAt[];
   extern const char kSandboxedPages[];
   extern const char kSandboxedPagesCSP[];
+  extern const char kScriptBadge[];
   extern const char kShiftKey[];
   extern const char kShortcutKey[];
   extern const char kSignature[];
@@ -282,6 +283,7 @@ namespace extension_manifest_errors {
   extern const char kInvalidSandboxedPagesList[];
   extern const char kInvalidSandboxedPage[];
   extern const char kInvalidSandboxedPagesCSP[];
+  extern const char kInvalidScriptBadge[];
   extern const char kInvalidSignature[];
   extern const char kInvalidTheme[];
   extern const char kInvalidThemeColors[];
@@ -319,6 +321,8 @@ namespace extension_manifest_errors {
   extern const char kPlatformAppNeedsManifestVersion2[];
   extern const char kOneUISurfaceOnly[];
   extern const char kReservedMessageFound[];
+  extern const char kScriptBadgeRequiresFlag[];
+  extern const char kScriptBadgeIconIgnored[];
   extern const char kWebRequestConflictsWithLazyBackground[];
 #if defined(OS_CHROMEOS)
   extern const char kIllegalPlugins[];
