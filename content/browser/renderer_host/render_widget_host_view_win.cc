@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_win.h"
 
 #include <algorithm>
+#include <map>
 #include <peninputpanel_i.c>
 
 #include "base/bind.h"
@@ -543,6 +544,8 @@ class WebTouchState {
   }
 
  private:
+  typedef std::map<unsigned int, int> MapType;
+
   // Adds a touch point or returns NULL if there's not enough space.
   WebKit::WebTouchPoint* AddTouchPoint(TOUCHINPUT* touch_input);
 
@@ -551,8 +554,18 @@ class WebTouchState {
   bool UpdateTouchPoint(WebKit::WebTouchPoint* touch_point,
                         TOUCHINPUT* touch_input);
 
+  // Find (or create) a mapping for _os_touch_id_.
+  unsigned int GetMappedTouch(unsigned int os_touch_id);
+
+  // Remove any mappings that are no longer in use.
+  void RemoveExpiredMappings();
+
   LocalTouchEvent touch_event_;
   const RenderWidgetHostViewWin* const window_;
+
+  // Maps OS touch Id's into an internal (WebKit-friendly) touch-id.
+  // WebKit expects small consecutive integers, starting at 0.
+  MapType touch_map_;
 
   DISALLOW_COPY_AND_ASSIGN(WebTouchState);
 };
@@ -2086,13 +2099,11 @@ size_t WebTouchState::UpdateTouchPoints(
   // Consume all events of the same type and add them to the changed list.
   int last_type = 0;
   for (size_t i = 0; i < count; ++i) {
-    if (points[i].dwID == 0ul)
-      continue;
+    unsigned int mapped_id = GetMappedTouch(points[i].dwID);
 
     WebKit::WebTouchPoint* point = NULL;
     for (unsigned j = 0; j < touch_event_.data().touchesLength; ++j) {
-      if (static_cast<DWORD>(touch_event_.data().touches[j].id) ==
-          points[i].dwID) {
+      if (static_cast<DWORD>(touch_event_.data().touches[j].id) == mapped_id) {
         point =  &touch_event_.data().touches[j];
         break;
       }
@@ -2136,6 +2147,7 @@ size_t WebTouchState::UpdateTouchPoints(
             continue;
           touch_event_.data().type = WebKit::WebInputEvent::TouchMove;
         } else if (touch_event_.data().changedTouchesLength) {
+          RemoveExpiredMappings();
           // Can't add a point if we're already handling move events.
           return i;
         } else {
@@ -2157,8 +2169,29 @@ size_t WebTouchState::UpdateTouchPoints(
         touch_event_.data().changedTouchesLength++] = *point;
   }
 
+  RemoveExpiredMappings();
   return count;
 }
+
+void WebTouchState::RemoveExpiredMappings() {
+  WebTouchState::MapType new_map;
+  for (MapType::iterator it = touch_map_.begin();
+      it != touch_map_.end();
+      ++it) {
+    WebKit::WebTouchPoint* point = touch_event_.data().touches;
+    WebKit::WebTouchPoint* end = point + touch_event_.data().touchesLength;
+    while (point < end) {
+      if ((point->id == it->second) &&
+          (point->state != WebKit::WebTouchPoint::StateReleased)) {
+        new_map.insert(*it);
+        break;
+      }
+      point++;
+    }
+  }
+  touch_map_.swap(new_map);
+}
+
 
 bool WebTouchState::ReleaseTouchPoints() {
   if (touch_event_.data().touchesLength == 0)
@@ -2177,13 +2210,15 @@ bool WebTouchState::ReleaseTouchPoints() {
 
 WebKit::WebTouchPoint* WebTouchState::AddTouchPoint(
     TOUCHINPUT* touch_input) {
+  DCHECK(touch_event_.data().touchesLength <
+      WebKit::WebTouchEvent::touchesLengthCap);
   if (touch_event_.data().touchesLength >=
       WebKit::WebTouchEvent::touchesLengthCap)
     return NULL;
   WebKit::WebTouchPoint* point =
       &touch_event_.data().touches[touch_event_.data().touchesLength++];
   point->state = WebKit::WebTouchPoint::StatePressed;
-  point->id = touch_input->dwID;
+  point->id = GetMappedTouch(touch_input->dwID);
   UpdateTouchPoint(point, touch_input);
   return point;
 }
@@ -2220,6 +2255,18 @@ bool WebTouchState::UpdateTouchPoint(
   touch_point->force = 0;
   touch_point->rotationAngle = 0;
   return false;
+}
+
+// Find (or create) a mapping for _os_touch_id_.
+unsigned int WebTouchState::GetMappedTouch(unsigned int os_touch_id) {
+  MapType::iterator it = touch_map_.find(os_touch_id);
+  if (it != touch_map_.end())
+    return it->second;
+  int next_value = 0;
+  for (it = touch_map_.begin(); it != touch_map_.end(); ++it)
+    next_value = std::max(next_value, it->second + 1);
+  touch_map_[os_touch_id] = next_value;
+  return next_value;
 }
 
 LRESULT RenderWidgetHostViewWin::OnTouchEvent(UINT message, WPARAM wparam,
