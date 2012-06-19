@@ -66,12 +66,15 @@ void MessageThrottlingFilter::SendThrottled(IPC::Message* message) {
          message->type() == DOMStorageHostMsg_RemoveItem::ID ||
          message->type() == DOMStorageHostMsg_Clear::ID);
   DCHECK(sender_);
-  if (!sender_)
+  if (!sender_) {
+    delete message;
     return;
+  }
   const int kMaxPendingMessages = 1000;
-  bool need_to_flush = IncrementPendingCount() > kMaxPendingMessages;
+  bool need_to_flush = (IncrementPendingCount() > kMaxPendingMessages) &&
+                       !message->is_sync();
   sender_->Send(message);
-  if (need_to_flush && !message->is_sync()) {
+  if (need_to_flush) {
     sender_->Send(new DOMStorageHostMsg_FlushMessages);
     DCHECK_EQ(0, GetPendingCount());
   } else {
