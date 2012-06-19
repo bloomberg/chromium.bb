@@ -2889,8 +2889,6 @@
         'browser/ui/global_error_service.h',
         'browser/ui/global_error_service_factory.cc',
         'browser/ui/global_error_service_factory.h',
-        'browser/ui/gtk/about_chrome_dialog.cc',
-        'browser/ui/gtk/about_chrome_dialog.h',
         'browser/ui/gtk/accelerators_gtk.cc',
         'browser/ui/gtk/accelerators_gtk.h',
         'browser/ui/gtk/autofill/autofill_popup_view_gtk.cc',

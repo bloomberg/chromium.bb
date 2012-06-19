@@ -41,7 +41,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
-#include "chrome/browser/ui/gtk/about_chrome_dialog.h"
 #include "chrome/browser/ui/gtk/accelerators_gtk.h"
 #include "chrome/browser/ui/gtk/avatar_menu_bubble_gtk.h"
 #include "chrome/browser/ui/gtk/avatar_menu_button_gtk.h"
@@ -1059,7 +1058,7 @@ void BrowserWindowGtk::ToggleBookmarkBar() {
 }
 
 void BrowserWindowGtk::ShowAboutChromeDialog() {
-  ShowAboutDialogForProfile(window_, browser_->profile(), browser_.get());
+  // Do nothing here, we show a WebUI page instead of a native one.
 }
 
 void BrowserWindowGtk::ShowUpdateChromeDialog() {
