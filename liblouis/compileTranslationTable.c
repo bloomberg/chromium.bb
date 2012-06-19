@@ -159,14 +159,19 @@ lou_getDataPath ()
 
 static char tablePath[MAXSTRING];
 static FILE *logFile = NULL;
+static char initialLogFileName[256];
 
 void EXPORT_CALL
 lou_logFile (const char *fileName)
 {
+  if (fileName == NULL)
+    return;
+  if (initialLogFileName[0] == 0)
+    strcpy (initialLogFileName, fileName);
+  logFile = fopen (fileName, "wb");
+  if (logFile == NULL && initialLogFileName[0] != 0)
+    logFile = fopen (initialLogFileName, "wb");
   if (logFile == NULL)
-    logFile = stderr;
-  logFile = fopen (fileName, "w");
-  if (!logFile)
     {
       fprintf (stderr, "Cannot open log file %s\n", fileName);
       logFile = stderr;
@@ -178,7 +183,11 @@ lou_logPrint (char *format, ...)
 {
 #ifndef __SYMBIAN32__
   va_list argp;
-  if (logFile == NULL)
+  if (format == NULL)
+    return;
+  if (logFile == NULL && initialLogFileName[0] != 0)
+    logFile = fopen (initialLogFileName, "wb");
+  if (logFile == NULL);
     logFile = stderr;
   va_start (argp, format);
   vfprintf (logFile, format, argp);
