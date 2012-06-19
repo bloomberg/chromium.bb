@@ -230,8 +230,6 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
 
   // State used for querying the temporary directory.
   nacl::scoped_ptr<pp::FileRef> dir_ref_;
-  nacl::scoped_ptr<pp::FileIO> dir_io_;
-  PP_FileInfo dir_info_;
 
   // The URL for the pexe file.
   nacl::string pexe_url_;

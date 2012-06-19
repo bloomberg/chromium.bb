@@ -170,8 +170,12 @@ void PnaclTranslateThread::TranslateFailed(const nacl::string& error_string) {
   PLUGIN_PRINTF(("PnaclTranslateThread::TranslateFailed (error_string='%s')\n",
                  error_string.c_str()));
   pp::Core* core = pp::Module::Get()->core();
-  error_info_->SetReport(ERROR_UNKNOWN,
-                        nacl::string("PnaclCoordinator: ") + error_string);
+  if (error_info_->message().empty()) {
+    // Only use our message if one hasn't already been set by the coordinator
+    // (e.g. pexe load failed).
+    error_info_->SetReport(ERROR_UNKNOWN,
+                           nacl::string("PnaclCoordinator: ") + error_string);
+  }
   core->CallOnMainThread(0, report_translate_finished_, PP_ERROR_FAILED);
 }
 

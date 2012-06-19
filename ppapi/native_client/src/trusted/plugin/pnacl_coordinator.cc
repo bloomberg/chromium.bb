@@ -300,7 +300,10 @@ void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
   // destroyed, then we are in trouble since the obj_file_, nexe_file_,
   // etc. may have been destroyed.
   // TODO(jvoung,sehr): Fix.
-  translate_finish_error_ = pp_error;
+  // If there was an error already set (e.g. pexe load failure) then we want
+  // to use the first one, (which might be something useful) rather than
+  // the one from the compiler, (which is always just PP_ERROR_FAILED)
+  if (translate_finish_error_ == PP_OK) translate_finish_error_ = pp_error;
 
   // Close the object temporary file (regardless of error code).
   pp::CompletionCallback cb =
@@ -329,9 +332,11 @@ void PnaclCoordinator::ObjectFileWasDeleted(int32_t pp_error) {
     return;
   }
   // Close the nexe temporary file.
-  pp::CompletionCallback cb =
-     callback_factory_.NewCallback(&PnaclCoordinator::NexeFileWasClosed);
-  nexe_file_->Close(cb);
+  if (nexe_file_ != NULL) {
+    pp::CompletionCallback cb =
+      callback_factory_.NewCallback(&PnaclCoordinator::NexeFileWasClosed);
+    nexe_file_->Close(cb);
+  }
 }
 
 void PnaclCoordinator::NexeFileWasClosed(int32_t pp_error) {
@@ -423,7 +428,6 @@ void PnaclCoordinator::FileSystemDidOpen(int32_t pp_error) {
   }
   dir_ref_.reset(new pp::FileRef(*file_system_,
                                  kPnaclTempDir));
-  dir_io_.reset(new pp::FileIO(plugin_));
   // Attempt to create the directory.
   pp::CompletionCallback cb =
       callback_factory_.NewCallback(&PnaclCoordinator::DirectoryWasCreated);
@@ -507,7 +511,12 @@ void PnaclCoordinator::BitcodeStreamDidFinish(int32_t pp_error) {
   PLUGIN_PRINTF(("PnaclCoordinator::BitcodeStreamDidFinish (pp_error=%"
                  NACL_PRId32")\n", pp_error));
   if (pp_error != PP_OK) {
-    ReportPpapiError(pp_error, "pexe load failed.");
+    // Defer reporting the error and obj_file/nexe_file cleanup until after
+    // the translation thread returns, because it may be accessing the
+    // coordinator's objects or writing to the files.
+    translate_finish_error_ = pp_error;
+    error_info_.SetReport(ERROR_UNKNOWN,
+                          nacl::string("PnaclCoordinator: pexe load failed."));
     translate_thread_->SetSubprocessesShouldDie();
   }
 }
