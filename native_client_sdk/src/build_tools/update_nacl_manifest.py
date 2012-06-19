@@ -184,7 +184,10 @@ class RealDelegate(Delegate):
 
   def GsUtil_ls(self, url):
     """See Delegate.GsUtil_ls"""
-    stdout = self._RunGsUtil(None, 'ls', url)
+    try:
+      stdout = self._RunGsUtil(None, 'ls', url)
+    except subprocess.CalledProcessError:
+      return []
 
     # filter out empty lines
     return filter(None, stdout.split('\n'))
@@ -216,7 +219,8 @@ class RealDelegate(Delegate):
     else:
       stdin_pipe = None
 
-    process = subprocess.Popen(cmd, stdin=stdin_pipe, stdout=subprocess.PIPE)
+    process = subprocess.Popen(cmd, stdin=stdin_pipe, stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE)
     stdout, _ = process.communicate(stdin)
 
     if process.returncode != 0:
